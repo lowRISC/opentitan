@@ -18,7 +18,11 @@ class spi_device_pass_all_vseq extends spi_device_pass_base_vseq;
       spi_device_flash_pass_init(PassthroughMode);
 
       for (int j = 0; j < 20; ++j) begin
-        if ($urandom_range(0, 99) < write_flash_status_pct) random_write_flash_status();
+        if ($urandom_range(0, 99) < write_flash_status_pct) begin
+          random_access_flash_status(.write(1));
+        end else if ($urandom_range(0, 1)) begin
+          random_access_flash_status(.write(0));
+        end
 
         randomize_op_addr_size();
         `uvm_info(`gfn, $sformatf("Testing op_num %0d/20, op = 0x%0h", j, opcode), UVM_MEDIUM)

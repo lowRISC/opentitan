@@ -307,7 +307,7 @@
             - Host should poll busy field status to check if command is done.
             - Issue next command upload and poll busy status again.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_upload"]
     }
     {
       name: mailbox_command
@@ -357,9 +357,8 @@
       desc: '''
             - Configure cmd info slots.
             - Configure dummy cycle of read commands to non default value.
-            - For single mode allowed dummy cycle is 7.
-            - For dual mode allowed dummy cycle is 3 and 7.
-            - For quad mode allowed dummy cycle is 1, 3, 5 and 7.
+            - For single mode allowed dummy cycle is 0 or more.
+            - For dual/quad mode allowed dummy cycle is 2 or more.
             - Check return data timing for configured commands.
             - Check proper read data.
             - Issue new read command that crosses read buffer boundary.

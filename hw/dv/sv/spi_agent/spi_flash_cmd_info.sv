@@ -25,6 +25,8 @@ class spi_flash_cmd_info extends uvm_sequence_item;
   constraint dummy_cycles_c {
     // for dual/quad read, need at least 2 dummy cycles
     num_lanes > 1 && !write_command -> dummy_cycles >= 2;
+    // write doesn't have dummy cycle
+    write_command -> dummy_cycles == 0;
     dummy_cycles dist {
       0     :/ 1,
       [2:7] :/ 1,

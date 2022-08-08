@@ -161,6 +161,11 @@
     }
 
     {
+      name: spi_device_upload
+      uvm_test_seq: spi_device_upload_vseq
+    }
+
+    {
       name: spi_device_pass_all
       uvm_test_seq: spi_device_pass_all_vseq
     }

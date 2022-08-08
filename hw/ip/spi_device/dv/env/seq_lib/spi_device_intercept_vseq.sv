@@ -34,8 +34,8 @@ class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
 
   // randomly set flash_status for every spi transaction
   virtual task spi_host_xfer_flash_item(bit [7:0] op, uint payload_size,
-                                        bit [31:0] addr);
-    random_write_flash_status();
-    super.spi_host_xfer_flash_item(op, payload_size, addr);
+                                        bit [31:0] addr, bit wait_on_busy = 1);
+    random_access_flash_status();
+    super.spi_host_xfer_flash_item(op, payload_size, addr, wait_on_busy);
   endtask
 endclass : spi_device_intercept_vseq
