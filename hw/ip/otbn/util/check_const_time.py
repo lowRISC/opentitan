@@ -6,12 +6,53 @@
 import argparse
 import sys
 
+from typing import Dict, List
+
 from shared.check import CheckResult
 from shared.control_flow import program_control_graph, subroutine_control_graph
 from shared.decode import decode_elf
 from shared.information_flow_analysis import (get_program_iflow,
                                               get_subroutine_iflow,
                                               stringify_control_deps)
+
+# GPR maximum value.
+GPR_MAX = (1 << 32) - 1
+
+def is_gpr_name(name: str):
+    return name in [f'x{i}' for i in range(32)]
+
+def parse_required_constants(constants: List[str]) -> Dict[str,int]:
+    '''Parses required initial constants.
+
+    Constants are expected to be provided in the form <reg>:<value>, e.g.
+    x5:0xfffffff or x22:0. The value can be expressed in decimal or integer
+    form. Only GPRs are accepted as required constants (not wide registers or
+    special registers).
+    '''
+    out = {}
+    for token in constants:
+        reg_and_value = token.split(':')
+        if len(reg_and_value) != 2:
+            raise ValueError(
+                    f'Could not parse required constant {token}. Please '
+                    'provide required constants in the form <reg>:<value>, '
+                    'e.g. x5:3.')
+        reg, value = reg_and_value
+        if not is_gpr_name(reg):
+            raise ValueError(
+                    f'Cannot parse required constant {token}: {reg} is not a '
+                    'valid GPR name.')
+        if not value.isnumeric():
+            raise ValueError(
+                    f'Cannot parse required constant {token}: {value} is not '
+                    'a recognized numeric value.')
+        value = int(value)
+        if value < 0 or value > GPR_MAX:
+            raise ValueError(
+                    f'Cannot parse required constant {token}: {value} is out '
+                    'of range [0, GPR_MAX].')
+        out[reg] = value
+    return out
 
 
 def main() -> int:
@@ -26,6 +67,15 @@ def main() -> int:
         help=('The specific subroutine to check. If not provided, the start '
               'point is _imem_start (whole program).'))
     parser.add_argument(
+        '--constants',
+        nargs='+',
+        type=str,
+        required=False,
+        help=('Registers which are required to be constant at the start of the '
+              'subroutine. Only valid if `--subroutine` is passed. Write '
+              'in the form "reg:value", e.g. x3:5. Only GPRs are accepted as '
+              'required constants.'))
+    parser.add_argument(
         '--secrets',
         nargs='+',
         type=str,
@@ -35,6 +85,16 @@ def main() -> int:
               'program has only one possible control-flow path regardless '
               'of input.'))
     args = parser.parse_args()
+
+    # Parse initial constants.
+    if args.constants is None:
+        constants = {}
+    else:
+        if args.subroutine is None:
+            raise ValueError('Cannot require initial constants for a whole '
+                             'program; use --subroutine to analyze a specific '
+                             'subroutine.')
+        constants = parse_required_constants(args.constants)
 
     # Compute control graph and get all nodes that influence control flow.
     program = decode_elf(args.elf)
@@ -46,7 +106,7 @@ def main() -> int:
         graph = subroutine_control_graph(program, args.subroutine)
         to_analyze = 'subroutine {}'.format(args.subroutine)
         _, _, control_deps = get_subroutine_iflow(program, graph,
-                                                  args.subroutine)
+                                                  args.subroutine, constants)
 
     if args.secrets is None:
         if args.verbose:
@@ -56,8 +116,8 @@ def main() -> int:
         secret_control_deps = control_deps
     else:
         if args.verbose:
-            print('Analyzing {} with initial secrets {}'.format(
-                to_analyze, args.secrets))
+            print('Analyzing {} with initial secrets {} and initial constants {}'.format(
+                to_analyze, args.secrets, constants))
         # If secrets were provided, only show the ways in which those specific
         # nodes could influence control flow.
         secret_control_deps = {
