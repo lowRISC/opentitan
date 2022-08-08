@@ -157,6 +157,10 @@ module tb;
     .DmemAddrWidth (DmemAddrWidth)
   ) i_otbn_trace_if (.*);
 
+  assign dut.u_otbn_core.i_otbn_trace_if.scramble_state_err_i = dut.otbn_scramble_state_error;
+  assign dut.u_otbn_core.i_otbn_trace_if.missed_gnt_i.imem_gnt_missed_err = dut.imem_missed_gnt;
+  assign dut.u_otbn_core.i_otbn_trace_if.missed_gnt_i.dmem_gnt_missed_err = dut.dmem_missed_gnt;
+
   bind dut.u_otbn_core otbn_tracer u_otbn_tracer(.*, .otbn_trace(i_otbn_trace_if));
 
   bind dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller

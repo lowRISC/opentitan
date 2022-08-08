@@ -83,9 +83,20 @@ interface otbn_trace_if
   input logic [1:0][otbn_pkg::SideloadKeyWidth-1:0] sideload_key_shares_i,
 
   input logic secure_wipe_req,
-  input logic secure_wipe_ack
+  input logic secure_wipe_ack,
+
+  input logic locking_o,
+  input logic urnd_all_zero,
+  input logic insn_addr_err,
+  input logic alu_bignum_predec_error,
+  input logic mac_bignum_predec_error,
+  input logic ispr_predec_error,
+  input logic controller_predec_error,
+  input logic rf_bignum_predec_error,
+  input logic rd_predec_error
 );
   import otbn_pkg::*;
+  import prim_mubi_pkg::*;
 
   localparam int DmemSubWordAddrWidth = prim_util_pkg::vbits(WLEN/8);
 
@@ -323,6 +334,75 @@ interface otbn_trace_if
       end
     end
   end
+
+  // Bad Internal State Probes
+  // We need to capture them until we are actually locking to sample them in the correct instance.
+  predec_err_t predec_err_i, predec_err_d, predec_err_q;
+  start_stop_bad_int_t start_stop_bad_int_i, start_stop_bad_int_d, start_stop_bad_int_q;
+  controller_bad_int_t controller_bad_int_i, controller_bad_int_d, controller_bad_int_q;
+  missed_gnt_t missed_gnt_i, missed_gnt_d, missed_gnt_q;
+  logic scramble_state_err_i, scramble_state_err_d, scramble_state_err_q;
+  logic urnd_all_zero_d, urnd_all_zero_q;
+  logic insn_addr_err_d, insn_addr_err_q;
+
+  assign missed_gnt_d = (locking_o) ? '0 : (missed_gnt_q | missed_gnt_i);
+  assign predec_err_d = (locking_o) ? '0 : (predec_err_q | predec_err_i);
+  assign urnd_all_zero_d = (locking_o) ? '0 : (urnd_all_zero_q | urnd_all_zero);
+  assign insn_addr_err_d = (locking_o) ? '0 : (insn_addr_err_q | insn_addr_err);
+  assign start_stop_bad_int_d = (locking_o) ? '0 : (start_stop_bad_int_q | start_stop_bad_int_i);
+  assign controller_bad_int_d = (locking_o) ? '0 : (controller_bad_int_q | controller_bad_int_i);
+  assign scramble_state_err_d = (locking_o) ? '0 : (scramble_state_err_q | scramble_state_err_i);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      missed_gnt_q <= '0;
+      predec_err_q <= '0;
+      urnd_all_zero_q <= '0;
+      insn_addr_err_q <= '0;
+      start_stop_bad_int_q <= '0;
+      controller_bad_int_q <= '0;
+      scramble_state_err_q <= '0;
+    end else begin
+      missed_gnt_q <= missed_gnt_d;
+      predec_err_q <= predec_err_d;
+      urnd_all_zero_q <= urnd_all_zero_d;
+      insn_addr_err_q <= insn_addr_err_d;
+      scramble_state_err_q <= scramble_state_err_d;
+      start_stop_bad_int_q <= start_stop_bad_int_d;
+      controller_bad_int_q <= controller_bad_int_d;
+    end
+  end
+
+  assign predec_err_i.alu_bignum_err = alu_bignum_predec_error && insn_fetch_resp_valid;
+  assign predec_err_i.mac_bignum_err = mac_bignum_predec_error && insn_fetch_resp_valid;
+  assign predec_err_i.ispr_bignum_err = ispr_predec_error;
+  assign predec_err_i.controller_err = controller_predec_error;
+  assign predec_err_i.rf_err = rf_bignum_predec_error;
+  assign predec_err_i.rd_err = rd_predec_error;
+
+  assign start_stop_bad_int_i.state_err = u_otbn_start_stop_control.state_error;
+  assign start_stop_bad_int_i.spr_urnd_acks = u_otbn_start_stop_control.spurious_urnd_ack_error;
+  assign start_stop_bad_int_i.spr_secwipe_reqs = u_otbn_start_stop_control.secure_wipe_error_q;
+
+  assign start_stop_bad_int_i.mubi_rma_err = u_otbn_start_stop_control.mubi_err_d &&
+    prim_mubi_pkg::mubi4_test_invalid(u_otbn_start_stop_control.rma_ack_q);
+  assign start_stop_bad_int_i.mubi_urnd_err = u_otbn_start_stop_control.mubi_err_d &&
+    prim_mubi_pkg::mubi4_test_invalid(u_otbn_start_stop_control.wipe_after_urnd_refresh_q);
+
+  assign controller_bad_int_i.loop_hw_cnt_err =
+    (|u_otbn_controller.u_otbn_loop_controller.loop_counter_err);
+
+  assign controller_bad_int_i.loop_hw_stack_cnt_err =
+    u_otbn_controller.u_otbn_loop_controller.loop_stack_cnt_err;
+
+  assign controller_bad_int_i.loop_hw_intg_err =
+    ((|u_otbn_controller.u_otbn_loop_controller.current_loop_intg_err) &&
+     u_otbn_controller.u_otbn_loop_controller.current_loop_valid);
+
+  assign controller_bad_int_i.rf_base_call_stack_err =
+    u_otbn_controller.rf_base_call_stack_hw_err_i;
+  assign controller_bad_int_i.spr_secwipe_acks = u_otbn_controller.spurious_secure_wipe_ack_q;
+  assign controller_bad_int_i.state_err = u_otbn_controller.state_error;
 
 endinterface
 
