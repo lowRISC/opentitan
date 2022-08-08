@@ -361,8 +361,9 @@ module hmac
   assign msg_fifo_wmask_endian = conv_endian(msg_fifo_wmask, endian_swap);
 
   prim_packer #(
-    .InW      (32),
-    .OutW     (32)
+    .InW          (32),
+    .OutW         (32),
+    .EnProtection (1'b 0)
   ) u_packer (
     .clk_i,
     .rst_ni,
@@ -378,7 +379,9 @@ module hmac
     .ready_i      (fifo_wready & ~hmac_fifo_wsel),
 
     .flush_i      (reg_hash_process),
-    .flush_done_o (packer_flush_done) // ignore at this moment
+    .flush_done_o (packer_flush_done), // ignore at this moment
+
+    .err_o  () // Not used
   );
 
 

@@ -188,6 +188,9 @@
       desc: '''Round counter, key index counter, sentmsg counter and hash counter
         use prim_count for redundancy'''
     }
+    { name: "PACKER.CTR.REDUN"
+      desc: "Packer Position counter uses prim_count for redundancy"
+    }
     { name: "CFG_SHADOWED.CONFIG.REGWEN"
       desc: "CFG_SHADOWED is protected by REGWEN"
     }

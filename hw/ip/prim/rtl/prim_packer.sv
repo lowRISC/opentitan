@@ -8,9 +8,14 @@
 
 // ICEBOX(#12958): Revise to send out the empty status.
 module prim_packer #(
-  parameter int InW  = 32,
-  parameter int OutW = 32,
-  parameter int HintByteData = 0 // If 1, The input/output are byte granularity
+  parameter int unsigned InW  = 32,
+  parameter int unsigned OutW = 32,
+
+  // If 1, The input/output are byte granularity
+  parameter int HintByteData = 0,
+
+  // Turn on protect against FI for the pos variable
+  parameter bit EnProtection = 1'b 0
 ) (
   input clk_i ,
   input rst_ni,
@@ -26,14 +31,18 @@ module prim_packer #(
   input                   ready_i,
 
   input                   flush_i,  // If 1, send out remnant and clear state
-  output logic            flush_done_o
+  output logic            flush_done_o,
+
+  // When EnProtection is set, err_o raises an error case (position variable
+  // mismatch)
+  output logic            err_o
 );
 
-  localparam int Width = InW + OutW; // storage width
-  localparam int ConcatW = Width + InW; // Input concatenated width
-  localparam int PtrW = $clog2(ConcatW+1);
-  localparam int IdxW = prim_util_pkg::vbits(InW);
-  localparam int OnesCntW = $clog2(InW+1);
+  localparam int unsigned Width    = InW + OutW;  // storage width
+  localparam int unsigned ConcatW  = Width + InW; // Input concatenated width
+  localparam int unsigned PtrW     = $clog2(ConcatW+1);
+  localparam int unsigned IdxW     = prim_util_pkg::vbits(InW);
+  localparam int unsigned OnesCntW = $clog2(InW+1);
 
   logic valid_next, ready_next;
   logic [Width-1:0]   stored_data, stored_mask;
@@ -41,7 +50,7 @@ module prim_packer #(
   logic [ConcatW-1:0] shiftl_data, shiftl_mask;
   logic [InW-1:0]     shiftr_data, shiftr_mask;
 
-  logic [PtrW-1:0]     pos_q, pos_d; // Current write position
+  logic [PtrW-1:0]     pos_q;         // Current write position
   logic [IdxW-1:0]     lod_idx;       // result of Leading One Detector
   logic [OnesCntW-1:0] inmask_ones;   // Counting Ones for mask_i
 
@@ -60,29 +69,86 @@ module prim_packer #(
   end
 
   logic [PtrW-1:0] pos_with_input;
+  assign pos_with_input = pos_q + PtrW'(inmask_ones);
 
-  always_comb begin
-    pos_d = pos_q;
-    pos_with_input = pos_q + PtrW'(inmask_ones);
+  if (EnProtection == 1'b 0) begin : g_pos_nodup
+    logic [PtrW-1:0] pos_d;
 
-    unique case ({ack_in, ack_out})
-      2'b00: pos_d = pos_q;
-      2'b01: pos_d = (int'(pos_q) <= OutW) ? '0 : pos_q - PtrW'(unsigned'(OutW));
-      2'b10: pos_d = pos_with_input;
-      2'b11: pos_d = (int'(pos_with_input) <= OutW) ? '0 : pos_with_input - PtrW'(unsigned'(OutW));
-      default: pos_d = pos_q;
-    endcase
-  end
+    always_comb begin
+      pos_d = pos_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      pos_q <= '0;
-    end else if (flush_done) begin
-      pos_q <= '0;
-    end else begin
-      pos_q <= pos_d;
+      unique case ({ack_in, ack_out})
+        2'b00: pos_d = pos_q;
+        2'b01: pos_d = (int'(pos_q) <= OutW) ? '0 : pos_q - PtrW'(OutW);
+        2'b10: pos_d = pos_with_input;
+        2'b11: pos_d = (int'(pos_with_input) <= OutW) ? '0 : pos_with_input - PtrW'(OutW);
+        default: pos_d = pos_q;
+      endcase
     end
-  end
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        pos_q <= '0;
+      end else if (flush_done) begin
+        pos_q <= '0;
+      end else begin
+        pos_q <= pos_d;
+      end
+    end
+
+    assign err_o = 1'b 0; // No checker logic
+
+  end else begin : g_pos_dupcnt // EnProtection == 1'b 1
+    // incr_en: Increase the pos by cnt_step. ack_in && !ack_out
+    // decr_en: Decrease the pos by cnt_step. !ack_in && ack_out
+    // set_en:  Set to specific value in case of ack_in && ack_out.
+    //          This case, the value could be increased or descreased based on
+    //          the input size (inmask_ones)
+    logic            cnt_incr_en, cnt_decr_en, cnt_set_en;
+    logic [PtrW-1:0] cnt_step, cnt_set;
+
+    assign cnt_incr_en =  ack_in && !ack_out;
+    assign cnt_decr_en = !ack_in &&  ack_out;
+    assign cnt_set_en  =  ack_in &&  ack_out;
+
+    // counter has underflow protection.
+    assign cnt_step = (cnt_incr_en) ? PtrW'(inmask_ones) : PtrW'(OutW);
+
+    always_comb begin : cnt_set_logic
+
+      // default, consuming all data
+      cnt_set = '0;
+
+      if (pos_with_input > PtrW'(OutW)) begin
+        // pos_q + inmask_ones is bigger than Output width. Still data remained.
+        cnt_set = pos_with_input - PtrW'(OutW);
+      end
+    end : cnt_set_logic
+
+
+    prim_count #(
+      .Width      (PtrW),
+      .ResetValue ('0  )
+    ) u_pos (
+      .clk_i,
+      .rst_ni,
+
+      .clr_i      (flush_done),
+
+      .set_i      (cnt_set_en),
+      .set_cnt_i  (cnt_set   ),
+
+      .incr_en_i  (cnt_incr_en),
+      .decr_en_i  (cnt_decr_en),
+      .step_i     (cnt_step   ),
+
+      .cnt_o      (pos_q     ), // Current counter state
+      .cnt_next_o (          ), // Next counter state
+
+      .err_o
+    );
+  end // g_pos_dupcnt
+
   //---------------------------------------------------------------------------
 
   // Leading one detector for mask_i

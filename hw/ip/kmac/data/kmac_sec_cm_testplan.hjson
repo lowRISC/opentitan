@@ -66,6 +66,12 @@
       tests: []
     }
     {
+      name: sec_cm_packer_ctr_redun
+      desc: "Verify the countermeasure(s) PACkER.CTR.REDUN."
+      milestone: V2S
+      tests: []
+    }
+    {
       name: sec_cm_cfg_shadowed_config_regwen
       desc: "Verify the countermeasure(s) CFG_SHADOWED.CONFIG.REGWEN."
       milestone: V2S

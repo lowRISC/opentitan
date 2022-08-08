@@ -382,7 +382,10 @@ package kmac_pkg;
     ErrShadowRegUpdate = 8'h C0,
 
     // Error due to lc_escalation_en_i or fatal fault
-    ErrFatalError = 8'h C1
+    ErrFatalError = 8'h C1,
+
+    // Error due to the counter integrity check failure inside MsgFifo.Packer
+    ErrPackerIntegrity = 8'h C2
   } err_code_e;
 
   typedef struct packed {
@@ -390,6 +393,7 @@ package kmac_pkg;
     err_code_e   code; // Type of error
     logic [23:0] info; // Additional Debug info
   } err_t;
+  parameter int unsigned ErrInfoW = 24 ; // err_t::info
 
   typedef struct packed {
     logic [AppDigestW-1:0] digest_share0;
