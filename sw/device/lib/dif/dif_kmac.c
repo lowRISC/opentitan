@@ -483,11 +483,11 @@ dif_result_t dif_kmac_mode_kmac_start(
   // Set key strength and calculate rate (r).
   uint32_t kstrength;
   switch (mode) {
-    case kDifKmacModeCshakeLen128:
+    case kDifKmacModeKmacLen128:
       kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128;
       operation_state->r = calculate_rate_bits(128) / 32;
       break;
-    case kDifKmacModeCshakeLen256:
+    case kDifKmacModeKmacLen256:
       kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256;
       operation_state->r = calculate_rate_bits(256) / 32;
       break;
