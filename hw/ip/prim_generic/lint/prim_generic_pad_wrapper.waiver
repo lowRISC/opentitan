@@ -7,6 +7,8 @@
 
 waive -rules TRI_DRIVER -regexp {'inout_io' is driven by a tristate driver} -location {prim_generic_pad_wrapper.sv} \
       -comment "This is a bidirectional pad inout."
+waive -rules TRI_DRIVER -regexp {'in_raw_o' is driven by a tristate driver} \
+      -comment "This is a bidirectional pad inout."
 waive -rules MULTI_DRIVEN -regexp {.* drivers on 'inout_io' here} -location {prim_generic_pad_wrapper.sv} \
       -comment "The pad simulation model has multiple drivers to emulate different IO terminations."
 waive -rules SELF_ASSIGN -regexp {LHS signal 'inout_io' encountered on the RHS of a continuous assignment statement} -location {prim_generic_pad_wrapper.sv} \
@@ -21,3 +23,5 @@ waive -rules PARAM_NOT_USED -regexp {Parameter 'Variant' not used in module 'pri
       -comment "This parameter has been provisioned for later and is currently unused."
 waive -rules PARAM_NOT_USED -regexp {Parameter 'ScanRole' not used in module 'prim_generic_pad_wrapper'} -location {prim_generic_pad_wrapper.sv} \
       -comment "This parameter has been provisioned for later and is currently unused."
+waive -rules INPUT_NOT_READ -msg {Input port 'clk_scan_i' is not read from in module 'prim_generic_pad_wrapper'} \
+      -comment "This clock is not read in RTL since it will be connected after synthesis during DFT insertion"
