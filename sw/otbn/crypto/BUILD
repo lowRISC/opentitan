@@ -344,19 +344,19 @@ otbn_consttime_test(
 #   subroutine = "p384_sign",
 # )
 
-# TODO: Add an argument to the constant-time checker script that accepts
-# "required constant registers". This test fails because the subroutine
-# requires some registers (indirect references) to be constant at the start,
-# and without this information the constant-time checker cannot construct the
-# information-flow graph.
-#
-# otbn_consttime_test(
-#   name = "p384_proj_add_consttime",
-#   deps = [
-#       ":p384_ecdsa_sign_test"
-#   ],
-#   subroutine = "proj_add_p384",
-# )
+otbn_consttime_test(
+    name = "proj_add_p384_consttime",
+    initial_constants = [
+        "x22:10",
+        "x23:11",
+        "x24:16",
+        "x25:17",
+    ],
+    subroutine = "proj_add_p384",
+    deps = [
+        ":p384_ecdsa_sign_test",
+    ],
+)
 
 otbn_consttime_test(
     name = "scalar_mult_p384_consttime",

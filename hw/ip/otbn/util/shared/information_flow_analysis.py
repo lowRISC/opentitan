@@ -528,7 +528,7 @@ def _get_iflow(program: OTBNProgram, graph: ControlGraph, start_pc: int,
 
 
 def get_subroutine_iflow(program: OTBNProgram, graph: ControlGraph,
-                         subroutine_name: str) -> SubroutineIFlow:
+        subroutine_name: str, start_constants: Dict[str,int]) -> SubroutineIFlow:
     '''Gets the information-flow graphs for the subroutine.
 
     Returns three items:
@@ -540,9 +540,14 @@ def get_subroutine_iflow(program: OTBNProgram, graph: ControlGraph,
     3. The information-flow nodes whose values at the start of the subroutine
        influence its control flow.
     '''
+    if 'x0' in start_constants and start_constants['x0'] != 0:
+        raise ValueError('The x0 register is always 0; cannot require '
+                f'x0={start_constants["x0"]}')
+    start_constants['x0'] = 0
+    constants = ConstantContext(start_constants)
     start_pc = program.get_pc_at_symbol(subroutine_name)
     _, ret_iflow, end_iflow, _, cycles, control_deps = _get_iflow(
-        program, graph, start_pc, ConstantContext.empty(), None, IFlowCache())
+        program, graph, start_pc, constants, None, IFlowCache())
     if cycles:
         for pc in cycles:
             print(cycles[pc].pretty())
