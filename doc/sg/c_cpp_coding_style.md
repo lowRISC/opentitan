@@ -280,6 +280,17 @@ public:
   void SetAnimalName(std::string new_name);
 };
 ```
+
+### Features
+
+Avoid using `C-style` features in C++ code, here are some examples:
+- Use `C++-style` casting (`static_cast`, `reinterpret_cast`, etc) rather than `C-style` casting.
+- Use the `constexpr` keyword to define constants rather than `const`.
+- Use the `nullptr` keyword rather than `NULL`.
+- Use `std::endl` rather than `'\n'`.
+- Use `new` and `delete` rather than `malloc()` and `free()`.
+- Use smart pointers rather than pointers. Refer to [Ownership and Smart Pointers](https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers) for more details.
+
 ## C Style Guide
 
 The [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) targets C++, but it can also be used for C code with minor adjustments.
