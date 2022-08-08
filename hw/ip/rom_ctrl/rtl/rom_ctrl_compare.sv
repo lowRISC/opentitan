@@ -8,11 +8,6 @@
 // This module is in charge of comparing the digest that was computed over the ROM data with the
 // expected digest stored in the top few words.
 //
-//
-// TODO: Think properly about hardening here. A glitch that messes up the comparison isn't a
-//       show-stopper (because the attacker will still have the wrong CreatorRootKey in the key
-//       manager), but glitching the FSM our counter could probably confuse some of the other blocks
-//       that we communicate with.
 
 `include "prim_assert.sv"
 
