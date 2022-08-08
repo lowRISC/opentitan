@@ -193,7 +193,7 @@
       name: sec_cm_start_stop_ctrl_state_consistency
       desc: "Verify the countermeasure(s) START_STOP_CTRL.STATE.CONSISTENCY."
       milestone: V2S
-      tests: []
+      tests: ["otbn_sec_wipe_err"]
     }
     {
       name: sec_cm_data_mem_sec_wipe

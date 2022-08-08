@@ -55,6 +55,7 @@ filesets:
       - seq_lib/otbn_mac_bignum_acc_err_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_pc_ctrl_flow_redun_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_ctrl_redun_vseq.sv: {is_include_file: true}
+      - seq_lib/otbn_sec_wipe_err_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
