@@ -55,6 +55,9 @@ if (foo) {
   do_something();
 }
 ```
+### Infinite loops
+
+Prefer `while(true){}` infinite loops rather than `for(;;)`
 
 ### Comments
 
