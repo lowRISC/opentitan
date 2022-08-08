@@ -2137,7 +2137,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), kmac_cmd};
+                  kmac_err.info  = {5'h0, 3'h4, 5'h0, 3'(err_st), 2'b0, kmac_cmd};
 
                   predict_err(.is_kmac_err(1));
                 end
@@ -2156,7 +2156,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), kmac_cmd};
+                  kmac_err.info  = {5'h0, 3'h4, 5'h0, 3'(err_st), 2'b0, kmac_cmd};
 
                   predict_err(.is_kmac_err(1));
                 end
@@ -2172,7 +2172,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), kmac_cmd};
+                  kmac_err.info  = {5'h0, 3'h4, 5'h0, 3'(err_st), 2'b0, kmac_cmd};
 
                   predict_err(.is_kmac_err(1));
                 end
@@ -2202,7 +2202,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {6'h1, 11'h0, 3'(err_st), kmac_cmd};
+                  kmac_err.info  = {5'h0, 3'h4, 5'h0, 3'(err_st), 2'b0, kmac_cmd};
 
                   predict_err(.is_kmac_err(1));
                 end
