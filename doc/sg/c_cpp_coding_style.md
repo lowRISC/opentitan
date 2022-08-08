@@ -355,6 +355,22 @@ Macros are often necessary and reasonable coding practice C (as opposed to C++) 
 In contrast to the recommendation in the Google C++ style guide, exporting macros as part of the public API is allowed in C code.
 A typical use case is a header with register definitions.
 
+**Function-like Macros**
+Function-like macros should be avoided whenever possible since they are error-prone. Where they are necessary, they should be hygienic. Here are some useful tips:
+- Expand the macro arguments between brackets `()` as the caller could use an expression as an argument.
+- Variables local to the macro must be named with a trailing underscore `_`.
+- Wrap up multiline macros inside a block `do { ... } while (false)` to make them expand to a single statement.
+    For example:
+    ```c
+    #define CHECK(condition, ...)                      \
+    do {                                               \
+      if (!(condition)) {                              \
+        ...                                            \
+      }                                                \
+    } while (false)
+    ```
+- Don't finish macros with a semicolon `;` to force the caller to include it.
+
 ### Aggregate Initialization
 
 C99 introduces designated initializers: when initializing a type of struct, array, or union type, it is possible to *designate* an initializer as being for a particular field or array index.
