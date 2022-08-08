@@ -15,7 +15,7 @@ ARG RUST_VERSION=1.60.0
 # This should match the version in bazelish.sh.
 ARG BAZELISK_VERSION=v1.11.0
 # This should match the version in ci/install-package-dependencies.sh
-ARG GCC_VERION=9
+ARG GCC_VERSION=9
 
 # Main container image.
 FROM ubuntu:18.04 AS opentitan
