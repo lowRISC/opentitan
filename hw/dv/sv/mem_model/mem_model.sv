@@ -44,7 +44,7 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
 
   function void compare_byte(mem_addr_t addr, bit [7:0] act_data);
    `uvm_info(`gfn, $sformatf("Compare Mem : Addr[0x%0h], Act Data[0x%0h], Exp Data[0x%0h]",
-                             addr, act_data, system_memory[addr]), UVM_HIGH)
+                             addr, act_data, system_memory[addr]), UVM_MEDIUM)
     `DV_CHECK_EQ(act_data, system_memory[addr], $sformatf("addr 0x%0h read out mismatch", addr))
   endfunction
 
@@ -77,8 +77,12 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     for (int i = 0; i < DataWidth / 8; i++) begin
       mem_addr_t byte_addr = addr + i;
       byte_data = act_data[7:0];
-      if (mask[0] && (!compare_exist_addr_only || addr_exists(byte_addr))) begin
-        compare_byte(byte_addr, byte_data);
+      if (mask[0]) begin
+        if (addr_exists(byte_addr)) begin
+          compare_byte(byte_addr, byte_data);
+        end else if (!compare_exist_addr_only) begin
+          `uvm_error(`gfn, $sformatf("address 0x%0x not exists", byte_addr))
+        end
       end else begin
         // Nothing to do here: since this byte wasn't selected by the mask, there are no
         // requirements about what data came back.
