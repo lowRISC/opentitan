@@ -380,7 +380,11 @@ module spi_cmdparse
               // DpNone
             end
           endcase
-        end
+        end // if (module_active && data_valid_i && cmd_info_d.valid)
+        else if (module_active && data_valid_i) begin
+          // Could not find valid command information entry.
+          st_d = StWait;
+        end // if (module_active && data_valid_i)
       end
 
       // dead-end states below. Reset (CSb de-assertion) let SM back to Idle
