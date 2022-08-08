@@ -442,7 +442,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        ht_esbus_vld_dly2_q, ht_esbus_vld_dly2_d;
   logic        ht_failed_q, ht_failed_d;
   logic        ht_done_pulse_q, ht_done_pulse_d;
-  logic                    sha3_err_q, sha3_err_d;
+  logic        sha3_err_q, sha3_err_d;
   logic        cs_aes_halt_q, cs_aes_halt_d;
   logic [63:0] es_rdata_capt_q, es_rdata_capt_d;
   logic        es_rdata_capt_vld_q, es_rdata_capt_vld_d;
@@ -1442,6 +1442,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clear_i             (health_test_clr),
     .active_i            (repcnt_active),
     .thresh_i            (repcnt_threshold),
+    .window_wrap_pulse_i (health_test_done_pulse),
     .test_cnt_o          (repcnt_event_cnt),
     .test_fail_pulse_o   (repcnt_fail_pulse),
     .count_err_o         (repcnt_cntr_err)
@@ -1503,6 +1504,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clear_i             (health_test_clr),
     .active_i            (repcnts_active),
     .thresh_i            (repcnts_threshold),
+    .window_wrap_pulse_i (health_test_done_pulse),
     .test_cnt_o          (repcnts_event_cnt),
     .test_fail_pulse_o   (repcnts_fail_pulse),
     .count_err_o         (repcnts_cntr_err)
@@ -1949,13 +1951,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o               (any_fails_cntr_err)
   );
 
-
   assign any_fail_pulse =
          repcnt_fail_pulse ||
          repcnts_fail_pulse ||
          adaptp_hi_fail_pulse || adaptp_lo_fail_pulse ||
          bucket_fail_pulse ||
-         markov_hi_fail_pulse ||markov_lo_fail_pulse ||
+         markov_hi_fail_pulse || markov_lo_fail_pulse ||
          extht_hi_fail_pulse || extht_lo_fail_pulse;
 
   assign ht_failed_d =
