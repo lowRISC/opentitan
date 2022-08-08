@@ -1206,7 +1206,7 @@ module spi_device
   // intercept_en shall not be de-asserted except mailbox
   `ASSUME(InterceptLevel_M,
     $rose(|{intercept.status, intercept.jedec, intercept.sfdp}) |=>
-      $stable(intercept_en) until !rst_spi_n,
+      ##1 $stable(intercept_en) until !rst_spi_n,
     clk_spi_out_buf, !rst_spi_n)
 
   ////////////////////////////
