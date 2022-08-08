@@ -110,6 +110,38 @@ package otbn_pkg;
     logic bad_data_addr;
   } err_bits_t;
 
+  // Wrappers for classifying bad internal states
+  typedef struct packed {
+    logic alu_bignum_err;
+    logic mac_bignum_err;
+    logic ispr_bignum_err;
+    logic controller_err;
+    logic rf_err;
+    logic rd_err;
+  } predec_err_t;
+
+  typedef struct packed {
+    logic spr_urnd_acks;
+    logic spr_secwipe_reqs;
+    logic mubi_rma_err;
+    logic mubi_urnd_err;
+    logic state_err;
+  } start_stop_bad_int_t;
+
+  typedef struct packed {
+    logic loop_hw_cnt_err;
+    logic loop_hw_stack_cnt_err;
+    logic loop_hw_intg_err;
+    logic rf_base_call_stack_err;
+    logic spr_secwipe_acks;
+    logic state_err;
+  } controller_bad_int_t;
+
+  typedef struct packed {
+    logic imem_gnt_missed_err;
+    logic dmem_gnt_missed_err;
+  } missed_gnt_t;
+
   // All the error signals that can be generated directly from the controller. Note that this is
   // organised to include every software error (including 'call_stack', which actually gets fed in
   // from the base register file)
