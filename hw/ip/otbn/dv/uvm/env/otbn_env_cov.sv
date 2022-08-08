@@ -622,6 +622,13 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     clr_C_cross: cross fg_cp, clr_C_cp;
   endgroup
 
+  covergroup insn_addr_cg with function sample(mnem_str_t mnemonic, logic [31:0] insn_addr);
+    `DEF_SEEN_CP(str_insn_at_top_cp, (insn_addr == ImemSizeByte - 4) &&
+                                      !(mnemonic inside {mnem_beq, mnem_bne, mnem_jal, mnem_jalr,
+                                                         mnem_ecall, mnem_loop, mnem_loopi}))
+
+  endgroup
+
   // Pairwise instructions /////////////////////////////////////////////////////
 
   covergroup pairwise_insn_cg with function sample(mnem_str_t last, mnem_str_t cur);
@@ -2043,6 +2050,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     promoted_err_cg = new;
     scratchpad_writes_cg = new;
 
+    insn_addr_cg = new;
     call_stack_cg = new;
     flag_write_cg = new;
     pairwise_insn_cg = new;
@@ -2314,6 +2322,10 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
     mnem = mnem_str_t'(iss_item.mnemonic);
     insn_data = rtl_item.insn_data;
+
+    // Track and catch when we are on the top of the instruction memory and have a straight-line
+    // instruction.
+    insn_addr_cg.sample(mnem, rtl_item.insn_addr);
 
     // Call stack tracking. Some instructions want to know whether they are over- or under-flowing
     // the call stack so, as well as sampling in the call_stack_cg covergroup, we also compute those
