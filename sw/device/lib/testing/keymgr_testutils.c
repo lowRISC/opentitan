@@ -4,10 +4,73 @@
 
 #include "sw/device/lib/testing/keymgr_testutils.h"
 
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+enum {
+  /** Flash Secret partition ID. */
+  kFlashInfoPartitionId = 0,
+
+  /** Secret partition flash bank ID. */
+  kFlashInfoBankId = 0,
+
+  /** Creator Secret flash info page ID. */
+  kFlashInfoPageIdCreatorSecret = 1,
+
+  /** Owner Secret flash info page ID. */
+  kFlashInfoPageIdOwnerSecret = 2,
+
+  /** Key manager secret word size. */
+  kSecretWordSize = 8,
+};
+
+/**
+ * Key manager Creator Secret stored in info flash page.
+ */
+static const uint32_t kCreatorSecret[kSecretWordSize] = {
+    0x4e919d54, 0x322288d8, 0x4bd127c7, 0x9f89bc56,
+    0xb4fb0fdf, 0x1ca1567b, 0x13a0e876, 0xa6521d8f};
+
+/**
+ * Key manager Owner Secret stored in info flash page.
+ */
+static const uint32_t kOwnerSecret[kSecretWordSize] = {
+    0xa6521d8f, 0x13a0e876, 0x1ca1567b, 0xb4fb0fdf,
+    0x9f89bc56, 0x4bd127c7, 0x322288d8, 0x4e919d54,
+};
+
+static void write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
+                            const uint32_t *data) {
+  uint32_t address = flash_ctrl_testutils_info_region_setup(
+      flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId);
+
+  CHECK(flash_ctrl_testutils_erase_and_write_page(
+      flash, address, kFlashInfoPartitionId, data,
+      kDifFlashCtrlPartitionTypeInfo, kSecretWordSize));
+
+  uint32_t readback_data[kSecretWordSize];
+  CHECK(flash_ctrl_testutils_read(flash, address, kFlashInfoPartitionId,
+                                  readback_data, kDifFlashCtrlPartitionTypeInfo,
+                                  kSecretWordSize, 0));
+  CHECK_ARRAYS_EQ(data, readback_data, kSecretWordSize);
+}
+
+void keymgr_testutils_init_flash(void) {
+  dif_flash_ctrl_state_t flash;
+
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+
+  // Initialize flash secrets.
+  write_info_page(&flash, kFlashInfoPageIdCreatorSecret, kCreatorSecret);
+  write_info_page(&flash, kFlashInfoPageIdOwnerSecret, kOwnerSecret);
+}
 
 void keymgr_testutils_advance_state(const dif_keymgr_t *keymgr,
                                     const dif_keymgr_state_params_t *params) {
@@ -46,7 +109,5 @@ void keymgr_testutils_wait_for_operation_done(const dif_keymgr_t *keymgr) {
   do {
     CHECK_DIF_OK(dif_keymgr_get_status_codes(keymgr, &status));
   } while (status == 0);
-  if (status != kDifKeymgrStatusCodeIdle) {
-    LOG_ERROR("Unexpected status: %x", status);
-  }
+  CHECK(status == kDifKeymgrStatusCodeIdle, "Unexpected status: %x", status);
 }

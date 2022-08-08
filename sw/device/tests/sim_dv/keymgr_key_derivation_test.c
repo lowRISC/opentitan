@@ -7,7 +7,6 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -15,7 +14,6 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -26,108 +24,7 @@
 #include "keymgr_regs.h"  // Generated.
 #include "kmac_regs.h"    // Generated.
 
-enum {
-  /** Flash Secret partition ID. */
-  kFlashInfoPartitionId = 0,
-
-  /** Secret partition flash bank ID. */
-  kFlashInfoBankId = 0,
-
-  /** Creator Secret flash info page ID. */
-  kFlashInfoPageIdCreatorSecret = 1,
-
-  /** Owner Secret flash info page ID. */
-  kFlashInfoPageIdOwnerSecret = 2,
-
-  /** Key manager secret word size. */
-  kSecretWordSize = 8,
-};
-
-/**
- * Software binding value for advancing to creator state
- */
-static const dif_keymgr_state_params_t kCreatorParams = {
-    .binding_value = {0xdc96c23d, 0xaf36e268, 0xcb68ff71, 0xe92f76e2,
-                      0xb8a8379d, 0x426dc745, 0x19f5cff7, 0x4ec9c6d6},
-    .max_key_version = 0x11,
-};
-
-/**
- * Software binding value for advancing to owner int state
- */
-static const dif_keymgr_state_params_t kOwnerIntParams = {
-    .binding_value = {0xe4987b39, 0x3f83d390, 0xc2f3bbaf, 0x3195dbfa,
-                      0x23fb480c, 0xb012ae5e, 0xf1394d28, 0x1940ceeb},
-    .max_key_version = 0xaa,
-};
-
-/**
- * Key manager Creator Secret stored in info flash page.
- */
-static const uint32_t kCreatorSecret[kSecretWordSize] = {
-    0x4e919d54, 0x322288d8, 0x4bd127c7, 0x9f89bc56,
-    0xb4fb0fdf, 0x1ca1567b, 0x13a0e876, 0xa6521d8f};
-
-/**
- * Key manager Owner Secret stored in info flash page.
- */
-static const uint32_t kOwnerSecret[kSecretWordSize] = {
-    0xa6521d8f, 0x13a0e876, 0x1ca1567b, 0xb4fb0fdf,
-    0x9f89bc56, 0x4bd127c7, 0x322288d8, 0x4e919d54,
-};
-
-static const dif_keymgr_versioned_key_params_t kKeyVersionedParams = {
-    .dest = kDifKeymgrVersionedKeyDestSw,
-    .salt =
-        {
-            0xb6521d8f,
-            0x13a0e876,
-            0x1ca1567b,
-            0xb4fb0fdf,
-            0x9f89bc56,
-            0x4bd127c7,
-            0x322288d8,
-            0xde919d54,
-        },
-    .version = 0xaa,
-};
-
-/**
- * Kmac prefix "KMAC" with empty custom string
- */
-#define KMAC_PREFIX_SIZE 11
-const uint32_t kKmacPrefix[KMAC_PREFIX_SIZE] = {
-    0x4d4b2001, 0x00014341, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-};
-
 OTTF_DEFINE_TEST_CONFIG();
-
-static void write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
-                            const uint32_t *data) {
-  uint32_t address = flash_ctrl_testutils_info_region_setup(
-      flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId);
-
-  CHECK(flash_ctrl_testutils_erase_and_write_page(
-      flash, address, kFlashInfoPartitionId, data,
-      kDifFlashCtrlPartitionTypeInfo, kSecretWordSize));
-
-  uint32_t readback_data[kSecretWordSize];
-  CHECK(flash_ctrl_testutils_read(flash, address, kFlashInfoPartitionId,
-                                  readback_data, kDifFlashCtrlPartitionTypeInfo,
-                                  kSecretWordSize, 0));
-  CHECK_ARRAYS_EQ(data, readback_data, kSecretWordSize);
-}
-
-static void init_flash(void) {
-  dif_flash_ctrl_state_t flash;
-
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-
-  // Initialize flash secrets.
-  write_info_page(&flash, kFlashInfoPageIdCreatorSecret, kCreatorSecret);
-  write_info_page(&flash, kFlashInfoPageIdOwnerSecret, kOwnerSecret);
-}
 
 /** Place kmac into sideload mode for correct keymgr operation */
 static void init_kmac_for_keymgr(void) {
@@ -137,6 +34,7 @@ static void init_kmac_for_keymgr(void) {
 
   // Configure KMAC hardware using software entropy.
   dif_kmac_config_t config = (dif_kmac_config_t){
+      .entropy_mode = kDifKmacEntropyModeSoftware,
       .sideload = true,
   };
   CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
@@ -156,7 +54,7 @@ bool test_main(void) {
     LOG_INFO("Powered up for the first time, program flash");
 
     // Initialize flash
-    init_flash();
+    keymgr_testutils_init_flash();
 
     // Lock otp secret partition
     dif_otp_ctrl_t otp;
