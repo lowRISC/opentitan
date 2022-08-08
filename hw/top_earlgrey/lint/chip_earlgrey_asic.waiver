@@ -63,6 +63,6 @@ waive -rules {RESET_DRIVER} -location {chip_earlgrey_asic.sv} \
 waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} -regexp {'tx' driven in module 'uart_core' by 'rx' at uart_core.sv} \
       -comment "there is technically a loopback path through uart, however RX / TX should never be configured to the same pin"
 
-# Combo loops through sysrst_ctrl inversion can be ignored (TODO: need to double check, are the inversions meant to be direct?)
-waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} -regexp {'cio_key2_out_o' driven in module 'sysrst_ctrl_inv' by 'key2_out_int' at sysrst_ctrl_inv.sv} \
+# Combo loops through sysrst_ctrl inversion can be ignored
+waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} -regexp {'outputs\[[0-9]+\]' driven in module 'sysrst_ctrl_pin' by 'inputs\[[0-9]+\]' at sysrst_ctrl_pin} \
       -comment "sysrst_ctrl creates a feed through path directly for certain muxed pins"
