@@ -61,16 +61,29 @@ Prefer `while(true){}` infinite loops rather than `for(;;)`
 
 ### Comments
 
-***Comments should be `// C99-style` for consistency with C++.***
+Comments should use the `// C99-style` for consistency with C++.
 
 <!-- To render a backtick in inline code in markdown, you need to double the surrounding backticks.
 https://daringfireball.net/projects/markdown/syntax#code -->
-***Variables mentioned in comments should be delimited with backtick (`` ` ``) characters.***
-
+Variables mentioned in comments should be delimited with backtick (`` ` ``) characters.
 Example:
 
 ```c
 // `ptr` can never be NULL for reasons.
+```
+Documentation comments should start with `/*` and non-doc comments should start with `//`.
+Example:
+
+```c
+/**
+ * This function sorts an int array very quickly.
+ */
+void sort(int array[], size_t size){
+  // Loop through the array moving higher numbers to the end.
+  for (size_t i = 0; i < size; ++i>){
+    ...
+  }
+}
 ```
 
 Note also [Public function (API) documentation](#public-function-api-documentation) below.
@@ -144,7 +157,7 @@ You must not dereference a symbol that has non-address value.
 ***It is recommended to document public functions, classes, Methods, and data structures in the header file with a Doxygen-style comment.***
 
 The first line of the comment is the summary, followed by a new line, and an optional longer description.
-Input arguments and return arguments can be documented with `@param` and `@return` if they are not self-explanatory from the name.
+Input arguments and return arguments should be documented with `@param` and `@return` if they are not self-explanatory from the name. Output arguments should be documented with `@param[out]`.
 
 The documentation tool will also render markdown within descriptions, so backticks should be used to get monospaced text.
 It can also generate references to other named declarations using `#other_function` (for C-style declarations), or `ns::foo` (for C++ declarations).
@@ -162,9 +175,10 @@ Example:
  *
  * @param pots_of_gold Number of gold pots to place next to the rainbow
  * @param unicorns Number of unicorns to position on the rainbow
+ * @param[out] expiration_time Pointer to receive the time the rainbow will last in seconds.
  * @return 0 if the function was successful, -1 otherwise
  */
-int create_rainbow(int pots_of_gold, int unicorns);
+int create_rainbow(int pots_of_gold, int unicorns, int *expiration_time);
 ```
 
 ### Polyglot headers
