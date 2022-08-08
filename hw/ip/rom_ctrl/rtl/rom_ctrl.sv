@@ -77,15 +77,6 @@ module rom_ctrl
 
   logic                     internal_alert;
 
-  // Force point for reset glitch tests
-  logic rst_n;
-  prim_clock_buf #(
-    .NoFpgaBuf(1)
-  ) u_prim_clock_buf_rst_n (
-    .clk_i(rst_ni),
-    .clk_o(rst_n)
-  );
-
   // Pack / unpack kmac connection data ========================================
 
   logic [63:0]              kmac_rom_data;
@@ -164,8 +155,8 @@ module rom_ctrl
   logic  rom_reg_integrity_error;
 
   rom_ctrl_rom_reg_top u_rom_top (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_n),
+    .clk_i,
+    .rst_ni,
     .tl_i       (rom_tl_i),
     .tl_o       (rom_tl_o),
     .tl_win_o   (tl_rom_h2d_upstream),
@@ -207,8 +198,8 @@ module rom_ctrl
     .EnableDataIntgPt(!SecDisableScrambling), // SEC_CM: BUS.INTEGRITY
     .SecFifoPtr      (1)                      // SEC_CM: TLUL_FIFO.CTR.REDUN
   ) u_tl_adapter_rom (
-    .clk_i        (clk_i),
-    .rst_ni       (rst_n),
+    .clk_i,
+    .rst_ni,
 
     .tl_i         (tl_rom_h2d_downstream),
     .tl_o         (tl_rom_d2h),
@@ -243,8 +234,8 @@ module rom_ctrl
     .AW (RomIndexWidth),
     .DW (DataWidth)
   ) u_mux (
-    .clk_i             (clk_i),
-    .rst_ni            (rst_n),
+    .clk_i,
+    .rst_ni,
     .sel_bus_i         (rom_select_bus),
     .bus_rom_addr_i    (bus_rom_rom_index),
     .bus_prince_addr_i (bus_rom_prince_index),
@@ -287,8 +278,8 @@ module rom_ctrl
       .ScrNonce    (RndCnstScrNonce),
       .ScrKey      (RndCnstScrKey)
     ) u_rom (
-      .clk_i         (clk_i),
-      .rst_ni        (rst_n),
+      .clk_i,
+      .rst_ni,
       .req_i         (rom_req),
       .rom_addr_i    (rom_rom_index),
       .prince_addr_i (rom_prince_index),
@@ -309,8 +300,8 @@ module rom_ctrl
       .Depth       (RomSizeWords),
       .MemInitFile (BootRomInitFile)
     ) u_rom (
-      .clk_i    (clk_i),
-      .rst_ni   (rst_n),
+      .clk_i,
+      .rst_ni,
       .req_i    (rom_req),
       .addr_i   (rom_rom_index),
       .rvalid_o (rom_rvalid),
@@ -337,8 +328,8 @@ module rom_ctrl
   logic                  reg_integrity_error;
 
   rom_ctrl_regs_reg_top u_reg_regs (
-    .clk_i      (clk_i),
-    .rst_ni     (rst_n),
+    .clk_i,
+    .rst_ni,
     .tl_i       (regs_tl_i),
     .tl_o       (regs_tl_o),
     .reg2hw     (reg2hw),
@@ -364,8 +355,8 @@ module rom_ctrl
       .RomDepth (RomSizeWords),
       .TopCount (8)
     ) u_checker_fsm (
-      .clk_i                (clk_i),
-      .rst_ni               (rst_n),
+      .clk_i,
+      .rst_ni,
       .digest_i             (digest_q),
       .exp_digest_i         (exp_digest_q),
       .digest_o             (digest_d),
@@ -466,7 +457,7 @@ module rom_ctrl
       .IsFatal(i == AlertFatal)
     ) u_alert_sender (
       .clk_i,
-      .rst_ni(rst_n),
+      .rst_ni,
       .alert_test_i  ( alert_test[i] ),
       .alert_req_i   ( alerts[i]     ),
       .alert_ack_o   (               ),
