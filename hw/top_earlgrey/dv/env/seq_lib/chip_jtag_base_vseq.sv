@@ -32,7 +32,6 @@ class chip_jtag_base_vseq extends chip_sw_base_vseq;
     cfg.clk_rst_vif.wait_clks(5);
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(1));
     cfg.clk_rst_vif.wait_clks(5);
-
   endtask
 
    task ndm_reset_off();

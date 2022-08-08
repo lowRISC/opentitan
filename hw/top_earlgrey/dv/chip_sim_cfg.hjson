@@ -448,6 +448,13 @@
       reseed: 15
     }
     {
+      name: chip_sw_lc_ctrl_kmac_reset
+      uvm_test_seq: chip_sw_lc_ctrl_kmac_reset_vseq
+      sw_images: ["//sw/device/tests/sim_dv:lc_ctrl_kmac_reset_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      reseed: 1
+    }
+    {
       name: chip_sw_lc_walkthrough_dev
       uvm_test_seq: chip_sw_lc_walkthrough_vseq
       sw_images: ["//sw/device/tests/sim_dv:lc_walkthrough_test:1"]
