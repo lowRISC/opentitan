@@ -66,3 +66,30 @@ waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} -regexp {'tx' driven
 # Combo loops through sysrst_ctrl inversion can be ignored
 waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} -regexp {'outputs\[[0-9]+\]' driven in module 'sysrst_ctrl_pin' by 'inputs\[[0-9]+\]' at sysrst_ctrl_pin} \
       -comment "sysrst_ctrl creates a feed through path directly for certain muxed pins"
+
+# External clock
+waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv}  -regexp {'(attr_padring_o|mio_attr)\[28\].pull_select' driven in module} \
+      -comment "MioPadIoc6 at index 28 may serve as an external clock input, hence the warnings"
+
+waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv}  -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_ast_ext_scn'} \
+      -comment "MioPadIoc6 at index 28 may serve as an external clock input, hence the warnings"
+
+# Unused power OK signals
+waive -rules {HIER_NET_NOT_READ NOT_READ} -location {chip_earlgrey_asic.sv} -regexp {(Signal|Net) 'ast_pwst(\.vcc_pok|_h\.io_pok|_h\.main_pok|_h\.vcc_pok)' is not read from in module 'chip_earlgrey_asic'} \
+      -comment "Not all POK signals are used inside top_earlgrey"
+
+# Clock / reset connections going back into AST
+waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} -regexp {'clkmgr_aon_clocks..*' is connected to 'ast' port '(sns_clks_i..*|clk_ast_usb_i)', and used as a clock} \
+      -comment "This is a clock struct that is fed back into AST."
+
+waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'ast_base_clks.clk_io' reaches a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
+
+waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_secure' is driven by a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
+
+waive -rules {RESET_USE} -location {chip_earlgrey_asic.sv} -regexp {'rstmgr_aon_resets..*' is connected to 'ast' port 'sns_rsts_i..*', and used as an asynchronous reset or set} \
+      -comment "This is a reset struct that is fed back into AST."
+
+waive -rules {RESET_MUX} -location {chip_earlgrey_asic.sv} -regexp {Asynchronous reset 'rstmgr_aon_resets..*' is driven by a multiplexer here, used as a reset} \
+      -comment "This is a reset struct that is fed back into AST."
