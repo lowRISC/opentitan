@@ -63,6 +63,7 @@ filesets:
       - seq_lib/chip_sw_flash_ctrl_lc_rw_en_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_flash_init_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_flash_rma_unlocked_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_lc_ctrl_kmac_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_transition_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_walkthrough_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_walkthrough_testunlocks_vseq.sv: {is_include_file: true}

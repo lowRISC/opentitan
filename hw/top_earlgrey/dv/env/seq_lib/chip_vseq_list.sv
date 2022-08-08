@@ -27,6 +27,7 @@
 `include "chip_sw_flash_ctrl_lc_rw_en_vseq.sv"
 `include "chip_sw_flash_init_vseq.sv"
 `include "chip_sw_flash_rma_unlocked_vseq.sv"
+`include "chip_sw_lc_ctrl_kmac_reset_vseq.sv"
 `include "chip_sw_lc_ctrl_transition_vseq.sv"
 `include "chip_sw_lc_walkthrough_vseq.sv"
 `include "chip_sw_lc_walkthrough_testunlocks_vseq.sv"

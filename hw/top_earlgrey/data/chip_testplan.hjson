@@ -1424,10 +1424,11 @@
 
             - For a lc state transition, force a reset to KMAC when KMAC is processing lc
               transition tokens.
-            - Verify that LC won't transfer to next state upon KMAC reset glitch.
+            - Force another KMAC reset after KMAC is done processing lc trantition tokens.
+            - Verify that kmac reset won't affect LC state transition.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_lc_ctrl_kmac_reset"]
     }
     {
       name: chip_sw_lc_ctrl_key_div

@@ -27,4 +27,13 @@ bool lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl);
 void lc_ctrl_testutils_check_transition_count(const dif_lc_ctrl_t *lc_ctrl,
                                               uint8_t exp_lc_count);
 
+/**
+ * Check if Lifecycle Controller current state is expected.
+ *
+ * This function will read out lc_state register and check the value
+ * against exp_lc_state value.
+ */
+void lc_ctrl_testutils_check_lc_state(const dif_lc_ctrl_t *lc_ctrl,
+                                      dif_lc_ctrl_state_t exp_lc_state);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_LC_CTRL_TESTUTILS_H_
