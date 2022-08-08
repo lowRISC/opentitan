@@ -113,6 +113,8 @@ package spi_device_env_pkg;
   parameter bit[11:0] TPM_HW_STS_OFFSET          = 12'h018;
   parameter bit[11:0] TPM_HW_INT_CAP_OFFSET      = 12'h014;
   parameter bit[23:0] TPM_BASE_ADDR              = 24'hD40000;
+
+  parameter uint     NUM_INTERNAL_PROCESSED_CMD  = 11; // exclude WREN, WRDI, EN4B, EX4B
   parameter bit[7:0] READ_JEDEC                  = 8'h9F;
   parameter bit[7:0] READ_SFDP                   = 8'h5A;
   parameter bit[7:0] READ_STATUS_1               = 8'h05;
@@ -202,6 +204,26 @@ package spi_device_env_pkg;
   // return the field offset of the cmd_filter for the input opcode
   function automatic int get_cmd_filter_offset(bit[7:0] opcode);
     return opcode % 32;
+  endfunction
+
+  function automatic spi_device_reg_cmd_info get_cmd_info_reg_by_opcode(bit [7:0] opcode,
+                                                                        spi_device_reg_block ral);
+    foreach (ral.cmd_info[i]) begin
+      if (`gmv(ral.cmd_info[i].valid) == 1 && `gmv(ral.cmd_info[i].opcode) == opcode) begin
+        return ral.cmd_info[i];
+      end
+    end
+    return null;
+  endfunction
+
+  // return the field offset of the cmd_filter for the input opcode
+  function automatic bit[31:0] convert_addr_from_byte_queue(const ref bit[7:0] addr_byte_q[$]);
+    bit[31:0] addr;
+    foreach (addr_byte_q[i]) begin
+      if (i > 0) addr = addr << 8;
+      addr[7:0] = addr_byte_q[i];
+    end
+    return addr;
   endfunction
 
   // macros

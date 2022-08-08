@@ -14,6 +14,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   int addr_payload_swap_pct = 30;
 
   bit allow_intercept;
+  bit allow_upload;
 
   bit [7:0] valid_opcode_q[$];
   rand bit valid_op;
@@ -242,6 +243,13 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       csr_update(ral.intercept_en);
     end
 
+    // in passthrough, if upload is enabled, need to enable status intercept, so that host side
+    // can know if spi_device is busy or not
+    if (allow_upload && mode == PassthroughMode && (`gmv(ral.intercept_en.status) == 0)) begin
+      ral.intercept_en.status.set(1);
+      csr_update(ral.intercept_en);
+    end
+
     `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.mailbox_addr.addr,
         // the 4th byte needs to be 0 if the cmd only contains 3 bytes address
         // constrain this byte 50% to be 0.
@@ -288,7 +296,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     bit [31:0] buffer_data [1024];
     `DV_CHECK_STD_RANDOMIZE_FATAL(buffer_data)
     // Prepare Buffer
-    for (int i = 0; i < 1024; i++) begin // Fill buffer with random data
+    for (int i = 0; i < SRAM_SIZE / 4; i++) begin // Fill buffer with random data
       mem_wr(.ptr(ral.buffer), .offset(i), .data(buffer_data[i]));
       `uvm_info(`gfn, $sformatf("write mem addr 0x%0x: 0x%0x", i << 2, buffer_data[i]), UVM_MEDIUM)
     end
@@ -361,14 +369,79 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       swap = 0;
     end
     ral.cmd_info[idx].payload_swap_en.set(swap);
+
+    // configure upload
+    // first 11 cmd doesn't support upload
+    if (idx >= NUM_INTERNAL_PROCESSED_CMD && allow_upload) begin
+      // upload only applies to program or no data
+      if (ral.cmd_info[idx].payload_en.get() == 0 ||
+        ral.cmd_info[idx].payload_dir.get() == PayloadIn) begin
+          `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info[idx].upload)
+       end
+    end
+    `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info[idx].busy)
     csr_update(.csr(ral.cmd_info[idx]));
   endtask : add_cmd_info
 
-  virtual task random_write_flash_status();
-    `DV_CHECK_RANDOMIZE_FATAL(ral.flash_status)
-    `uvm_info(`gfn, $sformatf("program flash_status: 0x%0h", ral.flash_status.get()), UVM_MEDIUM)
-    csr_update(.csr(ral.flash_status));
+  virtual task random_access_flash_status(bit write = $urandom_range(0, 1),
+                                          bit busy  = $urandom_range(0, 1),
+                                          bit wel   = $urandom_range(0, 1));
+    if (write) begin
+      ral.flash_status.busy.set(busy);
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.flash_status.status,
+                                    value[0] == wel;)
+      `uvm_info(`gfn, $sformatf("program flash_status: 0x%0h", ral.flash_status.get()), UVM_MEDIUM)
+      csr_update(.csr(ral.flash_status));
 
-    cfg.clk_rst_vif.wait_clks(10);
+      cfg.clk_rst_vif.wait_clks(10);
+    end else begin
+      bit[TL_DW-1:0] val;
+      csr_rd(ral.flash_status, val);
+    end
+  endtask
+
+  // check if 3 upload fifo (cmd, addr, payload) are empty. If so, read all of them
+  // if busy is set, clear it
+  virtual task read_upload_fifos();
+    bit cmdfifo_not_empty_val;
+    bit [TL_DW-1:0] status_val, status2_val;
+    int cmdfifo_depth_val, addrfifo_depth_val, payload_depth_val;
+    int payload_base_offset;
+    bit busy_val;
+
+    csr_rd(ral.intr_state.upload_cmdfifo_not_empty, cmdfifo_not_empty_val);
+    csr_rd(ral.upload_status, status_val);
+    csr_rd(ral.upload_status2, status2_val);
+
+    cmdfifo_depth_val = get_field_val(ral.upload_status.cmdfifo_depth, status_val);
+    addrfifo_depth_val = get_field_val(ral.upload_status.addrfifo_depth, status_val);
+    payload_depth_val = get_field_val(ral.upload_status2.payload_depth, status2_val);
+    for (int i = 0; i < cmdfifo_depth_val; i++) begin
+      bit [TL_DW-1:0] val;
+      csr_rd(ral.upload_cmdfifo, val);
+      `uvm_info(`gfn, $sformatf("read upload_cmdfifo: idx: %0d, data: 0x%0x", i, val), UVM_MEDIUM)
+    end
+
+    for (int i = 0; i < addrfifo_depth_val; i++) begin
+      bit [TL_DW-1:0] val;
+      csr_rd(ral.upload_addrfifo, val);
+      `uvm_info(`gfn, $sformatf("read upload_addrfifo: idx: %0d, data: 0x%0x", i, val), UVM_MEDIUM)
+    end
+
+    if (payload_depth_val > PAYLOAD_FIFO_SIZE) payload_depth_val = PAYLOAD_FIFO_SIZE;
+    // need to shift by 2 for the offset used at mem_rd
+    payload_base_offset = (READ_CMD_BUFFER_SIZE + MAILBOX_BUFFER_SIZE + SFDP_SIZE) / 4;
+    payload_depth_val = payload_depth_val / 4;
+    for (int i = 0; i < payload_depth_val; i++) begin
+      bit [TL_DW-1:0] val;
+      int offset = i + payload_base_offset;
+      mem_rd(.ptr(ral.buffer), .offset(offset), .data(val));
+      `uvm_info(`gfn, $sformatf("read upload_payloadfifo: idx: %0d, data: 0x%0x", i, val),
+                UVM_MEDIUM)
+    end
+
+    // clear busy bit
+    csr_rd(ral.flash_status.busy, busy_val);
+    if (busy_val == 1) random_access_flash_status(.write(1), .busy(0));
   endtask
 endclass : spi_device_pass_base_vseq

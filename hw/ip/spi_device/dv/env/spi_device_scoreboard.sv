@@ -14,9 +14,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     InternalProcessStatus,
     InternalProcessJedec,
     InternalProcessSfdp,
-    InternalProcessMailbox,
+    InternalProcessReadCmd,
     // cmd like write enable/disable, enter/exit 4B addr
-    InternalProcessCfgCmd
+    InternalProcessCfgCmd,
+    UploadCmd
   } internal_process_cmd_e;
 
   // TLM fifos to pick up the packets
@@ -41,6 +42,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   // for passthrough
   spi_item spi_passthrough_downstream_q[$];
+
+  // for upload
+  bit [7:0] upload_cmd_q[$];
+  bit [31:0] upload_addr_q[$];
 
   flash_status_t flash_status_q[$];
 
@@ -81,33 +86,52 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           receive_spi_rx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
         end
         FlashMode, PassthroughMode: begin
+          internal_process_cmd_e cmd_type;
+          bit is_intercepted;
+          bit set_busy;
           `DV_CHECK_EQ(item.item_type, SpiFlashTrans)
           // downstream item should be in the queue at the same time, add small delay
           #1ps;
-          if (is_internal_processed_cmd(item.opcode, is_status, is_jedec,
-                                        is_sfdp, is_mbx_read)) begin
-            if (is_status) check_internal_processed_read_status(item);
-            if (is_jedec) check_internal_processed_read_jedec(item);
-            if (is_sfdp) check_internal_processed_read_sfdp(item);
-            if (is_mbx_read) begin
-              spi_item downstream_item;
-              if (is_opcode_passthrough(item.opcode)) begin
-                `DV_CHECK_EQ(spi_passthrough_downstream_q.size, 1)
-                downstream_item = spi_passthrough_downstream_q[0];
-              end
-              check_read_cmd_data(item, downstream_item);
-            end
-            // TODO, support more
+          cmd_type = triage_flash_cmd(item.opcode, set_busy);
+          `uvm_info(`gfn, $sformatf("Triage flash cmd: %s, set_busy: %0d", cmd_type, set_busy),
+                    UVM_MEDIUM)
 
-            // addr/data swap only occurs to passthrough, call handle_addr_payload_swap after
-            // all internal processed cmds are done
-            if (is_opcode_passthrough(item.opcode)) begin
-              compare_passthru_item(.upstream_item(item), .is_intercepted(1));
-            end
-          end else if (is_opcode_passthrough(item.opcode)) begin
-            compare_passthru_item(.upstream_item(item), .is_intercepted(0));
+          is_intercepted = 1;
+          case (cmd_type)
+              NoInternalProcess: begin
+                is_intercepted = 0;
+              end
+              InternalProcessStatus: begin
+                check_internal_processed_read_status(item);
+              end
+              InternalProcessJedec: begin
+                check_internal_processed_read_jedec(item);
+              end
+              InternalProcessSfdp: begin
+                check_internal_processed_read_sfdp(item);
+              end
+              InternalProcessReadCmd: begin
+                spi_item downstream_item;
+                if (is_opcode_passthrough(item.opcode)) begin
+                  `DV_CHECK_EQ_FATAL(spi_passthrough_downstream_q.size, 1)
+                  downstream_item = spi_passthrough_downstream_q[0];
+                end
+                check_read_cmd_data(item, downstream_item);
+              end
+              InternalProcessCfgCmd: begin
+                // TODO, support later
+              end
+              UploadCmd: begin
+                process_upload_cmd(item);
+              end
+              default: `uvm_fatal(`gfn, "can't get here")
+          endcase
+
+          if (is_opcode_passthrough(item.opcode)) begin
+            compare_passthru_item(.upstream_item(item), .is_intercepted(is_intercepted));
           end
-          latch_flash_status();
+
+          latch_flash_status(set_busy);
         end
         default: `uvm_fatal(`gfn, $sformatf("Unexpected mode: %0d", `gmv(ral.control.mode)))
       endcase
@@ -115,48 +139,72 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   endtask
 
   // update flash_status to the value of the last item
-  virtual function void latch_flash_status();
-    if (flash_status_q.size == 0) return;
-
-    void'(ral.flash_status.predict(.value(flash_status_q[$]), .kind(UVM_PREDICT_WRITE)));
-    `uvm_info(`gfn, $sformatf("flash status updated to: 0x%0h", flash_status_q[$]), UVM_MEDIUM)
-    flash_status_q.delete();
+  virtual function void latch_flash_status(bit set_busy);
+    if (flash_status_q.size != 0) begin
+      void'(ral.flash_status.predict(.value(flash_status_q[$]), .kind(UVM_PREDICT_WRITE)));
+      `uvm_info(`gfn, $sformatf("flash status updated to: 0x%0h", flash_status_q[$]), UVM_MEDIUM)
+      flash_status_q.delete();
+    end
+    if (set_busy) begin
+      void'(ral.flash_status.busy.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
+      `uvm_info(`gfn, "busy bit is set due to upload command", UVM_MEDIUM)
+    end
   endfunction
 
-  virtual function bit is_internal_processed_cmd(bit[7:0] opcode,
-      output bit is_status, output bit is_jedec, output bit is_sfdp, output bit is_mbx_read);
-
-    bit is_internal_processed;
-    bit valid_cmd;
+  virtual function internal_process_cmd_e triage_flash_cmd(bit[7:0] opcode, output bit set_busy);
+    internal_process_cmd_e cmd_type;
+    bit is_status, is_jedec, is_sfdp;
     bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
+    spi_device_reg_cmd_info reg_cmd_info = get_cmd_info_reg_by_opcode(opcode, ral);
 
-    is_status = opcode inside {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3};
+    set_busy = 0;
+    if (reg_cmd_info != null && `gmv(reg_cmd_info.upload)) begin
+      if (`gmv(reg_cmd_info.busy)) set_busy = 1;
+      return UploadCmd;
+    end
+
+    is_status = opcode inside {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3} &&
+                is_internal_recog_cmd(opcode);
     if (is_passthru) is_status &= `gmv(ral.intercept_en.status);
+    if (is_status) return InternalProcessStatus;
 
-    is_jedec = opcode == READ_JEDEC && `gmv(ral.intercept_en.jedec);
+    is_jedec = opcode == READ_JEDEC && `gmv(ral.intercept_en.jedec) &&
+              is_internal_recog_cmd(opcode);
     if (is_passthru) is_jedec &= `gmv(ral.intercept_en.jedec);
+    if (is_jedec) return InternalProcessJedec;
 
-    is_sfdp = opcode == READ_SFDP;
+    is_sfdp = opcode == READ_SFDP &&
+              is_internal_recog_cmd(opcode);
     if (is_passthru) is_sfdp &= `gmv(ral.intercept_en.sfdp);
+    if (is_sfdp) return InternalProcessSfdp;
 
-    is_mbx_read = opcode inside {READ_CMD_LIST} &&
-                  `gmv(ral.cfg.mailbox_en);
-    if (is_passthru) is_mbx_read &= `gmv(ral.intercept_en.mbx);
+    if (opcode inside {READ_CMD_LIST} && is_internal_recog_cmd(opcode)) begin
+      return InternalProcessReadCmd;
+    end
 
-    is_internal_processed = (is_status | is_jedec | is_sfdp | is_mbx_read) &&
-                            is_internal_recog_cmd(opcode);
-    valid_cmd = cfg.spi_host_agent_cfg.is_opcode_supported(opcode);
+    if (is_internal_cfg_cmd(opcode)) return InternalProcessCfgCmd;
 
-    `uvm_info(`gfn, $sformatf("Internal processed opcode: 0x%0h, valid: %0d",
-              opcode, valid_cmd), UVM_MEDIUM)
-    return is_internal_processed && valid_cmd;
+    return NoInternalProcess;
   endfunction
 
+  `define GET_OPCODE_VALID_AND_MATCH(CSR, OPCODE) \
+    (`gmv(ral.CSR.valid) == 1 && `gmv(ral.CSR.opcode) == OPCODE)
   // if the cmd isn't in the first 11 slots, it won't be processed in spi_device
   // interception or returning data from spi mem won't occur. It can only passthru to downstream
   virtual function bit is_internal_recog_cmd(bit[7:0] opcode);
     for (int i = 0; i < NumInternalRecognizedCmd; i++) begin
-      if (`gmv(ral.cmd_info[i].valid) == 1 && `gmv(ral.cmd_info[i].opcode) == opcode) return 1;
+      if (`GET_OPCODE_VALID_AND_MATCH(cmd_info[i], opcode)) return 1;
+    end
+    if (is_internal_cfg_cmd(opcode)) return 1;
+    return 0;
+  endfunction
+
+  virtual function bit is_internal_cfg_cmd(bit[7:0] opcode);
+    if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_en4b, opcode) ||
+        `GET_OPCODE_VALID_AND_MATCH(cmd_info_ex4b, opcode) ||
+        `GET_OPCODE_VALID_AND_MATCH(cmd_info_wren, opcode) ||
+        `GET_OPCODE_VALID_AND_MATCH(cmd_info_wrdi, opcode)) begin
+      return 1;
     end
     return 0;
   endfunction
@@ -237,19 +285,27 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     bit [31:0] mbx_base_addr = get_mbx_base_addr(ral);
     // TODO, sample this for coverage
     read_addr_size_type_e read_addr_size_type;
+    bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
+    bit mailbox_en;
+
+    if (`gmv(ral.cfg.mailbox_en)) begin
+      mailbox_en = 1;
+      if (is_passthru) mailbox_en &= `gmv(ral.intercept_en.mbx);
+    end
 
     foreach (up_item.address_q[i]) begin
       if (i > 0) start_addr = start_addr << 8;
       start_addr[7:0] = up_item.address_q[i];
     end
+    start_addr = convert_addr_from_byte_queue(up_item.address_q);
 
     if (dn_item != null) `DV_CHECK_EQ(up_item.payload_q.size, dn_item.payload_q.size)
     foreach (up_item.payload_q[i]) begin
       bit [31:0] cur_addr = start_addr + i;
 
       // out of mbx region
-      if ((cur_addr < mbx_base_addr) || (cur_addr >= mbx_base_addr + MAILBOX_BUFFER_SIZE)) begin
-        bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
+      if ((cur_addr < mbx_base_addr) || (cur_addr >= mbx_base_addr + MAILBOX_BUFFER_SIZE) ||
+          !mailbox_en) begin
         string str;
 
         if (is_passthru) begin // passthrough mode
@@ -281,6 +337,22 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     // TODO, sample read_addr_size_type for coverage
   endfunction
 
+  virtual function void process_upload_cmd(spi_item item);
+    bit [31:0] payload_start_addr = get_converted_addr(PAYLOAD_FIFO_START_ADDR);
+
+    upload_cmd_q.push_back(item.opcode);
+    if (item.address_q.size > 0) begin
+      upload_addr_q.push_back(convert_addr_from_byte_queue(item.address_q));
+    end
+    foreach (item.payload_q[i]) begin
+      uvm_reg_addr_t addr = payload_start_addr + (i % PAYLOAD_FIFO_SIZE);
+
+      spi_mem.write_byte(addr, item.payload_q[i]);
+      `uvm_info(`gfn, $sformatf("write upload payload idx %0d, mem addr 0x%0x, val: 0x%0x",
+                i, addr, item.payload_q[i]), UVM_MEDIUM)
+    end
+  endfunction
+
   // convert offset to the mem address that is used to find the locaiton in exp_mem
   // lsb 2 bit will be kept
   virtual function bit [31:0] get_converted_addr(bit [31:0] offset);
@@ -288,7 +360,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   endfunction
 
   virtual function void handle_addr_payload_swap(spi_item item);
-    spi_device_reg_cmd_info reg_cmd_info = get_cmd_info_reg_by_opcode(item.opcode);
+    spi_device_reg_cmd_info reg_cmd_info = get_cmd_info_reg_by_opcode(item.opcode, ral);
     if (reg_cmd_info == null) return;
 
     if (`gmv(reg_cmd_info.addr_swap_en)) begin
@@ -323,21 +395,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
   endfunction
 
-  virtual function spi_device_reg_cmd_info get_cmd_info_reg_by_opcode(bit [7:0] opcode);
-    foreach (ral.cmd_info[i]) begin
-      if (`gmv(ral.cmd_info[i].valid) == 1 && `gmv(ral.cmd_info[i].opcode) == opcode) begin
-        return ral.cmd_info[i];
-      end
-    end
-    return null;
-  endfunction
-
   virtual function void compare_passthru_item(spi_item upstream_item, bit is_intercepted);
     spi_item downstream_item;
 
     handle_addr_payload_swap(upstream_item);
 
-    `DV_CHECK_EQ(spi_passthrough_downstream_q.size, 1)
+    `DV_CHECK_EQ_FATAL(spi_passthrough_downstream_q.size, 1)
     downstream_item = spi_passthrough_downstream_q.pop_front();
 
     if (is_intercepted) begin
@@ -391,28 +454,36 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
       `DV_CHECK_NE_FATAL(csr, null)
     end
-    else if (item.a_addr inside {[cfg.sram_start_addr:cfg.sram_end_addr]}) begin
-      uint tx_base  = ral.txf_addr.base.get_mirrored_value();
-      uint rx_base  = ral.rxf_addr.base.get_mirrored_value();
-      uint tx_limit = ral.txf_addr.limit.get_mirrored_value();
-      uint rx_limit = ral.rxf_addr.limit.get_mirrored_value();
-      uint mem_addr = item.a_addr - cfg.sram_start_addr;
-      tx_base[1:0] = 0;
-      rx_base[1:0] = 0;
-      if (mem_addr inside {[tx_base : tx_base + tx_limit]}) begin // TX address
-        if (write && channel == AddrChannel) begin
-          tx_mem.write(mem_addr - tx_base, item.a_data);
-          `uvm_info(`gfn, $sformatf("write tx_mem addr 0x%0h, data: 0x%0h",
-                                    mem_addr - tx_base, item.a_data), UVM_MEDIUM)
-        end
-      end else if (mem_addr inside {[rx_base : rx_base + rx_limit]}) begin // RX address
-        if (!write && channel == DataChannel) begin //TODO UVM_ERROR unexpected write on RX mem
-          uint            addr     = mem_addr - rx_base;
-          bit [TL_DW-1:0] data_exp = rx_mem.read(addr);
-          `DV_CHECK_EQ(item.d_data, data_exp, $sformatf("Compare SPI RX data, addr: 0x%0h", addr))
+    else if (csr_addr inside {[cfg.sram_start_addr:cfg.sram_end_addr]}) begin
+      if (`gmv(ral.control.mode) == GenericMode) begin
+        uint tx_base  = ral.txf_addr.base.get_mirrored_value();
+        uint rx_base  = ral.rxf_addr.base.get_mirrored_value();
+        uint tx_limit = ral.txf_addr.limit.get_mirrored_value();
+        uint rx_limit = ral.rxf_addr.limit.get_mirrored_value();
+        uint mem_addr = item.a_addr - cfg.sram_start_addr;
+        tx_base[1:0] = 0;
+        rx_base[1:0] = 0;
+        if (mem_addr inside {[tx_base : tx_base + tx_limit]}) begin // TX address
+          if (write && channel == AddrChannel) begin
+            tx_mem.write(mem_addr - tx_base, item.a_data);
+            `uvm_info(`gfn, $sformatf("write tx_mem addr 0x%0h, data: 0x%0h",
+                                      mem_addr - tx_base, item.a_data), UVM_MEDIUM)
+          end
+        end else if (mem_addr inside {[rx_base : rx_base + rx_limit]}) begin // RX address
+          if (!write && channel == DataChannel) begin //TODO UVM_ERROR unexpected write on RX mem
+            uint            addr     = mem_addr - rx_base;
+            bit [TL_DW-1:0] data_exp = rx_mem.read(addr);
+            `DV_CHECK_EQ(item.d_data, data_exp, $sformatf("Compare SPI RX data, addr: 0x%0h", addr))
+          end
+        end else begin
+          // TODO hit unlocated mem, sample coverage
         end
       end else begin
-        // TODO hit unlocated mem, sample coverage
+        if (!write) begin
+          // cip_base_scoreboard compares the mem read only when the address exists
+          // just need to ensure address exists here and mem check is done at process_mem_read
+          `DV_CHECK(spi_mem.addr_exists(csr_addr))
+        end
       end
       return;
     end
@@ -455,7 +526,27 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           end
         end
       end
-      // TODO the other regs
+      "upload_cmdfifo": begin
+        if (!write && channel == DataChannel) begin
+          bit [31:0] exp_opcode;
+          `DV_CHECK_GT(upload_cmd_q.size, 0)
+          exp_opcode = upload_cmd_q.pop_front();
+
+          `DV_CHECK_EQ(item.d_data, exp_opcode)
+        end
+      end
+      "upload_addrfifo": begin
+        if (!write && channel == DataChannel) begin
+          bit [31:0] exp_addr;
+          `DV_CHECK_GT(upload_addr_q.size, 0)
+          exp_addr = upload_addr_q.pop_front();
+
+          `DV_CHECK_EQ(item.d_data, exp_addr)
+        end
+      end
+      default: begin
+        // TODO the other regs
+      end
     endcase
 
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
@@ -608,7 +699,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_CHECK_EQ(tx_word_q.size, 0)
     `DV_CHECK_EQ(rx_word_q.size, 0)
     `DV_CHECK_EQ(spi_passthrough_downstream_q.size, 0)
+    `DV_CHECK_EQ(upload_cmd_q.size, 0)
+    `DV_CHECK_EQ(upload_addr_q.size, 0)
     `DV_CHECK_EQ(flash_status_q.size, 0)
   endfunction
 
 endclass
+
+`undef GET_OPCODE_VALID_AND_MATCH

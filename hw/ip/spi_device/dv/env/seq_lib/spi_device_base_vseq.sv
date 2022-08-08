@@ -225,7 +225,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
   // transfer in command including opcode, address and payload
   // if byte_addr_q is empty, the host_seq will use a random addr
   virtual task spi_host_xfer_flash_item(bit [7:0] op, uint payload_size,
-                                        bit [31:0] addr);
+                                        bit [31:0] addr, bit wait_on_busy = 1);
     spi_host_flash_seq m_spi_host_seq;
     bit [7:0] byte_addr_q[$];
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
@@ -247,6 +247,31 @@ class spi_device_base_vseq extends cip_base_vseq #(
                                    payload_q.size() == payload_size;
                                    read_size == payload_size;)
     `uvm_send(m_spi_host_seq)
+
+    if (wait_on_busy) begin
+      spi_device_reg_cmd_info cmd_info = get_cmd_info_reg_by_opcode(op, ral);
+      if (cmd_info != null && `gmv(cmd_info.upload) && `gmv(cmd_info.busy)) begin
+        spi_host_wait_on_busy();
+      end
+    end
+  endtask
+
+  virtual task spi_host_wait_on_busy();
+    spi_host_flash_seq m_spi_host_seq;
+    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+    `DV_SPINWAIT(
+      while (1) begin
+        `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
+                                      opcode == READ_STATUS_1;
+                                      address_q.size() == 0;
+                                      payload_q.size() == 1;
+                                      read_size == 1;)
+        `uvm_send(m_spi_host_seq)
+        // bit 0 is busy bit
+        if (m_spi_host_seq.rsp.payload_q[0][0] === 0) break;
+        cfg.clk_rst_vif.wait_clks(1);
+      end
+    )
   endtask
 
   virtual task spi_device_flash_auto_rsp_nonblocking();
