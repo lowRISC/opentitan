@@ -342,6 +342,8 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=80_000_000", "+calibrate_usb_clk=1"]
       reseed: 20
+      // slow baudrate may be used, it needs longer time
+      run_timeout_mins: 240
     }
     {
       name: chip_sw_uart_tx_rx_alt_clk_freq
@@ -351,6 +353,8 @@
       run_opts: ["+sw_test_timeout_ns=80_000_000",
                  "+ext_clk_type=ExtClkHighSpeed", "+use_extclk=1", "+calibrate_usb_clk=1"]
       reseed: 5
+      // slow baudrate may be used, it needs longer time
+      run_timeout_mins: 240
     }
     {
       name: chip_sw_uart_tx_rx_alt_clk_freq_low_speed
@@ -360,6 +364,8 @@
       run_opts: ["+sw_test_timeout_ns=80_000_000", "+calibrate_usb_clk=1",
                  "+ext_clk_type=ExtClkLowSpeed", "+use_extclk=1", "+extclk_low_speed_sel=1"]
       reseed: 5
+      // slow baudrate may be used, it needs longer time
+      run_timeout_mins: 240
     }
     {
       name: chip_sw_spi_device_tx_rx
