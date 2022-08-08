@@ -139,6 +139,9 @@ TEST_F(ImemWriteTest, SuccessWithoutOffset) {
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[1]);
 
+  EXPECT_ABS_READ32(base_ + OTBN_IMEM_REG_OFFSET, test_data[0]);
+  EXPECT_ABS_READ32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[1]);
+
   EXPECT_EQ(otbn_imem_write(0, test_data.data(), 2), kErrorOk);
 }
 
@@ -151,6 +154,9 @@ TEST_F(ImemWriteTest, SuccessWithOffset) {
   EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_IMEM_REG_OFFSET + 8, test_data[1]);
+
+  EXPECT_ABS_READ32(base_ + OTBN_IMEM_REG_OFFSET + 4, test_data[0]);
+  EXPECT_ABS_READ32(base_ + OTBN_IMEM_REG_OFFSET + 8, test_data[1]);
 
   EXPECT_EQ(otbn_imem_write(4, test_data.data(), 2), kErrorOk);
 }
@@ -181,6 +187,9 @@ TEST_F(DmemWriteTest, SuccessWithoutOffset) {
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[1]);
 
+  EXPECT_ABS_READ32(base_ + OTBN_DMEM_REG_OFFSET, test_data[0]);
+  EXPECT_ABS_READ32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[1]);
+
   EXPECT_EQ(otbn_dmem_write(0, test_data.data(), 2), kErrorOk);
 }
 
@@ -193,6 +202,9 @@ TEST_F(DmemWriteTest, SuccessWithOffset) {
   EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[0]);
   EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + 8, test_data[1]);
+
+  EXPECT_ABS_READ32(base_ + OTBN_DMEM_REG_OFFSET + 4, test_data[0]);
+  EXPECT_ABS_READ32(base_ + OTBN_DMEM_REG_OFFSET + 8, test_data[1]);
 
   EXPECT_EQ(otbn_dmem_write(4, test_data.data(), 2), kErrorOk);
 }

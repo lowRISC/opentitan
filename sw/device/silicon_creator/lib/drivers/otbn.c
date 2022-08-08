@@ -81,6 +81,14 @@ static void otbn_write(uint32_t dest_addr, const uint32_t *src,
     HARDENED_CHECK_LT(i, num_words);
   }
   HARDENED_CHECK_EQ(iter_cnt, num_words);
+
+  /* Read back what we just wrote to check for tampering. */
+  i = 0;
+  for (; i < num_words; ++i) {
+    uint32_t readback = abs_mmio_read32(dest_addr + i * sizeof(uint32_t));
+    HARDENED_CHECK_EQ(readback, src[i]);
+  }
+  HARDENED_CHECK_EQ(i, num_words);
 }
 
 /**
