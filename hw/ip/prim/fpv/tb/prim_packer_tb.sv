@@ -23,7 +23,8 @@ module prim_packer_tb #(
   input                      ready_i,
 
   input                      flush_i,
-  output logic               flush_done_o
+  output logic               flush_done_o,
+  output logic               err_o
 );
 
   for (genvar k = 1; k <= 16; k++) begin : gen_prim_packer
@@ -40,7 +41,8 @@ module prim_packer_tb #(
       .mask_o (mask_o[16-k:0]),
       .ready_i,
       .flush_i,
-      .flush_done_o
+      .flush_done_o,
+      .err_o
     );
   end
 
@@ -57,7 +59,8 @@ module prim_packer_tb #(
       .mask_o (mask_o),
       .ready_i,
       .flush_i,
-      .flush_done_o
+      .flush_done_o,
+      .err_o
   );
 
 endmodule : prim_packer_tb

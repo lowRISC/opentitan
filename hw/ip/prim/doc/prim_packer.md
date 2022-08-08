@@ -11,10 +11,11 @@ Specification section on shared primitives.
 
 ## Parameters
 
-Name | type | Description
------|------|-------------
-InW  | int  | Input data width
-OutW | int  | Output data width
+Name         | type | Description
+-------------|------|-------------------------------------
+InW          | int  | Input data width
+OutW         | int  | Output data width
+EnProtection | bit  | Check FI attack on position counter
 
 ## Signal Interfaces
 
@@ -30,6 +31,7 @@ mask_o[OutW] | output | Output bit mask.
 ready_i      | input  | Output data can be drained.
 flush_i      | input  | Send out stored data and clear state.
 flush_done_o | output | Indicates flush operation is completed.
+err_o        | output | When EnProtection is set, the error is reported through this port. This signal is asynchronous to the datapath.
 
 # Theory of Opeations
 

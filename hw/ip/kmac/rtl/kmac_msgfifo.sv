@@ -15,6 +15,8 @@ module kmac_msgfifo
   // pushing to MsgFIFO
   parameter int OutWidth = 64,
 
+  parameter bit EnMasking = 1'b 1,
+
   // Internal MsgFIFO Entry count
   parameter  int MsgDepth = 9,
   localparam int MsgDepthW = $clog2(MsgDepth+1) // derived parameter
@@ -44,7 +46,9 @@ module kmac_msgfifo
   // process_i --> process_o
   // process_o asserted after all internal messages are flushed out to MSG interface
   input        process_i,
-  output logic process_o
+  output logic process_o,
+
+  err_t err_o
 );
 
   /////////////////
@@ -96,10 +100,16 @@ module kmac_msgfifo
   logic packer_flush_done;
   logic msgfifo_flush_done;
 
+  logic packer_err;
+
+  // SEC_CM: PACKER.CTR.REDUN
   prim_packer #(
     .InW          (OutWidth),
     .OutW         (OutWidth),
-    .HintByteData (1)
+    .HintByteData (1),
+
+    // Turn on dup counter when EnMasking is set
+    .EnProtection (EnMasking)
   ) u_packer (
     .clk_i,
     .rst_ni,
@@ -115,7 +125,9 @@ module kmac_msgfifo
     .ready_i      (packer_wready),
 
     .flush_i      (process_i),
-    .flush_done_o (packer_flush_done)
+    .flush_done_o (packer_flush_done),
+
+    .err_o (packer_err)
   );
 
   // Assign packer wdata and wmask to FIFO struct
@@ -221,6 +233,13 @@ module kmac_msgfifo
   end
 
   assign process_o = msgfifo_flush_done;
+
+  assign err_o = '{
+    // If EnProtection is 0, packer_err is tied to 0
+    valid: packer_err,
+    code:  kmac_pkg::ErrPackerIntegrity,
+    info:  kmac_pkg::ErrInfoW'(flush_st)
+  };
 
   ////////////////
   // Assertions //
