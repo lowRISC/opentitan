@@ -98,7 +98,7 @@ clang_format_check = rule(
             doc = "Command to execute to display diffs",
         ),
         "clang_format": attr.label(
-            default = "@com_lowrisc_toolchain_rv32imc_compiler//:bin/clang-format",
+            default = "@lowrisc_rv32imcb_files//:bin/clang-format",
             allow_single_file = True,
             cfg = "host",
             executable = True,
