@@ -454,6 +454,31 @@ jobs:
       includePatterns:
         - "/hw/top_englishbreakfast/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit"
 
+- job: build_fpga_tests_cw310
+  displayName: Build CW310 Tests
+  pool:
+    vmImage: ubuntu-18.04
+  # TODO: uncomment this
+  # dependsOn: lint
+  continueOnError: true
+  steps:
+    - template: ci/install-package-dependencies.yml
+    - bash: |
+        set -e -x
+        ci/bazelisk.sh build \
+          --define DISABLE_VERILATOR_BUILD=true \
+          --test_tag_filters=cw310,-broken \
+          --test_timeout_filters=short,moderate \
+          --build_tests_only \
+          --disk_cache="$(Pipeline.Workspace)/bazel-disk-cache" \
+          --local_cpu_resources=4 \
+          $(./bazelisk.sh query 'rdeps(//...,@bitstreams//:bitstream_test_rom)') \
+          $(./bazelisk.sh query 'rdeps(//...,@bitstreams//:bitstream_mask_rom)')
+    - publish: $(Pipeline.Workspace)/bazel-disk-cache
+      artifact: bazel-disk-cache
+      condition: always()
+      displayName: Upload Bazel disk cache containing FPGA test artifacts
+
 - job: execute_fpga_tests_cw310
   displayName: CW310 Tests
   # Execute tests on ChipWhisperer CW310 FPGA board
@@ -463,6 +488,8 @@ jobs:
     - chip_earlgrey_cw310
     - chip_earlgrey_cw310_splice_mask_rom
     - sw_build
+    - build_fpga_tests_cw310
+  condition: always()
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
@@ -470,8 +497,20 @@ jobs:
       downloadPartialBuildBinFrom:
         - chip_earlgrey_cw310_splice_mask_rom
         - sw_build
+  - download: current
+    artifact: bazel-disk-cache
+    displayName: Download Bazel disk cache
   - bash: |
       set -e
+      pwd
+      echo "-----"
+      ls -lah
+      echo "-----"
+      ls -lah $(Pipeline.Workspace)/bazel-disk-cache
+      echo "build --disk_cache=$(Pipeline.Workspace)/bazel-disk-cache" >> .bazelrc
+      echo "-----"
+      cat .bazelrc
+      echo "-----"
       ci/scripts/run-fpga-cw310-tests.sh
     displayName: Execute tests
 
@@ -516,7 +555,6 @@ jobs:
       addChangeLog: false
       assets: |
           $(Build.ArtifactStagingDirectory)/dist-final/*
-
 
 - job: build_docker_containers
   displayName: "Build Docker Containers"
