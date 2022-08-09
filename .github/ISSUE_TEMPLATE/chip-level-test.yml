@@ -22,6 +22,7 @@ body:
       label: Host side component
       description: Does this test require development of a host side component? (In other words, does the test require an external stimulus, like receiving UART or SPI transactions?)
       options:
+        - None Required
         - Unknown
         - SystemVerilog
         - Rust
