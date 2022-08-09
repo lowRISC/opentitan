@@ -40,7 +40,7 @@ body:
     attributes:
       label: Contact person
       description: GitHub username for a hardware engineer who can answer questions.
-  - type: markdown
+  - type: textarea
     id: checklist
     attributes:
       value: |
