@@ -74,7 +74,7 @@ package otbn_env_pkg;
   parameter int unsigned MNEM_STR_LEN = 16;
   typedef bit [MNEM_STR_LEN*8-1:0] mnem_str_t;
 
-  parameter int unsigned CSR_STR_LEN = 16;
+  parameter int unsigned CSR_STR_LEN = 20;
   typedef bit [CSR_STR_LEN*8-1:0] csr_str_t;
 
   // A very simple wrapper around a word that has been loaded from the input binary and needs

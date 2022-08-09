@@ -550,17 +550,17 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
   // alert. This gets sampled when we read a FATAL_ALERT_CAUSE with just FATAL_SOFTWARE and is given
   // last_err_bits (see comment above declaration of that variable for more details).
   covergroup promoted_err_cg
-    with function sample(logic [31:0] last_err_bits);
+    with function sample(logic [5:0] last_err_bits);
 
     // We're interested in the "one-hot" values corresponding to each error that wouldn't normally
     // be fatal.
     err_bits_cp: coverpoint last_err_bits {
-      bins bad_data_addr = {32'h1};
-      bins bad_insn_addr = {32'h2};
-      bins call_stack    = {32'h4};
-      bins illegal_insn  = {32'h8};
-      bins loop          = {32'h10};
-      bins key_invalid   = {32'h20};
+      bins bad_data_addr = {6'h1};
+      bins bad_insn_addr = {6'h2};
+      bins call_stack    = {6'h4};
+      bins illegal_insn  = {6'h8};
+      bins loop          = {6'h10};
+      bins key_invalid   = {6'h20};
     }
   endgroup
 
@@ -2200,6 +2200,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         ext_csr_status_cg.sample(otbn_pkg::status_e'(data), access_type);
       end
       "err_bits": begin
+        last_err_bits = data;
         ext_csr_err_bits_cg.sample(otbn_pkg::err_bits_t'(data),
                                    csr.get_mirrored_value(), access_type, state);
       end
@@ -2211,7 +2212,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
         if ((state == OperationalStateLocked) &&
             (access_type == AccessSoftwareRead) &&
             (data == (1 << 7))) begin
-          promoted_err_cg.sample(last_err_bits);
+          promoted_err_cg.sample(last_err_bits[5:0]);
         end
       end
       "insn_cnt": begin
