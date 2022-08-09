@@ -139,7 +139,7 @@ package entropy_src_env_pkg;
   } err_code_test_val_e;
 
 
-  typedef enum { BOOT, STARTUP, CONTINUOUS, HALTED } entropy_phase_e;
+  typedef enum { BOOT, STARTUP, CONTINUOUS, HALTED, ERROR } entropy_phase_e;
   typedef bit [RNG_BUS_WIDTH-1:0] rng_val_t;
   typedef bit [TL_DW-1:0]         tl_val_t;
   typedef rng_val_t queue_of_rng_val_t[$];
