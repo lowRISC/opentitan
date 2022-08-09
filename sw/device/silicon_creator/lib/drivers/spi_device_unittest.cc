@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 
+#include <array>
 #include <cstring>
 #include <limits>
 
