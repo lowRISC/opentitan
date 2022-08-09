@@ -35,22 +35,6 @@ class clkmgr_common_vseq extends clkmgr_base_vseq;
     endcase
   endtask
 
-  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
-    if (enable) begin
-      $asserton(0, "tb.dut.FpvSecCmClkMainKmacCountCheck_A");
-      $asserton(0, "tb.dut.FpvSecCmClkMainAesCountCheck_A");
-      $asserton(0, "tb.dut.FpvSecCmClkMainHmacCountCheck_A");
-      $asserton(0, "tb.dut.FpvSecCmClkMainOtbnCountCheck_A");
-      return;
-    end
-    if (if_proxy.sec_cm_type == SecCmPrimCount) begin
-      $assertoff(0, "tb.dut.FpvSecCmClkMainKmacCountCheck_A");
-      $assertoff(0, "tb.dut.FpvSecCmClkMainAesCountCheck_A");
-      $assertoff(0, "tb.dut.FpvSecCmClkMainHmacCountCheck_A");
-      $assertoff(0, "tb.dut.FpvSecCmClkMainOtbnCountCheck_A");
-    end
-  endfunction
-
   task initialize_on_start();
     super.initialize_on_start();
     // update default idle to false for
