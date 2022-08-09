@@ -40,11 +40,11 @@ body:
     attributes:
       label: Contact person
       description: GitHub username for a hardware engineer who can answer questions.
-  - type: markdown
+  - type: textarea
     id: checklist
     attributes:
+      label: Checklist
       value: |
-        # Checklist
         Please fill out this checklist as items are completed. Link to PRs and issues as appropriate.
         - [ ] Check if existing test covers most or all of this testpoint (if so, either extend said test to cover all points, or skip the next 3 checkboxes)
         - [ ] Device-side (C) component developed
