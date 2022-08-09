@@ -421,6 +421,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic                    sha3_state_error;
   logic                    sha3_count_error;
+  logic                    sha3_rst_storage_error;
   logic [EsEnableCopies-1:0] es_enable_q_fo;
   logic                      es_hw_regwen;
   logic                      recov_alert_state;
@@ -2378,8 +2379,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
     .error_o (sha3_err),
     .sparse_fsm_error_o (sha3_state_error),
-    .count_error_o  (sha3_count_error)
+    .count_error_o  (sha3_count_error),
+    .keccak_storage_rst_error_o (sha3_rst_storage_error)
   );
+
+  // TODO: Connect to an alert
+  logic unused_sha3_rst_storage_error;
+  assign unused_sha3_rst_storage_error = sha3_rst_storage_error;
 
 
   //--------------------------------------------

@@ -51,8 +51,14 @@ module keccak_round
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
 
+  // Errors:
+  //  sparse_fsm_error: Checking if FSM state falls into unknown value
   output logic             sparse_fsm_error_o,
+  //  round_count_error: prim_count checks round value consistency
   output logic             round_count_error_o,
+  //  rst_storage_error: check if reset signal asserted out of the
+  //                     permitted window
+  output logic             rst_storage_error_o,
 
   input  prim_mubi_pkg::mubi4_t clear_i     // Clear internal state to '0
 );
@@ -404,6 +410,23 @@ module keccak_round
       end // for j
     end // if xor_message
   end
+
+  // Check the rst_storage integrity
+  logic rst_storage_error;
+
+  always_comb begin : chk_rst_storage
+    rst_storage_error = 1'b 0;
+
+    if (rst_storage) begin
+      // FSM should be in StIdle and clear_i should be high
+      if ((keccak_st != StIdle) ||
+        prim_mubi_pkg::mubi4_test_false_loose(clear_i)) begin
+        rst_storage_error = 1'b 1;
+      end
+    end
+  end : chk_rst_storage
+
+  assign rst_storage_error_o = rst_storage_error ;
 
   //////////////
   // Datapath //

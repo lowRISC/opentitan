@@ -74,7 +74,10 @@ module sha3
   output logic sparse_fsm_error_o,
 
   // counter error
-  output logic count_error_o
+  output logic count_error_o,
+
+  // error on rst_storage in Keccak
+  output logic keccak_storage_rst_error_o
 
 );
   /////////////////
@@ -131,6 +134,10 @@ module sha3
   logic sha3pad_state_error;
 
   assign sparse_fsm_error_o = sha3_state_error | keccak_round_state_error | sha3pad_state_error;
+
+  // Keccak rst_storage is asserted unexpectedly
+  logic keccak_storage_rst_error;
+  assign keccak_storage_rst_error_o = keccak_storage_rst_error;
 
   /////////////////
   // Connections //
@@ -444,6 +451,7 @@ module sha3
 
     .sparse_fsm_error_o  (keccak_round_state_error),
     .round_count_error_o (round_count_error),
+    .rst_storage_error_o (keccak_storage_rst_error),
 
     .clear_i    (keccak_done)
   );
