@@ -69,11 +69,19 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   rng_val_t                        prev_rng_val = '0;
   int                              repcnt      [RNG_BUS_WIDTH];
   int                              repcnt_symbol;
-  int                              max_repcnt, max_repcnt_symbol;
+
+  // Total number of repcnt OR repcnts failures for a particular sample.
+  // Some care is required in counting total failures as different
+  // types of failures happening in the same sample only get counted once.
+  int                              continuous_fail_count;
+  bit                              cont_fail_in_last_sample;
 
   // TODO: Document method for clearing alerts in programmer's guide
   // TODO: Add health check failure and clearing to integration tests.
   bit threshold_alert_active = 1'b0;
+
+  // Signal to indicate that the main sm is going into the error state
+  bit main_sm_escalates = 0;
 
   // Bit to signify that the module_enable bit is locked
   bit dut_me_reglocked = 1'b0;
@@ -111,7 +119,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // response to the DUT to all the _ data that comes in, we mimic the DUT and ignore
   // these data points once we notice one of these events.
   bit ignore_fw_ov_data_pulse = 0;
-
 
   // Enabling, disabling and reset all have some effect in clearing the state of the DUT
   // Due to subleties in timing, the DUT resets the Observe FIFO with a unique delay
@@ -184,22 +191,45 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // Health check test routines
   //
 
-  function void update_repcnts(rng_val_t rng_val);
+  function void update_repcnts(bit fips_mode, rng_val_t rng_val);
+    int           max_repcnt = 0;
+    bit           repcnt_fail, repcnt_sym_fail;
+    uvm_reg_field alert_summary_field = ral.alert_summary_fail_counts.any_fail_count;
+    int           any_fail_count_regval;
+    string        fmt;
+
     for (int i = 0; i < RNG_BUS_WIDTH; i++) begin
       if (rng_val[i] == prev_rng_val[i]) begin
         repcnt[i]++;
-        max_repcnt = (repcnt[i] > max_repcnt) ? repcnt[i] : max_repcnt;
       end else begin
         repcnt[i] = 1;
       end
+      max_repcnt = (repcnt[i] > max_repcnt) ? repcnt[i] : max_repcnt;
     end
+    `uvm_info(`gfn, $sformatf("max repcnt %0h", max_repcnt), UVM_DEBUG)
+    repcnt_fail = evaluate_repcnt_test(fips_mode, max_repcnt);
+
     if (rng_val == prev_rng_val) begin
       repcnt_symbol++;
     end else begin
       repcnt_symbol = 1;
     end
+    repcnt_sym_fail = evaluate_repcnt_symbol_test(fips_mode, repcnt_symbol);
+
+    cont_fail_in_last_sample = repcnt_fail | repcnt_sym_fail;
+    continuous_fail_count += cont_fail_in_last_sample;
+
+    any_fail_count_regval = `gmv(alert_summary_field);
+    any_fail_count_regval += cont_fail_in_last_sample;
+    `DV_CHECK_FATAL(alert_summary_field.predict(.value(any_fail_count_regval),
+                                                .kind(UVM_PREDICT_DIRECT)))
+
+    if(cont_fail_in_last_sample) begin
+      fmt = "Predicted alert cnt for all tests: %04h";
+      `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval), UVM_HIGH)
+    end
+
     prev_rng_val = rng_val;
-    max_repcnt_symbol = (repcnt_symbol > max_repcnt_symbol) ? repcnt_symbol : max_repcnt_symbol;
   endfunction
 
   function int calc_adaptp_test(queue_of_rng_val_t window, output int maxval, output int minval);
@@ -346,40 +376,26 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // alert_fail_counts.<test>_fail_count
   // extht_fail_counts.<test>_fail_count
   //
-  // Because failing multiple  tests for a single test only count as one total alert failure
+  // Because failing multiple tests for a single test only count as one total alert failure
   // this routine does not update alert_summary_fail_counts
   //
-  function bit check_threshold(string test, bit fips_mode, int value);
-    string        threshold_reg_name;
-    string        threshold_field_name;
+
+  function void predict_failure_logs(string test);
     string        total_fail_reg_name;
     string        total_fail_field_name;
     string        alert_cnt_reg_name;
     string        alert_cnt_field_name;
-    uvm_reg       threshold_reg;
     uvm_reg       total_fail_reg;
     uvm_reg       alert_cnt_reg;
-    uvm_reg_field threshold_field;
     uvm_reg_field total_fail_field;
     uvm_reg_field alert_cnt_field;
 
-    int        threshold_val;
-    bit [3:0]  alert_cnt;
-    int        fail_total;
-    bit        continuous_test;
-    bit        failure;
-    bit        low_test;
-    string     fmt, msg;
+    bit [3:0]     alert_cnt;
+    int           fail_total;
+
+    string        fmt, msg;
 
     validate_test_name(test);
-    low_test             = is_low_test(test);
-    continuous_test      = (test == "repcnt") || (test == "repcnts");
-
-    // TODO: confirm that the FIPS threshold is the only one that matters for the continuous tests.
-    // Having split thresholds doesn't matter for such tests.
-    threshold_field_name = (fips_mode || continuous_test) ? "fips_thresh" : "bypass_thresh";
-    threshold_reg_name  = $sformatf("%s_thresholds", test);
-
     total_fail_reg_name = $sformatf("%s_total_fails", test);
     total_fail_field_name = total_fail_reg_name;
 
@@ -391,52 +407,79 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
     alert_cnt_field_name = $sformatf("%s_fail_count", test);
 
-    threshold_reg    = ral.get_reg_by_name(threshold_reg_name);
-    threshold_field  = threshold_reg.get_field_by_name(threshold_field_name);
-
     total_fail_reg   = ral.get_reg_by_name(total_fail_reg_name);
     total_fail_field = total_fail_reg.get_field_by_name(total_fail_field_name);
 
     alert_cnt_reg    = ral.get_reg_by_name(alert_cnt_reg_name);
     alert_cnt_field  = alert_cnt_reg.get_field_by_name(alert_cnt_field_name);
 
-    threshold_val = threshold_field.get_mirrored_value();
-
-    failure = (low_test && value < threshold_val) || (!low_test && value > threshold_val);
-
     fail_total = total_fail_field.get_mirrored_value();
     alert_cnt  =  alert_cnt_field.get_mirrored_value();
 
-    if (failure) begin
-      // Update the predicted failure counters, noting that the DUT will not let these overflow
-      alert_cnt  += (&alert_cnt)  ? 0 : 1;
-      fail_total += (&fail_total) ? 0 : 1;
-    end
-
-    fmt = "Threshold for \"%s\" test (FIPS? %d): %04h";
-    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, threshold_val), UVM_HIGH)
-
-    fmt = "Observed value for \"%s\" test (FIPS? %d): %04h, %s";
-    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, value, failure ? "FAIL" : "PASS"), UVM_HIGH)
+    // Update the predicted failure counters, noting that the DUT will not let these overflow
+    alert_cnt  += (&alert_cnt)  ? 0 : 1;
+    fail_total += (&fail_total) ? 0 : 1;
 
     fmt = "Previous alert cnt reg: %08h";
     msg = $sformatf(fmt, alert_cnt_reg.get_mirrored_value());
-    `uvm_info(`gfn, msg, UVM_FULL)
+    `uvm_info(`gfn, msg, UVM_DEBUG)
 
     `DV_CHECK_FATAL(total_fail_field.predict(.value(fail_total), .kind(UVM_PREDICT_DIRECT)))
     `DV_CHECK_FATAL( alert_cnt_field.predict(.value( alert_cnt), .kind(UVM_PREDICT_DIRECT)))
 
-    fmt = "Predicted alert cnt for \"%s\" test (FIPS? %d): %04h";
-    msg = $sformatf(fmt, test, fips_mode, alert_cnt_field.get_mirrored_value());
+    fmt = "Predicted alert cnt for \"%s\" test: %04h";
+    msg = $sformatf(fmt, test, alert_cnt_field.get_mirrored_value());
     `uvm_info(`gfn, msg, UVM_HIGH)
 
     fmt = "Entire alert cnt reg: %08h";
     msg = $sformatf(fmt, alert_cnt_reg.get_mirrored_value());
     `uvm_info(`gfn, msg, UVM_FULL)
 
-    fmt = "Predicted fail cnt for \"%s\" test (FIPS? %d): %01h";
-    msg = $sformatf(fmt, test, fips_mode, total_fail_field.get_mirrored_value());
+    fmt = "Predicted fail cnt for \"%s\" test: %01h";
+    msg = $sformatf(fmt, test, total_fail_field.get_mirrored_value());
     `uvm_info(`gfn, msg, UVM_HIGH)
+  endfunction
+
+  function bit check_threshold(string test, bit fips_mode, int value);
+    string        threshold_reg_name;
+    string        threshold_field_name;
+    uvm_reg       threshold_reg;
+    uvm_reg_field threshold_field;
+
+    int        threshold_val;
+    bit        continuous_test;
+    bit        failure;
+    bit        low_test;
+    string     fmt, msg;
+
+    validate_test_name(test);
+    low_test             = is_low_test(test);
+    continuous_test      = (test == "repcnt") || (test == "repcnts");
+
+    // TODO: Implement ONE-WAY thresholds
+    threshold_field_name = fips_mode ? "fips_thresh" : "bypass_thresh";
+    threshold_reg_name  = $sformatf("%s_thresholds", test);
+
+    threshold_reg    = ral.get_reg_by_name(threshold_reg_name);
+    threshold_field  = threshold_reg.get_field_by_name(threshold_field_name);
+
+    threshold_val = threshold_field.get_mirrored_value();
+
+    // Continuous tests are more rigorous about holding to the '>=' specified in NIST
+    // 800-90B. Meanwhile the windowed tests use "<" or ">" as this allows these tests
+    // to be temporarily disabled at boot, by choosing the maximal window size.
+    // TODO: Document this
+    if (continuous_test) begin
+      failure = (low_test && value <= threshold_val) || (!low_test && value >= threshold_val);
+    end else begin
+      failure = (low_test && value < threshold_val) || (!low_test && value > threshold_val);
+    end
+
+    fmt = "Threshold for \"%s\" test (FIPS? %d): %04h";
+    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, threshold_val), UVM_FULL)
+
+    fmt = "Observed value for \"%s\" test (FIPS? %d): %04h, %s";
+    `uvm_info(`gfn, $sformatf(fmt, test, fips_mode, value, failure ? "FAIL" : "PASS"), UVM_FULL)
 
     return failure;
 
@@ -478,7 +521,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     update_watermark("adaptp_hi", fips_mode, total_scope ? value : maxval);
 
     fail_lo = check_threshold("adaptp_lo", fips_mode, total_scope ? value : minval);
+    if (fail_lo) predict_failure_logs("adaptp_lo");
+
     fail_hi = check_threshold("adaptp_hi", fips_mode, total_scope ? value : maxval);
+    if (fail_hi) predict_failure_logs("adaptp_hi");
+
 
     if (ht_is_active()) begin
       cov_vif.cg_win_ht_sample(adaptp_ht, high_test, window_size, fail_hi);
@@ -508,6 +555,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     update_watermark("bucket", fips_mode, value);
 
     fail = check_threshold("bucket", fips_mode, value);
+    if (fail) predict_failure_logs("bucket");
 
     if (ht_is_active()) begin
       cov_vif.cg_win_ht_sample(bucket_ht, high_test, window_size, fail);
@@ -536,7 +584,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     update_watermark("markov_hi", fips_mode, total_scope ? value : maxval);
 
     fail_lo = check_threshold("markov_lo", fips_mode, total_scope ? value : minval);
+    if (fail_lo) predict_failure_logs("markov_lo");
+
     fail_hi = check_threshold("markov_hi", fips_mode, total_scope ? value : maxval);
+    if (fail_hi) predict_failure_logs("markov_hi");
+
 
     if (ht_is_active()) begin
       cov_vif.cg_win_ht_sample(markov_ht, high_test, window_size, fail_hi);
@@ -560,46 +612,52 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     update_watermark("extht_hi", fips_mode, value);
 
     fail_lo = check_threshold("extht_lo", fips_mode, value);
+    if (fail_lo) predict_failure_logs("extht_lo");
+
     fail_hi = check_threshold("extht_hi", fips_mode, value);
+    if (fail_hi) predict_failure_logs("extht_hi");
 
     return (fail_hi || fail_lo);
   endfunction
 
   // The repetition counts are always running
-  function bit evaluate_repcnt_test(bit fips_mode);
-    int value;
+  function bit evaluate_repcnt_test(bit fips_mode, int value);
     bit fail;
     int rng_select;
     bit rng_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
 
     rng_select = rng_en ? int'(`gmv(ral.conf.rng_bit_sel)) : RNG_BUS_WIDTH;
 
-    value = max_repcnt;
-
     update_watermark("repcnt", fips_mode, value);
 
     fail = check_threshold("repcnt", fips_mode, value);
+    if (fail) begin
+      `uvm_info(`gfn, "repcnt failure detected", UVM_FULL)
+      predict_failure_logs("repcnt");
+    end
 
     if (ht_is_active()) begin
       cov_vif.cg_cont_ht_sample(repcnt_ht, fips_mode, rng_select, value, fail);
     end
 
     return fail;
+
   endfunction
 
-  function bit evaluate_repcnt_symbol_test(bit fips_mode);
-    int value;
+  function bit evaluate_repcnt_symbol_test(bit fips_mode, int value);
     bit fail;
     int rng_select;
     bit rng_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
 
     rng_select = rng_en ? int'(`gmv(ral.conf.rng_bit_sel)) : RNG_BUS_WIDTH;
 
-    value = max_repcnt_symbol;
-
     update_watermark("repcnts", fips_mode, value);
 
     fail = check_threshold("repcnts", fips_mode, value);
+    if (fail) begin
+      `uvm_info(`gfn, "repcnts failure detected", UVM_FULL)
+      predict_failure_logs("repcnts");
+    end
 
     if (ht_is_active()) begin
       cov_vif.cg_cont_ht_sample(repcnts_ht, fips_mode, rng_select, value, fail);
@@ -608,49 +666,95 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     return fail;
   endfunction
 
-  function bit health_check_rng_data(queue_of_rng_val_t window, bit fips_mode, bit fw_ov_insert);
-    int failcnt = 0, failcnt_fatal = 0;
-    bit failure = 0;
-    uvm_reg       alert_summary_reg   = ral.get_reg_by_name("alert_summary_fail_counts");
-    uvm_reg_field alert_summary_field = alert_summary_reg.get_field_by_name("any_fail_count");
-    uvm_reg       alert_fail_reg   = ral.get_reg_by_name("alert_fail_counts");
-    uvm_reg       extht_fail_reg   = ral.get_reg_by_name("extht_fail_counts");
-    uvm_reg       alert_threshold_reg = ral.get_reg_by_name("alert_threshold");
-    // TODO: Confirm that an alert is triggered when (alert_threshold != alert_threshold_inv)
-    uvm_reg_field alert_threshold_field = alert_threshold_reg.get_field_by_name("alert_threshold");
+  function int health_check_rng_data(queue_of_rng_val_t window,
+                                     bit fips_mode);
+    int           windowed_fail_count;
+    int           total_fail_count;
+    bit           sample_fail_count;
+    uvm_reg_field alert_summary_field = ral.alert_summary_fail_counts.any_fail_count;
+    int           any_fail_count_regval;
+    string        fmt;
+
+    windowed_fail_count = evaluate_adaptp_test(window, fips_mode) +
+                          evaluate_bucket_test(window, fips_mode) +
+                          evaluate_markov_test(window, fips_mode) +
+                          evaluate_external_ht(window, fips_mode);
+
+    // Are there any failures this in the last sample (continuous or windowed)?
+    // Note: If the last sample in the window has a continuous HT failure, then
+    // this sample has already been added to the failure counts
+    sample_fail_count = (windowed_fail_count != 0) & ~cont_fail_in_last_sample;
+
+    // Add the number of continuous fails (excluding the last sample)
+    // to any failure in this sample.
+    total_fail_count = sample_fail_count + continuous_fail_count;
+
+    if (sample_fail_count) begin
+      any_fail_count_regval = `gmv(alert_summary_field);
+      // Just add any failure in the last sample as the previous samples
+      // were added as they occurred.
+      any_fail_count_regval++;
+      `DV_CHECK_FATAL(alert_summary_field.predict(.value(any_fail_count_regval),
+                                                  .kind(UVM_PREDICT_DIRECT)))
+      fmt = "Predicted alert cnt for all tests: %04h";
+      `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval), UVM_HIGH)
+    end
+
+    continuous_fail_count = 0;
+
+    return total_fail_count;
+  endfunction
+
+  function void process_failures(int total_fail_count,
+                                 bit fw_ov_insert,
+                                 entropy_phase_e dut_phase,
+                                 int successive_win_fail_count);
+
+    bit failure             = 0;
+
+    uvm_reg       alert_fail_reg      = ral.alert_fail_counts;
+    uvm_reg       extht_fail_reg      = ral.extht_fail_counts;
     string        fmt;
     int           any_fail_count_regval;
     int           alert_threshold;
-
-    failcnt_fatal += evaluate_repcnt_test(fips_mode);
-    failcnt_fatal += evaluate_repcnt_symbol_test(fips_mode);
-    failcnt += evaluate_adaptp_test(window, fips_mode);
-    failcnt += evaluate_bucket_test(window, fips_mode);
-    failcnt += evaluate_markov_test(window, fips_mode);
-    failcnt += evaluate_external_ht(window, fips_mode);
-
-    failure = (failcnt != 0  || failcnt_fatal != 0);
+    bit           main_sm_exp_alert_cond;
 
     // TODO: If an alert is anticipated, we should check that (if necessary) this seed is
     // stopped and no others are allowed to progress.
-    alert_threshold = alert_threshold_field.get_mirrored_value();
+    // TODO: Confirm that an alert is triggered when (alert_threshold != alert_threshold_inv)
+    alert_threshold = `gmv(ral.alert_threshold.alert_threshold);
 
-    any_fail_count_regval = alert_summary_field.get_mirrored_value();
+    fmt = "Predicting alert status with %0d new failures this window";
+    `uvm_info(`gfn, $sformatf(fmt, total_fail_count), UVM_FULL)
+
+    any_fail_count_regval = `gmv(ral.alert_summary_fail_counts.any_fail_count);
+
+    failure = (total_fail_count != 0);
+    main_sm_exp_alert_cond = (dut_phase == STARTUP) ?
+                             (successive_win_fail_count >= 2) :
+                             (any_fail_count_regval >= alert_threshold);
+
     if (failure) begin : test_failure
-      any_fail_count_regval++;
-      if (any_fail_count_regval >= alert_threshold) begin
-        if(!fw_ov_insert && !threshold_alert_active) begin
-          fmt = "New alert anticpated! Fail count (%01d) >= threshold (%01d)";
+      if (main_sm_exp_alert_cond) begin
+        if (!fw_ov_insert && !threshold_alert_active && !main_sm_escalates) begin
+          if (dut_phase == STARTUP) begin
+            fmt = "New alert anticpated with >= 2 failing windows.";
+            fmt += " (supercedes count/threshold of %01d/%01d)";
+          end else begin
+            fmt = "New alert anticpated! Fail count (%01d) >= threshold (%01d)";
+          end
           threshold_alert_active = 1;
           `DV_CHECK_FATAL(ral.recov_alert_sts.es_main_sm_alert.predict(1'b1));
           set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
           // The DUT should either set the alert, or crash the sim.
           // If we succeed, sample this alert_threshold as covered successfully.
           cov_vif.cg_alert_cnt_sample(alert_threshold);
-        end else if (!fw_ov_insert) begin
-          fmt = "Alerts suppressed:  Fail count (%01d) >= threshold (%01d)";
-        end else begin
+        end else if (main_sm_escalates) begin
+          fmt = "Main SM in error state, overrides recov alert (Fail cnt: %01d,  thresh: %01d)";
+        end else if(threshold_alert_active) begin
           fmt = "Alert already signalled:  Fail count (%01d) >= threshold (%01d)";
+        end else begin
+          fmt = "FW_OV mode, alerts suppressed:  Fail count (%01d) >= threshold (%01d)";
         end
         `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_HIGH)
       end else begin
@@ -658,22 +762,17 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_HIGH)
       end
     end else begin : no_test_failure
-      if (!threshold_alert_active) begin
+      if (!threshold_alert_active && !main_sm_escalates) begin
         any_fail_count_regval = 0;
         // Now we know that all tests have passed we can clear the failure counts
         `DV_CHECK_FATAL(alert_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_DIRECT)))
+        `DV_CHECK_FATAL(extht_fail_reg.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_DIRECT)))
       end else begin
         fmt = "Alert state persists: Fail count (%01d) >= threshold (%01d)";
         `uvm_info(`gfn, $sformatf(fmt, any_fail_count_regval, alert_threshold), UVM_HIGH)
       end
     end : no_test_failure
 
-   `DV_CHECK_FATAL(alert_summary_field.predict(.value(any_fail_count_regval),
-                                               .kind(UVM_PREDICT_DIRECT)))
-
-    fmt = "Predicted alert cnt for all tests (FIPS? %d): %04h";
-    `uvm_info(`gfn, $sformatf(fmt, fips_mode, any_fail_count_regval), UVM_HIGH)
-    return failure;
   endfunction
 
   //
@@ -848,14 +947,22 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     // reset all other statistics
     threshold_alert_active = 0;
+    main_sm_escalates = 0;
+
     seed_idx = 0;
     seed_tl_read_cnt = 0;
+
     for (int i = 0; i < RNG_BUS_WIDTH; i++) begin
-      repcnt[i]       = 0;
+      `uvm_info(`gfn, "Clearing REPCNTS cntr", UVM_DEBUG)
+      repcnt[i]       = 1;
     end
-    repcnt_symbol     = 0;
-    max_repcnt        = 0;
-    max_repcnt_symbol = 0;
+    repcnt_symbol     = 1;
+
+    prev_rng_val      = '0;
+
+    // Clear records of repcnt/repnts failures
+    continuous_fail_count     = 0;
+    cont_fail_in_last_sample  = 0;
 
     // Clear interrupt state
     known_intr_state                         = 0;
@@ -1144,7 +1251,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                     // We wait a few cycles to let any last couple RNG
                     // samples come into the dut (so we know to delete them
                     // from our model of the DUT);
-                    cfg.clk_rst_vif.wait_clks(cfg.tlul_to_rng_disable_delay);
+                    int shutdown_dly = cfg.tlul_to_rng_disable_delay;
+
+                    // It is empirically observed that when rng_bit selection
+                    // is enabled the shutdown needs one more cycle
+                    shutdown_dly += (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
+                    cfg.clk_rst_vif.wait_clks(shutdown_dly);
                     dut_pipeline_enabled = 0;
                   end
                   begin
@@ -1241,7 +1353,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               bit [TL_DW - 1:0] mask = (32'h1 << bit_num);
               bit is_fatal = 0;
               bit is_logged = 0;
-              bit main_sm_escalates = 0;
               string msg;
               msg = $sformatf("Received write to ERR_CODE_TEST: %d", bit_num);
               `uvm_info(`gfn, msg, UVM_MEDIUM)
@@ -1421,8 +1532,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     prim_mubi_pkg::mubi4_t           rng_single_bit;
 
     int                              sample_frames;
-    int                              pass_cnt_threshold;
-    int                              pass_cnt;
     bit                              fw_ov_insert;
 
     bit                              route_sw;
@@ -1512,71 +1621,83 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     return fips_csrng_data;
   endfunction
 
+  task wait_enabled();
+    if (!dut_pipeline_enabled) begin
+      wait(dut_pipeline_enabled);
+      `uvm_info(`gfn, "Enable detected", UVM_MEDIUM)
+    end
+  endtask
+
   // Wait on the RNG queue for rng sequence items
   //
   // If bit selection is enabled, wait for RNG_BUS_WIDTH items. Otherwise, return after one item.
-  // If at any point dut_pipeline_enabled is deasserted, halt and assert disable_detected.
+  // If dut_pipeline_enabled is deasserted before any data is found, this task
+  // halts and asserts disable_detected.
   task wait_rng_queue(output rng_val_t val, output bit disable_detected);
     push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH))  rng_item;
     bit bit_sel_enable = (ral.conf.rng_bit_enable.get_mirrored_value() == MuBi4True);
     int n_items        = bit_sel_enable ? RNG_BUS_WIDTH : 1;
     disable_detected   = 0;
 
-    if (!dut_pipeline_enabled) begin
-      wait(dut_pipeline_enabled);
-      `uvm_info(`gfn, "Enable detected", UVM_MEDIUM);
+    if(!dut_pipeline_enabled) begin
+      disable_detected = 1;
+      return;
     end
+
     for (int i = 0; i < n_items; i++) begin : rng_loop
       fork : isolation_fork
         begin
           fork
-            rng_fifo.get(rng_item);
+            rng_fifo.peek(rng_item);
             begin
               wait(!dut_pipeline_enabled);
-              `uvm_info(`gfn, "Disable detected", UVM_MEDIUM);
+              `uvm_info(`gfn, "Disable detected (waiting A)", UVM_MEDIUM);
             end
           join_any
           disable fork;
         end
       join : isolation_fork
-      if (!dut_pipeline_enabled) begin
-        break;
-      end
+      // Pop any data off the rng_fifo below to resolve potential
+      // race conditions if a new RNG word appears in the same
+      // cycle that the dut is disabled.
+      disable_detected = !rng_fifo.try_get(rng_item);
+      if (disable_detected) break;
+
       if (bit_sel_enable) begin
         val[i] = rng_item.h_data[ral.conf.rng_bit_sel.get_mirrored_value()];
       end else begin
         val    = rng_item.h_data;
       end
     end : rng_loop
-    if (dut_pipeline_enabled && bit_sel_enable) begin
+    if (bit_sel_enable) begin
       // Timing Detail:
       // In bit select mode, the DUT won't process the data until an extra RNG sample is accepted.
       // If a disable event happens before the following sample is received, everything is cleared.
       // To mimic this behavior, this task maintains control until at least one more sample is
       // present in the rng_fifo.
-      fork : isolation_fork
-        begin
-          fork
-            // Exploit the fact that peek is a blocking task to check the rng_fifo depth without
-            // modifying it.
-            // Note that the alternate approach: wait(!rng_fifo.is_empty()) does not work with VCS
-            rng_fifo.peek(rng_item);
-            begin
-              wait(!dut_pipeline_enabled);
-              `uvm_info(`gfn, "Disable detected", UVM_MEDIUM);
-            end
-          join_any
-          disable fork;
-        end
-      join : isolation_fork
+      if (dut_pipeline_enabled) begin
+        fork : isolation_fork
+          begin
+            fork
+              // Exploit the fact that peek is a blocking task to check the rng_fifo depth without
+              // modifying it.
+              // Note that the alternate approach: wait(!rng_fifo.is_empty()) does not work with VCS
+              rng_fifo.peek(rng_item);
+              begin
+                wait(!dut_pipeline_enabled);
+                `uvm_info(`gfn, "Disable detected (Waiting B)", UVM_MEDIUM);
+              end
+            join_any
+            disable fork;
+          end
+        join : isolation_fork
+      end else begin
+        `uvm_info(`gfn, "Disable detected (Pre bit_sel_enable wait)", UVM_FULL);
+      end
+      if (!dut_pipeline_enabled && rng_fifo.is_empty()) begin
+        disable_detected = 1;
+      end
     end
-
-    // Cleanup:
-    if (!dut_pipeline_enabled) begin
-      `uvm_info(`gfn, "Flushing data on disable", UVM_MEDIUM)
-      disable_detected = 1;
-    end
-
   endtask
 
   task collect_entropy();
@@ -1586,7 +1707,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     rng_val_t                 rng_val;
     queue_of_rng_val_t        window;
     int                       window_rng_frames;
-    int                       pass_requirement, pass_cnt;
+    int                       pass_requirement, pass_count, startup_fail_count;
     // Two levels of repacking to mimic the structure of the DUT
     // first RNG samples are packed into 32-bit TL DW's
     // then those are packed into 64-bit chunks suitable
@@ -1599,8 +1720,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit                       disable_detected;
     bit                       fw_ov_insert;
     bit                       is_fips_mode;
-    localparam int RngPerTlDw = TL_DW / RNG_BUS_WIDTH;
     bit                       fips_enable, es_route, es_type;
+    int                       failures_in_window;
+
+    localparam int RngPerTlDw = TL_DW / RNG_BUS_WIDTH;
+
+    wait_enabled();
 
     fips_enable = (ral.conf.fips_enable.get_mirrored_value()         == MuBi4True);
     es_route    = (ral.entropy_control.es_route.get_mirrored_value() == MuBi4True);
@@ -1612,7 +1737,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                    (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
                    (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
 
-    pass_cnt = 0;
+    pass_count = 0;
+    startup_fail_count = 0;
 
     window.delete();
 
@@ -1708,16 +1834,23 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           // Update the repetition counts, which are updated continuously.
           // The other health checks only operate on complete windows, and are processed later.
           // TODO: Confirm how repcnt is applied in bit-select mode
-          update_repcnts(rng_val);
+          update_repcnts(ht_fips_mode, rng_val);
         end
       end
 
       `uvm_info(`gfn, "FULL_WINDOW", UVM_FULL)
-      if (health_check_rng_data(window, ht_fips_mode, fw_ov_insert)) begin
-        pass_cnt = 0;
+      failures_in_window = health_check_rng_data(window, ht_fips_mode);
+      if (failures_in_window > 0) begin
+        pass_count = 0;
+        // Most failures are handled in the alert counter registers
+        // However the startup phase has special handling.
+        startup_fail_count++;
       end else begin
-        pass_cnt++;
+        pass_count++;
+        if (startup_fail_count < 2) startup_fail_count = 0;
       end
+
+      process_failures(failures_in_window, fw_ov_insert, dut_fsm_phase, startup_fail_count);
 
       window.delete();
 
@@ -1730,10 +1863,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       `uvm_info(`gfn, $sformatf("pass_requirement: %01d", pass_requirement), UVM_HIGH)
       `uvm_info(`gfn, $sformatf("process_fifo_q.size: %01d", process_fifo_q.size()), UVM_HIGH)
 
-      if (pass_cnt >= pass_requirement && !threshold_alert_active) begin
+      if (pass_count >= pass_requirement && !threshold_alert_active && !main_sm_escalates) begin
         package_and_release_entropy();
         // update counters for processing next seed:
-        pass_cnt = 0;
+        pass_count = 0;
         seed_idx++;
       end
     end : collect_entropy_loop

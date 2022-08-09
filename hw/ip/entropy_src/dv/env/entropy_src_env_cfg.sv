@@ -82,7 +82,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Number of clock cycles between a TLUL disable signal, and deassertion
   // of enable on the RNG bus.
 
-  int tlul_to_rng_disable_delay = 1;
+  int tlul_to_rng_disable_delay = 0;
   int tlul_to_fifo_clr_delay    = 5;
 
   // When expecting an alert, the cip scoreboarding routines expect a to see the
