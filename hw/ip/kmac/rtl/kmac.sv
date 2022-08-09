@@ -664,6 +664,11 @@ module kmac
                           | kmac_entropy_state_error
                           | kmac_state_error;
 
+  // Control Signal Integrity Errors
+  logic control_integrity_error;
+  logic sha3_storage_rst_error;
+  assign control_integrity_error = sha3_storage_rst_error;
+
   prim_intr_hw #(.Width(1)) intr_kmac_err (
     .clk_i,
     .rst_ni,
@@ -885,9 +890,10 @@ module kmac
     .state_valid_o (state_valid),
     .state_o       (state), // [Share]
 
-    .error_o            (sha3_err),
-    .sparse_fsm_error_o (sha3_state_error),
-    .count_error_o  (sha3_count_error)
+    .error_o                    (sha3_err),
+    .sparse_fsm_error_o         (sha3_state_error),
+    .count_error_o              (sha3_count_error),
+    .keccak_storage_rst_error_o (sha3_storage_rst_error)
   );
 
   // MSG_FIFO window interface to FIFO interface ===============================
@@ -1321,6 +1327,7 @@ module kmac
                      | alert_intg_err
                      | sparse_fsm_error
                      | counter_error
+                     | control_integrity_error
                      ;
 
   // Make the fatal alert observable via status register.
