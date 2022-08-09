@@ -85,9 +85,9 @@ RUN echo "verilator-${VERILATOR_VERSION}" >>/tmp/apt-requirements.txt \
 # Install the CI version of gcc and g++
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
     && apt-get update \
-    && apt-get install -y gcc-9 g++-9 \
-    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 90 \
-    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 90
+    && apt-get install -y gcc-${GCC_VERSION} g++-${GCC_VERSION} \
+    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_VERSION} 90 \
+    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${GCC_VERSION} 90
 
 # RISC-V device toolchain
 COPY util/get-toolchain.py /tmp/get-toolchain.py
