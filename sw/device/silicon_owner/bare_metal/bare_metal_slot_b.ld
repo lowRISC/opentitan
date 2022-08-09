@@ -14,11 +14,6 @@
 
 INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 
-/* Reserving space at the top of the RAM for the stack. */
-_stack_size = 0x2000;
-_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
-_stack_start = _stack_end - _stack_size;
-
 /* Slot B starts at the half-size mark of the eFlash plus the fixed size of the
  * ROM_EXT.
  */
