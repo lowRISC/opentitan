@@ -407,7 +407,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                    ecc_err;
 
     invalid_access = unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
-                     write_w_instr_type_err | instr_type_err;
+                     write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated;
 
     if (channel == DataChannel) begin
       // integrity at d_user is from DUT, which should be always correct, except data integrity for

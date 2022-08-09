@@ -85,6 +85,16 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
 
   endtask : check_sram_access_blocked_after_fi
 
+  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
+    if (!uvm_re_match("*u_tlul_adapter_sram.u_rspfifo.*", if_proxy.path)) begin
+      if (enable) begin
+        $asserton(0, "tb.dut.u_tlul_adapter_sram.u_rspfifo");
+      end else begin
+        $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_rspfifo");
+      end
+    end
+  endfunction
+
   // Check alert and `status.init_error` is set.
   // After injecting faults, reading any address should return 0. #10909
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
@@ -94,7 +104,12 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
 
     super.check_sec_cm_fi_resp(if_proxy);
 
-    csr_rd_check(.ptr(ral.status.init_error), .compare_value(1));
+    if (!uvm_re_match("*.u_tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt.*",
+                      if_proxy.path)) begin
+      csr_rd_check(.ptr(ral.status.bus_integ_error), .compare_value(1));
+    end else begin
+      csr_rd_check(.ptr(ral.status.init_error), .compare_value(1));
+    end
 
     check_sram_access_blocked_after_fi();
   endtask : check_sec_cm_fi_resp
