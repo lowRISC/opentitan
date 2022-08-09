@@ -283,10 +283,8 @@ class OTBNSim:
 
         # If something bad happened asynchronously (because of an escalation),
         # we want to finish the secure wipe but accept no further commands.  To
-        # this end, set `STATUS` to Locked and turn this into a "wipe because
-        # something bad happended".
+        # this end, turn this into a "wipe because something bad happended".
         if self.state.pending_halt:
-            self.state.ext_regs.write('STATUS', Status.LOCKED, True)
             self.state._fsm_state = FsmState.WIPING_BAD
 
         # Reflect wiping in STATUS register if it has not been updated yet.
