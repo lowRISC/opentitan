@@ -17,7 +17,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       begin
         inject_redun_err();
       end
-    join
+    join_any
   endtask: body
 
   task inject_redun_err();
