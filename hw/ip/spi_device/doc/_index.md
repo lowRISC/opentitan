@@ -879,6 +879,13 @@ Due to the CDC issue, the SW is only permitted to update the registers when the 
 1. The SW reads a word from TPM_CMD_ADDR CSR (optional cmdaddr_notempty interrupt).
   1. If the address falls into the return-by-HW registers and TPM_CFG.hw_reg_dis is not set, the HW does not push the command and address bytes into the TPM_CMD_ADDR CSR.
 1. The SW prepares the register value and writes the value into the read FIFO.
+  1. It is assumed that the writes are atomic.
+     TPM IP sends the read data whenever the FIFO has entries inside.
+     As TPM protocol does not support BUSY wait after sending a byte,
+     all read data should send in a chunk.
+     SW should ensure the read data is fed into the HW continuously.
+     In this version of IP, TPM provides 16B (4B wide x 4 depth) read FIFO.
+     SW may return up to 64B payload by pushing more data into the FIFO whenever the FIFO has available entries.
 1. The TPM submodule sends `WAIT` until the read FIFO is available. When available, the TPM submodule sends `START` followed by the register value.
 
 ### TPM Write
