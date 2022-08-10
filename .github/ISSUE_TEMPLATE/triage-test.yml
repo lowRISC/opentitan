@@ -1,0 +1,45 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Triage Test
+description: Issue to track regression failure triaging.
+title: "[test-triage] "
+labels: ["Component:TestTriage"]
+body:
+  - type: dropdown
+    id: hierarchy
+    attributes:
+      label: Hierarchy of regression failure
+      description: What hierarchy level is the regression failure?
+      options:
+        - Block level
+        - Chip Level
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Failure Description
+      description: A description of the test failure
+      placeholder: >
+        Example:  UVM_FATAL @   1.270237 us: (mem_bkdr_util.sv:480) [mem_bkdr_util[Rom]] file test_rom_sim_dv.scr.39.vmem could not be opened for r mode
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      value: |
+        - Commit hash where failure was observed
+        - dvsim invocation command to reproduce the failure, inclusive of build and run seeds
+        - Kokoro build number if applicable
+    validations:
+      required: true
+  - type: textarea
+    id: related-tests
+    attributes:
+      label: Tests with similar or related failures
+      value: |
+        - [ ] Test_name_1
+        - [ ] Test_name_2
