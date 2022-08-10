@@ -298,6 +298,12 @@ name:
       en_run_modes: ["build_otbn_rig_binary_mode"]
       reseed: 7
     }
+    {
+      name: "otbn_urnd_err"
+      uvm_test_seq: "otbn_urnd_err_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 2
+    }
   ]
 
   // List of regressions.
@@ -342,7 +348,7 @@ name:
         "otbn_tl_intg_err", "otbn_sec_cm", "otbn_pc_ctrl_flow_redun",
         "otbn_rnd_sec_cm", "otbn_alu_bignum_mod_err",
         "otbn_controller_ispr_rdata_err", "otbn_mac_bignum_acc_err",
-        "otbn_sec_wipe_err",
+        "otbn_sec_wipe_err", "otbn_urnd_err",
         # V2S but known broken
         # "otbn_passthru_mem_tl_intg_err",
         # V3 thus not yet active

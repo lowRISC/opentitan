@@ -24,3 +24,4 @@
 `include "otbn_rnd_sec_cm_vseq.sv"
 `include "otbn_ctrl_redun_vseq.sv"
 `include "otbn_sec_wipe_err_vseq.sv"
+`include "otbn_urnd_err_vseq.sv"
