@@ -887,6 +887,7 @@ Due to the CDC issue, the SW is only permitted to update the registers when the 
      As TPM protocol does not support BUSY wait after sending a byte,
      all read data should send in a chunk.
      SW should ensure the read data is fed into the HW continuously.
+     SW may disable interrupts before writing into the FIFO to not be disrupted.
      In this version of IP, TPM provides 16B (4B wide x 4 depth) read FIFO.
      SW may return up to 64B payload by pushing more data into the FIFO whenever the FIFO has available entries.
 1. The TPM submodule sends `WAIT` until the read FIFO is available. When available, the TPM submodule sends `START` followed by the register value.
