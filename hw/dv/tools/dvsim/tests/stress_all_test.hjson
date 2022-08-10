@@ -12,6 +12,7 @@
       uvm_test_seq: "{name}_stress_all_vseq"
       // 10ms
       run_opts: ["+test_timeout_ns=10000000000"]
+      run_timeout_mins: 180
     }
   ]
 }
