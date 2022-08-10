@@ -76,7 +76,8 @@ module clkmgr_meas_chk
     src_cfg_meas_en_valid_o = '0;
     src_cfg_meas_en_o = src_cfg_meas_en_i;
 
-    if (!src_calib_rdy) begin
+    // disable if the current value is not false
+    if (!src_calib_rdy && prim_mubi_pkg::mubi4_test_true_loose(src_cfg_meas_en_o)) begin
       src_cfg_meas_en_valid_o = 1'b1;
       src_cfg_meas_en_o = prim_mubi_pkg::MuBi4False;
     end
