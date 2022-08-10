@@ -2368,6 +2368,18 @@
       milestone: V2
       tests: []
     }
+    {
+      name: chip_sw_otp_prim_tl_access
+      desc: '''Verify that the SW can read / write the prim tlul interface.
+
+            - The prim tlul interface is a open source placeholder for the closed source CSRs that
+              will be implemented in a translation 'shim'.
+            - Verify that when `lc_dft_en_i` is On, this region can be read / written to by the SW.
+              When `lc_dft_en_i` is Off, accessing this region will result in a TLUL error.
+            '''
+      milestone: V2
+      tests: []
+    }
 
     // FLASH (pre-verified IP) integration tests:
     {
@@ -2539,13 +2551,13 @@
     }
     {
       name: chip_sw_flash_prim_tl_access
-      desc: '''Verify that the SW can read / write the dummy memory in flash phy.
+      desc: '''Verify that the SW can read / write the prim tlul interface in flash phy.
 
-            - The dummy memory is a open source placeholder for the closed source CSRs that will be
-              implemented in a translation 'shim'.
-            - Verify that this region can be read / written to by the SW.
-
-            - TODO: the existing CSR / mem tests may already handle this.
+            - The prim tlul interface is a open source placeholder for the closed source CSRs that
+              will be implemented in a translation 'shim'.
+            - Verify that when `lc_nvm_debug_en_i` is On, this region can be read / written to by
+              the SW. When `lc_nvm_debug_en_i` is Off, accessing this region will result in a TLUL
+              error.
             '''
       milestone: V2
       tests: []
