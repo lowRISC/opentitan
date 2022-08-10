@@ -748,6 +748,7 @@ def opentitan_flash_binary(
       @param platform: The target platform for the artifacts.
       @param signing_keys: The signing keys for to sign each BIN file with.
       @param signed: Whether or not to emit signed binary/VMEM files.
+      @param manifest: Partially populated manifest to set boot stage/slot configs.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
     Emits rules:
       For each device in per_device_deps entry:
@@ -790,6 +791,8 @@ def opentitan_flash_binary(
 
         # Sign BIN (if required) and generate scrambled VMEM images.
         if signed:
+            if manifest == None:
+                fail("A 'manifest' must be provided in order to sign flash images.")
             for (key_name, key) in signing_keys.items():
                 # Sign the Binary.
                 signed_bin_name = "{}_bin_signed_{}".format(devname, key_name)

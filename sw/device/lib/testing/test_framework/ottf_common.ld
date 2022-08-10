@@ -3,42 +3,11 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Linker script for OpenTitan OTTF-launched test binaries.
- *
- * Portions of this file are Ibex-specific.
+ * NOTE:
+ * This is an incomplete common portion of OTTF linker file, and should not
+ * be used directly. Instead it should be included by a top level OTTF slot
+ * linker file.
  */
-
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
-
-/**
- * Reserving space at the top of the RAM for the stack.
- */
-_stack_size = 0x2000;
-_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
-_stack_start = _stack_end - _stack_size;
-
-/**
- * DV Log offset.
- * TODO: this will need to be different depending on the boot stage the OTTF is
- * launched at. See lowrisc/opentitan:#10712.
- */
-_dv_log_offset = 0x10000;
-
-/*
- * The start of the .text section relative to the beginning of the associated
- * slot for use in the manifest.
- */
-_manifest_code_start = _text_start - ORIGIN(eflash);
-/*
- * The end of the .text section relative to the beginning of the associated slot
- * for use in the manifest.
- */
-_manifest_code_end = _text_end - ORIGIN(eflash);
-/*
- * The location of the entry point relative to the beginning of the associated
- * slot for use in the manifest.
- */
-_manifest_entry_point = _ottf_start - ORIGIN(eflash);
 
 OUTPUT_ARCH(riscv)
 
@@ -46,6 +15,13 @@ OUTPUT_ARCH(riscv)
  * Indicate that there are no dynamic libraries, whatsoever.
  */
 __DYNAMIC = 0;
+
+/**
+ * Reserving space at the top of the RAM for the stack.
+ */
+_stack_size = 0x2000;
+_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
+_stack_start = _stack_end - _stack_size;
 
 /**
  * Marking the entry point correctly for the ELF file. The signer tool will
@@ -56,13 +32,38 @@ __DYNAMIC = 0;
 ENTRY(_ottf_start);
 
 /**
+ * DV Log offset.
+ * TODO: this will need to be different depending on the boot stage the OTTF is
+ * launched at. See lowrisc/opentitan:#10712.
+ */
+_dv_log_offset = 0x10000;
+
+/**
+ * The start of the .text section relative to the beginning of the associated
+ * slot for use in the manifest.
+ */
+_manifest_code_start = _text_start - _ottf_start_address;
+
+/**
+ * The end of the .text section relative to the beginning of the associated slot
+ * for use in the manifest.
+ */
+_manifest_code_end = _text_end - _ottf_start_address;
+
+/**
+ * The location of the entry point relative to the beginning of the associated
+ * slot for use in the manifest.
+ */
+_manifest_entry_point = _ottf_start - _ottf_start_address;
+
+/**
  * NOTE: We have to align each section to word boundaries as our current
  * s19->slm conversion scripts are not able to handle non-word aligned sections.
  */
 SECTIONS {
-  .manifest ORIGIN(eflash) : {
+  .manifest _ottf_start_address : {
     KEEP(*(.manifest))
-  } > eflash
+  } > ottf_flash
 
   /**
    * Non-volatile Scratch area in flash.
@@ -73,7 +74,7 @@ SECTIONS {
   .non_volatile_scratch : ALIGN(2048){
     _non_volatile_scratch_start = .;
     KEEP(*(.non_volatile_scratch))
-  } > eflash
+  } > ottf_flash
 
   /**
    * Ibex interrupt vector. See 'ottf_start.S' for more information.
@@ -84,14 +85,14 @@ SECTIONS {
   .vectors : ALIGN (256){
     _text_start = .;
     *(.vectors)
-  } > eflash
+  } > ottf_flash
 
   /**
    * C runtime (CRT) section, containing program initialization code.
    */
   .crt : ALIGN(4) {
     KEEP(*(.crt))
-  } > eflash
+  } > ottf_flash
 
   /**
    * For LLVM profiling. This contains a pointer to the runtime initialization
@@ -105,7 +106,7 @@ SECTIONS {
       *(.init_array.*)
       . = ALIGN(4);
       _init_array_end = .;
-  } > eflash
+  } > ottf_flash
 
   /**
    * Standard text section, containing program code.
@@ -114,24 +115,33 @@ SECTIONS {
     *(.text)
     *(.text.*)
 
-    /**
-     * Some tests place functions into the .shutdown section.
-     */
+    /* Ensure section end is word-aligned. */
+    . = ALIGN(4);
+  } > ottf_flash
+
+  /**
+   * Shutdown text section, containing shutdown function(s).
+   *
+   * This must be the last executable section in the OTTF flash image.
+   */
+  .shutdown : ALIGN(4) {
     *(.shutdown)
     *(.shutdown.*)
 
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _text_end = .;
-  } > eflash
+  } > ottf_flash
 
   /**
    * Read-only data section, containing all large compile-time constants, like
    * strings.
    */
   .rodata : ALIGN(4) {
-    /* Small read-only data comes before regular read-only data for the same
-     * reasons as in the data section. */
+    /**
+     * Small read-only data comes before regular read-only data for the same
+     * reasons as in the data section.
+     */
     *(.srodata)
     *(.srodata.*)
     *(.rodata)
@@ -141,34 +151,38 @@ SECTIONS {
     KEEP(*(__llvm_covfun))
     KEEP(*(__llvm_covmap))
     KEEP(*(__llvm_prf_names))
-  } > eflash
-
-  /**
-   * "Intitial data" section, the initial values of the mutable data section
-   * initialized at runtime.
-   */
-  .idata : ALIGN(4) {
-    _data_init_start = .;
-  } > eflash
+  } > ottf_flash
 
   /**
    * Standard mutable data section, at the bottom of RAM. This will be
    * initialized from the .idata section at runtime by the CRT.
    */
-  .data ORIGIN(ram_main): AT(_data_init_start) ALIGN(4) {
+  .data : ALIGN(4) {
     _data_start = .;
+    _data_init_start = LOADADDR(.data);
+
+    /**
+     * This will get loaded into `gp`, and the linker will use that register for
+     * accessing data within [-2048,2047] of `__global_pointer$`.
+     *
+     * This is much cheaper (for small data) than materializing the
+     * address and loading from that (which will take one extra instruction).
+     */
     __global_pointer$ = . + 2048;
 
     /* SRAM programs embedded in functional tests must come first. */
     *(.data.sram_program)
 
-    /* Small data should come before larger data. This helps to ensure small
+    /**
+     * Small data should come before larger data. This helps to ensure small
      * globals are within 2048 bytes of the value of `gp`, making their accesses
-     * hopefully only take one instruction. */
+     * hopefully only take one instruction.
+     */
     *(.sdata)
     *(.sdata.*)
 
-    /* Other data will likely need multiple instructions to load, so we're less
+    /**
+     * Other data will likely need multiple instructions to load, so we're less
      * concerned about address materialisation taking more than one instruction.
      */
     *(.data)
@@ -181,7 +195,17 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _data_end = .;
-  } > ram_main
+    _data_init_end = LOADADDR(.data) + SIZEOF(.data);
+
+    /**
+     * This puts it in ram_main at runtime (for the VMA), but puts the section
+     * into flash for load time (for the LMA). This is why `_data_init_*` uses
+     * `LOADADDR`.
+     *
+     * Using `AT>` means we don't have to keep track of the next free part of
+     * flash, as we do in our other linker scripts.
+     */
+  } > ram_main AT> ottf_flash
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.
@@ -189,8 +213,10 @@ SECTIONS {
   .bss : ALIGN(4) {
     _bss_start = .;
 
-    /* Small BSS comes before regular BSS for the same reasons as in the data
-     * section. */
+    /**
+     * Small BSS comes before regular BSS for the same reasons as in the data
+     * section.
+     */
     *(.sbss)
     *(.sbss.*)
     *(.bss)

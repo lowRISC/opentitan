@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_flash_binary")
 load(
     "//rules:opentitan_test.bzl",
     "cw310_params",
@@ -93,6 +92,7 @@ opentitan_functest(
         ],
         bitstream = "//hw/bitstream:mask_rom",
     ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
     targets = ["cw310"],
     test_harness = "//sw/host/tests/mask_rom/e2e_bootup_bad_rom_ext_signature",

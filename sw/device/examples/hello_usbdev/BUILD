@@ -41,7 +41,7 @@ cc_library(
         "//sw/device/lib/testing:usb_testutils",
         "//sw/device/lib/testing:usb_testutils_simpleserial",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_start",
+        "//sw/device/lib/testing/test_framework:ottf_start_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
     ],
 )
