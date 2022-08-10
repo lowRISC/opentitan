@@ -245,6 +245,7 @@ module kmac
 
 
   // Secret Key signals
+  logic [MaxKeyLen-1:0] sw_key_data_reg [2];
   logic [MaxKeyLen-1:0] sw_key_data [Share];
   key_len_e             sw_key_len;
   logic [MaxKeyLen-1:0] key_data [Share];
@@ -467,31 +468,24 @@ module kmac
   // SEC_CM: SW_KEY.KEY.MASKING
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      sw_key_data[0] <= '0;
+      sw_key_data_reg[0] <= '0;
+      sw_key_data_reg[1] <= '0;
     end else if (engine_stable) begin
       for (int j = 0 ; j < MaxKeyLen/32 ; j++) begin
         if (reg2hw.key_share0[j].qe) begin
-          sw_key_data[0][32*j+:32] <= reg2hw.key_share0[j].q;
+          sw_key_data_reg[0][32*j+:32] <= reg2hw.key_share0[j].q;
+        end
+        if (reg2hw.key_share1[j].qe) begin
+          sw_key_data_reg[1][32*j+:32] <= reg2hw.key_share1[j].q;
         end
       end // for j
     end // else if engine_stable
   end // always_ff
 
   if (EnMasking) begin : gen_key_masked
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        sw_key_data[1] <= '0;
-      end else if (engine_stable) begin
-        for (int i = 0 ; i < MaxKeyLen/32 ; i++) begin
-          if (reg2hw.key_share1[i].qe) begin
-            sw_key_data[1][32*i+:32] <= reg2hw.key_share1[i].q;
-          end
-        end // for i
-      end // else if engine_stable
-    end // always_ff
-  end else begin : gen_unused_key_share1
-    logic unused_keyshare1;
-    assign unused_keyshare1 = ^reg2hw.key_share1;
+    assign sw_key_data = sw_key_data_reg;
+  end else begin : gen_key_unmasked
+    assign sw_key_data[0] = sw_key_data_reg[0] ^ sw_key_data_reg[1];
   end
 
   assign sw_key_len = key_len_e'(reg2hw.key_len.q);
