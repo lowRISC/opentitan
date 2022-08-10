@@ -127,7 +127,13 @@ class Modes():
                 sys.exit(1)
 
             # Check if they are different non-default values.
-            if self_attr_val != default_val and mode_attr_val != default_val:
+
+            # If the values are different, keep self, since it seems to carry
+            # the value set in the test sim_cfg. We need to be certain this is
+            # the right priority.
+            # Refer to https://github.com/lowRISC/opentitan/issues/14092
+            # TODO(https://github.com/lowRISC/opentitan/issues/14092)
+            if False and self_attr_val != default_val and mode_attr_val != default_val:
                 log.error(
                     "Mode %s cannot be merged into %s due to a conflict "
                     "(unable to pick one from different values): "
@@ -144,6 +150,7 @@ class Modes():
                 if self.name != sub_mode and sub_mode not in new_sub_modes:
                     new_sub_modes.append(sub_mode)
             self.set_sub_modes(new_sub_modes)
+        print(f"The timeout: {self.__dict__.get('run_timeout_mins', None)}")
         return True
 
     @staticmethod
