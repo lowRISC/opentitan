@@ -434,8 +434,6 @@ class otbn_base_vseq extends cip_base_vseq #(
         _send_random_cmd();
       end
     end
-    csr_utils_pkg::csr_wr(ral.ctrl, 'b0);
-    cfg.model_agent_cfg.vif.set_software_errs_fatal(1'b0);
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rd_pc, rd_pc inside {[0:100]};)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wr_pc, wr_pc inside {[0:100]};)

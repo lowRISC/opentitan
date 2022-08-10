@@ -206,6 +206,16 @@ class otbn_scoreboard extends cip_base_scoreboard #(
             expect_alert("recov");
           end
         end
+        "ctrl": begin
+          // Let model know that CTRL register has changed. This is not ideal since scoreboard
+          // ideally supposed be a passive component. Although we are still not affecting DUT in
+          // any way while doing this and an alternative way would include catching this register
+          // write in testbench level and sending a signal to otbn_core_model, which is not ideal
+          // as well.
+          if (item.is_write) begin
+            cfg.model_agent_cfg.vif.set_software_errs_fatal(item.a_data[0]);
+          end
+        end
         default: begin
           // No other special behaviour for writes
         end
