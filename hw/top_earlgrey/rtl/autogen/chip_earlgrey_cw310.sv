@@ -778,11 +778,14 @@ module chip_earlgrey_cw310 #(
   //////////////////////////////////
 
 
+  assign ast_base_pwr.main_pok = ast_pwst.main_pok;
+
+  logic [rstmgr_pkg::PowerDomains-1:0] por_n;
+  assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
+
   // TODO: Hook this up when FPGA pads are updated
   assign ext_clk = '0;
   assign pad2ast = '0;
-
-  assign ast_base_pwr.main_pok = base_ast_pwr.main_pd_n;
 
   logic clk_main, clk_usb_48mhz, clk_aon, rst_n, srst_n;
   clkgen_xil7series # (
@@ -1001,7 +1004,7 @@ module chip_earlgrey_cw310 #(
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
-    .por_n_i                      ( {rst_n, rst_n}        ),
+    .por_n_i                      ( por_n                 ),
     .clk_main_i                   ( ast_base_clks.clk_sys ),
     .clk_io_i                     ( ast_base_clks.clk_io  ),
     .clk_usb_i                    ( ast_base_clks.clk_usb ),

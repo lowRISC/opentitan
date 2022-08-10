@@ -815,8 +815,11 @@ module chip_earlgrey_asic (
   //////////////////////////////////
 
 
-
   assign ast_base_pwr.main_pok = ast_pwst.main_pok;
+
+  logic [rstmgr_pkg::PowerDomains-1:0] por_n;
+  assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
+
 
   logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
 
@@ -1067,9 +1070,6 @@ module chip_earlgrey_asic (
   //////////////////////
   // Top-level design //
   //////////////////////
-
-  logic [rstmgr_pkg::PowerDomains-1:0] por_n;
-  assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
   top_earlgrey #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
