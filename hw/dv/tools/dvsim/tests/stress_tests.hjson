@@ -1,15 +1,11 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-{
-  tests: [
-    {
-      name: "{name}_stress_all"
-      uvm_test_seq: "{name}_stress_all_vseq"
-      // 10ms
-      run_opts: ["+test_timeout_ns=10000000000"]
-    }
 
+// this contains stress_all and stress_all_with_rand_reset
+{
+  import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/tests/stress_all_test.hjson"]
+  tests: [
     {
       name: "{name}_stress_all_with_rand_reset"
       uvm_test_seq: "{name}_common_vseq"
@@ -17,6 +13,7 @@
                  // 10ms
                  "+test_timeout_ns=10000000000",
                  "+stress_seq={name}_stress_all_vseq"]
+      run_timeout_mins: 180
     }
   ]
 }
