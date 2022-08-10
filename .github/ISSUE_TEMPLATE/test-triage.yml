@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: Triage Test
+name: Test Triage
 description: Issue to track regression failure triaging.
 title: "[test-triage] "
 labels: ["Component:TestTriage"]
