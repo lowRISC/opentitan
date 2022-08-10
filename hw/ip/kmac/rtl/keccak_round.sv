@@ -54,7 +54,7 @@ module keccak_round
   output logic             sparse_fsm_error_o,
   output logic             round_count_error_o,
 
-  input                    clear_i     // Clear internal state to '0
+  input  prim_mubi_pkg::mubi4_t clear_i     // Clear internal state to '0
 );
 
   /////////////////////
@@ -212,7 +212,7 @@ module keccak_round
 
           xor_message    = 1'b 1;
           update_storage = 1'b 1;
-        end else if (clear_i) begin
+        end else if (prim_mubi_pkg::mubi4_test_true_strict(clear_i)) begin
           // Opt1. State machine allows resetting the storage only in Idle
           // Opt2. storage resets regardless of states but clear_i
           // Both are added in the design at this time. Will choose the
@@ -473,7 +473,9 @@ module keccak_round
   `ASSUME(ValidRunAssertStIdle_A, valid_i || run_i |-> keccak_st == StIdle, clk_i, !rst_ni)
 
   // clear_i is assumed to be asserted in Idle state
-  `ASSUME(ClearAssertStIdle_A, clear_i |-> keccak_st == StIdle, clk_i, !rst_ni)
+  `ASSUME(ClearAssertStIdle_A,
+    prim_mubi_pkg::mubi4_test_true_strict(clear_i)
+     |-> keccak_st == StIdle, clk_i, !rst_ni)
 
   // EnMasking controls the valid states
   if (EnMasking) begin : gen_mask_st_chk

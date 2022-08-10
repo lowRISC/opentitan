@@ -41,7 +41,7 @@ module kmac_msgfifo
   output logic [MsgDepthW-1:0] fifo_depth_o,
 
   // Control
-  input clear_i,
+  input prim_mubi_pkg::mubi4_t clear_i,
 
   // process_i --> process_o
   // process_o asserted after all internal messages are flushed out to MSG interface
@@ -149,7 +149,7 @@ module kmac_msgfifo
   ) u_msgfifo (
     .clk_i,
     .rst_ni,
-    .clr_i   (clear_i),
+    .clr_i   (prim_mubi_pkg::mubi4_test_true_strict(clear_i)),
 
     .wvalid_i(fifo_wvalid),
     .wready_o(fifo_wready),
@@ -219,7 +219,7 @@ module kmac_msgfifo
       end
 
       FlushClear: begin
-        if (clear_i) begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(clear_i)) begin
           flush_st_d = FlushIdle;
         end else begin
           flush_st_d = FlushClear;

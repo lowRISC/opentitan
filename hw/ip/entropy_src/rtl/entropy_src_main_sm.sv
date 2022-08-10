@@ -29,7 +29,7 @@ module entropy_src_main_sm #(
   output logic                  boot_phase_done_o,
   output logic                  sha3_start_o,
   output logic                  sha3_process_o,
-  output logic                  sha3_done_o,
+  output prim_mubi_pkg::mubi4_t sha3_done_o,
   output logic                  cs_aes_halt_req_o,
   input logic                   cs_aes_halt_ack_i,
   input logic                   local_escalate_i,
@@ -100,7 +100,7 @@ module entropy_src_main_sm #(
     boot_phase_done_o = 1'b0;
     sha3_start_o = 1'b0;
     sha3_process_o = 1'b0;
-    sha3_done_o = 1'b0;
+    sha3_done_o = prim_mubi_pkg::MuBi4False;
     cs_aes_halt_req_o = 1'b0;
     main_sm_alert_o = 1'b0;
     main_sm_idle_o = 1'b0;
@@ -270,11 +270,11 @@ module entropy_src_main_sm #(
       end
       Sha3Done: begin
         if (!enable_i) begin
-          sha3_done_o = 1'b1;
+          sha3_done_o = prim_mubi_pkg::MuBi4True;
           state_d = Idle;
         end else begin
           if (main_stage_rdy_i) begin
-            sha3_done_o = 1'b1;
+            sha3_done_o = prim_mubi_pkg::MuBi4True;
             main_stage_push_o = 1'b1;
             if (fw_ov_ent_insert_i) begin
               state_d = Idle;

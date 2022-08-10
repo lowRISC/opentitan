@@ -45,8 +45,8 @@ module sha3
   // run_i is a pulse signal to trigger the keccak_round manually by SW.
   // It is used to run additional keccak_f after sponge absorbing is completed.
   // See `keccak_run` signal
-  input run_i,
-  input done_i,    // see sha3pad for details
+  input                        run_i,
+  input prim_mubi_pkg::mubi4_t done_i,    // see sha3pad for details
 
   output prim_mubi_pkg::mubi4_t absorbed_o,
   output logic                  squeezing_o,
@@ -119,7 +119,8 @@ module sha3
   sha3_st_sparse_e st, st_d;
 
   // Keccak control signal (filtered by State Machine)
-  logic keccak_start, keccak_process, keccak_done;
+  logic keccak_start, keccak_process;
+  prim_mubi_pkg::mubi4_t keccak_done;
 
   // alert signals
   logic round_count_error, msg_count_error;
@@ -199,7 +200,7 @@ module sha3
     keccak_start = 1'b 0;
     keccak_process = 1'b 0;
     sw_keccak_run = 1'b 0;
-    keccak_done = 1'b 0;
+    keccak_done = prim_mubi_pkg::MuBi4False;
 
     squeezing = 1'b 0;
 
@@ -241,10 +242,10 @@ module sha3
           st_d = StManualRun_sparse;
 
           sw_keccak_run = 1'b 1;
-        end else if (done_i) begin
+        end else if (prim_mubi_pkg::mubi4_test_true_strict(done_i)) begin
           st_d = StFlush_sparse;
 
-          keccak_done = 1'b 1;
+          keccak_done = done_i;
         end else begin
           st_d = StSqueeze_sparse;
         end
@@ -309,7 +310,8 @@ module sha3
 
     unique case (st)
       StIdle_sparse: begin
-        if (process_i || run_i || done_i) begin
+        if (process_i || run_i ||
+          prim_mubi_pkg::mubi4_test_true_loose(done_i)) begin
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
@@ -319,7 +321,8 @@ module sha3
       end
 
       StAbsorb_sparse: begin
-        if (start_i || run_i || done_i || (process_i && processing)) begin
+        if (start_i || run_i || prim_mubi_pkg::mubi4_test_true_loose(done_i)
+          || (process_i && processing)) begin
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
@@ -339,7 +342,8 @@ module sha3
       end
 
       StManualRun_sparse: begin
-        if (start_i || process_i || run_i || done_i) begin
+        if (start_i || process_i || run_i ||
+          prim_mubi_pkg::mubi4_test_true_loose(done_i)) begin
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
@@ -349,7 +353,8 @@ module sha3
       end
 
       StFlush_sparse: begin
-        if (start_i || process_i || run_i || done_i) begin
+        if (start_i || process_i || run_i ||
+          prim_mubi_pkg::mubi4_test_true_loose(done_i)) begin
           error_o = '{
             valid: 1'b 1,
             code: ErrSha3SwControl,
