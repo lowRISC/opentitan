@@ -145,7 +145,9 @@ module kmac
 
   // SHA3 core control signals and its response.
   // Sequence: start --> process(multiple) --> get absorbed event --> {run -->} done
-  logic sha3_start, sha3_run, sha3_done, unused_sha3_squeeze;
+  logic sha3_start, sha3_run, unused_sha3_squeeze;
+  prim_mubi_pkg::mubi4_t sha3_done;
+  prim_mubi_pkg::mubi4_t sha3_done_d;
   prim_mubi_pkg::mubi4_t sha3_absorbed;
 
   // Indicate one block processed
@@ -404,7 +406,7 @@ module kmac
   always_comb begin
     sha3_start = 1'b 0;
     sha3_run = 1'b 0;
-    sha3_done = 1'b 0;
+    sha3_done_d = prim_mubi_pkg::MuBi4False;
     reg2msgfifo_process = 1'b 0;
 
     unique case (kmac_cmd)
@@ -421,7 +423,7 @@ module kmac
       end
 
       CmdDone: begin
-        sha3_done = 1'b 1;
+        sha3_done_d = prim_mubi_pkg::MuBi4True;
       end
 
       CmdNone: begin
@@ -729,12 +731,14 @@ module kmac
 
       KmacMsgFeed: begin
         // If absorbed, move to Digest
-        if (prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed) && sha3_done) begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed) &&
+          prim_mubi_pkg::mubi4_test_true_strict(sha3_done)) begin
           // absorbed and done can be asserted at a cycle if Applications have
           // requested the hash operation. kmac_app FSM issues CmdDone command
           // if it receives absorbed signal.
           kmac_st_d = KmacIdle;
-        end else if (prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed) && !sha3_done) begin
+        end else if (prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed) &&
+          prim_mubi_pkg::mubi4_test_false_strict(sha3_done)) begin
           kmac_st_d = KmacDigest;
         end else begin
           kmac_st_d = KmacMsgFeed;
@@ -743,7 +747,7 @@ module kmac
 
       KmacDigest: begin
         // SW can manually run it, wait till done
-        if (sha3_done) begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(sha3_done)) begin
           kmac_st_d = KmacIdle;
         end else begin
           kmac_st_d = KmacDigest;
@@ -1236,6 +1240,16 @@ module kmac
     logic [1:0] unused_entropy_status;
     assign unused_entropy_status = entropy_in_keyblock;
   end
+
+  // MUBI4 buf
+  prim_mubi4_sender #(
+    .AsyncOn (0)
+  ) u_sha3_done_sender (
+    .clk_i,
+    .rst_ni,
+    .mubi_i (sha3_done_d),
+    .mubi_o (sha3_done)
+  );
 
   // Register top
   logic [NumAlerts-1:0] alert_test, alerts, alerts_q;

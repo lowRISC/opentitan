@@ -44,7 +44,7 @@ module kmac_core
   // Controls : same to SHA3 core
   input start_i,
   input process_i,
-  input done_i,
+  input prim_mubi_pkg::mubi4_t done_i,
 
   // Control to SHA3 core
   output logic process_o,
@@ -212,7 +212,7 @@ module kmac_core
       end
 
       StKmacFlush: begin
-        if (done_i) begin
+        if (prim_mubi_pkg::mubi4_test_true_strict(done_i)) begin
           st_d = StKmacIdle;
         end else begin
           st_d = StKmacFlush;
@@ -267,7 +267,8 @@ module kmac_core
       process_latched <= 1'b 0;
     end else if (process_i && !process_o) begin
       process_latched <= 1'b 1;
-    end else if (process_o || done_i) begin
+    end else if (process_o ||
+      prim_mubi_pkg::mubi4_test_true_strict(done_i)) begin
       process_latched <= 1'b 0;
     end
   end

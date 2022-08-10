@@ -395,7 +395,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     sha3_msg_rdy_mask_q;
   logic                     sha3_msg_rdy_mask;
   logic                     sha3_block_processed;
-  logic                     sha3_done;
+  prim_mubi_pkg::mubi4_t    sha3_done;
   prim_mubi_pkg::mubi4_t    sha3_absorbed;
   logic                     sha3_squeezing;
   logic [2:0]               sha3_fsm;
