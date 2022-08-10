@@ -384,8 +384,11 @@ module sha3pad
           keccak_run_o = 1'b 1;
           clr_sentmsg = 1'b 1;
           hold_msg = 1'b 1;
-        end else if (process_latched) begin
+        end else if (process_latched || process_i) begin
           st_d = StPad;
+
+          // Not asserting the msg_ready_o
+          hold_msg = 1'b 1;
         end else begin
           st_d = StMessage;
 
@@ -802,6 +805,9 @@ module sha3pad
 
   // Message can be fed in between start_i and process_i.
   `ASSUME(MessageCondition_M, msg_valid_i && msg_ready_o |-> process_valid && !process_i)
+
+  // Message ready should be asserted only in between start_i and process_i
+  `ASSERT(MsgReadyCondition_A, msg_ready_o |-> process_valid && !process_i)
 
   `ASSUME(ProcessCondition_M, process_i |-> process_valid)
   `ASSUME(StartCondition_M, start_i |-> start_valid)
