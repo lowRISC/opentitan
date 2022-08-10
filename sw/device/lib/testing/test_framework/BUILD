@@ -56,51 +56,41 @@ cc_library(
 )
 
 ld_library(
-    name = "linker_script",
-    script = "ottf.ld",
+    name = "ottf_ld_common",
+    fragments = ["ottf_common.ld"],
+    deps = ["//sw/device:info_sections"],
+)
+
+ld_library(
+    name = "ottf_ld_silicon_creator_slot_a",
+    script = "ottf_silicon_creator_a.ld",
     deps = [
+        ":ottf_ld_common",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-        "//sw/device:info_sections",
     ],
 )
 
-# This target provides start files without providing the full OTTF, and can be used
-# to bootstrap post-ROM execution without pulling in the full OTTF.
-#
-# The binary target must provide a `noreturn void _ottf_main(void)` function that
-# this library will call.
-cc_library(
-    name = "ottf_start",
-    srcs = [
-        "ottf_isrs.S",
-        "ottf_isrs.c",
-        "ottf_start.S",
-    ],
-    hdrs = [
-        "ottf_isrs.h",
-        "ottf_macros.h",
-    ],
-    target_compatible_with = [OPENTITAN_CPU],
+ld_library(
+    name = "ottf_ld_silicon_creator_slot_b",
+    script = "ottf_silicon_creator_b.ld",
     deps = [
-        ":linker_script",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/crt",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/silicon_creator/lib:manifest_size",
+        ":ottf_ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
     ],
 )
 
-cc_library(
-    name = "ottf_test_config",
-    hdrs = [
-        "ottf_test_config.h",
+ld_library(
+    name = "ottf_ld_silicon_creator_slot_virtual",
+    script = "ottf_silicon_creator_virtual.ld",
+    deps = [
+        ":ottf_ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
     ],
 )
 
-# TODO(#12905): Use a slightly hollowed out version of the silicon_creator manifest_def
-# implementation when building the test_framework for the english breakfast top level.
+# TODO(#12905): Use a slightly hollowed out version of the silicon_creator
+# manifest_def implementation when building the test_framework for the english
+# breakfast top level.
 cc_library(
     name = "english_breakfast_test_framework_manifest_def",
     srcs = [
@@ -124,6 +114,71 @@ alias(
     }),
 )
 
+# This target provides start files without providing the full OTTF, and can be
+# used to bootstrap post-ROM execution without pulling in the full OTTF. This is
+# useful for programs in `sw/device/examples/` and `sw/device/sca/` that do not
+# make us of the full OTTF.
+#
+# The binary target must provide a `noreturn void _ottf_main(void)` function
+# that this library will call.
+cc_library(
+    name = "ottf_start",
+    srcs = [
+        "ottf_isrs.S",
+        "ottf_isrs.c",
+        "ottf_start.S",
+    ],
+    hdrs = [
+        "ottf_isrs.h",
+        "ottf_macros.h",
+    ],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crt",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+    ],
+)
+
+cc_library(
+    name = "ottf_start_silicon_creator_slot_a",
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":ottf_ld_silicon_creator_slot_a",
+        ":ottf_start",
+        ":test_framework_manifest_def",
+    ],
+)
+
+cc_library(
+    name = "ottf_start_silicon_creator_slot_b",
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":ottf_ld_silicon_creator_slot_b",
+        ":ottf_start",
+        ":test_framework_manifest_def",
+    ],
+)
+
+cc_library(
+    name = "ottf_start_silicon_creator_slot_virtual",
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        ":ottf_ld_silicon_creator_slot_virtual",
+        ":ottf_start",
+        ":test_framework_manifest_def",
+    ],
+)
+
+cc_library(
+    name = "ottf_test_config",
+    hdrs = [
+        "ottf_test_config.h",
+    ],
+)
+
 cc_library(
     name = "ottf_main",
     srcs = ["ottf_main.c"],
@@ -133,10 +188,9 @@ cc_library(
         ":check",
         ":coverage",
         ":freertos_port",
-        ":ottf_start",
+        ":ottf_start_silicon_creator_slot_a",
         ":ottf_test_config",
         ":status",
-        ":test_framework_manifest_def",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:uart",
@@ -146,9 +200,9 @@ cc_library(
         "//third_party/freertos",
         "@manufacturer_test_hooks//:test_hooks",
     ],
-    # `:ottf` depends on `:ottf_start`, but `:ottf_start` gets its main function from
-    # `:ottf`. Thus we need to include all of the objects in `:ottf` unconditionally
-    # so that the linker can find the symbol later.
+    # `:ottf` depends on `:ottf_start`, but `:ottf_start` gets its main function
+    # from `:ottf`. Thus we need to include all of the objects in `:ottf`
+    # unconditionally so that the linker can find the symbol later.
     alwayslink = True,
 )
 
