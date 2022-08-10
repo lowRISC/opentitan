@@ -225,6 +225,16 @@ package kmac_pkg;
 
     sha3_pkg::keccak_strength_e Strength;
 
+    // EnRstEntropy: Allow an App Intf to fetch pseudo-random entropy at the
+    // reset stage. ROM_CTRL requests KMAC without any proper SW
+    // configurations. To support, KMAC returns pseudo entropy unevenly
+    // distributed or fixed value to the hashing module SHA3.
+    //
+    // The field is to allow to fetch the entropy and block requests from
+    // other app interface in reset state.
+    bit EnRstEntropy;
+
+
     // PrefixMode determines the origin value of Prefix that is used in KMAC
     // and cSHAKE operations.
     // Choose **0** for CSRs (!!PREFIX), or **1** to use `Prefix` parameter
@@ -239,29 +249,38 @@ package kmac_pkg;
   parameter app_config_t AppCfg [NumAppIntf] = '{
     // KeyMgr
     '{
-      Mode:       AppKMAC, // KeyMgr uses KMAC operation
-      Strength:   sha3_pkg::L256,
-      PrefixMode: 1'b 1,   // Use prefix parameter
+      Mode:         AppKMAC, // KeyMgr uses KMAC operation
+      Strength:     sha3_pkg::L256,
+      EnRstEntropy: 1'b 0,
+      PrefixMode:   1'b 1, // Use prefix parameter
       // {fname: encoded_string("KMAC"), custom_str: encoded_string("")}
-      Prefix:     NSPrefixW'({EncodedStringEmpty, EncodedStringKMAC})
+      Prefix:       NSPrefixW'({EncodedStringEmpty, EncodedStringKMAC})
     },
 
     // LC_CTRL
+    //
+    // LC_CTRL may request cSHAKE operation in reset state. Also it may request
+    // after KMAC is configured.
     '{
-      Mode:       AppCShake,
-      Strength:   sha3_pkg::L128,
-      PrefixMode: 1'b 1,     // Use prefix parameter
+      Mode:         AppCShake,
+      Strength:     sha3_pkg::L128,
+      EnRstEntropy: 1'b 1,
+      PrefixMode:   1'b 1, // Use prefix parameter
       // {fname: encode_string(""), custom_str: encode_string("LC_CTRL")}
-      Prefix: NSPrefixW'({EncodedStringLcCtrl, EncodedStringEmpty})
+      Prefix:       NSPrefixW'({EncodedStringLcCtrl, EncodedStringEmpty})
     },
 
     // ROM_CTRL
+    //
+    // ROM_CTRL validates the ROM contents right after reset. It is expected to
+    // not request cSHAKE operation after KMAC is configured.
     '{
-      Mode:       AppCShake,
-      Strength:   sha3_pkg::L256,
-      PrefixMode: 1'b 1,     // Use prefix parameter
+      Mode:         AppCShake,
+      Strength:     sha3_pkg::L256,
+      EnRstEntropy: 1'b 1,
+      PrefixMode:   1'b 1, // Use prefix parameter
       // {fname: encode_string(""), custom_str: encode_string("ROM_CTRL")}
-      Prefix: NSPrefixW'({EncodedStringRomCtrl, EncodedStringEmpty})
+      Prefix:       NSPrefixW'({EncodedStringRomCtrl, EncodedStringEmpty})
     }
   };
 
