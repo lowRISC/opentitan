@@ -98,6 +98,8 @@ module otbn_core_model
   bit unused_raw_err_bits;
   logic unused_edn_rsp_fips;
 
+  logic lock_immediately_q; // No `_d` because model IF deposits directly into the `_q`.
+
   // EDN RND Request Logic
   logic edn_rnd_req_q, edn_rnd_req_d;
 
@@ -203,13 +205,18 @@ module otbn_core_model
 
       default: urnd_state_d = OtbnCoreModelUrndStateReset;
     endcase
+
+    if (lock_immediately_q) begin
+      urnd_state_d = OtbnCoreModelUrndStateReset;
+    end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      start_q        <= 1'b0;
-      urnd_state_q   <= OtbnCoreModelUrndStateReset;
-      wipe_cyc_cnt_q <= '0;
+      lock_immediately_q <= 1'b0;
+      start_q            <= 1'b0;
+      urnd_state_q       <= OtbnCoreModelUrndStateReset;
+      wipe_cyc_cnt_q     <= '0;
     end else begin
       start_q        <= start_d;
       urnd_state_q   <= urnd_state_d;
