@@ -9,8 +9,8 @@ module entropy_src_repcnt_ht #(
   parameter int RegWidth = 16,
   parameter int RngBusWidth = 4
 ) (
-  input logic clk_i,
-  input logic rst_ni,
+  input logic                   clk_i,
+  input logic                   rst_ni,
 
    // ins req interface
   input logic [RngBusWidth-1:0] entropy_bit_i,
@@ -30,17 +30,21 @@ module entropy_src_repcnt_ht #(
   logic [RngBusWidth-1:0][RegWidth-1:0] rep_cntr;
   logic [RngBusWidth-1:0]               rep_cntr_err;
   logic [RegWidth-1:0]                  cntr_max;
+  logic                                 fail_sampled;
 
   // flops
   logic [RngBusWidth-1:0] prev_sample_q, prev_sample_d;
+  logic fail_sample_mask_d, fail_sample_mask_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni)
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      prev_sample_q    <= '0;
+      prev_sample_q       <= '0;
+      fail_sample_mask_q  <= '0;
     end else begin
-      prev_sample_q    <= prev_sample_d;
+      prev_sample_q       <= prev_sample_d;
+      fail_sample_mask_q  <= fail_sample_mask_d;
     end
-
+  end
 
   // Repetitive Count Test
   //
@@ -97,8 +101,14 @@ module entropy_src_repcnt_ht #(
     .max_valid_o()
   );
 
-  // the pulses will be only one clock in length
-  assign test_fail_pulse_o = active_i && entropy_bit_vld_i && (|rep_cnt_fail);
+  // For the purposes of failure pulse generation, we want to sample
+  // the test output for only one cycle and do it immediately after
+  // the counter has been updated.
+  assign fail_sample_mask_d = entropy_bit_vld_i;
+  assign fail_sampled       = |rep_cnt_fail & fail_sample_mask_q;
+
+  assign test_fail_pulse_o = active_i & fail_sampled;
+
   assign test_cnt_o = cntr_max;
   assign count_err_o = (|rep_cntr_err);
 
