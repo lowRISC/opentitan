@@ -299,11 +299,8 @@ class OTBNSim:
         if self.state.ext_regs.read('WIPE_START', True):
             self.state.ext_regs.write('WIPE_START', 0, True)
 
-        # Zero INSN_CNT if we're in state WIPING_BAD. This is a bit silly
-        # because we'll send that update on every cycle, but it correctly
-        # handles the situation where we switch from WIPING_GOOD to WIPING_BAD
-        # half way through a secure wipe because of an incoming escalation.
-        if not is_good:
+        # Zero INSN_CNT once if we're in state WIPING_BAD.
+        if not is_good and self.state.ext_regs.read('INSN_CNT', True) != 0:
             self.state.ext_regs.write('INSN_CNT', 0, True)
 
         if self.state.wipe_cycles == 1:
