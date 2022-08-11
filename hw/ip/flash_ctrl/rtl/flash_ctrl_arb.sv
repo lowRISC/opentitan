@@ -27,10 +27,6 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   output logic sw_ack_o,
   output flash_ctrl_err_t sw_err_o,
 
-  // software interface to rd_fifo
-  output logic sw_rvalid_o,
-  input sw_rready_i,
-
   // software interface to prog_fifo
   input sw_wvalid_i,
   output logic sw_wready_o,
@@ -43,10 +39,6 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   input [BusAddrByteW-1:0] hw_addr_i,
   output logic hw_ack_o,
   output flash_ctrl_err_t hw_err_o,
-
-  // hardware interface to rd_fifo
-  output logic hw_rvalid_o,
-  input hw_rready_i,
 
   // hardware interface to prog_fifo
   input hw_wvalid_i,
@@ -65,10 +57,6 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
   input erase_ack_i,
   input flash_ctrl_err_t erase_err_i,
   input [BusAddrW-1:0] erase_err_addr_i,
-
-  // muxed interface to rd_fifo
-  input rd_fifo_rvalid_i,
-  output logic rd_fifo_rready_o,
 
   // muxed interface to prog_fifo
   output logic prog_fifo_wvalid_o,
@@ -214,15 +202,13 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
     muxed_addr_o = '0;
     sw_ack_o = '0;
     sw_err_o = '0;
-    sw_rvalid_o = '0;
     sw_wready_o = '0;
     hw_ack_o = '0;
     hw_err_o = '0;
-    hw_rvalid_o = '0;
+
     hw_wready_o = '0;
     prog_fifo_wvalid_o = '0;
     prog_fifo_wdata_o = '0;
-    rd_fifo_rready_o = '0;
 
     unique case (func_sel)
       HwSel: begin
@@ -233,9 +219,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
         hw_err_o = ctrl_err;
 
         // fifo related muxing
-        hw_rvalid_o = rd_fifo_rvalid_i;
         hw_wready_o = prog_fifo_wready_i;
-        rd_fifo_rready_o = hw_rready_i;
         prog_fifo_wvalid_o = hw_wvalid_i;
         prog_fifo_wdata_o = hw_wdata_i;
       end
@@ -249,9 +233,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
         sw_err_o = ctrl_err;
 
         // fifo related muxing
-        sw_rvalid_o = rd_fifo_rvalid_i;
         sw_wready_o = prog_fifo_wready_i;
-        rd_fifo_rready_o = sw_rready_i;
         prog_fifo_wvalid_o = sw_wvalid_i;
         prog_fifo_wdata_o = sw_wdata_i;
       end
