@@ -302,7 +302,10 @@ module otbn_start_stop_control
 
   assign done_o = ((state_q == OtbnStartStopSecureWipeComplete && init_sec_wipe_done_q) ||
                    (stop && (state_q == OtbnStartStopStateUrndRefresh) &&
-                    mubi4_test_false_strict(wipe_after_urnd_refresh_q)));
+                    mubi4_test_false_strict(wipe_after_urnd_refresh_q)) ||
+                   (spurious_urnd_ack_error && !(state_q inside {OtbnStartStopStateHalt,
+                                                                 OtbnStartStopStateLocked}) &&
+                    init_sec_wipe_done_q));
 
   assign addr_cnt_d = addr_cnt_inc ? (addr_cnt_q + 5'd1) : 5'd0;
 
