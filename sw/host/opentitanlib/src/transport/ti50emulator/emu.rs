@@ -9,6 +9,7 @@ use std::fs;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::{ErrorKind, Read};
+use std::os::unix::fs::FileTypeExt;
 use std::os::unix::net::UnixListener;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command};
@@ -278,15 +279,18 @@ impl EmulatorProcess {
     /// If all method fail, it returns an EmuError.
     fn stop_process(&mut self) -> Result<()> {
         self.power_cycle_count += 1;
-        if let Some(handle) = &self.proc {
+        if let Some(handle) = &mut self.proc {
             let pid = handle.id() as i32;
+            log::debug!("Stop sub-process PID:{} SIGTERM", pid);
             signal::kill(Pid::from_raw(pid), Signal::SIGTERM)
                 .context("Stop sub-process using SIGTERM")?;
             for _retry in 0..MAX_RETRY {
-                std::thread::sleep(TIMEOUT);
-                match signal::kill(Pid::from_raw(pid), None) {
-                    Ok(()) => {}
-                    Err(nix::Error::Sys(nix::errno::Errno::ESRCH)) => {
+                log::debug!("Stop sub-process PID:{} ...", pid);
+                match handle.try_wait() {
+                    Ok(None) => {}
+                    Ok(Some(status)) => {
+                        log::info!("Stop sub-process terminated PID: {} {}", pid, status);
+                        self.cleanup()?;
                         self.state = EmuState::Off;
                         self.proc = None;
                         return Ok(());
@@ -299,29 +303,55 @@ impl EmulatorProcess {
                         )));
                     }
                 }
+                std::thread::sleep(TIMEOUT);
             }
-            signal::kill(Pid::from_raw(pid), Signal::SIGKILL)
-                .context("Stop sub-process using SIGKILL")?;
-            std::thread::sleep(TIMEOUT);
-            match signal::kill(Pid::from_raw(pid), None) {
-                Err(nix::Error::Sys(nix::errno::Errno::ESRCH)) => {
-                    self.proc = None;
-                    self.state = EmuState::Off;
-                    return Ok(());
+            log::debug!("Stop sub-process PID:{} SIGKILL", pid);
+            for _retry in 0..MAX_RETRY {
+                match signal::kill(Pid::from_raw(pid), Signal::SIGKILL) {
+                    Ok(()) => {}
+                    Err(nix::Error::Sys(nix::errno::Errno::ESRCH)) => {
+                        log::debug!("Stop sub-process PID:{} process terminated", pid);
+                        self.cleanup()?;
+                        self.proc = None;
+                        self.state = EmuState::Off;
+                        return Ok(());
+                    }
+                    Err(e) => {
+                        self.proc = None;
+                        self.state = EmuState::Error;
+                        bail!(EmuError::StopFailureCause(format!(
+                            "Unable to stop process pid:{} error:{}",
+                            pid, e
+                        )));
+                    }
                 }
-                _ => {
-                    self.proc = None;
-                    self.state = EmuState::Error;
-                    bail!(EmuError::StopFailureCause(format!(
-                        "Unable to stop process pid:{}",
-                        pid
-                    )));
-                }
+                std::thread::sleep(TIMEOUT);
             }
+            self.state = EmuState::Error;
+            return Err(EmuError::StopFailureCause(format!(
+                "Timeout unable to stop process pid:{}",
+                pid,
+            ))
+            .into());
         } else {
             if self.state == EmuState::Error {
                 log::warn!("Stop sub-process don't exist clean error state");
+                self.cleanup()?;
                 self.state = EmuState::Off;
+            }
+        }
+        Ok(())
+    }
+
+    /// Method remove all peripheral files placed in the runtime directory.
+    fn cleanup(&mut self) -> Result<()> {
+        log::debug!("Cleanup runtime directory");
+        for file in fs::read_dir(&self.runtime_directory)? {
+            let path = file.unwrap().path();
+            let meta = fs::metadata(&path)?;
+            let file_type = meta.file_type();
+            if file_type.is_socket() || file_type.is_fifo() {
+                fs::remove_file(&path)?;
             }
         }
         Ok(())
