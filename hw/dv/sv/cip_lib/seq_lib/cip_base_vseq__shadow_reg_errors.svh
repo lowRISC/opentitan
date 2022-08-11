@@ -13,8 +13,16 @@ virtual task run_shadow_reg_errors(int num_times, bit en_csr_rw_seq = 0);
 
   foreach (cfg.ral_models[i]) cfg.ral_models[i].get_shadowed_regs(shadowed_csrs);
 
-  // Add exclusions for shadow regs and their status regs in csr_rw sequence.
+  // Add exclusions for in csr_rw sequence:
+  // 1) alert_test register because it can also trigger alert
+  // 2) shadow regs and their status regs, because they will affect the shadow_reg thread
   if (en_csr_rw_seq) begin
+    uvm_reg alert_test_reg = ral.get_reg_by_name("alert_test");
+    if (alert_test_reg != null) begin
+      csr_excl_item csr_excl = get_excl_item(alert_test_reg);
+      csr_excl.add_excl(alert_test_reg.get_full_name(), CsrExclWrite, CsrRwTest);
+    end
+
     foreach (shadowed_csrs[i]) begin
       csr_excl_item csr_excl = get_excl_item(shadowed_csrs[i]);
       csr_excl.add_excl(shadowed_csrs[i].get_full_name(), CsrExclAll, CsrRwTest);
