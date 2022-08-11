@@ -95,6 +95,8 @@ module kmac_msgfifo
   fifo_t fifo_rdata;
   logic  fifo_rready;
 
+  logic fifo_err; // FIFO dup. counter error
+
   // packer flush to msg_fifo, then msg_fifo empty out the internals
   // then assert msgfifo_flush_done
   logic packer_flush_done;
@@ -143,9 +145,10 @@ module kmac_msgfifo
 
   // MsgFIFO
   prim_fifo_sync #(
-    .Width ($bits(fifo_t)),
-    .Pass  (1'b 1),
-    .Depth (MsgDepth)
+    .Width  ($bits(fifo_t)),
+    .Pass   (1'b 1),
+    .Depth  (MsgDepth),
+    .Secure (EnMasking)
   ) u_msgfifo (
     .clk_i,
     .rst_ni,
@@ -155,13 +158,13 @@ module kmac_msgfifo
     .wready_o(fifo_wready),
     .wdata_i (fifo_wdata),
 
-    .depth_o (fifo_depth_o),
-    .full_o  (fifo_full_o),
-
     .rvalid_o (fifo_rvalid),
     .rready_i (fifo_rready),
     .rdata_o  (fifo_rdata),
-    .err_o    ()
+
+    .full_o  (fifo_full_o),
+    .depth_o (fifo_depth_o),
+    .err_o   (fifo_err)
 
   );
 
@@ -234,12 +237,30 @@ module kmac_msgfifo
 
   assign process_o = msgfifo_flush_done;
 
-  assign err_o = '{
-    // If EnProtection is 0, packer_err is tied to 0
-    valid: packer_err,
-    code:  kmac_pkg::ErrPackerIntegrity,
-    info:  kmac_pkg::ErrInfoW'(flush_st)
-  };
+  // Error assign
+  always_comb begin : error_logic
+    err_o = '{
+      valid: 1'b 0,
+      code: kmac_pkg::ErrNone,
+      info: '0
+    };
+
+    // Priority case -> if .. else if
+    if (packer_err) begin
+      err_o = '{
+        // If EnProtection is 0, packer_err is tied to 0
+        valid: 1'b 1,
+        code:  kmac_pkg::ErrPackerIntegrity,
+        info:  kmac_pkg::ErrInfoW'(flush_st)
+      };
+    end else if (fifo_err) begin
+      err_o = '{
+        valid: 1'b 1,
+        code:  kmac_pkg::ErrMsgFifoIntegrity,
+        info:  kmac_pkg::ErrInfoW'(flush_st)
+      };
+    end
+  end : error_logic
 
   ////////////////
   // Assertions //

@@ -385,7 +385,10 @@ package kmac_pkg;
     ErrFatalError = 8'h C1,
 
     // Error due to the counter integrity check failure inside MsgFifo.Packer
-    ErrPackerIntegrity = 8'h C2
+    ErrPackerIntegrity = 8'h C2,
+
+    // Error due to the counter integrity check failure inside MsgFifo.Fifo
+    ErrMsgFifoIntegrity = 8'h C3
   } err_code_e;
 
   typedef struct packed {
