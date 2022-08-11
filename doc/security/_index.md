@@ -1,6 +1,6 @@
 ---
-title: "OpenTitan Security"
-url: "security/"
+title: "Security"
+url: "/security/"
 ---
 
 ## Overview
@@ -122,4 +122,4 @@ the assigned severity.
 [implementation_guidelines]: {{< relref "doc/security/implementation_guidelines/hardware" >}}
 [otbn]: {{< relref "hw/ip/otbn/doc" >}}
 [security_model]: {{< relref "doc/security/specs" >}}
-[use_cases]: {{< relref "doc/security/use_cases" >}}
+[use_cases]: {{< relref "doc/use_cases" >}}
