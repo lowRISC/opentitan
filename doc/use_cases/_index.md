@@ -4,7 +4,7 @@ title: "Use Cases"
 
 ## Overview
 
-OpenTitan's mission is to raise the security bar industry wide by implementing a
+OpenTitan's mission is to raise the security bar industry-wide by implementing a
 transparent, logically secure hardware root of trust with wide application.
 
 This document describes some of those use cases for OpenTitan. These range from
