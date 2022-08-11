@@ -67,6 +67,8 @@ module kmac_entropy
   input                       hash_cnt_clr_i,
   input        [HashCntW-1:0] hash_threshold_i,
 
+  output prim_mubi_pkg::mubi4_t entropy_configured_o,
+
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
 
@@ -211,6 +213,9 @@ module kmac_entropy
   // If the SW wants to change the mode, it requires resetting the IP.
   logic mode_latch;
   entropy_mode_e mode_q;
+
+  // Status out: entropy configured
+  prim_mubi_pkg::mubi4_t entropy_configured;
 
   //////////////
   // Datapath //
@@ -687,6 +692,21 @@ module kmac_entropy
       ready_phase_q <= ready_phase_d;
     end
   end
+
+  // mubi4 sender
+
+  assign entropy_configured = (st != StRandReset)
+                            ? prim_mubi_pkg::MuBi4True
+                            : prim_mubi_pkg::MuBi4False ;
+  prim_mubi4_sender #(
+    .AsyncOn(1'b0)
+  ) u_entropy_configured (
+    .clk_i,
+    .rst_ni,
+
+    .mubi_i (entropy_configured  ),
+    .mubi_o (entropy_configured_o)
+  );
 
   ////////////////
   // Assertions //

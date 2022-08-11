@@ -286,6 +286,8 @@ module kmac
   entropy_mode_e entropy_mode;
   logic entropy_fast_process;
 
+  prim_mubi_pkg::mubi4_t entropy_configured;
+
   // Message Masking
   logic msg_mask_en, cfg_msg_mask;
   logic [MsgWidth-1:0] msg_mask;
@@ -1023,6 +1025,9 @@ module kmac
     .sw_cmd_i (checked_sw_cmd),
     .cmd_o    (kmac_cmd),
 
+    // Status
+    .entropy_ready_i (entropy_configured),
+
     // LC escalation
     .lc_escalate_en_i (lc_escalate_en[3]),
 
@@ -1193,6 +1198,8 @@ module kmac
       .hash_cnt_clr_i   (entropy_hash_clr),
       .hash_threshold_i (entropy_hash_threshold),
 
+      .entropy_configured_o (entropy_configured),
+
       // LC escalation
       .lc_escalate_en_i (lc_escalate_en[5]),
 
@@ -1240,6 +1247,9 @@ module kmac
 
     logic [1:0] unused_entropy_status;
     assign unused_entropy_status = entropy_in_keyblock;
+
+    // If Masking is off, always entropy configured
+    assign entropy_configured = prim_mubi_pkg::MuBi4True;
   end
 
   // MUBI4 buf
