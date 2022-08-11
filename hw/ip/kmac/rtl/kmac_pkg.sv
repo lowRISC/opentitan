@@ -208,6 +208,8 @@ package kmac_pkg;
     AppCShake = 1,
 
     // In KMAC mode, the secret key always comes from sideload.
+    // KMAC mode needs uniformly distributed entropy. The request will be
+    // silently discarded in Reset state.
     AppKMAC   = 2
   } app_mode_e;
 

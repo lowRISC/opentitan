@@ -92,6 +92,11 @@ module kmac_app
   // To status
   output logic app_active_o,
 
+  // Status
+  // - entropy_ready_i: Entropy configured by SW. It is used to check if App
+  //                    is OK to request.
+  input prim_mubi_pkg::mubi4_t entropy_ready_i,
+
   // Error input
   // This error comes from KMAC/SHA3 engine.
   // KeyMgr interface delivers the error signal to KeyMgr to drop the current op
@@ -158,7 +163,7 @@ module kmac_app
   };
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 10 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 11 -n 10 \
   //      -s 155490773 --language=sv
   //
   // Hamming distance histogram:
@@ -166,12 +171,12 @@ module kmac_app
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||| (13.33%)
-  //  4: |||||||||||||||||||| (24.44%)
-  //  5: |||||||||||||||||||| (24.44%)
-  //  6: |||||||||||||| (17.78%)
-  //  7: |||||||||||||| (17.78%)
-  //  8: | (2.22%)
+  //  3: ||||||||||||| (14.55%)
+  //  4: |||||||||||||||||||| (21.82%)
+  //  5: |||||||||||||||||| (20.00%)
+  //  6: |||||||||||||||||||| (21.82%)
+  //  7: |||||||||||||||||| (20.00%)
+  //  8: | (1.82%)
   //  9: --
   // 10: --
   //
@@ -181,8 +186,18 @@ module kmac_app
   // Maximum Hamming weight: 9
   //
   localparam int StateWidth = 10;
-
   // States
+  //  StIdle                  = 10'b0101110011,
+  //  StAppCfg                = 10'b0001010000,
+  //  StAppMsg                = 10'b0001011111,
+  //  StAppOutLen             = 10'b1011001111,
+  //  StAppProcess            = 10'b1000100110,
+  //  StAppWait               = 10'b0010010110,
+  //  StSw                    = 10'b0111111111,
+  //  StKeyMgrErrKeyNotValid  = 10'b1001110100,
+  //  StError                 = 10'b1101011101,
+  //  StServiceRejectedError  = 10'b1110000110,
+  //  StTerminalError         = 10'b0010001001
   typedef enum logic [StateWidth-1:0] {
     StIdle = 10'b0101110011,
 
@@ -221,6 +236,8 @@ module kmac_app
     StKeyMgrErrKeyNotValid = 10'b1001110100,
 
     StError = 10'b1101011101,
+
+    StServiceRejectedError = 10'b1110000110,
 
     // This state is used for terminal errors
     StTerminalError = 10'b0010001001
@@ -263,6 +280,15 @@ module kmac_app
 
   kmac_pkg::err_t fsm_err, mux_err;
 
+  logic service_rejected_error;
+  logic service_rejected_error_set, service_rejected_error_clr;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni)                         service_rejected_error <= 1'b 0;
+    else if (service_rejected_error_set) service_rejected_error <= 1'b 1;
+    else if (service_rejected_error_clr) service_rejected_error <= 1'b 0;
+  end
+
   ////////////////////////////
   // Application Mux/ Demux //
   ////////////////////////////
@@ -281,6 +307,7 @@ module kmac_app
           digest_share1: app_digest[1],
           // if fsm asserts done, should be an error case.
           error:         error_i | fsm_digest_done_q | sparse_fsm_error_o
+                         | service_rejected_error
         };
       end else begin
         app_o[i] = '{
@@ -378,6 +405,9 @@ module kmac_app
     fsm_err = '{valid: 1'b 0, code: ErrNone, info: '0};
     sparse_fsm_error_o = 1'b 0;
 
+    service_rejected_error_set = 1'b 0;
+    service_rejected_error_clr = 1'b 0;
+
     // If error happens, FSM asserts data ready but discard incoming msg
     fsm_data_ready = 1'b 0;
     fsm_digest_done_d = 1'b 0;
@@ -399,8 +429,19 @@ module kmac_app
       end
 
       StAppCfg: begin
+        if (AppCfg[app_id].Mode == AppKMAC &&
+          prim_mubi_pkg::mubi4_test_false_strict(entropy_ready_i)) begin
+          // Check if the entropy is not configured but it is needed in
+          // `AppCfg[app_id]` (KMAC mode).
+          //
+          // SW is not properly configured, report and not request Hashing
+          // Return the app with errors
+          st_d = StError;
 
-        if ((AppCfg[app_id].Mode == AppKMAC) && !keymgr_key_i.valid) begin
+          service_rejected_error_set = 1'b 1;
+
+        end else if ((AppCfg[app_id].Mode == AppKMAC) &&
+          !keymgr_key_i.valid) begin
           st_d = StKeyMgrErrKeyNotValid;
 
           // As mux_sel is not set to SelApp, app_data_ready is still 0.
@@ -494,8 +535,24 @@ module kmac_app
         if (app_i[app_id].valid && app_i[app_id].last) begin
           // Send garbage digest to the app interface to complete transaction
           fsm_digest_done_d = 1'b 1;
+
+          if (service_rejected_error) begin
+            // If service was rejected, it is assumed the SW is not loaded
+            // yet. In this case, return the request with error and keep
+            // moving, hoping SW may handle the errors later
+            st_d = StServiceRejectedError;
+          end
         end
 
+      end
+
+      StServiceRejectedError: begin
+        // Clear the error and move to Idle
+        // At this state, the app responses the request with an error.
+        st_d = StIdle;
+
+        clr_appid = 1'b 1;
+        service_rejected_error_clr = 1'b 1;
       end
 
       StTerminalError: begin
@@ -799,6 +856,5 @@ module kmac_app
   // different.
   `COVER(AppIntfUseDifferentSizeKey_C,
     (st == StAppCfg && kmac_en_o) |-> reg_key_len_i != SideloadedKey)
-
 
 endmodule
