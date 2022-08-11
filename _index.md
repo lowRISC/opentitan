@@ -17,6 +17,27 @@ For details on coding styles or how to use our project-specific tooling, see the
 Lastly, the [Hardware Dashboard page]({{< relref "hw" >}}) contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks.
 For questions about how the project is organized, see the [project]({{< relref "doc/project" >}}) landing spot for more information.
 
+## Understaning OpenTitan
+
+* [Use Cases]({{< relref "doc/use_cases" >}})
+* [Security]({{< relref "doc/security" >}})
+
+## Datasheets
+
+* [OpenTitan Earl Grey Chip Datasheet]({{< relref "hw/top_earlgrey/doc" >}})
+
+## Documentation
+
+* [Hardware]({{< relref "hw" >}})
+* [Software]({{< relref "sw" >}})
+
+## Development
+
+* [Getting Started]({{< relref "doc/getting_started" >}})
+* [User Guides]({{< relref "doc/ug" >}})
+* [Reference Manuals]({{< relref "doc/rm" >}})
+* [Style Guides]({{< relref "doc/sg" >}})
+
 ## Repository Structure
 
 The underlying
@@ -24,11 +45,3 @@ The underlying
 is set up as a monolithic repository to contain RTL, helper scripts, technical documentation, and other software necessary to produce our hardware designs.
 
 Unless otherwise noted, everything in the repository is covered by the Apache License, Version 2.0. See the [LICENSE](https://github.com/lowRISC/opentitan/blob/master/LICENSE) file and [repository README](https://github.com/lowRISC/opentitan/blob/master/README.md) for more information on licensing and see the user guides below for more information on development methodology.
-
-## Documentation Sections
-
-{{% sectionContent type="section" depth="1" %}}
-
-## Datasheets
-
-* [OpenTitan Earl Grey Chip Datasheet]({{< relref "hw/top_earlgrey/doc" >}})
