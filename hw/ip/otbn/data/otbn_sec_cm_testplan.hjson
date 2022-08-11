@@ -235,7 +235,7 @@
       name: sec_cm_data_mem_sw_noaccess
       desc: "Verify the countermeasure(s) DATA.MEM.SW_NOACCESS."
       milestone: V2S
-      tests: []
+      tests: ["otbn_sw_no_acc"]
     }
     {
       name: sec_cm_key_sideload
