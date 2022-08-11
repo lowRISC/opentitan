@@ -222,6 +222,7 @@ module otbn_core
 
   logic            urnd_reseed_req;
   logic            urnd_reseed_ack;
+  logic            urnd_reseed_err;
   logic            urnd_advance;
   logic            urnd_advance_start_stop_control;
   logic [WLEN-1:0] urnd_data;
@@ -279,6 +280,7 @@ module otbn_core
 
     .urnd_reseed_req_o (urnd_reseed_req),
     .urnd_reseed_ack_i (urnd_reseed_ack),
+    .urnd_reseed_err_o (urnd_reseed_err),
     .urnd_advance_o    (urnd_advance_start_stop_control),
 
     .secure_wipe_req_i (secure_wipe_req),
@@ -507,6 +509,8 @@ module otbn_core
     .rnd_req_o         (rnd_req),
     .rnd_prefetch_req_o(rnd_prefetch_req),
     .rnd_valid_i       (rnd_valid),
+
+    .urnd_reseed_err_i(urnd_reseed_err),
 
     // Secure wipe
     .secure_wipe_req_o     (secure_wipe_req),
