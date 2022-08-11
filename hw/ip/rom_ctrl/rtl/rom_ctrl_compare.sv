@@ -38,15 +38,10 @@ module rom_ctrl_compare
 
   localparam int AW = vbits(NumWords);
 
-  localparam int unsigned EndAddrInt  = NumWords;
   localparam int unsigned LastAddrInt = NumWords - 1;
-
-  // Note that if NumWords is a power of 2 then EndAddr will be zero. That's ok: we're just using a
-  // comparison with EndAddr to check that the address counter hasn't started wandering around when
-  // we're in the wrong state.
-  localparam bit [AW-1:0] EndAddr     = EndAddrInt[AW-1:0];
   localparam bit [AW-1:0] LastAddr    = LastAddrInt[AW-1:0];
 
+  logic          addr_incr;
   logic [AW-1:0] addr_q;
 
   // This module must wait until triggered by a write to start_i. At that point, it cycles through
@@ -118,31 +113,51 @@ module rom_ctrl_compare
   logic wait_addr_alert;
   assign wait_addr_alert = (state_q == Waiting) && (addr_q != '0);
 
-  // addr_q should be EndAddr when we're in the Done state
+  // addr_q should be LastAddr when we're in the Done state
   //
   // SEC_CM: COMPARE.CTR.CONSISTENCY
   logic done_addr_alert;
-  assign done_addr_alert = (state_q == Done) && (addr_q != EndAddr);
+  assign done_addr_alert = (state_q == Done) && (addr_q != LastAddr);
 
-  // Increment addr_q on each cycle when in Checking
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      addr_q    <= '0;
-      matches_q <= 1'b1;
-    end else begin
-      if (state_q == Checking) begin
-        addr_q    <= addr_q + AW'(1);
-        matches_q <= matches_d;
-      end
-    end
-  end
+  // Increment addr_q on each cycle except the last when in Checking. The prim_count primitive
+  // doesn't overflow but in case NumWords is not a power of 2, we need to take care of this
+  // ourselves.
+  assign addr_incr = (state_q == Checking) && (addr_q != LastAddr);
+
+  // SEC_CM: COMPARE.CTR.REDUN
+  logic addr_ctr_alert;
+  prim_count #(
+    .Width(AW)
+  ) u_prim_count_addr (
+    .clk_i,
+    .rst_ni,
+    .clr_i(1'b0),
+    .set_i(1'b0),
+    .set_cnt_i('0),
+    .incr_en_i(addr_incr),
+    .decr_en_i(1'b0),
+    .step_i(AW'(1)),
+    .cnt_o(addr_q),
+    .cnt_next_o(),
+    .err_o(addr_ctr_alert)
+  );
 
   logic [AW+5-1:0] digest_idx;
   logic [31:0]     digest_word, exp_digest_word;
   assign digest_idx = {addr_q, 5'd31};
   assign digest_word = digest_i[digest_idx -: 32];
   assign exp_digest_word = exp_digest_i[digest_idx -: 32];
+
   assign matches_d = matches_q && (digest_word == exp_digest_word);
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      matches_q <= 1'b1;
+    end else begin
+      if (state_q == Checking) begin
+        matches_q <= matches_d;
+      end
+    end
+  end
 
   assign done_o = (state_q == Done);
 
@@ -158,6 +173,6 @@ module rom_ctrl_compare
     .mubi_o (good_o)
   );
 
-  assign alert_o = fsm_alert | start_alert | wait_addr_alert | done_addr_alert;
+  assign alert_o = fsm_alert | start_alert | wait_addr_alert | done_addr_alert | addr_ctr_alert;
 
 endmodule

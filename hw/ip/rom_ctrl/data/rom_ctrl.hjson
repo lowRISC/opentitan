@@ -131,6 +131,15 @@
       '''
     },
     {
+      name: "COMPARE.CTR.REDUN",
+      desc: '''
+        The hash comparison module has an internal count (indexing 32-bit words
+        in the 256-bit digests) implemented using a redundant counter module.
+        In case a mismatch is detected between the redundant counters a fatal
+        alert is generated.
+      '''
+    },
+    {
       name: "FSM.SPARSE",
       desc: '''
         FSMs are sparsely encoded. There are two FSMs. The first is in

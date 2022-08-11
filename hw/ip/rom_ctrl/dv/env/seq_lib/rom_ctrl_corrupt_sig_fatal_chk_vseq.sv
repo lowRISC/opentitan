@@ -97,8 +97,9 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
           dut_init();
           wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
           wait_with_bound(10);
-          // EndAddr has been set to 8
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_addr, (invalid_addr > 0 && invalid_addr < 8););
+          // LastAddr has been set to 7
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_addr,
+                                             (invalid_addr >= 0 && invalid_addr < 7););
           force_sig("tb.dut.gen_fsm_scramble_enabled.u_checker_fsm.u_compare.addr_q", invalid_addr);
           check_for_alert();
           chk_fsm_state();

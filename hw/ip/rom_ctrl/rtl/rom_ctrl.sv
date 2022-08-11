@@ -494,6 +494,10 @@ module rom_ctrl
                                          gen_fsm_scramble_enabled.
                                          u_checker_fsm.u_state_regs,
                                          alert_tx_o[AlertFatal])
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CompareAddrCtrCheck_A,
+                                           gen_fsm_scramble_enabled.
+                                           u_checker_fsm.u_compare.u_prim_count_addr,
+                                           alert_tx_o[AlertFatal])
   end
 
   // The pwrmgr_data_o output (the "done" and "good" signals) should have a known value when out of

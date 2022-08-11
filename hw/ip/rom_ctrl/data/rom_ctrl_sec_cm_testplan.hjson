@@ -71,6 +71,12 @@
       tests: ['''rom_ctrl_corrupt_sig_fatal_chk''']
     }
     {
+      name: sec_cm_compare_ctr_redun
+      desc: '''Verify the countermeasure(s) COMPARE.CTR.REDUN.'''
+      milestone: V2S
+      tests: ['''rom_ctrl_sec_cm''']
+    },
+    {
       name: sec_cm_fsm_sparse
       desc: '''Verify the countermeasure(s) FSM.SPARSE.'''
       milestone: V2S
