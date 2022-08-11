@@ -375,7 +375,7 @@ It is the host's responsibility to check for integrity correctness and react acc
 
 ##### Host / Software Initiated Access to Flash Macro {#host-controller-op}
 Since controller operations are initiated through writes to the register file, the command check is identical to host direct access to [regfiles](#host-direct-reg).
-Controller reads behave similarly to [host direct access to macro](#host-direct-macro), the read data and its associated integrity are returned through the controller read fifo for the initiating host to handle.
+Controller reads behave similarly to [host direct access to macro](#host-direct-macro), the read data and its associated integrity are returned through the controller read FIFO for the initiating host to handle.
 
 For program operations, the write data and its associated integrity are stored and propagated through the flash protocol and physical controllers.
 Prior to packing the data for final flash program, the data is then checked for integrity correctness.
@@ -669,7 +669,7 @@ Signal                     | Direction      | Description
 ### Flash Protocol Controller Description
 
 The flash protocol controller uses a simple FIFO interface to communicate between the software and flash physical controller.
-There is a read fifo for read operations, and a program fifo for program operations.
+There is a read FIFO for read operations, and a program FIFO for program operations.
 Note, this means flash can be read both through the controller and the main bus interface.
 This may prove useful if the controller wishes to allocate specific regions to HW FSMs only, but is not a necessary feature.
 

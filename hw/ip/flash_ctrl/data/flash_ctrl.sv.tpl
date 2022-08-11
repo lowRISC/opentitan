@@ -178,15 +178,6 @@ module flash_ctrl
   logic [BusFullWidth-1:0] prog_fifo_wdata;
   logic [BusFullWidth-1:0] prog_fifo_rdata;
   logic [ProgDepthW-1:0]   prog_fifo_depth;
-  logic                    rd_fifo_wready;
-  logic                    rd_fifo_rvalid;
-  logic                    rd_fifo_rready;
-  logic                    rd_fifo_wen;
-  logic                    rd_fifo_ren;
-  logic [BusFullWidth-1:0] rd_fifo_wdata;
-  logic [BusFullWidth-1:0] rd_fifo_rdata;
-  logic [RdDepthW-1:0]     rd_fifo_depth;
-  logic                    rd_fifo_full;
 
   // Program Control Connections
   logic prog_flash_req;
@@ -199,6 +190,9 @@ module flash_ctrl
   logic rd_flash_ovfl;
   logic [BusAddrW-1:0] rd_flash_addr;
   logic rd_op_valid;
+  logic                    rd_ctrl_wen;
+  logic [BusFullWidth-1:0] rd_ctrl_wdata;
+
 
   // Erase Control Connections
   logic erase_flash_req;
@@ -237,8 +231,6 @@ module flash_ctrl
   logic [BusAddrByteW-1:0] hw_addr;
   logic hw_done;
   flash_ctrl_err_t hw_err;
-  logic hw_rvalid;
-  logic hw_rready;
   logic hw_wvalid;
   logic [BusFullWidth-1:0] hw_wdata;
   logic hw_wready;
@@ -249,6 +241,9 @@ module flash_ctrl
   logic lcmgr_intg_err;
   logic arb_fsm_err;
   logic seed_err;
+
+  // Flash lcmgr interface to direct read fifo
+  logic lcmgr_rready;
 
   // Flash control arbitration connections to software interface
   logic sw_ctrl_done;
@@ -270,9 +265,22 @@ module flash_ctrl
   logic ctrl_init_busy;
   logic fifo_clr;
 
-  // software tlul to flash control aribration
-  logic sw_rvalid;
+  // sw read fifo interface
+  logic sw_rfifo_wen;
+  logic sw_rfifo_wready;
+  logic [BusFullWidth-1:0] sw_rfifo_wdata;
+  logic sw_rfifo_full;
+  logic [RdDepthW-1:0] sw_rfifo_depth;
+  logic sw_rfifo_rvalid;
+  logic sw_rfifo_rready;
+  logic [BusFullWidth-1:0] sw_rfifo_rdata;
+
+  // software tlul interface to read fifo
+  logic adapter_req;
   logic adapter_rvalid;
+  logic adapter_fifo_err;
+
+  // software tlul interface to prog fifo
   logic sw_wvalid;
   logic [BusFullWidth-1:0] sw_wdata;
   logic sw_wready;
@@ -340,10 +348,6 @@ module flash_ctrl
     .sw_ack_o(sw_ctrl_done),
     .sw_err_o(sw_ctrl_err),
 
-    // software interface to rd_fifo
-    .sw_rvalid_o(sw_rvalid),
-    .sw_rready_i(adapter_rvalid),
-
     // software interface to prog_fifo
     // if prog operation not selected, software interface
     // writes have no meaning
@@ -364,8 +368,6 @@ module flash_ctrl
     .hw_err_o(hw_err),
 
     // hardware interface to rd_fifo
-    .hw_rvalid_o(hw_rvalid),
-    .hw_rready_i(hw_rready),
     .hw_wvalid_i(hw_wvalid),
     .hw_wdata_i(hw_wdata),
     .hw_wready_o(hw_wready),
@@ -384,10 +386,6 @@ module flash_ctrl
     .erase_ack_i(erase_done),
     .erase_err_i(erase_err),
     .erase_err_addr_i(erase_err_addr),
-
-    // muxed interface to rd_fifo
-    .rd_fifo_rvalid_i(rd_fifo_rvalid),
-    .rd_fifo_rready_o(rd_fifo_rready),
 
     // muxed interface to prog_fifo
     .prog_fifo_wvalid_o(prog_fifo_wvalid),
@@ -445,14 +443,14 @@ module flash_ctrl
     .err_i(hw_err),
 
     // interface to ctrl_arb data ports
-    .rready_o(hw_rready),
-    .rvalid_i(hw_rvalid),
     .wready_i(hw_wready),
     .wvalid_o(hw_wvalid),
     .wdata_o(hw_wdata),
 
-    // direct form rd_fifo
-    .rdata_i(rd_fifo_rdata),
+    // interface to hw interface read fifo
+    .rready_o(lcmgr_rready),
+    .rvalid_i(~sw_sel & rd_ctrl_wen),
+    .rdata_i(rd_ctrl_wdata),
 
     // external rma request
     .rma_req_i,
@@ -494,6 +492,9 @@ module flash_ctrl
 
     .debug_state_o(hw2reg.debug_state.d)
   );
+
+
+
 
   // Program FIFO
   // Since the program and read FIFOs are never used at the same time, it should really be one
@@ -586,27 +587,31 @@ module flash_ctrl
     .flash_mp_err_i (flash_mp_err)
   );
 
+
+
   // a read request is seen from software but a read operation is not enabled
   // AND there are no pending entries to read from the fifo.
   // This indicates software has issued a read when it should not have.
-  //
-  // sw_sel qualification is used here to ensure the no_op condition is ignored
-  // when software is not selected through arbitration.
   logic rd_no_op_d, rd_no_op_q;
-  assign rd_no_op_d = rd_fifo_ren & ~rd_op_valid & ~sw_rvalid & sw_sel;
+  logic sw_rd_op;
+  assign sw_rd_op = reg2hw.control.start.q & (reg2hw.control.op.q == FlashOpRead);
+
+  // If software ever attempts to read when the FIFO is empty AND if it has never
+  // initiated a transaction, then it is a read that can never complete, error
+  // back immediately.
+  assign rd_no_op_d = adapter_req & ~sw_rd_op & ~sw_rfifo_rvalid;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       adapter_rvalid <= 1'b0;
       rd_no_op_q <= 1'b0;
     end else begin
-      adapter_rvalid <= rd_fifo_ren & sw_rvalid;
+      adapter_rvalid <= adapter_req & sw_rfifo_rvalid;
       rd_no_op_q <= rd_no_op_d;
     end
   end
 
   // tlul adapter represents software's access interface to flash
-  logic rd_fifo_err;
   tlul_adapter_sram #(
     .SramAw(1),           //address unused
     .SramDw(BusWidth),
@@ -620,39 +625,44 @@ module flash_ctrl
     .tl_i        (tl_win_h2d[1]),
     .tl_o        (tl_win_d2h[1]),
     .en_ifetch_i (prim_mubi_pkg::MuBi4False),
-    .req_o       (rd_fifo_ren),
+    .req_o       (adapter_req),
     .req_type_o  (),
     // if there is no valid read operation, don't hang the
     // bus, just let things normally return
-    .gnt_i       (sw_rvalid | rd_no_op_d),
+    .gnt_i       (sw_rfifo_rvalid | rd_no_op_d),
     .we_o        (),
     .addr_o      (),
     .wmask_o     (),
     .wdata_o     (),
-    .intg_error_o(rd_fifo_err),
-    .rdata_i     (rd_fifo_rdata),
+    .intg_error_o(adapter_fifo_err),
+    .rdata_i     (sw_rfifo_rdata),
     .rvalid_i    (adapter_rvalid | rd_no_op_q),
     .rerror_i    ({rd_no_op_q, 1'b0})
   );
 
+  assign sw_rfifo_wen = sw_sel & rd_ctrl_wen;
+  assign sw_rfifo_wdata = rd_ctrl_wdata;
+  assign sw_rfifo_rready = adapter_rvalid;
+
+  // the read fifo below is dedicated to the software read path.
   prim_fifo_sync #(
     .Width(BusFullWidth),
     .Depth(RdFifoDepth)
-  ) u_rd_fifo (
+  ) u_sw_rd_fifo (
     .clk_i,
     .rst_ni,
-    .clr_i   (reg2hw.fifo_rst.q | fifo_clr),
-    .wvalid_i(rd_fifo_wen),
-    .wready_o(rd_fifo_wready),
-    .wdata_i (rd_fifo_wdata),
-    .full_o  (rd_fifo_full),
-    .depth_o (rd_fifo_depth),
-    .rvalid_o(rd_fifo_rvalid),
-    .rready_i(rd_fifo_rready),
-    .rdata_o (rd_fifo_rdata),
+    .clr_i   (reg2hw.fifo_rst.q),
+    .wvalid_i(sw_rfifo_wen),
+    .wready_o(sw_rfifo_wready),
+    .wdata_i (sw_rfifo_wdata),
+    .full_o  (sw_rfifo_full),
+    .depth_o (sw_rfifo_depth),
+    .rvalid_o(sw_rfifo_rvalid),
+    .rready_i(sw_rfifo_rready),
+    .rdata_o (sw_rfifo_rdata),
     .err_o   ()
   );
-  assign hw2reg.curr_fifo_lvl.rd.d = rd_fifo_depth;
+  assign hw2reg.curr_fifo_lvl.rd.d = sw_rfifo_depth;
 
   logic rd_cnt_err;
   // Read handler is consumer of rd_fifo
@@ -672,9 +682,9 @@ module flash_ctrl
     .cnt_err_o      (rd_cnt_err),
 
     // FIFO Interface
-    .data_rdy_i     (rd_fifo_wready),
-    .data_o         (rd_fifo_wdata),
-    .data_wr_o      (rd_fifo_wen),
+    .data_rdy_i     (sw_sel ? sw_rfifo_wready : lcmgr_rready),
+    .data_o         (rd_ctrl_wdata),
+    .data_wr_o      (rd_ctrl_wen),
 
     // Flash Macro Interface
     .flash_req_o    (rd_flash_req),
@@ -808,9 +818,9 @@ module flash_ctrl
   assign hw2reg.op_status.done.de    = sw_ctrl_done;
   assign hw2reg.op_status.err.d      = 1'b1;
   assign hw2reg.op_status.err.de     = |sw_ctrl_err;
-  assign hw2reg.status.rd_full.d     = rd_fifo_full;
+  assign hw2reg.status.rd_full.d     = sw_rfifo_full;
   assign hw2reg.status.rd_full.de    = sw_sel;
-  assign hw2reg.status.rd_empty.d    = ~rd_fifo_rvalid;
+  assign hw2reg.status.rd_empty.d    = ~sw_rfifo_rvalid;
   assign hw2reg.status.rd_empty.de   = sw_sel;
   assign hw2reg.status.prog_full.d   = ~prog_fifo_wready;
   assign hw2reg.status.prog_full.de  = sw_sel;
@@ -1064,7 +1074,7 @@ module flash_ctrl
   assign hw2reg.std_fault_status.storage_err.de    = storage_err;
   assign hw2reg.std_fault_status.phy_fsm_err.de    = flash_phy_rsp.fsm_err;
   assign hw2reg.std_fault_status.ctrl_cnt_err.de   = rd_cnt_err | prog_cnt_err;
-  assign hw2reg.std_fault_status.fifo_err.de       = flash_phy_rsp.fifo_err | rd_fifo_err;
+  assign hw2reg.std_fault_status.fifo_err.de       = flash_phy_rsp.fifo_err | adapter_fifo_err;
 
   // Correctable ECC count / address
   for (genvar i = 0; i < NumBanks; i++) begin : gen_ecc_single_err_reg
@@ -1077,14 +1087,14 @@ module flash_ctrl
     assign hw2reg.ecc_single_err_addr[i].d = {flash_phy_rsp.ecc_addr[i], {BusByteWidth{1'b0}}};
   end
 
-  logic rd_fifo_wr_q;
+  logic sw_rd_fifo_wr_q;
   logic prog_fifo_rd_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      rd_fifo_wr_q <= '0;
+      sw_rd_fifo_wr_q <= '0;
       prog_fifo_rd_q <= '0;
     end else begin
-      rd_fifo_wr_q <= rd_fifo_wen & rd_fifo_wready;
+      sw_rd_fifo_wr_q <= sw_rfifo_wen & sw_rfifo_wready;
       prog_fifo_rd_q <= prog_fifo_rvalid & prog_fifo_ren;
     end
   end
@@ -1151,7 +1161,7 @@ module flash_ctrl
   ) u_rd_full_event (
     .clk_i,
     .rst_ni,
-    .d_i(rd_fifo_full),
+    .d_i(sw_rfifo_full),
     .q_sync_o(),
     .q_posedge_pulse_o(intr_event[RdFull]),
     .q_negedge_pulse_o()
@@ -1177,7 +1187,7 @@ module flash_ctrl
   ) u_rd_lvl_event (
     .clk_i,
     .rst_ni,
-    .d_i(rd_fifo_wr_q & (reg2hw.fifo_lvl.rd.q == rd_fifo_depth)),
+    .d_i(sw_rd_fifo_wr_q & (reg2hw.fifo_lvl.rd.q == sw_rfifo_depth)),
     .q_sync_o(),
     .q_posedge_pulse_o(intr_event[RdLvl]),
     .q_negedge_pulse_o()

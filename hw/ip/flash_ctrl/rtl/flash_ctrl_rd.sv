@@ -165,10 +165,11 @@ module flash_ctrl_rd import flash_ctrl_pkg::*; (
   // if error, return "empty" data
   assign err_sel = data_wr_o & |op_err_o;
 
-  // When there is no error, return flash data directly. When the error is a read error
-  // specifically, also return flash data as the integrity is natively handled by the phy. All
-  // other errors do not result in an actual transaction to the flash, and therefore must use the
-  // locally available error value.
+  // When there is no error, return flash data directly.
+  // When the error is a read error specifically, also return flash data as the integrity is
+  // natively handled by the phy.
+  // All other errors do not result in an actual transaction to the flash, and therefore must use
+  // the locally available error value.
   assign data_o = ~err_sel | (err_sel & op_err_o.rd_err) ? flash_data_i :
                   prim_secded_pkg::prim_secded_inv_39_32_enc({BusWidth{1'b1}});
   assign op_err_o = op_err_q | op_err_d;
