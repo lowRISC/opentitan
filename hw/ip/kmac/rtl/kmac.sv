@@ -643,19 +643,14 @@ module kmac
 
   // Counter errors
   logic counter_error, sha3_count_error, key_index_error;
-  logic packer_counter_error;
+  logic msgfifo_counter_error;
   logic kmac_entropy_hash_counter_error;
   assign counter_error = sha3_count_error
                        | kmac_entropy_hash_counter_error
                        | key_index_error
-                       | packer_counter_error;
+                       | msgfifo_counter_error;
 
-  // msgfifo_err currently reports packer storage error only.
-  assign packer_counter_error = msgfifo_err.valid;
-  `ASSERT(
-    PackerErrorCheck_A,
-    msgfifo_err.valid |-> msgfifo_err.code == kmac_pkg::ErrPackerIntegrity
-  )
+  assign msgfifo_counter_error = msgfifo_err.valid;
 
   // State Errors
   logic sparse_fsm_error;
@@ -1452,9 +1447,23 @@ module kmac
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SeedIdxCountCheck_A,
                                            gen_entropy.u_entropy.u_seed_idx_count,
                                            alert_tx_o[1])
+
+    // MsgFifo.Packer
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       PackerCountCheck_A,
       u_msgfifo.u_packer.g_pos_dupcnt.u_pos,
+      alert_tx_o[1]
+    )
+
+    // MsgFifo.Fifo
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+      MsgFifoWptrCheck_A,
+      u_msgfifo.u_msgfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+      alert_tx_o[1]
+    )
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
+      MsgFifoRptrCheck_A,
+      u_msgfifo.u_msgfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
       alert_tx_o[1]
     )
   end
