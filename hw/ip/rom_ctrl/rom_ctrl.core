@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:buf
       - lowrisc:prim:cipher
+      - lowrisc:prim:count
       - lowrisc:prim:rom_adv
       - lowrisc:prim:sec_anchor
       - lowrisc:prim:sparse_fsm
