@@ -147,11 +147,14 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
       init_info_part();
 
       // READ (Compare Expected Data with Data Read : EXPECT DATA MISMATCH or STATUS FAIL)
-      // After Reset and DUT Initialisation, Check the FLASH is Erased.
+      // After Reset and DUT Initialisation, Check the FLASH is written randomly and its contents
+      // mismatch against its contents before the RMA took place.
+      // This may get an occasional Hit ~ 1 in 32^2-1, per location
+      // Additionally check that the Flash has not just been Erased, but has been overwritten.
 
       `uvm_info(`gfn, "READ", UVM_LOW)
 
-      do_flash_ops(flash_ctrl_pkg::FlashOpRead, ReadCheckErased);
+      do_flash_ops(flash_ctrl_pkg::FlashOpRead, ReadCheckRand);
       cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
     end

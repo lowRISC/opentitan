@@ -134,7 +134,7 @@ package flash_ctrl_env_pkg;
   // types
   typedef enum bit [1:0] {
     ReadCheckNorm = 0,
-    ReadCheckExplicit = 1,
+    ReadCheckRand = 1,
     ReadCheckErased = 2
   } read_check_e;
 
