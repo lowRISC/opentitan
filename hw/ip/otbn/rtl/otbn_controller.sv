@@ -137,6 +137,8 @@ module otbn_controller
   output logic rnd_prefetch_req_o,
   input  logic rnd_valid_i,
 
+  input  logic urnd_reseed_err_i,
+
   // Secure Wipe
   output logic secure_wipe_req_o,
   input  logic secure_wipe_ack_i,
@@ -362,7 +364,12 @@ module otbn_controller
   assign executing = (state_q == OtbnStateRun) ||
                      (state_q == OtbnStateStall);
 
-  assign locking_o = (state_d == OtbnStateLocked) & ~secure_wipe_req_o;
+  // Set the *locking* output when the next state is the *locked* state and no secure wipe is
+  // running or there is a URND reseed error.  `locking_o` is thus set only after the secure wipe
+  // has completed or if it cannot complete due to an URND reseed error (in which case
+  // `secure_wipe_req_o` and `urnd_reseed_err_i` will remain high).
+  assign locking_o = (state_d == OtbnStateLocked) & (~secure_wipe_req_o | urnd_reseed_err_i);
+
   assign start_secure_wipe = executing & (done_complete | err);
 
   assign jump_or_branch = (insn_valid_i &

@@ -38,6 +38,7 @@ module otbn_start_stop_control
 
   output logic urnd_reseed_req_o,
   input  logic urnd_reseed_ack_i,
+  output logic urnd_reseed_err_o,
   output logic urnd_advance_o,
 
   input   logic secure_wipe_req_i,
@@ -67,6 +68,7 @@ module otbn_start_stop_control
   mubi4_t wipe_after_urnd_refresh_q, wipe_after_urnd_refresh_d;
   mubi4_t rma_ack_d, rma_ack_q;
   logic mubi_err_q, mubi_err_d;
+  logic urnd_reseed_err_q, urnd_reseed_err_d;
 
   logic addr_cnt_inc;
   logic [4:0] addr_cnt_q, addr_cnt_d;
@@ -342,11 +344,17 @@ module otbn_start_stop_control
     if (!rst_ni) begin
       mubi_err_q          <= 1'b0;
       secure_wipe_error_q <= 1'b0;
+      urnd_reseed_err_q   <= 1'b0;
     end else begin
       mubi_err_q          <= mubi_err_d;
       secure_wipe_error_q <= secure_wipe_error_d;
+      urnd_reseed_err_q   <= urnd_reseed_err_d;
     end
   end
+
+  assign urnd_reseed_err_d = spurious_urnd_ack_error ? 1'b1 // set
+                                                     : urnd_reseed_err_q; // hold
+  assign urnd_reseed_err_o = urnd_reseed_err_d;
 
   assign fatal_error_o = spurious_urnd_ack_error | state_error | secure_wipe_error_q | mubi_err_q;
 
