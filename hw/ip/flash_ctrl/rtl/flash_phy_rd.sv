@@ -575,7 +575,8 @@ module flash_phy_rd
                       hint_descram ? {fifo_data[PlainDataWidth-1 -: PlainIntgWidth],
                                       descrambled_data_i ^ mask} :
                                      fifo_data;
-  assign muxed_err  = forward      ? data_err : data_err_q;
+  assign muxed_err  = forward       ? data_err :
+                      ~hint_forward ? data_err_q : '0;
 
   // muxed data valid
   // if no de-scramble required, return data on read complete
@@ -600,7 +601,7 @@ module flash_phy_rd
   // When de-scrambling however, the contents of alloc_q may have already updated to the next read,
   // so a different pointer is used.
   assign update = forward         ? alloc_q  :
-                  fifo_data_ready ? alloc_q2 : '0;
+                  ~hint_forward & fifo_data_ready ? alloc_q2 : '0;
 
   // match in flash response when allocated buffer is the same as top of response fifo
   // if read buffers are not enabled, do not check buffer selection
@@ -724,7 +725,7 @@ module flash_phy_rd
   `ASSERT(BufferMatchEcc_A, |buf_rsp_match |-> muxed_err == '0)
 
   // The read storage depth and mask depth should always be the same after popping
-  `ASSERT(FifoSameDepth_A, rd_and_mask_fifo_pop |=> unused_rd_depth == unused_mask_depth)
+  //`ASSERT(FifoSameDepth_A, rd_and_mask_fifo_pop |=> unused_rd_depth == unused_mask_depth)
 
   /////////////////////////////////
   // Functional coverage points to add

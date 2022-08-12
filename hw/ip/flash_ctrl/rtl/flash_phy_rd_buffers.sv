@@ -61,4 +61,10 @@ module flash_phy_rd_buffers import flash_phy_pkg::*; (
     end
   end
 
+  // If a buffer receives an update command, it MUST be work in progress
+  `ASSERT(UpdateCheck_A, update_i & en_i |-> out_o.attr == Wip)
+
+  // If a buffer receives an allocate command, it MUST NOT be work in progress
+  `ASSERT(AllocCheck_A, alloc_i & en_i |-> out_o.attr != Wip)
+
 endmodule // flash_phy_rd_buffers
