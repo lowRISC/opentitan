@@ -329,7 +329,7 @@ def _elf_to_scrambled_rom_impl(ctx):
         if src.extension != "elf":
             fail("only ROM images in the ELF format may be converted to the VMEM format and scrambled.")
         scrambled = ctx.actions.declare_file(
-            "{}.scr.39.vmem".format(
+            "{}.39.scr.vmem".format(
                 # Remove ".elf" from file basename.
                 src.basename.replace("." + src.extension, ""),
             ),
