@@ -44,10 +44,14 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   spi_item spi_passthrough_downstream_q[$];
 
   // for upload
-  bit [7:0] upload_cmd_q[$];
-  bit [31:0] upload_addr_q[$];
+  bit [7:0] upload_cmd_from_spi_q[$];
+  bit [7:0] upload_cmd_from_tl_q[$];
+  bit [31:0] upload_addr_from_spi_q[$];
+  bit [31:0] upload_addr_from_tl_q[$];
 
   flash_status_t flash_status_q[$];
+  flash_status_t flash_status_settle_q[$];
+  flash_status_t flash_status_tl_allow_q[$];
 
   `uvm_component_new
 
@@ -69,6 +73,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       process_upstream_spi_host_fifo();
       process_upstream_spi_device_fifo();
       process_downstream_spi_fifo();
+      forever_latch_flash_status();
     join_none
   endtask
 
@@ -127,7 +132,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
               default: `uvm_fatal(`gfn, "can't get here")
           endcase
 
-          if (is_opcode_passthrough(item.opcode)) begin
+          // if busy, passthrough is blocked
+          if (is_opcode_passthrough(item.opcode) && !`gmv(ral.flash_status.busy)) begin
             compare_passthru_item(.upstream_item(item), .is_intercepted(is_intercepted));
           end
 
@@ -140,16 +146,77 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   // update flash_status to the value of the last item
   virtual function void latch_flash_status(bit set_busy);
-    if (flash_status_q.size != 0) begin
-      void'(ral.flash_status.predict(.value(flash_status_q[$]), .kind(UVM_PREDICT_WRITE)));
-      `uvm_info(`gfn, $sformatf("flash status updated to: 0x%0h", flash_status_q[$]), UVM_MEDIUM)
-      flash_status_q.delete();
-    end
-    if (set_busy) begin
-      void'(ral.flash_status.busy.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
-      `uvm_info(`gfn, "busy bit is set due to upload command", UVM_MEDIUM)
-    end
+    fork begin
+      bit[TL_DW-1:0] rdata;
+      bit[TL_DW-1:0] pre_flash_status_val = `gmv(ral.flash_status);
+      bit match;
+
+      // it takes 3-4 cycles to update the status after spi item completes
+      // since we may have another thread to keep polling this csr, it's easier to predict it
+      // and compare with the backdoor value, to make sure both align
+      cfg.clk_rst_vif.wait_n_clks(4);
+      flash_status_tl_allow_q.delete();
+
+      if (flash_status_settle_q.size != 0) begin
+        `DV_CHECK_LE(flash_status_settle_q.size, 1)
+        void'(ral.flash_status.predict(.value(flash_status_settle_q[0]),
+                                       .kind(UVM_PREDICT_WRITE)));
+        `uvm_info(`gfn, $sformatf("flash_status updated to: 0x%0h", flash_status_settle_q[0]),
+                  UVM_MEDIUM)
+        flash_status_settle_q.delete();
+      end
+      if (set_busy) begin
+        void'(ral.flash_status.busy.predict(.value(1), .kind(UVM_PREDICT_READ)));
+        `uvm_info(`gfn, "busy bit is set due to upload command", UVM_MEDIUM)
+      end
+      // if sw updates this csr around the end of the spi item, it's hard to predict if the value
+      // is accepted or not. So do a backdoor check, it's ok if the rdata matchs to predict value
+      // or any value in the flash_status_q
+      csr_rd(.ptr(ral.flash_status), .value(rdata), .backdoor(1));
+
+      if (rdata == `gmv(ral.flash_status)) match = 1;
+
+      if (!match) begin
+        `DV_CHECK_LE(flash_status_q.size, 1)
+        while (flash_status_q.size > 0) begin
+          bit[TL_DW-1:0] predict_val = flash_status_q.pop_front();
+          if (predict_val == rdata) begin
+            match = 1;
+            void'(ral.flash_status.predict(.value(predict_val), .kind(UVM_PREDICT_READ)));
+            `uvm_info(`gfn, $sformatf("flash_status updated to: 0x%0h", predict_val), UVM_MEDIUM)
+            break;
+          end
+        end
+      end
+
+      if (!match) begin
+        `uvm_error(`gfn,
+                   $sformatf("flash_status mismatch, backdoor value: 0x%0x, exp: 0x%0x, or %p",
+                   rdata, `gmv(ral.flash_status), flash_status_q))
+      end
+
+      // when this is just updated, TL interface may read back old value and it's ok, it will get
+      // the new one in the next read
+      if (pre_flash_status_val != `gmv(ral.flash_status)) begin
+        flash_status_tl_allow_q.push_back(pre_flash_status_val);
+      end
+    end join_none
   endfunction
+
+  // flash status can be set by SW, then it's updated when a spi transaction completes
+  // If a flash status write occurs during spi transaction, not sure if it will be taken or not
+  // latch the flash_status at the beginning of the transaction. If some write happens during
+  // transaction, save to flash_status_q. it's ok that HW update status to any value in both Q.
+  virtual task forever_latch_flash_status();
+    forever begin
+      @(negedge cfg.spi_host_agent_cfg.vif.csb);
+      if (flash_status_q.size > 0) begin
+        flash_status_settle_q.delete();
+        flash_status_settle_q.push_back(flash_status_q[$]);
+        flash_status_q.delete();
+      end
+    end
+  endtask
 
   virtual function internal_process_cmd_e triage_flash_cmd(bit[7:0] opcode, output bit set_busy);
     internal_process_cmd_e cmd_type;
@@ -340,9 +407,26 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   virtual function void process_upload_cmd(spi_item item);
     bit [31:0] payload_start_addr = get_converted_addr(PAYLOAD_FIFO_START_ADDR);
 
-    upload_cmd_q.push_back(item.opcode);
+    if (upload_cmd_from_tl_q.size > 0) begin
+      // upload cmd may arrive at tl interface before we receive spi item
+      // only one item can arrive earlier
+      `DV_CHECK_EQ(upload_cmd_from_tl_q.size, 1)
+      `DV_CHECK_EQ(item.opcode, upload_cmd_from_tl_q[0])
+      upload_cmd_from_tl_q.delete();
+    end else begin
+      upload_cmd_from_spi_q.push_back(item.opcode);
+    end
+
     if (item.address_q.size > 0) begin
-      upload_addr_q.push_back(convert_addr_from_byte_queue(item.address_q));
+      bit[31:0] addr = convert_addr_from_byte_queue(item.address_q);
+      // same as cmd, addr may arrive at tl interface before we receive spi item
+      if (upload_addr_from_tl_q.size > 0) begin
+        `DV_CHECK_EQ(upload_addr_from_tl_q.size, 1)
+        `DV_CHECK_EQ(addr, upload_addr_from_tl_q[0])
+        upload_addr_from_tl_q.delete();
+      end else begin
+        upload_addr_from_spi_q.push_back(addr);
+      end
     end
     foreach (item.payload_q[i]) begin
       uvm_reg_addr_t addr = payload_start_addr + (i % PAYLOAD_FIFO_SIZE);
@@ -514,6 +598,16 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           // store the item in a queue as flash_status is updated at the end of spi transaction
           flash_status_q.push_back(item.a_data);
         end
+        if (!write && channel == DataChannel) begin
+          // it's ok to read back old value once.
+          flash_status_t exp_val = `gmv(ral.flash_status);
+          flash_status_t exp_data_q[$] = {flash_status_tl_allow_q, exp_val};
+          `DV_CHECK(item.d_data inside {exp_data_q},
+                    $sformatf("act (0x%0x) != exp %p", item.d_data, exp_data_q))
+          flash_status_tl_allow_q.delete();
+        end
+        // check is done above and predict is done after spi item completes. can return now
+        return;
       end
       "intr_test": begin
         if (write && channel == AddrChannel) begin
@@ -528,20 +622,22 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       end
       "upload_cmdfifo": begin
         if (!write && channel == DataChannel) begin
-          bit [31:0] exp_opcode;
-          `DV_CHECK_GT(upload_cmd_q.size, 0)
-          exp_opcode = upload_cmd_q.pop_front();
-
-          `DV_CHECK_EQ(item.d_data, exp_opcode)
+          // if tl read arrives after spi item, compare it, otherwise, store it in a queue
+          if (upload_cmd_from_spi_q.size > 0) begin
+            `DV_CHECK_EQ(item.d_data, upload_cmd_from_spi_q.pop_front())
+          end else begin
+            upload_cmd_from_tl_q.push_back(item.d_data);
+          end
         end
       end
       "upload_addrfifo": begin
         if (!write && channel == DataChannel) begin
-          bit [31:0] exp_addr;
-          `DV_CHECK_GT(upload_addr_q.size, 0)
-          exp_addr = upload_addr_q.pop_front();
-
-          `DV_CHECK_EQ(item.d_data, exp_addr)
+          // if tl read arrives after spi item, compare it, otherwise, store it in a queue
+          if (upload_addr_from_spi_q.size > 0) begin
+            `DV_CHECK_EQ(item.d_data, upload_addr_from_spi_q.pop_front())
+          end else begin
+            upload_addr_from_tl_q.push_back(item.d_data);
+          end
         end
       end
       default: begin
@@ -689,6 +785,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     rx_word_q.delete();
     spi_passthrough_downstream_q.delete();
     flash_status_q.delete();
+    flash_status_settle_q.delete();
+    flash_status_tl_allow_q.delete();
   endfunction
 
   function void check_phase(uvm_phase phase);
@@ -699,9 +797,13 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_CHECK_EQ(tx_word_q.size, 0)
     `DV_CHECK_EQ(rx_word_q.size, 0)
     `DV_CHECK_EQ(spi_passthrough_downstream_q.size, 0)
-    `DV_CHECK_EQ(upload_cmd_q.size, 0)
-    `DV_CHECK_EQ(upload_addr_q.size, 0)
+    `DV_CHECK_EQ(upload_cmd_from_spi_q.size, 0)
+    `DV_CHECK_EQ(upload_addr_from_spi_q.size, 0)
+    `DV_CHECK_EQ(upload_cmd_from_tl_q.size, 0)
+    `DV_CHECK_EQ(upload_addr_from_tl_q.size, 0)
     `DV_CHECK_EQ(flash_status_q.size, 0)
+    `DV_CHECK_EQ(flash_status_settle_q.size, 0)
+    `DV_CHECK_EQ(flash_status_tl_allow_q.size, 0)
   endfunction
 
 endclass
