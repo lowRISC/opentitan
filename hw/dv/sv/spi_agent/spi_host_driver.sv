@@ -162,43 +162,18 @@ class spi_host_driver extends spi_driver;
     if (req.write_command) begin
       issue_data(req.payload_q);
     end else begin
-      collect_flash_read_data(req.num_lanes, req.read_size, rsp.payload_q);
+      repeat (req.read_size) begin
+        logic [7:0] data;
+        cfg.read_flash_byte(.num_lanes(req.num_lanes), .is_device_rsp(1), .data(data));
+        rsp.payload_q.push_back(data);
+      end
+      `uvm_info(`gfn, $sformatf("collect read data for flash: 0x%p", rsp.payload_q), UVM_MEDIUM)
     end
 
     wait(sck_pulses == 0);
     cfg.vif.csb[cfg.csb_sel] <= 1'b1;
     cfg.vif.sio <= 'dx;
   endtask
-
-
-  virtual task collect_flash_read_data(input int num_lanes, input int num_bytes,
-                                       output logic [7:0] payload_q[$]);
-    for (int b = 0; b < num_bytes; b++) begin
-      int which_bit = 8;
-      logic [7:0] data;
-      for (int i = 0; i < 8; i += num_lanes) begin
-        cfg.wait_sck_edge(SamplingEdge);
-        case(num_lanes)
-          1: data[--which_bit] = cfg.vif.sio[1];
-          2: begin
-            data[--which_bit] = cfg.vif.sio[1];
-            data[--which_bit] = cfg.vif.sio[0];
-          end
-          4: begin
-            data[--which_bit] = cfg.vif.sio[3];
-            data[--which_bit] = cfg.vif.sio[2];
-            data[--which_bit] = cfg.vif.sio[1];
-            data[--which_bit] = cfg.vif.sio[0];
-          end
-          default: `uvm_fatal(`gfn, $sformatf("Unsupported lanes num 0x%0h", num_lanes))
-        endcase
-      end
-      `DV_CHECK_EQ(which_bit, 0)
-      payload_q.push_back(data);
-      `uvm_info(`gfn, $sformatf("collect one byte data for flash: 0x%0h", data), UVM_HIGH)
-    end
-    `uvm_info(`gfn, $sformatf("collect read data for flash: 0x%p", payload_q), UVM_MEDIUM)
-  endtask : collect_flash_read_data
 
   task drive_sck_no_csb_item();
     repeat (req.dummy_clk_cnt) begin

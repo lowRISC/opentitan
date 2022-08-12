@@ -202,7 +202,8 @@ class spi_monitor extends dv_base_monitor#(
             cfg.wait_sck_edge(LeadingEdge);
 
             // first byte is opcode. opcode or address is always sent on single mode
-            sample_flash_one_byte_data(.num_lanes(1), .is_device_rsp(0), .data(item.opcode));
+            sample_and_check_flash_byte(.num_lanes(1), .is_device_rsp(0),
+                              .data(item.opcode), .check_data_not_z(1));
             opcode_received = 1;
             cfg.extract_cmd_info_from_opcode(item.opcode,
                 // output
@@ -217,12 +218,8 @@ class spi_monitor extends dv_base_monitor#(
             req_analysis_port.write(item);
 
             forever begin
-              byte byte_data;
-              sample_flash_one_byte_data(.num_lanes(item.num_lanes),
-                                         .is_device_rsp(!item.write_command),
-                                         .data(byte_data),
-                                         // data may be high-z, because the cmd is blocked
-                                         .check_data_not_z(0));
+              logic[7:0] byte_data;
+              sample_and_check_flash_byte(item.num_lanes, !item.write_command, byte_data);
               item.payload_q.push_back(byte_data);
             end
           end: sample_thread
@@ -236,28 +233,22 @@ class spi_monitor extends dv_base_monitor#(
     join
   endtask : collect_flash_trans
 
-  virtual task sample_flash_one_byte_data(input int num_lanes, input bit is_device_rsp,
-                                          output logic [7:0] data,
-                                          input bit check_data_not_z = 1);
-    int which_bit = 8;
-    for (int i = 0; i < 8; i += num_lanes) begin
-      cfg.wait_sck_edge(SamplingEdge);
-      case(num_lanes)
-        1: data[--which_bit] = is_device_rsp ? cfg.vif.sio[1] : cfg.vif.sio[0];
-        2: begin
-          data[--which_bit] = cfg.vif.sio[1];
-          data[--which_bit] = cfg.vif.sio[0];
-        end
-        4: begin
-          data[--which_bit] = cfg.vif.sio[3];
-          data[--which_bit] = cfg.vif.sio[2];
-          data[--which_bit] = cfg.vif.sio[1];
-          data[--which_bit] = cfg.vif.sio[0];
-        end
-        default: `uvm_fatal(`gfn, $sformatf("Unsupported lanes num 0x%0h", num_lanes))
-      endcase
+  // address is 3 or 4 bytes
+  virtual task sample_flash_address(input int num_bytes, output bit[7:0] byte_addr_q[$]);
+    for (int i = 0; i < num_bytes; i++) begin
+      byte addr;
+      sample_and_check_flash_byte(.num_lanes(1), .is_device_rsp(0),
+                        .data(addr), .check_data_not_z(1));
+      byte_addr_q.push_back(addr);
     end
-    `DV_CHECK_EQ(which_bit, 0)
+    `uvm_info(`gfn, $sformatf("sampled flash addr: %p", byte_addr_q), UVM_HIGH)
+  endtask : sample_flash_address
+
+  task sample_and_check_flash_byte(input int num_lanes,
+                                   input bit is_device_rsp,
+                                   output logic [7:0] data,
+                                   input bit check_data_not_z = 0);
+    cfg.read_flash_byte(num_lanes, is_device_rsp, data);
 
     if (cfg.en_monitor_checks) begin
       foreach (data[i]) begin
@@ -265,19 +256,7 @@ class spi_monitor extends dv_base_monitor#(
         if (check_data_not_z) `DV_CHECK_CASE_NE(data[i], 1'bz)
       end
     end
-
-    `uvm_info(`gfn, $sformatf("sampled one byte data for flash: 0x%0h", data), UVM_HIGH)
-  endtask : sample_flash_one_byte_data
-
-  // address is 3 or 4 bytes
-  virtual task sample_flash_address(input int num_bytes, output bit[7:0] byte_addr_q[$]);
-    for (int i = 0; i < num_bytes; i++) begin
-      byte addr;
-      sample_flash_one_byte_data(.num_lanes(1), .is_device_rsp(0), .data(addr));
-      byte_addr_q.push_back(addr);
-    end
-    `uvm_info(`gfn, $sformatf("sampled flash addr: %p", byte_addr_q), UVM_HIGH)
-  endtask : sample_flash_address
+  endtask
 
   virtual task monitor_ready_to_end();
     ok_to_end = cfg.vif.csb[cfg.csb_sel];
