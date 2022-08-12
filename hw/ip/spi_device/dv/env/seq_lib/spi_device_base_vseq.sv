@@ -261,6 +261,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
     `DV_SPINWAIT(
       while (1) begin
+        cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
         `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
                                       opcode == READ_STATUS_1;
                                       address_q.size() == 0;
@@ -269,7 +270,6 @@ class spi_device_base_vseq extends cip_base_vseq #(
         `uvm_send(m_spi_host_seq)
         // bit 0 is busy bit
         if (m_spi_host_seq.rsp.payload_q[0][0] === 0) break;
-        cfg.clk_rst_vif.wait_clks(1);
       end
     )
   endtask

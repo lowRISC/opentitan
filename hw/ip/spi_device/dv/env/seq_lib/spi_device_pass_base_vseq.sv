@@ -16,6 +16,9 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   bit allow_intercept;
   bit allow_upload;
 
+  // we can only hold one payload, set it busy to avoid payload is overwritten before read out.
+  bit always_set_busy_when_upload_contain_payload;
+
   bit [7:0] valid_opcode_q[$];
   rand bit valid_op;
   rand bit [7:0] opcode;
@@ -375,23 +378,32 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     if (idx >= NUM_INTERNAL_PROCESSED_CMD && allow_upload) begin
       // upload only applies to program or no data
       if (ral.cmd_info[idx].payload_en.get() == 0 ||
-        ral.cmd_info[idx].payload_dir.get() == PayloadIn) begin
-          `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info[idx].upload)
-       end
+          ral.cmd_info[idx].payload_dir.get() == PayloadIn) begin
+        `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info[idx].upload)
+      end else begin
+        ral.cmd_info[idx].upload.set(0);
+      end
     end
-    `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info[idx].busy)
+
+    // set busy enabled, when this flas is set and cmd is updated with payload
+    if (always_set_busy_when_upload_contain_payload && ral.cmd_info[idx].upload.get()
+       && (ral.cmd_info[idx].payload_en.get() == 0 ||
+           ral.cmd_info[idx].payload_dir.get() == PayloadIn)) begin
+      ral.cmd_info[idx].busy.set(1);
+    end else begin
+      `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info[idx].busy)
+    end
     csr_update(.csr(ral.cmd_info[idx]));
   endtask : add_cmd_info
 
   virtual task random_access_flash_status(bit write = $urandom_range(0, 1),
                                           bit busy  = $urandom_range(0, 1),
-                                          bit wel   = $urandom_range(0, 1));
+                                          bit wel   = $urandom_range(0, 1),
+                                          bit [21:0] other_status = $urandom());
     if (write) begin
-      ral.flash_status.busy.set(busy);
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.flash_status.status,
-                                    value[0] == wel;)
+      bit [23:0] status_val = {other_status, wel, busy};
       `uvm_info(`gfn, $sformatf("program flash_status: 0x%0h", ral.flash_status.get()), UVM_MEDIUM)
-      csr_update(.csr(ral.flash_status));
+      csr_wr(.ptr(ral.flash_status), .value(status_val));
 
       cfg.clk_rst_vif.wait_clks(10);
     end else begin
@@ -400,22 +412,33 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     end
   endtask
 
+  virtual task clear_flash_busy_bit();
+    `uvm_info(`gfn, "Clearing flash busy bit", UVM_MEDIUM)
+    csr_wr(ral.flash_status.busy, 0);
+    csr_spinwait(ral.flash_status.busy, 0);
+  endtask
+
   // check if 3 upload fifo (cmd, addr, payload) are empty. If so, read all of them
   // if busy is set, clear it
   virtual task read_upload_fifos();
-    bit cmdfifo_not_empty_val;
-    bit [TL_DW-1:0] status_val, status2_val;
+    bit [TL_DW-1:0] intr_state_val, status_val, status2_val;
     int cmdfifo_depth_val, addrfifo_depth_val, payload_depth_val;
     int payload_base_offset;
     bit busy_val;
 
-    csr_rd(ral.intr_state.upload_cmdfifo_not_empty, cmdfifo_not_empty_val);
+    csr_rd(ral.intr_state, intr_state_val);
     csr_rd(ral.upload_status, status_val);
     csr_rd(ral.upload_status2, status2_val);
 
     cmdfifo_depth_val = get_field_val(ral.upload_status.cmdfifo_depth, status_val);
     addrfifo_depth_val = get_field_val(ral.upload_status.addrfifo_depth, status_val);
     payload_depth_val = get_field_val(ral.upload_status2.payload_depth, status2_val);
+
+    if (`gmv(ral.intr_state.upload_cmdfifo_not_empty) == 0 &&
+        `gmv(ral.intr_state.upload_payload_not_empty) == 0) begin
+      return;
+    end
+
     for (int i = 0; i < cmdfifo_depth_val; i++) begin
       bit [TL_DW-1:0] val;
       csr_rd(ral.upload_cmdfifo, val);
@@ -440,8 +463,17 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
                 UVM_MEDIUM)
     end
 
+    // clear interrupt
+    csr_wr(ral.intr_state, intr_state_val);
+
     // clear busy bit
     csr_rd(ral.flash_status.busy, busy_val);
-    if (busy_val == 1) random_access_flash_status(.write(1), .busy(0));
+    if (busy_val == 1) clear_flash_busy_bit();
+  endtask
+
+  task post_start();
+    super.post_start();
+    // read flash_status for check
+    random_access_flash_status(.write(0));
   endtask
 endclass : spi_device_pass_base_vseq
