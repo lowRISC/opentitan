@@ -28,7 +28,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   virtual entropy_src_path_if   entropy_src_path_vif;
 
   // handle to the interrupt interface
-  intr_vif interrupt_vif;
+  dv_utils_pkg::intr_vif interrupt_vif;
   // Pointer to the preconditioning fifo exception interface.
   // (For tracking errors during FW_OV mode)
   virtual entropy_subsys_fifo_exception_if#(1) precon_fifo_vif;
