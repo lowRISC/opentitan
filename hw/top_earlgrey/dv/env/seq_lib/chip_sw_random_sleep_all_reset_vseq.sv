@@ -24,7 +24,6 @@ class chip_sw_random_sleep_all_reset_vseq extends chip_sw_base_vseq;
   rand int cycles_after_trigger;
   rand int cycles_till_reset;
   rand int reset_delay;
-  int loop_num;
 
   constraint cycles_after_trigger_c {cycles_after_trigger inside {[0 : 9]};}
   constraint cycles_tll_reset_c {cycles_till_reset inside {[0 : 200]};}
@@ -37,26 +36,20 @@ class chip_sw_random_sleep_all_reset_vseq extends chip_sw_base_vseq;
 
   virtual task cpu_init();
     bit[7:0] rst_idx[NumRound];
-    loop_num = 0;
     for (int i=0; i< NumRound; i = i+1) begin
       if (i == (NumRound-1)) begin
         rst_idx[i] = i;
       end
       else begin
         rst_idx[i] = assa[i];
-        if (rst_idx[i] inside {[0:3]}) begin
-          loop_num = loop_num + 1;
-        end
       end
     end
-
-    `uvm_info(`gfn, $sformatf("HW rst loop # : %d", loop_num), UVM_MEDIUM)
-
     super.cpu_init();
     sw_symbol_backdoor_overwrite("RST_IDX", rst_idx);
   endtask
 
   virtual task body();
+    int loop_idx = 0;
     super.body();
     // mimic external pull up in key in0
     cfg.ast_supply_vif.force_key0_i(1'b1);
@@ -64,7 +57,8 @@ class chip_sw_random_sleep_all_reset_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
     `uvm_info(`gfn, "SW test ready", UVM_MEDIUM)
 
-    repeat (loop_num) begin
+    repeat (NumRound) begin
+      `uvm_info(`gfn, $sformatf("loop: %0d / %0d", loop_idx++, NumRound), UVM_MEDIUM)
       `DV_WAIT(
             cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by hw por" ||
             cfg.sw_logger_vif.printed_log ==
@@ -72,15 +66,16 @@ class chip_sw_random_sleep_all_reset_vseq extends chip_sw_base_vseq;
             cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by sysrst" ||
             cfg.sw_logger_vif.printed_log ==
                 "Booting and setting normal sleep followed by sysrst" ||
+            cfg.sw_logger_vif.printed_log == "Let SV wait timer reset" ||
             cfg.sw_logger_vif.printed_log == "Last Booting" ||
-            cfg.sw_logger_vif.printed_log == "Test finish",
-            // 20ms
-            20_000_000)
+            cfg.sw_logger_vif.printed_log == "Test finish")
+
+      `uvm_info(`gfn, $sformatf("SW message delivered to TB\n >> %0s",
+                                cfg.sw_logger_vif.printed_log), UVM_MEDIUM)
 
        if (cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by sysrst" ||
            cfg.sw_logger_vif.printed_log == "Booting and setting normal sleep followed by sysrst")
            begin
-         `uvm_info(`gfn, "SW message delivered to TB", UVM_MEDIUM)
          repeat (10) @cfg.pwrmgr_low_power_vif.cb;  //
          repeat (cycles_till_reset) @cfg.pwrmgr_low_power_vif.cb;
          `uvm_info(`gfn, $sformatf("sysrst req set after fixed delay : %d + variable delay : %d",
@@ -88,21 +83,29 @@ class chip_sw_random_sleep_all_reset_vseq extends chip_sw_base_vseq;
          cfg.ast_supply_vif.pulse_key0_i_next_trigger(50 + cycles_after_trigger);
        end
        else if (cfg.sw_logger_vif.printed_log ==
-                "Booting and setting deep sleep followed by hw por" |
+                "Booting and setting deep sleep followed by hw por" ||
                 cfg.sw_logger_vif.printed_log ==
                 "Booting and setting normal sleep followed by hw por") begin
-         `uvm_info(`gfn, "SW message delivered to TB", UVM_MEDIUM)
          repeat (10) @cfg.pwrmgr_low_power_vif.cb;
          repeat (cycles_till_reset) @cfg.pwrmgr_low_power_vif.cb;
-         `uvm_info(`gfn, $sformatf("sysrst req set after fixed delay : %d + variable delay : %d",
+         `uvm_info(`gfn, $sformatf("hw por set after fixed delay : %d + variable delay : %d",
                                     10, cycles_till_reset), UVM_MEDIUM)
          execute_reset();
+       end else if (cfg.sw_logger_vif.printed_log == "Let SV wait timer reset") begin
+         // Wait until c test finishes the current round and goes to reset.
+         `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
+       end else begin
+         // Add some time slap for dummy wait event
+         repeat (10) @cfg.pwrmgr_low_power_vif.fast_cb;
        end
-    end
-  endtask
 
-  virtual task pre_start();
-    super.pre_start();
+      // Wait for reboot except the last round
+      if (cfg.sw_logger_vif.printed_log != "Last Booting" &&
+          cfg.sw_logger_vif.printed_log != "Test finish") begin
+        `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
+      end
+      `uvm_info(`gfn, "loop end", UVM_MEDIUM)
+    end
   endtask
 
   task execute_reset();
