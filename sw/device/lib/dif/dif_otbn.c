@@ -165,7 +165,7 @@ dif_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn, uint32_t offset_bytes,
 dif_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn, uint32_t offset_bytes,
                                 void *dest, size_t len_bytes) {
   if (otbn == NULL || dest == NULL ||
-      !check_offset_len(offset_bytes, len_bytes, OTBN_IMEM_SIZE_BYTES)) {
+      !check_offset_len(offset_bytes, len_bytes, OTBN_DMEM_SIZE_BYTES)) {
     return kDifBadArg;
   }
 
