@@ -369,6 +369,7 @@ module entropy_src_reg_top (
   logic err_code_es_main_sm_err_qs;
   logic err_code_es_cntr_err_qs;
   logic err_code_sha3_state_err_qs;
+  logic err_code_sha3_rst_storage_err_qs;
   logic err_code_fifo_write_err_qs;
   logic err_code_fifo_read_err_qs;
   logic err_code_fifo_state_err_qs;
@@ -2996,6 +2997,32 @@ module entropy_src_reg_top (
     .qs     (err_code_sha3_state_err_qs)
   );
 
+  //   F[sha3_rst_storage_err]: 24:24
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_err_code_sha3_rst_storage_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.sha3_rst_storage_err.de),
+    .d      (hw2reg.err_code.sha3_rst_storage_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (err_code_sha3_rst_storage_err_qs)
+  );
+
   //   F[fifo_write_err]: 28:28
   prim_subreg #(
     .DW      (1),
@@ -3824,6 +3851,7 @@ module entropy_src_reg_top (
         reg_rdata_next[21] = err_code_es_main_sm_err_qs;
         reg_rdata_next[22] = err_code_es_cntr_err_qs;
         reg_rdata_next[23] = err_code_sha3_state_err_qs;
+        reg_rdata_next[24] = err_code_sha3_rst_storage_err_qs;
         reg_rdata_next[28] = err_code_fifo_write_err_qs;
         reg_rdata_next[29] = err_code_fifo_read_err_qs;
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
