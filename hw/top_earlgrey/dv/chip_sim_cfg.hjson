@@ -941,6 +941,14 @@
       reseed: 20
     }
     {
+      name: chip_prim_tl_access
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "chip_prim_tl_access_vseq"
+      en_run_modes: ["stub_cpu_mode"]
+      run_opts: ["+en_scb=0", "+en_scb_tl_err_chk=0"]
+      reseed: 1
+    }
+    {
       name: chip_plic_all_irqs
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests/autogen:plic_all_irqs_test:1"]

@@ -11,6 +11,7 @@
 // This needs to be listed prior to all sequences that derive from it.
 `include "chip_sw_base_vseq.sv"
 `include "chip_jtag_base_vseq.sv"
+`include "chip_prim_tl_access_vseq.sv"
 `include "chip_sw_full_aon_reset_vseq.sv"
 `include "chip_sw_deep_power_glitch_vseq.sv"
 `include "chip_sw_main_power_glitch_vseq.sv"

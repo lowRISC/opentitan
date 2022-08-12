@@ -2381,7 +2381,7 @@
               When `lc_dft_en_i` is Off, accessing this region will result in a TLUL error.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_prim_tl_access"]
     }
 
     // FLASH (pre-verified IP) integration tests:
@@ -2558,12 +2558,10 @@
 
             - The prim tlul interface is a open source placeholder for the closed source CSRs that
               will be implemented in a translation 'shim'.
-            - Verify that when `lc_nvm_debug_en_i` is On, this region can be read / written to by
-              the SW. When `lc_nvm_debug_en_i` is Off, accessing this region will result in a TLUL
-              error.
+            - Verify that this region can be read / written to by the SW in any LC state.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_prim_tl_access"]
     }
     {
       name: chip_sw_flash_ctrl_clock_freqs
