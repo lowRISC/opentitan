@@ -372,9 +372,6 @@ module tb;
        null, "*.env", "por_rstn_vif", por_rstn_if);
 
     uvm_config_db#(virtual pins_if #(1))::set(
-       null, "*.env", "pwrb_in_vif", pwrb_in_if);
-
-    uvm_config_db#(virtual pins_if #(1))::set(
         null, "*.env", "ec_rst_vif", ec_rst_if);
 
     uvm_config_db#(virtual pins_if #(1))::set(
