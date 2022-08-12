@@ -128,9 +128,9 @@ create_set_reset_scenario_script -output reset_scenarios.tcl -primary
 # Import hand-edited reset scenario file
 if {$RESET_SCENARIO_FILE != ""} {
   source $RESET_SCENARIO_FILE
+} else {
+  source reset_scenarios.tcl
 }
-
-source reset_scenarios.tcl
 
 #########################
 ## Run RDC             ##
