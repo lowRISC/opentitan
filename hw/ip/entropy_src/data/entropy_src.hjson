@@ -1471,6 +1471,15 @@
                 This bit will stay set until the next reset.
                 '''
         }
+        { bits: "24",
+          name: "SHA3_RST_STORAGE_ERR",
+          desc: '''
+                This bit will be set to one when a SHA3_RST_STORAGE_ERR signal being
+                active has been detected.
+                This error will signal a fatal alert, and also an interrupt if enabled.
+                This bit will stay set until the next reset.
+                '''
+        }
         { bits: "28",
           name: "FIFO_WRITE_ERR",
           desc: '''

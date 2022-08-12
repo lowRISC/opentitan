@@ -416,12 +416,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    es_cntr_err;
   logic                    es_cntr_err_sum;
   logic                    sha3_state_error_sum;
+  logic                    sha3_rst_storage_err_sum;
   logic                    efuse_es_sw_reg_en;
   logic                    efuse_es_sw_ov_en;
 
   logic                    sha3_state_error;
   logic                    sha3_count_error;
-  logic                    sha3_rst_storage_error;
+  logic                    sha3_rst_storage_err;
   logic [EsEnableCopies-1:0] es_enable_q_fo;
   logic                      es_hw_regwen;
   logic                      recov_alert_state;
@@ -735,6 +736,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                              es_ack_sm_err_sum ||
                                              es_main_sm_err_sum)) ||
                                              es_cntr_err_sum || // prim_count err is always active
+                                             sha3_rst_storage_err_sum ||
                                              sha3_state_error_sum;
 
   // set fifo errors that are single instances of source
@@ -762,6 +764,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
          err_code_test_bit[22];
   assign sha3_state_error_sum = sha3_state_error ||
          err_code_test_bit[23];
+  assign sha3_rst_storage_err_sum = sha3_rst_storage_err ||
+         err_code_test_bit[24];
   assign fifo_write_err_sum =
          sfifo_esrng_err[2] ||
          sfifo_observe_err[2] ||
@@ -799,6 +803,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign hw2reg.err_code.sha3_state_err.d = 1'b1;
   assign hw2reg.err_code.sha3_state_err.de = sha3_state_error_sum;
+
+  assign hw2reg.err_code.sha3_rst_storage_err.d = 1'b1;
+  assign hw2reg.err_code.sha3_rst_storage_err.de = sha3_rst_storage_err_sum;
 
 
  // set the err code type bits
@@ -1355,7 +1362,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .mubi_o(mubi_es_type_fanout)
   );
 
-  // TODO(#9759): add more description.
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_thresh_scope;
   assign mubi_thresh_scope = mubi4_t'(reg2hw.conf.threshold_scope.q);
@@ -2379,12 +2385,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .error_o (sha3_err),
     .sparse_fsm_error_o (sha3_state_error),
     .count_error_o  (sha3_count_error),
-    .keccak_storage_rst_error_o (sha3_rst_storage_error)
+    .keccak_storage_rst_error_o (sha3_rst_storage_err)
   );
-
-  // TODO: Connect to an alert
-  logic unused_sha3_rst_storage_error;
-  assign unused_sha3_rst_storage_error = sha3_rst_storage_error;
 
 
   //--------------------------------------------
@@ -2594,7 +2596,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // unused signals
   //--------------------------------------------
 
-  assign unused_err_code_test_bit = (|{err_code_test_bit[27:23],err_code_test_bit[19:3]});
+  assign unused_err_code_test_bit = (|{err_code_test_bit[27:25],err_code_test_bit[19:3]});
   assign unused_sha3_state = (|sha3_state[0][sha3_pkg::StateW-1:SeedLen]);
   assign unused_entropy_data = (|reg2hw.entropy_data.q);
   assign unused_fw_ov_rd_data = (|reg2hw.fw_ov_rd_data.q);
