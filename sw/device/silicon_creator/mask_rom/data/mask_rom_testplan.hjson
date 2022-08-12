@@ -120,19 +120,20 @@
 
     // Shutdown: Verify alert configuration
     {
-      name: mask_rom_e2e_shutdown_exception_c
+      name: mask_rom_e2e_shutdown_alert_config
       desc: '''Verify that alerts trigger a chip reset when enabled.
 
             - For PROD, PROD_END, DEV, and RMA life cycle states
               - Use an OTP image with an alert enabled.
             - Boot a ROM_EXT that triggers this alert by writing to a ALERT_TEST register.
-            - Verify that the chip resets.
+            - Verify that ROM_EXT boots and the chip resets after the write to the ALERT_TEST
+              register.
             '''
       tags: ["verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
-    
+
     // Functests
     {
       name: mask_rom_functests
@@ -466,54 +467,6 @@
             - Verify that that all sections of retention SRAM have been cleared.
             '''
       tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-
-    // Shutdown
-    {
-      name: mask_rom_e2e_shutdown_boot_failure
-      desc: '''Verify that all boot failure cases enter shutdown.
-
-            - Ensure that all invocations of `shutdown_finalize` and
-              `SHUTDOWN_IF_ERROR` result in a shutdown.
-            '''
-      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: mask_rom_e2e_shutdown_alert_configuration
-      desc: '''Verify that alert-handler is configured correctly.
-
-            - Verify alert-handler CSRs are configured as expected per the OTP.
-            - Test program forces an alert to trigger full escalation path.
-            - Verify that a reset occurs.
-            '''
-      tags: ["mask_rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: mask_rom_e2e_shutdown_mask_rom_alert_shutdown
-      desc: '''Verify that alerts during Mask ROM execution lead to shutdown.
-
-            - Trigger an alert while the Mask ROM is executing.
-            - Verify that the chip undergoes expected shutdown sequence.
-            '''
-      tags: ["mask_rom", "verilator", "dv"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: mask_rom_e2e_shutdown_interrupts
-      desc: '''Verify that interrupts lead to shutdown.
-
-            - Randomly select a group of interrupts.
-            - Force those interrupts during Mask ROM execution.
-            - Verify that shutdown occurs when the IRQ is triggered.
-            '''
-      tags: ["mask_rom", "dv"]
       milestone: V2
       tests: []
     }
