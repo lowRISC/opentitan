@@ -385,6 +385,16 @@ dif_result_t dif_clkmgr_recov_err_code_clear_codes(
   return kDifOk;
 }
 
+dif_result_t dif_clkmgr_fatal_err_code_get_codes(
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_fatal_err_codes_t *codes) {
+  if (clkmgr == NULL || codes == NULL) {
+    return kDifBadArg;
+  }
+  *codes =
+      mmio_region_read32(clkmgr->base_addr, CLKMGR_FATAL_ERR_CODE_REG_OFFSET);
+  return kDifOk;
+}
+
 dif_result_t dif_clkmgr_wait_for_ext_clk_switch(const dif_clkmgr_t *clkmgr) {
   if (clkmgr == NULL) {
     return kDifBadArg;

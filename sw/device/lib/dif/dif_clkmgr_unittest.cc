@@ -541,5 +541,46 @@ TEST_F(MeasureCountTest, GetThresholds) {
     EXPECT_EQ(max_threshold, 9);
   }
 }
+
+class RecovErrorTest : public ClkMgrTest {};
+
+TEST_F(RecovErrorTest, GetBadArgs) {
+  dif_clkmgr_recov_err_codes_t codes;
+  EXPECT_DIF_BADARG(dif_clkmgr_recov_err_code_get_codes(nullptr, nullptr));
+  EXPECT_DIF_BADARG(dif_clkmgr_recov_err_code_get_codes(nullptr, &codes));
+  EXPECT_DIF_BADARG(dif_clkmgr_recov_err_code_get_codes(&clkmgr_, nullptr));
+}
+
+TEST_F(RecovErrorTest, GetCodes) {
+  dif_clkmgr_recov_err_codes_t codes;
+  EXPECT_READ32(CLKMGR_RECOV_ERR_CODE_REG_OFFSET, 6);
+  EXPECT_DIF_OK(dif_clkmgr_recov_err_code_get_codes(&clkmgr_, &codes));
+  EXPECT_EQ(codes, 6);
+}
+
+TEST_F(RecovErrorTest, ClearBadArgs) {
+  EXPECT_DIF_BADARG(dif_clkmgr_recov_err_code_clear_codes(nullptr, 4));
+}
+
+TEST_F(RecovErrorTest, ClearCodes) {
+  EXPECT_WRITE32(CLKMGR_RECOV_ERR_CODE_REG_OFFSET, 6);
+  EXPECT_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(&clkmgr_, 6));
+}
+
+class FatalErrorTest : public ClkMgrTest {};
+
+TEST_F(FatalErrorTest, GetBadArgs) {
+  dif_clkmgr_fatal_err_type_t codes;
+  EXPECT_DIF_BADARG(dif_clkmgr_fatal_err_code_get_codes(nullptr, nullptr));
+  EXPECT_DIF_BADARG(dif_clkmgr_fatal_err_code_get_codes(nullptr, &codes));
+  EXPECT_DIF_BADARG(dif_clkmgr_fatal_err_code_get_codes(&clkmgr_, nullptr));
+}
+
+TEST_F(FatalErrorTest, GetCodes) {
+  dif_clkmgr_fatal_err_type_t codes;
+  EXPECT_READ32(CLKMGR_FATAL_ERR_CODE_REG_OFFSET, 6);
+  EXPECT_DIF_OK(dif_clkmgr_fatal_err_code_get_codes(&clkmgr_, &codes));
+  EXPECT_EQ(codes, 6);
+}
 }  // namespace
 }  // namespace dif_clkmgr_unittest
