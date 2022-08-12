@@ -84,7 +84,7 @@ module tb;
   assign interrupts[FatalErr]         = intr_fatal_err;
 
   bind prim_packer_fifo : dut.u_entropy_src_core.u_prim_packer_fifo_precon
-    entropy_subsys_fifo_exception_if#(1) u_fifo_exc_if (.*);
+    entropy_subsys_fifo_exception_if#(1) u_fifo_exc_if (.clk_i, .rst_ni, .wready_o, .wvalid_i);
 
   initial begin
     // Drive clk and rst_n from clk_if
