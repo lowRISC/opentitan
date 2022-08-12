@@ -164,4 +164,30 @@ class spi_agent_cfg extends dv_base_agent_cfg;
       dummy_cycles  = 0;
     end
   endfunction  : extract_cmd_info_from_opcode
+
+  // this task collects one byte data based on num_lanes, which is used in both monitor and driver
+  task read_flash_byte(input int num_lanes,
+                       input bit is_device_rsp,
+                       output logic [7:0] data);
+    int which_bit = 8;
+    while (which_bit != 0) begin
+      wait_sck_edge(SamplingEdge);
+      case (num_lanes)
+        1: data[--which_bit] = is_device_rsp ? vif.sio[1] : vif.sio[0];
+        2: begin
+          data[--which_bit] = vif.sio[1];
+          data[--which_bit] = vif.sio[0];
+        end
+        4: begin
+          data[--which_bit] = vif.sio[3];
+          data[--which_bit] = vif.sio[2];
+          data[--which_bit] = vif.sio[1];
+          data[--which_bit] = vif.sio[0];
+        end
+        default: `uvm_fatal(`gfn, $sformatf("Unsupported lanes num 0x%0h", num_lanes))
+      endcase
+    end
+
+    `uvm_info(`gfn, $sformatf("sampled one byte data for flash: 0x%0h", data), UVM_HIGH)
+  endtask
 endclass : spi_agent_cfg
