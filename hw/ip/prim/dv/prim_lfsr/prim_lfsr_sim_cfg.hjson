@@ -37,6 +37,10 @@
     }
   ]
 
+  // Since none of the tests use the "default" build mode, we need to indicate which build is the
+  // main build mode. See commit lowrisc/opentitan#51000a8 for more details.
+  primary_build_mode: prim_lfsr_dw_24
+
   // dw_8 is only used for "smoke" sims, so coverage collection is not needed.
   prim_lfsr_dw_8_vcs_cov_cfg_file: ""
   prim_lfsr_dw_24_vcs_cov_cfg_file: "-cm_hier {proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cover.cfg"
@@ -69,4 +73,3 @@
     }
   ]
 }
-
