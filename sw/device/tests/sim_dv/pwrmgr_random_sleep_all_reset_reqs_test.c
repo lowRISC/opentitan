@@ -142,8 +142,9 @@ void ottf_external_isr(void) {
           "AON Timer Wdog should not bark");
 
   } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
-    irq = (irq_id -
-           (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+    irq = (dif_rv_plic_irq_id_t)(irq_id -
+                                 (dif_rv_plic_irq_id_t)
+                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa);
 
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler, alert));
 
@@ -326,7 +327,6 @@ static void low_power_sysrst(const dif_pwrmgr_t *pwrmgr) {
   // Program the pwrmgr to go to deep sleep state (clocks off).
   pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceOne,
                                     0);
-  LOG_INFO("Low power set for sysrst");
   // Enter in low power mode.
   wait_for_interrupt();
 }
@@ -340,7 +340,6 @@ static void normal_sleep_sysrst(const dif_pwrmgr_t *pwrmgr) {
            kDifPwrmgrDomainOptionMainPowerInLowPower;
   pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceOne,
                                     config);
-  LOG_INFO("Normal sleep set for sysrst");
   // Enter in low power mode.
   wait_for_interrupt();
 }
@@ -451,7 +450,6 @@ static void low_power_por(const dif_pwrmgr_t *pwrmgr) {
        kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
        kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
       0);
-  LOG_INFO("ready for pad por");
   // Enter in low power mode.
   wait_for_interrupt();
   // If we arrive here the test must fail.
@@ -478,8 +476,6 @@ static void normal_sleep_por(const dif_pwrmgr_t *pwrmgr) {
        kDifPwrmgrWakeupRequestSourceThree | kDifPwrmgrWakeupRequestSourceFour |
        kDifPwrmgrWakeupRequestSourceFive | kDifPwrmgrWakeupRequestSourceSix),
       config);
-
-  LOG_INFO("ready for pad por");
   // Enter in low power mode.
   wait_for_interrupt();
 }
@@ -567,6 +563,7 @@ bool test_main(void) {
         LOG_INFO(
             "Booting and setting normal sleep mode followed for low_power "
             "entry reset");
+        LOG_INFO("Let SV wait timer reset");
         // actually the same test as normal sleep + watchdog
         rstmgr_testutils_pre_reset(&rstmgr);
         sleep_wdog_bite_test(&aon_timer, &pwrmgr, 200);
@@ -576,6 +573,7 @@ bool test_main(void) {
         LOG_INFO(
             "Booting and setting deep sleep mode followed for low_power entry "
             "reset");
+        LOG_INFO("Let SV wait timer reset");
         // Executing the wdog bite reset during sleep test.
         // actually the same test as deep sleep + watchdog
         rstmgr_testutils_pre_reset(&rstmgr);
@@ -590,9 +588,11 @@ bool test_main(void) {
             "Booting and setting normal sleep followed by watchdog reset "
             "combined "
             "with sw_req");
+        LOG_INFO("Let SV wait timer reset");
         // Executing the wdog bite reset during sleep test.
         rstmgr_testutils_pre_reset(&rstmgr);
         CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
+        LOG_INFO("Device reset from sw");
         sleep_wdog_bite_test(&aon_timer, &pwrmgr, 200);
         normal_sleep_wdog(&pwrmgr);
         timer_on(kEscalationPhase0MicrosCpu);
@@ -601,9 +601,11 @@ bool test_main(void) {
             "Booting and setting deep sleep followed by watchdog reset "
             "combined "
             "with sw_req");
+        LOG_INFO("Let SV wait timer reset");
         // Executing the wdog bite reset during sleep test.
         rstmgr_testutils_pre_reset(&rstmgr);
         CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
+        LOG_INFO("Device reset from sw");
         sleep_wdog_bite_test(&aon_timer, &pwrmgr, 200);
         low_power_wdog(&pwrmgr);
       }
@@ -611,6 +613,7 @@ bool test_main(void) {
     case 4:
       if (RST_IDX[event_idx] % 2) {
         LOG_INFO("Booting and setting normal sleep followed by watchdog reset");
+        LOG_INFO("Let SV wait timer reset");
         // Executing the wdog bite reset during sleep test.
         rstmgr_testutils_pre_reset(&rstmgr);
         sleep_wdog_bite_test(&aon_timer, &pwrmgr, 200);
@@ -618,6 +621,7 @@ bool test_main(void) {
         timer_on(kEscalationPhase0MicrosCpu);
       } else {
         LOG_INFO("Booting and setting deep sleep followed by watchdog reset");
+        LOG_INFO("Let SV wait timer reset");
         // Executing the wdog bite reset during sleep test.
         rstmgr_testutils_pre_reset(&rstmgr);
         sleep_wdog_bite_test(&aon_timer, &pwrmgr, 200);
