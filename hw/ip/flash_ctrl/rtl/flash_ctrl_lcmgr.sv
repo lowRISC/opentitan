@@ -632,7 +632,7 @@ module flash_ctrl_lcmgr
     .rst_ni,
     .clr_i(word_cnt_clr),
     .set_i(word_cnt_ld),
-    .set_cnt_i(WordCntWidth'(BusWordsPerPage)),
+    .set_cnt_i('0),
     .incr_en_i(word_cnt_incr),
     .decr_en_i(1'b0),
     .step_i(WordCntWidth'(WidthMultiple)),
