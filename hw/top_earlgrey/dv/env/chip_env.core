@@ -42,6 +42,7 @@ filesets:
       - seq_lib/chip_common_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_csr_rw_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_mem_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_prim_tl_access_vseq.sv: {is_include_file: true}
       - seq_lib/chip_tap_straps_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_jtag_base_vseq.sv: {is_include_file: true}
