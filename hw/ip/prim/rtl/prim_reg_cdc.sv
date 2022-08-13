@@ -3,6 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Component handling register CDC
+//
+// Currently, this module only works correctly when paired with tlul_adapter_reg.
+// This is because tlul_adapter_reg does not emit a new transaction to the same
+// register if it discovers it is currently busy. Please see the BusySrcReqChk_A
+// assertion below for more details.
+//
+// If in the future this assumption changes, we can modify this module easily to
+// support the new behavior.
 
 `include "prim_assert.sv"
 
@@ -91,7 +99,8 @@ module prim_reg_cdc #(
     if (!rst_src_ni) begin
       src_q <= ResetVal;
       txn_bits_q <= '0;
-    end else if (src_req && !busy) begin
+    end else if (src_req) begin
+      // See assertion below
       // At the beginning of a software initiated transaction, the following
       // values are captured in the src_q/txn_bits_q flops to ensure they cannot
       // change for the duration of the synchronization operation.
@@ -110,6 +119,15 @@ module prim_reg_cdc #(
       txn_bits_q <= '0;
     end
   end
+
+  // The current design (tlul_adapter_reg) does not spit out a request if the destination it chooses
+  // (decoded from address) is busy. So this creates a situation in the current design where
+  // src_req_i and busy can never be high at the same time.
+  // While the code above could be coded directly to be expressed as `src_req & !busy`, which makes
+  // the intent clearer, it ends up causing coverage holes from the tool's perspective since that
+  // condition cannot be met.
+  // Thus we add an assertion here to ensure the condition is always satisfied.
+  `ASSERT(BusySrcReqChk_A, busy |-> !src_req, clk_src_i, !rst_src_ni)
 
   // reserved bits are not used
   logic unused_wd;
