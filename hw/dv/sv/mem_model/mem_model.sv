@@ -7,11 +7,11 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
 
   localparam int MaskWidth  = DataWidth / 8;
 
-  typedef bit [AddrWidth-1:0] mem_addr_t;
-  typedef bit [DataWidth-1:0] mem_data_t;
-  typedef bit [MaskWidth-1:0] mem_mask_t;
+  typedef logic [AddrWidth-1:0] mem_addr_t;
+  typedef logic [DataWidth-1:0] mem_data_t;
+  typedef logic [MaskWidth-1:0] mem_mask_t;
 
-  bit [7:0] system_memory[mem_addr_t];
+  logic [7:0] system_memory[mem_addr_t];
 
   `uvm_object_param_utils(mem_model#(AddrWidth, DataWidth))
 
@@ -37,15 +37,16 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     return data;
   endfunction
 
-  function void write_byte(mem_addr_t addr, bit [7:0] data);
+  function void write_byte(mem_addr_t addr, logic [7:0] data);
    `uvm_info(`gfn, $sformatf("Write Mem : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
     system_memory[addr] = data;
   endfunction
 
-  function void compare_byte(mem_addr_t addr, bit [7:0] act_data);
+  function void compare_byte(mem_addr_t addr, logic [7:0] act_data);
    `uvm_info(`gfn, $sformatf("Compare Mem : Addr[0x%0h], Act Data[0x%0h], Exp Data[0x%0h]",
                              addr, act_data, system_memory[addr]), UVM_MEDIUM)
-    `DV_CHECK_EQ(act_data, system_memory[addr], $sformatf("addr 0x%0h read out mismatch", addr))
+    `DV_CHECK_CASE_EQ(act_data, system_memory[addr],
+                      $sformatf("addr 0x%0h read out mismatch", addr))
   endfunction
 
   function void write(input mem_addr_t addr, mem_data_t data, mem_mask_t mask = '1);
