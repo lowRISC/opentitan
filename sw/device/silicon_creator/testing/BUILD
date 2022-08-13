@@ -5,6 +5,6 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "mask_rom_test",
-    hdrs = ["mask_rom_test.h"],
+    name = "rom_test",
+    hdrs = ["rom_test.h"],
 )

@@ -23,7 +23,7 @@ Then, you can flash the new bitstream onto the FPGA with `opentitantool`.
 There are two ways to splice content into a bitstream.
 
 1. Define a Bazel target (or use an existing one).
-For example, see the `//hw/bitstream:mask_rom` target defined in [hw/bitstream/BUILD](https://github.com/lowRISC/opentitan/blob/master/hw/bitstream/BUILD).
+For example, see the `//hw/bitstream:rom` target defined in [hw/bitstream/BUILD](https://github.com/lowRISC/opentitan/blob/master/hw/bitstream/BUILD).
 
 2. Use the [`splice_rom.sh`](https://github.com/lowRISC/opentitan/blob/master/util/fpga/splice_rom.sh) script.
 
@@ -103,7 +103,7 @@ Specifically, this job runs `ci/scripts/build-bitstream-vivado.sh` and produces 
 * `rom.mmi`
 * `otp.mmi`
 
-The `chip_earlgrey_cw310_splice_mask_rom` job receives those files and splices the Mask ROM into the bitstream.
+The `chip_earlgrey_cw310_splice_rom` job receives those files and splices the ROM into the bitstream.
 
 If CI is working on the `master` branch, it puts selected build artifacts into a tarball, which it then uploads to the GCS bucket. The latest tarball is available here: https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz
 

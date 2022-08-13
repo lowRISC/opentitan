@@ -266,7 +266,7 @@ sign_bin = rv_rule(
     attrs = {
         "bin": attr.label(allow_single_file = True),
         "key": attr.label(
-            default = "@//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
+            default = "@//sw/device/silicon_creator/rom/keys:test_private_key_0",
             allow_single_file = True,
         ),
         "key_name": attr.string(),
@@ -731,7 +731,7 @@ def opentitan_flash_binary(
         name,
         platform = OPENTITAN_PLATFORM,
         signing_keys = {
-            "test_key_0": "@//sw/device/silicon_creator/mask_rom/keys:test_private_key_0",
+            "test_key_0": "@//sw/device/silicon_creator/rom/keys:test_private_key_0",
         },
         signed = False,
         manifest = None,

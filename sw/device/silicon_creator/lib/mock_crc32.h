@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/crc32.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 namespace internal {
 
 /**
@@ -28,6 +28,6 @@ class MockCrc32 : public global_mock::GlobalMock<MockCrc32> {
 
 using MockCrc32 = testing::StrictMock<internal::MockCrc32>;
 
-}  // namespace mask_rom_test
+}  // namespace rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MOCK_CRC32_H_

@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" {
 volatile sec_mmio_ctx_t sec_mmio_ctx;
 
@@ -30,4 +30,4 @@ void sec_mmio_check_counters(uint32_t expected_check_count) {
   MockSecMmio::Instance().CheckCounters(expected_check_count);
 }
 }  // extern "C"
-}  // namespace mask_rom_test
+}  // namespace rom_test

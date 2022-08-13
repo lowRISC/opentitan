@@ -7,16 +7,16 @@
 #include "gtest/gtest.h"
 #include "sw/device/silicon_creator/lib/mock_manifest.h"
 #include "sw/device/silicon_creator/rom_ext/mock_rom_ext_boot_policy_ptrs.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace manifest_unittest {
 namespace {
 using ::testing::Return;
 
-class RomExtBootPolicyTest : public mask_rom_test::MaskRomTest {
+class RomExtBootPolicyTest : public rom_test::RomTest {
  protected:
-  mask_rom_test::MockRomExtBootPolicyPtrs rom_ext_boot_policy_ptrs_;
-  mask_rom_test::MockManifest mock_manifest_;
+  rom_test::MockRomExtBootPolicyPtrs rom_ext_boot_policy_ptrs_;
+  rom_test::MockManifest mock_manifest_;
 };
 
 TEST_F(RomExtBootPolicyTest, ManifestCheck) {

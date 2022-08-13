@@ -19,7 +19,7 @@ extern "C" {
  * @brief Absolute Memory-mapped IO functions, for volatile access.
  *
  * Memory-mapped IO functions, which map to volatile accesses. Use this module
- * for register operations in mask ROM and ROM Extension production libraries.
+ * for register operations in ROM and ROM Extension production libraries.
  *
  * Compiling translation units that pull in this header with `-DMOCK_ABS_MMIO`
  * will disable the definitions of `abs_mmio_read` and `abs_mmio_write`. These

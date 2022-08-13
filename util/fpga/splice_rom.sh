@@ -28,11 +28,11 @@ Usage: $0 [-t TARGET_BOARD] [-T TARGET_TOP] [-b DV | PROD]
 
   - t: Target board: cw310, cw305.
   - T: Target top: earlgrey.
-  - b: Mask ROM binary, set to either DV or PROD.
+  - b: ROM binary, set to either DV or PROD.
 
-Mask ROM binary targets (-b):
+ROM binary targets (-b):
   - DV: sw/device/lib/testing/test_rom
-  - PROD: sw/device/silicon_creator/mask_rom
+  - PROD: sw/device/silicon_creator/rom
 
 USAGE
 }
@@ -85,7 +85,7 @@ TARGET_PREFIX=""
 if [[ ${FLAGS_BIN} == "DV" ]]; then
   TARGET_PREFIX="sw/device/lib/testing/test_rom/test_rom"
 elif [[ ${FLAGS_BIN} == "PROD" ]]; then
-  TARGET_PREFIX="sw/device/silicon_creator/mask_rom/mask_rom"
+  TARGET_PREFIX="sw/device/silicon_creator/rom/rom"
 else
   echo "Invalid -b option: ${FLAGS_BIN}; expected DV or PROD." >&2
   exit 1

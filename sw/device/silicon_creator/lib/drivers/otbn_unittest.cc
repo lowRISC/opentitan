@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"  // Generated.
@@ -20,7 +20,7 @@ namespace {
 using ::testing::ElementsAre;
 using ::testing::Return;
 
-class OtbnTest : public mask_rom_test::MaskRomTest {
+class OtbnTest : public rom_test::RomTest {
  protected:
   /**
    * Sets expectations for running an OTBN command.
@@ -54,9 +54,9 @@ class OtbnTest : public mask_rom_test::MaskRomTest {
   }
 
   uint32_t base_ = TOP_EARLGREY_OTBN_BASE_ADDR;
-  mask_rom_test::MockAbsMmio abs_mmio_;
-  mask_rom_test::MockRnd rnd_;
-  mask_rom_test::MockSecMmio sec_mmio_;
+  rom_test::MockAbsMmio abs_mmio_;
+  rom_test::MockRnd rnd_;
+  rom_test::MockSecMmio sec_mmio_;
 };
 
 class ExecuteTest : public OtbnTest {};

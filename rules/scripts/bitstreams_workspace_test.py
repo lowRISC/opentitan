@@ -87,7 +87,7 @@ filegroup(
 )
 
 filegroup(
-    name = "bitstream_mask_rom",
+    name = "bitstream_rom",
     srcs = ["cache/abcd/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"],
 )
 

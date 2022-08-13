@@ -13,7 +13,7 @@
     { name:    "BootRomInitFile",
       type:    "",
       default: '""',
-      desc:    "Contents of mask ROM"
+      desc:    "Contents of ROM"
       local:   "false",
       expose:  "true"
     }

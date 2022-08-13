@@ -73,17 +73,17 @@ filegroup(
 )
 
 bitstream_splice(
-    name = "fpga_cw310_mask_rom",
+    name = "fpga_cw310_rom",
     src = ":fpga_cw310_test_rom",
-    data = "//sw/device/silicon_creator/mask_rom:mask_rom_fpga_cw310_scr_vmem",
+    data = "//sw/device/silicon_creator/rom:rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
 )
 
 # Splice in the dev OTP image, replacing the RMA image.
 bitstream_splice(
-    name = "fpga_cw310_mask_rom_otp_dev",
-    src = ":fpga_cw310_mask_rom",
+    name = "fpga_cw310_rom_otp_dev",
+    src = ":fpga_cw310_rom",
     data = "//hw/ip/otp_ctrl/data:img_dev",
     meminfo = ":otp_mmi",
     tags = ["manual"],
@@ -138,8 +138,8 @@ filegroup(
 pkg_files(
     name = "standard",
     srcs = [
-        ":fpga_cw310_mask_rom",
-        ":fpga_cw310_mask_rom_otp_dev",
+        ":fpga_cw310_rom",
+        ":fpga_cw310_rom_otp_dev",
         ":fpga_cw310_test_rom",
         ":otp_mmi",
         ":rom_mmi",

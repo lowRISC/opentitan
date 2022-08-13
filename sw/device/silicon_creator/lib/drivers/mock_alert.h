@@ -7,9 +7,9 @@
 
 #include "sw/device/lib/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 namespace internal {
 
 /**
@@ -30,6 +30,6 @@ class MockAlert : public global_mock::GlobalMock<MockAlert> {
 
 using MockAlert = testing::StrictMock<internal::MockAlert>;
 
-}  // namespace mask_rom_test
+}  // namespace rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_ALERT_H_

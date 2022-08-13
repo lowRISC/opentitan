@@ -12,7 +12,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/mock_csr.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
@@ -23,7 +23,7 @@ namespace {
 using ::testing::Return;
 using ::testing::ValuesIn;
 
-class AstTest : public mask_rom_test::MaskRomTest {
+class AstTest : public rom_test::RomTest {
  protected:
   /**
    * Sets up expectations to read the STATUS register of sensor_ctrl twice.
@@ -50,8 +50,8 @@ class AstTest : public mask_rom_test::MaskRomTest {
   }
 
   uint32_t base_ = TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR;
-  mask_rom_test::MockAbsMmio mmio_;
-  mask_rom_test::MockOtp otp_;
+  rom_test::MockAbsMmio mmio_;
+  rom_test::MockOtp otp_;
   mock_csr::MockCsr csr_;
 };
 

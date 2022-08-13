@@ -12,7 +12,7 @@
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -23,11 +23,11 @@ namespace {
 using ::testing::NotNull;
 using ::testing::SetArgPointee;
 
-class SpiDeviceTest : public mask_rom_test::MaskRomTest {
+class SpiDeviceTest : public rom_test::RomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR;
-  mask_rom_test::MockAbsMmio mmio_;
-  mask_rom_test::MockLifecycle lifecycle_;
+  rom_test::MockAbsMmio mmio_;
+  rom_test::MockLifecycle lifecycle_;
 };
 
 class InitTest : public SpiDeviceTest {};

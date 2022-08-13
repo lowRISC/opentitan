@@ -27,7 +27,7 @@ extern "C" {
  * A typical usage of this library during different secure boot
  * stages is as follows:
  *
- * - In Mask ROM:
+ * - In ROM:
  *   - Create a new handle: `dif_keymgr_init()`.
  *   - Configure hardware: `dif_keymgr_configure()`.
  *   - Initialize state: `dif_keymgr_advance_state()`,

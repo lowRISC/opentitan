@@ -534,7 +534,7 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
   boot_data->min_security_version_bl0 =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_BL0_OFFSET);
   // We cannot use a constant digest since some fields are read from the OTP
-  // and we check the digest of the cached boot data entry in mask_rom.c
+  // and we check the digest of the cached boot data entry in rom.c
   boot_data_digest_compute(boot_data, &boot_data->digest);
 
   return res;

@@ -17,25 +17,25 @@ The diagram below summarizes the specific steps involved in the secure boot proc
 
 <img src="secure_boot_flow.svg" style="width: 800px;">
 
-## Mask ROM {#mask-rom}
+## ROM {#rom}
 
-The first stage of secure boot is called "Mask ROM".
-Mask ROM is a region of read-only memory that cannot be updated at all after an OpenTitan device is manufactured.
-For that reason, the Mask ROM is kept as simple as possible; it does some minimal setup, authenticates the next stage (`ROM_EXT`), and jumps there.
+The first stage of secure boot is called "ROM".
+ROM is a region of read-only memory that cannot be updated at all after an OpenTitan device is manufactured.
+For that reason, the ROM is kept as simple as possible; it does some minimal setup, authenticates the next stage (`ROM_EXT`), and jumps there.
 
-The Mask ROM contains non-updateable public keys, which it uses to authenticate the `ROM_EXT` signature.
+The ROM contains non-updateable public keys, which it uses to authenticate the `ROM_EXT` signature.
 These public keys correspond to what OpenTitan calls the "Silicon Creator": the entity who was initially involved in the manufacturing of the device.
 It's important to distinguish between the unchanging Silicon Creator and the changeable "Silicon Owner", the entity that owns the device at a given time.
 
-On startup, hardware settings use a feature called ["enhanced Physical Memory Protection" (ePMP)][ibex-epmp] to ensure that only the Mask ROM code itself is executable.
-For details about how the Mask ROM configures ePMP, see [Memory Protection Module][mask-rom-epmp].
+On startup, hardware settings use a feature called ["enhanced Physical Memory Protection" (ePMP)][ibex-epmp] to ensure that only the ROM code itself is executable.
+For details about how the ROM configures ePMP, see [Memory Protection Module][rom-epmp].
 Flash and MMIO memory regions are unlocked for read/write (for signature verification and configuring peripherals) but are not executable at this stage.
 
-On boot, the Mask ROM code does the following:
+On boot, the ROM code does the following:
 1. Initialize any additional ePMP settings beyond what is set by hardware at startup, plus initialize the C runtime and hardware peripherals (e.g. pinmux, UART).
 2. Load the "manifest" for `ROM_EXT`, which includes the start and end address of `ROM_EXT` code, a cryptographic signature, a public key modulus, and "selector bits" for hardware information.
     * The manifest's modulus field identifies which of the stored [Silicon Creator keys][silicon-creator-keys] should be used for signature verification. If there is no matching stored key, or the matching key is not suitable for the device's lifecycle state, then the boot fails.
-    * There are two slots for `ROM_EXT` implementations; the Mask ROM will first try the one with the newest security version. If the signature verification for that slot fails, the Mask ROM will attempt to boot from the other slot.
+    * There are two slots for `ROM_EXT` implementations; the ROM will first try the one with the newest security version. If the signature verification for that slot fails, the ROM will attempt to boot from the other slot.
 3. Read usage constraints from hardware according to the selector bits from the manifest.
     * The selector bits can choose all or part of the device ID, and/or information about the state of the device. Because the selected constraints are included in the digest, this means the signer of a `ROM_EXT` image can restrict their signature to only certain devices/states.
 4. Compute the SHA2-256 digest of the selected usage constraints concatenated with the contents of memory between the `ROM_EXT` start and end address given in the manifest.
@@ -45,25 +45,25 @@ On boot, the Mask ROM code does the following:
 ## `ROM_EXT` {#rom-ext}
 
 The `ROM_EXT` ("ROM extension") stage is another region of read-only memory that is controlled by the Silicon Creator.
-However, unlike the Mask ROM, it *can* be updated after the device is manufactured, as long as the new version is signed by the Silicon Creator.
+However, unlike the ROM, it *can* be updated after the device is manufactured, as long as the new version is signed by the Silicon Creator.
 
-Like the Mask ROM, the `ROM_EXT` must check the signature of the next boot stage (this time against the Silicon Owner's keys, rather than the Silicon Creator’s).
+Like the ROM, the `ROM_EXT` must check the signature of the next boot stage (this time against the Silicon Owner's keys, rather than the Silicon Creator’s).
 In addition, the `ROM_EXT` initializes Silicon Creator and then Silicon Owner keys using the key manager and performs “boot services”, which are a small set of specific operations that require access to the Silicon Creator's keys (for instance, providing an [attestation of device state][attestation] or [transferring the device to a new owner][ownership-transfer]).
 These services must happen during boot and not afterwards, because after boot we don't have access to the Silicon Creator keys.
 
 The general procedure for the `ROM_EXT` looks something like this:
-1. Load the manifest for BL0 (which has the same format as the `ROM_EXT` manifest described in the Mask ROM procedure).
+1. Load the manifest for BL0 (which has the same format as the `ROM_EXT` manifest described in the ROM procedure).
 2. Read usage constraints from hardware according to the selector bits from the manifest.
-3. Compute the SHA2-256 digest of the selected usage constraints concatenated with the contents of BL0, as Mask ROM does for `ROM_EXT`.
+3. Compute the SHA2-256 digest of the selected usage constraints concatenated with the contents of BL0, as ROM does for `ROM_EXT`.
 4. Check the signature from the manifest against the digest and a public code-signing key from the current Silicon Owner (RSA-3072 with the F4 exponent).
     * Like the Silicon Creator, the Silicon Owner may have multiple public code-signing keys. How many keys exactly is configurable by the Owner.
-    * The number of retries in case verification fails might differ from Mask ROM, and can differ between `ROM_EXT` implementations.
+    * The number of retries in case verification fails might differ from ROM, and can differ between `ROM_EXT` implementations.
 5. Step the key manager device in order to obtain the Silicon Creator "root key".
     * The root key mixes secret values provisioned by the Silicon Creator at manufacturing time with information about the specific device, the device health state, and `ROM_EXT`. It will differ between devices and between `ROM_EXT` images.
     * The actual value of the root key is locked inside the [key manager][key-manager] and hidden from software. The key manager starts with the Silicon Creator's secret values (which are also hidden from all software) and advances its state to a new value with each additional piece of information.
     * See the [identities and root keys][identities-keys] page for more details about the intermediate, identity, and root keys.
 6. From the Silicon Creator root key, use the key manager interface to derive the Silicon Creator "identity" key (an ECDSA-P256 key used for [attestation][attestation]) and the Silicon Owner "intermediate key" (a new key manager state which can later be used to derive the Silicon Owner's "identity" key).
-    * To create the intermediate key, the key manager starts with the Silicon Creator root key from the Mask ROM stage, and software steps the key manager state by mixing in owner secrets (provisioned by the owner at the time they take ownership of the device) and certain BL0 configuration information.
+    * To create the intermediate key, the key manager starts with the Silicon Creator root key from the ROM stage, and software steps the key manager state by mixing in owner secrets (provisioned by the owner at the time they take ownership of the device) and certain BL0 configuration information.
     * In between getting the Silicon Creator identity key and the Silicon Owner intermediate key, check if the boot purpose was "attestation"; if so, generate an attestation certificate for the software/hardware state, sign it with the Silicon Creator identity key, and write it to a special region of memory.
 7. Unlock flash execution, configure ePMP so that the Silicon Creator controlled regions of memory are not writable and the BL0 region is executable, and then jump to the start of BL0.
 
@@ -74,7 +74,7 @@ If any signature verification in the above process fails, or there is any kind o
 # Silicon Creator Keys {#silicon-creator-keys}
 
 The Silicon Creator has multiple public keys.
-This redundancy partially protects against the scenario in which one of the keys is compromised; any OpenTitan devices produced after the key is known to be compromised can mark the compromised key invalid, without requiring a full new Mask ROM implementation.
+This redundancy partially protects against the scenario in which one of the keys is compromised; any OpenTitan devices produced after the key is known to be compromised can mark the compromised key invalid, without requiring a full new ROM implementation.
 Devices produced before the key is known to be compromised are not protected by this strategy.
 
 Additionally, each key is restricted to one of three "roles", which determine in which device states the key can be used.
@@ -91,7 +91,7 @@ All of these keys are 3072-bit RSA public keys with exponent e=65537 (the “F4 
 ## OpenTitan Logical Entitites
 
 *   **Silicon Creator:** The owner of the public keys injected into the OpenTitan device at manufacturing time.
-    Signs the `Mask ROM` and `ROM_EXT` boot stages.
+    Signs the `ROM` and `ROM_EXT` boot stages.
 *   **Silicon Owner:** The individual or group who has taken ownership of the OpenTitan device by adding their public keys during an ownership transfer.
     Signs all boot stages after `ROM_EXT`.
 
@@ -107,7 +107,7 @@ The Silicon Owner can change during the lifetime of the device, but the Silicon 
 
 ## Boot stages:
 
-*   `Mask ROM`: Metal mask ROM, sometimes known as ROM or Boot ROM.
+*   `ROM`: Metal ROM, sometimes known as ROM or Boot ROM.
 *   `ROM_EXT`: ROM Extension. Stored in flash and signed by the Silicon Creator.
 *   `BL0`: Bootloader. Signed by the Silicon Owner.
 *   `Kernel`: Post-bootloader code. Signed by the Silicon Owner.
@@ -167,7 +167,7 @@ retention SRAM and resetting the system with the cause `BOOT_SERVICE_REQUEST`.
 
 # Manifest Requirements
 
-This document does not prescribe an exact data structure for the `ROM_EXT` manifest as seen by the Mask ROM.
+This document does not prescribe an exact data structure for the `ROM_EXT` manifest as seen by the ROM.
 For that information, see the [manifest format page][manifest-format].
 However, these are the requirements that the manifest format is required to support:
 
@@ -192,7 +192,7 @@ However, these are the requirements that the manifest format is required to supp
 [identities-keys]: {{< relref "/doc/security/specs/identities_and_root_keys" >}}
 [key-manager]: {{< relref "/hw/ip/keymgr/doc" >}}
 [manifest-format]: {{< relref "/sw/device/silicon_creator/rom_ext/docs/manifest" >}}
-[mask-rom-epmp]: {{< relref "/sw/device/silicon_creator/mask_rom/docs/memory_protection" >}}
+[rom-epmp]: {{< relref "/sw/device/silicon_creator/rom/docs/memory_protection" >}}
 [ot-flash]: #
 [ot-unlock-flow]: #
 [ownership-transfer]: {{< relref "/doc/security/specs/ownership_transfer" >}}

@@ -68,7 +68,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
 
     // Randomize retention memory.  This is done intentionally with wrong integrity
-    // as early portions of mask ROM will initialize it to the correct value.
+    // as early portions of ROM will initialize it to the correct value.
     // The randomization here is just to ensure we do not have x's in the memory.
     for (int ram_idx = 0; ram_idx < cfg.num_ram_ret_tiles; ram_idx++) begin
       cfg.mem_bkdr_util_h[chip_mem_e'(RamRet0 + ram_idx)].randomize_mem();
@@ -95,9 +95,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `uvm_info(`gfn, "CPU_init done", UVM_MEDIUM)
   endtask
 
-  // The jitter enable mechanism is different from test_rom and mask_rom right now.
+  // The jitter enable mechanism is different from test_rom and rom right now.
   // That's why below there is both a symbol overwrite and an otp backdoor load.
-  // Once test_rom and mask_rom are consistent in this area, the symbol backdoor load
+  // Once test_rom and rom are consistent in this area, the symbol backdoor load
   // can be removed.
   task config_jitter();
     bit en_jitter;
@@ -107,11 +107,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [7:0] en_jitter_arr[] = {1};
       sw_symbol_backdoor_overwrite("kJitterEnabled", en_jitter_arr, Rom, SwTypeRom);
 
-      // enable for mask_rom
+      // enable for rom
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
                                        prim_mubi_pkg::MuBi4True);
     end else begin
-      // mask rom blindly copies from otp, backdoor load a false value
+      // rom blindly copies from otp, backdoor load a false value
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
                                        prim_mubi_pkg::MuBi4False);
     end

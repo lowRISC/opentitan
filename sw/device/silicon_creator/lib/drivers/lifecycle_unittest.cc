@@ -9,7 +9,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "lc_ctrl_regs.h"
@@ -18,10 +18,10 @@ namespace lifecycle_unittest {
 namespace {
 using ::testing::ElementsAreArray;
 
-class LifecycleTest : public mask_rom_test::MaskRomTest {
+class LifecycleTest : public rom_test::RomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_LC_CTRL_BASE_ADDR;
-  mask_rom_test::MockSecMmio mmio_;
+  rom_test::MockSecMmio mmio_;
 };
 
 TEST_F(LifecycleTest, RawState) {

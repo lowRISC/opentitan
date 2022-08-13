@@ -64,7 +64,7 @@ _test_rom_interrupt_vector:
   // Set size so this vector can be disassembled.
   .size _test_rom_interrupt_vector, .-_test_rom_interrupt_vector
 
-  // Pop Mask ROM interrupt vector options.
+  // Pop ROM interrupt vector options.
   //
   // Re-enable compressed instructions, linker relaxation.
   .option pop

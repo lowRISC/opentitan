@@ -26,7 +26,7 @@ _stack_start = _stack_end - _stack_size;
 /**
  * Marking the entry point correctly for the ELF file. The signer tool will
  * transfer this value to the `entry_point` field of the manifest, which will
- * then be used by `mask_rom_boot` or `rom_ext_boot` to handover execution to
+ * then be used by `rom_boot` or `rom_ext_boot` to handover execution to
  * the OTTF.
  */
 ENTRY(_ottf_start);

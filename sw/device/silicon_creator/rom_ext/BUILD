@@ -34,7 +34,7 @@ dual_cc_library(
     deps = dual_inputs(
         host = [
             "//sw/device/lib/base:global_mock",
-            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "//sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
@@ -64,7 +64,7 @@ cc_test(
     srcs = ["rom_ext_boot_policy_unittest.cc"],
     deps = [
         ":rom_ext_boot_policy",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -132,7 +132,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:pinmux",
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/sigverify",
-        "//sw/device/silicon_creator/mask_rom:sigverify_keys",
+        "//sw/device/silicon_creator/rom:sigverify_keys",
     ],
 )
 
@@ -195,7 +195,7 @@ BOOT_FAILURE_MSG = "BFV:[0-9a-f]{8}"
 opentitan_functest(
     name = "e2e_rom_ext_slot_a",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:mask_rom",
+        bitstream = "//hw/bitstream:rom",
         exit_failure = BOOT_FAILURE_MSG,
         exit_success = BOOT_SUCCESS_MSG,
     ),
@@ -209,7 +209,7 @@ opentitan_functest(
 opentitan_functest(
     name = "e2e_rom_ext_virtual_addr",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:mask_rom",
+        bitstream = "//hw/bitstream:rom",
         exit_failure = BOOT_FAILURE_MSG,
         exit_success = BOOT_SUCCESS_MSG,
     ),

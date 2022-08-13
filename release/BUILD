@@ -15,7 +15,7 @@ pkg_tar(
         "//hw/ip/otp_ctrl/data:package",
         "//sw/device/examples/hello_world:package",
         "//sw/device/lib/testing/test_rom:package",
-        "//sw/device/silicon_creator/mask_rom:package",
+        "//sw/device/silicon_creator/rom:package",
         "//sw/host/opentitantool:package",
     ],
     extension = "tar.xz",

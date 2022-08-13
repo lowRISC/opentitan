@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 namespace internal {
 
 /**
@@ -42,6 +42,6 @@ class MockFlashCtrl : public global_mock::GlobalMock<MockFlashCtrl> {
 
 using MockFlashCtrl = testing::StrictMock<internal::MockFlashCtrl>;
 
-}  // namespace mask_rom_test
+}  // namespace rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_FLASH_CTRL_H_

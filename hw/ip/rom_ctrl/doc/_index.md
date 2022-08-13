@@ -7,12 +7,12 @@ title: ROM Controller Technical Specification
 This document describes the ROM controller (`rom_ctrl`).
 This module attaches as a peripheral to the system bus, and thus follows the [Comportability Specification]({{< relref "doc/rm/comportability_specification" >}}).
 
-The ROM controller interfaces between the system bus and the mask ROM.
+The ROM controller interfaces between the system bus and the ROM.
 This ROM has scrambled contents (scrambled with a fixed key, derived from a global constant).
 The controller is responsible for descrambling these contents on memory fetches.
 
 Unlike the [SRAM controller]({{< relref "hw/ip/sram_ctrl/doc" >}}), which performs the equivalent task for SRAM, the ROM controller also contains a *ROM checker* block.
-This ROM checker is used to compute a cryptographic hash of the ROM contents just after boot, detecting any malicious changes that have been made to the mask ROM when the system was at rest.
+This ROM checker is used to compute a cryptographic hash of the ROM contents just after boot, detecting any malicious changes that have been made to the ROM when the system was at rest.
 
 ## Features
 
@@ -106,9 +106,9 @@ The diagram below shows the operation of the simple FSM.
 
 ## What does the ROM check do?
 
-One of the possible physical attacks on a system like OpenTitan is to subvert the mask ROM.
-The regular structure of a mask ROM is useful because it makes metal fixes easy, but (for the same reasons) it makes the ROM quite an easy target for an attacker.
-See \[SKO-05\][^SKO-05], section 2.1.1, for a description of mask ROMs and attacks on them.
+One of the possible physical attacks on a system like OpenTitan is to subvert the ROM.
+The regular structure of a ROM is useful because it makes metal fixes easy, but (for the same reasons) it makes the ROM quite an easy target for an attacker.
+See \[SKO-05\][^SKO-05], section 2.1.1, for a description of ROMs and attacks on them.
 
 [^SKO-05]: **SKO-05**: Skorobogatov, [*Semi-Invasive Attacks - A New Approach to Hardware Security Analysis*](https://www.cl.cam.ac.uk/techreports/UCAM-CL-TR-630.html), University of Cambridge Computer Laboratory Technical Report 630, 2005
 

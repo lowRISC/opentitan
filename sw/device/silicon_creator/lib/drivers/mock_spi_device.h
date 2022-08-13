@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 namespace internal {
 
 /**
@@ -26,6 +26,6 @@ class MockSpiDevice : public global_mock::GlobalMock<MockSpiDevice> {
 
 using MockSpiDevice = testing::StrictMock<internal::MockSpiDevice>;
 
-}  // namespace mask_rom_test
+}  // namespace rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_SPI_DEVICE_H_

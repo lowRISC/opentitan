@@ -222,7 +222,7 @@ Steps:
 
 ### Secure Boot
 
-Secure boot is always enforced by the mask ROM and cannot be disabled.
+Secure boot is always enforced by the ROM and cannot be disabled.
 Personalization and factory software payloads are signed, and boot verification
 is used to anchor the mechanism in which the device authenticates the
 provisioning appliance during personalization.

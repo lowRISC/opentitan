@@ -13,7 +13,7 @@
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -58,12 +58,12 @@ const std::map<flash_ctrl_info_page_t, InfoPage> &InfoPages() {
   return *kInfoPages;
 }
 
-class FlashCtrlTest : public mask_rom_test::MaskRomTest {
+class FlashCtrlTest : public rom_test::RomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR;
-  mask_rom_test::MockAbsMmio mmio_;
-  mask_rom_test::MockSecMmio sec_mmio_;
-  mask_rom_test::MockOtp otp_;
+  rom_test::MockAbsMmio mmio_;
+  rom_test::MockSecMmio sec_mmio_;
+  rom_test::MockOtp otp_;
 };
 
 class InfoPagesTest : public FlashCtrlTest {};

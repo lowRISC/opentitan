@@ -39,7 +39,7 @@ cc_library(
     srcs = [
         "english_breakfast_fake_driver_funcs.c",
         "//sw/device/silicon_creator/lib/drivers:english_breakfast_test_rom_driver_srcs",
-        "//sw/device/silicon_creator/mask_rom:english_breakfast_test_rom_bootstrap_srcs",
+        "//sw/device/silicon_creator/rom:english_breakfast_test_rom_bootstrap_srcs",
     ],
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
@@ -60,7 +60,7 @@ cc_library(
     name = "earl_grey_test_rom_lib",
     deps = [
         "//sw/device/lib/dif:rstmgr",
-        "//sw/device/silicon_creator/mask_rom:bootstrap",
+        "//sw/device/silicon_creator/rom:bootstrap",
     ],
 )
 

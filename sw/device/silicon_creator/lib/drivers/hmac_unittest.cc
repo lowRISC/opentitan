@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -20,10 +20,10 @@ namespace hmac_unittest {
 namespace {
 using ::testing::ElementsAreArray;
 
-class HmacTest : public mask_rom_test::MaskRomTest {
+class HmacTest : public rom_test::RomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_HMAC_BASE_ADDR;
-  mask_rom_test::MockAbsMmio mmio_;
+  rom_test::MockAbsMmio mmio_;
 };
 
 class Sha256InitTest : public HmacTest {};

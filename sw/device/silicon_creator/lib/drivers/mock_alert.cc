@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/mock_alert.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" {
 rom_error_t alert_configure(size_t index, alert_class_t cls,
                             alert_enable_t enabled) {
@@ -25,4 +25,4 @@ rom_error_t alert_ping_enable(void) {
   return MockAlert::Instance().alert_ping_enable();
 }
 }  // extern "C"
-}  // namespace mask_rom_test
+}  // namespace rom_test

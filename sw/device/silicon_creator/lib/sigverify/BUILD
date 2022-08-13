@@ -35,7 +35,7 @@ dual_cc_library(
         ],
         host = [
             "//sw/device/lib/base:global_mock",
-            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "//sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
@@ -113,7 +113,7 @@ dual_cc_library(
         ],
         host = [
             "//sw/device/lib/base:global_mock",
-            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "//sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
@@ -194,7 +194,7 @@ cc_library(
 
 cc_library(
     name = "sigverify_without_mod_exp_ibex_mock",
-    visibility = ["//sw/device/silicon_creator/mask_rom:__pkg__"],
+    visibility = ["//sw/device/silicon_creator/rom:__pkg__"],
     deps = [
         dual_cc_device_library_of(":mod_exp_ibex"),
         ":mod_exp_otbn",
@@ -208,7 +208,7 @@ cc_test(
     deps = [
         ":sigverify",
         "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )

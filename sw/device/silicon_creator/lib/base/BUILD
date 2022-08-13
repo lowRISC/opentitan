@@ -27,7 +27,7 @@ dual_cc_library(
     deps = dual_inputs(
         host = [
             "//sw/device/lib/base:global_mock",
-            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "//sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
@@ -45,7 +45,7 @@ cc_test(
     srcs = ["sec_mmio_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":sec_mmio"),
-        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )

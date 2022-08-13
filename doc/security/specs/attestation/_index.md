@@ -33,7 +33,7 @@ attestation can be verified against the Silicon Owners' PKI of choice.
 
 Boot stages:
 
-*   `ROM`: Metal mask ROM, sometimes known as Boot ROM.
+*   `ROM`: Metal ROM, sometimes known as Boot ROM.
 *   `ROM_EXT`: ROM Extension. Stored in flash and signed by the Silicon Creator.
 *   Owner boot stages. This document uses two stages as an example. The Silicon
     Owner is free to choose other boot configurations.

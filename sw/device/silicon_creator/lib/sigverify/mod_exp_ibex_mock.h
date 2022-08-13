@@ -7,9 +7,9 @@
 
 #include "sw/device/lib/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_ibex.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 namespace internal {
 
 /**
@@ -27,6 +27,6 @@ class MockSigverifyModExpIbex
 
 using MockSigverifyModExpIbex =
     testing::StrictMock<internal::MockSigverifyModExpIbex>;
-}  // namespace mask_rom_test
+}  // namespace rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_SIGVERIFY_MOD_EXP_IBEX_MOCK_H_

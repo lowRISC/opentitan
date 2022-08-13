@@ -7,9 +7,9 @@
 
 #include "sw/device/lib/base/global_mock.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 namespace internal {
 
 /**
@@ -27,6 +27,6 @@ class MockRomExtBootPolicyPtrs
 using MockRomExtBootPolicyPtrs =
     testing::StrictMock<internal::MockRomExtBootPolicyPtrs>;
 
-}  // namespace mask_rom_test
+}  // namespace rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_MOCK_ROM_EXT_BOOT_POLICY_PTRS_H_

@@ -31,7 +31,7 @@ enum module_ {
   kModuleSigverify =    MODULE_CODE('S', 'V'),
   kModuleKeymgr =       MODULE_CODE('K', 'M'),
   kModuleManifest =     MODULE_CODE('M', 'A'),
-  kModuleMaskRom =      MODULE_CODE('M', 'R'),
+  kModuleRom =          MODULE_CODE('M', 'R'),
   kModuleInterrupt =    MODULE_CODE('I', 'R'),
   kModuleEpmp =         MODULE_CODE('E', 'P'),
   kModuleOtp =          MODULE_CODE('O', 'P'),
@@ -88,7 +88,7 @@ enum module_ {
   X(kErrorAlertBadEnable,             ERROR_(3, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadEscalation,         ERROR_(4, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadCrc32,              ERROR_(5, kModuleAlertHandler, kInvalidArgument)), \
-  X(kErrorMaskRomBootFailed,          ERROR_(1, kModuleMaskRom, kFailedPrecondition)), \
+  X(kErrorRomBootFailed,              ERROR_(1, kModuleRom, kFailedPrecondition)), \
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
   X(kErrorEpmpBadCheck,               ERROR_(1, kModuleEpmp, kInternal)), \
@@ -142,7 +142,7 @@ enum module_ {
 #define ERROR_ENUM_INIT(name_, value_) name_ = value_
 
 /**
- * Unified set of errors for Mask ROM and ROM_EXT.
+ * Unified set of errors for ROM and ROM_EXT.
  */
 typedef enum rom_error {
   DEFINE_ERRORS(ERROR_ENUM_INIT),

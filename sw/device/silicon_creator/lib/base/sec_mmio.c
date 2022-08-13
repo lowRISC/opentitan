@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 
-// The context is declared as weak so that the mask ROM and ROM_EXT may
+// The context is declared as weak so that the ROM and ROM_EXT may
 // override its location.
 OT_WEAK volatile sec_mmio_ctx_t sec_mmio_ctx;
 

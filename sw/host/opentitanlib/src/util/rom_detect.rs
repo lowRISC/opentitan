@@ -27,7 +27,7 @@ arg_enum! {
     #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
     pub enum RomKind {
         TestRom,
-        MaskRom,
+        Rom,
     }
 }
 

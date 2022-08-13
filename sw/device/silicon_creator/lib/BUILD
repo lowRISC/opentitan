@@ -28,7 +28,7 @@ dual_cc_library(
         ],
         host = [
             "//sw/device/lib/base:global_mock",
-            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "//sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
@@ -88,7 +88,7 @@ cc_test(
     srcs = ["epmp_unittest.cc"],
     deps = [
         ":epmp",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -205,7 +205,7 @@ dual_cc_library(
         ],
         host = [
             "//sw/device/lib/base:global_mock",
-            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "//sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
@@ -249,7 +249,7 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":manifest"),
         "//sw/device/lib/base:csr",
-        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -286,7 +286,7 @@ dual_cc_library(
     deps = dual_inputs(
         host = [
             "//sw/device/lib/base:global_mock",
-            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "//sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
@@ -322,7 +322,7 @@ cc_test(
     srcs = ["shutdown_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":shutdown"),
-        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )
@@ -350,7 +350,7 @@ dual_cc_library(
     deps = dual_inputs(
         host = [
             "//sw/device/lib/base:global_mock",
-            "//sw/device/silicon_creator/testing:mask_rom_test",
+            "//sw/device/silicon_creator/testing:rom_test",
             "@googletest//:gtest",
         ],
         shared = [
@@ -364,7 +364,7 @@ cc_test(
     srcs = ["crc32_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":crc32"),
-        "//sw/device/silicon_creator/testing:mask_rom_test",
+        "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
 )

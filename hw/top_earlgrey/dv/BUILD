@@ -7,7 +7,7 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "config",
     srcs = [
-        "chip_mask_rom_tests.hjson",
+        "chip_rom_tests.hjson",
         "chip_sim_cfg.hjson",
         "chip_smoketests.hjson",
     ],

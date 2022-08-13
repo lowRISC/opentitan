@@ -135,7 +135,7 @@ BOOT_FAILURE_MSG = "BFV:[0-9a-f]{8}"
 opentitan_functest(
     name = "e2e_rom_ext_virt_a_owner_virt_a",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:mask_rom",
+        bitstream = "//hw/bitstream:rom",
         exit_failure = BOOT_FAILURE_MSG,
         exit_success = BOOT_SUCCESS_MSG,
     ),

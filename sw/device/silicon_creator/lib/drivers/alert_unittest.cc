@@ -10,7 +10,7 @@
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/mock_crc32.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "alert_handler_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -21,12 +21,12 @@ namespace {
 using ::testing::NotNull;
 using ::testing::Return;
 
-class AlertTest : public mask_rom_test::MaskRomTest {
+class AlertTest : public rom_test::RomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR;
-  mask_rom_test::MockCrc32 crc32_;
-  mask_rom_test::MockAbsMmio abs_mmio_;
-  mask_rom_test::MockOtp otp_;
+  rom_test::MockCrc32 crc32_;
+  rom_test::MockAbsMmio abs_mmio_;
+  rom_test::MockOtp otp_;
 };
 
 class InitTest : public AlertTest {};

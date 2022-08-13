@@ -24,7 +24,7 @@ typedef struct boot_measurements {
    * consumed by the key manager.
    *
    * If OTP `ROM_KEYMGR_ROM_EXT_MEAS_EN` is set to `kHardenedBoolTrue`, the
-   * mask_rom will use this value to configure the key manager attestation
+   * rom will use this value to configure the key manager attestation
    * binding registers.
    */
   keymgr_binding_value_t rom_ext;

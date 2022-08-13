@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/mock_rstmgr.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" {
 uint32_t rstmgr_reason_get(void) { return MockRstmgr::Instance().ReasonGet(); }
 
@@ -18,4 +18,4 @@ void rstmgr_alert_info_enable(void) {
 
 void rstmgr_reset(void) { MockRstmgr::Instance().Reset(); }
 }  // extern "C"
-}  // namespace mask_rom_test
+}  // namespace rom_test

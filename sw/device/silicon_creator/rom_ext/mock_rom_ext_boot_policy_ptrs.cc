@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/rom_ext/mock_rom_ext_boot_policy_ptrs.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" {
 const manifest_t *rom_ext_boot_policy_manifest_a_get() {
   return MockRomExtBootPolicyPtrs::Instance().ManifestA();
@@ -14,4 +14,4 @@ const manifest_t *rom_ext_boot_policy_manifest_b_get() {
   return MockRomExtBootPolicyPtrs::Instance().ManifestB();
 }
 }  // extern "C"
-}  // namespace mask_rom_test
+}  // namespace rom_test

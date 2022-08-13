@@ -45,7 +45,7 @@
                 "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
                 "{proj_root}/hw/top_earlgrey/dv/chip_smoketests.hjson",
-                "{proj_root}/hw/top_earlgrey/dv/chip_mask_rom_tests.hjson",
+                "{proj_root}/hw/top_earlgrey/dv/chip_rom_tests.hjson",
                 ]
 
   // Override existing project defaults to supply chip-specific values.
@@ -206,8 +206,8 @@
       en_run_modes: ["sw_test_mode_common"]
     }
     {
-      name: sw_test_mode_mask_rom
-      sw_images: ["//sw/device/silicon_creator/mask_rom:mask_rom:0"]
+      name: sw_test_mode_rom
+      sw_images: ["//sw/device/silicon_creator/rom:rom:0"]
       en_run_modes: ["sw_test_mode_common"]
     }
     {

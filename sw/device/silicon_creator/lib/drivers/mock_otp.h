@@ -7,9 +7,9 @@
 
 #include "sw/device/lib/base/global_mock.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 namespace internal {
 
 /**
@@ -30,6 +30,6 @@ using NiceMockOtp = testing::NiceMock<internal::MockOtp>;
 // Strict mock for other unit tests.
 using MockOtp = testing::StrictMock<internal::MockOtp>;
 
-}  // namespace mask_rom_test
+}  // namespace rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_MOCK_OTP_H_

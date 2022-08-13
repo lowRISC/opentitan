@@ -40,9 +40,9 @@ tar -xvf bitstream-latest.tar.gz
 ```
 
 By default, the bitstream is built with a version of the boot ROM used for testing (called the _test ROM_; pulled from `sw/device/lib/testing/test_rom`).
-There is also a version of the boot ROM used in production (called the _mask ROM_; pulled from `sw/device/silicon_creator/mask_rom`).
+There is also a version of the boot ROM used in production (called the _ROM_; pulled from `sw/device/silicon_creator/rom`).
 This can be spliced into the bitstream to overwrite the testing boot ROM as described in the [FPGA Reference Manual]({{< relref "ref_manual_fpga.md#boot-rom-development" >}}).
-However, if you do not want to do the splicing yourself, both versions of the bitstream are available in the download as `*.bit.orig` and `*.bit.splice` (containing the test ROM and the mask ROM respectively).
+However, if you do not want to do the splicing yourself, both versions of the bitstream are available in the download as `*.bit.orig` and `*.bit.splice` (containing the test ROM and the ROM respectively).
 The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest/latest.txt).
 
 ### Build an FPGA bitstream
@@ -50,7 +50,7 @@ The metadata for the latest bitstream (the approximate creation time and the ass
 Synthesizing a design for an FPGA board is simple with Bazel.
 While Bazel is the entry point for kicking off the FPGA sythesis, under the hood, it invokes FuseSoC, the hardware package manager / build system supported by OpenTitan.
 During the build process, the boot ROM is baked into the bitstream.
-As mentioned above, we maintain two boot ROM programs, one for testing (_test ROM_), and one for production (_mask ROM_).
+As mentioned above, we maintain two boot ROM programs, one for testing (_test ROM_), and one for production (_ROM_).
 
 To build an FPGA bitstream with the _test ROM_, use:
 ```console
@@ -58,10 +58,10 @@ cd $REPO_TOP
 bazel build //hw/bitstream/vivado:fpga_cw310_test_rom
 ```
 
-To build an FPGA bitstream with the _mask ROM_, use:
+To build an FPGA bitstream with the _ROM_, use:
 ```console
 cd $REPO_TOP
-bazel build //hw/bitstream/vivado:fpga_cw310_mask_rom
+bazel build //hw/bitstream/vivado:fpga_cw310_rom
 ```
 
 #### Dealing with FPGA Congestion Issues

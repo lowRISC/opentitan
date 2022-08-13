@@ -15,7 +15,7 @@ extern "C" {
 /**
  * The retention SRAM is memory that is used to retain information, such as a
  * boot service request, across a device reset. If the reset reason is 'power
- * on' (POR) all fields will be initialized to zero by the mask ROM.
+ * on' (POR) all fields will be initialized to zero by the ROM.
  *
  * TODO(lowRISC/opentitan#5760): the memory map for the retention SRAM is not
  * yet finalized. When it is the layout and content of this structure should

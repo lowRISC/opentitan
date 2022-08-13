@@ -49,5 +49,5 @@ void device_fpga_version_print(void) {
   uint32_t fpga = ibex_fpga_version();
   // The cast to unsigned int stops GCC from complaining about uint32_t
   // being a `long unsigned int` while the %x specifier takes `unsigned int`.
-  rom_printf("MaskROM:%x\r\n", (unsigned int)fpga);
+  rom_printf("ROM:%x\r\n", (unsigned int)fpga);
 }

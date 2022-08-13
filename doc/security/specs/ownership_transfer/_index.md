@@ -68,7 +68,7 @@ There are three modes of ownership transfer supported:
 
 Boot stages:
 
-*   `ROM`: Metal mask ROM, sometimes known as Boot ROM.
+*   `ROM`: Metal ROM, sometimes known as Boot ROM.
 *   `ROM_EXT`: ROM Extension. Stored in flash and signed by the Silicon Creator.
 *   Owner boot stages. This document uses two stages as an example. The Silicon
     Owner is free to choose other boot configurations.
@@ -156,7 +156,7 @@ Definitions:
   <tr>
     <td>
     <!--
-    svgs are made in google docs, and can be found here: 
+    svgs are made in google docs, and can be found here:
     https://docs.google.com/drawings/d/1hnC2EgkYpkxhVJ6I0prxdoQbglstqfwxvBYh_JIt8TA/edit?usp=sharing
     -->
       <img src="ownership_transfer_fig1.svg" width="900" alt="fig1">

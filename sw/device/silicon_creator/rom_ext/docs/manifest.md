@@ -12,7 +12,7 @@ This document describes the manifest format for boot stage images stored in flas
 
 OpenTitan secure boot, at a minimum, consists of three boot stages: `ROM`,
 `ROM_EXT`, and the first owner boot stage, e.g. `BL0`. `ROM` is stored in the
-read-only Mask ROM while remaining stages are stored in flash. `ROM` and
+read-only ROM while remaining stages are stored in flash. `ROM` and
 `ROM_EXT` require the manifest described in this document to be at the start of
 `ROM_EXT` and first owner boot stage images so that they can verify the
 integrity and authenticity of the next stage and configure peripherals as
