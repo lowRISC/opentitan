@@ -233,7 +233,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     foreach (item.payload_q[i]) begin
       // status has 3 bytes, if read OOB, it will wrap
       int offset = (start_addr + i) % 3;
-      `DV_CHECK_EQ(item.payload_q[i], status[offset * 8 +: 8],
+      `DV_CHECK_CASE_EQ(item.payload_q[i], status[offset * 8 +: 8],
           $sformatf("status mismatch, offset %0d, act: 0x%0h, exp: 0x%0h",
               offset, item.payload_q[i], status[offset * 8 +: 8]))
     end
@@ -252,10 +252,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     foreach (item.payload_q[i]) begin
       if (i < exp_jedec_q.size) begin
-        `DV_CHECK_EQ(item.payload_q[i], exp_jedec_q[i],
+        `DV_CHECK_CASE_EQ(item.payload_q[i], exp_jedec_q[i],
             $sformatf("act 0x%0x != exp 0x%0x, index: %0d", item.payload_q[i], exp_jedec_q[i], i))
       end else begin
-        `DV_CHECK_EQ(item.payload_q[i], 0,
+        `DV_CHECK_CASE_EQ(item.payload_q[i], 0,
             $sformatf("act 0x%0x != exp 0x0, index: %0d (OOB)", item.payload_q[i], i))
       end
     end
@@ -312,11 +312,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           if (dn_item != null) begin
             str = $sformatf("compare mbx data with downstread item. idx %0d, up: 0x%0x, dn: 0x%0x",
                             i, up_item.payload_q[i], dn_item.payload_q[i]);
-            `DV_CHECK_EQ(up_item.payload_q[i], dn_item.payload_q[i], str)
+            `DV_CHECK_CASE_EQ(up_item.payload_q[i], dn_item.payload_q[i], str)
           end else begin // cmd is filtered
             str = $sformatf("compare mbx data. idx %0d, value 0x%0x != z",
                             i, up_item.payload_q[i]);
-            `DV_CHECK_EQ(up_item.payload_q[i], 'dz, str)
+            `DV_CHECK_CASE_EQ(up_item.payload_q[i], 8'dz, str)
           end
         end else begin // flash mode
           // TODO, support later, let it fail
