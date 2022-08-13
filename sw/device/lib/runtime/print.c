@@ -55,7 +55,7 @@ static size_t base_dev_null(void *data, const char *buf, size_t len) {
 static buffer_sink_t base_stdout = {
     .data = NULL,
     // Note: Using `&base_dev_null` causes this variable to be placed in the
-    // .data section and triggers the assertion in mask_rom.ld.
+    // .data section and triggers the assertion in rom.ld.
     .sink = NULL,
 };
 

@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/mock_crc32.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" {
 
 void crc32_init(uint32_t *ctx) { MockCrc32::Instance().Init(ctx); }
@@ -30,4 +30,4 @@ uint32_t crc32(const void *buf, size_t len) {
 }
 
 }  // extern "C"
-}  // namespace mask_rom_test
+}  // namespace rom_test

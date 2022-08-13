@@ -5,12 +5,12 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace manifest_unittest {
 namespace {
 
-class ManifestTest : public mask_rom_test::MaskRomTest {
+class ManifestTest : public rom_test::RomTest {
  protected:
   ManifestTest() {
     manifest_.length = 0x1000;

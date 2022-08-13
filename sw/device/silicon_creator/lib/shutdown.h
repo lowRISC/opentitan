@@ -33,7 +33,7 @@ extern "C" {
   } while (false)
 
 /**
- * Initializes the Mask ROM shutdown infrastructure.
+ * Initializes the ROM shutdown infrastructure.
  *
  * Reads the shutdown policy from OTP, and initializes the alert handler.
  *
@@ -108,7 +108,7 @@ shutdown_error_redact_t shutdown_redact_policy(void);
 uint32_t shutdown_redact(rom_error_t reason, shutdown_error_redact_t severity);
 
 /**
- * Perform a shutdown in the Mask ROM in response to an exceptional condition.
+ * Perform a shutdown in the ROM in response to an exceptional condition.
  *
  * @param reason A reason for entering the shutdown state.
  */

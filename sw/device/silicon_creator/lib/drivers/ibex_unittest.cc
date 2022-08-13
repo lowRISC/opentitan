@@ -9,7 +9,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_core_ibex_regs.h"
@@ -17,10 +17,10 @@
 namespace ibex_unittest {
 namespace {
 
-class AddressTranslationTest : public mask_rom_test::MaskRomTest {
+class AddressTranslationTest : public rom_test::RomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR;
-  mask_rom_test::MockSecMmio sec_;
+  rom_test::MockSecMmio sec_;
 };
 
 TEST_F(AddressTranslationTest, Slot0Sucess) {

@@ -38,7 +38,7 @@ namespace global_mock {
  *     // Type alias for making `internal::MockFoo` a nice mock if needed.
  *     using NiceMockFoo = testing::NiceMock<internal::MockFoo>;
  *     ...
- *     }  // namespace mask_rom_test
+ *     }  // namespace rom_test
  *
  * This construction also ensures that we cannot have `MockFoo` and
  * `NiceMockFoo` instantiated at the same time since they both derive from the

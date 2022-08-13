@@ -19,7 +19,7 @@ extern "C" {
  */
 
 /**
- * Initialize the pinmux with the configuration required for the mask ROM.
+ * Initialize the pinmux with the configuration required for the ROM.
  */
 void pinmux_init(void);
 

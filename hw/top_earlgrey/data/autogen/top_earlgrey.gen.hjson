@@ -6936,7 +6936,7 @@
       [
         {
           name: BootRomInitFile
-          desc: Contents of mask ROM
+          desc: Contents of ROM
           type: ""
           default: '''""'''
           expose: "true"

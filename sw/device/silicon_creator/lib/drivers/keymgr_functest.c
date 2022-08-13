@@ -63,7 +63,7 @@ enum {
 
 /**
  * Software binding value associated with the ROM_EXT. Programmed by
- * mask ROM.
+ * ROM.
  */
 const keymgr_binding_value_t kBindingValueRomExt = {
     .data = {0xdc96c23d, 0xaf36e268, 0xcb68ff71, 0xe92f76e2, 0xb8a8379d,
@@ -173,7 +173,7 @@ static void check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
   otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret2, 0);
 }
 
-/** Key manager configuration steps performed in mask ROM. */
+/** Key manager configuration steps performed in ROM. */
 rom_error_t keymgr_rom_test(void) {
   ASSERT_OK(keymgr_state_check(kKeymgrStateReset));
   keymgr_sw_binding_set(&kBindingValueRomExt, &kBindingValueRomExt);

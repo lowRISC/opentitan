@@ -8,7 +8,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/lib/base/multibits.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rstmgr_regs.h"  // Generated.
@@ -17,10 +17,10 @@ namespace rstmgr_unittest {
 namespace {
 using ::testing::ElementsAre;
 
-class RstmgrTest : public mask_rom_test::MaskRomTest {
+class RstmgrTest : public rom_test::RomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_RSTMGR_AON_BASE_ADDR;
-  mask_rom_test::MockAbsMmio mmio_;
+  rom_test::MockAbsMmio mmio_;
 };
 
 TEST_F(RstmgrTest, GetResetReason) {

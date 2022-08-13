@@ -90,12 +90,12 @@ There are two categories of OpenTitan tests Bazel can build and run:
 On-host tests are compiled and run on the host machine, while on-device tests are compiled and run on (simulated/emulated) OpenTitan hardware.
 
 Examples of on-host tests are:
-* unit tests for device software, such as [DIF]({{< relref "/sw/device/lib/dif" >}}) and [mask ROM]({{< relref "/sw/device/silicon_creator/mask_rom/docs/" >}}) unit tests.
+* unit tests for device software, such as [DIF]({{< relref "/sw/device/lib/dif" >}}) and [ROM]({{< relref "/sw/device/silicon_creator/rom/docs/" >}}) unit tests.
 * any test for host software, such as `opentitan{lib,tool}`.
 
 Examples of on-device tests are:
 * [chip-level tests]({{< relref "/sw/device/tests/index.md" >}}).
-* [mask ROM functional tests]({{< relref "/sw/device/silicon_creator/mask_rom/docs/" >}})
+* [ROM functional tests]({{< relref "/sw/device/silicon_creator/rom/docs/" >}})
 
 The remainder of this document will focus on building and running **on-host** tests with Bazel.
 To learn about running **on-device** tests with Bazel, please continue back to the main [Getting Started]({{< relref "getting_started" >}}) instructions, and proceed with the [Verilator]({{< relref "setup_verilator" >}}) and/or [FPGA]({{< relref "setup_fpga" >}}) setup instructions.
@@ -121,12 +121,12 @@ For example, building and testing the UART DIF library's unit tests:
 bazel test //sw/device/lib/dif:uart_unittest
 ```
 
-### Running on-host Mask ROM Tests
+### Running on-host ROM Tests
 
-Similar to the DIF libraries, you can query, build, and run all the [mask ROM]({{< relref "/sw/device/silicon_creator/mask_rom/docs/" >}}) unit tests (which also run on the host) with Bazel.
+Similar to the DIF libraries, you can query, build, and run all the [ROM]({{< relref "/sw/device/silicon_creator/rom/docs/" >}}) unit tests (which also run on the host) with Bazel.
 
 #### Querying which (on-host) tests are available
-Note, the mask ROM has both on-host and on-device tests.
+Note, the ROM has both on-host and on-device tests.
 This query filters tests by their kind, i.e., only on-host tests.
 ```console
 bazel query 'kind(cc_.*, tests(//sw/device/silicon_creator/lib/...))'
@@ -138,7 +138,7 @@ bazel test --test_tag_filters=-cw310,-dv,-verilator //sw/device/silicon_creator/
 ```
 
 #### Building and running a **single** (on-host) test
-For example, building and testing the mask ROM UART driver unit tests:
+For example, building and testing the ROM UART driver unit tests:
 ```console
 bazel test //sw/device/silicon_creator/lib/drivers:uart_unittest
 ```

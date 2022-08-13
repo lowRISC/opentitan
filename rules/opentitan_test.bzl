@@ -373,10 +373,10 @@ def opentitan_functest(
         if bitstream and not rom_kind:
             if "test_rom" in bitstream:
                 rom_kind = "testrom"
-            elif "mask_rom" in bitstream:
-                rom_kind = "maskrom"
+            elif "rom" in bitstream:
+                rom_kind = "rom"
             else:
-                fail("Unknown bitstream type. Expected the bitstream label to contain the string 'test_rom' or 'mask_rom'.")
+                fail("Unknown bitstream type. Expected the bitstream label to contain the string 'test_rom' or 'rom'.")
 
         # Set success/failure strings for target platforms that print test
         # results over the UART (e.g., Verilator and FPGA).

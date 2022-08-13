@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/mock_spi_device.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" {
 
 void spi_device_init(void) { MockSpiDevice::Instance().Init(); }
@@ -22,4 +22,4 @@ uint32_t spi_device_flash_status_get(void) {
 }
 
 }  // extern "C"
-}  // namespace mask_rom_test
+}  // namespace rom_test

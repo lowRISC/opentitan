@@ -291,7 +291,7 @@ static_assert(sizeof(spi_device_sfdp_table_t) ==
 extern const spi_device_sfdp_table_t kSpiDeviceSfdpTable;
 
 /**
- * Initializes the spi_device in flash mode for bootstrap in mask ROM.
+ * Initializes the spi_device in flash mode for bootstrap in ROM.
  *
  * This function initializes the spi_device in the following configuration:
  * - CPOL = 0, CPHA = 0 (clock low in idle, data sampled on rising clock edge).

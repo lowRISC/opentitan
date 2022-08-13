@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/mock_manifest.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" {
 rom_error_t manifest_check(const manifest_t *manifest) {
   return MockManifest::Instance().Check(manifest);
@@ -23,4 +23,4 @@ uintptr_t manifest_entry_point_get(const manifest_t *manifest) {
   return MockManifest::Instance().EntryPoint(manifest);
 }
 }  // extern "C"
-}  // namespace mask_rom_test
+}  // namespace rom_test

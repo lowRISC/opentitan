@@ -97,7 +97,7 @@ typedef struct sec_mmio_ctx {
 } sec_mmio_ctx_t;
 
 /**
- * The `sec_mmio_ctx_t` structure is accessible by both the mask ROM and ROM
+ * The `sec_mmio_ctx_t` structure is accessible by both the ROM and ROM
  * extension. It's layout is therefore fixed and any changes must be applied
  * to both boot stages.
  */

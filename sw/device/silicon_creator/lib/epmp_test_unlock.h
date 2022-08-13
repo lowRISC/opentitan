@@ -16,7 +16,7 @@ extern "C" {
 /**
  * Unlock the test status address space for read/write access.
  *
- * The production ePMP schema used by the mask ROM blocks all accesses to the
+ * The production ePMP schema used by the ROM blocks all accesses to the
  * 4 byte test status address space. This address space is used by tests to
  * report test progress and results and so must be made accessible before tests
  * can be run.

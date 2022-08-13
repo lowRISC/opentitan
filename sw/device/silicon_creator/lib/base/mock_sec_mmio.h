@@ -8,9 +8,9 @@
 #include "sw/device/lib/base/global_mock.h"
 #include "sw/device/lib/base/mock_mmio_test_utils.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 namespace internal {
 /**
  * Mock class for abs_mmio.c.
@@ -36,8 +36,8 @@ using MockSecMmio = testing::StrictMock<internal::MockSecMmio>;
  * @param ...  The value to return. May be an integer, a pointer to
  * little-endian data, or a `std::initializer_list<BitField>`.
  */
-#define EXPECT_SEC_READ32(addr, ...)                                  \
-  EXPECT_CALL(::mask_rom_test::MockSecMmio::Instance(), Read32(addr)) \
+#define EXPECT_SEC_READ32(addr, ...)                             \
+  EXPECT_CALL(::rom_test::MockSecMmio::Instance(), Read32(addr)) \
       .WillOnce(testing::Return(mock_mmio::ToInt<uint32_t>(__VA_ARGS__)))
 
 /**
@@ -47,8 +47,8 @@ using MockSecMmio = testing::StrictMock<internal::MockSecMmio>;
  * @param ...  Expected value to be written. May be an integer, a pointer to
  * little-endian data, or a `std::initializer_list<BitField>`.
  */
-#define EXPECT_SEC_WRITE32(addr, ...)                   \
-  EXPECT_CALL(::mask_rom_test::MockSecMmio::Instance(), \
+#define EXPECT_SEC_WRITE32(addr, ...)              \
+  EXPECT_CALL(::rom_test::MockSecMmio::Instance(), \
               Write32(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
 /**
@@ -58,10 +58,10 @@ using MockSecMmio = testing::StrictMock<internal::MockSecMmio>;
  * @param ...  Expected value to be written. May be an integer, a pointer to
  * little-endian data, or a `std::initializer_list<BitField>`.
  */
-#define EXPECT_SEC_WRITE32_SHADOWED(addr, ...)          \
-  EXPECT_CALL(::mask_rom_test::MockSecMmio::Instance(), \
+#define EXPECT_SEC_WRITE32_SHADOWED(addr, ...)     \
+  EXPECT_CALL(::rom_test::MockSecMmio::Instance(), \
               Write32Shadowed(addr, mock_mmio::ToInt<uint32_t>(__VA_ARGS__)));
 
-}  // namespace mask_rom_test
+}  // namespace rom_test
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_MOCK_SEC_MMIO_H_

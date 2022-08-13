@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/base/mock_abs_mmio.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" {
 uint8_t abs_mmio_read8(uint32_t addr) {
   return MockAbsMmio::Instance().Read8(addr);
@@ -30,4 +30,4 @@ void abs_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
   MockAbsMmio::Instance().Write32Shadowed(addr, value);
 }
 }  // extern "C"
-}  // namespace mask_rom_test
+}  // namespace rom_test

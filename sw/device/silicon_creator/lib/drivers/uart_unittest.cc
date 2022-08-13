@@ -7,7 +7,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "uart_regs.h"  // Generated.
@@ -21,10 +21,10 @@ const std::vector<uint8_t> kBytesArray = {
     'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v',
 };
 
-class UartTest : public mask_rom_test::MaskRomTest {
+class UartTest : public rom_test::RomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_UART0_BASE_ADDR;
-  mask_rom_test::MockAbsMmio mmio_;
+  rom_test::MockAbsMmio mmio_;
 
   void ExpectDeviceReset() {
     EXPECT_ABS_WRITE32(base_ + UART_CTRL_REG_OFFSET, 0);

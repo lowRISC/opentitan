@@ -198,7 +198,7 @@ _start_boot:
    * Setup global pointer.
    *
    * This requires that we disable linker relaxations, or it will be relaxed to
-   * `mv gp, gp`, so we disabled relaxations for all of `_mask_rom_start_boot`.
+   * `mv gp, gp`, so we disabled relaxations for all of `_rom_start_boot`.
    */
   la gp, __global_pointer$
 

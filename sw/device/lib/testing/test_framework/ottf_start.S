@@ -103,7 +103,7 @@ _ottf_interrupt_vector:
   /**
    * Entry point.
    *
-   * This symbol is jumped to from the test ROM or mask ROM using the
+   * This symbol is jumped to from the test ROM or ROM using the
    * `entry_point` field of the manifest.
    */
   .balign 4

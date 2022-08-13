@@ -15,7 +15,7 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_alert.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
@@ -83,7 +83,7 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
   Pack32(kAlertClass##prod, kAlertClass##prodend, kAlertClass##dev, \
          kAlertClass##rma)
 
-// This alert configuration is described in the Mask ROM Shutdown specification:
+// This alert configuration is described in the ROM Shutdown specification:
 // https://docs.google.com/document/d/1V8hRvQnJhsvddieJbRHS3azbPZvoBWxfxPZV_0YA1QU/edit#
 // Dummy alerts have been added to prevent the tests breaking when new alerts
 // are added (see #7183). These lists of alerts and local alerts are for test
@@ -294,7 +294,7 @@ alert_escalate_t RomAlertClassEscalation(alert_class_t cls) {
   }
 }
 
-class ShutdownTest : public mask_rom_test::MaskRomTest {
+class ShutdownTest : public rom_test::RomTest {
  protected:
   void SetupOtpReads() {
     // Make OTP reads retrieve their values from `otp_config_`.
@@ -358,10 +358,10 @@ class ShutdownTest : public mask_rom_test::MaskRomTest {
   OtpConfiguration otp_config_ = kOtpConfig;
   // Use NiceMock because we aren't interested in the specifics of OTP reads,
   // but we want to mock out calls to otp_read32.
-  mask_rom_test::NiceMockOtp otp_;
+  rom_test::NiceMockOtp otp_;
   MockShutdownImpl shutdown_;
-  mask_rom_test::MockAlert alert_;
-  mask_rom_test::MockAbsMmio mmio_;
+  rom_test::MockAlert alert_;
+  rom_test::MockAbsMmio mmio_;
 };
 
 TEST_F(ShutdownTest, InitializeProd) {

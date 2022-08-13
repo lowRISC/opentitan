@@ -30,7 +30,7 @@ _owner_virtual_size = LENGTH(owner_virtual);
 /**
  * Marking the entry point correctly for the ELF file. The signer tool will
  * transfer this value to the `entry_point` field of the manifest, which will
- * then be used by `mask_rom_boot` to handover execution to ROM_EXT.
+ * then be used by `rom_boot` to handover execution to ROM_EXT.
  */
 ENTRY(_rom_ext_start_boot)
 
@@ -120,7 +120,7 @@ SECTIONS {
   } > rom_ext_flash
 
   /**
-   * Critical static data that is accessible by both the mask ROM and the ROM
+   * Critical static data that is accessible by both the ROM and the ROM
    * extension.
    */
   INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld

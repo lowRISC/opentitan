@@ -63,8 +63,8 @@ The following attributes are used to define each testpoint, at minimum:
   // Run this testpoint in gate level and with poweraware.
   tags: ["gls", "pa"]
 
-  // Run this testpoint with mask ROM (will use test ROM by default).
-  tags: ["mask_rom"]
+  // Run this testpoint with ROM (will use test ROM by default).
+  tags: ["rom"]
 
   // Run this testpoint as a post-Si test vector on the tester.
   tags: ["vector"]

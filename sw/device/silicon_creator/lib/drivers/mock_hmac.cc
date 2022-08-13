@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" {
 void hmac_sha256_init(void) { MockHmac::Instance().sha256_init(); }
 
@@ -16,4 +16,4 @@ void hmac_sha256_final(hmac_digest_t *digest) {
   MockHmac::Instance().sha256_final(digest);
 }
 }  // extern "C"
-}  // namespace mask_rom_test
+}  // namespace rom_test

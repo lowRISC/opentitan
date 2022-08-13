@@ -181,14 +181,14 @@ jobs:
   - bash: |
       set -x -e
       . util/build_consts.sh
-      # copy the mask rom to a specific location
-      MASK_ROM_TARGET=${BIN_DIR}/sw/device/silicon_creator/mask_rom
-      mkdir -p ${MASK_ROM_TARGET}
-      MASK_ROM=$(ci/scripts/target-location.sh //sw/device/silicon_creator/mask_rom:mask_rom_fpga_cw310_scr_vmem)
-      cp $MASK_ROM $MASK_ROM_TARGET/mask_rom_fpga_cw310.scr.39.vmem
-      MASK_ROM_DIR=$(dirname $MASK_ROM)
-      cp $MASK_ROM_DIR/mask_rom_fpga_cw310.elf $MASK_ROM_TARGET/mask_rom_fpga_cw310.elf
-      cp $MASK_ROM_DIR/mask_rom_fpga_cw310.bin $MASK_ROM_TARGET/mask_rom_fpga_cw310.bin
+      # copy the rom to a specific location
+      ROM_TARGET=${BIN_DIR}/sw/device/silicon_creator/rom
+      mkdir -p ${ROM_TARGET}
+      ROM=$(ci/scripts/target-location.sh //sw/device/silicon_creator/rom:rom_fpga_cw310_scr_vmem)
+      cp $ROM $ROM_TARGET/rom_fpga_cw310.scr.39.vmem
+      ROM_DIR=$(dirname $ROM)
+      cp $ROM_DIR/rom_fpga_cw310.elf $ROM_TARGET/rom_fpga_cw310.elf
+      cp $ROM_DIR/rom_fpga_cw310.bin $ROM_TARGET/rom_fpga_cw310.bin
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
@@ -384,8 +384,8 @@ jobs:
     displayName: Upload artifacts for CW310
     condition: failed()
 
-- job: chip_earlgrey_cw310_splice_mask_rom
-  displayName: Splice Mask ROM into CW310 bitstream
+- job: chip_earlgrey_cw310_splice_rom
+  displayName: Splice ROM into CW310 bitstream
   dependsOn:
     - chip_earlgrey_cw310
     - sw_build
@@ -427,7 +427,7 @@ jobs:
         gcpKeyFile: "gcpkey.json"
         bucketURI: "gs://opentitan-bitstreams/master"
   - publish: "$(Build.ArtifactStagingDirectory)"
-    artifact: chip_earlgrey_cw310-splice-mask-rom-build-out
+    artifact: chip_earlgrey_cw310-splice-rom-build-out
     displayName: Upload artifacts for CW310
     condition: failed()
 
@@ -461,14 +461,14 @@ jobs:
   timeoutInMinutes: 30
   dependsOn:
     - chip_earlgrey_cw310
-    - chip_earlgrey_cw310_splice_mask_rom
+    - chip_earlgrey_cw310_splice_rom
     - sw_build
   steps:
   - template: ci/install-package-dependencies.yml
   - template: ci/download-artifacts-template.yml
     parameters:
       downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310_splice_mask_rom
+        - chip_earlgrey_cw310_splice_rom
         - sw_build
   - bash: |
       set -e

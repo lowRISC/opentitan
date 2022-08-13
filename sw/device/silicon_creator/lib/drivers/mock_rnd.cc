@@ -4,6 +4,6 @@
 
 #include "sw/device/silicon_creator/lib/drivers/mock_rnd.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" uint32_t rnd_uint32(void) { return MockRnd::Instance().Uint32(); }
-}  // namespace mask_rom_test
+}  // namespace rom_test

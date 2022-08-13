@@ -63,24 +63,24 @@ filegroup(
 )
 
 filegroup(
-    name = "mask_rom",
+    name = "rom",
     srcs = select({
         "bitstream_skip": ["skip.bit"],
-        "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_mask_rom"],
-        "bitstream_gcp_splice": [":gcp_spliced_mask_rom"],
-        "//conditions:default": ["@bitstreams//:bitstream_mask_rom"],
+        "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom"],
+        "bitstream_gcp_splice": [":gcp_spliced_rom"],
+        "//conditions:default": ["@bitstreams//:bitstream_rom"],
     }),
 )
 
 filegroup(
-    name = "mask_rom_otp_dev",
+    name = "rom_otp_dev",
     srcs = select({
         "bitstream_skip": ["skip.bit"],
-        "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_mask_rom_otp_dev"],
-        "bitstream_gcp_splice": [":gcp_spliced_mask_rom_otp_dev"],
+        "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom_otp_dev"],
+        "bitstream_gcp_splice": [":gcp_spliced_rom_otp_dev"],
         # FIXME(#13603) By default, this will actually do a local splice instead
         # of retrieving the pre-spliced bitstream from the cache.
-        "//conditions:default": [":gcp_spliced_mask_rom_otp_dev"],
+        "//conditions:default": [":gcp_spliced_rom_otp_dev"],
     }),
 )
 
@@ -112,20 +112,20 @@ bitstream_splice(
     visibility = ["//visibility:private"],
 )
 
-# Build the Mask ROM and splice it into a cached bitstream.
+# Build the ROM and splice it into a cached bitstream.
 bitstream_splice(
-    name = "gcp_spliced_mask_rom",
+    name = "gcp_spliced_rom",
     src = "@bitstreams//:bitstream_test_rom",
-    data = "//sw/device/silicon_creator/mask_rom:mask_rom_fpga_cw310_scr_vmem",
+    data = "//sw/device/silicon_creator/rom:rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
     visibility = ["//visibility:private"],
 )
 
-# Splice the OTP Dev image into `:gcp_spliced_mask_rom`.
+# Splice the OTP Dev image into `:gcp_spliced_rom`.
 bitstream_splice(
-    name = "gcp_spliced_mask_rom_otp_dev",
-    src = ":gcp_spliced_mask_rom",
+    name = "gcp_spliced_rom_otp_dev",
+    src = ":gcp_spliced_rom",
     data = "//hw/ip/otp_ctrl/data:img_dev",
     meminfo = ":otp_mmi",
     tags = ["manual"],

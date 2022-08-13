@@ -1,0 +1,533 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Testplan TODOs:
+// - TODO(lowRISC/opentitan#10791): Add tests across lifecycle states
+//   - Test functionality that exists in some LC states but fails in others
+//   - This could make use of test tags (#10536)
+// - TODO(lowRISC/opentitan#10792): Add tests for behavior during manufacture
+//   - Bringup keys for manufacturing and RMA
+
+{
+  name: "rom"
+
+  testpoints: [
+    // Shutdown: Error reporting
+    {
+      name: rom_e2e_shutdown_output
+      desc: '''Verify that ROM can properly report errors over UART.
+
+            - Attempt to boot without a valid ROM_EXT.
+            - Verify that we can receive 28 characters (LCV:xxxxxxxx\r\nBFV:xxxxxxxx\r\n) of error
+              output in all life cycle states where Ibex is enabled, i.e. TEST_UNLOCKED*, PROD,
+              PROD_END, DEV, and RMA.
+                - BFV should be 0x142500d for all life cycle states.
+                - See the table below for the expected LCV value.
+
+            | LC State |     LCV    | OTP LIFE_CYCLE state | OTP LIFE_CYCLE count |
+            |:--------:|:----------:|:--------------------:|:--------------------:|
+            |   TEST   | 0x02108421 |   "TEST_UNLOCKED0"   |           5          |
+            |   DEV    | 0x21084210 |        "DEV"         |           5          |
+            |   PROD   | 0x2318c631 |        "PROD"        |           5          |
+            | PROD_END | 0x25294a52 |      "PROD_END"      |           5          |
+            |   RMA    | 0x2739ce73 |        "RMA"         |           5          |
+            '''
+      tags: ["verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Shutdown: Redaction
+    {
+      name: rom_e2e_shutdown_redact
+      desc: '''Verify that ROM redacts errors properly.
+
+            - Attempt to boot without a valid ROM_EXT.
+            - Verify that there is no redaction in TEST_UNLOCKED* and RMA.
+            - For DEV, PROD, and PROD_END:
+              - Verify that BFV value is redacted according to the ROM_ERROR_REPORTING OTP item.
+
+            | OTP ROM_ERROR_REPORTING |     BFV    |
+            |:-----------------------:|:----------:|
+            |   0xe2290aa5 (None)     | 0x0142500d |
+            |   0x3367d3d4 (Error)    | 0x0042500d |
+            |   0x1e791123 (Module)   | 0x0100000d |
+            |   0x48eb4bd9 (All)      | 0xffffffff |
+            '''
+      tags: ["verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Shutdown: Watchdog
+    {
+      name: rom_e2e_shutdown_watchdog
+      desc: '''Verify that ROM configures the watchdog properly.
+
+            - Attempt to boot with a valid ROM_EXT.
+              - ROM_EXT needs to print something and busy loop (bounded) until watchdog resets the
+                chip.
+            - Verify that the chip does not reset in TEST and RMA.
+            - For DEV, PROD, and PROD_END:
+              - Verify that the chip resets when the `WATCHDOG_BITE_THRESHOLD_CYCLES` OTP item is
+               `0x00061a80` (2 s).
+              - Verify that watchdog is disabled when `WATCHDOG_BITE_THRESHOLD_CYCLES` is `0`.
+            '''
+      tags: ["verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: ["rom_e2e_shutdown_watchdog"]
+    }
+
+    // Shutdown: ASM exception handlers
+    {
+      name: rom_e2e_shutdown_exception_asm
+      desc: '''Verify that ROM asm exception handler resets the chip.
+
+            - Power on with the `CREATOR_SW_CFG_ROM_EXEC_EN` OTP item set to `0`.
+              - Execution should halt very early in `_rom_start_boot`.
+            - Connect the debugger and set a breakpoint at `_asm_exception_handler`.
+              - Note: We need to use a debugger for this test since `mtvec` points to C handlers
+                when `rom_main()` starts executing.
+            - Set `pc` to `0x10000000` (start of main SRAM) and execute one machine instruction,
+              i.e. `stepi`.
+            - Verify that execution stops at `_asm_exception_handler` since code execution from SRAM is
+              not enabled.
+            - Continue and verify that the asm exception handler resets the chip by confirming that
+              execution halts at `_rom_start_boot`.
+            '''
+      tags: ["verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Shutdown: C exception handlers
+    {
+      name: rom_e2e_shutdown_exception_c
+      desc: '''Verify that ROM C exception handler triggers shutdown.
+
+            - Boot a valid _fake_ ROM_EXT that doesn't register any interrupt handlers.
+            - Trigger an exception in the second stage.
+              - Set `pc` to `0x10000000` (start of main SRAM). This should trigger an exception
+                since code execution from SRAM is not enabled.
+            - Verify that the chip resets with the correct `BFV`: 0x01495202, i.e. instruction
+              access fault in the interrupt module.
+            '''
+      tags: ["verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Shutdown: Verify alert configuration
+    {
+      name: rom_e2e_shutdown_alert_config
+      desc: '''Verify that alerts trigger a chip reset when enabled.
+
+            - For PROD, PROD_END, DEV, and RMA life cycle states
+              - Use an OTP image with an alert enabled.
+            - Boot a ROM_EXT that triggers this alert by writing to a ALERT_TEST register.
+            - Verify that ROM_EXT boots and the chip resets after the write to the ALERT_TEST
+              register.
+            '''
+      tags: ["verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Functests
+    {
+      name: rom_functests
+      desc: '''Run functests developed for ROM.
+
+            Functests test ROM components (e.g., drivers, libraries, etc.)
+            work as intended on-chip. However, unlike when these components are
+            embedded in the ROM, functests are linked with the OTTF, and
+            run out of flash. Additionally, unlike the ROM E2E tests,
+            functests are booted by the test ROM.
+            '''
+      tags: ["verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: ["rom_keymgr_functest"]
+    }
+
+    // Bootup without ROM_EXT
+    {
+      name: rom_e2e_bootup_no_rom_ext
+      desc: '''Verify device fails to boot with no ROM_EXT.
+
+            - Test runner loads the ROM and no ROM_EXT.
+            - Attempt to boot.
+            - Verify that the chip indicates the correct boot fault.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    // Bootup with ROM_EXT
+    {
+      name: rom_e2e_bootup_success
+      desc: '''Verify device boots with a good ROM_EXT.
+
+            - Generate a ROM_EXT with a sufficiently high version number.
+            - Sign the ROM_EXT with a valid key.
+            - Test runner loads the ROM and prepared ROM_EXT.
+            - Attempt to boot.
+            - Verify that the chip successfully boots into the ROM_EXT.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: ["rom_e2e_bootup_success"]
+    }
+    // TODO(lowrisc/opentitan#10929): test both A/B partitions
+    // TODO(lowrisc/opentitan#10930): consider testing with both SW and OTBN sigverify
+    {
+      name: rom_e2e_bootup_bad_rom_ext_signature
+      desc: '''Verify device fails to boot with an improperly-signed ROM_EXT.
+
+            - Generate a ROM_EXT with a sufficiently high version number.
+            - Sign the ROM_EXT with a valid key.
+            - Flip one bit in the signature.
+            - Test runner loads the ROM and the improperly-signed ROM_EXT.
+            - Attempt to boot.
+            - Verify that the chip indicates the correct boot fault.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_bootup_bad_manifest_usage_constraint
+      desc: '''Verify device fails to boot with an invalid manifest usage constraints.
+
+            - Generate an otherwise valid ROM_EXT with invalid manifest usage constraints.
+            - Sign the ROM_EXT with a valid key.
+            - Test runner loads the ROM and the ROM_EXT.
+            - Attempt to boot.
+            - Verify that the chip indicates the correct boot fault.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_bootup_rom_ext_invalidated_key
+      desc: '''Verify device fails to boot with a ROM_EXT signed with an invalidated key.
+
+            - Generate a ROM_EXT with a sufficiently high version number.
+            - Sign the ROM_EXT with a test key.
+            - Generate an OTP with that test key disabled.
+            - Test runner loads the ROM, the signed ROM_EXT, and the OTP image.
+            - Verify that the chip indicates the correct boot fault.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_bootup_bad_rom_ext_version
+      desc: '''Verify device fails to boot with a bad minimum version.
+
+            - Test runner loads the ROM and a properly-signed ROM_EXT with a version number that is below the minimum version.
+            - Attempt to boot.
+            - Verify that the chip indicates the correct boot fault.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Entering Bootstrap Mode
+    {
+      name: rom_e2e_bootstrap_success
+      desc: '''Verify device enters bootstrap mode when strapping pins are set correctly.
+
+            - Test runner loads an OTP image with bootstrap mode enabled.
+            - Test runner sets the strapping pins to the correct levels.
+            - Attempt to boot the chip.
+            - Verify that the chip entered bootstrap mode.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_bootstrap_bad_pin_config
+      desc: '''Verify the device does not enter bootstrap mode when strapping pins are set incorrectly.
+
+            - Test runner loads an OTP image with bootstrap mode enabled.
+            - Test runner sets the strapping pins to levels that do not correspond to entering bootstrap mode.
+            - Attempt to boot the chip.
+            - Verify that the chip does not enter bootstrap mode.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_bootstrap_disabled
+      desc: '''Verify device does not enter bootstrap mode when strapping pins are set correctly, but bootstrap
+            is disabled in the OTP.
+
+            - Test runner loads an OTP image that has bootstrapping mode disabled.
+            - Set the strapping pins to the correct levels for bootstrapping.
+            - Attempt to boot the chip.
+            - Verify that the chip does not enter bootstrap mode.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Bootstrap mode
+    {
+      name: rom_e2e_bootstrap_config
+      desc: '''Verify that JEDEC ID and SFDP are configured.
+
+            - Test runner configures chip to enter bootstrap mode.
+            - In bootstrap mode, read JEDEC Device ID
+            - Verify that it matches the lowRISC JEDEC ID.
+            - SW reads SFDP and verifies that it is correct.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_bootstrap_phase1_reset_op
+      desc: '''Verify that phase 1 of bootstrap handles RESET ops correctly.
+
+            - Enter bootstrap mode.
+            - Test runner issues a RESET opcode.
+            - Verify that the bootstrap process aborted.
+            - Verify that the flash does not change. Phase 1 only allows the ERASE opcode.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_bootstrap_phase1_read_op
+      desc: '''Verify that phase 1 of bootstrap handles READ ops correctly.
+
+            - Enter bootstrap mode.
+            - Test runner issues a READ opcode.
+            - Verify that the flash returns 0xFF. Phase 1 only allows the ERASE opcode.
+            - Abort the bootstrap process.
+            - Verify that the flash contents are unchanged.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_bootstrap_phase1_page_program_op
+      desc: '''Verify that phase 1 of bootstrap handles PAGE_PROGRAM ops correctly.
+
+            - Enter bootstrap mode.
+            - Test runner issues a PAGE_PROGRAM opcode.
+            - Abort the bootstrap process.
+            - Verify that the flash does not change. Phase 1 only allows the ERASE opcode.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_bootstrap_phase1_erase_op
+      desc: '''Verify that phase 1 of bootstrap handles ERASE ops correctly.
+
+            - Enter bootstrap mode.
+            - Test runner issues an ERASE opcode.
+            - Abort the bootstrap process.
+            - Verify that the entire flash DATA segment is erased.
+            - Verify that the flash INFO segment is unchanged.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_bootstrap_phase2_reset_op
+      desc: '''Verify that phase 2 of bootstrap handles RESET ops correctly.
+
+            - Enter bootstrap mode.
+            - Issue ERASE opcode to enter phase 2.
+            - Issue RSTEN opcode.
+            - Issue RESET opcode.
+            - Verify that bootstrap was exited and that the chip was reset.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_phase2_page_program_op
+      desc: '''Verify that phase 2 of bootstrap correctly handles the PAGE_PROGRAM opcode.
+
+            - Enter bootstrap mode.
+            - Issue ERASE opcode to enter phase 2.
+            - Issue PAGE_PROGRAM opcode with an invalid address.
+            - Issue PAGE_PROGRAM opcode with a valid address.
+            - Issue RESET opcode to exit bootstrap and reset the chip.
+            - Verify that the valid address is correctly programmed and that the rest of flash is unchanged.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_phase2_erase_op
+      desc: '''Verify that phase 2 of bootstrap correctly handles the ERASE opcode.
+
+            - Enter bootstrap mode.
+            - Issue ERASE opcode to enter phase 2.
+            - Issue PAGE_PROGRAM opcode to program a target address.
+            - Issue ERASE opcode to the same target address.
+            - Issue RESET opcode to exit bootstrap and reset the chip.
+            - Verify that the target address was erased and that the rest of flash is unchanged.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_phase2_read_op
+      desc: '''Verify that phase 2 of bootstrap correctly handles the READ opcode.
+
+            - Enter bootstrap mode.
+            - Issue ERASE opcode to enter phase 2.
+            - Issue PAGE_PROGRAM opcode to program a target address.
+            - Issue READ opcode to read the same target address.
+            - Verify that the READ behaves correctly.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Chip-specific startup
+    {
+      // TODO(lowrisc/opentitan#10928): SRAM scrambling may be controlled by OTP
+      name: rom_e2e_startup_ast_main_sram_init
+      desc: '''Verify that the AST and main SRAM are initialized correctly after POR.
+
+            For each lifecycle state, perform the following:
+            - Load an OTP image corresponding to this state.
+            - Boot the chip.
+            - Check the SENSOR_CTRL_STATUS_AST_INIT_DONE bit.
+              - This bit should be 1 if the AST should be initialized and 0 otherwise.
+            - Check the following main SRAM registers in SRAM_CTRL.CTRL:
+              - SCR_KEY_VALID = 1
+              - SCR_KEY_SEED_VALID = 1
+              - INIT_DONE = 1
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      // TODO(lowrisc/opentitan#10928): SRAM scrambling may be controlled by OTP
+      name: rom_e2e_startup_retention_sram_init
+      desc: '''Verify that the retention SRAM is initialized correctly after POR.
+
+            - Initiate a POR.
+            - Check the following retention SRAM registers in SRAM_CTRL.CTRL:
+              - SCR_KEY_VALID = 1
+              - SCR_KEY_SEED_VALID = 1
+              - INIT_DONE = 1
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_startup_retention_sram_saved
+      desc: '''Verify that retention SRAM saves data across low-power entry/exit.
+
+            - Write known data into silicon_owner section of retention SRAM.
+            - Trigger a low-power entry/exit.
+            - Read the silicon_owner section of retention SRAM.
+            - Verify that the data has been retained.
+            - Verify that silicon_creator section has been wiped.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      // TODO: the retention SRAM may be initialized with an LFSR instead of
+      //   just being cleared.
+      // TODO: create a matrix of reset reasons and the expected retention SRAM
+      //   state after the reset.
+      name: rom_e2e_startup_retention_sram_wiped
+      desc: '''Verify that retention SRAM is wiped after a POR.
+
+            - Write known data into all sections of retention SRAM.
+            - Trigger a POR.
+            - Verify that that all sections of retention SRAM have been cleared.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    // Upgrade
+    {
+      name: rom_e2e_upgradable
+      desc: '''Verify that new firmware allows for upgrades.
+
+            - Load new firmware of version N.
+            - Attempt to upgrade to version N+1.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_upgrade_min_sec_version
+      desc: '''Verify that ROM checks minimum security version before booting.
+
+            - Load ROM_EXT that updates min_security_version past its own version.
+            - Attempt to boot again.
+            - Verify that the same ROM_EXT cannot be booted again.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_e2e_upgrade_power_loss
+      desc: '''Verify that losing power during a ROM_EXT upgrade does not brick the chip.
+
+            - Initiate a ROM_EXT update.
+            - After the new ROM_EXT is loaded into flash, trigger a reset.
+            - Verify that the chip can boot.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+    {
+      name: rom_rv_dm_perform_debug
+      desc: '''Verify that Ibex enters debug mode when triggered through JTAG
+
+            This test must be run with ROM.  ROM is responsible for enabling debug ROM
+            access and must be used to ensure the epmp configurations are done correctly.
+
+            - X-ref'ed with chip_sw_sram_execution and populate a single "return" instruction into
+              main SRAM at a fixed location (bottom of SRAM).
+            - Execute a "wait_for_interrupt" in a wrapping function in the test, this causes Ibex
+              to populate the return address and halt execution.
+            - Trigger a debug request by programming `dmcontrol.haltreq` via JTAG.
+            - Program the program buffer via JTAG with code to jump Ibex to the SRAM return
+              instruction.
+            - Verify that Ibex can fetch and execute the instructions from the SRAM correctly, Ibex
+              should return to the code that originally invoked the wait_for_interrupt routine.
+            - Release Ibex from halt via JTAG and allow the test to complete.
+            - The test should also ensure that no other interrupts occur in the system.
+            '''
+      milestone: V2
+      tests: []
+    }
+]
+}

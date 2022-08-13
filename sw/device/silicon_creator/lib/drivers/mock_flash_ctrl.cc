@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/mock_flash_ctrl.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" {
 
 void flash_ctrl_init(void) { MockFlashCtrl::Instance().Init(); }
@@ -83,4 +83,4 @@ void flash_ctrl_creator_info_pages_lockdown(void) {
 }
 
 }  // extern "C"
-}  // namespace mask_rom_test
+}  // namespace rom_test

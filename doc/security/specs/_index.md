@@ -27,9 +27,9 @@ device ownership state. A device that has been personalized with a unique
 
 ## [Secure Boot][secure_boot]
 
-OpenTitan supports a secure boot implementation anchored in the silicon mask
-ROM. The mask ROM contains a set of public keys used to verify the first boot
-stage stored in flash.  
+OpenTitan supports a secure boot implementation anchored in the silicon ROM.
+The ROM contains a set of public keys used to verify the first boot stage
+stored in flash.
 
 Each boot stage is in charge of verifying the signature of the next stage and
 locking out portions of the chip that are not required by later stages. Once the

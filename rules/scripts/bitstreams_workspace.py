@@ -255,7 +255,7 @@ class BitstreamCache(object):
             sys.exit(1)
 
         (test_rom_file, ) = files_by_extension['orig']
-        (mask_rom_file, ) = files_by_extension['splice']
+        (rom_file, ) = files_by_extension['splice']
 
         def filegroup_lines(name, src):
             return [
@@ -276,7 +276,7 @@ class BitstreamCache(object):
             'exports_files(glob(["cache/**"]))',
             '',
         ] + filegroup_lines('bitstream_test_rom', test_rom_file) \
-          + filegroup_lines('bitstream_mask_rom', mask_rom_file)
+          + filegroup_lines('bitstream_rom', rom_file)
 
         used_target_names: Set[str] = set()
 
@@ -361,7 +361,7 @@ def main(argv):
     # Write a build file which allows tests to reference the bitstreams with
     # the labels:
     #   @bitstreams//:bitstream_test_rom
-    #   @bitstreams//:bitstream_mask_rom
+    #   @bitstreams//:bitstream_rom
     configured_bitream = cache.WriteBuildFile(args.build_file,
                                               desired_bitstream)
     if desired_bitstream != 'latest' and configured_bitream != desired_bitstream:

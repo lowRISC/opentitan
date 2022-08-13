@@ -8,6 +8,6 @@
 // Secure MMIO context.
 //
 // This is placed at a fixed location in memory within the .static_critical
-// section. It will be populated by the mask ROM before the jump to ROM_EXT.
+// section. It will be populated by the ROM before the jump to ROM_EXT.
 OT_SECTION(".static_critical.sec_mmio_ctx")
 volatile sec_mmio_ctx_t sec_mmio_ctx;

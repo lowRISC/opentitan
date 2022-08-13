@@ -15,7 +15,7 @@
 #include "sw/device/silicon_creator/lib/drivers/mock_otp.h"
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_ibex_mock.h"
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_otbn_mock.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -104,12 +104,12 @@ constexpr std::array<lifecycle_state_t, 4> kLcStatesNonTestOperational{
 };
 
 class SigverifyInLcState
-    : public mask_rom_test::MaskRomTest,
+    : public rom_test::RomTest,
       public testing::WithParamInterface<lifecycle_state_t> {
  protected:
-  mask_rom_test::MockSigverifyModExpIbex sigverify_mod_exp_ibex_;
-  mask_rom_test::MockSigverifyModExpOtbn sigverify_mod_exp_otbn_;
-  mask_rom_test::MockOtp otp_;
+  rom_test::MockSigverifyModExpIbex sigverify_mod_exp_ibex_;
+  rom_test::MockSigverifyModExpOtbn sigverify_mod_exp_otbn_;
+  rom_test::MockOtp otp_;
   // The content of this key is not significant since we use mocks.
   sigverify_rsa_key_t key_{};
 };
@@ -241,11 +241,11 @@ struct UsageConstraintsTestCase {
 };
 
 class SigverifyUsageConstraints
-    : public mask_rom_test::MaskRomTest,
+    : public rom_test::RomTest,
       public testing::WithParamInterface<UsageConstraintsTestCase> {
  protected:
-  mask_rom_test::MockLifecycle lifecycle_;
-  mask_rom_test::MockOtp otp_;
+  rom_test::MockLifecycle lifecycle_;
+  rom_test::MockOtp otp_;
 };
 
 /**
@@ -271,7 +271,7 @@ constexpr lifecycle_device_id_t kDeviceId{
 };
 
 TEST_F(SigverifyUsageConstraints, ConstantCheck) {
-  // Changing this constant breaks compatibility with the mask ROM, existing
+  // Changing this constant breaks compatibility with the ROM, existing
   // images and tools.
   EXPECT_EQ(MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL, 0xA5A5A5A5);
   EXPECT_NE(kManufStateCreator, kUnusedWord);

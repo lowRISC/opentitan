@@ -16,7 +16,7 @@ extern "C" {
  * to UART0.
  *
  * This function only supports the format specifiers required by the
- * mask ROM:
+ * ROM:
  * - %s, which prints a null-terminated string.
  * - %x, which prints an `unsigned int` in hexadecimal using lowercase
  *   characters.

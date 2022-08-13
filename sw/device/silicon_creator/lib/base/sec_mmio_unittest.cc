@@ -11,7 +11,7 @@
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 namespace sec_mmio_unittest {
 namespace {
@@ -19,11 +19,11 @@ using ::testing::Each;
 using ::testing::ElementsAreArray;
 using ::testing::Eq;
 
-class SecMmioTest : public mask_rom_test::MaskRomTest {
+class SecMmioTest : public rom_test::RomTest {
  protected:
   void SetUp() override { sec_mmio_init(); }
   volatile sec_mmio_ctx_t *ctx_ = &::sec_mmio_ctx;
-  mask_rom_test::MockAbsMmio mmio_;
+  rom_test::MockAbsMmio mmio_;
 };
 
 TEST_F(SecMmioTest, Initialize) {

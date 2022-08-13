@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/testing/mask_rom_test.h"
+#include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
@@ -20,10 +20,10 @@ namespace {
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 
-class OtpTest : public mask_rom_test::MaskRomTest {
+class OtpTest : public rom_test::RomTest {
  protected:
   uint32_t base_ = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR;
-  mask_rom_test::MockSecMmio mmio_;
+  rom_test::MockSecMmio mmio_;
 };
 
 TEST_F(OtpTest, CreatorSwCfgLockdown) {

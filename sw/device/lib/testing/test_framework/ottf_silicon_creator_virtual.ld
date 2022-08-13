@@ -7,7 +7,7 @@
  *
  * Portions of this file are Ibex-specific.
  *
- * This linker script generates a binary to run mask_rom.
+ * This linker script generates a binary to run rom.
  */
 
 INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld

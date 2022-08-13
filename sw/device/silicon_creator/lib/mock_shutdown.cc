@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/mock_shutdown.h"
 
-namespace mask_rom_test {
+namespace rom_test {
 extern "C" {
 shutdown_error_redact_t shutdown_redact_policy(void) {
   return MockShutdown::Instance().RedactPolicy();
@@ -18,4 +18,4 @@ void shutdown_finalize(rom_error_t reason) {
   return MockShutdown::Instance().Finalize(reason);
 }
 }  // extern "C"
-}  // namespace mask_rom_test
+}  // namespace rom_test

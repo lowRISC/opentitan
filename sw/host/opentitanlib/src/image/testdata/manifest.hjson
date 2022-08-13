@@ -7,7 +7,7 @@
  *
  * OpenTitan secure boot, at a minimum, consists of three boot stages: ROM,
  * ROM_EXT, and the first owner boot stage, e.g. BL0. ROM is stored in the
- * read-only Mask ROM while remaining stages are stored in flash. This structure
+ * read-only ROM while remaining stages are stored in flash. This structure
  * must be placed at the start of ROM_EXT and first owner boot stage images so
  * that ROM and ROM_EXT can verify the integrity and authenticity of the next
  * stage and configure peripherals as needed before handing over execution.

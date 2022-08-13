@@ -24,7 +24,7 @@ struct SwBindingCfg {
   keymgr_binding_value_t binding_value_attestation;
 };
 
-class KeymgrTest : public mask_rom_test::MaskRomTest {
+class KeymgrTest : public rom_test::RomTest {
  protected:
   void ExpectStatusCheck(uint32_t op_status, uint32_t km_state,
                          uint32_t err_code) {
@@ -42,8 +42,8 @@ class KeymgrTest : public mask_rom_test::MaskRomTest {
       .binding_value_sealing = {0, 1, 2, 3, 4, 6, 7, 8},
       .binding_value_attestation = {9, 10, 11, 12, 13, 14, 15},
   };
-  mask_rom_test::MockAbsMmio mmio_;
-  mask_rom_test::MockSecMmio sec_mmio_;
+  rom_test::MockAbsMmio mmio_;
+  rom_test::MockSecMmio sec_mmio_;
 };
 
 TEST_F(KeymgrTest, Initialize) {
