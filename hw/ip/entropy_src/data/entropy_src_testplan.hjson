@@ -322,5 +322,13 @@
             must be checked in the scoreboard.
             '''
     }
+    {
+      name: one_way_ht_threshold_cg
+      desc: '''
+            Checks that all of the health test registers have been exercised and that the one-way
+            update feature (which prohibits thresholds being relaxed after reset) works for both
+            the FIPS and Bypass thresholds.
+            '''
+    }
   ]
 }
