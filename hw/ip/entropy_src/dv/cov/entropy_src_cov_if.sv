@@ -634,6 +634,35 @@ interface entropy_src_cov_if
 
   endgroup : observe_fifo_threshold_cg
 
+  covergroup one_way_ht_threshold_reg_cg with function sample(int offset,
+                                                              bit rejected,
+                                                              bit is_fips);
+
+    option.name         = "one_way_ht_threshold_cg";
+    option.per_instance = 1;
+
+    cp_offset : coverpoint offset {
+      bins one_way_regs[] = {
+        entropy_src_reg_pkg::ENTROPY_SRC_REPCNT_THRESHOLDS_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_REPCNTS_THRESHOLDS_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_HI_THRESHOLDS_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_ADAPTP_LO_THRESHOLDS_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_BUCKET_THRESHOLDS_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_HI_THRESHOLDS_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_MARKOV_LO_THRESHOLDS_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_EXTHT_HI_THRESHOLDS_OFFSET,
+        entropy_src_reg_pkg::ENTROPY_SRC_EXTHT_LO_THRESHOLDS_OFFSET
+      };
+    }
+
+    cp_rejected : coverpoint rejected;
+
+    cp_is_fips : coverpoint is_fips;
+
+    cr_cross : cross cp_rejected, cp_offset, cp_is_fips;
+
+  endgroup : one_way_ht_threshold_reg_cg
+
   `DV_FCOV_INSTANTIATE_CG(err_test_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(mubi_err_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(sm_err_cg, en_full_cov)
@@ -648,6 +677,7 @@ interface entropy_src_cov_if
   `DV_FCOV_INSTANTIATE_CG(win_ht_deep_threshold_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(alert_cnt_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(observe_fifo_threshold_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(one_way_ht_threshold_reg_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_err_test_sample(bit [4:0] err_code);
@@ -773,6 +803,10 @@ interface entropy_src_cov_if
 
   function automatic void cg_observe_fifo_threshold_sample(int threshold);
     observe_fifo_threshold_cg_inst.sample(threshold);
+  endfunction
+
+  function automatic void cg_one_way_ht_threshold_reg_sample(int offset, bit rejected, bit fips);
+    one_way_ht_threshold_reg_cg_inst.sample(offset, rejected, fips);
   endfunction
 
   // Sample the csrng_hw_cg whenever data is output on the csrng pins

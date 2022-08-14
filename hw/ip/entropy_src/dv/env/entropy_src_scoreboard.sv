@@ -1023,9 +1023,59 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
   endtask
 
+  // All the HT threshold registers are one-way: they can only become more strict unless
+  // the DUT is reset.  This function encapsulates this behavior.
+  //
+  // This function operates on full TL_DW words, with some knowledge of the structure of each
+  // register.
+  // 1. These registers are consist of two 16b thresholds a bypass and a FIPS threshold.
+  //    The one-way restriction is applied to them independently.
+  // 2. Both thresholds have the same directional restriction: both can go up or both can go down.
+  // If the structure of these registers ever becomes more varied we will have to generalize this
+  // function, using structural cues from the RAL model
+  //
+  // new_val:       The value to be written to the register
+  // prev_val:      The current value of the register
+  // increase_only: 1 if the register values are allowed to increase.
+  //
+  // Returns the new predicted value for the register.
+  function void predict_one_way_threshold(uvm_reg csr,
+                                          bit [TL_DW - 1:0] write_val,
+                                          bit increase_only);
+
+    localparam int ThreshW = 16;
+    bit [TL_DW - 1:0] prev_val = `gmv(csr);
+    int offset                 = csr.get_offset();
+    bit [ThreshW - 1:0] new_thresh, prev_thresh, thresh_out;
+    bit [TL_DW - 1:0]   result;
+    int                 i;
+    string              msg, fmt;
+
+    for (i=0; i < TL_DW; i+=ThreshW) begin
+      bit is_fips_thresh = (i==0);
+      bit update_rejected;
+      new_thresh  = write_val[i +: ThreshW];
+      prev_thresh =  prev_val[i +: ThreshW];
+      thresh_out  = increase_only ? (new_thresh > prev_thresh ? new_thresh : prev_thresh) :
+                                    (new_thresh < prev_thresh ? new_thresh : prev_thresh);
+      update_rejected = (thresh_out != new_thresh);
+      result[i +: ThreshW] = thresh_out;
+      cov_vif.cg_one_way_ht_threshold_reg_sample(offset, update_rejected, is_fips_thresh);
+    end
+    fmt = "Threshold Reg Update. Offset: %08x (%s), Orig: %08x, New: %08x, Final: %08x";
+    msg = $sformatf(fmt, offset, prev_val, increase_only ? "INCREASES" : "DECREASES",
+                    write_val, result);
+    `uvm_info(`gfn, msg, UVM_DEBUG);
+    void'(csr.predict(.value(result), .kind(UVM_PREDICT_WRITE)));
+  endfunction
+
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg csr;
     bit do_read_check       = 1'b1;
+    // Identifies a register as a one-way threshold (they can only get tighter until reset)
+    bit one_way_threshold   = 1'b0;
+    // Specifies the direction of the one-way threshold
+    bit threshold_increases = 1'b0;
     bit locked_reg_access   = 1'b0;
     bit dut_reg_locked, sw_regupd, module_enabled;
     bit write               = item.is_write();
@@ -1083,25 +1133,39 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         locked_reg_access = dut_reg_locked;
       end
       "repcnt_thresholds": begin
-        locked_reg_access = dut_reg_locked;
+        locked_reg_access   = dut_reg_locked;
+        one_way_threshold   = 1;
+        threshold_increases = 0;
       end
       "repcnts_thresholds": begin
         locked_reg_access = dut_reg_locked;
+        one_way_threshold   = 1;
+        threshold_increases = 0;
       end
       "adaptp_hi_thresholds": begin
         locked_reg_access = dut_reg_locked;
+        one_way_threshold   = 1;
+        threshold_increases = 0;
       end
       "adaptp_lo_thresholds": begin
         locked_reg_access = dut_reg_locked;
+        one_way_threshold   = 1;
+        threshold_increases = 1;
       end
       "bucket_thresholds": begin
         locked_reg_access = dut_reg_locked;
+        one_way_threshold   = 1;
+        threshold_increases = 0;
       end
       "markov_hi_thresholds": begin
         locked_reg_access = dut_reg_locked;
+        one_way_threshold   = 1;
+        threshold_increases = 0;
       end
       "markov_lo_thresholds": begin
         locked_reg_access = dut_reg_locked;
+        one_way_threshold   = 1;
+        threshold_increases = 1;
       end
       "repcnt_hi_watermarks": begin
         // TODO: KNOWN ISSUE: pending resolution to #9819
@@ -1199,7 +1263,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         end else begin
           string msg = $sformatf("Unlocked write to: %s", csr.get_name());
           `uvm_info(`gfn, msg, UVM_FULL)
-          void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+          if (one_way_threshold) begin
+            predict_one_way_threshold(csr, item.a_data, threshold_increases);
+          end else begin
+            void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+          end
           // Special handling for registers with broader impacts
           case (csr.get_name())
             "intr_state": begin
