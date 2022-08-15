@@ -21,7 +21,7 @@ module rglts_pdm_3p3v (
   output logic rglssm_vmppr_h_o,           // Regulators SM at VMPPR (vcmaim_pok_por_reset) @3.3v
   output logic rglssm_vcmon_h_o,           // Regulators state machine at VCMON @3.3v
   output logic rglssm_brout_h_o,           // Regulators state machine at BROUT @3.3v
-  output logic vcmain_pok_h_o,             // VCMAIN Exist @3.3v
+  output logic vcmain_pok_h_o,             // VCMAIN POK @3.3v
   output logic vcmain_pok_por_h_o,         // VCMAIN_POK_POR @3.3v
   output logic vcaon_pok_h_o,              // VCAON Exist @3.3v
   output logic vcaon_pok_1p1_h_o,          // VCAON Exist @3.3v for BE 1.1v (UPF issue)
