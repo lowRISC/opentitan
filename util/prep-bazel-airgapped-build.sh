@@ -140,10 +140,10 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   ${BAZELISK} fetch \
     --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
     //... \
-    @bazel_embedded_upstream_toolchain//... \
     @local_config_cc_toolchains//... \
     @local_config_platform//... \
     @local_config_sh//... \
+    @lowrisc_rv32imcb_files//... \
     @python3_toolchains//... \
     @remotejdk11_linux//... \
     @riscv-compliance//... \
