@@ -136,6 +136,26 @@ class otbn_common_vseq extends otbn_base_vseq;
       $assertoff(0, "tb.dut.u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack\
                .next_stack_top_idx_correct");
       $assertoff(0, "tb.dut.u_otbn_core.u_otbn_rf_base.u_call_stack.next_stack_top_idx_correct");
+      if (if_proxy.path == {"tb.dut.u_tlul_adapter_sram_dmem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.",
+                            "gen_secure_ptrs.u_wptr"} ||
+          if_proxy.path == {"tb.dut.u_tlul_adapter_sram_dmem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.",
+                            "gen_secure_ptrs.u_rptr"}) begin
+        if (enable) begin
+          $asserton(0, "tb.dut.u_tlul_adapter_sram_dmem.u_rspfifo.DataKnown_A");
+        end else begin
+          $assertoff(0, "tb.dut.u_tlul_adapter_sram_dmem.u_rspfifo.DataKnown_A");
+        end
+      end
+      if (if_proxy.path == {"tb.dut.u_tlul_adapter_sram_imem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.",
+                            "gen_secure_ptrs.u_wptr"} ||
+          if_proxy.path == {"tb.dut.u_tlul_adapter_sram_imem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.",
+                            "gen_secure_ptrs.u_rptr"}) begin
+        if (enable) begin
+          $asserton(0, "tb.dut.u_tlul_adapter_sram_imem.u_rspfifo.DataKnown_A");
+        end else begin
+          $assertoff(0, "tb.dut.u_tlul_adapter_sram_imem.u_rspfifo.DataKnown_A");
+        end
+      end
     end
 
   endfunction: sec_cm_fi_ctrl_svas
