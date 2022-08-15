@@ -44,15 +44,22 @@ static void initialize_expected_counts() {
   // Notice the ratios are small enough to fit a uint32_t, even if the Hz number
   // is in uint64_t.
   const uint32_t kDeviceCpuCount =
-      cast_safely(udiv64_slow(kClockFreqCpuHz, kClockFreqAonHz, NULL));
-  const uint32_t kDeviceIoCount = cast_safely(
-      udiv64_slow(kClockFreqPeripheralHz, kClockFreqAonHz, NULL) * 4);
-  const uint32_t kDeviceIoDiv2Count = cast_safely(
-      udiv64_slow(kClockFreqPeripheralHz, kClockFreqAonHz, NULL) * 2);
+      cast_safely(udiv64_slow(kClockFreqCpuHz, kClockFreqAonHz,
+                              /*rem_out=*/NULL));
+  const uint32_t kDeviceIoCount =
+      cast_safely(udiv64_slow(kClockFreqPeripheralHz, kClockFreqAonHz,
+                              /*rem_out=*/NULL) *
+                  4);
+  const uint32_t kDeviceIoDiv2Count =
+      cast_safely(udiv64_slow(kClockFreqPeripheralHz, kClockFreqAonHz,
+                              /*rem_out=*/NULL) *
+                  2);
   const uint32_t kDeviceIoDiv4Count =
-      cast_safely(udiv64_slow(kClockFreqPeripheralHz, kClockFreqAonHz, NULL));
+      cast_safely(udiv64_slow(kClockFreqPeripheralHz, kClockFreqAonHz,
+                              /*rem_out=*/NULL));
   const uint32_t kDeviceUsbCount =
-      cast_safely(udiv64_slow(kClockFreqUsbHz, kClockFreqAonHz, NULL));
+      cast_safely(udiv64_slow(kClockFreqUsbHz, kClockFreqAonHz,
+                              /*rem_out=*/NULL));
 
   // The expected counts are derived from the ratios of the frequencies of the
   // various clocks to the AON clock. For example, 48 Mhz / 200 kHz = 240, so

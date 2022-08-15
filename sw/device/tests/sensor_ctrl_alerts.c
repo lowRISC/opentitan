@@ -80,7 +80,7 @@ static bool incr_flash_cnt(uint32_t tested_idx) {
 };
 
 /**
- *  Clear event trigger and recoverble status.
+ *  Clear event trigger and recoverable status.
  */
 static void clear_event(uint32_t idx, dif_toggle_t fatal) {
   CHECK_DIF_OK(dif_sensor_ctrl_set_ast_event_trigger(&sensor_ctrl, idx,
