@@ -113,7 +113,8 @@ class OtbnModel {
             svBitVecVal *stop_pc /* bit [31:0] */);
 
   // Escalate errors. Returns 0 on success; -1 on failure.
-  int send_err_escalation(svBitVecVal *err_val /* bit [31:0] */);
+  int send_err_escalation(svBitVecVal *err_val /* bit [31:0] */,
+                          svBit lock_immediately);
 
   // Returns true if we have an ISS wrapper and it has the START_WIPE flag
   // asserted

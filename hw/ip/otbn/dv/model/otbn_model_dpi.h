@@ -136,7 +136,8 @@ int otbn_model_reset(OtbnModel *model, svBitVecVal *status /* bit [7:0] */,
 
 // React to an error escalation. Returns 0 on success or -1 on failure.
 int otbn_model_send_err_escalation(OtbnModel *model,
-                                   svBitVecVal *err_val /* bit [31:0] */);
+                                   svBitVecVal *err_val /* bit [31:0] */,
+                                   svBit lock_immediately);
 
 // Trigger initial secure wipe.
 int otbn_model_initial_secure_wipe(OtbnModel *model);

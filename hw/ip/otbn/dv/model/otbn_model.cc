@@ -616,13 +616,14 @@ int OtbnModel::reset(svBitVecVal *status /* bit [7:0] */,
   return 0;
 }
 
-int OtbnModel::send_err_escalation(svBitVecVal *err_val /* bit [31:0] */) {
+int OtbnModel::send_err_escalation(svBitVecVal *err_val /* bit [31:0] */,
+                                   svBit lock_immediately) {
   ISSWrapper *iss = ensure_wrapper();
   if (!iss)
     return -1;
 
   try {
-    iss->send_err_escalation(err_val[0]);
+    iss->send_err_escalation(err_val[0], lock_immediately);
   } catch (const std::exception &err) {
     std::cerr << "Error when sending error escalation signal to ISS: "
               << err.what() << "\n";
@@ -1034,9 +1035,10 @@ int otbn_model_reset(OtbnModel *model, svBitVecVal *status /* bit [7:0] */,
 }
 
 int otbn_model_send_err_escalation(OtbnModel *model,
-                                   svBitVecVal *err_val /* bit [31:0] */) {
+                                   svBitVecVal *err_val /* bit [31:0] */,
+                                   svBit lock_immediately) {
   assert(model);
-  return model->send_err_escalation(err_val);
+  return model->send_err_escalation(err_val, lock_immediately);
 }
 
 int otbn_model_initial_secure_wipe(OtbnModel *model) {

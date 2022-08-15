@@ -324,7 +324,10 @@ module otbn_core_model
       end
       if (new_escalation) begin
         // Setting LIFECYCLE_ESCALATION bit
-        failed_lc_escalate <= (otbn_model_send_err_escalation(model_handle, 32'd1 << 22) != 0);
+        failed_lc_escalate <= (otbn_model_send_err_escalation(model_handle,
+                                                              32'd1 << 22,
+                                                              1'b0)
+                               != 0);
       end
       if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
         failed_keymgr_value <= (otbn_model_set_keymgr_value(model_handle,

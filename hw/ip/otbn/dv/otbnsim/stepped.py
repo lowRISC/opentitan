@@ -142,6 +142,7 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     was_wiping = sim.state.wiping()
 
     insn, changes = sim.step(verbose=False)
+
     if insn is not None:
         hdr = insn.rtl_trace(pc)  # type: Optional[str]
     elif was_wiping:
@@ -151,6 +152,10 @@ def on_step(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
     elif sim.state.executing():
         hdr = 'STALL'
     else:
+        hdr = None
+
+    # When locking immediately, drop headers that get cancelled by RTL.
+    if sim.state.lock_immediately and hdr in ['V ', 'STALL']:
         hdr = None
 
     rtl_changes = []
@@ -370,9 +375,10 @@ def on_step_crc(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
 
 
 def on_send_err_escalation(sim: OTBNSim, args: List[str]) -> Optional[OTBNSim]:
-    check_arg_count('send_err_escalation', 1, args)
+    check_arg_count('send_err_escalation', 2, args)
     err_val = read_word('err_val', args[0], 32)
-    sim.send_err_escalation(err_val)
+    lock_immediately = bool(read_word('lock_immediately', args[1], 1))
+    sim.send_err_escalation(err_val, lock_immediately)
     return None
 
 

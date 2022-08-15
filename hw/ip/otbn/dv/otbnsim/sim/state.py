@@ -128,6 +128,8 @@ class OTBNState:
         # we wouldn't see the final instruction get executed and then
         # cancelled).
         self.injected_err_bits = 0
+        self.lock_immediately = False
+        self.zero_insn_cnt_next = False
 
         # If this is set, all software errors should result in the model status
         # being locked.
@@ -357,30 +359,35 @@ class OTBNState:
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
 
-        # Set the WIPE_START flag if we were running. This is used to tell the
-        # C++ model code that this is a good time to inspect DMEM and check
-        # that the RTL and model match. The flag will be cleared again on the
-        # next cycle.
-        if self._fsm_state == FsmState.EXEC:
-            # Make the final PC visible. This isn't currently in the RTL, but
-            # is useful in simulations that want to track whether we stopped
-            # where we expected to stop.
-            self.ext_regs.write('STOP_PC', self.pc, True)
-
-            self.ext_regs.write('WIPE_START', 1, True)
-            self.ext_regs.regs['WIPE_START'].commit()
-
-            # Switch to a 'wiping' state
-            self.set_fsm_state(FsmState.WIPING_BAD if should_lock
-                               else FsmState.WIPING_GOOD)
-        elif self._fsm_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
+        if self.lock_immediately:
             assert should_lock
-            self._next_fsm_state = FsmState.WIPING_BAD
+            self.set_fsm_state(FsmState.LOCKED)
+            self.ext_regs.write('STATUS', Status.LOCKED, True)
         else:
-            assert should_lock
-            self._next_fsm_state = FsmState.LOCKED
-            next_status = Status.LOCKED
-            self.ext_regs.write('STATUS', next_status, True)
+            # Set the WIPE_START flag if we were running. This is used to tell
+            # the C++ model code that this is a good time to inspect DMEM and
+            # check that the RTL and model match. The flag will be cleared
+            # again on the next cycle.
+            if self._fsm_state == FsmState.EXEC:
+                # Make the final PC visible. This isn't currently in the RTL,
+                # but is useful in simulations that want to track whether we
+                # stopped where we expected to stop.
+                self.ext_regs.write('STOP_PC', self.pc, True)
+
+                self.ext_regs.write('WIPE_START', 1, True)
+                self.ext_regs.regs['WIPE_START'].commit()
+
+                # Switch to a 'wiping' state
+                self.set_fsm_state(FsmState.WIPING_BAD if should_lock
+                                   else FsmState.WIPING_GOOD)
+            elif self._fsm_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
+                assert should_lock
+                self._next_fsm_state = FsmState.WIPING_BAD
+            else:
+                assert should_lock
+                self._next_fsm_state = FsmState.LOCKED
+                next_status = Status.LOCKED
+                self.ext_regs.write('STATUS', next_status, True)
 
         # Clear any pending request in the RND EDN client
         self.ext_regs.rnd_forget()
