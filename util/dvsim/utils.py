@@ -568,7 +568,7 @@ def mk_path(path):
     try:
         Path(path).mkdir(parents=True, exist_ok=True)
     except PermissionError as e:
-        log.fatal("Failed to create dirctory {}:\n{}.".format(path, e))
+        log.fatal("Failed to create directory {}:\n{}.".format(path, e))
         sys.exit(1)
 
 
