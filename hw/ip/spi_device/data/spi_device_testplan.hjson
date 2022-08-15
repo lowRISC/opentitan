@@ -208,11 +208,12 @@
       desc: '''
             - Randomize command opcode.
             - Configure unused CMD_INFO reg with new opcode and set it to valid.
-            - Check opcode and address are passing through.
+            - Check opcode, address and payload are passing through.
             - Configure filter bit corresponding to opcode to 1.
-            - Check only opcode is passing through.
+            - Check the entire command is filtered.
             - Set filter bit back to 0.
-            - Check opcode and address are passing through again.'''
+            - Check opcode and address are passing through again.
+            - Invalid opcode is also filtered'''
       milestone: V2
       tests: ["spi_device_pass_cmd_filtering", "spi_device_pass_all"]
     }
@@ -301,7 +302,7 @@
     {
       name: flash_cmd_upload
       desc: '''
-            - Configure flash mode.
+            - Configure spi_device on flash or passthrough mode.
             - Configure cmd info slots.
             - Set upload to 1 for some of 13 non fixed cmd info slots.
             - Host should poll busy field status to check if command is done.
@@ -317,27 +318,30 @@
             - Check response to read command.
             - Check if command is processed internally.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_mailbox"]
     }
     {
       name: mailbox_cross_outside_command
       desc: '''
+            - Configure spi_device on passthrough mode. Mailbox boundary crossing is not expected to
+              be used on flash mode, so that testing this on flash mode isn't needed.
             - Configure cmd info slots.
             - Issue one of predefined read command targeting mailbox space.
             - Command should start inside mailbox space and cross into read space.
-            - Command should be blocked.'''//TODO Clarify if data returned if crossing boundary
+            - When the address falls in the mailbox region, data returns from the mailbox. when the
+              address is outside the mailbox, data returns as follows
+                - returns high-z if the read command is filtered.
+                - returns from downstream port if read command is passed through.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_mailbox"]
     }
     {
       name: mailbox_cross_inside_command
       desc: '''
-            - Configure cmd info slots.
-            - Issue one of predefined read command targeting read space outside mailbox space.
-            - Command should start outside mailbox space and cross into mailbox space.
-            - Command should be blocked.'''//TODO Clarify if data returned if crossing boundary
+            - Similar to `mailbox_cross_outside_command`, except that start address is inside the
+              mailbox.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_mailbox"]
     }
     {
       name: cmd_read_buffer
@@ -361,10 +365,10 @@
             - For dual/quad mode allowed dummy cycle is 2 or more.
             - Check return data timing for configured commands.
             - Check proper read data.
-            - Issue new read command that crosses read buffer boundary.
+            - Issue new read command that crosses read maibox boundary.
             - Check internal buffer index bit.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_mailbox", "spi_device_pass_all"]
     }
     {
       name: quad_spi
@@ -375,7 +379,7 @@
             - Issue supported command.
             - Check data on all four lines.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_pass_all"]
     }
     {
       name: dual_spi
@@ -386,7 +390,7 @@
             - Issue supported command.
             - Check data on both lines.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_pass_all"]
     }
     {
       name: 4b_3b_feature
@@ -397,6 +401,17 @@
             - Randomize configuration of EN4B and EX4B register fields.
             - Issue supported command with required address.
             - Check proper address propagation.'''
+      milestone: V2
+      tests: ["spi_device_cfg_cmd"]
+    }
+    {
+      name: write_enable_disable
+      desc: '''
+            - Configure passthrough or flash mode.
+            - Randomize WREN and WRDI command info slots.
+            - Issue WREN and WRDI commands along with read_status command and others.
+            - Read flash status via TL interface.
+            - Check WREN/WRDI sets/clears flash status correctly.'''
       milestone: V2
       tests: ["spi_device_cfg_cmd"]
     }
@@ -500,9 +515,12 @@
     {
       name: spi_device_mailbox_cg
       desc: '''
-            Cover commands targeting mailbox space.
-            Cover command starting in buffer overlapping with mailbox.
-            Cover command starting in mailbox comming outside mailbox space.'''
+            Cover commands targeting inside mailbox space.
+            Cover command starting outside mailbox and crossing into mailbox space.
+            Cover command starting in mailbox comming outside mailbox space.
+            Cover command starting outside mailbox and crossing the entire mailbox space and coming
+            outside mailbox.
+            Cross above with filter on and off.'''
     }
     {
       name: spi_device_4B_address_management_cg
@@ -521,6 +539,12 @@
             Cover out commands that use dual mode.
             Cover out commands that use quad mode.
             Cross dual and quad modes with flash/passthrough mode.'''
+    }
+    {
+      name: spi_device_write_enable_disable_cg
+      desc: '''
+            Cover write enable and write disable commands.
+            Cross this with the previous flash_status.wel value.'''
     }
   ]
 }
