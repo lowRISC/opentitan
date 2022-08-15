@@ -7,7 +7,7 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/otbn/doc/">OTBN</a> Device Interface Functions
+ * @brief <a href="/hw/ip/otbn/doc/">OTBN</a> Device Interface Functions.
  */
 
 #include <stddef.h>
@@ -23,7 +23,7 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * OTBN commands
+ * OTBN commands.
  */
 typedef enum dif_otbn_cmd {
   kDifOtbnCmdExecute = 0xd8,
@@ -32,7 +32,7 @@ typedef enum dif_otbn_cmd {
 } dif_otbn_cmd_t;
 
 /**
- * OTBN status
+ * OTBN status.
  */
 typedef enum dif_otbn_status {
   kDifOtbnStatusIdle = 0x00,
@@ -44,7 +44,7 @@ typedef enum dif_otbn_status {
 } dif_otbn_status_t;
 
 /**
- * OTBN Errors
+ * OTBN Errors.
  *
  * OTBN uses a bitfield to indicate which errors have been seen. Multiple errors
  * can be seen at the same time. This enum gives the individual bits that may be
@@ -86,7 +86,7 @@ typedef enum dif_otbn_err_bits {
  * Resets the given OTBN device by setting its configuration registers to
  * reset values. Disables interrupts, output, and input filter.
  *
- * @param otbn OTBN instance
+ * @param otbn OTBN instance.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -105,8 +105,8 @@ dif_result_t dif_otbn_write_cmd(const dif_otbn_t *otbn, dif_otbn_cmd_t cmd);
 /**
  * Gets the current status of OTBN.
  *
- * @param otbn OTBN instance
- * @param[out] status OTBN status
+ * @param otbn OTBN instance.
+ * @param[out] status OTBN status.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -116,7 +116,7 @@ dif_result_t dif_otbn_get_status(const dif_otbn_t *otbn,
 /**
  * Get the error bits set by the device if the operation failed.
  *
- * @param otbn OTBN instance
+ * @param otbn OTBN instance.
  * @param[out] err_bits The error bits returned by the hardware.
  * @return The result of the operation.
  */
@@ -131,7 +131,7 @@ dif_result_t dif_otbn_get_err_bits(const dif_otbn_t *otbn,
  * there is one. Otherwise, gets the number executed in total in the previous
  * OTBN run.
  *
- * @param otbn OTBN instance
+ * @param otbn OTBN instance.
  * @param[out] insn_cnt The number of instructions executed by OTBN.
  * @return The result of the operation.
  */
@@ -139,12 +139,12 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_get_insn_cnt(const dif_otbn_t *otbn, uint32_t *insn_cnt);
 
 /**
- * Write an OTBN application into its instruction memory (IMEM)
+ * Write an OTBN application into its instruction memory (IMEM).
  *
  * Only 32b-aligned 32b word accesses are allowed.
  *
- * @param otbn OTBN instance
- * @param offset_bytes the byte offset in IMEM the first word is written to
+ * @param otbn OTBN instance.
+ * @param offset_bytes the byte offset in IMEM the first word is written to.
  * @param src the main memory location to start reading from.
  * @param len_bytes number of bytes to copy.
  * @return The result of the operation.
@@ -154,13 +154,13 @@ dif_result_t dif_otbn_imem_write(const dif_otbn_t *otbn, uint32_t offset_bytes,
                                  const void *src, size_t len_bytes);
 
 /**
- * Read from OTBN's instruction memory (IMEM)
+ * Read from OTBN's instruction memory (IMEM).
  *
  * Only 32b-aligned 32b word accesses are allowed.
  *
  * @param otbn OTBN instance
- * @param offset_bytes the byte offset in IMEM the first word is read from
- * @param[out] dest the main memory location to copy the data to (preallocated)
+ * @param offset_bytes the byte offset in IMEM the first word is read from.
+ * @param[out] dest the main memory location to copy the data to (preallocated).
  * @param len_bytes number of bytes to copy.
  * @return The result of the operation.
  */
@@ -169,12 +169,12 @@ dif_result_t dif_otbn_imem_read(const dif_otbn_t *otbn, uint32_t offset_bytes,
                                 void *dest, size_t len_bytes);
 
 /**
- * Write to OTBN's data memory (DMEM)
+ * Write to OTBN's data memory (DMEM).
  *
  * Only 32b-aligned 32b word accesses are allowed.
  *
- * @param otbn OTBN instance
- * @param offset_bytes the byte offset in DMEM the first word is written to
+ * @param otbn OTBN instance.
+ * @param offset_bytes the byte offset in DMEM the first word is written to.
  * @param src the main memory location to start reading from.
  * @param len_bytes number of bytes to copy.
  * @return The result of the operation.
@@ -184,13 +184,13 @@ dif_result_t dif_otbn_dmem_write(const dif_otbn_t *otbn, uint32_t offset_bytes,
                                  const void *src, size_t len_bytes);
 
 /**
- * Read from OTBN's data memory (DMEM)
+ * Read from OTBN's data memory (DMEM).
  *
  * Only 32b-aligned 32b word accesses are allowed.
  *
  * @param otbn OTBN instance
- * @param offset_bytes the byte offset in DMEM the first word is read from
- * @param[out] dest the main memory location to copy the data to (preallocated)
+ * @param offset_bytes the byte offset in DMEM the first word is read from.
+ * @param[out] dest the main memory location to copy the data to (preallocated).
  * @param len_bytes number of bytes to copy.
  * @return The result of the operation.
  */
@@ -204,7 +204,7 @@ dif_result_t dif_otbn_dmem_read(const dif_otbn_t *otbn, uint32_t offset_bytes,
  * When set any software error becomes a fatal error. The bit can only be
  * changed when the OTBN status is IDLE.
  *
- * @param otbn OTBN instance
+ * @param otbn OTBN instance.
  * @param enable Enable or disable whether software errors are fatal.
  * @return The result of the operation, `kDifUnavailable` is returned when the
  * requested change cannot be made.
@@ -216,16 +216,16 @@ dif_result_t dif_otbn_set_ctrl_software_errs_fatal(const dif_otbn_t *otbn,
 /**
  * Get the size of OTBN's data memory in bytes.
  *
- * @param otbn OTBN instance
- * @return data memory size in bytes
+ * @param otbn OTBN instance.
+ * @return data memory size in bytes.
  */
 size_t dif_otbn_get_dmem_size_bytes(const dif_otbn_t *otbn);
 
 /**
  * Get the size of OTBN's instruction memory in bytes.
  *
- * @param otbn OTBN instance
- * @return instruction memory size in bytes
+ * @param otbn OTBN instance.
+ * @return instruction memory size in bytes.
  */
 size_t dif_otbn_get_imem_size_bytes(const dif_otbn_t *otbn);
 
