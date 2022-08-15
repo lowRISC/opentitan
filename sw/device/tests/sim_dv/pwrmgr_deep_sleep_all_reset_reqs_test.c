@@ -87,19 +87,23 @@ static bool incr_flash_cnt(uint32_t tested_idx) {
  * Program the alert handler to escalate on alerts upto phase 2 (i.e. reset) but
  * the phase 1 (i.e. wipe secrets) should occur and last during the time the
  * wdog is programed to bark.
+ *
+ * Notice these settings are suitable for sim_dv. For other platforms we scale
+ * the resulting cycles by a factor of 10.
  */
 enum {
-  kWdogBarkMicros = 3 * 1000,          // 3 ms
-  kWdogBiteMicros = 4 * 1000,          // 4 ms
-  kEscalationPhase0Micros = 1 * 1000,  // 1 ms
-  // The cpu value is slightly larger as the busy_spin_micros
-  // routine cycle count comes out slightly smaller due to the
-  // fact that it does not divide by exactly 1M
-  // see sw/device/lib/runtime/hart.c
-  kEscalationPhase0MicrosCpu = kEscalationPhase0Micros + 200,  // 1.2 ms
-  kEscalationPhase1Micros = 5 * 1000,                          // 5 ms
-  kEscalationPhase2Micros = 500,                               // 500 us
+  kWdogBarkMicros = 3 * 100,          // 300 us
+  kWdogBiteMicros = 4 * 100,          // 400 us
+  kEscalationPhase0Micros = 1 * 100,  // 100 us
+  // The cpu value is slightly larger to avoid flakey results.
+  kEscalationPhase0MicrosCpu = kEscalationPhase0Micros + 20,  // 120 us
+  kEscalationPhase1Micros = 5 * 100,                          // 500 us
+  kEscalationPhase2Micros = 50,                               // 50 us
 };
+
+uint32_t cycle_rescaling_factor() {
+  return kDeviceType == kDeviceSimDV ? 1 : 10;
+}
 
 static_assert(
     kWdogBarkMicros < kWdogBiteMicros &&
@@ -212,22 +216,29 @@ static void alert_handler_config(void) {
   dif_alert_handler_escalation_phase_t esc_phases[] = {
       {.phase = kDifAlertHandlerClassStatePhase0,
        .signal = 0,
-       .duration_cycles = udiv64_slow(
-           kEscalationPhase0Micros * kClockFreqPeripheralHz, 1000000, NULL)},
+       .duration_cycles =
+           udiv64_slow(kEscalationPhase0Micros * kClockFreqPeripheralHz,
+                       1000000, NULL) *
+           cycle_rescaling_factor()},
       {.phase = kDifAlertHandlerClassStatePhase1,
        .signal = 1,
-       .duration_cycles = udiv64_slow(
-           kEscalationPhase1Micros * kClockFreqPeripheralHz, 1000000, NULL)},
+       .duration_cycles =
+           udiv64_slow(kEscalationPhase1Micros * kClockFreqPeripheralHz,
+                       1000000, NULL) *
+           cycle_rescaling_factor()},
       {.phase = kDifAlertHandlerClassStatePhase2,
        .signal = 3,
-       .duration_cycles = udiv64_slow(
-           kEscalationPhase2Micros * kClockFreqPeripheralHz, 1000000, NULL)}};
+       .duration_cycles =
+           udiv64_slow(kEscalationPhase2Micros * kClockFreqPeripheralHz,
+                       1000000, NULL) *
+           cycle_rescaling_factor()}};
 
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
       .accumulator_threshold = 0,
       .irq_deadline_cycles =
-          udiv64_slow(10 * kClockFreqPeripheralHz, 1000000, NULL),
+          udiv64_slow(10 * kClockFreqPeripheralHz, 1000000, NULL) *
+          cycle_rescaling_factor(),
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
@@ -257,9 +268,11 @@ static void alert_handler_config(void) {
 static void trigger_escalate(dif_aon_timer_t *aon_timer,
                              const dif_pwrmgr_t *pwrmgr) {
   uint64_t bark_cycles =
-      udiv64_slow(kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL);
+      udiv64_slow(kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL) *
+      cycle_rescaling_factor();
   uint64_t bite_cycles =
-      udiv64_slow(kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL);
+      udiv64_slow(kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL) *
+      cycle_rescaling_factor();
 
   CHECK(bite_cycles < UINT32_MAX,
         "The value %u can't fit into the 32 bits timer counter.", bite_cycles);
