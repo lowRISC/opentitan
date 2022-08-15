@@ -301,7 +301,12 @@ class OTBNSim:
 
         # Zero INSN_CNT once if we're in state WIPING_BAD.
         if not is_good and self.state.ext_regs.read('INSN_CNT', True) != 0:
-            self.state.ext_regs.write('INSN_CNT', 0, True)
+            if self.state.zero_insn_cnt_next or not self.state.lock_immediately:
+                self.state.ext_regs.write('INSN_CNT', 0, True)
+                self.state.zero_insn_cnt_next = False
+            if self.state.lock_immediately:
+                # Zero INSN_CNT in the *next* cycle to match RTL control flow.
+                self.state.zero_insn_cnt_next = True
 
         if self.state.wipe_cycles == 1:
             if self.state.first_round_of_wipe:
@@ -360,7 +365,8 @@ class OTBNSim:
             self.state.ext_regs.write('STATUS', Status.IDLE, True)
             self.state.set_fsm_state(FsmState.IDLE)
 
-    def send_err_escalation(self, err_val: int) -> None:
+    def send_err_escalation(self, err_val: int, lock_immediately: bool) -> None:
         '''React to an error escalation'''
         assert err_val & ~ErrBits.MASK == 0
         self.state.injected_err_bits |= err_val
+        self.state.lock_immediately = lock_immediately

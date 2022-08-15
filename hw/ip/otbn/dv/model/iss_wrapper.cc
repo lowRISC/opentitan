@@ -529,9 +529,10 @@ void ISSWrapper::reset(bool gen_trace) {
   mirrored_.reset();
 }
 
-void ISSWrapper::send_err_escalation(uint32_t err_val) {
+void ISSWrapper::send_err_escalation(uint32_t err_val, bool lock_immediately) {
   std::ostringstream oss;
-  oss << "send_err_escalation " << std::hex << "0x" << err_val << "\n";
+  oss << "send_err_escalation " << std::hex << "0x" << err_val << " "
+      << lock_immediately << "\n";
   run_command(oss.str(), nullptr);
 }
 
