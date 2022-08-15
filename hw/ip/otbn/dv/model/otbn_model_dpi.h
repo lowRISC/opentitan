@@ -139,6 +139,9 @@ int otbn_model_send_err_escalation(OtbnModel *model,
                                    svBitVecVal *err_val /* bit [31:0] */,
                                    svBit lock_immediately);
 
+// Trigger RMA request in model
+int otbn_model_send_rma_req(OtbnModel *model);
+
 // Trigger initial secure wipe.
 int otbn_model_initial_secure_wipe(OtbnModel *model);
 }

@@ -123,6 +123,9 @@ class OtbnModel {
   // Trigger initial secure wipe.
   int initial_secure_wipe();
 
+  // Send RMA request to model.
+  int send_rma_req();
+
   // Disable stack integrity checks
   int disable_stack_check();
 

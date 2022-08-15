@@ -139,6 +139,11 @@ class OTBNState:
         # current fsm_state.
         self.cycles_in_this_state = 0
 
+        # RMA request changes state to LOCKED, basically an escalation from lifecycle
+        # controller. Initiates secure wiping through stop_at_end_of_cycle method and
+        # this flag.
+        self.rma_req = False
+
     def get_next_pc(self) -> int:
         if self._pc_next_override is not None:
             return self._pc_next_override
@@ -346,7 +351,7 @@ class OTBNState:
         # might have updated state (either registers, memory or
         # externally-visible registers). We want to roll back any of those
         # changes.
-        if self._err_bits and self._fsm_state == FsmState.EXEC:
+        if (self._err_bits and self._fsm_state == FsmState.EXEC) or self.rma_req:
             self._abort()
 
         # INTR_STATE is the interrupt state register. Bit 0 (which is being
@@ -355,7 +360,8 @@ class OTBNState:
 
         should_lock = (((self._err_bits >> 16) != 0) or
                        ((self._err_bits >> 10) & 1) or
-                       (self._err_bits and self.software_errs_fatal))
+                       (self._err_bits and self.software_errs_fatal) or
+                       self.rma_req)
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
 
@@ -394,6 +400,9 @@ class OTBNState:
 
         # Clear the "we should stop soon" flag
         self.pending_halt = False
+
+        # Clear RMA request flag
+        self.rma_req = False
 
     def get_fsm_state(self) -> FsmState:
         return self._fsm_state
