@@ -22,18 +22,18 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.mean_rand_reconfig_time     = 1ms;
     // The random alerts only need to happen frequently enough to
     // close coverage
-    cfg.mean_rand_csr_alert_time    = 500ms;
+    cfg.mean_rand_csr_alert_time    = -1;
     cfg.soft_mtbf                   = 7500us;
 
     // Apply standards ranging from strict to relaxed
-    cfg.dut_cfg.adaptp_sigma_min            = 1.0;
+    cfg.dut_cfg.adaptp_sigma_min            = 3.0;
     cfg.dut_cfg.adaptp_sigma_max            = 6.0;
-    cfg.dut_cfg.bucket_sigma_min            = 1.0;
+    cfg.dut_cfg.bucket_sigma_min            = 3.0;
     cfg.dut_cfg.bucket_sigma_max            = 6.0;
-    cfg.dut_cfg.markov_sigma_min            = 1.0;
+    cfg.dut_cfg.markov_sigma_min            = 3.0;
     cfg.dut_cfg.markov_sigma_max            = 6.0;
 
-    cfg.dut_cfg.sw_regupd_pct               = 50;
+    cfg.dut_cfg.sw_regupd_pct               = 100;
 
     cfg.dut_cfg.entropy_data_reg_enable_pct = 50;
     cfg.dut_cfg.route_software_pct          = 50;

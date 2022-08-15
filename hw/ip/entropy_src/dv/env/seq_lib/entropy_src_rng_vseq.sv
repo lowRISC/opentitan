@@ -96,22 +96,24 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
                                 output bit completed,
                                 output bit regwen);
     int hi_thresh, lo_thresh;
+    mubi4_t threshold_scope = newcfg.ht_threshold_scope;
+
 
     if (do_disable) begin
-      ral.module_enable.set(MuBi4False);
-      csr_update(.csr(ral.module_enable));
+      disable_dut();
     end
 
     // TODO: Separate sigmas for bypass and FIPS operation
-    // TODO: cfg for threshold_rec per_line arguments
 
     if (!newcfg.default_ht_thresholds) begin
       // AdaptP thresholds
-      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, adaptp_ht, 0,
+      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, adaptp_ht,
+                                   threshold_scope != MuBi4True,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
       ral.adaptp_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
       ral.adaptp_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, adaptp_ht, 0,
+      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, adaptp_ht,
+                                   threshold_scope != MuBi4True,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
       ral.adaptp_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       ral.adaptp_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
@@ -127,12 +129,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       ral.bucket_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       csr_update(.csr(ral.bucket_thresholds));
 
-      // TODO: Markov DUT is currently cofigured for per_line operation (see Issue #9759)
-      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, markov_ht, 1,
+      // Markov Thresholds
+      m_rng_push_seq.threshold_rec(newcfg.fips_window_size, markov_ht,
+                                   threshold_scope != MuBi4True,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
       ral.markov_hi_thresholds.fips_thresh.set(hi_thresh[15:0]);
       ral.markov_lo_thresholds.fips_thresh.set(lo_thresh[15:0]);
-      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, markov_ht, 1,
+      m_rng_push_seq.threshold_rec(newcfg.bypass_window_size, markov_ht,
+                                   threshold_scope != MuBi4True,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
       ral.markov_hi_thresholds.bypass_thresh.set(hi_thresh[15:0]);
       ral.markov_lo_thresholds.bypass_thresh.set(lo_thresh[15:0]);
@@ -501,6 +505,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     realtime delta;
     string msg;
 
+    if (cfg.mean_rand_csr_alert_time <= 0) begin
+      `uvm_info(`gfn, "Skipping forced-alert thread", UVM_LOW)
+      return;
+    end
+
     `uvm_info(`gfn, "Starting forced-alert thread", UVM_LOW)
 
     while (do_background_procs) begin
@@ -526,7 +535,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     realtime delta;
     string msg;
 
+
+    if (cfg.mean_rand_reconfig_time <= 0) begin
+      `uvm_info(`gfn, "Skipping reconfig timer thread", UVM_LOW)
+      return;
+    end
+
     `uvm_info(`gfn, "Starting reconfig timer thread", UVM_LOW)
+
 
     randomize_unexpected_config_time();
     if (sched_reconfig_time > 0) begin
