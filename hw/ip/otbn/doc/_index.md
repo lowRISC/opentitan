@@ -1022,6 +1022,10 @@ In addition, it can be triggered by the [Life Cycle Controller]({{<relref "/hw/i
 
 A secure wipe of the internal state only is triggered automatically after reset and when OTBN [ends the software execution](#design-details-software-execution), either successfully, or unsuccessfully due to a [recoverable error](#design-details-recoverable-errors).
 
+If OTBN cannot complete a secure wipe of the internal state (e.g., due to failing to obtain the required randomness), it immediately becomes locked.
+In this case, OTBN must be reset and will then retry the secure wipe.
+The secure wipe after reset must succeed before OTBN can be used.
+
 #### Data Memory (DMEM) Secure Wipe {#design-details-secure-wipe-dmem}
 
 The wiping is performed by securely replacing the memory scrambling key, making all data stored in the memory unusable.
