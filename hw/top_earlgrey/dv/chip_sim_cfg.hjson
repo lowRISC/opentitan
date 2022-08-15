@@ -271,6 +271,12 @@
       name: "chip_csr_bit_bash"
       // Don't test over 512 randomly picked CSRs at a time.
       run_opts: ["+test_timeout_ns=120_000_000", "+num_test_csrs=400"]
+      run_timeout_mins: 120
+    }
+    {
+      // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
+      name: "chip_csr_aliasing"
+      run_timeout_mins: 180
     }
     {
       name: chip_sw_example_flash
@@ -666,6 +672,7 @@
       sw_images: ["//sw/device/tests:otbn_ecdsa_op_irq_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=28_000_000"]
+      run_timeout_mins: 400
     }
     {
       name: chip_sw_otbn_ecdsa_op_irq_jitter_en
@@ -673,6 +680,7 @@
       sw_images: ["//sw/device/tests:otbn_ecdsa_op_irq_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=35_000_000", "+en_jitter=1"]
+      run_timeout_mins: 400
     }
     {
       name: chip_sw_otbn_mem_scramble
