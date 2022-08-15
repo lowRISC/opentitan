@@ -41,4 +41,5 @@ trap 'python3 ./util/fpga/cw310_reboot.py' EXIT
         --test_output=all \
         --build_tests_only \
         --define cw310=lowrisc \
-        --flaky_test_attempts=2
+        --flaky_test_attempts=2 \
+        --execution_log_json_file="/tmp/fpga-test-log.json" \

@@ -472,8 +472,13 @@ jobs:
           --build_tests_only \
           --disk_cache="$(Pipeline.Workspace)/bazel-disk-cache" \
           --local_cpu_resources=4 \
+          --execution_log_json_file=$(Pipeline.Workspace)/fpga-build-exec-log.json \
           $(./bazelisk.sh query 'rdeps(//...,@bitstreams//:bitstream_test_rom)') \
           $(./bazelisk.sh query 'rdeps(//...,@bitstreams//:bitstream_mask_rom)')
+    - publish: $(Pipeline.Workspace)/fpga-build-exec-log.json
+      artifact: fpga-build-exec-log
+      condition: always()
+      displayName: "TEMP: upload build exec log"
     - publish: $(Pipeline.Workspace)/bazel-disk-cache
       artifact: bazel-disk-cache
       condition: always()
@@ -513,6 +518,9 @@ jobs:
       echo "-----"
       ci/scripts/run-fpga-cw310-tests.sh
     displayName: Execute tests
+  - publish: /tmp/fpga-test-exec-log.json
+    artifact: fpga-test-exec-log
+    displayName: "TEMP: upload test exec log"
 
 - job: deploy_release_artifacts
   displayName: Package & deploy release
