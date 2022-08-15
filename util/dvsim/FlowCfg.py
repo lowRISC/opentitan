@@ -42,7 +42,8 @@ class FlowCfg():
 
     def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
         # Options set from command line
-        self.items = args.items
+        # Uniquify input items, while preserving the order.
+        self.items = list(dict.fromkeys(args.items))
         self.list_items = args.list
         self.select_cfgs = args.select_cfgs
         self.flow_cfg_file = flow_cfg_file
