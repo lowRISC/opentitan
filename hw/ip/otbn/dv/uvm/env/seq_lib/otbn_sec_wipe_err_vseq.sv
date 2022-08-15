@@ -29,7 +29,7 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
         string err_path = "tb.dut.u_otbn_core.u_otbn_start_stop_control.secure_wipe_req_i";
 
         // Secure wipe requests are not allowed when OTBN is idle; so wait for OTBN to become idle.
-        wait(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle);
+        `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle)
         @(cfg.clk_rst_vif.cbn);
 
         // Disable assertion that would abort simulation when the fault is injected.
@@ -49,7 +49,7 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
         `DV_CHECK_FATAL(uvm_hdl_release(err_path) == 1)
 
         `uvm_info(`gfn, "Waiting for OTBN to lock up.", UVM_LOW)
-        wait(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);
+        `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
       end
 
       ERR_DROPPED_REQ: begin // Dropped secure wipe request
@@ -65,7 +65,7 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
 
         // Wait until binary has completed execution and OTBN does the internal secure wipe.
         `uvm_info(`gfn, "Waiting for OTBN to complete execution.", UVM_LOW)
-        wait(cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute);
+        `DV_WAIT(cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute)
         if (cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusySecWipeInt) begin
           // If OTBN is no longer executing but also not performing the internal secure wipe, we
           // have missed the opportunity (the `start_running_otbn()` function does not guarantee
@@ -95,7 +95,7 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
           cfg.model_agent_cfg.vif.send_err_escalation(32'd1 << 20);
 
           `uvm_info(`gfn, "Waiting for OTBN to lock up.", UVM_LOW)
-          wait(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);
+          `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
         end
       end
 
@@ -123,7 +123,7 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
         end else begin
           // Secure wipe acknowledges are not allowed when OTBN is idle; so wait for OTBN to become
           // idle.
-          wait(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle);
+          `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle)
           @(cfg.clk_rst_vif.cbn);
         end
 
@@ -143,7 +143,7 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
           `DV_CHECK_FATAL(uvm_hdl_release(err_path) == 1)
 
           `uvm_info(`gfn, "Waiting for OTBN to lock up.", UVM_LOW)
-          wait(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);
+          `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
         end
       end
 
