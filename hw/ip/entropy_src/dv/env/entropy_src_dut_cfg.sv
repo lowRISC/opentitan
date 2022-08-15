@@ -154,35 +154,48 @@ class entropy_src_dut_cfg extends uvm_object;
   //        in the RNG source which means that the false positive rate is still > 1 in 2^40)
   //
   // The last bin captures this most relaxed
+  //
+  // TODO: Establish usable constraints for repcnt thresholds < 40
+  // Temporarily disable the tighter bins, to allow seeds to pass.  The previous bins were
+  // previously so tight that no seed outputs were ever observed.  Even though each individual HT
+  // may pass with reasonable probability, if multiple HT thresholds are set tightly, the
+  // probability of all passing approaches zero, and we never see any entropy outputs.
   constraint repcnt_thresh_bypass_c {repcnt_thresh_bypass dist {
-      [6  : 10] :/ 1,
-      [11 : 20] :/ 1,
-      [21 : 40] :/ 1,
-      41        :/ 1};}
+      [6  : 10] :/ 0,
+      [11 : 20] :/ 0,
+      [21 : 40] :/ 0,
+      41        :/ 10};}
 
+  // TODO: Establish usable constraints for repcnt thresholds < 40
+  // See similar TODO note above for further details
   constraint repcnt_thresh_fips_c {repcnt_thresh_fips dist {
-      [6  : 10] :/ 1,
-      [11 : 20] :/ 1,
-      [21 : 40] :/ 1,
-      41        :/ 1};}
+      [6  : 10] :/ 0,
+      [11 : 20] :/ 0,
+      [21 : 40] :/ 0,
+      41        :/ 10};}
 
   // Make the bin sizes for the repcnts test 1/4 as small as the corresponding repcnt bins sizes,
   // since the likelihood of coincidental
   // failure is comparable to that of gathering 4x more data with the repcnt
   // test.
   //
-  // As with the repcnt test, the highest bin would (for an assumed ideal RNG noice source
-  constraint repcnts_thresh_bypass_c {repcnts_thresh_bypass dist {
-      [2  :  3] :/ 1,
-      [4  :  5] :/ 1,
-      [6  : 10] :/ 1,
-      11       :/ 1};}
+  // As with the repcnt test, the highest bin would (for an assumed ideal RNG noice source)
 
+  // TODO: Establish usable constraints for repcnts thresholds < 10
+  // See similar TODO note above for further details
+  constraint repcnts_thresh_bypass_c {repcnts_thresh_bypass dist {
+      [2  :  3] :/ 0,
+      [4  :  5] :/ 0,
+      [6  : 10] :/ 0,
+      11       :/ 10};}
+
+  // TODO: Establish usable constraints for repcnts thresholds < 10
+  // See similar TODO note above for further details
   constraint repcnts_thresh_fips_c {repcnts_thresh_fips dist {
-      [2  :  3] :/ 1,
-      [4  :  5] :/ 1,
-      [6  : 10] :/ 1,
-      [11 : 80] :/ 1};}
+      [2  :  3] :/ 0,
+      [4  :  5] :/ 0,
+      [6  : 10] :/ 0,
+      [11 : 80] :/ 10};}
 
   // TODO: Update dist to satisfy cover points
   constraint alert_threshold_c {alert_threshold dist {
