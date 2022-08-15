@@ -145,7 +145,7 @@ class FlowCfg():
 
         # Construct the result_path Path variable after variable expansion.
         self.results_path = (Path(self.scratch_base_path) / "reports" /
-                             self.rel_path / self.timestamp)
+                             self.rel_path / "latest")
 
         # Run any final checks
         self._post_init()
@@ -426,9 +426,8 @@ class FlowCfg():
         """Converts md text to HTML and writes to file in results_path area."""
 
         # Prepare reports directory, keeping 90 day history.
-        if not self.results_path.is_dir():
-            clean_odirs(odir=self.results_path, max_odirs=89)
-            mk_path(self.results_path)
+        clean_odirs(odir=self.results_path, max_odirs=89)
+        mk_path(self.results_path)
 
         # Write results to the report area.
         with open(self.results_path / filename, "w") as f:
