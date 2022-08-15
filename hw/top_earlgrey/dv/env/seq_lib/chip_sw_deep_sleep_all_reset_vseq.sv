@@ -99,7 +99,7 @@ class chip_sw_deep_sleep_all_reset_vseq extends chip_sw_base_vseq;
 
   task execute_reset();
     `uvm_info(`gfn, "wait for low power entry", UVM_MEDIUM)
-    `DV_WAIT(cfg.pwrmgr_low_power_vif.low_power == 1)
+    `DV_WAIT(cfg.pwrmgr_low_power_vif.low_power == 1, "timeout waiting for low power entry")
     `uvm_info(`gfn, "reset after low power entry", UVM_MEDIUM)
     assert_por_reset_deep_sleep (reset_delay);
   endtask // execute_reset
