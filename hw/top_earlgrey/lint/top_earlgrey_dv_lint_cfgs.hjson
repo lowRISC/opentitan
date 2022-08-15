@@ -166,12 +166,12 @@
                   rel_path: "hw/ip/usbdev/dv/lint/{tool}"
              },
              {    name: xbar_main
-                  fusesoc_core: lowrisc:dv:xbar_main_sim
+                  fusesoc_core: lowrisc:dv:top_earlgrey_xbar_main_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip/xbar_main/dv/lint/{tool}"
              },
              {    name: xbar_peri
-                  fusesoc_core: lowrisc:dv:xbar_peri_sim
+                  fusesoc_core: lowrisc:dv:top_earlgrey_xbar_peri_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip/xbar_peri/dv/lint/{tool}"
              },
