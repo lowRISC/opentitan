@@ -615,7 +615,7 @@ class otbn_base_vseq extends cip_base_vseq #(
       new_cnt_d = new_cnt_q;
     end
 
-    for (int k = 0; k < 1; k++) begin
+    for (int k = 0; k < 2; k++) begin
       index = $sformatf("[%d]", k);
       if (uvm_hdl_deposit({"tb.dut.u_otbn_core.u_otbn_controller.",
                            counter_path,
@@ -629,7 +629,7 @@ class otbn_base_vseq extends cip_base_vseq #(
                            counter_path,
                            ".cnt_q",
                            index},
-                           new_cnt_q[1]) != 1) begin
+                           new_cnt_q[k]) != 1) begin
         `dv_fatal({"Failed to override cnt_q", index, " for loop warp."})
       end
     end
