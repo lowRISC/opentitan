@@ -9,6 +9,9 @@
   // Top level dut name (sv module).
   dut: xbar_main
 
+  // The name of the chip this XBAR configuration is made for.
+  top_chip: top_earlgrey
+
   // Testplan hjson file.
   testplan: "{proj_root}/hw/top_earlgrey/ip/{dut}/data/autogen/{dut}_testplan.hjson"
 
