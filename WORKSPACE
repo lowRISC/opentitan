@@ -7,16 +7,17 @@
 
 workspace(name = "lowrisc_opentitan")
 
-# CRT is the Compiler Repository Toolkit.  It contains the configuration for
-# the windows compiler.
-load("//third_party/crt:repos.bzl", "crt_repos")
-crt_repos()
-load("@crt//:repos.bzl", "crt_repos")
-crt_repos()
-load("@crt//:deps.bzl", "crt_deps")
-crt_deps()
-load("@crt//config:registration.bzl", "crt_register_toolchains")
-crt_register_toolchains(riscv32 = True)
+# Bazel Embedded; Bazel platform configuration for embedded environments.
+load("//third_party/bazel_embedded:repos.bzl", "bazel_embedded_repos")
+bazel_embedded_repos()
+load("//third_party/bazel_embedded:deps.bzl", "bazel_embedded_deps")
+bazel_embedded_deps()
+
+# The lowRISC LLVM Toolchain
+load("//third_party/lowrisc_toolchain:repos.bzl", "lowrisc_toolchain_repos")
+lowrisc_toolchain_repos()
+load("//third_party/lowrisc_toolchain:deps.bzl", "lowrisc_toolchain_deps")
+lowrisc_toolchain_deps()
 
 # Tools for release automation
 load("//third_party/github:repos.bzl", "github_tools_repos")
