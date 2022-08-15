@@ -17,7 +17,6 @@
 
 module ast_pulse_sync (
   input scan_mode_i,
-  input scan_reset_ni,
   // source clock domain
   input clk_src_i,
   input rst_src_ni,
@@ -55,8 +54,8 @@ prim_flop_2sync #(
   .q_o ( rst_src_da_n )
 );
 
-assign rst_src_n = scan_mode_i ? scan_reset_ni : rst_src_ni && rst_dst_da_n;
-assign rst_dst_n = scan_mode_i ? scan_reset_ni : rst_dst_ni && rst_src_da_n;
+assign rst_src_n = scan_mode_i ? rst_src_ni : rst_src_ni && rst_dst_da_n;
+assign rst_dst_n = scan_mode_i ? rst_dst_ni : rst_dst_ni && rst_src_da_n;
 
 
 // Pulse Rising Edge Detect & Block
@@ -103,7 +102,7 @@ prim_flop_2sync #(
 );
 
 
-// DST_REQ Synchronizertp SRC for ACK
+// DST_REQ Synchronizer to SRC for ACK
 ///////////////////////////////////////
 logic src_ack;
 
@@ -142,5 +141,7 @@ assign dst_pulse_o = (dst_req ^ dst_req_d);
 
 // A new PULSE can only be introduced when source is not BUSY.
 `ASSERT(NewPulseWhenSrcBusy, $rose(src_pulse_i) |-> !src_busy_o, clk_src_i, !rst_src_n)
+
+`ASSERT(DstPulseCheck_A, dst_pulse_o |=> !dst_pulse_o, clk_dst_i, !rst_dst_n)
 
 endmodule : ast_pulse_sync

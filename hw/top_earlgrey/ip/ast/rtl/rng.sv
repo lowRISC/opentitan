@@ -75,9 +75,13 @@ assign srate_value = dv_srate_value;
 assign srate_value = 12'd120;
 `endif
 
+logic src_busy;
+
 always_ff @( posedge clk_i, negedge rst_n ) begin
   if ( !rst_n ) begin
     srate_cnt     <= 12'h000;
+    srate_rng_val <= 1'b0;
+  end else if ( (srate_cnt == srate_value) && src_busy ) begin
     srate_rng_val <= 1'b0;
   end else if ( srate_cnt == srate_value ) begin
     srate_cnt     <= 12'h000;
@@ -92,11 +96,10 @@ end
 ////////////////////////////////////////
 // Sychronize Bus & Valid to RNG Clock
 ////////////////////////////////////////
-logic sync_rng_val, srate_rng_val_en, src_busy;
+logic sync_rng_val, srate_rng_val_en;
 
 ast_pulse_sync u_rng_val_pulse_sync (
   .scan_mode_i ( scan_mode_i ),
-  .scan_reset_ni ( rst_n ),
   // source clock domain
   .clk_src_i ( clk_i ),
   .rst_src_ni ( rst_n ),
@@ -137,8 +140,7 @@ end
 ///////////////////////
 logic unused_sigs;
 assign unused_sigs = ^{
-                        rng_fips_i,  // Used in ASIC implementation
-                        src_busy
+                        rng_fips_i  // Used in ASIC implementation
                       };
 
 endmodule : rng
