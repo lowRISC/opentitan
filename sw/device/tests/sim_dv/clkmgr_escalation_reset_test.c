@@ -11,10 +11,9 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_pwrmgr.h"
+#include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
@@ -30,28 +29,30 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
- * Program the alert handler to escalate on alerts upto phase 2 (i.e. reset) but
- * the phase 1 (i.e. wipe secrets) should occur and last during the time the
- * wdog is programmed to bark.
+ * Program the alert handler to escalate on alerts upto phase 2 (i.e. reset).
+ * Also program the aon timer with:
+ * - bark after escalation starts, so the interrupt is suppressed by escalation,
+ * - bite after escalation reset, so we should not get timer reset.
  */
 enum {
   kWdogBarkMicros = 3 * 100,          // 300 us
-  kWdogBiteMicros = 4 * 100,          // 400 us
-  kEscalationPhase0Micros = 1 * 100,  // 100 us
+  kWdogBiteMicros = 8 * 100,          // 800 us
+  kEscalationPhase0Micros = 2 * 100,  // 200 us
   // The cpu value is set slightly larger, since if they are the same it is
   // possible busy_spin_micros in execute_test can complete before the
   // interrupt.
-  kEscalationPhase0MicrosCpu = kEscalationPhase0Micros + 20,  // 120 us
-  kEscalationPhase1Micros = 5 * 100,                          // 500 us
+  kEscalationPhase0MicrosCpu = kEscalationPhase0Micros + 20,  // 220 us
+  kEscalationPhase1Micros = 2 * 100,                          // 200 us
   kEscalationPhase2Micros = 100,                              // 100 us
 };
 
-static_assert(
-    kWdogBarkMicros < kWdogBiteMicros &&
-        kWdogBarkMicros > kEscalationPhase0Micros &&
-        kWdogBarkMicros < (kEscalationPhase0Micros + kEscalationPhase1Micros) &&
-        kWdogBiteMicros < (kEscalationPhase0Micros + kEscalationPhase1Micros),
-    "The wdog bark and bite shall happens during the escalation phase 1");
+static_assert(kWdogBarkMicros < kWdogBiteMicros &&
+                  kWdogBarkMicros > kEscalationPhase0Micros &&
+                  kWdogBarkMicros <
+                      (kEscalationPhase0Micros + kEscalationPhase1Micros) &&
+                  kWdogBiteMicros >
+                      (kEscalationPhase0Micros + kEscalationPhase1Micros),
+              "The wdog bite shall happen only if escalation reset fails.");
 
 /**
  * Objects to access the peripherals used in this test via dif API.
@@ -59,9 +60,13 @@ static_assert(
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 static dif_aon_timer_t aon_timer;
 static dif_rv_plic_t plic;
-static dif_pwrmgr_t pwrmgr;
+static dif_clkmgr_t clkmgr;
 static dif_rstmgr_t rstmgr;
 static dif_alert_handler_t alert_handler;
+
+volatile bool interrupt_seen = false;
+const dif_alert_handler_alert_t expected_alert =
+    kTopEarlgreyAlertIdClkmgrAonFatalFault;
 
 /**
  * External ISR.
@@ -71,6 +76,7 @@ static dif_alert_handler_t alert_handler;
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(void) {
+  interrupt_seen = true;
   dif_rv_plic_irq_id_t irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
@@ -83,7 +89,7 @@ void ottf_external_isr(void) {
                       kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
 
     // We should not get aon timer interrupts since escalation suppresses them.
-    LOG_ERROR("Unexpected aon timer interrupt %0d", irq);
+    CHECK(false, "Unexpected aon timer interrupt %0d", irq);
   } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
     // Check the class.
     dif_alert_handler_class_state_t state;
@@ -95,18 +101,17 @@ void ottf_external_isr(void) {
         (irq_id -
          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
 
-    // Deals with the alert cause: we expect it to be from the pwrmgr.
-    dif_alert_handler_alert_t alert = kTopEarlgreyAlertIdPwrmgrAonFatalFault;
+    // Check we get the expected alert.
     bool is_cause = false;
-    CHECK_DIF_OK(
-        dif_alert_handler_alert_is_cause(&alert_handler, alert, &is_cause));
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(&alert_handler,
+                                                  expected_alert, &is_cause));
     CHECK(is_cause);
+    // Fatal alerts are only cleared by reset.
 
-    // Acknowledge the cause and irq; neither of them affect escalation.
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler, alert));
-    CHECK_DIF_OK(
-        dif_alert_handler_alert_is_cause(&alert_handler, alert, &is_cause));
-    CHECK(!is_cause);
+    // Check the clkmgr has a fatal error.
+    dif_clkmgr_fatal_err_codes_t codes;
+    CHECK_DIF_OK(dif_clkmgr_fatal_err_code_get_codes(&clkmgr, &codes));
+    CHECK(codes == kDifClkmgrFatalErrTypeIdleCount);
 
     CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
   }
@@ -120,25 +125,21 @@ void ottf_external_isr(void) {
  * Initialize the peripherals used in this test.
  */
 void init_peripherals(void) {
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr));
+  CHECK_DIF_OK(dif_clkmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_rstmgr_init(base_addr, &rstmgr));
+  CHECK_DIF_OK(dif_rstmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer));
+  CHECK_DIF_OK(dif_aon_timer_init(
+      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
+  CHECK_DIF_OK(dif_rv_plic_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
 
-  rv_plic_testutils_irq_range_enable(
-      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
-  CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
 }
 
 /**
@@ -147,28 +148,31 @@ void init_peripherals(void) {
  * wdog is programed to bark.
  */
 static void alert_handler_config(void) {
-  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrAonFatalFault};
+  dif_alert_handler_alert_t alerts[] = {expected_alert};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
 
   dif_alert_handler_escalation_phase_t esc_phases[] = {
       {.phase = kDifAlertHandlerClassStatePhase0,
        .signal = 0,
        .duration_cycles = udiv64_slow(
-           kEscalationPhase0Micros * kClockFreqPeripheralHz, 1000000, NULL)},
+           kEscalationPhase0Micros * kClockFreqPeripheralHz, 1000000,
+           /*rem_out=*/NULL)},
       {.phase = kDifAlertHandlerClassStatePhase1,
        .signal = 1,
        .duration_cycles = udiv64_slow(
-           kEscalationPhase1Micros * kClockFreqPeripheralHz, 1000000, NULL)},
+           kEscalationPhase1Micros * kClockFreqPeripheralHz, 1000000,
+           /*rem_out=*/NULL)},
       {.phase = kDifAlertHandlerClassStatePhase2,
        .signal = 3,
        .duration_cycles = udiv64_slow(
-           kEscalationPhase2Micros * kClockFreqPeripheralHz, 1000000, NULL)}};
+           kEscalationPhase2Micros * kClockFreqPeripheralHz, 1000000,
+           /*rem_out=*/NULL)}};
 
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
       .accumulator_threshold = 0,
       .irq_deadline_cycles =
-          udiv64_slow(10 * kClockFreqPeripheralHz, 1000000, NULL),
+          udiv64_slow(10 * kClockFreqPeripheralHz, 1000000, /*rem_out=*/NULL),
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
@@ -210,9 +214,9 @@ static void execute_test(dif_aon_timer_t *aon_timer) {
   aon_timer_testutils_watchdog_config(aon_timer, bark_cycles, bite_cycles,
                                       /*pause_in_sleep=*/false);
 
-  // Trigger the alert handler to escalate.
-  dif_pwrmgr_alert_t alert = kDifPwrmgrAlertFatalFault;
-  CHECK_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr, alert));
+  // Trigger the clkmgr fatal error to start escalation.
+  LOG_INFO("Ready for error injection");
+
   busy_spin_micros(kEscalationPhase0MicrosCpu);
 
   // This should never run since escalation turns the CPU off.
@@ -226,7 +230,10 @@ bool test_main(void) {
 
   init_peripherals();
 
-  // Enable all the AON interrupts used in this test.
+  // Enable all the interrupts used in this test.
+  rv_plic_testutils_irq_range_enable(
+      &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
+      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassa,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassd);
@@ -247,6 +254,16 @@ bool test_main(void) {
     execute_test(&aon_timer);
   } else if (rst_info == kDifRstmgrResetInfoEscalation) {
     LOG_INFO("Booting for the second time due to escalation reset");
+    // Check the clkmgr has no fatal errors due to reset.
+    dif_clkmgr_fatal_err_codes_t codes;
+    CHECK_DIF_OK(dif_clkmgr_fatal_err_code_get_codes(&clkmgr, &codes));
+    CHECK(codes == 0, "Fatal error codes should be cleared upon reset");
+    // Check the alert handler cause is also cleared.
+    bool is_cause = true;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(&alert_handler,
+                                                  expected_alert, &is_cause));
+    CHECK(!is_cause);
+
   } else {
     LOG_ERROR("Unexpected rst_info=0x%x", rst_info);
     return false;

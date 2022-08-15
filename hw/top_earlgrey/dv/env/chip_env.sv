@@ -160,6 +160,11 @@ class chip_env extends cip_base_env #(
         )) begin
       `uvm_fatal(`gfn, "failed to get por_rstn_vif from uvm_config_db")
     end
+    if (!uvm_config_db#(virtual prim_count_if)::get(
+            this, "", "clkmgr_prim_count_vif", cfg.clkmgr_prim_count_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get clkmgr_prim_count_vif from uvm_config_db")
+    end
 
     // disable alert_esc_agent's driver and only use its monitor
     foreach (LIST_OF_ALERTS[i]) begin

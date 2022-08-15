@@ -19,18 +19,19 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   bit                 use_spi_load_bootstrap = 0;
 
   // chip top interfaces
-  gpio_vif            gpio_vif;
-  virtual pins_if#(2) tap_straps_vif;
-  virtual pins_if#(2) dft_straps_vif;
-  virtual pins_if#(3) sw_straps_vif;
-  virtual pins_if#(1) rst_n_mon_vif;
-  virtual clk_rst_if  cpu_clk_rst_vif;
-  virtual pins_if#(1) pinmux_wkup_vif;
-  virtual pins_if#(1) por_rstn_vif;
-  virtual pins_if#(1) pwrb_in_vif;
-  virtual pins_if#(1) ec_rst_vif;
-  virtual pins_if#(1) flash_wp_vif;
-  virtual pins_if#(8) sysrst_ctrl_vif;
+  gpio_vif              gpio_vif;
+  virtual pins_if#(2)   tap_straps_vif;
+  virtual pins_if#(2)   dft_straps_vif;
+  virtual pins_if#(3)   sw_straps_vif;
+  virtual pins_if#(1)   rst_n_mon_vif;
+  virtual clk_rst_if    cpu_clk_rst_vif;
+  virtual pins_if#(1)   pinmux_wkup_vif;
+  virtual pins_if#(1)   por_rstn_vif;
+  virtual pins_if#(1)   pwrb_in_vif;
+  virtual pins_if#(1)   ec_rst_vif;
+  virtual pins_if#(1)   flash_wp_vif;
+  virtual pins_if#(8)   sysrst_ctrl_vif;
+  virtual prim_count_if clkmgr_prim_count_vif;
 
   // pwrmgr probe interface
   virtual pwrmgr_low_power_if   pwrmgr_low_power_vif;

@@ -2542,7 +2542,7 @@
       name: chip_sw_flash_lc_escalate_en
       desc: '''Verify the lc_escalate_en signal from LC ctrl.
 
-            - Trigger an LC escalatation signal by generating an alert.
+            - Trigger an LC escalation signal by generating an alert.
             - Verify that all flash accesses are disabled when the escalation kicks in.
             - The CPU cannot read the flash either once escalation kicks in. This is unfortunately
               not possible because the CPU is also disabled when the escalation is triggered.
