@@ -370,3 +370,10 @@ class OTBNSim:
         assert err_val & ~ErrBits.MASK == 0
         self.state.injected_err_bits |= err_val
         self.state.lock_immediately = lock_immediately
+
+    def send_rma_req(self) -> None:
+        # Incoming RMA request basically acts like a fatal error.
+        # It does not immediately change the status to LOCKED just like any
+        # fatal error except spurious URND ack.
+        self.state.rma_req = True
+        self.state.pending_halt = True

@@ -33,6 +33,7 @@ module otbn_core_model
   input  logic               cmd_en_i, // CMD register enable for OTBN commands
 
   input  logic               lc_escalate_en_i,
+  input  logic               lc_rma_req_i,
 
   output err_bits_t          err_bits_o, // updated when STATUS switches to idle
 
@@ -242,20 +243,26 @@ module otbn_core_model
     end
   end
 
-  // The lc_escalate_en_i signal in the design goes through a prim_lc_sync which always injects
-  // exactly two cycles of delay (this is a synchroniser, not a CDC, so its behaviour is easy to
-  // predict). Model that delay in the SystemVerilog here, since it's much easier than handling it
+  // The lc_escalate_en_i and lc_rma_req_i signals in the design go through a prim_lc_sync
+  // which always injects exactly two cycles of delay (this is a synchroniser, not a CDC, so
+  // its behaviour is easy to predict).
+  // We model those delays in the SystemVerilog here, since it's much easier than handling it
   // in the Python.
   logic [2:0] escalate_fifo;
+  logic [2:0] rma_req_fifo;
   logic       new_escalation;
+  logic       new_rma_req;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       escalate_fifo <= '0;
+      rma_req_fifo <= '0;
     end else begin
       escalate_fifo <= {escalate_fifo[1:0], lc_escalate_en_i};
+      rma_req_fifo <= {rma_req_fifo[1:0], lc_rma_req_i};
     end
   end
   assign new_escalation = escalate_fifo[1] & ~escalate_fifo[2];
+  assign new_rma_req = rma_req_fifo[1] & ~rma_req_fifo[2];
 
   // A "busy" counter. We'd like to avoid stepping the Python process on every cycle when there's
   // nothing going on (since it's rather expensive). But exactly modelling *when* we can safely
@@ -274,7 +281,7 @@ module otbn_core_model
   end
 
   assign reset_busy_counter = |{running, cmd_en_i, check_due, new_escalation, edn_rnd_cdc_done_i,
-                                ~init_sec_wipe_done_i, wakeup_iss};
+                                ~init_sec_wipe_done_i, wakeup_iss, new_rma_req};
   assign step_iss = reset_busy_counter || (busy_counter_q != 0);
 
   always_comb begin
@@ -297,7 +304,7 @@ module otbn_core_model
 
   // Note: This can't be an always_ff block because we write to model_state here and also in an
   // initial block (see declaration of the variable above)
-  bit failed_reset, failed_lc_escalate, failed_keymgr_value;
+  bit failed_reset, failed_lc_escalate, failed_keymgr_value, failed_lc_rma_req;
   bit failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc;
   bit failed_initial_secure_wipe, initial_secure_wipe_started;
   always @(posedge clk_i or negedge rst_ni) begin
@@ -328,6 +335,9 @@ module otbn_core_model
                                                               32'd1 << 22,
                                                               1'b0)
                                != 0);
+      end
+      if (new_rma_req) begin
+        failed_lc_rma_req <= (otbn_model_send_rma_req(model_handle) != 0);
       end
       if (!$stable(keymgr_key_i) || $rose(rst_ni)) begin
         failed_keymgr_value <= (otbn_model_set_keymgr_value(model_handle,
@@ -414,7 +424,7 @@ module otbn_core_model
                    failed_reset, failed_lc_escalate, failed_keymgr_value,
                    failed_edn_flush, failed_rnd_step, failed_urnd_step,
                    failed_urnd_cdc, failed_rnd_cdc, failed_otp_key_cdc,
-                   failed_initial_secure_wipe};
+                   failed_initial_secure_wipe, failed_lc_rma_req};
 
   // Derive a "done" signal. This should trigger for a single cycle when OTBN finishes its work.
   // It's analogous to the done_o signal on otbn_core, but this signal is delayed by a single cycle

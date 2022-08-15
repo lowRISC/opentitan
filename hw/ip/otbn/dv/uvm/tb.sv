@@ -130,8 +130,8 @@ module tb;
     .alert_tx_o(alert_tx),
 
     .lc_escalate_en_i(escalate_if.enable),
-    .lc_rma_req_i    (lc_ctrl_pkg::Off),
-    .lc_rma_ack_o    (),
+    .lc_rma_req_i    (escalate_if.req),
+    .lc_rma_ack_o    (escalate_if.ack),
 
     .ram_cfg_i('0),
 
@@ -222,38 +222,39 @@ module tb;
     .MemScope     ("..dut"),
     .DesignScope  ("..dut.u_otbn_core")
   ) u_model (
-    .clk_i        (model_if.clk_i),
-    .clk_edn_i    (edn_clk),
-    .rst_ni       (model_if.rst_ni),
-    .rst_edn_ni   (edn_rst_n),
+    .clk_i     (model_if.clk_i),
+    .clk_edn_i (edn_clk),
+    .rst_ni    (model_if.rst_ni),
+    .rst_edn_ni(edn_rst_n),
 
-    .cmd_i        (model_if.cmd_q),
-    .cmd_en_i     (model_if.cmd_qe),
+    .cmd_i   (model_if.cmd_q),
+    .cmd_en_i(model_if.cmd_qe),
 
-    .lc_escalate_en_i (escalate_if.enable != lc_ctrl_pkg::Off),
+    .lc_escalate_en_i(escalate_if.enable != lc_ctrl_pkg::Off),
+    .lc_rma_req_i    (escalate_if.req != lc_ctrl_pkg::Off),
 
-    .err_bits_o   (model_if.err_bits),
+    .err_bits_o(model_if.err_bits),
 
-    .edn_rnd_i           ({edn_if[RndEdnIdx].ack, edn_if[RndEdnIdx].d_data}),
-    .edn_rnd_o           (edn_rnd_req_model),
-    .edn_rnd_cdc_done_i  (edn_rnd_cdc_done),
+    .edn_rnd_i         ({edn_if[RndEdnIdx].ack, edn_if[RndEdnIdx].d_data}),
+    .edn_rnd_o         (edn_rnd_req_model),
+    .edn_rnd_cdc_done_i(edn_rnd_cdc_done),
 
-    .edn_urnd_i          ({edn_if[UrndEdnIdx].ack, edn_if[UrndEdnIdx].d_data}),
-    .edn_urnd_o          (edn_urnd_req_model),
-    .edn_urnd_cdc_done_i (edn_urnd_cdc_done),
+    .edn_urnd_i         ({edn_if[UrndEdnIdx].ack, edn_if[UrndEdnIdx].d_data}),
+    .edn_urnd_o         (edn_urnd_req_model),
+    .edn_urnd_cdc_done_i(edn_urnd_cdc_done),
 
-    .init_sec_wipe_done_i (dut.u_otbn_core.i_otbn_trace_if.initial_secure_wipe_done),
+    .init_sec_wipe_done_i(dut.u_otbn_core.i_otbn_trace_if.initial_secure_wipe_done),
 
-    .otp_key_cdc_done_i  (otp_key_cdc_done),
+    .otp_key_cdc_done_i(otp_key_cdc_done),
 
-    .status_o     (model_if.status),
-    .insn_cnt_o   (model_insn_cnt),
+    .status_o  (model_if.status),
+    .insn_cnt_o(model_insn_cnt),
 
-    .done_rr_o    (),
+    .done_rr_o(),
 
-    .err_o        (model_if.err),
+    .err_o(model_if.err),
 
-    .keymgr_key_i (model_if.keymgr_key_i)
+    .keymgr_key_i(model_if.keymgr_key_i)
   );
 
   // Pull the final PC and the OtbnModel handle out of the SV model wrapper.

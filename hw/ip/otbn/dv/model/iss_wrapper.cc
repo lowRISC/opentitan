@@ -536,6 +536,12 @@ void ISSWrapper::send_err_escalation(uint32_t err_val, bool lock_immediately) {
   run_command(oss.str(), nullptr);
 }
 
+void ISSWrapper::send_rma_req() {
+  std::ostringstream oss;
+  oss << "send_rma_req\n";
+  run_command(oss.str(), nullptr);
+}
+
 void ISSWrapper::get_regs(std::array<uint32_t, 32> *gprs,
                           std::array<u256_t, 32> *wdrs) {
   assert(gprs && wdrs);
