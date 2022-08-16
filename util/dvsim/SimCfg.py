@@ -692,10 +692,6 @@ class SimCfg(FlowCfg):
                 else:
                     self.results_summary["Coverage"] = "--"
 
-            # append link of detail result to block name
-            self.results_summary["Name"] = self._get_results_page_link(
-                self.results_summary["Name"])
-
         if results.buckets:
             self.errors_seen = True
             results_str += "\n".join(create_bucket_report(results.buckets))
@@ -721,14 +717,20 @@ class SimCfg(FlowCfg):
         table = []
         header = []
         for cfg in self.cfgs:
-            row = cfg.results_summary.values()
+            row = cfg.results_summary
             if row:
+                # convert name entry to relative link
+                row = cfg.results_summary
+                row["Name"] = cfg._get_results_page_link(
+                                self.results_summary_server_dir,
+                                row["Name"])
+
                 # If header is set, ensure its the same for all cfgs.
                 if header:
                     assert header == cfg.results_summary.keys()
                 else:
                     header = cfg.results_summary.keys()
-                table.append(row)
+                table.append(row.values())
 
         if table:
             assert header

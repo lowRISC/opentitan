@@ -435,11 +435,12 @@ class FlowCfg():
             f.write(
                 md_results_to_html(self.results_title, self.css_file, text_md))
 
-    def _get_results_page_link(self, link_text):
-        if not self.args.publish:
-            return link_text
-        results_page_url = self.results_server_page.replace(
-            self.results_server_prefix, self.results_server_url_prefix)
+    def _get_results_page_link(self, relative_to, link_text=''):
+        """Create a relative markdown link to the results page."""
+
+        link_text = self.name.upper() if not link_text else link_text
+        results_page_url = os.path.relpath(self.results_server_page,
+                                           relative_to)
         return "[%s](%s)" % (link_text, results_page_url)
 
     def gen_email_html_summary(self):
