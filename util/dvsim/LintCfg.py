@@ -76,10 +76,8 @@ class LintCfg(OneShotCfg):
 
         keys = self.totals.get_keys(self.report_severities)
         for cfg in self.cfgs:
-            results_page = f'{cfg.results_server_dir}/results.html'
-            results_page_url = results_page.replace(
-                cfg.results_server_prefix, cfg.results_server_url_prefix)
-            name_with_link = f'[{cfg.name.upper()}]({results_page_url})'
+            name_with_link = cfg._get_results_page_link(
+                self.results_summary_server_dir)
 
             row = [name_with_link]
             row += cfg.result_summary.get_counts_md(keys)
