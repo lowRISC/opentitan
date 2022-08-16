@@ -18,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/drivers/alert.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
+#include "sw/device/silicon_creator/lib/epmp_defs.h"
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
@@ -448,33 +449,48 @@ SHUTDOWN_FUNC(noreturn, shutdown_hang(void)) {
 
   // Switch to assembly as RAM (incl. stack) is about to get scrambled.
 #ifdef OT_PLATFORM_RV32
-  while (true) {
-    asm volatile(
-        "1:"
-        // Request a new scrambling key.
-        "sw %[kSramRenewKey], %[kSramCtrlCtrlReg](%[kSramCtrlBase]);"
-        // Request a system reset.
-        "sw %[kMultiBitBool4True], %[kRstmgrResetReqReg](%[kRstmgrBase]);"
+  asm volatile(
+      ".L_shutdown_hang_asm_start:"
+      // Request a new scrambling key.
+      "sw %[kSramRenewKey], %[kSramCtrlCtrlReg](%[kSramCtrlBase]);"
+      // Request a system reset.
+      "sw %[kMultiBitBool4True], %[kRstmgrResetReqReg](%[kRstmgrBase]);"
 
-        // TODO(lowRISC/opentitan#7148): restrict the ePMP such that only
-        // ROM may execute.  mundaym's suggestion: set entry 2 as a NAPOT
-        // region covering the entire address space, clear all its permission
-        // bits and set the lock bit, and then finally disable RLB to prevent
-        // any further modifications.
+      // Reconfigure ePMP such that only this inline asm is executable:
+      // - Entry 1: TOR, LRX, [.L_shutdown_hang_asm_start,
+      // .L_shutdown_hang_asm_end).
+      // - Entry 2: NAPOT, L, entire address space.
+      // - MSECCFG: MMWP set RLB unset to prevent any further modifications.
+      "la   t0, .L_shutdown_hang_asm_start;"
+      "srli t0, t0, 2;"
+      "csrw pmpaddr0, t0;"
+      "la   t0, .L_shutdown_hang_asm_end;"
+      "srli t0, t0, 2;"
+      "csrw pmpaddr1, t0;"
+      "csrw pmpaddr2, %[kNapotEntireAddressSpace];"
+      "csrw pmpcfg0, %[kPmpCfg0];"
+      "csrw pmpcfg1, zero;"
+      "csrw pmpcfg2, zero;"
+      "csrw pmpcfg3, zero;"
+      "csrw %[kMSecCfgReg], %[kMSecCfgVal];"
 
-        // Generate a halt-maze.
-        "wfi; wfi; wfi; wfi; j 1b;"
-        "wfi; wfi; j 1b;"
-        "wfi; j 1b;"
-        "wfi;"
-        :
-        : [kSramRenewKey] "r"(1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT),
-          [kSramCtrlCtrlReg] "I"(SRAM_CTRL_CTRL_REG_OFFSET),
-          [kSramCtrlBase] "r"(kSramCtrlBase),
-          [kMultiBitBool4True] "r"(kMultiBitBool4True),
-          [kRstmgrBase] "r"(kRstmgrBase),
-          [kRstmgrResetReqReg] "I"(RSTMGR_RESET_REQ_REG_OFFSET));
-  }
+      // Generate a halt-maze.
+      "wfi; wfi; wfi; wfi; j .L_shutdown_hang_asm_start;"
+      "wfi; wfi; j .L_shutdown_hang_asm_start;"
+      "wfi; j .L_shutdown_hang_asm_start;"
+      ".L_shutdown_hang_asm_end:"
+      :
+      : [kSramRenewKey] "r"(1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT),
+        [kSramCtrlCtrlReg] "I"(SRAM_CTRL_CTRL_REG_OFFSET),
+        [kSramCtrlBase] "r"(kSramCtrlBase),
+        [kMultiBitBool4True] "r"(kMultiBitBool4True),
+        [kRstmgrResetReqReg] "I"(RSTMGR_RESET_REQ_REG_OFFSET),
+        [kRstmgrBase] "r"(kRstmgrBase),
+        [kNapotEntireAddressSpace] "r"(0x7fffffff),
+        [kPmpCfg0] "r"((EPMP_CFG_A_TOR | EPMP_CFG_LRX) << 8 |
+                       (EPMP_CFG_A_NAPOT | EPMP_CFG_L) << 16),
+        [kMSecCfgReg] "I"(EPMP_MSECCFG), [kMSecCfgVal] "r"(EPMP_MSECCFG_MMWP));
+  OT_UNREACHABLE();
 #endif
 }
 
