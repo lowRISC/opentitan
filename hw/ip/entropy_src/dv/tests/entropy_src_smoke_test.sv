@@ -20,6 +20,10 @@ class entropy_src_smoke_test extends entropy_src_base_test;
     cfg.dut_cfg.ht_threshold_scope_pct      = 100;
     cfg.dut_cfg.use_invalid_mubi            = 0;
 
+    // Disable tight HT thresholds, as the smoke vseq does
+    // not expect HT failures.
+    cfg.dut_cfg.default_ht_thresholds_pct   = 100;
+
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
 
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)
