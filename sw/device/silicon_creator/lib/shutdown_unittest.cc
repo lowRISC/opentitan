@@ -234,7 +234,8 @@ constexpr DefaultAlertClassification kDefaultAlertClassification[] = {
     ALERTS(FULL),
 };
 static_assert(ARRAYSIZE(kDefaultAlertClassification) <=
-                  (OTP_CTRL_PARAM_ROM_ALERT_CLASSIFICATION_SIZE / 4),
+                  (OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION_SIZE /
+                   4),
               "The default alert classification must be less than or equal to "
               "the number of reserved OTP words");
 
@@ -244,10 +245,11 @@ static_assert(kTopEarlgreyAlertIdLast < ARRAYSIZE(kDefaultAlertClassification),
 
 constexpr DefaultAlertClassification kDefaultLocAlertClassification[] = {
     LOC_ALERTS(FULL)};
-static_assert(ARRAYSIZE(kDefaultLocAlertClassification) <=
-                  (OTP_CTRL_PARAM_ROM_LOCAL_ALERT_CLASSIFICATION_SIZE / 4),
-              "The default local alert classification must be less than or "
-              "equal to the number of reserved OTP words");
+static_assert(
+    ARRAYSIZE(kDefaultLocAlertClassification) <=
+        (OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION_SIZE / 4),
+    "The default local alert classification must be less than or "
+    "equal to the number of reserved OTP words");
 
 constexpr alert_class_t kClasses[] = {
     kAlertClassA,
@@ -530,10 +532,11 @@ TEST_F(ShutdownTest, RedactPolicyProduction) {
     EXPECT_ABS_READ32(
         TOP_EARLGREY_LC_CTRL_BASE_ADDR + LC_CTRL_LC_STATE_REG_OFFSET,
         static_cast<uint32_t>(state));
-    EXPECT_ABS_READ32(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
-                          OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                          OTP_CTRL_PARAM_ROM_ERROR_REPORTING_OFFSET,
-                      static_cast<uint32_t>(kShutdownErrorRedactModule));
+    EXPECT_ABS_READ32(
+        TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+            OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ERROR_REPORTING_OFFSET,
+        static_cast<uint32_t>(kShutdownErrorRedactModule));
     EXPECT_EQ(shutdown_redact_policy(), kShutdownErrorRedactModule);
   }
 }

@@ -52,8 +52,8 @@ void watchdog_init(lifecycle_state_t lc_state) {
       HARDENED_UNREACHABLE();
   }
 
-  uint32_t threshold =
-      otp_read32(OTP_CTRL_PARAM_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES_OFFSET);
+  uint32_t threshold = otp_read32(
+      OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES_OFFSET);
 
   // Disable watchdog if `threshold` is less than minimum.
   if (launder32(threshold) < kWatchdogMinThreshold) {
