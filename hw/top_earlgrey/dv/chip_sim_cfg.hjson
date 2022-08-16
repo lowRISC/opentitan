@@ -754,6 +754,16 @@
       run_opts: ["+en_scb=0"]
     }
     {
+      name: chip_sw_alert_handler_entropy
+      uvm_test_seq: chip_sw_alert_handler_entropy_vseq
+      sw_images: ["//sw/device/tests/sim_dv:alert_handler_entropy_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      // Disable scoreboard to avoid incorrect alert prediction from the alert_monitor. Due to the
+      // cross-domain alert senders and receivers, the monitor from the chip level did not support
+      // processing alerts accurately from both ends.
+      run_opts: ["+en_scb=0"]
+    }
+    {
       name: chip_sw_aes_entropy
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:aes_entropy_test:1"]

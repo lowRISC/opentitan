@@ -1251,14 +1251,14 @@
       name: chip_sw_alert_handler_entropy
       desc: '''Verify the alert handler entropy input to ensure pseudo-random ping timer.
 
-            - Force `alert_handler_ping_timer` input signal `wait_cyc_mask_i` to `4'bff` to shorten
-              the simulation time.
+            - Force `alert_handler_ping_timer` input signal `wait_cyc_mask_i` to `16'h07ff` to
+              shorten the simulation time.
             - Verify that the alert_handler can request EDN to provide entropy.
             - Ensure that the alert ping handshake to all alert sources and escalation receivers
               complete without errors.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_alert_handler_entropy"]
     }
     {
       name: chip_sw_alert_handler_crashdump
