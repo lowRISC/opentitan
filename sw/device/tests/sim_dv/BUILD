@@ -743,6 +743,24 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "alert_handler_entropy_test",
+    srcs = ["alert_handler_entropy_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "lc_ctrl_program_error",
     srcs = ["lc_ctrl_program_error.c"],
     targets = ["dv"],
