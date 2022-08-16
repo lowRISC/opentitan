@@ -31,11 +31,12 @@
 #include "uart_regs.h"
 
 static_assert(ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT <=
-                  OTP_CTRL_PARAM_ROM_ALERT_CLASSIFICATION_SIZE / 4,
+                  OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION_SIZE / 4,
               "More alerts than alert classification OTP words!");
-static_assert(ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT <=
-                  OTP_CTRL_PARAM_ROM_LOCAL_ALERT_CLASSIFICATION_SIZE / 4,
-              "More local alerts than local alert classification OTP words!");
+static_assert(
+    ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT <=
+        OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION_SIZE / 4,
+    "More local alerts than local alert classification OTP words!");
 
 #define NO_MODIFIERS
 
@@ -122,9 +123,10 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
   // escalate configs per alert class (a/b/c/d).
   size_t i = 0;
   rom_error_t error = kErrorOk;
-  uint32_t class_enable = otp_read32(OTP_CTRL_PARAM_ROM_ALERT_CLASS_EN_OFFSET);
+  uint32_t class_enable =
+      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_CLASS_EN_OFFSET);
   uint32_t class_escalate =
-      otp_read32(OTP_CTRL_PARAM_ROM_ALERT_ESCALATION_OFFSET);
+      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_ESCALATION_OFFSET);
   alert_enable_t enable[ALERT_CLASSES];
   alert_escalate_t escalate[ALERT_CLASSES];
   for (i = 0; launder32(i) < ALERT_CLASSES; ++i) {
@@ -141,8 +143,9 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
   // configuration for the current lifecycle state.
   for (i = 0; launder32(i) < ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
        ++i) {
-    uint32_t value = otp_read32(OTP_CTRL_PARAM_ROM_ALERT_CLASSIFICATION_OFFSET +
-                                i * sizeof(uint32_t));
+    uint32_t value =
+        otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION_OFFSET +
+                   i * sizeof(uint32_t));
     alert_class_t cls = (alert_class_t)bitfield_field32_read(
         value, (bitfield_field32_t){.mask = 0xff, .index = lc_shift});
     rom_error_t e = alert_configure(i, cls, enable[clsindex(cls)]);
@@ -161,9 +164,9 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
   for (i = 0;
        launder32(i) < ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT;
        ++i) {
-    uint32_t value =
-        otp_read32(OTP_CTRL_PARAM_ROM_LOCAL_ALERT_CLASSIFICATION_OFFSET +
-                   i * sizeof(uint32_t));
+    uint32_t value = otp_read32(
+        OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION_OFFSET +
+        i * sizeof(uint32_t));
     alert_class_t cls = (alert_class_t)bitfield_field32_read(
         value, (bitfield_field32_t){.mask = 0xff, .index = lc_shift});
     rom_error_t e = alert_local_configure(i, cls, enable[clsindex(cls)]);
@@ -193,14 +196,16 @@ rom_error_t shutdown_init(lifecycle_state_t lc_state) {
   for (i = 0; launder32(i) < ALERT_CLASSES; ++i) {
     config.enabled = enable[i];
     config.escalation = escalate[i];
-    config.accum_threshold = otp_read32(
-        OTP_CTRL_PARAM_ROM_ALERT_ACCUM_THRESH_OFFSET + i * sizeof(uint32_t));
-    config.timeout_cycles = otp_read32(
-        OTP_CTRL_PARAM_ROM_ALERT_TIMEOUT_CYCLES_OFFSET + i * sizeof(uint32_t));
+    config.accum_threshold =
+        otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH_OFFSET +
+                   i * sizeof(uint32_t));
+    config.timeout_cycles =
+        otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES_OFFSET +
+                   i * sizeof(uint32_t));
     size_t phase = 0;
     for (; launder32(phase) < ARRAYSIZE(config.phase_cycles); ++phase) {
       config.phase_cycles[phase] = otp_read32(
-          OTP_CTRL_PARAM_ROM_ALERT_PHASE_CYCLES_OFFSET +
+          OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES_OFFSET +
           (i * ARRAYSIZE(config.phase_cycles) + phase) * sizeof(uint32_t));
     }
     if (phase != ARRAYSIZE(config.phase_cycles)) {
@@ -280,7 +285,7 @@ static shutdown_error_redact_t shutdown_redact_policy_inline(
       return (shutdown_error_redact_t)abs_mmio_read32(
           TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
           OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-          OTP_CTRL_PARAM_ROM_ERROR_REPORTING_OFFSET);
+          OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ERROR_REPORTING_OFFSET);
     default:
       // Redact everything if in an unexpected lifecycle state.
       return kShutdownErrorRedactAll;

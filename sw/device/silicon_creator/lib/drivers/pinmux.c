@@ -117,7 +117,8 @@ static void configure_output(pinmux_output_t output) {
 }
 
 void pinmux_init(void) {
-  uint32_t bootstrap_en = otp_read32(OTP_CTRL_PARAM_ROM_BOOTSTRAP_EN_OFFSET);
+  uint32_t bootstrap_en =
+      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_EN_OFFSET);
   if (launder32(bootstrap_en) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(bootstrap_en, kHardenedBoolTrue);
     configure_strap_pin(kInputSwStrap0);

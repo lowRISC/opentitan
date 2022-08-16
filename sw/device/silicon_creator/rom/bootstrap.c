@@ -324,7 +324,8 @@ static rom_error_t bootstrap_handle_program(bootstrap_state_t *state) {
 }
 
 hardened_bool_t bootstrap_requested(void) {
-  uint32_t res = otp_read32(OTP_CTRL_PARAM_ROM_BOOTSTRAP_EN_OFFSET);
+  uint32_t res =
+      otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_EN_OFFSET);
   if (launder32(res) != kHardenedBoolTrue) {
     return kHardenedBoolFalse;
   }

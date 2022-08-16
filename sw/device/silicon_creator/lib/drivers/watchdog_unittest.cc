@@ -32,7 +32,9 @@ class WatchdogTest : public rom_test::RomTest {
   void ExpectInit(bool enabled) {
     const uint32_t kBiteThreshold = 0x12345678;
     EXPECT_CALL(
-        otp_, read32(OTP_CTRL_PARAM_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES_OFFSET))
+        otp_,
+        read32(
+            OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES_OFFSET))
         .WillOnce(Return(kBiteThreshold));
 
     EXPECT_SEC_WRITE32(pwrmgr_ + PWRMGR_RESET_EN_REG_OFFSET,

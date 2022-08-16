@@ -71,7 +71,7 @@ class InitTest : public PinmuxTest {
 
 TEST_F(InitTest, WithBootstrap) {
   // The inputs that will be configured.
-  EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_ROM_BOOTSTRAP_EN_OFFSET))
+  EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_EN_OFFSET))
       .WillOnce(Return(kHardenedBoolTrue));
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio22),
                      kTopEarlgreyPinmuxInselIoc0)
@@ -97,7 +97,7 @@ TEST_F(InitTest, WithBootstrap) {
 
 TEST_F(InitTest, WithoutBootstrap) {
   // The inputs that will be configured.
-  EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_ROM_BOOTSTRAP_EN_OFFSET))
+  EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_EN_OFFSET))
       .WillOnce(Return(kHardenedBoolFalse));
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInUart0Rx),
                      kTopEarlgreyPinmuxInselIoc3);
