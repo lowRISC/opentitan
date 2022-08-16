@@ -16,12 +16,12 @@ static const otbn_app_t kOtbnAppCfiTest = OTBN_APP_T_INIT(randomness);
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static volatile bool has_exception_fired;
+static volatile bool has_irq_fired;
 
 /**
- * This overrides the default OTTF load/store fault exception handler.
+ * This overrides the default OTTF load integrity handler.
  */
-void ottf_load_store_fault_handler(void) { has_exception_fired = true; }
+void ottf_load_integrity_error_handler(void) { has_irq_fired = true; }
 
 typedef dif_result_t (*otbn_read_t)(const dif_otbn_t *otbn,
                                     uint32_t offset_bytes, void *dest,
@@ -47,15 +47,15 @@ static void otbn_check_mem(otbn_t *ctx, const uint8_t *addr, size_t mem_size,
       remainder = ARRAYSIZE(local_buf);
     }
 
-    // If the memory has been scrambled we will expect to receive an exception,
+    // If the memory has been scrambled we will expect to receive an IRQ,
     // otherwise we compare the memory value.
-    has_exception_fired = false;
+    has_irq_fired = false;
     CHECK_DIF_OK(otbn_read(&ctx->dif, offset, local_buf, remainder));
     if (match_expected) {
-      CHECK(!has_exception_fired, "Unexpected exception");
+      CHECK(!has_irq_fired, "Unexpected IRQ");
       CHECK_ARRAYS_EQ(addr + offset, local_buf, remainder);
     } else {
-      CHECK(has_exception_fired, "Expected exception haven't fired");
+      CHECK(has_irq_fired, "Expected IRQ hasn't fired");
       break;
     }
 
