@@ -15,7 +15,7 @@
                      "{proj_root}/hw/lint/tools/dvsim/{tool}.hjson"]
 
   // Different dashboard output path for each tool
-  rel_path: "hw/top_earlgrey/fpv/lint/{tool}"
+  rel_path: "hw/top_earlgrey/fpv/lint/{tool}/summary"
 
   use_cfgs: [{
               name: alert_handler_esc_timer_fpv
@@ -148,6 +148,6 @@
                fusesoc_core: lowrisc:fpv:sha3pad_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                rel_path: "hw/ip/kmac/fpv/lint/{tool}"
-             }       
+             }
             ]
 }

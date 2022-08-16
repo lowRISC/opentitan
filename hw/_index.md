@@ -18,13 +18,13 @@ Finally, we provide the same set of information for all available [top level des
 
 ## Results of tool-flows
 
-* [DV simulation summary results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/summary.html)
-* [FPV summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/formal/summary.html)
-* [AscentLint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/summary.html)
-* [Verilator lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/verilator/summary.html)
-* [Style lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/veriblelint/summary.html)
-* [DV Style lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/lint/veriblelint/summary.html)
-* [FPV Style lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/fpv/lint/veriblelint/summary.html)
+* [DV simulation summary results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/summary/latest/report.html)
+* [FPV summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/formal/summary/latest/report.html)
+* [AscentLint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/summary/latest/report.html)
+* [Verilator lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/verilator/summary/latest/report.html)
+* [Style lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/veriblelint/summary/latest/report.html)
+* [DV Style lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/lint/veriblelint/summary/latest/report.html)
+* [FPV Style lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/fpv/lint/veriblelint/summary/latest/report.html)
 
 ## Comportable IPs
 
@@ -37,19 +37,19 @@ Finally, we provide the same set of information for all available [top level des
   * [DV document](https://ibex-core.readthedocs.io/en/latest/03_reference/verification.html)
   * DV simulation results, with coverage (nightly) (TBD)
 
-## Earl Grey Chip
+## Earl Grey chip-level results
 
-* [Earl Grey Chip Datasheet]({{< relref "hw/top_earlgrey/doc" >}})
-* [Earl Grey Chip Specification]({{< relref "hw/top_earlgrey/doc/design" >}})
-* [Earl Grey Chip DV Document]({{< relref "hw/top_earlgrey/doc/dv" >}})
-* [DV simulation results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/results.html)
-* [Connectivity results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/conn/jaspergold/latest/results.html)
-* [AscentLint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/latest/results.html)
-* [Verilator lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/verilator/latest/results.html)
-* [Style lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/veriblelint/latest/results.html)
-* [DV Style lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/lint/veriblelint/latest/results.html)
-* [Synthesis results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/syn/latest/results.html)
-* [CDC results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/cdc/latest/results.html)
+* [Datasheet]({{< relref "hw/top_earlgrey/doc" >}})
+* [Specification]({{< relref "hw/top_earlgrey/doc/design" >}})
+* [DV Document]({{< relref "hw/top_earlgrey/doc/dv" >}})
+* [DV simulation results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/latest/report.html)
+* [Connectivity results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/conn/jaspergold/latest/report.html)
+* [AscentLint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/latest/report.html)
+* [Verilator lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/verilator/latest/report.html)
+* [Style lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/veriblelint/latest/report.html)
+* [DV Style lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/lint/veriblelint/latest/report.html)
+* [Synthesis results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/syn/latest/report.html)
+* [CDC results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/cdc/latest/report.html)
 
 ### Earl Grey-specific comportable IPs
 

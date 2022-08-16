@@ -607,7 +607,8 @@ def clean_odirs(odir: Path, max_odirs, ts_format=TS_FORMAT):
     if not pdir.exists():
         return []
 
-    dirs = sorted([old for old in pdir.iterdir() if old.is_dir()],
+    dirs = sorted([old for old in pdir.iterdir() if (old.is_dir() and
+                                                     old != 'summary')],
                   key=os.path.getctime,
                   reverse=True)
 
