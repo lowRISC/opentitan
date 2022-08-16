@@ -17,9 +17,12 @@ virtual task run_shadow_reg_errors(int num_times, bit en_csr_rw_seq = 0);
   // 1) alert_test register because it can also trigger alert
   // 2) shadow regs and their status regs, because they will affect the shadow_reg thread
   if (en_csr_rw_seq) begin
-    uvm_reg alert_test_reg = ral.get_reg_by_name("alert_test");
-    if (alert_test_reg != null) begin
-      csr_excl_item csr_excl = get_excl_item(alert_test_reg);
+    // Only exclude `alert_test` register if the block has alerts.
+    if (cfg.list_of_alerts.size() > 0) begin
+      csr_excl_item csr_excl;
+      uvm_reg alert_test_reg = ral.get_reg_by_name("alert_test");
+      `DV_CHECK(alert_test_reg != null)
+      csr_excl = get_excl_item(alert_test_reg);
       csr_excl.add_excl(alert_test_reg.get_full_name(), CsrExclWrite, CsrRwTest);
     end
 
