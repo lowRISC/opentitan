@@ -1,0 +1,74 @@
+"""
+@generated
+cargo-raze crate build file.
+
+DO NOT EDIT! Replaced on runs of cargo-raze
+"""
+
+# buildifier: disable=load
+load("@bazel_skylib//lib:selects.bzl", "selects")
+
+# buildifier: disable=load
+load(
+    "@rules_rust//rust:defs.bzl",
+    "rust_binary",
+    "rust_library",
+    "rust_proc_macro",
+    "rust_test",
+)
+
+package(default_visibility = [
+    # Public for visibility by "@raze__crate__version//" targets.
+    #
+    # Prefer access through "//third_party/rust/crates", which limits external
+    # visibility to explicit Cargo.toml dependencies.
+    "//visibility:public",
+])
+
+licenses([
+    "notice",  # MIT from expression "MIT"
+])
+
+# Generated Targets
+
+# Unsupported target "eq" with type "bench" omitted
+
+# Unsupported target "iter" with type "bench" omitted
+
+# Unsupported target "macros" with type "bench" omitted
+
+# Unsupported target "memcpy" with type "bench" omitted
+
+# Unsupported target "mut_access" with type "bench" omitted
+
+# Unsupported target "slice" with type "bench" omitted
+
+rust_library(
+    name = "bitvec",
+    srcs = glob(["**/*.rs"]),
+    crate_features = [
+        "alloc",
+        "atomic",
+        "default",
+        "std",
+    ],
+    crate_root = "src/lib.rs",
+    data = [] + glob(["**/*.md"]),
+    edition = "2021",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "crate-name=bitvec",
+        "manual",
+    ],
+    version = "1.0.1",
+    # buildifier: leave-alone
+    deps = [
+        "@raze__funty__2_0_0//:funty",
+        "@raze__radium__0_7_0//:radium",
+        "@raze__tap__1_0_1//:tap",
+        "@raze__wyz__0_5_0//:wyz",
+    ],
+)
