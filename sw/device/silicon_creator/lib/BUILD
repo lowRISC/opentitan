@@ -70,13 +70,20 @@ cc_library(
 )
 
 cc_library(
+    name = "epmp_defs",
+    hdrs = [
+        "epmp_defs.h",
+    ],
+)
+
+cc_library(
     name = "epmp",
     srcs = ["epmp.c"],
     hdrs = [
         "epmp.h",
-        "epmp_defs.h",
     ],
     deps = [
+        ":epmp_defs",
         ":error",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:hardened",
@@ -291,6 +298,7 @@ dual_cc_library(
         ],
         shared = [
             ":error",
+            ":epmp_defs",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
