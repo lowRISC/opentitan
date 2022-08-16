@@ -45,15 +45,20 @@ class spi_host_flash_seq extends spi_base_seq;
                                    foreach (address_q[i]) {
                                      address_q[i] == local::address_q[i];
                                    }
-                                   if (write_command) {
-                                     read_size == 0;
-                                     payload_q.size() == local::payload_q.size();
-                                     foreach (payload_q[i]) {
-                                       payload_q[i] == local::payload_q[i];
-                                     }
-                                   } else { // read
-                                     read_size == local::read_size;
-                                     payload_q.size() == 0;
+                                   if (num_lanes == 0) {
+                                    read_size == 0;
+                                    payload_q.size() == 0;
+                                   } else {
+                                    if (write_command) {
+                                      read_size == 0;
+                                      payload_q.size() == local::payload_q.size();
+                                      foreach (payload_q[i]) {
+                                        payload_q[i] == local::payload_q[i];
+                                      }
+                                    } else { // read
+                                      read_size == local::read_size;
+                                      payload_q.size() == 0;
+                                    }
                                    }
                                   // TODO, consolidate data and payload later
                                   data.size == 1;)

@@ -16,7 +16,8 @@ class spi_item extends uvm_sequence_item;
   rand bit write_command;
   rand bit [7:0] address_q[$];
   rand bit [7:0] opcode;
-  rand bit [2:0] num_lanes; // 1,2 or 4 lanes for read response
+  // 1,2 or 4 lanes for read response, 0 means no data
+  rand bit [2:0] num_lanes;
   rand int dummy_cycles;
 
   // for dummy transaction
@@ -32,7 +33,7 @@ class spi_item extends uvm_sequence_item;
 
   constraint num_lanes_c {
     write_command -> num_lanes == 1;
-    num_lanes inside {1, 2, 4};
+    num_lanes inside {0, 1, 2, 4};
   }
 
   `uvm_object_utils_begin(spi_item)
