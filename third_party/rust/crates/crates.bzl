@@ -14,6 +14,7 @@ _DEPENDENCIES = {
     "third_party/rust/crates": {
         "anyhow": "@raze__anyhow__1_0_64//:anyhow",
         "bitflags": "@raze__bitflags__1_3_2//:bitflags",
+        "bitvec": "@raze__bitvec__1_0_1//:bitvec",
         "byteorder": "@raze__byteorder__1_4_3//:byteorder",
         "chrono": "@raze__chrono__0_4_22//:chrono",
         "crc": "@raze__crc__3_0_0//:crc",
@@ -239,6 +240,8 @@ def raze_fetch_remote_crates(
 
         bitflags__1_3_2=None,
 
+        bitvec__1_0_1=None,
+
         block_buffer__0_10_3=None,
 
         bumpalo__3_11_0=None,
@@ -298,6 +301,8 @@ def raze_fetch_remote_crates(
         fastrand__1_8_0=None,
 
         flate2__1_0_24=None,
+
+        funty__2_0_0=None,
 
         generic_array__0_14_6=None,
 
@@ -407,6 +412,8 @@ def raze_fetch_remote_crates(
 
         quote__1_0_21=None,
 
+        radium__0_7_0=None,
+
         rand__0_8_5=None,
 
         rand_chacha__0_3_1=None,
@@ -471,6 +478,8 @@ def raze_fetch_remote_crates(
 
         synstructure__0_12_6=None,
 
+        tap__1_0_1=None,
+
         tempfile__3_3_0=None,
 
         termcolor__1_1_3=None,
@@ -532,6 +541,8 @@ def raze_fetch_remote_crates(
         winapi_util__0_1_5=None,
 
         winapi_x86_64_pc_windows_gnu__0_4_0=None,
+
+        wyz__0_5_0=None,
 
         zerocopy__0_5_0=None,
 
@@ -793,6 +804,23 @@ def raze_fetch_remote_crates(
             sha256 = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a",
             strip_prefix = "bitflags-1.3.2",
             build_file = Label("//third_party/rust/crates/remote:BUILD.bitflags-1.3.2.bazel"),
+        )
+
+    if bitvec__1_0_1:
+        maybe(
+            native.new_local_repository,
+            name = "raze__bitvec__1_0_1",
+            path = bitvec__1_0_1,
+            build_file = "//third_party/rust/crates/remote:BUILD.bitvec-1.0.1.bazel",
+        )
+    else:
+        maybe(
+            http_archive,
+            name = "raze__bitvec__1_0_1",
+            url = "https://crates.io/api/v1/crates/bitvec/1.0.1/download",
+            type = "tar.gz",
+            strip_prefix = "bitvec-1.0.1",
+            build_file = Label("//third_party/rust/crates/remote:BUILD.bitvec-1.0.1.bazel"),
         )
 
     if block_buffer__0_10_3:
@@ -1331,6 +1359,23 @@ def raze_fetch_remote_crates(
             sha256 = "f82b0f4c27ad9f8bfd1f3208d882da2b09c301bc1c828fd3a00d0216d2fbbff6",
             strip_prefix = "flate2-1.0.24",
             build_file = Label("//third_party/rust/crates/remote:BUILD.flate2-1.0.24.bazel"),
+        )
+
+    if funty__2_0_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__funty__2_0_0",
+            path = funty__2_0_0,
+            build_file = "//third_party/rust/crates/remote:BUILD.funty-2.0.0.bazel",
+        )
+    else:
+        maybe(
+            http_archive,
+            name = "raze__funty__2_0_0",
+            url = "https://crates.io/api/v1/crates/funty/2.0.0/download",
+            type = "tar.gz",
+            strip_prefix = "funty-2.0.0",
+            build_file = Label("//third_party/rust/crates/remote:BUILD.funty-2.0.0.bazel"),
         )
 
     if generic_array__0_14_6:
@@ -2311,6 +2356,23 @@ def raze_fetch_remote_crates(
             build_file = Label("//third_party/rust/crates/remote:BUILD.quote-1.0.21.bazel"),
         )
 
+    if radium__0_7_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__radium__0_7_0",
+            path = radium__0_7_0,
+            build_file = "//third_party/rust/crates/remote:BUILD.radium-0.7.0.bazel",
+        )
+    else:
+        maybe(
+            http_archive,
+            name = "raze__radium__0_7_0",
+            url = "https://crates.io/api/v1/crates/radium/0.7.0/download",
+            type = "tar.gz",
+            strip_prefix = "radium-0.7.0",
+            build_file = Label("//third_party/rust/crates/remote:BUILD.radium-0.7.0.bazel"),
+        )
+
     if rand__0_8_5:
         maybe(
             native.new_local_repository,
@@ -2887,6 +2949,23 @@ def raze_fetch_remote_crates(
             build_file = Label("//third_party/rust/crates/remote:BUILD.synstructure-0.12.6.bazel"),
         )
 
+    if tap__1_0_1:
+        maybe(
+            native.new_local_repository,
+            name = "raze__tap__1_0_1",
+            path = tap__1_0_1,
+            build_file = "//third_party/rust/crates/remote:BUILD.tap-1.0.1.bazel",
+        )
+    else:
+        maybe(
+            http_archive,
+            name = "raze__tap__1_0_1",
+            url = "https://crates.io/api/v1/crates/tap/1.0.1/download",
+            type = "tar.gz",
+            strip_prefix = "tap-1.0.1",
+            build_file = Label("//third_party/rust/crates/remote:BUILD.tap-1.0.1.bazel"),
+        )
+
     if tempfile__3_3_0:
         maybe(
             native.new_local_repository,
@@ -3443,6 +3522,23 @@ def raze_fetch_remote_crates(
             sha256 = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f",
             strip_prefix = "winapi-x86_64-pc-windows-gnu-0.4.0",
             build_file = Label("//third_party/rust/crates/remote:BUILD.winapi-x86_64-pc-windows-gnu-0.4.0.bazel"),
+        )
+
+    if wyz__0_5_0:
+        maybe(
+            native.new_local_repository,
+            name = "raze__wyz__0_5_0",
+            path = wyz__0_5_0,
+            build_file = "//third_party/rust/crates/remote:BUILD.wyz-0.5.0.bazel",
+        )
+    else:
+        maybe(
+            http_archive,
+            name = "raze__wyz__0_5_0",
+            url = "https://crates.io/api/v1/crates/wyz/0.5.0/download",
+            type = "tar.gz",
+            strip_prefix = "wyz-0.5.0",
+            build_file = Label("//third_party/rust/crates/remote:BUILD.wyz-0.5.0.bazel"),
         )
 
     if zerocopy__0_5_0:
