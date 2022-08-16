@@ -338,6 +338,8 @@ class AlertConfigCheckTest : public AlertTest {
   void ExpectConfigCrc32(uint32_t exp_crc32) {
     std::vector<uint32_t> reg_offsets;
     auto iter = std::back_inserter(reg_offsets);
+    std::generate_n(iter, ALERT_HANDLER_ALERT_REGWEN_MULTIREG_COUNT,
+                    WordStepper(ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET));
     std::generate_n(iter, ALERT_HANDLER_ALERT_EN_SHADOWED_MULTIREG_COUNT,
                     WordStepper(ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET));
     std::generate_n(

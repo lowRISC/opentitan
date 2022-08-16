@@ -257,7 +257,7 @@
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
-                    value: "0xce5c49ce",
+                    value: "0x727ca8ae",
                 }
             ],
         }

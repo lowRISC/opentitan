@@ -261,6 +261,8 @@ uint32_t alert_config_crc32(void) {
   uint32_t ctx;
   crc32_init(&ctx);
 
+  crc32_add_regs(&ctx, ALERT_HANDLER_ALERT_REGWEN_0_REG_OFFSET,
+                 ALERT_HANDLER_ALERT_REGWEN_MULTIREG_COUNT);
   crc32_add_regs(&ctx, ALERT_HANDLER_ALERT_EN_SHADOWED_0_REG_OFFSET,
                  ALERT_HANDLER_ALERT_EN_SHADOWED_MULTIREG_COUNT);
   crc32_add_regs(&ctx, ALERT_HANDLER_ALERT_CLASS_SHADOWED_0_REG_OFFSET,
