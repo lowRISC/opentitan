@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// This class is used for the testes `chip_sw_entropy_src_fuse_en_fw_read_test` and
+// `chip_sw_csrng_fuse_en_sw_app_read_test`. Please refer to the testplan for more
+ // details regarding the OTP initialization values.
 class chip_sw_entropy_src_fuse_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_entropy_src_fuse_vseq)
 
@@ -35,7 +38,7 @@ class chip_sw_entropy_src_fuse_vseq extends chip_sw_base_vseq;
       if (cfg.sw_logger_vif.printed_log == "Software resetting!") begin
         cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg_partition(
           .device_id(DEVICE_ID), .manuf_state(MANUF_STATE),
-          .en_sram_ifetch(MUBI8FALSE), .en_csrng_sw_app_read(MUBI8TRUE),
+          .en_sram_ifetch(MUBI8FALSE), .en_csrng_sw_app_read(MUBI8FALSE),
           .en_entropy_src_fw_read(MUBI8FALSE),
           .en_entropy_src_fw_over(MUBI8TRUE));
           break;

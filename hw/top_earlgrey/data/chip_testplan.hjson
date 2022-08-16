@@ -2025,7 +2025,7 @@
             - Verify that the SW reads back all zeros when reading the internal state values.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_csrng_fuse_en_sw_app_read_test"]
     }
     {
       name: chip_sw_csrng_lc_hw_debug_en
