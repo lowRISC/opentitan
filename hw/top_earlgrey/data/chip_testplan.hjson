@@ -1978,14 +1978,12 @@
       name: chip_sw_entropy_src_fuse_en_fw_read
       desc: '''Verify the fuse input entropy_src.
 
-            - Initialize the OTP with the `HW_CFG.EN_ENTROPY_SRC_FW_READ` fuse bit set to enabled in the
-              `uvm_test_seq`.
-            - Read and verify the OTP `HW_CFG.EN_ENTROPY_SRC_FW_READ` against the previous step expectation.
-            - Read the entropy_data_fifo via SW; verify that it reads valid values.
-            - Reset the chip, but this time, initialize the OTP with with the `HW_CFG.EN_ENTROPY_SRC_FW_READ`
-              fuse bit set to disable.
-            - Read and verify the OTP `HW_CFG.EN_ENTROPY_SRC_FW_READ` against the previous step expectation.
-            - Read the internal state via SW; verify that the entropy valid bit is zero.
+            - Initialize the OTP with the fuse that controls whether the SW can read the entropy src enabled.
+            - Read the OTP and verify that the fuse is enabled.
+            - Read the entropy_data_fifo via SW and verify that it reads valid values.
+            - Reset the chip, but this time, initialize the OTP with with the fuse disabled.
+            - Read the OTP and verify that fuse is disabled.
+            - Read the internal state via SW and verify that the entropy valid bit is zero.
             '''
       stage: V2
       tests: ["chip_sw_entropy_src_fuse_en_fw_read_test"]
@@ -2020,11 +2018,11 @@
       name: chip_sw_csrng_fuse_en_sw_app_read
       desc: '''Verify the fuse input to CSRNG.
 
-            - Initialize the OTP with this fuse bit set to 1.
+            - Initialize the OTP with the fuse that control whether the SW can read the CSRNG state enabled.
             - Issue an instantiate command to request entropy.
-            - Verify that SW can read the internal states.
-            - Reset the chip and repeat the steps above, but this time, with OTP fuse bit set to 0.
-            - Verify that the SW reads back all zeros when reading the internal states.
+            - Verify that SW can read the internal state values.
+            - Reset the chip and repeat the steps above, but this time, initialized the OTP with fuse disabled.
+            - Verify that the SW reads back all zeros when reading the internal state values.
             '''
       stage: V2
       tests: []
