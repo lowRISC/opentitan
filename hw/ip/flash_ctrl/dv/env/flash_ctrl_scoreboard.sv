@@ -250,6 +250,16 @@ class flash_ctrl_scoreboard #(
                  cov.erase_susp_cg.sample(erase_req);
                end
             end
+            "intr_test": begin
+               bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
+               bit [NumFlashCtrlIntr-1:0] intr_exp = `gmv(ral.intr_state);
+               intr_exp |= item.a_data;
+               foreach (intr_exp[i]) begin
+                  if (cfg.en_cov) begin
+                     cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
+                  end
+               end
+            end
             default: begin
             // TODO: Uncomment once func cover is implemented
             // `uvm_info(`gfn, $sformatf("Not for func coverage: %0s", csr.get_full_name()))
@@ -268,23 +278,31 @@ class flash_ctrl_scoreboard #(
           case (csr.get_name())
             // add individual case item for each csr
             "intr_state": begin
+              bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
+              bit [NumFlashCtrlIntr-1:0] intr_exp = `gmv(ral.intr_state);
+              csr_rd(.ptr(ral.curr_fifo_lvl), .value(data), .backdoor(1'b1));
+              if (cfg.en_cov) begin
+                foreach (intr_exp[i]) begin
+                  flash_ctrl_intr_e intr = flash_ctrl_intr_e'(i);
+                  cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
+                  cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+                end
+                cov.fifo_lvl_cg.sample(data[4:0], data[12:8]);
+              end
               // Skip read check on intr_state CSR, since it is WO.
               do_read_check = 1'b0;
             end
 
-            "intr_enable": begin
-            end
-
-            "intr_test": begin
-            end
-
-            "op_status", "status", "erase_suspend",
-            "curr_fifo_lvl",  "err_code", "debug_state",
-            "ecc_single_err_cnt", "ecc_single_err_addr_0",
-            "ecc_single_err_addr_1": begin
+            "op_status", "status", "erase_suspend", "curr_fifo_lvl", "debug_state",
+            "ecc_single_err_cnt", "ecc_single_err_addr_0", "ecc_single_err_addr_1": begin
               do_read_check = 1'b0;
             end
-
+            "err_code": begin
+              if (cfg.en_cov) begin
+                cov.error_cg.sample(item.d_data);
+              end
+              do_read_check = 1'b0;
+            end
             default: begin
               // TODO: uncomment when all CSRs are specified
               // `uvm_fatal(`gfn, $sformatf("CSR access not processed: %0s", csr.get_full_name()))
@@ -294,12 +312,6 @@ class flash_ctrl_scoreboard #(
           if (do_read_check) begin
             `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data, $sformatf(
                          "reg name: %0s", csr.get_full_name()))
-            if (csr.get_name() == "err_code") begin
-              csr_rd(.ptr(ral.err_code), .value(data), .backdoor(1));
-              if (cfg.en_cov) begin
-                cov.error_cg.sample(data);
-              end
-            end
           end
           void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
         end else if (is_mem_addr(item, ral_name) && cfg.scb_check) begin  // rd fifo

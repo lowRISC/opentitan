@@ -86,6 +86,9 @@ class flash_ctrl_common_vseq extends flash_ctrl_base_vseq;
           $assertoff(0, "tb.dut.u_flash_hw_if.DisableChk_A");
         end
       end
+      SecCmPrimOnehot: begin
+        // Do nothing.
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
       end

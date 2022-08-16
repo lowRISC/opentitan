@@ -73,15 +73,17 @@
     {
       name: flash_ctrl_smoke
       uvm_test_seq: flash_ctrl_smoke_vseq
+      reseed: 5
     }
     {
       name: flash_ctrl_smoke_hw
       uvm_test_seq: flash_ctrl_smoke_hw_vseq
+      reseed: 5
     }
     {
       name: flash_ctrl_rand_ops
       uvm_test_seq: flash_ctrl_rand_ops_vseq
-      reseed: 5
+      reseed: 20
     }
     {
       name: flash_ctrl_sw_op
@@ -146,12 +148,12 @@
       name: flash_ctrl_mp_regions
       uvm_test_seq: flash_ctrl_mp_regions_vseq
       run_opts: ["+multi_alert=1", "+test_timeout_ns=300_000_000_000"]
-      reseed: 8
+      reseed: 20
     }
     {
       name: flash_ctrl_fetch_code
       uvm_test_seq: flash_ctrl_fetch_code_vseq
-      reseed: 5
+      reseed: 10
     }
     {
       name: flash_ctrl_full_mem_access
@@ -178,7 +180,7 @@
     {
       name: flash_ctrl_invalid_op
       uvm_test_seq: flash_ctrl_invalid_op_vseq
-      reseed: 5
+      reseed: 20
     }
     {
       name: flash_ctrl_mid_op_rst
@@ -288,14 +290,14 @@
       build_mode: large_delay_mode
       uvm_test_seq: flash_ctrl_intr_rd_vseq
       run_opts: ["+scb_otf_en=1"]
-      reseed: 5
+      reseed: 40
     }
     {
       name: flash_ctrl_intr_wr
       build_mode: "large_delay_mode"
       uvm_test_seq: flash_ctrl_intr_wr_vseq
       run_opts: ["+scb_otf_en=1", "+test_timeout_ns=500_000_000"]
-      reseed: 5
+      reseed: 10
     }
     {
       name: flash_ctrl_prog_reset
@@ -306,6 +308,10 @@
     {
       name: flash_ctrl_sec_cm
       run_timeout_mins: 120
+    }
+    {
+      name: flash_ctrl_stress_all
+      reseed: 5
     }
   ]
 
@@ -321,6 +327,12 @@
       tests: ["flash_ctrl_smoke",
               "flash_ctrl_smoke_hw"
               ]
+    }
+    {
+      name: flash_err
+      tests: ["flash_ctrl_error_mp", "flash_ctrl_error_prog_win",
+              "flash_ctrl_error_prog_type"
+             ]
     }
   ]
 }

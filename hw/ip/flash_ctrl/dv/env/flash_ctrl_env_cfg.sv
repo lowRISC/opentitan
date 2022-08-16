@@ -207,6 +207,10 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
         num_interrupts = ral.intr_state.get_n_used_bits();
       end
     end
+    m_tl_agent_cfg.max_outstanding_req = 1;
+    m_tl_agent_cfgs[flash_ral_name].max_outstanding_req = 2;
+    m_tl_agent_cfgs[prim_ral_name].max_outstanding_req = 1;
+
     alert_max_delay = 20000;
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
 

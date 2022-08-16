@@ -363,7 +363,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
                                         flash_op.partition.name, page, num,
                                         wd, is_odd, tail), UVM_MEDIUM)
       if (drop) begin
-        `uvm_info("prog_flash", "skip sb path due to err", UVM_MEDIUM)
+        uvm_reg_data_t ldata;
+        csr_rd(.ptr(ral.err_code), .value(ldata), .backdoor(1));
+        `uvm_info("prog_flash", $sformatf("skip sb path due to err_code:%x", ldata), UVM_MEDIUM)
       end else begin
         flash_otf_print_data64(flash_program_data, "wdata");
         `uvm_create_obj(flash_otf_item, exp_item)
@@ -560,6 +562,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         wait_flash_op_done();
       end
       if (derr_is_set | cfg.ierr_created[0]) begin
+        uvm_reg_data_t ldata;
+        csr_rd(.ptr(ral.err_code), .value(ldata), .backdoor(1));
         `uvm_info("read_flash", $sformatf({"bank:%0d addr: %x(otf:%x) derr_is_set:%0d",
                                           " ierr_created[0]:%0d"}, bank, flash_op.addr,
                                           flash_op.otf_addr, derr_is_set, cfg.ierr_created[0])
@@ -869,18 +873,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     update_p2r_map(cfg.mp_regions);
   endtask
 
-  function flash_mp_region_cfg_t get_region_from_info(flash_bank_mp_info_page_cfg_t info);
-    flash_mp_region_cfg_t region;
-    region.en          = info.en;
-    region.read_en     = info.read_en;
-    region.program_en  = info.program_en;
-    region.erase_en    = info.erase_en;
-    region.scramble_en = info.scramble_en;
-    region.ecc_en      = info.ecc_en;
-    region.he_en       = info.he_en;
-    return region;
-  endfunction // get_region_from_info
-
   function void update_partition_access(bit[2:0] acc);
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::Off;
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::Off;
@@ -894,42 +886,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en = lc_ctrl_pkg::On;
     end
   endfunction // update_partition_access
-
-  // Check permission and page range of info partition
-  // Set exp recov_err alert if check fails
-  function bit check_info_part(flash_op_t flash_op, string str);
-    bit drop = 0;
-    int bank, page, end_page, loop;
-
-    bank = flash_op.addr[OTFBankId];
-    page = addr2page(flash_op.addr);
-    end_page = addr2page(flash_op.addr + (flash_op.num_words * 4) - 1);
-    // For read, cross page boundary is allowed. So you need to check
-    // both start and end address
-    if (flash_op.op == FlashOpRead) loop = 2;
-    else loop = 1;
-
-    for (int i= 0; i < loop; ++i) begin
-      if (i == 1) page = end_page;
-      if (flash_op.partition == FlashPartInfo && bank == 0 &&
-          page inside {[1:3]}) begin
-        if (!cfg.allow_spec_info_acc[page-1]) begin
-          `uvm_info(str, $sformatf("check_info:page:%0d access is not allowed", page), UVM_MEDIUM)
-          set_otf_exp_alert("recov_err");
-          drop = 1;
-        end
-      end
-      // check info page range
-      if (page >= InfoTypeSize[flash_op.partition>>1]) begin
-        `uvm_info(str, $sformatf("check_info:bank:%0d page:%0d addr:0x%0h is out of range",
-                                 bank, page, flash_op.otf_addr), UVM_MEDIUM)
-        set_otf_exp_alert("recov_err");
-        drop = 1;
-      end
-      if (drop) break;
-    end
-    return drop;
-  endfunction // check_part_info
 
   function mubi4_t get_mubi_val(otf_cfg_mode_e mode);
     case (mode)
