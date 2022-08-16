@@ -20,6 +20,8 @@ class spi_device_pass_all_vseq extends spi_device_pass_base_vseq;
     allow_upload = 1;
     always_set_busy_when_upload_contain_payload = 1;
 
+    allow_write_enable_disable = 1;
+
     fork
       // this thread runs until the main_seq completes
       while (!main_seq_done) upload_fifo_read_seq();

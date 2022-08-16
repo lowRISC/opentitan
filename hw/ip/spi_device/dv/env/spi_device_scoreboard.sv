@@ -2,13 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+
+`define GET_OPCODE_VALID_AND_MATCH(CSR, OPCODE) \
+  (`gmv(ral.CSR.valid) == 1 && `gmv(ral.CSR.opcode) == OPCODE)
+
 class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env_cfg),
                                                           .RAL_T (spi_device_reg_block),
                                                           .COV_T (spi_device_env_cov));
   `uvm_component_utils(spi_device_scoreboard)
 
   localparam int NumInternalRecognizedCmd = 11;
-
+  localparam int FLASH_STATUS_UPDATE_DLY_AFTER_CSB_DEASSERT = 3;
   typedef enum int {
     NoInternalProcess,
     InternalProcessStatus,
@@ -51,7 +55,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   flash_status_t flash_status_q[$];
   flash_status_t flash_status_settle_q[$];
-  flash_status_t flash_status_tl_allow_q[$];
+  // this queue contains the previous value of flash_status
+  // it's ok the readback value matches to either this one or the mirror value
+  // after a flash_status access, delete this queue as the uncertain window is only a few cycles
+  flash_status_t flash_status_tl_pre_val_q[$];
 
   `uvm_component_new
 
@@ -82,6 +89,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     spi_item item;
     forever begin
       bit is_status, is_jedec, is_sfdp, is_mbx_read;
+      bit update_wel, wel_val;
       upstream_spi_host_fifo.get(item);
       `uvm_info(`gfn, $sformatf("upstream received host spi item:\n%0s", item.sprint()),
                 UVM_MEDIUM)
@@ -124,7 +132,17 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 check_read_cmd_data(item, downstream_item);
               end
               InternalProcessCfgCmd: begin
-                // TODO, support later
+                if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_en4b, item.opcode)) begin
+                end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_ex4b, item.opcode)) begin
+                end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_wren, item.opcode)) begin
+                  update_wel = 1;
+                  wel_val = 1;
+                end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_wrdi, item.opcode)) begin
+                  update_wel = 1;
+                  wel_val = 0;
+                end else begin
+                  `uvm_fatal(`gfn, $sformatf("shouldn't enter here, opcode 0x%0x", item.opcode))
+                end
               end
               UploadCmd: begin
                 process_upload_cmd(item);
@@ -137,7 +155,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             compare_passthru_item(.upstream_item(item), .is_intercepted(is_intercepted));
           end
 
-          latch_flash_status(set_busy);
+          latch_flash_status(set_busy, update_wel, wel_val);
         end
         default: `uvm_fatal(`gfn, $sformatf("Unexpected mode: %0d", `gmv(ral.control.mode)))
       endcase
@@ -145,29 +163,38 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   endtask
 
   // update flash_status to the value of the last item
-  virtual function void latch_flash_status(bit set_busy);
+  virtual function void latch_flash_status(bit set_busy, bit update_wel, bit wel_val);
     fork begin
       bit[TL_DW-1:0] rdata;
-      bit[TL_DW-1:0] pre_flash_status_val = `gmv(ral.flash_status);
+      flash_status_t pre_flash_status_val = `gmv(ral.flash_status);
+      flash_status_t cur_flash_status_val;
       bit match;
 
       // it takes 3-4 cycles to update the status after spi item completes
       // since we may have another thread to keep polling this csr, it's easier to predict it
       // and compare with the backdoor value, to make sure both align
-      cfg.clk_rst_vif.wait_n_clks(4);
-      flash_status_tl_allow_q.delete();
+      cfg.clk_rst_vif.wait_n_clks(FLASH_STATUS_UPDATE_DLY_AFTER_CSB_DEASSERT + 1);
+      flash_status_tl_pre_val_q.delete();
 
       if (flash_status_settle_q.size != 0) begin
         `DV_CHECK_LE(flash_status_settle_q.size, 1)
         void'(ral.flash_status.predict(.value(flash_status_settle_q[0]),
                                        .kind(UVM_PREDICT_WRITE)));
-        `uvm_info(`gfn, $sformatf("flash_status updated to: 0x%0h", flash_status_settle_q[0]),
+        `uvm_info(`gfn, $sformatf("flash_status updated to: 0x%0h", `gmv(ral.flash_status)),
                   UVM_MEDIUM)
         flash_status_settle_q.delete();
       end
       if (set_busy) begin
         void'(ral.flash_status.busy.predict(.value(1), .kind(UVM_PREDICT_READ)));
         `uvm_info(`gfn, "busy bit is set due to upload command", UVM_MEDIUM)
+      end
+
+      cur_flash_status_val = `gmv(ral.flash_status);
+      if (update_wel && wel_val != cur_flash_status_val.wel) begin
+        cur_flash_status_val.wel = wel_val;
+        void'(ral.flash_status.predict(.value(cur_flash_status_val), .kind(UVM_PREDICT_READ)));
+        `uvm_info(`gfn, $sformatf("update wel to %0d due to wren/wrdi command", wel_val),
+                  UVM_MEDIUM)
       end
       // if sw updates this csr around the end of the spi item, it's hard to predict if the value
       // is accepted or not. So do a backdoor check, it's ok if the rdata matchs to predict value
@@ -183,7 +210,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           if (predict_val == rdata) begin
             match = 1;
             void'(ral.flash_status.predict(.value(predict_val), .kind(UVM_PREDICT_READ)));
-            `uvm_info(`gfn, $sformatf("flash_status updated to: 0x%0h", predict_val), UVM_MEDIUM)
+            `uvm_info(`gfn, $sformatf("found match, flash_status updated to: 0x%0h", predict_val),
+                      UVM_MEDIUM)
             break;
           end
         end
@@ -198,7 +226,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       // when this is just updated, TL interface may read back old value and it's ok, it will get
       // the new one in the next read
       if (pre_flash_status_val != `gmv(ral.flash_status)) begin
-        flash_status_tl_allow_q.push_back(pre_flash_status_val);
+        flash_status_tl_pre_val_q.push_back(pre_flash_status_val);
       end
     end join_none
   endfunction
@@ -254,8 +282,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     return NoInternalProcess;
   endfunction
 
-  `define GET_OPCODE_VALID_AND_MATCH(CSR, OPCODE) \
-    (`gmv(ral.CSR.valid) == 1 && `gmv(ral.CSR.opcode) == OPCODE)
   // if the cmd isn't in the first 11 slots, it won't be processed in spi_device
   // interception or returning data from spi mem won't occur. It can only passthru to downstream
   virtual function bit is_internal_recog_cmd(bit[7:0] opcode);
@@ -601,10 +627,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         if (!write && channel == DataChannel) begin
           // it's ok to read back old value once.
           flash_status_t exp_val = `gmv(ral.flash_status);
-          flash_status_t exp_data_q[$] = {flash_status_tl_allow_q, exp_val};
+          flash_status_t exp_data_q[$] = {flash_status_tl_pre_val_q, exp_val};
           `DV_CHECK(item.d_data inside {exp_data_q},
                     $sformatf("act (0x%0x) != exp %p", item.d_data, exp_data_q))
-          flash_status_tl_allow_q.delete();
+          flash_status_tl_pre_val_q.delete();
         end
         // check is done above and predict is done after spi item completes. can return now
         return;
@@ -786,7 +812,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     spi_passthrough_downstream_q.delete();
     flash_status_q.delete();
     flash_status_settle_q.delete();
-    flash_status_tl_allow_q.delete();
+    flash_status_tl_pre_val_q.delete();
   endfunction
 
   function void check_phase(uvm_phase phase);
@@ -803,7 +829,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_CHECK_EQ(upload_addr_from_tl_q.size, 0)
     `DV_CHECK_EQ(flash_status_q.size, 0)
     `DV_CHECK_EQ(flash_status_settle_q.size, 0)
-    `DV_CHECK_EQ(flash_status_tl_allow_q.size, 0)
+    `DV_CHECK_EQ(flash_status_tl_pre_val_q.size, 0)
   endfunction
 
 endclass

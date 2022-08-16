@@ -166,6 +166,11 @@
     }
 
     {
+      name: spi_device_cfg_cmd
+      uvm_test_seq: spi_device_cfg_cmd_vseq
+    }
+
+    {
       name: spi_device_pass_all
       uvm_test_seq: spi_device_pass_all_vseq
     }
