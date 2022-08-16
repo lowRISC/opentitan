@@ -131,7 +131,6 @@ class FormalCfg(OneShotCfg):
         # Gathers the aggregated results from all sub configs
         # The results_summary will only contain the passing rate and
         # percentages of the stimuli, coi, and proven coverage
-        # The email_summary will contain all the information from results_md
         results_str = "## " + self.results_title + " (Summary)\n\n"
         results_str += "### " + self.timestamp_long + "\n"
         if self.revision:
@@ -154,40 +153,6 @@ class FormalCfg(OneShotCfg):
             self.results_summary_md = results_str
 
         log.info("[result summary]: %s", self.results_summary_md)
-
-        # Generate email results summary
-        colalign = ("left", ) + ("center", ) * (len(self.header) - 1)
-        email_table = [self.header]
-        error_message = ""
-
-        for cfg in self.cfgs:
-            email_result = cfg.result.get("summary")
-            if email_result is not None:
-                email_table.append([
-                    cfg.name,
-                    str(email_result["errors"]) + " E ",
-                    str(email_result["warnings"]) + " W ",
-                    str(email_result["proven"]) + " G ",
-                    str(email_result["cex"]) + " E ",
-                    str(email_result["undetermined"]) + " W ",
-                    str(email_result["covered"]) + " G ",
-                    str(email_result["unreachable"]) + " E ",
-                    email_result["pass_rate"],
-                    email_result["cov_rate"]
-                ])
-            messages = cfg.result.get("messages")
-            if messages is not None:
-                # TODO: temp disable printing out warnings in results_summary
-                # Will clean up formal warnings first, then display warnings
-                error = self.parse_dict_to_str(messages, ["warnings"])
-                if error:
-                    error_message += "\n#### " + cfg.name + "\n"
-                    error_message += error
-
-        if len(email_table) > 1:
-            self.email_summary_md = results_str + tabulate(
-                email_table, headers="firstrow", tablefmt="pipe", colalign=colalign)
-        self.email_summary_md += error_message
 
         return self.results_summary_md
 

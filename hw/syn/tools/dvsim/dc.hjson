@@ -33,7 +33,6 @@
 
   // Restrict the maximum message count in each category
   max_msg_count: 100
-  // Do not sanitize regression mails, but do sanitize the published report
-  sanitize_email_results:   false
+  // Sanitize the published report
   sanitize_publish_results: true
 }
