@@ -87,18 +87,6 @@ package kmac_env_pkg;
   // log_2(W)
   localparam int L = $clog2(W);
 
-  // number of rounds performed by keccak logic
-  parameter int KECCAK_NUM_ROUNDS = 12 + 2 * L;
-
-  // After seeding the LFSRs, the internal auxiliary storage is filled up in 1 clock cycle.
-  parameter int CYCLES_TO_FILL_ENTROPY = 1;
-
-  // 4 cycles total: 4 cycles (for core) - entropy generation can be fully overlapped with core.
-  parameter int ENTROPY_FULL_EXPANSION_CYCLES = 4;
-
-  // 4 cycles total:                             4 cycles (for core)
-  parameter int ENTROPY_FAST_PROCESSING_CYCLES = 4;
-
   // interrupt types
   typedef enum int {
     KmacDone = 0,
