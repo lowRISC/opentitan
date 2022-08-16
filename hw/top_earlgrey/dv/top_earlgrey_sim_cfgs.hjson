@@ -12,6 +12,8 @@
 
   flow: sim
 
+  rel_path: "hw/top_earlgrey/dv/summary"
+
   // Maintain alphabetical order below.
   use_cfgs: [
              // Unit tests for UVCs.

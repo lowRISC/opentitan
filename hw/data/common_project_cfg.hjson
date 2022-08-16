@@ -25,10 +25,10 @@
   results_server_path: "{results_server_prefix}{results_server}/{rel_path}"
   results_server_dir:  "{results_server_path}/latest"
 
-  results_server_html: "results.html"
+  results_server_html: "report.html"
   results_server_page: "{results_server_dir}/{results_server_html}"
 
-  results_summary_server_html: "summary.html"
+  results_summary_server_html: "report.html"
   results_summary_server_page: "{results_server_path}/{results_summary_server_html}"
 
   // If defined, this is printed into the results md files

@@ -407,14 +407,14 @@ class FlowCfg():
             result = item._gen_results(results)
             log.info("[results]: [%s]:\n%s\n", item.name, result)
             log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
-            item.write_results_html("results.html", item.results_md)
-            log.log(VERBOSE, "[report]: [%s] [%s/results.html]", item.name,
+            item.write_results_html("report.html", item.results_md)
+            log.log(VERBOSE, "[report]: [%s] [%s/report.html]", item.name,
                     item.results_path)
             self.errors_seen |= item.errors_seen
 
         if self.is_primary_cfg:
             self.gen_results_summary()
-            self.write_results_html("summary.html", self.results_summary_md)
+            self.write_results_html("report.html", self.results_summary_md)
         self.gen_email_html_summary()
 
     def gen_results_summary(self):
@@ -618,7 +618,7 @@ class FlowCfg():
 
         # Publish the results page.
         log.info("Publishing results summary to %s", results_page_url)
-        result_summary_path = os.path.join(self.results_path, "summary.html")
+        result_summary_path = os.path.join(self.results_path, "report.html")
         cmd = (self.results_server_cmd + " cp " + result_summary_path + " " +
                self.results_summary_server_page)
         log.log(VERBOSE, cmd)

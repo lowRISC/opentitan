@@ -16,7 +16,7 @@
   flow: "lint"
 
   // Different dashboard output path for each tool
-  rel_path: "hw/top_earlgrey/dv/lint/{tool}"
+  rel_path: "hw/top_earlgrey/dv/lint/{tool}/summary"
 
   use_cfgs: [{    name: aes
                   fusesoc_core: lowrisc:dv:aes_sim
