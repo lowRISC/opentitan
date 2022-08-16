@@ -87,6 +87,9 @@ class spi_host_driver extends spi_driver;
       bit [7:0] device_byte;
       int       which_bit;
       bit [3:0] num_bits;
+
+      if (transfer_data.size == 0) return;
+
       if (cfg.partial_byte == 1) begin
         num_bits = cfg.bits_to_transfer;
       end else begin
@@ -137,12 +140,14 @@ class spi_host_driver extends spi_driver;
 
     cmd_addr_bytes = {req.opcode, req.address_q};
     sck_pulses = cmd_addr_bytes.size() * 8 + req.dummy_cycles;
-    if (req.write_command) begin
-      `DV_CHECK_EQ(req.num_lanes, 1)
-      sck_pulses += req.payload_q.size * 8;
-    end else begin
-      `DV_CHECK_EQ(req.payload_q.size, 0)
-      sck_pulses += req.read_size * (8 / req.num_lanes);
+    if (req.num_lanes > 0) begin
+      if (req.write_command) begin
+        `DV_CHECK_EQ(req.num_lanes, 1)
+        sck_pulses += req.payload_q.size * 8;
+      end else begin
+        `DV_CHECK_EQ(req.payload_q.size, 0)
+        sck_pulses += req.read_size * (8 / req.num_lanes);
+      end
     end
 
     // for mode 1 and 3, get the leading edges out of the way

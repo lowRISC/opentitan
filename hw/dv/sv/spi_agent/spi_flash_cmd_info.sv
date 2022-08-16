@@ -8,6 +8,7 @@ class spi_flash_cmd_info extends uvm_sequence_item;
   rand bit [7:0] opcode;
   rand bit [2:0] addr_bytes;
   rand bit write_command;
+  // number of lanes when sending payload, set to 0 if no payload is expected
   rand bit [2:0] num_lanes;
   rand int dummy_cycles;
 
@@ -19,14 +20,14 @@ class spi_flash_cmd_info extends uvm_sequence_item;
 
   constraint num_lanes_c {
     write_command -> num_lanes == 1;
-    num_lanes inside {1, 2, 4};
+    num_lanes inside {0, 1, 2, 4};
   }
 
   constraint dummy_cycles_c {
     // for dual/quad read, need at least 2 dummy cycles
     num_lanes > 1 && !write_command -> dummy_cycles >= 2;
-    // write doesn't have dummy cycle
-    write_command -> dummy_cycles == 0;
+    // write or no payload doesn't have dummy cycle.
+    write_command || num_lanes == 0 -> dummy_cycles == 0;
     dummy_cycles dist {
       0     :/ 1,
       [2:7] :/ 1,
