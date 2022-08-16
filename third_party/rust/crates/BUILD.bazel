@@ -49,6 +49,15 @@ alias(
 )
 
 alias(
+    name = "crc",
+    actual = "@raze__crc__3_0_0//:crc",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "deser_hjson",
     actual = "@raze__deser_hjson__1_0_2//:deser_hjson",
     tags = [
