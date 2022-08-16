@@ -24,6 +24,8 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
   constraint baud_rate_c {
     // constrain nco not over nco width
     `CALC_NCO(baud_rate, NCO_WIDTH, uart_clk_freq_khz) < (1 << NCO_WIDTH);
+    // only test 4 other speeds, <= 115k is slow which may take a few hours to complete the test
+    baud_rate > BaudRate115200;
   }
 
   function void pre_randomize();
