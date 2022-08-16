@@ -417,22 +417,10 @@
       default: "4",
       local: "true"
     },
-    { name: "RomFaultResponseOffset",
-      desc: "Offset of ROM_FAULT_RESPONSE",
-      type: "int",
-      default: "872",
-      local: "true"
-    },
-    { name: "RomFaultResponseSize",
-      desc: "Size of ROM_FAULT_RESPONSE",
-      type: "int",
-      default: "4",
-      local: "true"
-    },
     { name: "RomAlertClassEnOffset",
       desc: "Offset of ROM_ALERT_CLASS_EN",
       type: "int",
-      default: "876",
+      default: "872",
       local: "true"
     },
     { name: "RomAlertClassEnSize",
@@ -444,7 +432,7 @@
     { name: "RomAlertEscalationOffset",
       desc: "Offset of ROM_ALERT_ESCALATION",
       type: "int",
-      default: "880",
+      default: "876",
       local: "true"
     },
     { name: "RomAlertEscalationSize",
@@ -456,7 +444,7 @@
     { name: "RomAlertClassificationOffset",
       desc: "Offset of ROM_ALERT_CLASSIFICATION",
       type: "int",
-      default: "884",
+      default: "880",
       local: "true"
     },
     { name: "RomAlertClassificationSize",
@@ -468,7 +456,7 @@
     { name: "RomLocalAlertClassificationOffset",
       desc: "Offset of ROM_LOCAL_ALERT_CLASSIFICATION",
       type: "int",
-      default: "1204",
+      default: "1200",
       local: "true"
     },
     { name: "RomLocalAlertClassificationSize",
@@ -480,7 +468,7 @@
     { name: "RomAlertAccumThreshOffset",
       desc: "Offset of ROM_ALERT_ACCUM_THRESH",
       type: "int",
-      default: "1268",
+      default: "1264",
       local: "true"
     },
     { name: "RomAlertAccumThreshSize",
@@ -492,7 +480,7 @@
     { name: "RomAlertTimeoutCyclesOffset",
       desc: "Offset of ROM_ALERT_TIMEOUT_CYCLES",
       type: "int",
-      default: "1284",
+      default: "1280",
       local: "true"
     },
     { name: "RomAlertTimeoutCyclesSize",
@@ -504,7 +492,7 @@
     { name: "RomAlertPhaseCyclesOffset",
       desc: "Offset of ROM_ALERT_PHASE_CYCLES",
       type: "int",
-      default: "1300",
+      default: "1296",
       local: "true"
     },
     { name: "RomAlertPhaseCyclesSize",
@@ -516,7 +504,7 @@
     { name: "OwnerSwCfgRomAlertDigestProdOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD",
       type: "int",
-      default: "1364",
+      default: "1360",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertDigestProdSize",
@@ -528,7 +516,7 @@
     { name: "OwnerSwCfgRomAlertDigestProdEndOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END",
       type: "int",
-      default: "1368",
+      default: "1364",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertDigestProdEndSize",
@@ -540,7 +528,7 @@
     { name: "OwnerSwCfgRomAlertDigestDevOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV",
       type: "int",
-      default: "1372",
+      default: "1368",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertDigestDevSize",
@@ -552,7 +540,7 @@
     { name: "OwnerSwCfgRomAlertDigestRmaOffset",
       desc: "Offset of OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
       type: "int",
-      default: "1376",
+      default: "1372",
       local: "true"
     },
     { name: "OwnerSwCfgRomAlertDigestRmaSize",
@@ -564,7 +552,7 @@
     { name: "RomWatchdogBiteThresholdCyclesOffset",
       desc: "Offset of ROM_WATCHDOG_BITE_THRESHOLD_CYCLES",
       type: "int",
-      default: "1380",
+      default: "1376",
       local: "true"
     },
     { name: "RomWatchdogBiteThresholdCyclesSize",
@@ -576,7 +564,7 @@
     { name: "RomKeymgrRomExtMeasEnOffset",
       desc: "Offset of ROM_KEYMGR_ROM_EXT_MEAS_EN",
       type: "int",
-      default: "1384",
+      default: "1380",
       local: "true"
     },
     { name: "RomKeymgrRomExtMeasEnSize",
@@ -588,7 +576,7 @@
     { name: "OwnerSwCfgManufStateOffset",
       desc: "Offset of OWNER_SW_CFG_MANUF_STATE",
       type: "int",
-      default: "1388",
+      default: "1384",
       local: "true"
     },
     { name: "OwnerSwCfgManufStateSize",

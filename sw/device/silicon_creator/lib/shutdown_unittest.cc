@@ -193,7 +193,6 @@ constexpr uint32_t Pack32(uint8_t a, uint8_t b, uint8_t c, uint8_t d) {
 struct OtpConfiguration {
   uint32_t rom_error_reporting;
   uint32_t rom_bootstrap_en;
-  uint32_t rom_fault_response;
   uint32_t rom_alert_class_en;
   uint32_t rom_alert_escalation;
   uint32_t rom_alert_classification[80];
@@ -214,7 +213,6 @@ struct DefaultAlertClassification {
 constexpr OtpConfiguration kOtpConfig = {
     .rom_error_reporting = (uint32_t)kShutdownErrorRedactNone,
     .rom_bootstrap_en = 1,
-    .rom_fault_response = 0,
     .rom_alert_class_en = Pack32(kAlertEnableLocked, kAlertEnableEnabled,
                                  kAlertEnableNone, kAlertEnableNone),
     .rom_alert_escalation = Pack32(kAlertEscalatePhase3, kAlertEscalatePhase3,
