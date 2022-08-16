@@ -43,7 +43,7 @@ def main() -> int:
     args = parser.parse_args()
 
     # Extract width from ROM file name.
-    match = re.search(r'([0-9]+).vmem', args.infile.name)
+    match = re.search(r'([0-9]+)(\.scr)?\.vmem', args.infile.name)
     if not match:
         raise ValueError('Cannot extract ROM word width from file name ' +
                          args.infile.name)
