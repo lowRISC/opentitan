@@ -231,26 +231,60 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   endtask : body
 
   virtual task do_mp_reg();
-    int page;
+    int page ,bank;
     flash_mp_region_cfg_t my_region;
     poll_fifo_status           = 1;
     // Default region settings
     default_region_ecc_en      = MuBi4False;
     default_region_scramble_en = MuBi4False;
-
+    cfg.allow_spec_info_acc = 3'b111;
     configure_flash_protection();
     // Randomize Write Data
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(flash_op_data,
                                           flash_op_data.size == flash_op.num_words;)
     `uvm_info("do_mp_reg", $sformatf("flash_op: %p", flash_op), UVM_MEDIUM)
-    if (flash_op.partition == FlashPartData) begin
-      page = flash_op.addr >> 11;
-      if (cfg.p2r_map[page] == 8) begin
-        // default region
-        my_region = default_region_cfg;
+    bank = flash_op.addr[OTFBankId];
+    // For ctrl read, you have to validate per Qword
+    if (flash_op.op == FlashOpRead) begin
+      int is_odd = flash_op.addr[2];
+      int size = (flash_op.num_words + is_odd) / 2;
+      int tail = (flash_op.num_words + is_odd) % 2;
+      addr_t tmp_addr = flash_op.addr;
+      flash_op.addr[2:0] = 0;
+
+      `uvm_info("do_mp_reg", $sformatf("size:%0d tail:%0d bank:%0d addr:%x",
+                                  size, tail, bank, tmp_addr), UVM_MEDIUM)
+      for (int i = 0; i < size; i++) begin
+        if  (flash_op.partition == FlashPartData) begin
+          page = addr2page(flash_op.addr);
+          my_region = get_region(page);
+        end else begin
+          page = addr2page(flash_op.addr[OTFBankId-1:0]);
+          my_region = get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
+          illegal_trans |= check_info_part(flash_op, "read_flash");
+        end
+        illegal_trans |= validate_flash_op(flash_op, my_region);
+        flash_op.addr += 8;
+      end // for (int i = 0; i < size; i++)
+      if (tail) begin
+        if  (flash_op.partition == FlashPartData) begin
+          page = addr2page(flash_op.addr);
+          my_region = get_region(page);
+        end else begin
+          page = addr2page(flash_op.otf_addr);
+          my_region = get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
+          illegal_trans |= check_info_part(flash_op, "read_flash");
+        end
+        illegal_trans |= validate_flash_op(flash_op, my_region);
+      end // if (tail)
+      flash_op.addr = tmp_addr;
+    end else begin // if (flash_op.op == FlashOpRead)
+      if  (flash_op.partition == FlashPartData) begin
+        page = addr2page(flash_op.addr);
+        my_region = get_region(page);
       end else begin
-        my_region = mp_regions[cfg.p2r_map[page]];
-        if (my_region.en != MuBi4True) my_region = default_region_cfg;
+        page = addr2page(flash_op.addr[OTFBankId-1:0]);
+        my_region = get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
       end
       illegal_trans = validate_flash_op(flash_op, my_region);
     end
@@ -352,9 +386,24 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
 
     foreach (mp_info_pages[i, j, k]) begin
       flash_ctrl_mp_info_page_cfg(i, j, k, mp_info_pages[i][j][k]);
-      `uvm_info(`gfn, $sformatf("MP INFO regions values %p", mp_info_pages[i][j][k]), UVM_HIGH)
     end
     //Enable Bank erase
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
   endtask // configure_flash_protection
+
+  function flash_mp_region_cfg_t get_region(int page, bit dis = 1);
+    flash_mp_region_cfg_t my_region;
+    if (cfg.p2r_map[page] == 8) begin
+      my_region = default_region_cfg;
+    end else begin
+      my_region = mp_regions[cfg.p2r_map[page]];
+      if (my_region.en != MuBi4True) my_region = default_region_cfg;
+    end
+    if (dis) begin
+      `uvm_info("get_region", $sformatf("page:%0d --> region:%0d",
+                                        page, cfg.p2r_map[page]), UVM_MEDIUM)
+    end
+    return my_region;
+  endfunction // get_region
+
 endclass : flash_ctrl_mp_regions_vseq

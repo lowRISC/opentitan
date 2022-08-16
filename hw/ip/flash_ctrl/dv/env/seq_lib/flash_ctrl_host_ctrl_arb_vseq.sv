@@ -216,9 +216,8 @@ class flash_ctrl_host_ctrl_arb_vseq extends flash_ctrl_base_vseq;
     logic [RmaSeedWidth-1:0] rma_seed;
 
     // Iterate fixed Number of iterations as test time is VERY LONG.
-    // Since this test is getting unbearably long in the closed-source, when running in the
-    //  closed-source, this test will do only one iteration.
-    uint num_trans = `PRIM_DEFAULT_IMPL==prim_pkg::ImplGeneric ? 2 : 1;
+    // Set to 1 always
+    uint num_trans = 1;
 
     `uvm_info(`gfn, $sformatf("HOST CONTROL ARB TEST"), UVM_LOW)
 

@@ -77,7 +77,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     return (int'(addr[OTFBankId:11]));
   endfunction // addr2page
 
-  function flash_mp_region_cfg_t get_region(int page, bit dis = 1);
+  virtual function flash_mp_region_cfg_t get_region(int page, bit dis = 1);
     flash_mp_region_cfg_t my_region;
     if (cfg.p2r_map[page] == 8) begin
       my_region = default_region_cfg;
@@ -91,6 +91,54 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
     return my_region;
   endfunction // get_region
+
+  function flash_mp_region_cfg_t get_region_from_info(flash_bank_mp_info_page_cfg_t info);
+    flash_mp_region_cfg_t region;
+    region.en          = info.en;
+    region.read_en     = info.read_en;
+    region.program_en  = info.program_en;
+    region.erase_en    = info.erase_en;
+    region.scramble_en = info.scramble_en;
+    region.ecc_en      = info.ecc_en;
+    region.he_en       = info.he_en;
+    return region;
+  endfunction // get_region_from_info
+
+  // Check permission and page range of info partition
+  // Set exp recov_err alert if check fails
+  function bit check_info_part(flash_op_t flash_op, string str);
+    bit drop = 0;
+    int bank, page, end_page, loop;
+
+    bank = flash_op.addr[OTFBankId];
+    page = addr2page(flash_op.addr);
+    end_page = addr2page(flash_op.addr + (flash_op.num_words * 4) - 1);
+    // For read, cross page boundary is allowed. So you need to check
+    // both start and end address
+    if (flash_op.op == FlashOpRead) loop = 2;
+    else loop = 1;
+
+    for (int i= 0; i < loop; ++i) begin
+      if (i == 1) page = end_page;
+      if (flash_op.partition == FlashPartInfo && bank == 0 &&
+          page inside {[1:3]}) begin
+        if (!cfg.allow_spec_info_acc[page-1]) begin
+          `uvm_info(str, $sformatf("check_info:page:%0d access is not allowed", page), UVM_MEDIUM)
+          set_otf_exp_alert("recov_err");
+          drop = 1;
+        end
+      end
+      // check info page range
+      if (page >= InfoTypeSize[flash_op.partition>>1]) begin
+        `uvm_info(str, $sformatf("check_info:bank:%0d page:%0d addr:0x%0h is out of range",
+                                 bank, page, flash_op.otf_addr), UVM_MEDIUM)
+        set_otf_exp_alert("recov_err");
+        drop = 1;
+      end
+      if (drop) break;
+    end
+    return drop;
+  endfunction // check_part_info
 
   virtual task pre_start();
     `uvm_create_on(callback_vseq, p_sequencer);

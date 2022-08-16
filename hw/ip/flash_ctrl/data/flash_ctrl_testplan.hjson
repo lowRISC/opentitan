@@ -297,8 +297,8 @@
             matched with expected written value.
             '''
       milestone: V2
-      tests: ["flash_ctrl_read_word_sweep_serr", "flash_ctrl_read_rand_word_serr",
-              "flash_ctrl_ro_serr", "flash_ctrl_rw_serr", "flash_ctrl_rw_rand_word_serr"]
+      tests: ["flash_ctrl_read_word_sweep_serr",
+              "flash_ctrl_ro_serr", "flash_ctrl_rw_serr"]
     }
     {
       name: singlebit_err_counter
@@ -334,9 +334,7 @@
             '''
       milestone: V2
       tests: ["flash_ctrl_wo", "flash_ctrl_ro", "flash_ctrl_rw",
-              "flash_ctrl_write_word_sweep", "flash_ctrl_read_word_sweep",
-              "flash_ctrl_write_rand_word", "flash_ctrl_read_rand_word",
-              "flash_ctrl_rw_rand_word"]
+              "flash_ctrl_write_word_sweep", "flash_ctrl_read_word_sweep"]
     }
     {
       name: robustness
@@ -385,18 +383,13 @@
       name: error_cg
       desc: '''
             Covers following error scenarios given in Flash error code register:
+            - op_err: Undefined operation.
             - mp_err: Flash access has encountered an access permission error.
             - rd_err: Flash read has an uncorrectable data error.
+            - prog_err: Flash program has an error.
             - prog_win_err: Flash program has a window resolution error.
             - prog_type_err: Flash program selected unavailable type.
-            - flash_phy_err: The flash access encountered a native flash error.
-            Covers following error scenarios given in Flash fault status register:
-            - mp_err: The flash hardware interface encountered a memory permission error.
-            - rd_err: The flash hardware interface encountered a read data error.
-            - prog_win_err: The flash hardware interface encountered a program resolution error.
-            - prog_type_err: The flash hardware interface encountered a program type error.
-            - flash_phy_err: The flash hardware interface encountered a native flash error.
-            - lcmgr_err: The life cycle management interface has encountered a fatal error.
+            - update_err: A shadow register encountered an update error.
             '''
     }
   ]
