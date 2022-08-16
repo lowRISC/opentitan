@@ -421,6 +421,11 @@ SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_keymgr_kill(void)) {
   abs_mmio_write32(kBase + KEYMGR_SIDELOAD_CLEAR_REG_OFFSET, 1);
 }
 
+SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_reset(void)) {
+  enum { kBase = TOP_EARLGREY_RSTMGR_AON_BASE_ADDR };
+  abs_mmio_write32(kBase + RSTMGR_RESET_REQ_REG_OFFSET, kMultiBitBool4True);
+}
+
 SHUTDOWN_FUNC(NO_MODIFIERS, shutdown_flash_kill(void)) {
   enum { kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR };
   // Setting DIS (rw0c) to a value other than 5 will disable flash permanently.
@@ -484,6 +489,8 @@ void shutdown_finalize(rom_error_t reason) {
   shutdown_report_error(reason);
   shutdown_software_escalate();
   shutdown_keymgr_kill();
+  // Reset before killing the flash to be able to use this also in flash.
+  shutdown_reset();
   shutdown_flash_kill();
   // If we get here, we'll wait for the watchdog to reset the chip.
   shutdown_hang();
