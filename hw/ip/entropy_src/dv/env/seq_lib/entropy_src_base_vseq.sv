@@ -137,14 +137,15 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // Thresholds for the continuous health checks:
     // REPCNT and REPCNTS
 
-    ral.repcnt_thresholds.bypass_thresh.set(newcfg.repcnt_thresh_bypass);
-    ral.repcnt_thresholds.fips_thresh.set(newcfg.repcnt_thresh_fips);
-    csr_update(.csr(ral.repcnt_thresholds));
+    if (!newcfg.default_ht_thresholds) begin
+      ral.repcnt_thresholds.bypass_thresh.set(newcfg.repcnt_thresh_bypass);
+      ral.repcnt_thresholds.fips_thresh.set(newcfg.repcnt_thresh_fips);
+      csr_update(.csr(ral.repcnt_thresholds));
 
-    ral.repcnts_thresholds.bypass_thresh.set(newcfg.repcnts_thresh_bypass);
-    ral.repcnts_thresholds.fips_thresh.set(newcfg.repcnts_thresh_fips);
-    csr_update(.csr(ral.repcnts_thresholds));
-
+      ral.repcnts_thresholds.bypass_thresh.set(newcfg.repcnts_thresh_bypass);
+      ral.repcnts_thresholds.fips_thresh.set(newcfg.repcnts_thresh_fips);
+      csr_update(.csr(ral.repcnts_thresholds));
+    end
     #50us;
 
     // Windowed health test thresholds managed in derived vseq classes

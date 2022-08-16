@@ -64,15 +64,27 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
       `uvm_info(`gfn, "Resetting soft failure", UVM_MEDIUM)
       is_soft_failed = 0;
     end
-    soft_fail_time = randomize_failure_time(soft_mtbf);
-    `DV_CHECK_FATAL(soft_fail_time >= 0, "Failed to schedule soft failure")
+    if (soft_mtbf < 0) begin
+      // soft failures are disabled
+      soft_fail_time = -1;
+   end else begin
+      soft_fail_time = randomize_failure_time(soft_mtbf);
+      // The randomize function returns < 0 on error
+      `DV_CHECK_FATAL(soft_fail_time >= 0, "Failed to schedule soft failure")
+    end
 
     if (check_hard_failure()) begin
       `uvm_info(`gfn, "Resetting hard failure", UVM_MEDIUM)
       is_hard_failed = 0;
     end
-    hard_fail_time = randomize_failure_time(hard_mtbf);
-    `DV_CHECK_FATAL(hard_fail_time >= 0, "Failed to schedule hard failure")
+    if (hard_mtbf < 0) begin
+      // hard_failures are disabled
+      hard_fail_time = -1;
+    end else begin
+      hard_fail_time = randomize_failure_time(hard_mtbf);
+      // The randomize function returns < 0 on error
+      `DV_CHECK_FATAL(hard_fail_time >= 0, "Failed to schedule hard failure")
+    end
 
     is_initialized = 1;
 
@@ -80,7 +92,7 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
 
   function bit check_soft_failure();
     bit result;
-    result = is_initialized && ($realtime() > soft_fail_time);
+    result = is_initialized && (soft_fail_time >= 0) && ($realtime() > soft_fail_time);
     if (!is_soft_failed && result) begin
       `uvm_info(`gfn, "Soft Failure Detected", UVM_MEDIUM)
     end
@@ -90,7 +102,7 @@ class entropy_src_base_rng_seq extends push_pull_indefinite_host_seq#(
 
   function bit check_hard_failure();
     bit result;
-    result = is_initialized && ($realtime() > hard_fail_time);
+    result = is_initialized && (hard_fail_time >= 0) && ($realtime() > hard_fail_time);
     if (!is_hard_failed && result) begin
       `uvm_info(`gfn, "Hard Failure Detected", UVM_MEDIUM)
     end
