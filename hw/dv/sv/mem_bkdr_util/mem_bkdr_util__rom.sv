@@ -100,7 +100,7 @@ virtual function void rom_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1:
 
     // flip some bits to inject integrity fault
     integ_data ^= flip_bits;
-  
+
     // Calculate the scrambled data
     wdata_arr = {<<{integ_data}};
     wdata_arr = sram_scrambler_pkg::encrypt_sram_data(
@@ -155,17 +155,24 @@ virtual function void update_rom_digest(logic [SRAM_KEY_WIDTH-1:0]   key,
   int digest_start_addr = kmac_data_bytes;
   bit scramble_data = 0; // digest and kmac data aren't scrambled
 
-  // kmac data is twice of kmac_data_bytes as we use 64 bit bus to send 32 bit data + 7 intg
-  kmac_data_arr = new[kmac_data_bytes * 2];
+  // Each 4 byte of data is transferred as 5 bytes
+  int xfer_bytes = kmac_data_bytes * 5 / 4;
+  kmac_data_arr = new[xfer_bytes];
+  `uvm_info(`gfn, $sformatf("Actual bytes: %d, xfer'd: %d", kmac_data_bytes, xfer_bytes), UVM_DEBUG)
 
   for (int i = 0; i < kmac_data_bytes; i += 4) begin
-    bit [63:0] data64;
+    bit [39:0] data40;
 
-    // it returns 39 bits, including integrity. and the 39 bits data will be sent to 64 bits bus to
-    // the kmac
-    data64 = 64'(rom_encrypt_read32(i, key, nonce, scramble_data));
-    for (int j = 0; j < 8; j++) begin
-      kmac_data_arr[i * 2 + j] = data64[j * 8 +: 8];
+    // it returns 39 bits, including integrity. and the 39 bits data will be sent to 40 bits bus to
+    // the kmac. The kmac bus has byte strobes that are used to indicate 5 bytes instead of the full
+    // 8.
+    data40 = 40'(rom_encrypt_read32(i, key, nonce, scramble_data));
+    for (int j = 0; j < 5; j++) begin
+      // At byte position 0, we want bytes 0, 1, 2, 3, 4
+      // At byte position 4, we want bytes 5, 6, 7, 8, 9
+      // At byte position 8, we want bytes 10, 11, 12, 13, 14
+      int idx = i + (i / 4) + j;
+      kmac_data_arr[idx] = data40[j * 8 +: 8];
     end
   end
   digestpp_dpi_pkg::c_dpi_cshake256(kmac_data_arr, "", "ROM_CTRL", kmac_data_arr.size,
