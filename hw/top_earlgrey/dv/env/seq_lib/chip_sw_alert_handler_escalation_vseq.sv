@@ -7,8 +7,6 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  lc_ctrl_state_pkg::dec_lc_state_e state_val = lc_ctrl_state_pkg::DecLcStRaw;
-
   // Reassign `select_jtag` variable to drive LC JTAG tap at start,
   // because LC_CTRL's TestLock state can only sample strap once at boot.
   virtual task pre_start();
@@ -77,9 +75,6 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
     bool_vector = '0;
     bool_vector[EscEn] = 1;
     check_lc_ctrl_broadcast(bool_vector);
-
-
-
   endtask
 
 endclass
