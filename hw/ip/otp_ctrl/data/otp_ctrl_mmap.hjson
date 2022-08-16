@@ -197,39 +197,39 @@
             bkout_type: false,
             items: [
                 {
-                    name: "ROM_ERROR_REPORTING",
+                    name: "OWNER_SW_CFG_ROM_ERROR_REPORTING",
                     size: "4"
                 }
                 {
-                    name: "ROM_BOOTSTRAP_EN",
+                    name: "OWNER_SW_CFG_ROM_BOOTSTRAP_EN",
                     size: "4"
                 }
                 {
-                    name: "ROM_ALERT_CLASS_EN",
+                    name: "OWNER_SW_CFG_ROM_ALERT_CLASS_EN",
                     size: "4"
                 }
                 {
-                    name: "ROM_ALERT_ESCALATION",
+                    name: "OWNER_SW_CFG_ROM_ALERT_ESCALATION",
                     size: "4"
                 }
                 {
-                    name: "ROM_ALERT_CLASSIFICATION",
+                    name: "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION",
                     size: "320"
                 }
                 {
-                    name: "ROM_LOCAL_ALERT_CLASSIFICATION",
+                    name: "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION",
                     size: "64"
                 }
                 {
-                    name: "ROM_ALERT_ACCUM_THRESH",
+                    name: "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH",
                     size: "16"
                 }
                 {
-                    name: "ROM_ALERT_TIMEOUT_CYCLES",
+                    name: "OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES",
                     size: "16"
                 }
                 {
-                    name: "ROM_ALERT_PHASE_CYCLES",
+                    name: "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES",
                     size: "64"
                 }
                 {
@@ -249,11 +249,11 @@
                     size: "4",
                 }
                 {
-                    name: "ROM_WATCHDOG_BITE_THRESHOLD_CYCLES",
+                    name: "OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES",
                     size: "4"
                 }
                 {
-                    name: "ROM_KEYMGR_ROM_EXT_MEAS_EN",
+                    name: "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN",
                     size: "4"
                 }
                 {
