@@ -16,6 +16,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   bit allow_intercept;
   bit allow_upload;
 
+  bit allow_write_enable_disable;
+
   // we can only hold one payload, set it busy to avoid payload is overwritten before read out.
   bit always_set_busy_when_upload_contain_payload;
 
@@ -178,6 +180,23 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       info.write_command == 0 &&
       info.num_lanes == 4;)
     add_cmd_info(info, 10);
+
+
+    if (allow_write_enable_disable) begin
+      bit valid;
+      randomize_cfg_cmd_info(info, WREN, valid);
+      ral.cmd_info_wren.valid.set(valid);
+      if (valid) ral.cmd_info_wren.opcode.set(info.opcode);
+      else       `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info_wren.opcode)
+      csr_update(ral.cmd_info_wren);
+
+      randomize_cfg_cmd_info(info, WRDI, valid);
+      ral.cmd_info_wrdi.valid.set(valid);
+      if (valid) ral.cmd_info_wrdi.opcode.set(info.opcode);
+      else       `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info_wrdi.opcode)
+      csr_update(ral.cmd_info_wrdi);
+    end
+
     for (int i = 11; i < 24; i++) begin
       info = spi_flash_cmd_info::type_id::create("info");
       `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
@@ -187,6 +206,30 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
     valid_opcode_q = cfg.spi_host_agent_cfg.cmd_infos.find_index() with ('1);
   endtask : config_all_cmd_infos
+
+  // Task for configuring 4 special cmd info slot - wren, wrdi, en4b, ex4b.
+  // use ref as info is re-created in the function
+  virtual function void randomize_cfg_cmd_info(ref spi_flash_cmd_info info,
+                                               input bit [7:0] opcode,
+                                               output bit valid);
+    if (allow_set_cmd_info_invalid) valid = $urandom_range(0, 1);
+    else valid = 1;
+
+    if (!valid) return;
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
+      opcode == local::opcode;
+      // no addr, no payload
+      addr_bytes == 0;
+      num_lanes == 0;
+      write_command == 0;
+    )
+
+    cfg.spi_host_agent_cfg.add_cmd_info(info);
+    cfg.spi_device_agent_cfg.add_cmd_info(info);
+    `uvm_info(`gfn, $sformatf("Add this cfg cmd_info \n%s", info.sprint()), UVM_MEDIUM)
+  endfunction
 
   // Task for flash or pass init
   virtual task spi_device_flash_pass_init(device_mode_e mode);
@@ -322,9 +365,10 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
     `uvm_info(`gfn, $sformatf("Add this cmd_info \n%s", info.sprint()), UVM_MEDIUM)
     case (info.num_lanes)
-      1 : lanes_en = info.write_command ? 4'h1 : 4'h2;
-      2 : lanes_en = 4'h3;
-      4 : lanes_en = 4'hF;
+      0: lanes_en = 0;
+      1: lanes_en = info.write_command ? 4'h1 : 4'h2;
+      2: lanes_en = 4'h3;
+      4: lanes_en = 4'hF;
       default : `uvm_fatal(`gfn, $sformatf("Unsupported lanes num 0x%0h", info.num_lanes))
     endcase
     case (info.addr_bytes)
@@ -341,7 +385,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     ral.cmd_info[idx].addr_mode.set(addr_size);
 
     ral.cmd_info[idx].valid.set(valid); // Enable this OPCODE
-    ral.cmd_info[idx].opcode.set(info.opcode);// Read Dual
+    ral.cmd_info[idx].opcode.set(info.opcode);
     ral.cmd_info[idx].payload_en.set(lanes_en);
     ral.cmd_info[idx].payload_dir.set(!info.write_command);
 

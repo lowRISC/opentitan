@@ -74,9 +74,9 @@ package spi_device_env_pkg;
   } read_addr_size_type_e;
 
   typedef struct packed {
-    bit busy;
-    bit WEL;
     bit [21:0] other_status;
+    bit wel;
+    bit busy;
   } flash_status_t;
 
   // alerts
