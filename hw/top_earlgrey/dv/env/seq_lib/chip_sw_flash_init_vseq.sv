@@ -212,7 +212,7 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     bit [SEED_WIDTH-1:0] last_creator_seed;
     bit [(SEED_WIDTH*2)-1:0] expected_owner_seed;
     bit [(SEED_WIDTH*2)-1:0] expected_creator_seed;
-    uvm_hdl_data_t lc_seed_hw_rd_en;
+    bit [lc_ctrl_pkg::TxWidth-1:0] lc_seed_hw_rd_en;
     forever begin
       @(init_done_event);
       if (do_keymgr_check == 1) begin
@@ -227,6 +227,11 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
         `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", KEYMGR_SEEDS_PATH))
         owner_seed   = seeds[(SEED_WIDTH*flash_ctrl_pkg::OwnerSeedIdx)+:SEED_WIDTH];
         creator_seed = seeds[(SEED_WIDTH*flash_ctrl_pkg::CreatorSeedIdx)+:SEED_WIDTH];
+
+        // If 'lc_seed_hw_rd_en' is off, creator/owner seed cannot be updated.
+        // So compared with the old value.
+        // Make sure your bus is the right size cause
+        // full 64bit bus might contain x's.
         if (lc_seed_hw_rd_en == lc_ctrl_pkg::Off) begin
           `DV_CHECK_EQ(creator_seed, last_creator_seed);
           `DV_CHECK_EQ(owner_seed, last_owner_seed);
