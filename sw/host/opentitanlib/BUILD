@@ -171,6 +171,7 @@ rust_library(
 rust_test(
     name = "opentitanlib_test",
     compile_data = [
+        ":e2e_command",
         "src/bootstrap/simple.bin",
         "src/spiflash/SFDP_MX66L1G.bin",
     ],
@@ -186,4 +187,7 @@ rust_test(
         "src/otp/testdata/otp_ctrl_mmap.hjson",
         "src/otp/testdata/output.vmem",
     ],
+    rustc_env = {
+        "e2e_command": "$(location :e2e_command)",
+    },
 )
