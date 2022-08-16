@@ -205,10 +205,6 @@
                     size: "4"
                 }
                 {
-                    name: "ROM_FAULT_RESPONSE",
-                    size: "4"
-                }
-                {
                     name: "ROM_ALERT_CLASS_EN",
                     size: "4"
                 }
