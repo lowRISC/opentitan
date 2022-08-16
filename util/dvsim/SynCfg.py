@@ -391,11 +391,9 @@ class SynCfg(OneShotCfg):
                     msgs = self.result['messages'].get(key)
                     fail_msgs += print_msg_list("#### " + hdr, msgs, self.max_msg_count)
 
-            # the email and published reports will default to self.results_md if they are
-            # empty. in case they need to be sanitized, override them and do not append
-            # detailed messages.
-            if self.sanitize_email_results:
-                self.email_results_md = results_str
+            # Th published report will default to self.results_md if they are
+            # empty. In case it needs need to be sanitized, override it and do
+            # not append detailed messages.
             if self.sanitize_publish_results:
                 self.publish_results_md = results_str
 
