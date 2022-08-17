@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
+load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -43,6 +43,16 @@ cc_library(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:stdasm",
+    ],
+)
+
+cc_library(
+    name = "irq",
+    srcs = ["irq.c"],
+    hdrs = ["irq.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:csr",
     ],
 )
 
