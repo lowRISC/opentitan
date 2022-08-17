@@ -115,7 +115,14 @@ class otbn_common_vseq extends otbn_base_vseq;
     if (if_proxy.sec_cm_type == SecCmPrimOnehot) begin
       fatal_cause = ral.fatal_alert_cause.reg_intg_violation;
     end else begin
-      fatal_cause = ral.fatal_alert_cause.bad_internal_state;
+      if (if_proxy.sec_cm_type == SecCmPrimCount &&
+          if_proxy.path.match("^tb\.dut\.u_tlul_adapter_sram_[di]mem.*$")) begin
+        // Faults injected into the counters of an OTBN TLUL adapter manifest as bus integrity
+        // violation.
+        fatal_cause = ral.fatal_alert_cause.bus_intg_violation;
+      end else begin
+        fatal_cause = ral.fatal_alert_cause.bad_internal_state;
+      end
     end
     csr_utils_pkg::csr_rd_check(.ptr(fatal_cause), .compare_value(1));
     csr_utils_pkg::csr_rd_check(.ptr(ral.status), .compare_value('hFF));
