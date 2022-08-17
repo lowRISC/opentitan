@@ -51,10 +51,14 @@ module tb;
   wire cpu_rst_n = `CPU_HIER.rst_ni;
   wire alert_handler_clk = `ALERT_HANDLER_HIER.clk_i;
   wire alert_handler_rst_n = `ALERT_HANDLER_HIER.rst_ni;
+  wire usb_clk = `USBDEV_HIER.clk_i;
+  wire usb_rst_n = `USBDEV_HIER.rst_ni;
+
 
   // interfaces
   clk_rst_if clk_rst_if(.clk, .rst_n);
   clk_rst_if cpu_clk_rst_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
+  clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
   alert_esc_if alert_if[NUM_ALERTS](.clk(alert_handler_clk), .rst_n(alert_handler_rst_n));
   pins_if #(NUM_GPIOS) gpio_if(.pins(gpio_pins));
   pins_if #(1) srst_n_if(.pins(srst_n));
@@ -319,6 +323,7 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "cpu_clk_rst_vif", cpu_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "usb_clk_rst_vif", usb_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(
         null, "*.env", "clk_rst_vif_rv_dm_debug_mem_reg_block", clk_rst_if);
 

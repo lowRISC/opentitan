@@ -1137,6 +1137,14 @@
       // Timeout based on a ~7 minute dvsim runtime.
       run_opts: ["+sw_test_timeout_ns=7_000_000"]
     }
+    {
+      name: chip_sw_usb_ast_clk_calib
+      uvm_test_seq: "chip_sw_usb_ast_clk_calib_vseq"
+      sw_images: ["//sw/device/tests/sim_dv:ast_usb_clk_calib:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+usb_large_drift=1"]
+      reseed: 1
+    }
   ]
 
   // List of regressions.

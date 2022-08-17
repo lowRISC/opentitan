@@ -2663,10 +2663,15 @@
       name: chip_sw_ast_usb_clk_calib
       desc: '''Verify the USB clk calibration signaling.
 
-            Details TBD.
+            - First place the AST into a mode where usb clock frequency significantly deviates from the ideal.
+            - Verify the clock is "off" using the clkmgr measurement mechanism.
+            - Then, turn on the usb sof calibration machinery and wait a few mS.
+            - Afterwards, measure the usb clock again using the clkmgr measurement controls, at this point the clock should be significantly more accurate.
+            - Note, while the above is ideal, usbdev chip level testing is not yet ready and this test fakes the usb portion through DV forces.
+            - Note also the real AST calibration logic is not available, so the sof testing in the open source is effectively short-circuited.
             '''
       milestone: V2
-      tests: []
+      tests: ["chip_sw_usb_ast_clk_calib"]
     }
     {
       name: chip_sw_ast_alerts
