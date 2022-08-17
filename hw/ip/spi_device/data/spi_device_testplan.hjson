@@ -398,7 +398,7 @@
             - Issue supported command with required address.
             - Check proper address propagation.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_cfg_cmd"]
     }
   ]
   covergroups: [

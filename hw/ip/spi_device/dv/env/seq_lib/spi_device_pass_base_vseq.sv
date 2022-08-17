@@ -17,7 +17,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   bit allow_upload;
 
   bit allow_write_enable_disable;
-
+  bit allow_addr_cfg_cmd;
   // we can only hold one payload, set it busy to avoid payload is overwritten before read out.
   bit always_set_busy_when_upload_contain_payload;
 
@@ -101,7 +101,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
     // Configure the first 11 commands which are fixed
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes == 0 &&
+      info.addr_mode == SpiFlashAddrDisabled &&
       info.opcode == READ_STATUS_1 &&
       info.num_lanes == 1 &&
       info.dummy_cycles == 0 &&
@@ -109,7 +109,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     add_cmd_info(info, 0);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes == 0 &&
+      info.addr_mode == SpiFlashAddrDisabled &&
       info.opcode == READ_STATUS_2;
       info.num_lanes == 1 &&
       info.dummy_cycles == 0 &&
@@ -117,7 +117,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     add_cmd_info(info, 1);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes == 0 &&
+      info.addr_mode == SpiFlashAddrDisabled &&
       info.opcode == READ_STATUS_3 &&
       info.num_lanes == 1 &&
       info.dummy_cycles == 0 &&
@@ -125,7 +125,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     add_cmd_info(info, 2);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes == 0 &&
+      info.addr_mode == SpiFlashAddrDisabled &&
       info.opcode == READ_JEDEC &&
       info.num_lanes == 1 &&
       info.dummy_cycles == 0 &&
@@ -133,49 +133,49 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     add_cmd_info(info, 3);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes == 3 &&
+      info.addr_mode == SpiFlashAddr3b &&
       info.opcode == READ_SFDP;
       info.num_lanes == 1 &&
       info.write_command == 0;)
     add_cmd_info(info, 4);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes > 0 &&
+      info.addr_mode != SpiFlashAddrDisabled &&
       info.opcode == READ_NORMAL &&
       info.num_lanes == 1 &&
       info.write_command == 0;)
     add_cmd_info(info, 5);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes > 0 &&
+      info.addr_mode != SpiFlashAddrDisabled &&
       info.opcode == READ_FAST &&
       info.num_lanes == 1 &&
       info.write_command == 0;)
     add_cmd_info(info, 6);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes > 0 &&
+      info.addr_mode != SpiFlashAddrDisabled &&
       info.opcode == READ_DUAL &&
       info.write_command == 0 &&
       info.num_lanes == 2;)
     add_cmd_info(info, 7);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes > 0 &&
+      info.addr_mode != SpiFlashAddrDisabled &&
       info.opcode == READ_QUAD &&
       info.write_command == 0 &&
       info.num_lanes == 4;)
     add_cmd_info(info, 8);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes > 0 &&
+      info.addr_mode != SpiFlashAddrDisabled &&
       info.opcode == READ_DUALIO &&
       info.write_command == 0 &&
       info.num_lanes == 2;)
     add_cmd_info(info, 9);
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
-      info.addr_bytes > 0 &&
+      info.addr_mode != SpiFlashAddrDisabled &&
       info.opcode == READ_QUADIO &&
       info.write_command == 0 &&
       info.num_lanes == 4;)
@@ -195,6 +195,21 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       if (valid) ral.cmd_info_wrdi.opcode.set(info.opcode);
       else       `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info_wrdi.opcode)
       csr_update(ral.cmd_info_wrdi);
+    end
+
+    if (allow_addr_cfg_cmd) begin
+      bit valid;
+      randomize_cfg_cmd_info(info, EN4B, valid);
+      ral.cmd_info_en4b.valid.set(valid);
+      if (valid) ral.cmd_info_en4b.opcode.set(info.opcode);
+      else       `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info_en4b.opcode)
+      csr_update(ral.cmd_info_en4b);
+
+      randomize_cfg_cmd_info(info, EX4B, valid);
+      ral.cmd_info_ex4b.valid.set(valid);
+      if (valid) ral.cmd_info_ex4b.opcode.set(info.opcode);
+      else       `DV_CHECK_RANDOMIZE_FATAL(ral.cmd_info_ex4b.opcode)
+      csr_update(ral.cmd_info_ex4b);
     end
 
     for (int i = 11; i < 24; i++) begin
@@ -221,7 +236,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       opcode == local::opcode;
       // no addr, no payload
-      addr_bytes == 0;
+      addr_mode == SpiFlashAddrDisabled;
       num_lanes == 0;
       write_command == 0;
     )
@@ -233,10 +248,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
   // Task for flash or pass init
   virtual task spi_device_flash_pass_init(device_mode_e mode);
-    bit use_addr_4b_enable; // Mode of config
     spi_device_init();
     `uvm_info(`gfn, "Initialize flash/passthrough mode", UVM_MEDIUM)
-    `DV_CHECK_STD_RANDOMIZE_FATAL(use_addr_4b_enable)
     // TODO, fixed config for now
     cfg.spi_host_agent_cfg.sck_polarity[0] = 0;
     cfg.spi_host_agent_cfg.sck_phase[0] = 0;
@@ -255,7 +268,11 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     cfg.spi_device_agent_cfg.is_flash_mode = 1;
     ral.cfg.tx_order.set(cfg.spi_host_agent_cfg.host_bit_dir);
     ral.cfg.rx_order.set(cfg.spi_host_agent_cfg.device_bit_dir);
-    ral.cfg.addr_4b_en.set(use_addr_4b_enable);
+
+    `DV_CHECK_RANDOMIZE_FATAL(ral.cfg.addr_4b_en)
+    cfg.spi_host_agent_cfg.flash_addr_4b_en = ral.cfg.addr_4b_en.get();
+    cfg.spi_device_agent_cfg.flash_addr_4b_en = ral.cfg.addr_4b_en.get();
+
     ral.cfg.cpol.set(1'b0);
     ral.cfg.cpha.set(1'b0);
     csr_update(.csr(ral.cfg)); // TODO check if randomization possible
@@ -351,7 +368,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   // Task for configuring cmd info slot
   virtual task add_cmd_info(spi_flash_cmd_info info, bit [4:0] idx);
     bit [3:0] lanes_en;
-    addr_mode_e addr_size;
     bit valid;
     bit swap;
 
@@ -371,19 +387,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       4: lanes_en = 4'hF;
       default : `uvm_fatal(`gfn, $sformatf("Unsupported lanes num 0x%0h", info.num_lanes))
     endcase
-    case (info.addr_bytes)
-      0: addr_size = AddrDisabled;
-      3: addr_size = Addr3B;
-      4: addr_size = Addr4B;
-      default : `uvm_fatal(`gfn, $sformatf("Unsupported addr bytes 0x%0h", info.addr_bytes))
-    endcase
-    // if addr_size is aligned with addr_4b_en, we could use AddrCfg instead of Addr4B/Addr3B
-    if (`gmv(ral.cfg.addr_4b_en) == 1 && addr_size == Addr4B ||
-         `gmv(ral.cfg.addr_4b_en) == 0 && addr_size == Addr3B) begin
-        if ($urandom_range(0, 1)) addr_size = AddrCfg;
-    end
-    ral.cmd_info[idx].addr_mode.set(addr_size);
 
+    ral.cmd_info[idx].addr_mode.set(info.addr_mode);
     ral.cmd_info[idx].valid.set(valid); // Enable this OPCODE
     ral.cmd_info[idx].opcode.set(info.opcode);
     ral.cmd_info[idx].payload_en.set(lanes_en);
@@ -519,5 +524,11 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     super.post_start();
     // read flash_status for check
     random_access_flash_status(.write(0));
+  endtask
+
+  virtual task read_and_check_4b_en();
+    cfg.clk_rst_vif.wait_clks(10);
+    csr_rd_check(.ptr(ral.cfg.addr_4b_en),
+                 .compare_value(cfg.spi_device_agent_cfg.flash_addr_4b_en));
   endtask
 endclass : spi_device_pass_base_vseq

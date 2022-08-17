@@ -21,6 +21,7 @@ class spi_device_pass_all_vseq extends spi_device_pass_base_vseq;
     always_set_busy_when_upload_contain_payload = 1;
 
     allow_write_enable_disable = 1;
+    allow_addr_cfg_cmd = 1;
 
     fork
       // this thread runs until the main_seq completes
@@ -56,6 +57,8 @@ class spi_device_pass_all_vseq extends spi_device_pass_base_vseq;
         end else if ($urandom_range(0, 1)) begin
           random_access_flash_status(.write(0));
         end
+
+        if ($urandom_range(0, 1)) read_and_check_4b_en();
 
         randomize_op_addr_size();
         `uvm_info(`gfn, $sformatf("Testing op_num %0d/20, op = 0x%0h", j, opcode), UVM_MEDIUM)

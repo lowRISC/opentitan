@@ -55,6 +55,16 @@ package spi_agent_pkg;
     ReadSfdp   = 8'b01011010
   } spi_cmd_e;
 
+  typedef enum bit [1:0] {
+    SpiFlashAddrDisabled,
+    // Configurable 3b or 4b address
+    SpiFlashAddrCfg,
+    // Fixed 3b addr
+    SpiFlashAddr3b,
+    // Fixed 4b addr
+    SpiFlashAddr4b
+  } spi_flash_addr_mode_e;
+
   // forward declare classes to allow typedefs below
   typedef class spi_item;
   typedef class spi_agent_cfg;

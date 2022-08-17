@@ -39,7 +39,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   // Cmd info configs
   spi_flash_cmd_info cmd_infos[bit[7:0]];
   bit              is_flash_mode;
-
+  bit              flash_addr_4b_en;
 
   // address width in bytes (default is 4 bytes)
   int spi_cmd_width   = 4;
@@ -146,22 +146,22 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   endfunction  : is_opcode_supported
 
   virtual function void extract_cmd_info_from_opcode(input bit [7:0] opcode,
-      output bit [2:0] addr_bytes,
+      output bit [2:0] num_addr_bytes,
       output bit write_command,
       output bit [2:0] num_lanes,
       output int dummy_cycles);
     if (cmd_infos.exists(opcode)) begin
-      addr_bytes    = cmd_infos[opcode].addr_bytes;
-      write_command = cmd_infos[opcode].write_command;
-      num_lanes     = cmd_infos[opcode].num_lanes;
-      dummy_cycles  = cmd_infos[opcode].dummy_cycles;
+      num_addr_bytes = get_num_addr_byte(opcode);
+      write_command  = cmd_infos[opcode].write_command;
+      num_lanes      = cmd_infos[opcode].num_lanes;
+      dummy_cycles   = cmd_infos[opcode].dummy_cycles;
     end else begin
       // if it's invalid opcode, here is the default setting
       `uvm_info(`gfn, $sformatf("extract invalid opcode: 0x%0h", opcode), UVM_MEDIUM)
-      write_command = 1;
-      addr_bytes    = 0;
-      num_lanes     = 1;
-      dummy_cycles  = 0;
+      write_command  = 1;
+      num_addr_bytes = 0;
+      num_lanes      = 1;
+      dummy_cycles   = 0;
     end
   endfunction  : extract_cmd_info_from_opcode
 
@@ -190,4 +190,15 @@ class spi_agent_cfg extends dv_base_agent_cfg;
 
     `uvm_info(`gfn, $sformatf("sampled one byte data for flash: 0x%0h", data), UVM_HIGH)
   endtask
+
+  virtual function int get_num_addr_byte(bit [7:0] opcode);
+    `DV_CHECK(cmd_infos.exists(opcode))
+    case (cmd_infos[opcode].addr_mode)
+      SpiFlashAddrDisabled: return 0;
+      SpiFlashAddrCfg: return flash_addr_4b_en ? 4 : 3;
+      SpiFlashAddr3b: return 3;
+      SpiFlashAddr4b: return 4;
+      default: `uvm_fatal(`gfn, "Impossible value")
+    endcase
+  endfunction  : get_num_addr_byte
 endclass : spi_agent_cfg

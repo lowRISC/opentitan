@@ -6,16 +6,15 @@
 // cmd, it knows how many addr_bytes, direction, dummy_cycles etc
 class spi_flash_cmd_info extends uvm_sequence_item;
   rand bit [7:0] opcode;
-  rand bit [2:0] addr_bytes;
+  rand spi_flash_addr_mode_e addr_mode;
   rand bit write_command;
   // number of lanes when sending payload, set to 0 if no payload is expected
   rand bit [2:0] num_lanes;
   rand int dummy_cycles;
 
-  constraint addr_bytes_c {
-    addr_bytes inside {0, 3, 4};
+  constraint addr_mode_c {
     // for dual/quad mode, it always contains address
-    num_lanes > 1 -> addr_bytes > 0;
+    num_lanes > 1 -> addr_mode != SpiFlashAddrDisabled;
   }
 
   constraint num_lanes_c {
@@ -37,7 +36,7 @@ class spi_flash_cmd_info extends uvm_sequence_item;
 
   `uvm_object_utils_begin(spi_flash_cmd_info)
     `uvm_field_int(opcode,        UVM_DEFAULT)
-    `uvm_field_int(addr_bytes,    UVM_DEFAULT)
+    `uvm_field_enum(spi_flash_addr_mode_e, addr_mode, UVM_DEFAULT)
     `uvm_field_int(write_command, UVM_DEFAULT)
     `uvm_field_int(dummy_cycles,  UVM_DEFAULT)
     `uvm_field_int(num_lanes,     UVM_DEFAULT)
