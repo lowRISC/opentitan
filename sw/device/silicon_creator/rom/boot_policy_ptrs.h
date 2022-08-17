@@ -23,7 +23,6 @@ static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
  *
  * @return Pointer to the manifest of the ROM_EXT image in slot A.
  */
-// TODO(#7893): Should these be volatile?
 inline const manifest_t *boot_policy_manifest_a_get(void) {
   return (const manifest_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
 }
