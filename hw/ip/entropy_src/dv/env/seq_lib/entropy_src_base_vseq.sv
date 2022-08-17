@@ -12,6 +12,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   rand bit [3:0]                     rng_val;
   rand bit [NumEntropySrcIntr - 1:0] en_intr;
+  rand bit  do_check_ht_diag;
 
   // various knobs to enable certain routines
   bit  do_entropy_src_init = 1'b1;
@@ -24,6 +25,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   virtual entropy_src_cov_if   cov_vif;
 
   realtime default_cfg_pause = 50us;
+
+  constraint do_check_ht_diag_c {
+    do_check_ht_diag dist {
+      0 :/ cfg.do_check_ht_diag_pct,
+      1 :/ 100 - cfg.do_check_ht_diag_pct
+    };
+  }
 
   `uvm_object_new
 
@@ -114,6 +122,25 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Enabling DUT", UVM_MEDIUM)
     csr_wr(.ptr(ral.module_enable.module_enable), .value(prim_mubi_pkg::MuBi4True));
   endtask
+
+  task disable_dut();
+    csr_wr(.ptr(ral.module_enable.module_enable), .value(MuBi4False));
+    // Disabling the module will clear the error state,
+    // as well as the observe and entropy_data FIFOs
+    // Clear all interupts here
+    csr_wr(.ptr(ral.intr_state), .value(32'hf));
+    // Clear all recoverable alerts
+    // TODO: READ THE ALERTS FIRST to scoreboard them
+    csr_wr(.ptr(ral.recov_alert_sts), .value('0));
+
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
+    if (do_check_ht_diag) begin
+      // read all health check values
+      `uvm_info(`gfn, "Checking_ht_values", UVM_HIGH)
+      check_ht_diagnostics();
+      `uvm_info(`gfn, "HT value check complete", UVM_HIGH)
+    end
+  endtask;
 
   // Helper function to entropy_src_init. Tries to apply the the new configuration
   // Does not check for invalid MuBi or threshold alert values

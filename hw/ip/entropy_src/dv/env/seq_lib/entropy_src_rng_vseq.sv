@@ -21,8 +21,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   rand uint dly_to_insert_entropy;
   rand uint dly_to_reenable_dut;
   rand int  fw_ov_insert_per_seed;
-  rand bit  do_check_ht_diag;
-  rand bit  do_clear_ht_alert;
 
   // flags for coordinating between threads
   bit do_background_procs, continue_sim, reset_needed;
@@ -77,13 +75,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   constraint fw_ov_insert_per_seed_c {
     fw_ov_insert_per_seed inside { 16, 32, 64, 128, 256 };
-  }
-
-  constraint do_check_ht_diag_c {
-    do_check_ht_diag dist {
-      0 :/ cfg.do_check_ht_diag_pct,
-      1 :/ 100 - cfg.do_check_ht_diag_pct
-    };
   }
 
   `uvm_object_new
@@ -192,28 +183,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // We'll only use this if we have gaps in coverage.
     bit check_sw_update_explicit = 1'b0;
 
-    csr_wr(.ptr(ral.module_enable.module_enable), .value(MuBi4False));
-    // Disabling the module will clear the error state,
-    // as well as the observe and entropy_data FIFOs
-    // Clear all interupts here
-    csr_wr(.ptr(ral.intr_state), .value(32'hf));
+    disable_dut();
 
     // Optionally switch the device into FIPS mode for the remainder of the test
     if (switch_to_fips_mode) begin
       `uvm_info(`gfn, "SWITCHING to FIPS mode", UVM_MEDIUM)
       csr_wr(.ptr(ral.conf.fips_enable), .value(MuBi4True));
-    end
-
-    // Clear all recoverable alerts
-    csr_wr(.ptr(ral.recov_alert_sts), .value('0));
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
-    if (do_check_ht_diag) begin
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
-      cfg.clk_rst_vif.wait_clks(dly_to_access_alert_sts);
-      // read all health check values
-      `uvm_info(`gfn, "Checking_ht_values", UVM_HIGH)
-      check_ht_diagnostics();
-      `uvm_info(`gfn, "HT value check complete", UVM_HIGH)
     end
 
     if (check_sw_update_explicit &&
@@ -231,23 +206,26 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   endtask
 
-  task clear_ht_alert();
-    bit  alert_sts;
-    // Health check failures are coincident with an alert, which needs to also be cleared
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_intr);
-    cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
+  // Check for any outstanding HT failures.  If so, disable the DUT (possibly checking the HT
+  // statistics) and reset the RNG input to the DUT.
+  // If a HT failure is detected, the DUT is left in the disabled state.
+  // It is anticipated that a new configuration will be applied immediately afterward.
+  task fix_ht_alerts();
+    bit alert_sts;
     csr_rd(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(alert_sts));
+
     if (alert_sts) begin
-      `uvm_info(`gfn, "Clearing ES SM Alerts", UVM_HIGH)
-      `uvm_info(`gfn, "Identified main_sm alert", UVM_HIGH)
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_alert_sts)
-      cfg.clk_rst_vif.wait_clks(dly_to_access_alert_sts);
-      reinit_dut();
+      `uvm_info(`gfn, "HT Failure: Disabling DUT", UVM_HIGH)
+      disable_dut();
+      wait_no_outstanding_access();
+      m_rng_push_seq.reset_rng();
     end
   endtask
 
   task process_interrupts();
     bit [TL_DW - 1:0] intr_status;
+    bit               interrupt_shutdown = 0;
+
     `uvm_info(`gfn, "process interrupts", UVM_HIGH)
 
     // avoid zero delay loop during reset
@@ -263,17 +241,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       return;
     end
 
-    if (intr_status[HealthTestFailed]) begin
-      // TODO: I think there is a distinction between health test failure and alert.
-      //       We may be able to economize (or diversify) this test by only doing this on alerts.
-      `uvm_info(`gfn, "Health test failure detected", UVM_HIGH)
-      clear_ht_alert();
-      // Note: clear_ht_alert may purge the internal fifos.
-      //       Don't service any of the other interrupts without first querying the interrupt status
-      //       again
-      csr_rd(.ptr(ral.intr_state), .value(intr_status));
-    end
-
+    // handle the Observe FIFO first as that will have no impact on other features
     if (intr_status[ObserveFifoReady]) begin
       int bundles_found;
       // Read all currently available data
@@ -281,31 +249,46 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
                            .bundles_found(bundles_found));
     end
 
+    // Reading the ENTROPY_DATA reg may be slightly more impactful than the Observe
+    // FIFO, as a restart may be needed.
     if (intr_status[EntropyValid]) begin
       int bundles_found;
       do_entropy_data_read(.source(TlSrcEntropyDataReg),
                            .bundles_found(bundles_found));
       `uvm_info(`gfn, $sformatf("Found %d entropy_data bundles", bundles_found), UVM_HIGH)
-      if(ral.entropy_control.es_type.get_mirrored_value() == MuBi4True) begin
-        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut);
-        cfg.clk_rst_vif.wait_clks(dly_to_reenable_dut);
-        reinit_dut();
-      end
+      do_reenable = 1;
+    end
+
+    // If a health test error is detected, break the loop and reconfigure
+    if (intr_status[HealthTestFailed]) begin
+      `uvm_info(`gfn, "Health test failure detected", UVM_HIGH)
+      // Notify all the other threads that it's time for corrective action
+      interrupt_shutdown = 1;
+      // We'll manage the HT failure once the v-sequence collapses to single
+      // threaded mode.
     end
 
     if (intr_status[FatalErr]) begin
       bit [TL_DW - 1:0] err_code_val;
       `uvm_info(`gfn, "starting shutdown", UVM_MEDIUM)
-      // Gracefully stop the indefinite push and pull sequences, which
-      // tend to raise endless objections after a hard reset.
-      do_background_procs = 0;
-      // check the err_codes
+      // Check the err_codes, just to query the scoreboard.
       csr_rd(.ptr(ral.err_code), .value(err_code_val));
+      // Regardless of the source the remedy is always a reset.
       reset_needed = 1;
+      // Notify all the other threads that it's time for corrective action
+      interrupt_shutdown = 1;
+    end
+
+    if(interrupt_shutdown) begin
+      // Sure, something bad happened. But if nothing else is going on, let the DUT stew a bit.
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_reenable_dut);
+      // Wait for either do_background_procs = 0 or dly_to_reenable_dut
+      `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_clks(dly_to_reenable_dut);,
+                        wait(!do_background_procs);)
+      do_background_procs = 0;
     end
 
     `uvm_info(`gfn, "Interrupt handler complete", UVM_FULL)
-
   endtask
 
   task shutdown_indefinite_seqs();
@@ -452,7 +435,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       // disabled.) Such activities lead to alerts which are very hard
       // to predict generally, and should be validated in the alert
       // tests.
-      if (do_reenable) begin
+      if (do_background_procs && do_reenable) begin
         do_reenable = 0;
         `uvm_info(`gfn, "Reinitializing DUT in continuous mode", UVM_MEDIUM)
         reinit_dut(1);
@@ -635,6 +618,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
         if(!continue_sim) break;
         `uvm_info(`gfn, "Resuming single thread operation", UVM_LOW)
+
+        fix_ht_alerts();
 
         //
         // Resetting and/or reconfiguring before the next loop.
