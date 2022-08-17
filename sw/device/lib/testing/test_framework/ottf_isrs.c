@@ -56,7 +56,7 @@ static void generic_fault_print(const char *reason, uint32_t mcause) {
 
 static void generic_fault_handler(void) {
   uint32_t mcause = ibex_mcause_read();
-  generic_fault_print(exception_reason[mcause & kIbexExcIdMax], mcause);
+  generic_fault_print(exception_reason[mcause & kIbexExcMax], mcause);
   abort();
 }
 
@@ -73,7 +73,7 @@ OT_WEAK
 void ottf_exception_handler(void) {
   uint32_t mcause = ibex_mcause_read();
 
-  switch ((ibex_exc_t)(mcause & kIbexExcIdMax)) {
+  switch ((ibex_exc_t)(mcause & kIbexExcMax)) {
     case kIbexExcInstrMisaligned:
       ottf_instr_misaligned_fault_handler();
       break;

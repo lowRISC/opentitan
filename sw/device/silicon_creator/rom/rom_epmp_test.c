@@ -15,6 +15,7 @@
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
@@ -37,22 +38,6 @@
  * blocked unless the unlock function has been called with a region containing
  * the address of the access.
  */
-
-/**
- * Exception types that may be encountered.
- *
- * TODO(#7190): use global definitions instead.
- */
-typedef enum exception {
-  kExceptionNone = -1,
-  kExceptionInstructionAccessFault = 1,
-  kExceptionIllegalInstruction = 2,
-  kExceptionBreakpoint = 3,
-  kExceptionLoadAccessFault = 5,
-  kExceptionStoreAccessFault = 7,
-  kExceptionECallFromUMode = 8,
-  kExceptionECallFromMMode = 11,
-} exception_t;
 
 /**
  * Get the value of the `mcause` register.
@@ -100,7 +85,7 @@ void rom_interrupt_handler(void) { wait_for_interrupt(); }
  *
  * Set by the exception handler.
  */
-volatile exception_t exception_received = 0;
+volatile ibex_exc_t exception_received = 0;
 
 /**
  * The `mepc` value for the last exception (if any) received.
@@ -125,9 +110,9 @@ volatile uintptr_t exception_pc = 0;
 void rom_exception_handler(void) __attribute__((interrupt));
 void rom_exception_handler(void) {
   uint32_t mcause = get_mcause();
-  if (mcause == kExceptionInstructionAccessFault ||
-      mcause == kExceptionIllegalInstruction) {
-    exception_received = (exception_t)mcause;
+  if (mcause == kIbexExcInstrAccessFault ||
+      mcause == kIbexExcIllegalInstrFault) {
+    exception_received = (ibex_exc_t)mcause;
     exception_pc = get_mepc();
 
     // Return to caller.
@@ -157,9 +142,9 @@ void rom_exception_handler(void) {
  * @param expect The expected exception that will be raised.
  * @returns Whether the expected exception was raised at the correct PC.
  */
-static bool execute(const void *pc, exception_t expect) {
+static bool execute(const void *pc, ibex_exc_t expect) {
   exception_pc = 0;
-  exception_received = kExceptionNone;
+  exception_received = kIbexExcMax;
 
   // Jump to the target PC.
   //
@@ -183,7 +168,7 @@ static bool execute(const void *pc, exception_t expect) {
   // execute `pc` just in case a valid instruction is actually executed
   // and then execution continued to a point where an exception is
   // raised.
-  if (exception_received != kExceptionNone && exception_pc != (uintptr_t)pc) {
+  if (exception_received != kIbexExcMax && exception_pc != (uintptr_t)pc) {
     return false;
   }
   return exception_received == expect;
@@ -250,7 +235,7 @@ static bool passed = false;
 static void test_noexec_rodata(void) {
   CHECK(is_in_address_space(illegal_ins_ro, TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR,
                             TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES));
-  CHECK(execute(illegal_ins_ro, kExceptionInstructionAccessFault));
+  CHECK(execute(illegal_ins_ro, kIbexExcInstrAccessFault));
 }
 
 /**
@@ -265,7 +250,7 @@ static void test_noexec_rwdata(void) {
         kDifOk);
   CHECK(is_in_address_space(illegal_ins_rw, TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
                             TOP_EARLGREY_RAM_MAIN_SIZE_BYTES));
-  CHECK(execute(illegal_ins_rw, kExceptionInstructionAccessFault));
+  CHECK(execute(illegal_ins_rw, kIbexExcInstrAccessFault));
 }
 
 /**
@@ -277,14 +262,14 @@ static void test_noexec_eflash(void) {
   // check a sample of other addresses.
   uint32_t *eflash = (uint32_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
   size_t eflash_len = TOP_EARLGREY_EFLASH_SIZE_BYTES / sizeof(eflash[0]);
-  CHECK(execute(&eflash[0], kExceptionInstructionAccessFault));
-  CHECK(execute(&eflash[eflash_len - 1], kExceptionInstructionAccessFault));
+  CHECK(execute(&eflash[0], kIbexExcInstrAccessFault));
+  CHECK(execute(&eflash[eflash_len - 1], kIbexExcInstrAccessFault));
 
   // Step size is picked arbitrarily but should provide a reasonable sample of
   // addresses.
   size_t step = eflash_len / 999;
   for (size_t i = step; i < eflash_len; i += step) {
-    if (!execute(&eflash[i], kExceptionInstructionAccessFault)) {
+    if (!execute(&eflash[i], kIbexExcInstrAccessFault)) {
       LOG_ERROR("eflash execution not blocked @ %p", &eflash[i]);
       passed = false;
       break;
@@ -308,9 +293,9 @@ static void test_noexec_mmio(void) {
   uint32_t *ret_ram = (uint32_t *)TOP_EARLGREY_RAM_RET_AON_BASE_ADDR;
   size_t ret_ram_len = TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES / sizeof(ret_ram[0]);
   ret_ram[0] = kUnimpInstruction;
-  CHECK(execute(&ret_ram[0], kExceptionInstructionAccessFault));
+  CHECK(execute(&ret_ram[0], kIbexExcInstrAccessFault));
   ret_ram[ret_ram_len - 1] = kUnimpInstruction;
-  CHECK(execute(&ret_ram[ret_ram_len - 1], kExceptionInstructionAccessFault));
+  CHECK(execute(&ret_ram[ret_ram_len - 1], kIbexExcInstrAccessFault));
 }
 
 /**
@@ -342,20 +327,20 @@ static void test_unlock_exec_eflash(epmp_state_t *epmp) {
   // The image must consist of `unimp` instructions so that an illegal
   // instruction exception is generated.
   CHECK(image[0] == kUnimpInstruction);
-  CHECK(execute(&image[0], kExceptionIllegalInstruction));
+  CHECK(execute(&image[0], kIbexExcIllegalInstrFault));
   CHECK(image[image_len - 1] == kUnimpInstruction);
-  CHECK(execute(&image[image_len - 1], kExceptionIllegalInstruction));
+  CHECK(execute(&image[image_len - 1], kIbexExcIllegalInstrFault));
 
   // Verify that execution just outside the region still fails.
-  CHECK(execute(&image[-1], kExceptionInstructionAccessFault));
-  CHECK(execute(&image[image_len], kExceptionInstructionAccessFault));
+  CHECK(execute(&image[-1], kIbexExcInstrAccessFault));
+  CHECK(execute(&image[image_len], kIbexExcInstrAccessFault));
 }
 
 void rom_main(void) {
   // Initialize global variables here so that they don't end up in the .data
   // section since OpenTitan ROM does not have one.
   passed = true;
-  exception_received = kExceptionNone;
+  exception_received = kIbexExcMax;
   illegal_ins_rw[0] = kUnimpInstruction;
 
   // Initialize sec_mmio.
