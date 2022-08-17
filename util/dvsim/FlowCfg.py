@@ -88,19 +88,18 @@ class FlowCfg():
         self.results_title = ""
         self.revision = ""
         self.results_server_prefix = ""
-        self.results_server_url_prefix = ""
         self.results_server_cmd = ""
         self.css_file = os.path.join(
             os.path.dirname(os.path.realpath(__file__)), "style.css")
-        # `self.results_path` will be updated after `self.rel_path` and
+        # `self.results_*` below will be updated after `self.rel_path` and
         # `self.scratch_base_root` variables are updated.
-        self.results_path = ""
+        self.results_dir = ""
+        self.results_page = ""
         self.results_server_path = ""
         self.results_server_dir = ""
-        self.results_server_html = ""
         self.results_server_page = ""
-        self.results_summary_server_html = ""
-        self.results_summary_server_page = ""
+        self.results_server_url = ""
+        self.results_html_name = ""
 
         # Full results in md text
         self.results_md = ""
@@ -140,9 +139,19 @@ class FlowCfg():
         # _expand and add the code at the start.
         self._expand()
 
-        # Construct the result_path Path variable after variable expansion.
-        self.results_path = (Path(self.scratch_base_path) / "reports" /
-                             self.rel_path / "latest")
+        # Construct the path variables after variable expansion.
+        self.results_dir = (Path(self.scratch_base_path) / "reports" /
+                                  self.rel_path / "latest")
+        self.results_page = (self.results_dir /
+                                   self.results_html_name)
+
+        tmp_path = self.results_server + "/" + self.rel_path
+        self.results_server_path = self.results_server_prefix + tmp_path
+        tmp_path += "/latest"
+        self.results_server_dir = self.results_server_prefix + tmp_path
+        tmp_path += "/" + self.results_html_name
+        self.results_server_page = self.results_server_prefix + tmp_path
+        self.results_server_url = "https://" + tmp_path
 
         # Run any final checks
         self._post_init()
@@ -404,14 +413,15 @@ class FlowCfg():
             result = item._gen_results(results)
             log.info("[results]: [%s]:\n%s\n", item.name, result)
             log.info("[scratch_path]: [%s] [%s]", item.name, item.scratch_path)
-            item.write_results_html("report.html", item.results_md)
+            item.write_results_html(self.results_html_name, item.results_md)
             log.log(VERBOSE, "[report]: [%s] [%s/report.html]", item.name,
-                    item.results_path)
+                    item.results_dir)
             self.errors_seen |= item.errors_seen
 
         if self.is_primary_cfg:
             self.gen_results_summary()
-            self.write_results_html("report.html", self.results_summary_md)
+            self.write_results_html(self.results_html_name,
+                                    self.results_summary_md)
 
     def gen_results_summary(self):
         '''Public facing API to generate summary results for each IP/cfg file
@@ -419,14 +429,14 @@ class FlowCfg():
         return
 
     def write_results_html(self, filename, text_md):
-        """Converts md text to HTML and writes to file in results_path area."""
+        """Converts md text to HTML and writes to results_dir area."""
 
         # Prepare reports directory, keeping 90 day history.
-        clean_odirs(odir=self.results_path, max_odirs=89)
-        mk_path(self.results_path)
+        clean_odirs(odir=self.results_dir, max_odirs=89)
+        mk_path(self.results_dir)
 
         # Write results to the report area.
-        with open(self.results_path / filename, "w") as f:
+        with open(self.results_dir / filename, "w") as f:
             f.write(
                 md_results_to_html(self.results_title, self.css_file, text_md))
 
@@ -434,14 +444,14 @@ class FlowCfg():
         """Create a relative markdown link to the results page."""
 
         link_text = self.name.upper() if not link_text else link_text
-        results_page_url = os.path.relpath(self.results_server_page,
-                                           relative_to)
-        return "[%s](%s)" % (link_text, results_page_url)
+        relative_link = os.path.relpath(self.results_page,
+                                        relative_to)
+        return "[%s](%s)" % (link_text, relative_link)
 
     def _publish_results(self):
         '''Publish results to the opentitan web server.
 
-        Results are uploaded to {results_server_path}/latest/results.
+        Results are uploaded to {results_server_page}.
         If the 'latest' directory exists, then it is renamed to its 'timestamp'
         directory. If the list of directories in this area is > 14, then the
         oldest entry is removed. Links to the last 7 regression results are
@@ -452,16 +462,12 @@ class FlowCfg():
                       "results server")
             return
 
-        # Construct the paths
-        results_page_url = self.results_server_page.replace(
-            self.results_server_prefix, self.results_server_url_prefix)
-
         # Timeformat for moving the dir
         tf = "%Y.%m.%d_%H.%M.%S"
 
         # Extract the timestamp of the existing self.results_server_page
-        cmd = self.results_server_cmd + " ls -L " + self.results_server_page + \
-            " | grep \'Creation time:\'"
+        cmd = (self.results_server_cmd + " ls -L " +
+               self.results_server_page + " | grep \'Creation time:\'")
 
         log.log(VERBOSE, cmd)
         cmd_output = subprocess.run(cmd,
@@ -540,14 +546,11 @@ class FlowCfg():
 
         rm_cmd = ""
         history_txt = "\n## Past Results\n"
-        history_txt += "- [Latest](" + results_page_url + ")\n"
+        history_txt += "- [Latest](../latest/" + self.results_html_name + ")\n"
         if len(rdirs) > 0:
             for i in range(len(rdirs)):
                 if i < 7:
-                    rdir_url = self.results_server_path + '/' + rdirs[
-                        i] + "/" + self.results_server_html
-                    rdir_url = rdir_url.replace(self.results_server_prefix,
-                                                self.results_server_url_prefix)
+                    rdir_url = '../' + rdirs[i] + "/" + self.results_html_name
                     history_txt += "- [{}]({})\n".format(rdirs[i], rdir_url)
                 elif i > 14:
                     rm_cmd += self.results_server_path + '/' + rdirs[i] + " "
@@ -562,10 +565,11 @@ class FlowCfg():
         # Publish the results page.
         # First, write the results html file to the scratch area.
         self.write_results_html("publish.html", publish_results_md)
-        results_html_file = os.path.join(self.results_path, "publish.html")
+        results_html_file = self.results_dir / "publish.html"
 
-        log.info("Publishing results to %s", results_page_url)
-        cmd = (self.results_server_cmd + " cp " + results_html_file + " " +
+        log.info("Publishing results to %s", self.results_server_url)
+        cmd = (self.results_server_cmd + " cp " +
+               str(results_html_file) + " " +
                self.results_server_page)
         log.log(VERBOSE, cmd)
         try:
@@ -591,14 +595,11 @@ class FlowCfg():
         '''Public facing API for publishing md format results to the opentitan
         web server.
         '''
-        results_page_url = self.results_summary_server_page.replace(
-            self.results_server_prefix, self.results_server_url_prefix)
-
         # Publish the results page.
-        log.info("Publishing results summary to %s", results_page_url)
-        result_summary_path = os.path.join(self.results_path, "report.html")
-        cmd = (self.results_server_cmd + " cp " + result_summary_path + " " +
-               self.results_summary_server_page)
+        log.info("Publishing results summary to %s", self.results_server_url)
+        cmd = (self.results_server_cmd + " cp " +
+               str(self.results_page) + " " +
+               self.results_server_page)
         log.log(VERBOSE, cmd)
         try:
             cmd_output = subprocess.run(args=cmd,

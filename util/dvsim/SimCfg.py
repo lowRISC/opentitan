@@ -722,7 +722,7 @@ class SimCfg(FlowCfg):
                 # convert name entry to relative link
                 row = cfg.results_summary
                 row["Name"] = cfg._get_results_page_link(
-                                self.results_summary_server_dir,
+                                self.results_dir,
                                 row["Name"])
 
                 # If header is set, ensure its the same for all cfgs.

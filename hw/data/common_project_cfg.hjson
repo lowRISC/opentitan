@@ -19,23 +19,14 @@
   // Results server stuff - indicate what command to use to copy over the results.
   // Workaround for gsutil to fall back to using python2.7.
   results_server_prefix:      "gs://"
-  results_server_url_prefix:  "https://"
   results_server_cmd:         "/usr/bin/gsutil"
-
-  results_server_path: "{results_server_prefix}{results_server}/{rel_path}"
-  results_server_dir:  "{results_server_path}/latest"
-
-  results_server_html: "report.html"
-  results_server_page: "{results_server_dir}/{results_server_html}"
-
-  results_summary_server_html: "report.html"
-  results_summary_server_page: "{results_server_path}/{results_summary_server_html}"
+  results_html_name:          "report.html"
 
   // If defined, this is printed into the results md files
   revision: '''{eval_cmd}
             COMMIT_L=`git rev-parse HEAD`; \
             COMMIT_S=`git rev-parse --short HEAD`; \
-            REV_STR="GitHub Revision: [\`$COMMIT_S\`]({results_server_url_prefix}{repo_server}/tree/$COMMIT_L)"; \
+            REV_STR="GitHub Revision: [\`$COMMIT_S\`](https://{repo_server}/tree/$COMMIT_L)"; \
             printf "$REV_STR"; \
             if [ -d "{proj_root}/hw/foundry" ]; then \
               COMMIT_FOUNDRY_S=`git -C {proj_root}/hw/foundry rev-parse --short HEAD`; \
