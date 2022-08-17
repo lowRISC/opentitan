@@ -2,6 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:manifest.bzl", "CONST", "manifest")
+load("//rules:splice.bzl", "bitstream_splice")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_flash_binary")
 load(
     "//rules:opentitan_test.bzl",
     "cw310_params",
@@ -126,5 +129,82 @@ opentitan_functest(
         "//sw/device/lib/ujson",
         "//sw/device/silicon_creator/rom/e2e/json:chip_specific_startup",
         "//sw/device/silicon_creator/rom/e2e/json:command",
+    ],
+)
+
+# Manifest Usage Constraint Tests
+# Bad device ID
+manifest(
+    name = "manifest_bad_device_id",
+    address_translation = CONST.FALSE,
+    device_id = [
+        0xbad,
+        0xbad,
+        0xbad,
+        0xbad,
+        0xbad,
+        0xbad,
+        0xbad,
+        0xbad,
+    ],
+    identifier = CONST.ROM_EXT,
+)
+
+opentitan_functest(
+    name = "e2e_bootup_manifest_usage_bad_device_id",
+    srcs = ["empty_test.c"],
+    args = [],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom",
+        exit_failure = BOOT_SUCCESS_MSG,
+        exit_success = BOOT_FAILURE_MSG,
+    ),
+    manifest = ":manifest_bad_device_id",
+    # TODO: add verilator
+    signed = True,
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+# Good device ID
+manifest(
+    name = "manifest_good_device_id",
+    address_translation = CONST.FALSE,
+    device_id = [
+        0xabcdef,
+        0xabcdef,
+        0xabcdef,
+        0xabcdef,
+        0xabcdef,
+        0xabcdef,
+        0xabcdef,
+        0xabcdef,
+    ],
+    identifier = CONST.ROM_EXT,
+)
+
+bitstream_splice(
+    name = "gcp_spliced_rom_otp_good_device_id",
+    src = "//hw/bitstream:gcp_spliced_rom",
+    data = "//sw/device/silicon_creator/rom/e2e/otp_images:otp_test_img",
+    meminfo = "//hw/bitstream:otp_mmi",
+    tags = ["manual"],
+)
+
+opentitan_functest(
+    name = "e2e_bootup_good_device_id",
+    srcs = ["empty_test.c"],
+    args = [],
+    cw310 = cw310_params(
+        bitstream = ":gcp_spliced_rom_otp_good_device_id",
+        exit_failure = BOOT_FAILURE_MSG,
+        exit_success = BOOT_SUCCESS_MSG,
+    ),
+    manifest = ":manifest_good_device_id",
+    # TODO: add verilator
+    signed = True,
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

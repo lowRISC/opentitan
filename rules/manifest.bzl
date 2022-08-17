@@ -78,6 +78,9 @@ def _manifest_impl(ctx):
     if len(device_id) > 8:
         fail("The device_id must be 8 words or fewer.")
 
+    # TODO: is this the best way to handle the int32 limitation on Bazel rule arguments?
+    device_id = [i & 0xFFFFFFFF for i in device_id]
+
     # Extend the device_id to 8 words, then set the selector_bits for each
     # non-default word.
     if len(device_id) < 8:

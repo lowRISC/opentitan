@@ -119,7 +119,6 @@ bitstream_splice(
     data = "//sw/device/silicon_creator/rom:rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
-    visibility = ["//visibility:private"],
 )
 
 # Splice the OTP Dev image into `:gcp_spliced_rom`.
