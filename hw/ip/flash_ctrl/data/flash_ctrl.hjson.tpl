@@ -362,6 +362,12 @@
       randcount: "128",
       randtype:  "data", // randomize randcount databits
     },
+    { name:      "RndCnstAllSeeds",
+      desc:      "Compile-time random bits for default seeds",
+      type:      "flash_ctrl_pkg::all_seeds_t"
+      randcount: "512",
+      randtype:  "data", // randomize randcount databits
+    },
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
       type:      "flash_ctrl_pkg::lfsr_seed_t"

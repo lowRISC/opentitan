@@ -2056,6 +2056,7 @@ module top_earlgrey #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[35:33]),
     .RndCnstAddrKey(RndCnstFlashCtrlAddrKey),
     .RndCnstDataKey(RndCnstFlashCtrlDataKey),
+    .RndCnstAllSeeds(RndCnstFlashCtrlAllSeeds),
     .RndCnstLfsrSeed(RndCnstFlashCtrlLfsrSeed),
     .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm),
     .SecScrambleEn(SecFlashCtrlScrambleEn),

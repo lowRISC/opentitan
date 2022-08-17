@@ -206,6 +206,9 @@ package flash_ctrl_pkg;
   parameter bit [PageW-1:0] OwnerInfoPage = 2;
   parameter bit [PageW-1:0] IsolatedInfoPage = 3;
 
+  parameter int TotalSeedWidth = SeedWidth * NumSeeds;
+  typedef logic [TotalSeedWidth-1:0] all_seeds_t;
+
   // which page of which info type of which bank for seed selection
   parameter page_addr_t SeedInfoPageSel [NumSeeds] = '{
     '{
@@ -316,6 +319,11 @@ package flash_ctrl_pkg;
     128'h5d707f8a2d01d400928fa691c6a6e0a4;
   parameter flash_key_t RndCnstDataKeyDefault =
     128'h39953618f2ca6f674af39f64975ea1f5;
+  parameter all_seeds_t RndCnstAllSeedsDefault = {
+    256'h3528874c0d9e481ead4d240eb6238a2c6218896f5315edb5ccefe029a6d04091,
+    256'h9cde77e25a313a76984ab0ebf990983432b03b48186dcd556565fe721b447477
+  };
+
 
   ////////////////////////////
   // Flash operation related enums
