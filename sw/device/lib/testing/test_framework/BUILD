@@ -138,6 +138,7 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crt",
         "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
     ],
 )
