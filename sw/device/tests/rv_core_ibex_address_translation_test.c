@@ -93,7 +93,7 @@ void ottf_exception_handler(void) {
   uintptr_t ret_addr = *(uintptr_t *)(mepc_stack_addr + OTTF_WORD_SIZE);
 
   uint32_t mcause = ibex_mcause_read();
-  ibex_exc_t exception = mcause & kIbexExcIdMax;
+  ibex_exc_t exception = mcause & kIbexExcMax;
 
   switch (exception) {
     case kIbexExcInstrAccessFault:

@@ -7,9 +7,7 @@ load("//rules:exclude_files.bzl", "exclude_files")
 load("//rules:linker.bzl", "ld_library")
 load(
     "//rules:opentitan_test.bzl",
-    "cw310_params",
     "opentitan_functest",
-    "verilator_params",
 )
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
@@ -191,6 +189,7 @@ opentitan_functest(
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
