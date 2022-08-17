@@ -1059,6 +1059,9 @@ opentitan_functest(
 opentitan_functest(
     name = "pwrmgr_smoketest",
     srcs = ["pwrmgr_smoketest.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
