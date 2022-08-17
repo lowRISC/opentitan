@@ -119,7 +119,6 @@ cc_library(
         ":chip_info",
         ":target_test_rom_lib",
         ":test_rom_manifest",
-        "//hw/ip/clkmgr/data:clkmgr_regs",
         "//hw/ip/csrng/data:csrng_regs",
         "//hw/ip/edn/data:edn_regs",
         "//hw/ip/entropy_src/data:entropy_src_regs",

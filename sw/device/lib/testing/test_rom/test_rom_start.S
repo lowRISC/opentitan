@@ -6,7 +6,6 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits_asm.h"
 #include "ast_regs.h"
-#include "clkmgr_regs.h"
 #include "csrng_regs.h"
 #include "edn_regs.h"
 #include "entropy_src_regs.h"
@@ -145,13 +144,6 @@ _reset_start:
   .global _start
   .type _start, @function
 _start:
-  // Re-enable all SW gateable clocks in case the clkmgr was not reset.
-  li   a0, TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
-  li   t0, CLKMGR_CLK_ENABLES_REG_RESVAL
-  sw   t0, CLKMGR_CLK_ENABLES_REG_OFFSET(a0)
-  li   t0, CLKMGR_CLK_HINTS_REG_RESVAL
-  sw   t0, CLKMGR_CLK_HINTS_REG_OFFSET(a0)
-
 #if !OT_IS_ENGLISH_BREAKFAST
   // Check if AST initialization should be skipped.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
