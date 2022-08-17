@@ -143,73 +143,9 @@ For example, building and testing the ROM UART driver unit tests:
 bazel test //sw/device/silicon_creator/lib/drivers:uart_unittest
 ```
 
-## OpenTitan Bazel Workspace
-
-The rules for Bazel are described in a language called Starlark, which looks a lot like Python.
-
-The `$REPO_TOP` directory is defined as a Bazel workspace by the `//WORKSPACE` file.
-`BUILD` files provide the information Bazel needs to build the targets in a directory.
-`BUILD` files also manage any subdirectories that don't have their own `BUILD` files.
-
-OpenTitan uses .bzl files to specify custom rules to build artifacts that require specific attention like on-device test rules and project specific binaries.
-
-### WORKSPACE file
-
-The `WORKSPACE` file controls external dependencies such that builds can be made reproducible and hermetic.
-Bazel loads specific external dependencies, such as various language toolchains.
-It uses them to build OpenTitan targets (like it does with bazel\_embedded) or to satisfy dependencies (as it does with abseil).
-To produce increasingly stable releases the external dependencies loaded in `WORKSPACE` file attempts to fix a all external `http_archive`s to a specific SHA.
-As we add more dependencies to the workspace, builds and tests will become less sensitive to external updates, and we will vastly simplify the [Getting Started]({{< relref "getting_started" >}}) instructions.
-
-### BUILD files
-
-Throughout the OpenTitan repository, `BUILD` files describe targets and dependencies in the same directory (and subdirectories that lack their own `BUILD` files).
-`BUILD` files are mostly hand-written.
-To maintain the invariant that hand-written files not be included in autogen directories, there are `BUILD` files that describe how to build and depend on auto-generated files in autogen subdirectories.
-
-## Linting Software
-
-There are several Bazel rules that enable running quality checks and fixers on code.
-The subsections below describe how to use them.
-All of the tools described below are run in CI on every pull request, so it is best to run them before committing code.
-
-### Linting C/C++ Code
-The OpenTitan supported linter for C/C++ files is `clang-format`.
-It can be run with Bazel as shown below.
-
-Run the following to check if all C/C++ code as been formatted correctly:
-```console
-bazel run //:clang_format_check
-```
-and run the following to fix it, if it is not formatted correctly.
-```console
-bazel run //:clang_format_fix
-```
-
-### Linting Starlark
-
-The OpenTitan supported linter for Bazel files is `buildifier`.
-It can be run with Bazel as shown below.
-
-Run the following to check if all `WORKSPACE`, `BUILD`, and `.bzl` files have been formatted correctly:
-```console
-bazel run //:buildifier_check
-```
-and run the following to fix them, if they are not formatted correctly.
-```console
-bazel run //:buildifier_fix
-```
-
-### Checking License Headers
-
-Lastly, the OpenTitan supported linter for checking that every source code file contains a license header may be run with:
-```console
-bazel run //:license_check
-```
-
 ## Miscellaneous
 
-### Bazel-built Artifacts
+### Bazel-built Software Artifacts
 
 As decribed in the [OpenTitan Software]({{< relref "sw/" >}}) documentation, there are three categories of OpenTitan software, all of which are built with Bazel. These include:
 1. _device_ software,
@@ -226,14 +162,28 @@ There are three OpenTitan "devices" for simulating/emulating OpenTitan hardware:
 1. Verilator simulation (i.e., RTL simulation with the open source Verilator simulator),
 1. FPGA.
 
-Different software artifacts are built depending on the OpenTitan device above.
-Specifically, building an executable `<target>` destined to run on the OpenTitan device `<device>` will output the following files under `bazel-out/`:
-* `<target>_<device>`: the linked program, in ELF format.
-* `<target>_<device>.bin`: the linked program, as a plain binary with ELF debug information removed.
-* `<target>_<device>.elf.s`: the disassembled program with inline source code.
-* `<target>_<device>.*.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code.
+Additionally, for each device, there are two types of software images that can be built, depending on the memory type the software is destined for, i.e.:
+1. ROM,
+1. flash,
 
-Note, `<device>` will be in {`sim_dv`, `sim_verilator`, `fpga_cw310`}, and `<target>` will end in the suffix "`_prog`" for executable images destined for flash.
+To facilitate instantiating all build rules required to build the same artifacts across several devices and memories, we implement two OpenTitan-specific Bazel macros.
+These macros include:
+* `opentitan_rom_binary`
+* `opentitan_flash_binary`
+
+Both macros instantiate build rules to produce software artifacts for each OpenTitan device above.
+Specifically, building either an `opentitan_rom_binary` or `opentitan_flash_binary` named `<target>`, destined to run on the OpenTitan device `<device>`, will output the following files under `bazel-out/`:
+* `<target>_<device>.elf`: the linked program, in ELF format.
+* `<target>_<device>.bin`: the linked program, as a plain binary with ELF debug information removed.
+* `<target>_<device>.dis`: the disassembled program with inline source code.
+* `<target>_<device>.logs.txt`: a textual database of addresses where `LOG_*` macros are invoked (for DV backdoor logging interface).
+* `<target>_<device>.rodata.txt`: same as above, but contains the strings that are logged.
+* `<target>_<device>.*.vmem`: a Verilog memory file which can be read by `$readmemh()` in Verilog code.
+Note, `<device>` will be in {`sim_dv`, `sim_verilator`, `fpga_cw310`}.
+
+Additionally, if the `opentitan_flash_binary` is signed, then these files will also be under `bazel-out/`:
+* `<target>_<device>.<signing key name>.signed.bin`: the same `.bin` file above, but with a valid signature field in the manifest.
+* `<target>_<device>.<signing key name>.signed.*.vmem`: the same `*.vmem` file above, but with a valid signature field in the manifest.
 
 #### OTBN Artifacts
 
@@ -266,12 +216,12 @@ No `#include` is necessary, but you will likely need to initialize the symbols f
 
 Host software is built and run on the host hardware (e.g., an x64 Linux machine).
 A final linked program in the ELF format is all that is produced for host software builds.
-Note, like the device ELF, the file will not have an extension.
+Note, the file will **not** have an extension.
 
 ### Disassembling Device Code
 
 A disassembly of all executable sections is produced by the build system by default.
-It can be found by looking for files with the `.elf.s` extension next to the corresponding ELF file.
+It can be found by looking for files with the `.dis` extension next to the corresponding ELF file.
 
 To get a different type of disassembly, e.g. one which includes data sections in addition to executable sections, objdump can be called manually.
 For example the following command shows how to disassemble all sections of the UART DIF smoke test interleaved with the actual source code:
@@ -282,60 +232,3 @@ riscv32-unknown-elf-objdump --disassemble-all --headers --line-numbers --source 
 ```
 
 Refer to the output of `riscv32-unknown-elf-objdump --help` for a full list of options.
-
-### Locating Bazel-built Artifacts
-
-Bazel built artifacts can be located in the symlinked `bazel-out/` directory that gets automatically created on invocations of Bazel.
-To locate build artifacts, you may use the `find` utility.
-For example, after building the UART smoke test device software with
-```console
-bazel build //sw/device/tests:uart_smoketest_sim_verilator
-```
-to locate the `.bin` file use
-```console
-find -L bazel-bin/ -type f -name "uart_smoketest_prog_sim_verilator.bin"
-```
-
-### Troubleshooting Builds
-
-If you encounter an unexplained error building or running any `bazel` commands, you can issue a subsequent `bazel clean` command to erase any existing building directories to yield a clean build.
-Specifically, according to the Bazel [documentation](https://docs.bazel.build/versions/main/user-manual.html#clean), issuing a
-```console
-bazel clean
-```
-deletes all the output build directories, while running a
-```console
-bazel clean --expunge
-```
-will wipe all disk and memory traces (i.e., any cached intermediate files) produced by Bazel.
-The latter sledgehammer is only intended to be used as a last resort when the existing configuration is seriously broken.
-
-### Disk Cache
-
-Bazel can use a directory on the file system as a remote cache.
-This is useful for sharing build artifacts across multiple [`git` worktrees](https://git-scm.com/docs/git-worktree) or multiple workspaces of the same project, such as multiple checkouts.
-
-Use the `--disk_cache=<filename>` to specify a cache directory.
-For example, running
-```console
-bazel build //... --disk_cache=~/bazel_cache
-```
-will cache all built artifacts.
-
-Alternatively add the following to `$HOME/.bazelrc` to avoid having automatically use the disk cache on every Bazel invocation.
-```
-build --disk_cache=~/bazel_cache
-```
-
-For more documentation on Bazel disk caches see the [official documentation](https://docs.bazel.build/versions/main/remote-caching.html#disk-cache).
-
-### Excluding Verilator Simulation Binary Builds
-
-Many device software targets depend on the Verilator simulation binary,
-The Verilator simulation binary is slow to build.
-To avoid building it, use the
-`--define DISABLE_VERILATOR_BUILD=true` build option.
-For example, to build the UART smoke test artifacts but not the Verilator simulation binary run
-```console
-bazel build --define DISABLE_VERILATOR_BUILD=true //sw/device/tests:uart_smoketest
-```

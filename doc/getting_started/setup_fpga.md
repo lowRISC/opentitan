@@ -64,6 +64,8 @@ cd $REPO_TOP
 bazel build //hw/bitstream/vivado:fpga_cw310_rom
 ```
 
+Note, building these bitstreams will require Vivado be installed on your system, with access to the proper licenses, described [here]({{< relref "doc/getting_started/install_vivado" >}}).
+
 #### Dealing with FPGA Congestion Issues
 
 The default Vivado tool placement may sometimes result in congested FPGA floorplans.
@@ -145,7 +147,7 @@ Alternatively, for software build targets defined in Bazel BUILD files using the
 
 See below for details on both approaches.
 
-### Automatically loading FPGA bitstreams and bootstrapping software Bazel
+### Automatically loading FPGA bitstreams and bootstrapping software with Bazel
 
 A majority of on-device software tests are defined using the custom `opentitan_functest` Bazel macro, which under the hood, instantiates several Bazel [`native.sh_test` rules](https://docs.bazel.build/versions/main/be/shell.html#sh_test).
 In doing so, this macro provides a convenient interface for developers to run software tests on OpenTitan FPGA instances with a single invocation of `bazel test ...`.
