@@ -14,6 +14,7 @@ module flash_ctrl
   parameter logic [NumAlerts-1:0] AlertAsyncOn    = {NumAlerts{1'b1}},
   parameter flash_key_t           RndCnstAddrKey  = RndCnstAddrKeyDefault,
   parameter flash_key_t           RndCnstDataKey  = RndCnstDataKeyDefault,
+  parameter all_seeds_t           RndCnstAllSeeds = RndCnstAllSeedsDefault,
   parameter lfsr_seed_t           RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t           RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter int                   ProgFifoDepth   = MaxFifoDepth,
@@ -423,7 +424,8 @@ module flash_ctrl
   // hardware interface
   flash_ctrl_lcmgr #(
     .RndCnstAddrKey(RndCnstAddrKey),
-    .RndCnstDataKey(RndCnstDataKey)
+    .RndCnstDataKey(RndCnstDataKey),
+    .RndCnstAllSeeds(RndCnstAllSeeds)
   ) u_flash_hw_if (
     .clk_i,
     .rst_ni,

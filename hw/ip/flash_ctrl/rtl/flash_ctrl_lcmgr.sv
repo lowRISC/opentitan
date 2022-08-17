@@ -9,8 +9,9 @@ module flash_ctrl_lcmgr
   import flash_ctrl_pkg::*;
   import lc_ctrl_pkg::lc_tx_t;
 #(
-  parameter flash_key_t RndCnstAddrKey = RndCnstAddrKeyDefault,
-  parameter flash_key_t RndCnstDataKey = RndCnstDataKeyDefault
+  parameter flash_key_t RndCnstAddrKey  = RndCnstAddrKeyDefault,
+  parameter flash_key_t RndCnstDataKey  = RndCnstDataKeyDefault,
+  parameter all_seeds_t RndCnstAllSeeds = RndCnstAllSeedsDefault
 ) (
   input clk_i,
   input rst_ni,
@@ -256,9 +257,11 @@ module flash_ctrl_lcmgr
   logic [NumSeedWidth-1:0] seed_idx;
   assign rd_idx = addr_cnt_q[SeedRdsWidth-1:0];
   assign seed_idx = seed_cnt_q[NumSeedWidth-1:0];
-  always_ff @(posedge clk_i) begin
-    // validate current value
-    if (seed_phase && validate_q && rvalid_i) begin
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      seeds_q <= RndCnstAllSeeds;
+    end else if (seed_phase && validate_q && rvalid_i) begin
+      // validate current value
       seeds_q[seed_idx][rd_idx] <= seeds_q[seed_idx][rd_idx] &
                                    rdata_i[BusWidth-1:0];
     end else if (seed_phase && rvalid_i) begin
