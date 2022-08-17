@@ -176,6 +176,8 @@ The message FIFO receives incoming message bitstream regardless of its byte posi
 Then it packs the partial message bytes into the internal 64 bit data width.
 After packing the data, the logic stores the data into the FIFO until the internal KMAC/SHA3 engine consumes the data.
 
+#### FIFO Depth calculation
+
 The depth of the message FIFO is chosen to cover the throughput of the software or other producers such as DMA engine.
 The size of the message FIFO is enough to hold the incoming data while the SHA3 engine is processing the previous block.
 Details are in `kmac_pkg::MsgFifoDepth` parameter.
@@ -183,6 +185,20 @@ Default design parameters assume the system characteristics as below:
 
 - `kmac_pkg::RegLatency`: The register write takes 5 cycles.
 - `kmac_pkg::Sha3Latency`: Keccak round latency takes 96 cycles, which is the masked version of the Keccak round.
+
+#### FIFO Depth and Empty status
+
+If the SW is slow and the SHA3 engine pops the data fast enough, the Message FIFO's depth may remain **0**.
+The Message FIFO's `fifo_empty` signal, however, is lowered for a cycle.
+This enables the HW to fire the interrupt even the FIFO remains empty.
+
+However, the recommended approach to write messages is:
+
+1. Check the FIFO depth {{<regref "STATUS.fifo_depth" >}}.
+2. Write the remained size.
+3. Then repeat.
+
+#### Masking
 
 The message FIFO does not generate the masked message data.
 Incoming message bistream is not sensitive to the leakage.

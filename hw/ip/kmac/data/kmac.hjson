@@ -571,7 +571,18 @@
         }
         { bits: "14"
           name: "fifo_empty"
-          desc: "Message FIFO Empty indicator"
+          desc: '''Message FIFO Empty indicator.
+
+            The FIFO's `Pass` parameter is set to `1'b 1`. So, by default, if
+            the SHA engine is ready, the write data to FIFO just passes
+            through.
+
+            In this case, `fifo_depth` remains **0**. `fifo_empty`, however,
+            lowers the value to **0** for a cycle, then goes back to the empty
+            state, **1**.
+
+            See the "Message FIFO" section in the spec for the reason.
+            '''
           resval: "1"
         }
         { bits: "15"
