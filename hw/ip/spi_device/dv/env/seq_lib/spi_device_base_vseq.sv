@@ -231,11 +231,12 @@ class spi_device_base_vseq extends cip_base_vseq #(
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
 
     if (op inside {READ_CMD_LIST} && cfg.spi_host_agent_cfg.is_opcode_supported(op)) begin
-      int addr_bytes = cfg.spi_host_agent_cfg.cmd_infos[op].addr_bytes;
-      if (addr_bytes > 0) begin
-        if (addr_bytes == 4) begin
+      int num_addr_bytes = cfg.spi_host_agent_cfg.get_num_addr_byte(op);
+      if (num_addr_bytes > 0) begin
+        if (num_addr_bytes == 4) begin
           byte_addr_q.push_back(addr[31:24]);
         end
+        // push the lower 3 bytes address
         byte_addr_q = {byte_addr_q, addr[23:16], addr[15:8], addr[7:0]};
       end
     end
@@ -247,6 +248,14 @@ class spi_device_base_vseq extends cip_base_vseq #(
                                    payload_q.size() == payload_size;
                                    read_size == payload_size;)
     `uvm_send(m_spi_host_seq)
+
+    if (op == `gmv(ral.cmd_info_en4b.opcode) && `gmv(ral.cmd_info_en4b.valid)) begin
+      cfg.spi_device_agent_cfg.flash_addr_4b_en = 1;
+      cfg.spi_host_agent_cfg.flash_addr_4b_en   = 1;
+    end else if (op == `gmv(ral.cmd_info_ex4b.opcode) && `gmv(ral.cmd_info_ex4b.valid)) begin
+      cfg.spi_device_agent_cfg.flash_addr_4b_en = 0;
+      cfg.spi_host_agent_cfg.flash_addr_4b_en   = 0;
+    end
 
     if (wait_on_busy) begin
       spi_device_reg_cmd_info cmd_info = get_cmd_info_reg_by_opcode(op, ral);

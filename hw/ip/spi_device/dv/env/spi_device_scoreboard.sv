@@ -133,7 +133,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
               end
               InternalProcessCfgCmd: begin
                 if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_en4b, item.opcode)) begin
+                  void'(ral.cfg.addr_4b_en.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
+                  `uvm_info(`gfn, "Enable 4b addr due to cmd EN4B", UVM_MEDIUM)
                 end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_ex4b, item.opcode)) begin
+                  void'(ral.cfg.addr_4b_en.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
+                  `uvm_info(`gfn, "Disable 4b addr due to cmd EX4B", UVM_MEDIUM)
                 end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_wren, item.opcode)) begin
                   update_wel = 1;
                   wel_val = 1;

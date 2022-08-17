@@ -195,7 +195,7 @@ class spi_monitor extends dv_base_monitor#(
             wait(cfg.vif.csb[cfg.csb_sel] == 1'b1);
           end
           begin: sample_thread
-            int addr_bytes;
+            int num_addr_bytes;
             opcode_received = 0;
             item.item_type = SpiFlashTrans;
             // for mode 1 and 3, get the leading edges out of the way
@@ -207,10 +207,10 @@ class spi_monitor extends dv_base_monitor#(
             opcode_received = 1;
             cfg.extract_cmd_info_from_opcode(item.opcode,
                 // output
-                addr_bytes, item.write_command, item.num_lanes, item.dummy_cycles);
+                num_addr_bytes, item.write_command, item.num_lanes, item.dummy_cycles);
             `uvm_info(`gfn, $sformatf("sampled flash opcode: 0x%0h", item.opcode), UVM_MEDIUM)
 
-            sample_flash_address(addr_bytes, item.address_q);
+            sample_flash_address(num_addr_bytes, item.address_q);
 
             repeat (item.dummy_cycles) begin
               cfg.wait_sck_edge(SamplingEdge);
