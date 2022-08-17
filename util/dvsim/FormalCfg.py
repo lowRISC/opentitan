@@ -9,7 +9,7 @@ import hjson
 from tabulate import tabulate
 
 from OneShotCfg import OneShotCfg
-from utils import VERBOSE, subst_wildcards
+from utils import subst_wildcards
 
 
 class FormalCfg(OneShotCfg):
