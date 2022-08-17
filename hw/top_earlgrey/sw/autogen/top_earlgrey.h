@@ -1689,6 +1689,16 @@ typedef enum top_earlgrey_hintable_clocks {
   kTopEarlgreyHintableClocksLast = 3, /**< \internal Last Valid Hintable Clock */
 } top_earlgrey_hintable_clocks_t;
 
+/**
+ * MMIO Region
+ *
+ * MMIO region excludes any memory that is separate from the module
+ * configuration space, i.e. ROM, main SRAM, and flash are excluded but
+ * retention SRAM, spi_device memory, or usbdev memory are included.
+ */
+#define TOP_EARLGREY_MMIO_BASE_ADDR 0x40000000u
+#define TOP_EARLGREY_MMIO_SIZE_BYTES 0x10000000u
+
 // Header Extern Guard
 #ifdef __cplusplus
 }  // extern "C"

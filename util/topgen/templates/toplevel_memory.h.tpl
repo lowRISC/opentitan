@@ -78,6 +78,17 @@
  */
 #define ${size_bytes_name} ${hex_size_bytes}
 % endfor
+
+/**
+ * MMIO Region
+ *
+ * MMIO region excludes any memory that is separate from the module
+ * configuration space, i.e. ROM, main SRAM, and flash are excluded but
+ * retention SRAM, spi_device memory, or usbdev memory are included.
+ */
+#define ${helper.mmio.base_addr_name().as_c_define()} ${"0x{:X}".format(helper.mmio.base_addr)}
+#define ${helper.mmio.size_bytes_name().as_c_define()} ${"0x{:X}".format(helper.mmio.size_bytes)}
+
 #endif  // __ASSEMBLER__
 
 #endif  // ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_

@@ -193,6 +193,16 @@ ${helper.clkmgr_gateable_clocks.render()}
  */
 ${helper.clkmgr_hintable_clocks.render()}
 
+/**
+ * MMIO Region
+ *
+ * MMIO region excludes any memory that is separate from the module
+ * configuration space, i.e. ROM, main SRAM, and flash are excluded but
+ * retention SRAM, spi_device memory, or usbdev memory are included.
+ */
+#define ${helper.mmio.base_addr_name().as_c_define()} ${"0x{:X}u".format(helper.mmio.base_addr)}
+#define ${helper.mmio.size_bytes_name().as_c_define()} ${"0x{:X}u".format(helper.mmio.size_bytes)}
+
 // Header Extern Guard
 #ifdef __cplusplus
 }  // extern "C"
