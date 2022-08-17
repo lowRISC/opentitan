@@ -1196,13 +1196,75 @@ module otbn
 
 
   // Asserts ===================================================================
-  for (genvar i = 0;i < LoopStackDepth; ++i) begin : gen_loop_stack_cntr_asserts
+  for (genvar i = 0; i < LoopStackDepth; ++i) begin : gen_loop_stack_cntr_asserts
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(
       LoopStackCntAlertCheck_A,
       u_otbn_core.u_otbn_controller.u_otbn_loop_controller.g_loop_counters[i].u_loop_count,
       alert_tx_o[AlertFatal]
     )
   end
+
+  // GPR assertions for secure wipe
+  for (genvar i = 2; i < NGpr; ++i) begin : gen_sec_wipe_gpr_asserts
+    // Initial secure wipe needs to initialise all registers to nonzero
+    `ASSERT(InitSecWipeNonZeroBaseRegs_A,
+      $fell(busy_secure_wipe) |->
+      u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q !=
+        EccZeroWord,
+      clk_i, !rst_ni)
+    // After execution, it's expected to see a change resulting with a nonzero register value
+    `ASSERT(SecWipeChangedBaseRegs_A,
+      $rose(busy_secure_wipe) |-> (##[0:$]
+        u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q !=
+          EccZeroWord &&
+        $changed(
+          u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q)
+        within $rose(busy_secure_wipe) ##[0:$] $fell(busy_secure_wipe)),
+      clk_i, !rst_ni)
+  end
+
+  // WDR assertions for secure wipe
+  for (genvar i = 0; i < NWdr; ++i) begin : gen_sec_wipe_wdr_asserts
+    // Initial secure wipe needs to initialise all registers to nonzero
+    `ASSERT(InitSecWipeNonZeroWideRegs_A,
+            $fell(busy_secure_wipe) |->
+              u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i] !=
+                EccWideZeroWord,
+            clk_i, !rst_ni)
+
+    // After execution, it's expected to see a change resulting with a nonzero register value
+    `ASSERT(SecWipeChangedWideRegs_A,
+            $rose(busy_secure_wipe) |-> (##[0:$]
+              u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i] !=
+                EccWideZeroWord &&
+              $changed(
+                u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i])
+              within $rose(busy_secure_wipe) ##[0:$] $fell(busy_secure_wipe)),
+          clk_i, !rst_ni)
+  end
+
+  // Secure wipe needs to invalidate call and loop stack, initialize MOD, ACC to nonzero and set
+  // FLAGS CSR to zero
+  `ASSERT(SecWipeInvalidCallStack_A,
+          $fell(busy_secure_wipe) |-> (!u_otbn_core.u_otbn_rf_base.u_call_stack.top_valid_o),
+          clk_i, !rst_ni)
+  `ASSERT(SecWipeInvalidLoopStack_A,
+          $fell(busy_secure_wipe) |->
+            (!u_otbn_core.u_otbn_controller.u_otbn_loop_controller.loop_info_stack.top_valid_o),
+          clk_i, !rst_ni)
+
+  `ASSERT(SecWipeNonZeroMod_A,
+          $fell(busy_secure_wipe) |-> u_otbn_core.u_otbn_alu_bignum.mod_intg_q != EccWideZeroWord,
+          clk_i, !rst_ni)
+
+  `ASSERT(SecWipeNonZeroACC_A,
+          $fell(busy_secure_wipe) |->
+            u_otbn_core.u_otbn_alu_bignum.ispr_acc_intg_i != EccWideZeroWord,
+          clk_i, !rst_ni)
+
+  `ASSERT(SecWipeNonZeroFlags_A,
+          $fell(busy_secure_wipe) |-> (!u_otbn_core.u_otbn_alu_bignum.flags_flattened),
+          clk_i, !rst_ni)
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
