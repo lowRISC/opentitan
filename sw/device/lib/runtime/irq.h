@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_IRQ_H_
-#define OPENTITAN_SW_DEVICE_LIB_IRQ_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_IRQ_H_
+#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_IRQ_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -35,4 +35,4 @@ void irq_timer_ctrl(bool en);
  */
 void irq_software_ctrl(bool en);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_IRQ_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_IRQ_H_
