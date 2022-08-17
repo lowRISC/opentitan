@@ -74,9 +74,9 @@ rom_epmp_init:
   csrw pmpaddr5, t0
 
   // MMIO
-  li   t0, TOR(0x40000000) // TODO(#7117): generate MMIO start address.
+  li   t0, TOR(TOP_EARLGREY_MMIO_BASE_ADDR)
   csrw pmpaddr10, t0
-  li   t0, TOR(0x50000000) // TODO(#7117): generate MMIO end address.
+  li   t0, TOR(TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES)
   csrw pmpaddr11, t0
 
   // Debug ROM

@@ -14,6 +14,21 @@ extern char _stack_start[];  // Lowest stack address.
 extern char _text_start[];   // Start of executable code.
 extern char _text_end[];     // End of executable code.
 
+// Note: Hardcoding these values since the way we generate this range is not
+// very robust at the moment. See #14345 and #14336.
+static_assert(TOP_EARLGREY_MMIO_BASE_ADDR == 0x40000000,
+              "MMIO region changed, update ePMP configuration if needed");
+static_assert(TOP_EARLGREY_MMIO_SIZE_BYTES == 0x10000000,
+              "MMIO region changed, update ePMP configuration if needed");
+
+static_assert(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR >=
+                      TOP_EARLGREY_MMIO_BASE_ADDR &&
+                  TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
+                          TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES <
+                      TOP_EARLGREY_MMIO_BASE_ADDR +
+                          TOP_EARLGREY_MMIO_SIZE_BYTES,
+              "Retention SRAM must be in the MMIO address space.");
+
 void rom_epmp_state_init(epmp_state_t *state, lifecycle_state_t lc_state) {
   // Address space definitions.
   //
@@ -27,8 +42,9 @@ void rom_epmp_state_init(epmp_state_t *state, lifecycle_state_t lc_state) {
   const epmp_region_t eflash = {
       .start = TOP_EARLGREY_EFLASH_BASE_ADDR,
       .end = TOP_EARLGREY_EFLASH_BASE_ADDR + TOP_EARLGREY_EFLASH_SIZE_BYTES};
-  // TODO(#7117): generate MMIO addresses.
-  const epmp_region_t mmio = {.start = 0x40000000, .end = 0x50000000};
+  const epmp_region_t mmio = {
+      .start = TOP_EARLGREY_MMIO_BASE_ADDR,
+      .end = TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES};
   const epmp_region_t debug_rom = {.start = TOP_EARLGREY_RV_DM_ROM_BASE_ADDR,
                                    .end = TOP_EARLGREY_RV_DM_ROM_BASE_ADDR +
                                           TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES};
