@@ -1,0 +1,301 @@
+---
+title: Bazel Notes
+---
+
+Both OpenTitan hardware and software is built with Bazel.
+While our [Getting Started]({{< relref "getting_started" >}}) guides detail some of the Bazel commands that can be used to build both types of artifacts, below are detailed notes on:
+* how Bazel is configured for our project, and
+* brief examples of Bazel commands that are useful for:
+    * querying,
+    * building, and
+    * running tests with Bazel.
+
+# OpenTitan Bazel Workspace
+
+The rules for Bazel are described in a language called Starlark, which looks a lot like Python.
+
+The `$REPO_TOP` directory is defined as a Bazel workspace by the `//WORKSPACE` file.
+`BUILD` files provide the information Bazel needs to build the targets in a directory.
+`BUILD` files also manage any subdirectories that don't have their own `BUILD` files.
+
+OpenTitan uses .bzl files to specify custom rules to build artifacts that require specific attention like on-device test rules and project specific binaries.
+
+## WORKSPACE file
+
+The `WORKSPACE` file controls external dependencies such that builds can be made reproducible and hermetic.
+Bazel loads specific external dependencies, such as various language toolchains.
+It uses them to build OpenTitan targets (like it does with bazel\_embedded) or to satisfy dependencies (as it does with abseil).
+To produce increasingly stable releases the external dependencies loaded in `WORKSPACE` file attempts to fix a all external `http_archive`s to a specific SHA.
+As we add more dependencies to the workspace, builds and tests will become less sensitive to external updates, and we will vastly simplify the [Getting Started]({{< relref "getting_started" >}}) instructions.
+
+## BUILD files
+
+Throughout the OpenTitan repository, `BUILD` files describe targets and dependencies in the same directory (and subdirectories that lack their own `BUILD` files).
+`BUILD` files are mostly hand-written.
+To maintain the invariant that hand-written files not be included in autogen directories, there are `BUILD` files that describe how to build and depend on auto-generated files in autogen subdirectories.
+
+# General Commands
+- Build everything (software and Verilator hardware):
+  ```console
+  bazel build //...
+  ```
+- Build and run all tests (on-host tests, and Verilator/FPGA on-device tests):
+  ```console
+  bazel test --test_tag_filters=-broken,-dv //sw/...
+  ```
+  Note: this will take several hours.
+- Clean all build outputs and reclaim all disk and memory traces of a Bazel instance:
+  ```console
+  bazel clean --expunge
+  ```
+  Note: you should rarely need to run this, see [below]({{< relref "#troubleshooting-builds" >}}) for when this may be necessary.
+
+# Locating Build Artifacts
+
+When Bazel builds a target, or the dependencies of a target, it places them in a Bazel-managed output directory.
+This can make them difficult to find manually, however, Bazel also provides a mechanism to query for built artifacts that is demonstrated below.
+Note, the `outquery-*` command shown below is a special command that is parsed via our `bazelisk.sh` script.
+Therefore, it cannot be run with a standalone `bazel ...` invocation.
+
+## `opentitan_{rom,flash}_binary` Artifacts
+
+- Query the locations of all Bazel-built artifacts for all OpenTitan devices for an `opentitan_{rom,flash}_binary` macro:
+  ```console
+  ./bazelisk.sh outquery-all <target>
+  ```
+- Query the locations of all Bazel-built artifacts for a specific OpenTitan device for an `opentitan_{rom,flash}_binary` macro:
+  ```console
+  ./bazelisk.sh outquery-all <target>_<device>
+  ```
+  Note: `<device>` will be in {`sim_dv`, `sim_verilator`, `fpga_cw310`}.
+
+See [Building (and Testing) Software]({{< relref "doc/getting_started/build_sw#device-artifacts" >}}), device software can be built for multiple OpenTitan devices and memories, using OpenTitan-specific Bazel macros.
+
+## `opentitan_functest` Artifacts
+
+As described [Building (and Testing) Software]({{< relref "doc/getting_started/build_sw#device-artifacts" >}}), device software can be built for multiple OpenTitan devices and memories, using OpenTitan-specific Bazel macros.
+Since running tests on multiple OpenTitan devices (whether DV or Verilator simulation, or an FPGA) involves building several software images for multiple memories, we provide a Bazel macro for this.
+This macro is called `opentitan_functest`.
+
+- List all `sh_test` targets instantiated by a `opentitan_functest`, e.g. the UART smoketest:
+  ```console
+  bazel query 'labels(tests, //sw/device/tests:uart_smoketest)'
+  ```
+- Query the HW and SW dependencies of a specific `opentitan_functest` for the `fpga_cw310` device, e.g. the UART smoketest:
+  ```console
+  bazel query 'labels(data, //sw/device/tests:uart_smoketest_fpga_cw310)'
+  ```
+  or for any `opentitan_functest` target and `<device>` in {`sim_dv`, `sim_verilator`, `fpga_cw310`}
+  ```console
+  bazel query 'labels(data, <target>_<device>)'
+  ```
+- Query the software artifacts built for the `opentitan_flash_binary` that is a dependency of an `opentitan_functest` for the `fpga_cw310` device, e.g. the UART smoketest:
+  ```console
+  bazel query 'labels(srcs, //sw/device/tests:uart_smoketest_prog_fpga_cw310)'
+  ```
+  or for any `opentitan_functest` `<target>` and `<device>` in {`sim_dv`, `sim_verilator`, `fpga_cw310`}
+  ```console
+  bazel query 'labels(srcs, <target>_prog_<device>)'
+  ```
+  Note: if an `opentitan_functest` target has the name `foo`, then the `opentitan_flash_binary` target that is instantiated by the `opentitan_functest` will be named `foo_prog_<device>`.
+
+# Building Software
+
+* To build OpenTitan software see [here]({{< relref "doc/getting_started/build_sw#building-software-with-bazel" >}}), or run
+  ```console
+  bazel build <target>
+  ```
+
+# Testing Software
+
+## On-Host Tests
+
+* To query-for/run *on-host* software tests see [here]({{< relref "doc/getting_started/build_sw#running-tests-with-bazel" >}}).
+
+## On-Device Tests
+
+All device software, regardless of the device, is built with Bazel.
+However, only Verilator simulation and FPGA device software tests can be run with Bazel.
+
+### ROM Tests
+* Query for all ROM functional and E2E tests for FPGA:
+  ```console
+  bazel query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/silicon_creator/...))'
+  ```
+  and for Verilator:
+  ```console
+  bazel query 'filter(".*_sim_verilator", kind(".*test rule", //sw/device/silicon_creator/...))'
+  ```
+* Run all ROM functional and E2E tests on FPGA:
+  ```console
+  bazel test --test_tag_filters=cw310 //sw/device/silicon_creator/...
+  ```
+  and for Verilator:
+  ```console
+  bazel test --test_tag_filters=verilator //sw/device/silicon_creator/...
+  ```
+* Run a single ROM functional or E2E test on FPGA and see the output in real time:
+  ```console
+  bazel test \
+    --define DISABLE_VERILATOR_BUILD=true \
+    --test_tag_filters=cw310 \
+    --test_output=streamed \
+    //sw/device/silicon_creator/lib:boot_data_functest
+  ```
+  or, remove the define/filtering flags and just append the `<device>` name like:
+  ```console
+  bazel test --test_output=streamed //sw/device/silicon_creator/lib:boot_data_functest_fpga_cw310
+  ```
+  and similarly for Verilator:
+  ```console
+  bazel test --test_output=streamed //sw/device/silicon_creator/lib:boot_data_functest_sim_verilator
+  ```
+
+### Chip-Level Tests
+* Query for all chip-level tests for FPGA:
+  ```console
+  bazel query 'filter(".*_fpga_cw310", kind(".*test rule", //sw/device/tests/...))'
+  ```
+  and for Verilator:
+  ```console
+  bazel query 'filter(".*_sim_verilator", kind(".*test rule", //sw/device/tests/...))'
+  ```
+* Run all chip-level tests on FPGA:
+  ```console
+  bazel test --define DISABLE_VERILATOR_BUILD=true --test_tag_filters=cw310 //sw/device/tests/...
+  ```
+  and for Verilator:
+  ```console
+  bazel test --test_tag_filters=verilator //sw/device/tests/...
+  ```
+* Run a single chip-level test on FPGA and see the output in real time:
+  ```console
+  bazel test \
+    --define DISABLE_VERILATOR_BUILD=true
+    --test_tag_filters=cw310 \
+    --test_output=streamed \
+    //sw/device/tests:uart_smoketest
+  ```
+  or, remove the define/filtering flags and just append the `<device>` name like:
+  ```console
+  bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+  ```
+  and similarly for Verilator:
+  ```console
+  bazel test --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
+  ```
+
+# Linting Software
+
+There are several Bazel rules that enable running quality checks and fixers on code.
+The subsections below describe how to use them.
+All of the tools described below are run in CI on every pull request, so it is best to run them before committing code.
+
+## Linting C/C++ Code
+The OpenTitan supported linter for C/C++ files is `clang-format`.
+It can be run with Bazel as shown below.
+
+Run the following to check if all C/C++ code as been formatted correctly:
+```console
+bazel run //:clang_format_check
+```
+and run the following to fix it, if it is not formatted correctly.
+```console
+bazel run //:clang_format_fix
+```
+
+## Linting Starlark
+
+The OpenTitan supported linter for Bazel files is `buildifier`.
+It can be run with Bazel as shown below.
+
+Run the following to check if all `WORKSPACE`, `BUILD`, and `.bzl` files have been formatted correctly:
+```console
+bazel run //:buildifier_check
+```
+and run the following to fix them, if they are not formatted correctly.
+```console
+bazel run //:buildifier_fix
+```
+
+## Checking License Headers
+
+Lastly, the OpenTitan supported linter for checking that every source code file contains a license header may be run with:
+```console
+bazel run //:license_check
+```
+
+# Building Hardware
+
+Note, to run (software) tests on these OpenTitan hardware platforms **does not** require these Bazel commands be invoked before the test commands above.
+Bazel is aware of all dependency relationships, and knows what prerequisites to build to run a test.
+
+- Build FPGA bitstream with (test) ROM, see [here]({{< relref "doc/getting_started/setup_fpga#build-an-fpga-bitstream" >}}).
+- Build FPGA bitstream with (production) ROM, see [here]({{< relref "doc/getting_started/setup_fpga#build-an-fpga-bitstream" >}}).
+- Build Verilator simulation binary:
+  ```console
+  bazel build //hw:verilator
+  ```
+
+# Miscellaneous
+
+## Troubleshooting Builds
+
+If you encounter an unexplained error building or running any `bazel` commands, you can issue a subsequent `bazel clean` command to erase any existing building directories to yield a clean build.
+Specifically, according to the Bazel [documentation](https://docs.bazel.build/versions/main/user-manual.html#clean), issuing a
+```console
+bazel clean
+```
+deletes all the output build directories, while running a
+```console
+bazel clean --expunge
+```
+will wipe all disk and memory traces (i.e., any cached intermediate files) produced by Bazel.
+The latter sledgehammer is only intended to be used as a last resort when the existing configuration is seriously broken.
+
+## Disk Cache
+
+Bazel can use a directory on the file system as a remote cache.
+This is useful for sharing build artifacts across multiple [`git` worktrees](https://git-scm.com/docs/git-worktree) or multiple workspaces of the same project, such as multiple checkouts.
+
+Use the `--disk_cache=<filename>` to specify a cache directory.
+For example, running
+```console
+bazel build //... --disk_cache=~/bazel_cache
+```
+will cache all built artifacts.
+
+Alternatively add the following to `$HOME/.bazelrc` to avoid having automatically use the disk cache on every Bazel invocation.
+```
+build --disk_cache=~/bazel_cache
+```
+
+For more documentation on Bazel disk caches see the [official documentation](https://docs.bazel.build/versions/main/remote-caching.html#disk-cache).
+
+## Excluding Verilator Simulation Binary Builds
+
+Many device software targets depend on the Verilator simulation binary,
+The Verilator simulation binary is slow to build.
+To avoid building it, use the
+`--define DISABLE_VERILATOR_BUILD=true` build option.
+For example, to build the UART smoke test artifacts but not the Verilator simulation binary run
+```console
+bazel build --define DISABLE_VERILATOR_BUILD=true //sw/device/tests:uart_smoketest
+```
+
+## Displaying Test Outputs in Real Time
+
+By default, Bazel does not write test outputs to STDOUT.
+To see a test's output in real time, use the `--test_output=streamed` flag, like:
+```console
+bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+```
+
+## Filtering Broken Tests
+
+Some tests are marked known to be broken (and are in the process of being traiged).
+To prevent running these tests when running a block of tests, use the `test_tag_filters=-broken` flag.
+For example, to run all chip-level tests except the broken ones on FPGA:
+```console
+bazel test --test_tag_filters=cw310,-broken //sw/device/tests/...
+```

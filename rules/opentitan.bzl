@@ -532,12 +532,11 @@ def opentitan_binary(
       @param extract_sw_logs_db: Whether to emit a log database for DV testbench.
       @param **kwargs: Arguments to forward to `cc_binary`.
     Emits rules:
-      cc_binary             named: <name>
+      cc_binary             named: <name>.elf
       rv_preprocess         named: <name>_preproc
       rv_asm                named: <name>_asm
       rv_llvm_ir            named: <name>_ll
       rv_relink_with_map    named: <name>_map
-      obj_transform         named: <name>_elf
       obj_transform         named: <name>_bin
       elf_to_dissassembly   named: <name>_dis
       Optionally:
