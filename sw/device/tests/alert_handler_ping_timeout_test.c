@@ -34,11 +34,15 @@ static plic_isr_ctx_t plic_ctx = {
     .hart_id = kPlicTarget,
 };
 
+// Depends on the clock domain, sometimes alert handler will trigger a spurious
+// alert after the alert timeout. (Issue #2321)
+// So we allow class A interrupt to fire after the real timeout interrupt is
+// triggered.
 static alert_handler_isr_ctx_t alert_handler_ctx = {
     .alert_handler = &alert_handler,
     .plic_alert_handler_start_irq_id = kTopEarlgreyPlicIrqIdAlertHandlerClassa,
     .expected_irq = kDifAlertHandlerIrqClassb,
-    .is_only_irq = true,
+    .is_only_irq = false,
 };
 
 /**
@@ -108,9 +112,7 @@ static void alert_handler_config(void) {
       .classes = classes,
       .class_configs = class_configs,
       .classes_len = ARRAYSIZE(class_configs),
-      // Set ping timeout to 2 to ensure the ping request will always timeout
-      // and do not trigger spurious alert.
-      .ping_timeout = 2,
+      .ping_timeout = 1,
   };
 
   alert_handler_testutils_configure_all(&alert_handler, config,
