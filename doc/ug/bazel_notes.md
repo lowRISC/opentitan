@@ -253,6 +253,25 @@ bazel clean --expunge
 will wipe all disk and memory traces (i.e., any cached intermediate files) produced by Bazel.
 The latter sledgehammer is only intended to be used as a last resort when the existing configuration is seriously broken.
 
+## Create a `.bazelrc` File
+
+Create a `.bazelrc` file in your home directory to simplify executing bazel commands.
+For example, you can use a `.bazelrc` to:
+* set up a [disk cache]({{< relref "#disk-cache" >}}), or
+* skip running tests on the CW310 FPGA if you don not have one.
+
+A `.bazelrc` file that would accomplish this would look like:
+```
+# Make Bazel use a local directory as a remote cache.
+build --disk_cache=~/bazel_cache
+
+# Skip CW310 FPGA tests, since I do not have said FPGA.
+test --test_tag_filters=-cw310
+```
+
+See the [`.bazelrc`](https://github.com/lowRISC/opentitan/blob/master/.bazelrc) file in the OpenTitan repository for more examples.
+Additionally, for more information see the Bazel [documentation](https://bazel.build/run/bazelrc).
+
 ## Disk Cache
 
 Bazel can use a directory on the file system as a remote cache.
@@ -264,11 +283,7 @@ For example, running
 bazel build //... --disk_cache=~/bazel_cache
 ```
 will cache all built artifacts.
-
-Alternatively add the following to `$HOME/.bazelrc` to avoid having automatically use the disk cache on every Bazel invocation.
-```
-build --disk_cache=~/bazel_cache
-```
+Alternatively add the following to `$HOME/.bazelrc` to avoid having automatically use the disk cache on every Bazel invocation, as shown [above]({{< relref "#create-a-bazelrc-file" >}}).
 
 For more documentation on Bazel disk caches see the [official documentation](https://docs.bazel.build/versions/main/remote-caching.html#disk-cache).
 
