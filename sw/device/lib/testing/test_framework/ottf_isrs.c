@@ -56,7 +56,7 @@ static void generic_fault_print(const char *reason, uint32_t mcause) {
 
 static void generic_fault_handler(void) {
   uint32_t mcause = ibex_mcause_read();
-  generic_fault_print(exception_reason[mcause & kIdMax], mcause);
+  generic_fault_print(exception_reason[mcause & kIbexExcIdMax], mcause);
   abort();
 }
 
@@ -73,29 +73,29 @@ OT_WEAK
 void ottf_exception_handler(void) {
   uint32_t mcause = ibex_mcause_read();
 
-  switch ((ottf_exc_id_t)(mcause & kIdMax)) {
-    case kInstrMisaligned:
+  switch ((ibex_exc_t)(mcause & kIbexExcIdMax)) {
+    case kIbexExcInstrMisaligned:
       ottf_instr_misaligned_fault_handler();
       break;
-    case kInstrAccessFault:
+    case kIbexExcInstrAccessFault:
       ottf_instr_access_fault_handler();
       break;
-    case kIllegalInstrFault:
+    case kIbexExcIllegalInstrFault:
       ottf_illegal_instr_fault_handler();
       break;
-    case kBreakpoint:
+    case kIbexExcBreakpoint:
       ottf_breakpoint_handler();
       break;
-    case kLoadAccessFault:
+    case kIbexExcLoadAccessFault:
       ottf_load_store_fault_handler();
       break;
-    case kStoreAccessFault:
+    case kIbexExcStoreAccessFault:
       ottf_load_store_fault_handler();
       break;
-    case kMachineECall:
+    case kIbexExcMachineECall:
       ottf_machine_ecall_handler();
       break;
-    case kUserECall:
+    case kIbexExcUserECall:
       ottf_user_ecall_handler();
       break;
     default:
@@ -165,11 +165,11 @@ void ottf_load_integrity_error_handler(void);
 OT_WEAK
 void ottf_internal_isr(void) {
   uint32_t mcause = ibex_mcause_read();
-  switch ((ottf_internal_irq_id_t)(mcause)) {
-    case kInternalIrqLoadInteg:
+  switch ((ibex_internal_irq_t)(mcause)) {
+    case kIbexInternalIrqLoadInteg:
       ottf_load_integrity_error_handler();
       break;
-    case kInternalIrqNmi:
+    case kIbexInternalIrqNmi:
       ottf_external_nmi_handler();
       break;
     default:

@@ -128,21 +128,21 @@ void ottf_exception_handler(void) {
            ibex_mepc_read(), ret_addr);
 
   uint32_t mcause = ibex_mcause_read();
-  ottf_exc_id_t exception_id = mcause & kIdMax;
+  ibex_exc_t exception = mcause & kIbexExcIdMax;
 
-  switch (exception_id) {
-    case kInstrAccessFault:
+  switch (exception) {
+    case kIbexExcInstrAccessFault:
       LOG_INFO("Instruction access fault handler");
       exception_observed = true;
       *(uintptr_t *)mepc_stack_addr = ret_addr;
       break;
-    case kIllegalInstrFault:
+    case kIbexExcIllegalInstrFault:
       LOG_INFO("Illegal instruction fault handler");
       exception_observed = true;
       *(uintptr_t *)mepc_stack_addr = ret_addr;
       break;
     default:
-      LOG_FATAL("Unexpected exception id = 0x%x", exception_id);
+      LOG_FATAL("Unexpected exception id = 0x%x", exception);
       abort();
   }
 }

@@ -93,16 +93,16 @@ void ottf_exception_handler(void) {
   uintptr_t ret_addr = *(uintptr_t *)(mepc_stack_addr + OTTF_WORD_SIZE);
 
   uint32_t mcause = ibex_mcause_read();
-  ottf_exc_id_t exception_id = mcause & kIdMax;
+  ibex_exc_t exception = mcause & kIbexExcIdMax;
 
-  switch (exception_id) {
-    case kInstrAccessFault:
+  switch (exception) {
+    case kIbexExcInstrAccessFault:
       LOG_INFO("Instruction access fault handler");
       access_fault = true;
       *(uintptr_t *)mepc_stack_addr = ret_addr;
       break;
     default:
-      LOG_FATAL("Unexpected exception id = 0x%x", exception_id);
+      LOG_FATAL("Unexpected exception id = 0x%x", exception);
       abort();
   }
 }
