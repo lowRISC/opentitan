@@ -151,5 +151,15 @@
       stage: V2
       tests: ["otbn_sw_errs_fatal_chk"]
     }
+    {
+      name: otbn_mem_gnt_acc_err
+      desc: '''
+              Trigger a fault to cause the IMEM/DMEM grant signal to be false when req is asserted.
+              This in turn should cause dmem_missed_gnt/imem_missed_gnt to get asserted resulting
+              in a fatal alert (a bad_internal_state fatal error).
+            '''
+      milestone: V2S
+      tests: ["otbn_mem_gnt_acc_err"]
+    }
   ]
 }
