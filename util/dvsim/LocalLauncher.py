@@ -3,13 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import datetime
-import logging as log
 import os
 import shlex
 import subprocess
 
 from Launcher import ErrorMessage, Launcher, LauncherError
-from utils import VERBOSE
 
 
 class LocalLauncher(Launcher):
