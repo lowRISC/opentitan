@@ -26,3 +26,4 @@
 `include "otbn_sec_wipe_err_vseq.sv"
 `include "otbn_urnd_err_vseq.sv"
 `include "otbn_sw_no_acc_vseq.sv"
+`include "otbn_mem_gnt_acc_err_vseq.sv"
