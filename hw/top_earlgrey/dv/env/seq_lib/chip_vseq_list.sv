@@ -50,3 +50,4 @@
 `include "chip_sw_alert_handler_escalation_vseq.sv"
 `include "chip_sw_lc_ctrl_program_error_vseq.sv"
 `include "chip_sw_entropy_src_fuse_vseq.sv"
+`include "chip_sw_usb_ast_clk_calib_vseq.sv"

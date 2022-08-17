@@ -39,7 +39,7 @@ static uint32_t cast_safely(uint64_t val) {
   return (uint32_t)val;
 }
 
-static void initialize_expected_counts() {
+void initialize_expected_counts() {
   // The expected counts depend on the device, per sw/device/lib/arch/device.h.
   // Notice the ratios are small enough to fit a uint32_t, even if the Hz number
   // is in uint64_t.

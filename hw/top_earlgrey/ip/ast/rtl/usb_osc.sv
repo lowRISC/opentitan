@@ -27,6 +27,8 @@ real CLK_PERIOD;
 integer rand32;
 integer beacon_rdly;
 logic calibrate_usb_clk;
+logic large_drift;
+
 
 reg init_start;
 initial init_start = 1'b0;
@@ -45,6 +47,11 @@ initial begin
   end else begin
     calibrate_usb_clk = 1'b1;
   end
+
+  if ( !$value$plusargs("usb_large_drift=%0d", large_drift) ) begin
+    large_drift = 1'b0;
+  end
+
   //
   #1;
   init_start = 1'b1;
@@ -72,7 +79,9 @@ real CalUsbClkPeriod, UncUsbClkPeriod, UsbClkPeriod, drift;
 initial CalUsbClkPeriod = $itor( 1000000/48 );                    // ~20833.33333ps (48MHz)
 initial UncUsbClkPeriod = $itor( $urandom_range(55555, 25000) );  // 55555-25000ps (18-40MHz)
 
-assign drift = ref_val ? 0.0 : $itor(rand32);
+assign drift = ref_val      ? 0.0 :
+               large_drift  ? $itor(2000) :
+                              $itor(rand32);
 assign UsbClkPeriod = (usb_osc_cal_i && init_start) ? CalUsbClkPeriod :
                                                       UncUsbClkPeriod;
 assign CLK_PERIOD = (UsbClkPeriod + drift)/1000;
