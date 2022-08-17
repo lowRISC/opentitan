@@ -913,6 +913,17 @@
  * `TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR + TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES`.
  */
 #define TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES 0x1000
+
+/**
+ * MMIO Region
+ *
+ * MMIO region excludes any memory that is separate from the module
+ * configuration space, i.e. ROM, main SRAM, and flash are excluded but
+ * retention SRAM, spi_device memory, or usbdev memory are included.
+ */
+#define TOP_EARLGREY_MMIO_BASE_ADDR 0x40000000
+#define TOP_EARLGREY_MMIO_SIZE_BYTES 0x10000000
+
 #endif  // __ASSEMBLER__
 
 #endif  // OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_MEMORY_H_
