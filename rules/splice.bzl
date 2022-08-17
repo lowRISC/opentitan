@@ -18,7 +18,7 @@ def _bitstream_splice_impl(ctx):
         arguments = [
             ctx.file.data.path,
             update.path,
-        ] + ["--swap-nibbles"] if ctx.attr.swap_nybbles else [],
+        ] + (["--swap-nibbles"] if ctx.attr.swap_nybbles else []),
         executable = ctx.executable._tool,
         use_default_shell_env = True,
         execution_requirements = {
