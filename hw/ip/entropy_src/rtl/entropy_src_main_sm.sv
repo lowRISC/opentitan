@@ -110,7 +110,12 @@ module entropy_src_main_sm #(
         if (enable_i) begin
           // running fw override mode and in sha3 mode
           if (fw_ov_ent_insert_i && !bypass_mode_i) begin
-            state_d = FWInsertStart;
+            if (fw_ov_sha3_start_i || !enable_i) begin
+              sha3_start_o = 1'b1;
+              state_d = FWInsertMsg;
+            end else begin
+              state_d = FWInsertStart;
+            end
           // running in bypass_mode and not fw override mode
           end else if (bypass_mode_i && !fw_ov_ent_insert_i) begin
             state_d = BootHTRunning;
