@@ -34,14 +34,12 @@ In addition, the testbench instantiates the following interfaces, connects them 
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface for the flash controller]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * [TileLink host interface for the eflash]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* TileLine host interface for the prim registers
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 * [Memory backdoor utility]({{< relref "hw/dv/sv/mem_bkdr_util/doc" >}})
-
-In future, as the design (and DV) matures, the following interfaces will be
-instantiated and hooked up to the DUT:
 * Secret key interface from the OTP
-* Interface to the `key_mgr`
 * Interface from the life cycle manager
+* Interface to the `keymgr` and `pwrmgr`
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -50,7 +48,9 @@ The following utilities provide generic helper tasks and functions to perform ac
 
 ### TL_agent
 `flash_ctrl` UVM environment instantiates a (already handled in CIP base env) [tl_agent]({{< relref "hw/dv/sv/tl_agent/doc" >}}) which provides the ability to drive and independently monitor random traffic via TL host interface into `flash_ctrl` device.
-There is an additional instance of the `tl_agent` for the host interface to the `flash_phy`, to directly fetch the contents of the flash memory, bypassing the `flash_ctrl`.
+There are two additional instances of the `tl_agent`.
+* Host interface to the `flash_phy`, to directly fetch the contents of the flash memory, bypassing the `flash_ctrl`.
+* Host interface to the `prim registers`.
 
 The `tl_agent` monitor supplies partial TileLink request packets as well as completed TileLink response packets over the TLM analysis port for further processing within the `flash_ctrl` scoreboard.
 
@@ -87,35 +87,117 @@ All test sequences reside in `hw/ip/flash_ctrl/dv/env/seq_lib`.
 The `flash_ctrl_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 All test sequences are extended from `flash_ctrl_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
-Some of the most commonly used tasks / functions are as follows:
-* task 1:
-* task 2:
+Some of the most commonly used tasks / functions are as follows: From `hw/ip/flash_ctrl/dv/env/seq/flash_ctrl_base_vseq.sv`,
+* reset_flash
+  Reset flash controller and initialize flash device using back door interface.
+* flash_ctrl_start_op
+  Start operation on the flash controller
+* flash_ctrl_write
+  Send data to `prog_fifo`. This task is used for `program operation` from controller combined with `flash_ctrl_start_op`.
+* flash_ctrl_read
+  Read data from `rd_fifo`. This task is used for `read operation` from controller combined with `flash_ctrl_start_op`.
+* wait_flash_op_done
+  Polling `op_status` until op_status.done is set.
+* do_direct_read
+  Task to read flash from the host interface. Transaction size is 4 byte per transaction.
+* flash_ctrl_intr_read
+  Task to program flash with interrupt mode.
+* flash_ctrl_intr_write
+  Task to read flash with interrupt mode.
+* send_rma_req
+  Task to initiate rma request. Once rma started, task polls `rma ack` until it completes.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* cg1:
-* cg2:
-
+`hw/ip/flash_ctrl/dv/env/flash_ctrl_env_cov.sv`
+* control_cg
+  Collects operation types, partition and cross coverage of both.
+* erase_susp_cg
+  Check if request of erase suspension occured.
+* msgfifo_level_cg
+  Covers all possible fifo status to generate interrupt for read / program.
+* rd_buff_evict_cg
+  Check sequence of operation to trigger read eviction.
+* eviction_cg
+  Check whether eviction happens at all 4 caches with write / erase operation.
+  Also check each address belongs to randomly enabled scramble and ecc.
+* error_cg
+  Check errors degined in error code registers.
 ### Self-checking strategy
 #### Scoreboard
-The `flash_ctrl_scoreboard` is primarily used for end to end checking.
-It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* analysis port1:
-* analysis port2:
-<!-- explain inputs monitored, flow of data and outputs checked -->
+The `flash_ctrl_scoreboard` is primarily used for csr transaction integrity.
+Test bench also maintains a reference memory model (associative array) per partition.
+The reference model is updated on each operation and used for expected partition values at the end of test check.
+Given large memory size (mega bytes), maintaining an associative array per operation until the end of the test causes huge simulation overhead.
+Also, this model is not suitable for read only test, same address write test, descramble tests and error injection test for ecc.
+To address such issues, `on-the-fly` method is also used on top of legacy test component.
+In `on-the-fly` test mode, test does not rely on reference memory mode.
+Instead, it creates reference data for each operation.
+For the program(write) operation, rtl output is collected from flash phy interface and compared with each operation's pre calculated write data.
+For the read operation, the expected data is written via memory backdoor interface, read back, and compared.
+The `flash_ctrl_otf_scoreboard` is used for `on-the-fly` mode flash transaction integrity check, while `flash_ctrl_scoreboard` is still used for csr transaction integrity check.
+Since there is still uncovered logic stil within the model before data reaches the actual device, we add extra scoreboard to check that path and call it `last mile scoreboard`.
+The `last mile scoreboard` is added to compensate `on-the-fly` model.
+For the write transaction, `on-the-fly` model collects rtl data at the boundary of the controller and flash model.
 
 #### Assertions
-* TLUL assertions: The `tb/flash_ctrl_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `hw/ip/flash_ctrl/dv/sva/flash_ctrl_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* assert prop 1:
-* assert prop 2:
 
-### Global types & methods
+### Global types and methods
 All common types and methods defined at the package level can be found in
 `flash_ctrl_env_pkg`. Some of them in use are:
 ```systemverilog
-[list a few parameters, types & methods; no need to mention all]
+** types and enums
+// Interrupt enums
+  typedef enum int {
+    FlashCtrlIntrProgEmpty = 0,
+    FlashCtrlIntrProgLvl   = 1,
+    FlashCtrlIntrRdFull    = 2,
+    FlashCtrlIntrRdLvl     = 3,
+    FlashCtrlIntrOpDone    = 4,
+    FlashCtrlIntrErr       = 5,
+    NumFlashCtrlIntr       = 6
+  } flash_ctrl_intr_e;
+
+// Flash initialization mode
+  typedef enum {
+    FlashMemInitCustom,     // Initialize flash (via bkdr) with custom data set.
+    FlashMemInitSet,        // Initialize with all 1s.
+    FlashMemInitClear,      // Initialize with all 0s.
+    FlashMemInitRandomize,  // Initialize with random data.
+    FlashMemInitInvalidate, // Initialize with Xs.
+    FlashMemInitEccMode     // Flash init for ecc_mode
+  } flash_mem_init_e;
+
+// Ecc test mode
+  typedef enum {
+    FlashEccDisabled,    // No ecc enable
+    FlashEccEnabled,     // Ecc enable but no error injection
+    FlashSerrTestMode,   // Ecc enable and single bit error injection
+    FlashDerrTestMode,   // Ecc enable and double bit error injection
+    FlashIerrTestMode    // Ecc enable and integrity error injection
+  } ecc_mode_e;
+
+// 4-states flash data type
+typedef logic [TL_DW-1:0] data_4s_t;
+// flash address type
+typedef bit [TL_AW-1:0] addr_t;
+// Queue of 4-states data words
+typedef data_4s_t data_q_t[$];
+// Flash op struct
+typedef struct packed {
+    flash_dv_part_e  partition;   // data or one of the info partitions
+    flash_erase_e    erase_type;  // erase page or the whole bank
+    flash_op_e       op;          // read / program or erase
+    flash_prog_sel_e prog_sel;    // program select
+    uint             num_words;   // number of words to read or program (TL_DW)
+    addr_t           addr;        // starting addr for the op
+    // addres for the ctrl interface per bank, 18:0
+    bit [flash_ctrl_pkg::BusAddrByteW-2:0] otf_addr;
+  } flash_op_t;
+
 ```
 
 ## Building and running tests
