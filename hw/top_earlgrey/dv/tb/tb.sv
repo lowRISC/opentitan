@@ -380,10 +380,6 @@ module tb;
     uvm_config_db#(virtual pins_if #(8))::set(
         null, "*.env", "sysrst_ctrl_vif", sysrst_ctrl_if);
 
-    uvm_config_db#(virtual prim_count_if)::set(
-        null, "*.env", "clkmgr_prim_count_vif",
-        dut.top_earlgrey.u_clkmgr_aon.u_clk_main_aes_trans.u_idle_cnt.prim_count_if);
-
     // temp disable pinmux assertion AonWkupReqKnownO_A because driving X in spi_device.sdi and
     // WkupPadSel choose IO_DPS1 in MIO will trigger this assertion
     // TODO: remove this assertion once pinmux is templatized

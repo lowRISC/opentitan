@@ -769,36 +769,32 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // Flip bits in LC FSM registers
   protected virtual task lc_fsm_backdoor_err_inj();
     logic [FsmStateWidth-1:0] state;
-    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy(
-        "tb.dut.u_lc_ctrl_fsm.u_fsm_state_regs"
-    );
-
+    sec_cm_base_if_proxy if_proxy = sec_cm_pkg::find_sec_cm_if_proxy(
+        "tb.dut.u_lc_ctrl_fsm.u_fsm_state_regs");
     if_proxy.inject_fault();
   endtask
 
   // Flip bits in KMAC FSM registers
   protected virtual task kmac_fsm_backdoor_err_inj();
     logic [KMAC_FSM_WIDTH-1:0] state;
-    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy(
-        "tb.dut.u_lc_ctrl_kmac_if.u_state_regs"
-    );
-
+    sec_cm_base_if_proxy if_proxy = sec_cm_pkg::find_sec_cm_if_proxy(
+        "tb.dut.u_lc_ctrl_kmac_if.u_state_regs");
     if_proxy.inject_fault();
   endtask
 
   // Flip bits in OTP State input
   protected virtual task state_backdoor_err_inj();
     logic [LcStateWidth-1:0] state;
-    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy("tb.dut.u_lc_ctrl_fsm.u_state_regs");
-
+    sec_cm_base_if_proxy if_proxy = sec_cm_pkg::find_sec_cm_if_proxy(
+        "tb.dut.u_lc_ctrl_fsm.u_state_regs");
     if_proxy.inject_fault();
   endtask
 
   // Flip bits OTP Count input
   protected virtual task count_backdoor_err_inj();
     logic [LcCountWidth-1:0] count;
-    sec_cm_base_if_proxy if_proxy = find_sec_cm_base_if_proxy("tb.dut.u_lc_ctrl_fsm.u_cnt_regs");
-
+    sec_cm_base_if_proxy if_proxy = sec_cm_pkg::find_sec_cm_if_proxy(
+        "tb.dut.u_lc_ctrl_fsm.u_cnt_regs");
     if_proxy.inject_fault();
   endtask
 
