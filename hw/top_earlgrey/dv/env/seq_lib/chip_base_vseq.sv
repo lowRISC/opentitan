@@ -69,6 +69,12 @@ class chip_base_vseq #(
     callback_vseq.pre_dut_init();
     // Randomize the ROM image. Subclasses that have an actual ROM image will load it later.
     cfg.mem_bkdr_util_h[Rom].randomize_mem();
+    // Initialize selected memories to all 0. This is required for some chip-level tests such as
+    // otbn_mem_scramble that may intentionally read memories before writing them. Reading these
+    // memories still triggeres ECC integrity errors that need to be handled by the test.
+    cfg.mem_bkdr_util_h[OtbnImem].clear_mem();
+    cfg.mem_bkdr_util_h[OtbnDmem].clear_mem();
+
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
     alert_ping_en_shorten();
