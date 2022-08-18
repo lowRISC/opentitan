@@ -163,6 +163,14 @@ module otbn_rf_bignum
   assign intg_err_o = ((|rd_data_a_err) & rd_en_a_i) |
                       ((|rd_data_b_err) & rd_en_b_i);
 
+  `ASSERT(BlankingBignumRegReadA_A,
+          !rd_en_a_i |->  rd_data_a_intg_o == '0,
+          clk_i, !rst_ni)
+
+  `ASSERT(BlankingBignumRegReadB_A,
+          !rd_en_b_i |->  rd_data_b_intg_o == '0,
+          clk_i, !rst_ni)
+
   // Make sure we're not outputting X. This indicates that something went wrong during the initial
   // secure wipe.
   `ASSERT(OtbnRfBignumRdAKnown, rd_en_a_i && !rd_en_a_mismatch |-> !$isunknown(rd_data_a_intg_o))
