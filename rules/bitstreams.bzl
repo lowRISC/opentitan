@@ -34,7 +34,7 @@ def _bitstreams_repo_impl(rctx):
 # By default, the cache manager will configure the latest available bitstream
 # as the default bitstream.  It will refresh every 18 hours.
 #
-# The behavior of the cache manager can be constrolled via the BITSTREAM
+# The behavior of the cache manager can be controlled via the BITSTREAM
 # environment variable.  The environment variable can be any command line
 # arguments accepted by the cache manager script.
 #
