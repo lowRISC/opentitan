@@ -4,7 +4,7 @@
 
 CONST = struct(
     ROM_EXT = 0x4552544f,
-    OWNER = 0x4f53544f,
+    OWNER = 0x3042544f,
     TRUE = 0x739,
     FALSE = 0x1d4,
 )
