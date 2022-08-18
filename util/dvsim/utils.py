@@ -600,7 +600,7 @@ def clean_odirs(odir: Path, max_odirs, ts_format=TS_FORMAT):
     if os.path.exists(odir):
         # If output directory exists, back it up.
         ts = datetime.fromtimestamp(os.stat(odir).st_ctime).strftime(ts_format)
-        shutil.move(odir, odir.with_name(ts))
+        shutil.move(odir, Path(odir).with_name(ts))
 
     # Get list of past output directories sorted by creation time.
     pdir = Path(odir).resolve().parent
