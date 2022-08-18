@@ -233,6 +233,9 @@ class kmac_smoke_vseq extends kmac_base_vseq;
             check_err();
             csr_utils_pkg::wait_no_outstanding_access();
           end
+
+          // If no error, wait a few cycles until Idle status is reflected to the status register.
+          cfg.clk_rst_vif.wait_clks($urandom_range(5, 10));
         end
       end else begin
         // normal hashing operation
