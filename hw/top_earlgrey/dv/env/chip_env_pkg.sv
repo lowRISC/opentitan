@@ -95,6 +95,8 @@ package chip_env_pkg;
     FlashBank1Data,
     FlashBank0Info,
     FlashBank1Info,
+    OtbnDmem,
+    OtbnImem,
     Otp,
     RamMain[16],
     RamRet[16],
