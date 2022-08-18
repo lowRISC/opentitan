@@ -384,6 +384,25 @@
       tests: []
     }
     {
+      name: chip_sw_sleep_pin_retention
+      desc: '''Verify the retention logic in pinmux that is activated during deep sleep.
+
+            - Pick a pin (such as GPIO0) and enable it in output mode. Set a known value to it (0 or
+              1) and verify the correctless of the value on the chip IO..
+            - Program the pin's retention value during deep sleep to be opposite of the active power
+              value programmed in the previous step.
+            - Reuse an existing deep sleep / low power wake up test, such as
+              `chip_sw_sleep_pin_wake` test to enter low power.
+            - Once the chip enters the deep sleep state, verify that this pin holds the correct
+              retention value throughout the low power state.
+            - Wake up the chip from sleep using the chosen method.
+            - Verify the pin value at the chip IOs is no longer holding the retention value once the
+              chip is back in active power.
+            '''
+      milestone: V2
+      tests: []
+    }
+    {
       name: chip_sw_tap_strap_sampling
       desc: '''Verify tap accesses in different LC states.
 
