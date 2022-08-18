@@ -27,9 +27,9 @@
 #define CHIP_ROM_EXT_SIZE_MAX 0x10000
 
 /**
- * First owner boot stage manifest identifier (ASCII "OTSO").
+ * First owner boot stage, e.g. BL0, manifest identifier (ASCII "OTB0").
  */
-#define CHIP_BL0_IDENTIFIER 0x4f53544f
+#define CHIP_BL0_IDENTIFIER 0x3042544f
 
 /**
  * Allowed bounds for the `length` field of a first owner boot stage manifest.
