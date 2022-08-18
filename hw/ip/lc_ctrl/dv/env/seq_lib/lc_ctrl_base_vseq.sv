@@ -246,14 +246,4 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
               ), UVM_MEDIUM)
   endfunction
 
-
-  // Find sec_cm_base_if_proxy for a given path
-  virtual function sec_cm_base_if_proxy find_sec_cm_base_if_proxy(string path);
-    sec_cm_base_if_proxy proxies[$];
-    // Search singleton queue of proxies in sec_cm_pkg
-    proxies = sec_cm_pkg::sec_cm_if_proxy_q.find_first() with (item.path == path);
-    if (proxies.size > 0) return proxies[0];
-    else `uvm_fatal(`gfn, $sformatf("find_sec_cm_base_if_proxy: no proxy with path %s", path))
-  endfunction
-
 endclass : lc_ctrl_base_vseq

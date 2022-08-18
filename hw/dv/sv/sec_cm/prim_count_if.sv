@@ -60,4 +60,5 @@ interface prim_count_if #(
 
     `uvm_info(msg_id, $sformatf("Interface proxy class is added for %s", path), UVM_MEDIUM)
   end
+
 endinterface
