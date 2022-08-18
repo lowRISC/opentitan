@@ -18,7 +18,6 @@ module entropy_src_main_sm #(
   input logic                   ht_done_pulse_i,
   input logic                   ht_fail_pulse_i,
   input logic                   alert_thresh_fail_i,
-  input logic                   sfifo_esfinal_full_i,
   output logic                  rst_alert_cntr_o,
   input logic                   bypass_mode_i,
   input logic                   main_stage_rdy_i,
@@ -161,9 +160,18 @@ module entropy_src_main_sm #(
         if (!enable_i) begin
           state_d = Idle;
         end
+        // Even when stalled we keep monitoring for alerts and maintaining  alert statistics.
+        // However, we don't signal alerts or clear HT stats in FW_OV mode.
+        if(!fw_ov_ent_insert_i && ht_done_pulse_i) begin
+          if (alert_thresh_fail_i) begin
+            state_d = AlertState;
+          end else if (!ht_fail_pulse_i) begin
+            rst_alert_cntr_o = 1'b1;
+          end
+        end
       end
       StartupHTStart: begin
-        if (!enable_i || sfifo_esfinal_full_i) begin
+        if (!enable_i) begin
           state_d = Idle;
         end else begin
           sha3_start_o = 1'b1;
@@ -212,7 +220,7 @@ module entropy_src_main_sm #(
         end
       end
       ContHTStart: begin
-        if (!enable_i || sfifo_esfinal_full_i) begin
+        if (!enable_i) begin
           state_d = Idle;
         end else begin
           sha3_start_o = 1'b1;
@@ -220,9 +228,16 @@ module entropy_src_main_sm #(
         end
       end
       ContHTRunning: begin
-        // pass or fail of HT is the same path
-        if (ht_done_pulse_i || !enable_i) begin
-          state_d = Sha3MsgDone;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (ht_done_pulse_i) begin
+            if (alert_thresh_fail_i) begin
+              state_d = AlertState;
+            end else if (!ht_fail_pulse_i) begin
+              state_d = Sha3MsgDone;
+            end
+          end
         end
       end
       FWInsertStart: begin

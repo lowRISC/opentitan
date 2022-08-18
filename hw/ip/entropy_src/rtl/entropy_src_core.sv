@@ -2444,7 +2444,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .ht_done_pulse_i      (ht_done_pulse_q),
     .ht_fail_pulse_i      (ht_failed_q),
     .alert_thresh_fail_i  (alert_threshold_fail),
-    .sfifo_esfinal_full_i (sfifo_esfinal_full),
     .rst_alert_cntr_o     (rst_alert_cntr),
     .bypass_mode_i        (es_bypass_mode),
     .main_stage_rdy_i     (pfifo_cond_not_empty),
