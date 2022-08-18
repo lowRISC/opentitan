@@ -62,6 +62,8 @@ module otbn_rf_bignum_ff
         rf[i][ExtWLEN/2+:ExtWLEN/2] <= wr_data_blanked[ExtWLEN/2+:ExtWLEN/2];
       end
     end
+
+  `ASSERT(BlankingBignumRegWData_A, !(|we_onehot[i]) |-> wr_data_blanked inside {'0, 'x})
   end
 
   // SEC_CM: DATA_REG_SW.SCA

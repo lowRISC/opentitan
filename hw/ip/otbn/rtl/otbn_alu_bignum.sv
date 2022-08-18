@@ -844,4 +844,60 @@ module otbn_alu_bignum
   assign reg_intg_violation_err_o = mod_used & |(mod_intg_err);
   `ASSERT_KNOWN(RegIntgErrKnown_A, reg_intg_violation_err_o)
 
+  // Blanking Assertions
+  // adder_x_res related blanking
+  `ASSERT(BlankingBignumAluXOp_A,
+          !expected_adder_x_en |-> {adder_x_op_a_blanked, adder_x_op_b_blanked,adder_x_res} == '0,
+          clk_i, !rst_ni)
+
+  // adder_y_res related blanking
+  `ASSERT(BlankingBignumAluYOpA_A,
+          !expected_adder_y_op_a_en |-> adder_y_op_a_blanked == '0,
+          clk_i, !rst_ni)
+  `ASSERT(BlankingBignumAluYOpShft_A,
+          !expected_adder_y_op_shifter_en |-> adder_y_op_shifter_res_blanked == '0,
+          clk_i, !rst_ni)
+
+  `ASSERT(BlankingBignumAluYResUsed_A,
+          !adder_y_res_used |-> {x_res_operand_a_mux_out, adder_y_op_b} == '0,
+          clk_i, !rst_ni)
+
+  // shifter_res related blanking
+  `ASSERT(BlankingBignumAluShftA_A,
+          !expected_shifter_a_en |-> shifter_operand_a_blanked == '0,
+          clk_i, !rst_ni)
+
+  `ASSERT(BlankingBignumAluShftB_A,
+          !expected_shifter_b_en |-> shifter_operand_b_blanked == '0,
+          clk_i, !rst_ni)
+
+  `ASSERT(BlankingBignumAluShftRes_A,
+          !(expected_shifter_a_en || expected_shifter_b_en) |-> shifter_res == '0,
+          clk_i, !rst_ni)
+
+  // logical_res related blanking
+  `ASSERT(BlankingBignumAluLogicOpA_A,
+          !expected_logic_a_en |-> logical_op_a_blanked == '0,
+          clk_i, !rst_ni)
+
+  `ASSERT(BlankingBignumAluLogicShft_A,
+          !expected_logic_shifter_en |-> logical_op_shifter_res_blanked == '0,
+          clk_i, !rst_ni)
+
+  `ASSERT(BlankingBignumAluLogicRes_A,
+          !(expected_logic_a_en || expected_logic_shifter_en) |-> logical_res == '0,
+          clk_i, !rst_ni)
+
+
+  // MOD ISPR Blanking
+  `ASSERT(BlankingIsprMod_A,
+          !(|mod_wr_en) |-> ispr_mod_bignum_wdata_intg_blanked == '0,
+          clk_i, !rst_ni)
+
+  // ACC ISPR Blanking
+  `ASSERT(BlankingIsprACC_A,
+          !(|ispr_acc_wr_en_o) |-> ispr_acc_bignum_wdata_intg_blanked == '0,
+          clk_i, !rst_ni)
+
+
 endmodule
