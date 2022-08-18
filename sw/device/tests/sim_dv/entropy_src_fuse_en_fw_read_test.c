@@ -190,7 +190,7 @@ bool test_main(void) {
 
     // This log message is extremely important for the test, as the
     // `uvm_test_seq` uses it to change the otp values.
-    LOG_INFO("Software reseting!");
+    LOG_INFO("Software resetting!");
 
     // Wait here until device reset.
     wait_for_interrupt();
