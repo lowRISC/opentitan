@@ -26,7 +26,7 @@ class ManifestCheckLengthTest : public BootPolicyTest,
 
 TEST_P(ManifestCheckLengthTest, ManifestCheckGood) {
   manifest_t manifest{};
-  manifest.identifier = MANIFEST_IDENTIFIER_ROM_EXT;
+  manifest.identifier = CHIP_ROM_EXT_IDENTIFIER;
   manifest.length = GetParam();
   boot_data_t boot_data{};
 
@@ -36,9 +36,9 @@ TEST_P(ManifestCheckLengthTest, ManifestCheckGood) {
 }
 
 INSTANTIATE_TEST_SUITE_P(GoodLengths, ManifestCheckLengthTest,
-                         testing::Values(MANIFEST_LENGTH_FIELD_ROM_EXT_MIN,
-                                         MANIFEST_LENGTH_FIELD_ROM_EXT_MAX >> 1,
-                                         MANIFEST_LENGTH_FIELD_ROM_EXT_MAX));
+                         testing::Values(CHIP_ROM_EXT_SIZE_MIN,
+                                         CHIP_ROM_EXT_SIZE_MAX >> 1,
+                                         CHIP_ROM_EXT_SIZE_MAX));
 
 TEST_F(BootPolicyTest, ManifestCheckBadIdentifier) {
   manifest_t manifest{};
@@ -50,22 +50,22 @@ TEST_F(BootPolicyTest, ManifestCheckBadIdentifier) {
 
 TEST_F(BootPolicyTest, ManifestCheckBadLength) {
   manifest_t manifest{};
-  manifest.identifier = MANIFEST_IDENTIFIER_ROM_EXT;
+  manifest.identifier = CHIP_ROM_EXT_IDENTIFIER;
   boot_data_t boot_data{};
 
-  manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MIN - 1;
+  manifest.length = CHIP_ROM_EXT_SIZE_MIN - 1;
   EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
             kErrorBootPolicyBadLength);
 
-  manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MAX + 1;
+  manifest.length = CHIP_ROM_EXT_SIZE_MAX + 1;
   EXPECT_EQ(boot_policy_manifest_check(&manifest, &boot_data),
             kErrorBootPolicyBadLength);
 }
 
 TEST_F(BootPolicyTest, ManifestCheckBadManifest) {
   manifest_t manifest{};
-  manifest.identifier = MANIFEST_IDENTIFIER_ROM_EXT;
-  manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MAX;
+  manifest.identifier = CHIP_ROM_EXT_IDENTIFIER;
+  manifest.length = CHIP_ROM_EXT_SIZE_MAX;
   boot_data_t boot_data{};
 
   EXPECT_CALL(mock_manifest_, Check(&manifest))
@@ -76,8 +76,8 @@ TEST_F(BootPolicyTest, ManifestCheckBadManifest) {
 
 TEST_F(BootPolicyTest, ManifestCheckRollback) {
   manifest_t manifest{};
-  manifest.identifier = MANIFEST_IDENTIFIER_ROM_EXT;
-  manifest.length = MANIFEST_LENGTH_FIELD_ROM_EXT_MAX;
+  manifest.identifier = CHIP_ROM_EXT_IDENTIFIER;
+  manifest.length = CHIP_ROM_EXT_SIZE_MAX;
   boot_data_t boot_data{};
   boot_data.min_security_version_rom_ext = 1;
 

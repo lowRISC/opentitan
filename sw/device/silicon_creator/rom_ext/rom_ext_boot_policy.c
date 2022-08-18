@@ -22,11 +22,11 @@ rom_ext_boot_policy_manifests_t rom_ext_boot_policy_manifests_get(void) {
 }
 
 rom_error_t rom_ext_boot_policy_manifest_check(const manifest_t *manifest) {
-  if (manifest->identifier != MANIFEST_IDENTIFIER_OWNER_STAGE) {
+  if (manifest->identifier != CHIP_BL0_IDENTIFIER) {
     return kErrorBootPolicyBadIdentifier;
   }
-  if (manifest->length < MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN ||
-      manifest->length > MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX) {
+  if (manifest->length < CHIP_BL0_SIZE_MIN ||
+      manifest->length > CHIP_BL0_SIZE_MAX) {
     return kErrorBootPolicyBadLength;
   }
   RETURN_IF_ERROR(manifest_check(manifest));

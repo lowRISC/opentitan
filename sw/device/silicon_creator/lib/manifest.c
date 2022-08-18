@@ -8,20 +8,17 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static_assert(MANIFEST_LENGTH_FIELD_ROM_EXT_MIN >= MANIFEST_SIZE,
-              "`MANIFEST_LENGTH_FIELD_ROM_EXT_MIN` is too small");
-static_assert(MANIFEST_LENGTH_FIELD_ROM_EXT_MAX >=
-                  MANIFEST_LENGTH_FIELD_ROM_EXT_MIN,
-              "`MANIFEST_LENGTH_FIELD_ROM_EXT_MAX` is too small");
-static_assert(MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN >= MANIFEST_SIZE,
-              "`MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN` is too small");
-static_assert(MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX >=
-                  MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN,
-              "`MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX` is too small");
-static_assert(MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX <=
-                  ((TOP_EARLGREY_EFLASH_SIZE_BYTES / 2) -
-                   MANIFEST_LENGTH_FIELD_ROM_EXT_MAX),
-              "`MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX` is too large");
+static_assert(CHIP_ROM_EXT_SIZE_MIN >= CHIP_MANIFEST_SIZE,
+              "`CHIP_ROM_EXT_SIZE_MIN` is too small");
+static_assert(CHIP_ROM_EXT_SIZE_MAX >= CHIP_ROM_EXT_SIZE_MIN,
+              "`CHIP_ROM_EXT_SIZE_MAX` is too small");
+static_assert(CHIP_BL0_SIZE_MIN >= CHIP_MANIFEST_SIZE,
+              "`CHIP_BL0_SIZE_MIN` is too small");
+static_assert(CHIP_BL0_SIZE_MAX >= CHIP_BL0_SIZE_MIN,
+              "`CHIP_BL0_SIZE_MAX` is too small");
+static_assert(CHIP_BL0_SIZE_MAX <= ((TOP_EARLGREY_EFLASH_SIZE_BYTES / 2) -
+                                    CHIP_ROM_EXT_SIZE_MAX),
+              "`CHIP_BL0_SIZE_MAX` is too large");
 
 // Extern declarations for the inline functions in the manifest header.
 extern rom_error_t manifest_check(const manifest_t *manifest);

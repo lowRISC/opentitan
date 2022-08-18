@@ -102,8 +102,7 @@ extern char _owner_virtual_size[];
  */
 static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
   return (lma_addr - (uintptr_t)manifest +
-          (uintptr_t)_owner_virtual_start_address +
-          MANIFEST_LENGTH_FIELD_ROM_EXT_MAX);
+          (uintptr_t)_owner_virtual_start_address + CHIP_ROM_EXT_SIZE_MAX);
 }
 
 static rom_error_t rom_ext_boot(const manifest_t *manifest) {

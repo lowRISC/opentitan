@@ -226,7 +226,7 @@ OT_ASSERT_MEMBER_OFFSET(manifest_t, max_key_version, 880);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, code_start, 884);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, code_end, 888);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, entry_point, 892);
-OT_ASSERT_SIZE(manifest_t, MANIFEST_SIZE);
+OT_ASSERT_SIZE(manifest_t, CHIP_MANIFEST_SIZE);
 
 /**
  * Region of an image that should be included in the digest computation.
