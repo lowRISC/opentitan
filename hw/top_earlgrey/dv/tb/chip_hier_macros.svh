@@ -25,6 +25,7 @@
 `define UART_HIER             `CHIP_HIER.u_uart
 `define USBDEV_HIER           `CHIP_HIER.u_usbdev
 `define PWRMGR_HIER           `CHIP_HIER.u_pwrmgr_aon
+`define OTBN_HIER             `CHIP_HIER.u_otbn
 
 // The path to the actual memory array in rom_ctrl. This is a bit of a hack to allow a long path
 // without overflowing 100 characters or including any whitespace (which breaks a DV_STRINGIFY call
@@ -47,3 +48,5 @@
 `define ROM_MEM_HIER          `ROM_CTRL_HIER.`ROM_CTRL_INT_PATH
 `define OTP_GENERIC_HIER      `OTP_CTRL_HIER.u_otp.gen_generic.u_impl_generic
 `define OTP_MEM_HIER          `OTP_GENERIC_HIER.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
+`define OTBN_IMEM_HIER        `OTBN_HIER.u_imem.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
+`define OTBN_DMEM_HIER        `OTBN_HIER.u_dmem.u_prim_ram_1p_adv.u_mem.`MEM_ARRAY_SUB
