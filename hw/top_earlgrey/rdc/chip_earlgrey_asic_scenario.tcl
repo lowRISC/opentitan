@@ -4,21 +4,6 @@
 #
 # Meridian RDC Reset Scenario
 
-###############
-# Reset Group #
-###############
-
-# List of external reset group
-set ext_rst_lst {}
-# POR_N active low
-lappend ext_rst_lst [list { POR_N } {reset low}]
-
-foreach_in_collection j [get_pins top_earlgrey.rstmgr_aon_resets.*] {
-    lappend ext_rst_lst [list [get_attribute ${j} full_name] {reset low}]
-}
-
-set_reset_group $ext_rst_lst -name ext_rst
-
 ###################
 # Reset Scenarios #
 ###################
