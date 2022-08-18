@@ -380,11 +380,6 @@ module tb;
     uvm_config_db#(virtual pins_if #(8))::set(
         null, "*.env", "sysrst_ctrl_vif", sysrst_ctrl_if);
 
-    // temp disable pinmux assertion AonWkupReqKnownO_A because driving X in spi_device.sdi and
-    // WkupPadSel choose IO_DPS1 in MIO will trigger this assertion
-    // TODO: remove this assertion once pinmux is templatized
-    $assertoff(0, dut.top_earlgrey.u_pinmux_aon.AonWkupReqKnownO_A);
-
     // Format time in microseconds losing no precision. The added "." makes it easier to determine
     // the order of magnitude without counting digits, as is needed if it was formatted as ps or ns.
     $timeformat(-6, 6, " us", 13);
