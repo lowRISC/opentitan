@@ -150,6 +150,7 @@
   // Project defaults for VCS
   vcs_cov_cfg_file: "{{build_mode}_vcs_cov_cfg_file}"
   vcs_unr_cfg_file: "{dv_root}/tools/vcs/unr.cfg"
+  vcs_fsm_reset_cov_cfg_file: "{dv_root}/tools/vcs/fsm_reset_cov.cfg"
   vcs_cov_excl_files: []
 
   // Build-specific coverage cfg files for VCS.
