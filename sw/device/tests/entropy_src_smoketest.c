@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -14,17 +15,7 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-const size_t kEntropyDataNumWords = 12;
-
-// This expected value seems to require frequent updating.  If it turns
-// out that changes to the overall system start causing race conditions
-// we may want to relax the requirement for exact binary equivalence.
-//
-// Issue #10092 has been opened to discuss this.
-
-const uint32_t kExpectedEntropyData[] = {
-    0x38a9e15d, 0xc615d072, 0x15f21dc9, 0x38f06e56, 0x790a2a87, 0x8bff3d11,
-    0xd56913da, 0x75dc72c3, 0xee2d38a2, 0xabfddaec, 0x3837e88b, 0x29cf1c12};
+const size_t kEntropyDataChecks = 10;
 
 bool test_main(void) {
   dif_entropy_src_t entropy_src;
@@ -34,6 +25,7 @@ bool test_main(void) {
   // Disable entropy for test purpose, as it has been turned on by ROM
   CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
 
+  // Setup fips grade entropy that can be read by firmware
   const dif_entropy_src_config_t config = {
       .fips_enable = true,
       .route_to_firmware = true,
@@ -42,20 +34,36 @@ bool test_main(void) {
       .health_test_window_size = 0x0200,    /*default*/
       .alert_threshold = 2,                 /*default*/
   };
+
+  // Re-enable entropy src
   CHECK_DIF_OK(
       dif_entropy_src_configure(&entropy_src, config, kDifToggleEnabled));
 
-  uint32_t entropy_data[kEntropyDataNumWords];
-  uint32_t result = 0;
-  for (uint32_t i = 0; i < kEntropyDataNumWords; ++i) {
-    // wait for entropy to become available
-    while (dif_entropy_src_non_blocking_read(&entropy_src, &entropy_data[i]) !=
+  // ensure health tests are actually running
+  entropy_testutils_wait_for_state(&entropy_src,
+                                   kDifEntropySrcMainFsmStateContHTRunning);
+
+  uint32_t entropy_data;
+  uint32_t last_entropy_data = 0;
+  for (uint32_t i = 0; i < kEntropyDataChecks; ++i) {
+    // wait for entropy to become available and read
+    while (dif_entropy_src_non_blocking_read(&entropy_src, &entropy_data) !=
            kDifOk)
       ;
-    LOG_INFO("received 0x%x, expected 0x%x", entropy_data[i],
-             kExpectedEntropyData[i]);
-    result |= entropy_data[i] ^ kExpectedEntropyData[i];
+    if (entropy_data == last_entropy_data) {
+      LOG_FATAL("Received duplicate entropy, this should never happen");
+    } else {
+      last_entropy_data = entropy_data;
+    }
   }
 
-  return result == 0;
+  uint32_t errors;
+  CHECK_DIF_OK(dif_entropy_src_get_errors(&entropy_src, &errors));
+  if (errors != 0) {
+    LOG_FATAL("Error is non-zero, 0x%h", errors);
+  } else {
+    return true;
+  }
+
+  return false;
 }

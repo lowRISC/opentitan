@@ -551,14 +551,6 @@ opentitan_functest(
 opentitan_functest(
     name = "entropy_src_smoketest",
     srcs = ["entropy_src_smoketest.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
-    verilator = verilator_params(
-        timeout = "long",
-        tags = ["broken"],
-    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
@@ -566,6 +558,7 @@ opentitan_functest(
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
