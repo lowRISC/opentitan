@@ -3,7 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
-load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest", "verilator_params")
+load(
+    "//rules:opentitan_test.bzl",
+    "ROM_BOOT_FAILURE_MSG",
+    "cw310_params",
+    "dv_params",
+    "opentitan_functest",
+    "verilator_params",
+)
 
 # TODO(lowRISC:opentitan#13180): this is a temporary solution to enable writing
 # manufacturer specific tests in the `manufacturer_test_hooks` repository that
@@ -1341,10 +1348,35 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "uart_smoketest",
+    name = "uart_smoketest_signed",
     srcs = ["uart_smoketest.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom",
+        exit_failure = ROM_BOOT_FAILURE_MSG,
+    ),
+    dv = dv_params(
+        rom = "//sw/device/silicon_creator/rom",
+    ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
+    verilator = verilator_params(
+        timeout = "eternal",
+        exit_failure = ROM_BOOT_FAILURE_MSG,
+        rom = "//sw/device/silicon_creator/rom",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:uart",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "uart_smoketest",
+    srcs = ["uart_smoketest.c"],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",

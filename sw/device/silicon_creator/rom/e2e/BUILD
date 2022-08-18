@@ -4,6 +4,8 @@
 
 load(
     "//rules:opentitan_test.bzl",
+    "DEFAULT_TEST_FAILURE_MSG",
+    "DEFAULT_TEST_SUCCESS_MSG",
     "cw310_params",
     "dv_params",
     "opentitan_functest",
@@ -12,17 +14,11 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-BOOT_FAILURE_MSG = "BFV:[0-9a-f]{8}"
-
-BOOT_SUCCESS_MSG = "PASS!"
-
 opentitan_functest(
     name = "e2e_bootup_success",
     srcs = ["empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom",
-        exit_failure = BOOT_FAILURE_MSG,
-        exit_success = BOOT_SUCCESS_MSG,
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom",
@@ -30,8 +26,6 @@ opentitan_functest(
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
     verilator = verilator_params(
-        exit_failure = BOOT_FAILURE_MSG,
-        exit_success = BOOT_SUCCESS_MSG,
         rom = "//sw/device/silicon_creator/rom",
         # Note: Leaving as broken since this test takes a long time and
         # we don't really need it as long as the CI runs the FPGA version.
@@ -51,8 +45,6 @@ opentitan_functest(
     srcs = ["empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_dev",
-        exit_failure = BOOT_FAILURE_MSG,
-        exit_success = BOOT_SUCCESS_MSG,
         # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
@@ -70,13 +62,13 @@ opentitan_functest(
     srcs = ["empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom",
-        exit_failure = BOOT_SUCCESS_MSG,
-        exit_success = BOOT_FAILURE_MSG,
+        exit_failure = DEFAULT_TEST_SUCCESS_MSG,
+        exit_success = DEFAULT_TEST_FAILURE_MSG,
     ),
     signed = False,
     verilator = verilator_params(
-        exit_failure = BOOT_SUCCESS_MSG,
-        exit_success = BOOT_FAILURE_MSG,
+        exit_failure = DEFAULT_TEST_SUCCESS_MSG,
+        exit_success = DEFAULT_TEST_FAILURE_MSG,
         rom = "//sw/device/silicon_creator/rom",
     ),
     deps = [

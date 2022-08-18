@@ -5,8 +5,17 @@
 load("@//rules:opentitan.bzl", "opentitan_flash_binary", "opentitan_rom_binary")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 
-_EXIT_SUCCESS = r"PASS.*\n"
-_EXIT_FAILURE = r"(FAIL|FAULT).*\n"
+OTTF_SUCCESS_MSG = r"PASS.*\n"
+OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"
+ROM_BOOT_FAILURE_MSG = "BFV:[0-9a-f]{8}"
+
+# These are defined for positive test cases and should be flipped for negative
+# test cases, i.e., when a test failure is the expected outcome.
+DEFAULT_TEST_SUCCESS_MSG = OTTF_SUCCESS_MSG
+DEFAULT_TEST_FAILURE_MSG = "({})|({})".format(
+    OTTF_FAILURE_MSG,
+    ROM_BOOT_FAILURE_MSG,
+)
 
 _BASE_PARAMS = {
     "args": [],
@@ -17,8 +26,8 @@ _BASE_PARAMS = {
     "tags": [],
     "test_runner": "@//util:opentitan_functest_runner.sh",
     "timeout": "moderate",  # 5 minutes
-    "exit_success": _EXIT_SUCCESS,
-    "exit_failure": _EXIT_FAILURE,
+    "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+    "exit_failure": DEFAULT_TEST_FAILURE_MSG,
 }
 
 def dv_params(
