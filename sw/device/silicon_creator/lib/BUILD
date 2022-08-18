@@ -191,11 +191,6 @@ cc_test(
     ],
 )
 
-cc_library(
-    name = "manifest_size",
-    hdrs = ["manifest_size.h"],
-)
-
 dual_cc_library(
     name = "manifest",
     srcs = dual_inputs(
@@ -219,10 +214,10 @@ dual_cc_library(
             ":epmp",
             ":error",
             ":keymgr_binding",
-            ":manifest_size",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/sigverify:rsa_key",
+            "//sw/device/silicon_creator/lib/base:chip",
         ],
     ),
 )

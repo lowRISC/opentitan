@@ -4,6 +4,8 @@
 
 #include "sw/device/silicon_creator/lib/manifest.h"
 
+#include "sw/device/silicon_creator/lib/base/chip.h"
+
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static_assert(MANIFEST_LENGTH_FIELD_ROM_EXT_MIN >= MANIFEST_SIZE,

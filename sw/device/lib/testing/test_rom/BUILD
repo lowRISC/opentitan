@@ -94,7 +94,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:epmp",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
-        "//sw/device/silicon_creator/lib:manifest_size",
+        "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
     ],
