@@ -24,6 +24,15 @@ pub struct LcState {
     secded: LcSecded,
 }
 
+#[repr(u32)]
+pub enum LcStateVal {
+    Test = 0xb2865fbb,
+    Dev = 0x0b5a75e0,
+    Prod = 0x65f2520f,
+    ProdEnd = 0x91b9b68a,
+    Rma = 0xcf8cfaab,
+}
+
 impl LcSecded {
     pub fn new(in_file: &Path) -> Result<LcSecded> {
         let json_text = fs::read_to_string(in_file)?;
