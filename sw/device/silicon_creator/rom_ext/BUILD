@@ -38,6 +38,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            "//sw/device/silicon_creator/lib/base:chip",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib:manifest",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -121,6 +122,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib:rom_print",
         "//sw/device/silicon_creator/lib:shutdown",
+        "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
         "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",

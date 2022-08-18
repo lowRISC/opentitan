@@ -48,6 +48,7 @@ cc_library(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:shutdown",
+        "//sw/device/silicon_creator/lib/base:chip",
     ],
 )
 

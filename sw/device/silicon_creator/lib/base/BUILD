@@ -81,3 +81,8 @@ ld_library(
     name = "static_critical_sections",
     fragments = ["static_critical.ld"],
 )
+
+cc_library(
+    name = "chip",
+    hdrs = ["chip.h"],
+)
