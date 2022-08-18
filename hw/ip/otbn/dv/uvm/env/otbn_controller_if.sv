@@ -28,18 +28,19 @@ interface otbn_controller_if
   endfunction
 
   // Wait until some ISPR data is being used (outside a reset) or until `max_cycles` clock cycles
-  // have passed. When this task returns, the `success` output is set to `1'b1` if the data is being
-  // used and to `1'b0` otherwise.
-  task automatic wait_for_ispr_rdata_used(input int unsigned max_cycles, output bit success);
+  // have passed. When this task returns, the `used_words` output indicates which words are being
+  // used.
+  task automatic wait_for_ispr_rdata_used(input int unsigned max_cycles,
+                                          output bit [BaseWordsPerWLEN-1:0] used_words);
     int unsigned cycle_cnt = 0;
     while (1) begin
       @(negedge clk_i);
       if (rst_ni && |ispr_read_mask && non_prefetch_insn_running) begin
-        success = 1'b1;
+        used_words = ispr_read_mask;
         break;
       end
       if (max_cycles != 0 && cycle_cnt >= max_cycles) begin
-        success = 1'b0;
+        used_words = '0;
         break;
       end
       cycle_cnt++;
