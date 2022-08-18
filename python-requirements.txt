@@ -26,6 +26,7 @@ premailer < 3.9.0
 pydriller
 termcolor
 
+
 # Linters
 flake8
 isort
