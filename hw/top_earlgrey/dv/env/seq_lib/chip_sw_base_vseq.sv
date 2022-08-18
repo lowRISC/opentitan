@@ -241,23 +241,22 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_CHECK_EQ_FATAL((sw_byte_q.size % SPI_FRAME_BYTE_SIZE), 0,
                        "SPI data isn't aligned with frame size")
 
-    `DV_SPINWAIT(
-      while (sw_byte_q.size > byte_cnt) begin
-        `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
-        for (int i = byte_cnt; i < SPI_FRAME_BYTE_SIZE; i++) begin
-          `uvm_info(`gfn, $sformatf("SPI flash data[%0d] = 0x%0x", i, sw_byte_q[i]), UVM_LOW)
-        end
-        `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
-                                      data.size() == SPI_FRAME_BYTE_SIZE;
-                                      foreach (data[i]) {data[i] == sw_byte_q[byte_cnt+i];})
-        `uvm_send(m_spi_host_seq)
-        `DV_WAIT(string'(cfg.sw_logger_vif.printed_log) ==
-              $sformatf("Frame #%0d processed done", num_frame))
-        num_frame++;
-
-        byte_cnt += SPI_FRAME_BYTE_SIZE;
+    while (sw_byte_q.size > byte_cnt) begin
+      `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+      for (int i = byte_cnt; i < SPI_FRAME_BYTE_SIZE; i++) begin
+        `uvm_info(`gfn, $sformatf("SPI flash data[%0d] = 0x%0x", i, sw_byte_q[i]), UVM_LOW)
       end
-    )
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
+                                    data.size() == SPI_FRAME_BYTE_SIZE;
+                                    foreach (data[i]) {data[i] == sw_byte_q[byte_cnt+i];})
+      `uvm_send(m_spi_host_seq)
+      `DV_WAIT(string'(cfg.sw_logger_vif.printed_log) ==
+            $sformatf("Frame #%0d processed done", num_frame))
+      num_frame++;
+
+      byte_cnt += SPI_FRAME_BYTE_SIZE;
+    end
+
   endtask
 
   virtual function void read_sw_frames(string sw_image, ref byte sw_byte_q[$]);
