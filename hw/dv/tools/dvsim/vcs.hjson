@@ -242,6 +242,9 @@
   // Include hierarchies for both code coverage and assertions.
   vcs_cov_cfg_file: ""
 
+  // Supply cov configuration file for -cm_fsmresetfilter.
+  vcs_fsm_reset_cov_cfg_file: ""
+
   // Supply the cov exclusion files.
   vcs_cov_excl_files: []
 
@@ -297,7 +300,9 @@
                    // Coverage database output location
                    "-cm_dir {cov_db_dir}",
                    // The following option is to improve runtime performance
-                   "-Xkeyopt=rtopt"
+                   "-Xkeyopt=rtopt",
+                   // Exclude FSM transitions that can only happen on reset
+                   "-cm_fsmresetfilter {vcs_fsm_reset_cov_cfg_file}",
                    ]
 
       run_opts:   [// Enable the required cov metrics
