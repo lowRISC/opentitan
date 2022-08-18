@@ -3,7 +3,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import random
 import re
 import subprocess
 import tempfile
@@ -276,8 +275,8 @@ class MemFile:
         for chunk in self.chunks:
             chunk.write_vmem(self.width, outfile)
 
-    def flatten(self, size: int, rnd_seed: int) -> 'MemFile':
-        '''Flatten into a single chunk, padding with pseudo-random data
+    def flatten(self, size: int) -> 'MemFile':
+        '''Flatten into a single chunk, padding with zeroes
 
         As well as padding between the chunks, this expands the result up to
         size words by adding padding after the last chunk if necessary.
@@ -285,40 +284,31 @@ class MemFile:
         '''
         assert self.next_addr() <= size
 
-        old_rnd_state = random.getstate()
-        random.seed(rnd_seed)
-
-        try:
-            acc = MemChunk(0, [])
-            # Add each chunk
-            for chunk in self.chunks:
-                acc_end = acc.next_addr()
-                assert acc_end <= chunk.base_addr
-
-                # If there's a gap before the chunk, insert some random bits
-                padding_len = chunk.base_addr - acc_end
-                if padding_len:
-                    acc.words += [random.getrandbits(32)
-                                  for _ in range(padding_len)]
-
-                assert acc.next_addr() == chunk.base_addr
-                acc.words += chunk.words
-
+        acc = MemChunk(0, [])
+        # Add each chunk
+        for chunk in self.chunks:
             acc_end = acc.next_addr()
-            assert acc_end == self.next_addr()
+            assert acc_end <= chunk.base_addr
 
-            # If there's a gap after the last chunk, insert some more random
-            # bits
-            padding_len = size - acc_end
+            # If there's a gap before the chunk, pad it out with zeroes
+            padding_len = chunk.base_addr - acc_end
             if padding_len:
-                acc.words += [random.getrandbits(32)
-                              for _ in range(padding_len)]
+                acc.words += [0 for _ in range(padding_len)]
 
-            assert acc.next_addr() == size
+            assert acc.next_addr() == chunk.base_addr
+            acc.words += chunk.words
 
-            return MemFile(self.width, [acc])
-        finally:
-            random.setstate(old_rnd_state)
+        acc_end = acc.next_addr()
+        assert acc_end == self.next_addr()
+
+        # If there's a gap after the last chunk, pad it out with zeroes
+        padding_len = size - acc_end
+        if padding_len:
+            acc.words += [0 for _ in range(padding_len)]
+
+        assert acc.next_addr() == size
+
+        return MemFile(self.width, [acc])
 
     def add_ecc32(self) -> None:
         '''Add ECC32 integrity bits

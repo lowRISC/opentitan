@@ -358,9 +358,8 @@ class Scrambler:
         '''
         digest_size_words = 8
         initial_len = self.rom_size_words - digest_size_words
-        seed = self.key + self.nonce
 
-        flattened = mem.flatten(initial_len, seed)
+        flattened = mem.flatten(initial_len)
         assert len(flattened.chunks) == 1
         assert len(flattened.chunks[0].words) == initial_len
 
