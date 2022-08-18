@@ -32,4 +32,6 @@ fi
 
 REL_PATH=$(${REPO_TOP}/bazelisk.sh outquery "$@" 2>$REDIR)
 readonly REL_PATH
-echo "${REPO_TOP}/${REL_PATH}"
+REPO_EXECROOT=$(${REPO_TOP}/bazelisk.sh info --show_make_env execution_root)
+readonly REPO_EXECROOT
+echo "${REPO_EXECROOT}/${REL_PATH}"
