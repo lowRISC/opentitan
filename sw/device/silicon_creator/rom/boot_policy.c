@@ -27,11 +27,11 @@ boot_policy_manifests_t boot_policy_manifests_get(void) {
 
 rom_error_t boot_policy_manifest_check(const manifest_t *manifest,
                                        const boot_data_t *boot_data) {
-  if (manifest->identifier != MANIFEST_IDENTIFIER_ROM_EXT) {
+  if (manifest->identifier != CHIP_ROM_EXT_IDENTIFIER) {
     return kErrorBootPolicyBadIdentifier;
   }
-  if (manifest->length < MANIFEST_LENGTH_FIELD_ROM_EXT_MIN ||
-      manifest->length > MANIFEST_LENGTH_FIELD_ROM_EXT_MAX) {
+  if (manifest->length < CHIP_ROM_EXT_SIZE_MIN ||
+      manifest->length > CHIP_ROM_EXT_SIZE_MAX) {
     return kErrorBootPolicyBadLength;
   }
   RETURN_IF_ERROR(manifest_check(manifest));

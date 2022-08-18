@@ -29,7 +29,7 @@ static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
 // TODO(#7893): Should these be volatile?
 inline const manifest_t *rom_ext_boot_policy_manifest_a_get(void) {
   return (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
-                              MANIFEST_LENGTH_FIELD_ROM_EXT_MAX);
+                              CHIP_ROM_EXT_SIZE_MAX);
 }
 
 /**
@@ -42,7 +42,7 @@ inline const manifest_t *rom_ext_boot_policy_manifest_a_get(void) {
 inline const manifest_t *rom_ext_boot_policy_manifest_b_get(void) {
   return (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
                               (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2) +
-                              MANIFEST_LENGTH_FIELD_ROM_EXT_MAX);
+                              CHIP_ROM_EXT_SIZE_MAX);
 }
 #else
 /**

@@ -22,19 +22,21 @@ use zerocopy::FromBytes;
 //   cargo install bindgen
 //   cd "${REPO_TOP}"
 //   bindgen --allowlist-type manifest_t --allowlist-var "MANIFEST_.*" \
+//      --allowlist-var "CHIP_.*" \
 //      --no-doc-comments --no-layout-tests \
 //      sw/device/silicon_creator/lib/manifest.h \
+//      sw/device/silicon_creator/lib/base/chip.h \
 //      -- -I./ -Isw/device/lib/base/freestanding
 // TODO: Generate some constants as hex if possible, replacing manually for now.
 
-pub const MANIFEST_SIZE: u32 = 896;
+pub const CHIP_MANIFEST_SIZE: u32 = 896;
 pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xa5a5a5a5;
-pub const MANIFEST_IDENTIFIER_ROM_EXT: u32 = 0x4552544f;
-pub const MANIFEST_IDENTIFIER_OWNER_STAGE: u32 = 0x4f53544f;
-pub const MANIFEST_LENGTH_FIELD_ROM_EXT_MIN: u32 = 896;
-pub const MANIFEST_LENGTH_FIELD_ROM_EXT_MAX: u32 = 0x10000;
-pub const MANIFEST_LENGTH_FIELD_OWNER_STAGE_MIN: u32 = 896;
-pub const MANIFEST_LENGTH_FIELD_OWNER_STAGE_MAX: u32 = 0x70000;
+pub const CHIP_ROM_EXT_IDENTIFIER: u32 = 0x4552544f;
+pub const CHIP_BL0_IDENTIFIER: u32 = 0x4f53544f;
+pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 896;
+pub const CHIP_ROM_EXT_SIZE_MAX: u32 = 0x10000;
+pub const CHIP_BL0_SIZE_MIN: u32 = 896;
+pub const CHIP_BL0_SIZE_MAX: u32 = 0x70000;
 
 /// Manifest for boot stage images stored in flash.
 #[repr(C)]
@@ -129,5 +131,5 @@ pub fn check_manifest_layout() {
     assert_eq!(offset_of!(Manifest, code_start), 884);
     assert_eq!(offset_of!(Manifest, code_end), 888);
     assert_eq!(offset_of!(Manifest, entry_point), 892);
-    assert_eq!(size_of::<Manifest>(), MANIFEST_SIZE as usize);
+    assert_eq!(size_of::<Manifest>(), CHIP_MANIFEST_SIZE as usize);
 }
