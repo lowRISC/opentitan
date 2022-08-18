@@ -27,6 +27,9 @@ static dif_lc_ctrl_t lc;
 
 // TODO(lowRISC/opentitan:#11795): when the sw_symbol_backdoor_overwrite
 // is fixed for ROM, this can be overriden by the testbench as a SW variable.
+// Since rma process takes more than 100ms in dvsim,
+// the test runs 1.6h (110ms in simtime).
+
 static mmio_region_t sram_region_ret_base_addr;
 
 enum {
