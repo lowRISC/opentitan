@@ -439,7 +439,8 @@
       uvm_test_seq: chip_sw_flash_rma_unlocked_vseq
       sw_images: ["//sw/device/tests/sim_dv:flash_rma_unlocked_test:0:test_in_rom"]
       en_run_modes: ["sw_test_mode_common"]
-      run_opts: ["+sw_test_timeout_ns=200_000_000"]
+      run_opts: ["+sw_test_timeout_ns=150_000_000"]
+      run_timeout_mins: 200
     }
     {
       name: chip_sw_flash_ctrl_clock_freqs

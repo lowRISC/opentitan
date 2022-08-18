@@ -48,16 +48,17 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
   virtual task wait_for_transition();
     int retval;
     int transition_success = 0;
+    time rma_timeout_ns = 120_000_000; // 120ms
     retval = uvm_hdl_check_path(LC_CTRL_TRANS_SUCCESS_PATH);
     `DV_CHECK_EQ_FATAL(retval, 1, $sformatf(
                        "Hierarchical path %0s appears to be invalid.", LC_CTRL_TRANS_SUCCESS_PATH))
-    `DV_SPINWAIT(
-      while (transition_success == 0) begin
-        retval = uvm_hdl_read(LC_CTRL_TRANS_SUCCESS_PATH, transition_success);
-        `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", LC_CTRL_TRANS_SUCCESS_PATH))
-        cfg.clk_rst_vif.wait_clks(1);
-      end
-    )
+   `DV_SPINWAIT(while (transition_success == 0) begin
+                  retval = uvm_hdl_read(LC_CTRL_TRANS_SUCCESS_PATH, transition_success);
+                  `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", LC_CTRL_TRANS_SUCCESS_PATH))
+                  cfg.clk_rst_vif.wait_clks(1);
+                end,
+                "timeout while wait for flash rma complete",
+                rma_timeout_ns)
   endtask
 
   // TODO(lowRISC/opentitan:#11795): replace with SW symbol backdoor write
@@ -109,6 +110,7 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
     wait_for_transition();
+
     cfg.clk_rst_vif.wait_clks(1000);
     apply_reset();
 
