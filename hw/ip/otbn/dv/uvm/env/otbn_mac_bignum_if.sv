@@ -32,18 +32,19 @@ interface otbn_mac_bignum_if (
   endfunction
 
   // Wait for the `acc_used` signal to be high (outside a reset) or until `max_cycles` clock cycles
-  // have passed.  When this task returns, the `success` output is set to `1'b1` if the `acc_used`
-  // signal was high and to `1'b0` otherwise.
-  task automatic wait_for_acc_used(input int unsigned max_cycles, output bit success);
+  // have passed.  When this task returns, the `used_words` output indicates which words are being
+  // used.
+  task automatic wait_for_acc_used(input int unsigned max_cycles,
+                                   output bit [otbn_pkg::BaseWordsPerWLEN-1:0] used_words);
     int unsigned cycle_cnt = 0;
     while (1) begin
       @(negedge clk_i);
       if (rst_ni && acc_used) begin
-        success = 1'b1;
+        used_words = '1;
         break;
       end
       if (max_cycles != 0 && cycle_cnt >= max_cycles) begin
-        success = 1'b0;
+        used_words = '0;
         break;
       end
       cycle_cnt++;
