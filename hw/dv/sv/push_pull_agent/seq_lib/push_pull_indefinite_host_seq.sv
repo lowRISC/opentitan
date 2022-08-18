@@ -29,7 +29,7 @@ class push_pull_indefinite_host_seq #(parameter int HostDataWidth = 32,
 
   task wait_for_items_processed(int n);
     wait(items_processed >= n);
-  endtask;
+  endtask
 
   virtual task body();
     items_processed = 0;
