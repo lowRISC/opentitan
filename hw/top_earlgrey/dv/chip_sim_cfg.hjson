@@ -1129,5 +1129,10 @@
               "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"
              ]
     }
+    {
+      name: xcelium_ci
+      tests: ["chip_plic_all_irqs"]
+      reseed: 1
+    }
   ]
 }
