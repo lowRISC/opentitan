@@ -20,6 +20,21 @@ cc_library(
     ],
 )
 
+opentitan_functest(
+    name = "aes_test",
+    srcs = ["aes_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":aes",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 cc_library(
     name = "kmac",
     srcs = ["kmac.c"],
@@ -51,21 +66,6 @@ opentitan_functest(
     deps = [
         ":kmac",
         ":kmac_test_vectors",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_functest(
-    name = "aes_test",
-    srcs = ["aes_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        ":aes",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/testing/test_framework:check",

@@ -158,7 +158,7 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len) {
     // Block until there is more data available in the genbits buffer. CSRNG
     // generates data in 128bit chunks (i.e. 4 words).
     static_assert(kEntropyCsrngBitsBufferNumWords == 4,
-      "kEntropyCsrngBitsBufferNumWords must be a power of 2.");
+                  "kEntropyCsrngBitsBufferNumWords must be a power of 2.");
     if (i & (kEntropyCsrngBitsBufferNumWords - 1)) {
       uint32_t reg;
       do {
