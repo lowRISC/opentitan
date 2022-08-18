@@ -345,10 +345,10 @@ class kmac_base_vseq extends cip_base_vseq #(
   virtual task check_state();
     bit [TL_DW-1:0] data;
 
+    csr_rd(.ptr(ral.status), .value(data));
+
     csr_rd(.ptr(ral.intr_state), .value(data));
     csr_wr(.ptr(ral.intr_state), .value(data));
-
-    csr_rd(.ptr(ral.status), .value(data));
   endtask
 
   virtual task check_err(bit clear_err = 1'b1);

@@ -174,6 +174,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // through the data read phase.
   bit [TL_DBW-1:0] state_mask;
 
+  // This mask is used to avoid building a cycle accurate scoreboard to check kmac message fifo.
+  // This SCB will only check that when KmacStatusFifoFull is set, the FIFO depth should be full
+  // depth; when KmacStatusFifoEmpty is set, the FIFO depth should be 0. If none of them are set,
+  // the Fifo depth should be between 0 and the max value.
+  // The actually FIFO depth is covered in direct sequence.
+  bit [TL_DW-1:0] status_mask = (1'b1 << KmacStatusFifoFull) |
+                                (1'b1 << KmacStatusFifoEmpty) |
+                                ({KMAC_FIFO_DEPTH{1'b1}} << KmacStatusFifoDepthLSB);
+
   // TLM fifos
   uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_rsp_fifo[kmac_pkg::NumAppIntf];
   uvm_tlm_analysis_fifo #(push_pull_agent_pkg::push_pull_item #(
@@ -633,6 +642,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 if (do_check_digest) check_digest();
 
                 in_kmac_app = 0;
+                sha3_absorb = 0;
                 `uvm_info(`gfn, "dropped in_kmac_app", UVM_HIGH)
 
                 clear_state();
@@ -709,14 +719,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             `uvm_info(`gfn, "raised sha3_squeeze", UVM_HIGH)
 
             // sha3_squeeze goes low in one of three cases:
-            // - manual squeezing is requested
-            // - KMAC_APP operation finishes
-            // - CmdDone is written
-            `DV_SPINWAIT_EXIT(
-                @(posedge req_manual_squeeze);
-                ,
-                wait(checked_kmac_cmd == CmdDone || (is_kmac_app_op && !in_kmac_app));
-            )
+            // - Manual squeezing is requested - this will be checked in sequence level. Scb is
+            //   trying to avoid cycle accurate checking when squeeze starts and finishes.
+            // - KMAC_APP operation finishes.
+            // - CmdDone is written.
+            wait(checked_kmac_cmd == CmdDone || (is_kmac_app_op && !in_kmac_app));
             sha3_squeeze = 0;
             `uvm_info(`gfn, "dropped sha3_squeeze", UVM_HIGH)
           end
@@ -805,22 +812,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end
           // sample intr coverage
           if (cfg.en_cov) begin
-            bit [TL_DW-1:0]         intr_en  = `gmv(ral.intr_enable);
-            bit [KmacNumIntrs-1:0]  intr_exp = `gmv(ral.intr_state);
+            bit [TL_DW-1:0]        intr_en  = `gmv(ral.intr_enable);
+            bit [KmacNumIntrs-1:0] intr_exp = `gmv(ral.intr_state);
             foreach (intr_exp[i]) begin
               cov.intr_cg.sample(i, intr_en[i], item.d_data);
               cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
             end
           end
-        end else if (addr_phase_read) begin
-
-          void'(ral.intr_state.kmac_done.predict(
-              .value(intr_kmac_done), .kind(UVM_PREDICT_READ)));
-          void'(ral.intr_state.kmac_err.predict(
-              .value(intr_kmac_err), .kind(UVM_PREDICT_READ)));
-          void'(ral.intr_state.fifo_empty.predict(
-              .value(intr_fifo_empty), .kind(UVM_PREDICT_READ)));
-
         end
       end
       "intr_enable": begin
@@ -995,6 +993,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   unchecked_kmac_cmd = CmdManualRun;
 
                   req_manual_squeeze = 1;
+                  // Mask out status sequeeze check because it requires cycle accurate prediction.
+                  // Use sequence to backdoor check if sequeeze is reset to 0 after each squeeze
+                  // command.
+                  status_mask[KmacStatusSha3Squeeze] = 1;
                   `uvm_info(`gfn, "raised req_manual_squeeze", UVM_HIGH)
                 end else begin // SW sent wrong command
 
@@ -1013,6 +1015,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   if (cfg.en_cov) begin
                     cov.msg_len_cg.sample(msg.size());
                   end
+
+                  status_mask[KmacStatusSha3Squeeze] = 0;
 
                   // Calculate the digest using DPI and check for correctness
                   if (do_check_digest) check_digest();
@@ -1069,7 +1073,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           void'(ral.status.predict(.value(exp_status), .kind(UVM_PREDICT_READ)));
 
         end else if (data_phase_read) begin
-          bit[TL_DW-1:0] mask;
           do_read_check = 0;
 
           // Check fifo empty/full and fifo depth are aligned.
@@ -1086,24 +1089,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                  $sformatf("Status (val:%0h) error when fifo full! Expect Fifo Depth to be %0h",
                  item.d_data, KMAC_FIFO_DEPTH))
          end else begin
-            // TODO: issue #14286.
-            //`DV_CHECK_GT(item.d_data[KmacStatusFifoDepthMSB : KmacStatusFifoDepthLSB], 0,
-            //     $sformatf("Status (val:%0h) error! Depth cannot be 0 when fifo empty is not set",
-            //     item.d_data))
+            // When fifo empty is not set, we still allow one clock cycle where the fifo depth is
+            // set to 0. This is documented in issue #14286.
             `DV_CHECK_LT(item.d_data[KmacStatusFifoDepthMSB : KmacStatusFifoDepthLSB],
                  KMAC_FIFO_DEPTH,
                  $sformatf("Status (val:%0h) error! Depth cannot be %0h when fifo full is not set",
                  item.d_data, KMAC_FIFO_DEPTH))
          end
-
-         // Check other values.
-         mask[KmacStatusFifoDepthMSB : KmacStatusFifoDepthLSB] = '1;
-         mask[KmacStatusFifoFull] = 1;
-         mask[KmacStatusFifoEmpty] = 1;
-
-         // TODO: modify sequence and re-enable this check.
-         //`DV_CHECK_EQ(csr.get_mirrored_value() | mask, item.d_data | mask,
-         //             $sformatf("reg name: %0s", csr.get_full_name()))
+         `DV_CHECK_EQ(csr.get_mirrored_value() | status_mask, item.d_data | status_mask,
+                      $sformatf("reg name: %0s", csr.get_full_name()))
         end
       end
       "key_len": begin
@@ -1346,6 +1340,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     kmac_app_block_strb      = '0;
     kmac_app_block_strb_size = 0;
     kmac_app_last            = 0;
+    in_kmac_app              = 0;
     got_data_from_kmac_app   = 0;
 
     prefix_and_keys_done    = 0;
