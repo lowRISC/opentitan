@@ -98,6 +98,10 @@
       name: smoke
       tests: ["entropy_src_smoke"]
     }
+    {
+      name: live
+      tests: ["entropy_src_rng", "entropy_src_fw_ov"]
+    }
   ]
 
   component_a: "uvm_test_top.env.scoreboard"
