@@ -1212,10 +1212,12 @@ module otbn
   // when accessed from the bus. For INSN_CNT, we use "|=>" so that the assertion lines up with
   // "status.q" (a signal that isn't directly accessible here).
   `ASSERT(LockedInsnCntReadsZero_A, (hw2reg.status.d == StatusLocked) |=> insn_cnt == 'd0)
-  `ASSERT(NonIdleImemReadsZero_A,
-          (hw2reg.status.d != StatusIdle) & imem_rvalid_bus |-> imem_rdata_bus == 'd0)
-  `ASSERT(NonIdleDmemReadsZero_A,
-          (hw2reg.status.d != StatusIdle) & dmem_rvalid_bus |-> dmem_rdata_bus == 'd0)
+  `ASSERT(ExecuteOrLockedImemReadsZero_A,
+          (hw2reg.status.d inside {StatusBusyExecute, StatusLocked}) & imem_rvalid_bus
+          |-> imem_rdata_bus == 'd0)
+  `ASSERT(ExecuteOrLockedDmemReadsZero_A,
+          (hw2reg.status.d inside {StatusBusyExecute, StatusLocked}) & dmem_rvalid_bus
+          |-> dmem_rdata_bus == 'd0)
 
   // From the cycle the core is told to start to when it is done, it must always be busy executing,
   // locking, or both -- even if the core is never done.  We use this property to enable blanking
