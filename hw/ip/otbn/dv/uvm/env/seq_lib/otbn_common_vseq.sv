@@ -116,7 +116,7 @@ class otbn_common_vseq extends otbn_base_vseq;
       fatal_cause = ral.fatal_alert_cause.reg_intg_violation;
     end else begin
       if (if_proxy.sec_cm_type == SecCmPrimCount &&
-          if_proxy.path.match("^tb\.dut\.u_tlul_adapter_sram_[di]mem.*$")) begin
+          !uvm_re_match("*.u_tlul_adapter_sram_*", if_proxy.path)) begin
         // Faults injected into the counters of an OTBN TLUL adapter manifest as bus integrity
         // violation.
         fatal_cause = ral.fatal_alert_cause.bus_intg_violation;
