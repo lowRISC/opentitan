@@ -33,10 +33,12 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       0: begin
         bit wr_en;
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_addr_i";
-        do begin
-          @(cfg.clk_rst_vif.cb);
-          uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_wr_en", wr_en);
-        end while(!wr_en);
+        `DV_SPINWAIT(
+          do begin
+            @(cfg.clk_rst_vif.cb);
+            uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_wr_en", wr_en);
+          end while(!wr_en);
+        )
         uvm_hdl_read(err_path, good_addr);
         // Mask to corrupt 1 to 2 bits of the ispr addr
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
@@ -47,10 +49,12 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       1: begin
         bit rd_en;
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_addr_i";
-        do begin
-          @(cfg.clk_rst_vif.cb);
-          uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_rd_en_i", rd_en);
-        end while(!rd_en);
+        `DV_SPINWAIT(
+          do begin
+            @(cfg.clk_rst_vif.cb);
+            uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_alu_bignum.ispr_rd_en_i", rd_en);
+          end while(!rd_en);
+        )
         uvm_hdl_read(err_path, good_addr);
         // Mask to corrupt 1 to 2 bits of the ispr addr
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
@@ -63,10 +67,12 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         otbn_pkg::alu_op_bignum_e  bad_op;
         bit op_valid;
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.operation_i.op";
-        do begin
-          @(cfg.clk_rst_vif.cb);
-          uvm_hdl_read("tb.dut.u_otbn_core.alu_bignum_operation_valid", op_valid);
-        end while(!op_valid);
+        `DV_SPINWAIT(
+          do begin
+            @(cfg.clk_rst_vif.cb);
+            uvm_hdl_read("tb.dut.u_otbn_core.alu_bignum_operation_valid", op_valid);
+          end while(!op_valid);
+        )
         uvm_hdl_read(err_path, good_op);
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_op,
                                            bad_op != good_op;
@@ -79,10 +85,12 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         bit choose_err;
         otbn_pkg::insn_dec_shared_t insn_dec_shared_i;
         err_path = "tb.dut.u_otbn_core.u_otbn_controller.insn_dec_shared_i";
-        do begin
-          @(cfg.clk_rst_vif.cb);
-          uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_controller.insn_valid_i", insn_valid);
-        end while(!insn_valid);
+        `DV_SPINWAIT(
+          do begin
+            @(cfg.clk_rst_vif.cb);
+            uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_controller.insn_valid_i", insn_valid);
+          end while(!insn_valid);
+        )
         uvm_hdl_read(err_path, insn_dec_shared_i);
         `DV_CHECK_STD_RANDOMIZE_FATAL(choose_err)
         case(choose_err)
@@ -103,10 +111,12 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         bit insn_valid;
         bit [1:0] choose_err;
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 1000));
-        do begin
-          @(cfg.clk_rst_vif.cb);
-          uvm_hdl_read("tb.dut.u_otbn_core.insn_valid", insn_valid);
-        end while(insn_valid);
+        `DV_SPINWAIT(
+          do begin
+            @(cfg.clk_rst_vif.cb);
+            uvm_hdl_read("tb.dut.u_otbn_core.insn_valid", insn_valid);
+          end while(insn_valid);
+        )
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(choose_err, choose_err inside {[0:2]};)
         case(choose_err)
           0: begin
@@ -157,10 +167,12 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           1: begin
             bit zero_acc;
             err_path = "tb.dut.u_otbn_core.u_otbn_mac_bignum.operation_i.zero_acc";
-            do begin
-              @(cfg.clk_rst_vif.cb);
-              uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_mac_bignum.mac_en_i", mac_en);
-            end while(!mac_en);
+            `DV_SPINWAIT(
+              do begin
+                @(cfg.clk_rst_vif.cb);
+                uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_mac_bignum.mac_en_i", mac_en);
+              end while(!mac_en);
+            )
             uvm_hdl_read(err_path, zero_acc);
             `DV_CHECK_FATAL(uvm_hdl_force(err_path, !zero_acc) == 1);
           end
@@ -179,10 +191,12 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           0: begin
             bit [1:0] en;
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_addr_i[4:0]";
-            do begin
-              @(cfg.clk_rst_vif.cb);
-              uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_en_i[1:0]", en);
-            end while(!en);
+            `DV_SPINWAIT(
+              do begin
+                @(cfg.clk_rst_vif.cb);
+                uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_en_i[1:0]", en);
+              end while(!en);
+            )
             uvm_hdl_read(err_path, addr);
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
             addr = addr ^ mask;
@@ -191,10 +205,12 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           1: begin
             bit en;
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_addr_a_i";
-            do begin
-              @(cfg.clk_rst_vif.cb);
-              uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_en_a_i", en);
-            end while(!en);
+            `DV_SPINWAIT(
+              do begin
+                @(cfg.clk_rst_vif.cb);
+                uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_en_a_i", en);
+              end while(!en);
+            )
             uvm_hdl_read(err_path, addr);
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
             addr = addr ^ mask;
@@ -203,10 +219,12 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           2: begin
             bit en;
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_addr_b_i";
-            do begin
-              @(cfg.clk_rst_vif.cb);
-              uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_en_b_i", en);
-            end while(!en);
+            `DV_SPINWAIT(
+              do begin
+                @(cfg.clk_rst_vif.cb);
+                uvm_hdl_read("tb.dut.u_otbn_core.u_otbn_rf_bignum.rd_en_b_i", en);
+              end while(!en);
+            )
             uvm_hdl_read(err_path, addr);
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
             addr = addr ^ mask;
