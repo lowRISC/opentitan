@@ -155,9 +155,18 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       5: begin
         bit mac_en;
         bit choose_err;
+        bit insn_valid;
         `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusBusyExecute)
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
         `DV_CHECK_STD_RANDOMIZE_FATAL(choose_err)
+        // Wait for valid instruction, because `otbn_core` only propagates bignum MAC predec errors
+        // for valid instructions.
+        `DV_SPINWAIT(
+          do begin
+            @(cfg.clk_rst_vif.cb);
+            uvm_hdl_read("tb.dut.u_otbn_core.insn_valid", insn_valid);
+          end while(!insn_valid);
+        )
         case(choose_err)
           0: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_mac_bignum.mac_en_i";
