@@ -367,8 +367,11 @@ module otbn_controller
   // Set the *locking* output when the next state is the *locked* state and no secure wipe is
   // running or there is a URND reseed error.  `locking_o` is thus set only after the secure wipe
   // has completed or if it cannot complete due to an URND reseed error (in which case
-  // `secure_wipe_req_o` and `urnd_reseed_err_i` will remain high).
-  assign locking_o = (state_d == OtbnStateLocked) & (~secure_wipe_req_o | urnd_reseed_err_i);
+  // `secure_wipe_req_o` and `urnd_reseed_err_i` will remain high).  The condition for secure wipe
+  // running involves `secure_wipe_running_i`, which is high for the initial secure wipe, and
+  // `secure_wipe_req_o`, which is high for post-execution secure wipes.
+  assign locking_o = (state_d == OtbnStateLocked) & (~(secure_wipe_running_i | secure_wipe_req_o) |
+                                                     urnd_reseed_err_i);
 
   assign start_secure_wipe = executing & (done_complete | err);
 
