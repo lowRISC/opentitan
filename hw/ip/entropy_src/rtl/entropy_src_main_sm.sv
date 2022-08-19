@@ -88,6 +88,23 @@ module entropy_src_main_sm #(
 
   state_e state_d, state_q;
 
+  logic   start_mask_d, start_mask_q;
+  logic   sha3_start_unmasked;
+
+  always_ff @(posedge clk_i, negedge rst_ni) begin
+    if (!rst_ni) begin
+      start_mask_q <= 1'b0;
+    end else begin
+      start_mask_q <= start_mask_d;
+    end
+  end
+
+  assign start_mask_d = sha3_start_unmasked ? 1'b1 :
+                        sha3_process_o      ? 1'b0 :
+                        start_mask_q;
+
+  assign sha3_start_o  = sha3_start_unmasked & ~start_mask_q;
+
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Idle)
 
   assign main_sm_state_o = state_q;
@@ -98,7 +115,7 @@ module entropy_src_main_sm #(
     main_stage_push_o = 1'b0;
     bypass_stage_pop_o = 1'b0;
     boot_phase_done_o = 1'b0;
-    sha3_start_o = 1'b0;
+    sha3_start_unmasked = 1'b0;
     sha3_process_o = 1'b0;
     sha3_done_o = prim_mubi_pkg::MuBi4False;
     cs_aes_halt_req_o = 1'b0;
@@ -166,7 +183,7 @@ module entropy_src_main_sm #(
         if (!enable_i || sfifo_esfinal_full_i) begin
           state_d = Idle;
         end else begin
-          sha3_start_o = 1'b1;
+          sha3_start_unmasked = 1'b1;
           state_d = StartupPhase1;
         end
       end
@@ -215,7 +232,7 @@ module entropy_src_main_sm #(
         if (!enable_i || sfifo_esfinal_full_i) begin
           state_d = Idle;
         end else begin
-          sha3_start_o = 1'b1;
+          sha3_start_unmasked = 1'b1;
           state_d = ContHTRunning;
         end
       end
@@ -227,7 +244,7 @@ module entropy_src_main_sm #(
       end
       FWInsertStart: begin
         if (fw_ov_sha3_start_i || !enable_i) begin
-          sha3_start_o = 1'b1;
+          sha3_start_unmasked = 1'b1;
           state_d = FWInsertMsg;
         end
       end
