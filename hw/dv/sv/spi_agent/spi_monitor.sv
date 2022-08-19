@@ -228,7 +228,10 @@ class spi_monitor extends dv_base_monitor#(
 
         // only send out the item when opcode is fully received, otherwise,
         // it's consider dropped
-        if (opcode_received) host_analysis_port.write(item);
+        if (opcode_received) begin
+          host_analysis_port.write(item);
+          item.mon_item_complete = 1;
+        end
       end
     join
   endtask : collect_flash_trans

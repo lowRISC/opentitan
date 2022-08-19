@@ -24,6 +24,11 @@ class spi_item extends uvm_sequence_item;
   rand uint dummy_clk_cnt;
   rand uint dummy_sck_length_ns;
 
+  // transaction status. only use in monitor on flash mode
+  // allow scb to process payload when one byte data is received, instead
+  // of wait until the entire item is collected. This indicates item has collected all data.
+  bit mon_item_complete;
+
   // constrain size of data sent / received to be at most 64kB
   constraint data_size_c { data.size() inside {[1:65536]}; }
 
