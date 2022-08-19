@@ -196,6 +196,16 @@ static void otbn_init_irq(void) {
 }
 
 /**
+ * Securely wipes OTBN DMEM and waits for Done interrupt.
+ *
+ * @param otbn_ctx The OTBN context object.
+ */
+static void otbn_wipe_dmem(otbn_t *otbn_ctx) {
+  CHECK_DIF_OK(dif_otbn_write_cmd(&otbn_ctx->dif, kDifOtbnCmdSecWipeDmem));
+  otbn_wait_for_done_irq(otbn_ctx);
+}
+
+/**
  * CHECK()s that the actual data matches the expected data.
  *
  * @param actual The actual data.
@@ -398,9 +408,9 @@ static void test_ecdsa_p256_roundtrip(void) {
   p256_ecdsa_sign(&otbn_ctx, kIn, kPrivateKeyD, signature_r, signature_s);
   profile_end(t_start_sign, "Sign");
 
-  // Clear OTBN memory and reload app
-  LOG_INFO("Clearing OTBN memory and reloading app");
-  CHECK(otbn_zero_data_memory(&otbn_ctx) == kOtbnOk);
+  // Securely wipe OTBN data memory and reload app
+  LOG_INFO("Wiping OTBN DMEM and reloading app");
+  otbn_wipe_dmem(&otbn_ctx);
   CHECK(otbn_load_app(&otbn_ctx, kOtbnAppP256Ecdsa) == kOtbnOk);
 
   // Verify
@@ -417,9 +427,9 @@ static void test_ecdsa_p256_roundtrip(void) {
   check_data("signature_x_r", signature_r, signature_x_r, 32);
   profile_end(t_start_verify, "Verify");
 
-  // Clear OTBN memory
-  LOG_INFO("Clearing OTBN memory");
-  CHECK(otbn_zero_data_memory(&otbn_ctx) == kOtbnOk);
+  // Securely wipe OTBN data memory
+  LOG_INFO("Wiping OTBN DMEM");
+  otbn_wipe_dmem(&otbn_ctx);
 }
 
 bool test_main(void) {
