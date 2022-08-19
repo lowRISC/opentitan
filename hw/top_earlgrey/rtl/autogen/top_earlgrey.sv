@@ -54,6 +54,7 @@ module top_earlgrey #(
   parameter bit SecFlashCtrlScrambleEn = 1,
   parameter int FlashCtrlProgFifoDepth = 4,
   parameter int FlashCtrlRdFifoDepth = 16,
+  parameter int FlashCtrlModelOnlyProgLatency = 50,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::JTAG_IDCODE,
   // parameters for rv_plic
@@ -2061,7 +2062,8 @@ module top_earlgrey #(
     .RndCnstLfsrPerm(RndCnstFlashCtrlLfsrPerm),
     .SecScrambleEn(SecFlashCtrlScrambleEn),
     .ProgFifoDepth(FlashCtrlProgFifoDepth),
-    .RdFifoDepth(FlashCtrlRdFifoDepth)
+    .RdFifoDepth(FlashCtrlRdFifoDepth),
+    .ModelOnlyProgLatency(FlashCtrlModelOnlyProgLatency)
   ) u_flash_ctrl (
 
       // Input
