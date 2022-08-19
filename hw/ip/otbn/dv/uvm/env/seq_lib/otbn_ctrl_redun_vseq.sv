@@ -155,7 +155,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       5: begin
         bit mac_en;
         bit choose_err;
-        wait (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusBusyExecute);
+        `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusBusyExecute)
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
         `DV_CHECK_STD_RANDOMIZE_FATAL(choose_err)
         case(choose_err)
@@ -241,7 +241,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
     endcase
     `uvm_info(`gfn, "injecting bad internal state error into ISS", UVM_HIGH)
     cfg.model_agent_cfg.vif.send_err_escalation(err_val);
-    wait(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked);
+    `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
     `DV_CHECK_FATAL(uvm_hdl_release(err_path) == 1);
     reset_if_locked();
   endtask
