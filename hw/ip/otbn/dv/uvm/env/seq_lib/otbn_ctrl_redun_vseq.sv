@@ -115,7 +115,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
           do begin
             @(cfg.clk_rst_vif.cb);
             uvm_hdl_read("tb.dut.u_otbn_core.insn_valid", insn_valid);
-          end while(insn_valid);
+          end while(!insn_valid);
         )
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(choose_err, choose_err inside {[0:2]};)
         case(choose_err)
