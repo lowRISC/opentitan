@@ -4,7 +4,7 @@
 
 // host direct back to back read test. Testing pipeline architecture
 // of host interface reads with and without scrambling enabled.
-class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
+class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_fetch_code_vseq;
   `uvm_object_utils(flash_ctrl_host_dir_rd_vseq)
 
   `uvm_object_new
@@ -26,17 +26,10 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
 
   endfunction
 
-  // Randomized flash ctrl operation.
-  rand flash_op_t flash_op;
-
-  rand uint bank;
-
-  bit poll_fifo_status;
 
   // Constraint address to be in relevant range for the selected partition.
   constraint addr_c {
     solve bank before flash_op;
-    bank inside {[0 : flash_ctrl_pkg::NumBanks - 1]};
     flash_op.addr inside {[BytesPerBank * bank : BytesPerBank * (bank + 1) - BytesPerBank / 2]};
   }
 
@@ -48,24 +41,8 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
     flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth];
   }
 
-  // Flash ctrl operation data queue - used for programing or reading the flash.
-  rand data_q_t flash_op_data;
-
   // Single direct read data
   data_t flash_rd_one_data;
-
-  constraint flash_op_data_c {
-    solve flash_op before flash_op_data;
-    flash_op_data.size() == flash_op.num_words;
-  }
-
-  // Bit vector representing which of the mp region cfg CSRs to enable.
-  rand bit [flash_ctrl_pkg::MpRegions-1:0] en_mp_regions;
-
-  constraint en_mp_regions_c {$countones(en_mp_regions) == cfg.seq_cfg.num_en_mp_regions;}
-
-  // Memory protection regions settings.
-  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
 
   constraint mp_regions_c {
     solve en_mp_regions before mp_regions;
@@ -109,16 +86,7 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
   }
 
   // Default flash ctrl region settings.
-  rand mubi4_t default_region_read_en;
-  rand mubi4_t default_region_program_en;
   rand mubi4_t default_region_erase_en;
-  rand mubi4_t default_region_scramble_en;
-  rand mubi4_t default_region_he_en;
-  rand mubi4_t default_region_ecc_en;
-
-  constraint default_region_read_en_c {default_region_read_en == MuBi4True;}
-
-  constraint default_region_program_en_c {default_region_program_en == MuBi4True;}
 
   constraint default_region_erase_en_c {
     default_region_erase_en dist {
@@ -126,16 +94,6 @@ class flash_ctrl_host_dir_rd_vseq extends flash_ctrl_base_vseq;
       MuBi4False :/ (100 - cfg.seq_cfg.default_region_erase_en_pc)
     };
   }
-
-  constraint default_region_he_en_c {
-    default_region_he_en dist {
-      MuBi4True  :/ cfg.seq_cfg.default_region_he_en_pc,
-      MuBi4False :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
-    };
-  }
-
-  constraint default_region_scramble_en_c {default_region_scramble_en == MuBi4False;}
-  constraint default_region_ecc_en_c {default_region_ecc_en == MuBi4False;}
 
   bit   [TL_AW-1:0] read_addr;
   data_4s_t rdata;

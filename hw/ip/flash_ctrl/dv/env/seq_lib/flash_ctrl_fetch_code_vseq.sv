@@ -79,9 +79,10 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
       flash_ctrl_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
     };
 
-    flash_op.num_words inside {[10 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
+    flash_op.num_words >= 10;
+    flash_op.num_words <= (FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]);
     flash_op.num_words <= cfg.seq_cfg.op_max_words;
-    flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth];
+    flash_op.num_words < (FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth]);
   }
 
   // Flash ctrl operation data queue - used for programing or reading the flash.
@@ -122,8 +123,6 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
       mp_regions[i].num_pages <= cfg.seq_cfg.mp_region_max_pages;
 
       // If overlap is not allowed, then each configured region is uniquified.
-      // This creates an ascending order of mp_regions that are configured, so we shuffle it in
-      // post_randomize.
       if (!cfg.seq_cfg.allow_mp_region_overlap) {
         foreach (mp_regions[j]) {
           if (i != j) {
@@ -159,12 +158,13 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
     }
   }
 
-  mubi4_t default_region_read_en;
-  mubi4_t default_region_program_en;
-  mubi4_t default_region_erase_en;
-  mubi4_t default_region_scramble_en;
+  // Default region values
+  mubi4_t default_region_read_en = MuBi4True;
+  mubi4_t default_region_program_en = MuBi4True;
+  mubi4_t default_region_erase_en = MuBi4True;
+  mubi4_t default_region_scramble_en = MuBi4False;
   rand mubi4_t default_region_he_en;
-  rand mubi4_t default_region_ecc_en;
+  mubi4_t default_region_ecc_en = MuBi4False;
 
   // Bank Erasability.
   rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
@@ -182,8 +182,6 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
       MuBi4False :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
     };
   }
-
-  constraint default_region_ecc_en_c {default_region_ecc_en == MuBi4False;}
 
   // Configure sequence knobs to tailor it to smoke seq.
   virtual function void configure_vseq();
@@ -265,12 +263,6 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
 
   // Task to initialize the Flash Access (Enable All Regions)
   virtual task init_flash_regions();
-
-    // Default Region Settings
-    default_region_read_en     = MuBi4True;
-    default_region_program_en  = MuBi4True;
-    default_region_erase_en    = MuBi4True;
-    default_region_scramble_en = MuBi4False;
 
     // Enable Bank Erase
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));

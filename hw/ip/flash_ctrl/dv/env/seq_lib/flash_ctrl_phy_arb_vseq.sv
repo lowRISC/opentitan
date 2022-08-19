@@ -6,43 +6,19 @@
 // 1.Scenario tests on the different banks arbitration
 // 2.Scenario tests on the same bank arbitration
 // 3.Scenario tests lost of priority of host read on the same bank
-class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
+class flash_ctrl_phy_arb_vseq extends flash_ctrl_fetch_code_vseq;
   `uvm_object_utils(flash_ctrl_phy_arb_vseq)
 
   `uvm_object_new
 
-  // Configure sequence knobs to tailor it to smoke seq.
-  virtual function void configure_vseq();
-    // MAx number of transactions.
-    cfg.seq_cfg.max_num_trans           = 10;
-
-    // Do no more than 16 words per op.
-    cfg.seq_cfg.op_max_words            = 16;
-
-    // no overlap mp regions
-    cfg.seq_cfg.allow_mp_region_overlap = 0;
-
-    // enable high endurance
-    cfg.seq_cfg.mp_region_he_en_pc      = 50;
-    cfg.seq_cfg.default_region_he_en_pc = 50;
-
-    cfg.seq_cfg.op_readonly_on_info_partition  = 1;
-    cfg.seq_cfg.op_readonly_on_info1_partition = 1;
-
-  endfunction
-
   // Randomized flash ctrl operation.
-  rand flash_op_t flash_op;
   rand flash_op_t flash_op_host_rd;
   data_q_t flash_rd_data;
 
-  rand uint bank;
   rand uint bank_rd;
 
   // knob for testing arbitration on same or different banks
   logic bank_same = 0;
-
-  bit poll_fifo_status;
 
   // Constraint for banks.
   constraint bank_c {
@@ -52,53 +28,11 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
     bank_rd inside {[0 : flash_ctrl_pkg::NumBanks - 1]};
   }
 
-  // Constraint controller address to be in relevant range for the selected partition.
-  constraint addr_c {
-    solve bank before flash_op;
-    flash_op.addr inside {[BytesPerBank * bank : BytesPerBank * (bank + 1)]};
-    if (flash_op.partition != FlashPartData) {
-      flash_op.addr inside
-       {[0:InfoTypeBytes[flash_op.partition>>1]-1],
-        [BytesPerBank:BytesPerBank+InfoTypeBytes[flash_op.partition>>1]-1]};
-    }
-  }
-
   // Constraint host read address to be in relevant range for the selected partition.
   constraint addr_rd_c {
     solve bank_rd before flash_op_host_rd;
     flash_op_host_rd.addr inside {[BytesPerBank * bank_rd :
                                    BytesPerBank * (bank_rd + 1) - BytesPerBank / 2]};
-  }
-
-  constraint flash_op_c {
-    // Bank erase is supported only for data & 1st info partitions
-    flash_op.partition != FlashPartData && flash_op.partition != FlashPartInfo ->
-        flash_op.erase_type == flash_ctrl_pkg::FlashErasePage;
-
-    if (cfg.seq_cfg.op_readonly_on_info_partition) {
-      flash_op.partition == FlashPartInfo ->
-        flash_op.op == flash_ctrl_pkg::FlashOpRead;
-    }
-
-    if (cfg.seq_cfg.op_readonly_on_info1_partition) {
-      flash_op.partition == FlashPartInfo1 ->
-        flash_op.op == flash_ctrl_pkg::FlashOpRead;
-    }
-
-    if (flash_op.partition == FlashPartInfo2) {
-        flash_op.op == flash_ctrl_pkg::FlashOpRead;
-    }
-
-    flash_op.op inside {[flash_ctrl_pkg::FlashOpRead : flash_ctrl_pkg::FlashOpErase]};
-    (flash_op.op == flash_ctrl_pkg::FlashOpErase) ->
-    flash_op.erase_type dist {
-      flash_ctrl_pkg::FlashErasePage :/ (100 - cfg.seq_cfg.op_erase_type_bank_pc),
-      flash_ctrl_pkg::FlashEraseBank :/ cfg.seq_cfg.op_erase_type_bank_pc
-    };
-
-    flash_op.num_words inside {[10 : FlashNumBusWords - flash_op.addr[TL_AW-1:TL_SZW]]};
-    flash_op.num_words <= cfg.seq_cfg.op_max_words;
-    flash_op.num_words < FlashPgmRes - flash_op.addr[TL_SZW+:FlashPgmResWidth];
   }
 
   constraint flash_op_host_rd_c {
@@ -109,129 +43,6 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
     flash_op_host_rd.num_words < FlashPgmRes - flash_op_host_rd.addr[TL_SZW+:FlashPgmResWidth];
   }
 
-  // Flash ctrl operation data queue - used for programing or reading the flash.
-  rand data_q_t flash_op_data;
-  constraint flash_op_data_c {
-    solve flash_op before flash_op_data;
-    if (flash_op.op inside {flash_ctrl_pkg::FlashOpRead, flash_ctrl_pkg::FlashOpProgram}) {
-      flash_op_data.size() == flash_op.num_words;
-    } else {
-      flash_op_data.size() == 0;
-    }
-  }
-
-  // Bit vector representing which of the mp region cfg CSRs to enable.
-  rand bit [flash_ctrl_pkg::MpRegions-1:0] en_mp_regions;
-
-  constraint en_mp_regions_c {$countones(en_mp_regions) == cfg.seq_cfg.num_en_mp_regions;}
-
-  // Memory protection regions settings.
-  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
-
-  constraint mp_regions_c {
-    solve en_mp_regions before mp_regions;
-
-    foreach (mp_regions[i]) {
-      mp_regions[i].en == mubi4_bool_to_mubi(en_mp_regions[i]);
-
-      mp_regions[i].read_en == MuBi4True;
-
-      mp_regions[i].program_en == MuBi4True;
-
-      mp_regions[i].erase_en == MuBi4True;
-
-      mp_regions[i].scramble_en == MuBi4False;
-
-      mp_regions[i].ecc_en == MuBi4False;
-
-      mp_regions[i].he_en dist {
-        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
-        MuBi4True  :/ cfg.seq_cfg.mp_region_he_en_pc
-      };
-
-      mp_regions[i].start_page inside {[0 : FlashNumPages - 1]};
-      mp_regions[i].num_pages inside {[1 : FlashNumPages - mp_regions[i].start_page]};
-      mp_regions[i].num_pages <= cfg.seq_cfg.mp_region_max_pages;
-
-      // If overlap not allowed, then each configured region is uniquified.
-      // This creates an ascending order of mp_regions that are configured, so we shuffle it in
-      // post_randomize.
-      if (!cfg.seq_cfg.allow_mp_region_overlap) {
-        foreach (mp_regions[j]) {
-          if (i != j) {
-            !mp_regions[i].start_page inside {
-              [mp_regions[j].start_page:mp_regions[j].start_page + mp_regions[j].num_pages]
-            };
-          }
-        }
-      }
-    }
-  }
-
-  // Information partitions memory protection rpages settings.
-  rand flash_bank_mp_info_page_cfg_t
-         mp_info_pages[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
-
-  constraint mp_info_pages_c {
-
-    foreach (mp_info_pages[i, j]) {
-
-      mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
-
-      foreach (mp_info_pages[i][j][k]) {
-
-        mp_info_pages[i][j][k].en == MuBi4True;
-
-        mp_info_pages[i][j][k].read_en == MuBi4True;
-
-        mp_info_pages[i][j][k].program_en == MuBi4True;
-
-        mp_info_pages[i][j][k].erase_en == MuBi4True;
-
-        mp_info_pages[i][j][k].scramble_en == MuBi4False;
-
-        mp_info_pages[i][j][k].ecc_en == MuBi4False;
-
-        mp_info_pages[i][j][k].he_en dist {
-          MuBi4False :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
-          MuBi4True :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
-        };
-
-      }
-    }
-  }
-
-  // Default flash ctrl region settings.
-  rand mubi4_t default_region_read_en;
-  rand mubi4_t default_region_program_en;
-  rand mubi4_t default_region_erase_en;
-  mubi4_t default_region_scramble_en;
-  rand mubi4_t default_region_he_en;
-  rand mubi4_t default_region_ecc_en;
-
-  constraint default_region_read_en_c {default_region_read_en == MuBi4True;}
-
-  constraint default_region_program_en_c {default_region_program_en == MuBi4True;}
-
-  constraint default_region_erase_en_c {default_region_erase_en == MuBi4True;}
-
-  // Bank erasability.
-  rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
-
-  constraint bank_erase_en_c {
-    foreach (bank_erase_en[i]) {
-      bank_erase_en[i] == 1;
-    }
-  }
-
-  constraint default_region_he_en_c {
-    default_region_he_en dist {
-      MuBi4True :/ cfg.seq_cfg.default_region_he_en_pc,
-      MuBi4False :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
-    };
-  }
-
-  constraint default_region_ecc_en_c {default_region_ecc_en == MuBi4False;}
 
   addr_t read_addr;
 
@@ -239,6 +50,14 @@ class flash_ctrl_phy_arb_vseq extends flash_ctrl_base_vseq;
   data_t flash_rd_one_data;
 
   localparam data_t ALL_ONES = {TL_DW{1'b1}};
+
+  // Configure sequence knobs to tailor it to smoke seq.
+  virtual function void configure_vseq();
+    // MAx number of transactions.
+    cfg.seq_cfg.max_num_trans           = 10;
+
+    super.configure_vseq();
+  endfunction
 
   virtual task body();
 
