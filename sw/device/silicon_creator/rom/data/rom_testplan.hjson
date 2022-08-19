@@ -121,6 +121,369 @@
       tests: []
     }
 
+    {
+      name: rom_e2e_bootstrap_enabled_requested
+      desc: '''Verify that ROM enters bootstrap when enabled in OTP and requested.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Apply bootstrap pin strapping.
+            - Reset the chip.
+            - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_enabled_not_requested
+      desc: '''Verify that ROM does not enter bootstrap when enabled in OTP but not requested.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Do not apply bootstrap pin strapping.
+            - Reset the chip.
+            - Verify that the chip outputs the expected `BFV`: `0142500d` over UART.
+              - ROM will continously reset the chip and output the same `BFV`.
+            - Verify that the chip does not respond to `READ_STATUS` (`0x05`).
+              - The data on the CIPO line must be `0xff`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_disabled_requested
+      desc: '''Verify that ROM does not enter bootstrap when disabled in OTP but requested.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolFalse` (`0x1d4`).
+
+            - Apply bootstrap pin strapping.
+            - Reset the chip.
+            - Verify that the chip outputs the expected `BFV`: `0142500d` over UART.
+              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+            - Verify that the chip does not respond to `READ_STATUS` (`0x05`).
+              - The data on the CIPO line must be `0xff`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_disabled_not_requested
+      desc: '''Verify that ROM does not enter bootstrap when disabled in OTP and not requested.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolFalse` (`0x1d4`).
+
+            - Do not apply bootstrap pin strapping.
+            - Reset the chip.
+            - Verify that the chip outputs the expected `BFV`: `0142500d` over UART.
+              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+            - Verify that the chip does not respond to `READ_STATUS` (`0x05`).
+              - The data on the CIPO line must be `0xff`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_read_status
+      desc: '''Verify that bootstrap handles `READ_STATUS` correctly.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Apply bootstrap pin strapping.
+            - Reset the chip.
+            - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
+
+            See `rom_e2e_bootstrap_enabled_requested`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_watchdog_disabled
+      desc: '''Verify that watchdog is disabled upon entering bootstrap.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+            `OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES` OTP item must be `0x30d40`
+
+            - For TEST, DEV, PROD, PROD_END, and RMA life cycle states:
+              - Apply bootstrap pin strapping.
+              - Reset the chip.
+              - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
+              - Release bootstrap pin strapping and wait for 2 seconds.
+                - Note: Watchdog is always disabled in TEST and RMA. In other states, the threshold
+                  is set to `OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES`.
+              - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
+              - Verify that there was no output from UART.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_read_id
+      desc: '''Verify the JEDEC ID used during bootstrap.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Apply bootstrap pin strapping.
+            - Reset the chip.
+            - Verify that the chip responds to `READ_JEDEC_ID` (`0x9f`) with
+              - 12 repetitions of the continuation code `0x7f`,
+              - manufacturer ID `0xef`, and
+              - density `0x14`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_read_sfdp
+      desc: '''Verify the SFDP table used during bootstrap.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Apply bootstrap pin strapping.
+            - Reset the chip.
+            - Verify that the chip responds to `READ_SFDP` (`0x5a`).
+            - Verify the SFDP header structure. See this
+              [document](https://docs.google.com/document/d/1X_x7f62IrPeHRLGBzybhDu9TsvsSCb6_1uKOjQO_fI4/edit?resourcekey=0-vLsVqyrt1F2mGwLrz73uwA#heading=h.gc2hf662pvy9).
+            - Verify the JEDEC Basic Flash Parameter Table. See this
+              [spreadsheet](https://docs.google.com/spreadsheets/d/1cioU3HgsWZXD4-eoUiH9TuVLZeFpucSdjyq5HND-FpQ/edit#gid=0).
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_write_enable_disable
+      desc: '''Verify that bootstrap handles `WRITE_ENABLE` (`0x06`) and `WRITE_DISABLE` (`0x04`).
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Apply bootstrap pin strapping.
+            - Reset the chip.
+            - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
+            - Send `WRITE_ENABLE` (`0x06`) and `READ_STATUS` (`0x05`).
+            - Verify that the chip responds with the `WEL` bit set, i.e. `0x02`.
+            - Send `WRITE_DISABLE` (`0x04`) and `READ_STATUS` (`0x05`).
+            - Verify that the chip responds with `0x00`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_phase1_reset
+      desc: '''Verify that bootstrap phase 1 handles `RESET` (`0x99`) correctly.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Apply bootstrap pin strapping.
+            - Reset the chip.
+            - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
+            - Send `RESET` (`0x99`).
+            - Verify that the chip outputs the expected `BFV`: `0142500d` over UART.
+              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+            - Verify that the chip does not respond to `READ_STATUS` (`0x05`).
+              - The data on the CIPO line must be `0xff`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_phase1_page_program
+      desc: '''Verify that bootstrap phase 1 ignores `PAGE_PROGRAM` (`0x02`).
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Apply bootstrap pin strapping.
+            - Reset the chip.
+            - Write `0x4552544f` (ASCII "OTRE") at byte offset `0x334`.
+            - Write `0x1` at byte offset `0x374`.
+            - Reset the chip.
+            - Verify that the chip outputs the expected `BFV`: `0142500d` over UART.
+              - If the write succeeds, which shouldn't happen, ROM outputs `024d410d`
+                (`kErrorManifestBadCodeRegion`).
+              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_phase1_erase
+      desc: '''Verify that bootstrap phase 1 handles erase commands correctly.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - For `erase` in {`SECTOR_ERASE` (`0x20`), `CHIP_ERASE` (`0xc7`)}:
+              - Apply bootstrap pin strapping and reset the chip.
+              - Send `erase`.
+              - Write `0x4552544f` (ASCII "OTRE") at byte offset `0x334`.
+              - Write `0x1` at byte offset `0x374`.
+              - Release pins and reset.
+              - Verify that the chip outputs the expected `BFV`: `024d410d` over UART.
+                - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+              - Apply bootstrap pin strapping and reset the chip.
+              - Send `erase`.
+              - Release pins and reset.
+              - Verify that the chip outputs the expected `BFV`: `0142500d` over UART.
+                - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+
+            Note: For additional coverage we can also add another test point that uses a test
+            program on flash.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_phase1_read
+      desc: '''Verify that phase 1 of bootstrap ignores `READ` (`0x03`).
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Apply bootstrap pin strapping and reset the chip.
+            - Send `CHIP_ERASE` (`0xc7`).
+            - Write `0x4552544f` (ASCII "OTRE") at byte offset `0x334`.
+            - Reset the chip.
+            - Verify that the chip outputs the expected `BFV`: `024d410d` over UART.
+              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+            - Apply bootstrap pin strapping and reset the chip.
+            - Send `READ` (`0x03`) followed by the 3-byte address 0x000334.
+              - This is the address of the identifier that was written earlier.
+            - Verify that the chip does not respond for the next 4 bytes.
+              - The data on the CIPO line must be `0xff`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_phase2_reset
+      desc: '''Verify that bootstrap phase 2 handles `RESET` (`0x99`) correctly.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Apply bootstrap pin strapping and reset the chip.
+            - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
+            - Send `CHIP_ERASE` (`0xc7`).
+              - This moves bootstrap to phase 2.
+            - Release pins and send `RESET` (`0x99`).
+            - Verify that the chip outputs the expected `BFV`: `0142500d` over UART.
+              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+            - Verify that the chip does not respond to `READ_STATUS` (`0x05`).
+              - The data on the CIPO line must be `0xff`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_phase2_page_program
+      desc: '''Verify that bootstrap phase 2 handles `PAGE_PROGRAM` (`0x02`) correctly.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Apply bootstrap pin strapping and reset the chip.
+            - Send `erase`.
+            - Write `0x4552544f` (ASCII "OTRE") at byte offset `0x334`.
+            - Release pins and reset.
+            - Verify that the chip outputs the expected `BFV`: `024d410d`
+              (`kErrorManifestBadCodeRegion`) over UART.
+              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+
+            Note: For additional coverage we can also add another test point that uses a test
+            program on flash that verifies that the rest of the flash is empty after bootstrap.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_phase2_erase
+      desc: '''Verify that bootstrap phase 2 handles erase commands correctly.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - For `erase` in {`SECTOR_ERASE` (`0x20`), `CHIP_ERASE` (`0xc7`)}:
+              - Apply bootstrap pin strapping and reset the chip.
+              - Send `erase`.
+              - Write `0x4552544f` (ASCII "OTRE") at byte offset `0x334`.
+              - Write `0x1` at byte offset `0x374`.
+              - Send `erase`.
+              - Release pins and reset.
+              - Verify that the chip outputs the expected `BFV`: `0142500d` over UART.
+                - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+
+            Note: For additional coverage we can also add another test point that uses a test
+            program on flash.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_phase2_read
+      desc: '''Verify that phase 2 of bootstrap ignores `READ` (`0x03`).
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - Apply bootstrap pin strapping and reset the chip.
+            - Send `CHIP_ERASE` (`0xc7`).
+            - Write `0x4552544f` (ASCII "OTRE") at byte offset `0x334`.
+            - Reset the chip.
+            - Verify that the chip outputs the expected `BFV`: `024d410d` over UART.
+              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+            - Apply bootstrap pin strapping and reset the chip.
+            - Send `READ` (`0x03`) followed by the 3-byte address 0x000334.
+              - This is the address of the identifier that was written earlier.
+            - Verify that the chip does not respond for the next 4 bytes.
+              - The data on the CIPO line must be `0xff`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_bootstrap_shutdown
+      desc: '''Verify that invalid addresses trigger shutdown.
+
+            `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
+
+            - For `command` in {`SECTOR_ERASE` (`0xc7`) and `PAGE_PROGRAM (`0x02`)}
+              - Apply bootstrap pin strapping and reset the chip.
+              - Send `command` with invalid 3-byte address, e.g. `0xffffff`.
+              - Verify that the chip outputs the expected `BFV` over UART.
+                - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
     // Functests
     {
       name: rom_functests
@@ -223,174 +586,6 @@
       tests: []
     }
 
-    // Entering Bootstrap Mode
-    {
-      name: rom_e2e_bootstrap_success
-      desc: '''Verify device enters bootstrap mode when strapping pins are set correctly.
-
-            - Test runner loads an OTP image with bootstrap mode enabled.
-            - Test runner sets the strapping pins to the correct levels.
-            - Attempt to boot the chip.
-            - Verify that the chip entered bootstrap mode.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rom_e2e_bootstrap_bad_pin_config
-      desc: '''Verify the device does not enter bootstrap mode when strapping pins are set incorrectly.
-
-            - Test runner loads an OTP image with bootstrap mode enabled.
-            - Test runner sets the strapping pins to levels that do not correspond to entering bootstrap mode.
-            - Attempt to boot the chip.
-            - Verify that the chip does not enter bootstrap mode.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rom_e2e_bootstrap_disabled
-      desc: '''Verify device does not enter bootstrap mode when strapping pins are set correctly, but bootstrap
-            is disabled in the OTP.
-
-            - Test runner loads an OTP image that has bootstrapping mode disabled.
-            - Set the strapping pins to the correct levels for bootstrapping.
-            - Attempt to boot the chip.
-            - Verify that the chip does not enter bootstrap mode.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-
-    // Bootstrap mode
-    {
-      name: rom_e2e_bootstrap_config
-      desc: '''Verify that JEDEC ID and SFDP are configured.
-
-            - Test runner configures chip to enter bootstrap mode.
-            - In bootstrap mode, read JEDEC Device ID
-            - Verify that it matches the lowRISC JEDEC ID.
-            - SW reads SFDP and verifies that it is correct.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rom_e2e_bootstrap_phase1_reset_op
-      desc: '''Verify that phase 1 of bootstrap handles RESET ops correctly.
-
-            - Enter bootstrap mode.
-            - Test runner issues a RESET opcode.
-            - Verify that the bootstrap process aborted.
-            - Verify that the flash does not change. Phase 1 only allows the ERASE opcode.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rom_e2e_bootstrap_phase1_read_op
-      desc: '''Verify that phase 1 of bootstrap handles READ ops correctly.
-
-            - Enter bootstrap mode.
-            - Test runner issues a READ opcode.
-            - Verify that the flash returns 0xFF. Phase 1 only allows the ERASE opcode.
-            - Abort the bootstrap process.
-            - Verify that the flash contents are unchanged.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rom_e2e_bootstrap_phase1_page_program_op
-      desc: '''Verify that phase 1 of bootstrap handles PAGE_PROGRAM ops correctly.
-
-            - Enter bootstrap mode.
-            - Test runner issues a PAGE_PROGRAM opcode.
-            - Abort the bootstrap process.
-            - Verify that the flash does not change. Phase 1 only allows the ERASE opcode.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rom_e2e_bootstrap_phase1_erase_op
-      desc: '''Verify that phase 1 of bootstrap handles ERASE ops correctly.
-
-            - Enter bootstrap mode.
-            - Test runner issues an ERASE opcode.
-            - Abort the bootstrap process.
-            - Verify that the entire flash DATA segment is erased.
-            - Verify that the flash INFO segment is unchanged.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rom_e2e_bootstrap_phase2_reset_op
-      desc: '''Verify that phase 2 of bootstrap handles RESET ops correctly.
-
-            - Enter bootstrap mode.
-            - Issue ERASE opcode to enter phase 2.
-            - Issue RSTEN opcode.
-            - Issue RESET opcode.
-            - Verify that bootstrap was exited and that the chip was reset.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rom_e2e_phase2_page_program_op
-      desc: '''Verify that phase 2 of bootstrap correctly handles the PAGE_PROGRAM opcode.
-
-            - Enter bootstrap mode.
-            - Issue ERASE opcode to enter phase 2.
-            - Issue PAGE_PROGRAM opcode with an invalid address.
-            - Issue PAGE_PROGRAM opcode with a valid address.
-            - Issue RESET opcode to exit bootstrap and reset the chip.
-            - Verify that the valid address is correctly programmed and that the rest of flash is unchanged.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rom_e2e_phase2_erase_op
-      desc: '''Verify that phase 2 of bootstrap correctly handles the ERASE opcode.
-
-            - Enter bootstrap mode.
-            - Issue ERASE opcode to enter phase 2.
-            - Issue PAGE_PROGRAM opcode to program a target address.
-            - Issue ERASE opcode to the same target address.
-            - Issue RESET opcode to exit bootstrap and reset the chip.
-            - Verify that the target address was erased and that the rest of flash is unchanged.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rom_e2e_phase2_read_op
-      desc: '''Verify that phase 2 of bootstrap correctly handles the READ opcode.
-
-            - Enter bootstrap mode.
-            - Issue ERASE opcode to enter phase 2.
-            - Issue PAGE_PROGRAM opcode to program a target address.
-            - Issue READ opcode to read the same target address.
-            - Verify that the READ behaves correctly.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
 
     // Chip-specific startup
     {
