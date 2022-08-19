@@ -236,7 +236,7 @@ module prim_reg_cdc_arb #(
     assign src_update_o = src_req & (id_q == SelHwReq);
 
     // once hardware makes an update request, we must eventually see an update pulse
-    `ASSERT(ReqTimeout_A, $rose(id_q == SelHwReq) |-> s_eventually src_update_o,
+    `ASSERT(ReqTimeout_A, $rose(id_q == SelHwReq) |-> s_eventually(src_update_o),
       clk_src_i, !rst_src_ni)
 
     `ifdef INC_ASSERT
@@ -252,7 +252,7 @@ module prim_reg_cdc_arb #(
       end
 
      // once hardware makes an update request, we must eventually see an update pulse
-     `ASSERT(UpdateTimeout_A, $rose(async_flag) |-> s_eventually src_update_o,
+     `ASSERT(UpdateTimeout_A, $rose(async_flag) |-> s_eventually(src_update_o),
        clk_src_i, !rst_src_ni)
     `endif
 
