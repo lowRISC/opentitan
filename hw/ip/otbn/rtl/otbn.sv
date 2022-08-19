@@ -1217,6 +1217,13 @@ module otbn
   `ASSERT(NonIdleDmemReadsZero_A,
           (hw2reg.status.d != StatusIdle) & dmem_rvalid_bus |-> dmem_rdata_bus == 'd0)
 
+  // From the cycle the core is told to start to when it is done, it must always be busy executing,
+  // locking, or both -- even if the core is never done.  We use this property to enable blanking
+  // while the core is executing or locking, and this assertion ensures that there is no gap
+  // between execution and locking.
+  `ASSERT(BusyOrLockingFromStartToDone_A,
+          $rose(start_q) |-> (busy_execute_d | locking) |-> ##[0:$] $rose(done_core))
+
   // Error handling: if we pass an error signal down to the core then we should also be setting an
   // error flag. Note that this uses err_bits, not err_bits_q, because the latter signal only gets
   // asserted when an operation finishes.
