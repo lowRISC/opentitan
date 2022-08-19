@@ -602,7 +602,11 @@ def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
     if os.path.exists(odir):
         # If output directory exists, back it up.
         ts = datetime.fromtimestamp(os.stat(odir).st_ctime).strftime(ts_format)
-        shutil.move(odir, odir.with_name(ts))
+        # Prior to Python 3.9, shutil may run into an error when passing in
+        # Path objects (see https://bugs.python.org/issue32689). While this
+        # has been fixed in Python 3.9, string casts are added so that this
+        # also works with older versions.
+        shutil.move(str(odir), str(odir.with_name(ts)))
 
     # Get list of past output directories sorted by creation time.
     pdir = odir.resolve().parent
