@@ -16,16 +16,12 @@
 //   Check prediction above, Pass/Fail
 // End
 
-class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
+class flash_ctrl_error_prog_win_vseq extends flash_ctrl_fetch_code_vseq;
   `uvm_object_utils(flash_ctrl_error_prog_win_vseq)
 
   `uvm_object_new
 
   // Class Members
-  bit             poll_fifo_status = 1;
-  rand flash_op_t flash_op;
-  rand data_q_t   flash_op_data;
-  rand uint       bank;
   rand bit        exp_alert;
   rand uint       extended_num_words;
   rand data_q_t   extended_data;
@@ -47,15 +43,6 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
     extended_data.size() == extended_num_words;
   }
 
-  // Constraint for Bank.
-  constraint bank_c {bank inside {[0 : flash_ctrl_pkg::NumBanks-1]};}
-
-  // Constraint for controller address to be in relevant range the for the selected partition.
-  constraint addr_c {
-    solve bank before flash_op;
-    flash_op.addr inside {[BytesPerBank * bank : BytesPerBank * (bank+1)]};
-  }
-
   // Constraint for the Flash Operation
   constraint flash_op_c {
 
@@ -68,95 +55,6 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
 
     flash_op.prog_sel inside {FlashProgSelNormal, FlashProgSelRepair};
   }
-
-  // Flash ctrl operation data queue - used for programing in this test
-  constraint flash_op_data_c {
-    solve flash_op.num_words before flash_op_data;
-    flash_op_data.size() == flash_op.num_words;
-  }
-
-  rand flash_mp_region_cfg_t mp_regions[flash_ctrl_pkg::MpRegions];
-
-  constraint mp_regions_c {
-
-    foreach (mp_regions[i]) {
-      mp_regions[i].en == MuBi4False;
-      mp_regions[i].read_en == MuBi4True;
-      mp_regions[i].program_en == MuBi4True;
-      mp_regions[i].erase_en == MuBi4True;
-      mp_regions[i].scramble_en == MuBi4False;
-      mp_regions[i].ecc_en == MuBi4False;
-      mp_regions[i].he_en dist {
-        MuBi4False :/ (100 - cfg.seq_cfg.mp_region_he_en_pc),
-        MuBi4True  :/ cfg.seq_cfg.mp_region_he_en_pc
-      };
-
-      mp_regions[i].start_page inside {[0 : FlashNumPages - 1]};
-      mp_regions[i].num_pages inside {[1 : FlashNumPages - mp_regions[i].start_page]};
-      mp_regions[i].num_pages <= cfg.seq_cfg.mp_region_max_pages;
-
-      // If overlap is not allowed, then each configured region is uniquified.
-      // This creates an ascending order of mp_regions that are configured, so we shuffle it in
-      // post_randomize.
-      if (!cfg.seq_cfg.allow_mp_region_overlap) {
-        foreach (mp_regions[j]) {
-          if (i != j) {
-            !(mp_regions[i].start_page inside {
-              [mp_regions[j].start_page:mp_regions[j].start_page + mp_regions[j].num_pages]
-            });
-          }
-        }
-      }
-    }
-  }
-
-  // Information partitions memory protection settings.
-  rand flash_bank_mp_info_page_cfg_t
-    mp_info_pages[flash_ctrl_pkg::NumBanks][flash_ctrl_pkg::InfoTypes][$];
-
-  constraint mp_info_pages_c {
-    foreach (mp_info_pages[i, j]) {
-      mp_info_pages[i][j].size() == flash_ctrl_pkg::InfoTypeSize[j];
-      foreach (mp_info_pages[i][j][k]) {
-        mp_info_pages[i][j][k].en == MuBi4True;
-        mp_info_pages[i][j][k].read_en == MuBi4True;
-        mp_info_pages[i][j][k].program_en == MuBi4True;
-        mp_info_pages[i][j][k].erase_en == MuBi4True;
-        mp_info_pages[i][j][k].scramble_en == MuBi4False;
-        mp_info_pages[i][j][k].ecc_en == MuBi4False;
-        mp_info_pages[i][j][k].he_en dist {
-          MuBi4False :/ (100 - cfg.seq_cfg.mp_info_page_he_en_pc[i][j]),
-          MuBi4True  :/ cfg.seq_cfg.mp_info_page_he_en_pc[i][j]
-        };
-      }
-    }
-  }
-
-  mubi4_t default_region_read_en;
-  mubi4_t default_region_program_en;
-  mubi4_t default_region_erase_en;
-  mubi4_t default_region_scramble_en;
-  rand mubi4_t default_region_he_en;
-  rand mubi4_t default_region_ecc_en;
-
-  // Bank Erasability.
-  rand bit [flash_ctrl_pkg::NumBanks-1:0] bank_erase_en;
-
-  constraint bank_erase_en_c {
-    foreach (bank_erase_en[i]) {
-      bank_erase_en[i] == 1;
-    }
-  }
-
-  // High Endurance
-  constraint default_region_he_en_c {
-    default_region_he_en dist {
-      MuBi4True  :/ cfg.seq_cfg.default_region_he_en_pc,
-      MuBi4False :/ (100 - cfg.seq_cfg.default_region_he_en_pc)
-    };
-  }
-
-  constraint default_region_ecc_en_c {default_region_ecc_en == MuBi4False;}
 
   // Configure sequence knobs to tailor it to seq.
   virtual function void configure_vseq();
@@ -235,13 +133,6 @@ class flash_ctrl_error_prog_win_vseq extends flash_ctrl_base_vseq;
 
   // Task to initialize the Flash Access (Enable All Regions)
   virtual task init_flash_regions();
-
-    // Default Region Settings
-    default_region_read_en     = MuBi4True;
-    default_region_program_en  = MuBi4True;
-    default_region_erase_en    = MuBi4True;
-    default_region_scramble_en = MuBi4False;
-
     // Enable Bank Erase
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
 
