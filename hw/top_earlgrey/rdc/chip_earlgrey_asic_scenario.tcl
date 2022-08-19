@@ -12,9 +12,16 @@
 
 
 # POR_N
-set_reset_scenario { {POR_N {reset { @t0 0 } { #10 1}}}} -name ScnPOR
+# When POR_N released, POK remains high (already released from reset)
+set_reset_scenario { \
+  { POR_N           { reset {#2 0} { #10 1} }} \
+  { u_ast.vcaon_pok { constraint {@t0 1} }} \
+} -name ScnPOR
 
 # AST POK
+set_reset_scenario { \
+  { u_ast.vcaon_pok { reset {@t0 0} { #2 1} } } \
+} -name ScnPOK
 
 # PWRMGR Reset Cause
 
