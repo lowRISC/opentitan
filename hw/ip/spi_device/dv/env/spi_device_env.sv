@@ -33,6 +33,8 @@ class spi_device_env extends cip_base_env #(
           scoreboard.upstream_spi_host_fifo.analysis_export);
       spi_host_agent.monitor.device_analysis_port.connect(
           scoreboard.upstream_spi_device_fifo.analysis_export);
+      spi_host_agent.monitor.req_analysis_port.connect(
+          scoreboard.upstream_spi_req_fifo.analysis_export);
       spi_device_agent.monitor.host_analysis_port.connect(
           scoreboard.downstream_spi_host_fifo.analysis_export);
     end

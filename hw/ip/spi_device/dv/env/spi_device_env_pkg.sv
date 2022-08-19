@@ -83,10 +83,10 @@ package spi_device_env_pkg;
   parameter uint SRAM_PTR_PHASE_BIT              = SRAM_MSB + 1;
   parameter uint SRAM_WORD_SIZE                  = 4;
   parameter uint ASYNC_FIFO_SIZE                 = 8;
-  parameter uint READ_CMD_START_ADDR             = SRAM_OFFSET;
-  parameter uint READ_CMD_BUFFER_SIZE            = 2048;
+  parameter uint READ_BUFFER_START_ADDR          = SRAM_OFFSET;
+  parameter uint READ_BUFFER_SIZE                = 2048;
   // MAILBOX_START_ADDR is 0x800
-  parameter uint MAILBOX_START_ADDR              = READ_CMD_START_ADDR + READ_CMD_BUFFER_SIZE;
+  parameter uint MAILBOX_START_ADDR              = READ_BUFFER_START_ADDR + READ_BUFFER_SIZE;
   parameter uint MAILBOX_BUFFER_SIZE             = 1024;
   // SFDP_START_ADDR is 0xc00
   parameter uint SFDP_START_ADDR                 = MAILBOX_START_ADDR + MAILBOX_BUFFER_SIZE;

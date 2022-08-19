@@ -11,7 +11,7 @@ class spi_device_pass_cmd_filtering_vseq extends spi_device_pass_base_vseq;
 
     allow_set_cmd_info_invalid = 1;
     allow_use_invalid_opcode = 1;
-    spi_device_flash_pass_init(PassthroughMode);
+    spi_device_flash_pass_init();
 
     for (int i = 0; i < num_trans; ++i) begin
       randomize_op_addr_size();

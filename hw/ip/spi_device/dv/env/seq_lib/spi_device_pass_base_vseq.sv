@@ -21,6 +21,13 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   // we can only hold one payload, set it busy to avoid payload is overwritten before read out.
   bit always_set_busy_when_upload_contain_payload;
 
+  rand device_mode_e device_mode;
+
+  // overide this to enable other modes
+  constraint device_mode_c {
+    device_mode == PassthroughMode;
+  }
+
   bit [7:0] valid_opcode_q[$];
   rand bit valid_op;
   rand bit [7:0] opcode;
@@ -78,6 +85,12 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       (read_start_addr > mbx_end_addr &&
        (read_start_addr + payload_size <= {32{1'b1}} || read_end_addr < mbx_start_addr));
     }
+  }
+
+  constraint addr_size_and_device_mode_c {
+    // flash mode doesn't support mailbox boundary crossing.
+    device_mode == FlashMode ->
+      read_addr_size_type inside {ReadAddrWithinMailbox, ReadAddrOutsideMailbox};
   }
 
   `uvm_object_utils(spi_device_pass_base_vseq)
@@ -247,7 +260,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   endfunction
 
   // Task for flash or pass init
-  virtual task spi_device_flash_pass_init(device_mode_e mode);
+  virtual task spi_device_flash_pass_init();
     spi_device_init();
     `uvm_info(`gfn, "Initialize flash/passthrough mode", UVM_MEDIUM)
     // TODO, fixed config for now
@@ -277,13 +290,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     ral.cfg.cpha.set(1'b0);
     csr_update(.csr(ral.cfg)); // TODO check if randomization possible
     // Set the passthrough or flash mode mode
-    `DV_CHECK(mode inside {FlashMode, PassthroughMode});
-    if (mode == FlashMode) begin
-      ral.control.mode.set(FlashMode);
-    end
-    if (mode == PassthroughMode) begin
-      ral.control.mode.set(PassthroughMode);
-    end
+    `DV_CHECK(device_mode inside {FlashMode, PassthroughMode});
+    ral.control.mode.set(device_mode);
     csr_update(.csr(ral.control));
 
     // addr/payload swap settting
@@ -308,7 +316,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
     // in passthrough, if upload is enabled, need to enable status intercept, so that host side
     // can know if spi_device is busy or not
-    if (allow_upload && mode == PassthroughMode && (`gmv(ral.intercept_en.status) == 0)) begin
+    if (allow_upload && device_mode == PassthroughMode && (`gmv(ral.intercept_en.status) == 0))
+    begin
       ral.intercept_en.status.set(1);
       csr_update(ral.intercept_en);
     end
@@ -502,7 +511,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
     if (payload_depth_val > PAYLOAD_FIFO_SIZE) payload_depth_val = PAYLOAD_FIFO_SIZE;
     // need to shift by 2 for the offset used at mem_rd
-    payload_base_offset = (READ_CMD_BUFFER_SIZE + MAILBOX_BUFFER_SIZE + SFDP_SIZE) / 4;
+    payload_base_offset = (READ_BUFFER_SIZE + MAILBOX_BUFFER_SIZE + SFDP_SIZE) / 4;
     payload_depth_val = payload_depth_val / 4;
     for (int i = 0; i < payload_depth_val; i++) begin
       bit [TL_DW-1:0] val;
