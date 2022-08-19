@@ -453,7 +453,21 @@ jobs:
 
       module load "xilinx/vivado/$(VIVADO_VERSION)"
 
-      util/fpga/splice_rom.sh -t cw310 -T earlgrey -b PROD
+      ci/bazelisk.sh build --define bitstream=gcp_splice \\
+        //hw/bitstream:rom \\
+        //hw/bitstream:test_rom \\
+        //hw/bitstream_rom_mmi \\
+        //hw/bitstream_otp_mmi
+
+      ROM_FILE="$(ci/bazelisk.sh outquery --define bitstream=gcp_splice //hw/bitstream:rom)"
+      TEST_ROM_FILE="$(ci/bazelisk.sh outquery --define bitstream=gcp_splice //hw/bitstream:test_rom)"
+      ROM_MMI_FILE="$(ci/bazelisk.sh outquery --define bitstream=gcp_splice //hw/bitstream:rom_mmi)"
+      OTP_MMI_FILE="$(ci/bazelisk.sh outquery --define bitstream=gcp_splice //hw/bitstream:otp_mmi)"
+
+      echo "##vso[task.setvariable variable=romFile;]$ROM_FILE"
+      echo "##vso[task.setvariable variable=testRomFile;]$TEST_ROM_FILE"
+      echo "##vso[task.setvariable variable=romMmiFile;]$ROM_MMI_FILE"
+      echo "##vso[task.setvariable variable=otpMmiFile;]$OTP_MMI_FILE"
 
     displayName: Splicing bitstream with Vivado
   - template: ci/upload-artifacts-template.yml
