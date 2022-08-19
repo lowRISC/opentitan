@@ -171,8 +171,13 @@
     }
 
     {
-      name: spi_device_pass_all
-      uvm_test_seq: spi_device_pass_all_vseq
+      name: spi_device_flash_mode
+      uvm_test_seq: spi_device_flash_mode_vseq
+    }
+
+    {
+      name: spi_device_flash_all
+      uvm_test_seq: spi_device_flash_all_vseq
     }
   ]
 

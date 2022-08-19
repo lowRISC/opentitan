@@ -29,4 +29,5 @@
 `include "spi_device_mailbox_vseq.sv"
 `include "spi_device_upload_vseq.sv"
 `include "spi_device_cfg_cmd_vseq.sv"
-`include "spi_device_pass_all_vseq.sv"
+`include "spi_device_flash_mode_vseq.sv"
+`include "spi_device_flash_all_vseq.sv"

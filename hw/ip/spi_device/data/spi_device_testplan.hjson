@@ -215,7 +215,7 @@
             - Check opcode and address are passing through again.
             - Invalid opcode is also filtered'''
       milestone: V2
-      tests: ["spi_device_pass_cmd_filtering", "spi_device_pass_all"]
+      tests: ["spi_device_pass_cmd_filtering", "spi_device_flash_all"]
     }
     {
       name: pass_addr_translation
@@ -228,7 +228,7 @@
             - Disable address translation for given command.
             - Check address is now passing unchanged.'''
       milestone: V2
-      tests: ["spi_device_pass_addr_payload_swap", "spi_device_pass_all"]
+      tests: ["spi_device_pass_addr_payload_swap", "spi_device_flash_all"]
     }
     {
       name: pass_payload_translation
@@ -240,7 +240,7 @@
             - Disable payload translation for given command.
             - Check payload is now passing unchanged.'''
       milestone: V2
-      tests: ["spi_device_pass_addr_payload_swap", "spi_device_pass_all"]
+      tests: ["spi_device_pass_addr_payload_swap", "spi_device_flash_all"]
     }
     {
       name: cmd_info_slots
@@ -253,7 +253,7 @@
             - Disable some cmd info slots.
             - Check no propagation of disabled commands.'''
       milestone: V2
-      tests: ["spi_device_pass_all"]
+      tests: ["spi_device_flash_all"]
     }
     {
       name: cmd_read_status
@@ -264,7 +264,7 @@
             - Initiate response to the read status.
             - Check proper reception of response.'''
       milestone: V2
-      tests: ["spi_device_intercept", "spi_device_pass_all"]
+      tests: ["spi_device_intercept", "spi_device_flash_all"]
     }
     {
       name: cmd_read_jedec
@@ -275,7 +275,7 @@
             - Initiate response to the read jedec.
             - Check proper reception of response.'''
       milestone: V2
-      tests: ["spi_device_intercept", "spi_device_pass_all"]
+      tests: ["spi_device_intercept", "spi_device_flash_all"]
     }
     {
       name: cmd_read_sfdp
@@ -286,7 +286,7 @@
             - Initiate response to the read sfdp.
             - Check proper reception of response.'''
       milestone: V2
-      tests: ["spi_device_intercept", "spi_device_pass_all"]
+      tests: ["spi_device_intercept", "spi_device_flash_all"]
     }
     {
       name: cmd_fast_read
@@ -297,7 +297,7 @@
             - Initiate response to the fast read.
             - Check proper reception of response.'''
       milestone: V2
-      tests: ["spi_device_intercept", "spi_device_pass_all"]
+      tests: ["spi_device_intercept", "spi_device_flash_all"]
     }
     {
       name: flash_cmd_upload
@@ -346,15 +346,16 @@
     {
       name: cmd_read_buffer
       desc: '''
-            - Configure device in flash or passthrough mode.
-            - SW updates read buffer contents.
-            - Issue read command.
+            - Configure device in flash mode.
+            - Issue read commands.
+            - Create another parallel thread that SW updates read buffer contents after a watermark
+              or buffer flip event occurs.
             - Check proper read data.
-            - Issue new read command that crosses read buffer boundary.
-            - Behavior on crossing uncertain //TODO Clarify spec on this
-            - Check internal buffer index bit.'''
+            - Randomly issue read command that crosses read buffer boundary and switches back to
+              index 0.
+            - Check correctness of `last_read_addr`, `readbuf_watermark` and `readbuf_flip`.'''
       milestone: V2
-      tests: []
+      tests: ["spi_device_flash_mode"]
     }
     {
       name: cmd_dummy_cycle
@@ -368,7 +369,7 @@
             - Issue new read command that crosses read maibox boundary.
             - Check internal buffer index bit.'''
       milestone: V2
-      tests: ["spi_device_mailbox", "spi_device_pass_all"]
+      tests: ["spi_device_mailbox", "spi_device_flash_all"]
     }
     {
       name: quad_spi
@@ -379,7 +380,7 @@
             - Issue supported command.
             - Check data on all four lines.'''
       milestone: V2
-      tests: ["spi_device_pass_all"]
+      tests: ["spi_device_flash_all"]
     }
     {
       name: dual_spi
@@ -390,7 +391,7 @@
             - Issue supported command.
             - Check data on both lines.'''
       milestone: V2
-      tests: ["spi_device_pass_all"]
+      tests: ["spi_device_flash_all"]
     }
     {
       name: 4b_3b_feature
