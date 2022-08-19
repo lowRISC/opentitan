@@ -513,6 +513,18 @@
       type:      "int"
       default:   "${max_fifo_width}",
     },
+
+    { name:      "ModelOnlyProgLatency",
+      desc:      '''
+        Open source model program latency.
+        This is useful for the verification environment to control so that tests can be
+        sped up or slowed down at both block and chip level.
+      ''',
+      type:      "int"
+      default:   "50",
+      local:     "false",
+      expose:    "true"
+    },
   ],
 
   regwidth: "32",
