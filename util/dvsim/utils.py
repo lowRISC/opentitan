@@ -587,7 +587,7 @@ def mk_symlink(path, link):
             rm_path(link)
 
 
-def clean_odirs(odir: Path, max_odirs, ts_format=TS_FORMAT):
+def clean_odirs(odir, max_odirs, ts_format=TS_FORMAT):
     """Clean previous output directories.
 
     When running jobs, we may want to maintain a limited history of
@@ -597,13 +597,15 @@ def clean_odirs(odir: Path, max_odirs, ts_format=TS_FORMAT):
     remain after deletion.
     """
 
+    odir = Path(odir)
+
     if os.path.exists(odir):
         # If output directory exists, back it up.
         ts = datetime.fromtimestamp(os.stat(odir).st_ctime).strftime(ts_format)
-        shutil.move(odir, Path(odir).with_name(ts))
+        shutil.move(odir, odir.with_name(ts))
 
     # Get list of past output directories sorted by creation time.
-    pdir = Path(odir).resolve().parent
+    pdir = odir.resolve().parent
     if not pdir.exists():
         return []
 
