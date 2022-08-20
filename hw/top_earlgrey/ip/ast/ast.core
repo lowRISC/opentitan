@@ -17,6 +17,7 @@ filesets:
       - lowrisc:prim:lfsr
       - lowrisc:ip:pinmux_reg
       - lowrisc:ip:pinmux_component
+      - lowrisc:prim:assert
       - lowrisc:prim:prim_pkg
       - lowrisc:prim:mubi
       - lowrisc:ip:lc_ctrl_pkg
