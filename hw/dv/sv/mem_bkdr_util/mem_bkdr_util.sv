@@ -40,6 +40,9 @@ class mem_bkdr_util extends uvm_object;
   protected uint32_t addr_width;
   protected uint32_t byte_addr_width;
 
+  // Address range of this memory in the system address map.
+  protected addr_range_t addr_range;
+
   // Indicates the maximum number of errors that can be injected.
   //
   // If parity is enabled, this limit applies to a single byte in the memory width. We cannot inject
@@ -61,7 +64,7 @@ class mem_bkdr_util extends uvm_object;
   // package.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
-               int extra_bits_per_subword = 0);
+               int extra_bits_per_subword = 0, int unsigned system_base_addr = 0);
 
     bit res;
     super.new(name);
@@ -111,6 +114,8 @@ class mem_bkdr_util extends uvm_object;
     addr_lsb   = $clog2(bytes_per_word);
     addr_width = $clog2(depth);
     byte_addr_width = addr_width + addr_lsb;
+    addr_range.start_addr = system_base_addr;
+    addr_range.end_addr = system_base_addr + size_bytes - 1;
     max_errors = width;
     if (name == "") set_name({path, "::mem_bkdr_util"});
     `uvm_info(`gfn, this.convert2string(), UVM_MEDIUM)
@@ -129,7 +134,9 @@ class mem_bkdr_util extends uvm_object;
             $sformatf("addr_lsb = %0d\n", addr_lsb),
             $sformatf("addr_width = %0d\n", addr_width),
             $sformatf("byte_addr_width = %0d\n", byte_addr_width),
-            $sformatf("max_errors = %0d\n", max_errors)};
+            $sformatf("max_errors = %0d\n", max_errors),
+            $sformatf("addr_range.start_addr = 0x%0h\n", addr_range.start_addr),
+            $sformatf("addr_range.end_addr = 0x%0h\n", addr_range.end_addr)};
   endfunction
 
   function string get_path();
@@ -174,6 +181,10 @@ class mem_bkdr_util extends uvm_object;
 
   function uint32_t get_byte_addr_width();
     return byte_addr_width;
+  endfunction
+
+  function bit is_valid_addr(int unsigned system_addr);
+    return system_addr inside {[addr_range.start_addr:addr_range.end_addr]};
   endfunction
 
   function string get_file();
