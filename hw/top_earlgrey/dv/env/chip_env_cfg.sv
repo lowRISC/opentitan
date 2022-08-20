@@ -392,4 +392,19 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     end
   endfunction
 
+  // Returns the chip memory instance to which the address belongs.
+  virtual function bit get_mem_from_addr(input uint addr, output chip_mem_e mem);
+    chip_mem_e mem_iter = mem_iter.first();
+    do begin
+      if (mem_bkdr_util_h[mem_iter] != null) begin
+        if (mem_bkdr_util_h[mem_iter].is_valid_addr(addr)) begin
+          mem = mem_iter;
+          return 1;
+        end
+      end
+      mem_iter = mem_iter.next();
+    end while (mem_iter != mem_iter.first());
+    return 0;
+  endfunction
+
 endclass
