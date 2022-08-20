@@ -234,6 +234,11 @@ cc_library(
     hdrs = ["rand_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":rv_core_ibex_testutils",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
