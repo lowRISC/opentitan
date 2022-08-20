@@ -9,10 +9,7 @@
 //                -o hw/top_earlgrey/ \
 //                --rnd_cnst_seed 4881560218908238235
 
-module chip_earlgrey_asic #(
-  // open source flash model program latency
-  parameter int FlashCtrlModelOnlyProgLatency = 50
-) (
+module chip_earlgrey_asic (
   // Dedicated Pads
   inout POR_N, // Manual Pad
   inout USB_P, // Manual Pad
@@ -1074,8 +1071,7 @@ module chip_earlgrey_asic #(
   // Top-level design //
   //////////////////////
   top_earlgrey #(
-    .PinmuxAonTargetCfg(PinmuxTargetCfg),
-    .FlashCtrlModelOnlyProgLatency(FlashCtrlModelOnlyProgLatency)
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (
     // ast connections
     .por_n_i                      ( por_n                      ),

@@ -14,10 +14,7 @@ module flash_phy
   import flash_ctrl_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
-  parameter bit SecScrambleEn = 1'b1,
-  parameter int ModelOnlyReadLatency   = 1,   // generic model read latency
-  parameter int ModelOnlyProgLatency   = 50,  // generic model program latency
-  parameter int ModelOnlyEraseLatency  = 200 // generic model program latency
+  parameter bit SecScrambleEn = 1'b1
 )
 (
   input clk_i,
@@ -331,10 +328,7 @@ module flash_phy
     .InfoTypesWidth(InfoTypesWidth),
     .PagesPerBank(PagesPerBank),
     .WordsPerPage(WordsPerPage),
-    .DataWidth(flash_phy_pkg::FullDataWidth),
-    .ModelOnlyReadLatency(ModelOnlyReadLatency),
-    .ModelOnlyProgLatency(ModelOnlyProgLatency),
-    .ModelOnlyEraseLatency(ModelOnlyEraseLatency)
+    .DataWidth(flash_phy_pkg::FullDataWidth)
   ) u_flash (
     .clk_i,
     .rst_ni,

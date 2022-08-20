@@ -45,14 +45,7 @@
     }
   ]
 
-  build_modes: [
-    {
-      name: large_delay_mode
-      build_opts: ["+define+SLOW_FLASH"]
-    }
-  ]
-
-  large_delay_mode_vcs_cov_cfg_file: "{default_vcs_cov_cfg_file}"
+  build_modes: []
 
 // Add additional tops for simulation.
   sim_tops: ["flash_ctrl_bind","flash_ctrl_cov_bind", "sec_cm_prim_onehot_check_bind",
@@ -123,13 +116,13 @@
     {
       name: flash_ctrl_hw_rma
       uvm_test_seq: flash_ctrl_hw_rma_vseq
-      run_opts: ["+test_timeout_ns=300_000_000_000"]
+      run_opts: ["+flash_program_latency=5", "+test_timeout_ns=300_000_000_000"]
       reseed: 3
     }
     {
       name: flash_ctrl_hw_rma_reset
       uvm_test_seq: flash_ctrl_hw_rma_reset_vseq
-      run_opts: ["+test_timeout_ns=300_000_000_000"]
+      run_opts: ["+flash_program_latency=5", "+test_timeout_ns=300_000_000_000"]
       reseed: 20
     }
     {
@@ -287,16 +280,26 @@
     }
     {
       name: flash_ctrl_intr_rd
-      build_mode: large_delay_mode
       uvm_test_seq: flash_ctrl_intr_rd_vseq
       run_opts: ["+scb_otf_en=1"]
       reseed: 40
     }
     {
       name: flash_ctrl_intr_wr
-      build_mode: "large_delay_mode"
       uvm_test_seq: flash_ctrl_intr_wr_vseq
       run_opts: ["+scb_otf_en=1", "+test_timeout_ns=500_000_000"]
+      reseed: 10
+    }
+    {
+      name: flash_ctrl_intr_rd_slow_flash
+      uvm_test_seq: flash_ctrl_intr_rd_vseq
+      run_opts: ["+scb_otf_en=1", "+flash_read_latency=50", "+flash_program_latency=500"]
+      reseed: 40
+    }
+    {
+      name: flash_ctrl_intr_wr_slow_flash
+      uvm_test_seq: flash_ctrl_intr_wr_vseq
+      run_opts: ["+scb_otf_en=1", "+flash_read_latency=50", "+flash_program_latency=500", "+test_timeout_ns=500_000_000"]
       reseed: 10
     }
     {
