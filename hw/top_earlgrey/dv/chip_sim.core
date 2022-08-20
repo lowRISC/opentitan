@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:systems:top_earlgrey
+      - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:chip_earlgrey_asic
       - lowrisc:ibex:ibex_tracer
 
