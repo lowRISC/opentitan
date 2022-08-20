@@ -57,7 +57,7 @@ parser.add_argument('--repo',
                     help="Location of the source git repo")
 parser.add_argument(
     'bitstream',
-    default='latest',
+    default='HEAD',
     nargs='?',
     help='Bitstream to retrieve: "latest" or git commit identifier')
 
