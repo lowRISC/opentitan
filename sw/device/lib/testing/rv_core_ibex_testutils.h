@@ -8,6 +8,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/dif/dif_rv_core_ibex.h"
+
 /**
  * Returns the validity of random data read from the entropy source as bool.
  *

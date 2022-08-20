@@ -13,10 +13,12 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_base.h"
+#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/coverage.h"
@@ -33,6 +35,9 @@ OT_ASSERT_MEMBER_SIZE(ottf_test_config_t, enable_concurrency, 1);
 
 // UART for communication with host.
 static dif_uart_t uart0;
+
+// A global random number generator testutil handle.
+rand_testutils_rng_t rand_testutils_rng_ctx;
 
 static void init_uart(void) {
   CHECK_DIF_OK(dif_uart_init(
@@ -81,6 +86,14 @@ void _ottf_main(void) {
     init_uart();
     LOG_INFO("Running %s", kOttfTestConfig.file);
   }
+
+  // Initialize a global random number generator testutil context to provide
+  // tests with a source of entropy for randomizing test behaviors.
+  dif_rv_core_ibex_t rv_core_ibex;
+  CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+  rand_testutils_rng_ctx = rand_testutils_init(&rv_core_ibex);
 
   // Run the test.
   if (kOttfTestConfig.enable_concurrency) {
