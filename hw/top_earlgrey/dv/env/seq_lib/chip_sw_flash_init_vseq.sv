@@ -263,7 +263,7 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     for (int current_phase = 0; current_phase < NUM_TEST_PHASES; current_phase++) begin
       // Backdoor overwrite the SW variable for the test phase.
       array_data[0] = current_phase;
-      sw_symbol_backdoor_overwrite("kTestPhase", array_data, Rom, SwTypeRom);
+      sw_symbol_backdoor_overwrite("kTestPhase", array_data, SwTypeRom);
       if (current_phase < NUM_TEST_PHASES - 1) begin
         // Backdoor write to the flash only for the backdoor tests.
         if (current_phase < BACKDOOR_TEST0) begin

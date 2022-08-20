@@ -81,7 +81,7 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
 
   virtual task cpu_init();
     super.cpu_init();
-    sw_symbol_backdoor_overwrite("kLcRmaUnlockToken", rma_unlock_token, Rom, SwTypeRom);
+    sw_symbol_backdoor_overwrite("kLcRmaUnlockToken", rma_unlock_token, SwTypeRom);
   endtask
 
   virtual task body();
