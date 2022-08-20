@@ -14,6 +14,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Pass scoreboard handle to address multiple exp_alert issue.
   flash_ctrl_scoreboard scb_h;
   flash_ctrl_otf_scoreboard otf_scb_h;
+
   // seq cfg
   flash_ctrl_seq_cfg seq_cfg;
 
@@ -24,6 +25,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   virtual flash_ctrl_dv_if flash_ctrl_dv_vif;
   virtual clk_rst_if clk_rst_vif_flash_ctrl_eflash_reg_block;
   virtual clk_rst_if clk_rst_vif_flash_ctrl_prim_reg_block;
+  virtual flash_ctrl_mem_if flash_ctrl_mem_vif[NumBanks];
 
   // knobs
   // ral.status[init_wip] status is set for the very first clock cycle right out of reset.
@@ -61,6 +63,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // With ecc enabled, read path requires pre encoded data patterns.
   // 0 : no ecc
   // 1 : ecc enable
+  // Below mode use address split.
   // 2 : 1 bit error test mode
   //     Based on serr_pct, single bit error is injected in 'flash_mem_otf_read'
   // 3 : 2 bit error test mode
@@ -134,13 +137,13 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // read data by host if
   data_q_t flash_rd_data;
 
-  // 2bit of target prefix. Use with cfg.ecc_mode > FlashEccDisabled
-  // When cfg.ecc_mode > FlashEccDisabled, this will be randomized
+  // 2bit of target prefix. Use with cfg.ecc_mode > FlashEccEnabled
+  // When cfg.ecc_mode > FlashEccEnabled, this will be randomized
   // before sequence starts.
   // tgt_pre[0]: rd
   // tgt_pre[1]: direct_rd
   // tgt_pre[2]: wr
-  // tgt_pre[3]: rsvd
+  // tgt_pre[3]: erase
   // then assigned to bit 18:17
   bit [1:0] tgt_pre[flash_dv_part_e][NumTgt];
 
@@ -167,10 +170,67 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   int       rd_lvl = 0;
   int       wr_lvl = 0;
 
+  // force all region read enable
+  bit       en_always_read = 0;
   `uvm_object_utils(flash_ctrl_env_cfg)
   `uvm_object_new
 
   string flash_ral_name = "flash_ctrl_eflash_reg_block";
+
+  // default region cfg
+  flash_mp_region_cfg_t default_region_cfg = '{
+      default: MuBi4True,
+      scramble_en: MuBi4False,
+      ecc_en: MuBi4False,
+      he_en: MuBi4False,
+      // Below two values won't be programmed
+      // rtl uses hardcoded values
+      // start:0
+      // size : 2 * 256 (0x200)
+      num_pages: 512,
+      start_page: 0
+  };
+
+  // default info cfg
+  flash_bank_mp_info_page_cfg_t default_info_page_cfg = '{
+      default: MuBi4True,
+      scramble_en: MuBi4False,
+      ecc_en: MuBi4False,
+      he_en: MuBi4False
+  };
+
+  // 1page : 2048Byte
+  // returns 9 bit (max 512) pages
+  function int addr2page(bit[OTFBankId:0] addr);
+    return (int'(addr[OTFBankId:11]));
+  endfunction // addr2page
+
+  virtual function flash_mp_region_cfg_t get_region(int page, bit dis = 1);
+    flash_mp_region_cfg_t my_region;
+    if (p2r_map[page] == 8) begin
+      my_region = default_region_cfg;
+    end else begin
+      my_region = mp_regions[p2r_map[page]];
+      if (my_region.en != MuBi4True) my_region = default_region_cfg;
+    end
+    if (dis) begin
+      `uvm_info("get_region", $sformatf("page:%0d --> region:%0d",
+                                        page, p2r_map[page]), UVM_MEDIUM)
+    end
+    return my_region;
+  endfunction // get_region
+
+  function flash_mp_region_cfg_t get_region_from_info(flash_bank_mp_info_page_cfg_t info);
+    flash_mp_region_cfg_t region;
+    region.en          = info.en;
+    region.read_en     = info.read_en;
+    region.program_en  = info.program_en;
+    region.erase_en    = info.erase_en;
+    region.scramble_en = info.scramble_en;
+    region.ecc_en      = info.ecc_en;
+    region.he_en       = info.he_en;
+    return region;
+  endfunction // get_region_from_info
 
   virtual function void initialize(addr_t csr_base_addr = '1);
     string prim_ral_name = "flash_ctrl_prim_reg_block";
@@ -974,5 +1034,18 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
       if (derr_otd[ent] == 0) derr_otd.delete(ent);
     end
   endfunction // dec_otd_tbl
+
+  function flash_dv_part_e get_part(flash_part_e part,
+                                    logic [InfoTypesWidth-1:0] mem_info_sel);
+    if (part == FlashPartData) begin
+      return FlashPartData;
+    end else begin
+      case (mem_info_sel)
+        1: return FlashPartInfo1;
+        2: return FlashPartInfo2;
+        default: return FlashPartInfo;
+      endcase
+    end
+  endfunction // get_part
 
 endclass

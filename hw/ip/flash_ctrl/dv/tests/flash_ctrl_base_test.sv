@@ -62,6 +62,7 @@ class flash_ctrl_base_test #(
     void'($value$plusargs("otf_num_hr=%0d", cfg.otf_num_hr));
     void'($value$plusargs("otf_wr_pct=%0d", cfg.otf_wr_pct));
     void'($value$plusargs("otf_rd_pct=%0d", cfg.otf_rd_pct));
+    void'($value$plusargs("en_always_read=%0d", cfg.en_always_read));
   endfunction
 
   task run_phase(uvm_phase phase);

@@ -165,10 +165,10 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
 
     repeat (num_trans) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      default_region_cfg.read_en = default_region_read_en;
-      default_region_cfg.program_en = default_region_program_en;
-      default_region_cfg.erase_en = default_region_erase_en;
-      default_region_cfg.he_en = default_region_he_en;
+      cfg.default_region_cfg.read_en = default_region_read_en;
+      cfg.default_region_cfg.program_en = default_region_program_en;
+      cfg.default_region_cfg.erase_en = default_region_erase_en;
+      cfg.default_region_cfg.he_en = default_region_he_en;
       init_p2r_map();
       update_p2r_map(mp_regions);
 
@@ -256,11 +256,11 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
                                   size, tail, bank, tmp_addr), UVM_MEDIUM)
       for (int i = 0; i < size; i++) begin
         if  (flash_op.partition == FlashPartData) begin
-          page = addr2page(flash_op.addr);
-          my_region = get_region(page);
+          page = cfg.addr2page(flash_op.addr);
+          my_region = cfg.get_region(page);
         end else begin
-          page = addr2page(flash_op.addr[OTFBankId-1:0]);
-          my_region = get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
+          page = cfg.addr2page(flash_op.addr[OTFBankId-1:0]);
+          my_region = cfg.get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
           illegal_trans |= check_info_part(flash_op, "read_flash");
         end
         illegal_trans |= validate_flash_op(flash_op, my_region);
@@ -268,11 +268,11 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
       end // for (int i = 0; i < size; i++)
       if (tail) begin
         if  (flash_op.partition == FlashPartData) begin
-          page = addr2page(flash_op.addr);
-          my_region = get_region(page);
+          page = cfg.addr2page(flash_op.addr);
+          my_region = cfg.get_region(page);
         end else begin
-          page = addr2page(flash_op.otf_addr);
-          my_region = get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
+          page = cfg.addr2page(flash_op.otf_addr);
+          my_region = cfg.get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
           illegal_trans |= check_info_part(flash_op, "read_flash");
         end
         illegal_trans |= validate_flash_op(flash_op, my_region);
@@ -280,11 +280,11 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
       flash_op.addr = tmp_addr;
     end else begin // if (flash_op.op == FlashOpRead)
       if  (flash_op.partition == FlashPartData) begin
-        page = addr2page(flash_op.addr);
-        my_region = get_region(page);
+        page = cfg.addr2page(flash_op.addr);
+        my_region = cfg.get_region(page);
       end else begin
-        page = addr2page(flash_op.addr[OTFBankId-1:0]);
-        my_region = get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
+        page = cfg.addr2page(flash_op.addr[OTFBankId-1:0]);
+        my_region = cfg.get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
       end
       illegal_trans = validate_flash_op(flash_op, my_region);
     end
@@ -390,20 +390,5 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     //Enable Bank erase
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
   endtask // configure_flash_protection
-
-  function flash_mp_region_cfg_t get_region(int page, bit dis = 1);
-    flash_mp_region_cfg_t my_region;
-    if (cfg.p2r_map[page] == 8) begin
-      my_region = default_region_cfg;
-    end else begin
-      my_region = mp_regions[cfg.p2r_map[page]];
-      if (my_region.en != MuBi4True) my_region = default_region_cfg;
-    end
-    if (dis) begin
-      `uvm_info("get_region", $sformatf("page:%0d --> region:%0d",
-                                        page, cfg.p2r_map[page]), UVM_MEDIUM)
-    end
-    return my_region;
-  endfunction // get_region
 
 endclass : flash_ctrl_mp_regions_vseq

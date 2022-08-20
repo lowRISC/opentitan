@@ -77,10 +77,22 @@ module tb;
   `define FLASH_DEVICE_HIER tb.dut.u_eflash.u_flash
   assign fpp_if.req = `FLASH_DEVICE_HIER.flash_req_i;
   assign fpp_if.rsp = `FLASH_DEVICE_HIER.flash_rsp_o;
-  assign fpp_if.rreq[0] = tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.req_i;
-  assign fpp_if.rreq[1] = tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.req_i;
-  assign fpp_if.rdy[0] = tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.rdy_o;
-  assign fpp_if.rdy[1] = tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.rdy_o;
+  for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : gen_bank_loop
+    assign fpp_if.rreq[i] = tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.req_i;
+    assign fpp_if.rdy[i] = tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.rdy_o;
+
+    assign flash_ctrl_if.hazard[i] =
+                        tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.data_hazard[3:0];
+    assign flash_ctrl_if.evict_prog[i] =
+                        tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.prog_i;
+    assign flash_ctrl_if.evict_erase[i] =
+                        tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.pg_erase_i;
+    for (genvar j = 0; j < flash_phy_pkg::NumBuf; j++) begin : gen_per_buffer
+      assign flash_ctrl_if.rd_buf[i][j] =
+                        tb.dut.u_eflash.gen_flash_cores[i].u_core.u_rd.read_buf[j];
+    end
+  end
+  assign flash_ctrl_if.fatal_err = tb.dut.fatal_err;
   `undef  FLASH_DEVICE_HIER
 
   `DV_ALERT_IF_CONNECT
@@ -304,11 +316,17 @@ module tb;
                                        eflash_tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_flash_ctrl_prim_reg_block*", "vif",
                                        prim_tl_if);
-
     uvm_config_db#(virtual flash_ctrl_if)::set(null, "*.env", "flash_ctrl_vif", flash_ctrl_if);
     uvm_config_db#(virtual flash_phy_prim_if)::set(null, "*.env.m_fpp_agent*", "vif", fpp_if);
     uvm_config_db#(virtual flash_ctrl_dv_if)::set(null, "*.env", "flash_ctrl_dv_vif",
                                                   flash_ctrl_dv_if);
+    uvm_config_db#(virtual flash_ctrl_mem_if)::set(null, "*.env", "flash_ctrl_mem_vif[0]",
+        dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[0].
+                                                   u_prim_flash_bank.flash_ctrl_mem_if);
+    uvm_config_db#(virtual flash_ctrl_mem_if)::set(null, "*.env", "flash_ctrl_mem_vif[1]",
+        dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[1].
+                                                   u_prim_flash_bank.flash_ctrl_mem_if);
+
     $timeformat(-9, 1, " ns", 9);
     run_test();
   end

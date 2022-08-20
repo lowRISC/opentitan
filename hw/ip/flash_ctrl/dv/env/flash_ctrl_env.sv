@@ -34,6 +34,12 @@ class flash_ctrl_env #(
             this, "", "flash_ctrl_dv_vif", cfg.flash_ctrl_dv_vif)) begin
       `uvm_fatal(`gfn, "failed to get flash_ctrl_dv_vif from uvm_config_db")
     end
+    for (int i = 0; i < NumBanks; i++) begin
+      if (!uvm_config_db#(virtual flash_ctrl_mem_if)::get(
+              this, "", $sformatf("flash_ctrl_mem_vif[%0d]", i), cfg.flash_ctrl_mem_vif[i])) begin
+        `uvm_fatal(`gfn, "failed to get flash_ctrl_mem_vif from uvm_config_db")
+      end
+    end
     // Retrieve the mem backdoor util instances.
     for (
         int i = 0, flash_dv_part_e part = part.first(); i < part.num(); i++, part = part.next()
@@ -74,6 +80,8 @@ class flash_ctrl_env #(
                 m_otf_scb.eg_rtl_fifo[i].analysis_export);
         m_fpp_agent.monitor.rd_cmd_port[i].connect(
                 m_otf_scb.rd_cmd_fifo[i].analysis_export);
+        m_fpp_agent.monitor.eg_rtl_lm_port[i].connect(
+                m_otf_scb.eg_exp_lm_fifo[i].analysis_export);
      end
     end
 

@@ -309,6 +309,18 @@
       reseed: 30
      }
     {
+      name: flash_ctrl_rw_evict
+      uvm_test_seq: flash_ctrl_rw_evict_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_read=1"]
+      reseed: 40
+     }
+    {
+      name: flash_ctrl_re_evict
+      uvm_test_seq: flash_ctrl_re_evict_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_read=1"]
+      reseed: 20
+     }
+    {
       name: flash_ctrl_sec_cm
       run_timeout_mins: 120
     }

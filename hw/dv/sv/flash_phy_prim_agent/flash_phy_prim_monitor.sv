@@ -15,8 +15,10 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
 
   uvm_analysis_port #(flash_phy_prim_item) eg_rtl_port[NumBanks];
   uvm_analysis_port #(flash_phy_prim_item) rd_cmd_port[NumBanks];
+  uvm_analysis_port #(flash_phy_prim_item) eg_rtl_lm_port[NumBanks];
   flash_phy_prim_item w_item[NumBanks];
   flash_phy_prim_item r_item[NumBanks];
+  flash_phy_prim_item lm_item[NumBanks];
   logic [PhyDataW-1:0] write_buffer[NumBanks][$];
 
   `uvm_component_new
@@ -26,6 +28,7 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
     foreach (eg_rtl_port[i]) begin
       eg_rtl_port[i] = new($sformatf("eg_rtl_port[%0d]", i), this);
       rd_cmd_port[i] = new($sformatf("rd_cmd_port[%0d]", i), this);
+      eg_rtl_lm_port[i] = new($sformatf("eg_rtl_lm_port[%0d]", i), this);
     end
   endfunction
 
@@ -91,9 +94,15 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
                 if (cfg.vif.req[j].rd_req & cfg.vif.req[j].prog_req) begin
                   `uvm_error(`gfn, $sformatf("Both prog and rd req are set"))
                 end else if (~cfg.vif.req[j].rd_req & cfg.vif.req[j].prog_req) begin
+                  // collect transaction for last time check
+                  collect_lm_item(j);
                   collect_wr_data(j);
                 end else if (cfg.vif.req[j].rd_req) begin
                   collect_rd_cmd(j);
+                end else if (cfg.vif.req[j].pg_erase_req | cfg.vif.req[j].bk_erase_req |
+                             cfg.vif.req[j].erase_suspend_req) begin
+                  // collect erase error transactions
+                  collect_lm_item(j);
                 end
               end
             end
@@ -129,4 +138,13 @@ class flash_phy_prim_monitor extends dv_base_monitor #(
       write_buffer[bank] = {};
     end
   endtask // collect_item
+  function void collect_lm_item(int bank);
+    flash_phy_prim_item item;
+    `uvm_create_obj(flash_phy_prim_item, item)
+    item.req = cfg.vif.req[bank];
+    item.rsp = cfg.vif.rsp[bank];
+    eg_rtl_lm_port[bank].write(item);
+    `uvm_info("lm_debug", $sformatf("I sent bank%0d", bank),UVM_MEDIUM)
+  endfunction // collect_lm_item
+
 endclass

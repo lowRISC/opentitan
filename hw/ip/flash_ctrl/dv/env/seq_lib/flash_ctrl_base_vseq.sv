@@ -32,28 +32,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   constraint flash_program_data_c {flash_program_data.size == 16;}
 
-  // default region cfg
-  flash_mp_region_cfg_t default_region_cfg = '{
-      default: MuBi4True,
-      scramble_en: MuBi4False,
-      ecc_en: MuBi4False,
-      he_en: MuBi4False,
-      // Below two values won't be programmed
-      // rtl uses hardcoded values
-      // start:0
-      // size : 2 * 256 (0x200)
-      num_pages: 512,
-      start_page: 0
-  };
-
-  // default info cfg
-  flash_bank_mp_info_page_cfg_t default_info_page_cfg = '{
-      default: MuBi4True,
-      scramble_en: MuBi4False,
-      ecc_en: MuBi4False,
-      he_en: MuBi4False
-  };
-
   // By default, in 30% of the times initialize flash as in initial state (all 1s),
   //  while in 70% of the times the initialization will be randomized (simulating working flash).
   constraint flash_init_c {
@@ -71,39 +49,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Vseq to do some initial post-reset actions. Can be overriden by extending envs.
   flash_ctrl_callback_vseq callback_vseq;
 
-  // 1page : 2048Byte
-  // returns 9 bit (max 512) pages
-  function int addr2page(bit[OTFBankId:0] addr);
-    return (int'(addr[OTFBankId:11]));
-  endfunction // addr2page
-
-  virtual function flash_mp_region_cfg_t get_region(int page, bit dis = 1);
-    flash_mp_region_cfg_t my_region;
-    if (cfg.p2r_map[page] == 8) begin
-      my_region = default_region_cfg;
-    end else begin
-      my_region = cfg.mp_regions[cfg.p2r_map[page]];
-      if (my_region.en != MuBi4True) my_region = default_region_cfg;
-    end
-    if (dis) begin
-      `uvm_info("get_region", $sformatf("page:%0d --> region:%0d",
-                                        page, cfg.p2r_map[page]), UVM_MEDIUM)
-    end
-    return my_region;
-  endfunction // get_region
-
-  function flash_mp_region_cfg_t get_region_from_info(flash_bank_mp_info_page_cfg_t info);
-    flash_mp_region_cfg_t region;
-    region.en          = info.en;
-    region.read_en     = info.read_en;
-    region.program_en  = info.program_en;
-    region.erase_en    = info.erase_en;
-    region.scramble_en = info.scramble_en;
-    region.ecc_en      = info.ecc_en;
-    region.he_en       = info.he_en;
-    return region;
-  endfunction // get_region_from_info
-
   // Check permission and page range of info partition
   // Set exp recov_err alert if check fails
   function bit check_info_part(flash_op_t flash_op, string str);
@@ -111,8 +56,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     int bank, page, end_page, loop;
 
     bank = flash_op.addr[OTFBankId];
-    page = addr2page(flash_op.addr);
-    end_page = addr2page(flash_op.addr + (flash_op.num_words * 4) - 1);
+    page = cfg.addr2page(flash_op.otf_addr);
+    end_page = cfg.addr2page(flash_op.otf_addr + (flash_op.num_words * 4) - 1);
     // For read, cross page boundary is allowed. So you need to check
     // both start and end address
     if (flash_op.op == FlashOpRead) loop = 2;
@@ -138,7 +83,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       if (drop) break;
     end
     return drop;
-  endfunction // check_part_info
+  endfunction // check_info_part
 
   virtual task pre_start();
     `uvm_create_on(callback_vseq, p_sequencer);
@@ -195,7 +140,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask
   // Configure the memory protection regions.
   virtual task flash_ctrl_mp_region_cfg(uint index,
-                                        flash_mp_region_cfg_t region_cfg = default_region_cfg);
+                                        flash_mp_region_cfg_t region_cfg = cfg.default_region_cfg);
     uvm_reg_data_t data;
     uvm_reg csr;
     data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].en, data,
@@ -233,12 +178,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                              mubi4_t he_en       = MuBi4False);
     uvm_reg_data_t data;
 
-    default_region_cfg.read_en = read_en;
-    default_region_cfg.program_en = program_en;
-    default_region_cfg.erase_en = erase_en;
-    default_region_cfg.scramble_en = scramble_en;
-    default_region_cfg.ecc_en = ecc_en;
-    default_region_cfg.he_en = he_en;
+    cfg.default_region_cfg.read_en = read_en;
+    cfg.default_region_cfg.program_en = program_en;
+    cfg.default_region_cfg.erase_en = erase_en;
+    cfg.default_region_cfg.scramble_en = scramble_en;
+    cfg.default_region_cfg.ecc_en = ecc_en;
+    cfg.default_region_cfg.he_en = he_en;
 
     data = get_csr_val_with_updated_field(ral.default_region.rd_en, data, read_en);
     data = data |
@@ -256,7 +201,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   //  one of the banks.
   virtual task flash_ctrl_mp_info_page_cfg(
       uint bank, uint info_part, uint page,
-      flash_bank_mp_info_page_cfg_t page_cfg = default_info_page_cfg);
+      flash_bank_mp_info_page_cfg_t page_cfg = cfg.default_info_page_cfg);
 
     uvm_reg_data_t data;
     uvm_reg csr;
@@ -1264,7 +1209,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     int num = mp.size() - 1;
     int base, size;
     // Lower region has priority.
-    `uvm_info("update_p2r_map", $sformatf("default     : %p", default_region_cfg), UVM_MEDIUM)
+    `uvm_info("update_p2r_map", $sformatf("default     : %p", cfg.default_region_cfg), UVM_MEDIUM)
     for (int i = num; i >= 0; --i) begin
       // Check the region is enabled.
       if (mp[i].en == MuBi4True) begin

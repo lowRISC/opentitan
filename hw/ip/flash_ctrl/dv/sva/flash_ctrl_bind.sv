@@ -19,4 +19,23 @@ module flash_ctrl_bind;
     .h2d    (core_tl_i),
     .d2h    (core_tl_o)
   );
+
+  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_mif_bind
+    for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : gen_per_bank
+      bind tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i].
+                    u_prim_flash_bank flash_ctrl_mem_if flash_ctrl_mem_if (
+        .clk_i,
+        .rst_ni,
+        .data_mem_req,
+        .mem_wr,
+        .mem_addr,
+        .mem_wdata,
+        .mem_part,
+        .mem_info_sel,
+        .info0_mem_req (gen_info_types[0].info_mem_req),
+        .info1_mem_req (gen_info_types[1].info_mem_req),
+        .info2_mem_req (gen_info_types[2].info_mem_req)
+      );
+    end
+  end
 endmodule

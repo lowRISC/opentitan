@@ -61,12 +61,25 @@ class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
     }
   endgroup : fifo_lvl_cg
 
+  covergroup eviction_cg with function sample (int idx, bit[1:0] op,
+                                               bit [1:0] scr_ecc);
+    evic_idx_cp : coverpoint idx {
+      bins evic_idx[] = {1, 2, 4, 8};
+    }
+    evic_op_cp : coverpoint op {
+      bins evic_op[] = {1, 2};
+    }
+    evic_cfg_cp : coverpoint scr_ecc;
+    evic_all_cross : cross evic_idx_cp, evic_op_cp, evic_cfg_cp;
+  endgroup // eviction_cg
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
     control_cg = new();
     erase_susp_cg = new();
     error_cg = new();
     fifo_lvl_cg = new();
+    eviction_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);
