@@ -182,52 +182,56 @@ class flash_otf_item extends uvm_object;
       end
     end
     foreach (fq[i]) begin
-      if (ctrl_rd_region_q.size > 0) begin
-        scr_en = (ctrl_rd_region_q[i].scramble_en == MuBi4True);
-        ecc_en = (ctrl_rd_region_q[i].ecc_en == MuBi4True);
-        `uvm_info("rd_scr", $sformatf("size:%0d idx:%0d addr:%x scr_en:%0d ecc_en:%0d",
-                                      fq.size(), i, addr, scr_en, ecc_en), UVM_MEDIUM)
-      end
-      if (ecc_en) begin
-        dec68 = prim_secded_pkg::prim_secded_hamming_76_68_dec(fq[i]);
+       // erase data skip descramble
+      if (fq[i] == {flash_phy_pkg::FullDataWidth{1'b1}}) begin
+         raw_fq.push_back(fq[i]);
       end else begin
-        dec68.data = fq[i][67:0];
-      end
-
-      if (scr_en) begin
-        data = create_raw_data(dec68.data[63:0], addr, addr_key, data_key);
-        data[67:64] = dec68.data[67:64];
-      end else begin
-        data = dec68.data;
-      end
-
-      // check ecc
-      // chec icv
-      if (ecc_en) begin
-        data_with_icv = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
-        icv_err = (data_with_icv[67:64] != data[67:64]);
-        ecc_err |= (dec68.err[1] | icv_err);
-        if (dec68.err[1] | icv_err) begin
-          err_addr = addr << 3;
-          eaddr_q.push_back(err_addr);
-          `uvm_info("DCR_DBG", $sformatf("%4d:err_addr:%x err76:%2b synd:%x icv_err:%2b",
-                                         i, err_addr, dec68.err, dec68.syndrome, icv_err),
-                    UVM_MEDIUM)
+        if (ctrl_rd_region_q.size > 0) begin
+          scr_en = (ctrl_rd_region_q[i].scramble_en == MuBi4True);
+          ecc_en = (ctrl_rd_region_q[i].ecc_en == MuBi4True);
+          `uvm_info("rd_scr", $sformatf("size:%0d idx:%0d addr:%x scr_en:%0d ecc_en:%0d",
+                                        fq.size(), i, addr, scr_en, ecc_en), UVM_MEDIUM)
         end
-        if (dec68.err[0]) begin
-          `uvm_info("SERR_DBG", $sformatf("%4d: serr:%1b data:%x -- > %x",
-                    i, dec68.err[0], fq[i], dec68.data), UVM_MEDIUM)
+        if (ecc_en) begin
+          dec68 = prim_secded_pkg::prim_secded_hamming_76_68_dec(fq[i]);
+        end else begin
+          dec68.data = fq[i][67:0];
         end
-      end
 
-      raw_fq.push_back(data);
+        if (scr_en) begin
+          data = create_raw_data(dec68.data[63:0], addr, addr_key, data_key);
+          data[67:64] = dec68.data[67:64];
+        end else begin
+          data = dec68.data;
+        end
 
-      if (skip_err_chk == 0 && ecc_err != 0) begin
-        `uvm_error("rd_scr", "ecc error is detected")
+        // check ecc
+        // chec icv
+        if (ecc_en) begin
+          data_with_icv = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
+          icv_err = (data_with_icv[67:64] != data[67:64]);
+          ecc_err |= (dec68.err[1] | icv_err);
+          if (dec68.err[1] | icv_err) begin
+            err_addr = addr << 3;
+            eaddr_q.push_back(err_addr);
+            `uvm_info("DCR_DBG", $sformatf("%4d:err_addr:%x err76:%2b synd:%x icv_err:%2b",
+                                           i, err_addr, dec68.err, dec68.syndrome, icv_err),
+                      UVM_MEDIUM)
+          end
+          if (dec68.err[0]) begin
+            `uvm_info("SERR_DBG", $sformatf("%4d: serr:%1b data:%x -- > %x",
+                                            i, dec68.err[0], fq[i], dec68.data), UVM_MEDIUM)
+          end
+        end
+
+        raw_fq.push_back(data);
+
+        if (skip_err_chk == 0 && ecc_err != 0) begin
+          `uvm_error("rd_scr", "ecc error is detected")
+        end
+        addr++;
       end
-      addr++;
     end
-
     // collect upto cmd.num_words
     tmp_dq = fq2dq(raw_fq);
     dq = '{};

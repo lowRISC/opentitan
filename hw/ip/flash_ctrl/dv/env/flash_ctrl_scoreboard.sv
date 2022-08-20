@@ -47,6 +47,9 @@ class flash_ctrl_scoreboard #(
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_d_chan_fifo;
 
   bit skip_read_check = 0;
+
+  flash_phy_pkg::rd_buf_t evict_q[NumBanks][$];
+
   // utility function to word-align an input TL address
   function addr_t word_align_addr(addr_t addr);
     return {addr[TL_AW-1:2], 2'b00};
@@ -69,8 +72,44 @@ class flash_ctrl_scoreboard #(
     fork
       process_eflash_tl_a_chan_fifo();
       process_eflash_tl_d_chan_fifo();
+      mon_eviction();
     join_none
   endtask
+
+  task mon_eviction;
+    flash_mp_region_cfg_t my_region;
+    bit ecc_en, scr_en;
+    int page;
+    bit [OTFBankId:0] addr;
+    forever begin
+      @(negedge cfg.clk_rst_vif.clk);
+      for (int i = 0;i < NumBanks; i++) begin
+        foreach (cfg.flash_ctrl_vif.hazard[i][j]) begin
+          if (cfg.flash_ctrl_vif.hazard[i][j]) begin
+            addr =cfg.flash_ctrl_vif.rd_buf[i][j].addr<<3;
+            page = cfg.addr2page(addr);
+            if (cfg.flash_ctrl_vif.rd_buf[i][j].part == 0) begin // data
+              my_region = cfg.get_region(page + 256*i);
+            end else begin // info
+              my_region =
+                cfg.get_region_from_info(
+                    cfg.mp_info[i][cfg.flash_ctrl_vif.rd_buf[i][j].info_sel][page]);
+            end
+            ecc_en = (my_region.ecc_en == MuBi4True);
+            scr_en = (my_region.scramble_en == MuBi4True);
+            `uvm_info(`gfn,
+                      $sformatf({"eviction bank%0d buffer%0d addr:0x%x(%x)",
+                                 " page:%0d ecc_en:%0d scr_en:%0d"},
+                                i, j ,cfg.flash_ctrl_vif.rd_buf[i][j].addr,
+                                addr, page, ecc_en, scr_en), UVM_MEDIUM)
+            if (cfg.en_cov) cov.eviction_cg.sample(j, {cfg.flash_ctrl_vif.evict_prog[i],
+                                                       cfg.flash_ctrl_vif.evict_erase[i]},
+                                                   {scr_en, ecc_en});
+          end
+        end
+      end
+    end
+  endtask // mon_eviction
 
   // Task for receiving addr trans and storing them for later usage
   virtual task process_eflash_tl_a_chan_fifo();

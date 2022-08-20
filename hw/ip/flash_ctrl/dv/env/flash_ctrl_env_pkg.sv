@@ -199,6 +199,7 @@ package flash_ctrl_env_pkg;
     TgtRd = 0,
     TgtDr = 1, // direct read
     TgtWr = 2, // program
+    TgtEr = 3, // erase
     NumTgt = 4
   } flash_tgt_prefix_e;
 
@@ -477,6 +478,7 @@ package flash_ctrl_env_pkg;
   `include "flash_mem_addr_attrs.sv"
   `include "flash_otf_item.sv"
   `include "flash_otf_read_entry.sv"
+  `include "flash_otf_mem_entry.sv"
   `include "flash_ctrl_seq_cfg.sv"
   `include "flash_ctrl_env_cfg.sv"
   `include "flash_ctrl_env_cov.sv"

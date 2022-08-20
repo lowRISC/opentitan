@@ -111,6 +111,16 @@
       tests: ["flash_ctrl_rd_buff_evict"]
     }
     {
+      name: rd_buff_eviction_w_ecc
+      desc: '''
+            Run read eviction test with multiple memory protection configs.
+            Each config should enable read but randomize all other fields
+            including scramble and ecc enable.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_rw_evict", "flash_ctrl_re_evict"]
+    }
+    {
       name: host_arb
       desc: '''
             Test arbitration within Flash Physical Controller by reading from both interfaces at
