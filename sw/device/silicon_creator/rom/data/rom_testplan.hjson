@@ -2,27 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Testplan TODOs:
-// - TODO(lowRISC/opentitan#10791): Add tests across lifecycle states
-//   - Test functionality that exists in some LC states but fails in others
-//   - This could make use of test tags (#10536)
-// - TODO(lowRISC/opentitan#10792): Add tests for behavior during manufacture
-//   - Bringup keys for manufacturing and RMA
-
 {
   name: "rom"
 
   testpoints: [
-    // Shutdown: Error reporting
     {
       name: rom_e2e_shutdown_output
       desc: '''Verify that ROM can properly report errors over UART.
 
             - Attempt to boot without a valid ROM_EXT.
-            - Verify that we can receive 28 characters (LCV:xxxxxxxx\r\nBFV:xxxxxxxx\r\n) of error
+            - Verify that we can receive the 28 character long (`LCV:xxxxxxxx\r\nBFV:xxxxxxxx\r\n`) error
               output in all life cycle states where Ibex is enabled, i.e. TEST_UNLOCKED*, PROD,
               PROD_END, DEV, and RMA.
-                - BFV should be 0x142500d for all life cycle states.
+                - BFV should be 0142500d for all life cycle states.
                 - See the table below for the expected LCV value.
 
             | LC State |     LCV    | OTP LIFE_CYCLE state | OTP LIFE_CYCLE count |
@@ -33,12 +25,11 @@
             | PROD_END | 0x25294a52 |      "PROD_END"      |           5          |
             |   RMA    | 0x2739ce73 |        "RMA"         |           5          |
             '''
-      tags: ["verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
 
-    // Shutdown: Redaction
     {
       name: rom_e2e_shutdown_redact
       desc: '''Verify that ROM redacts errors properly.
@@ -48,19 +39,18 @@
             - For DEV, PROD, and PROD_END:
               - Verify that BFV value is redacted according to the ROM_ERROR_REPORTING OTP item.
 
-            | OTP ROM_ERROR_REPORTING |     BFV    |
-            |:-----------------------:|:----------:|
-            |   0xe2290aa5 (None)     | 0x0142500d |
-            |   0x3367d3d4 (Error)    | 0x0042500d |
-            |   0x1e791123 (Module)   | 0x0100000d |
-            |   0x48eb4bd9 (All)      | 0xffffffff |
+            | OTP ROM_ERROR_REPORTING |    BFV   |
+            |:-----------------------:|:--------:|
+            |   0xe2290aa5 (None)     | 0142500d |
+            |   0x3367d3d4 (Error)    | 0042500d |
+            |   0x1e791123 (Module)   | 0100000d |
+            |   0x48eb4bd9 (All)      | ffffffff |
             '''
-      tags: ["verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
 
-    // Shutdown: Watchdog
     {
       name: rom_e2e_shutdown_watchdog
       desc: '''Verify that ROM configures the watchdog properly.
@@ -74,12 +64,11 @@
                `0x00061a80` (2 s).
               - Verify that watchdog is disabled when `WATCHDOG_BITE_THRESHOLD_CYCLES` is `0`.
             '''
-      tags: ["verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: ["rom_e2e_shutdown_watchdog"]
     }
 
-    // Shutdown: ASM exception handlers
     {
       name: rom_e2e_shutdown_exception_asm
       desc: '''Verify that ROM asm exception handler resets the chip.
@@ -96,12 +85,11 @@
             - Continue and verify that the asm exception handler resets the chip by confirming that
               execution halts at `_rom_start_boot`.
             '''
-      tags: ["verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
 
-    // Shutdown: C exception handlers
     {
       name: rom_e2e_shutdown_exception_c
       desc: '''Verify that ROM C exception handler triggers shutdown.
@@ -110,15 +98,14 @@
             - Trigger an exception in the second stage.
               - Set `pc` to `0x10000000` (start of main SRAM). This should trigger an exception
                 since code execution from SRAM is not enabled.
-            - Verify that the chip resets with the correct `BFV`: 0x01495202, i.e. instruction
+            - Verify that the chip resets with the correct `BFV`: `01495202`, i.e. instruction
               access fault in the interrupt module.
             '''
-      tags: ["verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
 
-    // Shutdown: Verify alert configuration
     {
       name: rom_e2e_shutdown_alert_config
       desc: '''Verify that alerts trigger a chip reset when enabled.
@@ -129,7 +116,7 @@
             - Verify that ROM_EXT boots and the chip resets after the write to the ALERT_TEST
               register.
             '''
-      tags: ["verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
