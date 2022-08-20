@@ -213,6 +213,7 @@ void test_initialize(entropy_src_test_context_t *ctx) {
 
   mmio_region_t addr =
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
+  CHECK_DIF_OK(dif_entropy_src_init(addr, &ctx->entropy_src));
 
   addr = mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(addr, &ctx->ibex));
@@ -240,6 +241,10 @@ void test_initialize(entropy_src_test_context_t *ctx) {
   alert_handler_configure(ctx);
 
   entropy_testutils_auto_mode_init();
+
+  // ensure health tests are actually running
+  entropy_testutils_wait_for_state(&ctx->entropy_src,
+                                   kDifEntropySrcMainFsmStateContHTRunning);
 }
 
 /**
