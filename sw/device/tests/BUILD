@@ -1452,6 +1452,7 @@ opentitan_functest(
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],

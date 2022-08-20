@@ -9,6 +9,7 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
+#include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -25,12 +26,6 @@ rv_core_ibex_check_rnd_read_possible_while_status_invalid();
 
 #define RANDOM_DATA_READS 32
 #define MAX_STATUS_CHECKS 1024
-
-static bool get_rnd_status(const dif_rv_core_ibex_t *rv_core_ibex) {
-  dif_rv_core_ibex_rnd_status_t rnd_status;
-  CHECK_DIF_OK(dif_rv_core_ibex_get_rnd_status(rv_core_ibex, &rnd_status));
-  return rnd_status != 0;
-}
 
 bool test_main(void) {
   // Verify the functionality of the random number generation CSRs.
@@ -51,11 +46,9 @@ bool test_main(void) {
   uint32_t rnd_data;
   uint32_t previous_rnd_data = 0;
   for (int i = 0; i < RANDOM_DATA_READS; i++) {
-    IBEX_SPIN_FOR(get_rnd_status(&rv_core_ibex), MAX_STATUS_CHECKS);
-    CHECK_DIF_OK(dif_rv_core_ibex_read_rnd_data(&rv_core_ibex, &rnd_data));
+    rnd_data =
+        rv_core_ibex_testutils_get_rnd_data(&rv_core_ibex, MAX_STATUS_CHECKS);
     CHECK(rnd_data != previous_rnd_data);
-    CHECK(rnd_data != 0);
-    CHECK(rnd_data != UINT32_MAX);
     previous_rnd_data = rnd_data;
   }
 
@@ -71,7 +64,8 @@ bool test_main(void) {
 
   // Check to see that we can really do an RND while status is invalid before
   // and after.
-  IBEX_SPIN_FOR(get_rnd_status(&rv_core_ibex), MAX_STATUS_CHECKS);
+  IBEX_SPIN_FOR(rv_core_ibex_testutils_is_rnd_data_valid(&rv_core_ibex),
+                MAX_STATUS_CHECKS);
   uint32_t status_value =
       rv_core_ibex_check_rnd_read_possible_while_status_invalid();
   CHECK(status_value == 0);
