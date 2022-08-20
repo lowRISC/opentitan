@@ -105,7 +105,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     if (en_jitter) begin
       // enable for test_rom
       bit [7:0] en_jitter_arr[] = {1};
-      sw_symbol_backdoor_overwrite("kJitterEnabled", en_jitter_arr, Rom, SwTypeRom);
+      sw_symbol_backdoor_overwrite("kJitterEnabled", en_jitter_arr, SwTypeRom);
 
       // enable for rom
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
@@ -286,22 +286,36 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // TODO: Need to deal with scrambling.
   virtual function void sw_symbol_backdoor_overwrite(input string symbol,
                                                      inout bit [7:0] data[],
-                                                     input chip_mem_e mem = FlashBank0Data,
-                                                     input sw_type_e sw_type = SwTypeTest);
+                                                     input sw_type_e sw_type = SwTypeTest,
+                                                     input bit does_not_exist_ok = 0);
 
     bit [bus_params_pkg::BUS_AW-1:0] addr, mem_addr;
+    chip_mem_e mem;
     uint size;
     uint addr_mask;
+    string image;
+    bit ret;
 
     // Elf file name checks.
     `DV_CHECK_FATAL(cfg.sw_images.exists(sw_type))
     `DV_CHECK_STRNE_FATAL(cfg.sw_images[sw_type], "")
-    `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], FlashBank0Data, FlashBank1Data},
-        $sformatf("SW symbol cannot appear in %0s mem", mem))
 
     // Find the symbol in the sw elf file.
-    sw_symbol_get_addr_size({cfg.sw_images[sw_type], ".elf"}, symbol, addr, size);
+    image = $sformatf("%0s.elf", cfg.sw_images[sw_type]);
+    ret = sw_symbol_get_addr_size(image, symbol, does_not_exist_ok, addr, size);
+    if (!ret) begin
+      string msg = $sformatf("Failed to find symbol %0s in %0s", symbol, image);
+      if (does_not_exist_ok) begin
+        `uvm_info(`gfn, msg, UVM_LOW)
+        return;
+      end else `uvm_fatal(`gfn, msg)
+    end
     `DV_CHECK_EQ_FATAL(size, data.size())
+
+    // Infer mem from address.
+    `DV_CHECK(cfg.get_mem_from_addr(addr, mem))
+    `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], FlashBank0Data, FlashBank1Data},
+        $sformatf("SW symbol %0s is not expected to appear in %0s mem", symbol, mem))
 
     addr_mask = (2**$clog2(cfg.mem_bkdr_util_h[mem].get_size_bytes()))-1;
     mem_addr = addr & addr_mask;
@@ -311,6 +325,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
                               symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
     for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
 
+    // TODO: Move this specialization to an extended class called rom_bkdr_util.
     if (mem == Rom) begin
       `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
       cfg.mem_bkdr_util_h[mem].update_rom_digest(RndCnstRomCtrlScrKey, RndCnstRomCtrlScrNonce);
@@ -324,6 +339,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                         input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                         input byte data);
     byte prev_data;
+    // TODO: Move these specializations to extended classes so that no special handling is needed at
+    // the call site.
     if (mem == Rom) begin
       bit [127:0] key = RndCnstRomCtrlScrKey;
       bit [63:0] nonce = RndCnstRomCtrlScrNonce;
