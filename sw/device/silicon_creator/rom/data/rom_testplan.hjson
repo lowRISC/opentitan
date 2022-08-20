@@ -484,54 +484,139 @@
       tests: []
     }
 
-    // Functests
     {
-      name: rom_functests
-      desc: '''Run functests developed for ROM.
+      name: rom_e2e_boot_policy_no_rom_ext
+      desc: '''Verify that ROM triggers shutdown when there is no valid ROM_EXT.
 
-            Functests test ROM components (e.g., drivers, libraries, etc.)
-            work as intended on-chip. However, unlike when these components are
-            embedded in the ROM, functests are linked with the OTTF, and
-            run out of flash. Additionally, unlike the ROM E2E tests,
-            functests are booted by the test ROM.
-            '''
-      tags: ["verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: ["rom_keymgr_functest"]
-    }
-
-    // Bootup without ROM_EXT
-    {
-      name: rom_e2e_bootup_no_rom_ext
-      desc: '''Verify device fails to boot with no ROM_EXT.
-
-            - Test runner loads the ROM and no ROM_EXT.
-            - Attempt to boot.
-            - Verify that the chip indicates the correct boot fault.
+            - Reset the chip.
+            - Verify that the chip outputs the expected `BFV`: `0142500d ` over UART.
+              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
+            - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
-    // Bootup with ROM_EXT
-    {
-      name: rom_e2e_bootup_success
-      desc: '''Verify device boots with a good ROM_EXT.
 
-            - Generate a ROM_EXT with a sufficiently high version number.
-            - Sign the ROM_EXT with a valid key.
-            - Test runner loads the ROM and prepared ROM_EXT.
-            - Attempt to boot.
-            - Verify that the chip successfully boots into the ROM_EXT.
+    {
+      name: rom_e2e_boot_policy_newer
+      desc: '''Verify that ROM chooses the slot with the greater security version.
+
+            - Apply bootstrap pin strapping and reset the chip.
+            - Write the ROM_EXT images to the chip.
+            - Verify that ROM chooses the slot with the greater security version.
+            - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
+
+            | Slot a security version | Slot b security version | Chosen |
+            |:-----------------------:|:-----------------------:|:------:|
+            |            0            |             0           |   a    |
+            |            0            |             1           |   b    |
+            |            1            |             0           |   a    |
+            |            1            |             1           |   a    |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
-      tests: ["rom_e2e_bootup_success"]
+      tests: []
     }
+
+    {
+      name: rom_e2e_boot_policy_bad_manifest
+      desc: '''Verify that ROM performs some basic checks on manifest fields.
+
+            `CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT` OTP item should be 1, and
+            `CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD` should be `kHardenedBoolTrue` for PROD and
+            PROD_END for the sake of simplicity.
+
+
+            - Write the image to the chip. See the table below.
+              - The other slot remains empty.
+            - Verify that the chip outputs the expected `BFV` over UART.
+            - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
+
+            | Slot |     Case                          |   `BFV`                         |
+            |:----:|:---------------------------------:|:-------------------------------:|
+            |   b  | `identitfier = 0`                 | `kErrorBootPolicyBadIdentifier` |
+            |   b  | `length < CHIP_ROM_EXT_SIZE_MIN`  | `kErrorBootPolicyBadLength`     |
+            |   b  | `length > CHIP_ROM_EXT_SIZE_MIN`  | `kErrorBootPolicyBadLength`     |
+            |   b  | `code_start = code_end`           | `kErrorManifestBadCodeRegion`   |
+            |   b  | `code_start < CHIP_MANIFEST_SIZE` | `kErrorManifestBadCodeRegion`   |
+            |   b  | `code_end > length`               | `kErrorManifestBadCodeRegion`   |
+            |   b  | `code_start` in range, unaligned  | `kErrorManifestBadCodeRegion`   |
+            |   b  | `code_end` in range, unaligned    | `kErrorManifestBadCodeRegion`   |
+            |   b  | `entry_point < code_start`        | `kErrorManifestBadCodeRegion`   |
+            |   b  | `entry_point >= code_end`         | `kErrorManifestBadCodeRegion`   |
+            |   b  | `entry_point` in range, unaligned | `kErrorManifestBadCodeRegion`   |
+            |   b  | `security_version = 0`            | `kErrorBootPolicyRollback`      |
+            |   a  | `identitfier = 0`                 | `0142500d`                      |
+            |   a  | `length < CHIP_ROM_EXT_SIZE_MIN`  | `0142500d`                      |
+            |   a  | `length > CHIP_ROM_EXT_SIZE_MIN`  | `0142500d`                      |
+            |   a  | `code_start = code_end`           | `0142500d`                      |
+            |   a  | `code_start < CHIP_MANIFEST_SIZE` | `0142500d`                      |
+            |   a  | `code_end > length`               | `0142500d`                      |
+            |   a  | `code_start` in range, unaligned  | `0142500d`                      |
+            |   a  | `code_end` in range, unaligned    | `0142500d`                      |
+            |   a  | `entry_point < code_start`        | `0142500d`                      |
+            |   a  | `entry_point >= code_end`         | `0142500d`                      |
+            |   a  | `entry_point` in range, unaligned | `0142500d`                      |
+            |   a  | `security_version = 0`            | `0142500d`                      |
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_boot_policy_valid
+      desc: '''Verify that ROM chooses the slot with the valid signature.
+
+            - Apply bootstrap pin strapping and reset the chip.
+            - Write the ROM_EXT images to the chip -- same security_version.
+            - Verify that ROM chooses the slot with the valid signature, otherwise triggers a
+              shutdown.
+            - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
+
+            | Slot a | Slot b | Chosen |
+            |:------:|:------:|:------:|
+            |   Bad  |   Bad  |  None  |
+            |   Bad  |  Good  |   b    |
+            |  Good  |   Bad  |   a    |
+            |  Good  |  Good  |   a    |
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_boot_policy_rollback
+      desc: '''Verify that ROM rejects rollbacks.
+
+            `CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT` OTP item should be 1, and
+            `CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD` should be `kHardenedBoolTrue` for PROD and
+            PROD_END for the sake of simplicity.
+
+            - Apply bootstrap pin strapping and reset the chip.
+            - Write the ROM_EXT images to the chip -- valid signatures.
+            - Verify that ROM chooses the slot with acceptable & newer seurity version, otherwise
+              triggers a shutdown.
+            - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
+
+            | Slot a | Slot b | Chosen |
+            |:------:|:------:|:------:|
+            |    0   |    0   |  None  |
+            |    0   |    1   |   b    |
+            |    2   |    0   |   a    |
+            |    1   |    1   |   a    |
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
     // TODO(lowrisc/opentitan#10929): test both A/B partitions
     // TODO(lowrisc/opentitan#10930): consider testing with both SW and OTBN sigverify
     {
-      name: rom_e2e_bootup_bad_rom_ext_signature
+      name: rom_e2e_boot_policy_bad_rom_ext_signature
       desc: '''Verify device fails to boot with an improperly-signed ROM_EXT.
 
             - Generate a ROM_EXT with a sufficiently high version number.
@@ -545,8 +630,9 @@
       milestone: V2
       tests: []
     }
+
     {
-      name: rom_e2e_bootup_bad_manifest_usage_constraint
+      name: rom_e2e_boot_policy_bad_manifest_usage_constraint
       desc: '''Verify device fails to boot with an invalid manifest usage constraints.
 
             - Generate an otherwise valid ROM_EXT with invalid manifest usage constraints.
@@ -559,26 +645,15 @@
       milestone: V2
       tests: []
     }
+
     {
-      name: rom_e2e_bootup_rom_ext_invalidated_key
+      name: rom_e2e_boot_policy_rom_ext_invalidated_key
       desc: '''Verify device fails to boot with a ROM_EXT signed with an invalidated key.
 
             - Generate a ROM_EXT with a sufficiently high version number.
             - Sign the ROM_EXT with a test key.
             - Generate an OTP with that test key disabled.
             - Test runner loads the ROM, the signed ROM_EXT, and the OTP image.
-            - Verify that the chip indicates the correct boot fault.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
-    {
-      name: rom_e2e_bootup_bad_rom_ext_version
-      desc: '''Verify device fails to boot with a bad minimum version.
-
-            - Test runner loads the ROM and a properly-signed ROM_EXT with a version number that is below the minimum version.
-            - Attempt to boot.
             - Verify that the chip indicates the correct boot fault.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
