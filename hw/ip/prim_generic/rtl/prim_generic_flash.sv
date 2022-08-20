@@ -13,9 +13,6 @@ module prim_generic_flash #(
   parameter int PagesPerBank   = 256,// data pages per bank
   parameter int WordsPerPage   = 256,// words per page
   parameter int DataWidth      = 32, // bits per word
-  parameter int ModelOnlyReadLatency   = 1,   // generic model read latency
-  parameter int ModelOnlyProgLatency   = 50,  // generic model program latency
-  parameter int ModelOnlyEraseLatency  = 200, // generic model program latency
   parameter int TestModeWidth  = 2
 ) (
   input clk_i,
@@ -68,10 +65,7 @@ module prim_generic_flash #(
       .InfoTypesWidth(InfoTypesWidth),
       .PagesPerBank(PagesPerBank),
       .WordsPerPage(WordsPerPage),
-      .DataWidth(DataWidth),
-      .ModelOnlyReadLatency(ModelOnlyReadLatency),
-      .ModelOnlyProgLatency(ModelOnlyProgLatency),
-      .ModelOnlyEraseLatency(ModelOnlyEraseLatency)
+      .DataWidth(DataWidth)
     ) u_prim_flash_bank (
       .clk_i,
       .rst_ni,

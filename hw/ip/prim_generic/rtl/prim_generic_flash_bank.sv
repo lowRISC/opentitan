@@ -12,9 +12,6 @@ module prim_generic_flash_bank #(
   parameter int PagesPerBank   = 256, // data pages per bank
   parameter int WordsPerPage   = 256, // words per page
   parameter int DataWidth      = 32,  // bits per word
-  parameter int ModelOnlyReadLatency   = 1,   // generic model read latency
-  parameter int ModelOnlyProgLatency   = 50,  // generic model program latency
-  parameter int ModelOnlyEraseLatency  = 200, // generic model program latency
 
   // Derived parameters
   localparam int PageW = $clog2(PagesPerBank),
@@ -44,6 +41,23 @@ module prim_generic_flash_bank #(
   input                              flash_power_ready_h_i,
   input                              flash_power_down_h_i
 );
+
+  `ifdef SYNTHESIS
+    localparam int ReadLatency   = 1;
+    localparam int ProgLatency   = 50;
+    localparam int EraseLatency  = 200;
+
+  `else
+    int ReadLatency   = 1;
+    int ProgLatency   = 50;
+    int EraseLatency  = 200;
+
+    initial begin
+      void'($value$plusargs("flash_read_latency=%0d", ReadLatency));
+      void'($value$plusargs("flash_program_latency=%0d", ProgLatency));
+      void'($value$plusargs("flash_erase_latency=%0d", EraseLatency));
+    end
+  `endif
 
   // Emulated flash macro values
   localparam int BkEraseCycles = 2000;
@@ -204,11 +218,7 @@ module prim_generic_flash_bank #(
   end
 
   // if read cycle is only 1, we can expose the unlatched data directly
-  if (ModelOnlyReadLatency == 1) begin : gen_fast_rd_data
-    assign rd_data_o = rd_data_d;
-  end else begin : gen_rd_data
-    assign rd_data_o = rd_data_q;
-  end
+  assign rd_data_o = ReadLatency == 1 ? rd_data_d : rd_data_q;
 
   // prog_pend_q is necessary to emulate flash behavior that a bit written to 0 cannot be written
   // back to 1 without an erase
@@ -281,7 +291,7 @@ module prim_generic_flash_bank #(
         end else if (pg_erase_req) begin
           st_d = StErase;
           index_limit_d = WordsPerPage;
-          time_limit_d = ModelOnlyEraseLatency;
+          time_limit_d = EraseLatency;
         end else if (bk_erase_req) begin
           st_d = StErase;
           index_limit_d = WordsPerBank;
@@ -290,7 +300,7 @@ module prim_generic_flash_bank #(
       end
 
       StRead: begin
-        if (time_cnt < ModelOnlyReadLatency) begin
+        if (time_cnt < ReadLatency) begin
           time_cnt_inc = 1'b1;
 
         end else if (!prog_pend_q) begin
@@ -318,7 +328,7 @@ module prim_generic_flash_bank #(
       StProg: begin
         // if data is already 0, cannot program to 1 without erase
         mem_wdata = cmd_q.prog_data & rd_data_q;
-        if (time_cnt < ModelOnlyProgLatency) begin
+        if (time_cnt < ProgLatency) begin
           mem_req = 1'b1;
           mem_wr = 1'b1;
           time_cnt_inc = 1'b1;

@@ -77,10 +77,7 @@ module chip_${top["name"]}_${target["name"]} #(
   parameter OtpCtrlMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
 ) (
 % else:
-module chip_${top["name"]}_${target["name"]} #(
-  // open source flash model program latency
-  parameter int FlashCtrlModelOnlyProgLatency = 50
-) (
+module chip_${top["name"]}_${target["name"]} (
 % endif
 <%
   removed_port_names = []
@@ -911,8 +908,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // Top-level design //
   //////////////////////
   top_${top["name"]} #(
-    .PinmuxAonTargetCfg(PinmuxTargetCfg),
-    .FlashCtrlModelOnlyProgLatency(FlashCtrlModelOnlyProgLatency)
+    .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_${top["name"]} (
     // ast connections
     .por_n_i                      ( por_n                      ),
