@@ -235,6 +235,18 @@ cc_library(
 )
 
 cc_library(
+    name = "rv_core_ibex_testutils",
+    srcs = ["rv_core_ibex_testutils.c"],
+    hdrs = ["rv_core_ibex_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "rv_plic_testutils",
     srcs = ["rv_plic_testutils.c"],
     hdrs = ["rv_plic_testutils.h"],
