@@ -30,7 +30,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   int observe_fifo_drops   = 0;
 
   bit dut_pipeline_enabled = 0;
+  // The FW_OV pipeline is controlled by two variables: SHA3_START and MODULE_ENABLE
+  // The MODULE_ENABLE signal has different delays when shutting down the FW_OV pipeline
+  // so we track it in a separate variable for fw_ov
   bit fw_ov_sha_enabled    = 0;
+  bit fw_ov_pipe_enabled   = 0;
 
   // This scoreboard is not capable of anticipating with single-cycle accuracy whether the observe
   // and entropy data FIFOs are empty.  However, we can note when they have been explicitly cleared
@@ -43,8 +47,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // Queue of TL_DW words for predicting outputs of the observe FIFO
   bit [TL_DW - 1:0]                observe_fifo_q[$];
 
-  // Queue of 64-bit words for inserting entropy input to the SHA pipeline
-  bit [SHACondWidth - 1:0]         process_fifo_q[$];
+  // Queue of 64-bit words for inserting entropy input to the SHA (or raw) pipelines
+  bit [SHACondWidth - 1:0]         sha_process_q[$];
+  bit [SHACondWidth - 1:0]         raw_process_q[$];
 
   // Buffer to store SHA entropy when using FW_OV mode
   bit [SHACondWidth - 1:0]         repacked_entropy_fw_ov;
@@ -126,7 +131,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     HardReset,
     Disable,
     Enable,
-    FIFOClr
+    FIFOClr,
+    FWOVDisable
   } reset_event_e;
 
   `uvm_component_new
@@ -722,7 +728,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     // TODO: If an alert is anticipated, we should check that (if necessary) this seed is
     // stopped and no others are allowed to progress.
-    // TODO: Confirm that an alert is triggered when (alert_threshold != alert_threshold_inv)
     alert_threshold = `gmv(ral.alert_threshold.alert_threshold);
 
     fmt = "Predicting alert status with %0d new failures this window";
@@ -912,7 +917,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // Clear all relevant prediction variables for
   // Reset, disable, enable and (delayed) FIFOClr reset events.
   function void handle_disable_reset(reset_event_e rst_type);
-    bit is_raw = (ral.conf.fips_enable.get_mirrored_value() != MuBi4True);
+    bit is_fw_ov = (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True) &&
+                   (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
 
     if (rst_type == Enable) begin
       clear_ht_stat_predictions();
@@ -923,24 +929,30 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       fips_csrng_q.delete();
     end
 
-    // The SHA3 engine is the one unit that is not cleared on disable
-    // it only clears itself when a digest is output or on hard reset
-    // so we leave the process_fifo_q alone to represent the fact
-    // that there is still data in the SHA3 state
+    // The SHA3 engine is the one unit that is not always cleared on
+    // disable.
+    // It clears itself in on disable in normal RNG mode.
+    // However, in FW_OV mode it only clears itself
+    // when a digest is output or on hard reset so in this case,
+    // we leave the sha_process_q alone to represent the fact
+    // that there is still data in the SHA3 state.
     //
-    // However, if the DUT is in raw mode, it is not using SHA3, it
-    // is just using a fifo, which will be reset.
-    //
-    if( rst_type == HardReset ||
-        ( (rst_type == Disable) && is_raw) ) begin
-      process_fifo_q.delete();
+    // However any entropy absorbed in raw mode (and stashed in
+    // raw_process_q), will always be lost on disable.
+    if(rst_type == HardReset) begin
+      sha_process_q.delete();
+      raw_process_q.delete();
+    end
+    if (rst_type == Disable) begin
+      raw_process_q.delete();
     end
 
-    // For FW_OV mode the 64 bit packer is also cleared.
-    repack_idx_fw_ov = 0;
-    // Note: For non FW_OV mode, the repack_idx_tl and repack_idx_sha
-    // counters get reset automatically when the collect entropy task
-    // exits.
+    if (rst_type == FWOVDisable) begin
+      // For FW_OV mode the 64 bit packer is also cleared.
+      repack_idx_fw_ov = 0;
+    end
+    // Note: For non-FW_OV mode, the repack_idx_tl and repack_idx_sha counters are stack variables
+    // which get reset automatically when the collect entropy task exits.
 
     if (rst_type == FIFOClr) begin
       observe_fifo_q.delete();
@@ -1345,10 +1357,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
               msg = $sformatf("locked? %01d", dut_reg_locked);
               `uvm_info(`gfn, msg, UVM_FULL)
-              if (do_enable && !dut_pipeline_enabled) begin
-                dut_pipeline_enabled = 1;
+              if (do_enable) begin
                 fork
                   begin
+                    cfg.clk_rst_vif.wait_clks(2);
+                    fw_ov_pipe_enabled = 1;
+                  end
+                  if (!dut_pipeline_enabled) begin
+                    dut_pipeline_enabled = 1;
                     handle_disable_reset(Enable);
                     fifos_cleared = 0;
                     collect_entropy();
@@ -1359,19 +1375,28 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               `DV_CHECK_FATAL(ral.regwen.regwen.predict(.value(sw_regupd && !do_enable),
                                                         .kind(UVM_PREDICT_READ)));
               if (do_disable && dut_pipeline_enabled) begin
+                // The DUT does not immediately turn off the RNG input. We wait a few cycles to
+                // let any last couple RNG samples come into the dut (so we know to delete them
+                // from our model of the DUT);
+                int base_shutdown_dly = cfg.tlul_to_rng_disable_delay;
+
+                // Send shutdown signals to the various event loops, with delays as necessary
+                // to account for empirical pipeline delays in the DUT.
                 fork : background_process
                   begin
-                    // The DUT does not immediately turn off the RNG input
-                    // We wait a few cycles to let any last couple RNG
-                    // samples come into the dut (so we know to delete them
-                    // from our model of the DUT);
-                    int shutdown_dly = cfg.tlul_to_rng_disable_delay;
-
-                    // It is empirically observed that when rng_bit selection
-                    // is enabled the shutdown needs one more cycle
-                    shutdown_dly += (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
-                    cfg.clk_rst_vif.wait_clks(shutdown_dly);
+                    bit rng_bit_enable = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
+                    int rng_shutdown_dly = base_shutdown_dly;
+                    rng_shutdown_dly += rng_bit_enable ? 1 : 0;
+                    cfg.clk_rst_vif.wait_clks(rng_shutdown_dly);
                     dut_pipeline_enabled = 0;
+                  end
+                  begin
+                    int fw_ov_shutdown_dly = base_shutdown_dly;
+                    fw_ov_shutdown_dly += 3;
+                    cfg.clk_rst_vif.wait_clks(fw_ov_shutdown_dly);
+                    fw_ov_pipe_enabled = 0;
+                    `uvm_info(`gfn, "FW_OV pipeline clearing", UVM_FULL)
+                    handle_disable_reset(FWOVDisable);
                   end
                   begin
                     cfg.clk_rst_vif.wait_clks(cfg.tlul_to_fifo_clr_delay);
@@ -1429,22 +1454,34 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
               // Disabling the fw_ov_sha3_start field triggers the conditioner, but only
               // if the DUT is configured properly.
-              if (dut_pipeline_enabled && is_fips_mode && fw_ov_insert && do_disable_sha) begin
-                `uvm_info(`gfn, "SHA3 disabled for FW_OV", UVM_FULL)
-                // SW _shouldn't_ turn off the SHA3 processing until the last data word
-                // has been processed.  However if it _does_, we should note an alert.
-                // We can also make an accurate prediction of the output (to pass our sims).
-                if(cfg.precon_fifo_vif.write_forbidden) begin
-                  // Process the entropy EXCEPT for the last stuck word
-                  // which we load into the next round.
-                  bit [SHACondWidth - 1:0] sha_temp;
-                  sha_temp = process_fifo_q.pop_back();
-                  package_and_release_entropy();
-                  process_fifo_q.push_back(sha_temp);
-                  `uvm_info(`gfn, "SHA3 disabled while data pending, expecting alert", UVM_MEDIUM)
-                  set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+              if (is_fips_mode && fw_ov_insert && do_disable_sha) begin
+                uvm_reg_field recov_sts_fld = ral.recov_alert_sts.es_fw_ov_disable_alert;
+                if (fw_ov_pipe_enabled) begin
+                  if (cfg.precon_fifo_vif.write_forbidden) begin
+                    // SW _shouldn't_ turn off the SHA3 processing until the last data word
+                    // has been processed.  However if it _does_, we should note an alert.
+                    // We can also make an accurate prediction of the output (to pass our sims).
+                    //
+                    // Process the entropy EXCEPT for the last stuck word
+                    // which we load into the next round.
+                    bit [SHACondWidth - 1:0] sha_temp = sha_process_q.pop_back();
+                    `uvm_info(`gfn, "SHA3 disabled for FW_OV (Illegally, data present)", UVM_FULL)
+                    package_and_release_entropy();
+                    sha_process_q.push_back(sha_temp);
+                    `uvm_info(`gfn, "SHA3 disabled while data pending, expecting alert", UVM_MEDIUM)
+                    set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+                    `DV_CHECK_FATAL(recov_sts_fld.predict(.value(1'b1), .kind(UVM_PREDICT_READ)));
+                  end else begin
+                    `uvm_info(`gfn, "SHA3 disabled for FW_OV (Legally)", UVM_FULL)
+                    package_and_release_entropy();
+                  end
                 end else begin
-                  package_and_release_entropy();
+                  // SHA is disabled while the DUT is disabled.
+                  // Another Illegal use case, one that doesn't even process the data.
+                  // Expect an alert even though the dut won't do anything with it
+                  set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+                  `DV_CHECK_FATAL(recov_sts_fld.predict(.value(1'b1), .kind(UVM_PREDICT_READ)));
+                    `uvm_info(`gfn, "SHA3 disabled for FW_OV (Illegally, disabled)", UVM_FULL)
                 end
               end
               fw_ov_sha_enabled = (start_mubi == MuBi4True);
@@ -1457,6 +1494,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               bit es_route     = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
               bit es_type      = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
               bit is_fips_mode = fips_enabled && !(es_route && es_type);
+
+              bit predict_conditioned = do_condition_data();
 
               bit fw_ov_entropy_insert =
                   (cfg.otp_en_es_fw_over == MuBi8True) &&
@@ -1471,7 +1510,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                 `uvm_info(`gfn, msg, UVM_FULL)
               end
 
-              if (dut_pipeline_enabled && fw_ov_entropy_insert && !ignore_fw_ov_data_pulse) begin
+              if (fw_ov_pipe_enabled && fw_ov_entropy_insert && !ignore_fw_ov_data_pulse) begin
                 msg = $sformatf("Inserting word 0x%08x into pipeline", item.a_data);
                 `uvm_info(`gfn, msg, UVM_MEDIUM)
                 // Add this TL-word to the running SHA word
@@ -1483,10 +1522,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   repack_idx_fw_ov = 0;
                   msg = $sformatf("fw_ov SHA word: %016x", repacked_entropy_fw_ov);
                   `uvm_info(`gfn, msg, UVM_HIGH)
-                  process_fifo_q.push_back(repacked_entropy_fw_ov);
+                  if (predict_conditioned) begin
+                    sha_process_q.push_back(repacked_entropy_fw_ov);
+                  end else begin
+                    raw_process_q.push_back(repacked_entropy_fw_ov);
+                  end
                   // In bypass mode, data is automatically released when a full seed is acquired
-                  if (!is_fips_mode &&
-                      process_fifo_q.size() == (CSRNG_BUS_WIDTH / SHACondWidth)) begin
+                  if (! predict_conditioned &&
+                      raw_process_q.size() == (CSRNG_BUS_WIDTH / SHACondWidth)) begin
                     package_and_release_entropy();
                   end
                 end
@@ -1633,6 +1676,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             case (i)
               FIFO_WRITE_ERR: begin
                 if (!under_alert_handshake["recov_alert"]) begin
+                  `DV_CHECK_FATAL(ral.recov_alert_sts.es_fw_ov_wr_alert.predict(1'b1));
                   set_exp_alert("recov_alert");
                 end
                 // Make a single-clock pulse to tell the TL process that this error has been
@@ -1668,44 +1712,58 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     return fips_csrng[0 +: CSRNG_BUS_WIDTH];
   endfunction
 
-  // Note: this routine is destructive in that it empties the input argument
-  function bit [FIPS_CSRNG_BUS_WIDTH - 1:0] predict_fips_csrng();
-    bit [FIPS_CSRNG_BUS_WIDTH - 1:0] fips_csrng_data;
-    bit [CSRNG_BUS_WIDTH - 1:0]      csrng_data;
-    bit [FIPS_BUS_WIDTH - 1:0]       fips_data;
-    entropy_phase_e                  dut_phase;
-    bit                              predict_conditioned;
-    prim_mubi_pkg::mubi4_t           rng_single_bit;
+  function bit do_condition_data();
+    bit             route_sw;
+    bit             sw_bypass;
+    bit             fips_enable;
+    bit             is_fips_mode;
+    bit             fw_ov_insert;
+    entropy_phase_e dut_phase;
+    bit             predict_conditioned;
 
-    int                              sample_frames;
-    bit                              fw_ov_insert;
-
-    bit                              route_sw;
-    bit                              sw_bypass;
-    bit                              fips_enable;
-    bit                              is_fips_mode;
-
-    route_sw    = (ral.entropy_control.es_route.get_mirrored_value() == MuBi4True);
-    sw_bypass   = (ral.entropy_control.es_type.get_mirrored_value()  == MuBi4True);
-    fips_enable = (ral.conf.fips_enable.get_mirrored_value()         == MuBi4True);
+    route_sw    = (`gmv(ral.entropy_control.es_route) == MuBi4True);
+    sw_bypass   = (`gmv(ral.entropy_control.es_type)  == MuBi4True);
+    fips_enable = (`gmv(ral.conf.fips_enable)         == MuBi4True);
 
     is_fips_mode = fips_enable && !(route_sw && sw_bypass);
 
-    fw_ov_insert = (cfg.otp_en_es_fw_over == MuBi8True) &&
-                   (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
-                   (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
-
-    rng_single_bit = ral.conf.rng_bit_enable.get_mirrored_value();
+    fw_ov_insert = (cfg.otp_en_es_fw_over                        == MuBi8True) &&
+                   (`gmv(ral.fw_ov_control.fw_ov_mode)           == MuBi4True) &&
+                   (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
 
     dut_phase = convert_seed_idx_to_phase(seed_idx,
                                           is_fips_mode,
                                           fw_ov_insert);
 
-    sample_frames = process_fifo_q.size();
-
-    `uvm_info(`gfn, $sformatf("processing %01d 64-bit frames", sample_frames), UVM_FULL)
-
     predict_conditioned = !((route_sw && sw_bypass) || (dut_phase == BOOT));
+
+    return predict_conditioned;
+
+  endfunction
+
+
+  // Note: this routine is destructive in that it empties the input argument
+  function bit [FIPS_CSRNG_BUS_WIDTH - 1:0] predict_fips_csrng();
+    bit [FIPS_CSRNG_BUS_WIDTH - 1:0] fips_csrng_data;
+    bit [CSRNG_BUS_WIDTH - 1:0]      csrng_data;
+    bit [FIPS_BUS_WIDTH - 1:0]       fips_data;
+    bit                              predict_conditioned;
+    prim_mubi_pkg::mubi4_t           rng_single_bit;
+
+    int                              sample_frames;
+
+    string                           msg, fmt;
+
+    predict_conditioned = do_condition_data();
+
+    rng_single_bit = `gmv(ral.conf.rng_bit_enable);
+
+    sample_frames = predict_conditioned ? sha_process_q.size() : raw_process_q.size;
+
+    fmt = "processing %01d 64-bit frames in %s mode";
+    msg = $sformatf(fmt, sample_frames, predict_conditioned ? "FIPS" : "BYPASS");
+
+    `uvm_info(`gfn, msg, UVM_FULL);
 
     fips_data = predict_conditioned && (rng_single_bit == prim_mubi_pkg::MuBi4False);
 
@@ -1716,14 +1774,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       bit [7:0] sha_digest[CSRNG_BUS_WIDTH / 8];
       longint msg_len = 0;
 
-      sha_msg = new[process_fifo_q.size() * BytesPerSHAWord];
+      sha_msg = new[sha_process_q.size() * BytesPerSHAWord];
 
       // The DUT's SHA engine takes data in 64 (SHACondWidth) bit chunks, whereas the DPI call
       // requires an array of bytes.  Here we break the SHA-words into a stream of bytes
-      while (process_fifo_q.size() > 0) begin
+      while (sha_process_q.size() > 0) begin
         bit [SHACondWidth - 1:0] sha_word    = '0;
         bit [7:0] sha_byte                   = '0;
-        sha_word = process_fifo_q.pop_front();
+        sha_word = sha_process_q.pop_front();
         for (int i = 0; i < BytesPerSHAWord; i++) begin
           sha_byte = sha_word[ 0 +: 8];
           sha_word = sha_word >> 8;
@@ -1751,10 +1809,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     end else begin
 
-      while (process_fifo_q.size() > 0) begin
-        bit [SHACondWidth - 1:0] word = process_fifo_q.pop_front();
-        string fmt      = "sample size: %01d, last elem.: %016h";
-        `uvm_info(`gfn, $sformatf(fmt, process_fifo_q.size()+1, word), UVM_FULL)
+      while (raw_process_q.size() > 0) begin
+        bit [SHACondWidth - 1:0] word = raw_process_q.pop_front();
+        string fmt;
+
+        fmt = "sample size: %01d, last elem.: %016h";
+        `uvm_info(`gfn, $sformatf(fmt, raw_process_q.size()+1, word), UVM_FULL)
 
         csrng_data = csrng_data >> SHACondWidth;
         csrng_data[CSRNG_BUS_WIDTH - SHACondWidth +: SHACondWidth] = word;
@@ -1869,6 +1929,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit                       fips_enable, es_route, es_type;
     int                       failures_in_window;
 
+    bit                       predict_conditioning;
+    string                    msg;
+
+
     localparam int RngPerTlDw = TL_DW / RNG_BUS_WIDTH;
 
     wait_enabled();
@@ -1882,6 +1946,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     fw_ov_insert = (cfg.otp_en_es_fw_over == MuBi8True) &&
                    (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
                    (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
+    predict_conditioning = do_condition_data();
 
     pass_count = 0;
     startup_fail_count = 0;
@@ -1962,14 +2027,25 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             observe_fifo_q.push_back(repacked_entropy_tl);
 
             // Now repack the TL_DW width blocks into the larger SHA blocks
-            // to publish to the process_fifo_q
+            // to publish to the correct processing fifo.
+            // Since the raw and sha-conditioned data are handled differently
+            // on disable events they go into different FIFOs
+            //
             repacked_entropy_sha = {repacked_entropy_tl,
                                     repacked_entropy_sha[TL_DW +: (SHACondWidth - TL_DW)]};
             repack_idx_sha++;
             if (repack_idx_sha == SHACondWidth/TL_DW) begin
               repack_idx_sha = 0;
               if (!fw_ov_insert) begin
-                process_fifo_q.push_back(repacked_entropy_sha);
+                if (predict_conditioning) begin
+                  sha_process_q.push_back(repacked_entropy_sha);
+                  msg = $sformatf("RNG SHA word: %016x, count: 0x%01x",
+                                  repacked_entropy_sha, sha_process_q.size());
+                  `uvm_info(`gfn, msg, UVM_HIGH)
+                end else begin
+                  `uvm_info(`gfn, $sformatf("RNG RAW word: %016x", repacked_entropy_sha) , UVM_HIGH)
+                  raw_process_q.push_back(repacked_entropy_sha);
+                end
               end
             end
           end
@@ -2007,7 +2083,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
 
       `uvm_info(`gfn, $sformatf("pass_requirement: %01d", pass_requirement), UVM_HIGH)
-      `uvm_info(`gfn, $sformatf("process_fifo_q.size: %01d", process_fifo_q.size()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("raw_process_q.size: %01d", raw_process_q.size()), UVM_HIGH)
+      `uvm_info(`gfn, $sformatf("sha_process_q.size: %01d", sha_process_q.size()), UVM_HIGH)
 
       if (pass_count >= pass_requirement && !threshold_alert_active && !main_sm_escalates) begin
         package_and_release_entropy();
@@ -2026,7 +2103,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     entropy_data_reg_enable = (cfg.otp_en_es_fw_read == MuBi8True) &&
                               (ral.conf.entropy_data_reg_enable.get_mirrored_value() == MuBi4True);
 
-    `uvm_info(`gfn, $sformatf("process_fifo_q.size(): %01d", process_fifo_q.size()), UVM_FULL)
+    `uvm_info(`gfn, $sformatf("raw_process_q.size(): %01d", raw_process_q.size()), UVM_FULL)
+    `uvm_info(`gfn, $sformatf("sha_process_q.size(): %01d", sha_process_q.size()), UVM_FULL)
     fips_csrng = predict_fips_csrng();
 
     // package data for routing to SW and to CSRNG:
