@@ -616,7 +616,30 @@
     // TODO(lowrisc/opentitan#10929): test both A/B partitions
     // TODO(lowrisc/opentitan#10930): consider testing with both SW and OTBN sigverify
     {
-      name: rom_e2e_boot_policy_bad_rom_ext_signature
+      name: rom_e2e_boot_data_recovery
+      desc: '''Verify that ROM can use the default boot data when configured to do so.
+
+            - Apply bootstrap pin strapping and reset the chip.
+            - Write the ROM_EXT images to the chip -- valid signature, security version = 2.
+            - Verify that ROM boots the slot when boot data is available.
+            - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
+
+            | LC State | CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT | CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD |
+            |:--------:|:----------------------------------:|:----------------------------------------:|
+            |   TEST   |                 0                  |            `kHardenedBoolFalse`          |
+            |   DEV    |                 1                  |            `kHardenedBoolFalse`          |
+            |   PROD   |                 1                  |            `kHardenedBoolTrue`           |
+            |   PROD   |                 0                  |            `kHardenedBoolFalse` (error)  |
+            | PROD_END |                 0                  |            `kHardenedBoolTrue`           |
+            | PROD_END |                 1                  |            `kHardenedBoolFalse` (error)  |
+            |   RMA    |                 0                  |            `kHardenedBoolFalse`          |
+
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
       desc: '''Verify device fails to boot with an improperly-signed ROM_EXT.
 
             - Generate a ROM_EXT with a sufficiently high version number.
