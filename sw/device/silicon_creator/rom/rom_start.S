@@ -51,7 +51,7 @@
    *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
    */
   .section .vectors, "ax"
-  .balign 256
+  .balignl 256, 0xc0001073
   .global _rom_interrupt_vector_asm
   .type _rom_interrupt_vector_asm, @function
 _rom_interrupt_vector_asm:
@@ -70,7 +70,7 @@ _rom_interrupt_vector_asm:
   /**
    * Post C runtime initialization RISC-V vectored exception/interrupt handlers.
    */
-  .balign 256
+  .balignl 256, 0xc0001073
   .global _rom_interrupt_vector_c
   .type _rom_interrupt_vector_c, @function
 _rom_interrupt_vector_c:
@@ -95,7 +95,7 @@ _rom_interrupt_vector_c:
    * ROM shadow stack.
    */
   .section .bss
-  .balign 4
+  .balignl 4, 0xc0001073
   .global _rom_shadow_stack
   .type _rom_shadow_stack, @object
 _rom_shadow_stack:
@@ -121,7 +121,7 @@ _rom_shadow_stack:
   /**
    * Entry point after reset.
    */
-  .balign 4
+  .balignl 4, 0xc0001073
   .global _rom_start_boot
   .type _rom_start_boot, @function
 _rom_start_boot:
