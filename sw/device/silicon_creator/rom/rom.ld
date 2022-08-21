@@ -24,6 +24,15 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 _rom_boot_address = ORIGIN(rom);
 
 /**
+ * Size of the initial ePMP RX region at reset. This region must be large
+ * enough to cover the .crt section.
+ *
+ * NOTE: This value must match the size of the RX region in
+ * hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh.
+ */
+_epmp_reset_rx_size = 0x400;
+
+/**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
 _rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
@@ -92,7 +101,14 @@ SECTIONS {
    * will fit into the instruction encoding.
    */
   .crt : ALIGN(4) {
+    /* Pad with zeros. */
+    FILL(0x0000)
     KEEP(*(.crt))
+    /* .crt must fit in the ePMP RX region at reset. */
+    ASSERT(
+        SIZEOF(.vectors) + SIZEOF(.crt) <= _epmp_reset_rx_size,
+        "Error: .crt overflows reset ePMP region");
+    . = MAX(., _epmp_reset_rx_size - SIZEOF(.vectors));
   } > rom
 
   /**
