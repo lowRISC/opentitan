@@ -31,10 +31,13 @@ localparam pmp_cfg_t pmp_cfg_rst[16] = '{
 // Addresses are given in byte granularity for readibility. A minimum of two
 // bits will be stripped off the bottom (PMPGranularity == 0) with more stripped
 // off at coarser granularities.
+//
+// Note: The size of region 2 below must match `_epmp_reset_rx_size` in
+// `sw/device/silicon_creator/rom/rom.ld`
 localparam [33:0] pmp_addr_rst[16] = '{
   34'h00000000, // rgn 0
   34'h00000000, // rgn 1
-  34'h0000bffc, // rgn 2  [ROM: base=0x0000_8000 size=0x8000 (32KiB)]
+  34'h000081fc, // rgn 2  [ROM: base=0x0000_8000 size=0x400 (1KiB)]
   34'h00000000, // rgn 3
   34'h00000000, // rgn 4
   34'h00000000, // rgn 5
