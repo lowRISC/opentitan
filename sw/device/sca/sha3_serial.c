@@ -6,6 +6,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
@@ -574,7 +575,7 @@ static void sha3_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
  * Initializes peripherals and processes simple serial packets received over
  * UART.
  */
-void _ottf_main(void) {
+bool test_main(void) {
   sca_init(kScaTriggerSourceKmac, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
 
   LOG_INFO("Running sha3_serial");
