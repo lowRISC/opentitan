@@ -1893,11 +1893,15 @@
             Requires `EnMasking` parameter to be enabled.
             SW randomly configures the KMAC in any hashing mode/strength, and enable EDN mode.
             Randomly enable/disable the `entropy_refresh`.
-            // TODO - error handling is not complete, do not enable `wait_timer` yet.
-            KMAC should send request to EDN once `CmdStart` is written, and should send out another
-            request to EDN when either:
+            Randomly configure `wait_timer` values (zero for disable, non-zero for timer expire).
+              - Program `wait_timer` to a small value.
+                Check if EDN timeout error occurs after issuing the hashing op.
+              - Adjust `wait_timer` greater than expected EDN latency (with correct `prescaler` too).
+                Then check if Digest is correct.
+            KMAC should send EDN request after `entropy_ready` is set.
+            KMAC also should send out another request to EDN when either:
               - kmac hash counter hits the configured threshold (assuming it is non-zero)
-              - a hash operation is completed, KMAC will refresh its internal entropy state
+              - Hash count exceeds the threshold.
             SW verifies that KMAC produces the correct digest value.
 
             TODO: This is pending security review discussion. It is unclear if this feature will be
@@ -1905,7 +1909,7 @@
 
             X-ref'ed with EDN test/env.
             '''
-      stage: V3
+      stage: V2
       tests: []
     }
     {
