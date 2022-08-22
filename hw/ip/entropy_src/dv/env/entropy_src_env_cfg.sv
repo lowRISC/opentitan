@@ -12,6 +12,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
        m_rng_agent_cfg;
   rand push_pull_agent_cfg#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))
        m_csrng_agent_cfg;
+  rand push_pull_agent_cfg#(.HostDataWidth(0))
+       m_aes_halt_agent_cfg;
 
   // Additional reset interface for the csrng.
   virtual clk_rst_if    csrng_rst_vif;
@@ -147,6 +149,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
                             type_id::create("m_rng_agent_cfg");
     m_csrng_agent_cfg     = push_pull_agent_cfg#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))::
                             type_id::create("m_csrng_agent_cfg");
+    m_aes_halt_agent_cfg  = push_pull_agent_cfg#(.HostDataWidth(0))::
+                            type_id::create("m_aes_halt_agent_cfg");
 
     // set num_interrupts & num_alerts
     begin

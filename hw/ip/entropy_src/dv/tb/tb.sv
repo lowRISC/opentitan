@@ -39,6 +39,9 @@ module tb;
       rng_if(.clk(clk), .rst_n(csrng_rst_n));
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       csrng_if(.clk(clk), .rst_n(csrng_rst_n));
+  // Use a push_pull interface to
+  push_pull_if#(.HostDataWidth(0))
+      aes_halt_if(.clk(clk), .rst_n(csrng_rst_n));
   entropy_src_path_if entropy_src_path_if (.entropy_src_hw_if_i(entropy_src_hw_if_i));
   entropy_src_assert_if entropy_src_assert_if (.entropy_src_hw_if_i(entropy_src_hw_if_i));
 
@@ -60,8 +63,8 @@ module tb;
                                     csrng_if.d_data[entropy_src_pkg::CSRNG_BUS_WIDTH]}),
     .entropy_src_hw_if_i          (csrng_if.req),
 
-    .cs_aes_halt_o                (),
-    .cs_aes_halt_i                (1'b1),
+    .cs_aes_halt_o                (aes_halt_if.req),
+    .cs_aes_halt_i                (aes_halt_if.ack),
 
     .entropy_src_xht_o            (),
     .entropy_src_xht_i            ('0),
@@ -108,6 +111,8 @@ module tb;
         (null, "*.env.m_rng_agent*", "vif", rng_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)))::
         set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
+    uvm_config_db#(virtual push_pull_if#(.HostDataWidth(0)))::
+        set(null, "*.env.m_aes_halt_agent*", "vif", aes_halt_if);
     uvm_config_db#(virtual entropy_src_assert_if)::set(null, "*.env", "entropy_src_assert_vif",
         entropy_src_assert_if);
     uvm_config_db#(virtual entropy_src_path_if)::set(null, "*.env", "entropy_src_path_vif",
