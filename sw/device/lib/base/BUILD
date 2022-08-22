@@ -82,9 +82,14 @@ cc_library(
     srcs = ["memory.c"],
     hdrs = ["memory.h"],
 
-    # This library defines memcpy(), so we can't have LLVM rewriting memcpy
-    # into a call to itself.
-    copts = ["-fno-builtin"],
+    copts = [
+        # This library defines memcpy(), so we can't have LLVM rewriting memcpy
+        # into a call to itself.
+        "-fno-builtin",
+        # Function alignment affects performance. Force word alignment to keep
+        # `:memory_perftest` predictable per discussion in #14436.
+        "-falign-functions=32",
+    ],
     deps = [
         ":macros",
     ],
@@ -95,10 +100,6 @@ opentitan_functest(
     srcs = ["memory_perftest.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:test_rom",
-        tags = [
-            "flaky",
-            "manual",
-        ],
     ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     targets = ["cw310"],
