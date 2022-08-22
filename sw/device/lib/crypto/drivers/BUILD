@@ -20,6 +20,35 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "kmac",
+    srcs = ["kmac.c"],
+    hdrs = ["kmac.h"],
+    deps = [
+        "//hw/ip/kmac/data:kmac_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+    ],
+)
+
+opentitan_functest(
+    name = "kmac_test",
+    srcs = ["kmac_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":kmac",
+        ":kmac_test_vectors",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 opentitan_functest(
     name = "aes_test",
     srcs = ["aes_test.c"],
@@ -32,6 +61,15 @@ opentitan_functest(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
+    name = "kmac_test_vectors",
+    srcs = ["kmac_test_vectors.c"],
+    hdrs = ["kmac_test_vectors.h"],
+    deps = [
+        ":kmac",
     ],
 )
 
