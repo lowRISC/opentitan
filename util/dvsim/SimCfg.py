@@ -754,7 +754,7 @@ class SimCfg(FlowCfg):
 
         if self.cov_report_deploy is not None:
             results_server_dir_url = self.results_server_dir.replace(
-                self.results_server_prefix, self.results_server_url_prefix)
+                self.results_server_prefix, "https://")
 
             log.info("Publishing coverage results to %s",
                      results_server_dir_url)
