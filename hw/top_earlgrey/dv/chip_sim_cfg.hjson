@@ -104,6 +104,13 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 1
 
+  // Uncomment if using manufacturer tests / test hooks that live somewhere else
+  // on your system, outside of $REPO_TOP. See
+  // sw/device/tests/closed_source/README.md for more details.
+  // exports: [
+  //   {MANUFACTURER_HOOKS_DIR: "/path/to/manufacturer_hooks_dir"}
+  // ]
+
   // Default UVM test and seq class name.
   uvm_test: chip_base_test
   uvm_test_seq: chip_sw_base_vseq
