@@ -168,6 +168,9 @@ static void otbn_wait_for_done_irq(otbn_t *otbn_ctx) {
   // Disable Done interrupt.
   CHECK_DIF_OK(dif_otbn_irq_set_enabled(&otbn_ctx->dif, kDifOtbnIrqDone,
                                         kDifToggleDisabled));
+
+  // Acknowledge Done interrupt. This clears INTR_STATE.done back to 0.
+  CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn_ctx->dif, kDifOtbnIrqDone));
 }
 
 static void otbn_init_irq(void) {
