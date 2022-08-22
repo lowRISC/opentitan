@@ -48,7 +48,6 @@ class kmac_smoke_vseq extends kmac_base_vseq;
   }
 
   constraint disable_err_c {
-    en_kmac_err == 0;
     kmac_err_type == kmac_pkg::ErrNone;
   }
 
@@ -281,6 +280,11 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
         // issue Process cmd
         issue_cmd(CmdProcess);
+
+        if (kmac_err_type == kmac_pkg::ErrUnexpectedModeStrength &&
+            en_unsupported_modestrength == 0) begin
+          continue;
+        end
 
         wait_for_kmac_done();
         kmac_done = 1;
