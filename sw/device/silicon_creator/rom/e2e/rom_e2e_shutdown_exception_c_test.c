@@ -16,6 +16,6 @@
 //   - `.text`, only 2 instructions to trigger an instruction access fault, and
 //   - `.static_critical`, required by the linker script.
 
-void _rom_ext_start_boot(void) {
+void _ottf_start(void) {
   ((void (*)(void))TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR)();
 }

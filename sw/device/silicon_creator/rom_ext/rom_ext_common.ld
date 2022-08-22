@@ -118,9 +118,6 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
-    /* TODO(#14636): extract_sw_logs_db requires .rodata section. */
-    . = ALIGN(4);
-    _rodata_end = .;
   } > rom_ext_flash
 
   /**
