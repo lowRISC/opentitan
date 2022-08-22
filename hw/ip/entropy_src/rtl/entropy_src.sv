@@ -189,26 +189,15 @@ module entropy_src
   assign stub_es_valid = mubi4_test_true_strict(mubi_module_en);
 
   if (Stub) begin : gen_stub_entropy_src
-
-    logic seed_ld, lfsr_en;
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        lfsr_en <= '0;
-      end else begin
-        lfsr_en <= stub_es_valid;
-      end
-    end
-    assign seed_ld = stub_es_valid & !lfsr_en;
-
     prim_lfsr #(
       .LfsrDw(StubLfsrWidth),
       .StateOutDw(StubLfsrWidth)
     ) u_prim_lfsr (
       .clk_i          (clk_i),
       .rst_ni         (rst_ni),
-      .seed_en_i      (seed_ld),
-      .seed_i         (StubLfsrWidth'(reg2hw.seed.q)),
-      .lfsr_en_i      (lfsr_en),
+      .seed_en_i      ('0),
+      .seed_i         ('0),
+      .lfsr_en_i      (stub_es_valid),
       .entropy_i      ('0),
       .state_o        (stub_lfsr_value)
     );
