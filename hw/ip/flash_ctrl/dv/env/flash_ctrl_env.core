@@ -79,6 +79,7 @@ filesets:
       - seq_lib/flash_ctrl_rw_evict_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_re_evict_vseq.sv: {is_include_file: true}
       - seq_lib/flash_ctrl_oversize_error_vseq.sv: {is_include_file: true}
+      - seq_lib/flash_ctrl_connect_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

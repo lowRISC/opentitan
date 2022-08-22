@@ -336,6 +336,11 @@
       name: flash_ctrl_stress_all
       reseed: 5
     }
+    {
+      name: flash_ctrl_connect
+      uvm_test_seq: flash_ctrl_connect_vseq
+      reseed: 5
+    }
   ]
 
   // List of regressions.
