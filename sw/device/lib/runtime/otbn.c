@@ -92,12 +92,6 @@ otbn_result_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
     return kOtbnError;
   }
 
-  // Zero all of DMEM
-  otbn_result_t err = otbn_zero_data_memory(ctx);
-  if (err != kOtbnOk) {
-    return err;
-  }
-
   // Write initialized data
   if (data_size > 0) {
     if (dif_otbn_dmem_write(&ctx->dif, 0, ctx->app.dmem_data_start,
