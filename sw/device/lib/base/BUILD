@@ -88,7 +88,7 @@ cc_library(
         "-fno-builtin",
         # Function alignment affects performance. Force word alignment to keep
         # `:memory_perftest` predictable per discussion in #14436.
-        "-falign-functions=32",
+        "-falign-functions=4",
     ],
     deps = [
         ":macros",
