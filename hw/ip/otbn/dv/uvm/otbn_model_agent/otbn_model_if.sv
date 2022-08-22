@@ -99,7 +99,7 @@ interface otbn_model_if
   endtask: send_err_escalation
 
   task automatic lock_immediately(bit [31:0] err_val);
-    string lock_path = "u_model.lock_immediately_q";
+    string lock_path = "tb.u_model.lock_immediately_q";
     `uvm_info("otbn_model_if", "Locking immediately after error", UVM_HIGH)
     force u_model.wakeup_iss = 1;
     `DV_CHECK_FATAL(u_model.otbn_model_send_err_escalation(handle, err_val, 1'b1) == 0,
