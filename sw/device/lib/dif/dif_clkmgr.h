@@ -119,7 +119,7 @@ typedef uint32_t dif_clkmgr_recov_err_codes_t;
 
 typedef enum dif_clkmgr_fatal_err_type {
   /**
-   * A recoverable update error for one of the clocks.
+   * A fatal error for regfile integrity.
    */
   kDifClkmgrFatalErrTypeRegfileIntegrity = 1u << 0,
   /**
@@ -135,7 +135,7 @@ typedef enum dif_clkmgr_fatal_err_type {
 /**
  * A set of fatal errors.
  *
- * This type is used to clear and read the fatal error codes.
+ * This type is used to read the fatal error codes.
  */
 typedef uint32_t dif_clkmgr_fatal_err_codes_t;
 
@@ -382,7 +382,8 @@ dif_result_t dif_clkmgr_recov_err_code_clear_codes(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_fatal_err_code_get_codes(
-    const dif_clkmgr_t *clkmgr, dif_clkmgr_fatal_err_type_t *codes);
+    const dif_clkmgr_t *clkmgr, dif_clkmgr_fatal_err_codes_t *codes);
+
 /**
  * Wait for external clock switch to finish.
  *

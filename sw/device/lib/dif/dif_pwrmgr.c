@@ -451,3 +451,13 @@ dif_result_t dif_pwrmgr_wakeup_reason_clear(const dif_pwrmgr_t *pwrmgr) {
 
   return kDifOk;
 }
+
+dif_result_t dif_pwrmgr_fatal_err_code_get_codes(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_fatal_err_codes_t *codes) {
+  if (pwrmgr == NULL || codes == NULL) {
+    return kDifBadArg;
+  }
+  *codes =
+      mmio_region_read32(pwrmgr->base_addr, PWRMGR_FAULT_STATUS_REG_OFFSET);
+  return kDifOk;
+}

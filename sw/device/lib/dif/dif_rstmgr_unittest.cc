@@ -644,6 +644,21 @@ TEST_F(SoftwareResetIsHeldTest, Success) {
     EXPECT_FALSE(asserted);
   }
 }
+class FatalErrorTest : public RstmgrTest {};
+
+TEST_F(FatalErrorTest, GetBadArgs) {
+  dif_rstmgr_fatal_err_codes_t codes;
+  EXPECT_DIF_BADARG(dif_rstmgr_fatal_err_code_get_codes(nullptr, nullptr));
+  EXPECT_DIF_BADARG(dif_rstmgr_fatal_err_code_get_codes(nullptr, &codes));
+  EXPECT_DIF_BADARG(dif_rstmgr_fatal_err_code_get_codes(&rstmgr_, nullptr));
+}
+
+TEST_F(FatalErrorTest, GetCodes) {
+  dif_rstmgr_fatal_err_codes_t codes;
+  EXPECT_READ32(RSTMGR_ERR_CODE_REG_OFFSET, 6);
+  EXPECT_DIF_OK(dif_rstmgr_fatal_err_code_get_codes(&rstmgr_, &codes));
+  EXPECT_EQ(codes, 6);
+}
 
 }  // namespace
 }  // namespace dif_rstmgr_unittest

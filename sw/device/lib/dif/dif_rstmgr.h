@@ -110,6 +110,24 @@ typedef enum dif_rstmgr_reset_info {
  */
 typedef uint32_t dif_rstmgr_peripheral_t;
 
+typedef enum dif_rstmgr_fatal_err_type {
+  /**
+   * A fatal error for regfile integrity.
+   */
+  kDifRstmgrFatalErrTypeRegfileIntegrity = 1u << 0,
+  /**
+   * A fatal error for reset consistency.
+   */
+  kDifRstmgrFatalErrTypeResetConsistency = 1u << 1,
+} dif_rstmgr_fatal_err_type_t;
+
+/**
+ * A set of fatal errors.
+ *
+ * This type is used to read the fatal error codes.
+ */
+typedef uint32_t dif_rstmgr_fatal_err_codes_t;
+
 /**
  * Resets the Reset Manager registers to sane defaults.
  *
@@ -347,6 +365,17 @@ dif_result_t dif_rstmgr_software_reset_is_held(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rstmgr_software_device_reset(const dif_rstmgr_t *handle);
+
+/**
+ * Read the fatal error codes.
+ *
+ * @param rstmgr Reset Manager Handle.
+ * @param[out] codes The fatal error codes.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rstmgr_fatal_err_code_get_codes(
+    const dif_rstmgr_t *rstmgr, dif_rstmgr_fatal_err_codes_t *codes);
 
 #ifdef __cplusplus
 }  // extern "C"
