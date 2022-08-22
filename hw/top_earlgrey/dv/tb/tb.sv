@@ -508,16 +508,18 @@ module tb;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[OtbnImem], `OTBN_IMEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTBN DMEM", UVM_MEDIUM)
-      m_mem_bkdr_util[OtbnDmem] = new(.name  ("mem_bkdr_util[OtbnDmem]"),
-                                      .path  (`DV_STRINGIFY(`OTBN_DMEM_HIER)),
-                                      .depth ($size(`OTBN_DMEM_HIER)),
-                                      .n_bits($bits(`OTBN_DMEM_HIER)),
-                                      .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[OtbnDmem], `OTBN_DMEM_HIER)
+      m_mem_bkdr_util[OtbnDmem0] = new(.name  ("mem_bkdr_util[OtbnDmem0]"),
+                                       .path  (`DV_STRINGIFY(`OTBN_DMEM_HIER)),
+                                       .depth ($size(`OTBN_DMEM_HIER)),
+                                       .n_bits($bits(`OTBN_DMEM_HIER)),
+                                       .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[OtbnDmem0], `OTBN_DMEM_HIER)
 
       mem = mem.first();
       do begin
-        if (mem inside {[RamMain1:RamMain15]} || mem inside {[RamRet1:RamRet15]}) begin
+        if (mem inside {[RamMain1:RamMain15]} ||
+            mem inside {[RamRet1:RamRet15]} ||
+            mem inside {[OtbnDmem1:OtbnDmem15]}) begin
           mem = mem.next();
           continue;
         end

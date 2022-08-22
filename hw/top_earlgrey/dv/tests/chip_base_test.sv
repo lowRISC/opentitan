@@ -30,6 +30,7 @@ class chip_base_test extends cip_base_test #(
     // Set the number of RAM tiles (1 each).
     cfg.num_ram_main_tiles = 1;
     cfg.num_ram_ret_tiles = 1;
+    cfg.num_otbn_dmem_tiles = 1;
 
     // Knob to set the UART baud rate (set to 2M by default).
     void'($value$plusargs("uart_baud_rate=%0d", cfg.uart_baud_rate));

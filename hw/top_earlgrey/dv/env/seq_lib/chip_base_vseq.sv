@@ -73,7 +73,9 @@ class chip_base_vseq #(
     // otbn_mem_scramble that may intentionally read memories before writing them. Reading these
     // memories still triggeres ECC integrity errors that need to be handled by the test.
     cfg.mem_bkdr_util_h[OtbnImem].clear_mem();
-    cfg.mem_bkdr_util_h[OtbnDmem].clear_mem();
+    for (int ram_idx = 0; ram_idx < cfg.num_otbn_dmem_tiles; ram_idx++) begin
+      cfg.mem_bkdr_util_h[chip_mem_e'(OtbnDmem0 + ram_idx)].clear_mem();
+    end
 
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
