@@ -46,6 +46,8 @@ title: "SPI Device HWIP Technical Specification"
 - 1 TPM command (8b) and 1 address (24bit) buffer
 - HW controlled wait state
 - Shared SPI with other SPI Device functionalities. Unique CS# for the TPM
+  - Flash or Passthrough mode can be active with TPM mode.
+    Generic and TPM modes are mutually exclusive.
 - HW processed registers for the read requests
   - TPM_ACCESS_x, TPM_STS_x, TPM_INTF_CAPABILITY, TPM_INT_ENABLE, TPM_INT_STATUS, TPM_INT_VECTOR, TPM_DID_VID, TPM_RID
   - TPM_HASH_START returns FFh
