@@ -765,16 +765,29 @@
     }
 
     {
-      // TODO: the retention SRAM may be initialized with an LFSR instead of
-      //   just being cleared.
-      // TODO: create a matrix of reset reasons and the expected retention SRAM
-      //   state after the reset.
-      name: rom_e2e_startup_retention_sram_wiped
-      desc: '''Verify that retention SRAM is wiped after a POR.
+      name: rom_e2e_address_translation
+      desc: '''Verify that all address translation configurations work
 
-            - Write known data into all sections of retention SRAM.
-            - Trigger a POR.
-            - Verify that that all sections of retention SRAM have been cleared.
+            - Bootstrap the chip with a valid second stage image. See the table below.
+            - Verify that the chip behaves as expected.
+
+            | Address translation | Image addr | Slot used | Error |
+            |:-------------------:|:----------:|:---------:|:-----:|
+            |         Off         |      A     |     A     |  No   |
+            |         Off         |      B     |     B     |  No   |
+            |         Off         |      A     |     B     |  Yes  |
+            |         Off         |      B     |     A     |  Yes  |
+            |         On          |   Virtual  |     A     |  No   |
+            |         On          |   Virtual  |     B     |  No   |
+            |         Invalid     |   Virtual  |     A     |  Yes  |
+            |         Invalid     |   Virtual  |     B     |  Yes  |
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
