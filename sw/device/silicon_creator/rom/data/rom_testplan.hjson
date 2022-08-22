@@ -613,8 +613,6 @@
       tests: []
     }
 
-    // TODO(lowrisc/opentitan#10929): test both A/B partitions
-    // TODO(lowrisc/opentitan#10930): consider testing with both SW and OTBN sigverify
     {
       name: rom_e2e_boot_data_recovery
       desc: '''Verify that ROM can use the default boot data when configured to do so.
@@ -640,14 +638,32 @@
       tests: []
     }
 
-      desc: '''Verify device fails to boot with an improperly-signed ROM_EXT.
+    {
+      name: rom_e2e_sigverify_always
+      desc: '''Verify that ROM performs signature verification in all life cycle states.
 
-            - Generate a ROM_EXT with a sufficiently high version number.
-            - Sign the ROM_EXT with a valid key.
-            - Flip one bit in the signature.
-            - Test runner loads the ROM and the improperly-signed ROM_EXT.
+            - Prepare a ROM_EXT image with a valid signature generated using an authorized key.
+            - Flip a bit/make all zeros/make all ones at random.
+              - Log so that test can be reproduced.
+            - Apply bootstrap pin strapping and reset the chip.
+            - Load the image.
+            - Verify that boot fails with the expected `BFV`: `kErrorSigverifyBadEncodedMessage`.
+            - Repeat the steps above for TEST, DEV, PROD, PROD_END, and RMA.
+
+            See `rom_e2e_boot_policy_valid`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_sigverify_key_auth
+      desc: '''Verify that ROM only uses authorized keys for signature verification.
+
+            - Prepare a ROM_EXT image with a valid signature generated using an unauthorized key.
             - Attempt to boot.
-            - Verify that the chip indicates the correct boot fault.
+            - Verify that boot fails with `BFV:kErrorSigverifyBadKey`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
@@ -655,14 +671,20 @@
     }
 
     {
-      name: rom_e2e_boot_policy_bad_manifest_usage_constraint
-      desc: '''Verify device fails to boot with an invalid manifest usage constraints.
+      name: rom_e2e_sigverify_key_validity
+      desc: '''Verify that ROM only uses authorized keys that are not invalidated.
 
-            - Generate an otherwise valid ROM_EXT with invalid manifest usage constraints.
-            - Sign the ROM_EXT with a valid key.
-            - Test runner loads the ROM and the ROM_EXT.
-            - Attempt to boot.
-            - Verify that the chip indicates the correct boot fault.
+            - For each key entry in `CREATOR_SW_CFG_KEY_IS_VALID`,
+              - Invalidate the key by setting the entry to a value other than `kHardenedBoolTrue`.
+              - Prepare a ROM_EXT image with a valid signature generated using the invalidated key.
+              - Verify that boot fails with `BFV:kErrorSigverifyBadKey`
+
+            | LC State | Allowed key types |
+            |:--------:|:-----------------:|
+            |   DEV    | Prod, Dev         |
+            |   PROD   | Prod              |
+            | PROD_END | Prod              |
+            |   RMA    | Test, Prod        |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
@@ -670,70 +692,78 @@
     }
 
     {
-      name: rom_e2e_boot_policy_rom_ext_invalidated_key
-      desc: '''Verify device fails to boot with a ROM_EXT signed with an invalidated key.
+      name: rom_e2e_sigverify_key_type
+      desc: '''Verify that ROM only uses appropriate key types for each life cycle state.
 
-            - Generate a ROM_EXT with a sufficiently high version number.
-            - Sign the ROM_EXT with a test key.
-            - Generate an OTP with that test key disabled.
-            - Test runner loads the ROM, the signed ROM_EXT, and the OTP image.
-            - Verify that the chip indicates the correct boot fault.
+            - For each life cycle state and key type,
+              - Prepare a ROM_EXT image with a valid signature generated using a key of that type.
+              - Verify that boot fails with `BFV:kErrorSigverifyBadKey` or succeeds depending on the
+                life cycle state and key type. See the table below.
+
+            | LC State | Allowed key types |
+            |:--------:|:-----------------:|
+            |   TEST   | Test, Prod        |
+            |   DEV    | Prod, Dev         |
+            |   PROD   | Prod              |
+            | PROD_END | Prod              |
+            |   RMA    | Test, Prod        |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
 
-
-    // Chip-specific startup
     {
-      // TODO(lowrisc/opentitan#10928): SRAM scrambling may be controlled by OTP
-      name: rom_e2e_startup_ast_main_sram_init
-      desc: '''Verify that the AST and main SRAM are initialized correctly after POR.
+      name: rom_e2e_sigverify_mod_exp
+      desc: '''Verify that ROM can verify signatures using both implementations of mod_exp.
 
-            For each lifecycle state, perform the following:
-            - Load an OTP image corresponding to this state.
-            - Boot the chip.
-            - Check the SENSOR_CTRL_STATUS_AST_INIT_DONE bit.
-              - This bit should be 1 if the AST should be initialized and 0 otherwise.
-            - Check the following main SRAM registers in SRAM_CTRL.CTRL:
-              - SCR_KEY_VALID = 1
-              - SCR_KEY_SEED_VALID = 1
-              - INIT_DONE = 1
+            Note: The chip can be in any life cycle state except TEST since we use the software
+            implementation without reading from the OTP in TEST.
+
+            - Prepare a ROM_EXT image with a valid signature generated using an authorized key.
+            - Apply bootstrap pin strapping and reset the chip and load the image.
+            - Verify that boot succeeeds. Repeat with the following values:
+
+            | `CREATOR_SW_CFG_USE_SW_RSA_VERIFY` | Result  |
+            |:-----------------------------------:---------|
+            | `kHardenedBoolTrue`                | Success |
+            | `kHardenedBoolFalse`               | Success |
+            | `0`                                | Failure |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
+
     {
-      // TODO(lowrisc/opentitan#10928): SRAM scrambling may be controlled by OTP
-      name: rom_e2e_startup_retention_sram_init
-      desc: '''Verify that the retention SRAM is initialized correctly after POR.
+      name: rom_e2e_sigverify_usage_constraints
+      desc: '''Verify that ROM enforces usage constraints.
 
-            - Initiate a POR.
-            - Check the following retention SRAM registers in SRAM_CTRL.CTRL:
-              - SCR_KEY_VALID = 1
-              - SCR_KEY_SEED_VALID = 1
-              - INIT_DONE = 1
+            - Generate an otherwise valid ROM_EXT image for the following cases:
+              - No constraints specified
+              - Constrained to a specific device ID
+                - Device ID matches
+                - Device ID doesn't match
+              - Constrained to a family of devices
+                - Device ID matches
+                - Device ID doesn't match
+              - Constrained to TEST, DEV, PROD, PROD_END, RMA
+                - Life cycle state matches
+                - Life cycle state doesn't match
+              - Constrained to a creator manufacturing state
+                - `CREATOR_SW_CFG_MANUF_STATE` matches
+                - `CREATOR_SW_CFG_MANUF_STATE` doesn't match
+              - Constrained to an owner manufacturing state
+                - `OWNER_SW_CFG_MANUF_STATE` matches
+                - `OWNER_SW_CFG_MANUF_STATE` doesn't match
+              - All constraints specified
+              - Corrupt usage constraints data, e.g. wrong unselected word value.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
-    {
-      name: rom_e2e_startup_retention_sram_saved
-      desc: '''Verify that retention SRAM saves data across low-power entry/exit.
 
-            - Write known data into silicon_owner section of retention SRAM.
-            - Trigger a low-power entry/exit.
-            - Read the silicon_owner section of retention SRAM.
-            - Verify that the data has been retained.
-            - Verify that silicon_creator section has been wiped.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
     {
       // TODO: the retention SRAM may be initialized with an LFSR instead of
       //   just being cleared.
