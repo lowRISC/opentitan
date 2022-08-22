@@ -883,5 +883,90 @@
       tests: []
     }
 
+    {
+      name: rom_e2e_asm_interrupt_handler
+      desc: '''Verify that asm interrupt handler resets the chip.
+
+            `CREATOR_SW_CFG_ROM_EXEC_EN` should be set to `0` and the chip should in a life cycle
+             state where debugging is enabled, i.e. TEST, DEV, or RMA.
+
+            - Connect a debugger.
+            - Set a breakpoint on the asm handler.
+            - Trigger an exception, e.g. by setting `PC` to an address (end of ROM) that will trigger an
+              instruction access fault.
+            - Verify that execution breaks at the asm handler.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_asm_watchdog
+      desc: '''Verify that watchdog is initialized in `rom_start.S`.
+
+            `CREATOR_SW_CFG_ROM_EXEC_EN` should be set to `0` and the chip should in a life cycle
+             state where debugging is enabled, i.e. TEST, DEV, or RMA.
+
+            - Connect a debugger.
+            - Set breakpoints on right after watchdog is initialized in `rom_start.S` and the asm
+              handler.
+            - Wait until execution breaks at the first breakpoint, wait ~1s before continuing.
+            - Verify that watchdog expires and execution breaks at the asm handler.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_asm_c_interrupt_handler
+      desc: '''Verify that `rom_start.S` configures the ROM C interrupt handler and it triggers
+            shutdown.
+
+            `CREATOR_SW_CFG_ROM_EXEC_EN` should be set to `0` and the chip should in a life cycle
+             state where debugging is enabled, i.e. TEST, DEV, or RMA.
+
+            - Connect a debugger.
+            - Set a breakpoint on `rom_main()` and the ROM C handler `rom_interrupt_handler()`.
+            - Continue until `rom_main()`.
+            - Trigger an exception, e.g. by setting `PC` to an address (start of flash) that will trigger an
+              instruction access fault.
+            - Verify that execution breaks at the C interrupt handler.
+            - Verify that chip resets with `BFV:kErrorInterrupt`.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+
+    {
+      name: rom_e2e_asm_init
+      desc: '''Verify that ROM initializes peripherals properly.
+
+            Note: While the following can be checked at ROM_EXT stage, using a debugger would avoid
+            depending on `rom.c` for this test. Also, we may want to break this into multiple tests.
+
+            - Verify that the following peripherals are initialized properly:
+              - AST
+                - `CREATOR_SW_CFG_AST_INIT_EN`: `kMultiBitBool4True` enables, `kMultiBitBool4False`
+                  disables.
+              - Clock jitter
+                - `CREATOR_SW_CFG_JITTER_EN`: `kMultiBitBool4False` disables, all other values
+                  enables. `CREATOR_SW_CFG_AST_INIT_EN` must also be `kMultiBitBool4True` to enable.
+              - Entropy complex
+                - Entryop_src, csrng, and edn must be configured at boot mode.
+              - ePMP
+              - Interrupts should be disabled
+                - Trigger a test interrupt and verify that nothing happens.
+              - SRAM
+                - Must be scrambled with a new key. Can test using register values and
+                  functionality.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      milestone: V2
+      tests: []
+    }
+      
 ]
 }
