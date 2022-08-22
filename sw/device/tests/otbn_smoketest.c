@@ -69,7 +69,6 @@ static void check_otbn_insn_cnt(otbn_t *otbn_ctx, uint32_t expected_insn_cnt) {
 static void test_barrett384(otbn_t *otbn_ctx) {
   enum { kDataSizeBytes = 48 };
 
-  CHECK(otbn_zero_data_memory(otbn_ctx) == kOtbnOk);
   CHECK(otbn_load_app(otbn_ctx, kAppBarrett) == kOtbnOk);
 
   // a, first operand
