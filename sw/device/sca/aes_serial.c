@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
@@ -374,7 +375,7 @@ static void init_aes(void) {
  * Initializes peripherals and processes simple serial packets received over
  * UART.
  */
-void _ottf_main(void) {
+bool test_main(void) {
   sca_init(kScaTriggerSourceAes, kScaPeripheralIoDiv4 | kScaPeripheralAes);
 
   LOG_INFO("Running AES serial");
