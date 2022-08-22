@@ -14,3 +14,8 @@ foreach mod $modules {
     source $RDC_WAIVER_DIR/rdc_waivers.$mod.tcl
   }
 }
+
+# clk_ast_ext_i: Ignore S_GENCLK
+set_rule_status -rule {S_GENCLK} -status {Waived}  \
+  -expression {(ClockTreeSignal=~"IOC6")} \
+  -comment {External signal has SW bypass option. But usually not used. So internal generated clock is define ans main clock}
