@@ -12,6 +12,7 @@ class entropy_src_env extends cip_base_env #(
 
   push_pull_agent#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))         m_rng_agent;
   push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  m_csrng_agent;
+  push_pull_agent#(.HostDataWidth(0))                                      m_aes_halt_agent;
 
   `uvm_component_new
 
@@ -45,6 +46,15 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_csrng_agent_cfg.if_mode    = dv_utils_pkg::Host;
     cfg.m_csrng_agent_cfg.en_cov     = cfg.en_cov;
 
+    m_aes_halt_agent = push_pull_agent#(.HostDataWidth(0))::
+                      type_id::create("m_aes_halt_agent", this);
+    uvm_config_db#(push_pull_agent_cfg#(.HostDataWidth(0)))::set
+                  (this, "m_aes_halt_agent*", "cfg", cfg.m_aes_halt_agent_cfg);
+    cfg.m_aes_halt_agent_cfg.agent_type          = push_pull_agent_pkg::PullAgent;
+    cfg.m_aes_halt_agent_cfg.if_mode             = dv_utils_pkg::Device;
+    cfg.m_aes_halt_agent_cfg.pull_handshake_type = push_pull_agent_pkg::FourPhase;
+    cfg.m_aes_halt_agent_cfg.en_cov              = cfg.en_cov;
+
     uvm_config_db#(virtual entropy_subsys_fifo_exception_if#(1))::get(this, "", "precon_fifo_vif",
         cfg.precon_fifo_vif);
 
@@ -75,8 +85,9 @@ class entropy_src_env extends cip_base_env #(
 
     scoreboard.interrupt_vif = cfg.interrupt_vif;
 
-    virtual_sequencer.csrng_sequencer_h = m_csrng_agent.sequencer;
-    virtual_sequencer.rng_sequencer_h   = m_rng_agent.sequencer;
+    virtual_sequencer.csrng_sequencer_h    = m_csrng_agent.sequencer;
+    virtual_sequencer.rng_sequencer_h      = m_rng_agent.sequencer;
+    virtual_sequencer.aes_halt_sequencer_h = m_aes_halt_agent.sequencer;
 
   endfunction
 
