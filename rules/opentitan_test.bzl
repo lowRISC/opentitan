@@ -17,6 +17,14 @@ DEFAULT_TEST_FAILURE_MSG = "({})|({})".format(
     ROM_BOOT_FAILURE_MSG,
 )
 
+# This constant holds a dictionary of slot-specific linker script dependencies
+# that determine how an `opentitan_flash_binary` is built.
+_FLASH_SLOTS = {
+    "silicon_creator_a": ["@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a"],
+    "silicon_creator_b": ["@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_b"],
+    "silicon_creator_virtual": ["@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_virtual"],
+}
+
 _BASE_PARAMS = {
     "args": [],  # Passed to test runner as arguments.
     "data": [],
@@ -239,6 +247,7 @@ def opentitan_functest(
         test_in_rom = False,
         ot_flash_binary = None,
         signed = False,
+        slot = "silicon_creator_a",
         test_harness = "@//sw/host/opentitantool",
         key = "test_key_0",
         dv = None,
@@ -266,6 +275,7 @@ def opentitan_functest(
                               flash image for the test rather than building one
                               from srcs/deps.
       @param signed: Whether to sign the test image. Unsigned by default.
+      @param slot: What slot to build the image for.
       @param test_harness: The binary on the host side that runs the test.
       @param key: Which signed test image (by key) to use.
       @param dv: DV test parameters.
@@ -301,6 +311,10 @@ def opentitan_functest(
 
     # Generate SW artifacts for the tests.
     if not ot_flash_binary:
+        # Set the linker script for the specified slot.
+        if slot not in _FLASH_SLOTS:
+            fail("Invalid slot: {}. Valid slots are: silicon_creator_{a,b,virtual}".format(slot))
+        deps += _FLASH_SLOTS[slot]
         ot_flash_binary = name + "_prog"
         opentitan_flash_binary(
             name = ot_flash_binary,

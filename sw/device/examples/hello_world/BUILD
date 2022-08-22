@@ -20,7 +20,6 @@ opentitan_flash_binary(
     deps = [
         ":hello_world_lib",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/testing/test_framework:test_framework_manifest_def",
     ],
 )
 
@@ -41,7 +40,8 @@ cc_library(
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
-        "//sw/device/lib/testing/test_framework:ottf_start_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_start",
         "//sw/device/lib/testing/test_framework:ottf_test_config",
     ],
 )

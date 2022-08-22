@@ -139,6 +139,7 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":test_framework_manifest_def",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crt",
@@ -147,36 +148,6 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
         "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
-    ],
-)
-
-cc_library(
-    name = "ottf_start_silicon_creator_slot_a",
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":ottf_ld_silicon_creator_slot_a",
-        ":ottf_start",
-        ":test_framework_manifest_def",
-    ],
-)
-
-cc_library(
-    name = "ottf_start_silicon_creator_slot_b",
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":ottf_ld_silicon_creator_slot_b",
-        ":ottf_start",
-        ":test_framework_manifest_def",
-    ],
-)
-
-cc_library(
-    name = "ottf_start_silicon_creator_slot_virtual",
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":ottf_ld_silicon_creator_slot_virtual",
-        ":ottf_start",
-        ":test_framework_manifest_def",
     ],
 )
 
@@ -196,7 +167,7 @@ cc_library(
         ":check",
         ":coverage",
         ":freertos_port",
-        ":ottf_start_silicon_creator_slot_a",
+        ":ottf_start",
         ":ottf_test_config",
         ":status",
         "//sw/device/lib/arch:device",

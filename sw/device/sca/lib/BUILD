@@ -56,6 +56,6 @@ cc_library(
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:print",
         "//sw/device/lib/testing:pinmux_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_start_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_start",
     ],
 )
