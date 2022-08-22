@@ -197,7 +197,7 @@ static const perf_test_t kPerfTests[] = {
         .setup_buf1 = &fill_buf_zeroes,
         .setup_buf2 = &fill_buf_zeroes,
         .func = &test_memrcmp,
-        .expected_num_cycles =  220280,
+        .expected_num_cycles = 220280,
     },
     {
         .label = "memchr_pathological",

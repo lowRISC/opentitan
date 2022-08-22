@@ -81,7 +81,6 @@ cc_library(
     name = "memory",
     srcs = ["memory.c"],
     hdrs = ["memory.h"],
-
     copts = [
         # This library defines memcpy(), so we can't have LLVM rewriting memcpy
         # into a call to itself.
