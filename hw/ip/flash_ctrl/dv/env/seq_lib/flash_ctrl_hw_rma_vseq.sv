@@ -103,15 +103,31 @@ class flash_ctrl_hw_rma_vseq extends flash_ctrl_base_vseq;
 
       `uvm_info(`gfn, "READ", UVM_LOW)
       do_flash_ops(flash_ctrl_pkg::FlashOpRead, ReadCheckNorm);
-      cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
 
       // SEND RMA REQUEST (Erases the Flash and Writes Random Data To All Partitions)
+      fork
+        begin
+          cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
+          `uvm_info(`gfn, "RMA REQUEST", UVM_LOW)
+          rma_seed = $urandom;  // Random RMA Seed
+          send_rma_req(rma_seed);
+          cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
+        end
+        begin
+          // Assert flash_ctrl.INIT at the beginning of RMA or
+          // in the middle
+          int val = $urandom_range(0, 1);
+          `uvm_info(`gfn, $sformatf("INIT val: %0d", val), UVM_MEDIUM)
+          csr_wr(.ptr(ral.init), .value(val));
 
-      `uvm_info(`gfn, "RMA REQUEST", UVM_LOW)
-      rma_seed = $urandom;  // Random RMA Seed
-      send_rma_req(rma_seed);
-      cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
-
+          if (val == 0) begin
+            int my_wait = $urandom_range(1,100);
+            val = $urandom_range(0, 1);
+            #(my_wait * 1ms);
+            csr_wr(.ptr(ral.init), .value(val));
+          end
+        end
+      join
       // CHECK HOST SOFTWARE HAS NO ACCESS TO THE FLASH
 
       // Attempt to Read from FLASH Controller

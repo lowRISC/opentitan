@@ -444,24 +444,24 @@ class flash_ctrl_scoreboard #(
   virtual function void erase_data(flash_dv_part_e part, addr_t addr, bit sel);
     case (part)
       FlashPartData: begin
-        erase_page_bank(NUM_BK_DATA_WORDS, addr, sel, cfg.scb_flash_data);
+        erase_page_bank(NUM_BK_DATA_WORDS, addr, sel, cfg.scb_flash_data, "scb_flash_data");
       end
       FlashPartInfo: begin
         if (sel) begin
-          erase_page_bank(NUM_BK_DATA_WORDS, addr, sel, cfg.scb_flash_data);
+          erase_page_bank(NUM_BK_DATA_WORDS, addr, sel, cfg.scb_flash_data, "scb_flash_data");
         end
-        erase_page_bank(NUM_BK_INFO_WORDS, addr, sel, cfg.scb_flash_info);
+        erase_page_bank(NUM_BK_INFO_WORDS, addr, sel, cfg.scb_flash_info, "scb_flash_info");
       end
       FlashPartInfo1: begin
         if (!sel) begin
-          erase_page_bank(NUM_PAGE_WORDS, addr, sel, cfg.scb_flash_info1);
+          erase_page_bank(NUM_PAGE_WORDS, addr, sel, cfg.scb_flash_info1, "scb_flash_info1");
         end else begin
           `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Bank erase for INFO1 part not supported!")
         end
       end
       FlashPartInfo2: begin
         if (!sel) begin
-          erase_page_bank(NUM_PAGE_WORDS, addr, sel, cfg.scb_flash_info2);
+          erase_page_bank(NUM_PAGE_WORDS, addr, sel, cfg.scb_flash_info2, "scb_flash_info2");
         end else begin
           `uvm_fatal(`gfn, "flash_ctrl_scoreboard: Bank erase for INFO2 part not supported!")
         end
@@ -723,7 +723,8 @@ class flash_ctrl_scoreboard #(
   endtask
 
   virtual function void erase_page_bank(int num_bk_words, addr_t addr, bit sel,
-                                        ref data_model_t exp_part);
+                                        ref data_model_t exp_part,
+                                        input string scb_mem_name);
     int num_wr;
     if (sel) begin  // bank sel
       num_wr = num_bk_words;
@@ -740,7 +741,7 @@ class flash_ctrl_scoreboard #(
     for (int i = 0; i < num_wr; i++) begin
       if (exp_part.exists(addr)) begin
         exp_part[addr] = {TL_DW{1'b1}};
-        `uvm_info(`gfn, $sformatf("ERASE ADDR:0x%0h scb_flash_data: 0x%0h", addr, exp_part[addr]),
+        `uvm_info(`gfn, $sformatf("ERASE ADDR:0x%0h %s: 0x%0h", addr, scb_mem_name, exp_part[addr]),
                   UVM_LOW)
       end
       addr = addr + 4;
