@@ -22,5 +22,5 @@ class chip_sw_clkmgr_escalation_reset_vseq extends chip_sw_base_vseq;
     if_proxy = sec_cm_pkg::find_sec_cm_if_proxy(
         "tb.dut.top_earlgrey.u_clkmgr_aon.u_clk_main_aes_trans.u_idle_cnt");
     if_proxy.inject_fault();
-   endtask
+  endtask
 endclass

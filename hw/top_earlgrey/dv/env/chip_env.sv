@@ -117,6 +117,13 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get sw_test_status_vif from uvm_config_db")
     end
 
+    // get the handle to the alerts interface.
+    if (!uvm_config_db#(alerts_vif)::get(
+            this, "", "alerts_vif", cfg.alerts_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get alerts_vif from uvm_config_db")
+    end
+
     // get the handle to the ast supply interface.
     if (!uvm_config_db#(virtual ast_supply_if)::get(
             this, "", "ast_supply_vif", cfg.ast_supply_vif
