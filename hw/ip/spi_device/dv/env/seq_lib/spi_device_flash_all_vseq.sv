@@ -27,6 +27,7 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
     allow_write_enable_disable = 1;
     allow_addr_cfg_cmd = 1;
 
+    forever_read_buffer_update_nonblocking();
     fork
       // this thread runs until the main_seq completes
       while (!main_seq_done) upload_fifo_read_seq();
