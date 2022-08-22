@@ -405,3 +405,12 @@ dif_result_t dif_rstmgr_software_device_reset(const dif_rstmgr_t *handle) {
 
   return kDifOk;
 }
+
+dif_result_t dif_rstmgr_fatal_err_code_get_codes(
+    const dif_rstmgr_t *rstmgr, dif_rstmgr_fatal_err_codes_t *codes) {
+  if (rstmgr == NULL || codes == NULL) {
+    return kDifBadArg;
+  }
+  *codes = mmio_region_read32(rstmgr->base_addr, RSTMGR_ERR_CODE_REG_OFFSET);
+  return kDifOk;
+}

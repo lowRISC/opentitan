@@ -570,14 +570,14 @@ TEST_F(RecovErrorTest, ClearCodes) {
 class FatalErrorTest : public ClkMgrTest {};
 
 TEST_F(FatalErrorTest, GetBadArgs) {
-  dif_clkmgr_fatal_err_type_t codes;
+  dif_clkmgr_fatal_err_codes_t codes;
   EXPECT_DIF_BADARG(dif_clkmgr_fatal_err_code_get_codes(nullptr, nullptr));
   EXPECT_DIF_BADARG(dif_clkmgr_fatal_err_code_get_codes(nullptr, &codes));
   EXPECT_DIF_BADARG(dif_clkmgr_fatal_err_code_get_codes(&clkmgr_, nullptr));
 }
 
 TEST_F(FatalErrorTest, GetCodes) {
-  dif_clkmgr_fatal_err_type_t codes;
+  dif_clkmgr_fatal_err_codes_t codes;
   EXPECT_READ32(CLKMGR_FATAL_ERR_CODE_REG_OFFSET, 6);
   EXPECT_DIF_OK(dif_clkmgr_fatal_err_code_get_codes(&clkmgr_, &codes));
   EXPECT_EQ(codes, 6);

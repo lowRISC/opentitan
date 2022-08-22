@@ -158,6 +158,28 @@ typedef enum dif_pwrmgr_wakeup_type {
  */
 typedef uint8_t dif_pwrmgr_wakeup_types_t;
 
+typedef enum dif_pwrmgr_fatal_err_type {
+  /**
+   * A fatal error for regfile integrity.
+   */
+  kDifPwrmgrFatalErrTypeRegfileIntegrity = 1u << 0,
+  /**
+   * A fatal error for escalation timeout.
+   */
+  kDifPwrmgrFatalErrTypeEscalationTimeout = 1u << 1,
+  /**
+   * A fatal error for main power glitch.
+   */
+  kDifPwrmgrFatalErrTypeMainPowerGlitch = 1u << 2,
+} dif_pwrmgr_fatal_err_type_t;
+
+/**
+ * A set of fatal errors.
+ *
+ * This type is used to read the fatal error codes.
+ */
+typedef uint32_t dif_pwrmgr_fatal_err_codes_t;
+
 /**
  * Wakeup types and requests from sources since the last time recording started.
  */
@@ -366,6 +388,17 @@ dif_result_t dif_pwrmgr_wakeup_reason_get(const dif_pwrmgr_t *pwrmgr,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_wakeup_reason_clear(const dif_pwrmgr_t *pwrmgr);
+
+/**
+ * Read the fatal error codes.
+ *
+ * @param pwrmgr Power Manager Handle.
+ * @param[out] codes The fatal error codes.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwrmgr_fatal_err_code_get_codes(
+    const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_fatal_err_codes_t *codes);
 
 #ifdef __cplusplus
 }  // extern "C"

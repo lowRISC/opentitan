@@ -766,5 +766,21 @@ TEST_F(WakeupRecording, ClearReason) {
   EXPECT_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr_));
 }
 
+class FatalErrorTest : public DifPwrmgrInitialized {};
+
+TEST_F(FatalErrorTest, GetBadArgs) {
+  dif_pwrmgr_fatal_err_codes_t codes;
+  EXPECT_DIF_BADARG(dif_pwrmgr_fatal_err_code_get_codes(nullptr, nullptr));
+  EXPECT_DIF_BADARG(dif_pwrmgr_fatal_err_code_get_codes(nullptr, &codes));
+  EXPECT_DIF_BADARG(dif_pwrmgr_fatal_err_code_get_codes(&pwrmgr_, nullptr));
+}
+
+TEST_F(FatalErrorTest, GetCodes) {
+  dif_pwrmgr_fatal_err_codes_t codes;
+  EXPECT_READ32(PWRMGR_FAULT_STATUS_REG_OFFSET, 6);
+  EXPECT_DIF_OK(dif_pwrmgr_fatal_err_code_get_codes(&pwrmgr_, &codes));
+  EXPECT_EQ(codes, 6);
+}
+
 }  // namespace
 }  // namespace dif_pwrmgr_unittest
