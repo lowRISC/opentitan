@@ -23,6 +23,21 @@ set_reset_scenario { \
   { u_ast.vcaon_pok { reset {@t0 0} { #2 1} } } \
 } -name ScnPOK
 
+# AST Regulator Resets
+set_reset_scenario { \
+  { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { reset { @t0 0 } { #10 1}}} \
+} -name ScnMainPok
+
+set_reset_scenario { \
+  { u_ast.u_rglts_pdm_3p3v.rglssm_vmppr_h_o { reset { @t0 0 } { #10 1}}} \
+} -name ScnRglSsmVmppr
+
+set_reset_scenario { \
+  { u_ast.u_rglts_pdm_3p3v.deep_sleep_h_o \
+    { reset { @t0 1 } { #10 0} { #10 0 }} \
+  } \
+} -name ScnRglDeepSleep
+
 # PWRMGR Reset Cause
 
 # RSTMGR SW Resets
