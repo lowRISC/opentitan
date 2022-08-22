@@ -7,19 +7,21 @@
 class spi_device_intercept_vseq extends spi_device_pass_cmd_filtering_vseq;
   `uvm_object_utils(spi_device_intercept_vseq)
   `uvm_object_new
-  bit [7:0] intercept_ops[$] = {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3,
-                                READ_JEDEC,
-                                READ_SFDP,
-                                READ_CMD_LIST};
 
-  rand bit use_intercept_op;
+  // can override this queue to increase the chance to test these opcodes in extended vseq
+  bit [7:0] target_ops[$] = {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3,
+                             READ_JEDEC,
+                             READ_SFDP,
+                             READ_CMD_LIST};
+
+  rand bit use_target_op;
   constraint opcode_c {
-    solve use_intercept_op before opcode;
-    if (use_intercept_op) {
-      opcode inside {intercept_ops};
+    solve use_target_op before opcode;
+    if (use_target_op) {
+      opcode inside {target_ops};
     } else {
       opcode inside {valid_opcode_q} &&
-      !(opcode inside {intercept_ops});
+      !(opcode inside {target_ops});
     }
   }
 

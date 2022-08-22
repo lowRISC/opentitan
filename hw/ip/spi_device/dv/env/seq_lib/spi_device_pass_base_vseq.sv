@@ -21,6 +21,10 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   // we can only hold one payload, set it busy to avoid payload is overwritten before read out.
   bit always_set_busy_when_upload_contain_payload;
 
+  // knob to control read_buffer_update thread
+  bit stop_forever_read_buffer_update;
+  bit read_buffer_update_ongoing;
+
   rand device_mode_e device_mode;
 
   // overide this to enable other modes
@@ -55,6 +59,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   rand uint payload_size;
   rand read_addr_size_type_e read_addr_size_type;
 
+  int large_payload_weight = 1;
   constraint payload_size_c {
     payload_size dist {
         [0:5]    :/ 2,
@@ -341,7 +346,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     config_all_cmd_infos();
 
     spi_device_flash_auto_rsp_nonblocking();
-    randomize_mem();
+    random_write_spi_mem(.start_addr(0), .end_addr(SRAM_SIZE - 1));
     randomize_all_cmd_filters();
   endtask : spi_device_flash_pass_init
 
@@ -362,17 +367,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       csr_update(.csr(ral.cmd_filter[idx]));
     end
   endtask : randomize_all_cmd_filters
-
-  // Task for preparing memory buffer for read commands
-  virtual task randomize_mem();
-    bit [31:0] buffer_data [1024];
-    `DV_CHECK_STD_RANDOMIZE_FATAL(buffer_data)
-    // Prepare Buffer
-    for (int i = 0; i < SRAM_SIZE / 4; i++) begin // Fill buffer with random data
-      mem_wr(.ptr(ral.buffer), .offset(i), .data(buffer_data[i]));
-      `uvm_info(`gfn, $sformatf("write mem addr 0x%0x: 0x%0x", i << 2, buffer_data[i]), UVM_MEDIUM)
-    end
-  endtask : randomize_mem
 
   // Task for configuring cmd info slot
   virtual task add_cmd_info(spi_flash_cmd_info info, bit [4:0] idx);
@@ -533,6 +527,12 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     super.post_start();
     // read flash_status for check
     random_access_flash_status(.write(0));
+
+    // stop the read buffer thread and allow it to complete gracefully
+    if (read_buffer_update_ongoing) begin
+      stop_forever_read_buffer_update = 1;
+      `DV_WAIT(!read_buffer_update_ongoing)
+    end
   endtask
 
   virtual task read_and_check_4b_en();
@@ -540,4 +540,95 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     csr_rd_check(.ptr(ral.cfg.addr_4b_en),
                  .compare_value(cfg.spi_device_agent_cfg.flash_addr_4b_en));
   endtask
+
+  // read buffer can be divided into 2 half by flip events if threshold isn't set
+  // |____________half0___________|____________half1___________|
+  // |                          flip                         flip
+  //
+  // if threshold isn't 0, read buffer can be divided into 4 regions by watermark and flip events
+  // |___region0___|___region1____|___region2___|___region3____|
+  // |           watermark      flip          watermark      flip
+  // once SW receives an interrupt, update the previous region, so that it won't affect SPI read
+  // e.g. when 1st watermark occurs, update region0, then flip occurs, update 2nd region.
+  virtual task  update_read_buffer(
+      bit is_watermark_event, bit[TL_AW-1:0] last_read_addr);
+    bit [TL_AW-1:0] start_addr;
+    bit [TL_AW-1:0] end_addr;
+    int threshold = `gmv(ral.read_threshold);
+    int half_size = READ_BUFFER_SIZE / 2;
+
+    if (threshold == 0) begin // 2 halfs
+      if (last_read_addr inside {[half_size : READ_BUFFER_SIZE - 1]}) begin
+        // half0
+        start_addr = 0;
+        end_addr   = half_size - 1;
+      end else begin
+        // half1
+        start_addr = half_size;
+        end_addr   = READ_BUFFER_SIZE - 1;
+      end
+    end else begin // 4 regions
+      if (is_watermark_event) begin
+        if (last_read_addr inside {[threshold : threshold + half_size - 1]}) begin
+          // region0
+          start_addr = 0;
+          end_addr   = threshold - 1;
+        end else begin
+          // region2
+          start_addr = half_size;
+          end_addr   = half_size + threshold - 1;
+        end
+      end else begin // flip event
+        if (last_read_addr inside {[half_size : READ_BUFFER_SIZE - 1]}) begin
+          // region1
+          start_addr = threshold;
+          end_addr   = half_size - 1;
+        end else begin
+          // region3
+          start_addr = half_size + threshold;
+          end_addr   = READ_BUFFER_SIZE - 1;
+        end
+      end
+    end
+    random_write_spi_mem(start_addr, end_addr, "read buffer");
+  endtask : update_read_buffer
+
+  virtual task random_write_spi_mem(int start_addr, int end_addr, string msg_region = "mem");
+    for (int i = start_addr / 4; i <= end_addr / 4; i++) begin
+      bit [TL_DW-1:0] data = $urandom();
+      mem_wr(.ptr(ral.buffer), .offset(i), .data(data));
+      `uvm_info(`gfn, $sformatf("write %s offset 0x%0x: 0x%0x", msg_region, i << 2, data),
+                UVM_MEDIUM)
+    end
+  endtask : random_write_spi_mem
+
+  virtual task forever_read_buffer_update_nonblocking();
+    fork
+      begin
+        read_buffer_update_ongoing = 1;
+        while (!stop_forever_read_buffer_update) begin
+          bit [TL_DW-1] intr_state_val, last_read_addr;
+          bit is_watermark;
+          bit is_flip;
+
+          cfg.clk_rst_vif.wait_clks($urandom_range(10, 200));
+
+          csr_rd(ral.intr_state, intr_state_val);
+          is_watermark = get_field_val(ral.intr_state.readbuf_watermark, intr_state_val);
+          is_flip = get_field_val(ral.intr_state.readbuf_flip, intr_state_val);
+          csr_rd(ral.last_read_addr, last_read_addr);
+          if (!is_watermark && !is_flip) continue;
+
+          if (is_watermark) begin
+            update_read_buffer(.is_watermark_event(1), .last_read_addr(last_read_addr));
+          end
+          // we may receive both watermark and flip if watermark threshold is close to half size
+          if (is_flip) update_read_buffer(.is_watermark_event(0), .last_read_addr(last_read_addr));
+
+          csr_wr(ral.intr_state, intr_state_val);
+        end
+        read_buffer_update_ongoing = 0;
+      end
+    join_none
+  endtask : forever_read_buffer_update_nonblocking
 endclass : spi_device_pass_base_vseq

@@ -8,7 +8,8 @@ class spi_device_cfg_cmd_vseq extends spi_device_intercept_vseq;
   `uvm_object_new
 
   function void pre_randomize();
-    intercept_ops[$] = {WREN, WRDI, EN4B, EX4B};
+    super.pre_randomize();
+    target_ops = {WREN, WRDI, EN4B, EX4B};
   endfunction
 
   virtual task pre_start();
