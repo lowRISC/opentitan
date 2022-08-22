@@ -51,6 +51,8 @@ set_reset_scenario { \
   {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_5.q[0]} {reset  { @t0 0 } { #10 1}} } \
   {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_6.q[0]} {reset  { @t0 0 } { #10 1}} } \
   {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_7.q[0]} {reset  { @t0 0 } { #10 1}} } \
+  { POR_N           { constraint { @t0 1 } } } \
+  { u_ast.vcaon_pok { constraint { @t0 1 } } } \
 } -name RstMgrSwRst -comment "RSTMGR SW Controlled Resets"
 
 # SPI_DEVICE FIFO Reset (Sync)
