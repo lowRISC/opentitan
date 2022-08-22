@@ -1946,15 +1946,6 @@
       tests: ["chip_sw_entropy_src_ast_rng_req"]
     }
     {
-      name: chip_sw_entropy_src_ast_fips
-      desc: '''Verify the connectivity of rng_fips_o feedback signal to RNG.
-
-            Details TBD.
-            '''
-      stage: V2
-      tests: []
-    }
-    {
       name: chip_sw_entropy_src_csrng
       desc: '''Verify the transfer of entropy bits to CSRNG.
 
@@ -2031,7 +2022,15 @@
       name: chip_sw_csrng_lc_hw_debug_en
       desc: '''Verify the effect of LC HW debug enable on CSRNG.
 
-            TODO: This is pending SCA security review and might be removed.
+            lc_hw_debug_en is used to diversify the csrng seed.
+            - Configure entropy_src into bypassing the conditioner and directly inject known entropy.
+            - Instantiate CSRNG with the known entropy while in TEST state (hw_debug_en = 1).
+            - Retrieve entropy from csrng and save it in flash and reset the system.
+            - Run the process again and ensure the exact same result can be reproduced (similar to KAT).
+            - Advance the device to PROD or DEV state.
+            - Again configure entropy_src to bypass the conditioner and use direct injection.
+            - Instantiate CSRNG with the same fixed seed and fetch entropy again while in the NEW state.
+            - The newly fetched entropy and the old entropy stored in flash should not match.
             '''
       stage: V2
       tests: []

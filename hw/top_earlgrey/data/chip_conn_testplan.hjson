@@ -572,11 +572,23 @@
     }
 
     /////////////////////////
-    // TODO: OTP_CTRL       //
+    // TODO: OTP_CTRL      //
     /////////////////////////
     {
       name: otp_ctrl_external_voltage
       desc: "Verify the connectivity of the external voltage signal to OTP ctrl."
+      stage: V2
+      tests: []
+      tags: ["conn"]
+    }
+    ////////////////////////////
+    // TODO: AST Connectivity //
+    ////////////////////////////
+    {
+      name: chip_sw_entropy_src_ast_fips
+      desc: '''
+              Verify the connectivity of rng_fips_o feedback signal to RNG.
+            '''
       stage: V2
       tests: []
       tags: ["conn"]
