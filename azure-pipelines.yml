@@ -38,7 +38,7 @@ jobs:
 - job: checkout
   displayName: Checkout repository
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   steps:
   - checkout: self
     path: opentitan-repo
@@ -53,7 +53,7 @@ jobs:
   # Run code quality checks (quick lint)
   dependsOn: checkout
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   steps:
   - template: ci/checkout-template.yml
   - bash: |
@@ -142,7 +142,7 @@ jobs:
   # Download Bazel fetched dependencies
   dependsOn: checkout
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   steps:
   - template: ci/checkout-template.yml
   - bash: |
@@ -164,7 +164,7 @@ jobs:
   # Run code quality checks (in-depth lint)
   dependsOn: lint
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
@@ -192,7 +192,7 @@ jobs:
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   variables:
     - name: bazelCacheGcpKeyPath
       value: ''
@@ -242,7 +242,7 @@ jobs:
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
@@ -273,7 +273,7 @@ jobs:
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
@@ -335,7 +335,7 @@ jobs:
   displayName: Verilated English Breakfast
   # Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   dependsOn: chip_englishbreakfast_verilator
   steps:
   - template: ci/checkout-template.yml
@@ -364,7 +364,7 @@ jobs:
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   timeoutInMinutes: 10
   steps:
   - template: ci/checkout-template.yml
@@ -540,7 +540,7 @@ jobs:
 - job: deploy_release_artifacts
   displayName: Package & deploy release
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   dependsOn:
     - lint
     - sw_build
@@ -584,7 +584,7 @@ jobs:
 - job: build_docker_containers
   displayName: "Build Docker Containers"
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   dependsOn:
     - lint
   steps:
