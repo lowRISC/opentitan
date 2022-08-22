@@ -37,6 +37,7 @@ package chip_env_pkg;
   import tl_agent_pkg::*;
   import uart_agent_pkg::*;
   import xbar_env_pkg::*;
+  import top_earlgrey_pkg::*;
   import top_earlgrey_rnd_cnst_pkg::*;
   import pwm_monitor_pkg::*;
   import pwm_reg_pkg::NOutputs;
@@ -74,6 +75,7 @@ package chip_env_pkg;
   typedef virtual pins_if #(NUM_GPIOS) gpio_vif;
   typedef virtual sw_logger_if         sw_logger_vif;
   typedef virtual sw_test_status_if    sw_test_status_vif;
+  typedef virtual alerts_if            alerts_vif;
   typedef virtual ast_supply_if        ast_supply_vif;
   typedef virtual ast_ext_clk_if       ast_ext_clk_vif;
 

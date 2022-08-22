@@ -313,6 +313,40 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "all_escalation_resets_test",
+    srcs = ["all_escalation_resets_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rom_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:sram_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "clkmgr_escalation_reset_test",
     srcs = ["clkmgr_escalation_reset_test.c"],
     targets = ["dv"],

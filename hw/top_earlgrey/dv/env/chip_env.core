@@ -48,6 +48,7 @@ filesets:
       - seq_lib/chip_jtag_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_alert_handler_entropy_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_alert_handler_escalation_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_all_escalation_resets_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_clkmgr_escalation_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_full_aon_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_deep_power_glitch_vseq.sv: {is_include_file: true}
@@ -87,6 +88,7 @@ filesets:
       - seq_lib/chip_sw_entropy_src_fuse_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_usb_ast_clk_calib_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
+      - alerts_if.sv
       - ast_ext_clk_if.sv
       - ast_supply_if.sv
       - pwrmgr_low_power_if.sv

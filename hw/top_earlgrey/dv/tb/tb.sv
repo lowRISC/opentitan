@@ -80,6 +80,9 @@ module tb;
                       .fast_clk(`CLKMGR_HIER.clocks_o.clk_io_div4_powerup),
                       .rst_n(`RSTMGR_HIER.resets_o.rst_por_io_div4_n[0]));
 
+  alerts_if alerts_if(.clk(`ALERT_HANDLER_HIER.clk_i), .rst_ni(`ALERT_HANDLER_HIER.rst_ni),
+                      .alerts(`ALERT_HANDLER_HIER.alert_trig));
+
   assign pwrmgr_low_power_if.low_power = `PWRMGR_HIER.low_power_o;
 
   bind dut ast_supply_if ast_supply_if (
@@ -369,6 +372,10 @@ module tb;
         null, "*.env", "sw_test_status_vif", `SIM_SRAM_IF.u_sw_test_status_if);
     uvm_config_db#(virtual sw_logger_if)::set(
         null, "*.env", "sw_logger_vif", `SIM_SRAM_IF.u_sw_logger_if);
+
+    // Alerts interface.
+    uvm_config_db#(virtual alerts_if)::set(
+        null, "*.env", "alerts_vif", alerts_if);
 
     // AST supply interface.
     uvm_config_db#(virtual ast_supply_if)::set(

@@ -41,7 +41,17 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
     super.run_phase(phase);
     fork
       process_jtag_fifo();
+      if (cfg.en_cov) process_alerts_for_cov();
     join_none
+  endtask
+
+  virtual task process_alerts_for_cov();
+    int alert_cg_size = 0;
+    forever @cfg.alerts_vif.alerts_cb.alerts begin
+      foreach (cfg.alerts_vif.alerts_cb.alerts[i]) begin
+        if (cfg.alerts_vif.alerts_cb.alerts[i]) cov.alert_cg_wrap[i].sample(1'b1);
+      end
+    end
   endtask
 
   virtual task process_jtag_fifo();

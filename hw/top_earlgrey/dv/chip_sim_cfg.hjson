@@ -27,6 +27,7 @@
   sim_tops: ["clkmgr_bind",
              "pwrmgr_bind",
              "rstmgr_bind",
+             "sec_cm_prim_onehot_check_bind",
              "top_earlgrey_error_injection_ifs_bind",
              "top_earlgrey_bind",
              "xbar_main_bind",
@@ -317,6 +318,14 @@
       sw_images: ["//sw/device/tests/sim_dv:clkmgr_escalation_reset_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
+    }
+    {
+      name: chip_sw_all_escalation_resets
+      uvm_test_seq: chip_sw_all_escalation_resets_vseq
+      sw_images: ["//sw/device/tests/sim_dv:all_escalation_resets_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+bypass_alert_ready_to_end_check=1"]
+      reseed: 60
     }
     {
       name: chip_sw_sleep_pwm_pulses
