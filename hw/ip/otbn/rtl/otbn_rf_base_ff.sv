@@ -44,8 +44,11 @@ module otbn_rf_base_ff
   // No flops for register 0 as it's hard-wired to 0
   assign rf_reg[0] = WordZeroVal;
 
+  // No flops for register 1 as it's call stack and handled in a different module.
+  assign rf_reg[1] = WordZeroVal;
+
   // Generate flops for register 1 - NGpr
-  for (genvar i = 1; i < NGpr; i++) begin : g_rf_flops
+  for (genvar i = 2; i < NGpr; i++) begin : g_rf_flops
     logic [BaseIntgWidth-1:0] rf_reg_q;
 
     always_ff @(posedge clk_i) begin
