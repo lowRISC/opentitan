@@ -838,41 +838,50 @@
       tests: []
     }
 
-    // Upgrade
-    {
-      name: rom_e2e_upgradable
-      desc: '''Verify that new firmware allows for upgrades.
 
-            - Load new firmware of version N.
-            - Attempt to upgrade to version N+1.
+    {
+      name: rom_e2e_rom_ext_upgrade
+      desc: '''Verify that ROM_EXT can be upgraded.
+
+            `CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT` OTP item should be 0, and
+            `CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD` should be `kHardenedBoolTrue` for PROD and
+            PROD_END for the sake of simplicity.
+
+            - Load a ROM_EXT image that will
+              - print the current minimum required security version,
+                - The initial value of the minimum required security version should be 0.
+              - increment it to 1, and
+              - reset the chip.
+            - Verify that the minium required security version is incremented using UART output.
+            - Load a ROM_EXT with securiy version = 0.
+            - Verify that ROM fails to boot with `BFV:kErrorBootPolicyRollback`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
-    {
-      name: rom_e2e_upgrade_min_sec_version
-      desc: '''Verify that ROM checks minimum security version before booting.
 
-            - Load ROM_EXT that updates min_security_version past its own version.
-            - Attempt to boot again.
-            - Verify that the same ROM_EXT cannot be booted again.
+    {
+      name: rom_e2e_rom_ext_upgrade_interrupt
+      desc: '''Verify that an interrupted upgrade does not brick the chip.
+
+            `CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT` OTP item should be 0, and
+            `CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD` should be `kHardenedBoolTrue` for PROD and
+            PROD_END for the sake of simplicity.
+
+            - Load a ROM_EXT image that will
+              - print the current minimum required security version,
+                - The initial value of the minimum required security version should be 0.
+              - increment the minimum required security version, and
+              - reset the chip while flash is being accessed.
+            - Verify that the chip can boot after first attempt.
+            - Verify that ROM_EXT can detect the interruption and increment the minimum required
+              security version.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       milestone: V2
       tests: []
     }
-    {
-      name: rom_e2e_upgrade_power_loss
-      desc: '''Verify that losing power during a ROM_EXT upgrade does not brick the chip.
 
-            - Initiate a ROM_EXT update.
-            - After the new ROM_EXT is loaded into flash, trigger a reset.
-            - Verify that the chip can boot.
-            '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
-      tests: []
-    }
 ]
 }
