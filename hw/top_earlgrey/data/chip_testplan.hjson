@@ -909,6 +909,25 @@
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
     }
     {
+      name: chip_sw_pwrmgr_random_sleep_all_wake_ups
+      desc: '''Verify that the chip can go into random low power states and be woken up by ALL wake up
+            sources.
+
+            This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
+            working correctly as expected. X-ref'ed with all individual IP tests. For each wakeup
+            source clear and enable `wake_info` CSR, enable the wakeup from that source with the
+            `wakeup_en` CSR, bring the chip to low power, optionally disabling the source's clock,
+            have the source issue a wakeup event and verify `wake_info` indicates the expected
+            wakeup.
+
+            Each test should perform a minimum of 2 low power transitions to ensure there are no state
+            dependent corner cases with wakeup interactions.
+
+            '''
+      milestone: V2
+      tests: [""]
+    }
+    {
       name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
       desc: '''Verify that the chip can go into normal sleep state and be woken up by ALL wake up
             sources.
@@ -1009,6 +1028,26 @@
             '''
       milestone: V2
       tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
+    }
+    {
+      name: chip_sw_pwrmgr_random_sleep_power_glitch_reset
+      desc: '''Verify the effect of a glitch in main power rail in random sleep states.
+
+            The vcmain_supp_i AST input is forced to drop right after putting the chip in a random
+            sleep state. This triggers a MainPwr reset request, which is checked by reading retention
+            SRAM's reset_reason to show that the reset_info CSR's POR bit is not set when the test
+            restarts.
+
+            Note: the glitch has to be sent in a very narrow window:
+            - If sent too early the chip won't have started to process deep sleep.
+            - If too late the hardware won't monitor main power okay so the glitch will have no
+              effect, and the test will timeout.
+
+            Each test should perform a minimum of 2 low power transitions to ensure there are no
+            state dependent corner cases with power glitch handling.
+            '''
+      milestone: V2
+      tests: [""]
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
