@@ -68,11 +68,8 @@ module tb;
     .keymgr_key_i       (kmac_sideload_key),
 
     // KeyMgr KDF datapath
-    //
-    // TODO: this is set to 0 for the time being to get the csr tests passing.
-    //       this will eventually be hooked up to the kmac<->keymgr agent.
-    .app_i       (app_req ),
-    .app_o       (app_rsp ),
+    .app_i              (app_req ),
+    .app_o              (app_rsp ),
 
     // Interrupts
     .intr_kmac_done_o   (interrupts[KmacDone]      ),
@@ -82,7 +79,6 @@ module tb;
     // Idle interface
     .idle_o             (kmac_if.idle_o ),
 
-    // TODO: check this output signal.
     .en_masking_o       (kmac_if.en_masking_o ),
 
     // EDN interface

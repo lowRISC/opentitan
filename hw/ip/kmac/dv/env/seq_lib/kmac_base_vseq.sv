@@ -109,7 +109,6 @@ class kmac_base_vseq extends cip_base_vseq #(
   rand bit [TL_DBW-1:0] data_mask;
 
   // Error control fields
-  rand bit en_kmac_err;
   rand kmac_pkg::err_code_e kmac_err_type;
   // When creating errors by issue the wrong SW command, we need to have access
   // to what operational state to send an erroneous command in,
@@ -199,7 +198,7 @@ class kmac_base_vseq extends cip_base_vseq #(
   // Create an appropriate incorrect command based on what state to send an error in
   constraint err_sw_cmd_seq_c {
     solve err_sw_cmd_seq_st before err_sw_cmd_seq_cmd;
-    if (en_kmac_err && kmac_err_type == kmac_pkg::ErrSwCmdSequence) {
+    if (kmac_err_type == kmac_pkg::ErrSwCmdSequence) {
       if (err_sw_cmd_seq_st == sha3_pkg::StIdle) {
         err_sw_cmd_seq_cmd inside {CmdProcess, CmdManualRun, CmdDone};
       } else if (err_sw_cmd_seq_st == sha3_pkg::StAbsorb) {
@@ -291,7 +290,7 @@ class kmac_base_vseq extends cip_base_vseq #(
     cfg_interrupts(.interrupts(enable_intr));
     // For error cases that does not support in scb, predict its value so can be used in
     // `check_err` task.
-    if (cfg.en_scb == 0) ral.intr_enable.predict(enable_intr);
+    if (cfg.en_scb == 0) void'(ral.intr_enable.predict(enable_intr));
     `uvm_info(`gfn, $sformatf("intr[KmacDone] = %0b", enable_intr[KmacDone]), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("intr[KmacFifoEmpty] = %0b", enable_intr[KmacFifoEmpty]), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("intr[KmacErr] = %0b", enable_intr[KmacErr]), UVM_HIGH)

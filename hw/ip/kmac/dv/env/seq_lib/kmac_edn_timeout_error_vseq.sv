@@ -18,19 +18,8 @@ class kmac_edn_timeout_error_vseq extends kmac_app_vseq;
   }
 
   constraint kmac_err_type_c {
-    if (en_kmac_err) {
-      kmac_err_type == kmac_pkg::ErrWaitTimerExpired;
-      entropy_fast_process == 0;
-    } else {
-      kmac_err_type == kmac_pkg::ErrNone;
-    }
-  }
-
-  constraint en_err_c {
-    en_kmac_err dist {
-      0 :/ 2,
-      1 :/ 8
-    };
+    kmac_err_type dist {kmac_pkg::ErrWaitTimerExpired :/ 4, kmac_pkg::ErrNone :/ 1};
+    kmac_err_type == kmac_pkg::ErrWaitTimerExpired -> entropy_fast_process == 0;
   }
 
   function void pre_randomize();

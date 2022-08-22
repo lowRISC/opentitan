@@ -14,11 +14,7 @@ class kmac_entropy_mode_error_vseq extends kmac_edn_timeout_error_vseq;
   `uvm_object_new
 
   constraint kmac_err_type_c {
-    if (en_kmac_err) {
-      kmac_err_type == kmac_pkg::ErrIncorrectEntropyMode;
-    } else {
-      kmac_err_type == kmac_pkg::ErrNone;
-    }
+    kmac_err_type dist {kmac_pkg::ErrIncorrectEntropyMode :/ 4, kmac_pkg::ErrNone :/ 1};
   }
 
   // No assertions to disable.
@@ -36,7 +32,7 @@ class kmac_entropy_mode_error_vseq extends kmac_edn_timeout_error_vseq;
     fork begin
       while (cfg.en_scb == 0 && entropy_fetched == 0) begin
         wait (cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.kmac_data_rsp.done == 1);
-        if (cfg.enable_masking && entropy_mode == ErrIncorrectEntropyMode) begin
+        if (cfg.enable_masking && kmac_err_type == ErrIncorrectEntropyMode) begin
           if (entropy_fetched == 0) begin
             `DV_CHECK_EQ(cfg.m_kmac_app_agent_cfg[AppKeymgr].vif.kmac_data_rsp.error, 1)
           end
