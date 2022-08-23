@@ -98,8 +98,8 @@ ld_library(
 )
 
 ld_library(
-    name = "ld_virtual_addr",
-    script = "rom_ext_virtual_addr.ld",
+    name = "ld_slot_virtual",
+    script = "rom_ext_slot_virtual.ld",
     deps = [
         ":ld_common",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
@@ -152,7 +152,7 @@ manifest(
 )
 
 opentitan_flash_binary(
-    name = "slot_a",
+    name = "rom_ext_slot_a",
     srcs = ["rom_ext_start.S"],
     manifest = ":manifest_standard",
     signed = True,
@@ -165,7 +165,7 @@ opentitan_flash_binary(
 )
 
 opentitan_flash_binary(
-    name = "slot_b",
+    name = "rom_ext_slot_b",
     srcs = ["rom_ext_start.S"],
     manifest = ":manifest_standard",
     signed = True,
@@ -178,12 +178,12 @@ opentitan_flash_binary(
 )
 
 opentitan_flash_binary(
-    name = "virtual_addr",
+    name = "rom_ext_slot_virtual",
     srcs = ["rom_ext_start.S"],
     manifest = ":manifest_virtual",
     signed = True,
     deps = [
-        ":ld_virtual_addr",
+        ":ld_slot_virtual",
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
@@ -192,16 +192,13 @@ opentitan_flash_binary(
 
 BOOT_SUCCESS_MSG = "Starting ROM_EXT"
 
-BOOT_FAILURE_MSG = "BFV:[0-9a-f]{8}"
-
 opentitan_functest(
-    name = "e2e_rom_ext_slot_a",
+    name = "rom_ext_slot_a_boot_test",
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom",
-        exit_failure = BOOT_FAILURE_MSG,
         exit_success = BOOT_SUCCESS_MSG,
     ),
-    ot_flash_binary = ":slot_a",
+    ot_flash_binary = ":rom_ext_slot_a",
     signed = True,
     targets = ["cw310"],
 )
@@ -209,13 +206,12 @@ opentitan_functest(
 # TODO(#13511): Add a positive test for slot_b.
 
 opentitan_functest(
-    name = "e2e_rom_ext_virtual_addr",
+    name = "rom_ext_slot_virtual_boot_test",
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom",
-        exit_failure = BOOT_FAILURE_MSG,
         exit_success = BOOT_SUCCESS_MSG,
     ),
-    ot_flash_binary = ":virtual_addr",
+    ot_flash_binary = ":rom_ext_slot_virtual",
     signed = True,
     targets = ["cw310"],
 )
