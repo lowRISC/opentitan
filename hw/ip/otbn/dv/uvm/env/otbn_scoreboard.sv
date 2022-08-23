@@ -482,7 +482,9 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     num_alert_wait_counters--;
 
     if (cfg.under_reset) begin
-      // If we're in reset, exit immediately. No need to check anything or update any state
+      // If we're in reset, exit immediately. No need to check anything or update any state, except
+      // that we have not seen a recoverable alert since the last reset.
+      recov_alert_seen = 1'b0;
       return;
     end
 
