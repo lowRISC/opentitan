@@ -23,9 +23,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   bit do_check_digest = 1;
 
-  // Represents the number of blocks that have been filled in sha3pad
-  int num_blocks_filled = 0;
-
   // used solely for coverage sampling, indicates that keccak rounds are currently running
   bit in_keccak_rounds = 0;
 
@@ -37,10 +34,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // with the internal `complete` signal to allow the scb easier handling of these scenarios.
   bit keccak_complete_cycle = 0;
 
-  // this bit goes high when KMAC has finished processing the
-  // prefix and the secret keys (only in KMAC mode)
-  bit prefix_and_keys_done = 0;
-
   // this bit tracks the beginning and end of a KMAC_APP operation
   bit in_kmac_app;
 
@@ -49,30 +42,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
   // this bit goes high for a cycle when a manual squeezing is requested
   bit req_manual_squeeze = 0;
-
-  // this bit goes high a small delay after CmdProcess is requested,
-  // used by fifo flushing logic to handle an edge case
-  bit req_cmd_process_dly = 0;
-
-  // This bit goes high if the fifo write pointer is incremented on the same cycle that
-  // a CmdProcess is detected internally and the fifo starts to flush its contents
-  bit incr_fifo_wr_in_process = 0;
-
-  // This bit indicates that a CmdProcess has been seen while the KMAC is still processing
-  // the prefix and secret keys (only used in KMAC mode)
-  bit cmd_process_in_header = 0;
-
-  // This bit indicates that the last block of a KMAC_APP request transaction has been sent
-  // while the KMAC is still running keccak on a previous full set of blocks
-  bit kmac_app_last_in_keccak;
-
-  // This bit indicates that the last block of a KMAC_APP request transaction has been sent
-  // while the KMAC is still processing the prefix and secret keys
-  bit kmac_app_last_in_header = 0;
-
-  // This bit is toggled for half a clock cycle every time a new block of data
-  // is transmitted via kmac_app interface and received
-  bit got_data_from_kmac_app = 0;
 
   // The CFG.entropy_ready field is only used to transition the entropy FSM into fetching entropy
   // from the reset state, so we can only rely on writes to CFG.entropy_ready to update internal
@@ -126,14 +95,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // Need to track the FSM in `kmac_errchk` for error reporting
   kmac_err_st_e err_st      = ErrStIdle;
   kmac_err_st_e err_st_next = ErrStIdle;
-
-  // Variables to track the internal write/read pointers.
-  //
-  // One major difference between these and standard fifo pointers is that these
-  // values will not loop back to 0 after hitting the max fifo depth.
-  // These values will keep incrementing to keep some scoreboard logic simpler.
-  int fifo_wr_ptr;
-  int fifo_rd_ptr;
 
   // key length enum
   key_len_e key_len;
@@ -209,7 +170,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       process_checked_kmac_cmd();
       detect_kmac_app_start();
       process_kmac_app_fsm();
-      process_kmac_err_fsm();
       process_edn();
       process_sha3_idle();
       process_sha3_absorb();
@@ -485,61 +445,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // This task simulates the error handling FSM in the KMAC,
-  // as we need state information for error reporting.
-  virtual task process_kmac_err_fsm();
-    @(negedge cfg.under_reset);
-    forever begin
-      wait(!cfg.under_reset);
-      `DV_SPINWAIT_EXIT(
-          case (err_st)
-            ErrStIdle: begin
-              if (!app_fsm_active && unchecked_kmac_cmd == CmdStart) begin
-                err_st_next = ErrStMsgFeed;
-                `uvm_info(`gfn, "moving to ErrStMsgFeed", UVM_HIGH)
-              end
-            end
-            ErrStMsgFeed: begin
-              if (unchecked_kmac_cmd == CmdProcess) begin
-                err_st_next = ErrStProcessing;
-                `uvm_info(`gfn, "moving to ErrStProcessing", UVM_HIGH)
-              end
-            end
-            ErrStProcessing: begin
-              if (msg_digest_done) begin
-                err_st_next = ErrStAbsorbed;
-                `uvm_info(`gfn, "moving to ErrStAbsorbed", UVM_HIGH)
-              end
-            end
-            ErrStAbsorbed: begin
-              if (req_manual_squeeze) begin
-                err_st_next = ErrStSqueezing;
-                `uvm_info(`gfn, "moving to ErrStSqueezing", UVM_HIGH)
-              end else if (unchecked_kmac_cmd == CmdDone) begin
-                err_st_next = ErrStIdle;
-                `uvm_info(`gfn, "moving to ErrStIdle", UVM_HIGH)
-              end
-            end
-            ErrStSqueezing: begin
-              if (msg_digest_done) begin
-                err_st_next = ErrStAbsorbed;
-                `uvm_info(`gfn, "moving to ErrStAbsorbed", UVM_HIGH)
-              end
-            end
-            default: begin
-              err_st_next = ErrStIdle;
-              `uvm_info(`gfn, "moving to ErrStIdle", UVM_HIGH)
-            end
-          endcase
-          cfg.clk_rst_vif.wait_clks(1);
-          err_st = err_st_next;
-          #0;
-          ,
-          wait(cfg.under_reset);
-      )
-    end
-  endtask
-
   // This task continuously checks the analysis_port of the push_pull_agent
   // in the kmac_app_agent, as we need to know every time a data block is sent
   // over the KMAC_APP interface.
@@ -569,7 +474,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                     in_keccak_rounds);
               end
 
-              got_data_from_kmac_app = 1;
               while (kmac_app_block_strb > 0) begin
                 if (kmac_app_block_strb[0]) begin
                   kmac_app_msg.push_back(kmac_app_block_data[7:0]);
@@ -578,10 +482,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 kmac_app_block_strb = kmac_app_block_strb >> 1;
               end
               `uvm_info(`gfn, $sformatf("kmac_app_msg: %0p", kmac_app_msg), UVM_HIGH)
-              // drop `got_data_from_kmac_app` before the next cycle to avoid repeating
-              // unnecessary state updates elsewhere in the scb
-              cfg.clk_rst_vif.wait_n_clks(1);
-              got_data_from_kmac_app = 0;
             end
             ,
             wait(cfg.under_reset || !in_kmac_app);
@@ -973,11 +873,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   // kmac will now compute the digest
                   unchecked_kmac_cmd = CmdProcess;
 
-                  // Raise this bit after a small delay to handle an edge case where
-                  // fifo_wr_ptr and fifo_rd_ptr both increment on same cycle that CmdProcess
-                  // is latched by internal scoreboard logic
-                  #1 req_cmd_process_dly = 1;
-                  `uvm_info(`gfn, "raised req_cmd_process_dly", UVM_HIGH)
                 end else begin // SW sent wrong command
 
                   kmac_err.valid = 1;
@@ -1053,9 +948,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           // has been requested
           req_manual_squeeze = 0;
           `uvm_info(`gfn, "dropped req_manual_squeeze", UVM_HIGH)
-
-          #1 req_cmd_process_dly = 0;
-          `uvm_info(`gfn, "dropped req_cmd_process_dly", UVM_HIGH)
         end
       end
       "status": begin
@@ -1317,8 +1209,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     first_op_after_rst = 1;
 
-    num_blocks_filled = 0;
-
     // status tracking bits
     sha3_idle     = ral.status.sha3_idle.get_reset();
     sha3_absorb   = ral.status.sha3_absorb.get_reset();
@@ -1341,15 +1231,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     kmac_app_block_strb_size = 0;
     kmac_app_last            = 0;
     in_kmac_app              = 0;
-    got_data_from_kmac_app   = 0;
 
-    prefix_and_keys_done    = 0;
     req_manual_squeeze      = 0;
-    cmd_process_in_header   = 0;
-    kmac_app_last_in_header = 0;
     msg_digest_done         = 0;
-    fifo_rd_ptr             = 0;
-    fifo_wr_ptr             = 0;
 
     in_edn_fetch    = 0;
 
