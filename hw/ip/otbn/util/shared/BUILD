@@ -166,6 +166,11 @@ py_library(
 )
 
 py_library(
+    name = "reg_dump",
+    srcs = ["reg_dump.py"],
+)
+
+py_library(
     name = "section",
     srcs = ["section.py"],
     deps = [
