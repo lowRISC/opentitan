@@ -2,16 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-
-`define GET_OPCODE_VALID_AND_MATCH(CSR, OPCODE) \
-  (`gmv(ral.CSR.valid) == 1 && `gmv(ral.CSR.opcode) == OPCODE)
-
 class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env_cfg),
                                                           .RAL_T (spi_device_reg_block),
                                                           .COV_T (spi_device_env_cov));
   `uvm_component_utils(spi_device_scoreboard)
 
-  localparam int NumInternalRecognizedCmd = 11;
   localparam int FLASH_STATUS_UPDATE_DLY_AFTER_CSB_DEASSERT = 3;
   typedef enum int {
     NoInternalProcess,
@@ -37,7 +32,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   local uint tx_rptr_exp;
   local uint rx_wptr_exp;
   local mem_model spi_mem;
-
 
   // expected values
   local bit [NumSpiDevIntr-1:0] intr_exp;
@@ -109,7 +103,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           `DV_CHECK_EQ(item.item_type, SpiFlashTrans)
 
           // read buffer is handled at `process_read_buffer_cmd`
-          if (!is_read_buffer_cmd(item)) begin
+          if (!cfg.is_read_buffer_cmd(item)) begin
             // downstream item should be in the queue at the same time, add small delay
             #1ps;
             cmd_type = triage_flash_cmd(item.opcode, set_busy);
@@ -165,7 +159,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             if (is_opcode_passthrough(item.opcode) && !`gmv(ral.flash_status.busy)) begin
               compare_passthru_item(.upstream_item(item), .is_intercepted(is_intercepted));
             end
-          end // if (!is_read_buffer_cmd(item))
+          end // if (!cfg.is_read_buffer_cmd(item))
 
           latch_flash_status(set_busy, update_wel, wel_val);
         end
@@ -264,7 +258,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     internal_process_cmd_e cmd_type;
     bit is_status, is_jedec, is_sfdp;
     bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
-    spi_device_reg_cmd_info reg_cmd_info = get_cmd_info_reg_by_opcode(opcode, ral);
+    spi_device_reg_cmd_info reg_cmd_info = cfg.get_cmd_info_reg_by_opcode(opcode);
 
     set_busy = 0;
     if (reg_cmd_info != null && `gmv(reg_cmd_info.upload)) begin
@@ -273,47 +267,27 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
 
     is_status = opcode inside {READ_STATUS_1, READ_STATUS_2, READ_STATUS_3} &&
-                is_internal_recog_cmd(opcode);
+                cfg.is_internal_recog_cmd(opcode);
     if (is_passthru) is_status &= `gmv(ral.intercept_en.status);
     if (is_status) return InternalProcessStatus;
 
     is_jedec = opcode == READ_JEDEC && `gmv(ral.intercept_en.jedec) &&
-              is_internal_recog_cmd(opcode);
+              cfg.is_internal_recog_cmd(opcode);
     if (is_passthru) is_jedec &= `gmv(ral.intercept_en.jedec);
     if (is_jedec) return InternalProcessJedec;
 
     is_sfdp = opcode == READ_SFDP &&
-              is_internal_recog_cmd(opcode);
+              cfg.is_internal_recog_cmd(opcode);
     if (is_passthru) is_sfdp &= `gmv(ral.intercept_en.sfdp);
     if (is_sfdp) return InternalProcessSfdp;
 
-    if (opcode inside {READ_CMD_LIST} && is_internal_recog_cmd(opcode)) begin
+    if (opcode inside {READ_CMD_LIST} && cfg.is_internal_recog_cmd(opcode)) begin
       return InternalProcessReadCmd;
     end
 
-    if (is_internal_cfg_cmd(opcode)) return InternalProcessCfgCmd;
+    if (cfg.is_internal_cfg_cmd(opcode)) return InternalProcessCfgCmd;
 
     return NoInternalProcess;
-  endfunction
-
-  // if the cmd isn't in the first 11 slots, it won't be processed in spi_device
-  // interception or returning data from spi mem won't occur. It can only passthru to downstream
-  virtual function bit is_internal_recog_cmd(bit[7:0] opcode);
-    for (int i = 0; i < NumInternalRecognizedCmd; i++) begin
-      if (`GET_OPCODE_VALID_AND_MATCH(cmd_info[i], opcode)) return 1;
-    end
-    if (is_internal_cfg_cmd(opcode)) return 1;
-    return 0;
-  endfunction
-
-  virtual function bit is_internal_cfg_cmd(bit[7:0] opcode);
-    if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_en4b, opcode) ||
-        `GET_OPCODE_VALID_AND_MATCH(cmd_info_ex4b, opcode) ||
-        `GET_OPCODE_VALID_AND_MATCH(cmd_info_wren, opcode) ||
-        `GET_OPCODE_VALID_AND_MATCH(cmd_info_wrdi, opcode)) begin
-      return 1;
-    end
-    return 0;
   endfunction
 
   virtual function bit is_opcode_passthrough(bit[7:0] opcode);
@@ -410,7 +384,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     foreach (up_item.payload_q[i]) begin
       bit [31:0] cur_addr = start_addr + i;
 
-      if (is_in_mailbox_region(cur_addr)) begin
+      if (cfg.is_in_mailbox_region(cur_addr)) begin
         bit [31:0] offset = cur_addr % MAILBOX_BUFFER_SIZE;
         compare_mem_byte(MAILBOX_START_ADDR, offset, up_item.payload_q[i], i, "Mailbox");
       end else begin // out of mbx region
@@ -467,40 +441,14 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
   endfunction
 
-  virtual function bit is_read_buffer_cmd(spi_item item);
-    if (`gmv(ral.control.mode) != FlashMode ||
-        item.item_type != SpiFlashTrans ||
-        !(item.opcode inside {READ_CMD_LIST}) ||
-        !is_internal_recog_cmd(item.opcode)) begin
-      return 0;
-    end
-    if (is_in_mailbox_region(convert_addr_from_byte_queue(item.address_q))) return 0;
-    return 1;
-  endfunction
-
-  virtual function bit [31:0] is_in_mailbox_region(bit [31:0] addr);
-    bit [31:0] mbx_base_addr = get_mbx_base_addr(ral);
-    bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
-    bit mailbox_en;
-
-    if (`gmv(ral.cfg.mailbox_en)) begin
-      mailbox_en = 1;
-      if (is_passthru) mailbox_en &= `gmv(ral.intercept_en.mbx);
-    end
-    if (addr inside {[mbx_base_addr: mbx_base_addr + MAILBOX_BUFFER_SIZE - 1]} && mailbox_en) begin
-      return 1;
-    end
-    return 0;
-  endfunction
-
   // convert offset to the mem address that is used to find the locaiton in exp_mem
   // lsb 2 bit will be kept
   virtual function bit [31:0] get_converted_addr(bit [31:0] offset);
-    return cfg.ral.get_normalized_addr(offset) + offset[1:0];
+    return ral.get_normalized_addr(offset) + offset[1:0];
   endfunction
 
   virtual function void handle_addr_payload_swap(spi_item item);
-    spi_device_reg_cmd_info reg_cmd_info = get_cmd_info_reg_by_opcode(item.opcode, ral);
+    spi_device_reg_cmd_info reg_cmd_info = cfg.get_cmd_info_reg_by_opcode(item.opcode);
     if (reg_cmd_info == null) return;
 
     if (`gmv(reg_cmd_info.addr_swap_en)) begin
@@ -592,7 +540,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       bit [31:0] start_addr, offset;
 
       upstream_spi_req_fifo.get(item);
-      if (!is_read_buffer_cmd(item)) continue;
+      if (!cfg.is_read_buffer_cmd(item)) continue;
 
       start_addr = convert_addr_from_byte_queue(item.address_q);
       `DV_SPINWAIT(
@@ -892,7 +840,4 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_CHECK_EQ(flash_status_settle_q.size, 0)
     `DV_CHECK_EQ(flash_status_tl_pre_val_q.size, 0)
   endfunction
-
 endclass
-
-`undef GET_OPCODE_VALID_AND_MATCH
