@@ -342,6 +342,12 @@ dif_result_t dif_edn_stop(const dif_edn_t *edn) {
 
   mmio_region_write32(edn->base_addr, EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
 
+  // clear command fifo, see #14506
+  uint32_t reg = bitfield_field32_write(
+      EDN_CTRL_REG_RESVAL, EDN_CTRL_CMD_FIFO_RST_FIELD, kMultiBitBool4True);
+  mmio_region_write32(edn->base_addr, EDN_CTRL_REG_OFFSET, reg);
+  mmio_region_write32(edn->base_addr, EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
+
   return kDifOk;
 }
 

@@ -8,11 +8,23 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "edn_regs.h"          // Generated
-#include "entropy_src_regs.h"  // Generated
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+static void setup_entropy_src(const dif_entropy_src_t *entropy_src) {
+  const dif_entropy_src_config_t config = {
+      .fips_enable = true,
+      .route_to_firmware = false,
+      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
+      .health_test_window_size = 0x0200, /*default*/
+      .alert_threshold = 2,              /*default*/
+  };
+  CHECK_DIF_OK(
+      dif_entropy_src_configure(entropy_src, config, kDifToggleEnabled));
+}
+
 void entropy_testutils_auto_mode_init(void) {
+  const dif_entropy_src_t entropy_src = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
   const dif_csrng_t csrng = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
   const dif_edn_t edn0 = {
@@ -20,15 +32,14 @@ void entropy_testutils_auto_mode_init(void) {
   const dif_edn_t edn1 = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
 
-  // Disable CSRNG.  This is required to abort the generate command of boot
-  // mode, which is likely still running.
-  CHECK_DIF_OK(dif_csrng_stop(&csrng));
-
-  // Stop both EDNs.
+  // Disable entropy complex
   CHECK_DIF_OK(dif_edn_stop(&edn0));
   CHECK_DIF_OK(dif_edn_stop(&edn1));
+  CHECK_DIF_OK(dif_csrng_stop(&csrng));
+  CHECK_DIF_OK(dif_entropy_src_stop(&entropy_src));
 
-  // Re-enable the CSRNG.
+  // re-eanble entropy src and csrng
+  setup_entropy_src(&entropy_src);
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
   // Re-enable EDN0 in auto mode.
@@ -61,75 +72,32 @@ void entropy_testutils_auto_mode_init(void) {
           {
               .len = 1, .data = {0x00001003},  // One generate returns 1 block.
           },
-      .reseed_interval = 1,  // Reseed after every generate.
+      .reseed_interval = 4,  // Reseed after every 4 generates.
   };
   CHECK_DIF_OK(dif_edn_set_auto_mode(&edn1, edn1_params));
 }
 
-static void setup_entropy_src(void) {
-  dif_entropy_src_t entropy_src;
-  CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
-
-  // Disable entropy for test purpose, as it has been turned on by ROM
-  CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
-
-  const dif_entropy_src_config_t config = {
-      .fips_enable = true,
-      .route_to_firmware = false,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .health_test_window_size = 0x0200, /*default*/
-      .alert_threshold = 2,              /*default*/
-  };
-  CHECK_DIF_OK(
-      dif_entropy_src_configure(&entropy_src, config, kDifToggleEnabled));
-}
-
-static void setup_csrng(void) {
-  dif_csrng_t csrng;
-  CHECK_DIF_OK(dif_csrng_init(
-      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
-
-  CHECK_DIF_OK(dif_csrng_configure(&csrng));
-}
-
-static void setup_edn() {
-  // Temporary solution to configure/enable the EDN and CSRNG to allow OTBN to
-  // run before a DIF is available,
-  // https://github.com/lowRISC/opentitan/issues/6082
-  // disable edn.
-  uint32_t reg = 0;
-  reg =
-      bitfield_field32_write(0, EDN_CTRL_EDN_ENABLE_FIELD, kMultiBitBool4False);
-  reg = bitfield_field32_write(reg, EDN_CTRL_BOOT_REQ_MODE_FIELD,
-                               kMultiBitBool4False);
-  reg = bitfield_field32_write(reg, EDN_CTRL_AUTO_REQ_MODE_FIELD,
-                               kMultiBitBool4False);
-  reg = bitfield_field32_write(reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
-                               kMultiBitBool4False);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, reg);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, reg);
-
-  reg =
-      bitfield_field32_write(0, EDN_CTRL_EDN_ENABLE_FIELD, kMultiBitBool4True);
-  reg = bitfield_field32_write(reg, EDN_CTRL_BOOT_REQ_MODE_FIELD,
-                               kMultiBitBool4True);
-  reg = bitfield_field32_write(reg, EDN_CTRL_AUTO_REQ_MODE_FIELD,
-                               kMultiBitBool4False);
-  reg = bitfield_field32_write(reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
-                               kMultiBitBool4False);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, reg);
-  mmio_region_write32(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR),
-                      EDN_CTRL_REG_OFFSET, reg);
-}
-
 void entropy_testutils_boot_mode_init(void) {
-  setup_entropy_src();
-  setup_csrng();
-  setup_edn();
+  const dif_entropy_src_t entropy_src = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
+  const dif_csrng_t csrng = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+  const dif_edn_t edn0 = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+  const dif_edn_t edn1 = {
+      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+
+  CHECK_DIF_OK(dif_entropy_src_stop(&entropy_src));
+  CHECK_DIF_OK(dif_csrng_stop(&csrng));
+  CHECK_DIF_OK(dif_edn_stop(&edn0));
+  CHECK_DIF_OK(dif_edn_stop(&edn1));
+
+  setup_entropy_src(&entropy_src);
+  CHECK_DIF_OK(dif_csrng_configure(&csrng));
+  CHECK_DIF_OK(dif_edn_set_boot_mode(&edn0));
+  CHECK_DIF_OK(dif_edn_set_boot_mode(&edn1));
+  CHECK_DIF_OK(dif_edn_configure(&edn0));
+  CHECK_DIF_OK(dif_edn_configure(&edn1));
 }
 
 void entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,

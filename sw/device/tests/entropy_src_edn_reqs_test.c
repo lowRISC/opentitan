@@ -209,8 +209,6 @@ static void alert_handler_test(entropy_src_test_context_t *ctx) {
 void test_initialize(entropy_src_test_context_t *ctx) {
   LOG_INFO("%s", __func__);
 
-  entropy_testutils_boot_mode_init();
-
   mmio_region_t addr =
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
   CHECK_DIF_OK(dif_entropy_src_init(addr, &ctx->entropy_src));
