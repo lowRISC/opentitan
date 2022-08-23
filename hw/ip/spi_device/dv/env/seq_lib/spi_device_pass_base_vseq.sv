@@ -110,7 +110,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   `uvm_object_new
 
   function void randomize_op_addr_size();
-    mbx_start_addr = get_mbx_base_addr(ral);
+    mbx_start_addr = cfg.get_mbx_base_addr();
     mbx_end_addr   = mbx_start_addr + MAILBOX_BUFFER_SIZE;
 
     `DV_CHECK(this.randomize(opcode, valid_op,

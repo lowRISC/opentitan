@@ -258,7 +258,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     end
 
     if (wait_on_busy) begin
-      spi_device_reg_cmd_info cmd_info = get_cmd_info_reg_by_opcode(op, ral);
+      spi_device_reg_cmd_info cmd_info = cfg.get_cmd_info_reg_by_opcode(op);
       if (cmd_info != null && `gmv(cmd_info.upload) && `gmv(cmd_info.busy)) begin
         spi_host_wait_on_busy();
       end

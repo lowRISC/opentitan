@@ -184,11 +184,6 @@ package spi_device_env_pkg;
     return TPM_BASE_ADDR | (locality << 12) | TPM_HW_STS_OFFSET;
   endfunction
 
-  // Get mailbox base addr, the first 10 bits are 0
-  function automatic bit[31:0] get_mbx_base_addr(spi_device_reg_block ral);
-    return `gmv(ral.mailbox_addr) >> 10 << 10;
-  endfunction
-
   // return the index the cmd_filter for the input opcode
   function automatic int get_cmd_filter_index(bit[7:0] opcode);
     return opcode / 32;
@@ -197,16 +192,6 @@ package spi_device_env_pkg;
   // return the field offset of the cmd_filter for the input opcode
   function automatic int get_cmd_filter_offset(bit[7:0] opcode);
     return opcode % 32;
-  endfunction
-
-  function automatic spi_device_reg_cmd_info get_cmd_info_reg_by_opcode(bit [7:0] opcode,
-                                                                        spi_device_reg_block ral);
-    foreach (ral.cmd_info[i]) begin
-      if (`gmv(ral.cmd_info[i].valid) == 1 && `gmv(ral.cmd_info[i].opcode) == opcode) begin
-        return ral.cmd_info[i];
-      end
-    end
-    return null;
   endfunction
 
   // return the field offset of the cmd_filter for the input opcode
@@ -228,6 +213,9 @@ package spi_device_env_pkg;
     get_allocated_sram_size_bytes(ral.rxf_addr.base.get_mirrored_value(), \
                                   ral.rxf_addr.limit.get_mirrored_value())
 
+  `define GET_OPCODE_VALID_AND_MATCH(CSR, OPCODE) \
+    (`gmv(ral.CSR.valid) == 1 && `gmv(ral.CSR.opcode) == OPCODE)
+
   // package sources
   `include "spi_device_env_cfg.sv"
   `include "spi_device_env_cov.sv"
@@ -238,4 +226,5 @@ package spi_device_env_pkg;
 
   `undef GET_TX_ALLOCATED_SRAM_SIZE_BYTES
   `undef GET_RX_ALLOCATED_SRAM_SIZE_BYTES
+  `undef GET_OPCODE_VALID_AND_MATCH
 endpackage

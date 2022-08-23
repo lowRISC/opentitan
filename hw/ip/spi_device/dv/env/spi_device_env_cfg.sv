@@ -8,6 +8,9 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   bit [TL_AW-1:0]     sram_start_addr;
   bit [TL_AW-1:0]     sram_end_addr;
 
+  // read buffer needs to be read with incremental address, otherwise, watermark/fip won't work
+  bit [TL_AW-1:0]     read_buffer_addr;
+
   `uvm_object_utils_begin(spi_device_env_cfg)
     `uvm_field_object(spi_host_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(spi_device_agent_cfg, UVM_DEFAULT)
@@ -28,4 +31,63 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
     sram_end_addr   = sram_start_addr + SRAM_SIZE - 1;
   endfunction
 
+  function spi_device_reg_cmd_info get_cmd_info_reg_by_opcode(bit [7:0] opcode);
+    foreach (ral.cmd_info[i]) begin
+      if (`gmv(ral.cmd_info[i].valid) == 1 && `gmv(ral.cmd_info[i].opcode) == opcode) begin
+        return ral.cmd_info[i];
+      end
+    end
+    return null;
+  endfunction
+
+  // Get mailbox base addr, the first 10 bits are 0
+  function bit[31:0] get_mbx_base_addr();
+    return `gmv(ral.mailbox_addr) >> 10 << 10;
+  endfunction
+
+  virtual function bit is_read_buffer_cmd(spi_item item);
+    if (`gmv(ral.control.mode) != FlashMode ||
+        item.item_type != SpiFlashTrans ||
+        !(item.opcode inside {READ_CMD_LIST}) ||
+        !is_internal_recog_cmd(item.opcode)) begin
+      return 0;
+    end
+    if (is_in_mailbox_region(convert_addr_from_byte_queue(item.address_q))) return 0;
+    return 1;
+  endfunction
+
+  virtual function bit [31:0] is_in_mailbox_region(bit [31:0] addr);
+    bit [31:0] mbx_base_addr = get_mbx_base_addr();
+    bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
+    bit mailbox_en;
+
+    if (`gmv(ral.cfg.mailbox_en)) begin
+      mailbox_en = 1;
+      if (is_passthru) mailbox_en &= `gmv(ral.intercept_en.mbx);
+    end
+    if (addr inside {[mbx_base_addr: mbx_base_addr + MAILBOX_BUFFER_SIZE - 1]} && mailbox_en) begin
+      return 1;
+    end
+    return 0;
+  endfunction
+
+  // if the cmd isn't in the first 11 slots, it won't be processed in spi_device
+  // interception or returning data from spi mem won't occur. It can only passthru to downstream
+  virtual function bit is_internal_recog_cmd(bit[7:0] opcode);
+    for (int i = 0; i < NUM_INTERNAL_PROCESSED_CMD; i++) begin
+      if (`GET_OPCODE_VALID_AND_MATCH(cmd_info[i], opcode)) return 1;
+    end
+    if (is_internal_cfg_cmd(opcode)) return 1;
+    return 0;
+  endfunction
+
+  virtual function bit is_internal_cfg_cmd(bit[7:0] opcode);
+    if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_en4b, opcode) ||
+        `GET_OPCODE_VALID_AND_MATCH(cmd_info_ex4b, opcode) ||
+        `GET_OPCODE_VALID_AND_MATCH(cmd_info_wren, opcode) ||
+        `GET_OPCODE_VALID_AND_MATCH(cmd_info_wrdi, opcode)) begin
+      return 1;
+    end
+    return 0;
+  endfunction
 endclass
