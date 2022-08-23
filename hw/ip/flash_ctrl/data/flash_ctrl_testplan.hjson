@@ -211,6 +211,23 @@
       tests: ["flash_ctrl_error_prog_type"]
     }
     {
+      name: read_write_overflow
+      desc: '''
+            Send following error transactions with normal traffic and see
+            any catastrophic event happens.
+              - Program flash size longer than 64 bytes.
+                This wil cause prog_win_err.
+              - Read flash from controller without settting start op.
+              - Issue rd_fifo read more thatn CONTROL.NUM field value.
+                Both will cause d_error in tlul response.
+            Each transaction is terminated gracefully and should not cause
+            data path lock up. Also error status should be check per each
+            transaction.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_oversize_error"]
+    }
+    {
       name: stress_all
       desc: '''
             - combine above sequences in one test to run sequentially, except csr sequence

@@ -365,6 +365,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         tmp_data = {32{1'b1}};
         flash_program_data.push_back(tmp_data);
       end
+      if (wd > 16) begin
+        csr_rd_check(.ptr(ral.err_code.prog_win_err), .compare_value(1));
+        drop = 1;
+      end
       `uvm_info("prog_flash",$sformatf({"bank:%0d addr:%x otf_addr:%x part:%s",
                                         " page:%0d num:%0d wd:%0d  odd:%0d tail:%0d"},
                                         bank, flash_op.addr, flash_op.otf_addr,
@@ -400,7 +404,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg: bank: bank index to access flash
   // @arg: num : number of 8 words range: [1 : 32]
   // @arg: wd  : number of 4byte (TL bus unit) : default : 16
-  task read_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16);
+  task read_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16,
+                  int overrd = 0);
     data_q_t flash_read_data;
     flash_otf_item exp_item;
     bit poll_fifo_status = 1;
@@ -519,9 +524,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       end
       `uvm_info("read_flash",
                 $sformatf({"bank:%0d page:%0d otf_addr:0x%0h,",
-                           " part:%s size:%0d x %0d x 4B start_addr:%x  end_addr:%x"},
+                           " part:%s size:%0d x %0d x 4B start_addr:%x  end_addr:%x",
+                           " overrd:%0d"},
                           bank, page, flash_op.otf_addr,
-                          flash_op.partition.name, num, wd, start_addr, end_addr),
+                          flash_op.partition.name, num, wd, start_addr, end_addr, overrd),
                 UVM_MEDIUM)
 
       exp_item.cmd = flash_op;
@@ -568,6 +574,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       end else begin
         flash_ctrl_start_op(flash_op);
         flash_ctrl_read(flash_op.num_words, flash_read_data, poll_fifo_status);
+        if (overrd > 0) begin
+          overread(flash_op, bank, num, overrd);
+        end
         wait_flash_op_done();
       end
       if (derr_is_set | cfg.ierr_created[0]) begin
@@ -598,6 +607,22 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       flash_op.otf_addr = flash_op.otf_addr + (4 * wd);
     end // for (int i = 0; i < num; i++)
   endtask // read_flash
+
+  // Read error behavior task
+  // This task issue rd_fifo read without setting stat_op.
+  // Expected output is to received errored response from core_tl interface.
+  task overread(flash_op_t flash_op, int bank, int num, int wd);
+    data_q_t flash_read_data;
+    bit poll_fifo_status = 0;
+    addr_t addr = ral.rd_fifo.get_address();
+
+    repeat (wd) cfg.scb_h.over_rd_err[addr]++;
+    cfg.m_tl_agent_cfg.check_tl_errs = 0;
+    `uvm_info("overread", $sformatf("addr is set 0x%x wd:%0d", addr, wd),
+              UVM_MEDIUM)
+    flash_ctrl_read(wd, flash_read_data, poll_fifo_status, 1);
+    cfg.m_tl_agent_cfg.check_tl_errs = 1;
+  endtask // overread
 
   // Direct access from the host. It returns multiple of
   // 4bytes of data.

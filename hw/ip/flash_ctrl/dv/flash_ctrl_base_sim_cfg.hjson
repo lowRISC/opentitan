@@ -272,6 +272,14 @@
       reseed: 5
     }
     {
+      name: flash_ctrl_oversize_error
+      uvm_test_seq: flash_ctrl_oversize_error_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=2", "+serr_pct=0",
+                 "+otf_num_hr=1000", "+otf_num_rw=100",
+		 "+otf_wr_pct=4", "+otf_rd_pct=4"]
+      reseed: 5
+    }
+    {
       name: flash_ctrl_integrity
       uvm_test_seq: flash_ctrl_rw_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=4", "+ierr_pct=3",
