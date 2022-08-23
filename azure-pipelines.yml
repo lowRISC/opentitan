@@ -412,6 +412,8 @@ jobs:
       ci/scripts/get-bitstream-strategy.sh "@bitstreams//:bitstream_test_rom" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
     displayName: Configure bitstream strategy
   - bash: |
+      set -e
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/scripts/prepare-cached-bitstream.sh
     condition: eq(variables.bitstreamStrategy, 'cached')
     displayName: Prepare cached bitstream
