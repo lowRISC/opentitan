@@ -129,7 +129,7 @@ module otbn_idle_checker
           running_q |-> ##[0:1] (idle_o_i == prim_mubi_pkg::MuBi4False))
 
   `ASSERT(IdleIfNotRunningOrLocked_A,
-          !(running_qq || status_q_i == otbn_pkg::StatusLocked) |->
+          !(running_qq || busy_secure_wipe || status_q_i == otbn_pkg::StatusLocked) |->
           (idle_o_i == prim_mubi_pkg::MuBi4True))
 
   `ASSERT(NotIdleIfLockedAndRotatingKeys_A,
@@ -158,7 +158,8 @@ module otbn_idle_checker
   // with status_q reporting 'StatusLocked'. So expected bus read data depends upon locked status
   // when running.
   `ASSERT(NoMemRdataWhenBusy_A,
-    running_q |-> ((status_q_i == otbn_pkg::StatusLocked) ?
+    running_q && !(status_q_i == otbn_pkg::StatusBusySecWipeInt) |->
+      ((status_q_i == otbn_pkg::StatusLocked) ?
       imem_rdata_bus == EccZeroWord && dmem_rdata_bus == EccWideZeroWord :
       imem_rdata_bus == 'b0 && dmem_rdata_bus == 'b0))
 
