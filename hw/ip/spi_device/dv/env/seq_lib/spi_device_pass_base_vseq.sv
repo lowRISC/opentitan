@@ -98,6 +98,14 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       read_addr_size_type inside {ReadAddrWithinMailbox, ReadAddrOutsideMailbox};
   }
 
+  rand bit [9:0] read_threshold_val;
+  constraint read_threshold_val_c {
+    read_threshold_val dist {
+        0         :/ 1,
+        [1:4]     :/ 1,
+        [5:'h3fe] :/ 3,
+        'h3ff     :/ 1};
+  }
   `uvm_object_utils(spi_device_pass_base_vseq)
   `uvm_object_new
 
@@ -342,6 +350,10 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     csr_update(.csr(ral.jedec_cc));
     `DV_CHECK_RANDOMIZE_FATAL(ral.jedec_id)
     csr_update(.csr(ral.jedec_id));
+
+    // disable watermark event
+    ral.read_threshold.set(read_threshold_val);
+    csr_update(ral.read_threshold);
 
     config_all_cmd_infos();
 

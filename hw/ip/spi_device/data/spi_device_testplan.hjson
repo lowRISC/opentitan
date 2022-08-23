@@ -355,7 +355,7 @@
               index 0.
             - Check correctness of `last_read_addr`, `readbuf_watermark` and `readbuf_flip`.'''
       milestone: V2
-      tests: ["spi_device_flash_mode"]
+      tests: ["spi_device_flash_mode", "spi_device_read_buffer_direct"]
     }
     {
       name: cmd_dummy_cycle

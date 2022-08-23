@@ -46,6 +46,7 @@ filesets:
       - seq_lib/spi_device_upload_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_cfg_cmd_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_flash_mode_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_device_read_buffer_direct_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_flash_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 

@@ -176,6 +176,11 @@
     }
 
     {
+      name: spi_device_read_buffer_direct
+      uvm_test_seq: spi_device_read_buffer_direct_vseq
+    }
+
+    {
       name: spi_device_flash_all
       uvm_test_seq: spi_device_flash_all_vseq
     }
