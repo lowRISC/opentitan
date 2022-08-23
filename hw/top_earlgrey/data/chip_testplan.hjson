@@ -1118,15 +1118,6 @@
       tests: ["chip_sw_pwrmgr_b2b_sleep_reset_req"]
     }
     {
-      name: chip_sw_pwrmgr_debug_sleep
-      desc: '''Verify low power entry is prevented when the chip is in "debuggable" state.
-
-            This is an open issue: https://github.com/lowRISC/opentitan/issues/7215
-            '''
-      milestone: V2
-      tests: []
-    }
-    {
       name: chip_sw_pwrmgr_sleep_disabled
       desc: '''Verify that the chip does not go to sleep on WFI when low power hint is 0.
 
