@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-import os
 import sys
 
 import hjson
@@ -43,20 +42,14 @@ def main() -> int:
                         metavar='FILE',
                         type=argparse.FileType('r'),
                         help='Read test vectors from this HJSON file.')
-    tpl_default = open(
-        os.path.join(os.path.dirname(__file__), DEFAULT_TEMPLATE), 'r')
     parser.add_argument('--template',
                         metavar='FILE',
                         required=False,
-                        default=tpl_default,
                         type=argparse.FileType('r'),
                         help='Read header template from this file.')
-    out_default = open(
-        os.path.join(os.path.dirname(__file__), DEFAULT_OUTFILE), 'w')
     parser.add_argument('headerfile',
                         metavar='FILE',
                         nargs='?',
-                        default=out_default,
                         type=argparse.FileType('w'),
                         help='Write output to this file.')
 
@@ -78,9 +71,7 @@ def main() -> int:
     tpl = Template(args.template.read())
     args.headerfile.write(tpl.render(tests=testvecs))
     args.headerfile.close()
-    out_default.close()
     args.template.close()
-    tpl_default.close()
 
     return 0
 

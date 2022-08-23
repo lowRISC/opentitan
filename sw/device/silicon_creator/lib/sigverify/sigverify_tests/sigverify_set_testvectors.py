@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
-import os
 import sys
 
 import hjson
@@ -45,10 +44,10 @@ def compute_n0_inv(n):
     n0 = n & ((1 << 256) - 1)
     # maski = 2^i - 1 (start with i=2)
     maski = 3
-    for i in range(2, w+1):
+    for i in range(2, w + 1):
         # (n * y) mod 2^i = (n0 * y) mod 2^i because i <= 256
         if (n0 * y) & maski != 1:
-            y = y + (1 << (i-1))
+            y = y + (1 << (i - 1))
         maski <<= 1
         maski += 1
     return (1 << w) - y
@@ -110,20 +109,14 @@ def main() -> int:
                         metavar='FILE',
                         type=argparse.FileType('r'),
                         help='Read test vectors from this HJSON file.')
-    tpl_default = open(
-        os.path.join(os.path.dirname(__file__), DEFAULT_TEMPLATE), 'r')
     parser.add_argument('--template',
                         metavar='FILE',
                         required=False,
-                        default=tpl_default,
                         type=argparse.FileType('r'),
                         help='Read header template from this file.')
-    out_default = open(
-        os.path.join(os.path.dirname(__file__), DEFAULT_OUTFILE), 'w')
     parser.add_argument('headerfile',
                         metavar='FILE',
                         nargs='?',
-                        default=out_default,
                         type=argparse.FileType('w'),
                         help='Write output to this file.')
 
@@ -151,9 +144,7 @@ def main() -> int:
 
     args.headerfile.write(Template(args.template.read()).render(tests=testvecs))
     args.headerfile.close()
-    out_default.close()
     args.template.close()
-    tpl_default.close()
 
     return 0
 

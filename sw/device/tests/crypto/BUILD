@@ -28,11 +28,8 @@ opentitan_functest(
 autogen_cryptotest_header(
     name = "ecdsa_p256_verify_testvectors_hardcoded_header",
     hjson = "//sw/device/tests/crypto/testvectors:ecdsa_p256_verify_testvectors_hardcoded",
-    template = "ecdsa_p256_verify_testvectors.h.tpl",
-    test_setter = "ecdsa_p256_verify_set_testvectors.py",
-    deps = [
-        requirement("hjson"),
-    ],
+    template = ":ecdsa_p256_verify_testvectors.h.tpl",
+    tool = "//sw/device/tests/crypto:ecdsa_p256_verify_set_testvectors",
 )
 
 opentitan_functest(
@@ -55,11 +52,8 @@ opentitan_functest(
 autogen_cryptotest_header(
     name = "rsa_3072_verify_testvectors_wycheproof_header",
     hjson = "//sw/device/tests/crypto/testvectors:rsa_3072_verify_testvectors_wycheproof",
-    template = "rsa_3072_verify_testvectors.h.tpl",
-    test_setter = "rsa_3072_verify_set_testvectors.py",
-    deps = [
-        requirement("hjson"),
-    ],
+    template = ":rsa_3072_verify_testvectors.h.tpl",
+    tool = "//sw/device/tests/crypto:rsa_3072_verify_set_testvectors",
 )
 
 opentitan_functest(
@@ -82,8 +76,8 @@ opentitan_functest(
 autogen_cryptotest_header(
     name = "rsa_3072_verify_testvectors_hardcoded_header",
     hjson = "//sw/device/tests/crypto/testvectors:rsa_3072_verify_testvectors_hardcoded",
-    template = "rsa_3072_verify_testvectors.h.tpl",
-    test_setter = "rsa_3072_verify_set_testvectors.py",
+    template = ":rsa_3072_verify_testvectors.h.tpl",
+    tool = "//sw/device/tests/crypto:rsa_3072_verify_set_testvectors",
 )
 
 opentitan_functest(
@@ -100,5 +94,35 @@ opentitan_functest(
         "//sw/device/lib/crypto/rsa_3072:rsa_3072_verify",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+py_binary(
+    name = "ecdsa_p256_verify_set_testvectors",
+    srcs = ["ecdsa_p256_verify_set_testvectors.py"],
+    imports = ["."],
+    deps = [
+        "//util/design/lib:common",
+        requirement("hjson"),
+        requirement("mako"),
+    ],
+)
+
+py_binary(
+    name = "rsa_3072_verify_set_testvectors",
+    srcs = ["rsa_3072_verify_set_testvectors.py"],
+    imports = ["."],
+    deps = [
+        "//util/design/lib:common",
+        requirement("hjson"),
+        requirement("mako"),
+    ],
+)
+
+filegroup(
+    name = "template_files",
+    srcs = [
+        "ecdsa_p256_verify_testvectors.h.tpl",
+        "rsa_3072_verify_testvectors.h.tpl",
     ],
 )

@@ -223,9 +223,9 @@ def _cryptotest_header(ctx):
     hjson = ctx.file.hjson
     ctx.actions.run(
         outputs = [header],
-        inputs = [ctx.executable.test_setter, template, hjson],
+        inputs = [template, hjson],
         arguments = ["--template", template.path, hjson.path, header.path],
-        executable = ctx.executable.test_setter,
+        executable = ctx.executable.tool,
     )
 
     return [
@@ -246,10 +246,9 @@ autogen_cryptotest_header = rule(
         "deps": attr.label_list(allow_files = True),
         "template": attr.label(mandatory = True, allow_single_file = [".tpl"]),
         "hjson": attr.label(mandatory = True, allow_single_file = [".hjson"]),
-        "test_setter": attr.label(
-            allow_single_file = True,
+        "tool": attr.label(
+            default = "//sw/device/tests/crypto:ecdsa_p256_verify_set_testvectors",
             executable = True,
-            mandatory = True,
             cfg = "exec",
         ),
     },
