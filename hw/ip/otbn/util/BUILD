@@ -58,3 +58,12 @@ py_binary(
         "//hw/ip/otbn/util/shared:instruction_count_range",
     ],
 )
+
+py_binary(
+    name = "otbn_sim_test",
+    srcs = ["otbn_sim_test.py"],
+    deps = [
+        "//hw/ip/otbn/util/shared:check",
+        "//hw/ip/otbn/util/shared:reg_dump",
+    ],
+)

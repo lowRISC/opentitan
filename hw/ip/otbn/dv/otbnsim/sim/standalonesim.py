@@ -54,6 +54,9 @@ class StandaloneSim(OTBNSim):
         return insn_count
 
     def dump_regs(self, tgt: TextIO) -> None:
+        for reg in ['ERR_BITS', 'INSN_CNT', 'STOP_PC']:
+            value = self.state.ext_regs.read(reg, False)
+            tgt.write(' {} = 0x{:08x}\n'.format(reg, value))
         for idx, value in enumerate(self.state.gprs.peek_unsigned_values()):
             tgt.write(' x{:<2} = 0x{:08x}\n'.format(idx, value))
         for idx, value in enumerate(self.state.wdrs.peek_unsigned_values()):
