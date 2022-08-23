@@ -500,7 +500,7 @@ SW is responsible for updating the read buffer contents.
 The HW notifies the SW to update the buffer contents when needed.
 The HW provides a SW configurable read watermark CSR and read-only {{<regref "LAST_READ_ADDRESS">}} CSR.
 The **LAST_READ_ADDRESS** shows the last read address from the buffer.
-For instance, if the host system issues `0xABCD_E000` and reads 128 bytes, the **LAST_READ_ADDRESS** after the transaction will show `0xABCD_E0FC`.
+For instance, if the host system issues `0xABCD_E000` and reads 128 (or 0x80) bytes, the **LAST_READ_ADDRESS** after the transaction will show `0xABCD_E080`.
 It does not show the commands falling into the mailbox region or Read SFDP command's address.
 
 The read watermark address width is 1 bit smaller than the read buffer address.
