@@ -130,20 +130,23 @@ module entropy_src_main_sm #(
       BootHTRunning: begin
         if (!enable_i) begin
           state_d = Idle;
-        end else if (bypass_stage_rdy_i) begin
-          // pop if prior ht phase failed
-          bypass_stage_pop_o = 1'b1;
-        end else begin
-          if (ht_done_pulse_i) begin
-            if (ht_fail_pulse_i) begin
-              if (alert_thresh_fail_i) begin
-                state_d = AlertState;
-              end else begin
-                state_d = Idle;
-              end
-            end else begin
-              state_d = BootPostHTChk;
+        end else if (ht_done_pulse_i) begin
+          if (ht_fail_pulse_i) begin
+            if (bypass_stage_rdy_i) begin
+              // Remove failed data
+              bypass_stage_pop_o = 1'b1;
             end
+            if (alert_thresh_fail_i) begin
+              state_d = AlertState;
+            end else begin
+              state_d = Idle;
+            end
+          end else begin
+            // TODO (P1): This line seems to implicitly assume that the HT window
+            // is the same size as the output seed.  If the health test window is
+            // smaller than the output seed then only the first part of the seed
+            // is checked.
+            state_d = BootPostHTChk;
           end
         end
       end
@@ -192,6 +195,7 @@ module entropy_src_main_sm #(
               state_d = StartupFail1;
             end else begin
               state_d = StartupPass1;
+              rst_alert_cntr_o = 1'b1;
             end
           end
         end
@@ -206,6 +210,7 @@ module entropy_src_main_sm #(
             end else begin
               // Passed two consecutive tests
               state_d = Sha3MsgDone;
+              rst_alert_cntr_o = 1'b1;
             end
           end
         end
@@ -220,6 +225,7 @@ module entropy_src_main_sm #(
               state_d = AlertState;
             end else begin
               state_d = StartupPass1;
+              rst_alert_cntr_o = 1'b1;
             end
           end
         end
@@ -293,21 +299,17 @@ module entropy_src_main_sm #(
       Sha3Done: begin
         if (!enable_i) begin
           sha3_done_o = prim_mubi_pkg::MuBi4True;
-          state_d = Idle;
+          state_d = Sha3Quiesce;
         end else begin
           if (main_stage_rdy_i) begin
             sha3_done_o = prim_mubi_pkg::MuBi4True;
             main_stage_push_o = 1'b1;
-            if (fw_ov_ent_insert_i) begin
-              state_d = Idle;
-            end else begin
-              state_d = Sha3Quiesce;
-            end
+            state_d = Sha3Quiesce;
           end
         end
       end
       Sha3Quiesce: begin
-        if (!enable_i) begin
+        if (!enable_i || fw_ov_ent_insert_i) begin
           state_d = Idle;
         end else if (alert_thresh_fail_i) begin
           state_d = AlertState;
