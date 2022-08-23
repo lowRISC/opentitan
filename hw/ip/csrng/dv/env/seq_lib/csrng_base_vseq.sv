@@ -45,16 +45,6 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   // setup basic csrng features
   virtual task csrng_init();
-    state_e   state;
-    string    path;
-
-    // Force into random state while disabled
-    if (cfg.force_state) begin
-      path = "tb.dut.u_csrng_core.u_csrng_main_sm.state_d";
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(state, !(state inside { Error });)
-      `DV_CHECK(uvm_hdl_deposit(path, state));
-    end
-
     // In cases where we are testing alert scenarios using invalid register configurations
     // we must first disable the DUT assertions to allow the environment to catch the alerts
     if (cfg.use_invalid_mubi) begin
