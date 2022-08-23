@@ -93,7 +93,10 @@
         Corrupt internal state and expect an alert
       '''
       stage: V2S
-      tests: []
+      tests: ["otbn_alu_bignum_mod_err",
+              "otbn_controller_ispr_rdata_err",
+              "otbn_mac_bignum_acc_err",
+              "otbn_urnd_err"]
     }
     {
       name: back_to_back
