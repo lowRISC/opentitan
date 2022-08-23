@@ -21,7 +21,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // RNG Interface
   output logic rng_fips_o,
 
-
   // Entropy Interface
   input  entropy_src_hw_if_req_t entropy_src_hw_if_i,
   output entropy_src_hw_if_rsp_t entropy_src_hw_if_o,
@@ -148,6 +147,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic                   any_fail_pulse;
   logic                   main_stage_push;
+  logic                   main_stage_push_raw;
   logic                   bypass_stage_pop;
   logic                   boot_phase_done;
   logic [HalfRegWidth-1:0] any_fail_count;
@@ -164,6 +164,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     markov_active;
   logic                     extht_active;
   logic                     alert_cntrs_clr;
+  logic                     module_en_pulse;
   logic                     health_test_clr;
   logic                     health_test_done_pulse;
   logic [RngBusWidth-1:0]   health_test_esbus;
@@ -355,10 +356,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                        pfifo_precon_clr;
   logic                        pfifo_precon_pop;
 
-  logic [PreCondWidth-1:0]  pfifo_bypass_wdata;
+  logic [PostHTWidth-1:0]   pfifo_bypass_wdata;
   logic [SeedLen-1:0]       pfifo_bypass_rdata;
   logic                     pfifo_bypass_not_empty;
-  logic                     pfifo_bypass_not_full;
   logic                     pfifo_bypass_push;
   logic                     pfifo_bypass_clr;
   logic                     pfifo_bypass_pop;
@@ -397,6 +397,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [30:0]              err_code_test_bit;
   logic                     sha3_msgfifo_ready;
   logic                     sha3_state_vld;
+  logic                     sha3_start_raw;
   logic                     sha3_start;
   logic                     sha3_process;
   logic                     sha3_msg_end;
@@ -436,6 +437,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                      recov_alert_state;
   logic                      es_fw_ov_wr_alert;
   logic                      es_fw_ov_disable_alert;
+  logic                      stale_seed_processing;
+  logic                      main_sm_enable;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_sha3_state;
@@ -462,6 +465,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        sha3_msg_rdy_mask_q, sha3_msg_rdy_mask_d;
   mubi4_t      mubi_mod_en_dly_d, mubi_mod_en_dly_q;
 
+  logic                    es_bypass_mode_d, es_bypass_mode_q;
+  logic                    sha3_start_mask_q, sha3_start_mask_d;
+  logic                    main_sm_extd_en_n_d, main_sm_extd_en_n_q;
+  logic                    sha3_flush_q, sha3_flush_d;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ht_failed_q            <= '0;
@@ -472,7 +480,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
       es_rdata_capt_vld_q    <= '0;
       fw_ov_sha3_start_pfe_q <= '0;
       sha3_msg_rdy_mask_q    <= '0;
+      es_bypass_mode_q       <= '0;
       mubi_mod_en_dly_q      <= prim_mubi_pkg::MuBi4False;
+      sha3_flush_q           <= '0;
+      sha3_start_mask_q      <= '0;
+      main_sm_extd_en_n_q    <= 1'b1;
     end else begin
       ht_failed_q            <= ht_failed_d;
       ht_done_pulse_q        <= ht_done_pulse_d;
@@ -482,6 +494,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
       es_rdata_capt_vld_q    <= es_rdata_capt_vld_d;
       fw_ov_sha3_start_pfe_q <= fw_ov_sha3_start_pfe;
       sha3_msg_rdy_mask_q    <= sha3_msg_rdy_mask_d;
+      es_bypass_mode_q       <= es_bypass_mode_d;
+      sha3_flush_q           <= sha3_flush_d;
+      sha3_start_mask_q      <= sha3_start_mask_d;
+      main_sm_extd_en_n_q    <= main_sm_extd_en_n_d;
       mubi_mod_en_dly_q      <= mubi_mod_en_dly_d;
     end
   end
@@ -769,8 +785,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                  (sfifo_observe_err_sum ||
                                   sfifo_esfinal_err_sum ||
                                   sfifo_test_err_sum    ||
-                                  es_ack_sm_err_sum     ||
-                                 es_main_sm_err_sum) )  ||
+                                  es_ack_sm_err_sum ) ) ||
+                              (main_sm_enable && es_main_sm_err_sum) ||
                               es_cntr_err_sum || // prim_count err is always active
                               sha3_rst_storage_err_sum ||
                               sha3_state_error_sum;
@@ -1002,7 +1018,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign markov_active = es_enable_q_fo[7];
   assign extht_active = es_enable_q_fo[8];
 
-  assign health_test_clr = mubi4_test_true_strict(mubi_module_en_fanout[5]) && !es_enable_q_fo[9];
+  assign module_en_pulse = mubi4_test_true_strict(mubi_module_en_fanout[5]) && !es_enable_q_fo[9];
+  assign health_test_clr = module_en_pulse;
 
   assign health_test_fips_window = reg2hw.health_test_windows.fips_window.q;
   assign health_test_bypass_window = reg2hw.health_test_windows.bypass_window.q;
@@ -1351,6 +1368,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //------------------------------
 
   assign event_es_health_test_failed = es_main_sm_alert;
+
   assign event_es_observe_fifo_ready = observe_fifo_thresh_met;
 
   // SEC_CM: CONFIG.MUBI
@@ -1403,7 +1421,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_bypass_to_sw = es_type_pfe;
   assign threshold_scope = threshold_scope_pfe;
 
-  assign es_bypass_mode = (!fips_enable_pfe) || (es_bypass_to_sw && es_route_to_sw);
+  // Only update es_bypass_mode as we enable the module, since transient
+  // configuration changes can cause in-flight data (from the enable cycles)
+  // to be routed to the wrong path.
+  assign es_bypass_mode_d = module_en_pulse ?
+                            (!fips_enable_pfe) || (es_bypass_to_sw && es_route_to_sw) :
+                            es_bypass_mode_q;
+  assign es_bypass_mode = es_bypass_mode_q;
 
   // send off to AST RNG for possibly faster entropy generation
   assign rng_fips_o = !es_bypass_mode;
@@ -1419,7 +1443,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   ) u_prim_count_window_cntr (
     .clk_i,
     .rst_ni,
-    .clr_i(!es_enable_q_fo[10] || health_test_clr),
+    .clr_i(health_test_clr),
     .set_i(health_test_done_pulse),
     .set_cnt_i(HalfRegWidth'(0)),
     .incr_en_i(health_test_esbus_vld),
@@ -1994,7 +2018,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          extht_hi_fail_pulse || extht_lo_fail_pulse;
 
   assign ht_failed_d =
-         (!es_enable_q_fo[11]) ? 1'b0 :
+         (!es_enable_q_fo[10]) ? 1'b0 :
          ht_done_pulse_q ? 1'b0 :
          any_fail_pulse ? 1'b1 :
          ht_failed_q;
@@ -2218,10 +2242,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o    ()
   );
 
-  assign pfifo_postht_push = (es_enable_q_fo[12] && rng_bit_en) ? pfifo_esbit_not_empty :
+  assign pfifo_postht_push = (es_enable_q_fo[11] && rng_bit_en) ? pfifo_esbit_not_empty :
                              sfifo_esrng_not_empty;
 
-  assign pfifo_postht_wdata = (es_enable_q_fo[13] && rng_bit_en) ? pfifo_esbit_rdata :
+  assign pfifo_postht_wdata = (es_enable_q_fo[12] && rng_bit_en) ? pfifo_esbit_rdata :
                               sfifo_esrng_rdata;
 
   // For verification purposes, let post-disable data continue through to the SHA engine if it has
@@ -2233,8 +2257,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // Also, there is no association between SHA data and health test windows in FW_OV mode, so there
   // is no benefit in this mode to clearing the SHA FIFOs at the same time we clear the HT
   // statistics.
-  assign pfifo_postht_clr = fw_ov_mode_entropy_insert ? !es_enable_q_fo[14] : health_test_clr;
+
+  assign pfifo_postht_clr = fw_ov_mode_entropy_insert ? !es_enable_q_fo[13] : module_en_pulse;
   assign pfifo_postht_pop = fw_ov_mode_entropy_insert ? pfifo_postht_not_empty :
+                            es_bypass_mode ? pfifo_bypass_push :
                             pfifo_precon_push & pfifo_precon_not_full;
 
 
@@ -2284,7 +2310,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.fw_ov_rd_fifo_overflow.de = 1'b1;
 
   assign observe_fifo_thresh_met = fw_ov_mode && (observe_fifo_thresh != '0) &&
-         (observe_fifo_thresh <= sfifo_observe_depth) && es_enable_q_fo[15];
+         (observe_fifo_thresh <= sfifo_observe_depth) && es_enable_q_fo[14];
 
   assign hw2reg.observe_fifo_depth.d = sfifo_observe_depth;
 
@@ -2329,14 +2355,12 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o    ()
   );
 
-  assign pfifo_precon_push = fw_ov_mode ?
-         (fw_ov_mode_entropy_insert ? fw_ov_fifo_wr_pulse : pfifo_postht_not_empty) :
-         es_bypass_mode ? pfifo_postht_not_empty :
-         pfifo_postht_not_empty & sha3_msg_rdy_mask;
+  assign pfifo_precon_push = es_bypass_mode ? 1'b0 :
+                             fw_ov_mode_entropy_insert ? fw_ov_fifo_wr_pulse :
+                             pfifo_postht_not_empty;
 
-  assign pfifo_precon_wdata = fw_ov_mode ?
-         (fw_ov_mode_entropy_insert ? fw_ov_wr_data : pfifo_postht_rdata) :
-         pfifo_postht_rdata;
+  assign pfifo_precon_wdata = fw_ov_mode_entropy_insert ? fw_ov_wr_data :
+                              pfifo_postht_rdata;
 
   // For verification purposes, let post-disable data continue through to the SHA engine if it has
   // made it past the health checks, when in standard (non-fw_ov) mode.  This allows scoreboards
@@ -2353,11 +2377,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // of knowing if a word will get stalled by SHA backpressure.  This is not a problem however
   // as the reset is only important for clearing 32-bit half-SHA-words.
   assign pfifo_precon_clr = fw_ov_mode_entropy_insert ?
-                            !es_enable_q_fo[16] & !pfifo_precon_not_empty :
-                            health_test_clr;
+                            !es_enable_q_fo[15] & !pfifo_precon_not_empty :
+                            module_en_pulse;
 
-  assign pfifo_precon_pop = es_bypass_mode ? pfifo_bypass_push && pfifo_bypass_not_full :
-                            (pfifo_cond_push && sha3_msgfifo_ready);
+  assign pfifo_precon_pop = (pfifo_cond_push && sha3_msgfifo_ready);
 
   assign es_fw_ov_wr_alert = fw_ov_mode && fw_ov_mode_entropy_insert &&
          fw_ov_fifo_wr_pulse && fw_ov_wr_fifo_full;
@@ -2392,7 +2415,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                sha3_msg_rdy_mask_q;
 
   assign sha3_msg_rdy_mask = sha3_msg_rdy_mask_q & ~sha3_msg_end &
-                             ~cs_aes_halt_req & es_enable_q_fo[17];
+                             ~cs_aes_halt_req;
 
   assign pfifo_cond_rdata = sha3_state[0][SeedLen-1:0];
   assign pfifo_cond_not_empty = sha3_state_vld;
@@ -2454,7 +2477,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //--------------------------------------------
 
   prim_packer_fifo #(
-     .InW(PreCondWidth),
+     .InW(PostHTWidth),
      .OutW(SeedLen),
      .ClearOnRead(1'b0)
   ) u_prim_packer_fifo_bypass (
@@ -2463,21 +2486,26 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clr_i      (pfifo_bypass_clr),
     .wvalid_i   (pfifo_bypass_push),
     .wdata_i    (pfifo_bypass_wdata),
-    .wready_o   (pfifo_bypass_not_full),
+    .wready_o   (),
     .rvalid_o   (pfifo_bypass_not_empty),
     .rdata_o    (pfifo_bypass_rdata),
     .rready_i   (pfifo_bypass_pop),
     .depth_o    ()
   );
 
-  assign pfifo_bypass_push = pfifo_precon_not_empty && es_bypass_mode;
-  assign pfifo_bypass_wdata = pfifo_precon_rdata;
+  assign pfifo_bypass_push = !es_bypass_mode ? 1'b0 :
+                             fw_ov_mode_entropy_insert ? fw_ov_fifo_wr_pulse :
+                             pfifo_postht_not_empty;
+  assign pfifo_bypass_wdata = fw_ov_mode_entropy_insert ? fw_ov_wr_data :
+                              pfifo_postht_rdata;
 
-  assign pfifo_bypass_clr = !es_enable_q_fo[18];
+  assign pfifo_bypass_clr = !es_enable_q_fo[16];
 
+  // Corner case: If the main state machine encounters an alert, drain the
+  // bypass fifo, to get rid of the seeds and let the HT stats continue.
   assign pfifo_bypass_pop =
-         (es_bypass_mode && fw_ov_mode_entropy_insert) ? pfifo_bypass_not_empty : bypass_stage_pop;
-
+         fw_ov_mode_entropy_insert ? pfifo_bypass_not_empty :
+         bypass_stage_pop;
 
   // mux to select between fips and bypass mode
   assign final_es_data = es_bypass_mode ? pfifo_bypass_rdata : pfifo_cond_rdata;
@@ -2493,7 +2521,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     u_entropy_src_main_sm (
     .clk_i                (clk_i),
     .rst_ni               (rst_ni),
-    .enable_i             (es_enable_q_fo[19]),
+    .enable_i             (main_sm_enable),
     .fw_ov_ent_insert_i   (fw_ov_mode_entropy_insert),
     .fw_ov_sha3_start_i   (fw_ov_sha3_start_pfe),
     .ht_done_pulse_i      (ht_done_pulse_q),
@@ -2504,10 +2532,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .main_stage_rdy_i     (pfifo_cond_not_empty),
     .bypass_stage_rdy_i   (pfifo_bypass_not_empty),
     .sha3_state_vld_i     (sha3_state_vld),
-    .main_stage_push_o    (main_stage_push),
+    .main_stage_push_o    (main_stage_push_raw),
     .bypass_stage_pop_o   (bypass_stage_pop),
     .boot_phase_done_o    (boot_phase_done),
-    .sha3_start_o         (sha3_start),
+    .sha3_start_o         (sha3_start_raw),
     .sha3_process_o       (sha3_process),
     .sha3_done_o          (sha3_done),
     .cs_aes_halt_req_o    (cs_aes_halt_req),
@@ -2522,6 +2550,51 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // es to cs halt request to reduce power spikes
   assign cs_aes_halt_d = cs_aes_halt_req;
   assign cs_aes_halt_o.cs_aes_halt_req = cs_aes_halt_q;
+
+  //--------------------------------------------
+  // Corner case masking of main_sm inputs/outputs
+  //--------------------------------------------
+
+  // When operating in RNG mode the state machine does not respond
+  // immediately to disable requests if it processing the SHA output
+  // (here indicated by the cs_aes_halt_req handshake).  The SHA engine
+  // will continue to process even if the module is disabled.  These seeds
+  // that continue to process after the disable signal are referred to as
+  // stale.
+  //
+  // If the SHA processing were instantaneous, stale seeds would be discarded
+  // when the esfinal fifo was cleard on diable.  Though since processing
+  // can push through a disable pulse, stale seeds need to be identified,
+  // and held back from the esfinal FIFO.
+  //
+  // There is at most one seed processing at a time so, we simply need to
+  // detect when a stale seed has commenced processing, and mask the following
+  // main_stage_push signal.
+
+  assign stale_seed_processing = ~es_bypass_mode & ~fw_ov_mode_entropy_insert &
+                                 cs_aes_halt_req & ~es_enable_q_fo[17];
+  assign sha3_flush_d = stale_seed_processing ? 1'b1 :
+                        main_stage_push_raw ? 1'b0 :
+                        sha3_flush_q;
+  assign main_stage_push = main_stage_push_raw & !sha3_flush_q;
+
+  // If the SHA3 processing endures all the way through a disable pulse, the SM may miss
+  // disable events entirely.  This extends any disable pulses until they can be seen
+  // by the state machine.
+  assign main_sm_extd_en_n_d = cs_aes_halt_req && !es_enable_q_fo[18] ? 1'b0 :
+                               mubi4_test_true_strict(sha3_done) ? 1'b1 :
+                               main_sm_extd_en_n_q;
+
+  assign main_sm_enable = es_enable_q_fo[19] & main_sm_extd_en_n_q;
+
+  // The main SM can also generate redundant start pulses. After data can be pushed into SHA,
+  // the SM can be disabled leaving entropy in the SHA sponge.  This is fine, but the SM will
+  // have no recollection of this previous start pulse.  We track redundant start pulses
+  // outside the SM and suppress them as needed.
+  assign sha3_start_mask_d = sha3_start_raw ? 1'b1 :
+                             sha3_process   ? 1'b0 :
+                             sha3_start_mask_q;
+  assign sha3_start = sha3_start_raw & ~sha3_start_mask_q;
 
   //--------------------------------------------
   // send processed entropy to final fifo
@@ -2550,7 +2623,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   // fifo controls
   assign sfifo_esfinal_push_enable =
-         (es_bypass_mode && fw_ov_mode_entropy_insert) ? pfifo_bypass_not_empty : main_stage_push;
+         fw_ov_mode_entropy_insert && es_bypass_mode ? pfifo_bypass_not_empty :
+         main_stage_push;
 
   assign sfifo_esfinal_push = sfifo_esfinal_not_full && sfifo_esfinal_push_enable;
   assign sfifo_esfinal_clr  = !es_enable_q_fo[21];
