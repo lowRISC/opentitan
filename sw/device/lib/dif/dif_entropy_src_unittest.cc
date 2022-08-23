@@ -27,7 +27,7 @@ class ConfigTest : public EntropySrcTest {
       .fips_enable = false,
       .route_to_firmware = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-  };
+      .health_test_window_size = 1};
 };
 
 TEST_F(ConfigTest, NullHandle) {
@@ -154,10 +154,10 @@ INSTANTIATE_TEST_SUITE_P(
         ConfigParams{false, false, kDifEntropySrcSingleBitMode3, false, 64, 2,
                      kDifToggleEnabled},
         // Test alerts disabled.
-        ConfigParams{false, false, kDifEntropySrcSingleBitMode0, false, 0, 0,
+        ConfigParams{false, false, kDifEntropySrcSingleBitMode0, false, 1, 0,
                      kDifToggleDisabled},
         // Test all disabled.
-        ConfigParams{false, false, kDifEntropySrcSingleBitMode0, false, 0, 2,
+        ConfigParams{false, false, kDifEntropySrcSingleBitMode0, false, 1, 2,
                      kDifToggleDisabled},
         // Test all enabled.
         ConfigParams{true, true, kDifEntropySrcSingleBitMode0, true, 32, 2,
