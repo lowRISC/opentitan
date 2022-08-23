@@ -28,6 +28,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   flash_ctrl_env_cfg cfg;
 
   int eg_exp_cnt = 0;
+  bit comp_off = 0;
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -319,6 +320,8 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   task compare_data(fdata_q_t obs, fdata_q_t exp, int bank, string rw, bit is_ecc = 0);
     string str = $sformatf("%s_comp_bank%0d", rw, bank);
     bit    err = 0;
+
+    if (comp_off) return;
 
     foreach (obs[i]) begin
       if(is_ecc) begin

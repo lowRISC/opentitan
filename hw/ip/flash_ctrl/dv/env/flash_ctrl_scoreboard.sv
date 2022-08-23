@@ -41,6 +41,7 @@ class flash_ctrl_scoreboard #(
 
   // ecc error expected
   bit ecc_error_addr[bit [AddrWidth - 1 : 0]];
+  int over_rd_err[addr_t];
 
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_a_chan_fifo;
@@ -193,7 +194,6 @@ class flash_ctrl_scoreboard #(
     bit            data_phase_write = (write && channel == DataChannel);
     flash_op_t     flash_op_cov;
     bit            erase_req;
-
     if (skip_read_check) do_read_check = 0;
     // if access was to a valid csr, get the csr handle
     if ((is_mem_addr(
@@ -760,6 +760,15 @@ class flash_ctrl_scoreboard #(
                         item.a_addr, ecc_err,
                         channel.name, ral_name
                         ), UVM_HIGH)
+
+    if (over_rd_err.exists(item.a_addr)) begin
+      if (channel == DataChannel)  begin
+        over_rd_err[item.a_addr]--;
+        if (over_rd_err[item.a_addr] == 0) over_rd_err.delete(item.a_addr);
+        `uvm_info(`gfn, $sformatf("addr is clear 0x%x", item.a_addr), UVM_HIGH)
+      end
+      return 1;
+    end
 
     if ((ral_name == cfg.flash_ral_name) && (get_flash_instr_type_err(item, channel))) return (1);
     else if (ecc_err) begin

@@ -158,6 +158,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   int       otf_num_hr = 2500;
   int       otf_wr_pct = 1;
   int       otf_rd_pct = 1;
+  // overflow error rate
+  int       otf_bwr_pct = 1;
+  int       otf_brd_pct = 1;
 
   // interrupt mode
   bit       intr_mode = 0;

@@ -345,7 +345,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // Read data from flash, stopping whenever empty.
   // The flash op is assumed to have already commenced.
-  virtual task flash_ctrl_read(uint num_words, ref data_q_t data, input bit poll_fifo_status);
+  virtual task flash_ctrl_read(uint num_words, ref data_q_t data,
+                               input bit poll_fifo_status, bit dis = 0);
     for (int i = 0; i < num_words; i++) begin
       // Check if rd fifo is empty. If yes, then wait for data to become available.
       // Note that this polling is not needed since the interface is backpressure enabled.
@@ -354,6 +355,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       end
       mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(data[i]));
       `uvm_info(`gfn, $sformatf("flash_ctrl_read: 0x%0h", data[i]), UVM_HIGH)
+      if (dis) begin
+        `uvm_info(`gfn, $sformatf("dis:flash_ctrl_read: 0x%0h", data[i]), UVM_MEDIUM)
+      end
     end
   endtask : flash_ctrl_read
 
