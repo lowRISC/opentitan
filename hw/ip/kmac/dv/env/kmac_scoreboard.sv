@@ -171,9 +171,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       detect_kmac_app_start();
       process_kmac_app_fsm();
       process_edn();
-      process_sha3_idle();
-      process_sha3_absorb();
-      process_sha3_squeeze();
       process_kmac_app_req_fifo();
       process_kmac_app_rsp_fifo();
       process_sideload_key();
@@ -196,6 +193,14 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, "AFTER LATCHING KMAC_CMD", UVM_HIGH)
           `uvm_info(`gfn, $sformatf("unchecked_kmac_cmd: %0s", unchecked_kmac_cmd.name()), UVM_HIGH)
           `uvm_info(`gfn, $sformatf("checked_kmac_cmd: %0s", checked_kmac_cmd.name()), UVM_HIGH)
+
+          if (checked_kmac_cmd == CmdStart) begin
+            sha3_idle = 0;
+            sha3_absorb = 1;
+            `uvm_info(`gfn, "raised sha3_absorb and dropped sha3_idle when issued start cmd",
+                      UVM_HIGH)
+          end
+          if (checked_kmac_cmd == CmdDone) sha3_idle = 1;
           // If CmdDone is written, we know that a hash has completed.
           // So, we can set this to CmdNone one cycle later.
           cfg.clk_rst_vif.wait_clks(1);
@@ -271,11 +276,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
-  // This task checks for the start of a KMAC_APP operation and updates scoreboard state accordingly.
+  // This task checks for the start of a KMAC_APP operation and updates scoreboard state
+  // accordingly.
   //
-  // `process_kmac_app_req_fifo()` cannot be used for this purpose because the scb will only receive
-  // a kmac_app_req item once the full request has been completed, which can consist of many
-  // different request transactions.
+  // `process_kmac_app_req_fifo()` cannot be used for this purpose because the scb will only
+  // receive a kmac_app_req item once the full request has been completed, which can consist of
+  // many different request transactions.
   virtual task detect_kmac_app_start();
     @(negedge cfg.under_reset);
     forever begin
@@ -291,8 +297,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   `KMAC_APP_VALID_TRANS(AppLc) ||
                   `KMAC_APP_VALID_TRANS(AppRom)));
             in_kmac_app = 1;
+            sha3_idle = 0;
+            sha3_absorb = 1;
 
-            `uvm_info(`gfn, "raised in_kmac_app", UVM_HIGH)
+            `uvm_info(`gfn, "Raised in_kmac_app and sha3_absorb. Dropped sha3_idle.", UVM_HIGH)
 
             // we need to choose the correct application interface
             if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
@@ -407,6 +415,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 app_st = StError;
                 app_fsm_active = 0;
                 in_kmac_app = 0;
+                sha3_squeeze = 0;
+                sha3_idle = 1;
 
                 kmac_err.valid = 1;
                 kmac_err.code = kmac_pkg::ErrKeyNotValid;
@@ -462,7 +472,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                         $sformatf("Detected KMAC_APP data transfer:\n%0s",
                                   kmac_app_block_item.sprint()),
                         UVM_HIGH)
-              {kmac_app_block_data, kmac_app_block_strb, kmac_app_last} = kmac_app_block_item.h_data;
+              {kmac_app_block_data, kmac_app_block_strb, kmac_app_last} =
+                  kmac_app_block_item.h_data;
               kmac_app_block_strb_size = $countones(kmac_app_block_strb);
 
               // sample coverage
@@ -542,8 +553,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 if (do_check_digest) check_digest();
 
                 in_kmac_app = 0;
+                sha3_squeeze = 0;
                 sha3_absorb = 0;
-                `uvm_info(`gfn, "dropped in_kmac_app", UVM_HIGH)
+                sha3_idle = 1;
+                `uvm_info(`gfn, "dropped in_kmac_app and raised sha3_idle", UVM_HIGH)
 
                 clear_state();
                 ,
@@ -552,83 +565,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end
           ,
           wait(cfg.under_reset);
-      )
-    end
-  endtask
-
-  // This task updates the internal sha3_idle status field
-  virtual task process_sha3_idle();
-    @(negedge cfg.under_reset);
-    forever begin
-      wait(!cfg.under_reset);
-      `DV_SPINWAIT_EXIT(
-          forever begin
-            // sha3_idle drops when CmdStart command is sent or a KMAC_APP op is detected
-            @(posedge in_kmac_app or checked_kmac_cmd == CmdStart);
-            sha3_idle = 0;
-            `uvm_info(`gfn, "dropped sha3_idle", UVM_HIGH)
-
-            // sha3_idle goes high when either KMAC_APP op is complete or
-            // CmdDone command is sent by SW
-            @(negedge in_kmac_app or checked_kmac_cmd == CmdDone);
-            sha3_idle = 1;
-            `uvm_info(`gfn, "raised sha3_idle", UVM_HIGH)
-          end
-          ,
-          wait(cfg.under_reset || cfg.kmac_vif.lc_escalate_en_i != lc_ctrl_pkg::Off);
-      )
-      wait (cfg.under_reset);
-    end
-  endtask
-
-  // This task updates the internal sha3_absorb status field
-  virtual task process_sha3_absorb();
-    @(negedge cfg.under_reset);
-    forever begin
-      sha3_absorb = ral.status.sha3_absorb.get_reset();
-      wait(!cfg.under_reset);
-      `DV_SPINWAIT_EXIT(
-          forever begin
-            // sha3_absorb should go high when CmdStart is written or
-            // when KMAC_APP op is started
-            @(posedge in_kmac_app or checked_kmac_cmd == CmdStart);
-            sha3_absorb = 1;
-            `uvm_info(`gfn, "raised sha3_absorb", UVM_HIGH)
-            wait (sha3_absorb == 0);
-          end
-          ,
-          @(posedge cfg.under_reset or kmac_err.code == ErrKeyNotValid);
-      )
-    end
-  endtask
-
-  // This task updates the internal sha3_squeeze status field
-  virtual task process_sha3_squeeze();
-    bit is_kmac_app_op;
-
-    @(negedge cfg.under_reset);
-    forever begin
-      wait(!cfg.under_reset);
-      @(negedge sha3_idle);
-      `DV_SPINWAIT_EXIT(
-          forever begin
-            wait(sha3_squeeze == 1);
-            // latch whether we are doing a KMAC_APP op to accurately
-            // determine when to raise sha3_squeeze
-            is_kmac_app_op = in_kmac_app;
-            `uvm_info(`gfn, "raised sha3_squeeze", UVM_HIGH)
-
-            // sha3_squeeze goes low in one of three cases:
-            // - Manual squeezing is requested - this will be checked in sequence level. Scb is
-            //   trying to avoid cycle accurate checking when squeeze starts and finishes.
-            // - KMAC_APP operation finishes.
-            // - CmdDone is written.
-            wait(checked_kmac_cmd == CmdDone || (is_kmac_app_op && !in_kmac_app));
-            sha3_squeeze = 0;
-            `uvm_info(`gfn, "dropped sha3_squeeze", UVM_HIGH)
-          end
-          ,
-          @(posedge sha3_idle or posedge cfg.under_reset);
       )
     end
   endtask
@@ -675,13 +611,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
         void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
       end
-    end else if ((csr_addr & csr_addr_mask) inside {[KMAC_FIFO_BASE:KMAC_FIFO_END]}) begin
+    end else if ((csr_addr & csr_addr_mask) inside {[KMAC_FIFO_BASE : KMAC_FIFO_END]}) begin
       // msgfifo window
       msgfifo_access = 1;
-    end else if ((csr_addr & csr_addr_mask) inside {[KMAC_STATE_SHARE0_BASE:KMAC_STATE_SHARE0_END]}) begin
+    end else if ((csr_addr & csr_addr_mask) inside {[KMAC_STATE_SHARE0_BASE :
+                                                     KMAC_STATE_SHARE0_END]}) begin
       // state window 0
       share0_access = 1;
-    end else if ((csr_addr & csr_addr_mask) inside {[KMAC_STATE_SHARE1_BASE:KMAC_STATE_SHARE1_END]}) begin
+    end else if ((csr_addr & csr_addr_mask) inside {[KMAC_STATE_SHARE1_BASE :
+                                                     KMAC_STATE_SHARE1_END]}) begin
       // state window 1
       share1_access = 1;
     end else begin
@@ -906,6 +844,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 if (checked_kmac_cmd inside {CmdProcess, CmdManualRun}) begin
                   unchecked_kmac_cmd = CmdDone;
 
+                  sha3_squeeze = 0;
+                  `uvm_info(`gfn, "dropped sha3_squeeze", UVM_HIGH)
+
                   // sample coverage of message length
                   if (cfg.en_cov) begin
                     cov.msg_len_cg.sample(msg.size());
@@ -920,10 +861,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   clear_state();
 
                   void'(ral.cfg_regwen.predict(.value(1)));
-
-                  // IDLE should go high one cycle after issuing Done cmd
-                  //cfg.clk_rst_vif.wait_clks(1);
-                  //sha3_idle = 1;
 
                 end else begin // SW sent wrong command
 
