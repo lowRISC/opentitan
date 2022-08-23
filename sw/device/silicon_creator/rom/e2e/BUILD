@@ -81,12 +81,12 @@ opentitan_functest(
     srcs = ["empty_test.c"],
     args = [],
     cw310 = cw310_params(
-        args = [
+        bitstream = "//hw/bitstream:rom",
+        test_cmds = [
             "--bitstream=\"$(location //hw/bitstream:rom)\"",
             "--rom-kind=rom",
             "--rom-ext=\"$(location {flash})\"",
         ],
-        bitstream = "//hw/bitstream:rom",
     ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
@@ -102,12 +102,12 @@ opentitan_functest(
     srcs = ["chip_specific_startup.c"],
     args = [],
     cw310 = cw310_params(
-        args = [
+        bitstream = "//hw/bitstream:rom",
+        test_cmds = [
             "--bitstream=\"$(location //hw/bitstream:rom)\"",
             "--rom-kind=rom",
             "--bootstrap=\"$(location {flash})\"",
         ],
-        bitstream = "//hw/bitstream:rom",
     ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
