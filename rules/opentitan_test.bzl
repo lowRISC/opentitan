@@ -18,13 +18,14 @@ DEFAULT_TEST_FAILURE_MSG = "({})|({})".format(
 )
 
 _BASE_PARAMS = {
-    "args": [],
+    "args": [],  # Passed to test runner as arguments.
     "data": [],
     "local": True,
     "otp": "@//hw/ip/otp_ctrl/data:img_rma",
     "rom": "@//sw/device/lib/testing/test_rom",
     "tags": [],
     "test_runner": "@//util:opentitan_functest_runner.sh",
+    "test_cmds": [],  # Passed to test_runner via TEST_CMDS env var.
     "timeout": "moderate",  # 5 minutes
     "exit_success": DEFAULT_TEST_SUCCESS_MSG,
     "exit_failure": DEFAULT_TEST_FAILURE_MSG,
@@ -42,6 +43,7 @@ def dv_params(
         tags = _BASE_PARAMS["tags"],
         timeout = _BASE_PARAMS["timeout"],
         test_runner = "@//util:dvsim_test_runner.sh",
+        test_cmds = [],
         # DV-specific Parameters
         dvsim_config = "@//hw/top_earlgrey/dv:chip_sim_cfg.hjson",
         **kwargs):
@@ -50,7 +52,7 @@ def dv_params(
     This macro emits a dictionary of parameters which are pasted into the DV
     simulation specific test rule.
 
-    Args:
+    Parameters:
         @param args: Extra arguments to pass to the test runner (`dvsim.py`).
         @param data: Data dependencies of the test.
         @param local: Whether the test should be run locally without sandboxing.
@@ -58,9 +60,11 @@ def dv_params(
         @param rom: The ROM image to use.
         @param tags: The test tags to apply to the test rule.
         @param timeout: The timeout to apply to the test rule.
+        @param test_cmds: A list of required commands and args that make up the
+                          immutable portion of the harness invocation.
         @param dvsim_config: The dvsim.py Hjson config file for the toplevel.
     """
-    required_args = [
+    required_test_cmds = [
         "-i",
         "chip_sw_{name}",
         "--",
@@ -73,13 +77,14 @@ def dv_params(
     ]
     required_tags = ["dv"]
     kwargs.update(
-        args = args + required_args,
+        args = args,
         data = required_data + data,
         local = local,
         otp = otp,
         rom = rom,
         tags = required_tags + tags,
         test_runner = test_runner,
+        test_cmds = required_test_cmds + test_cmds,
         timeout = timeout,
         dvsim_config = dvsim_config,
     )
@@ -87,11 +92,7 @@ def dv_params(
 
 def verilator_params(
         # Base Parameters
-        args = _BASE_PARAMS["args"] + [
-            "console",
-            "--exit-success={exit_success}",
-            "--exit-failure={exit_failure}",
-        ],
+        args = _BASE_PARAMS["args"],
         data = _BASE_PARAMS["data"],
         exit_success = _BASE_PARAMS["exit_success"],
         exit_failure = _BASE_PARAMS["exit_failure"],
@@ -101,6 +102,11 @@ def verilator_params(
         tags = _BASE_PARAMS["tags"] + ["cpu:4"],
         timeout = _BASE_PARAMS["timeout"],
         test_runner = _BASE_PARAMS["test_runner"],
+        test_cmds = _BASE_PARAMS["test_cmds"] + [
+            "console",
+            "--exit-success={exit_success}",
+            "--exit-failure={exit_failure}",
+        ],
         # Verilator-specific Parameters
         # None
         **kwargs):
@@ -109,7 +115,7 @@ def verilator_params(
     This macro emits a dictionary of parameters which are pasted into the
     Verilator simulation specific test rule.
 
-    Args:
+    Parameters:
         @param args: Extra arguments to pass to the test runner (`opentitantool`).
         @param data: Data dependencies of the test.
         @param local: Whether the test should be run locally without sandboxing.
@@ -117,10 +123,14 @@ def verilator_params(
         @param rom: The ROM image to use.
         @param tags: The test tags to apply to the test rule.
         @param timeout: The timeout to apply to the test rule.
+        @param test_cmds: A list of required commands and args that make up the
+                          immutable portion of the harness invocation.
     """
-    required_args = [
+    default_args = [
         "--rcfile=",
         "--logging=info",
+    ]
+    required_test_cmds = [
         "--interface=verilator",
         "--verilator-bin=$(location @//hw:verilator)",
         "--verilator-rom=$(location {rom})",
@@ -134,7 +144,7 @@ def verilator_params(
     ]
     required_tags = ["verilator"]
     kwargs.update(
-        args = required_args + args,
+        args = default_args + args,
         data = required_data + data,
         exit_success = exit_success,
         exit_failure = exit_failure,
@@ -143,19 +153,14 @@ def verilator_params(
         rom = rom,
         tags = required_tags + tags,
         test_runner = test_runner,
+        test_cmds = required_test_cmds + test_cmds,
         timeout = timeout,
     )
     return kwargs
 
 def cw310_params(
         # Base Parameters
-        args = _BASE_PARAMS["args"] + [
-            "--exec=\"load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
-            "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
-            "console",
-            "--exit-success={exit_success}",
-            "--exit-failure={exit_failure}",
-        ],
+        args = _BASE_PARAMS["args"],
         data = _BASE_PARAMS["data"] + ["{bitstream}"],
         exit_success = _BASE_PARAMS["exit_success"],
         exit_failure = _BASE_PARAMS["exit_failure"],
@@ -163,6 +168,13 @@ def cw310_params(
         otp = _BASE_PARAMS["otp"],
         tags = _BASE_PARAMS["tags"],
         test_runner = _BASE_PARAMS["test_runner"],
+        test_cmds = [
+            "--exec=\"load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
+            "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
+            "console",
+            "--exit-success={exit_success}",
+            "--exit-failure={exit_failure}",
+        ],
         # CW310-specific Parameters
         bitstream = "@//hw/bitstream:test_rom",
         rom_kind = None,
@@ -174,12 +186,14 @@ def cw310_params(
     This macro emits a dictionary of parameters which are pasted into the
     ChipWhisperer-310 FPGA specific test rule.
 
-    Args:
+    Parameters:
         @param args: Extra arguments to pass the test runner `opentitantool`.
         @param data: Data dependencies of the test.
         @param local: Whether the test should be run locally without sandboxing.
         @param otp: The OTP image to use.
         @param tags: The test tags to apply to the test rule.
+        @param test_cmds: A list of required commands and args that make up the
+                          immutable portion of the harness invocation.
         @param timeout: The timeout to apply to the test rule.
         @param bitstream: The bitstream to load into the FPGA (this specifies
                           the ROM image that is also used, since the ROM is
@@ -187,9 +201,11 @@ def cw310_params(
         @param rom_kind: The ROM type (test or mask) that is baked into the
                          bitstream that is loaded into the FPGA.
     """
-    required_args = [
+    default_args = [
         "--rcfile=",
         "--logging=info",
+    ]
+    required_test_cmds = [
         "--interface=cw310",
     ]
     required_data = [
@@ -200,7 +216,7 @@ def cw310_params(
         "exclusive",
     ]
     kwargs.update(
-        args = required_args + args,
+        args = default_args + args,
         data = required_data + data,
         exit_success = exit_success,
         exit_failure = exit_failure,
@@ -208,6 +224,7 @@ def cw310_params(
         otp = otp,
         tags = required_tags + tags,
         test_runner = test_runner,
+        test_cmds = required_test_cmds + test_cmds,
         timeout = timeout,
         bitstream = bitstream,
         rom_kind = rom_kind,
@@ -234,11 +251,11 @@ def opentitan_functest(
     testing artifacts for each of the hardware targets in `targets`. The testing
     artifacts are then given to an `sh_test` rule which dispatches the test to
     the corresponding hardware target via `opentitantool`.
-    Args:
+    Parameters:
       @param name: The name of this rule.
       @param targets: A list of hardware targets on which to dispatch tests.
       @param args: Extra arguments (in addition to those defined in the target-
-                   specific parameter dictionary) to pass to the test runner
+                   specific parameter dictionary) to pass to the test harness
                    (e.g., `opentitantool`).
       @param data: Extra data dependencies (in addition to those defined in the
                    target-specific parameter dictionary) needed while executing
@@ -313,6 +330,7 @@ def opentitan_functest(
         # need to be present at runtime.
         target_args = args
         target_data = data + [test_harness]
+        target_test_cmds = []
 
         ########################################################################
         # Retrieve host-side test components.
@@ -406,6 +424,7 @@ def opentitan_functest(
         # args / data from device-specific params.
         target_args = target_args + params.pop("args")
         target_data = target_data + params.pop("data")
+        target_test_cmds = target_test_cmds + params.pop("test_cmds")
 
         # Fill placeholders in arg/data lists.
         format_dict = {
@@ -420,6 +439,8 @@ def opentitan_functest(
         format_dict.update(exit_strings_kwargs)
         target_args = [a.format(**format_dict) for a in target_args]
         target_data = [d.format(**format_dict) for d in target_data]
+        target_test_cmds = [s.format(**format_dict) for s in target_test_cmds]
+        env["TEST_CMDS"] = " ".join(target_test_cmds)
 
         if target == "fpga_cw310":
             # We attach the UART configuration to the front of the command line

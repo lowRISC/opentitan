@@ -11,4 +11,4 @@ set -e
 readonly DVSIM="util/dvsim/dvsim.py"
 
 echo "At this time, dvsim.py must be run manually (after building SW) via:
-${DVSIM} $*"
+${DVSIM} $* ${TEST_CMDS} "
