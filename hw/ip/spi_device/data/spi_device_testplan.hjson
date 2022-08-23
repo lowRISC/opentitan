@@ -416,6 +416,15 @@
       milestone: V2
       tests: ["spi_device_cfg_cmd"]
     }
+    {
+      name: TPM_with_flash_or_passthrough_mode
+      desc: '''
+            - Enable TPM mode.
+            - Configure passthrough or flash mode.
+            - Issue TPM read/write interleaving with flash transactions.'''
+      milestone: V2
+      tests: []
+    }
   ]
   covergroups: [
     {
@@ -546,6 +555,12 @@
       desc: '''
             Cover write enable and write disable commands.
             Cross this with the previous flash_status.wel value.'''
+    }
+    {
+      name: TPM_with_flash_or_passthrough_mode_cg
+      desc: '''
+            Cover TPM read/write with flash_mode enabled.
+            Cover TPM read/write with passthrough enabled.'''
     }
   ]
 }
