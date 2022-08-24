@@ -551,7 +551,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write otp_ctrl's alert_test reg and check alert_cause.
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 5; ++i) {
     CHECK_DIF_OK(dif_otp_ctrl_alert_force(&otp_ctrl, kDifOtpCtrlAlertFatalMacroError + i));
 
     // Verify that alert handler received it.

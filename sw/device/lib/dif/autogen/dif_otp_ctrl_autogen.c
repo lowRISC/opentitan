@@ -40,6 +40,12 @@ dif_result_t dif_otp_ctrl_alert_force(const dif_otp_ctrl_t *otp_ctrl,
     case kDifOtpCtrlAlertFatalBusIntegError:
       alert_idx = OTP_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_BIT;
       break;
+    case kDifOtpCtrlAlertFatalPrimOtpAlert:
+      alert_idx = OTP_CTRL_ALERT_TEST_FATAL_PRIM_OTP_ALERT_BIT;
+      break;
+    case kDifOtpCtrlAlertRecovPrimOtpAlert:
+      alert_idx = OTP_CTRL_ALERT_TEST_RECOV_PRIM_OTP_ALERT_BIT;
+      break;
     default:
       return kDifBadArg;
   }

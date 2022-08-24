@@ -192,6 +192,8 @@ module otp_ctrl_core_reg_top (
   logic alert_test_fatal_macro_error_wd;
   logic alert_test_fatal_check_error_wd;
   logic alert_test_fatal_bus_integ_error_wd;
+  logic alert_test_fatal_prim_otp_alert_wd;
+  logic alert_test_recov_prim_otp_alert_wd;
   logic status_re;
   logic status_vendor_test_error_qs;
   logic status_creator_sw_cfg_error_qs;
@@ -444,7 +446,7 @@ module otp_ctrl_core_reg_top (
 
   // R[alert_test]: V(True)
   logic alert_test_qe;
-  logic [2:0] alert_test_flds_we;
+  logic [4:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
   //   F[fatal_macro_error]: 0:0
   prim_subreg_ext #(
@@ -493,6 +495,38 @@ module otp_ctrl_core_reg_top (
     .qs     ()
   );
   assign reg2hw.alert_test.fatal_bus_integ_error.qe = alert_test_qe;
+
+  //   F[fatal_prim_otp_alert]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_fatal_prim_otp_alert (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_fatal_prim_otp_alert_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[3]),
+    .q      (reg2hw.alert_test.fatal_prim_otp_alert.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.fatal_prim_otp_alert.qe = alert_test_qe;
+
+  //   F[recov_prim_otp_alert]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_prim_otp_alert (
+    .re     (1'b0),
+    .we     (alert_test_we),
+    .wd     (alert_test_recov_prim_otp_alert_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[4]),
+    .q      (reg2hw.alert_test.recov_prim_otp_alert.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_prim_otp_alert.qe = alert_test_qe;
 
 
   // R[status]: V(True)
@@ -1723,6 +1757,10 @@ module otp_ctrl_core_reg_top (
   assign alert_test_fatal_check_error_wd = reg_wdata[1];
 
   assign alert_test_fatal_bus_integ_error_wd = reg_wdata[2];
+
+  assign alert_test_fatal_prim_otp_alert_wd = reg_wdata[3];
+
+  assign alert_test_recov_prim_otp_alert_wd = reg_wdata[4];
   assign status_re = addr_hit[4] & reg_re & !reg_error;
   assign err_code_re = addr_hit[5] & reg_re & !reg_error;
   assign direct_access_regwen_re = addr_hit[6] & reg_re & !reg_error;
@@ -1852,6 +1890,8 @@ module otp_ctrl_core_reg_top (
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
+        reg_rdata_next[3] = '0;
+        reg_rdata_next[4] = '0;
       end
 
       addr_hit[4]: begin

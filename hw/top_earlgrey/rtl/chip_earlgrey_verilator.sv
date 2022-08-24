@@ -245,6 +245,10 @@ module chip_earlgrey_verilator (
 
   ast_pkg::ast_dif_t flash_alert;
   ast_pkg::ast_dif_t otp_alert;
+
+  assign otp_alert.p = 1'b0;
+  assign otp_alert.n = 1'b1;
+
   logic ast_init_done;
 
 
@@ -445,7 +449,6 @@ module chip_earlgrey_verilator (
     .ast_edn_rsp_o                ( ast_edn_edn_rsp  ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
-    .otp_alert_o                  ( otp_alert                  ),
     .flash_bist_enable_i          ( flash_bist_enable          ),
     .flash_power_down_h_i         ( flash_power_down_h         ),
     .flash_power_ready_h_i        ( flash_power_ready_h        ),

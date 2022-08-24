@@ -154,17 +154,11 @@ module otp_ctrl_prim_reg_top (
   logic csr3_field2_qs;
   logic csr3_field2_wd;
   logic csr3_field3_qs;
-  logic csr3_field3_wd;
   logic csr3_field4_qs;
-  logic csr3_field4_wd;
   logic csr3_field5_qs;
-  logic csr3_field5_wd;
   logic csr3_field6_qs;
-  logic csr3_field6_wd;
   logic csr3_field7_qs;
-  logic csr3_field7_wd;
   logic csr3_field8_qs;
-  logic csr3_field8_wd;
   logic csr4_we;
   logic [9:0] csr4_field0_qs;
   logic [9:0] csr4_field0_wd;
@@ -573,15 +567,15 @@ module otp_ctrl_prim_reg_top (
   //   F[field3]: 17:17
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field3 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (csr3_we),
-    .wd     (csr3_field3_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.csr3.field3.de),
@@ -599,15 +593,15 @@ module otp_ctrl_prim_reg_top (
   //   F[field4]: 18:18
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field4 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (csr3_we),
-    .wd     (csr3_field4_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.csr3.field4.de),
@@ -625,15 +619,15 @@ module otp_ctrl_prim_reg_top (
   //   F[field5]: 19:19
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field5 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (csr3_we),
-    .wd     (csr3_field5_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.csr3.field5.de),
@@ -651,15 +645,15 @@ module otp_ctrl_prim_reg_top (
   //   F[field6]: 20:20
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field6 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (csr3_we),
-    .wd     (csr3_field6_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.csr3.field6.de),
@@ -677,15 +671,15 @@ module otp_ctrl_prim_reg_top (
   //   F[field7]: 21:21
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field7 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (csr3_we),
-    .wd     (csr3_field7_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.csr3.field7.de),
@@ -703,15 +697,15 @@ module otp_ctrl_prim_reg_top (
   //   F[field8]: 22:22
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field8 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (csr3_we),
-    .wd     (csr3_field8_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.csr3.field8.de),
@@ -1291,18 +1285,6 @@ module otp_ctrl_prim_reg_top (
   assign csr3_field1_wd = reg_wdata[13:4];
 
   assign csr3_field2_wd = reg_wdata[16];
-
-  assign csr3_field3_wd = reg_wdata[17];
-
-  assign csr3_field4_wd = reg_wdata[18];
-
-  assign csr3_field5_wd = reg_wdata[19];
-
-  assign csr3_field6_wd = reg_wdata[20];
-
-  assign csr3_field7_wd = reg_wdata[21];
-
-  assign csr3_field8_wd = reg_wdata[22];
   assign csr4_we = addr_hit[4] & reg_we & !reg_error;
 
   assign csr4_field0_wd = reg_wdata[9:0];

@@ -1282,20 +1282,6 @@
           index: -1
         }
         {
-          name: otp_alert
-          struct: ast_dif
-          package: ast_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: otp_ctrl
-          default: ""
-          external: true
-          top_signame: otp_alert
-          conn_type: false
-          index: -1
-        }
-        {
           name: edn
           struct: edn
           package: edn_pkg
@@ -8347,7 +8333,6 @@
       otp_ctrl.otp_ast_pwr_seq: ""
       otp_ctrl.otp_ast_pwr_seq_h: ""
       otp_ctrl.otp_ext_voltage_h: otp_ext_voltage_h
-      otp_ctrl.otp_alert: otp_alert
       otp_ctrl.otp_obs: otp_obs
       rstmgr_aon.por_n: por_n
       rv_core_ibex.fpga_info: fpga_info
@@ -13782,6 +13767,24 @@
       lpg_idx: 6
     }
     {
+      name: otp_ctrl_fatal_prim_otp_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otp_ctrl
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 6
+    }
+    {
+      name: otp_ctrl_recov_prim_otp_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otp_ctrl
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 6
+    }
+    {
       name: lc_ctrl_fatal_prog_error
       width: 1
       type: alert
@@ -14663,20 +14666,6 @@
         inst_name: otp_ctrl
         external: true
         top_signame: otp_ctrl_otp_ast_pwr_seq_h
-        conn_type: false
-        index: -1
-      }
-      {
-        name: otp_alert
-        struct: ast_dif
-        package: ast_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: otp_ctrl
-        default: ""
-        external: true
-        top_signame: otp_alert
         conn_type: false
         index: -1
       }
@@ -19695,18 +19684,6 @@
         conn_type: false
         index: -1
         netname: otp_ext_voltage_h
-      }
-      {
-        package: ast_pkg
-        struct: ast_dif
-        signame: otp_alert_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: otp_alert
       }
       {
         package: ""

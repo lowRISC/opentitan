@@ -68,6 +68,15 @@ typedef enum dif_otp_ctrl_alert {
    * detected.
    */
   kDifOtpCtrlAlertFatalBusIntegError = 2,
+  /**
+   * Fatal alert triggered inside the OTP primitive, including fatal TL-UL bus
+   * integrity faults of the test interface.
+   */
+  kDifOtpCtrlAlertFatalPrimOtpAlert = 3,
+  /**
+   * Recoverable alert triggered inside the OTP primitive.
+   */
+  kDifOtpCtrlAlertRecovPrimOtpAlert = 4,
 } dif_otp_ctrl_alert_t;
 
 /**
