@@ -2,15 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// name: sw_op
-// desc: '''
-//      Perform flash protocol controller read, program and erase on the single page of one
-//      bank within Data partition. Finally perform read on same location in order to test
-//      if previous operation was done successfully.
-//      '''
-// milestone: V2
-// tests: ["flash_ctrl_sw_op"]
-
+// Pseudo Code
 // Backdoor Write to FLASH (Initialize)
 // FLASH Read - Compare Frontdoor
 // FLASH Erase (Includes Backdoor Erase Check)

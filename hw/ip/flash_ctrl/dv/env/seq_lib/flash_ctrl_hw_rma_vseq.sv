@@ -2,23 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-//  name: rma_hw_if
-//  desc: '''
-//        Perform RMA entry requests and check afterwards that the  software has no access to
-//        the Flash.  After RMA entry, verify that the content of the flash is wiped out.
-//        '''
-//  milestone: V2
-//  tests: ["flash_ctrl_hw_rma"]
-//
-//  name: isolation_partition
-//  desc: '''
-//        Verify the isolated information partitions. Accessablity is controlled by Life
-//        Cycle Controller.  Verify Partition can be erase, written and programmed, with
-//        HW control, and wipes after an RMA.
-//        '''
-//  milestone: V2
-//  tests: [flash_ctrl_hw_rma"]
-
 // flash_ctrl_hw_rma Test
 
 // Pseudo Code
