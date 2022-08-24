@@ -48,7 +48,7 @@ tested separately, rather than having to test the whole boot system at once.
 
 The module descriptions below also include descriptions of: the dependencies
 that are required for that module to be implemented fully; the functionality
-expected at various milestones of the ROM's development; and, optionally,
+expected at various stages of the ROM's development; and, optionally,
 pseudo-code for any subroutines that make up their implementation.
 
 ## Boot Policy

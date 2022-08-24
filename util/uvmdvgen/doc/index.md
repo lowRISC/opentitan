@@ -169,7 +169,7 @@ Please see description for more details.
 The tool generates not only the UVM environment, but also the base test,
 testbench, top level fusesoc core file with sim target, Makefile that already
 includes the smoke and CSR test suite and more. With just a few tweaks, this
-enables the user to reach the V1 milestone much quicker.  Let's take `i2c_host`
+enables the user to reach the V1 stage much quicker.  Let's take `i2c_host`
 as the argument passed for the name of the IP. The following is the list of
 files generated with a brief description of their contents:
 

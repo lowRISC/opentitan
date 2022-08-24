@@ -28,10 +28,10 @@ The following attributes are used to define each testpoint, at minimum:
     The recommended naming convention to follow is `<main_feature>_<sub_feature>_<sub_sub_feature_or_type>_...`.
     This is no need to suffix (or prefix) the testpoint name with "test".
 
-* **milestone: targeted verification milestone**
+* **stage: targeted verification stage**
 
     This is either `V1`, `V2`, `V2S` or `V3`.
-    It helps us track whether all of the testing requirements of a milestone have been achieved.
+    It helps us track whether all of the testing requirements of a verification stage have been achieved.
 
 * **desc: testpoint description**
 
@@ -45,7 +45,7 @@ The following attributes are used to define each testpoint, at minimum:
     The testplan is written in the initial work stage of the verification [life-cycle]({{< relref "doc/project/development_stages#hardware-verification-stages" >}}).
     Later, when the DV engineer writes the tests, they may not map one-to-one to a testpoint - it may be possible that a written test satisfactorilly addresses multiple testpoints; OR it may also be possible that a testpoint needs to be split into multiple smaller tests.
     To cater to these needs, we provide the ability to set a list of written tests for each testpoint.
-    It is used to not only indicate the current progress so far into each milestone, but also map the simulation results to the testpoints to generate the final report table.
+    It is used to not only indicate the current progress so far into each verification stage, but also map the simulation results to the testpoints to generate the final report table.
     This list is initially empty - it is gradually updated as tests are written.
     Setting this list to `["N/A"]` will prevent this testpoint entry from being mapped to the simulation results.
     The testpoint will however, still show up in the generated testplan table.
@@ -80,7 +80,7 @@ Here's an example:
   testpoints: [
     {
       name: feature1
-      milestone: V1
+      stage: V1
       desc: '''**Goal**: High level goal of this test.
 
             **Stimulus**: Describe the stimulus procedure.
@@ -90,7 +90,7 @@ Here's an example:
     }
     {
       name: feature2
-      milestone: V2
+      stage: V2
       desc: '''**Goal**: High level goal of this test.
 
             **Stimulus**: Describe the stimulus procedure.
@@ -296,4 +296,4 @@ from dvsim.Testplan import Testplan
 * Allow DUT and its imported testplans to have the same testpoint name as long as they are in separate files.
   * The list of written tests are appended from both files.
   * The descriptions are merged - its upto the user to ensure that it is still meaningful after the merge.
-  * Conflicting milestones are flagged as an error.
+  * Conflicting verification stages are flagged as an error.
