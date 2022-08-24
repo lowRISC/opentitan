@@ -54,7 +54,9 @@ class chip_sw_deep_sleep_all_reset_vseq extends chip_sw_base_vseq;
     // mimic external pull up in key in0
     cfg.ast_supply_vif.force_key0_i(1'b1);
     // Wait until we reach the SW test state.
-    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest,
+             "Timed out waitingfor SwTestSTatusInTest",
+             40_000_000)
     `uvm_info(`gfn, "SW test ready", UVM_MEDIUM)
 
     repeat (NumRound) begin
