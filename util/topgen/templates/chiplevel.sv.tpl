@@ -492,6 +492,8 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // otp alert
   ast_pkg::ast_dif_t otp_alert;
+  assign otp_alert.p = 1'b0;
+  assign otp_alert.n = 1'b1;
 
   logic usb_ref_pulse;
   logic usb_ref_val;
@@ -950,7 +952,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .obs_ctrl_i                   ( obs_ctrl                   ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
-    .otp_alert_o                  ( otp_alert                  ),
     .otp_obs_o                    ( otp_obs                    ),
     .flash_bist_enable_i          ( flash_bist_enable          ),
     .flash_power_down_h_i         ( flash_power_down_h         ),
@@ -1140,7 +1141,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .adc_rsp_i                    ( adc_rsp                    ),
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
-    .otp_alert_o                  ( otp_alert                  ),
     .otp_obs_o                    ( otp_obs                    ),
     .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
     .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),

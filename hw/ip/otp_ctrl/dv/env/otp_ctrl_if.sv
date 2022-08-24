@@ -45,7 +45,6 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   otp_hw_cfg_t       otp_hw_cfg_o;
   otp_keymgr_key_t   keymgr_key_o;
   otp_lc_data_t      lc_data_o;
-  ast_pkg::ast_dif_t otp_alert_o;
   logic              pwr_otp_done_o, pwr_otp_idle_o;
 
   // Inputs to DUT
@@ -250,9 +249,6 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     release tb.dut.part_access;
     release tb.dut.part_access_dai;
   endtask
-
-  // In open source environment, `otp_alert_o` to is tied to 2'b01 (alert_p is 0 and alert_n is 1).
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) `ASSERT(OtpAstAlertO_A, otp_alert_o == 2'b01)
 
   // Connectivity assertions for test related I/Os.
   `ASSERT(LcOtpTestStatusO_A, otp_vendor_test_status_o == `PRIM_GENERIC_OTP_PATH.test_status_o)

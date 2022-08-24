@@ -57,9 +57,9 @@ TEST_F(AlertForceTest, Success) {
 
   // Force last alert.
   EXPECT_WRITE32(OTP_CTRL_ALERT_TEST_REG_OFFSET,
-                 {{OTP_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_BIT, true}});
+                 {{OTP_CTRL_ALERT_TEST_RECOV_PRIM_OTP_ALERT_BIT, true}});
   EXPECT_DIF_OK(
-      dif_otp_ctrl_alert_force(&otp_ctrl_, kDifOtpCtrlAlertFatalBusIntegError));
+      dif_otp_ctrl_alert_force(&otp_ctrl_, kDifOtpCtrlAlertRecovPrimOtpAlert));
 }
 
 class IrqGetStateTest : public OtpCtrlTest {};

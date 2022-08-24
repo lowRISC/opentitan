@@ -47,8 +47,6 @@ module otp_ctrl
   // Macro-specific power sequencing signals to/from AST.
   output otp_ast_req_t                               otp_ast_pwr_seq_o,
   input  otp_ast_rsp_t                               otp_ast_pwr_seq_h_i,
-  // AST alerts
-  output ast_pkg::ast_dif_t                          otp_alert_o,
   // Power manager interface (inputs are synced to OTP clock domain)
   input  pwrmgr_pkg::pwr_otp_req_t                   pwr_otp_i,
   output pwrmgr_pkg::pwr_otp_rsp_t                   pwr_otp_o,
@@ -547,14 +545,21 @@ module otp_ctrl
 
   logic [NumAlerts-1:0] alerts;
   logic [NumAlerts-1:0] alert_test;
+  logic fatal_prim_otp_alert, recov_prim_otp_alert;
 
   assign alerts = {
+    recov_prim_otp_alert,
+    fatal_prim_otp_alert,
     fatal_bus_integ_error_q,
     fatal_check_error_q,
     fatal_macro_error_q
   };
 
   assign alert_test = {
+    reg2hw.alert_test.recov_prim_otp_alert.q &
+    reg2hw.alert_test.recov_prim_otp_alert.qe,
+    reg2hw.alert_test.fatal_prim_otp_alert.q &
+    reg2hw.alert_test.fatal_prim_otp_alert.qe,
     reg2hw.alert_test.fatal_bus_integ_error.q &
     reg2hw.alert_test.fatal_bus_integ_error.qe,
     reg2hw.alert_test.fatal_check_error.q &
@@ -563,10 +568,18 @@ module otp_ctrl
     reg2hw.alert_test.fatal_macro_error.qe
   };
 
+  localparam logic [NumAlerts-1:0] AlertIsFatal = {
+    1'b0, // recov_prim_otp_alert
+    1'b1, // fatal_prim_otp_alert
+    1'b1, // fatal_bus_integ_error_q
+    1'b1, // fatal_check_error_q
+    1'b1  // fatal_macro_error_q
+  };
+
   for (genvar k = 0; k < NumAlerts; k++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[k]),
-      .IsFatal(1)
+      .IsFatal(AlertIsFatal[k])
     ) u_prim_alert_sender (
       .clk_i,
       .rst_ni,
@@ -780,7 +793,8 @@ module otp_ctrl
     .scan_rst_ni,
     .scanmode_i,
     // Alerts
-    .otp_alert_src_o  ( otp_alert_o          ),
+    .fatal_alert_o    ( fatal_prim_otp_alert ),
+    .recov_alert_o    ( recov_prim_otp_alert ),
     // Read / Write command interface
     .ready_o          ( otp_prim_ready       ),
     .valid_i          ( otp_prim_valid       ),
@@ -1451,11 +1465,14 @@ module otp_ctrl
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])
 
+  // Assertions for countermeasures inside prim_otp
   `ifndef PRIM_DEFAULT_IMPL
     `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
   `endif
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PrimFsmCheck_A,
+        u_otp.gen_generic.u_impl_generic.u_state_regs, alert_tx_o[3])
     `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
-        u_otp.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[1])
+        u_otp.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[3])
   end
 endmodule : otp_ctrl

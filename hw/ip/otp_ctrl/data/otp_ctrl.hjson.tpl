@@ -64,6 +64,12 @@
     { name: "fatal_bus_integ_error",
       desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
     }
+    { name: "fatal_prim_otp_alert",
+      desc: "Fatal alert triggered inside the OTP primitive, including fatal TL-UL bus integrity faults of the test interface."
+    }
+    { name: "recov_prim_otp_alert",
+      desc: "Recoverable alert triggered inside the OTP primitive."
+    }
   ],
 
   ////////////////
@@ -200,13 +206,6 @@
       act:     "rcv"
       default: "'0"
       package: "otp_ctrl_pkg"
-    }
-    // AST alert handling
-    { struct:  "ast_dif"
-      type:    "uni"
-      name:    "otp_alert"
-      act:     "req"
-      package: "ast_pkg"
     }
     // EDN interface
     { struct:  "edn"
@@ -1138,37 +1137,37 @@
          { bits: "17",
             name: "field3",
             desc: "",
-            swaccess: "rw1c",
+            swaccess: "ro",
             resval: "0x0",
          }
          { bits: "18",
             name: "field4",
             desc: "",
-            swaccess: "rw1c",
+            swaccess: "ro",
             resval: "0x0",
          }
          { bits: "19",
             name: "field5",
             desc: "",
-            swaccess: "rw1c",
+            swaccess: "ro",
             resval: "0x0",
          }
          { bits: "20",
             name: "field6",
             desc: "",
-            swaccess: "rw1c",
+            swaccess: "ro",
             resval: "0x0",
          }
          { bits: "21",
             name: "field7",
             desc: "",
-            swaccess: "rw1c",
+            swaccess: "ro",
             resval: "0x0",
          }
          { bits: "22",
             name: "field8",
             desc: "",
-            swaccess: "rw1c",
+            swaccess: "ro",
             resval: "0x0",
          }
         ]

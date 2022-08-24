@@ -142,7 +142,7 @@ package otp_ctrl_reg_pkg;
   parameter int LcTransitionCntSize = 48;
   parameter int LcStateOffset = 2008;
   parameter int LcStateSize = 40;
-  parameter int NumAlerts = 3;
+  parameter int NumAlerts = 5;
 
   // Address widths within the block
   parameter int CoreAw = 13;
@@ -194,6 +194,14 @@ package otp_ctrl_reg_pkg;
       logic        q;
       logic        qe;
     } fatal_bus_integ_error;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_prim_otp_alert;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_prim_otp_alert;
   } otp_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -361,10 +369,10 @@ package otp_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [197:196]
-    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [195:194]
-    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [193:190]
-    otp_ctrl_reg2hw_alert_test_reg_t alert_test; // [189:184]
+    otp_ctrl_reg2hw_intr_state_reg_t intr_state; // [201:200]
+    otp_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [199:198]
+    otp_ctrl_reg2hw_intr_test_reg_t intr_test; // [197:194]
+    otp_ctrl_reg2hw_alert_test_reg_t alert_test; // [193:184]
     otp_ctrl_reg2hw_direct_access_cmd_reg_t direct_access_cmd; // [183:178]
     otp_ctrl_reg2hw_direct_access_address_reg_t direct_access_address; // [177:167]
     otp_ctrl_reg2hw_direct_access_wdata_mreg_t [1:0] direct_access_wdata; // [166:103]
@@ -435,10 +443,12 @@ package otp_ctrl_reg_pkg;
   parameter logic [1:0] OTP_CTRL_INTR_TEST_RESVAL = 2'h 0;
   parameter logic [0:0] OTP_CTRL_INTR_TEST_OTP_OPERATION_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_INTR_TEST_OTP_ERROR_RESVAL = 1'h 0;
-  parameter logic [2:0] OTP_CTRL_ALERT_TEST_RESVAL = 3'h 0;
+  parameter logic [4:0] OTP_CTRL_ALERT_TEST_RESVAL = 5'h 0;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_MACRO_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_CHECK_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_ALERT_TEST_FATAL_PRIM_OTP_ALERT_RESVAL = 1'h 0;
+  parameter logic [0:0] OTP_CTRL_ALERT_TEST_RECOV_PRIM_OTP_ALERT_RESVAL = 1'h 0;
   parameter logic [16:0] OTP_CTRL_STATUS_RESVAL = 17'h 0;
   parameter logic [0:0] OTP_CTRL_STATUS_VENDOR_TEST_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_RESVAL = 1'h 0;
