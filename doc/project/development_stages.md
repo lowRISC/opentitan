@@ -34,7 +34,7 @@ Once the specification has been shared with the OpenTitan audience and sufficien
 The next life stage is **Development**.
 The hardware IP is being developed in GitHub, the specification is converted to Markdown, and design and verification planning is underway.
 This is a long phase expected to last until a more formal review is requested for full completion sign-off.
-When in Development phase, the stage tracking of the design and verification milestones are valid.
+When in Development phase, the stage tracking of the design and verification stages are valid.
 See those sections that follow for details there.
 To exit this stage, a sign-off review must occur.
 See the section on sign-off for details.
@@ -62,8 +62,8 @@ We may later evaluate adding a **Silicon Proven** stage, after deciding criteria
 
 ## Hardware Design Stages (D)
 
-The following development milestones are for hardware peripheral designs, i.e. SystemVerilog RTL development.
-They are similar to typical chip design milestones, but less rigid in the movement from one stage to the next.
+The following development stages are for hardware peripheral designs, i.e. SystemVerilog RTL development.
+They are similar to typical chip design stages, but less rigid in the movement from one stage to the next.
 The metric here is the quality bar and feature completeness of the design.
 
 The first design stage is **Initial Work**.
@@ -93,8 +93,8 @@ Once all bugs have been fixed, lint and CDC violations cleaned up, the design mo
 
 ## Hardware Verification Stages (V)
 
-The following development milestones are for hardware peripheral verification work.
-They are similar to typical chip verification milestones, but less rigid in the movement from one stage to the next.
+The following development stages are for hardware peripheral verification work.
+They are similar to typical chip verification stages, but less rigid in the movement from one stage to the next.
 The metric here is the progress towards testing completion and proof of testing coverage.
 The verification stages can be applied to simulation-based DV and formal property verification (FPV) approaches.
 
@@ -138,7 +138,7 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 ## Device Interface Function Stages (S)
 
 The following development stages are for [Device Interface Function (DIF)]({{< relref "doc/rm/device_interface_functions.md" >}}) work.
-These milestones have a slightly different emphasis to the hardware design and verification milestones, because software is much easier to change if bugs are found.
+These stages have a slightly different emphasis to the hardware design and verification stages, because software is much easier to change if bugs are found.
 The metric they are trying to capture is the stability and completeness of a low-level software interface to hardware design.
 We are aiming to keep this process fairly lightweight in the early stages, and not significantly burdeonsome to the associated HW designer through all stages.
 

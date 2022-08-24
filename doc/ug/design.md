@@ -113,7 +113,7 @@ These waivers have to be reviewed as part of the pull request review process.
 Note that our continuous integration infrastructure does not currently run AscentLint on each pull request as it does with Verilator lint.
 However, all designs with enabled AscentLint targets on the master branch will be run through the tool in eight-hour intervals and the results are published as part of the tool dashboards on the [hardware IP overview page](https://docs.opentitan.org/hw), enabling designers to close the lint errors and warnings even if they cannot run the sign-off tool locally.
 
-Goals for sign-off linting closure per design milestone are given in the [OpenTitan Development Stages]({{< relref "doc/project/development_stages" >}}) document.
+Goals for sign-off linting closure per design development stage are given in the [OpenTitan Development Stages]({{< relref "doc/project/development_stages" >}}) document.
 
 Note that cases may occur where the open-source and the sign-off lint tools both output a warning/error that is difficult to fix in RTL in a way that satisfies both tools at the same time.
 In those cases, priority shall be given to the RTL fix that satisfies the sign-off lint tool, and the open-source tool message shall be waived.

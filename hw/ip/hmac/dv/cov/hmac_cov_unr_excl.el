@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Note that this UNR only generate exclusions related to tlul_adapter_sram and FSM unreachables.
-// A comprehensive UNR will be generated when achieving V3 milestone.
+// A comprehensive UNR will be generated when achieving V3 stage.
 //
 //==================================================
 // This file contains the Excluded objects
