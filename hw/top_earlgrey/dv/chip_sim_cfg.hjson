@@ -770,7 +770,7 @@
       // Disable scoreboard to avoid incorrect alert prediction from the alert_monitor. Due to the
       // cross-domain alert senders and receivers, the monitor from the chip level did not support
       // processing alerts accurately from both ends.
-      run_opts: ["+en_scb=0"]
+      run_opts: ["+en_scb=0", "+bypass_alert_ready_to_end_check=1"]
     }
     {
       name: chip_sw_aes_entropy
