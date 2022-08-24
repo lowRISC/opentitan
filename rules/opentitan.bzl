@@ -42,7 +42,7 @@ PER_DEVICE_DEPS = {
     "fpga_cw310": ["@//sw/device/lib/arch:fpga_cw310"],
 }
 
-# Default keys used to sign ROM_EXT and Owner images for testing.
+# Default keys used to sign ROM_EXT and BL0 images for testing.
 DEFAULT_SIGNING_KEYS = {
     "test_key_0": "@//sw/device/silicon_creator/rom/keys:test_private_key_0",
 }
@@ -780,9 +780,10 @@ def opentitan_multislot_flash_binary(
 
     This macro is mostly a wrapper around the `assemble_flash_image` rule, that
     invokes `opentitantool` to stitch together multiple `opentitan_flash_binary`
-    images to create a single image for bootstrapping. This enables efficient
-    testing by only requiring one boostrap operation to load both silicon
-    creator and owner stages of flash.
+    images to create a single image for bootstrapping. Since bootstrap erases
+    the flash for programming this is the only way to load multiple
+    (A/B/Virtual) slots and (silicon creator, ROM_EXT, and owner, BL0) stages at
+    the same time.
     Args:
       @param name: The name of this rule.
       @param srcs: A dictionary of `opentitan_flash_binary` targets (to stitch
