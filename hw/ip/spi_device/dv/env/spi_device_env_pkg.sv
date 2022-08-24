@@ -85,6 +85,7 @@ package spi_device_env_pkg;
   parameter uint ASYNC_FIFO_SIZE                 = 8;
   parameter uint READ_BUFFER_START_ADDR          = SRAM_OFFSET;
   parameter uint READ_BUFFER_SIZE                = 2048;
+  parameter uint READ_BUFFER_HALF_SIZE           = READ_BUFFER_SIZE / 2;
   // MAILBOX_START_ADDR is 0x800
   parameter uint MAILBOX_START_ADDR              = READ_BUFFER_START_ADDR + READ_BUFFER_SIZE;
   parameter uint MAILBOX_BUFFER_SIZE             = 1024;
