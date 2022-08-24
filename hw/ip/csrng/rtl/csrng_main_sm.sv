@@ -53,6 +53,9 @@ module csrng_main_sm import csrng_pkg::*; #(
     main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else
         if (enable_i) begin
           if (ctr_drbg_cmd_req_rdy_i) begin
             // signal the arbiter to grant this request
@@ -64,7 +67,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       ParseCmd: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           if (ctr_drbg_cmd_req_rdy_i) begin
@@ -96,7 +101,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       InstantPrep: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           if (flag0_i) begin
@@ -112,7 +119,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       InstantReq: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           instant_req_o = 1'b1;
@@ -120,7 +129,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       ReseedPrep: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           if (flag0_i) begin
@@ -136,7 +147,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       ReseedReq: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           reseed_req_o = 1'b1;
@@ -144,7 +157,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       GeneratePrep: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           // assumes all adata is present now
@@ -152,7 +167,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       GenerateReq: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           generate_req_o = 1'b1;
@@ -160,7 +177,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       UpdatePrep: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           // assumes all adata is present now
@@ -168,7 +187,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       UpdateReq: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           update_req_o = 1'b1;
@@ -176,7 +197,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       UninstantPrep: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           // assumes all adata is present now
@@ -184,7 +207,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       UninstantReq: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           uninstant_req_o = 1'b1;
@@ -192,7 +217,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       ClrAData: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           clr_adata_packer_o = 1'b1;
@@ -200,7 +227,9 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
       end
       CmdCompWait: begin
-        if (!enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!enable_i) begin
           state_d = Idle;
         end else begin
           if (cmd_complete_i) begin
@@ -213,9 +242,6 @@ module csrng_main_sm import csrng_pkg::*; #(
       end
       default: state_d = Error;
     endcase
-    if (local_escalate_i) begin
-      state_d = Error;
-    end
   end
 
 endmodule

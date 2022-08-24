@@ -90,6 +90,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic                    cmd_gen_flag_q, cmd_gen_flag_d;
   logic [11:0]             cmd_gen_cmd_q, cmd_gen_cmd_d;
 
+  logic                    local_escalate;
+
 
   always_ff @(posedge clk_i or negedge rst_ni)
     if (!rst_ni) begin
@@ -194,6 +196,8 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     .err_o(cmd_gen_cnt_err_o)
   );
 
+  // For naming consistency
+  assign local_escalate = cmd_gen_cnt_err_o;
 
   //---------------------------------------------------------
   // state machine to process command
@@ -254,87 +258,139 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     cmd_stage_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
-        if (!cmd_fifo_zero) begin
-          state_d = ArbGnt;
+        if (local_escalate) begin
+          state_d = Error;
+        end else if (cs_enable_i) begin
+          if (!cmd_fifo_zero) begin
+            state_d = ArbGnt;
+          end
         end
       end
       ArbGnt: begin
-        cmd_arb_req_o = 1'b1;
-        if (cmd_arb_gnt_i) begin
-          state_d = SendSOP;
+        if (local_escalate) begin
+          state_d = Error;
+        end else if (!cs_enable_i) begin
+          state_d = Idle;
+        end else begin
+          cmd_arb_req_o = 1'b1;
+          if (cmd_arb_gnt_i) begin
+            state_d = SendSOP;
+          end
         end
       end
       SendSOP: begin
-        cmd_gen_1st_req = 1'b1;
-        cmd_arb_sop_o = 1'b1;
-        cmd_fifo_pop = 1'b1;
-        if (sfifo_cmd_rdata[24:12] == GenBitsCntrWidth'(1)) begin
-          cmd_gen_cnt_last = 1'b1;
-        end
-        if (cmd_len == '0) begin
-          cmd_arb_eop_o = 1'b1;
-          state_d = GenCmdChk;
+        if (local_escalate) begin
+          state_d = Error;
+        end else if (!cs_enable_i) begin
+          state_d = Idle;
         end else begin
-          state_d = SendMOP;
-        end
-      end
-      SendMOP: begin
-        if (!cmd_fifo_zero) begin
+          cmd_gen_1st_req = 1'b1;
+          cmd_arb_sop_o = 1'b1;
           cmd_fifo_pop = 1'b1;
-          cmd_len_dec = 1'b1;
-          if (cmd_len_q == 4'h1) begin
-            cmd_arb_mop_o = 1'b1;
+          if (sfifo_cmd_rdata[24:12] == GenBitsCntrWidth'(1)) begin
+            cmd_gen_cnt_last = 1'b1;
+          end
+          if (cmd_len == '0) begin
             cmd_arb_eop_o = 1'b1;
             state_d = GenCmdChk;
           end else begin
-            cmd_arb_mop_o = 1'b1;
+            state_d = SendMOP;
+          end
+        end
+      end
+      SendMOP: begin
+        if (local_escalate) begin
+          state_d = Error;
+        end else if (!cs_enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (!cmd_fifo_zero) begin
+            cmd_fifo_pop = 1'b1;
+            cmd_len_dec = 1'b1;
+            if (cmd_len_q == 4'h1) begin
+              cmd_arb_mop_o = 1'b1;
+              cmd_arb_eop_o = 1'b1;
+              state_d = GenCmdChk;
+            end else begin
+              cmd_arb_mop_o = 1'b1;
+            end
           end
         end
       end
       GenCmdChk: begin
-        if (cmd_gen_flag_q) begin
-          cmd_gen_cnt_dec= 1'b1;
+        if (local_escalate) begin
+          state_d = Error;
+        end else if (!cs_enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (cmd_gen_flag_q) begin
+            cmd_gen_cnt_dec= 1'b1;
+          end
+          state_d = CmdAck;
         end
-        state_d = CmdAck;
       end
       CmdAck: begin
-        if (cmd_ack_i) begin
-          state_d = GenReq;
+        if (local_escalate) begin
+          state_d = Error;
+        end else if (!cs_enable_i) begin
+          state_d = Idle;
+        end else begin
+          if (cmd_ack_i) begin
+            state_d = GenReq;
+          end
         end
       end
       GenReq: begin
-        // flag set if a gen request
-        if (cmd_gen_flag_q) begin
-          // must stall if genbits fifo is not clear
-          if (!sfifo_genbits_full) begin
-            if (cmd_gen_cnt == '0) begin
-              cmd_final_ack = 1'b1;
-              state_d = Idle;
-            end else begin
-              // issue a subsequent gen request
-              state_d = GenArbGnt;
-            end
-          end
-        end else begin
-          // ack for the non-gen request case
-          cmd_final_ack = 1'b1;
+        if (local_escalate) begin
+          state_d = Error;
+        end else if (!cs_enable_i) begin
           state_d = Idle;
+        end else begin
+          // flag set if a gen request
+          if (cmd_gen_flag_q) begin
+            // must stall if genbits fifo is not clear
+            if (!sfifo_genbits_full) begin
+              if (cmd_gen_cnt == '0) begin
+                cmd_final_ack = 1'b1;
+                state_d = Idle;
+              end else begin
+                // issue a subsequent gen request
+                state_d = GenArbGnt;
+              end
+            end
+          end else begin
+            // ack for the non-gen request case
+            cmd_final_ack = 1'b1;
+            state_d = Idle;
+          end
         end
       end
       GenArbGnt: begin
-        cmd_arb_req_o = 1'b1;
-        if (cmd_arb_gnt_i) begin
-          state_d = GenSOP;
+        if (local_escalate) begin
+          state_d = Error;
+        end else if (!cs_enable_i) begin
+          state_d = Idle;
+        end else begin
+          cmd_arb_req_o = 1'b1;
+          if (cmd_arb_gnt_i) begin
+            state_d = GenSOP;
+          end
         end
       end
       GenSOP: begin
-        cmd_arb_sop_o = 1'b1;
-        cmd_arb_eop_o = 1'b1;
-        cmd_gen_inc_req = 1'b1;
-        state_d = GenCmdChk;
-        // check for final genbits beat
-        if (cmd_gen_cnt == GenBitsCntrWidth'(1)) begin
-          cmd_gen_cnt_last = 1'b1;
+        if (local_escalate) begin
+          state_d = Error;
+        end else if (!cs_enable_i) begin
+          state_d = Idle;
+        end else begin
+          cmd_arb_sop_o = 1'b1;
+          cmd_arb_eop_o = 1'b1;
+          cmd_gen_inc_req = 1'b1;
+          state_d = GenCmdChk;
+          // check for final genbits beat
+          if (cmd_gen_cnt == GenBitsCntrWidth'(1)) begin
+            cmd_gen_cnt_last = 1'b1;
+          end
         end
       end
       Error: begin
