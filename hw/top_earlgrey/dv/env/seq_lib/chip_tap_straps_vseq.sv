@@ -72,10 +72,6 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  // no need to wait for SW test to complete, as we only need rom image for init
-  virtual task wait_for_sw_test_done();
-  endtask
-
   virtual task body();
     bit dft_straps_en = 1;
     chip_tap_type_e allowed_taps_q[$];

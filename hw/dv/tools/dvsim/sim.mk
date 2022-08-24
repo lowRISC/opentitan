@@ -88,7 +88,7 @@ ifneq (${sw_images},)
 			echo "SW image \"$$bazel_label\" is prebuilt - copying sources."; \
 			cp ${proj_root}/$${prebuilt_path} $${run_dir}/`basename $${prebuilt_path}`; \
 		else \
-			echo "Building SW image \"$$bazel_label\"."; \
+			echo "Building SW image \"$${bazel_label}\"."; \
 			bazel_opts="${sw_build_opts} --define DISABLE_VERILATOR_BUILD=true"; \
 			if [[ -z $${BAZEL_PYTHON_WHEELS_REPO} ]]; then \
 				echo "Building \"$${bazel_label}\" on network connected machine."; \
