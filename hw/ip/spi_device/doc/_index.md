@@ -93,7 +93,7 @@ Mailbox is an exception as it shares the Read command opcode.
 
 SPI Device HWIP has three modes + TPM mode, which are "Generic" mode (also known as FwMode), "Flash" mode, and "Passthrough" mode.
 Generic mode is exclusive. Flash and Passthrough modes share many parts of the datapath.
-TPM mode only shares the SPI and has separate CSb port, which allows that the host sends TPM commands while other SPI mode is active.
+TPM mode only shares the SPI and has separate CSb port, which allows that the host sends TPM commands while other SPI mode is active (except Generic mode).
 
 Mode     | FwMode | Status | JEDEC | SFDP | Mailbox | Read | Addr4B | Upload | Passthrough
 ---------|--------|--------|-------|------|---------|------|--------|--------|-------------
@@ -658,8 +658,8 @@ The module sends `START(0x01)` at the next byte followed by the actual return-by
 
 The module, by default, returns `WAIT` when the address does not fall into the return-by-HW register address.
 In the wait state, the TPM submodule watches the read FIFO status.
-The module stays in the wait state until the read FIFO is not empty.
-The module sends `START` at the next byte when the logic sees the notempty signal of the read FIFO.
+The module stays in the wait state until the read FIFO has the data >= requested transfer size.
+The module sends `START` at the next byte when the read FIFO has enough data.
 Then the module pops data from the read FIFO and sends the data over SPI.
 
 The TPM submodule accepts the payload for the TPM write command without the `WAIT` state if the write FIFO is empty.
@@ -884,15 +884,8 @@ Due to the CDC issue, the SW is only permitted to update the registers when the 
 1. The SW reads a word from TPM_CMD_ADDR CSR (optional cmdaddr_notempty interrupt).
   1. If the address falls into the return-by-HW registers and TPM_CFG.hw_reg_dis is not set, the HW does not push the command and address bytes into the TPM_CMD_ADDR CSR.
 1. The SW prepares the register value and writes the value into the read FIFO.
-  1. It is assumed that the writes are atomic.
-     TPM IP sends the read data whenever the FIFO has entries inside.
-     As TPM protocol does not support BUSY wait after sending a byte,
-     all read data should send in a chunk.
-     SW should ensure the read data is fed into the HW continuously.
-     SW may disable interrupts before writing into the FIFO to not be disrupted.
-     In this version of IP, TPM provides 16B (4B wide x 4 depth) read FIFO.
-     SW may return up to 64B payload by pushing more data into the FIFO whenever the FIFO has available entries.
-1. The TPM submodule sends `WAIT` until the read FIFO is available. When available, the TPM submodule sends `START` followed by the register value.
+1. The TPM submodule sends `WAIT` until the read FIFO is available.
+   When available, the TPM submodule sends `START` followed by the register value.
 
 ### TPM Write
 

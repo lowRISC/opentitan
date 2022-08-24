@@ -1070,12 +1070,10 @@
 
             All other values are reserved.
 
-            The SW may advertises as supporting more than `max_wr_size` to the South Brige.
-            If the SW reports the transfer size more than the value described in this field,
-            the SW must read the data from the write FIFO before the FIFO becomes full in order not to make FIFO overflow.
+            It is not recommended for SW to advertise TPM supporting more than `max_wr_size` to the South Bridge.
             '''
           resval: "6"
-        } // f: max_rd_size
+        } // f: max_wr_size
         { bits: "22:20"
           name: "max_rd_size"
           desc: '''The maximum read size in bytes the TPM submodule supports.
@@ -1089,9 +1087,7 @@
 
             All other values are reserved.
 
-            The SW may advertises as supporting more than `max_rd_size` to the South Brige.
-            If the SW reports the transfer size more than the value described in this field,
-            the SW must write data to the TPM Read FIFO before the FIFO becomes empty in order not to make FIFO underrun.
+            It is not recommended for SW to advertise TPM supporting more than `max_rd_size` to the South Bridge.
             '''
           resval: "4"
         } // f: max_rd_size
