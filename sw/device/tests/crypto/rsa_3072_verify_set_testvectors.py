@@ -17,12 +17,6 @@ generate a header file with these test vectors.
 # Number of 32-bit words in a 3072-bit number
 RSA_3072_NUMWORDS = int(3072 / 32)
 
-# Template file name
-DEFAULT_TEMPLATE = 'rsa_3072_verify_testvectors.h.tpl'
-
-# Default output file name
-DEFAULT_OUTFILE = 'rsa_3072_verify_testvectors.h'
-
 
 def rsa_3072_int_to_hexwords(x):
     '''Convert a 3072-bit integer to a list of 32-bit integers (little-endian).'''
@@ -38,18 +32,19 @@ def rsa_3072_int_to_hexwords(x):
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('hjsonfile',
+    parser.add_argument('--hjsonfile', '-j',
                         metavar='FILE',
+                        required=True,
                         type=argparse.FileType('r'),
                         help='Read test vectors from this HJSON file.')
-    parser.add_argument('--template',
+    parser.add_argument('--template', '-t',
                         metavar='FILE',
-                        required=False,
+                        required=True,
                         type=argparse.FileType('r'),
                         help='Read header template from this file.')
-    parser.add_argument('headerfile',
+    parser.add_argument('--headerfile', '-o',
                         metavar='FILE',
-                        nargs='?',
+                        required=True,
                         type=argparse.FileType('w'),
                         help='Write output to this file.')
 

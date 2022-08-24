@@ -21,12 +21,6 @@ RSA_3072_NUMWORDS = int(3072 / 32)
 # Number of 32-bit words in a 256-bit number
 INT_256_NUMWORDS = int(256 / 32)
 
-# Default template file name
-DEFAULT_TEMPLATE = 'sigverify_testvectors.h.tpl'
-
-# Default output file name
-DEFAULT_OUTFILE = 'sigverify_testvectors.h'
-
 
 def compute_n0_inv(n):
     '''Compute -(n^-1) mod 2^256, a Montgomery constant.
@@ -105,18 +99,19 @@ def int_256_to_hexwords(x):
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('hjsonfile',
+    parser.add_argument('--hjsonfile', '-j',
                         metavar='FILE',
+                        required=True,
                         type=argparse.FileType('r'),
                         help='Read test vectors from this HJSON file.')
-    parser.add_argument('--template',
+    parser.add_argument('--template', '-t',
                         metavar='FILE',
-                        required=False,
+                        required=True,
                         type=argparse.FileType('r'),
                         help='Read header template from this file.')
-    parser.add_argument('headerfile',
+    parser.add_argument('--headerfile', '-o',
                         metavar='FILE',
-                        nargs='?',
+                        required=True,
                         type=argparse.FileType('w'),
                         help='Write output to this file.')
 

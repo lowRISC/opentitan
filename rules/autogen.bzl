@@ -224,7 +224,14 @@ def _cryptotest_header(ctx):
     ctx.actions.run(
         outputs = [header],
         inputs = [template, hjson],
-        arguments = ["--template", template.path, hjson.path, header.path],
+        arguments = [
+            "-t",
+            template.path,
+            "-j",
+            hjson.path,
+            "-o",
+            header.path,
+        ],
         executable = ctx.executable.tool,
     )
 

@@ -17,12 +17,6 @@ generate a header file with these test vectors.
 # Number of 32-bit words in a coordinate or scalar
 P256_NUMWORDS = int(256 / 32)
 
-# Default template file name
-DEFAULT_TEMPLATE = 'ecdsa_p256_verify_testvectors.h.tpl'
-
-# Default output file name
-DEFAULT_OUTFILE = 'ecdsa_p256_verify_testvectors.h'
-
 
 def ecdsa_p256_int_to_hexwords(x):
     '''Convert a 256-bit integer to a list of 32-bit integers (little-endian).'''
@@ -37,18 +31,19 @@ def ecdsa_p256_int_to_hexwords(x):
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('hjsonfile',
+    parser.add_argument('--hjsonfile', '-j',
                         metavar='FILE',
+                        required=True,
                         type=argparse.FileType('r'),
                         help='Read test vectors from this HJSON file.')
-    parser.add_argument('--template',
+    parser.add_argument('--template', '-t',
                         metavar='FILE',
-                        required=False,
+                        required=True,
                         type=argparse.FileType('r'),
                         help='Read header template from this file.')
-    parser.add_argument('headerfile',
+    parser.add_argument('--headerfile', '-o',
                         metavar='FILE',
-                        nargs='?',
+                        required=True,
                         type=argparse.FileType('w'),
                         help='Write output to this file.')
 
