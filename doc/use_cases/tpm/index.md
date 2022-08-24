@@ -33,7 +33,7 @@ peripherals.
 *   Hash Algorithms:
     *   An approved hash algorithm with approximately the same security strength
         as its strongest asymmetric algorithm. For OpenTitan the target is
-        SHA2-256 (hardware), SHA3-384 (software implementation).
+        SHA2-256, SHA2-384.
     *   A TPM should support the extend function to make incremental updates to
         a digest value.
 *   Symmetric Key Algorithms:
