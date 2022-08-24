@@ -104,7 +104,9 @@ module edn_main_sm #(
     main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
-        if (boot_req_mode_i && edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (boot_req_mode_i && edn_enable_i) begin
           state_d = BootLoadIns;
         end else if (auto_req_mode_i && edn_enable_i) begin
           state_d = AutoLoadIns;
@@ -114,15 +116,31 @@ module edn_main_sm #(
         end
       end
       BootLoadIns: begin
-        boot_wr_cmd_reg_o = 1'b1;
-        state_d = BootLoadGen;
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
+          state_d = Idle;
+        end
+        else begin
+          boot_wr_cmd_reg_o = 1'b1;
+          state_d = BootLoadGen;
+        end
       end
       BootLoadGen: begin
-        boot_wr_cmd_genfifo_o = 1'b1;
-        state_d = BootInsAckWait;
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
+          state_d = Idle;
+        end
+        else begin
+          boot_wr_cmd_genfifo_o = 1'b1;
+          state_d = BootInsAckWait;
+        end
       end
       BootInsAckWait: begin
-        if (!edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
           state_d = Idle;
         end else begin
           if (csrng_cmd_ack_i) begin
@@ -131,21 +149,32 @@ module edn_main_sm #(
         end
       end
       BootCaptGenCnt: begin
-        capt_gencmd_fifo_cnt_o = 1'b1;
-        state_d = BootSendGenCmd;
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
+          state_d = Idle;
+        end
+        else begin
+          capt_gencmd_fifo_cnt_o = 1'b1;
+          state_d = BootSendGenCmd;
+        end
       end
       BootSendGenCmd: begin
-        boot_send_gencmd_o = 1'b1;
-        if (!edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
           state_d = Idle;
         end else begin
+          boot_send_gencmd_o = 1'b1;
           if (cmd_sent_i) begin
             state_d = BootGenAckWait;
           end
         end
       end
       BootGenAckWait: begin
-        if (!edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
           state_d = Idle;
         end else begin
           if (csrng_cmd_ack_i) begin
@@ -154,31 +183,43 @@ module edn_main_sm #(
         end
       end
       BootPulse: begin
-        main_sm_done_pulse_o = 1'b1;
-        state_d = BootDone;
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
+          state_d = Idle;
+        end else begin
+          main_sm_done_pulse_o = 1'b1;
+          state_d = BootDone;
+        end
       end
       BootDone: begin
-        if (!edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
           state_d = Idle;
         end
       end
       //-----------------------------------
       AutoLoadIns: begin
-        auto_set_intr_gate_o = 1'b1;
-        auto_first_ack_wait_o = 1'b1;
-        if (!edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
           state_d = Idle;
         end else begin
+          auto_set_intr_gate_o = 1'b1;
+          auto_first_ack_wait_o = 1'b1;
           if (sw_cmd_req_load_i) begin
             state_d = AutoFirstAckWait;
           end
         end
       end
       AutoFirstAckWait: begin
-        auto_first_ack_wait_o = 1'b1;
-        if (!edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
           state_d = Idle;
         end else begin
+          auto_first_ack_wait_o = 1'b1;
           if (csrng_cmd_ack_i) begin
             auto_clr_intr_gate_o = 1'b1;
             state_d = AutoDispatch;
@@ -186,20 +227,24 @@ module edn_main_sm #(
         end
       end
       AutoAckWait: begin
-        auto_req_mode_busy_o = 1'b1;
-        if (!edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
           state_d = Idle;
         end else begin
+          auto_req_mode_busy_o = 1'b1;
           if (csrng_cmd_ack_i) begin
             state_d = AutoDispatch;
           end
         end
       end
       AutoDispatch: begin
-        auto_req_mode_busy_o = 1'b1;
-        if (!edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
           state_d = Idle;
         end else begin
+          auto_req_mode_busy_o = 1'b1;
           if (!auto_req_mode_i) begin
             main_sm_done_pulse_o = 1'b1;
             state_d = Idle;
@@ -213,39 +258,57 @@ module edn_main_sm #(
         end
       end
       AutoCaptGenCnt: begin
-        auto_req_mode_busy_o = 1'b1;
-        capt_gencmd_fifo_cnt_o = 1'b1;
-        state_d = AutoSendGenCmd;
-      end
-      AutoSendGenCmd: begin
-        auto_req_mode_busy_o = 1'b1;
-        send_gencmd_o = 1'b1;
-        if (!edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
           state_d = Idle;
         end else begin
+          auto_req_mode_busy_o = 1'b1;
+          capt_gencmd_fifo_cnt_o = 1'b1;
+          state_d = AutoSendGenCmd;
+        end
+      end
+      AutoSendGenCmd: begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
+          state_d = Idle;
+        end else begin
+          auto_req_mode_busy_o = 1'b1;
+          send_gencmd_o = 1'b1;
           if (cmd_sent_i) begin
             state_d = AutoAckWait;
           end
         end
       end
       AutoCaptReseedCnt: begin
-        auto_req_mode_busy_o = 1'b1;
-        capt_rescmd_fifo_cnt_o = 1'b1;
-        state_d = AutoSendReseedCmd;
-      end
-      AutoSendReseedCmd: begin
-        auto_req_mode_busy_o = 1'b1;
-        send_rescmd_o = 1'b1;
-        if (!edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
           state_d = Idle;
         end else begin
+          auto_req_mode_busy_o = 1'b1;
+          capt_rescmd_fifo_cnt_o = 1'b1;
+          state_d = AutoSendReseedCmd;
+        end
+      end
+      AutoSendReseedCmd: begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
+          state_d = Idle;
+        end else begin
+          auto_req_mode_busy_o = 1'b1;
+          send_rescmd_o = 1'b1;
           if (cmd_sent_i) begin
             state_d = AutoAckWait;
           end
         end
       end
       SWPortMode: begin
-        if (!edn_enable_i) begin
+        if (local_escalate_i) begin
+          state_d = Error;
+        end else if (!edn_enable_i) begin
           state_d = Idle;
         end
       end
@@ -254,9 +317,6 @@ module edn_main_sm #(
       end
       default: state_d = Error;
     endcase
-    if (local_escalate_i) begin
-      state_d = Error;
-    end
   end
 
 endmodule
