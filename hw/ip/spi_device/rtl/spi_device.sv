@@ -81,7 +81,7 @@ module spi_device
 
   localparam int unsigned TpmRdFifoWidth  = spi_device_reg_pkg::TpmRdFifoWidth;
   localparam int unsigned TpmWrFifoDepth  = 64; // 64B
-  localparam int unsigned TpmRdFifoDepth  = 4;
+  localparam int unsigned TpmRdFifoDepth  = 16;
   localparam int unsigned TpmWrFifoPtrW   = $clog2(TpmWrFifoDepth+1);
   localparam int unsigned TpmRdFifoPtrW   = $clog2(TpmRdFifoDepth+1);
   `ASSERT_INIT(TpmWrPtrMatch_A,
