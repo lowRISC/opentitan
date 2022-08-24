@@ -165,8 +165,10 @@ module prim_reg_cdc_arb #(
       clk_dst_i, !rst_dst_ni)
 
     // if hw select was chosen, then it must be the case there was a destination update
-    // indication
-    `ASSERT(HwIdSelCheck_A, $rose(id_q == SelHwReq) |-> $past(dst_update_i, 1),
+    // indication or there was a difference between the transit register and the
+    // latest incoming value.
+    `ASSERT(HwIdSelCheck_A, $rose(id_q == SelHwReq) |-> $past(dst_update_i, 1) ||
+      $past(dst_lat_q, 1),
       clk_dst_i, !rst_dst_ni)
 
 
