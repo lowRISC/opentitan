@@ -59,7 +59,7 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
               UVM_LOW)
     end
 
-    // poll for state to transition into scrap
+    // poll for state to transition into escalate
     jtag_csr_spinwait(ral.lc_ctrl.lc_state.get_offset(),
       p_sequencer.jtag_sequencer_h,
       {DecLcStateNumRep{DecLcStEscalate}},
