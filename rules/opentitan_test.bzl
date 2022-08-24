@@ -389,7 +389,13 @@ def opentitan_functest(
         else:
             flash = "{}_{}_bin".format(ot_flash_binary, target)
         if signed:
-            flash += "_signed_{}".format(key)
+            flash += "_signed"
+
+            # Multislot flash binaries could have different slots / stages
+            # signed with different keys. Therefore, the key name will not be
+            # part of the target name for such images.
+            if key != "multislot":
+                flash += "_{}".format(key)
 
         # If test is to be run in ROM we load the same image into flash as a
         # as a placeholder (since execution will never reach flash). Moreover,
