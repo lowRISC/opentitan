@@ -20,7 +20,20 @@ class spi_device_flash_mode_vseq extends spi_device_intercept_vseq;
     // increase the chance (15%->50%) to send large payload,
     // in order to exercise watermark and flip events
     large_payload_weight = 6;
+
+    mailbox_addr_size_c.constraint_mode(0);
     forever_read_buffer_update_nonblocking();
-    super.body();
+
+    allow_set_cmd_info_invalid = 1;
+    allow_use_invalid_opcode = 1;
+    spi_device_flash_pass_init();
+
+    for (int i = 0; i < num_trans; ++i) begin
+      randomize_op_addr_size();
+      `uvm_info(`gfn, $sformatf("sending op 0x%0h addr: 0x%0x", opcode, read_start_addr),
+                UVM_MEDIUM)
+      spi_host_xfer_flash_item(opcode, payload_size, read_start_addr);
+      cfg.clk_rst_vif.wait_clks(10);
+    end
   endtask
 endclass : spi_device_flash_mode_vseq

@@ -10,6 +10,10 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
 
   // read buffer needs to be read with incremental address, otherwise, watermark/fip won't work
   bit [TL_AW-1:0]     read_buffer_addr;
+  // read_buffer_addr is updated after a transaction is done
+  // this ptr is updated when a flip event occurs, so that we could know which part is
+  // read by the SPI host, in order to update the other part
+  bit [TL_AW-1:0]     read_buffer_ptr;
 
   `uvm_object_utils_begin(spi_device_env_cfg)
     `uvm_field_object(spi_host_agent_cfg, UVM_DEFAULT)

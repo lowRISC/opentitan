@@ -59,17 +59,18 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   rand uint payload_size;
   rand read_addr_size_type_e read_addr_size_type;
 
-  int large_payload_weight = 1;
+  int large_payload_weight = 2;
   constraint payload_size_c {
     payload_size dist {
         [0:5]    :/ 2,
         128      :/ 1,
         256      :/ 2, // typical value for a flash page size
         512      :/ 1,
-        [6:3000] :/ 1};
+        [6:3000] :/ large_payload_weight};
   }
 
   constraint read_addr_size_type_c {
+    solve read_start_addr, payload_size before read_end_addr;
     read_start_addr + payload_size == read_end_addr;
 
     if (read_addr_size_type == ReadAddrWithinMailbox) {
@@ -90,12 +91,26 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       (read_start_addr > mbx_end_addr &&
        (read_start_addr + payload_size <= {32{1'b1}} || read_end_addr < mbx_start_addr));
     }
+
+    // make this distribute evenly
+    read_addr_size_type dist {
+        ReadAddrWithinMailbox     :/ 1,
+        ReadAddrCrossIntoMailbox  :/ 1,
+        ReadAddrCrossOutOfMailbox :/ 1,
+        ReadAddrCrossAllMailbox   :/ 1,
+        ReadAddrOutsideMailbox    :/ 1};
   }
 
   constraint addr_size_and_device_mode_c {
-    // flash mode doesn't support mailbox boundary crossing.
-    device_mode == FlashMode ->
+    solve device_mode before read_addr_size_type;
+    if (device_mode == FlashMode) {
+      // flash mode doesn't support mailbox boundary crossing.
       read_addr_size_type inside {ReadAddrWithinMailbox, ReadAddrOutsideMailbox};
+      // this is read buffer
+      if (read_addr_size_type == ReadAddrOutsideMailbox && opcode inside {READ_CMD_LIST}) {
+        read_start_addr == cfg.read_buffer_addr;
+      }
+    }
   }
 
   rand bit [9:0] read_threshold_val;
@@ -112,8 +127,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   function void randomize_op_addr_size();
     mbx_start_addr = cfg.get_mbx_base_addr();
     mbx_end_addr   = mbx_start_addr + MAILBOX_BUFFER_SIZE;
-
-    `DV_CHECK(this.randomize(opcode, valid_op,
+    `DV_CHECK_FATAL(this.randomize(opcode, valid_op,
       read_start_addr, read_end_addr, payload_size, read_addr_size_type))
   endfunction
 
@@ -338,7 +352,14 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.mailbox_addr.addr,
         // the 4th byte needs to be 0 if the cmd only contains 3 bytes address
         // constrain this byte 50% to be 0.
-        value[31:24] dist {0 :/ 1, [1:$] :/ 1};)
+        value[31:24] dist {0 :/ 1, [1:$] :/ 1};
+
+        // configure mailbox base address to very big so avoid read buffer overlaps with mailbox
+        // which isn't allowed in flash mode.
+        // 4th byte address may be off. In order to simplify the addr/size constraint for flash mode
+        // as they needs to either in mailbox region or start from the last read buffer address.
+        device_mode == FlashMode -> value[31:24] == 0 && value[23:22] > 1;
+        )
     csr_update(ral.mailbox_addr);
     ral.cfg.mailbox_en.set(1); // TODO, randomize it
     csr_update(ral.cfg);
@@ -553,90 +574,63 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
                  .compare_value(cfg.spi_device_agent_cfg.flash_addr_4b_en));
   endtask
 
-  // read buffer can be divided into 2 half by flip events if threshold isn't set
-  // |____________half0___________|____________half1___________|
-  // |                          flip                         flip
-  //
-  // if threshold isn't 0, read buffer can be divided into 4 regions by watermark and flip events
-  // |___region0___|___region1____|___region2___|___region3____|
-  // |           watermark      flip          watermark      flip
-  // once SW receives an interrupt, update the previous region, so that it won't affect SPI read
-  // e.g. when 1st watermark occurs, update region0, then flip occurs, update 2nd region.
-  virtual task  update_read_buffer(
-      bit is_watermark_event, bit[TL_AW-1:0] last_read_addr);
-    bit [TL_AW-1:0] start_addr;
-    bit [TL_AW-1:0] end_addr;
-    int threshold = `gmv(ral.read_threshold);
-    int half_size = READ_BUFFER_SIZE / 2;
-
-    if (threshold == 0) begin // 2 halfs
-      if (last_read_addr inside {[half_size : READ_BUFFER_SIZE - 1]}) begin
-        // half0
-        start_addr = 0;
-        end_addr   = half_size - 1;
-      end else begin
-        // half1
-        start_addr = half_size;
-        end_addr   = READ_BUFFER_SIZE - 1;
-      end
-    end else begin // 4 regions
-      if (is_watermark_event) begin
-        if (last_read_addr inside {[threshold : threshold + half_size - 1]}) begin
-          // region0
-          start_addr = 0;
-          end_addr   = threshold - 1;
-        end else begin
-          // region2
-          start_addr = half_size;
-          end_addr   = half_size + threshold - 1;
-        end
-      end else begin // flip event
-        if (last_read_addr inside {[half_size : READ_BUFFER_SIZE - 1]}) begin
-          // region1
-          start_addr = threshold;
-          end_addr   = half_size - 1;
-        end else begin
-          // region3
-          start_addr = half_size + threshold;
-          end_addr   = READ_BUFFER_SIZE - 1;
-        end
-      end
+  virtual task random_write_spi_mem(int start_addr, int end_addr, string msg_region = "mem",
+                                    bit zero_delay_write = $urandom_range(0, 1));
+    if (zero_delay_write) begin
+      cfg.m_tl_agent_cfg.a_valid_delay_max = 0;
+      cfg.m_tl_agent_cfg.d_ready_delay_max = 0;
     end
-    random_write_spi_mem(start_addr, end_addr, "read buffer");
-  endtask : update_read_buffer
-
-  virtual task random_write_spi_mem(int start_addr, int end_addr, string msg_region = "mem");
     for (int i = start_addr / 4; i <= end_addr / 4; i++) begin
       bit [TL_DW-1:0] data = $urandom();
-      mem_wr(.ptr(ral.buffer), .offset(i), .data(data));
+      mem_wr(.ptr(ral.buffer), .offset(i), .data(data), .blocking(!zero_delay_write));
       `uvm_info(`gfn, $sformatf("write %s offset 0x%0x: 0x%0x", msg_region, i << 2, data),
                 UVM_MEDIUM)
     end
+    wait_no_outstanding_access();
+    if (zero_delay_write) begin
+      cfg.m_tl_agent_cfg.a_valid_delay_max = 10;
+      cfg.m_tl_agent_cfg.d_ready_delay_max = 10;
+    end
   endtask : random_write_spi_mem
 
+  // read buffer can be divided into 2 half by flip events
+  // |____________half0___________|____________half1___________|
+  // |                          flip                         flip
+  // once SW receives an interrupt, update the previous 1k region, so that it won't affect ongoing
+  // SPI read
   virtual task forever_read_buffer_update_nonblocking();
+    bit [TL_AW-1:0] start_addr;
+    bit [TL_AW-1:0] end_addr;
     fork
       begin
         read_buffer_update_ongoing = 1;
         while (!stop_forever_read_buffer_update) begin
-          bit [TL_DW-1] intr_state_val, last_read_addr;
-          bit is_watermark;
+          bit [TL_DW-1:0] intr_state_val;
           bit is_flip;
+          bit is_watermark;
+          // use zero_delay write, otherwise, spi may read faster than SW write
+          bit zero_delay_write = 1;
 
           cfg.clk_rst_vif.wait_clks($urandom_range(10, 200));
 
           csr_rd(ral.intr_state, intr_state_val);
-          is_watermark = get_field_val(ral.intr_state.readbuf_watermark, intr_state_val);
           is_flip = get_field_val(ral.intr_state.readbuf_flip, intr_state_val);
-          csr_rd(ral.last_read_addr, last_read_addr);
-          if (!is_watermark && !is_flip) continue;
+          is_watermark = get_field_val(ral.intr_state.readbuf_watermark, intr_state_val);
 
-          if (is_watermark) begin
-            update_read_buffer(.is_watermark_event(1), .last_read_addr(last_read_addr));
+          if (is_flip) begin
+            start_addr = cfg.read_buffer_ptr % READ_BUFFER_SIZE;
+            end_addr = (start_addr + READ_BUFFER_HALF_SIZE);
+
+            `uvm_info(`gfn, $sformatf("Updating mem from 0x%0x:0x%0x due to flip event",
+                            start_addr, end_addr - 1), UVM_MEDIUM)
+            random_write_spi_mem(start_addr, end_addr - 1, "read buffer", zero_delay_write);
+            cfg.read_buffer_ptr = end_addr;
           end
-          // we may receive both watermark and flip if watermark threshold is close to half size
-          if (is_flip) update_read_buffer(.is_watermark_event(0), .last_read_addr(last_read_addr));
 
+          // clear flip and watermark event
+          intr_state_val = 0;
+          if (is_flip)      intr_state_val[ReadbufFlip] = 1;
+          if (is_watermark) intr_state_val[ReadbufWatermark] = 1;
           csr_wr(ral.intr_state, intr_state_val);
         end
         read_buffer_update_ongoing = 0;

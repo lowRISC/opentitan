@@ -257,6 +257,16 @@ class spi_device_base_vseq extends cip_base_vseq #(
       cfg.spi_host_agent_cfg.flash_addr_4b_en   = 0;
     end
 
+    if (cfg.is_read_buffer_cmd(m_spi_host_seq.rsp)) begin
+      cfg.read_buffer_addr = convert_addr_from_byte_queue(m_spi_host_seq.rsp.address_q) +
+                             m_spi_host_seq.rsp.payload_q.size();
+      cfg.clk_rst_vif.wait_clks(10);
+
+      csr_rd_check(.ptr(ral.last_read_addr), .compare_value(cfg.read_buffer_addr));
+      `uvm_info(`gfn, $sformatf("Updated read_buffer_addr to 0x%0x", cfg.read_buffer_addr),
+                UVM_MEDIUM)
+    end
+
     if (wait_on_busy) begin
       spi_device_reg_cmd_info cmd_info = cfg.get_cmd_info_reg_by_opcode(op);
       if (cmd_info != null && `gmv(cmd_info.upload) && `gmv(cmd_info.busy)) begin
