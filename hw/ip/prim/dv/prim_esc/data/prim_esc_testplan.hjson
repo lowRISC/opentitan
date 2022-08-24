@@ -12,7 +12,7 @@
             - Wait random length of cycles and verify `esc_en` output is set and `integ_fail`
               output remains 0.
             '''
-      milestone: V1
+      stage: V1
       tests: ["prim_esc_test"]
     }
 
@@ -26,7 +26,7 @@
             - Wait for `ping_ok` to set and `esc_req_out` to set.
             - Check the sequence completes without any signal integrity error.
             '''
-      milestone: V1
+      stage: V1
       tests: ["prim_esc_test"]
     }
 
@@ -40,7 +40,7 @@
             - Release the `esc_n` signal.
             - Send a ping request and repeat the above sequence and checkings.
             '''
-      milestone: V1
+      stage: V1
       tests: ["prim_esc_test"]
     }
 
@@ -56,7 +56,7 @@
               to 1.
             - Reset the DUT to clear `esc_en` output.
             '''
-      milestone: V1
+      stage: V1
       tests: ["prim_esc_test"]
     }
 
@@ -70,7 +70,7 @@
             - Verify that prim_esc_receiver detects the counter mismatch and set `esc_en` signal to
               1.
             '''
-      milestone: V1
+      stage: V1
       tests: ["prim_esc_test"]
     }
 
@@ -83,7 +83,7 @@
             - Verify that after reset, the prim_esc_sender and prim_esc_receiver pair functions
               correctly by issuing the tests above.
             '''
-      milestone: V1
+      stage: V1
       tests: ["prim_esc_test"]
     }
 

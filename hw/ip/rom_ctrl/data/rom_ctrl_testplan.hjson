@@ -32,7 +32,7 @@
             - Check that pwrmgr_data_o.good is asserted in second iteration.
             - Check that tile link accesses are blocked till pwrmgr_data_o.done is asserted.
             '''
-      milestone: V1
+      stage: V1
       tests: ["rom_ctrl_smoke"]
     }
     {
@@ -43,7 +43,7 @@
             **Checks**:
             - Check that fatal error is flagged.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["rom_ctrl_corrupt_sig_fatal_chk"]
     }
     {
@@ -55,7 +55,7 @@
             **Checks**:
             - Check if N read accesses finish in N+1 cycles.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rom_ctrl_max_throughput_chk"]
     }
     {
@@ -63,7 +63,7 @@
       desc: '''
             - Combine above sequences in one test to run sequentially.
             - Randomly add reset between each sequence'''
-      milestone: V2
+      stage: V2
       tests: ["rom_ctrl_stress_all"]
     }
     {
@@ -71,7 +71,7 @@
       desc: '''
             - Generate error from KMAC when it responds with KMAC digest image.
             - Check that ROM controller goes into invalid state'''
-      milestone: V2
+      stage: V2
       tests: ["rom_ctrl_kmac_err_chk"]
     }
 

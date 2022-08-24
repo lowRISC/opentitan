@@ -11,7 +11,7 @@
             - It is mandatory to run this test from all available interfaces the
               memories are accessible from.
             '''
-      milestone: V1
+      stage: V1
       tests: ["{name}{intf}_mem_walk"]
     }
     {
@@ -22,10 +22,9 @@
               correctness.
             - Also test outstanding access on memories
             '''
-      milestone: V1
+      stage: V1
       tests: ["{name}{intf}_mem_partial_access"]
     }
     // TODO: add mem access with reset
   ]
 }
-

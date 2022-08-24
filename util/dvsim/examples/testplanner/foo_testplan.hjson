@@ -19,15 +19,15 @@
             the description on multiple lines like this (with 3 single-inverted commas.
             Note that the subsequent lines are indented right below where the inverted
             commas start.'''
-      // milestone for which this test is targeted for - V1, V2 or V3
-      milestone: V1
+      // verification stage for which this test is targeted for - V1, V2 or V3
+      stage: V1
       // tests of actual written tests that maps to this entry
       tests: ["{name}_smoke"]
     }
     {
       name: feature1
       desc: "A single line description with single double-inverted commas."
-      milestone: V2
+      stage: V2
       // testplan entry with no tests added
       tests: ["{name}_{intf}_feature1"]
     }
@@ -48,7 +48,7 @@
 
             Start a new paragraph with two newlines.
             '''
-      milestone: V2
+      stage: V2
       // testplan entry with multiple tests added
       tests: ["foo_feature2_type1",
               "foo_feature2_type2",

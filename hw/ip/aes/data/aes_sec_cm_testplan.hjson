@@ -26,163 +26,163 @@
     {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_lc_escalate_en_intersig_mubi
       desc: "Verify the countermeasure(s) LC_ESCALATE_EN.INTERSIG.MUBI."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_main_config_shadow
       desc: "Verify the countermeasure(s) MAIN.CONFIG.SHADOW."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_main_config_sparse
       desc: "Verify the countermeasure(s) MAIN.CONFIG.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_aux_config_shadow
       desc: "Verify the countermeasure(s) AUX.CONFIG.SHADOW."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_aux_config_regwen
       desc: "Verify the countermeasure(s) AUX.CONFIG.REGWEN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_key_sideload
       desc: "Verify the countermeasure(s) KEY.SIDELOAD."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_key_sw_unreadable
       desc: "Verify the countermeasure(s) KEY.SW_UNREADABLE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_data_reg_sw_unreadable
       desc: "Verify the countermeasure(s) DATA_REG.SW_UNREADABLE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_key_sec_wipe
       desc: "Verify the countermeasure(s) KEY.SEC_WIPE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_iv_config_sec_wipe
       desc: "Verify the countermeasure(s) IV.CONFIG.SEC_WIPE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_data_reg_sec_wipe
       desc: "Verify the countermeasure(s) DATA_REG.SEC_WIPE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_data_reg_key_sca
       desc: "Verify the countermeasure(s) DATA_REG.KEY.SCA."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_key_masking
       desc: "Verify the countermeasure(s) KEY.MASKING."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_main_fsm_sparse
       desc: "Verify the countermeasure(s) MAIN.FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_main_fsm_redun
       desc: "Verify the countermeasure(s) MAIN.FSM.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_cipher_fsm_sparse
       desc: "Verify the countermeasure(s) CIPHER.FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_cipher_fsm_redun
       desc: "Verify the countermeasure(s) CIPHER.FSM.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_cipher_ctr_redun
       desc: "Verify the countermeasure(s) CIPHER.CTR.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctr_fsm_sparse
       desc: "Verify the countermeasure(s) CTR.FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctr_fsm_redun
       desc: "Verify the countermeasure(s) CTR.FSM.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctrl_sparse
       desc: "Verify the countermeasure(s) CTRL.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_main_fsm_global_esc
       desc: "Verify the countermeasure(s) MAIN.FSM.GLOBAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_main_fsm_local_esc
       desc: "Verify the countermeasure(s) MAIN.FSM.LOCAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_cipher_fsm_local_esc
       desc: "Verify the countermeasure(s) CIPHER.FSM.LOCAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctr_fsm_local_esc
       desc: "Verify the countermeasure(s) CTR.FSM.LOCAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_data_reg_local_esc
       desc: "Verify the countermeasure(s) DATA_REG.LOCAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
   ]

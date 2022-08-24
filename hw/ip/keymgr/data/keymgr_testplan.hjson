@@ -36,7 +36,7 @@
               any of saved meaningful data, which are collected from valid operations. This
               checking method is also applied to other error cases.
             '''
-      milestone: V1
+      stage: V1
       tests: ["keymgr_smoke"]
     }
     {
@@ -55,7 +55,7 @@
 
             Stimulus and checks are the same as smoke.
             '''
-      milestone: V1
+      stage: V1
       tests: ["keymgr_random"]
     }
     {
@@ -67,7 +67,7 @@
             Stimulus and checks:
             Test command and reg access gated by `cfg_regwen` is ignored during operation.
             '''
-      milestone: V2
+      stage: V2
       tests: ["keymgr_cfg_regwen"]
     }
     {
@@ -83,7 +83,7 @@
             Checks:
             Verify the sideload data and status for correctness.
             '''
-      milestone: V2
+      stage: V2
       tests: ["keymgr_sideload", "keymgr_sideload_kmac",
               "keymgr_sideload_aes", "keymgr_sideload_otbn"]
     }
@@ -93,7 +93,7 @@
             Stimulus and checks:
             Directly go to `StDisabled` from any state and check `StDisabled` is entered correctly.
             '''
-      milestone: V2
+      stage: V2
       tests: ["keymgr_direct_to_disabled"]
     }
     {
@@ -111,7 +111,7 @@
               and SW output will be invalid after OP is done.
             - If keymgr in disabled state, check the behavior is consistent with normal behavior.
             '''
-      milestone: V2
+      stage: V2
       tests: ["keymgr_lc_disable"]
     }
     {
@@ -126,7 +126,7 @@
             Checks:
             Same as above entry - "invalid_cmd".
             '''
-      milestone: V2
+      stage: V2
       tests: ["keymgr_kmac_rsp_err"]
     }
     {
@@ -143,7 +143,7 @@
             - Check alert `recov_operation_err` is triggered and err_code is `INVALID_KMAC_INPUT`.
             - Check KMAC output key is corrupted and working state remains the same.
             '''
-      milestone: V2
+      stage: V2
       tests: ["keymgr_sw_invalid_input"]
     }
     {
@@ -159,7 +159,7 @@
             - Check alert `recov_operation_err` is triggered and err_code is `INVALID_KMAC_DATA`.
             - Check SW output isn't updated and working state remains the same.
             '''
-      milestone: V2
+      stage: V2
       tests: ["keymgr_hwsw_invalid_input"]
     }
     {
@@ -177,7 +177,7 @@
             - Check alert `fatal_fault_err` is triggered.
             - Check `fault_status` is updated correctly.
             '''
-      milestone: V2
+      stage: V2
       tests: ["keymgr_sync_async_fault_cross"]
     }
     {
@@ -187,7 +187,7 @@
               keymgr_cfg_regwen (requires zero_delays).
             - Randomly add reset between each sequence.
             '''
-      milestone: V2
+      stage: V2
       tests: ["keymgr_stress_all"]
     }
     {
@@ -202,7 +202,7 @@
             - Besides checking alert and `fault_status`, issue an operation after injecting faults,
               then ensure that `op_status` is failed and design enters `StInvalid`.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["keymgr_sec_cm"]
     }
   ]

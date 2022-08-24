@@ -8,35 +8,35 @@
       name: unexpected_child_reset_activity
       desc: '''Verify unexpected child_reset activity flags an error.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["rstmgr_cnsty_chk_smoke"]
     }
     {
       name: child_reset_asserts_late
       desc: '''Verify error triggered if child reset asserts late.
             '''
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: child_reset_releases_late
       desc: '''Verify error triggered if child reset releases late.
             '''
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: parent_reset_asserts_late
       desc: '''Verify error triggered if parent reset asserts late.
             '''
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: parent_reset_releases_late
       desc: '''Verify error triggered if parent reset releases late.
             '''
-      milestone: V2S
+      stage: V2S
       tests: []
     }
   ]

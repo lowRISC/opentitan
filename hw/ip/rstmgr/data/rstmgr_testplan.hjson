@@ -36,7 +36,7 @@
             - Checks the output reset pins corresponding to sw resettable
               units match `sw_rst_ctrl_n` CSR.
             '''
-      milestone: V1
+      stage: V1
       tests: ["rstmgr_smoke"]
     }
     {
@@ -55,7 +55,7 @@
             - With SVA check the output reset is only set if the input reset
               has had at least 32 cycles of steady input reset active.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rstmgr_por_stretcher"]
     }
     {
@@ -81,7 +81,7 @@
               `sw_rst_regwen` have no effect on resets.
             - Check the `reset_info`, `cpu_info`, and `alert_info` CSRs are not modified.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rstmgr_sw_rst"]
     }
     {
@@ -99,7 +99,7 @@
             - Check the `reset_info` CSR.
             - Reset behavior is checked by SVA.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rstmgr_sw_rst_reset_race"]
     }
     {
@@ -115,7 +115,7 @@
             - Each bit was set at least once.
             - Each bit was cleared at least once.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rstmgr_reset"]
     }
     {
@@ -136,7 +136,7 @@
             - Verify the `cpu_info` contents at each `cpu_info_ctrl.index`
               matches the expected value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rstmgr_reset"]
     }
     {
@@ -157,7 +157,7 @@
             - Verify the `alert_info` contents at each `alert_info_ctrl.index`
               matches the expected value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rstmgr_reset"]
     }
     {
@@ -174,7 +174,7 @@
             **Checks**:
             - Non-AON resets prior to this event don't capture.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rstmgr_reset"]
     }
     {
@@ -186,7 +186,7 @@
             - rstmgr_smoke_vseq
             - rstmgr_sw_rst_vseq
 	    '''
-      milestone: V2
+      stage: V2
       tests: ["rstmgr_stress_all"]
     }
   ]

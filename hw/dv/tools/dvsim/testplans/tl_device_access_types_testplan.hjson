@@ -6,7 +6,7 @@
     {
       name: tl_d_oob_addr_access
       desc: "Access out of bounds address and verify correctness of response / behavior"
-      milestone: V2
+      stage: V2
       tests: ["{name}_tl_errors"]
     }
     {
@@ -30,7 +30,7 @@
               - read a WO (write-only) memory
               - write a RO (read-only) memory
               - write with `instr_type = True`'''
-      milestone: V2
+      stage: V2
       tests: ["{name}_tl_errors"]
     }
     {
@@ -38,7 +38,7 @@
       desc: '''Drive back-to-back requests without waiting for response to ensure there is one
             transaction outstanding within the TL device. Also, verify one outstanding when back-
             to-back accesses are made to the same address.'''
-      milestone: V2
+      stage: V2
       tests: ["{name}_csr_hw_reset",
               "{name}_csr_rw",
               "{name}_csr_aliasing",
@@ -49,7 +49,7 @@
       desc: '''Access CSR with one or more bytes of data.
             For read, expect to return all word value of the CSR.
             For write, enabling bytes should cover all CSR valid fields.'''
-      milestone: V2
+      stage: V2
       tests: ["{name}_csr_hw_reset",
               "{name}_csr_rw",
               "{name}_csr_aliasing",
@@ -63,7 +63,7 @@
               Verify that triggers the correct fatal alert.
             - Inject a fault at the onehot check in `u_reg.u_prim_reg_we_check` and verify the
               corresponding fatal alert occurs'''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_tl_intg_err", "{name}_sec_cm"]
     }
   ]

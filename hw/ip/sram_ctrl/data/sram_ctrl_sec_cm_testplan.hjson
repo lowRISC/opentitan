@@ -26,7 +26,7 @@
     {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_tl_intg_err"]
     }
     {
@@ -37,13 +37,13 @@
              - When `ctrl_regwen` is 1, writting to `ctrl` can take effect.
              - When `ctrl_regwen` is 0, writting to `ctrl` has no effect.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_regwen"]
     }
     {
       name: sec_cm_exec_config_regwen
       desc: "Verify the countermeasure(s) EXEC.CONFIG.REGWEN."
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_csr_rw"]
     }
     {
@@ -52,7 +52,7 @@
 
             Refer to the testpoint `executable` for the detail scenario.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_executable"]
     }
     {
@@ -62,7 +62,7 @@
             Refer to the testpoint `executable` for the detail scenario.
             `cip_mubi_cov_if` is bound to this port.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_executable"]
     }
     {
@@ -72,7 +72,7 @@
             Refer to the testpoint `executable` for the detail scenario.
             `cip_mubi_cov_if` is bound to this port.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_executable"]
     }
     {
@@ -82,13 +82,13 @@
             Refer to the testpoint `lc_escalation` for the detail scenario.
             `cip_lc_tx_cov_if` is bound to this port.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_lc_escalation"]
     }
     {
       name: sec_cm_mem_integrity
       desc: "Verify the countermeasure(s) MEM.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_passthru_mem_tl_intg_err"]
     }
     {
@@ -97,7 +97,7 @@
 
             This is verified in all non-CSR tests.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_smoke"]
     }
     {
@@ -106,7 +106,7 @@
 
             This is verified in all non-CSR tests.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_smoke"]
     }
     {
@@ -115,13 +115,13 @@
 
             Refer to the testpoint `executable` for the detail scenario.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_executable"]
     }
     {
       name: sec_cm_key_global_esc
       desc: "Verify the countermeasure(s) KEY.GLOBAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_lc_escalation"]
     }
     {
@@ -133,7 +133,7 @@
             - Check internal key/nonce are reset to the default values.
             - Check SRAM access is blocked after a fault injection.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_sec_cm"]
     }
     {
@@ -144,7 +144,7 @@
             `sec_cm_key_local_esc`, also have following checks:
             - Check alert and `status.init_error` is set.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_sec_cm"]
     }
     {
@@ -155,14 +155,14 @@
             However, from defined CSRs and memory returned data, there is no way to read
             scramble key by SW.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_smoke"]
     }
     {
       name: sec_cm_tlul_fifo_ctr_redun
       desc: '''Verify the countermeasure(s) TLUL_FIFO.CTR.REDUN.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_sec_cm"]
     }
 

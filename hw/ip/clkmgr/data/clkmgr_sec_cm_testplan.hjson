@@ -26,73 +26,73 @@
     {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_timeout_clk_bkgn_chk
       desc: "Verify the countermeasure(s) TIMEOUT.CLK.BKGN_CHK."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_meas_clk_bkgn_chk
       desc: "Verify the countermeasure(s) MEAS.CLK.BKGN_CHK."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_idle_intersig_mubi
       desc: "Verify the countermeasure(s) IDLE.INTERSIG.MUBI."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_lc_ctrl_intersig_mubi
       desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_lc_ctrl_clk_handshake_intersig_mubi
       desc: "Verify the countermeasure(s) LC_CTRL_CLK_HANDSHAKE.INTERSIG.MUBI."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_clk_handshake_intersig_mubi
       desc: "Verify the countermeasure(s) CLK_HANDSHAKE.INTERSIG.MUBI."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_div_intersig_mubi
       desc: "Verify the countermeasure(s) DIV.INTERSIG.MUBI."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_jitter_config_mubi
       desc: "Verify the countermeasure(s) JITTER.CONFIG.MUBI."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_idle_ctr_redun
       desc: "Verify the countermeasure(s) IDLE.CTR.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_sec_cm"]
     }
     {
       name: sec_cm_meas_config_regwen
       desc: "Verify the countermeasure(s) MEAS.CONFIG.REGWEN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_clk_ctrl_config_regwen
       desc: "Verify the countermeasure(s) CLK_CTRL.CONFIG.REGWEN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
   ]

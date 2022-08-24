@@ -29,7 +29,7 @@
             - Once the transition is successful, check lc_ctrl broadcast outputs are all turned
               off.
             '''
-      milestone: V1
+      stage: V1
       tests: ["lc_ctrl_smoke"]
     }
     {
@@ -41,7 +41,7 @@
             Use scoreboard to ensure lc_ctrl ignores this additional lc_state transition request
             and check state count.
             '''
-      milestone: V2
+      stage: V2
       tests: ["lc_ctrl_state_post_trans"]
     }
     {
@@ -54,7 +54,7 @@
             - Check `transition_regwen` register is set to 1 during lc_state transition request.
             - Check that accessing its locked CSRs is gated during the transition operation.
             '''
-      milestone: V2
+      stage: V2
       tests: ["lc_ctrl_regwen_during_op"]
     }
     {
@@ -67,7 +67,7 @@
             - Check if lc_program_failure alert is triggered.
             - Check if lc_state moves to escalation state.
             '''
-      milestone: V2
+      stage: V2
       tests: ["lc_ctrl_prog_failure"]
     }
     {
@@ -84,7 +84,7 @@
             - Check if lc_state_failure alert is triggered.
             - Check if lc_state moves to escalation state.
             '''
-      milestone: V2
+      stage: V2
       tests: ["lc_ctrl_state_failure"]
     }
     {
@@ -104,7 +104,7 @@
             - Check if lc_state moves to correct exit state.
             - Check if lc_trans_cnt is incremented.
             '''
-      milestone: V2
+      stage: V2
       tests: ["lc_ctrl_errors"]
     }
     {
@@ -115,7 +115,7 @@
             - scrap state: lc_ctrl moves to escalation state, check the state will be cleared up
                upon next power cycle
             '''
-      milestone: V2
+      stage: V2
       tests: ["lc_ctrl_security_escalation",
               "lc_ctrl_errors",
               "lc_ctrl_state_failure",
@@ -132,7 +132,7 @@
             This test will use both JTAG TAP and TLUL to access the CSR space.
             All above CSR sequences should be accessible via both interfaces.
             '''
-      milestone: V2
+      stage: V2
       tests: ["lc_ctrl_jtag_access",
               "lc_ctrl_jtag_smoke",
               "lc_ctrl_jtag_state_post_trans",
@@ -163,7 +163,7 @@
               from the CSR readings. This checking ensures there is no token leakage between
               interfaces.
             '''
-      milestone: V2
+      stage: V2
       tests: ["lc_ctrl_jtag_priority"]
     }
     {
@@ -173,7 +173,7 @@
             - Random selection of Tilelink or JTAG CSR for each sequence
             - Randomly add reset between each sequence.
             '''
-      milestone: V2
+      stage: V2
       tests: ["lc_ctrl_stress_all"]
     }
   ]

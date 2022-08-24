@@ -310,8 +310,8 @@ class SimCfg(FlowCfg):
         if self.testplan != "":
             self.testplan = Testplan(self.testplan,
                                      repo_top=Path(self.proj_root))
-            # Extract tests in each milestone and add them as regression target.
-            self.regressions.extend(self.testplan.get_milestone_regressions())
+            # Extract tests in each stage and add them as regression target.
+            self.regressions.extend(self.testplan.get_stage_regressions())
         else:
             # Create a dummy testplan with no entries.
             self.testplan = Testplan(None, name=self.name)

@@ -31,7 +31,7 @@
             This will not trigger rst_req, but
             send fatal alert
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_tl_intg_err"]
     }
     {
@@ -52,7 +52,7 @@
               is set to '1' only when lc_dft_en_i or lc_hw_debug_en_i
               is high.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_sec_cm_lc_ctrl_intersig_mubi"]
     }
     {
@@ -69,7 +69,7 @@
             - Collect coverage by binding cip_mubi_cov_if to
               tb.dut.rom_ctrl_i
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_sec_cm_rom_ctrl_intersig_mubi"]
     }
     {
@@ -84,7 +84,7 @@
             - Collect coverage by binding cip_mubi_cov_if to
               tb.dut.sw_rst_req_i
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_sec_cm_rstmgr_intersig_mubi"]
     }
     {
@@ -102,7 +102,7 @@
               is back to normal operation state.
 
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_esc_clk_rst_malfunc"]
     }
     {
@@ -118,7 +118,7 @@
             - Detect fast state transition to FastPwrStateResetPrep.
               And this will trigger rstreqs[ResetEscIdx].
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_sec_cm"]
     }
     {
@@ -129,7 +129,7 @@
             /hw/dv/sv/cip_lib/doc/index.md#security-verification
             -for-common-countermeasure-primitives)
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_sec_cm"]
     }
     {
@@ -145,7 +145,7 @@
             pwr_rst_o.rst_sys_req = 3 and pwr_clk_o = 0.
             Dut should be recovered by asserting rst_n = 0.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_sec_cm"]
     }
     {
@@ -159,7 +159,7 @@
             - Check fast state transition to FastPwrStateResetPrep
               and get pwr_rst_req.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_global_esc"]
     }
     {
@@ -173,7 +173,7 @@
             - Check fast state transition to FastPwrStateResetPrep
               and get pwr_rst_req.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_glitch"]
     }
     {
@@ -191,7 +191,7 @@
               read back and check the value is not updated by
               the csr udate attempt.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_sec_cm_ctrl_config_regwen"]
     }
     {
@@ -200,7 +200,7 @@
 
             This is covered by auto csr test.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_csr_rw"]
     }
     {
@@ -209,7 +209,7 @@
 
             This is covered by auto csr test.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["pwrmgr_csr_rw"]
     }
   ]

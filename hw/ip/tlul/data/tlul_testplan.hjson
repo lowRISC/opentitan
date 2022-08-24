@@ -9,13 +9,13 @@
     {
       name: xbar_smoke
       desc: '''Sequentially test each host to access any device'''
-      milestone: V1
+      stage: V1
       tests: ["xbar_{name}_smoke"]
     }
     {
       name: xbar_base_random_sequence
       desc: '''Enable all hosts to randomly send transactions to any device'''
-      milestone: V2
+      stage: V2
       tests: ["xbar_{name}_random"]
     }
     {
@@ -24,7 +24,7 @@
             - Zero delay for sending a/d_valid and a/d_ready
             - Large delay from 0 ~ 1000 cycles
             - Small delay (0-10 cycles) for a_channel, large delay (0-1000 cycles) for d_channel'''
-      milestone: V2
+      stage: V2
       tests: ["xbar_{name}_smoke_zero_delays", "xbar_{name}_smoke_large_delays", "xbar_{name}_smoke_slow_rsp",
               "xbar_{name}_random_zero_delays", "xbar_{name}_random_large_delays", "xbar_{name}_random_slow_rsp"]
     }
@@ -34,7 +34,7 @@
             - Host randomly drives transactions with mapped and unmapped address
             - Ensure DUT returns d_error=1 if address is unmapped and transaction isn't passed down
               to any device'''
-      milestone: V2
+      stage: V2
       tests: ["xbar_{name}_unmapped_addr", "xbar_{name}_error_and_unmapped_addr"]
     }
     {
@@ -42,7 +42,7 @@
       desc: '''
             - Drive any random value on size, mask, opcode in both channels
             - Ensure everything just pass through host to device or device to host'''
-      milestone: V2
+      stage: V2
       tests: ["xbar_{name}_error_random", "xbar_{name}_error_and_unmapped_addr"]
     }
     {
@@ -51,13 +51,13 @@
             - Randomly pick a device, make all hosts to access this device
             - If the device isn't accessible for the host, let the host randomly access the other
               devices'''
-      milestone: V2
+      stage: V2
       tests: ["xbar_{name}_access_same_device", "xbar_{name}_access_same_device_slow_rsp"]
     }
     {
       name: xbar_all_hosts_use_same_source_id
       desc: '''Test all hosts use same ID at the same same'''
-      milestone: V2
+      stage: V2
       tests: ["xbar_{name}_same_source"]
     }
     {
@@ -65,7 +65,7 @@
       desc: '''
             - Combine all sequences and run in parallel
             - Add random reset between each iteration'''
-      milestone: V2
+      stage: V2
       tests: ["xbar_{name}_stress_all", "xbar_{name}_stress_all_with_error"]
     }
     {
@@ -74,7 +74,7 @@
             - Inject reset while stress_all is running, after reset is completed, kill the
               stress seq and then start a new stress seq
             - Run a few iteration to ensure reset doesn't break the design'''
-      milestone: V2
+      stage: V2
       tests: ["xbar_{name}_stress_all_with_rand_reset", "xbar_{name}_stress_all_with_reset_error"]
     }
   ]

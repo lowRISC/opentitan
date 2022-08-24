@@ -28,7 +28,7 @@
       desc: '''Verify the countermeasure(s) BUS.INTEGRITY.
             This entry is covered by tl_access_test.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_tl_intg_err"]
     }
     {
@@ -42,7 +42,7 @@
               clock.
             - Measurement error should trigger a recoverable alert
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_frequency"]
     }
     {
@@ -54,7 +54,7 @@
               and stopped. This will leads to timeout event.
             - Timeout should cause a recoverable alert
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_frequency_timeout"]
     }
     {
@@ -66,7 +66,7 @@
             (https://github.com/lowRISC/opentitan/blob/master/
             hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson)
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_shadow_reg_errors"]
     }
     {
@@ -87,7 +87,7 @@
               When clk_hints_status go to '0', check clocks_o
               to see if clock is really off
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_idle_intersig_mubi"]
     }
     {
@@ -101,7 +101,7 @@
             When dut sees invalid values of lc_hw_debug_en_i,
             all_clk_byp_req should not be asserted. Covered by assertion checker.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_lc_ctrl_intersig_mubi"]
     }
     {
@@ -115,7 +115,7 @@
             When dut sees invalid values of lc_clk_byp_req_i,
             io_clk_byp_req_o should not be asserted. Covered by assertion checker.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_lc_clk_byp_req_intersig_mubi"]
     }
     {
@@ -132,7 +132,7 @@
             When both are true, lc_clk_byp_req is assigned to lc_clk_byp_ack.
             Covered by assertion checker.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_clk_handshake_intersig_mubi"]
     }
     {
@@ -144,7 +144,7 @@
             **Check**:
             dut should ignore invalid req values. Covered by assertion checker.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_div_intersig_mubi"]
     }
     {
@@ -155,7 +155,7 @@
             jittery clock is enabled. So it can be covered by default
             csr test.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_csr_rw"]
     }
     {
@@ -165,7 +165,7 @@
             **Check**:
             read check CLKMGR.FATAL_ERR_CODE.IDLE_CNT == 1
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_sec_cm"]
     }
     {
@@ -174,7 +174,7 @@
 
             This is covered by auto csr test.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_csr_rw"]
     }
     {
@@ -183,7 +183,7 @@
 
             This is covered by auto csr test.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["clkmgr_csr_rw"]
     }
   ]

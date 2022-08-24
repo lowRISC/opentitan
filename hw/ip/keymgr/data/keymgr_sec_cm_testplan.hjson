@@ -26,145 +26,145 @@
     {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_config_shadow
       desc: "Verify the countermeasure(s) CONFIG.SHADOW."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_op_config_regwen
       desc: "Verify the countermeasure(s) OP.CONFIG.REGWEN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_reseed_config_regwen
       desc: "Verify the countermeasure(s) RESEED.CONFIG.REGWEN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_sw_binding_config_regwen
       desc: "Verify the countermeasure(s) SW_BINDING.CONFIG.REGWEN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_max_key_ver_config_regwen
       desc: "Verify the countermeasure(s) MAX_KEY_VER.CONFIG.REGWEN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_lc_ctrl_intersig_mubi
       desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_constants_consistency
       desc: "Verify the countermeasure(s) CONSTANTS.CONSISTENCY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_intersig_consistency
       desc: "Verify the countermeasure(s) INTERSIG.CONSISTENCY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_hw_key_sw_noaccess
       desc: "Verify the countermeasure(s) HW.KEY.SW_NOACCESS."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_output_keys_ctrl_redun
       desc: "Verify the countermeasure(s) OUTPUT_KEYS.CTRL.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctrl_fsm_sparse
       desc: "Verify the countermeasure(s) CTRL.FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_data_fsm_sparse
       desc: "Verify the countermeasure(s) DATA.FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctrl_fsm_local_esc
       desc: "Verify the countermeasure(s) CTRL.FSM.LOCAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctrl_fsm_consistency
       desc: "Verify the countermeasure(s) CTRL.FSM.CONSISTENCY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctrl_fsm_global_esc
       desc: "Verify the countermeasure(s) CTRL.FSM.GLOBAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctrl_ctr_redun
       desc: "Verify the countermeasure(s) CTRL.CTR.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_kmac_if_fsm_sparse
       desc: "Verify the countermeasure(s) KMAC_IF.FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_kmac_if_ctr_redun
       desc: "Verify the countermeasure(s) KMAC_IF.CTR.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_kmac_if_cmd_ctrl_consistency
       desc: "Verify the countermeasure(s) KMAC_IF_CMD.CTRL.CONSISTENCY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_kmac_if_done_ctrl_consistency
       desc: "Verify the countermeasure(s) KMAC_IF_DONE.CTRL.CONSISTENCY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_reseed_ctr_redun
       desc: "Verify the countermeasure(s) RESEED.CTR.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_side_load_sel_ctrl_consistency
       desc: "Verify the countermeasure(s) SIDE_LOAD_SEL.CTRL.CONSISTENCY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctrl_key_integrity
       desc: "Verify the countermeasure(s) CTRL.KEY.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
   ]

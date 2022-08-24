@@ -24,7 +24,7 @@
             Checking:
               - Ensure transactions are transmitted/received correctly
             '''
-      milestone: V1
+      stage: V1
       tests: ["spi_host_smoke"]
     }
     {
@@ -40,7 +40,7 @@
             Checking:
               - Ensure transactions are transmitted/received correctly
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_performance"]
     }
     {
@@ -61,7 +61,7 @@
               - Ensure the matching between the bit-field values of ERROR_ENABLE
                 once the event interrupt pin is asserted
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_overflow_underflow", "spi_host_error_cmd", "spi_host_event"]
     }
     {
@@ -77,7 +77,7 @@
               - verify that merging of commands work correctly
               - verify that the DUT can handle different sck -> cs_n timings
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_speed"]
     }
     {
@@ -89,7 +89,7 @@
             Checking:
               - verify that all speeds are supported
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_speed"]
     }
     {
@@ -101,7 +101,7 @@
             Checking:
               - Check that the DUT operates correctly under different SPI clock speeds
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_speed"]
     }
     {
@@ -118,7 +118,7 @@
               - Ensure that transactions are dropped in both the scoreboard and spi_agent monitor
                 after the tx_fifo or spi_fsm is reset
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_sw_reset"]
     }
     {
@@ -131,7 +131,7 @@
             Checking:
               - Ensure Host to Device and Device to Host paths are switched to Passthrough ports
       '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_passthrough_mode"]
     }
     {
@@ -143,7 +143,7 @@
             Checking:
               - Check that the DUT operates correctly under different cs_n settings
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_speed"]
     }
     {
@@ -155,7 +155,7 @@
             Checking:
               - Check that the data can be read one full cycle after the data was asserted
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_speed"]
     }
     {
@@ -167,7 +167,7 @@
             Checking:
               - verify that the DUT support both half and full duplex in standard mode.
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_smoke"]
     }
     {
@@ -181,7 +181,7 @@
               - verify that the DUT ignores rx line when in tx only mode
               - verify that the DUT does not drain the tx fifo in rx only mode
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_smoke"]
     }
     {
@@ -198,7 +198,7 @@
               - Ensure transactions are transmitted/received correctly
               - Ensure reset is handled correctly
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_stress_all"]
     }
     {
@@ -214,7 +214,7 @@
               - Ensure Rxstall occurs and recovers
               - Ensure Txstall occurs and recovers
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_status_stall"]
     }
     {
@@ -227,7 +227,7 @@
               - Ensure transactions goes through even with a segment pause and idle wait
                 in the state IdleCsbActive
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_host_idlecsbactive"]
     }
     {
@@ -242,7 +242,7 @@
             - Verify the DUT against the WindBond bfm by making the spi agent passive
               to verify that we comply with the spi targeted for opentitan
             '''
-      milestone: V3
+      stage: V3
       tests: []
     }
   ]

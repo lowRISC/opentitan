@@ -13,7 +13,7 @@
             - If the alert is fatal, verify if the alert continuous fires until a reset is
               issued.
             '''
-      milestone: V1
+      stage: V1
       tests: ["prim_async_alert",
               "prim_async_fatal_alert",
               "prim_sync_alert",
@@ -27,7 +27,7 @@
              - Send an alert test request by driving `alert_test` pin to 1.
              - Verify that alert handshake completes and `alert_ack` signal stays low.
             '''
-      milestone: V1
+      stage: V1
       tests: ["prim_async_alert",
               "prim_async_fatal_alert",
               "prim_sync_alert",
@@ -41,7 +41,7 @@
             - Send a ping request by driving `ping_req` pin to 1.
             - Verify that `ping_ok` signal is set and ping handshake completes.
             '''
-      milestone: V1
+      stage: V1
       tests: ["prim_async_alert",
               "prim_async_fatal_alert",
               "prim_sync_alert",
@@ -62,7 +62,7 @@
               drive `init_trigger_i` in prim_alert_receiver.
               Check `ping_ok` returns 1.
             '''
-      milestone: V2
+      stage: V2
       tests: ["prim_async_alert",
               "prim_async_fatal_alert",
               "prim_sync_alert",
@@ -84,7 +84,7 @@
                 - Verify that prim_alert_receiver can identify the integrity error by setting
                   `integ_fail_o` output to 1.
             '''
-      milestone: V1
+      stage: V1
       tests: ["prim_async_alert",
               "prim_async_fatal_alert",
               "prim_sync_alert",
@@ -101,7 +101,7 @@
               and verify we will never miss or drop an alert handshake by expecting `alert_ack_o`
               to return 1 after `alert_req` is sent.
             '''
-      milestone: V3
+      stage: V3
       tests: []
     }
   ]

@@ -29,7 +29,7 @@
 
       Verify this countermeasure with a standardized test.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_tl_intg_err"]
     }
     {
@@ -42,7 +42,7 @@
       JTAG interface, depending on which interface is being used to claim the
       mutex).
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_regwen_during_op"]
     }
     {
@@ -52,7 +52,7 @@
 
       Verify this countermeasure with a standardized test.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
@@ -62,7 +62,7 @@
 
       Verify this countermeasure with a standardized test.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
@@ -72,7 +72,7 @@
 
       Verify this countermeasure with a standardized test.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
@@ -82,7 +82,7 @@
 
       Verify this countermeasure with a standardized test.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
@@ -92,7 +92,7 @@
 
       Verify this countermeasure with a standardized test.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
@@ -102,7 +102,7 @@
 
       Verify this countermeasure with a standardized test.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
@@ -112,7 +112,7 @@
 
       Verify this countermeasure with a standardized test.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
@@ -130,7 +130,7 @@
       * the life cycle state vector and transition counter (from OTP) have an
         invalid encoding (MANUF.STATE.BKGN_CHK, TRANSITION.CTR.BKGN_CHK).
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_cm", "lc_ctrl_state_failure"]
     }
     {
@@ -141,7 +141,7 @@
       Verify that the main FSM goes into the `EscalateSt` if
       any of the two escalation channels (`esc_scrap_state0/1`) is asserted.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_security_escalation"]
     }
     {
@@ -157,7 +157,7 @@
       Note: This is expected to be formally proven by FPV test lc_ctrl_sec_cm_fsm but
       there is currently no mechanism to include this in the testplan.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_state_post_trans", "lc_ctrl_jtag_state_post_trans"]
     }
     {
@@ -193,7 +193,7 @@
       The main life cycle FSM should not progress through the `TransProgSt` if
       this error occurs.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_mubi"]
     }
     {
@@ -206,7 +206,7 @@
       life cycle FSM should not progress through the `TransProgSt` if this
       error occurs.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_mubi"]
     }
     {
@@ -228,7 +228,7 @@
         `TokenCheck0St` and `TokenCheck1St`. Verify that a mismatch in any of
         these checks will lead to a TOKEN_ERROR.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_token_digest"]
     }
     {
@@ -245,7 +245,7 @@
 
       Note: the same test as for TOKEN_VALID.MUX.REDUN can be used.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_token_mux"]
     }
     {
@@ -263,7 +263,7 @@
 
       Note: the same test as for TOKEN_MUX.CTRL.REDUN can be used.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["lc_ctrl_sec_token_mux"]
     }
   ]

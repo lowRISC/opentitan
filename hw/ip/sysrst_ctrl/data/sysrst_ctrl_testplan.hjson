@@ -18,7 +18,7 @@
             * Write a random data to the input keys.
             * Read the data at the output pins and compare it with the input data.
             '''
-      milestone: V1
+      stage: V1
       tests: ["sysrst_ctrl_smoke"]
     }
 
@@ -33,7 +33,7 @@
             * Configure KEY_INVERT_CTL register to invert the output.
             * Check if the output is inverted form of input pins.
             '''
-      milestone: V1
+      stage: V1
       tests: ["sysrst_ctrl_in_out_inverted"]
     }
 
@@ -48,10 +48,10 @@
             * Set the pulse width via EC_RST_CTL register only to raise ec_rst action.
             * Read the COMBO_INTR_STATUS register to check if the interrupt is raised and
               clear the interrupt.
-            * NOTE: This is a directed test with no random values for V1 milestone,
+            * NOTE: This is a directed test with no random values for V1 stage,
               further this test will be randomized.
             '''
-      milestone: V1
+      stage: V1
       tests: ["sysrst_ctrl_combo_detect_ec_rst"]
     }
 
@@ -67,7 +67,7 @@
             * Read the COMBO_INTR_STATUS register to check if the interrupt is raised and clear the
               interrupt.
             '''
-      milestone: V2
+      stage: V2
       tests: ["sysrst_ctrl_combo_detect"]
     }
 
@@ -82,7 +82,7 @@
             * Check whether the input keys stays low for the selected debounce time.
             * Read the AUTO_BLOCK_OUT_CTL register to check if the output key is overridden.
             '''
-      milestone: V2
+      stage: V2
       tests: ["sysrst_ctrl_auto_blk_key_output"]
     }
 
@@ -97,7 +97,7 @@
             * Read the KEY_INTR_STATUS register to check if the interrupt caused and
               clear the interrupt.
             '''
-      milestone: V2
+      stage: V2
       tests: ["sysrst_ctrl_edge_detect"]
     }
 
@@ -110,7 +110,7 @@
             * Allow the output signals to override the value via PIN_ALLOWED_CTL register.
             * Set the override value to the output signal via PIN_OUT_VALUE register.
             '''
-      milestone: V2
+      stage: V2
       tests: ["sysrst_ctrl_override_test"]
     }
 
@@ -123,7 +123,7 @@
               values.
             * Read the PIN_IN_VALUE register and check if the read value is same as input value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["sysrst_ctrl_pin_access_test"]
     }
 
@@ -137,7 +137,7 @@
             * Make sure ec_rst_out_l is asserted even after opentitan reset is released.
             * Set PIN_OUT_CTL.EC_RST_L to 0 to release the ec_rst_out_l reset.
             '''
-      milestone: V2
+      stage: V2
       tests: ["sysrst_ctrl_ec_pwr_on_rst"]
     }
 
@@ -152,7 +152,7 @@
             * Check flash_wp_l_i does not have a bypass path to flash_wp_l_o.
             * Check if flash_wp_l_o is released only by the override function.
             '''
-      milestone: V2
+      stage: V2
       tests: ["sysrst_ctrl_flash_wr_prot_out"]
     }
 
@@ -170,7 +170,7 @@
             * Read the ULP_STATUS register and check if the ultra low power wakeup event is
               detected.
             '''
-      milestone: V2
+      stage: V2
       tests: ["sysrst_ctrl_ultra_low_pwr"]
     }
 
@@ -182,7 +182,7 @@
             * Combine above sequences in one test then randomly select for running.
             * All sequences should be finished and checked by the scoreboard.
       '''
-      milestone: V2
+      stage: V2
       tests: ["sysrst_ctrl_stress_all"]
     }
   ]

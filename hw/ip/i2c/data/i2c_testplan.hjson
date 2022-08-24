@@ -31,7 +31,7 @@
               - Check the timing behavior of START, STOP, ACK, NACK, and "repeated" START
               - Read and write transfer matching
             '''
-      milestone: V1
+      stage: V1
       tests: ["i2c_host_smoke"]
     }
     {
@@ -55,7 +55,7 @@
                 intr_sda_unstable interrupts are asserted and stay asserted until cleared
               - Ensure IP operation get back normal after on-the-fly reset finished
             '''
-      milestone: V2
+      stage: V2
       tests: ["i2c_host_error_intr"]
     }
     {
@@ -73,7 +73,7 @@
               - Ensure transactions are transmitted/received correctly,
               - Ensure reset is handled correctly
             '''
-      milestone: V2
+      stage: V2
       tests: ["i2c_host_stress_all"]
     }
     {
@@ -91,7 +91,7 @@
               - Ensure transactions are transmitted/received correctly
               - Ensure reset is handled correctly
             '''
-      milestone: V2
+      stage: V2
       tests: ["i2c_host_stress_all_with_rand_reset"]
     }
     {
@@ -109,7 +109,7 @@
             Checking:
               - Ensure transactions are transmitted/received correctly
             '''
-      milestone: V2
+      stage: V2
       tests: ["i2c_host_perf"]
     }
     {
@@ -124,7 +124,7 @@
             Checking:
               - Ensure scl_o, sda_o are overridden
             '''
-      milestone: V2
+      stage: V2
       tests: ["i2c_host_override"]
     }
     {
@@ -142,7 +142,7 @@
               - Ensure the fmt_fifo and rx_fifo watermark interrupts stay asserted until cleared
               - Ensure receving correct number of fmt_fifo and rx_fifo watermark interrupts
             '''
-      milestone: V2
+      stage: V2
       tests: ["i2c_host_fifo_watermark"]
     }
     {
@@ -159,7 +159,7 @@
               - Ensure excess format bytes are dropped
               - Ensure fmt_overflow and rx_overflow interrupt are asserted
             '''
-      milestone: V2
+      stage: V2
       tests: ["i2c_host_fifo_overflow"]
     }
     {
@@ -175,7 +175,7 @@
             Checking:
               - Ensure the remaining entries are not show up after fmt_fifo is reset
             '''
-      milestone: V2
+      stage: V2
       tests: ["i2c_host_fifo_reset_fmt", "i2c_host_fifo_reset_rx", "i2c_host_fifo_fmt_empty"]
     }
     {
@@ -191,7 +191,7 @@
             Checking:
               - Check fifo full states by reading status register
             '''
-      milestone: V2
+      stage: V2
       tests: ["i2c_host_fifo_full"]
     }
     {
@@ -210,7 +210,7 @@
               - Ensure stretch_timeout is asserted and a correct number is received
 
             '''
-      milestone: V2
+      stage: V2
       tests: ["i2c_host_timeout"]
     }
     {
@@ -225,7 +225,7 @@
             Checking:
               - Read rx data oversampled value and ensure it is same as driven value
             '''
-      milestone: V2
+      stage: V2
       tests: ["i2c_host_rx_oversample"]
     }
 
@@ -251,7 +251,7 @@
               - Check the timing behavior of START, STOP, ACK, NACK, and "repeated" START
               - Read and write transfer matching
             '''
-      milestone: V1
+      stage: V1
       tests: [""]
     }
     {
@@ -267,7 +267,7 @@
               - Ensure all acq_stop is asserted and stay asserted until cleared
               - Ensure IP operation get back normal after on-the-fly reset finished
             '''
-      milestone: V2
+      stage: V2
       tests: [""]
     }
     {
@@ -284,7 +284,7 @@
               - Ensure transactions are transmitted/received correctly,
               - Ensure reset is handled correctly
             '''
-      milestone: V2
+      stage: V2
       tests: [""]
     }
     {
@@ -302,7 +302,7 @@
               - Ensure transactions are transmitted/received correctly
               - Ensure reset is handled correctly
             '''
-      milestone: V2
+      stage: V2
       tests: [""]
     }
     {
@@ -320,7 +320,7 @@
             Checking:
               - Ensure transactions are transmitted/received correctly
             '''
-      milestone: V2
+      stage: V2
       tests: [""]
     }
     {
@@ -337,7 +337,7 @@
               - Ensure excess format bytes are dropped
               - Ensure tx_overflow and acq_overflow interrupt are asserted
             '''
-      milestone: V2
+      stage: V2
       tests: [""]
     }
     {
@@ -354,7 +354,7 @@
                 in tx_fifo
                 otherwise tx_empty interrupt must be asserted
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -370,7 +370,7 @@
             Checking:
               - Ensure the remaining entries are not show up after fmt_fifo is reset,
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -386,7 +386,7 @@
             Checking:
               - Check fifo full states by reading status register
             '''
-      milestone: V2
+      stage: V2
       tests: [""]
     }
     {
@@ -403,7 +403,7 @@
               - Ensure host_timeout is asserted and a correct number is received
 
             '''
-      milestone: V2
+      stage: V2
       tests: [""]
     }
   ]

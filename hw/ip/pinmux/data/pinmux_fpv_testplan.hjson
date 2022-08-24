@@ -11,14 +11,14 @@
       name: InSel0_A
       desc: '''When register `periph_insel` is set to 0, which means the selected input is constant
              zero, the corresponding `mio_to_periph_o` must be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: InSel1_A
       desc: '''When register `periph_insel` is set to 1, which means the selected input is constant
             one, the corresponding `mio_to_periph_o` must be 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -26,14 +26,14 @@
       desc: '''When register `periph_insel` is set to any value between 2 and
             (2 + number of MioPads) and the select index is not jtag, the corresponding
             `mio_to_periph_o` must be equal to the related `mio_in_i` value.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: InSelOOB_A
       desc: '''When register `periph_insel` is set to any value larger than
             (2 + number of MioPads), the corresponding `mio_to_periph_o` must be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -46,7 +46,7 @@
             - The corresponding `mio_in_i` is 0.
             - Jtag is enabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
     {
@@ -56,7 +56,7 @@
             - The corresponding `mio_in_i` is 1.
             - Jtag is enabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
 
@@ -65,7 +65,7 @@
     {
       name: DioInSelN_A
       desc: "This assertion checks that `dio_to_periph_o` is directly connected to `dio_in_i`."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -75,21 +75,21 @@
       name: OutSel0_A
       desc: '''When register `mio_outsel` is set to 0 and is not in sleep mode or jtag, which means
             the selected output is constant zero, the corresponding `mio_out_o` must be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: OutSel1_A
       desc: '''When register `mio_outsel` is set to 1 and is not in sleep mode or jtag, which means
             the selected output is constant one, the corresponding `mio_out_o` must be 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: OutSel2_A
       desc: '''When register `mio_outsel` is set to 2 and is not in sleep mode or jtag, which means
             the selected output is driving high-Z, the corresponding `mio_out_o` must be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -97,7 +97,7 @@
       desc: '''When register `mio_outsel` is set to any value between 3 and
             (3 + Number of periph out) and is not in sleep mode or jtag, the corresponding
             `mio_out_o` must be equal to the related `periph_to_mio_i` value.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -105,7 +105,7 @@
       desc: '''When register `mio_outsel` is set to any value larger than
             (3 + Number of periph out) and is not in sleep mode, the corresponding `mio_out_o` must
             be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -118,7 +118,7 @@
             - The corresponding `periph_to_mio_i` is 0.
             - Sleep mode is enabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
     {
@@ -128,7 +128,7 @@
             - The corresponding `periph_to_mio_i` is 1.
             - Sleep mode is enabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
 
@@ -138,14 +138,14 @@
       name: OutSelOe0_A
       desc: '''When register `mio_outsel` is set to 0 and is not in sleep mode or jtag, the
             corresponding `mio_oe_o` must be 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: OutSelOe1_A
       desc: '''When register `mio_outsel` is set to 1 and is not in sleep mode or jtag, the
             corresponding `mio_oe_o` must be 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -153,7 +153,7 @@
       desc: '''When register `mio_outsel` is set to 2 and is not in sleep mode or jtag, which
             indicates driving high-Z to the selected output, the corresponding `mio_oe_o` must
             be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -161,7 +161,7 @@
       desc: '''When register `mio_outsel` is set to any value between 3 and
             (3 + Number of periph out) and is not in sleep mode or jtag, the corresponding
             `mio_oe_o` must be equal to the related `periph_to_mio_oe_i` value.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -169,7 +169,7 @@
       desc: '''When register `mio_outsel` is set to any value larger than
             (3 + Number of periph out) and is not in sleep mode, the corresponding `mio_oe_o` must
             be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -182,7 +182,7 @@
             - The corresponding `periph_to_mio_oe_i` is 0.
             - Sleep mode is enabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
     {
@@ -192,7 +192,7 @@
             - The corresponding `periph_to_mio_oe_i` is 1.
             - Sleep mode is enabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
 
@@ -204,7 +204,7 @@
             `mio_pad_sleep_mode` is 0, which means the pad is driven zero in deep sleep mode.
             If, in the meantime, register `mio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `mio_out_o` must be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -213,7 +213,7 @@
             `mio_pad_sleep_mode` is 1, which means the pad is driven one in deep sleep mode.
             In the meantime, if register `mio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `mio_out_o` must be 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -222,7 +222,7 @@
             `mio_pad_sleep_mode` is 2, which means the pad is driven high-Z in deep sleep mode.
             In the meantime, if register `mio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `mio_out_o` must be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -233,7 +233,7 @@
             In the meantime, if register `mio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `mio_out_o` should be stable.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -242,7 +242,7 @@
             `mio_pad_sleep_status` is not written via TLUL interface to clear the sleep status, the
             corresponding `mio_out_o` should be stable.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -254,7 +254,7 @@
             `mio_pad_sleep_mode` is 0, which means the pad is driven zero in deep sleep mode.
             In the meantime, if register `mio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `mio_oe_o` must be 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -263,7 +263,7 @@
             `mio_pad_sleep_mode` is 1, which means the pad is driven one in deep sleep mode.
             In the meantime, if register `mio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `mio_oe_o` must be 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -272,7 +272,7 @@
             `mio_pad_sleep_mode` is 2, which means the pad is driven high-Z in deep sleep mode.
             In the meantime, if register `mio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `mio_oe_o` must be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -283,7 +283,7 @@
             In the meantime, if register `mio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `mio_oe_o` should be stable.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -292,7 +292,7 @@
             `mio_pad_sleep_status` is not written via TLUL interface to clear the sleep status, the
             corresponding `mio_oe_o` should be stable.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -305,7 +305,7 @@
             - In sleep mode, previous `mio_out_o` is 0 and `mio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `mio_out_o` is 0 and input `sleep_en_i` is not at posedge.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
     {
@@ -315,7 +315,7 @@
             - In sleep mode, previous `mio_out_o` is 1 and `mio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `mio_out_o` is 1 and input `sleep_en_i` is not at posedge.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
 
@@ -328,7 +328,7 @@
             - In sleep mode, previous `mio_oe_o` is 0 and `mio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `mio_oe_o` is 0 and input `sleep_en_i` is not at posedge.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
     {
@@ -338,7 +338,7 @@
             - In sleep mode, previous `mio_oe_o` is 1 and `mio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `mio_oe_o` is 1 and input `sleep_en_i` is not at posedge.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
 
@@ -347,7 +347,7 @@
     {
       name: DOutSelN_A
       desc: "`dio_out_o` is connected to `periph_to_dio_i` if not in sleep mode."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -356,7 +356,7 @@
     {
       name: DOutSelOeN_A
       desc: "`dio_oe_o` is connected to `periph_to_dio_oe_i` if not in sleep mode."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -368,7 +368,7 @@
             `dio_pad_sleep_mode` is 0, which means the pad is driven zero in deep sleep mode.
             In the meantime, if register `dio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `dio_out_o` must be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -377,7 +377,7 @@
             `dio_pad_sleep_mode` is 1, which means the pad is driven one in deep sleep mode.
             In the meantime, if register `dmio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `dio_out_o` must be 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -386,7 +386,7 @@
             `dio_pad_sleep_mode` is 2, which means the pad is driven high-Z in deep sleep mode.
             In the meantime, if register `dio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `dio_out_o` must be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -397,7 +397,7 @@
             In the meantime, if register `dio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `dio_out_o` should be stable.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -406,7 +406,7 @@
             `dio_pad_sleep_status` is not written via TLUL interface to clear the sleep status, the
             corresponding `dio_out_o` should be stable.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -418,7 +418,7 @@
             `dio_pad_sleep_mode` is 0, which means the pad is driven zero in deep sleep mode.
             In the meantime, if register `dio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `dio_oe_o` must be 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -427,7 +427,7 @@
             `dio_pad_sleep_mode` is 1, which means the pad is driven one in deep sleep mode.
             In the meantime, if register `dio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `dio_oe_o` must be 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -436,7 +436,7 @@
             `dio_pad_sleep_mode` is 2, which means the pad is driven high-Z in deep sleep mode.
             In the meantime, if register `dio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `dio_oe_o` must be 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -447,7 +447,7 @@
             In the meantime, if register `dio_pad_sleep_status` is not written via TLUL interface
             to clear the sleep status, the corresponding `dio_oe_o` should be stable.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -456,7 +456,7 @@
             `dio_pad_sleep_status` is not written via TLUL interface to clear the sleep status, the
             corresponding `dio_oe_o` should be stable.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -470,7 +470,7 @@
             - In sleep mode, previous `dio_out_o` is 0 and `dio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `dio_out_o` is 0 and input `sleep_en_i` is not at posedge.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
     {
@@ -481,7 +481,7 @@
             - In sleep mode, previous `dio_out_o` is 1 and `dio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `dio_out_o` is 1 and input `sleep_en_i` is not at posedge.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
 
@@ -495,7 +495,7 @@
             - In sleep mode, previous `dio_oe_o` is 0 and `dio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `dio_oe_o` is 0 and input `sleep_en_i` is not at posedge.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
     {
@@ -506,7 +506,7 @@
             - In sleep mode, previous `dio_oe_o` is 1 and `dio_pad_sleep_mode` is set to 3.
             - In sleep mode, previous `dio_oe_o` is 1 and input `sleep_en_i` is not at posedge.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
 
@@ -515,13 +515,13 @@
       name: MioAttrO_A
       desc: '''`mio_attr_o` should be equal to corresponding `mio_pad_attr` register value and
             TargetCfg's mio_pad_type configuration.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: MioJtagAttrO_A
       desc: "If jtag is enabled, the jtag `mio_attr_o` index should be equal to 0."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -530,7 +530,7 @@
       name: DioAttrO_A
       desc: '''`dio_attr_o` should be equal to corresponding `dio_pad_attr` register value and
             TargetCfg's dio_pad_type configuration.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -543,7 +543,7 @@
       desc: '''When register `wkup_detector_en` is set to 1 and `wkup_detector.mode` is set to 0,
             which means rising edge is used to detect wakeup. If variable `final_pin_val` is at
             posedge then `wkup_cause` register's `de` attribute should be set to 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -551,7 +551,7 @@
       desc: '''When register `wkup_detector_en` is set to 1 and `wkup_detector.mode` is set to 1,
             which means falling edge is used to detect wakeup. If variable `final_pin_val` is at
             negedge, then `wkup_cause` register's `de` attribute should be set to 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -560,7 +560,7 @@
             which means either rising or falling edge is used to detect wakeup. If variable
             `final_pin_val` is at posedge or negedge, then `wkup_cause` register's `de` attribute
             should be set to 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -569,7 +569,7 @@
             which means postive pulse cycles are used to detect wakeup. If variable `final_pin_val`
             stays high longer than the threshold, then `wkup_cause` register's `de` attribute
             should be set to 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -578,21 +578,21 @@
             which means negative pulse cycles are used to detect wakeup. If variable `final_pin_val`
             stays low longer than the threshold, then `wkup_cause` register's `de` attribute should
             be set to 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: WkupCauseQ_A
       desc: '''When `wkup_cause` register's `de` attribute is set to 1 and user is not writing to
             `wkup_cause` at the same cycle, then `wkup_cause.q` should be set to 1.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: AonWkupO_A
       desc: '''When register `wkup_cause` is 1, `pin_wkup_req_o` should also be 1.
             `pin_wkup_req_o` is 0 only when all `wkup_cause` registers are 0.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -600,13 +600,13 @@
     {
       name: WkupCause0_A
       desc: "Register `wkup_cause` is 0 only when none of the above wakeup conditions is met."
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
     {
       name: WkupCause1_A
       desc: "Register `wkup_cause` is 1 when at least one of the above wakeup conditions is met."
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
 
@@ -615,7 +615,7 @@
       name: LcJtagWoScanmode_A
       desc: '''Not in scanmode, when tap_strap select LC_tap, `lc_jtag_o` must be equal to the
             corresponding `mio_in_i` pins based on the `TargetCfg` configuration.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -623,13 +623,13 @@
       desc: '''In scanmode, when tap_strap select LC_tap, `lc_jtag_o` must be equal to the
             corresponding `mio_in_i` pins based on the `TargetCfg` configuration except the
             `jtag_trst` pin, which must be equal to `rst_ni`.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: LcJtagODefault_A
       desc: "`lc_jtag_o` should stay 0 if tap_strap did not select LC_tap."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -639,7 +639,7 @@
             - Lc Jtag is disabled and the corresponding pins are 0.
             - Lc Jtag is enabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
 
@@ -649,7 +649,7 @@
       desc: '''Not in scanmode, when tap_strap select RV_tap and `lc_hw_debug_en_i` input is On for
             the past two clock cycles due to the synchronizer, then `rv_jtag_o` must be equal to
             the corresponding `mio_in_i` pins based on the `TargetCfg` configuration.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -659,14 +659,14 @@
             corresponding `mio_in_i` pins based on the `TargetCfg` configuration except the
             `jtag_trst` pin, which must be equal to `rst_ni`.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: RvJtagODefault_A
       desc: '''`rv_jtag_o` should stay 0 if tap_strap did not select RV_tap or `lc_hw_debug_en_i`
             input is Off for the past two clock cycles due to the synchronizer.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -676,7 +676,7 @@
             - Rv Jtag is disabled and the corresponding pins are 0.
             - Rv Jtag is enabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
 
@@ -686,7 +686,7 @@
       desc: '''Not in scanmode, when tap_strap select DFT_tap and `lc_dft_en_i` is On for the past
             two clock cycles due to the synchronizer, `lc_jtag_o` must be equal to the
             corresponding `mio_in_i` pins based on the `TargetCfg` configuration.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -695,14 +695,14 @@
             two clock cycles due to the synchronizer, `lc_jtag_o` must be equal to the
             corresponding `mio_in_i` pins based on the `TargetCfg` configuration except the
             `jtag_trst` pin, which must be equal to `rst_ni`.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: DftJtagODefault_A
       desc: '''`dft_jtag_o` should stay 0 if tap_strap did not select DFT_tap or the `lc_dft_en_i`
             input is Off for the past two clock cycles due to the synchronizer.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -712,7 +712,7 @@
             - Dft Jtag is disabled and the corresponding pins are 0.
             - Dft Jtag is enabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
     {
@@ -720,7 +720,7 @@
       desc: '''`dft_jtag_o` pins are ones if one of the following conditions are met:
             - Dft Jtag is enabled and the corresponding pins are 1.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pinmux_assert"]
     }
 
@@ -732,7 +732,7 @@
             the synchronizer, then tap_strap must be equal to the past value of corresponding
             `mio_in_i`.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -741,7 +741,7 @@
             due to the synchronizer, or `strap_en_i` is 1.
             Then tap_strap[0] must be equal to the past value of corresponding `mio_in_i`.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -750,7 +750,7 @@
       name: LcJtagI_A
       desc: '''When Lc tap is selected, the corresponding `mio_out_o` and `mio_out_oe` should be
             equal to `lc_jtag_i`.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -758,7 +758,7 @@
       desc: '''When Rv tap is selected and `lc_hw_debug_en_i` is On for the past two clock cycles
             due to the synchronizer, the corresponding `mio_out_o` and `mio_out_oe` should be equal
             to `rv_jtag_i`.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
@@ -766,7 +766,7 @@
       desc: '''When Dft tap is selected and `lc_dft_en_i` is On for the past two clock cycles
             due to the synchronizer, the corresponding `mio_out_o` and `mio_out_oe` should be equal
             to `dft_jtag_i`.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -776,19 +776,19 @@
       desc: '''When `lc_dft_en_i` is On for the past two clock cycles due to the synchronizer,
             `dft_strap_test_o.valid` must be 1, and `dft_strap_test_o.straps` should be equal to
             the corresponding `mio_in_i` index.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: DftStrapTestOValidStable_A
       desc: "`dft_strap_test_o.valid` once set to 1 will stay high until reset."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: DftStrapTestOStrapStable_A
       desc: "`dft_strap_test_o.valid` once set, `dft_strap_test_o.straps` should stay stable."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
 
@@ -798,88 +798,86 @@
     {
       name: UsbSleepEnI_A
       desc: "`sleep_en_i` should be connected directly to usbdev's `low_power_alw_i`."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbDppullupEnUpwrI_A
       desc: '''`usb_dppullup_en_upwr_i` should be connected directly to usbdev's
             `usb_dppullup_en_upwr_i`.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbDnpullupEnUpwrI_A
       desc: '''`usb_dnpullup_en_upwr_i` should be connected directly to usbdev's
             `usb_dnpullup_en_upwr_i`.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbDppullupEnO_A
       desc: '''`usb_dppullup_en_o` should be connected directly to usbdev's
             `usb_dppullup_en_o`.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbDnpullupEnO_A
       desc: '''`usb_dnpullup_en_o` should be connected directly to usbdev's
             `usb_dnpullup_en_o`.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbOutOfRstI_A
       desc: "`usb_out_of_rst_i` should be connected directly to usbdev's `usb_out_of_rst_upwr_i`."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbAonWakeEnUpwrI_A
       desc: '''`usb_aon_wake_en_i` should be connected directly to usbdev's
             `usb_aon_wake_en_upwr_i`.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbAonWakeAckUpwrI_A
       desc: '''`usb_aon_wake_ack_i` should be connected directly to usbdev's
             `usb_aon_woken_upwr_i`.'''
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbSuspendI_A
       desc: "`usb_suspend_i` should be connected directly to usbdev's `usb_suspended_upwr_i`."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbWkupReqO_A
       desc: "`usb_wkup_req_o` should be connected directly to usbdev's `wake_rep_alw_o`."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbBusResetO_A
       desc: "`usb_bus_reset_o` should be connected directly to usbdev's `bus_reset_alw_o`."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbSenseLostO_A
       desc: "`usb_sense_lost_o` should be connected directly to usbdev's `bus_lost_alw_o`."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
     {
       name: UsbStateDebugO_A
       desc: "`usb_state_debug_o` should be connected directly to usbdev's `bus_debug_o`."
-      milestone: V1
+      stage: V1
       tests: ["pinmux_assert"]
     }
  ]
 }
-
-

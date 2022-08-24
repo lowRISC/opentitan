@@ -30,7 +30,7 @@
               without the OtpError interrupt
             - read out secrets through the hardware interfaces
             '''
-      milestone: V1
+      stage: V1
       tests: ["otp_ctrl_wake_up"]
     }
     {
@@ -56,7 +56,7 @@
               `otp_vendor_test_ctrl_i`, `cio_test_o`, and `cio_test_en_o` are connected currently
               with `lc_dft_en_i` On and Off.
             '''
-      milestone: V1
+      stage: V1
       tests: ["otp_ctrl_smoke"]
     }
     {
@@ -65,7 +65,7 @@
             Similar to UVM's memory walk test, this test ensures every address in each partition
             can be accessed successfully via DAI and TLUL interfacs according to its access policy.
             '''
-      milestone: V2
+      stage: V2
       tests: ["otp_ctrl_partition_walk"]
     }
     {
@@ -88,7 +88,7 @@
             - OTP initialization finishes with power init output goes to 1
             - `status`, `intr_state`, `err_code` CSRs reflect ECC correctable error
             '''
-      milestone: V2
+      stage: V2
       tests: ["otp_ctrl_init_fail"]
     }
     {
@@ -111,7 +111,7 @@
             Note that due to limited simulation time, for background checks, this test only write
             random value that is less than 20 to the check period.
             '''
-      milestone: V2
+      stage: V2
       tests: ["otp_ctrl_check_fail", "otp_ctrl_background_chks"]
     }
     {
@@ -127,7 +127,7 @@
             - verify that the writes to the registers controlled by it do not go through during OTP
               initialization
             '''
-      milestone: V2
+      stage: V2
       tests: ["otp_ctrl_regwen"]
     }
     {
@@ -137,7 +137,7 @@
             write. After locking the partitions, issue read or program sequences and check if the
             operations are locked correctly, and check if the `AccessError` is set.
             '''
-      milestone: V2
+      stage: V2
       tests: ["otp_ctrl_dai_lock"]
     }
     {
@@ -147,7 +147,7 @@
             Based on the DAI access sequence, this test will run key requests sequence in
             parallel, and check if correct keys are generated.
             '''
-      milestone: V2
+      stage: V2
       tests: ["otp_ctrl_parallel_key_req"]
     }
     {
@@ -165,7 +165,7 @@
             - if `lc_escalation_en` is enabled, verify that alert is triggered and OTP_CTRL entered
               terminal state
             '''
-      milestone: V2
+      stage: V2
       tests: ["otp_ctrl_parallel_lc_req", "otp_ctrl_parallel_lc_esc"]
     }
     { name: otp_dai_errors
@@ -180,7 +180,7 @@
             - `err_code` and `status` CSRs
             - `otp_error` interrupt
             '''
-      milestone: V2
+      stage: V2
       tests: ["otp_ctrl_dai_errs"]
     }
     { name: otp_macro_errors
@@ -196,7 +196,7 @@
             - if the error is unrecoverable, verify that alert is triggered and OTP_CTRL entered
               terminal state
             '''
-      milestone: V2
+      stage: V2
       tests: ["otp_ctrl_macro_errs"]
     }
     {
@@ -208,7 +208,7 @@
             - Write and check read results from the prim_tl_i/o.
             - Ensure no error or alert occurs from DUT.
             '''
-      milestone: V2
+      stage: V2
       tests: ["otp_ctrl_test_access"]
     }
     {
@@ -217,7 +217,7 @@
             - combine above sequences in one test to run sequentially, except csr sequence
             - randomly add reset between each sequence
             '''
-      milestone: V2
+      stage: V2
       tests: ["{name}_stress_all"]
     }
     {
@@ -233,7 +233,7 @@
             - Check OTP_CTRL is locked after the fatal fault injection by trying to access OTP_CTRL
               via dai, kdi, and lci interfaces.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["otp_ctrl_sec_cm"]
     }
     {
@@ -248,7 +248,7 @@
             - Use DAI access to read each memory address and compare if the value is correct.
             - If DAI address is in a SW partition, read and check again via TLUL interface.
             '''
-      milestone: V3
+      stage: V3
       tests: ["otp_ctrl_low_freq_read"]
     }
   ]

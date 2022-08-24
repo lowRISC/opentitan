@@ -43,7 +43,7 @@
                 during each hash operation and ensure that internal state is being updated
                 correctly
             '''
-      milestone: V1
+      stage: V1
       tests: ["{variant}_smoke"]
     }
     {
@@ -61,7 +61,7 @@
             Set function name as "KMAC" and enable full randomization of customization string (if
             applicable).
             '''
-      milestone: V2
+      stage: V2
       tests: ["{variant}_long_msg_and_output"]
     }
     {
@@ -70,7 +70,7 @@
             This is the same as the long_message test, except we burst-write chunks of the message
             into the msg_fifo, and disable intermediate status/CSR checks.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{variant}_burst_write"]
     }
     {
@@ -79,7 +79,7 @@
             These tests drive NIST test vectors for SHA3/SHAKE/KMAC into the design and check
             the output against the expected digest values.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{variant}_test_vectors_sha3_224", "{variant}_test_vectors_sha3_256",
               "{variant}_test_vectors_sha3_384", "{variant}_test_vectors_sha3_512",
               "{variant}_test_vectors_shake_128", "{variant}_test_vectors_shake_256",
@@ -93,7 +93,7 @@
             KMAC should operate on the sideloaded key regardless of the cfg_shadowed.sideload field
             value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{variant}_sideload"]
     }
     {
@@ -108,7 +108,7 @@
             In addition, read from the STATE window afterwards and confirm that this access is
             blocked and will return 0.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{variant}_app"]
     }
     {
@@ -120,7 +120,7 @@
             will not check `status` and `intr_state` registers, but will check other registers and
             all interface data including digest.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{variant}_app_with_partial_data"]
    }
    {
@@ -143,7 +143,7 @@
             //       added later.
             //       So this might be split into several error tests later on.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{variant}_error"]
     }
     {
@@ -162,7 +162,7 @@
             - Check keymgr interface responses with all zero digests and error bit is set.
             - Check kmac can resume normal functionalities after processing this error case.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{variant}_key_error"]
     }
     {
@@ -177,7 +177,7 @@
             - Check timeout error will not trigger if the `entropy_mode` is set to SW, or masking
               is disabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{variant}_edn_timeout_error"]
     }
      {
@@ -191,7 +191,7 @@
             - Check kmac can resume normal functionalities after processing this error case.
             - Check timeout error will not trigger if masking is disabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{variant}_entropy_mode_error"]
     }
    {
@@ -205,7 +205,7 @@
             - Kmac does not accept any SW or APP requests.
             - Digest window always output all 0s.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{variant}_lc_escalation"]
     }
     {
@@ -214,7 +214,7 @@
             - Combine above sequences in one test to run sequentially, except csr sequence and
               some error tests that disabled scoreboard.
             - Randomly add reset between each sequence'''
-      milestone: V2
+      stage: V2
       tests: ["kmac_stress_all"]
     }
     {
@@ -231,7 +231,7 @@
 
             This will be checked in the scoreboard using the cycle acurate model.
             '''
-      milestone: V3
+      stage: V3
       tests: ["{variant}_entropy"]
     }
     {
@@ -240,7 +240,7 @@
             Measure the throughput of the various hashing calculations and make sure they correspond
             to the expected throughput range for the design.
             '''
-      milestone: V3
+      stage: V3
       tests: ["{variant}_throughput"]
     }
   ]

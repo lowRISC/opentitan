@@ -29,7 +29,7 @@
             - Wiggle the `unavailable` input and read the DTM register field dmstatus[allunavail]
               to verify that it reflects the same value as the input signal.
             '''
-      milestone: V1
+      stage: V1
       tests: ["rv_dm_smoke"]
 
     }
@@ -44,7 +44,7 @@
             In these set of tests, the lc_hw_debug_en is set to true, scanmode & scan_rst_n inputs
             to false.
             '''
-      milestone: V1
+      stage: V1
       tests: ["rv_dm_jtag_dtm_csr_hw_reset"]
     }
     {
@@ -55,7 +55,7 @@
             See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
             the same approach, but applies to the JTAG DTM regisers.
             '''
-      milestone: V1
+      stage: V1
       tests: ["rv_dm_jtag_dtm_csr_rw"]
     }
     {
@@ -66,7 +66,7 @@
             See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
             the same approach, but applies to the JTAG DTM regisers.
             '''
-      milestone: V1
+      stage: V1
       tests: ["rv_dm_jtag_dtm_csr_bit_bash"]
     }
     {
@@ -77,7 +77,7 @@
             See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
             the same approach, but applies to the JTAG DTM regisers.
             '''
-      milestone: V1
+      stage: V1
       tests: ["rv_dm_jtag_dtm_csr_aliasing"]
     }
     {
@@ -94,7 +94,7 @@
             Also, the dmcontrol[dmactive] field is set to 1 at the start, to ensure CSR accesses to
             all other registers go through.
             '''
-      milestone: V1
+      stage: V1
       tests: ["rv_dm_jtag_dmi_csr_hw_reset"]
     }
     {
@@ -105,7 +105,7 @@
             See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
             the same approach, but applies to the JTAG DMI regisers.
             '''
-      milestone: V1
+      stage: V1
       tests: ["rv_dm_jtag_dmi_csr_rw"]
     }
     {
@@ -116,7 +116,7 @@
             See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
             the same approach, but applies to the JTAG DMI regisers.
             '''
-      milestone: V1
+      stage: V1
       tests: ["rv_dm_jtag_dmi_csr_bit_bash"]
     }
     {
@@ -127,7 +127,7 @@
             See hw/dv/tools/dvsim/testplans/csr_testplan.hjson for more description, This follows
             the same approach, but applies to the JTAG DMI regisers.
             '''
-      milestone: V1
+      stage: V1
       tests: ["rv_dm_jtag_dmi_csr_aliasing"]
     }
     {
@@ -139,7 +139,7 @@
             - Read the IDCODE register in JTAG DTM register space, via JTAG.
             - Verify it reads back what was set.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rv_dm_smoke"]
     }
     {
@@ -151,7 +151,7 @@
               dtmcs[dmihardreset] bit.
             - Read the target DMI register to verify the write did not succeed.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -165,7 +165,7 @@
             - Issue random legal DMI accesses back to back and ensure that all of them complete
               successfully, without dmistat reflecting an error.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -181,7 +181,7 @@
               successfully by doing a read-check.
             - TBO - unclear how to generate other types of failed DMI transactions.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -193,7 +193,7 @@
             - Perform random writes to DMI registers while dmcontrol[dmactive] is 0 (exclude it).
             - Read all DMI registers back and verify they reflect POR values.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -216,7 +216,7 @@
               no alerts occur.
             - Hav.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rv_dm_sba_tl_access"]
     }
     {
@@ -235,7 +235,7 @@
             - pulp-platform/riscv-dbg#86: bad address (sberror = 2) is not defined or implemented.
             - 'Other' error cases (sberror = 7) is not defined.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rv_dm_bad_sba_tl_access"]
     }
     {
@@ -254,7 +254,7 @@
               the sbdata0 a randomized number of times - each read should trigger a new SBA TL read
               access.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rv_dm_autoincr_sba_tl_access"]
     }
     {
@@ -273,7 +273,7 @@
             - Set lc_hw_debug_en to true and again, read the DMI CSR - it should reflect the
               originally written value.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -291,7 +291,7 @@
             - Reapeat, a random number of times.
             - Verify via assertion checks, no transactions were seen on the SBA TL interface.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -309,7 +309,7 @@
             - Set lc_hw_debug_en to true and again, read the debug mem CSR - it should reflect the
               originally written value.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -325,7 +325,7 @@
               register in the debub memory.
             - Ensure that the polling in the loop above completes.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -347,7 +347,7 @@
             - Read the previously written registers back and verify that they reflect the previously
               written value, proving that ndmreset assertion had no effect on them.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -361,7 +361,7 @@
             - Periodically issue reads to dmstatus register to verify allunavail matches the
               `unavailable` input value
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -371,7 +371,7 @@
 
             - TBD.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -381,7 +381,7 @@
 
             - TBD
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -391,7 +391,7 @@
 
             - TBD
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -403,7 +403,7 @@
               Run the rest sequentially.
             - Randomly inject a full device reset intermittently.
             '''
-      milestone: V2
+      stage: V2
       tests: ["rv_dm_stress_all"]
     }
   ]

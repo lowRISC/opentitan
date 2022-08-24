@@ -24,7 +24,7 @@
             for writes. Interrupts are not enabled, Completion is ascertained through polling. The
             success of each operation is verified via backdoor.
             '''
-      milestone: V1
+      stage: V1
       tests: ["flash_ctrl_smoke"]
     }
     {
@@ -34,7 +34,7 @@
             initialized with random values and then it is being read directly by Host interface.
             Finally, backdoor read is used for checking read data.
             '''
-      milestone: V1
+      stage: V1
       tests: ["flash_ctrl_smoke_hw"]
     }
     {
@@ -44,7 +44,7 @@
             bank within Data partition. Finally perform read on same location in order to test
             if previous operation was done successfully.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_sw_op"]
     }
     {
@@ -54,7 +54,7 @@
             interface. In addition, perform stalls to test pipeline structure. Enable scramble to
             test pipeline structure.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_host_dir_rd"]
     }
     {
@@ -63,7 +63,7 @@
             Perform RMA entry requests and check afterwards that the  software has no access to
             the Flash.  After RMA entry, verify that the content of the flash is wiped out.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_hw_rma", "flash_ctrl_hw_rma_reset"]
     }
     {
@@ -75,7 +75,7 @@
             before the RMA starts. When the RMA completes the RMA FSM remains in its final state
             until Reset and software access is blocked.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_host_ctrl_arb"]
     }
     {
@@ -86,7 +86,7 @@
             Check if request is cleared in case when suspend is handled.
             Read affected bank in order to verify erase suspension feature.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_erase_suspend"]
     }
     {
@@ -96,7 +96,7 @@
             partitions can be directly read by Software(Flash controller) and hardware hosts,
             while Info partitions can be read only by the Flash controller.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_full_mem_access"]
     }
     {
@@ -107,7 +107,7 @@
             and Host interface. All combinations should be tested. Covergroup for this hazardous
             behavior is rd_buff_evict_cg.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_rd_buff_evict"]
     }
     {
@@ -119,7 +119,7 @@
             progress. Perform parallel operations at addresses of different banks and also on same
             bank. Expect that operations are successfully executed.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_phy_arb"]
     }
     {
@@ -131,7 +131,7 @@
             and on the same address. Expect that operations are successfully
             executed.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_phy_arb"]
     }
     {
@@ -142,7 +142,7 @@
             enable bits. Test boundary values of regions. Test overlap of regions in which lower
             region wins arbitration.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_mp_regions"]
     }
     {
@@ -152,7 +152,7 @@
             Reads for instructions via the Hardware Interface are allowed if a specific value
             is written to the EXEC csr.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_fetch_code"]
     }
     {
@@ -161,7 +161,7 @@
             Sanity + both, legal data and info partitions are accessed. In future, support for
             multiple info partitions may be added - those will be covered as well.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_rand_ops"]
     }
     {
@@ -170,7 +170,7 @@
             Perform accesses in order to provoke memory permission errors. Test the Software
             interface (Erase, Program, Read). Related covergroup is error_cg.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_error_mp"]
     }
     {
@@ -179,7 +179,7 @@
             Perform accesses in order to provoke read data error. Test both, Software interface and
             Hardware interface. Related covergroup is error_cg.
             '''
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
@@ -188,7 +188,7 @@
             Perform accesses in order to provoke the 'program resolution' error.
             Test via the Software interface. Related covergroup is error_cg.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_error_prog_win"]
     }
     {
@@ -197,7 +197,7 @@
             Perform accesses in order to provoke the 'program type' error.
             Test via the Software interface. Related covergroup is error_cg.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_error_prog_type"]
     }
     {
@@ -206,7 +206,7 @@
             - combine above sequences in one test to run sequentially, except csr sequence
             - randomly add reset between each sequence
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_stress_all"]
     }
     {
@@ -215,7 +215,7 @@
             Perform accesses in order to provoke native flash error. Test both, Software interface
             and Hardware interface. Related covergroup is error_cg.
             '''
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
@@ -224,7 +224,7 @@
             Perform accesses in order to provoke life cycle management interface error. Related
             covergroup is error_cg.
             '''
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
@@ -235,7 +235,7 @@
             that scramble Keys are Read from the OTP and sent into the Flash Ctlr.  Also erify that programmed
             Secret Partitions retain their values through a Reset Cycle.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_hw_sec_otp", "flash_ctrl_otp_reset"]
     }
     {
@@ -245,7 +245,7 @@
             Cycle Controller.  Verify Partition can be erase, written and programmed, with
             HW control, and wipes after an RMA.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_hw_rma"]
     }
     {
@@ -254,7 +254,7 @@
             Perform accesses in order to raise all interrupts given in register map.
             Check behaviour of Interrupt Enable and Status Registers.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_intr_rd", "flash_ctrl_intr_wr"]
     }
     {
@@ -263,7 +263,7 @@
             Send invalid command in order to check that it does not affect memory content.
             Check that recovery alert is triggered.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_invalid_op"]
     }
     {
@@ -272,7 +272,7 @@
             Flash middle operation reset test. Send reset via power ready signal
             in the middle of operation program, read, erase and erase suspend.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_mid_op_rst"]
     }
     {
@@ -285,7 +285,7 @@
             Check fatal alert is asserted for reliability ecc errors (double bits) and
             integrity ECC errors.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_read_word_sweep_derr", "flash_ctrl_ro_derr",
               "flash_ctrl_rw_derr", "flash_ctrl_derr_detect", "flash_ctrl_integrity"]
     }
@@ -296,7 +296,7 @@
             All single bit error should be corrected and all read data should be
             matched with expected written value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_read_word_sweep_serr",
               "flash_ctrl_ro_serr", "flash_ctrl_rw_serr"]
     }
@@ -308,7 +308,7 @@
             saturated.
             Compare counter values for both bank with expected counter values.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_serr_counter"]
     }
     {
@@ -319,7 +319,7 @@
             transaction to be completed and compare ecc_single_err_addr register with the
             expected value. Do this for multiple rounds for both banks.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_serr_address"]
     }
     {
@@ -332,7 +332,7 @@
             the timing is correct (subsequent reads should be faster). When scrambling is not
             enabled, ensure that the raw data is written and read back.
             '''
-      milestone: V2
+      stage: V2
       tests: ["flash_ctrl_wo", "flash_ctrl_ro", "flash_ctrl_rw",
               "flash_ctrl_write_word_sweep", "flash_ctrl_read_word_sweep"]
     }
@@ -342,7 +342,7 @@
             Enable full randomization in order to fully stress DUT. Perform illegal accesses in
             order to gain robustness.
             '''
-      milestone: V3
+      stage: V3
       tests: []
     }
   ]

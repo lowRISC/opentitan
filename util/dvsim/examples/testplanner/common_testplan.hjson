@@ -7,7 +7,7 @@
       name: csr
       desc: '''Standard CSR suite of tests run from all valid interfaces to prove SW
             accessibility.'''
-      milestone: V1
+      stage: V1
       // {name} and {intf} are wildcards in tests
       // importer needs to provide substitutions for these as string or a list
       // if list, then substitution occurs on all values in the list
@@ -19,4 +19,3 @@
     }
   ]
 }
-
