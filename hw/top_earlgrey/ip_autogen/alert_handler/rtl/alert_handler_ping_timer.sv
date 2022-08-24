@@ -122,8 +122,20 @@ module alert_handler_ping_timer import alert_pkg::*; #(
     .err_o      ( lfsr_err             )
   );
 
-  logic [IdDw-1:0] id_to_ping;
-  assign id_to_ping = lfsr_state[PING_CNT_DW +: IdDw];
+  logic [IdDw-1:0] id_to_ping_d, id_to_ping_q;
+  assign id_to_ping_d = lfsr_state[PING_CNT_DW +: IdDw];
+
+  // we need to hold the ID stable while the ping is ongoing since this will result in
+  // spurious ping responses otherwise.
+  always_ff @(posedge clk_i or negedge rst_ni) begin : p_id_reg
+    if (!rst_ni) begin
+      id_to_ping_q <= '0;
+    end else begin
+      if (cnt_set) begin
+        id_to_ping_q <= id_to_ping_d;
+      end
+    end
+  end
 
   // align the enable mask with powers of two for the indexing operation below.
   logic [2**IdDw-1:0] enable_mask;
@@ -131,7 +143,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
 
   // check if the randomly drawn alert ID is actually valid and the alert is enabled
   logic id_vld;
-  assign id_vld = enable_mask[id_to_ping];
+  assign id_vld = enable_mask[id_to_ping_q];
 
   //////////////////////////////////
   // Escalation Counter Instances //
@@ -243,7 +255,7 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   logic spurious_alert_ping, spurious_esc_ping;
 
   // generate ping enable vector
-  assign alert_ping_req_o = NAlerts'(alert_ping_en) << id_to_ping;
+  assign alert_ping_req_o = NAlerts'(alert_ping_en) << id_to_ping_q;
   assign esc_ping_req_o   = N_ESC_SEV'(esc_ping_en) << esc_cnt;
 
   // under normal operation, these signals should never be asserted.
