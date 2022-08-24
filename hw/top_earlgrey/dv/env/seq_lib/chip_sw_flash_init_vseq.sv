@@ -228,13 +228,15 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
         owner_seed   = seeds[(SEED_WIDTH*flash_ctrl_pkg::OwnerSeedIdx)+:SEED_WIDTH];
         creator_seed = seeds[(SEED_WIDTH*flash_ctrl_pkg::CreatorSeedIdx)+:SEED_WIDTH];
 
-        // If 'lc_seed_hw_rd_en' is off, creator/owner seed cannot be updated.
-        // So compared with the old value.
+        // If 'lc_seed_hw_rd_en' is off, creator/owner seed cannot be updated and
+        // retains the default value.
         // Make sure your bus is the right size cause
         // full 64bit bus might contain x's.
         if (lc_seed_hw_rd_en == lc_ctrl_pkg::Off) begin
-          `DV_CHECK_EQ(creator_seed, last_creator_seed);
-          `DV_CHECK_EQ(owner_seed, last_owner_seed);
+          `DV_CHECK_EQ(creator_seed,
+              top_earlgrey_rnd_cnst_pkg::RndCnstFlashCtrlAllSeeds[SEED_WIDTH-1:0]);
+          `DV_CHECK_EQ(owner_seed,
+              top_earlgrey_rnd_cnst_pkg::RndCnstFlashCtrlAllSeeds[SEED_WIDTH +: SEED_WIDTH]);
         end else begin
           `DV_CHECK_EQ(creator_seed, expected_creator_seed[SEED_WIDTH-1:0]);
           `DV_CHECK_EQ(owner_seed, expected_owner_seed[SEED_WIDTH-1:0]);
