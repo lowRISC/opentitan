@@ -107,15 +107,15 @@
       local:   "true"
     } // p: NumLocality
     { name:    "TpmWrFifoPtrW"
-      desc:    "TPM WrFIFO Pointer Bit Width. clog2(Depth(4+1))"
+      desc:    "TPM WrFIFO Pointer Bit Width. clog2(Depth(64+1))"
       type:    "int unsigned"
       default: "7"
       local:   "true"
     } // p: TpmWrFifoPtrW
     { name:    "TpmRdFifoPtrW"
-      desc:    "TPM RdFIFO Pointer Bit Width. clog2(Depth(4+1))"
+      desc:    "TPM RdFIFO Pointer Bit Width. clog2(Depth(16+1))"
       type:    "int unsigned"
-      default: "3"
+      default: "5"
       local:   "true"
     } // p: TpmRdFifoPtrW
     { name:    "TpmRdFifoWidth"
