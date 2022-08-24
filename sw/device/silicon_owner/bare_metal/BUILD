@@ -2,9 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:manifest.bzl", "CONST", "manifest")
-load("//rules:opentitan.bzl", "opentitan_flash_binary")
 load("//rules:linker.bzl", "ld_library")
+load("//rules:manifest.bzl", "CONST", "manifest")
+load(
+    "//rules:opentitan.bzl",
+    "opentitan_flash_binary",
+    "opentitan_multislot_flash_binary",
+)
 load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest")
 
 ld_library(
@@ -104,39 +108,31 @@ opentitan_flash_binary(
     ],
 )
 
-# TODO(#13511): This is a temporary workaround until #13511 is resolved.
-genrule(
-    name = "rom_ext_virt_a_owner_virt_a_fpga_cw310_bin_signed_test_key_0",
-    srcs = [
-        "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual_fpga_cw310_bin_signed_test_key_0",
-        ":bare_metal_slot_virtual_fpga_cw310_bin_signed_test_key_0",
-    ],
-    outs = ["rom_ext_virt_a_owner_virt_a_fpga_cw310.test_key_0.signed.bin"],
-    cmd = "./$(location //sw/host/opentitantool) image assemble --mirror false --output $@ --size 0x11000 " +
-          "$(location //sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual_fpga_cw310_bin_signed_test_key_0)@0 " +
-          "$(location :bare_metal_slot_virtual_fpga_cw310_bin_signed_test_key_0)@0x10000",
-    tools = ["//sw/host/opentitantool"],
-)
-
-filegroup(
-    name = "rom_ext_virt_a_owner_virt_a_fpga_cw310",
-    srcs = [":rom_ext_virt_a_owner_virt_a"],
-)
-
-filegroup(
-    name = "rom_ext_virt_a_owner_virt_a",
-    srcs = ["rom_ext_virt_a_owner_virt_a_fpga_cw310.test_key_0.signed.bin"],
+opentitan_multislot_flash_binary(
+    name = "rom_ext_virtual_bare_metal_virtual",
+    srcs = {
+        "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
+            "key": "test_key_0",
+            "offset": "0x0",
+        },
+        ":bare_metal_slot_virtual": {
+            "key": "test_key_0",
+            "offset": "0x10000",
+        },
+    },
+    image_size = "0x11000",
 )
 
 BOOT_SUCCESS_MSG = "Bare metal PASS!"
 
 opentitan_functest(
-    name = "e2e_rom_ext_virt_a_owner_virt_a",
+    name = "rom_ext_virtual_bare_metal_virtual_boot_test",
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom",
         exit_success = BOOT_SUCCESS_MSG,
     ),
-    ot_flash_binary = ":rom_ext_virt_a_owner_virt_a",
+    key = "multislot",
+    ot_flash_binary = ":rom_ext_virtual_bare_metal_virtual",
     signed = True,
     targets = ["cw310"],
 )
