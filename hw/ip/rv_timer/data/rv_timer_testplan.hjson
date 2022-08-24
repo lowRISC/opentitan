@@ -17,7 +17,7 @@
             - Program one to CTRL.active* (activate timer)
             - Wait for number of cycles to have mTime>= mTimeCmp
             - Check Interrupt state register and Interrupt signal (scoreboard logic)'''
-      milestone: V1
+      stage: V1
       tests: ["rv_timer_random"]
     }
     {
@@ -25,7 +25,7 @@
       desc: '''This test is to exercise on the fly reset(timer is active)
             - Assert reset randomly in the middle of random test steps
             - Scoreboard check for all register go back to reset value'''
-      milestone: V2
+      stage: V2
       tests: ["rv_timer_random_reset"]
     }
     {
@@ -35,7 +35,7 @@
             - Program 1 in interrupt enable and 0 in control register and random value for
               rest of the registers
             - Scoreboard check for no activity and no interrupt whatever is setting'''
-      milestone: V2
+      stage: V2
       tests: ["rv_timer_disabled"]
     }
     {
@@ -45,7 +45,7 @@
             - Program random values in interrrupt enable, prescaler, step, mtime and mtime cmp
             - After some clocks update timer config values
             - Check for interrupt as per new config set'''
-      milestone: V2
+      stage: V2
       tests: ["rv_timer_cfg_update_on_fly"]
     }
     {
@@ -56,7 +56,7 @@
             - Program random values in interrrupt enable, prescaler, step, mtime and mtime cmp
             - Update timer config values just before timer is about to expire
             - Check for no interrupt set'''
-      milestone: V2
+      stage: V2
       tests: ["rv_timer_cfg_update_on_fly"]
     }
     {
@@ -64,7 +64,7 @@
       desc: '''Do combinations of multiple of above scenarios to get multiple interrupts
             asserted at the same time. Scoreboard should be robust enough to deal with all
             scenarios.'''
-      milestone: V2
+      stage: V2
       tests: ["rv_timer_stress_all"]
     }
   ]

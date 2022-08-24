@@ -28,7 +28,7 @@
             - If we are changing WKUP_THOLD to be lower than the current WKUP_COUNT
             wakeup timer should raise the interrupt `wkup_timer_expired`.
             '''
-      milestone: V1
+      stage: V1
       tests: ["aon_timer_smoke"]
     }
     {
@@ -44,7 +44,7 @@
             - WKUP_COUNT should reflect expected -and changed- passing of real time
             regardless of its changing prescaler value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["aon_timer_prescaler"]
     }
     {
@@ -66,7 +66,7 @@
             - WKUP_COUNT should reflect expected passing of real time regardless of
             prescaler value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["aon_timer_jump"]
     }
     {
@@ -80,7 +80,7 @@
             - aon_timer_prescaler
             - aon_timer_smoke
             '''
-      milestone: V2
+      stage: V2
       tests: ["aon_timer_stress_all"]
     }
   ]

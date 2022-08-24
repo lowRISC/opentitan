@@ -23,7 +23,7 @@
               - ensure pulses are generated correctly in pulse or blink mode
 
             '''
-      milestone: V1
+      stage: V1
       tests: ["pwm_smoke"]
     }
     {
@@ -32,7 +32,7 @@
             Verify different duty cycle settings in Pulse, Blink and Heart Beat mode.
 
             '''
-      milestone: V2
+      stage: V2
       tests: ["pwm_rand_output"]
     }
     {
@@ -41,7 +41,7 @@
             Verify the pulse mode of the PWM
             by de-asserting blink_en field in the PWM_PARAM register
             '''
-      milestone: V2
+      stage: V2
       tests: ["pwm_rand_output"]
     }
     {
@@ -50,7 +50,7 @@
             Verify the blink mode of the PWM
             by asserting the blink_en field in the PWM_PARAM register
             '''
-      milestone: V2
+      stage: V2
       tests: ["pwm_rand_output"]
     }
     {
@@ -59,7 +59,7 @@
             Verify the Heart Beat mode of the PWM
             by asserting the blink_en and HTBT field in the PWM_PARAM register
             '''
-        milestone: V2
+        stage: V2
         tests: ["pwm_rand_output"]
     }
    {
@@ -67,7 +67,7 @@
       desc: '''
             Verify the PWM generates correct duty cycle for different resolution settings
             '''
-        milestone: V2
+        stage: V2
         tests: ["pwm_rand_output"]
     }
     {
@@ -75,7 +75,7 @@
       desc: '''
             Verifies that PWM correctly generates pulses on multiple channels concurrently
             '''
-        milestone: V2
+        stage: V2
         tests: ["pwm_rand_output"]
     }
     {
@@ -83,7 +83,7 @@
       desc: '''
             Verify that the polarity of the pulse can be inverted by setting the invert channel bit in the invert register
             '''
-        milestone: V2
+        stage: V2
         tests: ["pwm_rand_output"]
     }
     {
@@ -91,7 +91,7 @@
       desc: '''
             Check that the relative phase between pulses matches the setting in the phase_delay field in the PWM_PARAM register.
             '''
-        milestone: V2
+        stage: V2
         tests: ["pwm_rand_output"]
     }
     {
@@ -105,7 +105,7 @@
             Checks:
                 - Ensure pulses are still generated when in LP mode
             '''
-        milestone: V2
+        stage: V2
         tests: ["pwm_rand_output"]
     }
     {
@@ -121,7 +121,7 @@
             Checks:
                 - Ensure the output pulses are correctly modulated for all channels
             '''
-      milestone: V2
+      stage: V2
       tests: ["pwm_perf"]
     }
     {
@@ -135,7 +135,7 @@
             Checking:
                 - All sequences should be finished and checked by the scoreboard
             '''
-      milestone: V2
+      stage: V2
       tests: ["pwm_stress_all"]
     }
   ]

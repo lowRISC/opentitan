@@ -20,9 +20,8 @@
               all sets back to 0.
             - Repeat the above steps a bunch of times.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{name}{intf}_alert_test"]
     }
   ]
 }
-

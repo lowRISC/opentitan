@@ -16,9 +16,8 @@
                - Above sequences will be run with `csr_rw_vseq` to ensure it won't affect CSR
                  accesses.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["{name}_passthru_mem_tl_intg_err"]
     }
   ]
 }
-

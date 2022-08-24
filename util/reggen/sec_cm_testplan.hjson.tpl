@@ -32,7 +32,7 @@ def get_sec_cm_testpoint_name(cm):
     {
       name: ${get_sec_cm_testpoint_name(cm)}
       desc: "Verify the countermeasure(s) ${str(cm)}."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
 % endfor

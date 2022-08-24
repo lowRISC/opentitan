@@ -26,49 +26,49 @@
     {
       name: sec_cm_config_regwen
       desc: "Verify the countermeasure(s) CONFIG.REGWEN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_config_mubi
       desc: "Verify the countermeasure(s) CONFIG.MUBI."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_main_sm_fsm_sparse
       desc: "Verify the countermeasure(s) MAIN_SM.FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ack_sm_fsm_sparse
       desc: "Verify the countermeasure(s) ACK_SM.FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctr_redun
       desc: "Verify the countermeasure(s) CTR.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_main_sm_ctr_local_esc
       desc: "Verify the countermeasure(s) MAIN_SM.CTR.LOCAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_cs_rdata_bus_consistency
       desc: "Verify the countermeasure(s) CS_RDATA.BUS.CONSISTENCY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_tile_link_bus_integrity
       desc: "Verify the countermeasure(s) TILE_LINK.BUS.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
   ]

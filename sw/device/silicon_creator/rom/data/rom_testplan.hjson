@@ -26,7 +26,7 @@
             |   RMA    | 0x2739ce73 |        "RMA"         |           5          |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -47,7 +47,7 @@
             |   0x48eb4bd9 (All)      | ffffffff |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -65,7 +65,7 @@
               - Verify that watchdog is disabled when `WATCHDOG_BITE_THRESHOLD_CYCLES` is `0`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: ["rom_e2e_shutdown_watchdog"]
     }
 
@@ -86,7 +86,7 @@
               execution halts at `_rom_start_boot`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -102,7 +102,7 @@
               access fault in the interrupt module.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -117,7 +117,7 @@
               register.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -132,7 +132,7 @@
             - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -150,7 +150,7 @@
               - The data on the CIPO line must be `0xff`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -168,7 +168,7 @@
               - The data on the CIPO line must be `0xff`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -186,7 +186,7 @@
               - The data on the CIPO line must be `0xff`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -203,7 +203,7 @@
             See `rom_e2e_bootstrap_enabled_requested`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -225,7 +225,7 @@
               - Verify that there was no output from UART.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -243,7 +243,7 @@
               - density `0x14`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -262,7 +262,7 @@
               [spreadsheet](https://docs.google.com/spreadsheets/d/1cioU3HgsWZXD4-eoUiH9TuVLZeFpucSdjyq5HND-FpQ/edit#gid=0).
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -281,7 +281,7 @@
             - Verify that the chip responds with `0x00`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -301,7 +301,7 @@
               - The data on the CIPO line must be `0xff`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -322,7 +322,7 @@
               - ROM will continously reset the chip and output the same `BFV` and `LCV`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -350,7 +350,7 @@
             program on flash.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -373,7 +373,7 @@
               - The data on the CIPO line must be `0xff`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -394,7 +394,7 @@
               - The data on the CIPO line must be `0xff`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -416,7 +416,7 @@
             program on flash that verifies that the rest of the flash is empty after bootstrap.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -440,7 +440,7 @@
             program on flash.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -463,7 +463,7 @@
               - The data on the CIPO line must be `0xff`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -480,7 +480,7 @@
                 - ROM will continously reset the chip and output the same `BFV` and `LCV`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -494,7 +494,7 @@
             - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -515,7 +515,7 @@
             |            1            |             1           |   a    |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -561,7 +561,7 @@
             |   a  | `security_version = 0`            | `0142500d`                      |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -583,7 +583,7 @@
             |  Good  |  Good  |   a    |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -609,7 +609,7 @@
             |    1   |    1   |   a    |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -634,7 +634,7 @@
 
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -653,7 +653,7 @@
             See `rom_e2e_boot_policy_valid`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -666,7 +666,7 @@
             - Verify that boot fails with `BFV:kErrorSigverifyBadKey`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -687,7 +687,7 @@
             |   RMA    | Test, Prod        |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -709,7 +709,7 @@
             |   RMA    | Test, Prod        |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -731,7 +731,7 @@
             | `0`                                | Failure |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -760,7 +760,7 @@
               - Corrupt usage constraints data, e.g. wrong unselected word value.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -783,7 +783,7 @@
             |         Invalid     |   Virtual  |     B     |  Yes  |
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -799,7 +799,7 @@
               - Verify that ROM fails to boot with `BFV:0142500d`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -812,7 +812,7 @@
             - Verify that ROM cannot be debugged in PROD and PROD_END.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -834,7 +834,7 @@
             for detils.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -857,7 +857,7 @@
             - Verify that ROM fails to boot with `BFV:kErrorBootPolicyRollback`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -879,7 +879,7 @@
               security version.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -897,7 +897,7 @@
             - Verify that execution breaks at the asm handler.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -915,7 +915,7 @@
             - Verify that watchdog expires and execution breaks at the asm handler.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -936,7 +936,7 @@
             - Verify that chip resets with `BFV:kErrorInterrupt`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -964,7 +964,7 @@
                   functionality.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -982,7 +982,7 @@
             - Verify that all previously written sections are different.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
 
     }
@@ -1001,7 +1001,7 @@
             - Verify that all previously written sections are intact.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1014,7 +1014,7 @@
             - Bits 0-5 of the `cpuctrl` CSR: `CREATOR_SW_CFG_CPUCTRL`
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1026,7 +1026,7 @@
               PROD_END.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1040,7 +1040,7 @@
               `kWatchdogMinThreshold`, disabled otherwise.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1053,7 +1053,7 @@
               the OTP value.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1071,7 +1071,7 @@
             - Verify that flash_ctrl is initialized.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1089,7 +1089,7 @@
               - max creator key version equals the `max_key_version` field of the manifest,
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1104,7 +1104,7 @@
               `sec_mmio_check_counters()`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1121,7 +1121,7 @@
             reused on the silicon.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      milestone: V2
+      stage: V2
       tests: []
     }
   ]

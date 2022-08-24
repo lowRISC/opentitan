@@ -26,85 +26,85 @@
     {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_lc_escalate_en_intersig_mubi
       desc: "Verify global LC_ESCALATE_EN mubi"
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_sw_key_key_masking
       desc: "Verify the countermeasure(s) SW_KEY.KEY.MASKING."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_key_sideload
       desc: "Verify the key from KeyMgr is sideloaded."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_cfg_shadowed_config_shadow
       desc: "Verify the countermeasure(s) CFG_SHADOWED.CONFIG.SHADOW."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_fsm_sparse
       desc: "Verify the countermeasure(s) FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctr_redun
       desc: "Verify the countermeasure(s) CTR.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_packer_ctr_redun
       desc: "Verify the countermeasure(s) PACkER.CTR.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_cfg_shadowed_config_regwen
       desc: "Verify the countermeasure(s) CFG_SHADOWED.CONFIG.REGWEN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_fsm_global_esc
       desc: "Verify the countermeasure(s) FSM.GLOBAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_fsm_local_esc
       desc: "Verify the countermeasure(s) FSM.LOCAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_logic_integrity
       desc: "Verify the countermeasure(s) LOGIC.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_absorbed_ctrl_mubi
       desc: "Verify the countermeasure(s) ABSORBED.CTRL.INTEGRITY"
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_sw_cmd_ctrl_sparse
       desc: "Verify the countermeasure(s) SW_CMD.CTRL.INTEGRITY"
-      milestone: V2S
+      stage: V2S
       tests: []
     }
   ]

@@ -24,7 +24,7 @@
               output values
             - Support both synchronous and asynchronous settings
             '''
-      milestone: V1
+      stage: V1
       tests: ["alert_handler_smoke"]
     }
     {
@@ -33,7 +33,7 @@
             Based on the smoke test, this test will focus on testing the escalation accumulation
             feature. So all the escalations in the test will be triggered by alert accumulation.
             '''
-      milestone: V2
+      stage: V2
       tests: ["alert_handler_esc_alert_accum"]
     }
     {
@@ -42,7 +42,7 @@
            Based on the smoke test, this test will focus on testing the escalation timeout
            feature. So all the escalations in the test will be triggered by interrupt timeout.
            '''
-      milestone: V2
+      stage: V2
       tests: ["alert_handler_esc_intr_timeout"]
     }
     {
@@ -51,7 +51,7 @@
             Based on the smoke test, this test enables ping testing, and check if the ping feature
             correctly pings all devices within certain period of time.
             '''
-      milestone: V2
+      stage: V2
       tests: ["alert_handler_entropy"]
     }
     {
@@ -61,7 +61,7 @@
             escalator tx/rx pairs. Then check if integrity failure alert is triggered and
             escalated.
             '''
-      milestone: V2
+      stage: V2
       tests: ["alert_handler_sig_int_fail"]
     }
     {
@@ -70,19 +70,19 @@
             This test will randomly inject clock skew within the differential pairs. Then check no
             alert is raised.
             '''
-      milestone: V2
+      stage: V2
       tests: ["alert_handler_smoke"]
     }
     {
       name: random_alerts
       desc: "Input random alerts and randomly write phase cycles."
-      milestone: V2
+      stage: V2
       tests: ["alert_handler_random_alerts"]
     }
     {
       name: random_classes
       desc: "Based on random_alerts test, this test will also randomly enable interrupt classes."
-      milestone: V2
+      stage: V2
       tests: ["alert_handler_random_classes"]
     }
     {
@@ -96,7 +96,7 @@
             - Verify alert and local alert causes.
             - Verify escalation states and counts.
             '''
-      milestone: V2
+      stage: V2
       tests: ["alert_handler_ping_timeout"]
     }
     {
@@ -115,7 +115,7 @@
             - Expect no ping timeout error because the alert_receivers are disabled via low-power
               group, or because alert_handler's clk input is paused due to sleep mode.
             '''
-      milestone: V2
+      stage: V2
       tests: ["alert_handler_lpg", "alert_handler_lpg_stub_clk"]
     }
     {
@@ -125,7 +125,7 @@
             - CSR sequences: scoreboard disabled
             - Ping_corner_cases sequence: included reset in the sequence
             '''
-      milestone: V2
+      stage: V2
       tests: ["alert_handler_stress_all"]
     }
   ]

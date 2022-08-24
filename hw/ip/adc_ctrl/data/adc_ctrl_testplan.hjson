@@ -29,7 +29,7 @@
             - Compare sample registers against expected.
             - Check oneshot bit of interrupt status register works as expected.
             '''
-      milestone: V1
+      stage: V1
       tests: ["adc_ctrl_smoke"]
     }
     {
@@ -50,7 +50,7 @@
           - Confirm this by reading the filter status register.
           - Ensure that only one ADC channel is selected at a time.
           '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_filters_polled"]
     }
     {
@@ -58,7 +58,7 @@
       desc: '''
           As filters_polled but with filter parameters fixed during the test.
           '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_filters_polled_fixed"]
     }
     {
@@ -80,7 +80,7 @@
           - Confirm correct interrupt sample value has been captured in ADC sample registers(s)
           - Check interrupt signal operates as expected.
           '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_filters_interrupt"]
     }
     {
@@ -88,7 +88,7 @@
       desc: '''
           As filters_interrupt but with filter parameters fixed during the test.
           '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_filters_interrupt_fixed"]
     }
     {
@@ -108,7 +108,7 @@
           - Confirm this by reading the filter status register.
           - Check wakeup signal operates as expected.
           '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_filters_wakeup"]
     }
     {
@@ -116,7 +116,7 @@
       desc: '''
           As filters_wakeup but with filter parameters fixed during the test.
           '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_filters_wakeup_fixed"]
     }
     {
@@ -138,7 +138,7 @@
           - Check wakeup signal operates as expected.
           - Check interrupt signal operates as expected.
           '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_filters_both"]
     }
     {
@@ -163,7 +163,7 @@
           - Check wakeup signal operates as expected.
           - Check interrupt signal operates as expected.
           '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_clock_gating"]
     }
     {
@@ -182,7 +182,7 @@
 
           - Confirm timing of power down and channel select signals to ADC.
           '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_poweron_counter"]
     }
     {
@@ -201,7 +201,7 @@
 
           - Confirm return to fast sampling happens as expected.
         '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_lowpower_counter"]
     }
     {
@@ -221,7 +221,7 @@
 
           - Ensure ADC controller FSM and counters are reset.
         '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_fsm_reset"]
     }
 
@@ -236,7 +236,7 @@
             Checking:
               - All sequences should be finished and checked by the scoreboard
       '''
-      milestone: V2
+      stage: V2
       tests: ["adc_ctrl_stress_all"]
     }
 

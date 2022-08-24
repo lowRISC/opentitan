@@ -27,7 +27,7 @@
               - Perform a number of random memory accesses to the SRAM, verify that all accesses
                 were executed correctly using the `mem_bkdr_util`
             '''
-      milestone: V1
+      stage: V1
       tests: ["{name}_smoke"]
     }
     {
@@ -45,7 +45,7 @@
               - Verify that all memory access succeed even if the scrambling key changes at arbitrary
                 intervals
             '''
-      milestone: V2
+      stage: V2
       tests: ["{name}_multiple_keys"]
     }
     {
@@ -55,7 +55,7 @@
             memory accesses at each random address in order to create read/write conflicts and
             stress the encryption pipeline.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{name}_stress_pipeline"]
     }
     {
@@ -76,7 +76,7 @@
 
             This process will be repeated for a number of new key seeds.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{name}_bijection"]
     }
     {
@@ -89,7 +89,7 @@
             TODO: Behavior might change in future to throw an error instead of ignore,
                   should be reflected in TB.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{name}_access_during_key_req"]
     }
     {
@@ -104,7 +104,7 @@
             We then issue a reset to the SRAM to get it out of the terminal state, and issue a
             couple of memory accesses just to make sure everything is still in working order.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{name}_lc_escalation"]
     }
     {
@@ -122,7 +122,7 @@
             error out, however `DataType` transactions should be successful when the SRAM is
             configured to be executable.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{name}_executable"]
     }
     {
@@ -133,7 +133,7 @@
 
             Reuse the `smoke` and `stress_pipeline` by setting `partial_access_pct` = 90%
             '''
-      milestone: V2
+      stage: V2
       tests: ["{name}_partial_access", "{name}_partial_access_b2b"]
     }
     {
@@ -145,7 +145,7 @@
             finish N SRAM read/write accesses.
             With partial write, it needs 2 extra cycles per partial write.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{name}_max_throughput", "{name}_throughput_w_partial_write"]
     }
     {
@@ -163,7 +163,7 @@
             at the beginning of each iteration. So when regwen is cleared, the related CSRs will be
             locked.
             '''
-      milestone: V2
+      stage: V2
       tests: ["{name}_regwen"]
     }
     {
@@ -172,7 +172,7 @@
             - Combine above sequences in one test to run sequentially, except csr sequence and
               sequences that require zero_delays or invoke reset (such as lc_escalation).
             - Randomly add reset between each sequence'''
-      milestone: V2
+      stage: V2
       tests: ["{name}_stress_all"]
     }
   ]

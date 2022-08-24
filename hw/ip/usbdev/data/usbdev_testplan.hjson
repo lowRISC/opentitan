@@ -22,7 +22,7 @@
               describe second bullet
 
             Start a new paragraph.'''
-      milestone: V1
+      stage: V1
       tests: ["usbdev_smoke"]
     }
   ]

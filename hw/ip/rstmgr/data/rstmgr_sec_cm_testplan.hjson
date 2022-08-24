@@ -28,7 +28,7 @@
       desc: '''Verify the countermeasure(s) BUS.INTEGRITY.
             This entry is covered by tl_access_test.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["rstmgr_tl_intg_err"]
     }
     {
@@ -42,7 +42,7 @@
             **Check**:
             If dut accepts any of invalid values, test will fail by turing dut to scanmode.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["rstmgr_sec_cm_scan_intersig_mubi"]
     }
     {
@@ -59,7 +59,7 @@
             Upon asserting each reset consistency error,
             check alert_fatal_cnsty_fault is asserted.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["rstmgr_leaf_rst_cnsty"]
     }
     {
@@ -69,7 +69,7 @@
             Check if normal leaf reset module is not triggerred.
             Do over all {shadow, normal} leaf reset module pairs
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["rstmgr_leaf_rst_shadow_attack"]
     }
     {
@@ -79,7 +79,7 @@
             Force leaf rst check state to illegal value.
             This is triggered by common cm primitives
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["rstmgr_sec_cm"]
     }
     {
@@ -89,7 +89,7 @@
             RSTMGR.SW_RST_CTRL_N.
             This is covered by auto csr test.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["rstmgr_csr_rw"]
     }
     {
@@ -99,7 +99,7 @@
             RSTMGR.ALERT_INFO_CTRL and RSTMGR.CPU_INFO_CTRL
             This is covered by auto csr test.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["rstmgr_csr_rw"]
     }
   ]

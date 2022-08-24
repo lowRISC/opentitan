@@ -19,7 +19,7 @@
             - Read a word data from RX memory and update rptr
             - Compare the data and check no pending data in SRAM FIFO
             - Repeat above steps'''
-      milestone: V1
+      stage: V1
       tests: ["spi_device_smoke"]
     }
     {
@@ -29,7 +29,7 @@
             - Write random data to TX memory unless fifo is full
             - Send SPI transfer unless TX is empty or RX is full
             - Read RX memory unless RX is empty'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_txrx"]
     }
     {
@@ -38,7 +38,7 @@
             Increase the chance to have fifo full by following
             - Reduce delay to write TX memory
             - Increase delay to read RX memory'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_fifo_full"]
     }
     {
@@ -50,7 +50,7 @@
             - When RX is overflow, data will be lost and if SW update rptr, received data may be
               mis-aligned
             - Ensure underflow/overflow is triggered correctly'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_fifo_underflow_overflow"]
     }
     {
@@ -58,7 +58,7 @@
       desc: '''
             Drive dummy sck without csb or drive dummy csb without sck, and test no impact on the
             design'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_dummy_item_extra_dly"]
     }
     {
@@ -67,7 +67,7 @@
             Add extra delay between spi clock edge or extra delay between 2 words data
             This is to test host pause transfer for a while without turning off csb and then stream
             in data again'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_dummy_item_extra_dly"]
     }
     {
@@ -82,7 +82,7 @@
             - Fill TX SRAM FIFO with some other data and enable SPI transfer
             - Check SPI device sends and receives the correct data
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_tx_async_fifo_reset"]
     }
     {
@@ -99,7 +99,7 @@
             - Fill TX SRAM FIFO with some other data and start another SPI transfers
             - Check SPI device sends and receives the correct data
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_rx_async_fifo_reset"]
     }
     {
@@ -110,7 +110,7 @@
             - rx full
             - rx error
             - overflow/underflow'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_intr"]
     }
     {
@@ -121,13 +121,13 @@
             - Poll until abort_done in status register
             - TBD additional checking
             '''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_abort"]
     }
     {
       name: byte_transfer_on_spi
       desc: '''send spi transfer on byte granularity, and make sure the timer never expires'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_byte_transfer"]
     }
     {
@@ -137,7 +137,7 @@
             - Only check data in sequence level when timer expires. Monitor and scoreboard don't
               model the timer feature
             - Note: Timeout only for RX'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_rx_timeout"]
     }
     {
@@ -146,19 +146,19 @@
             Send spi transfer on bit granularity
             - If TX drives < 7 bits, this byte will be sent in next CSB.
             - If TX drives 7 bits and set CSB to high, this byte won't be sent in next CSB'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_bit_transfer"]
     }
     {
       name: extreme_fifo_setting
       desc: '''Set fifo size to 4 bytes(minimum), 2k-4bytes(maximum) and others'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_extreme_fifo_size"]
     }
     {
       name: perf
       desc: '''Run spi_device_fifi_full_vseq with very small delays'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_perf"]
     }
     {
@@ -176,7 +176,7 @@
             - Check the read FIFO.
             - When available, confirm that the TPM submodule sends START followed by the register value.
             - Compare this value with the expected value.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_tpm_read"]
     }
     {
@@ -191,7 +191,7 @@
             - Based on FIFO status, check SPI bus to confirm WAIT or START sent.
             - Check that the TPM submodule accepts write data without the WAIT state if the write FIFO is empty.
             - Otherwise, check WAIT until the write FIFO becomes available (empty).'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_tpm_write"]
     }
     {
@@ -200,7 +200,7 @@
             - Make transactions of varying locality to the tpm submodule.
             - Ensure that the data returned is correct for the given locality.
             - Randomise TPM_CFG.invalid_locality and confirm response.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_tpm_locality"]
     }
     {
@@ -214,7 +214,7 @@
             - Set filter bit back to 0.
             - Check opcode and address are passing through again.
             - Invalid opcode is also filtered'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_pass_cmd_filtering", "spi_device_flash_all"]
     }
     {
@@ -227,7 +227,7 @@
             - Check proper address translation is applied.
             - Disable address translation for given command.
             - Check address is now passing unchanged.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_pass_addr_payload_swap", "spi_device_flash_all"]
     }
     {
@@ -239,7 +239,7 @@
             - Check proper payload translation is applied.
             - Disable payload translation for given command.
             - Check payload is now passing unchanged.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_pass_addr_payload_swap", "spi_device_flash_all"]
     }
     {
@@ -252,7 +252,7 @@
             - Check proper command propagation.
             - Disable some cmd info slots.
             - Check no propagation of disabled commands.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_flash_all"]
     }
     {
@@ -263,7 +263,7 @@
             - Check propagation of read status command.
             - Initiate response to the read status.
             - Check proper reception of response.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
     }
     {
@@ -274,7 +274,7 @@
             - Check propagation of read jedec command.
             - Initiate response to the read jedec.
             - Check proper reception of response.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
     }
     {
@@ -285,7 +285,7 @@
             - Check propagation of read sfdp command.
             - Initiate response to the read sfdp.
             - Check proper reception of response.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
     }
     {
@@ -296,7 +296,7 @@
             - Check propagation of fast read command.
             - Initiate response to the fast read.
             - Check proper reception of response.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_intercept", "spi_device_flash_all"]
     }
     {
@@ -307,7 +307,7 @@
             - Set upload to 1 for some of 13 non fixed cmd info slots.
             - Host should poll busy field status to check if command is done.
             - Issue next command upload and poll busy status again.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_upload"]
     }
     {
@@ -317,7 +317,7 @@
             - Issue one of predefined read command targeting mailbox space.
             - Check response to read command.
             - Check if command is processed internally.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_mailbox"]
     }
     {
@@ -332,7 +332,7 @@
               address is outside the mailbox, data returns as follows
                 - returns high-z if the read command is filtered.
                 - returns from downstream port if read command is passed through.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_mailbox"]
     }
     {
@@ -340,7 +340,7 @@
       desc: '''
             - Similar to `mailbox_cross_outside_command`, except that start address is inside the
               mailbox.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_mailbox"]
     }
     {
@@ -354,7 +354,7 @@
             - Randomly issue read command that crosses read buffer boundary and switches back to
               index 0.
             - Check correctness of `last_read_addr`, `readbuf_watermark` and `readbuf_flip`.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_flash_mode", "spi_device_read_buffer_direct"]
     }
     {
@@ -368,7 +368,7 @@
             - Check proper read data.
             - Issue new read command that crosses read maibox boundary.
             - Check internal buffer index bit.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_mailbox", "spi_device_flash_all"]
     }
     {
@@ -379,7 +379,7 @@
             - Configure quad mode.
             - Issue supported command.
             - Check data on all four lines.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_flash_all"]
     }
     {
@@ -390,7 +390,7 @@
             - Configure dual mode.
             - Issue supported command.
             - Check data on both lines.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_flash_all"]
     }
     {
@@ -402,7 +402,7 @@
             - Randomize configuration of EN4B and EX4B register fields.
             - Issue supported command with required address.
             - Check proper address propagation.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_cfg_cmd"]
     }
     {
@@ -413,7 +413,7 @@
             - Issue WREN and WRDI commands along with read_status command and others.
             - Read flash status via TL interface.
             - Check WREN/WRDI sets/clears flash status correctly.'''
-      milestone: V2
+      stage: V2
       tests: ["spi_device_cfg_cmd"]
     }
     {
@@ -422,7 +422,7 @@
             - Enable TPM mode.
             - Configure passthrough or flash mode.
             - Issue TPM read/write interleaving with flash transactions.'''
-      milestone: V2
+      stage: V2
       tests: []
     }
   ]

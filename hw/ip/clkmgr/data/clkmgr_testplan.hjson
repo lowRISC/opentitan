@@ -45,7 +45,7 @@
             - Check in scoreboard the `jitter_en_o` output tracks updates of the
               `jitter_enable` CSR.
             '''
-      milestone: V1
+      stage: V1
       tests: ["clkmgr_smoke"]
     }
     {
@@ -64,7 +64,7 @@
             - The scoreboard checks the gated clock activities against its
               model of the expected behavior.
             '''
-      milestone: V2
+      stage: V2
       tests: ["clkmgr_peri"]
     }
     {
@@ -89,7 +89,7 @@
             - SVA assertions for transactional unit clocks described in
               clkmgr_smoke.
             '''
-      milestone: V2
+      stage: V2
       tests: ["clkmgr_trans"]
     }
     {
@@ -141,7 +141,7 @@
                `lc_clk_byp_req_i`, the `lc_clk_byp_ack_o` output is set to
                `lc_ctrl_pkg::On`.
             '''
-      milestone: V2
+      stage: V2
       tests: ["clkmgr_extclk"]
     }
     {
@@ -159,7 +159,7 @@
             **Check**:
             - The checks are done in SVA at `clkmbf_pwrmgr_sva_if.sv`.
             '''
-      milestone: V2
+      stage: V2
       tests: ["clkmgr_clk_status"]
     }
     {
@@ -178,7 +178,7 @@
             - The `jitter_en_o` output pin reflects the `jitter_enable` CSR.
               Test is implemented in the scoreboard, and runs always.
             '''
-      milestone: V2
+      stage: V2
       tests: ["clkmgr_smoke"]
     }
     {
@@ -199,7 +199,7 @@
             - Slow and fast intervals should cause a recoverable alert.
             - Coverage collected per clock.
             '''
-      milestone: V2
+      stage: V2
       tests: ["clkmgr_frequency"]
     }
     {
@@ -218,7 +218,7 @@
             - Timeout should cause a recoverable alert.
             - Coverage collected per clock.
             '''
-      milestone: V2
+      stage: V2
       tests: ["clkmgr_frequency_timeout"]
     }
     {
@@ -236,7 +236,7 @@
             - The internal cnt_ovfl flop is set.
             - The fast_o output should be set.
             '''
-      milestone: V2
+      stage: V2
       tests: ["clkmgr_frequency"]
     }
     {
@@ -251,7 +251,7 @@
             - clkmgr_smoke_vseq,
             - clkmgr_trans_vseq
             '''
-      milestone: V2
+      stage: V2
       tests: ["clkmgr_stress_all"]
     }
   ]

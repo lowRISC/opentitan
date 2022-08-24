@@ -16,7 +16,7 @@
               CSRs are accessible from.
             - Shuffle the list of CSRs first to remove the effect of ordering.
             '''
-      milestone: V1
+      stage: V1
       tests: ["{name}{intf}_csr_hw_reset"]
     }
     {
@@ -30,7 +30,7 @@
               CSRs are accessible from.
             - Shuffle the list of CSRs first to remove the effect of ordering.
             '''
-      milestone: V1
+      stage: V1
       tests: ["{name}{intf}_csr_rw"]
     }
     {
@@ -46,7 +46,7 @@
               CSRs are accessible from.
             - Shuffle the list of CSRs first to remove the effect of ordering.
             '''
-      milestone: V1
+      stage: V1
       tests: ["{name}{intf}_csr_bit_bash"]
     }
     {
@@ -63,7 +63,7 @@
               CSRs are accessible from.
             - Shuffle the list of CSRs first to remove the effect of ordering.
             '''
-      milestone: V1
+      stage: V1
       tests: ["{name}{intf}_csr_aliasing"]
     }
     {
@@ -77,7 +77,7 @@
             - It is mandatory to run this test for all available interfaces the
               CSRs are accessible from.
             '''
-      milestone: V1
+      stage: V1
       tests: ["{name}{intf}_csr_mem_rw_with_rand_reset"]
     }
     {
@@ -95,7 +95,7 @@
 
             This is only applicable if the block contains regwen and locakable CSRs.
             '''
-      milestone: V1
+      stage: V1
       tests: ["{name}{intf}_csr_rw", "{name}{intf}_csr_aliasing"]
     }
   ]
@@ -114,4 +114,3 @@
     }
   ]
 }
-

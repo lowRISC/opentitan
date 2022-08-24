@@ -41,7 +41,7 @@
               reset cause.
             - The output `pwr_rst_req.rstreqs` matches the enabled resets.
             '''
-      milestone: V1
+      stage: V1
       tests: ["pwrmgr_smoke"]
     }
     {
@@ -76,7 +76,7 @@
             - Check that `intr_wakeup_o` is set according to `intr_enable` CSR.
             - Coverage collected by `wakeup_cg` and `wakeup_intr_cg`.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pwrmgr_wakeup"]
     }
     {
@@ -98,7 +98,7 @@
             - The usb clock enable is also checked during active mode against
               the control register.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pwrmgr_wakeup"]
     }
     {
@@ -127,7 +127,7 @@
             - Check that the `wakeup_info` CSR flags either `fall_through` or
               `abort` events when capture is enabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pwrmgr_aborted_low_power"]
     }
     {
@@ -156,7 +156,7 @@
              `pwr_rst_req.rstreqs` matches the unconditional and enabled
              conditional resets inputs.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pwrmgr_reset"]
     }
     {
@@ -176,7 +176,7 @@
             - Checks the output `pwr_rst_req.reset_cause` matches HwReq.
             - Checks the output `pwr_rst_req.rstreqs` matches power glitch.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pwrmgr_reset"]
     }
     {
@@ -198,7 +198,7 @@
             - Similar tests as for the wakeup and reset testpoints, except
               making sure they happen per the triggering order.
               '''
-      milestone: V2
+      stage: V2
       tests: ["pwrmgr_wakeup_reset"]
     }
     {
@@ -220,7 +220,7 @@
             - No timeout occurs.
             - Either pwrmgr remains active or a full low power cycle occurs.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pwrmgr_lowpower_wakeup_race"]
     }
     {
@@ -235,7 +235,7 @@
             - pwrmgr_wakeup_reset_vseq
             - pwrmgr_wakeup_vseq
 	    '''
-      milestone: V2
+      stage: V2
       tests: ["pwrmgr_stress_all"]
     }
   ]

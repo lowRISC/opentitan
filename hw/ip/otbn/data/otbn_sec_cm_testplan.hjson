@@ -26,91 +26,91 @@
     {
       name: sec_cm_mem_scramble
       desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_smoke"]
     }
     {
       name: sec_cm_data_mem_integrity
       desc: "Verify the countermeasure(s) DATA.MEM.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_imem_err", "otbn_dmem_err"]
     }
     {
       name: sec_cm_instruction_mem_integrity
       desc: "Verify the countermeasure(s) INSTRUCTION.MEM.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_imem_err", "otbn_dmem_err"]
     }
     {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_tl_intg_err"]
     }
     {
       name: sec_cm_controller_fsm_global_esc
       desc: "Verify the countermeasure(s) CONTROLLER.FSM.GLOBAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_escalate"]
     }
     {
       name: sec_cm_controller_fsm_local_esc
       desc: "Verify the countermeasure(s) CONTROLLER.FSM.LOCAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc"]
     }
     {
       name: sec_cm_controller_fsm_sparse
       desc: "Verify the countermeasure(s) CONTROLLER.FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_scramble_key_sideload
       desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_single"]
     }
     {
       name: sec_cm_scramble_ctrl_fsm_local_esc
       desc: "Verify the countermeasure(s) SCRAMBLE_CTRL.FSM.LOCAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc"]
     }
     {
       name: sec_cm_scramble_ctrl_fsm_sparse
       desc: "Verify the countermeasure(s) SCRAMBLE_CTRL.FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_start_stop_ctrl_fsm_global_esc
       desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.GLOBAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_escalate"]
     }
     {
       name: sec_cm_start_stop_ctrl_fsm_local_esc
       desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.LOCAL_ESC."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc"]
     }
     {
       name: sec_cm_start_stop_ctrl_fsm_sparse
       desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.SPARSE."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_data_reg_sw_sca
       desc: "Verify the countermeasure(s) DATA_REG_SW.SCA."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctrl_redun
       desc: "Verify the countermeasure(s) CTRL.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_ctrl_redun"]
     }
     {
@@ -119,7 +119,7 @@
                 Wait for a read request and istrn fetch request valid.
                 Corrupt the insn_prefetch_addr.
             '''
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_pc_ctrl_flow_redun"]
     }
     {
@@ -128,7 +128,7 @@
       RND.BUS.CONSISTENCY:
       Expect to trigger RND_FIPS_CHK_FAIL recoverable error for FIPS bit being low in any word of the received RND data.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_rnd_sec_cm"]
     }
     {
@@ -138,115 +138,115 @@
       Randomly send the same EDN word for incoming RND data.
       Expect to trigger RND_REP_CHK_FAIL recoverable error for repeated EDN words.
       '''
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_rnd_sec_cm"]
     }
     {
       name: sec_cm_rf_base_data_reg_sw_integrity
       desc: "Verify the countermeasure(s) RF_BASE.DATA_REG_SW.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_csr_rw"]
     }
     {
       name: sec_cm_rf_base_data_reg_sw_glitch_detect
       desc: "Verify the countermeasure(s) RF_BASE.DATA_REG_SW.GLITCH_DETECT."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_stack_wr_ptr_ctr_redun
       desc: "Verify the countermeasure(s) STACK_WR_PTR.CTR.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_rf_bignum_data_reg_sw_integrity
       desc: "Verify the countermeasure(s) RF_BIGNUM.DATA_REG_SW.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_csr_rw"]
     }
     {
       name: sec_cm_rf_bignum_data_reg_sw_glitch_detect
       desc: "Verify the countermeasure(s) RF_BIGNUM.DATA_REG_SW.GLITCH_DETECT."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_loop_stack_ctr_redun
       desc: "Verify the countermeasure(s) LOOP_STACK.CTR.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_loop_stack_addr_integrity
       desc: "Verify the countermeasure(s) LOOP_STACK.ADDR.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_call_stack_addr_integrity
       desc: "Verify the countermeasure(s) CALL_STACK.ADDR.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_start_stop_ctrl_state_consistency
       desc: "Verify the countermeasure(s) START_STOP_CTRL.STATE.CONSISTENCY."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_sec_wipe_err"]
     }
     {
       name: sec_cm_data_mem_sec_wipe
       desc: "Verify the countermeasure(s) DATA.MEM.SEC_WIPE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_instruction_mem_sec_wipe
       desc: "Verify the countermeasure(s) INSTRUCTION.MEM.SEC_WIPE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_data_reg_sw_sec_wipe
       desc: "Verify the countermeasure(s) DATA_REG_SW.SEC_WIPE."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_write_mem_integrity
       desc: "Verify the countermeasure(s) WRITE.MEM.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_multi"]
     }
     {
       name: sec_cm_ctrl_flow_count
       desc: "Verify the countermeasure(s) CTRL_FLOW.COUNT."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_single"]
     }
     {
       name: sec_cm_ctrl_flow_sca
       desc: "Verify the countermeasure(s) CTRL_FLOW.SCA."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_data_mem_sw_noaccess
       desc: "Verify the countermeasure(s) DATA.MEM.SW_NOACCESS."
-      milestone: V2S
+      stage: V2S
       tests: ["otbn_sw_no_acc"]
     }
     {
       name: sec_cm_key_sideload
       desc: "Verify the countermeasure(s) KEY.SIDELOAD."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_tlul_fifo_ctr_redun
       desc: "Verify the countermeasure(s) TLUL_FIFO.CTR.REDUN."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
   ]

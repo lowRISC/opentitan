@@ -32,7 +32,7 @@
             Verify each UART instance at the chip level independently. Verify there is no aliasing
             on all UART ports across the instances.
             '''
-      milestone: V1
+      stage: V1
       tests: ["chip_sw_uart_tx_rx"]
       tags: ["gls"]
     }
@@ -46,7 +46,7 @@
             Verify each UART instance at the chip level independently. Verify there is no aliasing
             on all UART ports across the instances.
             '''
-      milestone: V1
+      stage: V1
       tests: ["chip_sw_uart_tx_rx", "chip_sw_uart_tx_rx_idx1", "chip_sw_uart_tx_rx_idx2",
               "chip_sw_uart_tx_rx_idx3"]
     }
@@ -58,7 +58,7 @@
             rates - 9600bps, 115200bps, 230400bps, 128Kbps, 256Kbps, 1Mkbps, 1.5Mkbps.
 
             '''
-      milestone: V1
+      stage: V1
       tests: ["chip_sw_uart_rand_baudrate"]
     }
     {
@@ -71,7 +71,7 @@
             - Randomize `HI_SPEED_SEL`, so that uart core clock frequency can be either
               ext_clk_freq / 4 or ext_clk_freq / 2.
             '''
-      milestone: V1
+      stage: V1
       tests: ["chip_sw_uart_tx_rx_alt_clk_freq", "chip_sw_uart_tx_rx_alt_clk_freq_low_speed"]
     }
 
@@ -84,7 +84,7 @@
             pins. The testbench checks the value for correctness and verifies that there is no
             aliasing between the pins.
             '''
-      milestone: V1
+      stage: V1
       tests: ["chip_sw_gpio"]
     }
     {
@@ -94,7 +94,7 @@
             The SW test configures the GPIOs to be in input mode. The testbench walks a 1 through
             the pins. SW test ensures that the GPIO values read from the CSR is correct.
             '''
-      milestone: V1
+      stage: V1
       tests: ["chip_sw_gpio"]
     }
     {
@@ -105,7 +105,7 @@
             an interrupt. The testbench walks a 1 through the pins. SW test ensures that the
             interrupt corresponding to the right pin is seen.
             '''
-      milestone: V1
+      stage: V1
       tests: ["chip_sw_gpio"]
     }
 
@@ -127,7 +127,7 @@
             - TODO, consider to test this mode with a real use case. The actual use case of this
               mdoe is not clear right now.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_spi_device_tx_rx"]
     }
     {
@@ -140,7 +140,7 @@
               memory.
             - Ensure the image is executed correctly
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -159,7 +159,7 @@
               - Read Normal, Fast Read, Fast Dual, Fast Quad, Chip Erase, Program
 
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -173,7 +173,7 @@
             - Verify that only the payloads that are not filtered show up on the SPI host interface
               at chip IOs.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -187,7 +187,7 @@
             - Verify that the flash commands are received and interpreted correctly in the flash
               model
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -197,7 +197,7 @@
 
             TODO, add detail testplan once we have a conclusion on #5134
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -216,7 +216,7 @@
 
             Verify all SPI host instances in the chip.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -233,7 +233,7 @@
 
             Verify all instances of I2C in the chip.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -248,7 +248,7 @@
 
             Verify all instances of I2C in the chip.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -266,7 +266,7 @@
             - Check interrupts (connected, pkt_received, pkt_sent, av_empty, rx_full) are triggered
               correcly.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -281,7 +281,7 @@
             - Re-enable data transfer and ensure data correctness.
             - Observe valid reference pulse usb_ref_val/pulse_o.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -308,7 +308,7 @@
                   USB.
             - Re-enable data transfer and ensure data correctness.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -323,7 +323,7 @@
             - Stop sending any frame and check the `host_lost` interrupt. Ensure `use_ref_*` behave
               correctly.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -333,7 +333,7 @@
             - Drive random value on `usb_state_debug_i`.
             - Ensure the CSR `wake_debug` returns correctly value.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -342,7 +342,7 @@
 
             - TODO
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -354,7 +354,7 @@
             SW programs MIO INSEL and OUTSEL CSRs to connect and verify each muxed source. At the
             moment, GPIOs are the only mux inputs.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -368,7 +368,7 @@
             verifies the correctness of the reflected values once the chip goes into deep sleep.
             This is replicated for DIO pins as well.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -380,7 +380,7 @@
             level integration testing. Upon wake up, SW reads the wake cause CSR to verify
             correctness.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -399,7 +399,7 @@
             - Verify the pin value at the chip IOs is no longer holding the retention value once the
               chip is back in active power.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -416,7 +416,7 @@
             Verify top_earlgrey.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED*
             and RMA, regardless of the value on DFT SW straps.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma"]
     }
 
@@ -425,7 +425,7 @@
       name: chip_sw_padctrl_attributes
       desc: '''Verify pad attribute settings for all MIO and DIO pads.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -440,7 +440,7 @@
             - Validate the reception of the done interrupt.
             - Verify both pattgen channels independently.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -457,7 +457,7 @@
               hooking up the PWM monitor.
             - Repeat the steps for all 6 PWM signals.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sleep_pwm_pulses"]
     }
 
@@ -483,7 +483,7 @@
             - Verify that the CPU detects the integrity violation causing an alert.
             - Verify the alert upto the NMI stage.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -500,7 +500,7 @@
               access policies.
             - Accesses to CSRs external to `rv_dm` go through RV_DM SBA interface into the `xbar`.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_jtag_csr_rw"]
     }
     {
@@ -520,7 +520,7 @@
               value for correctness. Pick some random addresses to verify in case of read-only
               memories.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_jtag_mem_access"]
     }
     {
@@ -529,7 +529,7 @@
 
             TODO, add stimulus and checks
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -537,7 +537,7 @@
       desc: '''
             - X-ref'ed with rom_rv_dm_perform_debug from rom testplan
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -550,7 +550,7 @@
               reset to the original values, while values under life cycle reset will be preserved.
             - Read CSRs / mem in the debug domain to ensure that the values survive the reset.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_rv_dm_ndm_reset_req"]
     }
     // TODO, this could be a block-level test. Put it here since we don't have block-level testplan.
@@ -563,7 +563,7 @@
             - Check that halted state is clear (dmstatus.anyhalted/dmstatus.allhalted should be
               de-asserted).
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -573,7 +573,7 @@
             - Put the chip into sleep mode and then wake up.
             - Access some RV_DM CSRs to ensure that RV_DM doesn't need a full reset to work.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -585,7 +585,7 @@
             - Verify the TAP is selected correctly.
             - TODO, X-ref'ed with the LC tests.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -598,7 +598,7 @@
             - Verify that the JTAG TAP is unavailable.
             - X-ref'ed with `chip_tap_strap_sampling`
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -612,7 +612,7 @@
             - Service the interrupt when it triggers; verify that it came from rv_timer.
             - Verify that the interrupt triggered only after the timeout elapsed.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_rv_timer_irq"]
     }
 
@@ -627,7 +627,7 @@
             - Service the interrupt when it triggers; verify that it came from AON timer.
             - Verify that the interrupt triggered only after the timeout elapsed.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aon_timer_irq"]
     }
     {
@@ -645,7 +645,7 @@
             - After the test sequence is complete, read the wake up threshold register - it should
               not be reset.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_smoketest"]
     }
     {
@@ -656,7 +656,7 @@
             - Program the AON timer wdog to 'bark' after some time and enable the bark interrupt.
             - Service the bark interrupt upon reception.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aon_timer_irq"]
     }
     {
@@ -673,7 +673,7 @@
             - After the reset ensure that the reset cause was due to the escalation to prove that
               the wdog was disabled.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aon_timer_wdog_lc_escalate"]
     }
     {
@@ -687,7 +687,7 @@
             - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
               the wdog reset phase.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aon_timer_wdog_bite_reset"]
     }
     {
@@ -701,7 +701,7 @@
             - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
               the wdog reset phase.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aon_timer_wdog_bite_reset"]
     }
     {
@@ -717,7 +717,7 @@
               that the AON timer woke up the chip, not the wdog reset.
             - Un-pause the wdog and service the bark interrupt.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aon_timer_sleep_wdog_sleep_pause"]
     }
 
@@ -733,7 +733,7 @@
             testing within which functionally asserting an interrupt is hard to achieve or not of
             high value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_plic_all_irqs"]
     }
     {
@@ -744,7 +744,7 @@
             Write to the MSIP CSR to generate a SW interrupt to the CPU. Verify that the only
             interrupt that is seen is the SW interrupt.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_plic_sw_irq"]
     }
 
@@ -757,7 +757,7 @@
             completes in the transactional IP.  Verify it is off via spinwait in hints_status CSR.
             Verify that turning off this clock does not affect the other derived clocks.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aes_idle",
               "chip_sw_hmac_enc_idle",
               "chip_sw_kmac_idle",
@@ -775,7 +775,7 @@
             the CSR access (stretch since it could be difficult to maintain this
             check).
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_clkmgr_off_aes_trans",
               "chip_sw_clkmgr_off_hmac_trans",
               "chip_sw_clkmgr_off_kmac_trans",
@@ -789,7 +789,7 @@
             timers, turn off a peripheral's clock, issue a CSR access to that peripheral, verify a
             watchdog event results, and verify the rstmgr crash dump info records the CSR address.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_clkmgr_off_peri"]
     }
     {
@@ -800,7 +800,7 @@
             Connectivity tests check peripherals are connected to the clock they expect.
             Use the clkmgr count measurement feature to verify clock division.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast",
               "chip_sw_clkmgr_external_clk_src_for_sw_slow",
               "chip_sw_clkmgr_external_clk_src_for_lc"]
@@ -813,7 +813,7 @@
             it when lc_program completes. This also triggers divided clocks to step down. It may be
             best to verify this via SVA, unless we implement clock cycle counters.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_clkmgr_external_clk_src_for_lc"]
     }
     {
@@ -826,7 +826,7 @@
             counters.
             X-ref with chip_sw_uart_tx_rx_alt_clk_freq, which needs to deal with this as well.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_clkmgr_external_clk_src_for_sw_fast",
               "chip_sw_clkmgr_external_clk_src_for_sw_slow"]
     }
@@ -840,7 +840,7 @@
 
             X-ref with various specific jitter enable tests.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_clkmgr_jitter",
               "chip_sw_flash_ctrl_ops_jitter_en",
               "chip_sw_flash_ctrl_access_jitter_en",
@@ -859,7 +859,7 @@
             clock measurements should be off, but the recoverable fault status should not
             be cleared.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_ast_clk_outputs"]
     }
     {
@@ -870,7 +870,7 @@
             keeping some clocks disabled. Upon wakeup the clock measurements should be on, and the
             recoverable fault status should show no errors for the disabled clocks.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_clkmgr_sleep_frequency"]
     }
     {
@@ -881,7 +881,7 @@
             After reset the clock measurements should be off and the recoverable fault status
             should be cleared.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_clkmgr_reset_frequency"]
     }
     {
@@ -892,7 +892,7 @@
             reset. Upon alert escalation reset, the internal status should be clear and clkmgr
             should not attempt to send out more alerts.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -905,7 +905,7 @@
             the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
             by checking retention SRAM for reset_reason.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
     }
     {
@@ -924,7 +924,7 @@
             dependent corner cases with wakeup interactions.
 
             '''
-      milestone: V2
+      stage: V2
       tests: [""]
     }
     {
@@ -939,7 +939,7 @@
             have the source issue a wakeup event and verify `wake_info` indicates the expected
             wakeup.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
     }
     {
@@ -953,7 +953,7 @@
             rstmgr's `reset_info` indicated the expected reset by checking retention SRAM for
             reset_reason.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aon_timer_wdog_bite_reset"]
     }
     {
@@ -965,7 +965,7 @@
             working correctly as expected. X-ref'ed with all individual IP tests. Similar to
             chip_pwrmgr_sleep_all_wake_ups, except `control.main_pd_n` is set to 0.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
     }
     {
@@ -978,7 +978,7 @@
             - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
             - esc reset is followd by normal mode because it does not work with sleep mode
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_deep_sleep_all_reset_reqs"]
     }
     {
@@ -991,7 +991,7 @@
             - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
             - esc reset is followed by normal mode and cleared by reset because it does not work with sleep mode
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_normal_sleep_all_reset_reqs"]
     }
     {
@@ -1002,7 +1002,7 @@
             working correctly as expected. X-ref'ed with all individual IP tests. Similar to
             chip_pwrmgr_sleep_all_reset_reqs, except the chip is not put in low power mode.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_wdog_reset"]
     }
     {
@@ -1015,7 +1015,7 @@
             the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
             by checking retention SRAM for reset_reason.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_full_aon_reset"]
     }
     {
@@ -1026,7 +1026,7 @@
             a MainPwr reset request, which is checked by reading retention SRAM's reset_reason to
             see that the reset_info CSR's POR bit is not set when the test restarts.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_main_power_glitch_reset"]
     }
     {
@@ -1046,7 +1046,7 @@
             Each test should perform a minimum of 2 low power transitions to ensure there are no
             state dependent corner cases with power glitch handling.
             '''
-      milestone: V2
+      stage: V2
       tests: [""]
     }
     {
@@ -1063,7 +1063,7 @@
             - If too late the hardware won't monitor main power okay so the glitch will have no
               effect, and the test will timeout.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_deep_sleep_power_glitch_reset"]
     }
     {
@@ -1075,7 +1075,7 @@
             reset_reason shows that the reset_info CSR's POR bit is not set when the
             test restarts.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_sleep_power_glitch_reset"]
     }
     {
@@ -1086,7 +1086,7 @@
             - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
             - esc reset is followd by normal mode because it does not work with sleep mode
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_random_sleep_all_reset_reqs"]
     }
     {
@@ -1106,7 +1106,7 @@
               the wdog reset phase.
             - Program the AON timer wdog to 'bark' after some time.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_sysrst_ctrl_reset"]
     }
     {
@@ -1114,7 +1114,7 @@
       desc: '''Verify that the pwrmgr sequences sleep_req and reset req coming in almost at the same
             time, one after the other. Use POR_N PAD to trigger reset.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_b2b_sleep_reset_req"]
     }
     {
@@ -1124,7 +1124,7 @@
             This calls WFI with low_power_hint disabled and pwrmgr interrupts enabled,
             and fails if the pwrmgr ISR is called.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_sleep_disabled"]
     }
     {
@@ -1135,7 +1135,7 @@
                Upon alert escalation reset, the internal status should be clear and the
                pwrmgr should not attempt to send out more alerts.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1156,7 +1156,7 @@
             need special consideration.
             TODO(maturana) Add specific tests once they are developed.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_smoketest"]
     }
     {
@@ -1174,7 +1174,7 @@
             need special consideration.
             TODO(maturana) Add specific tests once they are developed.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1186,7 +1186,7 @@
             the `cpu_info` register contents when reset is handled.
             Refer to `chip_*sys_rstmgr_reset_info`.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_rstmgr_cpu_info"]
     }
     {
@@ -1198,7 +1198,7 @@
             After reset, the retention SRAM's reset_reason should show that the `reset_info` CSR
             reflects that a software request was the reset cause.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_rstmgr_sw_req"]
     }
     {
@@ -1211,7 +1211,7 @@
             verify the `alert_info` register contents when reset is handled.
             Refer to `chip_*sys_rstmgr_reset_info`.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_rstmgr_alert_info"]
     }
     {
@@ -1227,7 +1227,7 @@
 
             Notice the two `spi_host` IPs receive two different resets, `spi_host*`.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_rstmgr_sw_rst"]
     }
     {
@@ -1238,7 +1238,7 @@
                Upon alert escalation reset, the internal status should be clear and the
                rstmgr should not attempt to send out more alerts.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1252,7 +1252,7 @@
             - Ensure that all alerts are properly connected to the alert handler and cause the
               escalation paths to trigger.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_alert_test"]
     }
     {
@@ -1265,7 +1265,7 @@
             - Verify the third results in chip reset.
             - Ensure that all escalation handshakes complete without errors.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_alert_handler_escalation"]
     }
     {
@@ -1274,7 +1274,7 @@
 
             X-ref'ed with the automated PLIC test.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_plic_all_irqs"]
     }
     {
@@ -1287,7 +1287,7 @@
             - Ensure that the alert ping handshake to all alert sources and escalation receivers
               complete without errors.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_alert_handler_entropy"]
     }
     {
@@ -1297,7 +1297,7 @@
             When the chip resets due to alert escalating to cause the chip to reset, verify the
             reset cause to verify the alert crashdump.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1308,7 +1308,7 @@
             alert_handler detects the ping timeout and reflects it on the `loc_alert_cause`
             register.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_alert_handler_ping_timeout"]
     }
     {
@@ -1323,7 +1323,7 @@
               all alerts are still firing after waking up.
             - Repeat the previous steps for random number of iterations.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1344,7 +1344,7 @@
               This scenario ensures the ping mechanism will continue to send out pings after waking
               up from sleep modes.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1356,7 +1356,7 @@
             - Trigger fatal alerts in an IP then configure clkmgr to turn off the IP clock. Check
               the IP's fatal alert resumes after clock is turned back on.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1366,7 +1366,7 @@
             - Configure rstmgr to randomly toggle one IP block's SW reset and check alert_handler
               won't trigger a ping timeout error on that block.
            '''
-      milestone: V2
+      stage: V2
       tests: []
    }
    {
@@ -1376,7 +1376,7 @@
             Check that escalation receivers located inside always-on blocks do not auto-escalate
             due to the reverse ping feature while the system is in deep sleep.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1398,7 +1398,7 @@
             decoded outputs to other IPs.
             X-ref'ed with alert_handler's escalation test.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_alert_handler_escalation"]
     }
     {
@@ -1408,7 +1408,7 @@
             Using the JTAG agent, write and read LC ctrl CSRs, verify the read value for
             correctness.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma"]
     }
     {
@@ -1419,7 +1419,7 @@
             - Read the device ID and the ID state CSRs to verify their correctness.
             - Reset the chip and repeat the first 2 steps to verify a different set of values.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
     }
     {
@@ -1432,7 +1432,7 @@
             - Verify with connectivity assertion checks, the handshake signals are connected.
             - Ensure that no interrupts or alerts are triggered.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
@@ -1451,7 +1451,7 @@
 
             X-ref'ed chip_sw_otp_ctrl_program.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
@@ -1464,7 +1464,7 @@
 
             X-ref'ed with chip_kmac_lc_req.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
@@ -1476,7 +1476,7 @@
             - Force another KMAC reset after KMAC is done processing lc trantition tokens.
             - Verify that kmac reset won't affect LC state transition.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_lc_ctrl_kmac_reset"]
     }
     {
@@ -1488,7 +1488,7 @@
 
             X-ref'ed with chip_keymgr_lc_key_div_o.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1517,7 +1517,7 @@
             - These outputs are enabled per the [life cycle architecture spec]({{< relref "doc/security/specs/device_life_cycle/#architecture" >}}).
             X-ref'ed with the respective IP tests that consume these signals.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1530,7 +1530,7 @@
               the chip inputs.
             - Read the pin_in_value CSR to check for correctness.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sysrst_ctrl_inputs"]
     }
     {
@@ -1550,7 +1550,7 @@
             - Via assertion checks (or equivalent) verify that the transitions at the inputs
               immediately reflect at the outputs, if not intercepted / debounced by sysrst_ctrl.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sysrst_ctrl_outputs"]
     }
     {
@@ -1566,7 +1566,7 @@
               key_intr_status for correctness and clears the interrupt status.
             - Verify separately, eack key combination sufccessfully generates an interrupt.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1588,7 +1588,7 @@
             - Read the pin input value and the combo_intr_status CSRs to verify the correct
               combination on inputs woke up the chip from sleep.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sysrst_ctrl_reset"]
     }
     {
@@ -1610,7 +1610,7 @@
             - Read the com_sel_ctl_* CSR in SYSRST ctrl we programmed earlier - it should have been
               reset.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sysrst_ctrl_reset"]
     }
     {
@@ -1634,7 +1634,7 @@
             - Read the com_sel_ctl_* CSR in SYSRST ctrl we programmed earlier - it should have been
               reset.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sysrst_ctrl_reset"]
     }
     {
@@ -1648,7 +1648,7 @@
             - Optionally, also verify ec_rst_l pulse stretching by setting the ec_rst_ctl register
               with a suitable pulse width.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1657,7 +1657,7 @@
 
             - Exactly the same as chip_sysrst_ctrl_ec_rst_l, but covers the flash_wp_l pin.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1674,7 +1674,7 @@
             - Read the ulp_wakeup register to verify that the wakeup event is detected this time.
             - Verify that the z3_wakeup output at the chip IOs is reflecting the value of 1.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -1698,7 +1698,7 @@
               filter caused the interrupt to fire. Read the ADC channel value register to verify the
               correctness of the detected value that was forced in the AST for each channel.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1720,7 +1720,7 @@
               that was forced in the AST.
             - Repeat for both ADC channels.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup"]
     }
 
@@ -1738,7 +1738,7 @@
             computation to start. Wait for the AES operation to complete by polling the status
             register. Check the digest registers for correctness against the expected digest value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aes_enc",
               "chip_sw_aes_enc_jitter_en"]
     }
@@ -1758,7 +1758,7 @@
             - Assertion check verifies that the IV are also garbage, i.e. different from the originally
               written values.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aes_entropy"]
     }
     {
@@ -1775,7 +1775,7 @@
               clkmgr now reads 0 again (AES is disabled).
             - Write the AES clk hint to 1, read and check the AES output for correctness.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aes_idle"]
     }
     {
@@ -1793,7 +1793,7 @@
             - Clear the key in the keymgr and decrypt the ciphertext again.
             - Verify that output is not equal to the plain text.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aes_sideload"]
     }
 
@@ -1806,7 +1806,7 @@
             the NIST vectors). SW test verifies the digest against the pre-computed value. Verify
             the HMAC done and FIFO empty interrupts as a part of this test.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_hmac_enc",
               "chip_sw_hmac_enc_jitter_en"]
     }
@@ -1826,7 +1826,7 @@
             - This process is repeated for two hmac operations needed to verify the resulting hmac
               digest.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_hmac_enc_idle"]
     }
 
@@ -1838,7 +1838,7 @@
             SW test verifies SHA3 operation with a known key, plain text and digest (pick one of
             the NIST vectors). SW validates the reception of kmac done and fifo empty interrupts.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_kmac_mode_cshake", "chip_sw_kmac_mode_kmac",
               "chip_sw_kmac_mode_kmac_jitter_en"]
     }
@@ -1855,7 +1855,7 @@
 
             X-ref'ed with keymgr test.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1868,7 +1868,7 @@
 
             X-ref'ed with LC_CTRL test/env.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
@@ -1883,7 +1883,7 @@
 
             X-ref'ed with ROM_CTRL test/env.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_kmac_app_rom"]
     }
     {
@@ -1905,7 +1905,7 @@
 
             X-ref'ed with EDN test/env.
             '''
-      milestone: V3
+      stage: V3
       tests: []
     }
     {
@@ -1922,7 +1922,7 @@
             - After the KMAC operation is complete, verify the digest for correctness.
               Verify that the KMAC clk hint status within clkmgr now reads 0 again (KMAC is disabled).
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_kmac_idle"]
     }
 
@@ -1938,7 +1938,7 @@
               the AST RNG interface.
             - Verify the correctness of the received data with assertion based connectivity checks.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_entropy_src_ast_rng_req"]
     }
     {
@@ -1947,7 +1947,7 @@
 
             Details TBD.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1958,7 +1958,7 @@
             At the CSRNG, validate the reception of entropy req interrupt.
             Details TBD.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1967,7 +1967,7 @@
 
             Details TBD.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -1983,7 +1983,7 @@
             - Read and verify the OTP `HW_CFG.EN_ENTROPY_SRC_FW_READ` against the previous step expectation.
             - Read the internal state via SW; verify that the entropy valid bit is zero.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_entropy_src_fuse_en_fw_read_test"]
     }
     {
@@ -1994,7 +1994,7 @@
             - Feed NIST test-defined entropy sequences into the conditioner
             - Read the entropy_data_fifo via SW; verify that it reads the expected values.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_entropy_src_kat_test"]
     }
 
@@ -2009,7 +2009,7 @@
             - TODO: explore the ability to generate predictable data and verify the received value.
             Details TBD.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -2022,7 +2022,7 @@
             - Reset the chip and repeat the steps above, but this time, with OTP fuse bit set to 0.
             - Verify that the SW reads back all zeros when reading the internal states.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -2031,7 +2031,7 @@
 
             TODO: This is pending SCA security review and might be removed.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -2045,7 +2045,7 @@
             - Perform generate operations as required by the test vector.
             - Compare the results to test expectations.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_csrng_kat_test"]
     }
 
@@ -2060,7 +2060,7 @@
             Ensure there are no deadlocks and everything works as expected.
             X'ref'ed with each IP test that requsts entropy from EDN.
             '''
-      milestone: V2
+      stage: V2
       tests: ['chip_sw_edn_entropy_reqs']
     }
 
@@ -2093,7 +2093,7 @@
 
             X-ref'ed with kmac test.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_keymgr_key_derivation", "chip_sw_keymgr_key_derivation_jitter_en"]
     }
     {
@@ -2108,7 +2108,7 @@
 
             X-ref'ed with chip_kmac_app_keymgr test.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_keymgr_sideload_kmac"]
     }
     {
@@ -2117,7 +2117,7 @@
 
                Same as `chip_keymgr_sideload_kmac`, except, sideload to AES.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aes_sideload"]
     }
     {
@@ -2127,7 +2127,7 @@
                Load OTBN binary image, the rest is similar to `chip_keymgr_sideload_kmac`, except
                sideloading to otbn.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -2141,7 +2141,7 @@
             - SW verifies the correctness of the result with the expected value which is
               pre-computed using a reference model.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_otbn_ecdsa_op_irq",
               "chip_sw_otbn_ecdsa_op_irq_jitter_en"]
     }
@@ -2155,7 +2155,7 @@
               all 0s or all 1s, as a basic measure to ensure that the entropy subsystem is returning
               some data.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_otbn_randomness"]
     }
     {
@@ -2164,7 +2164,7 @@
 
             - Similar to chip_otbn_rnd_entropy, but verifies the URND bits.
             '''
-      milestone: V2
+      stage: V2
       tests:  ["chip_sw_otbn_randomness"]
     }
     {
@@ -2182,7 +2182,7 @@
               clkmgr now reads 0 again (OTBN is disabled).
             - Write the OTBN clk hint to 1, read and check the OTBN output for correctness.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_otbn_randomness"]
     }
     {
@@ -2198,7 +2198,7 @@
             - Verify the validity of EDN's output to OTP_CTRL via assertions
               (unique, non-zero data).
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_otbn_mem_scramble"]
     }
 
@@ -2214,7 +2214,7 @@
 
             - Verify that the CPU can fetch instructions from the ROM.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
     {
@@ -2226,7 +2226,7 @@
             - In PROD LC state, verify that the pwrmgr does not fully power up if the computed
               digest does not match the top 8 words of the ROM.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_rom_ctrl_integrity_check"]
     }
 
@@ -2245,7 +2245,7 @@
             - Verify the validity of EDN's output to OTP_CTRL via assertions
               (unique, non-zero data).
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sram_ctrl_ret_scrambled_access",
               "chip_sw_sram_ctrl_main_scrambled_access",
               "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"]
@@ -2259,7 +2259,7 @@
 
             TODO: how to deal with the scramble keys on low power exit?
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sleep_sram_ret_contents"]
     }
     {
@@ -2295,7 +2295,7 @@
 
             For the retention SRAM, instruction fetch is completely disabled via design parameter.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sram_ctrl_execution_main"]
     }
     {
@@ -2308,7 +2308,7 @@
             - Re-initialize the SRAMs and verify that they can now respond correctly to
               any further memory requests.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
 
@@ -2323,7 +2323,7 @@
             - Verify with connectivity assertion checks, the handshake signals are connected.
             - Ensure that no interrupts or alerts are triggered.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
@@ -2339,7 +2339,7 @@
             - chip_sw_keymgr_key_derivation
             - chip_sw_otbn_mem_scramble
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sram_ctrl_ret_scrambled_access", "chip_sw_flash_init",
               "chip_sw_keymgr_key_derivation", "chip_sw_otbn_mem_scramble"]
     }
@@ -2350,7 +2350,7 @@
             This is X-ref'ed with the chip_otp_ctrl_keys test, which needs to handshake with the EDN
             to receive some entropy bits before the keys for SRAM ctrl and OTBN are computed.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sram_ctrl_ret_scrambled_access", "chip_sw_flash_init",
               "chip_sw_keymgr_key_derivation", "chip_sw_otbn_mem_scramble"]
     }
@@ -2367,7 +2367,7 @@
             - After reset, verify that the LC state transition completed successfully by reading the
               LC state and LC count CSRs.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
@@ -2378,7 +2378,7 @@
             - Verify that the LC ctrl triggers an alert when the OTP ctrl responds back with a
               program error.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_lc_ctrl_program_error"]
     }
     {
@@ -2390,7 +2390,7 @@
 
             Xref'ed with corresponding IP tests that receive these bits.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_lc_ctrl_otp_hw_cfg"]
     }
     {
@@ -2408,7 +2408,7 @@
             X-ref'ed with chip_lc_ctrl_broadcast test, which verifies the connectivity of the LC
             decoded outputs to other IPs.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -2417,7 +2417,7 @@
 
             Details TBD.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -2429,7 +2429,7 @@
             - Verify that when `lc_dft_en_i` is On, this region can be read / written to by the SW.
               When `lc_dft_en_i` is Off, accessing this region will result in a TLUL error.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_prim_tl_access"]
     }
 
@@ -2448,7 +2448,7 @@
 
             - This test needs to execute as a boot rom image.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_init"]
     }
     {
@@ -2457,7 +2457,7 @@
 
             Nothing extra to do here - most SW based tests fetch code from flash.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_ctrl_access",
               "chip_sw_flash_ctrl_access_jitter_en"]
     }
@@ -2469,7 +2469,7 @@
             all data and info partitions. Erase both, bank and page. SW validates the reception of
             prog empty, prog level, rd full, rd level and op done interrupts.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_ctrl_ops", "chip_sw_flash_ctrl_ops_jitter_en"]
     }
     {
@@ -2484,7 +2484,7 @@
             - RMA entry can be on the C side as well. This should be done over C - The JTAG
               interface to flash ctrl is actually for the closed src.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_rma_unlocked"]
     }
     {
@@ -2499,7 +2499,7 @@
               flash with new test image that is re-scrambled with the new key.
             - Need to understand the bootstrapping requirements.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_init"]
     }
     {
@@ -2511,7 +2511,7 @@
             - Issue a WFI.
             - Ensure that the low power entry does not happen due to the ongoing flash operation.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_ctrl_idle_low_power"]
     }
     {
@@ -2521,7 +2521,7 @@
 
             X-ref'ed with keymgr test.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_keymgr_key_derivation"]
     }
     {
@@ -2532,14 +2532,14 @@
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
               accessibility of the corresponding partition depending on the signal value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
     }
     {
       name: chip_sw_flash_creator_seed_wipe_on_rma
       desc: '''Verify that the creator seed is wiped by the flash ctrl on RMA entry.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_rma_unlocked"]
     }
     {
@@ -2550,7 +2550,7 @@
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
               accessibility of the corresponding partition depending on the signal value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
     }
     {
@@ -2561,7 +2561,7 @@
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
               accessibility of the corresponding partition depending on the signal value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
     }
     {
@@ -2572,7 +2572,7 @@
               that this LC signal transitions from 0 to 1 and back to 0. Verify that the SW
               accessibility of the corresponding partition depending on the signal value.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
     }
     {
@@ -2584,7 +2584,7 @@
               does (or does not) read the creator and owner partitions to fetch the seeds for the
               keymgr.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
     }
     {
@@ -2598,7 +2598,7 @@
             - Use assertion based connectivity check to prove that this signal is connected to the
               flash ctrl.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -2609,7 +2609,7 @@
               will be implemented in a translation 'shim'.
             - Verify that this region can be read / written to by the SW in any LC state.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_prim_tl_access"]
     }
     {
@@ -2620,7 +2620,7 @@
               to the flash.
             - This sets the test for closed source where the flash access timing matters.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_flash_ctrl_clock_freqs"]
     }
 
@@ -2638,7 +2638,7 @@
             and verify that upon wakeup reset the clock counters are turned off, measure ctrl
             regwen is enabled, and errors are not cleared.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_ast_clk_outputs"]
     }
     {
@@ -2647,7 +2647,7 @@
 
             Details TBD.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -2656,7 +2656,7 @@
 
             Details TBD.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -2670,7 +2670,7 @@
             - Note, while the above is ideal, usbdev chip level testing is not yet ready and this test fakes the usb portion through DV forces.
             - Note also the real AST calibration logic is not available, so the sof testing in the open source is effectively short-circuited.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_usb_ast_clk_calib"]
     }
     {
@@ -2679,7 +2679,7 @@
 
              X-ref'ed with `chip_sensor_ctrl_ast_alerts`.
              '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sensor_ctrl_alert"]
     }
 
@@ -2695,7 +2695,7 @@
                For the alert handler case, make sure to test each alert configured
                as either recoverable or fatal.
              '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup",
               "chip_sw_sensor_ctrl_alert"]
     }
@@ -2707,7 +2707,7 @@
                from sensor_ctrl.  After triggering, the IO status can be read
                from a sensor_ctrl register.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_sensor_ctrl_status"]
     }
     {
@@ -2716,7 +2716,7 @@
                from sleep mode when an alert event is triggered from
                AST. X-ref'ed chip_sw_pwrmgr_sleep_all_wake_ups.
              '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
     }
 
@@ -2739,7 +2739,7 @@
             is not locked, check that alert_handler can clear this NMI escalation stage. Then make
             sure that the alert_handler won't move forward to the next escalation stage.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -2755,7 +2755,7 @@
                - Perform repeated reads from `RND_DATA` without `RND_STATUS`
                  polling to check read when invalid doesn't block.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_rv_core_ibex_rnd"]
     }
     {
@@ -2771,7 +2771,7 @@
                - Turn off address translation and confirm regions are no longer
                  being remapped.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_rv_core_ibex_address_translation"]
    }
 
@@ -2782,7 +2782,7 @@
                - Purposely create an ibex exception during execution through reads to an ummapped address.
                - Ensure the rstmgr fault dump correctly captures the related addresses to the exception.
             '''
-      milestone: V2
+      stage: V2
       tests: []
    }
 
@@ -2793,7 +2793,7 @@
                - Purposely create an ibex double exception during execution, by performing an unmapped read and in the exception handler perform another unmapped read.
                - Ensure the rstmgr fault dump correctly captures both dumps correctly and indicates the previous dump is valid.
             '''
-      milestone: V2
+      stage: V2
       tests: []
    }
 
@@ -2809,7 +2809,7 @@
             develop example tests to demonstrate these capabilities, and need to
             run them in DV to ensure the integrity of our infrastructure.
             '''
-      milestone: V1
+      stage: V1
       tests: ["chip_sw_example_flash",
               "chip_sw_example_rom",
               ]
@@ -2822,7 +2822,7 @@
             alive, and can be actuated by the DIF. We need to ensure that they
             work in DV as well.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_aes_smoketest",
               "chip_sw_aon_timer_smoketest",
               "chip_sw_clkmgr_smoketest",
@@ -2851,13 +2851,13 @@
             test ROM. We need to ensure our test infrastructure and ROM can
             boot and run one (or a few) of the same tests our test ROM can.
             '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_uart_smoketest_signed"]
     }
     {
       name: chip_sw_coremark
       desc: '''Run the coremark benchmark on the full chip.'''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_coremark"]
     }
     {
@@ -2873,7 +2873,7 @@
              Note: This flow will be replaced by using spi_device flash mode.
              For detail, refer to chip_spi_device_flash_mode
              '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_uart_tx_rx_bootstrap"]
     }
     {
@@ -2882,7 +2882,7 @@
 
              Details TBD.
              '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -2896,7 +2896,7 @@
                enabled.
              Verify that the features that should indeed be disabled are indeed disabled.
              '''
-      milestone: V2
+      stage: V2
       tests: ["chip_sw_lc_walkthrough_dev",
               "chip_sw_lc_walkthrough_prod",
               "chip_sw_lc_walkthrough_prodend",
@@ -2909,7 +2909,7 @@
 
              Details TBD.
              '''
-      milestone: V2
+      stage: V2
       tests: []
     }
     {
@@ -2921,7 +2921,7 @@
               and initiating another key request.
             - Verify that the RAMs are "wiped" once this operation completes.
             '''
-      milestone: V2
+      stage: V2
       tests: []
     }
   ]

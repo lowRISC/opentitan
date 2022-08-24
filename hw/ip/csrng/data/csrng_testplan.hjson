@@ -16,7 +16,7 @@
             Verify sending instantiate/generate cmds via SW path.
             Verify reading genbits via SW path.
             '''
-      milestone: V1
+      stage: V1
       tests: ["csrng_smoke"]
     }
     {
@@ -28,7 +28,7 @@
             Verify cs_fifo_err interrupt asserts/clears as predicted.
             Verify fifo error status bits are set as predicted.
             '''
-      milestone: V2
+      stage: V2
       tests: ["csrng_intr"]
     }
     {
@@ -38,7 +38,7 @@
             Verify all recov_alert_sts bits assert/clear as predicted.
             Verify fatal_alert asserts as predicted.
             '''
-      milestone: V2
+      stage: V2
       tests: ["csrng_alert"]
     }
     {
@@ -46,7 +46,7 @@
       desc: '''
             Verify err_code register bits assert/clear as predicted.
             '''
-      milestone: V2
+      stage: V2
       tests: ["csrng_err"]
     }
     {
@@ -64,7 +64,7 @@
             Verify AES_HALT.
             Verify commands with continuous/non-continuous valid.
             '''
-      milestone: V2
+      stage: V2
       tests: ["csrng_cmds"]
     }
     {
@@ -72,7 +72,7 @@
       desc: '''
             Verify lifecycle hardware debug mode.
             '''
-      milestone: V2
+      stage: V2
       tests: ["csrng_cmds"]
     }
     {
@@ -81,7 +81,7 @@
             Combine the other individual testpoints while injecting TL errors and running CSR tests
             in parallel.
             '''
-      milestone: V2
+      stage: V2
       tests: ["csrng_stress_all"]
     }
   ]

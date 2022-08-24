@@ -15,7 +15,7 @@
       desc: '''
             Enable entropy_src, wait for interrupt, verify entropy.
             '''
-      milestone: V1
+      stage: V1
       tests: ["entropy_src_smoke"]
     }
     {
@@ -26,7 +26,7 @@
             Verify control registers are read-only while DUT is enabled
             Verify registers at End-Of-Test
             '''
-      milestone: V2
+      stage: V2
       tests: ["entropy_src_smoke", "entropy_src_fw_ov", "entropy_src_rng"]
     }
     {
@@ -37,7 +37,7 @@
             Verify read FIFO
             - Random FIFO depths
             '''
-      milestone: V2
+      stage: V2
       tests: ["entropy_src_fw_ov"]
     }
     {
@@ -49,7 +49,7 @@
             - Verify single_bit_mode for all bit_selector values
             Verify FIPS bits match predicted
             '''
-      milestone: V2
+      stage: V2
       tests: ["entropy_src_rng"]
     }
     {
@@ -67,7 +67,7 @@
             - Pulse inputs and verify captured
             - Verify health testing stops when no demand for entropy
             '''
-      milestone: V2
+      stage: V2
       tests: ["entropy_src_rng"]
     }
     {
@@ -76,7 +76,7 @@
             Verify genbits seeds in bypass mode as predicted.
             Verify genbits seeds after shah3 conditioning as predicted.
             '''
-      milestone: V2
+      stage: V2
       tests: ["entropy_src_rng"]
     }
     {
@@ -86,7 +86,7 @@
             Verify es_health_test_failed interrupt asserts as predicted.
             Verify es_fifo_err interrupt asserts as predicted.
             '''
-      milestone: V2
+      stage: V2
       tests: ["entropy_src_intr"]
     }
     {
@@ -94,7 +94,7 @@
       desc: '''
             Verify es_alert_count_met asserts as expected.
             '''
-      milestone: V2
+      stage: V2
       tests: ["entropy_src_alert"]
     }
     {
@@ -103,7 +103,7 @@
             Combine the individual test points while injecting TL errors and
             running CSR tests in parallel.
             '''
-      milestone: V2
+      stage: V2
       tests: ["entropy_src_stress_all"]
     }
     {
@@ -111,7 +111,7 @@
       desc: '''
             Verify they never occur with asserts
             '''
-      milestone: V2
+      stage: V2
       tests: ["entropy_src_err"]
     }
   ]

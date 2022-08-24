@@ -26,25 +26,25 @@
     {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_lc_hw_debug_en_intersig_mubi
       desc: "Verify the countermeasure(s) LC_HW_DEBUG_EN.INTERSIG.MUBI."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_dm_en_ctrl_lc_gated
       desc: "Verify the countermeasure(s) DM_EN.CTRL.LC_GATED."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
     {
       name: sec_cm_exec_ctrl_mubi
       desc: "Verify the countermeasure(s) EXEC.CTRL.MUBI."
-      milestone: V2S
+      stage: V2S
       tests: []
     }
   ]

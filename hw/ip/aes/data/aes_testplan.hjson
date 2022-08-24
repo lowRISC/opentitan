@@ -13,35 +13,35 @@
    //   name: default_setting
    //   desc: '''
    //        '''
-   //   milestone: V1
+   //   stage: V1
    //   tests: []
    // }
     {
       name: wake_up
       desc: '''
            Basic hello world,  encrypt a plain text read it back - decrypt and compare to input.'''
-      milestone: V1
+      stage: V1
       tests: ["aes_wake_up"]
     }
     {
       name: smoke
       desc: '''
            Encrypt a plain text read it back - decrypt and compare to input but use reference model to compare after both encryption and decryption.'''
-      milestone: V1
+      stage: V1
       tests: ["aes_smoke"]
     }
     {
       name: algorithm
       desc: '''
            Compare cypher text from DUT with the output of a C model using same key and data.'''
-           milestone: V2
+           stage: V2
       tests: ["aes_smoke", "aes_stress", "aes_config_error"]
     }
     {
       name: key_length
       desc: '''
            Randomly select key length to verify all supported key lengths are working.'''
-           milestone: V2
+           stage: V2
       tests: ["aes_stress", "aes_smoke", "aes_config_error"]
     }
     {
@@ -49,14 +49,14 @@
       desc: '''
            Back to back Messages are not possible as the DUT need to be idle before writing a new configuration.
            But Back2back verifies that DUT can handle back to back data blocks and other spacings.'''
-      milestone: V2
+      stage: V2
       tests: ["aes_b2b", "aes_stress"]
     }
     {
       name: backpressure
       desc: '''
         Try to write data to registers without offloading the DUT output to verify Stall functionality.'''
-        milestone: V2
+        stage: V2
       tests: ["aes_stress"]
     }
     {
@@ -64,7 +64,7 @@
       desc: '''
         Run multiple messages in a random mix of encryption / decryption.
         Each message should select its mode randomly.'''
-      milestone: V2
+      stage: V2
       tests: ["aes_stress", "aes_smoke", "aes_config_error", "aes_alert_reset"]
     }
     {
@@ -77,7 +77,7 @@
               Then enter the 128bit of the key and use for decryption.
               Will result match plain text and vice.
             - Write unsupported configurations (Key length and mode are 1 hot, what happens if more than one bit is set.)'''
-      milestone: V2
+      stage: V2
       tests: ["aes_config_error", "aes_alert_reset", "aes_man_cfg_err"]
     }
     {
@@ -85,28 +85,28 @@
       desc: '''
             Exercise trigger and clear registers at random times to make sure we handle the different cornercases correctly.
             Example of a cornercases clearing data input or data output before the data is consumed or the DUT finishes an operation.'''
-      milestone: V2
+      stage: V2
       tests: ["aes_clear"]
     }
     {
       name: nist_test_vectors
       desc: '''
             Verify that the DUT handles the NIST test vectors correctly.'''
-      milestone: V2
+      stage: V2
       tests: ["aes_nist_vectors"]
     }
     {
       name: reset_recovery
       desc: '''
             Pull reset at random times, make sure DUT recover/resets correctly and there is no residual data left in the registers.'''
-      milestone: V2
+      stage: V2
       tests: ["aes_alert_reset"]
     }
     {
       name: stress
       desc: '''
             This will combine the other individual testpoints to ensure we stress test everything across the board.'''
-      milestone: V2
+      stage: V2
       tests: ["aes_stress"]
     }
     {
@@ -114,14 +114,14 @@
       desc: '''
             Verify that DUT uses sideload correctly when sideload is enabled.
             and that it ignores any valid on the bus when disabled.'''
-      milestone: V2
+      stage: V2
       tests: ["aes_stress", "aes_sideload"]
     }
     {
       name: deinitialization
       desc: '''
             Make sure that there is no residual data from latest operation. '''
-      milestone: V2
+      stage: V2
       tests: ["aes_deinit"]
     }
     {
@@ -130,14 +130,14 @@
             excercise the different reseeding configuations
             for reseeding every 8k blocks the DUT internal block counter will be manually changed to something close to 8k.
             to provoke the reseeding within reasonable simulation time '''
-      milestone: V2S
+      stage: V2S
       tests: ["aes_deinit"]
     }
     {
       name:fault_inject
       desc: '''
             Verify that injecting bit errors in one of the statemachines or the round counter triggers an error '''
-      milestone: V2S
+      stage: V2S
       tests: ["aes_fi"]
     }
   ]

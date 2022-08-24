@@ -31,7 +31,7 @@
               - Check completion interrupts are asserted once a pattern
                 is completely generated on the active channels
             '''
-      milestone: V1
+      stage: V1
       tests: ["pattgen_smoke"]
     }
     {
@@ -49,7 +49,7 @@
               - Ensure patterns are correctly generated
               - Ensure interrupts are robust asserted and cleared (e.g. at the high data rate)
             '''
-      milestone: V2
+      stage: V2
       tests: ["pattgen_perf"]
     }
     {
@@ -72,7 +72,7 @@
               - Ensure patterns are correctly generated
               - Ensure interrupts are robust asserted and cleared (e.g. at the high data rate)
             '''
-      milestone: V2
+      stage: V2
       tests: ["cnt_rollover"]
     }
     {
@@ -89,7 +89,7 @@
               - Ensure patterns are dropped when re-enabled
               - Ensure the output channels get back normal after re-enable
             '''
-      milestone: V2
+      stage: V2
       tests: ["pattgen_error"]
     }
     {
@@ -97,7 +97,7 @@
       desc: '''
             Stress_all test is a random mix of all the test above except csr tests.
             '''
-      milestone: V2
+      stage: V2
       tests: ["pattgen_stress_all"]
     }
   ]
