@@ -1153,7 +1153,13 @@
   regressions: [
     {
       name: smoke
-      tests: ["chip_sw_uart_tx_rx", "chip_plic_all_irqs"]
+      tests: ["xbar_chip_smoke",
+              "chip_sw_uart_tx_rx",
+              "chip_plic_all_irqs",
+              "chip_sw_example_flash",
+              "chip_sw_example_rom",
+              "chip_sw_example_manufacturer"]
+              // TODO: add this test after enabling HW verification: "rom_e2e_bootup_success"]
     }
     {
       name: jitter
