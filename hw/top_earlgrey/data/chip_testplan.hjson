@@ -893,7 +893,7 @@
             should not attempt to send out more alerts.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_clkmgr_escalation_reset"]
     }
 
     // PWRMGR tests:
@@ -2816,6 +2816,7 @@
       stage: V1
       tests: ["chip_sw_example_flash",
               "chip_sw_example_rom",
+              "chip_sw_example_manufacturer",
               ]
     }
     {
@@ -2845,6 +2846,18 @@
               "chip_sw_sram_ctrl_smoketest",
               "chip_sw_uart_smoketest",
             ]
+    }
+    {
+      name: chip_sw_rom_functests
+      desc: '''Run some ROM functional tests with test ROM.
+
+            ROM functional tests test ROM drivers and libraries by exercising
+            these components in the flash stage, launched via the test ROM. They
+            primarily are tested on the FPGA, however, we ensure they run in DV
+            as well.
+            '''
+      stage: V2
+      tests: ["rom_keymgr_functest"]
     }
     {
       name: chip_sw_signed
