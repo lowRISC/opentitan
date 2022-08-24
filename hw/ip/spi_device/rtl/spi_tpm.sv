@@ -13,9 +13,9 @@ module spi_tpm
 
   // Max Write/Read buffer size to support is 64B in TPM spec.
   // But more than 4B is for future use. So, 4B is recommended.
-  parameter int unsigned WrFifoDepth    = 4,
-  parameter int unsigned RdFifoDepth    = 4,
-  parameter int unsigned RdDataFifoSize = 32,
+  parameter int unsigned WrFifoDepth = 4,
+  parameter int unsigned RdFifoDepth = 4,
+  parameter int unsigned RdFifoWidth = 32,
 
   // Locality determines the number of TPM_ACCESS registers.
   // Other HW managed registers are shared across the locality.
@@ -49,8 +49,12 @@ module spi_tpm
   localparam int unsigned WrFifoWidth    = NumBits,
 
   // Read FIFO byte_offset calculation
-  localparam int unsigned RdFifoNumBytes = RdDataFifoSize / NumBits,
+  localparam int unsigned RdFifoNumBytes = RdFifoWidth / NumBits,
   localparam int unsigned RdFifoOffsetW  = prim_util_pkg::vbits(RdFifoNumBytes),
+
+  // RdFifoBytesW is used to calculate the ReadFifo data in bytes.
+  // TPM FSM compares the value to the requested xfer_size.
+  localparam int unsigned RdFifoBytesW   = $clog2(RdFifoNumBytes),
 
   // FIFO size
   localparam int unsigned RdFifoSize = RdFifoDepth * RdFifoNumBytes,
@@ -123,9 +127,9 @@ module spi_tpm
   output logic [WrFifoWidth-1:0] sys_wrfifo_rdata_o,
   input                          sys_wrfifo_rready_i,
 
-  input                       sys_rdfifo_wvalid_i,
-  input  [RdDataFifoSize-1:0] sys_rdfifo_wdata_i,
-  output logic                sys_rdfifo_wready_o,
+  input                    sys_rdfifo_wvalid_i,
+  input  [RdFifoWidth-1:0] sys_rdfifo_wdata_i,
+  output logic             sys_rdfifo_wready_o,
 
   // TPM_STATUS
   output logic                  sys_cmdaddr_notempty_o,
@@ -379,9 +383,9 @@ module spi_tpm
   assign sys_wrfifo_depth_o = sys_wrfifo_rdepth;
 
   // Read FIFO uses inverted SCK (clk_out_i)
-  logic                         isck_rdfifo_rvalid, isck_rdfifo_rready;
-  logic [RdDataFifoSize-1:0]    isck_rdfifo_rdata;
-  logic [RdFifoPtrW-1:0]        sys_rdfifo_wdepth, isck_rdfifo_rdepth;
+  logic                     isck_rdfifo_rvalid, isck_rdfifo_rready;
+  logic [RdFifoWidth-1:0]   isck_rdfifo_rdata;
+  logic [RdFifoPtrW-1:0]    sys_rdfifo_wdepth, isck_rdfifo_rdepth;
 
   logic [RdFifoOffsetW-1:0]     isck_rdfifo_idx;
   logic                         isck_rd_byte_sent;
@@ -392,6 +396,7 @@ module spi_tpm
   // Assume the NumBytes is power of two
   `ASSERT_INIT(RdFifoNumBytesPoT_A,
     (2**RdFifoOffsetW == RdFifoNumBytes) || (RdFifoNumBytes == 1))
+  `ASSERT_INIT(RdFifoDepthPoT_A, 2**$clog2(RdFifoDepth) == RdFifoDepth)
 
   assign sys_rdfifo_depth_o    = sys_rdfifo_wdepth;
   assign sys_rdfifo_notempty_o = |sys_rdfifo_wdepth;
@@ -455,6 +460,9 @@ module spi_tpm
   logic [5:0] xfer_size;
   logic [5:0] xfer_bytes_q, xfer_bytes_d;
   logic       xfer_size_met;
+
+  // Indicating that the Read FIFO has enough data to send to the host.
+  logic       enough_payload_in_rdfifo;
 
   // Output MISO
   typedef enum logic [2:0] {
@@ -767,6 +775,11 @@ module spi_tpm
   assign xfer_bytes_d  = xfer_bytes_q + 6'h 1;
   assign xfer_size_met = xfer_bytes_q == xfer_size;
 
+  // xfer_size is 0 based. FIFO depth is 1 based. GTE -> Greater than
+  assign enough_payload_in_rdfifo =
+    (7'({isck_rdfifo_rdepth, RdFifoBytesW'(0)}) > {1'b 0, xfer_size})
+    | (7'(RdFifoSize) <= 7'(xfer_size));
+
   // Output data mux
   `ASSERT_KNOWN(DataSelKnown_A, isck_data_sel, clk_out_i, !rst_n)
   always_comb begin
@@ -1074,7 +1087,7 @@ module spi_tpm
 
         // at every LSB of a byte, check the next state condition
         if (isck_p2s_sent &&
-          (((cmd_type == Read) && |isck_rdfifo_rdepth) ||
+          (((cmd_type == Read) && enough_payload_in_rdfifo) ||
           ((cmd_type == Write) && ~|sck_wrfifo_wdepth))) begin
           sck_st_d = StStartByte;
         end
@@ -1203,7 +1216,7 @@ module spi_tpm
   // transaction is completed (CSb deasserted).  So, everytime CSb is
   // deasserted --> rst_n asserted. So, reset the read FIFO.
   prim_fifo_async #(
-    .Width (RdDataFifoSize),
+    .Width (RdFifoWidth),
     .Depth (RdFifoDepth),
     .OutputZeroIfEmpty (1'b 1)
   ) u_rdfifo (

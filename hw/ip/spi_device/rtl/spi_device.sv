@@ -1698,9 +1698,9 @@ module spi_device
   // Instance of spi_tpm
   spi_tpm #(
     // CmdAddrFifoDepth
-    .WrFifoDepth    (TpmWrFifoDepth),
-    .RdFifoDepth    (TpmRdFifoDepth),
-    .RdDataFifoSize (TpmRdFifoWidth),
+    .WrFifoDepth (TpmWrFifoDepth),
+    .RdFifoDepth (TpmRdFifoDepth),
+    .RdFifoWidth (TpmRdFifoWidth),
     .EnLocality  (1)
   ) u_spi_tpm (
     .clk_in_i  (clk_spi_in_buf ),
