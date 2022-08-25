@@ -58,8 +58,7 @@ int OT_PREFIX_IF_NOT_RV32(memcmp)(const void *lhs, const void *rhs,
 }
 
 OT_WEAK
-int OT_PREFIX_IF_NOT_RV32(memrcmp)(const void *lhs, const void *rhs,
-                                   size_t len) {
+int memrcmp(const void *lhs, const void *rhs, size_t len) {
   const uint8_t *lhs8 = (uint8_t *)lhs;
   const uint8_t *rhs8 = (uint8_t *)rhs;
   size_t j;
