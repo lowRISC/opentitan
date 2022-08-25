@@ -263,7 +263,6 @@ module flash_ctrl_prim_reg_top (
   logic csr20_field1_qs;
   logic csr20_field1_wd;
   logic csr20_field2_qs;
-  logic csr20_field2_wd;
 
   // Register instances
   // R[csr0_regwen]: V(False)
@@ -1916,15 +1915,15 @@ module flash_ctrl_prim_reg_top (
   //   F[field2]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr20_field2 (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (csr20_we),
-    .wd     (csr20_field2_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.csr20.field2.de),
@@ -2137,8 +2136,6 @@ module flash_ctrl_prim_reg_top (
   assign csr20_field0_wd = reg_wdata[0];
 
   assign csr20_field1_wd = reg_wdata[1];
-
-  assign csr20_field2_wd = reg_wdata[2];
 
   // Assign write-enables to checker logic vector.
   always_comb begin

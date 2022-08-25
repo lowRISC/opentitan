@@ -701,6 +701,8 @@ module chip_earlgrey_cw310 #(
   logic flash_power_down_h;
   logic flash_power_ready_h;
   ast_pkg::ast_dif_t flash_alert;
+  assign flash_alert.p = 1'b0;
+  assign flash_alert.n = 1'b1;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -1033,7 +1035,6 @@ module chip_earlgrey_cw310 #(
     .flash_power_down_h_i         ( 1'b0                  ),
     .flash_power_ready_h_i        ( 1'b1                  ),
     .flash_obs_o                  ( flash_obs             ),
-    .flash_alert_o                ( flash_alert           ),
     .io_clk_byp_req_o             ( io_clk_byp_req        ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
     .all_clk_byp_req_o            ( all_clk_byp_req       ),

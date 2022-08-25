@@ -4690,20 +4690,6 @@
           index: -1
         }
         {
-          name: flash_alert
-          struct: ast_dif
-          package: ast_pkg
-          type: uni
-          act: req
-          width: 1
-          inst_name: flash_ctrl
-          default: ""
-          external: true
-          top_signame: flash_alert
-          conn_type: false
-          index: -1
-        }
-        {
           name: lc_creator_seed_sw_rw_en
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -8315,7 +8301,6 @@
       clkmgr_aon.hi_speed_sel: hi_speed_sel
       clkmgr_aon.div_step_down_req: div_step_down_req
       clkmgr_aon.calib_rdy: calib_rdy
-      flash_ctrl.flash_alert: flash_alert
       flash_ctrl.flash_bist_enable: flash_bist_enable
       flash_ctrl.flash_power_down_h: flash_power_down_h
       flash_ctrl.flash_power_ready_h: flash_power_ready_h
@@ -13983,6 +13968,24 @@
       lpg_idx: 18
     }
     {
+      name: flash_ctrl_fatal_prim_flash_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: flash_ctrl
+      lpg_name: infra_sys_0
+      lpg_idx: 18
+    }
+    {
+      name: flash_ctrl_recov_prim_flash_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: flash_ctrl
+      lpg_name: infra_sys_0
+      lpg_idx: 18
+    }
+    {
       name: rv_dm_fatal_fault
       width: 1
       type: alert
@@ -16940,20 +16943,6 @@
         index: -1
       }
       {
-        name: flash_alert
-        struct: ast_dif
-        package: ast_pkg
-        type: uni
-        act: req
-        width: 1
-        inst_name: flash_ctrl
-        default: ""
-        external: true
-        top_signame: flash_alert
-        conn_type: false
-        index: -1
-      }
-      {
         name: lc_creator_seed_sw_rw_en
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -19432,18 +19421,6 @@
         conn_type: false
         index: -1
         netname: calib_rdy
-      }
-      {
-        package: ast_pkg
-        struct: ast_dif
-        signame: flash_alert_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: flash_alert
       }
       {
         package: prim_mubi_pkg

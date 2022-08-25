@@ -24,7 +24,7 @@ package flash_ctrl_reg_pkg;
   parameter int unsigned ExecEn = 32'ha26a38f7;
   parameter int MaxFifoDepth = 16;
   parameter int MaxFifoWidth = 5;
-  parameter int NumAlerts = 3;
+  parameter int NumAlerts = 5;
 
   // Address widths within the block
   parameter int CoreAw = 9;
@@ -117,6 +117,14 @@ package flash_ctrl_reg_pkg;
       logic        q;
       logic        qe;
     } fatal_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_prim_flash_alert;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_prim_flash_alert;
   } flash_ctrl_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
@@ -723,10 +731,10 @@ package flash_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [1322:1317]
-    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [1316:1311]
-    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [1310:1299]
-    flash_ctrl_reg2hw_alert_test_reg_t alert_test; // [1298:1293]
+    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [1326:1321]
+    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [1320:1315]
+    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [1314:1303]
+    flash_ctrl_reg2hw_alert_test_reg_t alert_test; // [1302:1293]
     flash_ctrl_reg2hw_dis_reg_t dis; // [1292:1289]
     flash_ctrl_reg2hw_exec_reg_t exec; // [1288:1257]
     flash_ctrl_reg2hw_init_reg_t init; // [1256:1256]
@@ -889,10 +897,12 @@ package flash_ctrl_reg_pkg;
   parameter logic [0:0] FLASH_CTRL_INTR_TEST_RD_LVL_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_INTR_TEST_OP_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_INTR_TEST_CORR_ERR_RESVAL = 1'h 0;
-  parameter logic [2:0] FLASH_CTRL_ALERT_TEST_RESVAL = 3'h 0;
+  parameter logic [4:0] FLASH_CTRL_ALERT_TEST_RESVAL = 5'h 0;
   parameter logic [0:0] FLASH_CTRL_ALERT_TEST_RECOV_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_ALERT_TEST_FATAL_STD_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_ALERT_TEST_FATAL_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] FLASH_CTRL_ALERT_TEST_FATAL_PRIM_FLASH_ALERT_RESVAL = 1'h 0;
+  parameter logic [0:0] FLASH_CTRL_ALERT_TEST_RECOV_PRIM_FLASH_ALERT_RESVAL = 1'h 0;
   parameter logic [0:0] FLASH_CTRL_CTRL_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] FLASH_CTRL_CTRL_REGWEN_EN_RESVAL = 1'h 1;
   parameter logic [10:0] FLASH_CTRL_DEBUG_STATE_RESVAL = 11'h 0;

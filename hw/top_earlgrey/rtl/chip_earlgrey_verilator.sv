@@ -250,7 +250,8 @@ module chip_earlgrey_verilator (
   assign otp_alert.n = 1'b1;
 
   logic ast_init_done;
-
+  assign flash_alert.p = 1'b0;
+  assign flash_alert.n = 1'b1;
 
   ast #(
     .EntropyStreams(ast_pkg::EntropyStreams),
@@ -452,7 +453,6 @@ module chip_earlgrey_verilator (
     .flash_bist_enable_i          ( flash_bist_enable          ),
     .flash_power_down_h_i         ( flash_power_down_h         ),
     .flash_power_ready_h_i        ( flash_power_ready_h        ),
-    .flash_alert_o                ( flash_alert                ),
     .es_rng_req_o                 ( es_rng_req                 ),
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
     .es_rng_fips_o                ( es_rng_fips                ),

@@ -662,7 +662,6 @@
         'clkmgr_aon.all_clk_byp_ack'   : 'all_clk_byp_ack',
         'clkmgr_aon.io_clk_byp_req'    : 'io_clk_byp_req',
         'clkmgr_aon.io_clk_byp_ack'    : 'io_clk_byp_ack',
-        'flash_ctrl.flash_alert'          : 'flash_alert',
         'flash_ctrl.flash_bist_enable'    : 'flash_bist_enable',
         'flash_ctrl.flash_power_down_h'   : 'flash_power_down_h',
         'flash_ctrl.flash_power_ready_h'  : 'flash_power_ready_h',

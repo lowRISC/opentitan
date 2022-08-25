@@ -66,6 +66,15 @@ typedef enum dif_flash_ctrl_alert {
    * Flash fatal errors
    */
   kDifFlashCtrlAlertFatalErr = 2,
+  /**
+   * Fatal alert triggered inside the flash primitive, including fatal TL-UL bus
+   * integrity faults of the test interface.
+   */
+  kDifFlashCtrlAlertFatalPrimFlashAlert = 3,
+  /**
+   * Recoverable alert triggered inside the flash primitive.
+   */
+  kDifFlashCtrlAlertRecovPrimFlashAlert = 4,
 } dif_flash_ctrl_alert_t;
 
 /**

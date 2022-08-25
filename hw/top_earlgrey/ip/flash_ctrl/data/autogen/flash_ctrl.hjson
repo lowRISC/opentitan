@@ -47,6 +47,12 @@
     { name: "fatal_err",
       desc: "flash fatal errors"
     },
+    { name: "fatal_prim_flash_alert",
+      desc: "Fatal alert triggered inside the flash primitive, including fatal TL-UL bus integrity faults of the test interface."
+    },
+    { name: "recov_prim_flash_alert",
+      desc: "Recoverable alert triggered inside the flash primitive."
+    }
   ],
 
   // Define flash_ctrl <-> flash_phy struct package
@@ -96,12 +102,6 @@
       type: "io"
       act: "none"
       name: "flash_test_voltage_h"
-    },
-    { struct: "ast_dif",
-      package: "ast_pkg",
-      type: "uni"
-      act: "req"
-      name: "flash_alert"
     },
 
     { struct:  "lc_tx"
@@ -3016,7 +3016,7 @@
           {
             bits: "2",
             name: "field2",
-            swaccess: "rw1c",
+            swaccess: "ro",
             hwaccess: "hrw",
             resval: "0",
             tags: [],
