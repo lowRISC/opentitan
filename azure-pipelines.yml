@@ -533,7 +533,8 @@ jobs:
         - sw_build
   - bash: |
       set -e
-      ci/scripts/run-fpga-cw310-tests.sh
+      ci/scripts/run-fpga-cw310-tests.sh || \
+        echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"
     displayName: Execute tests
 
 - job: deploy_release_artifacts
