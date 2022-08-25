@@ -138,6 +138,7 @@ config = {
         "hw/top_earlgrey/data/chip_testplan.hjson",
         "hw/top_earlgrey/data/chip_testplan.hjson:gls",
         "hw/top_earlgrey/data/standalone_sw_testplan.hjson",
+        "sw/device/silicon_creator/manuf/data/manuf_testplan.hjson",
         "util/dvsim/examples/testplanner/foo_testplan.hjson",
     ],
 
