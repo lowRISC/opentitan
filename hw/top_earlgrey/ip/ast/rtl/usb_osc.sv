@@ -9,6 +9,7 @@
 module usb_osc (
   input vcore_pok_h_i,    // VCORE POK @3.3V
   input usb_en_i,         // USB Source Clock Enable
+  input usb_ref_pulse_i,  // USB Reference Pulse
   input usb_ref_val_i,    // USB Reference Valid
   input usb_osc_cal_i,    // USB Oscillator Calibrated
 `ifdef AST_BYPASS_CLK
@@ -24,11 +25,10 @@ module usb_osc (
 timeunit 1ns / 1ps;
 
 real CLK_PERIOD;
-integer rand32;
 integer beacon_rdly;
-logic calibrate_usb_clk;
-logic large_drift;
-
+bit calibrate_usb_clk, max_drift;
+localparam int MAXUSBDRIFT = 416;  // 416 is +/-2% of 48MHz; 694 is +/-3% of 48MHz
+integer usb_clk_drift;
 
 reg init_start;
 initial init_start = 1'b0;
@@ -47,18 +47,18 @@ initial begin
   end else begin
     calibrate_usb_clk = 1'b1;
   end
-
-  if ( !$value$plusargs("usb_large_drift=%0d", large_drift) ) begin
-    large_drift = 1'b0;
+  // Max USB drift is: +/-2%
+  if ( !$value$plusargs("usb_max_drift=%0b", max_drift) ) begin
+    max_drift = 1'b0;
   end
-
   //
   #1;
   init_start = 1'b1;
   #1;
   $display("\n%m: USB Clock Power-up Frequency: %0d Hz", $rtoi(10**9/CLK_PERIOD));
-  rand32 = ($urandom_range(0, 832) - 416);  // +/-416ps (+/-2% max)
-  $display("%m: USB Clock Drift: %0d ps", rand32);
+  usb_clk_drift =  max_drift ? ($urandom_range(0, 1) ? MAXUSBDRIFT : -MAXUSBDRIFT) : // +2% or -2%
+                               ($urandom_range(0, 2*MAXUSBDRIFT) - MAXUSBDRIFT);  // Up to +/-2%
+  $display("%m: USB Clock Drift: %0d ps", usb_clk_drift);
 end
 
 // Enable 5us RC Delay on rise
@@ -66,11 +66,24 @@ wire en_osc_re_buf, en_osc_re;
 buf #(ast_bhv_pkg::USB_EN_RDLY, 0) b0 (en_osc_re_buf, (vcore_pok_h_i && usb_en_i));
 assign en_osc_re = en_osc_re_buf && init_start;
 
-logic usb_ref_val_buf, ref_val;
+logic usb_ref_val_buf, zero_drift;
+
 buf #(ast_bhv_pkg::USB_VAL_RDLY, ast_bhv_pkg::USB_VAL_FDLY) b1
                                (usb_ref_val_buf, (vcore_pok_h_i && usb_ref_val_i));
+
 buf #(beacon_rdly, 0) b2 (usb_beacon_on_buf, (usb_osc_cal_i && calibrate_usb_clk));
-assign ref_val = (usb_ref_val_buf || usb_beacon_on_buf) && init_start;
+
+assign zero_drift = (usb_ref_val_buf && calibrate_usb_clk || usb_beacon_on_buf) && init_start;
+
+logic [4-1:0] ref_pulse_cnt_down;
+
+always_ff @( posedge usb_clk_o, negedge usb_ref_val_i ) begin
+  if ( !usb_ref_val_i ) begin
+     ref_pulse_cnt_down <= ast_reg_pkg::NumUsbBeaconPulses[4-1:0];
+  end else if ( (ref_pulse_cnt_down > 4'h0) && usb_ref_pulse_i ) begin
+     ref_pulse_cnt_down <= ref_pulse_cnt_down - 1'b1;
+  end
+end
 
 // Clock Oscillator
 ////////////////////////////////////////
@@ -79,9 +92,12 @@ real CalUsbClkPeriod, UncUsbClkPeriod, UsbClkPeriod, drift;
 initial CalUsbClkPeriod = $itor( 1000000/48 );                    // ~20833.33333ps (48MHz)
 initial UncUsbClkPeriod = $itor( $urandom_range(55555, 25000) );  // 55555-25000ps (18-40MHz)
 
-assign drift = ref_val      ? 0.0 :
-               large_drift  ? $itor(2000) :
-                              $itor(rand32);
+real adj_drift;
+assign adj_drift = $itor(usb_clk_drift) * $itor(ref_pulse_cnt_down) /
+                     $itor(ast_reg_pkg::NumUsbBeaconPulses[4-1:0]);
+
+assign drift = zero_drift ? 0.0 : adj_drift;
+
 assign UsbClkPeriod = (usb_osc_cal_i && init_start) ? CalUsbClkPeriod :
                                                       UncUsbClkPeriod;
 assign CLK_PERIOD = (UsbClkPeriod + drift)/1000;
@@ -161,7 +177,7 @@ prim_clock_buf #(
 // Unused Signals
 ///////////////////////
 logic unused_sigs;
-assign unused_sigs = ^{ usb_osc_cal_i, usb_ref_val_i };
+assign unused_sigs = ^{ usb_osc_cal_i, usb_ref_pulse_i, usb_ref_val_i };
 `endif
 
 endmodule : usb_osc
