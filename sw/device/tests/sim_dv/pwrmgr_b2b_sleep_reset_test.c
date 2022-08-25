@@ -41,37 +41,9 @@ static dif_flash_ctrl_state_t flash_ctrl;
 static dif_sysrst_ctrl_t sysrst_ctrl;
 static dif_pinmux_t pinmux;
 
+// This is a strike counter to keep track of progress.
 __attribute__((section(".non_volatile_scratch")))
 const volatile uint32_t events_vector = UINT32_MAX;
-
-/**
- *  Extracts current event id from the bit-strike counter.
- */
-static uint32_t event_to_test(void) {
-  uint32_t addr = (uint32_t)(&events_vector);
-  uint32_t val = abs_mmio_read32(addr);
-
-  for (size_t i = 0; i < 32; ++i) {
-    if (val >> i & 0x1) {
-      return i;
-    }
-  }
-  return -1;
-};
-
-/**
- *  Increment flash bit-strike counter.
- */
-static bool incr_flash_cnt(uint32_t tested_idx) {
-  uint32_t addr = (uint32_t)(&events_vector);
-
-  // set the tested bit to 0
-  uint32_t val = abs_mmio_read32(addr) & ~(1 << tested_idx);
-
-  // program the word into flash
-  return flash_ctrl_testutils_write(&flash_ctrl, addr, 0, &val,
-                                    kDifFlashCtrlPartitionTypeData, 1);
-};
 
 /**
  * sysrst_ctrl config for test #1
@@ -123,8 +95,8 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
 
   // First check the flash stored value
-  uint32_t event_idx = event_to_test();
-
+  uint32_t event_idx =
+      flash_ctrl_testutils_get_count((uint32_t *)&events_vector);
   // Enable flash access
   flash_ctrl_testutils_default_region_access(&flash_ctrl,
                                              /*rd_en*/ true,
@@ -135,9 +107,8 @@ bool test_main(void) {
                                              /*he_en*/ false);
 
   // Increment flash counter to know where we are
-  if (!incr_flash_cnt(event_idx)) {
-    LOG_ERROR("Error when incrementing flash counter");
-  }
+  flash_ctrl_testutils_increment_counter(&flash_ctrl,
+                                         (uint32_t *)&events_vector, event_idx);
 
   // Read wakeup reason before check
   dif_pwrmgr_wakeup_reason_t wakeup_reason;
