@@ -1856,7 +1856,7 @@
             X-ref'ed with keymgr test.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_keymgr_key_derivation"]
     }
     {
       name: chip_sw_kmac_app_lc
