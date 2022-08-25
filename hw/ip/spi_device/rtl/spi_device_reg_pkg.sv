@@ -638,7 +638,11 @@ package spi_device_reg_pkg;
     struct packed {
       logic [2:0]  d;
       logic        de;
-    } max_xfer_size;
+    } max_wr_size;
+    struct packed {
+      logic [2:0]  d;
+      logic        de;
+    } max_rd_size;
   } spi_device_hw2reg_tpm_cap_reg_t;
 
   typedef struct packed {
@@ -720,19 +724,19 @@ package spi_device_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    spi_device_hw2reg_intr_state_reg_t intr_state; // [285:262]
-    spi_device_hw2reg_cfg_reg_t cfg; // [261:260]
-    spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [259:244]
-    spi_device_hw2reg_status_reg_t status; // [243:238]
-    spi_device_hw2reg_rxf_ptr_reg_t rxf_ptr; // [237:221]
-    spi_device_hw2reg_txf_ptr_reg_t txf_ptr; // [220:204]
-    spi_device_hw2reg_last_read_addr_reg_t last_read_addr; // [203:172]
-    spi_device_hw2reg_flash_status_reg_t flash_status; // [171:148]
-    spi_device_hw2reg_upload_status_reg_t upload_status; // [147:132]
-    spi_device_hw2reg_upload_status2_reg_t upload_status2; // [131:113]
-    spi_device_hw2reg_upload_cmdfifo_reg_t upload_cmdfifo; // [112:105]
-    spi_device_hw2reg_upload_addrfifo_reg_t upload_addrfifo; // [104:73]
-    spi_device_hw2reg_tpm_cap_reg_t tpm_cap; // [72:58]
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [289:266]
+    spi_device_hw2reg_cfg_reg_t cfg; // [265:264]
+    spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [263:248]
+    spi_device_hw2reg_status_reg_t status; // [247:242]
+    spi_device_hw2reg_rxf_ptr_reg_t rxf_ptr; // [241:225]
+    spi_device_hw2reg_txf_ptr_reg_t txf_ptr; // [224:208]
+    spi_device_hw2reg_last_read_addr_reg_t last_read_addr; // [207:176]
+    spi_device_hw2reg_flash_status_reg_t flash_status; // [175:152]
+    spi_device_hw2reg_upload_status_reg_t upload_status; // [151:136]
+    spi_device_hw2reg_upload_status2_reg_t upload_status2; // [135:117]
+    spi_device_hw2reg_upload_cmdfifo_reg_t upload_cmdfifo; // [116:109]
+    spi_device_hw2reg_upload_addrfifo_reg_t upload_addrfifo; // [108:77]
+    spi_device_hw2reg_tpm_cap_reg_t tpm_cap; // [76:58]
     spi_device_hw2reg_tpm_status_reg_t tpm_status; // [57:40]
     spi_device_hw2reg_tpm_cmd_addr_reg_t tpm_cmd_addr; // [39:8]
     spi_device_hw2reg_tpm_write_fifo_reg_t tpm_write_fifo; // [7:0]

@@ -1058,23 +1058,43 @@
           resval: "1"
         } // f: locality
         { bits: "18:16"
-          name: "max_xfer_size"
-          desc: '''The maximum transfer size in bytes the TPM submodule supports.
+          name: "max_wr_size"
+          desc: '''The maximum write size in bytes the TPM submodule supports.
             The value is the exponent of the 2.
 
             - 3'b 010: Support up to 4B
             - 3'b 011: Support up to 8B
+            - 3'b 100: Support up to 16B
             - 3'b 101: Support up to 32B
             - 3'b 110: Support up to 64B
 
             All other values are reserved.
 
-            The SW may advertises as supporting more than `max_xfer_size` to the South Brige.
+            The SW may advertises as supporting more than `max_wr_size` to the South Brige.
             If the SW reports the transfer size more than the value described in this field,
             the SW must read the data from the write FIFO before the FIFO becomes full in order not to make FIFO overflow.
             '''
-          resval: "2"
-        } // f: max_xfer_size
+          resval: "6"
+        } // f: max_rd_size
+        { bits: "22:20"
+          name: "max_rd_size"
+          desc: '''The maximum read size in bytes the TPM submodule supports.
+            The value is the exponent of the 2.
+
+            - 3'b 010: Support up to 4B
+            - 3'b 011: Support up to 8B
+            - 3'b 100: Support up to 16B
+            - 3'b 101: Support up to 32B
+            - 3'b 110: Support up to 64B
+
+            All other values are reserved.
+
+            The SW may advertises as supporting more than `max_rd_size` to the South Brige.
+            If the SW reports the transfer size more than the value described in this field,
+            the SW must write data to the TPM Read FIFO before the FIFO becomes empty in order not to make FIFO underrun.
+            '''
+          resval: "4"
+        } // f: max_rd_size
       ]
       tags: [
         // Remove Read check (reset value)
