@@ -58,7 +58,8 @@ module otbn_rf_base
 
   output logic                     call_stack_sw_err_o,
   output logic                     call_stack_hw_err_o,
-  output logic                     rf_err_o
+  output logic                     intg_err_o,
+  output logic                     spurious_we_err_o
 );
   localparam int unsigned CallStackRegIndex = 1;
   localparam int unsigned CallStackDepth = 8;
@@ -160,7 +161,6 @@ module otbn_rf_base
     .next_top_valid_o()
   );
 
-  logic spurious_we_err;
   if (RegFile == RegFileFF) begin : gen_rf_base_ff
     otbn_rf_base_ff #(
       .WordZeroVal(prim_secded_pkg::SecdedInv3932ZeroWord)
@@ -177,7 +177,7 @@ module otbn_rf_base
       .rd_addr_b_i,
       .rd_data_b_o(rd_data_b_raw_intg),
 
-      .we_err_o(spurious_we_err)
+      .we_err_o(spurious_we_err_o)
     );
   end else if (RegFile == RegFileFPGA) begin : gen_rf_base_fpga
     otbn_rf_base_fpga #(
@@ -195,7 +195,7 @@ module otbn_rf_base
       .rd_addr_b_i,
       .rd_data_b_o(rd_data_b_raw_intg),
 
-      .we_err_o(spurious_we_err)
+      .we_err_o(spurious_we_err_o)
     );
   end
 
@@ -217,9 +217,8 @@ module otbn_rf_base
 
   // Suppress integrity error where the relevant read port saw a call stack pop error (so both
   // integrity and data are invalid).
-  assign rf_err_o = (|rd_data_a_err & rd_en_a_i & ~pop_stack_a_err) |
-                    (|rd_data_b_err & rd_en_b_i & ~pop_stack_b_err) |
-                    spurious_we_err;
+  assign intg_err_o = (|rd_data_a_err & rd_en_a_i & ~pop_stack_a_err) |
+                      (|rd_data_b_err & rd_en_b_i & ~pop_stack_b_err);
 
   // Make sure we're not outputting X. This indicates that something went wrong during the initial
   // secure wipe.
