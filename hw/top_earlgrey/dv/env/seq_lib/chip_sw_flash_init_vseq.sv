@@ -67,6 +67,12 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
 
   event init_done_event;
 
+  typedef enum int {
+    DV_EXP_RMA,
+    DV_EXP_PROD
+  } exp_lc_st_e;
+
+  exp_lc_st_e exp_lc_st;
   virtual task ret_backdoor_data_write();
     `DV_CHECK(uvm_hdl_read(SRAM_CTRL_RET_NONCE_PATH, sram_ret_nonce));
     `DV_CHECK(uvm_hdl_read(SRAM_CTRL_RET_KEY_PATH, sram_ret_key));
@@ -207,17 +213,15 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     int retval;
     bit [(SEED_WIDTH*2)-1:0] seeds;
     bit [SEED_WIDTH-1:0] owner_seed;
-    bit [SEED_WIDTH-1:0] last_owner_seed;
     bit [SEED_WIDTH-1:0] creator_seed;
-    bit [SEED_WIDTH-1:0] last_creator_seed;
     bit [(SEED_WIDTH*2)-1:0] expected_owner_seed;
     bit [(SEED_WIDTH*2)-1:0] expected_creator_seed;
     bit [lc_ctrl_pkg::TxWidth-1:0] lc_seed_hw_rd_en;
+    bit [(DecLcStateNumRep*DecLcStateWidth)-1:0] lc_state;
+    dec_lc_state_e dec_lc_state;
     forever begin
       @(init_done_event);
       if (do_keymgr_check == 1) begin
-        last_creator_seed = creator_seed;
-        last_owner_seed = owner_seed;
         expected_owner_seed = {<<32{owner_secret_data}};
         expected_creator_seed = {<<32{creator_secret_data}};
         retval = uvm_hdl_read(FLASH_LC_SEED_HW_RD_EN_PATH, lc_seed_hw_rd_en);
@@ -227,6 +231,30 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
         `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", KEYMGR_SEEDS_PATH))
         owner_seed   = seeds[(SEED_WIDTH*flash_ctrl_pkg::OwnerSeedIdx)+:SEED_WIDTH];
         creator_seed = seeds[(SEED_WIDTH*flash_ctrl_pkg::CreatorSeedIdx)+:SEED_WIDTH];
+
+        // Check 'lc_seed_hw_rd_en'
+        // This can be set to 'on' only if
+        // 1. lc_state = RMA or
+        // 2. otp.secret0_digest != 0 && otp.secret2_digest != 0.
+        //    and lc state should be one of {DEV, PROD, PROD_END}
+        `uvm_info("SEQ", $sformatf("EXP LC STATE: %s", exp_lc_st.name), UVM_MEDIUM)
+
+        if (exp_lc_st == DV_EXP_RMA) begin
+          `DV_CHECK(lc_seed_hw_rd_en, lc_ctrl_pkg::On)
+        end else begin
+          bit [63:0] secret0_digest, secret2_digest;
+          csr_peek(ral.otp_ctrl_core.secret0_digest[0], secret0_digest[31:0]);
+          csr_peek(ral.otp_ctrl_core.secret0_digest[1], secret0_digest[63:32]);
+          csr_peek(ral.otp_ctrl_core.secret2_digest[0], secret2_digest[31:0]);
+          csr_peek(ral.otp_ctrl_core.secret2_digest[1], secret2_digest[63:32]);
+          `uvm_info("SEQ", $sformatf("read secret digest:  digest0:0x%16x  digest2:0x%16x",
+                                     secret0_digest, secret2_digest), UVM_MEDIUM)
+          if (secret0_digest == 0 || secret2_digest == 0) begin
+            `DV_CHECK_NE(lc_seed_hw_rd_en, lc_ctrl_pkg::On)
+          end else begin
+            `DV_CHECK_EQ(lc_seed_hw_rd_en, lc_ctrl_pkg::On)
+          end
+        end
 
         // If 'lc_seed_hw_rd_en' is off, creator/owner seed cannot be updated and
         // retains the default value.
@@ -292,8 +320,12 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
         // After this test set the LC_STATE back to the default Rma.
         if (current_phase == UNSCRAMBLED_TEST1) begin
           cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
+          exp_lc_st = DV_EXP_PROD;
+          `uvm_info("SEQ", "SET_PROD", UVM_MEDIUM)
         end else if (current_phase == UNSCRAMBLED_TEST2) begin
           cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStRma);
+          exp_lc_st = DV_EXP_RMA;
+          `uvm_info("SEQ", "SET_RMA", UVM_MEDIUM)
         end
         // Reset for the next test phase.
         apply_reset();
