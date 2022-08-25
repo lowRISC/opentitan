@@ -257,7 +257,7 @@ wrap_barrett384:
 
   ecall
 
-.bss
+.data
 
 /* First operand for Barrett modular multiplication. */
 .globl inp_a
