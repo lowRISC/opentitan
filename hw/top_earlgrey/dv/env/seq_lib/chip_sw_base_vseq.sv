@@ -76,8 +76,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
     // Backdoor load memories with sw images.
+`ifdef DISABLE_ROM_INTEGRITY_CHECK
+    cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
+`else
     cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
-
+`endif
     // TODO: the location of the main execution image should be randomized to either bank in future.
     if (cfg.sw_images.exists(SwTypeTest)) begin
       if (cfg.use_spi_load_bootstrap) begin

@@ -539,9 +539,12 @@ module rom_ctrl
 
   // Check that whenever there is an alert triggered and FSM state is Invalid, there is no response
   // to read requests.
-  `ASSERT(BusLocalEscChk_A,
-          (gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid)
-          |-> always(!bus_rom_rvalid))
+  if (!SecDisableScrambling) begin : gen_fsm_scramble_enabled_asserts
+
+    `ASSERT(BusLocalEscChk_A,
+            (gen_fsm_scramble_enabled.u_checker_fsm.state_d == rom_ctrl_pkg::Invalid)
+            |-> always(!bus_rom_rvalid))
+  end
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
