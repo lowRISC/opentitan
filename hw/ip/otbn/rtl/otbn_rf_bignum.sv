@@ -45,13 +45,14 @@ module otbn_rf_bignum
   input  logic [WdrAw-1:0]       rd_addr_b_i,
   output logic [ExtWLEN-1:0]     rd_data_b_intg_o,
 
-  output logic                   rf_err_o,
+  output logic                   intg_err_o,
 
   input  rf_predec_bignum_t      rf_predec_bignum_i,
-  output logic                   predec_error_o
+  output logic                   predec_error_o,
+
+  output logic                   spurious_we_err_o
 );
 
-  logic                          spurious_we_err;
   logic [ExtWLEN-1:0]            wr_data_intg_mux_out, wr_data_intg_calc;
   logic [1:0]                    wr_en_internal;
   logic [BaseWordsPerWLEN*2-1:0] rd_data_a_err, rd_data_b_err;
@@ -78,7 +79,7 @@ module otbn_rf_bignum
 
       .rf_predec_bignum_i,
 
-      .we_err_o(spurious_we_err)
+      .we_err_o(spurious_we_err_o)
     );
   end else if (RegFile == RegFileFPGA) begin : gen_rf_bignum_fpga
     otbn_rf_bignum_fpga #(
@@ -97,7 +98,7 @@ module otbn_rf_bignum
       .rd_addr_b_i,
       .rd_data_b_o(rd_data_b_intg_o),
 
-      .we_err_o(spurious_we_err)
+      .we_err_o(spurious_we_err_o)
     );
   end
 
@@ -159,9 +160,8 @@ module otbn_rf_bignum
     );
   end
 
-  assign rf_err_o = ((|rd_data_a_err) & rd_en_a_i) |
-                    ((|rd_data_b_err) & rd_en_b_i) |
-                    spurious_we_err;
+  assign intg_err_o = ((|rd_data_a_err) & rd_en_a_i) |
+                      ((|rd_data_b_err) & rd_en_b_i);
 
   // Make sure we're not outputting X. This indicates that something went wrong during the initial
   // secure wipe.

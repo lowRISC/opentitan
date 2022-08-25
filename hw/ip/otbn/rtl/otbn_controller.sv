@@ -81,7 +81,8 @@ module otbn_controller
   output logic               rf_bignum_rd_en_b_o,
   input  logic [ExtWLEN-1:0] rf_bignum_rd_data_b_intg_i,
 
-  input logic rf_bignum_rf_err_i,
+  input logic rf_bignum_intg_err_i,
+  input logic rf_bignum_spurious_we_err_i,
 
   output logic [NWdr-1:0] rf_bignum_rd_a_indirect_onehot_o,
   output logic [NWdr-1:0] rf_bignum_rd_b_indirect_onehot_o,
@@ -294,13 +295,15 @@ module otbn_controller
 
   logic rf_a_indirect_err, rf_b_indirect_err, rf_d_indirect_err, rf_indirect_err;
 
-  // If we are doing an indirect lookup from the bignum register file, it's possible that the
-  // address that we use for the lookup is architecturally unknown. This happens if it came from x1
+  // If we are doing an indirect access to the bignum register file, it's possible that the
+  // address that we use for the access is architecturally unknown. This happens if it came from x1
   // and we've underflowed the call stack. When this happens, we want to ignore any read data
-  // integrity errors since the read from the bignum register file didn't happen architecturally
-  // anyway.
-  logic ignore_bignum_rf_errs;
-  logic rf_bignum_rf_err;
+  // integrity errors and spurious write enable errors since the access to the bignum register file
+  // didn't happen architecturally anyway.
+  logic ignore_rf_bignum_intg_errs;
+  logic rf_bignum_intg_err;
+  logic ignore_rf_bignum_spurious_we_errs;
+  logic rf_bignum_spurious_we_err;
 
   logic ispr_rdata_intg_err;
 
@@ -531,8 +534,8 @@ module otbn_controller
 
   assign fatal_software_err       = software_err & software_errs_fatal_i;
   assign bad_internal_state_err   = |{state_error, loop_hw_err, rf_base_call_stack_hw_err_i,
-                                      spurious_secure_wipe_ack_q};
-  assign reg_intg_violation_err   = rf_bignum_rf_err | ispr_rdata_intg_err;
+                                      rf_bignum_spurious_we_err, spurious_secure_wipe_ack_q};
+  assign reg_intg_violation_err   = rf_bignum_intg_err | ispr_rdata_intg_err;
   assign key_invalid_err          = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
   assign illegal_insn_err         = illegal_insn_static | rf_indirect_err;
   assign bad_data_addr_err        = dmem_addr_err;
@@ -1120,11 +1123,24 @@ module otbn_controller
   assign rf_indirect_err =
       insn_valid_i & (rf_a_indirect_err | rf_b_indirect_err | rf_d_indirect_err);
 
-  assign ignore_bignum_rf_errs = (insn_dec_bignum_i.rf_a_indirect |
-                                  insn_dec_bignum_i.rf_b_indirect) &
-                                 rf_base_call_stack_sw_err_i;
 
-  assign rf_bignum_rf_err = rf_bignum_rf_err_i & ~ignore_bignum_rf_errs;
+  // If the source registers are indirectly indexed and there is a stack error, the source
+  // register indices were illegal due to a stack pop error. In this case, ignore bignum RF read
+  // integrity errors.
+  assign ignore_rf_bignum_intg_errs = (insn_dec_bignum_i.rf_a_indirect |
+                                       insn_dec_bignum_i.rf_b_indirect) &
+                                      rf_base_call_stack_sw_err_i;
+
+  assign rf_bignum_intg_err = rf_bignum_intg_err_i & ~ignore_rf_bignum_intg_errs;
+
+  // If the destination register is indirectly indexed and there is a stack error, the destination
+  // register index was illegal due to a stack pop error. In this case, ignore bignum RF
+  // write-enable errors.
+  assign ignore_rf_bignum_spurious_we_errs = insn_dec_bignum_i.rf_d_indirect &
+                                             rf_base_call_stack_sw_err_i;
+
+  assign rf_bignum_spurious_we_err = rf_bignum_spurious_we_err_i &
+                                     ~ignore_rf_bignum_spurious_we_errs;
 
   // CSR/WSR/ISPR handling
   // ISPRs (Internal Special Purpose Registers) are the internal registers. CSRs and WSRs are the
