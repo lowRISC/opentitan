@@ -299,10 +299,10 @@ proj_to_affine_p384:
  */
 store_proj_randomize:
 
-  /* get a 384-bit random number
+  /* get a 384-bit random number from URND
     [w3, w2] = random(384) */
-  bn.wsrr   w2, 1
-  bn.wsrr   w3, 1
+  bn.wsrr   w2, 2
+  bn.wsrr   w3, 2
   bn.rshi   w3, w31, w3 >> 128
 
   /* reduce random number
@@ -584,12 +584,12 @@ scalar_mult_int_p384:
     bn.sid    x2++, 480(x30)
 
 
-    /* Get a fresh random number and scale the coordinates of 2P.
+    /* Get a fresh random number from URND and scale the coordinates of 2P.
        (scaling each proj. coordinate by same factor results in same point) */
 
-    /* get a 384-bit random number */
-    bn.wsrr   w2, 1
-    bn.wsrr   w3, 1
+    /* get a 384-bit random number from URND */
+    bn.wsrr   w2, 2
+    bn.wsrr   w3, 2
     bn.rshi   w3, w31, w3 >> 128
 
     /* reduce random number
