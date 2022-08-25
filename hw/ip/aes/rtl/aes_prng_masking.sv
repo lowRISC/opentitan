@@ -23,7 +23,7 @@
 module aes_prng_masking import aes_pkg::*;
 #(
   parameter  int unsigned Width        = WidthPRDMasking,     // Must be divisble by ChunkSize and 8
-  parameter  int unsigned ChunkSize    = ChunkSizePRDMasking, // Width of the LFSR primitives
+  parameter  int unsigned ChunkSize    = 8, // Width of the LFSR primitives
   parameter  int unsigned EntropyWidth = edn_pkg::ENDPOINT_BUS_WIDTH,
   parameter  bit          SecAllowForcingMasks  = 0, // Allow forcing masks to 0 using
                                                      // force_zero_masks_i. Useful for SCA only.
@@ -60,7 +60,6 @@ module aes_prng_masking import aes_pkg::*;
   logic                                prng_en;
   logic [NumChunks-1:0][ChunkSize-1:0] prng_state, perm;
   logic                    [Width-1:0] prng_b, perm_b;
-  logic                                phase_q;
 
   /////////////
   // Control //
@@ -153,24 +152,26 @@ module aes_prng_masking import aes_pkg::*;
   // LFSRs //
   ///////////
 
+  prim_lfsr #(
+    .LfsrType     ( "GAL_XOR"                       ),
+    .LfsrDw       ( ChunkSize                       ),
+    .StateOutDw   ( ChunkSize                       ),
+    .DefaultSeed  ( RndCnstLfsrSeed[0 +: ChunkSize] ),
+    .StatePermEn  ( 1'b0                            ),
+    .NonLinearOut ( 1'b0                            )
+  ) u_lfsr_chunk (
+    .clk_i     ( clk_i           ),
+    .rst_ni    ( rst_ni          ),
+    .seed_en_i ( prng_seed_en[0] ),
+    .seed_i    ( prng_seed[0]    ),
+    .lfsr_en_i ( prng_en         ),
+    .entropy_i ( '0              ),
+    .state_o   ( prng_state[0]   )
+  );
+
   // We use multiple LFSR instances each having a width of ChunkSize.
-  for (genvar c = 0; c < NumChunks; c++) begin : gen_lfsrs
-    prim_lfsr #(
-      .LfsrType     ( "GAL_XOR"                                   ),
-      .LfsrDw       ( ChunkSize                                   ),
-      .StateOutDw   ( ChunkSize                                   ),
-      .DefaultSeed  ( RndCnstLfsrSeed[c * ChunkSize +: ChunkSize] ),
-      .StatePermEn  ( 1'b0                                        ),
-      .NonLinearOut ( 1'b1                                        )
-    ) u_lfsr_chunk (
-      .clk_i     ( clk_i           ),
-      .rst_ni    ( rst_ni          ),
-      .seed_en_i ( prng_seed_en[c] ),
-      .seed_i    ( prng_seed[c]    ),
-      .lfsr_en_i ( prng_en         ),
-      .entropy_i ( '0              ),
-      .state_o   ( prng_state[c]   )
-    );
+  for (genvar c = 1; c < NumChunks; c++) begin : gen_output
+    assign prng_state[c] = prng_state[0];
   end
 
   // Add a permutation layer spanning across all LFSRs to break linear shift patterns.
@@ -187,8 +188,7 @@ module aes_prng_masking import aes_pkg::*;
   // To achieve independence of input and output masks (the output mask of round X is the input
   // mask of round X+1), we assign the scrambled chunks to the output data in alternating fashion.
   assign data_o =
-      (SecAllowForcingMasks && force_zero_masks_i) ? '0                             :
-       phase_q                                     ? {perm[0], perm[NumChunks-1:1]} : perm;
+      (SecAllowForcingMasks && force_zero_masks_i) ? '0 : perm;
 
   // Create a lint error to reduce the risk of accidentally enabling this feature.
   `ASSERT_STATIC_LINT_ERROR(AesSecAllowForcingMasksNonDefault, SecAllowForcingMasks == 0)
@@ -196,14 +196,6 @@ module aes_prng_masking import aes_pkg::*;
   if (SecAllowForcingMasks == 0) begin : gen_unused_force_masks
     logic unused_force_zero_masks;
     assign unused_force_zero_masks = force_zero_masks_i;
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_phase
-    if (!rst_ni) begin
-      phase_q <= '0;
-    end else if (prng_en) begin
-      phase_q <= ~phase_q;
-    end
   end
 
   /////////////////
