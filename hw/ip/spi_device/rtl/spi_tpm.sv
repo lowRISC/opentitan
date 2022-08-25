@@ -52,13 +52,18 @@ module spi_tpm
   localparam int unsigned RdFifoNumBytes = RdDataFifoSize / NumBits,
   localparam int unsigned RdFifoOffsetW  = prim_util_pkg::vbits(RdFifoNumBytes),
 
+  // FIFO size
+  localparam int unsigned RdFifoSize = RdFifoDepth * RdFifoNumBytes,
+  localparam int unsigned WrFifoSize = WrFifoDepth * (WrFifoWidth / NumBits),
+
   // TPM_CAP related constants.
   //  - Revision: the number visible in TPM_CAP CSR. Need to update the
   //    revision when the SW interface is revised.
   localparam logic [7:0] CapTpmRevision = 8'h 00,
-  //  - Max Xfer Size: the supported xfer_size is visible to the SW via
+  //  - Max Write Size: the supported write FIFO size is visible to the SW via
   //    TPM_CAP CSR
-  localparam logic [2:0] CapMaxXferSize = 3'($clog2(WrFifoDepth))
+  localparam logic [2:0] CapMaxWrSize = 3'(unsigned'($clog2(WrFifoSize))),
+  localparam logic [2:0] CapMaxRdSize = 3'(unsigned'($clog2(RdFifoSize)))
 ) (
   input clk_in_i,
   input clk_out_i,
@@ -133,7 +138,7 @@ module spi_tpm
   assign tpm_cap_o = '{
     rev:           CapTpmRevision,
     locality:      EnLocality,
-    max_xfer_size: CapMaxXferSize
+    max_xfer_size: (CapMaxWrSize > CapMaxRdSize) ? CapMaxRdSize : CapMaxWrSize
   };
 
   localparam int unsigned TpmRegisterSize = (AccessRegSize * NumLocality)
