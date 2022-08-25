@@ -277,6 +277,7 @@ module spi_readcmd
   // state based on the cmd_info.addr_mode and addr_4b_en_i
   logic [4:0] addr_cnt_d, addr_cnt_q;
   logic addr_cnt_set; // no need to clear the counter
+  logic addr_latched_d;
 
   logic [31:0] addr_q, addr_d;
 
@@ -303,9 +304,9 @@ module spi_readcmd
   // Compare addr_d[SramAw-1:2] and mailbox_addr_i with mailbox_mask_i. If the
   // value falls into mailbox, set this.  Even this is set, it only uses when
   // sram address is sent.
-  logic addr_in_mailbox;
+  logic addr_d_in_mailbox, addr_q_in_mailbox;
 
-  logic [31:0] mailbox_masked_addr;
+  logic [31:0] mailbox_masked_addr_d, mailbox_masked_addr_q;
 
   // Double buffering signals
   logic readbuf_idx; // 0 or 1
@@ -347,12 +348,20 @@ module spi_readcmd
     end
   end
 
+  // readbuf_addr is visible to SW after CSb is de-asserted. (last_read_addr)
+  //
+  // It indicates the last byte address the host read.
+  // To precisely represent the last byte:
+  //
+  // - the logic does not latch address field (not yet read the byte)
+  // - the logic latches `addr_q` at the last beat. But compare `addr_q` to
+  //   mailbox address.
   always_ff @(posedge clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
       readbuf_addr <= '0;
-    end else if (addr_latch_en && sel_dp_i == DpReadCmd
-                 && !(mailbox_en_i && addr_in_mailbox)) begin
-      readbuf_addr <= addr_d;
+    end else if ((main_st == MainOutput) && (sel_dp_i == DpReadCmd)
+      && addr_latch_en && !(mailbox_en_i && addr_q_in_mailbox)) begin
+      readbuf_addr <= addr_q;
     end
   end
   assign readbuf_address_o = readbuf_addr;
@@ -386,7 +395,6 @@ module spi_readcmd
   assign addr_ready_in_halfword = (addr_cnt_d == 5'd 1);
 
   // addr_latched should be a pulse to be used in spid_readsram
-  logic  addr_latched_d;
   assign addr_latched_d = (addr_cnt_d == 5'd 0);
 
   prim_edge_detector #(
@@ -476,10 +484,12 @@ module spi_readcmd
   localparam int unsigned MailboxAw = $clog2(MailboxDepth);
   localparam logic [31:0] MailboxMask = {{30-MailboxAw{1'b1}}, {2+MailboxAw{1'b0}}};
 
-  assign mailbox_masked_addr = addr_d & MailboxMask;
+  assign mailbox_masked_addr_d = addr_d & MailboxMask;
+  assign mailbox_masked_addr_q = addr_q & MailboxMask;
 
   // Only valid when logic sends SRAM request
-  assign addr_in_mailbox = (mailbox_masked_addr == mailbox_addr_i);
+  assign addr_d_in_mailbox = (mailbox_masked_addr_d == mailbox_addr_i);
+  assign addr_q_in_mailbox = (mailbox_masked_addr_q == mailbox_addr_i);
 
   // internal addr is the address that the logic tracks.
   // the first address comes from host system and then the internal logic
@@ -493,13 +503,13 @@ module spi_readcmd
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) mailbox_assumed_o <= 1'b 0;
     else if (sram_req && mailbox_en_i && cfg_intercept_en_mbx_i
-            && addr_in_mailbox) begin
+            && addr_d_in_mailbox) begin
       mailbox_assumed_o <= 1'b 1;
     end else if (mailbox_en_i && cfg_intercept_en_mbx_i
-                && addr_in_mailbox && (bitcnt == 3'h 0)) begin
+                && addr_d_in_mailbox && (bitcnt == 3'h 0)) begin
       // Keep checking if the next byte falls into the mailbox region
       mailbox_assumed_o <= 1'b 1;
-    end else if (!addr_in_mailbox && (bitcnt == 3'h 0)) begin
+    end else if (!addr_d_in_mailbox && (bitcnt == 3'h 0)) begin
       // At every byte, Check the address goes out of mailbox region.
       mailbox_assumed_o <= 1'b 0;
     end
@@ -752,7 +762,7 @@ module spi_readcmd
     .threshold_i       (readbuf_threshold_i),
 
     .sfdp_hit_i    (sfdp_hit),
-    .mailbox_hit_i (addr_in_mailbox),
+    .mailbox_hit_i (addr_d_in_mailbox),
     .mailbox_en_i  (mailbox_en_i),
 
     .start_i (readbuf_start),
