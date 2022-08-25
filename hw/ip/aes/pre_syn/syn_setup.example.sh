@@ -12,8 +12,8 @@ export LR_SYNTH_TOP_MODULE=aes
 
 # Setup module parameters.
 export LR_SYNTH_AES_192_ENABLE=1
-export LR_SYNTH_MASKING=1
-export LR_SYNTH_S_BOX_IMPL=4
+export LR_SYNTH_SEC_MASKING=1
+export LR_SYNTH_SEC_S_BOX_IMPL=4
 
 # Setup cell library path.
 # Uncomment the lines below and set the path to an appropriate .lib file
