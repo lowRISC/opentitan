@@ -92,7 +92,7 @@ module otbn_start_stop_control
   // SEC_CM: CONTROLLER.FSM.GLOBAL_ESC
   logic esc_request, rma_request, should_lock_d, should_lock_q, stop;
   assign esc_request   = mubi4_test_true_loose(escalate_en_i);
-  assign rma_request   = mubi4_test_true_loose(rma_req_i);
+  assign rma_request   = mubi4_test_true_strict(rma_req_i);
   assign stop          = esc_request | rma_request | secure_wipe_req_i;
   assign should_lock_d = should_lock_q | esc_request | rma_request;
 
