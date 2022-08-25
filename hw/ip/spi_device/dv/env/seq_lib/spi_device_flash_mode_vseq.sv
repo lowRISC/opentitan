@@ -16,6 +16,10 @@ class spi_device_flash_mode_vseq extends spi_device_intercept_vseq;
     target_ops = {READ_CMD_LIST};
   endfunction
 
+  constraint num_trans_c {
+    num_trans inside {[20:30]};
+  }
+
   task body();
     // increase the chance (15%->50%) to send large payload,
     // in order to exercise watermark and flip events

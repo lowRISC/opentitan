@@ -222,59 +222,6 @@ class spi_device_base_vseq extends cip_base_vseq #(
     device_data = {<<8{m_spi_host_seq.rsp.data}};
   endtask
 
-  // transfer in command including opcode, address and payload
-  // if byte_addr_q is empty, the host_seq will use a random addr
-  virtual task spi_host_xfer_flash_item(bit [7:0] op, uint payload_size,
-                                        bit [31:0] addr, bit wait_on_busy = 1);
-    spi_host_flash_seq m_spi_host_seq;
-    bit [7:0] byte_addr_q[$];
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
-
-    if (op inside {READ_CMD_LIST} && cfg.spi_host_agent_cfg.is_opcode_supported(op)) begin
-      int num_addr_bytes = cfg.spi_host_agent_cfg.get_num_addr_byte(op);
-      if (num_addr_bytes > 0) begin
-        if (num_addr_bytes == 4) begin
-          byte_addr_q.push_back(addr[31:24]);
-        end
-        // push the lower 3 bytes address
-        byte_addr_q = {byte_addr_q, addr[23:16], addr[15:8], addr[7:0]};
-      end
-    end
-
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
-                                   opcode == op;
-                                   address_q.size() == byte_addr_q.size();
-                                   foreach (byte_addr_q[i]) address_q[i] == byte_addr_q[i];
-                                   payload_q.size() == payload_size;
-                                   read_size == payload_size;)
-    `uvm_send(m_spi_host_seq)
-
-    if (op == `gmv(ral.cmd_info_en4b.opcode) && `gmv(ral.cmd_info_en4b.valid)) begin
-      cfg.spi_device_agent_cfg.flash_addr_4b_en = 1;
-      cfg.spi_host_agent_cfg.flash_addr_4b_en   = 1;
-    end else if (op == `gmv(ral.cmd_info_ex4b.opcode) && `gmv(ral.cmd_info_ex4b.valid)) begin
-      cfg.spi_device_agent_cfg.flash_addr_4b_en = 0;
-      cfg.spi_host_agent_cfg.flash_addr_4b_en   = 0;
-    end
-
-    if (cfg.is_read_buffer_cmd(m_spi_host_seq.rsp)) begin
-      cfg.read_buffer_addr = convert_addr_from_byte_queue(m_spi_host_seq.rsp.address_q) +
-                             m_spi_host_seq.rsp.payload_q.size();
-      cfg.clk_rst_vif.wait_clks(10);
-
-      csr_rd_check(.ptr(ral.last_read_addr), .compare_value(cfg.read_buffer_addr));
-      `uvm_info(`gfn, $sformatf("Updated read_buffer_addr to 0x%0x", cfg.read_buffer_addr),
-                UVM_MEDIUM)
-    end
-
-    if (wait_on_busy) begin
-      spi_device_reg_cmd_info cmd_info = cfg.get_cmd_info_reg_by_opcode(op);
-      if (cmd_info != null && `gmv(cmd_info.upload) && `gmv(cmd_info.busy)) begin
-        spi_host_wait_on_busy();
-      end
-    end
-  endtask
-
   virtual task spi_host_wait_on_busy();
     spi_host_flash_seq m_spi_host_seq;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
