@@ -401,7 +401,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write flash_ctrl's alert_test reg and check alert_cause.
-  for (int i = 0; i < 3; ++i) {
+  for (int i = 0; i < 5; ++i) {
     CHECK_DIF_OK(dif_flash_ctrl_alert_force(&flash_ctrl, kDifFlashCtrlAlertRecovErr + i));
 
     // Verify that alert handler received it.

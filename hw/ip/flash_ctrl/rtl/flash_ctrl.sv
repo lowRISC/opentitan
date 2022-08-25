@@ -87,8 +87,7 @@ module flash_ctrl
   input flash_power_down_h_i,
   input flash_power_ready_h_i,
   inout [1:0] flash_test_mode_a_io,
-  inout flash_test_voltage_h_io,
-  output ast_pkg::ast_dif_t flash_alert_o
+  inout flash_test_voltage_h_io
 );
 
   //////////////////////////////////////////////////////////
@@ -890,6 +889,7 @@ module flash_ctrl
 
   logic [NumAlerts-1:0] alert_srcs;
   logic [NumAlerts-1:0] alert_tests;
+  logic fatal_prim_flash_alert, recov_prim_flash_alert;
 
   // An excessive number of recoverable errors may also indicate an attack
   logic recov_err;
@@ -905,17 +905,23 @@ module flash_ctrl
   lc_ctrl_pkg::lc_tx_t local_esc;
   assign local_esc = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(fatal_std_err);
 
-  assign alert_srcs = { fatal_err,
-                        fatal_std_err,
-                        recov_err
-                      };
+  assign alert_srcs = {
+    fatal_prim_flash_alert,
+    recov_prim_flash_alert,
+    fatal_err,
+    fatal_std_err,
+    recov_err
+  };
 
-  assign alert_tests = { reg2hw.alert_test.fatal_err.q & reg2hw.alert_test.fatal_err.qe,
-                         reg2hw.alert_test.fatal_std_err.q & reg2hw.alert_test.fatal_std_err.qe,
-                         reg2hw.alert_test.recov_err.q & reg2hw.alert_test.recov_err.qe
-                       };
+  assign alert_tests = {
+    reg2hw.alert_test.fatal_prim_flash_alert.q & reg2hw.alert_test.fatal_prim_flash_alert.qe,
+    reg2hw.alert_test.recov_prim_flash_alert.q & reg2hw.alert_test.recov_prim_flash_alert.qe,
+    reg2hw.alert_test.fatal_err.q & reg2hw.alert_test.fatal_err.qe,
+    reg2hw.alert_test.fatal_std_err.q & reg2hw.alert_test.fatal_std_err.qe,
+    reg2hw.alert_test.recov_err.q & reg2hw.alert_test.recov_err.qe
+  };
 
-  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b1, 1'b0};
+  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b0, 1'b1, 1'b1, 1'b0};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
@@ -1326,7 +1332,8 @@ module flash_ctrl
     .flash_power_ready_h_i,
     .flash_test_mode_a_io,
     .flash_test_voltage_h_io,
-    .flash_alert_o,
+    .fatal_prim_flash_alert_o(fatal_prim_flash_alert),
+    .recov_prim_flash_alert_o(recov_prim_flash_alert),
     .scanmode_i,
     .scan_en_i,
     .scan_rst_ni
@@ -1437,12 +1444,13 @@ module flash_ctrl
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])
 
+  // Assertions for countermeasures inside prim_flash
   `ifndef PRIM_DEFAULT_IMPL
     `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
   `endif
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
     `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
-        u_eflash.u_flash.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[1])
+        u_eflash.u_flash.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[3])
   end
 
 endmodule

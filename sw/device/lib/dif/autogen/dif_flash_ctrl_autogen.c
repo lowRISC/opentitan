@@ -40,6 +40,12 @@ dif_result_t dif_flash_ctrl_alert_force(const dif_flash_ctrl_t *flash_ctrl,
     case kDifFlashCtrlAlertFatalErr:
       alert_idx = FLASH_CTRL_ALERT_TEST_FATAL_ERR_BIT;
       break;
+    case kDifFlashCtrlAlertFatalPrimFlashAlert:
+      alert_idx = FLASH_CTRL_ALERT_TEST_FATAL_PRIM_FLASH_ALERT_BIT;
+      break;
+    case kDifFlashCtrlAlertRecovPrimFlashAlert:
+      alert_idx = FLASH_CTRL_ALERT_TEST_RECOV_PRIM_FLASH_ALERT_BIT;
+      break;
     default:
       return kDifBadArg;
   }

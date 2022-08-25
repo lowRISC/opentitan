@@ -57,9 +57,9 @@ TEST_F(AlertForceTest, Success) {
 
   // Force last alert.
   EXPECT_WRITE32(FLASH_CTRL_ALERT_TEST_REG_OFFSET,
-                 {{FLASH_CTRL_ALERT_TEST_FATAL_ERR_BIT, true}});
-  EXPECT_DIF_OK(
-      dif_flash_ctrl_alert_force(&flash_ctrl_, kDifFlashCtrlAlertFatalErr));
+                 {{FLASH_CTRL_ALERT_TEST_RECOV_PRIM_FLASH_ALERT_BIT, true}});
+  EXPECT_DIF_OK(dif_flash_ctrl_alert_force(
+      &flash_ctrl_, kDifFlashCtrlAlertRecovPrimFlashAlert));
 }
 
 class IrqGetStateTest : public FlashCtrlTest {};

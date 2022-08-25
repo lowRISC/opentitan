@@ -521,6 +521,8 @@ module chip_${top["name"]}_${target["name"]} #(
   logic flash_power_down_h;
   logic flash_power_ready_h;
   ast_pkg::ast_dif_t flash_alert;
+  assign flash_alert.p = 1'b0;
+  assign flash_alert.n = 1'b1;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -956,7 +958,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .flash_bist_enable_i          ( flash_bist_enable          ),
     .flash_power_down_h_i         ( flash_power_down_h         ),
     .flash_power_ready_h_i        ( flash_power_ready_h        ),
-    .flash_alert_o                ( flash_alert                ),
     .flash_obs_o                  ( fla_obs                    ),
     .es_rng_req_o                 ( es_rng_req                 ),
     .es_rng_rsp_i                 ( es_rng_rsp                 ),
@@ -1126,7 +1127,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .flash_power_down_h_i         ( 1'b0                  ),
     .flash_power_ready_h_i        ( 1'b1                  ),
     .flash_obs_o                  ( flash_obs             ),
-    .flash_alert_o                ( flash_alert           ),
     .io_clk_byp_req_o             ( io_clk_byp_req        ),
     .io_clk_byp_ack_i             ( io_clk_byp_ack        ),
     .all_clk_byp_req_o            ( all_clk_byp_req       ),

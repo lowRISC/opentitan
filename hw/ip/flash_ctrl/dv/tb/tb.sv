@@ -193,8 +193,7 @@ module tb;
     .intr_op_done_o   (intr_op_done),
     .intr_corr_err_o  (intr_err),
     .alert_rx_i       (alert_rx),
-    .alert_tx_o       (alert_tx),
-    .flash_alert_o    (flash_ctrl_if.flash_alert)
+    .alert_tx_o       (alert_tx)
   );
 
   // Create edge in flash_power_down_h_i, whenever reset is asserted
