@@ -45,7 +45,8 @@ module spi_tpm
   localparam int unsigned NumBits        = $bits(spi_byte_t),
   localparam int unsigned CmdAddrSize    = 32, // Cmd 8bit + Addr 24bit
   localparam int unsigned FifoRegSize    = 12, // lower 12bit excluding locality
-  localparam int unsigned WrDataFifoSize = NumBits,
+
+  localparam int unsigned WrFifoWidth    = NumBits,
 
   // Read FIFO byte_offset calculation
   localparam int unsigned RdFifoNumBytes = RdDataFifoSize / NumBits,
@@ -113,9 +114,9 @@ module spi_tpm
   output logic [CmdAddrSize-1:0] sys_cmdaddr_rdata_o,
   input                          sys_cmdaddr_rready_i,
 
-  output logic                      sys_wrfifo_rvalid_o,
-  output logic [WrDataFifoSize-1:0] sys_wrfifo_rdata_o,
-  input                             sys_wrfifo_rready_i,
+  output logic                   sys_wrfifo_rvalid_o,
+  output logic [WrFifoWidth-1:0] sys_wrfifo_rdata_o,
+  input                          sys_wrfifo_rready_i,
 
   input                       sys_rdfifo_wvalid_i,
   input  [RdDataFifoSize-1:0] sys_rdfifo_wdata_i,
@@ -365,9 +366,9 @@ module spi_tpm
   // (sys_cmdaddr_rdepth > 0)
   assign sys_cmdaddr_notempty_o = |sys_cmdaddr_rdepth;
 
-  logic                      sck_wrfifo_wvalid, sck_wrfifo_wready;
-  logic [WrDataFifoSize-1:0] sck_wrfifo_wdata;
-  logic [WrFifoPtrW-1:0]     sys_wrfifo_rdepth, sck_wrfifo_wdepth;
+  logic                   sck_wrfifo_wvalid, sck_wrfifo_wready;
+  logic [WrFifoWidth-1:0] sck_wrfifo_wdata;
+  logic [WrFifoPtrW-1:0]  sys_wrfifo_rdepth, sck_wrfifo_wdepth;
 
   assign sys_wrfifo_depth_o = sys_wrfifo_rdepth;
 
@@ -1172,7 +1173,7 @@ module spi_tpm
   );
 
   prim_fifo_async #(
-    .Width (WrDataFifoSize),
+    .Width (WrFifoWidth),
     .Depth (WrFifoDepth),
     .OutputZeroIfEmpty (1'b 1)
   ) u_wrfifo (
