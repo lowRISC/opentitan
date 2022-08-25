@@ -93,7 +93,9 @@ interface otbn_trace_if
   input logic ispr_predec_error,
   input logic controller_predec_error,
   input logic rf_bignum_predec_error,
-  input logic rd_predec_error
+  input logic rd_predec_error,
+  input logic rf_base_spurious_we_err,
+  input logic rf_bignum_spurious_we_err
 );
   import otbn_pkg::*;
   import prim_mubi_pkg::*;
@@ -344,6 +346,8 @@ interface otbn_trace_if
   logic scramble_state_err_i, scramble_state_err_d, scramble_state_err_q;
   logic urnd_all_zero_d, urnd_all_zero_q;
   logic insn_addr_err_d, insn_addr_err_q;
+  logic rf_base_spurious_we_err_d, rf_base_spurious_we_err_q;
+  logic rf_bignum_spurious_we_err_d, rf_bignum_spurious_we_err_q;
 
   assign missed_gnt_d = (locking_o) ? '0 : (missed_gnt_q | missed_gnt_i);
   assign predec_err_d = (locking_o) ? '0 : (predec_err_q | predec_err_i);
@@ -352,6 +356,10 @@ interface otbn_trace_if
   assign start_stop_bad_int_d = (locking_o) ? '0 : (start_stop_bad_int_q | start_stop_bad_int_i);
   assign controller_bad_int_d = (locking_o) ? '0 : (controller_bad_int_q | controller_bad_int_i);
   assign scramble_state_err_d = (locking_o) ? '0 : (scramble_state_err_q | scramble_state_err_i);
+  assign rf_base_spurious_we_err_d = (locking_o) ? '0 :
+   (rf_base_spurious_we_err_q | rf_base_spurious_we_err);
+  assign rf_bignum_spurious_we_err_d = (locking_o) ? '0 :
+   (rf_bignum_spurious_we_err_q | rf_bignum_spurious_we_err);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -362,6 +370,8 @@ interface otbn_trace_if
       start_stop_bad_int_q <= '0;
       controller_bad_int_q <= '0;
       scramble_state_err_q <= '0;
+      rf_bignum_spurious_we_err_q <= '0;
+      rf_base_spurious_we_err_q <= '0;
     end else begin
       missed_gnt_q <= missed_gnt_d;
       predec_err_q <= predec_err_d;
@@ -370,6 +380,8 @@ interface otbn_trace_if
       scramble_state_err_q <= scramble_state_err_d;
       start_stop_bad_int_q <= start_stop_bad_int_d;
       controller_bad_int_q <= controller_bad_int_d;
+      rf_base_spurious_we_err_q <= rf_base_spurious_we_err_d;
+      rf_bignum_spurious_we_err_q <= rf_bignum_spurious_we_err_d;
     end
   end
 

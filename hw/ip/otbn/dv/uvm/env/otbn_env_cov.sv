@@ -631,7 +631,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                          otbn_pkg::predec_err_t predec_err,
                          otbn_pkg::missed_gnt_t missed_gnt,
                          otbn_pkg::controller_bad_int_t controller_bad_int,
-                         otbn_pkg::start_stop_bad_int_t start_stop_bad_int);
+                         otbn_pkg::start_stop_bad_int_t start_stop_bad_int,
+                         logic rf_base_spurious_we_err,
+                         logic rf_bignum_spurious_we_err);
 
     `DEF_SEEN_CP(alu_bignum_predec_err, predec_err.alu_bignum_err)
     `DEF_SEEN_CP(mac_bignum_predec_err, predec_err.mac_bignum_err)
@@ -659,6 +661,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(urnd_all_zero_cp, urnd_all_zero)
     `DEF_SEEN_CP(insn_addr_err_cp, insn_addr_err)
     `DEF_SEEN_CP(scramble_state_err_cp, scramble_state_err)
+    `DEF_SEEN_CP(rf_base_spurious_we_err_cp, rf_base_spurious_we_err)
+    `DEF_SEEN_CP(rf_bignum_spurious_we_err_cp, rf_bignum_spurious_we_err)
 
   endgroup
 
@@ -2228,7 +2232,9 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                                  cfg.trace_vif.predec_err_q,
                                  cfg.trace_vif.missed_gnt_q,
                                  cfg.trace_vif.controller_bad_int_q,
-                                 cfg.trace_vif.start_stop_bad_int_q);
+                                 cfg.trace_vif.start_stop_bad_int_q,
+                                 cfg.trace_vif.rf_base_spurious_we_err_q,
+                                 cfg.trace_vif.rf_bignum_spurious_we_err_q);
   endfunction
 
   function void on_write_to_wr_csr(uvm_reg csr, logic [31:0] data, operational_state_e state);
