@@ -33,8 +33,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   local uint rx_wptr_exp;
   local mem_model spi_mem;
 
-  // expected values
-  local bit [NumSpiDevIntr-1:0] intr_exp;
+  // when interrupt is triggered, it may take a few cycles before it's reflected in a TL read
+  local bit [NumSpiDevIntr-1:0] intr_trigger_pending;
 
   // tx/rx async fifo, size is 2 words
   local bit [31:0] tx_word_q[$];
@@ -48,6 +48,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   bit [7:0] upload_cmd_from_tl_q[$];
   bit [31:0] upload_addr_from_spi_q[$];
   bit [31:0] upload_addr_from_tl_q[$];
+
+  // for read buffer
+  bit [31:0]  read_buffer_addr;
 
   flash_status_t flash_status_q[$];
   flash_status_t flash_status_settle_q[$];
@@ -550,14 +553,35 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             offset = (start_addr + payload_idx) % READ_BUFFER_SIZE;
             compare_mem_byte(READ_BUFFER_START_ADDR, offset, item.payload_q[payload_idx],
                              payload_idx, "Read buffer");
-            payload_idx++;
+            payload_idx++; // clear to 0 when transaction is done
+            read_buffer_addr++; // it's kept until reset
+            predict_read_buffer_intr(read_buffer_addr);
             `DV_CHECK_EQ(item.payload_q.size, payload_idx)
           end
           if (item.mon_item_complete) break;
         end
       )
+
+      `uvm_info(`gfn, $sformatf("Update last_read_addr to 0x%0x", read_buffer_addr), UVM_MEDIUM)
+      void'(ral.last_read_addr.predict(.value(read_buffer_addr), .kind(UVM_PREDICT_READ)));
     end
   endtask
+
+  virtual function void predict_read_buffer_intr(int addr);
+    int threshold = `gmv(ral.read_threshold);
+
+    int offset = addr % READ_BUFFER_HALF_SIZE;
+
+    if (offset == threshold && threshold > 0) begin
+      intr_trigger_pending[ReadbufWatermark] = 1;
+      `uvm_info(`gfn, $sformatf("read buffer watermark is triggered, addr: 0x%0x", addr),
+                UVM_MEDIUM)
+    end else if (addr % READ_BUFFER_HALF_SIZE == 0) begin
+      intr_trigger_pending[ReadbufFlip] = 1;
+      `uvm_info(`gfn, $sformatf("read buffer flip is triggered, addr: 0x%0x", addr),
+                UVM_MEDIUM)
+    end
+  endfunction
 
   // process_tl_access:this task processes incoming access into the IP over tl interface
   // this is already called in cip_base_scoreboard::process_tl_a/d_chan_fifo tasks
@@ -643,13 +667,38 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         // check is done above and predict is done after spi item completes. can return now
         return;
       end
+      "intr_state": begin
+        if (!write && channel == DataChannel) begin
+          bit [NumSpiDevIntr-1:0] intr_exp = `gmv(csr);
+          foreach (intr_exp[i]) begin
+            spi_device_intr_e intr = i;
+            // TODO, only test these 2 for now
+            if (!(i inside {ReadbufFlip, ReadbufWatermark})) continue;
+            if (!intr_trigger_pending[i]) begin
+              `DV_CHECK_EQ(item.d_data[i], intr_exp[i],
+                           $sformatf("Compare %s mismatch, act (0x%0x) != exp %p",
+                           intr.name, item.d_data[i], intr_exp[i]))
+            end else begin
+              // there is an interrupt pending, update interrupt to 1
+              // skip the check, as either 0 or 1 is fine
+              intr_exp[i] = 1;
+              void'(csr.predict(.value(intr_exp), .kind(UVM_PREDICT_READ)));
+              // clear pending interrupt
+              intr_trigger_pending[i] = 0;
+            end
+          end // foreach (intr_exp[i])
+          // skip updating predict value to d_data
+          return;
+        end // if (!write && channel == DataChannel)
+      end
       "intr_test": begin
         if (write && channel == AddrChannel) begin
           bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
-          intr_exp |= item.a_data;
+          bit [NumSpiDevIntr-1:0] intr_val;
+          intr_val = `gmv(ral.intr_state) | item.a_data;
           if (cfg.en_cov) begin
-            foreach (intr_exp[i]) begin
-              cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
+            foreach (intr_val[i]) begin
+              cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_val[i]);
             end
           end
         end
@@ -673,6 +722,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             upload_addr_from_tl_q.push_back(item.d_data);
           end
         end
+      end
+      "last_read_addr": begin
+        do_read_check = 1;
       end
       default: begin
         // TODO the other regs
@@ -813,7 +865,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     super.reset(kind);
     tx_rptr_exp = ral.txf_ptr.rptr.get_reset();
     rx_wptr_exp = ral.rxf_ptr.wptr.get_reset();
-    intr_exp    = ral.intr_state.get_reset();
+    intr_trigger_pending = ral.intr_state.get_reset();
 
     tx_word_q.delete();
     rx_word_q.delete();
@@ -821,6 +873,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     flash_status_q.delete();
     flash_status_settle_q.delete();
     flash_status_tl_pre_val_q.delete();
+
+    // used in seq
+    cfg.read_buffer_addr = 0;
+    cfg.read_buffer_ptr  = 0;
+
+    read_buffer_addr     = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);
