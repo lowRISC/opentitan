@@ -31,6 +31,7 @@ filesets:
       - seq_lib/alert_handler_ping_timeout_vseq.sv: {is_include_file: true}
       - seq_lib/alert_handler_lpg_vseq.sv: {is_include_file: true}
       - seq_lib/alert_handler_lpg_stub_clk_vseq.sv: {is_include_file: true}
+      - seq_lib/alert_handler_entropy_stress_vseq.sv: {is_include_file: true}
       - seq_lib/alert_handler_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
