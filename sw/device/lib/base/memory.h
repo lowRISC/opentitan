@@ -17,13 +17,23 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifndef OT_PLATFORM_RV32
+#include <string.h>
+#endif
+
 #include "sw/device/lib/base/macros.h"
 
 // When compiling unit tests on the host machine, we must mangle the names of
-// OpenTitan's memory functions to avoid conflicting with the libc variants. For
-// instance, without name mangling, the compiler may complain that `memcpy()`
-// has a different exception specifier than the variant declared in <string.h>.
+// OpenTitan's memory functions to disambiguate them from libc's variants.
+// Otherwise, the compiler could error when it encounters conflicting
+// declarations. For instance, OpenTitan's `memcpy()` could have a different
+// exception specifier than the one declared by the system header <string.h>.
 // (The <string.h> include is unavoidable because it's pulled in by GoogleTest.)
+//
+// Consumers of this header should almost always call the unmangled functions.
+// Device builds will naturally use OpenTitan's definitions and host builds will
+// use the system's definitions. However, nothing is stopping host builds from
+// calling the mangled function names; see :memory_unittest for an example.
 //
 // Separately, ASan segfaults during initialization when it calls our
 // user-defined memory functions. Prefixing the troublesome functions works
@@ -218,6 +228,9 @@ int OT_PREFIX_IF_NOT_RV32(memcmp)(const void *lhs, const void *rhs, size_t len);
  *
  * Can be used for arithmetic comparison of little-endian buffers.
  *
+ * This function is provided by OpenTitan in host builds, not by the platform's
+ * libc implementation.
+ *
  * @param lhs the left-hand-side of the comparison.
  * @param rhs the right-hand-side of the comparison.
  * @param len the length of both regions, in bytes.
@@ -225,8 +238,7 @@ int OT_PREFIX_IF_NOT_RV32(memcmp)(const void *lhs, const void *rhs, size_t len);
  * contingencies of `lhs == rhs`, `lhs > rhs`, and `lhs < rhs` (as buffers, not
  * pointers), respectively.
  */
-int OT_PREFIX_IF_NOT_RV32(memrcmp)(const void *lhs, const void *rhs,
-                                   size_t len);
+int memrcmp(const void *lhs, const void *rhs, size_t len);
 
 /**
  * Search a region of memory for the first occurence of a particular byte value.

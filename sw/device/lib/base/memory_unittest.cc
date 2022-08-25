@@ -73,8 +73,8 @@ class MemChrTest : public ::testing::TestWithParam<decltype(&ot_memchr)> {};
 INSTANTIATE_TEST_SUITE_P(MemCpy, MemCpyTest,
                          ::testing::Values(ot_memcpy, __builtin_memcpy));
 INSTANTIATE_TEST_SUITE_P(MemCmp, MemCmpTest,
-                         ::testing::Values(ot_memcmp, __builtin_memcmp,
-                                           ot_memrcmp, ref_memrcmp));
+                         ::testing::Values(ot_memcmp, __builtin_memcmp, memrcmp,
+                                           ref_memrcmp));
 INSTANTIATE_TEST_SUITE_P(MemSet, MemSetTest,
                          ::testing::Values(ot_memset, __builtin_memset));
 INSTANTIATE_TEST_SUITE_P(MemChr, MemChrTest,
@@ -233,8 +233,7 @@ TEST_P(MemCmpTest, Properties) {
 TEST_P(MemCmpTest, DoesNotUseSystemEndianness) {
   auto memcmp_func = GetParam();
 
-  const bool reverse =
-      memcmp_func == &ot_memrcmp || memcmp_func == &ref_memrcmp;
+  const bool reverse = memcmp_func == &memrcmp || memcmp_func == &ref_memrcmp;
 
   constexpr uint8_t kBuf1[] = {0, 0, 0, 1};
   constexpr uint8_t kBuf2[] = {0, 0, 1, 0};
