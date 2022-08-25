@@ -158,7 +158,17 @@ module tb;
   // We will need to feed this in via a muxed pin, once that function implemented.
 
   wire por_n = rst_n & por_rstn;
+`ifdef DISABLE_ROM_INTEGRITY_CHECK
+  chip_earlgrey_asic #(
+    // This is to be used carefully, and should never be on for synthesis.
+    // It causes many rom features to be disabled, including the very slow
+    // integrity check, so full chip simulation runs don't do it for each
+    // reset.
+    .SecRomCtrlDisableScrambling(1'b1)
+) dut (
+`else
   chip_earlgrey_asic dut (
+`endif
     // Clock and Reset (VCC domain)
     .POR_N(por_n),
     // Dedicated SPI Host (VIOA domain)
@@ -513,7 +523,11 @@ module tb;
           .path  (`DV_STRINGIFY(`ROM_MEM_HIER)),
           .depth ($size(`ROM_MEM_HIER)),
           .n_bits($bits(`ROM_MEM_HIER)),
+`ifdef DISABLE_ROM_INTEGRITY_CHECK
+          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
+`else
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
+`endif
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_ROM_BASE_ADDR));
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
 

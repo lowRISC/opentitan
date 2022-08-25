@@ -77,7 +77,9 @@ module chip_${top["name"]}_${target["name"]} #(
   parameter OtpCtrlMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
 ) (
 % else:
-module chip_${top["name"]}_${target["name"]} (
+module chip_${top["name"]}_${target["name"]} #(
+  parameter bit SecRomCtrlDisableScrambling = 1'b0
+) (
 % endif
 <%
   removed_port_names = []
@@ -908,7 +910,12 @@ module chip_${top["name"]}_${target["name"]} (
   // Top-level design //
   //////////////////////
   top_${top["name"]} #(
+% if target["name"] != "asic":
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
+% else:
+    .PinmuxAonTargetCfg(PinmuxTargetCfg),
+    .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
+% endif
   ) top_${top["name"]} (
     // ast connections
     .por_n_i                      ( por_n                      ),

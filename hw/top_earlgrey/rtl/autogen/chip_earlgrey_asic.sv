@@ -9,7 +9,9 @@
 //                -o hw/top_earlgrey/ \
 //                --rnd_cnst_seed 4881560218908238235
 
-module chip_earlgrey_asic (
+module chip_earlgrey_asic #(
+  parameter bit SecRomCtrlDisableScrambling = 1'b0
+) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
   inout USB_P, // Manual Pad
@@ -1071,7 +1073,8 @@ module chip_earlgrey_asic (
   // Top-level design //
   //////////////////////
   top_earlgrey #(
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
+    .PinmuxAonTargetCfg(PinmuxTargetCfg),
+    .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
   ) top_earlgrey (
     // ast connections
     .por_n_i                      ( por_n                      ),
