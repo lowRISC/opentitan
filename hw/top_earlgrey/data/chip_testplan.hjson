@@ -535,7 +535,7 @@
     {
       name: chip_rv_dm_perform_debug
       desc: '''
-            - X-ref'ed with rom_rv_dm_perform_debug from rom testplan
+            - X-ref'ed with rom_e2e_jtag_inject from rom testplan
             '''
       stage: V2
       tests: []
