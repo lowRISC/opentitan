@@ -41,4 +41,12 @@ interface alert_handler_if(input clk, input rst_n);
                                    NLpg, index))
     end
   endfunction
+
+  task automatic set_wait_cyc_mask(logic [PING_CNT_DW-1:0] val);
+    static logic [PING_CNT_DW-1:0] val_static;
+    begin
+      val_static = val;
+      force tb.dut.u_ping_timer.wait_cyc_mask_i = val_static;
+    end
+  endtask
 endinterface

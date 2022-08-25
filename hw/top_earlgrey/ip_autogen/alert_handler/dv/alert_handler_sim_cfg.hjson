@@ -106,6 +106,15 @@
     }
 
     {
+      name: alert_handler_entropy_stress
+      uvm_test_seq: alert_handler_entropy_stress_vseq
+      // This sequence forces signal `wait_cyc_mask_i` to a much smaller value.
+      // So all the timings are not accurate and we need to disable the scb.
+      run_opts: ["+en_scb=0"]
+      reseed: 20
+    }
+
+    {
       name: alert_handler_stress_all
       run_opts: ["+test_timeout_ns=15_000_000_000"]
     }

@@ -128,6 +128,21 @@
       stage: V2
       tests: ["alert_handler_stress_all"]
     }
+    {
+      name: alert_handler_entropy_stress_test
+      desc: '''
+            Stress the alert_handler's entropy request and make sure there is no spurious alert.
+
+            Stimulus:
+            - Randomly force the `wait_cyc_mask_i` to a legal value to stress the ping requests.
+            - Wait for all alerts at least being pinged for a few times.
+            Checks:
+            - Check alert_cause and loc_alert_cause registers to make sure there is no spurious
+              alert being fired.
+            '''
+      stage: V2
+      tests: ["alert_handler_entropy_stress"]
+    }
   ]
 
   covergroups: [

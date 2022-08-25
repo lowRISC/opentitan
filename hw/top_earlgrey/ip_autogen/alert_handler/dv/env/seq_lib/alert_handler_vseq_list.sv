@@ -14,4 +14,5 @@
 `include "alert_handler_ping_timeout_vseq.sv"
 `include "alert_handler_lpg_vseq.sv"
 `include "alert_handler_lpg_stub_clk_vseq.sv"
+`include "alert_handler_entropy_stress_vseq.sv"
 `include "alert_handler_stress_all_vseq.sv"
