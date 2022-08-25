@@ -374,10 +374,20 @@
   end
 `endif
 
+// macro that waits for a given delay and then reports an error
+`ifndef DV_WAIT_TIMEOUT
+`define DV_WAIT_TIMEOUT(TIMEOUT_NS_, ID_  = `gfn, ERROR_MSG_ = "timeout occurred!", REPORT_FATAL_ = 1) \
+  begin \
+    #(TIMEOUT_NS_ * 1ns); \
+    if (REPORT_FATAL_) `dv_fatal(ERROR_MSG_, ID_) \
+    else               `dv_error(ERROR_MSG_, ID_) \
+  end
+`endif
+
 // wait a task or statement with timer watchdog
 `ifndef DV_SPINWAIT
 `define DV_SPINWAIT(WAIT_, MSG_ = "timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
-  `DV_SPINWAIT_EXIT(WAIT_, wait_timeout(TIMEOUT_NS_, ID_, MSG_);, "", ID_)
+  `DV_SPINWAIT_EXIT(WAIT_, `DV_WAIT_TIMEOUT(TIMEOUT_NS_, ID_, MSG_);, "", ID_)
 `endif
 
 // a shorthand of `DV_SPINWAIT(wait(...))
