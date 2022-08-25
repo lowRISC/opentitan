@@ -838,8 +838,8 @@ mod_inv:
  */
 fetch_proj_randomize:
 
-  /* get random number */
-  bn.wsrr   w2, 1
+  /* get random number from URND */
+  bn.wsrr   w2, 2
 
   /* reduce random number
      w26 = z <= w2 mod p */
@@ -1056,15 +1056,15 @@ scalar_mult_int:
     bn.rshi   w0, w0, w0 >> 255
     bn.rshi   w1, w1, w1 >> 255
 
-    /* init regs with random numbers */
-    bn.wsrr   w11, 1
-    bn.wsrr   w12, 1
-    bn.wsrr   w13, 1
+    /* init regs with random numbers from URND */
+    bn.wsrr   w11, 2
+    bn.wsrr   w12, 2
+    bn.wsrr   w13, 2
 
-    /* get a fresh random number and scale the coordinates of
+    /* get a fresh random number from URND and scale the coordinates of
        2P = (w3, w4, w5) (scaling each projective coordinate with same
        factor results in same point) */
-    bn.wsrr   w2, 1
+    bn.wsrr   w2, 2
 
     /* w3 = w3 * w2 */
     bn.mov    w24, w3
