@@ -1,0 +1,408 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  name: "manufacturing"
+
+  testpoints: [
+    {
+      name: manuf_cp_unlock_raw
+      desc: '''Verify transition from RAW to TEST_UNLOCKED lc_state.
+
+            - Pre-load OTP with RAW lc_state.
+            - Bring device out of reset selecting the Life Cycle (LC) TAP interface using strap pins.
+
+            Perfom the following steps via LC TAP interface:
+
+            - Switch to external clock via TRANSITION_CTRL.EXT_CLOCK_EN.
+            - Provide RAW_UNLOCK.
+            - Poll for lc_ctrl STATUS register for TRANSITION_SUCCESSFUL. Check for errors or timeout.
+            - Perform reset by toggling the POR pin.
+            - Verify the lc_state is TEST_UNLOCKED0.
+
+            The manufacturing environment is required to support test reruns whenever possible:
+
+            - Verify that the RAW_UNLOCK process can be re-tried after failed or interrupted attempts.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_scrap
+      desc: '''Verify transition from any state to SCRAP lc_state.
+
+            Manufacturing tests should be able to move the device from any lc_state into SCRAP state.
+
+            For each manufacturing lc_state `s`:
+            - Pre-load OTP with `s` lc_state image.
+            - Bring device out of reset selecting the Life Cycle (LC) TAP interface using strap pins.
+            - Request transition to SCRAP state via LC TAP interface.
+            - Perform reset by togglig the POR pin.
+            - Check we are in SCRAP state via LC TAP interface.
+
+            The manufacturing environment is required to support test reruns whenever possible:
+
+            - Verify that the transition to SCRAP mode can be re-tried after failed or interrupted attempts.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_cp_yield_test
+      desc: '''Verify that it is possible to switch TAP interfaces while injecting external clock.
+
+            Verify that it is possible to access TAP interfaces while injecting an external clock.
+            This test case is valid only in test life cycle states.
+
+            - Pre-load OTP with TEST_UNLOCKED lc_state in pre-silicon environments. Advance to
+              state in silicon.
+            - Enable external clock injection.
+            - Connect to CPU JTAG and perform register read/writes to memory/registers.
+            - Switch to LC TAP by manipulating the strap pins.
+            - Verify that read/writes to lc_ctrl work as expected.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_cp_ast_test_execution
+      desc: '''Verify that the tester is able to load/exec test sequences into/from SRAM.
+
+            An expected pattern during manufacturing involves loading small program sequences into
+            SRAM, and use them to run higher level operations such as configuring OTP values in the
+            OTP hardware partition.
+
+            - Pre-load OTP with TEST_UNLOCKED lc_state in pre-silicon environments. Advance to
+              state in silicon.
+            - Select CPU JTAG via strap pins.
+            - Load program into SRAM to execute OTP word write sequences.
+            - Trigger OTP writes to HW partition (e.g. device ID).
+            - Perform reset by toggling POR pin.
+            - Select CPU JTAG via strap pins.
+            - Verify that OTP write was successful.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_cp_device_info_flash_wr
+      desc: '''Verify that the tester is able to write to flash info pages.
+
+            During early manufacturing stages, the tester writes information for later use into
+            flash info pages.
+
+            - Pre-load OTP with TEST_UNLOCKED lc_state in pre-silicon environments. Advance to
+              state in silicon.
+            - Select CPU JTAG via strap pins.
+            - Load program into SRAM to execute flash write sequences.
+            - Write 32B to the isolated flash info partition. Verify unable to read back.
+
+            In silicon, a separate test program must perform the following additional operations.
+            In pre-silicon, they can be part of the same program.
+
+            - Switch to LC TAP at runtime.
+            - Request transition to DEV or PROD state (test both cases).
+            - Perform reset by toggling POR pin.
+            - Verify isolated flash info partition expected data.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_cp_test_lock
+      desc: '''Verify provisioning and use of unlock tokens.
+
+            In transit devices will need to be switched into TEST_LOCKED states to disable debug
+            access and code execution. This test verifies that a TEST_UNLOCKED token can be
+            provisioned as part of this process.
+
+            - Pre-load OTP with TEST_UNLOCKED lc_state in pre-silicon environments. Advance to
+              state in silicon.
+            - Select CPU JTAG via strap pins.
+            - Program TEST_UNLOCK_TOKEN in OTP transition via JTAG.
+            - Select LC TAP via strap pins (at runtime).
+            - Request transition into TEST_LOCKED state.
+            - Perform reset by toggling POR pin.
+            - Select LC TAP via strap pins.
+            - Verify lc state.
+
+            Implement the following steps in a way in which it could be executed at a later time
+            in silicon targets:
+
+            - Load OTP state generted by previous steps.
+            - Select LC TAP via strap pins.
+            - Request transition to TEST_UNLCOKED by providing the TEST_UNLOCK_TOKEN provisioned
+              in previous steps.
+            - Perform reset by toggling POR pin.
+            - Select LC TAP via strap pins.
+            - Verify lc_state.
+
+            Repeat the same flow for the number of supported TEST_LOCK/UNLOCKED states.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_ft_exit_token
+      desc: '''Verify provisioning and use of test exit token.
+
+            The test exit token is used to move the device from test mode into DEV, PROD or
+            PROD_END state. This test also incorporates enabling of ROM execution before
+            triggering the lc_state change.
+
+            - Pre-load OTP with TEST_UNLOCKED lc_state in pre-silicon environments. Advance to
+              state in silicon.
+            - Select CPU JTAG via strap pins.
+            - Program TEST_EXIT_TOKEN in OTP transition via JTAG.
+            - Reset device by toggling POR pin.
+            - Select CPU JTAG via strap pins.
+            - Program CREATOR_SW_CFG_ROM_EXEC_EN in OTP via JTAG.
+            - Select LC TAP via strap pins (at runtime).
+            - Request transition into {pick one: DEV, PROD, PROD_END} state providing TEST_EXIT_TOKEN.
+            - Perform reset by toggling POR pin.
+            - Select LC TAP via strap pins.
+            - Verify lc state.
+
+            After this test most of the following manuf_ft_* test cases can be loaded into flash via
+            boostrap in silicon.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_ft_sku_individualization
+      desc: '''Configure device fuses.
+
+            This includes configuration for most countermeasures and hardware options. It does not
+            include configuration of the device identity and RMA token, which is done in the
+            personalization step.
+
+            The test steps are expected to be executed from flash. In silicon, the program is loaded
+            using the ROM bootstrap protocol. It is recommended to use the same approach on the FPGA,
+            and enable it as a configuration option in DV.
+
+            - Pre-load OTP with {pick one: DEV, PROD, PROD_END} lc_state in pre-silicon
+              environments. Advance to state in silicon.
+            - Load test program into flash and start execution.
+            - Check device lc_state. Return error to the host if device in invalid state.
+            - Configure the following OTP fuses to enable access to entropy:
+              - EN_CSRNG_SW_APP_READ
+              - EN_ENTROPY_SRC_FW_READ
+              - EN_ENTROPY_SRC_FW_OVER
+            - Configure remaining HW_CFG OTP fields:
+              - DEVICE_ID
+              - MANUF_STATE
+            - Lock HW_CFG OPT partition.
+            - Configure CREATOR_SW_CFG OTP words according to device SKU configuration.
+            - Configure OWNER_SW_CFG OTP words according to device SKU configuration.
+            - Perform reset trigered by software.
+            - Initialize entropy_src in FIPS mode. Check health status after setting appropriate
+              health test parameters. Configure SW csrng instance to generate enough data to
+              configure the following OTP fields:
+              - FLASH_ADDR_KEY_SEED
+              - FLASH_DATA_KEY_SEED
+              - SRAM_DATA_KEY_SEED
+            - Lock SECRET1 partition.
+            - Perform reset triggered by software.
+            - Load test program again into flash and start execution.
+            - Send response to host with test result serialized in JSON format.
+            - Check status response on the host side.
+
+            **Note**: Tests are easier to integrate with Automated Test Equipment (ATE) if all
+            device-host interfaces are unidirectional. This influences the type of physical
+            interface selection (e.g. SPI versus UART). Make sure the interface design takes
+            this constraint into consideration.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_ft_provision_rma_token_and_personalization
+      desc: '''Provision RMA unlock token.
+
+            ## Provisioning of RMA_UNLOCK_TOKEN
+
+            The RMA_UNLOCK_TOKEN is used to take a device from a production ls_state (i.e. DEV,
+            PROD) in to RMA state. RMA entry is conditional to flash erase, and it also triggers
+            a diversification change in the key manager to ensure that user assets are not exposed
+            to the manufacturer.
+
+            Since RMA enables debug interfaces in the chip, it is important to maintain the
+            confidentiality of the RMA_UNLOCK_TOKEN. For this reason, asymmetric encryption is
+            used to export the token.
+
+            The manufactuer is expected to maintain the RMA_UNLOCK_TOKEN decryption key in an
+            offline HSM.
+
+            ## Personalization
+
+            The device is configured with a unique set of secrets, which once provisioned, are
+            hidden from software. These secrets are use to as the root of the key derivation
+            function in the key manager.
+
+            ## Test steps
+
+            ### Prep steps
+            - Pre-load the OTP state with an image of an individualized device. See
+              manuf_ft_sku_individualization for more details.
+            - Check expected ls_state and OTP locked partitions (SECRET1, HW_CFG).
+            - Initialize entropy source in FIPS mode. Check health status after setting appropriate
+              health test parameters.
+
+            ### Device secrets
+            - Instantiate the SW CSRNG, and configure it to generate data.
+            - Configure the following OTP entries with data extracted from the CSRNG:
+              - CREATOR_ROOT_KEY_SHARE0
+              - CREATOR_ROOT_KEY_SHARE1
+            - Configure the flash info secret partition with data extracted from the CSRNG.
+            - Lock SECRET2 OTP partition.
+            - Perform reset triggered by software.
+
+            ### RMA provisioning
+            - Instantiate the SW CSRNG, and configure it to generate data.
+            - Configure RMA_TOKEN in the OTP partition with data extracted from the CSRNG.
+            - Encrypt RMA_TOKEN with asymmetric algorithm (e.g RSA-3072). The encrypted blob will
+              be sent to the host in the result status.
+            - Uninstantiate the sw CSRNG.
+
+            ### Device Identity
+
+            The OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN OTP must be configured so that the
+            attestation measurement can be provided in the manifest of the test program. This
+            way the provisioning program is able to generate the key manager derivation matching
+            the production ROM_EXT configuration.
+
+            TODO: Left details vague on purpose until we get the attestation flow reviewed.
+            - Advance the keymgr to CREATOR_ROOT_KEY state.
+            - Derive CREATOR attestation key pair.
+            - Calculate SHA2 hash of the public key with the device secret provisionined in
+              the manuf_cp_device_info_flash_wr test. The device secret is known by the
+              provisioning appliance.
+            - Disable the key manager.
+            - Configure OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN OTP to switch to attestation mode
+              associated with the device SKU.
+
+            ### Result status
+            - Send response to host with test result serialized in JSON format. The result must
+              include the encrypted RMA_UNLOCK_TOKEN, the DEVICE_ID, the public attestation key
+              and its hash.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_ft_load_transport_image
+      desc: '''Load transport stack into flash.
+
+            Ensure the ROM is able to bootstrap the transport image. The transport image supports
+            functionality such as full device attestation, and ownership transfer, which are
+            required to enable device integration into a system.
+
+            - Pre-load the OTP with an image of a personalized device. See
+              manuf_ft_provision_rma_token_and_personalization for more details.
+            - Bootstrap transport image.
+            - Reset device by toggling POR pin.
+            - Check device firmware version.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_ft_load_certificates
+      desc: '''Load endorsed certificates.
+
+            Load device certificate endorsing the creator public key. The certificate is signed
+            by the silicon creator.
+
+            TODO: This assumes the ROM_EXT supports a mechanism to update the certificate.
+            TODO: Should the transport image contain silicon creator pubilc keys to be able to
+            verify the certificate before install?
+
+            - Pre-load the OTP with an image of a personalized device.  See
+              manuf_ft_provision_rma_token_and_personalization for more details.
+            - The device flash should be loaded with the transprot image. See
+              manuf_ft_load_transport_image for details.
+            - The host sends a command to the device including the device certificate.
+            - The device verifies that the certificate corresponds to its device key.
+            - The certificate is then stored into a flash page (info versus regular flash TBD).
+            - Send response to the host with test result.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_ft_eom
+      desc: '''End of manufacturing.
+
+            This test requires the device to have completed the manuf_ft_load_certificates test.
+            - The host sends a command to the device to trigger the end of manufacturing.
+            - Final OTP configuration options are set.
+            - Manufacturing functionality supported by the ROM_EXT and transport image will be
+              disabled after reset.
+            - Trigger software reset.
+            - The host sends a command to ensure device is in post-manufacturing state.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+
+    {
+      name: manuf_rma_entry
+      desc: '''Verifies RMA entry.
+
+            In silicon, the entire process is executed in a secure environment in adherence to
+            certification requirements.
+
+            - Initialize device to reflect eom state. See manuf_ft_eom for more details.
+            - Select LC TAP via strap pins.
+            - Read DEVICE_ID via LC TAP interface.
+            - Powerdown the device.
+
+            The Silicon Creator is expected to lookup the RMA_UNLOCK_TOKEN in a manufacturing database
+            using the DEVICE_ID and decrypt it at an offline location. The token cannot leave the
+            secure environment in unencrypted form at any time, implying that there is a way for the
+            secure environment to handle the decryption operation.
+
+            - Select LC TAP via strap pins.
+            - Power on the device.
+
+            The following steps are performed via the LC TAP interface:
+            - Read DEVICE_ID. Confirm expected response.
+            - Load RMA_UNLOCK_TOKEN and request transition to RMA state.
+            - Poll for status completion.
+            - Reset device by toggling POR pin.
+
+            RMA entry will trigger a rotation of scrambling keys. It is recommended to either
+            connect to the CPU JTAG to continue debug, or bootstrap the device with new a firmware
+            image. Otherwise the ROM will fail to boot.
+            '''
+      tags: ["dv", "fpga", "silicon"]
+      stage: V3
+      tests: []
+    }
+  ]
+}
