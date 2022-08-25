@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -283,4 +284,26 @@ bool flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
                                                         bank_erase_enabled));
 
   return retval;
+}
+
+uint32_t flash_ctrl_testutils_get_count(uint32_t *strike_counter) {
+  uint32_t addr = (uint32_t)strike_counter;
+  uint32_t val = abs_mmio_read32(addr);
+
+  for (size_t i = 0; i < 32; ++i) {
+    if (val >> i & 0x1) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+void flash_ctrl_testutils_increment_counter(dif_flash_ctrl_state_t *flash_state,
+                                            uint32_t *strike_counter,
+                                            uint32_t index) {
+  uint32_t addr = (uint32_t)strike_counter;
+  uint32_t val = abs_mmio_read32(addr) & ~(1 << index);
+  CHECK(flash_ctrl_testutils_write(flash_state, addr, 0, &val,
+                                   kDifFlashCtrlPartitionTypeData, 1),
+        "Error incrementing strike counter");
 }

@@ -50,36 +50,6 @@ __attribute__((section(".non_volatile_scratch")))
 const volatile uint32_t events_vector = -1;
 
 /**
- *  Extracts current event id from the bit-strike counter.
- */
-static uint32_t event_to_test(void) {
-  uint32_t addr = (uint32_t)(&events_vector);
-  uint32_t val = abs_mmio_read32(addr);
-
-  for (size_t i = 0; i < 32; ++i) {
-    if (val >> i & 0x1) {
-      return i;
-    }
-  }
-  return -1;
-};
-
-/**
- *  Increment flash bit-strike counter.
- */
-static bool incr_flash_cnt(uint32_t tested_idx) {
-  uint32_t addr = (uint32_t)(&events_vector);
-
-  // set the tested bit to 0
-  uint32_t val = abs_mmio_read32(addr) & ~(1 << tested_idx);
-
-  // program the word into flash
-  return flash_ctrl_testutils_write(&flash_ctrl, addr, 0, &val,
-
-                                    kDifFlashCtrlPartitionTypeData, 1);
-};
-
-/**
  *  Clear event trigger and recoverable status.
  */
 static void clear_event(uint32_t idx, dif_toggle_t fatal) {
@@ -190,7 +160,8 @@ bool test_main(void) {
       kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleEnabled));
 
   // First check the flash stored value
-  uint32_t event_idx = event_to_test();
+  uint32_t event_idx =
+      flash_ctrl_testutils_get_count((uint32_t *)&events_vector);
 
   // Capture the number of events to test
   uint32_t sensor_ctrl_events = SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS;
@@ -218,9 +189,8 @@ bool test_main(void) {
   test_event(event_idx, /*fatal*/ kDifToggleEnabled);
 
   // increment flash counter to know where we are
-  if (!incr_flash_cnt(event_idx)) {
-    LOG_ERROR("Error when incrementing flash counter");
-  }
+  flash_ctrl_testutils_increment_counter(&flash_ctrl,
+                                         (uint32_t *)&events_vector, event_idx);
 
   // Now request system to reset and test again
   LOG_INFO("Rebooting system");

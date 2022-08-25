@@ -216,4 +216,34 @@ OT_WARN_UNUSED_RESULT
 bool flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
                                      uint32_t bank, bool data_only);
 
+/**
+ * Determines a count value as the index of the first bit set to 1 in a word.
+ *
+ * This uses an incrementing counter implemented as a uint32_t initialized to
+ * all 1 (meaning a count of zero), and on each increment operation the lowest
+ * bit set is cleared. This is consistent with the capability of flash.
+ *
+ * @param strike_counter The address of the counter.
+ * @return The bit position of the first bit set to 1.
+ */
+uint32_t flash_ctrl_testutils_get_count(uint32_t *strike_counter);
+
+/**
+ * Increments a strike counter by clearing a bit.
+ *
+ * Uses a strike counter as described for flash_ctrl_testutils_get_count.
+ * It is give a bit to be cleared, typically the value returned by the most
+ * recent call to flash_ctrl_testutils_get_count.
+ *
+ * Notice if the right-most bit set to 1 is not cleared the counter will not
+ * advance.
+ *
+ * @param flash_state A flash_ctrl state handle.
+ * @param strike_counter The address of the counter.
+ * @param index The bit to clear.
+ */
+void flash_ctrl_testutils_increment_counter(dif_flash_ctrl_state_t *flash_state,
+                                            uint32_t *strike_counter,
+                                            uint32_t index);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_
