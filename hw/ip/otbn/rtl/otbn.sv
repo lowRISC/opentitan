@@ -634,7 +634,7 @@ module otbn
   assign dmem_write = dmem_access_core ? dmem_write_core : dmem_write_bus;
   assign dmem_wmask = dmem_access_core ? dmem_wmask_core : dmem_wmask_bus;
   // SEC_CM: DATA.MEM.SW_NOACCESS
-  assign dmem_index = dmem_access_core ? dmem_index_core : {1'b0, dmem_index_bus};
+  assign dmem_index = dmem_access_core ? dmem_index_core : dmem_index_bus;
   assign dmem_wdata = dmem_access_core ? dmem_wdata_core : dmem_wdata_bus;
 
   assign dmem_illegal_bus_access = dmem_req_bus & dmem_access_core;
