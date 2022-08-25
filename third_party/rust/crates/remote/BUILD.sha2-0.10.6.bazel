@@ -31,13 +31,14 @@ licenses([
 
 # Generated Targets
 
+# Unsupported target "mod" with type "bench" omitted
+
 rust_library(
-    name = "digest",
+    name = "sha2",
     srcs = glob(["**/*.rs"]),
+    aliases = {
+    },
     crate_features = [
-        "alloc",
-        "block-buffer",
-        "core-api",
         "default",
         "std",
     ],
@@ -49,13 +50,23 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=digest",
+        "crate-name=sha2",
         "manual",
     ],
-    version = "0.10.3",
+    version = "0.10.6",
     # buildifier: leave-alone
     deps = [
-        "@raze__block_buffer__0_10_3//:block_buffer",
-        "@raze__crypto_common__0_1_6//:crypto_common",
-    ],
+        "@raze__cfg_if__1_0_0//:cfg_if",
+        "@raze__digest__0_10_5//:digest",
+    ] + selects.with_or({
+        # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+        (
+            "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
+        ): [
+            "@raze__cpufeatures__0_2_5//:cpufeatures",
+        ],
+        "//conditions:default": [],
+    }),
 )
+
+# Unsupported target "mod" with type "test" omitted

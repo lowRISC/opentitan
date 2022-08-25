@@ -31,12 +31,11 @@ licenses([
 
 # Generated Targets
 
-rust_library(
-    name = "rand_core",
+rust_proc_macro(
+    name = "pest_derive",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "alloc",
-        "getrandom",
+        "default",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -47,12 +46,21 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=rand_core",
+        "crate-name=pest_derive",
         "manual",
     ],
-    version = "0.6.3",
+    version = "2.3.1",
     # buildifier: leave-alone
     deps = [
-        "@raze__getrandom__0_2_7//:getrandom",
+        "@raze__pest__2_3_1//:pest",
+        "@raze__pest_generator__2_3_1//:pest_generator",
     ],
 )
+
+# Unsupported target "grammar" with type "test" omitted
+
+# Unsupported target "grammar_inline" with type "test" omitted
+
+# Unsupported target "lists" with type "test" omitted
+
+# Unsupported target "reporting" with type "test" omitted

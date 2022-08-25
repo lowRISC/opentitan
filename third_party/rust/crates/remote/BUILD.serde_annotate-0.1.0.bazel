@@ -26,42 +26,50 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT"
+    "restricted",  # no license
 ])
 
 # Generated Targets
 
-# Unsupported target "ansi_parser" with type "bench" omitted
+# Unsupported target "autoschema" with type "example" omitted
 
-# Unsupported target "colors" with type "example" omitted
+# Unsupported target "samples" with type "example" omitted
 
-# Unsupported target "colors256" with type "example" omitted
-
-# Unsupported target "cursor_at" with type "example" omitted
-
-# Unsupported target "term" with type "example" omitted
+# Unsupported target "transcode" with type "example" omitted
 
 rust_library(
-    name = "console",
+    name = "serde_annotate",
     srcs = glob(["**/*.rs"]),
     crate_features = [
     ],
     crate_root = "src/lib.rs",
     data = [],
-    edition = "2018",
+    compile_data = [ "src/relax.pest" ],
+    edition = "2021",
+    proc_macro_deps = [
+        "@raze__annotate_derive__0_1_0//:annotate_derive",
+        "@raze__pest_derive__2_3_1//:pest_derive",
+    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=console",
+        "crate-name=serde_annotate",
         "manual",
     ],
-    version = "0.15.1",
+    version = "0.1.0",
     # buildifier: leave-alone
     deps = [
-        "@raze__libc__0_2_133//:libc",
+        "@raze__ansi_term__0_12_1//:ansi_term",
+        "@raze__inventory__0_2_3//:inventory",
+        "@raze__num_traits__0_2_15//:num_traits",
         "@raze__once_cell__1_14_0//:once_cell",
-        "@raze__terminal_size__0_1_17//:terminal_size",
+        "@raze__pest__2_3_1//:pest",
+        "@raze__regex__1_6_0//:regex",
+        "@raze__serde__1_0_144//:serde",
+        "@raze__thiserror__1_0_35//:thiserror",
     ],
 )
+
+# Unsupported target "test_format" with type "test" omitted

@@ -31,53 +31,35 @@ licenses([
 
 # Generated Targets
 
+# Unsupported target "parens" with type "example" omitted
+
 rust_library(
-    name = "thiserror",
+    name = "pest",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "default",
+        "std",
+        "thiserror",
     ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
-    proc_macro_deps = [
-        "@raze__thiserror_impl__1_0_34//:thiserror_impl",
-    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=thiserror",
+        "crate-name=pest",
         "manual",
     ],
-    version = "1.0.34",
+    version = "2.3.1",
     # buildifier: leave-alone
     deps = [
+        "@raze__thiserror__1_0_35//:thiserror",
+        "@raze__ucd_trie__0_1_5//:ucd_trie",
     ],
 )
 
-# Unsupported target "compiletest" with type "test" omitted
+# Unsupported target "calculator" with type "test" omitted
 
-# Unsupported target "test_backtrace" with type "test" omitted
-
-# Unsupported target "test_deprecated" with type "test" omitted
-
-# Unsupported target "test_display" with type "test" omitted
-
-# Unsupported target "test_error" with type "test" omitted
-
-# Unsupported target "test_expr" with type "test" omitted
-
-# Unsupported target "test_from" with type "test" omitted
-
-# Unsupported target "test_generics" with type "test" omitted
-
-# Unsupported target "test_lints" with type "test" omitted
-
-# Unsupported target "test_option" with type "test" omitted
-
-# Unsupported target "test_path" with type "test" omitted
-
-# Unsupported target "test_source" with type "test" omitted
-
-# Unsupported target "test_transparent" with type "test" omitted
+# Unsupported target "json" with type "test" omitted

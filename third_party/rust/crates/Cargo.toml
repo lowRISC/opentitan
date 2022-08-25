@@ -14,6 +14,7 @@ path = "empty_file_to_appease_cargo.rs"
 # Please avoid version numbers that only have one component.
 [dependencies]
 anyhow = { version = "1.0.57", features=["backtrace"] }
+atty = "0.2"
 bitflags = "1.0"
 bitvec = "1.0.1"
 byteorder = "1.4.3"
@@ -45,6 +46,7 @@ regex = "1.5.4"
 rsa = "0.5.0"
 rusb = "0.8.1"
 serde = { version="1.0.130", features=["serde_derive"] }
+serde_annotate = { git = "https://github.com/lowRISC/serde-annotate" }
 serde_json = "1.0.69"
 serialport = "4.0.1"
 sha2 = "0.10.1"
@@ -76,3 +78,6 @@ patch_args = ["-p1"]
 # Workaround for https://github.com/google/cargo-raze/issues/480
 [workspace.metadata.raze.crates.bitvec.'1.0.1']
 data_attr = 'glob(["**/*.md"])'
+
+[package.metadata.raze.crates.serde_annotate.'*']
+compile_data_attr = '[ "src/relax.pest" ]'

@@ -31,10 +31,8 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "xid" with type "bench" omitted
-
 rust_library(
-    name = "unicode_xid",
+    name = "unicode_width",
     srcs = glob(["**/*.rs"]),
     crate_features = [
         "default",
@@ -47,13 +45,11 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=unicode-xid",
+        "crate-name=unicode-width",
         "manual",
     ],
-    version = "0.2.3",
+    version = "0.1.10",
     # buildifier: leave-alone
     deps = [
     ],
 )
-
-# Unsupported target "exhaustive_tests" with type "test" omitted

@@ -31,16 +31,13 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "graphemes" with type "bench" omitted
-
-# Unsupported target "unicode_words" with type "bench" omitted
-
-# Unsupported target "word_bounds" with type "bench" omitted
+# Unsupported target "bench" with type "bench" omitted
 
 rust_library(
-    name = "unicode_segmentation",
+    name = "ucd_trie",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -50,10 +47,10 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=unicode-segmentation",
+        "crate-name=ucd-trie",
         "manual",
     ],
-    version = "1.9.0",
+    version = "0.1.5",
     # buildifier: leave-alone
     deps = [
     ],

@@ -26,23 +26,19 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT"
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
 ])
 
 # Generated Targets
 
-# Unsupported target "ansi_parser" with type "bench" omitted
+# Unsupported target "graphemes" with type "bench" omitted
 
-# Unsupported target "colors" with type "example" omitted
+# Unsupported target "unicode_words" with type "bench" omitted
 
-# Unsupported target "colors256" with type "example" omitted
-
-# Unsupported target "cursor_at" with type "example" omitted
-
-# Unsupported target "term" with type "example" omitted
+# Unsupported target "word_bounds" with type "bench" omitted
 
 rust_library(
-    name = "console",
+    name = "unicode_segmentation",
     srcs = glob(["**/*.rs"]),
     crate_features = [
     ],
@@ -54,14 +50,11 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=console",
+        "crate-name=unicode-segmentation",
         "manual",
     ],
-    version = "0.15.1",
+    version = "1.10.0",
     # buildifier: leave-alone
     deps = [
-        "@raze__libc__0_2_133//:libc",
-        "@raze__once_cell__1_14_0//:once_cell",
-        "@raze__terminal_size__0_1_17//:terminal_size",
     ],
 )
