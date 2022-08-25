@@ -488,7 +488,8 @@ package spi_device_pkg;
   typedef struct packed {
     logic [7:0] rev;
     logic       locality;
-    logic [2:0] max_xfer_size;
+    logic [2:0] max_wr_size;
+    logic [2:0] max_rd_size;
   } tpm_cap_t;
   // TPM ----------------------------------------------------------------------
 

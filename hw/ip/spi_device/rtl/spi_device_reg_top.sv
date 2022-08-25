@@ -1496,7 +1496,8 @@ module spi_device_reg_top (
   logic cmd_info_wrdi_valid_wd;
   logic [7:0] tpm_cap_rev_qs;
   logic tpm_cap_locality_qs;
-  logic [2:0] tpm_cap_max_xfer_size_qs;
+  logic [2:0] tpm_cap_max_wr_size_qs;
+  logic [2:0] tpm_cap_max_rd_size_qs;
   logic tpm_cfg_we;
   logic tpm_cfg_en_qs;
   logic tpm_cfg_en_wd;
@@ -18241,12 +18242,12 @@ module spi_device_reg_top (
     .qs     (tpm_cap_locality_qs)
   );
 
-  //   F[max_xfer_size]: 18:16
+  //   F[max_wr_size]: 18:16
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (3'h2)
-  ) u_tpm_cap_max_xfer_size (
+    .RESVAL  (3'h6)
+  ) u_tpm_cap_max_wr_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -18255,8 +18256,8 @@ module spi_device_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.tpm_cap.max_xfer_size.de),
-    .d      (hw2reg.tpm_cap.max_xfer_size.d),
+    .de     (hw2reg.tpm_cap.max_wr_size.de),
+    .d      (hw2reg.tpm_cap.max_wr_size.d),
 
     // to internal hardware
     .qe     (),
@@ -18264,7 +18265,33 @@ module spi_device_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (tpm_cap_max_xfer_size_qs)
+    .qs     (tpm_cap_max_wr_size_qs)
+  );
+
+  //   F[max_rd_size]: 22:20
+  prim_subreg #(
+    .DW      (3),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (3'h4)
+  ) u_tpm_cap_max_rd_size (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.tpm_cap.max_rd_size.de),
+    .d      (hw2reg.tpm_cap.max_rd_size.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (tpm_cap_max_rd_size_qs)
   );
 
 
@@ -21398,7 +21425,8 @@ module spi_device_reg_top (
       addr_hit[64]: begin
         reg_rdata_next[7:0] = tpm_cap_rev_qs;
         reg_rdata_next[8] = tpm_cap_locality_qs;
-        reg_rdata_next[18:16] = tpm_cap_max_xfer_size_qs;
+        reg_rdata_next[18:16] = tpm_cap_max_wr_size_qs;
+        reg_rdata_next[22:20] = tpm_cap_max_rd_size_qs;
       end
 
       addr_hit[65]: begin

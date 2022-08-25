@@ -136,9 +136,10 @@ module spi_tpm
 
   // Capability
   assign tpm_cap_o = '{
-    rev:           CapTpmRevision,
-    locality:      EnLocality,
-    max_xfer_size: (CapMaxWrSize > CapMaxRdSize) ? CapMaxRdSize : CapMaxWrSize
+    rev:         CapTpmRevision,
+    locality:    EnLocality,
+    max_wr_size: CapMaxWrSize,
+    max_rd_size: CapMaxRdSize
   };
 
   localparam int unsigned TpmRegisterSize = (AccessRegSize * NumLocality)

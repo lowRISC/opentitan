@@ -1614,15 +1614,15 @@ TEST_F(TpmTest, NullArgs) {
 TEST_F(TpmTest, InitDevice) {
   dif_spi_device_tpm_caps_t caps;
   EXPECT_READ32(SPI_DEVICE_TPM_CAP_REG_OFFSET,
-                {
-                    {SPI_DEVICE_TPM_CAP_REV_OFFSET, 3},
-                    {SPI_DEVICE_TPM_CAP_LOCALITY_BIT, 1},
-                    {SPI_DEVICE_TPM_CAP_MAX_XFER_SIZE_OFFSET, 4},
-                });
+                {{SPI_DEVICE_TPM_CAP_REV_OFFSET, 3},
+                 {SPI_DEVICE_TPM_CAP_LOCALITY_BIT, 1},
+                 {SPI_DEVICE_TPM_CAP_MAX_WR_SIZE_OFFSET, 6},
+                 {SPI_DEVICE_TPM_CAP_MAX_RD_SIZE_OFFSET, 6}});
   EXPECT_DIF_OK(dif_spi_device_get_tpm_capabilities(&spi_, &caps));
   EXPECT_EQ(caps.revision, 3);
   EXPECT_TRUE(caps.multi_locality);
-  EXPECT_EQ(caps.max_transfer_size, 4);
+  EXPECT_EQ(caps.max_write_size, 6);
+  EXPECT_EQ(caps.max_read_size, 6);
 
   dif_spi_device_tpm_config_t config = {
       .interface = kDifSpiDeviceTpmInterfaceFifo,

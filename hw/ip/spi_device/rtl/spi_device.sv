@@ -1755,9 +1755,10 @@ module spi_device
   // Register connection
   //  TPM_CAP:
   assign hw2reg.tpm_cap = '{
-    rev:           '{ de: 1'b 1, d: tpm_cap.rev           },
-    locality:      '{ de: 1'b 1, d: tpm_cap.locality      },
-    max_xfer_size: '{ de: 1'b 1, d: tpm_cap.max_xfer_size }
+    rev:         '{ de: 1'b 1, d: tpm_cap.rev         },
+    locality:    '{ de: 1'b 1, d: tpm_cap.locality    },
+    max_wr_size: '{ de: 1'b 1, d: tpm_cap.max_wr_size },
+    max_rd_size: '{ de: 1'b 1, d: tpm_cap.max_rd_size }
   };
 
   //  CFG:

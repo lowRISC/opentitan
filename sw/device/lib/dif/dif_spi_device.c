@@ -1277,8 +1277,10 @@ dif_result_t dif_spi_device_get_tpm_capabilities(
   caps->revision = bitfield_field32_read(reg_val, SPI_DEVICE_TPM_CAP_REV_FIELD);
   caps->multi_locality =
       bitfield_bit32_read(reg_val, SPI_DEVICE_TPM_CAP_LOCALITY_BIT);
-  caps->max_transfer_size =
-      bitfield_field32_read(reg_val, SPI_DEVICE_TPM_CAP_MAX_XFER_SIZE_FIELD);
+  caps->max_write_size =
+      bitfield_field32_read(reg_val, SPI_DEVICE_TPM_CAP_MAX_WR_SIZE_FIELD);
+  caps->max_read_size =
+      bitfield_field32_read(reg_val, SPI_DEVICE_TPM_CAP_MAX_RD_SIZE_FIELD);
   return kDifOk;
 }
 

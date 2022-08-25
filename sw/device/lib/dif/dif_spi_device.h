@@ -910,11 +910,17 @@ typedef struct dif_spi_device_tpm_caps {
    */
   bool multi_locality;
   /**
-   * The maximum transfer size, in bytes, of the data phase of TPM
+   * The maximum write size, in bytes, of the data phase of TPM
    * transactions. This represents the maximum amount of data the FIFO can
    * accept.
    */
-  uint8_t max_transfer_size;
+  uint8_t max_write_size;
+  /**
+   * The maximum read size, in bytes, of the data phase of TPM
+   * transactions. This represents the maximum amount of data the FIFO can
+   * accept.
+   */
+  uint8_t max_read_size;
 } dif_spi_device_tpm_caps_t;
 
 /**
