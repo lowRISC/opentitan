@@ -50,7 +50,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   bit [31:0] upload_addr_from_tl_q[$];
 
   // for read buffer
-  bit [31:0]  read_buffer_addr;
+  // once triggered, it won't be triggered again until it flips
+  bit read_buffer_watermark_triggered;
 
   flash_status_t flash_status_q[$];
   flash_status_t flash_status_settle_q[$];
@@ -372,7 +373,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // this doesn't handle read cmd falling in read buffer
   virtual function void check_read_cmd_data_for_non_read_buffer(spi_item up_item,
                                                                 spi_item dn_item);
-    bit [31:0] start_addr, end_addr;
+    bit [31:0] start_addr;
+    bit [TL_DW-1:0] new_last_read_addr = `gmv(ral.last_read_addr);
     // TODO, sample this for coverage
     read_addr_size_type_e read_addr_size_type;
     bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
@@ -393,6 +395,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       end else begin // out of mbx region
         string str;
 
+        // if last addr is not in mailbox, will be captured in last_read_addr CSR.
+        new_last_read_addr = cur_addr;
+
         `DV_CHECK_EQ_FATAL(is_passthru, 1)
         if (dn_item != null) begin
           str = $sformatf("compare mbx data with downstread item. idx %0d, up: 0x%0x, dn: 0x%0x",
@@ -408,6 +413,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       end
     end
 
+    if (new_last_read_addr != `gmv(ral.last_read_addr)) begin
+      `uvm_info(`gfn, $sformatf("Update last_read_addr to 0x%0x", new_last_read_addr), UVM_MEDIUM)
+      void'(ral.last_read_addr.predict(.value(new_last_read_addr), .kind(UVM_PREDICT_READ)));
+    end
     // TODO, sample read_addr_size_type for coverage
   endfunction
 
@@ -540,7 +549,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     forever begin
       spi_item item;
       uint payload_idx;
-      bit [31:0] start_addr, offset;
+      bit [31:0] start_addr, offset, read_buffer_addr;
 
       upstream_spi_req_fifo.get(item);
       if (!cfg.is_read_buffer_cmd(item)) continue;
@@ -553,30 +562,35 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             offset = (start_addr + payload_idx) % READ_BUFFER_SIZE;
             compare_mem_byte(READ_BUFFER_START_ADDR, offset, item.payload_q[payload_idx],
                              payload_idx, "Read buffer");
+            read_buffer_addr = start_addr + payload_idx; // it's kept until reset
             payload_idx++; // clear to 0 when transaction is done
-            read_buffer_addr++; // it's kept until reset
-            predict_read_buffer_intr(read_buffer_addr);
+            predict_read_buffer_intr(read_buffer_addr + 1);
             `DV_CHECK_EQ(item.payload_q.size, payload_idx)
           end
           if (item.mon_item_complete) break;
         end
       )
-
-      `uvm_info(`gfn, $sformatf("Update last_read_addr to 0x%0x", read_buffer_addr), UVM_MEDIUM)
-      void'(ral.last_read_addr.predict(.value(read_buffer_addr), .kind(UVM_PREDICT_READ)));
+      // only update when it has payload
+      if (payload_idx > 0) begin
+        `uvm_info(`gfn, $sformatf("Update last_read_addr to 0x%0x", read_buffer_addr), UVM_MEDIUM)
+        void'(ral.last_read_addr.predict(.value(read_buffer_addr), .kind(UVM_PREDICT_READ)));
+      end
     end
   endtask
 
   virtual function void predict_read_buffer_intr(int addr);
     int threshold = `gmv(ral.read_threshold);
-
     int offset = addr % READ_BUFFER_HALF_SIZE;
 
-    if (offset == threshold && threshold > 0) begin
+    if (offset >= threshold && threshold > 0 && !read_buffer_watermark_triggered) begin
+      read_buffer_watermark_triggered = 1;
       intr_trigger_pending[ReadbufWatermark] = 1;
       `uvm_info(`gfn, $sformatf("read buffer watermark is triggered, addr: 0x%0x", addr),
                 UVM_MEDIUM)
-    end else if (addr % READ_BUFFER_HALF_SIZE == 0) begin
+    end
+    if (addr % READ_BUFFER_HALF_SIZE == 0) begin
+      // after flip, WM can be triggered again
+      read_buffer_watermark_triggered = 0;
       intr_trigger_pending[ReadbufFlip] = 1;
       `uvm_info(`gfn, $sformatf("read buffer flip is triggered, addr: 0x%0x", addr),
                 UVM_MEDIUM)
@@ -690,6 +704,15 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           // skip updating predict value to d_data
           return;
         end // if (!write && channel == DataChannel)
+        else if (write && channel == AddrChannel) begin
+          bit [NumSpiDevIntr-1:0] intr_val = item.a_data;
+          foreach (intr_val[i]) begin
+            spi_device_intr_e intr = i;
+            if (intr_val[i]) begin
+              `uvm_info(`gfn, $sformatf("Clear %s", intr.name), UVM_MEDIUM)
+            end
+          end
+        end
       end
       "intr_test": begin
         if (write && channel == AddrChannel) begin
@@ -875,10 +898,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     flash_status_tl_pre_val_q.delete();
 
     // used in seq
-    cfg.read_buffer_addr = 0;
+    cfg.next_read_buffer_addr = 0;
     cfg.read_buffer_ptr  = 0;
 
-    read_buffer_addr     = 0;
+    read_buffer_watermark_triggered = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);
