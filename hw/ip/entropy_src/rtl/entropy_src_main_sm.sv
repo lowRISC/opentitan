@@ -256,7 +256,9 @@ module entropy_src_main_sm #(
         end
       end
       Sha3MsgDone: begin
-        state_d = Sha3Prep;
+        if (!cs_aes_halt_ack_i) begin
+          state_d = Sha3Prep;
+        end
       end
       Sha3Prep: begin
         // for normal or halt cases, always prevent a power spike
