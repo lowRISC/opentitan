@@ -62,6 +62,7 @@ class spi_device_read_buffer_direct_vseq extends spi_device_flash_mode_vseq;
     `uvm_info(`gfn, "reading 1 more byte at read_threshold_val - 1", UVM_MEDIUM)
     send_read_cmd(.start_addr(start_addr), .payload_size(1));
     check_interrupts(.interrupts((1 << ReadbufWatermark)), .check_set(1));
+    check_interrupts(.interrupts((1 << ReadbufFlip)), .check_set(0));
     start_addr += 1;
 
     payload_size = READ_BUFFER_SIZE / 2 - 1;
@@ -72,10 +73,10 @@ class spi_device_read_buffer_direct_vseq extends spi_device_flash_mode_vseq;
     check_interrupts(.interrupts((1 << ReadbufFlip)), .check_set(1));
     start_addr += payload_size;
 
-    start_addr += 1;
     `uvm_info(`gfn, "reading 1 more byte at read_threshold_val - 1 in 2nd half", UVM_MEDIUM)
     send_read_cmd(.start_addr(start_addr), .payload_size(1));
     check_interrupts(.interrupts((1 << ReadbufWatermark)), .check_set(1));
+    check_interrupts(.interrupts((1 << ReadbufFlip)), .check_set(0));
   endtask
 
   task send_read_cmd(bit[31:0] start_addr, int payload_size);
@@ -87,6 +88,6 @@ class spi_device_read_buffer_direct_vseq extends spi_device_flash_mode_vseq;
     spi_host_xfer_flash_item(opcode, payload_size, start_addr);
     cfg.clk_rst_vif.wait_clks(10);
 
-    csr_rd_check(.ptr(ral.last_read_addr), .compare_value(start_addr + payload_size));
+    csr_rd_check(.ptr(ral.last_read_addr), .compare_value(start_addr + payload_size - 1));
   endtask
 endclass : spi_device_read_buffer_direct_vseq

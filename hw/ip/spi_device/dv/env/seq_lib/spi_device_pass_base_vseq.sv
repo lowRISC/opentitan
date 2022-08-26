@@ -108,7 +108,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       read_addr_size_type inside {ReadAddrWithinMailbox, ReadAddrOutsideMailbox};
       // this is read buffer
       if (read_addr_size_type == ReadAddrOutsideMailbox && opcode inside {READ_CMD_LIST}) {
-        read_start_addr == cfg.read_buffer_addr;
+        read_start_addr == cfg.next_read_buffer_addr;
       }
     }
   }
@@ -517,17 +517,20 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     end
 
     if (cfg.is_read_buffer_cmd(m_spi_host_seq.rsp)) begin
-      cfg.read_buffer_addr = convert_addr_from_byte_queue(m_spi_host_seq.rsp.address_q) +
+      cfg.next_read_buffer_addr = convert_addr_from_byte_queue(m_spi_host_seq.rsp.address_q) +
                              m_spi_host_seq.rsp.payload_q.size();
-      cfg.clk_rst_vif.wait_clks(10);
 
-      `uvm_info(`gfn, $sformatf("Updated read_buffer_addr to 0x%0x", cfg.read_buffer_addr),
+      `uvm_info(`gfn, $sformatf("Updated next_read_buffer_addr: 0x%0x", cfg.next_read_buffer_addr),
                 UVM_MEDIUM)
     end
 
-    // TODO, only read last_read_addr in this mode due to #14586
-    if (device_mode == FlashMode && $urandom_range(0, 1)) begin
-      csr_rd_check(.ptr(ral.last_read_addr), .compare_value(cfg.read_buffer_addr));
+    // randomly read last_read_addr for scb to check
+    if ($urandom_range(0, 2) == 0) begin
+      bit [TL_DW-1:0] rdata;
+
+      // This is synced from the other clock domain. It takes around 3-4 cycles.
+      cfg.clk_rst_vif.wait_clks(5);
+      csr_rd(.ptr(ral.last_read_addr), .value(rdata));
     end
 
     if (wait_on_busy) begin
@@ -680,6 +683,15 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
           is_flip = get_field_val(ral.intr_state.readbuf_flip, intr_state_val);
           is_watermark = get_field_val(ral.intr_state.readbuf_watermark, intr_state_val);
 
+          // clear flip and watermark event before updating mem
+          // if clear too late, scb is hard to handle as the interrupt may happen again
+          intr_state_val = 0;
+          if (is_flip)      intr_state_val[ReadbufFlip] = 1;
+          if (is_watermark) intr_state_val[ReadbufWatermark] = 1;
+
+          if (!is_flip && !is_watermark) continue;
+          csr_wr(ral.intr_state, intr_state_val);
+
           if (is_flip) begin
             start_addr = cfg.read_buffer_ptr % READ_BUFFER_SIZE;
             end_addr = (start_addr + READ_BUFFER_HALF_SIZE);
@@ -689,12 +701,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
             random_write_spi_mem(start_addr, end_addr - 1, "read buffer", zero_delay_write);
             cfg.read_buffer_ptr = end_addr;
           end
-
-          // clear flip and watermark event
-          intr_state_val = 0;
-          if (is_flip)      intr_state_val[ReadbufFlip] = 1;
-          if (is_watermark) intr_state_val[ReadbufWatermark] = 1;
-          csr_wr(ral.intr_state, intr_state_val);
         end
         read_buffer_update_ongoing = 0;
       end

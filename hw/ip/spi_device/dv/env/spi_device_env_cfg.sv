@@ -9,7 +9,8 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   bit [TL_AW-1:0]     sram_end_addr;
 
   // read buffer needs to be read with incremental address, otherwise, watermark/fip won't work
-  bit [TL_AW-1:0]     read_buffer_addr;
+  // this needs to be kept across sequences and cleared when reset occurs. Only seq uses it.
+  bit [TL_AW-1:0]     next_read_buffer_addr;
   // read_buffer_addr is updated after a transaction is done
   // this ptr is updated when a flip event occurs, so that we could know which part is
   // read by the SPI host, in order to update the other part
