@@ -32,7 +32,8 @@ body:
       label: Steps to Reproduce
       value: |
         - Commit hash where failure was observed
-        - dvsim invocation command to reproduce the failure, inclusive of build and run seeds
+        - dvsim invocation command to reproduce the failure, inclusive of build and run seeds:
+          ./util/dvsim/dvsim.py hw/top_earlgrey/dv/chip_sim_cfg.hjson -i {TEST_NAME} --fixed-seed {FAILING_SEED} --build-seed {BUILD_SEED} --waves -v h
         - Kokoro build number if applicable
     validations:
       required: true
