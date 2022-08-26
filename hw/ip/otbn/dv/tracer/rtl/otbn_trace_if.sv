@@ -380,7 +380,7 @@ interface otbn_trace_if
   assign predec_err_i.rf_err = rf_bignum_predec_error;
   assign predec_err_i.rd_err = rd_predec_error;
 
-  assign start_stop_bad_int_i.state_err = u_otbn_start_stop_control.state_error;
+  assign start_stop_bad_int_i.state_err = u_otbn_start_stop_control.state_error_d;
   assign start_stop_bad_int_i.spr_urnd_acks = u_otbn_start_stop_control.spurious_urnd_ack_error;
   assign start_stop_bad_int_i.spr_secwipe_reqs = u_otbn_start_stop_control.secure_wipe_error_q;
 
