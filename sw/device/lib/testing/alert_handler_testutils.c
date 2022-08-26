@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -57,4 +58,13 @@ void alert_handler_testutils_configure_all(
   // Configure the ping timer.
   CHECK_DIF_OK(dif_alert_handler_configure_ping_timer(
       alert_handler, config.ping_timeout, kDifToggleEnabled, locked));
+}
+
+uint32_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds) {
+  uint64_t cycles = udiv64_slow(microseconds * kClockFreqPeripheralHz, 1000000,
+                                /*rem_out=*/NULL);
+  CHECK(cycles < UINT32_MAX,
+        "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
+        (cycles >> 32), (uint32_t)cycles);
+  return (uint32_t)cycles;
 }
