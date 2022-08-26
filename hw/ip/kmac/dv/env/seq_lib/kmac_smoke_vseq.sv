@@ -169,6 +169,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
           `uvm_info(`gfn, "starting kmac_app requests", UVM_HIGH)
           begin : send_kmac_req
             send_kmac_app_req(app_mode);
+            wait_no_outstanding_access();
             disable invalid_msgfifo_wr;
             disable sw_cmd_in_app;
             disable check_invalid_key_err;
