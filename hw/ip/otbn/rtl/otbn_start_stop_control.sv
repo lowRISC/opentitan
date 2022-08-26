@@ -67,15 +67,16 @@ module otbn_start_stop_control
   logic init_sec_wipe_done_q, init_sec_wipe_done_d;
   mubi4_t wipe_after_urnd_refresh_q, wipe_after_urnd_refresh_d;
   mubi4_t rma_ack_d, rma_ack_q;
+  logic state_error_q, state_error_d;
   logic mubi_err_q, mubi_err_d;
   logic urnd_reseed_err_q, urnd_reseed_err_d;
+  logic secure_wipe_error_q, secure_wipe_error_d;
 
   logic addr_cnt_inc;
   logic [4:0] addr_cnt_q, addr_cnt_d;
 
-  logic       state_error, spurious_urnd_ack_error;
-  logic       spurious_secure_wipe_req, dropped_secure_wipe_req;
-  logic       secure_wipe_error_q, secure_wipe_error_d;
+  logic spurious_urnd_ack_error;
+  logic spurious_secure_wipe_req, dropped_secure_wipe_req;
 
   // There are three ways in which the start/stop controller can be told to stop.
   // 1. secure_wipe_req_i comes from the controller (which means "I've run some instructions and
@@ -137,7 +138,7 @@ module otbn_start_stop_control
     addr_cnt_inc              = 1'b0;
     secure_wipe_ack_o         = 1'b0;
     secure_wipe_running_o     = 1'b0;
-    state_error               = 1'b0;
+    state_error_d             = state_error_q;
     allow_secure_wipe         = 1'b0;
     expect_secure_wipe        = 1'b0;
     spurious_urnd_ack_error   = 1'b0;
@@ -279,7 +280,7 @@ module otbn_start_stop_control
       end
       default: begin
         // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
-        state_error = 1'b1;
+        state_error_d = 1'b1;
         rma_ack_d = MuBi4False;
         state_d = OtbnStartStopStateLocked;
       end
@@ -361,10 +362,12 @@ module otbn_start_stop_control
   assign secure_wipe_error_d = spurious_secure_wipe_req | dropped_secure_wipe_req;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
+      state_error_q       <= 1'b0;
       mubi_err_q          <= 1'b0;
       secure_wipe_error_q <= 1'b0;
       urnd_reseed_err_q   <= 1'b0;
     end else begin
+      state_error_q       <= state_error_d;
       mubi_err_q          <= mubi_err_d;
       secure_wipe_error_q <= secure_wipe_error_d;
       urnd_reseed_err_q   <= urnd_reseed_err_d;
@@ -375,7 +378,7 @@ module otbn_start_stop_control
                                                      : urnd_reseed_err_q; // hold
   assign urnd_reseed_err_o = urnd_reseed_err_d;
 
-  assign fatal_error_o = spurious_urnd_ack_error | state_error | secure_wipe_error_q | mubi_err_q;
+  assign fatal_error_o = urnd_reseed_err_o | state_error_d | secure_wipe_error_q | mubi_err_q;
 
   assign rma_ack_o = rma_ack_q;
 
