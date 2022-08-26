@@ -239,7 +239,8 @@
             - Reset the chip.
             - Verify that the chip responds to `READ_JEDEC_ID` (`0x9f`) with
               - 12 repetitions of the continuation code `0x7f`,
-              - manufacturer ID `0xef`, and
+              - manufacturer ID `0xef`,
+              - device ID `0x08`, and
               - density `0x14`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
@@ -725,7 +726,7 @@
             - Verify that boot succeeeds. Repeat with the following values:
 
             | `CREATOR_SW_CFG_USE_SW_RSA_VERIFY` | Result  |
-            |:-----------------------------------:---------|
+            |:----------------------------------:|:-------:|
             | `kHardenedBoolTrue`                | Success |
             | `kHardenedBoolFalse`               | Success |
             | `0`                                | Failure |
@@ -1006,7 +1007,7 @@
     }
 
     {
-      name: rom_e2e_pinmux_init
+      name: rom_e2e_c_init
       desc: '''Verify that ROM initializes various peripherals properly.
 
             - Pinmux: UART pins, SW straps if `OWNER_SW_CFG_ROM_BOOTSTRAP_EN == kHardenedBoolTrue`
