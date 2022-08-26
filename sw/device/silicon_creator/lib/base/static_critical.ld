@@ -19,6 +19,6 @@
   KEEP(*(.static_critical.sec_mmio_ctx))
 
   ASSERT(
-    . - ADDR(.static_critical) == 1648,
+    . - ADDR(.static_critical) == 8048,
     "Error: .static_critical section size has changed");
 } > ram_main
