@@ -7,12 +7,15 @@
 
 module prim_lfsr_tb;
 
-//////////////////////////////////////////////////////
-// config
-//////////////////////////////////////////////////////
+  import dv_utils_pkg::*;
+  `include "dv_macros.svh"
 
-// this can be overriden on the command line
-// supported types are GAL_XOR, FIB_XNOR
+  //////////////////////////////////////////////////////
+  // Build configurations:
+  // LFSR_TYPE; The type of LFSR used. Choices: "GAL_XOR" or "FIB_XOR"
+  // MIN_LFSR_DW: Minimum LFSR width tested.
+  // MAX_LFSR_DW: Maximum LFSR width tested.
+  //////////////////////////////////////////////////////
 `ifdef LFSR_TYPE
   localparam string           LfsrType   = `LFSR_TYPE;
 `else
@@ -29,30 +32,17 @@ module prim_lfsr_tb;
   localparam int unsigned     MaxLfsrDw  = 32;
 `endif
 
-  // leave this constant
-  localparam logic SEED       = 1'b1;
-
-  localparam time  ClkPeriod  = 10000;
-
-//////////////////////////////////////////////////////
-// clock
-//////////////////////////////////////////////////////
-
-  wire clk, rst_n;
-
-  clk_rst_if main_clk (
-    .clk,
-    .rst_n
-  );
-
-//////////////////////////////////////////////////////
-// DUTs
-//////////////////////////////////////////////////////
+  // The default seed of the LFSR.
+  //
+  // This is fixed to 1. It is unused in simulations. The `prim_lfsr` instead, randomizes the
+  // default seed value (DefaultSeedLocal) at runtime. This is enforced with
+  // +prim_lfsr_use_default_seed=0 plusarg.
+  localparam logic SEED = 1'b1;
 
   // The StatePerm below is only defined for LFSRs up to 256bit wide.
   `ASSERT_INIT(MaxStateSizeCheck_A, MaxLfsrDw < 256)
 
-  logic [MaxLfsrDw:0] lfsr_en, err;
+  logic [MaxLfsrDw:MinLfsrDw] lfsr_en, err, test_done;
   logic [MaxLfsrDw:MinLfsrDw][MaxLfsrDw-1:0] state_out;
   logic [MaxLfsrDw:MinLfsrDw][MaxLfsrDw-1:0] lfsr_periods;
 
@@ -127,7 +117,16 @@ module prim_lfsr_tb;
       Dw'(32'd003), Dw'(32'd002), Dw'(32'd001), Dw'(32'd000)
     };
 
-    prim_lfsr #(
+    //////////////////////////////////////////////////////
+    // clock & reset
+    //////////////////////////////////////////////////////
+    wire clk, rst_n;
+    clk_rst_if main_clk(.clk, .rst_n);
+
+   //////////////////////////////////////////////////////
+   // DUTs
+   //////////////////////////////////////////////////////
+   prim_lfsr #(
       .LfsrType    ( LfsrType ),
       .LfsrDw      ( k        ),
       .EntropyDw   ( 1        ),
@@ -156,61 +155,59 @@ module prim_lfsr_tb;
 
     // calculate period of LFSR:
     assign lfsr_periods[k] = MaxLfsrDw'({{(k-1){1'b1}}, 1'b0});
-  end
 
-//////////////////////////////////////////////////////
-// stimuli application / response checking
-//////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////
+    // stimuli application / response checking
+    //////////////////////////////////////////////////////
+    initial begin : p_stimuli
+      bit [MaxLfsrDw-1:0] actual_default_seed;
 
-  initial begin : p_stimuli
-    lfsr_en = '0;
-    err     = '0;
+      lfsr_en[k] = 0;
+      err[k] = 0;
+      test_done[k] = 0;
 
-    main_clk.set_period_ps(ClkPeriod);
-    main_clk.set_active();
-    main_clk.apply_reset();
+      main_clk.set_sole_clock(1);
+      main_clk.set_active();
+      main_clk.apply_reset();
+      main_clk.wait_clks($urandom_range(2, 20));
 
-    $display("LFSR maxlen test started for %s (%0d bit to %0d bit).",
-        LfsrType, MinLfsrDw, MaxLfsrDw);
+      // For simulations, we modify prim_lfsr to pick a random default seed for every
+      // invocation, instead of going with the DefaultSeed parameter.
+      actual_default_seed = MaxLfsrDw'(i_prim_lfsr.DefaultSeedLocal);
 
-    main_clk.wait_clks(10);
+      // enable this LFSR
+      lfsr_en[k] = 1;
 
-    // enable all LFSRs
-    lfsr_en = '1;
-
-    $display("Running for 2**%0d-1 cycles...", MaxLfsrDw);
-    for (longint unsigned k = 0; k <= lfsr_periods[MaxLfsrDw]; k++ ) begin
-
-      main_clk.wait_clks(1);
-
-      for (int unsigned j = MinLfsrDw; j <= MaxLfsrDw; j++) begin
-        // check if we reached the initial state again
-        if (state_out[j] == MaxLfsrDw'(SEED) && lfsr_en[j]) begin
-          // $display("cycle: %d -- lfsr: %d -- %x ?= %x, %x",
-          // k, j, state_out[j], SEED, lfsr_en);
-          lfsr_en[j] = 1'b0;
-          // we expect this to occur only after the maximum length period
-          if (lfsr_periods[j] == k) begin
-            $display("Maxlen check for LFSR %0d succeeded!", j);
+      $display("Starting LFSR maxlen test for width %0d: running %0d cycles", k, 2 ** k - 1);
+      for (longint unsigned i = 0; i <= lfsr_periods[MaxLfsrDw] && lfsr_en[k]; i++) begin
+        main_clk.wait_clks(1);
+        // Check if we reached the initial state again.
+        if (state_out[k] == actual_default_seed && lfsr_en[k]) begin
+          lfsr_en[k] = 1'b0;
+          // We expect this to occur only after the maximum length period.
+          if (i == lfsr_periods[k]) begin
+            $display("LFSR maxlen test for width %0d passed!", k);
           end else begin
-            err[j] = 1'b1;
-            $error("Error LFSR %0d is not maximal length!", j);
+            $display("LFSR maxlen test for width %0d failed at period %0d!", k, i);
+            err[k] = 1'b1;
           end
         end
       end
-    end
 
-    main_clk.wait_clks(10);
-
-    for (int unsigned j = MinLfsrDw; j <= MaxLfsrDw; j++) begin
-      if (lfsr_en[j]) begin
-        $error("Error LFSR %0d never got back to initial state!", j);
-        err[j] = 1'b1;
+      main_clk.wait_clks(10);
+      if (lfsr_en[k]) begin
+        $error("LFSR with width %0d never got back to the initial state!", k);
+        err[k] = 1'b1;
       end
+      main_clk.stop_clk();
+      test_done[k] = 1;
     end
+  end
 
-    if (!err) $display("All LFSRs from %0d bit to %0d have maximum length!", MinLfsrDw, MaxLfsrDw);
-    dv_test_status_pkg::dv_test_status(.passed(!err));
+  initial begin
+    $display("Testing LFSR of type %0s for widths {[%0d:%0d]}", LfsrType, MinLfsrDw, MaxLfsrDw);
+    `DV_WAIT(test_done === '1, , 1_000_000_000 /*1ms*/, "prim_lfsr_tb")
+    dv_test_status_pkg::dv_test_status(.passed(err === '0 && test_done === '1));
     $finish();
   end
 

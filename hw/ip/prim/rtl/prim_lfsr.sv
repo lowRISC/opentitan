@@ -311,6 +311,33 @@ module prim_lfsr #(
   logic [LfsrDw-1:0] lfsr_d, lfsr_q;
   logic [LfsrDw-1:0] next_lfsr_state, coeffs;
 
+  // Enable the randomization of DefaultSeed using DefaultSeedLocal in DV simulations.
+  `ifdef SYNTHESIS
+    localparam logic [LfsrDw-1:0] DefaultSeedLocal = DefaultSeed;
+
+  `elsif VERILATOR
+    localparam logic [LfsrDw-1:0] DefaultSeedLocal = DefaultSeed;
+
+  `else
+    logic [LfsrDw-1:0] DefaultSeedLocal;
+    logic prim_lfsr_use_default_seed;
+
+    initial begin
+      if (!$value$plusargs("prim_lfsr_use_default_seed=%0d", prim_lfsr_use_default_seed)) begin
+        // 30% of the time, use the DefaultSeed parameter; 70% of the time, randomize it.
+        `ASSERT_I(UseDefaultSeedRandomizeCheck_A, std::randomize(prim_lfsr_use_default_seed) with {
+                                                  prim_lfsr_use_default_seed dist {0:/7, 1:/3};})
+      end
+      if (prim_lfsr_use_default_seed) begin
+        DefaultSeedLocal = DefaultSeed;
+      end else begin
+        // Randomize the DefaultSeedLocal ensuring its not all 0s or all 1s.
+        `ASSERT_I(DefaultSeedLocalRandomizeCheck_A, std::randomize(DefaultSeedLocal) with {
+                                                    !(DefaultSeedLocal inside {'0, '1});})
+      end
+      $display("%m: DefaultSeed = 0x%0h, DefaultSeedLocal = 0x%0h", DefaultSeed, DefaultSeedLocal);
+    end
+  `endif
 
   ////////////////
   // Galois XOR //
@@ -334,7 +361,7 @@ module prim_lfsr #(
     assign lockup = ~(|lfsr_q);
 
     // check that seed is not all-zero
-    `ASSERT_INIT(DefaultSeedNzCheck_A, |DefaultSeed)
+    `ASSERT_INIT(DefaultSeedNzCheck_A, |DefaultSeedLocal)
 
 
   ////////////////////
@@ -359,7 +386,7 @@ module prim_lfsr #(
     assign lockup = &lfsr_q;
 
     // check that seed is not all-ones
-    `ASSERT_INIT(DefaultSeedNzCheck_A, !(&DefaultSeed))
+    `ASSERT_INIT(DefaultSeedNzCheck_A, !(&DefaultSeedLocal))
 
 
   /////////////
@@ -378,7 +405,7 @@ module prim_lfsr #(
   //////////////////
 
   assign lfsr_d = (seed_en_i)           ? seed_i          :
-                  (lfsr_en_i && lockup) ? DefaultSeed     :
+                  (lfsr_en_i && lockup) ? DefaultSeedLocal     :
                   (lfsr_en_i)           ? next_lfsr_state :
                                           lfsr_q;
 
@@ -520,7 +547,7 @@ module prim_lfsr #(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_reg
     if (!rst_ni) begin
-      lfsr_q <= DefaultSeed;
+      lfsr_q <= DefaultSeedLocal;
     end else begin
       lfsr_q <= lfsr_d;
     end
@@ -547,7 +574,7 @@ module prim_lfsr #(
     // Galois XOR
     if (64'(LfsrType) == 64'("GAL_XOR")) begin
       if (next_state == 0) begin
-        next_state = DefaultSeed;
+        next_state = DefaultSeedLocal;
       end else begin
         state0 = next_state[0];
         next_state = next_state >> 1;
@@ -557,7 +584,7 @@ module prim_lfsr #(
     // Fibonacci XNOR
     end else if (64'(LfsrType) == "FIB_XNOR") begin
       if (&next_state) begin
-        next_state = DefaultSeed;
+        next_state = DefaultSeedLocal;
       end else begin
         state0 = ~(^(next_state & lfsrcoeffs));
         next_state = next_state << 1;
@@ -659,9 +686,9 @@ module prim_lfsr #(
       end
     end
 
-    `ASSERT(MaximalLengthCheck0_A, cnt_q == 0 |-> lfsr_q == DefaultSeed,
+    `ASSERT(MaximalLengthCheck0_A, cnt_q == 0 |-> lfsr_q == DefaultSeedLocal,
         clk_i, !rst_ni || perturbed_q)
-    `ASSERT(MaximalLengthCheck1_A, cnt_q != 0 |-> lfsr_q != DefaultSeed,
+    `ASSERT(MaximalLengthCheck1_A, cnt_q != 0 |-> lfsr_q != DefaultSeedLocal,
         clk_i, !rst_ni || perturbed_q)
 `endif
   end

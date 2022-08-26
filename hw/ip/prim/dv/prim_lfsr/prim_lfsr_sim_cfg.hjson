@@ -41,6 +41,13 @@
   // main build mode. See commit lowrisc/opentitan#51000a8 for more details.
   primary_build_mode: prim_lfsr_dw_24
 
+  // Always randomize the initial seed of the LFSR.
+  //
+  // For this block level, the DefaultSeed is ignored and a random value is picked instead. This is
+  // facilitated by the plusarg below. At the chip level, this plusarg is not set, so prim_lfsr
+  // randomly picks between the DefaultSeed value and a random value.
+  run_opts: ["+prim_lfsr_use_default_seed=0"]
+
   // dw_8 is only used for "smoke" sims, so coverage collection is not needed.
   prim_lfsr_dw_8_vcs_cov_cfg_file: ""
   prim_lfsr_dw_24_vcs_cov_cfg_file: "-cm_hier {proj_root}/hw/ip/prim/dv/prim_lfsr/data/prim_lfsr_cover.cfg"
@@ -58,6 +65,7 @@
     {
       name: prim_lfsr_test
       build_mode: prim_lfsr_dw_24
+      run_timeout_mins: 120
     }
   ]
 
