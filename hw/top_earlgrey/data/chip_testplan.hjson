@@ -2760,7 +2760,7 @@
             sure that the alert_handler won't move forward to the next escalation stage.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_rv_core_ibex_nmi_irq"]
     }
     {
       name: chip_sw_rv_core_ibex_rnd

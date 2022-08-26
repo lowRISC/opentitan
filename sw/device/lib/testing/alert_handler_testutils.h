@@ -25,4 +25,9 @@ void alert_handler_testutils_configure_all(
     const dif_alert_handler_t *alert_handler, dif_alert_handler_config_t config,
     dif_toggle_t locked);
 
+/**
+ * Returns the number of cycles corresponding to the given microseconds.
+ */
+uint32_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_ALERT_HANDLER_TESTUTILS_H_
