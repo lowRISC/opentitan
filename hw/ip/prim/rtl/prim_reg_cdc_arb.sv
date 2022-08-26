@@ -92,6 +92,13 @@ module prim_reg_cdc_arb #(
     StWait
   } state_e;
 
+
+  // Only honor the incoming destinate update request if the incoming
+  // value is actually different from what is already completed in the
+  // handshake
+  logic dst_update;
+  assign dst_update = dst_update_i & (dst_qs_o != dst_ds_i);
+
   if (DstWrReq) begin : gen_wr_req
     logic dst_lat_q;
     logic dst_lat_d;
@@ -161,7 +168,7 @@ module prim_reg_cdc_arb #(
 
     // if a destination update is received when the system is idle and there is no
     // software side request, hw update must be selected.
-    `ASSERT(DstUpdateReqCheck_A, ##1 dst_update_i & !dst_req & !busy |=> id_q == SelHwReq,
+    `ASSERT(DstUpdateReqCheck_A, ##1 dst_update & !dst_req & !busy |=> id_q == SelHwReq,
       clk_dst_i, !rst_dst_ni)
 
     // if hw select was chosen, then it must be the case there was a destination update
@@ -195,7 +202,7 @@ module prim_reg_cdc_arb #(
             // there's a software issued request for change
             state_d = StWait;
             dst_lat_d = 1'b1;
-          end else if (dst_update_i) begin
+          end else if (dst_update) begin
             state_d = StWait;
             dst_lat_d = 1'b1;
           end else if (dst_qs_o != dst_qs_i) begin
@@ -248,7 +255,7 @@ module prim_reg_cdc_arb #(
           async_flag <= '0;
         end else if (src_update_o) begin
           async_flag <= '0;
-        end else if (dst_update_i && !dst_req_o && !busy) begin
+        end else if (dst_update && !dst_req_o && !busy) begin
           async_flag <= 1'b1;
         end
       end
@@ -280,7 +287,7 @@ module prim_reg_cdc_arb #(
     );
 
     logic unused_sigs;
-    assign unused_sigs = |{dst_ds_i, dst_update_i};
+    assign unused_sigs = |{dst_ds_i, dst_update};
   end
 
 
