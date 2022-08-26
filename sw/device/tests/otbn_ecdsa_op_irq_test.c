@@ -433,7 +433,7 @@ static void test_ecdsa_p256_roundtrip(void) {
 }
 
 bool test_main(void) {
-  entropy_testutils_boot_mode_init();
+  entropy_testutils_auto_mode_init();
 
   test_ecdsa_p256_roundtrip();
 
