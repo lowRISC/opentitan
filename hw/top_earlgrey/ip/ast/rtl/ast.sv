@@ -415,6 +415,8 @@ usb_clk u_usb_clk (
   .clk_src_usb_en_i ( clk_usb_en ),
   .usb_ref_val_i ( usb_ref_val ),
   .usb_ref_pulse_i ( usb_ref_pulse ),
+  .clk_ast_usb_i ( clk_ast_usb_i ),
+  .rst_ast_usb_ni ( rst_ast_usb_ni ),
   .scan_mode_i ( scan_mode ),
   .usb_osc_cal_i ( usb_osc_cal ),
 `ifdef AST_BYPASS_CLK
