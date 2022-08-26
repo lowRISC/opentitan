@@ -450,8 +450,7 @@ module otbn
      imem_rdata_bus_raw[31:0]};
 
   `ASSERT(ImemRDataBusDisabledWhenCoreAccess_A, imem_access_core |-> !imem_rdata_bus_en_q)
-  `ASSERT(ImemRDataBusEnabledWhenNoCoreAccess_A,
-    !imem_access_core && ~locking && !imem_dummy_response_q |-> imem_rdata_bus_en_q)
+  `ASSERT(ImemRDataBusEnabledWhenIdle_A, status_q == StatusIdle |-> imem_rdata_bus_en_q)
   `ASSERT(ImemRDataBusDisabledWhenLocked_A, locking |=> !imem_rdata_bus_en_q)
   `ASSERT(ImemRDataBusReadAsZeroWhenLocked_A,
     imem_rvalid_bus & locking |-> imem_rdata_bus_raw == '0)
@@ -685,8 +684,7 @@ module otbn
   end
 
   `ASSERT(DmemRDataBusDisabledWhenCoreAccess_A, dmem_access_core |-> !dmem_rdata_bus_en_q)
-  `ASSERT(DmemRDataBusEnabledWhenNoCoreAccess_A,
-    !dmem_access_core && ~locking && !dmem_dummy_response_q |-> dmem_rdata_bus_en_q)
+  `ASSERT(DmemRDataBusEnabledWhenIdle_A, status_q == StatusIdle |-> dmem_rdata_bus_en_q)
   `ASSERT(DmemRDataBusDisabledWhenLocked_A, locking |=> !dmem_rdata_bus_en_q)
   `ASSERT(DmemRDataBusReadAsZeroWhenLocked_A,
     dmem_rvalid_bus & locking |-> dmem_rdata_bus_raw == '0)
