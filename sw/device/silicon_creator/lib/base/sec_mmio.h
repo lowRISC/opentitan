@@ -50,11 +50,8 @@ extern "C" {
 enum {
   /**
    * Number of registers stored in the sec_mmio context.
-   *
-   * This value must be less than the `kSecMmioRndStep` in sec_mmio.c.
    */
-  // TODO(#6609): Update size of expectations table.
-  kSecMmioRegFileSize = 200,
+  kSecMmioRegFileSize = 1000,
 };
 
 /**
@@ -102,12 +99,12 @@ typedef struct sec_mmio_ctx {
  * to both boot stages.
  */
 OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, values, 0);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, addrs, 800);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, last_index, 1600);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, write_count, 1604);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, expected_write_count, 1608);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, check_count, 1612);
-OT_ASSERT_SIZE(sec_mmio_ctx_t, 1616);  // Checked by linker script.
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, addrs, 4000);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, last_index, 8000);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, write_count, 8004);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, expected_write_count, 8008);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, check_count, 8012);
+OT_ASSERT_SIZE(sec_mmio_ctx_t, 8016);  // Checked by linker script.
 
 // The sec_mmio_ctx is referenced here to be able to use it inside the
 // `SEC_MMIO_WRITE_INCREMENT()` macro.
