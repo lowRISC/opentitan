@@ -687,7 +687,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:otbn_ecdsa_op_irq_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=22_000_000"]
+      run_opts: ["+sw_test_timeout_ns=28_000_000", "+rng_srate_value=30"]
       run_timeout_mins: 300
     }
     {
@@ -695,7 +695,7 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:otbn_ecdsa_op_irq_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=29_000_000", "+en_jitter=1"]
+      run_opts: ["+sw_test_timeout_ns=33_000_000", "+rng_srate_value=30", "+en_jitter=1"]
       run_timeout_mins: 300
     }
     {
