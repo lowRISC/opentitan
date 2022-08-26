@@ -70,7 +70,7 @@ logic [12-1:0] dv_srate_value;
 logic [12-1:0] rng_srate_value_min = 12'd32;
 logic [12-1:0] rng_srate_value_max = 12'd128;
 
-initial begin
+initial begin : rng_plusargs
   void'($value$plusargs("rng_srate_value_min=%0d", rng_srate_value_min));
   void'($value$plusargs("rng_srate_value_max=%0d", rng_srate_value_max));
   `ASSERT_I(DvRngSrateMinCheck, rng_srate_value_min inside {[5:500]})
