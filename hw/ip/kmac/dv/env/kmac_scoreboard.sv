@@ -99,8 +99,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   // key length enum
   key_len_e key_len;
 
-  keymgr_pkg::hw_key_req_t sideload_key;
-
   bit [keymgr_pkg::KmacDataIfWidth-1:0]   kmac_app_block_data;
   bit [keymgr_pkg::KmacDataIfWidth/8-1:0] kmac_app_block_strb;
   int kmac_app_block_strb_size = 0;
@@ -110,7 +108,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   //
   // max key size is 512-bits
   bit [KMAC_NUM_SHARES-1:0][KMAC_NUM_KEYS_PER_SHARE-1:0][31:0] keys;
-  bit [KMAC_NUM_SHARES-1:0][KMAC_NUM_KEYS_PER_SHARE-1:0][31:0] keymgr_keys;
 
   // prefix words
   bit [31:0] prefix[KMAC_NUM_PREFIX_WORDS];
@@ -245,7 +242,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   endtask
 
   // This task will check for any sideload keys that have been provided
+  // TODO: use this for error case instead
   virtual task process_sideload_key();
+  /*
     @(negedge cfg.under_reset);
     forever begin
       wait(!cfg.under_reset);
@@ -274,7 +273,27 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           wait(cfg.under_reset);
       )
     end
+    */
   endtask
+
+  // Get sideload keys, pack and return the keys.
+  virtual function bit [KMAC_NUM_SHARES-1:0][KMAC_NUM_KEYS_PER_SHARE-1:0][31:0] get_keymgr_keys();
+    bit [KMAC_NUM_SHARES-1:0][KMAC_NUM_KEYS_PER_SHARE-1:0][31:0] keymgr_keys;
+    keymgr_pkg::hw_key_req_t sideload_key;
+
+    if (cfg.keymgr_sideload_agent_cfg.vif.sideload_key.valid) begin
+      sideload_key = cfg.keymgr_sideload_agent_cfg.vif.sideload_key;
+      `uvm_info(`gfn, $sformatf("get valid sideload_key: %0p", sideload_key), UVM_HIGH)
+      for (int i = 0; i < keymgr_pkg::KeyWidth / 32; i++) begin
+        keymgr_keys[0][i] = sideload_key.key[0][i*32 +: 32];
+        keymgr_keys[1][i] = sideload_key.key[1][i*32 +: 32];
+      end
+      return keymgr_keys;
+    end else begin
+      `uvm_error(`gfn, "Invalid sideload key")
+      return 0;
+    end
+  endfunction
 
   // This task checks for the start of a KMAC_APP operation and updates scoreboard state
   // accordingly.
@@ -1185,8 +1204,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     err_st = ErrStIdle;
 
     keys          = '0;
-    keymgr_keys   = '0;
-    sideload_key  = '0;
     prefix        = '{default:0};
     digest_share0 = {};
     digest_share1 = {};
@@ -1376,7 +1393,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         if (kmac_en) begin
           // Calculate the unmasked key
           exp_keys = (sideload_en || (in_kmac_app && app_mode == AppKeymgr)) ?
-                     keymgr_keys : keys;
+                      get_keymgr_keys : keys;
           for (int i = 0; i < key_word_len; i++) begin
             if (cfg.enable_masking) begin
               unmasked_key.push_back(exp_keys[0][i] ^ exp_keys[1][i]);
