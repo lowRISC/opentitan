@@ -8,6 +8,7 @@ package ast_reg_pkg;
 
   // Param list
   parameter int NumRegsB = 5;
+  parameter int NumUsbBeaconPulses = 8;
 
   // Address widths within the block
   parameter int BlockAw = 10;

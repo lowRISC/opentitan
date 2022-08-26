@@ -22,10 +22,16 @@
   no_auto_alert_regs: "True",
   param_list: [
     { name:    "NumRegsB",
+      desc: "Number of registers in the Array-B",
       type:    "int",
       default: "5",
-      desc: "Number of registers in the Array-B",
       local:   "true",
+    },
+    { name: "NumUsbBeaconPulses",
+      desc: "Number of USB valid beacon pulses for clock to re-calibrate",
+      type: "int",
+      default: "8",
+      local: "true"
     },
   ],
   regwidth: "32",
