@@ -1,0 +1,29 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  name: "rom_manual"
+
+  testpoints: [
+    {
+      name: rom_manual_spi_device_constants
+      desc: '''Verify that spi_device constants in `spi_device.h` are up to date.
+
+            Certain spi_device hardware constants are currently hard-coded in `spi_device.h` since
+            they are not auto-generated yet. See #11740 for details.
+
+            - Verify that the following constants defined in `spi_device.h` are up to date:
+              - `kSpiDeviceSfdpAreaNumBytes`
+              - `kSpiDeviceSfdpAreaOffset`
+              - `kSpiDevicePayloadAreaOffset`
+              - `kSpiDevicePayloadAreaNumBytes`
+              - `kSpiDevicePayloadAreaNumWords`
+              - `kSpiDeviceWelBit`
+            '''
+      tags: ["manual"]
+      stage: V2
+      tests: []
+    }
+  ]
+}
