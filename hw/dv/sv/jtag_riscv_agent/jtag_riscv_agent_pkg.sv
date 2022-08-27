@@ -128,8 +128,8 @@ package jtag_riscv_agent_pkg;
             end
           end
           begin
-            wait_timeout(timeout_ns, msg_id, $sformatf("timeout (addr=0x%0h) == 0x%0h",
-                csr_addr, exp_data));
+            `DV_WAIT_TIMEOUT(timeout_ns, msg_id, $sformatf("timeout (addr=0x%0h) == 0x%0h",
+                csr_addr, exp_data))
           end
         join_any
         disable fork;

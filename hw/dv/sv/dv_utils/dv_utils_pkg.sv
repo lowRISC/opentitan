@@ -138,16 +138,6 @@ package dv_utils_pkg;
     return report_server.get_severity_count(UVM_FATAL) > 0;
   endfunction
 
-  // task that waits for the specfied timeout
-  task automatic wait_timeout(input uint    timeout_ns,
-                              input string  error_msg_id  = msg_id,
-                              input string  error_msg     = "timeout occurred!",
-                              input bit     report_fatal  = 1);
-    #(timeout_ns * 1ns);
-    if (report_fatal) `uvm_fatal(error_msg_id, error_msg)
-    else              `uvm_error(error_msg_id, error_msg)
-  endtask : wait_timeout
-
   // get masked data based on provided byte mask; if csr reg handle is provided (optional) then
   // masked bytes from csr's mirrored value are returned, else masked bytes are 0's
   function automatic bit [bus_params_pkg::BUS_DW-1:0]
