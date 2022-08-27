@@ -62,6 +62,17 @@ dif_result_t dif_aon_timer_wakeup_stop(const dif_aon_timer_t *aon);
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aon_timer_wakeup_restart(const dif_aon_timer_t *aon);
 
+/**
+ * Checks whether this Always-On Timer (wake-up timer) is enabled.
+ *
+ * @param aon An Always-On Timer handle.
+ * @param[out] is_enabled Out-param for the enabled state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_wakeup_is_enabled(const dif_aon_timer_t *aon,
+                                             bool *is_enabled);
+
 /** Clear Always-On Timer wakeup cause
  *
  * Clears WKUP_CAUSE register
@@ -122,6 +133,17 @@ dif_result_t dif_aon_timer_watchdog_stop(const dif_aon_timer_t *aon);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aon_timer_watchdog_restart(const dif_aon_timer_t *aon);
+
+/**
+ * Checks whether this Always-On Timer (watchdog timer) is enabled.
+ *
+ * @param aon An Always-On Timer handle.
+ * @param[out] is_enabled Out-param for the enabled state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aon_timer_watchdog_is_enabled(const dif_aon_timer_t *aon,
+                                               bool *is_enabled);
 
 /** Retrieves Always-On Timer (watchdog timer) tick count.
  *

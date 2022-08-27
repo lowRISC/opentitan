@@ -100,6 +100,20 @@ dif_result_t dif_aon_timer_wakeup_restart(const dif_aon_timer_t *aon) {
   return kDifOk;
 }
 
+dif_result_t dif_aon_timer_wakeup_is_enabled(const dif_aon_timer_t *aon,
+                                             bool *is_enabled) {
+  if (aon == NULL || is_enabled == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg =
+      mmio_region_read32(aon->base_addr, AON_TIMER_WKUP_CTRL_REG_OFFSET);
+
+  *is_enabled = bitfield_bit32_read(reg, AON_TIMER_WKUP_CTRL_ENABLE_BIT);
+
+  return kDifOk;
+}
+
 dif_result_t dif_aon_timer_clear_wakeup_cause(const dif_aon_timer_t *aon) {
   if (aon == NULL) {
     return kDifBadArg;
@@ -181,6 +195,20 @@ dif_result_t dif_aon_timer_watchdog_restart(const dif_aon_timer_t *aon) {
 
   aon_timer_watchdog_clear_counter(aon);
   aon_timer_watchdog_toggle(aon, true);
+
+  return kDifOk;
+}
+
+dif_result_t dif_aon_timer_watchdog_is_enabled(const dif_aon_timer_t *aon,
+                                               bool *is_enabled) {
+  if (aon == NULL || is_enabled == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg =
+      mmio_region_read32(aon->base_addr, AON_TIMER_WDOG_CTRL_REG_OFFSET);
+
+  *is_enabled = bitfield_bit32_read(reg, AON_TIMER_WDOG_CTRL_ENABLE_BIT);
 
   return kDifOk;
 }
