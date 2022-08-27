@@ -183,9 +183,9 @@ class rv_timer_base_vseq extends cip_base_vseq #(
             if ((read_data == exp_data) | (reset_asserted == 1)) break;
           end
           begin
-            wait_timeout(timeout_ns, "intr_state_spinwait",
-                         $sformatf("timeout %0s (addr=0x%0h) == 0x%0h",
-                         intr_state_rg.get_full_name(), intr_state_rg.get_address(), exp_data));
+            `DV_WAIT_TIMEOUT(timeout_ns, "intr_state_spinwait",
+                             $sformatf("timeout %0s (addr=0x%0h) == 0x%0h",
+                             intr_state_rg.get_full_name(), intr_state_rg.get_address(), exp_data))
           end
         join_any
         disable fork;
