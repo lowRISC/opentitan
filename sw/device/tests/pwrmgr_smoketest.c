@@ -35,10 +35,13 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
 
   // Initialize rstmgr since this will check some registers.
-
   dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
+
+  dif_aon_timer_t aon_timer;
+  CHECK_DIF_OK(dif_aon_timer_init(
+      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
 
   // Assuming the chip hasn't slept yet, wakeup reason should be empty.
 
@@ -52,10 +55,6 @@ bool test_main(void) {
     // Prepare rstmgr for a reset.
     rstmgr_testutils_pre_reset(&rstmgr);
 
-    dif_aon_timer_t aon_timer;
-    CHECK_DIF_OK(dif_aon_timer_init(
-        mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR),
-        &aon_timer));
     aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold);
     // Deep sleep.
     pwrmgr_testutils_enable_low_power(&pwrmgr,
@@ -74,6 +73,10 @@ bool test_main(void) {
     LOG_INFO("Aon timer wakeup detected");
     rstmgr_testutils_post_reset(&rstmgr, kDifRstmgrResetInfoLowPowerExit, 0, 0,
                                 0, 0);
+
+    // Turn off the AON timer hardware completely before exiting.
+    aon_timer_testutils_shutdown(&aon_timer);
+
     return true;
   } else {
     dif_pwrmgr_wakeup_reason_t wakeup_reason;
