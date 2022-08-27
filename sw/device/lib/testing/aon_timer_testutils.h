@@ -40,4 +40,14 @@ void aon_timer_testutils_watchdog_config(const dif_aon_timer_t *aon_timer,
                                          uint32_t bite_cycles,
                                          bool pause_in_sleep);
 
+/**
+ * Turn off the AON timer peripheral.
+ *
+ * At the end of the simulation, stop the wakeup and watchdog timers so that
+ * the design stops generating events that may affect the simulation from
+ * terminating cleanly. The wakeup and watchdog timer controls are read back
+ * to ensure the written value successfully crossed the AON clock domain.
+ */
+void aon_timer_testutils_shutdown(const dif_aon_timer_t *aon_timer);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AON_TIMER_TESTUTILS_H_
