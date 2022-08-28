@@ -1386,7 +1386,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   begin
                     bit rng_bit_enable = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
                     int rng_shutdown_dly = base_shutdown_dly;
-                    rng_shutdown_dly += rng_bit_enable ? 1 : 0;
                     cfg.clk_rst_vif.wait_clks(rng_shutdown_dly);
                     dut_pipeline_enabled = 0;
                   end
@@ -1875,35 +1874,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         val    = rng_item.h_data;
       end
     end : rng_loop
-    if (bit_sel_enable) begin
-      // Timing Detail:
-      // In bit select mode, the DUT won't process the data until an extra RNG sample is accepted.
-      // If a disable event happens before the following sample is received, everything is cleared.
-      // To mimic this behavior, this task maintains control until at least one more sample is
-      // present in the rng_fifo.
-      if (dut_pipeline_enabled) begin
-        fork : isolation_fork
-          begin
-            fork
-              // Exploit the fact that peek is a blocking task to check the rng_fifo depth without
-              // modifying it.
-              // Note that the alternate approach: wait(!rng_fifo.is_empty()) does not work with VCS
-              rng_fifo.peek(rng_item);
-              begin
-                wait(!dut_pipeline_enabled);
-                `uvm_info(`gfn, "Disable detected (Waiting B)", UVM_MEDIUM);
-              end
-            join_any
-            disable fork;
-          end
-        join : isolation_fork
-      end else begin
-        `uvm_info(`gfn, "Disable detected (Pre bit_sel_enable wait)", UVM_FULL);
-      end
-      if (!dut_pipeline_enabled && rng_fifo.is_empty()) begin
-        disable_detected = 1;
-      end
-    end
   endtask
 
   task collect_entropy();
