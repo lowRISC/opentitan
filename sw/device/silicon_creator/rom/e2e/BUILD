@@ -26,12 +26,8 @@ opentitan_functest(
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
     verilator = verilator_params(
+        timeout = "eternal",
         rom = "//sw/device/silicon_creator/rom",
-        # Note: Leaving as broken since this test takes a long time and
-        # we don't really need it as long as the CI runs the FPGA version.
-        tags = [
-            "broken",
-        ],
     ),
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
