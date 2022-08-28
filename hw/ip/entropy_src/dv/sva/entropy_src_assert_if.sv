@@ -23,6 +23,8 @@
     tb.dut.u_entropy_src_core.u_prim_mubi4_sync_es_type
 `define PATH9 \
     tb.dut.u_entropy_src_core.u_prim_mubi4_sync_es_enable
+`define PATH10 \
+    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_es_prebitsel_enable
 `define CORE \
     tb.dut.u_entropy_src_core
 `define SHA3 \
@@ -73,6 +75,10 @@ interface entropy_src_assert_if
     $assertoff(0, `PATH9.PrimMubi4SyncCheckTransients_A);
     $assertoff(0, `PATH9.PrimMubi4SyncCheckTransients0_A);
     $assertoff(0, `PATH9.PrimMubi4SyncCheckTransients1_A);
+
+    $assertoff(0, `PATH10.PrimMubi4SyncCheckTransients_A);
+    $assertoff(0, `PATH10.PrimMubi4SyncCheckTransients0_A);
+    $assertoff(0, `PATH10.PrimMubi4SyncCheckTransients1_A);
   endtask // assert_off_alert
 
   task automatic assert_on_alert ();
@@ -111,6 +117,10 @@ interface entropy_src_assert_if
     $asserton(0, `PATH9.PrimMubi4SyncCheckTransients_A);
     $asserton(0, `PATH9.PrimMubi4SyncCheckTransients0_A);
     $asserton(0, `PATH9.PrimMubi4SyncCheckTransients1_A);
+
+    $asserton(0, `PATH10.PrimMubi4SyncCheckTransients_A);
+    $asserton(0, `PATH10.PrimMubi4SyncCheckTransients0_A);
+    $asserton(0, `PATH10.PrimMubi4SyncCheckTransients1_A);
   endtask // assert_on_alert
 
   task automatic assert_off_err ();
