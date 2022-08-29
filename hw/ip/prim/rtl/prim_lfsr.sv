@@ -322,7 +322,7 @@ module prim_lfsr #(
     logic [LfsrDw-1:0] DefaultSeedLocal;
     logic prim_lfsr_use_default_seed;
 
-    initial begin
+    initial begin : p_randomize_default_seed
       if (!$value$plusargs("prim_lfsr_use_default_seed=%0d", prim_lfsr_use_default_seed)) begin
         // 30% of the time, use the DefaultSeed parameter; 70% of the time, randomize it.
         `ASSERT_I(UseDefaultSeedRandomizeCheck_A, std::randomize(prim_lfsr_use_default_seed) with {

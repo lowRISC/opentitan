@@ -87,7 +87,7 @@ module prim_double_lfsr #(
 `ifndef SYNTHESIS
 `ifndef VERILATOR
   // Ensure both LFSRs start off with the same default seed. if randomized in simulations.
-  initial begin
+  initial begin : p_sync_lfsr_default_seed
     wait (!$isunknown(gen_double_lfsr[0].u_prim_lfsr.DefaultSeedLocal));
     wait (!$isunknown(gen_double_lfsr[1].u_prim_lfsr.DefaultSeedLocal));
     gen_double_lfsr[1].u_prim_lfsr.DefaultSeedLocal =
