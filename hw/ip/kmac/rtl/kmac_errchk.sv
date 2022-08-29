@@ -322,7 +322,17 @@ module kmac_errchk
   ///////////////////
   // State Machine //
   ///////////////////
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, st_d, st, st_e, StIdle)
+  st_e st_gated_d;
+
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, st_gated_d, st, st_e, StIdle)
+
+  // ICEBOX(#14631): Move block_swcmd to PRIM_FLOP_SPARSE_FSM()
+  //
+  // It would be better to place this condition (block_swcmd) in `always_ff`
+  // block to clearly indicate the clock gating condition. However, the
+  // statemachine uses the sparse encoding scheme and macro. It prevents any
+  // latch enable signals.
+  assign st_gated_d = (block_swcmd) ? st : st_d ;
 
   always_comb begin : next_state
     st_d = st;
