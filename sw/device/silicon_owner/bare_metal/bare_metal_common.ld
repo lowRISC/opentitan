@@ -54,6 +54,7 @@ _manifest_entry_point = _start_boot - _slot_start_address;
 SECTIONS {
   .manifest _slot_start_address : {
     KEEP(*(.manifest))
+    . = ALIGN(256);
   } > owner_flash
 
   /**
