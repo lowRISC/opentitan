@@ -330,6 +330,10 @@ module spi_readcmd
   // Events: watermark, flip
   logic read_watermark, read_flip;
 
+  // SPI Mode
+  logic  spid_in_flashmode;
+  assign spid_in_flashmode = (spi_mode_i == FlashMode);
+
   //////////////
   // Datapath //
   //////////////
@@ -360,10 +364,12 @@ module spi_readcmd
     if (!sys_rst_ni) begin
       readbuf_addr <= '0;
     end else if ((main_st == MainOutput) && (sel_dp_i == DpReadCmd)
-      && addr_latch_en && !(mailbox_en_i && addr_q_in_mailbox)) begin
+      && addr_latch_en && !(mailbox_en_i && addr_q_in_mailbox)
+      && spid_in_flashmode) begin
       readbuf_addr <= addr_q;
     end
   end
+
   assign readbuf_address_o = readbuf_addr;
 
   always_comb begin
