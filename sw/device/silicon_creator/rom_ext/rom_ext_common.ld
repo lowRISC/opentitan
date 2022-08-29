@@ -61,6 +61,7 @@ _manifest_entry_point = _rom_ext_start_boot - _rom_ext_start_address;
 SECTIONS {
   .manifest _rom_ext_start_address : {
     KEEP(*(.manifest))
+    . = ALIGN(256);
   } > rom_ext_flash
 
   /**

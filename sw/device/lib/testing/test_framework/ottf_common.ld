@@ -63,6 +63,7 @@ _manifest_entry_point = _ottf_start - _ottf_start_address;
 SECTIONS {
   .manifest _ottf_start_address : {
     KEEP(*(.manifest))
+    . = ALIGN(256);
   } > ottf_flash
 
   /**
