@@ -295,7 +295,15 @@ module otbn_start_stop_control
     end
 
     // If the MuBi signals take on invalid values, something bad is happening. Put them back to
-    // a safe value and signal an error.
+    // a safe value (if possible) and signal an error.
+    if (mubi4_test_invalid(escalate_en_i)) begin
+      mubi_err_d = 1'b1;
+      state_d = OtbnStartStopStateLocked;
+    end
+    if (mubi4_test_invalid(rma_req_i)) begin
+      mubi_err_d = 1'b1;
+      state_d = OtbnStartStopStateLocked;
+    end
     if (mubi4_test_invalid(wipe_after_urnd_refresh_q)) begin
       wipe_after_urnd_refresh_d = MuBi4False;
       mubi_err_d = 1'b1;

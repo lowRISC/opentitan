@@ -525,6 +525,8 @@ module otbn
   logic unused_dmem_addr_core_wordbits;
   assign unused_dmem_addr_core_wordbits = ^dmem_addr_core[DmemAddrWidth-DmemIndexWidth-1:0];
 
+  logic mubi_err;
+
   // SEC_CM: MEM.SCRAMBLE
   prim_ram_1p_scr #(
     .Width             (ExtWLEN),
@@ -1140,7 +1142,7 @@ module otbn
   assign non_core_err_bits = '{
     lifecycle_escalation: lc_escalate_en[0] != lc_ctrl_pkg::Off,
     illegal_bus_access:   illegal_bus_access_q,
-    bad_internal_state:   otbn_scramble_state_error | missed_gnt_error_q,
+    bad_internal_state:   otbn_scramble_state_error | missed_gnt_error_q | mubi_err,
     bus_intg_violation:   bus_intg_violation
   };
 
@@ -1174,13 +1176,22 @@ module otbn
     bad_data_addr:        core_err_bits.bad_data_addr
   };
 
+  // Internally, OTBN uses MUBI types.
+  mubi4_t mubi_escalate_en;
+  assign mubi_escalate_en = lc_ctrl_pkg::lc_to_mubi4(lc_escalate_en[1]);
+
   // An error signal going down into the core to show that it should locally escalate
   assign core_escalate_en = mubi4_or_hi(
       mubi4_bool_to_mubi(|{non_core_err_bits.illegal_bus_access,
                            non_core_err_bits.bad_internal_state,
                            non_core_err_bits.bus_intg_violation}),
-      lc_ctrl_pkg::lc_to_mubi4(lc_escalate_en[1])
+      mubi_escalate_en
   );
+
+  // Signal error if MuBi input signals take on invalid values as this means something bad is
+  // happening. The explicit error detection is required as the mubi4_or_hi operations above
+  // might mask invalid values depending on other input operands.
+  assign mubi_err = mubi4_test_invalid(mubi_escalate_en);
 
   // The core can never signal a write to IMEM
   assign imem_write_core = 1'b0;

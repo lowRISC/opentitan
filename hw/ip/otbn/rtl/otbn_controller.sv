@@ -190,6 +190,7 @@ module otbn_controller
   logic executing;
   logic state_error;
   logic spurious_secure_wipe_ack_q, spurious_secure_wipe_ack_d;
+  logic mubi_err_q, mubi_err_d;
 
   logic                     insn_fetch_req_valid_raw;
   logic [ImemAddrWidth-1:0] insn_fetch_req_addr_last;
@@ -528,13 +529,29 @@ module otbn_controller
     end
   end
 
+  // Signal error if MuBi input signals take on invalid values as this means something bad is
+  // happening. Register the error signal to break circular paths (instruction fetch errors factor
+  // into fatal_escalate_en_i, RND errors factor into recov_escalate_en_i).
+  assign mubi_err_d = |{mubi4_test_invalid(fatal_escalate_en_i),
+                        mubi4_test_invalid(recov_escalate_en_i),
+                        mubi4_test_invalid(rma_req_i),
+                        mubi_err_q};
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      mubi_err_q <= 1'b0;
+    end else begin
+      mubi_err_q <= mubi_err_d;
+    end
+  end
+
   // Instruction is illegal based on the static properties of the instruction bits (illegal encoding
   // or illegal WSR/CSR referenced).
   assign illegal_insn_static = insn_illegal_i | ispr_err;
 
   assign fatal_software_err       = software_err & software_errs_fatal_i;
   assign bad_internal_state_err   = |{state_error, loop_hw_err, rf_base_call_stack_hw_err_i,
-                                      rf_bignum_spurious_we_err, spurious_secure_wipe_ack_q};
+                                      rf_bignum_spurious_we_err, spurious_secure_wipe_ack_q,
+                                      mubi_err_q};
   assign reg_intg_violation_err   = rf_bignum_intg_err | ispr_rdata_intg_err;
   assign key_invalid_err          = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
   assign illegal_insn_err         = illegal_insn_static | rf_indirect_err;
