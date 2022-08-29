@@ -442,12 +442,61 @@ jobs:
     displayName: Upload artifacts for CW310
     condition: failed()
 
+- job: chip_earlgrey_cw310_hyperdebug
+  displayName: CW310's Earl Grey Bitstream for Hyperdebug
+  # Build CW310-hyperdebug variant of the Earl Grey toplevel design using Vivado
+  dependsOn:
+    - lint
+    # The bootrom is built into the FPGA image at synthesis time.
+    - cw310_sw_build
+  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'master'))
+  pool: ci-public
+  timeoutInMinutes: 180
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - bash: |
+      set -e
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      . util/build_consts.sh
+      mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
+      mkdir -p $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
+      ci/bazelisk.sh build //hw/bitstream/vivado:fpga_cw310_hyperdebug
+      cp -r -t $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
+        $($REPO_TOP/bazelisk.sh cquery --output=starlark --starlark:expr "' '.join([x.path for x in target.files.to_list()])" //hw/bitstream/vivado:fpga_cw310_hyperdebug)
+      cp -t $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
+        $($REPO_TOP/bazelisk.sh cquery --output=starlark --starlark:expr "' '.join([x.path for x in target.files.to_list()])" //hw/bitstream/vivado:hyperdebug)
+    displayName: Build bitstream with Vivado
+  - bash: |
+      . util/build_consts.sh
+      echo Synthesis log
+      cat $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/synth_1/runme.log || true
+
+      echo Implementation log
+      cat $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/impl_1/runme.log || true
+    displayName: Display synthesis & implementation logs
+  - template: ci/upload-artifacts-template.yml
+    parameters:
+      includePatterns:
+        - "/hw/***"
+  - publish: "$(Build.ArtifactStagingDirectory)"
+    artifact: chip_earlgrey_cw310_hyperdebug-build-out
+    displayName: Upload artifacts for CW310
+    condition: failed()
+
 - job: chip_earlgrey_cw310_splice_rom
   displayName: Splice ROM into CW310 bitstream
   dependsOn:
     - chip_earlgrey_cw310
+    - chip_earlgrey_cw310_hyperdebug
     - sw_build
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+  condition: |
+    and
+    (
+      succeeded('chip_earlgrey_cw310'),
+      succeeded('sw_build'),
+      in(dependencies.chip_earlgrey_cw310_hyperdebug.result, 'Succeeded', 'SucceededWithIssues', 'Skipped')
+    )
   pool: ci-public
   timeoutInMinutes: 10
   steps:
@@ -458,6 +507,8 @@ jobs:
       downloadPartialBuildBinFrom:
         - chip_earlgrey_cw310
         - sw_build
+        - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+          - chip_earlgrey_cw310_hyperdebug
   - bash: |
       set -e
       . util/build_consts.sh
@@ -472,6 +523,8 @@ jobs:
       unconditionalIncludePatterns:
         - "/hw/top_earlgrey/rom.mmi"
         - "/hw/top_earlgrey/otp.mmi"
+        - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
+          - "/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/***"
       includePatterns:
         - "/hw/***"
   - ${{ if eq(variables['Build.SourceBranchName'], 'master') }}:
@@ -483,6 +536,9 @@ jobs:
           - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
           - "rom.mmi"
           - "otp.mmi"
+          - "chip_earlgrey_cw310_hyperdebug/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"
+          - "chip_earlgrey_cw310_hyperdebug/rom.mmi"
+          - "chip_earlgrey_cw310_hyperdebug/otp.mmi"
         gcpKeyFile: "gcpkey.json"
         bucketURI: "gs://opentitan-bitstreams/master"
   - publish: "$(Build.ArtifactStagingDirectory)"
@@ -523,6 +579,7 @@ jobs:
     - chip_earlgrey_cw310
     - chip_earlgrey_cw310_splice_rom
     - sw_build
+  condition: succeeded( 'chip_earlgrey_cw310', 'chip_earlgrey_cw310_splice_rom', 'sw_build' )
   steps:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
