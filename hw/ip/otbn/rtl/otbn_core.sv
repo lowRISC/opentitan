@@ -906,6 +906,7 @@ module otbn_core
   `ASSERT_KNOWN(EdnRndReqOKnown_A, edn_rnd_req_o)
   `ASSERT_KNOWN(EdnUrndReqOKnown_A, edn_urnd_req_o)
   `ASSERT_KNOWN(InsnCntOKnown_A, insn_cnt_o)
+  `ASSERT_KNOWN(ErrBitsKnown_A, err_bits_o)
 
   // Keep the EDN requests active until they are acknowledged.
   `ASSERT(EdnRndReqStable_A, edn_rnd_req_o & ~edn_rnd_ack_i |=> edn_rnd_req_o)
