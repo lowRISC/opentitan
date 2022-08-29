@@ -3,7 +3,7 @@
       "list": [{
         "name": "rv32imc",
         "image": "ibex-toolchain:v2",
-        "memory" : "1",  
+        "memory" : "1",
         "cmd": "python3 run.py --test riscv_arithmetic_basic_test --simulator dsim --output out --verbose --co",
         "wavesCmd": "python3 run.py --test riscv_arithmetic_basic_test --simulator dsim --output out --verbose --co"
       }]
@@ -36,7 +36,7 @@
       "tests": {
         "resultsDir": "/mux-flow/build/repo/out",
         "builds": ["rv32imc"],
-        "memory": "1",  
+        "memory": "1",
         "listCmd": "<rootDir>/scripts/genMetricsList.py",
         "listFile": "<rootDir>/regression_list.json"
       }

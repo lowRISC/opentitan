@@ -38,7 +38,7 @@ import uvm;
 class riscv_instr_registry: uvm_object
 {
   mixin uvm_object_utils;
-  
+
   // All derived instructions
   string[riscv_instr_name_t]                    instr_registry;
 
@@ -64,7 +64,7 @@ class riscv_instr_registry: uvm_object
   void set_cfg(riscv_instr_gen_config cfg) {
     this.cfg = cfg;
   }
-  
+
   bool register(riscv_instr_name_t instr_name, string qualified_name) {
     uvm_info("riscv_instr", format("Registering %0s", instr_name), UVM_LOW);
     instr_registry[instr_name] = qualified_name;
@@ -192,7 +192,7 @@ class riscv_instr_registry: uvm_object
     return get_rand_instr(null, exclude_instr, include_category, null, null, null);
   }
 
-         
+
   riscv_instr get_rand_instr(riscv_instr_category_t[] include_category,
 			     riscv_instr_group_t[] exclude_group) {
     return get_rand_instr(null, null, include_category, null, null, exclude_group);
@@ -202,7 +202,7 @@ class riscv_instr_registry: uvm_object
     return get_rand_instr(null, null, include_category, null, null, null);
   }
 
-  
+
   riscv_instr get_rand_instr(riscv_instr_name_t[] include_instr) {
     return get_rand_instr(include_instr, null, null, null, null, null);
   }
@@ -258,7 +258,7 @@ class riscv_instr_registry: uvm_object
       import std.algorithm.sorting: sort;
       import std.algorithm.setops: setIntersection, setDifference;
       import std.array: array;
-      
+
       riscv_instr_name_t[] instr_set = instr_names.dup;
       instr_set.sort();
 
@@ -269,7 +269,7 @@ class riscv_instr_registry: uvm_object
 	include_set = include_instr;
 	include_set.sort();
       }
-      
+
       if (allowed_instr.length > 0) {
 	allowed_set = allowed_instr;
 	allowed_set.sort();
@@ -326,5 +326,5 @@ class riscv_instr_registry: uvm_object
     instr.m_cfg = cfg;
     return instr;
   }
-  
+
 }

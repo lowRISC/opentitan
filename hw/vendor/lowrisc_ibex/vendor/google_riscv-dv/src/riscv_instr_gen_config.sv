@@ -167,6 +167,11 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    enable_unaligned_load_store;
   int                    illegal_instr_ratio;
   int                    hint_instr_ratio;
+  // CSR instruction control
+  bit                    gen_all_csrs_by_default = 0; // Generate CSR instructions that use all supported CSRs. Other options below only take effect if this is enabled.
+  bit                    gen_csr_ro_write = 0;        // Generate CSR writes to read-only CSRs
+  privileged_reg_t       add_csr_write[] = {};        // CSRs to add to the set of writeable CSRs
+  privileged_reg_t       remove_csr_write[] = {};     // CSRs to remove from the set of writeable CSRs
   // Number of harts to be simulated, must be <= NUM_HARTS
   int                    num_of_harts = NUM_HARTS;
   // Use SP as stack pointer
@@ -487,6 +492,10 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_int(enable_unaligned_load_store, UVM_DEFAULT)
     `uvm_field_int(illegal_instr_ratio, UVM_DEFAULT)
     `uvm_field_int(hint_instr_ratio, UVM_DEFAULT)
+    `uvm_field_int(gen_all_csrs_by_default, UVM_DEFAULT)
+    `uvm_field_int(gen_csr_ro_write, UVM_DEFAULT)
+    `uvm_field_array_enum(privileged_reg_t, add_csr_write, UVM_DEFAULT)
+    `uvm_field_array_enum(privileged_reg_t, remove_csr_write, UVM_DEFAULT)
     `uvm_field_string(boot_mode_opts, UVM_DEFAULT)
     `uvm_field_int(enable_page_table_exception, UVM_DEFAULT)
     `uvm_field_int(no_directed_instr, UVM_DEFAULT)
@@ -561,6 +570,12 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+no_delegation=", no_delegation);
     get_int_arg_value("+illegal_instr_ratio=", illegal_instr_ratio);
     get_int_arg_value("+hint_instr_ratio=", hint_instr_ratio);
+    get_bool_arg_value("+gen_all_csrs_by_default=", gen_all_csrs_by_default);
+    get_bool_arg_value("+gen_csr_ro_write=", gen_csr_ro_write);
+    cmdline_enum_processor #(privileged_reg_t)::get_array_values("+add_csr_write=",
+                                                              1'b1, add_csr_write);
+    cmdline_enum_processor #(privileged_reg_t)::get_array_values("+remove_csr_write=",
+                                                              1'b1, remove_csr_write);
     get_int_arg_value("+num_of_harts=", num_of_harts);
     get_bool_arg_value("+enable_unaligned_load_store=", enable_unaligned_load_store);
     get_bool_arg_value("+force_m_delegation=", force_m_delegation);
@@ -590,7 +605,7 @@ class riscv_instr_gen_config extends uvm_object;
     get_bool_arg_value("+enable_zbc_extension=", enable_zbc_extension);
     get_bool_arg_value("+enable_zbs_extension=", enable_zbs_extension);
     cmdline_enum_processor #(b_ext_group_t)::get_array_values("+enable_bitmanip_groups=",
-                                                              enable_bitmanip_groups);
+                                                              1'b0, enable_bitmanip_groups);
     if(inst.get_arg_value("+boot_mode=", boot_mode_opts)) begin
       `uvm_info(get_full_name(), $sformatf(
                 "Got boot mode option - %0s", boot_mode_opts), UVM_LOW)
@@ -608,7 +623,7 @@ class riscv_instr_gen_config extends uvm_object;
                    riscv_instr_pkg::supported_privileged_mode.size()), UVM_LOW)
     void'(inst.get_arg_value("+asm_test_suffix=", asm_test_suffix));
     // Directed march list from the runtime options, ex. RV32I, RV32M etc.
-    cmdline_enum_processor #(riscv_instr_group_t)::get_array_values("+march=", march_isa);
+    cmdline_enum_processor #(riscv_instr_group_t)::get_array_values("+march=", 1'b0, march_isa);
     if (march_isa.size != 0) riscv_instr_pkg::supported_isa = march_isa;
 
     if (!(RV32C inside {supported_isa})) begin
@@ -638,7 +653,7 @@ class riscv_instr_gen_config extends uvm_object;
     vector_cfg = riscv_vector_cfg::type_id::create("vector_cfg");
     pmp_cfg = riscv_pmp_cfg::type_id::create("pmp_cfg");
     pmp_cfg.rand_mode(pmp_cfg.pmp_randomize);
-    pmp_cfg.initialize(require_signature_addr);
+    pmp_cfg.initialize(signature_addr);
     setup_instr_distribution();
     get_invalid_priv_lvl_csr();
   endfunction

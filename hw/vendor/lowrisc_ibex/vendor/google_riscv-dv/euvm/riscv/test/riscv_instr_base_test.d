@@ -97,7 +97,7 @@ class riscv_instr_base_test: uvm_test
   }
 
   void apply_directed_instr() { }
-  
+
 
   override void run_phase(uvm_phase phase) {
     int fd;

@@ -50,7 +50,7 @@ enum core_status_t: byte {
   LOAD_FAULT_EXCEPTION,
   STORE_FAULT_EXCEPTION,
   EBREAK_EXCEPTION
-} 
+}
 
 enum test_result_t: bool {
   TEST_PASS,

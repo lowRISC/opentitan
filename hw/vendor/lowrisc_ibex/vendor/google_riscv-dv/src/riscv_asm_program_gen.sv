@@ -62,6 +62,11 @@ class riscv_asm_program_gen extends uvm_object;
 
   // This is the main function to generate all sections of the program.
   virtual function void gen_program();
+    // Prevent generation of PMP exception handling code where PMP is not supported
+    if (!support_pmp) begin
+      cfg.pmp_cfg.enable_pmp_exception_handler = 1'b0;
+    end
+
     instr_stream.delete();
     // Generate program header
     gen_program_header();

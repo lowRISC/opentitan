@@ -8,27 +8,6 @@ class core_ibex_csr_test extends core_ibex_base_test;
   `uvm_component_utils(core_ibex_csr_test)
   `uvm_component_new
 
-  virtual task wait_for_test_done();
-    bit result;
-    fork
-    begin
-      wait_for_mem_txn(cfg.signature_addr, TEST_RESULT);
-      result = signature_data_q.pop_front();
-      if (result == TEST_PASS) begin
-        `uvm_info(`gfn, "CSR test completed successfully!", UVM_LOW)
-      end else if (result == TEST_FAIL) begin
-        `uvm_error(`gfn, "CSR TEST_FAILED!")
-      end else begin
-        `uvm_fatal(`gfn, "CSR test values are not configured properly")
-      end
-    end
-    begin
-      clk_vif.wait_clks(timeout_in_cycles);
-      `uvm_fatal(`gfn, "TEST TIMEOUT!!")
-    end
-    join_any
-  endtask
-
 endclass
 
 // Reset test
@@ -459,7 +438,7 @@ class core_ibex_directed_test extends core_ibex_debug_intr_basic_test;
           fork
             check_stimulus();
           join_none
-          wait (dut_vif.dut_cb.ecall === 1'b1);
+          wait (test_done === 1'b1);
           disable fork;
           if (cur_run_phase.get_objection_count(this) > 1) begin
             cur_run_phase.drop_objection(this);
@@ -1447,7 +1426,7 @@ class core_ibex_assorted_traps_interrupts_debug_test extends core_ibex_directed_
      irq_new_seq_h.stimulus_delay_cycles_max = 2000;
      irq_new_seq_h.zero_delay_pct = 10;
      debug_new_seq_h.iteration_modes = MultipleRuns;
-     debug_new_seq_h.iteration_cnt_max = 10; // Limit this or the test will never end. (end = ecall)
+     debug_new_seq_h.iteration_cnt_max = 10; // Limit this or the test will never end.
      debug_new_seq_h.pulse_length_cycles_min = 3000;   // Length of debug request pulse
      debug_new_seq_h.pulse_length_cycles_max = 5000;
      debug_new_seq_h.stimulus_delay_cycles_min = 5000; // Interval between requests

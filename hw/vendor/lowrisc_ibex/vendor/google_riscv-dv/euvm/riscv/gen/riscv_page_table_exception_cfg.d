@@ -38,7 +38,7 @@ class riscv_page_table_exception_cfg : uvm_object
   @rand bool allow_privileged_mode_exception;
   @rand bool allow_zero_access_bit_exception;
   @rand bool allow_zero_dirty_bit_exception;
-  
+
   // Exception ratio control
   uint page_access_fault_ratio     = 10;
   uint misaligned_superpage_ratio  = 10;

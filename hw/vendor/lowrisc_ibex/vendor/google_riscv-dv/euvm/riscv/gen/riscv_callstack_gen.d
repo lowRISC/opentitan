@@ -55,7 +55,7 @@ class riscv_program: uvm_object
   } legal_c;
 
   this(string name = "") {
-    super(name);  
+    super(name);
   }
 
   override string convert2string() {
@@ -114,7 +114,7 @@ class riscv_callstack_gen : uvm_object
   //`endif
 
   this(string name = "") {
-    super(name);  
+    super(name);
   }
 
   // Init all program instances before randomization
@@ -169,7 +169,7 @@ class riscv_callstack_gen : uvm_object
 	  spid = next_program_list[nextid];
 	}
       }
-      
+
 
       sub_program_id_pool.shuffle();
       sub_program_cnt.length = program_list.length;

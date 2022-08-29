@@ -677,7 +677,7 @@ enum riscv_fpr_t: ubyte { 	// 5'b
 enum riscv_vreg_t: ubyte {
   V0, V1, V2, V3, V4, V5, V6, V7, V8, V9, V10, V11, V12, V13, V14, V15,
   V16, V17, V18, V19, V20, V21, V22, V23, V24, V25, V26, V27, V28, V29, V30, V31
-} 
+}
 
 
 enum riscv_instr_format_t: ubyte {	// 6'b
@@ -727,7 +727,7 @@ enum va_variant_t: ubyte {
   VFM,
   VS,
   VM
-} 
+}
 
 enum riscv_instr_category_t: ubyte {	// 6'b
   LOAD = 0,
@@ -1175,7 +1175,7 @@ enum exception_cause_t: ubyte {
   INSTRUCTION_PAGE_FAULT         = 0xC,
   LOAD_PAGE_FAULT                = 0xD,
   STORE_AMO_PAGE_FAULT           = 0xF
-} 
+}
 
 enum  misa_ext_t: int {
   MISA_EXT_A = 0,
@@ -1221,7 +1221,7 @@ enum pmp_addr_mode_t: ubyte {
   TOR   = 0b01,
   NA4   = 0b10,
   NAPOT = 0b11
-} 
+}
 
 //   // PMP configuration register layout
 //   // This configuration struct includes the pmp address for simplicity
@@ -1254,7 +1254,7 @@ struct pmp_cfg_reg_t {
   // The offset from the address of <main> - automatically populated by the
   // PMP generation routine.
   @rand ubvec!XLEN    offset;
-} 
+}
 
 
 string hart_prefix(int hart = 0) {
@@ -1280,7 +1280,7 @@ struct vtype_t {
     @rand uint vsew;
     @rand uint vlmul;
   }
-} 
+}
 
 
 enum vxrm_t: ubyte {
@@ -1288,7 +1288,7 @@ enum vxrm_t: ubyte {
   RoundToNearestEven,
   RoundDown,
   RoundToOdd
-} 
+}
 
 enum  b_ext_group_t: int {
   ZBA,
@@ -1303,7 +1303,7 @@ enum  b_ext_group_t: int {
   ZBT,
   ZB_TMP // for uncategorized instructions
 }
-  
+
 // `VECTOR_INCLUDE("riscv_instr_pkg_inc_variables.sv")
 
 alias program_id_t = ubvec!16;
@@ -1521,7 +1521,7 @@ void get_val(string str, out bvec!XLEN val, bool hex = 0) {
     val = str.to!int(16);
     return;
   }
-    
+
   if (hex) {
     val = str.to!int(16);
   }

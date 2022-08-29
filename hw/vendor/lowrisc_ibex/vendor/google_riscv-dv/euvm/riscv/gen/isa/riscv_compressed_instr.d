@@ -165,14 +165,14 @@ class riscv_compressed_instr: riscv_instr
     assert (rhs_ !is null);
     this.imm_align = rhs_.imm_align;
   }
-  
+
   override void extend_imm() {
     if (instr_name != riscv_instr_name_t.C_LUI) {
       super.extend_imm();
       imm = imm << imm_align;
     }
   }
- 
+
   override void set_rand_mode() {
     switch (instr_format) {
     case riscv_instr_format_t.CR_FORMAT :
@@ -269,7 +269,7 @@ class riscv_compressed_instr: riscv_instr
 	break;
       default: uvm_info(get_full_name(),
 			format("Unsupported format %0s", instr_format), UVM_LOW);
-	break; 
+	break;
       }
     }
     else {
@@ -498,10 +498,10 @@ class riscv_compressed_instr: riscv_instr
       riscv_instr_name_t.C_SDSP : return toubvec!2(0b10);
     default :
       uvm_fatal(get_full_name(), format("Unsupported instruction %0s", instr_name));
-      assert (false); 
+      assert (false);
     }
   }
- 
+
   //ubvec!3 get_func3()
   override ubvec!3 get_func3() {
     switch(instr_name) {

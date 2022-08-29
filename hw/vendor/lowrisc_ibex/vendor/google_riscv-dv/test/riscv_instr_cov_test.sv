@@ -38,6 +38,7 @@ class riscv_instr_cov_test extends uvm_test;
     // disable_compressed_instr is not relevant to coverage test
     cfg.disable_compressed_instr = 0;
     riscv_instr::create_instr_list(cfg);
+    riscv_csr_instr::create_csr_filter(cfg);
     instr_cg = new(cfg);
     `uvm_info(`gfn, $sformatf("%0d CSV trace files to be processed", trace_csv.size()), UVM_LOW)
     foreach (trace_csv[i]) begin

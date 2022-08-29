@@ -51,7 +51,7 @@ class riscv_privileged_common_seq : uvm_sequence!(uvm_sequence_item,uvm_sequence
   mixin uvm_object_utils;
 
   this(string name = "") {
-    super(name);  
+    super(name);
   }
 
   void enter_privileged_mode(in privileged_mode_t mode,
@@ -109,7 +109,7 @@ class riscv_privileged_common_seq : uvm_sequence!(uvm_sequence_item,uvm_sequence
     }
     // instrs.pushFront(label); // do it upfront
   }
-  
+
   void setup_mmode_reg(privileged_mode_t mode, ref riscv_privil_reg[] regs) {
     mstatus = riscv_privil_reg.type_id.create("mstatus");
     mstatus.init_reg(privileged_reg_t.MSTATUS);
@@ -168,7 +168,7 @@ class riscv_privileged_common_seq : uvm_sequence!(uvm_sequence_item,uvm_sequence
       regs ~= mie;
     }
   }
-	
+
   void setup_smode_reg(privileged_mode_t mode, ref riscv_privil_reg [] regs) {
     sstatus = riscv_privil_reg.type_id.create("sstatus");
     sstatus.init_reg(privileged_reg_t.SSTATUS);

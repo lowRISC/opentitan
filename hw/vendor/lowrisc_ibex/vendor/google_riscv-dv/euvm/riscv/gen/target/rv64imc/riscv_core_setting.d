@@ -20,7 +20,7 @@
 //-----------------------------------------------------------------------------
 // XLEN
 
-module riscv.gen.target.rv64imc.riscv_core_setting; 
+module riscv.gen.target.rv64imc.riscv_core_setting;
 
 import riscv.gen.riscv_instr_pkg: satp_mode_t, privileged_mode_t,
   riscv_instr_name_t, mtvec_mode_t, interrupt_cause_t,

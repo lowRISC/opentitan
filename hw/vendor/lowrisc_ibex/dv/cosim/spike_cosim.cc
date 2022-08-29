@@ -33,7 +33,8 @@
 
 SpikeCosim::SpikeCosim(const std::string &isa_string, uint32_t start_pc,
                        uint32_t start_mtvec, const std::string &trace_log_path,
-                       bool secure_ibex, bool icache_en)
+                       bool secure_ibex, bool icache_en,
+                       uint32_t pmp_num_regions, uint32_t pmp_granularity)
     : nmi_mode(false), pending_iside_error(false) {
   FILE *log_file = nullptr;
   if (trace_log_path.length() != 0) {
@@ -52,6 +53,8 @@ SpikeCosim::SpikeCosim(const std::string &isa_string, uint32_t start_pc,
       isa_parser.get(), DEFAULT_VARCH, this, 0, false, log_file, std::cerr);
 #endif
 
+  processor->set_pmp_num(pmp_num_regions);
+  processor->set_pmp_granularity(1 << (pmp_granularity + 2));
   processor->set_ibex_flags(secure_ibex, icache_en);
 
   processor->set_mmu_capability(IMPL_MMU_SBARE);

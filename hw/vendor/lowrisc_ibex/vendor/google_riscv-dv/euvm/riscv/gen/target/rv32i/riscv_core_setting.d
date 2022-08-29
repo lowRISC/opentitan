@@ -20,7 +20,7 @@
 //-----------------------------------------------------------------------------
 // XLEN
 
-module riscv.gen.target.rv32i.riscv_core_setting; 
+module riscv.gen.target.rv32i.riscv_core_setting;
 
 import riscv.gen.riscv_instr_pkg: satp_mode_t, privileged_mode_t,
   riscv_instr_name_t, mtvec_mode_t, interrupt_cause_t,
@@ -40,7 +40,7 @@ riscv_instr_name_t[] unsupported_instr = [];
 
 // ISA supported by the processor
 riscv_instr_group_t[] supported_isa = [riscv_instr_group_t.RV32I];
-			   
+
 // Interrupt mode support
 mtvec_mode_t[] supported_interrupt_mode  = [mtvec_mode_t.DIRECT, mtvec_mode_t.VECTORED];
 
@@ -120,7 +120,7 @@ enum privileged_reg_t[] implemented_csr = [
 					   ];
 
 // Implementation-specific custom CSRs
-ubvec!12[] custom_csr= []; 
+ubvec!12[] custom_csr= [];
 
 // ----------------------------------------------------------------------------
 // Supported interrupt/exception setting, used for functional coverage

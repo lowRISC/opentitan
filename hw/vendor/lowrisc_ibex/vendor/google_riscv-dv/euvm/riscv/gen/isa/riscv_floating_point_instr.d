@@ -51,7 +51,7 @@ class riscv_floating_point_instr: riscv_instr
     super(name);
   }
 
-  
+
   // Convert the instruction to assembly code
   override string convert2asm(string prefix = "") {
     import std.conv: to;
@@ -383,7 +383,7 @@ class riscv_floating_point_instr: riscv_instr
   //   riscv_floating_point_instr pre_fp_instr;
   //   super.check_hazard_condition(pre_instr);
   //   pre_fp_instr = cast(riscv_floating_point_instr) pre_instr;
-  
+
   //   if (pre_fp_instr != null && pre_fp_instr.has_fd)
   //     {
   // 	if ((has_fs1 && (fs1 == pre_fp_instr.fd)) || (has_fs2 && (fs2 == pre_fp_instr.fd))
@@ -406,7 +406,7 @@ class riscv_floating_point_instr: riscv_instr
   // 	    gpr_hazard = hazard_e.NO_HAZARD;
   // 	  }
   //     }
-  
+
   // }
 
 }

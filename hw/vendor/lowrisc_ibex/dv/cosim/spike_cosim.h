@@ -71,7 +71,8 @@ class SpikeCosim : public simif_t, public Cosim {
  public:
   SpikeCosim(const std::string &isa_string, uint32_t start_pc,
              uint32_t start_mtvec, const std::string &trace_log_path,
-             bool secure_ibex, bool icache_en);
+             bool secure_ibex, bool icache_en, uint32_t pmp_num_regions,
+             uint32_t pmp_granularity);
 
   // simif_t implementation
   virtual char *addr_to_mem(reg_t addr) override;

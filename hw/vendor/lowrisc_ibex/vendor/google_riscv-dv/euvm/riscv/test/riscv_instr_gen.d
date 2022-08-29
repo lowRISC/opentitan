@@ -23,7 +23,7 @@ int main(string[] args) {
   uint random_seed;
   uint thread_index;
   uint thread_count;
-  
+
   CommandLine cmdl = new CommandLine(args);
 
   if (cmdl.plusArgs("random_seed=" ~ "%d", random_seed))
@@ -34,7 +34,7 @@ int main(string[] args) {
     thread_index = 0;
   if (! cmdl.plusArgs("thread_count=" ~ "%d", thread_count))
     thread_count = 1;
-  
+
   auto testbench = new uvm_testbench;
 
   testbench.multicore(thread_index, thread_count);

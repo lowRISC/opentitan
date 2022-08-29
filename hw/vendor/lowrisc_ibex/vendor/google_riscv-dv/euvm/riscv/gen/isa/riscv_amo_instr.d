@@ -29,7 +29,7 @@ import uvm;
 class riscv_amo_instr: riscv_instr
 {
   mixin uvm_object_utils;
-  
+
   @rand bool aq;
   @rand bool rl;
 

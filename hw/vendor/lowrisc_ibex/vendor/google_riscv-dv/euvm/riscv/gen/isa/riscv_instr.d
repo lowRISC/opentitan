@@ -35,7 +35,7 @@ import uvm;
 class riscv_instr: uvm_object
 {
   mixin uvm_object_utils;
-  
+
   riscv_instr_gen_config     m_cfg;
   // riscv_instr_registry       m_registry;
 
@@ -93,7 +93,7 @@ class riscv_instr: uvm_object
       }
     }
   } imm_c;
-  
+
   constraint!  q{
     if (category == riscv_instr_category_t.CSR) {
       if (m_cfg.instr_registry.include_reg.length > 0) {
@@ -120,7 +120,7 @@ class riscv_instr: uvm_object
     case riscv_instr_format_t.R_FORMAT:
       has_imm = false;
       break;
-    case riscv_instr_format_t.I_FORMAT: 
+    case riscv_instr_format_t.I_FORMAT:
       has_rs2 = false;
       break;
     case riscv_instr_format_t.S_FORMAT, riscv_instr_format_t.B_FORMAT:
@@ -211,13 +211,13 @@ class riscv_instr: uvm_object
 	  asm_str = format("%0s%0s, 0x%0x, %0s", asm_str,rd, csr, get_imm());
 	else
 	  asm_str = format("%0s%0s, %0s, %0s", asm_str, rd, rs1, get_imm());
-	break; 
+	break;
       case riscv_instr_format_t.S_FORMAT, riscv_instr_format_t.B_FORMAT: // instr rs1,rs2,imm
 	if (category == riscv_instr_category_t.STORE) // Use psuedo instruction format
 	  asm_str = format("%0s%0s, %0s(%0s)", asm_str, rs2, get_imm(), rs1);
 	else
 	  asm_str = format("%0s%0s, %0s, %0s", asm_str, rs1, rs2, get_imm());
-	break;  
+	break;
       case riscv_instr_format_t.R_FORMAT: // instr rd,rs1,rs2
 	if (category ==  riscv_instr_category_t.CSR) {
 	  asm_str = format("%0s%0s, 0x%0x, %0s", asm_str, rd, csr, rs1);
@@ -228,7 +228,7 @@ class riscv_instr: uvm_object
 	else {
 	  asm_str = format("%0s%0s, %0s, %0s", asm_str, rd, rs1, rs2);
 	}
-	break; 
+	break;
       default: uvm_fatal(get_full_name(), format("Unsupported format %0s [%0s]",
 						   instr_format, instr_name));
 	break;
@@ -479,8 +479,8 @@ class riscv_instr: uvm_object
   string convert2bin(string prefix = "") {
     import std.conv: to;
     ubvec!32 vec;
-    switch (instr_format) {  
-    case riscv_instr_format_t.J_FORMAT: 
+    switch (instr_format) {
+    case riscv_instr_format_t.J_FORMAT:
       vec = cast(ubvec!1) imm[20]
 	~ cast(ubvec!10) imm[1..11]
 	~ cast(ubvec!1) imm[11]
@@ -488,12 +488,12 @@ class riscv_instr: uvm_object
 	~ toubvec!5(rd)
 	~ get_opcode();
       break;
-    case riscv_instr_format_t.U_FORMAT: 
+    case riscv_instr_format_t.U_FORMAT:
       vec = cast(ubvec!20) imm[12..32]
 	~ toubvec!5(rd)
 	~ get_opcode();
       break;
-    case riscv_instr_format_t.I_FORMAT: 
+    case riscv_instr_format_t.I_FORMAT:
       if (canFind( [riscv_instr_name_t.FENCE, riscv_instr_name_t.FENCE_I], instr_name)) {
 	vec = toubvec!17(0b00000000000000000)
 	  ~ get_func3()
@@ -552,19 +552,19 @@ class riscv_instr: uvm_object
 	~ toubvec!5(rs1)
 	~ get_func3()
 	~ cast(ubvec!5) imm[0..5]
-	~ get_opcode(); 
+	~ get_opcode();
       break;
-    case riscv_instr_format_t.B_FORMAT: 
+    case riscv_instr_format_t.B_FORMAT:
       vec = cast(ubvec!1) imm[12]
 	~ cast(ubvec!6) imm[5..11]
 	~ toubvec!5(rs2)
 	~ toubvec!5(rs1)
-	~ get_func3() 
+	~ get_func3()
 	~ cast(ubvec!4) imm[1..5]
 	~ cast(ubvec!1) imm[11]
 	~ get_opcode();
       break;
-    case riscv_instr_format_t.R_FORMAT: 
+    case riscv_instr_format_t.R_FORMAT:
       if (category == riscv_instr_category_t.CSR) {
 	vec = csr // cast(ubvec!11) csr[0..11] -- SV BUG?
 	  ~ toubvec!5(rs1)
@@ -621,7 +621,7 @@ class riscv_instr: uvm_object
     riscv_instr rhs_;
     super.copy(rhs);
     rhs_ = cast(riscv_instr) rhs;
-    if ( rhs_ !is null ) { //rhs_ = rhs; 
+    if ( rhs_ !is null ) { //rhs_ = rhs;
       this.group          = rhs_.group;
       this.instr_format   = rhs_.instr_format;
       this.category       = rhs_.category;
@@ -646,7 +646,7 @@ class riscv_instr: uvm_object
   void update_imm_str() {
     imm_str = format("%0d", cast(bvec!32) imm);
   }
-   
+
   //`include "isa/riscv_instr_cov.svh"
 
 }

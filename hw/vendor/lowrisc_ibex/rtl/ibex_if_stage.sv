@@ -56,6 +56,7 @@ module ibex_if_stage import ibex_pkg::*; #(
   output logic [LineSizeECC-1:0]      ic_data_wdata_o,
   input  logic [LineSizeECC-1:0]      ic_data_rdata_i [IC_NUM_WAYS],
   input  logic                        ic_scr_key_valid_i,
+  output logic                        ic_scr_key_req_o,
 
   // output of ID stage
   output logic                        instr_valid_id_o,         // instr in IF-ID is valid
@@ -301,6 +302,7 @@ module ibex_if_stage import ibex_pkg::*; #(
         .ic_data_wdata_o     ( ic_data_wdata_o            ),
         .ic_data_rdata_i     ( ic_data_rdata_i            ),
         .ic_scr_key_valid_i  ( ic_scr_key_valid_i         ),
+        .ic_scr_key_req_o    ( ic_scr_key_req_o           ),
 
         .icache_enable_i     ( icache_enable_i            ),
         .icache_inval_i      ( icache_inval_i             ),
@@ -353,6 +355,7 @@ module ibex_if_stage import ibex_pkg::*; #(
     assign ic_data_write_o       = 'b0;
     assign ic_data_addr_o        = 'b0;
     assign ic_data_wdata_o       = 'b0;
+    assign ic_scr_key_req_o      = 'b0;
     assign icache_ecc_error_o    = 'b0;
 
 `ifndef SYNTHESIS

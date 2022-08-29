@@ -3,54 +3,54 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import argparse
 import os
-import re
 import shlex
 import subprocess
 import sys
-from typing import Dict, IO, List, Optional, Tuple, Union
-
-THIS_DIR = os.path.dirname(__file__)
-IBEX_ROOT = os.path.normpath(os.path.join(THIS_DIR, 4 * '../'))
-RISCV_DV_ROOT = os.path.normpath(os.path.join(IBEX_ROOT,
-                                              'vendor/google_riscv-dv'))
-
-_OLD_SYS_PATH = sys.path
-try:
-    sys.path = [os.path.join(IBEX_ROOT, 'util')] + sys.path
-    from ibex_config import Config, parse_config
-finally:
-    sys.path = _OLD_SYS_PATH
-
-TestAndSeed = Tuple[str, int]
+import pickle
+import pathlib3x as pathlib
+from io import IOBase
+from typing import Dict, TextIO, Optional, Union, List
+from typing_utils import get_args
+import dataclasses
+from typeguard import typechecked
 
 
+import logging
+logger = logging.getLogger(__name__)
+
+
+@typechecked
 def run_one(verbose: bool,
             cmd: List[str],
-            redirect_stdstreams: Optional[Union[str, IO]] = None,
+            redirect_stdstreams: Optional[Union[str, pathlib.Path, IOBase]] = None,
             timeout_s: Optional[int] = None,
-            shell: Optional[bool] = False,
             env: Dict[str, str] = None) -> int:
-    '''Run a command, returning its return code
+    """Run a command, returning its retcode.
 
     If verbose is true, print the command to stderr first (a bit like bash -x).
 
-    If redirect_stdstreams is true, redirect the stdout and stderr of the
-    subprocess to the given file object or path.
+    The cmd argument must be formatted the idiomatic pythonic way, as list[str].
 
-    '''
+    If redirect_stdstreams is true, redirect the stdout and stderr of the
+    subprocess to the given file object or path. Be flexible here to different
+    possible destinations.
+    """
     stdstream_dest = None
     needs_closing = False
 
     if redirect_stdstreams is not None:
         if redirect_stdstreams == '/dev/null':
             stdstream_dest = subprocess.DEVNULL
-        elif isinstance(redirect_stdstreams, str):
+        elif isinstance(redirect_stdstreams, pathlib.Path):
             stdstream_dest = open(redirect_stdstreams, 'wb')
             needs_closing = True
-        else:
+        elif isinstance(redirect_stdstreams, IOBase):
             stdstream_dest = redirect_stdstreams
+        else:
+            raise RuntimeError(
+                f"redirect_stdstream called as {redirect_stdstreams} "
+                f"but that argument is invalid.")
 
     if verbose:
         # The equivalent of bash -x
@@ -82,11 +82,14 @@ def run_one(verbose: bool,
                             stderr=stdstream_dest,
                             close_fds=False,
                             timeout=timeout_s,
-                            shell=shell,
                             env=env)
         return ps.returncode
     except subprocess.CalledProcessError:
         print(ps.communicate()[0])
+        return(1)
+    except OSError as e:
+        print(e)
+        # print(ps.communicate()[0])
         return(1)
     except subprocess.TimeoutExpired:
         print("Error: Timeout[{}s]: {}".format(timeout_s, cmd))
@@ -96,74 +99,209 @@ def run_one(verbose: bool,
             stdstream_dest.close()
 
 
-def start_riscv_dv_run_cmd(verbose: bool):
-    '''Return the command parts of a call to riscv-dv's run.py'''
-    riscv_dv_extension = os.path.join(THIS_DIR, '../riscv_dv_extension')
+@typechecked
+def format_to_cmd(input_arg: Union[str, List[any]]) -> List[str]:
+    """Format useful compound-lists into list[str], suitable for subprocess.
 
-    csr_desc = os.path.join(riscv_dv_extension, 'csr_description.yaml')
-    testlist = os.path.join(riscv_dv_extension, 'testlist.yaml')
+    Can be a list of [str, int, bool, pathlib.Path]
+    """
+    cmd_list = []
+    for item in input_arg:
+        try:
+            cmd_list.append(format_to_str(item))
+        except TypeError as e:
+            raise RuntimeError(f"Can't format item to str when constructing a cmd: {e}")
 
-    cmd = ['python3',
-           os.path.join(RISCV_DV_ROOT, 'run.py'),
-           '--testlist', testlist,
-           '--gcc_opts=-mno-strict-align',
-           '--custom_target', riscv_dv_extension,
-           '--csr_yaml', csr_desc,
-           '--mabi=ilp32']
-    if verbose:
-        cmd.append('--verbose')
-
-    return cmd
+    return cmd_list
 
 
-def subst_vars(string: str, var_dict: Dict[str, str]) -> str:
-    '''Apply substitutions in var_dict to string
+@typechecked
+def subst_opt(string: str, name: str, replacement: str) -> str:
+    """Substitute the <name> option in string with 'replacement'."""
+    from riscvdv_interface import parameter_format
+    needle = parameter_format.format(name)
+    if needle in string:
+        logger.debug(f"Substituting <{name}> with {replacement}")
+        return string.replace(needle, replacement)
+    else:
+        logger.debug(f"Tried to substitute for <{name}> in cmd but it was not found.")
+        return string
 
-    If var_dict[K] = V, then <K> will be replaced with V in string.'''
+
+@typechecked
+def subst_dict(string: str, var_dict: Dict[str, Union[str, pathlib.Path]]) -> str:
+    """Apply substitutions in var_dict to string.
+
+    If <K> in string, substitute <K> for var_dict[K].
+    """
     for key, value in var_dict.items():
-        string = string.replace('<{}>'.format(key), value)
+        if isinstance(value, pathlib.Path):
+            # Resolve to absolute path
+            string = subst_opt(string, key, str(value.resolve()))
+        else:
+            string = subst_opt(string, key, value)
     return string
 
 
-def read_test_dot_seed(arg: str) -> TestAndSeed:
-    '''Read a value for --test-dot-seed'''
+@typechecked
+def subst_env_vars(string: str, env_vars: List[str]) -> str:
+    """Substitute environment variables in string.
 
-    match = re.match(r'([^.]+)\.([0-9]+)$', arg)
-    if match is None:
-        raise argparse.ArgumentTypeError('Bad --test-dot-seed ({}): '
-                                         'should be of the form TEST.SEED.'
-                                         .format(arg))
+    For each environment variable, V, in the list, any
+    occurrence of <V> in string will be replaced by the value of the
+    environment variable with that name. If <V> occurs in the string but $V is
+    not set in the environment, an error is raised.
 
-    return (match.group(1), int(match.group(2), 10))
+    """
+    for var in env_vars:
+        value = os.environ.get(var)
+        if value is None:
+            raise RuntimeError('Cannot substitute {} in command because '
+                               'the environment variable ${} is not set.'
+                               .format(var, var))
+        string = subst_opt(string, var, value)
+
+    return string
 
 
-def get_config(cfg_name: str) -> Config:
-    yaml_path = os.path.join(IBEX_ROOT, "ibex_configs.yaml")
-    return parse_config(cfg_name, yaml_path)
+# If any of these characters are present in a string output it in multi-line
+# mode. This will either be because the string contains newlines or other
+# characters that would otherwise need escaping
+_YAML_MULTILINE_CHARS = ['[', ']', ':', "'", '"', '\n']
+_YAML_PRINTABLE_TYPES = Union[int, str, bool]
 
 
-def get_isas_for_config(cfg: Config) -> Tuple[str, str]:
-    '''Get ISA and ISS_ISA keys for the given Ibex config'''
-    # NOTE: This logic should match the code in the get_isa_string() function
-    # in core_ibex/tests/core_ibex_base_test.sv: keep them in sync!
-    has_multiplier = cfg.rv32m != 'ibex_pkg::RV32MNone'
-    base_isa = 'rv32{}{}c'.format('e' if cfg.rv32e else 'i',
-                                  'm' if has_multiplier else '')
+@typechecked
+def _yaml_value_format(val: _YAML_PRINTABLE_TYPES) -> str:
+    """Format a value for yaml output.
 
-    bitmanip_mapping = {
-        'ibex_pkg::RV32BNone': [],
-        'ibex_pkg::RV32BBalanced': ['Zba', 'Zbb', 'Zbs', 'XZbf', 'XZbt'],
-        'ibex_pkg::RV32BOTEarlGrey': ['Zba', 'Zbb', 'Zbc', 'Zbs',
-                                      'XZbf', 'XZbp', 'XZbr', 'XZbt'],
-        'ibex_pkg::RV32BFull': ['Zba', 'Zbb', 'Zbc', 'Zbs',
-                                'XZbe', 'XZbf', 'XZbp', 'XZbr', 'XZbt']
-    }
+    For int, str and bool value can just be converted to str with special
+    handling for some strings
+    """
+    # If val is a multi-line string
+    if isinstance(val, str) and any(c in val for c in _YAML_MULTILINE_CHARS):
+        # Split into individual lines and output them after a suitable yaml
+        # multi-line string indicator ('|-') indenting each line.
+        lines = val.split('\n')
+        return '|-\n' + '\n'.join([f'  {line}' for line in lines])
 
-    bitmanip_isa = bitmanip_mapping.get(cfg.rv32b)
-    if bitmanip_isa is None:
-        raise ValueError(f'Unknown RV32B value ({cfg.rv32b}) in config YAML')
+    if val is None:
+        return ''
 
-    has_bitmanip = cfg.rv32b != 'ibex_pkg::RV32BNone'
-    toolchain_isa = base_isa + ('b' if has_bitmanip else '')
+    return str(val)
 
-    return (toolchain_isa, '_'.join([base_isa] + bitmanip_isa))
+
+@typechecked
+def pprint_dict(d: dict, output: TextIO) -> None:
+    """Pretty-Print a python dictionary as valid yaml.
+
+    Align all the values to the same offset.
+    eg.
+    spam      eggs
+    turkey    gravy
+    yorkshire pudding
+    """
+    klen = 1
+    for k in d.keys():
+        klen = max(klen, len(k))
+
+    for k, v in d.items():
+        kpad = ' ' * (klen - len(k))
+        output.write(f'{k}:{kpad} {_yaml_value_format(v)}\n')
+
+
+@typechecked
+def format_dict_to_printable_dict(arg: dict) -> dict:
+    """Convert all dictionary keys to strings."""
+    clean_dict = {}
+    for k, v in arg.items():
+        try:
+            if isinstance(v, dict):
+                clean_dict[k] = str(v)
+                continue
+            elif isinstance(v, list):
+                clean_dict[k] = ' '.join([format_to_str(item)
+                                         for item in v])
+            else:
+                clean_dict[k] = format_to_str(v)
+        except TypeError:
+            clean_dict[k] = str(v)  # see what happens? yolo
+            pass
+
+    return clean_dict
+
+
+def format_to_str(arg: any) -> str:
+    """Format single arg to str or raise exception if unable."""
+    if isinstance(arg, get_args(_YAML_PRINTABLE_TYPES)):
+        return str(arg)
+    elif isinstance(arg, pathlib.Path):
+        return str(arg.resolve())
+    elif (arg is None):
+        # Maybe remove?
+        return ''
+    else:
+        raise TypeError("Couldn't format element to str!")
+
+
+class testdata_cls():
+    """Baseclass for testdata to hold common methods....
+
+    Objects inheriting from this can easily import/export
+    themselves to files, allowing data to gain continuinty between
+    different phases of the regression and testing process
+    """
+
+    @classmethod
+    @typechecked
+    def construct_from_pickle(cls, metadata_pickle: pathlib.Path):
+        """Allow easy contruction of the data-structure from a file."""
+        trr = cls()
+        logger.debug(f"Constructing object from data in {metadata_pickle}")
+        with metadata_pickle.open('rb') as handle:
+            trr = pickle.load(handle)
+        return trr
+
+    @typechecked
+    def export(self, write_yaml: bool = False):
+        """Write the object to disk.
+
+        Simultaneously write a pickle file and a yaml-file
+        for easy human consumption.
+
+        This should only be called from contexts where there
+        won't be races to write into the file. So, only
+        export if you are sure only one process has opened
+        the file. (eg. use LockedMetadata())
+        """
+        # TODO redesign to try and remove the above restriction
+        # with better API design
+
+        if not self.pickle_file:
+            logger.error(f"Tried to export {type(self).__name__} but self.pickle_file has no path set!")
+            raise RuntimeError
+        if not self.yaml_file:
+            logger.error(f"Tried to export {type(self).__name__} but self.yaml_file has no path set!")
+            raise RuntimeError
+
+        logger.info(f"Dumping object to {self.pickle_file}")
+        self.pickle_file.parent.mkdir(parents=True, exist_ok=True)
+        with self.pickle_file.open('wb') as handle:
+            pickle.dump(self, handle)
+
+        if not write_yaml:
+            return
+
+        self.yaml_file.parent.mkdir(parents=True, exist_ok=True)
+        with self.yaml_file.open('w') as handle:
+            pprint_dict(self.format_to_printable_dict(), handle)
+            # TRIED EXPERIMENTING HERE BUT IT WASN'T SO PRETTY \"
+            # pp = pprint.PrettyPrinter(indent=4, stream=handle)
+            # pp.pprint(self.format_to_printable_dict())
+
+    def format_to_printable_dict(self) -> dict:
+        """Return a printable dict of the object with all-str fields.
+
+        Recommended for human-consumption
+        """
+        return format_dict_to_printable_dict(dataclasses.asdict(self))

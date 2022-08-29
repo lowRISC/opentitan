@@ -28,6 +28,7 @@ class riscv_instr_test extends riscv_instr_base_test;
     fd = $fopen(test_name,"w");
     `uvm_info(`gfn, "Creating instruction list", UVM_LOW)
     riscv_instr::create_instr_list(cfg);
+    riscv_csr_instr::create_csr_filter(cfg);
     `uvm_info(`gfn, "Randomizing instruction list now...", UVM_LOW)
     repeat (10000) begin
       instr = riscv_instr::get_rand_instr();

@@ -1208,6 +1208,8 @@ package riscv_instr_pkg;
     WAW_HAZARD
   } hazard_e;
 
+  bit [11:0] default_include_csr_write[$] = {MSCRATCH};
+
   `include "riscv_core_setting.sv"
 
   // ePMP machine security configuration
@@ -1252,7 +1254,7 @@ package riscv_instr_pkg;
     rand bit                   r;
     // RV32: the pmpaddr is the top 32 bits of a 34 bit PMP address
     // RV64: the pmpaddr is the top 54 bits of a 56 bit PMP address
-    bit [XLEN - 1 : 0]    addr;
+    rand bit [XLEN - 1 : 0]    addr;
     // The offset from the address of <main> - automatically populated by the
     // PMP generation routine.
     rand bit [XLEN - 1 : 0]    offset;
@@ -1453,7 +1455,7 @@ package riscv_instr_pkg;
   endfunction
 
   class cmdline_enum_processor #(parameter type T = riscv_instr_group_t);
-    static function void get_array_values(string cmdline_str, ref T vals[]);
+    static function void get_array_values(string cmdline_str, bit allow_raw_vals, ref T vals[]);
       string s;
       void'(inst.get_arg_value(cmdline_str, s));
       if(s != "") begin
@@ -1462,7 +1464,13 @@ package riscv_instr_pkg;
         uvm_split_string(s, ",", cmdline_list);
         vals = new[cmdline_list.size];
         foreach (cmdline_list[i]) begin
-          if (uvm_enum_wrapper#(T)::from_name(
+          if (allow_raw_vals && cmdline_list[i].substr(0, 1) == "0x") begin
+            logic[$bits(T)-1:0] raw_val;
+
+            string raw_val_hex_digits = cmdline_list[i].substr(2, cmdline_list[i].len()-1);
+            raw_val = raw_val_hex_digits.atohex();
+            vals[i] = T'(raw_val);
+          end else if (uvm_enum_wrapper#(T)::from_name(
              cmdline_list[i].toupper(), value)) begin
             vals[i] = value;
           end else begin
@@ -1523,6 +1531,7 @@ package riscv_instr_pkg;
   `include "isa/riscv_zbc_instr.sv"
   `include "isa/riscv_zbs_instr.sv"
   `include "isa/riscv_b_instr.sv"
+  `include "isa/riscv_csr_instr.sv"
   `include "isa/riscv_floating_point_instr.sv"
   `include "isa/riscv_vector_instr.sv"
   `include "isa/riscv_compressed_instr.sv"

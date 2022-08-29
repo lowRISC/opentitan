@@ -54,7 +54,7 @@ class riscv_illegal_instr: uvm_object
     kReservedCompressedInstr,
     kHintInstr,
     kIllegalSystemInstr
-  } 
+  }
 
   enum reserved_c_instr_e: ubyte {
     kIllegalCompressed,
@@ -69,7 +69,7 @@ class riscv_illegal_instr: uvm_object
     kReservedC0,
     kReservedC1,
     kReservedC2
-  } 
+  }
 
   // Default legal opcode for RV32I instructions
   ubvec!7[]  legal_opcode = [0b0000011.toubvec!7,
@@ -353,7 +353,7 @@ class riscv_illegal_instr: uvm_object
     solve opcode before func3;
     if (compressed == false) {
       if (exception == illegal_instr_type_e.kIllegalFunc3) {
-	(opcode == 0b1100111) -> (func3 != 0b000); 
+	(opcode == 0b1100111) -> (func3 != 0b000);
 	(opcode == 0b1100011) -> (func3 inside [0b010, 0b011]);
 
         if (XLEN == 32) {
@@ -387,7 +387,7 @@ class riscv_illegal_instr: uvm_object
 	(opcode == 0b0111011) -> (func3 !inside [0b010, 0b011]);
       }
     }
-    
+
   } illegal_func3_c;
 
   constraint! q{

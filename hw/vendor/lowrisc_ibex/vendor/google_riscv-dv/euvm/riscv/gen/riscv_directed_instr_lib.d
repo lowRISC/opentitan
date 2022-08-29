@@ -44,7 +44,7 @@ class riscv_directed_instr_stream: riscv_rand_instr_stream
   string label;
 
   this(string name = "") {
-    super(name);  
+    super(name);
   }
 
   void post_randomize() {
@@ -74,10 +74,10 @@ class riscv_mem_access_stream : riscv_directed_instr_stream
 
 
   this(string name = "") {
-    super(name);  
+    super(name);
   }
-  
-  
+
+
   void pre_randomize() {
     if (load_store_shared_memory) {
       data_page = cfg.amo_region;
@@ -261,7 +261,7 @@ class riscv_jal_instr : riscv_rand_instr_stream
   this(string name = "") {
     super(name);
   }
-  
+
   void post_randomize() {
     int[]  order;
     order.length  = num_of_jump_instr;
@@ -291,7 +291,7 @@ class riscv_jal_instr : riscv_rand_instr_stream
       jj = cfg.instr_registry.get_rand_instr(jal);
       //DV_CHECK_RANDOMIZE_WITH_FATAL(jump[i],
       // Giving randomization error
-      jj.randomize_with! q{ 
+      jj.randomize_with! q{
 	if (has_rd == true ) {
 	  rd dist [riscv_reg_t.RA := 5, riscv_reg_t.T1 := 2, riscv_reg_t.SP..riscv_reg_t.T0 :/ 1, riscv_reg_t.T2..riscv_reg_t.T6 :/ 2];
 	  rd !inside [$0];
@@ -312,7 +312,7 @@ class riscv_jal_instr : riscv_rand_instr_stream
 	}
       }
     }
-    
+
     instr_list = jump_start ~ jump ~ jump_end;
     foreach (instr; instr_list) {
       instr.has_label = true;
@@ -426,7 +426,7 @@ class riscv_pop_stack_instr: riscv_rand_instr_stream
   this(string name = "") {
     super(name);
   }
-  
+
   //uvm_object_utils(riscv_pop_stack_instr)
 
   void init() {
@@ -490,11 +490,11 @@ class riscv_int_numeric_corner_stream: riscv_directed_instr_stream
     Zero,
     AllOne,
     NegativeMax
-  } 
+  }
 
   uint                  num_of_avail_regs = 10;
   @rand uint            num_of_instr;
-  @rand ubvec!XLEN[]    init_val; // becasue of compile error it has been commented. 
+  @rand ubvec!XLEN[]    init_val; // becasue of compile error it has been commented.
   @rand int_numeric_e[] init_val_type;
   riscv_pseudo_instr[]  init_instr;
 
@@ -511,14 +511,14 @@ class riscv_int_numeric_corner_stream: riscv_directed_instr_stream
       areg !inside [cfg.reserved_regs];
       areg != riscv_reg_t.ZERO;
     }
-  }  avail_regs_c; 
+  }  avail_regs_c;
 
   mixin uvm_object_utils;
 
   this(string name = "") {
     super(name);
   }
-  
+
   void pre_randomize() {
     avail_regs.length = num_of_avail_regs;
     // super.pre_randomize();

@@ -35,7 +35,7 @@ class riscv_privil_reg: riscv_reg!(privileged_reg_t)
   this(string name = "") {
     super(name);
   }
-  
+
   override void init_reg(privileged_reg_t reg_name) {
     super.init_reg(reg_name);
     switch(reg_name) {
@@ -128,7 +128,7 @@ class riscv_privil_reg: riscv_reg!(privileged_reg_t)
       add_field("SPF", 1, reg_field_access_t.WARL);
       add_field("WARL2", XLEN-16, reg_field_access_t.WARL);
       break;
-      
+
       // Machine Interrupt Delegation Register
     case privileged_reg_t.MIDELEG:
       privil_level = privileged_level_t.M_LEVEL;
@@ -163,7 +163,7 @@ class riscv_privil_reg: riscv_reg!(privileged_reg_t)
       add_field("MEIP",   1,  reg_field_access_t.WARL);
       add_field("WPRI3",  XLEN - 12,  reg_field_access_t.WPRI);
       break;
-      
+
       // Machine Interrupt-enable register
     case privileged_reg_t.MIE:
       privil_level = privileged_level_t.M_LEVEL;
@@ -215,7 +215,7 @@ class riscv_privil_reg: riscv_reg!(privileged_reg_t)
       privil_level = privileged_level_t.M_LEVEL;
       add_field(format("%s", reg_name), XLEN, reg_field_access_t.WARL);
       break;
-	
+
       // Hardware Performance Monitor Counters - RV32I only
     case  privileged_reg_t.MHPMCOUNTER3H:
       ..
@@ -338,7 +338,7 @@ class riscv_privil_reg: riscv_reg!(privileged_reg_t)
       add_field("PMP13CFG", 8, reg_field_access_t.WARL);
       add_field("PMP14CFG", 8, reg_field_access_t.WARL);
       add_field("PMP15CFG", 8, reg_field_access_t.WARL);
-      break;			      
+      break;
       // Physical Memory Protection Configuration Registers
     case privileged_reg_t.PMPADDR0:
       ..

@@ -1,45 +1,95 @@
+"""Helper to aggregate all metadata from a test in one place"""
+
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-import collections
+import pathlib3x as pathlib
+from typing import Optional, List
+import dataclasses
+from typeguard import typechecked
 
-# test_name, test_idx, seed and passed must never be None. Other fields can be
-# None.
-test_run_result_fields = [
-         'name',  # Name of test
-         'seed',  # Seed of test
-         'binary',  # Path to test binary
-         'uvm_log',  # Path to UVM DV simulation log
-         'rtl_trace',  # Path to RTL ibex trace output
-         'rtl_trace_csv',  # Path to RTL ibex trace CSV
-         'iss_trace',  # Path to spike trace
-         'iss_trace_csv',  # Path to spike trac.
-         'en_cosim',  # Is cosim enabled?
-         'cosim_trace',  # Path to cosim_trace logfile
-         'cosim_trace_csv',  # Path to cosim_trace CSV
-         'comparison_log',  # Path to trace comparison log
-         'passed',  # True if test passed
-         'failure_message'  # Message describing failure, includes a
-                            # '[FAILED]: XXXX' line at the end. Must not be
-                            # None if passed is False
-        ]
+import scripts_lib
 
-TestRunResult = collections.namedtuple('TestRunResult', test_run_result_fields)
+import logging
+logger = logging.getLogger(__name__)
 
 
-def check_test_run_result(trr: TestRunResult):
-    assert (trr.name is not None and isinstance(trr.name, str))
-    assert (trr.seed is not None and isinstance(trr.seed, int))
-    assert (trr.binary is None or isinstance(trr.binary, str))
-    assert (trr.uvm_log is None or isinstance(trr.uvm_log, str))
-    assert (trr.rtl_trace is None or isinstance(trr.rtl_trace, str))
-    assert (trr.rtl_trace_csv is None or isinstance(trr.rtl_trace_csv, str))
-    assert (trr.iss_trace is None or isinstance(trr.iss_trace, str))
-    assert (trr.iss_trace_csv is None or isinstance(trr.iss_trace_csv, str))
-    assert (trr.en_cosim is None or isinstance(trr.en_cosim, bool))
-    assert (trr.cosim_trace is None or isinstance(trr.cosim_trace, str))
-    assert (trr.cosim_trace_csv is None or isinstance(trr.cosim_trace_csv, str))
-    assert (trr.comparison_log is None or isinstance(trr.comparison_log, str))
-    assert (isinstance(trr.passed, bool))
-    assert (trr.passed or isinstance(trr.failure_message, str))
+@typechecked
+@dataclasses.dataclass
+class TestRunResult(scripts_lib.testdata_cls):
+    """Holds metadata about a single test and its results.
+
+    Most of the fields aren't actually optional to running
+    the simulations, but they may be optional in that we haven't yet
+    populated the field or generated the item yet.
+    """
+    passed: Optional[bool] = None                # True if test passed
+    # Message describing failure, includes a '[FAILED]: XXXX' line at the end.
+    failure_message: Optional[str] = None
+
+    testdotseed: Optional[str] = None
+    testname: Optional[str] = None        # Name of test
+    seed: Optional[int] = None            # Seed of test
+    binary: Optional[pathlib.Path] = None # Path to test binary
+    rtl_simulator: Optional[str] = None   # Which simulator is used
+    iss_cosim: Optional[str] = None       # Which ISS are we cosimulating with?
+
+    # RISCV_DV specific test parameters
+    gen_test: Optional[str] = None
+    gen_opts: Optional[str] = None
+    rtl_test: Optional[str] = None
+    sim_opts: Optional[str] = None
+
+    dir_test: Optional[pathlib.Path] = None
+    assembly: Optional[pathlib.Path] = None         # Path to assembly file
+    objectfile: Optional[pathlib.Path] = None
+
+    riscvdv_run_gen_log: Optional[pathlib.Path] = None
+    riscvdv_run_gen_stdout: Optional[pathlib.Path] = None
+    riscvdv_run_log: Optional[pathlib.Path] = None
+    riscvdv_run_stdout: Optional[pathlib.Path] = None
+    compile_asm_gen_log: Optional[pathlib.Path] = None
+    compile_asm_log: Optional[pathlib.Path] = None
+
+    rtl_log: Optional[pathlib.Path] = None          # Path to UVM DV simulation log
+    rtl_stdout: Optional[pathlib.Path] = None
+    rtl_trace: Optional[pathlib.Path] = None        # Path to RTL ibex trace output
+    iss_cosim_log: Optional[pathlib.Path] = None
+    iss_cosim_trace: Optional[pathlib.Path] = None  # Path to cosim_trace logfile
+
+    dir_fcov: Optional[pathlib.Path] = None
+
+    riscvdv_run_gen_cmds: Optional[List[List[str]]] = None
+    riscvdv_run_cmds: Optional[List[List[str]]] = None
+    compile_asm_gen_cmds: Optional[List[str]] = None
+    compile_asm_cmds: Optional[List[List[str]]] = None
+    rtl_cmds: Optional[List[List[str]]] = None
+
+    metadata_pickle_file: pathlib.Path = None
+    pickle_file: Optional[pathlib.Path] = None
+    yaml_file: Optional[pathlib.Path] = None
+
+    @classmethod
+    @typechecked
+    def construct_from_metadata_dir(cls, dir_metadata: pathlib.Path, tds: str):
+        """Construct metadata object from exported object using default filenames."""
+
+        trr_pickle = dir_metadata / f"{tds}.pickle"
+        trr = cls.construct_from_pickle(trr_pickle)
+        return trr
+
+    def format_to_printable_dict(self) -> dict:
+        """Overwrite the default method in scripts_lib.testdata_cls.
+
+        Format to a printable dict, but for any pathlib.Path strings, print them
+        as relative to the test directory. More useful for human scanning.
+        """
+        relative_dict = {}
+        for k, v in dataclasses.asdict(self).items():
+            if (isinstance(v, pathlib.Path) and v.is_relative_to(self.dir_test)):
+                relative_dict[k] = str(v.relative_to(self.dir_test))
+            else:
+                relative_dict[k] = v
+
+        return scripts_lib.format_dict_to_printable_dict(relative_dict)

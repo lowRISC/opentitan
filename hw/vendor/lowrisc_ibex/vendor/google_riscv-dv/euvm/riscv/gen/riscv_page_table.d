@@ -39,7 +39,7 @@ class riscv_page_table(satp_mode_t MODE): uvm_object
   ubvec!2                     level;         // Page table level
   ubvec!XLEN []               pte_binary;    // Page table entry in binary format
   @rand riscv_page_table_entry!(MODE)[] pte;         // List of all page table//  entries
-  
+
   mixin uvm_object_utils;
 
   this(string name = "") {
@@ -53,7 +53,7 @@ class riscv_page_table(satp_mode_t MODE): uvm_object
   void init_page_table(uint num_of_pte = 1) {
     this.num_of_pte = num_of_pte;
     pte.length = num_of_pte;
-    pte_binary.length = num_of_pte; 
+    pte_binary.length = num_of_pte;
   }
 
   // Generate the page table binary

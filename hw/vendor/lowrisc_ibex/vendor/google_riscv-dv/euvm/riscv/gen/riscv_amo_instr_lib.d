@@ -24,7 +24,7 @@ import riscv.gen.target: supported_isa, XLEN;
 import riscv.gen.riscv_directed_instr_lib: riscv_mem_access_stream;
 import riscv.gen.riscv_load_store_instr_lib: riscv_vector_load_store_instr_stream;
 import riscv.gen.riscv_pseudo_instr: riscv_pseudo_instr;
-import riscv.gen.isa.riscv_instr: riscv_instr;       
+import riscv.gen.isa.riscv_instr: riscv_instr;
 
 import std.format: format;
 import std.algorithm: canFind;
@@ -150,7 +150,7 @@ class riscv_lr_sc_instr_stream : riscv_amo_base_instr_stream
       allowed_lr_instr ~= riscv_instr_name_t.LR_D;
       allowed_sc_instr ~= riscv_instr_name_t.SC_D;
     }
-    
+
     lr_instr = cfg.instr_registry.get_rand_instr(allowed_lr_instr);
     sc_instr = cfg.instr_registry.get_rand_instr(allowed_sc_instr);
 
@@ -163,7 +163,7 @@ class riscv_lr_sc_instr_stream : riscv_amo_base_instr_stream
         rd !inside [$2];
       }
       rd != $0;
-    } (rs1_reg[0], reserved_rd, cfg.reserved_regs); 
+    } (rs1_reg[0], reserved_rd, cfg.reserved_regs);
     sc_instr.randomize_with! q{
       rs1 == $0;
       if ($1.length > 0) {
@@ -188,7 +188,7 @@ class riscv_lr_sc_instr_stream : riscv_amo_base_instr_stream
   override void add_mixed_instr(int instr_cnt) {
     riscv_instr instr;
     int i;
-    setup_allowed_instr(true, true);  
+    setup_allowed_instr(true, true);
     //setup_allowed_instr(.no_branch(1), .no_load_store(1));
     while (i < instr_cnt) {
       instr = riscv_instr.type_id.create("instr");
@@ -240,7 +240,7 @@ class riscv_amo_instr_stream: riscv_amo_base_instr_stream
         rd !inside [$2];
       } (reserved_rd, cfg.reserved_regs, rs1_reg);
       append_instr(instr);
-    } 
+    }
   }
 }
 
@@ -251,7 +251,7 @@ class riscv_vector_amo_instr_stream: riscv_vector_load_store_instr_stream
     // AMO operation uses indexed address mode
     address_mode == address_mode_e.INDEXED;
   } amo_address_mode_c;
-  
+
   mixin uvm_object_utils;
   this(string name = "") {
     super(name);

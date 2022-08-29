@@ -289,7 +289,7 @@ class riscv_instr_gen_config: uvm_object
   @UVM_DEFAULT bool                    enable_zbb_extension;
   @UVM_DEFAULT bool                    enable_zbc_extension;
   @UVM_DEFAULT bool                    enable_zbs_extension;
-  
+
   @UVM_DEFAULT b_ext_group_t[]         enable_bitmanip_groups =
     [b_ext_group_t.ZBB, b_ext_group_t.ZBS, b_ext_group_t.ZBP, b_ext_group_t.ZBE,
      b_ext_group_t.ZBF, b_ext_group_t.ZBC, b_ext_group_t.ZBR, b_ext_group_t.ZBM,
@@ -302,7 +302,7 @@ class riscv_instr_gen_config: uvm_object
   uint[riscv_instr_category_t] category_dist;
 
   riscv_instr_registry instr_registry;
-  
+
   CommandLine cmdl;
 
   constraint! q{
@@ -311,7 +311,7 @@ class riscv_instr_gen_config: uvm_object
     main_program_instr_cnt inside [10:instr_cnt];
     foreach (cnt; sub_program_instr_cnt) {
       cnt inside [10:instr_cnt];
-    } 
+    }
     // Disable sfence if the program is not boot to supervisor mode
     // If sfence exception is allowed, we can enable sfence instruction in any priviledged mode.
     // When MSTATUS.TVM is set, executing sfence.vma will be treate as illegal instruction
@@ -325,7 +325,7 @@ class riscv_instr_gen_config: uvm_object
        || no_fence) -> (enable_sfence == false);
     }
   } default_c;
-  
+
   constraint! q{
     if (support_debug_mode) {
       debug_program_instr_cnt inside [100:300];
@@ -335,14 +335,14 @@ class riscv_instr_gen_config: uvm_object
     }
     main_program_instr_cnt + sub_program_instr_cnt.sum == instr_cnt;
   } debug_mode_c;
-  
+
   // Keep the number of single step iterations relatively small
   constraint! q{
     if (enable_debug_single_step) {
       single_step_iterations inside [10 : 50];
     }
   } debug_single_step_c;
-  
+
   // Boot privileged mode distribution
    constraint! q{
      // Boot to higher privileged mode more often
@@ -359,9 +359,9 @@ class riscv_instr_gen_config: uvm_object
        init_privileged_mode == supported_privileged_mode[0];
      }
    } boot_privileged_mode_dist_c;
-  
+
   immutable int tvec_align =  clog2((XLEN*4)/8);
-  
+
   constraint! q{
       mtvec_mode inside [supported_interrupt_mode];
     if (mtvec_mode == mtvec_mode_t.DIRECT) {
@@ -373,7 +373,7 @@ class riscv_instr_gen_config: uvm_object
     }
   } mtvec_c;
 
-  
+
   constraint! q{
     // This is default disabled at setup phase. It can be enabled in the exception and interrupt
     // handling routine
@@ -388,7 +388,7 @@ class riscv_instr_gen_config: uvm_object
       mstatus_tvm == false;
     }
   } mstatus_c;
-  
+
   // Exception delegation setting
   constraint! q{
     // Do not delegate instructino page fault to supervisor/user mode because this may introduce
@@ -480,7 +480,7 @@ class riscv_instr_gen_config: uvm_object
    constraint! q{
      solve init_privileged_mode before virtual_addr_translation_on;
    } addr_translation_rnd_order_c;
-  
+
   constraint! q{
     if ((init_privileged_mode != privileged_mode_t.MACHINE_MODE) &&
 	(SATP_MODE != satp_mode_t.BARE)) {
@@ -490,8 +490,8 @@ class riscv_instr_gen_config: uvm_object
       virtual_addr_translation_on == false;
     }
   } addr_translation_c;
-  
-  
+
+
   constraint! q{
     if (enable_floating_point) {
       mstatus_fs == 1;
@@ -500,7 +500,7 @@ class riscv_instr_gen_config: uvm_object
       mstatus_fs == 0;
     }
   } floating_point_c;
-  
+
 
   constraint! q{
     if (enable_vector_extension) {
@@ -510,7 +510,7 @@ class riscv_instr_gen_config: uvm_object
       mstatus_vs == 0;
     }
   } mstatus_vs_c;
-  
+
   // `uvm_object_utils_begin(riscv_instr_gen_config)
   //   `uvm_field_int(main_program_instr_cnt, UVM_DEFAULT)
   //   `uvm_field_sarray_int(sub_program_instr_cnt, UVM_DEFAULT)

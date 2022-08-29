@@ -36,7 +36,7 @@ import uvm;
 class riscv_data_page_gen: uvm_object
 {
   import std.conv: to;
-  
+
   riscv_instr_gen_config        cfg;
   string[]                      data_page_str;
   mem_region_t[]                mem_region_setting;
@@ -44,9 +44,9 @@ class riscv_data_page_gen: uvm_object
   mixin uvm_object_utils;
 
   this(string name = "cls_avail_regs") {
-    super(name);  
+    super(name);
   }
- 
+
   // The data section can be initialized with different data pattern:
   // - Random value, incremental value, all zeros
   void gen_data(in  int idx,
@@ -57,7 +57,7 @@ class riscv_data_page_gen: uvm_object
     data.length = num_of_bytes;
     foreach (i, ref dd; data) {
       if (pattern == data_pattern_t.RAND_DATA) {
-        temp_data = toubvec!8(urandom!ubyte()); 
+        temp_data = toubvec!8(urandom!ubyte());
 	dd = temp_data;
       }
       else if (pattern == data_pattern_t.INCR_VAL) {

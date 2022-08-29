@@ -91,6 +91,8 @@ module tb #(
       .ic_data_wdata_o     ( ram_if.ic_data_wdata       ),
       .ic_data_rdata_i     ( ram_if.ic_data_rdata_o     ),
       .ic_scr_key_valid_i  ( scramble_key_valid_q       ),
+      // TODO: Hook up to monitor and appropriate checking
+      .ic_scr_key_req_o    (                            ),
 
       // TODO: Probe this and verify functionality
       .ecc_error_o         ( ram_if.ecc_err             )

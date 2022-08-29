@@ -51,4 +51,4 @@ version (RISCV_INSTR_STRING_MIXIN) {
    class riscv_REMU_instr: riscv_instr
    { mixin RISCV_INSTR_MIXIN!(REMU,   R_FORMAT, ARITHMETIC, RV32M); }
  }
-   
+

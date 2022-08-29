@@ -102,4 +102,4 @@ version (RISCV_INSTR_STRING_MIXIN) {
    { mixin RISCV_INSTR_MIXIN!(FCVT_S_WU, I_FORMAT, ARITHMETIC, RV32F); }
    class riscv_FMV_W_X_instr: riscv_floating_point_instr
    { mixin RISCV_INSTR_MIXIN!(FMV_W_X,   I_FORMAT, ARITHMETIC, RV32F); }
- }   
+ }

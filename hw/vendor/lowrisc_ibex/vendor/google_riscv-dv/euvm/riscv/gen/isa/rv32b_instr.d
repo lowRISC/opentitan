@@ -129,4 +129,4 @@ version (RISCV_INSTR_STRING_MIXIN) {
    { mixin RISCV_INSTR_MIXIN!(BDECOMPRESS, R_FORMAT, ARITHMETIC, RV32B); }
    class riscv_BFP_instr: riscv_b_instr
    { mixin RISCV_INSTR_MIXIN!(BFP,         R_FORMAT, ARITHMETIC, RV32B); }
- }   
+ }
