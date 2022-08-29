@@ -478,7 +478,6 @@
               - Apply bootstrap pin strapping and reset the chip.
               - Send `command` with invalid 3-byte address, e.g. `0xffffff`.
               - Verify that the chip outputs the expected `BFV` over UART.
-                - ROM will continously reset the chip and output the same `BFV` and `LCV`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2
@@ -767,7 +766,7 @@
 
     {
       name: rom_e2e_address_translation
-      desc: '''Verify that all address translation configurations work
+      desc: '''Verify that all address translation configurations work.
 
             - Bootstrap the chip with a valid second stage image. See the table below.
             - Verify that the chip behaves as expected.
@@ -922,9 +921,12 @@
 
     {
       name: rom_e2e_asm_c_interrupt_handler
-      desc: '''Verify that `rom_start.S` configures the ROM C interrupt handler and it triggers
-            shutdown.
+      desc: '''Verify that `rom_start.S` configures the ROM C interrupt handler and it triggers shutdown.
 
+            #### Using a ROM_EXT image (preferred)
+            See #14274.
+
+            #### Using a debugger
             `CREATOR_SW_CFG_ROM_EXEC_EN` should be set to `0` and the chip should in a life cycle
              state where debugging is enabled, i.e. TEST, DEV, or RMA.
 
@@ -1096,8 +1098,7 @@
 
     {
       name: rom_e2e_static_critical
-      desc: '''Verify that ROM initializes the data structures in the `.static_critical` section
-            properly.
+      desc: '''Verify that ROM initializes the data structures in the `.static_critical` section properly.
 
             - Verify that `boot_measurements` holds the digest of the next stage.
               - Don't specify any usage constraints to be able to compute the actual hash in the second stage.
