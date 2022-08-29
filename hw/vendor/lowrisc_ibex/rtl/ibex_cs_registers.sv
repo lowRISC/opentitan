@@ -124,14 +124,30 @@ module ibex_cs_registers #(
 
   import ibex_pkg::*;
 
-  localparam int unsigned RV32BEnabled = (RV32B == RV32BNone) ? 0 : 1;
+  // Is a PMP config a locked one that allows M-mode execution when MSECCFG.MML is set (either
+  // M mode alone or shared M/U mode execution)?
+  function automatic logic is_mml_m_exec_cfg(ibex_pkg::pmp_cfg_t pmp_cfg);
+    logic unused_cfg;
+    unused_cfg = ^{pmp_cfg.mode};
+
+    if (pmp_cfg.lock) begin
+      unique case ({pmp_cfg.read, pmp_cfg.write, pmp_cfg.exec})
+        3'b001, 3'b010, 3'b011, 3'b101: return 1'b1;
+        default: return 1'b0;
+      endcase
+    end
+
+    return 1'b0;
+  endfunction
+
+  localparam int unsigned RV32BExtra = (RV32B == RV32BOTEarlGrey) || (RV32B == RV32BFull) ? 1 : 0;
   localparam int unsigned RV32MEnabled = (RV32M == RV32MNone) ? 0 : 1;
   localparam int unsigned PMPAddrWidth = (PMPGranularity > 0) ? 33 - PMPGranularity : 32;
 
   // misa
   localparam logic [31:0] MISA_VALUE =
       (0                 <<  0)  // A - Atomic Instructions extension
-    | (RV32BEnabled      <<  1)  // B - Bit-Manipulation extension
+    | (0                 <<  1)  // B - Bit-Manipulation extension
     | (1                 <<  2)  // C - Compressed extension
     | (0                 <<  3)  // D - Double precision floating-point extension
     | (32'(RV32E)        <<  4)  // E - RV32E base ISA
@@ -141,7 +157,7 @@ module ibex_cs_registers #(
     | (0                 << 13)  // N - User level interrupts supported
     | (0                 << 18)  // S - Supervisor mode implemented
     | (1                 << 20)  // U - User mode implemented
-    | (0                 << 23)  // X - Non-standard extensions present
+    | (RV32BExtra        << 23)  // X - Non-standard extensions present
     | (32'(CSR_MISA_MXL) << 30); // M-XLEN
 
   typedef struct packed {
@@ -508,6 +524,16 @@ module ibex_cs_registers #(
         illegal_csr = 1'b1;
       end
     endcase
+
+    if (!PMPEnable) begin
+      if (csr_addr inside {CSR_PMPCFG0,   CSR_PMPCFG1,   CSR_PMPCFG2,   CSR_PMPCFG3,
+                           CSR_PMPADDR0,  CSR_PMPADDR1,  CSR_PMPADDR2,  CSR_PMPADDR3,
+                           CSR_PMPADDR4,  CSR_PMPADDR5,  CSR_PMPADDR6,  CSR_PMPADDR7,
+                           CSR_PMPADDR8,  CSR_PMPADDR9,  CSR_PMPADDR10, CSR_PMPADDR11,
+                           CSR_PMPADDR12, CSR_PMPADDR13, CSR_PMPADDR14, CSR_PMPADDR15}) begin
+        illegal_csr = 1'b1;
+      end
+    end
   end
 
   // write logic
@@ -566,9 +592,9 @@ module ibex_cs_registers #(
               mprv: csr_wdata_int[CSR_MSTATUS_MPRV_BIT],
               tw:   csr_wdata_int[CSR_MSTATUS_TW_BIT]
           };
-          // Convert illegal values to M-mode
+          // Convert illegal values to U-mode
           if ((mstatus_d.mpp != PRIV_LVL_M) && (mstatus_d.mpp != PRIV_LVL_U)) begin
-            mstatus_d.mpp = PRIV_LVL_M;
+            mstatus_d.mpp = PRIV_LVL_U;
           end
         end
 
@@ -592,9 +618,9 @@ module ibex_cs_registers #(
         CSR_DCSR: begin
           dcsr_d = csr_wdata_int;
           dcsr_d.xdebugver = XDEBUGVER_STD;
-          // Change to PRIV_LVL_M if software writes an unsupported value
+          // Change to PRIV_LVL_U if software writes an unsupported value
           if ((dcsr_d.prv != PRIV_LVL_M) && (dcsr_d.prv != PRIV_LVL_U)) begin
-            dcsr_d.prv = PRIV_LVL_M;
+            dcsr_d.prv = PRIV_LVL_U;
           end
 
           // Read-only for SW
@@ -1035,6 +1061,7 @@ module ibex_cs_registers #(
     logic                        pmp_mseccfg_err;
     pmp_cfg_t                    pmp_cfg         [PMPNumRegions];
     logic [PMPNumRegions-1:0]    pmp_cfg_locked;
+    logic [PMPNumRegions-1:0]    pmp_cfg_wr_suppress;
     pmp_cfg_t                    pmp_cfg_wdata   [PMPNumRegions];
     logic [PMPAddrWidth-1:0]     pmp_addr        [PMPNumRegions];
     logic [PMPNumRegions-1:0]    pmp_cfg_we;
@@ -1090,7 +1117,9 @@ module ibex_cs_registers #(
       // -------------------------
       // Instantiate cfg registers
       // -------------------------
-      assign pmp_cfg_we[i] = csr_we_int & ~pmp_cfg_locked[i] &
+      assign pmp_cfg_we[i] = csr_we_int                                       &
+                             ~pmp_cfg_locked[i]                               &
+                             ~pmp_cfg_wr_suppress[i]                          &
                              (csr_addr == (CSR_OFF_PMP_CFG + (i[11:0] >> 2)));
 
       // Select the correct WDATA (each CSR contains 4 CFG fields, each with 2 RES bits)
@@ -1129,6 +1158,12 @@ module ibex_cs_registers #(
       // MSECCFG.RLB allows the lock bit to be bypassed (allowing cfg writes when MSECCFG.RLB is
       // set).
       assign pmp_cfg_locked[i] = pmp_cfg[i].lock & ~pmp_mseccfg_q.rlb;
+
+      // When MSECCFG.MML is set cannot add new regions allowing M mode execution unless MSECCFG.RLB
+      // is set
+      assign pmp_cfg_wr_suppress[i] = pmp_mseccfg_q.mml                   &
+                                      ~pmp_mseccfg.rlb                    &
+                                      is_mml_m_exec_cfg(pmp_cfg_wdata[i]);
 
       // --------------------------
       // Instantiate addr registers
@@ -1254,8 +1289,11 @@ module ibex_cs_registers #(
 
     // activate all
     for (int i = 0; i < 32; i++) begin : gen_mhpmevent_active
-      mhpmevent[i]    =   '0;
-      mhpmevent[i][i] = 1'b1;
+      mhpmevent[i] = '0;
+
+      if (i >= 3) begin
+        mhpmevent[i][i - 3] = 1'b1;
+      end
     end
 
     // deactivate
@@ -1358,7 +1396,7 @@ module ibex_cs_registers #(
     logic [29-MHPMCounterNum-1:0] unused_mhphcounterh_we;
     logic [29-MHPMCounterNum-1:0] unused_mhphcounter_incr;
 
-    assign mcountinhibit = {{29 - MHPMCounterNum{1'b1}}, mcountinhibit_q};
+    assign mcountinhibit = {{29 - MHPMCounterNum{1'b0}}, mcountinhibit_q};
     // Lint tieoffs for unused bits
     assign unused_mhphcounter_we   = mhpmcounter_we[31:MHPMCounterNum+3];
     assign unused_mhphcounterh_we  = mhpmcounterh_we[31:MHPMCounterNum+3];

@@ -45,4 +45,4 @@ version (RISCV_INSTR_STRING_MIXIN) {
    { mixin RISCV_INSTR_MIXIN!(C_LDSP,   CI_FORMAT, LOAD, RV64C, UIMM); }
    class riscv_C_SDSP_instr: riscv_compressed_instr
    { mixin RISCV_INSTR_MIXIN!(C_SDSP,   CSS_FORMAT, STORE, RV64C, UIMM); }
- }   
+ }

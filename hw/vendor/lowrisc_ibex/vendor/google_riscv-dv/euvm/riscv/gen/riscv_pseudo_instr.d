@@ -34,24 +34,24 @@ class riscv_pseudo_instr: riscv_instr
 
   // `add_pseudo_instr(LI, I_FORMAT, LOAD, RV32I)
   constraint! q{
-    if (pseudo_instr_name  == riscv_pseudo_instr_name_t.LI) { 
-      instr_format       == riscv_instr_format_t.I_FORMAT; 
-      category           == riscv_instr_category_t.LOAD; 
-      group              == riscv_instr_group_t.RV32I; 
-    } 
+    if (pseudo_instr_name  == riscv_pseudo_instr_name_t.LI) {
+      instr_format       == riscv_instr_format_t.I_FORMAT;
+      category           == riscv_instr_category_t.LOAD;
+      group              == riscv_instr_group_t.RV32I;
+    }
   } riscv_RV32I_LI_c;
 
   // `add_pseudo_instr(LA, I_FORMAT, LOAD, RV32I)
   constraint! q{
-    if (pseudo_instr_name  == riscv_pseudo_instr_name_t.LA) { 
-      instr_format       == riscv_instr_format_t.I_FORMAT; 
-      category           == riscv_instr_category_t.LOAD; 
-      group              == riscv_instr_group_t.RV32I; 
-    } 
+    if (pseudo_instr_name  == riscv_pseudo_instr_name_t.LA) {
+      instr_format       == riscv_instr_format_t.I_FORMAT;
+      category           == riscv_instr_category_t.LOAD;
+      group              == riscv_instr_group_t.RV32I;
+    }
   } riscv_RV32I_LA_c;
 
   mixin uvm_object_utils;
-  
+
   this(string name = "") {
     super(name);
     process_load_store = false;

@@ -195,7 +195,7 @@ _start:
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_AUTO_REQ_MODE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_CMD_FIFO_RST_OFFSET)
   sw t0, EDN_CTRL_REG_OFFSET(a0)
-#endif
+
   // Remove address space protections by configuring entry 15 as
   // read-write-execute for the entire address space and then clearing
   // all other entries.
@@ -209,7 +209,7 @@ _start:
   csrw pmpcfg0, zero
   csrw pmpcfg1, zero
   csrw pmpcfg2, zero
-
+#endif
   // Scramble and initialize main memory (main SRAM).
   // Memory accesses will stall until initialization is complete.
   // Skip SRAM initialization for DV sim device type, as the testbench handles

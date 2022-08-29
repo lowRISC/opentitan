@@ -48,7 +48,7 @@ class riscv_zbb_instr: riscv_instr
 	has_rs2 = true;
       }
       break;
-    case riscv_instr_format_t.I_FORMAT: 
+    case riscv_instr_format_t.I_FORMAT:
       if ([riscv_instr_name_t.CLZ, riscv_instr_name_t.CLZW,
 	   riscv_instr_name_t.CTZ, riscv_instr_name_t.CTZW,
 	   riscv_instr_name_t.CPOP, riscv_instr_name_t.CPOPW,
@@ -192,7 +192,7 @@ class riscv_zbb_instr: riscv_instr
     default: uvm_fatal(get_full_name(), format("Unsupported instruction %0s", instr_name));
       assert (false);
     }
-  }    
+  }
 
   override ubvec!7 get_func7() {
     switch (instr_name) {
@@ -229,7 +229,7 @@ class riscv_zbb_instr: riscv_instr
     string binary = "";
 
     switch (instr_format) {
-    case riscv_instr_format_t.R_FORMAT: 
+    case riscv_instr_format_t.R_FORMAT:
       if (instr_name == riscv_instr_name_t.ZEXT_H) {
 	binary = format("%8h", get_func7() ~ get_func5() ~ rs1 ~ get_func3() ~ rd ~ get_opcode());
       }

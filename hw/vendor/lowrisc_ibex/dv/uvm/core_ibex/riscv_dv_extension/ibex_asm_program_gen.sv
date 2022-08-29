@@ -43,4 +43,40 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
     instr.push_back("csrwi 0x7c0, 1");
   endfunction
 
+  // Generate "test_done" section.
+  // The test is ended from the UVM testbench, which awaits the following write to
+  // the special test-control signature address (signature_addr - 0x4).
+  // The ECALL trap handler will handle the clean up procedure while awaiting the
+  // simulation to be ended.
+  virtual function void gen_test_done();
+    bit [XLEN-1:0] test_control_addr;
+    string str;
+    string i = indent; // lint-hack
+    test_control_addr = cfg.signature_addr - 4'h4;
+
+    str = {str,
+      {format_string("test_done:", LABEL_STR_LEN), "\n"},
+      {i, "li gp, 1", "\n"}
+    };
+
+    if (cfg.bare_program_mode) begin
+      str = {str,
+        {i, "j write_tohost", "\n"}
+      };
+    end else begin
+      // The testbench will await a write of TEST_PASS, and use that to end the test.
+      str = {str,
+        {i, $sformatf(  "li x%0d, 0x%0h",       cfg.gpr[1],             test_control_addr), "\n"},
+        {i, $sformatf(  "li x%0d, 0x%0h",       cfg.gpr[0],             TEST_PASS), "\n"},
+        {i, $sformatf("slli x%0d, x%0d, 8",     cfg.gpr[0], cfg.gpr[0]), "\n"},
+        {i, $sformatf("addi x%0d, x%0d, 0x%0h", cfg.gpr[0], cfg.gpr[0], TEST_RESULT), "\n"},
+        {i, $sformatf(  "sw x%0d, 0(x%0d)",     cfg.gpr[0], cfg.gpr[1]), "\n"},
+      // Still add the ecall insn, to go to the ecall_handler code as before.
+        {i, "ecall", "\n"}
+      };
+    end
+
+    instr_stream.push_back(str);
+  endfunction
+
 endclass

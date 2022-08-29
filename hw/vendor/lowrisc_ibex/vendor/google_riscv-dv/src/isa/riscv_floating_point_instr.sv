@@ -80,7 +80,7 @@ class riscv_floating_point_instr extends riscv_instr;
       CS_FORMAT:
         asm_str = $sformatf("%0s%0s, %0s(%0s)", asm_str, fs2.name(), get_imm(), rs1.name());
       CSS_FORMAT:
-	asm_str = $sformatf("%0s%0s, %0s(sp)", asm_str, fs2.name(), get_imm());
+        asm_str = $sformatf("%0s%0s, %0s(sp)", asm_str, fs2.name(), get_imm());
       CI_FORMAT:
         asm_str = $sformatf("%0s%0s, %0s", asm_str, fd.name(), get_imm());
       default:
@@ -172,12 +172,12 @@ class riscv_floating_point_instr extends riscv_instr;
         has_fd = 1'b0;
       end
       CSS_FORMAT: begin
-	has_rs1 = 1'b0;
-	has_fd = 1'b0;
+        has_rs1 = 1'b0;
+        has_fd = 1'b0;
       end
       CI_FORMAT: begin
-	has_rs1 = 1'b0;
-	has_fs2 = 1'b0;
+        has_rs1 = 1'b0;
+        has_fs2 = 1'b0;
       end
       default: `uvm_info(`gfn, $sformatf("Unsupported format %0s", format.name()), UVM_LOW)
     endcase

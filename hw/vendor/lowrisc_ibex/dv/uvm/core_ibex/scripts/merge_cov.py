@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
+"""Helper-scripts to merge coverage databases across multiple tests."""
+
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Regression script for running the Spike UVM testbench"""
 
 import argparse
 import logging
 import os
 import shutil
 import sys
+import pathlib3x as pathlib
 from typing import Set
 
+from metadata import RegressionMetadata
+from setup_imports import _OT_LOWRISC_IP
 from scripts_lib import run_one
-
-_THIS_DIR = os.path.normpath(os.path.join(os.path.dirname(__file__)))
-_IBEX_ROOT = os.path.normpath(os.path.join(_THIS_DIR, 4 * '../'))
 
 
 def find_cov_dirs(start_dir: str, simulator: str) -> Set[str]:
@@ -35,6 +36,10 @@ def find_cov_dirs(start_dir: str, simulator: str) -> Set[str]:
             logging.info("Found coverage database (vdb) at %s" % vdb_path)
             cov_dirs.add(vdb_path)
 
+    if not cov_dirs:
+        logging.info(f"No coverage found for {simulator}")
+        return 1
+
     return cov_dirs
 
 
@@ -51,8 +56,7 @@ def merge_cov_vcs(cov_dir: str, verbose: bool, cov_dirs: Set[str]) -> int:
 
 
 def merge_cov_xlm(cov_dir: str, verbose: bool, cov_dirs: Set[str]) -> int:
-    xcelium_scripts = os.path.join(_IBEX_ROOT,
-                                   'vendor/lowrisc_ip/dv/tools/xcelium')
+    xcelium_scripts = _OT_LOWRISC_IP/'dv/tools/xcelium'
 
     # The merge TCL code uses a glob to find all available scopes and previous
     # runs. In order to actually get the databases we need to go up once so
@@ -106,39 +110,23 @@ def merge_cov_xlm(cov_dir: str, verbose: bool, cov_dirs: Set[str]) -> int:
 def main():
     '''Entry point when run as a script'''
     parser = argparse.ArgumentParser()
-
-    parser.add_argument("--working-dir")
-    parser.add_argument("--simulator")
-    parser.add_argument("--verbose", action="store_true")
-
+    parser.add_argument('--dir-metadata', type=pathlib.Path, required=True)
     args = parser.parse_args()
+    md = RegressionMetadata.construct_from_metadata_dir(args.dir_metadata)
 
-    if args.simulator not in ['xlm', 'vcs']:
-        raise ValueError(f'Unsupported simulator: {args.simulator}.')
+    if md.simulator not in ['xlm', 'vcs']:
+        raise ValueError(f'Unsupported simulator for merging coverage: {args.simulator}')
 
-    output_dir = os.path.join(args.working_dir, 'coverage')
-
-    # If output_dir exists, delete it: we'll re-generate its contents in a sec
-    # and we don't want to accidentally pick them up as part of the merge.
-    try:
-        shutil.rmtree(output_dir)
-    except FileNotFoundError:
-        pass
-
-    # Now make output_dir again (but empty)
-    os.makedirs(output_dir)
+    md.dir_cov.mkdir(exist_ok=True, parents=True)
 
     # Compile a list of all directories that contain coverage databases
-    cov_dirs = find_cov_dirs(args.working_dir, args.simulator)
-    if not cov_dirs:
-        logging.info(f"No coverage found for {args.simulator}.")
-        return 1
+    cov_dirs = find_cov_dirs(str(md.dir_run), md.simulator)
 
     merge_funs = {
         'vcs': merge_cov_vcs,
         'xlm': merge_cov_xlm
     }
-    return merge_funs[args.simulator](output_dir, args.verbose, cov_dirs)
+    return merge_funs[md.simulator](str(md.dir_cov), md.verbose, cov_dirs)
 
 
 if __name__ == '__main__':

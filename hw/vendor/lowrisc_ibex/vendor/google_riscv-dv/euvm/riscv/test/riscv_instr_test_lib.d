@@ -53,7 +53,7 @@ class riscv_rand_instr_test:riscv_instr_base_test
                                         "riscv_debug_rom_gen",
                                         get_full_name() ~ ".asm_gen.debug_rom");
     }
-   
+
   }
   override void randomize_cfg()
   {
@@ -111,7 +111,7 @@ class riscv_ml_test: riscv_instr_base_test
     uvm_info(get_full_name(), "Create configuration instance...done", UVM_LOW);
     uvm_info(get_full_name(), cfg.sprint(), UVM_LOW);
     uvm_config_db!(riscv_instr_gen_config).set(null, "*", "instr_cfg", cfg);
-  } 
+  }
 
   override void randomize_cfg()
   {
@@ -120,7 +120,7 @@ class riscv_ml_test: riscv_instr_base_test
     cfg.addr_translation_rnd_order_c.constraint_mode(1);
     uvm_info(get_full_name(), format("riscv_instr_gen_config is randomized:\n%0s",cfg.sprint()), UVM_LOW);
   }
- 
+
   override void run_phase(uvm_phase phase)
   {
     randomize_cfg();

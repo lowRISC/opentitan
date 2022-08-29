@@ -58,6 +58,7 @@ module ibex_icache import ibex_pkg::*; #(
   output logic [LineSizeECC-1:0]         ic_data_wdata_o,
   input  logic [LineSizeECC-1:0]         ic_data_rdata_i [IC_NUM_WAYS],
   input  logic                           ic_scr_key_valid_i,
+  output logic                           ic_scr_key_req_o,
 
   // Cache status
   input  logic                           icache_enable_i,
@@ -182,11 +183,19 @@ module ibex_icache import ibex_pkg::*; #(
   logic [31:0]                            output_data;
   logic                                   output_err;
   // Invalidations
-  logic                                   start_inval, inval_done;
-  logic                                   inval_lock, inval_req_d, inval_req_q;
-  logic                                   reset_inval_q;
-  logic                                   inval_prog_d, inval_prog_q;
-  logic [IC_INDEX_W-1:0]                  inval_index_d, inval_index_q;
+  typedef enum logic [1:0] {
+    OUT_OF_RESET,
+    AWAIT_SCRAMBLE_KEY,
+    INVAL_CACHE,
+    IDLE
+  } inval_state_e;
+
+  inval_state_e          inval_state_q, inval_state_d;
+  logic                  inval_write_req;
+  logic                  inval_block_cache;
+  logic [IC_INDEX_W-1:0] inval_index_d, inval_index_q;
+  logic                  inval_index_en;
+  logic                  inval_active;
 
   //////////////////////////
   // Instruction prefetch //
@@ -238,28 +247,27 @@ module ibex_icache import ibex_pkg::*; #(
   // Cache write
   assign fill_req_ic0   = (|fill_ram_req);
   assign fill_index_ic0 = fill_ram_req_addr[IC_INDEX_HI:IC_LINE_W];
-  assign fill_tag_ic0   = {(~inval_prog_q & ~ecc_write_req),
+  assign fill_tag_ic0   = {(~inval_write_req & ~ecc_write_req),
                            fill_ram_req_addr[ADDR_W-1:IC_INDEX_HI+1]};
   assign fill_wdata_ic0 = fill_ram_req_data;
 
   // Arbitrated signals - lookups have highest priority
   assign lookup_grant_ic0  = lookup_req_ic0;
-  assign fill_grant_ic0    = fill_req_ic0 & ~lookup_req_ic0 & ~inval_prog_q &
+  assign fill_grant_ic0    = fill_req_ic0 & ~lookup_req_ic0 & ~inval_write_req &
                              ~ecc_write_req;
   // Qualified lookup grant to mask ram signals in IC1 if access was not made
-  assign lookup_actual_ic0 = lookup_grant_ic0 & icache_enable_i & ~inval_prog_q &
-                             ~icache_inval_i & ~inval_lock & ~start_inval;
+  assign lookup_actual_ic0 = lookup_grant_ic0 & icache_enable_i & ~inval_block_cache;
 
   // Tagram
-  assign tag_req_ic0   = lookup_req_ic0 | fill_req_ic0 | inval_prog_q | ecc_write_req;
-  assign tag_index_ic0 = inval_prog_q   ? inval_index_q :
-                         ecc_write_req  ? ecc_write_index :
-                         fill_grant_ic0 ? fill_index_ic0 :
-                                          lookup_index_ic0;
+  assign tag_req_ic0   = lookup_req_ic0 | fill_req_ic0 | inval_write_req | ecc_write_req;
+  assign tag_index_ic0 = inval_write_req ? inval_index_q :
+                         ecc_write_req   ? ecc_write_index :
+                         fill_grant_ic0  ? fill_index_ic0 :
+                                           lookup_index_ic0;
   assign tag_banks_ic0 = ecc_write_req  ? ecc_write_ways :
                          fill_grant_ic0 ? fill_ram_req_way :
                                           {IC_NUM_WAYS{1'b1}};
-  assign tag_write_ic0 = fill_grant_ic0 | inval_prog_q | ecc_write_req;
+  assign tag_write_ic0 = fill_grant_ic0 | inval_write_req | ecc_write_req;
 
   // Dataram
   assign data_req_ic0   = lookup_req_ic0 | fill_req_ic0;
@@ -534,13 +542,11 @@ module ibex_icache import ibex_pkg::*; #(
       end
     end
 
-    assign fill_cache_new = (branch_i | (|cache_cnt_q)) & icache_enable_i &
-                            ~icache_inval_i & ~inval_lock & ~inval_prog_q;
-
+    assign fill_cache_new = (branch_i | (|cache_cnt_q)) & icache_enable_i & ~inval_block_cache;
   end else begin : gen_cache_all
 
     // Cache all missing fetches
-    assign fill_cache_new = icache_enable_i & ~start_inval & ~inval_prog_q;
+    assign fill_cache_new = icache_enable_i & ~inval_block_cache;
   end
 
   //////////////////////////
@@ -603,7 +609,7 @@ module ibex_icache import ibex_pkg::*; #(
     // Any invalidation or disabling of the cache while the buffer is busy will stop allocation
     assign fill_cache_d[fb]    = (fill_alloc[fb] & fill_cache_new) |
                                  (fill_cache_q[fb] & fill_busy_q[fb] &
-                                  icache_enable_i & ~icache_inval_i & ~inval_lock);
+                                  icache_enable_i & ~icache_inval_i);
     // Record whether the request hit in the cache
     assign fill_hit_ic1[fb]    = lookup_valid_ic1 & fill_in_ic1[fb] & tag_hit_ic1 & ~ecc_err_ic1;
     assign fill_hit_d[fb]      = fill_hit_ic1[fb] | (fill_hit_q[fb] & fill_busy_q[fb]);
@@ -1060,39 +1066,82 @@ module ibex_icache import ibex_pkg::*; #(
   // Invalidations //
   ///////////////////
 
+  // Invalidation (writing all entries in the tag RAM with an invalid tag) occurs straight out of
+  // reset and after any invalidation request (signalled via icache_inval_i). An invalidation
+  // request coming whilst another is writing tags causes the invalidation to start again. This
+  // ensures a new scramble key is requested where a previous one is in use.
+  // TODO: Ditch this behaviour for non-secure ibex?
+  always_comb begin
+    inval_state_d     = inval_state_q;
+    inval_index_d     = inval_index_q;
+    inval_index_en    = 1'b0;
+    inval_write_req   = 1'b0;
+    ic_scr_key_req_o  = 1'b0;
 
-  // We need to save the invalidation request inside a register. That way we can wait
-  // until we have a valid scrambling key to do it. Since the key itself is needed for
-  // starting to fill in the RAMs and read from them, ICache also needs to stop operating.
-  assign inval_req_d = (inval_req_q | icache_inval_i) & ~(inval_done & inval_prog_q);
+    // Prevent other cache activity (cache lookups and cache allocations) whilst an invalidation is
+    // in progress. Set to 1 by default as the only time we don't block is when the state machine is
+    // IDLE.
+    inval_block_cache = 1'b1;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      inval_req_q  <= 1'b0;
-    end else begin
-      inval_req_q  <= inval_req_d;
-    end
+    unique case (inval_state_q)
+      OUT_OF_RESET: begin
+        // Initial state, this initialises the tag RAMs out of reset before the icache can be used
+        inval_state_d = AWAIT_SCRAMBLE_KEY;
+
+        if (~ic_scr_key_valid_i) begin
+          ic_scr_key_req_o = 1'b1;
+        end
+      end
+      AWAIT_SCRAMBLE_KEY: begin
+        // When invalidating a new scrambling key is requested on all invalidation requests. Wait
+        // for that new key to be available before beginning with the actual invalidation (cannot
+        // write to the tag RAM until we have the new scrambling key that will be used). Ignore any
+        // requests in this phase (once a scramble key request has started we cannot request a new
+        // one until the on-going request is done).
+        if (ic_scr_key_valid_i) begin
+          inval_state_d  = INVAL_CACHE;
+          inval_index_d  = '0;
+          inval_index_en = 1'b1;
+        end
+      end
+      INVAL_CACHE: begin
+        // Actually invalidate the cache. Write every entry in the tag RAM with an invalid tag. Once
+        // all are written we're done.
+        inval_write_req = 1'b1;
+        inval_index_d   = (inval_index_q + {{IC_INDEX_W-1{1'b0}},1'b1});
+        inval_index_en  = 1'b1;
+
+        if (icache_inval_i) begin
+          // If a new invalidaiton requests comes in go back to the beginning with a new scramble
+          // key
+          ic_scr_key_req_o = 1'b1;
+          inval_state_d = AWAIT_SCRAMBLE_KEY;
+        end else if (&inval_index_q) begin
+          // When the final index is written we're done
+            inval_state_d = IDLE;
+        end
+      end
+      IDLE: begin
+        // Usual running state
+        if (icache_inval_i) begin
+          ic_scr_key_req_o = 1'b1;
+          inval_state_d = AWAIT_SCRAMBLE_KEY;
+        end else begin
+          // Allow other cache activies whilst in IDLE and no invalidation has been requested
+          inval_block_cache = 1'b0;
+        end
+      end
+      default: ;
+    endcase
   end
 
-  // This will act like a lock mechanism.
-  // Main idea is to lock the invalidation request until we got a valid scrambling key.
-  assign inval_lock = inval_req_d & ~ic_scr_key_valid_i;
-
-  // Invalidate on reset, or when instructed. If an invalidation request is received while a
-  // previous invalidation is ongoing, it does not need to be restarted. Do not start
-  // this process until inval lock is removed meaning the scrambling key is valid.
-  assign start_inval   = ~inval_lock & (~reset_inval_q | inval_req_q) & ~inval_prog_q ;
-  assign inval_prog_d  = ~inval_lock & (start_inval | (inval_prog_q & ~inval_done));
-  assign inval_done    = &inval_index_q;
-  assign inval_index_d = start_inval ? '0 : (inval_index_q + {{IC_INDEX_W-1{1'b0}},1'b1});
+  assign inval_active = inval_state_q != IDLE;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      inval_prog_q  <= 1'b0;
-      reset_inval_q <= 1'b0;
+      inval_state_q <= OUT_OF_RESET;
     end else begin
-      inval_prog_q  <= inval_prog_d;
-      reset_inval_q <= 1'b1;
+      inval_state_q <= inval_state_d;
     end
   end
 
@@ -1100,13 +1149,13 @@ module ibex_icache import ibex_pkg::*; #(
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         inval_index_q <= '0;
-      end else if (inval_prog_d) begin
+      end else if (inval_index_en) begin
         inval_index_q <= inval_index_d;
       end
     end
   end else begin : g_inval_index_nr
     always_ff @(posedge clk_i) begin
-      if (inval_prog_d) begin
+      if (inval_index_en) begin
         inval_index_q <= inval_index_d;
       end
     end
@@ -1118,7 +1167,7 @@ module ibex_icache import ibex_pkg::*; #(
 
   // Only busy (for WFI purposes) while an invalidation is in-progress, or external requests are
   // outstanding.
-  assign busy_o = inval_req_q | (|(fill_busy_q & ~fill_rvd_done));
+  assign busy_o = inval_active | (|(fill_busy_q & ~fill_rvd_done));
 
   ////////////////
   // Assertions //

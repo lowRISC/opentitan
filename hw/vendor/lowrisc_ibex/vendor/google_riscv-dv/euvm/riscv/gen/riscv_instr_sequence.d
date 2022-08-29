@@ -75,7 +75,7 @@ class riscv_instr_sequence:  uvm_sequence!(uvm_sequence_item,uvm_sequence_item)
   int                      hint_instr_pct;       // Percentage of HINT instruction
 
   mixin uvm_object_utils;
- 
+
   this(string name = "") {
     super(name);
     if(!uvm_config_db!(riscv_instr_gen_config).get(null, "*", "instr_cfg", cfg))
@@ -318,7 +318,7 @@ class riscv_instr_sequence:  uvm_sequence!(uvm_sequence_item,uvm_sequence_item)
     }
   }
 
-  
+
   void generate_return_routine(string prefix) {
     import std.algorithm: countUntil;
     string str;
@@ -329,7 +329,7 @@ class riscv_instr_sequence:  uvm_sequence!(uvm_sequence_item,uvm_sequence_item)
     uint ra_idx;
 
     auto zero_idx = cfg.reserved_regs.countUntil(riscv_reg_t.ZERO);
-    
+
     // if (zero_idx >= 0) {
       ra_idx = urandom (0, cast(uint) cfg.reserved_regs.length);
       if (ra_idx <= zero_idx) ra_idx += 1;

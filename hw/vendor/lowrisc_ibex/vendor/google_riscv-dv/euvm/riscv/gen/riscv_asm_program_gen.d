@@ -91,7 +91,7 @@ class riscv_asm_program_gen : uvm_object
   mixin uvm_object_utils;
 
   this(string name = "") {
-    super(name);  
+    super(name);
   }
 
   //---------------------------------------------------------------------------------------
@@ -731,7 +731,7 @@ class riscv_asm_program_gen : uvm_object
     case 5: value[SINGLE_PRECISION_FRACTION_BITS..31] = 0; break;
     default: break;
     }
-	  
+
     return value;
   }
 
@@ -1137,7 +1137,7 @@ class riscv_asm_program_gen : uvm_object
       if (cfg.check_xstatus) {
         instr ~= format("csrr x%0d, 0x%0x # %0s", cfg.gpr[0], status, status);
       }
-      instr ~= 
+      instr ~=
 	// Use scratch CSR to save a GPR value
 	// Check if the exception is caused by an interrupt, if yes, jump to interrupt
 	// handler Interrupt is indicated by xCause[XLEN-1]
@@ -1172,9 +1172,9 @@ class riscv_asm_program_gen : uvm_object
        format("beq x%0d, x%0d, %0sebreak_handler",
 	      cfg.gpr[0], cfg.gpr[1], hart_prefix(hart)),
        // Check if it's an ECALL exception. Jump to ECALL exception handler
-       format("li x%0d, 0x%0x # ECALL_UMODE", cfg.gpr[1], exception_cause_t.ECALL_UMODE), 
+       format("li x%0d, 0x%0x # ECALL_UMODE", cfg.gpr[1], exception_cause_t.ECALL_UMODE),
        format("beq x%0d, x%0d, %0secall_handler",
-	      cfg.gpr[0], cfg.gpr[1], hart_prefix(hart)), 
+	      cfg.gpr[0], cfg.gpr[1], hart_prefix(hart)),
        format("li x%0d, 0x%0x # ECALL_SMODE", cfg.gpr[1], exception_cause_t.ECALL_SMODE),
        format("beq x%0d, x%0d, %0secall_handler",
 	      cfg.gpr[0], cfg.gpr[1], hart_prefix(hart)),
@@ -1184,13 +1184,13 @@ class riscv_asm_program_gen : uvm_object
        // Page table fault or access fault conditions
        format("li x%0d, 0x%0x", cfg.gpr[1], exception_cause_t.INSTRUCTION_ACCESS_FAULT),
        format("beq x%0d, x%0d, %0sinstr_fault_handler",
-	      cfg.gpr[0], cfg.gpr[1], hart_prefix(hart)), 
+	      cfg.gpr[0], cfg.gpr[1], hart_prefix(hart)),
        format("li x%0d, 0x%0x", cfg.gpr[1], exception_cause_t.LOAD_ACCESS_FAULT),
        format("beq x%0d, x%0d, %0sload_fault_handler",
 	      cfg.gpr[0], cfg.gpr[1], hart_prefix(hart)),
-       format("li x%0d, 0x%0x", cfg.gpr[1], exception_cause_t.STORE_AMO_ACCESS_FAULT), 
+       format("li x%0d, 0x%0x", cfg.gpr[1], exception_cause_t.STORE_AMO_ACCESS_FAULT),
        format("beq x%0d, x%0d, %0sstore_fault_handler",
-	      cfg.gpr[0], cfg.gpr[1], hart_prefix(hart)), 
+	      cfg.gpr[0], cfg.gpr[1], hart_prefix(hart)),
        format("li x%0d, 0x%0x", cfg.gpr[1], exception_cause_t.INSTRUCTION_PAGE_FAULT),
        format("beq x%0d, x%0d, %0spt_fault_handler",
 	      cfg.gpr[0], cfg.gpr[1], hart_prefix(hart)),
@@ -1338,7 +1338,7 @@ class riscv_asm_program_gen : uvm_object
   void gen_instr_fault_handler(int hart) {
     string[] instr;
     riscv_reg_t[6] regs;
-    
+
     gen_signature_handshake(instr, signature_type_t.CORE_STATUS, core_status_t.INSTR_FAULT_EXCEPTION);
     gen_signature_handshake(instr, signature_type_t.WRITE_CSR, core_status_t.INITIALIZED,
 			    test_result_t.TEST_FAIL, privileged_reg_t.MCAUSE);
@@ -1818,7 +1818,7 @@ class riscv_asm_program_gen : uvm_object
         if (object_h is null) {
           uvm_fatal(get_full_name(), format("Cannot create instr stream %0s", name));
         }
-	
+
 	riscv_rand_instr_stream new_instr_stream = cast(riscv_rand_instr_stream) object_h;
         if (new_instr_stream !is null) {
 	  assert (cfg !is null);

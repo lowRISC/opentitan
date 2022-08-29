@@ -46,7 +46,7 @@ class riscv_vector_cfg : uvm_object
 
   // Allow only vector instructions from the random sequences
   @rand bool only_vec_instr;
-  
+
   constraint! q{@soft only_vec_instr == false;} only_vec_instr_c;
 
   // Allow vector floating-point instructions (Allows vtype.vsew to be set <16 or >32).
@@ -81,7 +81,7 @@ class riscv_vector_cfg : uvm_object
   // Enable fault only first load ops
   @rand @UVM_DEFAULT bool enable_fault_only_first_load;
 
-  
+
    constraint! q{
      //solve vtype before vl;
      //solve vl before vstart;
@@ -107,7 +107,7 @@ class riscv_vector_cfg : uvm_object
      if (vec_quad_widening) {
        vtype.vlmul < 4 || (vtype.fractional_lmul == true);
      }
-   } vlmul_c ; 
+   } vlmul_c ;
 
    constraint! q{
      vtype.vsew inside [8, 16, 32, 64, 128];
@@ -116,7 +116,7 @@ class riscv_vector_cfg : uvm_object
      if (vec_fp) {vtype.vsew inside [32];}
      if (vec_narrowing_widening) {vtype.vsew < ELEN;}
      if (vec_quad_widening) {vtype.vsew < (ELEN >> 1);}
-   } vsew_c; 
+   } vsew_c;
 
    constraint! q{
      enable_zvlsseg -> (vtype.vlmul < 8);
@@ -126,7 +126,7 @@ class riscv_vector_cfg : uvm_object
      vtype.vediv inside [1, 2, 4, 8];
      vtype.vediv <= (vtype.vsew / SELEN);
    } vdeiv_c;
-  
+
 
   this(string name = "") {
     import esdl.base.cmdl: CommandLine;
@@ -161,5 +161,5 @@ class riscv_vector_cfg : uvm_object
       uvm_info(get_full_name(), format("Checking emul: %.2f", emul), UVM_LOW);
     }
   }
-  
+
 }

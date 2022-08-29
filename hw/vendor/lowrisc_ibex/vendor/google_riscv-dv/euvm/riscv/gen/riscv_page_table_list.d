@@ -60,7 +60,7 @@ class riscv_page_table_list(satp_mode_t MODE = satp_mode_t.SV39) : uvm_object
   privileged_mode_t privileged_mode = privileged_mode_t.USER_MODE;
 
   // Starting physical address of the program.
-  ubvec!XLEN start_pa = 0x80000000; 
+  ubvec!XLEN start_pa = 0x80000000;
 
   // Num of page table per level
   uint[]  num_of_page_table;
@@ -134,7 +134,7 @@ class riscv_page_table_list(satp_mode_t MODE = satp_mode_t.SV39) : uvm_object
   // Note:
   // - The number of randomization call is optimized to improve performance
   // - PPN assignment is done at program run time
-  void randomize_page_table() { 
+  void randomize_page_table() {
     int pte_index;
     exception_cfg.enable_exception = enable_exception;
     create_valid_pte();
@@ -155,7 +155,7 @@ class riscv_page_table_list(satp_mode_t MODE = satp_mode_t.SV39) : uvm_object
             // First few super pages are link PTE to the next level
 	    // $cast(page_table[i].pte[j], valid_link_pte.clone());
           }
-	  else if (j < SuperLeafPtePerTable + LinkPtePerTable) { 
+	  else if (j < SuperLeafPtePerTable + LinkPtePerTable) {
 	    entry = cast(riscv_page_table_entry!MODE) valid_leaf_pte.clone();
             // Non-link superpage table entry
 	    //  $cast(page_table[i].pte[j], valid_leaf_pte.clone());
@@ -188,7 +188,7 @@ class riscv_page_table_list(satp_mode_t MODE = satp_mode_t.SV39) : uvm_object
 
   // Create the basic legal page table entries
   void create_valid_pte() {
-    valid_leaf_pte.randomize_with! q{ 
+    valid_leaf_pte.randomize_with! q{
       if ($0 == $1) {
         u == true;
       }
@@ -250,7 +250,7 @@ class riscv_page_table_list(satp_mode_t MODE = satp_mode_t.SV39) : uvm_object
     // Unaligned super leaf PTE
     if (exception_cfg.allow_superpage_misaligned_exception &&
         (level > 0) && (pte.xwr != pte_permission_t.NEXT_LEVEL_PAGE)) {
-      ubvec!(riscv_page_table_entry!(MODE).VPN_WIDTH) fault_ppn; 
+      ubvec!(riscv_page_table_entry!(MODE).VPN_WIDTH) fault_ppn;
       fault_ppn.randomize();
       // `DV_CHECK_STD_RANDOMIZE_FATAL(fault_ppn)
       if (level == 3) {
@@ -287,7 +287,7 @@ class riscv_page_table_list(satp_mode_t MODE = satp_mode_t.SV39) : uvm_object
       level = 3;
       bit_mask = bit_mask >> (riscv_page_table_entry!(MODE).RSVD_WIDTH +
                               riscv_page_table_entry!(MODE).PPN3_WIDTH);
-    }			      
+    }
     else if (MODE == satp_mode_t.SV39) {
       load_store_unit = "d";
       level = 2;

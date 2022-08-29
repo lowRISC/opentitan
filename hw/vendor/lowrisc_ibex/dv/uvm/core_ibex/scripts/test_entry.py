@@ -1,31 +1,40 @@
-import os
-import sys
-from typing import Dict, List
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 
-_CORE_IBEX = os.path.normpath(os.path.join(os.path.dirname(__file__), '..'))
-_IBEX_ROOT = os.path.normpath(os.path.join(_CORE_IBEX, 3 * '../'))
-_RISCV_DV_ROOT = os.path.join(_IBEX_ROOT, 'vendor/google_riscv-dv')
-_OLD_SYS_PATH = sys.path
+import argparse
+import re
+import logging
+from typing import Dict, List, Tuple
 
 # Import riscv_trace_csv and lib from _DV_SCRIPTS before putting sys.path back
 # as it started.
-try:
-    sys.path = ([os.path.join(_CORE_IBEX, 'riscv_dv_extension'),
-                 os.path.join(_RISCV_DV_ROOT, 'scripts')] +
-                sys.path)
-    from lib import process_regression_list  # type: ignore
-finally:
-    sys.path = _OLD_SYS_PATH
+from setup_imports import _CORE_IBEX_RISCV_DV_EXTENSION, _RISCV_DV
+import lib as riscvdv_lib  # type: ignore
 
 
 TestEntry = Dict[str, object]
 TestEntries = List[TestEntry]
+TestAndSeed = Tuple[str, int]
+
+
+def read_test_dot_seed(arg: str) -> TestAndSeed:
+    '''Read a value for --test-dot-seed'''
+
+    match = re.match(r'([^.]+)\.([0-9]+)$', arg)
+    if match is None:
+        raise argparse.ArgumentTypeError('Bad --test-dot-seed ({}): '
+                                         'should be of the form TEST.SEED.'
+                                         .format(arg))
+
+    return (match.group(1), int(match.group(2), 10))
 
 
 def get_test_entry(testname: str) -> TestEntry:
     matched_list = []  # type: TestEntries
-    testlist = os.path.join(_CORE_IBEX, 'riscv_dv_extension', 'testlist.yaml')
-    process_regression_list(testlist, 'all', 0, matched_list, _RISCV_DV_ROOT)
+    testlist = _CORE_IBEX_RISCV_DV_EXTENSION/'testlist.yaml'
+
+    riscvdv_lib.process_regression_list(testlist, 'all', 0, matched_list, _RISCV_DV)
 
     for entry in matched_list:
         if entry['test'] == testname:

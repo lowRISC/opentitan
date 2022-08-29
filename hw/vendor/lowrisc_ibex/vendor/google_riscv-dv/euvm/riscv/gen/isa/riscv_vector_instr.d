@@ -253,7 +253,7 @@ class riscv_vector_instr: riscv_floating_point_instr
   // the source mask register (v0) when LMUL=1
   constraint!q{
     (vm == false) && (m_cfg.vector_cfg.vtype.vlmul > 1) -> (vd != 0);
-  } vmask_overlap_c; 
+  } vmask_overlap_c;
 
   constraint!q{
     // Below instruction is always masked
@@ -340,7 +340,7 @@ class riscv_vector_instr: riscv_floating_point_instr
     (vm == false) -> (vd != 0);
   } temp_c;
 
-  
+
   this(string name = "riscv_vector_instr") {
     super(name);
   }
@@ -457,7 +457,7 @@ class riscv_vector_instr: riscv_floating_point_instr
 	  asm_str = format("%0s.%0s ", get_instr_name(), va_variant);
 	  asm_str = format_string(asm_str, MAX_INSTR_STR_LEN);
 	  switch (va_variant) {
-	  case va_variant_t.WV, 
+	  case va_variant_t.WV,
 	    va_variant_t.VV,
 	    va_variant_t.VVM,
 	    va_variant_t.VM:
@@ -585,7 +585,7 @@ class riscv_vector_instr: riscv_floating_point_instr
     asm_str ~= vec_vm_str();
     if (comment != "") {
       asm_str ~= " #" ~ comment;
-    }  
+    }
     return asm_str.toLower();
   }
 

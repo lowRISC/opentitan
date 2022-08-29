@@ -142,47 +142,52 @@
 # fields need to be constrained such that their value after every operation is within the allowed
 # range of values - too much complexity for the current format
 # MSTATUS
-#- csr: mstatus
-#  description: >
-#    Controls hart's current operating state
-#  address: 0x300
-#  privilege_mode: M
-#  rv32:
-#    - field_name: tw
-#      description: >
-#        Timeout Wait (WFI from U-mode will trap to M-mode)
-#      type: WARL
-#      reset_val: 0
-#      msb: 21
-#      lsb: 21
-#    - field_name: mprv
-#      description: >
-#        Modify Privilege (Loads and stores use MPP for privilege checking)
-#      type: WARL
-#      reset_val: 0
-#      msb: 17
-#      lsb: 17
-#    - field_name: mpp
-#      desription : >
-#        Previous privilege mode
-#      type: R
-#      reset_val: 0
-#      msb: 12
-#      lsb: 11
-#    - field_name: mpie
-#      description: >
-#        Previous value of interrupt-enable bit
-#      type: WARL
-#      reset_val: 1
-#      msb: 7
-#      lsb: 7
-#    - field_name: mie
-#      description: >
-#        M-mode interrupt enable
-#      type: WARL
-#      reset_val: 0
-#      msb: 3
-#      lsb: 3
+- csr: mstatus
+  description: >
+    Controls hart's current operating state
+  address: 0x300
+  privilege_mode: M
+  rv32:
+    - field_name: tw
+      description: >
+        Timeout Wait (WFI from U-mode will trap to M-mode)
+      type: WARL
+      reset_val: 0
+      msb: 21
+      lsb: 21
+    - field_name: mprv
+      description: >
+        Modify Privilege (Loads and stores use MPP for privilege checking)
+      type: WARL
+      reset_val: 0
+      msb: 17
+      lsb: 17
+    - field_name: mpp
+      desription : >
+        Previous privilege mode
+      type: WARL
+      reset_val: 0
+      msb: 12
+      lsb: 11
+      warl_legalize: |
+        if val_in == 0b11 or val_in == 0b00:
+          val_out = val_in
+        else:
+          val_out = 0b00
+    - field_name: mpie
+      description: >
+        Previous value of interrupt-enable bit
+      type: WARL
+      reset_val: 1
+      msb: 7
+      lsb: 7
+    - field_name: mie
+      description: >
+        M-mode interrupt enable
+      type: WARL
+      reset_val: 0
+      msb: 3
+      lsb: 3
 
 # MIP
 - csr: mip
@@ -288,25 +293,34 @@
 
 # TODO: Add support for WARL fields to CSR test generator allowing this CSR to
 # be tested.
-## MCAUSE
-#- csr: mcause
-#  description: >
-#    Indicates trap cause
-#  address: 0x342
-#  privilege_mode: M
-#  rv32:
-#    - field_name: Interrupt
-#      description: >
-#        Indicates if trap caused by interrupt
-#      type: WARL
-#      reset_val: 0
-#      msb: 31
-#      lsb: 31
-#    - field_name: Exception Code
-#      type: WLRL
-#      reset_val: 0
-#      msb: 4
-#      lsb: 0
+# MCAUSE
+- csr: mcause
+  description: >
+    Indicates trap cause
+  address: 0x342
+  privilege_mode: M
+  rv32:
+    - field_name: Interrupt info
+      description: >
+        Indicates if trap caused by interrupt and if that interrupt was internal
+        or external
+      type: WARL
+      reset_val: 0
+      msb: 31
+      lsb: 5
+      warl_legalize: |
+        if val_in & 0x4000000:
+          if val_in & 0x2000000:
+            val_out = 0x7ffffff
+          else:
+            val_out = 0x4000000
+        else:
+          val_out = 0x0000000
+    - field_name: Exception Code
+      type: WLRL
+      reset_val: 0
+      msb: 4
+      lsb: 0
 
 # MTVAL
 - csr: mtval

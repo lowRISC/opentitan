@@ -155,9 +155,9 @@ def collect_cov(out, cfg, cwd):
             logging.error("Cannot find {} directory, or it is empty".format(argv.dir))
             sys.exit(RET_FAIL)
     if argv.core:
-        """If functional coverage is being collected from an RTL core 
-        implementation, the flow assumes that the core's trace logs have 
-        already been converted to CSV files by the post_compare step of the 
+        """If functional coverage is being collected from an RTL core
+        implementation, the flow assumes that the core's trace logs have
+        already been converted to CSV files by the post_compare step of the
         flow. """
         trace_log = ("{}/{}_trace_log".format(out, argv.core))
         run_cmd("find {} -name \"*.csv\" | sort > {}".format(argv.dir, trace_log))

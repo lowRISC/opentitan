@@ -6,9 +6,7 @@ class core_ibex_base_test extends uvm_test;
 
   core_ibex_env                                   env;
   core_ibex_env_cfg                               cfg;
-`ifdef INC_IBEX_COSIM
   core_ibex_cosim_cfg                             cosim_cfg;
-`endif
   virtual clk_rst_if                              clk_vif;
   virtual core_ibex_dut_probe_if                  dut_vif;
   virtual core_ibex_instr_monitor_if              instr_vif;
@@ -25,8 +23,10 @@ class core_ibex_base_test extends uvm_test;
   bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0]    signature_data_q[$];
   bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0]    signature_data;
   uvm_tlm_analysis_fifo #(ibex_mem_intf_seq_item) item_collected_port;
+  uvm_tlm_analysis_fifo #(ibex_mem_intf_seq_item) test_done_port;
   uvm_tlm_analysis_fifo #(irq_seq_item)           irq_collected_port;
   uvm_phase                                       cur_run_phase;
+  bit                                             test_done = 1'b0;
 
   `uvm_component_utils(core_ibex_base_test)
 
@@ -36,6 +36,7 @@ class core_ibex_base_test extends uvm_test;
     ibex_report_server = new();
     uvm_report_server::set_server(ibex_report_server);
     item_collected_port = new("item_collected_port_test", this);
+    test_done_port = new("test_done_port_instance", this);
     irq_collected_port  = new("irq_collected_port_test", this);
   endfunction
 
@@ -78,6 +79,8 @@ class core_ibex_base_test extends uvm_test;
 
   virtual function void build_phase(uvm_phase phase);
     string cosim_log_file;
+    bit [31:0] pmp_num_regions;
+    bit [31:0] pmp_granularity;
 
     super.build_phase(phase);
     $value$plusargs("timeout_in_cycles=%0d", timeout_in_cycles);
@@ -98,7 +101,6 @@ class core_ibex_base_test extends uvm_test;
     env = core_ibex_env::type_id::create("env", this);
     cfg = core_ibex_env_cfg::type_id::create("cfg", this);
 
-`ifdef INC_IBEX_COSIM
     cosim_cfg = core_ibex_cosim_cfg::type_id::create("cosim_cfg", this);
 
     cosim_cfg.isa_string = get_isa_string();
@@ -109,8 +111,19 @@ class core_ibex_base_test extends uvm_test;
     void'($value$plusargs("cosim_log_file=%0s", cosim_log_file));
     cosim_cfg.log_file = cosim_log_file;
 
+    if (!uvm_config_db#(bit [31:0])::get(null, "", "PMPNumRegions", pmp_num_regions)) begin
+      pmp_num_regions = '0;
+    end
+
+    if (!uvm_config_db#(bit [31:0])::get(null, "", "PMPGranularity", pmp_granularity)) begin
+      pmp_granularity = '0;
+    end
+
+    cosim_cfg.pmp_num_regions = pmp_num_regions;
+    cosim_cfg.pmp_granularity = pmp_granularity;
+    cosim_cfg.relax_cosim_check = cfg.disable_cosim;
+
     uvm_config_db#(core_ibex_cosim_cfg)::set(null, "*cosim_agent*", "cosim_cfg", cosim_cfg);
-`endif
 
     uvm_config_db#(core_ibex_env_cfg)::set(this, "*", "cfg", cfg);
     mem = mem_model_pkg::mem_model#()::type_id::create("mem");
@@ -124,6 +137,8 @@ class core_ibex_base_test extends uvm_test;
     super.connect_phase(phase);
     env.data_if_response_agent.monitor.item_collected_port.connect(
       this.item_collected_port.analysis_export);
+    env.data_if_response_agent.monitor.item_collected_port.connect(
+      this.test_done_port.analysis_export);
     env.irq_agent.monitor.irq_port.connect(this.irq_collected_port.analysis_export);
   endfunction
 
@@ -172,32 +187,38 @@ class core_ibex_base_test extends uvm_test;
       `uvm_fatal(get_full_name(), $sformatf("Cannot open file %0s", bin))
     while ($fread(r8,f_bin)) begin
       `uvm_info(`gfn, $sformatf("Init mem [0x%h] = 0x%0h", addr, r8), UVM_FULL)
-      mem.write(addr, r8);
-`ifdef INC_IBEX_COSIM
-      if (env.cosim_agent != null) begin
-        env.cosim_agent.write_mem_byte(addr, r8);
-      end
-`endif
+      mem.write(addr, r8);                      // Populate RTL memory model
+      env.cosim_agent.write_mem_byte(addr, r8); // Populate ISS memory model
       addr++;
     end
   endfunction
 
+  // Use a RISCV_DV handshake signature to end the test.
+  // This process uses a different signature address (cfg.signature_addr - 0x4)
   virtual task wait_for_test_done();
+    bit result;
+
+    // Make use of the 'test_done_port' which subscribes to all memory interface items.
+    // We can then watch for the correct message in isolation.
     fork
       begin
-        wait (dut_vif.dut_cb.ecall === 1'b1);
-        vseq.stop();
-        `uvm_info(`gfn, "ECALL instruction is detected, test done", UVM_LOW)
-        fork
-          begin
-            check_perf_stats();
-            // De-assert fetch enable to finish the test
-            clk_vif.wait_clks(10);
-            dut_vif.dut_cb.fetch_enable <= ibex_pkg::FetchEnableOff;
-          end
+        wait_for_mem_txn((cfg.signature_addr - 4'h4), TEST_RESULT, test_done_port);
+        result = signature_data_q.pop_front();
+        if (result == TEST_PASS) begin
+          test_done = 1'b1;
+          `uvm_info(`gfn, "Test PASSED!", UVM_LOW)
+          vseq.stop();
+          check_perf_stats();
+          // De-assert fetch enable to finish the test
+          clk_vif.wait_clks(10);
+          dut_vif.dut_cb.fetch_enable <= ibex_pkg::FetchEnableOff;
           // Wait some time for the remaining instruction to finish
           clk_vif.wait_clks(3000);
-        join
+        end else if (result == TEST_FAIL) begin
+          `uvm_fatal(`gfn, "Test FAILED!")
+        end else begin
+          `uvm_fatal(`gfn, "Incorrectly formed handshake received at test-control address.")
+        end
       end
       begin
         clk_vif.wait_clks(timeout_in_cycles);
@@ -207,14 +228,18 @@ class core_ibex_base_test extends uvm_test;
   endtask
 
 
-  virtual task wait_for_mem_txn(input bit[ibex_mem_intf_agent_pkg::ADDR_WIDTH-1:0] ref_addr,
-                                input signature_type_t ref_type);
+  virtual task wait_for_mem_txn(
+    input bit [ibex_mem_intf_agent_pkg::ADDR_WIDTH-1:0] ref_addr,
+    input signature_type_t ref_type,
+    input uvm_tlm_analysis_fifo #(ibex_mem_intf_seq_item) txn_port = item_collected_port
+    );
+
     ibex_mem_intf_seq_item mem_txn;
     `uvm_info(`gfn, $sformatf("Awaiting riscv-dv handshake at 0x%0h, Type : %0s",
                               ref_addr, ref_type), UVM_HIGH)
     forever begin
       // The first write to this address is guaranteed to contain the signature type in bits [7:0]
-      item_collected_port.get(mem_txn);
+      txn_port.get(mem_txn);
       if (mem_txn.addr       == ref_addr &&
           mem_txn.data[7:0] === ref_type &&
           mem_txn.read_write == WRITE) begin
@@ -234,7 +259,7 @@ class core_ibex_base_test extends uvm_test;
           WRITE_GPR: begin
             for(int i = 0; i < 32; i++) begin
               do begin
-                item_collected_port.get(mem_txn);
+                txn_port.get(mem_txn);
               end while(!(mem_txn.addr == ref_addr && mem_txn.read_write == WRITE));
               signature_data_q.push_back(mem_txn.data);
             end
@@ -243,7 +268,7 @@ class core_ibex_base_test extends uvm_test;
           WRITE_CSR: begin
             signature_data_q.push_back(signature_data >> 8);
             do begin
-              item_collected_port.get(mem_txn);
+              txn_port.get(mem_txn);
             end while (!(mem_txn.addr == ref_addr && mem_txn.read_write == WRITE));
             signature_data_q.push_back(mem_txn.data);
           end

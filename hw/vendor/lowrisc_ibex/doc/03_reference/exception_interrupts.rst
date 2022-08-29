@@ -81,13 +81,13 @@ The possible ``mcause`` values for an internal interrupt as listed below:
 +-------------+-------------------------------------------------------------------------------------------------------------+
 | ``mcause``  | Description                                                                                                 |
 +-------------+-------------------------------------------------------------------------------------------------------------+
-| 0xFFFFFFFE0 | Load integrity error internal interrupt.                                                                    |
+| 0xFFFFFFE0  | Load integrity error internal interrupt.                                                                    |
 |             | Only generated when SecureIbex == 0.                                                                        |
 |             | ``mtval`` gives the faulting address.                                                                       |
 |             | The interrupt will be taken at most one instruction after the faulting load.                                |
 |             | In particular a load or store immediately after a faulting load may execute before the interrupt is taken.  |
 +-------------+-------------------------------------------------------------------------------------------------------------+
-| 0x80000001F | External NMI                                                                                                |
+| 0x8000001F  | External NMI                                                                                                |
 +-------------+-------------------------------------------------------------------------------------------------------------+
 
 Recoverable Non-Maskable Interrupt

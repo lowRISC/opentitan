@@ -174,7 +174,7 @@ class riscv_page_table_entry(satp_mode_t MODE = satp_mode_t.SV39) : uvm_object
       break;
     }
   }
-  
+
 
   // Return the PPN field offset based on the page level
    int get_ppn_offset(ubvec!2 page_level) {
@@ -184,13 +184,13 @@ class riscv_page_table_entry(satp_mode_t MODE = satp_mode_t.SV39) : uvm_object
      case 1:
        return PPN0_WIDTH;
      case 2:
-       return PPN0_WIDTH + PPN1_WIDTH; 
+       return PPN0_WIDTH + PPN1_WIDTH;
      case 3:
        return PPN0_WIDTH + PPN1_WIDTH + PPN2_WIDTH;
      default:  uvm_fatal(get_full_name(),
 			 format("Unsupported page_level %0x", page_level));
-       assert (false); 
-    } 
+       assert (false);
+    }
   }
 
   // Assign each PPN field based on the input physical address. This function //is used to setup the
@@ -247,5 +247,5 @@ class riscv_page_table_entry(satp_mode_t MODE = satp_mode_t.SV39) : uvm_object
     return retval;
   }
 }
-    
- 
+
+

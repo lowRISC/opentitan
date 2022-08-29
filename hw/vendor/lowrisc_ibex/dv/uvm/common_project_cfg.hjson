@@ -5,8 +5,9 @@
   project:          ibex
 
   // These keys are expected by dvsim.py, so we have to set them to something.
-  doc_server:       bogus.doc.server
-  results_server:   bogus.results.server
+  doc_server:        bogus.doc.server
+  results_server:    bogus.results.server
+  results_html_name: report.html
 
   // Default directory structure for the output
   scratch_base_path:  "{scratch_root}/{dut}.{flow}.{tool}"

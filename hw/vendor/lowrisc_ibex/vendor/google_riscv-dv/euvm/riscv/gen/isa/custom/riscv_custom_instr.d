@@ -41,7 +41,7 @@ class riscv_custom_instr: riscv_instr
   this(string name = "") {
     super(name);
   }
-   
+
   override string get_instr_name() {
     import std.conv: to;
     return instr_name.to!string();

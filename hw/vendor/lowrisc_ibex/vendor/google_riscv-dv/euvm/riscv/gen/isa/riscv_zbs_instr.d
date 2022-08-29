@@ -122,7 +122,7 @@ class riscv_zbs_instr: riscv_instr
     }
     return binary;
   }
-  
+
   override bool is_supported(riscv_instr_gen_config cfg) {
     return (cfg.enable_zbs_extension &&
 	    (supported_isa.canFind(riscv_instr_group_t.RV32ZBS) ||

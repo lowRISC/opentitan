@@ -18,6 +18,8 @@ VERBOSITY=
 # The number of seeds to run for each selected test. Defaults to 1.
 RESEED=1
 
+SIM=vcs
+
 # Specify the seed for the test to run. If this is empty, dvsim.py
 # will pick random seeds. By default, we make runs reproducible, so
 # force the seed if RESEED is 1.
@@ -39,9 +41,10 @@ verbosity-arg  := $(if $(VERBOSITY),--verbosity $(VERBOSITY),)
 reseed-arg     := --reseed $(RESEED)
 seed-arg       := $(if $(SEED),--fixed-seed $(SEED),)
 tests-arg      := $(if $(TESTS),--items $(TESTS))
+tool-arg       := -t $(SIM)
 
 dvsim-mk-args := \
-  $(waves-arg) $(coverage-arg) $(verbosity-arg) \
+  $(tool-arg) $(waves-arg) $(coverage-arg) $(verbosity-arg) \
   $(reseed-arg) $(seed-arg) $(tests-arg)
 
 .PHONY: run

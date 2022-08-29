@@ -65,7 +65,7 @@ class riscv_instr_test: riscv_instr_base_test
     uvm_info(get_full_name(), "Creating instruction list", UVM_LOW);
     cfg.instr_registry.create_instr_list(cfg);
     uvm_info(get_full_name(), "Randomizing instruction list now...", UVM_LOW);
-    
+
     //10000.repeat();
     for(int i = 0; i<100000; i++)
       {
@@ -77,14 +77,14 @@ class riscv_instr_test: riscv_instr_base_test
     instr = cfg.instr_registry.get_rand_instr([riscv_instr_category_t.LOAD, riscv_instr_category_t.STORE]);
     instr.randomize();
     fd.writeln(instr.convert2asm());
-      
+
     // repeat (10000);
     instr = cfg.instr_registry.get_rand_instr(([riscv_instr_category_t.LOAD, riscv_instr_category_t.STORE , riscv_instr_category_t.BRANCH]),
 					      ([riscv_instr_group_t.RV32I, riscv_instr_group_t.RV32M]));
     instr.randomize();
     fd.writeln(instr.convert2asm());
-   
-    uvm_info(get_full_name(), format("%0s is generated", test_name), UVM_LOW); 
+
+    uvm_info(get_full_name(), format("%0s is generated", test_name), UVM_LOW);
 
   }
 

@@ -47,7 +47,7 @@ class riscv_load_store_base_instr_stream : riscv_mem_access_stream
     HIGH,
     MEDIUM,
     SPARSE
-  } 
+  }
 
   @rand uint            num_load_store;
   @rand uint            num_mixed_instr;
@@ -333,7 +333,7 @@ class riscv_hazard_instr_stream : riscv_load_store_base_instr_stream
   this(string name = "") {
     super(name);
   }
- 
+
   override void pre_randomize() {
     avail_regs.length  = num_of_avail_regs;
     super.pre_randomize();
@@ -412,7 +412,7 @@ class riscv_multi_page_load_store_instr_stream: riscv_mem_access_stream
   constraint! q{
     foreach (id; data_page_id) {
       id < max_data_page_id;
-    }  
+    }
     data_page_id.length == num_of_instr_stream;
     rs1_reg.length == num_of_instr_stream;
     unique [rs1_reg];
@@ -431,7 +431,7 @@ class riscv_multi_page_load_store_instr_stream: riscv_mem_access_stream
   // Each page access needs a reserved register as the base address of load/store instruction
   constraint! q{
     num_of_instr_stream inside [2:8];
-  } reasonable_c; 
+  } reasonable_c;
 
   this(string name = "") {
     super(name);
@@ -611,7 +611,7 @@ class riscv_load_store_rand_addr_instr_stream : riscv_load_store_base_instr_stre
 
 class riscv_vector_load_store_instr_stream : riscv_mem_access_stream
 {
-  enum address_mode_e {UNIT_STRIDED, STRIDED, INDEXED} 
+  enum address_mode_e {UNIT_STRIDED, STRIDED, INDEXED}
 
   @rand ubvec!11 eew;
   @rand uint  data_page_id;
@@ -656,7 +656,7 @@ class riscv_vector_load_store_instr_stream : riscv_mem_access_stream
   riscv_vector_instr load_store_instr;
 
   mixin uvm_object_utils;
-  
+
   this(string name = "") {
     super(name);
   }
@@ -745,13 +745,13 @@ class riscv_vector_load_store_instr_stream : riscv_mem_access_stream
 	}
       }
       break;
-    case address_mode_e.STRIDED: 
+    case address_mode_e.STRIDED:
       allowed_instr = [riscv_instr_name_t.VLSE_V, riscv_instr_name_t.VSSE_V] ~ allowed_instr;
       if (cfg.vector_cfg.enable_zvlsseg) {
 	allowed_instr = [riscv_instr_name_t.VLSSEGE_V, riscv_instr_name_t.VSSSEGE_V] ~ allowed_instr;
       }
       break;
-    case address_mode_e.INDEXED: 
+    case address_mode_e.INDEXED:
       allowed_instr = [riscv_instr_name_t.VLXEI_V, riscv_instr_name_t.VSXEI_V,
 		       riscv_instr_name_t.VSUXEI_V] ~ allowed_instr;
       if (cfg.vector_cfg.enable_zvlsseg) {

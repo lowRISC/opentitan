@@ -32,7 +32,7 @@ import std.algorithm: canFind;
 class riscv_zbc_instr: riscv_instr
 {
   mixin uvm_object_utils;
-  
+
   this(string name = "") {
     super(name);
   }

@@ -61,7 +61,8 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
     cleanup_cosim();
 
     // TODO: Ensure log file on reset gets append rather than overwrite?
-    cosim_handle = spike_cosim_init(cfg.isa_string, cfg.start_pc, cfg.start_mtvec, cfg.log_file);
+    cosim_handle = spike_cosim_init(cfg.isa_string, cfg.start_pc, cfg.start_mtvec, cfg.log_file,
+      cfg.pmp_num_regions, cfg.pmp_granularity);
 
     if (cosim_handle == null) begin
       `uvm_fatal(`gfn, "Could not initialise cosim")
@@ -135,7 +136,11 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
                             rvfi_instr.trap)) begin
         // cosim instruction step doesn't match rvfi captured instruction, report a fatal error
         // with the details
-        `uvm_fatal(`gfn, get_cosim_error_str())
+        if (cfg.relax_cosim_check) begin
+          `uvm_info(`gfn, get_cosim_error_str(), UVM_LOW)
+        end else begin
+          `uvm_fatal(`gfn, get_cosim_error_str())
+        end
       end
     end
   endtask: run_cosim_rvfi

@@ -55,12 +55,12 @@ class riscv_reg_field: uvm_object
   this(string name = "") {
     super(name);
   }
-    
+
   override string convert2string() {
     return(format("%0s bit_width:%0d val:0x%0x type:%0s",
 		  get_name(), bit_width, val, access_type));
   }
-  
+
 
   void post_randomize() {
     ubvec!XLEN mask = ubvec!XLEN.max();
@@ -85,7 +85,7 @@ class riscv_reg(REG_T): uvm_object
   this(string name = "") {
     super(name);
   }
-  
+
   void init_reg(REG_T reg_name) {
     this.reg_name = reg_name;
     offset = toubvec!12(reg_name);
@@ -111,7 +111,7 @@ class riscv_reg(REG_T): uvm_object
     }
     return val;
   }
-  
+
   void add_field(string fld_name, uint  bit_width,
 		 reg_field_access_t access_type,
 		 ubvec!XLEN reset_val = 0) {
@@ -127,7 +127,7 @@ class riscv_reg(REG_T): uvm_object
     ubvec!XLEN val_ = val;
     set_field_bvec(fld_name, val_, hard_wired);
   }
-  
+
   void set_field_bvec(string fld_name, ubvec!XLEN val, bool hard_wired = false) {
     foreach (f; fld) {
       if (fld_name == (f.get_name())) {
@@ -143,7 +143,7 @@ class riscv_reg(REG_T): uvm_object
   }
 
   riscv_reg_field get_field_by_name(string fld_name) {
-    foreach (f; fld) {    
+    foreach (f; fld) {
       if (fld_name == (f.get_name())) {
         return f;
       }
@@ -151,13 +151,13 @@ class riscv_reg(REG_T): uvm_object
     uvm_fatal(get_full_name(), format("Cannot match found field %0s", fld_name));
     return null;
   }
- 
+
   void rand_field(string fld_name) {
     riscv_reg_field fld_hd = get_field_by_name(fld_name);
     // `DV_CHECK_RANDOMIZE_FATAL(fld_hd)
     fld_hd.randomize();
   }
-  
+
   void set_field_rand_mode(string fld_name, bool rand_on) {
     riscv_reg_field fld_hd = get_field_by_name(fld_name);
     // rand_mode!q{fld_hd}(rand_on); // TBD

@@ -182,12 +182,12 @@ module ibex_top import ibex_pkg::*; #(
   logic [IC_INDEX_W-1:0]       ic_data_addr;
   logic [LineSizeECC-1:0]      ic_data_wdata;
   logic [LineSizeECC-1:0]      ic_data_rdata [IC_NUM_WAYS];
+  logic                        ic_scr_key_req;
   // Alert signals
   logic                        core_alert_major_internal, core_alert_major_bus, core_alert_minor;
   logic                        lockstep_alert_major_internal, lockstep_alert_major_bus;
   logic                        lockstep_alert_minor;
   // Scramble signals
-  logic                         icache_inval;
   logic [SCRAMBLE_KEY_W-1:0]    scramble_key_q;
   logic [SCRAMBLE_NONCE_W-1:0]  scramble_nonce_q;
   logic                         scramble_key_valid_d, scramble_key_valid_q;
@@ -326,6 +326,7 @@ module ibex_top import ibex_pkg::*; #(
     .ic_data_wdata_o   (ic_data_wdata),
     .ic_data_rdata_i   (ic_data_rdata),
     .ic_scr_key_valid_i(scramble_key_valid_q),
+    .ic_scr_key_req_o  (ic_scr_key_req),
 
     .irq_software_i,
     .irq_timer_i,
@@ -374,7 +375,6 @@ module ibex_top import ibex_pkg::*; #(
     .alert_minor_o         (core_alert_minor),
     .alert_major_internal_o(core_alert_major_internal),
     .alert_major_bus_o     (core_alert_major_bus),
-    .icache_inval_o        (icache_inval),
     .core_busy_o           (core_busy_d)
   );
 
@@ -467,7 +467,7 @@ module ibex_top import ibex_pkg::*; #(
     // Scramble key valid starts with OTP returning new valid key and stays high
     // until we request a new valid key.
     assign scramble_key_valid_d = scramble_req_q ? scramble_key_valid_i :
-                                  icache_inval   ? 1'b0                 :
+                                  ic_scr_key_req ? 1'b0                 :
                                                    scramble_key_valid_q;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -492,14 +492,14 @@ module ibex_top import ibex_pkg::*; #(
 
   // Scramble key request starts with invalidate signal from ICache and stays high
   // until we got a valid key.
-    assign scramble_req_d = scramble_req_q ? ~scramble_key_valid_i : icache_inval;
+    assign scramble_req_d = scramble_req_q ? ~scramble_key_valid_i : ic_scr_key_req;
     assign scramble_req_o = scramble_req_q;
 
   end else begin : gen_noscramble
 
     logic unused_scramble_inputs = scramble_key_valid_i & (|scramble_key_i) & (|RndCnstIbexKey) &
                                    (|scramble_nonce_i) & (|RndCnstIbexNonce) & scramble_req_q &
-                                   icache_inval & scramble_key_valid_d & scramble_req_d;
+                                   ic_scr_key_req & scramble_key_valid_d & scramble_req_d;
 
     assign scramble_req_d       = 1'b0;
     assign scramble_req_q       = 1'b0;
@@ -703,6 +703,7 @@ module ibex_top import ibex_pkg::*; #(
       ic_data_addr,
       ic_data_wdata,
       scramble_key_valid_i,
+      ic_scr_key_req,
       irq_software_i,
       irq_timer_i,
       irq_external_i,
@@ -713,7 +714,6 @@ module ibex_top import ibex_pkg::*; #(
       crash_dump_o,
       double_fault_seen_o,
       fetch_enable_i,
-      icache_inval,
       core_busy_d
     });
 
@@ -757,6 +757,7 @@ module ibex_top import ibex_pkg::*; #(
     logic [IC_INDEX_W-1:0]        ic_data_addr_local;
     logic [LineSizeECC-1:0]       ic_data_wdata_local;
     logic                         scramble_key_valid_local;
+    logic                         ic_scr_key_req_local;
 
     logic                         irq_software_local;
     logic                         irq_timer_local;
@@ -770,7 +771,6 @@ module ibex_top import ibex_pkg::*; #(
     logic                         double_fault_seen_local;
     fetch_enable_t                fetch_enable_local;
 
-    logic                         icache_inval_local;
     logic                         core_busy_local;
 
     assign buf_in = {
@@ -808,6 +808,7 @@ module ibex_top import ibex_pkg::*; #(
       ic_data_addr,
       ic_data_wdata,
       scramble_key_valid_q,
+      ic_scr_key_req,
       irq_software_i,
       irq_timer_i,
       irq_external_i,
@@ -818,7 +819,6 @@ module ibex_top import ibex_pkg::*; #(
       crash_dump_o,
       double_fault_seen_o,
       fetch_enable_i,
-      icache_inval,
       core_busy_d
     };
 
@@ -857,6 +857,7 @@ module ibex_top import ibex_pkg::*; #(
       ic_data_addr_local,
       ic_data_wdata_local,
       scramble_key_valid_local,
+      ic_scr_key_req_local,
       irq_software_local,
       irq_timer_local,
       irq_external_local,
@@ -867,7 +868,6 @@ module ibex_top import ibex_pkg::*; #(
       crash_dump_local,
       double_fault_seen_local,
       fetch_enable_local,
-      icache_inval_local,
       core_busy_local
     } = buf_out;
 
@@ -966,6 +966,7 @@ module ibex_top import ibex_pkg::*; #(
       .ic_data_wdata_i        (ic_data_wdata_local),
       .ic_data_rdata_i        (ic_data_rdata_local),
       .ic_scr_key_valid_i     (scramble_key_valid_local),
+      .ic_scr_key_req_i       (ic_scr_key_req_local),
 
       .irq_software_i         (irq_software_local),
       .irq_timer_i            (irq_timer_local),
@@ -982,7 +983,6 @@ module ibex_top import ibex_pkg::*; #(
       .alert_minor_o          (lockstep_alert_minor_local),
       .alert_major_internal_o (lockstep_alert_major_internal_local),
       .alert_major_bus_o      (lockstep_alert_major_bus_local),
-      .icache_inval_i         (icache_inval_local),
       .core_busy_i            (core_busy_local),
       .test_en_i              (test_en_i),
       .scan_rst_ni            (scan_rst_ni)
@@ -1104,7 +1104,7 @@ module ibex_top import ibex_pkg::*; #(
     // the new request.
     `ASSERT(MaxOutstandingDSideAccessesCorrect,
         data_req_o |->
-        ~pending_dside_accesses_d[MaxOutstandingDSideAccesses-1].valid | data_rvalid_i)
+        ~pending_dside_accesses_q[MaxOutstandingDSideAccesses-1].valid | data_rvalid_i)
 
     // Should only see a request response if we're expecting one
     `ASSERT(PendingAccessTrackingCorrect, data_rvalid_i |-> pending_dside_accesses_q[0])

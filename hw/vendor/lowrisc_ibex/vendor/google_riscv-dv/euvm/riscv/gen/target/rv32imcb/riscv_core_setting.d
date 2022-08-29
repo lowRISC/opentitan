@@ -20,7 +20,7 @@
 //-----------------------------------------------------------------------------
 // XLEN
 
-module riscv.gen.target.rv32imcb.riscv_core_setting; 
+module riscv.gen.target.rv32imcb.riscv_core_setting;
 
 import riscv.gen.riscv_instr_pkg: satp_mode_t, privileged_mode_t,
   riscv_instr_name_t, mtvec_mode_t, interrupt_cause_t,
@@ -123,7 +123,7 @@ enum privileged_reg_t[] implemented_csr = [
 					   ];
 
 // Implementation-specific custom CSRs
-ubvec!12[] custom_csr = []; 
+ubvec!12[] custom_csr = [];
 
 // ----------------------------------------------------------------------------
 // Supported interrupt/exception setting, used for functional coverage

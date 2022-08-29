@@ -169,7 +169,7 @@ class riscv_loop_instr: riscv_rand_instr_stream
 	rs1 == riscv_reg_t.ZERO;
 	imm == $1;
       } (loop_cnt_reg[i], loop_init_val[i]);
-      
+
       loop_init_instr[2*i].comment = format("init loop %0d counter", i);
 
       // Instruction to init loop limit
@@ -199,7 +199,7 @@ class riscv_loop_instr: riscv_rand_instr_stream
 	  rd !inside [$0, $1];
 	}
       } (reserved_rd, cfg.reserved_regs);
-      
+
       loop_branch_target_instr[i].label = format("%0s_%0d_t", label, i);
 
       // Instruction to update loop counter
@@ -247,7 +247,7 @@ class riscv_loop_instr: riscv_rand_instr_stream
       loop_instr = [loop_init_instr[2*i],
                     loop_init_instr[2*i+1],
                     loop_branch_target_instr[i],
-                    loop_update_instr[i]] ~ 
+                    loop_update_instr[i]] ~
 	loop_instr ~
 	loop_branch_instr[i];
     }

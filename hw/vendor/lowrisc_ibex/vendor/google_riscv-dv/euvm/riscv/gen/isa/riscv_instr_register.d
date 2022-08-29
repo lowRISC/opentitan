@@ -35,11 +35,11 @@ void register(alias MOD, INSTRS...)(riscv_instr_registry registry) {
     return;
   }
 }
-  
+
 void register_module(alias MOD)(riscv_instr_registry registry) {
   register!(MOD, __traits(allMembers, MOD))(registry);
 }
-  
+
 void register_isa(riscv_instr_registry registry) {
   import riscv.gen.isa.rv128c_instr;
   import riscv.gen.isa.rv32a_instr;

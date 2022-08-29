@@ -86,7 +86,7 @@ You can find the prebuilt document under docs/build/singlehtml/index.html
 RISC-V DV is now contributed to CHIPS Alliance. We have regular meetings to
 discuss the issues, feature priorities, development progress etc. Please join
 the [mail group](https://lists.chipsalliance.org/g/riscv-dv-wg) for latest
-status. 
+status.
 
 Please refer to CONTRIBUTING.md for license related questions.
 

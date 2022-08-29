@@ -9,7 +9,9 @@ import "DPI-C" function
   chandle spike_cosim_init(string isa_string,
                            bit [31:0] start_pc,
                            bit [31:0] start_mtvec,
-                           string     log_file_path);
+                           string     log_file_path,
+                           bit [31:0] pmp_num_regions,
+                           bit [31:0] pmp_granularity);
 
 import "DPI-C" function void spike_cosim_release(chandle cosim_handle);
 

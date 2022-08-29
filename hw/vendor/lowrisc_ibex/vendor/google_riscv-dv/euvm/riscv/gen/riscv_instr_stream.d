@@ -66,7 +66,7 @@ class riscv_instr_stream: uvm_object
   }
 
   // Initialize the instruction stream, create each instruction instance
-  
+
   void initialize_instr_list(uint instr_cnt) {
     instr_list.length = 0;
     this.instr_cnt = instr_cnt;
@@ -109,7 +109,7 @@ class riscv_instr_stream: uvm_object
   void insert_instr_map(Queue!riscv_instr new_instr, int idx = -1, bool replace = false) {
     assert (replace == false);
   }
-  
+
   // Insert an instruction to the existing instruction stream at the given index
   // When index is -1, the instruction is injected at a random location
   // When replace is 1, the original instruction at the inserted position will be replaced
@@ -442,7 +442,7 @@ class riscv_rand_instr_stream: riscv_instr_stream
     } (avail_regs, reserved_rd, cfg.reserved_regs);
     // TODO: Add constraint for CSR, floating point register
   }
-  
+
 
   riscv_instr get_init_gpr_instr(riscv_reg_t gpr, ubvec!XLEN val) {
     riscv_pseudo_instr li_instr;
@@ -588,7 +588,7 @@ class riscv_prog_instr_stream: riscv_rand_instr_stream
     uint mixed_count = instr_count;
 
     dir_n.length = instr_count;
-    
+
     this.dir_instr_list = dir_list;
 
     foreach (size_t dir_idx, dir_instr; dir_instr_list) {

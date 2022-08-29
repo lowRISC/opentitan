@@ -289,6 +289,14 @@ module core_ibex_tb_top;
     uvm_config_db#(ibex_pkg::rv32m_e)::set(null, "*", "RV32M", RV32M);
     uvm_config_db#(ibex_pkg::rv32b_e)::set(null, "*", "RV32B", RV32B);
 
+    if (PMPEnable) begin
+      uvm_config_db#(bit [31:0])::set(null, "*", "PMPNumRegions", PMPNumRegions);
+      uvm_config_db#(bit [31:0])::set(null, "*", "PMPGranularity", PMPGranularity);
+    end else begin
+      uvm_config_db#(bit [31:0])::set(null, "*", "PMPNumRegions", 0);
+      uvm_config_db#(bit [31:0])::set(null, "*", "PMPGranularity", 0);
+    end
+
     run_test();
   end
 

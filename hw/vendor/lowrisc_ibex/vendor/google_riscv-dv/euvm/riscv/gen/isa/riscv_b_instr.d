@@ -36,7 +36,7 @@ import uvm;
 
 class riscv_b_instr: riscv_instr
 {
-  mixin uvm_object_utils; 
+  mixin uvm_object_utils;
 
   @rand riscv_reg_t rs3;
   bool has_rs3 = false;
@@ -102,7 +102,7 @@ class riscv_b_instr: riscv_instr
     asm_str = format_string(get_instr_name(), MAX_INSTR_STR_LEN);
 
     switch (instr_format) {
-    case riscv_instr_format_t.I_FORMAT: 
+    case riscv_instr_format_t.I_FORMAT:
       if ([riscv_instr_name_t.FSRI,
 	   riscv_instr_name_t.FSRIW].canFind(instr_name)) {  // instr rd,rs1,rs3,imm
 	asm_str_final = format("%0s%0s, %0s, %0s, %0s", asm_str, rd, rs1,
@@ -414,7 +414,7 @@ class riscv_b_instr: riscv_instr
     default:
       if (binary == "") binary = super.convert2bin(prefix);
     }
-    
+
     return prefix ~ binary;
   }
 

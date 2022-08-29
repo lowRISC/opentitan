@@ -1,5 +1,5 @@
 # Copyright Google LLC
-#
+
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+############################################################
 # The -CFLAGS option is required as some VCS DPI code contains smart quotes
 # around some preprocessor macros, making G++ throw errors during compilation.
 # As a result, passing -fno-extended-identifiers tells G++ to pretend that
@@ -20,147 +21,227 @@
   env_var: IBEX_ROOT
   compile:
     cmd:
-      - "vcs -f <core_ibex>/ibex_dv.f  -full64
-         -l <out>/compile.log
-         -sverilog -ntb_opts uvm-1.2
-         +define+UVM
-         +define+UVM_REGEX_NO_DPI -timescale=1ns/10ps -licqueue
-         -LDFLAGS '-Wl,--no-as-needed'
-         -CFLAGS '--std=c99 -fno-extended-identifiers'
-         -Mdir=<out>/vcs_simv.csrc
-         -o <out>/vcs_simv
-         -debug_access+pp
-         -xlrm uniq_prior_final
-         -CFLAGS '--std=c99 -fno-extended-identifiers'
-         -lca -kdb <cmp_opts> <wave_opts> <cov_opts> <cosim_opts>"
-    cov_opts: >
+      - >-
+        vcs
+          -full64
+          -f <core_ibex>/ibex_dv.f
+          -l <tb_dir>/<rtl_log>
+          -sverilog
+          -ntb_opts uvm-1.2
+          +define+UVM
+          +define+UVM_REGEX_NO_DPI
+          -timescale=1ns/10ps
+          -licqueue
+          -LDFLAGS '-Wl,--no-as-needed'
+          -CFLAGS '--std=c99 -fno-extended-identifiers'
+          -Mdir=<tb_dir>/vcs_simv.csrc
+          -o <tb_dir>/vcs_simv
+          -debug_access+pp
+          -xlrm uniq_prior_final
+          -CFLAGS '--std=c99 -fno-extended-identifiers'
+          -lca -kdb
+          <cmp_opts> <wave_opts> <cov_opts> <cosim_opts>
+    cov_opts: >-
       -cm line+tgl+assert+fsm+branch
       -cm_tgl portsonly
       -cm_tgl structarr
       -cm_report noinitial
       -cm_seqnoconst
-      -cm_dir <shared_cov_dir>/test.vdb
+      -cm_dir <dir_shared_cov>/test.vdb
       -cm_hier cover.cfg
-    wave_opts: >
-      -debug_access+all -ucli -do vcs.tcl
-    cosim_opts: >
+    wave_opts: >-
+      -debug_access+all
+      -ucli
+      -do vcs.tcl
+    cosim_opts: >-
       -f <core_ibex>/ibex_dv_cosim_dpi.f
-      +define+INC_IBEX_COSIM
       -LDFLAGS '<ISS_LDFLAGS>'
       -CFLAGS '<ISS_CFLAGS>'
       -CFLAGS '-I<IBEX_ROOT>/dv/cosim'
       <ISS_LIBS>
       -lstdc++
   sim:
-    cmd: >
-      env SIM_DIR=<sim_dir>
-        <out>/vcs_simv +vcs+lic+wait <sim_opts> <wave_opts> <cov_opts>
-          +ntb_random_seed=<seed> +UVM_TESTNAME=<rtl_test>
-          +UVM_VERBOSITY=UVM_LOW +bin=<binary>
-          +ibex_tracer_file_base=<sim_dir>/trace_core
-          +cosim_log_file=<sim_dir>/spike_cosim.log
+    cmd:
+      - >-
+        env SIM_DIR=<test_dir>
+          <tb_dir>/vcs_simv
+            +vcs+lic+wait
+            +ntb_random_seed=<seed>
+            +UVM_TESTNAME=<rtl_test>
+            +UVM_VERBOSITY=UVM_LOW
+            +bin=<binary>
+            +ibex_tracer_file_base=<rtl_trace>
+            +cosim_log_file=<test_dir>/<iss_cosim_trace>
+            <sim_opts> <wave_opts> <cov_opts>
     cov_opts: >
       -cm line+tgl+assert+fsm+branch
-      -cm_dir <shared_cov_dir>/test.vdb
+      -cm_dir <dir_shared_cov>/test.vdb
       -cm_log /dev/null
       -assert nopostproc
       -cm_name test_<test_name>_<seed>
       +enable_ibex_fcov=1
     wave_opts: >
-      -ucli -do <cwd>/vcs.tcl
+      -ucli
+      -do <cwd>/vcs.tcl
 
+
+############################################################
 - tool: questa
   compile:
     cmd:
-      - "vmap mtiUvm $QUESTA_HOME/questasim/uvm-1.2"
-      - "vlog -64
-              -f <core_ibex>/ibex_dv.f
-              -sv
-              -mfcu -cuname design_cuname
-              +define+UVM_REGEX_NO_DPI
-              +define+UVM
-              -timescale \"1 ns / 1 ps \"
-              -writetoplevels <out>/top.list
-              -l <out>/compile.log <cmp_opts>"
+      - >
+        vmap
+          mtiUvm $QUESTA_HOME/questasim/uvm-1.2
+      - >
+        vlog
+          -64
+          -f <core_ibex>/ibex_dv.f
+          -sv
+          -mfcu -cuname design_cuname
+          +define+UVM_REGEX_NO_DPI
+          +define+UVM
+          -timescale \"1 ns / 1 ps \"
+          -writetoplevels <tb_dir>/top.list
+          -l <tb_dir>/<rtl_log>
+          <cmp_opts>
   sim:
-    cmd: >
-      vsim -64 -c <cov_opts> -do "run -a; quit -f" +designfile -f <out>/top.list <sim_opts>  -sv_seed <seed> +access +r+w +UVM_TESTNAME=<rtl_test> +UVM_VERBOSITY=UVM_LOW +bin=<binary> +ibex_tracer_file_base="<sim_dir>/trace_core" -l <sim_dir>/sim.log
-    cov_opts: >
-      -do "coverage save -onexit <out>/cov.ucdb;"
+    cmd:
+      - >-
+        vsim
+          -64
+          -c
+          -do "run -a; quit -f"
+          +designfile -f <tb_dir>/top.list
+          <sim_opts>
+          -sv_seed <seed>
+          +access +r+w
+          +UVM_TESTNAME=<rtl_test>
+          +UVM_VERBOSITY=UVM_LOW
+          +bin=<binary>
+          +ibex_tracer_file_base=<rtl_trace>
+          -l <test_dir>/sim.log
+          <cov_opts>
+    cov_opts: >-
+      -do "coverage save -onexit <tb_dir>/cov.ucdb;"
 
+
+############################################################
 - tool: dsim
   env_var: DSIM,DSIM_LIB_PATH
   compile:
     cmd:
-      - "mkdir -p <out>/dsim"
-      - "<DSIM> -sv -work <out>/dsim
-                -genimage image
-                -timescale 1ns/1ps
-                +incdir+$UVM_HOME/src
-                $UVM_HOME/src/uvm_pkg.sv
-                +define+UVM
-                +define+DSIM
-                +acc+rwb
-                -f <core_ibex>/ibex_dv.f
-                -l <out>/dsim/compile.log
-                -suppress EnumMustBePositive"
+      - >-
+        <DSIM>
+          -sv
+          -work <tb_dir>
+          -genimage image
+          -timescale 1ns/1ps
+          +incdir+$UVM_HOME/src
+          $UVM_HOME/src/uvm_pkg.sv
+          +define+UVM
+          +define+DSIM
+          +acc+rwb
+          -f <core_ibex>/ibex_dv.f
+          -l <tb_build_log>
+          -suppress EnumMustBePositive"
   sim:
-    cmd: >
-      <DSIM> <sim_opts> -sv_seed <seed> -pli_lib <DSIM_LIB_PATH>/libuvm_dpi.so +acc+rwb -image image -work <out>/dsim <wave_opts> +UVM_TESTNAME=<rtl_test> +UVM_VERBOSITY=UVM_LOW +bin=<binary> +ibex_tracer_file_base=<sim_dir>/trace_core -l <sim_dir>/sim.log
+    cmd:
+      - >-
+        <DSIM>
+          -sv_seed <seed>
+          -pli_lib <DSIM_LIB_PATH>/libuvm_dpi.so
+          +acc+rwb
+          -image image
+          -work <tb_dir>
+          +UVM_TESTNAME=<rtl_test>
+          +UVM_VERBOSITY=UVM_LOW
+          +bin=<binary>
+          +ibex_tracer_file_base=<rtl_trace>
+          -l <rtl_sim_log>
+          <sim_opts> <wave_opts>
     wave_opts: >
       -waves waves.vcd
 
+############################################################
 - tool: riviera
   env_var: ALDEC_PATH
   compile:
     cmd:
-      - "vlib <out>/work"
-      - "vlog -work <out>/work
-        <cmp_opts>
-        -uvmver 1.2
-        +define+UVM
-        -f <core_ibex>/ibex_dv.f"
+      - >-
+        vlib
+          <tb_dir>/work
+      - >-
+        vlog
+          -work <tb_dir>/work
+          -uvmver 1.2
+          +define+UVM
+          -f <core_ibex>/ibex_dv.f
+          <cmp_opts>
   sim:
-    cmd: >
-      vsim -c <sim_opts> <cov_opts> -sv_seed <seed> -lib <out>/work +UVM_TESTNAME=<rtl_test> +UVM_VERBOSITY=UVM_LOW +bin=<binary> +ibex_tracer_file_base="<sim_dir>/trace_core" -l <sim_dir>/sim.log -do "run -all; endsim; quit -force"
-    cov_opts: >
-      -acdb_file <out>/cov.acdb
+    cmd:
+      - >-
+        vsim
+          -c
+          -sv_seed <seed>
+          -lib <tb_dir>/work
+          +UVM_TESTNAME=<rtl_test>
+          +UVM_VERBOSITY=UVM_LOW
+          +bin=<binary>
+          +ibex_tracer_file_base=<rtl_trace>
+          -l <rtl_sim_log>
+          -do "run -all; endsim; quit -force"
+          <sim_opts> <cov_opts>
+    cov_opts: >-
+      -acdb_file <tb_dir>/cov.acdb
 
+############################################################
 - tool: qrun
   compile:
     cmd:
-      - "qrun -f <core_ibex>/ibex_dv.f -uvmhome uvm-1.2
-              +define+UVM
-              -svinputport=net
-              -access=rw+/. -optimize
-              -suppress 2583
-              -mfcu -cuname design_cuname
-              -sv -o design_opt
-              -l <out>/qrun_compile_optimize.log
-              -outdir <out>/qrun.out"
+      - >-
+        qrun
+          -f <core_ibex>/ibex_dv.f
+          -uvmhome uvm-1.2
+          +define+UVM
+          -svinputport=net
+          -access=rw+/. -optimize
+          -suppress 2583
+          -mfcu -cuname design_cuname
+          -sv -o design_opt
+          -l <tb_build_logj>
+          -outdir <tb_dir>/qrun.out
   sim:
-    cmd: >
-      qrun -simulate -snapshot design_opt <cov_opts> <sim_opts> -sv_seed <seed> -outdir <out>/qrun.out
-    cov_opts: >
-      -coverage -ucdb <out>/cov.ucdb
+    cmd:
+      - >-
+        qrun
+          -simulate
+          -snapshot design_opt
+          -sv_seed <seed>
+          -outdir <tb_dir>/qrun.out
+          <sim_opts> <cov_opts>
+    cov_opts: >-
+      -coverage
+      -ucdb <tb_dir>/cov.ucdb
 
-
+############################################################
 - tool: xlm
   env_var: dv_root, DUT_TOP, IBEX_ROOT
   compile:
     cmd:
-      - "xrun -64bit
-              -q
-              -f <core_ibex>/ibex_dv.f
-              -sv
-              -licqueue
-              -uvm
-              -uvmhome CDNS-1.2
-              -define UVM_REGEX_NO_DPI
-              -elaborate
-              -l <out>/compile.log
-              -xmlibdirpath <out>
-              <cmp_opts> <cov_opts> <wave_opts> <cosim_opts>"
+      - >-
+        xrun
+        -64bit
+        -q
+        -f <core_ibex>/ibex_dv.f
+        -sv
+        -licqueue
+        -uvm
+        -uvmhome CDNS-1.2
+        -define UVM_REGEX_NO_DPI
+        -elaborate
+        -l <tb_build_log>
+        -xmlibdirpath <tb_dir>
+        <cmp_opts> <cov_opts> <wave_opts> <cosim_opts>
     cov_opts: >
       -coverage all
       -nowarn COVDEF
@@ -172,33 +253,32 @@
       <ISS_LIBS>
       <ISS_CFLAGS>
       -Wld,<ISS_LDFLAGS>
-      +define+INC_IBEX_COSIM
       -lstdc++
   sim:
-    cmd: >
-      xrun -64bit
-           -R
-           -xmlibdirpath <out>
-           -licqueue
-           -svseed <seed>
-           -svrnc rand_struct
-           +UVM_TESTNAME=<rtl_test>
-           +UVM_VERBOSITY=UVM_LOW
-           +bin=<binary>
-           +ibex_tracer_file_base=<sim_dir>/trace_core
-           +cosim_log_file=<sim_dir>/spike_cosim.log
-           -l <sim_dir>/xrun.log
-           -nokey
-           <sim_opts>
-           <cov_opts>
-           <wave_opts>
+    cmd:
+      - >-
+        xrun
+        -64bit
+        -R
+        -xmlibdirpath <tb_dir>
+        -licqueue
+        -svseed <seed>
+        -svrnc rand_struct
+        -nokey
+        -l <rtl_sim_log>
+        +UVM_TESTNAME=<rtl_test>
+        +UVM_VERBOSITY=UVM_LOW
+        +bin=<binary>
+        +ibex_tracer_file_base=<rtl_trace>
+        +cosim_log_file=<iss_cosim_trace>
+        <cov_opts> <wave_opts> <sim_opts>
     cov_opts: >
-      -covmodeldir <sim_dir>/coverage
-      -covworkdir <sim_dir>
+      -covmodeldir <test_dir>/coverage
+      -covworkdir <test_dir>
       -covscope coverage
       -covtest <test_name>.<seed>
       +enable_ibex_fcov=1
     wave_opts: >
-      -input @"database -open <sim_dir>/waves -shm -default"
+      -input @"database -open <test_dir>/waves -shm -default"
       -input @"probe -create core_ibex_tb_top -all -memories -depth all"
       -input @"run"

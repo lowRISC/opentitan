@@ -17,7 +17,7 @@
             Self-checking performed as described in the DV plan (the same
             self-check tests are run for all the tests described below, as well
             as any extra tests they describe).'''
-      milestone: V1
+      stage: V1
       tests: ["ibex_icache_smoke"]
     }
 
@@ -35,7 +35,7 @@
             probably spot it happening. Note that the smoke test theoretically
             could check this, but the unconstrained branch addresses mean it's
             very unlikely to see much caching going on.'''
-      milestone: V2
+      stage: V2
       tests: ["ibex_icache_passthru"]
     }
 
@@ -50,7 +50,7 @@
             reset has finished), start fetching and check that most results are
             cached by counting transactions on the instruction bus versus
             instructions fetched.'''
-      milestone: V2
+      stage: V2
       tests: ["ibex_icache_caching"]
     }
 
@@ -62,7 +62,7 @@
             hits. Enable the cache but increase frequency of cache invalidations
             and seed updates for the memory to try and hit any race conditions
             between the request tracking logic and the invalidation logic.'''
-      milestone: V2
+      stage: V2
       tests: ["ibex_icache_invalidation"]
     }
 
@@ -76,7 +76,7 @@
 
             Compare bus transactions and instructions fetched to make sure that
             cached instructions survive enable/disable toggles.'''
-      milestone: V2
+      stage: V2
       tests: ["ibex_icache_oldval"]
     }
 
@@ -94,7 +94,7 @@
             and then goes back to the start to get what it missed). This will
             spot if there are any bugs that cause it to cache bogus data just
             before the original branch target.'''
-      milestone: V2
+      stage: V2
       tests: ["ibex_icache_back_line"]
     }
 
@@ -105,7 +105,7 @@
             This will cause very frequent branching and stress-test the cache's
             error handling. Constrain branch targets as in the caching test so
             that we are actually caching something.'''
-      milestone: V2
+      stage: V2
       tests: ["ibex_icache_many_errors"]
     }
 
@@ -117,7 +117,7 @@
             memory for the cache RAMs, which occasionally inserts a single
             bit error. Check that the invalid cached data is correctly
             ignored.'''
-      milestone: V2
+      stage: V2
       tests: ["ibex_icache_ecc"]
     }
 
@@ -127,7 +127,7 @@
 
             Tests are selected from the sequences above. With 50% probability,
             reset between the sequences.'''
-      milestone: V2
+      stage: V2
       tests: ["ibex_icache_stress_all"]
     }
 
@@ -137,7 +137,7 @@
 
             Tests are selected from the sequences above. Add occasional
             resets (in the middle of sequences)'''
-      milestone: V2
+      stage: V2
       tests: ["ibex_icache_stress_all_with_reset"]
     }
   ]

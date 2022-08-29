@@ -11,7 +11,7 @@ def make_http_request( req_type, endpoint, params=None ):
     headers = { 'Content-Type': 'application/json',
                 'Private-Token': str(os.environ['METRICS_CI_TOKEN'])
                }
-    
+
     conn = http.client.HTTPSConnection(server)
     conn.request(req_type, endpoint, params, headers)
     response = conn.getresponse()
@@ -48,7 +48,7 @@ else:
     reqParams['branch'] = str(os.environ['GITHUB_REF'])
 params = json.dumps(reqParams)
 
-response, regressionData = make_http_request('POST', postRegression, params) 
+response, regressionData = make_http_request('POST', postRegression, params)
 
 ## Check response
 if response.status != 201:
@@ -105,7 +105,7 @@ print('\n')
 
 print('Full results at: https://chipsalliance.metrics.ca/' + args.projectId + \
       '/results/regressionRuns/' + regressionRunId)
-      
+
 ## Set the exit code to be used by github action
 if regressionData['testRuns']['failed'] > 0 or \
    regressionData['testRuns']['incomplete'] > 0:
@@ -115,8 +115,3 @@ else:
     print('All tests have passed. Exit with code 0.')
     exit(0)
 
-    
-                                                 
-
-                                                 
-                        

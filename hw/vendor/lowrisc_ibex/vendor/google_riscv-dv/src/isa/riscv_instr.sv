@@ -28,9 +28,6 @@ class riscv_instr extends uvm_object;
   static riscv_instr_name_t  basic_instr[$];
   static riscv_instr         instr_template[riscv_instr_name_t];
 
-  // Privileged CSR filter
-  static privileged_reg_t    exclude_reg[];
-  static privileged_reg_t    include_reg[];
 
   riscv_instr_gen_config     m_cfg;
 
@@ -83,16 +80,6 @@ class riscv_instr extends uvm_object;
     }
   }
 
-  constraint csr_c {
-    if (category == CSR) {
-      if (include_reg.size() > 0) {
-        csr inside {include_reg};
-      }
-      if (exclude_reg.size() > 0) {
-        !(csr inside {exclude_reg});
-      }
-    }
-  }
 
   `uvm_object_utils(riscv_instr)
   `uvm_object_new
@@ -138,31 +125,11 @@ class riscv_instr extends uvm_object;
       end
     end
     build_basic_instruction_list(cfg);
-    create_csr_filter(cfg);
   endfunction : create_instr_list
 
   virtual function bit is_supported(riscv_instr_gen_config cfg);
     return 1;
   endfunction
-
-  static function void create_csr_filter(riscv_instr_gen_config cfg);
-    include_reg.delete();
-    exclude_reg.delete();
-    if (cfg.enable_illegal_csr_instruction) begin
-      exclude_reg = implemented_csr;
-    end else if (cfg.enable_access_invalid_csr_level) begin
-      include_reg = cfg.invalid_priv_mode_csrs;
-    end else begin
-      // Use scratch register to avoid the side effect of modifying other privileged mode CSR.
-      if (cfg.init_privileged_mode == MACHINE_MODE) begin
-        include_reg = {MSCRATCH};
-      end else if (cfg.init_privileged_mode == SUPERVISOR_MODE) begin
-        include_reg = {SSCRATCH};
-      end else begin
-        include_reg = {USCRATCH};
-      end
-    end
-  endfunction : create_csr_filter
 
   static function riscv_instr create_instr(riscv_instr_name_t instr_name);
     uvm_object obj;
@@ -319,12 +286,6 @@ class riscv_instr extends uvm_object;
         has_rs2 = 1'b0;
       end
     endcase
-    if (category == CSR) begin
-      has_rs2 = 1'b0;
-      if (format == I_FORMAT) begin
-        has_rs1 = 1'b0;
-      end
-    end
   endfunction
 
   function void pre_randomize();
@@ -385,8 +346,6 @@ class riscv_instr extends uvm_object;
             asm_str = "fence.i";
           else if(category == LOAD) // Use psuedo instruction format
             asm_str = $sformatf("%0s%0s, %0s(%0s)", asm_str, rd.name(), get_imm(), rs1.name());
-          else if(category == CSR)
-            asm_str = $sformatf("%0s%0s, 0x%0x, %0s", asm_str, rd.name(), csr, get_imm());
           else
             asm_str = $sformatf("%0s%0s, %0s, %0s", asm_str, rd.name(), rs1.name(), get_imm());
         S_FORMAT, B_FORMAT: // instr rs1,rs2,imm
@@ -395,9 +354,7 @@ class riscv_instr extends uvm_object;
           else
             asm_str = $sformatf("%0s%0s, %0s, %0s", asm_str, rs1.name(), rs2.name(), get_imm());
         R_FORMAT: // instr rd,rs1,rs2
-          if(category == CSR) begin
-            asm_str = $sformatf("%0s%0s, 0x%0x, %0s", asm_str, rd.name(), csr, rs1.name());
-          end else if(instr_name == SFENCE_VMA) begin
+          if(instr_name == SFENCE_VMA) begin
             asm_str = "sfence.vma x0, x0"; // TODO: Support all possible sfence
           end else begin
             asm_str = $sformatf("%0s%0s, %0s, %0s", asm_str, rd.name(), rs1.name(), rs2.name());
@@ -432,7 +389,7 @@ class riscv_instr extends uvm_object;
       ADDIW, SLLIW, SRLIW, SRAIW                                   : get_opcode = 7'b0011011;
       MULH, MULHSU, MULHU, DIV, DIVU, REM, REMU                    : get_opcode = 7'b0110011;
       FENCE, FENCE_I                                               : get_opcode = 7'b0001111;
-      ECALL, EBREAK, CSRRW, CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI   : get_opcode = 7'b1110011;
+      ECALL, EBREAK                                                : get_opcode = 7'b1110011;
       ADDW, SUBW, SLLW, SRLW, SRAW, MULW, DIVW, DIVUW, REMW, REMUW : get_opcode = 7'b0111011;
       ECALL, EBREAK, URET, SRET, MRET, DRET, WFI, SFENCE_VMA       : get_opcode = 7'b1110011;
       default : `uvm_fatal(`gfn, $sformatf("Unsupported instruction %0s", instr_name.name()))
@@ -480,12 +437,6 @@ class riscv_instr extends uvm_object;
       FENCE_I    : get_func3 = 3'b001;
       ECALL      : get_func3 = 3'b000;
       EBREAK     : get_func3 = 3'b000;
-      CSRRW      : get_func3 = 3'b001;
-      CSRRS      : get_func3 = 3'b010;
-      CSRRC      : get_func3 = 3'b011;
-      CSRRWI     : get_func3 = 3'b101;
-      CSRRSI     : get_func3 = 3'b110;
-      CSRRCI     : get_func3 = 3'b111;
       LWU        : get_func3 = 3'b110;
       LD         : get_func3 = 3'b011;
       SD         : get_func3 = 3'b011;
@@ -579,8 +530,6 @@ class riscv_instr extends uvm_object;
       I_FORMAT: begin
         if(instr_name inside {FENCE, FENCE_I})
           binary = $sformatf("%8h", {17'b0, get_func3(), 5'b0, get_opcode()});
-        else if(category == CSR)
-          binary = $sformatf("%8h", {csr[11:0], imm[4:0], get_func3(), rd, get_opcode()});
         else if(instr_name == ECALL)
           binary = $sformatf("%8h", {get_func7(), 18'b0, get_opcode()});
         else if(instr_name inside {URET, SRET, MRET})
@@ -603,9 +552,7 @@ class riscv_instr extends uvm_object;
                               imm[4:1], imm[11], get_opcode()});
       end
       R_FORMAT: begin
-        if(category == CSR)
-          binary = $sformatf("%8h", {csr[11:0], rs1, get_func3(), rd, get_opcode()});
-        else if(instr_name == SFENCE_VMA)
+        if(instr_name == SFENCE_VMA)
           binary = $sformatf("%8h", {get_func7(), 18'b0, get_opcode()});
         else
           binary = $sformatf("%8h", {get_func7(), rs2, rs1, get_func3(), rd, get_opcode()});
