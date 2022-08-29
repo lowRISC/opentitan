@@ -15,6 +15,37 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 opentitan_functest(
+    name = "rom_e2e_shutdown_exception_c",
+    srcs = ["rom_e2e_shutdown_exception_c_test.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom",
+        # Note: This test never prints a failure message so it will fail only
+        # when it times out.
+        exit_failure = "NO_FAILURE_MESSAGE",
+        exit_success = "BFV:01495202(?s:.*)BFV:01495202",
+    ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    signed = True,
+    targets = [
+        "cw310",
+        "verilator",
+    ],
+    verilator = verilator_params(
+        timeout = "eternal",
+        exit_failure = "NO_FAILURE_MESSAGE",
+        exit_success = "BFV:01495202(?s:.*)BFV:01495202",
+        rom = "//sw/device/silicon_creator/rom",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
+        "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
+        "//sw/device/silicon_creator/rom_ext:ld_slot_a",
+    ],
+)
+
+opentitan_functest(
     name = "e2e_bootup_success",
     srcs = ["empty_test.c"],
     cw310 = cw310_params(
