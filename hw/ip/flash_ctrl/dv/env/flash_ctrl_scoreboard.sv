@@ -74,8 +74,20 @@ class flash_ctrl_scoreboard #(
       process_eflash_tl_a_chan_fifo();
       process_eflash_tl_d_chan_fifo();
       mon_eviction();
+      mon_rma();
     join_none
   endtask
+
+  task mon_rma;
+    bit init_set = 0;
+    forever begin
+      @(negedge cfg.clk_rst_vif.clk);
+      if (init_set == 0 && cfg.flash_ctrl_cov_vif.init == 1) begin
+        init_set = 1;
+        if (cfg.en_cov) cov.rma_init_cg.sample(cfg.flash_ctrl_cov_vif.rma_state);
+      end
+    end
+  endtask // mon_rma
 
   task mon_eviction;
     flash_mp_region_cfg_t my_region;
@@ -299,6 +311,13 @@ class flash_ctrl_scoreboard #(
                   end
                end
             end
+            "exec": begin
+              bit is_exec_key = `gmv(ral.exec) == CODE_EXEC_KEY;
+              tlul_pkg::tl_a_user_t a_user = item.a_user;
+              if (cfg.en_cov) begin
+                cov.fetch_code_cg.sample(is_exec_key, a_user.instr_type);
+              end
+            end
             default: begin
             // TODO: Uncomment once func cover is implemented
             // `uvm_info(`gfn, $sformatf("Not for func coverage: %0s", csr.get_full_name()))
@@ -314,6 +333,11 @@ class flash_ctrl_scoreboard #(
           // process the csr req
           // for write, update local variable and fifo at address phase
           // for read, update predication at address phase and compare at data phase
+          if(!uvm_re_match("err_code*",csr.get_name())) begin
+            if (cfg.en_cov) begin
+              cov.error_cg.sample(item.d_data);
+            end
+          end
           case (csr.get_name())
             // add individual case item for each csr
             "intr_state": begin
@@ -337,9 +361,6 @@ class flash_ctrl_scoreboard #(
               do_read_check = 1'b0;
             end
             "err_code": begin
-              if (cfg.en_cov) begin
-                cov.error_cg.sample(item.d_data);
-              end
               do_read_check = 1'b0;
             end
             default: begin

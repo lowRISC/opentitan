@@ -258,7 +258,6 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
       end
 
     end
-
   endtask : body
 
   // Task to initialize the Flash Access (Enable All Regions)

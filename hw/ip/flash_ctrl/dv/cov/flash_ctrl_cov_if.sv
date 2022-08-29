@@ -11,13 +11,15 @@ interface flash_ctrl_cov_if (
 
   import uvm_pkg::*;
   import flash_ctrl_pkg::*;
+  import lc_ctrl_pkg::*;
   import dv_utils_pkg::*;
   `include "dv_fcov_macros.svh"
 
-  ///////////////////////////////////
-  // Control register cover points //
-  ///////////////////////////////////
-
-  // TODO add covergroups and coverpoints
-
+  logic       rd_buf_en;
+  lc_tx_t rma_req;
+  rma_state_e rma_state;
+  logic [10:0] prog_state0;
+  logic [10:0] prog_state1;
+  logic [10:0] lcmgr_state;
+  logic        init;
 endinterface

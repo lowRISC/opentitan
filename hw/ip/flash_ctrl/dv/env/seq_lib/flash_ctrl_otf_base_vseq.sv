@@ -540,9 +540,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       // Address has to be 8byte aligned
       rd_entry.addr[2:0] = 'h0;
       rd_entry.part = flash_op.partition;
-
       if (cfg.ecc_mode > FlashEccEnabled) begin
-        if (exp_item.region.ecc_en == MuBi4True && drop == 0) begin
+        if (drop == 0) begin
           if (cfg.ecc_mode == FlashSerrTestMode || flash_op.addr[2] == 0) begin
             cfg.add_bit_err(flash_op, ReadTaskCtrl, exp_item);
           end
@@ -580,8 +579,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         wait_flash_op_done();
       end
       if (derr_is_set | cfg.ierr_created[0]) begin
-        uvm_reg_data_t ldata;
-        csr_rd(.ptr(ral.err_code), .value(ldata), .backdoor(1));
         `uvm_info("read_flash", $sformatf({"bank:%0d addr: %x(otf:%x) derr_is_set:%0d",
                                           " ierr_created[0]:%0d"}, bank, flash_op.addr,
                                           flash_op.otf_addr, derr_is_set, cfg.ierr_created[0])
@@ -737,6 +734,12 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       cfg.inc_otd_tbl(bank, tl_addr, FlashPartData);
       do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata),
                      .completed(completed), .exp_err_rsp(derr));
+
+      // issue csr rd to capture coverpoint at sb.
+      if (derr) begin
+        uvm_reg_data_t ldata;
+        csr_rd(.ptr(ral.err_code), .value(ldata));
+      end
       if (completed) begin
         exp_item.dq.push_back(rdata);
         p_sequencer.eg_exp_host_port[bank].write(exp_item);

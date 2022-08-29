@@ -73,6 +73,21 @@ class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
     evic_all_cross : cross evic_idx_cp, evic_op_cp, evic_cfg_cp;
   endgroup // eviction_cg
 
+  covergroup fetch_code_cg with function sample(bit is_exec_key, logic [MuBi4Width-1:0] instr);
+    key_cp: coverpoint is_exec_key;
+    instr_type_cp: coverpoint instr {
+      bins instr_types[2] = {MuBi4True, MuBi4False};
+      bins others = {[0:15]} with (!(item inside {MuBi4True, MuBi4False}));
+    }
+    key_instr_cross : cross key_cp, instr_type_cp;
+  endgroup // fetch_code_cg
+
+  covergroup rma_init_cg with function sample(flash_ctrl_pkg::rma_state_e st);
+    rma_start_cp: coverpoint st {
+      bins rma_st[2] = {StRmaIdle, [StRmaPageSel:StRmaInvalid]};
+    }
+  endgroup // rma_init_cg
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
     control_cg = new();
@@ -80,6 +95,8 @@ class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
     error_cg = new();
     fifo_lvl_cg = new();
     eviction_cg = new();
+    fetch_code_cg = new();
+    rma_init_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);

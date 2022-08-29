@@ -419,5 +419,36 @@
             - update_err: A shadow register encountered an update error.
             '''
     }
+    {
+      name: eviction_cg
+      desc: '''
+            Covers eviction with mp_region_cfgs for data and info regions.
+            Sample all 4 rd_buf status.
+            When each buffer hazard is set, capture the address stored in the buffer.
+            Then search from tb data base to see which region the address belong to.
+            After that record the config value (scrambe_en and ecc_en) of the region.
+            Use cross over buffer index, the operation to cause the eviction and
+            the region config values.
+            '''
+    }
+    {
+      name: fetch_code_cg
+      desc: '''
+            Covers whether dut received valid or invalid key value from ral.exec register.
+            Cross with tlul.instr_types.
+            '''
+    }
+    {
+      name: rma_init_cg
+      desc: '''
+            Cover rma operation is executed regardless of when flash_init started.
+            flash_ctrl_hw_rma runs rma operation and flash init in parallel thread.
+            In this test, sample rma state when flash init starts.
+            If rma state is StRmaIdle, which means rma is not started. So it confirms
+            rma start after flash init start.
+            If rma state is [StRmaPageSel:StRmaInvalid], which mean rma is on going.
+            So it confirms rma start before flash init start.
+            '''
+    }
   ]
 }
