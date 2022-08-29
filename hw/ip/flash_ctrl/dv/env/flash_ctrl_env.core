@@ -19,7 +19,6 @@ filesets:
       - flash_ctrl_eflash_ral_pkg.sv
       - flash_ctrl_env_pkg.sv
       - flash_ctrl_if.sv
-      - flash_ctrl_dv_if.sv
       - flash_ctrl_mem_if.sv
       - flash_mem_bkdr_util.sv: {is_include_file: true}
       - flash_mem_addr_attrs.sv: {is_include_file: true}
