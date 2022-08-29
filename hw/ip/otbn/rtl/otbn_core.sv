@@ -259,6 +259,7 @@ module otbn_core
   logic                 prefetch_ignore_errs;
 
   core_err_bits_t err_bits_q, err_bits_d;
+  logic           mubi_err;
 
   logic start_stop_fatal_error;
   logic rf_bignum_predec_error, alu_bignum_predec_error, ispr_predec_error, mac_bignum_predec_error;
@@ -564,7 +565,8 @@ module otbn_core
                            urnd_all_zero,
                            predec_error,
                            insn_addr_err,
-                           rf_base_spurious_we_err},
+                           rf_base_spurious_we_err,
+                           mubi_err},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
                            non_controller_reg_intg_violation},
     dmem_intg_violation: lsu_rdata_err,
@@ -611,6 +613,11 @@ module otbn_core
                   mubi4_bool_to_mubi(|{urnd_all_zero, rf_base_intg_err, rf_base_spurious_we_err,
                                        predec_error, lsu_rdata_err, insn_fetch_err,
                                        controller_fatal_err, insn_addr_err}));
+
+  // Signal error if MuBi input signals take on invalid values as this means something bad is
+  // happening. The explicit error detection is required as the mubi4_or_hi operations above
+  // might mask invalid values depending on other input operands.
+  assign mubi_err = mubi4_test_invalid(escalate_en_i);
 
   assign insn_cnt_o = insn_cnt;
 
