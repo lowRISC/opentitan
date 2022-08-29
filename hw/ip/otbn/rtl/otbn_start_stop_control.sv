@@ -73,7 +73,7 @@ module otbn_start_stop_control
   logic secure_wipe_error_q, secure_wipe_error_d;
 
   logic addr_cnt_inc;
-  logic [4:0] addr_cnt_q, addr_cnt_d;
+  logic [5:0] addr_cnt_q, addr_cnt_d;
 
   logic spurious_urnd_ack_error;
   logic spurious_secure_wipe_req, dropped_secure_wipe_req;
@@ -220,7 +220,18 @@ module otbn_start_stop_control
         expect_secure_wipe    = 1'b1;
         secure_wipe_running_o = 1'b1;
 
-        if (addr_cnt_q == 5'b11111) begin
+        // Count one extra cycle when wiping the WDR, because the wipe signals to the WDR
+        // (`sec_wipe_wdr_o` and `sec_wipe_wdr_urnd_o`) are flopped once but the wipe signals to the
+        // ACC register, which is wiped directly after the last WDR, are not.  If we would not count
+        // this extra cycle, the last WDR and the ACC register would be wiped simultaneously and
+        // thus with the same random value.
+        if (addr_cnt_q == 6'b100000) begin
+          // Reset `addr_cnt` on the transition out of this state.
+          addr_cnt_inc = 1'b0;
+          // The following two signals are flopped once before they reach the FSM, so clear them one
+          // cycle early here.
+          sec_wipe_wdr_o      = 1'b0;
+          sec_wipe_wdr_urnd_o = 1'b0;
           state_d = OtbnStartStopSecureWipeAccModBaseUrnd;
         end
       end
@@ -234,12 +245,12 @@ module otbn_start_stop_control
         expect_secure_wipe    = 1'b1;
         secure_wipe_running_o = 1'b1;
         // The first two clock cycles are used to write random data to accumulator and modulus.
-        sec_wipe_acc_urnd_o   = (addr_cnt_q == 5'b00000);
-        sec_wipe_mod_urnd_o   = (addr_cnt_q == 5'b00001);
+        sec_wipe_acc_urnd_o   = (addr_cnt_q == 6'b000000);
+        sec_wipe_mod_urnd_o   = (addr_cnt_q == 6'b000001);
         // Supress writes to the zero register and the call stack.
-        sec_wipe_base_o       = (addr_cnt_q > 5'b00001);
-        sec_wipe_base_urnd_o  = (addr_cnt_q > 5'b00001);
-        if (addr_cnt_q == 5'b11111) begin
+        sec_wipe_base_o       = (addr_cnt_q > 6'b000001);
+        sec_wipe_base_urnd_o  = (addr_cnt_q > 6'b000001);
+        if (addr_cnt_q == 6'b011111) begin
           state_d = OtbnStartStopSecureWipeAllZero;
         end
       end
@@ -332,11 +343,11 @@ module otbn_start_stop_control
                                                                  OtbnStartStopStateLocked}) &&
                     init_sec_wipe_done_q));
 
-  assign addr_cnt_d = addr_cnt_inc ? (addr_cnt_q + 5'd1) : 5'd0;
+  assign addr_cnt_d = addr_cnt_inc ? (addr_cnt_q + 6'd1) : 6'd0;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      addr_cnt_q           <= 5'd0;
+      addr_cnt_q           <= 6'd0;
       init_sec_wipe_done_q <= 1'b0;
     end else begin
       addr_cnt_q           <= addr_cnt_d;
@@ -354,7 +365,10 @@ module otbn_start_stop_control
     .mubi_o(wipe_after_urnd_refresh_q)
   );
 
-  assign sec_wipe_addr_o = addr_cnt_q;
+  // Clip the secure wipe address to [0..31].  This is safe because the wipe enable signals are
+  // never set when the counter exceeds 5 bit, which we assert below.
+  assign sec_wipe_addr_o = addr_cnt_q[4:0];
+  `ASSERT(NoSecWipeAbove32Bit_A, addr_cnt_q[5] |-> (!sec_wipe_wdr_o && !sec_wipe_acc_urnd_o))
 
   // A check for spurious or dropped secure wipe requests.
   // We only expect to start a secure wipe when running.

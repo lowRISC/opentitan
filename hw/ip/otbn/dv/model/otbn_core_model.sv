@@ -145,7 +145,7 @@ module otbn_core_model
   } urnd_state_e;
   urnd_state_e urnd_state_q, urnd_state_d;
 
-  localparam int unsigned WIPE_CYCLES = 66;
+  localparam int unsigned WIPE_CYCLES = 67;
   typedef logic [$clog2(WIPE_CYCLES+1)-1:0] wipe_cyc_cnt_t;
   wipe_cyc_cnt_t wipe_cyc_cnt_q, wipe_cyc_cnt_d;
 

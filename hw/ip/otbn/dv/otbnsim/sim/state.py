@@ -21,7 +21,7 @@ from .wsr import WSRFile
 
 # The number of cycles spent per round of a secure wipe. This takes constant
 # time in the RTL, mirrored here.
-_WIPE_CYCLES = 67
+_WIPE_CYCLES = 68
 
 
 class FsmState(IntEnum):
