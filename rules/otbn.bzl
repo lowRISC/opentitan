@@ -162,7 +162,7 @@ def _otbn_sim_test(ctx):
 
     # Create a simple script that runs the OTBN simulator on the .elf file and
     # checks if the w0 register is 0.
-    simulator_cmd = "{} {} --dump-regs -".format(ctx.file._simulator.path, elf.short_path)
+    simulator_cmd = "{} {} --dump-regs -".format(ctx.executable._simulator.short_path, elf.short_path)
     expected_string = "0x" + ("0" * 64)
     script = '''
       echo "Running simulator: {simulator_cmd}"
@@ -182,9 +182,10 @@ def _otbn_sim_test(ctx):
         content = script,
     )
 
-    # The simulator and .elf file must be added to runfiles in order to be
-    # visible to the test at runtime.
-    runfiles = ctx.runfiles(files = (ctx.files.srcs + [elf, ctx.file._simulator]))
+    # Runfiles include sources, the .elf file, the simulator itself, and all
+    # the simulator's runfiles.
+    runfiles = ctx.runfiles(files = (ctx.files.srcs + [elf, ctx.executable._simulator]))
+    runfiles = runfiles.merge(ctx.attr._simulator[DefaultInfo].default_runfiles)
     return [
         DefaultInfo(runfiles = runfiles, executable = script_file),
         providers[1],
@@ -311,9 +312,11 @@ otbn_sim_test = rv_rule(
             default = "//hw/ip/otbn/data:all_files",
             allow_files = True,
         ),
-        # TODO: make the simulator target an executable and update this
-        # dependency to match the others.
-        "_simulator": attr.label(default = "//hw/ip/otbn/dv/otbnsim:standalone.py", allow_single_file = True),
+        "_simulator": attr.label(
+            default = "//hw/ip/otbn/dv/otbnsim:standalone",
+            executable = True,
+            cfg = "exec",
+        ),
         "_wrapper": attr.label(
             default = "//util:otbn_build",
             executable = True,
