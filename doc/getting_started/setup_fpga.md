@@ -273,11 +273,9 @@ Assuming opentitantool has been built and that the current directory is the root
 
 ```console
 $ ./bazel-bin/sw/host/opentitantool/opentitantool \
-        --conf sw/host/opentitantool/config/opentitan_cw310.json \
         --interface cw310 \
         gpio write TAP_STRAP0 false
 $ ./bazel-bin/sw/host/opentitantool/opentitantool \
-        --conf sw/host/opentitantool/config/opentitan_cw310.json \
         --interface cw310 \
         gpio write TAP_STRAP1 true
 ```
@@ -346,7 +344,7 @@ mdw 0x8000 0x10 // read 16 bytes at address 0x8000
 
 ### Debug with GDB
 
-Fist, make sure the device software has been built with debug symbols (by default Bazel does not build software with debug symbols).
+First, make sure the device software has been built with debug symbols (by default Bazel does not build software with debug symbols).
 For example, to build and test the UART smoke test with debug symbols, you can add `--copt=-g` flag to the `bazel test ...` command:
 ```console
 cd $REPO_TOP
@@ -360,7 +358,9 @@ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
   "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf)"
 ```
 
-Note, the above will print out the contents of the registers upon success.
+The above will print out the contents of the registers upon successs.
+Note that you should have the RISC-V toolchain installed and on your `PATH`.
+For example, if you followed the [Getting Started]({{< relref "getting_started#step-3-install-the-lowrisc-risc-v-toolchain" >}}) instructions, then make sure `/tools/riscv/bin` is on your `PATH`.
 
 #### Common operations with GDB
 
