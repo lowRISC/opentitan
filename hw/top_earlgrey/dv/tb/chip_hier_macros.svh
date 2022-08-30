@@ -26,6 +26,7 @@
 `define USBDEV_HIER           `CHIP_HIER.u_usbdev
 `define PWRMGR_HIER           `CHIP_HIER.u_pwrmgr_aon
 `define OTBN_HIER             `CHIP_HIER.u_otbn
+`define I2C0_HIER             `CHIP_HIER.u_i2c0
 
 // The path to the actual memory array in rom_ctrl. This is a bit of a hack to allow a long path
 // without overflowing 100 characters or including any whitespace (which breaks a DV_STRINGIFY call

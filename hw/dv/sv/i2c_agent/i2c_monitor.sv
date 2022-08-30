@@ -56,12 +56,11 @@ class i2c_monitor extends dv_base_monitor #(
   // collect transactions forever
   virtual protected task collect_thread(uvm_phase phase);
     i2c_item full_item;
-
     wait(cfg.en_monitor);
     if (mon_dut_item.stop ||
        (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
       cfg.vif.wait_for_host_start(cfg.timing_cfg);
-      `uvm_info(`gfn, "\nmonitor, detect HOST START", UVM_DEBUG)
+      `uvm_info(`gfn, "\nmonitor, detect HOST START", UVM_MEDIUM)
     end else begin
       mon_dut_item.rstart = 1'b1;
     end
@@ -92,17 +91,20 @@ class i2c_monitor extends dv_base_monitor #(
     mon_dut_item.tran_id = num_dut_tran;
     for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
       cfg.vif.get_bit_data("host", cfg.timing_cfg, mon_dut_item.addr[i]);
-      `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]), UVM_MEDIUM)
     end
-    `uvm_info(`gfn, $sformatf("\nmonitor, address 0x%0x", mon_dut_item.addr), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
+    cfg.vif.set_address(mon_dut_item.addr);
     cfg.vif.get_bit_data("host", cfg.timing_cfg, rw_req);
+    `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", rw_req), UVM_MEDIUM)
     mon_dut_item.bus_op = (rw_req) ? BusOpRead : BusOpWrite;
     // get ack after transmitting address
     mon_dut_item.drv_type = DevAck;
     `downcast(clone_item, mon_dut_item.clone());
+    `uvm_info(`gfn, $sformatf("Req analysis port: address thread"), UVM_MEDIUM)
     req_analysis_port.write(clone_item);
     cfg.vif.wait_for_device_ack(cfg.timing_cfg);
-    `uvm_info(`gfn, $sformatf("\nmonitor, address, detect TARGET ACK"), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("\nmonitor, address, detect TARGET ACK"), UVM_MEDIUM)
   endtask : address_thread
 
   virtual protected task read_thread();
@@ -116,22 +118,23 @@ class i2c_monitor extends dv_base_monitor #(
       // ask driver response read data
       mon_dut_item.drv_type = RdData;
       `downcast(clone_item, mon_dut_item.clone());
+      `uvm_info(`gfn, $sformatf("Req analysis port: read thread"), UVM_MEDIUM)
       req_analysis_port.write(clone_item);
       // sample read data
       for (int i = 7; i >= 0; i--) begin
         cfg.vif.get_bit_data("device", cfg.timing_cfg, mon_data[i]);
         `uvm_info(`gfn, $sformatf("\nmonitor, rd_data, trans %0d, byte %0d, bit[%0d] %0b",
-            mon_dut_item.tran_id, mon_dut_item.num_data+1, i, mon_data[i]), UVM_DEBUG)
+            mon_dut_item.tran_id, mon_dut_item.num_data+1, i, mon_data[i]), UVM_MEDIUM)
       end
       mon_dut_item.data_q.push_back(mon_data);
       mon_dut_item.num_data++;
       `uvm_info(`gfn, $sformatf("\nmonitor, rd_data, trans %0d, byte %0d 0x%0x",
-          mon_dut_item.tran_id, mon_dut_item.num_data, mon_data), UVM_DEBUG)
+          mon_dut_item.tran_id, mon_dut_item.num_data, mon_data), UVM_MEDIUM)
       // sample host ack/nack (in the last byte, nack can be issue if rcont is set)
       cfg.vif.wait_for_host_ack_or_nack(cfg.timing_cfg, mon_dut_item.ack, mon_dut_item.nack);
       `DV_CHECK_NE_FATAL({mon_dut_item.ack, mon_dut_item.nack}, 2'b11)
       `uvm_info(`gfn, $sformatf("\nmonitor, detect HOST %s",
-          (mon_dut_item.ack) ? "ACK" : "NO_ACK"), UVM_DEBUG)
+          (mon_dut_item.ack) ? "ACK" : "NO_ACK"), UVM_MEDIUM)
       // if nack is issued, next bit must be stop or rstart
       if (mon_dut_item.nack) begin
         cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
@@ -139,7 +142,7 @@ class i2c_monitor extends dv_base_monitor #(
                                              mon_dut_item.stop);
         `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
         `uvm_info(`gfn, $sformatf("\nmonitor, rd_data, detect HOST %s",
-            (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_DEBUG)
+            (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_MEDIUM)
       end
     end
   endtask : read_thread
@@ -156,15 +159,21 @@ class i2c_monitor extends dv_base_monitor #(
             begin
               // ask driver's response a write request
               mon_dut_item.drv_type = WrData;
-              `downcast(clone_item, mon_dut_item.clone());
-              req_analysis_port.write(clone_item);
               for (int i = 7; i >= 0; i--) begin
                 cfg.vif.get_bit_data("host", cfg.timing_cfg, mon_data[i]);
               end
-              mon_dut_item.num_data++;
+              // move port write after data collection to sure that an early
+              // terminate due to "STOP" or "RESTART" does not emit an extra data entry
+              // for loopback
+              `uvm_info(`gfn, $sformatf("Monitor collected data %0x", mon_data), UVM_MEDIUM)
               mon_dut_item.data_q.push_back(mon_data);
+              `downcast(clone_item, mon_dut_item.clone());
+               `uvm_info(`gfn, $sformatf("Req analysis port: write thread data"), UVM_MEDIUM)
+              req_analysis_port.write(clone_item);
+              mon_dut_item.num_data++;
               mon_dut_item.drv_type = DevAck;
               `downcast(clone_item, mon_dut_item.clone());
+              `uvm_info(`gfn, $sformatf("Req analysis port: write thread ack"), UVM_MEDIUM)
               req_analysis_port.write(clone_item);
               cfg.vif.wait_for_device_ack(cfg.timing_cfg);
             end
@@ -174,7 +183,7 @@ class i2c_monitor extends dv_base_monitor #(
                                                    mon_dut_item.stop);
               `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
               `uvm_info(`gfn, $sformatf("\nmonitor, wr_data, detect HOST %s %0b",
-                  (mon_dut_item.stop) ? "STOP" : "RSTART", mon_dut_item.stop), UVM_DEBUG)
+                  (mon_dut_item.stop) ? "STOP" : "RSTART", mon_dut_item.stop), UVM_MEDIUM)
             end
           join_any
           disable fork;
@@ -193,4 +202,3 @@ class i2c_monitor extends dv_base_monitor #(
   endtask : monitor_ready_to_end
 
 endclass : i2c_monitor
-

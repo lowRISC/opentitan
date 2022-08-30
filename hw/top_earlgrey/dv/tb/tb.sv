@@ -73,6 +73,13 @@ module tb;
   // TODO reveiw m_tl_agent_rv_dm_debug_mem_reg_block
   tl_if dmi_tbd_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
 
+  // declar only one i2c interface right now to try things out
+  i2c_if i2c_if[0:0]();
+  for (genvar i = 0; i < NUM_I2CS; i++) begin : gen_i2c_if_connections
+     assign i2c_if[i].clk_i = `I2C0_HIER.clk_i;
+     assign i2c_if[i].rst_ni = `I2C0_HIER.rst_ni;
+  end
+
   uart_if uart_if[NUM_UARTS-1:0]();
   jtag_if jtag_if();
   pwm_if pwm_if[NUM_PWM_CHANNELS]();
@@ -148,8 +155,17 @@ module tb;
   wire ioc10, ioc11, ioc12;
 
   assign (weak0, weak1) iob10 = 1'b0;
-  assign (weak0, weak1) iob11 = 1'b0;
-  assign (weak0, weak1) iob12 = 1'b0;
+
+  // temporarily hijack iob10/11 for i2c testing
+  assign i2c_if[0].scl_i = iob11;
+  assign i2c_if[0].sda_i = iob12;
+  assign (weak0, weak1) iob11 = 1'b1;
+  assign (weak0, weak1) iob12 = 1'b1;
+  wire i2c_if_scl = i2c_if[0].scl_o ? 'bz : '0;
+  wire i2c_if_sda = i2c_if[0].sda_o ? 'bz : '0;
+  assign iob11 = i2c_if_scl;
+  assign iob12 = i2c_if_sda;
+
   assign (weak0, weak1) ioc10 = 1'b0;
   assign (weak0, weak1) ioc11 = 1'b0;
   assign (weak0, weak1) ioc12 = 1'b0;
@@ -437,6 +453,16 @@ module tb;
                                           $sformatf("m_pwm_monitor%0d_vif", n), pwm_if[n]);
     end
   end
+
+  // eventually need to follow above examples for multiple i2c interfaces, for now
+  // just declare 1
+  for (genvar n = 0; n < NUM_I2CS; n++) begin : gen_i2c_if
+    initial begin
+      uvm_config_db#(virtual i2c_if)::set(null, $sformatf("*.env.m_i2c_agent%0d*", n),
+                                          "vif", i2c_if[n]);
+    end
+  end
+
 
   `undef SIM_SRAM_IF
 
