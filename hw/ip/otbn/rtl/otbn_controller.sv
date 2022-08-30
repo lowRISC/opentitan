@@ -202,6 +202,7 @@ module otbn_controller
   logic jump_or_branch;
   logic branch_taken;
   logic insn_executing;
+  logic ld_insn_with_addr_from_call_stack, st_insn_with_addr_from_call_stack;
   logic [ImemAddrWidth-1:0] branch_target;
   logic                     branch_target_overflow;
   logic [ImemAddrWidth:0]   next_insn_addr_wide;
@@ -555,8 +556,30 @@ module otbn_controller
   assign reg_intg_violation_err   = rf_bignum_intg_err | ispr_rdata_intg_err;
   assign key_invalid_err          = ispr_rd_bignum_insn & insn_valid_i & key_invalid;
   assign illegal_insn_err         = illegal_insn_static | rf_indirect_err;
-  assign bad_data_addr_err        = dmem_addr_err;
   assign call_stack_sw_err        = rf_base_call_stack_sw_err_i;
+
+  // Flag a bad data address error if the data memory address is invalid and it does not come from
+  // an empty call stack.  The second case cannot be decided as bad data address because the address
+  // on top of the empty call stack may or may not be valid.  (Also, in most RTL simulators an empty
+  // call stack that has never been pushed contains an unknown value, so this error bit would become
+  // unknown.)  Thus, a data memory address coming from an empty call stack raises a call stack
+  // error but never a bad data address error.
+  assign bad_data_addr_err = dmem_addr_err &
+                             ~(call_stack_sw_err &
+                               (ld_insn_with_addr_from_call_stack |
+                                st_insn_with_addr_from_call_stack));
+
+  // Identify load instructions that take the memory address from the call stack.
+  assign ld_insn_with_addr_from_call_stack = insn_valid_i               &
+                                             insn_dec_shared_i.ld_insn  &
+                                             insn_dec_base_i.rf_ren_a   &
+                                             (insn_dec_base_i.a == 5'd1);
+
+  // Identify store instructions that take the memory address from the call stack.
+  assign st_insn_with_addr_from_call_stack = insn_valid_i               &
+                                             insn_dec_shared_i.st_insn  &
+                                             insn_dec_base_i.rf_ren_a   &
+                                             (insn_dec_base_i.a == 5'd1);
 
   // All software errors that aren't bad_insn_addr. Factored into bad_insn_addr so it is only raised
   // if other software errors haven't ocurred. As bad_insn_addr relates to the next instruction
