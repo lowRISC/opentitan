@@ -231,9 +231,12 @@ module tb;
   //
   // For eflash of a specific vendor implementation, set the hierarchy to the memory element
   // correctly when creating these instances in the extended testbench.
-  `define FLASH_DATA_MEM_HIER(i)                                                        \
+  `define FLASH_BANK_HIER(i)                                                            \
       tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i].       \
-      u_prim_flash_bank.u_mem.gen_generic.u_impl_generic.mem
+      u_prim_flash_bank
+
+  `define FLASH_DATA_MEM_HIER(i)                                                        \
+      `FLASH_BANK_HIER(i).u_mem.gen_generic.u_impl_generic.mem
 
   `define FLASH_DATA_MEM_HIER_STR(i)                                                    \
       $sformatf({"tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.",                 \
@@ -283,9 +286,28 @@ module tb;
         end
       end : gen_each_info_type
 
+      bind `FLASH_BANK_HIER(i) flash_ctrl_mem_if flash_ctrl_mem_if (
+        .clk_i,
+        .rst_ni,
+        .data_mem_req,
+        .mem_wr,
+        .mem_addr,
+        .mem_wdata,
+        .mem_part,
+        .mem_info_sel,
+        .info0_mem_req (gen_info_types[0].info_mem_req),
+        .info1_mem_req (gen_info_types[1].info_mem_req),
+        .info2_mem_req (gen_info_types[2].info_mem_req)
+      );
+      initial begin
+        uvm_config_db#(virtual flash_ctrl_mem_if)::set(null, "*.env",
+            $sformatf("flash_ctrl_mem_vif[%0d]", i), `FLASH_BANK_HIER(i).flash_ctrl_mem_if);
+      end
+
     end : gen_each_bank
   end : gen_generic
 
+  `undef FLASH_BANK_HIER
   `undef FLASH_DATA_MEM_HIER
   `undef FLASH_INFO_MEM_HIER
 
@@ -320,13 +342,6 @@ module tb;
     uvm_config_db#(virtual flash_phy_prim_if)::set(null, "*.env.m_fpp_agent*", "vif", fpp_if);
     uvm_config_db#(virtual flash_ctrl_dv_if)::set(null, "*.env", "flash_ctrl_dv_vif",
                                                   flash_ctrl_dv_if);
-    uvm_config_db#(virtual flash_ctrl_mem_if)::set(null, "*.env", "flash_ctrl_mem_vif[0]",
-        dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[0].
-                                                   u_prim_flash_bank.flash_ctrl_mem_if);
-    uvm_config_db#(virtual flash_ctrl_mem_if)::set(null, "*.env", "flash_ctrl_mem_vif[1]",
-        dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[1].
-                                                   u_prim_flash_bank.flash_ctrl_mem_if);
-
     $timeformat(-9, 1, " ns", 9);
     run_test();
   end
