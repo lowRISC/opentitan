@@ -1105,6 +1105,7 @@
               - Don't specify any usage constraints to be able to compute the actual hash in the second stage.
             - Verify that `sec_mmio_ctx` is valid using `sec_mmio_check_values()` and
               `sec_mmio_check_counters()`.
+            - Verify that a failed sec_mmio check triggers an illegal instruction exception.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2

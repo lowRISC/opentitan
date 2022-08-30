@@ -65,6 +65,30 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "rom_e2e_static_critical",
+    srcs = ["rom_e2e_static_critical_test.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom",
+    ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    signed = True,
+    targets = [
+        "cw310",
+        "verilator",
+    ],
+    verilator = verilator_params(
+        timeout = "eternal",
+        rom = "//sw/device/silicon_creator/rom",
+    ),
+    deps = [
+        "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+    ],
+)
+
 # Same as `:e2e_bootup_success`, but the Dev OTP image is spliced into the
 # bitstream before it's sent to the CW310 FPGA.
 opentitan_functest(
