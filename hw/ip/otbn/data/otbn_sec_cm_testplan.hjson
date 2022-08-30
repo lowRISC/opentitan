@@ -181,13 +181,13 @@
       name: sec_cm_loop_stack_addr_integrity
       desc: "Verify the countermeasure(s) LOOP_STACK.ADDR.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["otbn_stack_addr_integ_chk"]
     }
     {
       name: sec_cm_call_stack_addr_integrity
       desc: "Verify the countermeasure(s) CALL_STACK.ADDR.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["otbn_stack_addr_integ_chk"]
     }
     {
       name: sec_cm_start_stop_ctrl_state_consistency
