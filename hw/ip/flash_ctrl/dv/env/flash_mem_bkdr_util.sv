@@ -8,8 +8,9 @@ class flash_mem_bkdr_util extends mem_bkdr_util;
   // Initialize the class instance - reuse the base class' new.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
-               int extra_bits_per_subword = 0);
-    super.new(name, path, depth, n_bits, err_detection_scheme, extra_bits_per_subword);
+               int extra_bits_per_subword = 0, int unsigned system_base_addr = 0);
+    super.new(name, path, depth, n_bits, err_detection_scheme, extra_bits_per_subword,
+              system_base_addr);
     // Error detection scheme is assumed to be 76_68, otherwise, the overrides below won't work.
     `DV_CHECK_EQ_FATAL(err_detection_scheme, mem_bkdr_util_pkg::EccHamming_76_68)
   endfunction
