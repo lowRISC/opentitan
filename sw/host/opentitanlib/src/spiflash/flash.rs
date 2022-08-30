@@ -300,29 +300,30 @@ impl SpiFlash {
         progress: impl Fn(u32, u32),
     ) -> Result<&Self> {
         let mut remain = buffer.len();
-        let mut chunkstart = 0usize;
+        let mut chunk_start = 0usize;
         while remain != 0 {
             // If the address isn't program-page-size aligned, adjust the first
             // chunk so that subsequent writes will be so-aligned.
             // This is necessary because the SPI eeprom will wrap within the
             // programming page and the resultant data in the eeprom will not
             // be what you intended.
-            let chunk = (self.program_size - (address % self.program_size)) as usize;
-            let chunk = std::cmp::min(chunk, remain);
-            let chunkend = chunkstart + chunk;
-            let op_addr = self.opcode_with_address(SpiFlash::PAGE_PROGRAM, address)?;
-            // Issue the write enable first as a separate transaction.
-            SpiFlash::set_write_enable(spi)?;
-            // Then issue the program operation.
-            spi.run_transaction(&mut [
-                Transfer::Write(&op_addr),
-                Transfer::Write(&buffer[chunkstart..chunkend]),
-            ])?;
-            SpiFlash::wait_for_busy_clear(spi)?;
-            address += chunk as u32;
-            chunkstart += chunk;
-            remain -= chunk;
-            progress(address, chunk as u32);
+            let chunk_size = (self.program_size - (address % self.program_size)) as usize;
+            let chunk_size = std::cmp::min(chunk_size, remain);
+            let chunk_end = chunk_start + chunk_size;
+            let chunk = &buffer[chunk_start..chunk_end];
+            // Skip this chunk if all bytes are 0xff.
+            if !chunk.iter().all(|&x| x == 0xff) {
+                let op_addr = self.opcode_with_address(SpiFlash::PAGE_PROGRAM, address)?;
+                // Issue the write enable first as a separate transaction.
+                SpiFlash::set_write_enable(spi)?;
+                // Then issue the program operation.
+                spi.run_transaction(&mut [Transfer::Write(&op_addr), Transfer::Write(chunk)])?;
+                SpiFlash::wait_for_busy_clear(spi)?;
+            }
+            address += chunk_size as u32;
+            chunk_start += chunk_size;
+            remain -= chunk_size;
+            progress(address, chunk_size as u32);
         }
         Ok(self)
     }
