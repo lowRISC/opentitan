@@ -776,6 +776,9 @@
       uvm_test_seq: chip_sw_alert_handler_escalation_vseq
       sw_images: ["//sw/device/tests/sim_dv:alert_handler_escalation_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      // Disable scoreboard to avoid incorrect alert prediction from the alert_monitor. Due to the
+      // cross-domain alert senders and receivers, the monitor from the chip level did not support
+      // processing alerts accurately from both ends.
       run_opts: ["+en_scb=0", "+sw_test_timeout_ns=5000000", "+bypass_alert_ready_to_end_check=1"]
     }
     {
@@ -783,7 +786,23 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:alert_handler_ping_timeout_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
+      // Disable scoreboard to avoid incorrect alert prediction from the alert_monitor. Due to the
+      // cross-domain alert senders and receivers, the monitor from the chip level did not support
+      // processing alerts accurately from both ends.
       run_opts: ["+en_scb=0"]
+    }
+    {
+      name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:alert_handler_reverse_ping_in_deep_sleep_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      // Disable scoreboard to avoid incorrect alert prediction from the alert_monitor. Due to the
+      // cross-domain alert senders and receivers, the monitor from the chip level did not support
+      // processing alerts accurately from both ends.
+      // This test takes long due to the compile time configured reverse timeout. See test plan for
+      // more details.
+      run_opts: ["+en_scb=0", "+sw_test_timeout_ns=240_000_000"]
+      run_timeout_mins: 240
     }
     {
       name: chip_sw_alert_handler_entropy
