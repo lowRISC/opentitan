@@ -1158,6 +1158,7 @@ module otbn_controller
 
   assign rf_d_indirect_err = insn_dec_bignum_i.rf_d_indirect    &
                              (|rf_base_rd_data_b_no_intg[31:5]) &
+                             ~rf_base_call_stack_sw_err_i       &
                              rf_base_rd_en_b_o;
 
   assign rf_indirect_err =
