@@ -1415,9 +1415,53 @@
 
             Check that escalation receivers located inside always-on blocks do not auto-escalate
             due to the reverse ping feature while the system is in deep sleep.
+
+            ## Reverse ping timeout calculation
+
+            The reverse ping timeout calculation is done using the following formula available in
+            `prim_esc_receiver`:
+
+            ```
+            4  * N_ESC_SEV * (2 * 2 * 2^PING_CNT_DW)
+            ```
+
+            `pwrmgr` is the only block consuming the `N_ESC_SEV` and `PING_CNT_DW` compile time
+            parameters:
+
+            ```
+            alert_handler_reg_pkg::N_ESC_SEV = 4
+            alert_handler_reg_pkg::PING_CNT_DW = 16
+            ```
+
+            The alert escalation responder inside `pwrmgr` is connected to the `io_div4` clock,
+            yielding a target 24MHz frequency. The result expected timeout based on the above
+            parameters is thus:
+
+            ```
+            reverse_ping_timeout = 0.175s = (4 * 4 ( 2 * 2 * 2^16)) / 24e6
+            ```
+
+            ## Procedure
+
+            - On POR reset:
+              - Enable all alerts assigning them to ClassA.
+              - Enable all local alerts and assign to ClassB.
+              - Set escalation configuration to trigger before test wake up time.
+              - Set ping timeout to a time less than wake up time.
+              - Lock alert configuration and enable ping mechanism.
+              - Wait for polling counters to cycle through by busy polling on Ibex for
+                `reverse_ping_timeout >> 2` usec.
+              - Configure AON to wake up device at a later time, making sure it is greater than the
+                `reverse_ping_timeout` calculated in the previous section.
+              - Enter deep sleep.
+            - On wake up from sleep:
+              - Ensure reset status is low power exit. A `kDifRstmgrResetInfoEscalation` signals that
+                there was a local escalation and should result in test failure.
+              - Disable AON timer.
+              - Check there are no flagged local alerts.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_alert_handler_reverse_ping_in_deep_sleep"]
     }
 
     // LC_CTRL (pre-verified IP) integration tests:
