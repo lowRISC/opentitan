@@ -149,11 +149,10 @@ module tb;
     .jitter_en_o(clkmgr_if.jitter_en_o),
     .clocks_o   (clkmgr_if.clocks_o),
 
-    // assumes calibration is always ready
-    .calib_rdy_i(prim_mubi_pkg::MuBi4True),
+    .calib_rdy_i(clkmgr_if.calib_rdy),
 
     // TODO: connect and use this interface.
-    .hi_speed_sel_o()
+    .hi_speed_sel_o(clkmgr_if.hi_speed_sel)
   );
 
   initial begin
