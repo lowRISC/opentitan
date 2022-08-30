@@ -20,7 +20,7 @@
  *
  * @param[in]  w8: enc(k), encoded scalar (256-bit random number)
  * @param[in]  w9: enc(u), encoded Montgomery u-coordinate (256 bits)
- * @param[out] w22: result, X25519(k, u) as a u-coordinate
+ * @param[out] w22: result, X25519(k, u) as an encoded u-coordinate
  *
  * clobbered registers: w2 to w24
  * clobbered flag groups: FG0
@@ -364,4 +364,4 @@ modulus25519:
 .balign 32
 a24:
 .word 0x0001db41
-.zero 24
+.zero 28

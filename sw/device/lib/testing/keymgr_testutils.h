@@ -26,7 +26,7 @@ static const dif_keymgr_versioned_key_params_t kKeyVersionedParams = {
             0x322288d8,
             0xde919d54,
         },
-    .version = 0xaa,
+    .version = 0x1,
 };
 
 /**
@@ -70,7 +70,8 @@ static const dif_keymgr_state_params_t kOwnerIntParams = {
  * procedure is so that the key manager will not use KMAC with the default
  * entropy settings.
  *
- * @param keymgr A key manager handle.
+ * @param keymgr A key manager handle, may be uninitialized.
+ * @param kmac A KMAC handle, may be uninitialized.
  */
 void keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac);
 

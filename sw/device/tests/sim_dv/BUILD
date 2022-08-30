@@ -209,6 +209,26 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "keymgr_sideload_otbn_test",
+    srcs = ["keymgr_sideload_otbn_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/ip/otbn/data:otbn_regs",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:otbn",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/otbn/crypto:x25519_sideload",
+    ],
+)
+
 cc_library(
     name = "lc_ctrl_transition_impl",
     srcs = ["lc_ctrl_transition_impl.c"],
