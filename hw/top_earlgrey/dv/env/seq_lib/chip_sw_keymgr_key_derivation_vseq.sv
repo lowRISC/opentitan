@@ -97,6 +97,16 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrOtbnSeed,
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
 
+  bit lc_at_prod;
+
+  virtual task dut_init(string reset_kind = "HARD");
+    super.dut_init(reset_kind);
+    void'($value$plusargs("lc_at_prod=%0d", lc_at_prod));
+    if (lc_at_prod) begin
+      cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
+    end
+  endtask
+
   virtual task body();
     string path_internal_key = "tb.dut.top_earlgrey.u_keymgr.u_ctrl.key_o.key";
     string path_kmac_key = "tb.dut.top_earlgrey.u_keymgr.kmac_key_o";
@@ -200,7 +210,15 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, $sformatf("DeviceIdentifier 0x%0h", creator_data.DeviceIdentifier),
               UVM_LOW)
 
-    creator_data.HealthMeasurement = top_earlgrey_rnd_cnst_pkg::RndCnstLcCtrlLcKeymgrDivTestDevRma;
+    // this test uses either PROD or RMA state
+    if (lc_at_prod) begin
+      creator_data.HealthMeasurement =
+          top_earlgrey_rnd_cnst_pkg::RndCnstLcCtrlLcKeymgrDivProduction;
+    end else begin
+      creator_data.HealthMeasurement =
+          top_earlgrey_rnd_cnst_pkg::RndCnstLcCtrlLcKeymgrDivTestDevRma;
+    end
+
     for (int i = 0; i < keymgr_pkg::KeyWidth / TL_DW; i++) begin
       bit [TL_DW-1:0] rdata;
       csr_peek(ral.rom_ctrl_regs.digest[i], rdata);
