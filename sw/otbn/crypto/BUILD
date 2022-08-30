@@ -379,6 +379,17 @@ otbn_library(
     ],
 )
 
+otbn_binary(
+    name = "x25519_sideload",
+    srcs = [
+        "x25519_sideload.s",
+    ],
+    deps = [
+        ":field25519",
+        ":x25519",
+    ],
+)
+
 otbn_sim_test(
     name = "x25519_test",
     srcs = [

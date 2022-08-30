@@ -2141,7 +2141,7 @@
                sideloading to otbn.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_keymgr_sideload_otbn"]
     }
 
     // OTBN (pre-verified IP) integration tests:
