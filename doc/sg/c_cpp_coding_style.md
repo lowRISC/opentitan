@@ -366,8 +366,17 @@ typedef enum my_wonderful_option {
 C11 introduces a number of undescore-prefixed keywords, such as `_Static_assert`, `_Bool`, and `_Noreturn`, which do not have a C++ counterpart.
 These should be avoided in preference for macros that wrap them, such as `static_assert`, `bool`, and `noreturn`.
 
-### Preprocessor Macros
+### Constants and Preprocessor Macros
+**Constants**
+  Prefer using a `enum` to define named constants rather than Preprocessor Macros or even `const int` in `C` because:
+  - It appears in the symbol table which improves debugging in contrast to Macros.
+  - It can be used as `case` labels in a `switch` statement in contrast to `const int`.
+  - It can be used as the dimension of global arrays in contrast to `const int`.
+  - It doesn't use any memory as well as Macros.
 
+  Note that, if the constant will be used in assembly code, then Preprocessor macros would be the best choice.
+
+**Macros**
 Macros are often necessary and reasonable coding practice C (as opposed to C++) projects.
 In contrast to the recommendation in the Google C++ style guide, exporting macros as part of the public API is allowed in C code.
 A typical use case is a header with register definitions.
