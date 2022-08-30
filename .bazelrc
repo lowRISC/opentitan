@@ -23,7 +23,7 @@ build --workspace_status_command=util/get_workspace_status.sh
 
 # This enables convenient building for opentitan targets with the argument
 # --config=riscv32
-build:riscv32 --platforms=@bazel_embedded//platforms:opentitan_rv32imc
+build:riscv32 --platforms=@crt//platforms/riscv32:opentitan
 
 # Generate coverage in lcov format, which can be post-processed by lcov
 # into html-formatted reports.
