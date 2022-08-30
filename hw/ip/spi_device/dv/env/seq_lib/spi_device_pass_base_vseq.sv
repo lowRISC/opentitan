@@ -19,7 +19,9 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   bit allow_write_enable_disable;
   bit allow_addr_cfg_cmd;
   // we can only hold one payload, set it busy to avoid payload is overwritten before read out.
-  bit always_set_busy_when_upload_contain_payload;
+  // TODO, set this for all vseq, since uploading another payload with clearing busy bit isn't a
+  // correct use case.
+  bit always_set_busy_when_upload_contain_payload = 1;
 
   // knob to control read_buffer_update thread
   bit stop_forever_read_buffer_update;
@@ -146,7 +148,11 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       info.num_lanes == 1 &&
       info.dummy_cycles == 0 &&
       info.write_command == 0;)
-    add_cmd_info(info, 0);
+    // don't allow invalid the read_status if upload is used.
+    // Otherwise, upstream SPI can't read the busy bit
+    if (allow_upload) add_cmd_info(.info(info), .idx(0), .allow_invalid(0));
+    else              add_cmd_info(.info(info), .idx(0)); // use default value for allow_invalid
+
     info = spi_flash_cmd_info::type_id::create("info");
     `DV_CHECK_RANDOMIZE_WITH_FATAL(info,
       info.addr_mode == SpiFlashAddrDisabled &&
@@ -341,10 +347,9 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       csr_update(ral.intercept_en);
     end
 
-    // in passthrough, if upload is enabled, need to enable status intercept, so that host side
+    // if upload is enabled, need to enable status intercept, so that host side
     // can know if spi_device is busy or not
-    if (allow_upload && device_mode == PassthroughMode && (`gmv(ral.intercept_en.status) == 0))
-    begin
+    if (allow_upload && (`gmv(ral.intercept_en.status) == 0)) begin
       ral.intercept_en.status.set(1);
       csr_update(ral.intercept_en);
     end
@@ -402,12 +407,13 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   endtask : randomize_all_cmd_filters
 
   // Task for configuring cmd info slot
-  virtual task add_cmd_info(spi_flash_cmd_info info, bit [4:0] idx);
+  virtual task add_cmd_info(spi_flash_cmd_info info, bit [4:0] idx,
+                            bit allow_invalid = allow_set_cmd_info_invalid);
     bit [3:0] lanes_en;
     bit valid;
     bit swap;
 
-    if (allow_set_cmd_info_invalid) valid = $urandom_range(0, 1);
+    if (allow_invalid) valid = $urandom_range(0, 1);
     else valid = 1;
 
     if (valid) begin
@@ -573,16 +579,24 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     bit intr_cmdfifo, intr_payload;
 
     csr_rd(ral.intr_state, intr_state_val);
-    csr_rd(ral.upload_status, status_val);
-    csr_rd(ral.upload_status2, status2_val);
-
     intr_cmdfifo = get_field_val(ral.intr_state.upload_cmdfifo_not_empty, intr_state_val);
     intr_payload = get_field_val(ral.intr_state.upload_payload_not_empty, intr_state_val);
+    if (intr_cmdfifo == 0 && intr_payload == 0) return;
+
+    // read these status after interrupts occur, so that scb doesn't need to model it
+    // cycle accurately
+    csr_rd(ral.upload_status, status_val);
+    csr_rd(ral.upload_status2, status2_val);
     cmdfifo_depth_val = get_field_val(ral.upload_status.cmdfifo_depth, status_val);
     addrfifo_depth_val = get_field_val(ral.upload_status.addrfifo_depth, status_val);
     payload_depth_val = get_field_val(ral.upload_status2.payload_depth, status2_val);
 
-    if (intr_cmdfifo == 0 && intr_payload == 0) return;
+
+    // clear interrupt before reading out data, so that if new event comes, won't be missed.
+    intr_state_val = 0;
+    if (intr_cmdfifo) intr_state_val[CmdFifoNotEmpty] = 1;
+    if (intr_payload) intr_state_val[PayloadNotEmpty] = 1;
+    csr_wr(ral.intr_state, intr_state_val);
 
     if (intr_cmdfifo) `DV_CHECK_GT(cmdfifo_depth_val, 0)
     for (int i = 0; i < cmdfifo_depth_val; i++) begin
@@ -611,16 +625,22 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
                 UVM_MEDIUM)
     end
 
-    // clear interrupt
-    intr_state_val = 0;
-    if (intr_cmdfifo) intr_state_val[CmdFifoNotEmpty] = 1;
-    if (intr_payload) intr_state_val[PayloadNotEmpty] = 1;
-    csr_wr(ral.intr_state, intr_state_val);
-
     // clear busy bit
     csr_rd(ral.flash_status.busy, busy_val);
     if (busy_val == 1) clear_flash_busy_bit();
-  endtask
+  endtask : read_upload_fifos
+
+  virtual task upload_fifo_read_seq();
+    int upload_read_dly;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(upload_read_dly,
+        upload_read_dly dist {
+            [0:10]      :/ 1,
+            [11:100]    :/ 2,
+            [101:1000]  :/ 2,
+            [1000:5000] :/ 1};)
+    cfg.clk_rst_vif.wait_clks(upload_read_dly);
+    read_upload_fifos();
+  endtask : upload_fifo_read_seq
 
   task post_start();
     super.post_start();

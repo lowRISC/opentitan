@@ -44,10 +44,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   spi_item spi_passthrough_downstream_q[$];
 
   // for upload
-  bit [7:0] upload_cmd_from_spi_q[$];
-  bit [7:0] upload_cmd_from_tl_q[$];
-  bit [31:0] upload_addr_from_spi_q[$];
-  bit [31:0] upload_addr_from_tl_q[$];
+  bit [7:0] upload_cmd_q[$];
+  bit [31:0] upload_addr_q[$];
 
   // for read buffer
   // once triggered, it won't be triggered again until it flips
@@ -374,7 +372,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   virtual function void check_read_cmd_data_for_non_read_buffer(spi_item up_item,
                                                                 spi_item dn_item);
     bit [31:0] start_addr;
-    bit [TL_DW-1:0] new_last_read_addr = `gmv(ral.last_read_addr);
     // TODO, sample this for coverage
     read_addr_size_type_e read_addr_size_type;
     bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
@@ -395,9 +392,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       end else begin // out of mbx region
         string str;
 
-        // if last addr is not in mailbox, will be captured in last_read_addr CSR.
-        new_last_read_addr = cur_addr;
-
         `DV_CHECK_EQ_FATAL(is_passthru, 1)
         if (dn_item != null) begin
           str = $sformatf("compare mbx data with downstread item. idx %0d, up: 0x%0x, dn: 0x%0x",
@@ -413,37 +407,20 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       end
     end
 
-    if (new_last_read_addr != `gmv(ral.last_read_addr)) begin
-      `uvm_info(`gfn, $sformatf("Update last_read_addr to 0x%0x", new_last_read_addr), UVM_MEDIUM)
-      void'(ral.last_read_addr.predict(.value(new_last_read_addr), .kind(UVM_PREDICT_READ)));
-    end
     // TODO, sample read_addr_size_type for coverage
   endfunction
 
   virtual function void process_upload_cmd(spi_item item);
     bit [31:0] payload_start_addr = get_converted_addr(PAYLOAD_FIFO_START_ADDR);
-
-    if (upload_cmd_from_tl_q.size > 0) begin
-      // upload cmd may arrive at tl interface before we receive spi item
-      // only one item can arrive earlier
-      `DV_CHECK_EQ(upload_cmd_from_tl_q.size, 1)
-      `DV_CHECK_EQ(item.opcode, upload_cmd_from_tl_q[0])
-      upload_cmd_from_tl_q.delete();
-    end else begin
-      upload_cmd_from_spi_q.push_back(item.opcode);
-    end
+    int payload_depth_exp;
+    upload_cmd_q.push_back(item.opcode);
+    intr_trigger_pending[CmdFifoNotEmpty] = 1;
 
     if (item.address_q.size > 0) begin
       bit[31:0] addr = convert_addr_from_byte_queue(item.address_q);
-      // same as cmd, addr may arrive at tl interface before we receive spi item
-      if (upload_addr_from_tl_q.size > 0) begin
-        `DV_CHECK_EQ(upload_addr_from_tl_q.size, 1)
-        `DV_CHECK_EQ(addr, upload_addr_from_tl_q[0])
-        upload_addr_from_tl_q.delete();
-      end else begin
-        upload_addr_from_spi_q.push_back(addr);
-      end
+      upload_addr_q.push_back(addr);
     end
+
     foreach (item.payload_q[i]) begin
       uvm_reg_addr_t addr = payload_start_addr + (i % PAYLOAD_FIFO_SIZE);
 
@@ -451,6 +428,36 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       `uvm_info(`gfn, $sformatf("write upload payload idx %0d, mem addr 0x%0x, val: 0x%0x",
                 i, addr, item.payload_q[i]), UVM_MEDIUM)
     end
+    if (item.payload_q.size > 0) intr_trigger_pending[PayloadNotEmpty] = 1;
+
+    update_cmdfifo_status();
+    update_addrfifo_status();
+
+    payload_depth_exp = item.payload_q.size > 256 ? 256 : item.payload_q.size;
+    void'(ral.upload_status2.payload_depth.predict(.value(payload_depth_exp),
+                                                   .kind(UVM_PREDICT_READ)));
+    // if received payload is bigger than fifo size, payload_start_idx = payload size % fifo size.
+    if (item.payload_q.size > PAYLOAD_FIFO_SIZE) begin
+      int start_idx = item.payload_q.size % PAYLOAD_FIFO_SIZE;
+      void'(ral.upload_status2.payload_start_idx.predict(.value(start_idx),
+                                                         .kind(UVM_PREDICT_READ)));
+    end else begin
+      void'(ral.upload_status2.payload_start_idx.predict(.value(0), .kind(UVM_PREDICT_READ)));
+    end
+  endfunction
+
+  virtual function void update_cmdfifo_status();
+    void'(ral.upload_status.cmdfifo_depth.predict(.value(upload_cmd_q.size),
+                                                  .kind(UVM_PREDICT_READ)));
+    void'(ral.upload_status.cmdfifo_notempty.predict(.value(upload_cmd_q.size > 0),
+                                                  .kind(UVM_PREDICT_READ)));
+  endfunction
+
+  virtual function void update_addrfifo_status();
+    void'(ral.upload_status.addrfifo_depth.predict(.value(upload_addr_q.size),
+                                                  .kind(UVM_PREDICT_READ)));
+    void'(ral.upload_status.addrfifo_notempty.predict(.value(upload_addr_q.size > 0),
+                                                  .kind(UVM_PREDICT_READ)));
   endfunction
 
   // convert offset to the mem address that is used to find the locaiton in exp_mem
@@ -557,7 +564,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       start_addr = convert_addr_from_byte_queue(item.address_q);
       `DV_SPINWAIT(
         while (1) begin
-          `DV_WAIT(item.payload_q.size > payload_idx || item.mon_item_complete)
+          wait (item.payload_q.size > payload_idx || item.mon_item_complete);
           if (item.payload_q.size > payload_idx) begin
             offset = (start_addr + payload_idx) % READ_BUFFER_SIZE;
             compare_mem_byte(READ_BUFFER_START_ADDR, offset, item.payload_q[payload_idx],
@@ -685,9 +692,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         if (!write && channel == DataChannel) begin
           bit [NumSpiDevIntr-1:0] intr_exp = `gmv(csr);
           foreach (intr_exp[i]) begin
-            spi_device_intr_e intr = i;
-            // TODO, only test these 2 for now
-            if (!(i inside {ReadbufFlip, ReadbufWatermark})) continue;
+            spi_device_intr_e intr = spi_device_intr_e'(i);
+            // TODO, only test these interrupts for now
+            if (!(i inside {ReadbufFlip, ReadbufWatermark,
+                            CmdFifoNotEmpty, PayloadNotEmpty})) begin
+              continue;
+            end
             if (!intr_trigger_pending[i]) begin
               `DV_CHECK_EQ(item.d_data[i], intr_exp[i],
                            $sformatf("Compare %s mismatch, act (0x%0x) != exp %p",
@@ -707,7 +717,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         else if (write && channel == AddrChannel) begin
           bit [NumSpiDevIntr-1:0] intr_val = item.a_data;
           foreach (intr_val[i]) begin
-            spi_device_intr_e intr = i;
+            spi_device_intr_e intr = spi_device_intr_e'(i);
             if (intr_val[i]) begin
               `uvm_info(`gfn, $sformatf("Clear %s", intr.name), UVM_MEDIUM)
             end
@@ -728,25 +738,19 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       end
       "upload_cmdfifo": begin
         if (!write && channel == DataChannel) begin
-          // if tl read arrives after spi item, compare it, otherwise, store it in a queue
-          if (upload_cmd_from_spi_q.size > 0) begin
-            `DV_CHECK_EQ(item.d_data, upload_cmd_from_spi_q.pop_front())
-          end else begin
-            upload_cmd_from_tl_q.push_back(item.d_data);
-          end
+          `DV_CHECK_GT(upload_cmd_q.size, 0)
+          `DV_CHECK_EQ(item.d_data, upload_cmd_q.pop_front())
+          update_cmdfifo_status();
         end
       end
       "upload_addrfifo": begin
         if (!write && channel == DataChannel) begin
-          // if tl read arrives after spi item, compare it, otherwise, store it in a queue
-          if (upload_addr_from_spi_q.size > 0) begin
-            `DV_CHECK_EQ(item.d_data, upload_addr_from_spi_q.pop_front())
-          end else begin
-            upload_addr_from_tl_q.push_back(item.d_data);
-          end
+          `DV_CHECK_GT(upload_addr_q.size, 0)
+          `DV_CHECK_EQ(item.d_data, upload_addr_q.pop_front())
+          update_addrfifo_status();
         end
       end
-      "last_read_addr": begin
+      "last_read_addr", "upload_status", "upload_status2": begin
         do_read_check = 1;
       end
       default: begin
@@ -757,7 +761,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     // On reads, if do_read_check, is set, then check mirrored_value against item.d_data
     if (!write && channel == DataChannel) begin
       if (do_read_check) begin
-        `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data)
+        `DV_CHECK_EQ(item.d_data, `gmv(csr),
+                    $sformatf("CSR %s compare mismatch act 0x%0x != exp 0x%0x",
+                    csr.`gn, item.d_data, `gmv(csr)))
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
@@ -913,10 +919,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_CHECK_EQ(tx_word_q.size, 0)
     `DV_CHECK_EQ(rx_word_q.size, 0)
     `DV_CHECK_EQ(spi_passthrough_downstream_q.size, 0)
-    `DV_CHECK_EQ(upload_cmd_from_spi_q.size, 0)
-    `DV_CHECK_EQ(upload_addr_from_spi_q.size, 0)
-    `DV_CHECK_EQ(upload_cmd_from_tl_q.size, 0)
-    `DV_CHECK_EQ(upload_addr_from_tl_q.size, 0)
+    `DV_CHECK_EQ(upload_cmd_q.size, 0)
+    `DV_CHECK_EQ(upload_addr_q.size, 0)
     `DV_CHECK_EQ(flash_status_q.size, 0)
     `DV_CHECK_EQ(flash_status_settle_q.size, 0)
     `DV_CHECK_EQ(flash_status_tl_pre_val_q.size, 0)
