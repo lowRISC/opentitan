@@ -39,18 +39,6 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
     join
   endtask : body
 
-  virtual task upload_fifo_read_seq();
-    int upload_read_dly;
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(upload_read_dly,
-        upload_read_dly dist {
-            [0:10]      :/ 1,
-            [11:100]    :/ 2,
-            [101:1000]  :/ 2,
-            [1000:5000] :/ 1};)
-    cfg.clk_rst_vif.wait_clks(upload_read_dly);
-    read_upload_fifos();
-  endtask : upload_fifo_read_seq
-
   virtual task main_seq();
     for (int i = 0; i < num_trans; ++i) begin
       `uvm_info(`gfn, $sformatf("running iteration %0d/%0d", i, num_trans), UVM_LOW)
