@@ -42,6 +42,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   rand int min_offset;
   rand int max_offset;
 
+  mubi4_t calib_rdy;
+
   constraint thresholds_c {
     solve clk_tested before mesr;
     solve mesr before min_offset, max_offset;
@@ -67,6 +69,12 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     usb_ip_clk_en == 1;
   }
 
+  function void post_randomize();
+    calib_rdy = get_rand_mubi4_val(6, 2, 2);
+    `uvm_info(`gfn, $sformatf("randomize: calib_rdy=0x%x", calib_rdy), UVM_MEDIUM)
+    super.post_randomize();
+  endfunction
+
   // Keep saturating the count on aon negedges if needed.
   local task maybe_saturate_count(bit saturate, clk_mesr_e clk_tested);
     forever begin
@@ -83,6 +91,17 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     cfg.aon_clk_rst_vif.wait_clks(CyclesToGetMeasurements);
     // Wait for the result to propagate to the recov_err_code CSR.
     cfg.clk_rst_vif.wait_clks(CyclesForErrUpdate);
+  endtask
+
+  // If clocks become uncalibrated measure_ctrl_regwen is re-enabled.
+  task check_measure_ctrl_regwen_for_calib_rdy();
+    logic value;
+    csr_wr(.ptr(ral.measure_ctrl_regwen), .value(0));
+    cfg.clkmgr_vif.update_calib_rdy(MuBi4False);
+    cfg.clk_rst_vif.wait_clks(20);
+    // Update the mirrored value.
+    ral.measure_ctrl_regwen.predict(1);
+    csr_rd_check(.ptr(ral.measure_ctrl_regwen), .compare_value(1));
   endtask
 
   task body();
@@ -125,6 +144,9 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       logic [ClkMesrUsb:0] expected_recov_meas_err = '0;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      // Update calib_rdy input: if calibration is not ready the measurements
+      // don't happen, so we should not get faults.
+      cfg.clkmgr_vif.update_calib_rdy(calib_rdy);
       `uvm_info(`gfn, "New round", UVM_MEDIUM)
       prior_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
       if (cause_saturation) `uvm_info(`gfn, "Will cause saturation", UVM_MEDIUM)
@@ -136,7 +158,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
         if (clk == clk_tested) begin
           min_threshold = expected + min_offset;
           max_threshold = expected + max_offset;
-          if (min_threshold > expected || max_threshold < expected - 1 || cause_saturation) begin
+          if (calib_rdy != MuBi4False &&
+              (min_threshold > expected || max_threshold < expected - 1 || cause_saturation)) begin
             `uvm_info(`gfn, $sformatf(
                       "Expect %0s to get a %0s error%0s",
                       clk_mesr.name,
@@ -199,6 +222,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       csr_wr(.ptr(ral.recov_err_code), .value('1));
       cfg.aon_clk_rst_vif.wait_clks(12);
     end
+    // And finally, check that unsetting calib_rdy causes meaesure_ctrl_regwen to be set to 1.
+    check_measure_ctrl_regwen_for_calib_rdy();
   endtask
 
 endclass
