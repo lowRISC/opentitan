@@ -16,7 +16,7 @@ extern const uint32_t _manifest_entry_point[];
 static_assert(sizeof(uint32_t) == sizeof(uintptr_t), "Pointer is not 32-bits.");
 
 const volatile manifest_t kManifest = {
-    .code_start = (uintptr_t)&_manifest_code_start,
-    .code_end = (uintptr_t)&_manifest_code_end,
-    .entry_point = (uintptr_t)&_manifest_entry_point,
+    .code_start = (uint32_t)_manifest_code_start,
+    .code_end = (uint32_t)_manifest_code_end,
+    .entry_point = (uint32_t)_manifest_entry_point,
 };
