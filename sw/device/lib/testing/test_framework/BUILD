@@ -58,7 +58,10 @@ cc_library(
 ld_library(
     name = "ottf_ld_common",
     fragments = ["ottf_common.ld"],
-    deps = ["//sw/device:info_sections"],
+    deps = [
+        "//sw/device:info_sections",
+        "//sw/device/silicon_creator/lib/base:static_critical_sections",
+    ],
 )
 
 ld_library(
@@ -117,7 +120,9 @@ alias(
 # This target provides start files without providing the full OTTF, and can be
 # used to bootstrap post-ROM execution without pulling in the full OTTF. This is
 # useful for programs in `sw/device/examples/` and `sw/device/sca/` that do not
-# make us of the full OTTF.
+# make use of the full OTTF. This target is also suitable for preparing ROM_EXT
+# and BLO images since it reserves space at the start of main SRAM for the
+# `.static_critical` section that holds boot measurements and sec_mmio context.
 #
 # The binary target must provide a `noreturn void _ottf_main(void)` function
 # that this library will call.
@@ -140,6 +145,8 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
+        "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
+        "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
     ],
 )
 
