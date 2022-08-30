@@ -6,8 +6,12 @@ load("@rules_python//python:defs.bzl", "py_binary")
 
 package(default_visibility = ["//visibility:public"])
 
-# Make standalone simulator visible to OTBN tests within Bazel (see
-# rules/otbn.bzl). Note that this means other files in this directory and
-# subdirectories are not included in all_files targets for higher-level
-# directories.
-exports_files(["standalone.py"])
+py_binary(
+    name = "standalone",
+    srcs = ["standalone.py"],
+    deps = [
+        "//hw/ip/otbn/dv/otbnsim/sim:load_elf",
+        "//hw/ip/otbn/dv/otbnsim/sim:standalonesim",
+        "//hw/ip/otbn/dv/otbnsim/sim:stats",
+    ],
+)
