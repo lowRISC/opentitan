@@ -145,6 +145,12 @@
       ]
       is_sim_mode: 1
     }
+    // Sim mode that enables faster simulation for test development.
+    // DO NOT USE FOR NIGHTLY
+    {
+      name: fast_sim
+      build_opts: ["+define+DISABLE_ROM_INTEGRITY_CHECK"]
+    }
   ]
 
   // Add options needed to compile against otbn_memutil, otbn_tracer, and
