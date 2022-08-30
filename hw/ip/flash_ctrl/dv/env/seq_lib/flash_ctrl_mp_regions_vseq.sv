@@ -4,6 +4,7 @@
 
 // Memory protect test. Overlapping regions with randomization.
 // Send one op among program, read and erase (page) in each trans round.
+// This sequence uses local mp_region db. Don't use cfg.get_region()
 class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
   `uvm_object_utils(flash_ctrl_mp_regions_vseq)
 
@@ -257,7 +258,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
       for (int i = 0; i < size; i++) begin
         if  (flash_op.partition == FlashPartData) begin
           page = cfg.addr2page(flash_op.addr);
-          my_region = cfg.get_region(page);
+          my_region = get_region_from_page(page);
         end else begin
           page = cfg.addr2page(flash_op.addr[OTFBankId-1:0]);
           my_region = cfg.get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
@@ -269,7 +270,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
       if (tail) begin
         if  (flash_op.partition == FlashPartData) begin
           page = cfg.addr2page(flash_op.addr);
-          my_region = cfg.get_region(page);
+          my_region = get_region_from_page(page);
         end else begin
           page = cfg.addr2page(flash_op.otf_addr);
           my_region = cfg.get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
@@ -281,7 +282,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     end else begin // if (flash_op.op == FlashOpRead)
       if  (flash_op.partition == FlashPartData) begin
         page = cfg.addr2page(flash_op.addr);
-        my_region = cfg.get_region(page);
+        my_region = get_region_from_page(page);
       end else begin
         page = cfg.addr2page(flash_op.addr[OTFBankId-1:0]);
         my_region = cfg.get_region_from_info(mp_info_pages[bank][flash_op.partition>>1][page]);
@@ -290,8 +291,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     end
 
     if(illegal_trans) begin
-      cfg.scb_h.exp_alert["recov_err"] = 1;
-      cfg.scb_h.alert_chk_max_delay["recov_err"] = 2000; // cycles
+      set_otf_exp_alert("recov_err");
     end
 
     `uvm_info("do_mp_reg", $sformatf("trans:%0d page:%x region:%0d illegal_trans:%0d",
@@ -390,5 +390,20 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
     //Enable Bank erase
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
   endtask // configure_flash_protection
+
+  function flash_mp_region_cfg_t get_region_from_page(int page, bit dis = 1);
+    flash_mp_region_cfg_t my_region;
+    if (cfg.p2r_map[page] == 8) begin
+      my_region = cfg.default_region_cfg;
+    end else begin
+      my_region = this.mp_regions[cfg.p2r_map[page]];
+      if (my_region.en != MuBi4True) my_region = cfg.default_region_cfg;
+    end
+    if (dis) begin
+      `uvm_info("get_region_from_page", $sformatf("page:%0d --> region:%0d",
+                                        page, cfg.p2r_map[page]), UVM_MEDIUM)
+    end
+    return my_region;
+  endfunction // get_region_from_page
 
 endclass : flash_ctrl_mp_regions_vseq

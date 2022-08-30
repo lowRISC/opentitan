@@ -4,7 +4,7 @@
 
 // Send read only traffic with interrup mode.
 // No protection is applied.
-class flash_ctrl_intr_rd_vseq extends flash_ctrl_otf_base_vseq;
+class flash_ctrl_intr_rd_vseq extends flash_ctrl_legacy_base_vseq;
   `uvm_object_utils(flash_ctrl_intr_rd_vseq)
   `uvm_object_new
 
