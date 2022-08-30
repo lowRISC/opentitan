@@ -107,8 +107,14 @@ dif_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
   DIF_RETURN_IF_ERROR(dif_hmac_calculate_device_config_value(&reg, config));
 
   // Set the HMAC key.
-  mmio_region_memcpy_to_mmio32(hmac->base_addr, HMAC_KEY_0_REG_OFFSET, key,
-                               HMAC_PARAM_NUM_WORDS * sizeof(uint32_t));
+  // The least significant word is at HMAC_KEY_7_REG_OFFSET.
+  // From the HWIP spec: "Order of the secret key is: key[255:0] = {KEY0, KEY1,
+  // KEY2, ... , KEY7};"
+  for (size_t i = 0; i < HMAC_PARAM_NUM_WORDS; ++i) {
+    const uint32_t word_offset = i * sizeof(uint32_t);
+    mmio_region_write32(hmac->base_addr, HMAC_KEY_7_REG_OFFSET - word_offset,
+                        read_32((char *)key + word_offset));
+  }
 
   // Set HMAC to process in HMAC mode (not SHA256-only mode).
   reg = bitfield_bit32_write(reg, HMAC_CFG_SHA_EN_BIT, true);
@@ -246,11 +252,14 @@ dif_result_t dif_hmac_finish(const dif_hmac_t *hmac,
     return kDifUnavailable;
   }
 
-  // Read the digest.
-  // TODO Static assert register layout.
-  mmio_region_memcpy_from_mmio32(hmac->base_addr, HMAC_DIGEST_0_REG_OFFSET,
-                                 digest->digest,
-                                 HMAC_PARAM_NUM_WORDS * sizeof(uint32_t));
+  // Read the digest in reverse to preserve the numerical value.
+  // The least significant word is at HMAC_DIGEST_7_REG_OFFSET.
+  // From the HWIP spec: "Order of the digest is: digest[255:0] = {DIGEST0,
+  // DIGEST1, DIGEST2, ... , DIGEST7};"
+  for (size_t i = 0; i < ARRAYSIZE(digest->digest); ++i) {
+    digest->digest[i] = mmio_region_read32(
+        hmac->base_addr, HMAC_DIGEST_7_REG_OFFSET - i * sizeof(uint32_t));
+  }
 
   // Disable HMAC and SHA256 until the next transaction, clearing the current
   // digest.

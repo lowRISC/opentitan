@@ -25,34 +25,36 @@ static const char kData[142] =
     "one of the few honest people that I have ever "
     "known";
 
-static uint32_t kHmacKey[8] = {0x243f6a88, 0x85a308d3, 0x13198a2e, 0x03707344,
-                               0xa4093822, 0x299f31d0, 0x082efa98, 0xec4e6c89};
+static uint32_t kHmacKey[8] = {
+    0xec4e6c89, 0x082efa98, 0x299f31d0, 0xa4093822,
+    0x03707344, 0x13198a2e, 0x85a308d3, 0x243f6a88,
+};
 
 static const dif_hmac_digest_t kExpectedShaDigest = {
     .digest =
         {
-            0x3dc296dc,
-            0x68e236af,
-            0x71ff68cb,
-            0xe2762fe9,
-            0x9d37a8b8,
-            0x45c76d42,
-            0xf7cff519,
             0xd6c6c94e,
+            0xf7cff519,
+            0x45c76d42,
+            0x9d37a8b8,
+            0xe2762fe9,
+            0x71ff68cb,
+            0x68e236af,
+            0x3dc296dc,
         },
 };
 
 static const dif_hmac_digest_t kExpectedHmacDigest = {
     .digest =
         {
-            0x397b98e4,
-            0x90d3833f,
-            0xafbbf3c2,
-            0xfadb9531,
-            0x0c48fb23,
-            0x5eae12b0,
-            0x284d39f1,
             0xebce4019,
+            0x284d39f1,
+            0x5eae12b0,
+            0x0c48fb23,
+            0xfadb9531,
+            0xafbbf3c2,
+            0x90d3833f,
+            0x397b98e4,
         },
 };
 

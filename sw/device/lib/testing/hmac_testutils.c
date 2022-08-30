@@ -28,14 +28,14 @@ const uint8_t kRefHmacLongKey[100] = {
 const dif_hmac_digest_t kRefExpectedShaDigest = {
     .digest =
         {
-            0xBCE0AFF1,
-            0x9CF5AA6A,
-            0x7469A30D,
-            0x61D04E43,
-            0x76E4BBF6,
-            0x381052EE,
-            0x9E7F3392,
             0x5C954D52,
+            0x9E7F3392,
+            0x381052EE,
+            0x76E4BBF6,
+            0x61D04E43,
+            0x7469A30D,
+            0x9CF5AA6A,
+            0xBCE0AFF1,
         },
 };
 
@@ -45,14 +45,14 @@ const dif_hmac_digest_t kRefExpectedShaDigest = {
 const dif_hmac_digest_t kRefExpectedHmacDigest = {
     .digest =
         {
-            0xBDCCB6C7,
-            0x2DDEADB5,
-            0x00AE7683,
-            0x86CB38CC,
-            0x41C63DBB,
-            0x0878DDB9,
-            0xC7A38A43,
             0x1B78378D,
+            0xC7A38A43,
+            0x0878DDB9,
+            0x41C63DBB,
+            0x86CB38CC,
+            0x00AE7683,
+            0x2DDEADB5,
+            0xBDCCB6C7,
         },
 };
 
