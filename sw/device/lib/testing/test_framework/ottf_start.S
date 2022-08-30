@@ -111,6 +111,18 @@ _ottf_interrupt_vector:
   .type _ottf_start, @function
 _ottf_start:
   /**
+   * Set up the global pointer `gp`.
+   *
+   * Linker relaxations are disabled until the global pointer is setup below,
+   * because otherwise some sequences may be turned into `gp`-relative
+   * sequences, which is incorrect when `gp` is not initialized.
+   */
+  .option push
+  .option norelax
+  la gp, __global_pointer$
+  .option pop
+
+  /**
    * Set up the stack pointer.
    *
    * In RISC-V, the stack grows downwards, so we load the address of the highest
@@ -152,17 +164,6 @@ _ottf_start:
   la   a0, _bss_start
   la   a1, _bss_end
   call crt_section_clear
-
-  /**
-   * Setup global pointer.
-   *
-   * This requires that we temporarily disable linker relaxations, or it will be
-   * relaxed to `mv gp, gp`.
-   */
-  .option push
-  .option norelax
-  la gp, __global_pointer$
-  .option pop
 
  /**
   * Call the functions in the `.init_array` section.
