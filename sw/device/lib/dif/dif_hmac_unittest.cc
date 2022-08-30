@@ -53,7 +53,7 @@ class HmacTest : public testing::Test, public mock_mmio::MmioTest {
     for (size_t i = 0; i < size; i += sizeof(uint32_t)) {
       uint32_t word = 0;
       memcpy(&word, &key[i], sizeof(uint32_t));
-      EXPECT_WRITE32(i + HMAC_KEY_0_REG_OFFSET, word);
+      EXPECT_WRITE32(HMAC_KEY_7_REG_OFFSET - i, word);
     }
   }
 };
