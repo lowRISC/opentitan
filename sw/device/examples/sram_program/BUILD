@@ -13,6 +13,7 @@ ld_library(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
         "//sw/device:info_sections",
+        "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],
 )
 
@@ -29,7 +30,6 @@ opentitan_ram_binary(
         ":sram_program_linker_script",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
-        "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
     ],

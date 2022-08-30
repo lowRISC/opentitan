@@ -16,6 +16,7 @@ OUTPUT_ARCH(riscv);
 __DYNAMIC = 0;
 
 INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE sw/device/silicon_creator/lib/base/static_critical_size.ld
 
 _stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
 
@@ -33,7 +34,7 @@ SECTIONS {
    * SRAM programs consist only of a `.data` section that contains all input
    * `.rodata`, `.data`, `.text`, and `.bss` sections.
    */
-  .data : ALIGN(4){
+  .data ORIGIN(ram_main) + _static_critical_size : ALIGN(4){
     /* This will get loaded into `gp`, and the linker will use that register for
      * accessing data within [-2048,2047] of `__global_pointer$`.
      *

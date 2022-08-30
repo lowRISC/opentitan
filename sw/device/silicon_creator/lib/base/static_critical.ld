@@ -10,6 +10,8 @@
  * memory sections.
  */
 
+INCLUDE sw/device/silicon_creator/lib/base/static_critical_size.ld
+
 .static_critical ORIGIN(ram_main) (NOLOAD) : ALIGN(4) {
   ASSERT(
     . == ORIGIN(ram_main),
@@ -19,6 +21,6 @@
   KEEP(*(.static_critical.sec_mmio_ctx))
 
   ASSERT(
-    . - ADDR(.static_critical) == 8048,
+    SIZEOF(.static_critical) == _static_critical_size,
     "Error: .static_critical section size has changed");
 } > ram_main

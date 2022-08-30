@@ -79,7 +79,10 @@ cc_library(
 
 ld_library(
     name = "static_critical_sections",
-    fragments = ["static_critical.ld"],
+    fragments = [
+        "static_critical_size.ld",
+        "static_critical.ld",
+    ],
 )
 
 cc_library(
