@@ -45,14 +45,9 @@
     }
   ]
 
-  build_modes: []
-
 // Add additional tops for simulation.
   sim_tops: ["flash_ctrl_bind","flash_ctrl_cov_bind", "sec_cm_prim_onehot_check_bind",
              "sec_cm_prim_count_bind", "sec_cm_prim_sparse_fsm_flop_bind"]
-
-  // Flash Ctrl coverage exclusion.
-  // xcelium_cov_refine_files: ["{proj_root}/hw/ip/flash_ctrl/dv/cov/flash_ctrl_cov.vRefine"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
@@ -289,13 +284,13 @@
     {
       name: flash_ctrl_intr_rd
       uvm_test_seq: flash_ctrl_intr_rd_vseq
-      run_opts: ["+scb_otf_en=1"]
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_read=1"]
       reseed: 40
     }
     {
       name: flash_ctrl_intr_wr
       uvm_test_seq: flash_ctrl_intr_wr_vseq
-      run_opts: ["+scb_otf_en=1", "+test_timeout_ns=500_000_000"]
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+test_timeout_ns=500_000_000"]
       reseed: 10
     }
     {
