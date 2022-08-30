@@ -23,7 +23,7 @@
 #include "sysrst_ctrl_regs.h"
 /*
    RV_DM NDM RESET REQUEST TEST
-   In top_earlgrey, the CSRs can be devided into 3 groups as below.
+   In top_earlgrey, the CSRs can be divided into 3 groups as below.
      1. Group1 : Devce under por_reset
         - pwrmgr, rstmgr
      2. Group2 : Device under lc_reset
@@ -164,31 +164,47 @@ static test_register_t kReg[] = {
         },
 };
 
-static void write_test_reg() {
-  for (size_t i = OTP_CTRL; i <= FLASH_CTRL; ++i) {
+static void write_test_reg(void) {
+  for (size_t i = 0; i < ARRAYSIZE(kReg); ++i) {
     mmio_region_write32(mmio_region_from_addr(kReg[i].base), kReg[i].offset,
                         kReg[i].write_val);
   }
 }
 
+static void check_test_reg(void) {
+  for (size_t i = 0; i < ARRAYSIZE(kReg); ++i) {
+    uint32_t val =
+        mmio_region_read32(mmio_region_from_addr(kReg[i].base), kReg[i].offset);
+    CHECK(val == kReg[i].exp_read_val, "reg[%d]: obs:0x%x  exp:0x%x", i, val,
+          kReg[i].exp_read_val);
+  }
+}
+
+static void init_peripherals(void) {
+  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_rstmgr_init(addr, &rstmgr));
+
+  addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_otp_ctrl_init(addr, &otp_ctrl));
+
+  addr = mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR);
+  CHECK_DIF_OK(dif_flash_ctrl_init(addr, &flash_ctrl));
+
+  addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_adc_ctrl_init(addr, &adc_ctrl));
+
+  addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_sysrst_ctrl_init(addr, &sysrst_ctrl));
+
+  addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
+  CHECK_DIF_OK(dif_pinmux_init(addr, &pinmux));
+
+  addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
+  CHECK_DIF_OK(dif_keymgr_init(addr, &keymgr));
+}
+
 bool test_main(void) {
-  // Device init.
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  CHECK_DIF_OK(dif_flash_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR),
-      &flash_ctrl));
-  CHECK_DIF_OK(dif_adc_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
-  CHECK_DIF_OK(dif_sysrst_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
-      &sysrst_ctrl));
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
+  init_peripherals();
 
   if (rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoPor)) {
     rstmgr_testutils_reason_clear();
@@ -200,19 +216,13 @@ bool test_main(void) {
     wait_for_interrupt();
   } else {
     // NDM reset is de-asserted.
-    // Check reset info to be kDifRstmgrResetInfoNdm
+    // Check reset info to be kDifRstmgrResetInfoNdm.
     LOG_INFO("check reset info");
-
     CHECK(rstmgr_testutils_is_reset_info(&rstmgr, kDifRstmgrResetInfoNdm));
 
-    // Register value check after reset
+    // Register value check after reset.
     LOG_INFO("Check registers");
-    for (size_t i = 0; i < ARRAYSIZE(kReg); ++i) {
-      uint32_t val = mmio_region_read32(mmio_region_from_addr(kReg[i].base),
-                                        kReg[i].offset);
-      CHECK(val == kReg[i].exp_read_val, "reg[%d]: obs:0x%x  exp:0x%x", i, val,
-            kReg[i].exp_read_val);
-    }
+    check_test_reg();
   }
   return true;
 }
