@@ -6,6 +6,11 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
 
   bit en_monitor = 1'b1; // enable monitor
 
+  // Valid only when agent is in DEVICE role.
+  // When loopback is enabled, whatever is written by the host
+  // is stored and then fed back to the host
+  bit en_loopback = 1'b0;
+
   // this parameters can be set by test to slow down the agent's responses
   int host_latency_cycles = 0;
   int device_latency_cycles = 0;

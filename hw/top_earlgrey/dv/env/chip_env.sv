@@ -11,6 +11,7 @@ class chip_env extends cip_base_env #(
   `uvm_component_utils(chip_env)
 
   uart_agent             m_uart_agents[NUM_UARTS];
+  i2c_agent              m_i2c_agents[NUM_I2CS];
   jtag_riscv_agent       m_jtag_riscv_agent;
   jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
   spi_agent              m_spi_agent;
@@ -152,6 +153,12 @@ class chip_env extends cip_base_env #(
                                           cfg.m_uart_agent_cfgs[i]);
     end
 
+    foreach (m_i2c_agents[i]) begin
+      m_i2c_agents[i] = i2c_agent::type_id::create($sformatf("m_i2c_agent%0d", i), this);
+      uvm_config_db#(i2c_agent_cfg)::set(this, $sformatf("m_i2c_agent%0d*", i), "cfg",
+                                          cfg.m_i2c_agent_cfgs[i]);
+    end
+
     m_jtag_riscv_agent = jtag_riscv_agent::type_id::create("m_jtag_riscv_agent", this);
     uvm_config_db#(jtag_riscv_agent_cfg)::set(this, "m_jtag_riscv_agent*", "cfg",
                                               cfg.m_jtag_riscv_agent_cfg);
@@ -193,6 +200,11 @@ class chip_env extends cip_base_env #(
         virtual_sequencer.uart_sequencer_hs[i] = m_uart_agents[i].sequencer;
       end
     end
+
+    foreach (m_i2c_agents[i]) begin
+      virtual_sequencer.i2c_sequencer_hs[i] = m_i2c_agents[i].sequencer;
+    end
+
     if (cfg.is_active && cfg.m_jtag_riscv_agent_cfg.is_active) begin
       virtual_sequencer.jtag_sequencer_h = m_jtag_riscv_agent.sequencer;
     end

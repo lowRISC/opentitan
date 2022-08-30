@@ -9,7 +9,14 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   rand bit [7:0] rd_data[256]; // max length of read transaction
   byte wr_data;
-  byte address;
+  bit [9:0] address = 0;
+
+  // loopback storage queue - the 256 represent different i2c devices.
+  // The loopback option takes every write to a specific device and shoves
+  // it into a queue.  When a read is later performed on that device, the
+  // same data is returned in the same order it was received.
+  bit [7:0] lb_q[256][$];
+
   // get an array with unique read data
   constraint rd_data_c { unique { rd_data }; }
 
@@ -25,7 +32,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   virtual task get_and_drive();
     i2c_item req;
-
     @(posedge cfg.vif.rst_ni);
     forever begin
       release_bus();
@@ -79,10 +85,13 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   virtual task drive_device_item(i2c_item req);
     bit [7:0] rd_data_cnt = 8'd0;
+    bit [7:0] rdata;
+    address = cfg.vif.cur_address;
 
     unique case (req.drv_type)
       DevAck: begin
         cfg.timing_cfg.tStretchHostClock = gen_num_stretch_host_clks(cfg.timing_cfg);
+         `uvm_info(`gfn, $sformatf("sending an ack"), UVM_MEDIUM)
         fork
           // host clock stretching allows a high-speed host to communicate
           // with a low-speed device by setting TIMEOUT_CTRL.EN bit
@@ -95,20 +104,41 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         join
       end
       RdData: begin
-        if (rd_data_cnt == 8'd0) `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
+        if (cfg.en_loopback) begin
+          `uvm_info(`gfn, $sformatf("Loopback read address %0x", address), UVM_MEDIUM)
+          if (lb_q[address].size == 0) begin
+            `uvm_fatal(`gfn, $sformatf("Loopback requested on empty queue"))
+          end else begin
+             rdata = lb_q[address].pop_front();
+          end
+        end else begin
+          if (rd_data_cnt == 8'd0) begin
+             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
+          end
+          rdata = rd_data[rd_data_cnt];
+        end
+
+        `uvm_info(`gfn, $sformatf("Send readback data %0x", rdata), UVM_MEDIUM)
         for (int i = 7; i >= 0; i--) begin
-          cfg.vif.device_send_bit(cfg.timing_cfg, rd_data[rd_data_cnt][i]);
+          cfg.vif.device_send_bit(cfg.timing_cfg, rdata[i]);
         end
         `uvm_info(`gfn, $sformatf("\n  device_driver, trans %0d, byte %0d  %0x",
             req.tran_id, req.num_data+1, rd_data[rd_data_cnt]), UVM_DEBUG)
         // rd_data_cnt is rollled back (no overflow) after reading 256 bytes
         rd_data_cnt++;
       end
-      WrData:
-        // TODO: consider adding memory (associative array) in device_driver
-        for (int i = 7; i >= 0; i--) begin
-          cfg.vif.get_bit_data("host", cfg.timing_cfg, wr_data[i]);
+      WrData: begin
+        if (cfg.en_loopback) begin
+          // we use pop_back because the queue cloned over from the monitor contains
+          // all the accumulated write entries until a STOP or RESTART is encountered.
+          // If we used pop_front, we would repeatedly get the earliest transmitted byte.
+          // What we want instead is the most recently transmitted byte.
+          wr_data = req.data_q.pop_back();
+          `uvm_info(`gfn,
+            $sformatf("Push entry into queue, address %0x, data %0x", address, wr_data), UVM_MEDIUM)
+          lb_q[address].push_back(wr_data);
         end
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("\n  device_driver, received invalid request"))
       end
@@ -116,6 +146,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   endtask : drive_device_item
 
   function int gen_num_stretch_host_clks(ref timing_cfg_t tc);
+
     // By randomly pulling down scl_o "offset" within [0:2*tc.tTimeOut],
     // intr_stretch_timeout_o interrupt would be generated uniformly
     // To test this feature more regressive, there might need a dedicated vseq (V2)
@@ -126,12 +157,17 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   virtual task process_reset();
     @(negedge cfg.vif.rst_ni);
     release_bus();
+    // on reset just wipe out the entire storage
+    foreach (lb_q[i]) lb_q[i].delete();
     `uvm_info(`gfn, "\n  driver is reset", UVM_DEBUG)
   endtask : process_reset
 
   virtual task release_bus();
+    `uvm_info(`gfn, "Driver released the bus", UVM_MEDIUM)
     cfg.vif.scl_o = 1'b1;
     cfg.vif.sda_o = 1'b1;
   endtask : release_bus
+
+
 
 endclass : i2c_driver

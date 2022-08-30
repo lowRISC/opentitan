@@ -14,6 +14,8 @@ interface i2c_if;
   logic sda_i;
   logic sda_o;
 
+  bit [9:0] cur_address;
+
   //---------------------------------
   // common tasks
   //---------------------------------
@@ -152,6 +154,7 @@ interface i2c_if;
     wait_for_dly(tc.tSdaUnstable);
     sda_o = ~sda_o;
     wait_for_dly(tc.tClockPulse + tc.tHoldBit - tc.tSdaUnstable);
+
     // not release/change sda_o until host clock stretch passes
     if (tc.enbTimeOut) wait(!scl_i);
     sda_o = 1'b1;
@@ -183,16 +186,18 @@ interface i2c_if;
   task automatic get_bit_data(string src = "host",
                               ref timing_cfg_t tc,
                               output bit bit_o);
-    wait_for_dly(tc.tClockLow + tc.tSetupBit);
-    @(posedge scl_i);
     if (src == "host") begin // host transmits data (addr/wr_data)
+      @(posedge scl_i);
       bit_o = sda_i;
       // force sda_target2host low during the clock pulse of scl_host2target
       sda_o = 1'b0;
       wait_for_dly(tc.tSdaInterference);
       sda_o = 1'b1;
-      wait_for_dly(tc.tClockPulse + tc.tHoldBit - tc.tSdaInterference);
+      @(negedge scl_i);
+      wait_for_dly(tc.tHoldBit - tc.tSdaInterference);
+      //wait_for_dly(tc.tClockPulse + tc.tHoldBit - tc.tSdaInterference);
     end else begin // target transmits data (rd_data)
+      wait_for_dly(tc.tClockLow + tc.tSetupBit);
       bit_o = sda_o;
       wait_for_dly(tc.tClockPulse + tc.tHoldBit);
     end
@@ -244,5 +249,9 @@ interface i2c_if;
       scl_o = 1'b0;
       wait_for_dly(tc.tHoldBit);
   endtask: host_nack
+
+  task automatic set_address(bit [9:0] addr);
+     cur_address = addr;
+  endtask : set_address
 
 endinterface : i2c_if

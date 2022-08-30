@@ -43,6 +43,7 @@ package chip_env_pkg;
   import pwm_reg_pkg::NOutputs;
   import tl_main_pkg::ADDR_SPACE_RV_CORE_IBEX__CFG;
   import rv_core_ibex_reg_pkg::RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;
+  import i2c_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -56,6 +57,9 @@ package chip_env_pkg;
   parameter uint NUM_GPIOS = 16;
   parameter uint NUM_UARTS = 4;
   parameter uint NUM_PWM_CHANNELS = pwm_reg_pkg::NOutputs;
+
+  // only handle one for the time being
+  parameter uint NUM_I2CS = 1;
 
   // Buffer is half of SPI_DEVICE Dual Port SRAM
   parameter uint SPI_FRAME_BYTE_SIZE = spi_device_reg_pkg::SPI_DEVICE_BUFFER_SIZE/2;
