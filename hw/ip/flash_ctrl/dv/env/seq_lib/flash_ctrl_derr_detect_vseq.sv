@@ -21,7 +21,7 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
 
     fork
       begin
-        repeat(20) begin
+        repeat(40) begin
           `DV_CHECK_RANDOMIZE_FATAL(this)
           ctrl = rand_op;
           bank = rand_op.addr[OTFBankId];
@@ -37,7 +37,7 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
         end
       end
       begin
-        for (int i = 0; i < 3; ++i) begin
+        for (int i = 0; i < 4; ++i) begin
           fork
             send_rand_host_rd();
           join_none

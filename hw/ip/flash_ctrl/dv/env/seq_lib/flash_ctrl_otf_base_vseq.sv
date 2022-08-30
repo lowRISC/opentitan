@@ -127,9 +127,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
     init_p2r_map();
     `uvm_info("cfg_summary",
-              $sformatf({"flash_init:%s ecc_mode %0d allow_spec_info_acc:%3b",
+              $sformatf({"flash_init:%s ecc_mode %s allow_spec_info_acc:%3b",
                          " scr_ecc_cfg:%s always_read:%0d"},
-                        flash_init.name, cfg.ecc_mode, allow_spec_info_acc,
+                        flash_init.name, cfg.ecc_mode.name, allow_spec_info_acc,
                         scr_ecc_cfg.name, cfg.en_always_read),
               UVM_MEDIUM)
 
@@ -1229,6 +1229,12 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     cfg.otf_read_entry.hash.delete();
     foreach (cfg.otf_read_entry.prv_read[i]) cfg.otf_read_entry.prv_read[i] = '{};
     cfg.otf_scb_h.clear_fifos();
+
+    for (int i = 0; i < NumBanks; i++) begin
+      cfg.otf_scb_h.data_mem[i].delete();
+      foreach (cfg.otf_scb_h.info_mem[i][j])
+        cfg.otf_scb_h.info_mem[i][j].delete();
+    end
   endtask // otf_tb_clean_up
 
   // Populate cfg.mp_info with default_info_page_cfg except scr, ecc.

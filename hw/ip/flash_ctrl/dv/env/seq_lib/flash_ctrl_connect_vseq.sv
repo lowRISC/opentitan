@@ -47,9 +47,9 @@ class flash_ctrl_connect_vseq extends flash_ctrl_base_vseq;
     mystr = {dut_path, ".cio_tdo_o"};
     `DV_CHECK(uvm_hdl_read(mystr, jtag_dst_rsp.tdo))
 
-    // Make non-declared port don't care.x
-    jtag_dst_req.trst_n = jtag_src_req.trst_n;
-    jtag_dst_rsp.tdo_oe = jtag_src_rsp.tdo_oe;
+    // Make non-declared port don't care.
+    jtag_dst_req.trst_n = jtag_src_req.trst_n & lc_nvm_debug_en;
+    jtag_dst_rsp.tdo_oe = jtag_src_rsp.tdo_oe & lc_nvm_debug_en;
 
     `DV_CHECK_EQ(jtag_dst_req, jtag_src_req & {4{lc_nvm_debug_en}})
     `DV_CHECK_EQ(jtag_dst_rsp, jtag_src_rsp & {2{lc_nvm_debug_en}})

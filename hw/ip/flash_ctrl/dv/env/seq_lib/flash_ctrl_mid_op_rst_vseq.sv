@@ -160,8 +160,7 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
             csr_wr(.ptr(ral.erase_suspend), .value(1));
             low_ready_h();
           end
-        join_any;
-        disable fork;
+        join
       end : isolation_fork_erase_suspend
     join
     wait_cfg_prog_rd();
@@ -186,11 +185,10 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
             cfg.clk_rst_vif.wait_clks(19);
             low_ready_h();
           end
-        join_any;
-        disable fork;
+        join
       end : isolation_fork_read
     join
-    wait_cfg_prog_rd();
+   wait_cfg_prog_rd();
 
   endtask : body
 
