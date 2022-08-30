@@ -60,6 +60,7 @@ filesets:
       - seq_lib/chip_sw_sysrst_ctrl_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_random_sleep_all_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_deep_sleep_all_reset_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sleep_pin_wake_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_pwm_pulses_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_tx_rx_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_uart_rand_baudrate_vseq.sv: {is_include_file: true}

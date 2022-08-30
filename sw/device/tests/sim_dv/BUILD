@@ -595,6 +595,23 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "sleep_pin_wake_test",
+    srcs = ["sleep_pin_wake_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "spi_tx_rx_test",
     srcs = ["spi_tx_rx_test.c"],
     targets = ["dv"],
