@@ -4,6 +4,7 @@
 
 use anyhow::Result;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::execute_test;
 use opentitanlib::test_utils::e2e_command::TestCommand;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
@@ -50,6 +51,6 @@ fn main() -> Result<()> {
     opts.init.init_logging();
 
     let transport = opts.init.init_target()?;
-    test_chip_specific_startup(&opts, &transport)?;
+    execute_test!(test_chip_specific_startup, &opts, &transport);
     Ok(())
 }
