@@ -75,9 +75,7 @@
                "+define+DUT_HIER={dut_instance}"]
 
   run_opts: ["+UVM_NO_RELNOTES",
-             "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}",
-             // TODO: remove once smoke regr passes:
-             "+prim_cdc_rand_delay_mode=disable"]
+             "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}"]
 
   // Default list of things to export to shell
   exports: [
