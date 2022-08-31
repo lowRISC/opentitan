@@ -51,9 +51,13 @@ module prim_diff_decode #(
     // 2 sync regs, one reg for edge detection
     logic diff_pq, diff_nq, diff_pd, diff_nd;
 
+    // TODO: Disable prim CDC randomization since the addition of delays violates the tolerance of
+    // differential signaling being out of sync.
+
     prim_flop_2sync #(
       .Width(1),
-      .ResetValue('0)
+      .ResetValue('0),
+      .EnablePrimCdcRandDelay(0)
     ) i_sync_p (
       .clk_i,
       .rst_ni,
@@ -63,7 +67,8 @@ module prim_diff_decode #(
 
     prim_flop_2sync #(
       .Width(1),
-      .ResetValue(1'b1)
+      .ResetValue(1'b1),
+      .EnablePrimCdcRandDelay(0)
     ) i_sync_n (
       .clk_i,
       .rst_ni,

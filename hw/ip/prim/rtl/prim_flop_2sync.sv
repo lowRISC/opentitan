@@ -10,7 +10,8 @@ module prim_flop_2sync #(
   parameter int               Width      = 16,
   parameter logic [Width-1:0] ResetValue = '0,
   parameter int               CdcLatencyPs = 1000,
-  parameter int               CdcJitterPs = 1000
+  parameter int               CdcJitterPs = 1000,
+  parameter bit               EnablePrimCdcRandDelay = 1
 ) (
   input                    clk_i,
   input                    rst_ni,
@@ -21,6 +22,7 @@ module prim_flop_2sync #(
   logic [Width-1:0] d_o;
 
   prim_cdc_rand_delay #(
+    .EnablePrimCdcRandDelay(EnablePrimCdcRandDelay),
     .DataWidth(Width),
     .UseSourceClock(0),
     .LatencyPs(CdcLatencyPs),
