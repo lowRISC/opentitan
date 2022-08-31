@@ -634,8 +634,19 @@ class cip_base_vseq #(
                             bit    do_rand_wr_and_reset = 1,
                             dv_base_reg_block models[$] = {},
                             string ral_name = "");
+    bit has_shadow_reg;
+    dv_base_reg regs[$];
 
-    if (csr_access_abort_pct.rand_mode()) begin
+    // if there is any shadow reg, we shouldn't abort TL access, otherwise, it may do only one
+    // write to the shadow reg, which may cause an unexpected recoverable error.
+    foreach (cfg.ral_models[i]) cfg.ral_models[i].get_dv_base_regs(regs);
+    foreach (regs[i]) begin
+      if (regs[i].get_is_shadowed()) begin
+        has_shadow_reg = 1;
+        break;
+      end
+    end
+    if (!has_shadow_reg && csr_access_abort_pct.rand_mode()) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_access_abort_pct)
     end else begin
       csr_access_abort_pct = 0;
