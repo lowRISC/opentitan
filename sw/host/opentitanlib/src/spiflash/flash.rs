@@ -138,6 +138,13 @@ impl SpiFlash {
         Ok(())
     }
 
+    /// Send the WRITE_DISABLE opcode to the `spi` target.
+    pub fn set_write_disable(spi: &dyn Target) -> Result<()> {
+        let wrdi = [SpiFlash::WRITE_DISABLE];
+        spi.run_transaction(&mut [Transfer::Write(&wrdi)])?;
+        Ok(())
+    }
+
     /// Read and parse the SFDP table from the `spi` target.
     pub fn read_sfdp(spi: &dyn Target) -> Result<Sfdp> {
         let mut buf = vec![0u8; 256];
