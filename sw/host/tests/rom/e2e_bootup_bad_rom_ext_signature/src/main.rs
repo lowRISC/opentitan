@@ -4,6 +4,7 @@
 
 use anyhow::{bail, Result};
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 use regex::Regex;
@@ -85,6 +86,6 @@ fn main() -> Result<()> {
     opts.init.init_logging();
 
     let transport = opts.init.init_target()?;
-    test_corrupted_rom_ext(&opts, &transport)?;
+    execute_test!(test_corrupted_rom_ext, &opts, &transport);
     Ok(())
 }

@@ -8,6 +8,7 @@ use std::time::Duration;
 use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::execute_test;
 use opentitanlib::spiflash::{BlockEraseSize, SpiFlash, SupportedAddressModes, WriteGranularity};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
@@ -198,10 +199,20 @@ fn main() -> Result<()> {
     opts.init.init_logging();
 
     let transport = opts.init.init_target()?;
-    test_bootstrap_entry(&opts, &transport, BootstrapRequest::No)?;
-    test_bootstrap_entry(&opts, &transport, BootstrapRequest::Yes)?;
-    test_jedec_id(&opts, &transport)?;
-    test_sfdp(&opts, &transport)?;
-    test_write_enable_disable(&transport)?;
+    execute_test!(
+        test_bootstrap_entry,
+        &opts,
+        &transport,
+        BootstrapRequest::No
+    );
+    execute_test!(
+        test_bootstrap_entry,
+        &opts,
+        &transport,
+        BootstrapRequest::Yes
+    );
+    execute_test!(test_jedec_id, &opts, &transport);
+    execute_test!(test_sfdp, &opts, &transport);
+    execute_test!(test_write_enable_disable, &transport);
     Ok(())
 }
