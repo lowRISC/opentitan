@@ -156,7 +156,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @rust_windows_x86_64_toolchains//...
   cp -R "$(${BAZELISK} info output_base)"/external/${BAZEL_PYTHON_WHEEL_REPO} \
     ${BAZEL_AIRGAPPED_DIR}/
-  cp -R "$(dirname "$(readlink -f "$(bazel info output_base)"/external/${BAZEL_BITSTREAMS_REPO}/cache)")" \
+  cp -R "$(dirname "$(readlink -f "$(${BAZELISK} info output_base)"/external/${BAZEL_BITSTREAMS_REPO}/cache)")" \
     ${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}
   echo "Done."
 fi
