@@ -17,11 +17,19 @@
  *
  * This is a convenience function to avoid superfluous error-checking in all the
  * functions that can be locked out by this register.
+ *
+ * @param check_config True to check the config regwen. False to check the
+ * trigger regwen.
  */
-static bool checks_are_locked(const dif_otp_ctrl_t *otp) {
-  uint32_t locked =
-      mmio_region_read32(otp->base_addr, OTP_CTRL_CHECK_REGWEN_REG_OFFSET);
-  return !bitfield_bit32_read(locked, OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT);
+static bool checks_are_locked(const dif_otp_ctrl_t *otp, bool check_config) {
+  uintptr_t reg_offset = check_config
+                             ? OTP_CTRL_CHECK_REGWEN_REG_OFFSET
+                             : OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET;
+  size_t regwen_bit =
+      check_config ? OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT
+                   : OTP_CTRL_CHECK_TRIGGER_REGWEN_CHECK_TRIGGER_REGWEN_BIT;
+  uint32_t locked = mmio_region_read32(otp->base_addr, reg_offset);
+  return !bitfield_bit32_read(locked, regwen_bit);
 }
 
 dif_result_t dif_otp_ctrl_configure(const dif_otp_ctrl_t *otp,
@@ -29,7 +37,7 @@ dif_result_t dif_otp_ctrl_configure(const dif_otp_ctrl_t *otp,
   if (otp == NULL) {
     return kDifBadArg;
   }
-  if (checks_are_locked(otp)) {
+  if (checks_are_locked(otp, /*check_config=*/true)) {
     return kDifLocked;
   }
 
@@ -49,7 +57,7 @@ dif_result_t dif_otp_ctrl_check_integrity(const dif_otp_ctrl_t *otp) {
   if (otp == NULL) {
     return kDifBadArg;
   }
-  if (checks_are_locked(otp)) {
+  if (checks_are_locked(otp, /*check_config=*/false)) {
     return kDifLocked;
   }
 
@@ -64,7 +72,7 @@ dif_result_t dif_otp_ctrl_check_consistency(const dif_otp_ctrl_t *otp) {
   if (otp == NULL) {
     return kDifBadArg;
   }
-  if (checks_are_locked(otp)) {
+  if (checks_are_locked(otp, /*check_config=*/false)) {
     return kDifLocked;
   }
 
@@ -81,7 +89,7 @@ dif_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp) {
   }
 
   uint32_t reg =
-      bitfield_bit32_write(0, OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT, true);
+      bitfield_bit32_write(0, OTP_CTRL_CHECK_REGWEN_CHECK_REGWEN_BIT, false);
   mmio_region_write32(otp->base_addr, OTP_CTRL_CHECK_REGWEN_REG_OFFSET, reg);
 
   return kDifOk;
@@ -93,7 +101,30 @@ dif_result_t dif_otp_ctrl_config_is_locked(const dif_otp_ctrl_t *otp,
     return kDifBadArg;
   }
 
-  *is_locked = checks_are_locked(otp);
+  *is_locked = checks_are_locked(otp, /*check_config=*/true);
+  return kDifOk;
+}
+
+dif_result_t dif_otp_ctrl_lock_check_trigger(const dif_otp_ctrl_t *otp) {
+  if (otp == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = bitfield_bit32_write(
+      0, OTP_CTRL_CHECK_TRIGGER_REGWEN_CHECK_TRIGGER_REGWEN_BIT, false);
+  mmio_region_write32(otp->base_addr, OTP_CTRL_CHECK_TRIGGER_REGWEN_REG_OFFSET,
+                      reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_otp_ctrl_check_trigger_is_locked(const dif_otp_ctrl_t *otp,
+                                                  bool *is_locked) {
+  if (otp == NULL || is_locked == NULL) {
+    return kDifBadArg;
+  }
+
+  *is_locked = checks_are_locked(otp, /*check_config=*/false);
   return kDifOk;
 }
 
@@ -131,7 +162,14 @@ dif_result_t dif_otp_ctrl_lock_reading(const dif_otp_ctrl_t *otp,
     return kDifBadArg;
   }
 
-  uint32_t reg = bitfield_bit32_write(0, index, true);
+  uint32_t busy = mmio_region_read32(otp->base_addr,
+                                     OTP_CTRL_DIRECT_ACCESS_REGWEN_REG_OFFSET);
+  if (!bitfield_bit32_read(
+          busy, OTP_CTRL_DIRECT_ACCESS_REGWEN_DIRECT_ACCESS_REGWEN_BIT)) {
+    return kDifUnavailable;
+  }
+
+  uint32_t reg = bitfield_bit32_write(0, index, false);
   mmio_region_write32(otp->base_addr, offset, reg);
 
   return kDifOk;
