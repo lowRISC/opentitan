@@ -27,7 +27,7 @@ pub fn create(args: &BackendOpts) -> Result<Box<dyn Transport>> {
         .unwrap_or(Vec::new());
     Ok(Box::new(CW310::new(
         args.usb_vid,
-        args.usb_vid,
+        args.usb_pid,
         args.usb_serial.as_deref(),
         &uarts,
     )?))
