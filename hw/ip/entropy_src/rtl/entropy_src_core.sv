@@ -523,13 +523,17 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   prim_mubi4_sync #(
     .NumCopies(EsEnableCopies),
-    .AsyncOn(1)
+    .AsyncOn(1) // must be set to one, see note below
   ) u_prim_mubi4_sync_es_enable (
     .clk_i,
     .rst_ni,
     .mubi_i(mubi_module_en_fanout[1]),
     .mubi_o(mubi_es_enable_q_fanout)
   );
+
+  // note: the AsyncOn parameter is set above to make sure that a clock delay
+  //       is provided on this mubi value before it propagates to other logic.
+  //       The delay is required when moving in and out of the enabled state.
 
   mubi4_t mubi_fips_en;
   mubi4_t [1:0] mubi_fips_en_fanout;
@@ -639,13 +643,17 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   prim_mubi8_sync #(
     .NumCopies(1),
-    .AsyncOn(1)
+    .AsyncOn(1) // must be set to one, see note below
   ) u_prim_mubi8_sync_es_fw_over (
     .clk_i,
     .rst_ni,
     .mubi_i(otp_en_entropy_src_fw_over_i),
     .mubi_o({en_entropy_src_fw_over})
   );
+
+  // note: the input to the above sync module is from the OTP block.
+  //       It is assumed that the source is in a different time domain,
+  //       and requires the AsyncOn parameter to be set.
 
   assign entropy_src_rng_o.rng_enable = es_enable_q_fo[0];
 
@@ -2609,13 +2617,18 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   prim_mubi8_sync #(
     .NumCopies(1),
-    .AsyncOn(1)
+    .AsyncOn(1) // must be set to one, see note below
   ) u_prim_mubi8_sync_es_fw_read (
     .clk_i,
     .rst_ni,
     .mubi_i(otp_en_entropy_src_fw_read_i),
     .mubi_o({en_entropy_src_fw_read})
   );
+
+  // note: the input to the above sync module is from the OTP block.
+  //       It is assumed that the source is in a different time domain,
+  //       and requires the AsyncOn parameter to be set.
+
 
   //--------------------------------------------
   // unused signals
