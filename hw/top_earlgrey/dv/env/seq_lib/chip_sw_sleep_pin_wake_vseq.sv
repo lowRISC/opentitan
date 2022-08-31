@@ -29,7 +29,23 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
   // The detector module to be used (total 8)
   rand bit [7:0] detector_idx[1];
 
+  // Random delay (in ns)
+  // - Fast FSM to enter Low power : 18.8 us
+  // - Slow FSM to enter Low power : 278.7us
+  //
+  // delay should cover the edge case
+  rand int unsigned exit_delay;
+
   constraint pinmux_detector_c {detector_idx[0] inside {[8'h0 : 8'h7]};}
+
+  constraint exit_delay_range_c {
+    // Distribution
+    exit_delay dist {
+      [ 15000: 20000] := 10, // trying to hit when Fast FSM enters LP
+      [ 20000:270000] := 2,  // Other scenario (in the middle)
+      [270000:300000] := 10  // trying to hit when Slow FSM enters LP
+    };
+  }
 
   virtual task cpu_init();
     super.cpu_init();
@@ -48,10 +64,13 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "pinmux_init end")
 
-    // TODO: Wait until chip enters low power (sleep or deep sleep).
+    // Wait until chip enters low power (sleep or deep sleep).
     `DV_WAIT(
         cfg.sw_logger_vif.printed_log == "Entering low power mode."
     )
+
+    // Wait #exit_delay ns before asserting a PAD
+    #(exit_delay * 1ns)
 
     // Drive the Pin to high
     `uvm_info(`gfn, "Driving a PAD to wake up the chip", UVM_LOW)
