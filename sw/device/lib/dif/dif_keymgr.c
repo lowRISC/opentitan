@@ -340,8 +340,6 @@ dif_result_t dif_keymgr_get_status_codes(
   // Read and clear OP_STATUS register (rw1c).
   uint32_t reg_op_status =
       mmio_region_read32(keymgr->base_addr, KEYMGR_OP_STATUS_REG_OFFSET);
-  mmio_region_write32(keymgr->base_addr, KEYMGR_OP_STATUS_REG_OFFSET,
-                      reg_op_status);
 
   bool is_idle = false;
   bool has_error = false;
@@ -351,10 +349,14 @@ dif_result_t dif_keymgr_get_status_codes(
       break;
     case KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS:
       is_idle = true;
+      mmio_region_write32(keymgr->base_addr, KEYMGR_OP_STATUS_REG_OFFSET,
+                          reg_op_status);
       break;
     case KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR:
       is_idle = true;
       has_error = true;
+      mmio_region_write32(keymgr->base_addr, KEYMGR_OP_STATUS_REG_OFFSET,
+                          reg_op_status);
       break;
     case KEYMGR_OP_STATUS_STATUS_VALUE_WIP:
       break;
