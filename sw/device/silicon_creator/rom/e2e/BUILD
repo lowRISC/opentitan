@@ -128,13 +128,13 @@ opentitan_functest(
     name = "e2e_bootstrap_entry",
     srcs = ["empty_test.c"],
     cw310 = cw310_params(
-        args = [
+        data = [
+            "//hw/bitstream:rom",
+        ],
+        test_cmds = [
             "--rom-kind=rom",
             "--bitstream=\"$(location //hw/bitstream:rom)\"",
             "--bootstrap=\"$(location {flash})\"",
-        ],
-        data = [
-            "//hw/bitstream:rom",
         ],
     ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
