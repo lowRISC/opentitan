@@ -106,7 +106,6 @@ opentitan_functest(
 opentitan_functest(
     name = "e2e_bootup_bad_rom_ext_signature",
     srcs = ["empty_test.c"],
-    args = [],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom",
         test_cmds = [
@@ -128,13 +127,11 @@ opentitan_functest(
     name = "e2e_bootstrap_entry",
     srcs = ["empty_test.c"],
     cw310 = cw310_params(
-        args = [
+        bitstream = "//hw/bitstream:rom",
+        test_cmds = [
             "--rom-kind=rom",
             "--bitstream=\"$(location //hw/bitstream:rom)\"",
             "--bootstrap=\"$(location {flash})\"",
-        ],
-        data = [
-            "//hw/bitstream:rom",
         ],
     ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
@@ -152,7 +149,6 @@ opentitan_functest(
 opentitan_functest(
     name = "e2e_chip_specific_startup",
     srcs = ["chip_specific_startup.c"],
-    args = [],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom",
         test_cmds = [
