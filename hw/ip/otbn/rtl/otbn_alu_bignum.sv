@@ -858,8 +858,12 @@ module otbn_alu_bignum
           !expected_adder_y_op_shifter_en |-> adder_y_op_shifter_res_blanked == '0,
           clk_i, !rst_ni)
 
+  // Adder Y must be blanked when its result is not used, with one exception: For `BN.SUBM` with
+  // `a >= b` (thus the result of Adder X has the carry bit set), the result of Adder Y is not used
+  // but it cannot be blanked solely based on the carry bit.
   `ASSERT(BlankingBignumAluYResUsed_A,
-          !adder_y_res_used |-> {x_res_operand_a_mux_out, adder_y_op_b} == '0,
+          !adder_y_res_used && !(operation_i.op == AluOpBignumSubm && adder_x_res[WLEN+1])
+          |-> {x_res_operand_a_mux_out, adder_y_op_b} == '0,
           clk_i, !rst_ni)
 
   // shifter_res related blanking
