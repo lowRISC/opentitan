@@ -56,25 +56,25 @@
 // See: https://en.cppreference.com/w/c/language/generic
 // clang-format off
 #define SHOW_MISMATCH_FMT_STR_(a) _Generic((a),                 \
-          bool: "CHECK-fail: [%d] got: 0x02%x; want: 0x02%x",   \
-        int8_t: "CHECK-fail: [%d] got: 0x02%x; want: 0x02%x",   \
-       uint8_t: "CHECK-fail: [%d] got: 0x02%x; want: 0x02%x",   \
-       int16_t: "CHECK-fail: [%d] got: 0x04%x; want: 0x04%x",   \
-      uint16_t: "CHECK-fail: [%d] got: 0x04%x; want: 0x04%x",   \
-       int32_t: "CHECK-fail: [%d] got: 0x08%x; want: 0x08%x",   \
-      uint32_t: "CHECK-fail: [%d] got: 0x08%x; want: 0x08%x",   \
-       int64_t: "CHECK-fail: [%d] got: 0x016%x; want: 0x016%x", \
-      uint64_t: "CHECK-fail: [%d] got: 0x016%x; want: 0x016%x")
+          bool: "CHECK-fail: [%d] got: 0x%02x; want: 0x%02x",   \
+        int8_t: "CHECK-fail: [%d] got: 0x%02x; want: 0x%02x",   \
+       uint8_t: "CHECK-fail: [%d] got: 0x%02x; want: 0x%02x",   \
+       int16_t: "CHECK-fail: [%d] got: 0x%04x; want: 0x%04x",   \
+      uint16_t: "CHECK-fail: [%d] got: 0x%04x; want: 0x%04x",   \
+       int32_t: "CHECK-fail: [%d] got: 0x%08x; want: 0x%08x",   \
+      uint32_t: "CHECK-fail: [%d] got: 0x%08x; want: 0x%08x",   \
+       int64_t: "CHECK-fail: [%d] got: 0x%016x; want: 0x%016x", \
+      uint64_t: "CHECK-fail: [%d] got: 0x%016x; want: 0x%016x")
 #define SHOW_MATCH_FMT_STR_(a) _Generic((a),            \
-          bool: "CHECK-fail: [%d] both equal: 0x02%x",  \
-        int8_t: "CHECK-fail: [%d] both equal: 0x02%x",  \
-       uint8_t: "CHECK-fail: [%d] both equal: 0x02%x",  \
-       int16_t: "CHECK-fail: [%d] both equal: 0x04%x",  \
-      uint16_t: "CHECK-fail: [%d] both equal: 0x04%x",  \
-       int32_t: "CHECK-fail: [%d] both equal: 0x08%x",  \
-      uint32_t: "CHECK-fail: [%d] both equal: 0x08%x",  \
-       int64_t: "CHECK-fail: [%d] both equal: 0x016%x", \
-      uint64_t: "CHECK-fail: [%d] both equal: 0x016%x")
+          bool: "CHECK-fail: [%d] both equal: 0x%02x",  \
+        int8_t: "CHECK-fail: [%d] both equal: 0x%02x",  \
+       uint8_t: "CHECK-fail: [%d] both equal: 0x%02x",  \
+       int16_t: "CHECK-fail: [%d] both equal: 0x%04x",  \
+      uint16_t: "CHECK-fail: [%d] both equal: 0x%04x",  \
+       int32_t: "CHECK-fail: [%d] both equal: 0x%08x",  \
+      uint32_t: "CHECK-fail: [%d] both equal: 0x%08x",  \
+       int64_t: "CHECK-fail: [%d] both equal: 0x%016x", \
+      uint64_t: "CHECK-fail: [%d] both equal: 0x%016x")
 // clang-format on
 
 /**
