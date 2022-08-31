@@ -128,9 +128,7 @@ opentitan_functest(
     name = "e2e_bootstrap_entry",
     srcs = ["empty_test.c"],
     cw310 = cw310_params(
-        data = [
-            "//hw/bitstream:rom",
-        ],
+        bitstream = "//hw/bitstream:rom",
         test_cmds = [
             "--rom-kind=rom",
             "--bitstream=\"$(location //hw/bitstream:rom)\"",
