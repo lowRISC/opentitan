@@ -24,7 +24,7 @@
 `define PATH9 \
     tb.dut.u_entropy_src_core.u_prim_mubi4_sync_es_enable
 `define PATH10 \
-    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_es_prebitsel_enable
+    tb.dut.u_entropy_src_core.u_prim_mubi4_sync_es_enable_pulse
 `define CORE \
     tb.dut.u_entropy_src_core
 `define SHA3 \

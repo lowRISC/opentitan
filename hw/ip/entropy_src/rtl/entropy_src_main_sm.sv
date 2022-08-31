@@ -110,8 +110,8 @@ module entropy_src_main_sm #(
         if (enable_i) begin
           // running fw override mode and in sha3 mode
           if (fw_ov_ent_insert_i && !bypass_mode_i) begin
-            if (fw_ov_sha3_start_i || !enable_i) begin
-              sha3_start_o = 1'b1;
+            sha3_start_o = 1'b1;
+            if (fw_ov_sha3_start_i) begin
               state_d = FWInsertMsg;
             end else begin
               state_d = FWInsertStart;
@@ -247,23 +247,23 @@ module entropy_src_main_sm #(
               state_d = AlertState;
             end else if (!ht_fail_pulse_i) begin
               state_d = Sha3MsgDone;
+              rst_alert_cntr_o = 1'b1;
             end
           end
         end
       end
       FWInsertStart: begin
-        if (fw_ov_sha3_start_i || !enable_i) begin
-          sha3_start_o = 1'b1;
+        if (!enable_i) begin
+          state_d = Idle;
+        end else if (fw_ov_sha3_start_i) begin
           state_d = FWInsertMsg;
         end
       end
       FWInsertMsg: begin
         if (!enable_i) begin
           state_d = Idle;
-        end else begin
-          if (!fw_ov_sha3_start_i) begin
-            state_d = Sha3MsgDone;
-          end
+        end else if (!fw_ov_sha3_start_i) begin
+          state_d = Sha3MsgDone;
         end
       end
       Sha3MsgDone: begin
@@ -280,13 +280,6 @@ module entropy_src_main_sm #(
       end
       Sha3Process: begin
         cs_aes_halt_req_o = 1'b1;
-        // The SHA control is asynchronous from the HT's in FW_OV mode
-        // breaking some of the timing assumptions associated with this
-        // alert clear pulse.  This makes predicting the alert count registers
-        // harder, and even though the alerts are surpressed in this mode
-        // the counters are still scoreboarded, so we supress this clear
-        // pulse in FW_OV insert mode.
-        rst_alert_cntr_o = ~fw_ov_ent_insert_i;
         sha3_process_o = 1'b1;
         state_d = Sha3Valid;
       end
