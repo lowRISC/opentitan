@@ -136,6 +136,20 @@ fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
+fn test_write_enable_disable(transport: &TransportWrapper) -> Result<()> {
+    let spi = transport.spi("0")?;
+
+    assert_eq!(SpiFlash::read_status(&*spi)?, 0x0);
+
+    SpiFlash::set_write_enable(&*spi)?;
+    assert_eq!(SpiFlash::read_status(&*spi)?, 0x2);
+
+    SpiFlash::set_write_disable(&*spi)?;
+    assert_eq!(SpiFlash::read_status(&*spi)?, 0x0);
+
+    Ok(())
+}
+
 fn test_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let spi = transport.spi("0")?;
     let sfdp = SpiFlash::read_sfdp(&*spi)?;
@@ -188,5 +202,6 @@ fn main() -> Result<()> {
     test_bootstrap_entry(&opts, &transport, BootstrapRequest::Yes)?;
     test_jedec_id(&opts, &transport)?;
     test_sfdp(&opts, &transport)?;
+    test_write_enable_disable(&transport)?;
     Ok(())
 }
