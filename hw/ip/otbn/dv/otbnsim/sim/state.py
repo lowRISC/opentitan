@@ -389,7 +389,7 @@ class OTBNState:
             elif self._fsm_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
                 assert should_lock
                 self._next_fsm_state = FsmState.WIPING_BAD
-            else:
+            elif self._init_sec_wipe_state == InitSecWipeState.DONE:
                 assert should_lock
                 self._next_fsm_state = FsmState.LOCKED
                 next_status = Status.LOCKED
