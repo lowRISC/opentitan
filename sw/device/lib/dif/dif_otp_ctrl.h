@@ -329,8 +329,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_check_consistency(const dif_otp_ctrl_t *otp);
 
 /**
- * Locks out `dif_otp_ctrl_configure()` and the
- * `dif_otp_ctrl_check_*()` functions.
+ * Locks out `dif_otp_ctrl_configure()` function.
  *
  * This function is reentrant: calling it while functionality is locked will
  * have no effect and return `kDifOtpCtrlOk`.
@@ -342,8 +341,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp);
 
 /**
- * Checks whether `dif_otp_ctrl_configure()` and the `dif_otp_ctrl_check_*()`
- * functions are locked-out.
+ * Checks whether `dif_otp_ctrl_configure()` function is locked-out.
  *
  * @param otp An OTP handle.
  * @param[out] is_locked Out-param for the locked state.
@@ -352,6 +350,29 @@ dif_result_t dif_otp_ctrl_lock_config(const dif_otp_ctrl_t *otp);
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_config_is_locked(const dif_otp_ctrl_t *otp,
                                            bool *is_locked);
+
+/**
+ * Locks out `dif_otp_ctrl_check_*()` functions.
+ *
+ * This function is reentrant: calling it while functionality is locked will
+ * have no effect and return `kDifOtpCtrlOk`.
+ *
+ * @param otp An OTP handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otp_ctrl_lock_check_trigger(const dif_otp_ctrl_t *otp);
+
+/**
+ * Checks whether the `dif_otp_ctrl_check_*()` functions are locked-out.
+ *
+ * @param otp An OTP handle.
+ * @param[out] is_locked Out-param for the locked state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otp_ctrl_check_trigger_is_locked(const dif_otp_ctrl_t *otp,
+                                                  bool *is_locked);
 
 /**
  * Locks out reads to a SW partition.
