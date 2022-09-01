@@ -37,6 +37,9 @@ rust_library(
         "src/bootstrap/mod.rs",
         "src/bootstrap/primitive.rs",
         "src/bootstrap/rescue.rs",
+        "src/chip/alert.rs",
+        "src/chip/boolean.rs",
+        "src/chip/mod.rs",
         "src/crypto/mod.rs",
         "src/crypto/rsa.rs",
         "src/crypto/sha256.rs",
@@ -123,11 +126,20 @@ rust_library(
         "src/util/usb.rs",
         "src/util/usr_access.rs",
         "src/util/voltage.rs",
-    ],
+    ] + select({
+        "//sw/device:is_english_breakfast": [],
+        "//conditions:default": [
+            "src/chip/earlgrey.rs",
+        ],
+    }),
     compile_data = [
         ":config",
         ":e2e_command",
     ],
+    crate_features = select({
+        "//sw/device:is_english_breakfast": ["english_breakfast"],
+        "//conditions:default": [],
+    }),
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
@@ -135,6 +147,7 @@ rust_library(
         "e2e_command": "$(location :e2e_command)",
     },
     deps = [
+        "//sw/host/opentitanlib/bindgen",
         "//third_party/rust/crates:anyhow",
         "//third_party/rust/crates:bitflags",
         "//third_party/rust/crates:bitvec",
