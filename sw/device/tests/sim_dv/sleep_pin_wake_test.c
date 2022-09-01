@@ -9,6 +9,7 @@
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -23,12 +24,7 @@ static dif_rv_plic_t plic;
 // Volatile for vseq to assign random constant to select one of 8 MIO DIO
 static volatile const uint8_t kWakeupSel = 0;
 
-/**
- * Pins to be configured.
- *
- * Assign GPIO Pads to Pinmux so that sv sequence can drive GPIO PADs.
- */
-static const uint32_t kGpioMask = 0x000001ff;
+static const uint32_t kNumDio = 16;  // top_earlgrey has 16 DIOs
 
 bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
@@ -49,21 +45,23 @@ bool test_main(void) {
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
     LOG_INFO("POR reset");
 
-    // TODO: Enable Pwrmgr wake up event, PLIC, then configure PINMUX randomly
-    // Assign GPIOs in the pinmux
-    for (size_t i = 0; i < 32; ++i) {
-      if (kGpioMask & (1u << i)) {
-        dif_pinmux_index_t mio = kTopEarlgreyPinmuxMioOutIoa0 + i;
-        dif_pinmux_index_t gpio_out = kTopEarlgreyPinmuxOutselGpioGpio0 + i;
-        CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, mio, gpio_out));
-        mio = kTopEarlgreyPinmuxInselIoa0 + i;
-        dif_pinmux_index_t gpio_in =
-            kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i;
-        CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio_in, mio));
-      }
+    LOG_INFO("pinmux_init end");
+
+    // Prepare which PAD SW want to select
+    uint32_t mio0_dio1 = rand_testutils_gen32_range(0, 1);
+    uint32_t pad_sel = 0;
+
+    if (mio0_dio1) {
+      // DIO
+      pad_sel = rand_testutils_gen32_range(0, kNumDio - 1);
+
+    } else {
+      // MIO: 0, 1 are tie-0, tie-1
+      pad_sel = rand_testutils_gen32_range(2, kTopEarlgreyPinmuxInselLast);
     }
-    CHECK_DIF_OK(dif_gpio_init(
-        mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+
+    // Send selection to SV vseq.
+    LOG_INFO("Pad Selection: %d / %d", mio0_dio1, pad_sel);
 
     wakeup_cfg.mode = kDifPinmuxWakeupModePositiveEdge;
     wakeup_cfg.signal_filter = false;
@@ -79,8 +77,6 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(
         &pinmux, (uint32_t)kWakeupSel, wakeup_cfg));
 
-    // ...
-    LOG_INFO("pinmux_init end");
 
     // Enter low power
     pwrmgr_testutils_enable_low_power(&pwrmgr,

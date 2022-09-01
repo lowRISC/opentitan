@@ -607,6 +607,7 @@ opentitan_functest(
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
