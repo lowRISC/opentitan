@@ -43,10 +43,10 @@
 
   alert_list: [
     { name: "fatal_macro_error",
-      desc: "This alert triggers if hardware detects an ECC or digest error in the buffered partitions.",
+      desc: "This alert triggers if hardware detects an uncorrectable error during an OTP transaction, for example an uncorrectable ECC error in the OTP array.",
     }
     { name: "fatal_check_error",
-      desc: "This alert triggers if the digest over the buffered registers does not match with the digest stored in OTP.",
+      desc: "This alert triggers if any of the background checks fails. This includes the digest checks and concurrent ECC checks in the buffer registers.",
     }
     { name: "fatal_bus_integ_error",
       desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
