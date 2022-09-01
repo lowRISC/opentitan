@@ -154,7 +154,12 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
                    $sformatf("unexpected double bit error 0x%x", err_addr))
       end
     end else begin
-      if (exp.derr & obs.derr) begin
+      if (exp.exp_err) begin
+        `uvm_info("process_eg_host",
+                  $sformatf("expected other tlul error start:%x",
+                            exp.start_addr),
+                  UVM_MEDIUM)
+      end else if (exp.derr & obs.derr) begin
         `uvm_info("process_eg_host",
                   $sformatf("expected double bit error by redundant write start:%x",
                             exp.start_addr),
@@ -272,7 +277,12 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
           send.raw_fq[i] = exp.fq[i];
         end
       end
-      if (exp.derr & send.derr) begin
+      if (exp.exp_err) begin
+        `uvm_info("process_read",
+                  $sformatf("expected other tlul error start:%x",
+                            exp.start_addr),
+                  UVM_MEDIUM)
+      end else if (exp.derr & send.derr) begin
         `uvm_info("process_read",
                   $sformatf("expected double bit error by redundant write start:%x",
                             exp.start_addr),

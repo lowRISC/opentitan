@@ -43,6 +43,9 @@ class flash_ctrl_scoreboard #(
   bit ecc_error_addr[bit [AddrWidth - 1 : 0]];
   int over_rd_err[addr_t];
 
+   //host error injection
+  bit in_error_addr[bit [AddrWidth - 1 : 0]];
+
   // TLM agent fifos
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_a_chan_fifo;
   uvm_tlm_analysis_fifo #(tl_seq_item)       eflash_tl_d_chan_fifo;
@@ -426,6 +429,9 @@ class flash_ctrl_scoreboard #(
     if (cfg.scb_check && cfg.check_full_scb_mem_model) begin
       cfg.check_mem_model();
     end
+
+    `DV_CHECK_EQ(cfg.tlul_core_obs_cnt, cfg.tlul_core_exp_cnt,
+                 "core_tlul_error_cnt mismatch")
   endfunction
 
   virtual function flash_dv_part_e calc_part(bit part_sel, bit [1:0] info_sel);
@@ -772,16 +778,16 @@ class flash_ctrl_scoreboard #(
   // Overriden function from cip_base_scoreboard, to handle TL/UL Error seen on Hardware Interface
   // when using Code Access Restrictions (EXEC)
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
-    bit   ecc_err;
+    bit   ecc_err, in_err;
     // For flash, address has to be 8byte aligned.
     ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
-
+    in_err = in_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
     `uvm_info("predic_tl_err_dbg",
-              $sformatf("addr:0x%x(%x) ecc_err:%0d channel:%s ral_name:%s",
+              $sformatf("addr:0x%x(%x) ecc_err:%0d in_err:%0d channel:%s ral_name:%s",
                         {item.a_addr[AddrWidth-1:3],3'b0},
-                        item.a_addr, ecc_err,
+                        item.a_addr, ecc_err, in_err,
                         channel.name, ral_name
-                        ), UVM_HIGH)
+                        ), UVM_MEDIUM)
 
     if (over_rd_err.exists(item.a_addr)) begin
       if (channel == DataChannel)  begin
@@ -792,14 +798,22 @@ class flash_ctrl_scoreboard #(
       return 1;
     end
 
-    if ((ral_name == cfg.flash_ral_name) && (get_flash_instr_type_err(item, channel))) return (1);
-    else if (ecc_err) begin
-      if (channel == DataChannel) begin
-        `DV_CHECK_EQ(item.d_error, 1, $sformatf("On interface %s, TL item: %s, ecc_err:%0d",
-                                                ral_name, item.sprint(uvm_default_line_printer),
-                                                ecc_err))
-        return 1;
-      end
+    if (ral_name == cfg.flash_ral_name) begin
+       if (get_flash_instr_type_err(item, channel)) return (1);
+    end else begin
+       if (cfg.tlul_core_exp_cnt > 0 && item.d_error == 1) begin
+          cfg.tlul_core_obs_cnt++;
+          return 1;
+       end
+       if (ecc_err | in_err) begin
+          if (channel == DataChannel) begin
+             `DV_CHECK_EQ(item.d_error, 1,
+                          $sformatf("On interface %s, TL item: %s, ecc_err:%0d in_err:%0d",
+                                    ral_name, item.sprint(uvm_default_line_printer),
+                                    ecc_err, in_err))
+             return 1;
+          end
+       end
     end
     return (super.predict_tl_err(item, channel, ral_name));
   endfunction : predict_tl_err

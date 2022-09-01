@@ -17,6 +17,9 @@ class flash_otf_item extends uvm_object;
   flash_mp_region_cfg_t ctrl_rd_region_q[$];
 
   bit                                    derr;
+  // other expected error than double bit ecc
+  bit                                    exp_err;
+
   bit                                    skip_err_chk;
   addr_t                                 err_addr, eaddr_q[$];
   function new(string name = "flash_otf_item");
@@ -24,6 +27,7 @@ class flash_otf_item extends uvm_object;
     head_pad = 0;
     tail_pad = 0;
     derr = 0;
+    exp_err = 0;
     skip_err_chk = 0;
   endfunction // new
 

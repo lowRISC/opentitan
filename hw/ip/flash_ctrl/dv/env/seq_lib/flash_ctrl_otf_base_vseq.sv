@@ -38,7 +38,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
   constraint all_ent_c {
     solve all_entry_en before rand_regions, rand_info;
-    if (cfg.en_always_read) all_entry_en == 1;
+    if (cfg.en_always_any) all_entry_en == 1;
     else all_entry_en dist { 1 := 1, 0 := 4};
   }
   constraint scr_ecc_c {
@@ -54,7 +54,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       };
       rand_regions[i].num_pages inside {[1 : FlashNumPages - rand_regions[i].start_page]};
       rand_regions[i].num_pages <= 32;
-      if (cfg.en_always_read) rand_regions[i].read_en == MuBi4True;
       rand_regions[i].scramble_en dist { MuBi4True := 4, MuBi4False := 1};
       rand_regions[i].ecc_en dist { MuBi4True := 4, MuBi4False := 1};
     }
@@ -106,6 +105,20 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   constraint special_info_acc_c {
     allow_spec_info_acc dist { 3'h7 := 1, 3'h0 := 1, [1:6] :/ 2};
   }
+
+  function void post_randomize();
+    super.post_randomize();
+    foreach (rand_regions[i]) begin
+      if (cfg.en_always_read) rand_regions[i].read_en = MuBi4True;
+      if (cfg.en_always_prog) rand_regions[i].program_en = MuBi4True;
+      if (cfg.en_always_erase) rand_regions[i].erase_en = MuBi4True;
+    end
+    foreach (rand_info[i, j, k]) begin
+      if (cfg.en_always_read) rand_info[i][j][k].read_en = MuBi4True;
+      if (cfg.en_always_prog) rand_info[i][j][k].program_en = MuBi4True;
+      if (cfg.en_always_erase) rand_info[i][j][k].erase_en = MuBi4True;
+    end
+  endfunction // post_randomize
 
   virtual task pre_start();
     // Erased page doesn't go through descramble.
@@ -217,10 +230,11 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg: bank: bank index to access flash
   // @arg: num : number of 8 words range: [1 : 32]
   // @arg: wd  : number of 4byte (TL bus unit) : default : 16
-  task prog_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16);
+  task prog_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16,
+                  bit in_err = 0);
     data_q_t flash_data_chunk;
     flash_otf_item exp_item;
-    bit poll_fifo_status = 1;
+    bit poll_fifo_status = in_err;
     bit [15:0] lcnt = 0;
     bit [flash_ctrl_pkg::BusAddrByteW-1:0] start_addr, end_addr;
     data_4s_t tmp_data;
@@ -347,8 +361,11 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         flash_ctrl_intr_write(flash_op, flash_program_data);
       end else begin
         flash_ctrl_start_op(flash_op);
+        if (in_err) begin
+          cfg.tlul_core_exp_cnt += flash_op.num_words;
+        end
         flash_ctrl_write(flash_program_data, poll_fifo_status);
-        wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
+        if (!in_err) wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
       end
       if (is_odd == 1) begin
         tmp_data = {32{1'b1}};
@@ -405,10 +422,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg: num : number of 8 words range: [1 : 32]
   // @arg: wd  : number of 4byte (TL bus unit) : default : 16
   task read_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16,
-                  int overrd = 0);
+                  int overrd = 0, bit in_err = 0);
     data_q_t flash_read_data;
     flash_otf_item exp_item;
-    bit poll_fifo_status = 1;
+    bit poll_fifo_status = ~in_err;
     bit [flash_ctrl_pkg::BusAddrByteW-1:0] start_addr, end_addr;
     int page;
     bit overflow = 0;
@@ -572,11 +589,17 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         flash_ctrl_intr_read(flash_op, flash_read_data);
       end else begin
         flash_ctrl_start_op(flash_op);
+        if (in_err) begin
+           cfg.tlul_core_exp_cnt += flash_op.num_words;
+        end
         flash_ctrl_read(flash_op.num_words, flash_read_data, poll_fifo_status);
         if (overrd > 0) begin
           overread(flash_op, bank, num, overrd);
         end
         wait_flash_op_done();
+
+       if (!in_err) wait_flash_op_done();
+
       end
       if (derr_is_set | cfg.ierr_created[0]) begin
         `uvm_info("read_flash", $sformatf({"bank:%0d addr: %x(otf:%x) derr_is_set:%0d",
@@ -593,6 +616,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         cfg.ierr_created[0] = 0;
       end
 
+      exp_item.exp_err |= in_err;
       exp_item.dq = flash_read_data;
       exp_item.fq = exp_item.dq2fq(flash_read_data);
       if (drop) begin
@@ -632,7 +656,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg : bank : bank index to access flash.
   // @arg : num  : number of 4byte data to read countinuously
   //               by 4 byte apart.
-  task otf_direct_read(bit [OTFHostId-2:0] addr, int bank, int num, int dbg = -1);
+  task otf_direct_read(bit [OTFHostId-2:0] addr, int bank, int num, int dbg = -1, bit in_err);
     bit[TL_AW-1:0] tl_addr, st_addr, end_addr;
     data_4s_t rdata;
     flash_otf_item exp_item;
@@ -722,8 +746,12 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) derr = 1;
       end
       cfg.otf_read_entry.insert(rd_entry, flash_op);
-      `uvm_info("direct_read", $sformatf("%0d:%0d bank:%0d exec: 0x%x derr:%0d",
-                                          dbg, i, bank, tl_addr, derr), UVM_MEDIUM)
+      `uvm_info("direct_read", $sformatf("%0d:%0d bank:%0d exec: 0x%x derr:%0d in_err:%0d",
+                                          dbg, i, bank, tl_addr, derr, in_err), UVM_MEDIUM)
+      if (in_err) cfg.scb_h.in_error_addr[{tl_addr[31:3],3'h0}] = 1;
+
+      derr |= in_err;
+
       if (cfg.ecc_mode > FlashSerrTestMode) begin
         if (derr & cfg.scb_h.do_alert_check) begin
           cfg.scb_h.exp_alert["fatal_err"] = 1;
@@ -731,6 +759,12 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
           cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
         end
       end
+
+      // in_err is currently used to address error caused by disable flash.
+      if (in_err) begin
+         set_otf_exp_alert("fatal_err");
+      end
+
       cfg.inc_otd_tbl(bank, tl_addr, FlashPartData);
       do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata),
                      .completed(completed), .exp_err_rsp(derr));
@@ -742,6 +776,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       end
       if (completed) begin
         exp_item.dq.push_back(rdata);
+        exp_item.exp_err |= in_err;
+
         p_sequencer.eg_exp_host_port[bank].write(exp_item);
         `uvm_info("direct_read",
                   $sformatf("SEQ:st_addr:%x addr:%x rcvd:%0d rdata:%x derr:%0d",
@@ -1038,8 +1074,6 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
       `uvm_info("direct_readback", $sformatf("idx:%0d: bank:%0d exec: 0x%x page:%0d derr:%0d",
                                              i, bank, tl_addr, page, derr), UVM_MEDIUM)
-
-
       cfg.inc_otd_tbl(bank, tl_addr, FlashPartData);
       do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata),
                      .completed(completed), .exp_err_rsp(derr));
@@ -1065,7 +1099,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
    endtask
 
-   task erase_flash(flash_op_t flash_op, int bank);
+   task erase_flash(flash_op_t flash_op, int bank, bit in_err = 0);
      bit drop = 0;
      int page;
      flash_mp_region_cfg_t my_region;
@@ -1082,9 +1116,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
          flash_op.otf_addr[10:9] = cfg.tgt_pre[flash_op.partition][TgtEr];
        end
      end
-     `uvm_info("erase_flash", $sformatf("{bank:%0d otf_addr:0x%0h, page:%0d part:%s",
+     `uvm_info("erase_flash", $sformatf("{bank:%0d otf_addr:0x%0h, page:%0d part:%s erase_type:%s",
                                         bank, flash_op.otf_addr, cfg.addr2page(flash_op.addr),
-                                        flash_op.partition.name), UVM_MEDIUM)
+                                        flash_op.partition.name, flash_op.erase_type.name),
+               UVM_MEDIUM)
      if (flash_op.partition == FlashPartData) begin
        page = cfg.addr2page(flash_op.addr);
        my_region = cfg.get_region(page);
@@ -1099,10 +1134,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
                                           flash_op.op.name, my_region), UVM_MEDIUM)
        set_otf_exp_alert("recov_err");
      end
-
      flash_ctrl_start_op(flash_op);
-     wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
-
+     if (!in_err) wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
    endtask
 
   function void update_otf_mem_read_zone(flash_dv_part_e part, int bank, addr_t addr);
@@ -1196,7 +1229,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   endfunction // flash_otf_init
 
   // Send direct host read to both bankds 'host_num' times.
-  virtual task send_rand_host_rd(int num = -1, int dbg = -1);
+  virtual task send_rand_host_rd(int num = -1, int dbg = -1, bit in_err = 0);
     flash_op_t host;
     int host_num, host_bank;
 
@@ -1206,7 +1239,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     else host_num = $urandom_range(1,128);
     host_bank = $urandom_range(0,1);
 
-    otf_direct_read(host.otf_addr, host_bank, host_num, dbg);
+    otf_direct_read(host.otf_addr, host_bank, host_num, dbg, in_err);
   endtask // send_rand_host_rd
 
   // Clean up tb vars. Used for multiple sequence run.
@@ -1224,6 +1257,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     cfg.serr_addr_tbl.delete();
 
     cfg.scb_h.ecc_error_addr.delete();
+    cfg.scb_h.in_error_addr.delete();
     global_derr_is_set = 0;
 
     cfg.otf_read_entry.hash.delete();
@@ -1279,6 +1313,30 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     `uvm_info("otf_region_cfg", $sformatf("default = %p", cfg.default_region_cfg), UVM_MEDIUM)
     flash_ctrl_default_info_cfg(scr_mode, ecc_mode);
     update_p2r_map(cfg.mp_regions);
+  endtask
+
+  task send_rand_ops(int iter = 1, bit exp_err = 0);
+    flash_op_t ctrl;
+    int num, bank;
+
+    repeat (iter) begin
+      `DV_CHECK_RANDOMIZE_FATAL(this)
+      ctrl = rand_op;
+      bank = rand_op.addr[OTFBankId];
+      if (ctrl.partition == FlashPartData) begin
+        num = ctrl_num;
+      end else begin
+        num = ctrl_info_num;
+      end
+      randcase
+        1:prog_flash(ctrl, bank, 1, fractions, exp_err);
+        1:read_flash(ctrl, bank, 1, fractions, 0, exp_err);
+        1: begin
+          send_rand_host_rd(.in_err(exp_err));
+        end
+        1:erase_flash(ctrl, bank, exp_err);
+      endcase // randcase
+    end
   endtask
 
   function void update_partition_access(bit[2:0] acc);

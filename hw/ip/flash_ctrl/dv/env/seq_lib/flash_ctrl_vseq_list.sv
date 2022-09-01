@@ -47,4 +47,5 @@
 `include "flash_ctrl_re_evict_vseq.sv"
 `include "flash_ctrl_oversize_error_vseq.sv"
 `include "flash_ctrl_connect_vseq.sv"
+`include "flash_ctrl_disable_vseq.sv"
 `include "flash_ctrl_stress_all_vseq.sv"

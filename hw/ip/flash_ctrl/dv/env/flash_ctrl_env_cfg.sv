@@ -173,8 +173,24 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   int       rd_lvl = 0;
   int       wr_lvl = 0;
 
-  // force all region read enable
+  // force all region enable to '1'
+  // '0' doesn't affect randomization
   bit       en_always_read = 0;
+  bit       en_always_erase = 0;
+  bit       en_always_prog = 0;
+  bit       en_always_all = 0;
+
+  // This is not tied to plusarg.
+  // Internal use only.
+  bit       en_always_any = 0;
+
+  // tlul error transaction counter
+  // compare at the end of sim
+  int       tlul_core_exp_cnt = 0;
+  int       tlul_core_obs_cnt = 0;
+
+
+
   `uvm_object_utils(flash_ctrl_env_cfg)
   `uvm_object_new
 
