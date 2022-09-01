@@ -65,18 +65,11 @@ bool test_main(void) {
 
     wakeup_cfg.mode = kDifPinmuxWakeupModePositiveEdge;
     wakeup_cfg.signal_filter = false;
-
-    // TODO: Get the padkind from vseq
-    wakeup_cfg.pad_type = kDifPinmuxPadKindMio;
-
-    // TODO: Get the pad randomly from vseq
-    // kTopEarlgreyPinmuxInselIoa0:kTopEarlgreyPinmuxInselLast if KinMio
-    // 0: NUM_DIO_PADS-1 if KindDio
-    wakeup_cfg.pad_select = kTopEarlgreyPinmuxInselIoa0;
+    wakeup_cfg.pad_type = mio0_dio1;
+    wakeup_cfg.pad_select = pad_sel;
 
     CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(
         &pinmux, (uint32_t)kWakeupSel, wakeup_cfg));
-
 
     // Enter low power
     pwrmgr_testutils_enable_low_power(&pwrmgr,
