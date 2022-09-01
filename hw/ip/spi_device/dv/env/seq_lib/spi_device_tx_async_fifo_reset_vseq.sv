@@ -23,10 +23,6 @@ class spi_device_tx_async_fifo_reset_vseq extends spi_device_base_vseq;
     wait_for_tx_avail_bytes(SRAM_WORD_SIZE, SramSpaceAvail, avail_bytes);
     write_device_words_to_send({device_data}); //TODO random amount of data
     cfg.clk_rst_vif.wait_clks(16);
-    // Write 0 into read and write point of TX SRAM FIFO
-    ral.txf_ptr.wptr.set(sram_device_base_addr);
-    ral.txf_ptr.rptr.set(sram_device_base_addr);
-    csr_update(.csr(ral.txf_ptr));
     csr_rd(.ptr(ral.async_fifo_level.txlvl), .value(tx_level));
     `DV_CHECK_CASE_NE(tx_level, 0)
     // Program `rst_txfifo` to reset the async FIFO
