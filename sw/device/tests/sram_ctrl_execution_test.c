@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "sw/device/examples/sram_program/sram_program.h"
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
@@ -14,6 +15,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/epmp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -83,6 +85,14 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_sram_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR),
       &sram_ctrl));
+
+  // Unlock the entire address space for RWX so that we can run this test with
+  // both rom and test_rom.
+  CSR_SET_BITS(CSR_REG_PMPADDR15, 0x7fffffff);
+  CSR_SET_BITS(CSR_REG_PMPCFG3, kEpmpPermLockedReadWriteExecute << 24);
+  CSR_WRITE(CSR_REG_PMPCFG2, 0);
+  CSR_WRITE(CSR_REG_PMPCFG1, 0);
+  CSR_WRITE(CSR_REG_PMPCFG0, 0);
 
   // Note: We can test the negative case only using the retention SRAM since
   // execution is unconditionally enabled for the main SRAM in the RMA life
