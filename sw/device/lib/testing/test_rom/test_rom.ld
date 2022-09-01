@@ -43,7 +43,6 @@ _flash_start = ORIGIN(eflash);
 _manifest = _flash_start;
 
 _rom_digest_size = 32;
-_chip_info_size = 128;
 _chip_info_start = ORIGIN(rom) + LENGTH(rom) - _rom_digest_size - _chip_info_size;
 
 /* DV Log offset (has to be different to other boot stages). */
