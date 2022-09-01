@@ -112,8 +112,6 @@ module ast #(
   output edn_pkg::edn_req_t entropy_req_o,    // Entropy Request
 
   // alerts
-  input ast_pkg::ast_dif_t fla_alert_src_i,    // Flash Alert Input
-  input ast_pkg::ast_dif_t otp_alert_src_i,    // OTP Alert Input
   input ast_pkg::ast_alert_rsp_t alert_rsp_i,  // Alerts Trigger & Acknowledge Inputs
   output ast_pkg::ast_alert_req_t alert_req_o, // Alerts Output
 
@@ -735,28 +733,6 @@ ast_alert u_alert_ts_lo (
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::TsLoSel] ),
   .alert_req_o ( alert_req_o.alerts[ast_pkg::TsLoSel] )
 );  // of u_alert_ts_lo
-
-// Flash Alert (FLA)
-///////////////////////////////////////
-ast_alert u_alert_fla (
-  .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
-  .alert_src_i ( fla_alert_src_i ),  //TODO: Add enable
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::FlaSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::FlaSel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::FlaSel] )
-);  // of u_alert_fla
-
-// OTP Alert (OTP)
-///////////////////////////////////////
-ast_alert u_alert_otp (
-  .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
-  .alert_src_i ( otp_alert_src_i ),  //TODO: Add enable
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::OtpSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::OtpSel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::OtpSel] )
-);  // of u_alert_otp
 
 // Other-0 Alert (OT0)
 ///////////////////////////////////////

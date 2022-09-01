@@ -32,7 +32,7 @@
   param_list: [
     { name:    "NumAlertEvents",
       type:    "int",
-      default: "13",
+      default: "11",
       desc:    "Number of alert events from ast",
       local:   "true"
     },

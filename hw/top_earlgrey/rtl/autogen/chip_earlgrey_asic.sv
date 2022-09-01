@@ -709,11 +709,6 @@ module chip_earlgrey_asic #(
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
   otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
 
-  // otp alert
-  ast_pkg::ast_dif_t otp_alert;
-  assign otp_alert.p = 1'b0;
-  assign otp_alert.n = 1'b1;
-
   logic usb_ref_pulse;
   logic usb_ref_val;
 
@@ -739,9 +734,6 @@ module chip_earlgrey_asic #(
   prim_mubi_pkg::mubi4_t flash_bist_enable;
   logic flash_power_down_h;
   logic flash_power_ready_h;
-  ast_pkg::ast_dif_t flash_alert;
-  assign flash_alert.p = 1'b0;
-  assign flash_alert.n = 1'b1;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -949,8 +941,6 @@ module chip_earlgrey_asic #(
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
     // alerts
-    .fla_alert_src_i       ( flash_alert    ),
-    .otp_alert_src_i       ( otp_alert      ),
     .alert_rsp_i           ( ast_alert_rsp  ),
     .alert_req_o           ( ast_alert_req  ),
     // dft

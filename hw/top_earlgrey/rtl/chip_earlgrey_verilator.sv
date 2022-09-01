@@ -243,15 +243,7 @@ module chip_earlgrey_verilator (
   logic unused_pwr_clamp;
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
 
-  ast_pkg::ast_dif_t flash_alert;
-  ast_pkg::ast_dif_t otp_alert;
-
-  assign otp_alert.p = 1'b0;
-  assign otp_alert.n = 1'b1;
-
   logic ast_init_done;
-  assign flash_alert.p = 1'b0;
-  assign flash_alert.n = 1'b1;
 
   ast #(
     .EntropyStreams(ast_pkg::EntropyStreams),
@@ -356,8 +348,6 @@ module chip_earlgrey_verilator (
     .entropy_rsp_i         ( ast_edn_edn_rsp ),
     .entropy_req_o         ( ast_edn_edn_req ),
     // alerts
-    .fla_alert_src_i       ( flash_alert    ),
-    .otp_alert_src_i       ( otp_alert      ),
     .alert_rsp_i           ( ast_alert_rsp  ),
     .alert_req_o           ( ast_alert_req  ),
     // dft
