@@ -20,6 +20,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/lib/testing/test_rom/chip_info.h"  // Generated.
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
@@ -55,6 +56,9 @@ static dif_rv_core_ibex_t ibex;
 // rom tests. By default, it simply jumps into the OTTF's flash.
 OT_WEAK
 bool rom_test_main(void) {
+  // Initial sec_mmio, required by bootstrap and its dependencies.
+  sec_mmio_init();
+
   // Configure the pinmux.
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
