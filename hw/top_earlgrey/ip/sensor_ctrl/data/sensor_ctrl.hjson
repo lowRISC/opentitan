@@ -16,7 +16,7 @@
   ],
   available_output_list: [
     { name: "ast_debug_out",
-      desc: "ast debug outputs to pinmux",
+      desc: "Outgoing `analog sensor top` debug output signals to `pinmux`.",
       width: "9"
     }
   ],
@@ -79,6 +79,7 @@
       name:    "ast_alert",
       act:     "rsp",
       package: "ast_pkg",
+      desc:    "alert requests/acknowledgements from/to `analog sensor top`"
     },
 
     { struct:  "ast_status",
@@ -86,6 +87,7 @@
       name:    "ast_status",
       act:     "rcv",
       package: "ast_pkg",
+      desc:    " Incoming `analog sensor top` status."
     },
 
     { struct:  "logic",
@@ -93,6 +95,7 @@
       name:    "ast_init_done",
       act:     "rcv",
       package: "",
+      desc:    "Initialization done indication coming from `analog sensor top`"
     },
 
     { struct:  "logic",
@@ -100,14 +103,16 @@
       name:    "ast2pinmux",
       act:     "rcv",
       width:   9,
-      package: ""
+      package: "",
+      desc:    "Outgoing `analog sensor top` DFT signals that are being forwarded to the pinmux via ast_debug_out."
     },
 
     { struct:  "logic",
       type:    "uni",
       name:    "wkup_req",
       act:     "req",
-      package: ""
+      package: "",
+      desc:    "Raised if an alert event is seen during low power"
     },
   ],
 

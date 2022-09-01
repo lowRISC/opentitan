@@ -57,16 +57,6 @@ It will only be able to send wakeups when the system is powered and the `clk_aon
 
 {{< incGenFromIpDesc "../data/sensor_ctrl.hjson" "hwcfg" >}}
 
-The table below lists other signals.
-
-Signal               | Direction        | Type                                   | Description
----------------------|------------------|----------------------------------------|---------------
-`ast_alert_i`        | `input`          | `ast_pkg::ast_alert_req_t`             | Incoming alert requests from `analog sensor top`
-`ast_alert_o`        | `output`         | `ast_pkg::ast_alert_rsp_t`             | Outgoing alert acknowledgments to `analog sensor top`
-`status_i`           | `input`          | `ast_pkg::ast_status_t`                | Incoming `analog sensor top` status
-`ast2pinmux_i`       | `input`          | `logic [ast_pkg::Ast2PadOutWidth-1:0]` | Incoming `analog sensor top` debug output signals
-`cio_ast_debug_out`  | `output`         | `logic [ast_pkg::Ast2PadOutWidth-1:0]` | Outgoing `analog sensor top` debug output signals to `pinmux`
-
 # Programmer's Guide
 
 Each available alert has a corresponding fatality configuration.
