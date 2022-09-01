@@ -101,20 +101,24 @@ _interrupt_vector:
   .section .crt, "ax"
 
   /**
-   * Linker Relaxation is disabled until `__global_pointer$` is setup, below,
-   * because otherwise some sequences may be turned into gp-relative sequences,
-   * which is incorrect when `gp` is not initialized.
-   */
-  .option push
-  .option norelax
-
-  /**
    * Entry point.
    */
   .balign 4
   .global _start_boot
   .type _start_boot, @function
 _start_boot:
+  /**
+   * Set up the global pointer `gp`.
+   *
+   * Linker relaxations are disabled until the global pointer is setup below,
+   * because otherwise some sequences may be turned into `gp`-relative
+   * sequences, which is incorrect when `gp` is not initialized.
+   */
+  .option push
+  .option norelax
+  la gp, __global_pointer$
+  .option pop
+
   /**
    * Disable Interrupts.
    *
@@ -193,17 +197,6 @@ _start_boot:
   li a5, 0x0
   li a6, 0x0
   li a7, 0x0
-
-  /**
-   * Setup global pointer.
-   *
-   * This requires that we disable linker relaxations, or it will be relaxed to
-   * `mv gp, gp`, so we disabled relaxations for all of `_rom_start_boot`.
-   */
-  la gp, __global_pointer$
-
-  // Re-enable linker relaxation.
-  .option pop
 
   /**
    * Jump to C Code
