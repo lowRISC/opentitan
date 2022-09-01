@@ -46,3 +46,4 @@
 `include "flash_ctrl_legacy_base_vseq.sv"
 `include "flash_ctrl_rw_evict_vseq.sv"
 `include "flash_ctrl_re_evict_vseq.sv"
+`include "flash_ctrl_disable_vseq.sv"

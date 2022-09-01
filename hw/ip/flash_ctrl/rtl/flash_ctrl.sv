@@ -599,8 +599,9 @@ module flash_ctrl
   // If software ever attempts to read when the FIFO is empty AND if it has never
   // initiated a transaction, then it is a read that can never complete, error
   // back immediately.
-  assign rd_no_op_d = adapter_req & ~sw_rd_op & ~sw_rfifo_rvalid;
-
+//  assign rd_no_op_d = adapter_req & ~sw_rd_op & ~sw_rfifo_rvalid;
+ assign rd_no_op_d = adapter_req & ((~sw_rd_op & ~sw_rfifo_rvalid) | (prim_mubi_pkg::mubi4_test_true_loose(flash_disable));
+   
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       adapter_rvalid <= 1'b0;
