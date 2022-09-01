@@ -24,57 +24,77 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  localparam int unsigned NumMioPads = 49;
+  localparam int unsigned NumMioPads = top_earlgrey_pkg::MioPadCount+2;
+  localparam int unsigned NumDioPads = top_earlgrey_pkg::DioCount;
+
   localparam string MioPads [NumMioPads] = '{
-    "tb.dut.IOA0",  // MIO0
-    "tb.dut.IOA1",  // MIO
-    "tb.dut.IOA2",  // MIO
-    "tb.dut.IOA3",  // MIO
-    "tb.dut.IOA4",  // MIO
-    "tb.dut.IOA5",  // MIO
-    "tb.dut.IOA6",  // MIO
-    "tb.dut.IOA7",  // MIO
-    "tb.dut.IOA8",  // MIO
-    "tb.dut.IOB0",  // MIO
-    "tb.dut.IOB1",  // MIO
-    "tb.dut.IOB2",  // MIO
-    "tb.dut.IOB3",  // MIO
-    "tb.dut.IOB4",  // MIO
-    "tb.dut.IOB5",  // MIO
-    "tb.dut.IOB6",  // MIO
-    "tb.dut.IOB7",  // MIO
-    "tb.dut.IOB8",  // MIO
-    "tb.dut.IOB9",  // MIO
-    "tb.dut.IOB10", // MIO
-    "tb.dut.IOB11", // MIO
-    "tb.dut.IOB12", // MIO
-    "tb.dut.IOC0",  // MIO
-    "tb.dut.IOC1",  // MIO
-    "tb.dut.IOC2",  // MIO
-    "tb.dut.IOC3",  // MIO
-    "tb.dut.IOC4",  // MIO
-    "tb.dut.IOC5",  // MIO
-    "tb.dut.IOC6",  // MIO
-    "tb.dut.IOC7",  // MIO
-    "tb.dut.IOC8",  // MIO
-    "tb.dut.IOC9",  // MIO
-    "tb.dut.IOC10", // MIO
-    "tb.dut.IOC11", // MIO
-    "tb.dut.IOC12", // MIO
-    "tb.dut.IOR0",  // MIO
-    "tb.dut.IOR1",  // MIO
-    "tb.dut.IOR2",  // MIO
-    "tb.dut.IOR3",  // MIO
-    "tb.dut.IOR4",  // MIO
-    "tb.dut.IOR5",  // MIO
-    "tb.dut.IOR6",  // MIO
-    "tb.dut.IOR7",  // MIO
-    "tb.dut.IOR8",  // MIO
-    "tb.dut.IOR9",  // MIO
-    "tb.dut.IOR10", // MIO
-    "tb.dut.IOR11", // MIO
-    "tb.dut.IOR12", // MIO
+    "1'b0", // Not Used
+    "1'b1", // Not Used
+    "tb.dut.IOA0",  // MIO2
+    "tb.dut.IOA1",  // MIO3
+    "tb.dut.IOA2",  // MIO4
+    "tb.dut.IOA3",  // MIO5
+    "tb.dut.IOA4",  // MIO6
+    "tb.dut.IOA5",  // MIO7
+    "tb.dut.IOA6",  // MIO8
+    "tb.dut.IOA7",  // MIO9
+    "tb.dut.IOA8",  // MIO10
+    "tb.dut.IOB0",  // MIO11
+    "tb.dut.IOB1",  // MIO12
+    "tb.dut.IOB2",  // MIO13
+    "tb.dut.IOB3",  // MIO14
+    "tb.dut.IOB4",  // MIO15
+    "tb.dut.IOB5",  // MIO16
+    "tb.dut.IOB6",  // MIO17
+    "tb.dut.IOB7",  // MIO18
+    "tb.dut.IOB8",  // MIO19
+    "tb.dut.IOB9",  // MIO20
+    "tb.dut.IOB10", // MIO21
+    "tb.dut.IOB11", // MIO22
+    "tb.dut.IOB12", // MIO23
+    "tb.dut.IOC0",  // MIO24
+    "tb.dut.IOC1",  // MIO25
+    "tb.dut.IOC2",  // MIO26
+    "tb.dut.IOC3",  // MIO27
+    "tb.dut.IOC4",  // MIO28
+    "tb.dut.IOC5",  // MIO29
+    "tb.dut.IOC6",  // MIO30
+    "tb.dut.IOC7",  // MIO31
+    "tb.dut.IOC8",  // MIO32
+    "tb.dut.IOC9",  // MIO33
+    "tb.dut.IOC10", // MIO34
+    "tb.dut.IOC11", // MIO35
+    "tb.dut.IOC12", // MIO36
+    "tb.dut.IOR0",  // MIO37
+    "tb.dut.IOR1",  // MIO38
+    "tb.dut.IOR2",  // MIO39
+    "tb.dut.IOR3",  // MIO40
+    "tb.dut.IOR4",  // MIO41
+    "tb.dut.IOR5",  // MIO42
+    "tb.dut.IOR6",  // MIO43
+    "tb.dut.IOR7",  // MIO44
+    "tb.dut.IOR10", // MIO45
+    "tb.dut.IOR11", // MIO46
+    "tb.dut.IOR12", // MIO47
     "tb.dut.IOR13"  // MIO48
+  };
+  localparam string DioPads [NumDioPads] = '{
+    "tb.dut.USB_P",          // DIO 0
+    "tb.dut.USB_N",          // DIO 1
+    "tb.dut.SPI_HOST_D0",    // DIO 2
+    "tb.dut.SPI_HOST_D1",    // DIO 3
+    "tb.dut.SPI_HOST_D2",    // DIO 4
+    "tb.dut.SPI_HOST_D3",    // DIO 5
+    "tb.dut.SPI_DEV_D0",     // DIO 6
+    "tb.dut.SPI_DEV_D1",     // DIO 7
+    "tb.dut.SPI_DEV_D2",     // DIO 8
+    "tb.dut.SPI_DEV_D3",     // DIO 9
+    "tb.dut.IOR8",           // DIO 10 EC_RST_L
+    "tb.dut.IOR9",           // DIO 11 FLASH_WP_L
+    "tb.dut.SPI_DEV_CLK",    // DIO 12
+    "tb.dut.SPI_DEV_CS_L",   // DIO 13
+    "tb.dut.SPI_HOST_CLK",   // DIO 14
+    "tb.dut.SPI_HOST_CS_L"   // DIO 15
   };
 
   // mio0_dio1 and pad_sel values come from SW
@@ -147,9 +167,14 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     // Drive the Pin to high
     `uvm_info(`gfn, "Driving a PAD to wake up the chip", UVM_LOW)
 
-    // TODO: Make it randomize
-    // currently driving gpio0 only
-    `DV_CHECK(uvm_hdl_force(MioPads[0], 1'b1));
+    // Drive the pin using DPI `uvm_hdl_force()` function
+    if (mio0_dio1) begin
+      // DIO drive
+      `DV_CHECK(uvm_hdl_force(DioPads[pad_sel], 1'b1));
+    end else begin
+      // MIO drive
+      `DV_CHECK(uvm_hdl_force(MioPads[pad_sel], 1'b1));
+    end
 
   endtask : body
 
