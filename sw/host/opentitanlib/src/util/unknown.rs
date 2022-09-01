@@ -70,6 +70,12 @@ macro_rules! with_unknown {
             )*
         }
 
+        impl From<$Enum> for $type {
+            fn from(v: $Enum) -> $type {
+                v.0
+            }
+        }
+
         // Implement the various display traits.
         $crate::__impl_fmt_unknown!(Display, "{}", "{}", $Enum { $($enumerator),* });
         $crate::__impl_fmt_unknown!(LowerHex, "{:x}", "{:#x}", $Enum { $($enumerator),* });
@@ -233,6 +239,15 @@ mod tests {
         a: HardenedBool,
         b: HardenedBool,
         c: HardenedBool,
+    }
+
+    #[test]
+    fn test_conversion() -> Result<()> {
+        let t = HardenedBool::True;
+        let x = HardenedBool(12345);
+        assert_eq!(u32::from(t), 0x739);
+        assert_eq!(u32::from(x), 12345);
+        Ok(())
     }
 
     #[test]

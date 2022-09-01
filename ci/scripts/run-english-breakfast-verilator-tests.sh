@@ -18,7 +18,9 @@ ci/bazelisk.sh clean
 ./hw/top_englishbreakfast/util/prepare_sw.py -b
 
 # Build some other dependencies.
-ci/bazelisk.sh build //sw/host/opentitantool //hw/ip/otp_ctrl/data:img_rma
+ci/bazelisk.sh build  \
+    --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_ \
+    //sw/host/opentitantool //hw/ip/otp_ctrl/data:img_rma
 
 # Run the one test.
 # This needs to be run outside the bazel sandbox, so we do not use `bazel run`

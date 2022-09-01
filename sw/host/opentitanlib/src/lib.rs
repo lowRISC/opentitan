@@ -6,6 +6,7 @@
 pub mod app;
 pub mod backend;
 pub mod bootstrap;
+pub mod chip;
 pub mod crypto;
 pub mod image;
 pub mod io;
