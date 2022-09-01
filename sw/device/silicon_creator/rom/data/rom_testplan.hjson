@@ -948,8 +948,13 @@
       name: rom_e2e_asm_init
       desc: '''Verify that ROM initializes peripherals properly.
 
-            Note: While the following can be checked at ROM_EXT stage, using a debugger would avoid
-            depending on `rom.c` for this test. Also, we may want to break this into multiple tests.
+            Note: While the following can be checked at ROM_EXT stage, using a debugger in
+            FPGA-based tests would avoid depending on `rom.c`. Doing so would give us more
+            information and help us narrow down possible issues if we end up having a problem in
+            ROM. For DV, we don't have to use the JTAG interface: we can wait until Ibex accesses
+            `rom_main()` and backdoor check specific values.
+
+            Also, we may want to break this into multiple tests.
 
             - Verify that the following peripherals are initialized properly:
               - AST
