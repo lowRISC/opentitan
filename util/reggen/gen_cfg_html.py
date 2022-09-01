@@ -101,6 +101,7 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
                "      <th>Type</th>\n" +
                "      <th>Act</th>\n" +
                "      <th>Width</th>\n" +
+               "      <th>Description</th>\n" +
                "    </tr>\n" +
                "  </thead>\n" +
                "  <tbody>\n")
@@ -111,6 +112,7 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
             sig_type = ims.signal_type
             act = ims.act
             width = str(ims.width) if ims.width is not None else "1"
+            desc = ims.desc if ims.desc is not None else ""
             genout(outfile,
                    "    <tr>\n" +
                    "      <td>" + name + "</td>\n" +
@@ -118,6 +120,7 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
                    "      <td>" + sig_type+ "</td>\n" +
                    "      <td>" + act + "</td>\n" +
                    "      <td>" + width + "</td>\n" +
+                   "      <td>" + desc + "</td>\n" +
                    "    </tr>\n")
             continue
 
