@@ -457,11 +457,6 @@ cc_test(
 opentitan_functest(
     name = "retention_sram_functest",
     srcs = ["retention_sram_functest.c"],
-    targets = [
-        "cw310_test_rom",
-        "verilator",
-        "dv",
-    ],
     verilator = verilator_params(
         timeout = "long",
     ),
