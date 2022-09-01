@@ -101,6 +101,12 @@ SECTIONS {
   } > owner_flash
 
   /**
+   * Critical static data that is accessible by both the ROM and the ROM
+   * extension.
+   */
+  INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
+
+  /**
    * Mutable data section, at the bottom of ram_main. This will be initialized
    * from flash at runtime by the CRT.
    *
