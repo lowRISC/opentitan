@@ -94,6 +94,7 @@ interface sw_logger_if #(
   // Indicate when the log was printed and what was the final string.
   event  printed_log_event;
   arg_t  printed_log;
+  arg_t  printed_arg [];
 
   // Sets the sw_name with the provided path.
   //
@@ -530,6 +531,7 @@ interface sw_logger_if #(
     end
 
     printed_log = sw_log.format;
+    printed_arg = sw_log.arg;
     ->printed_log_event;
   endfunction
 
