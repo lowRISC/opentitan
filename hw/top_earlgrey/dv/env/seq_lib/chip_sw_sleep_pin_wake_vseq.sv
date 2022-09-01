@@ -77,6 +77,10 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     "tb.dut.IOR13"  // MIO48
   };
 
+  // mio0_dio1 and pad_sel values come from SW
+  int unsigned mio0_dio1;
+  int unsigned pad_sel;
+
   // The detector module to be used (total 8)
   rand bit [7:0] detector_idx;
 
@@ -109,6 +113,7 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
   endtask : cpu_init
 
   virtual task body();
+    string printed_log;
     super.body();
 
     // Wait until we reach the SW test state.
@@ -119,6 +124,17 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     // TODO: Get the PAD selection result from SW
     //       1. MIO / DIO
     //       2. MIO PAD SEL OR DIO PAD SEL
+    @(cfg.sw_logger_vif.printed_log_event);
+
+    printed_log = string'(cfg.sw_logger_vif.printed_log);
+    assert (printed_log.substr(0,9) == "Pad Select") ;
+
+    // SW sends a log with chosen mode, pad formatted as below:
+    //   Pad Selection: {mio0_dio1} / {pad_sel}
+    mio0_dio1 = cfg.sw_logger_vif.printed_arg[0];
+    pad_sel   = cfg.sw_logger_vif.printed_arg[1];
+
+    `uvm_info(`gfn, $sformatf("VSEQ: Pad Selection %d / %d", mio0_dio1, pad_sel), UVM_LOW)
 
     // Wait until chip enters low power (sleep or deep sleep).
     `DV_WAIT(
