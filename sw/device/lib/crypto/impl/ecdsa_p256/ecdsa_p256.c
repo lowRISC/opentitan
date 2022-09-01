@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/ecdsa_p256/ecdsa_p256.h"
+#include "sw/device/lib/crypto/impl/ecdsa_p256/ecdsa_p256.h"
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/crypto/otbn_util.h"
+#include "sw/device/lib/crypto/impl/otbn_util.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 

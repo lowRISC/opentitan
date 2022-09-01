@@ -8,7 +8,7 @@
 #ifndef OPENTITAN_SW_DEVICE_TESTS_CRYPTO_ECDSA_P256_VERIFY_TESTVECTORS_H_
 #define OPENTITAN_SW_DEVICE_TESTS_CRYPTO_ECDSA_P256_VERIFY_TESTVECTORS_H_
 
-#include "sw/device/lib/crypto/ecdsa_p256/ecdsa_p256.h"
+#include "sw/device/lib/crypto/impl/ecdsa_p256/ecdsa_p256.h"
 
 #ifdef __cplusplus
 extern "C" {

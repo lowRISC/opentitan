@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/aes_gcm/aes_gcm.h"
+#include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
 
 #include <stddef.h>
 #include <stdint.h>

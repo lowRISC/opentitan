@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_AES_GCM_AES_GCM_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_AES_GCM_AES_GCM_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_AES_GCM_AES_GCM_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_AES_GCM_AES_GCM_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -68,4 +68,4 @@ aes_error_t aes_gcm_ghash(const aes_block_t *hash_subkey,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_AES_GCM_AES_GCM_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_AES_GCM_AES_GCM_H_
