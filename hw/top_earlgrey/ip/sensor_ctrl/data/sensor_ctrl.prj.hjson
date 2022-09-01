@@ -11,7 +11,7 @@
       {
         version:            "1.0",
         life_stage:         "L1",
-        design_stage:       "D2",
+        design_stage:       "D3",
         // block level verification not planned
         verification_stage: "N/A",
         notes:              "Verified at the top-level."
