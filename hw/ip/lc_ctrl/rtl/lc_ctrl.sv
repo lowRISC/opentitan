@@ -129,17 +129,17 @@ module lc_ctrl
   lc_ctrl_reg_pkg::lc_ctrl_hw2reg_t hw2reg;
 
   // SEC_CM: TRANSITION.CONFIG.REGWEN, STATE.CONFIG.SPARSE
-  logic fatal_bus_integ_error_q, fatal_bus_integ_error_d;
+  logic fatal_bus_integ_error_q, fatal_bus_integ_error_csr_d, fatal_bus_integ_error_tap_d;
   lc_ctrl_reg_top u_reg (
     .clk_i,
     .rst_ni,
     .tl_i,
     .tl_o,
-    .reg2hw    ( reg2hw                  ),
-    .hw2reg    ( hw2reg                  ),
+    .reg2hw    ( reg2hw                      ),
+    .hw2reg    ( hw2reg                      ),
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o( fatal_bus_integ_error_d ),
-    .devmode_i ( 1'b1                    )
+    .intg_err_o( fatal_bus_integ_error_csr_d ),
+    .devmode_i ( 1'b1                        )
   );
 
   ////////////////////
@@ -154,13 +154,15 @@ module lc_ctrl
   lc_ctrl_reg_top u_reg_tap (
     .clk_i,
     .rst_ni,
-    .tl_i      ( tap_tl_h2d ),
-    .tl_o      ( tap_tl_d2h ),
-    .reg2hw    ( tap_reg2hw ),
-    .hw2reg    ( tap_hw2reg ),
-    // The JTAG TAP does not support bus integrity.
-    .intg_err_o(            ),
-    .devmode_i ( 1'b1       )
+    .tl_i      ( tap_tl_h2d                  ),
+    .tl_o      ( tap_tl_d2h                  ),
+    .reg2hw    ( tap_reg2hw                  ),
+    .hw2reg    ( tap_hw2reg                  ),
+    // SEC_CM: BUS.INTEGRITY
+    // While the TAP does not have bus integrity, it does have a WE checker
+    // that feeds into intg_err_o - hence this is is wired up to the fatal_bus_integ_error.
+    .intg_err_o( fatal_bus_integ_error_tap_d ),
+    .devmode_i ( 1'b1                        )
   );
 
 
@@ -448,7 +450,9 @@ module lc_ctrl
       fatal_prog_error_q        <= otp_prog_error_d        | fatal_prog_error_q;
       fatal_state_error_q       <= state_invalid_error_d   | fatal_state_error_q;
       otp_part_error_q          <= otp_lc_data_i.error     | otp_part_error_q;
-      fatal_bus_integ_error_q   <= fatal_bus_integ_error_d | fatal_bus_integ_error_q;
+      fatal_bus_integ_error_q   <= fatal_bus_integ_error_csr_d |
+                                   fatal_bus_integ_error_tap_d |
+                                   fatal_bus_integ_error_q;
       // Other regs, gated by mutex further below.
       sw_claim_transition_if_q  <= sw_claim_transition_if_d;
       tap_claim_transition_if_q <= tap_claim_transition_if_d;
