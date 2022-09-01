@@ -353,13 +353,13 @@ typedef enum hash_mode {
  * Values are hardened.
  */
 typedef enum xof_mode {
-  // SHA3-Shake128 mode.
+  // Shake128 mode.
   kXofModeSha3Shake128 = 0x2bb4,
-  // SHA3-Shake256 mode.
+  // Shake256 mode.
   kXofModeSha3Shake256 = 0x4778,
-  // SHA3-cShake128 mode.
+  // cShake128 mode.
   kXofModeSha3Cshake128 = 0x8f45,
-  // SHA3-cShake256 mode.
+  // cShake256 mode.
   kXofModeSha3Cshake256 = 0x8c9e,
 } xof_mode_t;
 
@@ -481,7 +481,7 @@ typedef struct ecc_public_key {
  * Struct for domain parameters of a custom Weierstrass curve.
  */
 typedef struct ecc_domain {
-  // Prime P (modulus of coordinate finite field)
+  // Prime P (modulus of coordinate finite field).
   crypto_const_uint8_buf_t p;
   // Coefficient a.
   crypto_const_uint8_buf_t a;
@@ -528,18 +528,6 @@ typedef struct ecc_curve {
 } ecc_curve_t;
 
 /**
- * Enum to define the supported DRBG mechanisms.
- *
- * Values are hardened.
- */
-typedef enum drbg_type {
-  // DRBG mechanism based on CTR (CTR_DRBG).
-  kDrbgTypeCtr = 0x3af7,
-  // DRBG mechanism based on HMAC (HMAC_DRBG).
-  kDrbgTypeHmac = 0xd298,
-} drbg_type_t;
-
-/**
  * Enum to define the supported KDF constructions.
  *
  * Values are hardened.
@@ -580,6 +568,14 @@ typedef struct hash_context hash_context_t;
  * with #otcrypto_hmac_init.
  */
 typedef struct hmac_context hmac_context_t;
+
+/**
+ * Context for GCM GHASH operation.
+ *
+ * Representation is internal to the hmac implementation; initialize
+ * with #otcrypto_gcm_ghash_init.
+ */
+typedef struct gcm_ghash_context gcm_ghash_context_t;
 
 /**
  * DRBG state.
@@ -700,29 +696,85 @@ crypto_status_t otcrypto_aes_decrypt_gcm(const crypto_blinded_key_t *key,
                                          crypto_uint8_buf_t *plaintext);
 
 /**
- * Performs the internal GHASH operation of Galois Counter Mode (GCM).
+ * Internal GHASH operation of Galois Counter Mode (GCM).
  *
- * This function is an operation internal to GCM and can be used to
- * create custom implementations that do not adhere to the AES-GCM
- * encryption and decryption APIs provided here. However, custom GCM
- * constructs can be dangerous; for most use cases, prefer the
- * provided encryption and decryption operations.
+ * GHASH is an operation internal to GCM. It can be used to create
+ * custom implementations that do not adhere to the AES-GCM encryption
+ * and decryption API provided here. However, custom GCM constructs
+ * can be dangerous; for most use cases, prefer the provided
+ * encryption and decryption operations.
  *
- * The length of the input bitstring must be a multiple of 128 bits,
- * and must not be zero.
- *
- * The caller should allocate space for the `output` buffer, which
- * must have a length of 16 bytes.
+ * This function initializes the GHASH context and must be called
+ * to create a context object.
  *
  * @param hash_subkey Hash subkey (H), 16 bytes
- * @param input Input bitstring (X)
- * @param output buffer, 16 bytes
- * @return crypto_status_t Result of the authenticated decryption
- * operation
+ * @param ctx Output GHASH context object, caller-allocated
+ * @return crypto_status_t Result of the operation
  */
-crypto_status_t otcrypto_gcm_ghash(const crypto_blinded_key_t *hash_subkey,
-                                   crypto_uint8_buf_t input,
-                                   crypto_uint8_buf_t *output);
+crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
+                                        gcm_ghash_context_t *ctx);
+
+/**
+ * Internal GHASH operation of Galois Counter Mode (GCM).
+ *
+ * GHASH is an operation internal to GCM. It can be used to create
+ * custom implementations that do not adhere to the AES-GCM encryption
+ * and decryption API provided here. However, custom GCM constructs
+ * can be dangerous; for most use cases, prefer the provided
+ * encryption and decryption operations.
+ *
+ * This operation adds the input buffer to the message that will
+ * be hashed and updates the GHASH context. If the input length is
+ * not a multiple of 128 bits, it will be right-padded with zeros.
+ * The input length must not be zero.
+ *
+ * @param ctx GHASH context object
+ * @param input Input buffer
+ * @return crypto_status_t Result of the operation
+ */
+crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
+                                          crypto_const_uint8_buf_t input);
+
+/**
+ * Internal GHASH operation of Galois Counter Mode (GCM).
+ *
+ * GHASH is an operation internal to GCM. It can be used to create
+ * custom implementations that do not adhere to the AES-GCM encryption
+ * and decryption API provided here. However, custom GCM constructs
+ * can be dangerous; for most use cases, prefer the provided
+ * encryption and decryption operations.
+ *
+ * This operation signals that all input has been provided and
+ * extracts the digest from the GHASH context. The digest buffer must
+ * be 16 bytes.
+ *
+ * @param ctx GHASH context object
+ * @param digest Output buffer for digest, 16 bytes
+ * @return crypto_status_t Result of the operation
+ */
+crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
+                                         crypto_uint8_buf_t digest);
+
+/**
+ * Internal AES-GCTR operation of AES Galois Counter Mode (AES-GCM).
+ *
+ * GCTR is an operation internal to AES-GCM and is based on AES-CTR.
+ * It can be used to create custom implementations that do not adhere
+ * to the AES-GCM encryption and decryption API provided here.
+ * However, custom GCM constructs can be dangerous; for most use
+ * cases, prefer the provided encryption and decryption operations.
+ *
+ * The caller-allocated output buffer must be the same length as the
+ * input.
+ *
+ * @param key AES key for the GCTR operation
+ * @param input Input buffer
+ * @param output Output buffer (same length as input)
+ * @return crypto_status_t Result of the operation
+ */
+crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
+                                      crypto_const_uint8_buf_t input,
+                                      crypto_uint8_buf_t output);
 
 /**
  * Performs the AES-KWP authenticated encryption operation.
@@ -1225,7 +1277,7 @@ crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
  * started, or`kCryptoStatusInternalError` if the operation cannot be
  * started.
  *
- * @param required_key_len Requested key length in bits
+ * @param required_key_len Requested key length
  * @return crypto_status_t Result of async RSA keygen start operation
  */
 crypto_status_t otcrypto_rsa_keygen_async_start(
@@ -1682,13 +1734,11 @@ crypto_status_t otcrypto_x25519_async_finalize(
  * entropy input automatically from the entropy source.
  *
  * @param drbg_state Pointer to the DRBG working state
- * @param drbg_mode Required DRBG mechanism, CTR-DRBG or HMAC-DRBG
  * @param nonce Pointer to the nonce bit-string
  * @param perso_string Pointer to personalization bitstring
  * @return crypto_status_t Result of the DRBG instantiate operation
  */
 crypto_status_t otcrypto_drbg_instantiate(drbg_state_t *drbg_state,
-                                          drbg_type_t drbg_mode,
                                           crypto_uint8_buf_t nonce,
                                           crypto_uint8_buf_t perso_string);
 
@@ -1713,13 +1763,12 @@ crypto_status_t otcrypto_drbg_reseed(drbg_state_t *drbg_state,
  *
  * @param drbg_state Pointer to the DRBG working state
  * @param entropy Pointer to the user defined entropy value
- * @param drbg_mode Required DRBG mechanism, CTR-DRBG or HMAC-DRBG
  * @param nonce Pointer to the nonce bit-string
  * @param personalization_string Pointer to personalization bitstring
  * @return crypto_status_t Result of the DRBG manual instantiation
  */
 crypto_status_t otcrypto_drbg_manual_instantiate(
-    drbg_state_t *drbg_state, crypto_uint8_buf_t entropy, drbg_type_t drbg_mode,
+    drbg_state_t *drbg_state, crypto_uint8_buf_t entropy,
     crypto_uint8_buf_t nonce, crypto_uint8_buf_t perso_string);
 
 /**
@@ -1744,20 +1793,20 @@ crypto_status_t otcrypto_drbg_manual_reseed(
  * DRBG reseeding.
  *
  * The caller should allocate space for the `drbg_output` buffer,
- * (byte length as `required_bit_len`), and set the length of expected
+ * (of length `output_len`), and set the length of expected
  * output in the `len` field of `drbg_output`. If the user-set length
  * and the output length does not match, an error message will be
  * returned.
  *
  * @param drbg_state Pointer to the DRBG working state
  * @param additional_input Pointer to the additional data
- * @param required_bit_len Required len of pseudorandom output in bits
+ * @param output_len Required len of pseudorandom output, in bytes
  * @param drbg_output Pointer to the generated pseudo random bits
  * @return crypto_status_t Result of the DRBG generate operation
  */
 crypto_status_t otcrypto_drbg_generate(drbg_state_t *drbg_state,
                                        crypto_uint8_buf_t additional_input,
-                                       size_t required_bit_len,
+                                       size_t output_len,
                                        crypto_uint8_buf_t *drbg_output);
 
 /**
