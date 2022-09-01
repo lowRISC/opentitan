@@ -24,7 +24,7 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 _boot_address = ORIGIN(rom);
 
 _heap_size = 0xe000;
-_stack_size = LENGTH(ram_main) - _heap_size;
+_stack_size = LENGTH(ram_main) - _heap_size - _static_critical_size;
 _stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
 _stack_start = _stack_end - _stack_size;
 _flash_start = ORIGIN(eflash);
@@ -100,19 +100,24 @@ SECTIONS {
   } > rom
 
   /**
-   * "Intitial data" section, the initial values of the mutable data section
-   * initialized at runtime.
+   * Critical static data that is accessible by both the ROM and the ROM
+   * extension.
    */
-  .idata : ALIGN(4) {
-    _data_init_start = .;
-  } > rom
+  INCLUDE sw/device/silicon_creator/lib/base/static_critical.ld
 
   /**
    * Standard mutable data section, at the bottom of RAM. This will be
    * initialized from the .idata section at runtime by the CRT.
    */
-  .data ORIGIN(ram_main): AT(_data_init_start) ALIGN(4) {
+  .data : ALIGN(4) {
     _data_start = .;
+    _data_init_start = LOADADDR(.data);
+
+    /* This will get loaded into `gp`, and the linker will use that register for
+     * accessing data within [-2048,2047] of `__global_pointer$`.
+     *
+     * This is much cheaper (for small data) than materializing the
+     * address and loading from that (which will take one extra instruction). */
     __global_pointer$ = . + 2048;
 
     /* Small data should come before larger data. This helps to ensure small
@@ -126,9 +131,16 @@ SECTIONS {
      */
     *(.data)
     *(.data.*)
+
+    /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _data_end = .;
-  } > ram_main
+    _data_init_end = LOADADDR(.data) + SIZEOF(.data);
+
+    /* This puts it in ram_main at runtime (for the VMA), but puts the section
+     * into rom for load time (for the LMA). This is why `_data_init_*` uses
+     * `LOADADDR`. */
+  } > ram_main AT> rom
 
   /**
    * Immutable chip_info data, containing build-time-recorded information.
