@@ -329,8 +329,124 @@ The following standardised countermeasures are defined:
 
 ## Register Handling
 
-The definition and handling of registers is a topic all on its own, and is specified in its [own document]({{< relref "doc/rm/register_tool" >}}).
+### Types of Comportable IPs
+
+The registers of lowRISC peripheral designs are defined in an Hjson configuration file, and the detailed syntax and handling is a topic all on its own and specified in its [own document]({{< relref "doc/rm/register_tool" >}}).
 All lowRISC peripheral designs must conform to this register specification.
+
+
+However, for the sake of this comportable IP specification, an important distinction must be made between lowRISC peripheral designs that are completely open-source, and designs that contain one or more proprietary submodules or vendor IPs (henceforth referred to as *closed-source IPs*).
+These two cases are illustrated as cases I and II in the figure below.
+
+![Types of Comportable IP](comportable_ip_types.svg)
+
+The definition of the registers in case I is straightforward.
+Such designs may define registers as long as they comply with the [regtool spec]({{< relref "doc/rm/register_tool" >}}).
+
+For case II, more restrictions apply.
+In particular, such peripheral designs must expose enough information about the control/status register (CSR) space pertaining to the closed-source IP to ensure that the trusted compute base (TCB) can be open-sourced.
+In other words, it must be guaranteed that the source code of the SW belonging to the TCB can be checked into open-source repositories, and that such source code can be built without reliance on closed-source / proprietary code segments and header files.
+These properties are crucial for the OpenTitan project as they enable independent source code evaluation and cryptographic measurability of the binaries produced.
+Examples for the TCB include the ROM, ROM extension, Crypto library and Tock OS.
+
+The restrictions imposed are described in more detail below.
+
+### Definition of Closed-source Registers
+
+#### Categories of Registers
+
+Registers for closed-source IP can typically be categorized as follows:
+
+Functionality is relevant to the TCB | Description of register functionality can be disclosed | Description of register functionality *cannot* be disclosed
+-------------------------------------|--------------------------------------------------------|-----------------------------------------------------------
+no                                   | Category A                                             | Category B
+yes                                  | Category A                                             | Category C
+
+- **Category A:** This category includes CSRs that may or may not be relevant to the TCB, but the mechanisms that they exercise are commonly known and their description can be disclosed.
+  As such, they can be implemented and documented like regular open-source registers.
+  Examples include driving strength or pull-up / pull-down enable registers for pad libraries, or design for test (DFT) registers steering a clock bypass mux.
+
+- **Category B:** This category includes CSRs that are not relevant to the TCB and whose description may not be disclosed.
+  Such registers must follow a specific register layout - however there are no restrictions in terms of programming model.
+  Examples include DFT and test related registers such as vendor-specific built-in self-test (BIST) structures.
+
+- **Category C:** This category includes CSRs relevant to the TCB whose description may not be disclosed.
+  Similarly to category B, such registers must follow a specific register layout and in addition the programming model needs to be structured such that these registers are compatible with an open-source TCB.
+  Examples include hardware calibration registers for mechanisms that cannot be described in open-source or chicken bits for security countermeasures.
+
+The definition and recommended programming model for a specific register pertaining to a closed-source IP depends on which of the above categories it belongs to, as described in the next two subsections.
+
+#### Register Node Structure
+
+In any case, the register node of a lowRISC peripheral IP containing the TL-UL bus interface and register address decoding logic must be located *outside* of the closed-source IP as illustrated below:
+
+![Types of Comportable IP](register_categories.svg)
+
+Such register nodes shall contain an open-source register region where regular open-source registers and registers belonging to category A can be implemented.
+
+For registers falling into categories B and C, a closed-source register region with a generic structure and description must be allocated.
+The structure may contain one or all the following generic sections:
+
+- A section of L x 32bit status registers with read-only SW access, labeled as STATUS,
+- A section of M x 32bit control registers with read-write SW access, labeled as CTRL,
+- A section of 1 x 1bit or M x 1bit write enable registers for the M control registers, labeled as CTRL_REGWEN,
+- A section of N x 32bit data registers with read-write SW access, labeled as DATA,
+- A section of 1 x 1bit or N x 1bit write enable registers for the N data registers, labeled as DATA_REGWEN.
+
+This standardized structure allows the bus interface and crossbar address region settings to be parameterized correctly on the open-source side.
+The parameters L, M, N are to be determined for each IP separately. Register data and control signals (Q, QE, D, DE etc) needed by the closed-source IP shall be connected using plain logic vectors or structs.
+The corresponding RTL registers themselves may be implemented inside the closed-source IP using the [`hwext` feature of the reggen tool]({{< relref "doc/rm/register_tool/index.md#type-rw-hwext" >}}), thereby ensuring that proprietary reset values can be accommodated.
+
+Open documentation for the closed-source section shall be as descriptive as allowable - however, the complete documentation must be maintained separately in a closed source repository.
+
+### Programming Model Guidelines
+
+For registers belonging to category A or B, there are no specific recommendations for a programming model, since either the associated functionality is irrelevant to the TCB (e.g. DFT features that are only used / enabled during the manufacturing flow), or the functionality can be described publicly, thereby not creating any dependency on undisclosed information.
+For registers belonging to category C however, the programming model must be structured according to the following two approaches to maintain compatibility with an open-source TCB:
+
+1. Ensure that the values to be written to or to be read from the CSRs can be disclosed in open-source source code.
+   This enables the definition of SW constants with generic/abstracted names and their use in conditional statements.
+   This approach is useful for individual configuration / status registers or chicken-bits.
+   For example, this could look as follows:
+
+```c++
+    #define CONFIG_REG_ADDR_A 0x10000000
+    #define STATUS_REG_ADDR_A 0x10000004
+    #define CONFIG_VALUE_A    0x00000001
+    #define CONFIG_VALUE_B    0x00000010
+    #define STATUS_VALUE_A    0x00000001
+    #define STATUS_VALUE_B    0x00000010
+
+    // Initialize closed-source IP
+    mmio_write32((uint32_t*)CONFIG_REG_ADDR_A, CONFIG_VALUE_A)
+
+    // Poll status register of closed-source IP before continuing
+    while (!(mmio_read32((uint32_t*)STATUS_REG_ADDR_A) & STATUS_VALUE_A))
+```
+
+2. If the values that have to be written to the CSRs can *not* be disclosed, ensure that these values can be transferred as a blob via a simple `memcpy` sequence from a non-volatile memory location in the system (e.g. OTP or Flash).
+   By programming this blob to the non-volatile memory during the manufacturing or provisioning flow, it can be ensured that the information contained therein does not have to be made part of the open-source source code of the TCB. F
+   or example, this could look as follows:
+
+```c++
+    #define CONFIG_BLOB_ADDR 0x20000000
+    #define CONFIG_BLOB_SIZE 0x00000020
+    #define CONFIG_REG_ADDR  0x10000000
+
+    // Initialize closed-source IP
+    memcpy((uint8_t*)CONFIG_REG_ADDR, (uint8_t*)CONFIG_BLOB_ADDR, CONFIG_BLOB_SIZE)
+```
+
+In both cases, complex SW/HW interaction should be avoided so that SW source code patterns do not reveal any undisclosable information about the mechanisms associated with the registers.
+
+Note: If the above two programming model approaches are not viable, another option is to wrap the closed-source IP with shimming and translation logic that exposes a simplified interface which can be disclosed in open-source.
+
+### Future Extensions
+
+Currently, closed-source targeted DV and manufacturing test code have to use the generic register names and constants (such as STATUS_REG_ADDR_0, CTRL_REG_ADDR_1) in the same way as open-source software does.
+In the future, it may make sense to implement additional tooling to generate the mapping of a more detailed closed-source description to the public interface.
+Note that such a tool would have to be implemented so that the underlying RTL implementation is not altered.
+Instead, only the generated SW constants and DV functions should be extended to include more detailed / granular aliases to existing (generic) constants and functions.
 
 ## Configuration description Hjson
 
