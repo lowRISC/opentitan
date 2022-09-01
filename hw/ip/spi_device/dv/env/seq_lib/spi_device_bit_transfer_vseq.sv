@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Bit Access test to verify proper handling of partial byte transfers
+// TODO, constrain not to send 7 bits, as that byte may or may not be dropped depends on
+// the phase setting, which is low risk and makes scb too complicated.
 class spi_device_bit_transfer_vseq extends spi_device_base_vseq;
   `uvm_object_utils(spi_device_bit_transfer_vseq)
   `uvm_object_new
@@ -31,8 +33,8 @@ class spi_device_bit_transfer_vseq extends spi_device_base_vseq;
         `uvm_info(`gfn, $sformatf("Device Data = 0x%0h", device_data), UVM_LOW)
         cfg.clk_rst_vif.wait_clks(16);
         cfg.spi_host_agent_cfg.partial_byte = 1;
-        // Randomize number of bits to send before CSN deassert
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bits_num, bits_num > 0;)
+        // Randomize number of bits to send before CSB deassert
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bits_num, bits_num inside {[1:6]};)
         cfg.spi_host_agent_cfg.bits_to_transfer = bits_num;
         `uvm_info(`gfn, $sformatf("Bits_num = 0x%0h", bits_num), UVM_LOW)
         spi_host_xfer_byte(host_data[7:0], device_data_exp[0]);
@@ -62,6 +64,13 @@ class spi_device_bit_transfer_vseq extends spi_device_base_vseq;
           `DV_CHECK_CASE_EQ(device_data,
               {device_data_exp[3],device_data_exp[2], device_data_exp[1], device_data_exp[0]})
         end
+
+        wait_for_rx_avail_bytes(SRAM_WORD_SIZE, SramDataAvail, avail_bytes);
+        `DV_CHECK_EQ(avail_bytes, SRAM_WORD_SIZE)
+        read_host_words_rcvd(1, host_data_exp_q);
+        // first byte is dropped due to partial byte sent
+        host_data = host_data >> 8;
+        `DV_CHECK_CASE_EQ(host_data, host_data_exp_q[0])
       end
     end
   endtask : body
