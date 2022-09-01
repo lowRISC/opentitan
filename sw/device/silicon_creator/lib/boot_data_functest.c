@@ -342,6 +342,9 @@ rom_error_t write_page_switch_test(void) {
 bool test_main(void) {
   rom_error_t result = kErrorOk;
 
+  // Initialize the sec_mmio table so that we can run this test with both rom
+  // and test_rom.
+  sec_mmio_init();
   flash_ctrl_init();
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
   sec_mmio_check_counters(/*expected_check_count=*/0);
