@@ -736,6 +736,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           end
         end
       end
+      "control": begin
+        if (write && channel == AddrChannel) begin
+          if (!`gmv(ral.control.rst_txfifo)) tx_word_q.delete();
+        end
+      end
       "upload_cmdfifo": begin
         if (!write && channel == DataChannel) begin
           `DV_CHECK_GT(upload_cmd_q.size, 0)
