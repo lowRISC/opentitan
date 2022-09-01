@@ -40,6 +40,22 @@ package top_${top["name"]}_pkg;
 
 % endfor
 
+  // Enumeration of alert modules
+  typedef enum int unsigned {
+% for mod in top["alert_module"]:
+    ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_peripheral_" + mod).as_camel_case()} = ${loop.index},
+% endfor
+    TopEarlgreyAlertPeripheralCount
+  } alert_peripheral_e;
+
+  // Enumeration of alerts
+  typedef enum int unsigned {
+% for alert in top["alert"]:
+    ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_id_" + alert["name"]).as_camel_case()} = ${loop.index},
+% endfor
+    TopEarlgreyAlertIdCount
+  } alert_id_e;
+
   // Enumeration of IO power domains.
   // Only used in ASIC target.
   typedef enum logic [${len(top["pinout"]["banks"]).bit_length()-1}:0] {
