@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 // Note: Since this test program is written to verify the behavior of the ROM C
 // exception handlers,

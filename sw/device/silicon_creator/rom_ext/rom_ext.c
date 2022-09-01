@@ -27,7 +27,7 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include OPENTITAN_HW_TOP_HDR_PATH  // Generated.
 
 // In-memory copy of the ePMP register configuration.
 epmp_state_t epmp;

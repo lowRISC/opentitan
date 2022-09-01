@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 #include "keymgr_regs.h"  // Generated.
 
 #define KEYMGR_ASSERT(a, b) static_assert(a == b, "Bad value for " #a)

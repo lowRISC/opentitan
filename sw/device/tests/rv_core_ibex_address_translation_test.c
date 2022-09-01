@@ -13,7 +13,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 #define TEST_STR "Hello there, WHaT 1S Y0Ur N@ME?"
 #define EXPECTED_RESULT_MAKE_LOWER_CASE "hello there, what 1s y0ur n@me?"

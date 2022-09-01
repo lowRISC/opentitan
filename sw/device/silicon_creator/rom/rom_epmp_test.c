@@ -27,7 +27,7 @@
 #include "sw/device/silicon_creator/rom/rom_epmp.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 /**
  * ROM ePMP test.

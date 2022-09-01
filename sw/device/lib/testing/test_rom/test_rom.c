@@ -24,7 +24,7 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/rom/bootstrap.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include OPENTITAN_HW_TOP_HDR_PATH  // Generated.
 
 /**
  * This symbol is defined in `sw/device/lib/testing/test_rom/test_rom.ld`,

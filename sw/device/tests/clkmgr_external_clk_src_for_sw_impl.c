@@ -16,7 +16,7 @@
 #include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 // Switching to external clocks causes the clocks to be unstable for some time.
 // This is used to delay further action when the switch happens.

@@ -11,7 +11,7 @@
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/sca/lib/prng.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 /**
  * Macro for ignoring return values.

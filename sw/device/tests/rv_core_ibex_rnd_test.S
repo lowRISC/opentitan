@@ -12,7 +12,8 @@
  * extent by using the assembly versions.
  */
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "sw/device/lib/base/macros.h"
+#include OPENTITAN_HW_TOP_MEMORY_HDR_PATH
 #include "rv_core_ibex_regs.h"
 
 /**

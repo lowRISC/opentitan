@@ -8,7 +8,7 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 static void setup_entropy_src(const dif_entropy_src_t *entropy_src) {
   const dif_entropy_src_config_t config = {

@@ -23,7 +23,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 OTTF_DEFINE_TEST_CONFIG();
 static volatile const uint8_t RST_IDX[5] = {3, 30, 130, 5, 50};

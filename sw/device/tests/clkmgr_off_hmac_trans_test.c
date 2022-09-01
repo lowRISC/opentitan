@@ -6,7 +6,7 @@
 
 #include "sw/device/tests/clkmgr_off_trans_impl.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 bool test_main(void) {
   return execute_off_trans_test(kTopEarlgreyHintableClocksMainHmac);

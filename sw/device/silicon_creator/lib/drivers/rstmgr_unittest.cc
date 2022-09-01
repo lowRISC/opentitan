@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 #include "rstmgr_regs.h"  // Generated.
 
 namespace rstmgr_unittest {

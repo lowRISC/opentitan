@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/epmp_defs.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include OPENTITAN_HW_TOP_MEMORY_HDR_PATH
 
 /**
  * Helper macro to move v into the correct position to set the pmp{N*4+i}cfg

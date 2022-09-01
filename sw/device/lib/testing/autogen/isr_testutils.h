@@ -38,7 +38,7 @@
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include OPENTITAN_HW_TOP_HDR_PATH  // Generated.
 
 /**
  * A handle to a PLIC ISR context struct.

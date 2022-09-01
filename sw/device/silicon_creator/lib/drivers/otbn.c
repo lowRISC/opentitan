@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 #include "otbn_regs.h"  // Generated.
 
 #define ASSERT_ERR_BIT_MATCH(enum_val, autogen_val) \

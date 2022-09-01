@@ -418,4 +418,17 @@
   if (expr_) {            \
   }
 
+/**
+ * Stub for the HW top header file.
+ * The definition can point to a different path with a compile flag.
+ */
+#ifndef OPENTITAN_HW_TOP_HDR_PATH
+#define OPENTITAN_HW_TOP_HDR_PATH "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#endif
+
+#ifndef OPENTITAN_HW_TOP_MEMORY_HDR_PATH
+#define OPENTITAN_HW_TOP_MEMORY_HDR_PATH \
+  "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#endif
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_

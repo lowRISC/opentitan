@@ -19,7 +19,7 @@
 
 #include "alert_handler_regs.h"
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 #include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
 #include "rv_core_ibex_regs.h"

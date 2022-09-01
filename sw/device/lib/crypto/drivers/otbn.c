@@ -11,7 +11,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 #include "otbn_regs.h"  // Generated.
 
 #define ASSERT_ERR_BIT_MATCH(enum_val, autogen_val) \

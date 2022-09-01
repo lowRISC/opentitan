@@ -6,7 +6,7 @@
 
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 static_assert(CHIP_ROM_EXT_SIZE_MIN >= CHIP_MANIFEST_SIZE,
               "`CHIP_ROM_EXT_SIZE_MIN` is too small");

@@ -22,7 +22,7 @@
 #include "clkmgr_regs.h"  // Generated
 #include "csrng_regs.h"   // Generated
 #include "edn_regs.h"     // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 #if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/lib/dif/dif_csrng.h"

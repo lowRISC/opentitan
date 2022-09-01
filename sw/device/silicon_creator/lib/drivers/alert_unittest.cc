@@ -13,7 +13,7 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "alert_handler_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 #include "otp_ctrl_regs.h"
 
 namespace alert_unittest {

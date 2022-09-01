@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 #include "otp_ctrl_regs.h"
 #include "pinmux_regs.h"
 

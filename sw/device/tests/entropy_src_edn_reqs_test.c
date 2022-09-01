@@ -25,7 +25,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "alert_handler_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 OTBN_DECLARE_APP_SYMBOLS(randomness);
 OTBN_DECLARE_SYMBOL_ADDR(randomness, rv);

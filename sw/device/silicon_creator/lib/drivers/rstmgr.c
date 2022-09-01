@@ -16,7 +16,7 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 #include "rstmgr_regs.h"
 
 enum {

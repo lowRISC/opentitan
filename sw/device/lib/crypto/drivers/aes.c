@@ -10,7 +10,7 @@
 #include "sw/device/lib/base/memory.h"
 
 #include "aes_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 // Static assertions for enum values.
 OT_ASSERT_ENUM_VALUE(kAesCipherModeEcb, AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB);

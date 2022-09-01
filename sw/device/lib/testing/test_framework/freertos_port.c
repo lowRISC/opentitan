@@ -13,7 +13,7 @@
 #include "external/freertos/include/task.h"
 #include "external/freertos/portable/GCC/RISC-V/portmacro.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include OPENTITAN_HW_TOP_HDR_PATH  // Generated.
 
 // NOTE: some of the function names below do NOT, and cannot, conform to the
 // style guide, since they are specific implementations of FreeRTOS defined

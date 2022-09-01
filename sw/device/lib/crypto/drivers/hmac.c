@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/memory.h"
 
 #include "hmac_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 void hmac_sha256_init(void) {
   // Clear the config, stopping the SHA engine.

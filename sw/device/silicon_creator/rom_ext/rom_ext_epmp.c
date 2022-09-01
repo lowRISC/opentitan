@@ -7,7 +7,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 void rom_ext_epmp_unlock_owner_stage_rx(epmp_state_t *state,
                                         epmp_region_t region) {

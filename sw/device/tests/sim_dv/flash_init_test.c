@@ -14,7 +14,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include OPENTITAN_HW_TOP_HDR_PATH  // Generated.
 
 static dif_uart_t uart0;
 static dif_flash_ctrl_state_t flash_state;

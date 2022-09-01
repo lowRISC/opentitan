@@ -21,7 +21,7 @@
 #include "sw/device/lib/testing/usb_testutils_controlep.h"
 #include "sw/device/lib/testing/usb_testutils_simpleserial.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
+#include OPENTITAN_HW_TOP_HDR_PATH  // Generated.
 
 // These just for the '/' printout
 #define USBDEV_BASE_ADDR TOP_EARLGREY_USBDEV_BASE_ADDR

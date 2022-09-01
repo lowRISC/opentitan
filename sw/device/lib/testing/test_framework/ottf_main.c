@@ -26,7 +26,7 @@
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
 // TODO: make this toplevel agnostic.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 // Check layout of test configuration struct since OTTF ISR asm code requires a
 // specific layout.

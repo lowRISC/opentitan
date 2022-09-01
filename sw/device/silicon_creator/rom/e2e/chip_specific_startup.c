@@ -15,7 +15,7 @@
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/silicon_creator/rom/e2e/json/command.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 OTTF_DEFINE_TEST_CONFIG();
 

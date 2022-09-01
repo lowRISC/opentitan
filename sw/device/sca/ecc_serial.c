@@ -14,7 +14,7 @@
 #include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 /**
  * OpenTitan program for OTBN ECDSA-P384 side-channel analysis.

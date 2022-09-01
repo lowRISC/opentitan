@@ -14,7 +14,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 // From: http://www.abrahamlincolnonline.org/lincoln/speeches/gettysburg.htm
 static const char kGettysburgPrelude[] =

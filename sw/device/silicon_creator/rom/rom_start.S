@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits_asm.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include OPENTITAN_HW_TOP_MEMORY_HDR_PATH
 #include "aon_timer_regs.h"
 #include "ast_regs.h"
 #include "clkmgr_regs.h"

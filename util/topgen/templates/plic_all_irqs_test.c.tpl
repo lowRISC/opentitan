@@ -23,7 +23,7 @@ def args(p):
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-#include "hw/top_${top["name"]}/sw/autogen/top_${top["name"]}.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 % for p in helper.irq_peripherals:
 static dif_${p.name}_t ${p.inst_name};

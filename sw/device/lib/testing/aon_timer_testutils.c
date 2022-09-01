@@ -13,7 +13,7 @@
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 uint32_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds) {
   uint64_t cycles = udiv64_slow(microseconds * kClockFreqAonHz, 1000000,

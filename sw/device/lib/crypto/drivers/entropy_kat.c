@@ -10,7 +10,7 @@
 #include "sw/device/lib/runtime/log.h"
 
 #include "csrng_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 enum {
   kBaseCsrng = TOP_EARLGREY_CSRNG_BASE_ADDR,

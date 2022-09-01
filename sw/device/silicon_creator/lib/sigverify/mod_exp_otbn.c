@@ -11,7 +11,7 @@
 #include "sw/device/silicon_creator/lib/otbn_util.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 OTBN_DECLARE_APP_SYMBOLS(
     run_rsa_verify_3072_rr_modexp);  // The OTBN RSA-3072 app.

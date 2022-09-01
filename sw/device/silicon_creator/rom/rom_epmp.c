@@ -7,7 +7,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 // Symbols defined in linker script.
 extern char _stack_start[];  // Lowest stack address.

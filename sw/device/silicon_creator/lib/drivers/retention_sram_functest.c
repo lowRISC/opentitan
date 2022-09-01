@@ -12,7 +12,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 
 static rom_error_t retention_sram_clear_test(void) {
   // Set every bit in the retention SRAM to one.

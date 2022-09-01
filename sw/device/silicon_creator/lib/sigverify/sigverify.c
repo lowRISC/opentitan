@@ -12,7 +12,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_ibex.h"
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_otbn.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include OPENTITAN_HW_TOP_HDR_PATH
 #include "otp_ctrl_regs.h"
 
 /*
