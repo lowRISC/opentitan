@@ -314,3 +314,27 @@ For example, to run all chip-level tests except the broken ones on FPGA:
 ```console
 bazel test --test_tag_filters=cw310,-broken //sw/device/tests/...
 ```
+
+## Commonly Encountered Issues
+
+### Cannot find ld
+
+One issue encountered while using bazel is the following error message when attempting to build:
+```console
+  = note: collect2: fatal error: cannot find 'ld'
+          compilation terminated.
+```
+
+The reason this occurs is related to these issues:
+* [opentitan issue](https://github.com/lowRISC/opentitan/issues/12448)
+* [rust issue](https://github.com/bazelbuild/rules_rust/issues/1114)
+
+Specifically, when the rustc compiler is invoked, it uses the LLVM linker that is not managed by the bazel flow.
+This means bazel cannot ensure it is installed at a specific location, and instead just uses whatever is available on the host machine.
+The issue above points out that rustc expects the linker to be located in the same directory as `gcc`, so if on the host machine this statement is untrue, there can be build issues.
+
+To resolve this problem:
+1. Install the LLVM linker with, e.g., `sudo apt install lld`.
+2. Symlink `lld` to where `gcc` is installed.
+
+This workaround will be needed until the rust issue is resolved.
