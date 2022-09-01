@@ -52,7 +52,7 @@ dif_result_t dif_sensor_ctrl_set_ast_event_trigger(
 
   uint32_t reg = mmio_region_read32(sensor_ctrl->base_addr,
                                     SENSOR_CTRL_ALERT_TRIG_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, event_idx, enable);
+  reg = bitfield_bit32_write(reg, event_idx, dif_toggle_to_bool(enable));
   mmio_region_write32(sensor_ctrl->base_addr, SENSOR_CTRL_ALERT_TRIG_REG_OFFSET,
                       reg);
 
@@ -73,7 +73,7 @@ dif_result_t dif_sensor_ctrl_set_alert_fatal(
 
   uint32_t reg = mmio_region_read32(sensor_ctrl->base_addr,
                                     SENSOR_CTRL_FATAL_ALERT_EN_REG_OFFSET);
-  reg = bitfield_bit32_write(reg, event_idx, en_fatal);
+  reg = bitfield_bit32_write(reg, event_idx, dif_toggle_to_bool(en_fatal));
   mmio_region_write32(sensor_ctrl->base_addr,
                       SENSOR_CTRL_FATAL_ALERT_EN_REG_OFFSET, reg);
 
