@@ -4,8 +4,8 @@ title: "Sensor Control Technical Specification"
 
 # Overview
 
-This document specifies the functionality of the sensor control module.
-The sensor control module is a comportable front-end to the [analog sensor top]({{< relref "hw/top_earlgrey/ip/ast/doc" >}}).
+This document specifies the functionality of the `sensor control` module.
+The `sensor control` module is a comportable front-end to the [analog sensor top]({{< relref "hw/top_earlgrey/ip/ast/doc" >}}).
 
 It provides basic alert functionality, pad debug hook ups, and a small amount of open source visible status readback.
 Long term, this is a module that can be absorbed directly into the `analog sensor top`.
@@ -46,9 +46,9 @@ This causes the alert to constantly send until the system escalates in some form
 ## Wakeup Requests
 
 In addition to forwarding events to the `alert handler`, incoming events can also be aggregated into a wakeup request to the system.
-The `sensor_ctrl` does not make assumptions about its power domains and thus it is up to the integrating system to decide which power modes allow alert event wakeups.
+The `sensor control` does not make assumptions about its power domains and thus it is up to the integrating system to decide which power modes allow alert event wakeups.
 
-As an example, if the `sensor_ctrl` is not placed in an always on domain, then it cannot send alert based wakeups if the system is in a deep low power state.
+As an example, if the `sensor control` is not placed in an always on domain, then it cannot send alert based wakeups if the system is in a deep low power state.
 It will only be able to send wakeups when the system is powered and the `clk_aon_i` input is available.
 
 ## Hardware Interfaces
@@ -70,7 +70,7 @@ Signal               | Direction        | Type                                  
 # Programmer's Guide
 
 Each available alert has a corresponding fatality configuration.
-If an alert event is set to 1 in {{< regref "FATAL_ALERT_EN" >}}, `sensor_ctrl` treats it as a fatal event instead of a recoverable event.
+If an alert event is set to 1 in {{< regref "FATAL_ALERT_EN" >}}, `sensor control` treats it as a fatal event instead of a recoverable event.
 Fatal events are not acknowledged, and continuously send alert events in the system until some kind of escalation is seen.
 
 ## Device Interface Functions (DIFs)
