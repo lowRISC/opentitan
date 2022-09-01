@@ -24,30 +24,11 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
 _rom_boot_address = ORIGIN(rom);
 
 /**
- * Size of the initial ePMP RX region at reset. This region must be large
- * enough to cover the .crt section.
- *
- * NOTE: This value must match the size of the RX region in
- * hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh.
- */
-_epmp_reset_rx_size = 0x400;
-
-/**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
 _rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
 ASSERT((_rom_ext_virtual_size <= (LENGTH(eflash) / 2)), "Error: rom ext flash is bigger than slot");
-
-/* Reserving space at the top of the RAM for the stack. */
-_stack_size = 0x2000;
-_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
-_stack_start = _stack_end - _stack_size;
-
-/* Reserving 128 bytes at the top of ROM for chip info */
-_chip_info_size  = 0x80;
-_chip_info_end   = ORIGIN(rom) + LENGTH(rom);
-_chip_info_start = _chip_info_end - _chip_info_size;
 
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x0;

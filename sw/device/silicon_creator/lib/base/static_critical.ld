@@ -10,8 +10,6 @@
  * memory sections.
  */
 
-INCLUDE sw/device/silicon_creator/lib/base/static_critical_size.ld
-
 .static_critical ORIGIN(ram_main) (NOLOAD) : ALIGN(4) {
   ASSERT(
     . == ORIGIN(ram_main),

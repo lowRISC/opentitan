@@ -16,11 +16,6 @@ OUTPUT_ARCH(riscv)
  */
 __DYNAMIC = 0;
 
-/* Reserving space at the top of the RAM for the stack. */
-_stack_size = 0x2000;
-_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
-_stack_start = _stack_end - _stack_size;
-
 /**
  * Marking the entry point correctly for the ELF file. The signer tool will
  * transfer this value to the `entry_point` field of the manifest, which will

@@ -15,3 +15,32 @@ MEMORY {
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = 0x80000
   owner_virtual(rx): ORIGIN = 0xa0000000, LENGTH = 0x80000
 }
+
+/**
+ * Stack at the top of the main SRAM.
+ */
+_stack_size = 4096;
+_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
+_stack_start = _stack_end - _stack_size;
+
+/**
+ * Size of the `.static_critical` section at the bottom of the main SRAM (in
+ * bytes).
+ */
+_static_critical_size = 8048;
+
+/**
+ * `.chip_info` at the top of ROM.
+ */
+_chip_info_size = 128;
+_chip_info_end   = ORIGIN(rom) + LENGTH(rom);
+_chip_info_start = _chip_info_end - _chip_info_size;
+
+/**
+ * Size of the initial ePMP RX region at reset (in bytes). This region must be
+ * large enough to cover the .crt section.
+ *
+ * NOTE: This value must match the size of the RX region in
+ * hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh.
+ */
+_epmp_reset_rx_size = 1024;

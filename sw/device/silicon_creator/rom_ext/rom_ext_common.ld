@@ -16,11 +16,6 @@ OUTPUT_ARCH(riscv)
  */
 __DYNAMIC = 0;
 
-/* Reserving space at the top of the RAM for the stack. */
-_stack_size = 0x2000;
-_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
-_stack_start = _stack_end - _stack_size;
-
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */

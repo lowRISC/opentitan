@@ -16,7 +16,6 @@ OUTPUT_ARCH(riscv);
 __DYNAMIC = 0;
 
 INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
-INCLUDE sw/device/silicon_creator/lib/base/static_critical_size.ld
 
 _stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
 
