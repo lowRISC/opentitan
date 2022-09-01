@@ -45,11 +45,6 @@ dual_cc_library(
 opentitan_functest(
     name = "boot_data_functest",
     srcs = ["boot_data_functest.c"],
-    targets = [
-        "cw310_test_rom",
-        "verilator",
-        "dv",
-    ],
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["flaky"],
