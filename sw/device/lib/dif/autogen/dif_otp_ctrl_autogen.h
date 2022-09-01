@@ -54,13 +54,13 @@ dif_result_t dif_otp_ctrl_init(mmio_region_t base_addr,
  */
 typedef enum dif_otp_ctrl_alert {
   /**
-   * This alert triggers if hardware detects an ECC or digest error in the
-   * buffered partitions.
+   * This alert triggers if hardware detects an uncorrectable error during an
+   * OTP transaction, for example an uncorrectable ECC error in the OTP array.
    */
   kDifOtpCtrlAlertFatalMacroError = 0,
   /**
-   * This alert triggers if the digest over the buffered registers does not
-   * match with the digest stored in OTP.
+   * This alert triggers if any of the background checks fails. This includes
+   * the digest checks and concurrent ECC checks in the buffer registers.
    */
   kDifOtpCtrlAlertFatalCheckError = 1,
   /**

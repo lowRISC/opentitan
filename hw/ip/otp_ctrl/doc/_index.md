@@ -704,8 +704,12 @@ Downstream logic must be able to sink the response in any case.
 The response optionally carries read data, depending on whether the operation that took place was a read or not.
 Also, an error signal returns a non-zero error code in case an error occurred while carrying out the OTP command.
 
+The signals pertaining to the generalized open-source interface are listed below.
+
 Signal                  | Direction        | Type                        | Description
 ------------------------|------------------|-----------------------------|---------------
+`fatal_alert_o`         | `output`         | `logic`                     | Fatal alert output from the primitive. This is connected to a separate alert channel in the instantiating IP. The instantiating IP latches the alert indication and continuously outputs alert events until reset.
+`recov_alert_o`         | `output`         | `logic`                     | Recoverable alert output from the primitive. This is connected to a separate alert channel in the instantiating IP. Should only be pulsed high for each alert occurrence. The instantiating IP then sends out a single alert event for each pulse.
 `ready_o`               | `output`         | `logic`                     | Ready signal for the command handshake.
 `valid_i`               | `input`          | `logic`                     | Valid signal for the command handshake.
 `size_i`                | `input`          | `logic [SizeWidth-1:0]`     | Number of native OTP words to transfer, minus one: `2'b00 = 1 native word` ... `2'b11 = 4 native words`.
