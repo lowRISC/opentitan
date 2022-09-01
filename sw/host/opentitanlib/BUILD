@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen_library")
 load("//rules:ujson.bzl", "ujson_rust")
 
 package(default_visibility = ["//visibility:public"])
@@ -16,6 +17,21 @@ ujson_rust(
 filegroup(
     name = "config",
     srcs = glob(["src/app/config/*.json"]),
+)
+
+rust_bindgen_library(
+    name = "bindgen_alert",
+    bindgen_flags = [
+        "--allowlist-type=AlertClass",
+        "--allowlist-type=AlertEnable",
+        "--allowlist-type=AlertEscalate",
+    ],
+    cc_lib = "//sw/device/silicon_creator/lib/drivers:alert",
+    header = "//sw/device/silicon_creator/lib/drivers:alert.h",
+    rustc_flags = [
+        "--allow=non_snake_case",
+        "--allow=non_upper_case_globals",
+    ],
 )
 
 rust_library(
@@ -37,6 +53,8 @@ rust_library(
         "src/bootstrap/mod.rs",
         "src/bootstrap/primitive.rs",
         "src/bootstrap/rescue.rs",
+        "src/chip/alert.rs",
+        "src/chip/mod.rs",
         "src/crypto/mod.rs",
         "src/crypto/rsa.rs",
         "src/crypto/sha256.rs",
@@ -133,6 +151,7 @@ rust_library(
         "e2e_command": "$(location :e2e_command)",
     },
     deps = [
+        ":bindgen_alert",
         "//third_party/rust/crates:anyhow",
         "//third_party/rust/crates:bitflags",
         "//third_party/rust/crates:byteorder",
