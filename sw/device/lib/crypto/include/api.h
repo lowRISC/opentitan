@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_API_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_API_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_API_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_API_H_
 
 /**
  * @brief OS-facing API for the OpenTitan cryptography library.
@@ -1842,4 +1842,4 @@ crypto_status_t otcrypto_unblinded_to_blinded_key(
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_API_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_API_H_

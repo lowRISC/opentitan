@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_OTBN_UTIL_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_OTBN_UTIL_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_OTBN_UTIL_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_OTBN_UTIL_H_
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -244,4 +244,4 @@ otbn_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len,
 }
 #endif
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_OTBN_UTIL_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_OTBN_UTIL_H_

@@ -13,8 +13,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//sw/device/lib/base:hardened",
-        "//sw/device/lib/crypto:otbn_util",
         "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:otbn_util",
         "//sw/otbn/crypto:p256_ecdsa",
     ],
 )
