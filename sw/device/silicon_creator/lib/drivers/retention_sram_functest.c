@@ -14,12 +14,19 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
+// Variables of type `retention_sram_t` are static to reduce stack usage.
+retention_sram_t ones;
+retention_sram_t zeros;
+retention_sram_t result;
+retention_sram_t ret;
+uint64_t raw[sizeof(retention_sram_t) / sizeof(uint64_t)];
+
 static rom_error_t retention_sram_clear_test(void) {
+  volatile retention_sram_t *ret = retention_sram_get();
+
   // Set every bit in the retention SRAM to one.
   // Note: memset cannot be used directly because it discards the volatile
   // qualifier.
-  volatile retention_sram_t *ret = retention_sram_get();
-  retention_sram_t ones;
   memset(&ones, 0xff, sizeof(retention_sram_t));
   *ret = ones;
 
@@ -29,9 +36,8 @@ static rom_error_t retention_sram_clear_test(void) {
   // Check that the retention SRAM was fully cleared.
   // Note: memcmp cannot be used directly because it discards the volatile
   // qualifier.
-  retention_sram_t zeros;
   memset(&zeros, 0, sizeof(retention_sram_t));
-  retention_sram_t result = *ret;
+  result = *ret;
   if (memcmp(&zeros, &result, sizeof(retention_sram_t)) != 0) {
     LOG_ERROR("Retention SRAM not cleared.");
     return kErrorUnknown;  // Unreachable.
@@ -53,8 +59,7 @@ rom_error_t retention_sram_scramble_test(void) {
   // Retention SRAM accesses will stall until scrambling is complete.
   LOG_INFO(
       "Checking retention SRAM is scrambled (will stall for a short time).");
-  uint64_t raw[sizeof(retention_sram_t) / sizeof(uint64_t)];
-  retention_sram_t ret = *retention_sram_get();
+  ret = *retention_sram_get();
   memcpy(raw, &ret, sizeof(retention_sram_t));
 
   // Check that every entry in the retention SRAM has changed.
