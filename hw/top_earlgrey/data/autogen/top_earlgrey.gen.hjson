@@ -4210,6 +4210,7 @@
       [
         {
           name: ast_alert
+          desc: alert requests/acknowledgements from/to `analog sensor top`
           struct: ast_alert
           package: ast_pkg
           type: req_rsp
@@ -4224,6 +4225,7 @@
         }
         {
           name: ast_status
+          desc: " Incoming `analog sensor top` status."
           struct: ast_status
           package: ast_pkg
           type: uni
@@ -4238,6 +4240,7 @@
         }
         {
           name: ast_init_done
+          desc: Initialization done indication coming from `analog sensor top`
           struct: logic
           type: uni
           act: rcv
@@ -4252,6 +4255,7 @@
         }
         {
           name: ast2pinmux
+          desc: Outgoing `analog sensor top` DFT signals that are being forwarded to the pinmux via ast_debug_out.
           struct: logic
           type: uni
           act: rcv
@@ -4266,6 +4270,7 @@
         }
         {
           name: wkup_req
+          desc: Raised if an alert event is seen during low power
           struct: logic
           type: uni
           act: req
@@ -16769,6 +16774,7 @@
       }
       {
         name: ast_alert
+        desc: alert requests/acknowledgements from/to `analog sensor top`
         struct: ast_alert
         package: ast_pkg
         type: req_rsp
@@ -16783,6 +16789,7 @@
       }
       {
         name: ast_status
+        desc: " Incoming `analog sensor top` status."
         struct: ast_status
         package: ast_pkg
         type: uni
@@ -16797,6 +16804,7 @@
       }
       {
         name: ast_init_done
+        desc: Initialization done indication coming from `analog sensor top`
         struct: logic
         type: uni
         act: rcv
@@ -16811,6 +16819,7 @@
       }
       {
         name: ast2pinmux
+        desc: Outgoing `analog sensor top` DFT signals that are being forwarded to the pinmux via ast_debug_out.
         struct: logic
         type: uni
         act: rcv
@@ -16825,6 +16834,7 @@
       }
       {
         name: wkup_req
+        desc: Raised if an alert event is seen during low power
         struct: logic
         type: uni
         act: req
