@@ -24,10 +24,61 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  bit [NUM_GPIOS-1:0] gpios_mask = NUM_GPIOS'(1); // GPIO0 drive
+  localparam int unsigned NumMioPads = 49;
+  localparam string MioPads [NumMioPads] = '{
+    "tb.dut.IOA0",  // MIO0
+    "tb.dut.IOA1",  // MIO
+    "tb.dut.IOA2",  // MIO
+    "tb.dut.IOA3",  // MIO
+    "tb.dut.IOA4",  // MIO
+    "tb.dut.IOA5",  // MIO
+    "tb.dut.IOA6",  // MIO
+    "tb.dut.IOA7",  // MIO
+    "tb.dut.IOA8",  // MIO
+    "tb.dut.IOB0",  // MIO
+    "tb.dut.IOB1",  // MIO
+    "tb.dut.IOB2",  // MIO
+    "tb.dut.IOB3",  // MIO
+    "tb.dut.IOB4",  // MIO
+    "tb.dut.IOB5",  // MIO
+    "tb.dut.IOB6",  // MIO
+    "tb.dut.IOB7",  // MIO
+    "tb.dut.IOB8",  // MIO
+    "tb.dut.IOB9",  // MIO
+    "tb.dut.IOB10", // MIO
+    "tb.dut.IOB11", // MIO
+    "tb.dut.IOB12", // MIO
+    "tb.dut.IOC0",  // MIO
+    "tb.dut.IOC1",  // MIO
+    "tb.dut.IOC2",  // MIO
+    "tb.dut.IOC3",  // MIO
+    "tb.dut.IOC4",  // MIO
+    "tb.dut.IOC5",  // MIO
+    "tb.dut.IOC6",  // MIO
+    "tb.dut.IOC7",  // MIO
+    "tb.dut.IOC8",  // MIO
+    "tb.dut.IOC9",  // MIO
+    "tb.dut.IOC10", // MIO
+    "tb.dut.IOC11", // MIO
+    "tb.dut.IOC12", // MIO
+    "tb.dut.IOR0",  // MIO
+    "tb.dut.IOR1",  // MIO
+    "tb.dut.IOR2",  // MIO
+    "tb.dut.IOR3",  // MIO
+    "tb.dut.IOR4",  // MIO
+    "tb.dut.IOR5",  // MIO
+    "tb.dut.IOR6",  // MIO
+    "tb.dut.IOR7",  // MIO
+    "tb.dut.IOR8",  // MIO
+    "tb.dut.IOR9",  // MIO
+    "tb.dut.IOR10", // MIO
+    "tb.dut.IOR11", // MIO
+    "tb.dut.IOR12", // MIO
+    "tb.dut.IOR13"  // MIO48
+  };
 
   // The detector module to be used (total 8)
-  rand bit [7:0] detector_idx[1];
+  rand bit [7:0] detector_idx;
 
   // Random delay (in ns)
   // - Fast FSM to enter Low power : 18.8 us
@@ -36,7 +87,7 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
   // delay should cover the edge case
   rand int unsigned exit_delay;
 
-  constraint pinmux_detector_c {detector_idx[0] inside {[8'h0 : 8'h7]};}
+  constraint pinmux_detector_c {detector_idx inside {[8'h0 : 8'h7]};}
 
   constraint exit_delay_range_c {
     // Distribution
@@ -48,21 +99,26 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
   }
 
   virtual task cpu_init();
+    bit [7:0] byte_arr [];
+
     super.cpu_init();
 
-    sw_symbol_backdoor_overwrite("kWakeupSel", detector_idx);
+    byte_arr = '{detector_idx};
+    sw_symbol_backdoor_overwrite("kWakeupSel", byte_arr);
+
   endtask : cpu_init
 
   virtual task body();
     super.body();
 
-    cfg.gpio_vif.drive_en(gpios_mask);
-    cfg.gpio_vif.drive(~gpios_mask); // 0
-
     // Wait until we reach the SW test state.
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "pinmux_init end")
+
+    // TODO: Get the PAD selection result from SW
+    //       1. MIO / DIO
+    //       2. MIO PAD SEL OR DIO PAD SEL
 
     // Wait until chip enters low power (sleep or deep sleep).
     `DV_WAIT(
@@ -77,7 +133,7 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
 
     // TODO: Make it randomize
     // currently driving gpio0 only
-    cfg.gpio_vif.drive_pin(0, 1'b 1);
+    `DV_CHECK(uvm_hdl_force(MioPads[0], 1'b1));
 
   endtask : body
 
