@@ -314,35 +314,6 @@ Parameter                   | Default (Max) | Top Earlgrey | Description
 
 {{< incGenFromIpDesc "../data/otp_ctrl.hjson" "hwcfg" >}}
 
-The table below lists other OTP controller signals.
-
-Signal                       | Direction        | Type                        | Description
------------------------------|------------------|-----------------------------|---------------
-`otp_ast_pwr_seq_o`          | `output`         | `otp_ast_req_t `            | Power sequencing signals going to AST (VDD domain).
-`otp_ast_pwr_seq_h_i`        | `input`          | `otp_ast_rsp_t `            | Power sequencing signals coming from AST (VCC domain).
-`otp_edn_o`                  | `output`         | `otp_edn_req_t`             | Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
-`otp_edn_i`                  | `input`          | `otp_edn_rsp_t`             | Entropy acknowledgment to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
-`pwr_otp_i`                  | `input`          | `pwrmgr::pwr_otp_req_t`     | Initialization request coming from power manager.
-`pwr_otp_o`                  | `output`         | `pwrmgr::pwr_otp_rsp_t`     | Initialization response and programming idle state going to power manager.
-`lc_otp_vendor_test_i`       | `input`          | `lc_otp_vendor_test_req_t`  | Vendor test control signals coming from the life cycle TAP.
-`lc_otp_vendor_test_o`       | `output`         | `lc_otp_vendor_test_rsp_t`  | Vendor test status signals going to the life cycle TAP.
-`lc_otp_program_i`           | `input`          | `lc_otp_program_req_t`      | Life cycle state transition request.
-`lc_otp_program_o`           | `output`         | `lc_otp_program_rsp_t`      | Life cycle state transition response.
-`lc_escalate_en_i`           | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle escalation enable coming from life cycle controller. This signal moves all FSMs within OTP into the error state.
-`lc_check_byp_en_i`          | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Life cycle partition check bypass signal. This signal causes the life cycle partition to bypass consistency checks during life cycle state transitions in order to prevent spurious consistency check failures.
-`lc_creator_seed_sw_rw_en_i` | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Provision enable qualifier coming from life cycle controller. This signal enables SW read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
-`lc_seed_hw_rd_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Seed read enable coming from life cycle controller. This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
-`lc_dft_en_i`                | `input`          | `lc_ctrl_pkg::lc_tx_t`      | Test enable qualifier coming from from life cycle controller. This signals enables the TL-UL access port to the proprietary OTP IP.
-`otp_lc_data_o`              | `output`         | `otp_lc_data_t`             | Life cycle state output holding the current life cycle state, the value of the transition counter and the tokens needed for life cycle transitions.
-`otp_keymgr_key_o`           | `output`         | `keymgr_key_t`              | Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
-`flash_otp_key_i`            | `input`          | `flash_otp_key_req_t`       | Key derivation request for FLASH scrambling.
-`flash_otp_key_o`            | `output`         | `flash_otp_key_rsp_t`       | Key output holding static scrambling keys derived from FLASH_DATA_KEY_SEED and FLASH_ADDR_KEY_SEED.
-`sram_otp_key_i`             | `input`          | `sram_otp_key_req_t[NumSramKeyReqSlots-1:0]` | Array with key derivation requests from SRAM scrambling devices.
-`sram_otp_key_o`             | `output`         | `sram_otp_key_rsp_t[NumSramKeyReqSlots-1:0]` | Array with key outputs holding ephemeral scrambling keys derived from SRAM_DATA_KEY_SEED.
-`otbn_otp_key_i`             | `input`          | `otbn_otp_key_req_t`                         | Key derivation requests from OTBN DMEM scrambling device.
-`otbn_otp_key_o`             | `output`         | `otbn_otp_key_rsp_t`                         | Key output holding ephemeral scrambling key derived from SRAM_DATA_KEY_SEED.
-`otp_hw_cfg_o`               | `output`         | `otp_hw_cfg_t`                               | Output of the HW_CFG partition.
-
 The OTP controller contains various interfaces that connect to other comportable IPs within OpenTitan, and these are briefly explained further below.
 
 #### EDN Interface

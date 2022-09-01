@@ -198,6 +198,7 @@
       act:     "req"
       default: "'0"
       package: "otp_ctrl_pkg"
+      desc:    "Power sequencing signals to AST (VDD domain)."
     }
     // Power sequencing signals from AST
     { struct:  "otp_ast_rsp"
@@ -206,6 +207,7 @@
       act:     "rcv"
       default: "'0"
       package: "otp_ctrl_pkg"
+      desc:    "Power sequencing signals coming from AST (VCC domain)."
     }
     // EDN interface
     { struct:  "edn"
@@ -213,6 +215,7 @@
       name:    "edn"
       act:     "req"
       package: "edn_pkg"
+      desc:    "Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation."
     }
     // Power manager init command
     { struct:  "pwr_otp"
@@ -221,6 +224,7 @@
       act:     "rsp"
       default: "'0"
       package: "pwrmgr_pkg"
+      desc:    "Initialization request/acknowledge from/to power manager."
     }
     // Macro-specific test signals to/from LC TAP
     { struct:  "lc_otp_vendor_test"
@@ -229,6 +233,7 @@
       act:     "rsp"
       default: "'0"
       package: "otp_ctrl_pkg"
+      desc:    "Vendor test control signals from/to the life cycle TAP."
     }
     // LC transition command
     { struct:  "lc_otp_program"
@@ -237,6 +242,7 @@
       act:     "rsp"
       default: "'0"
       package: "otp_ctrl_pkg"
+      desc:    "Life cycle state transition interface."
     }
     // Broadcast to LC
     { struct:  "otp_lc_data"
@@ -245,6 +251,10 @@
       act:     "req"
       default: "'0"
       package: "otp_ctrl_pkg"
+      desc:    '''
+               Life cycle state output holding the current life cycle state,
+               the value of the transition counter and the tokens needed for life cycle transitions.
+               '''
     }
     // Broadcast from LC
     { struct:  "lc_tx"
@@ -253,6 +263,10 @@
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
+      desc:    '''
+               Life cycle escalation enable coming from life cycle controller.
+               This signal moves all FSMs within OTP into the error state.
+               '''
     }
     { struct:  "lc_tx"
       type:    "uni"
@@ -260,6 +274,10 @@
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
+      desc:    '''
+               Provision enable qualifier coming from life cycle controller.
+               This signal enables SW read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+               '''
     }
     { struct:  "lc_tx"
       type:    "uni"
@@ -267,6 +285,10 @@
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
+      desc:    '''
+               Seed read enable coming from life cycle controller.
+               This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+               '''
     }
     { struct:  "lc_tx"
       type:    "uni"
@@ -274,6 +296,10 @@
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
+      desc:    '''
+               Test enable qualifier coming from from life cycle controller.
+               This signals enables the TL-UL access port to the proprietary OTP IP.
+               '''
     }
     { struct:  "lc_tx"
       type:    "uni"
@@ -281,6 +307,10 @@
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
+      desc:    '''
+               Life cycle partition check bypass signal.
+               This signal causes the life cycle partition to bypass consistency checks during life cycle state transitions in order to prevent spurious consistency check failures.
+               '''
     }
     // Broadcast to Key Manager
     { struct:  "otp_keymgr_key"
@@ -289,6 +319,7 @@
       act:     "req"
       default: "'0"
       package: "otp_ctrl_pkg"
+      desc:    "Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1."
     }
     // Broadcast to Flash Controller
     { struct:  "flash_otp_key"
@@ -297,6 +328,7 @@
       act:     "rsp"
       default: "'0"
       package: "otp_ctrl_pkg"
+      desc:    "Key derivation interface for FLASH scrambling."
     }
     // Key request from SRAM scramblers
     { struct:  "sram_otp_key"
@@ -308,6 +340,7 @@
       act:     "rsp"
       default: "'0"
       package: "otp_ctrl_pkg"
+      desc:    "Array with key derivation interfaces for SRAM scrambling devices."
     }
     // Key request from OTBN RAM Scrambler
     { struct:  "otbn_otp_key"
@@ -316,6 +349,7 @@
       act:     "rsp"
       default: "'0"
       package: "otp_ctrl_pkg"
+      desc:    "Key derivation interface for OTBN scrambling devices."
     }
     // Hardware config partition
     { struct:  "otp_hw_cfg"
@@ -324,6 +358,7 @@
       act:     "req"
       default: "'0"
       package: "otp_ctrl_part_pkg"
+      desc:    "Output of the HW_CFG partition."
     }
     // AST observability control
     { struct: "ast_obs_ctrl",
@@ -331,6 +366,7 @@
       name: "obs_ctrl",
       act: "rcv",
       package: "ast_pkg"
+      desc:    "AST observability control signals."
     }
     // prim otp observe bus
     { struct: "logic",
@@ -339,6 +375,7 @@
       act: "req",
       width: "8",
       package: ""
+      desc:    "AST observability bus."
     }
   ] // inter_signal_list
 

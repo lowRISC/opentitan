@@ -1255,6 +1255,7 @@
         }
         {
           name: otp_ast_pwr_seq
+          desc: Power sequencing signals to AST (VDD domain).
           struct: otp_ast_req
           package: otp_ctrl_pkg
           type: uni
@@ -1269,6 +1270,7 @@
         }
         {
           name: otp_ast_pwr_seq_h
+          desc: Power sequencing signals coming from AST (VCC domain).
           struct: otp_ast_rsp
           package: otp_ctrl_pkg
           type: uni
@@ -1283,6 +1285,7 @@
         }
         {
           name: edn
+          desc: Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
           struct: edn
           package: edn_pkg
           type: req_rsp
@@ -1295,6 +1298,7 @@
         }
         {
           name: pwr_otp
+          desc: Initialization request/acknowledge from/to power manager.
           struct: pwr_otp
           package: pwrmgr_pkg
           type: req_rsp
@@ -1307,6 +1311,7 @@
         }
         {
           name: lc_otp_vendor_test
+          desc: Vendor test control signals from/to the life cycle TAP.
           struct: lc_otp_vendor_test
           package: otp_ctrl_pkg
           type: req_rsp
@@ -1319,6 +1324,7 @@
         }
         {
           name: lc_otp_program
+          desc: Life cycle state transition interface.
           struct: lc_otp_program
           package: otp_ctrl_pkg
           type: req_rsp
@@ -1331,6 +1337,11 @@
         }
         {
           name: otp_lc_data
+          desc:
+            '''
+            Life cycle state output holding the current life cycle state,
+            the value of the transition counter and the tokens needed for life cycle transitions.
+            '''
           struct: otp_lc_data
           package: otp_ctrl_pkg
           type: uni
@@ -1345,6 +1356,11 @@
         }
         {
           name: lc_escalate_en
+          desc:
+            '''
+            Life cycle escalation enable coming from life cycle controller.
+            This signal moves all FSMs within OTP into the error state.
+            '''
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -1357,6 +1373,11 @@
         }
         {
           name: lc_creator_seed_sw_rw_en
+          desc:
+            '''
+            Provision enable qualifier coming from life cycle controller.
+            This signal enables SW read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+            '''
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -1369,6 +1390,11 @@
         }
         {
           name: lc_seed_hw_rd_en
+          desc:
+            '''
+            Seed read enable coming from life cycle controller.
+            This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+            '''
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -1381,6 +1407,11 @@
         }
         {
           name: lc_dft_en
+          desc:
+            '''
+            Test enable qualifier coming from from life cycle controller.
+            This signals enables the TL-UL access port to the proprietary OTP IP.
+            '''
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -1393,6 +1424,11 @@
         }
         {
           name: lc_check_byp_en
+          desc:
+            '''
+            Life cycle partition check bypass signal.
+            This signal causes the life cycle partition to bypass consistency checks during life cycle state transitions in order to prevent spurious consistency check failures.
+            '''
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -1405,6 +1441,7 @@
         }
         {
           name: otp_keymgr_key
+          desc: Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
           struct: otp_keymgr_key
           package: otp_ctrl_pkg
           type: uni
@@ -1419,6 +1456,7 @@
         }
         {
           name: flash_otp_key
+          desc: Key derivation interface for FLASH scrambling.
           struct: flash_otp_key
           package: otp_ctrl_pkg
           type: req_rsp
@@ -1431,6 +1469,7 @@
         }
         {
           name: sram_otp_key
+          desc: Array with key derivation interfaces for SRAM scrambling devices.
           struct: sram_otp_key
           package: otp_ctrl_pkg
           type: req_rsp
@@ -1445,6 +1484,7 @@
         }
         {
           name: otbn_otp_key
+          desc: Key derivation interface for OTBN scrambling devices.
           struct: otbn_otp_key
           package: otp_ctrl_pkg
           type: req_rsp
@@ -1458,6 +1498,7 @@
         }
         {
           name: otp_hw_cfg
+          desc: Output of the HW_CFG partition.
           struct: otp_hw_cfg
           package: otp_ctrl_part_pkg
           type: uni
@@ -1470,6 +1511,7 @@
         }
         {
           name: obs_ctrl
+          desc: AST observability control signals.
           struct: ast_obs_ctrl
           package: ast_pkg
           type: uni
@@ -1482,6 +1524,7 @@
         }
         {
           name: otp_obs
+          desc: AST observability bus.
           struct: logic
           type: uni
           act: req
@@ -14646,6 +14689,7 @@
       }
       {
         name: otp_ast_pwr_seq
+        desc: Power sequencing signals to AST (VDD domain).
         struct: otp_ast_req
         package: otp_ctrl_pkg
         type: uni
@@ -14660,6 +14704,7 @@
       }
       {
         name: otp_ast_pwr_seq_h
+        desc: Power sequencing signals coming from AST (VCC domain).
         struct: otp_ast_rsp
         package: otp_ctrl_pkg
         type: uni
@@ -14674,6 +14719,7 @@
       }
       {
         name: edn
+        desc: Entropy request to the entropy distribution network for LFSR reseeding and ephemeral key derivation.
         struct: edn
         package: edn_pkg
         type: req_rsp
@@ -14686,6 +14732,7 @@
       }
       {
         name: pwr_otp
+        desc: Initialization request/acknowledge from/to power manager.
         struct: pwr_otp
         package: pwrmgr_pkg
         type: req_rsp
@@ -14698,6 +14745,7 @@
       }
       {
         name: lc_otp_vendor_test
+        desc: Vendor test control signals from/to the life cycle TAP.
         struct: lc_otp_vendor_test
         package: otp_ctrl_pkg
         type: req_rsp
@@ -14710,6 +14758,7 @@
       }
       {
         name: lc_otp_program
+        desc: Life cycle state transition interface.
         struct: lc_otp_program
         package: otp_ctrl_pkg
         type: req_rsp
@@ -14722,6 +14771,11 @@
       }
       {
         name: otp_lc_data
+        desc:
+          '''
+          Life cycle state output holding the current life cycle state,
+          the value of the transition counter and the tokens needed for life cycle transitions.
+          '''
         struct: otp_lc_data
         package: otp_ctrl_pkg
         type: uni
@@ -14736,6 +14790,11 @@
       }
       {
         name: lc_escalate_en
+        desc:
+          '''
+          Life cycle escalation enable coming from life cycle controller.
+          This signal moves all FSMs within OTP into the error state.
+          '''
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -14748,6 +14807,11 @@
       }
       {
         name: lc_creator_seed_sw_rw_en
+        desc:
+          '''
+          Provision enable qualifier coming from life cycle controller.
+          This signal enables SW read / write access to the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+          '''
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -14760,6 +14824,11 @@
       }
       {
         name: lc_seed_hw_rd_en
+        desc:
+          '''
+          Seed read enable coming from life cycle controller.
+          This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+          '''
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -14772,6 +14841,11 @@
       }
       {
         name: lc_dft_en
+        desc:
+          '''
+          Test enable qualifier coming from from life cycle controller.
+          This signals enables the TL-UL access port to the proprietary OTP IP.
+          '''
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -14784,6 +14858,11 @@
       }
       {
         name: lc_check_byp_en
+        desc:
+          '''
+          Life cycle partition check bypass signal.
+          This signal causes the life cycle partition to bypass consistency checks during life cycle state transitions in order to prevent spurious consistency check failures.
+          '''
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -14796,6 +14875,7 @@
       }
       {
         name: otp_keymgr_key
+        desc: Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
         struct: otp_keymgr_key
         package: otp_ctrl_pkg
         type: uni
@@ -14810,6 +14890,7 @@
       }
       {
         name: flash_otp_key
+        desc: Key derivation interface for FLASH scrambling.
         struct: flash_otp_key
         package: otp_ctrl_pkg
         type: req_rsp
@@ -14822,6 +14903,7 @@
       }
       {
         name: sram_otp_key
+        desc: Array with key derivation interfaces for SRAM scrambling devices.
         struct: sram_otp_key
         package: otp_ctrl_pkg
         type: req_rsp
@@ -14836,6 +14918,7 @@
       }
       {
         name: otbn_otp_key
+        desc: Key derivation interface for OTBN scrambling devices.
         struct: otbn_otp_key
         package: otp_ctrl_pkg
         type: req_rsp
@@ -14849,6 +14932,7 @@
       }
       {
         name: otp_hw_cfg
+        desc: Output of the HW_CFG partition.
         struct: otp_hw_cfg
         package: otp_ctrl_part_pkg
         type: uni
@@ -14861,6 +14945,7 @@
       }
       {
         name: obs_ctrl
+        desc: AST observability control signals.
         struct: ast_obs_ctrl
         package: ast_pkg
         type: uni
@@ -14873,6 +14958,7 @@
       }
       {
         name: otp_obs
+        desc: AST observability bus.
         struct: logic
         type: uni
         act: req
