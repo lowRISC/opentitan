@@ -53,9 +53,19 @@ module prim_generic_flash_bank #(
     int EraseLatency  = 200;
 
     initial begin
+      bit flash_rand_delay_en;
+      void'($value$plusargs("flash_rand_delay_en=%0b", flash_rand_delay_en));
+
+      if (flash_rand_delay_en) begin
+        ReadLatency  = $urandom_range(1, 5);
+        ProgLatency  = $urandom_range(25, 50);
+        EraseLatency = $urandom_range(125, 200);
+      end
       void'($value$plusargs("flash_read_latency=%0d", ReadLatency));
       void'($value$plusargs("flash_program_latency=%0d", ProgLatency));
       void'($value$plusargs("flash_erase_latency=%0d", EraseLatency));
+      $display("%m: ReadLatency:%0d ProgLatency:%0d EraseLatency:%0d",
+               ReadLatency, ProgLatency, EraseLatency);
     end
   `endif
 
