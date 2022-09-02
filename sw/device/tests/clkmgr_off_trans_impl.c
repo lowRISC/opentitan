@@ -185,6 +185,9 @@ bool execute_off_trans_test(dif_clkmgr_hintable_clock_t clock) {
     LOG_INFO("DATA ADDRESS = 0x%x", cpu_dump[2]);
     LOG_INFO("EXC ADDRESS  = 0x%x", cpu_dump[3]);
     */
+
+    // Turn off the AON timer hardware completely before exiting.
+    aon_timer_testutils_shutdown(&aon_timer);
     return true;
   } else {
     dif_rstmgr_reset_info_bitfield_t reset_info;

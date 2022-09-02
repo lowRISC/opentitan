@@ -237,5 +237,7 @@ bool test_main(void) {
   execute_test(&aon_timer, irq_time,
                /*expected_irq=*/kDifAonTimerIrqWdogTimerBark);
 
+  // Turn off the AON timer hardware completely before exiting.
+  aon_timer_testutils_shutdown(&aon_timer);
   return true;
 }

@@ -115,5 +115,7 @@ bool test_main(void) {
     LOG_FATAL("Unexepected reset type detected.");
   }
 
+  // Turn off the AON timer hardware completely before exiting.
+  aon_timer_testutils_shutdown(&aon_timer);
   return true;
 }

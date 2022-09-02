@@ -243,6 +243,8 @@ bool test_main(void) {
       LOG_ERROR("This is unreachable since a reset should have been triggered");
       return false;
     } else {
+      // Turn off the AON timer hardware completely before exiting.
+      aon_timer_testutils_shutdown(&aon_timer);
       return true;
     }
   } else {

@@ -152,6 +152,8 @@ bool test_main(void) {
     LOG_INFO("Test round %d", event_idx);
   } else {
     LOG_INFO("Test finish");
+    // Turn off the AON timer hardware completely before exiting.
+    aon_timer_testutils_shutdown(&aon_timer);
     return true;
   }
 

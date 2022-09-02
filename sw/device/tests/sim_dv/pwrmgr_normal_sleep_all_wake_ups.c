@@ -351,6 +351,9 @@ bool test_main(void) {
       cleanup(i);
       LOG_INFO("clean up done source %d", i);
     }
+
+    // Turn off the AON timer hardware completely before exiting.
+    aon_timer_testutils_shutdown(&aon_timer);
     return true;
   }
 
