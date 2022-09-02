@@ -535,5 +535,7 @@ bool test_main(void) {
       LOG_INFO("Booting for undefined case");
   }
 
+  // Turn off the AON timer hardware completely before exiting.
+  aon_timer_testutils_shutdown(&aon_timer);
   return true;
 }

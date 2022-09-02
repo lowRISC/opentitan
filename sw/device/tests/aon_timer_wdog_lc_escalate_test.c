@@ -252,5 +252,7 @@ bool test_main(void) {
     return false;
   }
 
+  // Turn off the AON timer hardware completely before exiting.
+  aon_timer_testutils_shutdown(&aon_timer);
   return true;
 }

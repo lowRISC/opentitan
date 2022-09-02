@@ -195,7 +195,9 @@ bool test_main(void) {
     LOG_INFO("Booting for the third time due to wdog bite reset");
     LOG_INFO("Last Booting");
   }
-  LOG_INFO("Test finish");
 
+  // Turn off the AON timer hardware completely before exiting.
+  aon_timer_testutils_shutdown(&aon_timer);
+  LOG_INFO("Test finish");
   return true;
 }

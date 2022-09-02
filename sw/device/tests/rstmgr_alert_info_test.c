@@ -879,6 +879,9 @@ bool test_main(void) {
     CHECK(false, "Should have reset before this line");
   } else if (rst_info == kDifRstmgrResetInfoEscalation && event_idx == 4) {
     collect_alert_dump_and_compare(kRound4);
+
+    // Turn off the AON timer hardware completely before exiting.
+    aon_timer_testutils_shutdown(&aon_timer);
     return true;
   } else {
     LOG_FATAL("unexpected reset info %d", rst_info);

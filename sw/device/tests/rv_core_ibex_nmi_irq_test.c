@@ -294,5 +294,7 @@ bool test_main(void) {
   // the reset reason is still POR.
   pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0);
 
+  // Turn off the AON timer hardware completely before exiting.
+  aon_timer_testutils_shutdown(&aon_timer);
   return true;
 }

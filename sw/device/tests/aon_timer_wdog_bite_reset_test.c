@@ -132,5 +132,7 @@ bool test_main(void) {
     LOG_INFO("Booting for the third time due to wdog bite reset during sleep");
   }
 
+  // Turn off the AON timer hardware completely before exiting.
+  aon_timer_testutils_shutdown(&aon_timer);
   return true;
 }

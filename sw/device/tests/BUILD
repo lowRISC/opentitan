@@ -696,6 +696,7 @@ opentitan_functest(
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
