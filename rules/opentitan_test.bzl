@@ -187,7 +187,7 @@ def cw310_params(
         bitstream = "@//hw/bitstream:test_rom",
         rom_kind = None,
         # None
-        timeout = "short",
+        timeout = "moderate",
         **kwargs):
     """A macro to create CW310 parameters for OpenTitan functional tests.
 
