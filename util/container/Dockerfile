@@ -18,7 +18,7 @@ ARG BAZELISK_VERSION=v1.11.0
 ARG GCC_VERSION=9
 
 # Main container image.
-FROM ubuntu:18.04 AS opentitan
+FROM ubuntu:20.04 AS opentitan
 ARG VERILATOR_VERSION
 ARG OPENOCD_VERSION
 ARG VERIBLE_VERSION
@@ -36,7 +36,7 @@ RUN ln -sf /bin/bash /bin/sh
 
 # Add OBS repository to apt sources.
 RUN OBS_URL="https://download.opensuse.org/repositories"; \
-    OBS_PATH="/home:/phiwag:/edatools/xUbuntu_18.04"; \
+    OBS_PATH="/home:/phiwag:/edatools/xUbuntu_20.04"; \
     REPO_URL="${OBS_URL}${OBS_PATH}"; \
     \
     EDATOOLS_REPO_KEY="${REPO_URL}/Release.key"; \
@@ -63,6 +63,11 @@ RUN OBS_URL="https://download.opensuse.org/repositories"; \
 # - minicom and screen are useful to see UART communication.
 # - dc and time are requirements of Synopsys VCS.
 # - software-properties-common is required to be able to install newer gcc versions.
+
+# Necessary to avoid user interaction with tzdata during install
+ARG DEBIAN_FRONTEND=noninteractive
+ENV TZ=UTC
+
 COPY apt-requirements.txt /tmp/apt-requirements.txt
 RUN echo "verilator-${VERILATOR_VERSION}" >>/tmp/apt-requirements.txt \
     && echo "openocd-${OPENOCD_VERSION}"  >>/tmp/apt-requirements.txt \
