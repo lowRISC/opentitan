@@ -25,6 +25,14 @@ using ::mock_mmio::MockDevice;
 using ::testing::_;
 using ::testing::Return;
 
+// If the assert below fails, please look at #14038.
+// A digest is calculated for the configuration of the alerts,
+// so if the number of alerts change, the digest will be changed
+// as well.  This process is not yet automated, so the user
+// must be aware on how to update the value.
+static_assert(ALERT_HANDLER_PARAM_N_ALERTS == 65,
+              "The number of alerts have changed.");
+
 constexpr int kAlerts = ALERT_HANDLER_PARAM_N_ALERTS;
 constexpr int kLocalAlerts = ALERT_HANDLER_PARAM_N_LOC_ALERT;
 constexpr int kClasses = ALERT_HANDLER_PARAM_N_CLASSES;
