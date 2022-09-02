@@ -20,9 +20,6 @@ class i2c_base_seq extends dv_base_seq #(
     data_q.size() inside {[cfg.i2c_host_min_data_rw : cfg.i2c_host_max_data_rw]};
   }
 
-  // return the data in this queue if it's provided, otherwise, random data will be used
-  bit[7:0] byte_data_q[$];
-
   virtual task body();
     if (cfg.if_mode == Device) begin
       // get seq for agent running in Device mode

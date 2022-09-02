@@ -50,11 +50,82 @@ static volatile const uint32_t kI2cClockPeriodNanos = 0;
  */
 static volatile const uint8_t kI2cIdx = 0;
 
+/**
+ * Provides external irq handling for this test.
+ *
+ * This function overrides the default OTTF external ISR.
+ */
+static volatile bool fmt_irq_seen = false;
+static volatile bool rx_irq_seen = false;
+static volatile bool done_irq_seen = false;
+
+void ottf_external_isr(void) {
+  // Find which interrupt fired at PLIC by claiming it.
+  dif_rv_plic_irq_id_t plic_irq_id;
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &plic_irq_id));
+
+  // Check if it is the right peripheral.
+  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
+      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+  CHECK(peripheral == kTopEarlgreyPlicPeripheralI2c0,
+        "Interurpt from unexpected peripheral: %d", peripheral);
+
+  // Correlate the interrupt fired.
+  dif_i2c_irq_t i2c_irq;
+  if (plic_irq_id == kTopEarlgreyPlicIrqIdI2c0FmtWatermark) {
+    fmt_irq_seen = true;
+    i2c_irq = kDifI2cIrqFmtWatermark;
+  } else if (plic_irq_id == kTopEarlgreyPlicIrqIdI2c0RxWatermark) {
+    rx_irq_seen = true;
+    i2c_irq = kDifI2cIrqRxWatermark;
+  } else if (plic_irq_id == kTopEarlgreyPlicIrqIdI2c0TransComplete) {
+    done_irq_seen = true;
+    i2c_irq = kDifI2cIrqTransComplete;
+  } else {
+    LOG_ERROR("Unexpected interrupt (at PLIC): %d", plic_irq_id);
+  }
+
+  // Check if the same interrupt fired at I2C as well.
+  bool is_pending;
+  CHECK_DIF_OK(dif_i2c_irq_is_pending(&i2c, i2c_irq, &is_pending));
+  CHECK(is_pending, "i2c interrupt fired at PLIC did not fire at I2C");
+
+  // Clear the interrupt at I2C.
+  CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c, i2c_irq));
+
+  // Complete the IRQ at PLIC.
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
+                                        plic_irq_id));
+}
+
 bool test_main(void) {
   CHECK_DIF_OK(
       dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c));
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_rv_plic_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      &plic, kTopEarlgreyPlicIrqIdI2c0FmtWatermark, kTopEarlgreyPlicTargetIbex0,
+      kDifToggleEnabled));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      &plic, kTopEarlgreyPlicIrqIdI2c0RxWatermark, kTopEarlgreyPlicTargetIbex0,
+      kDifToggleEnabled));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+      &plic, kTopEarlgreyPlicIrqIdI2c0TransComplete,
+      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      &plic, kTopEarlgreyPlicIrqIdI2c0FmtWatermark, 0x1));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      &plic, kTopEarlgreyPlicIrqIdI2c0RxWatermark, 0x1));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
+      &plic, kTopEarlgreyPlicIrqIdI2c0TransComplete, 0x1));
+
+  // Enable the external IRQ at Ibex.
+  irq_global_ctrl(true);
+  irq_external_ctrl(true);
 
   // Temporary hack that connects i2c to a couple of open drain pins
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
@@ -80,11 +151,20 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_i2c_compute_timing(timing_config, &config));
   CHECK_DIF_OK(dif_i2c_configure(&i2c, config));
   CHECK_DIF_OK(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_i2c_set_watermarks(&i2c, kDifI2cLevel30Byte, kDifI2cLevel4Byte));
+  CHECK_DIF_OK(
+      dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtWatermark, kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqRxWatermark, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqTransComplete,
+                                       kDifToggleEnabled));
 
   // randomize variables
   uint8_t byte_count = rand_testutils_gen32_range(1, 64);
   uint8_t device_addr = rand_testutils_gen32_range(0, 16);
   uint8_t expected_data[byte_count];
+  LOG_INFO("Loopback %d bytes with device %d", byte_count, device_addr);
 
   // controlling the randomization from C side is a bit slow, but might be
   // easier for portability to a different setup later
@@ -93,6 +173,7 @@ bool test_main(void) {
   };
 
   // write expected data to i2c device
+  CHECK(!fmt_irq_seen);
   i2c_testutils_wr(&i2c, device_addr, byte_count, expected_data, false);
 
   uint8_t tx_fifo_lvl, rx_fifo_lvl;
@@ -101,14 +182,18 @@ bool test_main(void) {
   do {
     CHECK_DIF_OK(dif_i2c_get_fifo_levels(&i2c, &tx_fifo_lvl, &rx_fifo_lvl));
   } while (tx_fifo_lvl > 0);
+  CHECK(fmt_irq_seen);
+  fmt_irq_seen = false;
 
   // read data from i2c device
+  CHECK(!rx_irq_seen);
   i2c_testutils_rd(&i2c, device_addr, byte_count);
 
   // make sure all data has been read back
   do {
     CHECK_DIF_OK(dif_i2c_get_fifo_levels(&i2c, &tx_fifo_lvl, &rx_fifo_lvl));
   } while (rx_fifo_lvl < byte_count);
+  CHECK(rx_irq_seen);
 
   uint8_t byte;
 
@@ -118,6 +203,7 @@ bool test_main(void) {
     // LOG_INFO("Expected data 0x%x, read data 0x%x", expected_data[i], byte);
     CHECK(expected_data[i] == byte);
   };
+  CHECK(done_irq_seen);
 
   return true;
 }

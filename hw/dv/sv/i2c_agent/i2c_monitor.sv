@@ -94,7 +94,6 @@ class i2c_monitor extends dv_base_monitor #(
       `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]), UVM_MEDIUM)
     end
     `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
-    cfg.vif.set_address(mon_dut_item.addr);
     cfg.vif.get_bit_data("host", cfg.timing_cfg, rw_req);
     `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", rw_req), UVM_MEDIUM)
     mon_dut_item.bus_op = (rw_req) ? BusOpRead : BusOpWrite;
@@ -157,20 +156,22 @@ class i2c_monitor extends dv_base_monitor #(
         begin : iso_fork_write
           fork
             begin
+               `uvm_info(`gfn, $sformatf("Req analysis port: write thread data"), UVM_MEDIUM)
               // ask driver's response a write request
               mon_dut_item.drv_type = WrData;
+              `downcast(clone_item, mon_dut_item.clone());
+              req_analysis_port.write(clone_item);
               for (int i = 7; i >= 0; i--) begin
                 cfg.vif.get_bit_data("host", cfg.timing_cfg, mon_data[i]);
               end
-              // move port write after data collection to sure that an early
-              // terminate due to "STOP" or "RESTART" does not emit an extra data entry
-              // for loopback
               `uvm_info(`gfn, $sformatf("Monitor collected data %0x", mon_data), UVM_MEDIUM)
-              mon_dut_item.data_q.push_back(mon_data);
-              `downcast(clone_item, mon_dut_item.clone());
-               `uvm_info(`gfn, $sformatf("Req analysis port: write thread data"), UVM_MEDIUM)
-              req_analysis_port.write(clone_item);
               mon_dut_item.num_data++;
+              mon_dut_item.data_q.push_back(mon_data);
+
+              // if loopback is enabled, also store this into the loopback queue
+              if (cfg.en_loopback) cfg.vif.lb_q[mon_dut_item.addr].push_back(mon_data);
+
+              // send device ack to host write
               mon_dut_item.drv_type = DevAck;
               `downcast(clone_item, mon_dut_item.clone());
               `uvm_info(`gfn, $sformatf("Req analysis port: write thread ack"), UVM_MEDIUM)

@@ -9,13 +9,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   rand bit [7:0] rd_data[256]; // max length of read transaction
   byte wr_data;
-  bit [9:0] address = 0;
-
-  // loopback storage queue - the 256 represent different i2c devices.
-  // The loopback option takes every write to a specific device and shoves
-  // it into a queue.  When a read is later performed on that device, the
-  // same data is returned in the same order it was received.
-  bit [7:0] lb_q[256][$];
 
   // get an array with unique read data
   constraint rd_data_c { unique { rd_data }; }
@@ -86,7 +79,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   virtual task drive_device_item(i2c_item req);
     bit [7:0] rd_data_cnt = 8'd0;
     bit [7:0] rdata;
-    address = cfg.vif.cur_address;
+    bit [9:0] address = req.addr;
 
     unique case (req.drv_type)
       DevAck: begin
@@ -106,10 +99,10 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
       RdData: begin
         if (cfg.en_loopback) begin
           `uvm_info(`gfn, $sformatf("Loopback read address %0x", address), UVM_MEDIUM)
-          if (lb_q[address].size == 0) begin
+          if (cfg.vif.lb_q[address].size == 0) begin
             `uvm_fatal(`gfn, $sformatf("Loopback requested on empty queue"))
           end else begin
-             rdata = lb_q[address].pop_front();
+             rdata = cfg.vif.lb_q[address].pop_front();
           end
         end else begin
           if (rd_data_cnt == 8'd0) begin
@@ -128,16 +121,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         rd_data_cnt++;
       end
       WrData: begin
-        if (cfg.en_loopback) begin
-          // we use pop_back because the queue cloned over from the monitor contains
-          // all the accumulated write entries until a STOP or RESTART is encountered.
-          // If we used pop_front, we would repeatedly get the earliest transmitted byte.
-          // What we want instead is the most recently transmitted byte.
-          wr_data = req.data_q.pop_back();
-          `uvm_info(`gfn,
-            $sformatf("Push entry into queue, address %0x, data %0x", address, wr_data), UVM_MEDIUM)
-          lb_q[address].push_back(wr_data);
-        end
+        // nothing to do here at the moment
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("\n  device_driver, received invalid request"))
@@ -158,7 +142,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     @(negedge cfg.vif.rst_ni);
     release_bus();
     // on reset just wipe out the entire storage
-    foreach (lb_q[i]) lb_q[i].delete();
+    foreach (cfg.vif.lb_q[i]) cfg.vif.lb_q[i].delete();
     `uvm_info(`gfn, "\n  driver is reset", UVM_DEBUG)
   endtask : process_reset
 
