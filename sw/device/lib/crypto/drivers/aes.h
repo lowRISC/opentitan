@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
@@ -68,19 +69,21 @@ typedef enum aes_key_len {
 } aes_key_len_t;
 
 /**
- * Parameters for initializing the AES hardware for performing a specific
- * encryption or decryption operation.
+ * Represents an AES key.
+ *
+ * The key may be provided by software as two shares, or it may be a sideloaded
+ * key that is produced by the keymgr and not visible to software.
  */
-typedef struct aes_params_t {
+typedef struct aes_key {
   /**
-   * Whether to use the encryption or decryption operation.
-   */
-  bool encrypt;
-
-  /**
-   * The hardware-native cipher mode to apply, if any.
+   * Block cipher mode for which the key is intended.
    */
   aes_cipher_mode_t mode;
+
+  /**
+   * Whether the key is sideloaded.
+   */
+  hardened_bool_t sideload;
 
   /**
    * The length of the key.
@@ -95,28 +98,42 @@ typedef struct aes_params_t {
    * the two pointers should be pointed to an array of zero-valued words
    * of sufficient length.
    */
-  const uint32_t *key[2];
-
-  /**
-   * The IV to use with the CBC or CTR modes.
-   *
-   * If the selected mode needs an IV, this pointer must not be null;
-   * otherwise, its value is irrelevant.
-   *
-   * The IV must always be 128 bits.
-   */
-  uint32_t iv[4];
-} aes_params_t;
+  const uint32_t *key_shares[2];
+} aes_key_t;
 
 /**
- * Prepares the AES hardware to perform an encryption or decryption operation,
- * which is described by the given parameters.
+ * Prepares the AES hardware to perform an encryption operation.
  *
- * @param params Parameters for the operation.
+ * If `key.sideload` is true, then this routine does not load the key; the
+ * caller must separately call keymgr to write the key into the AES block before
+ * calling `aes_update`.
+ *
+ * If the selected mode requires an IV, then `iv` must not be null. Otherwise
+ * (e.g. for ECB mode), `iv` is ignored and may be null.
+ *
+ * @param key Encryption key.
+ * @param iv IV to use for non-ECB modes, 128 bits.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-aes_error_t aes_begin(aes_params_t params);
+aes_error_t aes_encrypt_begin(const aes_key_t key, const aes_block_t *iv);
+
+/**
+ * Prepares the AES hardware to perform a decryption operation.
+ *
+ * If `key.sideload` is true, then this routine does not load the key; the
+ * caller must separately call keymgr to write the key into the AES block before
+ * calling `aes_update`.
+ *
+ * If the selected mode requires an IV, then `iv` must not be null. Otherwise
+ * (e.g. for ECB mode), `iv` is ignored and may be null.
+ *
+ * @param key Encryption key.
+ * @param iv IV to use for non-ECB modes, 128 bits.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+aes_error_t aes_decrypt_begin(const aes_key_t key, const aes_block_t *iv);
 
 /**
  * Advances the AES state by a single block.
@@ -133,7 +150,7 @@ aes_error_t aes_begin(aes_params_t params);
  *
  * Operation of the driver will look something like this:
  * ```
- * aes_begin(...);
+ * aes_encrypt_begin(...);
  * aes_update(NULL, input0);
  * aes_update(output0, input1);
  * // ...

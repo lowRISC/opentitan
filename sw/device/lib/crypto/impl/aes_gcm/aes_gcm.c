@@ -399,16 +399,20 @@ aes_error_t aes_gcm_ghash(const aes_block_t *hash_subkey,
 }
 
 /**
- * One-shot version of the AES API for a single block, for convenience.
+ * One-shot version of the AES encryption API for a single block.
  */
-static aes_error_t aes_single_block(const aes_params_t params,
-                                    const aes_block_t *input,
-                                    aes_block_t *output) {
-  aes_error_t err = aes_begin(params);
+static aes_error_t aes_encrypt_block(const aes_key_t key, const aes_block_t *iv,
+                                     const aes_block_t *input,
+                                     aes_block_t *output) {
+  aes_error_t err = aes_encrypt_begin(key, iv);
   if (err != kAesOk) {
     return err;
   }
-  err = aes_update(output, input);
+  err = aes_update(/*dest*/ NULL, input);
+  if (err != kAesOk) {
+    return err;
+  }
+  err = aes_update(output, /*src*/ NULL);
   if (err != kAesOk) {
     return err;
   }
@@ -428,16 +432,14 @@ static aes_error_t aes_single_block(const aes_params_t params,
  * Input must be less than 2^32 blocks long; that is, `len` < 2^36, since each
  * block is 16 bytes.
  *
- * @param key_len length of the AES key
- * @param key_shares key, expressed in two shares
+ * @param key The AES key
  * @param icb Initial counter block, 128 bits
  * @param len Number of bytes for input and output
  * @param input Pointer to input buffer (may be NULL if `len` is 0)
  * @param[out] output Pointer to output buffer (same size as input, may be the
  * same buffer)
  */
-aes_error_t aes_gcm_gctr(const aes_key_len_t key_len,
-                         const uint32_t *key_shares[2], const aes_block_t *icb,
+aes_error_t aes_gcm_gctr(const aes_key_t key, const aes_block_t *icb,
                          const size_t len, const uint8_t *input,
                          uint8_t *output) {
   // If the input is empty, the output must be as well. Since the output length
@@ -451,17 +453,19 @@ aes_error_t aes_gcm_gctr(const aes_key_len_t key_len,
     return kAesInternalError;
   }
 
-  // Prepare AES parameters for AES-CTR encryption. Encrypting a single block B
-  // with these parameters will return AES_K(IV) ^ B, where AES_K is the core
-  // AES block cipher encryption operation using key K.
-  aes_params_t aes_ctr_params = {
-      .encrypt = true,
-      .mode = kAesCipherModeCtr,
-      .key_len = key_len,
-      .key = {key_shares[0], key_shares[1]},
-      .iv = {0},
-  };
-  memcpy(aes_ctr_params.iv, icb->data, kAesBlockNumBytes);
+  // TODO: add support for sideloaded keys.
+  if (key.sideload != kHardenedBoolFalse) {
+    return kAesInternalError;
+  }
+
+  // Key must be intended for CTR mode.
+  if (key.mode != kAesCipherModeCtr) {
+    return kAesInternalError;
+  }
+
+  // Initial IV = ICB.
+  aes_block_t iv;
+  memcpy(iv.data, icb->data, kAesBlockNumBytes);
 
   // Calculate the number of blocks needed to represent the input. Since we
   // checked for empty input above, nblocks must be at least 1.
@@ -485,7 +489,7 @@ aes_error_t aes_gcm_gctr(const aes_key_len_t key_len,
 
     // Run the AES-CTR encryption operation on the next block of input.
     aes_block_t block_out;
-    aes_error_t err = aes_single_block(aes_ctr_params, &block_in, &block_out);
+    aes_error_t err = aes_encrypt_block(key, &iv, &block_in, &block_out);
     if (err != kAesOk) {
       return err;
     }
@@ -494,9 +498,8 @@ aes_error_t aes_gcm_gctr(const aes_key_len_t key_len,
     // the input block was partial.
     memcpy(&output[i * kAesBlockNumBytes], block_out.data, nbytes);
 
-    // Update the counter block.
-    aes_ctr_params.iv[kAesBlockNumWords - 1] =
-        word_inc32(aes_ctr_params.iv[kAesBlockNumWords - 1]);
+    // Update the counter block with inc32().
+    block_inc32(&iv);
   }
 
   return kAesOk;
@@ -540,30 +543,19 @@ static hardened_bool_t check_buffer_lengths(const size_t iv_len,
  * If any step in this process fails, the function returns an error and the
  * output should not be used.
  *
- * @param key_len length of key
- * @param key_shares key, expressed in two shares
+ * @param key AES key
  * @param[out] tbl Destination for the output hash subkey product table
  * @return OK or error
  */
-static aes_error_t aes_gcm_hash_subkey(const aes_key_len_t key_len,
-                                       const uint32_t *key_shares[2],
+static aes_error_t aes_gcm_hash_subkey(const aes_key_t key,
                                        aes_gcm_product_table_t *tbl) {
-  // Set AES parameters to perform AES-CTR encryption with IV=0.
-  aes_params_t aes_ctr_params = {
-      .encrypt = true,
-      .mode = kAesCipherModeCtr,
-      .key_len = key_len,
-      .key = {key_shares[0], key_shares[1]},
-      .iv = {0},
-  };
-
   // Compute the initial hash subkey H = AES_K(0). Note that to get this
   // result from AES_CTR, we set both the IV and plaintext to zero; this way,
   // AES-CTR's final XOR with the plaintext does nothing.
   aes_block_t zero;
   memset(zero.data, 0, kAesBlockNumBytes);
   aes_block_t hash_subkey;
-  aes_error_t err = aes_single_block(aes_ctr_params, &zero, &hash_subkey);
+  aes_error_t err = aes_encrypt_block(key, &zero, &zero, &hash_subkey);
   if (err != kAesOk) {
     return err;
   }
@@ -614,8 +606,7 @@ static aes_error_t aes_gcm_counter(const size_t iv_len, const uint8_t *iv,
 /**
  * Compute the AES-GCM authentication tag.
  *
- * @param key_len Length of the AES key
- * @param key_shares AES key, split into two shares
+ * @param key AES key
  * @param tbl Product table for the hash subkey H
  * @param ciphertext_len Length of the ciphertext in bytes
  * @param ciphertext Ciphertext value
@@ -624,8 +615,7 @@ static aes_error_t aes_gcm_counter(const size_t iv_len, const uint8_t *iv,
  * @param j0 Counter block (J0 in the NIST specification)
  * @param[out] tag Buffer for output tag (128 bits)
  */
-static aes_error_t aes_gcm_compute_tag(const aes_key_len_t key_len,
-                                       const uint32_t *key_shares[2],
+static aes_error_t aes_gcm_compute_tag(const aes_key_t key,
                                        const aes_gcm_product_table_t *tbl,
                                        const size_t ciphertext_len,
                                        const uint8_t *ciphertext,
@@ -662,12 +652,10 @@ static aes_error_t aes_gcm_compute_tag(const aes_key_len_t key_len,
   // Compute the tag T = GCTR(K, J0, S).
   uint8_t s_data_bytes[sizeof(s.data)];
   memcpy(s_data_bytes, s.data, sizeof(s.data));
-  return aes_gcm_gctr(key_len, key_shares, j0, kAesBlockNumBytes, s_data_bytes,
-                      tag);
+  return aes_gcm_gctr(key, j0, kAesBlockNumBytes, s_data_bytes, tag);
 }
 
-aes_error_t aes_gcm_encrypt(const aes_key_len_t key_len,
-                            const uint32_t *key_shares[2], const size_t iv_len,
+aes_error_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
                             const uint8_t *iv, const size_t plaintext_len,
                             const uint8_t *plaintext, const size_t aad_len,
                             const uint8_t *aad, uint8_t *ciphertext,
@@ -680,7 +668,7 @@ aes_error_t aes_gcm_encrypt(const aes_key_len_t key_len,
 
   // Compute the hash subkey H as a product table.
   aes_gcm_product_table_t Htbl;
-  aes_error_t err = aes_gcm_hash_subkey(key_len, key_shares, &Htbl);
+  aes_error_t err = aes_gcm_hash_subkey(key, &Htbl);
   if (err != kAesOk) {
     return err;
   }
@@ -698,13 +686,12 @@ aes_error_t aes_gcm_encrypt(const aes_key_len_t key_len,
   block_inc32(&j0_inc);
 
   // Compute ciphertext C = GCTR(K, inc32(J0), plaintext).
-  err = aes_gcm_gctr(key_len, key_shares, &j0_inc, plaintext_len, plaintext,
-                     ciphertext);
+  err = aes_gcm_gctr(key, &j0_inc, plaintext_len, plaintext, ciphertext);
   if (err != kAesOk) {
     return err;
   }
 
   // Compute the authentication tag T.
-  return aes_gcm_compute_tag(key_len, key_shares, &Htbl, plaintext_len,
-                             ciphertext, aad_len, aad, &j0, tag);
+  return aes_gcm_compute_tag(key, &Htbl, plaintext_len, ciphertext, aad_len,
+                             aad, &j0, tag);
 }

@@ -26,8 +26,7 @@ extern "C" {
  *
  * This implementation does not support short tags.
  *
- * @param key_len length of key
- * @param key_shares key, expressed in two shares
+ * @param key AES key
  * @param iv_len length of IV in bytes
  * @param iv IV value (may be NULL if iv_len is 0)
  * @param plaintext_len length of plaintext in bytes
@@ -38,8 +37,7 @@ extern "C" {
  * @param[out] tag Output buffer for tag (128 bits)
  */
 OT_WARN_UNUSED_RESULT
-aes_error_t aes_gcm_encrypt(const aes_key_len_t key_len,
-                            const uint32_t *key_shares[2], const size_t iv_len,
+aes_error_t aes_gcm_encrypt(const aes_key_t key, const size_t iv_len,
                             const uint8_t *iv, const size_t plaintext_len,
                             const uint8_t *plaintext, const size_t aad_len,
                             const uint8_t *aad, uint8_t *ciphertext,

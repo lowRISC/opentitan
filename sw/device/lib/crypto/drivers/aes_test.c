@@ -18,12 +18,15 @@ static const uint32_t kSecretKey[] = {
     0x3c4fcf09,
 };
 
-static const uint32_t kIv[] = {
-    // Init Counter: f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff
-    0xf3f2f1f0,
-    0xf7f6f5f4,
-    0xfbfaf9f8,
-    0xfffefdfc,
+static const aes_block_t kIv = {
+    .data =
+        {
+            // Init Counter: f0f1f2f3f4f5f6f7f8f9fafbfcfdfeff
+            0xf3f2f1f0,
+            0xf7f6f5f4,
+            0xfbfaf9f8,
+            0xfffefdfc,
+        },
 };
 
 static const aes_block_t kPlaintext[] = {
@@ -66,17 +69,13 @@ bool test_main(void) {
                               0,          0,          0,          0};
 
   LOG_INFO("Configuring the AES hardware.");
-  aes_params_t params = {
-      .encrypt = true,
+  aes_key_t key = {
       .mode = kAesCipherModeCtr,
+      .sideload = kHardenedBoolFalse,
       .key_len = kAesKeyLen128,
-      .key = {share0, share1},
-      .iv = {0},
+      .key_shares = {share0, share1},
   };
-  for (size_t i = 0; i < ARRAYSIZE(kIv); ++i) {
-    params.iv[i] = kIv[i];
-  }
-  CHECK(aes_begin(params) == kAesOk);
+  CHECK(aes_encrypt_begin(key, &kIv) == kAesOk);
 
   aes_block_t ciphertext[ARRAYSIZE(kCiphertext)] = {0};
   for (size_t i = 0; i < ARRAYSIZE(kPlaintext); ++i) {
