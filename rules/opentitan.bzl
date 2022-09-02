@@ -714,6 +714,9 @@ def opentitan_rom_binary(
             extract_sw_logs_db = device == "sim_dv",
             **kwargs
         ))
+
+        # We need to generate VMEM files even for FPGA devices, because we use
+        # them for bitstream splicing.
         elf_name = "{}.{}".format(devname, "elf")
         bin_name = "{}_{}".format(devname, "bin")
 
@@ -828,24 +831,26 @@ def opentitan_multislot_flash_binary(
             binaries = signed_dev_binaries,
         )
 
-        # Generate a VMEM64 from the binary.
-        signed_vmem_name = "{}_vmem64_signed".format(devname)
-        dev_targets.append(":" + signed_vmem_name)
-        bin_to_vmem(
-            name = signed_vmem_name,
-            bin = signed_bin_name,
-            platform = platform,
-            word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
-        )
+        # We only need to generate VMEM files for sim devices.
+        if device in ["sim_dv", "sim_verilator"]:
+            # Generate a VMEM64 from the binary.
+            signed_vmem_name = "{}_vmem64_signed".format(devname)
+            dev_targets.append(":" + signed_vmem_name)
+            bin_to_vmem(
+                name = signed_vmem_name,
+                bin = signed_bin_name,
+                platform = platform,
+                word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
+            )
 
-        # Scramble signed VMEM64.
-        scr_signed_vmem_name = "{}_scr_vmem64_signed".format(devname)
-        dev_targets.append(":" + scr_signed_vmem_name)
-        scramble_flash_vmem(
-            name = scr_signed_vmem_name,
-            vmem = signed_vmem_name,
-            platform = platform,
-        )
+            # Scramble signed VMEM64.
+            scr_signed_vmem_name = "{}_scr_vmem64_signed".format(devname)
+            dev_targets.append(":" + scr_signed_vmem_name)
+            scramble_flash_vmem(
+                name = scr_signed_vmem_name,
+                vmem = signed_vmem_name,
+                platform = platform,
+            )
 
         # Create a filegroup with just the current device's targets.
         native.filegroup(
@@ -933,49 +938,53 @@ def opentitan_flash_binary(
                     manifest = manifest,
                 )
 
-                # Generate a VMEM64 from the signed binary.
-                signed_vmem_name = "{}_vmem64_signed_{}".format(
-                    devname,
-                    key_name,
-                )
-                dev_targets.append(":" + signed_vmem_name)
-                bin_to_vmem(
-                    name = signed_vmem_name,
-                    bin = signed_bin_name,
-                    platform = platform,
-                    word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
-                )
+                # We only need to generate VMEM files for sim devices.
+                if device in ["sim_dv", "sim_verilator"]:
+                    # Generate a VMEM64 from the signed binary.
+                    signed_vmem_name = "{}_vmem64_signed_{}".format(
+                        devname,
+                        key_name,
+                    )
+                    dev_targets.append(":" + signed_vmem_name)
+                    bin_to_vmem(
+                        name = signed_vmem_name,
+                        bin = signed_bin_name,
+                        platform = platform,
+                        word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
+                    )
 
-                # Scramble signed VMEM64.
-                scr_signed_vmem_name = "{}_scr_vmem64_signed_{}".format(
-                    devname,
-                    key_name,
-                )
-                dev_targets.append(":" + scr_signed_vmem_name)
-                scramble_flash_vmem(
-                    name = scr_signed_vmem_name,
-                    vmem = signed_vmem_name,
-                    platform = platform,
-                )
+                    # Scramble signed VMEM64.
+                    scr_signed_vmem_name = "{}_scr_vmem64_signed_{}".format(
+                        devname,
+                        key_name,
+                    )
+                    dev_targets.append(":" + scr_signed_vmem_name)
+                    scramble_flash_vmem(
+                        name = scr_signed_vmem_name,
+                        vmem = signed_vmem_name,
+                        platform = platform,
+                    )
 
-        # Generate a VMEM64 from the binary.
-        vmem_name = "{}_vmem64".format(devname)
-        dev_targets.append(":" + vmem_name)
-        bin_to_vmem(
-            name = vmem_name,
-            bin = bin_name,
-            platform = platform,
-            word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
-        )
+        # We only need to generate VMEM files for sim devices.
+        if device in ["sim_dv", "sim_verilator"]:
+            # Generate a VMEM64 from the binary.
+            vmem_name = "{}_vmem64".format(devname)
+            dev_targets.append(":" + vmem_name)
+            bin_to_vmem(
+                name = vmem_name,
+                bin = bin_name,
+                platform = platform,
+                word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
+            )
 
-        # Scramble VMEM64.
-        scr_vmem_name = "{}_scr_vmem64".format(devname)
-        dev_targets.append(":" + scr_vmem_name)
-        scramble_flash_vmem(
-            name = scr_vmem_name,
-            vmem = vmem_name,
-            platform = platform,
-        )
+            # Scramble VMEM64.
+            scr_vmem_name = "{}_scr_vmem64".format(devname)
+            dev_targets.append(":" + scr_vmem_name)
+            scramble_flash_vmem(
+                name = scr_vmem_name,
+                vmem = vmem_name,
+                platform = platform,
+            )
 
         # Create a filegroup with just the current device's targets.
         native.filegroup(
