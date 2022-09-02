@@ -23,7 +23,14 @@
 #define BACKDOOR_TEST_WORDS 16
 #define BACKDOOR_TEST_BYTES BACKDOOR_TEST_WORDS * sizeof(uint32_t)
 
-/* The offset into the main SRAM where we will backdoor write data.
+/**
+ * Define the maximum false positives the test will tolerate to 1% rounded up.
+ */
+#define ECC_ERRORS_FALSE_POSITIVE_FLOOR_LIMIT \
+  (uint32_t)((SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS + 100 - 1) / 100)
+
+/**
+ * The offset into the main SRAM where we will backdoor write data.
  * This offset only needs to be after the location of
  * "sram_ctrl_main_scramble_buffer" as all other data in the SRAM
  * will have been scrambled at this point. Using the midpoint
@@ -32,16 +39,18 @@
 #define BACKDOOR_MAIN_RAM_OFFSET \
   (TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES / 8)
 
-/* The offset in the retention SRAM where we will copy the data
+/**
+ * The offset in the retention SRAM where we will copy the data
  * read from the main SRAM that was written by the backdoor. This
  * location needs to be after SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS which
  * is the end of where the scrambled data is located.
  */
 #define RET_RAM_COPY_OFFSET SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS
 
-/* The offset in the retention SRAM to store the integrity exception count.
+/**
+ * The offset in the retention SRAM to store the ECC error count.
  */
-#define INTEGRITY_EXCEPTION_COUNT_OFFSET \
+#define ECC_ERROR_COUNT_OFFSET \
   ((RET_RAM_COPY_OFFSET * sizeof(uint32_t)) + BACKDOOR_TEST_BYTES)
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -64,9 +73,9 @@ static const sram_ctrl_testutils_data_t kRamTestPattern1 = {
     .words =
         {
             0xA5A5A5A5,
-            0xA5A5A5A5,
-            0xA5A5A5A5,
-            0xA5A5A5A5,
+            0xA23DE94C,
+            0xD82A4FB0,
+            0xE3CA4D62,
         },
 };
 
@@ -77,13 +86,14 @@ static const sram_ctrl_testutils_data_t kRamTestPattern2 = {
     .words =
         {
             0x5A5A5A5A,
-            0x5A5A5A5A,
-            0x5A5A5A5A,
-            0x5A5A5A5A,
+            0x3CFB4A77,
+            0x304C6528,
+            0xFAEFD5CC,
         },
 };
 
-/** Expected data for the backdoor write test, to be written from the testbench.
+/**
+ * Expected data for the backdoor write test, to be written from the testbench.
  */
 static const uint8_t kBackdoorExpectedBytes[BACKDOOR_TEST_BYTES];
 
@@ -221,9 +231,8 @@ void ottf_internal_isr(void) {
   mmio_region_t mem_region =
       mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR);
   uint32_t exception_count =
-      mmio_region_read32(mem_region, INTEGRITY_EXCEPTION_COUNT_OFFSET);
-  mmio_region_write32(mem_region, INTEGRITY_EXCEPTION_COUNT_OFFSET,
-                      ++exception_count);
+      mmio_region_read32(mem_region, ECC_ERROR_COUNT_OFFSET);
+  mmio_region_write32(mem_region, ECC_ERROR_COUNT_OFFSET, ++exception_count);
 }
 
 /**
@@ -240,23 +249,38 @@ bool test_main(void) {
       &sram_ctrl));
 
   if (reentry_after_system_reset()) {
+    // Second boot, check the values.
     CHECK(sram_ctrl_testutils_read_check_neq(
         TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, &kRamTestPattern1));
     CHECK(sram_ctrl_testutils_read_check_neq(
         TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, &kRamTestPattern2));
 
-    CHECK(mmio_region_read32(mmio_region_from_addr(
-                                 TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR),
-                             INTEGRITY_EXCEPTION_COUNT_OFFSET) ==
-          SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS);
+    // Statistically there is always a chance that after changing the scrambling
+    // key the ECC bits are correct and no IRQ is triggered. So we tolerate a
+    // minimum of false positives.
+    uint32_t ecc_errors = mmio_region_read32(
+        mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR),
+        ECC_ERROR_COUNT_OFFSET);
+    uint32_t false_positives = SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS - ecc_errors;
+
+    if (false_positives > 0) {
+      if (false_positives > ECC_ERRORS_FALSE_POSITIVE_FLOOR_LIMIT) {
+        LOG_ERROR("Failed as it didn't generate enough ECC errors(%d/%d)",
+                  false_positives, ECC_ERRORS_FALSE_POSITIVE_FLOOR_LIMIT);
+        return false;
+      }
+      LOG_INFO("Passing with a remark, %d words didn't generate ECC errors",
+               false_positives);
+    }
 
     sram_ctrl_testutils_check_backdoor_write(
         TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, BACKDOOR_TEST_WORDS,
         RET_RAM_COPY_OFFSET, kBackdoorExpectedBytes);
   } else {
+    // First boot, prepare the test.
     mmio_region_write32(
         mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR),
-        INTEGRITY_EXCEPTION_COUNT_OFFSET, 0);
+        ECC_ERROR_COUNT_OFFSET, 0);
 
     prepare_for_scrambling();
     main_sram_scramble();
