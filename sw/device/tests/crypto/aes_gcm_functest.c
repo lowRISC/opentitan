@@ -147,25 +147,32 @@ bool test_main(void) {
     // Construct key shares by setting first share to full key and second share
     // to 0. (Note: this is not a secure construction! But it makes debugging
     // tests easier because there is only one thing to print.)
-    const uint32_t *key_shares[2];
     const uint32_t share1[8] = {0};
-    key_shares[1] = share1;
+    const uint32_t *share0;
     if (test.key_len == kAesKeyLen128) {
-      key_shares[0] = kKey128;
+      share0 = kKey128;
     } else if (test.key_len == kAesKeyLen256) {
-      key_shares[0] = kKey256;
+      share0 = kKey256;
     } else {
       LOG_ERROR("No key available for key length.");
       return false;
     }
+
+    // Construct AES key.
+    const aes_key_t test_key = {
+        .mode = kAesCipherModeCtr,
+        .sideload = kHardenedBoolFalse,
+        .key_len = test.key_len,
+        .key_shares = {share0, share1},
+    };
 
     // Call AES-GCM encrypt.
     uint8_t actual_ciphertext[test.plaintext_len];
     uint8_t actual_tag[16];
     uint64_t start = ibex_mcycle_read();
     aes_error_t err = aes_gcm_encrypt(
-        test.key_len, key_shares, test.iv_len, test.iv, test.plaintext_len,
-        test.plaintext, test.aad_len, test.aad, actual_ciphertext, actual_tag);
+        test_key, test.iv_len, test.iv, test.plaintext_len, test.plaintext,
+        test.aad_len, test.aad, actual_ciphertext, actual_tag);
     uint64_t end = ibex_mcycle_read();
     uint32_t cycles = end - start;
     LOG_INFO("aes_gcm_encrypt() took %u cycles", cycles);
