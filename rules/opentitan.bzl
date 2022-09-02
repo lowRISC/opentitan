@@ -679,6 +679,7 @@ def opentitan_binary(
 
 def opentitan_rom_binary(
         name,
+        devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for ROM.
@@ -689,6 +690,7 @@ def opentitan_rom_binary(
     macro and those listed below.
     Args:
       @param name: The name of this rule.
+      @param devices: List of devices to build the target for.
       @param platform: The target platform for the artifacts.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
     Emits rules:
@@ -703,7 +705,10 @@ def opentitan_rom_binary(
     """
     deps = kwargs.pop("deps", [])
     all_targets = []
-    for (device, dev_deps) in PER_DEVICE_DEPS.items():
+    for device in devices:
+        if device not in PER_DEVICE_DEPS:
+            fail("invalid device; device must be in {}".format(PER_DEVICE_DEPS.keys()))
+        dev_deps = PER_DEVICE_DEPS[device]
         devname = "{}_{}".format(name, device)
         dev_targets = []
 
@@ -778,6 +783,7 @@ def opentitan_multislot_flash_binary(
         name,
         srcs,
         image_size,
+        devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM):
     """A helper macro for generating multislot OpenTitan binary flash images.
 
@@ -792,6 +798,7 @@ def opentitan_multislot_flash_binary(
       @param srcs: A dictionary of `opentitan_flash_binary` targets (to stitch
                    together) as keys, and key/offset configurations as values.
       @param image_size: The final flash image_size to pass to `opentitantool`.
+      @param devices: List of devices to build the target for.
       @param platform: The target platform for the artifacts.
     Emits rules:
       For each device in per_device_deps entry:
@@ -805,7 +812,9 @@ def opentitan_multislot_flash_binary(
           Containing all targets across all devices for the above generated rules.
     """
     all_targets = []
-    for (device, _) in PER_DEVICE_DEPS.items():
+    for device in devices:
+        if device not in PER_DEVICE_DEPS:
+            fail("invalid device; device must be in {}".format(PER_DEVICE_DEPS.keys()))
         devname = "{}_{}".format(name, device)
         dev_targets = []
         signed_dev_binaries = {}
@@ -867,6 +876,7 @@ def opentitan_multislot_flash_binary(
 
 def opentitan_flash_binary(
         name,
+        devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
         signing_keys = DEFAULT_SIGNING_KEYS,
         signed = False,
@@ -881,6 +891,7 @@ def opentitan_flash_binary(
     macro and those listed below.
     Args:
       @param name: The name of this rule.
+      @param devices: List of devices to build the target for.
       @param platform: The target platform for the artifacts.
       @param signing_keys: The signing keys for to sign each BIN file with.
       @param signed: Whether or not to emit signed binary/VMEM files.
@@ -902,7 +913,10 @@ def opentitan_flash_binary(
     """
     deps = kwargs.pop("deps", [])
     all_targets = []
-    for (device, dev_deps) in PER_DEVICE_DEPS.items():
+    for device in devices:
+        if device not in PER_DEVICE_DEPS:
+            fail("invalid device; device must be in {}".format(PER_DEVICE_DEPS.keys()))
+        dev_deps = PER_DEVICE_DEPS[device]
         devname = "{}_{}".format(name, device)
         dev_targets = []
 
@@ -1002,6 +1016,7 @@ def opentitan_flash_binary(
 def opentitan_ram_binary(
         name,
         archive_symbol_prefix,
+        devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for RAM.
@@ -1012,19 +1027,22 @@ def opentitan_ram_binary(
     macro and those listed below.
     Args:
       @param name: The name of this rule.
-      @param platform: The target platform for the artifacts.
       @param archive_symbol_prefix: Prefix used to rename symbols in the binary.
+      @param devices: List of devices to build the target for.
+      @param platform: The target platform for the artifacts.
       @param **kwargs: Arguments to forward to `opentitan_binary`.
     Emits rules:
       For each device in per_device_deps entry:
         rules emitted by `opentitan_binary` named: see `opentitan_binary` macro
       bin_to_archive named: <name>
     """
-
     deps = kwargs.pop("deps", [])
     hdrs = kwargs.pop("hdrs", [])
     binaries = []
-    for (device, dev_deps) in PER_DEVICE_DEPS.items():
+    for device in devices:
+        if device not in PER_DEVICE_DEPS:
+            fail("invalid device; device must be in {}".format(PER_DEVICE_DEPS.keys()))
+        dev_deps = PER_DEVICE_DEPS[device]
         devname = "{}_{}".format(name, device)
 
         # Generate the binary.

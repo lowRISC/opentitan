@@ -5,6 +5,8 @@
 load("@//rules:opentitan.bzl", "opentitan_flash_binary", "opentitan_rom_binary")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 
+VALID_TARGETS = ["dv", "verilator", "cw310"]
+
 OTTF_SUCCESS_MSG = r"PASS.*\n"
 OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"
 ROM_BOOT_FAILURE_MSG = "BFV:[0-9a-f]{8}"
@@ -241,7 +243,7 @@ def cw310_params(
 
 def opentitan_functest(
         name,
-        targets = ["dv", "verilator", "cw310"],
+        targets = VALID_TARGETS,
         args = [],
         data = [],
         test_in_rom = False,
@@ -296,6 +298,18 @@ def opentitan_functest(
     deps = kwargs.pop("deps", [])
     all_tests = []
 
+    # Only build SW for devices we are running tests on.
+    devices_to_build_for = []
+    for target in targets:
+        if target == "dv":
+            devices_to_build_for.append("sim_dv")
+        elif target == "verilator":
+            devices_to_build_for.append("sim_verilator")
+        elif target == "cw310":
+            devices_to_build_for.append("fpga_cw310")
+        else:
+            fail("invalid target. Target must be in {}".format(VALID_TARGETS))
+
     # Handle the special case were the test is run at the ROM stage.
     if test_in_rom:
         if ot_flash_binary:
@@ -306,6 +320,7 @@ def opentitan_functest(
         opentitan_rom_binary(
             name = ot_flash_binary,
             deps = deps,
+            devices = devices_to_build_for,
             **kwargs
         )
 
@@ -320,6 +335,7 @@ def opentitan_functest(
             name = ot_flash_binary,
             signed = signed,
             deps = deps,
+            devices = devices_to_build_for,
             **kwargs
         )
 
