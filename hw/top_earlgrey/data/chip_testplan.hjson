@@ -393,7 +393,7 @@
             correctness.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_sleep_pin_wake"]
     }
     {
       name: chip_sw_sleep_pin_retention
