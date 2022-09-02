@@ -115,9 +115,11 @@ typedef enum test_round {
   kRoundTotal = 3
 } test_round_t;
 
+#define ALERT_CAUSE_CNT ((ALERT_HANDLER_PARAM_N_ALERTS - 1) / 32) + 1
+
 typedef struct alert_info {
   char *test_name;
-  uint64_t alert_cause;                                     // 61bit
+  uint32_t alert_cause[ALERT_CAUSE_CNT];
   uint8_t loc_alert_cause;                                  // 7bit
   uint16_t class_accum_cnt[ALERT_HANDLER_PARAM_N_CLASSES];  // 4x16bit
   uint32_t class_esc_cnt[ALERT_HANDLER_PARAM_N_CLASSES];    // 4x32bit
@@ -193,13 +195,10 @@ static const dif_alert_handler_class_config_t
             },
 };
 
-static const alert_info_t kExpectedInfo[kRoundTotal] = {
+static alert_info_t kExpectedInfo[kRoundTotal] = {
     [kRound1] =
         {
             .test_name = "Single class(ClassA)",
-            .alert_cause = ((uint64_t)1 << kTopEarlgreyAlertIdI2c0FatalFault) |
-                           ((uint64_t)1 << kTopEarlgreyAlertIdI2c1FatalFault) |
-                           ((uint64_t)1 << kTopEarlgreyAlertIdI2c2FatalFault),
             .class_accum_cnt = {3, 0, 0, 0},
             .class_esc_state = {kCstatePhase0, kCstateIdle, kCstateIdle,
                                 kCstateIdle},
@@ -207,12 +206,6 @@ static const alert_info_t kExpectedInfo[kRoundTotal] = {
     [kRound2] =
         {
             .test_name = "Multi classes(ClassB,C)",
-            .alert_cause =
-                ((uint64_t)1 << kTopEarlgreyAlertIdUart0FatalFault) |
-                ((uint64_t)1 << kTopEarlgreyAlertIdUart1FatalFault) |
-                ((uint64_t)1 << kTopEarlgreyAlertIdUart2FatalFault) |
-                ((uint64_t)1 << kTopEarlgreyAlertIdUart3FatalFault) |
-                ((uint64_t)1 << kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError),
             .class_accum_cnt = {0, 1, 4, 0},
             .class_esc_state = {kCstateIdle, kCstatePhase1, kCstatePhase0,
                                 kCstateIdle},
@@ -220,25 +213,27 @@ static const alert_info_t kExpectedInfo[kRoundTotal] = {
     [kRound3] =
         {
             .test_name = "All classes",
-            .alert_cause =
-                ((uint64_t)1 << kTopEarlgreyAlertIdRvCoreIbexRecovSwErr) |
-                ((uint64_t)1 << kTopEarlgreyAlertIdUart0FatalFault) |
-                ((uint64_t)1 << kTopEarlgreyAlertIdI2c0FatalFault) |
-                ((uint64_t)1 << kTopEarlgreyAlertIdSpiHost0FatalFault),
             .class_accum_cnt = {1, 1, 1, 1},
             .class_esc_state = {kCstatePhase0, kCstatePhase1, kCstatePhase0,
                                 kCstatePhase0},
         },
 };
 
+// TODO: This entire function needs to be made smarter.
+// There is too much hardcoding that changes when we add / subtract
+// alerts.
+// We need to track both a dump_idx and a bit_idx to know where we
+// are and do the conversion in an automatic way.
 static alert_info_t alert_info_dump2struct(
     const dif_rstmgr_alert_info_dump_segment_t *dump) {
+  // each escalation state is 3 bits, and there are 4 classes total
   alert_info_t myinfo = {
       .class_esc_state = {(cstate_t)(dump[0] & 0x7),
                           (cstate_t)((dump[0] >> 3) & 0x7),
                           (cstate_t)((dump[0] >> 6) & 0x7),
                           (cstate_t)((dump[0] >> 9) & 0x7)},
   };
+
   // class_esc_cnt
   uint32_t upper, lower;
 
@@ -247,6 +242,7 @@ static alert_info_t alert_info_dump2struct(
     upper = dump[i + 1] << 20;
     myinfo.class_esc_cnt[i] = upper | lower;
   }
+
   // class_accum_cnt
   myinfo.class_accum_cnt[0] = (uint16_t)(dump[4] >> 12);
   lower = dump[4] >> 28;
@@ -266,19 +262,29 @@ static alert_info_t alert_info_dump2struct(
   // 18                    12,11 0
   // +--loc_alert_cause[6:0]--+--class_accum_cnt[3][15:4]--|
   //
+  uint32_t alerts_remaining = kTopEarlgreyAlertIdLast + 1;
 
   // the lower 32-bit of the alert cause is made up of:
   // upper 13 bits from dump[6]
   // lower 19 bits from dump[7]
-  lower = dump[6] >> 19;
-  lower = lower | (dump[7] & ((1 << 20) - 1)) << 13;
+  myinfo.alert_cause[0] = dump[6] >> 19;
+  myinfo.alert_cause[0] = myinfo.alert_cause[0] | (dump[7] & ((1 << 20) - 1))
+                                                      << 13;
+  alerts_remaining -= 32;
 
   // the upper 32-bit of the alert cause is made up of:
   // upper 13 bits from dump[7]
-  // lower 16 bits from dump[8]
-  upper = dump[7] >> 19;
-  upper = upper | (dump[8] & 0xffff) << 13;
-  myinfo.alert_cause = (uint64_t)upper << 32 | lower;
+  // lower 19 bits from dump[8]
+  myinfo.alert_cause[1] = dump[7] >> 19;
+  myinfo.alert_cause[1] = myinfo.alert_cause[1] | (dump[8] & ((1 << 20) - 1))
+                                                      << 13;
+  alerts_remaining -= 32;
+
+  // shove remaining bits of dump[8] into this one
+  if (alerts_remaining > 0 & alerts_remaining < 32) {
+    myinfo.alert_cause[2] = dump[8] >> 19;
+  }
+
   return myinfo;
 }
 
@@ -360,13 +366,9 @@ void ottf_external_isr(void) {
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
 }
 
-static const uint32_t num_prints =
-    sizeof(((alert_info_t *)0)->alert_cause) / sizeof(uint32_t);
-
 static void print_alert_cause(alert_info_t info) {
-  for (uint32_t i = 0; i < num_prints; ++i) {
-    LOG_INFO("alert_cause[%d]: 0x%x", i,
-             (uint32_t)(info.alert_cause >> (32 * i)));
+  for (uint32_t i = 0; i < ALERT_CAUSE_CNT; ++i) {
+    LOG_INFO("alert_cause[%d]: 0x%x", i, (uint32_t)(info.alert_cause[i]));
   }
 }
 
@@ -559,7 +561,9 @@ static void collect_alert_dump_and_compare(test_round_t round) {
   print_alert_cause(actual_info);
   LOG_INFO("expected alert cause:");
   print_alert_cause(kExpectedInfo[round]);
-  CHECK(kExpectedInfo[round].alert_cause == actual_info.alert_cause);
+  for (int i = 0; i < ALERT_CAUSE_CNT; ++i) {
+    CHECK(kExpectedInfo[round].alert_cause[i] == actual_info.alert_cause[i]);
+  }
 
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
     CHECK(kExpectedInfo[round].class_accum_cnt[i] ==
@@ -642,10 +646,45 @@ static node_t test_node[kTopEarlgreyAlertPeripheralLast] = {
         },
 };
 
+static void init_expected_cause() {
+  kExpectedInfo[kRound1].alert_cause[kTopEarlgreyAlertIdI2c0FatalFault / 32] |=
+      1 << (kTopEarlgreyAlertIdI2c0FatalFault % 32);
+  kExpectedInfo[kRound1].alert_cause[kTopEarlgreyAlertIdI2c1FatalFault / 32] |=
+      1 << (kTopEarlgreyAlertIdI2c1FatalFault % 32);
+  kExpectedInfo[kRound1].alert_cause[kTopEarlgreyAlertIdI2c2FatalFault / 32] |=
+      1 << (kTopEarlgreyAlertIdI2c2FatalFault % 32);
+
+  kExpectedInfo[kRound2].alert_cause[kTopEarlgreyAlertIdUart0FatalFault / 32] |=
+      1 << (kTopEarlgreyAlertIdUart0FatalFault % 32);
+  kExpectedInfo[kRound2].alert_cause[kTopEarlgreyAlertIdUart1FatalFault / 32] |=
+      1 << (kTopEarlgreyAlertIdUart1FatalFault % 32);
+  kExpectedInfo[kRound2].alert_cause[kTopEarlgreyAlertIdUart2FatalFault / 32] |=
+      1 << (kTopEarlgreyAlertIdUart2FatalFault % 32);
+  kExpectedInfo[kRound2].alert_cause[kTopEarlgreyAlertIdUart3FatalFault / 32] |=
+      1 << (kTopEarlgreyAlertIdUart3FatalFault % 32);
+  kExpectedInfo[kRound2]
+      .alert_cause[kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError / 32] |=
+      1 << (kTopEarlgreyAlertIdOtpCtrlFatalBusIntegError % 32);
+
+  kExpectedInfo[kRound3]
+      .alert_cause[kTopEarlgreyAlertIdRvCoreIbexRecovSwErr / 32] |=
+      1 << (kTopEarlgreyAlertIdRvCoreIbexRecovSwErr % 32);
+  kExpectedInfo[kRound3].alert_cause[kTopEarlgreyAlertIdUart0FatalFault / 32] |=
+      1 << (kTopEarlgreyAlertIdUart0FatalFault % 32);
+  kExpectedInfo[kRound3].alert_cause[kTopEarlgreyAlertIdI2c0FatalFault / 32] |=
+      1 << (kTopEarlgreyAlertIdI2c0FatalFault % 32);
+  kExpectedInfo[kRound3]
+      .alert_cause[kTopEarlgreyAlertIdSpiHost0FatalFault / 32] |=
+      1 << (kTopEarlgreyAlertIdSpiHost0FatalFault % 32);
+};
+
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
   irq_external_ctrl(true);
+
+  // set expected values
+  init_expected_cause();
 
   CHECK_DIF_OK(dif_rstmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
