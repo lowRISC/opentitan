@@ -282,6 +282,12 @@ class BitstreamCache(object):
 
         for mmi_file in sorted(files_by_extension.get('mmi', set())):
             target_name = os.path.basename(mmi_file).replace('.', '_')
+
+            # Only use the top-level files for now.
+            target_directory = "cache/{}".format(key)
+            if (os.path.dirname(mmi_file) != target_directory):
+              continue
+
             if target_name in used_target_names:
                 logging.error(
                     "Target name {} for file {} would collide with another target"
