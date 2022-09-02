@@ -326,6 +326,12 @@
       reseed: 60
     }
     {
+      name: chip_sw_sleep_pin_mio_dio_val
+      uvm_test_seq: chip_sw_sleep_pin_mio_dio_val_vseq
+      sw_images: ["//sw/device/tests/sim_dv:sleep_pin_mio_dio_val_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_sleep_pin_wake
       uvm_test_seq: chip_sw_sleep_pin_wake_vseq
       sw_images: ["//sw/device/tests/sim_dv:sleep_pin_wake_test:1"]
