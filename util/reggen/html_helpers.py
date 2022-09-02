@@ -6,6 +6,10 @@ import logging as log
 import re
 from typing import List, Match, Optional, Set
 
+def get_reg_link(rname: str) -> str:
+    '''Return regname with a HTML link to itself'''
+    return '<a href="#Reg_{}">{}</a>'.format(rname.lower(), rname)
+
 
 def expand_paras(s: str, rnames: Set[str]) -> List[str]:
     '''Expand a description field to HTML.
