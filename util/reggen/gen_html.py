@@ -5,12 +5,12 @@
 Generate HTML documentation from IpBlock
 """
 
-from typing import Optional, Set, TextIO
+from typing import Optional, Set, TextIO, List, Union
 
 import mistletoe as mk
 
 from reggen.ip_block import IpBlock
-from reggen.html_helpers import expand_paras, render_td
+from reggen.html_helpers import expand_paras, render_td, get_reg_link
 from reggen.multi_register import MultiRegister
 from reggen.reg_block import RegBlock
 from reggen.register import Register
@@ -125,6 +125,45 @@ def gen_html_reg_pic(outfile: TextIO, reg: Register, width: int) -> None:
 
 # Generation of HTML table with header, register picture and details
 
+def gen_html_register_summary(outfile: TextIO,
+                              obj_list: List[Union[Window, Register]],
+                              comp: str,
+                              width: int,
+                              rnames: Set[str]) -> None:
+
+    bytew = width // 8
+    genout(outfile,
+           '<table class="regdef" id="RegSummary_{comp}">\n'
+           ' <tr>\n'
+           '  <th class="regdef" colspan=4> Summary </th>\n'
+           ' </tr>\n'
+           ' <tr>\n'
+           '  <th class="regdef">Name</th>'
+           '  <th class="regdef">Offset</th>'
+           '  <th class="regdef">Length</th>'
+           '  <th class="regdef">Description</th>'
+           ' </tr>\n')
+
+    for obj in obj_list:
+        obj_length = bytew if isinstance(obj, Register) else bytew * obj.items
+        desc_paras = expand_paras(obj.desc, rnames)
+        obj_desc = desc_paras[0]
+
+        genout(outfile,
+               ' <tr>\n'
+               '  <td class="regfn">{comp}.{link}</td>'
+               '  <td class="regfn">{obj_offset:#x}</td>'
+               '  <td class="regfn">{obj_length}</td>'
+               '  <td class="regfn">{obj_desc}</td>'
+               ' </tr>\n'
+               .format(comp=comp,
+                       link=get_reg_link(obj.name),
+                       obj_offset=obj.offset,
+                       obj_length=obj_length,
+                       obj_desc=obj_desc))
+
+    genout(outfile, '</table>')
+
 
 def gen_html_register(outfile: TextIO,
                       reg: Register,
@@ -146,7 +185,7 @@ def gen_html_register(outfile: TextIO,
            '<table class="regdef" id="Reg_{lrname}">\n'
            ' <tr>\n'
            '  <th class="regdef" colspan=5>\n'
-           '   <div>{comp}.{rname} @ {off:#x}</div>\n'
+           '   <div>{comp}.{link} @ {off:#x}</div>\n'
            '   <div>{desc}</div>\n'
            '   <div>Reset default = {resval:#x}, mask {mask:#x}</div>\n'
            '{wen}'
@@ -154,7 +193,7 @@ def gen_html_register(outfile: TextIO,
            ' </tr>\n'
            .format(lrname=rname.lower(),
                    comp=comp,
-                   rname=rname,
+                   link=get_reg_link(rname),
                    off=offset,
                    desc=desc_head,
                    resval=reg.resval,
@@ -277,13 +316,13 @@ def gen_html_window(outfile: TextIO,
            '<table class="regdef" id="Reg_{lwname}">\n'
            '  <tr>\n'
            '    <th class="regdef">\n'
-           '      <div>{comp}.{wname} @ + {off:#x}</div>\n'
+           '      <div>{comp}.{link} @ + {off:#x}</div>\n'
            '      <div>{items} item {swaccess} window</div>\n'
            '      <div>Byte writes are {byte_writes}supported</div>\n'
            '    </th>\n'
            '  </tr>\n'
            .format(comp=comp,
-                   wname=wname,
+                   link=get_reg_link(wname),
                    lwname=wname.lower(),
                    off=offset,
                    items=win.items,
@@ -331,6 +370,18 @@ def gen_html_reg_block(outfile: TextIO,
     if len(rb.entries) == 0:
         genout(outfile, 'This interface does not expose any registers.')
     else:
+        # Generate overview table first.
+        obj_list: List[Union[Register, Window]] = []
+        for x in rb.entries:
+            if isinstance(x, MultiRegister):
+                for reg in x.regs:
+                    obj_list += [reg]
+            else:
+                assert isinstance(x, Window) or isinstance(x, Register)
+                obj_list += [x]
+        gen_html_register_summary(outfile, obj_list, comp, width, rnames)
+
+        # Generate detailed entries
         for x in rb.entries:
             if isinstance(x, Register):
                 gen_html_register(outfile, x, comp, width, rnames)
