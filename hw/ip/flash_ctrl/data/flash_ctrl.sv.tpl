@@ -112,6 +112,7 @@ module flash_ctrl
   logic intg_err;
   logic eflash_cmd_intg_err;
   logic tl_gate_intg_err;
+  logic tl_prog_gate_intg_err;
 
   // SEC_CM: REG.BUS.INTEGRITY
   // SEC_CM: CTRL.CONFIG.REGWEN
@@ -500,6 +501,23 @@ module flash_ctrl
   // strategy has been identified
   assign prog_op_valid = op_start & prog_op;
 
+  tlul_pkg::tl_h2d_t prog_tl_h2d;
+  tlul_pkg::tl_d2h_t prog_tl_d2h;
+
+  // the program path also needs an lc gate to error back when flash is disabled.
+  // This is because tlul_adapter_sram does not actually have a way of signaling
+  // write errors, only read errors.
+  tlul_lc_gate u_prog_tl_gate (
+    .clk_i,
+    .rst_ni,
+    .tl_h2d_i(tl_win_h2d[0]),
+    .tl_d2h_o(tl_win_d2h[0]),
+    .tl_h2d_o(prog_tl_h2d),
+    .tl_d2h_i(prog_tl_d2h),
+    .lc_en_i(lc_ctrl_pkg::mubi4_to_lc_inv(flash_disable[ProgFifoIdx])),
+    .err_o(tl_prog_gate_intg_err)
+  );
+
   tlul_adapter_sram #(
     .SramAw(1),          //address unused
     .SramDw(BusWidth),
@@ -509,8 +527,8 @@ module flash_ctrl
   ) u_to_prog_fifo (
     .clk_i,
     .rst_ni,
-    .tl_i        (tl_win_h2d[0]),
-    .tl_o        (tl_win_d2h[0]),
+    .tl_i        (prog_tl_h2d),
+    .tl_o        (prog_tl_d2h),
     .en_ifetch_i (prim_mubi_pkg::MuBi4False),
     .req_o       (sw_wvalid),
     .req_type_o  (),
@@ -595,9 +613,10 @@ module flash_ctrl
   assign sw_rd_op = reg2hw.control.start.q & (reg2hw.control.op.q == FlashOpRead);
 
   // If software ever attempts to read when the FIFO is empty AND if it has never
-  // initiated a transaction, then it is a read that can never complete, error
-  // back immediately.
-  assign rd_no_op_d = adapter_req & ~sw_rd_op & ~sw_rfifo_rvalid;
+  // initiated a transaction, OR when flash is disabled, then it is a read that
+  // can never complete, error back immediately.
+  assign rd_no_op_d = adapter_req & ((~sw_rd_op & ~sw_rfifo_rvalid) |
+                      (prim_mubi_pkg::mubi4_test_true_loose(flash_disable[RdFifoIdx])));
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -1071,7 +1090,7 @@ module flash_ctrl
   assign hw2reg.std_fault_status.ctrl_cnt_err.d    = 1'b1;
   assign hw2reg.std_fault_status.fifo_err.d        = 1'b1;
   assign hw2reg.std_fault_status.reg_intg_err.de   = intg_err | eflash_cmd_intg_err |
-                                                     tl_gate_intg_err;
+                                                     tl_gate_intg_err | tl_prog_gate_intg_err;
   assign hw2reg.std_fault_status.prog_intg_err.de  = flash_phy_rsp.prog_intg_err;
   assign hw2reg.std_fault_status.lcmgr_err.de      = lcmgr_err;
   assign hw2reg.std_fault_status.lcmgr_intg_err.de = lcmgr_intg_err;
@@ -1395,6 +1414,8 @@ module flash_ctrl
     u_ctrl_arb.u_state_regs, alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
     u_tl_gate.u_state_regs, alert_tx_o[1])
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlProgLcGateFsm_A,
+    u_prog_tl_gate.u_state_regs, alert_tx_o[1])
 
    for (genvar i=0; i<NumBanks; i++) begin : gen_phy_assertions
      `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PhyFsmCheck_A,

@@ -81,13 +81,15 @@ package flash_ctrl_pkg;
   };
 
   // Flash Disable usage
-  typedef enum logic [2:0] {
+  typedef enum logic [3:0] {
     PhyDisableIdx,
     ArbFsmDisableIdx,
     LcMgrDisableIdx,
     MpDisableIdx,
     HostDisableIdx,
     IFetchDisableIdx,
+    RdFifoIdx,
+    ProgFifoIdx,
     FlashDisableLast
   } flash_disable_pos_e;
 
