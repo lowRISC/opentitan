@@ -905,16 +905,16 @@ module flash_ctrl
   assign local_esc = lc_ctrl_pkg::lc_tx_bool_to_lc_tx(fatal_std_err);
 
   assign alert_srcs = {
-    fatal_prim_flash_alert,
     recov_prim_flash_alert,
+    fatal_prim_flash_alert,
     fatal_err,
     fatal_std_err,
     recov_err
   };
 
   assign alert_tests = {
-    reg2hw.alert_test.fatal_prim_flash_alert.q & reg2hw.alert_test.fatal_prim_flash_alert.qe,
     reg2hw.alert_test.recov_prim_flash_alert.q & reg2hw.alert_test.recov_prim_flash_alert.qe,
+    reg2hw.alert_test.fatal_prim_flash_alert.q & reg2hw.alert_test.fatal_prim_flash_alert.qe,
     reg2hw.alert_test.fatal_err.q & reg2hw.alert_test.fatal_err.qe,
     reg2hw.alert_test.fatal_std_err.q & reg2hw.alert_test.fatal_std_err.qe,
     reg2hw.alert_test.recov_err.q & reg2hw.alert_test.recov_err.qe
