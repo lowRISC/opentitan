@@ -12,6 +12,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "i2c_regs.h"  // Generated.
@@ -35,7 +36,8 @@ void i2c_testutils_wr(dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
 
   // first write the address
   flags.start = true;
-  data_frame = (addr < 1) | kI2cWrite;
+  LOG_INFO("testutils: address %d address %d", addr, addr < 1);
+  data_frame = (addr << 1) | kI2cWrite;
   CHECK_DIF_OK(dif_i2c_write_byte_raw(i2c, data_frame, flags));
 
   // once address phase is through, blast the rest as generic data
@@ -49,7 +51,7 @@ void i2c_testutils_wr(dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
     data++;
   }
 
-  // check for errors / status?
+  // TODO check for errors / status?
 }
 
 void i2c_testutils_rd(dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count) {
@@ -62,7 +64,7 @@ void i2c_testutils_rd(dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count) {
 
   // first write the address
   flags.start = true;
-  data_frame = (addr < 1) | kI2cRead;
+  data_frame = (addr << 1) | kI2cRead;
   CHECK_DIF_OK(dif_i2c_write_byte_raw(i2c, data_frame, flags));
 
   // once address phase is through, issue the read transaction
@@ -73,5 +75,5 @@ void i2c_testutils_rd(dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count) {
   // inform the controller how many bytes to read overall
   CHECK_DIF_OK(dif_i2c_write_byte_raw(i2c, byte_count, flags));
 
-  // check for errors / status?
+  // TODO check for errors / status?
 }

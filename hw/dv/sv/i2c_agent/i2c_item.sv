@@ -6,7 +6,6 @@ class i2c_item extends uvm_sequence_item;
 
   // transaction data part
   bit [7:0]                data_q[$];
-  bit [7:0]                rdata_q[$];
   bit [9:0]                addr;      // enough to support both 7 & 10-bit target address
   int                      tran_id;
   int                      num_data;  // valid data

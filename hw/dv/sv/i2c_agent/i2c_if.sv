@@ -14,7 +14,11 @@ interface i2c_if;
   logic sda_i;
   logic sda_o;
 
-  bit [9:0] cur_address;
+  // loopback storage queue - the 256 represent different i2c devices.
+  // The loopback option takes every write to a specific device and shoves
+  // it into a queue.  When a read is later performed on that device, the
+  // same data is returned in the same order it was received.
+  bit [7:0] lb_q[256][$];
 
   //---------------------------------
   // common tasks
@@ -186,18 +190,21 @@ interface i2c_if;
   task automatic get_bit_data(string src = "host",
                               ref timing_cfg_t tc,
                               output bit bit_o);
+    @(posedge scl_i);
     if (src == "host") begin // host transmits data (addr/wr_data)
-      @(posedge scl_i);
       bit_o = sda_i;
       // force sda_target2host low during the clock pulse of scl_host2target
       sda_o = 1'b0;
       wait_for_dly(tc.tSdaInterference);
       sda_o = 1'b1;
+      // The code below was originally written as
+      // wait_for_dly(tc.tClockPulse + tc.tHoldBit - tc.tSdaInterference);
+      // But this functionally should be identical to just waiting for the
+      // the nedgedge and then proceeding.  Keep a reference to the original
+      // just in case there is another test sequence that relied on this.
       @(negedge scl_i);
       wait_for_dly(tc.tHoldBit - tc.tSdaInterference);
-      //wait_for_dly(tc.tClockPulse + tc.tHoldBit - tc.tSdaInterference);
     end else begin // target transmits data (rd_data)
-      wait_for_dly(tc.tClockLow + tc.tSetupBit);
       bit_o = sda_o;
       wait_for_dly(tc.tClockPulse + tc.tHoldBit);
     end
@@ -249,9 +256,5 @@ interface i2c_if;
       scl_o = 1'b0;
       wait_for_dly(tc.tHoldBit);
   endtask: host_nack
-
-  task automatic set_address(bit [9:0] addr);
-     cur_address = addr;
-  endtask : set_address
 
 endinterface : i2c_if
