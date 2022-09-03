@@ -10,8 +10,20 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   rand bit [7:0] rd_data[256]; // max length of read transaction
   byte wr_data;
 
+  // loopback storage queue - the 256 represent different i2c devices.
+  // The loopback option takes every write to a specific device and shoves
+  // it into a queue.  When a read is later performed on that device, the
+  // same data is returned in the same order it was received.
+  uvm_tlm_analysis_fifo #(i2c_item) lb_fifo[256];
+
   // get an array with unique read data
   constraint rd_data_c { unique { rd_data }; }
+
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    foreach (lb_fifo[i])
+      lb_fifo[i] = new($sformatf("lb_fifo[%0d]", i), this);
+  endfunction
 
   virtual task reset_signals();
     forever begin
@@ -98,11 +110,13 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
       end
       RdData: begin
         if (cfg.en_loopback) begin
+          i2c_item item;
           `uvm_info(`gfn, $sformatf("Loopback read address %0x", address), UVM_MEDIUM)
-          if (cfg.vif.lb_q[address].size == 0) begin
+          lb_fifo[address].try_get(item);
+          if (item == null) begin
             `uvm_fatal(`gfn, $sformatf("Loopback requested on empty queue"))
           end else begin
-             rdata = cfg.vif.lb_q[address].pop_front();
+            rdata = item.lb_data;
           end
         end else begin
           if (rd_data_cnt == 8'd0) begin
@@ -139,10 +153,13 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   endfunction : gen_num_stretch_host_clks
 
   virtual task process_reset();
+    i2c_item dummy;
     @(negedge cfg.vif.rst_ni);
     release_bus();
     // on reset just wipe out the entire storage
-    foreach (cfg.vif.lb_q[i]) cfg.vif.lb_q[i].delete();
+    foreach (lb_fifo[i]) begin
+      while (lb_fifo[i].used() > 0) lb_fifo[i].get(dummy);
+    end
     `uvm_info(`gfn, "\n  driver is reset", UVM_DEBUG)
   endtask : process_reset
 

@@ -23,7 +23,10 @@ class i2c_item extends uvm_sequence_item;
   rand bit [7:0]           fbyte;
   rand bit                 nakok, rcont, read, stop, start;
 
-  constraint fbyte_c     { fbyte      inside {[0 : 127]}; }
+  // loopback data
+  bit [7:0]                lb_data;
+
+  constraint fbyte_c     { fbyte      inside {[0 : 127] }; }
   constraint rcont_c     {
      solve read, stop before rcont;
      // for read request, rcont and stop must be complementary set

@@ -22,4 +22,10 @@ class i2c_agent extends dv_base_agent #(
     cfg.has_req_fifo = 1;
   endfunction : build_phase
 
+  function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    foreach (driver.lb_fifo[i])
+      monitor.lb_port[i].connect(driver.lb_fifo[i].analysis_export);
+  endfunction // connect_phase
+
 endclass

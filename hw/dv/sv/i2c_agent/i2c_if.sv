@@ -14,12 +14,6 @@ interface i2c_if;
   logic sda_i;
   logic sda_o;
 
-  // loopback storage queue - the 256 represent different i2c devices.
-  // The loopback option takes every write to a specific device and shoves
-  // it into a queue.  When a read is later performed on that device, the
-  // same data is returned in the same order it was received.
-  bit [7:0] lb_q[256][$];
-
   //---------------------------------
   // common tasks
   //---------------------------------

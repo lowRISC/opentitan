@@ -11,6 +11,8 @@ class i2c_monitor extends dv_base_monitor #(
 
   uvm_analysis_port #(i2c_item) wr_item_port;   // used to send complete wr_tran to sb
   uvm_analysis_port #(i2c_item) rd_item_port;   // used to send complete rd_tran to sb
+  uvm_analysis_port #(i2c_item) lb_port[256];
+
 
   local i2c_item  mon_dut_item;
   local bit [7:0] mon_data;
@@ -23,6 +25,8 @@ class i2c_monitor extends dv_base_monitor #(
     wr_item_port  = new("wr_item_port", this);
     rd_item_port  = new("rd_item_port", this);
     mon_dut_item  = i2c_item::type_id::create("mon_dut_item", this);
+    foreach (lb_port[i])
+      lb_port[i] = new($sformatf("lb_port[%0d]", i), this);
   endfunction : build_phase
 
   virtual task wait_for_reset_and_drop_item();
@@ -169,8 +173,12 @@ class i2c_monitor extends dv_base_monitor #(
               mon_dut_item.data_q.push_back(mon_data);
 
               // if loopback is enabled, also store this into the loopback queue
-              if (cfg.en_loopback) cfg.vif.lb_q[mon_dut_item.addr].push_back(mon_data);
-
+              if (cfg.en_loopback) begin
+                i2c_item item;
+                `uvm_create_obj(i2c_item, item)
+                item.lb_data = mon_data;
+                lb_port[mon_dut_item.addr].write(item);
+              end
               // send device ack to host write
               mon_dut_item.drv_type = DevAck;
               `downcast(clone_item, mon_dut_item.clone());
