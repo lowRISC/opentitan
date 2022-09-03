@@ -9,6 +9,23 @@ class chip_sw_usb_ast_clk_calib_vseq extends chip_sw_base_vseq;
 
   string usbdev_path = {`DV_STRINGIFY(`USBDEV_HIER)};
 
+  int sof_period_us;
+
+  virtual task cpu_init();
+    // sw_symbol_backdoor_overwrite takes an array as the input
+    bit [7:0] sof_period_us_data[];
+    super.cpu_init();
+
+    if ( !$value$plusargs("usb_fast_sof=%0d", sof_period_us) ) begin
+      sof_period_us = 1000;
+    end else begin
+      sof_period_us = 20;
+    end
+
+    sof_period_us_data = {<<byte{sof_period_us}};
+    sw_symbol_backdoor_overwrite("kSoFPeriodUs", sof_period_us_data);
+  endtask
+
   virtual task connect_usbdev();
     int link_reset = 0;
     string idle_det_path = {usbdev_path,
@@ -46,7 +63,7 @@ class chip_sw_usb_ast_clk_calib_vseq extends chip_sw_base_vseq;
            ".usbdev_impl.u_usb_fs_nb_pe.sof_valid_o"};
 
     forever begin
-      #1ms;
+      #(sof_period_us * 1us);
       @(posedge cfg.usb_clk_rst_vif.clk);
       `DV_CHECK_FATAL(uvm_hdl_force(sof_path, 1'b1));
       @(posedge cfg.usb_clk_rst_vif.clk);

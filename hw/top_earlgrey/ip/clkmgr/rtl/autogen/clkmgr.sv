@@ -743,17 +743,6 @@
     .mubi_i(((clk_main_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.main_secure)
   );
-  assign clocks_o.clk_usb_secure = clk_usb_root;
-
-  // clock gated indication for alert handler
-  prim_mubi4_sender #(
-    .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_usb_secure (
-    .clk_i(clk_usb_i),
-    .rst_ni(rst_usb_ni),
-    .mubi_i(((clk_usb_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.usb_secure)
-  );
   assign clocks_o.clk_io_div4_timers = clk_io_div4_root;
 
   // clock gated indication for alert handler

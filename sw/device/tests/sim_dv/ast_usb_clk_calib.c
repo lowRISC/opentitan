@@ -12,6 +12,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "ast_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -27,8 +28,13 @@ static uint32_t cast_safely(uint64_t val) {
 
 static uint32_t device_usb_count;
 static uint32_t aon_clk_period_us;
-const static uint32_t kSoFPeriodUs = 1000;
-const static uint32_t kNumSoF = 2;
+
+// This variable can be overwritten from the TB side side to speed up
+// simulation. By default, it is set to 1ms, which matches the nominal sof
+// packet interval. During simulation however, waiting for a few ms can be very
+// costly in real time, so we give the testbench the option to override this
+// value and speed things up.
+static volatile const uint32_t kSoFPeriodUs = 1000;
 
 static void enable_usb_meas_get_code(dif_clkmgr_t *clkmgr,
                                      dif_clkmgr_recov_err_codes_t *codes) {
@@ -83,7 +89,7 @@ bool test_main(void) {
   // Third, wait for usbdev sof calibration to execute
   LOG_INFO("Wait for sof to calibrate clocks");
   // Wait for a few sofs.
-  busy_spin_micros(kNumSoF * kSoFPeriodUs);
+  busy_spin_micros((AST_PARAM_NUM_USB_BEACON_PULSES + 2) * kSoFPeriodUs);
 
   // Last, measure clocks after usb calibration. They should be very accurate.
   // re-enable measurements.
