@@ -940,7 +940,7 @@ module flash_ctrl
     reg2hw.alert_test.recov_err.q & reg2hw.alert_test.recov_err.qe
   };
 
-  localparam logic [NumAlerts-1:0] IsFatal = {1'b1, 1'b0, 1'b1, 1'b1, 1'b0};
+  localparam logic [NumAlerts-1:0] IsFatal = {1'b0, 1'b1, 1'b1, 1'b1, 1'b0};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_senders
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
