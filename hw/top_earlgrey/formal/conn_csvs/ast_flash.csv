@@ -1,0 +1,13 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+CONNECTION, AST_FLASH_OBS_CTRL,    u_ast, obs_ctrl_o,            top_earlgrey.u_flash_ctrl, obs_ctrl_i
+CONNECTION, AST_FLASH_PWR_DWN_OUT, u_ast, flash_power_down_h_o,  top_earlgrey.u_flash_ctrl, flash_power_down_h_i
+CONNECTION, AST_FLASH_PWR_RDY_OUT, u_ast, flash_power_ready_h_o, top_earlgrey.u_flash_ctrl, flash_power_ready_h_i
+CONNECTION, AST_FLASH_BIST_EN_OUT, u_ast, flash_bist_en_o,       top_earlgrey.u_flash_ctrl, flash_bist_enable_i
