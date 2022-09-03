@@ -26,14 +26,16 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   // spi_host regs
   //-------------------------
   // csid reg
-  bit [MAX_CS-1:0] csid;
+  bit [CSB_WIDTH-1:0] csid;
+  // indicate csb is selected in cfg or spi_item
+  bit                     csb_sel_in_cfg = 1;
   // configopts register fields
-  bit              sck_polarity[MAX_CS];       // aka CPOL
-  bit              sck_phase[MAX_CS];          // aka CPHA
-  bit              full_cyc[MAX_CS];
-  bit [3:0]        csn_lead[MAX_CS];
-  bit [3:0]        csn_trail[MAX_CS];
-  bit [3:0]        csn_idle[MAX_CS];
+  bit              sck_polarity[NUM_CSB];       // aka CPOL
+  bit              sck_phase[NUM_CSB];          // aka CPHA
+  bit              full_cyc[NUM_CSB];
+  bit [3:0]        csn_lead[NUM_CSB];
+  bit [3:0]        csn_trail[NUM_CSB];
+  bit [3:0]        csn_idle[NUM_CSB];
   // command register fields
   spi_mode_e       spi_mode;
   // Cmd info configs

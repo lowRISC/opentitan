@@ -4,13 +4,14 @@
 
 interface spi_if
   import spi_agent_pkg::*;
+  import uvm_pkg::*;
 (
   input rst_n
 );
 
   // standard spi interface pins
   logic       sck;
-  logic [3:0] csb;
+  logic [CSB_WIDTH-1:0] csb;
   logic [3:0] sio;
 
   // debug signals
@@ -22,6 +23,7 @@ interface spi_if
   bit         sck_polarity;
   bit         sck_phase;
 
+  string      msg_id = "spi_if";
   //---------------------------------
   // common tasks
   //---------------------------------
@@ -38,4 +40,18 @@ interface spi_if
     endcase
   endtask : get_data_from_sio
 
+  function automatic bit [CSB_WIDTH-1:0] get_active_csb();
+    foreach (csb[i]) begin
+      if (csb[i] === 0) begin
+        return i;
+      end
+    end
+    `uvm_fatal(msg_id, "Don't call this function - get_active_csb when there is no active CSB")
+  endfunction : get_active_csb
+
+  // check only 1 csb can be active
+  initial forever begin
+    @(csb);
+    `DV_CHECK_LE($countones(CSB_WIDTH'(~csb)), 1, , , msg_id)
+  end
 endinterface : spi_if

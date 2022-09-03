@@ -24,6 +24,9 @@ class spi_item extends uvm_sequence_item;
   rand uint dummy_clk_cnt;
   rand uint dummy_sck_length_ns;
 
+  // indicate the active csb
+  bit [CSB_WIDTH-1:0] csb_sel;
+
   // transaction status. only use in monitor on flash mode
   // allow scb to process payload when one byte data is received, instead
   // of wait until the entire item is collected. This indicates item has collected all data.
@@ -52,6 +55,7 @@ class spi_item extends uvm_sequence_item;
     `uvm_field_int(opcode,                       UVM_DEFAULT)
     `uvm_field_int(num_lanes,                    UVM_DEFAULT)
     `uvm_field_int(dummy_cycles,                 UVM_DEFAULT)
+    `uvm_field_int(csb_sel,                      UVM_DEFAULT)
     `uvm_field_queue_int(payload_q,              UVM_DEFAULT)
     `uvm_field_queue_int(address_q,              UVM_DEFAULT)
   `uvm_object_utils_end

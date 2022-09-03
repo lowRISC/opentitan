@@ -14,6 +14,7 @@ class spi_monitor extends dv_base_monitor#(
   spi_cmd_e cmd;
   spi_cmd_e cmdtmp;
   int cmd_byte;
+  bit [CSB_WIDTH-1:0] active_csb;
 
   // Analysis port for the collected transfer.
   uvm_analysis_port #(spi_item) host_analysis_port;
@@ -38,6 +39,8 @@ class spi_monitor extends dv_base_monitor#(
 
     forever begin
       @(negedge cfg.vif.csb);
+      active_csb = cfg.vif.get_active_csb();
+
       // indicate that this the first byte in a spi transaction
       host_item.first_byte = 1;
       cmd = CmdOnly;
@@ -55,7 +58,7 @@ class spi_monitor extends dv_base_monitor#(
       begin: isolation_thread
         fork
           begin : csb_deassert_thread
-            wait(cfg.vif.csb[cfg.csb_sel] == 1'b1);
+            wait(cfg.vif.csb[active_csb] == 1'b1);
           end
           begin : sample_thread
             // for mode 1 and 3, get the leading edges out of the way
@@ -67,6 +70,10 @@ class spi_monitor extends dv_base_monitor#(
               int       which_bit_d;
               int       data_shift;
               bit [3:0] num_samples;
+
+              host_item.csb_sel = active_csb;
+              device_item.csb_sel = active_csb;
+
               if (cfg.partial_byte == 1) begin
                 num_samples = cfg.bits_to_transfer;
               end else begin
@@ -190,9 +197,11 @@ class spi_monitor extends dv_base_monitor#(
       begin: isolation_thread
         spi_item item = spi_item::type_id::create("host_item", this);
         bit opcode_received;
+
+        item.csb_sel = active_csb;
         fork
           begin: csb_deassert_thread
-            wait(cfg.vif.csb[cfg.csb_sel] == 1'b1);
+            wait(cfg.vif.csb[active_csb] == 1'b1);
           end
           begin: sample_thread
             int num_addr_bytes;
@@ -262,10 +271,10 @@ class spi_monitor extends dv_base_monitor#(
   endtask
 
   virtual task monitor_ready_to_end();
-    ok_to_end = cfg.vif.csb[cfg.csb_sel];
+    ok_to_end = 1;
     forever begin
-      @(cfg.vif.csb[cfg.csb_sel]);
-      ok_to_end = cfg.vif.csb[cfg.csb_sel];
+      @(cfg.vif.csb);
+      ok_to_end = (cfg.vif.csb == '1);
     end
   endtask : monitor_ready_to_end
 

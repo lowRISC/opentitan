@@ -7,6 +7,7 @@ class spi_host_driver extends spi_driver;
   `uvm_component_new
 
   uint sck_pulses = 0;
+  bit [CSB_WIDTH-1:0] active_csb;
 
   virtual task run_phase(uvm_phase phase);
     fork
@@ -22,7 +23,7 @@ class spi_host_driver extends spi_driver;
       under_reset = 1'b1;
       cfg.vif.sck <= cfg.sck_polarity[0];
       cfg.vif.sio <= 'hz;
-      cfg.vif.csb <= 'hF;
+      cfg.vif.csb <= '1;
       sck_pulses = 0;
       @(posedge cfg.vif.rst_n);
       under_reset = 1'b0;
@@ -70,6 +71,10 @@ class spi_host_driver extends spi_driver;
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn, $sformatf("spi_host_driver: rcvd item:\n%0s", req.sprint()), UVM_HIGH)
+
+      if (cfg.csb_sel_in_cfg) active_csb = cfg.csid;
+      else                    active_csb = req.csb_sel;
+
       case (req.item_type)
         SpiTransNormal:   drive_normal_item();
         SpiTransSckNoCsb: drive_sck_no_csb_item();
@@ -112,7 +117,7 @@ class spi_host_driver extends spi_driver;
   endtask
 
   task drive_normal_item();
-    cfg.vif.csb[cfg.csb_sel] <= 1'b0;
+    cfg.vif.csb[active_csb] <= 1'b0;
     if ((req.data.size() == 1) && (cfg.partial_byte == 1)) begin
       sck_pulses = cfg.bits_to_transfer;
     end else begin
@@ -127,7 +132,7 @@ class spi_host_driver extends spi_driver;
 
     wait(sck_pulses == 0);
     if (cfg.csb_consecutive == 0) begin
-      cfg.vif.csb[cfg.csb_sel] <= 1'b1;
+      cfg.vif.csb[active_csb] <= 1'b1;
       cfg.vif.sio[0] <= 1'bx;
     end
   endtask
@@ -136,7 +141,7 @@ class spi_host_driver extends spi_driver;
     bit [7:0] cmd_addr_bytes[$];
 
     `uvm_info(`gfn, $sformatf("Driving flash item: \n%s", req.sprint()), UVM_MEDIUM)
-    cfg.vif.csb[cfg.csb_sel] <= 1'b0;
+    cfg.vif.csb[active_csb] <= 1'b0;
 
     cmd_addr_bytes = {req.opcode, req.address_q};
     sck_pulses = cmd_addr_bytes.size() * 8 + req.dummy_cycles;
@@ -176,7 +181,7 @@ class spi_host_driver extends spi_driver;
     end
 
     wait(sck_pulses == 0);
-    cfg.vif.csb[cfg.csb_sel] <= 1'b1;
+    cfg.vif.csb[active_csb] <= 1'b1;
     cfg.vif.sio <= 'dx;
   endtask
 
@@ -190,9 +195,9 @@ class spi_host_driver extends spi_driver;
   endtask
 
   task drive_csb_no_sck_item();
-    cfg.vif.csb[cfg.csb_sel] <= 1'b0;
+    cfg.vif.csb[active_csb] <= 1'b0;
     #(req.dummy_sck_length_ns * 1ns);
-    cfg.vif.csb[cfg.csb_sel] <= 1'b1;
+    cfg.vif.csb[active_csb] <= 1'b1;
   endtask
 
   function uint get_rand_extra_delay_ns_btw_sck();
