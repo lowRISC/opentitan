@@ -875,6 +875,7 @@ opentitan_functest(
     srcs = ["ast_usb_clk_calib.c"],
     targets = ["dv"],
     deps = [
+        "//hw/top_earlgrey/ip/ast/data:ast_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",

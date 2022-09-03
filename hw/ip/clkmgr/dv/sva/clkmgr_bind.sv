@@ -271,15 +271,6 @@ module clkmgr_bind;
     .cg_en(cg_en_o.main_secure == prim_mubi_pkg::MuBi4True)
   );
 
-  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_usb_secure (
-    .clk(clk_usb_i),
-    .rst_n(rst_usb_ni),
-    .ip_clk_en(clk_usb_en),
-    .sw_clk_en(1'b1),
-    .scanmode(prim_mubi_pkg::MuBi4False),
-    .cg_en(cg_en_o.usb_secure == prim_mubi_pkg::MuBi4True)
-  );
-
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div4_timers (
     .clk(clk_io_div4_i),
     .rst_n(rst_io_div4_ni),

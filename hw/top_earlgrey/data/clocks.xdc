@@ -21,6 +21,7 @@ create_generated_clock -name clk_io_div2 -source [get_pin ${u_pll}/CLKOUT0] -div
 set u_div4 top_*/u_clkmgr_aon/u_no_scan_io_div4_div
 create_generated_clock -name clk_io_div4 -source [get_pin ${u_pll}/CLKOUT0] -divide_by 4 [get_pin ${u_div4}/u_clk_div_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
 
+
 # the step-down mux is implemented with a LUT right now and the mux switches on the falling edge.
 # therefore, Vivado propagates both clock edges down the clock network.
 # this implementation is not ideal - but we can at least tell Vivado to only honour the rising edge for
@@ -68,4 +69,9 @@ set_output_delay -clock clk_spi 5 [get_ports SPI_DEV_D1] -add_delay
 create_generated_clock -name clk_spi_in  -divide_by 1 -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_in_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O]
 create_generated_clock -name clk_spi_out -divide_by 1 -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O] -invert
 
+## Set asynchronous clock groups
 set_clock_groups -group ${clks_10_unbuf} -group ${clks_48_unbuf} -group ${clks_aon_unbuf} -group clk_io_div2 -group clk_io_div4 -group lc_jtag_tck -group rv_jtag_tck -group {clk_spi clk_spi_in clk_spi_out} -group sys_clk_pin -asynchronous
+
+## The usb calibration handling inside ast is assumed to be async to the outside world
+## even though its interface is also a usb clock.
+set_false_path -from [get_clocks clk_usb_48mhz] -to [get_pins u_ast/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/gen_*/q_o_reg[0]/D]

@@ -919,8 +919,6 @@ module top_earlgrey #(
     assign unused_cg_en_13 = clkmgr_aon_cg_en.io_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_14;
     assign unused_cg_en_14 = clkmgr_aon_cg_en.io_div2_infra;
-    prim_mubi_pkg::mubi4_t unused_cg_en_15;
-    assign unused_cg_en_15 = clkmgr_aon_cg_en.usb_secure;
     prim_mubi_pkg::mubi4_t unused_rst_en_0;
     assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_1;

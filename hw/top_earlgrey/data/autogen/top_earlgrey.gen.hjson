@@ -145,7 +145,6 @@
           clk_io_div4_secure: io_div4
           clk_main_secure: main
           clk_aon_secure: aon
-          clk_usb_secure: usb
         }
       }
       {
@@ -4101,7 +4100,11 @@
         clk_ast_alert_i: io_div4
         clk_ast_es_i: main
         clk_ast_rng_i: main
-        clk_ast_usb_i: usb
+        clk_ast_usb_i:
+        {
+          clock: usb
+          group: peri
+        }
       }
       clock_group: secure
       reset_connections:
@@ -4150,7 +4153,7 @@
         clk_ast_alert_i: clkmgr_aon_clocks.clk_io_div4_secure
         clk_ast_es_i: clkmgr_aon_clocks.clk_main_secure
         clk_ast_rng_i: clkmgr_aon_clocks.clk_main_secure
-        clk_ast_usb_i: clkmgr_aon_clocks.clk_usb_secure
+        clk_ast_usb_i: clkmgr_aon_clocks.clk_usb_peri
       }
       param_decl: {}
       param_list: []
