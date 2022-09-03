@@ -13,7 +13,8 @@ package spi_agent_pkg;
   `include "dv_macros.svh"
 
   // parameter
-  parameter uint MAX_CS = 4;      // set to the maximum valid value
+  parameter uint CSB_WIDTH = 2;
+  parameter uint NUM_CSB = CSB_WIDTH ** 2;
 
   // transaction type
   typedef enum {

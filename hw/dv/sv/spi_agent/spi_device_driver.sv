@@ -6,6 +6,8 @@ class spi_device_driver extends spi_driver;
   `uvm_component_utils(spi_device_driver)
   `uvm_component_new
 
+  bit [CSB_WIDTH-1:0] active_csb;
+
   virtual task reset_signals();
     forever begin
       @(negedge cfg.vif.rst_n);
@@ -22,7 +24,8 @@ class spi_device_driver extends spi_driver;
 
     forever begin
       seq_item_port.get_next_item(req);
-      wait (!under_reset && !cfg.vif.csb[cfg.csid]);
+      active_csb = req.csb_sel;
+      wait (!under_reset && !cfg.vif.csb[active_csb]);
       fork
         begin: iso_fork
           fork
@@ -82,7 +85,7 @@ class spi_device_driver extends spi_driver;
       begin: isolation_thread
         fork
           begin: csb_deassert_thread
-            wait(cfg.vif.csb[cfg.csb_sel] == 1'b1);
+            wait(cfg.vif.csb[active_csb] == 1'b1);
           end
           begin
             spi_mode_e spi_mode;
@@ -114,7 +117,7 @@ class spi_device_driver extends spi_driver;
   endtask : send_data_to_sio
 
   virtual task drive_bus_to_highz();
-    @(posedge cfg.vif.csb[cfg.csid]);
+    @(posedge cfg.vif.csb[active_csb]);
     case (cfg.spi_mode)
       Standard: cfg.vif.sio[1]   = 1'bz;
       Dual:     cfg.vif.sio[1:0] = 2'bzz;
