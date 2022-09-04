@@ -163,10 +163,6 @@ module sensor_ctrl_reg_top (
   logic alert_trig_val_9_wd;
   logic alert_trig_val_10_qs;
   logic alert_trig_val_10_wd;
-  logic alert_trig_val_11_qs;
-  logic alert_trig_val_11_wd;
-  logic alert_trig_val_12_qs;
-  logic alert_trig_val_12_wd;
   logic fatal_alert_en_we;
   logic fatal_alert_en_val_0_qs;
   logic fatal_alert_en_val_0_wd;
@@ -190,10 +186,6 @@ module sensor_ctrl_reg_top (
   logic fatal_alert_en_val_9_wd;
   logic fatal_alert_en_val_10_qs;
   logic fatal_alert_en_val_10_wd;
-  logic fatal_alert_en_val_11_qs;
-  logic fatal_alert_en_val_11_wd;
-  logic fatal_alert_en_val_12_qs;
-  logic fatal_alert_en_val_12_wd;
   logic recov_alert_we;
   logic recov_alert_val_0_qs;
   logic recov_alert_val_0_wd;
@@ -217,10 +209,6 @@ module sensor_ctrl_reg_top (
   logic recov_alert_val_9_wd;
   logic recov_alert_val_10_qs;
   logic recov_alert_val_10_wd;
-  logic recov_alert_val_11_qs;
-  logic recov_alert_val_11_wd;
-  logic recov_alert_val_12_qs;
-  logic recov_alert_val_12_wd;
   logic fatal_alert_val_0_qs;
   logic fatal_alert_val_1_qs;
   logic fatal_alert_val_2_qs;
@@ -233,8 +221,6 @@ module sensor_ctrl_reg_top (
   logic fatal_alert_val_9_qs;
   logic fatal_alert_val_10_qs;
   logic fatal_alert_val_11_qs;
-  logic fatal_alert_val_12_qs;
-  logic fatal_alert_val_13_qs;
   logic status_ast_init_done_qs;
   logic [1:0] status_io_pok_qs;
 
@@ -736,58 +722,6 @@ module sensor_ctrl_reg_top (
     .qs     (alert_trig_val_10_qs)
   );
 
-  //   F[val_11]: 11:11
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_alert_trig_val_11 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (alert_trig_we),
-    .wd     (alert_trig_val_11_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_trig[11].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (alert_trig_val_11_qs)
-  );
-
-  //   F[val_12]: 12:12
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_alert_trig_val_12 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (alert_trig_we),
-    .wd     (alert_trig_val_12_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.alert_trig[12].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (alert_trig_val_12_qs)
-  );
-
 
   // Subregister 0 of Multireg fatal_alert_en
   // R[fatal_alert_en]: V(False)
@@ -1080,58 +1014,6 @@ module sensor_ctrl_reg_top (
     .qs     (fatal_alert_en_val_10_qs)
   );
 
-  //   F[val_11]: 11:11
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_fatal_alert_en_val_11 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (fatal_alert_en_gated_we),
-    .wd     (fatal_alert_en_val_11_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.fatal_alert_en[11].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (fatal_alert_en_val_11_qs)
-  );
-
-  //   F[val_12]: 12:12
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0)
-  ) u_fatal_alert_en_val_12 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (fatal_alert_en_gated_we),
-    .wd     (fatal_alert_en_val_12_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.fatal_alert_en[12].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (fatal_alert_en_val_12_qs)
-  );
-
 
   // Subregister 0 of Multireg recov_alert
   // R[recov_alert]: V(False)
@@ -1419,58 +1301,6 @@ module sensor_ctrl_reg_top (
 
     // to register interface (read)
     .qs     (recov_alert_val_10_qs)
-  );
-
-  //   F[val_11]: 11:11
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_recov_alert_val_11 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (recov_alert_we),
-    .wd     (recov_alert_val_11_wd),
-
-    // from internal hardware
-    .de     (hw2reg.recov_alert[11].de),
-    .d      (hw2reg.recov_alert[11].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.recov_alert[11].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (recov_alert_val_11_qs)
-  );
-
-  //   F[val_12]: 12:12
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0)
-  ) u_recov_alert_val_12 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (recov_alert_we),
-    .wd     (recov_alert_val_12_wd),
-
-    // from internal hardware
-    .de     (hw2reg.recov_alert[12].de),
-    .d      (hw2reg.recov_alert[12].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.recov_alert[12].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (recov_alert_val_12_qs)
   );
 
 
@@ -1788,58 +1618,6 @@ module sensor_ctrl_reg_top (
     .qs     (fatal_alert_val_11_qs)
   );
 
-  //   F[val_12]: 12:12
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
-  ) u_fatal_alert_val_12 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.fatal_alert[12].de),
-    .d      (hw2reg.fatal_alert[12].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.fatal_alert[12].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (fatal_alert_val_12_qs)
-  );
-
-  //   F[val_13]: 13:13
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
-  ) u_fatal_alert_val_13 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.fatal_alert[13].de),
-    .d      (hw2reg.fatal_alert[13].d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.fatal_alert[13].q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (fatal_alert_val_13_qs)
-  );
-
 
   // R[status]: V(False)
   //   F[ast_init_done]: 0:0
@@ -1975,10 +1753,6 @@ module sensor_ctrl_reg_top (
   assign alert_trig_val_9_wd = reg_wdata[9];
 
   assign alert_trig_val_10_wd = reg_wdata[10];
-
-  assign alert_trig_val_11_wd = reg_wdata[11];
-
-  assign alert_trig_val_12_wd = reg_wdata[12];
   assign fatal_alert_en_we = addr_hit[6] & reg_we & !reg_error;
 
   assign fatal_alert_en_val_0_wd = reg_wdata[0];
@@ -2002,10 +1776,6 @@ module sensor_ctrl_reg_top (
   assign fatal_alert_en_val_9_wd = reg_wdata[9];
 
   assign fatal_alert_en_val_10_wd = reg_wdata[10];
-
-  assign fatal_alert_en_val_11_wd = reg_wdata[11];
-
-  assign fatal_alert_en_val_12_wd = reg_wdata[12];
   assign recov_alert_we = addr_hit[7] & reg_we & !reg_error;
 
   assign recov_alert_val_0_wd = reg_wdata[0];
@@ -2029,10 +1799,6 @@ module sensor_ctrl_reg_top (
   assign recov_alert_val_9_wd = reg_wdata[9];
 
   assign recov_alert_val_10_wd = reg_wdata[10];
-
-  assign recov_alert_val_11_wd = reg_wdata[11];
-
-  assign recov_alert_val_12_wd = reg_wdata[12];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -2089,8 +1855,6 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[8] = alert_trig_val_8_qs;
         reg_rdata_next[9] = alert_trig_val_9_qs;
         reg_rdata_next[10] = alert_trig_val_10_qs;
-        reg_rdata_next[11] = alert_trig_val_11_qs;
-        reg_rdata_next[12] = alert_trig_val_12_qs;
       end
 
       addr_hit[6]: begin
@@ -2105,8 +1869,6 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[8] = fatal_alert_en_val_8_qs;
         reg_rdata_next[9] = fatal_alert_en_val_9_qs;
         reg_rdata_next[10] = fatal_alert_en_val_10_qs;
-        reg_rdata_next[11] = fatal_alert_en_val_11_qs;
-        reg_rdata_next[12] = fatal_alert_en_val_12_qs;
       end
 
       addr_hit[7]: begin
@@ -2121,8 +1883,6 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[8] = recov_alert_val_8_qs;
         reg_rdata_next[9] = recov_alert_val_9_qs;
         reg_rdata_next[10] = recov_alert_val_10_qs;
-        reg_rdata_next[11] = recov_alert_val_11_qs;
-        reg_rdata_next[12] = recov_alert_val_12_qs;
       end
 
       addr_hit[8]: begin
@@ -2138,8 +1898,6 @@ module sensor_ctrl_reg_top (
         reg_rdata_next[9] = fatal_alert_val_9_qs;
         reg_rdata_next[10] = fatal_alert_val_10_qs;
         reg_rdata_next[11] = fatal_alert_val_11_qs;
-        reg_rdata_next[12] = fatal_alert_val_12_qs;
-        reg_rdata_next[13] = fatal_alert_val_13_qs;
       end
 
       addr_hit[9]: begin
