@@ -596,9 +596,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         if (overrd > 0) begin
           overread(flash_op, bank, num, overrd);
         end
-        wait_flash_op_done();
 
-       if (!in_err) wait_flash_op_done();
+        if (!in_err) wait_flash_op_done();
 
       end
       if (derr_is_set | cfg.ierr_created[0]) begin

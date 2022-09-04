@@ -346,6 +346,18 @@
       uvm_test_seq: flash_ctrl_connect_vseq
       reseed: 5
     }
+    {
+      name: flash_ctrl_rd_intg
+      uvm_test_seq: flash_ctrl_rd_path_intg_vseq
+      run_opts: ["+scb_otf_en=1", "+otf_num_rw=5", "+otf_num_hr=50"]
+      reseed: 1
+    }
+    {
+      name: flash_ctrl_wr_intg
+      uvm_test_seq: flash_ctrl_wr_path_intg_vseq
+      run_opts: ["+scb_otf_en=1", "+otf_num_rw=5", "+otf_num_hr=0", "+otf_rd_pct=0"]
+      reseed: 1
+    }
   ]
 
   // List of regressions.

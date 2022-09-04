@@ -25,21 +25,35 @@
   testpoints: [
     {
       name: sec_cm_reg_bus_integrity
-      desc: "Verify the countermeasure(s) REG.BUS.INTEGRITY."
+      desc: '''Verify the countermeasure(s) REG.BUS.INTEGRITY.
+            This entry is covered by tl_access_test
+            (hw/dv/tools/dvsim/tests/tl_access_tests.hjson)
+            '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_tl_intg_err"]
     }
     {
       name: sec_cm_host_bus_integrity
-      desc: "Verify the countermeasure(s) HOST.BUS.INTEGRITY."
+      desc: '''Verify the countermeasure(s) HOST.BUS.INTEGRITY.
+            This entry is covered by tl_access_test
+            (hw/dv/tools/dvsim/tests/tl_access_tests.hjson)
+            '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_tl_intg_err"]
     }
     {
       name: sec_cm_mem_bus_integrity
-      desc: "Verify the countermeasure(s) MEM.BUS.INTEGRITY."
+      desc: '''Verify the countermeasure(s) MEM.BUS.INTEGRITY.
+            For read path, inject error to
+            tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.u_bus_intg
+            tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.u_bus_intg
+	    read data error will be detected by tl_agent in tb.
+            For write path, inject error to tb.dut.u_prog_fifo.wdata_i
+            This will trigger fatal_std_err (prog_intg_err) and
+            err_code.prog_err
+            '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_rd_intg", "flash_ctrl_wr_intg"]
     }
     {
       name: sec_cm_scramble_key_sideload
