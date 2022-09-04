@@ -19,7 +19,7 @@ module ast #(
   // tlul if
   input tlul_pkg::tl_h2d_t tl_i,              // TLUL H2D
   output tlul_pkg::tl_d2h_t tl_o,             // TLUL D2H
-  output logic ast_init_done_o,               // AST (registers) Init Done
+  output prim_mubi_pkg::mubi4_t ast_init_done_o,  // AST (registers) Init Done
 
   // clocks / resets
   input clk_ast_adc_i,                        // Buffered AST ADC Clock
@@ -112,8 +112,6 @@ module ast #(
   output edn_pkg::edn_req_t entropy_req_o,    // Entropy Request
 
   // alerts
-  input ast_pkg::ast_dif_t fla_alert_src_i,    // Flash Alert Input
-  input ast_pkg::ast_dif_t otp_alert_src_i,    // OTP Alert Input
   input ast_pkg::ast_alert_rsp_t alert_rsp_i,  // Alerts Trigger & Acknowledge Inputs
   output ast_pkg::ast_alert_req_t alert_req_o, // Alerts Output
 
@@ -736,28 +734,6 @@ ast_alert u_alert_ts_lo (
   .alert_req_o ( alert_req_o.alerts[ast_pkg::TsLoSel] )
 );  // of u_alert_ts_lo
 
-// Flash Alert (FLA)
-///////////////////////////////////////
-ast_alert u_alert_fla (
-  .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
-  .alert_src_i ( fla_alert_src_i ),  //TODO: Add enable
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::FlaSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::FlaSel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::FlaSel] )
-);  // of u_alert_fla
-
-// OTP Alert (OTP)
-///////////////////////////////////////
-ast_alert u_alert_otp (
-  .clk_i ( clk_ast_alert_i ),
-  .rst_ni ( rst_ast_alert_ni ),
-  .alert_src_i ( otp_alert_src_i ),  //TODO: Add enable
-  .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::OtpSel] ),
-  .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::OtpSel] ),
-  .alert_req_o ( alert_req_o.alerts[ast_pkg::OtpSel] )
-);  // of u_alert_otp
-
 // Other-0 Alert (OT0)
 ///////////////////////////////////////
 ast_alert u_alert_ot0 (
@@ -874,10 +850,10 @@ assign hw2reg.regal.d = regal;
 always_ff @( posedge clk_ast_tlul_i, negedge regal_rst_n ) begin
   if ( !regal_rst_n ) begin
     regal           <= ast_reg_pkg::AST_REGAL_RESVAL;
-    ast_init_done_o <= 1'b0;
+    ast_init_done_o <= prim_mubi_pkg::MuBi4False;
   end else if ( regal_we ) begin
     regal           <= regal_di;
-    ast_init_done_o <= 1'b1;
+    ast_init_done_o <= prim_mubi_pkg::MuBi4True;
   end
 end
 

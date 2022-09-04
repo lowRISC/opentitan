@@ -7,7 +7,7 @@
 package sensor_ctrl_reg_pkg;
 
   // Param list
-  parameter int NumAlertEvents = 13;
+  parameter int NumAlertEvents = 11;
   parameter int NumLocalEvents = 1;
   parameter int NumAlerts = 2;
   parameter int NumIoRails = 2;
@@ -109,21 +109,21 @@ package sensor_ctrl_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    sensor_ctrl_reg2hw_intr_state_reg_t intr_state; // [64:63]
-    sensor_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [62:61]
-    sensor_ctrl_reg2hw_intr_test_reg_t intr_test; // [60:57]
-    sensor_ctrl_reg2hw_alert_test_reg_t alert_test; // [56:53]
-    sensor_ctrl_reg2hw_alert_trig_mreg_t [12:0] alert_trig; // [52:40]
-    sensor_ctrl_reg2hw_fatal_alert_en_mreg_t [12:0] fatal_alert_en; // [39:27]
-    sensor_ctrl_reg2hw_recov_alert_mreg_t [12:0] recov_alert; // [26:14]
-    sensor_ctrl_reg2hw_fatal_alert_mreg_t [13:0] fatal_alert; // [13:0]
+    sensor_ctrl_reg2hw_intr_state_reg_t intr_state; // [56:55]
+    sensor_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [54:53]
+    sensor_ctrl_reg2hw_intr_test_reg_t intr_test; // [52:49]
+    sensor_ctrl_reg2hw_alert_test_reg_t alert_test; // [48:45]
+    sensor_ctrl_reg2hw_alert_trig_mreg_t [10:0] alert_trig; // [44:34]
+    sensor_ctrl_reg2hw_fatal_alert_en_mreg_t [10:0] fatal_alert_en; // [33:23]
+    sensor_ctrl_reg2hw_recov_alert_mreg_t [10:0] recov_alert; // [22:12]
+    sensor_ctrl_reg2hw_fatal_alert_mreg_t [11:0] fatal_alert; // [11:0]
   } sensor_ctrl_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    sensor_ctrl_hw2reg_intr_state_reg_t intr_state; // [62:59]
-    sensor_ctrl_hw2reg_recov_alert_mreg_t [12:0] recov_alert; // [58:33]
-    sensor_ctrl_hw2reg_fatal_alert_mreg_t [13:0] fatal_alert; // [32:5]
+    sensor_ctrl_hw2reg_intr_state_reg_t intr_state; // [54:51]
+    sensor_ctrl_hw2reg_recov_alert_mreg_t [10:0] recov_alert; // [50:29]
+    sensor_ctrl_hw2reg_fatal_alert_mreg_t [11:0] fatal_alert; // [28:5]
     sensor_ctrl_hw2reg_status_reg_t status; // [4:0]
   } sensor_ctrl_hw2reg_t;
 
