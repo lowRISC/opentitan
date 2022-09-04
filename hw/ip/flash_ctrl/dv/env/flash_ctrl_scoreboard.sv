@@ -42,6 +42,7 @@ class flash_ctrl_scoreboard #(
   // ecc error expected
   bit ecc_error_addr[bit [AddrWidth - 1 : 0]];
   int over_rd_err[addr_t];
+  bit exp_tl_rsp_intg_err = 0;
 
    //host error injection
   bit in_error_addr[bit [AddrWidth - 1 : 0]];
@@ -360,7 +361,8 @@ class flash_ctrl_scoreboard #(
             end
 
             "op_status", "status", "erase_suspend", "curr_fifo_lvl", "debug_state",
-            "ecc_single_err_cnt", "ecc_single_err_addr_0", "ecc_single_err_addr_1": begin
+            "ecc_single_err_cnt", "ecc_single_err_addr_0", "ecc_single_err_addr_1",
+            "std_fault_status": begin
               do_read_check = 1'b0;
             end
             "err_code": begin
@@ -783,11 +785,13 @@ class flash_ctrl_scoreboard #(
     ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
     in_err = in_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
     `uvm_info("predic_tl_err_dbg",
-              $sformatf("addr:0x%x(%x) ecc_err:%0d in_err:%0d channel:%s ral_name:%s",
+              $sformatf({"addr:0x%x(%x) ecc_err:%0d in_err:%0d channel:%s ral_name:%s",
+                         " tlul_exp_cnt:%0d"},
                         {item.a_addr[AddrWidth-1:3],3'b0},
                         item.a_addr, ecc_err, in_err,
-                        channel.name, ral_name
-                        ), UVM_MEDIUM)
+                        channel.name, ral_name,
+                        cfg.tlul_core_exp_cnt
+                        ), UVM_HIGH)
 
     if (over_rd_err.exists(item.a_addr)) begin
       if (channel == DataChannel)  begin
@@ -814,6 +818,9 @@ class flash_ctrl_scoreboard #(
              return 1;
           end
        end
+    end
+    if (exp_tl_rsp_intg_err) begin
+      return (!item.is_d_chan_intg_ok(.throw_error(0)));
     end
     return (super.predict_tl_err(item, channel, ral_name));
   endfunction : predict_tl_err
