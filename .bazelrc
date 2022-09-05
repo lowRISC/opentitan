@@ -62,3 +62,6 @@ build:ubsan --copt -g
 build:ubsan --strip=never
 build:ubsan --copt -fno-omit-frame-pointer
 build:ubsan --linkopt -fsanitize=undefined
+
+# Import site-specific configuration.
+try-import .bazelrc-site

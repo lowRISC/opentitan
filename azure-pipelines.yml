@@ -136,6 +136,9 @@ jobs:
     displayName: Type of change
     # Check what kinds of changes the PR contains
     name: DetermineBuildType
+  - bash: ci/scripts/check-no-bazelrc-site.sh
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    displayName: Confirm no .bazelrc-site files
 
 - job: download_bazel_dependencies
   displayName: Prefetch Bazel deps
