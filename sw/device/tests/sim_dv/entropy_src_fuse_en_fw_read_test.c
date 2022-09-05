@@ -87,7 +87,7 @@ static void test_fuse_init(dif_entropy_src_t *entropy) {
       0x91b7f960, 0x0d566bb3, 0xef35e170, 0x94ba7d8e, 0x534eb741, 0x6b60b0da,
   };
   CHECK_DIF_OK(dif_entropy_src_observe_fifo_write(entropy, kInputMsg,
-                                                  ARRAYSIZE(kInputMsg)));
+                                                  ARRAYSIZE(kInputMsg), NULL));
 
   CHECK_DIF_OK(dif_entropy_src_conditioner_stop(entropy));
 }
