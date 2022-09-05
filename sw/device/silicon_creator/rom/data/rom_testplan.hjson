@@ -474,10 +474,13 @@
 
             `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
 
-            - For `command` in {`SECTOR_ERASE` (`0xc7`) and `PAGE_PROGRAM (`0x02`)}
+            - For `command` in {`SECTOR_ERASE` (`0xc7`) and `PAGE_PROGRAM` (`0x02`)}
               - Apply bootstrap pin strapping and reset the chip.
-              - Send `command` with invalid 3-byte address, e.g. `0xffffff`.
+              - Send `CHIP_ERASE` command to transition to bootstrap phase 2.
+              - Send `command` with an invalid 3-byte address, e.g. `0xffffff`.
               - Verify that the chip outputs the expected `BFV` over UART.
+                - For `SECTOR_ERASE`: `BFV:01425303` (`kErrorBootstrapEraseAddress`) followed by `BFV:0142500d` (`kErrorBootPolicyBadIdentifier`)
+                - For `PAGE_PROGRAM`: `BFV:02425303` (`kErrorBootstrapProgramAddress`) followed by `BFV:0142500d` (`kErrorBootPolicyBadIdentifier`)
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2
