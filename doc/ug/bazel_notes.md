@@ -272,6 +272,25 @@ test --test_tag_filters=-cw310
 See the [`.bazelrc`](https://github.com/lowRISC/opentitan/blob/master/.bazelrc) file in the OpenTitan repository for more examples.
 Additionally, for more information see the Bazel [documentation](https://bazel.build/run/bazelrc).
 
+### Site-specific `.bazelrc-site` options
+
+We use the term "compute site" to refer to a particular development host, or more broadly a _collection_ of compute nodes, that is operated by an organization with its own unique compute requirements or IT policies.
+The experience of working in such an environment may be different than using an off-the-shelf Linux distribution, and so team members working on some compute sites may require the use of slightly different Bazel options.
+
+In addition to each user's `$HOME/.bazelrc` file and the project-level configurations in [`$REPO_TOP/.bazelrc`](https://github.com/lowRISC/opentitan/blob/master/.bazelrc), there is the option to add site-specific configuration options, by adding them to the file `$REPO_TOP/.bazelrc-site`.
+
+The `.bazelrc-site` file can be useful for enforcing site-specific policies such as:
+- Default locations for build artifacts (e.g., new defaults for `--output_user_root` or perhaps `--output_base` options, outside the `$HOME` filesystem).
+- Site-specific, non-standard paths for build-tools, libraries, or package configuration data.
+
+Putting Bazel options in this file adds another layer of configuration to help groups of individuals working on a common compute site share the same site-specific default options.
+
+At a more fine-grained level, individual users can still place options in `$HOME/.bazelrc`, potentially overriding the options used in `.bazelrc-site` and `$REPO_TOP/.bazelrc`.
+However the "$HOME/.bazelrc" file is not specific to OpenTitan, which could create confusion for users working on a number of projects.
+
+The policies and paths for each contributing site could vary greatly.
+So in order to avoid accidental conflicts between sites, the `.bazelrc-site` file is explicitly _not_ included in the git repository and OpenTitan CI scripts will reject any commit that includes a `.bazelrc-site` file.
+
 ## Disk Cache
 
 Bazel can use a directory on the file system as a remote cache.
