@@ -11,10 +11,13 @@ class i2c_base_seq extends dv_base_seq #(
   `uvm_object_new
 
   // queue monitor requests which ask the re-active driver to response host dut
-  i2c_item req_q[$];
+  REQ req_q[$];
 
   // data to be sent to target dut
   bit [7:0] data_q[$];
+
+  // Stops running this sequence
+  protected bit stop;
   // constrain size of data sent/received
   constraint data_q_size_c {
     data_q.size() inside {[cfg.i2c_host_min_data_rw : cfg.i2c_host_max_data_rw]};
@@ -22,33 +25,44 @@ class i2c_base_seq extends dv_base_seq #(
 
   virtual task body();
     if (cfg.if_mode == Device) begin
-      // get seq for agent running in Device mode
-      fork
-        forever begin
-          i2c_item  req;
-          p_sequencer.req_analysis_fifo.get(req);
-          req_q.push_back(req);
-        end
-        forever begin
-          i2c_item  rsp;
-          wait(req_q.size > 0);
-          rsp = req_q.pop_front();
-          start_item(rsp);
-          finish_item(rsp);
-        end
-      join
+      send_device_mode_txn();
     end else begin
-      // get seq for agent running in Host mode
-      req = i2c_item::type_id::create("req");
-      start_item(req);
-      `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-                                     data_q.size() == local::data_q.size();
-                                     foreach (data_q[i]) {
-                                       data_q[i] == local::data_q[i];
-                                     })
-      finish_item(req);
-      get_response(rsp);
+      send_host_mode_txn();
     end
   endtask : body
+
+  virtual task send_device_mode_txn();
+    // get seq for agent running in Device mode
+    fork
+      forever begin
+        p_sequencer.req_analysis_fifo.get(req);
+        req_q.push_back(req);
+      end
+      forever begin
+        wait(req_q.size > 0);
+        rsp = req_q.pop_front();
+        start_item(rsp);
+        finish_item(rsp);
+      end
+    join
+  endtask
+
+  virtual task send_host_mode_txn();
+    // get seq for agent running in Host mode
+    req = REQ::type_id::create("req");
+    start_item(req);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
+                                   data_q.size() == local::data_q.size();
+                                   foreach (data_q[i]) {
+                                     data_q[i] == local::data_q[i];
+                                   })
+    finish_item(req);
+    get_response(rsp);
+  endtask
+
+  virtual task seq_stop();
+    stop = 1'b1;
+    wait_for_sequence_state(UVM_FINISHED);
+  endtask // seq_stop
 
 endclass : i2c_base_seq

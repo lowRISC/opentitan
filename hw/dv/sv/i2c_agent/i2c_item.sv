@@ -23,7 +23,14 @@ class i2c_item extends uvm_sequence_item;
   rand bit [7:0]           fbyte;
   rand bit                 nakok, rcont, read, stop, start;
 
-  constraint fbyte_c     { fbyte      inside {[0 : 127]}; }
+  // Incoming write data
+  logic [7:0]                wdata;
+  logic [7:0]                rdata;
+  // This is added temporarily to address the contention between driver and read data.
+  // Will be removed when #14825 is addressed.
+  bit                        cp_wdata;
+
+  constraint fbyte_c     { fbyte      inside {[0 : 127] }; }
   constraint rcont_c     {
      solve read, stop before rcont;
      // for read request, rcont and stop must be complementary set
@@ -41,8 +48,11 @@ class i2c_item extends uvm_sequence_item;
     `uvm_field_int(num_data,                UVM_DEFAULT)
     `uvm_field_int(start,                   UVM_DEFAULT)
     `uvm_field_int(stop,                    UVM_DEFAULT)
+    `uvm_field_int(wdata,                   UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_field_queue_int(data_q,            UVM_DEFAULT)
     `uvm_field_queue_int(fmt_ovf_data_q,    UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(rdata,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
+    `uvm_field_int(cp_wdata,                UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_int(rstart,                  UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_int(fbyte,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_int(ack,                     UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
@@ -61,6 +71,8 @@ class i2c_item extends uvm_sequence_item;
     drv_type = None;
     data_q.delete();
     fmt_ovf_data_q.delete();
+    wdata = 0;
+    rdata = 0;
   endfunction : clear_data
 
   function void clear_flag();
@@ -70,6 +82,7 @@ class i2c_item extends uvm_sequence_item;
     rcont   = 1'b0;
     nakok   = 1'b0;
     rstart  = 1'b0;
+    cp_wdata = 1'b0;
   endfunction : clear_flag
 
   function void clear_all();
