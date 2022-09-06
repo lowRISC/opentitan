@@ -338,13 +338,6 @@ module tb;
     uvm_config_db#(virtual flash_phy_prim_if)::set(null, "*.env.m_fpp_agent*", "vif", fpp_if);
     uvm_config_db#(virtual flash_ctrl_cov_if)::set(null, "*.env", "flash_ctrl_cov_vif",
                                                   dut.u_flash_ctrl_cov_if);
-    uvm_config_db#(virtual flash_ctrl_mem_if)::set(null, "*.env", "flash_ctrl_mem_vif[0]",
-        dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[0].
-                                                   u_prim_flash_bank.flash_ctrl_mem_if);
-    uvm_config_db#(virtual flash_ctrl_mem_if)::set(null, "*.env", "flash_ctrl_mem_vif[1]",
-        dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[1].
-                                                   u_prim_flash_bank.flash_ctrl_mem_if);
-
     $timeformat(-9, 1, " ns", 9);
     run_test();
   end
