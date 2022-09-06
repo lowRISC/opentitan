@@ -12,18 +12,49 @@ ownership state of the device:
 *   _UNLOCKED_OWNERSHIP_: The device is ready to be assigned to a new owner.
 *   _LOCKED_OWNERSHIP_: The device is assigned to an owner and in operational mode.
 
-This document defines the ownership management functions that control the
-transitions between ownership states:
+The following steps describe the ownership transfer process in detail.
 
-### Unlock Ownership {#unlock-ownership-top}
+1. The current owner of the device wipes any secret information they may have on it, and boots the device with an "unlock ownership" boot service request and a signature authenticating the request.
+At this point the device switches from a `LOCKED_OWNERSHIP` to an `UNLOCKED_OWNERSHIP` state, and the current owner will now be referred to as the "previous owner".
+    *  The device attestation process will specify that the device is in an unlocked state rather than attesting to any specific owner.
+Key derivations will also correspond to the unlocked state rather than the previous owner.
+    * The previous owner's public keys are still stored after ownership is unlocked.
+1. The new owner creates a set of keys by any means they wish (doesn't have to be on an OpenTitan device).
+These keys must include an RSA-3072 key pair for secure boot, an ECDSA-P256 key pair for unlocking ownership, and another ECDSA-P256 key pair for endorsing the next owner (see [Owner Keys]({{< relref "#owner-keys" >}})).
+    * The number of redundant keys stored is configurable up to around 2kiB of total key material.
+The new owner may choose, for example, to generate several RSA public/private key pairs.
+1. The new owner gives their public keys to the previous owner (which may be the manufacturer), who endorses them with a cryptographic signature.
+The Silicon Creator can also endorse new owners, although this will not happen often in practice.
+The endorser then creates an "ownership transfer payload", which includes the new owner’s public keys and their own ECDSA-P256 signature to authenticate the keys.
+1. The device should now be booted with a "transfer ownership" boot service request and with the ownership transfer payload to a special region of memory.
+During boot (specifically during the `ROM_EXT` stage), the device will check the signature on the payload against the endorser's public key.
+    * If the endorser is the previous owner, the device checks against the inactive public keys in the Silicon Owner slot.
+    * If the endorser is the Silicon Creator, the device checks against public keys which have been injected during manufacturing.
+1. If the signature is valid, then `ROM_EXT` will set up the new owner as the current owner by randomly generating a new Silicon Owner "root secret" (which is used to derive the Silicon Owner identity key for attestation) and writing the new owner's public keys to one of the two slots described in [Key Provisioning]({{< relref "#key-provisioning" >}}).
+    * The previous owner's public keys are still on the device and it is still in `UNLOCKED_OWNERSHIP` until the new owner's code successfully boots.
+This is a protection in case there is a problem with the new owner's keys or they have been tampered with in transit.
+1. At this point, the device should be restarted with the new owner's code.
+The device will attempt to verify the code's cryptographic signature with the new owner's stored keys.
+If successful, the device will disable the previous owner's keys and move to the `LOCKED_OWNERSHIP` state.
+It will now boot any code signed by the new owner, and generate attestation certificates associated with the new owner's identity.
 
-Implements transition from `LOCKED_OWNERSHIP` to `UNLOCKED_OWNERSHIP` state. The device must be in
-`UNLOCKED_OWNERSHIP` state before it can be assigned to a new owner.
+### Examples
 
-### Ownership Transfer (or Ownership Assignment) {#ownership-transfer-top}
+By design, ownership transfer has a lot of flexibility.
+To help explain the process, here are a few concrete examples of how ownership transfer could work in practice.
+This is just for illustration, and is by no means an exhaustive list.
 
-Implements transition from `UNLOCKED_OWNERSHIP` to `LOCKED_OWNERSHIP` stage. The rest of this document
-refers to this functionality as Ownership Transfer.
+**Scenario 1:** Immediately after manufacturing the device, the Silicon Creator assigns ownership to a known first Silicon Owner who has commissioned the device and prepared an ownership transfer payload in advance.
+
+**Scenario 2:** A Silicon Owner wants to sell their device to someone else.
+The buyer sends the seller an ownership transfer payload with their public keys.
+The seller signs the payload and sends the buyer a) their signature and b) the physical device in an `UNLOCKED_OWNERSHIP` state.
+The buyer can now complete the ownership transfer procedure to become the new owner.
+
+**Scenario 3:** A Silicon Owner wants to send their device back to the Silicon Creator for resale.
+They send it back in an `UNLOCKED_OWNERSHIP` state.
+(This unlocking step is vital, although the Silicon Creator can endorse a new owner, they cannot unlock ownership for a device that is in a `LOCKED_OWNERSHIP` state.)
+The Silicon Creator can later endorse the ownership transfer payload of whoever buys the device, without further involvement from the previous owner.
 
 ## Owner Keys {#owner-keys}
 
