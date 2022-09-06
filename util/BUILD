@@ -65,3 +65,16 @@ py_test(
         "generate_compilation_db_test.py",
     ],
 )
+
+py_binary(
+    name = "run_manual_tests",
+    srcs = [
+        "run_manual_tests.py",
+    ],
+    deps = [
+        requirement("typer"),
+        requirement("hjson"),
+        requirement("rich"),
+        requirement("pluralizer"),
+    ],
+)
