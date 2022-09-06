@@ -954,12 +954,18 @@
             ROM. For DV, we don't have to use the JTAG interface: we can wait until Ibex accesses
             `rom_main()` and backdoor check specific values.
 
+            This test should be run in all life cycle states where the processor is allowed to execute
+            instructions (TEST_UNLOCKED*, DEV, PROD*, RMA).
+
             Also, we may want to break this into multiple tests.
 
             - Verify that the following peripherals are initialized properly:
               - AST
                 - `CREATOR_SW_CFG_AST_INIT_EN`: `kMultiBitBool4True` enables, `kMultiBitBool4False`
-                  disables.
+                  disables. Both configurations should be tested.
+                - If `CREATOR_SW_CFG_AST_INIT_EN` is set to `kMultiBitBool4True`, check that the
+                  `AST_INIT_DONE` signal is correctly set to 1 in `sensor_ctrl` once the AST
+                  initialization is complete.
               - Clock jitter
                 - `CREATOR_SW_CFG_JITTER_EN`: `kMultiBitBool4False` disables, all other values
                   enables. `CREATOR_SW_CFG_AST_INIT_EN` must also be `kMultiBitBool4True` to enable.
