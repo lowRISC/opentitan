@@ -7,6 +7,7 @@ load("//rules:exclude_files.bzl", "exclude_files")
 load("//rules:linker.bzl", "ld_library")
 load(
     "//rules:opentitan_test.bzl",
+    "manual_test",
     "opentitan_functest",
 )
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
@@ -317,4 +318,13 @@ pkg_files(
     name = "package",
     srcs = [":pre_package"],
     prefix = "earlgrey/rom",
+)
+
+manual_test(
+    name = "manual_test",
+    tags = [
+        "manual",
+        "no-cache",
+    ],
+    testplan = "//sw/device/silicon_creator/rom/data:rom_manual_testplan.hjson",
 )
