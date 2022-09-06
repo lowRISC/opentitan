@@ -295,7 +295,7 @@ def _validate_mmap(config):
                                 check_int(part["size"]) - DIGEST_SIZE)
             if offset > canonical_offset:
                 raise RuntimeError(
-                    "Not enough space in partitition "
+                    "Not enough space in partition "
                     "{} to accommodate a digest. Bytes available "
                     "= {}, bytes allocated to items = {}".format(
                         part["name"], part["size"], offset - part["offset"]))
@@ -307,7 +307,7 @@ def _validate_mmap(config):
 
         # check offsets and size
         if offset > check_int(part["offset"]) + check_int(part["size"]):
-            raise RuntimeError("Not enough space in partitition "
+            raise RuntimeError("Not enough space in partition "
                                "{} to accommodate all items. Bytes available "
                                "= {}, bytes allocated to items = {}".format(
                                    part["name"], part["size"],

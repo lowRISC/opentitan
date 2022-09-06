@@ -57,7 +57,7 @@ typedef enum dif_otp_ctrl_partition {
   /**
    * Scrambled partition 0.
    *
-   * This paritition contains TEST lifecycle state unlock tokens.
+   * This partition contains TEST lifecycle state unlock tokens.
    */
   kDifOtpCtrlPartitionSecret0,
   /**
@@ -409,7 +409,7 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
  * access.
  *
  * Furthermore, `address` must be well-aligned: it must be four-byte aligned for
- * normal paritions and eight-byte-aligned for secret partitions. An error is
+ * normal partitions and eight-byte-aligned for secret partitions. An error is
  * returned for unaligned access.
  *
  * @param otp An OTP handle.

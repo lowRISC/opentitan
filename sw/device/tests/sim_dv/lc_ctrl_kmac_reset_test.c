@@ -32,7 +32,7 @@ OTTF_DEFINE_TEST_CONFIG();
  * Tests the kmac reset won't affect LC state transition.
  *
  * 1) OTP pre-load image with lc_count = `8`.
- * 2) Backdoor write OTP's LC parition to `TestUnlocked1` state, and backdoor
+ * 2) Backdoor write OTP's LC partition to `TestUnlocked1` state, and backdoor
  * write OTP's `test_exit` token and `test_unlock` token to match the rand
  * patterns.
  * 3) Write a wrong KMAC exit token and trigger a LC state transition request

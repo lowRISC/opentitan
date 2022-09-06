@@ -153,7 +153,7 @@ impl OtpMap {
             );
 
             // Fetch the img definition for partition, this contains the associated values for
-            // paritition items.
+            // partition items.
             let mut img_partition = img.get_partition(&partition.name);
 
             let mut offset = 0usize;
