@@ -6,12 +6,15 @@
 hjson
 libcst
 mako
+pluralizer
 pycryptodome >= 3.11.0
 pyelftools
 pytest
 pytest-timeout
 pyyaml
+rich
 tabulate
+typer
 
 # Dependencies: dv_sim
 enlighten
