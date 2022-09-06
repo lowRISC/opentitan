@@ -88,7 +88,7 @@ TEST(ComputeTimingTest, StandardSpeed) {
       .start_signal_setup_cycles = 53,
       .start_signal_hold_cycles = 45,
       .data_signal_setup_cycles = 3,
-      .data_signal_hold_cycles = 0,
+      .data_signal_hold_cycles = 1,
       .stop_signal_setup_cycles = 45,
       .stop_signal_hold_cycles = 53,
   };
@@ -105,7 +105,7 @@ TEST(ComputeTimingTest, StandardSpeed) {
       .start_signal_setup_cycles = 235,
       .start_signal_hold_cycles = 200,
       .data_signal_setup_cycles = 13,
-      .data_signal_hold_cycles = 0,
+      .data_signal_hold_cycles = 1,
       .stop_signal_setup_cycles = 200,
       .stop_signal_hold_cycles = 235,
   };
@@ -123,7 +123,7 @@ TEST(ComputeTimingTest, StandardSpeed) {
       .start_signal_setup_cycles = 53,
       .start_signal_hold_cycles = 45,
       .data_signal_setup_cycles = 3,
-      .data_signal_hold_cycles = 0,
+      .data_signal_hold_cycles = 1,
       .stop_signal_setup_cycles = 45,
       .stop_signal_hold_cycles = 53,
   };
@@ -145,7 +145,7 @@ TEST(ComputeTimingTest, FastSpeed) {
       .start_signal_setup_cycles = 7,
       .start_signal_hold_cycles = 7,
       .data_signal_setup_cycles = 2,
-      .data_signal_hold_cycles = 0,
+      .data_signal_hold_cycles = 1,
       .stop_signal_setup_cycles = 7,
       .stop_signal_hold_cycles = 15,
   };
@@ -162,7 +162,7 @@ TEST(ComputeTimingTest, FastSpeed) {
       .start_signal_setup_cycles = 30,
       .start_signal_hold_cycles = 30,
       .data_signal_setup_cycles = 5,
-      .data_signal_hold_cycles = 0,
+      .data_signal_hold_cycles = 1,
       .stop_signal_setup_cycles = 30,
       .stop_signal_hold_cycles = 65,
   };
@@ -180,7 +180,7 @@ TEST(ComputeTimingTest, FastSpeed) {
       .start_signal_setup_cycles = 7,
       .start_signal_hold_cycles = 7,
       .data_signal_setup_cycles = 2,
-      .data_signal_hold_cycles = 0,
+      .data_signal_hold_cycles = 1,
       .stop_signal_setup_cycles = 7,
       .stop_signal_hold_cycles = 15,
   };
@@ -202,7 +202,7 @@ TEST(ComputeTimingTest, FastPlusSpeed) {
       .start_signal_setup_cycles = 13,
       .start_signal_hold_cycles = 13,
       .data_signal_setup_cycles = 3,
-      .data_signal_hold_cycles = 0,
+      .data_signal_hold_cycles = 1,
       .stop_signal_setup_cycles = 13,
       .stop_signal_hold_cycles = 25,
   };
@@ -220,7 +220,7 @@ TEST(ComputeTimingTest, FastPlusSpeed) {
       .start_signal_setup_cycles = 13,
       .start_signal_hold_cycles = 13,
       .data_signal_setup_cycles = 3,
-      .data_signal_hold_cycles = 0,
+      .data_signal_hold_cycles = 1,
       .stop_signal_setup_cycles = 13,
       .stop_signal_hold_cycles = 25,
   };
@@ -243,7 +243,7 @@ TEST_F(ConfigTest, NormalInit) {
       .start_signal_setup_cycles = 235,
       .start_signal_hold_cycles = 200,
       .data_signal_setup_cycles = 13,
-      .data_signal_hold_cycles = 0,
+      .data_signal_hold_cycles = 1,
       .stop_signal_setup_cycles = 200,
       .stop_signal_hold_cycles = 235,
   };
@@ -550,8 +550,8 @@ TEST_F(FifoTest, WriteRawBadArgs) {
   EXPECT_DIF_BADARG(dif_i2c_write_byte_raw(nullptr, 0xff, {}));
   EXPECT_DIF_BADARG(dif_i2c_write_byte_raw(&i2c_, 0xff,
                                            {
-                                               .start = false,
-                                               .stop = true,
+                                               .start = true,
+                                               .stop = false,
                                                .read = true,
                                            }));
   EXPECT_DIF_BADARG(dif_i2c_write_byte_raw(&i2c_, 0xff,

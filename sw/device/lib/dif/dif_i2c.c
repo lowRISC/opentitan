@@ -18,10 +18,6 @@
  * As usual, a divisor of 0 is still Undefined Behavior.
  */
 static uint16_t round_up_divide(uint32_t a, uint32_t b) {
-  if (a == 0) {
-    return 0;
-  }
-
   return ((a - 1) / b) + 1;
 }
 
@@ -45,7 +41,7 @@ static dif_i2c_config_t default_timing_for_speed(dif_i2c_speed_t speed,
               round_up_divide(4700, clock_period_nanos),
           .start_signal_hold_cycles = round_up_divide(4000, clock_period_nanos),
           .data_signal_setup_cycles = round_up_divide(250, clock_period_nanos),
-          .data_signal_hold_cycles = 0,
+          .data_signal_hold_cycles = 1,
           .stop_signal_setup_cycles = round_up_divide(4000, clock_period_nanos),
           .stop_signal_hold_cycles = round_up_divide(4700, clock_period_nanos),
       };
@@ -56,7 +52,7 @@ static dif_i2c_config_t default_timing_for_speed(dif_i2c_speed_t speed,
           .start_signal_setup_cycles = round_up_divide(600, clock_period_nanos),
           .start_signal_hold_cycles = round_up_divide(600, clock_period_nanos),
           .data_signal_setup_cycles = round_up_divide(100, clock_period_nanos),
-          .data_signal_hold_cycles = 0,
+          .data_signal_hold_cycles = 1,
           .stop_signal_setup_cycles = round_up_divide(600, clock_period_nanos),
           .stop_signal_hold_cycles = round_up_divide(1300, clock_period_nanos),
       };
@@ -67,7 +63,7 @@ static dif_i2c_config_t default_timing_for_speed(dif_i2c_speed_t speed,
           .start_signal_setup_cycles = round_up_divide(260, clock_period_nanos),
           .start_signal_hold_cycles = round_up_divide(260, clock_period_nanos),
           .data_signal_setup_cycles = round_up_divide(50, clock_period_nanos),
-          .data_signal_hold_cycles = 0,
+          .data_signal_hold_cycles = 1,
           .stop_signal_setup_cycles = round_up_divide(260, clock_period_nanos),
           .stop_signal_hold_cycles = round_up_divide(500, clock_period_nanos),
       };
@@ -377,7 +373,7 @@ dif_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
   }
   // Validate that "write only" flags and "read only" flags are not set
   // simultaneously.
-  bool has_write_flags = flags.start || flags.stop || flags.suppress_nak_irq;
+  bool has_write_flags = flags.start || flags.suppress_nak_irq;
   bool has_read_flags = flags.read || flags.read_cont;
   if (has_write_flags && has_read_flags) {
     return kDifBadArg;

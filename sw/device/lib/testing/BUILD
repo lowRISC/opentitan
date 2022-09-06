@@ -148,6 +148,19 @@ cc_library(
 )
 
 cc_library(
+    name = "i2c_testutils",
+    srcs = ["i2c_testutils.c"],
+    hdrs = ["i2c_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/ip/i2c/data:i2c_regs",
+        "//sw/device/lib/dif:i2c",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "keymgr_testutils",
     srcs = ["keymgr_testutils.c"],
     hdrs = ["keymgr_testutils.h"],
