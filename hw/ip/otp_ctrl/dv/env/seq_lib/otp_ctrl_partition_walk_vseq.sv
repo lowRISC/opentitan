@@ -21,7 +21,7 @@ class otp_ctrl_partition_walk_vseq extends otp_ctrl_base_vseq;
       // granularity of 64 bits
       if (is_secret(dai_addr) || is_digest(dai_addr)) begin
         if (addr % 2) continue;
-        // DAI access hw parition will throw an access error, thus it is not a valid operation.
+        // DAI access hw partition will throw an access error, thus it is not a valid operation.
         if (is_digest(dai_addr) && !is_sw_digest(dai_addr)) is_valid_dai_op = 0;
         dai_wr(dai_addr, dai_addr, dai_addr + 1);
         if (!is_digest(dai_addr)) dai_rd_check(dai_addr, dai_addr, dai_addr + 1);

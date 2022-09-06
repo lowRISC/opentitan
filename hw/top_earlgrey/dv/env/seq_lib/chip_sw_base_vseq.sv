@@ -359,7 +359,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // LC state transition tasks
   // This function takes the token value from the four LC_CTRL token CSRs, then runs through
   // cshake128 to get a 768-bit XORed token output.
-  // The first 128 bits of the decoded token should match the OTP paritition's descrambled tokens
+  // The first 128 bits of the decoded token should match the OTP partition's descrambled tokens
   // value.
   virtual function bit [TokenWidthBit-1:0] dec_otp_token_from_lc_csrs(
       bit [7:0] token_in[TokenWidthByte]);

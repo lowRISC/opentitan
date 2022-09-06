@@ -75,8 +75,8 @@ pub struct VmemPartition {
     digest_type: DigestType,
     /// Partition size.
     size: usize,
-    /// The key name for this parition.
-    /// If specified, the serializer will attempt to scramble this parition using the key named in
+    /// The key name for this partition.
+    /// If specified, the serializer will attempt to scramble this partition using the key named in
     /// this field.
     key_name: Option<String>,
 }

@@ -43,7 +43,7 @@ static volatile const uint8_t kLcExitToken[LC_TOKEN_SIZE] = {
  * Tests the state transition request handshake between LC_CTRL and OTP_CTRL.
  *
  * 1). OTP pre-load image with lc_count = `8`.
- * 2). Backdoor write OTP's LC parition to `TestLocked1` state, and backdoor
+ * 2). Backdoor write OTP's LC partition to `TestLocked1` state, and backdoor
  * write OTP's `test_exit` token and `test_unlock` token to match the rand
  * patterns.
  * 3). `TestLocked1` state disabled CPU, so external testbench will drive JTAG
