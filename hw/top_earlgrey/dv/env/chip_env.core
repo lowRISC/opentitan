@@ -29,6 +29,8 @@ filesets:
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
       - "fileset_partner ? (partner:systems:ast_pkg)"
     files:
+      - chip_common_pkg.sv
+      - chip_if.sv
       - chip_env_pkg.sv
       - chip_env_cfg.sv: {is_include_file: true}
       - chip_env_cov.sv: {is_include_file: true}

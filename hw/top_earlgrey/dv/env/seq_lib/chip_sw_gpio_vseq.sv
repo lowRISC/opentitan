@@ -5,7 +5,7 @@
 class chip_sw_gpio_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_gpio_vseq)
 
-    bit [NUM_GPIOS-1:0] gpios_mask = {chip_env_pkg::NUM_GPIOS{1'b1}};
+    bit [NUM_GPIOS-1:0] gpios_mask = {NUM_GPIOS{1'b1}};
     uint                timeout_ns = 2_000_000;
 
   `uvm_object_new
@@ -17,8 +17,8 @@ class chip_sw_gpio_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
 
     // Disable pullups and pulldowns on GPIOs.
-    cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b0}});
-    cfg.gpio_vif.set_pullup_en({chip_env_pkg::NUM_GPIOS{1'b0}});
+    cfg.gpio_vif.set_pulldown_en({NUM_GPIOS{1'b0}});
+    cfg.gpio_vif.set_pullup_en({NUM_GPIOS{1'b0}});
 
     // Run the GPIO output tests.
     gpio_output_test();
@@ -29,7 +29,7 @@ class chip_sw_gpio_vseq extends chip_sw_base_vseq;
 
   virtual task gpio_output_test();
     // Disable GPIOs from being driven as chip inputs.
-    cfg.gpio_vif.drive_en({chip_env_pkg::NUM_GPIOS{1'b0}});
+    cfg.gpio_vif.drive_en({NUM_GPIOS{1'b0}});
 
     `uvm_info(`gfn, "Starting GPIO output test", UVM_LOW)
 
