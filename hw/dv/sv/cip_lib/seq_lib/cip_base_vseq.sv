@@ -771,46 +771,52 @@ class cip_base_vseq #(
     for (int trans = 1; trans <= num_times; trans++) begin
       `uvm_info(`gfn, $sformatf("Running same CSR outstanding test iteration %0d/%0d",
                                  trans, num_times), UVM_LOW)
-      all_csrs.shuffle();
 
       // first iteration already issued dut_init in pre_start
       if (trans != 1 && $urandom_range(0, 1)) dut_init();
 
-      foreach (all_csrs[i]) begin
-        uvm_reg_data_t exp_data = all_csrs[i].get_mirrored_value();
-        uvm_reg_data_t rd_data, wr_data, rd_mask, wr_mask;
-        csr_excl_item  csr_excl = get_excl_item(all_csrs[i]);
+      foreach (cfg.ral_models[ral_name]) begin
+        dv_base_reg csrs[$];
+        cfg.ral_models[ral_name].get_dv_base_regs(csrs);
+        csrs.shuffle();
 
-        rd_mask = get_mask_excl_fields(all_csrs[i], CsrExclWriteCheck, csr_test_type);
-        wr_mask = get_mask_excl_fields(all_csrs[i], CsrExclWrite, csr_test_type);
+        foreach (csrs[i]) begin
+          uvm_reg_data_t exp_data = csrs[i].get_mirrored_value();
+          uvm_reg_data_t rd_data, wr_data, rd_mask, wr_mask;
+          csr_excl_item  csr_excl = get_excl_item(csrs[i]);
 
-        repeat ($urandom_range(2, 20)) begin
-          // do read, exclude CsrExclWriteCheck, CsrExclCheck
-          if ($urandom_range(0, 1) &&
-              !csr_excl.is_excl(all_csrs[i], CsrExclWriteCheck, csr_test_type)) begin
-            tl_access(.addr(all_csrs[i].get_address()), .write(0), .data(rd_data),
-                      .exp_data(exp_data), .check_exp_data(1), .compare_mask(rd_mask),
-                      .blocking(0));
-          end
-          // do write, exclude CsrExclWrite
-          if ($urandom_range(0, 1) &&
-              !csr_excl.is_excl(all_csrs[i], CsrExclWrite, csr_test_type)) begin
-            // Shadowed register requires two writes and thus call predict function twice.
-            int num_write = all_csrs[i].get_is_shadowed() ? 2 : 1;
+          rd_mask = get_mask_excl_fields(csrs[i], CsrExclWriteCheck, csr_test_type);
+          wr_mask = get_mask_excl_fields(csrs[i], CsrExclWrite, csr_test_type);
 
-            `DV_CHECK_STD_RANDOMIZE_FATAL(wr_data)
-            wr_data &= wr_mask;
-            repeat (num_write) begin
-              tl_access(.addr(all_csrs[i].get_address()), .write(1), .data(wr_data), .blocking(0));
-              void'(all_csrs[i].predict(.value(wr_data), .kind(UVM_PREDICT_WRITE)));
+          repeat ($urandom_range(2, 20)) begin
+            // do read, exclude CsrExclWriteCheck, CsrExclCheck
+            if ($urandom_range(0, 1) &&
+                !csr_excl.is_excl(csrs[i], CsrExclWriteCheck, csr_test_type)) begin
+              tl_access(.addr(csrs[i].get_address()), .write(0), .data(rd_data),
+                        .exp_data(exp_data), .check_exp_data(1), .compare_mask(rd_mask),
+                        .blocking(0), .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
             end
-            exp_data = all_csrs[i].get_mirrored_value();
-          end
-        end
-        csr_utils_pkg::wait_no_outstanding_access();
+            // do write, exclude CsrExclWrite
+            if ($urandom_range(0, 1) &&
+                !csr_excl.is_excl(csrs[i], CsrExclWrite, csr_test_type)) begin
+              // Shadowed register requires two writes and thus call predict function twice.
+              int num_write = csrs[i].get_is_shadowed() ? 2 : 1;
 
-        // Manually lock lockable flds because we use tl_access() instead of csr_wr().
-        if (all_csrs[i].is_wen_reg()) all_csrs[i].lock_lockable_flds(`gmv(all_csrs[i]));
+              `DV_CHECK_STD_RANDOMIZE_FATAL(wr_data)
+              wr_data &= wr_mask;
+              repeat (num_write) begin
+                tl_access(.addr(csrs[i].get_address()), .write(1), .data(wr_data), .blocking(0),
+                          .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
+                void'(csrs[i].predict(.value(wr_data), .kind(UVM_PREDICT_WRITE)));
+              end
+              exp_data = csrs[i].get_mirrored_value();
+            end
+          end
+          csr_utils_pkg::wait_no_outstanding_access();
+
+          // Manually lock lockable flds because we use tl_access() instead of csr_wr().
+          if (csrs[i].is_wen_reg()) csrs[i].lock_lockable_flds(`gmv(csrs[i]));
+        end
       end
     end
   endtask
