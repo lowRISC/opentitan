@@ -47,6 +47,9 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_base_vseq;
   virtual task body();
     super.body();
 
+    // Connect the UART RX pin to the chip IOs.
+    cfg.chip_vif.enable_uart(uart_idx, 1);
+
     // Spawn off a thread to retrieve UART TX items.
     fork get_uart_tx_items(uart_idx); join_none
 
@@ -79,6 +82,11 @@ class chip_sw_uart_tx_rx_vseq extends chip_sw_base_vseq;
       `DV_CHECK_RANDOMIZE_WITH_FATAL(send_rx_seq, data == rx_data;)
       `uvm_send(send_rx_seq)
     end
+  endtask
+
+  virtual task dut_shutdown();
+    super.dut_shutdown();
+    if (uart_idx > 0) cfg.chip_vif.enable_uart(uart_idx, 0);
   endtask
 
 endclass : chip_sw_uart_tx_rx_vseq

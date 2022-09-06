@@ -22,9 +22,9 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     super.pre_start();
     // Deselect JTAG interface.
     if (cfg.jtag_riscv_map != null || cfg.use_jtag_dmi == 1) begin
-      cfg.tap_straps_vif.drive(SelectRVJtagTap);
+      cfg.chip_vif.tap_straps_if.drive(SelectRVJtagTap);
     end else begin
-      cfg.tap_straps_vif.drive(DeselectJtagTap);
+      cfg.chip_vif.tap_straps_if.drive(DeselectJtagTap);
     end
     enable_asserts_in_hw_reset_rand_wr = 0;
   endtask
@@ -41,18 +41,15 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
 
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
-    // internal reset does not immediately go to 0 when external reset is applied
-    `DV_WAIT(cfg.rst_n_mon_vif.pins[0] === 0)
-    `DV_WAIT(cfg.rst_n_mon_vif.pins[0] === 1)
-
+    `DV_SPINWAIT(cfg.chip_vif.cpu_clk_rst_if.wait_for_reset();)
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     // make sure jtag rst triggers
-    cfg.tap_straps_vif.drive(SelectRVJtagTap);
+    cfg.chip_vif.tap_straps_if.drive(SelectRVJtagTap);
     super.dut_init(reset_kind);
     if (cfg.jtag_riscv_map == null && cfg.use_jtag_dmi == 0) begin
-      cfg.tap_straps_vif.drive(DeselectJtagTap);
+      cfg.chip_vif.tap_straps_if.drive(DeselectJtagTap);
     end
     // Program the AST with the configuration data loaded in OTP creator SW config region.
     if (cfg.use_jtag_dmi == 0) do_ast_cfg();

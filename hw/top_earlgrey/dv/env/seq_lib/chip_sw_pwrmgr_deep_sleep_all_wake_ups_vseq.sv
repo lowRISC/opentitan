@@ -9,7 +9,7 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    cfg.pwrb_in_vif.drive(1'b1);    // off
+    cfg.chip_vif.pwrb_in_if.drive(1'b1);    // off
   endtask
 
   virtual task body();
@@ -59,7 +59,7 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
     case(round)
       0: begin
         `uvm_info(`gfn, "Push power button ", UVM_MEDIUM)
-        cfg.pwrb_in_vif.drive(1'b0); // on
+        cfg.chip_vif.pwrb_in_if.drive(1'b0); // on
       end
       1: begin
         `uvm_info(`gfn, "Force adc out ", UVM_MEDIUM)
@@ -71,7 +71,7 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
       end
       2: begin
         `uvm_info(`gfn, "Send pattern to pinmux wakeup detector ", UVM_MEDIUM)
-        cfg.pinmux_wkup_vif.drive(1'b1);
+        cfg.chip_vif.pinmux_wkup_if.drive(1'b1);
       end
       default: `uvm_fatal(`gfn, $sformatf("round %d is not allowed", round))
     endcase
@@ -81,14 +81,14 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
   task release_action(int round);
     string path1 ,path2;
     case(round)
-      0: cfg.pwrb_in_vif.drive(1'b1);
+      0: cfg.chip_vif.pwrb_in_if.drive(1'b1);
       1: begin
         path1 = "tb.dut.u_ast.u_adc.u_adc_ana.adc_d_ch0_o";
         path2 = "tb.dut.u_ast.u_adc.u_adc_ana.adc_d_ch1_o";
         `DV_CHECK(uvm_hdl_release(path1))
         `DV_CHECK(uvm_hdl_release(path2))
       end
-      2:     cfg.pinmux_wkup_vif.drive(1'b0);
+      2:     cfg.chip_vif.pinmux_wkup_if.drive(1'b0);
       default: `uvm_fatal(`gfn, $sformatf("round %d is not allowed", round))
     endcase
   endtask // release_action

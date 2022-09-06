@@ -5,6 +5,8 @@
 // Provides parameters, types and methods shared throughout the chip level testbench.
 package chip_common_pkg;
 
+  import dv_utils_pkg::uint;
+
   // Chip composition (number of hardware resources).
   parameter dv_utils_pkg::uint NUM_GPIOS = 16;
   parameter dv_utils_pkg::uint NUM_UARTS = 4;
@@ -20,6 +22,9 @@ package chip_common_pkg;
 
   parameter bit [top_pkg::TL_AW-1:0] SW_DV_TEST_STATUS_ADDR = SW_DV_START_ADDR + 0;
   parameter bit [top_pkg::TL_AW-1:0] SW_DV_LOG_ADDR         = SW_DV_START_ADDR + 4;
+
+  // Auto-generated parameters. TODO: rename to chip_common_pkg__params.svh.
+  `include "autogen/chip_env_pkg__params.sv"
 
   // TODO: Eventually, move everything from chip_env_pkg to here.
 
@@ -37,24 +42,61 @@ package chip_common_pkg;
     FlashTestMode0,
     FlashTestMode1,
     OtpExtVolt,
-    SpiHostD[0:3],
+    SpiHostD[0:3],  // 9
     SpiHostClk,
     SpiHostCsL,
-    SpiDevD[0:3],
+    SpiDevD[0:3],  // 15
     SpiDevClk,
-    SpiDevCSL,
+    SpiDevCsL,
     AstMisc,
 
-    // Muxed Pads
-    IoA[0:8],
-    IoB[0:12],
-    IoC[0:12],
+    // Muxed Pads:
+    IoA[0:8],  // 22
+    IoB[0:12],  // 31
+    IoC[0:12],  // 44
 
     // Note: IOR[8:9] are dedicated IOs used by sysrst_ctrl.
-    IoR[0:13],
+    IoR[0:13],  // 56
 
     // Total number of pads, including dedicated and muxed.
-    IoNumTotal
+    IoNumTotal  // 70
   } chip_io_e;
+
+  // Chip Peripherals.
+  typedef enum {
+    AdcCtrl,
+    Aes,
+    AlertHandler,
+    AonTimer,
+    Ast,
+    Clkmgr,
+    Csrng,
+    Edn,
+    EntropySrc,
+    FlashCtrl,
+    Gpio,
+    Hmac,
+    I2c,
+    Keymgr,
+    Kmac,
+    LcCtrl,
+    Otbn,
+    OtpCtrl,
+    SramCtrlMain,
+    SramCtrlRet,
+    Pattgen,
+    Pinmux,
+    Pwrmgr,
+    Pwm,
+    RomCrl,
+    RstMgr,
+    RvDm,
+    RvTimer,
+    SpiDevice,
+    SpiHost,
+    SysRstCtrl,
+    Uart,
+    UsbDev
+  } chip_peripheral_e;
 
 endpackage

@@ -84,7 +84,7 @@ class chip_sw_pwm_pulses_vseq extends chip_sw_base_vseq;
     // Flushing first 2 packets will remove such a false alarm.
     if (pkt_cnt[channel] <= 2) return;
 
-    if (cfg.pwrmgr_low_power_vif.low_power == 1) begin
+    if (cfg.chip_vif.pwrmgr_low_power_if.low_power == 1) begin
       low_power_cnt[channel]++;
     end
     if (item.period != CLOCK_PERIOD) begin

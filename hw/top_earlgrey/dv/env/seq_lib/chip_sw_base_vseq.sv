@@ -412,11 +412,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
   //     This transition will use default raw unlock token.
   // 2). Test lock state N -> test unlock state N+1
   //     This transition requires user to input the correct test unlock token.
+  // During this operation switch to LC_CTRL JTAG tap.
   virtual task jtag_lc_state_transition(dec_lc_state_e src_state,
                                         dec_lc_state_e dest_state,
                                         bit [TokenWidthBit-1:0] test_unlock_token = 0);
     bit [TL_DW-1:0] actual_src_state;
     bit valid_transition;
+
+    cfg.chip_vif.enable_jtag = 1'b1;
+    cfg.chip_vif.tap_straps_if.drive(SelectLCJtagTap);
+
     jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
                                         p_sequencer.jtag_sequencer_h,
                                         actual_src_state);
@@ -506,6 +511,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     wait_lc_status(LcTransitionSuccessful);
     `uvm_info(`gfn, "LC transition request succeed!", UVM_LOW)
+    cfg.chip_vif.enable_jtag = 1'b0;
   endtask
 
   // These assertions check if OTP image sets the correct mubi type. However, when loading the raw
@@ -530,34 +536,23 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
   endfunction
 
-
-  // drive PAD PORN for 6 aon_clk cycles
-  task assert_por_reset(int delay = 0);
-    repeat (delay) @cfg.pwrmgr_low_power_vif.fast_cb;
-    cfg.por_rstn_vif.drive(0);
-    repeat (6) @cfg.pwrmgr_low_power_vif.cb;
-
-    cfg.clk_rst_vif.wait_clks(10);
-    cfg.por_rstn_vif.drive(1);
-  endtask // assert_por_reset
-
   task assert_por_reset_deep_sleep (int delay = 0);
-    repeat (delay) @cfg.pwrmgr_low_power_vif.cb;
-    cfg.por_rstn_vif.drive(0);
-    repeat (6) @cfg.pwrmgr_low_power_vif.cb;
+    repeat (delay) @cfg.chip_vif.pwrmgr_low_power_if.cb;
+    cfg.chip_vif.por_n_if.drive(0);
+    repeat (6) @cfg.chip_vif.pwrmgr_low_power_if.cb;
 
     cfg.clk_rst_vif.wait_clks(10);
-    cfg.por_rstn_vif.drive(1);
-  endtask // assert_por_reset
+    cfg.chip_vif.por_n_if.drive(1);
+  endtask // assert_por_reset_deep_sleep
 
   // push button 50us;
   // this task requires proper sysrst_ctrl config
   // see sw/device/tests/pwrmgr_b2b_sleep_reset_test.c
   // 'static void prgm_push_button_wakeup()' for example
-  task push_button;
-    cfg.pwrb_in_vif.drive(0);
+  task push_button();
+    cfg.chip_vif.pwrb_in_if.drive(0);
     #50us;
-    cfg.pwrb_in_vif.drive(1);
+    cfg.chip_vif.pwrb_in_if.drive(1);
   endtask // push_button
 
 endclass : chip_sw_base_vseq

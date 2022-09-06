@@ -12,7 +12,7 @@ class chip_sw_alert_handler_entropy_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   virtual task pre_start();
-    string wait_cyc_mask_path = {`DV_STRINGIFY(`ALERT_HANDLER_HIER),
+    string wait_cyc_mask_path = {`DV_STRINGIFY(tb.dut.`ALERT_HANDLER_HIER),
                                  ".u_ping_timer.wait_cyc_mask_i"};
     `DV_CHECK(uvm_hdl_force(wait_cyc_mask_path, 'h7))
     super.pre_start();
@@ -29,7 +29,7 @@ class chip_sw_alert_handler_entropy_vseq extends chip_sw_base_vseq;
           cfg.m_alert_agent_cfg[LIST_OF_ALERTS[index]].vif.wait_alert_ping();
           num_alerts--;
           `uvm_info(`gfn, $sformatf("alert %0s received ping request.\n %0d alerts remaining.",
-                    LIST_OF_ALERTS[index], num_alerts), UVM_LOW);
+                    LIST_OF_ALERTS[index], num_alerts), UVM_LOW)
         end join_none
       end
       wait fork;

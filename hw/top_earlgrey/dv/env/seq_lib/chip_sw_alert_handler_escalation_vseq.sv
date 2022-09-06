@@ -7,15 +7,13 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  // Reassign `select_jtag` variable to drive LC JTAG tap at start,
-  // because LC_CTRL's TestLock state can only sample strap once at boot.
   virtual task pre_start();
-    select_jtag = SelectLCJtagTap;
+    cfg.chip_vif.tap_straps_if.drive(SelectLCJtagTap);
     super.pre_start();
   endtask
 
   virtual task body();
-    string keymgr_path = {`DV_STRINGIFY(`KEYMGR_HIER),
+    string keymgr_path = {`DV_STRINGIFY(tb.dut.`KEYMGR_HIER),
                         ".u_ctrl.key_state_q"};
     logic [1023:0] curr_key, prev_key;
     logic [TL_DW-1:0] init_state;

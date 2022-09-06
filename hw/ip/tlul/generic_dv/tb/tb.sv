@@ -8,7 +8,6 @@ module tb;
   import dv_utils_pkg::*;
   import xbar_test_pkg::*;
 
-
   wire clk, rst_n;
   // reference clock for scb/seq and this clock isn't connected to any design clock
   // TODO, reset is the combined all the resets. Re-visit this if partial reset is needed
