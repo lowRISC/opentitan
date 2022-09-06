@@ -9,7 +9,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   rand bit [7:0] rd_data[256]; // max length of read transaction
   byte wr_data;
-  byte address;
+
   // get an array with unique read data
   constraint rd_data_c { unique { rd_data }; }
 
@@ -25,7 +25,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   virtual task get_and_drive();
     i2c_item req;
-
     @(posedge cfg.vif.rst_ni);
     forever begin
       release_bus();
@@ -79,10 +78,12 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   virtual task drive_device_item(i2c_item req);
     bit [7:0] rd_data_cnt = 8'd0;
+    bit [7:0] rdata;
 
     unique case (req.drv_type)
       DevAck: begin
         cfg.timing_cfg.tStretchHostClock = gen_num_stretch_host_clks(cfg.timing_cfg);
+         `uvm_info(`gfn, $sformatf("sending an ack"), UVM_MEDIUM)
         fork
           // host clock stretching allows a high-speed host to communicate
           // with a low-speed device by setting TIMEOUT_CTRL.EN bit
@@ -95,20 +96,27 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         join
       end
       RdData: begin
-        if (rd_data_cnt == 8'd0) `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
+        if (req.cp_wdata) begin
+          rdata = req.rdata;
+        end else begin
+          if (rd_data_cnt == 8'd0) begin
+             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
+          end
+          rdata = rd_data[rd_data_cnt];
+        end
+
+        `uvm_info(`gfn, $sformatf("Send readback data %0x", rdata), UVM_MEDIUM)
         for (int i = 7; i >= 0; i--) begin
-          cfg.vif.device_send_bit(cfg.timing_cfg, rd_data[rd_data_cnt][i]);
+          cfg.vif.device_send_bit(cfg.timing_cfg, rdata[i]);
         end
         `uvm_info(`gfn, $sformatf("\n  device_driver, trans %0d, byte %0d  %0x",
             req.tran_id, req.num_data+1, rd_data[rd_data_cnt]), UVM_DEBUG)
         // rd_data_cnt is rollled back (no overflow) after reading 256 bytes
         rd_data_cnt++;
       end
-      WrData:
-        // TODO: consider adding memory (associative array) in device_driver
-        for (int i = 7; i >= 0; i--) begin
-          cfg.vif.get_bit_data("host", cfg.timing_cfg, wr_data[i]);
-        end
+      WrData: begin
+        // nothing to do here at the moment
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("\n  device_driver, received invalid request"))
       end
@@ -130,6 +138,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   endtask : process_reset
 
   virtual task release_bus();
+    `uvm_info(`gfn, "Driver released the bus", UVM_MEDIUM)
     cfg.vif.scl_o = 1'b1;
     cfg.vif.sda_o = 1'b1;
   endtask : release_bus
