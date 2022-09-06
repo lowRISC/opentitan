@@ -55,9 +55,18 @@ class chip_base_vseq #(
   chip_callback_vseq callback_vseq;
 
   virtual task dut_init(string reset_kind = "HARD");
+    // Initialize these spare IOs (chip inputs) to 0.
+    cfg.chip_vif.cc1 = '0;
+    cfg.chip_vif.cc2 = '0;
+    cfg.chip_vif.flash_test_volt = '0;
+    cfg.chip_vif.flash_test_mode0 = '0;
+    cfg.chip_vif.flash_test_mode1 = '0;
+    cfg.chip_vif.otp_ext_volt = '0;
+    cfg.chip_vif.ast_misc = '0;
+
     // Initialize gpio pin default states
     if (!$test$plusargs("disable_gpio_pulldown")) begin
-      cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b1}});
+      cfg.gpio_vif.set_pulldown_en({NUM_GPIOS{1'b1}});
     end
     // Initialize flash seeds
     cfg.mem_bkdr_util_h[FlashBank0Info].set_mem();

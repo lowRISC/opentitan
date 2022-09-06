@@ -19,6 +19,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   bit                 use_spi_load_bootstrap = 0;
 
   // chip top interfaces
+  virtual chip_if       chip_vif;
   gpio_vif              gpio_vif;
   virtual pins_if#(2)   tap_straps_vif;
   virtual pins_if#(2)   dft_straps_vif;

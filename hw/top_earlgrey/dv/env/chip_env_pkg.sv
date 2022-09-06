@@ -11,6 +11,7 @@ package chip_env_pkg;
   import ast_pkg::AstRegsNum, ast_pkg::AstLastRegOffset;
   import bus_params_pkg::*;
   import chip_ral_pkg::*;
+  import chip_common_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
   import digestpp_dpi_pkg::*;
@@ -51,21 +52,6 @@ package chip_env_pkg;
 
   // include auto-generated alert related parameters
   `include "autogen/chip_env_pkg__params.sv"
-
-  // local parameters and types
-  parameter uint NUM_GPIOS = 16;
-  parameter uint NUM_UARTS = 4;
-  parameter uint NUM_PWM_CHANNELS = pwm_reg_pkg::NOutputs;
-
-  // Buffer is half of SPI_DEVICE Dual Port SRAM
-  parameter uint SPI_FRAME_BYTE_SIZE = spi_device_reg_pkg::SPI_DEVICE_BUFFER_SIZE/2;
-
-  // SW constants - use unmapped address space with at least 32 bytes.
-
-  parameter bit [TL_AW-1:0] SW_DV_START_ADDR        = ADDR_SPACE_RV_CORE_IBEX__CFG +
-                                                      RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;
-  parameter bit [TL_AW-1:0] SW_DV_TEST_STATUS_ADDR  = SW_DV_START_ADDR + 0;
-  parameter bit [TL_AW-1:0] SW_DV_LOG_ADDR          = SW_DV_START_ADDR + 4;
 
   // LC token paramters
   // LC sends two 64-bit msg as input token.

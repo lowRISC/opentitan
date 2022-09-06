@@ -44,7 +44,7 @@ class chip_sw_gpio_smoke_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
 
     // Disable the default pulldown on GPIOs.
-    cfg.gpio_vif.set_pulldown_en({chip_env_pkg::NUM_GPIOS{1'b0}});
+    cfg.gpio_vif.set_pulldown_en({NUM_GPIOS{1'b0}});
 
     `uvm_info(`gfn, "Starting GPIO output test", UVM_LOW)
     for (int i = 0; i < num_gpio_vals; i++) begin

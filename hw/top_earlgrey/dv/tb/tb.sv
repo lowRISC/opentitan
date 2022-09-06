@@ -8,6 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
   import chip_env_pkg::*;
+  import chip_common_pkg::*;
   import top_pkg::*;
   import chip_test_pkg::*;
   import xbar_test_pkg::*;
@@ -159,6 +160,8 @@ module tb;
 
   // TODO: the external clk is currently not connected.
   // We will need to feed this in via a muxed pin, once that function implemented.
+
+  bind dut chip_if chip_if();
 
   wire por_n = rst_n & por_rstn;
 `ifdef DISABLE_ROM_INTEGRITY_CHECK
@@ -341,6 +344,7 @@ module tb;
         null, "*.env", "clk_rst_vif_rv_dm_debug_mem_reg_block", clk_rst_if);
 
     // IO Interfaces
+    uvm_config_db#(virtual chip_if)::set(null, "*.env", "chip_vif", dut.chip_if);
     uvm_config_db#(virtual pins_if #(NUM_GPIOS))::set(null, "*.env", "gpio_vif", gpio_if);
     uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_riscv_agent*", "vif", jtag_if);
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_if);
