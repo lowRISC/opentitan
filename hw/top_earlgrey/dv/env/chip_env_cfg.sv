@@ -7,7 +7,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   );
 
   // Testbench settings
-  bit                 stub_cpu;
   bit                 en_uart_logger;
   uart_agent_pkg::baud_rate_e uart_baud_rate = uart_agent_pkg::BaudRate1Mbps;
   bit                 use_gpio_for_sw_test_status;
@@ -20,22 +19,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
   // chip top interfaces
   virtual chip_if       chip_vif;
-  gpio_vif              gpio_vif;
-  virtual pins_if#(2)   tap_straps_vif;
-  virtual pins_if#(2)   dft_straps_vif;
-  virtual pins_if#(3)   sw_straps_vif;
-  virtual pins_if#(1)   rst_n_mon_vif;
-  virtual clk_rst_if    cpu_clk_rst_vif;
-  virtual clk_rst_if    usb_clk_rst_vif;
-  virtual pins_if#(1)   pinmux_wkup_vif;
-  virtual pins_if#(1)   por_rstn_vif;
-  virtual pins_if#(1)   pwrb_in_vif;
-  virtual pins_if#(1)   ec_rst_vif;
-  virtual pins_if#(1)   flash_wp_vif;
-  virtual pins_if#(8)   sysrst_ctrl_vif;
-
-  // pwrmgr probe interface
-  virtual pwrmgr_low_power_if   pwrmgr_low_power_vif;
 
   // Memory backdoor util instances for all memory instances in the chip.
   mem_bkdr_util mem_bkdr_util_h[chip_mem_e];
@@ -86,7 +69,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   uint               sw_test_timeout_ns = 12_000_000; // 12ms
   sw_logger_vif      sw_logger_vif;
   sw_test_status_vif sw_test_status_vif;
-  alerts_vif         alerts_vif;
   ast_supply_vif     ast_supply_vif;
   ast_ext_clk_vif    ast_ext_clk_vif;
 
@@ -111,7 +93,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   parameter uint JTAG_IR_LEN = 5;
 
   `uvm_object_utils_begin(chip_env_cfg)
-    `uvm_field_int   (stub_cpu,               UVM_DEFAULT)
     `uvm_field_object(m_jtag_riscv_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(m_spi_agent_cfg,        UVM_DEFAULT)
     `uvm_field_object(jtag_dmi_ral,           UVM_DEFAULT)
@@ -127,7 +108,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     ext_clk_type_e ext_clk_type = UseInternalClk;
     has_devmode = 0;
-    list_of_alerts = chip_env_pkg::LIST_OF_ALERTS;
+    list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
 
     // Set up second RAL model for ROM memory and associated collateral
     if (use_jtag_dmi == 1) begin

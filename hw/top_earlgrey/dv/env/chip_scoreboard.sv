@@ -19,13 +19,11 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
   uart_item       uart_rx_q[$];
   jtag_riscv_item jtag_q[$];
 
-  bit             stub_cpu;
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     jtag_fifo = new("jtag_fifo", this);
-    void'($value$plusargs("stub_cpu=%0b", stub_cpu));
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -47,9 +45,9 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
 
   virtual task process_alerts_for_cov();
     int alert_cg_size = 0;
-    forever @cfg.alerts_vif.alerts_cb.alerts begin
-      foreach (cfg.alerts_vif.alerts_cb.alerts[i]) begin
-        if (cfg.alerts_vif.alerts_cb.alerts[i]) cov.alert_cg_wrap[i].sample(1'b1);
+    forever @cfg.chip_vif.alerts_if.alerts_cb.alerts begin
+      foreach (cfg.chip_vif.alerts_if.alerts_cb.alerts[i]) begin
+        if (cfg.chip_vif.alerts_if.alerts_cb.alerts[i]) cov.alert_cg_wrap[i].sample(1'b1);
       end
     end
   endtask
@@ -84,7 +82,7 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
     // any access to dv_sim_window returns d_error since this is a DV mem
     // if stub_cpu is off, we force connect this DV mem with a sim_sram, accessing the DV mem is to
     // passing info from C to SV, which won't set d_error
-    if (mem != null && mem.get_name() == "dv_sim_window" && stub_cpu) begin
+    if (mem != null && mem.get_name() == "dv_sim_window" && cfg.chip_vif.stub_cpu) begin
       if (channel == DataChannel) `DV_CHECK_EQ(item.d_error, 1)
       return 1;
     end

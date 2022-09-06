@@ -12,10 +12,8 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
 
   constraint num_trans_c {num_trans inside {[1 : 2]};}
 
-  // Reassign `select_jtag` variable to drive LC JTAG tap at start,
-  // because LC_CTRL's TestLock state can only sample strap once at boot.
   virtual task pre_start();
-    select_jtag = SelectLCJtagTap;
+    cfg.chip_vif.tap_straps_if.drive(SelectLCJtagTap);
     super.pre_start();
   endtask
 

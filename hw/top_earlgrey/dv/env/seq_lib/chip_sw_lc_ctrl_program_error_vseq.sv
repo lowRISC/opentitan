@@ -7,16 +7,14 @@ class chip_sw_lc_ctrl_program_error_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  // Reassign `select_jtag` variable to drive LC JTAG tap at start,
-  // because LC_CTRL's TestLock state can only sample strap once at boot.
   virtual task pre_start();
-    select_jtag = SelectLCJtagTap;
+    cfg.chip_vif.tap_straps_if.drive(SelectLCJtagTap);
     super.pre_start();
   endtask
 
   virtual task body();
     bit [TL_DW-1:0] status_val;
-    string otp_path = {`DV_STRINGIFY(`OTP_CTRL_HIER),
+    string otp_path = {`DV_STRINGIFY(tb.dut.`OTP_CTRL_HIER),
                        ".u_otp_ctrl_lci.lc_err_o"};
 
     super.body();

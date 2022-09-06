@@ -13,9 +13,9 @@ class chip_jtag_mem_vseq extends chip_common_vseq;
   `uvm_object_new
 
   virtual task pre_start();
-    select_jtag = SelectRVJtagTap;
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
     super.pre_start();
+    cfg.chip_vif.tap_straps_if.drive(SelectRVJtagTap);
   endtask
 
   virtual task body();

@@ -18,9 +18,8 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
   bit [7:0] otp_exit_token[TokenWidthByte];
   bit [7:0] otp_unlock_token[TokenWidthByte];
 
-  // Reassign `select_jtag` variable to drive LC JTAG tap and disable mubi assertion errors.
   virtual task pre_start();
-    select_jtag = SelectLCJtagTap;
+    cfg.chip_vif.tap_straps_if.drive(SelectLCJtagTap);
     otp_raw_img_mubi_assertion_ctrl(.enable(0));
     super.pre_start();
   endtask

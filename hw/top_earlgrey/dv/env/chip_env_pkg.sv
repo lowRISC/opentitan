@@ -50,23 +50,16 @@ package chip_env_pkg;
   `include "dv_macros.svh"
   `include "chip_hier_macros.svh"
 
-  // include auto-generated alert related parameters
-  `include "autogen/chip_env_pkg__params.sv"
-
   // LC token paramters
   // LC sends two 64-bit msg as input token.
   localparam uint TokenWidthBit  = kmac_pkg::MsgWidth * 2;
   localparam uint TokenWidthByte = TokenWidthBit / 8;
 
-  typedef virtual pins_if #(NUM_GPIOS) gpio_vif;
   typedef virtual sw_logger_if         sw_logger_vif;
   typedef virtual sw_test_status_if    sw_test_status_vif;
-  typedef virtual alerts_if            alerts_vif;
   typedef virtual ast_supply_if        ast_supply_vif;
   typedef virtual ast_ext_clk_if       ast_ext_clk_vif;
 
-  // Types of memories in the chip.
-  //
   typedef enum {
     // external clock is still on, but the source of all IP clocks is the internal clock
     UseInternalClk,
@@ -76,6 +69,8 @@ package chip_env_pkg;
     ExtClkHighSpeed
   } ext_clk_type_e;
 
+  // Types of memories in the chip.
+  //
   // RAM instances have support for up to 16 tiles. Actual number of tiles in use in the design is a
   // runtime setting in chip_env_cfg.
   typedef enum {

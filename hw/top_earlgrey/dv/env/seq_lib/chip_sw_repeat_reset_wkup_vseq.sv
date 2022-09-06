@@ -25,9 +25,8 @@ class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-
-    cfg.por_rstn_vif.drive(1);
-    cfg.pwrb_in_vif.drive(1);
+    cfg.chip_vif.por_n_if.drive(0);
+    cfg.chip_vif.pwrb_in_if.drive(1);
   endtask
 
   virtual task body();
@@ -69,7 +68,7 @@ class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
     #30us;
     if (add_cycle == 1) begin
       `uvm_info(`gfn, "wake up after low power entry", UVM_MEDIUM)
-      repeat((1 + reset_delay))@cfg.pwrmgr_low_power_vif.cb;
+      repeat((1 + reset_delay))@cfg.chip_vif.pwrmgr_low_power_if.cb;
     end
     push_button();
   endtask // execute_wakeup
@@ -77,7 +76,7 @@ class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
   task execute_reset();
     if (add_cycle == 1) begin
       `uvm_info(`gfn, "reset after low power entry", UVM_MEDIUM)
-      `DV_WAIT(cfg.pwrmgr_low_power_vif.low_power == 1)
+      `DV_WAIT(cfg.chip_vif.pwrmgr_low_power_if.low_power == 1)
 
     end
     assert_por_reset(reset_delay);

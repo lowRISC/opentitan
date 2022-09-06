@@ -26,71 +26,8 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get chip_vif from uvm_config_db")
     end
 
-    if (!uvm_config_db#(gpio_vif)::get(this, "", "gpio_vif", cfg.gpio_vif)) begin
-      `uvm_fatal(`gfn, "failed to get gpio_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(virtual pins_if #(2))::get(
-            this, "", "tap_straps_vif", cfg.tap_straps_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get tap_straps_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(virtual pins_if #(2))::get(
-            this, "", "dft_straps_vif", cfg.dft_straps_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get dft_straps_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(virtual pins_if #(3))::get(
-            this, "", "sw_straps_vif", cfg.sw_straps_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get sw_straps_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(virtual pins_if #(1))::get(
-            this, "", "rst_n_mon_vif", cfg.rst_n_mon_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get rst_n_mon_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "cpu_clk_rst_vif", cfg.cpu_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get cpu_clk_rst_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "usb_clk_rst_vif", cfg.usb_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get usb_clk_rst_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(virtual pins_if #(1))::get(
-            this, "", "pinmux_wkup_vif", cfg.pinmux_wkup_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get pinmux_wkup_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(virtual pins_if #(1))::get(this, "", "pwrb_in_vif", cfg.pwrb_in_vif)) begin
-      `uvm_fatal(`gfn, "failed to get pwrb_in_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(virtual pins_if #(1))::get(this, "", "ec_rst_vif", cfg.ec_rst_vif)) begin
-      `uvm_fatal(`gfn, "failed to get ec_rst_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(virtual pins_if #(1))::get(
-            this, "", "flash_wp_vif", cfg.flash_wp_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get flash_wp_vif from uvm_config_db")
-    end
-
-    if (!uvm_config_db#(virtual pins_if #(8))::get(
-            this, "", "sysrst_ctrl_vif", cfg.sysrst_ctrl_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get sysrst_ctrl_vif from uvm_config_db")
-    end
+    // Set tl_agent's is_active bit based on the stub_cpu value.
+    cfg.m_tl_agent_cfg.is_active = cfg.chip_vif.stub_cpu;
 
     for (chip_mem_e mem = mem.first(), int i = 0; i < mem.num(); mem = mem.next(), i++) begin
       string inst = $sformatf("mem_bkdr_util[%0s]", mem.name());
@@ -121,13 +58,6 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get sw_test_status_vif from uvm_config_db")
     end
 
-    // get the handle to the alerts interface.
-    if (!uvm_config_db#(alerts_vif)::get(
-            this, "", "alerts_vif", cfg.alerts_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get alerts_vif from uvm_config_db")
-    end
-
     // get the handle to the ast supply interface.
     if (!uvm_config_db#(virtual ast_supply_if)::get(
             this, "", "ast_supply_vif", cfg.ast_supply_vif
@@ -140,13 +70,6 @@ class chip_env extends cip_base_env #(
             this, "", "ast_ext_clk_vif", cfg.ast_ext_clk_vif
         )) begin
       `uvm_fatal(`gfn, "failed to get ast_ext_clk_vif from uvm_config_db")
-    end
-
-    // get the handle to the pwrmgr interface
-    if (!uvm_config_db#(virtual pwrmgr_low_power_if)::get(
-            this, "", "pwrmgr_low_power_vif", cfg.pwrmgr_low_power_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get pwrmgr_low_power_vif from uvm_config_db")
     end
 
     // create components
@@ -175,12 +98,6 @@ class chip_env extends cip_base_env #(
                                            "m_pwm_monitor%0d_cfg", i), cfg.m_pwm_monitor_cfg[i]);
     end
 
-    if (!uvm_config_db#(virtual pins_if #(1))::get(
-            this, "", "por_rstn_vif", cfg.por_rstn_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get por_rstn_vif from uvm_config_db")
-    end
-
     // disable alert_esc_agent's driver and only use its monitor
     foreach (LIST_OF_ALERTS[i]) begin
       cfg.m_alert_agent_cfg[LIST_OF_ALERTS[i]].is_active = 0;
@@ -204,13 +121,15 @@ class chip_env extends cip_base_env #(
       virtual_sequencer.spi_sequencer_h = m_spi_agent.sequencer;
     end
 
-    // Connect the DUT's UART TX TLM port to the sequencer.
+    // The chip level scoreboard is intentionally kept lightweight, since most tests are directed,
+    // with stimulus and checks both contained in the sequence. The following TLM connections from
+    // the interface agent's monitor to the sequencer enables sequences to directly retrieve the
+    // packets from the monitor for processing / end-to-end checks.
+
     foreach (m_uart_agents[i]) begin
       m_uart_agents[i].monitor.tx_analysis_port.connect(
           virtual_sequencer.uart_tx_fifos[i].analysis_export);
     end
-
-    // Connect pwm_monitor analysis_port to sequencer.
     foreach (m_pwm_monitor[i]) begin
       m_pwm_monitor[i].item_port.connect(virtual_sequencer.pwm_rx_fifo[i].analysis_export);
     end

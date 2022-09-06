@@ -44,11 +44,11 @@ class chip_sw_gpio_smoke_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
 
     // Disable the default pulldown on GPIOs.
-    cfg.gpio_vif.set_pulldown_en({NUM_GPIOS{1'b0}});
+    cfg.chip_vif.gpio_pins_if.set_pulldown_en({NUM_GPIOS{1'b0}});
 
     `uvm_info(`gfn, "Starting GPIO output test", UVM_LOW)
     for (int i = 0; i < num_gpio_vals; i++) begin
-      `DV_SPINWAIT(wait(cfg.gpio_vif.pins === gpio_vals[i][NUM_GPIOS-1:0]);,
+      `DV_SPINWAIT(wait(cfg.chip_vif.gpio_pins_if.pins === gpio_vals[i][NUM_GPIOS-1:0]);,
                    $sformatf("Timed out waiting for GPIOs == %0h", gpio_vals[i][NUM_GPIOS-1:0]),
                    TIMEOUT_NS,
                   `gfn)
@@ -57,13 +57,13 @@ class chip_sw_gpio_smoke_vseq extends chip_sw_base_vseq;
     // Test walking 1s and 0s.
     for (int i = 0; i < NUM_GPIOS; i++) begin
       logic [NUM_GPIOS-1:0] exp_gpios = (1 << i);
-      `DV_SPINWAIT(wait(cfg.gpio_vif.pins === exp_gpios);,
+      `DV_SPINWAIT(wait(cfg.chip_vif.gpio_pins_if.pins === exp_gpios);,
                    $sformatf("Timed out waiting for GPIOs == %0h", exp_gpios),
                    TIMEOUT_NS,
                   `gfn)
 
       exp_gpios = ~exp_gpios;
-      `DV_SPINWAIT(wait(cfg.gpio_vif.pins === exp_gpios);,
+      `DV_SPINWAIT(wait(cfg.chip_vif.gpio_pins_if.pins === exp_gpios);,
                    $sformatf("Timed out waiting for GPIOs == %0h", exp_gpios),
                    TIMEOUT_NS,
                   `gfn)

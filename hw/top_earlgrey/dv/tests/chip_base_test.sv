@@ -22,11 +22,6 @@ class chip_base_test extends cip_base_test #(
 
     super.build_phase(phase);
 
-    // Knob to en/dis stubbing cpu (disabled by default).
-    void'($value$plusargs("stub_cpu=%0b", cfg.stub_cpu));
-    // Set tl_agent's is_active bit based on the retrieved stub_cpu value.
-    cfg.m_tl_agent_cfg.is_active = cfg.stub_cpu;
-
     // Set the number of RAM tiles (1 each).
     cfg.num_ram_main_tiles = 1;
     cfg.num_ram_ret_tiles = 1;

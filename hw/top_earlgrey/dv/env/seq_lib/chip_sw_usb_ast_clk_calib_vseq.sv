@@ -7,7 +7,7 @@ class chip_sw_usb_ast_clk_calib_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  string usbdev_path = {`DV_STRINGIFY(`USBDEV_HIER)};
+  string usbdev_path = {`DV_STRINGIFY(tb.dut.`USBDEV_HIER)};
 
   int sof_period_us;
 
@@ -48,8 +48,8 @@ class chip_sw_usb_ast_clk_calib_vseq extends chip_sw_base_vseq;
     // is reset, then release reset so the link state
     // will advance to Active.
     `DV_SPINWAIT(while (link_reset == 0) begin
-                 uvm_hdl_read(link_reset_path, link_reset);
-                 cfg.usb_clk_rst_vif.wait_clks(10);
+                 void'(uvm_hdl_read(link_reset_path, link_reset));
+                 cfg.chip_vif.usb_clk_rst_if.wait_clks(10);
                  end,
                   "timeout waiting for link reset",
                  cfg.sw_test_timeout_ns)
@@ -64,9 +64,9 @@ class chip_sw_usb_ast_clk_calib_vseq extends chip_sw_base_vseq;
 
     forever begin
       #(sof_period_us * 1us);
-      @(posedge cfg.usb_clk_rst_vif.clk);
+      @(posedge cfg.chip_vif.usb_clk_rst_if.clk);
       `DV_CHECK_FATAL(uvm_hdl_force(sof_path, 1'b1));
-      @(posedge cfg.usb_clk_rst_vif.clk);
+      @(posedge cfg.chip_vif.usb_clk_rst_if.clk);
       `DV_CHECK_FATAL(uvm_hdl_release(sof_path));
     end
 

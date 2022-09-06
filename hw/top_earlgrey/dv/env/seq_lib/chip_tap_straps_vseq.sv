@@ -11,18 +11,22 @@
 // top_earlgrey.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
 // Verify pimux.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED* and
 // RMA, regardless of the value on DFT SW straps.
+
+// TODO: This test is broken. Drive functional JTAG traffic as opposed to pin connectivity.
+
 class chip_tap_straps_vseq extends chip_sw_base_vseq;
-  string path_dft_strap_test_o = {`DUT_HIER_STR, ".top_earlgrey.dft_strap_test_o"};
-  string path_dft_tap_req = {`DUT_HIER_STR, ".top_earlgrey.u_dft_tap_breakout.req_i"};
-  string path_dft_tap_rsp = {`DUT_HIER_STR, ".top_earlgrey.u_dft_tap_breakout.rsp_o"};
-  string path_tb_jtag_tck = "tb.jtag_tck";
-  string path_tb_jtag_tms = "tb.jtag_tms";
-  string path_tb_jtag_trst_n = "tb.jtag_trst_n";
-  string path_tb_jtag_tdi    = "tb.jtag_tdi";
+  string path_dft_strap_test_o = "tb.dut.top_earlgrey.dft_strap_test_o";
+  string path_dft_tap_req = "tb.dut.top_earlgrey.u_dft_tap_breakout.req_i";
+  string path_dft_tap_rsp = "tb.dut.top_earlgrey.u_dft_tap_breakout.rsp_o";
+  string path_tb_jtag_tck = "tb.dut.chip_if.jtag_if.tck";
+  string path_tb_jtag_tms = "tb.dut.chip_if.jtag_if.tms";
+  string path_tb_jtag_trst_n = "tb.dut.chip_if.jtag_if.trst_n";
+  string path_tb_jtag_tdi    = "tb.dut.chip_if.jtag_if.tdi";
 
   lc_ctrl_state_pkg::lc_state_e cur_lc_state;
 
   local uvm_reg lc_csrs[$];
+  chip_tap_type_e select_jtag;
 
   `uvm_object_utils(chip_tap_straps_vseq)
 
@@ -56,7 +60,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   virtual task dut_init(string reset_kind = "HARD");
     randomize_dft_straps();
     `DV_CHECK_STD_RANDOMIZE_FATAL(select_jtag)
-    cfg.tap_straps_vif.drive(select_jtag);
+    cfg.chip_vif.tap_straps_if.drive(select_jtag);
 
     super.dut_init(reset_kind);
     // in LcStProd, we can only select LC tap at boot.
@@ -102,7 +106,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
       enable_jtag_tap(tap);
     end else begin // switch won't take effect. tap_straps won't be sampled again
       enable_jtag_tap(select_jtag);
-      cfg.tap_straps_vif.drive(tap);
+      cfg.chip_vif.tap_straps_if.drive(tap);
     end
   endtask
 
@@ -112,7 +116,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
       // switching tap needs to reset the agent and re-init the tap
       reset_jtag_tap();
     end
-    cfg.tap_straps_vif.drive(select_jtag);
+    cfg.chip_vif.tap_straps_if.drive(select_jtag);
 
     case (select_jtag)
       SelectRVJtagTap: begin
@@ -265,14 +269,14 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     bit [1:0] val = $urandom;
 
     `uvm_info(`gfn, $sformatf("Drive dft straps to %0d", val), UVM_LOW)
-    cfg.dft_straps_vif.drive(val);
+    cfg.chip_vif.dft_straps_if.drive(val);
   endfunction
 
   virtual function void check_dft_straps();
     bit [1:0] exp_val, act_val;
 
     if (is_lc_in_unlocked_or_rma()) begin
-      exp_val = cfg.dft_straps_vif.sample();
+      exp_val = cfg.chip_vif.dft_straps_if.sample();
     end else begin
       exp_val = 0;
     end

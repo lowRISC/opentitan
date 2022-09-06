@@ -13,7 +13,6 @@ class chip_base_vseq #(
   `uvm_object_utils(chip_base_vseq)
 
   // knobs to enable pre_start routines
-  bit do_strap_pins_init = 1'b1;  // initialize the strap
 
   // knobs to enable post_start routines
 
@@ -21,9 +20,6 @@ class chip_base_vseq #(
 
   // Local queue for holding received UART TX data.
   byte uart_tx_data_q[$];
-
-  // Default value to drive JTAG tap during pre_start().
-  chip_tap_type_e select_jtag = SelectRVJtagTap;
 
   `uvm_object_new
 
@@ -44,7 +40,12 @@ class chip_base_vseq #(
     // will also be X. This causes the JTAG reset to not properly propagate, and hence we
     // have to assert the main reset before that (release can happen in a randomized way
     // via the apply_reset task later on).
-    cfg.clk_rst_vif.drive_rst_pin(1'b0);
+    // assert_por_reset();
+    `uvm_info(`gfn, "Asserting POR_N", UVM_LOW)
+    cfg.chip_vif.por_n_if.drive(0);
+    cfg.chip_vif.ext_clk_if.wait_clks(2000);
+    cfg.chip_vif.por_n_if.drive(1);
+    `uvm_info(`gfn, "POR_N complete", UVM_LOW)
     // TODO: Cannot assert different types of resets in parallel; due to randomization
     // resets de-assert at different times. If the main rst_n de-asserts before others,
     // the CPU starts executing right away which can cause breakages.
@@ -54,21 +55,24 @@ class chip_base_vseq #(
 
   chip_callback_vseq callback_vseq;
 
+  // Iniitializes the DUT.
+  //
+  // Initializes DUT inputs, internal memories, etc., brings the DUT out of reset (performs a reset
+  // cycle) and  performs immediate post-reset steps to prime the design for stimilus. The
+  // base class method invoked by super.dut_init() applies the reset.
   virtual task dut_init(string reset_kind = "HARD");
     // Initialize these spare IOs (chip inputs) to 0.
-    cfg.chip_vif.cc1 = '0;
-    cfg.chip_vif.cc2 = '0;
-    cfg.chip_vif.flash_test_volt = '0;
-    cfg.chip_vif.flash_test_mode0 = '0;
-    cfg.chip_vif.flash_test_mode1 = '0;
-    cfg.chip_vif.otp_ext_volt = '0;
-    cfg.chip_vif.ast_misc = '0;
+    cfg.chip_vif.cc_if.drive('0);
+    cfg.chip_vif.flash_test_volt_if.drive('0);
+    cfg.chip_vif.flash_test_mode_if.drive('0);
+    cfg.chip_vif.otp_ext_volt_if.drive('0);
+    cfg.chip_vif.ast_misc_if.drive('0);
 
-    // Initialize gpio pin default states
-    if (!$test$plusargs("disable_gpio_pulldown")) begin
-      cfg.gpio_vif.set_pulldown_en({NUM_GPIOS{1'b1}});
-    end
-    // Initialize flash seeds
+    // Initialize the SW strap pins - these are sort of dedicated.
+    // TODO: add logic to drive / undrive this only when the ROM / test ROM code is active.
+    cfg.chip_vif.sw_straps_if.drive({2'b00, cfg.use_spi_load_bootstrap});
+
+    // Initialize all memories via backdoor.
     cfg.mem_bkdr_util_h[FlashBank0Info].set_mem();
     cfg.mem_bkdr_util_h[FlashBank1Info].set_mem();
     // Backdoor load the OTP image.
@@ -125,17 +129,6 @@ class chip_base_vseq #(
     `DV_CHECK_RANDOMIZE_FATAL(callback_vseq)
     super.pre_start();
     do_dut_init = do_dut_init_save;
-
-    // Drive strap signals at the start.
-    if (do_strap_pins_init) begin
-      cfg.tap_straps_vif.drive(select_jtag);
-      cfg.dft_straps_vif.drive(2'b00);
-      cfg.sw_straps_vif.drive({2'b00, cfg.use_spi_load_bootstrap});
-    end
-
-    cfg.pinmux_wkup_vif.drive(1'b0);
-    cfg.pwrb_in_vif.drive(1'b0);
-
     // Now safe to do DUT init.
     if (do_dut_init) dut_init();
   endtask
@@ -152,7 +145,7 @@ class chip_base_vseq #(
 
   // shorten alert ping timer enable wait time
   task alert_ping_en_shorten();
-    string mask_path = {`DV_STRINGIFY(`ALERT_HANDLER_HIER),
+    string mask_path = {`DV_STRINGIFY(tb.dut.`ALERT_HANDLER_HIER),
                         ".u_ping_timer.wait_cyc_mask_i"};
     bit shorten_ping_en;
     `uvm_info(`gfn, $sformatf("ping enable path: %s", mask_path), UVM_HIGH)
@@ -166,7 +159,7 @@ class chip_base_vseq #(
   virtual task check_lc_ctrl_broadcast(bit [LcBroadcastLast-1:0] bool_vector);
     foreach (lc_broadcast_paths[i]) begin
       logic [lc_ctrl_pkg::TxWidth-1:0] curr_val;
-      string path = {`DV_STRINGIFY(`LC_CTRL_HIER), ".", lc_broadcast_paths[i]};
+      string path = {`DV_STRINGIFY(tb.dut.`LC_CTRL_HIER), ".", lc_broadcast_paths[i]};
       `DV_CHECK_FATAL(uvm_hdl_read(path, curr_val))
       // if bool vector bit is 1, the probed value should be ON
       // if bool vector bit is 0, the probed value should be OFF
@@ -253,5 +246,14 @@ class chip_base_vseq #(
               UVM_MEDIUM)
 
   endtask : test_mem_rw
+
+  // POR_N needs to stay asserted for at least 6 AON clock cycles.
+  task assert_por_reset(int delay = 0);
+    repeat (delay) @cfg.chip_vif.pwrmgr_low_power_if.fast_cb;
+    cfg.chip_vif.por_n_if.drive(0);
+    repeat (6) @cfg.chip_vif.pwrmgr_low_power_if.cb;
+    cfg.clk_rst_vif.wait_clks(10);
+    cfg.chip_vif.por_n_if.drive(1);
+  endtask // assert_por_reset
 
 endclass : chip_base_vseq
