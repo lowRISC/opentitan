@@ -864,6 +864,31 @@
               "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"]
     }
     {
+      name: chip_sw_clkmgr_extended_range
+      desc: '''Verify that the system can run at a reduced, calibrated clock frequency.
+
+            This test should check that the system can run at a reduced, calibrated clock
+            frequency (70MHz) with jitter enabled (which can lower the frequency down to ~55 MHz momentarily).
+            This option is intended as a fall-back in case there are issues running the system with
+            at 100MHz (calibrated).
+
+            This testpoint can be covered by extending the DV environment to support the extended
+            range clock option via a flag, and running several existing chip-level tests with that option, e.g.
+
+              chip_sw_clkmgr_jitter
+              chip_sw_flash_ctrl_ops_jitter_en
+              chip_sw_flash_ctrl_access_jitter_en
+              chip_sw_otbn_ecdsa_op_irq_jitter_en
+              chip_sw_aes_enc_jitter_en
+              chip_sw_hmac_enc_jitter_en
+              chip_sw_keymgr_key_derivation_jitter_en
+              chip_sw_kmac_mode_kmac_jitter_en
+              chip_sw_sram_ctrl_main_scrambled_access_jitter_en
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: chip_sw_clkmgr_deep_sleep_frequency
       desc: '''Verify the frequency measurement through deep sleep.
 
