@@ -4,12 +4,15 @@
 
 use anyhow::{bail, Result};
 use regex::Regex;
+use std::matches;
 use std::time::Duration;
 use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
-use opentitanlib::spiflash::{BlockEraseSize, SpiFlash, SupportedAddressModes, WriteGranularity};
+use opentitanlib::spiflash::{
+    sfdp, BlockEraseSize, SpiFlash, SupportedAddressModes, WriteGranularity,
+};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 use opentitanlib::util::parse_int::ParseInt;
@@ -107,12 +110,21 @@ fn test_bootstrap_entry(
         }
     };
 
-    // Now check whether the SPI device is responding to status messages
+    // Now check whether the SPI device is responding to status messages.
+    // Note: CIPO line is in high-z state when CMD_INFO registers are not configured.
+    // Use READ_SFDP instead of READ_STATUS to avoid false negatives when bootstrap is not
+    // requested
     let spi = transport.spi("0")?;
     let status = SpiFlash::read_status(&*spi)?;
     match request {
-        BootstrapRequest::No => assert_eq!(status, 0xff),
         BootstrapRequest::Yes => assert_eq!(status, 0x00),
+        BootstrapRequest::No => assert!(matches!(
+            SpiFlash::read_sfdp(&*spi)
+                .unwrap_err()
+                .downcast::<sfdp::Error>()
+                .unwrap(),
+            sfdp::Error::WrongHeaderSignature(..)
+        )),
     }
     Ok(())
 }

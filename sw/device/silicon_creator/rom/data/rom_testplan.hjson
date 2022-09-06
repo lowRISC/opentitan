@@ -147,8 +147,7 @@
             - Reset the chip.
             - Verify that the chip outputs the expected `BFV`: `0142500d` over UART.
               - ROM will continously reset the chip and output the same `BFV`.
-            - Verify that the chip does not respond to `READ_STATUS` (`0x05`).
-              - The data on the CIPO line must be `0xff`.
+            - Verify that the chip does not respond to `READ_SFDP` (`0x5a`).
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2
