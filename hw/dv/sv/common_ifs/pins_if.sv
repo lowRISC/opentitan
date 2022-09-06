@@ -8,11 +8,15 @@
 `ifndef SYNTHESIS
 
 interface pins_if #(
-  parameter int Width = 1
+  parameter int Width = 1,
+  parameter bit [8*4-1:0] PullStrength = "Pull"
 ) (
   inout [Width-1:0] pins
 );
 
+  `include "prim_assert.sv"
+
+  `ASSERT_INIT(PullStrengthParamValid, PullStrength inside {"Weak", "Pull"})
 
   logic [Width-1:0] pins_o;       // value to be driven out
   bit   [Width-1:0] pins_oe = '0; // output enable
@@ -78,10 +82,18 @@ interface pins_if #(
                      pins_pu[i] ? 1'b1 :
                      pins_pd[i] ? 1'b0 : 1'bz;
 `else
-    // Drive the pin with pull strength based on whether pullup / pulldown is enabled.
-    assign (pull0, pull1) pins[i] = ~pins_oe[i] ? (pins_pu[i] ? 1'b1 :
-                                                   pins_pd[i] ? 1'b0 : 1'bz) : 1'bz;
-
+    // Drive the pin based on whether pullup / pulldown is enabled.
+    //
+    // If output is not enabled, then the pin is pulled up or down with the `PullStrength` strength
+    // Pullup has priority over pulldown.
+    if (PullStrength == "Pull") begin : gen_pull_strength_pull
+      assign (pull0, pull1) pins[i] = ~pins_oe[i] ? (pins_pu[i] ? 1'b1 :
+                                                     pins_pd[i] ? 1'b0 : 1'bz) : 1'bz;
+    end : gen_pull_strength_pull
+    else if (PullStrength == "Weak") begin : gen_pull_strength_weak
+      assign (weak0, weak1) pins[i] = ~pins_oe[i] ? (pins_pu[i] ? 1'b1 :
+                                                     pins_pd[i] ? 1'b0 : 1'bz) : 1'bz;
+    end : gen_pull_strength_weak
 
     // If output enable is 1, strong driver assigns pin to 'value to be driven out';
     // the external strong driver can still affect pin, if exists.
