@@ -392,13 +392,25 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       csr_rd(.ptr(ral.intr_state), .value(data));
       intr_st = data;
       clear_intr_state(data);
+      csr_rd(.ptr(ral.curr_fifo_lvl.rd), .value(curr_rd));
       `uvm_info("intr_read", $sformatf("intr_state: %x", intr_st), UVM_MEDIUM)
+
+      // the comparison below is done because when the flash reads "too fast", it can fill up
+      // the FIFO before more entries are read out. This creates a siutation where we may have
+      // multiple level or full interrupts even though it is not really the case.
+      // Imagine the level is set to 5, and we get the first interrupt when are 5 entries.
+      // While reading the 5 entries out, the flash fills so fast that the hardware sees another
+      // 4->5 transition, causing a second interrupt.  However, there has not actually been 10
+      // entries deposited, this is just an artifact of one side moving much faster than
+      // anticipated.  This kind of level interrupt scheme works better when one side is
+      // much slower, which is not guaranteed based on the parameters of the test.
       if (intr_st[FlashCtrlIntrOpDone]) begin
-        csr_rd(.ptr(ral.curr_fifo_lvl.rd), .value(curr_rd));
+         // just read whatever the current read level is
       end else if (intr_st[FlashCtrlIntrRdFull]) begin
-        curr_rd = 16; // fifo size is 16
+        // fifo size is 16
+        curr_rd = curr_rd >= 16 ? 16 : curr_rd;
       end else if (intr_st[FlashCtrlIntrRdLvl]) begin
-        curr_rd = cfg.rd_lvl;
+        curr_rd = curr_rd >= cfg.rd_lvl ? cfg.rd_lvl : curr_rd;
       end
       repeat(curr_rd) begin
         mem_rd(.ptr(ral.rd_fifo), .offset(0), .data(rdata[rd_idx++]));
