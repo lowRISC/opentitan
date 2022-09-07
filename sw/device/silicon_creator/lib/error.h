@@ -27,7 +27,6 @@ enum module_ {
   // clang-format off
   kModuleUnknown = 0,
   kModuleAlertHandler = MODULE_CODE('A', 'H'),
-  kModuleUart =         MODULE_CODE('U', 'A'),
   kModuleSigverify =    MODULE_CODE('S', 'V'),
   kModuleKeymgr =       MODULE_CODE('K', 'M'),
   kModuleManifest =     MODULE_CODE('M', 'A'),
@@ -71,8 +70,6 @@ enum module_ {
 //       after the ROM is frozen.
 #define DEFINE_ERRORS(X) \
   X(kErrorOk, 0x739), \
-  X(kErrorUartInvalidArgument,        ERROR_(1, kModuleUart, kInvalidArgument)), \
-  X(kErrorUartBadBaudRate,            ERROR_(2, kModuleUart, kInvalidArgument)), \
   X(kErrorSigverifyBadEncodedMessage, ERROR_(1, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadKey,            ERROR_(2, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadSignature,      ERROR_(3, kModuleSigverify, kInvalidArgument)), \
