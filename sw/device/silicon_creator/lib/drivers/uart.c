@@ -35,10 +35,6 @@ static void uart_reset(void) {
 }
 
 rom_error_t uart_init(uint32_t precalculated_nco) {
-  if (precalculated_nco == 0 || precalculated_nco & ~UART_CTRL_NCO_MASK) {
-    return kErrorUartInvalidArgument;
-  }
-
   // Must be called before the first write to any of the UART registers.
   uart_reset();
 

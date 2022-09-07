@@ -577,14 +577,11 @@ TEST(ShutdownModule, RedactErrors) {
   EXPECT_EQ(shutdown_redact(kErrorOk, kShutdownErrorRedactModule), 0);
   EXPECT_EQ(shutdown_redact(kErrorOk, kShutdownErrorRedactAll), 0);
 
-  EXPECT_EQ(shutdown_redact(kErrorUartBadBaudRate, kShutdownErrorRedactNone),
-            0x02554103);
-  EXPECT_EQ(shutdown_redact(kErrorUartBadBaudRate, kShutdownErrorRedactError),
-            0x00554103);
-  EXPECT_EQ(shutdown_redact(kErrorUartBadBaudRate, kShutdownErrorRedactModule),
-            0x00000003);
-  EXPECT_EQ(shutdown_redact(kErrorUartBadBaudRate, kShutdownErrorRedactAll),
-            0xFFFFFFFF);
+  rom_error_t error = static_cast<rom_error_t>(0xaabbccdd);
+  EXPECT_EQ(shutdown_redact(error, kShutdownErrorRedactNone), 0xaabbccdd);
+  EXPECT_EQ(shutdown_redact(error, kShutdownErrorRedactError), 0x00bbccdd);
+  EXPECT_EQ(shutdown_redact(error, kShutdownErrorRedactModule), 0x000000dd);
+  EXPECT_EQ(shutdown_redact(error, kShutdownErrorRedactAll), 0xffffffff);
 }
 
 TEST_F(ShutdownTest, ShutdownFinalize) {

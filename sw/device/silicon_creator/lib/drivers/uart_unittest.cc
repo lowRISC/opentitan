@@ -56,11 +56,6 @@ TEST_F(InitTest, Initialize) {
   EXPECT_EQ(uart_init(1), kErrorOk);
 }
 
-TEST_F(InitTest, InvalidInit) {
-  EXPECT_EQ(uart_init(0), kErrorUartInvalidArgument);
-  EXPECT_EQ(uart_init(65536), kErrorUartInvalidArgument);
-}
-
 class BytesSendTest : public UartTest {
  protected:
   /**

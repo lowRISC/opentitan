@@ -58,7 +58,7 @@ TEST(ErrorsTest, NoDuplicateValues) {
 
 // Checks that the RETURN_IF_ERROR macro works as expected.
 TEST(ErrorsTest, CheckReturnIfError) {
-  EXPECT_EQ(kErrorUartBadBaudRate, ReturnIfError(kErrorUartBadBaudRate));
+  EXPECT_EQ(kErrorUnknown, ReturnIfError(kErrorUnknown));
 
   rom_error_t ok = ReturnIfError(kErrorOk);
   EXPECT_EQ(0, static_cast<int>(ok));
