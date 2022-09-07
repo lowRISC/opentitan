@@ -24,10 +24,14 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
 
         set -x
 
-        ./opentitantool fpga load-bitstream --rom-kind=TestRom rom.bit
+        run_opentitantool() {{
+            ./opentitantool --rcfile= --logging=info --interface=cw310 "$@"
+        }}
+
+        run_opentitantool fpga load-bitstream --rom-kind={rom_kind} rom.bit
 
         (openocd -f /usr/share/openocd/scripts/interface/ftdi/olimex-arm-usb-tiny-h.cfg \\
-            -c "adapter speed 500; transport select jtag; reset_config trst_and_srst" \\
+            -c "adapter speed 0; transport select jtag; reset_config trst_and_srst" \\
             -f {openocd_earlgrey_config} \\
             |& prefix_lines OPENOCD "$COLOR_PURPLE") &
         OPENOCD_PID=$!
@@ -38,8 +42,8 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
         (/tools/riscv/bin/riscv32-unknown-elf-gdb --command=script.gdb \\
             |& prefix_lines GDB "$COLOR_GREEN") &
 
-        ./opentitantool console \\
-            --timeout 15s \\
+        run_opentitantool console \\
+            --timeout 5s \\
             --exit-success='{exit_success_pattern}' \\
             |& prefix_lines CONSOLE "$COLOR_RED"
 
@@ -48,6 +52,7 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
         kill $OPENOCD_PID
         wait
     '''.format(
+        rom_kind = ctx.attr.rom_kind,
         openocd_earlgrey_config = ctx.file._openocd_earlgrey_config.path,
         exit_success_pattern = ctx.attr.exit_success_pattern,
     )
@@ -111,6 +116,7 @@ opentitan_gdb_fpga_cw310_test = rv_rule(
             mandatory = True,
             allow_single_file = True,
         ),
+        "rom_kind": attr.string(mandatory = True),
         "_opentitantool": attr.label(
             default = "//sw/host/opentitantool",
             allow_single_file = True,
