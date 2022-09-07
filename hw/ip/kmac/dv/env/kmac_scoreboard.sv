@@ -92,10 +92,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   bit             app_fsm_active = 0;
   app_mux_sel_e   app_mux_sel = SelNone;
 
-  // Need to track the FSM in `kmac_errchk` for error reporting
-  kmac_err_st_e err_st      = ErrStIdle;
-  kmac_err_st_e err_st_next = ErrStIdle;
-
   // key length enum
   key_len_e key_len;
 
@@ -736,9 +732,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
           // Entropy mode configuration error
           if (cfg.enable_masking && !(entropy_mode inside {EntropyModeSw, EntropyModeEdn})) begin
-            kmac_err.valid  = 1;
-            kmac_err.code   = kmac_pkg::ErrIncorrectEntropyMode;
-            kmac_err.info   = 24'(entropy_mode);
+            kmac_err.valid = 1;
+            kmac_err.code  = kmac_pkg::ErrIncorrectEntropyMode;
+            kmac_err.info  = 24'(entropy_mode);
 
             predict_err(.is_kmac_err(1));
           end
@@ -820,7 +816,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {5'h0, 3'h4, 5'h0, 3'(err_st), 2'b0, kmac_cmd};
+                  kmac_err.info  = get_kmac_sw_cmd_seq_err_info(kmac_cmd);
 
                   predict_err(.is_kmac_err(1));
                 end
@@ -831,10 +827,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   unchecked_kmac_cmd = CmdProcess;
 
                 end else begin // SW sent wrong command
-
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {5'h0, 3'h4, 5'h0, 3'(err_st), 2'b0, kmac_cmd};
+                  kmac_err.info  = get_kmac_sw_cmd_seq_err_info(kmac_cmd);
 
                   predict_err(.is_kmac_err(1));
                 end
@@ -851,10 +846,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                   status_mask[KmacStatusSha3Squeeze] = 1;
                   `uvm_info(`gfn, "raised req_manual_squeeze", UVM_HIGH)
                 end else begin // SW sent wrong command
-
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {5'h0, 3'h4, 5'h0, 3'(err_st), 2'b0, kmac_cmd};
+                  kmac_err.info  = get_kmac_sw_cmd_seq_err_info(kmac_cmd);
 
                   predict_err(.is_kmac_err(1));
                 end
@@ -885,7 +879,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
-                  kmac_err.info  = {5'h0, 3'h4, 5'h0, 3'(err_st), 2'b0, kmac_cmd};
+                  kmac_err.info  = get_kmac_sw_cmd_seq_err_info(kmac_cmd);
 
                   predict_err(.is_kmac_err(1));
                 end
@@ -955,7 +949,19 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         end
       end
       "err_code": begin
-        // TODO don't do anything rn, need implement the error checking
+        if (data_phase_read) begin
+          kmac_pkg::err_t err_code = kmac_pkg::err_t'(item.d_data);
+          if (err_code.code == ErrSwCmdSequence) begin
+            // Mask out the kmac_state FSM information because the SCB is not cycle accurate to
+            // track in which SHA state does the error happen.
+            kmac_pkg::err_t err_chk_mask = '1;
+            err_chk_mask.info[kmac_st_idx +: 2] = 0;
+            // TODO: add some direct sequence to check this error information.
+            do_read_check = 0;
+            `DV_CHECK_EQ(csr.get_mirrored_value() & err_chk_mask, item.d_data & err_chk_mask,
+                         $sformatf("reg name: %0s", csr.get_full_name()))
+          end
+        end
       end
       // TODO - entropy csrs
       default: begin
@@ -1201,7 +1207,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                  info: '0};
 
     app_st = StIdle;
-    err_st = ErrStIdle;
 
     keys          = '0;
     prefix        = '{default:0};
@@ -1598,6 +1603,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     `uvm_info(`gfn, $sformatf("decoded fname: %0s", fname), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("decoded custom_str: %0s", custom_str), UVM_HIGH)
+  endfunction
+
+  // Return `info` field for ErrSwCmdSequence with the current kmac_cmd as input.
+  // This scb do not predict kmac internal state, so the FSM state information is all 0 and will be
+  // masked out during read check.
+  function kmac_sw_cmd_seq_err_info_t get_kmac_sw_cmd_seq_err_info(bit [KmacCmdIdx:0] kmac_cmd);
+    kmac_sw_cmd_seq_err_info_t err_info;
+    err_info.sw_cmd = kmac_cmd;
+    err_info.sw_err = 1;
+    return err_info;
   endfunction
 
   function void check_phase(uvm_phase phase);

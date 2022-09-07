@@ -153,17 +153,24 @@ package kmac_env_pkg;
     StError                 = 10'b1101011101
   } kmac_app_st_e;
 
-  // states of the error FSM
-  typedef enum bit [2:0] {
-    ErrStIdle,
-    ErrStMsgFeed,
-    ErrStProcessing,
-    ErrStAbsorbed,
-    ErrStSqueezing
-  } kmac_err_st_e;
+  typedef enum bit [23:0] {
+    kmac_cmd_idx = 0,
+    kmac_st_idx = 8
+  } kmac_err_info_idx_e;
 
-  typedef virtual key_sideload_if   sideload_vif;
-  typedef virtual kmac_if           kmac_vif;
+  typedef struct packed {
+    bit [4:0] padded_zeros_0;
+    bit sw_err;       // Field that recommended to fill
+    bit mode_strength_err;
+    bit prefix_err;
+    bit [4:0] padded_zeros_1;
+    bit [2:0] StL;    // Field that recommended to fill
+    bit [1:0] padded_zeros_2;
+    bit [5:0] sw_cmd; // Field that recommended to fill
+  } kmac_sw_cmd_seq_err_info_t;
+
+  typedef virtual key_sideload_if sideload_vif;
+  typedef virtual kmac_if         kmac_vif;
 
   // Helper functions that returns the KMAC key size in bytes/words/blocks
   function automatic int get_key_size_bytes(kmac_pkg::key_len_e len);
