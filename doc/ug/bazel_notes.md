@@ -308,7 +308,7 @@ bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
 
 ## Filtering Broken Tests
 
-Some tests are marked known to be broken (and are in the process of being traiged).
+Some tests are marked known to be broken (and are in the process of being triaged).
 To prevent running these tests when running a block of tests, use the `test_tag_filters=-broken` flag.
 For example, to run all chip-level tests except the broken ones on FPGA:
 ```console

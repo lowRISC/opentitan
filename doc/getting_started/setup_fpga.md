@@ -48,7 +48,7 @@ The metadata for the latest bitstream (the approximate creation time and the ass
 ### Build an FPGA bitstream
 
 Synthesizing a design for an FPGA board is simple with Bazel.
-While Bazel is the entry point for kicking off the FPGA sythesis, under the hood, it invokes FuseSoC, the hardware package manager / build system supported by OpenTitan.
+While Bazel is the entry point for kicking off the FPGA synthesis, under the hood, it invokes FuseSoC, the hardware package manager / build system supported by OpenTitan.
 During the build process, the boot ROM is baked into the bitstream.
 As mentioned above, we maintain two boot ROM programs, one for testing (_test ROM_), and one for production (_ROM_).
 
@@ -69,7 +69,7 @@ Note, building these bitstreams will require Vivado be installed on your system,
 #### Dealing with FPGA Congestion Issues
 
 The default Vivado tool placement may sometimes result in congested FPGA floorplans.
-When this happens, the implemenation time and results become unpredictable.
+When this happens, the implementation time and results become unpredictable.
 It may become necessary for the user to manually adjust certain placement.
 See [this comment](https://github.com/lowRISC/opentitan/pull/8138#issuecomment-916696830) for a thorough analysis of one such situation and what changes were made to improve congestion.
 
@@ -142,7 +142,7 @@ There are two ways to load a bitstream on to the FPGA and bootstrap software int
 1. **automatically**, on single invocations of `bazel test ...`.
 1. **manually**, using multiple invocations of `opentitantool`, and
 Which one you use, will depend on how the build target is defined for the software you would like to test on the FPGA.
-Specifically, for software build targets defined in Bazel BUILD files uing the `opentitan_functest` Bazel macro, you will use the latter (**automatic**) approach.
+Specifically, for software build targets defined in Bazel BUILD files using the `opentitan_functest` Bazel macro, you will use the latter (**automatic**) approach.
 Alternatively, for software build targets defined in Bazel BUILD files using the `opentitan_flash_binary` Bazel macro, you will use the former (**manual**) approach.
 
 See below for details on both approaches.
@@ -360,7 +360,7 @@ riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
   "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf)"
 ```
 
-Note, the above will print out the contents of the registers upon successs.
+Note, the above will print out the contents of the registers upon success.
 
 #### Common operations with GDB
 

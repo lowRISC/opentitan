@@ -29,7 +29,7 @@ each of the 5 control bits written to the FIFO:
 |R | Read transaction (data value indicates how many bytes to read) |
 |C | With R, allows read to continue by ACK of the last byte read |
 |N | NACK OK, do not raise an error on a NACK |
-|. | A dot is guarenteed to be ignored in the input, it is included in the text output format to help readability |
+|. | A dot is guaranteed to be ignored in the input, it is included in the text output format to help readability |
 
 The flags may occur in any order (but not be repeated) and additional
 characters will be ignored. In general other than dot (`.`) other
@@ -86,7 +86,7 @@ A simple I2C write consists of a Start with Address and direction bit
 of zero, and a single data byte (4 in the example) with a Stop.
 
 The baseline tool will generate an svg file (which can be viewed in a
-browser) that includes the diagramatic form of the transaction and a
+browser) that includes the diagrammatic form of the transaction and a
 line with the comma separated structured text form.
 
 ```console
@@ -170,7 +170,7 @@ representation:
 
 ```console
 $ cd $REPO_TOP/util
-$ ./i2csvg.py --nosvg --text --fifodata --prefix=I2CF: i2csvg/examples/traceout.txt 
+$ ./i2csvg.py --nosvg --text --fifodata --prefix=I2CF: i2csvg/examples/traceout.txt
 T read sensor
 S.... 0x40
 .PR.. 0x1
@@ -186,4 +186,3 @@ Or the output can be converted into pictures for display in a browser:
 $ cd $REPO_TOP/util
 $ ./i2csvg.py --text --fifodata --prefix=I2CF: i2csvg/examples/traceout.txt > out.html
 ```
-

@@ -21,7 +21,7 @@ $REPO_TOP/bazelisk.sh test //... --test_tag_filters=-cw310,-verilator --disk_cac
 
 ## Installing Bazel
 
-There are two ways to install the correct verion of Bazel:
+There are two ways to install the correct version of Bazel:
 1. **automatically**, using the `bazelisk.sh` script provided in the repo, or
 1. **manually**.
 
@@ -147,7 +147,7 @@ bazel test //sw/device/silicon_creator/lib/drivers:uart_unittest
 
 ### Bazel-built Software Artifacts
 
-As decribed in the [OpenTitan Software]({{< relref "sw/" >}}) documentation, there are three categories of OpenTitan software, all of which are built with Bazel. These include:
+As described in the [OpenTitan Software]({{< relref "sw/" >}}) documentation, there are three categories of OpenTitan software, all of which are built with Bazel. These include:
 1. _device_ software,
 1. _OTBN_ software,
 1. _host_ software,

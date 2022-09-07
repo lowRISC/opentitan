@@ -4,7 +4,7 @@ title: "Memory Model"
 
 The memory model UVC models a memory device which any host interface can read
 from or write to. It is implemented as a `uvm_object`, and instantiates an
-associative array of bytes `system_memory`. This class is paramterized by both
+associative array of bytes `system_memory`. This class is parameterized by both
 the address width and the data width, and creates two `typedefs` to represent
 both, `mem_addr_t` and `mem_data_t`.
 The `mem_model` class has four main functions, which are detailed below.

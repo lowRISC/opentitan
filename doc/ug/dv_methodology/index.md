@@ -58,7 +58,7 @@ The testplan consist of two parts:
 
 The testplan is written in Hjson format and is made available in the corresponding `data` directory of each DUT.
 
-The Hjson schema enables this information to be human-writable and machine-parsable, which facilitates an automated and documentation-driven DV effort.
+The Hjson schema enables this information to be human-writable and machine-parseable, which facilitates an automated and documentation-driven DV effort.
 The testplan is parsed into a data structure that serves the following purposes:
 
 *  Provide the ability to insert the testplan and coverage plan as tables into the DV document itself, so that all of the required information is in one place
@@ -90,7 +90,7 @@ These are described below.
 As is the case with design, we strive for conformity in our verification efforts as well.
 The motivation for this is not just aesthetics, but also to reap the advantages of [code reuse](#code-reuse), which we rely heavily on.
 To help achieve this, we provide a verification starter tool-kit called [uvmdvgen]({{< relref "util/uvmdvgen/doc" >}}).
-It can be used to completely auto-generate the complete initial DV enviroment for a new DUT, including the [documentation](#documentation) pieces (testplan as well as DV document), the complete UVM environment including the testbench, to the collaterals for building and running tests along with some common tests.
+It can be used to completely auto-generate the complete initial DV environment for a new DUT, including the [documentation](#documentation) pieces (testplan as well as DV document), the complete UVM environment including the testbench, to the collaterals for building and running tests along with some common tests.
 This significantly helps reduce the development time.
 It can also be used to auto-generate the initial skeleton source code for building a new reusable verification component for an interface (a complete UVM agent).
 
@@ -131,7 +131,7 @@ The actual UVM testbenches for the Comportable IPs extend from this library as t
 
 ### Common Verification Components
 
-In addition to the above library of classes, there are several common plug-and-play verification compoments (a.k.a. universal verification components or UVCs) provided for use in testbenches at `hw/dv/sv` location.
+In addition to the above library of classes, there are several common plug-and-play verification components (a.k.a. universal verification components or UVCs) provided for use in testbenches at `hw/dv/sv` location.
 A few examples of these are as follows:
 
 *  [Common interfaces]({{< relref "hw/dv/sv/common_ifs" >}})

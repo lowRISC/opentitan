@@ -363,7 +363,7 @@ typedef enum my_wonderful_option {
 
 ### C-specific Keywords
 
-C11 introduces a number of undescore-prefixed keywords, such as `_Static_assert`, `_Bool`, and `_Noreturn`, which do not have a C++ counterpart.
+C11 introduces a number of underscore-prefixed keywords, such as `_Static_assert`, `_Bool`, and `_Noreturn`, which do not have a C++ counterpart.
 These should be avoided in preference for macros that wrap them, such as `static_assert`, `bool`, and `noreturn`.
 
 ### Constants and Preprocessor Macros
@@ -407,13 +407,13 @@ int arr[5] = { [3] = 0xff, [4] = 0x1b };
 ```
 With judicious use, designated initializers can make code more readable and robust; struct field reordering will not affect downstream users, and weak typing will not lead to surprising union initialization.
 
-When initializing a struct or union, initializers within *must* be designated; array-style initialization (or mixing designated and undesignated initializers) is forbidden.
+When initializing a struct or union, initializers within *must* be designated; array-style initialization (or mixing designated and non-designated initializers) is forbidden.
 
 Furthermore, the nested forms of designated initialization are forbidden (e.g., `.x.y = foo` and `.x[0] = bar`), to discourage initialization of deeply nested structures with flat syntax.
 This may change if we find cases where this initialization improves readability.
 
 When initializing an array, initializers *may* be designated when that makes the array more readable (e.g., lookup tables that are mostly zeroed).
-Mixing designated and undesignated initializers, or using nested initializers, is still forbidden.
+Mixing designated and non-designated initializers, or using nested initializers, is still forbidden.
 
 ### Function Declarations
 

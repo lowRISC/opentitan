@@ -231,7 +231,7 @@ Once everything has rebased properly you can do
 $ git log
 ```
 
-And see that the changes you commited on the branch are at the top of
+And see that the changes you committed on the branch are at the top of
 the log followed by the latest changes on the `master` branch.
 
 Note: be mindful about which branch you are working on.
@@ -409,7 +409,7 @@ For instance, if one user prepares a verification test case and finds a bug.
 Another user fixed it and created a pull request. The first user needs
 to test if the fix works on the new verification environment.
 
-In this case, it is recommanded to create a new branch on top of the local
+In this case, it is recommended to create a new branch on top of the local
 commit and `rebase`, `cherry-pick`, or `merge` the pull request. Assume you have a branch
 name 'br_localfix' which has an update for the verification environment. If the
 other user created a pull request with ID #345, which has a fix for the

@@ -5,7 +5,7 @@ title: "Committers"
 Committers are individuals with repository write access.
 While everyone can and is encouraged to contribute by reviewing code, committers are responsible for final approval and merge.
 Committers must ensure that any code merged meets a high quality bar, has been properly discussed, and the design rationale adequately explained and documented.
-Making a judgement on when these requirements have been met is fundamental to the role.
+Making a judgment on when these requirements have been met is fundamental to the role.
 
 Committers are proposed by and voted on by the TC.
 Committers should:

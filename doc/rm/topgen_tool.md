@@ -22,7 +22,7 @@ The top specific Hjson describes how the design looks and how it should connect,
 * Clock sources
 * Reset sources
 * List of instantiated peripherals
-  * Module type of each peripheral (it is possible to have multiple instantitations of a particular module)
+  * Module type of each peripheral (it is possible to have multiple instantiations of a particular module)
   * Clock / reset connectivity of each peripheral
   * Base address of each peripheral
 * System memories

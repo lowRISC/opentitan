@@ -85,12 +85,12 @@ The tool will normally increment the offset to align the region based on its siz
 
 The tool will give a warning if the size is not a power of 2.
 The tool will also give a warning if the window has software access other than read-only, write-only or read-write.
-Both of these warnings are supressed if the description acknowledges there is something special about this window by setting `unusual: "True"` in the window declaration.
+Both of these warnings are suppressed if the description acknowledges there is something special about this window by setting `unusual: "True"` in the window declaration.
 
 The tool will increment the offset to align the region based on its size.
 The start address is aligned such that the base item in the window is at an address with all zeros in the low bits.
 For instance, if the current offset is 0x104, and the window size in 32-bit words is between 0x11 and 0x20 (inclusive) (i.e. 65-128 bytes), the window base will be set to 0x180.
-The next register will immedately follow the window, so will be at the window base address plus the window size in bytes.
+The next register will immediately follow the window, so will be at the window base address plus the window size in bytes.
 
 Sometimes the window may need to map a structure that is not a full word wide (for example providing debug access to a the memory in a 12-bit wide FIFO).
 In this case it may be convenient to have only the low bits of each word valid and use the word address directly as an index (rather than presenting a "packed" structure with the sub-word items packed into as few words as possible).
@@ -150,7 +150,7 @@ If the registers are 32 bits wide then the tool will pack the four bit instances
 ```
 
 Note that the definition bits for the base instance need not be contiguous.
-In this case the tool will match the patten for the other instances.
+In this case the tool will match the pattern for the other instances.
 For example the data bits and mask bits could be in the lower and upper parts of a register:
 
 ```hjson
@@ -288,7 +288,7 @@ The `prim_subreg` module takes a parameter `SwAccess` that is used to adjust the
 
 On the right are the typedef structs that gather the `q` and `qe`s into one output bundle, and receive the bundled `d` and `de` inputs.
 
-The addess decode and TL-UL 1:N adapter shown at the bottom are created only if the register definition includes one or more `window:` descriptions.
+The address decode and TL-UL 1:N adapter shown at the bottom are created only if the register definition includes one or more `window:` descriptions.
 Each window is given its own TL-UL connection and the implementation must provide a device interface.
 
 It is notable that in the current definition, each field of a register has its own register instantiation.

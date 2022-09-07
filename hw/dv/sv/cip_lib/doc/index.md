@@ -60,7 +60,7 @@ The following is a list of common features and settings:
   many as the DUT provides. The reason for going with a fixed width pins_if is
   to allow the intr_vif to be available in this base env cfg class (which does not
   know how many interrupt each IP DUT provides).
-* **devmode_vif**: THis is a handle to the `pins_if #(1)` interface instance created
+* **devmode_vif**: This is a handle to the `pins_if #(1)` interface instance created
   in the tb to hookup the DUT input `devmode`.
 * **tl_agent_cfg**: The downstream TileLink host agent created in the cip_base_env
   class requires the agent cfg handle to tell it how to configure the agent.
@@ -350,8 +350,8 @@ plusargs as required.
 
 ## Configure Alert Device Agent from CIP library classes
 
-To configure alert device agents in block level testbench environment that extended
-from this CIP library claaes, please follow the steps below:
+To configure alert device agents in a block level testbench environment that is extended
+from this CIP library class, please follow the steps below:
 * **${ip_name}_env_pkg.sv**: Add parameter `LIST_OF_ALERTS[]` and `NUM_ALERTS`.
   Please make sure the alert names and order are correct.
   For example in `otp_ctrl_env_pkg.sv`:
