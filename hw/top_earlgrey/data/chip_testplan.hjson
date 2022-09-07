@@ -780,8 +780,8 @@
       desc: '''Verify the turned off transactional units.
 
             Verify CSR accesses do not complete in units that are off.  Using the watchdog timers,
-            turn off a transactional unit's clock, issue a CSR access to that unit, verify a watchdog
-            event results, and verify the rstmgr crash dump info records the CSR address.
+            turn off a transactional unit's clock, issue a CSR access to that unit, verify a
+            watchdog event results, and verify the rstmgr crash dump info records the CSR address.
 
             A stretch goal is to check the PC corresponds to the code performing
             the CSR access (stretch since it could be difficult to maintain this
@@ -867,13 +867,14 @@
       name: chip_sw_clkmgr_extended_range
       desc: '''Verify that the system can run at a reduced, calibrated clock frequency.
 
-            This test should check that the system can run at a reduced, calibrated clock
-            frequency (70MHz) with jitter enabled (which can lower the frequency down to ~55 MHz momentarily).
-            This option is intended as a fall-back in case there are issues running the system with
-            at 100MHz (calibrated).
+            This test should check that the system can run at a reduced, calibrated clock frequency
+            (70MHz) with jitter enabled (which can lower the frequency down to ~55 MHz
+            momentarily). This option is intended as a fall-back in case there are issues running
+            the system with at 100MHz (calibrated).
 
             This testpoint can be covered by extending the DV environment to support the extended
-            range clock option via a flag, and running several existing chip-level tests with that option, e.g.
+            range clock option via a flag, and running several existing chip-level tests with that
+            option, e.g.
 
               chip_sw_clkmgr_jitter
               chip_sw_flash_ctrl_ops_jitter_en
@@ -948,8 +949,8 @@
     }
     {
       name: chip_sw_pwrmgr_random_sleep_all_wake_ups
-      desc: '''Verify that the chip can go into random low power states and be woken up by ALL wake up
-            sources.
+      desc: '''Verify that the chip can go into random low power states and be woken up by ALL wake
+            up sources.
 
             This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
             working correctly as expected. X-ref'ed with all individual IP tests. For each wakeup
@@ -958,8 +959,8 @@
             have the source issue a wakeup event and verify `wake_info` indicates the expected
             wakeup.
 
-            Each test should perform a minimum of 2 low power transitions to ensure there are no state
-            dependent corner cases with wakeup interactions.
+            Each test should perform a minimum of 2 low power transitions to ensure there are no
+            state dependent corner cases with wakeup interactions.
 
             '''
       stage: V2
@@ -1027,7 +1028,8 @@
             This verifies ALL reset sources.
             - 7 resets are generated randomly with normal sleeps
             - POR (HW PAD) reset, SW POR, sysrst, wdog timer reset, esc rst, SW req
-            - esc reset is followed by normal mode and cleared by reset because it does not work with sleep mode
+            - esc reset is followed by normal mode and cleared by reset because it does not work
+              with sleep mode
             '''
       stage: V2
       tests: ["chip_sw_pwrmgr_normal_sleep_all_reset_reqs"]
@@ -1036,8 +1038,8 @@
       name: chip_sw_pwrmgr_wdog_reset
       desc: '''Verify that the chip can be reset by watchdog timer reset source.
 
-            This verifies watchdog timer reset source. This also verifies that the pwrmgr sequencing is
-            working correctly as expected. X-ref'ed with all individual IP tests. Similar to
+            This verifies watchdog timer reset source. This also verifies that the pwrmgr sequencing
+            is working correctly as expected. X-ref'ed with all individual IP tests. Similar to
             chip_pwrmgr_sleep_all_reset_reqs, except the chip is not put in low power mode.
             '''
       stage: V2
@@ -1072,9 +1074,9 @@
       desc: '''Verify the effect of a glitch in main power rail in random sleep states.
 
             The vcmain_supp_i AST input is forced to drop right after putting the chip in a random
-            sleep state. This triggers a MainPwr reset request, which is checked by reading retention
-            SRAM's reset_reason to show that the reset_info CSR's POR bit is not set when the test
-            restarts.
+            sleep state. This triggers a MainPwr reset request, which is checked by reading
+            retention SRAM's reset_reason to show that the reset_info CSR's POR bit is not set when
+            the test restarts.
 
             Note: the glitch has to be sent in a very narrow window:
             - If sent too early the chip won't have started to process deep sleep.
@@ -1133,8 +1135,8 @@
 
             - Read the reset cause register in rstmgr to confirm that the SW is in the POR reset
               phase.
-            - After sysrst reset is generated by forcing, read the reset cause register in rstmgr to confirm that the SW is now in
-              the sysrst reset phase.
+            - After sysrst reset is generated by forcing, read the reset cause register in rstmgr to
+              confirm that the SW is now in the sysrst reset phase.
             - Generate sysrst by driving input PAD.
             - After reset, read the reset cause register in rstmgr to confirm that the SW is now in
               the sysrst reset phase.
@@ -1793,8 +1795,8 @@
             - Write the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR trigger bits to 1 and wait for it to
               complete by polling the status idle bit.
             - Read back the data out CSRs - they should all read garbage values.
-            - Assertion check verifies that the IV are also garbage, i.e. different from the originally
-              written values.
+            - Assertion check verifies that the IV are also garbage, i.e. different from the
+              originally written values.
             '''
       stage: V2
       tests: ["chip_sw_aes_entropy"]
@@ -1859,8 +1861,8 @@
             - Initiate an HMAC operation with a known key, plain text and digest.
               Write HMAC clock hint to 0 and verify the HMAC clk hint status within clkmgr reads 1
               (HMAC is enabled), before the HMAC operation is complete.
-            - After the HMAC operation is complete, verify the digest for correctness.
-              Verify that the HMAC clk hint status within clkmgr now reads 0 again (HMAC is disabled).
+            - After the HMAC operation is complete, verify the digest for correctness. Verify that
+              the HMAC clk hint status within clkmgr now reads 0 again (HMAC is disabled).
             - This process is repeated for two hmac operations needed to verify the resulting hmac
               digest.
             '''
@@ -1934,8 +1936,8 @@
             Randomly configure `wait_timer` values (zero for disable, non-zero for timer expire).
               - Program `wait_timer` to a small value.
                 Check if EDN timeout error occurs after issuing the hashing op.
-              - Adjust `wait_timer` greater than expected EDN latency (with correct `prescaler` too).
-                Then check if Digest is correct.
+              - Adjust `wait_timer` greater than expected EDN latency (with correct `prescaler`
+                too). Then check if Digest is correct.
             KMAC should send EDN request after `entropy_ready` is set.
             KMAC also should send out another request to EDN when either:
               - kmac hash counter hits the configured threshold (assuming it is non-zero)
@@ -1961,8 +1963,8 @@
             - Initiate a KMAC operation with a known key, plain text and digest.
               Write KMAC clock hint to 0 and verify the KMAC clk hint status within clkmgr reads 1
               (KMAC is enabled), before the KMAC operation is complete.
-            - After the KMAC operation is complete, verify the digest for correctness.
-              Verify that the KMAC clk hint status within clkmgr now reads 0 again (KMAC is disabled).
+            - After the KMAC operation is complete, verify the digest for correctness. Verify that
+              the KMAC clk hint status within clkmgr now reads 0 again (KMAC is disabled).
             '''
       stage: V2
       tests: ["chip_sw_kmac_idle"]
@@ -2007,7 +2009,8 @@
       name: chip_sw_entropy_src_fuse_en_fw_read
       desc: '''Verify the fuse input entropy_src.
 
-            - Initialize the OTP with the fuse that controls whether the SW can read the entropy src enabled.
+            - Initialize the OTP with the fuse that controls whether the SW can read the entropy src
+              enabled.
             - Read the OTP and verify that the fuse is enabled.
             - Read the entropy_data_fifo via SW and verify that it reads valid values.
             - Reset the chip, but this time, initialize the OTP with with the fuse disabled.
@@ -2047,10 +2050,12 @@
       name: chip_sw_csrng_fuse_en_sw_app_read
       desc: '''Verify the fuse input to CSRNG.
 
-            - Initialize the OTP with the fuse that control whether the SW can read the CSRNG state enabled.
+            - Initialize the OTP with the fuse that control whether the SW can read the CSRNG state
+              enabled.
             - Issue an instantiate command to request entropy.
             - Verify that SW can read the internal state values.
-            - Reset the chip and repeat the steps above, but this time, initialized the OTP with fuse disabled.
+            - Reset the chip and repeat the steps above, but this time, initialized the OTP with
+              fuse disabled.
             - Verify that the SW reads back all zeros when reading the internal state values.
             '''
       stage: V2
@@ -2061,13 +2066,16 @@
       desc: '''Verify the effect of LC HW debug enable on CSRNG.
 
             lc_hw_debug_en is used to diversify the csrng seed.
-            - Configure entropy_src into bypassing the conditioner and directly inject known entropy.
+            - Configure entropy_src into bypassing the conditioner and directly inject known
+              entropy.
             - Instantiate CSRNG with the known entropy while in TEST state (hw_debug_en = 1).
             - Retrieve entropy from csrng and save it in flash and reset the system.
-            - Run the process again and ensure the exact same result can be reproduced (similar to KAT).
+            - Run the process again and ensure the exact same result can be reproduced (similar to
+              KAT).
             - Advance the device to PROD or DEV state.
             - Again configure entropy_src to bypass the conditioner and use direct injection.
-            - Instantiate CSRNG with the same fixed seed and fetch entropy again while in the NEW state.
+            - Instantiate CSRNG with the same fixed seed and fetch entropy again while in the NEW
+              state.
             - The newly fetched entropy and the old entropy stored in flash should not match.
             '''
       stage: V2
@@ -2709,12 +2717,16 @@
       name: chip_sw_ast_usb_clk_calib
       desc: '''Verify the USB clk calibration signaling.
 
-            - First place the AST into a mode where usb clock frequency significantly deviates from the ideal.
+            - First place the AST into a mode where usb clock frequency significantly deviates from
+              the ideal.
             - Verify the clock is "off" using the clkmgr measurement mechanism.
             - Then, turn on the usb sof calibration machinery and wait a few mS.
-            - Afterwards, measure the usb clock again using the clkmgr measurement controls, at this point the clock should be significantly more accurate.
-            - Note, while the above is ideal, usbdev chip level testing is not yet ready and this test fakes the usb portion through DV forces.
-            - Note also the real AST calibration logic is not available, so the sof testing in the open source is effectively short-circuited.
+            - Afterwards, measure the usb clock again using the clkmgr measurement controls, at this
+              point the clock should be significantly more accurate.
+            - Note, while the above is ideal, usbdev chip level testing is not yet ready and this
+              test fakes the usb portion through DV forces.
+            - Note also the real AST calibration logic is not available, so the sof testing in the
+              open source is effectively short-circuited.
             '''
       stage: V2
       tests: ["chip_sw_usb_ast_clk_calib"]
@@ -2825,8 +2837,10 @@
       name: chip_sw_rv_core_ibex_fault_dump
       desc: '''Verify the functionality of the ibex fault dump.
 
-               - Purposely create an ibex exception during execution through reads to an ummapped address.
-               - Ensure the rstmgr fault dump correctly captures the related addresses to the exception.
+               - Purposely create an ibex exception during execution through reads to an ummapped
+                 address.
+               - Ensure the rstmgr fault dump correctly captures the related addresses to the
+                 exception.
             '''
       stage: V2
       tests: []
@@ -2836,8 +2850,10 @@
       name: chip_sw_rv_core_ibex_double_fault
       desc: '''Verify the functionality of the ibex double fault dump.
 
-               - Purposely create an ibex double exception during execution, by performing an unmapped read and in the exception handler perform another unmapped read.
-               - Ensure the rstmgr fault dump correctly captures both dumps correctly and indicates the previous dump is valid.
+               - Purposely create an ibex double exception during execution, by performing an
+                 unmapped read and in the exception handler perform another unmapped read.
+               - Ensure the rstmgr fault dump correctly captures both dumps correctly and indicates
+                 the previous dump is valid.
             '''
       stage: V2
       tests: []
