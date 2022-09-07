@@ -867,15 +867,20 @@
       swaccess: "ro",
       hwaccess: "hwo",
       fields: [
-        { bits: "31:0",
+        { bits: "31"
+          name: "valid"
+          desc: '''If 1, err_code field represents the captured error.'''
+          swaccess: "rw1c"
+        } // f: valid
+        { bits: "30:0",
           name: "err_code",
           desc: '''If error interrupt occurs, this register has information of error cause.
                 Please take a look at `hw/ip/kmac/rtl/kmac_pkg.sv:err_code_e enum type.
                 '''
-          tags: [// Randomly write mem will cause this reg updated by design
-                 "excl:CsrNonInitTests:CsrExclWriteCheck"]
         }
       ]
+      tags: [// Randomly write mem will cause this reg updated by design
+             "excl:CsrNonInitTests:CsrExclWriteCheck"]
     } // R: ERR_CODE
     { skipto: "0x400"}
     { window: {

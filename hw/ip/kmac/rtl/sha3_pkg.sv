@@ -183,13 +183,13 @@ package sha3_pkg;
   //////////////////
   // Error Report //
   //////////////////
-  typedef enum logic [7:0] {
-    ErrNone = 8'h 00,
+  typedef enum logic [6:0] {
+    ErrNone = 7'h 00,
 
     // ErrSha3SwControl occurs when software sent wrong flow signal.
     // e.g) Sw set `process_i` without `start_i`. The state machine ignores
     //      the signal and report through the error FIFO.
-    ErrSha3SwControl = 8'h 80
+    ErrSha3SwControl = 7'h 40
   } err_code_e;
 
   typedef struct packed {

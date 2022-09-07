@@ -391,7 +391,10 @@ module kmac_reg_top (
   logic prefix_10_we;
   logic [31:0] prefix_10_qs;
   logic [31:0] prefix_10_wd;
-  logic [31:0] err_code_qs;
+  logic err_code_we;
+  logic [30:0] err_code_err_code_qs;
+  logic err_code_valid_qs;
+  logic err_code_valid_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2667,11 +2670,12 @@ module kmac_reg_top (
 
 
   // R[err_code]: V(False)
+  //   F[err_code]: 30:0
   prim_subreg #(
-    .DW      (32),
+    .DW      (31),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (32'h0)
-  ) u_err_code (
+    .RESVAL  (31'h0)
+  ) u_err_code_err_code (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -2680,8 +2684,8 @@ module kmac_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.err_code.de),
-    .d      (hw2reg.err_code.d),
+    .de     (hw2reg.err_code.err_code.de),
+    .d      (hw2reg.err_code.err_code.d),
 
     // to internal hardware
     .qe     (),
@@ -2689,7 +2693,33 @@ module kmac_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (err_code_qs)
+    .qs     (err_code_err_code_qs)
+  );
+
+  //   F[valid]: 31:31
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0)
+  ) u_err_code_valid (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (err_code_we),
+    .wd     (err_code_valid_wd),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.valid.de),
+    .d      (hw2reg.err_code.valid.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (err_code_valid_qs)
   );
 
 
@@ -3046,6 +3076,9 @@ module kmac_reg_top (
   assign prefix_10_we = addr_hit[59] & reg_we & !reg_error;
 
   assign prefix_10_wd = reg_wdata[31:0];
+  assign err_code_we = addr_hit[60] & reg_we & !reg_error;
+
+  assign err_code_valid_wd = reg_wdata[31];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -3110,7 +3143,7 @@ module kmac_reg_top (
     reg_we_check[57] = prefix_8_gated_we;
     reg_we_check[58] = prefix_9_gated_we;
     reg_we_check[59] = prefix_10_gated_we;
-    reg_we_check[60] = 1'b0;
+    reg_we_check[60] = err_code_we;
   end
 
   // Read data return
@@ -3386,7 +3419,8 @@ module kmac_reg_top (
       end
 
       addr_hit[60]: begin
-        reg_rdata_next[31:0] = err_code_qs;
+        reg_rdata_next[30:0] = err_code_err_code_qs;
+        reg_rdata_next[31] = err_code_valid_qs;
       end
 
       default: begin

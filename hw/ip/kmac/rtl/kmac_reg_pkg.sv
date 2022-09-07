@@ -224,8 +224,14 @@ package kmac_reg_pkg;
   } kmac_hw2reg_entropy_refresh_hash_cnt_reg_t;
 
   typedef struct packed {
-    logic [31:0] d;
-    logic        de;
+    struct packed {
+      logic [30:0] d;
+      logic        de;
+    } err_code;
+    struct packed {
+      logic        d;
+      logic        de;
+    } valid;
   } kmac_hw2reg_err_code_reg_t;
 
   // Register -> HW type
@@ -248,11 +254,11 @@ package kmac_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    kmac_hw2reg_intr_state_reg_t intr_state; // [62:57]
-    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [56:56]
-    kmac_hw2reg_status_reg_t status; // [55:44]
-    kmac_hw2reg_entropy_refresh_hash_cnt_reg_t entropy_refresh_hash_cnt; // [43:33]
-    kmac_hw2reg_err_code_reg_t err_code; // [32:0]
+    kmac_hw2reg_intr_state_reg_t intr_state; // [63:58]
+    kmac_hw2reg_cfg_regwen_reg_t cfg_regwen; // [57:57]
+    kmac_hw2reg_status_reg_t status; // [56:45]
+    kmac_hw2reg_entropy_refresh_hash_cnt_reg_t entropy_refresh_hash_cnt; // [44:34]
+    kmac_hw2reg_err_code_reg_t err_code; // [33:0]
   } kmac_hw2reg_t;
 
   // Register offsets

@@ -340,57 +340,57 @@ package kmac_pkg;
   ////////////////////
 
   // Error structure is same to the SHA3 one. The codes do not overlap.
-  typedef enum logic [7:0] {
-    ErrNone = 8'h 00,
+  typedef enum logic [6:0] {
+    ErrNone = 7'h 00,
 
     // ErrSha3SwControl occurs when software sent wrong flow signal.
     // e.g) Sw set `process_i` without `start_i`. The state machine ignores
     //      the signal and report through the error FIFO.
-    //ErrSha3SwControl = 8'h 80
+    //ErrSha3SwControl = 7'h 80
 
     // ErrKeyNotValid: KeyMgr interface raises an error if the secret key is
     // not valid when KeyMgr initiates KDF.
-    ErrKeyNotValid = 8'h 01,
+    ErrKeyNotValid = 7'h 01,
 
     // ErrSwPushMsgFifo: Sw writes data into Msg FIFO abruptly.
     // This error occurs in below scenario:
     //   - Sw does not send "Start" command to KMAC then writes data into
     //     Msg FIFO
     //   - Sw writes data into Msg FIFO when KeyMgr is in operation
-    ErrSwPushedMsgFifo = 8'h 02,
+    ErrSwPushedMsgFifo = 7'h 02,
 
     // ErrSwIssuedCmdInAppActive
     //  - Sw writes any command while AppIntf is in active.
-    ErrSwIssuedCmdInAppActive = 8'h 03,
+    ErrSwIssuedCmdInAppActive = 7'h 03,
 
     // ErrWaitTimerExpired
     // Entropy Wait timer expired. Something wrong on EDN i/f
-    ErrWaitTimerExpired = 8'h 04,
+    ErrWaitTimerExpired = 7'h 04,
 
     // ErrIncorrectEntropyMode
     // Incorrect Entropy mode when entropy is ready
-    ErrIncorrectEntropyMode = 8'h 05,
+    ErrIncorrectEntropyMode = 7'h 05,
 
     // ErrUnexpectedModeStrength
-    ErrUnexpectedModeStrength = 8'h 06,
+    ErrUnexpectedModeStrength = 7'h 06,
 
     // ErrIncorrectFunctionName "KMAC"
-    ErrIncorrectFunctionName = 8'h 07,
+    ErrIncorrectFunctionName = 7'h 07,
 
     // ErrSwCmdSequence
-    ErrSwCmdSequence = 8'h 08,
+    ErrSwCmdSequence = 7'h 08,
 
     // Error Shadow register update
-    ErrShadowRegUpdate = 8'h C0,
+    ErrShadowRegUpdate = 7'h 60,
 
     // Error due to lc_escalation_en_i or fatal fault
-    ErrFatalError = 8'h C1,
+    ErrFatalError = 7'h 61,
 
     // Error due to the counter integrity check failure inside MsgFifo.Packer
-    ErrPackerIntegrity = 8'h C2,
+    ErrPackerIntegrity = 7'h 62,
 
     // Error due to the counter integrity check failure inside MsgFifo.Fifo
-    ErrMsgFifoIntegrity = 8'h C3
+    ErrMsgFifoIntegrity = 7'h 63
   } err_code_e;
 
   typedef struct packed {

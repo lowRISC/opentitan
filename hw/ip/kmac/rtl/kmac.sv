@@ -608,37 +608,45 @@ module kmac
                      ;
 
   // Assing error code to the register
-  assign hw2reg.err_code.de = event_error;
+  assign hw2reg.err_code.err_code.de = event_error;
+  assign hw2reg.err_code.valid.de    = event_error;
 
   always_comb begin
-    hw2reg.err_code.d = '0;
+    hw2reg.err_code.err_code.d = '0;
+    hw2reg.err_code.valid.d = 1'b 0;
 
     priority case (1'b 1)
       // app_err has the highest priority. If SW issues an incorrect command
       // while app is in active state, the error from AppIntf is passed
       // through.
       app_err.valid: begin
-        hw2reg.err_code.d = {app_err.code, app_err.info};
+        hw2reg.err_code.valid.d    = 1'b 1;
+        hw2reg.err_code.err_code.d = {app_err.code, app_err.info};
       end
 
       errchecker_err.valid: begin
-        hw2reg.err_code.d = {errchecker_err.code , errchecker_err.info};
+        hw2reg.err_code.valid.d    = 1'b 1;
+        hw2reg.err_code.err_code.d = {errchecker_err.code , errchecker_err.info};
       end
 
       sha3_err.valid: begin
-        hw2reg.err_code.d = {sha3_err.code , sha3_err.info};
+        hw2reg.err_code.valid.d    = 1'b 1;
+        hw2reg.err_code.err_code.d = {sha3_err.code , sha3_err.info};
       end
 
       entropy_err.valid: begin
-        hw2reg.err_code.d = {entropy_err.code, entropy_err.info};
+        hw2reg.err_code.valid.d    = 1'b 1;
+        hw2reg.err_code.err_code.d = {entropy_err.code, entropy_err.info};
       end
 
       msgfifo_err.valid: begin
-        hw2reg.err_code.d = {msgfifo_err.code, msgfifo_err.info};
+        hw2reg.err_code.valid.d    = 1'b 1;
+        hw2reg.err_code.err_code.d = {msgfifo_err.code, msgfifo_err.info};
       end
 
       default: begin
-        hw2reg.err_code.d = '0;
+        hw2reg.err_code.valid.d    = 1'b 0;
+        hw2reg.err_code.err_code.d = '0;
       end
     endcase
   end
