@@ -5,6 +5,8 @@
 use anyhow::{bail, Result};
 use regex::Regex;
 use std::matches;
+use std::ops::Drop;
+use std::thread;
 use std::time::Duration;
 use structopt::StructOpt;
 
@@ -56,6 +58,44 @@ struct Opts {
         help = "Size of the internal flash",
     )]
     flash_size: u32,
+}
+
+/// A struct for isolating individual test points.
+///
+/// This is basically an example of the RAII technique.
+/// Calling `BootstrapTest::start()` resets the chip and puts it in bootstrap mode (assuming it's
+/// enabled). Strapping pins are released and the chip is reset when the returned struct is
+/// dropped, typically at the end of the test point.
+struct BootstrapTest<'a> {
+    transport: &'a TransportWrapper,
+    reset_delay: Duration,
+}
+
+impl<'a> BootstrapTest<'a> {
+    pub fn start(transport: &'a TransportWrapper, reset_delay: Duration) -> Result<Self> {
+        let b = BootstrapTest {
+            transport,
+            reset_delay,
+        };
+        transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
+        transport.reset_target(b.reset_delay, true)?;
+
+        let spi = transport.spi("0")?;
+        while SpiFlash::read_status(&*spi)? != 0 {
+            thread::sleep(Duration::from_millis(10));
+        }
+
+        Ok(b)
+    }
+}
+
+impl<'a> Drop for BootstrapTest<'a> {
+    fn drop(&mut self) {
+        self.transport
+            .remove_pin_strapping("ROM_BOOTSTRAP")
+            .unwrap();
+        self.transport.reset_target(self.reset_delay, true).unwrap();
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
