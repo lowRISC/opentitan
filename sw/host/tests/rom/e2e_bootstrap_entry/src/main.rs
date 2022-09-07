@@ -12,6 +12,7 @@ use structopt::StructOpt;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::spi::Transfer;
 use opentitanlib::spiflash::{
     sfdp, BlockEraseSize, SpiFlash, SupportedAddressModes, WriteGranularity,
 };
@@ -251,6 +252,49 @@ fn test_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
+fn test_bootstrap_shutdown(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    cmd: u8,
+    bfv: &str,
+) -> Result<()> {
+    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+
+    let spi = transport.spi("0")?;
+    let uart = transport.uart("0")?;
+    let mut console = UartConsole {
+        timeout: Some(Duration::new(2, 0)),
+        // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
+        exit_success: Some(Regex::new(
+            format!("(?s)BFV:{bfv}\r\n.*BFV:0142500d\r\n").as_str(),
+        )?),
+        ..Default::default()
+    };
+    // Send CHIP_ERASE to transition to phase 2.
+    SpiFlash::from_spi(&*spi)?.chip_erase(&*spi)?;
+    // Remove strapping so that chip fails to boot instead of going into bootstrap.
+    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    // SECTOR_ERASE with invalid address to trigger a shutdown.
+    SpiFlash::set_write_enable(&*spi)?;
+    let bad_erase = [cmd, 0xff, 0xff, 0xff];
+    spi.run_transaction(&mut [Transfer::Write(&bad_erase)])?;
+    // We should see the expected BFVs.
+    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    if result != ExitStatus::ExitSuccess {
+        bail!("FAIL: {:?}", result);
+    }
+    // Also verify that the chip is no longer in bootstrap mode.
+    assert!(matches!(
+        SpiFlash::read_sfdp(&*spi)
+            .unwrap_err()
+            .downcast::<sfdp::Error>()
+            .unwrap(),
+        sfdp::Error::WrongHeaderSignature(..)
+    ));
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -261,5 +305,21 @@ fn main() -> Result<()> {
     execute_test!(test_jedec_id, &opts, &transport);
     execute_test!(test_sfdp, &opts, &transport);
     execute_test!(test_write_enable_disable, &opts, &transport);
+    // `kErrorBootstrapEraseAddress` (01425303) is defined in `error.h`.
+    execute_test!(
+        test_bootstrap_shutdown,
+        &opts,
+        &transport,
+        SpiFlash::SECTOR_ERASE,
+        "01425303"
+    );
+    // `kErrorBootstrapProgramAddress` (02425303) is defined in `error.h`.
+    execute_test!(
+        test_bootstrap_shutdown,
+        &opts,
+        &transport,
+        SpiFlash::PAGE_PROGRAM,
+        "02425303"
+    );
     Ok(())
 }
