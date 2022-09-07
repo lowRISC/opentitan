@@ -117,7 +117,9 @@ function main() {
             #   outquery.x: return output files ending with the substring ".x".
             QEXPR="$(outquery_starlark_expr "$1")"
             shift
-            exec "$file" cquery "$@" --output=starlark --starlark:expr="$QEXPR"
+            exec "$file" cquery "$@" \
+                --output=starlark --starlark:expr="$QEXPR" \
+                --ui_event_filters=-info --noshow_progress
             ;;
         *)
             exec "$file" "$@"
