@@ -42,7 +42,7 @@ class chip_jtag_mem_vseq extends chip_common_vseq;
     test_mems.shuffle();
 
     for (int i = 0;i < test_mems.size(); ++i) begin
-      test_mem_rw(test_mems[i]);
+      test_mem_rw(.mem(test_mems[i]), .max_access(128));
     end
   endtask : body
 
