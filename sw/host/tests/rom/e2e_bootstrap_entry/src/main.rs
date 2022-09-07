@@ -98,40 +98,19 @@ impl<'a> Drop for BootstrapTest<'a> {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
-enum BootstrapRequest {
-    No,
-    Yes,
-}
-
-fn test_bootstrap_entry(
-    opts: &Opts,
-    transport: &TransportWrapper,
-    request: BootstrapRequest,
-) -> Result<()> {
+fn test_bootstrap_enabled_requested(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // TODO: Should really `opts.init.uart_params.create()` here, but we need to refactor
     // BootstrapOptions first.
     //let uart = opts.init.uart_params.create(&transport)?;
     let uart = transport.uart("0")?;
-
-    // Look for the bootstrap signal from the ROM.
-    // When enabled, we expect the uart to emit a message indicating bootstrap entry.
-    // When disabled, we expect the ROM to indicate boot failure.
-    let (success, failure) = match request {
-        BootstrapRequest::No => (Regex::new(r"BFV:")?, Regex::new(r"bootstrap:1\r\n")?),
-        BootstrapRequest::Yes => (Regex::new(r"bootstrap:1\r\n")?, Regex::new(r"BFV:")?),
-    };
     let mut console = UartConsole {
         timeout: Some(opts.timeout),
-        exit_success: Some(success),
-        exit_failure: Some(failure),
+        exit_success: Some(Regex::new(r"bootstrap:1\r\n")?),
+        exit_failure: Some(Regex::new(r"BFV:")?),
         ..Default::default()
     };
 
-    match request {
-        BootstrapRequest::No => transport.remove_pin_strapping("ROM_BOOTSTRAP")?,
-        BootstrapRequest::Yes => transport.apply_pin_strapping("ROM_BOOTSTRAP")?,
-    }
+    transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
     let reset_delay = opts
         .init
         .bootstrap
@@ -141,8 +120,43 @@ fn test_bootstrap_entry(
     transport.reset_target(reset_delay, true)?;
 
     // Now watch the console for the exit conditions.
-    let mut stdout = std::io::stdout();
-    let result = console.interact(&*uart, None, Some(&mut stdout))?;
+    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    match result {
+        ExitStatus::ExitSuccess => {}
+        _ => {
+            bail!("FAIL: {:?}", result);
+        }
+    };
+    // Now check whether the SPI device is responding to status messages
+    let spi = transport.spi("0")?;
+    assert_eq!(SpiFlash::read_status(&*spi)?, 0x00);
+
+    Ok(())
+}
+
+fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    // TODO: Should really `opts.init.uart_params.create()` here, but we need to refactor
+    // BootstrapOptions first.
+    //let uart = opts.init.uart_params.create(&transport)?;
+    let uart = transport.uart("0")?;
+    let mut console = UartConsole {
+        timeout: Some(opts.timeout),
+        exit_success: Some(Regex::new(r"BFV:")?),
+        exit_failure: Some(Regex::new(r"bootstrap:1\r\n")?),
+        ..Default::default()
+    };
+
+    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    let reset_delay = opts
+        .init
+        .bootstrap
+        .options
+        .reset_delay
+        .unwrap_or(Duration::from_millis(50));
+    transport.reset_target(reset_delay, true)?;
+
+    // Now watch the console for the exit conditions.
+    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
     match result {
         ExitStatus::ExitSuccess => {}
         _ => {
@@ -150,22 +164,18 @@ fn test_bootstrap_entry(
         }
     };
 
-    // Now check whether the SPI device is responding to status messages.
+    // Now check whether the SPI device is responding to commands.
     // Note: CIPO line is in high-z state when CMD_INFO registers are not configured.
     // Use READ_SFDP instead of READ_STATUS to avoid false negatives when bootstrap is not
     // requested
     let spi = transport.spi("0")?;
-    let status = SpiFlash::read_status(&*spi)?;
-    match request {
-        BootstrapRequest::Yes => assert_eq!(status, 0x00),
-        BootstrapRequest::No => assert!(matches!(
-            SpiFlash::read_sfdp(&*spi)
-                .unwrap_err()
-                .downcast::<sfdp::Error>()
-                .unwrap(),
-            sfdp::Error::WrongHeaderSignature(..)
-        )),
-    }
+    assert!(matches!(
+        SpiFlash::read_sfdp(&*spi)
+            .unwrap_err()
+            .downcast::<sfdp::Error>()
+            .unwrap(),
+        sfdp::Error::WrongHeaderSignature(..)
+    ));
     Ok(())
 }
 
@@ -251,18 +261,8 @@ fn main() -> Result<()> {
     opts.init.init_logging();
 
     let transport = opts.init.init_target()?;
-    execute_test!(
-        test_bootstrap_entry,
-        &opts,
-        &transport,
-        BootstrapRequest::No
-    );
-    execute_test!(
-        test_bootstrap_entry,
-        &opts,
-        &transport,
-        BootstrapRequest::Yes
-    );
+    execute_test!(test_bootstrap_enabled_not_requested, &opts, &transport);
+    execute_test!(test_bootstrap_enabled_requested, &opts, &transport);
     execute_test!(test_jedec_id, &opts, &transport);
     execute_test!(test_sfdp, &opts, &transport);
     execute_test!(test_write_enable_disable, &transport);
