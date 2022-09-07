@@ -296,6 +296,8 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       // read out intr_state and status, scb will check
       check_state();
 
+      check_hash_cnt();
+
       // Read the output digest, scb will check digest
       //
       // If performing a KMAC_APP operation, digest will be sent directly to the m_kmac_app_agent,

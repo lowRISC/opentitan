@@ -63,6 +63,7 @@ package kmac_env_pkg;
   // `right_encode()` or `left_encode()`.
   parameter int MAX_ENCODE_WIDTH = 2040;
 
+  parameter uint HASH_CNT_WIDTH = 10;
   // alerts
   parameter uint NUM_ALERTS = 2;
   parameter string LIST_OF_ALERTS[] = {"recov_operation_err", "fatal_fault_err"};
