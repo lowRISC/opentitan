@@ -74,15 +74,19 @@ const volatile uint32_t nv_fault_checker[3] = {UINT32_MAX, UINT32_MAX,
 // to preserve it across resets.
 fault_checker_t fault_checker;
 
-// This is a strike counter to keep track of progress.
+// This is a strike counter for resets.
 __attribute__((section(".non_volatile_scratch")))
 const volatile uint32_t nv_reset_counter = UINT32_MAX;
 
 uint32_t reset_count;
 
-// This is a strike counter to keep track of progress.
+// This is a strike counter for regular interrupts.
 __attribute__((section(".non_volatile_scratch")))
 const volatile uint32_t nv_interrupt_counter = UINT32_MAX;
+
+// This is a strike counter for nmis.
+__attribute__((section(".non_volatile_scratch")))
+const volatile uint32_t nv_nmi_interrupt_counter = UINT32_MAX;
 
 /**
  * Program the alert handler to escalate on alerts upto phase 2 (i.e. reset).
@@ -93,11 +97,13 @@ const volatile uint32_t nv_interrupt_counter = UINT32_MAX;
 enum {
   kWdogBarkMicros = 10 * 100,         //   1 ms
   kWdogBiteMicros = 15 * 100,         // 1.5 ms
+  kEscalationStartMicros = 40,        //  40 us
   kEscalationPhase0Micros = 2 * 100,  // 200 us
-  kEscalationPhase1Micros = 100,      // 100 us
+  kEscalationPhase1Micros = 2 * 100,  // 200 us
   kEscalationPhase2Micros = 100,      // 100 us
+  kEscalationPhase3Micros = 100,      // 100 us
   kMaxResets = 2,
-  kMaxInterrupts = 40,
+  kMaxInterrupts = 30,
 };
 
 static_assert(kWdogBarkMicros < kWdogBiteMicros &&
@@ -125,8 +131,6 @@ static dif_sram_ctrl_t sram_ctrl_main;
 static dif_sram_ctrl_t sram_ctrl_ret;
 
 static const char *we_check = "prim_reg_we_check";
-
-static volatile bool interrupt_seen = false;
 
 static void save_fault_checker(fault_checker_t *fault_checker) {
   uint32_t function_addr = (uint32_t)(fault_checker->function);
@@ -400,13 +404,14 @@ static void sram_ctrl_ret_fault_checker(bool enable, const char *ip_inst,
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(void) {
-  interrupt_seen = true;
   dif_rv_plic_irq_id_t irq_id;
+
+  LOG_INFO("At regular external ISR");
 
   // There may be multiple interrupts due to the alert firing, so this keeps an
   // interrupt counter and errors-out if there are too many interrupts.
 
-  // Increment the interrupt count and report reset and interrupt counts.
+  // Increment the interrupt count and detect overflows.
   uint32_t interrupt_count =
       flash_ctrl_testutils_get_count((uint32_t *)&nv_interrupt_counter);
   if (interrupt_count > kMaxInterrupts) {
@@ -430,29 +435,7 @@ void ottf_external_isr(void) {
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %0d", irq);
   } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
-    // Check the class.
-    dif_alert_handler_class_state_t state;
-    CHECK_DIF_OK(dif_alert_handler_get_class_state(
-        &alert_handler, kDifAlertHandlerClassA, &state));
-    CHECK(state == kDifAlertHandlerClassStatePhase0, "Wrong phase %d", state);
-
-    uint32_t irq =
-        (irq_id -
-         (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
-
-    // Check this gets the expected alert.
-    bool is_cause = false;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, kExpectedAlertNumber, &is_cause));
-    CHECK(is_cause);
-
-    // Acknowledge the cause and irq; neither of them affect escalation.
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler,
-                                                     kExpectedAlertNumber));
-
-    // Acknowledge the interrupt to alert_handler.
-    CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
-
+    // Don't acknowledge the interrupt to alert_handler so it escalates.
     CHECK(fault_checker.function);
     CHECK(fault_checker.ip_inst);
     CHECK(fault_checker.type);
@@ -464,6 +447,43 @@ void ottf_external_isr(void) {
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
+  LOG_INFO("Regular external ISR exiting");
+}
+
+/**
+ * External NMI ISR.
+ *
+ * Handles NMI interrupts on Ibex for either escalation or watchdog.
+ */
+void ottf_external_nmi_handler(void) {
+  LOG_INFO("At NMI handler");
+
+  // Increment the nmi interrupt count.
+  uint32_t nmi_interrupt_count =
+      flash_ctrl_testutils_get_count((uint32_t *)&nv_nmi_interrupt_counter);
+  if (nmi_interrupt_count > kMaxInterrupts) {
+    LOG_INFO("Saturating nmi interrupts at %d", nmi_interrupt_count);
+  } else {
+    flash_ctrl_testutils_increment_counter(
+        &flash_ctrl_state, (uint32_t *)&nv_nmi_interrupt_counter,
+        nmi_interrupt_count);
+  }
+
+  // Check the class.
+  dif_alert_handler_class_state_t state;
+  CHECK_DIF_OK(dif_alert_handler_get_class_state(
+      &alert_handler, kDifAlertHandlerClassA, &state));
+  CHECK(state == kDifAlertHandlerClassStatePhase0, "Wrong phase %d", state);
+
+  // Check this gets the expected alert.
+  bool is_cause = false;
+  CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+      &alert_handler, kExpectedAlertNumber, &is_cause));
+  CHECK(is_cause);
+
+  // Acknowledge the cause, which doesn't affect escalation.
+  CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler,
+                                                   kExpectedAlertNumber));
 }
 
 /**
@@ -522,9 +542,9 @@ static void init_peripherals(void) {
 }
 
 /**
- * Program the alert handler to escalate on alerts and reset on phase 2 but
- * the phase 1 (i.e. wipe secrets) should occur and last during the time the
- * wdog is programed to bark.
+ * Program the alert handler to escalate on alerts and reset on phase 2,
+ * and to start escalation after timing out due to an unacknowledged
+ * interrupt.
  */
 static void alert_handler_config(void) {
   dif_alert_handler_alert_t alerts[] = {kExpectedAlertNumber};
@@ -547,11 +567,15 @@ static void alert_handler_config(void) {
            kEscalationPhase2Micros * kClockFreqPeripheralHz, 1000000,
            /*rem_out=*/NULL)}};
 
+  uint32_t deadline_cycles =
+      udiv64_slow(kEscalationStartMicros * kClockFreqPeripheralHz, 1000000,
+                  /*rem_out=*/NULL);
+  LOG_INFO("Configuring class A with %0d cycles and %0d occurrences",
+           deadline_cycles, UINT16_MAX);
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
-      .accumulator_threshold = 0,
-      .irq_deadline_cycles =
-          udiv64_slow(10 * kClockFreqPeripheralHz, 1000000, /*rem_out=*/NULL),
+      .accumulator_threshold = UINT16_MAX,
+      .irq_deadline_cycles = deadline_cycles,
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
@@ -595,6 +619,8 @@ static void set_aon_timers(const dif_aon_timer_t *aon_timer) {
  * Execute the aon timer interrupt test.
  */
 static void execute_test(const dif_aon_timer_t *aon_timer) {
+  alert_handler_config();
+
   // Select the fault_checker function, depending on kExpectedAlertNumber.
   switch (kExpectedAlertNumber) {
     case kTopEarlgreyAlertIdAdcCtrlAonFatalFault: {
@@ -821,6 +847,10 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   // Save the fault_checker to flash.
   save_fault_checker(&fault_checker);
 
+  // Enable NMI
+  CHECK_DIF_OK(
+      dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceAlert));
+
   set_aon_timers(aon_timer);
 
   LOG_INFO("Expected alert is %d for %s", kExpectedAlertNumber,
@@ -847,8 +877,6 @@ bool test_main(void) {
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassa,
                                      kTopEarlgreyPlicIrqIdAlertHandlerClassd);
-
-  alert_handler_config();
 
   // Enable access to flash for storing info across resets.
   LOG_INFO("Setting default region accesses");
@@ -890,7 +918,14 @@ bool test_main(void) {
     restore_fault_checker(&fault_checker);
 
     LOG_INFO("Booting for the second time due to escalation reset");
-    CHECK(interrupt_seen, "Failed to get an interrupt due to alerts");
+
+    int interrupt_count =
+        flash_ctrl_testutils_get_count((uint32_t *)&nv_interrupt_counter);
+    CHECK(interrupt_count > 0, "Expected at least one regular interrupt");
+
+    int nmi_interrupt_count =
+        flash_ctrl_testutils_get_count((uint32_t *)&nv_nmi_interrupt_counter);
+    CHECK(nmi_interrupt_count > 0, "Expected at least one nmi");
 
     // Check the alert handler cause is cleared.
     bool is_cause = true;
