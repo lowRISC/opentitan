@@ -77,9 +77,9 @@ This module needs to be instantiated on an existing outbound TL connection, poss
 - we must be able to run simulations with Verilator (which prevents us from using forces for example)
 
 One way of achieving this is by disconnecting an outbound TL interface in the design source where `sim_sram` needs to be inserted.
-The disconnection must be made in the desired desigm block ONLY if `` `SYNTHESIS`` is NOT defined and a special macro (user's choice on the name) is defined for simulations.
+The disconnection must be made in the desired design block ONLY if `` `SYNTHESIS`` is NOT defined and a special macro (user's choice on the name) is defined for simulations.
 This module is instantiated in the testbench rather than in the design.
-Its inbound and outbound TL interaces are then connected to the disconnected TL interface in the design by hierarchically referencing their paths.
+Its inbound and outbound TL interfaces are then connected to the disconnected TL interface in the design by hierarchically referencing their paths.
 
 This disconnection is currently done in `hw/ip/rv_core_ibex/rtl/rv_core_ibex.sv`, which relies on `` `RV_CORE_IBEX_SIM_SRAM`` being defined.
 In UVM DV simulations, we do not disconnect anything - we use forces instead to make the connections.

@@ -419,7 +419,7 @@ The DV document is fully complete.
 ### FUNCTIONAL_COVERAGE_IMPLEMENTED
 
 The functional coverage plan is fully implemented.
-All covergoups have been created and sampled in the reactive components of the testbench (passive interfaces, monitors and scoreboards).
+All covergroups have been created and sampled in the reactive components of the testbench (passive interfaces, monitors and scoreboards).
 
 ### ALL_INTERFACES_EXERCISED
 

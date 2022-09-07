@@ -339,7 +339,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
         intr_field = ral.intr_state.es_observe_fifo_ready;
       end
       default: begin
-        `uvm_fatal(`gfn, "Invalid source for accessing TL entropy (enviroment error)")
+        `uvm_fatal(`gfn, "Invalid source for accessing TL entropy (environment error)")
       end
     endcase
 
@@ -390,7 +390,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
         csr_rd(.ptr(ral.observe_fifo_thresh), .value(cnt_per_interrupt));
       end
       default: begin
-        `uvm_fatal(`gfn, "Invalid source for accessing TL entropy (enviroment error)")
+        `uvm_fatal(`gfn, "Invalid source for accessing TL entropy (environment error)")
       end
     endcase
 

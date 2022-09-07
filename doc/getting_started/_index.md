@@ -202,7 +202,7 @@ $ sudo mv verible-${VERIBLE_VERSION}/* /tools/verible/${VERIBLE_VERSION}/
 
 After installation you need to add `/tools/verible/$VERIBLE_VERSION/bin` to your `PATH` environment variable.
 
-Note that we currently use version {{< tool_version "verible" >}}, but it is expected that this version is going to be updated frequently, since the tool is under active develpment.
+Note that we currently use version {{< tool_version "verible" >}}, but it is expected that this version is going to be updated frequently, since the tool is under active development.
 
 ### Step 6b: Install OpenOCD (optional)
 

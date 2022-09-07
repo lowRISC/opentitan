@@ -458,7 +458,7 @@ Each key manager binding stage shall provide at least 128b of data.
 ### Key Versioning {#key-versioning}
 
 Key versioning is the mechanism by which software implements key rotation
-triggered by security updates. Since there may be more than one updatable code
+triggered by security updates. Since there may be more than one updateable code
 partition in the system, the key versioning scheme has to implement at least 8
 32b version comparators with lockable controls, which will be configured as part
 of the secure boot process.

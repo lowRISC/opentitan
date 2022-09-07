@@ -88,7 +88,7 @@ All of these keys are 3072-bit RSA public keys with exponent e=65537 (the “F4 
 
 # Terminology Quick Reference
 
-## OpenTitan Logical Entitites
+## OpenTitan Logical Entities
 
 *   **Silicon Creator:** The owner of the public keys injected into the OpenTitan device at manufacturing time.
     Signs the `ROM` and `ROM_EXT` boot stages.

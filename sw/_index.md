@@ -16,7 +16,7 @@ This is to differentiate from a "library", which is a collection of functions th
 
 # Device Software
 
-This software runs on the primary core within the OpenTitian platform chip itself.
+This software runs on the primary core within the OpenTitan platform chip itself.
 You can find all the device software in the `sw/device` directory of the repository.
 
 The device software is split into two parts:

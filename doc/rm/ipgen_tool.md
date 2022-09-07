@@ -96,7 +96,7 @@ The following rules should be applied when creating IP templates:
 
 * Template and use an instance-specific name for all FuseSoC cores which reference templated source files (e.g. SystemVerilog files).
 * Template and use an instance-specific name at least the top-level FuseSoC core.
-* If a FuseSoC core with an instance-specific name exposes a well-defined public interface (see below) add a `provides: lowrisc:ip_interfaces:<name>` line to the core file to allow other cores to refer to it without knowning the actual core name.
+* If a FuseSoC core with an instance-specific name exposes a well-defined public interface (see below), add a `provides: lowrisc:ip_interfaces:<name>` line to the core file to allow other cores to refer to it without knowing the actual core name.
 
 #### Templating core files to uphold the "same name, same interface" principle
 

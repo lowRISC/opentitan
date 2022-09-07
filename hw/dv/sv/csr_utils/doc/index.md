@@ -156,5 +156,5 @@ Examples of useful functions in this class are:
 
 ### CSR sequence framework
 The [cip_lib]({{< relref "hw/dv/sv/cip_lib/doc" >}}) includes a virtual sequence named `cip_base_vseq`,
-that provides a common framework for all testbenchs to run these CSR test sequences and
+that provides a common framework for all testbenches to run these CSR test sequences and
 add exclusions.

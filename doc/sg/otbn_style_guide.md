@@ -62,7 +62,7 @@ Labels should not be indented.
 
 ***Operands should be aligned within blocks of OTBN code.***
 
-The exact spacing betweeen mnemonic and operand is not important, as long as it is consistent within the block.
+The exact spacing between mnemonic and operand is not important, as long as it is consistent within the block.
 
 Example:
 ```S

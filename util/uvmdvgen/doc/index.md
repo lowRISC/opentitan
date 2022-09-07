@@ -239,7 +239,7 @@ provided by `-hi` and `-ha` respectively. By default, these are set to 'False'
 * `env/i2c_host_env`
 
     This is the env class that creates the downstream agents passed via `-ea`
-    switch. It sets their correspodnding cfg objects (which are members of env cfg
+    switch. It sets their corresponding cfg objects (which are members of env cfg
     object) into the `uvm_config_db`. It also makes the analysis port connections
     in the `connect_phase` and sets the sequencer handles in the virtual
     sequencer.

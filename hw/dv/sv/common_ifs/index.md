@@ -22,7 +22,7 @@ unless the `set_active` function is called.
 
 Just like `clk_if`, this interface has clocking blocks `cb` and `cbn`, together
 with `wait_clks` and `wait_n_clks` utility tasks. It also has
-* `wait_for_reset`: wait for a reset signalled on `rst_n`
+* `wait_for_reset`: wait for a reset signaled on `rst_n`
 
 To generate a clock signal, call `set_active` at the start of the simulation.
 This is typically called from an `initial` block in the testbench. To configure

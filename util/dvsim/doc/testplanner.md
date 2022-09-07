@@ -6,7 +6,7 @@ title: "Testplanner tool"
 * Expanding the testplan inline within the DV document as a table;
 * Annotating the simulation results with testplan entries for a document driven DV execution;
 
-Please see [DV methodology]({{< relref "doc/ug/dv_methodology/index.md#documentation" >}}) for more details on the rationale and motivation for writing and maintaining testplans in a machine-parsable format (`Hjson`).
+Please see [DV methodology]({{< relref "doc/ug/dv_methodology/index.md#documentation" >}}) for more details on the rationale and motivation for writing and maintaining testplans in a machine-parseable format (`Hjson`).
 This document will focus on the anatomy of an Hjson testplan, the list of features supported and some of the ways of using the tool.
 
 ## Hjson testplan
@@ -43,7 +43,7 @@ The following attributes are used to define each testpoint, at minimum:
 * **tests: list of written test(s) for this testpoint**
 
     The testplan is written in the initial work stage of the verification [life-cycle]({{< relref "doc/project/development_stages#hardware-verification-stages" >}}).
-    Later, when the DV engineer writes the tests, they may not map one-to-one to a testpoint - it may be possible that a written test satisfactorilly addresses multiple testpoints; OR it may also be possible that a testpoint needs to be split into multiple smaller tests.
+    Later, when the DV engineer writes the tests, they may not map one-to-one to a testpoint - it may be possible that a written test satisfactorily addresses multiple testpoints; OR it may also be possible that a testpoint needs to be split into multiple smaller tests.
     To cater to these needs, we provide the ability to set a list of written tests for each testpoint.
     It is used to not only indicate the current progress so far into each verification stage, but also map the simulation results to the testpoints to generate the final report table.
     This list is initially empty - it is gradually updated as tests are written.

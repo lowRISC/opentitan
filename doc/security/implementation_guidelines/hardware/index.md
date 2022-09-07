@@ -89,7 +89,7 @@ identity management, and protocol design are outside the scope of this document,
 but may create some dependencies here. For general reading, the slides of [[10](#ref-10)]
 are considered a useful companion to these guidelines.
 
-### **Recommendation 1**: Identify sensitive/priviledged operations
+### **Recommendation 1**: Identify sensitive/privileged operations
 
 Identify any sensitive/privileged operations performed by the module
 (non-exhaustive list of examples: working with secret keys, writing to OTP,

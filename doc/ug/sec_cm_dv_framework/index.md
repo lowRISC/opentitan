@@ -72,7 +72,7 @@ endmodule
 ### Special Handling of Sparse FSM Primitive
 
 Sparse FSMs in OpenTitan security IPs are implemented with the `prim_sparse_fsm_flop` countermeasure primitive to ensure that the state encoding cannot be altered by synthesis tools.
-This primititive also implements the embedded common checks mentioned above.
+This primitive also implements the embedded common checks mentioned above.
 
 However, simulation tools like Xcelium and VCS are at this time not able to correctly infer FSMs and report FSM coverage when the state registers reside in a different hierarchy (such as `prim_sparse_fsm_flop`) than the next-state logic of the FSMs.
 
@@ -99,7 +99,7 @@ In order to generate a complete template for sparsely encoded FSMs, please refer
 
 ## Verification Framework For The Standardized Design Countermeasures
 
-This verification framework involves three different steps, which are all needed in order to acheive the completed verification for countermeasures.
+This verification framework involves three different steps, which are all needed in order to achieve the completed verification for countermeasures.
 
 ### Primitive-Level Verification
 Use FPV or a simple simulation based testbench to verify the correctness of the error indicator as well as other functionality in the primitive.

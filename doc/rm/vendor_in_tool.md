@@ -120,7 +120,7 @@ In the example vendor description file below, the mpsse directory is populated f
 
 ## Updating and The Vendor Lock File
 
-In order to document which version of a repositoy has been cloned and committed to the repository with the vendor tool, a vendor lock file is stored in `vendor/<vendor>_<name>.lock.hjson`.
+In order to document which version of a repository has been cloned and committed to the repository with the vendor tool, a vendor lock file is stored in `vendor/<vendor>_<name>.lock.hjson`.
 This contains only the upstream information, including the URL and the exact git revision that was cloned.
 
 Beyond just documentation, this enables users to re-clone the previously-cloned upstream repository -- including re-applying patches, choosing subdirectories, and excluding additional files -- without having to integrate any upstream changes.

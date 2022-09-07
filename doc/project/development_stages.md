@@ -140,7 +140,7 @@ Once all coverage metrics have been met, waivers checked, the verification moves
 The following development stages are for [Device Interface Function (DIF)]({{< relref "doc/rm/device_interface_functions.md" >}}) work.
 These stages have a slightly different emphasis to the hardware design and verification stages, because software is much easier to change if bugs are found.
 The metric they are trying to capture is the stability and completeness of a low-level software interface to hardware design.
-We are aiming to keep this process fairly lightweight in the early stages, and not significantly burdeonsome to the associated HW designer through all stages.
+We are aiming to keep this process fairly lightweight in the early stages, and not significantly burdensome to the associated HW designer through all stages.
 
 There are explicit checkpoints in these stages to ensure that DIF development does not overtake design and verification.
 

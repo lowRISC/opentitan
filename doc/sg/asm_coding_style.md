@@ -12,7 +12,7 @@ It also codifies otherwise unwritten style guidelines in one central location.
 
 This document is not an introduction to RISC-V assembly; for that purpose, see the [RISC-V Assembly Programmer's Manual](https://github.com/riscv/riscv-asm-manual/blob/master/riscv-asm.md).
 
-Assembly is typically very specialized; the following rules do not presume to describe every use-case, so use your best judgement.
+Assembly is typically very specialized; the following rules do not presume to describe every use-case, so use your best judgment.
 
 This style guide is specialized for R32IMC, the ISA implemented by Ibex.
 As such, no advice is provided for other RISC-V extensions, though this style guide is written such that advice for other extensions could be added without conflicts.
@@ -35,7 +35,7 @@ Example:
 
 This rule can be ignored when the ABI meaning of a register is unimportant, e.g., such as when clobbering all 31 general-purpose registers.
 
-### Pseudoinstrucions
+### Pseudoinstructions
 
 ***When performing an operation for which a pseudoinstruction exists, that pseudoinstruction must be used.***
 
@@ -102,7 +102,7 @@ Example:
 
 ### Control and Status Register (CSR) Names
 
-***CSRs defined in the RISC-V spec must be refered to by those names (like `mstatus`), while custom non-standard ones must be encapsulated in a `#define`.***
+***CSRs defined in the RISC-V spec must be referred to by those names (like `mstatus`), while custom non-standard ones must be encapsulated in a `#define`.***
 
 Naturally, if a pseudoinstruction exists to read that CSR (like `rdtime`) that one should be used, instead.
 
@@ -229,7 +229,7 @@ Thus, interrupt vectors, although not actually functions, are marked with  `@fun
 
 The first instruction in the function should immediately follow the opening label.
 
-### Register useage
+### Register usage
 
 ***Register usage in a "function" that diverges from the RISC-V function call ABI must be documented.***
 

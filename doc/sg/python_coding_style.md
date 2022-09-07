@@ -91,7 +91,7 @@ $ ./lintpy.py -f a.py subdir/*.py
 ```
 
 Errors may be fixed using the same tool to edit the problem file(s) in-place (you may need to refresh the file(s) in your editor after doing this).
-This uses the same set of files as are being checked, so unless the`--file` or `-f` flag is used this will only affect files that have already been modifed (or staged for commit if `-c`is used) and will not fix errors in Python files that have not been touched.
+This uses the same set of files as are being checked, so unless the`--file` or `-f` flag is used this will only affect files that have already been modified (or staged for commit if `-c`is used) and will not fix errors in Python files that have not been touched.
 
 ```console
 $ cd $REPO_TOP/util
@@ -191,7 +191,7 @@ In command line tools use the [argparse library](https://docs.python.org/3/libra
 This will provide support for `--help` and `-h` to get usage information.
 
 Every command line program should provide `--version` to provide standard version information.
-This lists the git repositary information for the tool and the version numbers of any Python packages that are used.
+This lists the git repository information for the tool and the version numbers of any Python packages that are used.
 The `show_and_exit` routine in `reggen/version.py` can be used to do this.
 
 Options that consume an arbitrary number of command line arguments with `nargs="*"` or `nargs="+"` should be avoided wherever possible.
