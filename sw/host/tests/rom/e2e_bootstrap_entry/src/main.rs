@@ -118,11 +118,8 @@ fn test_bootstrap_enabled_requested(opts: &Opts, transport: &TransportWrapper) -
 
     // Now watch the console for the exit conditions.
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
-    match result {
-        ExitStatus::ExitSuccess => {}
-        _ => {
-            bail!("FAIL: {:?}", result);
-        }
+    if result != ExitStatus::ExitSuccess {
+        bail!("FAIL: {:?}", result);
     };
     // Now check whether the SPI device is responding to status messages
     let spi = transport.spi("0")?;
@@ -147,11 +144,8 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
 
     // Now watch the console for the exit conditions.
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
-    match result {
-        ExitStatus::ExitSuccess => {}
-        _ => {
-            bail!("FAIL: {:?}", result);
-        }
+    if result != ExitStatus::ExitSuccess {
+        bail!("FAIL: {:?}", result);
     };
 
     // Now check whether the SPI device is responding to commands.
