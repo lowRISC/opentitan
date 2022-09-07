@@ -47,6 +47,10 @@
                "-nowarn SPDUSD",
                // Needed for including "secded_enc.h".
                "-I{build_dir}/src/lowrisc_dv_secded_enc_0",
+               // This warning is thrown when a scalar enum variable is assigned to an enum array.
+               // Other tools (e.g., FPV) treat such assignments as an error, hence we bump it to
+               // an error in simulation so that this can be caught early in CI.
+               "-NCError ENUMERR"
                ]
 
   // We want to allow the possibility of passing no test or no test sequence. Unfortunately,
