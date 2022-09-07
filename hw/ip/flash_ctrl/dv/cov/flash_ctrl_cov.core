@@ -11,7 +11,6 @@ filesets:
       - lowrisc:dv:dv_utils
       - lowrisc:ip:flash_ctrl
     files:
-      - flash_ctrl_cov_if.sv
       - flash_ctrl_cov_bind.sv
     file_type: systemVerilogSource
 

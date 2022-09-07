@@ -10,7 +10,6 @@
  );
 
 module flash_ctrl_cov_bind;
-  bind flash_ctrl flash_ctrl_cov_if u_flash_ctrl_cov_if (.*);
 
   `FLASH_COV_LC_TX_BIND(lc_creator_seed_sw_rw_en)
   `FLASH_COV_LC_TX_BIND(lc_owner_seed_sw_rw_en)

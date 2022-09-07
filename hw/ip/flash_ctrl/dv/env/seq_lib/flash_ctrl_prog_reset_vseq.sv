@@ -69,8 +69,8 @@ class flash_ctrl_prog_reset_vseq extends flash_ctrl_otf_base_vseq;
           string path1, path2;
           reset_index_e reset_index = $urandom_range(DVStPrePack, DVStCalcEcc);
           `uvm_info("Test", $sformatf("reset_idx: %s", reset_index.name), UVM_MEDIUM)
-          `DV_SPINWAIT(wait(cfg.flash_ctrl_cov_vif.prog_state0 == dv2rtl_st(reset_index) ||
-                            cfg.flash_ctrl_cov_vif.prog_state1 == dv2rtl_st(reset_index));,
+          `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.prog_state0 == dv2rtl_st(reset_index) ||
+                            cfg.flash_ctrl_vif.prog_state1 == dv2rtl_st(reset_index));,
                        $sformatf("Timed out waiting for %s", reset_index.name),
                        // Use long time out.
                        // Some unique state does not always guarantee to reach.
@@ -87,7 +87,7 @@ class flash_ctrl_prog_reset_vseq extends flash_ctrl_otf_base_vseq;
     csr_wr(.ptr(ral.init), .value(1));
     `uvm_info("Test","OTP",UVM_LOW)
     otp_model();
-    `DV_SPINWAIT(wait(cfg.flash_ctrl_cov_vif.rd_buf_en == 1);,
+    `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rd_buf_en == 1);,
                  "Timed out waiting for rd_buf_en",
                  state_timeout_ns)
 
