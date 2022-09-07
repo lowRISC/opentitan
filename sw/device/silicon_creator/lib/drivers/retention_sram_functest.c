@@ -45,10 +45,7 @@ rom_error_t retention_sram_scramble_test(void) {
 
   // Scramble the retention SRAM.
   LOG_INFO("Scrambling retention SRAM.");
-  if (retention_sram_scramble() != kErrorOk) {
-    LOG_ERROR("Scrambling failed.");
-    return kErrorUnknown;
-  }
+  retention_sram_scramble();
 
   // Copy the contents of the retention SRAM into an array of 64-bit integers.
   // We use 64-bit integers rather than 32-bit integers to reduce the

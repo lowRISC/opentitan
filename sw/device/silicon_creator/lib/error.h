@@ -36,7 +36,6 @@ enum module_ {
   kModuleOtbn =         MODULE_CODE('B', 'N'),
   kModuleFlashCtrl =    MODULE_CODE('F', 'C'),
   kModuleBootPolicy =   MODULE_CODE('B', 'P'),
-  kModuleRetSram =      MODULE_CODE('R', 'S'),
   kModuleBootstrap =    MODULE_CODE('B', 'S'),
   kModuleLog =          MODULE_CODE('L', 'G'),
   kModuleBootData =     MODULE_CODE('B', 'D'),
@@ -101,7 +100,6 @@ enum module_ {
   X(kErrorBootPolicyBadIdentifier,    ERROR_(1, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyBadLength,        ERROR_(2, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyRollback,         ERROR_(3, kModuleBootPolicy, kInternal)), \
-  X(kErrorRetSramLocked,              ERROR_(1, kModuleRetSram, kInternal)), \
   X(kErrorBootstrapEraseAddress,      ERROR_(1, kModuleBootstrap, kInvalidArgument)), \
   X(kErrorBootstrapProgramAddress,    ERROR_(2, kModuleBootstrap, kInvalidArgument)), \
   X(kErrorBootstrapInvalidState,      ERROR_(3, kModuleBootstrap, kInvalidArgument)), \

@@ -66,7 +66,7 @@ void retention_sram_clear(void);
  *
  * @return Result of the operation.
  */
-rom_error_t retention_sram_init(void);
+void retention_sram_init(void);
 
 /**
  * Start scrambling the retention SRAM.
@@ -80,7 +80,7 @@ rom_error_t retention_sram_init(void);
  *
  * @return An error if a new key cannot be requested.
  */
-rom_error_t retention_sram_scramble(void);
+void retention_sram_scramble(void);
 
 #ifdef __cplusplus
 }
