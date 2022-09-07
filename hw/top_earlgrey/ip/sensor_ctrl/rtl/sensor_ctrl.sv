@@ -27,7 +27,7 @@ module sensor_ctrl
   output ast_pkg::ast_alert_rsp_t ast_alert_o,
   input ast_pkg::ast_status_t ast_status_i,
   input [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux_i,
-  input ast_init_done_i,
+  input prim_mubi_pkg::mubi4_t ast_init_done_i,
 
   // Interface to pinmux
   output logic [ast_pkg::Ast2PadOutWidth-1:0] cio_ast_debug_out_o,
@@ -147,7 +147,7 @@ module sensor_ctrl
   ) u_init_chg (
     .clk_i,
     .rst_ni,
-    .d_i(ast_init_done_i),
+    .d_i(prim_mubi_pkg::mubi4_test_true_strict(ast_init_done_i)),
     .q_sync_o(hw2reg.status.ast_init_done.d),
     .q_posedge_pulse_o(init_rise),
     .q_negedge_pulse_o(init_fall)

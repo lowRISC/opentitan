@@ -3413,13 +3413,13 @@
         {
           name: calib_rdy
           desc: Indicates clocks are calibrated and frequencies accurate
-          struct: logic
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: rcv
           width: 1
+          default: prim_mubi_pkg::MuBi4True
           inst_name: clkmgr_aon
-          default: ""
-          package: ""
           external: true
           top_signame: calib_rdy
           conn_type: false
@@ -4241,13 +4241,13 @@
         }
         {
           name: ast_init_done
-          struct: logic
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: rcv
           width: 1
+          default: prim_mubi_pkg::MuBi4True
           inst_name: sensor_ctrl
-          default: ""
-          package: ""
           external: true
           top_signame: ast_init_done
           conn_type: false
@@ -16306,13 +16306,13 @@
       {
         name: calib_rdy
         desc: Indicates clocks are calibrated and frequencies accurate
-        struct: logic
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: rcv
         width: 1
+        default: prim_mubi_pkg::MuBi4True
         inst_name: clkmgr_aon
-        default: ""
-        package: ""
         external: true
         top_signame: calib_rdy
         conn_type: false
@@ -16800,13 +16800,13 @@
       }
       {
         name: ast_init_done
-        struct: logic
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: rcv
         width: 1
+        default: prim_mubi_pkg::MuBi4True
         inst_name: sensor_ctrl
-        default: ""
-        package: ""
         external: true
         top_signame: ast_init_done
         conn_type: false
@@ -19500,12 +19500,12 @@
         netname: div_step_down_req
       }
       {
-        package: ""
-        struct: logic
+        package: prim_mubi_pkg
+        struct: mubi4
         signame: calib_rdy_i
         width: 1
         type: uni
-        default: ""
+        default: prim_mubi_pkg::MuBi4True
         direction: in
         conn_type: false
         index: -1
@@ -19836,12 +19836,12 @@
         netname: ast2pinmux
       }
       {
-        package: ""
-        struct: logic
+        package: prim_mubi_pkg
+        struct: mubi4
         signame: ast_init_done_i
         width: 1
         type: uni
-        default: ""
+        default: prim_mubi_pkg::MuBi4True
         direction: in
         conn_type: false
         index: -1

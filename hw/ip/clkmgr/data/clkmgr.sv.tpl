@@ -84,7 +84,7 @@ from topgen.lib import Name
   // clock calibration has been done.
   // If this is signal is 0, assume clock frequencies to be
   // uncalibrated.
-  input calib_rdy_i,
+  input prim_mubi_pkg::mubi4_t calib_rdy_i,
 
   // jittery enable to ast
   output mubi4_t jitter_en_o,
@@ -108,6 +108,7 @@ from topgen.lib import Name
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_true_loose;
+  import prim_mubi_pkg::mubi4_test_false_strict;
 
   ////////////////////////////////////////////////////
   // External step down request
@@ -338,32 +339,42 @@ from topgen.lib import Name
   // SEC_CM: TIMEOUT.CLK.BKGN_CHK, MEAS.CLK.BKGN_CHK
   ////////////////////////////////////////////////////
 
+  typedef enum logic [${(len(typed_clocks.rg_srcs) + 1).bit_length() - 1}:0] {
+    BaseIdx,
+% for src in typed_clocks.rg_srcs:
+    Clk${Name.from_snake_case(src).as_camel_case()}Idx,
+% endfor
+    CalibRdyLastIdx
+  } clkmgr_calib_idx_e;
+
   // if clocks become uncalibrated, allow the measurement control configurations to change
-  logic calib_rdy;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue(0)
+  mubi4_t [CalibRdyLastIdx-1:0] calib_rdy;
+  prim_mubi4_sync #(
+    .AsyncOn(1),
+    .NumCopies(int'(CalibRdyLastIdx)),
+    .ResetValue(MuBi4False)
   ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
-    .d_i(calib_rdy_i),
-    .q_o(calib_rdy)
+    .mubi_i(calib_rdy_i),
+    .mubi_o({calib_rdy})
   );
 
   always_comb begin
     hw2reg.measure_ctrl_regwen.de = '0;
     hw2reg.measure_ctrl_regwen.d = reg2hw.measure_ctrl_regwen;
 
-    if (!calib_rdy) begin
+    if (mubi4_test_false_strict(calib_rdy[BaseIdx])) begin
       hw2reg.measure_ctrl_regwen.de = 1'b1;
       hw2reg.measure_ctrl_regwen.d = 1'b1;
     end
   end
 <% aon_freq = clocks.all_srcs['aon'].freq %>\
-% for src in typed_clocks.rg_srcs:
+% for i, src in enumerate(typed_clocks.rg_srcs):
 <%
  freq = clocks.all_srcs[src].freq
  cnt = int(freq*2 / aon_freq)
+ sel_idx = f"Clk{Name.from_snake_case(src).as_camel_case()}Idx"
 %>
   clkmgr_meas_chk #(
     .Cnt(${cnt}),
@@ -383,7 +394,7 @@ from topgen.lib import Name
     .src_cfg_meas_en_valid_o(hw2reg.${src}_meas_ctrl_en.de),
     .src_cfg_meas_en_o(hw2reg.${src}_meas_ctrl_en.d),
     // signals on local clock domain
-    .calib_rdy_i(calib_rdy),
+    .calib_rdy_i(calib_rdy[${sel_idx}]),
     .meas_err_o(hw2reg.recov_err_code.${src}_measure_err.de),
     .timeout_err_o(hw2reg.recov_err_code.${src}_timeout_err.de)
   );

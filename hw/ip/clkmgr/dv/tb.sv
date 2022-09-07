@@ -150,7 +150,7 @@ module tb;
     .clocks_o   (clkmgr_if.clocks_o),
 
     // assumes calibration is always ready
-    .calib_rdy_i(1'b1),
+    .calib_rdy_i(prim_mubi_pkg::MuBi4True),
 
     // TODO: connect and use this interface.
     .hi_speed_sel_o()

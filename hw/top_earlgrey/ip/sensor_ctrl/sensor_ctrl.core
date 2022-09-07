@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:assert
       - lowrisc:prim:edge_detector
+      - lowrisc:prim:mubi
       - lowrisc:systems:sensor_ctrl_pkg
     files:
       - rtl/sensor_ctrl.sv

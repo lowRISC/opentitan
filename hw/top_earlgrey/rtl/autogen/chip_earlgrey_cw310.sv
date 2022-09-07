@@ -810,9 +810,7 @@ module chip_earlgrey_cw310 #(
   };
 
 
-  prim_mubi_pkg::mubi4_t ast_init_done_o;  // TODO: Tim to rename to ast_init_done
-  logic ast_init_done;                     // TODO: Tim to remove 2 lines
-  assign ast_init_done = prim_mubi_pkg::mubi4_test_true_strict(ast_init_done_o);
+  prim_mubi_pkg::mubi4_t ast_init_done;
 
   ast #(
     .EntropyStreams(ast_pkg::EntropyStreams),
@@ -847,7 +845,7 @@ module chip_earlgrey_cw310 #(
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
-    .ast_init_done_o       ( ast_init_done_o ),   // TODO: Tim to rename to ast_init_done
+    .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
     .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_secure),
     .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_secure),

@@ -90,7 +90,7 @@
   // clock calibration has been done.
   // If this is signal is 0, assume clock frequencies to be
   // uncalibrated.
-  input calib_rdy_i,
+  input prim_mubi_pkg::mubi4_t calib_rdy_i,
 
   // jittery enable to ast
   output mubi4_t jitter_en_o,
@@ -111,6 +111,7 @@
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_true_loose;
+  import prim_mubi_pkg::mubi4_test_false_strict;
 
   ////////////////////////////////////////////////////
   // External step down request
@@ -506,23 +507,34 @@
   // SEC_CM: TIMEOUT.CLK.BKGN_CHK, MEAS.CLK.BKGN_CHK
   ////////////////////////////////////////////////////
 
+  typedef enum logic [2:0] {
+    BaseIdx,
+    ClkIoIdx,
+    ClkIoDiv2Idx,
+    ClkIoDiv4Idx,
+    ClkMainIdx,
+    ClkUsbIdx,
+    CalibRdyLastIdx
+  } clkmgr_calib_idx_e;
+
   // if clocks become uncalibrated, allow the measurement control configurations to change
-  logic calib_rdy;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue(0)
+  mubi4_t [CalibRdyLastIdx-1:0] calib_rdy;
+  prim_mubi4_sync #(
+    .AsyncOn(1),
+    .NumCopies(int'(CalibRdyLastIdx)),
+    .ResetValue(MuBi4False)
   ) u_calib_rdy_sync (
     .clk_i,
     .rst_ni,
-    .d_i(calib_rdy_i),
-    .q_o(calib_rdy)
+    .mubi_i(calib_rdy_i),
+    .mubi_o({calib_rdy})
   );
 
   always_comb begin
     hw2reg.measure_ctrl_regwen.de = '0;
     hw2reg.measure_ctrl_regwen.d = reg2hw.measure_ctrl_regwen;
 
-    if (!calib_rdy) begin
+    if (mubi4_test_false_strict(calib_rdy[BaseIdx])) begin
       hw2reg.measure_ctrl_regwen.de = 1'b1;
       hw2reg.measure_ctrl_regwen.d = 1'b1;
     end
@@ -546,7 +558,7 @@
     .src_cfg_meas_en_valid_o(hw2reg.io_meas_ctrl_en.de),
     .src_cfg_meas_en_o(hw2reg.io_meas_ctrl_en.d),
     // signals on local clock domain
-    .calib_rdy_i(calib_rdy),
+    .calib_rdy_i(calib_rdy[ClkIoIdx]),
     .meas_err_o(hw2reg.recov_err_code.io_measure_err.de),
     .timeout_err_o(hw2reg.recov_err_code.io_timeout_err.de)
   );
@@ -573,7 +585,7 @@
     .src_cfg_meas_en_valid_o(hw2reg.io_div2_meas_ctrl_en.de),
     .src_cfg_meas_en_o(hw2reg.io_div2_meas_ctrl_en.d),
     // signals on local clock domain
-    .calib_rdy_i(calib_rdy),
+    .calib_rdy_i(calib_rdy[ClkIoDiv2Idx]),
     .meas_err_o(hw2reg.recov_err_code.io_div2_measure_err.de),
     .timeout_err_o(hw2reg.recov_err_code.io_div2_timeout_err.de)
   );
@@ -600,7 +612,7 @@
     .src_cfg_meas_en_valid_o(hw2reg.io_div4_meas_ctrl_en.de),
     .src_cfg_meas_en_o(hw2reg.io_div4_meas_ctrl_en.d),
     // signals on local clock domain
-    .calib_rdy_i(calib_rdy),
+    .calib_rdy_i(calib_rdy[ClkIoDiv4Idx]),
     .meas_err_o(hw2reg.recov_err_code.io_div4_measure_err.de),
     .timeout_err_o(hw2reg.recov_err_code.io_div4_timeout_err.de)
   );
@@ -627,7 +639,7 @@
     .src_cfg_meas_en_valid_o(hw2reg.main_meas_ctrl_en.de),
     .src_cfg_meas_en_o(hw2reg.main_meas_ctrl_en.d),
     // signals on local clock domain
-    .calib_rdy_i(calib_rdy),
+    .calib_rdy_i(calib_rdy[ClkMainIdx]),
     .meas_err_o(hw2reg.recov_err_code.main_measure_err.de),
     .timeout_err_o(hw2reg.recov_err_code.main_timeout_err.de)
   );
@@ -654,7 +666,7 @@
     .src_cfg_meas_en_valid_o(hw2reg.usb_meas_ctrl_en.de),
     .src_cfg_meas_en_o(hw2reg.usb_meas_ctrl_en.d),
     // signals on local clock domain
-    .calib_rdy_i(calib_rdy),
+    .calib_rdy_i(calib_rdy[ClkUsbIdx]),
     .meas_err_o(hw2reg.recov_err_code.usb_measure_err.de),
     .timeout_err_o(hw2reg.recov_err_code.usb_timeout_err.de)
   );
