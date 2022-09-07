@@ -99,6 +99,8 @@ impl<'a> Drop for BootstrapTest<'a> {
 }
 
 fn test_bootstrap_enabled_requested(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+
     // TODO: Should really `opts.init.uart_params.create()` here, but we need to refactor
     // BootstrapOptions first.
     //let uart = opts.init.uart_params.create(&transport)?;
@@ -140,7 +142,6 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
         ..Default::default()
     };
 
-    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // Now watch the console for the exit conditions.
@@ -168,6 +169,8 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
 }
 
 fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+
     let spi = transport.spi("0")?;
     let id = SpiFlash::read_jedec_id(&*spi, 16)?;
     log::info!("Read jedec id: {:x?}", id);
@@ -187,7 +190,9 @@ fn test_jedec_id(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     Ok(())
 }
 
-fn test_write_enable_disable(transport: &TransportWrapper) -> Result<()> {
+fn test_write_enable_disable(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+
     let spi = transport.spi("0")?;
 
     assert_eq!(SpiFlash::read_status(&*spi)?, 0x0);
@@ -202,6 +207,8 @@ fn test_write_enable_disable(transport: &TransportWrapper) -> Result<()> {
 }
 
 fn test_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+
     let spi = transport.spi("0")?;
     let sfdp = SpiFlash::read_sfdp(&*spi)?;
     log::info!("SFDP: {:#x?}", sfdp);
@@ -253,6 +260,6 @@ fn main() -> Result<()> {
     execute_test!(test_bootstrap_enabled_requested, &opts, &transport);
     execute_test!(test_jedec_id, &opts, &transport);
     execute_test!(test_sfdp, &opts, &transport);
-    execute_test!(test_write_enable_disable, &transport);
+    execute_test!(test_write_enable_disable, &opts, &transport);
     Ok(())
 }
