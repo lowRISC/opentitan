@@ -96,8 +96,8 @@ pub struct BootstrapOptions {
         help = "Whether to reset target and clear UART RX buffer after bootstrap. For CW310 only."
     )]
     pub clear_uart: Option<bool>,
-    #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the reset delay")]
-    pub reset_delay: Option<Duration>,
+    #[structopt(long, parse(try_from_str=parse_duration), default_value = "100ms", help = "Duration of the reset delay")]
+    pub reset_delay: Duration,
     #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the inter-frame delay")]
     pub inter_frame_delay: Option<Duration>,
     #[structopt(long, parse(try_from_str=parse_duration), help = "Duration of the flash-erase delay")]
@@ -115,8 +115,6 @@ pub struct Bootstrap<'a> {
 }
 
 impl<'a> Bootstrap<'a> {
-    const RESET_DELAY: Duration = Duration::from_millis(200);
-
     /// Perform the update, sending the firmware `payload` to a SPI or UART target depending on
     /// given `options`, which specifies protocol and port to use.
     pub fn update(
@@ -164,7 +162,7 @@ impl<'a> Bootstrap<'a> {
             uart_params: &options.uart_params,
             spi_params: &options.spi_params,
             reset_pin: transport.gpio_pin("RESET")?,
-            reset_delay: options.reset_delay.unwrap_or(Self::RESET_DELAY),
+            reset_delay: options.reset_delay,
         }
         .do_update(updater, transport, payload, &progress)
     }
