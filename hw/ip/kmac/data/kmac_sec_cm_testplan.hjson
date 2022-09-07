@@ -27,61 +27,61 @@
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["kmac_tl_intg_err"]
     }
     {
       name: sec_cm_lc_escalate_en_intersig_mubi
       desc: "Verify global LC_ESCALATE_EN mubi"
       stage: V2S
-      tests: []
+      tests: ["{variant}_lc_escalation"]
     }
     {
       name: sec_cm_sw_key_key_masking
       desc: "Verify the countermeasure(s) SW_KEY.KEY.MASKING."
       stage: V2S
-      tests: []
+      tests: ["{variant}_smoke"]
     }
     {
       name: sec_cm_key_sideload
       desc: "Verify the key from KeyMgr is sideloaded."
       stage: V2S
-      tests: []
+      tests: ["{variant}_sideload"]
     }
     {
       name: sec_cm_cfg_shadowed_config_shadow
       desc: "Verify the countermeasure(s) CFG_SHADOWED.CONFIG.SHADOW."
       stage: V2S
-      tests: []
+      tests: ["kmac_shadow_reg_errors"]
     }
     {
       name: sec_cm_fsm_sparse
       desc: "Verify the countermeasure(s) FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["kmac_sec_cm"]
     }
     {
       name: sec_cm_ctr_redun
       desc: "Verify the countermeasure(s) CTR.REDUN."
       stage: V2S
-      tests: []
+      tests: ["kmac_sec_cm"]
     }
     {
       name: sec_cm_packer_ctr_redun
-      desc: "Verify the countermeasure(s) PACkER.CTR.REDUN."
+      desc: "Verify the countermeasure(s) PACKER.CTR.REDUN."
       stage: V2S
-      tests: []
+      tests: ["kmac_sec_cm"]
     }
     {
       name: sec_cm_cfg_shadowed_config_regwen
       desc: "Verify the countermeasure(s) CFG_SHADOWED.CONFIG.REGWEN."
       stage: V2S
-      tests: []
+      tests: ["{variant}_smoke"]
     }
     {
       name: sec_cm_fsm_global_esc
       desc: "Verify the countermeasure(s) FSM.GLOBAL_ESC."
       stage: V2S
-      tests: []
+      tests: ["{variant}_lc_escalation"]
     }
     {
       name: sec_cm_fsm_local_esc
@@ -105,7 +105,7 @@
       name: sec_cm_sw_cmd_ctrl_sparse
       desc: "Verify the countermeasure(s) SW_CMD.CTRL.INTEGRITY"
       stage: V2S
-      tests: []
+      tests: ["{variant}_smoke"]
     }
   ]
 }
