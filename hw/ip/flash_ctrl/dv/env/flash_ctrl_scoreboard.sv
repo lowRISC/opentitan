@@ -85,9 +85,9 @@ class flash_ctrl_scoreboard #(
     bit init_set = 0;
     forever begin
       @(negedge cfg.clk_rst_vif.clk);
-      if (init_set == 0 && cfg.flash_ctrl_cov_vif.init == 1) begin
+      if (init_set == 0 && cfg.flash_ctrl_vif.init == 1) begin
         init_set = 1;
-        if (cfg.en_cov) cov.rma_init_cg.sample(cfg.flash_ctrl_cov_vif.rma_state);
+        if (cfg.en_cov) cov.rma_init_cg.sample(cfg.flash_ctrl_vif.rma_state);
       end
     end
   endtask // mon_rma

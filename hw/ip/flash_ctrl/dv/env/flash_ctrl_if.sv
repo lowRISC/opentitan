@@ -50,4 +50,12 @@ interface flash_ctrl_if ();
   logic [flash_ctrl_pkg::NumBanks-1:0]             evict_erase;
   logic                                            fatal_err;
 
+  // rma coverage
+  logic       rd_buf_en;
+  rma_state_e rma_state;
+  logic [10:0] prog_state0;
+  logic [10:0] prog_state1;
+  logic [10:0] lcmgr_state;
+  logic        init;
+
 endinterface : flash_ctrl_if

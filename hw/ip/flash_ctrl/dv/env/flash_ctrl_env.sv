@@ -30,10 +30,6 @@ class flash_ctrl_env #(
         )) begin
       `uvm_fatal(`gfn, "failed to get flash_ctrl_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(virtual flash_ctrl_cov_if)::get(
-            this, "", "flash_ctrl_cov_vif", cfg.flash_ctrl_cov_vif)) begin
-      `uvm_fatal(`gfn, "failed to get flash_ctrl_cov_vif from uvm_config_db")
-    end
     for (int i = 0; i < NumBanks; i++) begin
       if (!uvm_config_db#(virtual flash_ctrl_mem_if)::get(
               this, "", $sformatf("flash_ctrl_mem_vif[%0d]", i), cfg.flash_ctrl_mem_vif[i])) begin

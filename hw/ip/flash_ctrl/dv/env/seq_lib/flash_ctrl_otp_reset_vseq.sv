@@ -46,7 +46,7 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
             csr_wr(.ptr(ral.init), .value(1));
             `uvm_info("Test","OTP",UVM_LOW)
             otp_model();
-            `DV_SPINWAIT(wait(cfg.flash_ctrl_cov_vif.rd_buf_en == 1);,
+            `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rd_buf_en == 1);,
                          "Timed out waiting for rd_buf_en",
                          state_wait_timeout_ns)
             `uvm_info("Test", "RMA REQUEST START", UVM_LOW)
@@ -70,7 +70,7 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
             if (reset_index == DVWaitRmaRsp) wait_time = long_wait_timeout_ns;
             else wait_time = state_wait_timeout_ns;
 
-            `DV_SPINWAIT(wait(cfg.flash_ctrl_cov_vif.lcmgr_state == dv2rtl_st(reset_index));,
+            `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.lcmgr_state == dv2rtl_st(reset_index));,
                          $sformatf("Timed out waiting for %s", reset_index.name),
                          wait_time)
             // Since these are single cycle state,
@@ -138,7 +138,7 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
       cfg.clk_rst_vif.wait_clks(2);
       `uvm_info("Test","OTP after loop",UVM_LOW)
       otp_model();
-      `DV_SPINWAIT(wait(cfg.flash_ctrl_cov_vif.rd_buf_en == 1);,
+      `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rd_buf_en == 1);,
                    "Timed out waiting for rd_buf_en",
                    state_wait_timeout_ns)
 

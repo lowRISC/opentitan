@@ -22,7 +22,6 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   flash_phy_prim_agent_cfg m_fpp_agent_cfg;
   // interface
   virtual flash_ctrl_if flash_ctrl_vif;
-  virtual flash_ctrl_cov_if flash_ctrl_cov_vif;
   virtual clk_rst_if clk_rst_vif_flash_ctrl_eflash_reg_block;
   virtual clk_rst_if clk_rst_vif_flash_ctrl_prim_reg_block;
   virtual flash_ctrl_mem_if flash_ctrl_mem_vif[NumBanks];

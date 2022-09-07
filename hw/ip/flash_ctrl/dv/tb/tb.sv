@@ -107,15 +107,14 @@ module tb;
   assign otp_rsp.rand_key   = flash_ctrl_if.otp_rsp.rand_key;
   assign otp_rsp.seed_valid = flash_ctrl_if.otp_rsp.seed_valid;
 
-  assign dut.u_flash_ctrl_cov_if.rd_buf_en   = tb.dut.u_flash_hw_if.rd_buf_en_o;
-  assign dut.u_flash_ctrl_cov_if.rma_req     = tb.dut.u_flash_hw_if.rma_req_i;
-  assign dut.u_flash_ctrl_cov_if.rma_state   = tb.dut.u_flash_hw_if.rma_state_q;
-  assign dut.u_flash_ctrl_cov_if.prog_state0 =
+  assign flash_ctrl_if.rd_buf_en   = tb.dut.u_flash_hw_if.rd_buf_en_o;
+  assign flash_ctrl_if.rma_state   = tb.dut.u_flash_hw_if.rma_state_q;
+  assign flash_ctrl_if.prog_state0 =
                tb.dut.u_eflash.gen_flash_cores[0].u_core.gen_prog_data.u_prog.state_q;
-  assign dut.u_flash_ctrl_cov_if.prog_state1 =
+  assign flash_ctrl_if.prog_state1 =
                tb.dut.u_eflash.gen_flash_cores[1].u_core.gen_prog_data.u_prog.state_q;
-  assign dut.u_flash_ctrl_cov_if.lcmgr_state = tb.dut.u_flash_hw_if.state_q;
-  assign dut.u_flash_ctrl_cov_if.init = tb.dut.u_flash_hw_if.init_i;
+  assign flash_ctrl_if.lcmgr_state = tb.dut.u_flash_hw_if.state_q;
+  assign flash_ctrl_if.init = tb.dut.u_flash_hw_if.init_i;
 
   wire flash_test_v;
   assign (pull1, pull0) flash_test_v = 1'b1;
@@ -336,8 +335,6 @@ module tb;
                                        prim_tl_if);
     uvm_config_db#(virtual flash_ctrl_if)::set(null, "*.env", "flash_ctrl_vif", flash_ctrl_if);
     uvm_config_db#(virtual flash_phy_prim_if)::set(null, "*.env.m_fpp_agent*", "vif", fpp_if);
-    uvm_config_db#(virtual flash_ctrl_cov_if)::set(null, "*.env", "flash_ctrl_cov_vif",
-                                                  dut.u_flash_ctrl_cov_if);
     $timeformat(-9, 1, " ns", 9);
     run_test();
   end
