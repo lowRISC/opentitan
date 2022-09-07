@@ -49,18 +49,13 @@ package spi_agent_pkg;
   } spi_func_mode_e;
 
   typedef enum bit [7:0] {
-    ReadStd    = 8'b11001100,
-    WriteStd   = 8'b11111100,
-    ReadDual   = 8'b00000011,
-    WriteDual  = 8'b00001100,
-    ReadQuad   = 8'b00001111,
-    WriteQuad  = 8'b11110000,
-    CmdOnly    = 8'b10000001,
-    ReadSts1   = 8'b00000101,
-    ReadSts2   = 8'b00110101,
-    ReadSts3   = 8'b00010101,
-    ReadJedec  = 8'b10011111,
-    ReadSfdp   = 8'b01011010
+    ReadStd      = 8'b11001100,
+    WriteStd     = 8'b11111100,
+    ReadDual     = 8'b00000011,
+    WriteDual    = 8'b00001100,
+    ReadQuad     = 8'b00001111,
+    WriteQuad    = 8'b11110000,
+    CmdOnly      = 8'b10000001
   } spi_cmd_e;
 
   typedef enum bit [1:0] {

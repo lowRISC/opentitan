@@ -82,7 +82,7 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
 
         SpiData: begin
           case (cmd)
-            ReadStd, ReadDual, ReadQuad, ReadSts1, ReadSts2, ReadSts3, ReadJedec: begin
+            ReadStd, ReadDual, ReadQuad: begin
               // read_until CSB low
               data = $urandom();
               addr_cnt += 4;

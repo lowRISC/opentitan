@@ -98,6 +98,26 @@ package chip_env_pkg;
     LcOtpError
   } lc_ctrl_status_e;
 
+  // Typical SPI flash opcodes.
+  typedef enum bit [7:0] {
+    SpiFlashReadJedec    = 8'h9F,
+    SpiFlashReadSfdp     = 8'h5A,
+    SpiFlashReadNormal   = 8'h03,
+    SpiFlashReadFast     = 8'h0B,
+    SpiFlashReadDual     = 8'h3B,
+    SpiFlashReadQuad     = 8'h6B,
+    SpiFlashReadSts1     = 8'h05,
+    SpiFlashReadSts2     = 8'h35,
+    SpiFlashReadSts3     = 8'h15,
+    SpiFlashWriteDisable = 8'h04,
+    SpiFlashWriteEnable  = 8'h06,
+    SpiFlashChipErase    = 8'hC7,
+    SpiFlashSectorErase  = 8'h20,
+    SpiFlashPageProgram  = 8'h02,
+    SpiFlashEn4B         = 8'hB7,
+    SpiFlashEx4B         = 8'hE9
+  } spi_flash_cmd_e;
+
   // Extracts the address and size of a const symbol in a SW test (supplied as an ELF file).
   //
   // Used by a testbench to modify the given symbol in an executable (elf) generated for an embedded
