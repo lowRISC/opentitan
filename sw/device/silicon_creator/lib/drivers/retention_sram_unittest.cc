@@ -23,44 +23,24 @@ class RetentionSramTest : public rom_test::RomTest {
 class ScrambleTest : public RetentionSramTest {};
 
 TEST_F(ScrambleTest, Ok) {
-  EXPECT_ABS_READ32(base_ + SRAM_CTRL_CTRL_REGWEN_REG_OFFSET,
-                    {
-                        {SRAM_CTRL_CTRL_REGWEN_CTRL_REGWEN_BIT, 1},
-                    });
   EXPECT_ABS_WRITE32(base_ + SRAM_CTRL_CTRL_REG_OFFSET,
                      {
                          {SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, 1},
                          {SRAM_CTRL_CTRL_INIT_BIT, 1},
                      });
 
-  EXPECT_EQ(retention_sram_scramble(), kErrorOk);
-}
-
-TEST_F(ScrambleTest, Locked) {
-  EXPECT_ABS_READ32(base_ + SRAM_CTRL_CTRL_REGWEN_REG_OFFSET, 0);
-
-  EXPECT_EQ(retention_sram_scramble(), kErrorRetSramLocked);
+  retention_sram_scramble();
 }
 
 class InitTest : public RetentionSramTest {};
 
 TEST_F(InitTest, Ok) {
-  EXPECT_ABS_READ32(base_ + SRAM_CTRL_CTRL_REGWEN_REG_OFFSET,
-                    {
-                        {SRAM_CTRL_CTRL_REGWEN_CTRL_REGWEN_BIT, 1},
-                    });
   EXPECT_ABS_WRITE32(base_ + SRAM_CTRL_CTRL_REG_OFFSET,
                      {
                          {SRAM_CTRL_CTRL_INIT_BIT, 1},
                      });
 
-  EXPECT_EQ(retention_sram_init(), kErrorOk);
-}
-
-TEST_F(InitTest, Locked) {
-  EXPECT_ABS_READ32(base_ + SRAM_CTRL_CTRL_REGWEN_REG_OFFSET, 0);
-
-  EXPECT_EQ(retention_sram_init(), kErrorRetSramLocked);
+  retention_sram_init();
 }
 
 }  // namespace
