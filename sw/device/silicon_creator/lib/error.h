@@ -68,28 +68,38 @@ enum module_ {
 //       have been created.  This is required for error-space stability
 //       after the ROM is frozen.
 #define DEFINE_ERRORS(X) \
-  X(kErrorOk, 0x739), \
+  X(kErrorOk,                         0x739), \
+  X(kErrorUnknown,                    0xffffffff), \
+  \
   X(kErrorSigverifyBadEncodedMessage, ERROR_(1, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadKey,            ERROR_(2, kModuleSigverify, kInvalidArgument)), \
   X(kErrorSigverifyBadSignature,      ERROR_(3, kModuleSigverify, kInvalidArgument)), \
+  \
   X(kErrorKeymgrInternal,             ERROR_(1, kModuleKeymgr, kInternal)), \
+  \
   X(kErrorManifestBadEntryPoint,      ERROR_(1, kModuleManifest, kInternal)), \
   X(kErrorManifestBadCodeRegion,      ERROR_(2, kModuleManifest, kInternal)), \
+  \
   X(kErrorAlertBadIndex,              ERROR_(1, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadClass,              ERROR_(2, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadEnable,             ERROR_(3, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadEscalation,         ERROR_(4, kModuleAlertHandler, kInvalidArgument)), \
   X(kErrorAlertBadCrc32,              ERROR_(5, kModuleAlertHandler, kInvalidArgument)), \
+  \
   X(kErrorRomBootFailed,              ERROR_(1, kModuleRom, kFailedPrecondition)), \
+  \
   /* The high-byte of kErrorInterrupt is modified with the interrupt cause */ \
   X(kErrorInterrupt,                  ERROR_(0, kModuleInterrupt, kUnknown)), \
+  \
   X(kErrorEpmpBadCheck,               ERROR_(1, kModuleEpmp, kInternal)), \
+  \
   X(kErrorOtbnInvalidArgument,        ERROR_(1, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnBadOffsetLen,           ERROR_(2, kModuleOtbn, kInvalidArgument)), \
   X(kErrorOtbnExecutionFailed,        ERROR_(3, kModuleOtbn, kInternal)), \
   X(kErrorOtbnSecWipeImemFailed,      ERROR_(4, kModuleOtbn, kInternal)), \
   X(kErrorOtbnSecWipeDmemFailed,      ERROR_(5, kModuleOtbn, kInternal)), \
   X(kErrorOtbnBadInsnCount,           ERROR_(6, kModuleOtbn, kInternal)), \
+  \
   X(kErrorFlashCtrlDataRead,          ERROR_(1, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlInfoRead,          ERROR_(2, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlDataWrite,         ERROR_(3, kModuleFlashCtrl, kInternal)), \
@@ -97,20 +107,25 @@ enum module_ {
   X(kErrorFlashCtrlDataErase,         ERROR_(5, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlInfoErase,         ERROR_(6, kModuleFlashCtrl, kInternal)), \
   X(kErrorFlashCtrlDataEraseVerify,   ERROR_(7, kModuleFlashCtrl, kInternal)), \
+  \
   X(kErrorBootPolicyBadIdentifier,    ERROR_(1, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyBadLength,        ERROR_(2, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyRollback,         ERROR_(3, kModuleBootPolicy, kInternal)), \
+  \
   X(kErrorBootstrapEraseAddress,      ERROR_(1, kModuleBootstrap, kInvalidArgument)), \
   X(kErrorBootstrapProgramAddress,    ERROR_(2, kModuleBootstrap, kInvalidArgument)), \
   X(kErrorBootstrapInvalidState,      ERROR_(3, kModuleBootstrap, kInvalidArgument)), \
   X(kErrorBootstrapNotRequested,      ERROR_(4, kModuleBootstrap, kInternal)), \
+  \
   X(kErrorLogBadFormatSpecifier,      ERROR_(1, kModuleLog, kInternal)), \
+  \
   X(kErrorBootDataNotFound,           ERROR_(1, kModuleBootData, kInternal)), \
   X(kErrorBootDataWriteCheck,         ERROR_(2, kModuleBootData, kInternal)), \
   X(kErrorBootDataInvalid,            ERROR_(3, kModuleBootData, kInternal)), \
+  \
   X(kErrorSpiDevicePayloadOverflow,   ERROR_(1, kModuleSpiDevice, kInternal)), \
-  X(kErrorAstInitNotDone,             ERROR_(1, kModuleAst, kInternal)), \
-  X(kErrorUnknown, 0xFFFFFFFF)
+  \
+  X(kErrorAstInitNotDone,             ERROR_(1, kModuleAst, kInternal))
 // clang-format on
 
 #define ERROR_ENUM_INIT(name_, value_) name_ = value_
