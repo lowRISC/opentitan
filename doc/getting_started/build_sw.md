@@ -223,12 +223,20 @@ Note, the file will **not** have an extension.
 A disassembly of all executable sections is produced by the build system by default.
 It can be found by looking for files with the `.dis` extension next to the corresponding ELF file.
 
+```console
+./bazelisk.sh build //sw/device/tests:uart_smoketest_prog_sim_verilator_dis
+
+less "$(./bazelisk.sh outquery //sw/device/tests:uart_smoketest_prog_sim_verilator_dis)"
+```
+
 To get a different type of disassembly, e.g. one which includes data sections in addition to executable sections, objdump can be called manually.
 For example the following command shows how to disassemble all sections of the UART DIF smoke test interleaved with the actual source code:
 
 ```console
+./bazelisk.sh build --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf
+
 riscv32-unknown-elf-objdump --disassemble-all --headers --line-numbers --source \
-  $(find -L bazel-out/ -type f -name "uart_smoketest_prog_sim_verilator")
+  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
 ```
 
 Refer to the output of `riscv32-unknown-elf-objdump --help` for a full list of options.

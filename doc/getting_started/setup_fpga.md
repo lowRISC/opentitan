@@ -357,7 +357,7 @@ Then a connection between OpenOCD and GDB may be established with:
 ```console
 cd $REPO_TOP
 riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
-  $(find -L bazel-out/ -type f -name "uart_smoketest_prog_fpga_cw310.elf" | head -n 1)
+  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf)"
 ```
 
 Note, the above will print out the contents of the registers upon successs.
