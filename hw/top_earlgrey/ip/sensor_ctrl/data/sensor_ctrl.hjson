@@ -88,11 +88,12 @@
       package: "ast_pkg",
     },
 
-    { struct:  "logic",
+    { struct:  "mubi4",
       type:    "uni",
       name:    "ast_init_done",
       act:     "rcv",
-      package: "",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4True"
     },
 
     { struct:  "logic",

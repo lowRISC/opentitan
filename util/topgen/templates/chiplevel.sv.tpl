@@ -664,9 +664,7 @@ module chip_${top["name"]}_${target["name"]} #(
 
 % endif
 
-  prim_mubi_pkg::mubi4_t ast_init_done_o;  // TODO: Tim to rename to ast_init_done
-  logic ast_init_done;                     // TODO: Tim to remove 2 lines
-  assign ast_init_done = prim_mubi_pkg::mubi4_test_true_strict(ast_init_done_o);
+  prim_mubi_pkg::mubi4_t ast_init_done;
 
   ast #(
     .EntropyStreams(ast_pkg::EntropyStreams),
@@ -717,7 +715,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
-    .ast_init_done_o       ( ast_init_done_o ),   // TODO: Tim to rename to ast_init_done
+    .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
     % for port, clk in ast["clock_connections"].items():
     .${port} (${clk}),

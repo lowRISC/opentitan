@@ -168,13 +168,13 @@
       width:   "${len(hint_names)}"
     },
 
-    { struct:  "logic",
+    { struct:  "mubi4",
       desc:    "Indicates clocks are calibrated and frequencies accurate",
       type:    "uni",
       name:    "calib_rdy",
       act:     "rcv",
-      package: "",
-      width:   "1"
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4True"
     },
   ],
 

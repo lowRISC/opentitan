@@ -30,7 +30,7 @@ module clkmgr_meas_chk
   output logic src_cfg_meas_en_valid_o,
   output mubi4_t src_cfg_meas_en_o,
   // calibration ready input provided on local operating clock
-  input calib_rdy_i,
+  input mubi4_t calib_rdy_i,
   // error output are provided on local operating clock
   output logic meas_err_o,
   output logic timeout_err_o
@@ -60,15 +60,15 @@ module clkmgr_meas_chk
     .ref_timeout_clk_o(ref_timeout_err)
   );
 
-  logic src_calib_rdy;
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue(0)
+  mubi4_t src_calib_rdy;
+  prim_mubi4_sync #(
+    .AsyncOn(1),
+    .ResetValue(prim_mubi_pkg::MuBi4False)
   ) u_calib_rdy_sync (
-    .clk_i(clk_src_i),
-    .rst_ni(rst_src_ni),
-    .d_i(calib_rdy_i),
-    .q_o(src_calib_rdy)
+    .clk_i,
+    .rst_ni,
+    .mubi_i(calib_rdy_i),
+    .mubi_o({src_calib_rdy})
   );
 
   // if clocks become uncalibrated, switch off measurement controls
@@ -76,8 +76,10 @@ module clkmgr_meas_chk
     src_cfg_meas_en_valid_o = '0;
     src_cfg_meas_en_o = src_cfg_meas_en_i;
 
-    // disable if the current value is not false
-    if (!src_calib_rdy && prim_mubi_pkg::mubi4_test_true_loose(src_cfg_meas_en_o)) begin
+    // if calibration is lost when measurement is currently enabled,
+    // disable measurement enable.
+    if (prim_mubi_pkg::mubi4_test_false_strict(src_calib_rdy) &&
+        prim_mubi_pkg::mubi4_test_true_loose(src_cfg_meas_en_o)) begin
       src_cfg_meas_en_valid_o = 1'b1;
       src_cfg_meas_en_o = prim_mubi_pkg::MuBi4False;
     end
