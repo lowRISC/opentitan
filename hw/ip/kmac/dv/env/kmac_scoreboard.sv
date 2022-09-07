@@ -321,6 +321,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
               app_mode = AppKeymgr;
               strength = sha3_pkg::L256;
+              incr_and_predict_hash_cnt();
             end else if (`KMAC_APP_VALID_TRANS(AppLc)) begin
               app_mode = AppLc;
               strength = sha3_pkg::L128;
@@ -752,6 +753,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         // TODO - handle error cases
         if (addr_phase_write) begin
           bit [KmacCmdIdx:0] kmac_cmd = item.a_data[KmacCmdIdx:0];
+
+          // Handle hash_cnt_clr bit
+          if (item.a_data[KmacHashCntClrIdx]) void'(ral.entropy_refresh_hash_cnt.predict(0));
+
           if (app_fsm_active) begin
             // As per designer comment in https://github.com/lowRISC/opentitan/issues/7716,
             // if CmdStart is sent during an active App operation, KMAC will throw
@@ -801,6 +806,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   void'(ral.cfg_regwen.predict(.value(0)));
 
+                  // If masking on and it is a KMAC transaction with secret keys, increment the
+                  // entropy count.
+                  if (cfg.enable_masking && kmac_en) incr_and_predict_hash_cnt();
+
                   if (kmac_en && function_name_6B != kmac_pkg::EncodedStringKMAC) begin
                     kmac_err.valid  = 1;
                     kmac_err.code   = kmac_pkg::ErrIncorrectFunctionName;
@@ -825,7 +834,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 if (checked_kmac_cmd == CmdStart) begin
                   // kmac will now compute the digest
                   unchecked_kmac_cmd = CmdProcess;
-
                 end else begin // SW sent wrong command
                   kmac_err.valid = 1;
                   kmac_err.code  = kmac_pkg::ErrSwCmdSequence;
@@ -963,7 +971,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
-      // TODO - entropy csrs
       default: begin
         // regex match the key_share csrs
         string full_idx;
@@ -1130,7 +1137,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
-      void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+      csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask : process_tl_access
 
@@ -1613,6 +1620,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     err_info.sw_cmd = kmac_cmd;
     err_info.sw_err = 1;
     return err_info;
+  endfunction
+
+  function void incr_and_predict_hash_cnt();
+    bit [HASH_CNT_WIDTH-1:0] curr_hash_cnt_val = `gmv(ral.entropy_refresh_hash_cnt);
+    if (curr_hash_cnt_val != '1) begin
+      void'(ral.entropy_refresh_hash_cnt.predict(++curr_hash_cnt_val));
+    end
   endfunction
 
   function void check_phase(uvm_phase phase);
