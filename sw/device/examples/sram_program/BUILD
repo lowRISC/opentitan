@@ -39,26 +39,78 @@ opentitan_ram_binary(
 
 opentitan_gdb_fpga_cw310_test(
     name = "sram_program_fpga_cw310_test",
+    timeout = "short",
     exit_success_pattern = "sram_program\\.c:47\\] PC: 0x1000208c, SRAM: \\[0x10000000, 0x10020000\\)",
     gdb_script = """
         target extended-remote :3333
-        set pagination off
 
         echo :::: Send OpenOCD the 'reset halt' command.\\n
         monitor reset halt
 
-        echo :::: Set RAM as RWX by executing code between _start and test_rom_main()\\n
-        file test_rom.elf
-        break rom_test_main
-        continue
-        delete breakpoints
+
+        # Mitigate flakiness from the watchdog timer. Prior to connecting
+        # OpenOCD and GDB, the device is executing normally. The ROM has
+        # probably already started up and configured the watchdog timer. This is
+        # a problem; if the timer fires while we're connected, the interrupt
+        # will steal control away from the debugger and cause this test to fail.
+        # Thus, we need to disable the watchdog timer as quickly as possible to
+        # minimize the chances of it firing.
+        #
+        # The proper solution would be to disable ROM execution by provisioning
+        # with an OTP image that has CREATOR_SW_CFG_ROM_EXEC_EN set to zero.
+        #
+        # Initialize and disable the watchdog timer per aon_timer docs [1]. The
+        # hardcoded addresses were computed by adding REG_OFFSET values from
+        # //hw/ip/aon_timer/data:aon_timer_regs to the base address
+        # TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR.
+        #
+        # [1]: https://docs.opentitan.org/hw/ip/aon_timer/doc/#initialization
+
+        echo :::: Disable the watchdog timer.\\n
+        monitor mdw 0x40470014
+        monitor mww 0x40470014 0
+        echo :::: Reset WDOG_COUNT.\\n
+        monitor mdw 0x40470020
+        monitor mww 0x40470020 0
+        echo :::: Clear the interrupt (if any) by writing to INTR_STATE.\\n
+        monitor mdw 0x40470024
+        monitor mww 0x40470024 0
+
+
+        # Before transferring the SRAM program to the device, we must configure
+        # the PMP unit to enable writing to and executing from SRAM. Due to
+        # implementation details of OpenTitan's hardware debug module, we cannot
+        # set pmpcfg* registers to arbitrary values [1]. However, we can safely
+        # modify unused PMP configuration registers. Thankfully, pmp0cfg (the
+        # lowest byte of CSR pmpcfg0) is unused and has the highest priority.
+        #
+        # In more detail, the problem is that our debug module implements the
+        # "Access Register" abstract command by assembling instructions in the
+        # program buffer and then executing the buffer. If one of those
+        # instructions clobbers the PMP configuration register that allows
+        # execution from the program buffer, subsequent instruction fetches will
+        # generate exceptions.
+        #
+        # Debug module concepts like abstract commands and the program buffer
+        # buffer are defined in "RISC-V External Debug Support Version 0.13.2"
+        # [2]. OpenTitan's (vendored-in) implementation lives in
+        # //hw/vendor/pulp_riscv_dbg.
+        #
+        # [1]: https://github.com/lowRISC/opentitan/issues/14978
+        # [2]: https://riscv.org/wp-content/uploads/2019/03/riscv-debug-release.pdf
+
+        echo :::: Configure the PMP unit.\\n
+        monitor reg pmpcfg0
+        # Write "L NAPOT X W R" to pmp{0,1,2,3}cfg in pmpcfg0. Crucially, this
+        # value is no less permissive than whatever the current value is.
+        monitor reg pmpcfg0 0x9f9f9f9f
+        monitor reg pmpaddr0 0x7fffffff
 
         echo :::: Load the SRAM program onto the device and check integrity.\\n
         file sram_program.elf
         load sram_program.elf
         compare-sections
 
-        info registers
         echo :::: Update registers before calling sram_main().\\n
         set $sp = _stack_end
         set $gp = __global_pointer$
@@ -71,9 +123,12 @@ opentitan_gdb_fpga_cw310_test(
     """,
     gdb_script_symlinks = {
         ":sram_program_fpga_cw310.elf": "sram_program.elf",
-        "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310.elf": "test_rom.elf",
+        "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
     },
-    # TODO(#13968) Switch to ROM instead of Test ROM.
-    rom_bitstream = "//hw/bitstream:test_rom",
-    tags = ["manual"],
+    rom_bitstream = "//hw/bitstream:rom",
+    rom_kind = "Rom",
+    tags = [
+        "flaky",
+        "manual",
+    ],
 )
