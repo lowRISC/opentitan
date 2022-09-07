@@ -85,9 +85,10 @@ class chip_base_vseq #(
 
     // Initialize the SW strap pins - these are sort of dedicated.
     // TODO: add logic to drive / undrive this only when the ROM / test ROM code is active.
-    if (cfg.use_spi_load_bootstrap) begin
-      cfg.chip_vif.sw_straps_if.drive({2'b00, cfg.use_spi_load_bootstrap});
-    end
+    cfg.chip_vif.sw_straps_if.drive({3{cfg.use_spi_load_bootstrap}});
+
+    // Connect DIOs
+    cfg.chip_vif.enable_spi_host = 1;
 
     // Initialize all memories via backdoor.
     cfg.mem_bkdr_util_h[FlashBank0Info].set_mem();
