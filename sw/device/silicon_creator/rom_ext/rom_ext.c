@@ -18,6 +18,7 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
+#include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 #include "sw/device/silicon_creator/lib/rom_print.h"
@@ -29,8 +30,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-// In-memory copy of the ePMP register configuration.
-epmp_state_t epmp;
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = kLcStateProd;
 
@@ -128,12 +127,13 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
       // Unlock read-only for the whole rom_ext virtual memory.
-      // TODO(#13507): Add ePMP state checks.
+      HARDENED_RETURN_IF_ERROR(epmp_state_check((epmp_state_t *)&epmp_state));
       rom_ext_epmp_unlock_owner_stage_r(
-          &epmp,
+          (epmp_state_t *)&epmp_state,
           (epmp_region_t){.start = (uintptr_t)_owner_virtual_start_address,
                           .end = (uintptr_t)_owner_virtual_start_address +
                                  (uintptr_t)_owner_virtual_size});
+      HARDENED_RETURN_IF_ERROR(epmp_state_check((epmp_state_t *)&epmp_state));
 
       // Move the ROM_EXT execution section from the load address to the virtual
       // address.
@@ -150,7 +150,9 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   }
 
   // Unlock execution of owner stage executable code (text) sections.
-  rom_ext_epmp_unlock_owner_stage_rx(&epmp, text_region);
+  HARDENED_RETURN_IF_ERROR(epmp_state_check((epmp_state_t *)&epmp_state));
+  rom_ext_epmp_unlock_owner_stage_rx((epmp_state_t *)&epmp_state, text_region);
+  HARDENED_RETURN_IF_ERROR(epmp_state_check((epmp_state_t *)&epmp_state));
 
   // Jump to OWNER entry point.
   rom_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
