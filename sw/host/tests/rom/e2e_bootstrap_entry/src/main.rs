@@ -111,13 +111,7 @@ fn test_bootstrap_enabled_requested(opts: &Opts, transport: &TransportWrapper) -
     };
 
     transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
-    let reset_delay = opts
-        .init
-        .bootstrap
-        .options
-        .reset_delay
-        .unwrap_or(Duration::from_millis(50));
-    transport.reset_target(reset_delay, true)?;
+    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // Now watch the console for the exit conditions.
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
@@ -147,13 +141,7 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
     };
 
     transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
-    let reset_delay = opts
-        .init
-        .bootstrap
-        .options
-        .reset_delay
-        .unwrap_or(Duration::from_millis(50));
-    transport.reset_target(reset_delay, true)?;
+    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
 
     // Now watch the console for the exit conditions.
     let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
