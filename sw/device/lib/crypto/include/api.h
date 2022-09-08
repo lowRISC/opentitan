@@ -608,7 +608,7 @@ typedef struct drbg_state drbg_state_t;
  * @param iv Initialization vector, used for CBC, CFB, OFB, CTR modes
  * @param aes_mode Required AES mode of operation
  * @param aes_operation Required AES operation (encrypt or decrypt)
- * @return crypto_status_t The result of the init operation
+ * @return The result of the init operation
  */
 crypto_status_t otcrypto_aes_init(const crypto_blinded_key_t *key,
                                   crypto_uint8_buf_t iv,
@@ -632,7 +632,7 @@ crypto_status_t otcrypto_aes_init(const crypto_blinded_key_t *key,
  * @param cipher_input Input data to be ciphered
  * @param aes_padding Padding scheme to be used for the data
  * @param cipher_output Output data after cipher operation
- * @return crypto_status_t The result of the cipher operation
+ * @return The result of the cipher operation
  */
 crypto_status_t otcrypto_aes_cipher(crypto_const_uint8_buf_t cipher_input,
                                     aes_padding_t aes_padding,
@@ -659,7 +659,7 @@ crypto_status_t otcrypto_aes_cipher(crypto_const_uint8_buf_t cipher_input,
  * @param tag_len Length of authentication tag to be generated
  * @param ciphertext Encrypted output data, same length as input data
  * @param auth_tag Generated authentication tag
- * @return crypto_status_t Result of the authenticated encryption
+ * @return Result of the authenticated encryption
  * operation
  */
 crypto_status_t otcrypto_aes_encrypt_gcm(
@@ -685,7 +685,7 @@ crypto_status_t otcrypto_aes_encrypt_gcm(
  * @param aad Additional authenticated data
  * @param auth_tag Authentication tag to be verified
  * @param plaintext Decrypted plaintext data, same len as input data
- * @return crypto_status_t Result of the authenticated decryption
+ * @return Result of the authenticated decryption
  * operation
  */
 crypto_status_t otcrypto_aes_decrypt_gcm(const crypto_blinded_key_t *key,
@@ -709,7 +709,7 @@ crypto_status_t otcrypto_aes_decrypt_gcm(const crypto_blinded_key_t *key,
  *
  * @param hash_subkey Hash subkey (H), 16 bytes
  * @param ctx Output GHASH context object, caller-allocated
- * @return crypto_status_t Result of the operation
+ * @return Result of the operation
  */
 crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
                                         gcm_ghash_context_t *ctx);
@@ -730,7 +730,7 @@ crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
  *
  * @param ctx GHASH context object
  * @param input Input buffer
- * @return crypto_status_t Result of the operation
+ * @return Result of the operation
  */
 crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
                                           crypto_const_uint8_buf_t input);
@@ -750,7 +750,7 @@ crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
  *
  * @param ctx GHASH context object
  * @param digest Output buffer for digest, 16 bytes
- * @return crypto_status_t Result of the operation
+ * @return Result of the operation
  */
 crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
                                          crypto_uint8_buf_t digest);
@@ -770,7 +770,7 @@ crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
  * @param key AES key for the GCTR operation
  * @param input Input buffer
  * @param output Output buffer (same length as input)
- * @return crypto_status_t Result of the operation
+ * @return Result of the operation
  */
 crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
                                       crypto_const_uint8_buf_t input,
@@ -790,7 +790,7 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
  * @param key_to_wrap Pointer to the blinded key to be wrapped
  * @param key_kek Input Pointer to the blinded encryption key
  * @param wrapped_key Pointer to the output wrapped key
- * @return crypto_status_t Result of the aes-kwp encrypt operation
+ * @return Result of the aes-kwp encrypt operation
  */
 crypto_status_t otcrypto_aes_kwp_encrypt(
     const crypto_blinded_key_t *key_to_wrap,
@@ -805,7 +805,7 @@ crypto_status_t otcrypto_aes_kwp_encrypt(
  * @param wrapped_key Pointer to the input wrapped key
  * @param key_kek Input Pointer to the blinded encryption key
  * @param unwrapped_key Pointer to the output unwrapped key struct
- * @return crypto_status_t Result of the aes-kwp decrypt operation
+ * @return Result of the aes-kwp decrypt operation
  */
 crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_uint8_buf_t wrapped_key,
                                          const crypto_blinded_key_t *key_kek,
@@ -826,7 +826,7 @@ crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_uint8_buf_t wrapped_key,
  * @param input_message Input message to be hashed
  * @param hash_mode Required hash mode for the digest
  * @param digest Output digest after hashing the input message
- * @return crypto_status_t Result of the hash operation
+ * @return Result of the hash operation
  */
 crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
                               hash_mode_t hash_mode,
@@ -855,7 +855,7 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
  * @param customization_string Customization string for cSHAKE
  * @param required_output_len Required output length, in bytes
  * @param digest Output from the extendable output function
- * @return crypto_status_t Result of the xof operation
+ * @return Result of the xof operation
  */
 crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
                              xof_mode_t xof_mode,
@@ -879,7 +879,7 @@ crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
  *
  * @param ctx Pointer to the generic hash context struct
  * @param hash_mode Required hash mode
- * @return crypto_status_t Result of the hash init operation
+ * @return Result of the hash init operation
  */
 crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
                                    hash_mode_t hash_mode);
@@ -896,7 +896,7 @@ crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
  *
  * @param ctx Pointer to the generic hash context struct
  * @param input_message Input message to be hashed
- * @return crypto_status_t Result of the hash update operation
+ * @return Result of the hash update operation
  */
 crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
                                      crypto_const_uint8_buf_t input_message);
@@ -917,7 +917,7 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
  *
  * @param ctx Pointer to the generic hash context struct
  * @param digest Output digest after hashing the input blocks
- * @return crypto_status_t Result of the hash final operation
+ * @return Result of the hash final operation
  */
 crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
                                     crypto_uint8_buf_t *digest);
@@ -948,7 +948,7 @@ crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
  * @param required_output_len Required output length from KMAC, in
  * bytes
  * @param digest Output digest after hashing the input data
- * @return crypto_status_t The result of the KMAC128 operation
+ * @return The result of the KMAC128 operation
  */
 crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
                              crypto_const_uint8_buf_t input_message,
@@ -977,7 +977,7 @@ crypto_status_t otcrypto_mac(const crypto_blinded_key_t *key,
  * @param ctx Pointer to the generic HMAC context struct
  * @param key Pointer to the blinded HMAC key struct
  * @param hmac_mode Required HMAC mode
- * @return crypto_status_t Result of the HMAC init operation
+ * @return Result of the HMAC init operation
  */
 crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
                                    const crypto_blinded_key_t *key,
@@ -995,7 +995,7 @@ crypto_status_t otcrypto_hmac_init(hmac_context_t *ctx,
  *
  * @param ctx Pointer to the generic HMAC context struct
  * @param input_message Input message to be hashed
- * @return crypto_status_t Result of the HMAC update operation
+ * @return Result of the HMAC update operation
  */
 crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
                                      crypto_const_uint8_buf_t input_message);
@@ -1015,7 +1015,7 @@ crypto_status_t otcrypto_hmac_update(hmac_context_t *const ctx,
  *
  * @param ctx Pointer to the generic HMAC context struct
  * @param digest Output digest after hashing the input blocks
- * @return crypto_status_t Result of the HMAC final operation
+ * @return Result of the HMAC final operation
  */
 crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
                                     crypto_uint8_buf_t *digest);
@@ -1029,7 +1029,7 @@ crypto_status_t otcrypto_hmac_final(hmac_context_t *const ctx,
  * @param required_key_len Requested key length
  * @param rsa_public_key Pointer to RSA public exponent struct
  * @param rsa_private_key Pointer to RSA private exponent struct
- * @return crypto_status_t Result of the RSA key generation
+ * @return Result of the RSA key generation
  */
 crypto_status_t otcrypto_rsa_keygen(rsa_key_size_t required_key_len,
                                     rsa_public_key_t *rsa_public_key,
@@ -1049,7 +1049,7 @@ crypto_status_t otcrypto_rsa_keygen(rsa_key_size_t required_key_len,
  * @param padding_mode Padding scheme to be used for the data
  * @param hash_mode Hashing scheme to be used for the signature scheme
  * @param signature Pointer to generated signature struct
- * @return crypto_status_t The result of the RSA sign generation
+ * @return The result of the RSA sign generation
  */
 crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
                                   crypto_const_uint8_buf_t input_message,
@@ -1070,7 +1070,7 @@ crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
  * @param signature Pointer to the input signature to be verified
  * @param verification_result Returns the result of signature
  * verification (Pass/Fail)
- * @return crypto_status_t The status of the RSA verify operation
+ * @return The status of the RSA verify operation
  */
 crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
                                     crypto_const_uint8_buf_t input_message,
@@ -1092,7 +1092,7 @@ crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
  * @param elliptic_curve Pointer to the elliptic curve to be used
  * @param private_key Pointer to the blinded private key (d) struct
  * @param public_key Pointer to the unblinded public key (Q) struct
- * @return crypto_status_t Result of the ECDSA key generation
+ * @return Result of the ECDSA key generation
  */
 crypto_status_t otcrypto_ecdsa_keygen(ecc_curve_t *elliptic_curve,
                                       crypto_blinded_key_t *private_key,
@@ -1109,7 +1109,7 @@ crypto_status_t otcrypto_ecdsa_keygen(ecc_curve_t *elliptic_curve,
  * @param input_message Input message to be signed
  * @param elliptic_curve Pointer to the elliptic curve to be used
  * @param signature Pointer to the signature struct with (r,s) values
- * @return crypto_status_t Result of the ECDSA signature generation
+ * @return Result of the ECDSA signature generation
  */
 crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
                                     crypto_const_uint8_buf_t input_message,
@@ -1131,7 +1131,7 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
  * @param input_message Input message to be signed
  * @param elliptic_curve Pointer to the elliptic curve to be used
  * @param signature Pointer to the signature struct with (r,s) values
- * @return crypto_status_t Result of the deterministic ECDSA signature
+ * @return Result of the deterministic ECDSA signature
  * generation
  */
 crypto_status_t otcrypto_deterministic_ecdsa_sign(
@@ -1151,7 +1151,7 @@ crypto_status_t otcrypto_deterministic_ecdsa_sign(
  * @param signature Pointer to the signature to be verified
  * @param elliptic_curve Pointer to the elliptic curve to be used
  * @param verification_result Result of verification (Pass/Fail)
- * @return crypto_status_t Result of the ECDSA verification operation
+ * @return Result of the ECDSA verification operation
  */
 crypto_status_t otcrypto_ecdsa_verify(
     const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
@@ -1171,7 +1171,7 @@ crypto_status_t otcrypto_ecdsa_verify(
  * @param elliptic_curve Pointer to the elliptic curve to be used
  * @param private_key Pointer to the blinded private key (d) struct
  * @param public_key Pointer to the unblinded public key (Q) struct
- * @return crypto_status_t Result of the ECDH key generation
+ * @return Result of the ECDH key generation
  */
 crypto_status_t otcrypto_ecdh_keygen(ecc_curve_t *elliptic_curve,
                                      crypto_blinded_key_t *private_key,
@@ -1188,7 +1188,7 @@ crypto_status_t otcrypto_ecdh_keygen(ecc_curve_t *elliptic_curve,
  * @param public_key Pointer to the unblinded public key (Q) struct
  * @param elliptic_curve Pointer to the elliptic curve to be used
  * @param shared_secret Pointer to generated blinded shared key struct
- * @return crypto_status_t Result of ECDH shared secret generation
+ * @return Result of ECDH shared secret generation
  */
 crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
                               const ecc_public_key_t *public_key,
@@ -1205,7 +1205,7 @@ crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
  *
  * @param private_key Pointer to the blinded private key struct
  * @param public_key Pointer to the unblinded public key struct
- * @return crypto_status_t Result of the Ed25519 key generation
+ * @return Result of the Ed25519 key generation
  */
 crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
                                         crypto_unblinded_key_t *public_key);
@@ -1217,7 +1217,7 @@ crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
  * @param input_message Input message to be signed
  * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
  * @param signature Pointer to the EdDSA signature with (r,s) values
- * @return crypto_status_t Result of the EdDSA signature generation
+ * @return Result of the EdDSA signature generation
  */
 crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
                                       crypto_const_uint8_buf_t input_message,
@@ -1233,7 +1233,7 @@ crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
  * @param signature Pointer to the signature to be verified
  * @param verification_result Returns the result of signature
  * verification (Pass/Fail)
- * @return crypto_status_t Result of the EdDSA verification operation
+ * @return Result of the EdDSA verification operation
  */
 crypto_status_t otcrypto_ed25519_verify(
     const crypto_unblinded_key_t *public_key,
@@ -1250,7 +1250,7 @@ crypto_status_t otcrypto_ed25519_verify(
  *
  * @param private_key Pointer to the blinded private key struct
  * @param public_key Pointer to the unblinded public key struct
- * @return crypto_status_t Result of the X25519 key generation
+ * @return Result of the X25519 key generation
  */
 crypto_status_t otcrypto_x25519_keygen(crypto_blinded_key_t *private_key,
                                        crypto_unblinded_key_t *public_key);
@@ -1261,7 +1261,7 @@ crypto_status_t otcrypto_x25519_keygen(crypto_blinded_key_t *private_key,
  * @param private_key Pointer to blinded private key (u-coordinate)
  * @param public_key Pointer to the public scalar from the sender
  * @param shared_secret Pointer to shared secret key (u-coordinate)
- * @return crypto_status_t Result of the X25519 operation
+ * @return Result of the X25519 operation
  */
 crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
                                 const crypto_unblinded_key_t *public_key,
@@ -1278,7 +1278,7 @@ crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
  * started.
  *
  * @param required_key_len Requested key length
- * @return crypto_status_t Result of async RSA keygen start operation
+ * @return Result of async RSA keygen start operation
  */
 crypto_status_t otcrypto_rsa_keygen_async_start(
     rsa_key_size_t required_key_len);
@@ -1293,7 +1293,7 @@ crypto_status_t otcrypto_rsa_keygen_async_start(
  *
  * @param rsa_public_key Pointer to RSA public exponent struct
  * @param rsa_private_key Pointer to RSA private exponent struct
- * @return crypto_status_t Result of asynchronous RSA keygen finalize
+ * @return Result of asynchronous RSA keygen finalize
  * operation
  */
 crypto_status_t otcrypto_rsa_keygen_async_finalize(
@@ -1313,7 +1313,7 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
  * @param input_message Input message to be signed
  * @param padding_mode Padding scheme to be used for the data
  * @param hash_mode Hashing scheme to be used for the signature scheme
- * @return crypto_status_t Result of async RSA sign start operation
+ * @return Result of async RSA sign start operation
  */
 crypto_status_t otcrypto_rsa_sign_async_start(
     const rsa_private_key_t *rsa_private_key,
@@ -1334,7 +1334,7 @@ crypto_status_t otcrypto_rsa_sign_async_start(
  * match, an error message will be returned.
  *
  * @param signature Pointer to generated signature struct
- * @return crypto_status_t Result of async RSA sign finalize operation
+ * @return Result of async RSA sign finalize operation
  */
 crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_uint8_buf_t *signature);
 
@@ -1346,7 +1346,7 @@ crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_uint8_buf_t *signature);
  *
  * @param rsa_public_key Pointer to RSA public exponent struct
  * @param signature Pointer to the input signature to be verified
- * @return crypto_status_t Result of async RSA verify start operation
+ * @return Result of async RSA verify start operation
  */
 crypto_status_t otcrypto_rsa_verify_async_start(
     const rsa_public_key_t *rsa_public_key, crypto_const_uint8_buf_t signature);
@@ -1364,7 +1364,7 @@ crypto_status_t otcrypto_rsa_verify_async_start(
  * @param padding_mode Padding scheme to be used for the data
  * @param hash_mode Hashing scheme to be used for the signature scheme
  * @param verification_result Returns the result of verification
- * @return crypto_status_t Result of async RSA verify finalize
+ * @return Result of async RSA verify finalize
  * operation
  */
 crypto_status_t otcrypto_rsa_verify_async_finalize(
@@ -1386,7 +1386,7 @@ crypto_status_t otcrypto_rsa_verify_async_finalize(
  * started.
  *
  * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return crypto_status_t Result of asynchronous ECDSA keygen start
+ * @return Result of asynchronous ECDSA keygen start
  * operation.
  */
 crypto_status_t otcrypto_ecdsa_keygen_async_start(ecc_curve_t *elliptic_curve);
@@ -1401,7 +1401,7 @@ crypto_status_t otcrypto_ecdsa_keygen_async_start(ecc_curve_t *elliptic_curve);
  *
  * @param private_key Pointer to the blinded private key (d) struct
  * @param public_key Pointer to the unblinded public key (Q) struct
- * @return crypto_status_t Result of asynchronous ECDSA keygen
+ * @return Result of asynchronous ECDSA keygen
  * finalize operation
  */
 crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
@@ -1418,7 +1418,7 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
  * @param private_key Pointer to the blinded private key (d) struct
  * @param input_message Input message to be signed
  * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return crypto_status_t Result of async ECDSA start operation
+ * @return Result of async ECDSA start operation
  */
 crypto_status_t otcrypto_ecdsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
@@ -1432,7 +1432,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
  * busy or `kCryptoStatusInternalError` if there is an error.
  *
  * @param signature Pointer to the signature struct with (r,s) values
- * @return crypto_status_t Result of async ECDSA finalize operation
+ * @return Result of async ECDSA finalize operation
  */
 crypto_status_t otcrypto_ecdsa_sign_async_finalize(ecc_signature_t *signature);
 
@@ -1447,7 +1447,7 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(ecc_signature_t *signature);
  * @param private_key Pointer to the blinded private key (d) struct
  * @param input_message Input message to be signed
  * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return crypto_status_t Result of async ECDSA start operation
+ * @return Result of async ECDSA start operation
  */
 crypto_status_t otcrypto_deterministic_ecdsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
@@ -1465,7 +1465,7 @@ crypto_status_t otcrypto_deterministic_ecdsa_sign_async_start(
  * busy or `kCryptoStatusInternalError` if there is an error.
  *
  * @param signature Pointer to the signature struct with (r,s) values
- * @return crypto_status_t Result of async deterministic ECDSA finalize
+ * @return Result of async deterministic ECDSA finalize
  * operation
  */
 crypto_status_t otcrypto_ecdsa_deterministic_sign_async_finalize(
@@ -1483,7 +1483,7 @@ crypto_status_t otcrypto_ecdsa_deterministic_sign_async_finalize(
  * @param input_message Input message to be signed for verification
  * @param signature Pointer to the signature to be verified
  * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return crypto_status_t Result of async ECDSA verify start function
+ * @return Result of async ECDSA verify start function
  */
 crypto_status_t otcrypto_ecdsa_verify_async_start(
     const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
@@ -1499,7 +1499,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_start(
  * and a PASS or FAIL is returned.
  *
  * @param verification_result Returns the result of verification
- * @return crypto_status_t Result of async ECDSA verify finalize
+ * @return Result of async ECDSA verify finalize
  * operation
  */
 crypto_status_t otcrypto_ecdsa_verify_async_finalize(
@@ -1520,7 +1520,7 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
  * started.
  *
  * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return crypto_status_t Result of asynchronous ECDH keygen start
+ * @return Result of asynchronous ECDH keygen start
  * operation.
  */
 crypto_status_t otcrypto_ecdh_keygen_async_start(ecc_curve_t *elliptic_curve);
@@ -1535,7 +1535,7 @@ crypto_status_t otcrypto_ecdh_keygen_async_start(ecc_curve_t *elliptic_curve);
  *
  * @param private_key Pointer to the blinded private key (d) struct
  * @param public_key Pointer to the unblinded public key (Q) struct
- * @return crypto_status_t Result of asynchronous ECDH keygen
+ * @return Result of asynchronous ECDH keygen
  * finalize operation
  */
 crypto_status_t otcrypto_ecdh_keygen_async_finalize(
@@ -1552,7 +1552,7 @@ crypto_status_t otcrypto_ecdh_keygen_async_finalize(
  * @param private_key Pointer to the blinded private key (d) struct
  * @param public_key Pointer to the unblinded public key (Q) struct
  * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return crypto_status_t Result of async ECDH start operation
+ * @return Result of async ECDH start operation
  */
 crypto_status_t otcrypto_ecdh_async_start(
     const crypto_blinded_key_t *private_key, const ecc_public_key_t *public_key,
@@ -1567,7 +1567,7 @@ crypto_status_t otcrypto_ecdh_async_start(
  * is busy or `kCryptoStatusInternalError` if there is an error.
  *
  * @param shared_secret Pointer to generated blinded shared key struct
- * @return crypto_status_t Result of async ECDH finalize operation
+ * @return Result of async ECDH finalize operation
  */
 crypto_status_t otcrypto_ecdh_async_finalize(
     crypto_blinded_key_t *shared_secret);
@@ -1580,7 +1580,7 @@ crypto_status_t otcrypto_ecdh_async_finalize(
  *
  * No domain_parameter is needed and is automatically set for X25519.
  *
- * @return crypto_status_t Result of asynchronous ed25519 keygen start
+ * @return Result of asynchronous ed25519 keygen start
  * operation.
  */
 crypto_status_t otcrypto_ed25519_keygen_async_start();
@@ -1595,7 +1595,7 @@ crypto_status_t otcrypto_ed25519_keygen_async_start();
  *
  * @param private_key Pointer to the blinded private key struct
  * @param public_key Pointer to the unblinded public key struct
- * @return crypto_status_t Result of asynchronous ed25519 keygen
+ * @return Result of asynchronous ed25519 keygen
  * finalize operation.
  */
 crypto_status_t otcrypto_ed25519_keygen_async_finalize(
@@ -1612,7 +1612,7 @@ crypto_status_t otcrypto_ed25519_keygen_async_finalize(
  * @param input_message Input message to be signed
  * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
  * @param signature Pointer to the EdDSA signature to get (r) value
- * @return crypto_status_t Result of async Ed25519 start operation
+ * @return Result of async Ed25519 start operation
  */
 crypto_status_t otcrypto_ed25519_sign_async_start(
     const crypto_blinded_key_t *private_key,
@@ -1627,7 +1627,7 @@ crypto_status_t otcrypto_ed25519_sign_async_start(
  * busy or `kCryptoStatusInternalError` if there is an error.
  *
  * @param signature Pointer to the EdDSA signature to get (s) value
- * @return crypto_status_t Result of async Ed25519 finalize operation
+ * @return Result of async Ed25519 finalize operation
  */
 crypto_status_t otcrypto_ed25519_sign_async_finalize(
     ecc_signature_t *signature);
@@ -1644,7 +1644,7 @@ crypto_status_t otcrypto_ed25519_sign_async_finalize(
  * @param signature Pointer to the signature to be verified
  * @param verification_result Returns the result of signature
  * verification (Pass/Fail)
- * @return crypto_status_t Result of async Ed25519 verification start
+ * @return Result of async Ed25519 verification start
  * function
  */
 crypto_status_t otcrypto_ed25519_verify_async_start(
@@ -1661,7 +1661,7 @@ crypto_status_t otcrypto_ed25519_verify_async_start(
  * `kCryptoStatusInternalError` if there is an error.
  *
  * @param verification_result Returns the result of verification
- * @return crypto_status_t Result of async Ed25519 verification
+ * @return Result of async Ed25519 verification
  * finalize function
  */
 crypto_status_t otcrypto_ed25519_verify_async_finalize(
@@ -1675,7 +1675,7 @@ crypto_status_t otcrypto_ed25519_verify_async_finalize(
  *
  * No domain_parameter is needed and is automatically set for X25519.
  *
- * @return crypto_status_t Result of asynchronous X25519 keygen start
+ * @return Result of asynchronous X25519 keygen start
  * operation.
  */
 crypto_status_t otcrypto_x25519_keygen_async_start();
@@ -1690,7 +1690,7 @@ crypto_status_t otcrypto_x25519_keygen_async_start();
  *
  * @param private_key Pointer to the blinded private key struct
  * @param public_key Pointer to the unblinded public key struct
- * @return crypto_status_t Result of asynchronous X25519 keygen
+ * @return Result of asynchronous X25519 keygen
  * finalize operation.
  */
 crypto_status_t otcrypto_x25519_keygen_async_finalize(
@@ -1707,7 +1707,7 @@ crypto_status_t otcrypto_x25519_keygen_async_finalize(
  * @param private_key Pointer to the blinded private key
  * (u-coordinate)
  * @param public_key Pointer to the public scalar from the sender
- * @return crypto_status_t Result of the async X25519 start operation
+ * @return Result of the async X25519 start operation
  */
 crypto_status_t otcrypto_x25519_async_start(
     const crypto_blinded_key_t *private_key,
@@ -1722,7 +1722,7 @@ crypto_status_t otcrypto_x25519_async_start(
  * is busy or `kCryptoStatusInternalError` if there is an error.
  *
  * @param shared_secret Pointer to shared secret key (u-coordinate)
- * @return crypto_status_t Result of async X25519 finalize operation
+ * @return Result of async X25519 finalize operation
  */
 crypto_status_t otcrypto_x25519_async_finalize(
     crypto_blinded_key_t *shared_secret);
@@ -1736,7 +1736,7 @@ crypto_status_t otcrypto_x25519_async_finalize(
  * @param drbg_state Pointer to the DRBG working state
  * @param nonce Pointer to the nonce bit-string
  * @param perso_string Pointer to personalization bitstring
- * @return crypto_status_t Result of the DRBG instantiate operation
+ * @return Result of the DRBG instantiate operation
  */
 crypto_status_t otcrypto_drbg_instantiate(drbg_state_t *drbg_state,
                                           crypto_uint8_buf_t nonce,
@@ -1750,7 +1750,7 @@ crypto_status_t otcrypto_drbg_instantiate(drbg_state_t *drbg_state,
  *
  * @param drbg_state Pointer to the DRBG working state
  * @param additional_input Pointer to the additional input for DRBG
- * @return crypto_status_t Result of the DRBG reseed operation
+ * @return Result of the DRBG reseed operation
  */
 crypto_status_t otcrypto_drbg_reseed(drbg_state_t *drbg_state,
                                      crypto_uint8_buf_t additional_input);
@@ -1765,7 +1765,7 @@ crypto_status_t otcrypto_drbg_reseed(drbg_state_t *drbg_state,
  * @param entropy Pointer to the user defined entropy value
  * @param nonce Pointer to the nonce bit-string
  * @param personalization_string Pointer to personalization bitstring
- * @return crypto_status_t Result of the DRBG manual instantiation
+ * @return Result of the DRBG manual instantiation
  */
 crypto_status_t otcrypto_drbg_manual_instantiate(
     drbg_state_t *drbg_state, crypto_uint8_buf_t entropy,
@@ -1780,7 +1780,7 @@ crypto_status_t otcrypto_drbg_manual_instantiate(
  * @param drbg_state Pointer to the DRBG working state
  * @param entropy Pointer to the user defined entropy value
  * @param additional_input Pointer to the additional input for DRBG
- * @return crypto_status_t Result of the manual DRBG reseed operation
+ * @return Result of the manual DRBG reseed operation
  */
 crypto_status_t otcrypto_drbg_manual_reseed(
     drbg_state_t *drbg_state, crypto_uint8_buf_t entropy,
@@ -1802,7 +1802,7 @@ crypto_status_t otcrypto_drbg_manual_reseed(
  * @param additional_input Pointer to the additional data
  * @param output_len Required len of pseudorandom output, in bytes
  * @param drbg_output Pointer to the generated pseudo random bits
- * @return crypto_status_t Result of the DRBG generate operation
+ * @return Result of the DRBG generate operation
  */
 crypto_status_t otcrypto_drbg_generate(drbg_state_t *drbg_state,
                                        crypto_uint8_buf_t additional_input,
@@ -1813,7 +1813,7 @@ crypto_status_t otcrypto_drbg_generate(drbg_state_t *drbg_state,
  * Uninstantiates DRBG and clears the context.
  *
  * @param drbg_state Pointer to the DRBG working state
- * @return crypto_status_t Result of the DRBG uninstantiate operation
+ * @return Result of the DRBG uninstantiate operation
  */
 crypto_status_t otcrypto_drbg_uninstantiate(drbg_state_t *drbg_state);
 
@@ -1828,7 +1828,7 @@ crypto_status_t otcrypto_drbg_uninstantiate(drbg_state_t *drbg_state);
  * @param key_mode Crypto mode for which the derived key is intended
  * @param required_bit_len Required length of the derived key in bits
  * @param keying_material Pointer to the blinded keying material
- * @return crypto_status_t Result of the key derivation operation
+ * @return Result of the key derivation operation
  */
 crypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key,
                                  kdf_type_t kdf_mode, key_mode_t key_mode,
@@ -1841,7 +1841,7 @@ crypto_status_t otcrypto_kdf_ctr(const crypto_blinded_key_t key_derivation_key,
  * @param plain_key Pointer to the user defined plain key
  * @param key_mode Crypto mode for which the key usage is intended
  * @param unblinded_key Generated unblinded key struct
- * @return crypto_status_t Result of the build unblinded key operation
+ * @return Result of the build unblinded key operation
  */
 crypto_status_t otcrypto_build_unblinded_key(
     crypto_const_uint8_buf_t plain_key, key_mode_t key_mode,
@@ -1857,7 +1857,7 @@ crypto_status_t otcrypto_build_unblinded_key(
  * @param plain_key Pointer to the user defined plain key
  * @param key_mode Crypto mode for which the key usage is intended
  * @param blinded_key Generated blinded key struct
- * @return crypto_status_t Result of the build blinded key operation
+ * @return Result of the build blinded key operation
  */
 crypto_status_t otcrypto_build_blinded_key(crypto_const_uint8_buf_t plain_key,
                                            key_mode_t key_mode,
@@ -1871,7 +1871,7 @@ crypto_status_t otcrypto_build_blinded_key(crypto_const_uint8_buf_t plain_key,
  *
  * @param blinded_key Blinded key struct to be unmasked
  * @param unblinded_key Generated unblinded key struct
- * @return crypto_status_t Result of the blinded key export operation
+ * @return Result of the blinded key export operation
  */
 crypto_status_t otcrypto_blinded_to_unblinded_key(
     const crypto_blinded_key_t blinded_key,
@@ -1882,7 +1882,7 @@ crypto_status_t otcrypto_blinded_to_unblinded_key(
  *
  * @param unblinded_key Blinded key struct to be unmasked
  * @param blinded_key Generated (unmasked) unblinded key struct
- * @return crypto_status_t Result of unblinded key export operation
+ * @return Result of unblinded key export operation
  */
 crypto_status_t otcrypto_unblinded_to_blinded_key(
     const crypto_unblinded_key unblinded_key, crypto_blinded_key_t blinded_key);
