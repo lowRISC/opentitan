@@ -24,7 +24,7 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
 
         set -x
 
-        ./opentitantool load-bitstream --rom-kind=TestRom rom.bit
+        ./opentitantool fpga load-bitstream --rom-kind=TestRom rom.bit
 
         (openocd -f /usr/share/openocd/scripts/interface/ftdi/olimex-arm-usb-tiny-h.cfg \\
             -c "adapter speed 500; transport select jtag; reset_config trst_and_srst" \\
