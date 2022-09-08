@@ -27,8 +27,10 @@ real CLK_PERIOD;
 
 reg init_start;
 initial init_start = 1'b0;
+logic cal_sys_clk_70mhz = 1'b0;
 
 initial begin
+  void'($value$plusargs("cal_sys_clk_70mhz=%0b", cal_sys_clk_70mhz));
   #1;
   init_start  = 1'b1;
   #1;
@@ -45,7 +47,8 @@ assign sys_jen = sys_jen_i && en_osc_re_buf && init_start;
 ////////////////////////////////////////
 real CalSysClkPeriod, UncSysClkPeriod, SysClkPeriod, jitter;
 
-initial CalSysClkPeriod = $itor( 10000 );                         // 10000ps (100MHz)
+initial CalSysClkPeriod = cal_sys_clk_70mhz ? $itor( 14286 ) :    // 14286ps (70MHz)
+                                              $itor( 10000 );     // 10000ps (100MHz)
 initial UncSysClkPeriod = $itor( $urandom_range(40000, 16667) );  // 40000-16667ps (25-60MHz)
 
 assign SysClkPeriod = (sys_osc_cal_i && init_start) ? CalSysClkPeriod : UncSysClkPeriod;
@@ -56,8 +59,10 @@ reg clk_osc;
 initial clk_osc = 1'b1;
 
 always begin
-  // 0-2000ps is upto +20% Jitter
-  jitter = sys_jen ? $itor($urandom_range(2000, 0)) : 0.0;
+  // 20% Jitter
+  jitter = !sys_jen ? 0.0 :
+                     (cal_sys_clk_70mhz ? $itor($urandom_range(2857, 0)) :
+                                          $itor($urandom_range(2000, 0)));
   #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
