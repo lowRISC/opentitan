@@ -8,6 +8,7 @@
 #include "sw/device/lib/runtime/pmp.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/epmp.h"
 
 /**
  * PMP regions that are used for load/store and execution permission violation
@@ -68,6 +69,15 @@ static void pmp_configure_load_tor(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
+  // Unlock the entire address space for RWX so that we can run this test with
+  // both rom and test_rom.
+  CSR_SET_BITS(CSR_REG_PMPADDR15, 0x7fffffff);
+  CSR_WRITE(CSR_REG_PMPCFG3, (kEpmpModeNapot | kEpmpPermLockedReadWriteExecute)
+                                 << 24);
+  CSR_WRITE(CSR_REG_PMPCFG2, 0);
+  CSR_WRITE(CSR_REG_PMPCFG1, 0);
+  CSR_WRITE(CSR_REG_PMPCFG0, 0);
+
   pmp_load_exception = false;
   char load = pmp_load_test_data[PMP_LOAD_RANGE_BOTTOM_OFFSET];
   CHECK(!pmp_load_exception, "Load access violation before PMP configuration");
