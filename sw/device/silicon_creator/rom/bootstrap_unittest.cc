@@ -327,7 +327,7 @@ TEST_F(BootstrapTest, BootstrapOddPayload) {
   EXPECT_EQ(bootstrap(), kErrorUnknown);
 }
 
-TEST_F(BootstrapTest, BootstrapMisalignedAddr) {
+TEST_F(BootstrapTest, BootstrapMisalignedAddrLongPayload) {
   // Erase
   ExpectBootstrapRequestCheck(true);
   EXPECT_CALL(spi_device_, Init());
@@ -350,6 +350,37 @@ TEST_F(BootstrapTest, BootstrapMisalignedAddr) {
   EXPECT_CALL(flash_ctrl_, DataWrite(0xfff0, 4, HasBytes(flash_bytes_0)))
       .WillOnce(Return(kErrorOk));
   EXPECT_CALL(flash_ctrl_, DataWrite(0xff00, 60, HasBytes(flash_bytes_1)))
+      .WillOnce(Return(kErrorOk));
+  ExpectFlashCtrlAllDisable();
+
+  EXPECT_CALL(spi_device_, FlashStatusClear());
+  // Reset
+  ExpectSpiCmd(ResetCmd());
+  EXPECT_CALL(rstmgr_, Reset());
+
+  EXPECT_EQ(bootstrap(), kErrorUnknown);
+}
+
+TEST_F(BootstrapTest, BootstrapMisalignedAddrShortPayload) {
+  // Erase
+  ExpectBootstrapRequestCheck(true);
+  EXPECT_CALL(spi_device_, Init());
+  ExpectSpiCmd(ChipEraseCmd());
+  ExpectSpiFlashStatusGet(true);
+  ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
+  // Verify
+  ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
+  EXPECT_CALL(spi_device_, FlashStatusClear());
+  // Program
+  auto cmd = PageProgramCmd(816, 8);
+  ExpectSpiCmd(cmd);
+  ExpectSpiFlashStatusGet(true);
+
+  std::vector<uint8_t> flash_bytes(cmd.payload,
+                                   cmd.payload + cmd.payload_byte_count);
+
+  ExpectFlashCtrlWriteEnable();
+  EXPECT_CALL(flash_ctrl_, DataWrite(816, 2, HasBytes(flash_bytes)))
       .WillOnce(Return(kErrorOk));
   ExpectFlashCtrlAllDisable();
 
