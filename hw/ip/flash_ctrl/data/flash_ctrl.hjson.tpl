@@ -896,7 +896,7 @@
                 name: "ECC_EN",
                 mubi: true,
                 desc: '''
-                  Region is ECC enabled (both integrity and reliability ECC).
+                  Region is integrity checked and reliability ECC enabled.
                 ''',
                 resval: false
               }

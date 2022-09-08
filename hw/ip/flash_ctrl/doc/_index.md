@@ -73,7 +73,7 @@ The physical controller supports the following features
    * Flash supports XEX scrambling using the PRINCE cipher.
    * Scrambling is optional based on page boundaries and is configurable by software.
 *  Two types of Flash ECC support.
-   * A pre-scramble ECC used for integrity verification, this is required on every word.
+   * A pre-scramble ICV (integrity check value) used for integrity verification implemented as ECC.
    * A post-scramble ECC used for reliability detection, this is configurable on a page boundary.
 *  Life cycle modulated JTAG connection to the vendor flash module.
 
@@ -204,7 +204,7 @@ Its primary functions are two fold
 *  Translate software program, erase and read requests into a high level protocol for the actual flash physical controller
 *  Act as communication interface between flash and other components in the system, such as life cycle and key manager.
 
-The flash protocol controller is not responsible for the detailed timing and waveform control of the flash, nor is it responsible for data scrambling and reliability metadata such as parity and ECC.
+The flash protocol controller is not responsible for the detailed timing and waveform control of the flash, nor is it responsible for data scrambling and reliability metadata such as ICV and ECC.
 Instead, it maintains FIFOs / interrupts for the software to process data, as well as high level abstraction of region protection controls and error handling.
 
 The flash controller selects requests between the software and hardware interfaces.
@@ -395,15 +395,15 @@ If an integrity error is seen, it is registered in {{< regref "FAULT_STATUS.LCMG
 For program operations, the program data and its associated integrity are propagated into the flash controller.
 If an integrity error is seen, an error is registered in {{< regref "FAULT_STATUS.PROG_INTG_ERR" >}}.
 
-#### ECC Related Read Errors
+#### ECC and ICV Related Read Errors
 
-In addition to transmission integrity errors described above, the flash can also emit read errors based on [ECC checks](#flash-ecc).
+In addition to transmission integrity errors described above, the flash can also emit read errors based on [ECC and ICV checks](#flash-ecc-and-icv).
 
-Flash reliability ECC errors (multi-bit errors) and integrity ECC errors (storage errors) are both reflected as in-band errors to the entity that issued the transaction.
+Flash reliability ECC errors (multi-bit errors) and integrity check errors (integrity check errors) are both reflected as in-band errors to the entity that issued the transaction.
 That means if a host direct read, controller initiated read or hardware initiated read encounters one of these errors, the error is directly reflected in the operation status.
 
-Further, reliability / integrity ECC errors are also captured in {{< regref "FAULT_STATUS" >}} and can be used to generate fatal alerts.
-The reason ECC errors are captured not captured in {{< regref "STD_FAULT_STATUS" >}} is because it is assumed 2-bit errors can occur in real usage.
+Further, reliability ECC / integrity check errors are also captured in {{< regref "FAULT_STATUS" >}} and can be used to generate fatal alerts.
+The reason these are not captured in {{< regref "STD_FAULT_STATUS" >}} is because 1 or 2 bit errors can occur in real usage due to environmental conditions, thus they do not belong to the standard group of structural errors.
 If we assume 2-bit errors can occur, then software must have a mechanism to recover from the error instead of [escalation](#flash-escalation).
 
 #### Flash Escalation
@@ -480,31 +480,31 @@ Scramble enablement is done differently depending on the type of partitions.
 *  For information partitions, the scramble enablement is done on a per page basis.
    *  Software can configure for each page whether scramble is enabled.
 
-#### Flash ECC
+#### Flash ECC and ICV
 
-There are two types of flash ECC supported.
+Flash supports both ECC (error correction) and ICV (integrity check value).
+While the two are used for different functions, they are implemented as two separate ECCs, thus flash supports two types of ECC.
 
-The first type is an integrity ECC used to detect whether the de-scrambled data has been modified.
-The second type is a reliability ECC used for error detection and correction on the whole flash word.
+ICV is an integrity check, implemented as an ECC, used to detect whether the de-scrambled data has been modified.
+The other is a reliability ECC used for error detection and correction on the whole flash word.
 
-The first type of ECC is required on every flash word.
-The second type of ECC is configurable based on the various page and memory property configurations.
+The key differentiation here is that ICV is used only for detection, while the real error correction can correct single bit errors.
+Both ICV and ECC are configurable based on the various page and memory property configurations.
 
-##### Overall ECC Application
+##### Overall ICV and ECC Application
 
-The following diagram shows how the various ECC tags are applied and used through the life of a transactions.
+The following diagram shows how the various ICV / ECC tags are applied and used through the life of a transactions.
 ![Flash ECC_LIFE](flash_integrity.svg).
 
-Note that the integrity ECC is calculated over the descrambled data and is only 4-bits.
-While the reliability ECC is calculated over both the scrambled data and the integrity ECC.
+Note that the ICV (integrity ECC) is calculated over the descrambled data and is only 4-bits, while the reliability ECC is calculated over both the scrambled data and the ICV.
 
-##### Integrity ECC
+##### ICV
 
-The purpose of the integrity ECC is to emulate end-to-end integrity like the other memories.
+The purpose of the ICV (integrity check value, implemnted as an ECC) is to emulate end-to-end integrity like the other memories.
 This is why the data is calculated over the descrambled data as it can be stored alongside for continuous checks.
-When descrambled data is returned to the host, the integrity ECC is used to validate the data is correct.
+When descrambled data is returned to the host, the ICV is used to validate the data is correct.
 
-The flash may not always have the capacity to store both the integrity and reliability ECC, the integrity ECC is thus truncated since it is not used for error correction.
+The flash may not always have the capacity to store both the ICV and reliability ECC, the ICV is thus truncated since it is not used for error correction.
 
 ##### Reliability ECC
 
