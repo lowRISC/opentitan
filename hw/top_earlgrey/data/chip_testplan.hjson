@@ -379,6 +379,9 @@
             sleep the peripheral can continue its signaling even in deep sleep. The testbench
             verifies the correctness of the reflected values once the chip goes into deep sleep.
             This is replicated for DIO pins as well.
+
+            In this test, passthrough feature is not tested. The feature is
+            covered in other tests such as chip_sw_sleep_pwm_pulses.
             '''
       stage: V2
       tests: []
