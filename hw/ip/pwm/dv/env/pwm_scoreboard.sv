@@ -30,7 +30,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   bit [PWM_NUM_CHANNELS-1:0]        channel_en               = '0;
   bit [PWM_NUM_CHANNELS-1:0]        prev_channel_en          = '0;
   bit [PWM_NUM_CHANNELS-1:0]        invert                   = '0;
-  state_e                           blink_state[PWM_NUM_CHANNELS] = '{default:0};
+  state_e                           blink_state[PWM_NUM_CHANNELS] = '{default:CycleA};
   int                               blink_cnt[PWM_NUM_CHANNELS]   = '{default:0};
   int                               ignore_start_pulse[PWM_NUM_CHANNELS]   = '{default:2};
   int                               ignore_state_change[PWM_NUM_CHANNELS]   = '{default:0};
