@@ -6,6 +6,7 @@ use num_bigint_dig::BigUint;
 use num_traits::Num;
 use std::cmp::Ordering;
 use std::fmt;
+use std::iter;
 use thiserror::Error;
 
 use crate::util::parse_int::ParseInt;
@@ -76,17 +77,23 @@ impl<const BIT_LEN: usize, const EXACT_LEN: bool> FixedSizeBigInt<BIT_LEN, EXACT
 
     /// Returns the byte representation in little-endian order.
     pub(crate) fn to_le_bytes(&self) -> Vec<u8> {
-        self.0.to_bytes_le()
+        let mut v = self.0.to_bytes_le();
+        assert!(Self::BYTE_LEN >= v.len());
+        // Append since `v` is little-endian.
+        v.resize(Self::BYTE_LEN, 0);
+        v
     }
 
     /// Returns the byte representation in big-endian order.
     pub(crate) fn to_be_bytes(&self) -> Vec<u8> {
-        self.0.to_bytes_be()
+        let mut v = self.0.to_bytes_be();
+        assert!(Self::BYTE_LEN >= v.len());
+        // Prepend since `v` is big-endian.
+        v.splice(0..0, iter::repeat(0).take(Self::BYTE_LEN - v.len()));
+        v
     }
 
     /// Returns the underlying `BigUint`.
-    // FIXME: remove this `dead_code` if this function is ever used.
-    #[allow(dead_code)]
     pub(crate) fn as_biguint(&self) -> &BigUint {
         &self.0
     }
@@ -222,10 +229,10 @@ mod tests {
         fn check(slice: &[u8], data: &[u8]) {
             assert_eq!(TestArray::from_le_bytes(slice).unwrap().to_le_bytes(), data);
         }
-        check(&[], &[0]);
-        check(&[1], &[1]);
+        check(&[], &[0, 0]);
+        check(&[1], &[1, 0]);
         check(&[0, 1], &[0, 1]);
-        check(&[1, 0], &[1]);
+        check(&[1, 0], &[1, 0]);
 
         assert!(TestArray::from_le_bytes([1, 2, 3]).is_err());
     }
@@ -251,9 +258,9 @@ mod tests {
         fn check(slice: &[u8], data: &[u8]) {
             assert_eq!(TestArray::from_be_bytes(slice).unwrap().to_be_bytes(), data);
         }
-        check(&[1], &[1]);
+        check(&[1], &[0, 1]);
         check(&[1, 0], &[1, 0]);
-        check(&[0, 1], &[1]);
+        check(&[0, 1], &[0, 1]);
 
         assert!(TestArray::from_be_bytes([1, 2, 1]).is_err());
     }
@@ -288,7 +295,7 @@ mod tests {
 
     #[test]
     fn test_from_str() {
-        assert_eq!(TestArray::from_str("0x01").unwrap().to_le_bytes(), [1]);
+        assert_eq!(TestArray::from_str("0x01").unwrap().to_le_bytes(), [1, 0]);
         assert_eq!(
             TestArray::from_str("0x00201").unwrap().to_le_bytes(),
             [1, 2]
