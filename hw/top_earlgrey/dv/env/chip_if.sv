@@ -417,9 +417,56 @@ interface chip_if;
 
 
   // Functional (muxed) interface: I2Cs.
-  bit [NUM_I2CS-1:0] enable_i2c;
+  bit [NUM_I2CS-1:0] __enable_i2c = {NUM_I2CS{1'b0}}; // Internal signal.
+
+  // {ioa7, ioa8}, {iob9, iob10}, {iob11, iob12} are the i2c connections
+  localparam chip_io_e AssignedI2cSclIos [NUM_I2CS]  = {
+    IoB11,
+    IoB9,
+    IoA7
+  };
+  localparam chip_io_e AssignedI2cSdaIos [NUM_I2CS] = {
+    IoB12,
+    IoB10,
+    IoA8
+  };
+
+  // This part unfortunately has to be hardcoded since the macro cannot interpret a genvar.
   // TODO: Update i2c_if to emit all signals as inout ports.
-  // TODO: i2c_if i2c_if[NUM_I2CS-1:0]();
+  i2c_if i2c_if[NUM_I2CS-1:0]();
+  assign i2c_if[0].clk_i  = `I2C_HIER(0).clk_i;
+  assign i2c_if[0].rst_ni = `I2C_HIER(0).rst_ni;
+  assign i2c_if[1].clk_i  = `I2C_HIER(1).clk_i;
+  assign i2c_if[1].rst_ni = `I2C_HIER(1).rst_ni;
+  assign i2c_if[2].clk_i  = `I2C_HIER(2).clk_i;
+  assign i2c_if[2].rst_ni = `I2C_HIER(2).rst_ni;
+
+  for (genvar i = 0; i < NUM_I2CS; i++) begin : gen_i2c_if_connections
+
+    // connect to agents
+    initial begin
+      uvm_config_db#(virtual i2c_if)::set(null, $sformatf("*.env.m_i2c_agent%0d*", i),
+      "vif", i2c_if[i]);
+    end
+
+    assign i2c_if[i].scl_i = ios[AssignedI2cSclIos[i]];
+    assign i2c_if[i].sda_i = ios[AssignedI2cSdaIos[i]];
+    assign ios[AssignedI2cSclIos[i]] = !__enable_i2c[i] ? 1'bz :
+                                       i2c_if[i].scl_o  ? 1'bz : 1'b0;
+
+    assign ios[AssignedI2cSdaIos[i]] = !__enable_i2c[i] ? 1'bz :
+                                       i2c_if[i].sda_o  ? 1'bz : 1'b0;
+
+  end
+
+  function automatic void enable_i2c(int inst_num, bit enable);
+    `DV_CHECK_FATAL(inst_num inside {[0:NUM_I2CS-1]}, , MsgId)
+    ios_if.pins_pu[AssignedI2cSclIos[inst_num]] = enable;
+    ios_if.pins_pd[AssignedI2cSclIos[inst_num]] = 0;
+    ios_if.pins_pu[AssignedI2cSdaIos[inst_num]] = enable;
+    ios_if.pins_pd[AssignedI2cSdaIos[inst_num]] = 0;
+    __enable_i2c[inst_num] = enable;
+  endfunction
 
   // Functional (muxed) interface: PWM.
   localparam chip_io_e AssignedPwmIos[NUM_PWM_CHANNELS] = {IoB10, IoB11, IoB12,
@@ -590,9 +637,9 @@ interface chip_if;
     ast2pad_if.disconnect();
     pad2ast_if.disconnect();
     pinmux_wkup_if.disconnect();
-    for (int i = 0; i < NUM_UARTS; i++) enable_uart(i, 0);
-    for (int i = 0; i < NUM_SPI_HOSTS; i++) enable_spi_device(i, 0);
-    enable_i2c = '0;
+    for (int i = 0; i < NUM_UARTS; i++) enable_uart(.inst_num(i), .enable(0));
+    for (int i = 0; i < NUM_SPI_HOSTS; i++) enable_spi_device(.inst_num(i), .enable(0));
+    for (int i = 0; i < NUM_I2CS; i++) enable_i2c(.inst_num(i), .enable(0));
     ext_clk_if.set_active(0, 0);
   endfunction
 
