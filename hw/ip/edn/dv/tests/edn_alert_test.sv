@@ -13,7 +13,7 @@ class edn_alert_test extends edn_base_test;
     cfg.en_scb            = 0;
     cfg.enable_pct        = 100;
     cfg.boot_req_mode_pct = 0;
-    cfg.cmd_fifo_rst      = 100;
+    cfg.cmd_fifo_rst_pct  = 100;
     cfg.use_invalid_mubi  = 1;
     cfg.num_endpoints     = MIN_NUM_ENDPOINTS;
 
