@@ -5,6 +5,7 @@
 pub mod bootstrap;
 pub mod console;
 pub mod emulator;
+pub mod fpga;
 pub mod gpio;
 pub mod hello;
 pub mod i2c;

@@ -179,7 +179,7 @@ def cw310_params(
         tags = _BASE_PARAMS["tags"],
         test_runner = _BASE_PARAMS["test_runner"],
         test_cmds = [
-            "--exec=\"load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
+            "--exec=\"fpga load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
             "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
             "console",
             "--exit-success={exit_success}",

@@ -204,10 +204,10 @@ To flash the bitstream onto the FPGA using `opentitantool`, use the following co
 cd $REPO_TOP
 
 ### If you downloaded the bitstream from the Internet:
-bazel run //sw/host/opentitantool load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig
+bazel run //sw/host/opentitantool fpga load-bitstream /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig
 
 ### If you built the bitstream yourself:
-bazel run //sw/host/opentitantool load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_cw310_test_rom)
+bazel run //sw/host/opentitantool fpga load-bitstream $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_cw310_test_rom)
 ```
 
 Depending on the FPGA device, the flashing itself may take several seconds.
@@ -233,7 +233,7 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the 
 1. Run `opentitantool`.
    ```console
    cd ${REPO_TOP}
-   bazel run //sw/host/opentitantool set-pll # This needs to be done only once.
+   bazel run //sw/host/opentitantool fpga set-pll # This needs to be done only once.
    bazel build //sw/device/examples/hello_world:hello_world_fpga_cw310_bin
    bazel run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw310_bin)
    ```
@@ -437,7 +437,7 @@ The FPGA tests attempt to load the latest bitstream by default, but because we w
 
 ```console
 # Load the bitstream with opentitantool
-bazel run //sw/host/opentitantool --interface=cw310 load-bitstream <path_to_your_bitstream>
+bazel run //sw/host/opentitantool --interface=cw310 fpga load-bitstream <path_to_your_bitstream>
 
 # Run the broken test locally, showing all test output and skipping the bitstream loading
 bazel test <broken_test_rule> --define bitstream=skip --test_output=streamed
