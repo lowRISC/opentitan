@@ -31,6 +31,9 @@ struct PllMulDiv {
     fvco: u32,
 }
 
+#[derive(Ord, PartialOrd, Eq, PartialEq, Debug, Clone)]
+pub struct FirmwareVersion(u8, u8, u8);
+
 impl Backend {
     /// Commands for the CW310 board.
     pub const CMD_FW_VERSION: u8 = 0x17;
@@ -134,10 +137,10 @@ impl Backend {
     }
 
     /// Get the firmware version.
-    pub fn get_firmware_version(&self) -> Result<[u8; 3]> {
+    pub fn get_firmware_version(&self) -> Result<FirmwareVersion> {
         let mut buf = [0u8; 3];
         self.read_ctrl(Backend::CMD_FW_VERSION, 0, &mut buf)?;
-        Ok(buf)
+        Ok(FirmwareVersion(buf[0], buf[1], buf[2]))
     }
 
     /// Set GPIO `pinname` to either output or input mode.
@@ -298,9 +301,19 @@ impl Backend {
         Ok(status[0] & 0x01 != 0)
     }
 
-    // Erase the FPGA and prepare for programming.
-    fn fpga_erase(&self) -> Result<()> {
-        self.send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_INIT, &[])?;
+    // Set the FPGA download speed and prepare for programming.
+    fn fpga_prepare(&self, speed_hz: u32) -> Result<()> {
+        let supports_variable_speed = self.get_firmware_version()? >= FirmwareVersion(1, 0, 0);
+        let speed_hz = speed_hz.to_le_bytes();
+        self.send_ctrl(
+            Backend::CMD_FPGA_PROGRAM,
+            Backend::PROGRAM_INIT,
+            if supports_variable_speed {
+                &speed_hz
+            } else {
+                &[]
+            },
+        )?;
         std::thread::sleep(Duration::from_millis(1));
         self.send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_PREPARE, &[])?;
         std::thread::sleep(Duration::from_millis(1));
@@ -334,7 +347,7 @@ impl Backend {
         bitstream: &[u8],
         progress: Option<&dyn Fn(u32, u32)>,
     ) -> Result<()> {
-        self.fpga_erase()?;
+        self.fpga_prepare(20_000_000)?;
         let result = self.fpga_download(bitstream, progress);
 
         let mut status = false;
