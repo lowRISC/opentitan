@@ -96,18 +96,9 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         join
       end
       RdData: begin
-        if (req.cp_wdata) begin
-          rdata = req.rdata;
-        end else begin
-          if (rd_data_cnt == 8'd0) begin
-             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rd_data)
-          end
-          rdata = rd_data[rd_data_cnt];
-        end
-
-        `uvm_info(`gfn, $sformatf("Send readback data %0x", rdata), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("Send readback data %0x", req.rdata), UVM_MEDIUM)
         for (int i = 7; i >= 0; i--) begin
-          cfg.vif.device_send_bit(cfg.timing_cfg, rdata[i]);
+          cfg.vif.device_send_bit(cfg.timing_cfg, req.rdata[i]);
         end
         `uvm_info(`gfn, $sformatf("\n  device_driver, trans %0d, byte %0d  %0x",
             req.tran_id, req.num_data+1, rd_data[rd_data_cnt]), UVM_DEBUG)
