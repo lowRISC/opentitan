@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// This base sequence consists of common kmac tasks and functions.
+// In this sequence, when it uses a plain `csr_rd` without checking, the read value should be
+// predicted and checked in the kmac scoreboard.
 class kmac_base_vseq extends cip_base_vseq #(
     .RAL_T               (kmac_reg_block),
     .CFG_T               (kmac_env_cfg),
