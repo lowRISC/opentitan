@@ -71,6 +71,6 @@ class i2c_base_seq extends dv_base_seq #(
   virtual task seq_stop();
     stop = 1'b1;
     wait_for_sequence_state(UVM_FINISHED);
-  endtask // seq_stop
+  endtask : seq_stop
 
 endclass : i2c_base_seq

@@ -2,10 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_sw_i2c_tx_rx_vseq extends chip_sw_base_vseq;
-  `uvm_object_utils(chip_sw_i2c_tx_rx_vseq)
+class chip_sw_i2c_host_tx_rx_vseq extends chip_sw_base_vseq;
+  `uvm_object_utils(chip_sw_i2c_host_tx_rx_vseq)
 
   `uvm_object_new
+
+  rand int i2c_idx;
+
+  // TODO: Randomize this variable later when C side is ready.
+  // When this is randomized, the sequence will arbitrarily pick one of the i2c interfaces
+  // to test.
+  constraint i2c_idx_c {
+    i2c_idx inside {[0:0]};
+  }
 
   // need to figure out is there a way to get this from the tb
   int clock_period_nanos = 41;
@@ -32,25 +41,29 @@ class chip_sw_i2c_tx_rx_vseq extends chip_sw_base_vseq;
     super.body();
 
     // enable the monitor
-    cfg.m_i2c_agent_cfgs[0].en_monitor = 1'b1;
-    cfg.m_i2c_agent_cfgs[0].if_mode = Device;
+    cfg.m_i2c_agent_cfgs[i2c_idx].en_monitor = 1'b1;
+    cfg.m_i2c_agent_cfgs[i2c_idx].if_mode = Device;
+
+    // Enbale appropriate interface
+    cfg.chip_vif.enable_i2c(.inst_num(i2c_idx), .enable(1));
 
     `uvm_info(`gfn, $sformatf("Full period cycle: %d", clock_period_cycles), UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("Half period cycle: %d", half_period_cycles), UVM_MEDIUM)
 
     // tClockLow needs to be "slightly" shorter than the actual clock low period
-    cfg.m_i2c_agent_cfgs[0].timing_cfg.tClockLow = half_period_cycles - 1;
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockLow = half_period_cycles - 1;
 
     // tClockPulse needs to be "slightly" longer than the clock period.
-    cfg.m_i2c_agent_cfgs[0].timing_cfg.tClockPulse = half_period_cycles + 1;
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockPulse = half_period_cycles + 1;
 
     i2c_device_autoresponder();
   endtask
 
   virtual task i2c_device_autoresponder(i2c_device_response_seq seq = null);
     if (seq == null) seq = i2c_device_response_seq::type_id::create("seq");
-    fork seq.start(p_sequencer.i2c_sequencer_hs[0]) join_none
+    fork seq.start(p_sequencer.i2c_sequencer_hs[i2c_idx]); join_none
     #0;  // Ensure seq actually starts before subsequent code executes.
   endtask
 
-endclass : chip_sw_i2c_tx_rx_vseq
+
+endclass : chip_sw_i2c_host_tx_rx_vseq

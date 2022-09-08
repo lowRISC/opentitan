@@ -24,8 +24,8 @@ class i2c_item extends uvm_sequence_item;
   rand bit                 nakok, rcont, read, stop, start;
 
   // Incoming write data
-  bit [7:0]                wdata;
-  bit [7:0]                rdata;
+  logic [7:0]              wdata;
+  logic [7:0]              rdata;
 
   constraint fbyte_c     { fbyte      inside {[0 : 127] }; }
   constraint rcont_c     {

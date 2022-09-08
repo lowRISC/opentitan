@@ -87,6 +87,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   rand jtag_agent_cfg       m_jtag_agent_cfg;
   rand spi_agent_cfg        m_spi_agent_cfg;
   pwm_monitor_cfg           m_pwm_monitor_cfg[NUM_PWM_CHANNELS];
+  rand i2c_agent_cfg        m_i2c_agent_cfgs[NUM_I2CS];
 
   // JTAG DMI register model
   rand jtag_dmi_reg_block jtag_dmi_ral;
@@ -141,6 +142,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     foreach (m_spi_device_agent_cfgs[i]) begin
       m_spi_device_agent_cfgs[i] =
         spi_agent_cfg::type_id::create($sformatf("m_spi_device_agent_cfg%0d", i));
+    end
+
+    // create i2c agent config obj
+    foreach (m_i2c_agent_cfgs[i]) begin
+      m_i2c_agent_cfgs[i] = i2c_agent_cfg::type_id::create($sformatf("m_i2c_agent_cfg%0d", i));
     end
 
     // create jtag agent config obj

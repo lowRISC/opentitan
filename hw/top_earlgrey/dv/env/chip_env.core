@@ -25,6 +25,7 @@ filesets:
       - lowrisc:dv:sw_logger_if
       - lowrisc:dv:uart_agent
       - lowrisc:dv:pwm_monitor
+      - lowrisc:dv:i2c_agent
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:pwrmgr_pkg
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
@@ -93,6 +94,7 @@ filesets:
       - seq_lib/chip_callback_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_entropy_src_fuse_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_usb_ast_clk_calib_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_i2c_host_tx_rx_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
       - alerts_if.sv
       - ast_ext_clk_if.sv

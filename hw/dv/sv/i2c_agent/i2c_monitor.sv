@@ -103,7 +103,7 @@ class i2c_monitor extends dv_base_monitor #(
     `uvm_info(`gfn, $sformatf("Req analysis port: address thread"), UVM_HIGH)
     req_analysis_port.write(clone_item);
     cfg.vif.wait_for_device_ack(cfg.timing_cfg);
-    `uvm_info(`gfn, $sformatf("\nmonitor, address, detect TARGET ACK"), UVM_HIGH)
+    `uvm_info(`gfn, "\nmonitor, address, detect TARGET ACK", UVM_HIGH)
   endtask : address_thread
 
   virtual protected task read_thread();
@@ -117,7 +117,7 @@ class i2c_monitor extends dv_base_monitor #(
       // ask driver response read data
       mon_dut_item.drv_type = RdData;
       `downcast(clone_item, mon_dut_item.clone());
-      `uvm_info(`gfn, $sformatf("Req analysis port: read thread"), UVM_HIGH)
+      `uvm_info(`gfn, "Req analysis port: read thread", UVM_HIGH)
       req_analysis_port.write(clone_item);
       // sample read data
       for (int i = 7; i >= 0; i--) begin
@@ -156,7 +156,7 @@ class i2c_monitor extends dv_base_monitor #(
         begin : iso_fork_write
           fork
             begin
-               `uvm_info(`gfn, $sformatf("Req analysis port: write thread data"), UVM_HIGH)
+               `uvm_info(`gfn, "Req analysis port: write thread data", UVM_HIGH)
               // ask driver's response a write request
               mon_dut_item.drv_type = WrData;
               `downcast(clone_item, mon_dut_item.clone());

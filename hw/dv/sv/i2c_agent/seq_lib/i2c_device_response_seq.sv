@@ -42,7 +42,6 @@ class i2c_device_response_seq extends i2c_base_seq;
             end else begin
               rsp = w_q[req.addr].pop_front();
               req.rdata = rsp.wdata;
-              req.cp_wdata = 1;
             end
           end
           start_item(req);
