@@ -52,11 +52,11 @@ At the functional level OpenTitan aims to provide the following guarantees:
 
 ## Use Cases
 
-The security goals of the project are derived from a list of target use cases.
-See [OpenTitan's Use Cases][use_cases] for more details. The security goals are
-used to define OpenTitan's threat model, as well as functional and assurance
-security requirements. Such requirements influence the system architecture, as
-well as the certification strategy for silicon implementations.
+The security goals of the project are derived from a list of target
+[use cases][use_cases]. The security goals are used to define OpenTitan's
+[threat model][threat_model], as well as functional and assurance security
+requirements. Such requirements influence the system architecture, as well as
+the certification strategy for silicon implementations.
 
 ## Security Primitives
 
@@ -118,8 +118,9 @@ the assigned severity.
 [entropy_source]: {{< relref "hw/ip/entropy_src/doc" >}}
 [hmac]: {{< relref "hw/ip/hmac/doc" >}}
 [keymgr]: {{< relref "hw/ip/keymgr/doc" >}}
-[logical_security_model]: {{< relref "doc/security/logical_security_model" >}}
-[implementation_guidelines]: {{< relref "doc/security/implementation_guidelines/hardware" >}}
+[logical_security_model]: {{< relref "logical_security_model" >}}
+[implementation_guidelines]: {{< relref "implementation_guidelines/hardware" >}}
 [otbn]: {{< relref "hw/ip/otbn/doc" >}}
-[security_model]: {{< relref "doc/security/specs" >}}
+[security_model]: {{< relref "specs" >}}
 [use_cases]: {{< relref "doc/use_cases" >}}
+[threat_model]: {{< relref "threat_model" >}}

@@ -20,6 +20,7 @@ For questions about how the project is organized, see the [project]({{< relref "
 ## Understaning OpenTitan
 
 * [Use Cases]({{< relref "doc/use_cases" >}})
+* [Threat Model]({{< relref "doc/security/threat_model" >}})
 * [Security]({{< relref "doc/security" >}})
 
 ## Datasheets
