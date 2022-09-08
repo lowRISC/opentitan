@@ -472,7 +472,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // it can only generate one seed.
   task reinit_monitor_thread();
     bit boot_mode_csrng;
-    mubi4_t fips_enable, es_route;
+    logic [MuBi4Width-1:0] fips_enable, es_route;
 
     `uvm_info(`gfn, "Starting re-init monitor", UVM_LOW)
 

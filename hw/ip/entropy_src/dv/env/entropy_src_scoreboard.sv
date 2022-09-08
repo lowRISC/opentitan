@@ -874,16 +874,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             `uvm_error(`gfn, "testbench error: too many segments read from candidate seed")
           end
           cov_vif.cg_seed_output_csr_sample(
-              ral.conf.fips_enable.get_mirrored_value(),
-              ral.conf.threshold_scope.get_mirrored_value(),
-              ral.conf.rng_bit_enable.get_mirrored_value(),
+              prim_mubi_pkg::mubi4_t'(ral.conf.fips_enable.get_mirrored_value()),
+              prim_mubi_pkg::mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
+              prim_mubi_pkg::mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
               ral.conf.rng_bit_sel.get_mirrored_value(),
-              ral.entropy_control.es_route.get_mirrored_value(),
-              ral.entropy_control.es_type.get_mirrored_value(),
-              ral.conf.entropy_data_reg_enable.get_mirrored_value(),
-              cfg.otp_en_es_fw_read,
-              ral.fw_ov_control.fw_ov_mode.get_mirrored_value(),
-              ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value(),
+              prim_mubi_pkg::mubi4_t'(ral.entropy_control.es_route.get_mirrored_value()),
+              prim_mubi_pkg::mubi4_t'(ral.entropy_control.es_type.get_mirrored_value()),
+              prim_mubi_pkg::mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
+              prim_mubi_pkg::mubi8_t'(cfg.otp_en_es_fw_read),
+              prim_mubi_pkg::mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
+              prim_mubi_pkg::mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value()),
               full_seed_found
           );
           break;
@@ -1029,7 +1029,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       @(interrupt_vif.pins);
       new_intrs = interrupt_vif.pins & ~known_intr_state;
       handle_new_interrupts(new_intrs);
-      for (i = 0; i < NumEntropySrcIntr; i++) begin
+      for (i = i.first(); i < i.last(); i = i.next()) begin
         if (new_intrs[i]) begin
           `uvm_info(`gfn, $sformatf("INTERRUPT RECEIVED: %0s", i.name), UVM_FULL)
         end
@@ -1108,7 +1108,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     // ALERT_THRESHOLD in which the threhold field must equal the inverse of the
     // inverse threshold field.
     if (reg_name != "alert_threshold") begin
-      bad_redundancy = mubi4_test_invalid(get_reg_fld_mirror_value(ral, reg_name, mubi_field));
+      bad_redundancy = mubi4_test_invalid(
+          prim_mubi_pkg::mubi4_t'(get_reg_fld_mirror_value(ral, reg_name, mubi_field)));
     end else begin
       bit thresh     = get_reg_fld_mirror_value(ral, "alert_threshold", "alert_threshold");
       bit thresh_inv = get_reg_fld_mirror_value(ral, "alert_threshold", "alert_threshold_inv");
@@ -1347,7 +1348,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               bit do_disable, do_enable;
 
               uvm_reg_field enable_field = csr.get_field_by_name("module_enable");
-              prim_mubi_pkg::mubi4_t enable_mubi = enable_field.get_mirrored_value();
+              prim_mubi_pkg::mubi4_t enable_mubi =
+                  prim_mubi_pkg::mubi4_t'(enable_field.get_mirrored_value());
               do_enable  = (enable_mubi == prim_mubi_pkg::MuBi4True);
               // Though non-mubi values sent alerts, for the
               // purposes of enablement, all invalid values are effectively disables.
@@ -1435,16 +1437,19 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             end
             "fw_ov_sha3_start": begin
               // The fw_ov_sha3_start field triggers the internal processing of SHA data
-              mubi4_t start_mubi  = ral.fw_ov_sha3_start.fw_ov_insert_start.get_mirrored_value();
+              mubi4_t start_mubi  = prim_mubi_pkg::mubi4_t'(
+                  ral.fw_ov_sha3_start.fw_ov_insert_start.get_mirrored_value());
               bit fips_enabled    = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
               bit es_route        = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
               bit es_type         = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
               bit is_fips_mode    = fips_enabled && !(es_route && es_type);
-              mubi4_t fw_ov_mubi  = ral.fw_ov_control.fw_ov_mode.get_mirrored_value();
+              mubi4_t fw_ov_mubi  = prim_mubi_pkg::mubi4_t'(
+                  ral.fw_ov_control.fw_ov_mode.get_mirrored_value());
 
               bit fw_ov_mode      = (cfg.otp_en_es_fw_read == MuBi8True) &&
                                     (fw_ov_mubi == MuBi4True);
-              mubi4_t insert_mubi = ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value();
+              mubi4_t insert_mubi = prim_mubi_pkg::mubi4_t'(
+                  ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value());
               bit fw_ov_insert    = fw_ov_mode && (insert_mubi == MuBi4True);
               bit do_disable_sha  = fw_ov_sha_enabled && (start_mubi == MuBi4False);
 
@@ -1658,8 +1663,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
         @(cfg.precon_fifo_vif.mon_cb);
 
-        fw_ov_mubi   = `gmv(ral.fw_ov_control.fw_ov_mode);
-        insert_mubi  = `gmv(ral.fw_ov_control.fw_ov_entropy_insert);
+        fw_ov_mubi   = prim_mubi_pkg::mubi4_t'(`gmv(ral.fw_ov_control.fw_ov_mode));
+        insert_mubi  = prim_mubi_pkg::mubi4_t'(`gmv(ral.fw_ov_control.fw_ov_entropy_insert));
         fw_ov_mode   = (cfg.otp_en_es_fw_read == MuBi8True) &&
                        (fw_ov_mubi == MuBi4True);
         fw_ov_insert = fw_ov_mode && (insert_mubi == MuBi4True);
@@ -1755,7 +1760,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     predict_conditioned = do_condition_data();
 
-    rng_single_bit = `gmv(ral.conf.rng_bit_enable);
+    rng_single_bit = prim_mubi_pkg::mubi4_t'(`gmv(ral.conf.rng_bit_enable));
 
     sample_frames = predict_conditioned ? sha_process_q.size() : raw_process_q.size;
 
@@ -2162,16 +2167,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           observe_fifo_words++;
           match_found = 1;
           cov_vif.cg_observe_fifo_event_sample(
-              ral.conf.fips_enable.get_mirrored_value(),
-              ral.conf.threshold_scope.get_mirrored_value(),
-              ral.conf.rng_bit_enable.get_mirrored_value(),
+              prim_mubi_pkg::mubi4_t'(ral.conf.fips_enable.get_mirrored_value()),
+              prim_mubi_pkg::mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
+              prim_mubi_pkg::mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
               ral.conf.rng_bit_sel.get_mirrored_value(),
-              ral.entropy_control.es_route.get_mirrored_value(),
-              ral.entropy_control.es_type.get_mirrored_value(),
-              ral.conf.entropy_data_reg_enable.get_mirrored_value(),
-              cfg.otp_en_es_fw_read,
-              ral.fw_ov_control.fw_ov_mode.get_mirrored_value(),
-              ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value()
+              prim_mubi_pkg::mubi4_t'(ral.entropy_control.es_route.get_mirrored_value()),
+              prim_mubi_pkg::mubi4_t'(ral.entropy_control.es_type.get_mirrored_value()),
+              prim_mubi_pkg::mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
+              prim_mubi_pkg::mubi8_t'(cfg.otp_en_es_fw_read),
+              prim_mubi_pkg::mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
+              prim_mubi_pkg::mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value())
           );
           msg = $sformatf("Match found: %d\n", observe_fifo_words);
           `uvm_info(`gfn, msg, UVM_FULL)
