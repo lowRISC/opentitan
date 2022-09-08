@@ -755,7 +755,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           bit [KmacCmdIdx:0] kmac_cmd = item.a_data[KmacCmdIdx:0];
 
           // Handle hash_cnt_clr bit
-          if (item.a_data[KmacHashCntClrIdx]) void'(ral.entropy_refresh_hash_cnt.predict(0));
+          if (item.a_data[KmacHashCntClrIdx]) `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
 
           if (app_fsm_active) begin
             // As per designer comment in https://github.com/lowRISC/opentitan/issues/7716,
@@ -1137,7 +1137,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         `DV_CHECK_EQ(csr.get_mirrored_value(), item.d_data,
                      $sformatf("reg name: %0s", csr.get_full_name()))
       end
-      csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+      `DV_CHECK(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
   endtask : process_tl_access
 
@@ -1150,9 +1150,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
     // predict error CSR
     if (is_sha3_err) begin
-      void'(ral.err_code.predict(.value(TL_DW'(sha3_err)), .kind(UVM_PREDICT_DIRECT)));
+      `DV_CHECK(ral.err_code.predict(.value(TL_DW'(sha3_err)), .kind(UVM_PREDICT_DIRECT)));
     end else if (is_kmac_err) begin
-      void'(ral.err_code.predict(.value(TL_DW'(kmac_err)), .kind(UVM_PREDICT_DIRECT)));
+      `DV_CHECK(ral.err_code.predict(.value(TL_DW'(kmac_err)), .kind(UVM_PREDICT_DIRECT)));
     end
 
     // collect coverage
@@ -1625,7 +1625,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   function void incr_and_predict_hash_cnt();
     bit [HASH_CNT_WIDTH-1:0] curr_hash_cnt_val = `gmv(ral.entropy_refresh_hash_cnt);
     if (curr_hash_cnt_val != '1) begin
-      void'(ral.entropy_refresh_hash_cnt.predict(++curr_hash_cnt_val));
+      `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(curr_hash_cnt_val + 1));
     end
   endfunction
 
