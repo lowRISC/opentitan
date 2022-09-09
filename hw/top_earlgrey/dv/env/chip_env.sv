@@ -11,8 +11,11 @@ class chip_env extends cip_base_env #(
   `uvm_component_utils(chip_env)
 
   uart_agent             m_uart_agents[NUM_UARTS];
+  // spi device agents that receive transactions from dut spi host
+  spi_agent              m_spi_device_agents[NUM_SPI_HOSTS];
   jtag_riscv_agent       m_jtag_riscv_agent;
   jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
+  // spi host agent that transmits trasnactions to dut spi device
   spi_agent              m_spi_agent;
   pwm_monitor            m_pwm_monitor[NUM_PWM_CHANNELS];
 
@@ -79,6 +82,13 @@ class chip_env extends cip_base_env #(
                                           cfg.m_uart_agent_cfgs[i]);
     end
 
+    // dut spi host, tb spi device
+    foreach (m_spi_device_agents[i]) begin
+      m_spi_device_agents[i] = spi_agent::type_id::create($sformatf("m_spi_device_agent%0d", i), this);
+      uvm_config_db#(spi_agent_cfg)::set(this, $sformatf("m_spi_device_agent%0d*", i), "cfg",
+                                         cfg.m_spi_device_agent_cfgs[i]);
+    end
+
     m_jtag_riscv_agent = jtag_riscv_agent::type_id::create("m_jtag_riscv_agent", this);
     uvm_config_db#(jtag_riscv_agent_cfg)::set(this, "m_jtag_riscv_agent*", "cfg",
                                               cfg.m_jtag_riscv_agent_cfg);
@@ -88,6 +98,7 @@ class chip_env extends cip_base_env #(
     );
     m_jtag_riscv_reg_adapter.cfg = cfg.m_jtag_riscv_agent_cfg;
 
+    // dut spi device, tb spi host
     m_spi_agent = spi_agent::type_id::create("m_spi_agent", this);
     uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_agent*", "cfg", cfg.m_spi_agent_cfg);
 
@@ -114,9 +125,17 @@ class chip_env extends cip_base_env #(
         virtual_sequencer.uart_sequencer_hs[i] = m_uart_agents[i].sequencer;
       end
     end
+
+    foreach (m_spi_device_agents[i]) begin
+      if (cfg.is_active && cfg.m_spi_device_agent_cfgs[i].is_active) begin
+        virtual_sequencer.spi_device_sequencer_hs[i] = m_spi_device_agents[i].sequencer;
+      end
+    end
+
     if (cfg.is_active && cfg.m_jtag_riscv_agent_cfg.is_active) begin
       virtual_sequencer.jtag_sequencer_h = m_jtag_riscv_agent.sequencer;
     end
+
     if (cfg.is_active && cfg.m_spi_agent_cfg.is_active) begin
       virtual_sequencer.spi_sequencer_h = m_spi_agent.sequencer;
     end
@@ -130,6 +149,12 @@ class chip_env extends cip_base_env #(
       m_uart_agents[i].monitor.tx_analysis_port.connect(
           virtual_sequencer.uart_tx_fifos[i].analysis_export);
     end
+
+    foreach (m_spi_device_agents[i]) begin
+      m_spi_device_agents[i].monitor.device_analysis_port.connect(
+          virtual_sequencer.spi_device_fifos[i].analysis_export);
+    end
+
     foreach (m_pwm_monitor[i]) begin
       m_pwm_monitor[i].analysis_port.connect(virtual_sequencer.pwm_rx_fifo[i].analysis_export);
     end

@@ -101,7 +101,7 @@ interface chip_if;
     ios_if.pins_pu[IoR4] = 1;  // JTAG t_rst_n.
     ios_if.pins_pu[IoR8] = 1;
     ios_if.pins_pu[IoR9] = 1;
-    // Leave dedicated chip outputs undriven.
+
     ios_if.pins_pd[SpiHostCsL] = 0;
     ios_if.pins_pd[SpiHostClk] = 0;
 
@@ -355,11 +355,27 @@ interface chip_if;
 
   // Functional (muxed) interface: SPI device 1 interface (receives traffic from the chip).
   // TODO: Update spi_if to emit all signals as inout ports.
-  bit enable_spi_device1;
-  // spi_if spi_device1_if(.rst_n(`SPI_HOST_HIER(1).rst_ni),
-  //                       .sck(ios[IoB3]),
-  //                       .csb(ios[IoB0]),
-  //                       .sio(ios[IoB1:IoB2]));
+  // spi_if spi_device_ec_if(.rst_n(`SPI_HOST_HIER(1).rst_ni),
+  //                         .sck(ios[IoB3]),
+  //                         .csb(ios[IoB0]),
+  //                         .sio(ios[IoB1:IoB2]));
+  for (genvar i = 0; i < NUM_SPI_HOSTS; i++) begin : gen_spi_host_if_conn
+    // dut is host, agent is device
+    spi_if spi_devic_if(.rst_n);
+
+    assign spi_device_if.sck = ios[SpiHostClk];
+    assign spi_device_if.csb = ios[SpiHostCsL];
+    assign spi_device_if.sio[0] = ios[SpiHostD0];
+    assign ios[SpiHostD1] = spi_device_if.sio[1];
+    assign ios[SpiHostD2] = spi_device_if.sio[2];
+    assign ios[SpiHostD3] = spi_device_if.sio[3];
+
+
+    initial begin
+      uvm_config_db#(virtual spi_if)::set(null, $sformatf("*.env.m_spi_device_agent%0d*", i),
+                                           "vif", spi_device_if[i]);
+    end
+  end
 
   // Functional (muxed) interface: I2Cs.
   bit [NUM_I2CS-1:0] enable_i2c;
