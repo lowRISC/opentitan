@@ -97,7 +97,7 @@ interface clk_rst_if #(
   bit sole_clock = 1'b0;
 
   // use IfName as a part of msgs to indicate which clk_rst_vif instance
-  string msg_id = {"clk_rst_if::", IfName};
+  string msg_id = $sformatf("[%m(clk_rst_if):%s]", IfName);
 
   clocking cb @(posedge clk);
   endclocking
