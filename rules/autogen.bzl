@@ -108,25 +108,20 @@ def _otp_image(ctx):
     # TODO(dmcardle) I don't like hardcoding the width in the filename. Maybe we
     # can write it into some metadata in the file instead.
     output = ctx.actions.declare_file(ctx.attr.name + ".24.vmem")
+    args = ctx.actions.args()
+    args.add("--quiet")
+    args.add("--lc-state-def", ctx.file.lc_state_def)
+    args.add("--mmap-def", ctx.file.mmap_def)
+    args.add("--img-cfg", ctx.file.src)
+    args.add("--out", "{}/{}.BITWIDTH.vmem".format(output.dirname, ctx.attr.name))
     ctx.actions.run(
         outputs = [output],
         inputs = [
             ctx.file.src,
             ctx.file.lc_state_def,
             ctx.file.mmap_def,
-            ctx.executable._tool,
         ],
-        arguments = [
-            "--quiet",
-            "--lc-state-def",
-            ctx.file.lc_state_def.path,
-            "--mmap-def",
-            ctx.file.mmap_def.path,
-            "--img-cfg",
-            ctx.file.src.path,
-            "--out",
-            "{}/{}.BITWIDTH.vmem".format(output.dirname, ctx.attr.name),
-        ],
+        arguments = [args],
         executable = ctx.executable._tool,
     )
     return [DefaultInfo(files = depset([output]), data_runfiles = ctx.runfiles(files = [output]))]
