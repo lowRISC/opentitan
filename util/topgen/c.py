@@ -115,6 +115,7 @@ class TopGenC:
         self._init_plic_mapping()
         self._init_alert_mapping()
         self._init_pinmux_mapping()
+        self._init_pad_mapping()
         self._init_pwrmgr_wakeups()
         self._init_rstmgr_sw_rsts()
         self._init_pwrmgr_reset_requests()
@@ -388,6 +389,45 @@ class TopGenC:
         self.pinmux_insel = insel
         self.pinmux_mio_out = mio_out
         self.pinmux_outsel = outsel
+
+    def _init_pad_mapping(self):
+        """Generate C enums for order of MIO and DIO pads.
+
+        These are needed to configure pad specific configurations such as
+        slew rate and other flags.
+        """
+        direct_enum = CEnum(self._top_name +
+                               Name(["direct", "pads"]))
+
+        muxed_enum = CEnum(self._top_name +
+                               Name(["muxed", "pads"]))
+
+        pads_info = self.top['pinout']['pads']
+        muxed = [pad['name'] for pad in pads_info if pad['connection'] == 'muxed']
+
+        # The logic here follows the sequence done in toplevel_pkg.sv.tpl.
+        # The direct pads do not enumerate directly from the pinout like the muxed
+        # ios.  Instead it follows a direction from the pinmux perspective.
+        pads_info = self.top['pinmux']['ios']
+        direct = [pad for pad in pads_info if pad['connection'] != 'muxed']
+
+        for pad in (direct):
+            name = f"{pad['name']}"
+            if pad['width'] > 1:
+                name = f"{name}{pad['idx']}"
+
+            direct_enum.add_constant(
+                Name.from_snake_case(name))
+        direct_enum.add_last_constant("Last valid direct pad")
+
+        for pad in (muxed):
+            muxed_enum.add_constant(
+                Name.from_snake_case(pad))
+        muxed_enum.add_last_constant("Last valid muxed pad")
+
+        self.direct_pads = direct_enum
+        self.muxed_pads = muxed_enum
+
 
     def _init_pwrmgr_wakeups(self):
         enum = CEnum(self._top_name +

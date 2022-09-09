@@ -1630,6 +1630,83 @@ typedef enum top_earlgrey_pinmux_outsel {
 } top_earlgrey_pinmux_outsel_t;
 
 /**
+ * Dedicated Pad Selects
+ */
+typedef enum top_earlgrey_direct_pads {
+  kTopEarlgreyDirectPadsUsbdevUsbDp = 0, /**<  */
+  kTopEarlgreyDirectPadsUsbdevUsbDn = 1, /**<  */
+  kTopEarlgreyDirectPadsSpiHost0Sd0 = 2, /**<  */
+  kTopEarlgreyDirectPadsSpiHost0Sd1 = 3, /**<  */
+  kTopEarlgreyDirectPadsSpiHost0Sd2 = 4, /**<  */
+  kTopEarlgreyDirectPadsSpiHost0Sd3 = 5, /**<  */
+  kTopEarlgreyDirectPadsSpiDeviceSd0 = 6, /**<  */
+  kTopEarlgreyDirectPadsSpiDeviceSd1 = 7, /**<  */
+  kTopEarlgreyDirectPadsSpiDeviceSd2 = 8, /**<  */
+  kTopEarlgreyDirectPadsSpiDeviceSd3 = 9, /**<  */
+  kTopEarlgreyDirectPadsSysrstCtrlAonEcRstL = 10, /**<  */
+  kTopEarlgreyDirectPadsSysrstCtrlAonFlashWpL = 11, /**<  */
+  kTopEarlgreyDirectPadsSpiDeviceSck = 12, /**<  */
+  kTopEarlgreyDirectPadsSpiDeviceCsb = 13, /**<  */
+  kTopEarlgreyDirectPadsSpiHost0Sck = 14, /**<  */
+  kTopEarlgreyDirectPadsSpiHost0Csb = 15, /**<  */
+  kTopEarlgreyDirectPadsLast = 15, /**< \internal Last valid direct pad */
+} top_earlgrey_direct_pads_t;
+
+/**
+ * Muxed Pad Selects
+ */
+typedef enum top_earlgrey_muxed_pads {
+  kTopEarlgreyMuxedPadsIoa0 = 0, /**<  */
+  kTopEarlgreyMuxedPadsIoa1 = 1, /**<  */
+  kTopEarlgreyMuxedPadsIoa2 = 2, /**<  */
+  kTopEarlgreyMuxedPadsIoa3 = 3, /**<  */
+  kTopEarlgreyMuxedPadsIoa4 = 4, /**<  */
+  kTopEarlgreyMuxedPadsIoa5 = 5, /**<  */
+  kTopEarlgreyMuxedPadsIoa6 = 6, /**<  */
+  kTopEarlgreyMuxedPadsIoa7 = 7, /**<  */
+  kTopEarlgreyMuxedPadsIoa8 = 8, /**<  */
+  kTopEarlgreyMuxedPadsIob0 = 9, /**<  */
+  kTopEarlgreyMuxedPadsIob1 = 10, /**<  */
+  kTopEarlgreyMuxedPadsIob2 = 11, /**<  */
+  kTopEarlgreyMuxedPadsIob3 = 12, /**<  */
+  kTopEarlgreyMuxedPadsIob4 = 13, /**<  */
+  kTopEarlgreyMuxedPadsIob5 = 14, /**<  */
+  kTopEarlgreyMuxedPadsIob6 = 15, /**<  */
+  kTopEarlgreyMuxedPadsIob7 = 16, /**<  */
+  kTopEarlgreyMuxedPadsIob8 = 17, /**<  */
+  kTopEarlgreyMuxedPadsIob9 = 18, /**<  */
+  kTopEarlgreyMuxedPadsIob10 = 19, /**<  */
+  kTopEarlgreyMuxedPadsIob11 = 20, /**<  */
+  kTopEarlgreyMuxedPadsIob12 = 21, /**<  */
+  kTopEarlgreyMuxedPadsIoc0 = 22, /**<  */
+  kTopEarlgreyMuxedPadsIoc1 = 23, /**<  */
+  kTopEarlgreyMuxedPadsIoc2 = 24, /**<  */
+  kTopEarlgreyMuxedPadsIoc3 = 25, /**<  */
+  kTopEarlgreyMuxedPadsIoc4 = 26, /**<  */
+  kTopEarlgreyMuxedPadsIoc5 = 27, /**<  */
+  kTopEarlgreyMuxedPadsIoc6 = 28, /**<  */
+  kTopEarlgreyMuxedPadsIoc7 = 29, /**<  */
+  kTopEarlgreyMuxedPadsIoc8 = 30, /**<  */
+  kTopEarlgreyMuxedPadsIoc9 = 31, /**<  */
+  kTopEarlgreyMuxedPadsIoc10 = 32, /**<  */
+  kTopEarlgreyMuxedPadsIoc11 = 33, /**<  */
+  kTopEarlgreyMuxedPadsIoc12 = 34, /**<  */
+  kTopEarlgreyMuxedPadsIor0 = 35, /**<  */
+  kTopEarlgreyMuxedPadsIor1 = 36, /**<  */
+  kTopEarlgreyMuxedPadsIor2 = 37, /**<  */
+  kTopEarlgreyMuxedPadsIor3 = 38, /**<  */
+  kTopEarlgreyMuxedPadsIor4 = 39, /**<  */
+  kTopEarlgreyMuxedPadsIor5 = 40, /**<  */
+  kTopEarlgreyMuxedPadsIor6 = 41, /**<  */
+  kTopEarlgreyMuxedPadsIor7 = 42, /**<  */
+  kTopEarlgreyMuxedPadsIor10 = 43, /**<  */
+  kTopEarlgreyMuxedPadsIor11 = 44, /**<  */
+  kTopEarlgreyMuxedPadsIor12 = 45, /**<  */
+  kTopEarlgreyMuxedPadsIor13 = 46, /**<  */
+  kTopEarlgreyMuxedPadsLast = 46, /**< \internal Last valid muxed pad */
+} top_earlgrey_muxed_pads_t;
+
+/**
  * Power Manager Wakeup Signals
  */
 typedef enum top_earlgrey_power_manager_wake_ups {

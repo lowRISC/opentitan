@@ -75,6 +75,12 @@ extern const uint64_t kClockFreqCpuHz;
 extern const uint64_t kClockFreqPeripheralHz;
 
 /**
+ * The high-speed peripheral clock frequency of the device, in hertz.
+ * This is the operating clock used by the spi host
+ */
+extern const uint64_t kClockFreqHiSpeedPeripheralHz;
+
+/**
  * The USB clock frequency of the device, in hertz.
  * This is the operating clock used by the USB phy interface.
  */

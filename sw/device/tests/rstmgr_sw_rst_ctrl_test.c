@@ -82,7 +82,7 @@ static void spi_device_config(void *dif) {
 
 static void spi_host0_config(void *dif) {
   dif_spi_host_config_t cfg = {
-      .spi_clock = 1000000,
+      .spi_clock = 500000,
       .peripheral_clock_freq_hz = 1000000,
       .chip_select =
           {
@@ -99,7 +99,7 @@ static void spi_host0_config(void *dif) {
 
 static void spi_host1_config(void *dif) {
   dif_spi_host_config_t cfg = {
-      .spi_clock = 5000000,
+      .spi_clock = 2500000,
       .peripheral_clock_freq_hz = 5000000,
       .chip_select =
           {

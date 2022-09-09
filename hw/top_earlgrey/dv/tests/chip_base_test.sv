@@ -45,6 +45,12 @@ class chip_base_test extends cip_base_test #(
     cfg.m_uart_agent_cfgs[0].en_logger = cfg.en_uart_logger;
     cfg.m_uart_agent_cfgs[0].write_logs_to_file = cfg.write_sw_logs_to_file;
 
+    // all the spi_agents talking to the host interface should be configured into
+    // device mode
+    foreach (cfg.m_spi_device_agent_cfgs[i]) begin
+       cfg.m_spi_device_agent_cfgs[i].if_mode = dv_utils_pkg::Device;
+    end
+
     // Knob to set the sw_test_timeout_ns (set to 12ms by default).
     void'($value$plusargs("sw_test_timeout_ns=%0d", cfg.sw_test_timeout_ns));
 

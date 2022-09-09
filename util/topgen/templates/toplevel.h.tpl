@@ -164,6 +164,16 @@ ${helper.pinmux_mio_out.render()}
 ${helper.pinmux_outsel.render()}
 
 /**
+ * Dedicated Pad Selects
+ */
+${helper.direct_pads.render()}
+
+/**
+ * Muxed Pad Selects
+ */
+${helper.muxed_pads.render()}
+
+/**
  * Power Manager Wakeup Signals
  */
 ${helper.pwrmgr_wakeups.render()}

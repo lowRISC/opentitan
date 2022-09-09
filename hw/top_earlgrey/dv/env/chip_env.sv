@@ -84,8 +84,9 @@ class chip_env extends cip_base_env #(
 
     // dut spi host, tb spi device
     foreach (m_spi_device_agents[i]) begin
-      m_spi_device_agents[i] = spi_agent::type_id::create($sformatf("m_spi_device_agent%0d", i), this);
-      uvm_config_db#(spi_agent_cfg)::set(this, $sformatf("m_spi_device_agent%0d*", i), "cfg",
+      m_spi_device_agents[i] =
+        spi_agent::type_id::create($sformatf("m_spi_device_agents%0d", i), this);
+      uvm_config_db#(spi_agent_cfg)::set(this, $sformatf("m_spi_device_agents%0d*", i), "cfg",
                                          cfg.m_spi_device_agent_cfgs[i]);
     end
 
@@ -148,11 +149,6 @@ class chip_env extends cip_base_env #(
     foreach (m_uart_agents[i]) begin
       m_uart_agents[i].monitor.tx_analysis_port.connect(
           virtual_sequencer.uart_tx_fifos[i].analysis_export);
-    end
-
-    foreach (m_spi_device_agents[i]) begin
-      m_spi_device_agents[i].monitor.device_analysis_port.connect(
-          virtual_sequencer.spi_device_fifos[i].analysis_export);
     end
 
     foreach (m_pwm_monitor[i]) begin

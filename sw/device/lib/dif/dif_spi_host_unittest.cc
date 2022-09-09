@@ -89,7 +89,7 @@ class SpiHostTest : public Test, public MmioTest {
   };
 
   dif_spi_host_config config_ = {
-      .spi_clock = 1000000,
+      .spi_clock = 500000,
       .peripheral_clock_freq_hz = 1000000,
       .chip_select =
           {
@@ -162,7 +162,7 @@ TEST_F(ConfigTest, ClockRate) {
   ExpectDeviceReset();
   EXPECT_WRITE32(SPI_HOST_CONFIGOPTS_REG_OFFSET,
                  {
-                     {SPI_HOST_CONFIGOPTS_CLKDIV_0_OFFSET, 1},
+                     {SPI_HOST_CONFIGOPTS_CLKDIV_0_OFFSET, 0},
                      {SPI_HOST_CONFIGOPTS_CSNIDLE_0_OFFSET, 0},
                      {SPI_HOST_CONFIGOPTS_CSNTRAIL_0_OFFSET, 0},
                      {SPI_HOST_CONFIGOPTS_CSNLEAD_0_OFFSET, 0},
