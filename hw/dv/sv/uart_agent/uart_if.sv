@@ -13,8 +13,13 @@ interface uart_if #(realtime UartDefaultClkPeriodNs = 104166.667ns) ();
   bit   uart_rx_clk = 1'b1;
   int   uart_rx_clk_pulses = 0;
 
+  // UART TX from the DUT when signaled over muxed IOs can experience glitches in the same
+  // time-step (a simulation artifact). Delaying by 1ps eliminates them.
+  wire uart_tx_int;
+  assign #1ps uart_tx_int = uart_tx;
+
   clocking mon_tx_cb @(negedge uart_tx_clk);
-    input  #10ns uart_tx;
+    input  #10ns uart_tx_int;
   endclocking
   modport mon_tx_mp(clocking mon_tx_cb);
 
