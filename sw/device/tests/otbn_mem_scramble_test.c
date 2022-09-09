@@ -22,19 +22,59 @@ typedef dif_result_t (*otbn_write_t)(const dif_otbn_t *otbn,
                                      uint32_t offset_bytes, const void *src,
                                      size_t len_bytes);
 
-/**
- * Number of distinct addresses to check in each IMEM and DMEM.
- */
-static const int kNumAddrs = 50;
+enum {
+  /**
+   * Number of distinct addresses to check in each IMEM and DMEM.
+   */
+  kNumAddrs = 50,
 
-/**
- * Minimum number of expected integrity errors in IMEM and DMEM after
- * re-scrambling.
- *
- * Note that there is a non-zero chance for every word that the integrity bits
- * after re-scrambling are still valid.
- */
-static const int kNumIntgErrorsThreshold = kNumAddrs - 1;
+  /**
+   * Minimum number of expected integrity errors in IMEM and DMEM after
+   * re-scrambling.
+   * Note that there are `2^32` valid code words and that each non-valid code
+   * word triggers an error. Therefore, the probability that a random 39-bit
+   * word triggers an error is: `(2^39 - 2^32)/ 2^39 = 127/128`. Then the
+   * probability that all `kNumAddrs` triggers an errors is
+   * `(127/128)^kNumAddrs` after re-scrambling.
+   *
+   * The Generic formula:
+   *               (w-i)
+   *             127
+   * Pr(i) =  -------- x (w choose i)
+   *                w
+   *             128
+   * Where:
+   *      w = The number of words tested.
+   *      i = The number of words that may not generate errors.
+   *      Pr(i) = Probability that i words will not generate an ECC error.
+   *
+   * So for i in (0..4):
+   *
+   * ``` Python
+   * from math import comb
+   * w = 50
+   * t = 0
+   * for i in range(5):
+   *    p = ((127**(w-i))/(128**w)) * comb(w,i)
+   *    t += p
+   *    print(f'Pr({i}): { round(p, 4)},\tsum{{Pr(0-{i})}}: {round(t, 6)}')
+   * ```
+   * ```
+   * Pr(0): 0.6756,   sum{Pr(0-0)}: 0.675597
+   * Pr(1): 0.266,    sum{Pr(0-1)}: 0.94158
+   * Pr(2): 0.0513,   sum{Pr(0-2)}: 0.992891
+   * Pr(3): 0.0065,   sum{Pr(0-3)}: 0.999356
+   * Pr(4): 0.0006,   sum{Pr(0-4)}: 0.999954
+   * ```
+   * So by choosing `(kNumAddrs - 2) = 48` as the threshold we will have a
+   * probability of `1 - 0.992891 = 0.71%` that this test will fail randomly due
+   * to ECC errors not being generated. That seems a reasonable number.
+   */
+  kNumIntgErrorsThreshold = kNumAddrs - 2,
+};
+static_assert(kNumAddrs == 50,
+              "kNumAddrs changed, so kEccErrorProbability should be "
+              "computed again");
 
 static volatile bool has_irq_fired;
 
