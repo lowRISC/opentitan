@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:pwm:0.1
+      - lowrisc:prim:assert
 
   files_dv:
     depend:

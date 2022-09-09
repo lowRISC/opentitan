@@ -13,6 +13,7 @@ module tb;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+  `include "prim_assert.sv"
 
   localparam PWM_NUM_CHANNELS = pwm_reg_pkg::NOutputs;
 
@@ -28,7 +29,7 @@ module tb;
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   clk_rst_if clk_rst_core_if(.clk(clk_core), .rst_n(rst_core_n));
   pins_if #(1) devmode_if(devmode);
-  pwm_if  pwm_if[PWM_NUM_CHANNELS]();
+  pwm_if  pwm_if[PWM_NUM_CHANNELS](.clk(clk), .rst_n(rst_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
   `DV_ALERT_IF_CONNECT
@@ -51,12 +52,10 @@ module tb;
     .cio_pwm_en_o  (cio_pwm_en)
   );
 
+  `ASSERT(PwmEnTiedHigh_A, cio_pwm_en == '1, clk, rst_n)
 
   for (genvar i = 0; i < PWM_NUM_CHANNELS; i++) begin : gen_mux
-    assign pwm_if[i].clk    = clk_core;
-    assign pwm_if[i].rst_n  = rst_core_n;
-    assign pwm_if[i].pwm    = cio_pwm[i];
-    assign pwm_if[i].pwm_en = cio_pwm_en[i];
+    assign pwm_if[i].pwm = cio_pwm[i];
   end
 
   genvar n;
