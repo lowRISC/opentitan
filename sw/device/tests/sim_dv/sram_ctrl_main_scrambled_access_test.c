@@ -24,11 +24,51 @@
 #define BACKDOOR_TEST_BYTES BACKDOOR_TEST_WORDS * sizeof(uint32_t)
 
 /**
- * Define the maximum false positives the test will tolerate to 1% rounded up.
+ * Note that there are `2^32` valid code words and that each non-valid code
+ * word triggers an error. Therefore, the probability that a random 39-bit
+ * word triggers an error is: `(2^39 - 2^32)/ 2^39 = 127/128`. Then the
+ * probability that all `BACKDOOR_TEST_WORDS` triggers an errors is
+ * `(127/128)^BACKDOOR_TEST_WORDS` after re-scrambling.
+ *
+ * The Generic formula:
+ *
+ *               (w-i)
+ *             127
+ * Pr(i) =  -------- x (w choose i)
+ *                w
+ *             128
+ * Where:
+ *      w = The number of words tested.
+ *      i = The number of words that may not generate errors.
+ *      Pr(i) = Probability that i words will not generate an ECC error.
+ *
+ * So for i in (0..3):
+ *
+ * ``` Python
+ * from math import comb
+ * w = 16
+ * t = 0
+ * for i in range(4):
+ *    p = ((127**(w-i))/(128**w)) * comb(w,i)
+ *    t += p
+ *    print(f'Pr({i}): { round(p, 4)},\tsum{{Pr(0-{i})}}: {round(t, 6)}')
+ * ```
+ * ```
+ * Pr(0): 0.8821,   sum{Pr(0-0)}: 0.882064
+ * Pr(1): 0.1111,   sum{Pr(0-1)}: 0.99319
+ * Pr(2): 0.0066,   sum{Pr(0-2)}: 0.999753
+ * Pr(3): 0.0002,   sum{Pr(0-3)}: 0.999994
+ * ```
+ * So by choosing 1 as the floor limit we will a have probability of `1 -
+ * 0.99319 = 0.68%` that this test would fail randomly due to ECC errors not
+ * being generated.
  */
-#define ECC_ERRORS_FALSE_POSITIVE_FLOOR_LIMIT \
-  (uint32_t)((SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS + 100 - 1) / 100)
+#define ECC_ERRORS_FALSE_POSITIVE_FLOOR_LIMIT 1
 
+static_assert(BACKDOOR_TEST_WORDS == 16,
+              "BACKDOOR_TEST_WORDS changed, so "
+              "ECC_ERRORS_FALSE_POSITIVE_FLOOR_LIMIT should be "
+              "computed again");
 /**
  * The offset into the main SRAM where we will backdoor write data.
  * This offset only needs to be after the location of
