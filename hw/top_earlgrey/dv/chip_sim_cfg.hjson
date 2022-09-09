@@ -409,6 +409,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_spi_host_tx_rx
+      uvm_test_seq: chip_sw_spi_host_tx_rx_vseq
+      sw_images: ["//sw/device/tests/sim_dv:spi_host_tx_rx_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_gpio
       uvm_test_seq: chip_sw_gpio_vseq
       sw_images: ["//sw/device/tests/sim_dv:gpio_test:1"]

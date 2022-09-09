@@ -1,7 +1,6 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
 // One chip level interface to rule them all, and in the IOs, bind them...
 //
 // The top_earlgrey SoC provides a bunch of fixed-function and muxed IO pads. The interface serves
@@ -173,6 +172,7 @@ interface chip_if;
   // Functional (dedicated) interface (analog input): OTP ext volt.
   pins_if #(1) otp_ext_volt_if(.pins(ios[OtpExtVolt]));
 
+
   // Functional (dedicated) interface: SPI host interface (drives traffic into the chip).
   // TODO: Update spi_if to emit all signals as inout ports.
   // spi_if spi_host_if(.rst_n(`SPI_DEVICE_HIER.rst_ni),
@@ -193,16 +193,78 @@ interface chip_if;
   //                         .sck(ios[SpiHostClk]),
   //                         .csb(ios[SpiHostCsL]),
   //                         .sio(ios[SpiHostD3:SpiHostD0]));
+  // dut is spi host, tb emulates spi flash device
+  localparam int SpiHostMaxDataIos = 4;
+  localparam int SpiHostNumDataIos[NUM_SPI_HOSTS] = {
+    SpiHostMaxDataIos,
+    2
+  };
 
-  bit enable_spi_device0;
-  spi_if spi_device0_if(.rst_n(`SPI_HOST_HIER(0).rst_ni));
-  assign spi_device0_if.sck = enable_spi_device0 ? ios[SpiHostClk] : 1'bz;
-  assign spi_device0_if.csb = enable_spi_device0 ? ios[SpiHostCsL] : 1'bz;
-  // for (genvar i = 0; i < 4; i++) begin : gen_spi_device_ap_if_sio_conn
-  //   // TODO: This logic needs to be firmed up.
-  //   assign ios[SpiHostD0 + i] = spi_device0_if.sio_oe[i] ? spi_device0_if.sio[i] : 1'bz;
-  //   assign spi_device0_if.sio[i] = ~spi_device0_if.sio_oe[i] ? ios[SpiHostD0 + i] : 1'bz;
-  // end
+  localparam chip_io_e AssignedSpiHostsDataIo[NUM_SPI_HOSTS][SpiHostMaxDataIos] = '{
+    '{SpiHostD0, SpiHostD1, SpiHostD2, SpiHostD3},
+    '{IoB2, IoB3, IoB3, IoB3}
+  };
+
+  localparam chip_io_e AssignedSpiHostsClkIo[NUM_SPI_HOSTS] = '{
+    SpiHostClk,
+    IoB0
+  };
+
+  localparam chip_io_e AssignedSpiHostsCsLIo[NUM_SPI_HOSTS] = '{
+    SpiHostCsL,
+    IoB1
+  };
+
+  bit [NUM_SPI_HOSTS-1:0] __enable_spi_device = 0;
+  spi_if spi_device_if[NUM_SPI_HOSTS-1:0]();
+  assign spi_device_if[0].rst_n = `SPI_HOST_HIER(0).rst_ni;
+  assign spi_device_if[1].rst_n = `SPI_HOST_HIER(1).rst_ni;
+
+  // TODO: Generate oe directly from spi_if later, it needs to take into account dual / quad
+  // read.  For now, assume single lane.
+  bit [3:0] sio_oe = {1'b1, 1'b1, 1'b1, 1'b0};
+  for (genvar i = 0; i < NUM_SPI_HOSTS; i++) begin : gen_spi_device_if_conn
+    // These are always input
+    assign spi_device_if[i].sck = ios[AssignedSpiHostsClkIo[i]];
+
+    always_comb begin
+      spi_device_if[i].csb = {spi_agent_pkg::CSB_WIDTH{1'b1}};
+      // if spi device interface is not enabled, do not allow csb to go low
+      spi_device_if[i].csb[0] = !__enable_spi_device[i] |
+                                ios[AssignedSpiHostsCsLIo[i]];
+    end
+
+    for (genvar j = 0; j < SpiHostNumDataIos[i]; j++) begin : gen_spi_device_sio_conn
+      assign ios[AssignedSpiHostsDataIo[i][j]] = __enable_spi_device[i] & sio_oe[j] ?
+                                                 spi_device_if[i].sio[j] : 1'bz;
+      assign spi_device_if[i].sio[j] = ~sio_oe[j] ? ios[AssignedSpiHostsDataIo[i][j]] : 1'bz;
+    end
+
+    initial begin
+      uvm_config_db#(virtual spi_if)::set(null, $sformatf("*.env.m_spi_device_agents%0d*", i),
+                                           "vif", spi_device_if[i]);
+    end
+  end
+
+  // Enables tb spi_device, which connects to dut spi_host
+  function automatic void enable_spi_device(int inst_num, bit enable);
+    `DV_CHECK_FATAL(inst_num inside {[0:NUM_SPI_HOSTS-1]}, , MsgId)
+    `uvm_info(MsgId, $sformatf("enable spi device"), UVM_LOW)
+
+    ios_if.pins_pu[AssignedSpiHostsClkIo[inst_num]] = enable;
+    ios_if.pins_pd[AssignedSpiHostsClkIo[inst_num]] = 0;
+
+    ios_if.pins_pu[AssignedSpiHostsCsLIo[inst_num]] = enable;
+    ios_if.pins_pd[AssignedSpiHostsCsLIo[inst_num]] = 0;
+
+    for (int i = 0; i < SpiHostNumDataIos[inst_num]; i++) begin
+      ios_if.pins_pu[AssignedSpiHostsDataIo[inst_num][i]] = enable;
+      ios_if.pins_pd[AssignedSpiHostsDataIo[inst_num][i]] = 0;
+    end
+
+    __enable_spi_device[inst_num] = enable;
+  endfunction // enable_spi_device
+
 
   // Functional (dedicated) interface (inout): EC reset.
   pins_if #(1) ec_rst_l_if(.pins(ios[IoR8]));
@@ -353,29 +415,6 @@ interface chip_if;
     __enable_uart[inst_num] = enable;
   endfunction
 
-  // Functional (muxed) interface: SPI device 1 interface (receives traffic from the chip).
-  // TODO: Update spi_if to emit all signals as inout ports.
-  // spi_if spi_device_ec_if(.rst_n(`SPI_HOST_HIER(1).rst_ni),
-  //                         .sck(ios[IoB3]),
-  //                         .csb(ios[IoB0]),
-  //                         .sio(ios[IoB1:IoB2]));
-  for (genvar i = 0; i < NUM_SPI_HOSTS; i++) begin : gen_spi_host_if_conn
-    // dut is host, agent is device
-    spi_if spi_devic_if(.rst_n);
-
-    assign spi_device_if.sck = ios[SpiHostClk];
-    assign spi_device_if.csb = ios[SpiHostCsL];
-    assign spi_device_if.sio[0] = ios[SpiHostD0];
-    assign ios[SpiHostD1] = spi_device_if.sio[1];
-    assign ios[SpiHostD2] = spi_device_if.sio[2];
-    assign ios[SpiHostD3] = spi_device_if.sio[3];
-
-
-    initial begin
-      uvm_config_db#(virtual spi_if)::set(null, $sformatf("*.env.m_spi_device_agent%0d*", i),
-                                           "vif", spi_device_if[i]);
-    end
-  end
 
   // Functional (muxed) interface: I2Cs.
   bit [NUM_I2CS-1:0] enable_i2c;
@@ -537,8 +576,6 @@ interface chip_if;
     flash_test_mode_if.disconnect();
     otp_ext_volt_if.disconnect();
     enable_spi_host = 0;
-    enable_spi_device0 = 0;
-    enable_spi_device1 = 0;
     ec_rst_l_if.disconnect();
     flash_wp_l_if.disconnect();
     pwrb_in_if.disconnect();
@@ -553,6 +590,7 @@ interface chip_if;
     pad2ast_if.disconnect();
     pinmux_wkup_if.disconnect();
     for (int i = 0; i < NUM_UARTS; i++) enable_uart(i, 0);
+    for (int i = 0; i < NUM_SPI_HOSTS; i++) enable_spi_device(i, 0);
     enable_i2c = '0;
     ext_clk_if.set_active(0, 0);
   endfunction

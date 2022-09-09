@@ -219,11 +219,8 @@
       desc: '''Verify the transmission of data on the chip's SPI host port.
 
             - Program the SPI host to send a known payload out of the chip on the SPI host ports.
-            - At the same time, the testbench transfers a known payload from device to host on the
-              SPI host interface.
-            - The SPI device monitor in the testbench grabs the host payload and verifies its
-              integrity.
-            - The SW verifies the device payload for integrity and services the SPI event interrupt.
+            - The testbench receives the payload and plays it back to the SPI host interface.
+	    - The SW verifies the sent payload matches the read response and services SPI event interrupts.
             - Run with min and max SPI clk frequencies and with single, dual and quad SPI modes.
 
             Verify all SPI host instances in the chip.

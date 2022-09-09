@@ -71,7 +71,8 @@ dif_result_t dif_spi_host_configure(const dif_spi_host_t *spi_host,
     return kDifBadArg;
   }
 
-  uint32_t divider = (config.peripheral_clock_freq_hz / config.spi_clock) - 1;
+  uint32_t divider =
+      ((config.peripheral_clock_freq_hz / config.spi_clock) / 2) - 1;
   if (divider & ~SPI_HOST_CONFIGOPTS_CLKDIV_0_MASK) {
     return kDifBadArg;
   }
