@@ -77,16 +77,18 @@ bool rom_test_main(void) {
       dif_flash_ctrl_set_flash_enablement(&flash_ctrl, kDifToggleEnabled));
 
   // Setup the UART for printing messages to the console.
-  CHECK_DIF_OK(dif_uart_init(
-      mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
-  CHECK_DIF_OK(
-      dif_uart_configure(&uart0, (dif_uart_config_t){
-                                     .baudrate = kUartBaudrate,
-                                     .clk_freq_hz = kClockFreqPeripheralHz,
-                                     .parity_enable = kDifToggleDisabled,
-                                     .parity = kDifUartParityEven,
-                                 }));
-  base_uart_stdout(&uart0);
+  if (kDeviceType != kDeviceSimDV) {
+    CHECK_DIF_OK(dif_uart_init(
+        mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
+    CHECK_DIF_OK(
+        dif_uart_configure(&uart0, (dif_uart_config_t){
+                                       .baudrate = kUartBaudrate,
+                                       .clk_freq_hz = kClockFreqPeripheralHz,
+                                       .parity_enable = kDifToggleDisabled,
+                                       .parity = kDifUartParityEven,
+                                   }));
+    base_uart_stdout(&uart0);
+  }
 
   // Print the chip version information
   LOG_INFO("%s", chip_info);

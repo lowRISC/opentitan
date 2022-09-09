@@ -129,6 +129,7 @@ cc_library(
         "//hw/top_earlgrey/ip/clkmgr/data/autogen:clkmgr_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:clkmgr",
