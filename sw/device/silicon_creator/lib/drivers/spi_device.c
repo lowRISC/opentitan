@@ -529,6 +529,30 @@ void spi_device_init(void) {
                                kSpiDeviceJedecManufId);
   abs_mmio_write32(kBase + SPI_DEVICE_JEDEC_ID_REG_OFFSET, reg);
 
+  // Write SFDP table to the reserved region in spi_device buffer.
+  uint32_t dest = kSfdpAreaStartAddr;
+  const char *table = (const char *)&kSpiDeviceSfdpTable;
+  for (size_t i = 0; i < kSpiDeviceSfdpTableNumWords; ++i) {
+    abs_mmio_write32(dest, read_32(table));
+    dest += sizeof(uint32_t);
+    table += sizeof(uint32_t);
+  }
+  // Fill the remaining space with `0xff`s.
+  for (; dest < kSfdpAreaEndAddr; dest += sizeof(uint32_t)) {
+    abs_mmio_write32(dest, UINT32_MAX);
+  }
+
+  // Reset the payload buffer to prevent access faults when reading beyond
+  // current payload depth (see #11782).
+  for (size_t i = 0; i < kSpiDevicePayloadAreaNumBytes; i += sizeof(uint32_t)) {
+    abs_mmio_write32(
+        kBase + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset + i,
+        0);
+  }
+
+  // Reset status register
+  abs_mmio_write32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
+
   // Configure the READ_STATUS command (CMD_INFO_0).
   cmd_info_set((cmd_info_t){
       .reg_offset = SPI_DEVICE_CMD_INFO_0_REG_OFFSET,
@@ -593,30 +617,6 @@ void spi_device_init(void) {
   reg = bitfield_field32_write(reg, SPI_DEVICE_CMD_INFO_WRDI_OPCODE_FIELD,
                                kSpiDeviceOpcodeWriteDisable);
   abs_mmio_write32(kBase + SPI_DEVICE_CMD_INFO_WRDI_REG_OFFSET, reg);
-
-  // Write SFDP table to the reserved region in spi_device buffer.
-  uint32_t dest = kSfdpAreaStartAddr;
-  const char *table = (const char *)&kSpiDeviceSfdpTable;
-  for (size_t i = 0; i < kSpiDeviceSfdpTableNumWords; ++i) {
-    abs_mmio_write32(dest, read_32(table));
-    dest += sizeof(uint32_t);
-    table += sizeof(uint32_t);
-  }
-  // Fill the remaining space with `0xff`s.
-  for (; dest < kSfdpAreaEndAddr; dest += sizeof(uint32_t)) {
-    abs_mmio_write32(dest, UINT32_MAX);
-  }
-
-  // Reset the payload buffer to prevent access faults when reading beyond
-  // current payload depth (see #11782).
-  for (size_t i = 0; i < kSpiDevicePayloadAreaNumBytes; i += sizeof(uint32_t)) {
-    abs_mmio_write32(
-        kBase + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset + i,
-        0);
-  }
-
-  // Reset status register
-  abs_mmio_write32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
 }
 
 rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
