@@ -231,14 +231,16 @@ static rom_error_t bootstrap_handle_erase(bootstrap_state_t *state) {
       error = bootstrap_chip_erase();
       HARDENED_RETURN_IF_ERROR(error);
       *state = kBootstrapStateEraseVerify;
+      // Note: We clear WIP and WEN bits in `bootstrap_handle_erase_verify()`
+      // after checking that both data banks have been erased.
       break;
     default:
-      // Ignore any other command, e.g. PAGE_PROGRAM, RESET.
+      // Ignore any other command, e.g. PAGE_PROGRAM, RESET, and clear WIP and
+      // WEN bits right away.
+      spi_device_flash_status_clear();
       error = kErrorOk;
   }
 
-  // Note: We clear WIP and WEN bits in `bootstrap_handle_erase_verify()` after
-  // checking that both data banks have been erased.
   return error;
 }
 
