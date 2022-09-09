@@ -55,6 +55,7 @@ TEST_F(InitTest, Init) {
       .chip_rev = 3,
   };
   EXPECT_CALL(lifecycle_, HwRev(NotNull())).WillOnce(SetArgPointee<0>(hw_rev));
+
   EXPECT_ABS_WRITE32(
       base_ + SPI_DEVICE_JEDEC_ID_REG_OFFSET,
       {
@@ -67,6 +68,26 @@ TEST_F(InitTest, Init) {
                FLASH_CTRL_PARAM_BYTES_PER_BANK)},
           {SPI_DEVICE_JEDEC_ID_MF_OFFSET, kSpiDeviceJedecManufId},
       });
+
+  std::array<uint32_t, kSpiDeviceSfdpAreaNumBytes / sizeof(uint32_t)>
+      sfdp_buffer;
+  sfdp_buffer.fill(std::numeric_limits<uint32_t>::max());
+  std::memcpy(sfdp_buffer.data(), &kSpiDeviceSfdpTable,
+              sizeof(kSpiDeviceSfdpTable));
+  uint32_t offset =
+      base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDeviceSfdpAreaOffset;
+  for (size_t i = 0; i < sfdp_buffer.size(); ++i) {
+    EXPECT_ABS_WRITE32(offset, sfdp_buffer[i]);
+    offset += sizeof(uint32_t);
+  }
+
+  offset = base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
+  for (size_t i = 0; i < kSpiDevicePayloadAreaNumWords; ++i) {
+    EXPECT_ABS_WRITE32(offset, 0);
+    offset += sizeof(uint32_t);
+  }
+
+  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
 
   EXPECT_ABS_WRITE32(
       base_ + SPI_DEVICE_CMD_INFO_0_REG_OFFSET,
@@ -146,26 +167,6 @@ TEST_F(InitTest, Init) {
                           kSpiDeviceOpcodeWriteDisable},
                          {SPI_DEVICE_CMD_INFO_WRDI_VALID_BIT, 1},
                      });
-
-  std::array<uint32_t, kSpiDeviceSfdpAreaNumBytes / sizeof(uint32_t)>
-      sfdp_buffer;
-  sfdp_buffer.fill(std::numeric_limits<uint32_t>::max());
-  std::memcpy(sfdp_buffer.data(), &kSpiDeviceSfdpTable,
-              sizeof(kSpiDeviceSfdpTable));
-  uint32_t offset =
-      base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDeviceSfdpAreaOffset;
-  for (size_t i = 0; i < sfdp_buffer.size(); ++i) {
-    EXPECT_ABS_WRITE32(offset, sfdp_buffer[i]);
-    offset += sizeof(uint32_t);
-  }
-
-  offset = base_ + SPI_DEVICE_BUFFER_REG_OFFSET + kSpiDevicePayloadAreaOffset;
-  for (size_t i = 0; i < kSpiDevicePayloadAreaNumWords; ++i) {
-    EXPECT_ABS_WRITE32(offset, 0);
-    offset += sizeof(uint32_t);
-  }
-
-  EXPECT_ABS_WRITE32(base_ + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
 
   spi_device_init();
 }
