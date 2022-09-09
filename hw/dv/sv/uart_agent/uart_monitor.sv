@@ -47,19 +47,19 @@ class uart_monitor extends dv_base_monitor#(
         item = uart_item::type_id::create("item");
         // get the start bit
         @(cfg.vif.mon_tx_mp.mon_tx_cb);
-        `uvm_info(`gfn, $sformatf("tx start bit %0b", cfg.vif.uart_tx), UVM_DEBUG)
-        item.start_bit = cfg.vif.uart_tx;
+        `uvm_info(`gfn, $sformatf("tx start bit %0b", cfg.vif.uart_tx_int), UVM_HIGH)
+        item.start_bit = cfg.vif.uart_tx_int;
         // get the data bits
         for (int i = 0; i < 8; i++) begin
           @(cfg.vif.mon_tx_mp.mon_tx_cb);
-          `uvm_info(`gfn, $sformatf("tx data bit[%0d] %0b", i, cfg.vif.uart_tx), UVM_DEBUG)
-          item.data[i] = cfg.vif.uart_tx;
+          `uvm_info(`gfn, $sformatf("tx data bit[%0d] %0b", i, cfg.vif.uart_tx_int), UVM_DEBUG)
+          item.data[i] = cfg.vif.uart_tx_int;
         end
         // get the parity bit
         if (cfg.vif.uart_tx_clk_pulses > 2) begin
           @(cfg.vif.mon_tx_mp.mon_tx_cb);
-          `uvm_info(`gfn, $sformatf("tx parity bit %0b", cfg.vif.uart_tx), UVM_DEBUG)
-          item.parity = cfg.vif.uart_tx;
+          `uvm_info(`gfn, $sformatf("tx parity bit %0b", cfg.vif.uart_tx_int), UVM_DEBUG)
+          item.parity = cfg.vif.uart_tx_int;
           if (cfg.en_tx_checks && item.parity != `GET_PARITY(item.data, cfg.odd_parity)) begin
             `uvm_error(`gfn, "Parity failed")
           end
@@ -68,10 +68,10 @@ class uart_monitor extends dv_base_monitor#(
 
         // get the stop bit
         @(cfg.vif.mon_tx_mp.mon_tx_cb);
-        `uvm_info(`gfn, $sformatf("tx stop bit %0b", cfg.vif.uart_tx), UVM_DEBUG)
-        item.stop_bit = cfg.vif.uart_tx;
+        `uvm_info(`gfn, $sformatf("tx stop bit %0b", cfg.vif.uart_tx_int), UVM_DEBUG)
+        item.stop_bit = cfg.vif.uart_tx_int;
         // check stop bit
-        if (cfg.en_tx_checks && cfg.vif.uart_tx !== 1'b1) begin
+        if (cfg.en_tx_checks && cfg.vif.uart_tx_int !== 1'b1) begin
           `uvm_error(`gfn, "No stop bit when expected!")
         end
         `uvm_info(`gfn, $sformatf("collected uart tx txn:\n%0s", item.sprint()), UVM_HIGH)
@@ -82,7 +82,7 @@ class uart_monitor extends dv_base_monitor#(
 
         if (cfg.en_cov) cov.uart_cg.sample(UartTx, item);
       end else begin
-        @(cfg.vif.uart_tx);
+        @(cfg.vif.uart_tx_int);
       end
     end
   endtask
@@ -149,7 +149,7 @@ class uart_monitor extends dv_base_monitor#(
         cfg.vif.uart_tx_clk = ~cfg.vif.uart_tx_clk;
         cfg.vif.uart_tx_clk_pulses--;
       end else begin
-        @(cfg.vif.uart_tx, cfg.vif.uart_tx_clk_pulses);
+        @(cfg.vif.uart_tx_int, cfg.vif.uart_tx_clk_pulses);
       end
     end
   endtask
@@ -178,7 +178,7 @@ class uart_monitor extends dv_base_monitor#(
       #(cfg.vif.uart_clk_period_ns * (50 - cfg.get_max_drift_cycle_pct()) / 100);
       `DV_SPINWAIT_EXIT(
           begin
-            @(cfg.vif.uart_tx);
+            @(cfg.vif.uart_tx_int);
             `uvm_error(`gfn, $sformatf(
                 "Expect uart_tx stable from %0d to %0d of the period, but it's changed",
                 50 - cfg.get_max_drift_cycle_pct(), 50 + cfg.get_max_drift_cycle_pct()))
