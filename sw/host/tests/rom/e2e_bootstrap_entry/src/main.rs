@@ -292,28 +292,21 @@ fn test_bootstrap_shutdown(
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
-
     let transport = opts.init.init_target()?;
+
     execute_test!(test_bootstrap_enabled_not_requested, &opts, &transport);
     execute_test!(test_bootstrap_enabled_requested, &opts, &transport);
     execute_test!(test_jedec_id, &opts, &transport);
     execute_test!(test_sfdp, &opts, &transport);
     execute_test!(test_write_enable_disable, &opts, &transport);
-    // `kErrorBootstrapEraseAddress` (01425303) is defined in `error.h`.
-    execute_test!(
-        test_bootstrap_shutdown,
-        &opts,
-        &transport,
-        SpiFlash::SECTOR_ERASE,
-        "01425303"
-    );
-    // `kErrorBootstrapProgramAddress` (02425303) is defined in `error.h`.
-    execute_test!(
-        test_bootstrap_shutdown,
-        &opts,
-        &transport,
-        SpiFlash::PAGE_PROGRAM,
-        "02425303"
-    );
+    for (cmd, bfv) in [
+        // `kErrorBootstrapEraseAddress` (01425303) is defined in `error.h`.
+        (SpiFlash::SECTOR_ERASE, "01425303"),
+        // `kErrorBootstrapProgramAddress` (02425303) is defined in `error.h`.
+        (SpiFlash::PAGE_PROGRAM, "02425303"),
+    ] {
+        execute_test!(test_bootstrap_shutdown, &opts, &transport, cmd, bfv);
+    }
+
     Ok(())
 }
