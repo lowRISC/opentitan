@@ -413,6 +413,7 @@ def _bin_to_vmem_impl(ctx):
         # This this executable is expected to be installed (as required by the
         # srecord package in apt-requirements.txt).
         executable = "srec_cat",
+        use_default_shell_env = True,
     )
     return [DefaultInfo(
         files = depset(outputs),
