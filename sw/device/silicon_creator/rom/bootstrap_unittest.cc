@@ -471,20 +471,21 @@ TEST_F(BootstrapTest, MisalignedEraseAddress) {
 }
 
 TEST_F(BootstrapTest, IgnoredCommands) {
-  // Erase
+  // Phase 1: Erase
   ExpectBootstrapRequestCheck(true);
   EXPECT_CALL(spi_device_, Init());
   ExpectSpiCmd(ChipEraseCmd());  // Ignored, missing WREN.
   ExpectSpiFlashStatusGet(false);
   ExpectSpiCmd(ResetCmd());  // Ignored, not supported.
   ExpectSpiFlashStatusGet(true);
+  EXPECT_CALL(spi_device_, FlashStatusClear());
   ExpectSpiCmd(ChipEraseCmd());
   ExpectSpiFlashStatusGet(true);
   ExpectFlashCtrlChipErase(kErrorOk, kErrorOk);
-  // Verify
+  // Phase 1: Verify
   ExpectFlashCtrlEraseVerify(kErrorOk, kErrorOk);
   EXPECT_CALL(spi_device_, FlashStatusClear());
-  // Erase/Program
+  // Phase 2: Erase/Program
   ExpectSpiCmd(SectorEraseCmd(0));
   ExpectSpiFlashStatusGet(false);
   ExpectSpiCmd(ChipEraseCmd());
