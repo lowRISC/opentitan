@@ -13,6 +13,7 @@ class spi_device_driver extends spi_driver;
       @(negedge cfg.vif.rst_n);
       `uvm_info(`gfn, "\n  dev_drv: in reset progress", UVM_DEBUG)
       under_reset = 1'b1;
+      cfg.vif.sio = 'hz;
       @(posedge cfg.vif.rst_n);
       under_reset = 1'b0;
       `uvm_info(`gfn, "\n  dev_drv: out of reset", UVM_DEBUG)

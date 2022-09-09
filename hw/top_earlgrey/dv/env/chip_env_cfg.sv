@@ -82,6 +82,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
   // ext component cfgs
   rand uart_agent_cfg       m_uart_agent_cfgs[NUM_UARTS];
+  rand spi_agent_cfg        m_spi_device_agent_cfgs[NUM_SPI_HOSTS];
   rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
   rand jtag_agent_cfg       m_jtag_agent_cfg;
   rand spi_agent_cfg        m_spi_agent_cfg;
@@ -134,6 +135,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // create uart agent config obj
     foreach (m_uart_agent_cfgs[i]) begin
       m_uart_agent_cfgs[i] = uart_agent_cfg::type_id::create($sformatf("m_uart_agent_cfg%0d", i));
+    end
+
+    // create spi device agent config obj
+    foreach (m_spi_device_agent_cfgs[i]) begin
+      m_spi_device_agent_cfgs[i] = spi_agent_cfg::type_id::create($sformatf("m_spi_device_agent_cfg%0d", i));
     end
 
     // create jtag agent config obj
