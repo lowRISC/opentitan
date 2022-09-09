@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:autogen.bzl", "autogen_hjson_header", "otp_image")
+load("//rules:otp.bzl", "otp_json")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
@@ -14,14 +15,26 @@ autogen_hjson_header(
     ],
 )
 
+otp_json(
+    name = "otp_ctrl_rma_json",
+    lc_count = 8,
+    lc_state = "RMA",
+)
+
 otp_image(
     name = "img_rma",
-    src = ":otp_ctrl_img_rma.hjson",
+    src = ":otp_ctrl_rma_json",
+)
+
+otp_json(
+    name = "otp_ctrl_dev_json",
+    lc_count = 5,
+    lc_state = "DEV",
 )
 
 otp_image(
     name = "img_dev",
-    src = ":otp_ctrl_img_dev.hjson",
+    src = ":otp_ctrl_dev_json",
 )
 
 filegroup(
