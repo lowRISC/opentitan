@@ -341,6 +341,58 @@ fn test_bootstrap_phase1_page_program(opts: &Opts, transport: &TransportWrapper)
     Ok(())
 }
 
+fn test_bootstrap_phase1_erase(
+    opts: &Opts,
+    transport: &TransportWrapper,
+    erase_cmd: u8,
+) -> Result<()> {
+    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+    let spi = transport.spi("0")?;
+    let uart = transport.uart("0")?;
+    let spiflash = SpiFlash::from_spi(&*spi)?;
+    let mut console = UartConsole {
+        timeout: Some(Duration::new(1, 0)),
+        ..Default::default()
+    };
+
+    let erase = || match erase_cmd {
+        SpiFlash::SECTOR_ERASE => spiflash.erase(&*spi, 0, 4096),
+        SpiFlash::CHIP_ERASE => spiflash.chip_erase(&*spi),
+        _ => bail!("Unexpected erase command opcode: {:?}", erase_cmd),
+    };
+
+    // Send `erase_cmd` to transition to phase 2.
+    erase()?
+        // Write "OTRE" to the identifier field of the manifest in the second slot.
+        .program(&*spi, 0x80330, &0x4552544f_00000000u64.to_le_bytes())?;
+
+    // Remove strapping so that chip fails to boot instead of going into bootstrap.
+    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    // `kErrorBootPolicyBadLength` (0242500d) is defined in `error.h`.
+    console.exit_success = Some(Regex::new("BFV:0242500d")?);
+    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    if result != ExitStatus::ExitSuccess {
+        bail!("FAIL: {:?}", result);
+    }
+
+    // Put the chip into bootstrap mode again and erase.
+    transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    erase()?;
+    uart.clear_rx_buffer()?;
+    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
+    console.exit_success = Some(Regex::new("BFV:0142500d")?);
+    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    if result != ExitStatus::ExitSuccess {
+        bail!("FAIL: {:?}", result);
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -361,6 +413,9 @@ fn main() -> Result<()> {
     }
     execute_test!(test_bootstrap_phase1_reset, &opts, &transport);
     execute_test!(test_bootstrap_phase1_page_program, &opts, &transport);
+    for erase_cmd in [SpiFlash::SECTOR_ERASE, SpiFlash::CHIP_ERASE] {
+        execute_test!(test_bootstrap_phase1_erase, &opts, &transport, erase_cmd);
+    }
 
     Ok(())
 }

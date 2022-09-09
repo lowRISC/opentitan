@@ -334,19 +334,19 @@
             - For `erase` in {`SECTOR_ERASE` (`0x20`), `CHIP_ERASE` (`0xc7`)}:
               - Apply bootstrap pin strapping and reset the chip.
               - Send `erase`.
-              - Write `0x4552544f` (ASCII "OTRE") at byte offset `0x334`.
-              - Write `0x1` at byte offset `0x374`.
+              - Write `0x4552544f_00000000` (ASCII "\0\0\0\0OTRE") at byte offset `0x80330`.
+                - Note: Writes must start at a flash-word-aligned address and we
+                  must write to the second slot since ROM returns the last error.
               - Release pins and reset.
-              - Verify that the chip outputs the expected `BFV`: `024d410d` over UART.
+              - Verify that the chip outputs the expected `BFV`: `0242500d`
+                over UART (`kErrorBootPolicyBadLength`).
                 - ROM will continously reset the chip and output the same `BFV` and `LCV`.
               - Apply bootstrap pin strapping and reset the chip.
               - Send `erase`.
               - Release pins and reset.
-              - Verify that the chip outputs the expected `BFV`: `0142500d` over UART.
+              - Verify that the chip outputs the expected `BFV`: `0142500d`
+                over UART (`kErrorBootPolicyBadIdentifier`).
                 - ROM will continously reset the chip and output the same `BFV` and `LCV`.
-
-            Note: For additional coverage we can also add another test point that uses a test
-            program on flash.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2
