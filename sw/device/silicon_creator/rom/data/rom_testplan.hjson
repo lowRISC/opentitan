@@ -288,18 +288,14 @@
 
     {
       name: rom_e2e_bootstrap_phase1_reset
-      desc: '''Verify that bootstrap phase 1 handles `RESET` (`0x99`) correctly.
+      desc: '''Verify that bootstrap phase 1 ignores `RESET` (`0x99`).
 
             `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping.
             - Reset the chip.
-            - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
             - Send `RESET` (`0x99`).
-            - Verify that the chip outputs the expected `BFV`: `0142500d` over UART.
-              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
-            - Verify that the chip does not respond to `READ_STATUS` (`0x05`).
-              - The data on the CIPO line must be `0xff`.
+            - Verify that the chip does not output anything over UART for at least 1 s.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2

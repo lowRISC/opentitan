@@ -289,6 +289,28 @@ fn test_bootstrap_shutdown(
     Ok(())
 }
 
+fn test_bootstrap_phase1_reset(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+
+    let spi = transport.spi("0")?;
+    let uart = transport.uart("0")?;
+    // RESET should be ignored and we should not see any messages.
+    let mut console = UartConsole {
+        timeout: Some(Duration::new(1, 0)),
+        exit_failure: Some(Regex::new(".+")?),
+        ..Default::default()
+    };
+    // Discard buffered messages before interacting with the console.
+    uart.clear_rx_buffer()?;
+    SpiFlash::chip_reset(&*spi)?;
+    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    if result != ExitStatus::Timeout {
+        bail!("FAIL: {:?}", result);
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -307,6 +329,7 @@ fn main() -> Result<()> {
     ] {
         execute_test!(test_bootstrap_shutdown, &opts, &transport, cmd, bfv);
     }
+    execute_test!(test_bootstrap_phase1_reset, &opts, &transport);
 
     Ok(())
 }
