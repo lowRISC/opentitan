@@ -152,10 +152,6 @@ SECTIONS {
     KEEP(*(__llvm_covfun))
     KEEP(*(__llvm_covmap))
     KEEP(*(__llvm_prf_names))
-
-    /* TODO(#14636): extract_sw_logs_db requires .rodata section. */
-    . = ALIGN(4);
-    _rodata_end = .;
   } > ottf_flash
 
   /**
