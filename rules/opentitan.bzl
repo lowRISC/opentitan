@@ -489,8 +489,6 @@ def _gen_sim_dv_logs_db_impl(ctx):
             arguments = [
                 "--elf-file",
                 src.path,
-                "--rodata-sections",
-                ".rodata",
                 "--logs-fields-section",
                 ".logs.fields",
                 "--name",
