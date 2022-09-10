@@ -14,6 +14,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -46,8 +47,8 @@ static dif_alert_handler_t alert_handler;
  * As events are tested, they are marked as 0 in the vector,
  * so we go from 0xFFFF_FFFF -> 0xFFFF_FFFE -> 0xFFFF_FFFC
  */
-__attribute__((section(".non_volatile_scratch")))
-const volatile uint32_t events_vector = -1;
+__attribute__((section(
+    ".non_volatile_scratch"))) volatile uint32_t events_vector = UINT32_MAX;
 
 /**
  *  Clear event trigger and recoverable status.
@@ -159,20 +160,6 @@ bool test_main(void) {
       &alert_handler, kTopEarlgreyAlertIdSensorCtrlFatalAlert,
       kDifAlertHandlerClassA, kDifToggleEnabled, kDifToggleEnabled));
 
-  // First check the flash stored value
-  uint32_t event_idx =
-      flash_ctrl_testutils_get_count((uint32_t *)&events_vector);
-
-  // Capture the number of events to test
-  uint32_t sensor_ctrl_events = SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS;
-
-  if (event_idx == sensor_ctrl_events) {
-    LOG_INFO("Tested all events");
-    return true;
-  } else {
-    LOG_INFO("Testing event %d", event_idx);
-  }
-
   // Enable flash access
   flash_ctrl_testutils_default_region_access(&flash_ctrl,
                                              /*rd_en*/ true,
@@ -181,6 +168,33 @@ bool test_main(void) {
                                              /*scramble_en*/ false,
                                              /*ecc_en*/ false,
                                              /*he_en*/ false);
+
+  // If all bits are set, then this must be the first iteration.
+  // On first iteration, populate events_vector with a random value that is
+  // progressively cleared in subsequent iterations.
+  if (events_vector == UINT32_MAX) {
+    const uint32_t max = (1 << SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS) - 1;
+    uint32_t new_val;
+    // Make sure we do not try to test more than half of all available events
+    // in a single test.  Testing too many would just make the run time too
+    // long.
+    do {
+      new_val = rand_testutils_gen32_range(1, max);
+    } while (bitfield_popcount32(new_val) >
+             (SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS >> 1));
+    flash_ctrl_testutils_set_counter(&flash_ctrl, (uint32_t *)&events_vector,
+                                     new_val);
+    LOG_INFO("Initial event vector 0x%x", events_vector);
+  }
+
+  uint32_t event_idx;
+  if (events_vector == 0) {
+    LOG_INFO("Tested all events");
+    return true;
+  } else {
+    event_idx = flash_ctrl_testutils_get_count((uint32_t *)&events_vector);
+    LOG_INFO("Testing event %d", event_idx);
+  }
 
   // test recoverable event
   test_event(event_idx, /*fatal*/ kDifToggleDisabled);
@@ -197,5 +211,5 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
   wait_for_interrupt();
 
-  return true;
+  return false;
 }

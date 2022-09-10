@@ -246,4 +246,18 @@ void flash_ctrl_testutils_increment_counter(dif_flash_ctrl_state_t *flash_state,
                                             uint32_t *strike_counter,
                                             uint32_t index);
 
+/**
+ * Sets a strike counter to an arbitrary value.
+ *
+ * If the arbitrary value is impossible (attempts to flip a bit
+ * from 0 to 1 without an erase), an error is created.
+ *
+ * @param flash_state A flash_ctrl state handle.
+ * @param strike_counter The address of the counter.
+ * @param new_val The new counter value.
+ */
+void flash_ctrl_testutils_set_counter(dif_flash_ctrl_state_t *flash_state,
+                                      uint32_t *strike_counter,
+                                      uint32_t new_val);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_
