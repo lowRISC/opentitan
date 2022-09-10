@@ -157,7 +157,9 @@ def get_str_at_addr(str_addr, addr_strings):
     for addr in addr_strings.keys():
         if addr <= str_addr < addr + len(addr_strings[addr]):
             return addr_strings[addr][str_addr - addr:].strip()
-    raise KeyError("string at addr {} not found".format(str_addr))
+    raise KeyError(f"string at addr {str_addr} not found"
+                   "Are you trying to print (unsupported) whitespace? "
+                   "i.e., LOG_INFO(\"\\n\"")
 
 
 def extract_sw_logs(elf_file, logs_fields_section, ro_sections):
@@ -177,10 +179,8 @@ def extract_sw_logs(elf_file, logs_fields_section, ro_sections):
                 size = int(section.header['sh_size'])
                 data = section.data()
                 ro_contents.append((base_addr, size, data))
-            else:
-                print("Error: {} section not found in {}".format(
-                    ro_section, elf_file))
-                sys.exit(1)
+            # If there is no ro section then we will end up generating empty
+            # database files which is OK, and keeps the SW build from failing.
         addr_strings = get_addr_strings(ro_contents)
 
         # Dump the {addr: string} data.
