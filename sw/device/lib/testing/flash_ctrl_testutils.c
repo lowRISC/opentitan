@@ -303,9 +303,26 @@ void flash_ctrl_testutils_increment_counter(dif_flash_ctrl_state_t *flash_state,
                                             uint32_t *strike_counter,
                                             uint32_t index) {
   uint32_t addr = (uint32_t)strike_counter;
-  uint32_t val = abs_mmio_read32(addr) & ~(1 << index);
-  CHECK(val != 0, "The counter overflows past 31");
+  uint32_t val = abs_mmio_read32(addr);
+  CHECK(val != 0, "Counter already 0, an increment will overflow past 31");
+
+  val = val & ~(1 << index);
   CHECK(flash_ctrl_testutils_write(flash_state, addr, 0, &val,
                                    kDifFlashCtrlPartitionTypeData, 1),
         "Error incrementing strike counter");
+}
+
+void flash_ctrl_testutils_set_counter(dif_flash_ctrl_state_t *flash_state,
+                                      uint32_t *strike_counter,
+                                      uint32_t new_val) {
+  uint32_t addr = (uint32_t)strike_counter;
+  uint32_t val = abs_mmio_read32(addr);
+
+  // Determine which bits are changing value and whether they are allowed
+  // 0 -> 1 is not okay
+  // 1 -> 0 is okay
+  CHECK(((val ^ new_val) & new_val) == 0);
+  CHECK(flash_ctrl_testutils_write(flash_state, addr, 0, &new_val,
+                                   kDifFlashCtrlPartitionTypeData, 1),
+        "Error setting strike counter");
 }
