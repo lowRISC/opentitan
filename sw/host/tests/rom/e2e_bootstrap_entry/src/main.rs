@@ -85,6 +85,13 @@ impl<'a> BootstrapTest<'a> {
 
 impl<'a> Drop for BootstrapTest<'a> {
     fn drop(&mut self) {
+        self.transport.apply_pin_strapping("ROM_BOOTSTRAP").unwrap();
+        self.transport.reset_target(self.reset_delay, true).unwrap();
+        let spi = self.transport.spi("0").unwrap();
+        SpiFlash::from_spi(&*spi)
+            .unwrap()
+            .chip_erase(&*spi)
+            .unwrap();
         self.transport
             .remove_pin_strapping("ROM_BOOTSTRAP")
             .unwrap();
