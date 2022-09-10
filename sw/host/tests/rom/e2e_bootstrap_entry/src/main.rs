@@ -6,7 +6,6 @@ use anyhow::{bail, Result};
 use regex::Regex;
 use std::matches;
 use std::ops::Drop;
-use std::thread;
 use std::time::Duration;
 use structopt::StructOpt;
 
@@ -80,12 +79,6 @@ impl<'a> BootstrapTest<'a> {
         };
         transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
         transport.reset_target(b.reset_delay, true)?;
-
-        let spi = transport.spi("0")?;
-        while SpiFlash::read_status(&*spi)? != 0 {
-            thread::sleep(Duration::from_millis(10));
-        }
-
         Ok(b)
     }
 }
