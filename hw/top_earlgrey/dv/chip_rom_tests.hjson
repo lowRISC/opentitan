@@ -19,7 +19,7 @@
     // Signed chip-level tests to be run with ROM, instead of test ROM.
     {
       name: chip_sw_uart_smoketest_signed
-      uvm_test_seq: chip_sw_base_vseq
+      uvm_test_seq: chip_sw_uart_smoke_vseq
       sw_images: ["//sw/device/tests:uart_smoketest_signed:1:signed"]
       en_run_modes: ["sw_test_mode_rom"]
       run_opts: ["+sw_test_timeout_ns=20000000"]

@@ -247,9 +247,7 @@
       // The tests using this mode only require the ROM init check to succeed.
       // The example_test_from_rom test is sufficient.
       sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom"]
-      run_opts: ["+create_jtag_riscv_map=1",
-                 // select DFT tap
-                 "+uart0_sel=0"]
+      run_opts: ["+create_jtag_riscv_map=1"]
       reseed: 5
     }
     {

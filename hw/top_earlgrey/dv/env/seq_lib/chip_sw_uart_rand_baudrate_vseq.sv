@@ -32,15 +32,16 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
     super.pre_randomize();
     void'($value$plusargs("use_extclk=%0d", use_extclk));
     void'($value$plusargs("extclk_low_speed_sel=%0d", extclk_low_speed_sel));
+
     if (use_extclk) begin
       // Uart bus clock is in div4 domain
       uart_clk_freq_khz = cfg.clk_freq_mhz * 1000 / 4;
-
       if (extclk_low_speed_sel) uart_clk_freq_khz = uart_clk_freq_khz * 2;
     end else begin
       // internal uart bus clock is 24Mhz
       uart_clk_freq_khz = 24_000;
     end
+
     `uvm_info(`gfn, $sformatf(
               "External clock freq: %0dmhz, use_extclk: %0d, extclk_low_speed_sel: %0d",
               cfg.clk_freq_mhz,
@@ -49,10 +50,10 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
               ), UVM_LOW)
   endfunction
 
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init(reset_kind);
+  function void post_randomize();
+    super.post_randomize();
     cfg.uart_baud_rate = baud_rate;
-  endtask
+  endfunction
 
   virtual task cpu_init();
     // sw_symbol_backdoor_overwrite takes an array as the input
@@ -82,12 +83,12 @@ class chip_sw_uart_rand_baudrate_vseq extends chip_sw_uart_tx_rx_vseq;
   endtask
 
   // When uart starts to send RX data, check if AST is using extclk if extclk is selected.
-  virtual task send_uart_rx_data(int size = -1, bit random = 0);
+  virtual task send_uart_rx_data(int instance_num, int size = -1, bit random = 0);
     if (use_extclk) begin
       `DV_CHECK(cfg.ast_ext_clk_vif.is_ext_clk_in_use(),
                 "expected the external clock to be used for io");
     end
-    super.send_uart_rx_data(size, random);
+    super.send_uart_rx_data(instance_num, size, random);
   endtask
 
 endclass : chip_sw_uart_rand_baudrate_vseq
