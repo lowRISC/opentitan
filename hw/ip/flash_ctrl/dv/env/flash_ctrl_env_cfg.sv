@@ -645,16 +645,23 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // The addr need not be bus word aligned. Its the same addr programmed into the `control` CSR.
   // The exp data queue is sized for the bus word.
   // TODO: support for partition.
-  virtual function void flash_mem_bkdr_read_check(flash_op_t flash_op, const ref data_q_t exp_data);
+  virtual function void flash_mem_bkdr_read_check(flash_op_t flash_op,
+                                                  const ref data_q_t exp_data,
+                                                  input bit check_match = 1);
     data_q_t data;
     flash_mem_bkdr_read(flash_op, data);
     foreach (data[i]) begin
-      `DV_CHECK_CASE_EQ(data[i], exp_data[i])
+      if (check_match) begin
+        `DV_CHECK_CASE_EQ(data[i], exp_data[i])
+      end else begin
+        `DV_CHECK_CASE_NE(data[i], exp_data[i])
+      end
     end
   endfunction : flash_mem_bkdr_read_check
 
   // Verifies that the flash page / bank has indeed been erased.
-  virtual function void flash_mem_bkdr_erase_check(flash_op_t flash_op, data_q_t exp_data = {});
+  virtual function void flash_mem_bkdr_erase_check(flash_op_t flash_op, data_q_t exp_data = {},
+                                                   bit check_match = 1);
     flash_mem_addr_attrs             addr_attrs = new(flash_op.addr);
     bit                  [TL_AW-1:0] erase_check_addr;
     string                           erase_page_num_msg;
@@ -724,10 +731,14 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                 ), UVM_HIGH)
       // If the expected data is not empty then it should be taken is expected. If it is empty the
       //  default expected value is checked - which for successful erase is all 1s.
-      if (exp_data.size() <= i) begin
-        `DV_CHECK_CASE_EQ(data, '1)
+      if (check_match) begin
+        if (exp_data.size() <= i) begin
+          `DV_CHECK_CASE_EQ(data, '1)
+        end else begin
+          `DV_CHECK_CASE_EQ(data, exp_data[i])
+        end
       end else begin
-        `DV_CHECK_CASE_EQ(data, exp_data[i])
+        `DV_CHECK_CASE_NE(data, '1)
       end
       erase_check_addr += TL_DBW;
     end
