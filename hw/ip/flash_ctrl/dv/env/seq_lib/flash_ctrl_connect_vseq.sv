@@ -34,7 +34,8 @@ class flash_ctrl_connect_vseq extends flash_ctrl_base_vseq;
     // tdo_oe : dut.eflash
 
     lc_nvm_debug_en = $urandom_range(0, 1);
-    cfg.flash_ctrl_vif.lc_nvm_debug_en = (lc_nvm_debug_en)? lc_ctrl_pkg::On : lc_ctrl_pkg::Off;
+    cfg.flash_ctrl_vif.lc_nvm_debug_en = (lc_nvm_debug_en)?
+      lc_ctrl_pkg::On : get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(4));
 
     // takes dealy to propagate lc_nvm_debug_en
     cfg.clk_rst_vif.wait_clks(5);

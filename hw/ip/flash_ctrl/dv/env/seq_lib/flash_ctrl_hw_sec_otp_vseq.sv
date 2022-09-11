@@ -47,7 +47,7 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
 
   endfunction : configure_vseq
 
-  task body();
+  virtual task body();
 
     // Local Variables
     data_q_t flash_op_data;

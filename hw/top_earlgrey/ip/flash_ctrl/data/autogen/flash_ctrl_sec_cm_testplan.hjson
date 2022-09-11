@@ -57,15 +57,31 @@
     }
     {
       name: sec_cm_scramble_key_sideload
-      desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
+      desc: '''Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD.
+
+      '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_lc_ctrl_intersig_mubi
-      desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
+      desc: '''Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI.
+        - Creator info partition can be read, written, erased when lc_creator_seed_sw_rw_en is true.
+          Owner info partition can be read, written, erased when lc_owner_seed_sw_rw_en is true.
+          Both partition can be read when lc_seed_hw_rd_en is true.
+          Isolated info partition can be written whwen lc_iso_part_sw_wr_en is true,
+          and can be read when lc_iso_part_sw_rd_en is true.
+          Run test for each partition and check whether each partition can be accessed
+          only when each lc_ctrl input is valid.
+          If lc_ctrl inputs are invalid, the access to the secret info region will trigger
+          recoverable fatal alert.
+        - lc_escalate_en_i is covered by flash_ctrl_disable test. See 'flash_ctrl_disable`
+          from the flash_ctrl_testpan.hjson
+        - lc_nvm_debug_en_i is covered by flash_ctrl_connect. See 'flash_ctrl_connect'
+          from the flash_ctrl_testplan.hjson
+      '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_sec_info_access", "flash_ctrl_disable", "flash_ctrl_connect"]
     }
     {
       name: sec_cm_ctrl_config_regwen

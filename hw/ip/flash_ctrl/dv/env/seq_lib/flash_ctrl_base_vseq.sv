@@ -493,7 +493,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   // Task to Read/Erase/Program the Two Secret Seed Partitions (Creator and Owner)
   virtual task do_flash_op_secret_part(input flash_sec_part_e secret_part, input flash_op_e op,
                                        output data_q_t flash_op_data);
-
     // Note:
     // Secret partition 0 (used for creator): Bank 0, information partition 0, page 1
     // Secret partition 1 (used for owner):   Bank 0, information partition 0, page 2
@@ -511,7 +510,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     poll_fifo_status                    = 1;
 
     // Disable HW Access to Secret Partition from Life Cycle Controller Interface (Write/Read/Erase)
-    cfg.flash_ctrl_vif.lc_seed_hw_rd_en = lc_ctrl_pkg::Off;  // Disable Secret Partition HW Access
+    cfg.flash_ctrl_vif.lc_seed_hw_rd_en = lc_ctrl_pkg::Off;
 
     unique case (secret_part)
       FlashCreatorPart: begin
@@ -565,7 +564,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       end
       default: `uvm_error(`gfn, "Secret Partition Unrecognised, FAIL")
     endcase
-
   endtask : do_flash_op_secret_part
 
   // Task to compare a Secret Seed sent to the Key Manager with the Value in the FLASH
@@ -891,7 +889,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask : do_flash_op_rma
 
   // Task to Program the Entire Flash Memory
-  virtual task flash_ctrl_write_extra(flash_op_t flash_op, data_q_t data);
+  virtual task flash_ctrl_write_extra(flash_op_t flash_op, data_q_t data, bit check_match = 1);
 
     // Local Signals
     uvm_reg_data_t           reg_data;
@@ -978,8 +976,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
     exp_data = cfg.calculate_expected_data(flash_op_copy, data_copy);
 
-    if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op_copy, exp_data);
-
+    if (cfg.seq_cfg.check_mem_post_tran) begin
+      cfg.flash_mem_bkdr_read_check(flash_op_copy, exp_data, check_match);
+    end
   endtask : flash_ctrl_write_extra
 
   // Task to Program the Entire Flash Memory
@@ -1299,5 +1298,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
               $sformatf("exp_alert_ff[%s] size: %0d",
                         str, cfg.scb_h.exp_alert_ff[str].size()), UVM_MEDIUM)
   endfunction // set_otf_exp_alert
+
+  // This function checks wheter input 'sig' is lc_ctrl_pkg::On or lc_ctrl_pkg::Off
+  function bit is_lc_ctrl_valid(lc_ctrl_pkg::lc_tx_t sig, bit is_true_valid = 1);
+    return (sig == (is_true_valid)? lc_ctrl_pkg::On : lc_ctrl_pkg::Off);
+  endfunction // is_lc_ctrl_valid
 
 endclass : flash_ctrl_base_vseq

@@ -228,6 +228,25 @@
       tests: ["flash_ctrl_oversize_error"]
     }
     {
+      name: flash_ctrl_disable
+      desc: '''
+            Set flash ctrl disable by hw (lc_escalate_en = On) or
+            sw (flash_ctrl.dis = MuBi4True). And try to access flash ctrl
+            and check the access attempt to be failed.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_disable"]
+    }
+    {
+      name: flash_ctrl_connect
+      desc: '''
+            Check jtag input / output ports connectivity with lc_nvm_debug_en.
+            Connections are set only when lc_nvm_debug_en = On.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_connect"]
+    }
+    {
       name: stress_all
       desc: '''
             - combine above sequences in one test to run sequentially, except csr sequence
@@ -241,15 +260,6 @@
       desc: '''
             Perform accesses in order to provoke native flash error. Test both, Software interface
             and Hardware interface. Related covergroup is error_cg.
-            '''
-      stage: V2S
-      tests: []
-    }
-    {
-      name: error_lc
-      desc: '''
-            Perform accesses in order to provoke life cycle management interface error. Related
-            covergroup is error_cg.
             '''
       stage: V2S
       tests: []
