@@ -23,9 +23,8 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
   virtual task pre_start();
     `DV_GET_ENUM_PLUSARG(lc_ctrl_state_pkg::dec_lc_state_e, dest_dec_state, dest_dec_state)
     `uvm_info(`gfn, $sformatf("Destination state is %0s", dest_dec_state.name), UVM_MEDIUM)
-
-    cfg.chip_vif.tap_straps_if.drive(SelectLCJtagTap);
     otp_raw_img_mubi_assertion_ctrl(.enable(0));
+    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     super.pre_start();
   endtask
 

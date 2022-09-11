@@ -94,13 +94,6 @@ package chip_env_pkg;
     SwTypeOtbn  // Otbn SW.
   } sw_type_e;
 
-  typedef enum bit [1:0] {
-    DeselectJtagTap = 2'b00,
-    SelectLCJtagTap = 2'b01,
-    SelectRVJtagTap = 2'b10,
-    SelectDftJtagTap = 2'b11
-  } chip_tap_type_e;
-
   // Two status for LC JTAG to identify if LC state transition is successful.
   typedef enum int {
     LcReady,

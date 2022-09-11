@@ -99,4 +99,11 @@ package chip_common_pkg;
     UsbDev
   } chip_peripheral_e;
 
+  typedef enum bit [1:0] {
+    JtagTapNone = 2'b00,
+    JtagTapLc = 2'b01,
+    JtagTapRvDm = 2'b10,
+    JtagTapDft = 2'b11
+  } chip_jtag_tap_e;
+
 endpackage

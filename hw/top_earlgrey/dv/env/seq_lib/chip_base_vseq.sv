@@ -49,6 +49,7 @@ class chip_base_vseq #(
     // TODO: Cannot assert different types of resets in parallel; due to randomization
     // resets de-assert at different times. If the main rst_n de-asserts before others,
     // the CPU starts executing right away which can cause breakages.
+    // TODO; Invoke only if JTAG is used.
     cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n();
     super.apply_reset(kind);
   endtask
@@ -58,7 +59,7 @@ class chip_base_vseq #(
   // Iniitializes the DUT.
   //
   // Initializes DUT inputs, internal memories, etc., brings the DUT out of reset (performs a reset
-  // cycle) and  performs immediate post-reset steps to prime the design for stimilus. The
+  // cycle) and  performs immediate post-reset steps to prime the design for stimulus. The
   // base class method invoked by super.dut_init() applies the reset.
   virtual task dut_init(string reset_kind = "HARD");
     // Initialize these spare IOs (chip inputs) to 0.

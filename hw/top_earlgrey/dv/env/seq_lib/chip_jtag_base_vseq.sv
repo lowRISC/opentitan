@@ -21,9 +21,9 @@ class chip_jtag_base_vseq extends chip_sw_base_vseq;
   endfunction // set_handles
 
   virtual task pre_start();
+    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
     super.pre_start();
     max_outstanding_accesses = 1;
-    cfg.chip_vif.tap_straps_if.drive(SelectRVJtagTap);
   endtask
 
   task debug_mode_en();
@@ -47,4 +47,5 @@ class chip_jtag_base_vseq extends chip_sw_base_vseq;
       super.apply_reset(kind);
     join
   endtask
+
 endclass

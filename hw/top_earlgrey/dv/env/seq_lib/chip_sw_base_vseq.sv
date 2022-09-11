@@ -25,7 +25,13 @@ class chip_sw_base_vseq extends chip_base_vseq;
     super.dut_init(reset_kind);
   endtask
 
+  // Initialize the chip to enable SW to boot up and execute code.
+  //
   // Backdoor load the sw test image, initialize memories, sw logger and test status interfaces.
+  // Note that this function is called the moment POR_N asserts. The chip resources including the
+  // CPU are brought out of reset much later, after the pwrmgr has gone through the wakeup sequence.
+  // Invoke cfg.chip_vif.cpu_clk_rst_vif.wait_for_reset() to bring the simulation to the point where
+  // the CPU is out of reset and ready to execute code.
   virtual task cpu_init();
      int size_bytes;
      int total_bytes;
@@ -408,15 +414,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
   //     This transition will use default raw unlock token.
   // 2). Test lock state N -> test unlock state N+1
   //     This transition requires user to input the correct test unlock token.
-  // During this operation switch to LC_CTRL JTAG tap.
   virtual task jtag_lc_state_transition(dec_lc_state_e src_state,
                                         dec_lc_state_e dest_state,
                                         bit [TokenWidthBit-1:0] test_unlock_token = 0);
     bit [TL_DW-1:0] actual_src_state;
     bit valid_transition;
-
-    cfg.chip_vif.enable_jtag = 1'b1;
-    cfg.chip_vif.tap_straps_if.drive(SelectLCJtagTap);
 
     jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
                                         p_sequencer.jtag_sequencer_h,
@@ -507,7 +509,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     wait_lc_status(LcTransitionSuccessful);
     `uvm_info(`gfn, "LC transition request succeed!", UVM_LOW)
-    cfg.chip_vif.enable_jtag = 1'b0;
   endtask
 
   // These assertions check if OTP image sets the correct mubi type. However, when loading the raw

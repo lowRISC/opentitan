@@ -8,7 +8,7 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(SelectLCJtagTap);
+    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     super.pre_start();
   endtask
 

@@ -13,7 +13,7 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_base_vseq;
   constraint num_trans_c {num_trans inside {[1 : 2]};}
 
   virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(SelectLCJtagTap);
+    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     super.pre_start();
   endtask
 
