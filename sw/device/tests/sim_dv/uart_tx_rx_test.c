@@ -539,11 +539,11 @@ bool test_main(void) {
       kTopEarlgreyPinmuxMioOutIob5, kTopEarlgreyPinmuxOutselUart1Tx);
   // TODO: the UARTs below still need to be mapped to the correct location.
   pinmux_connect_uart_to_pads(
-      kTopEarlgreyPinmuxInselIor7, kTopEarlgreyPinmuxPeripheralInUart2Rx,
-      kTopEarlgreyPinmuxMioOutIor10, kTopEarlgreyPinmuxOutselUart2Tx);
+      kTopEarlgreyPinmuxInselIoa4, kTopEarlgreyPinmuxPeripheralInUart2Rx,
+      kTopEarlgreyPinmuxMioOutIoa5, kTopEarlgreyPinmuxOutselUart2Tx);
   pinmux_connect_uart_to_pads(
-      kTopEarlgreyPinmuxInselIor11, kTopEarlgreyPinmuxPeripheralInUart3Rx,
-      kTopEarlgreyPinmuxMioOutIor12, kTopEarlgreyPinmuxOutselUart3Tx);
+      kTopEarlgreyPinmuxInselIoa0, kTopEarlgreyPinmuxPeripheralInUart3Rx,
+      kTopEarlgreyPinmuxMioOutIoa1, kTopEarlgreyPinmuxOutselUart3Tx);
 
   if (kUseExtClk) {
     config_external_clock(&clkmgr);
