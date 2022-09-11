@@ -19,7 +19,7 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
   bit [7:0] otp_unlock_token[TokenWidthByte];
 
   virtual task pre_start();
-    cfg.chip_vif.tap_straps_if.drive(SelectLCJtagTap);
+    cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
     otp_raw_img_mubi_assertion_ctrl(.enable(0));
     super.pre_start();
   endtask

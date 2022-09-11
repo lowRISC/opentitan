@@ -26,7 +26,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   lc_ctrl_state_pkg::lc_state_e cur_lc_state;
 
   local uvm_reg lc_csrs[$];
-  chip_tap_type_e select_jtag;
+  chip_jtag_tap_e select_jtag;
 
   `uvm_object_utils(chip_tap_straps_vseq)
 
@@ -68,17 +68,17 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     if (cur_lc_state == LcStProd) begin
       cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
       // In Dev state, only pin0 of select_jtag is sampled. When it's set, select LC tap
-      if (select_jtag[0] == 0) select_jtag = DeselectJtagTap;
-      else                     select_jtag = SelectLCJtagTap;
+      if (select_jtag[0] == 0) select_jtag = JtagTapNone;
+      else                     select_jtag = JtagTapLc;
     end else if (cur_lc_state == LcStDev) begin
       // In Dev state, can't select DFT tap. If it's selected, effectively, no tap is enabled
-      if (select_jtag == SelectDftJtagTap) select_jtag = DeselectJtagTap;
+      if (select_jtag == JtagTapDft) select_jtag = JtagTapNone;
     end
   endtask
 
   virtual task body();
     bit dft_straps_en = 1;
-    chip_tap_type_e allowed_taps_q[$];
+    chip_jtag_tap_e allowed_taps_q[$];
 
     ral.lc_ctrl.get_registers(lc_csrs);
 
@@ -99,7 +99,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   endtask : body
 
   virtual task random_enable_jtag_tap();
-    chip_tap_type_e tap;
+    chip_jtag_tap_e tap;
     `DV_CHECK_STD_RANDOMIZE_FATAL(tap)
 
     if (is_lc_in_unlocked_or_rma()) begin
@@ -110,7 +110,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  virtual task enable_jtag_tap(chip_tap_type_e tap);
+  virtual task enable_jtag_tap(chip_jtag_tap_e tap);
     if (select_jtag != tap) begin
       select_jtag = tap;
       // switching tap needs to reset the agent and re-init the tap
@@ -119,14 +119,14 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.tap_straps_if.drive(select_jtag);
 
     case (select_jtag)
-      SelectRVJtagTap: begin
+      JtagTapRvDm: begin
         if (!cfg.m_jtag_riscv_agent_cfg.rv_dm_activated) init_rv_dm();
         cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
       end
-      SelectLCJtagTap:begin
+      JtagTapLc:begin
         cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 0;
       end
-      SelectDftJtagTap, DeselectJtagTap: begin
+      JtagTapDft, JtagTapNone: begin
       end
       default: begin
         `uvm_fatal(`gfn, "Unexpected tap")
@@ -159,16 +159,16 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     cfg.clk_rst_vif.wait_clks(100);
     `uvm_info(`gfn, $sformatf("Testing jtag tab %s", select_jtag), UVM_LOW)
     case (select_jtag)
-      SelectRVJtagTap: begin
+      JtagTapRvDm: begin
         test_rv_dm_access_via_jtag();
       end
-      SelectLCJtagTap:begin
+      JtagTapLc:begin
         test_lc_access_via_jtag();
       end
-      SelectDftJtagTap: begin
+      JtagTapDft: begin
         test_dft_tap(.dft_tap_en(1));
       end
-      DeselectJtagTap: begin
+      JtagTapNone: begin
         test_no_tap_selected();
       end
       default: begin

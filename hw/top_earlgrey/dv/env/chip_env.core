@@ -26,6 +26,7 @@ filesets:
       - lowrisc:dv:uart_agent
       - lowrisc:dv:pwm_monitor
       - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:ip:pwrmgr_pkg
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
       - "fileset_partner ? (partner:systems:ast_pkg)"
     files:

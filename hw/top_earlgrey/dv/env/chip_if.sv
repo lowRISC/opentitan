@@ -97,6 +97,7 @@ interface chip_if;
     // These are "inactive high".
     ios_if.pins_pu[PorN] = 1;
     ios_if.pins_pu[UsbP] = 1;
+    ios_if.pins_pu[IoR4] = 1;  // JTAG t_rst_n.
     ios_if.pins_pu[IoR8] = 1;
     ios_if.pins_pu[IoR9] = 1;
     // Leave dedicated chip outputs undriven.
@@ -212,6 +213,51 @@ interface chip_if;
   // Functional (dedicated) interface (input): AST misc.
   pins_if #(1) ast_misc_if(.pins(ios[AstMisc]));
 
+  // Functional (muxed) interface: DFT straps.
+  pins_if #(2) dft_straps_if(.pins(ios[IoC4:IoC3]));
+
+  // Functional (muxed) interface: TAP straps.
+  pins_if #(2) tap_straps_if(.pins({ios[IoC5], ios[IoC8]}));
+
+  // Set JTAG TAP straps during the next powerup.
+  //
+  // The function waits for the pwrmgr fast FSM state to reach the strap sampling state and sets the
+  // JTAG TAP strap pins to the desired values. This function must be called after asserting POR
+  // or just before a new low power entry. The strap pins are set the moment pwrmgr FSM reaches the
+  // strap sampling state. The strap interface is disconnected from the chip IOs immediately once
+  // the pwrmgr advances to the next state, so that the chip IOs are freed up for other uses.
+  //
+  // In DFT-enabled LC state, the TAP straps are continuously sampled to allow switching back and
+  // forth between RV_DM and LC TAPs. For this usecase, the test sequence can set the TAP straps
+  // directly using the tap_straps_if interface.
+  //
+  // This method is non-blocking - it immediately returns back to the caller after spawning a
+  // thread. Care must be taken to ensure the calling thread is not killed unless desired.
+  wire pwrmgr_pkg::fast_pwr_state_e pwrmgr_fast_pwr_state = `PWRMGR_HIER.u_fsm.state_q;
+  function automatic void set_tap_straps_on_powerup(chip_jtag_tap_e tap_strap);
+    fork begin
+      wait (pwrmgr_fast_pwr_state == pwrmgr_pkg::FastPwrStateStrap);
+      tap_straps_if.drive(tap_strap);
+      wait (pwrmgr_fast_pwr_state != pwrmgr_pkg::FastPwrStateStrap);
+      tap_straps_if.drive_en('0);
+    end join_none
+  endfunction
+
+  // Set DFT straps during the next powerup.
+  //
+  // Similar in behavior to set_tap_straps_on_next_powerup(), but used for setting the DFT straps.
+  function automatic void set_dft_straps_on_powerup(bit [1:0] dft_strap);
+    fork begin
+      wait (pwrmgr_fast_pwr_state == pwrmgr_pkg::FastPwrStateStrap);
+      dft_straps_if.drive(dft_strap);
+      wait (pwrmgr_fast_pwr_state != pwrmgr_pkg::FastPwrStateStrap);
+      dft_straps_if.drive_en('0);
+    end join_none
+  endfunction
+
+  // Functional (muxed) interface: SW straps.
+  pins_if #(3) sw_straps_if(.pins(ios[IoC2:IoC0]));
+
   // Functional (muxed) interface: GPIOs.
   //
   // Note: In an actual implementation, fewer GPIOs may be in use. For testing, we try to connect as
@@ -229,16 +275,21 @@ interface chip_if;
   );
 
   // Functional (muxed) interface: JTAG (valid during debug enabled LC state only).
+
+  // To connect the JTAG interface to chip IOs, just set the TAP strap to the desired value.
+  //
+  // Whether the desired JTAG TAP will actually selected or not depends on the LC state and the
+  // window of time when the TAP straps are set. It is upto the test sequence to orchestrate it
+  // correctly. Disconnect the TAP strap interface to free up the muxed IOs.
+  wire __enable_jtag = (tap_straps_if.pins != 0);
   wire lc_hw_debug_en = (`LC_CTRL_HIER.lc_hw_debug_en_o == lc_ctrl_pkg::On);
-  bit enable_jtag, jtag_enabled;
   jtag_if jtag_if();
 
-  assign jtag_enabled = enable_jtag && lc_hw_debug_en;
-  assign ios[IoR0] = jtag_enabled ? jtag_if.tms : 1'bz;
-  assign jtag_if.tdo = jtag_enabled ? ios[IoR1] : 1'bz;
-  assign ios[IoR2] = jtag_enabled ? jtag_if.tdi : 1'bz;
-  assign ios[IoR3] = jtag_enabled ? jtag_if.tck : 1'bz;
-  assign ios[IoR4] = jtag_enabled ? jtag_if.trst_n : 1'bz;
+  assign ios[IoR0] = __enable_jtag ? jtag_if.tms : 1'bz;
+  assign jtag_if.tdo = __enable_jtag ? ios[IoR1] : 1'bz;
+  assign ios[IoR2] = __enable_jtag ? jtag_if.tdi : 1'bz;
+  assign ios[IoR3] = __enable_jtag ? jtag_if.tck : 1'bz;
+  assign ios[IoR4] = __enable_jtag ? jtag_if.trst_n : 1'bz;
 
   // Functional (muxed) interface: Flash controller JTAG.
   logic enable_flash_ctrl_jtag, flash_ctrl_jtag_enabled;
@@ -249,15 +300,6 @@ interface chip_if;
   assign flash_ctrl_jtag_if.tdo = flash_ctrl_jtag_enabled ? ios[IoB1] : 1'bz;
   assign ios[IoB2] = flash_ctrl_jtag_enabled ? flash_ctrl_jtag_if.tdi : 1'bz;
   assign ios[IoB3] = flash_ctrl_jtag_enabled ? flash_ctrl_jtag_if.tck : 1'bz;
-
-  // Functional (muxed) interface: DFT straps.
-  pins_if #(2) dft_straps_if(.pins(ios[IoC4:IoC3]));
-
-  // Functional (muxed) interface: TAP straps.
-  pins_if #(2) tap_straps_if(.pins({ios[IoC8], ios[IoC5]}));
-
-  // Functional (muxed) interface: SW straps.
-  pins_if #(3) sw_straps_if(.pins(ios[IoC2:IoC0]));
 
   // Functional (muxed) interface: AST2PAD.
   pins_if #(9) ast2pad_if(.pins({ios[IoA0], ios[IoA1], ios[IoB3], ios[IoB4],
