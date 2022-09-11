@@ -29,7 +29,6 @@ class chip_sw_i2c_tx_rx_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task body();
-    i2c_device_response_seq m_base_seq;
     super.body();
 
     // enable the monitor
@@ -45,8 +44,7 @@ class chip_sw_i2c_tx_rx_vseq extends chip_sw_base_vseq;
     // tClockPulse needs to be "slightly" longer than the clock period.
     cfg.m_i2c_agent_cfgs[0].timing_cfg.tClockPulse = half_period_cycles + 1;
 
-    i2c_device_autoresponder(m_base_seq);
-
+    i2c_device_autoresponder();
   endtask
 
   virtual task i2c_device_autoresponder(i2c_device_response_seq seq = null);
