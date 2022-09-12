@@ -31,15 +31,12 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 #include "otp_ctrl_regs.h"
 
-/**
- * This symbol is defined in `sw/device/lib/testing/test_rom/test_rom.ld`,
- * and describes the location of the flash header.
- *
- * The actual contents are not defined by the ROM, but rather
- * by the flash binary: see `sw/device/lib/testing/test_framework/ottf.ld`
- * for that.
+/* These symbols are defined in
+ * `opentitan/sw/device/lib/testing/test_rom/test_rom.ld`, and describes the
+ * location of the flash header.
  */
-extern const char _manifest[];
+extern char _rom_ext_virtual_start_address[];
+extern char _rom_ext_virtual_size[];
 
 /**
  * Type alias for the OTTF entry point.
@@ -47,7 +44,7 @@ extern const char _manifest[];
  * The entry point address obtained from the OTTF manifest must be cast to a
  * pointer to this type before being called.
  */
-typedef void ottf_entry(void);
+typedef void ottf_entry_point(void);
 
 static dif_clkmgr_t clkmgr;
 static dif_flash_ctrl_state_t flash_ctrl;
@@ -55,6 +52,19 @@ static dif_pinmux_t pinmux;
 static dif_rstmgr_t rstmgr;
 static dif_uart_t uart0;
 static dif_rv_core_ibex_t ibex;
+
+/**
+ * Compute the virtual address corresponding to the physical address `lma_addr`.
+ *
+ * @param manifest Pointer to the current manifest.
+ * @param lma_addr Load address or physical address.
+ * @return the computed virtual address.
+ */
+static inline uintptr_t rom_ext_vma_get(const manifest_t *manifest,
+                                        uintptr_t lma_addr) {
+  return (lma_addr - (uintptr_t)manifest +
+          (uintptr_t)_rom_ext_virtual_start_address);
+}
 
 // `test_in_rom = True` tests can override this symbol to provide their own
 // rom tests. By default, it simply jumps into the OTTF's flash.
@@ -171,14 +181,35 @@ bool rom_test_main(void) {
   CHECK_DIF_OK(
       dif_flash_ctrl_set_exec_enablement(&flash_ctrl, kDifToggleEnabled));
 
-  // TODO(lowrisc/opentitan:#10712): setup Ibex address translation
+  // Always select slot a and enable address translation if manifest says to.
+  const manifest_t *manifest =
+      (const manifest_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
+  uintptr_t entry_point = manifest_entry_point_get(manifest);
+  if (manifest->address_translation == kHardenedBoolTrue) {
+    dif_rv_core_ibex_addr_translation_mapping_t addr_map = {
+        .matching_addr = (uintptr_t)_rom_ext_virtual_start_address,
+        .remap_addr = (uintptr_t)manifest,
+        .size = (size_t)_rom_ext_virtual_size,
+    };
+    CHECK_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
+        &ibex, kDifRvCoreIbexAddrTranslationSlot_0,
+        kDifRvCoreIbexAddrTranslationDBus, addr_map));
+    CHECK_DIF_OK(dif_rv_core_ibex_configure_addr_translation(
+        &ibex, kDifRvCoreIbexAddrTranslationSlot_0,
+        kDifRvCoreIbexAddrTranslationIBus, addr_map));
+    CHECK_DIF_OK(dif_rv_core_ibex_enable_addr_translation(
+        &ibex, kDifRvCoreIbexAddrTranslationSlot_0,
+        kDifRvCoreIbexAddrTranslationDBus));
+    CHECK_DIF_OK(dif_rv_core_ibex_enable_addr_translation(
+        &ibex, kDifRvCoreIbexAddrTranslationSlot_0,
+        kDifRvCoreIbexAddrTranslationIBus));
+    entry_point = rom_ext_vma_get(manifest, entry_point);
+  }
 
-  // Jump to the OTTF in flash. Within the flash binary, it is the responsibily
-  // of the OTTF to set up its own stack, and to never return.
-  uintptr_t entry_point =
-      manifest_entry_point_get((const manifest_t *)_manifest);
-  LOG_INFO("Test ROM complete, jumping to flash!");
-  ((ottf_entry *)entry_point)();
+  // Jump to the OTTF in flash. Within the flash binary, it is the
+  // responsibily of the OTTF to set up its own stack, and to never return.
+  LOG_INFO("Test ROM complete, jumping to flash (addr: %x)!", entry_point);
+  ((ottf_entry_point *)entry_point)();
 
   // If the flash image returns, we should abort anyway.
   abort();
