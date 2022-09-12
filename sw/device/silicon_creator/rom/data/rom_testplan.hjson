@@ -405,15 +405,12 @@
             `OWNER_SW_CFG_ROM_BOOTSTRAP_EN` OTP item must be `kHardenedBoolTrue` (`0x739`).
 
             - Apply bootstrap pin strapping and reset the chip.
-            - Send `erase`.
-            - Write `0x4552544f` (ASCII "OTRE") at byte offset `0x334`.
+            - Send `CHIP_ERASE` (`0xc7`).
+            - Write `0x4552544f_00000000` (ASCII "\0\0\0\0OTRE") at byte offset `0x80330`.
+              - Note: Writes must start at a flash-word-aligned address and we must write to the second slot since ROM returns the last error.
             - Release pins and reset.
-            - Verify that the chip outputs the expected `BFV`: `024d410d`
-              (`kErrorManifestBadCodeRegion`) over UART.
+            - Verify that the chip outputs the expected `BFV`: `0242500d` over UART (`kErrorBootPolicyBadLength`).
               - ROM will continously reset the chip and output the same `BFV` and `LCV`.
-
-            Note: For additional coverage we can also add another test point that uses a test
-            program on flash that verifies that the rest of the flash is empty after bootstrap.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2
