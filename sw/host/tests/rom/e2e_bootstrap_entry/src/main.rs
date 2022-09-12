@@ -429,6 +429,40 @@ fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Resu
     Ok(())
 }
 
+fn test_bootstrap_phase2_reset(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+
+    let spi = transport.spi("0")?;
+    let uart = transport.uart("0")?;
+    let mut console = UartConsole {
+        timeout: Some(Duration::new(1, 0)),
+        // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
+        exit_success: Some(Regex::new("BFV:0142500d\r\n")?),
+        ..Default::default()
+    };
+    // Send CHIP_ERASE to transition to phase 2.
+    SpiFlash::from_spi(&*spi)?.chip_erase(&*spi)?;
+    // Remove strapping so that chip fails to boot instead of going into bootstrap.
+    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    // Discard buffered messages before interacting with the console.
+    uart.clear_rx_buffer()?;
+    SpiFlash::chip_reset(&*spi)?;
+    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    if result != ExitStatus::ExitSuccess {
+        bail!("FAIL: {:?}", result);
+    }
+
+    assert!(matches!(
+        SpiFlash::read_sfdp(&*spi)
+            .unwrap_err()
+            .downcast::<sfdp::Error>()
+            .unwrap(),
+        sfdp::Error::WrongHeaderSignature(..)
+    ));
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -453,6 +487,7 @@ fn main() -> Result<()> {
         execute_test!(test_bootstrap_phase1_erase, &opts, &transport, erase_cmd);
     }
     execute_test!(test_bootstrap_phase1_read, &opts, &transport);
+    execute_test!(test_bootstrap_phase2_reset, &opts, &transport);
 
     Ok(())
 }
