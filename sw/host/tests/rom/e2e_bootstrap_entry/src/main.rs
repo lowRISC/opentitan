@@ -63,9 +63,9 @@ struct Opts {
 /// A struct for isolating individual test points.
 ///
 /// This is basically an example of the RAII technique.
-/// Calling `BootstrapTest::start()` resets the chip and puts it in bootstrap mode (assuming it's
-/// enabled). Strapping pins are released and the chip is reset when the returned struct is
-/// dropped, typically at the end of the test point.
+/// Calling `BootstrapTest::start()` resets the chip, erases its flash and puts it in bootstrap
+/// mode (assuming it's enabled). Strapping pins are released, the chip is reset, and its flash is
+/// erased when the returned struct is dropped, typically at the end of the test point.
 struct BootstrapTest<'a> {
     transport: &'a TransportWrapper,
     reset_delay: Duration,
@@ -79,6 +79,12 @@ impl<'a> BootstrapTest<'a> {
         };
         transport.apply_pin_strapping("ROM_BOOTSTRAP")?;
         transport.reset_target(b.reset_delay, true)?;
+        let spi = transport.spi("0").unwrap();
+        SpiFlash::from_spi(&*spi)
+            .unwrap()
+            .chip_erase(&*spi)
+            .unwrap();
+        transport.reset_target(reset_delay, true).unwrap();
         Ok(b)
     }
 }
