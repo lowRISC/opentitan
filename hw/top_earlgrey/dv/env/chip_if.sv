@@ -175,11 +175,12 @@ interface chip_if;
   //                    .csb(ios[SpiDevCsL]),
   //                    .sio(ios[SpiDevD3:SpiDevD0]));
 
+  bit enable_spi_host = 1;  // Since these are DIOs.
   spi_if spi_host_if(.rst_n(`SPI_DEVICE_HIER.rst_ni));
-  assign ios[SpiDevClk] = spi_host_if.sck;
-  assign ios[SpiDevCsL] = spi_host_if.csb;
-  assign ios[SpiDevD0] = spi_host_if.sio[0];
-  assign spi_host_if.sio[1] = ios[SpiDevD1];
+  assign ios[SpiDevClk] = enable_spi_host ? spi_host_if.sck : 1'bz;
+  assign ios[SpiDevCsL] = enable_spi_host ? spi_host_if.csb : 1'bz;
+  assign ios[SpiDevD0] = enable_spi_host ? spi_host_if.sio[0] : 1'bz;
+  assign spi_host_if.sio[1] = enable_spi_host ? ios[SpiDevD1] : 1'bz;
 
   // Functional (dedicated) interface: SPI AP device interface (receives traffic from the chip).
   // TODO: Update spi_if to emit all signals as inout ports.
@@ -188,9 +189,10 @@ interface chip_if;
   //                         .csb(ios[SpiHostCsL]),
   //                         .sio(ios[SpiHostD3:SpiHostD0]));
 
+  bit enable_spi_device_ap = 1;  // Since these are DIOs.
   spi_if spi_device_ap_if(.rst_n(`SPI_HOST_HIER(0).rst_ni));
-  assign spi_device_ap_if.sck = ios[SpiHostClk];
-  assign spi_device_ap_if.csb = ios[SpiHostCsL];
+  assign spi_device_ap_if.sck = enable_spi_device_ap ? ios[SpiHostClk] : 1'bz;
+  assign spi_device_ap_if.csb = enable_spi_device_ap ? ios[SpiHostCsL] : 1'bz;
   // for (genvar i = 0; i < 4; i++) begin : gen_spi_device_ap_if_sio_conn
   //   // TODO: This logic needs to be firmed up.
   //   assign ios[SpiHostD0 + i] = spi_device_ap_if.sio_oe[i] ? spi_device_ap_if.sio[i] : 1'bz;
