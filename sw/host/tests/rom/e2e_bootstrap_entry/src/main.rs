@@ -463,6 +463,33 @@ fn test_bootstrap_phase2_reset(opts: &Opts, transport: &TransportWrapper) -> Res
     Ok(())
 }
 
+fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+    let spi = transport.spi("0")?;
+    let uart = transport.uart("0")?;
+    SpiFlash::from_spi(&*spi)?
+        // Send CHIP_ERASE to transition to phase 2.
+        .chip_erase(&*spi)?
+        // Write "OTRE" to the identifier field of the manifest in the second slot.
+        .program(&*spi, 0x80330, &0x4552544f_00000000u64.to_le_bytes())?;
+
+    let mut console = UartConsole {
+        timeout: Some(Duration::new(1, 0)),
+        // `kErrorBootPolicyBadLength` (0242500d) is defined in `error.h`.
+        exit_success: Some(Regex::new("BFV:0242500d\r\n")?),
+        ..Default::default()
+    };
+    // Remove strapping so that chip fails to boot instead of going into bootstrap.
+    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    if result != ExitStatus::ExitSuccess {
+        bail!("FAIL: {:?}", result);
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -488,6 +515,7 @@ fn main() -> Result<()> {
     }
     execute_test!(test_bootstrap_phase1_read, &opts, &transport);
     execute_test!(test_bootstrap_phase2_reset, &opts, &transport);
+    execute_test!(test_bootstrap_phase2_page_program, &opts, &transport);
 
     Ok(())
 }
