@@ -31,35 +31,29 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "web_event" with type "example" omitted
-
 rust_library(
-    name = "typetag",
+    name = "js_sys",
     srcs = glob(["**/*.rs"]),
     crate_features = [
     ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
-    proc_macro_deps = [
-        "@raze__typetag_impl__0_1_8//:typetag_impl",
-    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=typetag",
+        "crate-name=js-sys",
         "manual",
     ],
-    version = "0.1.8",
+    version = "0.3.59",
     # buildifier: leave-alone
     deps = [
-        "@raze__erased_serde__0_3_21//:erased_serde",
-        "@raze__inventory__0_2_3//:inventory",
-        "@raze__once_cell__1_14_0//:once_cell",
-        "@raze__serde__1_0_139//:serde",
+        "@raze__wasm_bindgen__0_2_82//:wasm_bindgen",
     ],
 )
 
-# Unsupported target "test" with type "test" omitted
+# Unsupported target "headless" with type "test" omitted
+
+# Unsupported target "wasm" with type "test" omitted

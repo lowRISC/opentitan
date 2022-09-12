@@ -31,35 +31,27 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "web_event" with type "example" omitted
+# Unsupported target "time_zone" with type "example" omitted
 
 rust_library(
-    name = "typetag",
+    name = "android_system_properties",
     srcs = glob(["**/*.rs"]),
     crate_features = [
     ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
-    proc_macro_deps = [
-        "@raze__typetag_impl__0_1_8//:typetag_impl",
-    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=typetag",
+        "crate-name=android_system_properties",
         "manual",
     ],
-    version = "0.1.8",
+    version = "0.1.5",
     # buildifier: leave-alone
     deps = [
-        "@raze__erased_serde__0_3_21//:erased_serde",
-        "@raze__inventory__0_2_3//:inventory",
-        "@raze__once_cell__1_14_0//:once_cell",
-        "@raze__serde__1_0_139//:serde",
+        "@raze__libc__0_2_126//:libc",
     ],
 )
-
-# Unsupported target "test" with type "test" omitted
