@@ -26,59 +26,57 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
 
   import chip_common_pkg::*;  // chip_io_e
 
-  localparam int unsigned NumMioPads = top_earlgrey_pkg::MioPadCount+2;
+  localparam int unsigned NumMioPads = top_earlgrey_pkg::MioPadCount;
   localparam int unsigned NumDioPads = top_earlgrey_pkg::DioCount;
 
-  localparam string MioPads [NumMioPads] = '{
-    "1'b0", // Not Used
-    "1'b1", // Not Used
-    "tb.dut.IOA0",  // MIO2
-    "tb.dut.IOA1",  // MIO3
-    "tb.dut.IOA2",  // MIO4
-    "tb.dut.IOA3",  // MIO5
-    "tb.dut.IOA4",  // MIO6
-    "tb.dut.IOA5",  // MIO7
-    "tb.dut.IOA6",  // MIO8
-    "tb.dut.IOA7",  // MIO9
-    "tb.dut.IOA8",  // MIO10
-    "tb.dut.IOB0",  // MIO11
-    "tb.dut.IOB1",  // MIO12
-    "tb.dut.IOB2",  // MIO13
-    "tb.dut.IOB3",  // MIO14
-    "tb.dut.IOB4",  // MIO15
-    "tb.dut.IOB5",  // MIO16
-    "tb.dut.IOB6",  // MIO17
-    "tb.dut.IOB7",  // MIO18
-    "tb.dut.IOB8",  // MIO19
-    "tb.dut.IOB9",  // MIO20
-    "tb.dut.IOB10", // MIO21
-    "tb.dut.IOB11", // MIO22
-    "tb.dut.IOB12", // MIO23
-    "tb.dut.IOC0",  // MIO24
-    "tb.dut.IOC1",  // MIO25
-    "tb.dut.IOC2",  // MIO26
-    "tb.dut.IOC3",  // MIO27
-    "tb.dut.IOC4",  // MIO28
-    "tb.dut.IOC5",  // MIO29
-    "tb.dut.IOC6",  // MIO30
-    "tb.dut.IOC7",  // MIO31
-    "tb.dut.IOC8",  // MIO32
-    "tb.dut.IOC9",  // MIO33
-    "tb.dut.IOC10", // MIO34
-    "tb.dut.IOC11", // MIO35
-    "tb.dut.IOC12", // MIO36
-    "tb.dut.IOR0",  // MIO37
-    "tb.dut.IOR1",  // MIO38
-    "tb.dut.IOR2",  // MIO39
-    "tb.dut.IOR3",  // MIO40
-    "tb.dut.IOR4",  // MIO41
-    "tb.dut.IOR5",  // MIO42
-    "tb.dut.IOR6",  // MIO43
-    "tb.dut.IOR7",  // MIO44
-    "tb.dut.IOR10", // MIO45
-    "tb.dut.IOR11", // MIO46
-    "tb.dut.IOR12", // MIO47
-    "tb.dut.IOR13"  // MIO48
+  localparam chip_io_e MioPads [NumMioPads] = '{
+    IoA0,  // MIO2
+    IoA1,  // MIO3
+    IoA2,  // MIO4
+    IoA3,  // MIO5
+    IoA4,  // MIO6
+    IoA5,  // MIO7
+    IoA6,  // MIO8
+    IoA7,  // MIO9
+    IoA8,  // MIO10
+    IoB0,  // MIO11
+    IoB1,  // MIO12
+    IoB2,  // MIO13
+    IoB3,  // MIO14
+    IoB4,  // MIO15
+    IoB5,  // MIO16
+    IoB6,  // MIO17
+    IoB7,  // MIO18
+    IoB8,  // MIO19
+    IoB9,  // MIO20
+    IoB10, // MIO21
+    IoB11, // MIO22
+    IoB12, // MIO23
+    IoC0,  // MIO24
+    IoC1,  // MIO25
+    IoC2,  // MIO26
+    IoC3,  // MIO27
+    IoC4,  // MIO28
+    IoC5,  // MIO29
+    IoC6,  // MIO30
+    IoC7,  // MIO31
+    IoC8,  // MIO32
+    IoC9,  // MIO33
+    IoC10, // MIO34
+    IoC11, // MIO35
+    IoC12, // MIO36
+    IoR0,  // MIO37
+    IoR1,  // MIO38
+    IoR2,  // MIO39
+    IoR3,  // MIO40
+    IoR4,  // MIO41
+    IoR5,  // MIO42
+    IoR6,  // MIO43
+    IoR7,  // MIO44
+    IoR10, // MIO45
+    IoR11, // MIO46
+    IoR12, // MIO47
+    IoR13  // MIO48
   };
   localparam chip_io_e DioPads [NumDioPads] = '{
     UsbP,       // DIO 0
@@ -174,8 +172,12 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
       // DIO drive
       cfg.chip_vif.ios_if.drive_pin(DioPads[pad_sel], 1'b1);
     end else begin
-      // MIO drive
-      `DV_CHECK(uvm_hdl_force(MioPads[pad_sel], 1'b1));
+      // MIO drive. First 2 are tie-0, tie-1
+      if (pad_sel inside {0, 1}) begin
+        `uvm_error(`gfn, "pad_sel valu 0, 1 are not permitted.")
+      end else begin
+        cfg.chip_vif.ios_if.drive_pin(MioPads[pad_sel-2], 1'b1);
+      end
     end
 
   endtask : body
