@@ -79,7 +79,7 @@ rust_library(
     version = "1.6.0",
     # buildifier: leave-alone
     deps = [
-        "@raze__aho_corasick__0_7_18//:aho_corasick",
+        "@raze__aho_corasick__0_7_19//:aho_corasick",
         "@raze__memchr__2_5_0//:memchr",
         "@raze__regex_syntax__0_6_27//:regex_syntax",
     ],

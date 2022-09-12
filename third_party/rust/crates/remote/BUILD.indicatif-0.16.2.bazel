@@ -85,7 +85,7 @@ rust_library(
     version = "0.16.2",
     # buildifier: leave-alone
     deps = [
-        "@raze__console__0_15_0//:console",
+        "@raze__console__0_15_1//:console",
         "@raze__lazy_static__1_4_0//:lazy_static",
         "@raze__number_prefix__0_4_0//:number_prefix",
         "@raze__regex__1_6_0//:regex",

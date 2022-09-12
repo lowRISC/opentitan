@@ -55,7 +55,7 @@ rust_library(
     version = "0.10.3",
     # buildifier: leave-alone
     deps = [
-        "@raze__block_buffer__0_10_2//:block_buffer",
-        "@raze__crypto_common__0_1_5//:crypto_common",
+        "@raze__block_buffer__0_10_3//:block_buffer",
+        "@raze__crypto_common__0_1_6//:crypto_common",
     ],
 )

@@ -51,7 +51,7 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__getrandom__0_2_7//:getrandom",
-        "@raze__redox_syscall__0_2_13//:redox_syscall",
-        "@raze__thiserror__1_0_31//:thiserror",
+        "@raze__redox_syscall__0_2_16//:redox_syscall",
+        "@raze__thiserror__1_0_34//:thiserror",
     ],
 )
