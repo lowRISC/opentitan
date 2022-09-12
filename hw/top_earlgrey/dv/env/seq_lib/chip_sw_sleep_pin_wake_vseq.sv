@@ -127,6 +127,9 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
 
     super.cpu_init();
 
+    // Turn off Mux
+    cfg.chip_vif.enable_flash_ctrl_jtag = 1'b 0;
+
     byte_arr = '{detector_idx};
     sw_symbol_backdoor_overwrite("kWakeupSel", byte_arr);
 
@@ -155,6 +158,78 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     pad_sel   = cfg.sw_logger_vif.printed_arg[1];
 
     `uvm_info(`gfn, $sformatf("VSEQ: Pad Selection %d / %d", mio0_dio1, pad_sel), UVM_LOW)
+
+    // Check if selected PAD is pull up
+    // UsbP, IoR8, IoR9 are pull up
+    if (mio0_dio1) begin
+      case (DioPads[pad_sel])
+        UsbP: begin
+          cfg.chip_vif.ios_if.drive_pin(UsbP, 1'b 0);
+        end
+
+        IoR8, IoR9: begin
+          cfg.chip_vif.ec_rst_l_if.drive_en('0);
+          cfg.chip_vif.flash_wp_l_if.drive_en('0);
+          cfg.chip_vif.ios_if.drive_pin(DioPads[pad_sel], 1'b 0);
+        end
+
+        default:;
+      endcase
+    end else begin
+
+      // GPIO ports are many. Blindly turning them off.
+      cfg.chip_vif.gpio_pins_if.drive_en('0);
+
+      case (MioPads[pad_sel-2]) inside
+        [IoC0:IoC2]: begin
+          cfg.chip_vif.sw_straps_if.drive_en(3'b 000);
+        end
+
+        [IoC3:IoC4]: begin
+          // Disable Uart0
+          cfg.chip_vif.enable_uart(0, 1'b0);
+
+          // DFT
+          cfg.chip_vif.dft_straps_if.drive_en('0);
+        end
+
+        [IoB4:IoB5]: begin
+          // Disable Uart1
+          cfg.chip_vif.enable_uart(1, 1'b0);
+        end
+
+        [IoA4:IoA5]: begin
+          // Disable Uart2
+          cfg.chip_vif.enable_uart(2, 1'b0);
+        end
+
+        [IoA0:IoA1]: begin
+          // Disable Uart3
+          cfg.chip_vif.enable_uart(3, 1'b0);
+        end
+
+        IoR4: begin
+          // jtag rst_n
+          //   It is pull up PADs. Need to off it first
+          cfg.chip_vif.ios_if.pins_pu[IoR4] = 1'b 0;
+        end
+
+        IoC6: begin
+          // Ext Clk needs to be off
+          cfg.chip_vif.ext_clk_if.set_active(0, 0);
+        end
+
+        IoC8, IoC5: begin
+          cfg.chip_vif.tap_straps_if.drive_en('0);
+        end
+
+        IoB3, IoB6, IoB8, IoB9, IoC7, IoC9, IoR5, IoR6: begin
+          cfg.chip_vif.sysrst_ctrl_if.drive_en('0);
+        end
+
+        default:;
+      endcase
+    end
 
     // Wait until chip enters low power (sleep or deep sleep).
     `DV_WAIT(
