@@ -54,7 +54,7 @@ rust_library(
     version = "0.2.11",
     # buildifier: leave-alone
     deps = [
-        "@raze__generic_array__0_14_5//:generic_array",
+        "@raze__generic_array__0_14_6//:generic_array",
         "@raze__rand_core__0_6_3//:rand_core",
         "@raze__subtle__2_4_1//:subtle",
     ],

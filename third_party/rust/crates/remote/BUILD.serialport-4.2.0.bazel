@@ -85,7 +85,7 @@ rust_library(
         ): [
             "@raze__bitflags__1_3_2//:bitflags",
             "@raze__cfg_if__1_0_0//:cfg_if",
-            "@raze__nix__0_24_1//:nix",
+            "@raze__nix__0_24_2//:nix",
         ],
         "//conditions:default": [],
     }),

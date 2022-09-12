@@ -52,7 +52,7 @@ rust_library(
     version = "0.17.0",
     # buildifier: leave-alone
     deps = [
-        "@raze__gimli__0_26_1//:gimli",
+        "@raze__gimli__0_26_2//:gimli",
     ],
 )
 
