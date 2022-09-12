@@ -9,17 +9,18 @@ load("@nonhermetic//:env.bzl", "ENV")
 
 def _bitstream_splice_impl(ctx):
     update = ctx.actions.declare_file("{}.update.mem".format(ctx.label.name))
+    spliced = ctx.actions.declare_file("{}.spliced.bit".format(ctx.label.name))
     output = ctx.actions.declare_file("{}.bit".format(ctx.label.name))
 
     ctx.actions.run(
         mnemonic = "GenVivadoImage",
         outputs = [update],
-        inputs = [ctx.executable._tool, ctx.file.data],
+        inputs = [ctx.executable._gen_mem_img, ctx.file.data],
         arguments = [
             ctx.file.data.path,
             update.path,
         ] + (["--swap-nibbles"] if ctx.attr.swap_nybbles else []),
-        executable = ctx.executable._tool,
+        executable = ctx.executable._gen_mem_img,
         use_default_shell_env = True,
         execution_requirements = {
             "no-sandbox": "",
@@ -37,7 +38,7 @@ def _bitstream_splice_impl(ctx):
 
     ctx.actions.run(
         mnemonic = "SpliceBitstream",
-        outputs = [output],
+        outputs = [spliced],
         inputs = [tmpsrc, ctx.file.meminfo, update],
         arguments = [
             "-force",
@@ -50,7 +51,7 @@ def _bitstream_splice_impl(ctx):
             "--proc",
             "dummy",
             "--out",
-            output.path,
+            spliced.path,
         ] + ["--debug"] if ctx.attr.debug else [],
         executable = "updatemem",
         use_default_shell_env = False,
@@ -58,6 +59,20 @@ def _bitstream_splice_impl(ctx):
             "no-sandbox": "",
         },
         env = ENV,
+    )
+
+    ctx.actions.run(
+        mnemonic = "UpdateUsrAccessValue",
+        outputs = [output],
+        inputs = [spliced],
+        arguments = [
+            "--logging",
+            "info",
+            "update-usr-access",
+            spliced.path,
+            output.path,
+        ],
+        executable = ctx.executable._opentitantool,
     )
 
     return [
@@ -79,8 +94,13 @@ bitstream_splice = rule(
         "data": attr.label(allow_single_file = True, doc = "The memory image to splice into the bitstream"),
         "swap_nybbles": attr.bool(default = True, doc = "Swap nybbles while preparing the memory image"),
         "debug": attr.bool(default = True, doc = "Emit debug info while updating"),
-        "_tool": attr.label(
+        "_gen_mem_img": attr.label(
             default = "//hw/ip/rom_ctrl/util:gen_vivado_mem_image",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_opentitantool": attr.label(
+            default = "//sw/host/opentitantool:opentitantool",
             executable = True,
             cfg = "exec",
         ),
