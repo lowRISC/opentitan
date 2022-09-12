@@ -31,6 +31,7 @@ enum RootCommandHierarchy {
     I2c(command::i2c::I2cCommand),
     Image(command::image::Image),
     SetPll(command::set_pll::SetPll),
+    UpdateUsrAccess(command::update_usr_access::UpdateUsrAccess),
     LoadBitstream(command::load_bitstream::LoadBitstream),
     NoOp(command::NoOp),
     Rsa(command::rsa::Rsa),
