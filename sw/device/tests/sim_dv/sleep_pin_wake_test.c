@@ -26,6 +26,11 @@ static volatile const uint8_t kWakeupSel = 0;
 
 static const uint32_t kNumDio = 16;  // top_earlgrey has 16 DIOs
 
+// kDirectDio is a list of Dio index that TB cannot control the PAD value.
+// The list should be incremental order (see the code below)
+#define NUM_DIRECT_DIO 5
+static const uint32_t kDirectDio [NUM_DIRECT_DIO] = { 6, 12, 13, 14, 15};
+
 bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
   dif_pinmux_t pinmux;
@@ -51,10 +56,18 @@ bool test_main(void) {
     uint32_t mio0_dio1 = rand_testutils_gen32_range(0, 1);
     uint32_t pad_sel = 0;
 
+    // SpiDev CLK(idx 12), CS#(idx 13), D0(idx 6) and SpiHost CLK (14), CS#
+    // (15) are directly connected to the SPI IF. Cannot control them. Roll 3
+    // less and compensated later.
     if (mio0_dio1) {
       // DIO
-      pad_sel = rand_testutils_gen32_range(0, kNumDio - 1);
+      pad_sel = rand_testutils_gen32_range(0, kNumDio - 1 - NUM_DIRECT_DIO);
 
+      for (int i = 0; i < NUM_DIRECT_DIO; i++) {
+        if (pad_sel >= kDirectDio[i]) {
+          pad_sel++;
+        }
+      }
     } else {
       // MIO: 0, 1 are tie-0, tie-1
       pad_sel = rand_testutils_gen32_range(2, kTopEarlgreyPinmuxInselLast);
