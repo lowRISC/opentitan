@@ -5,23 +5,14 @@
 use anyhow::Result;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::convert::TryInto;
 use std::str::FromStr;
 use std::time::Duration;
 use std::time::Instant;
 use structopt::clap::arg_enum;
-use thiserror::Error;
 
 use crate::io::uart::Uart;
 use crate::uart::console::{ExitStatus, UartConsole};
-
-const REG_USR_ACCESS: [u8; 4] = [0x30, 0x01, 0xa0, 0x01];
-
-#[derive(Error, Debug, Serialize, Deserialize)]
-pub enum Error {
-    #[error("USR_ACCESS value not found in bitstream")]
-    UsrAccessNotFound,
-}
+use crate::util::usr_access::usr_access_get;
 
 arg_enum! {
     #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
@@ -41,24 +32,13 @@ impl RomDetect {
     pub fn new(kind: RomKind, bitstream: &[u8], timeout: Option<Duration>) -> Result<RomDetect> {
         Ok(RomDetect {
             kind: kind,
-            usr_access: Self::scan_usr_access(bitstream)?,
+            usr_access: usr_access_get(bitstream)?,
             console: UartConsole {
                 timeout: timeout,
                 exit_success: Some(Regex::new(r"(\w*ROM):([^\r\n]+)[\r\n]").unwrap()),
                 ..Default::default()
             },
         })
-    }
-
-    fn scan_usr_access(bitstream: &[u8]) -> Result<u32> {
-        let operand = bitstream
-            .chunks(4)
-            .skip_while(|op| **op != REG_USR_ACCESS)
-            .nth(1)
-            .ok_or(Error::UsrAccessNotFound)?;
-        let usr_access = u32::from_be_bytes(operand.try_into()?);
-        log::info!("Bitstream file USR_ACCESS value: {:#x}", usr_access);
-        Ok(usr_access)
     }
 
     pub fn detect(&mut self, uart: &dyn Uart) -> Result<bool> {

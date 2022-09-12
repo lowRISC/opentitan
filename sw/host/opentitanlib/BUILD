@@ -119,6 +119,7 @@ rust_library(
         "src/util/rom_detect.rs",
         "src/util/unknown.rs",
         "src/util/usb.rs",
+        "src/util/usr_access.rs",
         "src/util/voltage.rs",
     ],
     compile_data = [
