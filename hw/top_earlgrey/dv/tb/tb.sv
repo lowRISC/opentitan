@@ -112,7 +112,7 @@ module tb;
     .IOC9(dut.chip_if.ios[IoC9]), // MIO Pad 31
     .IOC10(dut.chip_if.ios[IoC10]), // MIO Pad 32
     .IOC11(dut.chip_if.ios[IoC11]), // MIO Pad 33
-    .IOC12(dut.chip_if.ios[IoC11]), // MIO Pad 34
+    .IOC12(dut.chip_if.ios[IoC12]), // MIO Pad 34
     .IOR0(dut.chip_if.ios[IoR0]), // MIO Pad 35
     .IOR1(dut.chip_if.ios[IoR1]), // MIO Pad 36
     .IOR2(dut.chip_if.ios[IoR2]), // MIO Pad 37
