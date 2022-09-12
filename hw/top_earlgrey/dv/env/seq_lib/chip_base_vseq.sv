@@ -54,6 +54,16 @@ class chip_base_vseq #(
     super.apply_reset(kind);
   endtask
 
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    cfg.chip_vif.por_n_if.drive(0);
+    // At least 6 AON clock cycles.
+    // TODO: Tentatively this is set to 100us. Fetch the individual clock freqs from AST via
+    // chip_vif.
+    reset_duration_ps = max2(reset_duration_ps, 100_000_000 /* 100us */);
+    super.apply_resets_concurrently(reset_duration_ps);
+    cfg.chip_vif.por_n_if.drive(1);
+  endtask
+
   chip_callback_vseq callback_vseq;
 
   // Iniitializes the DUT.
