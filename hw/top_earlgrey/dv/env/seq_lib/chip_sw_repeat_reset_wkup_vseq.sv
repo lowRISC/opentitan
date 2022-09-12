@@ -25,7 +25,6 @@ class chip_sw_repeat_reset_wkup_vseq extends chip_sw_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    cfg.chip_vif.por_n_if.drive(0);
     cfg.chip_vif.pwrb_in_if.drive(1);
   endtask
 
