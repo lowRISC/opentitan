@@ -31,35 +31,30 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "web_event" with type "example" omitted
-
 rust_library(
-    name = "typetag",
+    name = "wasm_bindgen_macro_support",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "spans",
     ],
     crate_root = "src/lib.rs",
     data = [],
     edition = "2018",
-    proc_macro_deps = [
-        "@raze__typetag_impl__0_1_8//:typetag_impl",
-    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=typetag",
+        "crate-name=wasm-bindgen-macro-support",
         "manual",
     ],
-    version = "0.1.8",
+    version = "0.2.82",
     # buildifier: leave-alone
     deps = [
-        "@raze__erased_serde__0_3_21//:erased_serde",
-        "@raze__inventory__0_2_3//:inventory",
-        "@raze__once_cell__1_14_0//:once_cell",
-        "@raze__serde__1_0_139//:serde",
+        "@raze__proc_macro2__1_0_40//:proc_macro2",
+        "@raze__quote__1_0_20//:quote",
+        "@raze__syn__1_0_98//:syn",
+        "@raze__wasm_bindgen_backend__0_2_82//:wasm_bindgen_backend",
+        "@raze__wasm_bindgen_shared__0_2_82//:wasm_bindgen_shared",
     ],
 )
-
-# Unsupported target "test" with type "test" omitted

@@ -15,6 +15,7 @@ _DEPENDENCIES = {
         "anyhow": "@raze__anyhow__1_0_58//:anyhow",
         "bitflags": "@raze__bitflags__1_3_2//:bitflags",
         "byteorder": "@raze__byteorder__1_4_3//:byteorder",
+        "chrono": "@raze__chrono__0_4_22//:chrono",
         "deser-hjson": "@raze__deser_hjson__1_0_2//:deser_hjson",
         "directories": "@raze__directories__4_0_1//:directories",
         "env_logger": "@raze__env_logger__0_8_4//:env_logger",
@@ -259,6 +260,15 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__android_system_properties__0_1_5",
+        url = "https://crates.io/api/v1/crates/android_system_properties/0.1.5/download",
+        type = "tar.gz",
+        strip_prefix = "android_system_properties-0.1.5",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.android_system_properties-0.1.5.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__ansi_term__0_12_1",
         url = "https://crates.io/api/v1/crates/ansi_term/0.12.1/download",
         type = "tar.gz",
@@ -349,6 +359,15 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__bumpalo__3_11_0",
+        url = "https://crates.io/api/v1/crates/bumpalo/3.11.0/download",
+        type = "tar.gz",
+        strip_prefix = "bumpalo-3.11.0",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.bumpalo-3.11.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__byteorder__1_4_3",
         url = "https://crates.io/api/v1/crates/byteorder/1.4.3/download",
         type = "tar.gz",
@@ -389,6 +408,15 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__chrono__0_4_22",
+        url = "https://crates.io/api/v1/crates/chrono/0.4.22/download",
+        type = "tar.gz",
+        strip_prefix = "chrono-0.4.22",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.chrono-0.4.22.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__clap__2_34_0",
         url = "https://crates.io/api/v1/crates/clap/2.34.0/download",
         type = "tar.gz",
@@ -415,6 +443,15 @@ def raze_fetch_remote_crates():
         sha256 = "9d6f2aa4d0537bcc1c74df8755072bd31c1ef1a3a1b85a68e8404a8c353b7b8b",
         strip_prefix = "const-oid-0.6.2",
         build_file = Label("//third_party/rust/crates/remote:BUILD.const-oid-0.6.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__core_foundation_sys__0_8_3",
+        url = "https://crates.io/api/v1/crates/core-foundation-sys/0.8.3/download",
+        type = "tar.gz",
+        strip_prefix = "core-foundation-sys-0.8.3",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.core-foundation-sys-0.8.3.bazel"),
     )
 
     maybe(
@@ -669,6 +706,15 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__iana_time_zone__0_1_47",
+        url = "https://crates.io/api/v1/crates/iana-time-zone/0.1.47/download",
+        type = "tar.gz",
+        strip_prefix = "iana-time-zone-0.1.47",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.iana-time-zone-0.1.47.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__indicatif__0_16_2",
         url = "https://crates.io/api/v1/crates/indicatif/0.16.2/download",
         type = "tar.gz",
@@ -705,6 +751,15 @@ def raze_fetch_remote_crates():
         sha256 = "112c678d4050afce233f4f2852bb2eb519230b3cf12f33585275537d7e41578d",
         strip_prefix = "itoa-1.0.2",
         build_file = Label("//third_party/rust/crates/remote:BUILD.itoa-1.0.2.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__js_sys__0_3_59",
+        url = "https://crates.io/api/v1/crates/js-sys/0.3.59/download",
+        type = "tar.gz",
+        strip_prefix = "js-sys-0.3.59",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.js-sys-0.3.59.bazel"),
     )
 
     maybe(
@@ -985,12 +1040,11 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
-        name = "raze__once_cell__1_13_0",
-        url = "https://crates.io/api/v1/crates/once_cell/1.13.0/download",
+        name = "raze__once_cell__1_14_0",
+        url = "https://crates.io/api/v1/crates/once_cell/1.14.0/download",
         type = "tar.gz",
-        sha256 = "18a6dbe30758c9f83eb00cbea4ac95966305f5a7772f3f42ebfc7fc7eddbd8e1",
-        strip_prefix = "once_cell-1.13.0",
-        build_file = Label("//third_party/rust/crates/remote:BUILD.once_cell-1.13.0.bazel"),
+        strip_prefix = "once_cell-1.14.0",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.once_cell-1.14.0.bazel"),
     )
 
     maybe(
@@ -1495,6 +1549,15 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__time__0_1_44",
+        url = "https://crates.io/api/v1/crates/time/0.1.44/download",
+        type = "tar.gz",
+        strip_prefix = "time-0.1.44",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.time-0.1.44.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__toml__0_5_9",
         url = "https://crates.io/api/v1/crates/toml/0.5.9/download",
         type = "tar.gz",
@@ -1625,12 +1688,66 @@ def raze_fetch_remote_crates():
 
     maybe(
         http_archive,
+        name = "raze__wasi__0_10_0_wasi_snapshot_preview1",
+        url = "https://crates.io/api/v1/crates/wasi/0.10.0+wasi-snapshot-preview1/download",
+        type = "tar.gz",
+        strip_prefix = "wasi-0.10.0+wasi-snapshot-preview1",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.wasi-0.10.0+wasi-snapshot-preview1.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "raze__wasi__0_11_0_wasi_snapshot_preview1",
         url = "https://crates.io/api/v1/crates/wasi/0.11.0+wasi-snapshot-preview1/download",
         type = "tar.gz",
         sha256 = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423",
         strip_prefix = "wasi-0.11.0+wasi-snapshot-preview1",
         build_file = Label("//third_party/rust/crates/remote:BUILD.wasi-0.11.0+wasi-snapshot-preview1.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__wasm_bindgen__0_2_82",
+        url = "https://crates.io/api/v1/crates/wasm-bindgen/0.2.82/download",
+        type = "tar.gz",
+        strip_prefix = "wasm-bindgen-0.2.82",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.wasm-bindgen-0.2.82.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__wasm_bindgen_backend__0_2_82",
+        url = "https://crates.io/api/v1/crates/wasm-bindgen-backend/0.2.82/download",
+        type = "tar.gz",
+        strip_prefix = "wasm-bindgen-backend-0.2.82",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.wasm-bindgen-backend-0.2.82.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__wasm_bindgen_macro__0_2_82",
+        url = "https://crates.io/api/v1/crates/wasm-bindgen-macro/0.2.82/download",
+        type = "tar.gz",
+        strip_prefix = "wasm-bindgen-macro-0.2.82",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.wasm-bindgen-macro-0.2.82.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__wasm_bindgen_macro_support__0_2_82",
+        url = "https://crates.io/api/v1/crates/wasm-bindgen-macro-support/0.2.82/download",
+        type = "tar.gz",
+        strip_prefix = "wasm-bindgen-macro-support-0.2.82",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.wasm-bindgen-macro-support-0.2.82.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "raze__wasm_bindgen_shared__0_2_82",
+        url = "https://crates.io/api/v1/crates/wasm-bindgen-shared/0.2.82/download",
+        type = "tar.gz",
+        strip_prefix = "wasm-bindgen-shared-0.2.82",
+        build_file = Label("//third_party/rust/crates/remote:BUILD.wasm-bindgen-shared-0.2.82.bazel"),
     )
 
     maybe(

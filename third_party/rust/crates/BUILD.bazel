@@ -40,6 +40,15 @@ alias(
 )
 
 alias(
+    name = "chrono",
+    actual = "@raze__chrono__0_4_22//:chrono",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "deser_hjson",
     actual = "@raze__deser_hjson__1_0_2//:deser_hjson",
     tags = [
