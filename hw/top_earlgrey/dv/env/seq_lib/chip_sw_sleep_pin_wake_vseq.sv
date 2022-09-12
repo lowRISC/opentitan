@@ -24,6 +24,8 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
+  import chip_common_pkg::*;  // chip_io_e
+
   localparam int unsigned NumMioPads = top_earlgrey_pkg::MioPadCount+2;
   localparam int unsigned NumDioPads = top_earlgrey_pkg::DioCount;
 
@@ -78,23 +80,23 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     "tb.dut.IOR12", // MIO47
     "tb.dut.IOR13"  // MIO48
   };
-  localparam string DioPads [NumDioPads] = '{
-    "tb.dut.USB_P",          // DIO 0
-    "tb.dut.USB_N",          // DIO 1
-    "tb.dut.SPI_HOST_D0",    // DIO 2
-    "tb.dut.SPI_HOST_D1",    // DIO 3
-    "tb.dut.SPI_HOST_D2",    // DIO 4
-    "tb.dut.SPI_HOST_D3",    // DIO 5
-    "tb.dut.SPI_DEV_D0",     // DIO 6
-    "tb.dut.SPI_DEV_D1",     // DIO 7
-    "tb.dut.SPI_DEV_D2",     // DIO 8
-    "tb.dut.SPI_DEV_D3",     // DIO 9
-    "tb.dut.IOR8",           // DIO 10 EC_RST_L
-    "tb.dut.IOR9",           // DIO 11 FLASH_WP_L
-    "tb.dut.SPI_DEV_CLK",    // DIO 12
-    "tb.dut.SPI_DEV_CS_L",   // DIO 13
-    "tb.dut.SPI_HOST_CLK",   // DIO 14
-    "tb.dut.SPI_HOST_CS_L"   // DIO 15
+  localparam chip_io_e DioPads [NumDioPads] = '{
+    UsbP,       // DIO 0
+    UsbN,       // DIO 1
+    SpiHostD0,  // DIO 2
+    SpiHostD1,  // DIO 3
+    SpiHostD2,  // DIO 4
+    SpiHostD3,  // DIO 5
+    SpiDevD0,   // DIO 6
+    SpiDevD1,   // DIO 7
+    SpiDevD2,   // DIO 8
+    SpiDevD3,   // DIO 9
+    IoR8,       // DIO 10 EC_RST_L
+    IoR9,       // DIO 11 FLASH_WP_L
+    SpiDevClk,  // DIO 12
+    SpiDevCsL,  // DIO 13
+    SpiHostClk, // DIO 14
+    SpiHostCsL  // DIO 15
   };
 
   // mio0_dio1 and pad_sel values come from SW
@@ -170,7 +172,7 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     // Drive the pin using DPI `uvm_hdl_force()` function
     if (mio0_dio1) begin
       // DIO drive
-      `DV_CHECK(uvm_hdl_force(DioPads[pad_sel], 1'b1));
+      cfg.chip_vif.ios_if.drive_pin(DioPads[pad_sel], 1'b1);
     end else begin
       // MIO drive
       `DV_CHECK(uvm_hdl_force(MioPads[pad_sel], 1'b1));
