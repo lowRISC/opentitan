@@ -447,15 +447,14 @@
 
             - Apply bootstrap pin strapping and reset the chip.
             - Send `CHIP_ERASE` (`0xc7`).
-            - Write `0x4552544f` (ASCII "OTRE") at byte offset `0x334`.
-            - Reset the chip.
-            - Verify that the chip outputs the expected `BFV`: `024d410d` over UART.
-              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
-            - Apply bootstrap pin strapping and reset the chip.
-            - Send `READ` (`0x03`) followed by the 3-byte address 0x000334.
+            - Write `0x4552544f_00000000` (ASCII "\0\0\0\0OTRE") at byte offset `0x80330`.
+              - Note: Writes must start at a flash-word-aligned address and we must write to the second slot since ROM returns the last error.
+            - `READ` (`0x03`) 8 bytes starting at `0x080330`.
               - This is the address of the identifier that was written earlier.
-            - Verify that the chip does not respond for the next 4 bytes.
-              - The data on the CIPO line must be `0xff`.
+            - Verify that the response is not equal to `0x4552544f_00000000`.
+            - Release pins and reset.
+            - Verify that the chip outputs the expected `BFV`: `0242500d` over UART (`kErrorBootPolicyBadLength`).
+              - ROM will continously reset the chip and output the same `BFV` and `LCV`.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2
