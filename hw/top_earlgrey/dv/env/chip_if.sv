@@ -110,21 +110,17 @@ interface chip_if;
   // Chip IOs must always either be undriven or driven to a known value. Xs indicate multiple
   // drivers, which is an issue likely caused by multiple functions simultaneously attempting to
   // control the shared (muxed) pads.
-  initial begin
-    wait (ios_if.pins_pd == {IoNumTotal{1'b1}});
-    foreach (ios[i]) begin
-      fork
-        begin
-          automatic int a_i = i;
-          forever @(ios[a_i]) begin
-            automatic chip_io_e io = chip_io_e'(a_i);
-            `DV_CHECK_FATAL(ios[a_i] !== 1'bx,
-                            $sformatf("Possible multiple drivers on chip IO %0s", io.name()), MsgId)
-          end
-        end
-      join_none
+  for (genvar i = 0; i < IoNumTotal; i++) begin : gen_ios_x_check
+    wire glitch_free_io;
+    assign #1ps glitch_free_io = ios[i];
+
+    chip_io_e named_io = chip_io_e'(i);
+    always @(glitch_free_io) begin
+      if (glitch_free_io === 1'bx) begin
+        `uvm_error(MsgId, $sformatf("Detected an X on %0s", named_io.name()))
+      end
     end
-  end
+  end : gen_ios_x_check
 
   // Functional interfaces.
   //
@@ -591,7 +587,7 @@ interface chip_if;
    * Helper methods for forcing internal signals.
    *
    * The macros invoked below create a static function to sample / force / release an internal
-     * signal. Please see definition in `hw/dv/sv/dv_utils/dv_macros.svh` for more details.
+   * signal. Please see definition in `hw/dv/sv/dv_utils/dv_macros.svh` for more details.
    */
 
   // Signal probe function for LC program error signal in OTP ctrl.
