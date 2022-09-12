@@ -16,6 +16,7 @@ path = "empty_file_to_appease_cargo.rs"
 anyhow = { version = "1.0.57", features=["backtrace"] }
 bitflags = "1.0"
 byteorder = "1.4.3"
+chrono = "0.4"
 deser-hjson = "1.0.2"
 directories = "4.0.1"
 env_logger = "0.8.3"
