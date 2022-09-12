@@ -13,12 +13,10 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task body();
-    string keymgr_path = {`DV_STRINGIFY(tb.dut.`KEYMGR_HIER),
-                        ".u_ctrl.key_state_q"};
     logic [1023:0] curr_key, prev_key;
     logic [TL_DW-1:0] init_state;
     logic [TL_DW-1:0] reg_val;
-    bit [LcBroadcastLast-1:0] bool_vector;
+    bit [LcCtrlSignalNumTotal-1:0] lc_ctrl_signals_expected_values;
 
     super.body();
 
@@ -26,10 +24,6 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
     `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Keymgr entered Init State");,
              "timeout waiting for C side keymgr init acknowledgement",
              cfg.sw_test_timeout_ns)
-
-    if (!uvm_hdl_read(keymgr_path, curr_key)) begin
-       `uvm_fatal(`gfn, $sformatf("uvm_hdl_read failed for %0s", keymgr_path))
-    end
 
     // Read current lc state to establish baseline
     jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
@@ -64,15 +58,15 @@ class chip_sw_alert_handler_escalation_vseq extends chip_sw_base_vseq;
       cfg.sw_test_timeout_ns);
 
     prev_key = curr_key;
-    `DV_CHECK_FATAL(uvm_hdl_read(keymgr_path, curr_key))
+    curr_key = cfg.chip_vif.signal_probe_keymgr_key_state(SignalProbeSample);
     if (curr_key == prev_key) begin
       `uvm_fatal(`gfn, $sformatf("something is very wrong"))
     end
 
     // once in scrap, probe and check for broadcasts
-    bool_vector = '0;
-    bool_vector[EscEn] = 1;
-    check_lc_ctrl_broadcast(bool_vector);
+    lc_ctrl_signals_expected_values = '0;
+    lc_ctrl_signals_expected_values[LcCtrlSignalEscEn] = 1;
+    cfg.chip_vif.check_lc_ctrl_all_enable_signals(lc_ctrl_signals_expected_values);
   endtask
 
 endclass

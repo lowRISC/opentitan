@@ -14,8 +14,6 @@ class chip_sw_lc_ctrl_program_error_vseq extends chip_sw_base_vseq;
 
   virtual task body();
     bit [TL_DW-1:0] status_val;
-    string otp_path = {`DV_STRINGIFY(tb.dut.`OTP_CTRL_HIER),
-                       ".u_otp_ctrl_lci.lc_err_o"};
 
     super.body();
 
@@ -25,7 +23,7 @@ class chip_sw_lc_ctrl_program_error_vseq extends chip_sw_base_vseq;
              cfg.sw_test_timeout_ns)
 
     // force lc_ctrl program path to error
-    `DV_CHECK_FATAL(uvm_hdl_force(otp_path, 1'b1));
+    void'(cfg.chip_vif.signal_probe_otp_ctrl_lc_err_o(SignalProbeForce, 1));
 
     // poll for state to transition to post transition state
     jtag_csr_spinwait(ral.lc_ctrl.lc_state.get_offset(),

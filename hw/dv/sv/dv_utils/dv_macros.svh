@@ -565,3 +565,34 @@
 `ifndef DV_MAX2
   `define DV_MAX2(a, b) ((a) > (b) ? (a) : (b))
 `endif
+
+// Creates a signal probe function to sample / force / release an internal signal.
+//
+// If there is a need to sample / force an internal signal, then it must be done in the testbench,
+// or in an interface bound to the DUT. This macro creates a standardized signal probe function
+// meant to be invoked an interface. The generated function can then be invoked in test sequences
+// or other UVM classes. The macro takes 2 arguments - name of the function and the hierarchical
+// path to the signal. If invoked in an interface which is bound to the DUT, the signal can be a
+// partial hierarchical path within the DUT. The generated function accepts 2 arguments - the first
+// indicates the probe action (sample, force or release) of type dv_utils_pkg::signal_probe_e. The
+// second argument is the value to be forced. If sample action is chosen, then it returns the
+// sampled value. In other cases, it returns Xs, which can be ignored by void-casting the function
+// call.
+//
+// The suggested naming convention for the function is:
+//   signal_probe_<DUT_or_IP_block_name>_<signal_name>
+//
+// This macro must be invoked in an interface or module.
+`ifndef DV_CREATE_SIGNAL_PROBE_FUNCTION
+`define DV_CREATE_SIGNAL_PROBE_FUNCTION(FUNC_NAME_, SIGNAL_PATH_)                       \
+  function static uvm_hdl_data_t FUNC_NAME_(dv_utils_pkg::signal_probe_e kind,          \
+                                            uvm_hdl_data_t value = '0);                 \
+    case (kind)                                                                         \
+      dv_utils_pkg::SignalProbeSample:  return SIGNAL_PATH_;                            \
+      dv_utils_pkg::SignalProbeForce:   force SIGNAL_PATH_ = value;                     \
+      dv_utils_pkg::SignalProbeRelease: release SIGNAL_PATH_;                           \
+      default:            `uvm_fatal(`"FUNC_NAME_`", $sformatf("Bad value: %0d", kind)) \
+    endcase                                                                             \
+    return 'x;                                                                          \
+  endfunction
+`endif

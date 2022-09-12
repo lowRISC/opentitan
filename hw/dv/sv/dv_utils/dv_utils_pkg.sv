@@ -68,6 +68,13 @@ package dv_utils_pkg;
     BusOpRead  = 1'b1
   } bus_op_e;
 
+ // Enum representing a probe operation on an internal signal.
+  typedef enum {
+    SignalProbeSample,  // Sample the signal.
+    SignalProbeForce,   // Force the signal with some value.
+    SignalProbeRelease  // Release the previous force.
+  } signal_probe_e;
+
   // Enum representing a type of host requests - read only, write only or random read & write
   typedef enum int {
     HostReqNone      = 0,

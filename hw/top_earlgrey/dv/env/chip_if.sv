@@ -509,6 +509,43 @@ interface chip_if;
   end
 
   // Helper methods.
+
+  // Verifies an LC control signal broadcast by the LC controller.
+  function automatic void check_lc_ctrl_enable_signal(lc_ctrl_signal_e signal, bit expected_value);
+    lc_ctrl_pkg::lc_tx_t value;
+    case (signal)
+      LcCtrlSignalDftEn:          value = `LC_CTRL_HIER.lc_dft_en_o;
+      LcCtrlSignalNvmDebugEn:     value = `LC_CTRL_HIER.lc_nvm_debug_en_o;
+      LcCtrlSignalHwDebugEn:      value = `LC_CTRL_HIER.lc_hw_debug_en_o;
+      LcCtrlSignalCpuEn:          value = `LC_CTRL_HIER.lc_cpu_en_o;
+      LcCtrlSignalCreatorSeedEn:  value = `LC_CTRL_HIER.lc_creator_seed_sw_rw_en_o;
+      LcCtrlSignalOwnerSeedEn:    value = `LC_CTRL_HIER.lc_owner_seed_sw_rw_en_o;
+      LcCtrlSignalIsoRdEn:        value = `LC_CTRL_HIER.lc_iso_part_sw_rd_en_o;
+      LcCtrlSignalIsoWrEn:        value = `LC_CTRL_HIER.lc_iso_part_sw_wr_en_o;
+      LcCtrlSignalSeedRdEn:       value = `LC_CTRL_HIER.lc_seed_hw_rd_en_o;
+      LcCtrlSignalKeyMgrEn:       value = `LC_CTRL_HIER.lc_keymgr_en_o;
+      LcCtrlSignalEscEn:          value = `LC_CTRL_HIER.lc_escalate_en_o;
+      LcCtrlSignalCheckBypEn:     value = `LC_CTRL_HIER.lc_check_byp_en_o;
+      default:        `uvm_fatal(MsgId, $sformatf("Bad choice: %0s", signal.name()))
+    endcase
+    if (expected_value ~^ (value == lc_ctrl_pkg::On)) begin
+      `uvm_info(MsgId, $sformatf("LC control signal %0s: value = %0s matched",
+                                 signal.name(), value.name()), UVM_HIGH)
+    end else begin
+      `uvm_error(MsgId, $sformatf("LC control signal %0s: value = %0s mismatched",
+                                  signal.name(), value.name()))
+    end
+  endfunction
+
+  // Verifies all LC control signals broadcast by the LC controller.
+  function automatic void check_lc_ctrl_all_enable_signals(
+      bit [LcCtrlSignalNumTotal-1:0] expected_values);
+    foreach (expected_values[i]) begin
+      check_lc_ctrl_enable_signal(lc_ctrl_signal_e'(i), expected_values[i]);
+    end
+  endfunction
+
+  // Returns string path to an IP block instance.
   function automatic string get_hier_path(chip_peripheral_e peripheral, int inst_num = 0);
     string path = dv_utils_pkg::get_parent_hier($sformatf("%m"));
     case (peripheral)
@@ -549,6 +586,41 @@ interface chip_if;
     endcase
     return path;
   endfunction
+
+  /*
+   * Helper methods for forcing internal signals.
+   *
+   * The macros invoked below create a static function to sample / force / release an internal
+     * signal. Please see definition in `hw/dv/sv/dv_utils/dv_macros.svh` for more details.
+   */
+
+  // Signal probe function for LC program error signal in OTP ctrl.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_ctrl_lc_err_o,
+      `OTP_CTRL_HIER.u_otp_ctrl_lci.lc_err_o)
+
+  // Signal probe function for wait cycle mask in alert handler.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_alert_handler_ping_timer_wait_cyc_mask_i,
+      `ALERT_HANDLER_HIER.u_ping_timer.wait_cyc_mask_i)
+
+  // Signal probe function for keymgr key state.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
+      `KEYMGR_HIER.u_ctrl.key_state_q)
+
+  // Signal probe function for RX idle detection in usbdev.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_rx_idle_det_o,
+      `USBDEV_HIER.usbdev_impl.u_usb_fs_nb_pe.u_usb_fs_rx.rx_idle_det_o)
+
+  // Signal probe function for se0 signal in usbdev.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_se0,
+      `USBDEV_HIER.usbdev_impl.u_usbdev_linkstate.line_se0_raw)
+
+  // Signal probe function for link reset signal in usbdev.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_link_reset_o,
+      `USBDEV_HIER.usbdev_impl.u_usbdev_linkstate.link_reset_o)
+
+  // Signal probe function for SOF valid signal in usbdev.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_usbdev_sof_valid_o,
+      `USBDEV_HIER.usbdev_impl.u_usb_fs_nb_pe.sof_valid_o)
 
 `undef TOP_HIER
 `undef ADC_CTRL_HIER
