@@ -174,7 +174,7 @@ interface chip_if;
 
   // Functional (dedicated) interface: SPI host interface (drives traffic into the chip).
   // TODO: Update spi_if to emit all signals as inout ports.
-  // spi_if spi_host_if(.rst_n(top_earlgrey.u_spi_device.rst_ni),
+  // spi_if spi_host_if(.rst_n(`SPI_DEVICE_HIER.rst_ni),
   //                    .sck(ios[SpiDevClk]),
   //                    .csb(ios[SpiDevCsL]),
   //                    .sio(ios[SpiDevD3:SpiDevD0]));
@@ -186,6 +186,12 @@ interface chip_if;
   assign spi_host_if.sio[1] = ios[SpiDevD1];
 
   // Functional (dedicated) interface: SPI AP device interface (receives traffic from the chip).
+  // TODO: Update spi_if to emit all signals as inout ports.
+  // spi_if spi_device_ap_if(.rst_n(`SPI_HOST_HIER(0).rst_ni),
+  //                         .sck(ios[SpiHostClk]),
+  //                         .csb(ios[SpiHostCsL]),
+  //                         .sio(ios[SpiHostD3:SpiHostD0]));
+
   spi_if spi_device_ap_if(.rst_n(`SPI_HOST_HIER(0).rst_ni));
   assign spi_device_ap_if.sck = ios[SpiHostClk];
   assign spi_device_ap_if.csb = ios[SpiHostCsL];
@@ -292,9 +298,10 @@ interface chip_if;
   assign ios[IoR4] = __enable_jtag ? jtag_if.trst_n : 1'bz;
 
   // Functional (muxed) interface: Flash controller JTAG.
-  logic enable_flash_ctrl_jtag, flash_ctrl_jtag_enabled;
+  bit enable_flash_ctrl_jtag, flash_ctrl_jtag_enabled;
   jtag_if flash_ctrl_jtag_if();
 
+  // TODO: Revisit this logic.
   assign flash_ctrl_jtag_enabled = enable_flash_ctrl_jtag && lc_hw_debug_en;
   assign ios[IoB0] = flash_ctrl_jtag_enabled ? flash_ctrl_jtag_if.tms : 1'bz;
   assign flash_ctrl_jtag_if.tdo = flash_ctrl_jtag_enabled ? ios[IoB1] : 1'bz;
@@ -344,11 +351,11 @@ interface chip_if;
   endfunction
 
   // Functional (muxed) interface: SPI EC device interface (receives traffic from the chip).
-  // spi_if spi_device_ec_if(.rst_n(top_earlgrey.u_spi_host1.rst_ni));
-  // assign spi_device_ec_if.csk = ios[IoB3];
-  // assign spi_device_ec_if.csb = ios[IoB0];
-  // assign spi_device_ec_if.sio[0] = ios[IoB1];
-  // assign ios[IoB2] = assign spi_device_ec_if.sio[1] : 1'bz;
+  // TODO: Update spi_if to emit all signals as inout ports.
+  // spi_if spi_device_ec_if(.rst_n(`SPI_HOST_HIER(1).rst_ni),
+  //                         .sck(ios[IoB3]),
+  //                         .csb(ios[IoB0]),
+  //                         .sio(ios[IoB1:IoB2]));
 
   // Functional (muxed) interface: I2Cs.
   bit [NUM_I2CS-1:0] enable_i2c;
