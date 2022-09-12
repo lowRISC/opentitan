@@ -28,6 +28,26 @@ package chip_common_pkg;
 
   // TODO: Eventually, move everything from chip_env_pkg to here.
 
+  // Represents the various chip-wide control signals broadcast by the LC controller.
+  //
+  // The design emits these as a redundantly encoded signal of type lc_ctrl_pkg::lc_tx_t, which can
+  // be compared against the {On, Off} values.
+  typedef enum {
+    LcCtrlSignalDftEn,
+    LcCtrlSignalNvmDebugEn,
+    LcCtrlSignalHwDebugEn,
+    LcCtrlSignalCpuEn,
+    LcCtrlSignalCreatorSeedEn,
+    LcCtrlSignalOwnerSeedEn,
+    LcCtrlSignalIsoRdEn,
+    LcCtrlSignalIsoWrEn,
+    LcCtrlSignalSeedRdEn,
+    LcCtrlSignalKeyMgrEn,
+    LcCtrlSignalEscEn,
+    LcCtrlSignalCheckBypEn,
+    LcCtrlSignalNumTotal
+  } lc_ctrl_signal_e;
+
   // Chip IOs.
   //
   // This aggregates all chip IOs as seen at the pads.

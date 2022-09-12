@@ -12,9 +12,7 @@ class chip_sw_alert_handler_entropy_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   virtual task pre_start();
-    string wait_cyc_mask_path = {`DV_STRINGIFY(tb.dut.`ALERT_HANDLER_HIER),
-                                 ".u_ping_timer.wait_cyc_mask_i"};
-    `DV_CHECK(uvm_hdl_force(wait_cyc_mask_path, 'h7))
+    void'(cfg.chip_vif.signal_probe_alert_handler_ping_timer_wait_cyc_mask_i(SignalProbeForce, 7));
     super.pre_start();
   endtask
 

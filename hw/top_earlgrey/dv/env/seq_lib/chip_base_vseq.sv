@@ -144,35 +144,21 @@ class chip_base_vseq #(
     end
   endtask
 
-  // shorten alert ping timer enable wait time
+  // Shorten the alert handler ping timer wait cycles.
+  //
+  // This is done to speed up the simulation while achieving coverage on alert pings to various
+  // blocks.
+  // TODO; plusargs should be sought in a singla place (we do it in the base test class).
+  // TODO: Nothing may happen after calling this function, becuase it internally fetches a plusarg
+  // which can result in a nop. Refactor this later.
   task alert_ping_en_shorten();
-    string mask_path = {`DV_STRINGIFY(tb.dut.`ALERT_HANDLER_HIER),
-                        ".u_ping_timer.wait_cyc_mask_i"};
     bit shorten_ping_en;
-    `uvm_info(`gfn, $sformatf("ping enable path: %s", mask_path), UVM_HIGH)
     void'($value$plusargs("shorten_ping_en=%0d", shorten_ping_en));
     if (shorten_ping_en) begin
-       `DV_CHECK_FATAL(uvm_hdl_force(mask_path, 16'h3F))
+      void'(cfg.chip_vif.signal_probe_alert_handler_ping_timer_wait_cyc_mask_i(
+          SignalProbeForce, 16'h3F));
     end
   endtask : alert_ping_en_shorten
-
-  // shorten alert ping timer enable wait time
-  virtual task check_lc_ctrl_broadcast(bit [LcBroadcastLast-1:0] bool_vector);
-    foreach (lc_broadcast_paths[i]) begin
-      logic [lc_ctrl_pkg::TxWidth-1:0] curr_val;
-      string path = {`DV_STRINGIFY(tb.dut.`LC_CTRL_HIER), ".", lc_broadcast_paths[i]};
-      `DV_CHECK_FATAL(uvm_hdl_read(path, curr_val))
-      // if bool vector bit is 1, the probed value should be ON
-      // if bool vector bit is 0, the probed value should be OFF
-      if (bool_vector[i] ~^ (curr_val == lc_ctrl_pkg::On)) begin
-        `uvm_info(`gfn, $sformatf("%s: %d matched", lc_broadcast_paths[i],
-                                  curr_val), UVM_HIGH)
-      end else begin
-        `uvm_error(`gfn, $sformatf("%s: %d mismatched", lc_broadcast_paths[i],
-                                   curr_val))
-      end
-    end
-  endtask : check_lc_ctrl_broadcast
 
   // Initialize the OTP creator SW cfg region to use otbn for signature verification.
   virtual function void initialize_otp_sig_verify();

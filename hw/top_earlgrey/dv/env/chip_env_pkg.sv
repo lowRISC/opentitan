@@ -105,40 +105,6 @@ package chip_env_pkg;
     LcOtpError
   } lc_ctrl_status_e;
 
-  // enumeration for lc_ctrl broadcasts
-  typedef enum int {
-    DftEn = 0,
-    NvmDebugEn,
-    HwDebugEn,
-    CpuEn,
-    CreatorSeedEn,
-    OwnerSeedEn,
-    IsoRdEn,
-    IsoWrEn,
-    SeedRdEn,
-    KeyMgrEn,
-    EscEn,
-    CheckBypEn,
-    LcBroadcastLast
-  } lc_broadcast_e;
-
-  // hierarchy paths for lc_ctrl broadcast signals
-  string lc_broadcast_paths[LcBroadcastLast] = '{
-    0  : "lc_dft_en_o",
-    1  : "lc_nvm_debug_en_o",
-    2  : "lc_hw_debug_en_o",
-    3  : "lc_cpu_en_o",
-    4  : "lc_creator_seed_sw_rw_en_o",
-    5  : "lc_owner_seed_sw_rw_en_o",
-    6  : "lc_iso_part_sw_rd_en_o",
-    7  : "lc_iso_part_sw_wr_en_o",
-    8  : "lc_seed_hw_rd_en_o",
-    9  : "lc_keymgr_en_o",
-    10 : "lc_escalate_en_o",
-    11 : "lc_check_byp_en_o"
-  };
-
-
   // Extracts the address and size of a const symbol in a SW test (supplied as an ELF file).
   //
   // Used by a testbench to modify the given symbol in an executable (elf) generated for an embedded
