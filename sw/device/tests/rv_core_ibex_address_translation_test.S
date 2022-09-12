@@ -10,6 +10,7 @@
  */
   .globl make_lower_case
   .type make_lower_case, @function
+  .balign 256
 make_lower_case:
   // a0: beginning of string
   // t0, t1: lower and upper bound of ascii capital letters
@@ -53,6 +54,7 @@ kMakeLowerCaseFnSize:
  */
   .globl get_name
   .type get_name, @function
+  .balign 256
 get_name:
   // a0: beginning of string.
   // t0: beginning of replace string.
