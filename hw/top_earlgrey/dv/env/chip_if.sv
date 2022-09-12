@@ -213,8 +213,8 @@ interface chip_if;
   // Functional (muxed) interface: sysrst_ctrl.
   // TODO: Replace with sysrst_ctrl IP level interface.
   // TODO; combine all into 1 single sysrst_ctrl_if.
-  pins_if #(8) sysrst_ctrl_if(.pins({ios[IoB3], ios[IoB6], ios[IoB8], ios[IoB9],
-                                     ios[IoC7], ios[IoC9], ios[IoR5], ios[IoR6]}));
+  pins_if #(8) sysrst_ctrl_if(.pins({ios[IoR6], ios[IoR5], ios[IoC9], ios[IoC7],
+                                     ios[IoB9], ios[IoB8], ios[IoB6], ios[IoB3]}));
 
   // Functional (dedicated) interface (input): AST misc.
   pins_if #(1) ast_misc_if(.pins(ios[AstMisc]));
