@@ -2,15 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
-
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules:opentitan_test.bzl",
     "cw310_params",
     "opentitan_functest",
 )
+
+package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "global_mock",
@@ -94,7 +93,6 @@ opentitan_functest(
     name = "memory_perftest",
     srcs = ["memory_perftest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:test_rom",
         tags = [
             "flaky",
             "manual",

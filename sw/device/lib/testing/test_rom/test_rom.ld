@@ -23,24 +23,13 @@ INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
  */
 _boot_address = ORIGIN(rom);
 
-_heap_size = 0xe000;
-_stack_size = LENGTH(ram_main) - _heap_size - _static_critical_size;
-_stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
-_stack_start = _stack_end - _stack_size;
-_flash_start = ORIGIN(eflash);
-
 /**
- * TODO(lowrisc/opentitan:#10712): setup Ibex address translation
+ * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
-
-/**
- * This symbol points at the manifest of the OTTF + test binary, which contains
- * loading and signing information.
- *
- * See `sw/device/lib/testing/test_framework/ottf.ld`, under the
- * .manifest section, which populates it.
- */
-_manifest = _flash_start;
+_rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
+_rom_ext_virtual_size = LENGTH(rom_ext_virtual);
+ASSERT((_rom_ext_virtual_size <= (LENGTH(eflash) / 2)),
+  "Error: rom ext flash is bigger than slot.");
 
 _rom_digest_size = 32;
 _chip_info_start = ORIGIN(rom) + LENGTH(rom) - _rom_digest_size - _chip_info_size;
@@ -145,7 +134,7 @@ SECTIONS {
    * Immutable chip_info data, containing build-time-recorded information.
    */
   .chip_info _chip_info_start : ALIGN(4) {
-    *(.chip_info)
+    KEEP(*(.chip_info))
   } > rom
 
   /**
