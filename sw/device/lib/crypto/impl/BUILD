@@ -12,3 +12,15 @@ cc_library(
         "//sw/device/lib/crypto/drivers:otbn",
     ],
 )
+
+cc_library(
+    name = "integrity_check",
+    srcs = ["integrity_check.c"],
+    hdrs = [
+        "integrity_check.h",
+        "//sw/device/lib/crypto/include:datatypes.h",
+    ],
+    deps = [
+        "//sw/device/lib/base:hardened",
+    ],
+)

@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_DATATYPES_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_DATATYPES_H_
 
+#include "sw/device/lib/base/hardened.h"
+
 /**
  * @file
  * @brief Shared datatypes for the OpenTitan cryptography library.
@@ -27,7 +29,7 @@ typedef enum crypto_status {
   // Status is OK; no errors.
   kCryptoStatusOK = 0x4d39,
   // Invalid input arguments; wrong length or invalid type.
-  kCryptoIncorrectInput = 0xbd57,
+  kCryptoStatusBadArgs = 0xbd57,
   // Inconsistencies when cross-checking results, witness,checksum.
   kCryptoStatusInternalError = 0x86ba,
   // An asynchronous operation is still in progress.
@@ -245,13 +247,23 @@ typedef enum key_mode {
  * Struct to handle unmasked key type.
  */
 typedef struct crypto_unblinded_key {
-  // Mode for which the key usage is intended.
+  /**
+   * Mode for which the key usage is intended.
+   */
   key_mode_t key_mode;
-  // Key length.
+  /**
+   * Key length in bytes.
+   */
   size_t key_length;
-  // Implementation specific, storage provided by caller.
+  /**
+   * Implementation specific, storage provided by caller.
+   *
+   * Length in bytes must be equal to `key_length`.
+   */
   uint32_t *key;
-  // Implementation specific, checksum for this struct.
+  /**
+   * Implementation specific, checksum for this struct.
+   */
   uint32_t checksum;
 } crypto_unblinded_key_t;
 
@@ -267,7 +279,34 @@ typedef struct crypto_unblinded_key {
  * integrity purposes. The way the checksum is computed is a
  * implementation specific details.
  */
-typedef struct crypto_blinded_key crypto_blinded_key_t;
+typedef struct crypto_blinded_key {
+  /**
+   * Mode for which the key usage is intended.
+   */
+  key_mode_t key_mode;
+  /**
+   * Key length in bytes.
+   */
+  size_t key_length;
+  /**
+   * Implementation specific, storage provided by caller.
+   *
+   * Length in bytes must be equal to `key_length`.
+   */
+  uint32_t *key_blob;
+  /**
+   * True if and only if this represents a hardware-backed key.
+   *
+   * In the case of sideloaded keys, `key_blob` contains the handle used to
+   * generate the key from the key manager, rather than the actual key
+   * material.
+   */
+  hardened_bool_t sideloaded;
+  /**
+   * Implementation specific, checksum for this struct.
+   */
+  uint32_t checksum;
+} crypto_blinded_key_t;
 
 #ifdef __cplusplus
 }  // extern "C"
