@@ -299,10 +299,18 @@ This is useful for sharing build artifacts across multiple [`git` worktrees](htt
 Use the `--disk_cache=<filename>` to specify a cache directory.
 For example, running
 ```console
-bazel build //... --disk_cache=~/bazel_cache
+bazel build //... --disk_cache=~/.cache/bazel-disk-cache
 ```
 will cache all built artifacts.
 Alternatively add the following to `$HOME/.bazelrc` to avoid having automatically use the disk cache on every Bazel invocation, as shown [above]({{< relref "#create-a-bazelrc-file" >}}).
+
+Note that Bazel does not perform any garbage collection on the disk cache.
+To clean out the disk cache, you can set a cron job to periodically delete all files that have not been accessed for a certain amount of time.
+For example add the following line with the path to your disk cache to your crontab (using `crontab -e`) to delete all files that were last accessed over 60 days ago.
+
+```console
+0 0 * * 0 /usr/bin/find /path/to/disk/cache -type f -atime +60 -delete
+```
 
 For more documentation on Bazel disk caches see the [official documentation](https://docs.bazel.build/versions/main/remote-caching.html#disk-cache).
 
