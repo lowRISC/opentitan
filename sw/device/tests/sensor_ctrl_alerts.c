@@ -42,15 +42,6 @@ static dif_sensor_ctrl_t sensor_ctrl;
 static dif_alert_handler_t alert_handler;
 
 /**
- * The events_vector stores the tested events in bit strike fashion.
- * This means at first the flash word is 0xFFFF_FFFF.
- * As events are tested, they are marked as 0 in the vector,
- * so we go from 0xFFFF_FFFF -> 0xFFFF_FFFE -> 0xFFFF_FFFC
- */
-__attribute__((section(
-    ".non_volatile_scratch"))) volatile uint32_t events_vector = UINT32_MAX;
-
-/**
  *  Clear event trigger and recoverable status.
  */
 static void clear_event(uint32_t idx, dif_toggle_t fatal) {
@@ -134,6 +125,28 @@ static void test_event(uint32_t idx, dif_toggle_t fatal) {
   check_alert_state(fatal);
 };
 
+enum {
+  // Counter for event index.
+  kCounterEventIdx,
+  // Counter for number of events tested.
+  kCounterNumTests,
+  // Max number of events to test per run.
+  kNumTestsMax = SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS >> 1,
+};
+
+static uint32_t get_next_event_to_test(void) {
+  uint32_t event_idx;
+  // Reseed so that we don't see the same sequence after each reset.
+  rand_testutils_reseed();
+  do {
+    event_idx = flash_ctrl_testutils_counter_get(kCounterEventIdx);
+    flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterEventIdx);
+    // Drop each event randomly to reduce run time.
+  } while (rand_testutils_gen32() <= UINT32_MAX >> 1 &&
+           event_idx < SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS);
+  return event_idx;
+}
+
 bool test_main(void) {
   // Initialize flash_ctrl
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
@@ -169,30 +182,15 @@ bool test_main(void) {
                                              /*ecc_en*/ false,
                                              /*he_en*/ false);
 
-  // If all bits are set, then this must be the first iteration.
-  // On first iteration, populate events_vector with a random value that is
-  // progressively cleared in subsequent iterations.
-  if (events_vector == UINT32_MAX) {
-    const uint32_t max = (1 << SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS) - 1;
-    uint32_t new_val;
-    // Make sure we do not try to test more than half of all available events
-    // in a single test.  Testing too many would just make the run time too
-    // long.
-    do {
-      new_val = rand_testutils_gen32_range(1, max);
-    } while (bitfield_popcount32(new_val) >
-             (SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS >> 1));
-    flash_ctrl_testutils_set_counter(&flash_ctrl, (uint32_t *)&events_vector,
-                                     new_val);
-    LOG_INFO("Initial event vector 0x%x", events_vector);
-  }
-
-  uint32_t event_idx;
-  if (events_vector == 0) {
+  // Make sure we do not try to test more than half of all available events
+  // in a single test.  Testing too many would just make the run time too
+  // long.
+  uint32_t event_idx = get_next_event_to_test();
+  if (event_idx == SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS ||
+      flash_ctrl_testutils_counter_get(kCounterNumTests) >= kNumTestsMax) {
     LOG_INFO("Tested all events");
     return true;
   } else {
-    event_idx = flash_ctrl_testutils_get_count((uint32_t *)&events_vector);
     LOG_INFO("Testing event %d", event_idx);
   }
 
@@ -203,8 +201,7 @@ bool test_main(void) {
   test_event(event_idx, /*fatal*/ kDifToggleEnabled);
 
   // increment flash counter to know where we are
-  flash_ctrl_testutils_increment_counter(&flash_ctrl,
-                                         (uint32_t *)&events_vector, event_idx);
+  flash_ctrl_testutils_counter_increment(&flash_ctrl, kCounterNumTests);
 
   // Now request system to reset and test again
   LOG_INFO("Rebooting system");

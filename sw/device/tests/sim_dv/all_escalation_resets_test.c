@@ -66,27 +66,22 @@ typedef struct fault_checker {
 } fault_checker_t;
 
 // This preserves the fault checker across multiple resets.
-__attribute__((section(".non_volatile_scratch")))
-const volatile uint32_t nv_fault_checker[3] = {UINT32_MAX, UINT32_MAX,
-                                               UINT32_MAX};
+OT_SECTION(".non_volatile_scratch") uint64_t nv_fault_checker[3];
 
 // This is the fault checker to be used. It is saved and retrieved from flash
 // to preserve it across resets.
 fault_checker_t fault_checker;
 
-// This is a strike counter for resets.
-__attribute__((section(".non_volatile_scratch")))
-const volatile uint32_t nv_reset_counter = UINT32_MAX;
-
 uint32_t reset_count;
 
-// This is a strike counter for regular interrupts.
-__attribute__((section(".non_volatile_scratch")))
-const volatile uint32_t nv_interrupt_counter = UINT32_MAX;
-
-// This is a strike counter for nmis.
-__attribute__((section(".non_volatile_scratch")))
-const volatile uint32_t nv_nmi_interrupt_counter = UINT32_MAX;
+enum {
+  // Counter for resets.
+  kCounterReset,
+  // Counter for regular interrupts.
+  kCounterInterrupt,
+  // Counter for NMIs.
+  kCounterNmi,
+};
 
 /**
  * Program the alert handler to escalate on alerts upto phase 2 (i.e. reset).
@@ -95,13 +90,13 @@ const volatile uint32_t nv_nmi_interrupt_counter = UINT32_MAX;
  * - bite after escalation reset, so we should not get timer reset.
  */
 enum {
-  kWdogBarkMicros = 10 * 100,         //   1 ms
-  kWdogBiteMicros = 15 * 100,         // 1.5 ms
-  kEscalationStartMicros = 40,        //  40 us
-  kEscalationPhase0Micros = 2 * 100,  // 200 us
-  kEscalationPhase1Micros = 2 * 100,  // 200 us
-  kEscalationPhase2Micros = 100,      // 100 us
-  kEscalationPhase3Micros = 100,      // 100 us
+  kWdogBarkMicros = 2000,          // 2 ms
+  kWdogBiteMicros = 6000,          // 6 ms
+  kEscalationStartMicros = 1000,   // 1 ms
+  kEscalationPhase0Micros = 1000,  // 1 ms
+  kEscalationPhase1Micros = 1000,  // 1 ms
+  kEscalationPhase2Micros = 1000,  // 1 ms
+  kEscalationPhase3Micros = 1000,  // 1 ms
   kMaxResets = 2,
   kMaxInterrupts = 30,
 };
@@ -137,23 +132,23 @@ static void save_fault_checker(fault_checker_t *fault_checker) {
   uint32_t ip_inst_addr = (uint32_t)(fault_checker->ip_inst);
   uint32_t type_addr = (uint32_t)(fault_checker->type);
   CHECK(flash_ctrl_testutils_write(
-      &flash_ctrl_state, (uint32_t)(&nv_fault_checker[0]), 0, &function_addr,
-      kDifFlashCtrlPartitionTypeData, 1));
+      &flash_ctrl_state,
+      (uint32_t)(&nv_fault_checker[0]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+      0, &function_addr, kDifFlashCtrlPartitionTypeData, 1));
   CHECK(flash_ctrl_testutils_write(
-      &flash_ctrl_state, (uint32_t)(&nv_fault_checker[1]), 0, &ip_inst_addr,
-      kDifFlashCtrlPartitionTypeData, 1));
+      &flash_ctrl_state,
+      (uint32_t)(&nv_fault_checker[1]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+      0, &ip_inst_addr, kDifFlashCtrlPartitionTypeData, 1));
   CHECK(flash_ctrl_testutils_write(
-      &flash_ctrl_state, (uint32_t)(&nv_fault_checker[2]), 0, &type_addr,
-      kDifFlashCtrlPartitionTypeData, 1));
+      &flash_ctrl_state,
+      (uint32_t)(&nv_fault_checker[2]) - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+      0, &type_addr, kDifFlashCtrlPartitionTypeData, 1));
 }
 
 static void restore_fault_checker(fault_checker_t *fault_checker) {
-  fault_checker->function =
-      (FaultCheckerFunction)(abs_mmio_read32((uint32_t)(nv_fault_checker + 0)));
-  fault_checker->ip_inst =
-      (char *)(abs_mmio_read32((uint32_t)(nv_fault_checker + 1)));
-  fault_checker->type =
-      (char *)(abs_mmio_read32((uint32_t)(nv_fault_checker + 2)));
+  fault_checker->function = (FaultCheckerFunction)nv_fault_checker[0];
+  fault_checker->ip_inst = (char *)nv_fault_checker[1];
+  fault_checker->type = (char *)nv_fault_checker[2];
 }
 
 static const char *no_name = "unidentified";
@@ -413,14 +408,14 @@ void ottf_external_isr(void) {
 
   // Increment the interrupt count and detect overflows.
   uint32_t interrupt_count =
-      flash_ctrl_testutils_get_count((uint32_t *)&nv_interrupt_counter);
+      flash_ctrl_testutils_counter_get(kCounterInterrupt);
   if (interrupt_count > kMaxInterrupts) {
     restore_fault_checker(&fault_checker);
     CHECK(false, "For %s, reset count %d got too many interrupts (%d)",
           fault_checker.ip_inst, reset_count, interrupt_count);
   }
-  flash_ctrl_testutils_increment_counter(
-      &flash_ctrl_state, (uint32_t *)&nv_interrupt_counter, interrupt_count);
+  flash_ctrl_testutils_counter_set_at_least(
+      &flash_ctrl_state, kCounterInterrupt, interrupt_count + 1);
 
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
@@ -459,14 +454,12 @@ void ottf_external_nmi_handler(void) {
   LOG_INFO("At NMI handler");
 
   // Increment the nmi interrupt count.
-  uint32_t nmi_interrupt_count =
-      flash_ctrl_testutils_get_count((uint32_t *)&nv_nmi_interrupt_counter);
+  uint32_t nmi_interrupt_count = flash_ctrl_testutils_counter_get(kCounterNmi);
   if (nmi_interrupt_count > kMaxInterrupts) {
     LOG_INFO("Saturating nmi interrupts at %d", nmi_interrupt_count);
   } else {
-    flash_ctrl_testutils_increment_counter(
-        &flash_ctrl_state, (uint32_t *)&nv_nmi_interrupt_counter,
-        nmi_interrupt_count);
+    flash_ctrl_testutils_counter_set_at_least(&flash_ctrl_state, kCounterNmi,
+                                              nmi_interrupt_count + 1);
   }
 
   // Check the class.
@@ -606,7 +599,7 @@ static void set_aon_timers(const dif_aon_timer_t *aon_timer) {
       aon_timer_testutils_get_aon_cycles_from_us(kWdogBiteMicros);
 
   LOG_INFO(
-      "Wdog will bark after %u/%u us/cycles and bite after %u/%u us/cycles",
+      "Wdog will bark after %u us (%u cycles) and bite after %u us (%u cycles)",
       (uint32_t)kWdogBarkMicros, bark_cycles, (uint32_t)kWdogBiteMicros,
       bite_cycles);
 
@@ -889,9 +882,8 @@ bool test_main(void) {
                                              /*he_en*/ false);
 
   // Get the flash maintained reset counter.
-  reset_count = flash_ctrl_testutils_get_count((uint32_t *)&nv_reset_counter);
-  LOG_INFO("Reset counter at 0x%x, count 0x%x", (uint32_t)&nv_reset_counter,
-           reset_count);
+  reset_count = flash_ctrl_testutils_counter_get(kCounterReset);
+  LOG_INFO("Reset counter value: %u", reset_count);
   if (reset_count > kMaxResets) {
     restore_fault_checker(&fault_checker);
     CHECK(false, "Ip %d Got too many resets (%d)", fault_checker.ip_inst,
@@ -899,8 +891,8 @@ bool test_main(void) {
   }
 
   // Increment reset counter to know where we are.
-  flash_ctrl_testutils_increment_counter(
-      &flash_ctrl_state, (uint32_t *)&nv_reset_counter, reset_count);
+  flash_ctrl_testutils_counter_set_at_least(&flash_ctrl_state, kCounterReset,
+                                            reset_count + 1);
 
   // Check if there was a HW reset caused by the escalation.
   dif_rstmgr_reset_info_bitfield_t rst_info;
@@ -919,12 +911,10 @@ bool test_main(void) {
 
     LOG_INFO("Booting for the second time due to escalation reset");
 
-    int interrupt_count =
-        flash_ctrl_testutils_get_count((uint32_t *)&nv_interrupt_counter);
+    int interrupt_count = flash_ctrl_testutils_counter_get(kCounterInterrupt);
     CHECK(interrupt_count > 0, "Expected at least one regular interrupt");
 
-    int nmi_interrupt_count =
-        flash_ctrl_testutils_get_count((uint32_t *)&nv_nmi_interrupt_counter);
+    int nmi_interrupt_count = flash_ctrl_testutils_counter_get(kCounterNmi);
     CHECK(nmi_interrupt_count > 0, "Expected at least one nmi");
 
     // Check the alert handler cause is cleared.

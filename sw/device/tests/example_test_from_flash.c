@@ -73,17 +73,17 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
 // void ottf_external_isr(void) {}
 
 /**
- * Place data in flash that will need to persist across resets by marking with
- * with the section ".non_volatile_scratch"). Write to this region with the
- * flash controller DIFs. Read from it with `abs_mmio_read32(...)`.
- * Additionally, be sure to initialize the bits in this array to all 1s,
- * otherwise this region may not be programmed properly, depending on the
- * programming transactions issued. According to the hardware specification:
- *  - a bit cannot be programmed back to 1 once it has been programmed to 0, and
- *  - only erase can restore a bit to 1 under normal circumstances.
+ * Place data that will need to persist across resets by placing it in the
+ * ".non_volatile_scratch" section. OpenTitan's flash is mapped to its address
+ * space for reads. Thus, these variables can be read as usual. Write to this
+ * region with the flash controller DIFs, obeying flash constraints. Since the
+ * non-volatile scratch region is NOLOAD and bootstrap erases all flash, initial
+ * values of variables in this section are always `0xff`, regardless of any
+ * initialization in the source code. In order to avoid confusion, don't
+ * initialize or assign to these values. If needed, they can be initialized at
+ * runtime during flash controller DIFs.
  */
-// __attribute__((section(".non_volatile_scratch")))
-// const volatile uint32_t non_volatile_data[2] = {UINT32_MAX, UINT32_MAX};
+// OT_SECTION(".non_volatile_scratch") uint32_t non_volatile_data[2];
 
 bool test_main(void) {
   /**
