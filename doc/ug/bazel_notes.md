@@ -342,6 +342,19 @@ For example, to run all chip-level tests except the broken ones on FPGA:
 bazel test --test_tag_filters=cw310,-broken //sw/device/tests/...
 ```
 
+## Using Bazel with Git Worktrees
+
+Bazel was not optimized for the `git` worktree workflow, but using worktrees can help with branch management and provides the advantage of being able to run multiple Bazel jobs simultaneously.
+Here are some tips that can improve the developer experience when using worktrees.
+
+1. Follow the [instructions above]({{< relref "#disk-cache" >}}) to enable the disk cache.
+  Bazel uses the workspace's path when caching actions.
+  Because each worktree is a separate workspace at a different path, different worktrees cannot share an action cache.
+  They can, however, share a disk cache, which helps avoid rebuilding the same artifacts across different worktrees.
+  Note that the repository cache is shared by default across all workspaces, so no additional configuration is needed there.
+1. Before deleting a worktree, be sure to run `bazel clean --expunge` to remove Bazel's generated files.
+  Otherwise, files from old worktrees can accumulate in your output user root (located at `~/.cache/bazel/_bazel_${USER}/` by default).
+
 ## Commonly Encountered Issues
 
 ### Cannot find ld
