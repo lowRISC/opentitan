@@ -51,10 +51,8 @@ enum {
 /**
  * Reserve expected cpu dump area in flash
  */
-__attribute__((section(".non_volatile_scratch")))
-const volatile dif_rstmgr_cpu_info_dump_segment_t exp_dump[kCpuDumpSize] = {
-    UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX,
-    UINT32_MAX, UINT32_MAX, UINT32_MAX, UINT32_MAX};
+OT_SECTION(".non_volatile_scratch")
+dif_rstmgr_cpu_info_dump_segment_t exp_dump[kCpuDumpSize];
 
 /**
  *  Dump structure:
@@ -106,8 +104,6 @@ static void read_error(void) {
  * Overrides the default OTTF exception handler.
  */
 void ottf_exception_handler(void) {
-  uint32_t addr = (uint32_t)exp_dump;
-
   // The exception address ends up being the same since both are
   // are referencing the same read function
   temp_dump[kCpuDumpIdxCurrentExceptionPc] =
@@ -119,14 +115,13 @@ void ottf_exception_handler(void) {
   temp_dump[kCpuDumpIdxPreviousExceptionAddr] = kIllegalAddr1;
   temp_dump[kCpuDumpIdxPreviousValid] = 1;
 
-  CHECK(flash_ctrl_testutils_write(&flash_ctrl, addr, 0, temp_dump,
-                                   kDifFlashCtrlPartitionTypeData,
-                                   kCpuDumpSize));
+  CHECK(flash_ctrl_testutils_write(
+      &flash_ctrl, (uintptr_t)exp_dump - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+      0, temp_dump, kDifFlashCtrlPartitionTypeData, kCpuDumpSize));
 
-  for (int i = 0; i < kCpuDumpSize; ++i) {
-    dif_rstmgr_cpu_info_dump_segment_t rdata = abs_mmio_read32(addr);
+  for (size_t i = 0; i < kCpuDumpSize; ++i) {
+    dif_rstmgr_cpu_info_dump_segment_t rdata = exp_dump[i];
     LOG_INFO("Expected dump:%d: 0x%x", i, rdata);
-    addr += 4;
   }
 
   read_error();
@@ -191,16 +186,13 @@ bool test_main(void) {
       LOG_INFO("Observed crash dump:%d: 0x%x", i, dump[i]);
     }
 
-    uint32_t addr = (uint32_t)exp_dump;
-
-    for (int i = 0; i < seg_size; ++i) {
-      dif_rstmgr_cpu_info_dump_segment_t rdata = abs_mmio_read32(addr);
+    for (size_t i = 0; i < seg_size; ++i) {
+      dif_rstmgr_cpu_info_dump_segment_t rdata = exp_dump[i];
 
       if (rdata != kSkipComp) {
         CHECK(rdata == dump[i], "field mismatch: exp = 0x%x, obs = 0x%x", rdata,
               dump[i]);
       }
-      addr += 4;
     }
   }
   return true;

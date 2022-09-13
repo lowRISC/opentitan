@@ -99,12 +99,6 @@ static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
 static dif_i2c_t i2c0, i2c1, i2c2;
 
-/**
- * event vector/index for randomization
- */
-__attribute__((section(".non_volatile_scratch")))
-const volatile uint32_t events_vector = UINT32_MAX;
-
 typedef struct node {
   const char *name;
   dif_alert_handler_alert_t alert;
@@ -797,8 +791,7 @@ bool test_main(void) {
       kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
 
   // First check the flash stored value.
-  uint32_t event_idx =
-      flash_ctrl_testutils_get_count((uint32_t *)&events_vector);
+  uint32_t event_idx = flash_ctrl_testutils_counter_get(0);
 
   // Enable flash access
   flash_ctrl_testutils_default_region_access(&flash_ctrl,
@@ -810,8 +803,7 @@ bool test_main(void) {
                                              /*he_en*/ false);
 
   // Increment flash counter to know where we are.
-  flash_ctrl_testutils_increment_counter(&flash_ctrl,
-                                         (uint32_t *)&events_vector, event_idx);
+  flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
 
   LOG_INFO("Test round %d", event_idx);
 

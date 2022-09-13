@@ -47,54 +47,16 @@ static dif_spi_host_t spi_host1;
 static dif_usbdev_t usbdev;
 static dif_uart_t uart0;
 
-/**
- * clock tested
- */
-__attribute__((section(
-    ".non_volatile_scratch"))) volatile uint64_t clock_tested = UINT64_MAX;
-__attribute__((
-    section(".non_volatile_scratch"))) volatile uint64_t hung_data_addr[4] = {
-    UINT64_MAX, UINT64_MAX, UINT64_MAX, UINT64_MAX};
-
-/**
- *  Extracts current clock.
- */
-static uint32_t clock_to_test(void) {
-  uint32_t addr = (uint32_t)(&clock_tested);
-  uint32_t val = abs_mmio_read32(addr);
-  LOG_INFO("Reading clock from address 0x%x gets 0x%x", addr, val);
-  for (int i = 0; i < 32; ++i) {
-    if ((val >> i) & 0x1) {
-      return i;
-    }
-  }
-  LOG_ERROR("Cannot find clock to test");
-  return -1;
-};
-
-/**
- *  Updates clock tested.
- */
-static void update_clock_to_test(uint32_t clock) {
-  uint32_t addr = (uint32_t)(&clock_tested);
-  LOG_INFO("Writing clock %d to flash", clock);
-  uint32_t val = abs_mmio_read32(addr) & (~(1 << clock));
-  // program the word into flash
-  CHECK(flash_ctrl_testutils_write(&flash_ctrl, addr, 0, &val,
-                                   kDifFlashCtrlPartitionTypeData, 1));
-};
-
-static uint32_t get_hung_address(dif_clkmgr_gateable_clock_t clock) {
-  uint32_t addr = (uint32_t)(&hung_data_addr[clock]);
-  return abs_mmio_read32(addr);
-}
+OT_SECTION(".non_volatile_scratch") uint64_t hung_data_addr[4];
 
 static void set_hung_address(dif_clkmgr_gateable_clock_t clock,
                              uint32_t value) {
-  uint32_t addr = (uint32_t)(&hung_data_addr[clock]);
-  CHECK(flash_ctrl_testutils_write(&flash_ctrl, addr, 0, &value,
-                                   kDifFlashCtrlPartitionTypeData, 1));
-  CHECK(get_hung_address(clock) == value, "Unexpected mismatch on read back");
+  uint32_t addr =
+      (uintptr_t)&hung_data_addr[clock] - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR;
+  uint32_t flash_word[2] = {value, 0};
+  CHECK(flash_ctrl_testutils_write(&flash_ctrl, addr, 0, flash_word,
+                                   kDifFlashCtrlPartitionTypeData, 2));
+  CHECK(hung_data_addr[clock] == value, "Unexpected mismatch on read back");
   LOG_INFO("The expected hung address for clock %d is 0x%x at 0x%x", clock,
            value, addr);
 }
@@ -234,7 +196,7 @@ bool test_main(void) {
 
     // Starting clock.
     dif_clkmgr_gateable_clock_t clock = kTopEarlgreyGateableClocksIoDiv4Peri;
-    LOG_INFO("Next clock to test %d", clock_to_test());
+    LOG_INFO("Next clock to test %d", flash_ctrl_testutils_counter_get(0));
 
     test_gateable_clocks_off(&clkmgr, &pwrmgr, clock);
 
@@ -243,7 +205,7 @@ bool test_main(void) {
     return false;
   } else if (rstmgr_testutils_is_reset_info(&rstmgr,
                                             kDifRstmgrResetInfoWatchdog)) {
-    dif_clkmgr_gateable_clock_t clock = clock_to_test();
+    dif_clkmgr_gateable_clock_t clock = flash_ctrl_testutils_counter_get(0);
     LOG_INFO("Got an expected watchdog reset when reading for clock %d", clock);
 
     size_t actual_size;
@@ -263,14 +225,14 @@ bool test_main(void) {
     LOG_INFO("PREV_EXC_ADDR  = 0x%x", cpu_dump[5]);
     LOG_INFO("PREV_EXC_PC    = 0x%x", cpu_dump[6]);
     LOG_INFO("PREV_VALID     = 0x%x", cpu_dump[7]);
-    uint32_t expected_hung_address = get_hung_address(clock);
+    uint32_t expected_hung_address = hung_data_addr[clock];
     LOG_INFO("The expected hung address = 0x%x", expected_hung_address);
     CHECK(cpu_dump[2] == expected_hung_address, "Unexpected hung address");
     // Mark this clock as tested.
-    update_clock_to_test(clock);
+    flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
 
     if (clock < kTopEarlgreyGateableClocksLast) {
-      clock = clock_to_test();
+      clock = flash_ctrl_testutils_counter_get(0);
       LOG_INFO("Next clock to test %d", clock);
 
       rstmgr_testutils_pre_reset(&rstmgr);

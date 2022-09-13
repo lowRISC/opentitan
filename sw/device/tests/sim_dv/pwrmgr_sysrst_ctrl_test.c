@@ -29,9 +29,6 @@ OTTF_DEFINE_TEST_CONFIG();
 static volatile const uint8_t RST_IDX[5] = {3, 30, 130, 5, 50};
 static dif_flash_ctrl_state_t flash_ctrl;
 
-__attribute__((section(".non_volatile_scratch")))
-const volatile uint32_t events_vector = UINT32_MAX;
-
 /**
  * Configure the sysrst.
  */
@@ -160,8 +157,7 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // First check the flash stored value
-  uint32_t event_idx =
-      flash_ctrl_testutils_get_count((uint32_t *)&events_vector);
+  uint32_t event_idx = flash_ctrl_testutils_counter_get(0);
 
   // Enable flash access
   flash_ctrl_testutils_default_region_access(&flash_ctrl,
@@ -173,8 +169,7 @@ bool test_main(void) {
                                              /*he_en*/ false);
 
   // Increment flash counter to know where we are
-  flash_ctrl_testutils_increment_counter(&flash_ctrl,
-                                         (uint32_t *)&events_vector, event_idx);
+  flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
 
   LOG_INFO("Test round %d", event_idx);
   LOG_INFO("RST_IDX[%d] = %d", event_idx, RST_IDX[event_idx]);
