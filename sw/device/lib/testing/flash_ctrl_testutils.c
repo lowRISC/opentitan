@@ -14,7 +14,8 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "flash_ctrl_regs.h"  // Generated.
+#include "flash_ctrl_regs.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 void flash_ctrl_testutils_wait_for_init(dif_flash_ctrl_state_t *flash_state) {
   dif_flash_ctrl_status_t status;
@@ -286,43 +287,69 @@ bool flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
   return retval;
 }
 
-uint32_t flash_ctrl_testutils_get_count(uint32_t *strike_counter) {
-  uint32_t addr = (uint32_t)strike_counter;
-  uint32_t val = abs_mmio_read32(addr);
+enum {
+  kNonVolatileCounterFlashWords = 256,
+};
+static_assert(kNonVolatileCounterFlashWords ==
+                  kFlashCtrlTestUtilsCounterMaxCount,
+              "Word count must be equal to max count.");
+static_assert(
+    FLASH_CTRL_PARAM_BYTES_PER_WORD == sizeof(uint64_t),
+    "Elements of the counter array must be the same size as a flash word");
+extern char _non_volatile_counter_flash_words[];
 
-  for (size_t i = 0; i < 32; ++i) {
-    if (val >> i & 0x1) {
-      return i;
+OT_SECTION(".non_volatile_counter_0")
+uint64_t nv_counter_0[kNonVolatileCounterFlashWords];
+OT_SECTION(".non_volatile_counter_1")
+uint64_t nv_counter_1[kNonVolatileCounterFlashWords];
+OT_SECTION(".non_volatile_counter_2")
+uint64_t nv_counter_2[kNonVolatileCounterFlashWords];
+
+static uint64_t *const kNvCounters[] = {
+    nv_counter_0,
+    nv_counter_1,
+    nv_counter_2,
+};
+
+uint32_t flash_ctrl_testutils_counter_get(size_t counter) {
+  CHECK(counter < ARRAYSIZE(kNvCounters));
+  CHECK((uint32_t)&_non_volatile_counter_flash_words ==
+        kNonVolatileCounterFlashWords);
+
+  // Use a reverse loop since `flash_ctrl_testutils_counter_set_at_least()` can
+  // introduce gaps.
+  size_t i = kNonVolatileCounterFlashWords - 1;
+  for (; i < kNonVolatileCounterFlashWords; --i) {
+    if (kNvCounters[counter][i] == 0) {
+      break;
     }
   }
-  CHECK(false, "the counter is all zero?");
-  return -1;
+  return i + 1;
 }
 
-void flash_ctrl_testutils_increment_counter(dif_flash_ctrl_state_t *flash_state,
-                                            uint32_t *strike_counter,
-                                            uint32_t index) {
-  uint32_t addr = (uint32_t)strike_counter;
-  uint32_t val = abs_mmio_read32(addr);
-  CHECK(val != 0, "Counter already 0, an increment will overflow past 31");
-
-  val = val & ~(1 << index);
-  CHECK(flash_ctrl_testutils_write(flash_state, addr, 0, &val,
-                                   kDifFlashCtrlPartitionTypeData, 1),
-        "Error incrementing strike counter");
+void flash_ctrl_testutils_counter_increment(dif_flash_ctrl_state_t *flash_state,
+                                            size_t counter) {
+  size_t i = flash_ctrl_testutils_counter_get(counter);
+  CHECK(i < kNonVolatileCounterFlashWords,
+        "Non-volatile counter %u is at its maximum", counter);
+  flash_ctrl_testutils_counter_set_at_least(flash_state, counter, i + 1);
+  CHECK(flash_ctrl_testutils_counter_get(counter) == i + 1,
+        "Counter increment failed");
 }
 
-void flash_ctrl_testutils_set_counter(dif_flash_ctrl_state_t *flash_state,
-                                      uint32_t *strike_counter,
-                                      uint32_t new_val) {
-  uint32_t addr = (uint32_t)strike_counter;
-  uint32_t val = abs_mmio_read32(addr);
-
-  // Determine which bits are changing value and whether they are allowed
-  // 0 -> 1 is not okay
-  // 1 -> 0 is okay
-  CHECK(((val ^ new_val) & new_val) == 0);
-  CHECK(flash_ctrl_testutils_write(flash_state, addr, 0, &new_val,
-                                   kDifFlashCtrlPartitionTypeData, 1),
-        "Error setting strike counter");
+void flash_ctrl_testutils_counter_set_at_least(
+    dif_flash_ctrl_state_t *flash_state, size_t counter, uint32_t val) {
+  CHECK(val <= kNonVolatileCounterFlashWords,
+        "Non-volatile counter %u new value %u > max value %u", counter, val,
+        kNonVolatileCounterFlashWords);
+  if (val == 0) {
+    return;
+  }
+  uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0, 0};
+  CHECK(flash_ctrl_testutils_write(flash_state,
+                                   (uint32_t)&kNvCounters[counter][val - 1] -
+                                       TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+                                   0, new_val, kDifFlashCtrlPartitionTypeData,
+                                   ARRAYSIZE(new_val)),
+        "Flash write failed");
 }

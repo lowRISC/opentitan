@@ -216,35 +216,41 @@ OT_WARN_UNUSED_RESULT
 bool flash_ctrl_testutils_bank_erase(dif_flash_ctrl_state_t *flash_state,
                                      uint32_t bank, bool data_only);
 
-/**
- * Determines a count value as the index of the first bit set to 1 in a word.
- *
- * This uses an incrementing counter implemented as a uint32_t initialized to
- * all 1 (meaning a count of zero), and on each increment operation the lowest
- * bit set is cleared. This is consistent with the capability of flash.
- *
- * @param strike_counter The address of the counter.
- * @return The bit position of the first bit set to 1.
- */
-uint32_t flash_ctrl_testutils_get_count(uint32_t *strike_counter);
+enum {
+  kFlashCtrlTestUtilsCounterMaxCount = 256,
+};
 
 /**
- * Increments a strike counter by clearing a bit.
+ * Returns the value of a non-volatile counter in flash.
  *
- * Uses a strike counter as described for flash_ctrl_testutils_get_count.
- * It is give a bit to be cleared, typically the value returned by the most
- * recent call to flash_ctrl_testutils_get_count.
- *
- * Notice if the right-most bit set to 1 is not cleared the counter will not
- * advance.
+ * @param counter Counter ID, [0, 2].
+ * @return Value of the non-volatile counter
+ */
+uint32_t flash_ctrl_testutils_counter_get(size_t counter);
+
+/**
+ * Increments a non-volatile counter in flash.
  *
  * @param flash_state A flash_ctrl state handle.
- * @param strike_counter The address of the counter.
- * @param index The bit to clear.
+ * @param counter Counter ID, [0, 2].
  */
-void flash_ctrl_testutils_increment_counter(dif_flash_ctrl_state_t *flash_state,
-                                            uint32_t *strike_counter,
-                                            uint32_t index);
+void flash_ctrl_testutils_counter_increment(dif_flash_ctrl_state_t *flash_state,
+                                            size_t counter);
+
+/**
+ * Sets a non-volatile counter to at least `val`.
+ *
+ * This function simply writes zeros to the corresponding flash word without any
+ * checks and is intended for contexts where performance is critical, e.g. ISRs.
+ * The value of the counter will not change if it is already greater than or
+ * equal to `val`.
+ *
+ * @param flash_state A flash_ctrl state handle.
+ * @param counter Counter ID, [0, 2].
+ * @param val Counter value.
+ */
+void flash_ctrl_testutils_counter_set_at_least(
+    dif_flash_ctrl_state_t *flash_state, size_t counter, uint32_t val);
 
 /**
  * Sets a strike counter to an arbitrary value.
