@@ -1336,9 +1336,11 @@
 
             When the chip resets due to alert escalating to cause the chip to reset, verify the
             reset cause to verify the alert crashdump.
+
+            Xref'ed with chip_sw_rstmgr_alert_info.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_rstmgr_alert_info"]
     }
     {
       name: chip_sw_alert_handler_ping_timeout
