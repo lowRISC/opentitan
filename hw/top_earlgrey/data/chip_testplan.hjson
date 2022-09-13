@@ -1480,7 +1480,7 @@
               - Verify that all decoded outputs except for escalate_en are
                 disabled. X-ref'ed with the respective IP tests that consume these signals.
 
-            X-ref'ed with chip_lc_ctrl_broadcast test, which verifies the connectivity of the LC
+            X-ref'ed with chip_sw_lc_ctrl_broadcast test, which verifies the connectivity of the LC
             decoded outputs to other IPs.
             X-ref'ed with alert_handler's escalation test.
             '''
@@ -2505,7 +2505,7 @@
             - `lc_check_byp_en_i`: verify that the background check during LC ctrl state
               programming passes when enabled.
 
-            X-ref'ed with chip_lc_ctrl_broadcast test, which verifies the connectivity of the LC
+            X-ref'ed with chip_sw_lc_ctrl_broadcast test, which verifies the connectivity of the LC
             decoded outputs to other IPs.
             '''
       stage: V2
