@@ -19,6 +19,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
@@ -63,6 +64,11 @@
     reset.
   - Read alert_info from rstmgr and compare with expected value.
 
+  Round 4: Local alert
+  - Trigger local alert by setting ping timeout value to 1.
+  - Once alert triggers interrupt, call sw_device reset from interrupt
+    handler.
+  - After reset, read alert_info from rstmgr and compare with expected value.
 
  */
 
@@ -77,9 +83,11 @@ enum {
   kRoundOneDelay = 100,           // us
   kRoundTwoDelay = 100,           // us
   kRoundThreeDelay = 1000,        // us
+  kRoundFourDelay = 2500,         // us
 };
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static dif_flash_ctrl_state_t flash_ctrl;
 static dif_rstmgr_t rstmgr;
 static dif_alert_handler_t alert_handler;
 static dif_uart_t uart0, uart1, uart2, uart3;
@@ -90,6 +98,12 @@ static dif_rv_core_ibex_t rv_core_ibex;
 static dif_aon_timer_t aon_timer;
 static dif_pwrmgr_t pwrmgr;
 static dif_i2c_t i2c0, i2c1, i2c2;
+
+/**
+ * event vector/index for randomization
+ */
+__attribute__((section(".non_volatile_scratch")))
+const volatile uint32_t events_vector = UINT32_MAX;
 
 typedef struct node {
   const char *name;
@@ -112,7 +126,8 @@ typedef enum test_round {
   kRound1 = 0,
   kRound2 = 1,
   kRound3 = 2,
-  kRoundTotal = 3
+  kRound4 = 3,
+  kRoundTotal = 4
 } test_round_t;
 
 #define ALERT_CAUSE_CNT ((ALERT_HANDLER_PARAM_N_ALERTS - 1) / 32) + 1
@@ -216,6 +231,14 @@ static alert_info_t kExpectedInfo[kRoundTotal] = {
             .class_accum_cnt = {1, 1, 1, 1},
             .class_esc_state = {kCstatePhase0, kCstatePhase1, kCstatePhase0,
                                 kCstatePhase0},
+        },
+    [kRound4] =
+        {
+            .test_name = "Local alert(ClassB)",
+            .loc_alert_cause = (0x1 << kDifAlertHandlerLocalAlertAlertPingFail),
+            .class_accum_cnt = {0, 1, 0, 0},
+            .class_esc_state = {kCstateIdle, kCstatePhase2, kCstateIdle,
+                                kCstateIdle},
         },
 };
 
@@ -344,7 +367,7 @@ void ottf_external_isr(void) {
 
         break;
       case 1:
-        LOG_INFO("IRQ: class B");
+        LOG_INFO("IRQ: class B %d", global_test_round);
         break;
       case 2:
         LOG_INFO("IRQ: class C");
@@ -438,7 +461,7 @@ static void prgm_alert_handler_round2(void) {
  * Set I2c0 alert to class a
  *     spi_host alert to class b
  *     uart0 alert to class c and
- *     the rest to class d (including local alert)
+ *     the rest to class d
  *
  * For class d, enable 3 phases and escalation reset will be
  * triggered at phase2
@@ -508,6 +531,59 @@ static void prgm_alert_handler_round3(void) {
                                             kDifRvCoreIbexAlertRecovSwErr));
 }
 
+/*
+ * Configure all global alert enable and mapped to class A
+ * Configure local alert enable and mapped to class B
+ * For class B, set signal to 3 to trigger escalation reset
+ * Change ping timeout value to 1 to cause alert ping timeout
+ */
+
+static void prgm_alert_handler_round4(void) {
+  dif_alert_handler_alert_t alerts[ALERT_HANDLER_PARAM_N_ALERTS];
+  dif_alert_handler_class_t alert_classes[ALERT_HANDLER_PARAM_N_ALERTS];
+
+  // Enable all alerts to enable ping associate with them.
+  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+    CHECK_DIF_OK(dif_alert_handler_configure_alert(
+        &alert_handler, i, kDifAlertHandlerClassA, kDifToggleEnabled,
+        kDifToggleEnabled));
+  }
+
+  // Enable alert ping fail local alert and configure that to classb.
+  dif_alert_handler_local_alert_t loc_alert =
+      kDifAlertHandlerLocalAlertAlertPingFail;
+  dif_alert_handler_class_t loc_alert_class = kDifAlertHandlerClassB;
+
+  dif_alert_handler_escalation_phase_t esc_phases[] = {
+      {.phase = kDifAlertHandlerClassStatePhase2,
+       .signal = 3,
+       .duration_cycles = 2000}};
+
+  dif_alert_handler_class_config_t class_config = {
+      .auto_lock_accumulation_counter = kDifToggleDisabled,
+      .accumulator_threshold = 0,
+      .irq_deadline_cycles = 240,
+      .escalation_phases = esc_phases,
+      .escalation_phases_len = ARRAYSIZE(esc_phases),
+      .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
+  };
+
+  CHECK_DIF_OK(dif_alert_handler_configure_local_alert(
+      &alert_handler, loc_alert, loc_alert_class, kDifToggleEnabled,
+      kDifToggleEnabled));
+
+  CHECK_DIF_OK(dif_alert_handler_configure_class(
+      &alert_handler, kDifAlertHandlerClassB, class_config, kDifToggleEnabled,
+      kDifToggleEnabled));
+
+  CHECK_DIF_OK(dif_alert_handler_configure_ping_timer(
+      &alert_handler, 1, kDifToggleEnabled, kDifToggleEnabled));
+
+  // Enables alert handler irq.
+  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+      &alert_handler, kDifAlertHandlerIrqClassb, kDifToggleEnabled));
+}
+
 static void peripheral_init(void) {
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host));
@@ -557,12 +633,24 @@ static void collect_alert_dump_and_compare(test_round_t round) {
 
   actual_info = alert_info_dump2struct(dump);
 
-  LOG_INFO("observed alert cause:");
-  print_alert_cause(actual_info);
-  LOG_INFO("expected alert cause:");
-  print_alert_cause(kExpectedInfo[round]);
-  for (int i = 0; i < ALERT_CAUSE_CNT; ++i) {
-    CHECK(kExpectedInfo[round].alert_cause[i] == actual_info.alert_cause[i]);
+  if (round == kRound4) {
+    // Check local alert only.
+    // While testing ping timeout for local alert,
+    // global alert ping timeout can be trigerred
+    // dut to short timeout value.
+    // However, alert source of this ping timeout can be choosen randomly,
+    // as documented in issue #2321, so we conly check local alert cause.
+    LOG_INFO("loc_alert_cause: exp: %0x   obs: %0x",
+             kExpectedInfo[round].loc_alert_cause, actual_info.loc_alert_cause);
+    CHECK(kExpectedInfo[round].loc_alert_cause == actual_info.loc_alert_cause);
+  } else {
+    LOG_INFO("observed alert cause:");
+    print_alert_cause(actual_info);
+    LOG_INFO("expected alert cause:");
+    print_alert_cause(kExpectedInfo[round]);
+    for (int i = 0; i < ALERT_CAUSE_CNT; ++i) {
+      CHECK(kExpectedInfo[round].alert_cause[i] == actual_info.alert_cause[i]);
+    }
   }
 
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
@@ -694,6 +782,10 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
 
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash_ctrl,
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+
   peripheral_init();
 
   // Enable all interrupts used in this test.
@@ -703,6 +795,25 @@ bool test_main(void) {
   rv_plic_testutils_irq_range_enable(
       &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
       kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
+
+  // First check the flash stored value.
+  uint32_t event_idx =
+      flash_ctrl_testutils_get_count((uint32_t *)&events_vector);
+
+  // Enable flash access
+  flash_ctrl_testutils_default_region_access(&flash_ctrl,
+                                             /*rd_en*/ true,
+                                             /*prog_en*/ true,
+                                             /*erase_en*/ true,
+                                             /*scramble_en*/ false,
+                                             /*ecc_en*/ false,
+                                             /*he_en*/ false);
+
+  // Increment flash counter to know where we are.
+  flash_ctrl_testutils_increment_counter(&flash_ctrl,
+                                         (uint32_t *)&events_vector, event_idx);
+
+  LOG_INFO("Test round %d", event_idx);
 
   // enable alert info
   CHECK_DIF_OK(dif_rstmgr_alert_info_set_enabled(&rstmgr, kDifToggleEnabled));
@@ -729,11 +840,9 @@ bool test_main(void) {
     // Give an enough delay until sw rest happens.
     busy_spin_micros(kRoundOneDelay);
     CHECK(false, "Should have reset before this line");
-
-  } else if (rst_info == kDifRstmgrResetInfoSw) {
+  } else if (rst_info == kDifRstmgrResetInfoSw && event_idx == 1) {
     collect_alert_dump_and_compare(kRound1);
     global_test_round = kRound2;
-
     prgm_alert_handler_round2();
 
     // Setup the aon_timer the wdog bark and bite timeouts.
@@ -770,8 +879,14 @@ bool test_main(void) {
 
     busy_spin_micros(kRoundThreeDelay);
     CHECK(false, "Should have reset before this line");
-  } else if (rst_info == kDifRstmgrResetInfoEscalation) {
+  } else if (rst_info == kDifRstmgrResetInfoEscalation && event_idx == 3) {
     collect_alert_dump_and_compare(kRound3);
+    global_test_round = kRound4;
+    prgm_alert_handler_round4();
+    busy_spin_micros(kRoundFourDelay);
+    CHECK(false, "Should have reset before this line");
+  } else if (rst_info == kDifRstmgrResetInfoEscalation && event_idx == 4) {
+    collect_alert_dump_and_compare(kRound4);
     return true;
   } else {
     LOG_FATAL("unexpected reset info %d", rst_info);

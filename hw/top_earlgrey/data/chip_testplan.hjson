@@ -1338,7 +1338,7 @@
             reset cause to verify the alert crashdump.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_rstmgr_alert_info"]
     }
     {
       name: chip_sw_alert_handler_ping_timeout
