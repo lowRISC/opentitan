@@ -21,11 +21,7 @@
 /**
  * Simple buffer for passing data between TCP sockets and DPI modules
  */
-#ifdef __cplusplus
-const int BUFSIZE_BYTE = 256;
-#else
 #define BUFSIZE_BYTE 256
-#endif
 
 struct tcp_buf {
   unsigned int rptr;
@@ -382,7 +378,8 @@ err_cleanup_return:
 }
 
 // Abstract interface functions
-struct tcp_server_ctx *tcp_server_create(const char *display_name, int listen_port) {
+struct tcp_server_ctx *tcp_server_create(const char *display_name,
+                                         int listen_port) {
   struct tcp_server_ctx *ctx =
       (struct tcp_server_ctx *)calloc(1, sizeof(struct tcp_server_ctx));
   assert(ctx);
