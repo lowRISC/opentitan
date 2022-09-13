@@ -31,11 +31,7 @@ const int IDCODEVAL = 0x04F5484D;
 // [3:0]    0x1  - Protocol version (0.13)
 const int DTMCSRVAL = 0x00000071;
 
-#ifndef __cplusplus
 enum jtag_state_t {
-#else
-enum jtag_state_t : uint8_t {
-#endif
   TestLogicReset,
   RunTestIdle,
   SelectDrScan,
@@ -54,11 +50,7 @@ enum jtag_state_t : uint8_t {
   UpdateIr
 };
 
-#ifndef __cplusplus
 enum jtag_reg_t {
-#else
-enum jtag_reg_t : uint8_t {
-#endif
   Bypass0 = 0x0,
   IdCode = 0x1,
   DTMCSR = 0x10,
