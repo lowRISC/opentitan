@@ -1456,7 +1456,7 @@ module otp_ctrl
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntScrmblCheck_A,
       u_otp_ctrl_scrmbl.u_prim_count, alert_tx_o[1])
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlLcGateFsm_A,
-      u_tlul_lc_gate.u_state_regs, alert_tx_o[1])
+      u_tlul_lc_gate.u_state_regs, alert_tx_o[2])
 
   // Alert assertions for double LFSR.
   `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(DoubleLfsrCheck_A,
