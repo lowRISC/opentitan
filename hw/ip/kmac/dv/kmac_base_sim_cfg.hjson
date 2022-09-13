@@ -150,6 +150,10 @@
       reseed: 10
     }
     {
+      name: "{variant}_entropy_refresh"
+      uvm_test_seq: kmac_entropy_refresh_vseq
+   }
+   {
       name: "{variant}_error"
       uvm_test_seq: kmac_error_vseq
     }
