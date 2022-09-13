@@ -386,7 +386,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
         OtbnModelStatus: begin
           bit was_executing = model_status inside {otbn_pkg::StatusBusyExecute,
                                                    otbn_pkg::StatusBusySecWipeInt};
-          bit is_busy = otbn_pkg::is_busy_status(item.status);
+          bit is_busy = otbn_pkg::is_busy_status(status_e'(item.status));
 
           // Did the status change happen due to a reset? If so, reset the model status as well.
           if (item.rst_n !== 1'b1) model_status = item.status;
