@@ -9,8 +9,8 @@
 
 # clkmgr infra clock connectivity
 # flash_ctrl
-CONNECTION, CLKMGR_INFRA_CLK_FLASH_CTRL_CLK,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_earlgrey.u_flash_ctrl, clk_otp_i
-CONNECTION, CLKMGR_INFRA_CLK_FLASH_CTRL_MAIN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_infra,    top_earlgrey.u_flash_ctrl, clk_i
+CONNECTION, CLKMGR_INFRA_CLK_FLASH_CTRL_CLK_OTP, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_earlgrey.u_flash_ctrl, clk_otp_i
+CONNECTION, CLKMGR_INFRA_CLK_FLASH_CTRL_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_infra,    top_earlgrey.u_flash_ctrl, clk_i
 
 #rv_dm
 CONNECTION, CLKMGR_INFRA_CLK_RV_DM_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_infra, top_earlgrey.u_rv_dm, clk_i

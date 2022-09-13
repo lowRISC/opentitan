@@ -16,6 +16,7 @@
               "{conn_csvs_dir}/ast_mem_cfg.csv",
               "{conn_csvs_dir}/ast_scanmode.csv",
               "{conn_csvs_dir}/clkmgr_ast.csv",
+              "{conn_csvs_dir}/clkmgr_cg_en.csv",
               "{conn_csvs_dir}/clkmgr_idle.csv",
               "{conn_csvs_dir}/clkmgr_infra.csv",
               "{conn_csvs_dir}/clkmgr_peri.csv",
@@ -26,7 +27,9 @@
               "{conn_csvs_dir}/flash_ast.csv",
               "{conn_csvs_dir}/jtag.csv",
               "{conn_csvs_dir}/lc_ctrl_broadcast.csv",
-              "{conn_csvs_dir}/pwrmgr_rstmgr.csv"]
+              "{conn_csvs_dir}/pwrmgr_rstmgr.csv",
+              "{conn_csvs_dir}/rstmgr_resets_o.csv",
+              "{conn_csvs_dir}/rstmgr_rst_en.csv"]
 
   // TODO: reduce run time and turn on coverage
   cov: false
