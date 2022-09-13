@@ -12,14 +12,13 @@
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
-#include "sw/device/lib/testing/rv_plic_testutils.h"
+#include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -33,35 +32,19 @@ typedef void (*isr_handler)(void);
 
 static volatile isr_handler expected_isr_handler;
 static volatile dif_rv_core_ibex_nmi_state_t nmi_state;
+static volatile dif_alert_handler_class_state_t alert_state;
 static volatile bool nmi_fired = false;
+static volatile bool ext_irq_fired = false;
+static volatile bool irq_is_pending = false;
 
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_aon_timer_t aon_timer;
-static aon_timer_isr_ctx_t aon_timer_ctx = {
-    .aon_timer = &aon_timer,
-    .plic_aon_timer_start_irq_id =
-        kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
-};
-
-static dif_rv_plic_t plic;
-static plic_isr_ctx_t plic_ctx = {
-    .rv_plic = &plic,
-    .hart_id = kTopEarlgreyPlicTargetIbex0,
-};
-
-static volatile dif_aon_timer_irq_t irq;
 static dif_alert_handler_t alert_handler;
-static alert_handler_isr_ctx_t alert_handler_ctx = {
-    .alert_handler = &alert_handler,
-    .plic_alert_handler_start_irq_id = kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-    .expected_irq = kDifAlertHandlerIrqClassb,
-    .is_only_irq = false,
-};
 
 /**
  * Program the alert handler to escalate on alerts upto phase 2 (i.e. reset)
- * but at the phase 1 (i.e. wipe secrets)the nmi interrupt handler should clear
+ * but at the phase 1 (i.e. wipe secrets) the NMI interrupt handler should clear
  * the escalation.
  */
 enum {
@@ -70,6 +53,11 @@ enum {
   kIrqDeadlineMicros = 10,               // 10 us
   kWdogBarkMicros = 500,                 // 500 us
 };
+
+/**
+ * Defines how many times the two NMI tests are repeated back to back.
+ */
+const int kNumTestIterations = 3;
 
 static void alert_handler_config(void) {
   dif_alert_handler_escalation_phase_t esc_phases[] = {
@@ -107,52 +95,60 @@ static void alert_handler_config(void) {
 
   alert_handler_testutils_configure_all(&alert_handler, config,
                                         /*lock=*/kDifToggleDisabled);
-  // Enables alert handler irq.
-  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
-      &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleEnabled));
 }
 
 /**
- * Handle the wdog bark nmi irq.
+ * Handle the wdog bark NMI IRQ.
  */
 static void wdog_handler(void) {
-  top_earlgrey_plic_peripheral_t peripheral;
-  dif_aon_timer_irq_t irq;
-  isr_testutils_aon_timer_isr(plic_ctx, aon_timer_ctx, &peripheral, &irq);
+  bool is_pending;
+  // The watchdog bark external interrupt is also connected to the NMI input
+  // of rv_core_ibex. We therefore expect the interrupt to be pending on the
+  // peripheral side (the check is done later in the test function).
+  CHECK_DIF_OK(dif_aon_timer_irq_is_pending(
+      &aon_timer, kDifAonTimerIrqWdogTimerBark, &is_pending));
+  irq_is_pending = is_pending;
+
+  // Stop the watchdog.
   CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon_timer));
+  // In order to handle the NMI we need to acknowledge the interrupt status
+  // bit it at the peripheral side. Note that this test does not use the
+  // PLIC, so there is nothing to acknowledge on the PLIC side. We are hence
+  // not using the isr_testutils_aon_timer_isr function here.
+  CHECK_DIF_OK(
+      dif_aon_timer_irq_acknowledge(&aon_timer, kDifAonTimerIrqWdogTimerBark));
 }
 
 /**
- * Handle the alert handler nmi irq.
+ * Handle the alert handler NMI IRQ.
  */
 static void alert_handler_handler(void) {
-  top_earlgrey_plic_peripheral_t peripheral;
-  dif_alert_handler_irq_t irq;
-  isr_testutils_alert_handler_isr(plic_ctx, alert_handler_ctx, &peripheral,
-                                  &irq);
-
-  // Check that the alert handler escalation can be stoped.
   bool can_clear;
+  dif_alert_handler_class_state_t state;
+  // In this particular case the alert handler is configured to send out an NMI
+  // when class A enters escalation phase 0. We therefore get the alert handler
+  // state and check later in the test function whether class A has indeed
+  // escalated.
+  CHECK_DIF_OK(dif_alert_handler_get_class_state(
+      &alert_handler, kDifAlertHandlerClassA, &state));
+  alert_state = state;
+
+  // We expect the class to be clearable since it has not been locked.
   CHECK_DIF_OK(dif_alert_handler_escalation_can_clear(
-      alert_handler_ctx.alert_handler, kDifAlertHandlerClassA, &can_clear));
+      &alert_handler, kDifAlertHandlerClassA, &can_clear));
   CHECK(can_clear, "Alert handler is locked.");
 
-  CHECK_DIF_OK(dif_alert_handler_escalation_clear(
-      alert_handler_ctx.alert_handler, kDifAlertHandlerClassA));
+  // Clear the class in order to stop the alert handler from sending
+  // an NMI to the processor.
+  CHECK_DIF_OK(dif_alert_handler_escalation_clear(&alert_handler,
+                                                  kDifAlertHandlerClassA));
 }
 
 /**
- * Execute the wdog bark nmi interrupt test.
+ * Execute the wdog bark NMI interrupt test.
  */
 static void wdog_nmi_test(void) {
-  rv_plic_testutils_irq_range_enable(
-      &plic, plic_ctx.hart_id, kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark,
-      kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
-
-  CHECK_DIF_OK(
-      dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceWdog));
-
-  // Setup to handle the incoming wdog nmi irq.
+  // Setup to handle the incoming wdog NMI IRQ.
   expected_isr_handler = wdog_handler;
   nmi_fired = false;
   nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
@@ -164,57 +160,62 @@ static void wdog_nmi_test(void) {
                                       /*bark_cycles=*/count_cycles,
                                       /*bite_cycles=*/UINT32_MAX,
                                       /*pause_in_sleep=*/false);
+  LOG_INFO("Wait for aon_timer NMI");
   IBEX_SPIN_FOR(nmi_fired, kWdogBarkMicros * 2);
 
-  // Check that the wdog nmi was enabled and barked during the nmi irq.
+  // We expect the watchdog bark interrupt to be pending on the peripheral side.
+  CHECK(irq_is_pending, "Expected watchdog bark interrupt to be pending");
+
+  // Check that the wdog NMI was enabled and barked during the NMI IRQ.
   CHECK(nmi_state.wdog_enabled && nmi_state.wdog_barked,
-        "Wdog nmi state not expected:\n\t"
+        "Wdog NMI state not expected:\n\t"
         "wdog_enable:%x\n\twdog_raised:%"
         "x\n",
         nmi_state.wdog_enabled, nmi_state.wdog_barked);
 
-  // Check that the wdog nmi is enable and is cleared.
+  // Check that the wdog NMI is enable and is cleared.
   CHECK_DIF_OK(dif_rv_core_ibex_get_nmi_state(
       &rv_core_ibex, (dif_rv_core_ibex_nmi_state_t *)&nmi_state));
   CHECK(nmi_state.wdog_enabled && !nmi_state.wdog_barked,
-        "Wdog nmi state not expected:\n\t"
+        "Wdog NMI state not expected:\n\t"
         "wdog_enable:%x\n\twdog_raised:%"
         "x\n",
         nmi_state.wdog_enabled, nmi_state.wdog_barked);
 }
 
 /**
- * Execute the alert handler nmi interrupt test.
+ * Execute the alert handler NMI interrupt test.
  */
 static void alert_handler_nmi_test(void) {
   alert_handler_config();
-  rv_plic_testutils_irq_range_enable(&plic, plic_ctx.hart_id,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa,
-                                     kTopEarlgreyPlicIrqIdAlertHandlerClassa);
-  CHECK_DIF_OK(
-      dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceAlert));
 
-  // Setup to handle the incoming alert handler nmi irq.
+  // Setup to handle the incoming alert handler NMI IRQ.
   expected_isr_handler = alert_handler_handler;
   nmi_fired = false;
+  nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
 
   // Trigger the alert handler to escalate.
   CHECK_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr, kDifPwrmgrAlertFatalFault));
 
+  LOG_INFO("Wait for alert NMI");
   IBEX_SPIN_FOR(nmi_fired, kEscalationPhase0Micros);
 
-  // Check that the alert handler nmi was enabled and raised an alert during the
-  // nmi irq.
+  // We expect class A to be in escalation phase 0 at this point.
+  CHECK(alert_state == kDifAlertHandlerClassStatePhase0,
+        "Alert handler class A is expected to be in phase 0.");
+
+  // Check that the alert handler NMI was enabled and raised an alert during the
+  // NMI IRQ.
   CHECK(nmi_state.alert_enabled && nmi_state.alert_raised,
-        "Alert handler nmi state not expected:\n\t"
+        "Alert handler NMI state not expected:\n\t"
         "alert_enable:%x\n\talert_raised:%x\n",
         nmi_state.alert_enabled, nmi_state.alert_raised);
 
-  // Check that the alert handler nmi is enabled and is cleared.
+  // Check that the alert handler NMI is enabled and is cleared.
   CHECK_DIF_OK(dif_rv_core_ibex_get_nmi_state(
       &rv_core_ibex, (dif_rv_core_ibex_nmi_state_t *)&nmi_state));
   CHECK(nmi_state.alert_enabled && !nmi_state.alert_raised,
-        "Alert handler nmi state not expected:\n\t"
+        "Alert handler NMI state not expected:\n\t"
         "alert_enable:%x\n\talert_raised:%x\n",
         nmi_state.alert_enabled, nmi_state.alert_raised);
 }
@@ -223,7 +224,7 @@ static void alert_handler_nmi_test(void) {
  * OTTF external NMI internal IRQ handler.
  * This functions overrides the OTTF weak definition.
  * It calls the `expected_isr_handler` function pointer that is previously set
- * by the test to handler the specific peripheral irq.
+ * by the test to handler the specific peripheral IRQ.
  */
 void ottf_external_nmi_handler(void) {
   nmi_fired = true;
@@ -237,13 +238,17 @@ void ottf_external_nmi_handler(void) {
 }
 
 /**
+ * OTTF external IRQ handler
+ * This functions overrides the OTTF weak definition.
+ */
+void ottf_external_isr(void) { ext_irq_fired = true; }
+
+/**
  * Initialized all peripherals used in this test.
  */
 void init_peripherals(void) {
-  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(addr, &plic));
-
-  addr = mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+  mmio_region_t addr =
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_core_ibex_init(addr, &rv_core_ibex));
 
   addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR);
@@ -262,9 +267,32 @@ void init_peripherals(void) {
  * - Repeat the previous steps with alert handler.
  */
 bool test_main(void) {
+  // Disable external interrupts via the PLIC entirely.
+  // The NMI should still get through to the processor regardless.
+  irq_global_ctrl(false);
+  irq_external_ctrl(false);
   init_peripherals();
-  alert_handler_nmi_test();
-  wdog_nmi_test();
+
+  // Enable both NMIs.
+  CHECK_DIF_OK(
+      dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceWdog));
+  CHECK_DIF_OK(
+      dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceAlert));
+
+  // Execute both NMI tests several times back-to-back to verify that
+  // the causes are successfully cleared in the NMI handlers.
+  for (int k = 0; k < kNumTestIterations; ++k) {
+    LOG_INFO("Test iteration %d begin", k);
+    alert_handler_nmi_test();
+    wdog_nmi_test();
+    LOG_INFO("Test iteration %d end", k);
+  }
+
+  // Double check that no external interrupts have occurred.
+  CHECK(ext_irq_fired == false, "Unexpected external interrupt triggered.");
+  // Double check that the system has not been reset due to escalation and that
+  // the reset reason is still POR.
+  pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0);
 
   return true;
 }
