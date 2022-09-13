@@ -75,6 +75,13 @@ interface pins_if #(
     return pins;
   endfunction
 
+  // Fully disconnect this interface, including the pulls.
+  function automatic void disconnect();
+    pins_oe = {Width{1'b0}};
+    pins_pu = {Width{1'b0}};
+    pins_pd = {Width{1'b0}};
+  endfunction
+
   // make connections
   for (genvar i = 0; i < Width; i++) begin : gen_each_pin
 `ifdef VERILATOR
