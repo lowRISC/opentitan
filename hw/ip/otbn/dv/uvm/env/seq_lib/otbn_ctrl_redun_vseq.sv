@@ -63,8 +63,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
       end
       // injecting error on opcode
       2: begin
-        otbn_pkg::alu_op_bignum_e  good_op;
-        otbn_pkg::alu_op_bignum_e  bad_op;
+        logic [3:0] good_op, bad_op;
         bit op_valid;
         err_path = "tb.dut.u_otbn_core.u_otbn_alu_bignum.operation_i.op";
         `DV_SPINWAIT(
