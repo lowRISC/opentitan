@@ -715,7 +715,6 @@
         cname: "KMAC"
         hwext: "true"
         hwqe : "true"
-        regwen: "CFG_REGWEN"
         swaccess: "wo"
         hwaccess: "hro"
         fields: [

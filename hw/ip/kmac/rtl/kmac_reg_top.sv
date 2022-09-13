@@ -1412,14 +1412,11 @@ module kmac_reg_top (
   logic entropy_seed_0_qe;
   logic [0:0] entropy_seed_0_flds_we;
   assign entropy_seed_0_qe = &entropy_seed_0_flds_we;
-  // Create REGWEN-gated WE signal
-  logic entropy_seed_0_gated_we;
-  assign entropy_seed_0_gated_we = entropy_seed_0_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_entropy_seed_0 (
     .re     (1'b0),
-    .we     (entropy_seed_0_gated_we),
+    .we     (entropy_seed_0_we),
     .wd     (entropy_seed_0_wd),
     .d      ('0),
     .qre    (),
@@ -1436,14 +1433,11 @@ module kmac_reg_top (
   logic entropy_seed_1_qe;
   logic [0:0] entropy_seed_1_flds_we;
   assign entropy_seed_1_qe = &entropy_seed_1_flds_we;
-  // Create REGWEN-gated WE signal
-  logic entropy_seed_1_gated_we;
-  assign entropy_seed_1_gated_we = entropy_seed_1_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_entropy_seed_1 (
     .re     (1'b0),
-    .we     (entropy_seed_1_gated_we),
+    .we     (entropy_seed_1_we),
     .wd     (entropy_seed_1_wd),
     .d      ('0),
     .qre    (),
@@ -1460,14 +1454,11 @@ module kmac_reg_top (
   logic entropy_seed_2_qe;
   logic [0:0] entropy_seed_2_flds_we;
   assign entropy_seed_2_qe = &entropy_seed_2_flds_we;
-  // Create REGWEN-gated WE signal
-  logic entropy_seed_2_gated_we;
-  assign entropy_seed_2_gated_we = entropy_seed_2_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_entropy_seed_2 (
     .re     (1'b0),
-    .we     (entropy_seed_2_gated_we),
+    .we     (entropy_seed_2_we),
     .wd     (entropy_seed_2_wd),
     .d      ('0),
     .qre    (),
@@ -1484,14 +1475,11 @@ module kmac_reg_top (
   logic entropy_seed_3_qe;
   logic [0:0] entropy_seed_3_flds_we;
   assign entropy_seed_3_qe = &entropy_seed_3_flds_we;
-  // Create REGWEN-gated WE signal
-  logic entropy_seed_3_gated_we;
-  assign entropy_seed_3_gated_we = entropy_seed_3_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_entropy_seed_3 (
     .re     (1'b0),
-    .we     (entropy_seed_3_gated_we),
+    .we     (entropy_seed_3_we),
     .wd     (entropy_seed_3_wd),
     .d      ('0),
     .qre    (),
@@ -1508,14 +1496,11 @@ module kmac_reg_top (
   logic entropy_seed_4_qe;
   logic [0:0] entropy_seed_4_flds_we;
   assign entropy_seed_4_qe = &entropy_seed_4_flds_we;
-  // Create REGWEN-gated WE signal
-  logic entropy_seed_4_gated_we;
-  assign entropy_seed_4_gated_we = entropy_seed_4_we & cfg_regwen_qs;
   prim_subreg_ext #(
     .DW    (32)
   ) u_entropy_seed_4 (
     .re     (1'b0),
-    .we     (entropy_seed_4_gated_we),
+    .we     (entropy_seed_4_we),
     .wd     (entropy_seed_4_wd),
     .d      ('0),
     .qre    (),
@@ -3061,11 +3046,11 @@ module kmac_reg_top (
     reg_we_check[8] = entropy_period_gated_we;
     reg_we_check[9] = 1'b0;
     reg_we_check[10] = entropy_refresh_threshold_shadowed_gated_we;
-    reg_we_check[11] = entropy_seed_0_gated_we;
-    reg_we_check[12] = entropy_seed_1_gated_we;
-    reg_we_check[13] = entropy_seed_2_gated_we;
-    reg_we_check[14] = entropy_seed_3_gated_we;
-    reg_we_check[15] = entropy_seed_4_gated_we;
+    reg_we_check[11] = entropy_seed_0_we;
+    reg_we_check[12] = entropy_seed_1_we;
+    reg_we_check[13] = entropy_seed_2_we;
+    reg_we_check[14] = entropy_seed_3_we;
+    reg_we_check[15] = entropy_seed_4_we;
     reg_we_check[16] = key_share0_0_gated_we;
     reg_we_check[17] = key_share0_1_gated_we;
     reg_we_check[18] = key_share0_2_gated_we;
