@@ -124,6 +124,29 @@
       tests: ["{variant}_app_with_partial_data"]
    }
    {
+      name: entropy_refresh
+      desc: ''' Test entropy interface for KMAC.
+
+            This test randomly chooses to execute either a SW-controlled hash or a hash from the
+            App interface.
+            All configuration fields are left as is, but now we will request EDN entropy by setting
+            the following registers with random value:
+            - "cmd.entropy_req": Request an EDN entropy
+            - "cmd.hash_cnt_clear": Clear the entropy_refresh_hash_cnt
+            - "entropy_refresh_threshold_shadowed": The threshold when KMAC should request an EDN
+              entropy
+
+            In masked mode, scoreboard will check:
+            - Register `entropy_refresh_hash_cnt` value
+            - KMAC requests EDN at the correct time
+
+            In unmasked mode, scoreboard will check:
+            - Register `entropy_refresh_hash_cnt` always returns 0
+            '''
+      stage: V2
+      tests: ["{variant}_entropy_refresh"]
+   }
+   {
       name: error
       desc: '''
             Try several error sequences:
@@ -168,8 +191,8 @@
     {
       name: edn_timeout_error
       desc: ''' Test kmac responses correctly when EDN response timeout.
-            Based on kmac app sequence, this sequence write `ral.entropy_period.wait_timer` with
-            the minimal value (timeout after 1 cycle) to ensure a EDN timeout request.
+            Based on kmac app sequence, this sequence configures kmac to ensure an EDN timeout
+            error by writing `entropy_period.wait_timer` and `entropy_period.prescaler` registers.
             **Check**:
             - Check error related registers including `err_code`, `status`, and `interrupt`.
             - Check keymgr interface responses with error bit sets to 1.
@@ -180,7 +203,7 @@
       stage: V2
       tests: ["{variant}_edn_timeout_error"]
     }
-     {
+    {
       name: entropy_mode_error
       desc: ''' Test kmac responses correctly when entropy mode is configured incorrectly.
             Based on kmac edn_timeout sequence, this sequence write incorrect
@@ -193,7 +216,7 @@
             '''
       stage: V2
       tests: ["{variant}_entropy_mode_error"]
-    }
+   }
    {
       name: lc_escalation
       desc: '''
@@ -216,23 +239,6 @@
             - Randomly add reset between each sequence'''
       stage: V2
       tests: ["kmac_stress_all"]
-    }
-    {
-      name: entropy_timers
-      desc: ''' Test entropy interface for KMAC.
-
-            This test randomly chooses to execute either a SW-controlled hash or a hash
-            from the App interface.
-            All configuration fields are left as is, but now we set both of the internal timer CSRs:
-            - the entropy_timer value is the number of cycles that KMAC will wait before
-              sending a new request to EDN for more entropy
-            - the wait_timer value is the number of cycles that KMAC will wait for an EDN response
-              before raising an error
-
-            This will be checked in the scoreboard using the cycle acurate model.
-            '''
-      stage: V3
-      tests: ["{variant}_entropy"]
     }
     {
       name: throughput

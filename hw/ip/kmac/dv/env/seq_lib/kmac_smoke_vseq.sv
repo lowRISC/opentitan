@@ -67,6 +67,11 @@ class kmac_smoke_vseq extends kmac_base_vseq;
     entropy_ready == 1;
   }
 
+  constraint entropy_refresh_c {
+    hash_threshold == 0;
+    hash_cnt_clr   == 0;
+  }
+
   // Constraint output byte length to be at most the keccak block size (168/136).
   // This way we can read the entire digest without having to manually squeeze data.
   constraint output_len_c {

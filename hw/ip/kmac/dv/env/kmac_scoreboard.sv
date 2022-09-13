@@ -971,6 +971,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
+      "entropy_refresh_threshold_shadowed": begin
+        if (addr_phase_write &&
+            (dv_base_csr.is_staged() || dv_base_csr.get_shadow_update_err())) begin
+          bit [HASH_CNT_WIDTH-1:0] threshold = item.a_data;
+          if (threshold > 0 && threshold <= `gmv(ral.entropy_refresh_hash_cnt)) begin
+            `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
+          end
+        end
+      end
       default: begin
         // regex match the key_share csrs
         string full_idx;
@@ -1622,10 +1631,22 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     return err_info;
   endfunction
 
+  // Increment the hash_cnt under the following conditions:
+  // 1). Hash_cnt is less than the threshold (except threshold == 0)
+  // 2). Hash_cnt is not overflowed
   function void incr_and_predict_hash_cnt();
     bit [HASH_CNT_WIDTH-1:0] curr_hash_cnt_val = `gmv(ral.entropy_refresh_hash_cnt);
+    // Check overflow
     if (curr_hash_cnt_val != '1) begin
-      `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(curr_hash_cnt_val + 1));
+      bit [HASH_CNT_WIDTH-1:0] new_hash_cnt_val = curr_hash_cnt_val + 1;
+
+      // Check threshold
+      if (new_hash_cnt_val >= `gmv(ral.entropy_refresh_threshold_shadowed) &&
+          `gmv(ral.entropy_refresh_threshold_shadowed) > 0) begin
+        `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
+      end else begin
+        `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(new_hash_cnt_val));
+      end
     end
   endfunction
 
