@@ -7,17 +7,15 @@
 
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
-# clkmgr powerup clock connectivity
+# clkmgr secure clock connectivity
 CONNECTION, CLKMGR_SECURE_CLK_ALERT_HANDLER_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_alert_handler, clk_i
 CONNECTION, CLKMGR_SECURE_CLK_ALERT_HANDLER_EDN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,    top_earlgrey.u_alert_handler, clk_edn_i
-
 
 CONNECTION, CLKMGR_SECURE_CLK_AST_TLUL_CLK,  top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, u_ast, clk_ast_tlul_i
 CONNECTION, CLKMGR_SECURE_CLK_AST_ADC_CLK,   top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_secure,     u_ast, clk_ast_adc_i
 CONNECTION, CLKMGR_SECURE_CLK_AST_ALERT_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, u_ast, clk_ast_alert_i
 CONNECTION, CLKMGR_SECURE_CLK_AST_ES_CLK,    top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,    u_ast, clk_ast_es_i
 CONNECTION, CLKMGR_SECURE_CLK_AST_RNG_CLK,   top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,    u_ast, clk_ast_rng_i
-CONNECTION, CLKMGR_SECURE_CLK_AST_USB_CLK,   top_earlgrey.u_clkmgr_aon, clocks_o.clk_usb_secure,     u_ast, clk_ast_usb_i
 
 CONNECTION, CLKMGR_SECURE_CLK_CSRNG_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure, top_earlgrey.u_csrng, clk_i
 
@@ -32,10 +30,13 @@ CONNECTION, CLKMGR_SECURE_CLK_KEYMGR_EDN_CLK, top_earlgrey.u_clkmgr_aon, clocks_
 CONNECTION, CLKMGR_SECURE_CLK_LC_CTRL,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_lc_ctrl, clk_i
 CONNECTION, CLKMGR_SECURE_KMAC_CLK_LC_CTRL, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,    top_earlgrey.u_lc_ctrl, clk_kmac_i
 
+CONNECTION, CLKMGR_SECURE_CLK_OTBN_EDN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure, top_earlgrey.u_otbn, clk_edn_i
+CONNECTION, CLKMGR_SECURE_CLK_OTBN_OTP_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_otbn, clk_otp_i
+
 CONNECTION, CLKMGR_SECURE_CLK_OTP_CTRL_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_otp_ctrl, clk_i
 CONNECTION, CLKMGR_SECURE_CLK_OTP_CTRL_EDN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,    top_earlgrey.u_otp_ctrl, clk_edn_i
 
-CONNECTION, CLKMGR_SECURE_CLK_PWRMGR_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_pwrmgr_aon, clk_esc_i
+CONNECTION, CLKMGR_SECURE_CLK_PWRMGR_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_pwrmgr_aon, clk_lc_i
 
 CONNECTION, CLKMGR_SECURE_CLK_RV_CORE_IBEX_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_rv_core_ibex, clk_esc_i
 CONNECTION, CLKMGR_SECURE_CLK_RV_CORE_IBEX_OTP_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_rv_core_ibex, clk_otp_i
