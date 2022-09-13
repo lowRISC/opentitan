@@ -61,19 +61,26 @@ def _bitstream_splice_impl(ctx):
         env = ENV,
     )
 
-    ctx.actions.run(
-        mnemonic = "UpdateUsrAccessValue",
-        outputs = [output],
-        inputs = [spliced],
-        arguments = [
-            "--logging",
-            "info",
-            "update-usr-access",
-            spliced.path,
-            output.path,
-        ],
-        executable = ctx.executable._opentitantool,
-    )
+    if ctx.attr.update_usr_access:
+        ctx.actions.run(
+            mnemonic = "UpdateUsrAccessValue",
+            outputs = [output],
+            inputs = [spliced],
+            arguments = [
+                "--rcfile=",
+                "--logging",
+                "info",
+                "update-usr-access",
+                spliced.path,
+                output.path,
+            ],
+            executable = ctx.executable._opentitantool,
+        )
+    else:
+        ctx.actions.symlink(
+            output = output,
+            target_file = spliced,
+        )
 
     return [
         DefaultInfo(
@@ -94,6 +101,7 @@ bitstream_splice = rule(
         "data": attr.label(allow_single_file = True, doc = "The memory image to splice into the bitstream"),
         "swap_nybbles": attr.bool(default = True, doc = "Swap nybbles while preparing the memory image"),
         "debug": attr.bool(default = True, doc = "Emit debug info while updating"),
+        "update_usr_access": attr.bool(default = False, doc = "Update the USR_ACCESS value of the bitstream, breaks hermeticity"),
         "_gen_mem_img": attr.label(
             default = "//hw/ip/rom_ctrl/util:gen_vivado_mem_image",
             executable = True,
