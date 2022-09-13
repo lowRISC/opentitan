@@ -347,7 +347,8 @@ impl Backend {
         bitstream: &[u8],
         progress: Option<&dyn Fn(u32, u32)>,
     ) -> Result<()> {
-        self.fpga_prepare(20_000_000)?;
+        const PROG_SPEED: u32 = 20_000_000;
+        self.fpga_prepare(PROG_SPEED)?;
         let result = self.fpga_download(bitstream, progress);
 
         let mut status = false;
