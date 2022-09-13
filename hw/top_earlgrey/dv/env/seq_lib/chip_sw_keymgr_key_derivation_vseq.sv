@@ -73,26 +73,28 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
       32'hde919d54, 32'h322288d8, 32'h4bd127c7, 32'h9f89bc56,
       32'hb4fb0fdf, 32'h1ca1567b, 32'h13a0e876, 32'hb6521d8f};
 
+  localparam bit [31:0] SwKeyVersion = 32'h11;
+
   localparam gen_out_data_t GenSWOutData = '{
-      32'haa, // KeyVersion
+      SwKeyVersion,
       Salt,
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrNoneSeed,
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrSoftOutputSeed};
 
   localparam gen_out_data_t GenKmacOutData = '{
-      32'haa, // KeyVersion
+      SwKeyVersion,
       Salt,
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrKmacSeed,
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
 
   localparam gen_out_data_t GenAesOutData = '{
-      32'haa, // KeyVersion
+      SwKeyVersion,
       Salt,
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrAesSeed,
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
 
   localparam gen_out_data_t GenOtbnOutData = '{
-      32'haa, // KeyVersion
+      SwKeyVersion,
       Salt,
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrOtbnSeed,
       top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrHardOutputSeed};
