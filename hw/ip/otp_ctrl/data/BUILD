@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:autogen.bzl", "autogen_hjson_header", "otp_image")
-load("//rules:otp.bzl", "otp_json")
+load("//rules:autogen.bzl", "autogen_hjson_header")
+load("//rules:otp.bzl", "otp_image", "otp_json")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
