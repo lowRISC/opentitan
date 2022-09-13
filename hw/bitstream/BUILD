@@ -109,6 +109,7 @@ bitstream_splice(
     data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
+    update_usr_access = True,
     visibility = ["//visibility:private"],
 )
 
@@ -119,6 +120,7 @@ bitstream_splice(
     data = "//sw/device/silicon_creator/rom:rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
+    update_usr_access = True,
     visibility = ["//visibility:private"],
 )
 
@@ -129,5 +131,6 @@ bitstream_splice(
     data = "//hw/ip/otp_ctrl/data:img_dev",
     meminfo = ":otp_mmi",
     tags = ["manual"],
+    update_usr_access = True,
     visibility = ["//visibility:private"],
 )
