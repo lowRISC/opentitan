@@ -20,6 +20,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // chip top interfaces
   virtual chip_if       chip_vif;
 
+  // Indicates which clock source to use for chip simulations.
+  chip_clock_source_e   chip_clock_source;
+
   // Memory backdoor util instances for all memory instances in the chip.
   mem_bkdr_util mem_bkdr_util_h[chip_mem_e];
 
@@ -92,21 +95,27 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Design uses 5 bits for IR.
   parameter uint JTAG_IR_LEN = 5;
 
+  // NOTE: The clk_freq_mhz variable created in the base class was meant to be used by clk_rst_vif
+  // interface that is passed by default by the testbench (retrieved by dv_base_env class). It was
+  // meant for a CIP-compliant testbench to drive the clock and reset to the DUT. The chip level
+  // testbench reuses the CIP framework, but is not exactly CIP-compliant. It uses chip_vif.por_n_if
+  // to drive the reset and chip_vif.ext_clk_if to drive the external clock, only if external clock
+  // source is required for the test. The clk_rst_vif is a passive interface which monitors them.
+  constraint clk_freq_mhz_c {
+    clk_freq_mhz inside {ChipClockSourceExternal48Mhz, ChipClockSourceExternal96Mhz};
+    foreach (clk_freqs_mhz[i]) clk_freqs_mhz[i] == clk_freq_mhz;
+  }
+
+  `uvm_object_new
+
   `uvm_object_utils_begin(chip_env_cfg)
     `uvm_field_object(m_jtag_riscv_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(m_spi_agent_cfg,        UVM_DEFAULT)
     `uvm_field_object(jtag_dmi_ral,           UVM_DEFAULT)
   `uvm_object_utils_end
 
-  constraint clk_freq_mhz_c {
-    clk_freq_mhz inside {48, 96};
-    foreach (clk_freqs_mhz[i]) clk_freqs_mhz[i] == clk_freq_mhz;
-  }
-
-  `uvm_object_new
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-    ext_clk_type_e ext_clk_type = UseInternalClk;
     has_devmode = 0;
     list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
 
@@ -162,22 +171,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
     `DV_CHECK_LE_FATAL(num_otbn_dmem_tiles, 16)
-
-    // Set external clock frequency.
-    `DV_GET_ENUM_PLUSARG(ext_clk_type_e, ext_clk_type, ext_clk_type)
-    case (ext_clk_type)
-      UseInternalClk:  begin
-        // if it's internal clk, the ext clk is only used in ast, the freq doesn't matter
-        randcase
-          1: clk_freq_mhz = 48;
-          1: clk_freq_mhz = 96;
-        endcase
-      end
-      ExtClkLowSpeed:  clk_freq_mhz = 48;
-      ExtClkHighSpeed: clk_freq_mhz = 96;
-      default: `uvm_fatal(`gfn, $sformatf("Unexpected ext_clk_type: %s", ext_clk_type.name))
-    endcase // case (ext_clk_type)
-    clk_freq_mhz.rand_mode(0);
 
     // ral_model_names = chip_reg_block // 1 entry
     if (use_jtag_dmi == 1) begin
