@@ -26,7 +26,7 @@ static const dif_keymgr_versioned_key_params_t kKeyVersionedParams = {
             0x322288d8,
             0xde919d54,
         },
-    .version = 0x1,
+    .version = 0x11,
 };
 
 /**
