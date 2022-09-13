@@ -105,7 +105,7 @@
       name: sec_cm_data_reg_sw_sca
       desc: "Verify the countermeasure(s) DATA_REG_SW.SCA."
       stage: V2S
-      tests: []
+      tests: ["otbn_single"]
     }
     {
       name: sec_cm_ctrl_redun
@@ -199,19 +199,19 @@
       name: sec_cm_data_mem_sec_wipe
       desc: "Verify the countermeasure(s) DATA.MEM.SEC_WIPE."
       stage: V2S
-      tests: []
+      tests: ["otbn_single"]
     }
     {
       name: sec_cm_instruction_mem_sec_wipe
       desc: "Verify the countermeasure(s) INSTRUCTION.MEM.SEC_WIPE."
       stage: V2S
-      tests: []
+      tests: ["otbn_single"]
     }
     {
       name: sec_cm_data_reg_sw_sec_wipe
       desc: "Verify the countermeasure(s) DATA_REG_SW.SEC_WIPE."
       stage: V2S
-      tests: []
+      tests: ["otbn_single"]
     }
     {
       name: sec_cm_write_mem_integrity
@@ -229,7 +229,7 @@
       name: sec_cm_ctrl_flow_sca
       desc: "Verify the countermeasure(s) CTRL_FLOW.SCA."
       stage: V2S
-      tests: []
+      tests: ["otbn_single"]
     }
     {
       name: sec_cm_data_mem_sw_noaccess
