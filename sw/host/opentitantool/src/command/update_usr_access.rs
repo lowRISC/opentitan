@@ -11,6 +11,7 @@ use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::util::parse_int::ParseInt;
 use opentitanlib::util::usr_access::{usr_access_set, usr_access_timestamp};
 
 /// Update the USR_ACCESS value of an FPGA bitstream with the current timestamp.
@@ -21,6 +22,11 @@ pub struct UpdateUsrAccess {
 
     #[structopt(name = "OUTPUT_FILE")]
     output: PathBuf,
+
+    #[structopt(long,
+                parse(try_from_str = u32::from_str),
+                help="New USR_ACCESS value, default = timestamp")]
+    usr_access: Option<u32>,
 }
 
 impl CommandDispatch for UpdateUsrAccess {
@@ -30,7 +36,10 @@ impl CommandDispatch for UpdateUsrAccess {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Serialize>>> {
         let mut bs = fs::read(&self.input)?;
-        usr_access_set(&mut bs, usr_access_timestamp())?;
+        usr_access_set(
+            &mut bs,
+            self.usr_access.unwrap_or_else(|| usr_access_timestamp()),
+        )?;
         fs::write(&self.output, bs)?;
         Ok(None)
     }
