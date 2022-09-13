@@ -60,17 +60,6 @@ SECTIONS {
   } > ottf_flash
 
   /**
-   * Non-volatile Scratch area in flash.
-   *
-   * This is a separate section for tests to read/write data to/from to persist
-   * across resets.
-   */
-  .non_volatile_scratch : ALIGN(2048){
-    _non_volatile_scratch_start = .;
-    KEEP(*(.non_volatile_scratch))
-  } > ottf_flash
-
-  /**
    * Ibex interrupt vector. See 'ottf_start.S' for more information.
    *
    * This has to be set up at a 256-byte offset, so that we can use it with
@@ -238,6 +227,67 @@ SECTIONS {
     _freertos_heap_start = .;
     *(.freertos.heap)
   } > ram_main
+
+  /**
+   * Non-volatile scratch and counter areas for tests.
+   *
+   * These sections are meant to be used by tests to store data that should
+   * persist across resets. Since `opentitantool` assumes that the signed
+   * region of an image extends until the end, these sections are placed after
+   * all other sections and are NOLOAD so that they don't appear in the binary
+   * and therefore don't end up being covered by the signature.
+   */
+   _non_volatile_scratch_size = 20480;
+   _non_volatile_scratch_end = ORIGIN(ottf_flash) + _ottf_size;
+   _non_volatile_scratch_start = _non_volatile_scratch_end - _non_volatile_scratch_size;
+
+   _non_volatile_counter_size = 2048;
+   _non_volatile_counter_flash_words = _non_volatile_counter_size / 8;
+
+   _non_volatile_counter_0_end = _non_volatile_scratch_start;
+   _non_volatile_counter_0_start = _non_volatile_counter_0_end - _non_volatile_counter_size;
+
+   _non_volatile_counter_1_end = _non_volatile_counter_0_start;
+   _non_volatile_counter_1_start = _non_volatile_counter_1_end - _non_volatile_counter_size;
+
+   _non_volatile_counter_2_end = _non_volatile_counter_1_start;
+   _non_volatile_counter_2_start = _non_volatile_counter_2_end - _non_volatile_counter_size;
+
+  /**
+   * Non-volatile scratch area in flash.
+   */
+  .non_volatile_scratch _non_volatile_scratch_start (NOLOAD) : ALIGN(2048) {
+    KEEP(*(.non_volatile_scratch))
+    KEEP(*(.non_volatile_scratch.*))
+    . = _non_volatile_scratch_size;
+  } > ottf_flash
+
+
+  /**
+   * Non-volatile counter area in flash.
+   *
+   * Similar to the `.non_volatile_scratch` section, this section is meant to
+   * be used by tests. Because we don't want to write to the same flash word
+   * twice, tests that require non-volatile counters can use this section by
+   * striking flash words to count up to `_non_volatile_counter_max_count`.
+   */
+  .non_volatile_counter_0 _non_volatile_counter_0_start (NOLOAD) : ALIGN(2048) {
+    KEEP(*(.non_volatile_counter_0))
+    KEEP(*(.non_volatile_counter_0.*))
+    . = _non_volatile_counter_size;
+  } > ottf_flash
+
+  .non_volatile_counter_1 _non_volatile_counter_1_start (NOLOAD) : ALIGN(2048) {
+    KEEP(*(.non_volatile_counter_1))
+    KEEP(*(.non_volatile_counter_1.*))
+    . = _non_volatile_counter_size;
+  } > ottf_flash
+
+  .non_volatile_counter_2 _non_volatile_counter_2_start (NOLOAD) : ALIGN(2048) {
+    KEEP(*(.non_volatile_counter_2))
+    KEEP(*(.non_volatile_counter_2.*))
+    . = _non_volatile_counter_size;
+  } > ottf_flash
 
   INCLUDE sw/device/info_sections.ld
 }
