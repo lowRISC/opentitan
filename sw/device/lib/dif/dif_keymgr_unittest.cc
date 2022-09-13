@@ -410,8 +410,17 @@ class GetStatusCodesNoError
       public testing::WithParamInterface<GetStatusCodesTestCase> {};
 
 TEST_P(GetStatusCodesNoError, Success) {
-  EXPECT_READ32(KEYMGR_OP_STATUS_REG_OFFSET, GetParam().reg_val);
-  EXPECT_WRITE32(KEYMGR_OP_STATUS_REG_OFFSET, GetParam().reg_val);
+  uint32_t reg_val = mock_mmio::ToInt<uint32_t>(GetParam().reg_val);
+  EXPECT_READ32(KEYMGR_OP_STATUS_REG_OFFSET, reg_val);
+  if (reg_val == KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS ||
+      reg_val == KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR) {
+    EXPECT_WRITE32(KEYMGR_OP_STATUS_REG_OFFSET, reg_val);
+  }
+
+  if (reg_val == KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR) {
+    EXPECT_READ32(KEYMGR_ERR_CODE_REG_OFFSET, 5);
+    EXPECT_WRITE32(KEYMGR_ERR_CODE_REG_OFFSET, 5);
+  }
 
   dif_keymgr_status_codes_t act_val;
   EXPECT_DIF_OK(dif_keymgr_get_status_codes(&keymgr_, &act_val));
@@ -434,6 +443,15 @@ INSTANTIATE_TEST_SUITE_P(
                 .value = KEYMGR_OP_STATUS_STATUS_VALUE_DONE_SUCCESS,
             }},
             .exp_val = kDifKeymgrStatusCodeIdle,
+        },
+        GetStatusCodesTestCase{
+            .reg_val = {{
+                .offset = KEYMGR_OP_STATUS_STATUS_OFFSET,
+                .value = KEYMGR_OP_STATUS_STATUS_VALUE_DONE_ERROR,
+            }},
+            .exp_val = kDifKeymgrStatusCodeIdle |
+                       kDifKeymgrStatusCodeInvalidKmacOutput |
+                       kDifKeymgrStatusCodeInvalidOperation,
         },
         GetStatusCodesTestCase{
             .reg_val = {{
