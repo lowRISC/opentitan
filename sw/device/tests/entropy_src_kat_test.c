@@ -13,8 +13,6 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
-#define KAT_TEST_TIMEOUT_ATTEMPTS 256
-
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
@@ -23,6 +21,10 @@ enum {
    * firmware override mode.
    */
   kEntropyFifoBufferSize = 12,
+  /**
+   * The number of attemps for performing operations before timing out.
+   */
+  kKatTestTimeoutAttempts = 256,
 };
 
 /**
@@ -30,7 +32,7 @@ enum {
  * the release of a conditioned seed.
  *
  * If stopping the conditioner fails, due to pending data keep trying for
- * at most KAT_TEST_TIMEOUT_ATTEMPTS.
+ * at most kKatTestTimeoutAttempts.
  *
  * @param entropy An entropy source instance.
  */
@@ -42,7 +44,7 @@ static void stop_sha3_conditioner(dif_entropy_src_t *entropy_src) {
     op_result = dif_entropy_src_conditioner_stop(entropy_src);
     if (op_result == kDifIpFifoFull) {
       fail_count++;
-      CHECK(fail_count < KAT_TEST_TIMEOUT_ATTEMPTS);
+      CHECK(fail_count < kKatTestTimeoutAttempts);
     } else {
       CHECK_DIF_OK(op_result);
     }
@@ -59,10 +61,19 @@ static void flush_sha3_conditioner(dif_entropy_src_t *entropy_src) {
   CHECK_DIF_OK(dif_entropy_src_conditioner_start(entropy_src));
   stop_sha3_conditioner(entropy_src);
 
+  int fail_count = 0;
+
   // Read (and discard) the resulting seed.
   uint32_t got[kEntropyFifoBufferSize];
   for (size_t i = 0; i < ARRAYSIZE(got); ++i) {
-    CHECK_DIF_OK(dif_entropy_src_non_blocking_read(entropy_src, &got[i]));
+    dif_result_t op_result =
+        dif_entropy_src_non_blocking_read(entropy_src, &got[i]);
+    if (op_result == kDifUnavailable) {
+      fail_count++;
+      CHECK(fail_count < kKatTestTimeoutAttempts);
+    } else {
+      CHECK_DIF_OK(op_result);
+    }
   }
 }
 
@@ -107,7 +118,7 @@ void test_sha384_kat(dif_entropy_src_t *entropy_src) {
     total += count;
     if (op_result == kDifIpFifoFull) {
       fail_count++;
-      CHECK(fail_count < KAT_TEST_TIMEOUT_ATTEMPTS);
+      CHECK(fail_count < kKatTestTimeoutAttempts);
     } else {
       fail_count = 0;
       CHECK_DIF_OK(op_result);
@@ -117,9 +128,16 @@ void test_sha384_kat(dif_entropy_src_t *entropy_src) {
   // Cleanly disable the conditioner.
   stop_sha3_conditioner(entropy_src);
 
+  fail_count = 0;
   uint32_t got[kEntropyFifoBufferSize];
   for (size_t i = 0; i < ARRAYSIZE(got); ++i) {
-    CHECK_DIF_OK(dif_entropy_src_non_blocking_read(entropy_src, &got[i]));
+    op_result = dif_entropy_src_non_blocking_read(entropy_src, &got[i]);
+    if (op_result == kDifUnavailable) {
+      fail_count++;
+      CHECK(fail_count < kKatTestTimeoutAttempts);
+    } else {
+      CHECK_DIF_OK(op_result);
+    }
   }
 
   const uint32_t kExpectedDigest[kEntropyFifoBufferSize] = {
