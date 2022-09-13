@@ -29,7 +29,7 @@ static const uint32_t kNumDio = 16;  // top_earlgrey has 16 DIOs
 // kDirectDio is a list of Dio index that TB cannot control the PAD value.
 // The list should be incremental order (see the code below)
 #define NUM_DIRECT_DIO 5
-static const uint32_t kDirectDio [NUM_DIRECT_DIO] = { 6, 12, 13, 14, 15};
+static const uint32_t kDirectDio[NUM_DIRECT_DIO] = {6, 12, 13, 14, 15};
 
 bool test_main(void) {
   dif_pwrmgr_t pwrmgr;
@@ -76,6 +76,14 @@ bool test_main(void) {
     // Send selection to SV vseq.
     LOG_INFO("Pad Selection: %d / %d", mio0_dio1, pad_sel);
 
+    if (mio0_dio1 == 0) {
+      // TODO: Check if the PAD is locked (kDifPinmuxLockTargetOutsel), then
+      // skip if locked.
+      // Turn off Pinmux output selection
+      CHECK_DIF_OK(dif_pinmux_output_select(
+          &pinmux, pad_sel - 2, kTopEarlgreyPinmuxOutselConstantHighZ));
+    }
+
     wakeup_cfg.mode = kDifPinmuxWakeupModePositiveEdge;
     wakeup_cfg.signal_filter = false;
     wakeup_cfg.pad_type = mio0_dio1;
@@ -111,3 +119,6 @@ bool test_main(void) {
   }
   return false;
 }
+
+#undef NUM_DIRECT_DIO
+#undef NUM_LOCKED_MIO
