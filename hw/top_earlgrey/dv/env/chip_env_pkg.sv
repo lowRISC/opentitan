@@ -60,15 +60,6 @@ package chip_env_pkg;
   typedef virtual ast_supply_if        ast_supply_vif;
   typedef virtual ast_ext_clk_if       ast_ext_clk_vif;
 
-  typedef enum {
-    // external clock is still on, but the source of all IP clocks is the internal clock
-    UseInternalClk,
-    // 48Mhz, same for Life cycle transition mode
-    ExtClkLowSpeed,
-    // 96Mhz
-    ExtClkHighSpeed
-  } ext_clk_type_e;
-
   // Types of memories in the chip.
   //
   // RAM instances have support for up to 16 tiles. Actual number of tiles in use in the design is a
