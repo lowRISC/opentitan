@@ -30,11 +30,11 @@ package otp_ctrl_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter string LIST_OF_ALERTS[]      = {"fatal_macro_error",
-                                            "fatal_check_error",
-                                            "fatal_bus_integ_error",
-                                            "fatal_prim_otp_alert",
-                                            "recov_prim_otp_alert"};
+  parameter string LIST_OF_ALERTS[] = {"fatal_macro_error",
+                                       "fatal_check_error",
+                                       "fatal_bus_integ_error",
+                                       "fatal_prim_otp_alert",
+                                       "recov_prim_otp_alert"};
   parameter uint NUM_ALERTS              = 5;
   parameter uint NUM_EDN                 = 1;
 
