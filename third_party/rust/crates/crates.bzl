@@ -212,347 +212,176 @@ def raze_fetch_remote_crates(
         # Each of these may be used to temporarily override the location of
         # the crate to a path on your local filesystem for local development
         # of crates you may be using in your project.
-        CoreFoundation_sys__0_1_4=None,
-
-        IOKit_sys__0_1_5=None,
-
-        addr2line__0_17_0=None,
-
-        adler__1_0_2=None,
-
-        aho_corasick__0_7_19=None,
-
-        android_system_properties__0_1_5=None,
-
-        ansi_term__0_12_1=None,
-
-        anyhow__1_0_64=None,
-
-        atty__0_2_14=None,
-
-        autocfg__0_1_8=None,
-
-        autocfg__1_1_0=None,
-
-        backtrace__0_3_66=None,
-
-        base64ct__1_1_1=None,
-
-        bitflags__1_3_2=None,
-
-        bitvec__1_0_1=None,
-
-        block_buffer__0_10_3=None,
-
-        bumpalo__3_11_0=None,
-
-        byteorder__1_4_3=None,
-
-        cc__1_0_73=None,
-
-        cfg_if__0_1_10=None,
-
-        cfg_if__1_0_0=None,
-
-        chrono__0_4_22=None,
-
-        clap__2_34_0=None,
-
-        console__0_15_1=None,
-
-        const_oid__0_6_2=None,
-
-        core_foundation_sys__0_8_3=None,
-
-        cpufeatures__0_2_5=None,
-
-        crc__3_0_0=None,
-
-        crc_catalog__2_1_0=None,
-
-        crc32fast__1_3_2=None,
-
-        crypto_bigint__0_2_11=None,
-
-        crypto_common__0_1_6=None,
-
-        ctor__0_1_23=None,
-
-        der__0_4_5=None,
-
-        derive_more__0_14_1=None,
-
-        deser_hjson__1_0_2=None,
-
-        digest__0_10_3=None,
-
-        digest__0_9_0=None,
-
-        directories__4_0_1=None,
-
-        dirs_sys__0_3_7=None,
-
-        encode_unicode__0_3_6=None,
-
-        env_logger__0_8_4=None,
-
-        erased_serde__0_3_23=None,
-
-        fastrand__1_8_0=None,
-
-        flate2__1_0_24=None,
-
-        funty__2_0_0=None,
-
-        generic_array__0_14_6=None,
-
-        getrandom__0_2_7=None,
-
-        ghost__0_1_6=None,
-
-        gimli__0_26_2=None,
-
-        heck__0_3_3=None,
-
-        hermit_abi__0_1_19=None,
-
-        hex__0_4_3=None,
-
-        humantime__2_1_0=None,
-
-        iana_time_zone__0_1_47=None,
-
-        indicatif__0_16_2=None,
-
-        instant__0_1_12=None,
-
-        inventory__0_2_3=None,
-
-        itoa__1_0_3=None,
-
-        js_sys__0_3_60=None,
-
-        lazy_static__1_4_0=None,
-
-        libc__0_2_132=None,
-
-        libm__0_2_5=None,
-
-        libudev__0_3_0=None,
-
-        libudev_sys__0_1_4=None,
-
-        libusb1_sys__0_5_0=None,
-
-        log__0_4_17=None,
-
-        mach__0_1_2=None,
-
-        mach__0_3_2=None,
-
-        memchr__2_5_0=None,
-
-        memoffset__0_6_5=None,
-
-        miniz_oxide__0_5_4=None,
-
-        mio__0_7_14=None,
-
-        mio_signals__0_1_5=None,
-
-        miow__0_3_7=None,
-
-        nix__0_17_0=None,
-
-        nix__0_24_2=None,
-
-        ntapi__0_3_7=None,
-
-        num_bigint_dig__0_7_0=None,
-
-        num_integer__0_1_45=None,
-
-        num_iter__0_1_43=None,
-
-        num_traits__0_2_15=None,
-
-        num_enum__0_5_7=None,
-
-        num_enum_derive__0_5_7=None,
-
-        number_prefix__0_4_0=None,
-
-        object__0_25_3=None,
-
-        object__0_29_0=None,
-
-        once_cell__1_14_0=None,
-
-        pem_rfc7468__0_2_4=None,
-
-        pkcs1__0_2_4=None,
-
-        pkcs8__0_7_6=None,
-
-        pkg_config__0_3_25=None,
-
-        ppv_lite86__0_2_16=None,
-
-        proc_macro_crate__1_2_1=None,
-
-        proc_macro_error__1_0_4=None,
-
-        proc_macro_error_attr__1_0_4=None,
-
-        proc_macro2__0_4_30=None,
-
-        proc_macro2__1_0_43=None,
-
-        quote__0_6_13=None,
-
-        quote__1_0_21=None,
-
-        radium__0_7_0=None,
-
-        rand__0_8_5=None,
-
-        rand_chacha__0_3_1=None,
-
-        rand_core__0_6_3=None,
-
-        raw_tty__0_1_0=None,
-
-        redox_syscall__0_2_16=None,
-
-        redox_users__0_4_3=None,
-
-        regex__1_6_0=None,
-
-        regex_syntax__0_6_27=None,
-
-        remove_dir_all__0_5_3=None,
-
-        rsa__0_5_0=None,
-
-        rusb__0_8_1=None,
-
-        rustc_demangle__0_1_21=None,
-
-        rustc_version__0_2_3=None,
-
-        ryu__1_0_11=None,
-
-        semver__0_9_0=None,
-
-        semver_parser__0_7_0=None,
-
-        serde__1_0_144=None,
-
-        serde_derive__1_0_144=None,
-
-        serde_json__1_0_85=None,
-
-        serialport__4_2_0=None,
-
-        sha2__0_10_5=None,
-
-        shellwords__1_1_0=None,
-
-        smallvec__1_9_0=None,
-
-        spin__0_5_2=None,
-
-        spki__0_4_1=None,
-
-        strsim__0_8_0=None,
-
-        structopt__0_3_26=None,
-
-        structopt_derive__0_4_18=None,
-
-        subtle__2_4_1=None,
-
-        syn__0_15_44=None,
-
-        syn__1_0_99=None,
-
-        synstructure__0_12_6=None,
-
-        tap__1_0_1=None,
-
-        tempfile__3_3_0=None,
-
-        termcolor__1_1_3=None,
-
-        terminal_size__0_1_17=None,
-
-        textwrap__0_11_0=None,
-
-        thiserror__1_0_34=None,
-
-        thiserror_impl__1_0_34=None,
-
-        time__0_1_44=None,
-
-        toml__0_5_9=None,
-
-        typenum__1_15_0=None,
-
-        typetag__0_1_8=None,
-
-        typetag_impl__0_1_8=None,
-
-        unicode_ident__1_0_3=None,
-
-        unicode_segmentation__1_9_0=None,
-
-        unicode_width__0_1_9=None,
-
-        unicode_xid__0_1_0=None,
-
-        unicode_xid__0_2_3=None,
-
-        vcpkg__0_2_15=None,
-
-        vec_map__0_8_2=None,
-
-        version_check__0_9_4=None,
-
-        void__1_0_2=None,
-
-        wasi__0_10_0_wasi_snapshot_preview1=None,
-
-        wasi__0_11_0_wasi_snapshot_preview1=None,
-
-        wasm_bindgen__0_2_83=None,
-
-        wasm_bindgen_backend__0_2_83=None,
-
-        wasm_bindgen_macro__0_2_83=None,
-
-        wasm_bindgen_macro_support__0_2_83=None,
-
-        wasm_bindgen_shared__0_2_83=None,
-
-        winapi__0_3_9=None,
-
-        winapi_i686_pc_windows_gnu__0_4_0=None,
-
-        winapi_util__0_1_5=None,
-
-        winapi_x86_64_pc_windows_gnu__0_4_0=None,
-
-        wyz__0_5_0=None,
-
-        zerocopy__0_5_0=None,
-
-        zerocopy_derive__0_3_1=None,
-
-        zeroize__1_4_3=None,
-
-        zeroize_derive__1_3_2=None,
-
-    ):
+        CoreFoundation_sys__0_1_4 = None,
+        IOKit_sys__0_1_5 = None,
+        addr2line__0_17_0 = None,
+        adler__1_0_2 = None,
+        aho_corasick__0_7_19 = None,
+        android_system_properties__0_1_5 = None,
+        ansi_term__0_12_1 = None,
+        anyhow__1_0_64 = None,
+        atty__0_2_14 = None,
+        autocfg__0_1_8 = None,
+        autocfg__1_1_0 = None,
+        backtrace__0_3_66 = None,
+        base64ct__1_1_1 = None,
+        bitflags__1_3_2 = None,
+        bitvec__1_0_1 = None,
+        block_buffer__0_10_3 = None,
+        bumpalo__3_11_0 = None,
+        byteorder__1_4_3 = None,
+        cc__1_0_73 = None,
+        cfg_if__0_1_10 = None,
+        cfg_if__1_0_0 = None,
+        chrono__0_4_22 = None,
+        clap__2_34_0 = None,
+        console__0_15_1 = None,
+        const_oid__0_6_2 = None,
+        core_foundation_sys__0_8_3 = None,
+        cpufeatures__0_2_5 = None,
+        crc__3_0_0 = None,
+        crc_catalog__2_1_0 = None,
+        crc32fast__1_3_2 = None,
+        crypto_bigint__0_2_11 = None,
+        crypto_common__0_1_6 = None,
+        ctor__0_1_23 = None,
+        der__0_4_5 = None,
+        derive_more__0_14_1 = None,
+        deser_hjson__1_0_2 = None,
+        digest__0_10_3 = None,
+        digest__0_9_0 = None,
+        directories__4_0_1 = None,
+        dirs_sys__0_3_7 = None,
+        encode_unicode__0_3_6 = None,
+        env_logger__0_8_4 = None,
+        erased_serde__0_3_23 = None,
+        fastrand__1_8_0 = None,
+        flate2__1_0_24 = None,
+        funty__2_0_0 = None,
+        generic_array__0_14_6 = None,
+        getrandom__0_2_7 = None,
+        ghost__0_1_6 = None,
+        gimli__0_26_2 = None,
+        heck__0_3_3 = None,
+        hermit_abi__0_1_19 = None,
+        hex__0_4_3 = None,
+        humantime__2_1_0 = None,
+        iana_time_zone__0_1_47 = None,
+        indicatif__0_16_2 = None,
+        instant__0_1_12 = None,
+        inventory__0_2_3 = None,
+        itoa__1_0_3 = None,
+        js_sys__0_3_60 = None,
+        lazy_static__1_4_0 = None,
+        libc__0_2_132 = None,
+        libm__0_2_5 = None,
+        libudev__0_3_0 = None,
+        libudev_sys__0_1_4 = None,
+        libusb1_sys__0_5_0 = None,
+        log__0_4_17 = None,
+        mach__0_1_2 = None,
+        mach__0_3_2 = None,
+        memchr__2_5_0 = None,
+        memoffset__0_6_5 = None,
+        miniz_oxide__0_5_4 = None,
+        mio__0_7_14 = None,
+        mio_signals__0_1_5 = None,
+        miow__0_3_7 = None,
+        nix__0_17_0 = None,
+        nix__0_24_2 = None,
+        ntapi__0_3_7 = None,
+        num_bigint_dig__0_7_0 = None,
+        num_integer__0_1_45 = None,
+        num_iter__0_1_43 = None,
+        num_traits__0_2_15 = None,
+        num_enum__0_5_7 = None,
+        num_enum_derive__0_5_7 = None,
+        number_prefix__0_4_0 = None,
+        object__0_25_3 = None,
+        object__0_29_0 = None,
+        once_cell__1_14_0 = None,
+        pem_rfc7468__0_2_4 = None,
+        pkcs1__0_2_4 = None,
+        pkcs8__0_7_6 = None,
+        pkg_config__0_3_25 = None,
+        ppv_lite86__0_2_16 = None,
+        proc_macro_crate__1_2_1 = None,
+        proc_macro_error__1_0_4 = None,
+        proc_macro_error_attr__1_0_4 = None,
+        proc_macro2__0_4_30 = None,
+        proc_macro2__1_0_43 = None,
+        quote__0_6_13 = None,
+        quote__1_0_21 = None,
+        radium__0_7_0 = None,
+        rand__0_8_5 = None,
+        rand_chacha__0_3_1 = None,
+        rand_core__0_6_3 = None,
+        raw_tty__0_1_0 = None,
+        redox_syscall__0_2_16 = None,
+        redox_users__0_4_3 = None,
+        regex__1_6_0 = None,
+        regex_syntax__0_6_27 = None,
+        remove_dir_all__0_5_3 = None,
+        rsa__0_5_0 = None,
+        rusb__0_8_1 = None,
+        rustc_demangle__0_1_21 = None,
+        rustc_version__0_2_3 = None,
+        ryu__1_0_11 = None,
+        semver__0_9_0 = None,
+        semver_parser__0_7_0 = None,
+        serde__1_0_144 = None,
+        serde_derive__1_0_144 = None,
+        serde_json__1_0_85 = None,
+        serialport__4_2_0 = None,
+        sha2__0_10_5 = None,
+        shellwords__1_1_0 = None,
+        smallvec__1_9_0 = None,
+        spin__0_5_2 = None,
+        spki__0_4_1 = None,
+        strsim__0_8_0 = None,
+        structopt__0_3_26 = None,
+        structopt_derive__0_4_18 = None,
+        subtle__2_4_1 = None,
+        syn__0_15_44 = None,
+        syn__1_0_99 = None,
+        synstructure__0_12_6 = None,
+        tap__1_0_1 = None,
+        tempfile__3_3_0 = None,
+        termcolor__1_1_3 = None,
+        terminal_size__0_1_17 = None,
+        textwrap__0_11_0 = None,
+        thiserror__1_0_34 = None,
+        thiserror_impl__1_0_34 = None,
+        time__0_1_44 = None,
+        toml__0_5_9 = None,
+        typenum__1_15_0 = None,
+        typetag__0_1_8 = None,
+        typetag_impl__0_1_8 = None,
+        unicode_ident__1_0_3 = None,
+        unicode_segmentation__1_9_0 = None,
+        unicode_width__0_1_9 = None,
+        unicode_xid__0_1_0 = None,
+        unicode_xid__0_2_3 = None,
+        vcpkg__0_2_15 = None,
+        vec_map__0_8_2 = None,
+        version_check__0_9_4 = None,
+        void__1_0_2 = None,
+        wasi__0_10_0_wasi_snapshot_preview1 = None,
+        wasi__0_11_0_wasi_snapshot_preview1 = None,
+        wasm_bindgen__0_2_83 = None,
+        wasm_bindgen_backend__0_2_83 = None,
+        wasm_bindgen_macro__0_2_83 = None,
+        wasm_bindgen_macro_support__0_2_83 = None,
+        wasm_bindgen_shared__0_2_83 = None,
+        winapi__0_3_9 = None,
+        winapi_i686_pc_windows_gnu__0_4_0 = None,
+        winapi_util__0_1_5 = None,
+        winapi_x86_64_pc_windows_gnu__0_4_0 = None,
+        wyz__0_5_0 = None,
+        zerocopy__0_5_0 = None,
+        zerocopy_derive__0_3_1 = None,
+        zeroize__1_4_3 = None,
+        zeroize_derive__1_3_2 = None):
     """This function defines a collection of repos and should be called in a WORKSPACE file"""
     if CoreFoundation_sys__0_1_4:
         maybe(
@@ -1717,12 +1546,12 @@ def raze_fetch_remote_crates(
             type = "tar.gz",
             sha256 = "3c8469b4a23b962c1396b9b451dda50ef5b283e8dd309d69033475fa9b334324",
             strip_prefix = "libudev-sys-0.1.4",
-        patches = [
-            "@//third_party/rust/crates/patches:libudev-sys-0.1.4.patch",
-        ],
-        patch_args = [
-            "-p1",
-        ],
+            patches = [
+                "@//third_party/rust/crates/patches:libudev-sys-0.1.4.patch",
+            ],
+            patch_args = [
+                "-p1",
+            ],
             build_file = Label("//third_party/rust/crates/remote:BUILD.libudev-sys-0.1.4.bazel"),
         )
 
@@ -3612,4 +3441,3 @@ def raze_fetch_remote_crates(
             strip_prefix = "zeroize_derive-1.3.2",
             build_file = Label("//third_party/rust/crates/remote:BUILD.zeroize_derive-1.3.2.bazel"),
         )
-

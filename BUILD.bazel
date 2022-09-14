@@ -142,6 +142,7 @@ rust_analyzer(
     name = "rust_analyzer",
     targets = [
         "//sw/host/opentitanlib:opentitanlib",
+        "//sw/host/opentitanlib/opentitantool_derive:opentitantool_derive",
         "//sw/host/opentitansession:opentitansession",
         "//sw/host/opentitantool:opentitantool",
     ],
