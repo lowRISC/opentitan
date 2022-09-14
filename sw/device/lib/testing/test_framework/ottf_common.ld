@@ -237,11 +237,11 @@ SECTIONS {
    * all other sections and are NOLOAD so that they don't appear in the binary
    * and therefore don't end up being covered by the signature.
    */
-   _non_volatile_scratch_size = 20480;
+   _non_volatile_scratch_size = DEFINED(no_ottf_nv_scratch) ? 0 : 20480;
    _non_volatile_scratch_end = ORIGIN(ottf_flash) + _ottf_size;
    _non_volatile_scratch_start = _non_volatile_scratch_end - _non_volatile_scratch_size;
 
-   _non_volatile_counter_size = 2048;
+   _non_volatile_counter_size = DEFINED(no_ottf_nv_counter) ? 0 : 2048;
    _non_volatile_counter_flash_words = _non_volatile_counter_size / 8;
 
    _non_volatile_counter_0_end = _non_volatile_scratch_start;

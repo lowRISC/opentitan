@@ -7,6 +7,15 @@
 def _ld_library_impl(ctx):
     files = [] + ctx.files.includes
     user_link_flags = []
+
+    # Disable non-volatile scratch region and counters if building for english
+    # breakfast. This should appear before the linker script.
+    if "-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_" in ctx.fragments.cpp.copts:
+        user_link_flags += [
+            "-Wl,--defsym=no_ottf_nv_scratch=1",
+            "-Wl,--defsym=no_ottf_nv_counter=1",
+        ]
+
     if ctx.file.script:
         files += ctx.files.script
         user_link_flags += [
@@ -30,6 +39,7 @@ def _ld_library_impl(ctx):
 
 ld_library = rule(
     implementation = _ld_library_impl,
+    fragments = ["cpp"],
     doc = """
     A linker script library. Linker script libraries consist of a collection of
     "includes" (the linker equivalent of a header) and an optional script. Linker

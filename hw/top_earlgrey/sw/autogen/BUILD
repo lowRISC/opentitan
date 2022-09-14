@@ -19,7 +19,7 @@ cc_library(
 
 ld_library(
     name = "top_earlgrey_memory",
-    fragments = ["top_earlgrey_memory.ld"],
+    includes = ["top_earlgrey_memory.ld"],
 )
 
 filegroup(
