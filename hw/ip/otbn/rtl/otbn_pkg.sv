@@ -135,6 +135,7 @@ package otbn_pkg;
     logic rf_base_call_stack_err;
     logic spr_secwipe_acks;
     logic state_err;
+    logic controller_mubi_err;
   } controller_bad_int_t;
 
   typedef struct packed {
