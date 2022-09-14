@@ -83,6 +83,7 @@ interface chip_if;
   // DO NOT manipulate this signal in test sequences directly. Use the individual functional
   // interfaces below instead.
   wire [IoNumTotal-1:0] ios;
+  bit [IoNumTotal-1:0]  dios;  // 1 - DIO, 0 - MIO.
 
   // Functional interface: for testing ALL chip IOs, such as pinmux and padctrl tests.
   pins_if#(.Width(IoNumTotal), .PullStrength("Weak")) ios_if(.pins(ios));
@@ -103,20 +104,24 @@ interface chip_if;
     // Leave dedicated chip outputs undriven.
     ios_if.pins_pd[SpiHostCsL] = 0;
     ios_if.pins_pd[SpiHostClk] = 0;
+
+    // IOs starting at IOA0 are MIOs, except IOR8:9.
+    dios[AstMisc:PorN] = '1;
+    dios[IoR9:IoR8] = '1;
   end
 
   // X-check monitor on chip IOs.
   //
   // Chip IOs must always either be undriven or driven to a known value. Xs indicate multiple
   // drivers, which is an issue likely caused by multiple functions simultaneously attempting to
-  // control the shared (muxed) pads.
+  // control the shared (muxed) pads. Disable X-check on DIOs.
   for (genvar i = 0; i < IoNumTotal; i++) begin : gen_ios_x_check
     wire glitch_free_io;
     assign #1ps glitch_free_io = ios[i];
 
     chip_io_e named_io = chip_io_e'(i);
     always @(glitch_free_io) begin
-      if (glitch_free_io === 1'bx) begin
+      if (!dios[i] && glitch_free_io === 1'bx) begin
         `uvm_error(MsgId, $sformatf("Detected an X on %0s", named_io.name()))
       end
     end
