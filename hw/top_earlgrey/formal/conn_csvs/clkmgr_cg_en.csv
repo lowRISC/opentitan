@@ -25,7 +25,7 @@ CONNECTION, CLKMGR_IO_DIV4_INFRA_ALERT_12_CG_EN, top_earlgrey.u_clkmgr_aon, cg_e
 CONNECTION, CLKMGR_IO_DIV4_PERI_ALERT_13_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_peri, top_earlgrey.u_alert_handler, lpg_cg_en_i[13]
 CONNECTION, CLKMGR_IO_DIV4_POWERUP_ALERT_14_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_powerup, top_earlgrey.u_alert_handler, lpg_cg_en_i[14]
 CONNECTION, CLKMGR_IO_DIV4_TIMERS_ALERT_15_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_timers, top_earlgrey.u_alert_handler, lpg_cg_en_i[15]
-CONNECTION, CLKMGR_IO_DIV4_SECURE_ALERT_16_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_secure, top_earlgrey.u_alert_handler, lpg_cg_en_i[16]
+CONNECTION, CLKMGR_IO_DIV4_INFRA_ALERT_16_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_infra, top_earlgrey.u_alert_handler, lpg_cg_en_i[16]
 CONNECTION, CLKMGR_IO_DIV4_SECURE_ALERT_17_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.io_div4_secure, top_earlgrey.u_alert_handler, lpg_cg_en_i[17]
 CONNECTION, CLKMGR_MAIN_INFRA_ALERT_18_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.main_infra, top_earlgrey.u_alert_handler, lpg_cg_en_i[18]
 CONNECTION, CLKMGR_MAIN_INFRA_ALERT_19_CG_EN, top_earlgrey.u_clkmgr_aon, cg_en_o.main_infra, top_earlgrey.u_alert_handler, lpg_cg_en_i[19]

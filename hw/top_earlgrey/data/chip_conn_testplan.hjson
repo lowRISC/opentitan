@@ -235,9 +235,13 @@
     }
     {
       name: cg_en_io_div4_infra
-      desc: '''Verify clkmgr's cg_en_o.io_div4_infra is connected to alert_handler's lpg_cg_en[12].'''
+      desc: '''Verify clkmgr's cg_en_o.io_div4_infra is connected to:
+            - alert_handler's lpg_cg_en_i[12]
+            - alert_handler's lpg_cg_en_i[16]
+            '''
       stage: V2
-      tests: ["clkmgr_io_div2_infra_alert_12_cg_en"]
+      tests: ["clkmgr_io_div2_infra_alert_12_cg_en",
+              "clkmgr_io_div4_infra_alert_16_cg_en"]
       tags: ["conn"]
     }
     {
@@ -271,11 +275,10 @@
       name: cg_en_io_div4_secure
       desc: '''Verify clkmgr's cg_en_o.io_div4_secure is connected to the following:
             - alert_handler's lpg_cg_en_i[6]
-            - alert_handler's lpg_cg_en_i[15]
+            - alert_handler's lpg_cg_en_i[17]
             '''
       stage: V2
       tests: ["clkmgr_io_div4_secure_alert_6_cg_en",
-              "clkmgr_io_div4_secure_alert_16_cg_en",
               "clkmgr_io_div4_secure_alert_17_cg_en"]
       tags: ["conn"]
     }
@@ -503,7 +506,7 @@
               "clkmgr_powerup_clk_pinmux_clk",
               "clkmgr_powerup_clk_pwm_clk",
               "clkmgr_powerup_clk_pwrmgr_clk",
-              "clkmgr_powerup_clk_rstmgr_clk",
+              "clkmgr_powerup_clk_rstmgr_por_clk",
               "clkmgr_powerup_clk_rstmgr_io4_clk"]
       tags: ["conn"]
     }
@@ -852,13 +855,15 @@
             - clkmgr's rst_io_div4_ni
             - pinmux's rst_ni
             - sram_ctrl_ret's rst_otp_ni
+            - rstmgr's rst_ni
             '''
       stage: V2
       tests: ["rstmgr_lc_io_div4_aon_aon_timer_rst_ni",
               "rstmgr_lc_io_div4_aon_clkmgr_rst_ni",
               "rstmgr_lc_io_div4_aon_clkmgr_rst_io_div4_ni",
               "rstmgr_lc_io_div4_aon_pinmux_rst_ni",
-              "rstmgr_lc_io_div4_aon_sram_ctrl_ret_rst_otp_ni"]
+              "rstmgr_lc_io_div4_aon_sram_ctrl_ret_rst_otp_ni",
+              "rstmgr_lc_io_div4_aon_rstmgr_rst_ni"]
       tags: ["conn"]
     }
     {
@@ -960,7 +965,7 @@
             - clkmgr's rst_root_io_div4_ni
             - clkmgr's rst_root_ni
             - pwrmgr's rst_ni
-            - rstmgr's rst_ni
+            - rstmgr's rst_por_ni
             '''
       stage: V2
       tests: ["rstmgr_por_io_div4_aon_clkmgr_rst_root_io_div4_ni",

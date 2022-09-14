@@ -19,7 +19,7 @@ CONNECTION, CLKMGR_POWERUP_CLK_PWM_CORE_CLK, top_earlgrey.u_clkmgr_aon, clocks_o
 CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_CLK,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.u_pwrmgr_aon, clk_i
 CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_SLOW_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_powerup,     top_earlgrey.u_pwrmgr_aon, clk_slow_i
 
-CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_CLK,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.u_rstmgr_aon, clk_i
+CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_POR_CLK,  top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.u_rstmgr_aon, clk_por_i
 CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_AON_CLK,  top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_powerup,     top_earlgrey.u_rstmgr_aon, clk_aon_i
 CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_MAIN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_powerup,    top_earlgrey.u_rstmgr_aon, clk_main_i
 CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO_CLK,   top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_powerup,      top_earlgrey.u_rstmgr_aon, clk_io_i
