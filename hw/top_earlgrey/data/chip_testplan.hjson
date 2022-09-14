@@ -1571,11 +1571,9 @@
 
             - Verify in different LC states, LC ctrl outputs the correct `key_div_o` to keymgr.
             - Verify that the keymgr uses the given `key_div_o` value to compute the keys.
-
-            X-ref'ed with chip_keymgr_lc_key_div_o.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_keymgr_key_derivation_prod"]
     }
     {
       name: chip_sw_lc_ctrl_broadcast
