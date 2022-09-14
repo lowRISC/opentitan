@@ -615,6 +615,21 @@
       tests: ["flash_ast_obs_ctrl"]
       tags: ["conn"]
     }
+    /////////////////////////////
+    // ast_entropy_src_cfg.csv //
+    /////////////////////////////
+    {
+      name: chip_sw_entropy_src_ast_fips
+      desc: '''
+              Verify the connectivity of rng_fips_o feedback signal to RNG.
+            '''
+      stage: V2
+      tests: ["ast_entropy_src_rng_val",
+              "ast_entropy_src_rng_b",
+              "ast_entropy_src_rng_fips",
+              "ast_entropy_src_rng_en"]
+      tags: ["conn"]
+    }
 
     /////////////////////////
     // jtag.csv            //
@@ -1221,18 +1236,6 @@
     {
       name: otp_ctrl_external_voltage
       desc: "Verify the connectivity of the external voltage signal to OTP ctrl."
-      stage: V2
-      tests: []
-      tags: ["conn"]
-    }
-    ////////////////////////////
-    // TODO: AST Connectivity //
-    ////////////////////////////
-    {
-      name: chip_sw_entropy_src_ast_fips
-      desc: '''
-              Verify the connectivity of rng_fips_o feedback signal to RNG.
-            '''
       stage: V2
       tests: []
       tags: ["conn"]
