@@ -803,7 +803,7 @@
       // processing alerts accurately from both ends.
       // This test takes long due to the compile time configured reverse timeout. See test plan for
       // more details.
-      run_opts: ["+en_scb=0", "+sw_test_timeout_ns=240_000_000"]
+      run_opts: ["+en_scb=0", "+sw_test_timeout_ns=300_000_000"]
       run_timeout_mins: 240
     }
     {
