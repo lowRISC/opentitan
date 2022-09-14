@@ -754,8 +754,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         if (addr_phase_write) begin
           bit [KmacCmdIdx:0] kmac_cmd = item.a_data[KmacCmdIdx:0];
 
-          // Handle hash_cnt_clr bit
+          // Handle hash_cnt clear conditions
           if (item.a_data[KmacHashCntClrIdx]) `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
+          if (item.a_data[KmacEntropyReqIdx]) `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
 
           if (app_fsm_active) begin
             // As per designer comment in https://github.com/lowRISC/opentitan/issues/7716,
