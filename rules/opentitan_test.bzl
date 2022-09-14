@@ -248,7 +248,8 @@ def opentitan_functest(
         data = [],
         test_in_rom = False,
         ot_flash_binary = None,
-        signed = False,
+        signed = True,
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         slot = "silicon_creator_a",
         test_harness = "@//sw/host/opentitantool",
         key = "test_key_0",
@@ -276,7 +277,8 @@ def opentitan_functest(
       @param ot_flash_binary: Use the named `opentitan_flash_binary` as the
                               flash image for the test rather than building one
                               from srcs/deps.
-      @param signed: Whether to sign the test image. Unsigned by default.
+      @param signed: Whether to sign the test image. Signed by default.
+      @param manifest: Partially populated manifest to set boot stage/slot configs.
       @param slot: What slot to build the image for.
       @param test_harness: The binary on the host side that runs the test.
       @param key: Which signed test image (by key) to use.
@@ -336,6 +338,7 @@ def opentitan_functest(
             signed = signed,
             deps = deps,
             devices = devices_to_build_for,
+            manifest = manifest,
             **kwargs
         )
 

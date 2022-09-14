@@ -878,8 +878,8 @@ def opentitan_flash_binary(
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
         signing_keys = DEFAULT_SIGNING_KEYS,
-        signed = False,
-        manifest = None,
+        signed = True,
+        manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for flash.
 
