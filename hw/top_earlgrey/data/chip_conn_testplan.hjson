@@ -803,13 +803,6 @@
     // rstmgr_resets_o.csv //
     /////////////////////////
     {
-      name: rst_all
-      desc: '''Verify all rstmgr's resets_o are connected to ast's sns_rsts_i.'''
-      stage: V2
-      tests: ["rstmgr_all_resets_ast_sns_rsts_i"]
-      tags: ["conn"]
-    }
-    {
       name: rst_i2c0_n_d0
       desc: '''Verify rstmgr's rst_i2c0_n[1] is connected to i2c0's rst_ni.'''
       stage: V2
@@ -872,7 +865,6 @@
       name: rst_lc_io_div4_d0
       desc: '''Verify rstmgr's rst_lc_io_div4_n[1] is connected to the following:
             - alert_handler's rst_ni
-            - ast's rst_ast_alert_ni
             - lc_ctrl's rst_ni
             - otbn's rst_otp_ni
             - otp_ctrl's rst_ni
@@ -883,7 +875,6 @@
             '''
       stage: V2
       tests: ["rstmgr_lc_io_div4_d0_alert_handler_rst_ni",
-              "rstmgr_lc_io_div4_d0_ast_rst_ast_alert_ni",
               "rstmgr_lc_io_div4_d0_lc_ctrl_rst_ni",
               "rstmgr_lc_io_div4_d0_otbn_rst_otp_ni",
               "rstmgr_lc_io_div4_d0_otp_ctrl_rst_ni",
@@ -1010,14 +1001,12 @@
       name: rst_sys_aon_aon
       desc: '''Verify rstmgr's rst_sys_aon_n[0] is connected to the following:
             - adc_ctrl's rst_aon_ni
-            - ast's rst_ast_adc_ni
             - pwm's rst_core_ni
             - sensor_ctrl's rst_aon_ni
             - sysrst_ctrl's rst_aon_ni
             '''
       stage: V2
       tests: ["rstmgr_sys_aon_aon_adc_ctrl_rst_aon_ni",
-              "rstmgr_sys_aon_aon_ast_rst_ast_adc_ni",
               "rstmgr_sys_aon_aon_pwm_rst_aon_ni",
               "rstmgr_sys_aon_aon_sensor_ctrl_rst_aon_ni",
               "rstmgr_sys_aon_aon_sysrst_ctrl_rst_aon_ni"]
@@ -1057,7 +1046,6 @@
     {
       name: rst_sys_io_div4_d0
       desc: '''Verify rstmgr's rst_sys_io_div4_n[1] is connected to the following:
-            - ast's rst_ast_tlul_ni
             - flash_ctrl's rst_otp_ni
             - gpio's rst_ni
             - pattgen's rst_ni
@@ -1070,8 +1058,7 @@
             - xbar_peri's rst_peri_ni
             '''
       stage: V2
-      tests: ["rstmgr_sys_io_div4_d0_ast_rst_ast_tlul_ni",
-              "rstmgr_sys_io_div4_d0_flash_ctrl_rst_otp_ni",
+      tests: ["rstmgr_sys_io_div4_d0_flash_ctrl_rst_otp_ni",
               "rstmgr_sys_io_div4_d0_gpio_rst_ni",
               "rstmgr_sys_io_div4_d0_pattgen_rst_ni",
               "rstmgr_sys_io_div4_d0_rv_timer_rst_ni",
@@ -1089,8 +1076,6 @@
             - aes's rst_edn_ni
             - aes's rst_ni
             - alert_handler's rst_edn_ni
-            - ast's rst_ast_es_ni
-            - ast's rst_ast_rng_ni
             - csrng's rst_ni
             - edn0's rst_ni
             - edn1's rst_ni
@@ -1115,8 +1100,6 @@
       tests: ["rstmgr_sys_d0_aes_rst_edn_ni",
               "rstmgr_sys_d0_aes_rst_ni",
               "rstmgr_sys_d0_alert_handler_rst_edn_ni",
-              "rstmgr_sys_d0_ast_rst_ast_es_ni",
-              "rstmgr_sys_d0_ast_rst_ast_rng_ni",
               "rstmgr_sys_d0_csrng_rst_ni",
               "rstmgr_sys_d0_edn0_rst_ni",
               "rstmgr_sys_d0_edn1_rst_ni",
@@ -1171,12 +1154,10 @@
     {
       name: rst_usb_d0
       desc: '''Verify rstmgr's rst_usb_n[1] is connected to the following:
-            - ast's rst_ast_usb_ni
             - usbdev's rst_ni
             '''
       stage: V2
-      tests: ["rstmgr_usb_d0_ast_rst_ast_usb_ni",
-              "rstmgr_usb_d0_usbdev_rst_ni"]
+      tests: ["rstmgr_usb_d0_usbdev_rst_ni"]
       tags: ["conn"]
     }
     ///////////////////////
