@@ -122,6 +122,7 @@ class kmac_base_vseq extends cip_base_vseq #(
   // Entropy related variables
   rand bit [9:0] hash_threshold;
   rand bit hash_cnt_clr;
+  rand bit entropy_req;
 
   // array to store `right_encode(output_len)`
   bit [7:0] output_len_enc[];
@@ -307,7 +308,8 @@ class kmac_base_vseq extends cip_base_vseq #(
     end
 
     csr_wr(.ptr(ral.entropy_refresh_threshold_shadowed), .value(hash_threshold));
-    csr_wr(.ptr(ral.cmd), .value((hash_cnt_clr << KmacHashCntClrIdx) | CmdNone));
+    wr_hash_cnt_clear_cmd();
+    wr_entropy_req_cmd();
 
     // setup CFG csr with default random values
     ral.cfg_shadowed.kmac_en.set(kmac_en);
@@ -881,6 +883,8 @@ class kmac_base_vseq extends cip_base_vseq #(
         end
 
         squeeze_digest();
+        wr_hash_cnt_clear_cmd();
+        wr_entropy_req_cmd();
       end
 
       `uvm_info(`gfn, $sformatf("remaining_output_len: %0d", remaining_output_len), UVM_HIGH)
@@ -891,5 +895,25 @@ class kmac_base_vseq extends cip_base_vseq #(
   virtual task check_hash_cnt();
     bit [TL_DW-1:0] val;
     csr_rd(.ptr(ral.entropy_refresh_hash_cnt), .value(val));
+  endtask
+
+  // The hash_cnt_clr is `r0w1c` field.
+  // If user wants to set `hash_cnt_clr`, this task will always write 1 to the register.
+  // If user do not want to set `hash_cnt_clr`, this task has 10% possibility to write 0 to the
+  // register.
+  virtual task wr_hash_cnt_clear_cmd();
+    if (hash_cnt_clr || $urandom_range(0, 9) == 9) begin
+      csr_wr(.ptr(ral.cmd.hash_cnt_clr), .value(hash_cnt_clr));
+    end
+  endtask
+
+  // The entropy_req is `r0w1c` field.
+  // If user wants to set `entropy_req`, this task will always write 1 to the register.
+  // If user do not want to set `entropy_req`, this task has 10% possibility to write 0 to the
+  // register.
+ virtual task wr_entropy_req_cmd();
+    if (entropy_req || $urandom_range(0, 9) == 9) begin
+      csr_wr(.ptr(ral.cmd.entropy_req), .value(entropy_req));
+    end
   endtask
 endclass : kmac_base_vseq
