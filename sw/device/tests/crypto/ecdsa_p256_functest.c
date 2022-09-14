@@ -55,16 +55,18 @@ bool sign_then_verify_test(void) {
   ecdsa_p256_signature_t signature;
   hardened_bool_t verificationResult;
 
+  // Spin until OTBN is idle.
+  if (otbn_busy_wait_for_done() != kOtbnErrorOk) {
+    return false;
+  }
+
   // Generate a signature for the message
   LOG_INFO("Signing...");
   otbn_error_t err = ecdsa_p256_sign(&digest, &kPrivateKey, &signature);
-  for (size_t i = 0; i < kP256ScalarNumWords; i++) {
-    LOG_INFO("h[%d] = 0x%08x", i, digest.h[i]);
-  }
   if (err != kOtbnErrorOk) {
     LOG_ERROR("Error from OTBN while signing: 0x%08x.", err);
     otbn_err_bits_t err_bits;
-    otbn_get_err_bits(&err_bits);
+    otbn_err_bits_get(&err_bits);
     LOG_INFO("OTBN error bits: 0x%08x", err_bits);
     return false;
   }
@@ -76,7 +78,7 @@ bool sign_then_verify_test(void) {
   if (err != kOtbnErrorOk) {
     LOG_ERROR("Error from OTBN while verifying signature: 0x%08x.", err);
     otbn_err_bits_t err_bits;
-    otbn_get_err_bits(&err_bits);
+    otbn_err_bits_get(&err_bits);
     LOG_INFO("OTBN error bits: 0x%08x", err_bits);
     return false;
   }

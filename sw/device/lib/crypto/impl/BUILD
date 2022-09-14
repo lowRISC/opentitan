@@ -9,6 +9,7 @@ cc_library(
     srcs = ["otbn_util.c"],
     hdrs = ["otbn_util.h"],
     deps = [
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/crypto/drivers:otbn",
     ],
 )

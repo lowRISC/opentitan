@@ -54,7 +54,7 @@ typedef enum otbn_error {
   kOtbnErrorInvalidArgument = 1,
   /** Invalid offset provided. */
   kOtbnErrorBadOffsetLen = 2,
-  /** OTBN internal error; use otbn_get_err_bits for specific error codes. */
+  /** OTBN internal error; use otbn_err_bits_get for specific error codes. */
   kOtbnErrorExecutionFailed = 3,
   /** Attempt to interact with OTBN while it was unavailable. */
   kOtbnErrorUnavailable = 4,
@@ -75,15 +75,31 @@ typedef enum otbn_error {
 
 /**
  * Start the execution of the application loaded into OTBN.
+ *
+ * This function returns an error if called when OTBN is not idle.
+ *
+ * @return Result of the operation.
  */
-void otbn_execute(void);
+otbn_error_t otbn_execute(void);
 
 /**
- * Is OTBN busy executing an application?
+ * Ensures OTBN is idle.
  *
- * @return OTBN is busy
+ * If OTBN is busy or locked, this function will return
+ * `kOtbnErrorUnavailable`; otherwise it will return `kOtbnErrorOk`.
+ *
+ * @return Result of the operation.
  */
-bool otbn_is_busy(void);
+otbn_error_t otbn_assert_idle(void);
+
+/**
+ * Blocks until OTBN is idle.
+ *
+ * If OTBN is or becomes locked, an error will occur.
+ *
+ * @return Result of the operation.
+ */
+otbn_error_t otbn_busy_wait_for_done(void);
 
 /**
  * OTBN Internal Errors
@@ -127,32 +143,74 @@ typedef enum otbn_err_bits {
  *
  * @param[out] err_bits The error bits returned by the hardware.
  */
-void otbn_get_err_bits(otbn_err_bits_t *err_bits);
+void otbn_err_bits_get(otbn_err_bits_t *err_bits);
+
+/**
+ * Read OTBN's instruction count register.
+ *
+ * OTBN automatically calculates how many instructions are executed in a given
+ * program and writes the result to this register. Software can read it to
+ * verify that instructions were not unexpectedly skipped or added (for
+ * instance, due to fault injection attacks).
+ *
+ * Note that the OTBN hardware resets the instruction count register to 0 when
+ * the EXECUTE command is issued, so there is no need for software to reset the
+ * counter between programs.
+ *
+ * @return count the value from the instruction count register
+ */
+uint32_t otbn_instruction_count_get(void);
+
+/**
+ * Wipe IMEM securely.
+ *
+ * This function returns an error if called when OTBN is not idle, and blocks
+ * until the secure wipe is complete.
+ *
+ * @return Result of the operation.
+ */
+otbn_error_t otbn_imem_sec_wipe(void);
 
 /**
  * Write an OTBN application into its instruction memory (IMEM)
  *
- * Only 32b-aligned 32b word accesses are allowed.
+ * Only 32b-aligned 32b word accesses are allowed. If `offset_bytes` is not
+ * word-aligned or if the length and offset exceed the IMEM size, this function
+ * will return an error.
+ *
+ * The caller must ensure OTBN is idle before calling this function.
  *
  * @param offset_bytes the byte offset in IMEM the first word is written to
  * @param src the main memory location to start reading from.
  * @param len number of words to copy.
- * @return `kOtbnErrorBadOffset` if `offset_bytes` isn't word aligned,
- * `kOtbnErrorBadOffsetLen` if `len` is invalid , `kOtbnErrorOk` otherwise.
+ * @return Result of the operation.
  */
 otbn_error_t otbn_imem_write(uint32_t offset_bytes, const uint32_t *src,
                              size_t len);
 
 /**
+ * Wipe DMEM securely.
+ *
+ * This function returns an error if called when OTBN is not idle, and blocks
+ * until the secure wipe is complete.
+ *
+ * @return Result of the operation.
+ */
+otbn_error_t otbn_dmem_sec_wipe(void);
+
+/**
  * Write to OTBN's data memory (DMEM)
  *
- * Only 32b-aligned 32b word accesses are allowed.
+ * Only 32b-aligned 32b word accesses are allowed. If `offset_bytes` is not
+ * word-aligned or if the length and offset exceed the DMEM size, this function
+ * will return an error.
+ *
+ * The caller must ensure OTBN is idle before calling this function.
  *
  * @param offset_bytes the byte offset in DMEM the first word is written to
  * @param src the main memory location to start reading from.
  * @param len number of words to copy.
- * @return `kOtbnErrorBadOffset` if `offset_bytes` isn't word aligned,
- * `kOtbnErrorBadOffsetLen` if `len` is invalid , `kOtbnErrorOk` otherwise.
+ * @return Result of the operation.
  */
 otbn_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
                              size_t len);
@@ -160,20 +218,18 @@ otbn_error_t otbn_dmem_write(uint32_t offset_bytes, const uint32_t *src,
 /**
  * Read from OTBN's data memory (DMEM)
  *
- * Only 32b-aligned 32b word accesses are allowed.
+ * Only 32b-aligned 32b word accesses are allowed. If `offset_bytes` is not
+ * word-aligned or if the length and offset exceed the DMEM size, this function
+ * will return an error.
+ *
+ * The caller must ensure OTBN is idle before calling this function.
  *
  * @param offset_bytes the byte offset in DMEM the first word is read from
  * @param[out] dest the main memory location to copy the data to (preallocated)
  * @param len number of words to copy.
- * @return `kOtbnErrorBadOffset` if `offset_bytes` isn't word aligned,
- * `kOtbnErrorBadOffsetLen` if `len` is invalid , `kOtbnErrorOk` otherwise.
+ * @return Result of the operation.
  */
 otbn_error_t otbn_dmem_read(uint32_t offset_bytes, uint32_t *dest, size_t len);
-
-/**
- * Zero out the contents of OTBN's data memory (DMEM).
- */
-void otbn_zero_dmem(void);
 
 /**
  * Sets the software errors are fatal bit in the control register.
@@ -181,9 +237,10 @@ void otbn_zero_dmem(void);
  * When set any software error becomes a fatal error. The bit can only be
  * changed when the OTBN status is IDLE.
  *
+ * This function returns an error if called when OTBN is not idle.
+ *
  * @param enable Enable or disable whether software errors are fatal.
- * @return `kOtbnErrorUnavailable` if the requested change cannot be made or
- * `kOtbnErrorOk` otherwise.
+ * @return Result of the operation.
  */
 otbn_error_t otbn_set_ctrl_software_errs_fatal(bool enable);
 

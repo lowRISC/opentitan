@@ -4,31 +4,16 @@
 
 #include "sw/device/lib/crypto/impl/otbn_util.h"
 
-#include <assert.h>
-#include <stddef.h>
-#include <stdint.h>
-
 #include "sw/device/lib/crypto/drivers/otbn.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 void otbn_init(otbn_t *ctx) {
   *ctx = (otbn_t){
       .app = {0},
-      .app_is_loaded = false,
+      .app_is_loaded = kHardenedBoolFalse,
       .error_bits = kOtbnErrBitsNoError,
   };
-}
-
-otbn_error_t otbn_busy_wait_for_done(otbn_t *ctx) {
-  while (otbn_is_busy()) {
-  }
-
-  otbn_err_bits_t err_bits;
-  otbn_get_err_bits(&err_bits);
-  if (err_bits != kOtbnErrBitsNoError) {
-    ctx->error_bits = err_bits;
-    return kOtbnErrorExecutionFailed;
-  }
-  return kOtbnErrorOk;
 }
 
 /**
@@ -42,7 +27,7 @@ otbn_error_t otbn_busy_wait_for_done(otbn_t *ctx) {
  * @param app the OTBN application to check
  * @return true if the addresses are valid, otherwise false.
  */
-bool check_app_address_ranges(const otbn_app_t *app) {
+static bool check_app_address_ranges(const otbn_app_t *app) {
   // IMEM must have a strictly positive range (cannot be backwards or empty)
   if (app->imem_end <= app->imem_start) {
     return false;
@@ -59,43 +44,43 @@ otbn_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
     return kOtbnErrorInvalidArgument;
   }
 
+  // Ensure OTBN is idle.
+  OTBN_RETURN_IF_ERROR(otbn_assert_idle());
+
   const size_t imem_num_words = app.imem_end - app.imem_start;
   const size_t data_num_words = app.dmem_data_end - app.dmem_data_start;
 
-  ctx->app_is_loaded = false;
+  ctx->app_is_loaded = kHardenedBoolFalse;
 
+  OTBN_RETURN_IF_ERROR(otbn_imem_sec_wipe());
   OTBN_RETURN_IF_ERROR(otbn_imem_write(0, app.imem_start, imem_num_words));
 
-  otbn_zero_dmem();
+  OTBN_RETURN_IF_ERROR(otbn_dmem_sec_wipe());
   if (data_num_words > 0) {
     OTBN_RETURN_IF_ERROR(
         otbn_dmem_write(0, app.dmem_data_start, data_num_words));
   }
 
   ctx->app = app;
-  ctx->app_is_loaded = true;
+  ctx->app_is_loaded = kHardenedBoolTrue;
   return kOtbnErrorOk;
 }
 
 otbn_error_t otbn_execute_app(otbn_t *ctx) {
-  if (!ctx->app_is_loaded) {
+  if (launder32(ctx->app_is_loaded) != kHardenedBoolTrue) {
     return kOtbnErrorInvalidArgument;
   }
+  HARDENED_CHECK_EQ(ctx->app_is_loaded, kHardenedBoolTrue);
 
-  otbn_execute();
-  return kOtbnErrorOk;
+  return otbn_execute();
 }
 
 otbn_error_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len,
                                     const uint32_t *src, otbn_addr_t dest) {
-  OTBN_RETURN_IF_ERROR(otbn_dmem_write(dest, src, len));
-
-  return kOtbnErrorOk;
+  return otbn_dmem_write(dest, src, len);
 }
 
 otbn_error_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len_bytes,
                                       otbn_addr_t src, uint32_t *dest) {
-  OTBN_RETURN_IF_ERROR(otbn_dmem_read(src, dest, len_bytes));
-
-  return kOtbnErrorOk;
+  return otbn_dmem_read(src, dest, len_bytes);
 }

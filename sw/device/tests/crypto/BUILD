@@ -114,6 +114,9 @@ autogen_cryptotest_header(
 opentitan_functest(
     name = "rsa_3072_verify_functest_wycheproof",
     srcs = ["rsa_3072_verify_functest.c"],
+    cw310 = cw310_params(
+        timeout = "long",
+    ),
     verilator = verilator_params(
         timeout = "long",
     ),

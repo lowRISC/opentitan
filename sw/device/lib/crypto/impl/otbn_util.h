@@ -5,10 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_OTBN_UTIL_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_IMPL_OTBN_UTIL_H_
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 
 #ifdef __cplusplus
@@ -77,14 +74,14 @@ typedef struct otbn {
   /**
    * The application loaded or to be loaded into OTBN.
    *
-   * Only valid if @p app_is_loaded is true.
+   * Only valid if @p app_is_loaded is kHardenedBoolTrue.
    */
   otbn_app_t app;
 
   /**
    * Is the application loaded into OTBN?
    */
-  bool app_is_loaded;
+  hardened_bool_t app_is_loaded;
 
   /**
    * The error bits from the last execution of OTBN.
@@ -187,9 +184,12 @@ typedef struct otbn {
 void otbn_init(otbn_t *ctx);
 
 /**
- * (Re-)loads the RSA application into OTBN.
+ * (Re-)loads the provided application into OTBN.
  *
- * Load the application image with both instruction and data segments into OTBN.
+ * Load the application image with both instruction and data segments into
+ * OTBN.
+ *
+ * This function will return an error if called when OTBN is not idle.
  *
  * @param ctx The context object.
  * @param app The application to load into OTBN.
@@ -200,20 +200,12 @@ otbn_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
 /**
  * Start the OTBN application.
  *
- * Use `otbn_busy_wait_for_done()` to wait for the function call to complete.
+ * This function will return an error if called when OTBN is not idle.
  *
  * @param ctx The context object.
  * @return The result of the operation.
  */
 otbn_error_t otbn_execute_app(otbn_t *ctx);
-
-/**
- * Busy waits for OTBN to be done with its operation.
- *
- * @param ctx The context object.
- * @return The result of the operation.
- */
-otbn_error_t otbn_busy_wait_for_done(otbn_t *ctx);
 
 /**
  * Copies data from the CPU memory to OTBN data memory.
