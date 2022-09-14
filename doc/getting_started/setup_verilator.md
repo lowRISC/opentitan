@@ -17,6 +17,8 @@ Even though Verilator is packaged for most Linux distributions these versions te
 We recommend compiling Verilator from source, as outlined here.
 
 Fetch, build and install Verilator itself (this should be done outside the `$REPO_TOP` directory).
+Note that Verilator 4.210 will not build with GCC 12.0 or later, so it will need to be built with an older toolchain.
+The example below assumes gcc-11 and g++-11 are installed on the system.
 
 ```console
 export VERILATOR_VERSION={{< tool_version "verilator" >}}
@@ -26,9 +28,9 @@ cd verilator
 git checkout v$VERILATOR_VERSION
 
 autoconf
-./configure --prefix=/tools/verilator/$VERILATOR_VERSION
-make
-make install
+CC=gcc-11 CXX=g++-11 ./configure --prefix=/tools/verilator/$VERILATOR_VERSION
+CC=gcc-11 CXX=g++-11 make
+CC=gcc-11 CXX=g++-11 make install
 ```
 
 After installation you need to add `/tools/verilator/$VERILATOR_VERSION/bin` to your `PATH` environment variable.
