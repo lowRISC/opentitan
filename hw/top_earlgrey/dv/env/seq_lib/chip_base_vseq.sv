@@ -43,7 +43,7 @@ class chip_base_vseq #(
     // assert_por_reset();
     `uvm_info(`gfn, "Asserting POR_N", UVM_LOW)
     cfg.chip_vif.por_n_if.drive(0);
-    cfg.chip_vif.ext_clk_if.wait_clks(2000);
+    #100us;  // TODO: revisit this.
     cfg.chip_vif.por_n_if.drive(1);
     `uvm_info(`gfn, "POR_N complete", UVM_LOW)
     // TODO: Cannot assert different types of resets in parallel; due to randomization
@@ -72,16 +72,22 @@ class chip_base_vseq #(
   // cycle) and  performs immediate post-reset steps to prime the design for stimulus. The
   // base class method invoked by super.dut_init() applies the reset.
   virtual task dut_init(string reset_kind = "HARD");
-    // Initialize these spare IOs (chip inputs) to 0.
-    cfg.chip_vif.cc_if.drive('0);
-    cfg.chip_vif.flash_test_volt_if.drive('0);
-    cfg.chip_vif.flash_test_mode_if.drive('0);
-    cfg.chip_vif.otp_ext_volt_if.drive('0);
-    cfg.chip_vif.ast_misc_if.drive('0);
+    // Connect the external clock source if the test needs it.
+    //
+    // TODO: This is a functional interface which should ideally be connected only in the extended
+    // test sequences. Revisit this later.
+    if (cfg.chip_clock_source != ChipClockSourceInternal) begin
+      `uvm_info(`gfn, {"Connecting and driving external clock source with frequency ",
+                       $sformatf("%0dMhz", cfg.chip_clock_source)}, UVM_LOW)
+      cfg.chip_vif.ext_clk_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
+      cfg.chip_vif.ext_clk_if.set_freq_mhz(cfg.chip_clock_source);
+    end
 
     // Initialize the SW strap pins - these are sort of dedicated.
     // TODO: add logic to drive / undrive this only when the ROM / test ROM code is active.
-    cfg.chip_vif.sw_straps_if.drive({2'b00, cfg.use_spi_load_bootstrap});
+    if (cfg.use_spi_load_bootstrap) begin
+      cfg.chip_vif.sw_straps_if.drive({2'b00, cfg.use_spi_load_bootstrap});
+    end
 
     // Initialize all memories via backdoor.
     cfg.mem_bkdr_util_h[FlashBank0Info].set_mem();

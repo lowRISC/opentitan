@@ -21,6 +21,25 @@ module tb;
 
   // interfaces
 
+  // Legacy clk_rst_if to satisfy our CIP base classes. DO NOT USE it in test sequences.
+  //
+  // This interface has an active clock driver, but the clock port is not connected to anything. The
+  // reset port is passive and is connected to the chip's POR_N port. The reset port is active only
+  // in `xbar_mode`, because a different UVM environment is in use, which does not have the chip_if.
+  // For the regular chip tests, the chip_if is used exclusively to drive all chip's ports.
+  //
+  // The bogus active clock is made to match the chip's main clock frequency. This is done to
+  // ensure compatibility with the CIP / DV lib base sequence classes which assume certain things.
+  // This clk_rst_if (which is available in the chip env as cfg.clk_rst_vif) should not be used to
+  // wait for clock events. Most tests will not require an external clock source - they will use
+  // internally generated clock provided by AST.
+  //
+  // Note that attempting to drive the external clock / power on reset using this interface will
+  // vacuously return instead of throwing an error. This is done to support the our base classes.
+  // To do so, the test sequences must use chip_vif.ext_clk_if and chip_vif.por_n_if respectively.
+  wire clk, rst_n;
+  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+
   // TODO: Absorb this functionality into chip_if.
   bind dut ast_supply_if ast_supply_if (
     .clk(top_earlgrey.clk_aon_i),
@@ -343,6 +362,22 @@ module tb;
 
   // Control assertions in the DUT with UVM resource string "dut_assert_en".
   `DV_ASSERT_CTRL("dut_assert_en", tb.dut)
+
+  // XBAR mode.
+  //
+  // XBAR mode uses a different UVM environment than the full chip. It requires the POR to be driven
+  // using a clk_rst_if instance. The `xbar_mode` plusarg is used to switch between the two
+  // environments. It is declared as type `logic` so that a wait statement can be used in other
+  // initial blocks to wait for its value to stabilize after a plusarg lookup.
+  logic xbar_mode;
+
+  initial begin
+    if (!$value$plusargs("xbar_mode=%0b", xbar_mode)) xbar_mode = 0;
+    clk_rst_if.set_active(.drive_clk_val(1 /* bogus clock */), .drive_rst_n_val(xbar_mode));
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "clk_rst_vif", clk_rst_if);
+  end
+  assign dut.POR_N = xbar_mode ? rst_n : 1'bz;
+  assign rst_n = xbar_mode ? 1'bz : dut.chip_if.ios[PorN];
 
   `include "../autogen/tb__xbar_connect.sv"
   `include "../autogen/tb__alert_handler_connect.sv"

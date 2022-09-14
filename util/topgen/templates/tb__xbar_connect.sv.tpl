@@ -57,7 +57,6 @@ def escape_if_name(qual_if_name):
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
 
-wire rst_n = dut.POR_N;
 % for c in clk_freq.keys():
 wire clk_${c};
 clk_rst_if clk_rst_if_${c}(.clk(clk_${c}), .rst_n(rst_n));
@@ -71,17 +70,9 @@ tl_if ${escape_if_name(i)}_tl_if(${clk}, rst_n);
 tl_if ${escape_if_name(i)}_tl_if(${clk}, rst_n);
 % endfor
 
-bit xbar_mode;
-
 initial begin
-  void'($value$plusargs("xbar_mode=%0b", xbar_mode));
+  wait (xbar_mode !== 1'bx);
   if (xbar_mode) begin
-    // The tests that run in `xbar_mode` use the XBAR UVM environment which is located at
-    // `hw/ip/tlul/generic_dv`. They do not use the chip level env or the sequences. The XBAR env
-    // expects an active clk_rst_if instance to be passed to the config db to apply the reset. We
-    // create a passive one in chip_if, which can serve this purpose.
-    dut.chip_if.clk_rst_if.set_active(.drive_clk_val(0), .drive_rst_n_val(xbar_mode));
-
     // only enable assertions in xbar as many pins are unconnected
     $assertoff(0, tb);
 % for xbar in top["xbar"]:

@@ -175,28 +175,28 @@ interface chip_if;
   //                    .csb(ios[SpiDevCsL]),
   //                    .sio(ios[SpiDevD3:SpiDevD0]));
 
-  bit enable_spi_host = 1;  // Since these are DIOs.
+  bit enable_spi_host;
   spi_if spi_host_if(.rst_n(`SPI_DEVICE_HIER.rst_ni));
   assign ios[SpiDevClk] = enable_spi_host ? spi_host_if.sck : 1'bz;
   assign ios[SpiDevCsL] = enable_spi_host ? spi_host_if.csb : 1'bz;
   assign ios[SpiDevD0] = enable_spi_host ? spi_host_if.sio[0] : 1'bz;
   assign spi_host_if.sio[1] = enable_spi_host ? ios[SpiDevD1] : 1'bz;
 
-  // Functional (dedicated) interface: SPI AP device interface (receives traffic from the chip).
+  // Functional (dedicated) interface: SPI device 0 interface (receives traffic from the chip).
   // TODO: Update spi_if to emit all signals as inout ports.
-  // spi_if spi_device_ap_if(.rst_n(`SPI_HOST_HIER(0).rst_ni),
+  // spi_if spi_device0_if(.rst_n(`SPI_HOST_HIER(0).rst_ni),
   //                         .sck(ios[SpiHostClk]),
   //                         .csb(ios[SpiHostCsL]),
   //                         .sio(ios[SpiHostD3:SpiHostD0]));
 
-  bit enable_spi_device_ap = 1;  // Since these are DIOs.
-  spi_if spi_device_ap_if(.rst_n(`SPI_HOST_HIER(0).rst_ni));
-  assign spi_device_ap_if.sck = enable_spi_device_ap ? ios[SpiHostClk] : 1'bz;
-  assign spi_device_ap_if.csb = enable_spi_device_ap ? ios[SpiHostCsL] : 1'bz;
+  bit enable_spi_device0;
+  spi_if spi_device0_if(.rst_n(`SPI_HOST_HIER(0).rst_ni));
+  assign spi_device0_if.sck = enable_spi_device0 ? ios[SpiHostClk] : 1'bz;
+  assign spi_device0_if.csb = enable_spi_device0 ? ios[SpiHostCsL] : 1'bz;
   // for (genvar i = 0; i < 4; i++) begin : gen_spi_device_ap_if_sio_conn
   //   // TODO: This logic needs to be firmed up.
-  //   assign ios[SpiHostD0 + i] = spi_device_ap_if.sio_oe[i] ? spi_device_ap_if.sio[i] : 1'bz;
-  //   assign spi_device_ap_if.sio[i] = ~spi_device_ap_if.sio_oe[i] ? ios[SpiHostD0 + i] : 1'bz;
+  //   assign ios[SpiHostD0 + i] = spi_device0_if.sio_oe[i] ? spi_device0_if.sio[i] : 1'bz;
+  //   assign spi_device0_if.sio[i] = ~spi_device0_if.sio_oe[i] ? ios[SpiHostD0 + i] : 1'bz;
   // end
 
   // Functional (dedicated) interface (inout): EC reset.
@@ -348,12 +348,13 @@ interface chip_if;
     __enable_uart[inst_num] = enable;
   endfunction
 
-  // Functional (muxed) interface: SPI EC device interface (receives traffic from the chip).
+  // Functional (muxed) interface: SPI device 1 interface (receives traffic from the chip).
   // TODO: Update spi_if to emit all signals as inout ports.
-  // spi_if spi_device_ec_if(.rst_n(`SPI_HOST_HIER(1).rst_ni),
-  //                         .sck(ios[IoB3]),
-  //                         .csb(ios[IoB0]),
-  //                         .sio(ios[IoB1:IoB2]));
+  bit enable_spi_device1;
+  // spi_if spi_device1_if(.rst_n(`SPI_HOST_HIER(1).rst_ni),
+  //                       .sck(ios[IoB3]),
+  //                       .csb(ios[IoB0]),
+  //                       .sio(ios[IoB1:IoB2]));
 
   // Functional (muxed) interface: I2Cs.
   bit [NUM_I2CS-1:0] enable_i2c;
@@ -381,8 +382,9 @@ interface chip_if;
 
   // Internal probes / monitors.
 
-  // Legacy clk_rst_if mainly used passively for waiting for clock and reset events.
-  clk_rst_if clk_rst_if(.clk(ios[IoC6]), .rst_n(ios[PorN]));
+  wire sys_clk = `CLKMGR_HIER.clocks_o.clk_main_powerup;
+  wire sys_rst_n = `RSTMGR_HIER.resets_o.rst_sys_n[0];
+  clk_rst_if sys_clk_rst_if(.clk(sys_clk), .rst_n(sys_rst_n));
 
   wire cpu_clk = `CPU_HIER.clk_i;
   wire cpu_rst_n = `CPU_HIER.rst_ni;
@@ -390,7 +392,7 @@ interface chip_if;
 
   wire aon_clk = `CLKMGR_HIER.clocks_o.clk_aon_powerup;
   wire aon_rst_n = `RSTMGR_HIER.resets_o.rst_por_aon_n[0];
-  clk_rst_if aon_clk_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
+  clk_rst_if aon_clk_por_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
 
   wire usb_clk = `USBDEV_HIER.clk_i;
   wire usb_rst_n = `USBDEV_HIER.rst_ni;
@@ -480,14 +482,6 @@ interface chip_if;
   // sub-interface handles that are consumed by the chip env. Only pass the sub-interface handles
   // for external interface agents.
   initial begin
-    // TODO: Should we always drive external clock? This should move to the sequences.
-    ext_clk_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
-
-    // Note that attempting to drive the external clock / power on reset using this interface will
-    // vacuously return instead of throwing an error. This is done to support the our base classes.
-    // The test sequences must use ext_clk_if and por_n_if respectively instead.
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "clk_rst_vif", clk_rst_if);
-
     // TODO: Update once jtag_riscv_agent is replaced with jtag_dmi_agent / SBA accessor.
     uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_riscv_agent*", "vif", jtag_if);
 
@@ -508,23 +502,56 @@ interface chip_if;
 
   // Helper methods.
 
+  // Disconnects all interfaces from chip IOs.
+  //
+  // Provides the test sequence a fresh start to connect specific interfaces needed by the test.
+  // The por_n_if is exempt from this. The disconnection of default pulls using ios_if is
+  // conditioned on the `disconnect_default_pulls` arg.
+  function automatic void disconnect_all_interfaces(bit disconnect_default_pulls);
+    `uvm_info(MsgId, "Disconnecting all interfaces from the chip IOs", UVM_LOW)
+    if (disconnect_default_pulls) ios_if.disconnect();
+    cc_if.disconnect();
+    flash_test_volt_if.disconnect();
+    flash_test_mode_if.disconnect();
+    otp_ext_volt_if.disconnect();
+    enable_spi_host = 0;
+    enable_spi_device0 = 0;
+    enable_spi_device1 = 0;
+    ec_rst_l_if.disconnect();
+    flash_wp_l_if.disconnect();
+    pwrb_in_if.disconnect();
+    sysrst_ctrl_if.disconnect();
+    ast_misc_if.disconnect();
+    dft_straps_if.disconnect();
+    tap_straps_if.disconnect();
+    sw_straps_if.disconnect();
+    gpio_pins_if.disconnect();
+    enable_flash_ctrl_jtag = 0;
+    ast2pad_if.disconnect();
+    pad2ast_if.disconnect();
+    pinmux_wkup_if.disconnect();
+    for (int i = 0; i < NUM_UARTS; i++) enable_uart(i, 0);
+    enable_i2c = '0;
+    ext_clk_if.set_active(0, 0);
+  endfunction
+
   // Verifies an LC control signal broadcast by the LC controller.
   function automatic void check_lc_ctrl_enable_signal(lc_ctrl_signal_e signal, bit expected_value);
     lc_ctrl_pkg::lc_tx_t value;
     case (signal)
-      LcCtrlSignalDftEn:          value = `LC_CTRL_HIER.lc_dft_en_o;
-      LcCtrlSignalNvmDebugEn:     value = `LC_CTRL_HIER.lc_nvm_debug_en_o;
-      LcCtrlSignalHwDebugEn:      value = `LC_CTRL_HIER.lc_hw_debug_en_o;
-      LcCtrlSignalCpuEn:          value = `LC_CTRL_HIER.lc_cpu_en_o;
-      LcCtrlSignalCreatorSeedEn:  value = `LC_CTRL_HIER.lc_creator_seed_sw_rw_en_o;
-      LcCtrlSignalOwnerSeedEn:    value = `LC_CTRL_HIER.lc_owner_seed_sw_rw_en_o;
-      LcCtrlSignalIsoRdEn:        value = `LC_CTRL_HIER.lc_iso_part_sw_rd_en_o;
-      LcCtrlSignalIsoWrEn:        value = `LC_CTRL_HIER.lc_iso_part_sw_wr_en_o;
-      LcCtrlSignalSeedRdEn:       value = `LC_CTRL_HIER.lc_seed_hw_rd_en_o;
-      LcCtrlSignalKeyMgrEn:       value = `LC_CTRL_HIER.lc_keymgr_en_o;
-      LcCtrlSignalEscEn:          value = `LC_CTRL_HIER.lc_escalate_en_o;
-      LcCtrlSignalCheckBypEn:     value = `LC_CTRL_HIER.lc_check_byp_en_o;
-      default:        `uvm_fatal(MsgId, $sformatf("Bad choice: %0s", signal.name()))
+      LcCtrlSignalDftEn:        value = `LC_CTRL_HIER.lc_dft_en_o;
+      LcCtrlSignalNvmDebugEn:   value = `LC_CTRL_HIER.lc_nvm_debug_en_o;
+      LcCtrlSignalHwDebugEn:    value = `LC_CTRL_HIER.lc_hw_debug_en_o;
+      LcCtrlSignalCpuEn:        value = `LC_CTRL_HIER.lc_cpu_en_o;
+      LcCtrlSignalCreatorSeedEn:value = `LC_CTRL_HIER.lc_creator_seed_sw_rw_en_o;
+      LcCtrlSignalOwnerSeedEn:  value = `LC_CTRL_HIER.lc_owner_seed_sw_rw_en_o;
+      LcCtrlSignalIsoRdEn:      value = `LC_CTRL_HIER.lc_iso_part_sw_rd_en_o;
+      LcCtrlSignalIsoWrEn:      value = `LC_CTRL_HIER.lc_iso_part_sw_wr_en_o;
+      LcCtrlSignalSeedRdEn:     value = `LC_CTRL_HIER.lc_seed_hw_rd_en_o;
+      LcCtrlSignalKeyMgrEn:     value = `LC_CTRL_HIER.lc_keymgr_en_o;
+      LcCtrlSignalEscEn:        value = `LC_CTRL_HIER.lc_escalate_en_o;
+      LcCtrlSignalCheckBypEn:   value = `LC_CTRL_HIER.lc_check_byp_en_o;
+      default:                  `uvm_fatal(MsgId, $sformatf("Bad choice: %0s", signal.name()))
     endcase
     if (expected_value ~^ (value == lc_ctrl_pkg::On)) begin
       `uvm_info(MsgId, $sformatf("LC control signal %0s: value = %0s matched",
