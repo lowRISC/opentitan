@@ -15,7 +15,7 @@ package(default_visibility = ["//visibility:public"])
 
 ld_library(
     name = "ld_common",
-    fragments = ["bare_metal_common.ld"],
+    includes = ["bare_metal_common.ld"],
     deps = [
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",

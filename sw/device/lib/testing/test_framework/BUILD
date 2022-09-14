@@ -57,7 +57,7 @@ cc_library(
 
 ld_library(
     name = "ottf_ld_common",
-    fragments = ["ottf_common.ld"],
+    includes = ["ottf_common.ld"],
     deps = [
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",

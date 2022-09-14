@@ -72,7 +72,7 @@ cc_test(
 
 ld_library(
     name = "ld_common",
-    fragments = ["rom_ext_common.ld"],
+    includes = ["rom_ext_common.ld"],
     deps = [
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
