@@ -148,7 +148,7 @@ otbn_error_t rsa_3072_compute_constants(const rsa_3072_public_key_t *public_key,
   OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
 
   // Spin here waiting for OTBN to complete.
-  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read constant rr out of DMEM.
   OTBN_RETURN_IF_ERROR(
@@ -212,7 +212,7 @@ otbn_error_t rsa_3072_verify(const rsa_3072_int_t *signature,
   OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
 
   // Spin here waiting for OTBN to complete.
-  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read recovered message out of OTBN dmem.
   rsa_3072_int_t recoveredMessage;

@@ -103,6 +103,9 @@ static otbn_error_t setup_data_pointers(otbn_t *otbn) {
 otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
                              const ecdsa_p256_private_key_t *private_key,
                              ecdsa_p256_signature_t *result) {
+  // If OTBN is non-idle, return an error.
+  OTBN_RETURN_IF_ERROR(otbn_assert_idle());
+
   otbn_t otbn;
   otbn_init(&otbn);
 
@@ -126,7 +129,7 @@ otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
   OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
 
   // Spin here waiting for OTBN to complete.
-  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read signature R out of OTBN dmem.
   OTBN_RETURN_IF_ERROR(otbn_copy_data_from_otbn(&otbn, kP256ScalarNumWords,
@@ -148,6 +151,9 @@ otbn_error_t ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
                                const ecdsa_p256_message_digest_t *digest,
                                const ecdsa_p256_public_key_t *public_key,
                                hardened_bool_t *result) {
+  // If OTBN is non-idle, return an error.
+  OTBN_RETURN_IF_ERROR(otbn_assert_idle());
+
   otbn_t otbn;
   otbn_init(&otbn);
 
@@ -183,7 +189,7 @@ otbn_error_t ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
   OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
 
   // Spin here waiting for OTBN to complete.
-  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done(&otbn));
+  OTBN_RETURN_IF_ERROR(otbn_busy_wait_for_done());
 
   // Read x_r (recovered R) out of OTBN dmem.
   uint32_t x_r[kP256ScalarNumWords];

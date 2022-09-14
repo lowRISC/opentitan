@@ -48,7 +48,7 @@ bool ecdsa_p256_verify_test(const ecdsa_p256_verify_test_vector_t *testvec) {
   otbn_error_t err = ecdsa_p256_verify(&testvec->signature, &digest,
                                        &testvec->public_key, &result);
   otbn_err_bits_t err_bits;
-  otbn_get_err_bits(&err_bits);
+  otbn_err_bits_get(&err_bits);
   CHECK(
       err == kOtbnErrorOk,
       "Error from OTBN while verifying signature: 0x%08x. Error bits: 0b%032b",
