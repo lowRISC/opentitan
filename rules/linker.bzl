@@ -5,7 +5,7 @@
 """Rules for declaring linker scripts and linker script fragments."""
 
 def _ld_library_impl(ctx):
-    files = [] + ctx.files.fragments
+    files = [] + ctx.files.includes
     user_link_flags = []
     if ctx.file.script:
         files += ctx.files.script
@@ -32,16 +32,16 @@ ld_library = rule(
     implementation = _ld_library_impl,
     doc = """
     A linker script library. Linker script libraries consist of a collection of
-    "fragments" (the linker equivalent of a header) and an optional script. Linker
-    script libraries can depend on other libraries to access the fragments they
-    public; cc_binaries can depend on an ld_library with a script to specify it
+    "includes" (the linker equivalent of a header) and an optional script. Linker
+    script libraries can depend on other libraries to access the includes they
+    publish; cc_binaries can depend on an ld_library with a script to specify it
     as the linker script for that binary.
 
     At most one ld_library in a cc_binary's dependencies may have a script.
     """,
     attrs = {
         "script": attr.label(allow_single_file = True),
-        "fragments": attr.label_list(
+        "includes": attr.label_list(
             default = [],
             allow_files = True,
         ),

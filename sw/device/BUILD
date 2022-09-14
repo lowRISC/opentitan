@@ -8,7 +8,7 @@ package(default_visibility = ["//visibility:public"])
 
 ld_library(
     name = "info_sections",
-    fragments = ["info_sections.ld"],
+    includes = ["info_sections.ld"],
 )
 
 # FIXME(lowRISC/opentitan#12065) This is a hack to work around currently
