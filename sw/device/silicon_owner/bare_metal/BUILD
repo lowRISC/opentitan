@@ -11,6 +11,8 @@ load(
 )
 load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest")
 
+package(default_visibility = ["//visibility:public"])
+
 ld_library(
     name = "ld_common",
     fragments = ["bare_metal_common.ld"],
@@ -110,6 +112,9 @@ opentitan_flash_binary(
     ],
 )
 
+################################################################################
+# Bare metal ROM_EXT + BL0 test that DOES NOT use OTTF.
+################################################################################
 opentitan_multislot_flash_binary(
     name = "rom_ext_virtual_bare_metal_virtual",
     srcs = {
@@ -135,6 +140,46 @@ opentitan_functest(
     ),
     key = "multislot",
     ot_flash_binary = ":rom_ext_virtual_bare_metal_virtual",
+    signed = True,
+    targets = ["cw310"],
+)
+
+################################################################################
+# Bare metal ROM_EXT + BL0 test that DOES use OTTF.
+################################################################################
+opentitan_flash_binary(
+    name = "ottf_test_bl0_slot_virtual",
+    srcs = ["empty_test.c"],
+    manifest = "//sw/device/silicon_owner/bare_metal:manifest_virtual",
+    signed = True,
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_multislot_flash_binary(
+    name = "rom_ext_virtual_ottf_bl0_virtual",
+    srcs = {
+        "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
+            "key": "test_key_0",
+            "offset": "0x0",
+        },
+        ":ottf_test_bl0_slot_virtual": {
+            "key": "test_key_0",
+            "offset": "0x10000",
+        },
+    },
+    image_size = "0x13000",
+)
+
+opentitan_functest(
+    name = "rom_ext_virtual_ottf_bl0_virtual_test",
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom",
+    ),
+    key = "multislot",
+    ot_flash_binary = ":rom_ext_virtual_ottf_bl0_virtual",
     signed = True,
     targets = ["cw310"],
 )
