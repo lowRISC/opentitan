@@ -28,6 +28,7 @@
               "{conn_csvs_dir}/clkmgr_secure.csv",
               "{conn_csvs_dir}/clkmgr_timers.csv",
               "{conn_csvs_dir}/clkmgr_trans.csv",
+              "{conn_csvs_dir}/analog_sigs.csv",
               "{conn_csvs_dir}/jtag.csv",
               "{conn_csvs_dir}/lc_ctrl_broadcast.csv",
               "{conn_csvs_dir}/pwrmgr_rstmgr.csv",
