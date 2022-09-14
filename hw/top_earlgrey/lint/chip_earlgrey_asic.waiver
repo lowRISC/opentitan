@@ -104,6 +104,9 @@ waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'ast_b
 waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_secure' is driven by a multiplexer here, used as a clock 'clk_i' at} \
       -comment "This is a clock signal that is fed back into AST."
 
+waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_infra' is driven by a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
+
 waive -rules {RESET_USE} -location {chip_earlgrey_asic.sv} -regexp {'rstmgr_aon_resets..*' is connected to 'ast' port 'sns_rsts_i..*', and used as an asynchronous reset or set} \
       -comment "This is a reset struct that is fed back into AST."
 

@@ -468,23 +468,19 @@
     {
       name: clkmgr_clk_usb_peri
       desc: '''Verify clkmgr's `clk_usb_peri` is connected to the following:
-            - ast's clk_ast_usb_i
             - usbdev's clk_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_ast_usb_clk",
-              "clkmgr_peri_clk_usbdev_usb_clk"]
+      tests: ["clkmgr_peri_clk_usbdev_usb_clk"]
       tags: ["conn"]
     }
     {
       name: clkmgr_clk_aon_peri
       desc: '''Verify clkmgr's `clk_aon_peri` is connected to the following blocks' clock input:
-            - adc_ctrl clk_aon_i
             - usbdev clk_aon_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_adc_ctrl_aon_clk",
-              "clkmgr_peri_clk_usbdev_aon_clk"]
+      tests: ["clkmgr_peri_clk_usbdev_aon_clk"]
       tags: ["conn"]
     }
 
@@ -566,8 +562,6 @@
       desc: '''Verify clkmgr's `clk_io_div4_secure` is connected to the following blocks' clock
             input:
             - alert_handler clk_i
-            - ast clk_ast_tlul_i
-            - ast clk_ast_alert_i
             - lc_ctrl clk_i
             - otbn clk_otp_i
             - otp_ctrl clk_i
@@ -578,8 +572,6 @@
             '''
       stage: V2
       tests: ["clkmgr_secure_clk_alert_handler_clk",
-              "clkmgr_secure_clk_ast_tlul_clk",
-              "clkmgr_secure_clk_ast_alert_clk",
               "clkmgr_secure_clk_lc_ctrl_clk",
               "clkmgr_secure_clk_otbn_otp_clk",
               "clkmgr_secure_clk_otp_ctrl_clk",
@@ -593,8 +585,6 @@
       name: clkmgr_clk_main_secure
       desc: '''Verify clkmgr's `clk_main_secure` is connected to the following blocks' clock input:
             - alert_handler's clk_edn_i
-            - ast clk_es_i
-            - ast clk_rng_i
             - csrgn clk_i
             - edn0 clk_i
             - edn1 clk_i
@@ -608,8 +598,6 @@
             '''
       stage: V2
       tests: ["clkmgr_secure_clk_alert_handler_edn_clk",
-              "clkmgr_secure_clk_ast_es_clk",
-              "clkmgr_secure_clk_ast_rng_clk",
               "clkmgr_secure_clk_csrng_clk",
               "clkmgr_secure_clk_edn0_clk",
               "clkmgr_secure_clk_edn1_clk",
@@ -625,12 +613,10 @@
     {
       name: clkmgr_clk_aon_secure
       desc: '''Verify clkmgr's `clk_aon_secure` is connected to the following blocks' clock input:
-            - ast clk_ast_adc_i
             - sensor_ctrl clk_aon_i
             '''
       stage: V2
-      tests: ["clkmgr_secure_clk_ast_adc_clk",
-              "clkmgr_secure_clk_sensor_ctrl_aon_clk"]
+      tests: ["clkmgr_secure_clk_sensor_ctrl_aon_clk"]
       tags: ["conn"]
     }
 

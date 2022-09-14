@@ -847,8 +847,8 @@ module chip_earlgrey_cw310 #(
     // init done indication
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
-    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_secure),
-    .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_secure),
+    .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_infra),
+    .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_peri),
     .clk_ast_alert_i (clkmgr_aon_clocks.clk_io_div4_secure),
     .clk_ast_es_i (clkmgr_aon_clocks.clk_main_secure),
     .clk_ast_rng_i (clkmgr_aon_clocks.clk_main_secure),
