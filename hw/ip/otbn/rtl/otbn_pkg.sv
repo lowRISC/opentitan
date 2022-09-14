@@ -142,6 +142,15 @@ package otbn_pkg;
     logic dmem_gnt_missed_err;
   } missed_gnt_t;
 
+  typedef struct packed {
+    logic rf_base_intg_err;
+    logic rf_bignum_intg_err;
+    logic mod_ispr_intg_err;
+    logic acc_ispr_intg_err;
+    logic loop_stack_addr_intg_err;
+    logic insn_fetch_intg_err;
+  } internal_intg_err_t;
+
   // All the error signals that can be generated directly from the controller. Note that this is
   // organised to include every software error (including 'call_stack', which actually gets fed in
   // from the base register file)

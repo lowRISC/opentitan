@@ -666,6 +666,18 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
 
   endgroup
 
+  // This covergroup tracks each possible "Internal Integrity Errors" with probes from RTL.
+  covergroup internal_intg_err_cg with function sample(otbn_pkg::internal_intg_err_t intg_err);
+
+    `DEF_SEEN_CP(rf_base_intg_err_cp, intg_err.rf_base_intg_err)
+    `DEF_SEEN_CP(rf_bignum_intg_err_cp, intg_err.rf_bignum_intg_err)
+    `DEF_SEEN_CP(mod_ispr_intg_err_cp, intg_err.mod_ispr_intg_err)
+    `DEF_SEEN_CP(acc_ispr_intg_err_cp, intg_err.acc_ispr_intg_err)
+    `DEF_SEEN_CP(loop_stack_addr_intg_err_cp, intg_err.loop_stack_addr_intg_err)
+    `DEF_SEEN_CP(insn_fetch_intg_err_cp, intg_err.insn_fetch_intg_err)
+
+  endgroup
+
   // This covergroup tracks straight-line instructions (i.e., instructions that do not
   // branch or jump) at the top of instruction memory (i.e., at the highest possible
   // address).
@@ -2235,6 +2247,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                                  cfg.trace_vif.start_stop_bad_int_q,
                                  cfg.trace_vif.rf_base_spurious_we_err_q,
                                  cfg.trace_vif.rf_bignum_spurious_we_err_q);
+
+    internal_intg_err_cg.sample(cfg.trace_vif.internal_intg_err_q);
   endfunction
 
   function void on_write_to_wr_csr(uvm_reg csr, logic [31:0] data, operational_state_e state);

@@ -95,7 +95,12 @@ interface otbn_trace_if
   input logic rf_bignum_predec_error,
   input logic rd_predec_error,
   input logic rf_base_spurious_we_err,
-  input logic rf_bignum_spurious_we_err
+  input logic rf_bignum_spurious_we_err,
+
+  input logic rf_base_intg_err,
+  input logic rf_bignum_intg_err,
+  input logic alu_bignum_reg_intg_violation_err,
+  input logic mac_bignum_reg_intg_violation_err
 );
   import otbn_pkg::*;
   import prim_mubi_pkg::*;
@@ -336,6 +341,25 @@ interface otbn_trace_if
       end
     end
   end
+
+  // Internal Integrity Check Probes
+  internal_intg_err_t internal_intg_err_i, internal_intg_err_d, internal_intg_err_q;
+
+  assign internal_intg_err_d = (locking_o) ? '0 : (internal_intg_err_q | internal_intg_err_i);
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      internal_intg_err_q <= '0;
+    end else begin
+      internal_intg_err_q <= internal_intg_err_d;
+    end
+  end
+
+  assign internal_intg_err_i.rf_base_intg_err = rf_base_intg_err;
+  assign internal_intg_err_i.rf_bignum_intg_err = rf_bignum_intg_err;
+  assign internal_intg_err_i.mod_ispr_intg_err = alu_bignum_reg_intg_violation_err;
+  assign internal_intg_err_i.acc_ispr_intg_err = mac_bignum_reg_intg_violation_err;
+  assign internal_intg_err_i.loop_stack_addr_intg_err = controller_bad_int_i.loop_hw_intg_err;
+  assign internal_intg_err_i.insn_fetch_intg_err = insn_fetch_err;
 
   // Bad Internal State Probes
   // We need to capture them until we are actually locking to sample them in the correct instance.
