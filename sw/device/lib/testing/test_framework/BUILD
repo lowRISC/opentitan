@@ -91,6 +91,33 @@ ld_library(
     ],
 )
 
+ld_library(
+    name = "ottf_ld_silicon_owner_slot_a",
+    script = "ottf_silicon_owner_a.ld",
+    deps = [
+        ":ottf_ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+    ],
+)
+
+ld_library(
+    name = "ottf_ld_silicon_owner_slot_b",
+    script = "ottf_silicon_owner_b.ld",
+    deps = [
+        ":ottf_ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+    ],
+)
+
+ld_library(
+    name = "ottf_ld_silicon_owner_slot_virtual",
+    script = "ottf_silicon_owner_virtual.ld",
+    deps = [
+        ":ottf_ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+    ],
+)
+
 # TODO(#12905): Use a slightly hollowed out version of the silicon_creator
 # manifest_def implementation when building the test_framework for the english
 # breakfast top level.
