@@ -21,12 +21,10 @@ CONNECTION, AST_IO_BYP_ACK_OUT,  u_ast, io_clk_byp_ack_o,  top_earlgrey.u_clkmgr
 #################################
 # Signals from Clkmgr to AST
 #################################
-# TODO: why is this clk_aon_secure in the chip-level, when the module itself is connected to clk_aon_peri?
 CONNECTION, AST_CLK_ADC_IN,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_peri,         u_ast, clk_ast_adc_i
 CONNECTION, AST_CLK_ALERT_IN,   top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure,   u_ast, clk_ast_alert_i
 CONNECTION, AST_CLK_ES_IN,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,      u_ast, clk_ast_es_i
 CONNECTION, AST_CLK_RNG_IN,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,      u_ast, clk_ast_rng_i
-# TODO: why is this clk_io_div4_secure in the chip-level when the peripheral Xbar runs on clk_io_div4_infra?
 CONNECTION, AST_CLK_TLUL_IN,    top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra,    u_ast, clk_ast_tlul_i
 CONNECTION, AST_CLK_USB_IN,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_usb_peri,         u_ast, clk_ast_usb_i
 CONNECTION, AST_CLK_SNS_IN,     top_earlgrey.u_clkmgr_aon, clocks_o,                      u_ast, sns_clks_i

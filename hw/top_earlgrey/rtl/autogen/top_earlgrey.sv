@@ -869,8 +869,8 @@ module top_earlgrey #(
   // timers_lc_io_div4_Aon
   assign lpg_cg_en[15] = clkmgr_aon_cg_en.io_div4_timers;
   assign lpg_rst_en[15] = rstmgr_aon_rst_en.lc_io_div4[rstmgr_pkg::DomainAonSel];
-  // secure_sys_io_div4_0
-  assign lpg_cg_en[16] = clkmgr_aon_cg_en.io_div4_secure;
+  // infra_sys_io_div4_0
+  assign lpg_cg_en[16] = clkmgr_aon_cg_en.io_div4_infra;
   assign lpg_rst_en[16] = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::Domain0Sel];
   // secure_sys_io_div4_Aon
   assign lpg_cg_en[17] = clkmgr_aon_cg_en.io_div4_secure;

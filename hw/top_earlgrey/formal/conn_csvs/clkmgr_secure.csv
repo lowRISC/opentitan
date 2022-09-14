@@ -11,12 +11,6 @@
 CONNECTION, CLKMGR_SECURE_CLK_ALERT_HANDLER_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_alert_handler, clk_i
 CONNECTION, CLKMGR_SECURE_CLK_ALERT_HANDLER_EDN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,    top_earlgrey.u_alert_handler, clk_edn_i
 
-CONNECTION, CLKMGR_SECURE_CLK_AST_TLUL_CLK,  top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, u_ast, clk_ast_tlul_i
-CONNECTION, CLKMGR_SECURE_CLK_AST_ADC_CLK,   top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_secure,     u_ast, clk_ast_adc_i
-CONNECTION, CLKMGR_SECURE_CLK_AST_ALERT_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, u_ast, clk_ast_alert_i
-CONNECTION, CLKMGR_SECURE_CLK_AST_ES_CLK,    top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,    u_ast, clk_ast_es_i
-CONNECTION, CLKMGR_SECURE_CLK_AST_RNG_CLK,   top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,    u_ast, clk_ast_rng_i
-
 CONNECTION, CLKMGR_SECURE_CLK_CSRNG_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure, top_earlgrey.u_csrng, clk_i
 
 CONNECTION, CLKMGR_SECURE_CLK_EDN0_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure, top_earlgrey.u_edn0, clk_i

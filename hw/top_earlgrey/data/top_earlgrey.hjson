@@ -488,15 +488,30 @@
     { name: "ast",
       type: "ast",
       clock_srcs: {
-        clk_ast_tlul_i: "io_div4",
-        clk_ast_adc_i: "aon",
-        clk_ast_alert_i: "io_div4",
-        clk_ast_es_i: "main",
-        clk_ast_rng_i: "main",
+        clk_ast_tlul_i: {
+          clock: "io_div4",
+          group: "infra"
+        },
+        clk_ast_adc_i: {
+          clock: "aon",
+          group: "peri"
+        },
+        clk_ast_alert_i: {
+          clock: "io_div4",
+          group: "secure"
+        }
+        clk_ast_es_i: {
+          clock: "main",
+          group: "secure"
+        }
+        clk_ast_rng_i: {
+          clock: "main",
+          group: "secure"
+        }
         clk_ast_usb_i: {
-	  clock: "usb",
-	  group: "peri"
-	}
+      	  clock: "usb",
+      	  group: "peri"
+      	}
       },
       clock_group: "secure",
       reset_connections: {
