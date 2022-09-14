@@ -1320,13 +1320,36 @@
     }
 
     /////////////////////////
-    // TODO: OTP_CTRL      //
+    // analog_sigs.csv     //
     /////////////////////////
     {
       name: otp_ctrl_external_voltage
-      desc: "Verify the connectivity of the external voltage signal to OTP ctrl."
+      desc: "Verify the connectivity between the external voltage pad and otp_ctrl."
       stage: V2
-      tests: []
+      tests: ["otp_ext_volt"]
+      tags: ["conn"]
+    }
+    {
+      name: flash_ctrl_test_voltage
+      desc: "Verify the connectivity between the test voltage pad and flash_ctrl."
+      stage: V2
+      tests: ["flash_test_volt"]
+      tags: ["conn"]
+    }
+    {
+      name: flash_ctrl_test_mode
+      desc: "Verify the connectivity between the test mode pads and flash_ctrl."
+      stage: V2
+      tests: ["flash_test_mode0",
+              "flash_test_mode1"]
+      tags: ["conn"]
+    }
+    {
+      name: ast_adc
+      desc: "Verify the connectivity between the CC pads and the ast ADC input."
+      stage: V2
+      tests: ["ast_cc1",
+              "ast_cc2"]
       tags: ["conn"]
     }
   ]
