@@ -140,6 +140,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   ${BAZELISK} fetch \
     --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
     //... \
+    @bindgen_clang_linux//... \
     @lowrisc_rv32imcb_files//... \
     @local_config_cc_toolchains//... \
     @local_config_platform//... \
