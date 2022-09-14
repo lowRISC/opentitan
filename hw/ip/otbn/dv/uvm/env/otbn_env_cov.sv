@@ -633,7 +633,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                          otbn_pkg::controller_bad_int_t controller_bad_int,
                          otbn_pkg::start_stop_bad_int_t start_stop_bad_int,
                          logic rf_base_spurious_we_err,
-                         logic rf_bignum_spurious_we_err);
+                         logic rf_bignum_spurious_we_err,
+                         logic ext_mubi_err);
 
     `DEF_SEEN_CP(alu_bignum_predec_err, predec_err.alu_bignum_err)
     `DEF_SEEN_CP(mac_bignum_predec_err, predec_err.mac_bignum_err)
@@ -654,6 +655,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(rf_base_call_stack_err_cp, controller_bad_int.rf_base_call_stack_err)
     `DEF_SEEN_CP(spr_secwipe_acks_cp, controller_bad_int.spr_secwipe_acks)
     `DEF_SEEN_CP(controller_state_err_cp, controller_bad_int.state_err)
+    `DEF_SEEN_CP(controller_mubi_err_cp, controller_bad_int.controller_mubi_err)
 
     `DEF_SEEN_CP(imem_gnt_missed_err_cp, missed_gnt.imem_gnt_missed_err)
     `DEF_SEEN_CP(dmem_gnt_missed_err_cp, missed_gnt.dmem_gnt_missed_err)
@@ -663,6 +665,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(scramble_state_err_cp, scramble_state_err)
     `DEF_SEEN_CP(rf_base_spurious_we_err_cp, rf_base_spurious_we_err)
     `DEF_SEEN_CP(rf_bignum_spurious_we_err_cp, rf_bignum_spurious_we_err)
+    `DEF_SEEN_CP(ext_mubi_err_cp, ext_mubi_err)
 
   endgroup
 
@@ -2246,7 +2249,8 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
                                  cfg.trace_vif.controller_bad_int_q,
                                  cfg.trace_vif.start_stop_bad_int_q,
                                  cfg.trace_vif.rf_base_spurious_we_err_q,
-                                 cfg.trace_vif.rf_bignum_spurious_we_err_q);
+                                 cfg.trace_vif.rf_bignum_spurious_we_err_q,
+                                 cfg.trace_vif.ext_mubi_err_q);
 
     internal_intg_err_cg.sample(cfg.trace_vif.internal_intg_err_q);
   endfunction
