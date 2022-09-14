@@ -39,16 +39,6 @@ pub trait OtpRead {
     fn read32_offset(&self, name: Option<&str>, offset: usize) -> Result<u32>;
 }
 
-impl OtpRead for OtpImg {
-    fn read32_offset(&self, name: Option<&str>, offset: usize) -> Result<u32> {
-        let mut start_offset = 0;
-        if let Some(name) = name {
-
-        }
-        Ok(0)
-    }
-}
-
 impl OtpImgPartition {
     pub fn get_item(&mut self, name: &str) -> Option<&mut OtpImgItem> {
         self.items
