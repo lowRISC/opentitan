@@ -98,10 +98,3 @@ CONNECTION, RSTMGR_SYS_USB_D0_XBAR_MAIN_RST_USB_NI, top_earlgrey.u_rstmgr_aon, r
 CONNECTION, RSTMGR_SYS_IO_D0_XBAR_MAIN_RST_SPI_HOST0_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_sys_io_n[1], top_earlgrey.u_xbar_main, rst_spi_host0_ni
 CONNECTION, RSTMGR_SYS_IO_DIV2_D0_XBAR_MAIN_RST_SPI_HOST1_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_sys_io_div2_n[1], top_earlgrey.u_xbar_main, rst_spi_host1_ni
 CONNECTION, RSTMGR_SYS_IO_DIV4_D0_XBAR_PERI_RST_PERI_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_sys_io_div4_n[1], top_earlgrey.u_xbar_peri, rst_peri_ni
-CONNECTION, RSTMGR_ALL_RESETS_AST_SNS_RSTS_I, top_earlgrey.u_rstmgr_aon, resets_o, u_ast, sns_rsts_i
-CONNECTION, RSTMGR_SYS_IO_DIV4_D0_AST_RST_AST_TLUL_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_sys_io_div4_n[1], u_ast, rst_ast_tlul_ni
-CONNECTION, RSTMGR_SYS_AON_AON_AST_RST_AST_ADC_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_sys_aon_n[0], u_ast, rst_ast_adc_ni
-CONNECTION, RSTMGR_LC_IO_DIV4_D0_AST_RST_AST_ALERT_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1], u_ast, rst_ast_alert_ni
-CONNECTION, RSTMGR_SYS_D0_AST_RST_AST_ES_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_sys_n[1], u_ast, rst_ast_es_ni
-CONNECTION, RSTMGR_SYS_D0_AST_RST_AST_RNG_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_sys_n[1], u_ast, rst_ast_rng_ni
-CONNECTION, RSTMGR_USB_D0_AST_RST_AST_USB_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_usb_n[1], u_ast, rst_ast_usb_ni
