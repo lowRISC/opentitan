@@ -27,6 +27,8 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
     void'($value$plusargs("+csr_%0s", csr_test_type));
     // These types of CSR tests are quite long; run them only once.
     if (csr_test_type inside {"bit_bash", "aliasing"}) num_trans = 1;
+    // Connect the dedicated SPI host to avoid CSR mismatches from the SPI device IP.
+    cfg.chip_vif.enable_spi_host = 1;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
