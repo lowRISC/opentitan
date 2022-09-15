@@ -83,7 +83,7 @@ interface chip_if;
   // DO NOT manipulate this signal in test sequences directly. Use the individual functional
   // interfaces below instead.
   wire [IoNumTotal-1:0] ios;
-  bit [IoNumTotal-1:0]  dios;  // 1 - DIO, 0 - MIO.
+  bit [IoNumTotal-1:0]  no_x_check;  // 1 - DIO, 0 - MIO.
 
   // Functional interface: for testing ALL chip IOs, such as pinmux and padctrl tests.
   pins_if#(.Width(IoNumTotal), .PullStrength("Weak")) ios_if(.pins(ios));
@@ -105,23 +105,23 @@ interface chip_if;
     ios_if.pins_pd[SpiHostCsL] = 0;
     ios_if.pins_pd[SpiHostClk] = 0;
 
-    // IOs starting at IOA0 are MIOs, except IOR8:9.
-    dios[AstMisc:PorN] = '1;
-    dios[IoR9:IoR8] = '1;
+    // Disable X check on these dedicated IOs.
+    no_x_check[AstMisc:PorN] = '1;
+    no_x_check[IoR9:IoR8] = '1;
   end
 
-  // X-check monitor on chip IOs.
+  // X-check monitor on the muxed chip IOs.
   //
   // Chip IOs must always either be undriven or driven to a known value. Xs indicate multiple
   // drivers, which is an issue likely caused by multiple functions simultaneously attempting to
-  // control the shared (muxed) pads. Disable X-check on DIOs.
+  // control the shared (muxed) pads.
   for (genvar i = 0; i < IoNumTotal; i++) begin : gen_ios_x_check
     wire glitch_free_io;
     assign #1ps glitch_free_io = ios[i];
 
     chip_io_e named_io = chip_io_e'(i);
     always @(glitch_free_io) begin
-      if (!dios[i] && glitch_free_io === 1'bx) begin
+      if (!no_x_check[i] && glitch_free_io === 1'bx) begin
         `uvm_error(MsgId, $sformatf("Detected an X on %0s", named_io.name()))
       end
     end
@@ -371,12 +371,13 @@ interface chip_if;
                                                            IoC10, IoC11, IoC12};
 
   for (genvar i = 0; i < NUM_PWM_CHANNELS; i++) begin : gen_pwm_if_conn
-    pwm_if pwm_if(.clk(`PWM_HIER.clk_i), .rst_n(`PWM_HIER.rst_ni));
-    assign pwm_if.pwm = ios[AssignedPwmIos[i]];
+    pwm_if pwm_if(.clk  (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
+                  .rst_n(`RSTMGR_HIER.resets_o.rst_sys_aon_n[0]),
+                  .pwm  (ios[AssignedPwmIos[i]]));
 
     initial begin
-      uvm_config_db#(virtual pwm_if)::set(null, $sformatf("*.env.m_pwm_monitor%0d*", i),
-                                          $sformatf("m_pwm_monitor%0d_vif", i), pwm_if);
+      uvm_config_db#(virtual pwm_if)::set(null, $sformatf("*.env.m_pwm_monitor%0d*", i), "vif",
+                                          pwm_if);
     end
   end : gen_pwm_if_conn
 

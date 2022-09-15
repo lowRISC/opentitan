@@ -10,6 +10,9 @@ class pwm_monitor_cfg  extends dv_base_agent_cfg;
   bit active     = 1'b0; // 1: collect items 0: ignore
   int resolution = 0;
 
+  // interface handle
+  virtual pwm_if vif;
+
   `uvm_object_utils_begin(pwm_monitor_cfg)
   `uvm_object_utils_end
   `uvm_object_new

@@ -25,7 +25,6 @@ class chip_sw_pwm_pulses_vseq extends chip_sw_base_vseq;
     foreach (duty_cycle[i]) duty_cycle[i] inside {[1 : BEATS_PER_PULSE_CYCLE - 1]};
   }
 
-
   virtual task cpu_init();
     bit[7:0] byte_arr[];
     super.cpu_init();

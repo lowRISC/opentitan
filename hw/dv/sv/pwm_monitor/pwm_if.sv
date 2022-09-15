@@ -4,10 +4,9 @@
 
 interface pwm_if (
   input logic clk,
-  input logic rst_n
+  input logic rst_n,
+  input logic pwm
 );
-
-  logic pwm;
 
   clocking cb @(posedge clk);
     input pwm;

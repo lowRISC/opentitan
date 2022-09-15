@@ -9,78 +9,59 @@ class pwm_monitor extends dv_base_monitor #(
   `uvm_component_utils(pwm_monitor)
   `uvm_component_new
 
-  uvm_analysis_port #(pwm_item) item_port;
-
-  //item
-  pwm_item dut_item, item_clone;
-
-  // interface handle
-  virtual pwm_if vif;
-
-  bit  prev_pwm_state  = '0;
-  uint cnt             =  0;
-  uint phase_count     =  0;
-
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    item_port = new($sformatf("%s_item_port", this.get_name()), this);
-    // get interface
-    if (!uvm_config_db#(virtual pwm_if)::get(this, "*.env.m_pwm_monitor*",
-                        $sformatf("%s_vif", get_name()), vif)) begin
-      `uvm_fatal(`gfn, $sformatf("\n  mon: failed to get %s_vif handle from uvm_config_db",
-                get_name()))
+    // get config
+    if (!uvm_config_db#(pwm_monitor_cfg)::get(this, "", "cfg", cfg)) begin
+      `uvm_fatal(`gfn, $sformatf("failed to get cfg from uvm_config_db"))
     end
 
-    // get config
-    if (!uvm_config_db#(pwm_monitor_cfg)::get(this, "*", $sformatf("%s_cfg", get_name()),cfg)) begin
-      `uvm_fatal(`gfn, $sformatf("\n  mon: failed to get %s_cfg from uvm_config_db", get_name()))
+    // get interface
+    if (!uvm_config_db#(virtual pwm_if)::get(this, "", "vif", cfg.vif)) begin
+      `uvm_fatal(`gfn, $sformatf("failed to get vif handle from uvm_config_db"))
     end
   endfunction
 
   // collect transactions forever - already forked in dv_base_monitor::run_phase
   virtual protected task collect_trans(uvm_phase phase);
-    wait(vif.rst_n);
-    `uvm_info(`gfn, $sformatf("getting delay %d", cfg.ok_to_end_delay_ns), UVM_HIGH)
-    dut_item = pwm_item::type_id::create($sformatf("%s_item", this.get_name()));
+    uint count_cycles, active_cycles;
+    logic pwm_prev = 0;
 
+    wait(cfg.vif.rst_n);
     forever begin
+      if (!cfg.active) begin
+        wait (cfg.active);
+        count_cycles = 0;
+        active_cycles = 0;
+      end
 
-      @(vif.cb);
-      if (cfg.active) begin
-        // increment high/low cnt
-        cnt     += 1;
-        // detect event
-        if (vif.cb.pwm != prev_pwm_state) begin
-          `uvm_info(`gfn, $sformatf("edge detected %0b -> %0b", prev_pwm_state, vif.cb.pwm),
-                     UVM_HIGH)
-          if (vif.cb.pwm == cfg.invert) begin
-            // store count in high count
-            dut_item.active_cnt  = cnt;
-          end else begin
-            dut_item.inactive_cnt  = cnt;
-            dut_item.invert        = cfg.invert;
-            dut_item.period        = cnt + dut_item.active_cnt;
-            dut_item.monitor_id    = cfg.monitor_id;
-            dut_item.duty_cycle    = dut_item.get_duty_cycle();
+      @(cfg.vif.cb);
+      count_cycles++;
+      if (cfg.vif.cb.pwm != pwm_prev) begin
+        `uvm_info(`gfn, $sformatf("Detected edge: %0b->%0b at %0d cycles (from last edge)",
+                                  pwm_prev, cfg.vif.cb.pwm, count_cycles), UVM_HIGH)
+        pwm_prev = cfg.vif.cb.pwm;
+        if (cfg.vif.cb.pwm == cfg.invert) begin
+          // We got to the first (active) half duty cycle point. Save the count and restart.
+          active_cycles = count_cycles;
+        end else begin
+          uint phase_count;
+          pwm_item item = pwm_item::type_id::create("item");
+          item.invert       = cfg.invert;
+          item.monitor_id   = cfg.monitor_id;
+          item.active_cnt   = active_cycles;
+          item.inactive_cnt = count_cycles;
+          item.period       = count_cycles + active_cycles;
+          item.duty_cycle   = item.get_duty_cycle();
 
-            // Each PWM pulse cycle is divided into 2^DC_RESN+1 beats, per beat the 16-bit
-            // phase counter increments by 2^(16-DC_RESN-1)(modulo 65536)
-            phase_count            = ((dut_item.period / (2**(cfg.resolution + 1))) *
-              (2**(16 - (cfg.resolution - 1))));
-            dut_item.phase         = (phase_count % 65536);
-
-            // item done
-            `downcast(item_clone, dut_item.clone());
-            item_port.write(item_clone);
-            dut_item = new($sformatf("%s_item", this.get_name()));
-          end
-          cnt = 0;
+          // Each PWM pulse cycle is divided into 2^DC_RESN+1 beats, per beat the 16-bit
+          // phase counter increments by 2^(16-DC_RESN-1)(modulo 65536)
+          phase_count = ((item.period / (2 ** (cfg.resolution + 1))) *
+                         (2 ** (16 - (cfg.resolution - 1))));
+          item.phase = (phase_count % 65536);
+          analysis_port.write(item);
         end
-        prev_pwm_state = vif.cb.pwm;
-      end else begin
-        // clear what was previously collected
-        dut_item = new($sformatf("%s_item", this.get_name()));
-        cnt = 0;
+        count_cycles = 0;
       end
     end
   endtask
@@ -89,9 +70,9 @@ class pwm_monitor extends dv_base_monitor #(
   // ok_to_end = 0 (bus busy) / 1 (bus idle)
   virtual task monitor_ready_to_end();
     forever begin
-      @(vif.cb)
+      @(cfg.vif.cb)
       ok_to_end = ~cfg.active;
     end
-  endtask : monitor_ready_to_end
+  endtask
 
-endclass : pwm_monitor
+endclass
