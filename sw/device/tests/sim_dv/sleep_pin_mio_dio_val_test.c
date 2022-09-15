@@ -133,6 +133,33 @@ void print_chosen_values(void) {
   LOG_INFO("END Chosen Retention Types");
 }
 
+/**
+ * Configure PADs retention types.
+ *
+ * @param pinmux Pinmux handle.
+ */
+void configure_pad_retention_types(dif_pinmux_t *pinmux) {
+  uint8_t io;  // 1 for DIO, 0 for MIO
+  uint32_t max_pads;
+  dif_pinmux_pad_kind_t pad_kind;
+  dif_pinmux_sleep_mode_t pad_mode;
+  LOG_INFO("Configuring PADs retention types in PINMUX...");
+
+  // TODO: for loop of writing values to PINMUX CSRs.
+  for (io = 0; io < 2; io++) {
+    max_pads = (io) ? NUM_DIO_PADS : NUM_MIO_PADS;
+    pad_kind = (io) ? kDifPinmuxPadKindDio : kDifPinmuxPadKindMio;
+    for (int i = 0; i < max_pads; i++) {
+      pad_mode = (io) ? (dif_pinmux_sleep_mode_t)(kDioPads[i])
+                      : (dif_pinmux_sleep_mode_t)(kMioPads[i]);
+      CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(pinmux, (dif_pinmux_index_t)i,
+                                               pad_kind, pad_mode));
+    }
+  }
+
+  LOG_INFO("PADs retention modes are configured.");
+}
+
 bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux) {
   bool result = false;
   dif_pwrmgr_domain_config_t pwrmgr_domain_cfg;
@@ -145,6 +172,7 @@ bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux) {
   print_chosen_values();
 
   // Configure pwrmgr to deep powerdown.
+  configure_pad_retention_types(pinmux);
 
   CHECK_DIF_OK(dif_pwrmgr_set_domain_config(pwrmgr, pwrmgr_domain_cfg,
                                             kDifToggleEnabled));
