@@ -474,7 +474,8 @@ interface chip_if;
   pwrmgr_low_power_if pwrmgr_low_power_if(.clk     (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
                                           .fast_clk(`CLKMGR_HIER.clocks_o.clk_io_div4_powerup),
                                           .rst_n   (`RSTMGR_HIER.resets_o.rst_por_io_div4_n[0]));
-  assign pwrmgr_low_power_if.low_power = `PWRMGR_HIER.low_power_o;
+  assign pwrmgr_low_power_if.low_power      = `PWRMGR_HIER.low_power_o;
+  assign pwrmgr_low_power_if.deep_powerdown = ~`PWRMGR_HIER.pwr_ast_i.main_pok;
 
   // Use this until we decide what to do with m_tl_agent_rv_dm_debug_mem_reg_block
   // TODO reveiw m_tl_agent_rv_dm_debug_mem_reg_block.
