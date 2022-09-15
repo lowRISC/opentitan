@@ -62,8 +62,29 @@ OTTF_DEFINE_TEST_CONFIG();
  * }
  * ```
  */
+
+typedef enum uint8_t {
+  kDioUsbP,       /* DIO 0                INOUT  */
+  kDioUsbN,       /* DIO 1                INOUT  */
+  kDioSpiHostD0,  /* DIO 2                INOUT  */
+  kDioSpiHostD1,  /* DIO 3                INOUT  */
+  kDioSpiHostD2,  /* DIO 4                INOUT  */
+  kDioSpiHostD3,  /* DIO 5                INOUT  */
+  kDioSpiDevD0,   /* DIO 6                INOUT  */
+  kDioSpiDevD1,   /* DIO 7                INOUT  */
+  kDioSpiDevD2,   /* DIO 8                INOUT  */
+  kDioSpiDevD3,   /* DIO 9                INOUT  */
+  kDioIoR8,       /* DIO 10 EC_RST_L      INOUT  */
+  kDioIoR9,       /* DIO 11 FLASH_WP_L    INOUT  */
+  kDioSpiDevClk,  /* DIO 12               INPUT  */
+  kDioSpiDevCsL,  /* DIO 13               INPUT  */
+  kDioSpiHostClk, /* DIO 14               OUTPUT */
+  kDioSpiHostCsL  /* DIO 15               OUTPUT */
+} dio_pad_idx_t;
+
 #define NUM_OPTOUT_DIO 2
-static const uint8_t kOptOutDio[NUM_OPTOUT_DIO] = {12, 13};
+static const uint8_t kOptOutDio[NUM_OPTOUT_DIO] = {kDioSpiDevClk,
+                                                   kDioSpiDevCsL};
 
 static uint8_t kMioPads[NUM_MIO_PADS] = {0};
 static uint8_t kDioPads[NUM_DIO_PADS] = {0};
@@ -79,7 +100,7 @@ void draw_pinmux_ret(const uint32_t num_pins, uint8_t *arr) {
     uint32_t min_idx = (i + 16 < num_pins) ? i + 16 : num_pins;
 
     for (int j = i; j < min_idx; j++) {
-      /* bit slice 2b at a time and if it is 3, redraw */
+      /* Bit slice 2b at a time and if it is 3, redraw */
       arr[j] = (val >> ((j & 0xF) * 2)) & 0x3;
       if (arr[j] == 3) {
         arr[j] = (uint8_t)rand_testutils_gen32_range(0, 2);
