@@ -6,53 +6,13 @@
 import argparse
 import sys
 
-from typing import Dict, List
-
 from shared.check import CheckResult
+from shared.constants import parse_required_constants
 from shared.control_flow import program_control_graph, subroutine_control_graph
 from shared.decode import decode_elf
 from shared.information_flow_analysis import (get_program_iflow,
                                               get_subroutine_iflow,
                                               stringify_control_deps)
-
-# GPR maximum value.
-GPR_MAX = (1 << 32) - 1
-
-def is_gpr_name(name: str):
-    return name in [f'x{i}' for i in range(32)]
-
-def parse_required_constants(constants: List[str]) -> Dict[str,int]:
-    '''Parses required initial constants.
-
-    Constants are expected to be provided in the form <reg>:<value>, e.g.
-    x5:0xfffffff or x22:0. The value can be expressed in decimal or integer
-    form. Only GPRs are accepted as required constants (not wide registers or
-    special registers).
-    '''
-    out = {}
-    for token in constants:
-        reg_and_value = token.split(':')
-        if len(reg_and_value) != 2:
-            raise ValueError(
-                    f'Could not parse required constant {token}. Please '
-                    'provide required constants in the form <reg>:<value>, '
-                    'e.g. x5:3.')
-        reg, value = reg_and_value
-        if not is_gpr_name(reg):
-            raise ValueError(
-                    f'Cannot parse required constant {token}: {reg} is not a '
-                    'valid GPR name.')
-        if not value.isnumeric():
-            raise ValueError(
-                    f'Cannot parse required constant {token}: {value} is not '
-                    'a recognized numeric value.')
-        value = int(value)
-        if value < 0 or value > GPR_MAX:
-            raise ValueError(
-                    f'Cannot parse required constant {token}: {value} is out '
-                    'of range [0, GPR_MAX].')
-        out[reg] = value
-    return out
 
 
 def main() -> int:
