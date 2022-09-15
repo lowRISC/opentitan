@@ -6,6 +6,7 @@
 import argparse
 import sys
 
+from shared.constants import parse_required_constants
 from shared.control_flow import program_control_graph, subroutine_control_graph
 from shared.decode import decode_elf
 from shared.information_flow import InformationFlowGraph
@@ -29,6 +30,15 @@ def main() -> int:
         help=(
             'The specific subroutine to check. If not provided, start point is '
             '_imem_start (whole program).'))
+    parser.add_argument(
+        '--constants',
+        nargs='+',
+        type=str,
+        required=False,
+        help=('Registers which are required to be constant at the start of the '
+              'subroutine. Only valid if `--subroutine` is passed. Write '
+              'in the form "reg:value", e.g. x3:5. Only GPRs are accepted as '
+              'required constants.'))
     parser.add_argument(
         '--secrets',
         nargs='+',
@@ -59,6 +69,16 @@ def main() -> int:
                     ', '.join(symbols)) if symbols else ''
                 print('{:#x}{}'.format(pc, label_str))
 
+    # Parse initial constants.
+    if args.constants is None:
+        constants = {}
+    else:
+        if args.subroutine is None:
+            raise ValueError('Cannot require initial constants for a whole '
+                             'program; use --subroutine to analyze a specific '
+                             'subroutine.')
+        constants = parse_required_constants(args.constants)
+
     # Compute information-flow graph(s).
     if args.subroutine is None:
         what = 'program'
@@ -67,7 +87,7 @@ def main() -> int:
     else:
         what = 'subroutine'
         ret_iflow, end_iflow, control_deps = get_subroutine_iflow(
-            program, graph, args.subroutine)
+            program, graph, args.subroutine, constants)
 
     # If no secrets were given or the --verbose flag is set, then print the
     # full information-flow graphs.

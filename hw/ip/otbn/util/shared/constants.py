@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from copy import deepcopy
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, List, Optional
 
 from .insn_yaml import Insn
 from .operand import RegOperandType
@@ -118,3 +118,43 @@ class ConstantContext:
         self.removemany(iflow.all_sinks())
 
         self.values.update(new_values)
+
+
+def is_gpr_name(name: str):
+    return name in [f'x{i}' for i in range(32)]
+
+
+def parse_required_constants(constants: List[str]) -> Dict[str, int]:
+    '''Parses required initial constants.
+
+    Constants are expected to be provided in the form <reg>:<value>, e.g.
+    x5:0xfffffff or x22:0. The value can be expressed in decimal or integer
+    form. Only GPRs are accepted as required constants (not wide registers or
+    special registers).
+    '''
+    GPR_MAX = (1 << 32) - 1
+
+    out = {}
+    for token in constants:
+        reg_and_value = token.split(':')
+        if len(reg_and_value) != 2:
+            raise ValueError(
+                f'Could not parse required constant {token}. Please provide '
+                'required constants in the form <reg>:<value>, e.g. x5:3.')
+        reg, value = reg_and_value
+        if not is_gpr_name(reg):
+            raise ValueError(
+                f'Cannot parse required constant {token}: {reg} is not a '
+                'valid GPR name.')
+        if not value.isnumeric():
+            raise ValueError(
+                f'Cannot parse required constant {token}: {value} is not a '
+                'recognized numeric value.')
+        value = int(value)
+        if value < 0 or value > GPR_MAX:
+            raise ValueError(
+                f'Cannot parse required constant {token}: {value} is out of '
+                'range [0, GPR_MAX].')
+        out[reg] = value
+
+    return out
