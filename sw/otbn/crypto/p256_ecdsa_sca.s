@@ -26,7 +26,6 @@ start:
 
 .text
 p256_ecdsa_sign:
-  jal      x1, p256_ecdsa_setup_rand
   jal      x1, p256_sign
   ecall
 
@@ -34,31 +33,7 @@ p256_ecdsa_verify:
   jal      x1, p256_verify
   ecall
 
-/**
- * Populate the variables rnd and k with randomness, and setup data pointers.
- */
-p256_ecdsa_setup_rand:
-  /* Obtain the blinding constant from URND, and write it to `rnd` in DMEM. */
-  /* bn.wsrr   w0, 0x2 */ /* URND */
-  la        x10, rnd
-  /* bn.sid    x0, 0(x10) */
-
-  /* Point dptr_rnd to rnd. */
-  la        x11, dptr_rnd
-  sw        x10, 0(x11)
-
-  /* Obtain the nonce (k) from RND. */
-  /*bn.wsrr   w0, 0x1 *//* RND */
-  la        x10, k
-  /*bn.sid    x0, 0(x10)*/
-
-  /* Point dptr_k to k. */
-  la        x11, dptr_k
-  sw        x10, 0(x11)
-
-  ret
-
-.data
+.bss
 
 /* Freely available DMEM space. */
 

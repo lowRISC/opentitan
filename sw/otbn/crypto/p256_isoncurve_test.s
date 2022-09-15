@@ -14,30 +14,14 @@
 
 p256_oncurve_test:
 
-  /* set dmem pointers to result */
-  la       x2, res_r
-  la       x3, dptr_r
-  sw       x2, 0(x3)
-  la       x2, res_l
-  la       x3, dptr_s
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to curve point */
-  la       x2, point_x
-  la       x3, dptr_x
-  sw       x2, 0(x3)
-  la       x2, point_y
-  la       x3, dptr_y
-  sw       x2, 0(x3)
-
   /* call curve point test routine in P-256 lib */
   jal      x1, p256_isoncurve
 
   /* load result to WDRs for comparison with reference */
   li        x2, 0
-  la        x3, res_r
+  la        x3, r
   bn.lid    x2++, 0(x3)
-  la        x3, res_l
+  la        x3, s
   bn.lid    x2, 0(x3)
 
   ecall
@@ -46,15 +30,21 @@ p256_oncurve_test:
 .data
 
 /* buffer for right side result of Weierstrass equation */
-res_r:
+.globl r
+.balign 32
+r:
   .zero 32
 
 /* buffer for left side result of Weierstrass equation */
-res_l:
+.globl s
+.balign 32
+s:
   .zero 32
 
 /* point affine x-coordinate */
-point_x:
+.globl x
+.balign 32
+x:
   .word 0xbfa8c334
   .word 0x9773b7b3
   .word 0xf36b0689
@@ -65,7 +55,9 @@ point_x:
   .word 0xb5511a6a
 
 /* point affine y-coordinate */
-point_y:
+.globl y
+.balign 32
+y:
   .word 0x9e008c2e
   .word 0xa8707058
   .word 0xab9c6924

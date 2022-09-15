@@ -20,15 +20,6 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, y);     // The public key y-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, d);     // The private key scalar d.
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x_r);   // Verification result.
 
-/* Declare symbols for DMEM pointers */
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_msg);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_r);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_s);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_x);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_y);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_d);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, dptr_x_r);
-
 static const otbn_app_t kOtbnAppEcdsa = OTBN_APP_T_INIT(p256_ecdsa);
 static const otbn_addr_t kOtbnVarEcdsaMode = OTBN_ADDR_T_INIT(p256_ecdsa, mode);
 static const otbn_addr_t kOtbnVarEcdsaMsg = OTBN_ADDR_T_INIT(p256_ecdsa, msg);
