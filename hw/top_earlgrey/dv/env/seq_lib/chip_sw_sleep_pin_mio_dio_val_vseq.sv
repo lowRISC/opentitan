@@ -101,6 +101,8 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     // Wait until Chip enters Low Power Mode
     wait (cfg.chip_vif.pwrmgr_low_power_if.low_power);
 
+    `uvm_info(`gfn, "Chip Entered Deep Powerdown mode.", UVM_LOW)
+
     // TODO: Sample the PADs and check with expected values
 
     // TODO: Fins out how to pass the test (maybe just $display()?)
