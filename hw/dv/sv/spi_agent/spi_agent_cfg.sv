@@ -61,6 +61,13 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   uint max_extra_dly_ns_btw_word    = 1000; // no timeout btw word
   uint extra_dly_chance_pc_btw_word = 5;    // percentage of extra delay btw each word
 
+  // min_idle_ns_after_csb_drop and its max_* sibling specify the range for
+  // which CSB will be held inactive at the end of a host sequence item.
+  // A value will be randomly chosen in the range. CSB is guaranteed to be inactive for
+  // at least min_idle_ns_after_csb_drop before the next transaction begins.
+  uint min_idle_ns_after_csb_drop = 1;
+  uint max_idle_ns_after_csb_drop = 1000;
+
   // interface handle used by driver, monitor & the sequencer
   virtual spi_if vif;
 
@@ -80,6 +87,8 @@ class spi_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int (en_extra_dly_btw_word,        UVM_DEFAULT)
     `uvm_field_int (max_extra_dly_ns_btw_word,    UVM_DEFAULT)
     `uvm_field_int (extra_dly_chance_pc_btw_word, UVM_DEFAULT)
+    `uvm_field_int (min_idle_ns_after_csb_drop,   UVM_DEFAULT)
+    `uvm_field_int (max_idle_ns_after_csb_drop,   UVM_DEFAULT)
 
     `uvm_field_sarray_int(sck_polarity,   UVM_DEFAULT)
     `uvm_field_sarray_int(sck_phase,      UVM_DEFAULT)

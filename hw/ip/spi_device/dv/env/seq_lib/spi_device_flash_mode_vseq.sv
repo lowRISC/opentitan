@@ -37,7 +37,6 @@ class spi_device_flash_mode_vseq extends spi_device_intercept_vseq;
       `uvm_info(`gfn, $sformatf("sending op 0x%0h addr: 0x%0x", opcode, read_start_addr),
                 UVM_MEDIUM)
       spi_host_xfer_flash_item(opcode, payload_size, read_start_addr);
-      cfg.clk_rst_vif.wait_clks(10);
     end
   endtask
 endclass : spi_device_flash_mode_vseq
