@@ -35,6 +35,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
   rand flash_mp_region_cfg_t rand_regions[MpRegions];
   rand flash_bank_mp_info_page_cfg_t rand_info[NumBanks][InfoTypes][$];
+  flash_mem_init_e otf_flash_init = FlashMemInitEccMode;
 
   constraint all_ent_c {
     solve all_entry_en before rand_regions, rand_info;
@@ -136,7 +137,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
                   UVM_MEDIUM)
       end
     end
-    flash_init = FlashMemInitEccMode;
+    flash_init = otf_flash_init;
+
 
     init_p2r_map();
     `uvm_info("cfg_summary",

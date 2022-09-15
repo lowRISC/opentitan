@@ -365,7 +365,7 @@ class flash_ctrl_scoreboard #(
             "std_fault_status": begin
               do_read_check = 1'b0;
             end
-            "err_code": begin
+            "err_code", "fault_status": begin
               do_read_check = 1'b0;
             end
             default: begin
