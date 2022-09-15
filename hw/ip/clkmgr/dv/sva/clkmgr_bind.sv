@@ -172,10 +172,6 @@ module clkmgr_bind;
   );
 
   // AON clock gating enables.
-  bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_infra (
-    .clk(clk_aon_i), .rst_n(rst_aon_ni), .cg_en(cg_en_o.aon_infra == prim_mubi_pkg::MuBi4True)
-  );
-
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_peri (
     .clk(clk_aon_i), .rst_n(rst_aon_ni), .cg_en(cg_en_o.aon_peri == prim_mubi_pkg::MuBi4True)
   );

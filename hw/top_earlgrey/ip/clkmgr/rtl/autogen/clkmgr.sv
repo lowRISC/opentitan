@@ -353,13 +353,6 @@
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.io_div2_powerup = MuBi4False;
-  prim_clock_buf u_clk_aon_infra_buf (
-    .clk_i(clk_aon_i),
-    .clk_o(clocks_o.clk_aon_infra)
-  );
-
-  // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.aon_infra = MuBi4False;
   prim_clock_buf u_clk_aon_secure_buf (
     .clk_i(clk_aon_i),
     .clk_o(clocks_o.clk_aon_secure)

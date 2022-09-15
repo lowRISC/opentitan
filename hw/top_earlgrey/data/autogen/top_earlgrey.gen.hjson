@@ -128,7 +128,6 @@
         clocks:
         {
           clk_io_div4_infra: io_div4
-          clk_aon_infra: aon
           clk_main_infra: main
           clk_usb_infra: usb
           clk_io_infra: io
@@ -2938,7 +2937,7 @@
         clk_i:
         {
           clock: io_div4
-          group: secure
+          group: powerup
         }
         clk_por_i: io_div4
         clk_aon_i: aon
@@ -2970,7 +2969,7 @@
       attr: templated
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
+        clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_por_i: clkmgr_aon_clocks.clk_io_div4_powerup
         clk_aon_i: clkmgr_aon_clocks.clk_aon_powerup
         clk_main_i: clkmgr_aon_clocks.clk_main_powerup
@@ -3464,7 +3463,7 @@
         clk_i: io_div4
         clk_aon_i: aon
       }
-      clock_group: infra
+      clock_group: secure
       reset_connections:
       {
         rst_ni:
@@ -3484,8 +3483,8 @@
       ]
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_infra
-        clk_aon_i: clkmgr_aon_clocks.clk_aon_infra
+        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
+        clk_aon_i: clkmgr_aon_clocks.clk_aon_secure
       }
       param_decl: {}
       param_list: []
@@ -3622,7 +3621,7 @@
         clk_i: io_div4
         clk_core_i: aon
       }
-      clock_group: powerup
+      clock_group: peri
       reset_connections:
       {
         rst_ni:
@@ -3642,8 +3641,8 @@
       ]
       clock_connections:
       {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_powerup
-        clk_core_i: clkmgr_aon_clocks.clk_aon_powerup
+        clk_i: clkmgr_aon_clocks.clk_io_div4_peri
+        clk_core_i: clkmgr_aon_clocks.clk_aon_peri
       }
       param_decl: {}
       param_list: []
@@ -13916,8 +13915,8 @@
       type: alert
       async: "1"
       module_name: rstmgr_aon
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 6
+      lpg_name: powerup_lc_io_div4_0
+      lpg_idx: 11
     }
     {
       name: rstmgr_aon_fatal_cnsty_fault
@@ -13925,8 +13924,8 @@
       type: alert
       async: "1"
       module_name: rstmgr_aon
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 6
+      lpg_name: powerup_lc_io_div4_0
+      lpg_idx: 11
     }
     {
       name: clkmgr_aon_recov_fault
@@ -13935,7 +13934,7 @@
       async: "1"
       module_name: clkmgr_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 12
     }
     {
       name: clkmgr_aon_fatal_fault
@@ -13944,7 +13943,7 @@
       async: "1"
       module_name: clkmgr_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 12
     }
     {
       name: sysrst_ctrl_aon_fatal_fault
@@ -13952,8 +13951,8 @@
       type: alert
       async: "1"
       module_name: sysrst_ctrl_aon
-      lpg_name: infra_sys_io_div4_Aon
-      lpg_idx: 12
+      lpg_name: secure_sys_io_div4_Aon
+      lpg_idx: 13
     }
     {
       name: adc_ctrl_aon_fatal_fault
@@ -13962,7 +13961,7 @@
       async: "1"
       module_name: adc_ctrl_aon
       lpg_name: peri_sys_io_div4_Aon
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: pwm_aon_fatal_fault
@@ -13970,7 +13969,7 @@
       type: alert
       async: "1"
       module_name: pwm_aon
-      lpg_name: powerup_sys_io_div4_Aon
+      lpg_name: peri_sys_io_div4_Aon
       lpg_idx: 14
     }
     {
@@ -13980,7 +13979,7 @@
       async: "1"
       module_name: pinmux_aon
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 12
     }
     {
       name: aon_timer_aon_fatal_fault
@@ -13998,7 +13997,7 @@
       async: "1"
       module_name: sensor_ctrl
       lpg_name: secure_sys_io_div4_Aon
-      lpg_idx: 17
+      lpg_idx: 13
     }
     {
       name: sensor_ctrl_fatal_alert
@@ -14007,7 +14006,7 @@
       async: "1"
       module_name: sensor_ctrl
       lpg_name: secure_sys_io_div4_Aon
-      lpg_idx: 17
+      lpg_idx: 13
     }
     {
       name: sram_ctrl_ret_aon_fatal_error
@@ -14016,7 +14015,7 @@
       async: "1"
       module_name: sram_ctrl_ret_aon
       lpg_name: infra_sys_io_div4_Aon
-      lpg_idx: 12
+      lpg_idx: 17
     }
     {
       name: flash_ctrl_recov_err
@@ -14553,6 +14552,31 @@
       }
     }
     {
+      name: powerup_lc_io_div4_0
+      clock_group:
+      {
+        name: powerup
+        src: top
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_io_div4_powerup: io_div4
+          clk_aon_powerup: aon
+          clk_main_powerup: main
+          clk_io_powerup: io
+          clk_usb_powerup: usb
+          clk_io_div2_powerup: io_div2
+        }
+      }
+      clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
+      reset_connection:
+      {
+        name: lc_io_div4
+        domain: "0"
+      }
+    }
+    {
       name: powerup_lc_io_div4_Aon
       clock_group:
       {
@@ -14578,24 +14602,21 @@
       }
     }
     {
-      name: infra_sys_io_div4_Aon
+      name: secure_sys_io_div4_Aon
       clock_group:
       {
-        name: infra
+        name: secure
         src: top
         sw_cg: no
         unique: no
         clocks:
         {
-          clk_io_div4_infra: io_div4
-          clk_aon_infra: aon
-          clk_main_infra: main
-          clk_usb_infra: usb
-          clk_io_infra: io
-          clk_io_div2_infra: io_div2
+          clk_io_div4_secure: io_div4
+          clk_main_secure: main
+          clk_aon_secure: aon
         }
       }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
+      clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
       reset_connection:
       {
         name: sys_io_div4
@@ -14620,31 +14641,6 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
-      reset_connection:
-      {
-        name: sys_io_div4
-        domain: Aon
-      }
-    }
-    {
-      name: powerup_sys_io_div4_Aon
-      clock_group:
-      {
-        name: powerup
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_powerup: io_div4
-          clk_aon_powerup: aon
-          clk_main_powerup: main
-          clk_io_powerup: io
-          clk_usb_powerup: usb
-          clk_io_div2_powerup: io_div2
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
       reset_connection:
       {
         name: sys_io_div4
@@ -14683,7 +14679,6 @@
         clocks:
         {
           clk_io_div4_infra: io_div4
-          clk_aon_infra: aon
           clk_main_infra: main
           clk_usb_infra: usb
           clk_io_infra: io
@@ -14698,21 +14693,23 @@
       }
     }
     {
-      name: secure_sys_io_div4_Aon
+      name: infra_sys_io_div4_Aon
       clock_group:
       {
-        name: secure
+        name: infra
         src: top
         sw_cg: no
         unique: no
         clocks:
         {
-          clk_io_div4_secure: io_div4
-          clk_main_secure: main
-          clk_aon_secure: aon
+          clk_io_div4_infra: io_div4
+          clk_main_infra: main
+          clk_usb_infra: usb
+          clk_io_infra: io
+          clk_io_div2_infra: io_div2
         }
       }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
+      clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
       reset_connection:
       {
         name: sys_io_div4
@@ -14730,7 +14727,6 @@
         clocks:
         {
           clk_io_div4_infra: io_div4
-          clk_aon_infra: aon
           clk_main_infra: main
           clk_usb_infra: usb
           clk_io_infra: io
@@ -14755,7 +14751,6 @@
         clocks:
         {
           clk_io_div4_infra: io_div4
-          clk_aon_infra: aon
           clk_main_infra: main
           clk_usb_infra: usb
           clk_io_infra: io
