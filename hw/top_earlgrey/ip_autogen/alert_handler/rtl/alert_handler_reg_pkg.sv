@@ -8,7 +8,7 @@ package alert_handler_reg_pkg;
 
   // Param list
   parameter int NAlerts = 65;
-  parameter int NLpg = 22;
+  parameter int NLpg = 25;
   parameter int NLpgWidth = 5;
   parameter logic [NAlerts-1:0][NLpgWidth-1:0] LpgMap = {
   5'd18,
@@ -27,11 +27,11 @@ package alert_handler_reg_pkg;
   5'd20,
   5'd20,
   5'd20,
-  5'd21,
-  5'd21,
-  5'd21,
-  5'd21,
-  5'd21,
+  5'd24,
+  5'd24,
+  5'd23,
+  5'd23,
+  5'd22,
   5'd21,
   5'd21,
   5'd20,
