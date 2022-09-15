@@ -61,3 +61,10 @@ otbn_binary(
         "randomness.s",
     ],
 )
+
+otbn_binary(
+    name = "calc_montgomery_consts",
+    srcs = [
+        "calc_montgomery_consts.s",
+    ],
+)
