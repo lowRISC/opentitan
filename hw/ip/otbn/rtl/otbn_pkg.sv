@@ -122,6 +122,7 @@ package otbn_pkg;
 
   typedef struct packed {
     logic spr_urnd_acks;
+    logic spr_rnd_acks;
     logic spr_secwipe_reqs;
     logic mubi_rma_err;
     logic mubi_urnd_err;

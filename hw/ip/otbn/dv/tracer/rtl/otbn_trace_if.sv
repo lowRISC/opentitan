@@ -421,7 +421,10 @@ interface otbn_trace_if
   assign predec_err_i.rd_err = rd_predec_error;
 
   assign start_stop_bad_int_i.state_err = u_otbn_start_stop_control.state_error_d;
-  assign start_stop_bad_int_i.spr_urnd_acks = u_otbn_start_stop_control.spurious_urnd_ack_error;
+  assign start_stop_bad_int_i.spr_urnd_acks = u_otbn_rnd.edn_urnd_ack_i &&
+    (!u_otbn_rnd.edn_urnd_req_o);
+  assign start_stop_bad_int_i.spr_rnd_acks = u_otbn_rnd.edn_rnd_ack_i &&
+    (!u_otbn_rnd.edn_rnd_req_o);
   assign start_stop_bad_int_i.spr_secwipe_reqs = u_otbn_start_stop_control.secure_wipe_error_q;
 
   assign start_stop_bad_int_i.mubi_rma_err = u_otbn_start_stop_control.mubi_err_d &&

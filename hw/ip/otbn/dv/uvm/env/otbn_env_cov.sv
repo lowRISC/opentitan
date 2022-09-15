@@ -644,6 +644,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     `DEF_SEEN_CP(rd_predec_err, predec_err.rd_err)
 
     `DEF_SEEN_CP(spr_urnd_acks_cp, start_stop_bad_int.spr_urnd_acks)
+    `DEF_SEEN_CP(spr_rnd_acks_cp, start_stop_bad_int.spr_rnd_acks)
     `DEF_SEEN_CP(spr_secwipe_reqs_cp, start_stop_bad_int.spr_secwipe_reqs)
     `DEF_SEEN_CP(mubi_rma_err_cp, start_stop_bad_int.mubi_rma_err)
     `DEF_SEEN_CP(mubi_urnd_err_cp, start_stop_bad_int.mubi_urnd_err)
