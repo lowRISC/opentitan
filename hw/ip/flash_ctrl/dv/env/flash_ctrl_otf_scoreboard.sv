@@ -29,6 +29,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
   int eg_exp_cnt = 0;
   bit comp_off = 0;
+  bit derr_expected = 0;
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -264,7 +265,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
         end else if (cfg.ierr_addr_tbl[err_addr].exists(exp.cmd.partition)) begin
           `uvm_info("process_read",
                     $sformatf("expected icv error 0x%x", err_addr), UVM_MEDIUM)
-        end else begin
+        end else if (derr_expected == 0) begin
           `uvm_error("process_read",
                      $sformatf("unexpected double bit error 0x%x", err_addr))
         end
