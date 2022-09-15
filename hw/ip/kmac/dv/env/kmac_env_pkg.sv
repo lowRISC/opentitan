@@ -125,6 +125,7 @@ package kmac_env_pkg;
 
   typedef enum int {
     KmacPrescaler = 0,
+    entropy_period_reserved = 10,
     KmacWaitTimer = 16
   } kmac_entropy_period_e;
 

@@ -228,8 +228,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             // This takes 4 clock cycles total, on the last cycle the entropy is marked as valid
             // to the keccak logic and any pending keccak rounds can begin.
             cfg.clk_rst_vif.wait_clks(4);
-            in_edn_fetch = 0;
-            `uvm_info(`gfn, "dropped in_edn_fetch", UVM_HIGH)
+            set_entropy_fetch(0);
           end
           ,
           wait(cfg.under_reset);
@@ -740,10 +739,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             predict_err(.is_kmac_err(1));
           end
 
-          if (entropy_mode == EntropyModeEdn &&
-              item.a_data[KmacEntropyReady] &&
-              first_op_after_rst) begin
-            in_edn_fetch = cfg.enable_masking;
+          if (item.a_data[KmacEntropyReady] && first_op_after_rst) begin
+            set_entropy_fetch(1);
           end
         end
       end
@@ -756,7 +753,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
           // Handle hash_cnt clear conditions
           if (item.a_data[KmacHashCntClrIdx]) `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
-          if (item.a_data[KmacEntropyReqIdx]) `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
+          if (item.a_data[KmacEntropyReqIdx]) begin
+            `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
+            set_entropy_fetch(1);
+          end
 
           if (app_fsm_active) begin
             // As per designer comment in https://github.com/lowRISC/opentitan/issues/7716,
@@ -809,7 +809,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
                   // If masking on and it is a KMAC transaction with secret keys, increment the
                   // entropy count.
-                  if (cfg.enable_masking && kmac_en) incr_and_predict_hash_cnt();
+                  if (kmac_en) incr_and_predict_hash_cnt();
 
                   if (kmac_en && function_name_6B != kmac_pkg::EncodedStringKMAC) begin
                     kmac_err.valid  = 1;
@@ -978,6 +978,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           bit [HASH_CNT_WIDTH-1:0] threshold = item.a_data;
           if (threshold > 0 && threshold <= `gmv(ral.entropy_refresh_hash_cnt)) begin
             `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
+            set_entropy_fetch(1);
           end
         end
       end
@@ -1214,7 +1215,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     req_manual_squeeze      = 0;
     msg_digest_done         = 0;
 
-    in_edn_fetch    = 0;
+    set_entropy_fetch(0);
 
     kmac_err = '{valid: 1'b0,
                  code: kmac_pkg::ErrNone,
@@ -1633,10 +1634,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   // Increment the hash_cnt under the following conditions:
-  // 1). Hash_cnt is less than the threshold (except threshold == 0)
-  // 2). Hash_cnt is not overflowed
+  // 1). Masking mode is On
+  // 2). Hash_cnt is less than the threshold (except threshold == 0)
+  // 3). Hash_cnt is not overflowed
   function void incr_and_predict_hash_cnt();
     bit [HASH_CNT_WIDTH-1:0] curr_hash_cnt_val = `gmv(ral.entropy_refresh_hash_cnt);
+    if (cfg.enable_masking == 0) return;
+
     // Check overflow
     if (curr_hash_cnt_val != '1) begin
       bit [HASH_CNT_WIDTH-1:0] new_hash_cnt_val = curr_hash_cnt_val + 1;
@@ -1648,6 +1652,15 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       end else begin
         `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(new_hash_cnt_val));
       end
+    end
+  endfunction
+
+  function void set_entropy_fetch(bit val);
+    if (val) begin
+      if (entropy_mode == EntropyModeEdn) in_edn_fetch = cfg.enable_masking;
+    end else begin
+      in_edn_fetch = 0;
+      `uvm_info(`gfn, "dropped in_edn_fetch", UVM_HIGH)
     end
   endfunction
 
