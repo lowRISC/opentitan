@@ -66,7 +66,6 @@ otbn_error_t otbn_load_app(otbn_t *ctx, const otbn_app_t app) {
 
   OTBN_RETURN_IF_ERROR(otbn_imem_write(0, app.imem_start, imem_num_words));
 
-  otbn_zero_dmem();
   if (data_num_words > 0) {
     OTBN_RETURN_IF_ERROR(
         otbn_dmem_write(0, app.dmem_data_start, data_num_words));
