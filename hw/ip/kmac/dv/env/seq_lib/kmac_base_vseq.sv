@@ -303,8 +303,11 @@ class kmac_base_vseq extends cip_base_vseq #(
         cfg.enable_masking) begin
       csr_wr(.ptr(ral.entropy_period), .value(1'b1 << KmacWaitTimer));
     end else begin
+      bit [entropy_period_reserved-1:0] prescaler_val = $urandom;
       // TODO: write random large values that can avoid timeout.
-      csr_wr(.ptr(ral.entropy_period), .value(0));
+      // Set `wait_timer` to 0 to disable the EDN timeout check.
+      csr_wr(.ptr(ral.entropy_period.wait_timer), .value(0));
+      csr_wr(.ptr(ral.entropy_period.prescaler), .value(prescaler_val));
     end
 
     csr_wr(.ptr(ral.entropy_refresh_threshold_shadowed), .value(hash_threshold));

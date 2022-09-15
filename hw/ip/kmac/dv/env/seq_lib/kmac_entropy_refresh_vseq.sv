@@ -13,20 +13,7 @@ class kmac_entropy_refresh_vseq extends kmac_app_with_partial_data_vseq;
 
   constraint entropy_refresh_c {
     hash_cnt_clr dist {0 :/ 19, 1 :/ 1};
+    entropy_req  dist {0 :/ 19, 1 :/ 1};
   }
 
-  virtual task body();
-    fork
-      begin
-        super.body();
-      end
-      begin
-        repeat (10) begin
-          int wait_cycs = $urandom_range(20_000, 100_000);
-          cfg.clk_rst_vif.wait_clks(wait_cycs);
-          csr_wr(.ptr(ral.cmd.entropy_req), .value(1));
-        end
-      end
-    join
-  endtask
 endclass
