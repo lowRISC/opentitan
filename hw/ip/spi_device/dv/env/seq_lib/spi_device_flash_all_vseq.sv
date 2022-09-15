@@ -57,7 +57,6 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
         `uvm_info(`gfn, $sformatf("Testing op_num %0d/20, op = 0x%0h", j, opcode), UVM_MEDIUM)
 
         spi_host_xfer_flash_item(opcode, payload_size, read_start_addr);
-        cfg.clk_rst_vif.wait_clks(10);
       end
     end
   endtask : main_seq

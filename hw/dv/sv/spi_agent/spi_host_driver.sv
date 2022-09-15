@@ -22,7 +22,7 @@ class spi_host_driver extends spi_driver;
       @(negedge cfg.vif.rst_n);
       under_reset = 1'b1;
       cfg.vif.sck <= cfg.sck_polarity[0];
-      cfg.vif.sio <= 'hz;
+      cfg.vif.sio <= 'x;
       cfg.vif.csb <= '1;
       sck_pulses = 0;
       @(posedge cfg.vif.rst_n);
@@ -81,6 +81,13 @@ class spi_host_driver extends spi_driver;
         SpiTransCsbNoSck: drive_csb_no_sck_item();
         SpiFlashTrans:    drive_flash_item();
       endcase
+
+      if (cfg.csb_consecutive == 0) begin
+        cfg.vif.csb[active_csb] <= 1'b1;
+        cfg.vif.sio <= 'x;
+      end
+
+      #($urandom_range(cfg.max_idle_ns_after_csb_drop, cfg.min_idle_ns_after_csb_drop) * 1ns);
       `uvm_info(`gfn, "spi_host_driver: item sent", UVM_HIGH)
       seq_item_port.item_done(rsp);
     end
@@ -131,10 +138,6 @@ class spi_host_driver extends spi_driver;
     issue_data(req.data);
 
     wait(sck_pulses == 0);
-    if (cfg.csb_consecutive == 0) begin
-      cfg.vif.csb[active_csb] <= 1'b1;
-      cfg.vif.sio[0] <= 1'bx;
-    end
   endtask
 
   task drive_flash_item();
@@ -181,8 +184,6 @@ class spi_host_driver extends spi_driver;
     end
 
     wait(sck_pulses == 0);
-    cfg.vif.csb[active_csb] <= 1'b1;
-    cfg.vif.sio <= 'dx;
   endtask
 
   task drive_sck_no_csb_item();
@@ -191,13 +192,11 @@ class spi_host_driver extends spi_driver;
       cfg.vif.sck <= ~cfg.vif.sck;
     end
     cfg.vif.sck <= cfg.sck_polarity[0];
-    #1ps; // make sure sck and csb (for next item) not change at the same time
   endtask
 
   task drive_csb_no_sck_item();
     cfg.vif.csb[active_csb] <= 1'b0;
     #(req.dummy_sck_length_ns * 1ns);
-    cfg.vif.csb[active_csb] <= 1'b1;
   endtask
 
   function uint get_rand_extra_delay_ns_btw_sck();

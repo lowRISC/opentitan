@@ -28,7 +28,6 @@ class spi_device_pass_cmd_filtering_vseq extends spi_device_pass_base_vseq;
         cfg_cmd_filter(cmd_filter, opcode);
         // Prepare data for transfer
         spi_host_xfer_flash_item(opcode, payload_size, read_start_addr);
-        cfg.clk_rst_vif.wait_clks(10);
       end
     end
 
