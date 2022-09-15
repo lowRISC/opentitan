@@ -2035,6 +2035,9 @@ module spi_device
   // Assume the tpm_en is set when TPM transaction is idle.
   `ASSUME(TpmEnableWhenTpmCsbIdle_M, $rose(cfg_tpm_en) |-> cio_tpm_csb_i)
 
+  // When CSBs are inactive, spi_device shouldn't drive the CIO
+  `ASSERT(CioSdoEnOffWhenInactive, cio_csb_i && cio_tpm_csb_i -> cio_sd_en_o === 0)
+
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule
