@@ -17,38 +17,12 @@
 
 ecdsa_verify_test:
 
-  /* set dmem pointer to point to message */
-  la       x2, msg
-  la       x3, dptr_msg
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to signature */
-  la       x2, sig_r
-  la       x3, dptr_r
-  sw       x2, 0(x3)
-  la       x2, sig_s
-  la       x3, dptr_s
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to public key */
-  la       x2, pub_x
-  la       x3, dptr_x
-  sw       x2, 0(x3)
-  la       x2, pub_y
-  la       x3, dptr_y
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to signature verifcation result */
-  la       x2, sig_x_r
-  la       x3, dptr_x_r
-  sw       x2, 0(x3)
-
   /* call ECDSA signature verification subroutine in P-256 lib */
   jal      x1, p256_verify
 
   /* load signature to wregs for comparison with reference */
   li        x2, 0
-  la        x3, sig_x_r
+  la        x3, x_r
   bn.lid    x2, 0(x3)
 
   ecall
@@ -56,6 +30,8 @@ ecdsa_verify_test:
 
 .data
 
+.globl msg
+.balign 32
 msg:
   .word 0x4456fd21
   .word 0x400bdd7d
@@ -67,7 +43,9 @@ msg:
   .word 0x06d71207
 
 /* signature R */
-sig_r:
+.globl r
+.balign 32
+r:
   .word 0x80a9674a
   .word 0x1147ea56
   .word 0x0c7d87dd
@@ -78,7 +56,9 @@ sig_r:
   .word 0x815215ad
 
 /* signature S */
-sig_s:
+.globl s
+.balign 32
+s:
   .word 0xc93fd605
   .word 0xd0b1051e
   .word 0xe90a6d17
@@ -89,7 +69,9 @@ sig_s:
   .word 0xa3991e01
 
 /* public key x-coordinate */
-pub_x:
+.globl x
+.balign 32
+x:
   .word 0xbfa8c334
   .word 0x9773b7b3
   .word 0xf36b0689
@@ -100,7 +82,9 @@ pub_x:
   .word 0xb5511a6a
 
 /* public key y-coordinate */
-pub_y:
+.globl y
+.balign 32
+y:
   .word 0x9e008c2e
   .word 0xa8707058
   .word 0xab9c6924
@@ -111,7 +95,9 @@ pub_y:
   .word 0x42a1c697
 
 /* signature verification result x_r */
-sig_x_r:
+.globl x_r
+.balign 32
+x_r:
   .zero 32
 
 /* Expected values wide register file (w0=x_r == R):

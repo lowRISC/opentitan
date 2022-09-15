@@ -19,43 +19,15 @@
 
 ecdsa_sign_test:
 
-  /* set dmem pointer to nonce k */
-  la       x2, nonce_k
-  la       x3, dptr_k
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to blinding parameter */
-  la       x2, blinding_param
-  la       x3, dptr_rnd
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to message */
-  la       x2, msg
-  la       x3, dptr_msg
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to private key d */
-  la       x2, priv_key_d
-  la       x3, dptr_d
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to signature */
-  la       x2, sig_r
-  la       x3, dptr_r
-  sw       x2, 0(x3)
-  la       x2, sig_s
-  la       x3, dptr_s
-  sw       x2, 0(x3)
-
   /* call ECDSA signing subroutine in P-256 lib */
   jal      x1, p256_sign
 
   /* load signature to wregs for comparison with reference */
   li        x2, 0
-  la        x3, sig_r
+  la        x3, r
   bn.lid    x2, 0(x3)
   li        x2, 1
-  la        x3, sig_s
+  la        x3, s
   bn.lid    x2, 0(x3)
 
   ecall
@@ -64,7 +36,9 @@ ecdsa_sign_test:
 .data
 
 /* nonce k */
-nonce_k:
+.globl k
+.balign 32
+k:
   .word 0xfe6d1071
   .word 0x21d0a016
   .word 0xb0b2c781
@@ -75,7 +49,9 @@ nonce_k:
   .word 0x1420fc41
 
 /* random number for blinding */
-blinding_param:
+.globl rnd
+.balign 32
+rnd:
   .word 0x7ab203c3
   .word 0xd6ee4951
   .word 0xd5b89b43
@@ -86,6 +62,8 @@ blinding_param:
   .word 0xa21c2147
 
 /* message digest */
+.globl msg
+.balign 32
 msg:
   .word 0x4456fd21
   .word 0x400bdd7d
@@ -97,7 +75,9 @@ msg:
   .word 0x06d71207
 
 /* private key d */
-priv_key_d:
+.globl d
+.balign 32
+d:
   .word 0xc7df1a56
   .word 0xfbd94efe
   .word 0xaa847f52
@@ -108,11 +88,15 @@ priv_key_d:
   .word 0xc0fbe256
 
 /* signature R */
-sig_r:
+.globl r
+.balign 32
+r:
   .zero 32
 
 /* signature S */
-sig_s:
+.globl s
+.balign 32
+s:
   .zero 32
 
 /* Expected values wide register file (w0=R, w1=S):

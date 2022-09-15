@@ -16,34 +16,14 @@
 
 p256_base_mult_test:
 
-  /* set dmem pointer to point to scalar (private key) d */
-  la       x2, scalar
-  la       x3, dptr_d
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to blinding parameter */
-  la       x2, blinding_param
-  la       x3, dptr_rnd
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to x-coordinate */
-  la       x2, p1_x
-  la       x3, dptr_x
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to y-coordinate */
-  la       x2, p1_y
-  la       x3, dptr_y
-  sw       x2, 0(x3)
-
   /* call base point multiplication routine in P-256 lib */
   jal      x1, p256_base_mult
 
   /* load result to WDRs for comparison with reference */
   li        x2, 0
-  la        x3, p1_x
+  la        x3, x
   bn.lid    x2++, 0(x3)
-  la        x3, p1_y
+  la        x3, y
   bn.lid    x2, 0(x3)
 
   ecall
@@ -52,7 +32,9 @@ p256_base_mult_test:
 .data
 
 /* scalar d */
-scalar:
+.globl d
+.balign 32
+d:
   .word 0xc7df1a56
   .word 0xfbd94efe
   .word 0xaa847f52
@@ -62,8 +44,10 @@ scalar:
   .word 0x9144233d
   .word 0xc0fbe256
 
-   /* blinding parameter rnd */
- blinding_param:
+/* blinding parameter rnd */
+.globl rnd
+.balign 32
+rnd:
   .word 0x7ab203c3
   .word 0xd6ee4951
   .word 0xd5b89b43
@@ -74,11 +58,15 @@ scalar:
   .word 0xa21c2147
 
 /* result buffer x-coordinate */
-p1_x:
+.globl x
+.balign 32
+x:
   .zero 32
 
 /* result buffer y-coordinate */
-p1_y:
+.globl y
+.balign 32
+y:
   .zero 32
 
 /* Expected values in wide register file (x- and y-coordinates of result):

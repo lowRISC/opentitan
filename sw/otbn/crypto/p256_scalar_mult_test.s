@@ -17,34 +17,14 @@
 
 scalar_mult_test:
 
-  /* set dmem pointer to point to x-coordinate */
-  la       x2, p1_x
-  la       x3, dptr_x
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to y-coordinate */
-  la       x2, p1_y
-  la       x3, dptr_y
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to scalar k */
-  la       x2, scalar
-  la       x3, dptr_k
-  sw       x2, 0(x3)
-
-  /* set dmem pointer to point to blinding parameter */
-  la       x2, blinding_param
-  la       x3, dptr_rnd
-  sw       x2, 0(x3)
-
   /* call scalar point multiplication routine in P-256 lib */
   jal      x1, p256_scalar_mult
 
   /* copy result to wide reg file */
   li       x2, 0
-  la       x3, p1_x
+  la       x3, x
   bn.lid   x2++, 0(x3)
-  la       x3, p1_y
+  la       x3, y
   bn.lid   x2, 0(x3)
 
   ecall
@@ -53,7 +33,9 @@ scalar_mult_test:
 .data
 
 /* scalar k */
-scalar:
+.globl d
+.balign 32
+d:
   .word 0xfe6d1071
   .word 0x21d0a016
   .word 0xb0b2c781
@@ -64,7 +46,9 @@ scalar:
   .word 0x1420fc41
 
 /* random number for blinding */
-blinding_param:
+.globl rnd
+.balign 32
+rnd:
   .word 0x7ab203c3
   .word 0xd6ee4951
   .word 0xd5b89b43
@@ -75,7 +59,9 @@ blinding_param:
   .word 0xa21c2147
 
 /* example curve point x-coordinate */
-p1_x:
+.globl x
+.balign 32
+x:
   .word 0xbfa8c334
   .word 0x9773b7b3
   .word 0xf36b0689
@@ -86,7 +72,9 @@ p1_x:
   .word 0xb5511a6a
 
 /* example curve point y-coordinate */
-p1_y:
+.globl y
+.balign 32
+y:
   .word 0x9e008c2e
   .word 0xa8707058
   .word 0xab9c6924

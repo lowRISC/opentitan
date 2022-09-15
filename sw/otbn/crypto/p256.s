@@ -204,14 +204,10 @@ mod_mul_256x256:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  dmem[12]: dptr_r, pointer to dmem location where right
- *                               side result r will be stored
- * @param[in]  dmem[16]: dptr_s, pointer to dmem location where left side
- *                               result s will be stored
- * @param[in]  dmem[20]: dptr_x, pointer to dmem location containing affine
- *                               x-coordinate of input point
- * @param[in]  dmem[24]: dptr_y, pointer to dmem location containing affine
- *                               y-coordinate of input point
+ * @param[in]  dmem[x]: affine x-coordinate of input point
+ * @param[in]  dmem[y]: affine y-coordinate of input point
+ * @param[out] dmem[r]: right side result r
+ * @param[out] dmem[s]: left side result s
  *
  * clobbered registers: x2, x3, x19, x20, w0, w19 to w25
  * clobbered flag groups: FG0
@@ -220,14 +216,6 @@ p256_isoncurve:
 
   /* setup all-zero reg */
   bn.xor    w31, w31, w31
-
-  /* load dmem pointer to signature r in dmem: x19 <= dptr_r = dmem[12] */
-  la        x19, dptr_r
-  lw        x19, 0(x19)
-
-  /* load dmem pointer to signature s in dmem: x20 <= dptr_s = dmem[16] */
-  la        x20, dptr_s
-  lw        x20, 0(x20)
 
   /* setup modulus p and Barrett constant u
      MOD <= w29 <= dmem[p256_p] = p; w28 <= dmem[p256_u_p] = u_p */
@@ -246,9 +234,8 @@ p256_isoncurve:
   bn.lid    x2, 0(x3)
 
   /* load affine y-coordinate of curve point from dmem
-     w26 <= dmem[dptr_y] = dmem[24] */
-  la        x3, dptr_y
-  lw        x3, 0(x3)
+     w26 <= dmem[y] */
+  la        x3, y
   li        x2, 24
   bn.lid    x2, 0(x3)
 
@@ -256,14 +243,14 @@ p256_isoncurve:
   bn.mov    w25, w24
   jal       x1, mod_mul_256x256
 
-  /* store left side result: dmem[dptr_s] <= w0 = y^2  mod p */
+  /* store left side result: dmem[s] <= w19 = y^2  mod p */
+  la        x20, s
   li        x2, 19
   bn.sid    x2, 0(x20)
 
   /* load affine x-coordinate of curve point from dmem
-     w26 <= dmem[dptr_x] = dmem[20] */
-  la        x3, dptr_x
-  lw        x3, 0(x3)
+     w26 <= dmem[x] */
+  la        x3, x
   li        x2, 26
   bn.lid    x2, 0(x3)
 
@@ -287,7 +274,8 @@ p256_isoncurve:
   /* w24 <= x^3 + ax + b mod p = w19 + w27 mod p */
   bn.addm   w19, w19, w27
 
-  /* store right side result: dmem[dptr_s] <= w19 = x^3 + ax + b mod p */
+  /* store right side result: dmem[r] <= w19 = x^3 + ax + b mod p */
+  la        x19, r
   li        x2, 19
   bn.sid    x2, 0(x19)
 
@@ -1112,15 +1100,12 @@ scalar_mult_int:
  * k^(-1) mod n, and our Barrett multiplication implementation accepts any
  * operands a and b such that a * b < 2^256 * p and fully reduces the result.
  *
- * @param[in]  dmem[0]: dptr_k, pointer to a 256 bit random secret in dmem
- * @param[in]  dmem[4]: dptr_rnd, pointer to location in dmem containing random
- *                                number for blinding
- * @param[in]  dmem[8]: dptr_msg, pointer to the message to be signed in dmem
- * @param[in]  dmem[12]: dptr_r, pointer to dmem location where s component
- *                               of signature will be placed
- * @param[in]  dmem[16]: dptr_s, pointer to dmem location where r component
- *                               of signature will be placed
- * @param[in]  dmem[28]: dptr_d, pointer to private key d in dmem
+ * @param[in]  dmem[k]:   random secret scalar (256 bits)
+ * @param[in]  dmem[rnd]: random number for blinding (256 bits)
+ * @param[in]  dmem[msg]: message to be signed (256 bits)
+ * @param[in]  dmem[r]:   dmem buffer for r component of signature (256 bits)
+ * @param[in]  dmem[s]:   dmem buffer for s component of signature (256 bits)
+ * @param[in]  dmem[d]:   private key d
  *
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
@@ -1133,36 +1118,13 @@ p256_sign:
   /* init all-zero register */
   bn.xor    w31, w31, w31
 
-  /* load dmem pointer to secret random scalar k: x16 <= dptr_k = dmem[0] */
-  la        x16, dptr_k
-  lw        x16, 0(x16)
-
-  /* load dmem pointer to random number for blinding rnd in dmem:
-     x17 <= dptr_rnd = dmem[4] */
-  la        x17, dptr_rnd
-  lw        x17, 0(x17)
-
-  /* load dmem pointer to message msg in dmem: x18 <= dptr_msg = dmem[8] */
-  la        x18, dptr_msg
-  lw        x18, 0(x18)
-
-  /* load dmem pointer to signature r in dmem: x19 <= dptr_r = dmem[12] */
-  la        x19, dptr_r
-  lw        x19, 0(x19)
-
-  /* load dmem pointer to signature s in dmem: x20 <= dptr_s = dmem[16] */
-  la        x20, dptr_s
-  lw        x20, 0(x20)
-
-  /* load dmem pointer to private key d in dmem: x23 <= d = dmem[28] */
-  la        x23, dptr_d
-  lw        x23, 0(x23)
-
-  /* load secret random scalar k from dmem: w0 = dmem[dptr_k] */
+  /* load secret random scalar k from dmem: w0 = dmem[k] */
+  la        x16, k
   li        x2, 0
   bn.lid    x2, 0(x16)
 
-  /* load random number for blinding from dmem: w1 = dmem[dptr_rnd] */
+  /* load random number for blinding from dmem: w1 = dmem[rnd] */
+  la        x17, rnd
   li        x2, 1
   bn.lid    x2, 0(x17)
 
@@ -1182,7 +1144,8 @@ p256_sign:
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
 
-  /* re-load secret random number k from dmem: w0 <= k = dmem[dptr_k] */
+  /* re-load secret random number k from dmem: w0 <= k = dmem[k] */
+  la        x16, k
   li        x2, 0
   bn.lid    x2, 0(x16)
 
@@ -1190,7 +1153,8 @@ p256_sign:
      w1 <= k^-1 mod n */
   jal       x1, mod_inv
 
-  /* w19 = k^-1*d mod n; w24 = d = dmem[dptr_d] */
+  /* w19 = k^-1*d mod n; w24 = d = dmem[d] */
+  la        x23, d
   li        x2, 24
   bn.lid    x2, 0(x23)
   bn.mov    w25, w1
@@ -1199,7 +1163,8 @@ p256_sign:
   /* w24 = r <= w11  mod n */
   bn.addm   w24, w11, w31
 
-  /* store r of signature in dmem: dmem[dptr_r] <= r = w24 */
+  /* store r of signature in dmem: dmem[r] <= r = w24 */
+  la        x19, r
   li        x2, 24
   bn.sid    x2, 0(x19)
 
@@ -1208,7 +1173,8 @@ p256_sign:
   jal       x1, mod_mul_256x256
   bn.mov    w0, w19
 
-  /* load message from dmem: w24 = msg <= dmem[dptr_msg] = dmem[x18] */
+  /* load message from dmem: w24 = msg <= dmem[msg] */
+  la        x18, msg
   li        x2, 24
   bn.lid    x2, 0(x18)
 
@@ -1219,7 +1185,8 @@ p256_sign:
   /* w0 = s <= w19 + w0 = k^-1*msg + r*k^-1*d  mod n */
   bn.addm   w0, w19, w0
 
-  /* store s of signature in dmem: dmem[dptr_s] <= s = w0 */
+  /* store s of signature in dmem: dmem[s] <= s = w0 */
+  la        x20, s
   li        x2, 0
   bn.sid    x2, 0(x20)
 
@@ -1238,12 +1205,10 @@ p256_sign:
  * P-256.
  * This routine runs in constant time.
  *
- * @param[in]  dmem[4]: dptr_rnd, pointer to location in dmem containing random
- *                      number for blinding
- * @param[in]  dmem[20]: dptr_x, pointer to affine x-coordinate in dmem
- * @param[in]  dmem[22]: dptr_y, pointer to affine y-coordinate in dmem
- * @param[in]  dmem[28]: dptr_d, pointer to location in dmem containing
- *                               scalar d
+ * @param[in]     dmem[rnd]: random number for blinding (256 bits)
+ * @param[in]     dmem[d]:   scalar d (256 bits)
+ * @param[in,out] dmem[x]:   affine x-coordinate (256 bits)
+ * @param[in,out] dmem[y]:   affine y-coordinate (256 bits)
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -1255,44 +1220,29 @@ p256_base_mult:
   /* init all-zero register */
   bn.xor    w31, w31, w31
 
-  /* load scalar d: w0 <= d = dmem[dptr_d] */
-  la        x16, dptr_d
-  lw        x16, 0(x16)
-
-  /* load dmem pointer to random number for blinding rnd in dmem:
-     x17 <= dptr_rnd = dmem[4] */
-  la        x17, dptr_rnd
-  lw        x17, 0(x17)
-
-  /* set dmem pointers to base point coordinates */
-  la        x21, p256_gx
-  la        x22, p256_gy
-
-  /* load private key d from dmem: w0 = dmem[dptr_d] */
+  /* load scalar d from dmem: w0 = dmem[d] */
+  la        x16, d
   li        x2, 0
   bn.lid    x2, 0(x16)
 
-  /* load random number for blinding from dmem: w1 = dmem[dptr_rnd] */
+  /* load random number for blinding from dmem: w1 = dmem[rnd] */
+  la        x17, rnd
   li        x2, 1
   bn.lid    x2, 0(x17)
 
   /* call internal scalar multiplication routine
      R = (x_a, y_a) = (w11, w12) <= k*P = w0*P */
+  la        x21, p256_gx
+  la        x22, p256_gy
   jal       x1, scalar_mult_int
 
-  /* set dmem pointer to point x-coordinate */
-  la        x21, dptr_x
-  lw        x21, 0(x21)
-
-  /* set dmem pointer to point y-coordinate */
-  la        x22, dptr_y
-  lw        x22, 0(x22)
-
   /* store result (affine coordinates) in dmem
-     dmem[x21] = dmem[dptr_x] <= x_a = w11
-     dmem[x22] = dmem[dptr_y] <= y_a = w12 */
+     dmem[x] <= x_a = w11
+     dmem[y] <= y_a = w12 */
   li        x2, 11
+  la        x21, x
   bn.sid    x2++, 0(x21)
+  la        x22, y
   bn.sid    x2, 0(x22)
 
   ret
@@ -1450,13 +1400,12 @@ mod_inv_var:
  * host side. The signature is valid if x1 == r.
  * This routine runs in variable time.
  *
- * @param[in]  dmem[8]: dptr_msg, pointer to the message to be verified in dmem
- * @param[in]  dmem[12]: dptr_r, pointer to s of signature in dmem
- * @param[in]  dmem[16]: dptr_s, pointer to r of signature in dmem
- * @param[in]  dmem[20]: dptr_x, pointer to x-coordinate of public key in dmem
- * @param[in]  dmem[20]: dptr_y, pointer to y-coordinate of public key in dmem
- * @param[in]  dmem[32]: dptr_x_r, pointer to dmem location where the reduced
- *                           affine x_r-coordinate will be stored (aka x_1)
+ * @param[in]  dmem[msg]: message to be verified (256 bits)
+ * @param[in]  dmem[r]:   r component of signature (256 bits)
+ * @param[in]  dmem[s]:   s component of signature (256 bits)
+ * @param[in]  dmem[x]:   affine x-coordinate of public key (256 bits)
+ * @param[in]  dmem[y]:   affine y-coordinate of public key (256 bits)
+ * @param[out] dmem[x_r]: dmem buffer for reduced affine x_r-coordinate (x_1)
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
@@ -1474,36 +1423,8 @@ p256_verify:
   la        x3, p256_b
   bn.lid    x2, 0(x3)
 
-  /* load dmem pointer to x_r (result) from dmem: x17 <= dptr_x_r = dmem[32] */
-  la        x17, dptr_x_r
-  lw        x17, 0(x17)
-
-  /* load dmem pointer to message msg in dmem: x18 <= dptr_msg = dmem[8] */
-  la        x18, dptr_msg
-  lw        x18, 0(x18)
-
-  /* load dmem pointer to signature r in dmem: x19 <= dptr_r = dmem[12] */
-  la        x19, dptr_r
-  lw        x19, 0(x19)
-
-  /* load dmem pointer to signature s in dmem: x20 <= dptr_s = dmem[16] */
-  la        x20, dptr_s
-  lw        x20, 0(x20)
-
-  /* load dmem pointer to affine x-coordinate of public key from dmem:
-     x21 <= dptr_x = dmem[20] */
-  la        x21, dptr_x
-  lw        x21, 0(x21)
-
-  /* load dmem pointer to affine y-coordinate of public key from dmem:
-     x22 <= dptr_y = dmem[24] */
-  la        x22, dptr_y
-  lw        x22, 0(x22)
-
-  la        x23, p256_gx
-  la        x24, p256_gy
-
-  /* load r of signature from dmem: w24 = r = dmem[dptr_r] */
+  /* load r of signature from dmem: w24 = r = dmem[r] */
+  la        x19, r
   li        x2, 11
   bn.lid    x2, 0(x19)
 
@@ -1517,7 +1438,8 @@ p256_verify:
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
 
-  /* load s of signature from dmem: w0 = s = dmem[dptr_s] */
+  /* load s of signature from dmem: w0 = s = dmem[s] */
+  la        x20, s
   bn.lid    x0, 0(x20)
 
   /* goto 'fail' if w0 == w31 <=> s == 0 */
@@ -1535,7 +1457,8 @@ p256_verify:
   /* w1 = s^-1  mod n */
   jal       x1, mod_inv_var
 
-  /* load r of signature from dmem: w24 = r = dmem[dptr_r] */
+  /* load r of signature from dmem: w24 = r = dmem[r] */
+  la        x19, r
   li        x2,  24
   bn.lid    x2, 0(x19)
 
@@ -1558,7 +1481,8 @@ p256_verify:
   jal       x1, mod_mul_256x256
   bn.mov    w0, w19
 
-  /* load message, w24 = msg = dmem[dptr_msg] */
+  /* load message, w24 = msg = dmem[msg] */
+  la        x18, msg
   li        x2, 24
   bn.lid    x2, 0(x18)
 
@@ -1577,17 +1501,21 @@ p256_verify:
   bn.lid    x2, 0(x3)
 
   /* load public key Q from dmem and use in projective form (set z to 1)
-     Q = (w11, w12, w13) = (dmem[dptr_x], dmem[dptr_y], 1) */
+     Q = (w11, w12, w13) = (dmem[x], dmem[y], 1) */
   li        x2, 11
+  la        x21, x
   bn.lid    x2++, 0(x21)
+  la        x22, y
   bn.lid    x2, 0(x22)
   bn.addi   w13, w31, 1
 
   /* load base point G and use in projective form (set z to 1)
      G = (w8, w9, w10) = (x_g, y_g, 1) */
   li        x13, 8
-  li        x14, 9
+  la        x23, p256_gx
   bn.lid    x13, 0(x23)
+  li        x14, 9
+  la        x24, p256_gy
   bn.lid    x14, 0(x24)
   bn.addi   w10, w31, 1
 
@@ -1685,7 +1613,8 @@ p256_verify:
   bn.subm   w24, w19, w31
 
   fail:
-  /* store affine x-coordinate in dmem: dmem[dptr_x_r] = w24 = x_r */
+  /* store affine x-coordinate in dmem: dmem[x_r] = w24 = x_r */
+  la        x17, x_r
   li        x2, 24
   bn.sid    x2, 0(x17)
 
@@ -1702,11 +1631,10 @@ p256_verify:
  * Sets up context and calls internal scalar multiplication routine.
  * This routine runs in constant time.
  *
- * @param[in]  dmem[0]: dK, pointer to location in dmem containing scalar k
- * @param[in]  dmem[4]: dRnd, pointer to location in dmem containing random
- *                        number for blinding
- * @param[in]  dmem[20]: dptr_x, pointer to affine x-coordinate in dmem
- * @param[in]  dmem[22]: dptr_y, pointer to affine y-coordinate in dmem
+ * @param[in]      dmem[k]:   scalar k (256 bits)
+ * @param[in]      dmem[rnd]: random number for blinding (256 bits)
+ * @param[in,out]  dmem[x]:   affine x-coordinate in dmem
+ * @param[in,out]  dmem[y]:   affine y-coordinate in dmem
  *
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
@@ -1719,38 +1647,25 @@ p256_scalar_mult:
   /* init all-zero register */
   bn.xor    w31, w31, w31
 
-  /* load dmem pointer to scalar k: x16 <= dptr_k = dmem[0] */
-  la        x16, dptr_k
-  lw        x16, 0(x16)
-
-  /* load dmem pointer to random number for blinding rnd in dmem:
-     x17 <= dptr_rnd = dmem[4] */
-  la        x17, dptr_rnd
-  lw        x17, 0(x17)
-
-  /* set dmem pointer to point x-coordinate */
-  la        x21, dptr_x
-  lw        x21, 0(x21)
-
-  /* set dmem pointer to point y-coordinate */
-  la        x22, dptr_y
-  lw        x22, 0(x22)
-
-  /* load private key d from dmem: w0 = dmem[dptr_d] */
+  /* load private key d from dmem: w0 = dmem[d] */
+  la        x16, d
   li        x2, 0
   bn.lid    x2, 0(x16)
 
-  /* load random number for blinding from dmem: w1 = dmem[dptr_rnd] */
+  /* load random number for blinding from dmem: w1 = dmem[rnd] */
+  la        x17, rnd
   li        x2, 1
   bn.lid    x2, 0(x17)
 
   /* call internal scalar multiplication routine
      R = (x_a, y_a) = (w11, w12) <= k*P = w0*P */
+  la        x21, x
+  la        x22, y
   jal       x1, scalar_mult_int
 
   /* store result (affine coordinates) in dmem
-     dmem[x21] = dmem[dptr_x] <= x_a = w11
-     dmem[x22] = dmem[dptr_y] <= y_a = w12 */
+     dmem[x] <= x_a = w11
+     dmem[y] <= y_a = w12 */
   li        x2, 11
   bn.sid    x2++, 0(x21)
   bn.sid    x2, 0(x22)
@@ -1758,60 +1673,6 @@ p256_scalar_mult:
   ret
 
 .section .data
-
-/* pointer to k (dptr_k) */
-.globl dptr_k
-.balign 4
-dptr_k:
-  .zero 4
-
-/* pointer to rnd (dptr_rnd) */
-.globl dptr_rnd
-.balign 4
-dptr_rnd:
-  .zero 4
-
-/* pointer to msg (dptr_msg) */
-.globl dptr_msg
-.balign 4
-dptr_msg:
-  .zero 4
-
-/* pointer to R (dptr_r) */
-.globl dptr_r
-.balign 4
-dptr_r:
-  .zero 4
-
-/* pointer to S (dptr_s) */
-.globl dptr_s
-.balign 4
-dptr_s:
-  .zero 4
-
-/* pointer to X (dptr_x) */
-.globl dptr_x
-.balign 4
-dptr_x:
-  .zero 4
-
-/* pointer to Y (dptr_y) */
-.globl dptr_y
-.balign 4
-dptr_y:
-  .zero 4
-
-/* pointer to D (dptr_d) */
-.globl dptr_d
-.balign 4
-dptr_d:
-  .zero 4
-
-/* pointer to verification result x_r aka x_1 (dptr_x_r) */
-.globl dptr_x_r
-.balign 4
-dptr_x_r:
-  .zero 4
 
 /* P-256 domain parameter b */
 .globl p256_b
@@ -1903,3 +1764,59 @@ p256_gy:
   .word 0x8ee7eb4a
   .word 0xfe1a7f9b
   .word 0x4fe342e2
+
+.section .bss
+
+/* random scalar k */
+.balign 32
+.weak k
+k:
+  .zero 32
+
+/* randomness for blinding */
+.balign 32
+.weak rnd
+rnd:
+  .zero 32
+
+/* message digest */
+.balign 32
+.weak msg
+msg:
+  .zero 32
+
+/* signature R */
+.balign 32
+.weak r
+r:
+  .zero 32
+
+/* signature S */
+.balign 32
+.weak s
+s:
+  .zero 32
+
+/* public key x-coordinate */
+.balign 32
+.weak x
+x:
+  .zero 32
+
+/* public key y-coordinate */
+.balign 32
+.weak y
+y:
+  .zero 32
+
+/* private key d */
+.balign 32
+.weak d
+d:
+  .zero 32
+
+/* verification result x_r (aka x_1) */
+.balign 32
+.weak x_r
+x_r:
+  .zero 32

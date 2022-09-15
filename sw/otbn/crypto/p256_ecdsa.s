@@ -43,24 +43,14 @@ p256_ecdsa_setup_rand:
   la        x10, rnd
   bn.sid    x0, 0(x10)
 
-  /* Point dptr_rnd to rnd. */
-  la        x11, dptr_rnd
-  sw        x10, 0(x11)
-
   /* Obtain the nonce (k) from RND. */
   bn.wsrr   w0, 0x1 /* RND */
   la        x10, k
   bn.sid    x0, 0(x10)
 
-  /* Point dptr_k to k. */
-  la        x11, dptr_k
-  sw        x10, 0(x11)
-
   ret
 
-.data
-
-/* Freely available DMEM space. */
+.bss
 
 /* Operation mode (1 = sign; 2 = verify) */
 .globl mode
@@ -68,56 +58,58 @@ p256_ecdsa_setup_rand:
 mode:
   .zero 4
 
-/* All constants below must be 256b-aligned. */
-
-/* random scalar k */
-.balign 32
-k:
-  .zero 32
-
-/* randomness for blinding */
-.balign 32
-rnd:
-  .zero 32
-
-/* message digest */
+/* Message digest. */
 .globl msg
 .balign 32
 msg:
   .zero 32
 
-/* signature R */
+/* Signature R. */
 .globl r
 .balign 32
 r:
   .zero 32
 
-/* signature S */
+/* Signature S. */
 .globl s
 .balign 32
 s:
   .zero 32
 
-/* public key x-coordinate */
+/* Public key x-coordinate. */
 .globl x
 .balign 32
 x:
   .zero 32
 
-/* public key y-coordinate */
+/* Public key y-coordinate. */
 .globl y
 .balign 32
 y:
   .zero 32
 
-/* private key d */
+/* Private key (d). */
 .globl d
 .balign 32
 d:
   .zero 32
 
-/* verification result x_r (aka x_1) */
+/* Verification result x_r (aka x_1). */
 .globl x_r
 .balign 32
 x_r:
+  .zero 32
+
+.section .scratchpad
+
+/* Secret scalar k. */
+.globl k
+.balign 32
+k:
+  .zero 32
+
+/* Random number for blinding. */
+.globl rnd
+.balign 32
+rnd:
   .zero 32
