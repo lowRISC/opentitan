@@ -94,8 +94,8 @@ class chip_env extends cip_base_env #(
     // instantiate pwm_monitor
     foreach (m_pwm_monitor[i]) begin
       m_pwm_monitor[i] = pwm_monitor::type_id::create($sformatf("m_pwm_monitor%0d", i), this);
-      uvm_config_db#(pwm_monitor_cfg)::set(this, $sformatf("m_pwm_monitor%0d*", i), $sformatf(
-                                           "m_pwm_monitor%0d_cfg", i), cfg.m_pwm_monitor_cfg[i]);
+      uvm_config_db#(pwm_monitor_cfg)::set(this, $sformatf("m_pwm_monitor%0d*", i), "cfg",
+                                           cfg.m_pwm_monitor_cfg[i]);
     end
 
     // disable alert_esc_agent's driver and only use its monitor
@@ -131,7 +131,7 @@ class chip_env extends cip_base_env #(
           virtual_sequencer.uart_tx_fifos[i].analysis_export);
     end
     foreach (m_pwm_monitor[i]) begin
-      m_pwm_monitor[i].item_port.connect(virtual_sequencer.pwm_rx_fifo[i].analysis_export);
+      m_pwm_monitor[i].analysis_port.connect(virtual_sequencer.pwm_rx_fifo[i].analysis_export);
     end
   endfunction
 

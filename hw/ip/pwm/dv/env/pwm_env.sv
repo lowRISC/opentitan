@@ -18,11 +18,9 @@ class pwm_env extends cip_base_env #(
 
     // instantiate pwm_monitor
     foreach(m_pwm_monitor[i]) begin
-      m_pwm_monitor[i] = pwm_monitor::type_id::create(.name($sformatf("m_pwm_monitor_%0d", i)),
-                                      .parent(this));
-      uvm_config_db#(pwm_monitor_cfg)::set(this, "*",
-          $sformatf("m_pwm_monitor_%0d_cfg", i), cfg.m_pwm_monitor_cfg[i]);
-      cfg.m_pwm_monitor_cfg[i].monitor_id = i;
+      m_pwm_monitor[i] = pwm_monitor::type_id::create($sformatf("m_pwm_monitor%0d", i), this);
+      uvm_config_db#(pwm_monitor_cfg)::set(this, $sformatf("m_pwm_monitor%0d", i), "cfg",
+                                           cfg.m_pwm_monitor_cfg[i]);
       cfg.m_pwm_monitor_cfg[i].ok_to_end_delay_ns = 2000;
     end
 
@@ -41,7 +39,7 @@ class pwm_env extends cip_base_env #(
     super.connect_phase(phase);
     if (cfg.en_scb) begin
       for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
-        m_pwm_monitor[i].item_port.connect(scoreboard.item_fifo[i].analysis_export);
+        m_pwm_monitor[i].analysis_port.connect(scoreboard.item_fifo[i].analysis_export);
       end
     end
   endfunction : connect_phase

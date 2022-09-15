@@ -26,7 +26,6 @@ class pwm_item extends uvm_sequence_item;
 
     function string convert2string();
       string txt ="";
-
       txt = "\n------| PWM ITEM |------";
       txt = { txt, $sformatf("\n Item from monitor %d", monitor_id) };
       txt = { txt, $sformatf("\n Period %d clocks", period) };
