@@ -23,6 +23,7 @@
       sw_images: ["//sw/device/tests:uart_smoketest_signed:1:signed"]
       en_run_modes: ["sw_test_mode_rom"]
       run_opts: ["+sw_test_timeout_ns=20000000"]
+      run_timeout_mins: 180
     }
 
     // ROM func tests to be run with test ROM.

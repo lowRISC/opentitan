@@ -22,6 +22,11 @@ class chip_sw_uart_smoke_vseq extends chip_sw_base_vseq;
   virtual task body();
     super.body();
     configure_and_connect_uart(uart_idx);
+    if ("signed" inside {cfg.sw_image_flags[SwTypeTest]}) begin
+      // The ROM enables weak pull down on IOC3,4, which contends with the weak pull up we set in
+      // chip_if. TODO: Revisit the whole default pull down strategy.
+      cfg.chip_vif.no_x_check[IoC4:IoC3] = '1;
+    end
   endtask
 
   // Configures the UART agent and connects uart_if to the chip IOs for the given instance.
