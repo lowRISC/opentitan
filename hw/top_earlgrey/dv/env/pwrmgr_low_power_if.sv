@@ -15,6 +15,9 @@ interface pwrmgr_low_power_if (
 );
   logic       low_power;
 
+  // Deep Power down indicator (while `low_power` is high)
+  logic deep_powerdown;
+
   // slow clock
   clocking cb @(posedge clk);
   endclocking
