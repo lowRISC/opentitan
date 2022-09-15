@@ -5,42 +5,24 @@
 
 # This script currently assumes it is used for chip_earlgrey_cw310.
 
-set -e
+set -ex
 
 . util/build_consts.sh
 
 TOPLEVEL=top_earlgrey
-TARGET=cw310
+TOPLEVEL_BIN_DIR="${BIN_DIR}/hw/${TOPLEVEL}"
 
-TOPLEVEL_BIN_DIR="$BIN_DIR/hw/$TOPLEVEL"
+BITSTREAM=HEAD ci/bazelisk.sh build --define bitstream=gcp_splice \
+  //hw/bitstream:test_rom \
+  //hw/bitstream:rom \
+  //hw/bitstream:rom_otp_dev \
+  //hw/bitstream:rom_mmi \
+  //hw/bitstream:otp_mmi
+
 mkdir -p ${TOPLEVEL_BIN_DIR}
-
-BOOTROM_SUFFIX=.scr.39.vmem
-BOOTROM_VMEM_FNAME="test_rom_fpga_$TARGET$BOOTROM_SUFFIX"
-BOOTROM_VMEM="$BIN_DIR/sw/device/lib/testing/test_rom/$BOOTROM_VMEM_FNAME"
-test -f "$BOOTROM_VMEM" || {
-  echo >&2 "No such file: $BOOTROM_VMEM"
-  exit 1
-}
-
-OTP_VMEM_FNAME="otp_img_fpga_$TARGET.vmem"
-OTP_VMEM="$BIN_DIR/sw/device/otp_img/$OTP_VMEM_FNAME"
-test -f "$OTP_VMEM" || {
-  echo >&2 "No such file: $OTP_VMEM"
-  exit 1
-}
-
-bitstream_file=$(ci/scripts/target-location.sh @bitstreams//:bitstream_test_rom)
-otp_mmi_file=$(ci/scripts/target-location.sh @bitstreams//:otp_mmi)
-rom_mmi_file=$(ci/scripts/target-location.sh @bitstreams//:rom_mmi)
-
-# Copy over the cached bitstream and MMI files to BIN_DIR for splicing.
-cp "${bitstream_file}" "${TOPLEVEL_BIN_DIR}/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"
-cp "${otp_mmi_file}" "${rom_mmi_file}" "${TOPLEVEL_BIN_DIR}/"
-
-# Splice in the test ROM. Note that OTP splicing is not handled for now.
-util/fpga/splice_rom.sh -t cw310 -T earlgrey -b DV
-
-# Remove extraneous copies.
-rm "${TOPLEVEL_BIN_DIR}/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
-rm "${TOPLEVEL_BIN_DIR}/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
+cp -rLvt "${TOPLEVEL_BIN_DIR}" \
+  "$(ci/scripts/target-location.sh //hw/bitstream:test_rom)" \
+  "$(ci/scripts/target-location.sh //hw/bitstream:rom)" \
+  "$(ci/scripts/target-location.sh //hw/bitstream:rom_otp_dev)"\
+  "$(ci/scripts/target-location.sh //hw/bitstream:rom_mmi)" \
+  "$(ci/scripts/target-location.sh //hw/bitstream:otp_mmi)"
