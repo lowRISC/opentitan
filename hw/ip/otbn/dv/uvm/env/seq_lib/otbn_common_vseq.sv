@@ -43,6 +43,8 @@ class otbn_common_vseq extends otbn_base_vseq;
     // If we see a write which causes an integrity error AND we've disabled the scoreboard (which
     // has its own predictor), we update the predicted value of the STATUS register to be LOCKED.
     if (completed && saw_err && !cfg.en_scb && tl_intg_err_type != TlIntgErrNone) begin
+      `DV_WAIT(!(cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
+                                                     otbn_pkg::StatusBusySecWipeInt}));
       `DV_CHECK_FATAL(ral.status.status.predict(otbn_pkg::StatusLocked, .kind(UVM_PREDICT_READ)),
                       "Failed to update STATUS register")
     end
@@ -125,6 +127,8 @@ class otbn_common_vseq extends otbn_base_vseq;
       end
     end
     csr_utils_pkg::csr_rd_check(.ptr(fatal_cause), .compare_value(1));
+    `DV_WAIT(!(cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
+                                                      otbn_pkg::StatusBusySecWipeInt}));
     csr_utils_pkg::csr_rd_check(.ptr(ral.status), .compare_value('hFF));
   endtask : check_sec_cm_fi_resp
 
