@@ -13,7 +13,8 @@ set -euo pipefail
 : "${BAZEL_AIRGAPPED_DIR:=bazel-airgapped}"
 : "${BAZEL_DISTDIR:=bazel-distdir}"
 : "${BAZEL_CACHEDIR:=bazel-cache}"
-: "${BAZEL_BITSTREAMS_CACHEDIR:=bitstreams-cache}"
+: "${BAZEL_BITSTREAMS_CACHE:=bitstreams-cache}"
+: "${BAZEL_BITSTREAMS_CACHEDIR:=${BAZEL_BITSTREAMS_CACHE}/cache}"
 : "${BAZEL_PYTHON_WHEEL_REPO:=ot_python_wheels}"
 : "${BAZEL_BITSTREAMS_REPO:=bitstreams}"
 
@@ -156,8 +157,17 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @rust_windows_x86_64_toolchains//...
   cp -R "$(${BAZELISK} info output_base)"/external/${BAZEL_PYTHON_WHEEL_REPO} \
     ${BAZEL_AIRGAPPED_DIR}/
-  cp -R "$(dirname "$(readlink -f "$(${BAZELISK} info output_base)"/external/${BAZEL_BITSTREAMS_REPO}/cache)")" \
-    ${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}
+  # We don't need all bitstreams in the cache, we just need the latest one so
+  # that the cache is "initialized" and "offline" mode will work correctly.
+  mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}
+  readonly SYSTEM_BITSTREAM_CACHE="${HOME}/.cache/opentitan-bitstreams"
+  readonly SYSTEM_BITSTREAM_CACHEDIR="${SYSTEM_BITSTREAM_CACHE}/cache"
+  readonly LATEST_BISTREAM_HASH_FILE="${SYSTEM_BITSTREAM_CACHE}/latest.txt"
+  cp "${LATEST_BISTREAM_HASH_FILE}" \
+    "${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHE}/"
+  LATEST_BISTREAM_HASH=$(cat "${LATEST_BISTREAM_HASH_FILE}")
+  cp -r "${SYSTEM_BITSTREAM_CACHEDIR}/${LATEST_BISTREAM_HASH}" \
+    "${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}"
   echo "Done."
 fi
 
