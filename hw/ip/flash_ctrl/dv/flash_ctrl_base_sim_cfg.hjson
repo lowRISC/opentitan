@@ -354,14 +354,16 @@
     {
       name: flash_ctrl_rd_intg
       uvm_test_seq: flash_ctrl_rd_path_intg_vseq
-      run_opts: ["+scb_otf_en=1", "+otf_num_rw=5", "+otf_num_hr=50"]
-      reseed: 1
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=4",
+                 "+otf_num_hr=40", "+en_always_read=1"]
+      reseed: 3
     }
     {
       name: flash_ctrl_wr_intg
       uvm_test_seq: flash_ctrl_wr_path_intg_vseq
-      run_opts: ["+scb_otf_en=1", "+otf_num_rw=5", "+otf_num_hr=0", "+otf_rd_pct=0"]
-      reseed: 1
+      run_opts: ["+scb_otf_en=1", "+otf_num_rw=5", "+otf_num_hr=0",
+                 "+en_always_prog=1", "+otf_rd_pct=0"]
+      reseed: 3
     }
   ]
 
