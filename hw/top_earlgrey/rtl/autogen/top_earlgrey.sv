@@ -854,17 +854,17 @@ module top_earlgrey #(
   // powerup_por_io_div4_Aon
   assign lpg_cg_en[10] = clkmgr_aon_cg_en.io_div4_powerup;
   assign lpg_rst_en[10] = rstmgr_aon_rst_en.por_io_div4[rstmgr_pkg::DomainAonSel];
-  // powerup_lc_io_div4_Aon
+  // powerup_lc_io_div4_0
   assign lpg_cg_en[11] = clkmgr_aon_cg_en.io_div4_powerup;
-  assign lpg_rst_en[11] = rstmgr_aon_rst_en.lc_io_div4[rstmgr_pkg::DomainAonSel];
-  // infra_sys_io_div4_Aon
-  assign lpg_cg_en[12] = clkmgr_aon_cg_en.io_div4_infra;
-  assign lpg_rst_en[12] = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::DomainAonSel];
-  // peri_sys_io_div4_Aon
-  assign lpg_cg_en[13] = clkmgr_aon_cg_en.io_div4_peri;
+  assign lpg_rst_en[11] = rstmgr_aon_rst_en.lc_io_div4[rstmgr_pkg::Domain0Sel];
+  // powerup_lc_io_div4_Aon
+  assign lpg_cg_en[12] = clkmgr_aon_cg_en.io_div4_powerup;
+  assign lpg_rst_en[12] = rstmgr_aon_rst_en.lc_io_div4[rstmgr_pkg::DomainAonSel];
+  // secure_sys_io_div4_Aon
+  assign lpg_cg_en[13] = clkmgr_aon_cg_en.io_div4_secure;
   assign lpg_rst_en[13] = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::DomainAonSel];
-  // powerup_sys_io_div4_Aon
-  assign lpg_cg_en[14] = clkmgr_aon_cg_en.io_div4_powerup;
+  // peri_sys_io_div4_Aon
+  assign lpg_cg_en[14] = clkmgr_aon_cg_en.io_div4_peri;
   assign lpg_rst_en[14] = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::DomainAonSel];
   // timers_lc_io_div4_Aon
   assign lpg_cg_en[15] = clkmgr_aon_cg_en.io_div4_timers;
@@ -872,8 +872,8 @@ module top_earlgrey #(
   // infra_sys_io_div4_0
   assign lpg_cg_en[16] = clkmgr_aon_cg_en.io_div4_infra;
   assign lpg_rst_en[16] = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::Domain0Sel];
-  // secure_sys_io_div4_Aon
-  assign lpg_cg_en[17] = clkmgr_aon_cg_en.io_div4_secure;
+  // infra_sys_io_div4_Aon
+  assign lpg_cg_en[17] = clkmgr_aon_cg_en.io_div4_infra;
   assign lpg_rst_en[17] = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::DomainAonSel];
   // infra_sys_0
   assign lpg_cg_en[18] = clkmgr_aon_cg_en.main_infra;
@@ -909,19 +909,17 @@ module top_earlgrey #(
     prim_mubi_pkg::mubi4_t unused_cg_en_4;
     assign unused_cg_en_4 = clkmgr_aon_cg_en.io_div2_powerup;
     prim_mubi_pkg::mubi4_t unused_cg_en_5;
-    assign unused_cg_en_5 = clkmgr_aon_cg_en.aon_infra;
+    assign unused_cg_en_5 = clkmgr_aon_cg_en.aon_secure;
     prim_mubi_pkg::mubi4_t unused_cg_en_6;
-    assign unused_cg_en_6 = clkmgr_aon_cg_en.aon_secure;
+    assign unused_cg_en_6 = clkmgr_aon_cg_en.aon_peri;
     prim_mubi_pkg::mubi4_t unused_cg_en_7;
-    assign unused_cg_en_7 = clkmgr_aon_cg_en.aon_peri;
+    assign unused_cg_en_7 = clkmgr_aon_cg_en.aon_timers;
     prim_mubi_pkg::mubi4_t unused_cg_en_8;
-    assign unused_cg_en_8 = clkmgr_aon_cg_en.aon_timers;
+    assign unused_cg_en_8 = clkmgr_aon_cg_en.usb_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_9;
-    assign unused_cg_en_9 = clkmgr_aon_cg_en.usb_infra;
+    assign unused_cg_en_9 = clkmgr_aon_cg_en.io_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_10;
-    assign unused_cg_en_10 = clkmgr_aon_cg_en.io_infra;
-    prim_mubi_pkg::mubi4_t unused_cg_en_11;
-    assign unused_cg_en_11 = clkmgr_aon_cg_en.io_div2_infra;
+    assign unused_cg_en_10 = clkmgr_aon_cg_en.io_div2_infra;
     prim_mubi_pkg::mubi4_t unused_rst_en_0;
     assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_1;
@@ -1749,7 +1747,7 @@ module top_earlgrey #(
       .scan_rst_ni,
 
       // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
       .clk_por_i (clkmgr_aon_clocks.clk_io_div4_powerup),
       .clk_aon_i (clkmgr_aon_clocks.clk_aon_powerup),
       .clk_main_i (clkmgr_aon_clocks.clk_main_powerup),
@@ -1855,8 +1853,8 @@ module top_earlgrey #(
       .tl_o(sysrst_ctrl_aon_tl_rsp),
 
       // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_io_div4_infra),
-      .clk_aon_i (clkmgr_aon_clocks.clk_aon_infra),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
+      .clk_aon_i (clkmgr_aon_clocks.clk_aon_secure),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel])
   );
@@ -1899,8 +1897,8 @@ module top_earlgrey #(
       .tl_o(pwm_aon_tl_rsp),
 
       // Clock and reset connections
-      .clk_i (clkmgr_aon_clocks.clk_io_div4_powerup),
-      .clk_core_i (clkmgr_aon_clocks.clk_aon_powerup),
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_peri),
+      .clk_core_i (clkmgr_aon_clocks.clk_aon_peri),
       .rst_ni (rstmgr_aon_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
       .rst_core_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::DomainAonSel])
   );

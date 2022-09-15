@@ -384,7 +384,7 @@
       clock_srcs: {
         clk_i: {
           clock: "io_div4",
-          group: "secure"
+          group: "powerup"
         },
         clk_por_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
         clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"
@@ -447,7 +447,7 @@
     { name: "sysrst_ctrl_aon",
       type: "sysrst_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
-      clock_group: "infra",
+      clock_group: "secure",
       reset_connections: {rst_ni: "sys_io_div4", rst_aon_ni: "sys_aon"},
       domain: ["Aon"],
       base_addr: "0x40430000"
@@ -463,7 +463,7 @@
     { name: "pwm_aon",
       type: "pwm",
       clock_srcs: {clk_i: "io_div4", clk_core_i: "aon"},
-      clock_group: "powerup",
+      clock_group: "peri",
       reset_connections: {rst_ni: "sys_io_div4", rst_core_ni: "sys_aon"},
       domain: ["Aon"],
       base_addr: "0x40450000",
