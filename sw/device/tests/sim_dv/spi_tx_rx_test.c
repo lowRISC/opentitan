@@ -240,10 +240,10 @@ static bool execute_test(dif_spi_device_handle_t *spi_device) {
                                    &bytes_transferred));
   if (bytes_transferred != SPI_DEVICE_DATASET_SIZE) {
     LOG_ERROR(
-        "SPI_DEVICE TX_FIFO transferred bytes mismatched: {act: %0d, exp: %0d}",
+        "SPI_DEVICE TX_FIFO transferred bytes mismatched: {act: %d, exp: %d}",
         bytes_transferred, SPI_DEVICE_DATASET_SIZE);
   } else {
-    LOG_INFO("Transferred %0d bytes to SPI_DEVICE TX_FIFO.", bytes_transferred);
+    LOG_INFO("Transferred %d bytes to SPI_DEVICE TX_FIFO.", bytes_transferred);
   }
 
   CHECK_DIF_OK(dif_spi_device_set_irq_levels(
@@ -277,11 +277,11 @@ static bool execute_test(dif_spi_device_handle_t *spi_device) {
       CHECK_DIF_OK(dif_spi_device_recv(spi_device, spi_device_rx_data,
                                        SPI_DEVICE_DATASET_SIZE, &bytes_recved));
       if (bytes_recved == SPI_DEVICE_DATASET_SIZE) {
-        LOG_INFO("Received %0d bytes from SPI_DEVICE RX_FIFO.", bytes_recved);
+        LOG_INFO("Received %d bytes from SPI_DEVICE RX_FIFO.", bytes_recved);
         read_rx_fifo_done = true;
       } else {
         LOG_ERROR(
-            "SPI_DEVICE RX_FIFO recvd bytes mismatched: {act: %0d, exp: %0d}",
+            "SPI_DEVICE RX_FIFO recvd bytes mismatched: {act: %d, exp: %d}",
             bytes_recved, SPI_DEVICE_DATASET_SIZE);
       }
       LOG_INFO("SPI_DEVICE read out RX FIFO.");
@@ -293,8 +293,8 @@ static bool execute_test(dif_spi_device_handle_t *spi_device) {
       LOG_INFO("Checking the received SPI_HOST RX_FIFO data for consistency.");
       for (int i = 0; i < SPI_DEVICE_DATASET_SIZE; ++i) {
         CHECK(spi_device_rx_data[i] == exp_spi_device_rx_data[i],
-              "SPI_DEVICE RX_FIFO data[%0d] mismatched: {act: %x, exp: %x}", i,
-              spi_device_rx_data[i], exp_spi_device_rx_data[i]);
+              "SPI_DEVICE RX_FIFO data[%d] mismatched: {act: %08x, exp: %08x}",
+              i, spi_device_rx_data[i], exp_spi_device_rx_data[i]);
       }
     }
 

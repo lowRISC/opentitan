@@ -154,7 +154,7 @@ static void lock_otp_secret2_partition() {
  */
 
 bool test_main(void) {
-  LOG_INFO("Start LC walkthrough %0d test.", kDestState);
+  LOG_INFO("Start LC walkthrough %d test.", kDestState);
 
   mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
   CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
@@ -184,7 +184,7 @@ bool test_main(void) {
       wait_for_interrupt();
       // Print out LcRmaToken to avoid SW compile error saying kLcRmaToken is
       // unused in certain state trasition tests.
-      LOG_INFO("LC RMA token start with %0h", kLcRmaToken[0]);
+      LOG_INFO("LC RMA token start with %08x", kLcRmaToken[0]);
       // Unreachable
       return false;
     } else {

@@ -288,7 +288,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdAdcCtrlAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -303,7 +303,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdAesRecovCtrlUpdateErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -318,7 +318,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdAonTimerAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -333,7 +333,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdClkmgrAonRecovFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -348,7 +348,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdCsrngRecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -363,7 +363,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdEdn0RecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -378,7 +378,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdEdn1RecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -393,7 +393,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdEntropySrcRecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -408,7 +408,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdFlashCtrlRecovErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -423,7 +423,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdGpioFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -438,7 +438,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdHmacFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -453,7 +453,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdI2c0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -468,7 +468,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdI2c1FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -483,7 +483,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdI2c2FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -498,7 +498,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdKeymgrRecovOperationErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -513,7 +513,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdKmacRecovOperationErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -528,7 +528,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdLcCtrlFatalProgError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -543,7 +543,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdOtbnFatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -558,7 +558,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdOtpCtrlFatalMacroError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -573,7 +573,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdPattgenFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -588,7 +588,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdPinmuxAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -603,7 +603,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdPwmAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -618,7 +618,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdPwrmgrAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -633,7 +633,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdRomCtrlFatal + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -648,7 +648,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdRstmgrAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -663,7 +663,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdRvCoreIbexFatalSwErr + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -678,7 +678,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdRvPlicFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -693,7 +693,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdRvTimerFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -708,7 +708,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdSensorCtrlRecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -723,7 +723,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdSpiDeviceFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -738,7 +738,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdSpiHost0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -753,7 +753,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdSpiHost1FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -768,7 +768,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdSramCtrlMainFatalError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -783,7 +783,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdSramCtrlRetAonFatalError + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -798,7 +798,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdSysrstCtrlAonFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -813,7 +813,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdUart0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -828,7 +828,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdUart1FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -843,7 +843,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdUart2FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -858,7 +858,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdUart3FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
@@ -873,7 +873,7 @@ static void trigger_alert_test(void) {
     exp_alert = kTopEarlgreyAlertIdUsbdevFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(

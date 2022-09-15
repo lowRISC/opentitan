@@ -48,7 +48,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rom_ctrl_get_expected_digest(&rom_ctrl, &expected_digest));
   CHECK(expected_digest.digest[ROM_CTRL_DIGEST_MULTIREG_COUNT - 1] !=
             computed_digest.digest[ROM_CTRL_DIGEST_MULTIREG_COUNT - 1],
-        "Expected and computed digests match. Digests = %0x",
+        "Expected and computed digests match. Digests = %08x",
         expected_digest.digest[ROM_CTRL_DIGEST_MULTIREG_COUNT - 1]);
 
   // set test_status to wfi and call wait_for_interrupt to make

@@ -58,7 +58,7 @@ bool test_main(void) {
   dif_rstmgr_reset_info_bitfield_t rstmgr_reset_info;
   rstmgr_reset_info = rstmgr_testutils_reason_get();
 
-  LOG_INFO("Reset info = %0x", rstmgr_reset_info);
+  LOG_INFO("Reset info = %08x", rstmgr_reset_info);
 
   if (rstmgr_reset_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("POR reset");

@@ -106,7 +106,7 @@ static void trigger_alert_test(void) {
     exp_alert = ${p.top_alert_name} + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %0d!", exp_alert);
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
 
     // Clear alert cause register
     CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(

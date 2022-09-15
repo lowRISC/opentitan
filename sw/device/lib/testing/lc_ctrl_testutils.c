@@ -33,20 +33,20 @@ bool lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl) {
 
 void lc_ctrl_testutils_check_transition_count(const dif_lc_ctrl_t *lc_ctrl,
                                               uint8_t exp_lc_count) {
-  LOG_INFO("Read LC count and check with expect_val=%0d", exp_lc_count);
+  LOG_INFO("Read LC count and check with expect_val=%d", exp_lc_count);
   uint8_t lc_count;
   CHECK_DIF_OK(dif_lc_ctrl_get_attempts(lc_ctrl, &lc_count));
   CHECK(lc_count == exp_lc_count,
-        "LC_count error, expected %0d but actual count is %0d", exp_lc_count,
+        "LC_count error, expected %d but actual count is %d", exp_lc_count,
         lc_count);
 }
 
 void lc_ctrl_testutils_check_lc_state(const dif_lc_ctrl_t *lc_ctrl,
                                       dif_lc_ctrl_state_t exp_lc_state) {
-  LOG_INFO("Read LC state and check with expect_state=%0d", exp_lc_state);
+  LOG_INFO("Read LC state and check with expect_state=%d", exp_lc_state);
   dif_lc_ctrl_state_t lc_state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(lc_ctrl, &lc_state));
   CHECK(lc_state == exp_lc_state,
-        "LC_state error, expected %0d but actual state is %0d", exp_lc_state,
+        "LC_state error, expected %d but actual state is %d", exp_lc_state,
         lc_state);
 }

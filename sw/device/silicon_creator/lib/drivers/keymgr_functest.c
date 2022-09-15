@@ -257,7 +257,7 @@ bool test_main(void) {
     EXECUTE_TEST(result, keymgr_rom_ext_test);
     return result == kErrorOk;
   } else {
-    LOG_FATAL("Unexpected reset reason unexpected: %0x", info);
+    LOG_FATAL("Unexpected reset reason unexpected: %08x", info);
   }
 
   return false;

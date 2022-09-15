@@ -106,7 +106,7 @@ void keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     wait_for_interrupt();
 
   } else {
-    CHECK(info == kDifRstmgrResetInfoSw, "Unexpected reset reason: %0x", info);
+    CHECK(info == kDifRstmgrResetInfoSw, "Unexpected reset reason: %08x", info);
     LOG_INFO(
         "Powered up for the second time, actuate keymgr and perform test.");
 
