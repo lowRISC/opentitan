@@ -1,0 +1,26 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      # Updates are scheduled at the beginning of the work week.
+      interval: "weekly"
+      day: "Monday"
+      time: "02:00"
+      # US Pacific Time
+      timezone: "America/Los_Angeles"
+    commit-message:
+      prefix: "[dependabot]"
+      reviewers:
+        - "lowRISC/ot-python-reviewers"
+    # Ignore packages fetched from GitHub URLs.
+    ignore:
+      - dependency-name: "*fusesoc*"
+      - dependency-name: "*edalize*"
+      - dependency-name: "*chipwhisperer*"
+    reviewers:
+      - "timothytrippel"
