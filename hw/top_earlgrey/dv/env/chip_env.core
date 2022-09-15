@@ -69,6 +69,7 @@ filesets:
       - seq_lib/chip_sw_sysrst_ctrl_inputs_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sysrst_ctrl_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sysrst_ctrl_outputs_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_sysrst_ctrl_ec_rst_l_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_gpio_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_flash_ctrl_lc_rw_en_vseq.sv: {is_include_file: true}

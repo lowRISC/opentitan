@@ -1737,7 +1737,7 @@
               with a suitable pulse width.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_sysrst_ctrl_ec_rst_l"]
     }
     {
       name: chip_sw_sysrst_ctrl_flash_wp_l
@@ -1746,7 +1746,7 @@
             - Exactly the same as chip_sysrst_ctrl_ec_rst_l, but covers the flash_wp_l pin.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_sysrst_ctrl_ec_rst_l"]
     }
     {
       name: chip_sw_sysrst_ctrl_ulp_z3_wakeup
