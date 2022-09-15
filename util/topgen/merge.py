@@ -787,6 +787,10 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
     num_lpg = 0
     lpg_dict = {}
     top['alert_lpgs'] = []
+
+    # ensure the object is already generated before we attempt to use it
+    assert isinstance(top['clocks'], Clocks)
+    clock_groups = top['clocks'].make_clock_to_group()
     for module in top["module"]:
         # the alert senders are attached to the primary clock of this block,
         # so let's start by getting that primary clock port of an IP (we need
@@ -800,10 +804,13 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
         #   2) the primary reset name
         #   3) the domain of the primary reset
         #
-        # 1) need to figure out whether the primary clock has a
-        #    specific clock group assignment or not
-        clk = module['clock_srcs'][block_clock.clock]
-        clock_group, _ = _get_clock_group_name(clk, module['clock_group'])
+        # 1) figure out the clock group assignment of the primary clock
+        # Get the full clock name and split the hierarchy path, getting the last element
+        clk = module['clock_connections'][block_clock.clock]
+        clk = clk.split(".")[-1]
+
+        # Discover what clock group we are related to
+        clock_group = clock_groups[clk]
 
         # 2-3) get reset info
         reset_name = primary_reset['name']
@@ -811,7 +818,11 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
 
         # using this info, we can create an LPG identifier
         # and uniquify it via a dict.
-        lpg_name = '_'.join([clock_group, reset_name, reset_domain])
+        lpg_name = '_'.join([clock_group.name, reset_name, reset_domain])
+        unique_cg = clock_group.unique and clock_group.sw_cg != "no"
+
+        # if clock group is "unique", add some uniquification to the tag
+        lpg_name = f"{module['name']}_{lpg_name}" if unique_cg else lpg_name
         if lpg_name not in lpg_dict:
             lpg_dict.update({lpg_name: num_lpg})
             # since the alert handler can tolerate timing delays on LPG

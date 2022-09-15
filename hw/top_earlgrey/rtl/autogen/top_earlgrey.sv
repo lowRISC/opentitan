@@ -884,9 +884,18 @@ module top_earlgrey #(
   // secure_sys_0
   assign lpg_cg_en[20] = clkmgr_aon_cg_en.main_secure;
   assign lpg_rst_en[20] = rstmgr_aon_rst_en.sys[rstmgr_pkg::Domain0Sel];
-  // trans_sys_0
+  // aes_trans_sys_0
   assign lpg_cg_en[21] = clkmgr_aon_cg_en.main_aes;
   assign lpg_rst_en[21] = rstmgr_aon_rst_en.sys[rstmgr_pkg::Domain0Sel];
+  // hmac_trans_sys_0
+  assign lpg_cg_en[22] = clkmgr_aon_cg_en.main_hmac;
+  assign lpg_rst_en[22] = rstmgr_aon_rst_en.sys[rstmgr_pkg::Domain0Sel];
+  // kmac_trans_sys_0
+  assign lpg_cg_en[23] = clkmgr_aon_cg_en.main_kmac;
+  assign lpg_rst_en[23] = rstmgr_aon_rst_en.sys[rstmgr_pkg::Domain0Sel];
+  // otbn_trans_sys_0
+  assign lpg_cg_en[24] = clkmgr_aon_cg_en.main_otbn;
+  assign lpg_rst_en[24] = rstmgr_aon_rst_en.sys[rstmgr_pkg::Domain0Sel];
 
 // tie-off unused connections
     prim_mubi_pkg::mubi4_t unused_cg_en_0;
@@ -908,17 +917,11 @@ module top_earlgrey #(
     prim_mubi_pkg::mubi4_t unused_cg_en_8;
     assign unused_cg_en_8 = clkmgr_aon_cg_en.aon_timers;
     prim_mubi_pkg::mubi4_t unused_cg_en_9;
-    assign unused_cg_en_9 = clkmgr_aon_cg_en.main_hmac;
+    assign unused_cg_en_9 = clkmgr_aon_cg_en.usb_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_10;
-    assign unused_cg_en_10 = clkmgr_aon_cg_en.main_kmac;
+    assign unused_cg_en_10 = clkmgr_aon_cg_en.io_infra;
     prim_mubi_pkg::mubi4_t unused_cg_en_11;
-    assign unused_cg_en_11 = clkmgr_aon_cg_en.main_otbn;
-    prim_mubi_pkg::mubi4_t unused_cg_en_12;
-    assign unused_cg_en_12 = clkmgr_aon_cg_en.usb_infra;
-    prim_mubi_pkg::mubi4_t unused_cg_en_13;
-    assign unused_cg_en_13 = clkmgr_aon_cg_en.io_infra;
-    prim_mubi_pkg::mubi4_t unused_cg_en_14;
-    assign unused_cg_en_14 = clkmgr_aon_cg_en.io_div2_infra;
+    assign unused_cg_en_11 = clkmgr_aon_cg_en.io_div2_infra;
     prim_mubi_pkg::mubi4_t unused_rst_en_0;
     assign unused_rst_en_0 = rstmgr_aon_rst_en.por_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_1;
