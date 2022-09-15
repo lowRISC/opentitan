@@ -32,6 +32,9 @@ class chip_sw_spi_tx_rx_vseq extends chip_sw_base_vseq;
     bit [7:0] spi_device_tx_data[$];
     super.body();
 
+    // Connect the SPI host interface to chip IOs.
+    cfg.chip_vif.enable_spi_host = 1;
+
     // Wait SPI_DEVICE filled TX FIFO, otherwise SDO will be X
     cfg.clk_rst_vif.wait_clks(100);
     csr_spinwait(.ptr(ral.spi_device.status.txf_full), .exp_data('b1), .backdoor(1),
