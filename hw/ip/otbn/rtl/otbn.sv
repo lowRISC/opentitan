@@ -1266,6 +1266,24 @@ module otbn
           $fell(busy_secure_wipe) |-> (!u_otbn_core.u_otbn_alu_bignum.flags_flattened),
           clk_i, !rst_ni)
 
+  // Secure wipe of IMEM and DMEM first happens with a key change from URND (while valid is zero)
+  `ASSERT(ImemSecWipeRequiresUrndKey_A,
+          $rose(imem_sec_wipe) |=> (otbn_imem_scramble_key == $past(imem_sec_wipe_urnd_key)),
+          clk_i, !rst_ni)
+  `ASSERT(DmemSecWipeRequiresUrndKey_A,
+          $rose(dmem_sec_wipe) |=> (otbn_dmem_scramble_key == $past(dmem_sec_wipe_urnd_key)),
+          clk_i, !rst_ni)
+
+  // Then it is guaranteed to have a valid key from OTP interface which is different from URND key
+  `ASSERT(ImemSecWipeRequiresOtpKey_A,
+          $rose(imem_sec_wipe) ##1 (otbn_imem_scramble_key == $past(imem_sec_wipe_urnd_key)) |=>
+            ##[0:$] otbn_imem_scramble_valid && $changed(otbn_imem_scramble_key),
+          clk_i, !rst_ni)
+  `ASSERT(DmemSecWipeRequiresOtpKey_A,
+          $rose(dmem_sec_wipe) ##1 (otbn_dmem_scramble_key == $past(dmem_sec_wipe_urnd_key)) |=>
+            ##[0:$] otbn_dmem_scramble_valid && $changed(otbn_dmem_scramble_key),
+          clk_i, !rst_ni)
+
   // All outputs should be known value after reset
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
