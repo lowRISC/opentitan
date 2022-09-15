@@ -114,6 +114,7 @@ void print_chosen_values(void) {
 
 bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux) {
   bool result = false;
+  dif_pwrmgr_domain_config_t pwrmgr_domain_cfg;
 
   LOG_INFO("Selecting PADs retention modes...");
 
@@ -124,7 +125,12 @@ bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux) {
 
   // Configure pwrmgr to deep powerdown.
 
-  wait_for_interrupt();
+  CHECK_DIF_OK(dif_pwrmgr_set_domain_config(pwrmgr, pwrmgr_domain_cfg,
+                                            kDifToggleEnabled));
+  CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifToggleEnabled,
+                                                kDifToggleEnabled));
+
+  wait_for_interrupt();  // Entering deep power down.
 
   return result;
 }
