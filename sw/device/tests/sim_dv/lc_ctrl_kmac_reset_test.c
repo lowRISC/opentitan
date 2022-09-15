@@ -65,7 +65,7 @@ bool test_main(void) {
   // Get LC count.
   uint8_t lc_count;
   CHECK_DIF_OK(dif_lc_ctrl_get_attempts(&lc, &lc_count));
-  LOG_INFO("LC_COUNT is %0d.", lc_count);
+  LOG_INFO("LC_COUNT is %d.", lc_count);
 
   dif_lc_ctrl_token_t token;
   switch (lc_count) {
@@ -89,7 +89,7 @@ bool test_main(void) {
       return true;
     default:
       // Unexpected value, exit test with error.
-      LOG_ERROR("Unexpected lc_count value %0d", lc_count);
+      LOG_ERROR("Unexpected lc_count value %d", lc_count);
       return false;
   }
 

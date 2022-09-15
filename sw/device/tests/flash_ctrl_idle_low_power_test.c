@@ -160,7 +160,7 @@ bool test_main(void) {
 
     rstmgr_testutils_reason_clear();
   } else {
-    LOG_ERROR("Unexepected reset type detected. Reset info = %0x",
+    LOG_ERROR("Unexepected reset type detected. Reset info = %08x",
               rstmgr_reset_info);
     return false;
   }

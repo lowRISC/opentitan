@@ -66,7 +66,7 @@ bool test_main(void) {
                          &otp_device_id);
 
     CHECK(otp_device_id == lc_device_id.data[i],
-          "Device_ID_%0d mismatch bewtween otp_ctrl: %0h and lc_ctrl: %0h", i,
+          "Device_ID_%d mismatch bewtween otp_ctrl: %08x and lc_ctrl: %08x", i,
           otp_device_id, lc_device_id.data[i]);
   }
   return true;

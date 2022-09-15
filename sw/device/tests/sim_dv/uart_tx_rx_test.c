@@ -314,7 +314,7 @@ static void uart_init_with_irqs(mmio_region_t base_addr, dif_uart_t *uart) {
  * Initializes PLIC and enables the relevant UART interrupts.
  */
 static void plic_init_with_irqs(mmio_region_t base_addr, dif_rv_plic_t *plic) {
-  LOG_INFO("Initializing the PLIC. %0x", uart_irq_tx_watermartk_id);
+  LOG_INFO("Initializing the PLIC. %08x", uart_irq_tx_watermartk_id);
 
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, plic));
 
@@ -498,8 +498,8 @@ static void execute_test(const dif_uart_t *uart) {
   LOG_INFO("Checking the received UART RX data for consistency.");
   for (int i = 0; i < UART_DATASET_SIZE; ++i) {
     CHECK(uart_rx_data[i] == kExpUartRxData[i],
-          "UART RX data[%0d] mismatched: {act: %x, exp: %x}", i,
-          uart_rx_data[i], kExpUartRxData[i]);
+          "UART RX data[%d] mismatched: {act: %x, exp: %x}", i, uart_rx_data[i],
+          kExpUartRxData[i]);
   }
 }
 

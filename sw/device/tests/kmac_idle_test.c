@@ -51,7 +51,7 @@ static void check_clock_state(dif_toggle_t expected_clock_state) {
   CHECK_DIF_OK(
       dif_clkmgr_hintable_clock_get_enabled(&clkmgr, kmac_clock, &clock_state));
   CHECK(clock_state == expected_clock_state,
-        "Clock enabled state is not as expected (%0d).", expected_clock_state);
+        "Clock enabled state is not as expected (%d).", expected_clock_state);
 }
 
 static void do_sha3_test(void) {

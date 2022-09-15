@@ -634,7 +634,7 @@ static void collect_alert_dump_and_compare(test_round_t round) {
     // dut to short timeout value.
     // However, alert source of this ping timeout can be choosen randomly,
     // as documented in issue #2321, so we conly check local alert cause.
-    LOG_INFO("loc_alert_cause: exp: %0x   obs: %0x",
+    LOG_INFO("loc_alert_cause: exp: %08x   obs: %08x",
              kExpectedInfo[round].loc_alert_cause, actual_info.loc_alert_cause);
     CHECK(kExpectedInfo[round].loc_alert_cause == actual_info.loc_alert_cause);
   } else {

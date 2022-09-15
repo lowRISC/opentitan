@@ -89,7 +89,7 @@ void ottf_external_isr(void) {
                       kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
 
     // We should not get aon timer interrupts since escalation suppresses them.
-    CHECK(false, "Unexpected aon timer interrupt %0d", irq);
+    CHECK(false, "Unexpected aon timer interrupt %d", irq);
   } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
     // Check the class.
     dif_alert_handler_class_state_t state;

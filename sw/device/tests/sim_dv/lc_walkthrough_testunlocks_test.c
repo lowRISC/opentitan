@@ -123,7 +123,7 @@ static void get_dest_state_and_cnt(dif_lc_ctrl_state_t *curr_state,
       *exp_cnt = 15;
       break;
     default:
-      LOG_FATAL("Unexpected state = %0d", curr_state);
+      LOG_FATAL("Unexpected state = %d", curr_state);
       abort();
   }
 }
@@ -200,7 +200,7 @@ bool test_main(void) {
                  "LC transition configuration failed!");
     CHECK_DIF_OK(dif_lc_ctrl_transition(&lc), "LC transition failed!");
 
-    LOG_INFO("Waiting for LC transtition %0d done and reboot.", kDestState);
+    LOG_INFO("Waiting for LC transtition %d done and reboot.", kDestState);
     wait_for_interrupt();
 
     // Unreachable.

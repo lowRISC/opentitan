@@ -136,7 +136,7 @@ static void flash_ctrl_init_with_irqs(mmio_region_t base_addr,
  */
 static void compare_and_clear_irq_variables(void) {
   for (int i = 0; i < FLASH_CTRL_NUM_IRQS; ++i) {
-    CHECK(expected_irqs[i] == fired_irqs[i], "expected IRQ mismatch = %0d", i);
+    CHECK(expected_irqs[i] == fired_irqs[i], "expected IRQ mismatch = %d", i);
   }
   clear_irq_variables();
 }

@@ -102,7 +102,7 @@ static void wait_next_test_phase(void) {
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
   IBEX_SPIN_FOR(current_phase != kTestPhase, kTestPhaseTimeoutUsec);
-  LOG_INFO("Test phase = %0d", kTestPhase);
+  LOG_INFO("Test phase = %d", kTestPhase);
 }
 
 // Enables the sysrst_ctrl overrides for the output pins. Allows

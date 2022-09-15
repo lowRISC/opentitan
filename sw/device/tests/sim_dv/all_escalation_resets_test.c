@@ -428,7 +428,7 @@ void ottf_external_isr(void) {
                       kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
 
     // We should not get aon timer interrupts since escalation suppresses them.
-    CHECK(false, "Unexpected aon timer interrupt %0d", irq);
+    CHECK(false, "Unexpected aon timer interrupt %d", irq);
   } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
     // Don't acknowledge the interrupt to alert_handler so it escalates.
     CHECK(fault_checker.function);
@@ -563,7 +563,7 @@ static void alert_handler_config(void) {
   uint32_t deadline_cycles =
       udiv64_slow(kEscalationStartMicros * kClockFreqPeripheralHz, 1000000,
                   /*rem_out=*/NULL);
-  LOG_INFO("Configuring class A with %0d cycles and %0d occurrences",
+  LOG_INFO("Configuring class A with %d cycles and %d occurrences",
            deadline_cycles, UINT16_MAX);
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
