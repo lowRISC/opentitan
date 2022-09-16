@@ -91,6 +91,9 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
   virtual task body();
     super.body();
 
+    // Wait until we reach the SW test state.
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+
     // TODO: Get expected MIO DIO value from SW
     fork
       receive_chosen_values();
@@ -99,7 +102,10 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     // Release any driver interfaces.
 
     // Wait until Chip enters Low Power Mode
-    wait (cfg.chip_vif.pwrmgr_low_power_if.low_power);
+    wait (cfg.chip_vif.pwrmgr_low_power_if.low_power
+      && cfg.chip_vif.pwrmgr_low_power_if.deep_powerdown);
+
+    @(cfg.chip_vif.pwrmgr_low_power_if.cb);
 
     `uvm_info(`gfn, "Chip Entered Deep Powerdown mode.", UVM_LOW)
 
