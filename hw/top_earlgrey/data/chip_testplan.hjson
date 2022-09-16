@@ -541,7 +541,13 @@
     {
       name: chip_rv_dm_perform_debug
       desc: '''
-            - X-ref'ed with rom_e2e_jtag_inject from rom testplan
+            - X-ref'ed with rom_e2e_jtag_inject from rom testplan.
+            - X-ref'ed with chip_sw_flash_lc_iso_part_sw_wr_en.
+            - X-ref'ed with manuf_cp_device_info_flash_wr from manufacturing testplan.
+            - Using the sram injection mechanism from rom_e2e_jtag_inject, load a SRAM program that
+              writes to isolated flash partition while the device is in TEST_UNLOCKED state.
+            - After writing, verify that the test program cannot read back the written value.
+
             '''
       stage: V2
       tests: []
@@ -1601,6 +1607,7 @@
       tests: []
     }
 
+
     // SYSRST_CTRL (pre-verified IP) integration tests:
     {
       name: chip_sw_sysrst_ctrl_inputs
@@ -2572,14 +2579,16 @@
 
             - Provision an RMA_UNLOCK token in OTP.
             - Reset the chip.
+            - Ensure device id and manufacturing state can be read through the LC JTAG.
             - Enable RMA mode, and verify that the SW can access the flash. Ensure that the previous
               contents are inaccessible.
 
-            - RMA entry can be on the C side as well. This should be done over C - The JTAG
-              interface to flash ctrl is actually for the closed src.
+            - RMA entry can be through the C side or the JTAG interface, both vectors should be tested.
+
+            - X-ref'ed with manuf_ft_provision_rma_token_and_personalization from the manufacturing testplan.
             '''
       stage: V2
-      tests: ["chip_sw_flash_rma_unlocked"]
+      tests: []
     }
     {
       name: chip_sw_flash_scramble
@@ -3001,6 +3010,43 @@
       tests: []
     }
     {
+      name: chip_lc_scrap
+      desc: '''Ensure it is possible to enter scrap state from every legal life cycle state.
+
+            -  Request transition to SCRAP state using the JTAG interface.
+            -  It should be possible to transition from every legal state using external clock.
+            -  Where it is allowed, transition using internal clocks should also be checked.
+            -  After transition, verify that the device is in SCRAP state through LC read.
+            -  Verify while in SCRAP state:
+               - RV JTAG interface is unavailable.
+               - Ibex is not executing.
+               - RV_DM is unreachable by the stub CPU.
+
+            - X-ref'd with manuf_scrap from the manufacturing testplan.
+            - X-ref'd with chip_lc_test_locked.
+            - X-ref'd with chip_tap_strap_sampling
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: chip_lc_test_locked
+      desc: '''Transition from TEST_UNLOCKED to TEST_LOCKED using LC JTAG interface.
+
+            -  Check in TEST_UNLOCKED RV JTAG interface is available.
+            -  Verify When in TEST_LOCKED state:
+               - RV JTAG interface is unavailable.
+               - Ibex is not executing.
+               - RV_DM is unreachable by the stub CPU.
+
+            - X-ref'd with manuf_cp_test_lock from the manufacturing testplan.
+            - X-ref'd with chip_lc_scrap.
+            - X-ref'd with chip_tap_strap_sampling
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: chip_sw_lc_walkthrough
       desc: '''Walk through the life cycle stages from RAW state and reseting the chip each time.
 
@@ -3151,6 +3197,44 @@
       '''
       stage: V2
       tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
+    }
+
+    {
+      name: chip_sw_exit_test_locked
+      desc: '''End to end test to ensure rom boot strap can be performed after
+      exiting TEST_LOCKED.
+
+      - Pre-load the device into TEST_UNLOCKED state and ROM_EXEC_EN = 0.
+      - In the same power cycle, advance device to PROD, PROD_END or DEV through LC JTAG request and
+        set ROM_EXEC_EN in OTP to logically true.
+      - Reboot the device and perform boot strap of a simple image, (e.g Hello World).
+      - Ensure boot strap succeeds.
+
+      X-ref'ed with manuf_ft_exit_token from manufacturing test plan.
+      '''
+      stage: V2
+      tests: []
+    }
+
+    {
+      name: chip_sw_inject_scramble_seed
+      desc: '''End to end test to ensure boot strap can succeed after injecting scramble seeds.
+
+      - Pre-load the device into PROD, PROD_END or DEV state.
+      - In the test program, populate the scramble seeds (flash / sram).
+      - In the test program, populate OTP entries to inform ROM to scramble flash upon next boot.
+      - Reboot the device and perform boot strap of the same test image, ROM should now program
+        the flash image with scramble enabled.
+      - Upon successful boot strap, ROM jumps to the newly programmed image and de-scrambles the
+        instructions.
+      - In the test program, check whether the OTP partition containing the scramble seeds is
+        locked. If it is, complete the test and return.  If not, return an error.
+
+
+      X-ref'ed with manuf_ft_sku_individualization from manufacturing test plan.
+      '''
+      stage: V2
+      tests: []
     }
   ]
 }
