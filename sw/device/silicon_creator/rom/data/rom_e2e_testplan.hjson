@@ -46,7 +46,7 @@
             |   0x1e791123 (Module)   | 0100000d |
             |   0x48eb4bd9 (All)      | ffffffff |
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -64,7 +64,7 @@
                `0x00061a80` (2 s).
               - Verify that watchdog is disabled when `WATCHDOG_BITE_THRESHOLD_CYCLES` is `0`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: ["rom_e2e_shutdown_watchdog"]
     }
@@ -85,7 +85,7 @@
             - Continue and verify that the asm exception handler resets the chip by confirming that
               execution halts at `_rom_start_boot`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -116,7 +116,7 @@
             - Verify that ROM_EXT boots and the chip resets after the write to the ALERT_TEST
               register.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -132,7 +132,7 @@
             - Verify that the chip reports `bootstrap:1` over the UART.
             - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -149,7 +149,7 @@
               - ROM will continously reset the chip and output the same `BFV`.
             - Verify that the chip does not respond to `READ_SFDP` (`0x5a`).
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -167,7 +167,7 @@
             - Verify that the chip does not respond to `READ_STATUS` (`0x05`).
               - The data on the CIPO line must be `0xff`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -185,7 +185,7 @@
             - Verify that the chip does not respond to `READ_STATUS` (`0x05`).
               - The data on the CIPO line must be `0xff`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -202,7 +202,7 @@
 
             See `rom_e2e_bootstrap_enabled_requested`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -224,7 +224,7 @@
               - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
               - Verify that there was no output from UART.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -243,7 +243,7 @@
               - device ID `0x08`, and
               - density `0x14`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -262,7 +262,7 @@
             - Verify the JEDEC Basic Flash Parameter Table. See this
               [spreadsheet](https://docs.google.com/spreadsheets/d/1cioU3HgsWZXD4-eoUiH9TuVLZeFpucSdjyq5HND-FpQ/edit#gid=0).
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -281,7 +281,7 @@
             - Send `WRITE_DISABLE` (`0x04`) and `READ_STATUS` (`0x05`).
             - Verify that the chip responds with `0x00`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -297,7 +297,7 @@
             - Send `RESET` (`0x99`).
             - Verify that the chip does not output anything over UART for at least 1 s.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -320,7 +320,7 @@
                 (`kErrorBootPolicyBadLength`).
               - ROM will continously reset the chip and output the same `BFV` and `LCV`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -348,7 +348,7 @@
                 over UART (`kErrorBootPolicyBadIdentifier`).
                 - ROM will continously reset the chip and output the same `BFV` and `LCV`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -374,7 +374,7 @@
               - This is the start address of the write operation performed above.
             - Verify that the data on the CIPO line does not match `0x4552544f_00000000`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -393,7 +393,7 @@
               - ROM will continously reset the chip and output the same `BFV` and `LCV`.
             - Verify that the chip does not respond to `READ_SFDP` (`0x5a`).
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -412,7 +412,7 @@
             - Verify that the chip outputs the expected `BFV`: `0242500d` over UART (`kErrorBootPolicyBadLength`).
               - ROM will continously reset the chip and output the same `BFV` and `LCV`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -434,7 +434,7 @@
               - Verify that the chip outputs the expected `BFV`: `0142500d` over UART (`rom_e2e_bootstrap_phase2_page_program`).
                 - ROM will continously reset the chip and output the same `BFV` and `LCV`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -456,7 +456,7 @@
             - Verify that the chip outputs the expected `BFV`: `0242500d` over UART (`kErrorBootPolicyBadLength`).
               - ROM will continously reset the chip and output the same `BFV` and `LCV`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -475,7 +475,7 @@
                 - For `SECTOR_ERASE`: `BFV:01425303` (`kErrorBootstrapEraseAddress`) followed by `BFV:0142500d` (`kErrorBootPolicyBadIdentifier`)
                 - For `PAGE_PROGRAM`: `BFV:02425303` (`kErrorBootstrapProgramAddress`) followed by `BFV:0142500d` (`kErrorBootPolicyBadIdentifier`)
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -489,7 +489,7 @@
               - ROM will continously reset the chip and output the same `BFV` and `LCV`.
             - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -510,7 +510,7 @@
             |            1            |             0           |   a    |
             |            1            |             1           |   a    |
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -556,7 +556,7 @@
             |   a  | `entry_point` in range, unaligned | `0142500d`                      |
             |   a  | `security_version = 0`            | `0142500d`                      |
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -604,7 +604,7 @@
             |    2   |    0   |   a    |
             |    1   |    1   |   a    |
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -629,7 +629,7 @@
             |   RMA    |                 0                  |            `kHardenedBoolFalse`          |
 
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -661,7 +661,7 @@
             - Attempt to boot.
             - Verify that boot fails with `BFV:kErrorSigverifyBadKey`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -682,7 +682,7 @@
             | PROD_END | Prod              |
             |   RMA    | Test, Prod        |
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -704,7 +704,7 @@
             | PROD_END | Prod              |
             |   RMA    | Test, Prod        |
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -726,7 +726,7 @@
             | `kHardenedBoolFalse`               | Success |
             | `0`                                | Failure |
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -755,7 +755,7 @@
               - All constraints specified
               - Corrupt usage constraints data, e.g. wrong unselected word value.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -778,7 +778,7 @@
             |         Invalid     |   Virtual  |     A     |  Yes  |
             |         Invalid     |   Virtual  |     B     |  Yes  |
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -807,7 +807,7 @@
 
             - Verify that ROM cannot be debugged in PROD and PROD_END.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -852,7 +852,7 @@
             - Load a ROM_EXT with securiy version = 0.
             - Verify that ROM fails to boot with `BFV:kErrorBootPolicyRollback`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -874,7 +874,7 @@
             - Verify that ROM_EXT can detect the interruption and increment the minimum required
               security version.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -892,7 +892,7 @@
               instruction access fault.
             - Verify that execution breaks at the asm handler.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -910,7 +910,7 @@
             - Wait until execution breaks at the first breakpoint, wait ~1s before continuing.
             - Verify that watchdog expires and execution breaks at the asm handler.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -934,7 +934,7 @@
             - Verify that execution breaks at the C interrupt handler.
             - Verify that chip resets with `BFV:kErrorInterrupt`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -991,7 +991,7 @@
             - Verify that `reset_reasons` reports a SW request.
             - Verify that all previously written sections are different.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
 
@@ -1010,7 +1010,7 @@
             - Verify that `reset_reasons` reports a SW request.
             - Verify that all previously written sections are intact.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -1023,7 +1023,7 @@
             - UART
             - Bits 0-5 of the `cpuctrl` CSR: `CREATOR_SW_CFG_CPUCTRL`
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -1035,7 +1035,7 @@
             - ePMP Debug ROM region should be enabled in TEST, DEV, and RMA, anddisabled in PROD and
               PROD_END.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -1049,7 +1049,7 @@
               `OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES` if greater than or equal to
               `kWatchdogMinThreshold`, disabled otherwise.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -1062,7 +1062,7 @@
             - Read from OTP in DEV, PROD, PROD_END, and RMA. Checksum of config registers must match
               the OTP value.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -1080,7 +1080,7 @@
             - Verify that `kFlashCtrlInfoPageCreatorSecret` is locked down.
             - Verify that flash_ctrl is initialized.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -1098,7 +1098,7 @@
               - sealing sw binding equals the `binding_value` field of the manifest, and
               - max creator key version equals the `max_key_version` field of the manifest,
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -1113,7 +1113,7 @@
               `sec_mmio_check_counters()`.
             - Verify that a failed sec_mmio check triggers an illegal instruction exception.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
@@ -1130,7 +1130,7 @@
             Determine which functests can be executed using ROM to understand which tests can be
             reused on the silicon.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "fpga", "silicon"]
       stage: V2
       tests: []
     }
