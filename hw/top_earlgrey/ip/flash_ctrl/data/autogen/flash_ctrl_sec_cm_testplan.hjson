@@ -45,11 +45,12 @@
       name: sec_cm_mem_bus_integrity
       desc: '''Verify the countermeasure(s) MEM.BUS.INTEGRITY.
             For read path, inject error to
-            tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.u_bus_intg
-            tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.u_bus_intg
-	    read data error will be detected by tl_agent in tb.
+            tb.dut.u_eflash.gen_flash_cores[*].u_core.u_rd.gen_bufs[0].
+            u_rd_buf.data_i
+	    read data error will trigger fault_status.phy_storage_err
+            and err_code.rd_err.
             For write path, inject error to tb.dut.u_prog_fifo.wdata_i
-            This will trigger fatal_std_err (prog_intg_err) and
+            This will trigger fatal_std_err.prog_intg_err and
             err_code.prog_err
             '''
       stage: V2S
@@ -58,10 +59,11 @@
     {
       name: sec_cm_scramble_key_sideload
       desc: '''Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD.
-
+      The scrambling key is sideloaded from OTP and thus unreadable by SW.
+      TBD
       '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_smoke"]
     }
     {
       name: sec_cm_lc_ctrl_intersig_mubi
@@ -141,79 +143,130 @@
       name: sec_cm_mem_disable_config_mubi
       desc: "Verify the countermeasure(s) MEM_DISABLE.CONFIG.MUBI."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_disable"]
     }
     {
       name: sec_cm_exec_config_redun
       desc: "Verify the countermeasure(s) EXEC.CONFIG.REDUN."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_fetch_code"]
     }
     {
       name: sec_cm_mem_scramble
       desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_rw"]
     }
     {
       name: sec_cm_mem_integrity
       desc: "Verify the countermeasure(s) MEM.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_rw_serr", "flash_ctrl_rw_derr", "flash_ctrl_integrity"]
     }
     {
       name: sec_cm_rma_entry_mem_sec_wipe
-      desc: "Verify the countermeasure(s) RMA_ENTRY.MEM.SEC_WIPE."
+      desc: '''Verify the countermeasure(s) RMA_ENTRY.MEM.SEC_WIPE.
+      RMA entry wipes flash memory with random data.
+      '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_hw_rma"]
     }
     {
       name: sec_cm_ctrl_fsm_sparse
-      desc: "Verify the countermeasure(s) CTRL.FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) CTRL.FSM.SPARSE.
+      Error is injected by global test.
+      Follwing state machines are in this category.
+        - tb.dut.u_ctrl_arb.state_q :
+          Error from this state machine will trigger std_fault_status.arb_fsm_err.
+        - tb.dut.u_flash_hw_if.state_q, tb.dut.u_flash_hw_if.rma_state_q
+          Error from these state machines will trigger std_fault_status.lcmgr_err.
+      '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_sec_cm"]
     }
     {
       name: sec_cm_phy_fsm_sparse
-      desc: "Verify the countermeasure(s) PHY.FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) PHY.FSM.SPARSE.
+      Error is injected by global test on
+      tb.dut.u_eflash.gen_flash_cores[*].u_core.state_q.
+      Error from this state machine will trigger std_fault_status.phy_fsm_err.
+      '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_sec_cm"]
     }
     {
       name: sec_cm_phy_prog_fsm_sparse
-      desc: "Verify the countermeasure(s) PHY_PROG.FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) PHY_PROG.FSM.SPARSE.
+      Error is injected by global test on
+      tb.dut.u_eflash.gen_flash_cores[*].u_core.gen_prog_data.u_prog.state_q.
+      Error from this state machine will trigger std_fault_status.phy_fsm_err.
+      '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_sec_cm"]
     }
     {
       name: sec_cm_ctr_redun
-      desc: "Verify the countermeasure(s) CTR.REDUN."
+      desc: '''Verify the countermeasure(s) CTR.REDUN.
+      Error is injected by global test.
+      Follwing counters are in this category.
+        - tb.dut.u_flash_hw_if.seed_cnt_q
+        - tb.dut.u_flash_hw_if.addr_cnt_q
+        - tb.dut.u_flash_hw_if.page_cnt
+        - tb.dut.u_flash_hw_if.word_cnt
+        - tb.dut.u_flash_hw_if.rma_wipe_idx
+      Error from these counters will trigger std_fault_status.lcmgr_err.
+      '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_sec_cm"]
     }
     {
       name: sec_cm_phy_arbiter_ctrl_redun
-      desc: "Verify the countermeasure(s) PHY_ARBITER.CTRL.REDUN."
+      desc: '''Verify the countermeasure(s) PHY_ARBITER.CTRL.REDUN.
+
+      The phy arbiter for controller and host is redundant.
+      The arbiter has two instance underneath that are constantly compared to each other.
+      fault_status.arb_err:
+      tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[0]
+      tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[1]
+      make output of both mismatch
+      '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_phy_host_grant_ctrl_consistency
-      desc: "Verify the countermeasure(s) PHY_HOST_GRANT.CTRL.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) PHY_HOST_GRANT.CTRL.CONSISTENCY.
+
+      fault_status.host_gnt_err
+       two error conditions
+       1. a host transaction was granted to the muxed partition, this is illegal
+       2. a host transaction was granted last cycle but somehow controller
+          operations have been kicked off, this is illegal
+      '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_phy_ack_ctrl_consistency
-      desc: "Verify the countermeasure(s) PHY_ACK.CTRL.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) PHY_ACK.CTRL.CONSISTENCY.
+      fault_status.spurious_ack:
+      tb.dut.u_eflash.gen_flash_cores[0].u_core.spurious_ack_o
+      '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_fifo_ctr_redun
-      desc: "Verify the countermeasure(s) FIFO.CTR.REDUN."
+      desc: '''Verify the countermeasure(s) FIFO.CTR.REDUN.
+      Error is injected by global test.
+      Follwing fifos are in this category.
+        - dut.u_to_rd_fifo,
+        - dut.u_eflash.gen_flash_cores[*].u_core.u_rd.u_rsp_order_fifo,
+        - dut.u_eflash.gen_flash_cores[*].u_core.u_rd.u_rd_storage
+      Error from these fifos will trigger std_fault_status.fifo_err.
+      '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_sec_cm"]
     }
   ]
 }

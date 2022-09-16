@@ -58,6 +58,51 @@ class flash_ctrl_common_vseq extends flash_ctrl_base_vseq;
     end
   endtask // check_tl_intg_error_response
 
+  virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
+    bit std_fault = 0;
+    `uvm_info(`gfn, $sformatf("path: %s", if_proxy.path), UVM_MEDIUM)
+    super.check_sec_cm_fi_resp(if_proxy);
+
+    case (if_proxy.sec_cm_type)
+      SecCmPrimCount: begin
+        if (!uvm_re_match("*.u_host_rsp_fifo.*", if_proxy.path) |
+            !uvm_re_match("*.u_to_rd_fifo.*", if_proxy.path) |
+            !uvm_re_match("*.u_rd_storage.*", if_proxy.path)) begin
+          csr_rd_check(.ptr(ral.std_fault_status.fifo_err), .compare_value(1));
+          std_fault = 1;
+        end
+        if (!uvm_re_match("*.u_flash_hw_if.*", if_proxy.path)) begin
+          csr_rd_check(.ptr(ral.std_fault_status.lcmgr_err), .compare_value(1));
+          std_fault = 1;
+        end
+      end
+      SecCmPrimSparseFsmFlop: begin
+        if (!uvm_re_match("*.flash_cores*", if_proxy.path)) begin
+          csr_rd_check(.ptr(ral.std_fault_status.phy_fsm_err), .compare_value(1));
+          std_fault = 1;
+        end
+        if (!uvm_re_match("*.u_ctrl_arb.*", if_proxy.path)) begin
+          csr_rd_check(.ptr(ral.std_fault_status.arb_fsm_err), .compare_value(1));
+          std_fault = 1;
+        end
+        if (!uvm_re_match("*.u_flash_hw_if.*", if_proxy.path)) begin
+          csr_rd_check(.ptr(ral.std_fault_status.lcmgr_err), .compare_value(1));
+          std_fault = 1;
+        end
+      end
+      SecCmPrimOnehot: begin
+        // Do nothing.
+      end
+      default: begin
+        `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
+      end
+    endcase
+    if (std_fault) begin
+      csr_rd_check(.ptr(ral.debug_state),
+                   .compare_value(flash_ctrl_env_pkg::FlashLcDisabled));
+    end
+  endtask // check_sec_cm_fi_resp
+
    virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
