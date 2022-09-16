@@ -648,6 +648,7 @@ def raze_fetch_remote_crates(
             name = "raze__bitvec__1_0_1",
             url = "https://crates.io/api/v1/crates/bitvec/1.0.1/download",
             type = "tar.gz",
+            sha256 = "1bc2832c24239b0141d5674bb9174f9d68a8b5b3f2753311927c172ca46f7e9c",
             strip_prefix = "bitvec-1.0.1",
             build_file = Label("//third_party/rust/crates/remote:BUILD.bitvec-1.0.1.bazel"),
         )
@@ -881,6 +882,7 @@ def raze_fetch_remote_crates(
             name = "raze__crc__3_0_0",
             url = "https://crates.io/api/v1/crates/crc/3.0.0/download",
             type = "tar.gz",
+            sha256 = "53757d12b596c16c78b83458d732a5d1a17ab3f53f2f7412f6fb57cc8a140ab3",
             strip_prefix = "crc-3.0.0",
             build_file = Label("//third_party/rust/crates/remote:BUILD.crc-3.0.0.bazel"),
         )
@@ -898,6 +900,7 @@ def raze_fetch_remote_crates(
             name = "raze__crc_catalog__2_1_0",
             url = "https://crates.io/api/v1/crates/crc-catalog/2.1.0/download",
             type = "tar.gz",
+            sha256 = "2d0165d2900ae6778e36e80bbc4da3b5eefccee9ba939761f9c2882a5d9af3ff",
             strip_prefix = "crc-catalog-2.1.0",
             build_file = Label("//third_party/rust/crates/remote:BUILD.crc-catalog-2.1.0.bazel"),
         )
@@ -1203,6 +1206,7 @@ def raze_fetch_remote_crates(
             name = "raze__funty__2_0_0",
             url = "https://crates.io/api/v1/crates/funty/2.0.0/download",
             type = "tar.gz",
+            sha256 = "e6d5a32815ae3f33302d95fdcb2ce17862f8c65363dcfd29360480ba1001fc9c",
             strip_prefix = "funty-2.0.0",
             build_file = Label("//third_party/rust/crates/remote:BUILD.funty-2.0.0.bazel"),
         )
@@ -2198,6 +2202,7 @@ def raze_fetch_remote_crates(
             name = "raze__radium__0_7_0",
             url = "https://crates.io/api/v1/crates/radium/0.7.0/download",
             type = "tar.gz",
+            sha256 = "dc33ff2d4973d518d823d61aa239014831e521c75da58e3df4840d3f47749d09",
             strip_prefix = "radium-0.7.0",
             build_file = Label("//third_party/rust/crates/remote:BUILD.radium-0.7.0.bazel"),
         )
@@ -2791,6 +2796,7 @@ def raze_fetch_remote_crates(
             name = "raze__tap__1_0_1",
             url = "https://crates.io/api/v1/crates/tap/1.0.1/download",
             type = "tar.gz",
+            sha256 = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369",
             strip_prefix = "tap-1.0.1",
             build_file = Label("//third_party/rust/crates/remote:BUILD.tap-1.0.1.bazel"),
         )
@@ -3366,6 +3372,7 @@ def raze_fetch_remote_crates(
             name = "raze__wyz__0_5_0",
             url = "https://crates.io/api/v1/crates/wyz/0.5.0/download",
             type = "tar.gz",
+            sha256 = "30b31594f29d27036c383b53b59ed3476874d518f0efb151b27a4c275141390e",
             strip_prefix = "wyz-0.5.0",
             build_file = Label("//third_party/rust/crates/remote:BUILD.wyz-0.5.0.bazel"),
         )
