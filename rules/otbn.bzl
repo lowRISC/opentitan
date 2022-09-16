@@ -160,34 +160,30 @@ def _otbn_sim_test(ctx):
     # Extract the output .elf file from the output group.
     elf = providers[1].elf.to_list()[0]
 
-    # Create a simple script that runs the OTBN simulator on the .elf file and
-    # checks if the w0 register is 0.
-    simulator_cmd = "{} {} --dump-regs -".format(ctx.executable._simulator.short_path, elf.short_path)
-    expected_string = "0x" + ("0" * 64)
-    script = '''
-      echo "Running simulator: {simulator_cmd}"
-      result=$({simulator_cmd} | grep -m 1 -P "w0  = [0-9A-Fa-f]+")
-      echo "Got     : $result"
-      echo "Expected:  w0  = {expected_string}"
-      if [[ "$result" == *"{expected_string}" ]]; then
-        echo "PASS"
-        exit 0
-      fi
-      echo "FAIL"
-      exit 1
-      '''.format(simulator_cmd = simulator_cmd, expected_string = expected_string)
-    script_file = ctx.actions.declare_file("run_{}.sh".format(elf.basename))
+    # Create a file with expected values (always w0=0).
+    # TODO: update existing tests to include expected-value files.
+    exp_file = ctx.actions.declare_file("{}.exp".format(ctx.label.name))
     ctx.actions.write(
-        output = script_file,
-        content = script,
+        output = exp_file,
+        content = "w0 = 0\n",
     )
 
-    # Runfiles include sources, the .elf file, the simulator itself, and all
-    # the simulator's runfiles.
-    runfiles = ctx.runfiles(files = (ctx.files.srcs + [elf, ctx.executable._simulator]))
+    # Create a simple script that runs the OTBN test wrapper on the .elf file
+    # using the provided simulator path.
+    sim_test_wrapper = ctx.executable._sim_test_wrapper
+    simulator = ctx.executable._simulator
+    ctx.actions.write(
+        output = ctx.outputs.executable,
+        content = "{} {} {} {}".format(sim_test_wrapper.short_path, simulator.short_path, exp_file.short_path, elf.short_path),
+    )
+
+    # Runfiles include sources, the .elf file, the simulator and test wrapper
+    # themselves, and all the simulator and test wrapper runfiles.
+    runfiles = ctx.runfiles(files = (ctx.files.srcs + [elf, exp_file, ctx.executable._simulator, ctx.executable._sim_test_wrapper]))
     runfiles = runfiles.merge(ctx.attr._simulator[DefaultInfo].default_runfiles)
+    runfiles = runfiles.merge(ctx.attr._sim_test_wrapper[DefaultInfo].default_runfiles)
     return [
-        DefaultInfo(runfiles = runfiles, executable = script_file),
+        DefaultInfo(runfiles = runfiles),
         providers[1],
     ]
 
@@ -314,6 +310,11 @@ otbn_sim_test = rv_rule(
         ),
         "_simulator": attr.label(
             default = "//hw/ip/otbn/dv/otbnsim:standalone",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_sim_test_wrapper": attr.label(
+            default = "//hw/ip/otbn/util:otbn_sim_test",
             executable = True,
             cfg = "exec",
         ),
