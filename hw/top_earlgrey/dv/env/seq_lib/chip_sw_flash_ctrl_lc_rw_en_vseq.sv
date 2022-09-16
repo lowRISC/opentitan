@@ -70,8 +70,7 @@ class chip_sw_flash_ctrl_lc_rw_en_vseq extends chip_sw_base_vseq;
                          "Mismatch for exepcted rw_en value [%0d] in Scrap LC state", i)
     end
 
-    cfg.sw_test_status_vif.sw_test_status = SwTestStatusPassed;
-    cfg.sw_test_status_vif.sw_test_done   = 1'b1;
+    override_test_status_and_finish(.passed(1'b 1));
 
   endtask
 

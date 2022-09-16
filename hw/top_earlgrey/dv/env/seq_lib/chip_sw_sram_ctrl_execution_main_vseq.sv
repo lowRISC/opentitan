@@ -48,8 +48,7 @@ class chip_sw_sram_ctrl_execution_main_vseq extends chip_sw_base_vseq;
     // State 3 - SRAM_IFETCH = True, LC_STATE = LcStProd.
     do_test(MUBI8TRUE, 1);
 
-    cfg.sw_test_status_vif.sw_test_status = SwTestStatusPassed;
-    cfg.sw_test_status_vif.sw_test_done   = 1'b1;
+    override_test_status_and_finish(.passed(1'b 1));
 
   endtask
 
