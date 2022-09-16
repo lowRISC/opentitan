@@ -639,7 +639,10 @@ interface chip_if;
     for (int i = 0; i < NUM_UARTS; i++) enable_uart(.inst_num(i), .enable(0));
     for (int i = 0; i < NUM_SPI_HOSTS; i++) enable_spi_device(.inst_num(i), .enable(0));
     for (int i = 0; i < NUM_I2CS; i++) enable_i2c(.inst_num(i), .enable(0));
-    ext_clk_if.set_active(0, 0);
+
+    // Set Active only can be called @ t=0
+    ext_clk_if.drive_clk   = 1'b 0;
+    ext_clk_if.drive_rst_n = 1'b 0;
   endfunction
 
   // Verifies an LC control signal broadcast by the LC controller.
