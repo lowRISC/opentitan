@@ -533,6 +533,20 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
   endfunction
 
+  // End the test with status.
+  //
+  // SW test code finishes the test sequence usually by returing true or false
+  // in the `test_main()` function. However, some tests may need vseq to
+  // finish the tests. For example, `chip_sw_sleep_pin_mio_dio_val` checks the
+  // PADs output value then finishes the test without waking up the SW again.
+  //
+  // If pass is 1, then `sw_test_status` is set to SwTestStatusPassed.
+  virtual function void override_test_status_and_finish(bit passed);
+    cfg.sw_test_status_vif.sw_test_status = (passed) ? SwTestStatusPassed
+                                                     : SwTestStatusFailed;
+    cfg.sw_test_status_vif.sw_test_done   = 1'b 1;
+  endfunction : override_test_status_and_finish
+
   task assert_por_reset_deep_sleep (int delay = 0);
     repeat (delay) @cfg.chip_vif.pwrmgr_low_power_if.cb;
     cfg.chip_vif.por_n_if.drive(0);
