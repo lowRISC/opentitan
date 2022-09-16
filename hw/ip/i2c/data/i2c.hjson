@@ -126,11 +126,11 @@
       fields: [
         { bits: "0"
           name: "FMTFULL"
-          desc: "FMT buffer is full"
+          desc: "FMT FIFO is full"
         }
         { bits: "1"
           name: "RXFULL"
-          desc: "RX buffer is full"
+          desc: "RX FIFO is full"
         }
         { bits: "2"
           name: "FMTEMPTY"

@@ -1,4 +1,3 @@
-
 ---
 title: "I2C HWIP Technical Specification"
 ---
@@ -13,7 +12,7 @@ See that document for integration overview within the broader top level system.
 
 ## Features
 
-- Two-pin clock-data parallel bidirectional external interface 
+- Two-pin clock-data parallel bidirectional external interface
 - Support for I2C Host ("I2C Master"<sup>1</sup>) and I2C Target ("I2C Slave"<sup>1</sup>) device modes
 - Support for standard (100 kbaud), fast (400 kbaud) and fast-plus (1 Mbaud) modes
 - Bandwidth up to 1 Mbaud
@@ -35,6 +34,7 @@ See that document for integration overview within the broader top level system.
 - SCL and SDA ports mapped to I/O via the pinmux.
 - Interrupts in the host mode for FMT and RX FIFO overflow, target NACK, SCL/SDA signal interference, timeout, unstable SDA signal levels, and transaction complete
 - Interrupts in the target mode for TX FIFO empty during a read, TX FIFO nonempty at the end of a read, TX and ACQ FIFO overflow, host sending STOP after ACK, and host ceasing to send SCL pulses during an ongoing transaction
+- SW may reset I2C block using the Reset Manager.
 
 <sup>1</sup> lowRISC is avoiding the fraught terms master/slave and defaulting to host/target where applicable.
 
@@ -60,10 +60,10 @@ The R/W bit is encoded along with the address.
 1. Data bytes, where the number of bytes required is indicated by the host,
 in a manner which differs between reads and writes.
     - For write transactions, the target device sends an ACK signal after every byte received.
-    The host indicates the end of a transaction by sending a STOP or RESTART signal.
+    The host indicates the end of a transaction by sending a STOP or repeating the START signal.
     - For read transactions, the target device continues to send data as long as the host acknowledges the target-issued data by sending an ACK signal.
-    Once the host has received all the required data it indicates that no more data is needed by explicitly de-asserting the ACK signal (this is called a NACK signal) just before sending a STOP or RESTART signal.
-1. A STOP signal or a RESTART signal.
+    Once the host has received all the required data it indicates that no more data is needed by explicitly de-asserting the ACK signal (this is called a NACK signal) just before sending a STOP or a repeated START signal.
+1. A STOP signal or a repeated START signal.
 
 This protocol is generally quite flexible with respect to timing constraints, and slow enough to be managed by a software microcontroller, however such an implementation requires frequent activity on the part of the microcontroller.
 This IP presents a simple register interface and state-machine to manage the corresponding I/O pins directly using a byte-formatted programming model.
@@ -161,15 +161,15 @@ In other words, address matching is performed only for bits where the mask is "1
 Thus, with the masks set to all ones (0x7F), the target device will respond to either of the two assigned unique addresses and no other.
 If the mask and the assigned address both have zeros in a particular bit position, that bit will be a match regardless of the value of that bit received from the host.
 Note that if, in any bit position, the mask has zero and the assigned address has one, no transaction can match and such mask/address pair is effectively disabled.
-The assigned address and mask pairs are set in registers {{< regref TARGET_ID.ADDRESS0 >}}, {{< regref TARGET_ID.MASK0 >}}, {{< regref TARGET_ID.ADDRESS1 >}}, and {{< regref TARGET_ID.MASK1 >}}. 
+The assigned address and mask pairs are set in registers {{< regref TARGET_ID.ADDRESS0 >}}, {{< regref TARGET_ID.MASK0 >}}, {{< regref TARGET_ID.ADDRESS1 >}}, and {{< regref TARGET_ID.MASK1 >}}.
 
 ### Acquired Formatted Data
 
 This section applies to I2C in the target mode.
 When the target accepts a transaction, it inserts the transaction address, read/write bit, and START signal sent by the host into ACQ FIFO where they can be accessed by software.
 ACQ FIFO output corresponds to {{< regref ACQDATA >}}.
-If the transaction is a write operation (R/W bit = 0), the target proceeds to read bytes from the bus and insert them into ACQ FIFO until the host terminates the transaction by sending a STOP or RESTART signal.
-A STOP or RESTART indicator is inserted into ACQ FIFO as the next entry following the last byte received, in which case other bits are junk.
+If the transaction is a write operation (R/W bit = 0), the target proceeds to read bytes from the bus and insert them into ACQ FIFO until the host terminates the transaction by sending a STOP or a repeated START signal.
+A STOP or repeated START indicator is inserted into ACQ FIFO as the next entry following the last byte received, in which case other bits may be junk.
 The following diagram shows consecutive entries inserted into ACQ FIFO during a write operation:
 
 ![](I2C_acq_fifo_write.svg)
@@ -177,8 +177,8 @@ The following diagram shows consecutive entries inserted into ACQ FIFO during a 
 If the transaction is a read operation (R/W bit = 1), the target pulls bytes out of TX FIFO and transmits them to the bus until the host signals the end of the transfer by sending a NACK signal.
 If TX FIFO holds no data, the target will hold SCL low to stretch the clock and give software time to write data bytes into TX FIFO.
 TX FIFO input corresponds to {{< regref TXDATA >}}.
-Typically, a NACK signal is followed by a STOP or RESTART signal and the IP will raise an exception if the host sends a STOP signal after an ACK.
-An ACK/NACK signal is inserted into the ACQ FIFO as the first bit (bit 0), in the same entry with a STOP or RESTART signal. 
+Typically, a NACK signal is followed by a STOP or repeated START signal and the IP will raise an exception if the host sends a STOP signal after an ACK.
+An ACK/NACK signal is inserted into the ACQ FIFO as the first bit (bit 0), in the same entry with a STOP or repeated START signal.
 For ACK and NACK signals, the value of the first bit is 0 and 1, respectively.
 The following diagram shows consecutive entries inserted into ACQ FIFO during a read operation:
 
@@ -190,8 +190,8 @@ The ACQ FIFO entry consists of 10 bits:
 The format flags indicate the following signals received from the host:
 - START: 01
 - STOP: 10
-- RESTART: 11
-- No START, STOP, or RESTART: 00
+- repeated START: 11
+- No START, or STOP: 00
 
 ### Timing Control Registers
 
@@ -336,10 +336,10 @@ In both cases, the `trans_complete` interrupt is asserted, in the beginning of a
 If an I2C target receives a START signal followed by an address and R/W = 1 (read), accepts a read transaction and its TX FIFO is empty, the interrupt `tx_empty` is asserted to inform firmware.
 The interrupt `tx_empty` is asserted also when a target keeps transmitting data on the bus and needs more data, but TX FIFO is empty.
 
-If a target receives a STOP or RESTART signal and there are extra bytes left in TX FIFO, the interrupt `tx_nonempty` is asserted and the FIFO is flushed.
+If a target receives a STOP or repeated START signal and there are extra bytes left in TX FIFO, the interrupt `tx_nonempty` is asserted and the FIFO is flushed.
 
-When a host receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a RESTART.
-In a case when a target receives an ACK and then a STOP/RESTART, the interrupt `tx_ack_stop` is asserted.
+When a host receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a repeated START.
+In a case when a target receives an ACK and then a STOP/START, the interrupt `ack_stop` is asserted.
 
 If either TX or ACQ FIFO receives an additional write request when its FIFO is full, the interrupt `tx_overflow` or `acq_overflow` is asserted and the format indicator is dropped.
 

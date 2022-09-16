@@ -256,7 +256,8 @@
             - Program the I2C to be in device mode.
             - The testbench writes a known payload over the chip's I2C device interface, which is
               received and verified by the SW test for correctness.
-            - SW validates the reception of RX watermark and trans complete interrupts.
+            - The testbench reads and verifies a known payload over the chip's I2C device interface,
+            - SW validates the reception of tx empty and trans complete interrupts.
             - Verify the virtual / true open drain capability.
 
             Verify all instances of I2C in the chip.
