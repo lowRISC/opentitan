@@ -135,6 +135,8 @@ package flash_ctrl_env_pkg;
   parameter uint FlashMacroErr    = 6;
   parameter uint FlashUpdateErr   = 7;
 
+  // From flash_ctrl_lcmgr.sv
+  parameter logic [10:0] FlashLcDisabled = 11'b11111100011;
   // types
   typedef enum bit [1:0] {
     OTFCfgTrue,
