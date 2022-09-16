@@ -67,15 +67,6 @@ uint8_t ecc256_msg[32] = {"Hello OTBN."};
 
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
 
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, dptr_msg);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, dptr_r);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, dptr_s);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, dptr_x);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, dptr_y);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, dptr_d);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, dptr_x_r);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, dptr_k);
-
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, mode);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, msg);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, r);
@@ -88,23 +79,6 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, x_r);
 
 static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
 
-static const otbn_addr_t kOtbnVarDptrMsg =
-    OTBN_ADDR_T_INIT(p256_ecdsa_sca, dptr_msg);
-static const otbn_addr_t kOtbnVarDptrR =
-    OTBN_ADDR_T_INIT(p256_ecdsa_sca, dptr_r);
-static const otbn_addr_t kOtbnVarDptrS =
-    OTBN_ADDR_T_INIT(p256_ecdsa_sca, dptr_s);
-static const otbn_addr_t kOtbnVarDptrX =
-    OTBN_ADDR_T_INIT(p256_ecdsa_sca, dptr_x);
-static const otbn_addr_t kOtbnVarDptrY =
-    OTBN_ADDR_T_INIT(p256_ecdsa_sca, dptr_y);
-static const otbn_addr_t kOtbnVarDptrD =
-    OTBN_ADDR_T_INIT(p256_ecdsa_sca, dptr_d);
-static const otbn_addr_t kOtbnVarDptrXR =
-    OTBN_ADDR_T_INIT(p256_ecdsa_sca, dptr_x_r);
-static const otbn_addr_t kOtbnVarDptrK =
-    OTBN_ADDR_T_INIT(p256_ecdsa_sca, dptr_k);
-
 static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p256_ecdsa_sca, mode);
 static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa_sca, msg);
 static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p256_ecdsa_sca, r);
@@ -114,39 +88,6 @@ static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p256_ecdsa_sca, y);
 static const otbn_addr_t kOtbnVarD = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d);
 static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(p256_ecdsa_sca, x_r);
 static const otbn_addr_t kOtbnVarK = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k);
-
-/**
- * Makes a single dptr in the P256 library point to where its value is stored.
- */
-static void setup_data_pointer(otbn_t *otbn_ctx, const otbn_addr_t dptr,
-                               const otbn_addr_t value) {
-  SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(value), &value, dptr) ==
-           kOtbnOk);
-}
-
-/**
- * Sets up all data pointers used by the P256 library to point to DMEM.
- *
- * The ECDSA P256 OTBN library makes use of "named" data pointers as part of
- * its calling convention, which are exposed as symbol starting with `dptr_`.
- * The DMEM locations these pointers refer to is not mandated by the P256
- * calling convention; the values can be placed anywhere in OTBN DMEM.
- *
- * As convenience, `ecdsa_p256.s` pre-allocates space for the data values.
- *
- * This function makes the data pointers refer to the pre-allocated DMEM
- * regions to store the actual values.
- */
-static void setup_data_pointers(otbn_t *otbn_ctx) {
-  setup_data_pointer(otbn_ctx, kOtbnVarDptrMsg, kOtbnVarMsg);
-  setup_data_pointer(otbn_ctx, kOtbnVarDptrR, kOtbnVarR);
-  setup_data_pointer(otbn_ctx, kOtbnVarDptrS, kOtbnVarS);
-  setup_data_pointer(otbn_ctx, kOtbnVarDptrX, kOtbnVarX);
-  setup_data_pointer(otbn_ctx, kOtbnVarDptrY, kOtbnVarY);
-  setup_data_pointer(otbn_ctx, kOtbnVarDptrD, kOtbnVarD);
-  setup_data_pointer(otbn_ctx, kOtbnVarDptrXR, kOtbnVarXR);
-  setup_data_pointer(otbn_ctx, kOtbnVarDptrK, kOtbnVarK);
-}
 
 /**
  * Simple serial 'd' (set private key) command handler.
@@ -199,10 +140,6 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
                             const uint8_t *private_key_d, uint8_t *signature_r,
                             uint8_t *signature_s, const uint8_t *k) {
   SS_CHECK(otbn_ctx != NULL);
-
-  // Set pointers to input arguments.
-  LOG_INFO("Setup data pointers");
-  setup_data_pointers(otbn_ctx);
 
   // Write input arguments.
   uint32_t mode = 1;  // mode 1 => sign
