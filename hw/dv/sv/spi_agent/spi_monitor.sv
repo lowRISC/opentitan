@@ -38,6 +38,7 @@ class spi_monitor extends dv_base_monitor#(
     device_item = spi_item::type_id::create("device_item", this);
 
     forever begin
+      wait(cfg.en_monitor);
       @(negedge cfg.vif.csb);
       active_csb = cfg.vif.get_active_csb();
 

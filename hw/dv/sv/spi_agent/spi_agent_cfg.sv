@@ -4,7 +4,8 @@
 
 class spi_agent_cfg extends dv_base_agent_cfg;
 
-  // enable checkers in monitor
+  // enable monitor collection and checker
+  bit en_monitor = 1'b1;
   bit en_monitor_checks = 1'b1;
 
   // byte order (configured by vseq)

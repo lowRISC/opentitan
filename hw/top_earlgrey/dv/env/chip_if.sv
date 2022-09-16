@@ -227,12 +227,11 @@ interface chip_if;
     // These are always input
     assign spi_device_if[i].sck = ios[AssignedSpiHostsClkIo[i]];
 
-    always_comb begin
-      spi_device_if[i].csb = {spi_agent_pkg::CSB_WIDTH{1'b1}};
-      // if spi device interface is not enabled, do not allow csb to go low
-      spi_device_if[i].csb[0] = !__enable_spi_device[i] |
-                                ios[AssignedSpiHostsCsLIo[i]];
+    for (genvar k = 1; k < spi_agent_pkg::CSB_WIDTH; k++) begin : gen_csb_tieoff
+       assign spi_device_if[i].csb[k] = 1'b1;
     end
+
+    assign spi_device_if[i].csb[0] = ios[AssignedSpiHostsCsLIo[i]];
 
     for (genvar j = 0; j < SpiHostNumDataIos[i]; j++) begin : gen_spi_device_sio_conn
       assign ios[AssignedSpiHostsDataIo[i][j]] = __enable_spi_device[i] & sio_oe[j] ?

@@ -41,8 +41,13 @@ class chip_sw_spi_host_tx_rx_vseq extends chip_sw_base_vseq;
     super.body();
     `uvm_info(`gfn, $sformatf("Testing with spi host %d", spi_host_idx), UVM_LOW)
 
-    // enable interface
+    // enable spi agent
     cfg.chip_vif.enable_spi_device(spi_host_idx, 1);
+
+    // enable spi agent interface to begin
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "spi host configuration complete",
+             "Timedout waiting for spi host c configuration.")
+    cfg.m_spi_device_agent_cfgs[spi_host_idx].en_monitor = 1'b1;
 
     // create and start the spi_device sequence
     m_device_seq = spi_device_seq::type_id::create("m_device_seq");

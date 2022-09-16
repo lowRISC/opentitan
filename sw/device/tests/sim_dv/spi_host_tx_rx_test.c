@@ -64,6 +64,9 @@ bool test_main(void) {
   // Setup spi host configuration
   CHECK_DIF_OK(dif_spi_host_configure(&spi_host, config));
 
+  // DV sync message
+  LOG_INFO("spi host configuration complete");
+
   uint32_t expected_data[DATA_SET_SIZE];
   uint32_t received_data[DATA_SET_SIZE];
   for (uint32_t i = 0; i < ARRAYSIZE(expected_data); ++i) {
