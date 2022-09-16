@@ -87,51 +87,70 @@ compute_m0inv2to256:
 compute_rr_sample:
   /* Load m into registers starting at w3 */
   /*  and write its 2-complement to output buffer */
-  li          x8, 3           /* -> w3 */
-  add         x9, x12, x0     /* -> output buffer */
-  bn.sub      w1, w1, w1      /* Clear w1 and carry FG0.C */
+  li          x8, 3
+  add         x9, x12, x0
+  /* Clear w1 and carry FG0.C */
+  bn.sub      w1, w1, w1
   loop        x11, 4
-    bn.lid      x0, 0(x10++)    /* load next limp of m to w0 */
-    bn.movr     x8++, x0        /*  and copy it to registers w3, w4, ... */
-    bn.subb     w0, w1, w0      /* calculate m's 2-complement */
-    bn.sid      x0, 0(x9++)     /*  and store it in output buffer */
+    /* load next limb of m to w0 and copy it to registers w3, w4, ... */
+    bn.lid      x0, 0(x10++)
+    bn.movr     x8++, x0
+    /* calculate m's 2-complement and store it in output buffer */
+    bn.subb     w0, w1, w0
+    bn.sid      x0, 0(x9++)
   /* Check that the most significant limb of m is >=2^255 */
-  csrrs       x8, 0x7c0, x0   /* FG0 flags from calculating highest limp of 2-complement */
-  andi        x9, x8, 2       /* isolate MSB flag */
-  beq         x9, x0, m_ok    /*  that is complemented with respect to highest limp of m */
-  li          x10, 1          /* Return 1 if error. */
+  /* isolate FG0.M from calculating highest limb of 2-complement */
+  csrrs       x8, 0x7c0, x0
+  andi        x9, x8, 2
+  beq         x9, x0, m_ok
+  /* Return 1 if error. */
+  li          x10, 1
   ret
 m_ok:
-  /* Now double r repeatedly subtracting or adding m depending on its current sign */
-  slli        x10, x11, 8     /* k<<8 = 256*k rounds */
-  bn.subi     w1, w1, 1, FG1  /* set FG1.C and set w1=-1 to start with sub */
+  /* Now double r in k<<8 = 256*k rounds subtracting or adding m depending on its current sign */
+  slli        x10, x11, 8
+  /* set FG1.C and set w1=-1 to start with sub */
+  bn.subi     w1, w1, 1, FG1
   loop        x10, 13
-    li          x8, 3           /* -> m in w3 */
-    add         x9, x12, x0     /* -> intermediate value in output buffer */
-    bn.sub      w0, w0, w0, FG0 /* Clear FG0.C */
+    li          x8, 3
+    add         x9, x12, x0
+    /* Clear FG0.C */
+    bn.sub      w0, w0, w0, FG0
     loop        x11, 6
-      bn.lid      x0, 0(x9)       /* get intermediate value */
-      bn.addc     w2, w0, w0, FG0 /*  and shift it by 1 bit */
-      bn.movr     x0, x8++        /* get next limb of the shifted modulus in w0 */
+      /* get intermediate value and shift it by 1 bit */
+      bn.lid      x0, 0(x9)
+      bn.addc     w2, w0, w0, FG0
+      /* get next limb of the shifted modulus in w0 complementing it when subtracting */
       /* TODO: check if w1=0/-1 is visible in power trace and if it matters */
-      bn.xor      w0, w0, w1      /*  complementing it when subtracting */
-      bn.addc     w0, w2, w0, FG1 /* add/sub m from intermediate value */
-      bn.sid      x0, 0(x9++)     /*  and write it to output buffer */
+      bn.movr     x0, x8++
+      bn.xor      w0, w0, w1
+      /* add/sub m from intermediate value and write it to output buffer */
+      bn.addc     w0, w2, w0, FG1
+      bn.sid      x0, 0(x9++)
     /* need the majority of three carries given by FG0.C, FG1.C and -w1 */
-    bn.subb     w0, w0, w0, FG0 /* -1 if FG0.C=1, otherwise 0 */
-    bn.addc     w1, w1, w0, FG1 /* FG1.C is the majority we want */
-    bn.subb     w1, w1, w1, FG1 /*  so set w1 accordingly for next round add/sub */
+    /* convert FG0.C=0/1, into w0=0/-1 */
+    bn.subb     w0, w0, w0, FG0
+    /* adding 0/-1 in w0 and w1 with FG1.C gives in FG1.C the majority we want */
+    bn.addc     w1, w1, w0, FG1
+    /* set w1 accordingly for next round add/sub */
+    bn.subb     w1, w1, w1, FG1
   /* if FG1.C=0/w1=0 then result is negative, so add m to make it positive */
-  li          x8, 3           /* -> m in w3 */
-  add         x9, x12, x0     /* -> output buffer */
-  bn.sub      w1, w1, w1, FG0 /* clear w1 and FG0.C */
+  li          x8, 3
+  add         x9, x12, x0
+  /* clear w1 and FG0.C */
+  bn.sub      w1, w1, w1, FG0
   loop        x11, 5
-    bn.movr   x0, x8++          /* get next limb of the shifted modulus in w0 */
-    bn.sel    w2, w1, w0, FG1.C /* C=1 means already positive, so add 0 */
-    bn.lid    x0, 0(x9)         /* get intermediate value */
-    bn.addc   w0, w0, w2, FG0   /*  and add m to it, unless already positive */
-    bn.sid    x0, 0(x9++)       /* write result */
-  add       x10, x0, x0       /* return 0 */
+    /* get next limb of the shifted modulus in w0 */
+    bn.movr   x0, x8++
+    /* C=1 means already positive, so choose 0 as summand instead of w0 */
+    bn.sel    w2, w1, w0, FG1.C
+    /* get intermediate value and add m to it, unless already positive */
+    bn.lid    x0, 0(x9)
+    bn.addc   w0, w0, w2, FG0
+    /* write result */
+    bn.sid    x0, 0(x9++)
+  /* return 0 */
+  add       x10, x0, x0
   ret
  .size compute_rr_sample, .-compute_rr_sample
 
@@ -161,53 +180,56 @@ m_ok:
      depending on FG1.C, where one is adding and the other is subtracting m from 2*r */
 compute_rr_unrolled_inner_loop:
 compute_rr_unrolled_inner_loop_3072bit:
-  bn.addc     w15, w15, w15, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w3, w1          /* switch between add/sub depending on w1 */
-  bn.addc     w15, w15, w0, FG1   /* add/sub m for updating r[i] */
+  /* double r[i] keeping carry in FG0.C */
+  bn.addc     w15, w15, w15, FG0
+  /* switch between add/sub depending on w1 */
+  bn.xor      w0, w3, w1
+  /* add/sub m for updating r[i] */
+  bn.addc     w15, w15, w0, FG1
 compute_rr_unrolled_inner_loop_2816bit:
-  bn.addc     w16, w16, w16, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w4, w1          /* switch between add/sub depending on w1 */
-  bn.addc     w16, w16, w0, FG1   /* add/sub m for updating r[i] */
+  bn.addc     w16, w16, w16, FG0
+  bn.xor      w0, w4, w1
+  bn.addc     w16, w16, w0, FG1
 compute_rr_unrolled_inner_loop_2560bit:
-  bn.addc     w17, w17, w17, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w5, w1          /* switch between add/sub depending on w1 */
-  bn.addc     w17, w17, w0, FG1   /* add/sub m for updating r[i] */
+  bn.addc     w17, w17, w17, FG0
+  bn.xor      w0, w5, w1
+  bn.addc     w17, w17, w0, FG1
 compute_rr_unrolled_inner_loop_2304bit:
-  bn.addc     w18, w18, w18, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w6, w1          /* switch between add/sub depending on w1 */
-  bn.addc     w18, w18, w0, FG1   /* add/sub m for updating r[i] */
+  bn.addc     w18, w18, w18, FG0
+  bn.xor      w0, w6, w1
+  bn.addc     w18, w18, w0, FG1
 compute_rr_unrolled_inner_loop_2048bit:
-  bn.addc     w19, w19, w19, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w7, w1          /* switch between add/sub depending on w1 */
-  bn.addc     w19, w19, w0, FG1   /* add/sub m for updating r[i] */
+  bn.addc     w19, w19, w19, FG0
+  bn.xor      w0, w7, w1
+  bn.addc     w19, w19, w0, FG1
 compute_rr_unrolled_inner_loop_1792bit:
-  bn.addc     w20, w20, w20, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w8, w1          /* switch between add/sub depending on w1 */
-  bn.addc     w20, w20, w0, FG1   /* add/sub m for updating r[i] */
+  bn.addc     w20, w20, w20, FG0
+  bn.xor      w0, w8, w1
+  bn.addc     w20, w20, w0, FG1
 compute_rr_unrolled_inner_loop_1536bit:
-  bn.addc     w21, w21, w21, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w9, w1          /* switch between add/sub depending on w1 */
-  bn.addc     w21, w21, w0, FG1   /* add/sub m for updating r[i] */
+  bn.addc     w21, w21, w21, FG0
+  bn.xor      w0, w9, w1
+  bn.addc     w21, w21, w0, FG1
 compute_rr_unrolled_inner_loop_1280bit:
-  bn.addc     w22, w22, w22, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w10, w1         /* switch between add/sub depending on w1 */
-  bn.addc     w22, w22, w0, FG1   /* add/sub m for updating r[i] */
+  bn.addc     w22, w22, w22, FG0
+  bn.xor      w0, w10, w1
+  bn.addc     w22, w22, w0, FG1
 compute_rr_unrolled_inner_loop_1024bit:
-  bn.addc     w23, w23, w23, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w11, w1         /* switch between add/sub depending on w1 */
-  bn.addc     w23, w23, w0, FG1   /* add/sub m for updating r[i] */
+  bn.addc     w23, w23, w23, FG0
+  bn.xor      w0, w11, w1
+  bn.addc     w23, w23, w0, FG1
 compute_rr_unrolled_inner_loop_768bit:
-  bn.addc     w24, w24, w24, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w12, w1         /* switch between add/sub depending on w1 */
-  bn.addc     w24, w24, w0, FG1   /* add/sub m for updating r[i] */
+  bn.addc     w24, w24, w24, FG0
+  bn.xor      w0, w12, w1
+  bn.addc     w24, w24, w0, FG1
 compute_rr_unrolled_inner_loop_512bit:
-  bn.addc     w25, w25, w25, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w13, w1         /* switch between add/sub depending on w1 */
-  bn.addc     w25, w25, w0, FG1   /* add/sub m for updating r[i] */
+  bn.addc     w25, w25, w25, FG0
+  bn.xor      w0, w13, w1
+  bn.addc     w25, w25, w0, FG1
 compute_rr_unrolled_inner_loop_256bit:
-  bn.addc     w26, w26, w26, FG0  /* double r[i] keeping carry in FG0.C */
-  bn.xor      w0, w14, w1         /* switch between add/sub depending on w1 */
-  bn.addc     w26, w26, w0, FG1   /* add/sub m for updating r[i] */
+  bn.addc     w26, w26, w26, FG0
+  bn.xor      w0, w14, w1
+  bn.addc     w26, w26, w0, FG1
 compute_rr_unrolled_inner_loop_0bit:
   ret
  .size compute_rr_unrolled_inner_loop, .-compute_rr_unrolled_inner_loop
@@ -238,48 +260,70 @@ compute_rr_unrolled_inner_loop_0bit:
 
 compute_rr_sample_fast:
   /* Load m and its 2-complement into registers ending in w14 rsp. w26 */
-  li          x8, 15          /* -> w15 */
-  sub         x8, x8, x11     /* -> w[14-(k-1)] */
-  addi        x9, x8, 12      /* -> w[26-(k-1)] */
-  bn.sub      w1, w1, w1      /* Clear w1 and carry FG0.C */
+  /* point to w[14-(k-1)] and w[26-(k-1)] */
+  li          x8, 15
+  sub         x8, x8, x11
+  addi        x9, x8, 12
+  /* Clear w1 and carry FG0.C */
+  bn.sub      w1, w1, w1
   loop        x11, 4
-    bn.lid      x0, 0(x10++)    /* load next limp of m to w0 */
-    bn.movr     x8++, x0        /*  and copy it to registers ..., w13, w14 */
-    bn.subb     w0, w1, w0      /* calculate m's 2-complement */
-    bn.movr     x9++, x0        /*  and store it in registers ..., w25, w26 */
+    /* load next limb of m to w0 and copy it to registers ..., w13, w14 */
+    bn.lid      x0, 0(x10++)
+    bn.movr     x8++, x0
+    /* calculate m's 2-complement and store it in registers ..., w25, w26 */
+    bn.subb     w0, w1, w0
+    bn.movr     x9++, x0
+
   /* Check that the most significant limb of m is >=2^255 */
-  csrrs       x8, 0x7c0, x0   /* FG0 flags from calculating highest limp of 2-complement */
-  andi        x9, x8, 2       /* isolate MSB flag */
-  beq         x9, x0, m_OK    /*  that is complemented with respect to highest limp of m */
-  li          x10, 1          /* Return 1 if error. */
+  /* isolate FG0.M from calculating highest limb of 2-complement */
+  csrrs       x8, 0x7c0, x0
+  andi        x9, x8, 2
+  beq         x9, x0, m_OK
+  /* Return 1 if error. */
+  li          x10, 1
   ret
 m_OK:
-  /* Now double r repeatedly subtracting or adding m depending on its current sign */
+  /* Now double r for k<<8 = 256*k rounds subtracting or adding m depending on its current sign */
+  /* calculate 12*k */
+  slli        x9, x11, 1
+  add         x9, x9, x11
+  slli        x9, x9, 2
+  /* and subtract it to get compute_rr_unrolled_inner_loop_(k*256)bit */
   la          x8, compute_rr_unrolled_inner_loop_0bit
-  slli        x9, x11, 1      /* 2*k */
-  add         x9, x9, x11     /* 3*k */
-  slli        x9, x9, 2       /* 12*k */
-  sub         x8, x8, x9      /* -> compute_rr_unrolled_inner_loop_(k*256)bit */
-  bn.subi     w1, w1, 1, FG1  /* set FG1.C and set w1=-1 to start with sub */
-  slli        x10, x11, 8     /* k<<8 = 256*k rounds */
+  sub         x8, x8, x9
+  /* set FG1.C and set w1=-1 to start with sub */
+  bn.subi     w1, w1, 1, FG1
+  slli        x10, x11, 8
   loop        x10, 5
-    bn.sub      w0, w0, w0, FG0 /* Clear FG0.C */
-    jalr        x1, x8, 0       /* r = 2*r +- m */
+    /* Clear FG0.C */
+    bn.sub      w0, w0, w0, FG0
+    /* double r and add/subtract m depending on r's sign */
+    jalr        x1, x8, 0
     /* need the majority of three carries given by FG0.C, FG1.C and -w1 */
-    bn.subb     w0, w0, w0, FG0 /* -1 if FG0.C=1, otherwise 0 */
-    bn.addc     w1, w1, w0, FG1 /* FG1.C is the majority we want */
-    bn.subb     w1, w1, w1, FG1 /*  so set w1 accordingly for next round add/sub */
+    /* convert FG0.C=0/1, into w0=0/-1 */
+    bn.subb     w0, w0, w0, FG0
+    /* adding 0/-1 in w0 and w1 with FG1.C gives in FG1.C the majority we want */
+    bn.addc     w1, w1, w0, FG1
+    /* set w1 accordingly for next round add/sub */
+    bn.subb     w1, w1, w1, FG1
   /* if FG1.C=0/w1=0 then result is negative, so add m to make it positive */
-  li          x8, 15          /* -> w15 */
-  sub         x8, x8, x11     /* -> w[14-(k-1)] */
-  addi        x9, x8, 12      /* -> w[26-(k-1)] */
-  bn.sub      w1, w1, w1, FG0 /* clear w1 and FG0.C */
+  /* point to w[14-(k-1)] and w[26-(k-1)] */
+  li          x8, 15
+  sub         x8, x8, x11
+  addi        x9, x8, 12
+  /* clear w1 and FG0.C */
+  bn.sub      w1, w1, w1, FG0
   loop        x11, 5
-    bn.movr   x0, x8++          /* get next limb of the shifted modulus in w0 */
-    bn.sel    w2, w1, w0, FG1.C /* C=1 means already positive, so add 0 */
-    bn.movr   x0, x9++          /* get intermediate value */
-    bn.addc   w0, w0, w2, FG0   /*  and add m to it, unless already positive */
-    bn.sid    x0, 0(x12++)       /* write result */
-  add       x10, x0, x0       /* return 0 */
+    /* get next limb of the shifted modulus in w0 */
+    bn.movr   x0, x8++
+    /* C=1 means already positive, so choose 0 as summand instead of w0 */
+    bn.sel    w2, w1, w0, FG1.C
+    /* get intermediate value and add m to it, unless already positive */
+    bn.movr   x0, x9++
+    bn.addc   w0, w0, w2, FG0
+    /* write result */
+    bn.sid    x0, 0(x12++)
+  /* return 0 */
+  add       x10, x0, x0
   ret
  .size compute_rr_sample_fast, .-compute_rr_sample_fast
