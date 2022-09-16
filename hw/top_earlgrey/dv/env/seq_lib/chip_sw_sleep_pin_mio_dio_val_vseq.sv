@@ -22,10 +22,6 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
   pad_ret_t [NumMioPads-1:0] mio_pad_ret;
   pad_ret_t [NumDioPads-1:0] dio_pad_ret;
 
-  virtual task cpu_init();
-    super.cpu_init();
-  endtask : cpu_init
-
   // SW sends chosen values via sw_logger_if. receive_chosen_value waits and
   // stores the values to the list.
   //
@@ -110,9 +106,5 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     // TODO: Fins out how to pass the test (maybe just $display()?)
 
   endtask : body
-
-  virtual task post_start();
-    super.post_start();
-  endtask : post_start
 
 endclass : chip_sw_sleep_pin_mio_dio_val_vseq
