@@ -28,6 +28,9 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
     bit [3:0] mask;
     bit [31:0] err_val = 32'd1 << 20;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_type, err_type inside {[0:6]};)
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsALU", 0)
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsRF", 0)
+    `DV_ASSERT_CTRL_REQ("SecWipeAsserts", 0)
     case(err_type)
       // Injecting error on ispr_addr during a write
       0: begin
@@ -252,6 +255,9 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
     `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
     `DV_CHECK_FATAL(uvm_hdl_release(err_path) == 1);
     reset_if_locked();
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsALU", 1)
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsRF", 1)
+    `DV_ASSERT_CTRL_REQ("SecWipeAsserts", 1)
   endtask
 
 endclass : otbn_ctrl_redun_vseq
