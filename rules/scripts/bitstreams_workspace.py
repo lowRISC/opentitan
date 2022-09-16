@@ -210,6 +210,8 @@ class BitstreamCache(object):
         tar.extractall(local_dir)
         if latest:
             self.Touch(latest)
+        if not os.path.exists(self.latest_update):
+            self.Touch(key)
 
     def GetFromCache(self, key: str) -> Dict[str, Set[str]]:
         """Get the requested bitstream files.
@@ -286,7 +288,7 @@ class BitstreamCache(object):
             # Only use the top-level files for now.
             target_directory = "cache/{}".format(key)
             if (os.path.dirname(mmi_file) != target_directory):
-              continue
+                continue
 
             if target_name in used_target_names:
                 logging.error(
