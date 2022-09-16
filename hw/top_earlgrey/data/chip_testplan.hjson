@@ -539,15 +539,6 @@
       tests: ["chip_jtag_mem_access"]
     }
     {
-      name: chip_rv_dm_cpu_debug_mem_not_accessable
-      desc: '''Verify that the debug mem can't be accessed from the CPU while not in the debug mode.
-
-            TODO, add stimulus and checks
-            '''
-      stage: V2
-      tests: []
-    }
-    {
       name: chip_rv_dm_perform_debug
       desc: '''
             - X-ref'ed with rom_e2e_jtag_inject from rom testplan
@@ -610,6 +601,7 @@
             - Put life cycle on states other than Test, RMA and DEV.
             - Verify that the rv_dm bus device is inaccessible from the CPU as well as external
               JTAG.
+            - Verify that the debug ROM is not accessible by the CPU.
             - Verify that the JTAG TAP is unavailable.
             - X-ref'ed with `chip_tap_strap_sampling`
             '''
