@@ -1249,6 +1249,8 @@
       name: smoke
       tests: ["xbar_chip_smoke",
               "chip_sw_uart_tx_rx",
+              "chip_sw_spi_host_tx_rx",
+              "chip_sw_i2c_host_tx_rx",
               "chip_plic_all_irqs",
               "chip_sw_example_flash",
               "chip_sw_example_rom",
