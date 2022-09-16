@@ -144,4 +144,75 @@ package chip_common_pkg;
     JtagTapDft = 2'b11
   } chip_jtag_tap_e;
 
+  // TOP MIO/ DIO connection map
+  parameter int unsigned NumMioPads = top_earlgrey_pkg::MioPadCount;
+  parameter int unsigned NumDioPads = top_earlgrey_pkg::DioCount;
+
+  parameter chip_io_e MioPads [NumMioPads] = '{
+    IoA0,  // MIO2
+    IoA1,  // MIO3
+    IoA2,  // MIO4
+    IoA3,  // MIO5
+    IoA4,  // MIO6
+    IoA5,  // MIO7
+    IoA6,  // MIO8
+    IoA7,  // MIO9
+    IoA8,  // MIO10
+    IoB0,  // MIO11
+    IoB1,  // MIO12
+    IoB2,  // MIO13
+    IoB3,  // MIO14
+    IoB4,  // MIO15
+    IoB5,  // MIO16
+    IoB6,  // MIO17
+    IoB7,  // MIO18
+    IoB8,  // MIO19
+    IoB9,  // MIO20
+    IoB10, // MIO21
+    IoB11, // MIO22
+    IoB12, // MIO23
+    IoC0,  // MIO24
+    IoC1,  // MIO25
+    IoC2,  // MIO26
+    IoC3,  // MIO27
+    IoC4,  // MIO28
+    IoC5,  // MIO29
+    IoC6,  // MIO30
+    IoC7,  // MIO31
+    IoC8,  // MIO32
+    IoC9,  // MIO33
+    IoC10, // MIO34
+    IoC11, // MIO35
+    IoC12, // MIO36
+    IoR0,  // MIO37
+    IoR1,  // MIO38
+    IoR2,  // MIO39
+    IoR3,  // MIO40
+    IoR4,  // MIO41
+    IoR5,  // MIO42
+    IoR6,  // MIO43
+    IoR7,  // MIO44
+    IoR10, // MIO45
+    IoR11, // MIO46
+    IoR12, // MIO47
+    IoR13  // MIO48
+  };
+  parameter chip_io_e DioPads [NumDioPads] = '{
+    UsbP,       // DIO 0
+    UsbN,       // DIO 1
+    SpiHostD0,  // DIO 2
+    SpiHostD1,  // DIO 3
+    SpiHostD2,  // DIO 4
+    SpiHostD3,  // DIO 5
+    SpiDevD0,   // DIO 6
+    SpiDevD1,   // DIO 7
+    SpiDevD2,   // DIO 8
+    SpiDevD3,   // DIO 9
+    IoR8,       // DIO 10 EC_RST_L
+    IoR9,       // DIO 11 FLASH_WP_L
+    SpiDevClk,  // DIO 12
+    SpiDevCsL,  // DIO 13
+    SpiHostClk, // DIO 14
+    SpiHostCsL  // DIO 15
+  };
 endpackage
