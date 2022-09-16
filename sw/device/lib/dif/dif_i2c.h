@@ -91,6 +91,28 @@ typedef struct dif_i2c_timing_config {
 } dif_i2c_timing_config_t;
 
 /**
+ * Configuration for the addressing behavior of the I2C, can be disabled or
+ * configured to look for multiple addresses by masking certain bits. A mask of
+ * 0x7f will match only a single address.
+ */
+typedef struct dif_i2c_id {
+  /**
+   * Mask the recieved I2C address before checking for a match. Received Address
+   * & mask must equal the programmed address to activate I2C Device. If Address
+   * & ~mask != 0, this will not match any addresses. A mask of 0x7f will cause
+   * device to only respond to an exact match. The mask is 7 bits and LSB
+   * aligned.
+   */
+  uint8_t mask;
+  /**
+   * The 7-bit I2C address that should be matched after masking to cause the
+   * activated I2C Target device to begin to act in a transaction. Address is
+   * LSB aligned.
+   */
+  uint8_t address;
+} dif_i2c_id_t;
+
+/**
  * Runtime configuration for I2C.
  *
  * This struct describes runtime timing parameters. Computing these values is
@@ -187,6 +209,32 @@ typedef struct dif_i2c_fmt_flags {
 } dif_i2c_fmt_flags_t;
 
 /**
+ * The I2C Target device records the following signals with received data
+ */
+typedef enum dif_i2c_signal {
+  /**
+   * The associated byte was received with a START signal, and should be the
+   * matching address and R/W bit
+   */
+  kDifI2cSignalStart = 1,
+  /**
+   * The associated byte was received after a STOP signal, so the transaction is
+   * over and the byte is junk
+   */
+  kDifI2cSignalStop = 2,
+  /**
+   * The associated byte was received with a repeated START signal and
+   * represents the address for the subsequent transaction.
+   */
+  kDifI2cSignalRepeat = 3,
+  /**
+   * There's no associated STOP or START signal this is just a byte that's been
+   * written to the I2C target in an ongoing transaction
+   */
+  kDifI2cSignalNone = 0,
+} dif_i2c_signal_t;
+
+/**
  * Available formatting codes for `dif_i2c_write_byte_raw()`.
  *
  * Each code describes how to interpret the `byte` parameter, referred to below
@@ -244,7 +292,87 @@ typedef enum dif_i2c_fmt {
 } dif_i2c_fmt_t;
 
 /**
- * Computes timing parameters for an I2C device and stores them in `config`.
+ * Flags representing the status of an I2C block
+ */
+typedef struct dif_i2c_status {
+  /**
+   * Enable Host, I2C block has been initialized and enabled to act as a host,
+   * consuming entries from the FMT FIFO to perform I2C transactions, and
+   * writing the results of I2C Reads to the RX FIFO
+   */
+  bool enable_host;
+  /**
+   * Enable Target, I2C block has been initialized and enabled to act as a
+   * target device, using the TX FIFO to respond to I2C Reads and the ACQ FIFO
+   * to store data received from I2C Writes
+   */
+  bool enable_target;
+  /**
+   * Line Loopback enabled
+   */
+  bool line_loopback;
+  /**
+   * Format FIFO is full, SW cannot write commands to transact into the FIFO
+   * until I2C host is able to act on the contents.
+   */
+  bool fmt_fifo_full;
+  /**
+   * RX FIFO is full, I2C cannot continue to read data until SW reads from the
+   * FIFO.
+   */
+  bool rx_fifo_full;
+  /**
+   * Format FIFO is empty, I2C host will stop transacting until the FIFO is
+   * written to.
+   */
+  bool fmt_fifo_empty;
+  /**
+   * RX FIFO Empty, Software has handled all bytes read by the I2C Host.
+   */
+  bool rx_fifo_empty;
+  /**
+   * I2C Host is not carrying out a transaction
+   */
+  bool host_idle;
+  /**
+   * I2C Device is not carrying out a transaction
+   */
+  bool target_idle;
+  /**
+   * TX FIFO Full, I2C device must respond to I2C reads or have the FIFO cleared
+   * before SW can write to the FIFO.
+   */
+  bool tx_fifo_full;
+  /**
+   * Acquire FIFO is full of data from I2C writes to the target device. Software
+   * must handle data before I2C device can continue
+   */
+  bool acq_fifo_full;
+  /**
+   * TX FIFO is empty, device is unprepared to respond to I2C Reads until SW
+   * writes to FIFO
+   */
+  bool tx_fifo_empty;
+  /**
+   * Aquire FIFO is empty and will remain so until I2C Device recieves a Write
+   */
+  bool acq_fifo_empty;
+} dif_i2c_status_t;
+
+/**
+ * Get I2C Status and store it in status
+ *
+ * @param i2c An I2c handle.
+ * @param[out] status I2C status as understood by the block
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_get_status(dif_i2c_t *i2c, dif_i2c_status_t *status);
+
+/**
+ * Computes timing parameters for an I2C host and stores them in `config`.
+ *
+ * Timing is based on requirements for devices attached to OpenTitan
  *
  * The values returned may be tweaked by callers that require finer control over
  * some of the calculations, such as how the allocation of a lengthened SCL
@@ -272,7 +400,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_configure(const dif_i2c_t *i2c, dif_i2c_config_t config);
 
 /**
- * Resets the state of the RX FIFO, essentially dropping all received bytes.
+ * Resets the state of the RX FIFO, essentially dropping all received bytes for
+ * the host.
  *
  * @param i2c An I2c handle.
  * @return The result of the operation.
@@ -289,6 +418,26 @@ dif_result_t dif_i2c_reset_rx_fifo(const dif_i2c_t *i2c);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_reset_fmt_fifo(const dif_i2c_t *i2c);
+
+/**
+ * Resets the state of the TX FIFO, essentially dropping all scheduled
+ * responses.
+ *
+ * @param i2c An I2c handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_reset_tx_fifo(const dif_i2c_t *i2c);
+
+/**
+ * Resets the state of the ACQ FIFO, essentially dropping all received bytes for
+ * the target device.
+ *
+ * @param i2c An I2c handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_reset_acq_fifo(const dif_i2c_t *i2c);
 
 /**
  * Sets watermarks for for the RX and FMT FIFOs, which will fire the respective
@@ -308,8 +457,8 @@ dif_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
                                     dif_i2c_level_t fmt_level);
 
 /**
- * Enables or disables the "Host I2C" functionality, effectively turning the
- * I2C device on or off. This function should be called to enable the device
+ * Enables or disables the "Host I2C" functionality,
+ * This function should be called to enable the device
  * once timings, interrupts, and watermarks are all configured.
  *
  * @param i2c An I2C handle.
@@ -318,6 +467,32 @@ dif_result_t dif_i2c_set_watermarks(const dif_i2c_t *i2c,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_host_set_enabled(const dif_i2c_t *i2c, dif_toggle_t state);
+
+/**
+ * Enables or disables the "Device I2C" functionality,
+ * This function should be called to enable the device
+ * once address, and interrupts are all configured.
+ *
+ * @param i2c An I2C handle.
+ * @param state The new toggle state for the device functionality.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_device_set_enabled(const dif_i2c_t *i2c,
+                                        dif_toggle_t state);
+
+/**
+ * Enables or disables the Line Loopback functionality,
+ * This function should be called to assist debugging by setting the i2c block
+ * or host to use received transactions to populate outgoing transactions.
+ *
+ * @param i2c An I2C handle.
+ * @param state The new toggle state for the host functionality.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_line_loopback_set_enabled(const dif_i2c_t *i2c,
+                                               dif_toggle_t state);
 
 /**
  * Enables or disables the "override mode". In override mode, software is able
@@ -360,19 +535,26 @@ dif_result_t dif_i2c_override_sample_pins(const dif_i2c_t *i2c,
                                           uint16_t *sda_samples);
 
 /**
- * Returns the current levels, i.e., number of entries, in the FMT and RX FIFOs.
- * These values represent the number of entries pending for send by hardware,
- * and entries pending for read by software, respectively.
+ * Returns the current levels, i.e., number of entries, in the FMT, RX, TX and
+ * ACQ FIFOs.
+ * These values represent the number of entries pending for send by host
+ * hardware, entries pending for read by host software, entries pending for send
+ * by device hardware, and entries pending for read by device software
+ * respectively.
  *
  * @param i2c An I2C handle.
  * @param[out] fmt_fifo_level The number of unsent FMT bytes; may be `NULL`.
  * @param[out] rx_fifo_level The number of unread RX bytes; may be `NULL`.
+ * @param[out] tx_fifo_level The number of unread TX bytes; may be `NULL`.
+ * @param[out] acq_fifo_level The number of unread ACQ bytes; may be `NULL`.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_get_fifo_levels(const dif_i2c_t *i2c,
                                      uint8_t *fmt_fifo_level,
-                                     uint8_t *rx_fifo_level);
+                                     uint8_t *rx_fifo_level,
+                                     uint8_t *tx_fifo_level,
+                                     uint8_t *acq_fifo_level);
 
 /**
  * Pops an entry (a byte) off of the RX FIFO. Passing in `NULL` to the out-param
@@ -418,6 +600,101 @@ dif_result_t dif_i2c_write_byte_raw(const dif_i2c_t *i2c, uint8_t byte,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_write_byte(const dif_i2c_t *i2c, uint8_t byte,
                                 dif_i2c_fmt_t code, bool suppress_nak_irq);
+
+/**
+ * Pushes a byte into the TX FIFO to make it available when this I2C block
+ * responds to an I2C Read as a target device.
+ *
+ * @param i2c handle.
+ * @param byte to write to FIFO
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_transmit_byte(const dif_i2c_t *i2c, uint8_t byte);
+
+/**
+ * Read acquired data from the ACQ FIFO, including record of starts, stops,
+ * address and written data
+ *
+ * @param i2c handle.
+ * @param[out] byte, Data received in the transaction, Could be the address or
+ * junk
+ * @param[out] signal, Signal received in the transaction
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_acquire_byte(const dif_i2c_t *i2c, uint8_t *byte,
+                                  dif_i2c_signal_t *signal);
+
+/**
+ * Enables clock stretching timeout after a number of I2C block clock cycles
+ * when I2C block is configured as host.
+ *
+ * @param i2c An I2C handle,
+ * @param enable the timeout
+ * @param cycles How many cycles to wait before timing out
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_enable_clock_stretching_timeout(const dif_i2c_t *i2c,
+                                                     dif_toggle_t enable,
+                                                     uint32_t cycles);
+
+/**
+ * Sets the I2C device to listen for a pair of masked addresses
+ *
+ * @param i2c handle,
+ * @param id0 address and mask pair to listen for can be null
+ * @param id1 address and mask pair to listen for can be null
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_set_device_id(const dif_i2c_t *i2c, dif_i2c_id_t *id0,
+                                   dif_i2c_id_t *id1);
+
+/**
+ * Set host timeout. When OT is acting as target device, set the number of
+ * counts after which to trigger a host_timeout interrupt
+ *
+ * @param i2c handle,
+ * @param duration in clock counts
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_set_host_timeout(const dif_i2c_t *i2c, uint32_t duration);
+
+/**
+ * Configures clock stretching after address match for reads and writes when OT
+ * is operating as the target device.
+ *
+ * Clock stretching should be terminated by software with
+ * `dif_i2c_stop_stretch()`
+ *
+ * @param i2c An I2C handle.
+ * @param stretch_reads Enable or disable clock stretching after device recieves
+ * I2C Reads
+ * @param stretch_writes Enable or disable clock stretching after device
+ * recieves I2C writes
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_config_stretch(const dif_i2c_t *i2c,
+                                    dif_toggle_t stretch_reads,
+                                    dif_toggle_t stretch_writes);
+
+/**
+ * Stops I2C stretching after address match for either a read, write or both
+ * when OT is operating as the target device.
+ *
+ * @param i2c An I2C handle.
+ * @param stop_read_stretch
+ * @param stop_write_stretch
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_stop_stretch(const dif_i2c_t *i2c,
+                                  dif_toggle_t stop_read_stretch,
+                                  dif_toggle_t stop_write_stretch);
 
 #ifdef __cplusplus
 }  // extern "C"

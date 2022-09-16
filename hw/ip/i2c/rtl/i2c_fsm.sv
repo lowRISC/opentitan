@@ -351,17 +351,21 @@ module i2c_fsm (
 
   // State definitions
   typedef enum logic [5:0] {
-    Idle, PopFmtFifo, SetupStart, HoldStart, SetupStop, HoldStop,
-        ClockLow, SetupBit, ClockPulse, HoldBit,
-        ClockLowAck, SetupDevAck, ClockPulseAck, HoldDevAck,
-        ReadClockLow, ReadSetupBit, ReadClockPulse, ReadHoldBit,
-        HostClockLowAck, HostSetupBitAck, HostClockPulseAck, HostHoldBitAck,
-        Active, ClockStart, ClockStop,
-        AcquireStart, AddrRead, AddrAckWait, AddrAckSetup, AddrAckPulse, AddrAckHold,
-        TransmitWait, TransmitSetup, TransmitPulse, TransmitHold, TransmitAck,
-        AcquireByte, AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
-        PopTxFifo, AcquireSrP, StretchTxEmpty, StretchAcqFull, StretchAddrTransmit,
-        StretchAddrAcquire
+    // Shared between all modes
+    Idle,
+    // Exclusive to host mode
+    PopFmtFifo, SetupStart, HoldStart, SetupStop, HoldStop,
+    ClockLow, SetupBit, ClockPulse, HoldBit,
+    ClockLowAck, SetupDevAck, ClockPulseAck, HoldDevAck,
+    ReadClockLow, ReadSetupBit, ReadClockPulse, ReadHoldBit,
+    HostClockLowAck, HostSetupBitAck, HostClockPulseAck, HostHoldBitAck,
+    Active, ClockStart, ClockStop,
+    // Exclusive to device mode
+    AcquireStart, AddrRead, AddrAckWait, AddrAckSetup, AddrAckPulse, AddrAckHold,
+    TransmitWait, TransmitSetup, TransmitPulse, TransmitHold, TransmitAck,
+    AcquireByte, AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
+    PopTxFifo, AcquireSrP, StretchTxEmpty, StretchAcqFull, StretchAddrTransmit,
+    StretchAddrAcquire
   } state_e;
 
   state_e state_q, state_d;

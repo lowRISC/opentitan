@@ -174,7 +174,8 @@ bool test_main(void) {
 
   // Make sure all fifo entries have been drained.
   do {
-    CHECK_DIF_OK(dif_i2c_get_fifo_levels(&i2c, &tx_fifo_lvl, &rx_fifo_lvl));
+    CHECK_DIF_OK(
+        dif_i2c_get_fifo_levels(&i2c, &tx_fifo_lvl, &rx_fifo_lvl, NULL, NULL));
   } while (tx_fifo_lvl > 0);
   CHECK(fmt_irq_seen);
   fmt_irq_seen = false;
@@ -185,7 +186,8 @@ bool test_main(void) {
 
   // Make sure all data has been read back.
   do {
-    CHECK_DIF_OK(dif_i2c_get_fifo_levels(&i2c, &tx_fifo_lvl, &rx_fifo_lvl));
+    CHECK_DIF_OK(
+        dif_i2c_get_fifo_levels(&i2c, &tx_fifo_lvl, &rx_fifo_lvl, NULL, NULL));
   } while (rx_fifo_lvl < byte_count);
   CHECK(rx_irq_seen);
 
