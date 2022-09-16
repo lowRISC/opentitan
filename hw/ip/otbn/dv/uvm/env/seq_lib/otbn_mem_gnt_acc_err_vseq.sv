@@ -28,7 +28,7 @@ class otbn_mem_gnt_acc_err_vseq extends otbn_single_vseq;
 
     `DV_CHECK_STD_RANDOMIZE_FATAL(choose_mem)
     cfg.clk_rst_vif.wait_clks($urandom_range(10, 100));
-
+    `DV_ASSERT_CTRL_REQ("DMemAsserts", 0)
     case(choose_mem)
       0: begin // Dmem
         gnt_path = "tb.dut.u_dmem.gnt_o";
@@ -36,6 +36,7 @@ class otbn_mem_gnt_acc_err_vseq extends otbn_single_vseq;
           do begin
             @(cfg.clk_rst_vif.cb);
             uvm_hdl_read("tb.dut.u_dmem.req_i", req);
+    `DV_ASSERT_CTRL_REQ("DMemAsserts", 0)
           end while(!req);
         )
         `DV_CHECK_FATAL(uvm_hdl_force(gnt_path, 0) == 1)
@@ -60,5 +61,6 @@ class otbn_mem_gnt_acc_err_vseq extends otbn_single_vseq;
       `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
       `DV_CHECK_FATAL(uvm_hdl_release(gnt_path) == 1);
       reset_if_locked();
+      `DV_ASSERT_CTRL_REQ("DMemAsserts", 1)
   endtask: inject_gnt_err
 endclass : otbn_mem_gnt_acc_err_vseq
