@@ -13,6 +13,7 @@ def args(p):
 %>\
 #include <limits.h>
 
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
 % for n in sorted(irq_peripheral_names + ["rv_plic"]):
 #include "sw/device/lib/dif/dif_${n}.h"
@@ -206,12 +207,24 @@ ${"" if loop.last else "\n"}\
   % endfor
 }
 
+/**
+ * Checks that the target ID corresponds to the ID of the hart on which
+ * this test is executed on. This check is meant to be used in a
+ * single-hart system only.
+ */
+static void check_hart_id(uint32_t exp_hart_id) {
+  uint32_t act_hart_id;
+  CSR_READ(CSR_REG_MHARTID, &act_hart_id);
+  CHECK(act_hart_id == exp_hart_id, "Processor has unexpected HART ID.");
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
   peripherals_init();
+  check_hart_id((uint32_t)kHart);
   rv_plic_testutils_irq_range_enable(
       &plic, kHart, kTop${top["name"].capitalize()}PlicIrqIdNone + 1, kTop${top["name"].capitalize()}PlicIrqIdLast);
   peripheral_irqs_clear();
