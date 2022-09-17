@@ -93,13 +93,13 @@
       name: sec_cm_logic_integrity
       desc: "Verify the countermeasure(s) LOGIC.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["N/A"]
     }
     {
       name: sec_cm_absorbed_ctrl_mubi
       desc: "Verify the countermeasure(s) ABSORBED.CTRL.INTEGRITY"
       stage: V2S
-      tests: []
+      tests: ["{variant}_mubi"]
     }
     {
       name: sec_cm_sw_cmd_ctrl_sparse

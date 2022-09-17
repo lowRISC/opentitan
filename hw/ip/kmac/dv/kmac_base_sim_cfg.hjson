@@ -37,7 +37,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["kmac_bind", "sec_cm_prim_onehot_check_bind"]
+  sim_tops: ["kmac_bind", "sec_cm_prim_onehot_check_bind", "kmac_cov_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
@@ -152,6 +152,11 @@
     {
       name: "{variant}_entropy_refresh"
       uvm_test_seq: kmac_entropy_refresh_vseq
+   }
+   {
+      name: "{variant}_mubi"
+      uvm_test_seq: kmac_mubi_vseq
+      reseed: 10
    }
    {
       name: "{variant}_error"

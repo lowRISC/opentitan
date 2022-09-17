@@ -16,7 +16,9 @@ class kmac_stress_all_vseq extends kmac_base_vseq;
     // plusarg - excluding them does not detract much from the stress_all test
     "kmac_test_vectors_kmac_vseq",
     "kmac_test_vectors_kmac_xof_vseq",
-    "kmac_app_vseq"
+    "kmac_app_vseq",
+    "kmac_mubi_vseq",
+    "kmac_entropy_refresh_vseq"
   };
 
   virtual task pre_start();
