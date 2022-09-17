@@ -13,7 +13,7 @@ class spi_device_driver extends spi_driver;
       @(negedge cfg.vif.rst_n);
       `uvm_info(`gfn, "\n  dev_drv: in reset progress", UVM_DEBUG)
       under_reset = 1'b1;
-      cfg.vif.sio = 'hz;
+      cfg.vif.sio_out = 'z;
       @(posedge cfg.vif.rst_n);
       under_reset = 1'b0;
       `uvm_info(`gfn, "\n  dev_drv: out of reset", UVM_DEBUG)
@@ -25,6 +25,8 @@ class spi_device_driver extends spi_driver;
 
     forever begin
       seq_item_port.get_next_item(req);
+      `DV_CHECK_EQ(cfg.vif.disconnected, 0)
+
       active_csb = req.csb_sel;
       wait (!under_reset && !cfg.vif.csb[active_csb]);
       fork
@@ -94,12 +96,12 @@ class spi_device_driver extends spi_driver;
             else if (item.num_lanes == 2) spi_mode = Dual;
             else spi_mode = Quad;
 
-          forever begin
-            cfg.wait_sck_edge(DrivingEdge);
-            for (int i = 0; i < item.num_lanes; i++) begin
-              sio_bits[i] = bits_q.size > 0 ? bits_q.pop_front() : $urandom_range(0, 1);
-            end
-            send_data_to_sio(spi_mode, sio_bits);
+            forever begin
+              cfg.wait_sck_edge(DrivingEdge);
+              for (int i = 0; i < item.num_lanes; i++) begin
+                sio_bits[i] = bits_q.size > 0 ? bits_q.pop_front() : $urandom_range(0, 1);
+              end
+              send_data_to_sio(spi_mode, sio_bits);
             end
           end
         join_any
@@ -111,25 +113,21 @@ class spi_device_driver extends spi_driver;
 
   virtual task send_data_to_sio(spi_mode_e mode, input logic [3:0] sio_bits);
     case (mode)
-      Standard: cfg.vif.sio[1]   <= sio_bits[0];
-      Dual:     cfg.vif.sio[1:0] <= sio_bits[1:0];
-      default:  cfg.vif.sio      <= sio_bits;
+      Standard: cfg.vif.sio_out[1]   <= sio_bits[0];
+      Dual:     cfg.vif.sio_out[1:0] <= sio_bits[1:0];
+      default:  cfg.vif.sio_out      <= sio_bits;
     endcase
   endtask : send_data_to_sio
 
   virtual task drive_bus_to_highz();
     @(posedge cfg.vif.csb[active_csb]);
-    case (cfg.spi_mode)
-      Standard: cfg.vif.sio[1]   = 1'bz;
-      Dual:     cfg.vif.sio[1:0] = 2'bzz;
-      default:  cfg.vif.sio      = 4'bzzzz;   // including Quad SPI mode
-    endcase
+    cfg.vif.sio_out = 'z;
     `uvm_info(`gfn, "\n  dev_drv: drive_bus_to_highz is done", UVM_DEBUG)
   endtask : drive_bus_to_highz
 
   virtual task drive_bus_for_reset();
     @(negedge cfg.vif.rst_n);
-    cfg.vif.sio = 4'bzzzz;
+    cfg.vif.sio_out = 'z;
     `uvm_info(`gfn, "\n  dev_drv: drive_bus_for_reset is done", UVM_DEBUG)
   endtask : drive_bus_for_reset
 endclass : spi_device_driver

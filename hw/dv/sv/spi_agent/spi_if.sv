@@ -6,13 +6,18 @@ interface spi_if
   import spi_agent_pkg::*;
   import uvm_pkg::*;
 (
-  input rst_n
+  input rst_n,
+  inout wire [3:0] sio
 );
-
   // standard spi interface pins
   logic       sck;
   logic [CSB_WIDTH-1:0] csb;
-  logic [3:0] sio;
+
+  // spi host drives sio to x when idle. release to z in case the io is used for other peripheral
+  bit disconnected;
+
+  logic [3:0] sio_out;
+  assign sio = disconnected ? 'z : sio_out;
 
   // debug signals
   logic [7:0] host_byte;
@@ -27,6 +32,10 @@ interface spi_if
   //---------------------------------
   // common tasks
   //---------------------------------
+  function automatic void disconnect(bit set_disconnect = 1);
+    disconnected = set_disconnect;
+  endfunction : disconnect
+
   task automatic wait_for_clks(int clks);
     repeat (clks) @(posedge sck);
   endtask : wait_for_clks

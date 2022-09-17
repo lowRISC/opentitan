@@ -19,10 +19,11 @@ class spi_host_driver extends spi_driver;
   // Resets signals
   virtual task reset_signals();
     forever begin
-      @(negedge cfg.vif.rst_n);
+      @(negedge cfg.vif.rst_n or negedge cfg.vif.disconnected);
+      if (cfg.vif.disconnected) continue;
       under_reset = 1'b1;
       cfg.vif.sck <= cfg.sck_polarity[0];
-      cfg.vif.sio <= 'x;
+      cfg.vif.sio_out <= 'x;
       cfg.vif.csb <= '1;
       sck_pulses = 0;
       @(posedge cfg.vif.rst_n);
@@ -68,12 +69,17 @@ class spi_host_driver extends spi_driver;
   task get_and_drive();
     forever begin
       seq_item_port.get_next_item(req);
+      `DV_CHECK_EQ(cfg.vif.disconnected, 0)
+
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn, $sformatf("spi_host_driver: rcvd item:\n%0s", req.sprint()), UVM_HIGH)
 
       if (cfg.csb_sel_in_cfg) active_csb = cfg.csid;
       else                    active_csb = req.csb_sel;
+
+      // switch from x to z to release the IO
+      cfg.vif.sio_out <= 'z;
 
       case (req.item_type)
         SpiTransNormal:   drive_normal_item();
@@ -84,7 +90,7 @@ class spi_host_driver extends spi_driver;
 
       if (cfg.csb_consecutive == 0) begin
         cfg.vif.csb[active_csb] <= 1'b1;
-        cfg.vif.sio <= 'x;
+        cfg.vif.sio_out <= 'x;
       end
 
       #($urandom_range(cfg.max_idle_ns_after_csb_drop, cfg.min_idle_ns_after_csb_drop) * 1ns);
@@ -111,7 +117,7 @@ class spi_host_driver extends spi_driver;
       for (int j = 0; j < num_bits; j++) begin
         // drive sio early so that it is stable at the sampling edge
         which_bit = cfg.host_bit_dir ? j : 7 - j;
-        cfg.vif.sio[0] <= host_byte[which_bit];
+        cfg.vif.sio_out[0] <= host_byte[which_bit];
         // wait for sampling edge to sample sio (half cycle)
         cfg.wait_sck_edge(SamplingEdge);
         which_bit = cfg.device_bit_dir ? j : 7 - j;
@@ -166,7 +172,7 @@ class spi_host_driver extends spi_driver;
 
     // align to DrivingEdge, if the item has more to send
     if (req.dummy_cycles > 0 || req.payload_q.size > 0 ) cfg.wait_sck_edge(DrivingEdge);
-    cfg.vif.sio <= 'dz;
+    cfg.vif.sio_out <= 'dz;
 
     repeat (req.dummy_cycles) begin
       cfg.wait_sck_edge(DrivingEdge);

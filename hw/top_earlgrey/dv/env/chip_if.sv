@@ -174,18 +174,17 @@ interface chip_if;
 
 
   // Functional (dedicated) interface: SPI host interface (drives traffic into the chip).
-  // TODO: Update spi_if to emit all signals as inout ports.
-  // spi_if spi_host_if(.rst_n(`SPI_DEVICE_HIER.rst_ni),
-  //                    .sck(ios[SpiDevClk]),
-  //                    .csb(ios[SpiDevCsL]),
-  //                    .sio(ios[SpiDevD3:SpiDevD0]));
-
-  bit enable_spi_host;
-  spi_if spi_host_if(.rst_n(`SPI_DEVICE_HIER.rst_ni));
+  bit enable_spi_host = 1;
+  spi_if spi_host_if(.rst_n(`SPI_DEVICE_HIER.rst_ni),
+                     .sio({ios[SpiDevD3], ios[SpiDevD2], ios[SpiDevD1], ios[SpiDevD0]}));
   assign ios[SpiDevClk] = enable_spi_host ? spi_host_if.sck : 1'bz;
   assign ios[SpiDevCsL] = enable_spi_host ? spi_host_if.csb : 1'bz;
-  assign ios[SpiDevD0] = enable_spi_host ? spi_host_if.sio[0] : 1'bz;
-  assign spi_host_if.sio[1] = enable_spi_host ? ios[SpiDevD1] : 1'bz;
+  initial begin
+    do begin
+      spi_host_if.disconnect(!enable_spi_host);
+      @(enable_spi_host);
+    end while (1);
+  end
 
   // Functional (dedicated) interface: SPI device 0 interface (receives traffic from the chip).
   // TODO: Update spi_if to emit all signals as inout ports.
@@ -615,6 +614,8 @@ interface chip_if;
   // Provides the test sequence a fresh start to connect specific interfaces needed by the test.
   // The por_n_if is exempt from this. The disconnection of default pulls using ios_if is
   // conditioned on the `disconnect_default_pulls` arg.
+  // spi_host isn't disconnected in this function as it uses dedicated IOs and default connected
+  // also CSB should be high to put it inactive. Set enable_spi_host = 0 explicitely when needed.
   function automatic void disconnect_all_interfaces(bit disconnect_default_pulls);
     `uvm_info(MsgId, "Disconnecting all interfaces from the chip IOs", UVM_LOW)
     if (disconnect_default_pulls) ios_if.disconnect();
@@ -622,7 +623,6 @@ interface chip_if;
     flash_test_volt_if.disconnect();
     flash_test_mode_if.disconnect();
     otp_ext_volt_if.disconnect();
-    enable_spi_host = 0;
     ec_rst_l_if.disconnect();
     flash_wp_l_if.disconnect();
     pwrb_in_if.disconnect();
