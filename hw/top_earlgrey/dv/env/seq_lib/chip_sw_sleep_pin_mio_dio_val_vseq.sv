@@ -107,6 +107,9 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
 
     // TODO: Fins out how to pass the test (maybe just $display()?)
 
+    // Fail the test until full checks are ready
+    override_test_status_and_finish(.passed(1'b 0));
+
   endtask : body
 
 endclass : chip_sw_sleep_pin_mio_dio_val_vseq
