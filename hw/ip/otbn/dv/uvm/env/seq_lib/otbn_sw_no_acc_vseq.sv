@@ -21,15 +21,19 @@ class otbn_sw_no_acc_vseq extends otbn_single_vseq;
 
     key = cfg.get_dmem_key();
     nonce = cfg.get_dmem_nonce();
+    cfg.en_scb_tl_err_chk = 0;
 
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data, $countones(data) != BUS_DW;)
     `DV_CHECK_STD_RANDOMIZE_FATAL(write)
-    offset = $urandom_range('hC00, 'hFFC);
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(offset,
+                                       offset dist {12'hC00           :/ 5,
+                                                    [12'hC00:12'hFFC] :/ 1,
+                                                    12'hFFC           :/ 5};)
     addr = cfg.ral.get_addr_from_offset('h8000 + offset);
     `uvm_info(`gfn, $sformatf("addr = %h", addr), UVM_LOW)
 
     super.body();
-    `DV_WAIT(cfg.model_agent_cfg.vif.status != otbn_pkg::StatusBusyExecute)
+    `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle)
       if (write) begin
         tl_access(.addr(addr), .write(1), .data(data), .exp_err_rsp(1));
         `uvm_info(`gfn,
@@ -44,6 +48,7 @@ class otbn_sw_no_acc_vseq extends otbn_single_vseq;
                   UVM_LOW)
         `DV_CHECK_FATAL(data == '1)
       end
+    cfg.en_scb_tl_err_chk = 1;
   endtask
 
 endclass
