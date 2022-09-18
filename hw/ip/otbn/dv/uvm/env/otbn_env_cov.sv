@@ -568,7 +568,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     // See attempted writes to the bottom and top address in the scratchpad memory
     addr_cp: coverpoint addr {
       bins low  = {OTBN_DMEM_OFFSET + OTBN_DMEM_SIZE};
-      bins high = {OTBN_DMEM_OFFSET + DmemSizeByte - 1};
+      bins high = {OTBN_DMEM_OFFSET + DmemSizeByte - 4};
     }
   endgroup
 
