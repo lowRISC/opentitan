@@ -135,13 +135,12 @@ BOOT_SUCCESS_MSG = "Bare metal PASS!"
 opentitan_functest(
     name = "rom_ext_virtual_bare_metal_virtual_boot_test",
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom",
         exit_success = BOOT_SUCCESS_MSG,
     ),
     key = "multislot",
     ot_flash_binary = ":rom_ext_virtual_bare_metal_virtual",
     signed = True,
-    targets = ["cw310"],
+    targets = ["cw310_rom"],
 )
 
 ################################################################################
@@ -175,11 +174,8 @@ opentitan_multislot_flash_binary(
 
 opentitan_functest(
     name = "rom_ext_virtual_ottf_bl0_virtual_test",
-    cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom",
-    ),
     key = "multislot",
     ot_flash_binary = ":rom_ext_virtual_ottf_bl0_virtual",
     signed = True,
-    targets = ["cw310"],
+    targets = ["cw310_rom"],
 )

@@ -13,6 +13,11 @@ load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 opentitan_functest(
     name = "plic_all_irqs_test",
     srcs = ["plic_all_irqs_test.c"],
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
+    ],
     verilator = verilator_params(
         timeout = "eternal",
         tags = ["flaky"],

@@ -131,6 +131,8 @@ cc_library(
 opentitan_functest(
     name = "example_test",
     srcs = ["example_test.c"],
+    signed = False,
+    targets = ["dv"],
     deps = [
         "@//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -157,6 +159,8 @@ opentitan_functest(
 opentitan_functest(
     name = "statically_hooked_opensource_test",
     srcs = ["@//sw/device/tests:example_test_from_flash.c"],
+    signed = False,
+    targets = ["dv"],
     deps = [
         "@//sw/device/lib/testing/test_framework:ottf_main",
         "@manufacturer_test_hooks//:test_hooks_1",
