@@ -8,7 +8,9 @@ class spi_host_flash_seq extends spi_base_seq;
   // if address isn't provided, will be randomized based on cmd_infos
   rand bit [7:0] address_q[$];
   rand bit [7:0] payload_q[$];
-  rand int          read_size;
+  rand int       read_size;
+
+  bit [CSB_WIDTH-1:0] csb_sel = 0;
 
   `uvm_object_utils_begin(spi_host_flash_seq)
     `uvm_field_int(opcode,          UVM_DEFAULT)
@@ -25,6 +27,7 @@ class spi_host_flash_seq extends spi_base_seq;
     req = spi_item::type_id::create("req");
     start_item(req);
 
+    cfg.spi_func_mode = SpiModeFlash;
     cfg.extract_cmd_info_from_opcode(opcode,
         // output
         num_addr_bytes, write_command, num_lanes, dummy_cycles);
@@ -36,7 +39,8 @@ class spi_host_flash_seq extends spi_base_seq;
     end
 
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
-                                   item_type == SpiFlashTrans;
+                                   item_type == SpiTransNormal;
+                                   csb_sel == local::csb_sel;
                                    opcode == local::opcode;
                                    write_command == local::write_command;
                                    num_lanes == local::num_lanes;

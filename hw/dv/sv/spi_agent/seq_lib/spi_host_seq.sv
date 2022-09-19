@@ -17,6 +17,7 @@ class spi_host_seq extends spi_base_seq;
   virtual task body();
     req = spi_item::type_id::create("req");
     start_item(req);
+    cfg.spi_func_mode = SpiModeGeneric;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
                                    item_type == SpiTransNormal;
                                    data.size() == local::data.size();

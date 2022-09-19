@@ -100,6 +100,9 @@ package spi_device_env_pkg;
   parameter uint ADDR_FIFO_START_ADDR            = CMD_FIFO_START_ADDR + CMD_FIFO_SIZE; // 0xe20
   parameter uint ADDR_FIFO_SIZE                  = 32;
 
+  parameter uint FW_FLASH_CSB_ID                 = 0; // for both FW and flash/passthrough mode
+  parameter uint TPM_CSB_ID                      = 1;
+
   parameter bit[7:0] TPM_WRITE_CMD               = 8'h03;
   parameter bit[7:0] TPM_READ_CMD                = 8'h83;
   parameter byte TPM_START                       = 8'h01;

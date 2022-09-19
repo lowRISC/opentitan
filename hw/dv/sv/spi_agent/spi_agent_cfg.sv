@@ -16,7 +16,6 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   bit host_bit_dir;               // 0 - msb -> lsb, 1 - lsb -> msb
   bit device_bit_dir;             // 0 - msb -> lsb, 1 - lsb -> msb
   bit sck_on;                     // keep sck on
-  bit [1:0] csb_sel;      // Select active CSB
   bit partial_byte;       // Transfering less than byte
   bit [3:0] bits_to_transfer; // Bits to transfer if using less than byte
   bit csb_consecutive;            // Don't deassert CSB
@@ -41,8 +40,10 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   spi_mode_e       spi_mode;
   // Cmd info configs
   spi_flash_cmd_info cmd_infos[bit[7:0]];
-  bit              is_flash_mode;
   bit              flash_addr_4b_en;
+
+  // set this mode before starting an item
+  spi_func_mode_e  spi_func_mode;
 
   // address width in bytes (default is 4 bytes)
   int spi_cmd_width   = 4;
@@ -76,7 +77,6 @@ class spi_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int (sck_period_ps,  UVM_DEFAULT)
     `uvm_field_int (host_bit_dir,   UVM_DEFAULT)
     `uvm_field_int (device_bit_dir, UVM_DEFAULT)
-    `uvm_field_int (csb_sel,        UVM_DEFAULT)
     `uvm_field_int (partial_byte,   UVM_DEFAULT)
     `uvm_field_int (csb_consecutive,    UVM_DEFAULT)
     `uvm_field_int (decode_commands,    UVM_DEFAULT)
@@ -98,7 +98,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_sarray_int(csn_trail,       UVM_DEFAULT)
     `uvm_field_sarray_int(csn_idle,        UVM_DEFAULT)
     `uvm_field_enum(spi_mode_e, spi_mode, UVM_DEFAULT)
-    `uvm_field_int(is_flash_mode, UVM_DEFAULT)
+    `uvm_field_enum(spi_func_mode_e, spi_func_mode, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new

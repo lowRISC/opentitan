@@ -25,7 +25,7 @@ class spi_item extends uvm_sequence_item;
   rand uint dummy_sck_length_ns;
 
   // indicate the active csb
-  bit [CSB_WIDTH-1:0] csb_sel;
+  rand bit [CSB_WIDTH-1:0] csb_sel;
 
   // transaction status. only use in monitor on flash mode
   // allow scb to process payload when one byte data is received, instead

@@ -52,7 +52,7 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
 
   virtual function bit is_read_buffer_cmd(spi_item item);
     if (`gmv(ral.control.mode) != FlashMode ||
-        item.item_type != SpiFlashTrans ||
+        spi_host_agent_cfg.spi_func_mode != SpiModeFlash ||
         !(item.opcode inside {READ_CMD_LIST}) ||
         !is_internal_recog_cmd(item.opcode)) begin
       return 0;

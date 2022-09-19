@@ -93,16 +93,16 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       upstream_spi_host_fifo.get(item);
       `uvm_info(`gfn, $sformatf("upstream received host spi item:\n%0s", item.sprint()),
                 UVM_MEDIUM)
-      case (`gmv(ral.control.mode))
-        GenericMode: begin
-          `DV_CHECK_EQ(item.item_type, SpiTransNormal)
+      case (cfg.spi_host_agent_cfg.spi_func_mode)
+        SpiModeGeneric: begin
+          `DV_CHECK_EQ(`gmv(ral.control.mode), GenericMode)
           receive_spi_rx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
         end
-        FlashMode, PassthroughMode: begin
+        SpiModeFlash: begin
           internal_process_cmd_e cmd_type;
           bit is_intercepted;
           bit set_busy;
-          `DV_CHECK_EQ(item.item_type, SpiFlashTrans)
+          `DV_CHECK(`gmv(ral.control.mode) inside {FlashMode, PassthroughMode})
 
           // read buffer is handled at `process_read_buffer_cmd`
           if (!cfg.is_read_buffer_cmd(item)) begin
@@ -165,8 +165,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
           latch_flash_status(set_busy, update_wel, wel_val);
         end
+        SpiModeTpm: begin
+          // TODO, add soon
+        end
         default: `uvm_fatal(`gfn, $sformatf("Unexpected mode: %0d", `gmv(ral.control.mode)))
-      endcase // case (`gmv(ral.control.mode))
+      endcase
     end // forever
   endtask
 
