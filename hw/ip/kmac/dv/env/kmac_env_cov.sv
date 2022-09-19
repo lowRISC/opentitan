@@ -291,12 +291,6 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
     state_mask_share_cross: cross share, state_read_mask;
   endgroup
 
-  covergroup cmd_process_cg with function sample(bit in_keccak_rounds, bit keccak_complete_cycle);
-    in_keccak: coverpoint in_keccak_rounds;
-
-    in_keccak_complete_cycle: coverpoint keccak_complete_cycle;
-  endgroup
-
   covergroup sideload_cg with function sample(bit en_sideload, bit in_kmac, bit app_keymgr);
     sideload:       coverpoint en_sideload;
     kmac_mode:      coverpoint in_kmac;
@@ -410,7 +404,6 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
     msgfifo_level_cg = new();
     sha3_status_cg = new();
     state_read_mask_cg = new();
-    cmd_process_cg = new();
     sideload_cg = new();
     error_cg = new();
     do begin

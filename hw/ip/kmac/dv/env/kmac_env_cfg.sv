@@ -59,6 +59,10 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
         num_interrupts = ral.intr_state.get_n_used_bits();
       end
     end
+
+    // only support 1 outstanding TL items in tlul_adapter
+    m_tl_agent_cfg.max_outstanding_req = 1;
+
   endfunction
 
 endclass

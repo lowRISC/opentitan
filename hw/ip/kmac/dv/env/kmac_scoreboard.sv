@@ -223,11 +223,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
               `DV_SPINWAIT(edn_fifos[0].get(edn_item);, "Wait EDN request")
             end
             `uvm_info(`gfn, "got all edn transactions", UVM_HIGH)
-            // Receiving the last EDN sequence item is synchronized on the EDN clock,
-            // so we need to synchronize into the KMAC clock domain.
-            // This takes 4 clock cycles total, on the last cycle the entropy is marked as valid
-            // to the keccak logic and any pending keccak rounds can begin.
-            cfg.clk_rst_vif.wait_clks(4);
             set_entropy_fetch(0);
           end
           ,
@@ -910,9 +905,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(
         end
       end
       "status": begin
-
-        // TODO - in data_phase_read sample coverage
-
         if (addr_phase_read) begin
           bit [TL_DW-1:0] exp_status;
 
@@ -939,16 +931,29 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                  KMAC_FIFO_DEPTH,
                  $sformatf("Status (val:%0h) error when fifo full! Expect Fifo Depth to be %0h",
                  item.d_data, KMAC_FIFO_DEPTH))
-         end else begin
+          end else begin
             // When fifo empty is not set, we still allow one clock cycle where the fifo depth is
             // set to 0. This is documented in issue #14286.
             `DV_CHECK_LT(item.d_data[KmacStatusFifoDepthMSB : KmacStatusFifoDepthLSB],
                  KMAC_FIFO_DEPTH,
                  $sformatf("Status (val:%0h) error! Depth cannot be %0h when fifo full is not set",
                  item.d_data, KMAC_FIFO_DEPTH))
-         end
-         `DV_CHECK_EQ(csr.get_mirrored_value() | status_mask, item.d_data | status_mask,
-                      $sformatf("reg name: %0s", csr.get_full_name()))
+          end
+          `DV_CHECK_EQ(csr.get_mirrored_value() | status_mask, item.d_data | status_mask,
+                       $sformatf("reg name: %0s", csr.get_full_name()))
+
+          // Sample coverage:
+          if (cfg.en_cov) begin
+            cov.msgfifo_level_cg.sample(
+                item.d_data[KmacStatusFifoEmpty],
+                item.d_data[KmacStatusFifoFull],
+                item.d_data[KmacStatusFifoDepthMSB : KmacStatusFifoDepthLSB],
+                hash_mode,
+                is_kmac_en());
+            cov.sha3_status_cg.sample(item.d_data[KmacStatusSha3Idle],
+                                      item.d_data[KmacStatusSha3Absorb],
+                                      item.d_data[KmacStatusSha3Squeeze]);
+          end
         end
       end
       "key_len": begin
@@ -1662,6 +1667,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(
       in_edn_fetch = 0;
       `uvm_info(`gfn, "dropped in_edn_fetch", UVM_HIGH)
     end
+  endfunction
+
+  function bit is_kmac_en();
+    return in_kmac_app ? app_mode == AppKeymgr : kmac_en;
   endfunction
 
   function void check_phase(uvm_phase phase);
