@@ -210,8 +210,8 @@ module tb;
     .cmd_i   (model_if.cmd_q),
     .cmd_en_i(model_if.cmd_qe),
 
-    .lc_escalate_en_i(escalate_if.enable != lc_ctrl_pkg::Off),
-    .lc_rma_req_i    (escalate_if.req != lc_ctrl_pkg::Off),
+    .lc_escalate_en_i(escalate_if.enable),
+    .lc_rma_req_i    (escalate_if.req),
 
     .err_bits_o(model_if.err_bits),
 

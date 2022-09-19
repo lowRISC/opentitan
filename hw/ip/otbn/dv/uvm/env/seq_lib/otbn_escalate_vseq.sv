@@ -20,7 +20,7 @@ class otbn_escalate_vseq extends otbn_base_vseq;
     `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)
 
     // Pick whether we're going to send RMA request or escalation to OTBN.
-    select_rma_req = $urandom_range(1);
+    select_rma_req = $urandom_range(0, 1);
 
     // Pick whether we're going before (5%), during (90%), or after (5%).
     bda_idx = $urandom_range(100);
