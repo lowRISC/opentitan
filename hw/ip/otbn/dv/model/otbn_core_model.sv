@@ -32,8 +32,8 @@ module otbn_core_model
   input  logic [7:0]         cmd_i,    // CMD register for OTBN commands
   input  logic               cmd_en_i, // CMD register enable for OTBN commands
 
-  input  logic               lc_escalate_en_i,
-  input  logic               lc_rma_req_i,
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+  input  lc_ctrl_pkg::lc_tx_t lc_rma_req_i,
 
   output err_bits_t          err_bits_o, // updated when STATUS switches to idle
 
@@ -99,7 +99,7 @@ module otbn_core_model
   bit unused_raw_err_bits;
   logic unused_edn_rsp_fips;
 
-  logic lock_immediately_q; // No `_d` because model IF deposits directly into the `_q`.
+  logic lock_immediately_d, lock_immediately_q;
 
   // EDN RND Request Logic
   logic edn_rnd_req_q, edn_rnd_req_d;
@@ -107,6 +107,49 @@ module otbn_core_model
   // Since RND is instantly set inside model we need to wait right until
   // it is also going to be written in RTL (which takes one cycle).
   logic edn_rnd_cdc_done_q;
+
+  // The lc_escalate_en_i and lc_rma_req_i signals in the design go through a prim_lc_sync
+  // which always injects exactly two cycles of delay (this is a synchroniser, not a CDC, so
+  // its behaviour is easy to predict).
+  // We model those delays in the SystemVerilog here, since it's much easier than handling it
+  // in the Python.
+  logic [2:0] escalate_fifo;
+  logic [2:0] rma_req_fifo;
+  logic [3:0] lc_mubi_err_fifo;
+  logic       new_escalation;
+  logic       new_rma_req;
+  logic       new_lc_mubi_err;
+  logic       valid_lc_rma_req;
+  logic       valid_lc_esc_req;
+  logic       valid_lc_mubi_err;
+  logic       invalid_lc_rma_req;
+  logic       invalid_lc_esc_en;
+
+  assign invalid_lc_rma_req = lc_ctrl_pkg::lc_tx_test_invalid(lc_rma_req_i);
+  assign invalid_lc_esc_en = lc_ctrl_pkg::lc_tx_test_invalid(lc_escalate_en_i);
+
+  assign valid_lc_rma_req = lc_ctrl_pkg::lc_tx_test_true_strict(lc_rma_req_i);
+  assign valid_lc_esc_req = lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i);
+  assign valid_lc_mubi_err =  invalid_lc_rma_req || invalid_lc_esc_en;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      escalate_fifo <= '0;
+      rma_req_fifo <= '0;
+      lc_mubi_err_fifo <= '0;
+    end else begin
+      escalate_fifo <= {escalate_fifo[1:0], valid_lc_esc_req};
+      rma_req_fifo <= {rma_req_fifo[1:0], valid_lc_rma_req};
+      lc_mubi_err_fifo <= {lc_mubi_err_fifo[2:0], valid_lc_mubi_err};
+    end
+  end
+  assign new_escalation = escalate_fifo[1] & ~escalate_fifo[2];
+  assign new_rma_req = rma_req_fifo[1] & ~rma_req_fifo[2];
+  // Invalid escalate goes through one cycle faster because its check is done earlier.
+  assign new_lc_mubi_err = invalid_lc_esc_en ? lc_mubi_err_fifo[2] & ~lc_mubi_err_fifo[3] :
+                                               lc_mubi_err_fifo[1] & ~lc_mubi_err_fifo[2];
+
+  assign lock_immediately_d = new_lc_mubi_err | lock_immediately_q;
 
   // RND Request starts if OTBN Model raises rnd_req_start while we are not
   // finishing up processing RND.
@@ -118,9 +161,11 @@ module otbn_core_model
     if (!rst_ni) begin
       edn_rnd_req_q <= 1'b0;
       edn_rnd_cdc_done_q <= 1'b0;
+      lock_immediately_q <= 1'b0;
     end else begin
       edn_rnd_cdc_done_q <= edn_rnd_cdc_done_i;
       edn_rnd_req_q <= edn_rnd_req_d;
+      lock_immediately_q <= lock_immediately_d;
     end
   end
 
@@ -214,7 +259,6 @@ module otbn_core_model
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      lock_immediately_q <= 1'b0;
       start_q            <= 1'b0;
       urnd_state_q       <= OtbnCoreModelUrndStateReset;
       wipe_cyc_cnt_q     <= '0;
@@ -242,27 +286,6 @@ module otbn_core_model
       end
     end
   end
-
-  // The lc_escalate_en_i and lc_rma_req_i signals in the design go through a prim_lc_sync
-  // which always injects exactly two cycles of delay (this is a synchroniser, not a CDC, so
-  // its behaviour is easy to predict).
-  // We model those delays in the SystemVerilog here, since it's much easier than handling it
-  // in the Python.
-  logic [2:0] escalate_fifo;
-  logic [2:0] rma_req_fifo;
-  logic       new_escalation;
-  logic       new_rma_req;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      escalate_fifo <= '0;
-      rma_req_fifo <= '0;
-    end else begin
-      escalate_fifo <= {escalate_fifo[1:0], lc_escalate_en_i};
-      rma_req_fifo <= {rma_req_fifo[1:0], lc_rma_req_i};
-    end
-  end
-  assign new_escalation = escalate_fifo[1] & ~escalate_fifo[2];
-  assign new_rma_req = rma_req_fifo[1] & ~rma_req_fifo[2];
 
   // A "busy" counter. We'd like to avoid stepping the Python process on every cycle when there's
   // nothing going on (since it's rather expensive). But exactly modelling *when* we can safely
@@ -334,6 +357,13 @@ module otbn_core_model
         failed_lc_escalate <= (otbn_model_send_err_escalation(model_handle,
                                                               32'd1 << 22,
                                                               1'b0)
+                               != 0);
+      end
+      if (new_lc_mubi_err) begin
+        // Setting BAD_INTERNAL_STATE bit
+        failed_lc_escalate <= (otbn_model_send_err_escalation(model_handle,
+                                                              32'd1 << 20,
+                                                              1'b1)
                                != 0);
       end
       if (new_rma_req) begin

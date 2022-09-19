@@ -359,8 +359,8 @@ module otbn_top_sim (
     .cmd_i                 ( otbn_pkg::CmdExecute ),
     .cmd_en_i              ( otbn_start ),
 
-    .lc_escalate_en_i      ( 1'b0 ),
-    .lc_rma_req_i          ( 1'b0 ),
+    .lc_escalate_en_i      ( lc_ctrl_pkg::Off ),
+    .lc_rma_req_i          ( lc_ctrl_pkg::Off ),
 
     .err_bits_o            ( otbn_model_err_bits ),
 

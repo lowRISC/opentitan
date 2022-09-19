@@ -208,15 +208,15 @@ name:
       reseed: 15
     }
 
-    // This test sets the lc_escalate_en_i signal somewhere in the middle of an
-    // operation and makes sure that we see an alert. There's not much
-    // interesting that can happen here, so a small number of seeds should
+    // This test sets the lc_escalate_en_i and lc_rma_req_i signals somewhere in
+    // the middle of an operation and makes sure that we see an alert. There's
+    // not much interesting that can happen here, so a small number of seeds should
     // suffice.
     {
       name: "otbn_escalate"
       uvm_test_seq: "otbn_escalate_vseq"
       en_run_modes: ["build_otbn_rig_binary_mode"]
-      reseed: 10
+      reseed: 20
     }
 
     {
