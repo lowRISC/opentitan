@@ -32,8 +32,10 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
-                // Disable until the stress_all sequence is created.
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
+                // Just run the stress_all sequence, and don't inject random
+                // resets since we may get overlapping resets due to sequences
+                // that inject them.
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_all_test.hjson"
                 ]
 
   // Specific exclusion files.

@@ -1,10 +1,11 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+
 // Description:
 // Test creates a set of reset event - low power, hw req, ndm and sw -.
 // my_pos indicates the begining of each reset event.
-// 1 - lowpwer reset
+// 1 - low power entry reset
 // 2 - hw req reset
 // 3 - ndm reset
 // 4 - sw reset
@@ -47,23 +48,26 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
   constraint cycles_to_sw_reset_c {cycles_to_sw_reset inside {[2 : 8]};}
   constraint cycles_to_sw_release_c {cycles_to_sw_release inside {[3 : 6]};}
 
+  // There is an extra POR reset when the consistency failure is triggered due to apply_reset.
+  int maybe_por_reset;
 
   task body();
     for (int i = 0; i < LIST_OF_LEAFS.size(); ++i) begin
       leaf_path = {"tb.dut.", LIST_OF_LEAFS[i], ".gen_rst_chk.u_rst_chk"};
       error_pos = $urandom_range(1, 4);
       my_pos = 0;
-      `uvm_info(`gfn, $sformatf("Round %0d %s  pos:%0d", i, leaf_path, error_pos), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("Round %0d %s pos:%0d", i, leaf_path, error_pos), UVM_MEDIUM)
+      // Get a clean slate for reset_info.
+      csr_wr(.ptr(ral.reset_info), .value('1));
 
       fork
         unexpected_child_activity(leaf_path);
         begin
           set_pos_and_wait();
           set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
-          csr_wr(.ptr(ral.reset_info), .value('1));
           // Send low power entry reset.
           send_reset(pwrmgr_pkg::LowPwrEntry, '0);
-          check_reset_info(2, "expected reset_info to indicate low power");
+          check_reset_info(maybe_por_reset | 2, "expected reset_info to indicate low power");
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
           csr_wr(.ptr(ral.reset_info), .value('1));
@@ -75,7 +79,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
           `DV_CHECK_RANDOMIZE_FATAL(this)
           set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
           send_reset(pwrmgr_pkg::HwReq, rstreqs);
-          check_reset_info({rstreqs, 4'h0}, $sformatf(
+          check_reset_info(maybe_por_reset | {rstreqs, 4'h0}, $sformatf(
                            "expected reset_info to match 0x%x", {rstreqs, 4'h0}));
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
 
@@ -87,7 +91,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
 
           // Send debug reset.
           send_ndm_reset();
-          check_reset_info(4, "Expected reset_info to indicate ndm reset");
+          check_reset_info(maybe_por_reset | 4, "Expected reset_info to indicate ndm reset");
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
           csr_wr(.ptr(ral.reset_info), .value('1));
@@ -98,7 +102,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
 
           // Send sw reset.
           send_sw_reset(MuBi4True);
-          check_reset_info(8, "Expected reset_info to indicate sw reset");
+          check_reset_info(maybe_por_reset | 8, "Expected reset_info to indicate sw reset");
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 0);
           csr_wr(.ptr(ral.reset_info), .value('1));
         end
@@ -138,6 +142,8 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
     `DV_CHECK(uvm_hdl_force(path, value))
   endtask : set_leaf_reset
 
+  // Create some unexpected child activity when my_pos is error_pos. The unexpected activity
+  // should trigger alerts, so this fails if no alert is generated.
   task unexpected_child_activity(string path);
     int err_value;
     string lpath;
@@ -147,6 +153,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
     `DV_SPINWAIT(wait_for_cnsty_idle(path);, "Timeout waiting for cnsty_idle", 1000_000)
 
     `DV_CHECK_RANDOMIZE_FATAL(this);
+    `uvm_info(`gfn, "Triggering inconsistency", UVM_MEDIUM)
     randcase
       1: send_unexpected_child_reset(path);
       1: send_unexpected_child_release(path);
@@ -162,6 +169,8 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
     `DV_CHECK(uvm_hdl_release(lpath))
     lpath = {path, ".sw_rst_req_i"};
     `DV_CHECK(uvm_hdl_release(lpath))
+    // And expect POR bit to be set.
+    maybe_por_reset = 1;
     apply_reset();
 
     // set error_pos to large value
@@ -196,7 +205,11 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
     end
   endtask : check_alert_and_cpu_info_after_reset
 
+  // Increments my_pos and if it equals error_pos this just waits to give time for the consistency
+  // error to be injected and side-effects to be created. Clear the expectation of a por reset
+  // since this is a new reset.
   task set_pos_and_wait();
+    maybe_por_reset = 0;
     my_pos++;
     `DV_SPINWAIT(while (my_pos == error_pos) @cfg.clk_rst_vif.cb;, $sformatf(
                  "Timeout waiting for my_pos == error_pos ends my_pos:%0d", my_pos), 1000_000)

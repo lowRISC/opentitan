@@ -65,4 +65,6 @@ interface rstmgr_if (
   logic cpu_info_en;
   always_comb cpu_info_en = `PATH_TO_DUT.reg2hw.cpu_info_ctrl.en.q;
 
+  bit rst_ni_inactive;
+  always_comb rst_ni_inactive = resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel];
 endinterface

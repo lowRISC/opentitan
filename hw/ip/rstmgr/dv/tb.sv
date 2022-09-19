@@ -56,7 +56,7 @@ module tb;
   pins_if #(1) devmode_if (devmode);
   tl_if tl_if (
     .clk,
-    .rst_n(rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel])
+    .rst_n(rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
 
   rstmgr_if rstmgr_if (
@@ -82,14 +82,14 @@ module tb;
   // This is consistent with rstmgr being the only source of resets.
   rstmgr dut (
     .clk_i        (clk),
-    .rst_ni       (rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_ni       (rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
     .clk_aon_i    (clk_aon),
     .clk_io_div4_i(clk_io_div4),
     .clk_main_i   (clk_main),
     .clk_io_i     (clk_io),
     .clk_io_div2_i(clk_io_div2),
     .clk_usb_i    (clk_usb),
-    .clk_por_i    (clk),
+    .clk_por_i    (clk_io_div4),
     .rst_por_ni   (rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
 
     .tl_i      (tl_if.h2d),
@@ -102,7 +102,7 @@ module tb;
     .pwr_i(rstmgr_if.pwr_i),
     .pwr_o(rstmgr_if.pwr_o),
 
-    .sw_rst_req_o(rstmgr_if.sw_rst_req_o),
+    .sw_rst_req_o  (rstmgr_if.sw_rst_req_o),
     .ndmreset_req_i(rstmgr_if.cpu_i.ndmreset_req),
 
     .alert_dump_i(rstmgr_if.alert_dump_i),
@@ -133,7 +133,7 @@ module tb;
     uvm_config_db#(virtual pwrmgr_rstmgr_sva_if)::set(null, "*.env", "pwrmgr_rstmgr_sva_vif",
                                                       dut.pwrmgr_rstmgr_sva_if);
     uvm_config_db#(virtual rstmgr_cascading_sva_if)::set(null, "*.env", "rstmgr_cascading_sva_vif",
-                                                      dut.rstmgr_cascading_sva_if);
+                                                         dut.rstmgr_cascading_sva_if);
     uvm_config_db#(virtual rstmgr_if)::set(null, "*.env", "rstmgr_vif", rstmgr_if);
 
     $timeformat(-12, 0, " ps", 12);
@@ -141,8 +141,10 @@ module tb;
   end
 
   initial begin
+    // This may help any code that depends on clk_rst_vif.rst_n in the infrastructure: they won't
+    // be able to change but at least the reset value will be true to the environment.
     clk_rst_if.drive_rst_n = 1'b0;
-    force clk_rst_if.rst_n = rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel];
+    force clk_rst_if.rst_n = rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel];
   end
 
 endmodule

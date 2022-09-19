@@ -32,12 +32,13 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
     fork
       monitor_por();
       monitor_capture();
+      monitor_tlul_rst();
     join_none
   endtask
 
   // Start coverage collection after the very first POR negedge, since that transition is not
   // useful for coverage.
-  task monitor_por();
+  local task monitor_por();
     int stretch_start;
     int reset_count;
     if (!cfg.en_cov) return;
@@ -54,13 +55,30 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
       end
   endtask
 
-  task monitor_capture();
+  local task monitor_capture();
     if (!cfg.en_cov) return;
     forever
       @cfg.rstmgr_vif.reset_info begin
         if (cfg.rstmgr_vif.reset_info != '0) begin
           cov.alert_info_capture_cg.sample(cfg.rstmgr_vif.reset_info, cfg.rstmgr_vif.alert_info_en);
           cov.cpu_info_capture_cg.sample(cfg.rstmgr_vif.reset_info, cfg.rstmgr_vif.cpu_info_en);
+        end
+      end
+  endtask
+
+  // Monitor tlul reset to update csr_utils_pkg::under_reset variable. This is needed
+  // because the tlul reset in rstmgr is generated internally, unlike any other modules
+  // where it is controlled by clk_rst_vif.
+  local task monitor_tlul_rst();
+    forever
+      @cfg.m_tl_agent_cfg.vif.rst_n begin
+        if (!cfg.m_tl_agent_cfg.vif.rst_n) begin
+          `uvm_info(`gfn, "tl got reset", UVM_MEDIUM)
+          under_reset = 1;
+        end else begin
+          `uvm_info(`gfn, "tl got out of reset", UVM_MEDIUM)
+          under_reset = 0;
+          clear_outstanding_access();
         end
       end
   endtask
