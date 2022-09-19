@@ -8,6 +8,10 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
 
   // disable fault csr read check from scoreboard
   bit disable_csr_rd_chk = 0;
+
+  // Invalid state test. Used to disable interrupt check.
+  bit invalid_st_test = 0;
+
   // ext component cfgs
   alert_esc_agent_cfg        m_esc_agent_cfg;
   pwrmgr_clk_ctrl_agent_cfg  m_pcc_agent_cfg;

@@ -128,7 +128,7 @@
               `abort` events when capture is enabled.
             '''
       stage: V2
-      tests: ["pwrmgr_aborted_low_power"]
+      tests: ["pwrmgr_aborted_low_power", "pwrmgr_lowpower_invalid"]
     }
     {
       name: reset
@@ -157,7 +157,7 @@
              conditional resets inputs.
             '''
       stage: V2
-      tests: ["pwrmgr_reset"]
+      tests: ["pwrmgr_reset", "pwrmgr_reset_invalid"]
     }
     {
       name: main_power_glitch_reset
@@ -222,6 +222,27 @@
             '''
       stage: V2
       tests: ["pwrmgr_lowpower_wakeup_race"]
+    }
+    {
+      name: disable_rom_integrity_check
+      desc: '''
+            Test rom integrity check is disabled under life cycle test states.
+
+            While running a series of reset event, at FastPwrStateRomCheck
+            state,
+            - Drive lc_hw_debug_en_i and lc_dft_en_i to random value
+              excluding {lc_ctrl_pkg::On, lc_ctrl_pkg::On} for both ports.
+            - Set rom_ctrl_i.good = Mubi4False.
+            - Wait for a while to make sure fsm state check is not FastPwrStateActive.
+
+            Then,
+            - Drive lc_hw_debug_en_i and lc_dft_en_i to {lc_ctrl_pkg::On, lc_ctrl_pkg::On}
+            - Check test finish gracefully.
+
+            Try these steps with different lc_ctrl inputs.
+            '''
+      stage: V2
+      tests: ["pwrmgr_disable_rom_integrity_check"]
     }
     {
       name: stress_all
