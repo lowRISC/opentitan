@@ -28,10 +28,36 @@ class chip_jtag_base_vseq extends chip_sw_base_vseq;
 
   task debug_mode_en();
     // "Activate" the DM to facilitate ease of testing.
+    bit [31:0] cmd;
+
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
     cfg.clk_rst_vif.wait_clks(5);
-    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(1));
+
+    cmd = 32'h3;
+    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(1), .blocking(1), .predict(1));
     cfg.clk_rst_vif.wait_clks(5);
+
+    //cmd = 32'h3;
+    //csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value(cmd), .blocking(1), .predict(1));
+    //cfg.clk_rst_vif.wait_clks(5);
+    //
+    //cmd = 32'h2303a2;
+    //csr_wr(.ptr(jtag_dmi_ral.command), .value(cmd), .blocking(1), .predict(1));
+    //cfg.clk_rst_vif.wait_clks(1000);
+
+    cmd = 32'h9f000000;
+    csr_wr(.ptr(jtag_dmi_ral.abstractdata[0]), .value(cmd), .blocking(1), .predict(1));
+    cfg.clk_rst_vif.wait_clks(5);
+
+    cmd = 32'h2303a3;
+    csr_wr(.ptr(jtag_dmi_ral.command), .value(cmd), .blocking(1), .predict(1));
+    cfg.clk_rst_vif.wait_clks(1000);
+
+
+
+
+    //csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(1));
+    //cfg.clk_rst_vif.wait_clks(5);
   endtask
 
    task ndm_reset_off();
