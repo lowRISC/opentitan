@@ -112,12 +112,13 @@ class rstmgr_reset_vseq extends rstmgr_base_vseq;
         default: `uvm_fatal(`gfn, $sformatf("Unexpected reset type %0d", which_reset))
       endcase
 
-      cfg.clk_rst_vif.wait_clks(8);
+      cfg.io_div4_clk_rst_vif.wait_clks(8);
       wait(cfg.rstmgr_vif.resets_o.rst_lc_n[1]);
       check_reset_info(expected_reset_info_code, reset_test_info.description);
       check_alert_info_after_reset(.alert_dump(expected_alert_dump),
                                    .enable(expected_alert_enable));
       check_cpu_info_after_reset(.cpu_dump(expected_cpu_dump), .enable(expected_cpu_enable));
+      if (which_reset == ResetPOR) read_and_check_all_csrs_after_reset();
       prev_alert_dump = expected_alert_dump;
       prev_cpu_dump   = expected_cpu_dump;
     end

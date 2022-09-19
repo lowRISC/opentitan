@@ -16,7 +16,6 @@ class rstmgr_sw_rst_vseq extends rstmgr_base_vseq;
   task body();
     bit [NumSwResets-1:0] exp_ctrl_n;
     bit [NumSwResets-1:0] sw_rst_regwen = '1;
-    bit [NumSwResets-1:0] all_ones = '1;
     alert_crashdump_t bogus_alert_dump = '1;
     cpu_crash_dump_t bogus_cpu_dump = '1;
     set_alert_and_cpu_info_for_capture(bogus_alert_dump, bogus_cpu_dump);
@@ -40,7 +39,7 @@ class rstmgr_sw_rst_vseq extends rstmgr_base_vseq;
         `uvm_info(`gfn, $sformatf("compare sw_rst_regwen against %b", exp_regwen[i]), UVM_LOW)
         csr_rd_check(.ptr(ral.sw_rst_regwen[i]), .compare_value(exp_regwen[i]),
                      .err_msg($sformatf("The expected value is %b", exp_regwen[i])));
-        check_sw_rst_ctrl_n(.sw_rst_ctrl_n('0), .sw_rst_regen(exp_regwen), .erase_ctrl_n(1'b1));
+        check_sw_rst_ctrl_n(.sw_rst_ctrl_n('0), .sw_rst_regwen(exp_regwen), .erase_ctrl_n(1'b1));
       end
       check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b1));
     end

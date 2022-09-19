@@ -6,7 +6,7 @@
 // resets for each of the bits randomly. It also triggers lc or sys resets to verify the reset
 // transitions that cause rising upper resets but non-rising leafs.
 //
-// Then it clears specific `sw_rst_regen` bits and attempts to cause resets to determine
+// Then it clears specific `sw_rst_regwen` bits and attempts to cause resets to determine
 // the bits with `sw_rst_regwen` cleared cannot cause a reset.
 class rstmgr_sw_rst_reset_race_vseq extends rstmgr_base_vseq;
   `uvm_object_utils(rstmgr_sw_rst_reset_race_vseq)
@@ -14,9 +14,13 @@ class rstmgr_sw_rst_reset_race_vseq extends rstmgr_base_vseq;
   `uvm_object_new
   rand int cycles_before_sw_rst;
   rand int cycles_before_reset;
+
+  // When reset is issued the clocks will be stopped, so the sw_rst_ctrl_n writes must
+  // start before reset to be safe, or this could wait forever since the clock will stop.
   constraint cycles_racing_c {
-    cycles_before_sw_rst inside {[2 : 8]};
+    solve cycles_before_reset before cycles_before_sw_rst;
     cycles_before_reset inside {[2 : 8]};
+    cycles_before_sw_rst inside {[1 : cycles_before_reset - 1]};
   }
 
   constraint rstreqs_non_zero_c {rstreqs != '0;}
@@ -36,13 +40,15 @@ class rstmgr_sw_rst_reset_race_vseq extends rstmgr_base_vseq;
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_sw_rst);
           check_sw_rst_ctrl_n(sw_rst_ctrl_n, sw_rst_regwen, 0);
+          `uvm_info(`gfn, "Done with sw_rst", UVM_MEDIUM)
         end
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_reset);
           send_reset(.reset_cause(pwrmgr_pkg::HwReq), .rstreqs(rstreqs), .clear_it(0));
+          `uvm_info(`gfn, "Done with send_reset", UVM_MEDIUM)
         end
       join
-      cfg.clk_rst_vif.wait_clks(20);
+      cfg.io_div4_clk_rst_vif.wait_clks(20);
       release_reset(pwrmgr_pkg::HwReq);
       clear_sw_rst_ctrl_n();
       check_reset_info({rstreqs, 4'h0}, $sformatf(

@@ -65,14 +65,19 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   rand int rst_to_req_cycles;
   constraint rst_to_req_cycles_c {rst_to_req_cycles inside {[1 : 6]};}
 
+  rand int release_lc_to_release_sys_cycles;
+  constraint release_lc_to_release_sys_cycles_c {
+    release_lc_to_release_sys_cycles inside {[1 : 10]};
+  }
+
   rand int scanmode_to_scan_rst_cycles;
   constraint scanmode_to_scan_rst_cycles_c {scanmode_to_scan_rst_cycles inside {[0 : 4]};}
 
   rand int ndm_reset_cycles;
   constraint ndm_reset_cycles_c {ndm_reset_cycles inside {[4 : 16]};}
 
-  rand int non_ndm_reset_cycles;
-  constraint non_ndm_reset_cycles_c {non_ndm_reset_cycles inside {[4 : 16]};}
+  rand int non_ndm_reset_us;
+  constraint non_ndm_reset_us_c {non_ndm_reset_us inside {[1 : 4]};}
 
   // various knobs to enable certain routines
   bit do_rstmgr_init = 1'b1;
@@ -272,9 +277,11 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   virtual protected task clear_sw_rst_ctrl_n();
     const sw_rst_t sw_rst_all_ones = '1;
+    `uvm_info(`gfn, "Entered clear_sw_rst_ctrl_n", UVM_MEDIUM)
     rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_ctrl_n), .value(sw_rst_all_ones));
     rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_ctrl_n), .compare_value(sw_rst_all_ones),
                                .err_msg("Expected sw_rst_ctrl_n to be set"));
+    `uvm_info(`gfn, "Exited clear_sw_rst_ctrl_n", UVM_MEDIUM)
   endtask
 
   virtual protected task clear_sw_rst_ctrl_n_per_entry(int entry);
@@ -283,27 +290,33 @@ class rstmgr_base_vseq extends cip_base_vseq #(
                  .err_msg($sformatf("Expected sw_rst_ctrl_n[%0d] to be set", entry)));
   endtask
 
-  // Stimulate and check sw_rst_ctrl_n with a given sw_rst_regen setting.
-  virtual protected task check_sw_rst_ctrl_n(sw_rst_t sw_rst_ctrl_n, sw_rst_t sw_rst_regen,
+  // Stimulate and check sw_rst_ctrl_n with a given sw_rst_regwen setting.
+  // Exit when a reset is detected or the sequence would be invalid and may get stuck.
+  virtual protected task check_sw_rst_ctrl_n(sw_rst_t sw_rst_ctrl_n, sw_rst_t sw_rst_regwen,
                                              bit erase_ctrl_n);
-    sw_rst_t exp_ctrl_n;
+    sw_rst_t exp_ctrl_n = ~sw_rst_regwen | sw_rst_ctrl_n;
 
-    `uvm_info(`gfn, $sformatf("Set sw_rst_ctrl_n to 0x%0x", sw_rst_ctrl_n), UVM_MEDIUM)
-    rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_ctrl_n), .value(sw_rst_ctrl_n));
-    // And check that the reset outputs match the actual ctrl_n settings.
-    // Allow for domain crossing delay.
-    cfg.io_div2_clk_rst_vif.wait_clks(3);
-    exp_ctrl_n = ~sw_rst_regen | sw_rst_ctrl_n;
     `uvm_info(`gfn, $sformatf(
-              "regen=%b, ctrl_n=%b, expected=%b", sw_rst_regen, sw_rst_ctrl_n, exp_ctrl_n),
-              UVM_MEDIUM)
-    rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_ctrl_n), .compare_value(exp_ctrl_n),
-                               .err_msg("Expected enabled updates in sw_rst_ctrl_n"));
-    if (erase_ctrl_n) clear_sw_rst_ctrl_n();
+              "Setting sw_rst_ctrl_n to 0x%0x with regwen 0x%x, expect 0x%x",
+              sw_rst_ctrl_n,
+              sw_rst_regwen,
+              exp_ctrl_n
+              ), UVM_MEDIUM)
+    foreach (ral.sw_rst_ctrl_n[i]) begin
+      if (under_reset) return;
+      `uvm_info(`gfn, $sformatf("Setting sw_rst_ctrl_n bit %0d", i), UVM_MEDIUM)
+      csr_wr(.ptr(ral.sw_rst_ctrl_n[i]), .value(sw_rst_ctrl_n[i]));
+      `uvm_info(`gfn, $sformatf("Done setting sw_rst_ctrl_n bit %0d", i), UVM_MEDIUM)
+      if (under_reset) return;
+      csr_rd_check(.ptr(ral.sw_rst_ctrl_n[i]), .compare_value(exp_ctrl_n[i]),
+                   .err_msg($sformatf("Mismatch for bit %0d", i)));
+      `uvm_info(`gfn, $sformatf("Done checking sw_rst_ctrl_n bit %0d", i), UVM_MEDIUM)
+    end
+    if (erase_ctrl_n && !under_reset) clear_sw_rst_ctrl_n();
   endtask
 
   virtual protected task check_sw_rst_ctrl_n_per_entry(
-      sw_rst_t sw_rst_ctrl_n, sw_rst_t sw_rst_regen, bit erase_ctrl_n, int entry);
+      sw_rst_t sw_rst_ctrl_n, sw_rst_t sw_rst_regwen, bit erase_ctrl_n, int entry);
     sw_rst_t exp_ctrl_n;
 
     `uvm_info(`gfn, $sformatf("Set sw_rst_ctrl_n[%0d] to 0x%0x", entry, sw_rst_ctrl_n), UVM_MEDIUM)
@@ -311,15 +324,30 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     // And check that the reset outputs match the actual ctrl_n settings.
     // Allow for domain crossing delay.
     cfg.io_div2_clk_rst_vif.wait_clks(3);
-    exp_ctrl_n = ~sw_rst_regen | sw_rst_ctrl_n;
+    exp_ctrl_n = ~sw_rst_regwen | sw_rst_ctrl_n;
     `uvm_info(`gfn, $sformatf(
-              "regen=%b, ctrl_n=%b, expected=%b", sw_rst_regen, sw_rst_ctrl_n, exp_ctrl_n),
+              "regwen=%b, ctrl_n=%b, expected=%b", sw_rst_regwen, sw_rst_ctrl_n, exp_ctrl_n),
               UVM_MEDIUM)
     csr_rd_check(.ptr(ral.sw_rst_ctrl_n[entry]), .compare_value(exp_ctrl_n[entry]),
                  .err_msg($sformatf("Expected enabled updates in sw_rst_ctrl_n[%0d]", entry)));
     if (erase_ctrl_n) clear_sw_rst_ctrl_n_per_entry(entry);
   endtask
 
+  local task control_all_clocks(bit enable);
+    if (enable) begin
+      cfg.io_clk_rst_vif.start_clk();
+      cfg.io_div2_clk_rst_vif.start_clk();
+      cfg.io_div4_clk_rst_vif.start_clk();
+      cfg.main_clk_rst_vif.start_clk();
+      cfg.usb_clk_rst_vif.start_clk();
+    end else begin
+      cfg.io_clk_rst_vif.stop_clk();
+      cfg.io_div2_clk_rst_vif.stop_clk();
+      cfg.io_div4_clk_rst_vif.stop_clk();
+      cfg.main_clk_rst_vif.stop_clk();
+      cfg.usb_clk_rst_vif.stop_clk();
+    end
+  endtask
 
   // Happens with hardware resets.
   local task reset_start(pwrmgr_pkg::reset_cause_e reset_cause);
@@ -330,16 +358,34 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     // state transitions.
     cfg.io_div4_clk_rst_vif.wait_clks(rst_to_req_cycles);
     set_pwrmgr_rst_reqs(.rst_lc_req('1), .rst_sys_req('1));
+    cfg.clk_rst_vif.stop_clk();
+    if (reset_cause == pwrmgr_pkg::LowPwrEntry) control_all_clocks(.enable(0));
+  endtask
+
+  protected task wait_till_active();
+    // And wait for the main reset to be done.
+    `DV_WAIT(cfg.rstmgr_vif.rst_ni_inactive, "Time-out waiting for rst_ni becoming inactive");
+    // And wait a few cycles for settling before allowing the sequences to start.
+    cfg.io_div4_clk_rst_vif.wait_clks(8);
   endtask
 
   local task reset_done();
     `uvm_info(`gfn, "Releasing pwrmgr inputs for reset request", UVM_MEDIUM)
+    if (cfg.rstmgr_vif.pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry) begin
+      control_all_clocks(.enable(1));
+    end
+    cfg.io_div4_clk_rst_vif.wait_clks(10);
     set_reset_cause(pwrmgr_pkg::ResetNone);
+    set_pwrmgr_rst_reqs(.rst_lc_req('0), .rst_sys_req('1));
+    cfg.clk_rst_vif.start_clk();
+    cfg.io_div4_clk_rst_vif.wait_clks(release_lc_to_release_sys_cycles);
     set_pwrmgr_rst_reqs(.rst_lc_req('0), .rst_sys_req('0));
+    wait_till_active();
+    `uvm_info(`gfn, "exiting reset_done", UVM_MEDIUM)
   endtask
 
   virtual protected task release_reset(pwrmgr_pkg::reset_cause_e reset_cause);
-    cfg.io_div4_clk_rst_vif.wait_clks(non_ndm_reset_cycles);
+    #(non_ndm_reset_us * 1us);
     // Cause the reset to drop.
     `uvm_info(`gfn, $sformatf("Releasing %0s reset", reset_cause.name()), UVM_LOW)
     set_rstreqs(0);
@@ -368,6 +414,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     #1us;
     update_scanmode(prim_mubi_pkg::MuBi4False);
     update_scan_rst_n(1'b1);
+    cfg.aon_clk_rst_vif.wait_clks(2);
     reset_done();
 
     // This makes sure the clock has restarted before this returns.
@@ -382,6 +429,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Sending ndm reset", UVM_LOW)
     cfg.io_div4_clk_rst_vif.wait_clks(ndm_reset_cycles);
     set_ndmreset_req(1'b0);
+    `uvm_info(`gfn, "Released ndm reset", UVM_LOW)
   endtask
 
   // Requests a sw reset. It is cleared by hardware once the reset is taken.
@@ -390,7 +438,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     if (value == prim_mubi_pkg::MuBi4True) begin
       `uvm_info(`gfn, "Sending sw reset", UVM_LOW)
       reset_start(pwrmgr_pkg::HwReq);
-      cfg.io_div4_clk_rst_vif.wait_clks(non_ndm_reset_cycles);
+      #(non_ndm_reset_us * 1us);
       reset_done();
     end
   endtask
@@ -406,6 +454,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   local task start_clocks();
+    control_all_clocks(.enable(1));
     fork
       cfg.aon_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0),
                                       .reset_width_clks(BOGUS_RESET_CLK_CYCLES));
@@ -422,15 +471,21 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     join
   endtask
 
-  virtual protected task por_reset();
-    `uvm_info(`gfn, "Starting POR", UVM_MEDIUM)
-    start_clocks();
-    cfg.rstmgr_vif.por_n = '0;
-    cfg.aon_clk_rst_vif.wait_clks(POR_CLK_CYCLES);
+  protected task por_reset_done();
     cfg.rstmgr_vif.por_n = '1;
     reset_start(pwrmgr_pkg::ResetUndefined);
-    cfg.io_div4_clk_rst_vif.wait_clks(non_ndm_reset_cycles);
+    #(non_ndm_reset_us * 1us);
     reset_done();
+  endtask
+
+  virtual protected task por_reset();
+    `uvm_info(`gfn, "Starting POR", UVM_MEDIUM)
+    cfg.rstmgr_vif.por_n = '0;
+    control_all_clocks(.enable(0));
+    #(100 * 1ns);
+    start_clocks();
+    cfg.aon_clk_rst_vif.wait_clks(POR_CLK_CYCLES);
+    por_reset_done();
   endtask
 
   virtual task apply_reset(string kind = "HARD");
@@ -446,6 +501,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
       start_clocks();
       super.apply_resets_concurrently(reset_duration_ps);
     join
+    `uvm_info(`gfn, "Done with apply_resets_concurrently", UVM_MEDIUM)
   endtask
 
   // Disable exclusions for RESET_REQ and SW_RST_CTRL_N: they are meant for full-chip only.
@@ -468,6 +524,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   // setup basic rstmgr features
   virtual task rstmgr_init();
+    // Must set clk_rst_vif frequency to IO_DIV4_FREQ_MHZ since they are gated
+    // versions of each other and have no clock domain crossings.
+    // Notice they may still end up out of phase due to the way they get started.
+    cfg.clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
     cfg.aon_clk_rst_vif.set_freq_mhz(AON_FREQ_MHZ);
     cfg.io_clk_rst_vif.set_freq_mhz(IO_FREQ_MHZ);
     cfg.io_div2_clk_rst_vif.set_freq_mhz(IO_DIV2_FREQ_MHZ);
