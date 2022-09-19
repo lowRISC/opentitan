@@ -82,9 +82,9 @@ typedef enum uint8_t {
   kDioSpiHostCsL  /* DIO 15               OUTPUT */
 } dio_pad_idx_t;
 
-#define NUM_OPTOUT_DIO 2
-static const uint8_t kOptOutDio[NUM_OPTOUT_DIO] = {kDioSpiDevClk,
-                                                   kDioSpiDevCsL};
+enum { kNumOptOutDio = 2 };
+static const uint8_t kOptOutDio[kNumOptOutDio] = {kDioSpiDevClk,
+                                                  kDioSpiDevCsL};
 
 static uint8_t kMioPads[NUM_MIO_PADS] = {0};
 static uint8_t kDioPads[NUM_DIO_PADS] = {0};
@@ -216,5 +216,3 @@ bool test_main(void) {
 
   return result;
 }
-
-#undef NUM_OPTOUT_DIO

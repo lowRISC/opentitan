@@ -104,7 +104,7 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
      */
 
     // High-Z for all ports
-    cfg.chip_vif.ios_if.pins_pd = '0;
+    cfg.chip_vif.ios_if.pins_pd = '1;
     cfg.chip_vif.ios_if.pins_pu = '0;
     pad = cfg.chip_vif.ios_if.sample();
 
