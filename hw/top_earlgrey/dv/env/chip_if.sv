@@ -614,8 +614,6 @@ interface chip_if;
   // Provides the test sequence a fresh start to connect specific interfaces needed by the test.
   // The por_n_if is exempt from this. The disconnection of default pulls using ios_if is
   // conditioned on the `disconnect_default_pulls` arg.
-  // spi_host isn't disconnected in this function as it uses dedicated IOs and default connected
-  // also CSB should be high to put it inactive. Set enable_spi_host = 0 explicitely when needed.
   function automatic void disconnect_all_interfaces(bit disconnect_default_pulls);
     `uvm_info(MsgId, "Disconnecting all interfaces from the chip IOs", UVM_LOW)
     if (disconnect_default_pulls) ios_if.disconnect();
@@ -636,6 +634,7 @@ interface chip_if;
     ast2pad_if.disconnect();
     pad2ast_if.disconnect();
     pinmux_wkup_if.disconnect();
+    enable_spi_host = 1'b 0;
     for (int i = 0; i < NUM_UARTS; i++) enable_uart(.inst_num(i), .enable(0));
     for (int i = 0; i < NUM_SPI_HOSTS; i++) enable_spi_device(.inst_num(i), .enable(0));
     for (int i = 0; i < NUM_I2CS; i++) enable_i2c(.inst_num(i), .enable(0));
