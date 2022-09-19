@@ -15,14 +15,14 @@ package spi_agent_pkg;
   // parameter
   parameter uint CSB_WIDTH = 2;
   parameter uint NUM_CSB = CSB_WIDTH ** 2;
+  parameter time TIME_SCK_STABLE_TO_CSB_NS = 10ns;
 
   // transaction type
   typedef enum {
     // device dut
     SpiTransNormal,    // normal SPI trans
     SpiTransSckNoCsb,  // bad SPI trans with sck but no csb
-    SpiTransCsbNoSck,   // bad SPI trans with csb but no sck
-    SpiFlashTrans
+    SpiTransCsbNoSck   // bad SPI trans with csb but no sck
   } spi_trans_type_e;
 
   // sck edge type - used by driver and monitor
@@ -40,6 +40,13 @@ package spi_agent_pkg;
     Quad     = 2'b10,  // Half duplex, tx and rx: sio[3:0]
     RsvdSpd  = 2'b11   // RFU
   } spi_mode_e;
+
+  // spi functional mode
+  typedef enum bit [1:0] {
+    SpiModeGeneric,
+    SpiModeFlash,
+    SpiModeTpm
+  } spi_func_mode_e;
 
   typedef enum bit [7:0] {
     ReadStd    = 8'b11001100,

@@ -136,12 +136,11 @@ class spi_device_base_vseq extends cip_base_vseq #(
     cfg.spi_host_agent_cfg.sck_phase[0] = sck_phase;
     cfg.spi_host_agent_cfg.host_bit_dir = host_bit_dir;
     cfg.spi_host_agent_cfg.device_bit_dir = device_bit_dir;
-    cfg.spi_host_agent_cfg.csb_sel = 0;
+    cfg.spi_host_agent_cfg.csid = 0;
     cfg.spi_host_agent_cfg.partial_byte = 0;
     cfg.spi_host_agent_cfg.csb_consecutive = 0;
     cfg.spi_host_agent_cfg.decode_commands = 0;
     cfg.spi_host_agent_cfg.num_bytes_per_trans_in_mon = 4;
-    cfg.spi_host_agent_cfg.is_flash_mode = 0;
 
     // update device rtl
     ral.control.mode.set(spi_mode);

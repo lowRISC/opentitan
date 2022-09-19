@@ -46,11 +46,14 @@ class spi_monitor extends dv_base_monitor#(
       host_item.first_byte = 1;
       cmd = CmdOnly;
       cmd_byte = 0;
-      if (cfg.is_flash_mode == 0) begin
-        collect_curr_trans();
-      end else begin
-        collect_flash_trans();
-      end
+      case (cfg.spi_func_mode)
+        SpiModeGeneric: collect_curr_trans();
+        SpiModeFlash: collect_flash_trans();
+        SpiModeTpm: collect_tpm_trans();
+        default: begin
+          `uvm_fatal(`gfn, $sformatf("Invalid mode %s", cfg.spi_func_mode.name))
+        end
+      endcase
     end
   endtask : collect_trans
 
@@ -207,7 +210,6 @@ class spi_monitor extends dv_base_monitor#(
           begin: sample_thread
             int num_addr_bytes;
             opcode_received = 0;
-            item.item_type = SpiFlashTrans;
             // for mode 1 and 3, get the leading edges out of the way
             cfg.wait_sck_edge(LeadingEdge);
 
@@ -245,6 +247,10 @@ class spi_monitor extends dv_base_monitor#(
       end
     join
   endtask : collect_flash_trans
+
+  virtual protected task collect_tpm_trans();
+    // TODO, add soon
+  endtask
 
   // address is 3 or 4 bytes
   virtual task sample_flash_address(input int num_bytes, output bit[7:0] byte_addr_q[$]);

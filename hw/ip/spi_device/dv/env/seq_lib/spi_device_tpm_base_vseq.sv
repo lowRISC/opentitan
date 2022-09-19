@@ -21,9 +21,10 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
 
   // Configure clocks and tpm, generate a word.
   virtual task tpm_init();
+    cfg.spi_host_agent_cfg.csid = TPM_CSB_ID;
     // Only SPI mode 0 is supported (CPHA=0, CPOL=0).
-    cfg.spi_host_agent_cfg.sck_polarity[0] = 0;
-    cfg.spi_host_agent_cfg.sck_phase[0] = 0;
+    cfg.spi_host_agent_cfg.sck_polarity[TPM_CSB_ID] = 0;
+    cfg.spi_host_agent_cfg.sck_phase[TPM_CSB_ID] = 0;
     // Only support tx/rx_order = 0
     cfg.spi_host_agent_cfg.host_bit_dir = 0;
     cfg.spi_host_agent_cfg.device_bit_dir = 0;
@@ -37,10 +38,6 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     // 1 for CRB, 0 for FIFO.
 
     csr_update(.csr(ral.tpm_cfg));
-
-    //Csb select for TPM
-    cfg.spi_host_agent_cfg.csb_sel = 1;
-
   endtask : tpm_init
 
   // Randomise other fields in TPM_CFG.

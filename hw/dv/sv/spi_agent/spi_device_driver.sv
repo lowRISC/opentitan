@@ -32,11 +32,14 @@ class spi_device_driver extends spi_driver;
       fork
         begin: iso_fork
           fork
-            if (cfg.is_flash_mode == 0) begin
-              send_rx_item(req);
-            end else begin
-              send_flash_item(req);
-            end
+            case (cfg.spi_func_mode)
+              SpiModeGeneric: send_rx_item(req);
+              SpiModeFlash: send_flash_item(req);
+              SpiModeTpm: send_tpm_item(req);
+              default: begin
+                `uvm_fatal(`gfn, $sformatf("Invalid mode %s", cfg.spi_func_mode.name))
+              end
+            endcase
             drive_bus_to_highz();
             drive_bus_for_reset();
           join_any
@@ -97,6 +100,10 @@ class spi_device_driver extends spi_driver;
       send_data_to_sio(spi_mode, sio_bits);
     end
   endtask : send_flash_item
+
+  virtual task send_tpm_item(spi_item item);
+    // TODO, add soon
+  endtask : send_tpm_item
 
   virtual task send_data_to_sio(spi_mode_e mode, input logic [3:0] sio_bits);
     case (mode)

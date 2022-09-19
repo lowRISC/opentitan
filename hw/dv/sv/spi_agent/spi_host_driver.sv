@@ -22,6 +22,7 @@ class spi_host_driver extends spi_driver;
       @(negedge cfg.vif.rst_n or negedge cfg.vif.disconnected);
       if (cfg.vif.disconnected) continue;
       under_reset = 1'b1;
+      active_csb  = 1'b0;
       cfg.vif.sck <= cfg.sck_polarity[0];
       cfg.vif.sio_out <= 'x;
       cfg.vif.csb <= '1;
@@ -34,37 +35,35 @@ class spi_host_driver extends spi_driver;
   // generate sck
   task gen_sck();
     @(posedge cfg.vif.rst_n);
-    fork
-      forever begin
-        if (sck_pulses > 0 || cfg.sck_on) begin
-          cfg.vif.sck <= ~cfg.vif.sck;
-          #((cfg.sck_period_ps / 2 + get_rand_extra_delay_ns_btw_sck() * 1000) * 1ps);
-          cfg.vif.sck <= ~cfg.vif.sck;
-          #((cfg.sck_period_ps / 2 + get_rand_extra_delay_ns_btw_sck() * 1000) * 1ps);
-          if (sck_pulses > 0) sck_pulses--;
-          // dly after a word transfer is completed
-          if (sck_pulses % 32 == 0) #(get_rand_extra_delay_ns_btw_word() * 1ns);
-        end else begin
-          @(cfg.sck_on, sck_pulses);
-          if (sck_pulses > 0) begin
-            // drive half cycle first
-            cfg.vif.sck <= cfg.sck_polarity[0];
-            #(cfg.sck_period_ps / 2 * 1ps);
-          end
+    forever begin
+      if (sck_pulses > 0 || cfg.sck_on) begin
+        cfg.vif.sck <= ~cfg.vif.sck;
+        #((cfg.sck_period_ps / 2 + get_rand_extra_delay_ns_btw_sck() * 1000) * 1ps);
+        cfg.vif.sck <= ~cfg.vif.sck;
+        #((cfg.sck_period_ps / 2 + get_rand_extra_delay_ns_btw_sck() * 1000) * 1ps);
+        if (sck_pulses > 0) sck_pulses--;
+        // dly after a word transfer is completed
+        if (sck_pulses % 32 == 0) #(get_rand_extra_delay_ns_btw_word() * 1ns);
+      end else begin
+        @(cfg.sck_on, sck_pulses);
+        if (sck_pulses > 0) begin
+          // drive half cycle first
+          cfg.vif.sck <= cfg.sck_polarity[active_csb];
+          #(cfg.sck_period_ps / 2 * 1ps);
         end
-        cfg.vif.sck_pulses = sck_pulses;
       end
-      forever begin
-        @(cfg.sck_polarity[0]);
-        cfg.vif.sck_polarity = cfg.sck_polarity[0];
-        if (sck_pulses == 0) cfg.vif.sck <= cfg.sck_polarity[0];
-      end
-      forever begin
-        @(cfg.sck_phase[0]);
-        cfg.vif.sck_phase = cfg.sck_phase[0];
-      end
-    join
+      cfg.vif.sck_pulses = sck_pulses;
+    end
   endtask : gen_sck
+
+  task switch_polarity_and_phase();
+    cfg.vif.sck_polarity = cfg.sck_polarity[active_csb];
+    cfg.vif.sck_phase = cfg.sck_phase[active_csb];
+    if (cfg.vif.sck != cfg.sck_polarity[active_csb]) begin
+      cfg.vif.sck <= cfg.sck_polarity[active_csb];
+      #TIME_SCK_STABLE_TO_CSB_NS;
+    end
+  endtask : switch_polarity_and_phase
 
   task get_and_drive();
     forever begin
@@ -78,14 +77,24 @@ class spi_host_driver extends spi_driver;
       if (cfg.csb_sel_in_cfg) active_csb = cfg.csid;
       else                    active_csb = req.csb_sel;
 
+      switch_polarity_and_phase();
       // switch from x to z to release the IO
       cfg.vif.sio_out <= 'z;
 
       case (req.item_type)
-        SpiTransNormal:   drive_normal_item();
+        SpiTransNormal: begin
+          case (cfg.spi_func_mode)
+            SpiModeGeneric: drive_normal_item();
+            SpiModeFlash: drive_flash_item();
+            SpiModeTpm: drive_tpm_item();
+            default: begin
+              `uvm_fatal(`gfn, $sformatf("Invalid mode %s", cfg.spi_func_mode.name))
+            end
+          endcase
+        end
         SpiTransSckNoCsb: drive_sck_no_csb_item();
         SpiTransCsbNoSck: drive_csb_no_sck_item();
-        SpiFlashTrans:    drive_flash_item();
+        default: `uvm_fatal(`gfn, $sformatf("Invalid type %s", req.item_type.name))
       endcase
 
       if (cfg.csb_consecutive == 0) begin
@@ -190,6 +199,10 @@ class spi_host_driver extends spi_driver;
     end
 
     wait(sck_pulses == 0);
+  endtask
+
+  task drive_tpm_item();
+    // TODO, add soon
   endtask
 
   task drive_sck_no_csb_item();
