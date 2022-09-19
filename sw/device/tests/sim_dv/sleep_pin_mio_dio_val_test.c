@@ -63,7 +63,7 @@ OTTF_DEFINE_TEST_CONFIG();
  * ```
  */
 
-typedef enum uint8_t {
+typedef enum {
   kDioUsbP,       /* DIO 0                INOUT  */
   kDioUsbN,       /* DIO 1                INOUT  */
   kDioSpiHostD0,  /* DIO 2                INOUT  */
@@ -86,6 +86,25 @@ enum { kNumOptOutDio = 2 };
 static const uint8_t kOptOutDio[kNumOptOutDio] = {kDioSpiDevClk,
                                                   kDioSpiDevCsL};
 
+typedef enum {
+  kMioIoR0 = 35,
+  kMioIoR2 = 37,
+  kMioIoR3 = 38,
+  kMioIoR4 = 39
+} mio_pad_idx_t;
+
+/**
+ * IOR[0:4] in chip_if are connected to JTAG interface.
+ * If tap_strap_if is disconnected (IoC5, IoC8), those signals become unknown.
+ *
+ * Issue(#15006) for debugging.
+ */
+enum { kNumOptOutMio = 4 };
+static const uint8_t kOptOutMio[kNumOptOutMio] = {kMioIoR0,
+                                                  kMioIoR2,
+                                                  kMioIoR3,
+                                                  kMioIoR4};
+
 static uint8_t kMioPads[NUM_MIO_PADS] = {0};
 static uint8_t kDioPads[NUM_DIO_PADS] = {0};
 
@@ -94,7 +113,7 @@ static uint8_t kDioPads[NUM_DIO_PADS] = {0};
  * Each gen32 can cover 16 PADs randomization. When each pad ret val draws
  * **3**, the code calls gen32_range to choose from 0 to 2.
  */
-void draw_pinmux_ret(const uint32_t num_pins, uint8_t *arr) {
+void draw_pinmux_ret(const uint32_t num_pins, uint8_t *arr, const uint8_t *optout, const uint8_t num_optout) {
   for (int i = 0; i < num_pins; i += 16) {
     uint32_t val = rand_testutils_gen32();
     uint32_t min_idx = (i + 16 < num_pins) ? i + 16 : num_pins;
@@ -106,6 +125,11 @@ void draw_pinmux_ret(const uint32_t num_pins, uint8_t *arr) {
         arr[j] = (uint8_t)rand_testutils_gen32_range(0, 2);
       }
     }
+  }
+
+  // OptOut processing after draw.
+  for (int i = 0; i < num_optout; i++) {
+    arr[optout[i]] = 2; // High-Z always
   }
 }
 
@@ -166,8 +190,8 @@ bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux) {
 
   LOG_INFO("Selecting PADs retention modes...");
 
-  draw_pinmux_ret(NUM_DIO_PADS, kDioPads);
-  draw_pinmux_ret(NUM_MIO_PADS, kMioPads);
+  draw_pinmux_ret(NUM_DIO_PADS, kDioPads, kOptOutDio, kNumOptOutDio);
+  draw_pinmux_ret(NUM_MIO_PADS, kMioPads, kOptOutMio, kNumOptOutMio);
 
   print_chosen_values();
 
