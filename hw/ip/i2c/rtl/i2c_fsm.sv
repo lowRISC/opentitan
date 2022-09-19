@@ -9,9 +9,9 @@ module i2c_fsm (
   input        rst_ni, // active low reset
 
   input        scl_i,  // serial clock input from i2c bus
-  output       scl_o,  // serial clock output to i2c bus
+  output logic scl_o,  // serial clock output to i2c bus
   input        sda_i,  // serial data input from i2c bus
-  output       sda_o,  // serial data output to i2c bus
+  output logic sda_o,  // serial data output to i2c bus
 
   input        host_enable_i, // enable host functionality
   input        target_enable_i, // enable target functionality
@@ -111,6 +111,8 @@ module i2c_fsm (
   logic        restart;       // indicates repeated start state is entered into
 
   // Target specific variables
+  logic        start_det_clr; // clear the start det indication once handling is complete
+  logic        stop_det_clr;  // clear the stop det indication once handling is complete
   logic        start_det;     // indicates start or repeated start is detected on the bus
   logic        stop_det;      // indicates stop is detected on the bus
   logic        address0_match;// indicates target's address0 matches the one sent by host
@@ -129,6 +131,7 @@ module i2c_fsm (
   logic        bit_ack;       // indicates ACK bit been sent or received
   logic        rw_bit;        // indicates host wants to read (1) or write (0)
   logic        host_ack;      // indicates host acknowledged transmitted byte
+
 
   // Clock counter implementation
   typedef enum logic [3:0] {
@@ -254,8 +257,8 @@ module i2c_fsm (
     if (!rst_ni) begin
       start_det <= 1'b0;
     end else if (scl_i_q && scl_i) begin
-      if (sda_i_q && !sda_i) start_det <= 1'b1;
-      else start_det <= 1'b0;
+      if (start_det && start_det_clr) start_det <= 1'b0;
+      else if (sda_i_q && !sda_i) start_det <= 1'b1;
     end else begin
       start_det <= 1'b0;
     end
@@ -266,8 +269,8 @@ module i2c_fsm (
     if (!rst_ni) begin
       stop_det <= 1'b0;
     end else if (scl_i_q && scl_i) begin
-      if (!sda_i_q && sda_i) stop_det <= 1'b1;
-      else stop_det <= 1'b0;
+      if (stop_det && stop_det_clr) stop_det <= 1'b0;
+      else if (!sda_i_q && sda_i) stop_det <= 1'b1;
     end else begin
       stop_det <= 1'b0;
     end
@@ -569,7 +572,11 @@ module i2c_fsm (
       // Active: continue while keeping SCL low
       Active : begin
         host_idle_o = 1'b0;
-        scl_temp = 1'b0;
+
+        // If the start flag was asserted, do not drive scl low
+        // since in the next state we will drive it high to initiate
+        // the start bit.
+        scl_temp = fmt_flag_start_before_i;
       end
       // PopFmtFifo: populate fmt_fifo
       PopFmtFifo : begin
@@ -633,7 +640,6 @@ module i2c_fsm (
       TransmitAck : begin
         target_idle_o = 1'b0;
         if (tx_fifo_depth_i == 7'd1 && !tx_fifo_wvalid_i && host_ack) event_tx_empty_o = 1'b1;
-        if (host_ack && (start_det || stop_det)) event_ack_stop_o = 1'b1;
       end
       // PopTxFifo: populate tx_fifo
       PopTxFifo : begin
@@ -669,6 +675,9 @@ module i2c_fsm (
       end
       // AcquireSrP: target acquires repeated Start or Stop
       AcquireSrP : begin
+        // If a normal ack from host was seen, then a start or stop was observed.
+        event_ack_stop_o = host_ack;
+
         if (start_det) acq_fifo_wdata_o = {1'b1, 1'b1, input_byte};
         else acq_fifo_wdata_o = {1'b1, 1'b0, input_byte};
         acq_fifo_wvalid_o = 1'b1;
@@ -738,14 +747,15 @@ module i2c_fsm (
     input_byte_clr = 1'b0;
     addr_stop_tx = 1'b0;
     addr_stop_acq = 1'b0;
+    start_det_clr = 1'b0;
+    stop_det_clr = 1'b0;
 
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
       Idle : begin
         if (!host_enable_i && !target_enable_i) state_d = Idle; // Idle unless host is enabled
         else if (host_enable_i) begin
-          if (!fmt_fifo_rvalid_i) state_d = Idle;
-          else state_d = Active;
+          if (fmt_fifo_rvalid_i) state_d = Active;
         end else if (target_enable_i) begin
           if (!start_det) state_d = Idle;
           else state_d = AcquireStart;
@@ -1013,6 +1023,7 @@ module i2c_fsm (
 
       // AcquireStart: hold start condition
       AcquireStart : begin
+        start_det_clr = 1'b1;
         if (scl_i_q && !scl_i) begin
           state_d = AddrRead;
           input_byte_clr = 1'b1;
@@ -1113,8 +1124,6 @@ module i2c_fsm (
         if (scl_i) begin
           if (host_ack) begin
             state_d = PopTxFifo;
-          end else begin
-            if (start_det || stop_det) state_d = AcquireSrP;
           end
         end
       end
@@ -1161,16 +1170,17 @@ module i2c_fsm (
       end
       // AcquireAckHold: target pulls SDA low while SCL is pulled low
       AcquireAckHold : begin
-        if (tcount_q == 20'd1) begin
-          if (bit_ack) begin
-            if (start_det || stop_det) state_d = AcquireSrP;
-            else state_d = AcquireByte;
-          end
+        if (tcount_q == 20'd1 && bit_ack) begin
+          state_d = AcquireByte;
         end
       end
 
       // AcquireSrP: target acquires repeated Start or Stop
       AcquireSrP : begin
+        // clear stop here as we want to cycle to Idle and wait.
+        // Do not clear start, as a start seen in this state is a
+        // repeated start and needs to handle address decode again.
+        stop_det_clr = stop_det;
         state_d = Idle;
       end
 
@@ -1221,7 +1231,15 @@ module i2c_fsm (
         addr_stop_tx = 1'b0;
         addr_stop_acq = 1'b0;
       end
-    endcase
+    endcase // unique case (state_q)
+
+    // If a start or stop is detected in target mode, handle it directly
+    // instead of being dependent on a specific state, which may lead to
+    // certain corner cases.
+    if (target_enable_i && (start_det || stop_det)) begin
+      state_d = AcquireSrP;
+    end
+
   end
 
   // Synchronous state transition
@@ -1234,8 +1252,15 @@ module i2c_fsm (
   end
 
   // I2C bus outputs
-  assign scl_o = scl_temp;
-  assign sda_o = sda_temp;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+   if (!rst_ni) begin
+    scl_o <= 1'b1;
+    sda_o <= 1'b1;
+   end else begin
+    scl_o <= scl_temp;
+    sda_o <= sda_temp;
+   end
+  end
 
   // Host ceased sending SCL pulses during ongoing transaction
   assign event_host_timeout_o = (!target_idle_o & (scl_high_cnt > host_timeout_i)) ? 1'b1 : 1'b0;
