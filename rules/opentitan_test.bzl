@@ -320,10 +320,12 @@ def opentitan_functest(
             if "test_rom" in target:
                 cw310_["rom_kind"] = "testrom"
                 cw310_["bitstream"] = "@//hw/bitstream:test_rom"
+                cw310_["tags"] = [t for t in cw310_["tags"]] + ["cw310_test_rom"]
                 target_params["fpga_cw310_test_rom"] = cw310_
             elif "rom" in target:
                 cw310_["rom_kind"] = "rom"
                 cw310_["bitstream"] = "@//hw/bitstream:rom"
+                cw310_["tags"] = [t for t in cw310_["tags"]] + ["cw310_rom"]
                 target_params["fpga_cw310_rom"] = cw310_
             else:
                 fail("Expected to find `test_rom` or `rom` in the target name")
