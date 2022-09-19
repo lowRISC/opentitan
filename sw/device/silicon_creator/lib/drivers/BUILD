@@ -267,6 +267,11 @@ cc_test(
 opentitan_functest(
     name = "keymgr_functest",
     srcs = ["keymgr_functest.c"],
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
+    ],
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -451,6 +456,11 @@ cc_test(
 opentitan_functest(
     name = "retention_sram_functest",
     srcs = ["retention_sram_functest.c"],
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
+    ],
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -570,6 +580,11 @@ cc_test(
 opentitan_functest(
     name = "rstmgr_functest",
     srcs = ["rstmgr_functest.c"],
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
+    ],
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -654,6 +669,11 @@ cc_test(
 opentitan_functest(
     name = "watchdog_functest",
     srcs = ["watchdog_functest.c"],
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
+    ],
     verilator = verilator_params(
         timeout = "long",
     ),

@@ -79,7 +79,7 @@ opentitan_functest(
     cw310 = cw310_params(
         timeout = "long",
     ),
-    targets = ["cw310"],  # Test set is too large to run in simulation
+    targets = ["cw310_test_rom"],  # Test set is too large to run in simulation
     deps = [
         ":mod_exp_ibex",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -145,6 +145,11 @@ opentitan_functest(
 opentitan_functest(
     name = "mod_exp_otbn_functest_wycheproof",
     srcs = ["mod_exp_otbn_functest.c"],
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
+    ],
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -279,7 +284,7 @@ opentitan_functest(
     cw310 = cw310_params(
         timeout = "long",
     ),
-    targets = ["cw310"],  # Test set is too large to run in simulation
+    targets = ["cw310_test_rom"],  # Test set is too large to run in simulation
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",

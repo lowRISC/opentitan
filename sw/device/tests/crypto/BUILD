@@ -117,6 +117,11 @@ opentitan_functest(
     cw310 = cw310_params(
         timeout = "long",
     ),
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
+    ],
     verilator = verilator_params(
         timeout = "long",
     ),

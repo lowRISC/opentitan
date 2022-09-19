@@ -18,16 +18,14 @@ opentitan_functest(
     name = "rom_e2e_shutdown_exception_c",
     srcs = ["rom_e2e_shutdown_exception_c_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom",
         # Note: This test never prints a failure message so it will fail only
         # when it times out.
         exit_failure = "NO_FAILURE_MESSAGE",
         exit_success = "BFV:01495202(?s:.*)BFV:01495202",
     ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
     targets = [
-        "cw310",
+        "cw310_rom",
         "verilator",
     ],
     verilator = verilator_params(
@@ -53,8 +51,12 @@ opentitan_functest(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom",
     ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
+    targets = [
+        "cw310_rom",
+        "verilator",
+        "dv",
+    ],
     verilator = verilator_params(
         timeout = "eternal",
         rom = "//sw/device/silicon_creator/rom",
@@ -67,13 +69,9 @@ opentitan_functest(
 opentitan_functest(
     name = "rom_e2e_static_critical",
     srcs = ["rom_e2e_static_critical_test.c"],
-    cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom",
-    ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
     targets = [
-        "cw310",
+        "cw310_rom",
         "verilator",
     ],
     verilator = verilator_params(
@@ -99,9 +97,8 @@ opentitan_functest(
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
     ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
-    targets = ["cw310"],
+    targets = ["cw310_rom"],
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -111,11 +108,11 @@ opentitan_functest(
     name = "e2e_bootup_no_rom_ext_signature",
     srcs = ["empty_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom",
         exit_failure = DEFAULT_TEST_SUCCESS_MSG,
         exit_success = DEFAULT_TEST_FAILURE_MSG,
     ),
     signed = False,
+    targets = ["cw310_rom"],
     verilator = verilator_params(
         exit_failure = DEFAULT_TEST_SUCCESS_MSG,
         exit_success = DEFAULT_TEST_FAILURE_MSG,
@@ -131,16 +128,14 @@ opentitan_functest(
     srcs = ["empty_test.c"],
     args = [],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom",
         test_cmds = [
             "--bitstream=\"$(location //hw/bitstream:rom)\"",
             "--rom-kind=rom",
             "--rom-ext=\"$(location {flash})\"",
         ],
     ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
-    targets = ["cw310"],
+    targets = ["cw310_rom"],
     test_harness = "//sw/host/tests/rom/e2e_bootup_bad_rom_ext_signature",
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -151,19 +146,17 @@ opentitan_functest(
     name = "e2e_bootstrap_entry",
     srcs = ["empty_test.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom",
         test_cmds = [
             "--rom-kind=rom",
             "--bitstream=\"$(location //hw/bitstream:rom)\"",
             "--bootstrap=\"$(location {flash})\"",
         ],
     ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     # We don't want the `empty_test` to run, but we _also_ don't want some
     # leftover flash image from a previous test to run.  So, bootstrap an
     # unsigned image to force a boot failure.
     signed = False,
-    targets = ["cw310"],
+    targets = ["cw310_rom"],
     test_harness = "//sw/host/tests/rom/e2e_bootstrap_entry",
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -175,16 +168,14 @@ opentitan_functest(
     srcs = ["chip_specific_startup.c"],
     args = [],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom",
         test_cmds = [
-            "--bitstream=\"$(location //hw/bitstream:rom)\"",
             "--rom-kind=rom",
+            "--bitstream=\"$(location //hw/bitstream:rom)\"",
             "--bootstrap=\"$(location {flash})\"",
         ],
     ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
-    targets = ["cw310"],
+    targets = ["cw310_rom"],
     test_harness = "//sw/host/tests/rom/e2e_chip_specific_startup",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",

@@ -101,7 +101,7 @@ opentitan_functest(
         ],
     ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
-    targets = ["cw310"],
+    targets = ["cw310_test_rom"],
     deps = [
         ":macros",
         ":memory",

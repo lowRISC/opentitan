@@ -46,6 +46,11 @@ opentitan_functest(
 opentitan_functest(
     name = "aes_sideload_test",
     srcs = ["aes_sideload_test.c"],
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
+    ],
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -136,7 +141,7 @@ opentitan_functest(
         # The test requires to run for > 0.2s, thus not recommended for
         # Verilator as this will slow down CI too much. It should still
         # be run as part of the DV nightly regression.
-        "cw310",
+        "cw310_test_rom",
         "dv",
     ],
     deps = [
@@ -771,7 +776,7 @@ opentitan_functest(
     srcs = ["gpio_smoketest.c"],
     targets = [
         #not compatible with the verilated top level
-        "cw310",
+        "cw310_test_rom",
         "dv",
     ],
     deps = [
@@ -1073,6 +1078,11 @@ opentitan_functest(
 opentitan_functest(
     name = "pmp_smoketest_tor",
     srcs = ["pmp_smoketest_tor.c"],
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
+    ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:csr",
@@ -1234,7 +1244,7 @@ opentitan_functest(
 opentitan_functest(
     name = "spi_host_smoketest",
     srcs = ["spi_host_smoketest.c"],
-    targets = ["cw310"],  # Can only run on CW310 board right now.
+    targets = ["cw310_test_rom"],  # Can only run on CW310 board right now.
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -1330,6 +1340,11 @@ opentitan_functest(
 opentitan_functest(
     name = "sram_ctrl_execution_test",
     srcs = ["sram_ctrl_execution_test.c"],
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
+    ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/examples/sram_program",
@@ -1379,7 +1394,6 @@ opentitan_functest(
     name = "uart_smoketest_signed",
     srcs = ["uart_smoketest.c"],
     cw310 = cw310_params(
-        bitstream = "//hw/bitstream:rom",
         exit_failure = ROM_BOOT_FAILURE_MSG,
     ),
     dv = dv_params(
@@ -1387,6 +1401,11 @@ opentitan_functest(
     ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
+    targets = [
+        "cw310_rom",
+        "verilator",
+        "dv",
+    ],
     verilator = verilator_params(
         timeout = "eternal",
         exit_failure = ROM_BOOT_FAILURE_MSG,
@@ -1434,6 +1453,11 @@ opentitan_functest(
 opentitan_functest(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
+    ],
     verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],
@@ -1492,6 +1516,11 @@ opentitan_functest(
     srcs = [
         "rv_core_ibex_address_translation_test.S",
         "rv_core_ibex_address_translation_test.c",
+    ],
+    targets = [
+        "cw310_test_rom",
+        "verilator",
+        "dv",
     ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
