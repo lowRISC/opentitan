@@ -131,6 +131,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg        csr;
     bit            do_read_check = ~(cfg.disable_csr_rd_chk);
+    bit            skip_intr_chk = cfg.invalid_st_test;
     bit            write = item.is_write();
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
 
@@ -160,6 +161,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
+        if (skip_intr_chk) return;
         if (data_phase_write) begin
           exp_intr &= ~item.a_data;
         end else if (data_phase_read) begin
