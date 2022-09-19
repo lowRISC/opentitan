@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:dv_utils
     files:
+      - kmac_cov_if.sv
       - kmac_cov_bind.sv
     file_type: systemVerilogSource
 
