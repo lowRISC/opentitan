@@ -32,13 +32,16 @@ export BITSTREAM="--offline --list ${SHA}"
 # in case we've crashed the UART handler on the CW310's SAM3U
 trap 'python3 ./util/fpga/cw310_reboot.py' EXIT
 
-./bazelisk.sh query 'rdeps(//..., @bitstreams//...)' |
-    xargs ci/bazelisk.sh test \
-        --define DISABLE_VERILATOR_BUILD=true \
-        --nokeep_going \
-        --test_tag_filters=cw310,-broken,-manual \
-        --test_timeout_filters=short,moderate \
-        --test_output=all \
-        --build_tests_only \
-        --define cw310=lowrisc \
-        --flaky_test_attempts=2
+cw310_tags=( "cw310_test_rom" "cw310_rom" )
+for tag in "${cw310_tags[@]}"; do
+    ./bazelisk.sh query 'rdeps(//..., @bitstreams//...)' |
+        xargs ci/bazelisk.sh test \
+            --define DISABLE_VERILATOR_BUILD=true \
+            --nokeep_going \
+            --test_tag_filters="${tag}",-broken,-manual \
+            --test_timeout_filters=short,moderate \
+            --test_output=all \
+            --build_tests_only \
+            --define cw310=lowrisc \
+            --flaky_test_attempts=2
+done
