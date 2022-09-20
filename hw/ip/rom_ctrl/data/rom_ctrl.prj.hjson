@@ -14,7 +14,7 @@
             life_stage:         "L1",
             design_stage:       "D3",
             verification_stage: "V2S",
-            dif_stage:          "S0",
+            dif_stage:          "S2",
         },
     ]
 }
