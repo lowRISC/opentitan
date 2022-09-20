@@ -18,7 +18,7 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:csr",
-        "//sw/device/silicon_creator/lib:epmp",
+        "//sw/device/silicon_creator/lib:epmp_state",
     ],
 )
 
@@ -125,6 +125,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
+        "//sw/device/silicon_creator/lib/base:static_critical_epmp_state",
         "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",

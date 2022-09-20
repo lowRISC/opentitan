@@ -16,6 +16,7 @@
     "Error: .static_critical section not at the base address of main RAM.");
 
   KEEP(*(.static_critical.boot_measurements))
+  KEEP(*(.static_critical.epmp_state))
   KEEP(*(.static_critical.sec_mmio_ctx))
 
   ASSERT(

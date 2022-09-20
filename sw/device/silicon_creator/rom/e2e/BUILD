@@ -38,6 +38,7 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
+        "//sw/device/silicon_creator/lib/base:static_critical_epmp_state",
         "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
     ],
 )
