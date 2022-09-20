@@ -30,63 +30,29 @@ licenses([
 ])
 
 # Generated Targets
-# buildifier: disable=out-of-order-load
-# buildifier: disable=load-on-top
-load(
-    "@rules_rust//cargo:cargo_build_script.bzl",
-    "cargo_build_script",
-)
-
-cargo_build_script(
-    name = "libc_build_script",
-    srcs = glob(["**/*.rs"]),
-    build_script_env = {
-    },
-    crate_features = [
-        "default",
-        "extra_traits",
-        "std",
-    ],
-    crate_root = "build.rs",
-    data = glob(["**"]),
-    edition = "2015",
-    rustc_flags = [
-        "--cap-lints=allow",
-    ],
-    tags = [
-        "cargo-raze",
-        "manual",
-    ],
-    version = "0.2.132",
-    visibility = ["//visibility:private"],
-    deps = [
-    ],
-)
 
 rust_library(
-    name = "libc",
+    name = "rand_core",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "default",
-        "extra_traits",
+        "alloc",
+        "getrandom",
         "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=libc",
+        "crate-name=rand_core",
         "manual",
     ],
-    version = "0.2.132",
+    version = "0.6.4",
     # buildifier: leave-alone
     deps = [
-        ":libc_build_script",
+        "@raze__getrandom__0_2_7//:getrandom",
     ],
 )
-
-# Unsupported target "const_fn" with type "test" omitted

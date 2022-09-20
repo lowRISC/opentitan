@@ -31,10 +31,15 @@ licenses([
 
 # Generated Targets
 
-rust_proc_macro(
-    name = "thiserror_impl",
+rust_library(
+    name = "digest",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "alloc",
+        "block-buffer",
+        "core-api",
+        "default",
+        "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -44,14 +49,13 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=thiserror-impl",
+        "crate-name=digest",
         "manual",
     ],
-    version = "1.0.34",
+    version = "0.10.5",
     # buildifier: leave-alone
     deps = [
-        "@raze__proc_macro2__1_0_43//:proc_macro2",
-        "@raze__quote__1_0_21//:quote",
-        "@raze__syn__1_0_99//:syn",
+        "@raze__block_buffer__0_10_3//:block_buffer",
+        "@raze__crypto_common__0_1_6//:crypto_common",
     ],
 )

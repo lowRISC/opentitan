@@ -14,5 +14,5 @@ if ! cd "$BUILD_WORKSPACE_DIRECTORY"; then
 fi
 
 for F in "${FILES[@]}"; do
-    bazel run @@CARGO_RAZE@@ -- --manifest-path="$BUILD_WORKSPACE_DIRECTORY/$F"
+    bazel run @@CARGO_RAZE@@ -- --manifest-path="$BUILD_WORKSPACE_DIRECTORY/$F" "$@"
 done

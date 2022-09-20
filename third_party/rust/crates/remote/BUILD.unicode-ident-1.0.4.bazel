@@ -26,19 +26,15 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT OR Apache-2.0"
+    "notice",  # MIT from expression "(MIT OR Apache-2.0) AND Unicode-DFS-2016"
 ])
 
 # Generated Targets
 
-# Unsupported target "graphemes" with type "bench" omitted
-
-# Unsupported target "unicode_words" with type "bench" omitted
-
-# Unsupported target "word_bounds" with type "bench" omitted
+# Unsupported target "xid" with type "bench" omitted
 
 rust_library(
-    name = "unicode_segmentation",
+    name = "unicode_ident",
     srcs = glob(["**/*.rs"]),
     crate_features = [
     ],
@@ -50,11 +46,15 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=unicode-segmentation",
+        "crate-name=unicode-ident",
         "manual",
     ],
-    version = "1.9.0",
+    version = "1.0.4",
     # buildifier: leave-alone
     deps = [
     ],
 )
+
+# Unsupported target "compare" with type "test" omitted
+
+# Unsupported target "static_size" with type "test" omitted

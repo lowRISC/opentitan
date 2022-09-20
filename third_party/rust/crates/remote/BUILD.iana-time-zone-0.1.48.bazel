@@ -26,17 +26,20 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "(MIT OR Apache-2.0) AND Unicode-DFS-2016"
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
 ])
 
 # Generated Targets
 
-# Unsupported target "xid" with type "bench" omitted
+# Unsupported target "get_timezone" with type "example" omitted
+
+# Unsupported target "stress-test" with type "example" omitted
 
 rust_library(
-    name = "unicode_ident",
+    name = "iana_time_zone",
     srcs = glob(["**/*.rs"]),
     crate_features = [
+        "fallback",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -46,15 +49,11 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=unicode-ident",
+        "crate-name=iana-time-zone",
         "manual",
     ],
-    version = "1.0.3",
+    version = "0.1.48",
     # buildifier: leave-alone
     deps = [
     ],
 )
-
-# Unsupported target "compare" with type "test" omitted
-
-# Unsupported target "static_size" with type "test" omitted
