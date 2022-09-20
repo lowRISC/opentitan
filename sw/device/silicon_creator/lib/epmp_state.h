@@ -153,18 +153,18 @@ extern volatile epmp_state_t epmp_state;
  * @param region The memory region to encode in the address registers.
  * @param perm The permissions to set for the entry.
  */
-inline void epmp_state_configure_tor(epmp_state_t *state, uint32_t entry,
-                                     epmp_region_t region, epmp_perm_t perm) {
+inline void epmp_state_configure_tor(uint32_t entry, epmp_region_t region,
+                                     epmp_perm_t perm) {
   // Set address registers.
   if (entry > 0) {
-    state->pmpaddr[entry - 1] = region.start >> 2;
+    epmp_state.pmpaddr[entry - 1] = region.start >> 2;
   }
-  state->pmpaddr[entry] = region.end >> 2;
+  epmp_state.pmpaddr[entry] = region.end >> 2;
 
   // Set configuration register.
   bitfield_field32_t field = {.mask = 0xff, .index = (entry % 4) * 8};
-  state->pmpcfg[entry / 4] = bitfield_field32_write(state->pmpcfg[entry / 4],
-                                                    field, kEpmpModeTor | perm);
+  epmp_state.pmpcfg[entry / 4] = bitfield_field32_write(
+      epmp_state.pmpcfg[entry / 4], field, kEpmpModeTor | perm);
 }
 
 /**
@@ -176,15 +176,15 @@ inline void epmp_state_configure_tor(epmp_state_t *state, uint32_t entry,
  * @param region The memory region to encode in the address registers.
  * @param perm The permissions to set for the entry.
  */
-inline void epmp_state_configure_na4(epmp_state_t *state, uint32_t entry,
-                                     epmp_region_t region, epmp_perm_t perm) {
+inline void epmp_state_configure_na4(uint32_t entry, epmp_region_t region,
+                                     epmp_perm_t perm) {
   // Set address register.
-  state->pmpaddr[entry] = region.start >> 2;
+  epmp_state.pmpaddr[entry] = region.start >> 2;
 
   // Set configuration register.
   bitfield_field32_t field = {.mask = 0xff, .index = (entry % 4) * 8};
-  state->pmpcfg[entry / 4] = bitfield_field32_write(state->pmpcfg[entry / 4],
-                                                    field, kEpmpModeNa4 | perm);
+  epmp_state.pmpcfg[entry / 4] = bitfield_field32_write(
+      epmp_state.pmpcfg[entry / 4], field, kEpmpModeNa4 | perm);
 }
 
 /**
@@ -196,16 +196,16 @@ inline void epmp_state_configure_na4(epmp_state_t *state, uint32_t entry,
  * @param region The memory region to encode in the address registers.
  * @param perm The permissions to set for the entry.
  */
-inline void epmp_state_configure_napot(epmp_state_t *state, uint32_t entry,
-                                       epmp_region_t region, epmp_perm_t perm) {
+inline void epmp_state_configure_napot(uint32_t entry, epmp_region_t region,
+                                       epmp_perm_t perm) {
   // Set address register.
   uint32_t len = (region.end - region.start - 1) >> 3;
-  state->pmpaddr[entry] = (region.start >> 2) | len;
+  epmp_state.pmpaddr[entry] = (region.start >> 2) | len;
 
   // Set configuration register.
   bitfield_field32_t field = {.mask = 0xff, .index = (entry % 4) * 8};
-  state->pmpcfg[entry / 4] = bitfield_field32_write(
-      state->pmpcfg[entry / 4], field, kEpmpModeNapot | perm);
+  epmp_state.pmpcfg[entry / 4] = bitfield_field32_write(
+      epmp_state.pmpcfg[entry / 4], field, kEpmpModeNapot | perm);
 }
 
 /**
@@ -215,7 +215,7 @@ inline void epmp_state_configure_napot(epmp_state_t *state, uint32_t entry,
  * @param state Expected values of the ePMP CSRs.
  * @return Whether the check succeeded.
  */
-rom_error_t epmp_state_check(const epmp_state_t *state);
+rom_error_t epmp_state_check(void);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -29,7 +29,7 @@ static_assert(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR >=
                           TOP_EARLGREY_MMIO_SIZE_BYTES,
               "Retention SRAM must be in the MMIO address space.");
 
-void rom_epmp_state_init(epmp_state_t *state, lifecycle_state_t lc_state) {
+void rom_epmp_state_init(lifecycle_state_t lc_state) {
   // Address space definitions.
   //
   // Note that the stack guard is placed at _stack_start because the stack
@@ -85,21 +85,21 @@ void rom_epmp_state_init(epmp_state_t *state, lifecycle_state_t lc_state) {
   // The actual hardware configuration is performed separately, either by reset
   // logic or in assembly. This code must be kept in sync with any changes
   // to the hardware configuration.
-  *state = (epmp_state_t){0};
-  epmp_state_configure_tor(state, 1, rom_text, kEpmpPermLockedReadExecute);
-  epmp_state_configure_napot(state, 2, rom, kEpmpPermLockedReadOnly);
-  epmp_state_configure_napot(state, 5, eflash, kEpmpPermLockedReadOnly);
-  epmp_state_configure_tor(state, 11, mmio, kEpmpPermLockedReadWrite);
-  epmp_state_configure_napot(state, 13, debug_rom, debug_rom_access);
-  epmp_state_configure_na4(state, 14, stack_guard, kEpmpPermLockedNoAccess);
-  epmp_state_configure_napot(state, 15, ram, kEpmpPermLockedReadWrite);
-  state->mseccfg = EPMP_MSECCFG_MMWP | EPMP_MSECCFG_RLB;
+  epmp_state = (epmp_state_t){0};
+  epmp_state_configure_tor(1, rom_text, kEpmpPermLockedReadExecute);
+  epmp_state_configure_napot(2, rom, kEpmpPermLockedReadOnly);
+  epmp_state_configure_napot(5, eflash, kEpmpPermLockedReadOnly);
+  epmp_state_configure_tor(11, mmio, kEpmpPermLockedReadWrite);
+  epmp_state_configure_napot(13, debug_rom, debug_rom_access);
+  epmp_state_configure_na4(14, stack_guard, kEpmpPermLockedNoAccess);
+  epmp_state_configure_napot(15, ram, kEpmpPermLockedReadWrite);
+  epmp_state.mseccfg = EPMP_MSECCFG_MMWP | EPMP_MSECCFG_RLB;
 }
 
-void rom_epmp_unlock_rom_ext_rx(epmp_state_t *state, epmp_region_t region) {
+void rom_epmp_unlock_rom_ext_rx(epmp_region_t region) {
   // Update the in-memory copy of ePMP register state.
   const int kEntry = 4;
-  epmp_state_configure_tor(state, kEntry, region, kEpmpPermLockedReadExecute);
+  epmp_state_configure_tor(kEntry, region, kEpmpPermLockedReadExecute);
 
   // Update the hardware configuration (CSRs).
   //
@@ -118,9 +118,9 @@ void rom_epmp_unlock_rom_ext_rx(epmp_state_t *state, epmp_region_t region) {
   CSR_SET_BITS(CSR_REG_PMPCFG1, kEpmpModeTor | kEpmpPermLockedReadExecute);
 }
 
-void rom_epmp_unlock_rom_ext_r(epmp_state_t *state, epmp_region_t region) {
+void rom_epmp_unlock_rom_ext_r(epmp_region_t region) {
   const int kEntry = 6;
-  epmp_state_configure_napot(state, kEntry, region, kEpmpPermLockedReadOnly);
+  epmp_state_configure_napot(kEntry, region, kEpmpPermLockedReadOnly);
 
   // Update the hardware configuration (CSRs).
   //

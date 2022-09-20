@@ -43,10 +43,9 @@ extern "C" {
  * logic or in assembly. This code must be kept in sync with any changes
  * to the hardware configuration.
  *
- * @param[out] state The shadow registers to configure with initial values.
  * @param lc_state The current lifecycle state to check for debug enable.
  */
-void rom_epmp_state_init(epmp_state_t *state, lifecycle_state_t lc_state);
+void rom_epmp_state_init(lifecycle_state_t lc_state);
 
 /**
  * Unlocks the provided ROM_EXT image region with read-execute permissions.
@@ -54,10 +53,9 @@ void rom_epmp_state_init(epmp_state_t *state, lifecycle_state_t lc_state);
  * The provided ePMP state is also updated to reflect the changes made to the
  * hardware configuration.
  *
- * @param state The ePMP state to update.
  * @param region Region for executable sections in ROM_EXT image.
  */
-void rom_epmp_unlock_rom_ext_rx(epmp_state_t *state, epmp_region_t region);
+void rom_epmp_unlock_rom_ext_rx(epmp_region_t region);
 
 /**
  * Unlocks the provided ROM_EXT image region with read-only permissions.
@@ -67,10 +65,9 @@ void rom_epmp_unlock_rom_ext_rx(epmp_state_t *state, epmp_region_t region);
  * The image size must be power of 2 as this function uses NAPOT
  * (Naturally-Aligned-Power-Of-Two) addressing mode.
  *
- * @param state The ePMP state to update.
  * @param region Region in the ROM_EXT image to receive read-only permission.
  */
-void rom_epmp_unlock_rom_ext_r(epmp_state_t *state, epmp_region_t region);
+void rom_epmp_unlock_rom_ext_r(epmp_region_t region);
 /**
  * Configure the ePMP entry to manage access to Debug ROM based on life cycle
  * state.

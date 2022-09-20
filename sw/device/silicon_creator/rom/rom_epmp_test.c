@@ -308,7 +308,7 @@ static void test_noexec_mmio(void) {
  *
  * @param epmp The ePMP state to update.
  */
-static void test_unlock_exec_eflash(epmp_state_t *epmp) {
+static void test_unlock_exec_eflash(void) {
   // Define a region to unlock (this is somewhat arbitrary but must be word-
   // aligned).
   uint32_t *eflash = (uint32_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
@@ -320,8 +320,8 @@ static void test_unlock_exec_eflash(epmp_state_t *epmp) {
 
   // Unlock execution of the region and check that the same changes are made
   // to the ePMP state.
-  rom_epmp_unlock_rom_ext_rx(epmp, region);
-  CHECK(epmp_state_check(epmp) == kErrorOk);
+  rom_epmp_unlock_rom_ext_rx(region);
+  CHECK(epmp_state_check() == kErrorOk);
 
   // Verify that execution within the region succeeds.
   // The image must consist of `unimp` instructions so that an illegal
@@ -371,9 +371,9 @@ void rom_main(void) {
   LOG_INFO("Starting ROM ePMP functional test.");
 
   // Initialize shadow copy of the ePMP register configuration.
-  epmp_state_t epmp;
-  rom_epmp_state_init(&epmp, kLcStateProd);
-  CHECK(epmp_state_check(&epmp) == kErrorOk);
+  epmp_state = (epmp_state_t){0};
+  rom_epmp_state_init(kLcStateProd);
+  CHECK(epmp_state_check() == kErrorOk);
 
   // Test that execution outside the ROM text is blocked by default.
   test_noexec_rodata();
@@ -383,12 +383,12 @@ void rom_main(void) {
 
   // Test that execution is unlocked for a sub-region of eFlash correctly.
   // Simulates the unlocking of the ROM extension text.
-  test_unlock_exec_eflash(&epmp);
+  test_unlock_exec_eflash();
 
   // The test of the ROM's ePMP configuration is now complete. Unlock the
   // DV address space so that the test result can be reported. Assumes that PMP
   // entry 6 is allocated for this purpose.
-  CHECK(epmp_unlock_test_status(&epmp));
+  CHECK(epmp_unlock_test_status());
 
   // Report the test status.
   //

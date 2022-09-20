@@ -10,7 +10,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/csr.h"
 
-bool epmp_unlock_test_status(epmp_state_t *state) {
+bool epmp_unlock_test_status(void) {
   // PMP entry dedicated to test status (DV).
   enum {
     kEntry = 6,
@@ -24,12 +24,10 @@ bool epmp_unlock_test_status(epmp_state_t *state) {
     return false;
   }
 
-  // Update the shadow register values (if provided).
-  if (state != NULL) {
-    epmp_region_t region = {.start = kDeviceTestStatusAddress,
-                            .end = kDeviceTestStatusAddress + sizeof(uint32_t)};
-    epmp_state_configure_na4(state, kEntry, region, kPerm);
-  }
+  // Update the shadow register values.
+  epmp_region_t region = {.start = kDeviceTestStatusAddress,
+                          .end = kDeviceTestStatusAddress + sizeof(uint32_t)};
+  epmp_state_configure_na4(kEntry, region, kPerm);
 
   // Update the hardware registers.
   static_assert(kEntry == 6, "PMP entry has changed, update CSR operations.");
@@ -38,7 +36,7 @@ bool epmp_unlock_test_status(epmp_state_t *state) {
                                     << ((kEntry % sizeof(uint32_t)) * 8));
 
   // Double check that the shadow registers match.
-  if (state != NULL && !epmp_state_check(state)) {
+  if (!epmp_state_check()) {
     return false;
   }
 
