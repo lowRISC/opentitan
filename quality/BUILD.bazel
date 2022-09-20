@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier", "buildifier_test")
 load("@lowrisc_lint//rules:rules.bzl", "licence_test")
 load("//rules:quality.bzl", "clang_format_check", "clang_format_test")
 
@@ -95,4 +96,31 @@ clang_format_check(
     name = "clang_format_fix",
     exclude_patterns = clang_format_exclude,
     mode = "fix",
+)
+
+buildifier(
+    name = "buildifier_fix",
+    exclude_patterns = [
+        "./WORKSPACE",  # Prevent Buildifier from inserting unnecessary newlines.
+        "./**/vendor/**",
+        "./build/**",
+    ],
+)
+
+buildifier_test(
+    name = "buildifier_check",
+    srcs = glob(
+        [
+            "**/*.bazel",
+            "**/*.bzl",
+            "**/BUILD",
+        ],
+        exclude = [
+            "WORKSPACE",  # Prevent Buildifier from inserting unnecessary newlines.
+            "**/vendor/**",
+            "build/**",
+        ],
+    ),
+    diff_command = "diff -u",
+    mode = "diff",
 )

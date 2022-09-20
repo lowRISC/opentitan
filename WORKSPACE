@@ -22,6 +22,14 @@ crt_register_toolchains(riscv32 = True)
 load("//third_party/github:repos.bzl", "github_tools_repos")
 github_tools_repos()
 
+# Various linters
+# Note: load this early so the preferred version of
+# com_github_bazel_builtools wins.
+load("//third_party/lint:repos.bzl", "lint_repos")
+lint_repos()
+load("//third_party/lint:deps.bzl", "lint_deps")
+lint_deps()
+
 # Go Toolchain
 load("//third_party/go:repos.bzl", "go_repos")
 go_repos()
@@ -68,12 +76,6 @@ load("//third_party/protobuf:repos.bzl", "protobuf_repos")
 protobuf_repos()
 load("//third_party/protobuf:deps.bzl", "protobuf_deps")
 protobuf_deps()
-
-# Various linters
-load("//third_party/lint:repos.bzl", "lint_repos")
-lint_repos()
-load("//third_party/lint:deps.bzl", "lint_deps")
-lint_deps()
 
 # FreeRTOS; used by the OTTF
 load("//third_party/freertos:repos.bzl", "freertos_repos")
