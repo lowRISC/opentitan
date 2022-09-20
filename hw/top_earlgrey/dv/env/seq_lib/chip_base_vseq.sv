@@ -43,7 +43,7 @@ class chip_base_vseq #(
     // assert_por_reset();
     `uvm_info(`gfn, "Asserting POR_N", UVM_LOW)
     cfg.chip_vif.por_n_if.drive(0);
-    #100us;  // TODO: revisit this.
+    #10us;  // TODO: revisit this.
     cfg.chip_vif.por_n_if.drive(1);
     `uvm_info(`gfn, "POR_N complete", UVM_LOW)
     // TODO: Cannot assert different types of resets in parallel; due to randomization
