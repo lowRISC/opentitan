@@ -196,8 +196,6 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
             `uvm_error(`gfn, $sformatf("alert %s has unexpected signal int error", alert_name))
           end else if (item.ping_timeout && cfg.en_scb_ping_chk == 1) begin
             `uvm_error(`gfn, $sformatf("alert %s has unexpected timeout error", alert_name))
-          end else if (item.alert_esc_type == AlertEscPingTrans && cfg.en_scb_ping_chk == 1) begin
-            `uvm_error(`gfn, $sformatf("alert %s has unexpected alert ping response", alert_name))
           end
         end
       join_none
