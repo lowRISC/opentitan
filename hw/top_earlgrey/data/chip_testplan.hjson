@@ -141,7 +141,7 @@
             - Ensure the image is executed correctly
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_uart_tx_rx_bootstrap"]
     }
     {
       name: chip_sw_spi_device_pass_through
