@@ -12,10 +12,14 @@ def lint_repos(lowrisc_lint = None):
         path = "hw/ip/prim/util/vendor/google_verible_verilog_syntax_py",
     )
 
+    # FIXME: The buildtools aren't hacked; the hack is the local name of the repository.
+    # We've renamed the repo locally so as to not conflict with the version of buildtools
+    # that golang depends on.
     http_archive(
-        name = "com_github_bazelbuild_buildtools",
-        strip_prefix = "buildtools-main",
-        url = "https://github.com/bazelbuild/buildtools/archive/main.zip",
+        name = "ot_hack_bazelbuild_buildtools",
+        sha256 = "e3bb0dc8b0274ea1aca75f1f8c0c835adbe589708ea89bf698069d0790701ea3",
+        strip_prefix = "buildtools-5.1.0",
+        url = "https://github.com/bazelbuild/buildtools/archive/refs/tags/5.1.0.tar.gz",
     )
 
     http_archive_or_local(
