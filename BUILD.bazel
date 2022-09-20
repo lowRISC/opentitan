@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:quality.bzl", "html_coverage_report")
 load("//rules:cargo.bzl", "cargo_raze")
 load("@rules_rust//rust:defs.bzl", "rust_analyzer")
 
@@ -12,10 +11,6 @@ exports_files([
     "WORKSPACE",
     "python-requirements.txt",
 ])
-
-html_coverage_report(
-    name = "html_coverage_report",
-)
 
 filegroup(
     name = "cores",
