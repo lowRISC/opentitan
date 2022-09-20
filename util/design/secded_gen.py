@@ -707,7 +707,7 @@ def format_c_files(c_src_filename, c_h_filename):
     try:
         # Call clang-format to in-place format generated C code. If there are
         # any issues log a warning.
-        result = subprocess.run(['./ci/bazelisk.sh', 'run', '//:clang_format_fix', '--',
+        result = subprocess.run(['./ci/bazelisk.sh', 'run', '//quality:clang_format_fix', '--',
                                 c_src_filename, c_h_filename], stderr=subprocess.PIPE,
                                 universal_newlines=True)
         result.check_returncode()
