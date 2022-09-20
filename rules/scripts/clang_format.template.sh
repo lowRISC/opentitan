@@ -6,11 +6,17 @@
 
 CLANG_FORMAT=@@CLANG_FORMAT@@
 MODE=@@MODE@@
+WORKSPACE="@@WORKSPACE@@"
+clang_format=$(realpath "$CLANG_FORMAT")
 
-clang_format=$(readlink "$CLANG_FORMAT")
-
-if ! cd "$BUILD_WORKSPACE_DIRECTORY"; then
-    echo "Unable to change to workspace (BUILD_WORKSPACE_DIRECTORY: ${BUILD_WORKSPACE_DIRECTORY})"
+if [[ ! -z "${WORKSPACE}" ]]; then
+    REPO="$(dirname "$(realpath ${WORKSPACE})")"
+    cd ${REPO} || exit 1
+elif [[ ! -z "${BUILD_WORKSPACE_DIRECTORY+is_set}" ]]; then
+    cd ${BUILD_WORKSPACE_DIRECTORY} || exit 1
+else
+    echo "Neither WORKSPACE nor BUILD_WORKSPACE_DIRECTORY were set."
+    echo "If this is a test rule, add 'workspace = \"//:WORKSPACE\"' to your rule."
     exit 1
 fi
 
@@ -38,5 +44,5 @@ case "$MODE" in
         ;;
     *)
         echo "Unknown mode: $MODE"
-        exit 2
+        exit 1
 esac

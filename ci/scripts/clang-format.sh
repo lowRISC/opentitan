@@ -22,8 +22,10 @@ merge_base="$(git merge-base origin/$tgt_branch HEAD)" || {
 }
 echo "Running C/C++ lint checks on files changed since $merge_base"
 
-trap 'echo "code failed clang_format_check fix with ./bazelisk.sh run //:clang_format_fix"' ERR
+trap 'echo "code failed clang_format_check fix with ./bazelisk.sh run //quality:clang_format_fix"' ERR
 
 set -o pipefail
-git diff --name-only "$merge_base" -- "*.cpp" "*.cc" "*.c" "*.h" ':!*/vendor/*' | \
-    xargs -r ./bazelisk.sh run //:clang_format_check --
+(for F in $(git diff --name-only "$merge_base" -- "*.cpp" "*.cc" "*.c" "*.h" ':!*/vendor/*'); do
+    echo "--test_arg=\"$F\""
+done) | \
+    xargs -r ./bazelisk.sh test //quality:clang_format_check --test_output=streamed
