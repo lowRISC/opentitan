@@ -46,7 +46,7 @@ pub fn process_config_file(env: &mut TransportWrapper, conf_file: &Path) -> Resu
         read_into_string(conf_file, &mut string)
             .map_err(|e| Error::ConfigReadError(conf_file.to_path_buf(), e.into()))?
     };
-    let res: ConfigurationFile = serde_json::from_str(conf_data)
+    let res: ConfigurationFile = serde_annotate::from_str(conf_data)
         .map_err(|e| Error::ConfigParseError(conf_file.to_path_buf(), e.into()))?;
 
     let subdir = conf_file.parent().unwrap_or_else(|| Path::new(""));

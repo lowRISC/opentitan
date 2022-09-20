@@ -163,6 +163,7 @@ rust_library(
         "//third_party/rust/crates:rsa",
         "//third_party/rust/crates:rusb",
         "//third_party/rust/crates:serde",
+        "//third_party/rust/crates:serde_annotate",
         "//third_party/rust/crates:serde_json",
         "//third_party/rust/crates:serialport",
         "//third_party/rust/crates:sha2",
