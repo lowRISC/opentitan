@@ -9,6 +9,10 @@ load(
     "@safe_ftdi//third_party/rust:deps.bzl",
     ftdi_fetch_remote_crates = "fetch_remote_crates",
 )
+load(
+    "@serde_annotate//third_party/rust:deps.bzl",
+    serde_annotate_fetch_remote_crates = "fetch_remote_crates",
+)
 
 def rust_deps():
     rules_rust_dependencies()
@@ -27,4 +31,5 @@ def rust_deps():
     )
     raze_fetch_remote_crates()
     ftdi_fetch_remote_crates()
+    serde_annotate_fetch_remote_crates()
     rules_rust_tools_rust_analyzer_fetch_remote_crates()
