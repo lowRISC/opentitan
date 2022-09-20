@@ -61,6 +61,9 @@ static void entropy_with_fw_override_enable(dif_entropy_src_t *entropy_src) {
       .fips_enable = true,
       .route_to_firmware = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
+      .health_test_threshold_scope = false,
+      .health_test_window_size = 0x0200,
+      .alert_threshold = 2,
   };
   CHECK_DIF_OK(
       dif_entropy_src_configure(entropy_src, config, kDifToggleEnabled));
