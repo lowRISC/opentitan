@@ -123,6 +123,9 @@ class kmac_base_vseq extends cip_base_vseq #(
   rand bit [9:0] hash_threshold;
   rand bit hash_cnt_clr;
   rand bit entropy_req;
+  rand bit entropy_timer_en;
+  rand bit [EntropyPeriodReserved-1:0] prescaler_val;
+  rand bit [TL_DW-KmacWaitTimer-1:0] entropy_wait_timer;
 
   // array to store `right_encode(output_len)`
   bit [7:0] output_len_enc[];
@@ -257,6 +260,20 @@ class kmac_base_vseq extends cip_base_vseq #(
     }
   }
 
+  constraint entropy_period_c {
+    if (entropy_mode == EntropyModeEdn && cfg.enable_masking) {
+      if (entropy_timer_en) {
+        prescaler_val * entropy_wait_timer >
+          // If zero delay case, the max delay is 0.
+          (cfg.m_edn_pull_agent_cfg[0].device_delay_max + 10) *
+          (cfg.edn_clk_freq_mhz / cfg.clk_freq_mhz + 1);
+      } else {
+        prescaler_val == 0;
+      }
+    }
+    solve entropy_mode before prescaler_val, entropy_wait_timer;
+  }
+
   virtual task dut_init(string reset_kind = "HARD");
     // KMAC has dut and edn reset. If assign kmac_vif_init() values after `super.dut_init()`,
     // and if dut reset deasserts earlier than edn reset, some KMAC outputs might remain X or Z
@@ -303,10 +320,7 @@ class kmac_base_vseq extends cip_base_vseq #(
         cfg.enable_masking) begin
       csr_wr(.ptr(ral.entropy_period), .value(1'b1 << KmacWaitTimer));
     end else begin
-      bit [entropy_period_reserved-1:0] prescaler_val = $urandom;
-      // TODO: write random large values that can avoid timeout.
-      // Set `wait_timer` to 0 to disable the EDN timeout check.
-      csr_wr(.ptr(ral.entropy_period.wait_timer), .value(0));
+      csr_wr(.ptr(ral.entropy_period.wait_timer), .value(entropy_wait_timer));
       csr_wr(.ptr(ral.entropy_period.prescaler), .value(prescaler_val));
     end
 
