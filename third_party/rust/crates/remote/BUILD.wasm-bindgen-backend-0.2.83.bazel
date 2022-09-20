@@ -56,7 +56,7 @@ rust_library(
         "@raze__once_cell__1_14_0//:once_cell",
         "@raze__proc_macro2__1_0_43//:proc_macro2",
         "@raze__quote__1_0_21//:quote",
-        "@raze__syn__1_0_99//:syn",
+        "@raze__syn__1_0_100//:syn",
         "@raze__wasm_bindgen_shared__0_2_83//:wasm_bindgen_shared",
     ],
 )

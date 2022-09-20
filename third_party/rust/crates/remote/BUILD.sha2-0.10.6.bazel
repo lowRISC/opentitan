@@ -31,12 +31,15 @@ licenses([
 
 # Generated Targets
 
+# Unsupported target "mod" with type "bench" omitted
+
 rust_library(
-    name = "rand_core",
+    name = "sha2",
     srcs = glob(["**/*.rs"]),
+    aliases = {
+    },
     crate_features = [
-        "alloc",
-        "getrandom",
+        "default",
         "std",
     ],
     crate_root = "src/lib.rs",
@@ -47,12 +50,23 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=rand_core",
+        "crate-name=sha2",
         "manual",
     ],
-    version = "0.6.3",
+    version = "0.10.6",
     # buildifier: leave-alone
     deps = [
-        "@raze__getrandom__0_2_7//:getrandom",
-    ],
+        "@raze__cfg_if__1_0_0//:cfg_if",
+        "@raze__digest__0_10_5//:digest",
+    ] + selects.with_or({
+        # cfg(any(target_arch = "aarch64", target_arch = "x86_64", target_arch = "x86"))
+        (
+            "@rules_rust//rust/platform:x86_64-unknown-linux-gnu",
+        ): [
+            "@raze__cpufeatures__0_2_5//:cpufeatures",
+        ],
+        "//conditions:default": [],
+    }),
 )
+
+# Unsupported target "mod" with type "test" omitted

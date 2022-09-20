@@ -31,28 +31,24 @@ licenses([
 
 # Generated Targets
 
-# Unsupported target "get_timezone" with type "example" omitted
-
-# Unsupported target "stress-test" with type "example" omitted
-
 rust_library(
-    name = "iana_time_zone",
+    name = "unicode_width",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "fallback",
+        "default",
     ],
     crate_root = "src/lib.rs",
     data = [],
-    edition = "2018",
+    edition = "2015",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=iana-time-zone",
+        "crate-name=unicode-width",
         "manual",
     ],
-    version = "0.1.47",
+    version = "0.1.10",
     # buildifier: leave-alone
     deps = [
     ],

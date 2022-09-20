@@ -14,7 +14,16 @@ licenses([
 # Aliased targets
 alias(
     name = "anyhow",
-    actual = "@raze__anyhow__1_0_64//:anyhow",
+    actual = "@raze__anyhow__1_0_65//:anyhow",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "atty",
+    actual = "@raze__atty__0_2_14//:atty",
     tags = [
         "cargo-raze",
         "manual",
@@ -320,7 +329,7 @@ alias(
 
 alias(
     name = "sha2",
-    actual = "@raze__sha2__0_10_5//:sha2",
+    actual = "@raze__sha2__0_10_6//:sha2",
     tags = [
         "cargo-raze",
         "manual",
@@ -347,7 +356,7 @@ alias(
 
 alias(
     name = "syn",
-    actual = "@raze__syn__1_0_99//:syn",
+    actual = "@raze__syn__1_0_100//:syn",
     tags = [
         "cargo-raze",
         "manual",
@@ -365,7 +374,7 @@ alias(
 
 alias(
     name = "thiserror",
-    actual = "@raze__thiserror__1_0_34//:thiserror",
+    actual = "@raze__thiserror__1_0_35//:thiserror",
     tags = [
         "cargo-raze",
         "manual",

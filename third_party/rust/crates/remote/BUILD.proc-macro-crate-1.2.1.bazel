@@ -51,7 +51,7 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__once_cell__1_14_0//:once_cell",
-        "@raze__thiserror__1_0_34//:thiserror",
+        "@raze__thiserror__1_0_35//:thiserror",
         "@raze__toml__0_5_9//:toml",
     ],
 )

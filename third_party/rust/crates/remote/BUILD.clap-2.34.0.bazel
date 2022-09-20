@@ -63,7 +63,7 @@ rust_library(
         "@raze__bitflags__1_3_2//:bitflags",
         "@raze__strsim__0_8_0//:strsim",
         "@raze__textwrap__0_11_0//:textwrap",
-        "@raze__unicode_width__0_1_9//:unicode_width",
+        "@raze__unicode_width__0_1_10//:unicode_width",
         "@raze__vec_map__0_8_2//:vec_map",
     ] + selects.with_or({
         # cfg(not(windows))
