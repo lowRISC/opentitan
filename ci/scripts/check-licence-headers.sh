@@ -27,8 +27,10 @@ echo "Checking licence headers on files changed since $merge_base"
 # ensures that we'll see an error if the git diff command fails for
 # some reason.
 set -o pipefail
-git diff -z --name-only --diff-filter=ACMRTUXB "$merge_base" | \
-    xargs -r -0 ./bazelisk.sh run //:license_check -- || {
+(for F in $(git diff --name-only --diff-filter=ACMRTUXB "$merge_base"); do
+    echo "--test_arg=\"$F\""
+done)| \
+    xargs -r ./bazelisk.sh test //quality:license_check --test_output=streamed || {
 
     echo >&2 -n "##vso[task.logissue type=error]"
     echo >&2 "Licence header check failed."

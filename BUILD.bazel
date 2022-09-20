@@ -5,12 +5,14 @@
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
 load("//rules:quality.bzl", "clang_format_check", "html_coverage_report")
 load("//rules:cargo.bzl", "cargo_raze")
-load("@lowrisc_lint//rules:rules.bzl", "licence_check")
 load("@rules_rust//rust:defs.bzl", "rust_analyzer")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["python-requirements.txt"])
+exports_files([
+    "WORKSPACE",
+    "python-requirements.txt",
+])
 
 unbuildify = [
     "./WORKSPACE",  # Prevent Buildifier from inserting unnecessary newlines.
@@ -29,70 +31,6 @@ buildifier(
     diff_command = "diff -u",
     exclude_patterns = unbuildify,
     mode = "diff",
-)
-
-licence_check(
-    name = "license_check",
-    exclude_patterns = [
-        # Exclude anything in vendored directories
-        "third_party/**",
-        "*/vendor/*/*",
-        "util/lowrisc_misc-linters/*",
-
-        ## Hardware Exclusions
-
-        # DV Vendored test vectors
-        "hw/dv/sv/test_vectors",
-        # Vendored CRC model
-        "hw/dv/dpi/usbdpi/usb_crc.c",
-        # Vendored HMAC model
-        "hw/ip/hmac/dv/cryptoc_dpi/*",
-        # PRINCE C++ reference model from Sebastien Riou
-        "hw/ip/prim/dv/prim_prince/crypto_dpi_prince/prince_ref.h",
-        # PRESENT C reference model from Thomas Siebert
-        "hw/ip/prim/dv/prim_present/crypto_dpi_present/boxes.inc",
-        "hw/ip/prim/dv/prim_present/crypto_dpi_present/comline.inc",
-        "hw/ip/prim/dv/prim_present/crypto_dpi_present/present.inc",
-        "hw/ip/prim/dv/prim_present/crypto_dpi_present/verbose.inc",
-        # PRESENT Python reference model
-        "util/design/lib/Present.py",
-        # Vendored FPGA information
-        "hw/top_earlgrey/data/*.xdc",
-        "util/fpga/bram_load.mmi",
-        # Manually checked, files contain additional copyright header lines
-        "hw/ip/usb_fs_nb_pe/rtl/*",
-        "hw/ip/usbdev/rtl/usbdev_iomux.sv",
-
-        ## Software Exclusions
-
-        # Coremark Vendored Files
-        "sw/device/benchmarks/coremark/top_earlgrey/*",
-
-        ## Other Exclusions
-
-        # Other Licences,
-        "util/wavegen/LICENSE.wavedrom",
-        # Site Assets
-        "site/**/assets/scss/**",
-        "site/landing/static/js/tiny-slider.js",
-        # Code taken from Chromium, so covered by the BSD licence
-        "sw/otbn/crypto/modexp.s",
-        "sw/otbn/crypto/p256.s",
-        "sw/otbn/crypto/rsa_verify.s",
-        "sw/otbn/crypto/handwritten/rsa_verify_3072.s",
-        # Mersenne Twister PRNG
-        "sw/device/sca/lib/prng.c",
-        # Alma testbench files
-        "hw/ip/aes/pre_sca/alma/cpp/testbench.h",
-        "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sbox.cpp",
-        "hw/ip/aes/pre_sca/alma/cpp/verilator_tb_aes_sub_bytes.cpp",
-        "hw/ip/kmac/pre_sca/alma/cpp/verilator_tb_keccak_2share.cpp",
-    ],
-    licence = """
-    Copyright lowRISC contributors.
-    Licensed under the Apache License, Version 2.0, see LICENSE for details.
-    SPDX-License-Identifier: Apache-2.0
-    """,
 )
 
 clang_format_exclude = [
