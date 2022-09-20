@@ -9,10 +9,9 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-void rom_ext_epmp_unlock_owner_stage_rx(epmp_state_t *state,
-                                        epmp_region_t region) {
+void rom_ext_epmp_unlock_owner_stage_rx(epmp_region_t region) {
   const int kEntry = 8;
-  epmp_state_configure_tor(state, kEntry, region, kEpmpPermLockedReadExecute);
+  epmp_state_configure_tor(kEntry, region, kEpmpPermLockedReadExecute);
 
   // Update the hardware configuration (CSRs).
   //
@@ -31,10 +30,9 @@ void rom_ext_epmp_unlock_owner_stage_rx(epmp_state_t *state,
   CSR_SET_BITS(CSR_REG_PMPCFG2, (kEpmpModeTor | kEpmpPermLockedReadExecute));
 }
 
-void rom_ext_epmp_unlock_owner_stage_r(epmp_state_t *state,
-                                       epmp_region_t region) {
+void rom_ext_epmp_unlock_owner_stage_r(epmp_region_t region) {
   const int kEntry = 9;
-  epmp_state_configure_napot(state, kEntry, region, kEpmpPermLockedReadOnly);
+  epmp_state_configure_napot(kEntry, region, kEpmpPermLockedReadOnly);
 
   // Update the hardware configuration (CSRs).
   //

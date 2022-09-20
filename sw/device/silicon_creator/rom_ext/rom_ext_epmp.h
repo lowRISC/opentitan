@@ -46,8 +46,7 @@ extern "C" {
  * @param state The ePMP state to update.
  * @param image Region for executable sections in the silicon Owner image.
  */
-void rom_ext_epmp_unlock_owner_stage_rx(epmp_state_t *state,
-                                        epmp_region_t image);
+void rom_ext_epmp_unlock_owner_stage_rx(epmp_region_t image);
 
 /**
  * Unlocks the provided first silicon owner region with read-only permissions.
@@ -61,8 +60,7 @@ void rom_ext_epmp_unlock_owner_stage_rx(epmp_state_t *state,
  * @param region Region in the silicon Owner image to receive read-only
  * permission.
  */
-void rom_ext_epmp_unlock_owner_stage_r(epmp_state_t *state,
-                                       epmp_region_t region);
+void rom_ext_epmp_unlock_owner_stage_r(epmp_region_t region);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

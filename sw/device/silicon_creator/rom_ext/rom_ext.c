@@ -127,13 +127,12 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
       // Unlock read-only for the whole rom_ext virtual memory.
-      HARDENED_RETURN_IF_ERROR(epmp_state_check((epmp_state_t *)&epmp_state));
+      HARDENED_RETURN_IF_ERROR(epmp_state_check());
       rom_ext_epmp_unlock_owner_stage_r(
-          (epmp_state_t *)&epmp_state,
           (epmp_region_t){.start = (uintptr_t)_owner_virtual_start_address,
                           .end = (uintptr_t)_owner_virtual_start_address +
                                  (uintptr_t)_owner_virtual_size});
-      HARDENED_RETURN_IF_ERROR(epmp_state_check((epmp_state_t *)&epmp_state));
+      HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
       // Move the ROM_EXT execution section from the load address to the virtual
       // address.
@@ -150,9 +149,9 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   }
 
   // Unlock execution of owner stage executable code (text) sections.
-  HARDENED_RETURN_IF_ERROR(epmp_state_check((epmp_state_t *)&epmp_state));
-  rom_ext_epmp_unlock_owner_stage_rx((epmp_state_t *)&epmp_state, text_region);
-  HARDENED_RETURN_IF_ERROR(epmp_state_check((epmp_state_t *)&epmp_state));
+  HARDENED_RETURN_IF_ERROR(epmp_state_check());
+  rom_ext_epmp_unlock_owner_stage_rx(text_region);
+  HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Jump to OWNER entry point.
   rom_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
