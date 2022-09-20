@@ -52,6 +52,14 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+
+  run_modes: [
+    {
+      name: csr_tests_mode
+      run_opts: ["+csr_test_mode=1"]
+    }
+  ]
+
   // Add default run opt
   run_opts: ["+flash_rand_delay_en=1"]
 
@@ -363,6 +371,12 @@
       uvm_test_seq: flash_ctrl_wr_path_intg_vseq
       run_opts: ["+scb_otf_en=1", "+otf_num_rw=5", "+otf_num_hr=0",
                  "+en_always_prog=1", "+otf_rd_pct=0"]
+      reseed: 3
+    }
+    {
+      name: flash_ctrl_access_after_disable
+      uvm_test_seq: flash_ctrl_access_after_disable_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+otf_num_rw=5", "+otf_num_hr=0", "+en_always_all=1", "+bypass_alert_ready_to_end_check=1"]
       reseed: 3
     }
   ]

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class flash_ctrl_common_vseq extends flash_ctrl_base_vseq;
+class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
   `uvm_object_utils(flash_ctrl_common_vseq)
 
   `uvm_object_new
@@ -13,7 +13,6 @@ class flash_ctrl_common_vseq extends flash_ctrl_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-
     // After reset, scoreboard need to wait until  wip process is done.
     // Since common reset test is not awared of it, remove check from sb and
     // have each test check read response.
@@ -29,6 +28,9 @@ class flash_ctrl_common_vseq extends flash_ctrl_base_vseq;
         end
 
       end
+    end else begin
+      csr_excl_item csr_excl = ral.get_excl_item();
+      csr_excl.add_excl("flash_ctrl_core_reg_block.init", CsrExclAll, CsrAllTests);
     end
   endtask // pre_start
 
@@ -59,7 +61,6 @@ class flash_ctrl_common_vseq extends flash_ctrl_base_vseq;
   endtask // check_tl_intg_error_response
 
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
-    bit std_fault = 0;
     `uvm_info(`gfn, $sformatf("path: %s", if_proxy.path), UVM_MEDIUM)
     super.check_sec_cm_fi_resp(if_proxy);
 
@@ -69,25 +70,20 @@ class flash_ctrl_common_vseq extends flash_ctrl_base_vseq;
             !uvm_re_match("*.u_to_rd_fifo.*", if_proxy.path) |
             !uvm_re_match("*.u_rd_storage.*", if_proxy.path)) begin
           csr_rd_check(.ptr(ral.std_fault_status.fifo_err), .compare_value(1));
-          std_fault = 1;
         end
         if (!uvm_re_match("*.u_flash_hw_if.*", if_proxy.path)) begin
           csr_rd_check(.ptr(ral.std_fault_status.lcmgr_err), .compare_value(1));
-          std_fault = 1;
         end
       end
       SecCmPrimSparseFsmFlop: begin
         if (!uvm_re_match("*.flash_cores*", if_proxy.path)) begin
           csr_rd_check(.ptr(ral.std_fault_status.phy_fsm_err), .compare_value(1));
-          std_fault = 1;
         end
         if (!uvm_re_match("*.u_ctrl_arb.*", if_proxy.path)) begin
           csr_rd_check(.ptr(ral.std_fault_status.arb_fsm_err), .compare_value(1));
-          std_fault = 1;
         end
         if (!uvm_re_match("*.u_flash_hw_if.*", if_proxy.path)) begin
           csr_rd_check(.ptr(ral.std_fault_status.lcmgr_err), .compare_value(1));
-          std_fault = 1;
         end
       end
       SecCmPrimOnehot: begin
@@ -97,10 +93,10 @@ class flash_ctrl_common_vseq extends flash_ctrl_base_vseq;
         `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
       end
     endcase
-    if (std_fault) begin
-      csr_rd_check(.ptr(ral.debug_state),
-                   .compare_value(flash_ctrl_env_pkg::FlashLcDisabled));
-    end
+
+    csr_rd_check(.ptr(ral.debug_state),
+                 .compare_value(flash_ctrl_env_pkg::FlashLcDisabled));
+    flash_access_after_disabled();
   endtask // check_sec_cm_fi_resp
 
    virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
