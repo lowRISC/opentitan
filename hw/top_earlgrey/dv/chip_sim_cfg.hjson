@@ -892,6 +892,14 @@
                  "+rng_srate_value_max=30"]
     }
     {
+      name: chip_sw_edn_entropy_reqs_jitter
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:entropy_src_edn_reqs_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=15000000", "+rng_srate_value_min=15",
+                 "+rng_srate_value_max=30", "+en_jitter=1"]
+    }
+    {
       name: chip_sw_hmac_enc
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:hmac_enc_test:1"]
