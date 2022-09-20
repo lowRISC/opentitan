@@ -211,11 +211,11 @@ It can be run with Bazel as shown below.
 
 Run the following to check if all `WORKSPACE`, `BUILD`, and `.bzl` files have been formatted correctly:
 ```console
-bazel run //:buildifier_check
+bazel test //quality:buildifier_check --test_output=streamed
 ```
 and run the following to fix them, if they are not formatted correctly.
 ```console
-bazel run //:buildifier_fix
+bazel run //quality:buildifier_fix
 ```
 
 ## Checking License Headers
