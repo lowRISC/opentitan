@@ -209,10 +209,10 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
       `DV_CHECK_STD_RANDOMIZE_FATAL(exp_jtag_rsp)
 
       // drive jtag
-      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_tck,    act_jtag_req.tck))
-      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_trst_n, act_jtag_req.trst_n))
-      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_tms,    act_jtag_req.tms))
-      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_tdi,    act_jtag_req.tdi))
+      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_tck,    exp_jtag_req.tck))
+      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_trst_n, exp_jtag_req.trst_n))
+      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_tms,    exp_jtag_req.tms))
+      `DV_CHECK_FATAL(uvm_hdl_force(path_tb_jtag_tdi,    exp_jtag_req.tdi))
       `DV_CHECK_FATAL(uvm_hdl_force(path_dft_tap_rsp,    exp_jtag_rsp))
 
       // avoid race condition
@@ -221,12 +221,12 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
       // check jtag
       `DV_CHECK_FATAL(uvm_hdl_read(path_dft_tap_req, act_jtag_req))
       if (dft_tap_en) begin
-        `DV_CHECK_EQ(act_jtag_req, exp_jtag_req)
-        if (exp_jtag_rsp.tdo_oe) `DV_CHECK_EQ(jtag_vif.tdo, exp_jtag_rsp.tdo)
-        else                     `DV_CHECK_EQ(jtag_vif.tdo, 0)
+        `DV_CHECK_CASE_EQ(act_jtag_req, exp_jtag_req)
+        if (exp_jtag_rsp.tdo_oe) `DV_CHECK_CASE_EQ(jtag_vif.tdo, exp_jtag_rsp.tdo)
+        else                     `DV_CHECK_CASE_EQ(jtag_vif.tdo, 0)
       end else begin
-        `DV_CHECK_EQ(act_jtag_req, 0)
-        `DV_CHECK_EQ(jtag_vif.tdo, 0)
+        `DV_CHECK_CASE_EQ(act_jtag_req, 0)
+        `DV_CHECK_CASE_EQ(jtag_vif.tdo, 0)
       end
     end
     `DV_CHECK_FATAL(uvm_hdl_release(path_tb_jtag_tck))
