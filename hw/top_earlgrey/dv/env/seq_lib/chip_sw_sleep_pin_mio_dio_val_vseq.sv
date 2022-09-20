@@ -88,7 +88,7 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, $sformatf("END Received PAD Retention Types"), UVM_LOW)
   endtask : receive_chosen_values
 
-  task check_pad_retention_type();
+  task check_pads_retention_type();
     logic [IoNumTotal-1:0] pad;
     /**
      * How to check 0, 1, High-Z
@@ -134,7 +134,7 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
 
     // TODO: Fins out how to pass the test (maybe just $display()?)
 
-  endtask : check_pad_retention_type
+  endtask : check_pads_retention_type
 
   virtual task body();
     super.body();
@@ -159,7 +159,7 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
 
     `uvm_info(`gfn, "Chip Entered Deep Powerdown mode.", UVM_LOW)
 
-    check_pad_retention_type();
+    check_pads_retention_type();
 
     // If `chech_pad_retention_type()` runs without uvm_error and reach this point, the test passed full check
     override_test_status_and_finish(.passed(1'b 1));
