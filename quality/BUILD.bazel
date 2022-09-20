@@ -3,11 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@lowrisc_lint//rules:rules.bzl", "licence_test")
+load("//rules:quality.bzl", "clang_format_check", "clang_format_test")
 
 package(default_visibility = ["//visibility:public"])
 
 licence_test(
-    name = "license_test",
+    name = "license_check",
     exclude_patterns = [
         # Exclude anything in vendored directories
         "third_party/**",
@@ -69,4 +70,29 @@ licence_test(
     SPDX-License-Identifier: Apache-2.0
     """,
     workspace = "//:WORKSPACE",
+)
+
+clang_format_exclude = [
+    # Vendored source code dirs
+    "./**/vendor/**",
+    # Rust cargo build dirs
+    "./**/target/**",
+    # Directories used exclusively to store build artifacts are still copied into.
+    "./build-out/**",
+    "./build-bin/**",
+    # fusesoc build dir
+    "./build/**",
+]
+
+clang_format_test(
+    name = "clang_format_check",
+    exclude_patterns = clang_format_exclude,
+    mode = "diff",
+    workspace = "//:WORKSPACE",
+)
+
+clang_format_check(
+    name = "clang_format_fix",
+    exclude_patterns = clang_format_exclude,
+    mode = "fix",
 )

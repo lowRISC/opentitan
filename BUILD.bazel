@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
-load("//rules:quality.bzl", "clang_format_check", "html_coverage_report")
+load("//rules:quality.bzl", "html_coverage_report")
 load("//rules:cargo.bzl", "cargo_raze")
 load("@rules_rust//rust:defs.bzl", "rust_analyzer")
 
@@ -31,30 +31,6 @@ buildifier(
     diff_command = "diff -u",
     exclude_patterns = unbuildify,
     mode = "diff",
-)
-
-clang_format_exclude = [
-    # Vendored source code dirs
-    "./**/vendor/**",
-    # Rust cargo build dirs
-    "./**/target/**",
-    # Directories used exclusively to store build artifacts are still copied into.
-    "./build-out/**",
-    "./build-bin/**",
-    # fusesoc build dir
-    "./build/**",
-]
-
-clang_format_check(
-    name = "clang_format_check",
-    exclude_patterns = clang_format_exclude,
-    mode = "diff",
-)
-
-clang_format_check(
-    name = "clang_format_fix",
-    exclude_patterns = clang_format_exclude,
-    mode = "fix",
 )
 
 html_coverage_report(
