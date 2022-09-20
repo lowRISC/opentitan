@@ -93,14 +93,10 @@ typedef enum {
 } mio_pad_idx_t;
 
 /**
- * IOR[0:4] in chip_if are connected to JTAG interface.
- * If tap_strap_if is disconnected (IoC5, IoC8), those signals become unknown.
- *
- * Issue(#15006) for debugging.
+ * If certain MIOs need to be skipped due to tied functionality, specify here.
  */
-enum { kNumOptOutMio = 4 };
-static const uint8_t kOptOutMio[kNumOptOutMio] = {kMioIoR0, kMioIoR2, kMioIoR3,
-                                                  kMioIoR4};
+enum { kNumOptOutMio = 0 };
+static const uint8_t kOptOutMio[kNumOptOutMio] = {};
 
 static uint8_t kMioPads[NUM_MIO_PADS] = {0};
 static uint8_t kDioPads[NUM_DIO_PADS] = {0};
