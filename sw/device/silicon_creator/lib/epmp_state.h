@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_STATE_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_STATE_H_
 
 #include <stdint.h>
 
@@ -142,6 +142,8 @@ typedef struct epmp_state {
   uint32_t mseccfg;
 } epmp_state_t;
 
+extern volatile epmp_state_t epmp_state;
+
 /**
  * Configure the given PMP entry in state using the Top-Of-Range addressing
  * mode.
@@ -219,4 +221,4 @@ rom_error_t epmp_state_check(const epmp_state_t *state);
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_EPMP_STATE_H_

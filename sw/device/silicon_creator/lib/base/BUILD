@@ -74,6 +74,18 @@ cc_library(
 )
 
 cc_library(
+    name = "static_critical_epmp_state",
+    srcs = ["static_critical_epmp_state.c"],
+    deps = [
+        "//sw/device/silicon_creator/lib:epmp_state",
+    ],
+    # This library provides a special symbol that the linker will find.
+    # We want this to be a linker input to ensure the weak version in
+    # epmp_state.c is overriden.
+    alwayslink = True,
+)
+
+cc_library(
     name = "static_critical_boot_measurements",
     srcs = ["static_critical_boot_measurements.c"],
     deps = [

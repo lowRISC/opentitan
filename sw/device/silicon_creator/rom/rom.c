@@ -72,8 +72,6 @@
 // Define counters and constant values required by the CFI counter macros.
 CFI_DEFINE_COUNTERS(rom_counters, ROM_CFI_FUNC_COUNTERS_TABLE);
 
-// In-memory copy of the ePMP register configuration.
-epmp_state_t epmp;
 // Life cycle state of the chip.
 lifecycle_state_t lc_state = (lifecycle_state_t)0;
 // Boot data from flash.
@@ -155,7 +153,7 @@ static rom_error_t rom_init(void) {
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInit);
 
   // Initialize in-memory copy of the ePMP register configuration.
-  rom_epmp_state_init(&epmp, lc_state);
+  rom_epmp_state_init((epmp_state_t *)&epmp_state, lc_state);
 
   // Check that AST is in the expected state.
   HARDENED_RETURN_IF_ERROR(ast_check(lc_state));
@@ -359,9 +357,9 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
       SEC_MMIO_WRITE_INCREMENT(kAddressTranslationSecMmioConfigure);
 
       // Unlock read-only for the whole rom_ext virtual memory.
-      HARDENED_RETURN_IF_ERROR(epmp_state_check(&epmp));
+      HARDENED_RETURN_IF_ERROR(epmp_state_check((epmp_state_t *)&epmp_state));
       rom_epmp_unlock_rom_ext_r(
-          &epmp,
+          (epmp_state_t *)&epmp_state,
           (epmp_region_t){.start = (uintptr_t)_rom_ext_virtual_start_address,
                           .end = (uintptr_t)_rom_ext_virtual_start_address +
                                  (uintptr_t)_rom_ext_virtual_size});
@@ -380,9 +378,9 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   }
 
   // Unlock execution of ROM_EXT executable code (text) sections.
-  HARDENED_RETURN_IF_ERROR(epmp_state_check(&epmp));
-  rom_epmp_unlock_rom_ext_rx(&epmp, text_region);
-  HARDENED_RETURN_IF_ERROR(epmp_state_check(&epmp));
+  HARDENED_RETURN_IF_ERROR(epmp_state_check((epmp_state_t *)&epmp_state));
+  rom_epmp_unlock_rom_ext_rx((epmp_state_t *)&epmp_state, text_region);
+  HARDENED_RETURN_IF_ERROR(epmp_state_check((epmp_state_t *)&epmp_state));
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomBoot, 2, kCfiRomPreBootCheck);
   rom_pre_boot_check();

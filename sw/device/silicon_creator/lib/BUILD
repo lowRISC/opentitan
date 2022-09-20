@@ -82,10 +82,10 @@ cc_library(
 )
 
 cc_library(
-    name = "epmp",
-    srcs = ["epmp.c"],
+    name = "epmp_state",
+    srcs = ["epmp_state.c"],
     hdrs = [
-        "epmp.h",
+        "epmp_state.h",
     ],
     deps = [
         ":epmp_defs",
@@ -99,7 +99,7 @@ cc_test(
     name = "epmp_unittest",
     srcs = ["epmp_unittest.cc"],
     deps = [
-        ":epmp",
+        ":epmp_state",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -111,7 +111,7 @@ cc_library(
     hdrs = ["epmp_test_unlock.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":epmp",
+        ":epmp_state",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",
     ],
@@ -221,7 +221,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            ":epmp",
+            ":epmp_state",
             ":error",
             ":keymgr_binding",
             "//sw/device/lib/base:macros",

@@ -7,7 +7,7 @@
 
 #include <stdbool.h>
 
-#include "sw/device/silicon_creator/lib/epmp.h"
+#include "sw/device/silicon_creator/lib/epmp_state.h"
 
 #ifdef __cplusplus
 extern "C" {
