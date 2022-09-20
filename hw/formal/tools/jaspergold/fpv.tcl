@@ -69,8 +69,27 @@ if {$stopat ne ""} {
 # tlul_assert.sv operates on the negedge clock
 # even clock this sampled at both_edges, input should only change at posedge clock cycle
 # TODO: create each DUT_TOP's individual config file
+if {$env(DUT_TOP) == "pinmux_tb"} {
+  clock clk_i -both_edges
+  clock clk_aon_i -factor 5
+  clock -rate -default clk_i
+  reset -expr {!rst_ni !rst_aon_ni}
 
-if {$env(DUT_TOP) == "rv_dm"} {
+} elseif {$env(DUT_TOP) == "prim_fifo_async_sram_adapter_tb"} {
+  clock clk_wr_i -factor 2
+  clock -rate {wvalid_i, wready_o, wdata_i} clk_wr_i
+  clock clk_rd_i -factor 3
+  clock -rate {rvalid_o, rready_i, rdata_o} clk_rd_i
+  reset -expr {!rst_ni}
+
+} elseif {$env(DUT_TOP) == "pwrmgr"} {
+  clock clk_i -both_edges
+  clock clk_slow_i -factor 3
+  clock clk_lc_i
+  clock -rate {esc_rst_tx_i} clk_lc_i
+  reset -expr {!rst_ni !rst_slow_ni !rst_main_ni !rst_lc_ni}
+
+} elseif {$env(DUT_TOP) == "rv_dm"} {
   clock clk_i -both_edges
   clock jtag_i.tck
   clock -rate {testmode, unavailable_i, reg_tl_d_i, sba_tl_h_i} clk_i
@@ -97,23 +116,6 @@ if {$env(DUT_TOP) == "rv_dm"} {
   clock -rate {tl_i, cio_d_i, cio_dp_i, cio_dn_i, cio_sense_i} clk_i
   reset -expr {!rst_ni !rst_aon_ni}
 
-# TODO: work with the block owner and re-define FPV checkings for xbar
-# } elseif {$env(DUT_TOP) == "xbar_main"} {
-#   clock clk_main_i -both_edges
-#   reset -expr {!rst_main_ni}
-
-} elseif {$env(DUT_TOP) == "prim_fifo_async_sram_adapter_tb"} {
-  clock clk_wr_i -factor 2
-  clock -rate {wvalid_i, wready_o, wdata_i} clk_wr_i
-  clock clk_rd_i -factor 3
-  clock -rate {rvalid_o, rready_i, rdata_o} clk_rd_i
-  reset -expr {!rst_ni}
-
-} elseif {$env(DUT_TOP) == "pinmux_tb"} {
-  clock clk_i -both_edges
-  clock clk_aon_i -factor 5
-  clock -rate -default clk_i
-  reset -expr {!rst_ni !rst_aon_ni}
 } else {
   clock clk_i -both_edges
   reset -expr {!rst_ni}
