@@ -632,12 +632,11 @@ Additionally, a header file, `dif_<ip>.h` and, optionally, `dif_<ip>.c` exist in
 
 All existing **non-production** code in the tree which uses the device does so via the DIF or a production driver.
 
-### DIF_TEST_SMOKE
+### DIF_TEST_ON_DEVICE
 
-Smoke tests exist for the DIF in `sw/device/tests` named `<ip>_smoketest.c`.
+An on-device test exists (in `sw/device/tests`) that uses the DIF.
 
-This should perform a basic test of the main datapath of the hardware module by the embedded core, via the DIF, and should be able to be run on all OpenTitan platforms (including FPGA, simulation, and DV).
-This test will be shared with DV.
+This test should excercise the main datapath of the hardware module via the DIF, and should be able to be run on at least one OpenTitan platform (either on FPGA or in simulation).
 
 ## S2
 
@@ -650,10 +649,6 @@ The DIF's respective device IP is at least stage D2.
 ### DIF_FEATURES
 
 The DIF has functions to cover all specified hardware functionality.
-
-### DIF_DV_TESTS
-
-Chip-level DV testing for the IP using DIFs has been started.
 
 ## S3
 
