@@ -3,14 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use atty::Stream;
 use directories::ProjectDirs;
 use erased_serde::Serialize;
 use log::LevelFilter;
+use serde_annotate::ColorProfile;
 use std::env::{args_os, ArgsOs};
 use std::ffi::OsString;
 use std::io::ErrorKind;
 use std::iter::{IntoIterator, Iterator};
 use std::path::PathBuf;
+use structopt::clap::arg_enum;
 use structopt::StructOpt;
 
 mod command;
@@ -44,6 +47,16 @@ enum RootCommandHierarchy {
     Greetings(command::hello::Greetings),
 }
 
+arg_enum! {
+    #[derive(Clone, Copy, Debug)]
+    enum Format {
+        Json,
+        Json5,
+        HJson,
+        Yaml,
+    }
+}
+
 #[derive(Debug, StructOpt)]
 #[structopt(
     name = "opentitantool",
@@ -59,6 +72,19 @@ struct Opts {
 
     #[structopt(long, default_value = "off")]
     logging: LevelFilter,
+
+    #[structopt(
+        short,
+        long,
+        possible_values = &Format::variants(),
+        case_insensitive = true,
+        default_value = "hjson",
+        help = "Preferred output format"
+    )]
+    format: Format,
+
+    #[structopt(short, long, parse(try_from_str), help = "Use color in the output")]
+    color: Option<bool>,
 
     #[structopt(
         long,
@@ -131,11 +157,23 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
 
 // Print the result of a command.
 // If there is an error and `RUST_BACKTRACE=1`, print a backtrace.
-fn print_command_result(result: Result<Option<Box<dyn Serialize>>>) -> Result<()> {
+fn print_command_result(opts: &Opts, result: Result<Option<Box<dyn Serialize>>>) -> Result<()> {
     match result {
         Ok(Some(value)) => {
             log::info!("Command result: success.");
-            println!("{}", serde_json::to_string_pretty(&value)?);
+            let profile = if atty::is(Stream::Stdout) && opts.color.unwrap_or(true) {
+                ColorProfile::basic()
+            } else {
+                ColorProfile::default()
+            };
+            let doc = serde_annotate::serialize(&value)?;
+            let string = match opts.format {
+                Format::Json => doc.to_json().color(profile).to_string(),
+                Format::Json5 => doc.to_json5().color(profile).to_string(),
+                Format::HJson => doc.to_hjson().color(profile).to_string(),
+                Format::Yaml => doc.to_yaml().color(profile).to_string(),
+            };
+            println!("{}", string);
             Ok(())
         }
         Ok(None) => {
@@ -158,7 +196,7 @@ where
     let command = RootCommandHierarchy::from_iter(
         std::iter::once(OsString::from("opentitantool")).chain(args),
     );
-    print_command_result(command.run(opts, &transport))?;
+    print_command_result(opts, command.run(opts, &transport))?;
     Ok(())
 }
 
@@ -174,6 +212,6 @@ fn main() -> Result<()> {
             &transport,
         )?;
     }
-    print_command_result(opts.command.run(&opts, &transport))?;
+    print_command_result(&opts, opts.command.run(&opts, &transport))?;
     Ok(())
 }

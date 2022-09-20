@@ -23,7 +23,9 @@ merge_base="$(git merge-base origin/$tgt_branch HEAD)" || {
 echo "Checking whitespace on files changed since $merge_base"
 
 set -o pipefail
-git diff --name-only --diff-filter=ACMRTUXB "$merge_base" -- ':!*/vendor/*' | \
+git diff --name-only --diff-filter=ACMRTUXB "$merge_base" -- \
+        ':!third_party/rust/crates/*' \
+        ':!*/vendor/*' | \
     xargs -r util/fix_trailing_whitespace.py --dry-run || {
     echo -n "##vso[task.logissue type=error]"
     echo "Whitespace check failed. Please run util/fix_trailing_whitespace.py on the above files."
