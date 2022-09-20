@@ -350,7 +350,7 @@ interface chip_if;
   // Whether the desired JTAG TAP will actually selected or not depends on the LC state and the
   // window of time when the TAP straps are set. It is upto the test sequence to orchestrate it
   // correctly. Disconnect the TAP strap interface to free up the muxed IOs.
-  wire __enable_jtag = (tap_straps_if.pins != 0);
+  wire __enable_jtag = (|(tap_straps_if.pins_oe & tap_straps_if.pins_o));
   wire lc_hw_debug_en = (`LC_CTRL_HIER.lc_hw_debug_en_o == lc_ctrl_pkg::On);
   jtag_if jtag_if();
 
