@@ -12,15 +12,19 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
   localparam int unsigned NumMioPads = top_earlgrey_pkg::MioPadCount;
   localparam int unsigned NumDioPads = top_earlgrey_pkg::DioCount;
 
-  typedef enum bit [1:0] {
+  typedef enum bit [2:0] {
     Ret0,  // PAD driving 0 while in retention
     Ret1,  // PAD driving 1 while in retention
     HighZ, // PAD is input mode while in retention
-    RetP   // PAD keeps the prev. value while in retention
+    RetP,  // PAD keeps the prev. value while in retention
+    RetSkip // Skip the test
   } pad_ret_t;
 
   pad_ret_t [NumMioPads-1:0] mio_pad_ret;
   pad_ret_t [NumDioPads-1:0] dio_pad_ret;
+
+  typedef pad_ret_t pads_ret_t[IoNumTotal];
+  pads_ret_t pad_ret;
 
   // SW sends chosen values via sw_logger_if. receive_chosen_value waits and
   // stores the values to the list.
@@ -77,6 +81,9 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
 
     end // forever
 
+    // Convert received maps to Ios
+    pad_ret = miodio_to_ios(mio_pad_ret, dio_pad_ret);
+
     // Print the received types
     `uvm_info(`gfn, $sformatf("BEGIN Received PAD Retention Types:"), UVM_LOW)
     foreach (dio_pad_ret[i]) begin
@@ -87,6 +94,25 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     end
     `uvm_info(`gfn, $sformatf("END Received PAD Retention Types"), UVM_LOW)
   endtask : receive_chosen_values
+
+  function pads_ret_t miodio_to_ios(
+    pad_ret_t [NumDioPads-1:0] mio_pad_ret,
+    pad_ret_t [NumDioPads-1:0] dio_pad_ret
+  );
+    // Default Skip
+    pads_ret_t result;
+    result = '{default: RetSkip};
+
+    foreach (MioPads[i]) begin
+      result[MioPads[i]] = mio_pad_ret[i];
+    end
+
+    foreach (DioPads[i]) begin
+      result[DioPads[i]] = dio_pad_ret[i];
+    end
+
+    return result;
+  endfunction : miodio_to_ios
 
   task check_pads_retention_type();
     logic [IoNumTotal-1:0] pad;
@@ -102,32 +128,23 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
      * 1 and samples. In each case, the sampled value should match to the
      * driving value not X or othe values.
      */
-
     // High-Z for all ports
     cfg.chip_vif.ios_if.pins_pd = '0;
     cfg.chip_vif.ios_if.pins_pu = '0;
     pad = cfg.chip_vif.ios_if.sample();
 
-    foreach (MioPads[i]) begin
-      pad_ret_t pad_ret      = mio_pad_ret[i];
-      bit       pad_sampled  = pad[MioPads[i]];
-      bit       pad_expected = (pad_ret == Ret1)? 1'b 1 : 1'b 0;
-      if (pad_ret inside {Ret0, Ret1}) begin
-        `DV_CHECK(pad_sampled == pad_expected,
-                  $sformatf("MIO[%2d] / IO(%2d) : sampled(%b) / exp(%b)",
-                            i, MioPads[i], pad_sampled, pad_expected))
-      end
-    end
+    foreach (pad_ret[i]) begin
+      bit pad_sampled    = pad[i];
+      bit pad_expected   = (pad_ret[i] == Ret1) ? 1'b 1 : 1'b 0;
+      chip_io_e pad_name = chip_io_e'(i);
 
-    foreach (DioPads[i]) begin
-      pad_ret_t pad_ret      = dio_pad_ret[i];
-      bit       pad_sampled  = pad[DioPads[i]];
-      bit       pad_expected = (pad_ret == Ret1)? 1'b 1 : 1'b 0;
-      if (pad_ret inside {Ret0, Ret1}) begin
-        `DV_CHECK(pad_sampled == pad_expected,
-                  $sformatf("DIO[%2d] / IO(%2d) : sampled(%b) / exp(%b)",
-                            i, DioPads[i], pad_sampled, pad_expected))
-      end
+      // Skip if not candidate.
+      if (!(pad_ret[i] inside {Ret0, Ret1})) continue;
+
+      `DV_CHECK(pad_sampled == pad_expected,
+                $sformatf(
+                  "IO[%2d/%s]: sampled(%b) / exp(%b)",
+                  i, pad_name.name, pad_sampled, pad_expected))
     end
 
     // TODO: Sample the PADs and check with expected values
