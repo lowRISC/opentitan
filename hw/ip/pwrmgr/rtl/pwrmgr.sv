@@ -116,6 +116,11 @@ module pwrmgr
     .esc_tx_i(esc_rst_tx_i)
   );
 
+  // This assertion uses formal to approve that once esc_rst_req is latched, we always expect to
+  // see the pwr_rst_o to latch.
+  // Use `s_eventually` because this signal crosses clock domains.
+  `ASSERT(PwrmgrSecCmEscO, esc_rst_req_d |-> s_eventually(pwr_rst_o), clk_slow_i, !rst_slow_ni)
+
   always_ff @(posedge clk_lc or negedge rst_lc_n) begin
     if (!rst_lc_n) begin
       esc_rst_req_q <= '0;

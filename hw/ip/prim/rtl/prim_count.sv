@@ -55,7 +55,7 @@ module prim_count #(
 
   logic [NumCnt-1:0][Width-1:0] cnt_d, cnt_q, fpv_force;
 
-`ifndef FPV_ON
+`ifndef FPV_SEC_CM_ON
   // This becomes a free variable in FPV.
   assign fpv_force = '0;
 `endif

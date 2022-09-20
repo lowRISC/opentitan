@@ -497,6 +497,23 @@
                task: "FpvSecCm"
                stopats: ["*u_state_regs.state_o"]
              }
+             // This testbench verifies once esc request is received, it should always trigger a
+             // reset request.
+             {
+               name: pwrmgr_esc_unstoppable
+               dut: pwrmgr
+               fusesoc_core: lowrisc:dv:pwrmgr_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/pwrmgr/{sub_flow}/{tool}"
+               cov: false
+               overrides: [
+                 {
+                   name:  design_level
+                   value: "top"
+                 }
+               ]
+               task: "PwrmgrSecCmEsc"
+             }
              {
                name: rom_ctrl_sec_cm
                dut: rom_ctrl
