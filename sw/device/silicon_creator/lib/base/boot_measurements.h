@@ -33,7 +33,7 @@ typedef struct boot_measurements {
 OT_ASSERT_MEMBER_OFFSET(boot_measurements_t, rom_ext, 0);
 OT_ASSERT_SIZE(boot_measurements_t, 32);
 
-extern boot_measurements_t boot_measurements;
+extern volatile boot_measurements_t boot_measurements;
 
 #ifdef __cplusplus
 }

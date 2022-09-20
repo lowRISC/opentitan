@@ -333,7 +333,8 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
       otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN_OFFSET);
   if (launder32(use_rom_ext_measurement) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(use_rom_ext_measurement, kHardenedBoolTrue);
-    attestation_measurement = &boot_measurements.rom_ext;
+    attestation_measurement =
+        (const keymgr_binding_value_t *)&boot_measurements.rom_ext;
   } else {
     HARDENED_CHECK_NE(use_rom_ext_measurement, kHardenedBoolTrue);
   }
