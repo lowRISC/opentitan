@@ -4,6 +4,7 @@
 
 `include "flash_ctrl_callback_vseq.sv"
 `include "flash_ctrl_base_vseq.sv"
+`include "flash_ctrl_otf_base_vseq.sv"
 `include "flash_ctrl_common_vseq.sv"
 `include "flash_ctrl_fetch_code_vseq.sv"
 `include "flash_ctrl_rand_ops_base_vseq.sv"
@@ -25,7 +26,6 @@
 `include "flash_ctrl_error_mp_vseq.sv"
 `include "flash_ctrl_invalid_op_vseq.sv"
 `include "flash_ctrl_mid_op_rst_vseq.sv"
-`include "flash_ctrl_otf_base_vseq.sv"
 `include "flash_ctrl_legacy_base_vseq.sv"
 `include "flash_ctrl_wo_vseq.sv"
 `include "flash_ctrl_ro_vseq.sv"
@@ -52,3 +52,4 @@
 `include "flash_ctrl_wr_path_intg_vseq.sv"
 `include "flash_ctrl_info_part_access_vseq.sv"
 `include "flash_ctrl_stress_all_vseq.sv"
+`include "flash_ctrl_access_after_disable_vseq.sv"

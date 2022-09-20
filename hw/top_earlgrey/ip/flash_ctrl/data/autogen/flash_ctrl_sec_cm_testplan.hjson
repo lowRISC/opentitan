@@ -89,55 +89,75 @@
       name: sec_cm_ctrl_config_regwen
       desc: "Verify the countermeasure(s) CTRL.CONFIG.REGWEN."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_csr_rw"]
     }
     {
       name: sec_cm_data_regions_config_regwen
       desc: "Verify the countermeasure(s) DATA_REGIONS.CONFIG.REGWEN."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_csr_rw"]
     }
     {
       name: sec_cm_data_regions_config_shadow
       desc: "Verify the countermeasure(s) DATA_REGIONS.CONFIG.SHADOW."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_shadow_reg_errors"]
     }
     {
       name: sec_cm_info_regions_config_regwen
       desc: "Verify the countermeasure(s) INFO_REGIONS.CONFIG.REGWEN."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_csr_rw"]
     }
     {
       name: sec_cm_info_regions_config_shadow
       desc: "Verify the countermeasure(s) INFO_REGIONS.CONFIG.SHADOW."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_shadow_reg_errors"]
     }
     {
       name: sec_cm_bank_config_regwen
       desc: "Verify the countermeasure(s) BANK.CONFIG.REGWEN."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_csr_rw"]
     }
     {
       name: sec_cm_bank_config_shadow
       desc: "Verify the countermeasure(s) BANK.CONFIG.SHADOW."
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_shadow_reg_errors"]
     }
     {
       name: sec_cm_mem_ctrl_global_esc
-      desc: "Verify the countermeasure(s) MEM.CTRL.GLOBAL_ESC."
+      desc: '''Verify the countermeasure(s) MEM.CTRL.GLOBAL_ESC.
+      Send a few flash access commands and
+      disable flash access by setting lc_escalate_en to lc_ctrl_pkg::On.
+      Check
+       - Ctrl initiated traffic : mp error
+       - Host initiated traffic : tlul errors
+       - Outstanding traffic:
+         Program or erase will be completed.
+         Read will be dropped.
+       - Debug state is changed to 'flash_ctrl_env_pkg::FlashLcDisabled' state
+      '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_disable"]
     }
     {
       name: sec_cm_mem_ctrl_local_esc
-      desc: "Verify the countermeasure(s) MEM.CTRL.LOCAL_ESC."
+      desc: '''Verify the countermeasure(s) MEM.CTRL.LOCAL_ESC.
+      Send a few flash access commands and
+      disable flash access by triggering std_fault.
+      Check
+       - Ctrl initiated traffic : mp error
+       - Host initiated traffic : tlul errors
+       - Outstanding traffic:
+         Program or erase will be completed.
+         Read will be dropped.
+       - Debug state is changed to 'flash_ctrl_env_pkg::FlashLcDisabled' state
+      '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_rd_path_intg", "flash_ctrl_access_after_disable"]
     }
     {
       name: sec_cm_mem_disable_config_mubi

@@ -122,82 +122,87 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   endfunction // post_randomize
 
   virtual task pre_start();
+    bit csr_test_mode = 0;
     // Erased page doesn't go through descramble.
     // To maintain high stress rate,
     // keep flash_init to FlashMemInitRandomize
-    flash_init_c.constraint_mode(0);
-    if (cfg.ecc_mode > FlashEccEnabled) begin
-      foreach (cfg.tgt_pre[partition]) begin
-        cfg.tgt_pre[partition].shuffle();
-        `uvm_info("cfg_summary",
-                  $sformatf("prefix:%s:rd:%2b dr:%2b wr:%2b er:%2b",
-                            partition.name, cfg.tgt_pre[partition][TgtRd],
-                            cfg.tgt_pre[partition][TgtDr], cfg.tgt_pre[partition][TgtWr],
-                            cfg.tgt_pre[partition][TgtEr]),
-                  UVM_MEDIUM)
+    void'($value$plusargs("csr_test_mode=%0b", csr_test_mode));
+    if (csr_test_mode) begin
+      super.pre_start();
+    end else begin
+      flash_init_c.constraint_mode(0);
+      if (cfg.ecc_mode > FlashEccEnabled) begin
+        foreach (cfg.tgt_pre[partition]) begin
+          cfg.tgt_pre[partition].shuffle();
+          `uvm_info("cfg_summary",
+                    $sformatf("prefix:%s:rd:%2b dr:%2b wr:%2b er:%2b",
+                              partition.name, cfg.tgt_pre[partition][TgtRd],
+                              cfg.tgt_pre[partition][TgtDr], cfg.tgt_pre[partition][TgtWr],
+                              cfg.tgt_pre[partition][TgtEr]),
+                    UVM_MEDIUM)
+        end
       end
-    end
-    flash_init = otf_flash_init;
+      flash_init = otf_flash_init;
 
+      init_p2r_map();
+      `uvm_info("cfg_summary",
+                $sformatf({"flash_init:%s ecc_mode %s allow_spec_info_acc:%3b",
+                           " scr_ecc_cfg:%s always_read:%0d"},
+                          flash_init.name, cfg.ecc_mode.name, allow_spec_info_acc,
+                          scr_ecc_cfg.name, cfg.en_always_read),
+                UVM_MEDIUM)
 
-    init_p2r_map();
-    `uvm_info("cfg_summary",
-              $sformatf({"flash_init:%s ecc_mode %s allow_spec_info_acc:%3b",
-                         " scr_ecc_cfg:%s always_read:%0d"},
-                        flash_init.name, cfg.ecc_mode.name, allow_spec_info_acc,
-                        scr_ecc_cfg.name, cfg.en_always_read),
-              UVM_MEDIUM)
-
-    configure_otf_mode();
-    super.pre_start();
-    if (cfg.seq_cfg.en_init_keys_seeds == 1) begin
-      `DV_SPINWAIT(while (otp_key_init_done != 2'b11) cfg.clk_rst_vif.wait_clks(1);,
-                   "timeout waiting  otp_key_init_done", 100_000)
-    end
-
-    // Need additional flash update after key init is done
-    case (cfg.ecc_mode)
-      FlashEccDisabled: begin
-        // In this mode, write and read are not separated.
-        // When write and read happen at the same address,
-        // unexpected ecc error can be created.
-        flash_otf_region_cfg();
+      configure_otf_mode();
+      super.pre_start();
+      if (cfg.seq_cfg.en_init_keys_seeds == 1) begin
+        `DV_SPINWAIT(while (otp_key_init_done != 2'b11) cfg.clk_rst_vif.wait_clks(1);,
+                     "timeout waiting  otp_key_init_done", 100_000)
       end
-      FlashEccEnabled: begin
-        // This mode use tb memory model.
-        flash_otf_region_cfg(.scr_mode(scr_ecc_cfg), .ecc_mode(scr_ecc_cfg));
+
+      // Need additional flash update after key init is done
+      case (cfg.ecc_mode)
+        FlashEccDisabled: begin
+          // In this mode, write and read are not separated.
+          // When write and read happen at the same address,
+          // unexpected ecc error can be created.
+          flash_otf_region_cfg();
+        end
+        FlashEccEnabled: begin
+          // This mode use tb memory model.
+          flash_otf_region_cfg(.scr_mode(scr_ecc_cfg), .ecc_mode(scr_ecc_cfg));
+        end
+        default: begin
+          flash_otf_region_cfg(.scr_mode(scr_ecc_cfg), .ecc_mode(OTFCfgTrue));
+          flash_otf_mem_read_zone_init();
+        end
+      endcase // case (cfg.ecc_mode)
+      if (cfg.ecc_mode > FlashSerrTestMode) begin
+        cfg.scb_h.do_alert_check = 0;
       end
-      default: begin
-        flash_otf_region_cfg(.scr_mode(scr_ecc_cfg), .ecc_mode(OTFCfgTrue));
-        flash_otf_mem_read_zone_init();
+
+      cfg.allow_spec_info_acc = allow_spec_info_acc;
+      update_partition_access(cfg.allow_spec_info_acc);
+      // Polling init wip is done
+      csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
+      cfg.m_fpp_agent_cfg.mon_start = 1;
+      `uvm_info("pre_start", "TEST PARAM SUMMARY", UVM_MEDIUM)
+      `uvm_info("pre_start", " ** sequence param", UVM_MEDIUM)
+      `uvm_info("pre_start", $sformatf({"  otf_num_rw:%0d otf_num_hr:%0d",
+                                        " otf_wr_pct:%0d otf_rd_pct:%0d"},
+                                       cfg.otf_num_rw,
+                                       cfg.otf_num_hr,
+                                       cfg.otf_wr_pct,
+                                       cfg.otf_rd_pct), UVM_MEDIUM)
+
+      if (cfg.intr_mode == 1) begin
+        cfg.rd_lvl = $urandom_range(1,15);
+        cfg.wr_lvl = $urandom_range(1,3);
+        `uvm_info("pre_start", $sformatf("interrupt testmode. rd_lvl:%0d wr_lvl:%0d",
+                                         cfg.rd_lvl, cfg.wr_lvl), UVM_MEDIUM)
+
+        flash_ctrl_fifo_levels_cfg_intr(cfg.rd_lvl, cfg.wr_lvl);
+        flash_ctrl_intr_enable(6'h3f);
       end
-    endcase // case (cfg.ecc_mode)
-    if (cfg.ecc_mode > FlashSerrTestMode) begin
-      cfg.scb_h.do_alert_check = 0;
-    end
-
-    cfg.allow_spec_info_acc = allow_spec_info_acc;
-    update_partition_access(cfg.allow_spec_info_acc);
-    // Polling init wip is done
-    csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
-    cfg.m_fpp_agent_cfg.mon_start = 1;
-    `uvm_info("pre_start", "TEST PARAM SUMMARY", UVM_MEDIUM)
-    `uvm_info("pre_start", " ** sequence param", UVM_MEDIUM)
-    `uvm_info("pre_start", $sformatf({"  otf_num_rw:%0d otf_num_hr:%0d",
-                                      " otf_wr_pct:%0d otf_rd_pct:%0d"},
-                                     cfg.otf_num_rw,
-                                     cfg.otf_num_hr,
-                                     cfg.otf_wr_pct,
-                                     cfg.otf_rd_pct), UVM_MEDIUM)
-
-    if (cfg.intr_mode == 1) begin
-      cfg.rd_lvl = $urandom_range(1,15);
-      cfg.wr_lvl = $urandom_range(1,3);
-      `uvm_info("pre_start", $sformatf("interrupt testmode. rd_lvl:%0d wr_lvl:%0d",
-                                       cfg.rd_lvl, cfg.wr_lvl), UVM_MEDIUM)
-
-      flash_ctrl_fifo_levels_cfg_intr(cfg.rd_lvl, cfg.wr_lvl);
-      flash_ctrl_intr_enable(6'h3f);
     end
   endtask
 
@@ -232,11 +237,12 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg: bank: bank index to access flash
   // @arg: num : number of 8 words range: [1 : 32]
   // @arg: wd  : number of 4byte (TL bus unit) : default : 16
+  // @arg: in_err : inject fatal error causes flash access disable
   task prog_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16,
                   bit in_err = 0);
     data_q_t flash_data_chunk;
     flash_otf_item exp_item;
-    bit poll_fifo_status = in_err;
+    bit poll_fifo_status = ~in_err;
     bit [15:0] lcnt = 0;
     bit [flash_ctrl_pkg::BusAddrByteW-1:0] start_addr, end_addr;
     data_4s_t tmp_data;
@@ -423,6 +429,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg: bank: bank index to access flash
   // @arg: num : number of 8 words range: [1 : 32]
   // @arg: wd  : number of 4byte (TL bus unit) : default : 16
+  // @arg: overrd : invoke oversize read
+  // @arg: in_err : inject fatal error causes flash access disable
   task read_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16,
                   int overrd = 0, bit in_err = 0);
     data_q_t flash_read_data;
@@ -656,7 +664,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg : bank : bank index to access flash.
   // @arg : num  : number of 4byte data to read countinuously
   //               by 4 byte apart.
-  task otf_direct_read(bit [OTFHostId-2:0] addr, int bank, int num, int dbg = -1, bit in_err);
+  // @arg: in_err : inject fatal error causes flash access disable
+  task otf_direct_read(bit [OTFHostId-2:0] addr, int bank, int num, bit in_err);
     bit[TL_AW-1:0] tl_addr, st_addr, end_addr;
     data_4s_t rdata;
     flash_otf_item exp_item;
@@ -746,8 +755,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         if (cfg.scb_h.ecc_error_addr.exists({tl_addr[31:3],3'h0}) | derr_is_set) derr = 1;
       end
       cfg.otf_read_entry.insert(rd_entry, flash_op);
-      `uvm_info("direct_read", $sformatf("%0d:%0d bank:%0d exec: 0x%x derr:%0d in_err:%0d",
-                                          dbg, i, bank, tl_addr, derr, in_err), UVM_MEDIUM)
+      `uvm_info("direct_read", $sformatf("num_i:%0d bank:%0d exec: 0x%x derr:%0d in_err:%0d",
+                                          i, bank, tl_addr, derr, in_err), UVM_MEDIUM)
       if (in_err) cfg.scb_h.in_error_addr[{tl_addr[31:3],3'h0}] = 1;
 
       derr |= in_err;
@@ -1229,7 +1238,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   endfunction // flash_otf_init
 
   // Send direct host read to both bankds 'host_num' times.
-  virtual task send_rand_host_rd(int num = -1, int dbg = -1, bit in_err = 0);
+  virtual task send_rand_host_rd(int num = -1, bit in_err = 0);
     flash_op_t host;
     int host_num, host_bank;
 
@@ -1239,7 +1248,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     else host_num = $urandom_range(1,128);
     host_bank = $urandom_range(0,1);
 
-    otf_direct_read(host.otf_addr, host_bank, host_num, dbg, in_err);
+    otf_direct_read(host.otf_addr, host_bank, host_num, in_err);
   endtask // send_rand_host_rd
 
   // Clean up tb vars. Used for multiple sequence run.
@@ -1315,9 +1324,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     update_p2r_map(cfg.mp_regions);
   endtask
 
-  task send_rand_ops(int iter = 1, bit exp_err = 0);
+  task send_rand_ops(int iter = 1, bit exp_err = 0, bit ctrl_only = 0);
     flash_op_t ctrl;
     int num, bank;
+    int host_pct = (ctrl_only)? 0 : 1;
 
     repeat (iter) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
@@ -1329,15 +1339,23 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         num = ctrl_info_num;
       end
       randcase
-        1:prog_flash(ctrl, bank, 1, fractions, exp_err);
-        1:read_flash(ctrl, bank, 1, fractions, 0, exp_err);
-        1: begin
-          send_rand_host_rd(.in_err(exp_err));
-        end
-        1:erase_flash(ctrl, bank, exp_err);
+        1: prog_flash(ctrl, bank, 1, fractions, exp_err);
+        1: read_flash(ctrl, bank, 1, fractions, 0, exp_err);
+        host_pct: send_rand_host_rd(.in_err(exp_err));
+        1: erase_flash(ctrl, bank, exp_err);
       endcase // randcase
     end
   endtask
+
+  // Use this task only after flash is disabled.
+  task flash_access_after_disabled();
+    `uvm_info(`gfn, "Flash Access after disabled", UVM_LOW)
+    cfg.m_tl_agent_cfg.check_tl_errs = 0;
+    send_rand_ops(.iter(5), .exp_err(1), .ctrl_only(1));
+
+    // Disable tlul_err_cnt check
+    cfg.tlul_core_obs_cnt = cfg.tlul_core_exp_cnt;
+  endtask // flash_access_after_disabled
 
   function void update_partition_access(bit[2:0] acc);
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::Off;
