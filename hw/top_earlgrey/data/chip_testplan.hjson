@@ -3222,6 +3222,7 @@
       desc: '''End to end test to ensure boot strap can succeed after injecting scramble seeds.
 
       - Pre-load the device into PROD, PROD_END or DEV state.
+      - Backdoor load an unscrambled value into flash isolated partition.
       - In the test program, populate the scramble seeds (flash / sram).
       - In the test program, populate OTP entries to inform ROM to scramble flash upon next boot.
       - Reboot the device and perform boot strap of the same test image, ROM should now program
@@ -3229,7 +3230,9 @@
       - Upon successful boot strap, ROM jumps to the newly programmed image and de-scrambles the
         instructions.
       - In the test program, check whether the OTP partition containing the scramble seeds is
-        locked. If it is, complete the test and return.  If not, return an error.
+        locked. Also check that the unscrambled value progarmmed into flash isolated partition
+        can be correctly read back when the region is set to scramble disable.
+      - If either of the above checks is incorrect, return error.
 
 
       X-ref'ed with manuf_ft_sku_individualization from manufacturing test plan.
