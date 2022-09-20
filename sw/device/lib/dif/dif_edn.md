@@ -13,7 +13,7 @@ Type           | Item                   | Resolution  | Note/Collaterals
 ---------------|------------------------|-------------|------------------
 Implementation | [DIF_EXISTS][]         | Done        |
 Implementation | [DIF_USED_IN_TREE][]   | Done        |
-Tests          | [DIF_TEST_ON_DEVICE][] | Not Started |
+Tests          | [DIF_TEST_ON_DEVICE][] | Done        |
 
 [DIF_EXISTS]:         {{< relref "/doc/project/checklist.md#dif_exists" >}}
 [DIF_USED_IN_TREE]:   {{< relref "/doc/project/checklist.md#dif_used_in_tree" >}}
@@ -24,7 +24,7 @@ Tests          | [DIF_TEST_ON_DEVICE][] | Not Started |
 Type           | Item                        | Resolution  | Note/Collaterals
 ---------------|-----------------------------|-------------|------------------
 Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Done        | [HW Dashboard]({{< relref "hw" >}})
-Implementation | [DIF_FEATURES][]            | In Progress |
+Implementation | [DIF_FEATURES][]            | Done        |
 
 [DIF_HW_FEATURE_COMPLETE]: {{< relref "/doc/project/checklist.md#dif_hw_feature_complete" >}}
 [DIF_FEATURES]:            {{< relref "/doc/project/checklist.md#dif_features" >}}
