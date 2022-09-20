@@ -9,27 +9,25 @@ All checklist items refer to the content in the [Checklist]({{< relref "/doc/pro
 
 <h3>S1</h3>
 
-Type           | Item                 | Resolution  | Note/Collaterals
----------------|----------------------|-------------|------------------
-Implementation | [DIF_EXISTS][]       | Done        |
-Implementation | [DIF_USED_IN_TREE][] | Done        |
-Tests          | [DIF_TEST_SMOKE][]   | Done        |
+Type           | Item                   | Resolution  | Note/Collaterals
+---------------|------------------------|-------------|------------------
+Implementation | [DIF_EXISTS][]         | Done        |
+Implementation | [DIF_USED_IN_TREE][]   | Done        |
+Tests          | [DIF_TEST_ON_DEVICE][] | Done        |
 
-[DIF_EXISTS]:       {{< relref "/doc/project/checklist.md#dif_exists" >}}
-[DIF_USED_IN_TREE]: {{< relref "/doc/project/checklist.md#dif_used_in_tree" >}}
-[DIF_TEST_SMOKE]:   {{< relref "/doc/project/checklist.md#dif_test_smoke" >}}
+[DIF_EXISTS]:         {{< relref "/doc/project/checklist.md#dif_exists" >}}
+[DIF_USED_IN_TREE]:   {{< relref "/doc/project/checklist.md#dif_used_in_tree" >}}
+[DIF_TEST_ON_DEVICE]: {{< relref "/doc/project/checklist.md#dif_test_on_device" >}}
 
 <h3>S2</h3>
 
 Type           | Item                        | Resolution  | Note/Collaterals
 ---------------|-----------------------------|-------------|------------------
 Coordination   | [DIF_HW_FEATURE_COMPLETE][] | Done        | [HW Dashboard]({{< relref "hw" >}})
-Implementation | [DIF_FEATURES][]            | Done        | 
-Coordination   | [DIF_DV_TESTS][]            | Done        |
+Implementation | [DIF_FEATURES][]            | Done        |
 
 [DIF_HW_FEATURE_COMPLETE]: {{< relref "/doc/project/checklist.md#dif_hw_feature_complete" >}}
 [DIF_FEATURES]:            {{< relref "/doc/project/checklist.md#dif_features" >}}
-[DIF_DV_TESTS]:            {{< relref "/doc/project/checklist.md#dif_dv_tests" >}}
 
 <h3>S3</h3>
 
