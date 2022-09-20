@@ -4,7 +4,7 @@
 
 load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier", "buildifier_test")
 load("@lowrisc_lint//rules:rules.bzl", "licence_test")
-load("//rules:quality.bzl", "clang_format_check", "clang_format_test")
+load("//rules:quality.bzl", "clang_format_check", "clang_format_test", "html_coverage_report")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -123,4 +123,8 @@ buildifier_test(
     ),
     diff_command = "diff -u",
     mode = "diff",
+)
+
+html_coverage_report(
+    name = "html_coverage_report",
 )
