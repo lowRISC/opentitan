@@ -172,6 +172,7 @@ rust_library(
         "//third_party/rust/crates:typetag",
         "//third_party/rust/crates:zerocopy",
         "@safe_ftdi",
+        "@serde_annotate",
     ],
 )
 
