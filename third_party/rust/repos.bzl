@@ -5,7 +5,7 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@//rules:repo.bzl", "http_archive_or_local")
 
-def rust_repos(rules_rust = None, safe_ftdi = None):
+def rust_repos(rules_rust = None, safe_ftdi = None, serde_annotate = None):
     # We use forked/patched Rust Bazel rules to enable caching repository rules
     # required for air-gapped Bazel builds. See lowRISC/opentitan:#12515 for
     # more details.
@@ -23,4 +23,12 @@ def rust_repos(rules_rust = None, safe_ftdi = None):
         sha256 = "33c61f3c2303e595c554a0b9ed8ba7ae3088d51052fa5916a9a4767604683b52",
         strip_prefix = "safe-ftdi-bazel-20220511_01",
         url = "https://github.com/lowRISC/safe-ftdi/archive/refs/tags/bazel-20220511_01.tar.gz",
+    )
+
+    http_archive_or_local(
+        name = "serde_annotate",
+        local = serde_annotate,
+        sha256 = "48775889028e42dbb684b6f5442a6e3cea8bee206be7e1eb46ec0a0fce79e6c4",
+        strip_prefix = "serde-annotate-0.0.2",
+        url = "https://github.com/lowRISC/serde-annotate/archive/refs/tags/v0.0.2.tar.gz",
     )
