@@ -149,16 +149,10 @@ interface clk_rst_if #(
     clk_freq_scale_up = freq_scale_up;
   endfunction
 
-  // call this function at t=0 (from tb top) to enable clk and rst_n to be driven
+  // Enables the clock and reset to be driven.
   function automatic void set_active(bit drive_clk_val = 1'b1, bit drive_rst_n_val = 1'b1);
-    time t = $time;
-    if (t == 0) begin
-      drive_clk = drive_clk_val;
-      drive_rst_n = drive_rst_n_val;
-    end
-    else begin
-      `dv_fatal("This function can only be called at t=0", msg_id)
-    end
+    drive_clk = drive_clk_val;
+    drive_rst_n = drive_rst_n_val;
   endfunction
 
   // set the clk period in ps
