@@ -10,6 +10,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/runtime/hart.h"
 
 // #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_core_ibex_regs.h"
@@ -124,7 +125,7 @@ dif_result_t dif_rv_core_ibex_configure_addr_translation(
   uint32_t mask = to_napot(addr_map.matching_addr, addr_map.size);
   mmio_region_write32(rv_core_ibex->base_addr, regs.maching, mask);
   mmio_region_write32(rv_core_ibex->base_addr, regs.remap, addr_map.remap_addr);
-
+  icache_invalidate();
   return kDifOk;
 }
 
@@ -141,6 +142,7 @@ dif_result_t dif_rv_core_ibex_enable_addr_translation(
     return kDifLocked;
   }
   mmio_region_write32(rv_core_ibex->base_addr, regs.en, 1);
+  icache_invalidate();
   return kDifOk;
 }
 
@@ -157,6 +159,7 @@ dif_result_t dif_rv_core_ibex_disable_addr_translation(
     return kDifLocked;
   }
   mmio_region_write32(rv_core_ibex->base_addr, regs.en, 0);
+  icache_invalidate();
   return kDifOk;
 }
 
