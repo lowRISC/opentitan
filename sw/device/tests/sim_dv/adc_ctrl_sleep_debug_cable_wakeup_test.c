@@ -17,7 +17,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 enum {
-  kPowerUpTimeAonCycles = 2,
+  kPowerUpTimeAonCycles = 6,
 };
 
 // These constants will be setup from the testbench
