@@ -26,6 +26,28 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
   typedef pad_ret_t pads_ret_t[IoNumTotal];
   pads_ret_t pad_ret;
 
+  string ios_to_miodio [IoNumTotal];
+
+  task pre_start();
+    super.pre_start();
+
+    // Create io -> miodio
+    ios_to_miodio = '{default: "Unmapped"};
+    foreach (MioPads[i]) begin
+      `DV_CHECK_STREQ(ios_to_miodio[MioPads[i]], "Unmapped",
+        $sformatf("MioPads cannot map to chip_io_e correctly: %s",
+          ios_to_miodio[MioPads[i]]))
+      ios_to_miodio[MioPads[i]] = $sformatf("MIO [%2d]", i);
+    end
+    foreach (DioPads[i]) begin
+      `DV_CHECK_STREQ(ios_to_miodio[DioPads[i]], "Unmapped",
+        $sformatf("DioPads cannot map to chip_io_e correctly: %s",
+          ios_to_miodio[DioPads[i]]))
+      ios_to_miodio[DioPads[i]] = $sformatf("DIO [%2d]", i);
+    end
+
+  endtask : pre_start
+
   // SW sends chosen values via sw_logger_if. receive_chosen_value waits and
   // stores the values to the list.
   //
@@ -41,6 +63,8 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     string       printed_log;
     int unsigned idx;
     pad_ret_t    pad_type;
+
+    string rcv_str;
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "BEGIN Chosen Retention Types")
 
@@ -85,14 +109,26 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     pad_ret = miodio_to_ios(mio_pad_ret, dio_pad_ret);
 
     // Print the received types
-    `uvm_info(`gfn, $sformatf("BEGIN Received PAD Retention Types:"), UVM_LOW)
+    rcv_str = "BEGIN Received PAD Retention Types:";
     foreach (dio_pad_ret[i]) begin
-      `uvm_info(`gfn, $sformatf("  DIO [%d]: %d", i, dio_pad_ret[i]), UVM_LOW)
+      rcv_str = {rcv_str, "\n",
+                 $sformatf("  DIO [%d]: %d", i, dio_pad_ret[i])};
     end
     foreach (mio_pad_ret[i]) begin
-      `uvm_info(`gfn, $sformatf("  MIO [%d]: %d", i, mio_pad_ret[i]), UVM_LOW)
+      rcv_str = {rcv_str, "\n",
+                 $sformatf("  MIO [%d]: %d", i, mio_pad_ret[i])};
     end
-    `uvm_info(`gfn, $sformatf("END Received PAD Retention Types"), UVM_LOW)
+    rcv_str = {rcv_str, "\n", "END Received PAD Retention Types"};
+    `uvm_info(`gfn, rcv_str, UVM_LOW)
+
+    rcv_str = "";
+    foreach (pad_ret[i]) begin
+      chip_io_e pad = chip_io_e'(i);
+      rcv_str = {rcv_str, "\n",
+                 $sformatf(" IO[%2d/%20s]: %9s %s",
+                   i, pad.name, pad_ret[i].name, ios_to_miodio[i])};
+    end
+    `uvm_info(`gfn, rcv_str, UVM_LOW)
   endtask : receive_chosen_values
 
   function pads_ret_t miodio_to_ios(
@@ -104,10 +140,12 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     result = '{default: RetSkip};
 
     foreach (MioPads[i]) begin
+      assert(result[MioPads[i]] == RetSkip)
       result[MioPads[i]] = mio_pad_ret[i];
     end
 
     foreach (DioPads[i]) begin
+      assert(result[DioPads[i]] == RetSkip)
       result[DioPads[i]] = dio_pad_ret[i];
     end
 
@@ -128,6 +166,7 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
      * 1 and samples. In each case, the sampled value should match to the
      * driving value not X or othe values.
      */
+
     // High-Z for all ports
     cfg.chip_vif.ios_if.pins_pd = '0;
     cfg.chip_vif.ios_if.pins_pu = '0;
@@ -143,8 +182,9 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
 
       `DV_CHECK(pad_sampled == pad_expected,
                 $sformatf(
-                  "IO[%2d/%s]: sampled(%b) / exp(%b)",
-                  i, pad_name.name, pad_sampled, pad_expected))
+                  "IO[%2d/%s] %s: sampled(%b) / exp(%b)",
+                  i, pad_name.name, ios_to_miodio[i],
+                  pad_sampled, pad_expected))
     end
 
     // TODO: Sample the PADs and check with expected values
