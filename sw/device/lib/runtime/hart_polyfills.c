@@ -20,3 +20,4 @@ void busy_spin_micros(uint32_t usec) { usleep(usec); }
 // corresponding header a link location.
 
 extern void wait_for_interrupt(void);
+extern void icache_invalidate(void);

@@ -31,6 +31,15 @@ inline void wait_for_interrupt(void) {
 }
 
 /**
+ * Invalidates the instruction cache.
+ */
+inline void icache_invalidate(void) {
+#ifdef OT_PLATFORM_RV32
+  asm volatile("fence.i");
+#endif
+}
+
+/**
  * Spin for at least the given number of microseconds.
  *
  * @param usec Duration in microseconds.
