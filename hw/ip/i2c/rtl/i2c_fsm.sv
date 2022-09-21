@@ -594,7 +594,11 @@ module i2c_fsm (
       // Active: continue while keeping SCL low
       Active : begin
         host_idle_o = 1'b0;
-        scl_temp = 1'b0;
+
+        // If the start flag was asserted, do not drive scl low
+        // since in the next state we will drive it high to initiate
+        // the start bit.
+        scl_temp = fmt_flag_start_before_i;
       end
       // PopFmtFifo: populate fmt_fifo
       PopFmtFifo : begin
@@ -769,8 +773,7 @@ module i2c_fsm (
       Idle : begin
         if (!host_enable_i && !target_enable_i) state_d = Idle; // Idle unless host is enabled
         else if (host_enable_i) begin
-          if (!fmt_fifo_rvalid_i) state_d = Idle;
-          else state_d = Active;
+          if (fmt_fifo_rvalid_i) state_d = Active;
         end else if (target_enable_i) begin
           if (!start_det) state_d = Idle;
           else state_d = AcquireStart;
@@ -1223,7 +1226,7 @@ module i2c_fsm (
         addr_stop_tx = 1'b0;
         addr_stop_acq = 1'b0;
       end
-    endcase
+    endcase // unique case (state_q)
   end
 
   // Synchronous state transition
