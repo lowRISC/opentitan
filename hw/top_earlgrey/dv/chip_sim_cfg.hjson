@@ -834,7 +834,7 @@
      }
      {
       name: chip_sw_alert_handler_lpg_clkoff
-      uvm_test_seq: chip_sw_base_vseq
+      uvm_test_seq: chip_sw_alert_handler_lpg_clkoff_vseq
       sw_images: ["//sw/device/tests:alert_handler_lpg_clkoff_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+en_scb=0"]

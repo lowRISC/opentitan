@@ -218,7 +218,7 @@ bool test_main(void) {
   {
     LOG_INFO("is_locked_ping_timer", is_sth);
   }
-  LOG_INFO("\n");
+  LOG_INFO("temp \n");
   //-----------------------------------------------------------------------
   
   dif_toggle_t clock_state;
@@ -321,12 +321,18 @@ bool test_main(void) {
   {
     LOG_INFO("is_locked_ping_timer = %d", is_sth);
   }
-  LOG_INFO("\n");
+  LOG_INFO("temp \n");
 
   
   LOG_INFO("STEP #5: WAIT....");
   //wait_for_interrupt();
-  busy_spin_micros(1000*10000);
+
+  // DV simulation probed internal signal to reduce the wait time between pings.
+  if (kDeviceType == kDeviceSimDV) {
+    busy_spin_micros(5000);
+  } else {
+    busy_spin_micros(1000 * 10000);
+  }
 
  
   int ii;
