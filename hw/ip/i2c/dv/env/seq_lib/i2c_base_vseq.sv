@@ -161,8 +161,10 @@ class i2c_base_vseq extends cip_base_vseq #(
     } else {
       tsu_sta inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
       // force derived timing parameters to be positive (correct DUT config)
-      tlow    inside {[(t_r + tsu_dat + thd_dat + 1) :
-                       (t_r + tsu_dat + thd_dat + 1) + cfg.seq_cfg.i2c_time_range]};
+      // tlow must be at least 2 greater than the sum of t_r + tsu_dat + thd_dat
+      // because the flopped clock (see #15003 below) reduces tClockLow by 1.
+      tlow    inside {[(t_r + tsu_dat + thd_dat + 2) :
+                       (t_r + tsu_dat + thd_dat + 2) + cfg.seq_cfg.i2c_time_range]};
       t_buf   inside {[(tsu_sta - t_r + 1) :
                        (tsu_sta - t_r + 1) + cfg.seq_cfg.i2c_time_range]};
       t_sda_unstable     inside {[0 : t_r + thigh + t_f - 1]};
@@ -294,7 +296,13 @@ class i2c_base_vseq extends cip_base_vseq #(
     timing_cfg.tSetupStart = t_r + tsu_sta;
     timing_cfg.tHoldStart  = t_f + thd_sta;
     timing_cfg.tClockStart = thd_dat;
-    timing_cfg.tClockLow   = tlow - t_r - tsu_dat - thd_dat;
+    // An extra -1 is added to tClokLow because scl coming from the host side is now flopped.
+    // See #15003
+    // This means, relative to the expectation of the DUT, we have "1 less" cycle of clock
+    // time.  Specifically, if the DUT drives the clock at cycle 1, the device does not see
+    // the clock until cycle 2.  This means, the device expectation of how long "low" is
+    // now shrunk by 1, since the end point is still fixed.
+    timing_cfg.tClockLow   = tlow - t_r - tsu_dat - thd_dat - 1;
     timing_cfg.tSetupBit   = t_r + tsu_dat;
     timing_cfg.tClockPulse = t_r + thigh + t_f;
     timing_cfg.tHoldBit    = t_f + thd_dat;

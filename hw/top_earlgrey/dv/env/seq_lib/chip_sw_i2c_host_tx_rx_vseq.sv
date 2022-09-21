@@ -51,7 +51,11 @@ class chip_sw_i2c_host_tx_rx_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, $sformatf("Half period cycle: %d", half_period_cycles), UVM_MEDIUM)
 
     // tClockLow needs to be "slightly" shorter than the actual clock low period
-    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockLow = half_period_cycles - 1;
+    // After fixing #15003, the clock low needs to be shortened by 1 additional cycle
+    // to account for delayed output. The ClockLow value is not used to program
+    // the DUT, but instead is used by the i2c agent to simulate when it should begin
+    // driving data.  The i2c agent drives to drive data as late as possible.
+    cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockLow = half_period_cycles - 2;
 
     // tClockPulse needs to be "slightly" longer than the clock period.
     cfg.m_i2c_agent_cfgs[i2c_idx].timing_cfg.tClockPulse = half_period_cycles + 1;

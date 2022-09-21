@@ -9,9 +9,9 @@ module i2c_fsm (
   input        rst_ni, // active low reset
 
   input        scl_i,  // serial clock input from i2c bus
-  output       scl_o,  // serial clock output to i2c bus
+  output logic scl_o,  // serial clock output to i2c bus
   input        sda_i,  // serial data input from i2c bus
-  output       sda_o,  // serial data output to i2c bus
+  output logic sda_o,  // serial data output to i2c bus
 
   input        host_enable_i, // enable host functionality
   input        target_enable_i, // enable target functionality
@@ -1236,8 +1236,15 @@ module i2c_fsm (
   end
 
   // I2C bus outputs
-  assign scl_o = scl_temp;
-  assign sda_o = sda_temp;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      scl_o <= 1'b1;
+      sda_o <= 1'b1;
+    end else begin
+      scl_o <= scl_temp;
+      sda_o <= sda_temp;
+    end
+  end
 
   // Host ceased sending SCL pulses during ongoing transaction
   assign event_host_timeout_o = (!target_idle_o & (scl_high_cnt > host_timeout_i)) ? 1'b1 : 1'b0;
