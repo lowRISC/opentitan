@@ -28,6 +28,8 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
 
   string ios_to_miodio [IoNumTotal];
 
+  bit [IoNumTotal-1:0] highz_oe;
+
   task pre_start();
     super.pre_start();
 
@@ -152,6 +154,38 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     return result;
   endfunction : miodio_to_ios
 
+
+  // Check Ret0, Ret1 sampled values with expected.
+  // global member variables: ios_to_miodio, pad_ret
+  function void check_pad_retention_out(logic [IoNumTotal-1:0] sampled);
+    foreach (pad_ret[i]) begin
+      bit pad_sampled    = sampled[i];
+      bit pad_expected   = (pad_ret[i] == Ret1) ? 1'b 1 : 1'b 0;
+      chip_io_e pad_name = chip_io_e'(i);
+
+      // Skip if not candidate.
+      if (!(pad_ret[i] inside {Ret0, Ret1})) continue;
+
+      `DV_CHECK(pad_sampled == pad_expected,
+                $sformatf(
+                  "IO[%2d/%s] %s: sampled(%b) / exp(%b)",
+                  i, pad_name.name, ios_to_miodio[i],
+                  pad_sampled, pad_expected))
+    end
+  endfunction : check_pad_retention_out
+
+  function bit [IoNumTotal-1:0] build_highz_oe(pads_ret_t ret);
+    bit [IoNumTotal-1:0] result = '0;
+    int find[$];
+
+    find = ret.find_index(x) with (x == HighZ);
+    foreach(find[i]) begin
+      result[find[i]] = 1'b 1;
+    end
+
+    return result;
+  endfunction : build_highz_oe
+
   task check_pads_retention_type();
     logic [IoNumTotal-1:0] pad;
     /**
@@ -168,28 +202,67 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
      */
 
     // High-Z for all ports
+    `uvm_info(`gfn, "Testing Retention Outputs", UVM_LOW)
     cfg.chip_vif.ios_if.pins_pd = '0;
     cfg.chip_vif.ios_if.pins_pu = '0;
     pad = cfg.chip_vif.ios_if.sample();
 
-    foreach (pad_ret[i]) begin
-      bit pad_sampled    = pad[i];
-      bit pad_expected   = (pad_ret[i] == Ret1) ? 1'b 1 : 1'b 0;
-      chip_io_e pad_name = chip_io_e'(i);
+    check_pad_retention_out(pad);
 
-      // Skip if not candidate.
-      if (!(pad_ret[i] inside {Ret0, Ret1})) continue;
+    // Pull-down then check
+    `uvm_info(`gfn, "Testing Retention Outputs with Pull-down", UVM_LOW)
+    cfg.chip_vif.ios_if.pins_pd = '1;
+    cfg.chip_vif.ios_if.pins_pu = '0;
+    @(cfg.chip_vif.pwrmgr_low_power_if.cb);
+    pad = cfg.chip_vif.ios_if.sample();
 
-      `DV_CHECK(pad_sampled == pad_expected,
-                $sformatf(
-                  "IO[%2d/%s] %s: sampled(%b) / exp(%b)",
-                  i, pad_name.name, ios_to_miodio[i],
-                  pad_sampled, pad_expected))
+    check_pad_retention_out(pad);
+
+    // Pull-up then check
+    `uvm_info(`gfn, "Testing Retention Outputs with Pull-up", UVM_LOW)
+    cfg.chip_vif.ios_if.pins_pd = '0;
+    cfg.chip_vif.ios_if.pins_pu = '1;
+    @(cfg.chip_vif.pwrmgr_low_power_if.cb);
+    pad = cfg.chip_vif.ios_if.sample();
+
+    check_pad_retention_out(pad);
+
+
+    // Build High-Z drive map (highz_oe)
+    highz_oe = build_highz_oe(pad_ret);
+
+    cfg.chip_vif.ios_if.pins_pd = '0;
+    cfg.chip_vif.ios_if.pins_pu = '0;
+
+    // High-Z check: Drive 0 then check
+    cfg.chip_vif.ios_if.pins_o = '0;
+    cfg.chip_vif.ios_if.pins_oe = highz_oe;
+    @(cfg.chip_vif.pwrmgr_low_power_if.cb);
+    pad = cfg.chip_vif.ios_if.sample();
+
+    for (int i = 0; i < IoNumTotal; i++) begin
+      if (highz_oe[i]) begin
+        chip_io_e pad_name = chip_io_e'(i);
+        `DV_CHECK_EQ(pad[i], 1'b 0,
+          $sformatf("High-Z Drive0 failed: IO[%2d/%9s] %s %p",
+            i, pad_name.name, ios_to_miodio[i], pad[i]))
+      end
     end
 
-    // TODO: Sample the PADs and check with expected values
+    // High-Z check: Drive 1 then check
+    cfg.chip_vif.ios_if.pins_o = '1;
+    cfg.chip_vif.ios_if.pins_oe = highz_oe;
+    @(cfg.chip_vif.pwrmgr_low_power_if.cb);
+    pad = cfg.chip_vif.ios_if.sample();
 
-    // TODO: Fins out how to pass the test (maybe just $display()?)
+    for (int i = 0; i < IoNumTotal; i++) begin
+      if (highz_oe[i]) begin
+        chip_io_e pad_name = chip_io_e'(i);
+        `DV_CHECK_EQ(pad[i], 1'b 1,
+          $sformatf("High-Z Drive1 failed: IO[%2d/%9s] %s %p",
+            i, pad_name.name, ios_to_miodio[i], pad[i]))
+      end
+    end
 
   endtask : check_pads_retention_type
 
