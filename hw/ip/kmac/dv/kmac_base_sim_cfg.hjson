@@ -37,7 +37,11 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["kmac_bind", "sec_cm_prim_onehot_check_bind", "kmac_cov_bind"]
+  sim_tops: ["kmac_bind",
+             "kmac_cov_bind",
+             "sec_cm_prim_onehot_check_bind",
+             "sec_cm_prim_sparse_fsm_flop_bind",
+             "sec_cm_prim_count_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

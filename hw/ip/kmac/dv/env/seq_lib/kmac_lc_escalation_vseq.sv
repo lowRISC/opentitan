@@ -27,8 +27,6 @@ class kmac_lc_escalation_vseq extends kmac_app_vseq;
 
     // Check only if lc_escalate_en is not `Off`.
     if (cfg.en_scb == 0) begin
-      kmac_pkg::kmac_cmd_e rand_cmd;
-      bit [7:0] share[];
       cfg.clk_rst_vif.wait_clks($urandom_range(5, 100));
 
       // Randomly turns off lc_escalate_en.
@@ -38,21 +36,11 @@ class kmac_lc_escalation_vseq extends kmac_app_vseq;
       end
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      `DV_CHECK_STD_RANDOMIZE_FATAL(rand_cmd)
+
+      check_lc_escalate_status();
 
       // Check if kmac will accept any SW request.
-      check_lc_escalate_status();
-      kmac_init(0);
-      set_prefix();
-      write_key_shares();
-      provide_sw_entropy();
-      issue_cmd(rand_cmd);
-      write_msg(msg);
-      check_lc_escalate_status();
-      read_digest_chunk(KMAC_STATE_SHARE0_BASE, keccak_block_size, share);
-      foreach (share[i]) `DV_CHECK_EQ_FATAL(share[i], '0)
-      read_digest_chunk(KMAC_STATE_SHARE1_BASE, keccak_block_size, share);
-      foreach (share[i]) `DV_CHECK_EQ_FATAL(share[i], '0)
+      kmac_sw_lock_check();
 
       // TODO: Add checking for kmac app request.
     end

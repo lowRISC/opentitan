@@ -186,7 +186,7 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     end
   endtask : check_sec_cm_fi_resp
 
-   virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
+  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
         if (!enable) begin

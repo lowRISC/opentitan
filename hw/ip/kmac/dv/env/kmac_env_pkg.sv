@@ -21,6 +21,7 @@ package kmac_env_pkg;
   import kmac_pkg::*;
   import keymgr_pkg::*;
   import key_sideload_agent_pkg::*;
+  import sec_cm_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
