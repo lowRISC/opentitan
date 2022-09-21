@@ -148,11 +148,6 @@ cc_library(
 opentitan_functest(
     name = "irq_asm_functest",
     srcs = ["irq_asm_functest.c"],
-    targets = [
-        "cw310_test_rom",
-        "verilator",
-        "dv",
-    ],
     verilator = verilator_params(
         timeout = "long",
     ),
