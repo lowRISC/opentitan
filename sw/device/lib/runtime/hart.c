@@ -27,3 +27,4 @@ noreturn void abort(void) {
 // corresponding header a link location.
 
 extern void wait_for_interrupt(void);
+extern void icache_invalidate(void);
