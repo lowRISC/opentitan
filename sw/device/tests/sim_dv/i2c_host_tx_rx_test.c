@@ -155,7 +155,7 @@ bool test_main(void) {
                                        kDifToggleEnabled));
 
   // Randomize variables.
-  uint8_t byte_count = rand_testutils_gen32_range(1, 64);
+  uint8_t byte_count = rand_testutils_gen32_range(30, 64);
   uint8_t device_addr = rand_testutils_gen32_range(0, 16);
   uint8_t expected_data[byte_count];
   LOG_INFO("Loopback %d bytes with device %d", byte_count, device_addr);
