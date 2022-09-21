@@ -39,6 +39,9 @@ bool test_main(void) {
   dif_pinmux_index_t detector;
   dif_pinmux_wakeup_config_t wakeup_cfg;
 
+  // Default Deep Power Down
+  dif_pwrmgr_domain_config_t pwrmgr_domain_cfg = 0;
+
   // Initialize power manager
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
@@ -51,6 +54,9 @@ bool test_main(void) {
     LOG_INFO("POR reset");
 
     LOG_INFO("pinmux_init end");
+
+    // Random choose low power or deep powerdown
+    uint32_t deep_powerdown_en = rand_testutils_gen32_range(0, 1);
 
     // Prepare which PAD SW want to select
     uint32_t mio0_dio1 = rand_testutils_gen32_range(0, 1);
@@ -92,9 +98,13 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(
         &pinmux, (uint32_t)kWakeupSel, wakeup_cfg));
 
+    if (deep_powerdown_en == 0) {
+      pwrmgr_domain_cfg = kDifPwrmgrDomainOptionMainPowerInLowPower |
+                          kDifPwrmgrDomainOptionUsbClockInActivePower;
+    }
     // Enter low power
-    pwrmgr_testutils_enable_low_power(&pwrmgr,
-                                      kDifPwrmgrWakeupRequestSourceThree, 0);
+    pwrmgr_testutils_enable_low_power(
+        &pwrmgr, kDifPwrmgrWakeupRequestSourceThree, pwrmgr_domain_cfg);
 
     LOG_INFO("Entering low power mode.");
     wait_for_interrupt();
