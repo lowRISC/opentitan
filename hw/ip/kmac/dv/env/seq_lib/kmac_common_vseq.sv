@@ -70,4 +70,25 @@ class kmac_common_vseq extends kmac_base_vseq;
     super.check_tl_intg_error_response();
   endtask
 
+  virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
+    super.check_sec_cm_fi_resp(if_proxy);
+    kmac_app_lock_check();
+    kmac_sw_lock_check();
+  endtask
+
+  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
+    if (!uvm_re_match("*.u_sha3.u_state_regs*", if_proxy.path)) begin
+      if (!enable) $assertoff(0, "tb.dut.u_sha3.FsmKnown_A");
+      else         $asserton(0, "tb.dut.u_sha3.FsmKnown_A");
+    end else if (!uvm_re_match("*.u_msgfifo.gen_normal_fifo.u_fifo_cnt*", if_proxy.path)) begin
+      if (!enable) begin
+        $assertoff(0, "tb.dut.u_msgfifo.u_msgfifo.DataKnown_A");
+        $assertoff(0, "tb.dut.u_msgfifo.u_msgfifo.gen_normal_fifo.depthShallNotExceedParamDepth");
+      end else begin
+        $asserton(0, "tb.dut.u_msgfifo.u_msgfifo.DataKnown_A");
+        $asserton(0, "tb.dut.u_msgfifo.u_msgfifo.gen_normal_fifo.depthShallNotExceedParamDepth");
+      end
+    end
+  endfunction: sec_cm_fi_ctrl_svas
+
 endclass

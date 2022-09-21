@@ -634,7 +634,9 @@ class kmac_base_vseq extends cip_base_vseq #(
   //
   // - Perform a TLUL access to the msgfifo with the random data/addr/mask, relying on tl_agent
   //   to correctly align the final address and data size
-  virtual task write_msg(bit [7:0] msg_arr[], bit blocking = $urandom_range(0, 1));
+  virtual task write_msg(bit [7:0] msg_arr[],
+                         bit blocking = $urandom_range(0, 1),
+                         bit wait_for_fifo_has_capacity = 1);
 
     bit [TL_DW-1:0] data_word;
     bit [7:0] msg_q[$];
@@ -650,8 +652,10 @@ class kmac_base_vseq extends cip_base_vseq #(
 
     // iterate through the message queue and pop off bytes to write to msgfifo
     while (msg_q.size() > 0) begin
-      // check that there is actually room in the fifo before we start writing anything
-      wait_fifo_has_capacity();
+
+      // Check that there is actually room in the fifo before we start writing anything.
+      // Will skip this check if it is used in error case, where the fifo full is forced to high.
+      if (wait_for_fifo_has_capacity) wait_fifo_has_capacity();
 
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fifo_addr)
 
@@ -928,9 +932,55 @@ class kmac_base_vseq extends cip_base_vseq #(
   // If user wants to set `entropy_req`, this task will always write 1 to the register.
   // If user do not want to set `entropy_req`, this task has 10% possibility to write 0 to the
   // register.
- virtual task wr_entropy_req_cmd();
+  virtual task wr_entropy_req_cmd();
     if (entropy_req || $urandom_range(0, 9) == 9) begin
       csr_wr(.ptr(ral.cmd.entropy_req), .value(entropy_req));
     end
   endtask
+
+  // This task checks after a local or global escalation, the KMAC is locked and cannot process any
+  // more kmac SW operation.
+  virtual task kmac_sw_lock_check();
+    kmac_pkg::kmac_cmd_e rand_cmd;
+    bit [7:0] share[];
+    `DV_CHECK_STD_RANDOMIZE_FATAL(rand_cmd)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(msg, msg.size() inside {[1:100]};)
+
+    kmac_init(0);
+    set_prefix();
+    write_key_shares();
+    provide_sw_entropy();
+    issue_cmd(rand_cmd);
+    write_msg(msg, .wait_for_fifo_has_capacity(0));
+    read_digest_chunk(KMAC_STATE_SHARE0_BASE, keccak_block_size, share);
+    foreach (share[i]) `DV_CHECK_EQ_FATAL(share[i], '0)
+    read_digest_chunk(KMAC_STATE_SHARE1_BASE, keccak_block_size, share);
+    foreach (share[i]) `DV_CHECK_EQ_FATAL(share[i], '0)
+  endtask
+
+  // This task send requests to all app interfaces and expect none of them to response until reset.
+  virtual task kmac_app_lock_check();
+    kmac_app_e mode = mode.first;
+
+    do begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(msg, msg.size() inside {[1:100]};)
+      fork begin
+        automatic kmac_app_e kmac_app_mode = mode;
+        fork
+          send_kmac_app_req(kmac_app_mode);
+          wait (cfg.under_reset);
+        join_any
+        disable fork;
+        `DV_CHECK_EQ_FATAL(cfg.under_reset, 1,
+            $sformatf("App interface %0s should not response during fatal error", mode.name))
+      end join_none
+       // Add #0 to ensure that this thread starts executing before any subsequent call
+      #0;
+     mode = mode.next;
+    end while (mode != mode.first);
+
+    // Wait to make sure no valid data comes back.
+    cfg.clk_rst_vif.wait_clks($urandom_range(100, 2000));
+  endtask
+
 endclass : kmac_base_vseq
