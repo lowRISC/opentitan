@@ -122,6 +122,12 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     };
   }
 
+  virtual task dut_init(string reset_kind = "HARD");
+    super.dut_init(reset_kind);
+
+    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
+  endtask : dut_init
+
   virtual task cpu_init();
     bit [7:0] byte_arr [];
 
