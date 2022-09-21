@@ -111,6 +111,8 @@ module i2c_fsm (
   logic        restart;       // indicates repeated start state is entered into
 
   // Target specific variables
+  logic        start_det_clr; // clear the start det indication once handling is complete
+  logic        stop_det_clr;  // clear the stop det indication once handling is complete
   logic        start_det;     // indicates start or repeated start is detected on the bus
   logic        stop_det;      // indicates stop is detected on the bus
   logic        address0_match;// indicates target's address0 matches the one sent by host
@@ -129,6 +131,7 @@ module i2c_fsm (
   logic        bit_ack;       // indicates ACK bit been sent or received
   logic        rw_bit;        // indicates host wants to read (1) or write (0)
   logic        host_ack;      // indicates host acknowledged transmitted byte
+
 
   // Clock counter implementation
   typedef enum logic [3:0] {
@@ -263,8 +266,8 @@ module i2c_fsm (
     if (!rst_ni) begin
       start_det <= 1'b0;
     end else if (scl_i_q && scl_i) begin
-      if (sda_i_q && !sda_i) start_det <= 1'b1;
-      else start_det <= 1'b0;
+      if (start_det && start_det_clr) start_det <= 1'b0;
+      else if (sda_i_q && !sda_i) start_det <= 1'b1;
     end else begin
       start_det <= 1'b0;
     end
@@ -275,8 +278,8 @@ module i2c_fsm (
     if (!rst_ni) begin
       stop_det <= 1'b0;
     end else if (scl_i_q && scl_i) begin
-      if (!sda_i_q && sda_i) stop_det <= 1'b1;
-      else stop_det <= 1'b0;
+      if (stop_det && stop_det_clr) stop_det <= 1'b0;
+      else if (!sda_i_q && sda_i) stop_det <= 1'b1;
     end else begin
       stop_det <= 1'b0;
     end
@@ -314,7 +317,6 @@ module i2c_fsm (
   assign address0_match = ((input_byte[7:1] & target_mask0_i) == target_address0_i);
   assign address1_match = ((input_byte[7:1] & target_mask1_i) == target_address1_i);
   assign address_match = (address0_match || address1_match);
-  assign rw_bit = input_byte[0];
 
   // Shift data in on positive SCL edge
   always_ff @ (posedge clk_i or negedge rst_ni) begin : tgt_input_register
@@ -360,11 +362,15 @@ module i2c_fsm (
 
   // State definitions
   typedef enum logic [5:0] {
-    Idle, PopFmtFifo,
+    Idle,
+    ///////////////////////
+    // Host function states
+    ///////////////////////
+    Active, PopFmtFifo,
     // Host function starts a transaction
-    SetupStart, HoldStart,
+    SetupStart, HoldStart, ClockStart,
     // Host function stops a transaction
-    SetupStop, HoldStop,
+    SetupStop, HoldStop, ClockStop,
     // Host function transmits a bit to the external target
     ClockLow, ClockPulse, HoldBit,
     // Host function recevies an ack from the external target
@@ -373,12 +379,29 @@ module i2c_fsm (
     ReadClockLow, ReadClockPulse, ReadHoldBit,
     // Host function transmits an ack to the external target
     HostClockLowAck, HostClockPulseAck, HostHoldBitAck,
-    // Below states are for target functionality only
-    Active, ClockStart, ClockStop,
-    AcquireStart, AddrRead, AddrAckWait, AddrAckSetup, AddrAckPulse, AddrAckHold,
-    TransmitWait, TransmitSetup, TransmitPulse, TransmitHold, TransmitAck,
-    AcquireByte, AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
-    PopTxFifo, AcquireSrP, StretchTxEmpty, StretchAcqFull, StretchAddrTransmit,
+
+    /////////////////////////
+    // Target function states
+    /////////////////////////
+
+    // Target function receives start and address from external host
+    AcquireStart, AddrRead,
+    // Target function acknowledges the address and returns an ack to external host
+    AddrAckWait, AddrAckSetup, AddrAckPulse, AddrAckHold,
+    // Target function sends read data to external host-receiver
+    TransmitWait, TransmitSetup, TransmitPulse, TransmitHold,
+    // Target function receives ack from external host
+    TransmitAck,
+    // Target function receives write data from the external host
+    AcquireByte,
+    // Target function sends ack to external host
+    AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
+    // Target function pops Tx fifo after successfully sending data to external host
+    PopTxFifo,
+    // Target function sees a stop or repeated start condition from external host
+    AcquireSrP,
+    // Target function clock stretch handling.
+    StretchTxEmpty, StretchAcqFull, StretchAddrTransmit,
     StretchAddrAcquire
   } state_e;
 
@@ -423,6 +446,19 @@ module i2c_fsm (
                                     ((sda_rise_cnt == sda_rise_latency) & (sda_o & !sda_i));
 
 
+  // The external host read the final byte and issued ack-stop instead of nak-stop.
+  // TODO: This feature likely will be removed, but for now maintain the previous function.
+  logic rw_bit_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rw_bit_q <= '0;
+    end else begin
+      rw_bit_q <= rw_bit;
+    end
+  end
+  assign event_ack_stop_o = rw_bit_q & (stop_det | start_det) & host_ack;
+
+
   // Outputs for each state
   always_comb begin : state_outputs
     host_idle_o = 1'b1;
@@ -442,7 +478,7 @@ module i2c_fsm (
     event_trans_complete_o = 1'b0;
     event_tx_empty_o = 1'b0;
     event_tx_nonempty_o = 1'b0;
-    event_ack_stop_o = 1'b0;
+    rw_bit = rw_bit_q;
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
       Idle : begin
@@ -614,10 +650,11 @@ module i2c_fsm (
       // AddrRead: read and compare target address
       AddrRead : begin
         target_idle_o = 1'b0;
+        rw_bit = input_byte[0];
         if (bit_ack && address_match) begin
           acq_fifo_wdata_o = {1'b0, 1'b1, input_byte}; // transfer data to acq_fifo
           acq_fifo_wvalid_o = 1'b1;          // assert that acq_fifo has valid data
-          if (tx_fifo_depth_i == '0 && rw_bit) event_tx_empty_o = 1'b1;
+          if (tx_fifo_depth_i == '0 && rw_bit_q) event_tx_empty_o = 1'b1;
         end
       end
       // AddrAckWait: pause before acknowledging
@@ -662,7 +699,6 @@ module i2c_fsm (
       TransmitAck : begin
         target_idle_o = 1'b0;
         if (tx_fifo_depth_i == 7'd1 && !tx_fifo_wvalid_i && host_ack) event_tx_empty_o = 1'b1;
-        if (host_ack && (start_det || stop_det)) event_ack_stop_o = 1'b1;
       end
       // PopTxFifo: populate tx_fifo
       PopTxFifo : begin
@@ -744,7 +780,6 @@ module i2c_fsm (
         event_trans_complete_o = 1'b0;
         event_tx_empty_o = 1'b0;
         event_tx_nonempty_o = 1'b0;
-        event_ack_stop_o = 1'b0;
       end
     endcase
   end
@@ -767,6 +802,8 @@ module i2c_fsm (
     addr_stop_tx = 1'b0;
     addr_stop_acq = 1'b0;
     en_sda_interf_det = 1'b0;
+    start_det_clr = 1'b0;
+    stop_det_clr = 1'b0;
 
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
@@ -775,8 +812,7 @@ module i2c_fsm (
         else if (host_enable_i) begin
           if (fmt_fifo_rvalid_i) state_d = Active;
         end else if (target_enable_i) begin
-          if (!start_det) state_d = Idle;
-          else state_d = AcquireStart;
+          if (start_det) state_d = AcquireStart;
         end
       end
 
@@ -1018,6 +1054,7 @@ module i2c_fsm (
 
       // AcquireStart: hold start condition
       AcquireStart : begin
+        start_det_clr = 1'b1;
         if (scl_i_q && !scl_i) begin
           state_d = AddrRead;
           input_byte_clr = 1'b1;
@@ -1039,7 +1076,7 @@ module i2c_fsm (
       AddrAckWait : begin
         if (tcount_q == 20'd1) begin
           if (!scl_i) begin
-            if (rw_bit) begin
+            if (rw_bit_q) begin
               if (stretch_en_addr_tx_i && !stretch_stop_tx_i) state_d = StretchAddrTransmit;
               else if (stretch_en_addr_tx_i && stretch_stop_tx_i) begin
                 state_d = AddrAckSetup;
@@ -1070,7 +1107,7 @@ module i2c_fsm (
       // AddrAckHold: target pulls SDA low while SCL is pulled low
       AddrAckHold : begin
         if (tcount_q == 20'd1) begin
-          if (rw_bit) begin
+          if (rw_bit_q) begin
             if (tx_fifo_rvalid_i) begin
               state_d = TransmitWait;
               load_tcount = 1'b1;
@@ -1114,12 +1151,12 @@ module i2c_fsm (
         end
       end
       // TransmitAck: target waits for host to ACK transmission
+      // If a nak is received, that means a stop is incoming, just
+      // wait for the stop transition to AcquireSrP.
       TransmitAck : begin
         if (scl_i) begin
           if (host_ack) begin
             state_d = PopTxFifo;
-          end else begin
-            if (start_det || stop_det) state_d = AcquireSrP;
           end
         end
       end
@@ -1166,16 +1203,17 @@ module i2c_fsm (
       end
       // AcquireAckHold: target pulls SDA low while SCL is pulled low
       AcquireAckHold : begin
-        if (tcount_q == 20'd1) begin
-          if (bit_ack) begin
-            if (start_det || stop_det) state_d = AcquireSrP;
-            else state_d = AcquireByte;
-          end
+        if (tcount_q == 20'd1 && bit_ack) begin
+          state_d = AcquireByte;
         end
       end
 
       // AcquireSrP: target acquires repeated Start or Stop
       AcquireSrP : begin
+        // clear stop here as we want to cycle to Idle and wait.
+        // Do not clear start, as a start seen in this state is a
+        // repeated start and needs to handle address decode again.
+        stop_det_clr = stop_det;
         state_d = Idle;
       end
 
@@ -1227,6 +1265,13 @@ module i2c_fsm (
         addr_stop_acq = 1'b0;
       end
     endcase // unique case (state_q)
+
+    // If a start or stop is detected in target mode, handle it directly
+    // instead of being dependent on a specific state, which may lead to
+    // certain corner cases.
+    if (target_enable_i && (start_det || stop_det)) begin
+      state_d = AcquireSrP;
+    end
   end
 
   // Synchronous state transition
