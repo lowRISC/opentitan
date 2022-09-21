@@ -194,6 +194,7 @@ interface i2c_if;
     @(posedge scl_i);
     if (src == "host") begin // host transmits data (addr/wr_data)
       bit_o = sda_i;
+      `uvm_info(msg_id, $sformatf("get bit data %d", bit_o), UVM_HIGH)
       // force sda_target2host low during the clock pulse of scl_host2target
       sda_o = 1'b0;
       wait_for_dly(tc.tSdaInterference);

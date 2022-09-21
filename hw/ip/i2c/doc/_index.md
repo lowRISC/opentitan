@@ -117,6 +117,18 @@ In this state the output drivers `scl_tx_o` and `sda_tx_o` are controlled direct
 When {{< regref OVRD.SCLVAL >}} and {{< regref OVRD.SDAVAL >}} are set high, the virtual open drain configuration will leave the output resistively pulled high, and controllable by remote targets.
 In this state, with SCL or SDA asserted high, the register fields {{< regref VAL.SCL_RX >}} and {{< regref VAL.SDA_RX >}} can be used to receive inputs (including remote acknowledgments) from target devices.
 
+#### FSM control of SCL and SDA
+
+While in host mode, SCL and SDA are generated through the internal state machine.
+Since SCL is directly decoded from the states, it can have short glitches during transition which the external target may be sensitive to if it is not using an over-sampling scheme.
+To counter this, the SCL and SDA outputs from the internal state machine are flopped before they are emitted.
+
+This adds a one cycle module clock delay to both signals.
+If the module clock is sufficiently faster than I2C line speeds (for example 20MHz), this is not an issue.
+However if the line speeds and the module clock speeds become very close (2x), the 1 cycle delay may have an impact, as the internal state machine may mistakenly think it has sampled an SDA that has not yet been updated.
+
+It it thus recommended to run clock ratios such that the internal module clock is at least 5x-10x the line speeds.
+
 ### Byte-Formatted Programming Mode
 
 This section applies to I2C in the host mode.
@@ -331,6 +343,7 @@ The `sda_unstable` interrupt is asserted if, when receiving data or acknowledgem
 Transactions are terminated by a STOP signal.
 The host may send a repeated START signal instead of a STOP, which also terminates the preceding transaction.
 In both cases, the `trans_complete` interrupt is asserted, in the beginning of a repeated START or at the end of a STOP.
+
 
 #### Target Mode
 If an I2C target receives a START signal followed by an address and R/W = 1 (read), accepts a read transaction and its TX FIFO is empty, the interrupt `tx_empty` is asserted to inform firmware.

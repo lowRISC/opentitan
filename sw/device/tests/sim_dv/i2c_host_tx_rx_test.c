@@ -93,6 +93,49 @@ void ottf_external_isr(void) {
   }
 }
 
+static void en_plic_irqs(dif_rv_plic_t *plic) {
+  // Enable functional interrupts as well as error interrupts to make sure
+  // everything is behaving as expected.
+  top_earlgrey_plic_irq_id_t plic_irqs[] = {
+      kTopEarlgreyPlicIrqIdI2c0FmtWatermark,
+      kTopEarlgreyPlicIrqIdI2c0RxWatermark,
+      kTopEarlgreyPlicIrqIdI2c0FmtOverflow, kTopEarlgreyPlicIrqIdI2c0RxOverflow,
+      kTopEarlgreyPlicIrqIdI2c0Nak, kTopEarlgreyPlicIrqIdI2c0SclInterference,
+      kTopEarlgreyPlicIrqIdI2c0SdaInterference,
+      kTopEarlgreyPlicIrqIdI2c0StretchTimeout,
+      // Leave out sda unstable for now until DV side is improved.  Sda
+      // instability during the high cycle is intentionally being introduced
+      // right now.
+      // kTopEarlgreyPlicIrqIdI2c0SdaUnstable,
+      kTopEarlgreyPlicIrqIdI2c0TransComplete};
+
+  for (uint32_t i = 0; i < ARRAYSIZE(plic_irqs); ++i) {
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+        plic, plic_irqs[i], kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+
+    // Assign a default priority
+    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, plic_irqs[i], 0x1));
+  }
+
+  // Enable the external IRQ at Ibex.
+  irq_global_ctrl(true);
+  irq_external_ctrl(true);
+}
+
+static void en_i2c_irqs(dif_i2c_t *i2c) {
+  dif_i2c_irq_t i2c_irqs[] = {
+      kDifI2cIrqFmtWatermark, kDifI2cIrqRxWatermark, kDifI2cIrqFmtOverflow,
+      kDifI2cIrqRxOverflow, kDifI2cIrqNak, kDifI2cIrqSclInterference,
+      kDifI2cIrqSdaInterference, kDifI2cIrqStretchTimeout,
+      // Removed for now, see plic_irqs above for explanation
+      // kDifI2cIrqSdaUnstable,
+      kDifI2cIrqTransComplete};
+
+  for (uint32_t i = 0; i <= ARRAYSIZE(i2c_irqs); ++i) {
+    CHECK_DIF_OK(dif_i2c_irq_set_enabled(i2c, i2c_irqs[i], kDifToggleEnabled));
+  }
+}
+
 bool test_main(void) {
   CHECK_DIF_OK(
       dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c));
@@ -101,25 +144,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, kTopEarlgreyPlicIrqIdI2c0FmtWatermark, kTopEarlgreyPlicTargetIbex0,
-      kDifToggleEnabled));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, kTopEarlgreyPlicIrqIdI2c0RxWatermark, kTopEarlgreyPlicTargetIbex0,
-      kDifToggleEnabled));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, kTopEarlgreyPlicIrqIdI2c0TransComplete,
-      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &plic, kTopEarlgreyPlicIrqIdI2c0FmtWatermark, 0x1));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &plic, kTopEarlgreyPlicIrqIdI2c0RxWatermark, 0x1));
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &plic, kTopEarlgreyPlicIrqIdI2c0TransComplete, 0x1));
-
-  // Enable the external IRQ at Ibex.
-  irq_global_ctrl(true);
-  irq_external_ctrl(true);
+  en_plic_irqs(&plic);
 
   // Temporary hack that connects i2c to a couple of open drain pins.
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
@@ -147,12 +172,8 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_i2c_host_set_enabled(&i2c, kDifToggleEnabled));
   CHECK_DIF_OK(
       dif_i2c_set_watermarks(&i2c, kDifI2cLevel30Byte, kDifI2cLevel4Byte));
-  CHECK_DIF_OK(
-      dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqFmtWatermark, kDifToggleEnabled));
-  CHECK_DIF_OK(
-      dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqRxWatermark, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqTransComplete,
-                                       kDifToggleEnabled));
+
+  en_i2c_irqs(&i2c);
 
   // Randomize variables.
   uint8_t byte_count = rand_testutils_gen32_range(30, 64);
