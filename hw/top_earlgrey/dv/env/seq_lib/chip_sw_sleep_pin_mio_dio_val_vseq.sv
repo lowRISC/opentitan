@@ -132,8 +132,8 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
   endtask : receive_chosen_values
 
   function pads_ret_t miodio_to_ios(
-    pad_ret_t [NumDioPads-1:0] mio_pad_ret,
-    pad_ret_t [NumDioPads-1:0] dio_pad_ret
+    pad_ret_t [NumMioPads-1:0] mio,
+    pad_ret_t [NumDioPads-1:0] dio
   );
     // Default Skip
     pads_ret_t result;
@@ -141,12 +141,12 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
 
     foreach (MioPads[i]) begin
       assert(result[MioPads[i]] == RetSkip)
-      result[MioPads[i]] = mio_pad_ret[i];
+      result[MioPads[i]] = mio[i];
     end
 
     foreach (DioPads[i]) begin
       assert(result[DioPads[i]] == RetSkip)
-      result[DioPads[i]] = dio_pad_ret[i];
+      result[DioPads[i]] = dio[i];
     end
 
     return result;
