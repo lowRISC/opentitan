@@ -240,7 +240,7 @@ def _sign_bin_impl(ctx):
     inputs = [
         ctx.file.bin,
         ctx.file.key,
-        ctx.file._tool,
+        ctx.file._opentitantool,
     ]
     manifest = []
     if ctx.file.manifest:
@@ -251,6 +251,7 @@ def _sign_bin_impl(ctx):
         outputs = outputs,
         inputs = inputs,
         arguments = [
+            "--rcfile=",
             "image",
             "manifest",
             "update",
@@ -259,7 +260,7 @@ def _sign_bin_impl(ctx):
             "--output={}".format(signed_image.path),
             ctx.file.bin.path,
         ] + manifest,
-        executable = ctx.file._tool.path,
+        executable = ctx.file._opentitantool.path,
     )
     return [DefaultInfo(
         files = depset(outputs),
@@ -279,7 +280,7 @@ sign_bin = rv_rule(
         # TODO(lowRISC/opentitan:#11199): explore other options to side-step the
         # need for this transition, in order to build the ROM_EXT signer tool.
         "platform": attr.string(default = "@local_config_platform//:host"),
-        "_tool": attr.label(
+        "_opentitantool": attr.label(
             default = "//sw/host/opentitantool:opentitantool",
             allow_single_file = True,
         ),
@@ -525,6 +526,7 @@ def _assemble_flash_image_impl(ctx):
     outputs = [output]
     inputs = []
     arguments = [
+        "--rcfile=",
         "image",
         "assemble",
         "--mirror",
