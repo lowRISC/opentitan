@@ -385,7 +385,7 @@
             covered in other tests such as chip_sw_sleep_pwm_pulses.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_sleep_pin_mio_dio_val"]
     }
     {
       name: chip_sw_sleep_pin_wake
