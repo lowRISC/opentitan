@@ -612,7 +612,9 @@ module spi_host
   `ASSERT_KNOWN(CioSdEnKnownO_A, cio_sd_en_o)
   `ASSERT_KNOWN(IntrSpiEventKnownO_A, intr_spi_event_o)
   `ASSERT_KNOWN(IntrErrorKnownO_A, intr_error_o)
-  `ASSERT_KNOWN(PassthroughKnownO_A, passthrough_o)
+
+  `ASSERT_KNOWN_IF(PassthroughKnownO_A, passthrough_o,
+    passthrough_i.passthrough_en && passthrough_i.csb_en && !passthrough_i.csb)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
