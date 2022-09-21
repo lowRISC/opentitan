@@ -58,7 +58,7 @@ MEMORY {
 /**
  * Stack at the top of the main SRAM.
  */
-_stack_size = 4096;
+_stack_size = 16384;
 _stack_end = ORIGIN(ram_main) + LENGTH(ram_main);
 _stack_start = _stack_end - _stack_size;
 
