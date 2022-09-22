@@ -33,6 +33,7 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(
     super.initialize(csr_base_addr);
 
     // This is for the integrity error test.
+    tl_intg_alert_name = "fatal_fault";
     tl_intg_alert_fields[ral.fatal_err_code.reg_intg] = 1;
     m_tl_agent_cfg.max_outstanding_req = 1;
 

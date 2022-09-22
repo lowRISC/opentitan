@@ -354,6 +354,7 @@ interface clkmgr_if (
   end
 
   clocking clk_cb @(posedge clk);
+    input calib_rdy;
     input extclk_ctrl_csr_sel;
     input extclk_ctrl_csr_step_down;
     input lc_hw_debug_en_i;

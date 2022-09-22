@@ -260,52 +260,146 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     endcase
   endtask
 
-  task enable_frequency_measurement(clk_mesr_e which, int min_threshold, int max_threshold);
+  local function int get_meas_ctrl_value(int min_threshold, int max_threshold, uvm_reg_field lo,
+                                         uvm_reg_field hi);
+    int lo_mask = (1 << lo.get_n_bits()) - 1;
+    int hi_mask = (1 << hi.get_n_bits()) - 1;
+
+    int value = (((min_threshold & lo_mask) << lo.get_lsb_pos()) |
+                 ((max_threshold & hi_mask) << hi.get_lsb_pos()));
+    return value;
+  endfunction
+
+  task enable_frequency_measurement(clk_mesr_e which, int min_threshold, int max_threshold,
+                                    bit block_meas_en = 1'b0);
+    mubi4_t expected_en_value = block_meas_en ? MuBi4False : MuBi4True;
     `uvm_info(`gfn, $sformatf(
-              "Enabling frequency measurement for %0s, min=%0d, max=%0d, expected=%0d",
+              "Enabling frequency measurement for %0s, min=0x%x, max=0x%x, expected=0x%x",
               which.name,
               min_threshold,
               max_threshold,
               ExpectedCounts[which]
               ), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf(
+              "measure_ctrl_regwen predicted value 0x%x, mirrored 0x%x",
+              ral.measure_ctrl_regwen.get(),
+              `gmv(ral.measure_ctrl_regwen)
+              ), UVM_MEDIUM)
     case (which)
       ClkMesrIo: begin
-        ral.io_meas_ctrl_shadowed.lo.set(min_threshold);
-        ral.io_meas_ctrl_shadowed.hi.set(max_threshold);
-        csr_update(.csr(ral.io_meas_ctrl_shadowed));
-        ral.io_meas_ctrl_en.en.set(MuBi4True);
-        csr_update(.csr(ral.io_meas_ctrl_en));
+        int value = get_meas_ctrl_value(
+            min_threshold, max_threshold, ral.io_meas_ctrl_shadowed.lo, ral.io_meas_ctrl_shadowed.hi
+        );
+        csr_wr(.ptr(ral.io_meas_ctrl_shadowed), .value(value));
+        `uvm_info(`gfn, $sformatf(
+                  "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
+                  value,
+                  which.name(),
+                  ral.io_meas_ctrl_shadowed.get(),
+                  `gmv(ral.io_meas_ctrl_shadowed)
+                  ), UVM_MEDIUM)
+        csr_wr(.ptr(ral.io_meas_ctrl_en), .value(MuBi4True));
       end
       ClkMesrIoDiv2: begin
-        ral.io_div2_meas_ctrl_shadowed.lo.set(min_threshold);
-        ral.io_div2_meas_ctrl_shadowed.hi.set(max_threshold);
-        csr_update(.csr(ral.io_div2_meas_ctrl_shadowed));
-        ral.io_div2_meas_ctrl_en.en.set(MuBi4True);
-        csr_update(.csr(ral.io_div2_meas_ctrl_en));
+        int value = get_meas_ctrl_value(
+            min_threshold,
+            max_threshold,
+            ral.io_div2_meas_ctrl_shadowed.lo,
+            ral.io_div2_meas_ctrl_shadowed.hi
+        );
+        csr_wr(.ptr(ral.io_div2_meas_ctrl_shadowed), .value(value));
+        `uvm_info(`gfn, $sformatf(
+                  "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
+                  value,
+                  which.name(),
+                  ral.io_div2_meas_ctrl_shadowed.get(),
+                  `gmv(ral.io_div2_meas_ctrl_shadowed)
+                  ), UVM_MEDIUM)
+        csr_wr(.ptr(ral.io_div2_meas_ctrl_en), .value(MuBi4True));
       end
       ClkMesrIoDiv4: begin
-        ral.io_div4_meas_ctrl_shadowed.lo.set(min_threshold);
-        ral.io_div4_meas_ctrl_shadowed.hi.set(max_threshold);
-        csr_update(.csr(ral.io_div4_meas_ctrl_shadowed));
-        ral.io_div4_meas_ctrl_en.en.set(MuBi4True);
-        csr_update(.csr(ral.io_div4_meas_ctrl_en));
+        int value = get_meas_ctrl_value(
+            min_threshold,
+            max_threshold,
+            ral.io_div4_meas_ctrl_shadowed.lo,
+            ral.io_div4_meas_ctrl_shadowed.hi
+        );
+        csr_wr(.ptr(ral.io_div4_meas_ctrl_shadowed), .value(value));
+        `uvm_info(`gfn, $sformatf(
+                  "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
+                  value,
+                  which.name(),
+                  ral.io_div4_meas_ctrl_shadowed.get(),
+                  `gmv(ral.io_div4_meas_ctrl_shadowed)
+                  ), UVM_MEDIUM)
+        csr_wr(.ptr(ral.io_div4_meas_ctrl_en), .value(MuBi4True));
       end
       ClkMesrMain: begin
-        ral.main_meas_ctrl_shadowed.lo.set(min_threshold);
-        ral.main_meas_ctrl_shadowed.hi.set(max_threshold);
-        csr_update(.csr(ral.main_meas_ctrl_shadowed));
-        ral.main_meas_ctrl_en.en.set(MuBi4True);
-        csr_update(.csr(ral.main_meas_ctrl_en));
+        int value = get_meas_ctrl_value(
+            min_threshold,
+            max_threshold,
+            ral.main_meas_ctrl_shadowed.lo,
+            ral.main_meas_ctrl_shadowed.hi
+        );
+        csr_wr(.ptr(ral.main_meas_ctrl_shadowed), .value(value));
+        `uvm_info(`gfn, $sformatf(
+                  "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
+                  value,
+                  which.name(),
+                  ral.main_meas_ctrl_shadowed.get(),
+                  `gmv(ral.main_meas_ctrl_shadowed)
+                  ), UVM_MEDIUM)
+        csr_wr(.ptr(ral.main_meas_ctrl_en), .value(MuBi4True));
       end
       ClkMesrUsb: begin
-        ral.usb_meas_ctrl_shadowed.lo.set(min_threshold);
-        ral.usb_meas_ctrl_shadowed.hi.set(max_threshold);
-        csr_update(.csr(ral.usb_meas_ctrl_shadowed));
-        ral.usb_meas_ctrl_en.en.set(MuBi4True);
-        csr_update(.csr(ral.usb_meas_ctrl_en));
+        int value = get_meas_ctrl_value(
+            min_threshold,
+            max_threshold,
+            ral.usb_meas_ctrl_shadowed.lo,
+            ral.usb_meas_ctrl_shadowed.hi
+        );
+        csr_wr(.ptr(ral.usb_meas_ctrl_shadowed), .value(value));
+        `uvm_info(`gfn, $sformatf(
+                  "Wrote 0x%x to %s, predict 0x%x, mirrored 0x%x",
+                  value,
+                  which.name(),
+                  ral.usb_meas_ctrl_shadowed.get(),
+                  `gmv(ral.usb_meas_ctrl_shadowed)
+                  ), UVM_MEDIUM)
+        csr_wr(.ptr(ral.usb_meas_ctrl_en), .value(MuBi4True));
       end
       default: ;
     endcase
+  endtask
+
+  // This checks that when calibration is lost regwen should be re-enabled and measurements
+  // disabled.
+  task calibration_lost_checks();
+    ral.measure_ctrl_regwen.predict(1);
+    csr_rd_check(.ptr(ral.measure_ctrl_regwen), .compare_value(1));
+    foreach (ExpectedCounts[clk]) begin
+      clk_mesr_e clk_mesr = clk_mesr_e'(clk);
+      case (clk_mesr)
+        ClkMesrIo: begin
+          csr_rd_check(.ptr(ral.io_meas_ctrl_en.en), .compare_value(MuBi4False));
+          `uvm_info(`gfn, $sformatf("CSR %s meas_ctrl_en mirrored value 0x%x",
+                                    clk_mesr.name(), `gmv(ral.io_meas_ctrl_en)), UVM_MEDIUM)
+        end
+        ClkMesrIoDiv2: begin
+          csr_rd_check(.ptr(ral.io_div2_meas_ctrl_en.en), .compare_value(MuBi4False));
+        end
+        ClkMesrIoDiv4: begin
+          csr_rd_check(.ptr(ral.io_div4_meas_ctrl_en.en), .compare_value(MuBi4False));
+        end
+        ClkMesrMain: begin
+          csr_rd_check(.ptr(ral.main_meas_ctrl_en.en), .compare_value(MuBi4False));
+        end
+        ClkMesrUsb: begin
+          csr_rd_check(.ptr(ral.usb_meas_ctrl_en.en), .compare_value(MuBi4False));
+        end
+        default: ;
+      endcase
+    end
   endtask
 
   local function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
