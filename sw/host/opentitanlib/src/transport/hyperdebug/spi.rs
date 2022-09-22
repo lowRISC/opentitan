@@ -191,11 +191,14 @@ impl HyperdebugSpiTarget {
             )
         );
 
+        // Round the max chunk size down to the nearest power of two.
+        let chunk =
+            std::cmp::min(resp.max_write_chunk, resp.max_read_chunk).next_power_of_two() / 2;
         Ok(Self {
             inner: Rc::clone(&inner),
             interface: *spi_interface,
             _target_idx: idx,
-            max_chunk_size: std::cmp::min(resp.max_write_chunk, resp.max_read_chunk) as usize,
+            max_chunk_size: chunk as usize,
             cs_asserted_count: Cell::new(0),
         })
     }
@@ -239,7 +242,7 @@ impl HyperdebugSpiTarget {
         );
         ensure!(
             resp.status_code == 0,
-            TransportError::CommunicationError("SPI error".to_string())
+            TransportError::CommunicationError(format!("SPI error ({})", resp.status_code))
         );
         let databytes = bytecount - 4;
         rbuf[0..databytes].clone_from_slice(&resp.data[0..databytes]);
@@ -274,6 +277,23 @@ impl HyperdebugSpiTarget {
 
     /// Request assertion or deassertion of chip select
     fn do_assert_cs(&self, assert: bool) -> Result<()> {
+        let mut count = self.cs_asserted_count.get();
+        if assert {
+            if count == 0 {
+                self._do_assert_cs(assert)?;
+            }
+            count += 1;
+        } else {
+            if count == 1 {
+                self._do_assert_cs(assert)?;
+            }
+            count -= 1;
+        }
+        self.cs_asserted_count.set(count);
+        Ok(())
+    }
+
+    fn _do_assert_cs(&self, assert: bool) -> Result<()> {
         let req = CmdChipSelect::new(assert);
         self.usb_write_bulk(&req.as_bytes())?;
 
@@ -351,6 +371,7 @@ impl Target for HyperdebugSpiTarget {
 
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {
         let mut idx: usize = 0;
+        self.do_assert_cs(true)?;
         while idx < transaction.len() {
             match &mut transaction[idx..] {
                 [Transfer::Write(wbuf), Transfer::Read(rbuf), ..] => {
@@ -403,30 +424,21 @@ impl Target for HyperdebugSpiTarget {
             }
             idx += 1;
         }
+        self.do_assert_cs(false)?;
         Ok(())
     }
 
     fn assert_cs(self: Rc<Self>) -> Result<AssertChipSelect> {
-        {
-            let cs_asserted_count = self.cs_asserted_count.get();
-            if cs_asserted_count == 0 {
-                self.do_assert_cs(true)?;
-            }
-            self.cs_asserted_count.set(cs_asserted_count + 1);
-        }
+        self.do_assert_cs(true)?;
         Ok(AssertChipSelect::new(self))
     }
 }
 
 impl TargetChipDeassert for HyperdebugSpiTarget {
     fn deassert_cs(&self) {
-        let cs_asserted_count = self.cs_asserted_count.get();
-        if cs_asserted_count - 1 == 0 {
-            // We cannot propagate errors through `Drop::drop()`, so panic on any error.  (Logging
-            // would be another option.)
-            self.do_assert_cs(false)
-                .expect("Error while deasserting CS");
-        }
-        self.cs_asserted_count.set(cs_asserted_count - 1);
+        // We cannot propagate errors through `Drop::drop()`, so panic on any error.  (Logging
+        // would be another option.)
+        self.do_assert_cs(false)
+            .expect("Error while deasserting CS");
     }
 }

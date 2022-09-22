@@ -250,7 +250,7 @@ impl TransportWrapper {
         std::thread::sleep(reset_delay);
         if clear_uart_rx {
             log::info!("Clearing the UART RX buffer");
-            self.uart("0")?.clear_rx_buffer()?;
+            self.uart("console")?.clear_rx_buffer()?;
         }
         log::info!("Deasserting the reset signal");
         self.remove_pin_strapping("RESET")?;
