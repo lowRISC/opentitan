@@ -740,7 +740,7 @@ module kmac
           // if it receives absorbed signal.
           kmac_st_d = KmacIdle;
         end else if (prim_mubi_pkg::mubi4_test_true_strict(sha3_absorbed) &&
-          prim_mubi_pkg::mubi4_test_false_strict(sha3_done)) begin
+          prim_mubi_pkg::mubi4_test_false_loose(sha3_done)) begin
           kmac_st_d = KmacDigest;
         end else begin
           kmac_st_d = KmacMsgFeed;
