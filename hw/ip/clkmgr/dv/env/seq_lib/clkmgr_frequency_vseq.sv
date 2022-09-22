@@ -99,9 +99,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     csr_wr(.ptr(ral.measure_ctrl_regwen), .value(0));
     cfg.clkmgr_vif.update_calib_rdy(MuBi4False);
     cfg.clk_rst_vif.wait_clks(20);
-    // Update the mirrored value.
-    ral.measure_ctrl_regwen.predict(1);
-    csr_rd_check(.ptr(ral.measure_ctrl_regwen), .compare_value(1));
+    calibration_lost_checks();
   endtask
 
   task body();
@@ -147,7 +145,15 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
       // Update calib_rdy input: if calibration is not ready the measurements
       // don't happen, so we should not get faults.
       cfg.clkmgr_vif.update_calib_rdy(calib_rdy);
+      `uvm_info(`gfn, $sformatf(
+                "Updating calib_rdy to 0x%x, predicted regwen 0x%x",
+                calib_rdy,
+                ral.measure_ctrl_regwen.get()
+                ), UVM_MEDIUM)
       `uvm_info(`gfn, "New round", UVM_MEDIUM)
+      // Allow calib_rdy to generate side-effects.
+      cfg.clk_rst_vif.wait_clks(3);
+      if (calib_rdy == MuBi4False) calibration_lost_checks();
       prior_alert_count = cfg.scoreboard.get_alert_count("recov_fault");
       if (cause_saturation) `uvm_info(`gfn, "Will cause saturation", UVM_MEDIUM)
       foreach (ExpectedCounts[clk]) begin
@@ -155,6 +161,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
         int min_threshold;
         int max_threshold;
         int expected = ExpectedCounts[clk];
+        bit block_meas_en;
         if (clk == clk_tested) begin
           min_threshold = expected + min_offset;
           max_threshold = expected + max_offset;
@@ -173,7 +180,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
           min_threshold = expected - 1;
           max_threshold = expected + 1;
         end
-        enable_frequency_measurement(clk_mesr, min_threshold, max_threshold);
+        block_meas_en = calib_rdy == MuBi4False;
+        enable_frequency_measurement(clk_mesr, min_threshold, max_threshold, block_meas_en);
       end
 
       fork

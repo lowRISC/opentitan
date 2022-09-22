@@ -55,8 +55,11 @@ class clkmgr_trans_vseq extends clkmgr_base_vseq;
       bool_idle = mubi_hintables_to_hintables(idle);
       value = initial_hints | ~bool_idle;
       csr_rd_check(.ptr(ral.clk_hints_status), .compare_value(value),
-                   .err_msg($sformatf("Busy units have status high: hints=0x%x, idle=0x%x",
-                                      initial_hints, bool_idle)));
+                   .err_msg($sformatf(
+                       "Busy units have status high: hints=0x%x, idle=0x%x",
+                       initial_hints,
+                       bool_idle
+                   )));
 
       // Setting all idle should make hint_status match hints.
       `uvm_info(`gfn, "Setting all units idle", UVM_MEDIUM)

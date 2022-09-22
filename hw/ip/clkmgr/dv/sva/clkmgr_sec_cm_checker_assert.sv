@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Assertion checker for
+// Assertion checker for external clock bypass
 // sec cm test
 module clkmgr_sec_cm_checker_assert (
   input clk_i,
