@@ -597,10 +597,10 @@
             - Put life cycle on Test or RMA state, so that TAPs can be selected between life cycle
               RV_DM and DFT.
             - Verify the TAP is selected correctly.
-            - TODO, X-ref'ed with the LC tests.
+            - X-ref'ed with chip_sw_tap_strap_sampling.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_tap_straps_rma"]
     }
     {
       name: chip_sw_rv_dm_lc_disabled
