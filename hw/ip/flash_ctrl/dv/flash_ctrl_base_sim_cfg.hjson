@@ -379,6 +379,12 @@
       run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+otf_num_rw=5", "+otf_num_hr=0", "+en_always_all=1", "+bypass_alert_ready_to_end_check=1"]
       reseed: 3
     }
+    {
+      name: flash_ctrl_fs_sup
+      uvm_test_seq: flash_ctrl_filesystem_support_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_all=1"]
+      reseed: 5
+    }
   ]
 
   // List of regressions.
