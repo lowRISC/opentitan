@@ -476,6 +476,7 @@ The full secure wipe mechanism is split into three parts:
 A secure wipe is performed automatically in certain situations, or can be requested manually by the host software.
 The full secure wipe is automatically initiated as a local reaction to a fatal error.
 In addition, it can be triggered by the [Life Cycle Controller]({{<relref "/hw/ip/lc_ctrl/doc" >}}) before RMA entry using the `lc_rma_req/ack` interface.
+In both cases OTBN enters the locked state afterwards and needs to be reset.
 A secure wipe of only the internal state is performed after reset, whenever an OTBN operation is complete, and after a recoverable error.
 Finally, host software can manually trigger the data memory and instruction memory secure wipe operations by issuing an appropriate [command](#design-details-commands).
 
@@ -637,7 +638,7 @@ Download the SVG from Google Draw, open it in Inkscape once and save it without 
 OTBN can be in different operational states.
 After reset (*init*), OTBN performs a secure wipe of the internal state and then becomes *idle*.
 OTBN is *busy* for as long it is performing an operation.
-OTBN is *locked* if a fatal error was observed.
+OTBN is *locked* if a fatal error was observed or after handling an RMA request.
 
 The current operational state is reflected in the {{< regref "STATUS" >}} register.
 - After reset, OTBN is busy with the internal secure wipe and the {{< regref "STATUS" >}} register is set to `BUSY_SEC_WIPE_INT`.
@@ -1019,6 +1020,7 @@ A secure wipe of either the instruction or the data memory can be triggered from
 
 A secure wipe of instruction memory, data memory, and all internal state is performed automatically when handling a [fatal error](#design-details-fatal-errors).
 In addition, it can be triggered by the [Life Cycle Controller]({{<relref "/hw/ip/lc_ctrl/doc" >}}) before RMA entry using the `lc_rma_req/ack` interface.
+In both cases OTBN enters the locked state afterwards and needs to be reset.
 
 A secure wipe of the internal state only is triggered automatically after reset and when OTBN [ends the software execution](#design-details-software-execution), either successfully, or unsuccessfully due to a [recoverable error](#design-details-recoverable-errors).
 
