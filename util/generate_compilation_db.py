@@ -27,6 +27,7 @@ import argparse
 import json
 import os
 import subprocess
+import sys
 from typing import Dict, List
 
 
@@ -103,10 +104,16 @@ def main(args):
         '--output=jsonproto',
         args.target,
     ]
-    completed_process = subprocess.run(bazel_aquery_command,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE,
-                                       check=True)
+    try:
+        completed_process = subprocess.run(bazel_aquery_command,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.PIPE,
+                                           check=True)
+    except subprocess.CalledProcessError as e:
+        print(e.stderr.decode('utf-8'), file=sys.stderr)
+        raise
+    except BaseException:
+        raise
     aquery_results = BazelAqueryResults(completed_process.stdout)
 
     compile_commands = []
