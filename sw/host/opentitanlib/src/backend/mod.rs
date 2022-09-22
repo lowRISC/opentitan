@@ -77,7 +77,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         ),
         "hyperdebug" => (
             hyperdebug::create::<StandardFlavor>(args)?,
-            Some(Path::new("/__builtin__/opentitan_verilator.json")),
+            Some(Path::new("/__builtin__/hyperdebug_cw310.json")),
         ),
         "c2d2" => (
             hyperdebug::create::<C2d2Flavor>(args)?,

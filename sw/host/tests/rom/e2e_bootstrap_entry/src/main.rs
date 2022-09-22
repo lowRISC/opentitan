@@ -111,7 +111,7 @@ fn test_bootstrap_enabled_requested(opts: &Opts, transport: &TransportWrapper) -
     // TODO: Should really `opts.init.uart_params.create()` here, but we need to refactor
     // BootstrapOptions first.
     //let uart = opts.init.uart_params.create(&transport)?;
-    let uart = transport.uart("0")?;
+    let uart = transport.uart("console")?;
     let mut console = UartConsole {
         timeout: Some(opts.timeout),
         exit_success: Some(Regex::new(r"bootstrap:1\r\n")?),
@@ -138,7 +138,7 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
     // TODO: Should really `opts.init.uart_params.create()` here, but we need to refactor
     // BootstrapOptions first.
     //let uart = opts.init.uart_params.create(&transport)?;
-    let uart = transport.uart("0")?;
+    let uart = transport.uart("console")?;
     let mut console = UartConsole {
         timeout: Some(opts.timeout),
         exit_success: Some(Regex::new(r"BFV:")?),
@@ -261,7 +261,7 @@ fn test_bootstrap_shutdown(
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
 
     let spi = transport.spi("0")?;
-    let uart = transport.uart("0")?;
+    let uart = transport.uart("console")?;
     let mut console = UartConsole {
         timeout: Some(Duration::new(2, 0)),
         // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
@@ -299,7 +299,7 @@ fn test_bootstrap_phase1_reset(opts: &Opts, transport: &TransportWrapper) -> Res
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
 
     let spi = transport.spi("0")?;
-    let uart = transport.uart("0")?;
+    let uart = transport.uart("console")?;
     // RESET should be ignored and we should not see any messages.
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
@@ -321,7 +321,7 @@ fn test_bootstrap_phase1_page_program(opts: &Opts, transport: &TransportWrapper)
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
 
     let spi = transport.spi("0")?;
-    let uart = transport.uart("0")?;
+    let uart = transport.uart("console")?;
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
         // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
@@ -354,7 +354,7 @@ fn test_bootstrap_phase1_erase(
 ) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
     let spi = transport.spi("0")?;
-    let uart = transport.uart("0")?;
+    let uart = transport.uart("console")?;
     let spiflash = SpiFlash::from_spi(&*spi)?;
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
@@ -402,7 +402,7 @@ fn test_bootstrap_phase1_erase(
 fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
     let spi = transport.spi("0")?;
-    let uart = transport.uart("0")?;
+    let uart = transport.uart("console")?;
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
         ..Default::default()
@@ -439,7 +439,7 @@ fn test_bootstrap_phase2_reset(opts: &Opts, transport: &TransportWrapper) -> Res
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
 
     let spi = transport.spi("0")?;
-    let uart = transport.uart("0")?;
+    let uart = transport.uart("console")?;
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
         // `kErrorBootPolicyBadIdentifier` (0142500d) is defined in `error.h`.
@@ -472,7 +472,7 @@ fn test_bootstrap_phase2_reset(opts: &Opts, transport: &TransportWrapper) -> Res
 fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
     let spi = transport.spi("0")?;
-    let uart = transport.uart("0")?;
+    let uart = transport.uart("console")?;
     SpiFlash::from_spi(&*spi)?
         // Send CHIP_ERASE to transition to phase 2.
         .chip_erase(&*spi)?
@@ -503,7 +503,7 @@ fn test_bootstrap_phase2_erase(
 ) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
     let spi = transport.spi("0")?;
-    let uart = transport.uart("0")?;
+    let uart = transport.uart("console")?;
     let spiflash = SpiFlash::from_spi(&*spi)?;
     let erase = || match erase_cmd {
         // We should erase the page of the identifier of the second slot.
@@ -539,7 +539,7 @@ fn test_bootstrap_phase2_erase(
 fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
     let spi = transport.spi("0")?;
-    let uart = transport.uart("0")?;
+    let uart = transport.uart("console")?;
     let mut read_buf = [0u8; 8];
 
     SpiFlash::from_spi(&*spi)?

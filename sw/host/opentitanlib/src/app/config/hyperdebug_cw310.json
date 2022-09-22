@@ -1,0 +1,31 @@
+{
+  "includes": ["/__builtin__/opentitan.json"],
+  "interface": "hyperdebug",
+  "pins": [
+      {
+          "name": "RESET",
+          "mode": "OpenDrain",
+          "level": true,
+          "pull_mode": "PullUp",
+          "alias_of": "CN10_29"
+      },
+      {
+          "name": "SW_STRAP0",
+          "alias_of": "CN9_13"
+      },
+      {
+          "name": "SW_STRAP1",
+          "alias_of": "CN9_15"
+      },
+      {
+          "name": "SW_STRAP2",
+          "alias_of": "CN9_17"
+      }
+  ],
+  "uarts": [
+    {
+      "name": "console",
+      "alias_of": "UART2"
+    }
+  ]
+}
