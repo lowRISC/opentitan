@@ -390,7 +390,7 @@
     }
     {
       name: chip_sw_sleep_pin_wake
-      desc: '''Verify pin wake up from deep sleep state.
+      desc: '''Verify pin wake up from any sleep states.
 
             Verify one of the 8 possible MIO or DIO pad inputs (randomly configured) can cause the
             chip to wake up from sleep state. Verifying wake on posedge is sufficient for the chip
