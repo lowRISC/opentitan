@@ -5,13 +5,17 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
+#include "sw/device/lib/dif/dif_rv_plic.h"
+#include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -101,6 +105,36 @@ static const uint8_t kOptOutMio[kNumOptOutMio] = {};
 static uint8_t kMioPads[NUM_MIO_PADS] = {0};
 static uint8_t kDioPads[NUM_DIO_PADS] = {0};
 
+// PLIC structures
+static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static dif_pwrmgr_t pwrmgr;
+static dif_pinmux_t pinmux;
+static dif_rv_plic_t plic;
+
+static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic,
+                                  .hart_id = kTopEarlgreyPlicTargetIbex0};
+
+static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
+    .pwrmgr = &pwrmgr,
+    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
+    .expected_irq = kDifPwrmgrIrqWakeup,
+    .is_only_irq = true};
+
+/**
+ * External interrupt handler.
+ */
+void ottf_external_isr(void) {
+  dif_pwrmgr_irq_t irq_id;
+  top_earlgrey_plic_peripheral_t peripheral;
+
+  isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
+
+  // Check that both the peripheral and the irq id is correct
+  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
+        "IRQ peripheral: %d is incorrect", peripheral);
+  CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
+}
+
 /** Configure pinmux retention value.
  *
  * Each gen32 can cover 16 PADs randomization. When each pad ret val draws
@@ -178,9 +212,9 @@ void configure_pad_retention_types(dif_pinmux_t *pinmux) {
   LOG_INFO("PADs retention modes are configured.");
 }
 
-bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux) {
+bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, bool deepsleep) {
   bool result = false;
-  dif_pwrmgr_domain_config_t pwrmgr_domain_cfg;
+  dif_pwrmgr_domain_config_t pwrmgr_domain_cfg = 0;
 
   LOG_INFO("Selecting PADs retention modes...");
 
@@ -192,6 +226,10 @@ bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux) {
   // Configure pwrmgr to deep powerdown.
   configure_pad_retention_types(pinmux);
 
+  if (!deepsleep) {
+    pwrmgr_domain_cfg = kDifPwrmgrDomainOptionMainPowerInLowPower |
+                        kDifPwrmgrDomainOptionUsbClockInActivePower;
+  }
   CHECK_DIF_OK(dif_pwrmgr_set_domain_config(pwrmgr, pwrmgr_domain_cfg,
                                             kDifToggleEnabled));
   CHECK_DIF_OK(dif_pwrmgr_low_power_set_enabled(pwrmgr, kDifToggleEnabled,
@@ -203,21 +241,37 @@ bool lowpower_prep(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux) {
 }
 
 bool test_main(void) {
-  dif_pwrmgr_t pwrmgr;
-  dif_pinmux_t pinmux;
-
   bool result = false;
+
+  // Enable global and external IRQ at Ibex.
+  irq_global_ctrl(true);
+  irq_external_ctrl(true);
 
   CHECK_DIF_OK(dif_pwrmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_rv_plic_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
 
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
-    result = lowpower_prep(&pwrmgr, &pinmux);
+    uint32_t deep_powerdown_en = rand_testutils_gen32_range(0, 1);
+    bool deepsleep = (deep_powerdown_en) ? true : false;
 
-  } else if (pwrmgr_testutils_is_wakeup_reason(
-                 &pwrmgr, kDifPwrmgrWakeupRequestSourceThree)) {
+    if (!deepsleep) {
+      // Enable all the AON interrupts used in this test.
+      rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
+                                         kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
+                                         kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+      // Enable pwrmgr interrupt
+      CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
+    }
+
+    result = lowpower_prep(&pwrmgr, &pinmux, deepsleep);
+  }
+
+  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr,
+                                        kDifPwrmgrWakeupRequestSourceThree)) {
     // TODO: change PINMUX wakeup, not pin detector
     /**
      *  Usually this part won't be hit. UVM testbench checks the PAD output

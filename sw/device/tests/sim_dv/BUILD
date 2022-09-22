@@ -621,9 +621,13 @@ opentitan_functest(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

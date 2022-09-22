@@ -285,12 +285,12 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     join_none
 
     // Wait until Chip enters Low Power Mode
-    wait (cfg.chip_vif.pwrmgr_low_power_if.low_power
-      && cfg.chip_vif.pwrmgr_low_power_if.deep_powerdown);
+    wait (cfg.chip_vif.pwrmgr_low_power_if.in_sleep);
+    @(cfg.chip_vif.pwrmgr_low_power_if.cb);
 
     // Release any driver interfaces.
     cfg.chip_vif.disconnect_all_interfaces(
-      .disconnect_default_pulls(1'b 1));
+      .disconnect_default_pulls(1'b 0));
 
     @(cfg.chip_vif.pwrmgr_low_power_if.cb);
 
