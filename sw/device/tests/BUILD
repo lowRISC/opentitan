@@ -1344,7 +1344,7 @@ opentitan_functest(
         "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:epmp",
+        "//sw/device/silicon_creator/lib:epmp_state",
     ],
 )
 
@@ -1518,9 +1518,8 @@ opentitan_functest(
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:epmp",
+        "//sw/device/silicon_creator/lib:epmp_state",
     ],
 )
 
