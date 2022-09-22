@@ -108,7 +108,8 @@ class spi_host_driver extends spi_driver;
     end
   endtask
 
-  task issue_data(bit [7:0] transfer_data[$]);
+  task issue_data(input bit [7:0] transfer_data[$], output bit [7:0] returned_data[$],
+                  input bit last_data = 1);
     for (int i = 0; i < transfer_data.size(); i++) begin
       bit [7:0] host_byte;
       bit [7:0] device_byte;
@@ -132,9 +133,11 @@ class spi_host_driver extends spi_driver;
         which_bit = cfg.device_bit_dir ? j : 7 - j;
         device_byte[which_bit] = cfg.vif.sio[1];
         // wait for driving edge to complete 1 cycle
-        if (i != transfer_data.size() - 1 || j != (num_bits - 1)) cfg.wait_sck_edge(DrivingEdge);
+        if (!last_data || i != transfer_data.size() - 1 || j != (num_bits - 1)) begin
+          cfg.wait_sck_edge(DrivingEdge);
+        end
       end
-      rsp.data[i] = device_byte;
+      returned_data[i] = device_byte;
     end
   endtask
 
@@ -150,13 +153,14 @@ class spi_host_driver extends spi_driver;
     cfg.wait_sck_edge(LeadingEdge);
 
     // drive data
-    issue_data(req.data);
+    issue_data(req.data, rsp.data);
 
     wait(sck_pulses == 0);
   endtask
 
   task drive_flash_item();
     bit [7:0] cmd_addr_bytes[$];
+    bit [7:0] dummy_return_q[$]; // nothing to return for flash cmd, addr and write
 
     `uvm_info(`gfn, $sformatf("Driving flash item: \n%s", req.sprint()), UVM_MEDIUM)
     cfg.vif.csb[active_csb] <= 1'b0;
@@ -177,7 +181,7 @@ class spi_host_driver extends spi_driver;
     cfg.wait_sck_edge(LeadingEdge);
 
     // driver cmd and address
-    issue_data(cmd_addr_bytes);
+    issue_data(cmd_addr_bytes, dummy_return_q);
 
     // align to DrivingEdge, if the item has more to send
     if (req.dummy_cycles > 0 || req.payload_q.size > 0 ) cfg.wait_sck_edge(DrivingEdge);
@@ -188,7 +192,7 @@ class spi_host_driver extends spi_driver;
     end
     // drive data
     if (req.write_command) begin
-      issue_data(req.payload_q);
+      issue_data(req.payload_q, dummy_return_q);
     end else begin
       repeat (req.read_size) begin
         logic [7:0] data;
@@ -202,7 +206,46 @@ class spi_host_driver extends spi_driver;
   endtask
 
   task drive_tpm_item();
-    // TODO, add soon
+    bit [7:0] cmd_bytes[$];
+    bit [7:0] returned_bytes[$];
+    bit [3:0] data_num_byte;
+    bit [7:0] tpm_rsp;
+
+    `uvm_info(`gfn, $sformatf("Driving TPM item: \n%s", req.sprint()), UVM_MEDIUM)
+
+    `DV_CHECK_EQ_FATAL(req.address_q.size(), TPM_ADDR_WIDTH_BYTE)
+    data_num_byte = req.write_command ? req.data.size() - 1 : req.read_size - 1;
+    `DV_CHECK_FATAL(data_num_byte inside {[1:64]});
+    cmd_bytes[0] = req.write_command ? {CMD_TPM_WRITE, data_num_byte} :
+                                       {CMD_TPM_READ, data_num_byte};
+    cmd_bytes = {cmd_bytes, req.address_q};
+
+    cfg.vif.csb[active_csb] <= 1'b0;
+    sck_pulses = cmd_bytes.size() * 8;
+    issue_data(.transfer_data(cmd_bytes), .returned_data(returned_bytes), .last_data(0));
+
+    // polling TPM_START
+    do begin
+      bit [7:0] dummy_bytes[$];
+      dummy_bytes = {$urandom};
+      sck_pulses += 8;
+      $display($time, " wcy %0d", sck_pulses);
+      issue_data(.transfer_data(dummy_bytes), .returned_data(returned_bytes), .last_data(0));
+      tpm_rsp = returned_bytes[0];
+      `DV_CHECK(tpm_rsp inside {TPM_WAIT, TPM_START})
+    end while (tpm_rsp == TPM_WAIT);
+
+    `uvm_info(`gfn, "Received TPM START", UVM_MEDIUM)
+    sck_pulses += (req.write_command ? req.data.size : req.read_size) * 8;
+    if (req.write_command) begin
+      issue_data(.transfer_data(req.data), .returned_data(returned_bytes), .last_data(1));
+      foreach (returned_bytes[i]) `DV_CHECK_EQ(returned_bytes[i], 0)
+    end else begin // TPM read
+      bit [7:0] dummy_bytes[$];
+      repeat (req.read_size) dummy_bytes.push_back($urandom);
+      issue_data(.transfer_data(dummy_bytes), .returned_data(rsp.data), .last_data(1));
+    end
+    wait(sck_pulses == 0);
   endtask
 
   task drive_sck_no_csb_item();

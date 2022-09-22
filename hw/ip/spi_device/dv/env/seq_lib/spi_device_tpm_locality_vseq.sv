@@ -43,8 +43,7 @@ class spi_device_tpm_locality_vseq extends spi_device_tpm_base_vseq;
       // Data size will be 5, first byte dummy for polling, remaining 4 for payload
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(data_bytes, data_bytes.size() == 5;)
       tpm_addr = get_tpm_addr(locality);
-      tpm_addr = {<<1{tpm_addr}};
-      address_command = {tpm_addr, tpm_cmd};
+      address_command = {tpm_addr[7:0], tpm_addr[15:8], tpm_addr[23:16], tpm_cmd};
       `uvm_info(`gfn, $sformatf("Address Command = 0x%0h", address_command), UVM_LOW)
       // send payload
       cfg.spi_host_agent_cfg.csb_consecutive = 1;

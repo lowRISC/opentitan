@@ -35,7 +35,7 @@ class spi_device_tpm_write_vseq extends spi_device_tpm_base_vseq;
     cfg.spi_host_agent_cfg.csb_consecutive = 1;
     spi_host_xfer_word(address_command, device_word_rsp);
     fork
-      check_tpm_cmd_addr(tpm_cmd, tpm_addr);
+      wait_and_check_tpm_cmd_addr(tpm_cmd, tpm_addr);
       begin
         `DV_SPINWAIT(
           while (pay_num < 5) begin

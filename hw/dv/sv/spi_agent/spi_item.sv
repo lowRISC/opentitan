@@ -33,7 +33,7 @@ class spi_item extends uvm_sequence_item;
   bit mon_item_complete;
 
   // constrain size of data sent / received to be at most 64kB
-  constraint data_size_c { data.size() inside {[1:65536]}; }
+  constraint data_size_c { data.size() inside {[0:65536]}; }
 
   constraint dummy_clk_cnt_c { dummy_clk_cnt inside {[1:1000]}; }
 

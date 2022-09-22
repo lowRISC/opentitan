@@ -508,7 +508,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
           byte_addr_q.push_back(addr[31:24]);
         end
         // push the lower 3 bytes address
-        byte_addr_q = {byte_addr_q, addr[23:16], addr[15:8], addr[7:0]};
+        byte_addr_q = {addr[7:0], addr[15:8], addr[23:16], byte_addr_q};
       end
     end
 
