@@ -185,6 +185,17 @@
     end
 `endif
 
+`ifndef DV_CHECK_Q_EQ
+  `define DV_CHECK_Q_EQ(ACT_, EXP_, MSG_="", SEV_=error, ID_=`gfn) \
+    begin \
+      `DV_CHECK_EQ(ACT_.size(), EXP_.size()) \
+      foreach (ACT_[i]) if (!((ACT_[i]) == (EXP_[i]))) begin \
+        `dv_``SEV_($sformatf("Check queue on idx (%0d) failed %s == %s (%0d [0x%0h] vs %0d [0x%0h]) %s", \
+                             i, `"ACT_`", `"EXP_`", ACT_[i], ACT_[i], EXP_[i], EXP_[i], MSG_), ID_) \
+      end \
+    end
+`endif
+
 // Fatal version of the checks
 `ifndef DV_CHECK_FATAL
   `define DV_CHECK_FATAL(T_, MSG_="", ID_=`gfn) \
