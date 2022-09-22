@@ -62,6 +62,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     uvm_reg   csr;
     i2c_item  sb_exp_wr_item;
     i2c_item  sb_exp_rd_item;
+    i2c_item  temp_item;
     bit       fmt_overflow;
     bit       do_read_check = 1'b1;
     bit       write = item.is_write();
@@ -170,13 +171,15 @@ class i2c_scoreboard extends cip_base_scoreboard #(
                   exp_rd_item.rstart = (exp_rd_item.stop) ? 1'b0 : 1'b1;
                   // decrement since data is dropped by rx_overflow
                   if (cfg.seq_cfg.en_rx_overflow) exp_rd_item.num_data--;
-                  // if not a chained read (stop is issued)
+
+                  // always push the expected transaction into the queue and handle during
+                  // rdata.
+                  `downcast(tmp_rd_item, exp_rd_item.clone());
+                  rd_pending_q.push_back(tmp_rd_item);
+                  `uvm_info(`gfn, $sformatf("\nrd_pending_q.push_back"), UVM_DEBUG)
                   if (exp_rd_item.stop) begin
                     `uvm_info(`gfn, $sformatf("\nscoreboard, partial exp_rd_item\n\%s",
                         exp_rd_item.sprint()), UVM_DEBUG)
-                    `downcast(tmp_rd_item, exp_rd_item.clone());
-                    rd_pending_q.push_back(tmp_rd_item);
-                    `uvm_info(`gfn, $sformatf("\nrd_pending_q.push_back"), UVM_DEBUG)
                     exp_rd_item.start = 0;
                     exp_rd_item.clear_data();
                   end
@@ -234,19 +237,33 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         "rdata": begin
           do_read_check = 1'b0;
           if (host_init) begin
-            if (rdata_cnt == 0) begin
+            // If read data count is 0, it means the transaction has not yet started.
+            // If read data count is non-zero and equals the expected number of data while the stop
+            // bit is not set, it means a chained read has been issued and we need to update the
+            // expected transaction.
+            if (rdata_cnt == 0 ||
+                rdata_cnt == rd_pending_item.num_data && !rd_pending_item.stop) begin
               // for on-the-fly reset, immediately finish task to avoid blocking
               wait(rd_pending_q.size() > 0 || cfg.under_reset);
               if (cfg.under_reset) return;
-              rd_pending_item = rd_pending_q.pop_front();
+              temp_item = rd_pending_q.pop_front();
+
+              if (rdata_cnt == 0) begin
+                // if rdata_cnt is 0, use transaction directly since it is the first
+                rd_pending_item = temp_item;
+              end else begin
+                // if rdata_cnt is non_zero, then we are part of chain read. Update the
+                // expected number of bytes and stop bit as required.
+                rd_pending_item.num_data = temp_item.num_data;
+                rd_pending_item.stop = temp_item.stop;
+              end
             end
             rd_pending_item.data_q.push_back(item.d_data);
             rdata_cnt++;
             `uvm_info(`gfn, $sformatf("\nscoreboard, rd_pending_item\n\%s",
                 rd_pending_item.sprint()), UVM_DEBUG)
             // get complete read transactions
-            if (rdata_cnt == rd_pending_item.num_data) begin
-              rd_pending_item.stop = 1'b1;
+            if (rdata_cnt == rd_pending_item.num_data && rd_pending_item.stop) begin
               `downcast(sb_exp_rd_item, rd_pending_item.clone());
               if (!cfg.under_reset) exp_rd_q.push_back(sb_exp_rd_item);
               num_exp_tran++;
