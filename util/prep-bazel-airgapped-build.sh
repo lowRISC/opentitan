@@ -163,6 +163,9 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   readonly SYSTEM_BITSTREAM_CACHE="${HOME}/.cache/opentitan-bitstreams"
   readonly SYSTEM_BITSTREAM_CACHEDIR="${SYSTEM_BITSTREAM_CACHE}/cache"
   readonly LATEST_BISTREAM_HASH_FILE="${SYSTEM_BITSTREAM_CACHE}/latest.txt"
+  # The revision named in latest.txt is not necessarily on disk. Induce the
+  # cache backend to fetch the latest bitstreams.
+  BITSTREAM=latest ${BAZELISK} build //hw/bitstream:rom
   cp "${LATEST_BISTREAM_HASH_FILE}" \
     "${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHE}/"
   LATEST_BISTREAM_HASH=$(cat "${LATEST_BISTREAM_HASH_FILE}")
