@@ -89,6 +89,14 @@ function outquery_starlark_expr() {
     esac
 }
 
+function do_outquery() {
+    local qexpr="$1"
+    local args="$2"
+    "$file" cquery "$args" \
+        --output=starlark --starlark:expr="$qexpr" \
+        --ui_event_filters=-info --noshow_progress
+}
+
 function main() {
     local bindir="${REPO_TOP}/${BINDIR}"
     local file="${bindir}/bazelisk"
@@ -115,11 +123,30 @@ function main() {
             #   outquery-all: return all output files associated with the label.
             #   outquery-x: return output files containing the substring "x".
             #   outquery.x: return output files ending with the substring ".x".
-            QEXPR="$(outquery_starlark_expr "$1")"
+            local qexpr
+            qexpr="$(outquery_starlark_expr "$1")"
             shift
-            exec "$file" cquery "$@" \
-                --output=starlark --starlark:expr="$QEXPR" \
-                --ui_event_filters=-info --noshow_progress
+            do_outquery "$qexpr" "$@"
+            ;;
+        build-then)
+            # The 'build-then' command builds the requested targets and then
+            # evaluates the given command template, replacing "%s" with the path
+            # to an output file.
+            #
+            # For example, the command below would build "//:foo" and run "less"
+            # on one of the output files.
+            #
+            #     ./bazelisk.sh build-then "less %s" //:foo
+            shift
+            local command_template="$1"
+            shift
+            local qexpr outfile
+            qexpr="$(outquery_starlark_expr outquery)"
+            outfile=$(do_outquery "$qexpr" "$@")
+            "$file" build "$@"
+            # shellcheck disable=SC2059
+            # We are intentionally using $command_template as a format string.
+            eval "$(printf "$command_template" "$outfile")"
             ;;
         *)
             exec "$file" "$@"
