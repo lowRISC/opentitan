@@ -13,7 +13,14 @@ interface pwrmgr_low_power_if (
   input logic fast_clk,
   input logic rst_n
 );
-  logic       low_power;
+
+  // low_power indicates the PWRMGR starts entering low power state. When the
+  // signal is high, the chip does not yet complete the power down.
+  logic low_power;
+
+  // If `in_sleep` is 1, it indicates, the chip is in either normal sleep or
+  // deep sleep state.
+  logic in_sleep;
 
   // Deep Power down indicator (while `low_power` is high)
   logic deep_powerdown;
