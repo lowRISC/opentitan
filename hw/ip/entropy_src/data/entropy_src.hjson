@@ -709,6 +709,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -745,6 +747,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -761,6 +765,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -779,6 +785,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -795,6 +803,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
@@ -811,6 +821,8 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext: "true",
+      tags: [// Internal HW can modify status register
+             "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "15:0",
           name: "FIPS_WATERMARK",
