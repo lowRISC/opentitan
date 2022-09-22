@@ -16,6 +16,12 @@ package spi_agent_pkg;
   parameter uint CSB_WIDTH = 2;
   parameter uint NUM_CSB = CSB_WIDTH ** 2;
   parameter time TIME_SCK_STABLE_TO_CSB_NS = 10ns;
+  parameter uint TPM_ADDR_WIDTH      = 24;
+  parameter uint TPM_ADDR_WIDTH_BYTE = TPM_ADDR_WIDTH / 8;
+  parameter bit[3:0] CMD_TPM_WRITE = 4'h0;
+  parameter bit[3:0] CMD_TPM_READ  = 4'h8;
+  parameter byte     TPM_WAIT      = 8'h00;
+  parameter byte     TPM_START     = 8'h01;
 
   // transaction type
   typedef enum {

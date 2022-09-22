@@ -61,20 +61,40 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
   endtask : tpm_configure_locality
 
   // Check the CMD_ADDR/wrFIFO contents.
-  virtual task check_tpm_cmd_addr(bit [7:0] exp_cmd, bit [23:0] exp_addr);
+  virtual task wait_and_check_tpm_cmd_addr(bit [7:0] exp_cmd, bit [23:0] exp_addr);
     bit [31:0] cmd_addr_data;
     bit [7:0] act_cmd;
     bit [23:0] act_addr;
 
-    // first sent byte is MSB of the address
-    exp_addr = {exp_addr[7:0], exp_addr[15:8], exp_addr[23:16]};
+    csr_spinwait(.ptr(ral.intr_state.tpm_header_not_empty), .exp_data(1));
     // Check command and address fifo
     csr_rd(.ptr(ral.tpm_cmd_addr), .value(cmd_addr_data));
     act_cmd = get_field_val(ral.tpm_cmd_addr.cmd, cmd_addr_data);
     act_addr = get_field_val(ral.tpm_cmd_addr.addr, cmd_addr_data);
     `DV_CHECK_CASE_EQ(act_cmd, exp_cmd)
     `DV_CHECK_CASE_EQ(act_addr, exp_addr)
-  endtask : check_tpm_cmd_addr
+
+    // clear the interrupt
+    csr_wr(ral.intr_state.tpm_header_not_empty, 1);
+  endtask : wait_and_check_tpm_cmd_addr
+
+  virtual task wait_and_fill_tpm_rfifo(bit [TPM_ADDR_WIDTH-1:0] exp_addr, uint exp_num_bytes,
+                                       output bit [7:0] rfifo_byte_q[$]);
+    wait_and_check_tpm_cmd_addr({CMD_TPM_READ, 4'(exp_num_bytes - 1)}, exp_addr);
+    // Upon receiving read command, set read fifo contents
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rfifo_byte_q, rfifo_byte_q.size() == exp_num_bytes;)
+    for (int i = 0; i < rfifo_byte_q.size(); i += 4) begin
+      bit [31:0] rdfifo_wdata;
+      for (int j = 0 ; j < 4 ; j++) begin
+        if (i+j < rfifo_byte_q.size()) begin
+          rdfifo_wdata[8*j+:8] = rfifo_byte_q[i+j];
+        end else begin
+          rdfifo_wdata[8*j+:8] = 8'h 0;
+        end
+      end
+      csr_wr(.ptr(ral.tpm_read_fifo), .value(rdfifo_wdata));
+    end
+  endtask : wait_and_fill_tpm_rfifo
 
   // Check the CMD_ADDR/wrFIFO contents.
   virtual task check_tpm_write_fifo(byte data_bytes[$]);
@@ -106,4 +126,23 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     )
   endtask : poll_start_collect_data
 
+  virtual task spi_host_xfer_tpm_item(input bit write,
+                                      ref bit [7:0] payload_q[$],
+                                      input uint read_size = 0, // not needed for write
+                                      input bit [TPM_ADDR_WIDTH-1:0] addr = $urandom);
+    spi_host_tpm_seq m_host_tpm_seq;
+
+    `uvm_create_on(m_host_tpm_seq, p_sequencer.spi_sequencer_h)
+    m_host_tpm_seq.csb_sel = TPM_CSB_ID;
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(m_host_tpm_seq,
+                                   write_command == write;
+                                   addr == local::addr;
+                                   if (write) {
+                                     data_q.size() == local::payload_q.size;
+                                     foreach (payload_q[i]) data_q[i] == local::payload_q[i];
+                                   }
+                                   read_size == local::read_size;)
+    `uvm_send(m_host_tpm_seq)
+    if (!write) payload_q = m_host_tpm_seq.rsp.data;
+  endtask
 endclass : spi_device_tpm_base_vseq

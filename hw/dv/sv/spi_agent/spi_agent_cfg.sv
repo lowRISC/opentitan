@@ -105,7 +105,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
 
   virtual task wait_sck_edge(sck_edge_type_e sck_edge_type);
     bit       wait_posedge;
-    bit [1:0] sck_mode = {sck_polarity[csid], sck_phase[csid]};
+    bit [1:0] sck_mode = {vif.sck_polarity, vif.sck_phase};
 
     // sck pola   sck_pha   mode
     //        0         0      0: sample at leading  posedge_sck (drive @ prev negedge_sck)
