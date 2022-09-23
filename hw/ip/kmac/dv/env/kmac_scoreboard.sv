@@ -999,6 +999,12 @@ class kmac_scoreboard extends cip_base_scoreboard #(
           end
         end
       end
+      "entropy_period": begin
+        if (cfg.en_cov && addr_phase_write) begin
+          cov.entropy_timer_cg.sample(item.a_data[9:0], item.a_data[31:16],
+                                      entropy_mode == EntropyModeEdn);
+        end
+      end
       default: begin
         // regex match the key_share csrs
         string full_idx;

@@ -392,6 +392,22 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
     end
   endfunction
 
+  covergroup entropy_timer_cg with function sample (bit [9:0]  prescaler,
+                                                    bit [15:0] wait_timer,
+                                                    bit        entropy_edn_mode);
+    prescaler_val: coverpoint prescaler {
+      bins zero_val   = {0};
+      bins lower_val  = {[1             : {9{1'b1}} / 2]};
+      bins higher_val = {[{9{1'b1}} / 2 : {9{1'b1}}]};
+    }
+    wait_timer_val: coverpoint prescaler {
+      bins zero_val   = {0};
+      bins lower_val  = {[1              : {16{1'b1}} / 2]};
+      bins higher_val = {[{16{1'b1}} / 2 : {16{1'b1}}]};
+    }
+    entropy_edn_mode_enabled: coverpoint entropy_edn_mode;
+    entropy_timer_cross: cross prescaler_val, wait_timer_val, entropy_edn_mode_enabled;
+  endgroup
 
   function new(string name, uvm_component parent);
     kmac_app_e app_name = app_name.first;
@@ -406,6 +422,7 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
     state_read_mask_cg = new();
     sideload_cg = new();
     error_cg = new();
+    entropy_timer_cg = new();
     do begin
       app_cg_wrappers[app_name] = new({app_name.name(), "_cg"});
       app_name = app_name.next;
