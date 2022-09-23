@@ -1105,7 +1105,7 @@
             '''
       tags: ["rom", "no_dv", "fpga", "silicon"]
       stage: V2
-      tests: []
+      tests: ["rom_keymgr_init"]
     }
 
     {
