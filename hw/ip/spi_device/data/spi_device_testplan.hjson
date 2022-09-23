@@ -177,7 +177,7 @@
             - When available, confirm that the TPM submodule sends START followed by the register value.
             - Compare this value with the expected value.'''
       stage: V2
-      tests: ["spi_device_tpm_read"]
+      tests: ["spi_device_tpm_rw"]
     }
     {
       name: tpm_write

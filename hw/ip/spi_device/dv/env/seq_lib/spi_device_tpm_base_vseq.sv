@@ -99,7 +99,7 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
         end
       end
     end else begin
-      bit [31:0] word_q[$]; 
+      bit [31:0] word_q[$];
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(byte_q, byte_q.size() == exp_num_bytes;)
       byte_q_to_word_q(byte_q, word_q);
       foreach (word_q[i]) csr_wr(.ptr(ral.tpm_read_fifo), .value(word_q[i]));
