@@ -2044,10 +2044,19 @@
 
             Verify the entropy valid interrupt.
             At the CSRNG, validate the reception of entropy req interrupt.
-            Details TBD.
+
+            - Disable edn0, edn1, csrng and entropy_src, as these are enabled by the test ROM.
+            - Enable entropy_src in fips mode routing data to csrng.
+            - Enable csrng and enable the entropy request interrupt.
+            - Issue csrng instantiate and reseed commands. Check that for each csrng command,
+              there is a corresponding entropy request interrupt.
+            - Generate output and ensure the data output is valid, and that csrng is not reporting
+              any errors.
+            - Issue instantiate and reseed commands from edn0 and edn1. Check that for each
+              command, there is a corresponding entropy request interrupt.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_entropy_src_csrng"]
     }
     {
       name: chip_sw_entropy_src_cs_aes_halt
