@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import i2c_agent_pkg::*;
+import uvm_pkg::*;
 
 interface i2c_if;
   logic clk_i;
@@ -13,6 +14,8 @@ interface i2c_if;
   logic scl_o;
   logic sda_i;
   logic sda_o;
+
+  string msg_id = "i2c_if";
 
   //---------------------------------
   // common tasks
@@ -77,7 +80,7 @@ interface i2c_if;
   endtask: wait_for_host_stop_or_rstart
 
   task automatic wait_for_host_ack(ref timing_cfg_t tc);
-    @(negedge sda_i);
+    `uvm_info(msg_id, "Wait for host ack::Begin", UVM_HIGH)
     wait_for_dly(tc.tClockLow + tc.tSetupBit);
     forever begin
       @(posedge scl_i);
@@ -87,10 +90,11 @@ interface i2c_if;
       end
     end
     wait_for_dly(tc.tHoldBit);
+    `uvm_info(msg_id, "Wait for host ack::Ack received", UVM_HIGH)
   endtask: wait_for_host_ack
 
   task automatic wait_for_host_nack(ref timing_cfg_t tc);
-    @(negedge sda_i);
+    `uvm_info(msg_id, "Wait for host nack::Begin", UVM_HIGH)
     wait_for_dly(tc.tClockLow + tc.tSetupBit);
     forever begin
       @(posedge scl_i);
@@ -100,6 +104,7 @@ interface i2c_if;
       end
     end
     wait_for_dly(tc.tHoldBit);
+    `uvm_info(msg_id, "Wait for host nack::nack received", UVM_HIGH)
   endtask: wait_for_host_nack
 
   task automatic wait_for_host_ack_or_nack(timing_cfg_t tc,
@@ -144,9 +149,11 @@ interface i2c_if;
                                  input bit bit_i);
     sda_o = 1'b1;
     wait_for_dly(tc.tClockLow);
+    `uvm_info(msg_id, "device_send_bit::Drive bit", UVM_MEDIUM)
     sda_o = bit_i;
     wait_for_dly(tc.tSetupBit);
     @(posedge scl_i);
+    `uvm_info(msg_id, "device_send_bit::Value sampled ", UVM_MEDIUM)
     // flip sda_target2host during the clock pulse of scl_host2target causes sda_unstable irq
     sda_o = ~sda_o;
     wait_for_dly(tc.tSdaUnstable);
