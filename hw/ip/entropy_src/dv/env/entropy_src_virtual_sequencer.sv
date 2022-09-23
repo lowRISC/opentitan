@@ -11,6 +11,7 @@ class entropy_src_virtual_sequencer extends cip_base_virtual_sequencer #(
   push_pull_sequencer#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))         rng_sequencer_h;
   push_pull_sequencer#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  csrng_sequencer_h;
   push_pull_sequencer#(.HostDataWidth(0))                                      aes_halt_sequencer_h;
+  entropy_src_xht_sequencer                                                    xht_sequencer;
 
   `uvm_component_new
 

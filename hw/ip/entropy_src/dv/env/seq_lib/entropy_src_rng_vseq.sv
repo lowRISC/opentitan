@@ -11,6 +11,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH) m_csrng_pull_seq;
   entropy_src_base_rng_seq                                              m_rng_push_seq;
+  entropy_src_xht_base_device_seq                                       m_xht_seq;
 
   // Tracks the number of CSRNG seeds seen by the m_csrng_pull_seq
   // just before enabling.
@@ -167,6 +168,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     m_csrng_pull_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
         type_id::create("m_csrng_pull_seq");
 
+    m_xht_seq = entropy_src_xht_base_device_seq::type_id::create("m_xht_seq");
+
     // Don't configure the DUT in dut_init (which is called in pre-start).  Instead wait until
     // we reach the main body() task, where we can handle any configuration alerts.
     do_entropy_src_init = 1'b0;
@@ -303,6 +306,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     `uvm_info(`gfn, $sformatf("STATE: %s", m_csrng_pull_seq.get_sequence_state().name), UVM_HIGH)
     m_csrng_pull_seq.wait_for_sequence_state(UVM_BODY);
 
+    `uvm_info(`gfn, "Stopping XHT sequencer", UVM_LOW)
+    p_sequencer.xht_sequencer.stop_sequences();
+
     `uvm_info(`gfn, "Stopping CSRNG seq", UVM_LOW)
     m_csrng_pull_seq.stop(.hard(0));
     `uvm_info(`gfn, "Stopping RNG seq", UVM_LOW)
@@ -365,15 +371,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // stay in the UVM_FINISHED state, so we create a new sequence item each time)
 
     fork
-      // Thread 1 of 2: run the RNG push sequencer
-      begin
         m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
-      end
-
-      // Thread 2 or 2: run the CSRNG pull sequencer
-      begin
         m_csrng_pull_seq.start(p_sequencer.csrng_sequencer_h);
-      end
+        m_xht_seq.start(p_sequencer.xht_sequencer);
     join_none
   endtask
 
