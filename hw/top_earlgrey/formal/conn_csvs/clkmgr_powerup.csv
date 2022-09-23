@@ -13,7 +13,6 @@ CONNECTION, CLKMGR_POWERUP_CLK_CLKMGR_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.c
 CONNECTION, CLKMGR_POWERUP_CLK_PINMUX_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.u_pinmux_aon, clk_i
 CONNECTION, CLKMGR_POWERUP_CLK_PINMUX_AON_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_powerup,     top_earlgrey.u_pinmux_aon, clk_aon_i
 
-CONNECTION, CLKMGR_POWERUP_CLK_PWM_CLK,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.u_pwm_aon, clk_i
 CONNECTION, CLKMGR_POWERUP_CLK_PWM_CORE_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_powerup,     top_earlgrey.u_pwm_aon, clk_core_i
 
 CONNECTION, CLKMGR_POWERUP_CLK_PWRMGR_CLK,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_powerup, top_earlgrey.u_pwrmgr_aon, clk_i

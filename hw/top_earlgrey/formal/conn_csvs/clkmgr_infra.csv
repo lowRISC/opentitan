@@ -32,7 +32,6 @@ CONNECTION, CLKMGR_INFRA_CLK_SRAM_CTRL_RET_OTP_CLK, top_earlgrey.u_clkmgr_aon, c
 
 #sysrst_ctrl
 CONNECTION, CLKMGR_INFRA_CLK_SYSRST_CTRL_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_infra, top_earlgrey.u_sysrst_ctrl_aon, clk_i
-CONNECTION, CLKMGR_INFRA_CLK_SYSRST_CTRL_AON_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_aon_infra,     top_earlgrey.u_sysrst_ctrl_aon, clk_aon_i
 
 #xbar
 CONNECTION, CLKMGR_INFRA_CLK_XBAR_MAIN_MAIN_CLK,      top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_infra,    top_earlgrey.u_xbar_main, clk_main_i
