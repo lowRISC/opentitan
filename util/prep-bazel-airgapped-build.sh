@@ -8,7 +8,7 @@ set -euo pipefail
 : "${REPO_TOP:=$(git rev-parse --show-toplevel)}"
 
 : "${BAZELISK:=${REPO_TOP}/bazelisk.sh}"
-: "${BAZEL_VERSION:=$(cat ${REPO_TOP}/.bazelversion)}"
+: "${BAZEL_VERSION:=$(cat "${REPO_TOP}/.bazelversion")}"
 
 : "${BAZEL_AIRGAPPED_DIR:=bazel-airgapped}"
 : "${BAZEL_DISTDIR:=bazel-distdir}"
@@ -115,9 +115,9 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-linux-x86_64 \
     --output bazel
   chmod +x bazel
-  git clone https://github.com/bazelbuild/bazel bazel-repo
+  git clone -b "${BAZEL_VERSION}" --depth 1 https://github.com/bazelbuild/bazel bazel-repo
   cd bazel-repo
-  git checkout "$(cat ${REPO_TOP}/.bazelversion)"
+  echo "Cloned bazel repo @ \"${BAZEL_VERSION}\" (commit $(git rev-parse HEAD))"
   ../bazel build @additional_distfiles//:archives.tar
   tar xvf bazel-bin/external/additional_distfiles/archives.tar \
     -C "../${BAZEL_DISTDIR}" \
