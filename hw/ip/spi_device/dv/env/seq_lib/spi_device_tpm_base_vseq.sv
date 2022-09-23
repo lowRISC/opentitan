@@ -78,23 +78,33 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     csr_wr(ral.intr_state.tpm_header_not_empty, 1);
   endtask : wait_and_check_tpm_cmd_addr
 
-  virtual task wait_and_fill_tpm_rfifo(bit [TPM_ADDR_WIDTH-1:0] exp_addr, uint exp_num_bytes,
-                                       output bit [7:0] rfifo_byte_q[$]);
-    wait_and_check_tpm_cmd_addr({CMD_TPM_READ, 4'(exp_num_bytes - 1)}, exp_addr);
+  virtual task wait_and_process_tpm_fifo(bit write,
+                                         bit [TPM_ADDR_WIDTH-1:0] exp_addr,
+                                         uint exp_num_bytes,
+                                         output bit [7:0] byte_q[$]);
+    wait_and_check_tpm_cmd_addr(get_tpm_cmd(write, exp_num_bytes), exp_addr);
     // Upon receiving read command, set read fifo contents
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rfifo_byte_q, rfifo_byte_q.size() == exp_num_bytes;)
-    for (int i = 0; i < rfifo_byte_q.size(); i += 4) begin
-      bit [31:0] rdfifo_wdata;
-      for (int j = 0 ; j < 4 ; j++) begin
-        if (i+j < rfifo_byte_q.size()) begin
-          rdfifo_wdata[8*j+:8] = rfifo_byte_q[i+j];
-        end else begin
-          rdfifo_wdata[8*j+:8] = 8'h 0;
+    if (write) begin
+      bit [7:0] wrfifo_byte;
+      for (int i; i < exp_num_bytes;) begin
+        // wait until fifo size > 0
+        csr_spinwait(.ptr(ral.tpm_status.wrfifo_depth), .exp_data(0), .compare_op(CompareOpGt));
+        `DV_CHECK_LE(i + `gmv(ral.tpm_status.wrfifo_depth), exp_num_bytes)
+
+        repeat (`gmv(ral.tpm_status.wrfifo_depth)) begin
+          csr_rd(.ptr(ral.tpm_write_fifo), .value(wrfifo_byte));
+          `uvm_info(`gfn, $sformatf("TPM Write FIFO Content = 0x%0h", wrfifo_byte), UVM_MEDIUM)
+          byte_q.push_back(wrfifo_byte);
+          i++;
         end
       end
-      csr_wr(.ptr(ral.tpm_read_fifo), .value(rdfifo_wdata));
+    end else begin
+      bit [31:0] word_q[$]; 
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(byte_q, byte_q.size() == exp_num_bytes;)
+      byte_q_to_word_q(byte_q, word_q);
+      foreach (word_q[i]) csr_wr(.ptr(ral.tpm_read_fifo), .value(word_q[i]));
     end
-  endtask : wait_and_fill_tpm_rfifo
+  endtask : wait_and_process_tpm_fifo
 
   // Check the CMD_ADDR/wrFIFO contents.
   virtual task check_tpm_write_fifo(byte data_bytes[$]);
@@ -127,9 +137,9 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
   endtask : poll_start_collect_data
 
   virtual task spi_host_xfer_tpm_item(input bit write,
-                                      ref bit [7:0] payload_q[$],
-                                      input uint read_size = 0, // not needed for write
-                                      input bit [TPM_ADDR_WIDTH-1:0] addr = $urandom);
+                                      input uint tpm_size = 0,
+                                      input bit [TPM_ADDR_WIDTH-1:0] addr,
+                                      output bit [7:0] payload_q[$]);
     spi_host_tpm_seq m_host_tpm_seq;
 
     `uvm_create_on(m_host_tpm_seq, p_sequencer.spi_sequencer_h)
@@ -138,11 +148,11 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
                                    write_command == write;
                                    addr == local::addr;
                                    if (write) {
-                                     data_q.size() == local::payload_q.size;
-                                     foreach (payload_q[i]) data_q[i] == local::payload_q[i];
-                                   }
-                                   read_size == local::read_size;)
+                                     data_q.size() == tpm_size;
+                                   } else {
+                                    read_size == tpm_size;
+                                   })
     `uvm_send(m_host_tpm_seq)
-    if (!write) payload_q = m_host_tpm_seq.rsp.data;
+    payload_q = m_host_tpm_seq.rsp.data;
   endtask
 endclass : spi_device_tpm_base_vseq

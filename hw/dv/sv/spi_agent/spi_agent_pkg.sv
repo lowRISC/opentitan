@@ -13,15 +13,15 @@ package spi_agent_pkg;
   `include "dv_macros.svh"
 
   // parameter
+  parameter uint TPM_START_MAX_WAIT_TIME_NS = 10_000_000; // 10ms
   parameter uint CSB_WIDTH = 2;
   parameter uint NUM_CSB = CSB_WIDTH ** 2;
   parameter time TIME_SCK_STABLE_TO_CSB_NS = 10ns;
   parameter uint TPM_ADDR_WIDTH      = 24;
   parameter uint TPM_ADDR_WIDTH_BYTE = TPM_ADDR_WIDTH / 8;
-  parameter bit[3:0] CMD_TPM_WRITE = 4'h0;
-  parameter bit[3:0] CMD_TPM_READ  = 4'h8;
-  parameter byte     TPM_WAIT      = 8'h00;
-  parameter byte     TPM_START     = 8'h01;
+  parameter byte TPM_WAIT            = 8'h00;
+  parameter byte TPM_START           = 8'h01;
+  parameter byte MAX_TPM_SIZE        = 64;
 
   // transaction type
   typedef enum {
@@ -77,6 +77,13 @@ package spi_agent_pkg;
   // forward declare classes to allow typedefs below
   typedef class spi_item;
   typedef class spi_agent_cfg;
+
+  string msg_id = "spi_agent_pkg";
+
+  function automatic bit [7:0] get_tpm_cmd(bit write, uint size);
+    `DV_CHECK_LE(size, MAX_TPM_SIZE, , , msg_id)
+    return {!write, 1'b0, 6'(size - 1)};
+  endfunction
 
   // package sources
   `include "spi_flash_cmd_info.sv"

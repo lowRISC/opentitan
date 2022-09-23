@@ -110,7 +110,7 @@ package spi_device_env_pkg;
   parameter bit[11:0] TPM_HW_STS_OFFSET          = 12'h018;
   parameter bit[11:0] TPM_HW_INT_CAP_OFFSET      = 12'h014;
   parameter bit[23:0] TPM_BASE_ADDR              = 24'hD40000;
-
+  parameter byte MAX_SUPPORT_TPM_SIZE            = 16; // current version can support up to 16
   parameter uint     NUM_INTERNAL_PROCESSED_CMD  = 11; // exclude WREN, WRDI, EN4B, EX4B
   parameter bit[7:0] READ_JEDEC                  = 8'h9F;
   parameter bit[7:0] READ_SFDP                   = 8'h5A;
@@ -206,6 +206,21 @@ package spi_device_env_pkg;
       addr[7:0] = addr_byte_q[i];
     end
     return addr;
+  endfunction
+
+  // if byte_q.size % 4 > 0, the last word is packed with random value to form the full word
+  function automatic void byte_q_to_word_q(input bit [7:0] byte_q[$], output bit [31:0] word_q[$]);
+    for (int i = 0; i < byte_q.size; i += 4) begin
+      bit [31:0] word_data;
+      for (int j = 0 ; j < 4 ; j++) begin
+        if (i + j < byte_q.size()) begin
+          word_data[8*j+:8] = byte_q[i + j];
+        end else begin
+          word_data[8*j+:8] = $urandom();
+        end
+      end
+      word_q.push_back(word_data);
+    end
   endfunction
 
   // macros
