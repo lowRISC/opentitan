@@ -138,6 +138,26 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "e2e_keymgr_init",
+    srcs = ["rom_e2e_keymgr_init_test.c"],
+    signed = True,
+    targets = [
+        "cw310_rom",
+        "verilator",
+    ],
+    verilator = verilator_params(
+        timeout = "eternal",
+        rom = "//sw/device/silicon_creator/rom",
+    ),
+    deps = [
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 # Same as `:e2e_bootup_success`, but the Dev OTP image is spliced into the
 # bitstream before it's sent to the CW310 FPGA.
 opentitan_functest(
