@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // TPM Read test, issuing READ command, writing to read fifo, checking host received data
-class spi_device_tpm_read_vseq extends spi_device_tpm_base_vseq;
-  `uvm_object_utils(spi_device_tpm_read_vseq)
+class spi_device_tpm_rw_vseq extends spi_device_tpm_base_vseq;
+  `uvm_object_utils(spi_device_tpm_rw_vseq)
   `uvm_object_new
 
   rand uint tpm_size = 4;
@@ -41,4 +41,4 @@ class spi_device_tpm_read_vseq extends spi_device_tpm_base_vseq;
     end
   endtask : body
 
-endclass : spi_device_tpm_read_vseq
+endclass : spi_device_tpm_rw_vseq
