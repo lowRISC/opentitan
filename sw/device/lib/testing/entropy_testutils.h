@@ -8,6 +8,11 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 
 /**
+ * Returns default entropy source configuration.
+ */
+dif_entropy_src_config_t entropy_testutils_config_default(void);
+
+/**
  * Initialize the entropy complex in auto-request mode.
  *
  * Initializes the CSRNG, EDN0, and EDN1 in automatic request mode, with EDN1
@@ -30,5 +35,12 @@ void entropy_testutils_boot_mode_init(void);
  */
 void entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
                                       dif_entropy_src_main_fsm_t state);
+
+/**
+ * Stops all entropy complex blocks.
+ *
+ * Stops EDN and CSRNG instances before stopping the entropy source.
+ */
+void entropy_testutils_stop_all(void);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_ENTROPY_TESTUTILS_H_

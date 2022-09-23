@@ -48,4 +48,22 @@ void csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
  */
 void csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng);
 
+/**
+ * Checks CSRNG command status.
+ *
+ * Asserts error if the command or internal FIFO status contains any errors.
+ *
+ * @param csrng Handle.
+ */
+void csrng_testutils_cmd_status_check(const dif_csrng_t *csrng);
+
+/**
+ * Checks CSRNG recoverable alerts.
+ *
+ * Asserts error if there are any CSRNG recoverable alerts set.
+ *
+ * @param csrng Handle.
+ */
+void csrng_testutils_recoverable_alerts_check(const dif_csrng_t *csrng);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_CSRNG_TESTUTILS_H_
