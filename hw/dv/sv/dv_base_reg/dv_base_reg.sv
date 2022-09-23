@@ -278,7 +278,7 @@ class dv_base_reg extends uvm_reg;
         return;
       end else begin
         `uvm_info(`gfn, $sformatf(
-            "Shadow reg %0s has update error, update rw.value from %0h to %0h",
+            "Update shadow reg %0s rw.value from %0h to %0h",
             get_name(), rw.value[0], get_committed_val()), UVM_HIGH)
         rw.value[0] = get_committed_val();
       end
