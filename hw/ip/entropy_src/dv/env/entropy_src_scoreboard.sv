@@ -30,6 +30,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   int observe_fifo_drops   = 0;
 
   bit dut_pipeline_enabled = 0;
+  bit ht_fips_mode = 0;
+
   // The FW_OV pipeline is controlled by two variables: SHA3_START and MODULE_ENABLE
   // The MODULE_ENABLE signal has different delays when shutting down the FW_OV pipeline
   // so we track it in a separate variable for fw_ov
@@ -84,6 +86,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   int                              continuous_fail_count;
   bit                              cont_fail_in_last_sample;
 
+  // Ext. HT counters.
+  // Like the continuous tests, these failures can in principle happen many times
+  // per window, however only one failure per window gets registered toward the
+  // total alert count.
+  int                              extht_fail_count;
+  int                              extht_fail_in_last_sample;
+
   // TODO: Document method for clearing alerts in programmer's guide
   // TODO: Add health check failure and clearing to integration tests.
   bit threshold_alert_active = 1'b0;
@@ -99,6 +108,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       csrng_fifo;
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH)))
       rng_fifo;
+  uvm_tlm_analysis_fifo#(entropy_src_xht_item) xht_fifo;
 
   // Interrupt Management Variables
 
@@ -145,6 +155,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     rng_fifo   = new("rng_fifo", this);
     csrng_fifo = new("csrng_fifo", this);
+    xht_fifo   = new("xht_fifo", this);
 
     if (!uvm_config_db#(virtual entropy_src_cov_if)::get
        (null, "*.env" , "entropy_src_cov_if", cov_vif)) begin
@@ -164,6 +175,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         process_interrupts();
         process_fifo_exceptions();
         health_test_scoring_thread();
+        process_xht_events();
       join_none
     end
   endtask
@@ -632,23 +644,37 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     return (fail_hi || fail_lo);
   endfunction
 
-  function evaluate_external_ht(queue_of_rng_val_t window, bit fips_mode);
-    int value;
+  function void evaluate_external_ht(entropy_src_xht_rsp_t xht_rsp, bit fips_mode);
+    int value_hi, value_lo;
     bit fail_hi, fail_lo;
+    string msg;
 
-    value = calc_extht_test(window);
+    value_hi = xht_rsp.test_cnt_hi;
+    value_lo = xht_rsp.test_cnt_lo;
 
-    update_watermark("extht_lo", fips_mode, value);
-    update_watermark("extht_hi", fips_mode, value);
+    fail_hi = xht_rsp.test_fail_hi_pulse;
+    fail_lo = xht_rsp.test_fail_lo_pulse;
 
-    fail_lo = check_threshold("extht_lo", fips_mode, value);
+    update_watermark("extht_lo", fips_mode, value_lo);
+    update_watermark("extht_hi", fips_mode, value_hi);
+
     if (fail_lo) predict_failure_logs("extht_lo");
 
-    fail_hi = check_threshold("extht_hi", fips_mode, value);
     if (fail_hi) predict_failure_logs("extht_hi");
 
-    return (fail_hi || fail_lo);
+    extht_fail_count += (fail_hi || fail_lo);
+    extht_fail_in_last_sample = fail_hi || fail_lo;
   endfunction
+
+  task process_xht_events();
+    entropy_src_xht_item item;
+    forever begin
+      xht_fifo.get(item);
+      if(!item.req.clear) begin
+        evaluate_external_ht(item.rsp, ht_fips_mode);
+      end
+    end
+  endtask
 
   // The repetition counts are always running
   function bit evaluate_repcnt_test(bit fips_mode, int value);
@@ -707,19 +733,22 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     windowed_fail_count = evaluate_adaptp_test(window, fips_mode) +
                           evaluate_bucket_test(window, fips_mode) +
-                          evaluate_markov_test(window, fips_mode) +
-                          evaluate_external_ht(window, fips_mode);
+                          evaluate_markov_test(window, fips_mode);
 
     // Are there any failures this in the last sample (continuous or windowed)?
     // Note: If the last sample in the window has a continuous HT failure, then
     // this sample has already been added to the failure counts
-    sample_fail_count = (windowed_fail_count != 0) & ~cont_fail_in_last_sample;
+    sample_fail_count = (windowed_fail_count != 0);
 
     // Add the number of continuous fails (excluding the last sample)
     // to any failure in this sample.
-    total_fail_count = sample_fail_count + continuous_fail_count;
+    total_fail_count = sample_fail_count +
+                       (continuous_fail_count - cont_fail_in_last_sample) +
+                       (extht_fail_count      - extht_fail_in_last_sample);
 
-    if (sample_fail_count) begin
+    // To avoid double counting only mark a sample failure if there haven't
+    // already been continuous or extht failures at the same time.
+    if (sample_fail_count && !(cont_fail_in_last_sample || extht_fail_in_last_sample)) begin
       any_fail_count_regval = `gmv(alert_summary_field);
       // Just add any failure in the last sample as the previous samples
       // were added as they occurred.
@@ -731,6 +760,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
 
     continuous_fail_count = 0;
+    extht_fail_count = 0;
 
     return total_fail_count;
   endfunction
@@ -1964,7 +1994,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     entropy_phase_e           dut_fsm_phase;
     int                       window_rng_frames;
     int                       pass_requirement, pass_count, startup_fail_count;
-    bit                       ht_fips_mode;
     bit                       fw_ov_insert;
     bit                       is_fips_mode;
     bit                       fips_enable, es_route, es_type;
@@ -2064,8 +2093,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
         if(window.size() < window_rng_frames && !dut_pipeline_enabled) break;
 
+        `DV_SPINWAIT_EXIT(wait(cfg.m_xht_agent_cfg.vif.req.window_wrap_pulse);,
+                          wait(!dut_pipeline_enabled);)
+        if (!cfg.m_xht_agent_cfg.vif.req.window_wrap_pulse) break;
+        cfg.clk_rst_vif.wait_clks(1);
         `uvm_info(`gfn, "FULL_WINDOW", UVM_FULL)
         failures_in_window = health_check_rng_data(window, ht_fips_mode);
+
         if (failures_in_window > 0) begin
           pass_count = 0;
           // Most failures are handled in the alert counter registers

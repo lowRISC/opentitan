@@ -12,6 +12,7 @@ filesets:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:cip_lib
       - lowrisc:dv:push_pull_agent
+      - lowrisc:dv:entropy_src_xht_agent
       - lowrisc:dv:entropy_subsys_fifo_exception_if
     files:
       - entropy_src_env_pkg.sv
