@@ -208,42 +208,42 @@ class spi_host_driver extends spi_driver;
   task drive_tpm_item();
     bit [7:0] cmd_bytes[$];
     bit [7:0] returned_bytes[$];
-    bit [3:0] data_num_byte;
+    byte data_num_byte;
     bit [7:0] tpm_rsp;
 
     `uvm_info(`gfn, $sformatf("Driving TPM item: \n%s", req.sprint()), UVM_MEDIUM)
 
     `DV_CHECK_EQ_FATAL(req.address_q.size(), TPM_ADDR_WIDTH_BYTE)
-    data_num_byte = req.write_command ? req.data.size() - 1 : req.read_size - 1;
-    `DV_CHECK_FATAL(data_num_byte inside {[1:64]});
-    cmd_bytes[0] = req.write_command ? {CMD_TPM_WRITE, data_num_byte} :
-                                       {CMD_TPM_READ, data_num_byte};
-    cmd_bytes = {cmd_bytes, req.address_q};
+    data_num_byte = req.write_command ? req.data.size() : req.read_size;
+    cmd_bytes = {get_tpm_cmd(req.write_command, data_num_byte), req.address_q};
 
     cfg.vif.csb[active_csb] <= 1'b0;
     sck_pulses = cmd_bytes.size() * 8;
     issue_data(.transfer_data(cmd_bytes), .returned_data(returned_bytes), .last_data(0));
 
     // polling TPM_START
-    do begin
-      bit [7:0] dummy_bytes[$];
-      dummy_bytes = {$urandom};
-      sck_pulses += 8;
-      $display($time, " wcy %0d", sck_pulses);
-      issue_data(.transfer_data(dummy_bytes), .returned_data(returned_bytes), .last_data(0));
-      tpm_rsp = returned_bytes[0];
-      `DV_CHECK(tpm_rsp inside {TPM_WAIT, TPM_START})
-    end while (tpm_rsp == TPM_WAIT);
+    `DV_SPINWAIT(
+      do begin
+        bit [7:0] dummy_bytes[$];
+        dummy_bytes = {$urandom};
+        sck_pulses += 8;
+        issue_data(.transfer_data(dummy_bytes), .returned_data(returned_bytes), .last_data(0));
+        tpm_rsp = returned_bytes[0];
+        `DV_CHECK(tpm_rsp inside {TPM_WAIT, TPM_START})
+      end while (tpm_rsp == TPM_WAIT);
+      , , TPM_START_MAX_WAIT_TIME_NS)
 
     `uvm_info(`gfn, "Received TPM START", UVM_MEDIUM)
     sck_pulses += (req.write_command ? req.data.size : req.read_size) * 8;
     if (req.write_command) begin
       issue_data(.transfer_data(req.data), .returned_data(returned_bytes), .last_data(1));
+      // no data will return for write
       foreach (returned_bytes[i]) `DV_CHECK_EQ(returned_bytes[i], 0)
     end else begin // TPM read
       bit [7:0] dummy_bytes[$];
       repeat (req.read_size) dummy_bytes.push_back($urandom);
       issue_data(.transfer_data(dummy_bytes), .returned_data(rsp.data), .last_data(1));
+      `uvm_info(`gfn, $sformatf("collect read data for TPM: 0x%p", rsp.data), UVM_MEDIUM)
     end
     wait(sck_pulses == 0);
   endtask
