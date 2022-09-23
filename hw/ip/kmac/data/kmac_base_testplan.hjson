@@ -361,6 +361,13 @@
             '''
    }
    {
+      name: entropy_timer_cg
+      desc: '''
+            Cover the values for the entropy_period register's `prescaler` and `wait_timer` fields.
+            Cross these field ranges with whether the entropy EDN mode is on or off.
+            '''
+   }
+   {
       name: edn_cg
       desc: '''
             Covers that EDN entropy can be received by KMAC while keccak rounds are active/inactive,
