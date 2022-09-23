@@ -138,7 +138,6 @@ class spi_device_base_vseq extends cip_base_vseq #(
     cfg.spi_host_agent_cfg.device_bit_dir = device_bit_dir;
     cfg.spi_host_agent_cfg.csid = 0;
     cfg.spi_host_agent_cfg.partial_byte = 0;
-    cfg.spi_host_agent_cfg.csb_consecutive = 0;
     cfg.spi_host_agent_cfg.decode_commands = 0;
     cfg.spi_host_agent_cfg.num_bytes_per_trans_in_mon = 4;
 

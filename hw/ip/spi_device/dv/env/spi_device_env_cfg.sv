@@ -95,4 +95,11 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
     end
     return 0;
   endfunction
+
+  // return 0/1 for active or inactive
+  function automatic bit get_locality_active(byte index);
+    uvm_reg_field access_fld = ral.get_field_by_name($sformatf("access_%0d", index));
+    byte access_val = `gmv(access_fld);
+    return access_val[TPM_ACTIVE_LOCALITY_BIT_POS];
+  endfunction
 endclass

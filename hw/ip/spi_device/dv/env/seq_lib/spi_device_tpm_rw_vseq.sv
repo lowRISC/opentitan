@@ -24,7 +24,6 @@ class spi_device_tpm_rw_vseq extends spi_device_tpm_base_vseq;
 
     // randomised tpm configuration.
     tpm_init();
-    tpm_configure();
     repeat (num_trans) begin
       bit write = $urandom;
       bit [TPM_ADDR_WIDTH-1:0] tpm_addr = $urandom;

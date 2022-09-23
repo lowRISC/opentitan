@@ -18,7 +18,6 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   bit sck_on;                     // keep sck on
   bit partial_byte;       // Transfering less than byte
   bit [3:0] bits_to_transfer; // Bits to transfer if using less than byte
-  bit csb_consecutive;            // Don't deassert CSB
   bit decode_commands;  // Used in monitor if decoding of commands needed
   bit [2:0] cmd_addr_size = 4; //Address size for command
 
@@ -78,7 +77,6 @@ class spi_agent_cfg extends dv_base_agent_cfg;
     `uvm_field_int (host_bit_dir,   UVM_DEFAULT)
     `uvm_field_int (device_bit_dir, UVM_DEFAULT)
     `uvm_field_int (partial_byte,   UVM_DEFAULT)
-    `uvm_field_int (csb_consecutive,    UVM_DEFAULT)
     `uvm_field_int (decode_commands,    UVM_DEFAULT)
     `uvm_field_int (cmd_addr_size,      UVM_DEFAULT)
     `uvm_field_int (bits_to_transfer,             UVM_DEFAULT)
