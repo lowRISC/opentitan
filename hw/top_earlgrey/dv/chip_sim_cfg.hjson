@@ -1271,7 +1271,7 @@
               "chip_sw_example_flash",
               "chip_sw_example_rom",
               "chip_sw_example_manufacturer"]
-              // TODO: add this test after enabling HW verification: "rom_e2e_bootup_success"]
+              // TODO: add this test after enabling HW verification: "rom_e2e_smoke"]
     }
     {
       name: jitter

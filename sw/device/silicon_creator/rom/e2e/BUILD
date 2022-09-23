@@ -44,7 +44,7 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "e2e_bootup_success",
+    name = "rom_e2e_smoke",
     srcs = ["empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom",

@@ -7,6 +7,18 @@
 
   testpoints: [
     {
+      name: rom_e2e_smoke
+      desc: '''Verify that ROM can boot a ROM_EXT with default infrastructure configurations.
+
+            - The valid ROM_EXT should be a test program that returns `true`, optimizing for speed.
+            - The test program should be launched via the OTTF.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      stage: V2
+      tests: ["rom_e2e_smoke"]
+    }
+
+    {
       name: rom_e2e_shutdown_output
       desc: '''Verify that ROM can properly report errors over UART.
 
