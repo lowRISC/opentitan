@@ -36,6 +36,11 @@
                     value: "0x4b4b4b4b4b4ba5a5",
                 },
                 {
+                    name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
+                    // Default value for flash scramble / ecc / he_en
+                    value: "0x0",
+                },
+                {
                     name: "CREATOR_SW_CFG_RNG_EN",
                     // Enable use of entropy for countermeasures. See the
                     // definition of `hardened_bool_t` in
