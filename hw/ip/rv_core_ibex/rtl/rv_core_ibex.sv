@@ -887,4 +887,13 @@ module rv_core_ibex
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_cfg, alert_tx_o[2])
   `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RvCoreRegWeOnehotCheck_A,
       u_core.gen_regfile_ff.register_file_i.gen_wren_check.u_prim_onehot_check, alert_tx_o[2])
+
+  // If the CPU is not enabled, the PC should not advance.
+  // Note that we need to account for 2 cycles synchronizer delay,
+  // and 1 cycle delay for $stable.
+  `ASSERT(LcCpuEnable_A,
+      lc_ctrl_pkg::lc_tx_test_false_loose(lc_cpu_en_i)
+      |->
+      ##3 $stable(u_core.u_ibex_core.if_stage_i.pc_if_o))
+
 endmodule
