@@ -732,20 +732,6 @@
     // lc_ctrl_broadcast.sv //
     //////////////////////////
     {
-      name: lc_keymgr_en
-      desc: "Verify LC_CTRL's lc_ctrl_lc_keymgr_en is connects correctly to keymgr."
-      stage: V2
-      tests: ["lc_keymgr_en_keymgr"]
-      tags: ["conn"]
-    }
-    {
-      name: lc_nvm_debug_en
-      desc: "Verify lc_ctrl's lc_nvm_debug_en is connected correctly to flash_ctrl."
-      stage: V2
-      tests: ["lc_nvm_debug_en_flash_ctrl"]
-      tags: ["conn"]
-    }
-    {
       name: lc_escalate_en
       desc: '''Verify lc_ctrl's `lc_escalate_en_o` is connected to the following blocks'
             `lc_escalate_en_i`:
@@ -769,7 +755,89 @@
               "lc_escalate_en_otbn"]
       tags: ["conn"]
     }
-
+    {
+      name: lc_keymgr_en
+      desc: "Verify that lc_ctrl's keymanager enable signal and diversification value are correctly connected to the keymgr."
+      stage: V2
+      tests: ["lc_keymgr_en_keymgr",
+              "lc_keymgr_div_keymgr"]
+      tags: ["conn"]
+    }
+    {
+      name: lc_nvm_debug_en
+      desc: "Verify lc_ctrl's lc_nvm_debug_en is connected correctly to flash_ctrl."
+      stage: V2
+      tests: ["lc_nvm_debug_en_flash_ctrl"]
+      tags: ["conn"]
+    }
+    {
+      name: lc_cpu_en
+      desc: "Verify that the lc_ctrl's lc_cpu_en_o signal is correctly connected to rv_core_ibex."
+      stage: V2
+      tests: ["lc_cpu_en_rv_core_ibex"]
+      tags: ["conn"]
+    }
+    {
+      name: lc_hw_debug_en
+      desc: "Verify that lc_ctrl's lc_hw_debug_en_o signal is correctly connected to IPs."
+      stage: V2
+      tests: ["lc_hw_debug_en_pwrmgr",
+              "lc_hw_debug_en_clkmgr",
+              "lc_hw_debug_en_pinmux",
+              "lc_hw_debug_en_sram_ctrl_ret",
+              "lc_hw_debug_en_sram_ctrl_main",
+              "lc_hw_debug_en_rv_dm",
+              "lc_hw_debug_en_csrng"]
+      tags: ["conn"]
+    }
+    {
+      name: lc_hw_dft_en
+      desc: "Verify that lc_ctrl's lc_dft_en_o signal is correctly connected to IPs."
+      stage: V2
+      tests: ["lc_dft_en_otp",
+              "lc_dft_en_pwrmgr",
+              "lc_dft_en_pinmux",
+              "lc_dft_en_ast"]
+      tags: ["conn"]
+    }
+    {
+      name: lc_flash_otbn_rma
+      desc: "Verify lc_ctrl's RMA request connections."
+      stage: V2
+      tests: ["lc_rma_seed_flash_ctrl",
+              "lc_rma_req_flash_ctrl",
+              "flash_ctrl_rma_ack_otbn",
+              "otbn_rma_ack_lc"]
+      tags: ["conn"]
+    }
+    {
+      name: lc_clk_byp
+      desc: "Verify lc_ctrl's clock bypass request connections."
+      stage: V2
+      tests: ["lc_clk_byp_req_clkmgr",
+              "clkmgr_clk_byp_ack_lc"]
+      tags: ["conn"]
+    }
+    {
+      name: lc_otp_check_byp
+      desc: "Verify lc_ctrl's check bypass signal is correctly connected to OTP (used when programming a life cycle transition)."
+      stage: V2
+      tests: ["lc_check_byp_en_otp"]
+      tags: ["conn"]
+    }
+    {
+      name: lc_access_control
+      desc: "Verify lc_ctrl's access control modulation signals are correctly connected to flash and OTP."
+      stage: V2
+      tests: ["lc_creator_seed_sw_rw_en_otp",
+              "lc_seed_hw_rd_en_otp",
+              "lc_creator_seed_sw_rw_en_flash",
+              "lc_seed_hw_rd_en_flash",
+              "lc_owner_seed_sw_rw_en_flash",
+              "lc_iso_part_sw_rd_en_flash",
+              "lc_iso_part_sw_wr_en_flash"]
+      tags: ["conn"]
+    }
     /////////////////////////
     // pwrmgr_rstmgr.sv    //
     /////////////////////////
