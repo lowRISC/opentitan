@@ -197,10 +197,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     if (check_sw_update_explicit &&
         (cfg.dut_cfg.sw_regupd == 0) && (ral.sw_regupd.sw_regupd.get() == 0)) begin
+      bit completed, regwen;
+
       entropy_src_dut_cfg altcfg;
       altcfg=cfg.dut_cfg;
       `DV_CHECK_RANDOMIZE_FATAL(altcfg)
-      entropy_src_init(altcfg);
+      entropy_src_init(.newcfg(altcfg), .completed(completed), .regwen(regwen));
       check_reconfig();
       // Don't bother updating cfg.dut_cfg for this rare case.  Updating the dut_cfg is
       // useful for logging, but it may not be worth the complexity here.
