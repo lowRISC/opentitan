@@ -3,7 +3,7 @@
   <information comment-version="1" creation-time="Tue 12 Apr 2022 05:13:12 PDT" creator="rasmus.madsen" csCheck="true" modified-by="rasmus.madsen" modify-time="Tue 12 Apr 2022 05:16:05 PDT" save-ref-method="seq" tool-version="Cadence vManager21.03" rules-signature-c="7ef9189187eff2ecb6887915c378f53a">
     <ucm-files>
     </ucm-files>
-    <ccf-files>     
+    <ccf-files>
     </ccf-files>
   </information>
   <rules>
@@ -406,9 +406,6 @@
     <rule ccType="inst" comment="21" domain="icc" entityName="aes/&quot;gen_cipher_control_fsm_svas[2]&quot;/gen_cipher_control_fsm_svas_n/FpvSecCmAesCipherControlFsmCheck_A" entityType="assertion" excTime="1647345045" name="exclude" reviewer="rasmus-madsen" user="22" vscope="default"></rule>
     <rule ccType="inst" comment="21" domain="icc" entityName="aes/aes_csr_assert/TlulOOBAddrErr_A" entityType="assertion" excTime="1647345107" name="exclude" reviewer="rasmus-madsen" user="22" vscope="default"></rule>
     <rule ccType="inst" comment="21" domain="icc" entityName="aes/aes_csr_assert/ctrl_aux_regwen_rd_A" entityType="assertion" excTime="1647345107" name="exclude" reviewer="rasmus-madsen" user="22" vscope="default"></rule>
-    <rule ccType="inst" comment="21" domain="icc" entityName="aes/u_prim_lc_sync/PrimLcSyncCheckTransients1_A" entityType="assertion" excTime="1647345365" name="exclude" reviewer="rasmus-madsen" user="22" vscope="default"></rule>
-    <rule ccType="inst" comment="21" domain="icc" entityName="aes/u_prim_lc_sync/PrimLcSyncCheckTransients0_A" entityType="assertion" excTime="1647345365" name="exclude" reviewer="rasmus-madsen" user="22" vscope="default"></rule>
-    <rule ccType="inst" comment="21" domain="icc" entityName="aes/u_prim_lc_sync/PrimLcSyncCheckTransients_A" entityType="assertion" excTime="1647345365" name="exclude" reviewer="rasmus-madsen" user="22" vscope="default"></rule>
     <rule ccType="inst" comment="23" domain="icc" entityName="aes/&quot;tl_i.a_user.rsvd&quot;" entityType="toggle" excTime="1649410990" name="exclude" reviewer="unknown; unknown" user="24" vscope="default"></rule>
     <rule ccType="inst" comment="23" domain="icc" entityName="aes/&quot;tl_i.a_param&quot;" entityType="toggle" excTime="1649410990" name="exclude" reviewer="unknown; unknown" user="24" vscope="default"></rule>
     <rule ccType="inst" comment="23" domain="icc" entityName="aes/&quot;tl_o.d_param&quot;" entityType="toggle" excTime="1649410990" name="exclude" reviewer="unknown; unknown" user="24" vscope="default"></rule>

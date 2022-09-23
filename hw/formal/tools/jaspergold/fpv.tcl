@@ -125,9 +125,6 @@ if {$env(DUT_TOP) == "pinmux_tb"} {
 #-------------------------------------------------------------------------
 # disable assertions
 #-------------------------------------------------------------------------
-assert -disable {*SyncCheckTransients_A}
-assert -disable {*SyncCheckTransients0_A}
-assert -disable {*SyncCheckTransients1_A}
 
 #-------------------------------------------------------------------------
 # assume properties for inputs

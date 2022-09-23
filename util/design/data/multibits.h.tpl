@@ -18,9 +18,9 @@ from mubi import prim_mubi
 %>\
 
 % for n in range(1, n_max_nibbles + 1):
-  <%
-     nbits = n * 4
-  %>\
+<%
+   nbits = n * 4
+%>\
   /**
    * ${nbits}-bits boolean values
    */

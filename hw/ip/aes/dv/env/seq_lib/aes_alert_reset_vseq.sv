@@ -57,13 +57,9 @@ class aes_alert_reset_vseq extends aes_base_vseq;
               if (!(randomize(lc_esc)  with { lc_esc != lc_ctrl_pkg::Off;})) begin
                 `uvm_fatal(`gfn, $sformatf("Randomization failes"))
               end
-              $assertoff(0,"tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients0_A");
-              $assertoff(0,"tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients_A");
                cfg.lc_escalate_vif.drive({lc_esc,1'b1});
                wait(!cfg.clk_rst_vif.rst_n);
                cfg.lc_escalate_vif.drive('0);
-              $asserton(0,"tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients0_A");
-              $asserton(0,"tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients_A");
             end
           end
           basic: begin

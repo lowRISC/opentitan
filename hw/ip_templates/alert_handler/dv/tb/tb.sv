@@ -94,38 +94,6 @@ module tb;
     .esc_tx_o             ( esc_tx        )
   );
 
-  `define LPG_MUBI_PATH tb.dut.u_alert_handler_lpg_ctrl
-  for (genvar k = 0; k < NLpg; k++) begin : gen_lpgs_asserts_disable
-    // These SVA checks the lpg inputs are either Off or On, we will use more than these 2 values.
-    // If it's not On, it should be Off.
-    initial begin
-      $assertoff(0,
-          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_rst_en.PrimMubi4SyncCheckTransients_A);
-      $assertoff(0,
-          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_rst_en.PrimMubi4SyncCheckTransients0_A);
-      $assertoff(0,
-          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_rst_en.PrimMubi4SyncCheckTransients1_A);
-      $assertoff(0,
-          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_cg_en.PrimMubi4SyncCheckTransients_A);
-      $assertoff(0,
-          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_cg_en.PrimMubi4SyncCheckTransients0_A);
-      $assertoff(0,
-          `LPG_MUBI_PATH.gen_lpgs[k].u_prim_mubi4_sync_cg_en.PrimMubi4SyncCheckTransients1_A);
-    end
-  end
-
-  for (genvar k=0; k < NAlerts; k++) begin : gen_alert_map_asserts_disable
-    initial begin
-      $assertoff(0,
-          `LPG_MUBI_PATH.gen_alert_map[k].u_prim_mubi4_sync_lpg_en.PrimMubi4SyncCheckTransients_A);
-      $assertoff(0,
-          `LPG_MUBI_PATH.gen_alert_map[k].u_prim_mubi4_sync_lpg_en.PrimMubi4SyncCheckTransients0_A);
-      $assertoff(0,
-          `LPG_MUBI_PATH.gen_alert_map[k].u_prim_mubi4_sync_lpg_en.PrimMubi4SyncCheckTransients1_A);
-    end
-  end
-  `undef LPG_MUBI_HIER_PATH
-
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();

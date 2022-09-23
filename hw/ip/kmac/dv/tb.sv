@@ -112,11 +112,6 @@ module tb;
                                                  "vif", sideload_if);
     uvm_config_db#(virtual kmac_if)::set(null, "*.env", "kmac_vif", kmac_if);
 
-    // Random drive lc_escalation signals.
-    $assertoff(0, tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients0_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync.PrimLcSyncCheckTransients1_A);
-
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

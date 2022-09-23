@@ -69,12 +69,6 @@ module tb;
   );
 
   initial begin
-    // these SVA checks the keymgr_en is either Off or On, we will use more than these 2 values.
-    // If it's not On, it should be off
-    $assertoff(0, tb.dut.u_lc_keymgr_en_sync.PrimLcSyncCheckTransients_A);
-    $assertoff(0, tb.dut.u_lc_keymgr_en_sync.PrimLcSyncCheckTransients0_A);
-    $assertoff(0, tb.dut.u_lc_keymgr_en_sync.PrimLcSyncCheckTransients1_A);
-
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);

@@ -40,87 +40,11 @@ interface entropy_src_assert_if
 );
 
   task automatic assert_off_alert ();
-    $assertoff(0, `PATH1.PrimMubi4SyncCheckTransients_A);
-    $assertoff(0, `PATH1.PrimMubi4SyncCheckTransients0_A);
-    $assertoff(0, `PATH1.PrimMubi4SyncCheckTransients1_A);
 
-    $assertoff(0, `PATH2.PrimMubi4SyncCheckTransients_A);
-    $assertoff(0, `PATH2.PrimMubi4SyncCheckTransients0_A);
-    $assertoff(0, `PATH2.PrimMubi4SyncCheckTransients1_A);
-
-    $assertoff(0, `PATH3.PrimMubi4SyncCheckTransients_A);
-    $assertoff(0, `PATH3.PrimMubi4SyncCheckTransients0_A);
-    $assertoff(0, `PATH3.PrimMubi4SyncCheckTransients1_A);
-
-    $assertoff(0, `PATH4.PrimMubi4SyncCheckTransients_A);
-    $assertoff(0, `PATH4.PrimMubi4SyncCheckTransients0_A);
-    $assertoff(0, `PATH4.PrimMubi4SyncCheckTransients1_A);
-
-    $assertoff(0, `PATH5.PrimMubi4SyncCheckTransients_A);
-    $assertoff(0, `PATH5.PrimMubi4SyncCheckTransients0_A);
-    $assertoff(0, `PATH5.PrimMubi4SyncCheckTransients1_A);
-
-    $assertoff(0, `PATH6.PrimMubi4SyncCheckTransients_A);
-    $assertoff(0, `PATH6.PrimMubi4SyncCheckTransients0_A);
-    $assertoff(0, `PATH6.PrimMubi4SyncCheckTransients1_A);
-
-    $assertoff(0, `PATH7.PrimMubi4SyncCheckTransients_A);
-    $assertoff(0, `PATH7.PrimMubi4SyncCheckTransients0_A);
-    $assertoff(0, `PATH7.PrimMubi4SyncCheckTransients1_A);
-
-    $assertoff(0, `PATH8.PrimMubi4SyncCheckTransients_A);
-    $assertoff(0, `PATH8.PrimMubi4SyncCheckTransients0_A);
-    $assertoff(0, `PATH8.PrimMubi4SyncCheckTransients1_A);
-
-    $assertoff(0, `PATH9.PrimMubi4SyncCheckTransients_A);
-    $assertoff(0, `PATH9.PrimMubi4SyncCheckTransients0_A);
-    $assertoff(0, `PATH9.PrimMubi4SyncCheckTransients1_A);
-
-    $assertoff(0, `PATH10.PrimMubi4SyncCheckTransients_A);
-    $assertoff(0, `PATH10.PrimMubi4SyncCheckTransients0_A);
-    $assertoff(0, `PATH10.PrimMubi4SyncCheckTransients1_A);
   endtask // assert_off_alert
 
   task automatic assert_on_alert ();
-    $asserton(0, `PATH1.PrimMubi4SyncCheckTransients_A);
-    $asserton(0, `PATH1.PrimMubi4SyncCheckTransients0_A);
-    $asserton(0, `PATH1.PrimMubi4SyncCheckTransients1_A);
 
-    $asserton(0, `PATH2.PrimMubi4SyncCheckTransients_A);
-    $asserton(0, `PATH2.PrimMubi4SyncCheckTransients0_A);
-    $asserton(0, `PATH2.PrimMubi4SyncCheckTransients1_A);
-
-    $asserton(0, `PATH3.PrimMubi4SyncCheckTransients_A);
-    $asserton(0, `PATH3.PrimMubi4SyncCheckTransients0_A);
-    $asserton(0, `PATH3.PrimMubi4SyncCheckTransients1_A);
-
-    $asserton(0, `PATH4.PrimMubi4SyncCheckTransients_A);
-    $asserton(0, `PATH4.PrimMubi4SyncCheckTransients0_A);
-    $asserton(0, `PATH4.PrimMubi4SyncCheckTransients1_A);
-
-    $asserton(0, `PATH5.PrimMubi4SyncCheckTransients_A);
-    $asserton(0, `PATH5.PrimMubi4SyncCheckTransients0_A);
-    $asserton(0, `PATH5.PrimMubi4SyncCheckTransients1_A);
-
-    $asserton(0, `PATH6.PrimMubi4SyncCheckTransients_A);
-    $asserton(0, `PATH6.PrimMubi4SyncCheckTransients0_A);
-    $asserton(0, `PATH6.PrimMubi4SyncCheckTransients1_A);
-
-    $asserton(0, `PATH7.PrimMubi4SyncCheckTransients_A);
-    $asserton(0, `PATH7.PrimMubi4SyncCheckTransients0_A);
-    $asserton(0, `PATH7.PrimMubi4SyncCheckTransients1_A);
-
-    $asserton(0, `PATH8.PrimMubi4SyncCheckTransients_A);
-    $asserton(0, `PATH8.PrimMubi4SyncCheckTransients0_A);
-    $asserton(0, `PATH8.PrimMubi4SyncCheckTransients1_A);
-
-    $asserton(0, `PATH9.PrimMubi4SyncCheckTransients_A);
-    $asserton(0, `PATH9.PrimMubi4SyncCheckTransients0_A);
-    $asserton(0, `PATH9.PrimMubi4SyncCheckTransients1_A);
-
-    $asserton(0, `PATH10.PrimMubi4SyncCheckTransients_A);
-    $asserton(0, `PATH10.PrimMubi4SyncCheckTransients0_A);
-    $asserton(0, `PATH10.PrimMubi4SyncCheckTransients1_A);
   endtask // assert_on_alert
 
   task automatic assert_off_err ();

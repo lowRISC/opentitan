@@ -101,8 +101,17 @@ module prim_mubi${n_bits}_sync
         );
       end
 
+      `ASSERT(OutputIfUnstable_A, sig_unstable |-> mubi_o == {NumCopies{reset_value}})
+      `ASSERT(OutputDelay_A, ##3 !sig_unstable |-> mubi_o == {NumCopies{$past(mubi_i, 3)}})
     end else begin : gen_no_stable_chks
       assign mubi = mubi_sync;
+      // Without the sampled rst_ni pre-condition, this may cause false assertion failures
+      // right after a reset release, since the "iff disable" condition with the rst_ni is
+      // sampled in the "observed" SV scheduler region after all assignments have been
+      // evaluated. This is a simulation artifact due to reset synchronization in RTL, which
+      // releases rst_ni on the active clock edge. This causes the assertion to evaluate
+      // although the reset was actually 0 when entering this simulation cycle.
+      `ASSERT(OutputDelay_A, rst_ni |-> ##2 mubi_o == {NumCopies{$past(mubi_i, 2)}})
     end
   end else begin : gen_no_flops
 
@@ -119,6 +128,8 @@ module prim_mubi${n_bits}_sync
     end
 
     assign mubi = MuBi${n_bits}Width'(mubi_i);
+
+    `ASSERT(OutputDelay_A, mubi_o == {NumCopies{mubi_i}})
   end
 
   for (genvar j = 0; j < NumCopies; j++) begin : gen_buffs
@@ -138,28 +149,5 @@ module prim_mubi${n_bits}_sync
 
   // The outputs should be known at all times.
   `ASSERT_KNOWN(OutputsKnown_A, mubi_o)
-
-  // If the multibit signal is in a transient state, we expect it
-  // to be stable again within one clock cycle.
-  // DV will exclude these three assertions by name, thus added a module name prefix to make it
-  // harder to accidentally replicate in other modules.
-  `ASSERT(PrimMubi${n_bits}SyncCheckTransients_A,
-      !(mubi_i inside {MuBi${n_bits}True, MuBi${n_bits}False})
-      |=>
-      (mubi_i inside {MuBi${n_bits}True, MuBi${n_bits}False}))
-
-  // If a signal departs from passive state, we expect it to move to the active state
-  // with only one transient cycle in between.
-  `ASSERT(PrimMubi${n_bits}SyncCheckTransients0_A,
-      $past(mubi_i == MuBi${n_bits}False) &&
-      !(mubi_i inside {MuBi${n_bits}True, MuBi${n_bits}False})
-      |=>
-      (mubi_i == MuBi${n_bits}True))
-
-  `ASSERT(PrimMubi${n_bits}SyncCheckTransients1_A,
-      $past(mubi_i == MuBi${n_bits}True) &&
-      !(mubi_i inside {MuBi${n_bits}True, MuBi${n_bits}False})
-      |=>
-      (mubi_i == MuBi${n_bits}False))
 
 endmodule : prim_mubi${n_bits}_sync
