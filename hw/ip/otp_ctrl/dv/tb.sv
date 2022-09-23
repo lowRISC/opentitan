@@ -197,43 +197,6 @@ module tb;
   end : gen_impl_generic
 
   initial begin
-    // These SVA checks the lc_escalate_en is either Off or On, we will use more than these
-    // 2 values.
-    // If the value is not lc_ctrl_pkg::Off, design will treat it as lc_ctrl_pkg::On.
-    $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.PrimLcSyncCheckTransients_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.PrimLcSyncCheckTransients0_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_escalate_en.PrimLcSyncCheckTransients1_A);
-
-    // These SVA checks the lc_sync_seed_hw_rd_en is either Off or On, we will use more than these
-    // 2 values.
-    // If the value is not lc_ctrl_pkg::On, design will treat it as lc_ctrl_pkg::Off.
-    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.PrimLcSyncCheckTransients_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.PrimLcSyncCheckTransients0_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_seed_hw_rd_en.PrimLcSyncCheckTransients1_A);
-
-    // These SVA checks the lc_check_byp_en is either Off or On, we will use more than these
-    // 2 values.
-    // If the value is not lc_ctrl_pkg::On, design will treat it as lc_ctrl_pkg::Off.
-    $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.PrimLcSyncCheckTransients_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.PrimLcSyncCheckTransients0_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_check_byp_en.PrimLcSyncCheckTransients1_A);
-
-    // These SVA checks the lc_dft_en is either Off or On, we will use more than these 2 values.
-    // If the value is not lc_ctrl_pkg::On, design will treat it as lc_ctrl_pkg::Off.
-    $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients0_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_dft_en.PrimLcSyncCheckTransients1_A);
-    $assertoff(0, tb.dut.u_tlul_lc_gate.u_err_en_sync.PrimLcSyncCheckTransients_A);
-    $assertoff(0, tb.dut.u_tlul_lc_gate.u_err_en_sync.PrimLcSyncCheckTransients0_A);
-    $assertoff(0, tb.dut.u_tlul_lc_gate.u_err_en_sync.PrimLcSyncCheckTransients1_A);
-
-    // These SVA checks the lc_sync_creator_seed_sw_rw_en is either Off or On, we will use more
-    // than these 2 values.
-    // If the value is not lc_ctrl_pkg::On, design will treat it as lc_ctrl_pkg::Off.
-    $assertoff(0, tb.dut.u_prim_lc_sync_creator_seed_sw_rw_en.PrimLcSyncCheckTransients_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_creator_seed_sw_rw_en.PrimLcSyncCheckTransients0_A);
-    $assertoff(0, tb.dut.u_prim_lc_sync_creator_seed_sw_rw_en.PrimLcSyncCheckTransients1_A);
-
     // DV forced otp_cmd_i to reach invalid state, thus violate the assertions
     $assertoff(0, tb.dut.gen_partitions[3].gen_buffered.u_part_buf.OtpErrorState_A);
     $assertoff(0, tb.dut.gen_partitions[4].gen_buffered.u_part_buf.OtpErrorState_A);

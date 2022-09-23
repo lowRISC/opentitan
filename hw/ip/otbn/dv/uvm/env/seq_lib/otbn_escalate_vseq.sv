@@ -75,22 +75,12 @@ class otbn_escalate_vseq extends otbn_base_vseq;
   // Return immediately if we go into reset.
   task send_escalation_signal(int unsigned max_cycles);
     cfg.escalate_vif.randomize_enable_after_n_clocks($urandom_range(max_cycles), .f_weight(0));
-    if (!(cfg.escalate_vif.enable inside {lc_ctrl_pkg::Off, lc_ctrl_pkg::On})) begin
-      $assertoff(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients_A");
-      $assertoff(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients0_A");
-      $assertoff(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients1_A");
-    end
   endtask
 
   // Wait between zero and max_cycles clock cycles and then set the RMA request signal to enabled.
   // Return immediately if we go into reset.
   task send_rma_request_signal(int unsigned max_cycles);
     cfg.escalate_vif.randomize_rma_req_after_n_clocks($urandom_range(max_cycles), .f_weight(0));
-    if (!(cfg.escalate_vif.req inside {lc_ctrl_pkg::Off, lc_ctrl_pkg::On})) begin
-      $assertoff(0, "tb.dut.u_lc_rma_req_sync.PrimLcSyncCheckTransients_A");
-      $assertoff(0, "tb.dut.u_lc_rma_req_sync.PrimLcSyncCheckTransients0_A");
-      $assertoff(0, "tb.dut.u_lc_rma_req_sync.PrimLcSyncCheckTransients1_A");
-    end
     // Wait for RMA Ack to Rise
     `DV_SPINWAIT_EXIT(
       wait(cfg.escalate_vif.ack == lc_ctrl_pkg::On);,
@@ -108,12 +98,6 @@ class otbn_escalate_vseq extends otbn_base_vseq;
 
     do_apply_reset = 1'b1;
     dut_init("HARD");
-    $asserton(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients_A");
-    $asserton(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients0_A");
-    $asserton(0, "tb.dut.u_lc_escalate_en_sync.PrimLcSyncCheckTransients1_A");
-    $asserton(0, "tb.dut.u_lc_rma_req_sync.PrimLcSyncCheckTransients_A");
-    $asserton(0, "tb.dut.u_lc_rma_req_sync.PrimLcSyncCheckTransients0_A");
-    $asserton(0, "tb.dut.u_lc_rma_req_sync.PrimLcSyncCheckTransients1_A");
   endtask
 
 endclass

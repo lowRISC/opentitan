@@ -642,28 +642,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `uvm_info(`gfn, "LC transition request succeed!", UVM_LOW)
   endtask
 
-  // These assertions check if OTP image sets the correct mubi type. However, when loading the raw
-  // image, the default value is 0 - which not mubi true or false. We expect this unprogrammed
-  // all-zero values to be interpreted as false and relax the assertion below.
-  // Detailed discussion in #12428.
-  virtual function void otp_raw_img_mubi_assertion_ctrl(bit enable);
-    if (enable) begin
-      // verilog_lint: waive line-length-exceeds-max
-      $asserton(0, "tb.dut.top_earlgrey.u_csrng.u_csrng_core.u_prim_mubi8_sync_sw_app_read.PrimMubi8SyncCheckTransients_A");
-      // verilog_lint: waive line-length-exceeds-max
-      $asserton(0, "tb.dut.top_earlgrey.u_entropy_src.u_entropy_src_core.u_prim_mubi8_sync_es_fw_over.PrimMubi8SyncCheckTransients_A");
-      // verilog_lint: waive line-length-exceeds-max
-      $asserton(0, "tb.dut.top_earlgrey.u_entropy_src.u_entropy_src_core.u_prim_mubi8_sync_es_fw_read.PrimMubi8SyncCheckTransients_A");
-    end else begin
-      // verilog_lint: waive line-length-exceeds-max
-      $assertoff(0, "tb.dut.top_earlgrey.u_csrng.u_csrng_core.u_prim_mubi8_sync_sw_app_read.PrimMubi8SyncCheckTransients_A");
-      // verilog_lint: waive line-length-exceeds-max
-      $assertoff(0, "tb.dut.top_earlgrey.u_entropy_src.u_entropy_src_core.u_prim_mubi8_sync_es_fw_over.PrimMubi8SyncCheckTransients_A");
-      // verilog_lint: waive line-length-exceeds-max
-      $assertoff(0, "tb.dut.top_earlgrey.u_entropy_src.u_entropy_src_core.u_prim_mubi8_sync_es_fw_read.PrimMubi8SyncCheckTransients_A");
-    end
-  endfunction
-
   // End the test with status.
   //
   // SW test code finishes the test sequence usually by returing true or false

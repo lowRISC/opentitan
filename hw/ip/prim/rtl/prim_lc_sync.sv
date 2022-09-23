@@ -46,6 +46,13 @@ module prim_lc_sync #(
       .d_i(lc_en_i),
       .q_o(lc_en)
     );
+    // Without the sampled rst_ni pre-condition, this may cause false assertion failures
+    // right after a reset release, since the "iff disable" condition with the rst_ni is
+    // sampled in the "observed" SV scheduler region after all assignments have been
+    // evaluated. This is a simulation artifact due to reset synchronization in RTL, which
+    // releases rst_ni on the active clock edge. This causes the assertion to evaluate
+    // although the reset was actually 0 when entering this simulation cycle.
+    `ASSERT(OutputDelay_A, rst_ni |-> ##2 lc_en_o == {NumCopies{$past(lc_en_i, 2)}})
   end else begin : gen_no_flops
     // This unused companion logic helps remove lint errors
     // for modules where clock and reset are used for assertions only
@@ -61,6 +68,8 @@ module prim_lc_sync #(
     end
 
     assign lc_en = lc_en_i;
+
+    `ASSERT(OutputDelay_A, lc_en_o == {NumCopies{lc_en_i}})
   end
 
   for (genvar j = 0; j < NumCopies; j++) begin : gen_buffs
@@ -80,28 +89,5 @@ module prim_lc_sync #(
 
   // The outputs should be known at all times.
   `ASSERT_KNOWN(OutputsKnown_A, lc_en_o)
-
-  // If the multibit signal is in a transient state, we expect it
-  // to be stable again within one clock cycle.
-  // DV will exclude these three assertions by name, thus added a module name prefix to make it
-  // harder to accidentally replicate in other modules.
-  `ASSERT(PrimLcSyncCheckTransients_A,
-      !(lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off})
-      |=>
-      (lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off}))
-
-  // If a signal departs from passive state, we expect it to move to the active state
-  // with only one transient cycle in between.
-  `ASSERT(PrimLcSyncCheckTransients0_A,
-      $past(lc_en_i == lc_ctrl_pkg::Off) &&
-      !(lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off})
-      |=>
-      (lc_en_i == lc_ctrl_pkg::On))
-
-  `ASSERT(PrimLcSyncCheckTransients1_A,
-      $past(lc_en_i == lc_ctrl_pkg::On) &&
-      !(lc_en_i inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off})
-      |=>
-      (lc_en_i == lc_ctrl_pkg::Off))
 
 endmodule : prim_lc_sync

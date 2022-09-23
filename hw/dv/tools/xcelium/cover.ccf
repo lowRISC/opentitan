@@ -45,28 +45,3 @@ select_coverage -toggle -module prim_esc_receiver
 select_coverage -toggle -module prim_onehot_check
 select_coverage -toggle -module prim_prince
 select_coverage -toggle -module prim_lfsr
-
-// These three assertions in prim_lc_sync and prim_mubi* check when `lc_ctrl_pkg::lc_tx_t` or
-// `mubi*_t` input are neither `On` or `Off`, it is interrupted to the correct `On` or `Off`
-// after one clock cycle. This behavior is implemented outside of IP level design thus these
-// assertions are not covered in IP level testbenchs.
-// TODO: check these assertions in top-level or FPV.
-deselect_coverage -assertion *.PrimLcSyncCheckTransients_A
-deselect_coverage -assertion *.PrimLcSyncCheckTransients0_A
-deselect_coverage -assertion *.PrimLcSyncCheckTransients1_A
-
-deselect_coverage -assertion *.PrimMubi4SyncCheckTransients_A
-deselect_coverage -assertion *.PrimMubi4SyncCheckTransients0_A
-deselect_coverage -assertion *.PrimMubi4SyncCheckTransients1_A
-
-deselect_coverage -assertion PrimMubi8SyncCheckTransients_A
-deselect_coverage -assertion PrimMubi8SyncCheckTransients0_A
-deselect_coverage -assertion PrimMubi8SyncCheckTransients1_A
-
-deselect_coverage -assertion PrimMubi12SyncCheckTransients_A
-deselect_coverage -assertion PrimMubi12SyncCheckTransients0_A
-deselect_coverage -assertion PrimMubi12SyncCheckTransients1_A
-
-deselect_coverage -assertion PrimMubi16SyncCheckTransients_A
-deselect_coverage -assertion PrimMubi16SyncCheckTransients0_A
-deselect_coverage -assertion PrimMubi16SyncCheckTransients1_A

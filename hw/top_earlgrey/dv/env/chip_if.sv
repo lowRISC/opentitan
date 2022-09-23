@@ -568,11 +568,6 @@ interface chip_if;
           end
         join_none
 
-        // In stub_cpu mode, disable these assertions because writing rand value to clkmgr's CSR
-        // `extclk_sel` can violate these assertions.
-        $assertoff(0, u_ast.u_ast_clks_byp.u_all_clk_byp_req.PrimMubi4SyncCheckTransients_A);
-        $assertoff(0, u_ast.u_ast_clks_byp.u_all_clk_byp_req.PrimMubi4SyncCheckTransients0_A);
-        $assertoff(0, u_ast.u_ast_clks_byp.u_all_clk_byp_req.PrimMubi4SyncCheckTransients1_A);
       end else begin
         // when en_sim_sram == 1, need to make sure the access to sim_sram doesn't appear on
         // cpu_d_tl_if, otherwise, we may have unmapped access as scb doesn't regnize addresses of
