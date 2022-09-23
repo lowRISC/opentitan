@@ -97,10 +97,8 @@ class spi_host_driver extends spi_driver;
         default: `uvm_fatal(`gfn, $sformatf("Invalid type %s", req.item_type.name))
       endcase
 
-      if (cfg.csb_consecutive == 0) begin
-        cfg.vif.csb[active_csb] <= 1'b1;
-        cfg.vif.sio_out <= 'x;
-      end
+      cfg.vif.csb[active_csb] <= 1'b1;
+      cfg.vif.sio_out <= 'x;
 
       #($urandom_range(cfg.max_idle_ns_after_csb_drop, cfg.min_idle_ns_after_csb_drop) * 1ns);
       `uvm_info(`gfn, "spi_host_driver: item sent", UVM_HIGH)

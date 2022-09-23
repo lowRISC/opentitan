@@ -35,20 +35,13 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     csr_update(.csr(ral.cfg));
 
     ral.tpm_cfg.en.set(1'b1);
-    // 1 for CRB, 0 for FIFO.
-
-    csr_update(.csr(ral.tpm_cfg));
-  endtask : tpm_init
-
-  // Randomise other fields in TPM_CFG.
-  virtual task tpm_configure();
     ral.tpm_cfg.tpm_mode.set(TpmCrbMode); // TODO randomize for locality test
     ral.tpm_cfg.hw_reg_dis.set(1); // TODO randomize for locality test
     ral.tpm_cfg.tpm_reg_chk_dis.set(1); // TODO randomize for locality test
     ral.tpm_cfg.invalid_locality.set(0); // TODO randomize for locality test
     csr_update(.csr(ral.tpm_cfg));
     `uvm_info(`gfn, ral.tpm_cfg.sprint(), UVM_MEDIUM)
-  endtask : tpm_configure
+  endtask : tpm_init
 
   // Randomise other fields in TPM_CFG.
   virtual task tpm_configure_locality();
@@ -105,36 +98,6 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
       foreach (word_q[i]) csr_wr(.ptr(ral.tpm_read_fifo), .value(word_q[i]));
     end
   endtask : wait_and_process_tpm_fifo
-
-  // Check the CMD_ADDR/wrFIFO contents.
-  virtual task check_tpm_write_fifo(byte data_bytes[$]);
-    bit [7:0]  wrfifo_data;
-
-    // Check write fifo
-    for (int i = 1; i <= 4; i++) begin
-      csr_rd(.ptr(ral.tpm_write_fifo), .value(wrfifo_data));
-      `uvm_info(`gfn, $sformatf("WR FIFO Content = 0x%0h", wrfifo_data), UVM_LOW)
-      `DV_CHECK_CASE_EQ(wrfifo_data, data_bytes[i])
-    end
-  endtask : check_tpm_write_fifo
-
-  // Poll for START symbol from TPM, collect device data
-  virtual task poll_start_collect_data(byte data_bytes[5], ref bit [7:0] returned_bytes[*]);
-    int pay_num = 0;
-    bit [7:0]  device_byte_rsp;
-    `DV_SPINWAIT(
-      while (pay_num < 5) begin
-        spi_host_xfer_byte(data_bytes[pay_num], device_byte_rsp);
-        `uvm_info(`gfn, $sformatf("Device Resp = 0x%0h", device_byte_rsp), UVM_LOW)
-        if (pay_num > 0) begin
-          returned_bytes[pay_num - 1] = device_byte_rsp;
-          pay_num++;
-        end
-        if ((pay_num == 0  && device_byte_rsp == TPM_START)) pay_num++;
-        if (pay_num == 4) cfg.spi_host_agent_cfg.csb_consecutive = 0;
-      end
-    )
-  endtask : poll_start_collect_data
 
   virtual task spi_host_xfer_tpm_item(input bit write,
                                       input uint tpm_size = 0,
