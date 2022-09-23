@@ -92,7 +92,7 @@ module prim_sync_reqack_data #(
     // SRC domain cannot change data while waiting for ACK.
     `ASSERT(SyncReqAckDataHoldSrc2Dst, !$stable(data_i) |->
         (!src_req_i || (src_req_i && src_ack_o)),
-        clk_src_i, !rst_src_ni)
+        clk_src_i, !rst_src_ni || !rst_dst_ni)
 
     // Register stage cannot be used.
     `ASSERT_INIT(SyncReqAckDataReg, DataSrc2Dst && !DataReg)
@@ -121,10 +121,10 @@ module prim_sync_reqack_data #(
     // checks that the DST side doesn't do anything that it shouldn't know is safe.
     `ASSERT(SyncReqAckDataHoldDst2SrcA,
             src_req_i && src_ack_o |-> $past(data_o, 2) == data_o && $past(data_o) == data_o,
-            clk_src_i, !rst_src_ni)
+            clk_src_i, !rst_src_ni || !rst_dst_ni)
     `ASSERT(SyncReqAckDataHoldDst2SrcB,
             $past(src_req_i && src_ack_o) |-> $past(data_o) == data_o,
-            clk_src_i, !rst_src_ni)
+            clk_src_i, !rst_src_ni || !rst_dst_ni)
   end
 
 endmodule
