@@ -59,3 +59,4 @@
 `include "chip_sw_entropy_src_fuse_vseq.sv"
 `include "chip_sw_usb_ast_clk_calib_vseq.sv"
 `include "chip_sw_i2c_host_tx_rx_vseq.sv"
+`include "chip_sw_inject_scramble_seed_vseq.sv"

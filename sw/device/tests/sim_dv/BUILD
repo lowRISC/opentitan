@@ -1004,3 +1004,25 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_functest(
+    name = "inject_scramble_seed",
+    srcs = ["inject_scramble_seed.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//hw/top_earlgrey/ip/flash_ctrl/data/autogen:flash_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)

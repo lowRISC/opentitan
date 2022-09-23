@@ -384,6 +384,14 @@
       run_timeout_mins: 180
     }
     {
+      name: chip_sw_inject_scramble_seed
+      uvm_test_seq: chip_sw_inject_scramble_seed_vseq
+      sw_images: ["//sw/device/tests/sim_dv:inject_scramble_seed:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+lc_at_prod=1", "+flash_program_latency=5", "+sw_test_timeout_ns=150_000_000"]
+      run_timeout_mins: 180
+    }
+    {
       name: chip_sw_uart_rand_baudrate
       uvm_test_seq: chip_sw_uart_rand_baudrate_vseq
       sw_images: ["//sw/device/tests/sim_dv:uart_tx_rx_test:1"]

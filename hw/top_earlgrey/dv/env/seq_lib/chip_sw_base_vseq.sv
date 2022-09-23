@@ -348,17 +348,17 @@ class chip_sw_base_vseq extends chip_base_vseq;
       .ptr(ral.spi_device.cmd_info[spi_device_pkg::CmdInfoReadSfdp].opcode),
       .exp_data(SpiFlashReadSfdp),
       .backdoor(1),
-      .spinwait_delay_ns(1000));
+      .spinwait_delay_ns(5000));
     csr_spinwait(
       .ptr(ral.spi_device.cmd_info[spi_device_pkg::CmdInfoReadStatus1].opcode),
       .exp_data(SpiFlashReadSts1),
       .backdoor(1),
-      .spinwait_delay_ns(1000));
+      .spinwait_delay_ns(5000));
     csr_spinwait(
       .ptr(ral.spi_device.cmd_info_wren.opcode),
       .exp_data(SpiFlashWriteEnable),
       .backdoor(1),
-      .spinwait_delay_ns(1000));
+      .spinwait_delay_ns(5000));
 
     // sdo from chip is unknown, ignore checking that
     cfg.m_spi_agent_cfg.en_monitor_checks = 0;
