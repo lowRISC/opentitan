@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@com_github_bazelbuild_buildtools//buildifier:def.bzl", "buildifier")
 load("//rules:quality.bzl", "html_coverage_report")
 load("//rules:cargo.bzl", "cargo_raze")
 load("@rules_rust//rust:defs.bzl", "rust_analyzer")
@@ -12,6 +13,25 @@ exports_files([
     "WORKSPACE",
     "python-requirements.txt",
 ])
+
+unbuildify = [
+    "./WORKSPACE",  # Prevent Buildifier from inserting unnecessary newlines.
+    "./**/vendor/**",
+    "./util/lowrisc_misc-linters/**",
+    "./build/**",
+]
+
+buildifier(
+    name = "buildifier_fix",
+    exclude_patterns = unbuildify,
+)
+
+buildifier(
+    name = "buildifier_check",
+    diff_command = "diff -u",
+    exclude_patterns = unbuildify,
+    mode = "diff",
+)
 
 html_coverage_report(
     name = "html_coverage_report",

@@ -14,9 +14,8 @@ def lint_repos(lowrisc_lint = None):
 
     http_archive(
         name = "com_github_bazelbuild_buildtools",
-        sha256 = "e3bb0dc8b0274ea1aca75f1f8c0c835adbe589708ea89bf698069d0790701ea3",
-        strip_prefix = "buildtools-5.1.0",
-        url = "https://github.com/bazelbuild/buildtools/archive/refs/tags/5.1.0.tar.gz",
+        strip_prefix = "buildtools-main",
+        url = "https://github.com/bazelbuild/buildtools/archive/main.zip",
     )
 
     http_archive_or_local(
