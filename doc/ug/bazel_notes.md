@@ -197,11 +197,11 @@ It can be run with Bazel as shown below.
 
 Run the following to check if all C/C++ code as been formatted correctly:
 ```console
-bazel test //quality:clang_format_check --test_output=streamed
+bazel run //:clang_format_check
 ```
 and run the following to fix it, if it is not formatted correctly.
 ```console
-bazel run //quality:clang_format_fix
+bazel run //:clang_format_fix
 ```
 
 ## Linting Starlark
