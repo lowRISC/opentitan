@@ -222,7 +222,7 @@ bazel run //:buildifier_fix
 
 Lastly, the OpenTitan supported linter for checking that every source code file contains a license header may be run with:
 ```console
-bazel run //quality:license_check --test_output=streamed
+bazel run //:license_check
 ```
 
 # Building Hardware
