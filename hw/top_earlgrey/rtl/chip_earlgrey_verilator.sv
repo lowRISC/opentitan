@@ -93,17 +93,44 @@ module chip_earlgrey_verilator (
 
   always_comb begin : assign_mio_in
     mio_in = '0;
-    mio_in[31:0] = cio_gpio_p2d_i;
-    mio_in[25] = cio_uart_rx_p2d_i;
-    mio_in[29] = cio_usbdev_sense_p2d_i;
+    // 14 generic GPIOs
+    mio_in[MioPadIob12:MioPadIob6] = cio_gpio_p2d_i[6:0];
+    mio_in[MioPadIor13:MioPadIor5] = cio_gpio_p2d_i[13:7];
+    // SW straps
+    mio_in[MioPadIoc2:MioPadIoc0] = cio_gpio_p2d_i[24:22];
+    // TAP straps
+    mio_in[MioPadIoc5] = cio_gpio_p2d_i[27];
+    mio_in[MioPadIoc8] = cio_gpio_p2d_i[30];
+    // UART RX
+    mio_in[MioPadIoc3] = cio_uart_rx_p2d_i;
+    // USB VBUS sense
+    mio_in[MioPadIoc7] = cio_usbdev_sense_p2d_i;
   end
 
-  assign cio_gpio_d2p_o[25:0]       = mio_out[25:0];
-  assign cio_gpio_en_d2p_o[25:0]    = mio_oe[25:0];
-  assign cio_gpio_d2p_o[31:27]      = mio_out[31:27];
-  assign cio_gpio_en_d2p_o[31:27]   = mio_oe[31:27];
-  assign cio_uart_tx_d2p_o    = mio_out[26];
-  assign cio_uart_tx_en_d2p_o = mio_oe[26];
+  // 14 generic GPIOs
+  assign cio_gpio_d2p_o[6:0]        = mio_out[MioPadIob12:MioPadIob6];
+  assign cio_gpio_en_d2p_o[6:0]     = mio_oe[MioPadIob12:MioPadIob6];
+  assign cio_gpio_d2p_o[13:7]       = mio_out[MioPadIor13:MioPadIor5];
+  assign cio_gpio_en_d2p_o[13:7]    = mio_oe[MioPadIor13:MioPadIor5];
+  assign cio_gpio_d2p_o[23:14]      = '0;
+  assign cio_gpio_en_d2p_o[23:14]   = '0;
+  // SW straps
+  assign cio_gpio_d2p_o[24:22]      = mio_out[MioPadIoc2:MioPadIoc0];
+  assign cio_gpio_en_d2p_o[24:22]   = mio_oe[MioPadIoc2:MioPadIoc0];
+  assign cio_gpio_d2p_o[26:25]      = '0;
+  assign cio_gpio_en_d2p_o[26:25]   = '0;
+  // TAP straps
+  assign cio_gpio_d2p_o[27]         = mio_out[MioPadIoc5];
+  assign cio_gpio_en_d2p_o[27]      = mio_oe[MioPadIoc5];
+  assign cio_gpio_d2p_o[29:28]      = '0;
+  assign cio_gpio_en_d2p_o[29:28]   = '0;
+  assign cio_gpio_d2p_o[30]         = mio_out[MioPadIoc8];
+  assign cio_gpio_en_d2p_o[30]      = mio_oe[MioPadIoc8];
+  assign cio_gpio_d2p_o[31]         = '0;
+  assign cio_gpio_en_d2p_o[31]      = '0;
+
+  assign cio_uart_tx_d2p_o    = mio_out[MioPadIoc4];
+  assign cio_uart_tx_en_d2p_o = mio_oe[MioPadIoc4];
 
   ////////////////////////////////
   // AST - Custom for Verilator //
