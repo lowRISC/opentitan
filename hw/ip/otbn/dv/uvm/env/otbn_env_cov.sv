@@ -2114,6 +2114,7 @@ class otbn_env_cov extends cip_base_env_cov #(.CFG_T(otbn_env_cfg));
     scratchpad_writes_cg = new;
 
     bad_internal_state_cg = new;
+    internal_intg_err_cg = new;
     insn_addr_cg = new;
     call_stack_cg = new;
     flag_write_cg = new;
