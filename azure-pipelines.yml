@@ -87,7 +87,6 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: flake8 (Python lint)
     # Run Python lint (flake8)
-    continueOnError: true
   - bash: ci/scripts/mypy.sh
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: mypy (Python lint)
