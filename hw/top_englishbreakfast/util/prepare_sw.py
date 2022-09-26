@@ -100,10 +100,20 @@ def main():
         delete_path(d)
 
     delete_path(REPO_TOP / 'build' / str(topname + '-autogen'))
+    delete_path(REPO_TOP / 'hw' / topname / 'data/autogen')
+    delete_path(REPO_TOP / 'hw' / topname / 'dv/autogen')
+    delete_path(REPO_TOP / 'hw' / topname / 'dv/env/autogen')
     delete_path(REPO_TOP / 'hw' / topname / 'ip/ast/rtl')
+    delete_path(REPO_TOP / 'hw' / topname / 'ip/clkmgr')
+    delete_path(REPO_TOP / 'hw' / topname / 'ip/flash_ctrl')
+    delete_path(REPO_TOP / 'hw' / topname / 'ip/pinmux')
+    delete_path(REPO_TOP / 'hw' / topname / 'ip/pwrmgr')
+    delete_path(REPO_TOP / 'hw' / topname / 'ip/rstmgr')
     delete_path(REPO_TOP / 'hw' / topname / 'ip/sensor_ctrl/rtl')
-    delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_main/xbar_main.core')
-    delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_peri/xbar_peri.core')
+    delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_main')
+    delete_path(REPO_TOP / 'hw' / topname / 'ip/xbar_peri')
+    delete_path(REPO_TOP / 'hw' / topname / 'rtl/autogen')
+    delete_path(REPO_TOP / 'hw' / topname / 'sw/autogen')
 
     if args.delete_only:
         return
