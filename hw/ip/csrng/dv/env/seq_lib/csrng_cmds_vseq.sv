@@ -26,7 +26,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     // Start with instantiate command
     `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
                                    cs_item.acmd == csrng_pkg::INS;)
-    if (!cs_item.flags[0]) begin
+    if (cs_item.flags != MuBi4True) begin
       gen_seed(app);
     end
     cs_item_q[app].push_back(cs_item);
@@ -43,7 +43,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
                                      cs_item.acmd inside { csrng_pkg::GEN,
                                                            csrng_pkg::RES,
                                                            csrng_pkg::UPD };)
-      if ((cs_item.acmd == csrng_pkg::RES) && (!cs_item.flags[0])) begin
+      if ((cs_item.acmd == csrng_pkg::RES) && (cs_item.flags != MuBi4True)) begin
         gen_seed(app);
       end
       cs_item_q[app].push_back(cs_item);

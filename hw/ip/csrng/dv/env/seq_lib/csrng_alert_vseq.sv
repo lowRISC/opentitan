@@ -61,7 +61,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Write CSRNG Cmd_Req - Instantiate Command
     cs_item.acmd  = csrng_pkg::INS;
     cs_item.clen  = 'h0;
-    cs_item.flags = 'h1;
+    cs_item.flags = MuBi4True;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
@@ -69,7 +69,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Write CSRNG Cmd_Req Register - Generate Command
     cs_item.acmd  = csrng_pkg::GEN;
     cs_item.clen  = 'h0;
-    cs_item.flags = 'h1;
+    cs_item.flags = MuBi4True;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
@@ -77,7 +77,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Write CSRNG Cmd_Req - Instantiate Command
     cs_item.acmd  = csrng_pkg::INS;
     cs_item.clen  = 'h0;
-    cs_item.flags = 'h1;
+    cs_item.flags = MuBi4True;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
@@ -85,7 +85,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Write CSRNG Cmd_Req Register - Generate Command
     cs_item.acmd  = csrng_pkg::GEN;
     cs_item.clen  = 'h0;
-    cs_item.flags = 'h1;
+    cs_item.flags = MuBi4True;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
