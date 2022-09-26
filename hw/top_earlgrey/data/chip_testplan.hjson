@@ -373,9 +373,13 @@
     }
     {
       name: chip_sw_sleep_pin_mio_dio_val
-      desc: '''Verify the MIO output values in deep sleep state.
+      desc: '''Verify the MIO output values in any sleep states.
 
-            SW programs the MIO OUTSEL CSRs to to ensure that in deep sleep it randomly picks
+            - Pick between normal sleep and deep sleep randomly
+            - Pick between tie-0, tie-1, or High-Z randomly for all muxed,
+              dedicated outputs coming from non-AON IPs.
+
+            SW programs the MIO OUTSEL CSRs to ensure that in sleep it randomly picks
             between tie-0, tie-1 or hi-Z for all muxed outputs coming from non-AON IPs. If an AON
             peripheral output is muxed, then that peripheral's output is selected to ensure in deep
             sleep the peripheral can continue its signaling even in deep sleep. The testbench
