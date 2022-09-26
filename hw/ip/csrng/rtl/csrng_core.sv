@@ -51,6 +51,10 @@ module csrng_core import csrng_pkg::*; #(
 
   import csrng_reg_pkg::*;
 
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_invalid;
+
   localparam int NApps = NHwApps + 1;
   localparam int AppCmdWidth = 32;
   localparam int AppCmdFifoDepth = 2;
@@ -80,6 +84,7 @@ module csrng_core import csrng_pkg::*; #(
   logic       event_cs_fatal_err;
   logic [CsEnableCopies-1:1] cs_enable_fo;
   logic [Flag0Copies-1:0]    flag0_fo;
+  logic       acmd_flag0_pfa;
   logic       cs_enable_pfa;
   logic       sw_app_enable;
   logic       sw_app_enable_pfe;
@@ -211,7 +216,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [2:0]             acmd_hold;
   logic [3:0]             shid;
   logic                   gen_last;
-  logic                   flag0;
+  mubi4_t                 flag0;
 
   // blk encrypt arbiter
   logic [Cmd-1:0]         updblk_benblk_cmd_arb_din;
@@ -346,10 +351,6 @@ module csrng_core import csrng_pkg::*; #(
   logic                    unused_err_code_test_bit;
   logic                    unused_reg2hw_genbits;
   logic                    unused_int_state_val;
-
-  import prim_mubi_pkg::mubi4_t;
-  import prim_mubi_pkg::mubi4_test_true_strict;
-  import prim_mubi_pkg::mubi4_test_invalid;
 
   prim_mubi_pkg::mubi8_t [1:0] en_csrng_sw_app_read;
   prim_mubi_pkg::mubi4_t [CsEnableCopies-1:0] mubi_cs_enable_fanout;
@@ -726,6 +727,7 @@ module csrng_core import csrng_pkg::*; #(
   assign recov_alert_event = cs_enable_pfa ||
          sw_app_enable_pfa ||
          read_int_state_pfa ||
+         acmd_flag0_pfa ||
          cs_main_sm_alert ||
          cs_bus_cmp_alert;
 
@@ -1025,9 +1027,15 @@ module csrng_core import csrng_pkg::*; #(
     .ready_i(acmd_accept) // 1 fsm rdy
   );
 
+  mubi4_t mubi_acmd_flag0;
+  assign mubi_acmd_flag0 = mubi4_t'(acmd_bus[11:8]);
+  assign acmd_flag0_pfa = mubi4_test_invalid(flag0_q);
+  assign hw2reg.recov_alert_sts.acmd_flag0_field_alert.de = acmd_flag0_pfa;
+  assign hw2reg.recov_alert_sts.acmd_flag0_field_alert.d  = acmd_flag0_pfa;
+
   // parse the command bus
   assign acmd_hold = acmd_sop ? acmd_bus[2:0] : acmd_q;
-  assign flag0 = acmd_bus[8];
+  assign flag0 = mubi_acmd_flag0;
   assign shid = acmd_bus[15:12];
   assign gen_last = acmd_bus[16];
 
@@ -1048,8 +1056,7 @@ module csrng_core import csrng_pkg::*; #(
 
   assign flag0_d =
          (!cs_enable_fo[35]) ? prim_mubi_pkg::MuBi4False :
-         (acmd_sop && flag0) ? prim_mubi_pkg::MuBi4True :
-         (acmd_sop && !flag0) ? prim_mubi_pkg::MuBi4False :
+         (acmd_sop && ((acmd_bus[2:0] == INS) || (acmd_bus[2:0] == RES))) ? flag0 :
          flag0_q;
 
   // SEC_CM: CTRL.MUBI
