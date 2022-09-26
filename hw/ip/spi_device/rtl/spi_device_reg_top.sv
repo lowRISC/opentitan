@@ -18272,7 +18272,7 @@ module spi_device_reg_top (
   prim_subreg #(
     .DW      (3),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (3'h4)
+    .RESVAL  (3'h6)
   ) u_tpm_cap_max_rd_size (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
