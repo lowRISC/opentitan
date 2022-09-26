@@ -102,7 +102,8 @@ class spi_device_driver extends spi_driver;
   endtask : send_flash_item
 
   virtual task send_tpm_item(spi_item item);
-    // TODO, add soon
+    // TODO, this mode isn't used in OT project
+    `uvm_fatal(`gfn, "TPM device mode isn't supported")
   endtask : send_tpm_item
 
   virtual task send_data_to_sio(spi_mode_e mode, input logic [3:0] sio_bits);
