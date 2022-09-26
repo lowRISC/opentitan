@@ -310,7 +310,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] extht_lo_bypass_threshold_oneway;
   logic                    extht_lo_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] extht_lo_threshold;
-  logic [HalfRegWidth-1:0] extht_event_cnt;
+  logic [HalfRegWidth-1:0] extht_event_cnt_hi;
+  logic [HalfRegWidth-1:0] extht_event_cnt_lo;
   logic [HalfRegWidth-1:0] extht_hi_event_hwm_fips;
   logic [HalfRegWidth-1:0] extht_hi_event_hwm_bypass;
   logic [HalfRegWidth-1:0] extht_lo_event_hwm_fips;
@@ -321,6 +322,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [EighthRegWidth-1:0] extht_lo_fail_count;
   logic                     extht_hi_fail_pulse;
   logic                     extht_lo_fail_pulse;
+  logic                     extht_cont_test;
   logic                     extht_hi_fails_cntr_err;
   logic                     extht_lo_fails_cntr_err;
   logic                     extht_hi_alert_cntr_err;
@@ -1920,13 +1922,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign entropy_src_xht_o.thresh_hi = extht_hi_threshold;
   assign entropy_src_xht_o.thresh_lo = extht_lo_threshold;
   assign entropy_src_xht_o.window_wrap_pulse = health_test_done_pulse;
+  assign entropy_src_xht_o.health_test_window = health_test_window;
   assign entropy_src_xht_o.threshold_scope = threshold_scope;
   // get inputs from external health test
-  assign extht_event_cnt = entropy_src_xht_i.test_cnt;
+  assign extht_event_cnt_hi = entropy_src_xht_i.test_cnt_hi;
+  assign extht_event_cnt_lo = entropy_src_xht_i.test_cnt_lo;
   assign extht_hi_fail_pulse = entropy_src_xht_i.test_fail_hi_pulse;
   assign extht_lo_fail_pulse = entropy_src_xht_i.test_fail_lo_pulse;
-
-
+  assign extht_cont_test = entropy_src_xht_i.continuous_test;
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
@@ -1935,8 +1938,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && !es_bypass_mode),
-    .value_i             (extht_event_cnt),
+    .event_i             ((extht_cont_test || health_test_done_pulse) && !es_bypass_mode),
+    .value_i             (extht_event_cnt_hi),
     .value_o             (extht_hi_event_hwm_fips)
   );
 
@@ -1947,8 +1950,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && es_bypass_mode),
-    .value_i             (extht_event_cnt),
+    .event_i             ((extht_cont_test || health_test_done_pulse) && es_bypass_mode),
+    .value_i             (extht_event_cnt_hi),
     .value_o             (extht_hi_event_hwm_bypass)
   );
 
@@ -1977,8 +1980,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && !es_bypass_mode),
-    .value_i             (extht_event_cnt),
+    .event_i             ((extht_cont_test || health_test_done_pulse) && !es_bypass_mode),
+    .value_i             (extht_event_cnt_lo),
     .value_o             (extht_lo_event_hwm_fips)
   );
 
@@ -1989,8 +1992,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && es_bypass_mode),
-    .value_i             (extht_event_cnt),
+    .event_i             ((extht_cont_test || health_test_done_pulse) && es_bypass_mode),
+    .value_i             (extht_event_cnt_lo),
     .value_o             (extht_lo_event_hwm_bypass)
   );
 
