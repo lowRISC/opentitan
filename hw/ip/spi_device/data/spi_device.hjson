@@ -1089,7 +1089,7 @@
 
             It is not recommended for SW to advertise TPM supporting more than `max_rd_size` to the South Bridge.
             '''
-          resval: "4"
+          resval: "6"
         } // f: max_rd_size
       ]
       tags: [

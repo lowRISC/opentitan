@@ -111,7 +111,7 @@ package spi_device_env_pkg;
   parameter bit[11:0] TPM_HW_INT_CAP_OFFSET      = 12'h014;
   parameter bit[23:0] TPM_BASE_ADDR              = 24'hD40000;
   parameter byte TPM_ACTIVE_LOCALITY_BIT_POS     = 5;
-  parameter byte MAX_SUPPORT_TPM_SIZE            = 16; // current version can support up to 16
+  parameter byte MAX_SUPPORT_TPM_SIZE            = 64;
   parameter byte MAX_TPM_LOCALITY                = 5;
 
   parameter uint     NUM_INTERNAL_PROCESSED_CMD  = 11; // exclude WREN, WRDI, EN4B, EX4B
