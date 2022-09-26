@@ -261,15 +261,15 @@ static rom_error_t bootstrap_handle_erase(bootstrap_state_t *state) {
 static rom_error_t bootstrap_handle_erase_verify(bootstrap_state_t *state) {
   HARDENED_CHECK_EQ(*state, kBootstrapStateEraseVerify);
 
-  // rom_error_t err_0 = flash_ctrl_data_erase_verify(0,
-  // kFlashCtrlEraseTypeBank); rom_error_t err_1 = flash_ctrl_data_erase_verify(
-  //     FLASH_CTRL_PARAM_BYTES_PER_BANK, kFlashCtrlEraseTypeBank);
-  // HARDENED_RETURN_IF_ERROR(err_0);
-  // HARDENED_RETURN_IF_ERROR(err_1);
+  rom_error_t err_0 = flash_ctrl_data_erase_verify(0, kFlashCtrlEraseTypeBank);
+  rom_error_t err_1 = flash_ctrl_data_erase_verify(
+      FLASH_CTRL_PARAM_BYTES_PER_BANK, kFlashCtrlEraseTypeBank);
+  HARDENED_RETURN_IF_ERROR(err_0);
+  HARDENED_RETURN_IF_ERROR(err_1);
 
   *state = kBootstrapStateProgram;
   spi_device_flash_status_clear();
-  return kErrorOk;
+  return err_0;
 }
 
 /**
