@@ -10,7 +10,8 @@ class csrng_item extends uvm_sequence_item;
   `uvm_object_new
 
   rand acmd_e       acmd;
-  rand bit [3:0]    clen, flags;
+  rand mubi4_t      flags;
+  rand bit [3:0]    clen;
   rand bit [18:0]   glen;
   rand bit [31:0]   cmd_data_q[$];
 
@@ -27,7 +28,7 @@ class csrng_item extends uvm_sequence_item;
   }
 
   constraint c_flags {
-    flags inside {[0:1]};
+    flags inside {MuBi4True, MuBi4False};
   }
 
   // TODO: Try glen > 32, glen = 0 on GEN cmd

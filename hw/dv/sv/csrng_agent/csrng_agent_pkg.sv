@@ -9,6 +9,7 @@ package csrng_agent_pkg;
   import dv_lib_pkg::*;
   import push_pull_agent_pkg::*;
   import csrng_pkg::*;
+  import prim_mubi_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

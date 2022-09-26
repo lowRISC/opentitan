@@ -13,6 +13,7 @@ class csrng_base_vseq extends cip_base_vseq #(
 
   bit                    do_csrng_init = 1'b1;
   bit [TL_DW-1:0]        rdata;
+  bit [3:0]              alt_flags;
   virtual csrng_cov_if   cov_vif;
 
   push_pull_device_seq#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
@@ -68,7 +69,13 @@ class csrng_base_vseq extends cip_base_vseq #(
   task send_cmd_req(uint app, csrng_item cs_item);
     bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]   cmd;
     // Gen cmd_req
-    cmd = {cs_item.glen, cs_item.flags, cs_item.clen, 1'b0, cs_item.acmd};
+    if ((cs_item.acmd != INS) && (cs_item.acmd != RES)) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(alt_flags)
+      cmd = {cs_item.glen, alt_flags, cs_item.clen, 1'b0, cs_item.acmd};
+    end
+    else begin
+      cmd = {cs_item.glen, cs_item.flags, cs_item.clen, 1'b0, cs_item.acmd};
+    end
     if (app != SW_APP) begin
       cfg.m_edn_agent_cfg[app].m_cmd_push_agent_cfg.add_h_user_data(cmd);
       m_edn_push_seq[app].num_trans = cs_item.clen + 1;

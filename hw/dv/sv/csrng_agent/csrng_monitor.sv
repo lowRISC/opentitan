@@ -67,7 +67,12 @@ class csrng_monitor extends dv_base_monitor #(
         if (i == 0) begin
           cs_item.acmd  = acmd_e'(item.h_data[3:0]);
           cs_item.clen  = item.h_data[7:4];
-          cs_item.flags = item.h_data[11:8];
+          if (item.h_data[11:8] == MuBi4True) begin
+            cs_item.flags = MuBi4True;
+          end
+          else begin
+            cs_item.flags = MuBi4False;
+          end
           cs_item.glen  = item.h_data[30:12];
           cs_item.cmd_data_q.delete();
         end
@@ -104,7 +109,12 @@ class csrng_monitor extends dv_base_monitor #(
         cs_item = csrng_item::type_id::create("cs_item");
         cs_item.acmd = acmd_e'(cfg.vif.mon_cb.cmd_req.csrng_req_bus[3:0]);
         cs_item.clen = cfg.vif.mon_cb.cmd_req.csrng_req_bus[7:4];
-        cs_item.flags = cfg.vif.mon_cb.cmd_req.csrng_req_bus[11:8];
+        if (cfg.vif.mon_cb.cmd_req.csrng_req_bus[11:8] == MuBi4True) begin
+          cs_item.flags = MuBi4True;
+        end
+        else begin
+          cs_item.flags = MuBi4False;
+        end
         if (cs_item.acmd == csrng_pkg::RES) begin
           cfg.reseed_cnt += 1;
         end

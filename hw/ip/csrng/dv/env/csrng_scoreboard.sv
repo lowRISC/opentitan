@@ -115,7 +115,12 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             cs_item[SW_APP] = csrng_item::type_id::create("cs_item[SW_APP]");
             cs_item[SW_APP].acmd  = acmd_e'(item.a_data[3:0]);
             cs_item[SW_APP].clen  = item.a_data[7:4];
-            cs_item[SW_APP].flags = item.a_data[11:8];
+            if (item.a_data[11:8] == MuBi4True) begin
+              cs_item[SW_APP].flags = MuBi4True;
+            end
+            else begin
+              cs_item[SW_APP].flags = MuBi4False;
+            end
             cs_item[SW_APP].glen  = item.a_data[30:12];
 
             more_cmd_data = cs_item[SW_APP].clen;
@@ -132,7 +137,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
             end
             case (cs_item[SW_APP].acmd)
               INS: begin
-                if (!cs_item[SW_APP].flags[0]) begin
+                if (cs_item[SW_APP].flags != MuBi4True) begin
                   // Get seed
                   wait (es_item_q[SW_APP].size());
                   es_item[SW_APP] = es_item_q[SW_APP].pop_front;
@@ -142,7 +147,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                 ctr_drbg_instantiate(SW_APP, es_data[SW_APP], cs_data[SW_APP], fips[SW_APP]);
               end
               RES: begin
-                if (!cs_item[SW_APP].flags[0]) begin
+                if (cs_item[SW_APP].flags != MuBi4True) begin
                   // Get seed
                   wait (es_item_q[SW_APP].size());
                   es_item[SW_APP] = es_item_q[SW_APP].pop_front;
@@ -408,7 +413,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
       case (cs_item[app].acmd)
         INS: begin
-          if (!cs_item[app].flags[0]) begin
+          if (cs_item[app].flags != MuBi4True) begin
             // Get seed
             wait (es_item_q[app].size());
             es_item[app] = es_item_q[app].pop_front();
@@ -427,7 +432,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           ctr_drbg_uninstantiate(app);
         end
         RES: begin
-          if (!cs_item[app].flags[0]) begin
+          if (cs_item[app].flags != MuBi4True) begin
             // Get seed
             wait (es_item_q[app].size());
             es_item[app] = es_item_q[app].pop_front();

@@ -17,7 +17,7 @@ class csrng_smoke_vseq extends csrng_base_vseq;
     // Create/Write CSRNG Cmd_Req - Instantiate Command
     `DV_CHECK_RANDOMIZE_WITH_FATAL(cs_item,
                                    cs_item.acmd  == csrng_pkg::INS;
-                                   cs_item.flags == 4'h1;
+                                   cs_item.flags == MuBi4True;
                                    cs_item.clen  == 4'hc;)
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
@@ -25,7 +25,7 @@ class csrng_smoke_vseq extends csrng_base_vseq;
     // Create/Write CSRNG Cmd_Req - Generate Command
     cs_item.acmd  = csrng_pkg::GEN;
     cs_item.clen  = 'h0;
-    cs_item.flags = 'h1;
+    cs_item.flags = MuBi4True;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
