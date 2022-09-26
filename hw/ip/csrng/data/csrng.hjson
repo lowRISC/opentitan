@@ -400,6 +400,14 @@
                 Writing a zero resets this status bit.
                 '''
         }
+        { bits: "3",
+          name: "ACMD_FLAG0_FIELD_ALERT",
+          desc: '''
+                This bit is set when the FLAG0 field in the Application Command is set to
+                a value other than kMultiBitBool4True or kMultiBitBool4False.
+                Writing a zero resets this status bit.
+                '''
+        }
         { bits: "12",
           name: "CS_BUS_CMP_ALERT",
           desc: '''

@@ -291,10 +291,10 @@ Below is a description of the fields of this header:
   </tr>
   <tr>
     <td>11:8</td>
-    <td>flags</td>
-    <td> Command Flags: Specific flags associated with a command.
-         Used to allow additional features per command. Flags are defined as <tt>flag0</tt>, <tt>flag1</tt>, <tt>flag2</tt>, and <tt>flag3</tt>, where <tt>flag0</tt> is bit 8, and <tt>flag1</tt> is bit 9, etc.
-         Note that <tt>flag0</tt> is used for the <tt>instantiate</tt> command. All others are reserved.
+    <td>flag0</td>
+    <td> Command Flag0: flag0 is associated with current command.
+         Setting this field to kMultiBitBool4True will enable flag0 to be enabled.
+         Note that <tt>flag0</tt> is used for the <tt>instantiate</tt> and  <tt>reseed</tt> commands only.
     </td>
   </tr>
   <tr>
