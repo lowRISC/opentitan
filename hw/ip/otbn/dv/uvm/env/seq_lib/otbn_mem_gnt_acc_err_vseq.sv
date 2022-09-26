@@ -36,7 +36,6 @@ class otbn_mem_gnt_acc_err_vseq extends otbn_single_vseq;
           do begin
             @(cfg.clk_rst_vif.cb);
             uvm_hdl_read("tb.dut.u_dmem.req_i", req);
-    `DV_ASSERT_CTRL_REQ("DMemAsserts", 0)
           end while(!req);
         )
         `DV_CHECK_FATAL(uvm_hdl_force(gnt_path, 0) == 1)
