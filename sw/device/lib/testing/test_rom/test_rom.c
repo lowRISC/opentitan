@@ -10,7 +10,6 @@
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
@@ -52,7 +51,6 @@ typedef void ottf_entry(void);
 
 static dif_clkmgr_t clkmgr;
 static dif_flash_ctrl_state_t flash_ctrl;
-static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
 static dif_rstmgr_t rstmgr;
 static dif_uart_t uart0;
@@ -130,15 +128,12 @@ bool rom_test_main(void) {
 
 #if !OT_IS_ENGLISH_BREAKFAST
   // Check the otp to see if flash scramble should be enabled.
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-
   uint32_t otp_val;
   otp_val = abs_mmio_read32(
       TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
       OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
 
-  // very stupid, just set the entire first bank to scrambled right now
+  // TODO: This section needs to be updated based on the discussion in #15035
   if (otp_val != 0) {
     LOG_INFO("Default flash settings have been supplied through otp 0x%x",
              otp_val);
@@ -154,7 +149,10 @@ bool rom_test_main(void) {
 #endif
 
   if (bootstrap_requested() == kHardenedBoolTrue) {
-    LOG_INFO("boot strap requested!");
+    // This log statement is used to synchronize the rom and DV testbench
+    // for specific test cases.
+    LOG_INFO("Boot strap requested");
+
     rom_error_t bootstrap_err = bootstrap();
     if (bootstrap_err != kErrorOk) {
       LOG_ERROR("Bootstrap failed with status code: %08x",

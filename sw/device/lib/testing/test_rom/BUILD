@@ -139,7 +139,6 @@ cc_library(
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
-        "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:spi_device",
