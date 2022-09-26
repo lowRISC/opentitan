@@ -513,7 +513,7 @@ module edn_reg_top (
   prim_subreg #(
     .DW      (32),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (32'h1)
+    .RESVAL  (32'h901)
   ) u_boot_ins_cmd (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),

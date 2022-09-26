@@ -164,7 +164,7 @@
           desc: '''
                 This field is used as the value for Instantiate command at boot time.
                 '''
-         resval: 0x0000_0001
+         resval: 0x0000_0901
         }
       ]
     },
