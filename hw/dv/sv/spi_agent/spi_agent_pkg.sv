@@ -80,9 +80,18 @@ package spi_agent_pkg;
 
   string msg_id = "spi_agent_pkg";
 
+  // formart: {write, 0, size-1 (6 bits)}
   function automatic bit [7:0] get_tpm_cmd(bit write, uint size);
     `DV_CHECK_LE(size, MAX_TPM_SIZE, , , msg_id)
     return {!write, 1'b0, 6'(size - 1)};
+  endfunction
+
+  function automatic void decode_tpm_cmd(input bit [7:0] cmd,
+                                         output bit write, output uint size);
+    write = cmd[7];
+    `DV_CHECK_EQ(cmd[6], 0, , , msg_id)
+    size = cmd[5:0] + 1;
+    `DV_CHECK_LE(size, MAX_TPM_SIZE, , , msg_id)
   endfunction
 
   // package sources

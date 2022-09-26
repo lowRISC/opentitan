@@ -194,7 +194,7 @@ class spi_host_driver extends spi_driver;
     end else begin
       repeat (req.read_size) begin
         logic [7:0] data;
-        cfg.read_flash_byte(.num_lanes(req.num_lanes), .is_device_rsp(1), .data(data));
+        cfg.read_byte(.num_lanes(req.num_lanes), .is_device_rsp(1), .data(data));
         rsp.payload_q.push_back(data);
       end
       `uvm_info(`gfn, $sformatf("collect read data for flash: 0x%p", rsp.payload_q), UVM_MEDIUM)
@@ -231,7 +231,7 @@ class spi_host_driver extends spi_driver;
       end while (tpm_rsp == TPM_WAIT);
       , , TPM_START_MAX_WAIT_TIME_NS)
 
-    `uvm_info(`gfn, "Received TPM START", UVM_MEDIUM)
+    `uvm_info(`gfn, "Received TPM START", UVM_HIGH)
     sck_pulses += (req.write_command ? req.data.size : req.read_size) * 8;
     if (req.write_command) begin
       issue_data(.transfer_data(req.data), .returned_data(returned_bytes), .last_data(1));
@@ -241,7 +241,7 @@ class spi_host_driver extends spi_driver;
       bit [7:0] dummy_bytes[$];
       repeat (req.read_size) dummy_bytes.push_back($urandom);
       issue_data(.transfer_data(dummy_bytes), .returned_data(rsp.data), .last_data(1));
-      `uvm_info(`gfn, $sformatf("collect read data for TPM: 0x%p", rsp.data), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("collect read data for TPM: 0x%p", rsp.data), UVM_HIGH)
     end
     wait(sck_pulses == 0);
   endtask

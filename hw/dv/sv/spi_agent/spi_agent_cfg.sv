@@ -176,9 +176,9 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   endfunction  : extract_cmd_info_from_opcode
 
   // this task collects one byte data based on num_lanes, which is used in both monitor and driver
-  task read_flash_byte(input int num_lanes,
-                       input bit is_device_rsp,
-                       output logic [7:0] data);
+  task read_byte(input int num_lanes,
+                 input bit is_device_rsp,
+                 output logic [7:0] data);
     int which_bit = 8;
     while (which_bit != 0) begin
       wait_sck_edge(SamplingEdge);
