@@ -19,9 +19,11 @@
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
@@ -176,10 +178,14 @@ static void check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
 /** Key manager configuration steps performed in ROM. */
 rom_error_t keymgr_rom_test(void) {
   ASSERT_OK(keymgr_state_check(kKeymgrStateReset));
-  keymgr_sw_binding_set(&kBindingValueRomExt, &kBindingValueRomExt);
-  keymgr_creator_max_ver_set(kMaxVerRomExt);
-  SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
-                           kKeymgrSecMmioCreatorMaxVerSet);
+  if (retention_sram_get()
+          ->reserved_creator[ARRAYSIZE((retention_sram_t){0}.reserved_creator) -
+                             1] == TEST_ROM_IDENTIFIER) {
+    keymgr_sw_binding_set(&kBindingValueRomExt, &kBindingValueRomExt);
+    keymgr_creator_max_ver_set(kMaxVerRomExt);
+    SEC_MMIO_WRITE_INCREMENT(kKeymgrSecMmioSwBindingSet +
+                             kKeymgrSecMmioCreatorMaxVerSet);
+  }
   sec_mmio_check_values(/*rnd_offset=*/0);
   sec_mmio_check_counters(/*expected_check_count=*/1);
   return kErrorOk;
