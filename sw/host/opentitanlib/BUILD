@@ -108,6 +108,7 @@ rust_library(
         "src/transport/ultradebug/spi.rs",
         "src/transport/ultradebug/uart.rs",
         "src/transport/verilator/mod.rs",
+        "src/transport/verilator/gpio.rs",
         "src/transport/verilator/stdout.rs",
         "src/transport/verilator/subprocess.rs",
         "src/transport/verilator/transport.rs",
