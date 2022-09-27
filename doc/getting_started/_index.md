@@ -6,11 +6,7 @@ aliases:
 ---
 
 Welcome!
-This guide will help you get OpenTitan up and running by instructing you how to:
-
-1. clone the OpenTitan Git repository,
-2. setup an adequate build/testing environment on your machine, and
-3. build OpenTitan software/hardware for the target of your choosing.
+This guide will help you get OpenTitan up and running.
 
 ## Workflow Options
 
@@ -28,7 +24,7 @@ Just keep in mind, if you're a new user and you don't know you're part of the FP
 
 Clone the [OpenTitan repository](https://github.com/lowRISC/opentitan):
 ```console
-$ git clone https://github.com/lowRISC/opentitan.git
+git clone https://github.com/lowRISC/opentitan.git
 ```
 
 If you wish to *contribute* to OpenTitan you will need to make a fork on GitHub and may wish to clone the fork instead.
@@ -38,7 +34,7 @@ We have some [notes for using GitHub]({{< relref "github_notes.md" >}}) which ex
 Unless you've specified some other name in the clone, `$REPO_TOP` will be a directory called `opentitan`.
 You can create the environment variable by calling the following command from the same directory where you ran `git clone`:
 ```console
-$ export REPO_TOP=$PWD/opentitan
+export REPO_TOP=$PWD/opentitan
 ```
 
 ## Step 1: Check System Requirements
@@ -50,78 +46,88 @@ You can then **skip to step 4** (building software).
 If you do have Linux, you are still welcome to try the Docker container.
 However, as the container option is currently experimental, we recommend following the steps below to build manually if you plan on being a long-term user or contributor for the project.
 
-Our continuous integration setup runs on Ubuntu 18.04 LTS, which gives us the most confidence that this distribution works out of the box.
+Our continuous integration setup runs on Ubuntu 20.04 LTS, which gives us the most confidence that this distribution works out of the box.
 We do our best to support other distributions, but cannot guarantee they can be used "out of the box" and might require updates of packages.
 Please file a [GitHub issue](https://github.com/lowRISC/opentitan/issues) if you need help or would like to propose a change to increase compatibility with other distributions.
+
+You will need at least 7GB of available RAM in order to build the Verilator simulation.
+If you have an FPGA and download the bitstream from our cloud bucket rather than building it locally (the default setup) then this constraint does not apply.
 
 ## Step 2: Install Package Manager Dependencies
 
 *Skip this step if using the Docker container.*
 
 A number of software packages from the distribution's package manager are required.
-On Ubuntu 18.04, the required packages can be installed with the following command.
+On Ubuntu 20.04, the required packages can be installed with the following command.
 
 {{< pkgmgr_cmd "apt" >}}
+
+Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
+We recommend installing the latest version of `pip` and `setuptools` (especially if on older systems such as Ubuntu 18.04) using:
+
+```console
+python3 -m pip install --user -U pip setuptools
+```
+
+The `pip` installation instructions use the `--user` flag to install without root permissions.
+Binaries are installed to `~/.local/bin`; check that this directory is listed in your `PATH` by running `which pip3`.
+It should show `~/.local/bin/pip3`.
+If it doesn't, add `~/.local/bin` to your `PATH`, e.g. by adding the following line to your `~/.bashrc` file:
+
+```console {title=~/.bashrc}
+export PATH=$PATH:~/.local/bin
+```
+
+Now install additional Python dependencies:
+
+```console
+cd $REPO_TOP
+pip3 install --user -r python-requirements.txt
+```
+
+### Adjust GCC version (if needed)
 
 On Ubuntu 18.04 the package `build-essential` includes the compilers `gcc-7` and `g++-7`.
 But for the OpenTitan project `gcc-9`/`g++-9` or higher is required, which has to be installed manually.
 Check that you have version 9 or higher of `gcc` installed by:
 
 ```console
-$ gcc --version
+gcc --version
 ```
 
 If your version is lower, you have to upgrade it manually.
 For this, first, add `ubuntu-toolchain-r/test` PPA to your system using the following commands:
 
 ```console
-$ sudo apt install software-properties-common
-$ sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+sudo apt install software-properties-common
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 ```
 
 Next, install the necessary GCC and G++ version by:
 
 ```console
-$ sudo apt update
-$ sudo apt install gcc-9 g++-9
+sudo apt update
+sudo apt install gcc-9 g++-9
 ```
 
 Finally, update the symbolic links for `gcc` and `g++` using these commands:
 
 ```console
-$ sudo ln -sf /usr/bin/gcc-9 /usr/bin/gcc
-$ sudo ln -sf /usr/bin/g++-9 /usr/bin/g++
-```
-
-Some tools in this repository are written in Python 3 and require Python dependencies to be installed through `pip`.
-We recommend installing the latest version of `pip` and `setuptools` (especially if on older systems such as Ubuntu 18.04) using:
-
-```console
-$ python3 -m pip install --user -U pip setuptools
-```
-
-The `pip` installation instructions use the `--user` flag to install without root permissions.
-Binaries are installed to `~/.local/bin`; check that this directory is listed in your `PATH` by running `which pip3`, which should show `~/.local/bin/pip3`.
-If it doesn't, add `~/.local/bin` to your `PATH`, e.g. by modifying your `~/.bashrc` file.
-
-Now install additional Python dependencies:
-
-```console
-$ cd $REPO_TOP
-$ pip3 install --user -r python-requirements.txt
+sudo ln -sf /usr/bin/gcc-9 /usr/bin/gcc
+sudo ln -sf /usr/bin/g++-9 /usr/bin/g++
 ```
 
 ## Step 3: Install the LowRISC RISC-V Toolchain
 
 *Skip this step if using the Docker container.*
 
-To build device software you need a baremetal RISC-V toolchain.
+To build device software you need a baremetal RISC-V toolchain (including, for example, a C compiler).
 Even if you already have one installed, we recommend using the prebuilt toolchain provided by lowRISC, because it is built with the specific patches and options that OpenTitan needs.
 You can install the toolchain using the `util/get-toolchain.py` script, which will download and install the toolchain to the default path, `/tools/riscv`.
 
 ```console
-$ cd $REPO_TOP
-$ ./util/get-toolchain.py
+cd $REPO_TOP
+./util/get-toolchain.py
 ```
 
 If you did not encounter errors running the script, **you're done and can go to step 4**.
@@ -136,33 +142,32 @@ You can alternatively download the tarball starting with `lowrisc-toolchain-rv32
 Assuming one of the above worked and you have installed to a non-standard location, you will need to set the `TOOLCHAIN_PATH` environment variable to match whatever path you used.
 For example, if I wanted to install to `~/ot_tools/riscv`, then I would use:
 ```console
-$ ./util/get-toolchain.py --install-dir=~/ot_tools/riscv
-$ export TOOLCHAIN_PATH=~/ot_tools/riscv
+./util/get-toolchain.py --install-dir=~/ot_tools/riscv
+export TOOLCHAIN_PATH=~/ot_tools/riscv
 ```
 Add the `export` command to your `~/.bashrc` or equivalent to ensure that the `TOOLCHAIN_PATH` variable is set for future sessions.
 Check that it worked by opening a new terminal and running:
 ```console
-$ ls $TOOLCHAIN_PATH/bin/riscv32-unknown-elf-as
+ls $TOOLCHAIN_PATH/bin/riscv32-unknown-elf-as
 ```
 If that prints out the file path without errors, then you've successfully installed the toolchain.
 Otherwise, try to find the `riscv32-unknown-elf-as` file in your file system and make sure `$TOOLCHAIN_PATH` is correctly set.
 
-## Step 4: Build OpenTitan Software
-
-Follow the [dedicated guide]({{< relref "build_sw" >}}) to build OpenTitan's software, and then return to this page.
-Some tests might fail because you don't have Verilator installed, which we will do in the next step.
-
-## Step 5: Set up your Simulation Tool or FPGA
+## Step 4: Set up your Simulation Tool or FPGA
 
 *Note: If you are using the pre-built Docker container, Verilator is already installed.
 Unless you know you need the FPGA or DV guides, you can skip this step.*
 
-In order to run the software we built in the last step, we need to have some way to emulate an OpenTitan chip.
+In order to run the software, we need to have some way to emulate an OpenTitan chip.
 There are a few different options depending on your equipment and use-case.
 Follow the guide(s) that applies to you:
 * **Option 1 (Verilator setup, recommended for new users):** [Verilator guide]({{< relref "setup_verilator.md" >}}), or
 * Option 2 (FPGA setup): [FPGA guide]({{< relref "setup_fpga.md" >}}), or
 * Option 3 (design verification setup): [DV guide]({{< relref "setup_dv.md" >}})
+
+## Step 5: Build OpenTitan Software
+
+Follow the [dedicated guide]({{< relref "build_sw" >}}) to build OpenTitan's software and run tests.
 
 ## Step 6: Optional Additional Steps
 
@@ -191,13 +196,13 @@ Go to [this page](https://github.com/google/verible/releases) and download the c
 The example below is for Ubuntu 18.04:
 
 ```console
-$ export VERIBLE_VERSION={{< tool_version "verible" >}}
+export VERIBLE_VERSION={{< tool_version "verible" >}}
 
-$ wget https://github.com/google/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
-$ tar -xf verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
+wget https://github.com/google/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
+tar -xf verible-${VERIBLE_VERSION}-Ubuntu-18.04-bionic-x86_64.tar.gz
 
-$ sudo mkdir -p /tools/verible/${VERIBLE_VERSION}/
-$ sudo mv verible-${VERIBLE_VERSION}/* /tools/verible/${VERIBLE_VERSION}/
+sudo mkdir -p /tools/verible/${VERIBLE_VERSION}/
+sudo mv verible-${VERIBLE_VERSION}/* /tools/verible/${VERIBLE_VERSION}/
 ```
 
 After installation you need to add `/tools/verible/$VERIBLE_VERSION/bin` to your `PATH` environment variable.

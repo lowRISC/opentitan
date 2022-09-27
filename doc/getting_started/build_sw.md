@@ -13,11 +13,19 @@ All OpenTitan software is built with [Bazel](https://bazel.build/).
 Additionally, _most_ tests may be run with Bazel too.
 
 ## TL;DR
-To install the correct version of bazel, build, and run all on-host tests you can simply run:
+To install the correct version of bazel, build, and run a single test with Verilator, run:
 
 ```console
-$REPO_TOP/bazelisk.sh test //... --test_tag_filters=-cw310,-verilator --disk_cache=~/bazel_cache
+$REPO_TOP/bazelisk.sh test --test_output=streamed --disk_cache=~/bazel_cache //sw/device/tests:uart_smoketest_sim_verilator
 ```
+
+This will take a while (an hour on a laptop is typical) if it's your first build or the first after a `git pull`, because Bazel has to build the chip simulation.
+Future builds will be much faster; go get a coffee and come back later.
+
+If the test worked, your OpenTitan setup is functional; you can build the software and run on-device tests using the Verilator simulation tool.
+See [Running Tests with Bazel]({{< relref "#running-tests with Bazel" >}}) for information on how to find and run other tests.
+
+If the test didn't work, read the full guide, especially the [Troubleshooting]({{< relref "#troubleshooting" >}}) section.
 
 ## Installing Bazel
 
@@ -97,8 +105,30 @@ Examples of on-device tests are:
 * [chip-level tests]({{< relref "/sw/device/tests/index.md" >}}).
 * [ROM functional tests]({{< relref "/sw/device/silicon_creator/rom/docs/" >}})
 
-The remainder of this document will focus on building and running **on-host** tests with Bazel.
-To learn about running **on-device** tests with Bazel, please continue back to the main [Getting Started]({{< relref "getting_started" >}}) instructions, and proceed with the [Verilator]({{< relref "setup_verilator" >}}) and/or [FPGA]({{< relref "setup_fpga" >}}) setup instructions.
+Test target names normally match file names (for instance, `//sw/device/tests:uart_smoketest` corresponds to `sw/device/test/uart_smoketest.c`).
+You can see all tests available under a given directory using `bazel query`, e.g.:
+
+```console
+bazel query 'tests(//sw/device/tests/...)'
+```
+
+### Running on-device Tests
+
+On-device tests such as `//sw/device/tests:uart_smoketest` include multiple targets for different device simulation/emulation tools.
+Typically, you will only want to run one of these test targets at a time (for instance, only Verilator or only FPGA).
+Add `_sim_verilator` to the test name to run the test on Verilator only, and `_fpga_cw310_rom` or `_fpga_cw310_test_rom` to run the test on FPGA only.
+
+You can check which Verilator tests are available under a given directory using:
+```console
+bazel query 'attr(tags, verilator, tests(//sw/device/tests/...))'
+```
+
+For FPGA tests, just change the tag:
+```console
+bazel query 'attr(tags, cw310, tests(//sw/device/tests/...))'
+```
+
+For more information, please refer to the [Verilator]({{< relref "setup_verilator" >}}) and/or [FPGA]({{< relref "setup_fpga" >}}) setup instructions.
 
 ### Running on-host DIF Tests
 
@@ -240,3 +270,32 @@ riscv32-unknown-elf-objdump --disassemble-all --headers --line-numbers --source 
 ```
 
 Refer to the output of `riscv32-unknown-elf-objdump --help` for a full list of options.
+
+## Troubleshooting {#troubleshooting}
+
+### Check CI {#troubleshooting-check-ci}
+
+First, [check the GitHub repository](https://github.com/lowRISC/opentitan/commits/master) to make sure the CI check is succeeding for the commit you cloned.
+If there's an issue with that commit (it would have a red "X" next to it), check out the most recent commit that passed CI (indicated by a green check mark).
+We try to always keep the main branch healthy, but the project is in active development and we're not immune to temporary breaks.
+
+### Debugging a failed verilator test {#troubleshooting-verilator-test-failure}
+
+If your `bazelisk.sh` build failed trying to run a test on Verilator, the first step is to see if you can build the chip simulation on its own:
+
+```console
+./bazelisk.sh build //hw:verilator
+```
+This build can take a long time; it's creating a simulation for the entire OpenTitan SoC.
+Expect up to an hour for a successful build, depending on your machine.
+
+If the `//hw:verilator` build above ran for a while and then failed with a bunch of warnings about various `.sv` files, it may have run out of RAM.
+At the time of writing, our CI has 7GB of RAM, so that should be sufficient.
+If your system is close to that limit, you may want to exit web browsers or other RAM-intensive applications while the Verilator build runs.
+
+If the `//hw:verilator` build failed pretty much immediately, try running `util/check_tool_requirements.py` to make sure you meet the tool requirements.
+
+If the `//hw:verilator` build succeeeded, but running a particular test fails, try running a different test (you can find many options under `sw/device/tests/`).
+If that works, then it may be a problem with the specific test you're running.
+See if you can build, but not run, the test with `./bazelisk.sh build` instead of `./bazelisk.sh test`.
+If the test fails to build, that indicates some issue with the source code or possibly the RISC-V toolchain installation.
