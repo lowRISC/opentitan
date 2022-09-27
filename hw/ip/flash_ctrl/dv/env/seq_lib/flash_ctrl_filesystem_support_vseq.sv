@@ -21,6 +21,7 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
     bit all_zero;
     special_info_acc_c.constraint_mode(0);
     allow_spec_info_acc = 3'h7;
+    update_partition_access(allow_spec_info_acc);
     // Disable scramble, enable ECC
     flash_otf_region_cfg(.scr_mode(OTFCfgFalse), .ecc_mode(OTFCfgTrue));
 
@@ -56,9 +57,11 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
       if (readback_data.exists(mypage)) continue;
 
       all_zero = (erased_page.exists(mypage))? 0 : 1;
+      `uvm_info("program_page", $sformatf("%p %p all_zero:%0b",
+                                          rand_op, mypage, all_zero), UVM_MEDIUM)
       filesys_ctrl_prgm_page(.flash_op_p(rand_op), .all_zero(all_zero),
                              .wdata(readback_data[mypage]));
-      `uvm_info("program_page", $sformatf("%p all_zero:%0b", mypage, all_zero), UVM_MEDIUM)
+
       `uvm_info("program_page", $sformatf("size:%0d data: %p",
                             readback_data[mypage].size(), readback_data[mypage]), UVM_HIGH)
       fs_wr_page.push_back(mypage);
@@ -82,6 +85,7 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
     flash_op_p.op = flash_ctrl_pkg::FlashOpProgram;
     flash_op_p.num_words = 16;
     flash_op_p.addr = {flash_op_p.addr[19:11], {11{1'b0}}};
+
     for (int i = 0; i < 32; i++) begin
       `uvm_info(`gfn, $sformatf("PROGRAM ADDRESS: 0x%0h", flash_op_p.addr), UVM_HIGH)
       // Randomize Write Data

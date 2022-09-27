@@ -13,6 +13,7 @@ class flash_ctrl_disable_vseq extends flash_ctrl_otf_base_vseq;
   virtual task body();
     bit exp_err;
 
+    $assertoff(0, "tb.dut.u_lc_escalation_en_sync");
     send_rand_ops();
     set_flash_disable(exp_err);
 

@@ -784,7 +784,7 @@ class flash_ctrl_scoreboard #(
     // For flash, address has to be 8byte aligned.
     ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
     in_err = in_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
-    `uvm_info("predic_tl_err_dbg",
+    `uvm_info("predict_tl_err_dbg",
               $sformatf({"addr:0x%x(%x) ecc_err:%0d in_err:%0d channel:%s ral_name:%s",
                          " tlul_exp_cnt:%0d"},
                         {item.a_addr[AddrWidth-1:3],3'b0},
@@ -809,16 +809,18 @@ class flash_ctrl_scoreboard #(
           cfg.tlul_core_obs_cnt++;
           return 1;
        end
-       if (ecc_err | in_err) begin
-          if (channel == DataChannel) begin
-             `DV_CHECK_EQ(item.d_error, 1,
-                          $sformatf("On interface %s, TL item: %s, ecc_err:%0d in_err:%0d",
-                                    ral_name, item.sprint(uvm_default_line_printer),
-                                    ecc_err, in_err))
-             return 1;
-          end
-       end
     end
+
+    if (ecc_err | in_err) begin
+      if (channel == DataChannel) begin
+        `DV_CHECK_EQ(item.d_error, 1,
+                     $sformatf("On interface %s, TL item: %s, ecc_err:%0d in_err:%0d",
+                               ral_name, item.sprint(uvm_default_line_printer),
+                               ecc_err, in_err))
+        return 1;
+      end
+    end
+
     if (exp_tl_rsp_intg_err) begin
       return (!item.is_d_chan_intg_ok(.throw_error(0)));
     end
