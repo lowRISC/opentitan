@@ -156,13 +156,13 @@
     {
       name: "{variant}_entropy_refresh"
       uvm_test_seq: kmac_entropy_refresh_vseq
-   }
-   {
+    }
+    {
       name: "{variant}_mubi"
       uvm_test_seq: kmac_mubi_vseq
       reseed: 10
-   }
-   {
+    }
+    {
       name: "{variant}_error"
       uvm_test_seq: kmac_error_vseq
     }
@@ -175,12 +175,17 @@
       uvm_test_seq: kmac_edn_timeout_error_vseq
       reseed: 20
     }
-     {
+    {
       name: "{variant}_entropy_mode_error"
       uvm_test_seq: kmac_entropy_mode_error_vseq
       reseed: 20
     }
-   {
+    {
+      name: "{variant}_entropy_ready_error"
+      uvm_test_seq: kmac_entropy_ready_error_vseq
+      reseed: 10
+    }
+    {
       name: "{variant}_lc_escalation"
       uvm_test_seq: kmac_lc_escalation_vseq
       run_opts: ["+disable_lc_asserts=1"]
