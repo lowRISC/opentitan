@@ -2,6 +2,21 @@
   "includes": ["/__builtin__/opentitan.json"],
   "interface": "verilator",
   "pins": [
+      { "name": "IOB6", "alias_of": "0" },
+      { "name": "IOB7", "alias_of": "1" },
+      { "name": "IOB8", "alias_of": "2" },
+      { "name": "IOB9", "alias_of": "3" },
+      { "name": "IOB10", "alias_of": "4" },
+      { "name": "IOB11", "alias_of": "5" },
+      { "name": "IOB12", "alias_of": "6" },
+
+      { "name": "IOR5", "alias_of": "7" },
+      { "name": "IOR6", "alias_of": "8" },
+      { "name": "IOR7", "alias_of": "9" },
+      { "name": "IOR10", "alias_of": "10" },
+      { "name": "IOR11", "alias_of": "11" },
+      { "name": "IOR12", "alias_of": "12" },
+      { "name": "IOR13", "alias_of": "13" }
   ],
   "uarts": [
     {

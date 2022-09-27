@@ -9,16 +9,19 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::Instant;
 
+use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::uart::Uart;
+use crate::transport::verilator::gpio::{GpioInner, VerilatorGpioPin};
 use crate::transport::verilator::subprocess::{Options, Subprocess};
 use crate::transport::verilator::uart::VerilatorUart;
 use crate::transport::{
     Capabilities, Capability, Transport, TransportError, TransportInterfaceType,
 };
+use crate::util::parse_int::ParseInt;
 
-#[derive(Default)]
-struct Inner {
+pub(crate) struct Inner {
     uart: Option<Rc<dyn Uart>>,
+    pub gpio: GpioInner,
 }
 
 /// Represents the verilator transport object.
@@ -29,7 +32,7 @@ pub struct Verilator {
     pub gpio_read_file: String,
     pub gpio_write_file: String,
 
-    inner: RefCell<Inner>,
+    inner: Rc<RefCell<Inner>>,
 }
 
 impl Verilator {
@@ -54,15 +57,20 @@ impl Verilator {
         log::info!("Verilator started with the following interaces:");
         log::info!("gpio_read = {}", gpio_rd);
         log::info!("gpio_write = {}", gpio_wr);
+        let gpio = GpioInner::new(&gpio_rd, &gpio_wr)?;
         log::info!("uart = {}", uart);
         log::info!("spi = {}", spi);
+
         Ok(Verilator {
             subprocess: Some(subprocess),
             uart_file: uart,
             spi_file: spi,
             gpio_read_file: gpio_rd,
             gpio_write_file: gpio_wr,
-            inner: RefCell::default(),
+            inner: Rc::new(RefCell::new(Inner {
+                uart: None,
+                gpio: gpio,
+            })),
         })
     }
 
@@ -84,7 +92,7 @@ impl Drop for Verilator {
 
 impl Transport for Verilator {
     fn capabilities(&self) -> Result<Capabilities> {
-        Ok(Capabilities::new(Capability::UART))
+        Ok(Capabilities::new(Capability::UART | Capability::GPIO))
     }
 
     fn uart(&self, instance: &str) -> Result<Rc<dyn Uart>> {
@@ -97,5 +105,14 @@ impl Transport for Verilator {
             inner.uart = Some(Rc::new(VerilatorUart::open(&self.uart_file)?));
         }
         Ok(Rc::clone(inner.uart.as_ref().unwrap()))
+    }
+
+    fn gpio_pin(&self, instance: &str) -> Result<Rc<dyn GpioPin>> {
+        let pin = u8::from_str(instance)?;
+        ensure!(pin < 32, GpioError::InvalidPinNumber(pin));
+        let mut inner = self.inner.borrow_mut();
+        Ok(Rc::clone(inner.gpio.pins.entry(pin).or_insert_with(|| {
+            VerilatorGpioPin::new(Rc::clone(&self.inner), pin)
+        })))
     }
 }
