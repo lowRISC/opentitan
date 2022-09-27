@@ -240,7 +240,7 @@ More detailed and complete code can be found in the software under `sw/`, [ROM c
 ## Initialization
 
 This section of the code describes initializing the HMAC-SHA256, setting up the
-interrupts, endianess, and HMAC, SHA-256 mode. {{< regref "CFG.endian_swap" >}} reverses
+interrupts, endianness, and HMAC, SHA-256 mode. {{< regref "CFG.endian_swap" >}} reverses
 the byte-order of input words when software writes into the message FIFO.
 {{< regref "CFG.digest_swap" >}} reverses the byte-order in the final HMAC or SHA hash.
 

@@ -124,7 +124,7 @@ It provides the following commonly used handles, variables, functions and tasks 
   The task provides some arguments to "pattern" the kind of randomized responses that are sent.
 
 * sba_tl_device_seq_stop(): This method stops the previously spawned SBA TL device sequence from executing further.
-  If the invocation of this task coincides with a new SBA TL request from RV_DM then the noew request is accepted.
+  If the invocation of this task coincides with a new SBA TL request from RV_DM then the new request is accepted.
   The task waits for all accepted requests to be serviced (i.e. responded to) before returning back to the caller.
 
 All test sequences extend from `rv_dm_base_vseq`.

@@ -15,7 +15,7 @@ This document describes the functionality of the reset controller and its intera
 *   Limited and selective software controlled module reset.
 *   Always-on reset information register.
 *   Always-on alert crash dump register.
-*   Always-on cpu crash dump register.
+*   Always-on CPU crash dump register.
 *   Reset consistency checks.
 
 # Theory of Operation
@@ -312,9 +312,9 @@ This behavioral difference may be important to software, as it implies the confi
 ## Crash Dump Information
 
 The reset manager manages crash dump information for software debugging across unexpected resets and watchdogs.
-When enabled, the latest alert information and latest cpu information are captured in always-on registers.
+When enabled, the latest alert information and latest CPU information are captured in always-on registers.
 
-When the software resumes after the reset, it is then able to examine the last cpu state or the last set of alert information to understand why the system has reset.
+When the software resumes after the reset, it is then able to examine the last CPU state or the last set of alert information to understand why the system has reset.
 
 The enable for such debug capture can be locked such that it never captures.
 
@@ -330,10 +330,10 @@ Set {{< regref "ALERT_INFO_CTRL.INDEX" >}} to the desired segment, and then read
 
 ### CPU Information
 
-The cpu information register contains the value of the cpu state prior to a triggered reset.
+The CPU information register contains the value of the CPU state prior to a triggered reset.
 Since this information differs in length between system implementation, the information register only displays 32-bits at a time.
 
-For more details on the cpu dump details, please see [crash dump]({{< relref "hw/ip/rv_core_ibex/doc/_index.md#crash-dump-collection" >}}).
+For more details on the CPU dump details, please see [crash dump]({{< relref "hw/ip/rv_core_ibex/doc/_index.md#crash-dump-collection" >}}).
 
 The {{< regref "CPU_INFO_ATTR" >}} register indicates how many 32-bit data segments must be read.
 Software then simply needs to write in {{< regref "CPU_INFO_CTRL.INDEX" >}} which segment it wishes and then read out the {{< regref "CPU_INFO" >}} register.

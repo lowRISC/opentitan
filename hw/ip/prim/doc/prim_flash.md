@@ -69,7 +69,7 @@ part               | input  | requested transaction partition
 info_sel           | input  | if requested transaction is information partition, the type of information partition accessed
 he                 | input  | high endurance enable for requested address
 prog_data          | input  | program data
-ack                | output | transction acknowledge
+ack                | output | transaction acknowledge
 rd_data            | output | transaction read data
 done               | output | transaction done
 
@@ -126,9 +126,9 @@ The following are examples for read, program and erase transactions.
 ]}
 {{< /wavejson >}}
 
-## Initlialization
+## Initialization
 
-The flash wrapper may undergo technology specific intializations when it is first powered up.
+The flash wrapper may undergo technology specific initializations when it is first powered up.
 During this state, it asserts the `init_busy` to inform the outside world that it is not ready for transactions.
 During this time, if a transaction is issued towards the flash wrapper, the transaction is not acknowledged until the initialization is complete.
 

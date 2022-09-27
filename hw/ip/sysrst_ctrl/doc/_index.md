@@ -140,7 +140,7 @@ Software should therefore read and clear the {{< regref WKUP_STATUS >}} register
 Also note that the detection status is sticky.
 I.e., software needs to explicitly disable this feature by setting {{< regref ULP_CTL >}} to 0 in order to clear the FSM state.
 If software wants to re-arm the mechanism right away, it should first read back {{< regref ULP_CTL >}} to make sure it has been cleared before setting that register to 1 again.
-This is needed because this register has to be syncronized over to the AON clock domain.
+This is needed because this register has to be synchronized over to the AON clock domain.
 
 ## Pin input value accessibility
 

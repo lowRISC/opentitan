@@ -38,7 +38,7 @@ rdata_o[OutW]| output | Output data.
 rready_i     | input  | Output data is popped from the FIFO.
 depth_o      | output | Indicates the fullness of the FIFO.
 
-# Theory of Opeations
+# Theory of Operations
 
 ```code
            /----------\
@@ -62,5 +62,5 @@ rvalid_o and rready_i are coincident), will clear the data and depth values on
 the next clock cycle. The complimentary flow occurs when the`prim_packer_fifo`
 module is in unpack mode.
 
-The internal register size is the greate of `InW` and `OutW` bits.
+The internal register size is the greater of `InW` and `OutW` bits.
 Timing diagrams are shown in the header of the `prim_packer_fifo` module.

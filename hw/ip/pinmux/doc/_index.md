@@ -208,7 +208,7 @@ TAP strap 1                     | Continuously   | Continuously | Once at boot |
 
 *Once at boot:* Sampled once after life cycle initialization (sampling event is initiated by pwrmgr).
 
-*Continously:* Sampled continuously after life cycle initialization.
+*Continuously:* Sampled continuously after life cycle initialization.
 
 The TAP muxing logic is further qualified by the life cycle state in order to isolate the TAPs in certain life cycle states.
 The following table lists the TAP strap encoding and the life cycle states in which the associated TAPs can be selected and accessed.

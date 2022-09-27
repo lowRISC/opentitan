@@ -72,7 +72,7 @@ virtual sequence is extended from `cip_base_vseq` and serves as a starting point
 All test sequences are extended from `hmac_base_vseq`. It provides commonly used handles,
 variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* `hmac_init`     : initialize hmac settings including configurations and interrupte
+* `hmac_init`     : initialize hmac settings including configurations and interrupt
   enables
 * `csr_rd_digest` : read digest values from the CSR registers
 * `wr_key`        : write key values into the CSR registers
@@ -80,7 +80,7 @@ Some of the most commonly used tasks / functions are as follows:
 * `compare_digest`: compare the read digest result with the expected values
 
 ##### Standard test vectors
-Besides contrained random test sequences, hmac test sequences also includes [standard
+Besides constrained random test sequences, hmac test sequences also includes [standard
 SHA256 and HMAC test vectors]({{< relref "hw/dv/sv/test_vectors/doc.md" >}}) from
 [NIST](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs)
 and [IETF](https://tools.ietf.org/html/rfc4868).

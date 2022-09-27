@@ -194,7 +194,7 @@ In this case the values in the {{< regref "adc_lp_sample_ctl" >}} are not used.
 The ADC will always be enabled and consuming power.
 
 If power saving is required then the controller can be set to operate in low power mode by setting {{< regref "adc_pd_ctl.lp_mode" >}}.
-The {{< regref "adc_lp_sample_ctl" >}} must be programed prior to setting this bit.
+The {{< regref "adc_lp_sample_ctl" >}} must be programmed prior to setting this bit.
 
 ## Running with the rest of the chip in sleep
 

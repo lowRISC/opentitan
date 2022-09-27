@@ -133,7 +133,7 @@ Testbench     | [PRELIMINARY_ASSERTION_CHECKS_ADDED][]| Done        |
 Testbench     | [SIM_TB_ENV_CREATED][]                | Done        |
 Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        | Done for both, regs and debug mem RAL. JTAG DTM and DMI RAL models are hand-written.
 Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        | Done for both, regs and debug mem RAL.
-Testbench     | [TB_GEN_AUTOMATED][]                  | N.A.        | Design is not parameterized into multiple varaints.
+Testbench     | [TB_GEN_AUTOMATED][]                  | N.A.        | Design is not parameterized into multiple variants.
 Tests         | [SIM_SMOKE_TEST_PASSING][]            | Done        |
 Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        | CSR tests run on all 4 RAL models.
 Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | N.A.        |

@@ -231,7 +231,7 @@ The {{< regref "FATAL_ALERT_CAUSE" >}} register might change value during operat
 To get the computed ROM digest, software can read {{< regref "DIGEST_0" >}} through {{< regref "DIGEST_7" >}}.
 The ROM also contains an expected ROM digest.
 Unlike the rest of the contents of ROM, this isn't scrambled.
-As such, software can't read it through the standard ROM interface (which would try to unscramble it again, resulting in rubbish data that woud cause a failed ECC check).
+As such, software can't read it through the standard ROM interface (which would try to unscramble it again, resulting in rubbish data that would cause a failed ECC check).
 In case software needs access to this value, it can be read at {{< regref "EXP_DIGEST_0" >}} through {{< regref "EXP_DIGEST_7" >}}.
 
 ## Device Interface Functions (DIFs)

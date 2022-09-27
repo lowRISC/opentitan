@@ -35,7 +35,7 @@ Signal | Type          | Description
 -------|---------------|------------------------------
 rnd_i  | input [RndW]  | current round number [0..(MaxRound-1)]
 s_i    | input [Width] | state input
-s_o    | output[Width] | permutated state output
+s_o    | output[Width] | permuted state output
 
 `s_i` and `s_o` are little-endian bitarrays.
 The [SHA3 spec][fibs-pub-202] shows how to convert the bitstream into the 5x5xW state cube.

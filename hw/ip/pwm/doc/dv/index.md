@@ -120,7 +120,7 @@ Some of the most commonly used tasks / functions are as follows:
 * set_ch_enables(bit [PWM_NUM_CHANNELS-1:0] enables): used to enable and disable the different channels
 * set_duty_cycle(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, dc_blink_t value ,bit [3:0] resn) set the A and B values for channel
 * set_blink(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, dc_blink_t value): set X and Y value for pulse and heart bit
-* set_param(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, param_reg_t value): set channel configuration (blink/heatbeat/phase)
+* set_param(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, param_reg_t value): set channel configuration (blink/heartbeat/phase)
 * shutdown_dut(): this will disable all channels as an indication for the scoreboard to verify all remaining items.
 
 #### Functional coverage

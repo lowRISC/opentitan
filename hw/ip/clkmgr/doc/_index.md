@@ -285,7 +285,7 @@ Assume a 24MHz clock and an always-on clock of 200KHz.
 The minimal error detection is then 200KHz / 24MHz, or approximately 0.83%.
 
 This means if the clock's actual value is between 23.8MHz and 24.2MHz, this deviation will not be detected.
-Conversely, if the clock's natural operation has an error range wider than this resoltion, the min / max counts must be adjusted to account for this error.
+Conversely, if the clock's natural operation has an error range wider than this resolution, the min / max counts must be adjusted to account for this error.
 
 Additionally, clock manager uses a similar time-out mechanism to see if any of the root clocks have stopped toggling for an extended period of time.
 This is done by creating an artificial handshake between the root clock domain and the always on clock domain that must complete within a certain amount of time based on known clock ratios.

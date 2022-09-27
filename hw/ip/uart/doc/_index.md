@@ -95,7 +95,7 @@ TX pin on positive edges of the baud clock.
 If TX is not enabled, written DATA into FIFO will be stacked up and sent out
 when TX is enabled.
 
-When the FIFO becomes empty as part of transmittion, a TX FIFO empty interrupt will be raised.
+When the FIFO becomes empty as part of transmission, a TX FIFO empty interrupt will be raised.
 This is separate from the TX FIFO water mark interrupt.
 
 
@@ -107,8 +107,8 @@ half a bit-time later (i.e. 8 cycles of the oversample clock) that the
 line is still low before detecting the START bit. If the line has
 returned high the glitch is ignored. After it detects the START bit,
 the RX module samples at the center of each bit-time and gathers
-incoming serial bits into a charcter buffer. If the STOP bit is
-detected as high and the optional partity bit is correct the data byte
+incoming serial bits into a character buffer. If the STOP bit is
+detected as high and the optional parity bit is correct the data byte
 is pushed into a 32 byte deep RX FIFO. The data can be read out by
 reading {{< regref "RDATA" >}} register.
 
@@ -119,13 +119,13 @@ initial sample point is aligned with the center of the START bit. The
 receiver will then sample every 16 cycles of the 16 x baud clock, the
 diagram below shows the number of ticks after the centering that each
 bit is captured. Because of the frequency difference between the
-transmiter and receiver the actual sample point will drift compared to
+transmitter and receiver the actual sample point will drift compared to
 the ideal center of the bit. In order to correctly receive the STOP
 bit it must be sampled between the "early" and "late" points shown
 on the diagram, which are half a bit-time or 8 ticks of the 16x baud
 clock before or after the center. If the transmitter is considered
 "ideal" then the local clock must thus differ by no more than plus or
-minus 8 ticks in 144 or aproximately +/- 5.5%. If parity is enabled
+minus 8 ticks in 144 or approximately +/- 5.5%. If parity is enabled
 the stop bit will be a bit time later, so this becomes 8/160 or about
 +/- 5%.
 
@@ -214,7 +214,7 @@ If the RX FIFO level becomes greater than or equal to RX water mark level (confi
 Note that the watermark interrupts are edge triggered events.
 This means the interrupt only triggers when the condition transitions from untrue->true.
 This is especially important in the tx_watermark case.
-When the TX FIFO is empty, it by default satisifies all the watermark conditions.
+When the TX FIFO is empty, it by default satisfies all the watermark conditions.
 In order for the interrupt to trigger then, it is required that software initiates a write burst that is greater than the programmed watermark value.
 
 For example, assume TX watermark is programmed to be less than 4 bytes, and software programs one byte at a time, waits for it to finish transmitting, before supplying the next byte.
@@ -316,7 +316,7 @@ character from the RX FIFO and right after it there is a baud clock tick and the
 start of a new RX transaction from the host, the timeout time is reduced by 1
 and half baud clock periods.
 
-#### rx_partity_err
+#### rx_parity_err
 The `rx_parity_err` interrupt is triggered if parity is enabled and
 the RX parity bit does not match the expected polarity as programmed
 in {{< regref "CTRL.PARITY_ODD" >}}.
@@ -343,7 +343,7 @@ baud rate error target and when care is needed.
 Also note that because the baud rate is multiplied by 2^20 care is
 needed not to overflow 32-bit registers. Baud rates can easily be more
 than 12 bits. The code below is careful to force 64-bit
-arithmetic. (Even if the complier is pre-computing constants there can
+arithmetic. (Even if the compiler is pre-computing constants there can
 be unexpected overflow).
 
 ```cpp

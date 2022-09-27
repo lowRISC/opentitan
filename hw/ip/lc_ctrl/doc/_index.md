@@ -639,7 +639,7 @@ The former provides status info such as idle state, number of address bits and R
 The latter exposes an address, data and operation field for accessing a CSR space.
 
 In order to interact with the LC controller through JTAG, the debugging agent should read out the `abits` field from 0x10 in order to determine the address width in the DMI, and verify that the `version` field is indeed set to 1 to confirm that the DTM implements v0.13 of the spec.
-Then, the debbuger can issue a CSR read or write operation via the 0x11 register as explained in more detail in [the RISC-V external specification, Chapter 6.1.5](https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf).
+Then, the debugger can issue a CSR read or write operation via the 0x11 register as explained in more detail in [the RISC-V external specification, Chapter 6.1.5](https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf).
 
 ### TAP and Isolation
 

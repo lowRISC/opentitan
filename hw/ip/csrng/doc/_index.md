@@ -33,13 +33,13 @@ This IP block is attached to the chip interconnect bus as a peripheral module co
     - All other instances route to other hardware peripherals (e.g. the key manager, obfuscation engines etc.) and in normal operation these other instances are inaccessible from software.
     - The IP may be configured to support "debug mode" wherein all instances can be accessed by software.
       For security reasons this mode may be permanently disabled using one-time programmable (OTP) memory.
-- The IP interfaces with external entropy sources to obtain any required non-determinstic seed material (entropy) and nonces.
+- The IP interfaces with external entropy sources to obtain any required non-deterministic seed material (entropy) and nonces.
     - Requires an external entropy source which is compliant with NIST SP 800-90B, and which also satisfies the requirements for a PTG.2 class physical non-deterministic random number generator as defined in AIS31.
     - Dedicated hardware interface with external entropy source satisfies requirements for `get_entropy_input()` interface as defined in SP 800-90A.
     - When needed, utilizes the `Block_Cipher_df` derivation function (as defined in SP 800-90A) for assembling seed material.
       This allows the use of entropy sources which are not full-entropy (less than one bit of entropy per bit generated).
 - Also supports the optional use of personalization strings or other application inputs (e.g. OTP memory values) during instantiation.
-- Assuming a continuously-live entropy source, each instance can also optionally be used as a non-determinstic TRNG (true random number generator, also called a non-deterministic random bit generator or NRBG in SP 800-90C).
+- Assuming a continuously-live entropy source, each instance can also optionally be used as a non-deterministic TRNG (true random number generator, also called a non-deterministic random bit generator or NRBG in SP 800-90C).
     - In this mode, an instance also meets the requirements laid out for a PTG.3 class RNG, the strongest class laid out in AIS31.
     - Implementation follows the NRBG "Oversampling Construction" approved by SP 800-90C, to meet both [Common Criteria (CC, ISO/IEC 15408)](https://www.iso.org/standard/50341.html) and FIPS TRNG constructions.
 - In addition to the approved DRNG mode, any instance can also operate in "Fully Deterministic mode", meaning the seed depends entirely on application inputs or personalization strings.
@@ -95,7 +95,7 @@ In CC terms, "entropy strings" (when used in this document without a qualifier) 
 ### Security
 
 All module assets and countermeasures performed by hardware are listed in the hjson countermeasures section.
-Labels for each instance of asset and coutermeasure are located throughout the RTL source code.
+Labels for each instance of asset and countermeasure are located throughout the RTL source code.
 
 The bus integrity checking for genbits is different for software and hardware.
 Only the application interface software port will have a hardware check on the genbits data bus.
@@ -300,7 +300,7 @@ Below is a description of the fields of this header:
   <tr>
     <td>24:12</td>
     <td>glen</td>
-    <td> Generate Length: Only defined for the generate command, this field is the total number of crytographic entropy blocks requested.
+    <td> Generate Length: Only defined for the generate command, this field is the total number of cryptographic entropy blocks requested.
          Each unit represents 128 bits of entropy returned.
          The NIST reference name is <tt>max_number_of_bit_per_request</tt>, and this field size supports the maximum size of 2<sup>19</sup> bits.
          For the maximum size, this field should be set to 4096, resulting in a <tt>max_number_of_bit_per_request</tt> value of 4096 x 128 bits.
@@ -335,7 +335,7 @@ The actions performed by each command, as well as which flags are supported, are
     <td> Initializes an instance in CSRNG.
          When seeding, the following table describes how the seed is determined based on <tt>flag0</tt> and the <tt>clen</tt> field.
          Note that the last table entry (<tt>flag0</tt> is set and <tt>clen</tt> is set to non-zero) is intended for known answer testing (KAT).
-        WARNING: Though <tt>flag0</tt> may be useful for generating fully-determininistic bit sequences, the use of this flag will render the instance non-FIPS compliant until it is re-instantiated.
+        WARNING: Though <tt>flag0</tt> may be useful for generating fully-deterministic bit sequences, the use of this flag will render the instance non-FIPS compliant until it is re-instantiated.
          When the <tt>Instantiate</tt> command is completed, the active bit in the CSRNG working state will be set.
         <table>
           <thead>
@@ -364,11 +364,11 @@ The actions performed by each command, as well as which flags are supported, are
   <tr>
     <td>Generate</td>
     <td>0x3</td>
-    <td> Starts a request to CSRNG to generate crytographic entropy bits.
+    <td> Starts a request to CSRNG to generate cryptographic entropy bits.
          The <tt>glen</tt> field defines how many 128-bit words are to be returned to the application interface.
          The <tt>glen</tt> field needs to be a minimum value of one.
          The NIST reference to the <tt>prediction_resistance_flag</tt> is not directly supported as a flag.
-         It is the resposibility of the calling application to reseed as needed before the <tt>Generate</tt> command to properly support prediction resistance.
+         It is the responsibility of the calling application to reseed as needed before the <tt>Generate</tt> command to properly support prediction resistance.
          Note that additional data is also supported when the <tt>clen</tt> field is set to non-zero.
     </td>
   </tr>
@@ -389,7 +389,7 @@ The actions performed by each command, as well as which flags are supported, are
     <td>0x5</td>
     <td> Resets an instance in CSRNG.
          Values in the instance are zeroed out.
-         When the <tt>Uninstantiate</tt> comand is completed, the <tt>Status</tt> bit in the CSRNG working state will be cleared.
+         When the <tt>Uninstantiate</tt> command is completed, the <tt>Status</tt> bit in the CSRNG working state will be cleared.
          Uninstantiating an instance effectively resets it, clearing any errors that it may have encountered due to bad command syntax or entropy source failures.
          Only a value of zero should be used for <tt>clen</tt>, since any additional data will be ignored.
     </td>

@@ -48,7 +48,7 @@ The following utilities provide generic helper tasks and functions to perform ac
   parameter int NumCS = 1;
 ```
 Currently there verification only covers NumCS = 1 since this is the configuration that will be used in tapeout.
-Endianess implemented and verified is only Little Endian with ByteOrder set to 1
+Endianness implemented and verified is only Little Endian with ByteOrder set to 1
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -192,7 +192,7 @@ In the current state the agent recognises 6 commands:
 
 for V1 only ReadStd, WriteStd and CmdOnly has been implemented.
 
-The agent monitor will capture both the outgoing host transactions where it creates an item for the device sequence and for the scoreboard to check agains the configuration.
+The agent monitor will capture both the outgoing host transactions where it creates an item for the device sequence and for the scoreboard to check against the configuration.
 and the incoming device transactions where it will capture the response items and forward them to another tlm_analysis_port in the host scoreboard.
 
 
@@ -211,7 +211,7 @@ It provides commonly used handles, variables, functions and tasks that the test 
 Some of the most commonly used tasks / functions are as follows:
 * generate_transaction()
 
-  Generates a SPI transaction of n segments with command, address, dummy and data segements
+  Generates a SPI transaction of n segments with command, address, dummy and data segments
 
 * read_rx_fifo()
 

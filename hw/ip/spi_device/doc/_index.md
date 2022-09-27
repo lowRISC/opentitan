@@ -397,7 +397,7 @@ See [Command Upload](#command-upload) section for details.
 
 Command parser (*cmdparse*) processes the first byte of the SPI and activates the processing submodules depending on the received opcode and the *cmd_info* list described in the previous section.
 
-The cmdparse compares the recevied opcode with the *cmd_info.opcode* data structure.
+The cmdparse compares the received opcode with the *cmd_info.opcode* data structure.
 If any entry matches to the received opcode, the cmdparse hands over the matched command information entry with the index to the corresponding submodule.
 As explained in the [previous section](#command-information-list), the command parser checks the index to activate Read Status / Read JEDEC ID/ Read Command / Address 4B modules.
 Other than the first 11 slots and last two slots (the last two slots are not visible to SW), the cmdparse checks the *upload* field and activates the upload module if the field is set.
@@ -413,7 +413,7 @@ Except BUSY bit and WEL bit, other bits are controlled by SW.
 BUSY bit is set by HW when it receives any commands that are uploaded to the FIFOs and their `busy` fields are 1 in the command information entry.
 SW may clear BUSY bit when it completes the received commands (e.g Erase/ Program).
 
-If BUSY is set, SPI_DEVICE IP blocks the passhthrough interface in Passthrough mode.
+If BUSY is set, SPI_DEVICE IP blocks the passthrough interface in Passthrough mode.
 The blocking of the interface occurs in SPI transaction idle state (CSb == 1).
 When SW clears the BUSY bit, it is applied to the STATUS register in the SPI clock domain when SPI clock toggles.
 It means the update happens when the next SPI transaction is received.
@@ -462,7 +462,7 @@ HW repeats the operation until CSb is de-asserted.
 The read command block has multiple sub-blocks to process normal Read, Fast Read, Fast Read Dual/ Quad from the internal DPSRAM.
 The DPSRAM has a 2kB region for the read command access.
 The read command region has two 1kB buffers.
-If HW recives the read access to the other half of the space first time, then the HW reports to the SW to refill the current 1kB region with new content.
+If HW receives the read access to the other half of the space first time, then the HW reports to the SW to refill the current 1kB region with new content.
 
 The double buffering scheme aids the SW to prepare the next chunk of data.
 SW copies a portion of data (1kB) from the internal flash memory into SPI_DEVICE DPSRAM.
@@ -477,7 +477,7 @@ The state machine in this block shifts the address one-by-one and decrements the
 When it reaches the 4B address (`addr[2]`), the module triggers the DPSRAM state machine to fetch data from the DPSRAM.
 When the module receives `addr[0]`, at the positive edge of SCK, the module moves to appropriate command state based on the given CMD_INFO data.
 
-If the received address falls into mailbox address ragne and mailbox feature is enabled, the module turns on the mailbox selection bit.
+If the received address falls into mailbox address range and mailbox feature is enabled, the module turns on the mailbox selection bit.
 Then all out-going requests to the DPSRAM are forwarded to the mailbox section, not the read buffer section.
 
 #### Dummy Cycle
@@ -561,7 +561,7 @@ The module also manipulates the data if needed.
 
 #### Command Filtering
 
-Fitering the incoming command is the key role of the Passthrough module.
+Filtering the incoming command is the key role of the Passthrough module.
 
 ![Command Filtering logic in Passthrough mode](passthrough-filter.svg)
 
@@ -614,7 +614,7 @@ The passthrough module consumes the lower byte first as SPI flash writes byte 0 
 For example, bit `[7:0]` is processed then `[15:8]`, `[23:16]`, and `[31:24]` at last.
 
 The CSRs affect the commands that have *payload_swap_en* as 1 in their command list entries.
-SW may use additional command informatio slots for the passthrough (index 11 to 23).
+SW may use additional command information slots for the passthrough (index 11 to 23).
 SW must configure *payload_dir* to **PayloadIn** and *payload_en* to `4'b 0001` in order for the payload translation feature to work correctly.
 
 #### Output Enable Control
@@ -630,7 +630,7 @@ SW is recommended to set the filter bit for Passthrough to not deliver the unmat
 #### Internally processed Commands
 
 As described in [SPI Device Modes](#spi-device-modes-and-active-submodules), SPI_DEVICE may return the data from the IP even if the passthrough mode is set.
-The HW can process Read Status, Read JEDEC ID, Read SFDP, Read commands accessing themailbox region, and EN4B/EX4B.
+The HW can process Read Status, Read JEDEC ID, Read SFDP, Read commands accessing the mailbox region, and EN4B/EX4B.
 
 SW configures {{<regref "INTERCEPT_EN">}} CSR to enable the feature.
 SW may selectively enable/disable commands.
@@ -871,7 +871,7 @@ In the TPM CRB mode (TPM_CFG.tpm_mode is 1), the logic always upload the command
 
 ### Return-by-HW register update
 
-The SW manages the retun-by-HW registers.
+The SW manages the return-by-HW registers.
 The contents are placed inside the SPI_DEVICE CSRs.
 The SW must maintain the other TPM registers outside of the SPI_DEVICE HWIP and use write/read FIFOs to receive the content from/ send the register value to the host system.
 

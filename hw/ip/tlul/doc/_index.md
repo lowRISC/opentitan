@@ -101,12 +101,12 @@ The function of the user bits are separately described in a separate table.
 | `d_sink[DIW-1:0]`   | input  | Response ID of configurable width (possibly unused) |
 | `d_user[DUW-1:0]`   | input  | Response attributes of configurable width; includes error responses plus other attributes TBD. **This is an augmentation to the TL-UL specification.** |
 
-The `a_user` bus contains serveral signals
+The `a_user` bus contains several signals
 - `instr_type` - controls whether the transaction is an instruction fetch type
 - `cmd_intg`   - carries the command integrity of the transaction
 - `data_intg`  - carries the write data integrity of the transaction
 
-The `d_user` bus contains serveral signals
+The `d_user` bus contains several signals
 - `rsp_intg`   - carries the response integrity of the transaction
 - `data_intg`  - carries the read data integrity of the transaction
 
@@ -208,12 +208,11 @@ endpackage
 
 #### Usage of Address
 
-All signaling for host-request routing is encapsulated in the `a_addr`
-signal. (See section 5.3 of the TileLink specification). Ie. for a bus
-host to designate which device it is talking to, it only needs to indicate
-the correct device register/memory address. The other host signals (namely
-`a_source` and `a_user`) do not enter into the address calculation. All
-request steering must thus be made as a function of the address.
+All signaling for host-request routing is encapsulated in the `a_addr` signal.
+(See section 5.3 of the TileLink specification).
+For a bus host to designate which device it is talking to, it only needs to indicate the correct device register/memory address.
+The other host signals (namely `a_source` and `a_user`) do not enter into the address calculation.
+All request steering must thus be made as a function of the address.
 
 #### Usage of Source and Sink ID Bits
 
@@ -297,7 +296,7 @@ The following list gives examples of future usage for `a_user` and
 - `a_user` modifications
   - Instruction Type
     - This indicates whether the transaction originates from a code fetch or data fetch.
-    - This attribute is used by downstream consumers to provide separate priviledge control based on transaction type.
+    - This attribute is used by downstream consumers to provide separate privilege control based on transaction type.
   - Command Integrity
     - This is the calculated integrity of the instruction type, transaction address, transaction op code and mask.
     - The integrity is checked by downstream consumers to ensure the transaction has not been tampered.

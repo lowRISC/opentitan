@@ -199,7 +199,7 @@ In additional to external requests, the power manager maintains 2 internal reset
 
 #### Escalation Reset Request
 
-Alert escalation resets in general behave similarly to peripehral requested resets.
+Alert escalation resets in general behave similarly to peripheral requested resets.
 However, peripheral resets are always handled gracefully and follow the normal FSM transition.
 
 Alert escalations can happen at any time and do not always obey normal rules.

@@ -201,7 +201,7 @@ However, the recommended approach to write messages is:
 #### Masking
 
 The message FIFO does not generate the masked message data.
-Incoming message bistream is not sensitive to the leakage.
+Incoming message bitstream is not sensitive to the leakage.
 If the `EnMasking` parameter is set and {{<regref "CFG_SHADOWED.msg_mask" >}} is enabled, the message is masked upon loading into the Keccak core using the internal entropy generator.
 The secret key, however, is stored as masked form always.
 

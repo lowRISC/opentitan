@@ -351,7 +351,7 @@ For the Attestation CDI, the {{< regref "ATTEST_SW_BINDING" >}} is used, all oth
 
 When invoking an advance operation, both versions are advanced, one after the other.
 There are thus two KMAC transactions.
-The first trasnaction uses the Sealing CDI internal key, {{< regref "SEALING_SW_BINDING" >}} and other common inputs.
+The first transaction uses the Sealing CDI internal key, {{< regref "SEALING_SW_BINDING" >}} and other common inputs.
 The second transaction uses the Attestation CDI internal key, {{< regref "ATTEST_SW_BINDING" >}} and other common inputs.
 
 When invoking a generate operation, the software must specify which CDI to use as the source key.

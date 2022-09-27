@@ -304,7 +304,7 @@ If SCL is pulled low during an SCL pulse which has already started, this interru
   {name: 'SCL bus', wave: '0.u..0|...u..0|..u0..'},
   {name: 'scl_interference', wave: '0.....|.......|....1.'},
 ],
-  head: {text: 'SCL pulses: Normal SCL pulse (Cycle 3),  SCL pulse with clock strectching (cycle 11), and SCL interference (interrupted SCL pulse)',tick:1}}
+  head: {text: 'SCL pulses: Normal SCL pulse (Cycle 3),  SCL pulse with clock stretching (cycle 11), and SCL interference (interrupted SCL pulse)',tick:1}}
 {{</wavejson>}}
 
 
@@ -329,7 +329,7 @@ Except for START and STOP symbols, the I2C specification requires that the SDA s
 The `sda_unstable` interrupt is asserted if, when receiving data or acknowledgement pulse, the value of the SDA signal does not remain constant over the duration of the SCL pulse.
 
 Transactions are terminated by a STOP signal.
-The host may send a repeated START signal instead of a STOP, which also terminates the preceeding transaction.
+The host may send a repeated START signal instead of a STOP, which also terminates the preceding transaction.
 In both cases, the `trans_complete` interrupt is asserted, in the beginning of a repeated START or at the end of a STOP.
 
 #### Target Mode
@@ -392,7 +392,7 @@ The values of these parameters will depend primarily on three bus details:
 Rather, it is a function of the capacitance and physical design of the bus.
 The specification provides detailed guidelines on how to manage capacitance in an I2C system:
    - Section 5.2 of the I2C specification indicates that Fast-mode plus devices may operate at reduced clock speeds if the bus capacitance drives signal rise times (t<sub>r</sub>) outside the nominal 120ns limit.
-Excess capacitance can also be compensated for by reducing the size of the bus pullup resistor, so long as the total open-drain current does not exceed 20mA for fast-mode plus devices (as described in section 7.1 of the I2C specificaion).
+Excess capacitance can also be compensated for by reducing the size of the bus pullup resistor, so long as the total open-drain current does not exceed 20mA for fast-mode plus devices (as described in section 7.1 of the I2C specification).
 However the specification places a hard limit on rise times capping them at 1000ns.
     - If there are standard- or fast-mode target devices on the bus, the specified open-drain current limit is reduced to 3mA (section 7.1), thus further restricting the minimum value of the pull-up resistor.
     - In fast-mode bus designs, where the total line capacitance exceeds 200pF, the specification recommends replacing the pull-up resistor with an active current source, supplying 3mA or less (section 5.1).
@@ -404,7 +404,7 @@ Regardless of the physical construction of the bus, the rise time (t<sub>r</sub>
    - By default the device should operate at the maximum frequency for that mode.
 However, If the system developer wishes to operate at slower than the mode-specific maximum, a larger than minimum period  could be allowed as an additional functional parameter when calculating the timing parameters.
 
-Based on the inputs, the timing paramaters may be chosen using the following algorithm:
+Based on the inputs, the timing parameters may be chosen using the following algorithm:
 1. The physical timing parameters t<sub>HD,STA</sub>, t<sub>SU,STA</sub>, t<sub>HD.DAT</sub>, t<sub>SU,DAT</sub>, t<sub>BUF</sub>, and t<sub>STO</sub>, t<sub>HIGH</sub>, and t<sub>LOW</sub> all have minimum allowed values which depend on the choice of speed mode (standard-mode, fast-mode or fast-mode plus).
 Using the speed mode input, look up the appropriate minimum value (in ns) for each parameter (i.e. t<sub>HD,STA,min</sub>, t<sub>SU,STA,min</sub>, etc)
 1. For each of these eight parameters, obtain an integer minimum by dividing the physical minimum parameter by the clock frequency and rounding up to the next highest integer:
@@ -424,7 +424,7 @@ $$ \textrm{T_STO_MIN}= \lceil{t\_{STO,min}/t\_{clk}}\rceil $$
 $$ \textrm{T_R}= \lceil{t\_{r}/t\_{clk}}\rceil $$
 $$ \textrm{T_F}= \lceil{t\_{f}/t\_{clk}}\rceil $$
 1. Store T_R and T_F in their corresponding registers: `TIMING1.T_R` and `TIMING1.T_F`.
-1. Based on the input speed mode, look up the maximum permissable SCL frequency (f<sub>SCL,max</sub>)and calculate the minimum permissable SCL period:
+1. Based on the input speed mode, look up the maximum permissible SCL frequency (f<sub>SCL,max</sub>)and calculate the minimum permissible SCL period:
 $$ t\_{SCL,min}= 1/f\_{SCL,max} $$
 1. As with each of the other physical parameters convert t<sub>SCL,min</sub> and, if provided, the t<sub>SCL,user</sub> to integers, MINPERIOD and USERPERIOD..
 $$ MINPERIOD = \lceil{t\_{SCL,min}/t\_{clk}}\rceil $$
@@ -438,7 +438,7 @@ $$ \textrm{THIGH}+\textrm{TLOW} \ge\textrm{PERIOD}-\textrm{T_F}-\textrm{T_R} $$
     - The balance between t<sub>HIGH</sub> and t<sub>LOW</sub> can be manipulated in a variety of different ways (depending on the desired SCL duty cycle).
     - It is, for instance, perfectly acceptable to simply set TLOW to the minimum possible value:
 $$ \textrm{TIMING0.TLOW}=\textrm{TLOW_MIN} $$
-1. THIGH is then set to satisfy both constraints in the desired SCL period and in the minimum permissable values for t<sub>HIGH</sub>:
+1. THIGH is then set to satisfy both constraints in the desired SCL period and in the minimum permissible values for t<sub>HIGH</sub>:
 $$ \textrm{TIMING0.THIGH}=\max(\textrm{PERIOD}-\textrm{T_R} - \textrm{TIMING0.TLOW} -\textrm{T_F}, \textrm{THIGH_MIN}) $$
 
 
@@ -470,7 +470,7 @@ All other parameters in registers `TIMING2`, `TIMING3`, `TIMING4` are unchanged 
 | TIMING0.THIGH   | 260              | 87         | 261            | Spec. t<sub>HIGH</sub> Minimum                |
 | TIMING0.TLOW    | 500              | 167        | 501            | Spec. t<sub>LOW</sub> Minimum                 |
 | TIMING1.T_F     | 20ns * (VDD/5.5V)| 7          | 21             | Signal slew-rate should be controlled         |
-| TIMING1.T_R     | 0                | 134        | 402            | Atypicallly high line capacitance             |
+| TIMING1.T_R     | 0                | 134        | 402            | Atypically high line capacitance             |
 | SCL Period      | 1000             | N/A        | 395            | Forced longer than minimum by long T_R        |
 
 ## Device Interface Functions (DIFs)

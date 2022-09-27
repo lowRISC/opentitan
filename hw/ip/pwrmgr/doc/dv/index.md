@@ -83,7 +83,7 @@ The `pwrmgr_base_vseq` virtual sequence is extended from `cip_base_vseq` and ser
 It provides commonly used handles, variables, functions and tasks used by the test sequences.
 Some of the most commonly used tasks and functions are as follows:
 * task `wait_for_fast_fsm_active`:
-  Waits for the `fetch_en_o` output to become 1, indicating the fast fsm is active and the cpu can fetch instructions.
+  Waits for the `fetch_en_o` output to become 1, indicating the fast fsm is active and the CPU can fetch instructions.
   We wait for this before the tests can start, since any CSR accesses require the CPU to be running.
   Due to complexities in the UVM sequences this task is called in the virtual post_apply_reset task of dv_base_vseq.
 * task `wait_for_csr_to_propagate_to_slow_domain`:
@@ -147,7 +147,7 @@ The `pwrmgr_scoreboard` is primarily used for end to end checking.
 
 Many inputs must have specific transitions to prevent the pwrmgr fsms from wait forever.
 When possible the transitions are triggered by pwrmgr output changes.
-These are described according to the unit that originates or is the recepient of the ports.
+These are described according to the unit that originates or is the recipient of the ports.
 See also the test plan for specific ways these are driven to trigger different testpoints.
 
 ##### AST
@@ -224,7 +224,7 @@ The pins connecting to LC behave pretty much the same way as those to OTP.
   After the transition is under way it is a don't care.
   The `pwrmgr_aborted_low_power_vseq` sequence sets it carefully to abort a low power entry soon after the attempt because the processor wakes up.
 
-##### Wakepus and Resets
+##### Wakeups and Resets
 There are a number of wakeup and reset requests.
 They are driven by sequences as they need to.
 

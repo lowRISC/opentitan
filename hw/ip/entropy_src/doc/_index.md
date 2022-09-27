@@ -127,7 +127,7 @@ Once firmware has processed the entropy,  it can then write the results back int
 The `FW_OV_ENTROPY_INSERT` in the {{< regref "FW_OV_CONTROL" >}} register will enable inserting entropy bits back into the entropy flow.
 The firmware override control fields will be set such that the new entropy will resume normal flow operation.
 
-An additional feature of the firmware override function is to insert entropy bits into the flow and still use the condtioning function in the hardware.
+An additional feature of the firmware override function is to insert entropy bits into the flow and still use the conditioning function in the hardware.
 Setting the `FW_OV_INSERT_START` field in the {{< regref "FW_OV_SHA3_START" >}} register will prepare the hardware for this flow.
 Once this field is set true, the {{< regref "FW_OV_WR_DATA" >}} register can be written with entropy bits.
 The {{< regref "FW_OV_WR_FIFO_FULL" >}} register should be monitored after each write to ensure data is not dropped.
@@ -219,7 +219,7 @@ If firmware is not currently reading entropy bits, all processed entropy bits wi
 ### Security
 
 All module assets and countermeasures performed by hardware are listed in the hjson countermeasures section.
-Labels for each instance of asset and coutermeasure are located throughout the RTL source code.
+Labels for each instance of asset and countermeasure are located throughout the RTL source code.
 
 For all of the health test threshold registers, these registers could be protected with shadow registers.
 A design choice was made here to not use shadow registers and save on silicon cost.
