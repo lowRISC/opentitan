@@ -17,7 +17,7 @@ For details on coding styles or how to use our project-specific tooling, see the
 Lastly, the [Hardware Dashboard page]({{< relref "hw" >}}) contains technical documentation on the SoC, the Ibex processor core, and the individual IP blocks.
 For questions about how the project is organized, see the [project]({{< relref "doc/project" >}}) landing spot for more information.
 
-## Understaning OpenTitan
+## Understanding OpenTitan
 
 * [Use Cases]({{< relref "doc/use_cases" >}})
 * [Threat Model]({{< relref "doc/security/threat_model" >}})
