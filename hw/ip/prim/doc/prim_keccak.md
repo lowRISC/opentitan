@@ -86,4 +86,3 @@ The recommended default value of 24 rounds is used in this design,
 but an argument (changed with the `-r` flag) is provided for reference.
 The `keccak_rc.py` script creates 64 bit of constants and the `prim_keccak` module uses only lower bits of the constants if the `Width` is less than 1600.
 For instance, if `Width` is 800, lower 32bits of the round constant are used.
-

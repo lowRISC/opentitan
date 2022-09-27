@@ -1126,4 +1126,3 @@ There is no instruction-specific covergroup.
 - Write to an invalid WSR
 
 These points are tracked with `wsr_cross` in `enc_wcsr_cg`.
-

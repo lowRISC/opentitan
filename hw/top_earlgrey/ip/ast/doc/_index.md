@@ -976,7 +976,7 @@ synchronous to the adc controller.
 
 {{< wavejson >}}
 {
-  signal: [ 
+  signal: [
     {node: '.a..b........', phase:0.2},
     {name: 'adc_pd_i' ,     wave: '10|..|.....|....|..1'},
     {name: 'clk_ast_adc_i', wave: 'p.|..|.....|....|...'},
@@ -985,7 +985,7 @@ synchronous to the adc controller.
     {name: 'adc_d_o' ,      wave: 'x.|..|.3.x.|.4..|.x.', data: ['ch0', 'ch1', 'ch1']},
    ],
 
-  edge: [ 'a<->b wakeup time', ] 
+  edge: [ 'a<->b wakeup time', ]
 }
 {{< /wavejson >}}
 
@@ -1026,7 +1026,7 @@ CSRNG. The details of this interface are still under discussion.
     {name: 'entropy_req_o' , wave: '01|.0.1.....0'},
     {name: 'entropy_ack_i' , wave: '0.|10.1.01..0'},
     {name: 'entropy_i',      wave: 'xx|2x.22x222x'},
-  ] 
+  ]
 }
 {{< /wavejson >}}
 
