@@ -804,6 +804,10 @@ class flash_ctrl_scoreboard #(
 
     if (ral_name == cfg.flash_ral_name) begin
        if (get_flash_instr_type_err(item, channel)) return (1);
+       if (cfg.tlul_eflash_exp_cnt > 0 && item.d_error == 1) begin
+          cfg.tlul_eflash_obs_cnt++;
+          return 1;
+       end
     end else begin
        if (cfg.tlul_core_exp_cnt > 0 && item.d_error == 1) begin
           cfg.tlul_core_obs_cnt++;

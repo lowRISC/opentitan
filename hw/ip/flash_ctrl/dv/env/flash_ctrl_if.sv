@@ -58,4 +58,8 @@ interface flash_ctrl_if ();
   logic [10:0] lcmgr_state;
   logic        init;
 
+  // v2s error injection
+  logic        host_gnt;
+  logic ctrl_fsm_idle;
+  logic [1:0] host_outstanding;
 endinterface : flash_ctrl_if

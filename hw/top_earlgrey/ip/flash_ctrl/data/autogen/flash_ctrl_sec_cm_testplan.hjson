@@ -246,35 +246,39 @@
 
       The phy arbiter for controller and host is redundant.
       The arbiter has two instance underneath that are constantly compared to each other.
-      fault_status.arb_err:
+      tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[1].u_req_buf.out_o[1:0]
       tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[0]
       tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[1]
-      make output of both mismatch
+      make output of both mismatch and check fault_status.arb_err is triggered.
       '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_phy_arb_redun"]
     }
     {
       name: sec_cm_phy_host_grant_ctrl_consistency
       desc: '''Verify the countermeasure(s) PHY_HOST_GRANT.CTRL.CONSISTENCY.
 
-      fault_status.host_gnt_err
-       two error conditions
-       1. a host transaction was granted to the muxed partition, this is illegal
-       2. a host transaction was granted last cycle but somehow controller
-          operations have been kicked off, this is illegal
+      A host transaction was granted to the muxed partition, this is illegal.
+      @ tb.dut.u_eflash.gen_flash_cores[0].u_core.host_gnt,
+      force tb.dut.u_eflash.gen_flash_cores[0].u_core.muxed_part = 1 and check
+      fault_status.host_gnt_err.
       '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_phy_host_grant_err"]
     }
     {
       name: sec_cm_phy_ack_ctrl_consistency
       desc: '''Verify the countermeasure(s) PHY_ACK.CTRL.CONSISTENCY.
-      fault_status.spurious_ack:
-      tb.dut.u_eflash.gen_flash_cores[0].u_core.spurious_ack_o
+
+      Triiger tb.dut.u_eflash.gen_flash_cores[0].u_core.spurious_ack_o as follows:
+      @ tb.dut.u_eflash.gen_flash_cores[0].u_core.ctrl_fsm_idle
+      force tb.dut.u_eflash.gen_flash_cores[0].u_core.ctrl_rsp_vld = 1 or
+      @ tb.dut.u_eflash.gen_flash_cores[0].u_core.host_outstanding[1:0] == 0
+      force tb.dut.u_eflash.gen_flash_cores[0].u_core.host_req_done_o = 1
+      Check fault_status.spurious_ack
       '''
       stage: V2S
-      tests: []
+      tests: ["flash_ctrl_phy_ack_consistency"]
     }
     {
       name: sec_cm_fifo_ctr_redun

@@ -188,6 +188,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   int       tlul_core_exp_cnt = 0;
   int       tlul_core_obs_cnt = 0;
 
+  int       tlul_eflash_exp_cnt = 0;
+  int       tlul_eflash_obs_cnt = 0;
 
 
   `uvm_object_utils(flash_ctrl_env_cfg)
