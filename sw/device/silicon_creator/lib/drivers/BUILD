@@ -268,17 +268,13 @@ cc_test(
 opentitan_functest(
     name = "keymgr_functest",
     srcs = ["keymgr_functest.c"],
-    targets = [
-        "cw310_test_rom",
-        "verilator",
-        "dv",
-    ],
     verilator = verilator_params(
         timeout = "long",
     ),
     deps = [
         ":keymgr",
         ":lifecycle",
+        ":retention_sram",
         "//hw/ip/kmac/data:kmac_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:flash_ctrl",
@@ -293,6 +289,7 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
     ],
 )
