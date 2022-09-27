@@ -559,6 +559,9 @@ package spi_device_reg_pkg;
     struct packed {
       logic        d;
     } csb;
+    struct packed {
+      logic        d;
+    } tpm_csb;
   } spi_device_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -724,10 +727,10 @@ package spi_device_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    spi_device_hw2reg_intr_state_reg_t intr_state; // [289:266]
-    spi_device_hw2reg_cfg_reg_t cfg; // [265:264]
-    spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [263:248]
-    spi_device_hw2reg_status_reg_t status; // [247:242]
+    spi_device_hw2reg_intr_state_reg_t intr_state; // [290:267]
+    spi_device_hw2reg_cfg_reg_t cfg; // [266:265]
+    spi_device_hw2reg_async_fifo_level_reg_t async_fifo_level; // [264:249]
+    spi_device_hw2reg_status_reg_t status; // [248:242]
     spi_device_hw2reg_rxf_ptr_reg_t rxf_ptr; // [241:225]
     spi_device_hw2reg_txf_ptr_reg_t txf_ptr; // [224:208]
     spi_device_hw2reg_last_read_addr_reg_t last_read_addr; // [207:176]
@@ -840,11 +843,12 @@ package spi_device_reg_pkg;
   parameter logic [0:0] SPI_DEVICE_ALERT_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] SPI_DEVICE_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [23:0] SPI_DEVICE_ASYNC_FIFO_LEVEL_RESVAL = 24'h 0;
-  parameter logic [5:0] SPI_DEVICE_STATUS_RESVAL = 6'h 3a;
+  parameter logic [6:0] SPI_DEVICE_STATUS_RESVAL = 7'h 7a;
   parameter logic [0:0] SPI_DEVICE_STATUS_RXF_EMPTY_RESVAL = 1'h 1;
   parameter logic [0:0] SPI_DEVICE_STATUS_TXF_EMPTY_RESVAL = 1'h 1;
   parameter logic [0:0] SPI_DEVICE_STATUS_ABORT_DONE_RESVAL = 1'h 1;
   parameter logic [0:0] SPI_DEVICE_STATUS_CSB_RESVAL = 1'h 1;
+  parameter logic [0:0] SPI_DEVICE_STATUS_TPM_CSB_RESVAL = 1'h 1;
   parameter logic [31:0] SPI_DEVICE_LAST_READ_ADDR_RESVAL = 32'h 0;
   parameter logic [23:0] SPI_DEVICE_FLASH_STATUS_RESVAL = 24'h 0;
   parameter logic [7:0] SPI_DEVICE_UPLOAD_CMDFIFO_RESVAL = 8'h 0;
