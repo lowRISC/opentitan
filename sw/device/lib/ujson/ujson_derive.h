@@ -15,10 +15,23 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/ujson/ujson.h"
 
+// If there is a pre-existing Rust `with_unknown! { ... }` enum, you can
+// add this flag to UJSON_SERDE_ENUM(...) to cause the C-based serializer
+// and deserializer to emit/parse the correct format.
+#define WITH_UNKNOWN 1
 #define RUST_ENUM_INTVALUE_STR OT_STRINGIFY(RUST_ENUM_INTVALUE)
+
 // clang-format off
 // clang-format is turned off; as scary as these macros look, they look
 // even scarier after clang-format is done with them.
+#define ujson_get_flags(...) \
+    OT_IIF(OT_NOT(OT_VA_ARGS_COUNT(dummy, ##__VA_ARGS__))) \
+    ( /*then*/ \
+        0 \
+    , /*else*/ \
+        __VA_ARGS__ \
+    ) /*endif*/
+
 #define ujson_struct_field_array_indirect() ujson_struct_field_array
 #define ujson_struct_field_array(nt_, sz_, ...) \
     OT_IIF(OT_NOT(OT_VA_ARGS_COUNT(dummy, ##__VA_ARGS__))) \
@@ -121,16 +134,22 @@
     case k ##formal_name_ ## name_: \
         TRY(ujson_serialize_string(uj, #name_)); break;
 
-#define UJSON_SERIALIZE_ENUM(formal_name_, name_, decl_) \
+#define UJSON_SERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
     status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) { \
         switch(*self) { \
             decl_(formal_name_, ujson_ser_enum) \
-            default: \
-                TRY(ujson_putbuf(uj, \
-                    "{\"" RUST_ENUM_INTVALUE_STR "\":", \
-                    sizeof("{\"" RUST_ENUM_INTVALUE_STR "\":") - 1)); \
-                TRY(ujson_serialize_uint32_t(uj, (const uint32_t*)self)); \
-                TRY(ujson_putbuf(uj, "}", 1)); \
+            default: { \
+                const uint32_t value = (uint32_t)(*self); \
+                if (ujson_get_flags(__VA_ARGS__) & WITH_UNKNOWN) { \
+                    TRY(ujson_serialize_uint32_t(uj, &value)); \
+                } else { \
+                    TRY(ujson_putbuf(uj, \
+                        "{\"" RUST_ENUM_INTVALUE_STR "\":", \
+                        sizeof("{\"" RUST_ENUM_INTVALUE_STR "\":") - 1)); \
+                    TRY(ujson_serialize_uint32_t(uj, &value)); \
+                    TRY(ujson_putbuf(uj, "}", 1)); \
+                } \
+            } \
         } \
         return OK_STATUS(); \
     } \
@@ -207,7 +226,7 @@
 #define ujson_de_enum(formal_name_, name_, ...) \
     else if (ujson_streq(value, #name_)) { *self = k ##formal_name_ ## name_; }
 
-#define UJSON_DESERIALIZE_ENUM(formal_name_, name_, decl_) \
+#define UJSON_DESERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
     status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { \
         char value[128]; \
         if (TRY(ujson_consume_maybe(uj, '"'))) { \
@@ -218,8 +237,7 @@
             else { \
                 return INVALID_ARGUMENT(); \
             } \
-        } else { \
-            TRY(ujson_consume(uj, '{')); \
+        } else if(TRY(ujson_consume_maybe(uj, '{'))) { \
             TRY(ujson_parse_qs(uj, value, sizeof(value))); \
             TRY(ujson_consume(uj, ':')); \
             if (ujson_streq(value, RUST_ENUM_INTVALUE_STR)) { \
@@ -228,6 +246,8 @@
                 return INVALID_ARGUMENT(); \
             } \
             TRY(ujson_consume(uj, '}')); \
+        } else { \
+            TRY(ujson_deserialize_uint32_t(uj, (uint32_t*)self)); \
         } \
         return OK_STATUS(); \
     } \
@@ -236,12 +256,12 @@
 #else  // UJSON_SERDE_IMPL
 #define UJSON_SERIALIZE_STRUCT(name_, decl_) \
   status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self)
-#define UJSON_SERIALIZE_ENUM(formal_name_, name_, decl_) \
+#define UJSON_SERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
   status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self)
 
 #define UJSON_DESERIALIZE_STRUCT(name_, decl_) \
   status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self);
-#define UJSON_DESERIALIZE_ENUM(formal_name_, name_, decl_) \
+#define UJSON_DESERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
   status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self);
 
 #endif  // UJSON_SERDE_IMPL
@@ -253,10 +273,14 @@
   UJSON_SERIALIZE_STRUCT(name_, decl_);                            \
   UJSON_DESERIALIZE_STRUCT(name_, decl_)
 
-#define UJSON_SERDE_ENUM(formal_name_, name_, decl_, ...)        \
-  UJSON_DECLARE_ENUM(formal_name_, name_, decl_, ##__VA_ARGS__); \
-  UJSON_SERIALIZE_ENUM(formal_name_, name_, decl_);              \
-  UJSON_DESERIALIZE_ENUM(formal_name_, name_, decl_)
+#define UJSON_SERDE_ENUM(formal_name_, name_, decl_, ...)          \
+  UJSON_DECLARE_ENUM(formal_name_, name_, decl_, ##__VA_ARGS__);   \
+  UJSON_SERIALIZE_ENUM(formal_name_, name_, decl_, ##__VA_ARGS__); \
+  UJSON_DESERIALIZE_ENUM(formal_name_, name_, decl_, ##__VA_ARGS__)
+
+#define C_ONLY(x) x
+#define RUST_ONLY(x) \
+  extern const int __never_referenced___here_to_eat_a_semicolon[]
 
 #else  // RUST_PREPROCESSOR_EMIT
 #include "sw/device/lib/ujson/ujson_rust.h"
