@@ -12,7 +12,7 @@ See that document for integration overview within the broader top-level system.
 
 - Pulse-width modulated (PWM) with adjustable duty cycle
 - Suitable for general-purpose use, but primarily designed for control of tri-color LEDs
-- Parametrizable number of output channels
+- Parameterizable number of output channels
 - Separate clock domains for TL-UL I/O vs. core operations
    - PWM operation can continue in low-power state.
 - Independent control of duty cycle, phase, and polarity for all channels
@@ -29,7 +29,7 @@ See that document for integration overview within the broader top-level system.
 
 ## Description
 
-The PWM IP is primarily designed to drive a parametrizable number of pulse-width modulated outputs with periodic pulses each with a programmable frequency, phase, and duty cycle (i.e. the ratio between the pulse duration and the overall period between pulses.)
+The PWM IP is primarily designed to drive a parameterizable number of pulse-width modulated outputs with periodic pulses each with a programmable frequency, phase, and duty cycle (i.e. the ratio between the pulse duration and the overall period between pulses.)
 
 The phase and duty cycle of each output channel can then be controlled with programmable resolution, from 1-bit (half-cycle resolution) to 16-bit (in which case pulse width and timing can be controlled to one part in 2<sup>16</sup> relative to the pulse period)
 

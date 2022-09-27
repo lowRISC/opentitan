@@ -57,7 +57,7 @@ uses the jtag_if interface in the testbench.
 
 ### PUSH/PULL Agent
 [push_pull_agent]({{< relref "hw/dv/sv/push_pull_agent/doc" >}}) is used to emulate the Token and
-OTP programing interfaces.
+OTP programming interfaces.
 
 ### UVM RAL Model
 The LC_CTRL RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
@@ -83,7 +83,7 @@ The following covergroups have been developed to prove that the test intent has 
 #### Scoreboard
 The `lc_ctrl_scoreboard` is primarily used for end to end checking.
 It creates the following analysis exports to retrieve the data monitored by corresponding interface agents:
-* tl_[a_chan, d_chan, dir]_fifo_lc_ctrl_reg_block.analysis_export: Tile Link CSR reads/writes.
+* tl_[a_chan, d_chan, dir]_fifo_lc_ctrl_reg_block.analysis_export: TileLink CSR reads/writes.
 * jtag_riscv_fifo.analysis_export: JTAG CSR reads/writes
 * alert_fifo[fatal_bus_integ_error, fatal_prog_error, fatal_state_error].analysis_export: Alert traffic from DUT
 * otp_prog_fifo.analysis_export:  OTP program data from LC_CTRL and response to LC_CTRL.
@@ -94,7 +94,7 @@ It creates the following analysis exports to retrieve the data monitored by corr
 It also updates the UVM register model.
 * JTAG CSR data is used to check against expected values predicted by the scoreboard.
 It also updates the UVM register model.
-* Alert data is decoded and used to indicate an alert has occured
+* Alert data is decoded and used to indicate an alert has occurred
 
 #### Assertions
 * TLUL assertions: The `tb/lc_ctrl_bind.sv` binds the `tlul_assert` [assertions]({{< relref "hw/ip/tlul/doc/TlulProtocolChecker.md" >}}) to the IP to ensure TileLink interface protocol compliance.

@@ -68,7 +68,7 @@ Note that the EDNs and CSRNG should always be reset together to ensure proper in
 ### Security
 
 All module assets and countermeasures performed by hardware are listed in the hjson countermeasures section.
-Labels for each instance of asset and coutermeasure are located throughout the RTL source code.
+Labels for each instance of asset and countermeasure are located throughout the RTL source code.
 
 The receiving FIFO for genbits from CSRNG will have a hardware check on the output bus.
 This is done to make sure repeated values are not occurring.
@@ -185,7 +185,7 @@ Fresh (i.e. previously unseen) random values are distributed to the endpoints vi
 Whenever new values are placed on the `bus`, the `ack` is asserted until the values are consumed by the endpoint, as indicated by simultaneous assertion of the `req` and `ack` signals in the same cycle.
 Otherwise `ack` is deasserted until enough fresh bits are received from CSRNG.
 The bus data will persist on the bus until a new `req` is asserted.
-This persistance will allow an asynchonous endpoint to capture the correct data sometime after the `ack` de-asserts.
+This persistence will allow an asynchronous endpoint to capture the correct data sometime after the `ack` de-asserts.
 
 The `fips` signal is used to identify whether the values received on the `bus` have been prepared with complete adherence to the recommendations in NIST SP 800-90.
 If the `fips` signal is deasserted, it means the associated CSRNG instance has been instantiated with a pre-FIPS seed.

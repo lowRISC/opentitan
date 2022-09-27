@@ -975,7 +975,7 @@ The instruction-specific covergroup is `insn_bn_xid_cg` (shared with `BN.SID`).
 - Misaligned address tracking.
   Track loads from addresses that are in range for the size of the memory.
   We track all possible alignments of the sum as `addr_align_cross`.
-  The reason for not tracking offset and register value misalignments seperately is because the offset would always be shifted by 5 bits, which makes it always aligned.
+  The reason for not tracking offset and register value misalignments separately is because the offset would always be shifted by 5 bits, which makes it always aligned.
 - See an invalid instruction with both increments specified
   Tracked in `enc_bnxid_cg` as a bin of `incd_inc1_cross`.
 - See `grd` greater than 31, giving an illegal instruction error
@@ -1031,7 +1031,7 @@ The instruction-specific covergroup is `insn_bn_xid_cg` (shared with `BN.LID`).
 - Misaligned address tracking.
   Track stores to addresses that are in range for the size of the memory.
   We track all possible alignments of the sum as `addr_align_cross`.
-  The reason for not tracking offset and register value misalignments seperately is because the offset would always be shifted by 5 bits, which makes it always aligned.
+  The reason for not tracking offset and register value misalignments separately is because the offset would always be shifted by 5 bits, which makes it always aligned.
 - See an invalid instruction with both increments specified
   Tracked in `enc_bnxid_cg` as a bin of `incd_inc1_cross`.
 - See `grd` greater than 31, giving an illegal instruction error

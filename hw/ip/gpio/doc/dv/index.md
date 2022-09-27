@@ -27,7 +27,7 @@ GPIO testbench has been constructed based on the [CIP testbench architecture]({{
 Top level testbench is located at `hw/ip/gpio/dv/tb/tb.sv`. It instantiates the GPIO DUT module `hw/ip/gpio/rtl/gpio.sv`.
 In addition, it instantiates the following interfaces and sets their handle into `uvm_config_db`:
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
-* [TileLink host interfac]({{< relref "hw/dv/sv/tl_agent/doc" >}})
+* [TileLink host interface]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * GPIO IOs ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}}))
 

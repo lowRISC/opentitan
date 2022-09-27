@@ -73,7 +73,7 @@ The timer IP supports more than one HART and/or more than one timer per hart.
 Each hart has a set of tick generator and counter. It means the timer IP has the
 same number of prescalers, steps, and `mtime` registers as the number of harts.
 
-Each hart can have multiple sets of `mtimecmp`, comparater logic, and expire
+Each hart can have multiple sets of `mtimecmp`, comparator logic, and expire
 interrupt signals. This version of the IP is fixed to have one Hart and one
 Timer per Hart.
 
@@ -235,9 +235,9 @@ between `mtime` and `mtimecmp` care is needed. A couple of cases are:
 ## Interrupt Handling
 
 If `mtime` is greater than or equal to the value of `mtimecmp`, the interrupt is generated from the RV_TIMER module.
-If the core enables the timer interrupt in `MIE` CSR, it jumps into the timer interupt service routine.
+If the core enables the timer interrupt in `MIE` CSR, it jumps into the timer interrupt service routine.
 Clearing the interrupt can be done by writing 1 into the Interrupt Status register {{<regref "INTR_STATE0">}}.
-The RV_TIMER module also follows RISC-V Previliged spec that requires the interrupt to be cleared by updating `mtimecmp` memory-mapped CSRs.
+The RV_TIMER module also follows RISC-V Privileged spec that requires the interrupt to be cleared by updating `mtimecmp` memory-mapped CSRs.
 In this case both {{<regref "COMPARE_LOWER0_0">}} and {{<regref "COMPARE_UPPER0_0">}} can clear the interrupt source.
 
 ## Device Interface Functions (DIFs)

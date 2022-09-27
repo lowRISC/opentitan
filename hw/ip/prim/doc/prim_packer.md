@@ -33,7 +33,7 @@ flush_i      | input  | Send out stored data and clear state.
 flush_done_o | output | Indicates flush operation is completed.
 err_o        | output | When EnProtection is set, the error is reported through this port. This signal is asynchronous to the datapath.
 
-# Theory of Opeations
+# Theory of Operations
 
 ```code
            /----------\

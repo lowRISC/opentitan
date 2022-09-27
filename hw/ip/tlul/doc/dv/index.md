@@ -76,7 +76,7 @@ Some of the most commonly used tasks / functions are as follows:
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* common covergroup from tl_agent:  Cover each host/device reaches its maximum outsanding requests
+* common covergroup from tl_agent:  Cover each host/device reaches its maximum outstanding requests
 * same_device_access_cg:            Cover each device has been accessed by all its hosts at the same time
 * same_source_access_cg:            Cover all hosts use the same ID at the same time and all the IDs have been used at this sequence
 * max_delay_cg:                     Cover zero delay, small delay and large delay have been used in every host and device
@@ -97,7 +97,7 @@ Due to this limitation, scoreboard is designed as following:
   When device receives a transaction, check if there is a same item in its queue and the item is allowed to be appeared out of order.
 * For d_channel, use same structure to check items from device to host.
 * If the transaction is unmapped, it won't be sent to any device. Host will return an error response with `d_error = 1`.
-  Each host has a queue used only for unmapped items. It stores the unmapped item from a_channal, then compare it with the same source ID response received in d_channel.
+  Each host has a queue used only for unmapped items. It stores the unmapped item from a_channel, then compare it with the same source ID response received in d_channel.
 
 Following analysis fifos are created to retrieve the data monitored by corresponding interface agents:
 * a_chan_host/device_name, d_chan_host/device_name: These fifos provide transaction items at the end of address channel and data channel respectively from host/device

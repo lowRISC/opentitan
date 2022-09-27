@@ -73,7 +73,7 @@ These are sampled by the scoreboard when the ADC_CRTL is enabled by register and
 and  wakeup line assertion. To distinguish between these situations and the fast clock gating
 status additional flags are also sampled enabling cross coverage.
 * adc_ctrl_testmode_cg: The mode of operation of the ADC_CTRL with transition bins to show modes can be selected
-independantly of a previous selected mode.
+independently of a previous selected mode.
 * adc_ctrl_hw_reset_cg: The state of the FSM and counters when a hardware reset is applied.
 * adc_ctrl_fsm_reset_cg: The state of the FSM and counters when a FSM reset is applied.
 
@@ -81,9 +81,9 @@ independantly of a previous selected mode.
 #### Scoreboard
 The `adc_ctrl_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* tl_[a_chan, d_chan, dir]_fifo_lc_ctrl_reg_block.analysis_export: Tile Link CSR reads/writes.
+* tl_[a_chan, d_chan, dir]_fifo_lc_ctrl_reg_block.analysis_export: TileLink CSR reads/writes.
 * m_adc_push_pull_fifo_[0,1,...].analysis_export: Transactions representing the ADC channel data
-Using data fron the Tile Link and ADC data streams a model within the scoreboard predicts the interrupt and
+Using data from the TileLink and ADC data streams a model within the scoreboard predicts the interrupt and
 wakeup line logic level at any point in the simulation. It also predicts various volatile register content.
 The scoreboard uses the predictions to compare against the RTL signals and register read data.
 
@@ -105,10 +105,10 @@ initialized to known values after coming out of reset.
 * Assertions in `tb.sv`
   * ChannelSelOnehot_A: Checks at most one ADC channel select is asserted at any time
   * ChannelSelKnown_A: Checks all ADC channel selects have a known logic value
-  * PwrupTime_A: Checks the time period between low power sampling cycles is consistant
+  * PwrupTime_A: Checks the time period between low power sampling cycles is consistent
   with the value in the configuration object.
   * WakeupTime_A: Checks the time period between power up and first channel selected
-  is consistant with the value in the configuration object.
+  is consistent with the value in the configuration object.
   * EnterLowPower_A: Checks the ADC power down is asserted between sampling periods in
   low power mode.
 

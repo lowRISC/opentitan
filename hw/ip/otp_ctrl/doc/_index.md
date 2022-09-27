@@ -348,7 +348,7 @@ The `lc_otp_vendor_test_i` and `lc_otp_vendor_test_o` signals are connected to a
 These control and status signals may be used by the silicon creator to exercise the OTP programming smoke checks on the VENDOR_TEST partition.
 The signals are gated with the life cycle state inside the life cycle controller such that they do not have any effect in production life cycle states.
 
-##### State, Counter and Token Ouput
+##### State, Counter and Token Output
 
 After initialization, the life cycle partition contents, as well as the tokens and personalization status is output to the life cycle controller via the `otp_lc_data_o` struct.
 The life cycle controller uses this information to determine the life cycle state, and steer the appropriate qualifier signals.

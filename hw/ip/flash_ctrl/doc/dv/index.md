@@ -18,7 +18,7 @@ title: "FLASH_CTRL DV document"
 For detailed information on `flash_ctrl` design features, please see the [`flash_ctrl` HWIP technical specification]({{< relref ".." >}}).
 The design-under-test (DUT) wraps the `flash_ctrl` IP, `flash_phy` and the TLUL SRAM adapter that converts the incoming TL accesses from the from host (CPU) interface into flash requests.
 These modules are instantiated and connected to each other and to the rest of the design at the top level.
-For the IP level DV, we replicate the instantiations and connections in `flash_ctrl_wrapper` module mainained in DV, located at `hw/ip/flash_ctrl/dv/tb/flash_ctrl_wrapper.sv`.
+For the IP level DV, we replicate the instantiations and connections in `flash_ctrl_wrapper` module maintained in DV, located at `hw/ip/flash_ctrl/dv/tb/flash_ctrl_wrapper.sv`.
 In future, we will consider having the wrapper maintained in the RTL area instead.
 
 ## Testbench architecture
@@ -34,7 +34,7 @@ In addition, the testbench instantiates the following interfaces, connects them 
 * [Clock and reset interface]({{< relref "hw/dv/sv/common_ifs" >}})
 * [TileLink host interface for the flash controller]({{< relref "hw/dv/sv/tl_agent/doc" >}})
 * [TileLink host interface for the eflash]({{< relref "hw/dv/sv/tl_agent/doc" >}})
-* TileLine host interface for the prim registers
+* TileLink host interface for the prim registers
 * Interrupts ([`pins_if`]({{< relref "hw/dv/sv/common_ifs" >}})
 * [Memory backdoor utility]({{< relref "hw/dv/sv/mem_bkdr_util/doc" >}})
 * Secret key interface from the OTP
@@ -60,10 +60,10 @@ The `flash_ctrl` RAL model is created with the [`ralgen`]({{< relref "hw/dv/tool
 It can be created manually by invoking [`regtool`]({{< relref "util/reggen/doc" >}}):
 
 #### Sequence cfg
-An efficient way to develop test sequences is by providing some random varibles that are used to configure the DUT / drive stimulus.
+An efficient way to develop test sequences is by providing some random variables that are used to configure the DUT / drive stimulus.
 The random variables are constrained using weights and knobs that can be controlled.
 These weights and knobs take on a "default" value that will result in the widest exploration of the design state space, when the test sequence is randomized and run as-is.
-To steer the randomization towards a particular distribution or to achieve interesting combinations of the random variables, the test sequence can be extended to create a spacialized variant.
+To steer the randomization towards a particular distribution or to achieve interesting combinations of the random variables, the test sequence can be extended to create a specialized variant.
 In this extended sequence, nothing would need to be done, other than setting those weights and knobs appropriately.
 This helps increase the likelihood of hitting the design corners that would otherwise be difficult to achieve, while maximizing reuse.
 
@@ -114,7 +114,7 @@ The following covergroups have been developed to prove that the test intent has 
 * control_cg
   Collects operation types, partition and cross coverage of both.
 * erase_susp_cg
-  Check if request of erase suspension occured.
+  Check if request of erase suspension occurred.
 * msgfifo_level_cg
   Covers all possible fifo status to generate interrupt for read / program.
 * rd_buff_evict_cg
@@ -123,7 +123,7 @@ The following covergroups have been developed to prove that the test intent has 
   Check whether eviction happens at all 4 caches with write / erase operation.
   Also check each address belongs to randomly enabled scramble and ecc.
 * error_cg
-  Check errors degined in error code registers.
+  Check errors defined in error code registers.
 ### Self-checking strategy
 #### Scoreboard
 The `flash_ctrl_scoreboard` is primarily used for csr transaction integrity.
@@ -137,7 +137,7 @@ Instead, it creates reference data for each operation.
 For the program(write) operation, rtl output is collected from flash phy interface and compared with each operation's pre calculated write data.
 For the read operation, the expected data is written via memory backdoor interface, read back, and compared.
 The `flash_ctrl_otf_scoreboard` is used for `on-the-fly` mode flash transaction integrity check, while `flash_ctrl_scoreboard` is still used for csr transaction integrity check.
-Since there is still uncovered logic stil within the model before data reaches the actual device, we add extra scoreboard to check that path and call it `last mile scoreboard`.
+Since there is still uncovered logic within the model before data reaches the actual device, we add extra scoreboard to check that path and call it `last mile scoreboard`.
 The `last mile scoreboard` is added to compensate `on-the-fly` model.
 For the write transaction, `on-the-fly` model collects rtl data at the boundary of the controller and flash model.
 

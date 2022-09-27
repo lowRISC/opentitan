@@ -319,7 +319,7 @@ Currently there is only one such attribute {{< regref "MP_REGION_CFG_0.HE" >}}.
 #### Idle Indication to External Power Manager
 
 The flash controller provides an idle indication to an external power manager.
-This idle indication does not mean the controller is doing "nothing", but rather the controller is not doing anything "stateful", ie program or erase.
+This idle indication does not mean the controller is doing "nothing", but rather the controller is not doing anything "stateful", e.g. program or erase.
 
 This is because an external power manager event (such as shutting off power) while a flash stateful transaction is ongoing may be damaging to the vendor flash module.
 
@@ -500,7 +500,7 @@ Note that the ICV (integrity ECC) is calculated over the descrambled data and is
 
 ##### ICV
 
-The purpose of the ICV (integrity check value, implemnted as an ECC) is to emulate end-to-end integrity like the other memories.
+The purpose of the ICV (integrity check value, implemented as an ECC) is to emulate end-to-end integrity like the other memories.
 This is why the data is calculated over the descrambled data as it can be stored alongside for continuous checks.
 When descrambled data is returned to the host, the ICV is used to validate the data is correct.
 

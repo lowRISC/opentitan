@@ -409,10 +409,10 @@ In Pass-though mode, control of the CSB lines passes directly to the inter-modul
 
 The command interface can allows for any number of segments in a given command.
 
-Since most SPI Flash transactions typically consist of 3 or 4 segemnts, there is a small command FIFO for submitting segments to the SPI_HOST IP, so that firmware can issue the entire transaction at one time.
+Since most SPI Flash transactions typically consist of 3 or 4 segments, there is a small command FIFO for submitting segments to the SPI_HOST IP, so that firmware can issue the entire transaction at one time.
 
 Writing a segment description to {{< regref "COMMAND" >}} when {{< regref "STATUS.READY" >}} is low will trigger an error condition, which must be acknowledged by software.
-When submitting multiple segments to the the command queue, firmware can also check the {{< regref "STATUS.CMDQD" >}} register to determine how many unprocessed segements are in the FIFO.
+When submitting multiple segments to the the command queue, firmware can also check the {{< regref "STATUS.CMDQD" >}} register to determine how many unprocessed segments are in the FIFO.
 
 ## Data Formatting
 
@@ -614,7 +614,7 @@ There are six types of error events which each represent a violation of the SPI_
 - If {{< regref "COMMAND" >}} is written when {{< regref "STATUS.READY">}} is zero, the IP will assert {{< regref "ERROR_STATUS.CMDERR" >}}.
 - The IP asserts {{< regref "ERROR_STATUS.OVERFLOW" >}} if it receives a write to {{< regref "TXDATA" >}} when the TX FIFO is full.
 - The IP asserts {{< regref "ERROR_STATUS.UNDERFLOW" >}} if it software attempts to read {{< regref "RXDATA" >}} when the RX FIFO is empty.
-- Specifying a command segment with an invalid width (speed), or making a request for a Bidirectional Dual- or Quad-width segement will trigger a {{< regref "ERROR_STATUS.CMDINVAL" >}} error event.
+- Specifying a command segment with an invalid width (speed), or making a request for a Bidirectional Dual- or Quad-width segment will trigger a {{< regref "ERROR_STATUS.CMDINVAL" >}} error event.
 - Submitting a command segment to an invalid CSID (one larger or equal to `NumCS`) will trigger a {{< regref "ERROR_STATUS.CSIDINVAL" >}} event.
 - {{< regref "ERROR_STATUS.ACCESSINVAL" >}} is asserted if the IP receives a write event to the {{< regref "TXDATA" >}} window that does not correspond to any known processor data type (byte, half- or full-word).
 
@@ -627,7 +627,7 @@ Clearing the bit corresponding bit in the {{< regref "ERROR_ENABLE" >}} register
 The {{< regref "ERROR_STATUS" >}} register will continue to report all violations even if a particular class of error event has been disabled.
 
 Of the six error event classes, `ACCESSINVAL` error events are the only ones which cannot be disabled.
-This is because `ACCESSINVAL` events are caused by anomolous TLUL byte-enable masks that do not correspond to any known software instructions, and can only occur through a fault in the hardware integration.
+This is because `ACCESSINVAL` events are caused by anomalous TLUL byte-enable masks that do not correspond to any known software instructions, and can only occur through a fault in the hardware integration.
 
 When handling SPI_HOST `error` interrupts, the {{< regref "ERROR_STATUS" >}} bit should be cleared *before* clearing the error interrupt in the {{< regref "INTR_STATE" >}} register.
 Failure do to so may result in a repeated interrupt.
@@ -835,7 +835,7 @@ head: {
 The connection from the shift register to the `sd` bus depends on the speed of the current segment.
 - In Standard-mode, only the most significant shift register bit, `sr_q[7]` is connected to the outputs using `sd_o[0]`.
 In this mode, each `shift_en_i` pulse is induces a shift of only one bit.
-- In Dual-mode, the two most significant bits, `sr_q[7:6]`, are connected to `sd_o[1:0]` and the shift register shifts by two bits with eery `shift_en_i` pulse.
+- In Dual-mode, the two most significant bits, `sr_q[7:6]`, are connected to `sd_o[1:0]` and the shift register shifts by two bits with every `shift_en_i` pulse.
 - In Quad-mode, the four most significant bits, `sr_q[7:4]`, are connected to `sd_o[3:0]` and the shift register shifts four bits with every pulse.
 
 The connections to the shift register inputs are similar.
@@ -1238,7 +1238,7 @@ From an implementation standpoint, the presence of a stall condition has two eff
 1. No flops or registers may be updated during a stall condition.
 Thus the FSM may not progress while stalled.
 
-2. All handshaking or control signals to other blocks must be surpressed during a stall condition, placing backpressure on the rest the blocks within the IP to also stop operations until the stall is resolved.
+2. All handshaking or control signals to other blocks must be suppressed during a stall condition, placing backpressure on the rest the blocks within the IP to also stop operations until the stall is resolved.
 
 # Programmer's Guide
 
@@ -1395,7 +1395,7 @@ To enable interrupts when ever the RX FIFO reaches the watermark, assert {{< reg
 
 ## Exception Handling
 
-The SPI_HOST will assert one of the {{< regref "ERROR_STATUS" >}} bits in the event of a firmware programming error, and will become unreponsive until firmware acknowledges the error by clearing the corresponding error bit.
+The SPI_HOST will assert one of the {{< regref "ERROR_STATUS" >}} bits in the event of a firmware programming error, and will become unresponsive until firmware acknowledges the error by clearing the corresponding error bit.
 
 The SPI_HOST interrupt handler should clear any bits in {{< regref "ERROR_STATUS" >}} bit before clearing {{< regref "INTR_STATE.error" >}}.
 

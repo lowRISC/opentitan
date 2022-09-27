@@ -81,8 +81,8 @@ It creates the following analysis ports to retrieve the data monitored by corres
 rv_timer scoreboard monitors all CSR registers and interrupt pins.
 
 For a write transaction, during the address channel, CSR values are updated in RAL and config values (timer enable, step, prescale, timer value, compare value) are updated in internal arrays.
-When particular timer is enabled, rv_timer scoreboard calculate timeout clocks and start a thread to wait for timeout, then if any of timer configuration updated on active timer, rv_timer scoreboard recalculate and update the timeout clocks in ther running timeout thread.
-If multiple timers are enabled, multipe threads will be initiated. On timeout scoreboard calculate the expected interrupt status and update RAL registers.
+When particular timer is enabled, rv_timer scoreboard calculate timeout clocks and start a thread to wait for timeout, then if any of timer configuration updated on active timer, rv_timer scoreboard recalculate and update the timeout clocks in their running timeout thread.
+If multiple timers are enabled, multiple threads will be initiated. On timeout scoreboard calculate the expected interrupt status and update RAL registers.
 
 For a read transaction, during the address channel for interrupt status CSR rv_timer will predict its value according to the timer timeout threads.
 During the data channel, rv_timer scoreboard will compare the read data with expected data in RAL.

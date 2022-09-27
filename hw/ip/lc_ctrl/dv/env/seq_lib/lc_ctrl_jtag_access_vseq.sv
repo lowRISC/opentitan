@@ -36,7 +36,7 @@ class lc_ctrl_jtag_access_vseq extends lc_ctrl_base_vseq;
   dv_base_reg m_claim_transition_if;
   // regwen register
   dv_base_reg m_transition_regwen;
-  // Acccess maps [LcCtrlTLUL] -> Tile Link, [LcCtrlJTAG] -> JTAG
+  // Acccess maps [LcCtrlTLUL] -> TileLink, [LcCtrlJTAG] -> JTAG
   uvm_reg_map m_map[lc_ctrl_csr_intf_e];
   // Queue of register access specs
   reg_access_t m_reg_accesses[$];

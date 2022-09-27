@@ -75,7 +75,7 @@ Some of the most commonly used tasks / functions are as follows:
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
-* common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrup pin
+* common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
 * uart_cg in uart_agent_cov `hw/dv/sv/uart_agent/uart_agent_cov.sv`:       Cover direction, uart data, en_parity, odd_parity and baud rate
 * fifo_level_cg `hw/ip/uart/dv/env/uart_env_cov.sv`:                       Cover all fifo level with fifo reset for both TX and RX
 

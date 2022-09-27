@@ -82,10 +82,10 @@ The `bit_ctr` counter increments on every falling edge of `clk_int`, until it ov
 In the `ACTIVE` state, the FSM `pda` output is driven by a multiplexer, connected to the `pattern` input.
 The value of `bit_ctr` selects the bit value from the appropriate sequence position, via this multiplexor.
 
-Finally whevever `bit_ctr` overflows and reverts to zero, the `repeat_ctr` increments, and the pattern starts again.
+Finally whenever `bit_ctr` overflows and reverts to zero, the `repeat_ctr` increments, and the pattern starts again.
 Finally `repeat_ctr` overflows to zero as it reaches the input value `n_repeats`.
 When this overflow occurs, the FSM transitions to the `END` state.
-All counters halt, the `pda` data lines reset to zero, and an interupt event is sent out to signal completion.
+All counters halt, the `pda` data lines reset to zero, and an interrupt event is sent out to signal completion.
 
 The entire sequence can be restarted either by resetting or disabling and re-enabling the FSM.
 
@@ -99,7 +99,7 @@ To clear the interrupts, bit `1` must be written the corresponding bits of {{< r
 
 To start pattern generation, the register interface of the pattern generator HWIP should be properly initialized and configured.
 
-The guide that follows provides instuctions for configuring Channel 0.
+The guide that follows provides instructions for configuring Channel 0.
 To configure Channel 1, use the registers with the "CH1" suffix, instead of the "CH0" registers.
 
 To configure a single channel:
@@ -108,7 +108,7 @@ To configure a single channel:
 For either channel, a zero in the polarity bit indicates that the channel clock line (`pcl`) should start low, and the channel data line `pda` transitions on every falling edge of `pcl`.
 A one in the polarity bit inverts the `pcl` clock so that it starts high and `pda` transitions on the rising edge.
 The following waveform illustrates the effect of the `POLARITY` bit.
-Here both channels are configured for simulatenous pattern generation, but the two channels are configured for opposite polarity.
+Here both channels are configured for simultaneous pattern generation, but the two channels are configured for opposite polarity.
 {{<wavejson>}}
 {signal: [
   {name: 'CTRL.ENABLE_CH0', wave: 'lh......'},
@@ -134,7 +134,7 @@ $$f_{pclx}=\frac{f_\textrm{I/O clk}}{2(\textrm{CLK_RATIO}+1)}$$
 Note that since the allowed number of pattern repetitions ranges from 1-1024, the value of this field should be one less than the desired repetition count.
 For example, to repeat a pattern 30, a value of 29 should written to the field {{< regref "SIZE.REPS_CH0" >}}.
 1. Finally to start the pattern, set the {{< regref "CTRL.ENABLE_CH0" >}}.
-To start both channel patterns at the same time, configure both channels then simulataneously assert both the {{< regref "CTRL.ENABLE_CH0" >}} and {{< regref "CTRL.ENABLE_CH1" >}} bits in the same register access.
+To start both channel patterns at the same time, configure both channels then simultaneously assert both the {{< regref "CTRL.ENABLE_CH0" >}} and {{< regref "CTRL.ENABLE_CH1" >}} bits in the same register access.
 
 ## Device Interface Functions (DIFs)
 
