@@ -15,6 +15,9 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // Double bit err is created
   bit        global_derr_is_set = 0;
 
+  // tmp debug counter
+  int        d_cnt1, d_cnt2;
+
   // Number of controller transactions per a single task
   // Min: 1 Max:32
   rand int  ctrl_num;
@@ -775,8 +778,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       end
 
       cfg.inc_otd_tbl(bank, tl_addr, FlashPartData);
+      d_cnt1++;
       do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(rdata),
                      .completed(completed), .exp_err_rsp(derr));
+      d_cnt2++;
 
       // issue csr rd to capture coverpoint at sb.
       if (derr) begin
@@ -1248,6 +1253,10 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     else host_num = $urandom_range(1,128);
     host_bank = $urandom_range(0,1);
 
+    // FIXIT
+     host_bank = 0;     
+     host_num = 1;
+     
     otf_direct_read(host.otf_addr, host_bank, host_num, in_err);
   endtask // send_rand_host_rd
 

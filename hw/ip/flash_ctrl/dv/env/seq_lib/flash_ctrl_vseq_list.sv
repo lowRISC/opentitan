@@ -53,3 +53,7 @@
 `include "flash_ctrl_info_part_access_vseq.sv"
 `include "flash_ctrl_stress_all_vseq.sv"
 `include "flash_ctrl_access_after_disable_vseq.sv"
+`include "flash_ctrl_err_vseq.sv"
+`include "flash_ctrl_phy_arb_redun_vseq.sv"
+`include "flash_ctrl_phy_host_grant_err_vseq.sv"
+`include "flash_ctrl_phy_ack_consistency_vseq.sv"

@@ -27,6 +27,7 @@ class flash_ctrl_rw_vseq extends flash_ctrl_otf_base_vseq;
             cfg.otf_rd_pct:read_flash(ctrl, bank, num, fractions);
           endcase
         end
+        `JDBG(("assa1"))
       end
       begin
         for (int i = 0; i < cfg.otf_num_hr; ++i) begin
@@ -36,6 +37,7 @@ class flash_ctrl_rw_vseq extends flash_ctrl_otf_base_vseq;
           #0;
         end
         csr_utils_pkg::wait_no_outstanding_access();
+        `JDBG(("assa2"))
       end
     join
   endtask

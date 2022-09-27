@@ -607,3 +607,8 @@
     return 'x;                                                                          \
   endfunction
 `endif
+`ifndef JDBG
+  `define JDBG(x) \
+  $write($sformatf("%t:JDBG:",$time));\
+  $display($sformatf x);
+`endif
