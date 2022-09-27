@@ -76,9 +76,8 @@ interface edn_cov_if (
     }
 
     cp_flags: coverpoint flags {
-      bins zero         = { 0 };
-      bins one          = { 1 };
-      ignore_bins other = { [2:$] };
+      bins false         = { MuBi4False };
+      bins true          = { MuBi4True };
     }
 
     cp_glen: coverpoint glen {

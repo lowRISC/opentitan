@@ -14,7 +14,8 @@ class edn_base_vseq extends cip_base_vseq #(
   bit do_edn_init = 1'b1;
   bit [csrng_pkg::GENBITS_BUS_WIDTH - 1:0]      genbits;
   bit [entropy_src_pkg::FIPS_BUS_WIDTH - 1:0]   fips;
-  bit [3:0]                                     clen, additional_data, flags;
+  mubi4_t                                       flags;
+  bit [3:0]                                     clen, additional_data;
   bit [18:0]                                    glen;
   bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]        cmd_data;
 
@@ -82,7 +83,7 @@ class edn_base_vseq extends cip_base_vseq #(
       csr_update(.csr(ral.ctrl));
 
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flags, flags dist { [0:1] :/ 50, [2:$] :/ 50 };)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glen, glen dist { 0 :/ 20, [1:$] :/ 80 };)
       cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
       wr_cmd(.cmd_type("reseed"), .acmd(csrng_pkg::RES), .clen(clen), .flags(flags), .glen(glen));
@@ -91,7 +92,7 @@ class edn_base_vseq extends cip_base_vseq #(
         wr_cmd(.cmd_type("reseed"), .cmd_data(cmd_data));
       end
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flags, flags dist { [0:1] :/ 50, [2:$] :/ 50 };)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       glen = 1;
       cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
       wr_cmd(.cmd_type("generate"), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags), .glen(glen));
@@ -108,7 +109,7 @@ class edn_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task wr_cmd(string cmd_type = "", csrng_pkg::acmd_e acmd = csrng_pkg::INV,
-                      bit[3:0] clen = '0, bit[3:0] flags = '0, bit[17:0] glen = '0,
+                      bit[3:0] clen = '0, bit[3:0] flags = MuBi4False, bit[17:0] glen = '0,
                       bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0] cmd_data = '0);
 
     case (cmd_type)

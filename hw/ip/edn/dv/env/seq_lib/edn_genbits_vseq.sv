@@ -77,7 +77,7 @@ class edn_genbits_vseq extends edn_base_vseq;
     if (cfg.boot_req_mode != MuBi4True) begin
       // Send instantiate cmd
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flags, flags dist { [0:1] :/ 50, [2:$] :/ 50 };)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(glen, glen dist { 0 :/ 20, [1:$] :/ 80 };)
       cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
       wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(clen), .flags(flags), .glen(glen));
@@ -90,7 +90,7 @@ class edn_genbits_vseq extends edn_base_vseq;
     if (cfg.auto_req_mode != MuBi4True) begin
       // Send generate cmd
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flags, flags dist { [0:1] :/ 50, [2:$] :/ 50 };)
+      `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
       glen = num_cs_reqs;
       cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
       wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags), .glen(glen));
@@ -112,7 +112,7 @@ class edn_genbits_vseq extends edn_base_vseq;
       if (num_cs_reqs > cfg.m_csrng_agent_cfg.generate_cnt) begin
         // Send generate cmd
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(clen, clen dist { 0 :/ 20, [1:12] :/ 80 };)
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flags, flags dist { [0:1] :/ 50, [2:$] :/ 50 };)
+        `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
         glen = num_cs_reqs - cfg.m_csrng_agent_cfg.generate_cnt;
         cov_vif.cg_cs_cmds_sample(.clen(clen), .flags(flags), .glen(glen));
         wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(clen), .flags(flags),
