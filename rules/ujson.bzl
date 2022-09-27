@@ -12,8 +12,10 @@ def _ujson_rust(ctx):
     ujson_lib = ctx.attr.ujson_lib[CcInfo].compilation_context.headers.to_list()
 
     srcs = []
+    includes = []
     for src in ctx.attr.srcs:
         srcs.extend(src[CcInfo].compilation_context.direct_public_headers)
+        includes.extend(src[CcInfo].compilation_context.headers.to_list())
 
     # TODO(cfrantz): Is there a better way to find the `rustfmt` binary?
     rustfmt_files = ctx.attr._rustfmt.data_runfiles.files.to_list()
@@ -39,7 +41,7 @@ def _ujson_rust(ctx):
 
     ctx.actions.run_shell(
         outputs = [module],
-        inputs = ujson_lib + srcs,
+        inputs = ujson_lib + srcs + includes,
         tools = cc_toolchain.all_files.to_list() + rustfmt_files,
         arguments = [src.path for src in srcs],
         command = command,
