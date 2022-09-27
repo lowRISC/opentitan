@@ -4,7 +4,7 @@ title: "Chip-Level Test Libraries"
 
 # Overview
 
-This subtree contains _test libary code_ that could aid in the writing of [chip-level tests]({{< relref "sw/device/tests/index.md" >}}).
+This subtree contains _test library code_ that could aid in the writing of [chip-level tests]({{< relref "sw/device/tests/index.md" >}}).
 Test library code consists of two components:
 1. `testutils` libraries, and
 2. the [on-device test framework]({{< relref "sw/device/lib/testing/test_framework/index.md" >}}).
@@ -31,6 +31,6 @@ code will live in: `sw/device/lib/testing/test\_framework`.
 - Pass-through `sw/device/lib/dif_base.h` types where appropriate.
   This allows testutils functions to easily mix with DIFs within chip-level tests.
 - Avoid defining testutils that call a single DIF, and use the DIF directly.
-  If a DIF does not exist for your needs, create one by following the [DIF developement guide]({{< relref "sw/device/lib/dif" >}}).
+  If a DIF does not exist for your needs, create one by following the [DIF development guide]({{< relref "sw/device/lib/dif" >}}).
 
 {{% sectionContent %}}

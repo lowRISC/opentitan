@@ -21,4 +21,4 @@ In DV, a subset of tests will indeed exercise the the bootstrap code paths since
 In FPGA, bootstrap is required and requested by an external host via GPIO.
 Bootstrap can be requested by driving TAP\_STRAP0 (USB\_A18) and TAP\_STRAP1 (USB\_A19) to 0 and 1, respectively, and presenting strong pull-ups on all SW\_STRAP* pins (USB\_A15, USB\_A16, and USB\_A17).
 If bootstrap is requested, the boot ROM initializes the SPI interface and flash controller.
-OpenTitan uses a SPI Flash based boostrap protocol and can be programmed using the `opentitantool`.
+OpenTitan uses a SPI Flash based bootstrap protocol and can be programmed using the `opentitantool`.
