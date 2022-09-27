@@ -70,7 +70,6 @@
         decl_(formal_name_, ujson_enum_value) \
     } name_
 
-#ifdef UJSON_SERDE_IMPL
 
 // Helper to count number of fields.
 #define ujson_count(name_, type_, ...) +1
@@ -120,7 +119,7 @@
         if (--nfield) TRY(ujson_putbuf(uj, ",", 1)); \
     }
 
-#define UJSON_SERIALIZE_STRUCT(name_, decl_) \
+#define UJSON_IMPL_SERIALIZE_STRUCT(name_, decl_) \
     status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) { \
         size_t nfield = decl_(ujson_count, ujson_count); \
         TRY(ujson_putbuf(uj, "{", 1)); \
@@ -134,7 +133,7 @@
     case k ##formal_name_ ## name_: \
         TRY(ujson_serialize_string(uj, #name_)); break;
 
-#define UJSON_SERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
+#define UJSON_IMPL_SERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
     status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) { \
         switch(*self) { \
             decl_(formal_name_, ujson_ser_enum) \
@@ -202,7 +201,7 @@
         ) /*endif*/ \
     }
 
-#define UJSON_DESERIALIZE_STRUCT(name_, decl_) \
+#define UJSON_IMPL_DESERIALIZE_STRUCT(name_, decl_) \
     status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { \
         size_t nfield = 0; \
         char key[128]; \
@@ -226,7 +225,7 @@
 #define ujson_de_enum(formal_name_, name_, ...) \
     else if (ujson_streq(value, #name_)) { *self = k ##formal_name_ ## name_; }
 
-#define UJSON_DESERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
+#define UJSON_IMPL_DESERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
     status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) { \
         char value[128]; \
         if (TRY(ujson_consume_maybe(uj, '"'))) { \
@@ -252,19 +251,44 @@
         return OK_STATUS(); \
     } \
     extern const int __never_referenced___here_to_eat_a_semicolon[]
-// clang-format on
-#else  // UJSON_SERDE_IMPL
+
+#ifndef UJSON_SERDE_IMPL
+#define UJSON_SERDE_IMPL 0
+#endif
+
 #define UJSON_SERIALIZE_STRUCT(name_, decl_) \
-  status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self)
+    OT_IIF(UJSON_SERDE_IMPL) \
+    ( /*then*/ \
+        UJSON_IMPL_SERIALIZE_STRUCT(name_, decl_) \
+    , /*else*/ \
+        status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) \
+    ) /*endif*/
+
 #define UJSON_SERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
-  status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self)
+    OT_IIF(UJSON_SERDE_IMPL) \
+    ( /*then*/ \
+        UJSON_IMPL_SERIALIZE_ENUM(formal_name_, name_, decl_, ##__VA_ARGS__) \
+    , /*else*/ \
+        status_t ujson_serialize_##name_(ujson_t *uj, const name_ *self) \
+    ) /*endif*/
 
 #define UJSON_DESERIALIZE_STRUCT(name_, decl_) \
-  status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self);
-#define UJSON_DESERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
-  status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self);
+    OT_IIF(UJSON_SERDE_IMPL) \
+    ( /*then*/ \
+        UJSON_IMPL_DESERIALIZE_STRUCT(name_, decl_) \
+    , /*else*/ \
+        status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) \
+    ) /*endif*/
 
-#endif  // UJSON_SERDE_IMPL
+#define UJSON_DESERIALIZE_ENUM(formal_name_, name_, decl_, ...) \
+    OT_IIF(UJSON_SERDE_IMPL) \
+    ( /*then*/ \
+        UJSON_IMPL_DESERIALIZE_ENUM(formal_name_, name_, decl_, ##__VA_ARGS__) \
+    , /*else*/ \
+        status_t ujson_deserialize_##name_(ujson_t *uj, name_ *self) \
+    ) /*endif*/
+// clang-format on
+
 //////////////////////////////////////////////////////////////////////
 // Combined build-everything macros
 //////////////////////////////////////////////////////////////////////
