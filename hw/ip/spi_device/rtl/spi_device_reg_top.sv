@@ -281,6 +281,7 @@ module spi_device_reg_top (
   logic status_txf_empty_qs;
   logic status_abort_done_qs;
   logic status_csb_qs;
+  logic status_tpm_csb_qs;
   logic rxf_ptr_we;
   logic [15:0] rxf_ptr_rptr_qs;
   logic [15:0] rxf_ptr_rptr_wd;
@@ -2893,6 +2894,21 @@ module spi_device_reg_top (
     .q      (),
     .ds     (),
     .qs     (status_csb_qs)
+  );
+
+  //   F[tpm_csb]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_tpm_csb (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.tpm_csb.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_tpm_csb_qs)
   );
 
 
@@ -20670,6 +20686,7 @@ module spi_device_reg_top (
         reg_rdata_next[3] = status_txf_empty_qs;
         reg_rdata_next[4] = status_abort_done_qs;
         reg_rdata_next[5] = status_csb_qs;
+        reg_rdata_next[6] = status_tpm_csb_qs;
       end
 
       addr_hit[9]: begin

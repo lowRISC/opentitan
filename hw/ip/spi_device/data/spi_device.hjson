@@ -394,6 +394,16 @@
             '''
           resval: "1" },
         { bits: "5", name: "csb",        desc: "Direct input of CSb signal", resval: "1" },
+        { bits: "6"
+          name: "tpm_csb"
+          desc: "Direct input of TPM CSb"
+          resval: "1"
+          tags: [
+            // the value of tpm_csb is determined by the
+            // value on the pins, hence it cannot be predicted.
+            "excl:CsrAllTests:CsrExclCheck"
+          ]
+        }
       ]
       tags: [// Status reads back unexpected values due to writes to other CSRs.
              "excl:CsrNonInitTests:CsrExclWriteCheck"]
