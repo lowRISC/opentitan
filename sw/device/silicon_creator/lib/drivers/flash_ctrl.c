@@ -295,13 +295,11 @@ static void page_lockdown(flash_ctrl_info_page_t info_page) {
 void flash_ctrl_init(void) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(
       kFlashCtrlSecMmioInit,
-      2 + kFlashCtrlSecMmioDataDefaultCfgSet + 2 * kFlashCtrlSecMmioInfoCfgSet);
+      kFlashCtrlSecMmioDataDefaultCfgSet + 2 * kFlashCtrlSecMmioInfoCfgSet);
 
   // Initialize the flash controller.
   abs_mmio_write32(kBase + FLASH_CTRL_INIT_REG_OFFSET,
                    bitfield_bit32_write(0, FLASH_CTRL_INIT_VAL_BIT, true));
-  // Disable all access to the silicon creator secret info page.
-  page_lockdown(kFlashCtrlInfoPageCreatorSecret);
   // Configure default scrambling, ECC, and HE settings for the data partition.
   uint32_t otp_val =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET);
@@ -552,14 +550,12 @@ void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
  * Information pages that should be locked by ROM_EXT before handing over
  * execution to the first owner boot stage. See
  * `flash_ctrl_creator_info_pages_lockdown()`.
- *
- * Note: This array does not include `kFlashCtrlInfoPageCreatorSecret` since
- * it's locked in `flash_ctrl_init()`.
  */
 static const flash_ctrl_info_page_t kInfoPagesNoOwnerAccess[] = {
-    kFlashCtrlInfoPageOwnerSecret, kFlashCtrlInfoPageWaferAuthSecret,
-    kFlashCtrlInfoPageBootData0,   kFlashCtrlInfoPageBootData1,
-    kFlashCtrlInfoPageOwnerSlot0,  kFlashCtrlInfoPageOwnerSlot1,
+    kFlashCtrlInfoPageCreatorSecret,   kFlashCtrlInfoPageOwnerSecret,
+    kFlashCtrlInfoPageWaferAuthSecret, kFlashCtrlInfoPageBootData0,
+    kFlashCtrlInfoPageBootData1,       kFlashCtrlInfoPageOwnerSlot0,
+    kFlashCtrlInfoPageOwnerSlot1,
 };
 
 void flash_ctrl_creator_info_pages_lockdown(void) {

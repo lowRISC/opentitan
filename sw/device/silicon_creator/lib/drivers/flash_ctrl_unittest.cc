@@ -117,10 +117,6 @@ TEST_P(InitTest, Initialize) {
   EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_INIT_REG_OFFSET,
                      {{FLASH_CTRL_INIT_VAL_BIT, true}});
 
-  auto info_page = InfoPages().at(kFlashCtrlInfoPageCreatorSecret);
-  EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0);
-  EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
-
   EXPECT_CALL(
       otp_, read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET))
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
@@ -133,7 +129,7 @@ TEST_P(InitTest, Initialize) {
       otp_,
       read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG_OFFSET))
       .WillOnce(Return(CfgToOtp(GetParam().cfg)));
-  info_page = InfoPages().at(kFlashCtrlInfoPageBootData0);
+  auto info_page = InfoPages().at(kFlashCtrlInfoPageBootData0);
   EXPECT_SEC_READ32(base_ + info_page.cfg_offset,
                     FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_RESVAL);
   EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, GetParam().info_write_val);
@@ -587,10 +583,11 @@ INSTANTIATE_TEST_SUITE_P(AllCases, FlashCtrlCfgSetTest,
                              }));
 
 TEST_F(FlashCtrlTest, CreatorInfoLockdown) {
-  std::array<flash_ctrl_info_page_t, 6> no_owner_access = {
-      kFlashCtrlInfoPageOwnerSecret, kFlashCtrlInfoPageWaferAuthSecret,
-      kFlashCtrlInfoPageBootData0,   kFlashCtrlInfoPageBootData1,
-      kFlashCtrlInfoPageOwnerSlot0,  kFlashCtrlInfoPageOwnerSlot1,
+  std::array<flash_ctrl_info_page_t, 7> no_owner_access = {
+      kFlashCtrlInfoPageCreatorSecret,   kFlashCtrlInfoPageOwnerSecret,
+      kFlashCtrlInfoPageWaferAuthSecret, kFlashCtrlInfoPageBootData0,
+      kFlashCtrlInfoPageBootData1,       kFlashCtrlInfoPageOwnerSlot0,
+      kFlashCtrlInfoPageOwnerSlot1,
   };
   for (auto page : no_owner_access) {
     auto info_page = InfoPages().at(page);
