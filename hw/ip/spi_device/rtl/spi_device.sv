@@ -387,6 +387,15 @@ module spi_device
     .out_o ({clk_csb_buf, rst_csb_buf, sys_csb, sck_csb})
   );
 
+  // Split TPM CSB into explicit reset and data.
+  logic rst_tpm_csb_buf, sys_tpm_csb_buf, sck_tpm_csb_buf;
+  prim_buf #(
+    .Width (3)
+  ) u_tpm_csb_buf (
+    .in_i  ({3{cio_tpm_csb_i}}),
+    .out_o ({rst_tpm_csb_buf, sys_tpm_csb_buf, sck_tpm_csb_buf})
+  );
+
   //////////////////////////////////////////////////////////////////////
   // Connect phase (between control signals above and register module //
   //////////////////////////////////////////////////////////////////////
@@ -916,7 +925,7 @@ module spi_device
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
   ) u_tpm_csb_rst_scan_mux (
-    .clk0_i (rst_ni & ~cio_tpm_csb_i),
+    .clk0_i (rst_ni & ~rst_tpm_csb_buf),
     .clk1_i (scan_rst_ni),
     .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode[TpmRstSel])),
     .clk_o  (tpm_rst_n)
@@ -1258,7 +1267,7 @@ module spi_device
     cio_sd_o    = internal_sd;
     cio_sd_en_o = internal_sd_en;
 
-    if (cfg_tpm_en && !cio_tpm_csb_i) begin : miso_tpm
+    if (cfg_tpm_en && !sck_tpm_csb_buf) begin : miso_tpm
       // TPM transaction is on-going. MOSI, MISO is being used by TPM
       cio_sd_o    = {2'b 00, tpm_miso,    1'b 0};
       cio_sd_en_o = {2'b 00, tpm_miso_en, 1'b 0};
@@ -1797,14 +1806,14 @@ module spi_device
     .clk_in_i  (clk_spi_in_buf ),
     .clk_out_i (clk_spi_out_buf),
 
-    .sys_clk_i  (clk_i),
-    .sys_rst_ni (rst_ni),
-    .rst_n (tpm_rst_n),
+    .sys_clk_i  (clk_i    ),
+    .sys_rst_ni (rst_ni   ),
+    .rst_n      (tpm_rst_n),
 
-    .csb_i     (cio_tpm_csb_i),
-    .mosi_i    (tpm_mosi     ),
-    .miso_o    (tpm_miso     ),
-    .miso_en_o (tpm_miso_en  ),
+    .csb_i     (sck_tpm_csb_buf), // used as data only
+    .mosi_i    (tpm_mosi       ),
+    .miso_o    (tpm_miso       ),
+    .miso_en_o (tpm_miso_en    ),
 
     .tpm_cap_o (tpm_cap),
     .sys_csb_pulse_stretch      (sys_csb_pos_pulse_stretch),
