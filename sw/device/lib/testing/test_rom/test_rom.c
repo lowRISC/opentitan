@@ -102,8 +102,15 @@ bool rom_test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &reset_reasons));
 
   // Store the reset reason in retention RAM and clear the register.
-  retention_sram_get()->reset_reasons = reset_reasons;
+  volatile retention_sram_t *ret_ram = retention_sram_get();
+  ret_ram->reset_reasons = reset_reasons;
   CHECK_DIF_OK(dif_rstmgr_reset_info_clear(&rstmgr));
+
+  // Write 0x54534554 (ASCII: TEST) to the end of the retention SRAM creator
+  // area to be able to determine the type of ROM in tests.
+  volatile uint32_t *creator_last_word =
+      &ret_ram->reserved_creator[ARRAYSIZE(ret_ram->reserved_creator) - 1];
+  *creator_last_word = TEST_ROM_IDENTIFIER;
 
   // Print the FPGA version-id.
   // This is guaranteed to be zero on all non-FPGA implementations.
