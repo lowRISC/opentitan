@@ -60,7 +60,8 @@ module flash_phy_core
   output logic                       spurious_ack_o,
   output logic                       arb_err_o,
   output logic                       host_gnt_err_o,
-  output logic                       fifo_err_o
+  output logic                       fifo_err_o,
+  output logic                       cnt_err_o
 );
 
 
@@ -186,58 +187,108 @@ module flash_phy_core
     .mubi_o(flash_disable)
   );
 
-  logic ctrl_fsm_idle;
-  logic host_req;
-  assign host_req = host_req_i & (arb_cnt < ArbCnt[CntWidth-1:0]) & ctrl_fsm_idle &
-                    mubi4_test_false_strict(flash_disable[HostDisableIdx]);
-  assign host_sel = host_req;
-  assign host_gnt = host_req & host_req_rdy_o;
-  assign host_req_done_o = ctrl_fsm_idle & rd_stage_data_valid;
-
-  // oustanding width is slightly larger to ensure a faulty increment is able to reach
+  // Oustanding width is slightly larger to ensure a faulty increment is able to reach
   // the higher value. For example if RspOrderDepth were 3, a clog2 of 3 would still be 2
   // and not allow the counter to increment to 4.
   localparam int OutstandingRdWidth = $clog2(RspOrderDepth+2);
   logic [OutstandingRdWidth-1:0] host_outstanding;
+  logic ctrl_fsm_idle;
+  logic host_req;
+  // SEC_CM: PHY_HOST_GRANT.CTRL.CONSISTENCY
+  // A host transaction was granted to the muxed partition, this is illegal
+  logic host_gnt_err_event;
+  assign host_gnt_err_event = (host_gnt && muxed_part != flash_ctrl_pkg::FlashPartData);
+  // Controller fsm became non idle when there are pending host transactions, this is
+  // illegal.
+  logic host_outstanding_err_event;
+  assign host_outstanding_err_event = |host_outstanding & !ctrl_fsm_idle;
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      host_outstanding <= '0;
-    end else if (host_gnt && !host_req_done_o && (host_outstanding <= RspOrderDepth)) begin
-      host_outstanding <= host_outstanding + 1'b1;
-    end else if (!host_gnt && host_req_done_o && |host_outstanding) begin
-      host_outstanding <= host_outstanding - 1'b1;
+      host_gnt_err_o <= '0;
+    end else if (host_gnt_err_event | host_outstanding_err_event) begin
+      host_gnt_err_o <= 1'b1;
     end
   end
-  `ASSERT(RdTxnCheck_A, host_outstanding <= RspOrderDepth)
 
-  // a host transaction granted in the previous cycle
-  logic host_gnt_q;
+  // When host grant errors occur, also create in band error responses.
+  // The error condition is held until all existing host transactions are
+  // processed.
+  logic host_gnt_rd_err;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      host_gnt_q <= '0;
-    end else begin
-      host_gnt_q <= host_gnt;
+      host_gnt_rd_err <= '0;
+    end else if (host_outstanding == '0) begin
+      host_gnt_rd_err <= '0;
+    end else if (host_gnt_err_event) begin
+      host_gnt_rd_err <= 1'b1;
+    end
+  end
+
+  // When host outstanding errors occur, also create in band error responses.
+  // The error condition is held until all existing host and controller
+  // transactions are processed.
+  logic host_outstanding_rd_err;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      host_outstanding_rd_err <= '0;
+    end else if (host_outstanding == '0 && ctrl_fsm_idle) begin
+      host_outstanding_rd_err <= '0;
+    end else if (host_outstanding_err_event) begin
+      host_outstanding_rd_err <= 1'b1;
     end
   end
 
   // SEC_CM: PHY_HOST_GRANT.CTRL.CONSISTENCY
-  // two error conditions
-  // 1. a host transaction was granted to the muxed partition, this is illegal
-  // 2. a host transaction was granted last cycle but somehow controller
-  //    operations have been kicked off, this is illegal
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      host_gnt_err_o <= '0;
-    end else if ((host_gnt && muxed_part != flash_ctrl_pkg::FlashPartData) ||
-                 (host_gnt_q && !ctrl_fsm_idle)) begin
-      host_gnt_err_o <= 1'b1;
-    end
-  end
+  prim_count #(
+    .Width(OutstandingRdWidth),
+    .ResetValue('0)
+  ) u_host_outstanding_cnt (
+    .clk_i,
+    .rst_ni,
+    .clr_i('0),
+    .set_i('0),
+    .set_cnt_i('0),
+    .incr_en_i(host_gnt && !host_req_done_o && (host_outstanding <= RspOrderDepth)),
+    .decr_en_i(!host_gnt && host_req_done_o && |host_outstanding),
+    .step_i(OutstandingRdWidth'(1'b1)),
+    .cnt_o(host_outstanding),
+    .cnt_next_o(),
+    .err_o(cnt_err_o)
+  );
+
+  // If host_outstanding is non-zero, the controller fsm must be idle..
+  // This assertion needs to be disabled for sec_cm testing
+  `ASSERT(HostTransIdleChk_A, |host_outstanding |-> ctrl_fsm_idle)
+
+  //always_ff @(posedge clk_i or negedge rst_ni) begin
+  //  if (!rst_ni) begin
+  //    host_outstanding <= '0;
+  //  end else if (host_gnt && !host_req_done_o && (host_outstanding <= RspOrderDepth)) begin
+  //    host_outstanding <= host_outstanding + 1'b1;
+  //  end else if (!host_gnt && host_req_done_o && |host_outstanding) begin
+  //    host_outstanding <= host_outstanding - 1'b1;
+  //  end
+  //end
+
+  `ASSERT(RdTxnCheck_A, host_outstanding <= RspOrderDepth)
+
+  // The host request is suppressed under a variety of conditions:
+  // 1. If a controller transaction is already ongoing.
+  // 2. If a grant or outstanding error has already been observed but not yet
+  //    fully processed.
+  assign host_req = host_req_i & (arb_cnt < ArbCnt[CntWidth-1:0]) & ctrl_fsm_idle &
+                    !host_gnt_rd_err & !host_outstanding_rd_err &
+                    mubi4_test_false_strict(flash_disable[HostDisableIdx]);
+  assign host_sel = host_req;
+  assign host_gnt = host_req & host_req_rdy_o;
+  assign host_req_done_o = |host_outstanding & rd_stage_data_valid;
 
   // controller request can only win after the entire read pipeline
   // clears
   logic ctrl_req;
   assign ctrl_req = req_i & rd_stage_idle &
+                    !host_gnt_rd_err & !host_outstanding_rd_err &
                     mubi4_test_false_strict(flash_disable[CtrlDisableIdx]);
 
   logic [1:0] data_tie_off [2];
@@ -366,6 +417,21 @@ module flash_phy_core
   logic [DataWidth-1:0] rd_scrambled_data;
   logic [DataWidth-1:0] rd_descrambled_data;
 
+  // if host grant is encountered, transactions return in-band
+  // error until all transactions are flushed.
+  logic phy_rd_err;
+  assign rd_err_o = phy_rd_err |
+                    // After host_gnt_rd_err asserts, no more host requests
+                    // are granted until all transactions are flushed. This means
+                    // the last outstanding transaction is by definition the "error".
+                    (host_gnt_rd_err & host_req_done_o & host_outstanding == 1'b1) |
+                    // If ctrl_fsm_idle inexplicably goes low while there are host transactions
+                    // the transaction handling may be irreversibly broken.
+                    // The host_oustanding_rd_err makes a best effort attempt to cleanly
+                    // recover.  It responds with in-band error controller transactions until the
+                    // all pending transactions are flushed.
+                    (host_outstanding_rd_err & rd_done_o);
+
   flash_phy_rd u_rd (
     .clk_i,
     .rst_ni,
@@ -383,7 +449,7 @@ module flash_phy_core
     .info_sel_i(info_sel_i),
     .rdy_o(rd_stage_rdy),
     .data_valid_o(rd_stage_data_valid),
-    .data_err_o(rd_err_o),
+    .data_err_o(phy_rd_err),
     .data_o(rd_data_o),
     .idle_o(rd_stage_idle),
     .req_o(flash_rd_req),
