@@ -9,7 +9,6 @@ import collections
 import fnmatch
 import logging as log
 import os
-import shutil
 import subprocess
 import sys
 from collections import OrderedDict
@@ -26,26 +25,6 @@ from utils import VERBOSE, rm_path
 # This affects the bucketizer failure report.
 _MAX_UNIQUE_TESTS = 5
 _MAX_TEST_RESEEDS = 2
-
-
-def pick_wave_format(fmts):
-    '''Pick a supported wave format from a list.
-
-    fmts is a list of formats that the chosen tool supports. Return the first
-    that we think is possible (e.g. not fsdb if Verdi is not installed).
-
-    '''
-    assert fmts
-    fmt = fmts[0]
-    # TODO: This will not work if the EDA tools are expected to be launched
-    # in a separate sandboxed environment such as Docker /  LSF. In such case,
-    # Verdi may be installed in that environment, but it may not be visible in
-    # the current repo environment where dvsim is invoked.
-    if fmt == 'fsdb' and not shutil.which('verdi'):
-        log.log(VERBOSE, "Skipping fsdb since verdi is not found in $PATH")
-        return pick_wave_format(fmts[1:])
-
-    return fmt
 
 
 class SimCfg(FlowCfg):
@@ -225,26 +204,12 @@ class SimCfg(FlowCfg):
         since it is used as a substitution variable in the parsed HJson dict.
         If waves are not enabled, or if this is a primary cfg, then return
         'none'. 'tool', which must be set at this point, supports a limited
-        list of wave formats (supplied with 'supported_wave_formats' key). If
-        waves is set to 'default', then pick the first item on that list; else
-        pick the desired format.
+        list of wave formats (supplied with 'supported_wave_formats' key).
         '''
         if self.waves == 'none' or self.is_primary_cfg:
             return 'none'
 
         assert self.tool is not None
-
-        # If the user hasn't specified a wave format (No argument supplied
-        # to --waves), we need to decide on a format for them. The supported
-        # list of wave formats is set in the tool's HJson configuration using
-        # the `supported_wave_formats` key. If that list is not set, we use
-        # 'vpd' by default and hope for the best. It that list if set, then we
-        # pick the first available format for which the waveform viewer exists.
-        if self.waves == 'default':
-            if self.supported_wave_formats:
-                return pick_wave_format(self.supported_wave_formats)
-            else:
-                return 'vpd'
 
         # If the user has specified their preferred wave format, use it. As
         # a sanity check, error out if the chosen tool doesn't support the
@@ -722,8 +687,8 @@ class SimCfg(FlowCfg):
                 # convert name entry to relative link
                 row = cfg.results_summary
                 row["Name"] = cfg._get_results_page_link(
-                                self.results_dir,
-                                row["Name"])
+                    self.results_dir,
+                    row["Name"])
 
                 # If header is set, ensure its the same for all cfgs.
                 if header:

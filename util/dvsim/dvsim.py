@@ -543,13 +543,9 @@ def parse_args():
     waveg.add_argument(
         "--waves",
         "-w",
-        nargs="?",
-        choices=["default", "fsdb", "shm", "vpd", "vcd", "evcd", "fst"],
-        const="default",
-        help=("Enable dumping of waves. It takes an optional "
-              "argument to pick the desired wave format. If "
-              "the optional argument is not supplied, it picks "
-              "whatever is the default for the chosen tool. "
+        choices=["fsdb", "shm", "vpd", "vcd", "evcd", "fst"],
+        help=("Enable dumping of waves. It takes an "
+              "argument to pick the desired wave format."
               "By default, dumping waves is not enabled."))
 
     waveg.add_argument("--max-waves",
