@@ -13,12 +13,12 @@ As most distributions do not yet include OpenOCD 0.11 in its package repositorie
 The following steps build OpenOCD (this should be done outside the `$REPO_TOP` directory):
 
 ```console
-$ wget https://downloads.sourceforge.net/project/openocd/openocd/0.11.0/openocd-0.11.0.tar.bz2
-$ tar -xf openocd-0.11.0.tar.bz2
-$ cd openocd-0.11.0/
-$ mkdir build
-$ cd build
-$ ../configure --enable-ftdi --enable-verbose-jtag-io --disable-vsllink --enable-remote-bitbang --prefix=/tools/openocd
-$ make -j4
-$ sudo make install
+wget https://downloads.sourceforge.net/project/openocd/openocd/0.11.0/openocd-0.11.0.tar.bz2
+tar -xf openocd-0.11.0.tar.bz2
+cd openocd-0.11.0/
+mkdir build
+cd build
+../configure --enable-ftdi --enable-verbose-jtag-io --disable-vsllink --enable-remote-bitbang --prefix=/tools/openocd
+make -j4
+sudo make install
 ```

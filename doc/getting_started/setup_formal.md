@@ -16,7 +16,7 @@ Please refer to the [OpenTitan Assertions]({{< relref "hw/formal/doc" >}}) for i
 It is recommended to use the [fpvgen]({{< relref "util/fpvgen/doc" >}}) tool to automatically create an FPV testbench template.
 To run the FPV tests in `dvsim`, please add the target in `hw/top_earlgrey/formal/top_earlgrey_fpv_cfgs.hjson`, then run with command:
 ```console
-$ util/dvsim/dvsim.py hw/top_earlgrey/formal/top_earlgrey_fpv_cfgs.hjson --select-cfgs {target_name}
+util/dvsim/dvsim.py hw/top_earlgrey/formal/top_earlgrey_fpv_cfgs.hjson --select-cfgs {target_name}
 ```
 It is recommended to add the FPV target to [lint]({{< relref "hw/lint/doc" >}}) script `hw/top_earlgrey/lint/top_earlgrey_fpv_lint_cfgs.hjson` to quickly find typos.
 
@@ -26,5 +26,5 @@ The connectivity verification is mainly used for exhaustively verifying system-l
 User can specify the connection ports via a CSV format file in `hw/top_earlgrey/formal/conn_csvs` folder.
 User can trigger top_earlgrey's connectivity test using `dvsim`:
 ```
-  util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfgs.hjson
+util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfgs.hjson
 ```

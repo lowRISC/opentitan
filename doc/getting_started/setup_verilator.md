@@ -4,7 +4,7 @@ aliases:
     - /doc/ug/getting_started_verilator
 ---
 
-_Before following this guide, make sure you've followed the [dependency installation and software build instructions]({{< relref "getting_started" >}})._
+_Before following this guide, make sure you've followed the [dependency installation instructions]({{< relref "getting_started" >}})._
 
 ## About Verilator
 
@@ -32,6 +32,7 @@ CC=gcc-11 CXX=g++-11 ./configure --prefix=/tools/verilator/$VERILATOR_VERSION
 CC=gcc-11 CXX=g++-11 make
 CC=gcc-11 CXX=g++-11 make install
 ```
+The `make` step can take several minutes.
 
 After installation you need to add `/tools/verilator/$VERILATOR_VERSION/bin` to your `PATH` environment variable.
 Also add it to your `~/.bashrc` or equivalent so that it's on the `PATH` in the future, like this:
@@ -67,12 +68,12 @@ Moreover, Bazel automatically connects to the simulated UART (via `opentitantool
 For example, to run the UART smoke test on Verilator simulated hardware, and see the output in real time, use
 ```console
 cd $REPO_TOP
-bazel test --test_tag_filters=verilator --test_output=streamed //sw/device/tests:uart_smoketest
+bazel test --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
 ```
 or
 ```console
 cd $REPO_TOP
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
+bazel test --test_tag_filters=verilator --test_output=streamed //sw/device/tests:uart_smoketest
 ```
 
 You should expect to see something like:

@@ -272,10 +272,10 @@ To connect the JTAG chain to the CPU's TAP, adjust the strap values with opentit
 Assuming opentitantool has been built and that the current directory is the root of the workspace, run these commands:
 
 ```console
-$ ./bazel-bin/sw/host/opentitantool/opentitantool \
+./bazel-bin/sw/host/opentitantool/opentitantool \
         --interface cw310 \
         gpio write TAP_STRAP0 false
-$ ./bazel-bin/sw/host/opentitantool/opentitantool \
+./bazel-bin/sw/host/opentitantool/opentitantool \
         --interface cw310 \
         gpio write TAP_STRAP1 true
 ```
