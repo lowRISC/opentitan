@@ -47,8 +47,8 @@ wvalid_i   |          |      rvalid_o
 wdata_i    |   Flop   |      rdata_o
 =====/====>|   FIFO   |=======/=======>
   [InW]    |          |      [OutW]
-           |          |      depth_o    
-           |          |--------------->   
+           |          |      depth_o
+           |          |--------------->
 wready_o   |          |      rready_i
 <----------|          |<---------------
            |          |
@@ -64,4 +64,3 @@ module is in unpack mode.
 
 The internal register size is the greate of `InW` and `OutW` bits.
 Timing diagrams are shown in the header of the `prim_packer_fifo` module.
-
