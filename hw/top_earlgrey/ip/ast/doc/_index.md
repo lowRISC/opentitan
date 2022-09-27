@@ -963,7 +963,7 @@ synchronous to the adc controller.
 3.   Select an analog channel to measure by setting the corresponding
      bit in ‘adc\_chnsel\_i’ bus. This triggers a measurement.
 
-4.   Wait unitl ‘adc\_d\_val’ is set and read the result via
+4.   Wait until ‘adc\_d\_val’ is set and read the result via
      ‘adc\_d\_o’
 
 5.   Clear ‘adc\_chnsel\_i’ bus to 0. Note that adc\_chnsel must be

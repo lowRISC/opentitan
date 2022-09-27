@@ -40,7 +40,7 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [JTAG interface]()
 * SPI interface
 * UART interface
-* SW logger inteface (for test boot ROM as well as the test SW)
+* SW logger interface (for test boot ROM as well as the test SW)
 * SW test status monitor
 * Backdoor memory interfaces (for ROM, SRAM and the flask banks)
 * Individual control pins:
