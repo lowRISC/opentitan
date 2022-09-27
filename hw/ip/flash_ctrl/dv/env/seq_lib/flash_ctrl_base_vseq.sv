@@ -212,6 +212,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     if (flash_ctrl_pkg::InfoTypeSize[info_part] > 1) begin
       csr_name = $sformatf({csr_name, "_%0d"}, page);
     end
+    `uvm_info("mp_info_page_cfg", $sformatf("%s: %p", csr_name, page_cfg), UVM_DEBUG)
     csr = ral.get_reg_by_name(csr_name);
     data = get_csr_val_with_updated_field(csr.get_field_by_name("en"), data, page_cfg.en);
     data = data |
@@ -1301,7 +1302,16 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   // This function checks wheter input 'sig' is lc_ctrl_pkg::On or lc_ctrl_pkg::Off
   function bit is_lc_ctrl_valid(lc_ctrl_pkg::lc_tx_t sig, bit is_true_valid = 1);
-    return (sig == (is_true_valid)? lc_ctrl_pkg::On : lc_ctrl_pkg::Off);
+
+    return ((sig == lc_ctrl_pkg::On && is_true_valid == 1) ||
+            (sig == lc_ctrl_pkg::Off && is_true_valid == 0));
   endfunction // is_lc_ctrl_valid
+
+  function void all_sw_rw_en();
+    cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
+  endfunction // all_sw_rw_en
 
 endclass : flash_ctrl_base_vseq

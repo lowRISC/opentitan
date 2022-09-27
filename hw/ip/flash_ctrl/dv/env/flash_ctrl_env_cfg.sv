@@ -851,15 +851,22 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   endfunction
 
   // Corrupt integrity check value only
-  function void flash_icv_flip(mem_bkdr_util _h, addr_t addr,
-                               flash_otf_item exp_item);
+  function void flash_icv_flip(mem_bkdr_util _h, addr_t addr, flash_dv_part_e part,
+                               bit bank, flash_otf_item exp_item);
     flash_otf_item item;
 
     `uvm_create_obj(flash_otf_item, item)
     item.dq.push_back($urandom());
     item.dq.push_back($urandom());
-    item.region = exp_item.region;
-    item.scramble(exp_item.addr_key, exp_item.data_key, addr, 0, 1);
+    if (part == FlashPartData) begin
+      addr_t full_addr = addr;
+      full_addr[OTFBankId] = bank;
+      item.region = get_region(addr2page(full_addr));
+    end else begin
+      item.region =
+                   get_region_from_info(mp_info[bank][part>>1][addr2page(addr)]);
+    end
+    item.scramble(exp_item.addr_key, exp_item.data_key, addr, 1, 1);
     _h.write(addr, item.fq[0]);
     item.clear_qs();
   endfunction
@@ -929,7 +936,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                 `uvm_info(name,
                           $sformatf("icv error [%s][%0d] is inserted at line:%0d rd_entry:%p",
                                     partition.name, bank, i, rd_entry), UVM_MEDIUM)
-                flash_icv_flip(mem_bkdr_util_h[partition][bank], aligned_addr, item);
+                flash_icv_flip(mem_bkdr_util_h[partition][bank],
+                               aligned_addr, partition, bank, item);
               end
             end
             10-ierr_pct: begin
@@ -1003,7 +1011,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
                 `uvm_info(name,
                           $sformatf("last:icv error[%s][%0d] is inserted at line:%0d rd_entry:%p",
                                     partition.name, bank, size, rd_entry), UVM_MEDIUM)
-                flash_icv_flip(mem_bkdr_util_h[partition][bank], aligned_addr, item);
+                flash_icv_flip(mem_bkdr_util_h[partition][bank],
+                               aligned_addr, partition, bank, item);
               end
             end
             10-ierr_pct: begin

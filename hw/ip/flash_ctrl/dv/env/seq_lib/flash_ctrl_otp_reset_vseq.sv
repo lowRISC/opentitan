@@ -32,7 +32,7 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
                 } reset_index_e;
 
   task body();
-    int state_wait_timeout_ns = 10000; // 10 us
+    int state_wait_timeout_ns = 50000; // 50 us
     int long_wait_timeout_ns = 5000000; // 5ms
     int wait_time;
     string path;
@@ -110,7 +110,8 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
                 end
                 2'b11: begin
                   if (reset_index == DVWaitDataKey) begin
-                    cfg.flash_ctrl_vif.lc_seed_hw_rd_en = lc_ctrl_pkg::Off;
+                    cfg.flash_ctrl_vif.lc_seed_hw_rd_en =
+                      get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(4));
                   end
                 end
                 default: begin
