@@ -7,6 +7,18 @@ class kmac_lc_escalation_vseq extends kmac_app_vseq;
   `uvm_object_utils(kmac_lc_escalation_vseq)
   `uvm_object_new
 
+  virtual function void disable_asserts();
+    $assertoff(0,
+      "tb.dut.gen_entropy.u_prim_sync_reqack_data.u_prim_sync_reqack.SyncReqAckAckNeedsReq");
+    $assertoff(0, "tb.edn_if[0].ReqHighUntilAck_A");
+    $assertoff(0, "tb.edn_if[0].AckAssertedOnlyWhenReqAsserted_A");
+  endfunction
+
+  virtual task pre_start();
+    super.pre_start();
+    if (cfg.enable_masking) disable_asserts();
+  endtask
+
   virtual task body();
     fork begin : isolation_fork
       fork
@@ -14,7 +26,13 @@ class kmac_lc_escalation_vseq extends kmac_app_vseq;
           super.body();
         end
         begin
-          cfg.clk_rst_vif.wait_clks($urandom_range(1, 500_000));
+          if ($urandom_range(0, 4) == 4) begin
+            cfg.clk_rst_vif.wait_clks($urandom_range(1, 100_000));
+          end else begin
+            `DV_SPINWAIT_EXIT(wait(cfg.kmac_vif.idle_o != prim_mubi_pkg::MuBi4True);,
+                              cfg.clk_rst_vif.wait_clks(10_000_000););
+            cfg.clk_rst_vif.wait_clks($urandom_range(0, 200));
+          end
           cfg.kmac_vif.drive_lc_escalate(
               get_rand_lc_tx_val(.t_weight(1), .f_weight(0), .other_weight(1)));
           cfg.en_scb = 0;
