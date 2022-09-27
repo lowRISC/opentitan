@@ -180,6 +180,8 @@ cc_library(
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/silicon_creator/lib/base:chip",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
 
