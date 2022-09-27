@@ -312,10 +312,7 @@ module prim_lfsr #(
   logic [LfsrDw-1:0] next_lfsr_state, coeffs;
 
   // Enable the randomization of DefaultSeed using DefaultSeedLocal in DV simulations.
-  `ifdef SYNTHESIS
-    localparam logic [LfsrDw-1:0] DefaultSeedLocal = DefaultSeed;
-
-  `elsif VERILATOR
+  `ifndef SIMULATION
     localparam logic [LfsrDw-1:0] DefaultSeedLocal = DefaultSeed;
 
   `else
