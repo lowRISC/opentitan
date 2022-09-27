@@ -5,12 +5,13 @@ title: "Device Interface Functions (DIFs)"
 ## Motivation
 
 Every hardware peripheral needs some form of higher-level software to actuate it to perform its intended function.
-Device Interface Functions (DIFs) aim to make it easy to use hardware for its intended purposes while making it difficult, or impossible, to misuse.
-DIFs can be seen as a living best-practices document for interacting with a given piece of hardware.
+Device Interface Functions (DIFs) aim to make it easy to use hardware for its intended purposes.
+DIFs can be seen as a working code reference for interacting with a given piece of hardware.
 
 ## Objectives
 
-DIFs provide extensively reviewed APIs for actuating hardware for three separate use cases: design verification, FPGA + post-silicon validation, and providing example code to aid the implementation of reference firmware including end-consumer applications.
+DIFs provide extensively reviewed APIs for actuating hardware for three separate use cases: design verification, FPGA + post-silicon validation, and providing example code to aid the implementation of non-production firmware.
+DIFs may be illustrative for writing device drivers but should not be considered drivers themselves.
 
 ## Requirements
 
