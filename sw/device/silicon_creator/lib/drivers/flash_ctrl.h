@@ -146,14 +146,14 @@ typedef enum flash_ctrl_info_page {
  * ```
  */
 enum {
-  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 12,
+  kFlashCtrlSecMmioCreatorInfoPagesLockdown = 14,
   kFlashCtrlSecMmioDataDefaultCfgSet = 1,
   kFlashCtrlSecMmioDataDefaultPermsSet = 1,
   kFlashCtrlSecMmioExecSet = 1,
   kFlashCtrlSecMmioInfoCfgSet = 1,
   kFlashCtrlSecMmioInfoPermsSet = 1,
   kFlashCtrlSecMmioBankErasePermsSet = 1,
-  kFlashCtrlSecMmioInit = 5,
+  kFlashCtrlSecMmioInit = 3,
 };
 
 
