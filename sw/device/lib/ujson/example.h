@@ -80,6 +80,20 @@ UJSON_SERDE_STRUCT(Matrix, matrix, STRUCT_MATRIX);
     value(_, West)
 UJSON_SERDE_ENUM(Direction, direction, ENUM_DIRECTION);
 
+/////////////////////////////////////////////////////////////////////////////
+// Automatic generation of C enums corresponding to rust `with_unknown!` enums
+//
+// The following creates an `enum FuzzyBool`:
+// typedef enum FuzzyBool {
+//     kFuzzyBoolFalse = 0,
+//     FuzzyBoolTrue = 100,
+// } fuzzy_bool;
+// status_t ujson_serialize_fuzzy_bool(ujson_t *context, const fuzzy_bool *self);
+// status_t ujson_deserialize_fuzzy_bool(ujson_t *context, fuzzy_bool *self);
+#define ENUM_FUZZY_BOOL(_, value) \
+    value(_, False, 0) \
+    value(_, True, 100)
+C_ONLY(UJSON_SERDE_ENUM(FuzzyBool, fuzzy_bool, ENUM_FUZZY_BOOL, WITH_UNKNOWN));
 
 /////////////////////////////////////////////////////////////////////////////
 // Other miscellaneous supported types: bool and status_t
