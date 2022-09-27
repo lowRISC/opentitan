@@ -210,27 +210,31 @@ module flash_phy_core
   end
   `ASSERT(RdTxnCheck_A, host_outstanding <= RspOrderDepth)
 
-  // a host transaction granted in the previous cycle
-  logic host_gnt_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      host_gnt_q <= '0;
-    end else begin
-      host_gnt_q <= host_gnt;
-    end
-  end
-
   // SEC_CM: PHY_HOST_GRANT.CTRL.CONSISTENCY
   // two error conditions
   // 1. a host transaction was granted to the muxed partition, this is illegal
-  // 2. a host transaction was granted last cycle but somehow controller
-  //    operations have been kicked off, this is illegal
+  // 2. there are outstanding host transactions yet controller operations have also
+  //    started
+  logic host_gnt_err_event;
+  assign host_gnt_err_event = (host_gnt && muxed_part != flash_ctrl_pkg::FlashPartData) ||
+                              (|host_outstanding && !ctrl_fsm_idle);
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       host_gnt_err_o <= '0;
-    end else if ((host_gnt && muxed_part != flash_ctrl_pkg::FlashPartData) ||
-                 (host_gnt_q && !ctrl_fsm_idle)) begin
+    end else if (host_gnt_err_event) begin
       host_gnt_err_o <= 1'b1;
+    end
+  end
+
+  // when host grant errors occur, also create in band error responses
+  logic host_gnt_rd_err;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      host_gnt_rd_err <= '0;
+    end else if (host_outstanding == '0 && ctrl_fsm_idle) begin
+      host_gnt_rd_err <= '0;
+    end else if (host_gnt_err_event) begin
+      host_gnt_rd_err <= 1'b1;
     end
   end
 
@@ -366,6 +370,11 @@ module flash_phy_core
   logic [DataWidth-1:0] rd_scrambled_data;
   logic [DataWidth-1:0] rd_descrambled_data;
 
+  // if host grant is encountered, transactions return in-band
+  // error until all transactions are flushed.
+  logic phy_rd_err;
+  assign rd_err_o = phy_rd_err | host_gnt_rd_err;
+
   flash_phy_rd u_rd (
     .clk_i,
     .rst_ni,
@@ -383,7 +392,7 @@ module flash_phy_core
     .info_sel_i(info_sel_i),
     .rdy_o(rd_stage_rdy),
     .data_valid_o(rd_stage_data_valid),
-    .data_err_o(rd_err_o),
+    .data_err_o(phy_rd_err),
     .data_o(rd_data_o),
     .idle_o(rd_stage_idle),
     .req_o(flash_rd_req),
