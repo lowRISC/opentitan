@@ -389,6 +389,7 @@ module spi_device
 
   // Split TPM CSB into explicit reset and data.
   logic rst_tpm_csb_buf, sys_tpm_csb_buf, sck_tpm_csb_buf;
+  logic sys_tpm_csb_syncd; // synchronized prior to be connected to reg
   prim_buf #(
     .Width (3)
   ) u_tpm_csb_buf (
@@ -438,7 +439,8 @@ module spi_device
   assign hw2reg.status.txf_empty.d = txf_empty_syncd;
 
   // CSb : after 2stage synchronizer
-  assign hw2reg.status.csb.d = sys_csb_syncd;
+  assign hw2reg.status.csb.d     = sys_csb_syncd;
+  assign hw2reg.status.tpm_csb.d = sys_tpm_csb_syncd;
 
   logic rxf_full_q, txf_empty_q;
   always_ff @(posedge clk_spi_in_buf or negedge rst_ni) begin
@@ -1026,6 +1028,18 @@ module spi_device
     // posedge(deassertion) cannot be detected as clock could be absent.
     .q_posedge_pulse_o (                      ),
     .q_negedge_pulse_o (sck_csb_asserted_pulse)
+  );
+
+  // TPM CSb 2FF sync to SYS_CLK
+  prim_flop_2sync #(
+    .Width      (1    ),
+    .ResetValue (1'b 1)
+  ) u_sys_tpm_csb_sync (
+    .clk_i,
+    .rst_ni,
+
+    .d_i (sys_tpm_csb_buf),
+    .q_o (sys_tpm_csb_syncd)
   );
 
   ///////////////////////////////////////////////////////////////////////////
