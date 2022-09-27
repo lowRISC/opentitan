@@ -32,7 +32,7 @@ class flash_ctrl_connect_vseq extends flash_ctrl_base_vseq;
     mystr = {flash_path, ".tdo_o"};
     `DV_CHECK(uvm_hdl_force(mystr, jtag_src_rsp.tdo))
     // tdo_oe : dut.eflash
-
+    $assertoff(0, "prim_lc_sync");
     lc_nvm_debug_en = $urandom_range(0, 1);
     cfg.flash_ctrl_vif.lc_nvm_debug_en = (lc_nvm_debug_en)?
       lc_ctrl_pkg::On : get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(4));

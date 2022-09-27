@@ -123,11 +123,15 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
   virtual task pre_start();
     bit csr_test_mode = 0;
+    string run_seq_name = "";
     // Erased page doesn't go through descramble.
     // To maintain high stress rate,
     // keep flash_init to FlashMemInitRandomize
+
     void'($value$plusargs("csr_test_mode=%0b", csr_test_mode));
-    if (csr_test_mode) begin
+    void'($value$plusargs("run_%0s", run_seq_name));
+    if (csr_test_mode == 1 ||
+        run_seq_name inside{"tl_intg_err"}) begin
       super.pre_start();
     end else begin
       flash_init_c.constraint_mode(0);
