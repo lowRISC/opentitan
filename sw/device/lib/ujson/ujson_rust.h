@@ -107,4 +107,6 @@ use opentitanlib::test_utils::status::status_t;
 #define UJSON_SERDE_ENUM(formal_name_, name_, decl_, ...) \
   UJSON_DECLARE_ENUM(formal_name_, name_, decl_, ##__VA_ARGS__)
 
+#define C_ONLY(x) const _ : () = {/* eat a semicolon */}
+#define RUST_ONLY(x) x
 #endif  // OPENTITAN_SW_DEVICE_LIB_UJSON_UJSON_RUST_H_
