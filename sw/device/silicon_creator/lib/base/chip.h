@@ -37,4 +37,10 @@
 #define CHIP_BL0_SIZE_MIN CHIP_MANIFEST_SIZE
 #define CHIP_BL0_SIZE_MAX 0x70000
 
+/**
+ * Value written to the end of the retention SRAM creator area by `test_rom` to
+ * be able to determine the type of ROM in tests (ASCII "TEST").
+ */
+#define TEST_ROM_IDENTIFIER 0x54534554
+
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_CHIP_H_
