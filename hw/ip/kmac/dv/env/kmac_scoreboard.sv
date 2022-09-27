@@ -315,7 +315,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
               app_mode = AppKeymgr;
               strength = sha3_pkg::L256;
-              incr_and_predict_hash_cnt();
+              if (entropy_ready) incr_and_predict_hash_cnt();
             end else if (`KMAC_APP_VALID_TRANS(AppLc)) begin
               app_mode = AppLc;
               strength = sha3_pkg::L128;
@@ -531,6 +531,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(
             @(posedge in_kmac_app);
             `uvm_info(`gfn, $sformatf("rsp app_mode: %0s", app_mode.name()), UVM_HIGH)
             `DV_SPINWAIT_EXIT(
+                bit app_intf_err = 0;
                 kmac_app_rsp_fifo[app_mode].get(kmac_app_rsp);
                 `uvm_info(`gfn,
                           $sformatf("Detected a KMAC_APP response:\n%0s",
@@ -554,13 +555,24 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 `DV_CHECK_FATAL(in_kmac_app == 1,
                     "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
 
-                // TODO error checks
+                // Check app interface errors.
+                if (app_mode == AppKeymgr && cfg.enable_masking && !entropy_ready) begin
+                  app_intf_err = 1;
+                  `DV_CHECK_FATAL(kmac_app_rsp.rsp_digest_share0 == 0,
+                    "APP interface error, expect output to be all 0s")
+                  `DV_CHECK_FATAL(kmac_app_rsp.rsp_digest_share1 == 0,
+                    "APP interface error, expect output to be all 0s")
+                end else begin
 
-                // assign digest values
-                kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
-                kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
+                  // assign digest values
+                  kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
+                  kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
 
-                if (do_check_digest) check_digest();
+                  if (do_check_digest) check_digest();
+                end
+
+                `DV_CHECK_FATAL(kmac_app_rsp.rsp_error == app_intf_err)
+
 
                 in_kmac_app = 0;
                 sha3_squeeze = 0;
