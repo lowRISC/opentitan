@@ -29,14 +29,18 @@ class flash_ctrl_rw_vseq extends flash_ctrl_otf_base_vseq;
         end
       end
       begin
-        for (int i = 0; i < cfg.otf_num_hr; ++i) begin
-          fork
-            send_rand_host_rd();
-          join_none
-          #0;
-        end
-        csr_utils_pkg::wait_no_outstanding_access();
+        launch_host_rd();
       end
     join
+  endtask
+
+  virtual task launch_host_rd();
+    for (int i = 0; i < cfg.otf_num_hr; ++i) begin
+      fork
+        send_rand_host_rd();
+      join_none
+      #0;
+    end
+    csr_utils_pkg::wait_no_outstanding_access();
   endtask
 endclass // flash_ctrl_rw_vseq

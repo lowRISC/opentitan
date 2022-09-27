@@ -115,6 +115,11 @@ module tb;
                tb.dut.u_eflash.gen_flash_cores[1].u_core.gen_prog_data.u_prog.state_q;
   assign flash_ctrl_if.lcmgr_state = tb.dut.u_flash_hw_if.state_q;
   assign flash_ctrl_if.init = tb.dut.u_flash_hw_if.init_i;
+  assign flash_ctrl_if.host_gnt = tb.dut.u_eflash.gen_flash_cores[0].u_core.host_gnt;
+  assign flash_ctrl_if.ctrl_fsm_idle = tb.dut.u_eflash.gen_flash_cores[0].u_core.ctrl_fsm_idle;
+  assign flash_ctrl_if.host_outstanding =
+               tb.dut.u_eflash.gen_flash_cores[0].u_core.host_outstanding[1:0];
+
 
   wire flash_test_v;
   assign (pull1, pull0) flash_test_v = 1'b1;

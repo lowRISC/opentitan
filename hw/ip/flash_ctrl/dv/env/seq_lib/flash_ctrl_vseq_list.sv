@@ -54,3 +54,7 @@
 `include "flash_ctrl_filesystem_support_vseq.sv"
 `include "flash_ctrl_stress_all_vseq.sv"
 `include "flash_ctrl_access_after_disable_vseq.sv"
+`include "flash_ctrl_err_base_vseq.sv"
+`include "flash_ctrl_phy_arb_redun_vseq.sv"
+`include "flash_ctrl_phy_host_grant_err_vseq.sv"
+`include "flash_ctrl_phy_ack_consistency_vseq.sv"
