@@ -34,6 +34,32 @@ rust_bindgen_library(
     ],
 )
 
+rust_bindgen_library(
+    name = "bindgen_earlgrey",
+    bindgen_flags = [
+        "--allowlist-type=top_earlgrey_alert_peripheral",
+        "--allowlist-type=top_earlgrey_alert_id",
+        "--allowlist-type=top_earlgrey_pinmux_peripheral_in",
+        "--allowlist-type=top_earlgrey_pinmux_insel",
+        "--allowlist-type=top_earlgrey_pinmux_mio_out",
+        "--allowlist-type=top_earlgrey_pinmux_outsel",
+        "--allowlist-type=top_earlgrey_direct_pads",
+        "--allowlist-type=top_earlgrey_muxed_pads",
+        "--allowlist-type=top_earlgrey_power_manager_wake_ups",
+        "--allowlist-type=top_earlgrey_reset_manager_sw_resets",
+        "--allowlist-type=top_earlgrey_power_manager_reset_requests",
+        "--allowlist-type=top_earlgrey_gateable_clocks",
+        "--allowlist-type=top_earlgrey_hintable_clocks",
+    ],
+    cc_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+    header = "//hw/top_earlgrey/sw/autogen:top_earlgrey.h",
+    rustc_flags = [
+        "--allow=non_snake_case",
+        "--allow=non_upper_case_globals",
+        "--allow=non_camel_case_types",
+    ],
+)
+
 rust_library(
     name = "opentitanlib",
     srcs = [
@@ -54,6 +80,7 @@ rust_library(
         "src/bootstrap/primitive.rs",
         "src/bootstrap/rescue.rs",
         "src/chip/alert.rs",
+        "src/chip/earlgrey.rs",
         "src/chip/mod.rs",
         "src/crypto/mod.rs",
         "src/crypto/rsa.rs",
@@ -122,8 +149,8 @@ rust_library(
         "src/transport/ultradebug/mpsse.rs",
         "src/transport/ultradebug/spi.rs",
         "src/transport/ultradebug/uart.rs",
-        "src/transport/verilator/mod.rs",
         "src/transport/verilator/gpio.rs",
+        "src/transport/verilator/mod.rs",
         "src/transport/verilator/stdout.rs",
         "src/transport/verilator/subprocess.rs",
         "src/transport/verilator/transport.rs",
@@ -155,6 +182,7 @@ rust_library(
     },
     deps = [
         ":bindgen_alert",
+        ":bindgen_earlgrey",
         "//third_party/rust/crates:anyhow",
         "//third_party/rust/crates:bitflags",
         "//third_party/rust/crates:bitvec",

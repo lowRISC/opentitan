@@ -40,3 +40,13 @@ cc_library(
         "//sw/device/lib/testing/test_framework:check",
     ],
 )
+
+cc_library(
+    name = "pinmux",
+    srcs = ["pinmux.c"],
+    hdrs = ["pinmux.h"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/ujson",
+    ],
+)
