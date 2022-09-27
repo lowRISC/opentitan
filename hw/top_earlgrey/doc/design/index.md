@@ -170,7 +170,7 @@ See the [UART specification]({{< relref "hw/ip/uart/doc" >}}) for more details o
 
 ##### GPIO
 
-The chip contains one GPIO peripheral that creates 32 bits of bidrectional communication with the outside world via the pinmux.
+The chip contains one GPIO peripheral that creates 32 bits of bidirectional communication with the outside world via the pinmux.
 Via pinmux any of the 32 pins of GPIO can be connected to any of the 32 MIO chip pins, in any direction.
 See the [GPIO specification]({{< relref "hw/ip/gpio/doc" >}}) for more details on this peripheral.
 See the [pinmux specification]({{< relref "hw/ip/pinmux/doc" >}}) for how to connect peripheral IO to chip IO.

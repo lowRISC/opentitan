@@ -44,12 +44,12 @@ Modify `xbar_main.hjson` for the host / device connectivity
 
 Main configuration for Top Earlgrey is in `data/top_earlgrey.hjson`. The users
 need to specify the list of peripherals, memories, crossbars, and the interrupts
-in the configuration file. The tool then reads relavant information from the
+in the configuration file. The tool then reads relevant information from the
 each peripheral blocks' configuration. For instance, if `uart` module is used,
 the tool reads `hw/ip/uart/data/uart{_reg}.hjson` and parses the information such
 as input/output, the size of its register space, and interrupts.
 
-For the memories, the tool utilizes the `type` and instantiates relavant modules
+For the memories, the tool utilizes the `type` and instantiates relevant modules
 including the converter from TL-UL interface to the native interfaces (SRAM,
 ROM, eFlash). The user only needs to describe the base address and the memory
 size.

@@ -9,7 +9,7 @@ title: "OpenTitan Earl Grey Chip Datasheet"
 The OpenTitan Earl Grey chip is a low-power secure microcontroller that is designed for several use cases requiring hardware security.
 The block diagram is shown above and shows the system configuration, including the Ibex processor and all of the memories and comportable IPs.
 
-As can be seen in the blockdiagram, the system is split into a fast processor core domain that runs on a 100MHz jittery clock, and a peripheral domain that runs at 24MHz.
+As can be seen in the block diagram, the system is split into a fast processor core domain that runs on a 100MHz jittery clock, and a peripheral domain that runs at 24MHz.
 Further, a portion of the peripheral domain, the analog sensor top and the padring can stay always-on.
 The rest of the system can be shut off as part of the sleep mode.
 
