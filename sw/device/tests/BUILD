@@ -46,11 +46,6 @@ opentitan_functest(
 opentitan_functest(
     name = "aes_sideload_test",
     srcs = ["aes_sideload_test.c"],
-    targets = [
-        "cw310_test_rom",
-        "verilator",
-        "dv",
-    ],
     verilator = verilator_params(
         timeout = "long",
     ),
