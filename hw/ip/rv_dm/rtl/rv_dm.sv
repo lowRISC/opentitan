@@ -369,7 +369,9 @@ module rv_dm
     .Outstanding(1),
     .ByteAccess(1),
     .CmdIntgCheck(1),
-    .EnableRspIntgGen(1)
+    .EnableRspIntgGen(1),
+    // This is a ROM region, hence write requests are not expected.
+    .ErrOnWrite(1)
   ) tl_adapter_device_mem (
     .clk_i,
     .rst_ni,
