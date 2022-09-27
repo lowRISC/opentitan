@@ -50,7 +50,12 @@ impl Subprocess {
         args.extend_from_slice(&options.extra_args);
         command.args(&args[..]);
 
-        log::info!("Spawning verilator: {:?} {:?}", options.executable, args);
+        log::info!("CWD: {:?}", std::env::current_dir());
+        log::info!(
+            "Spawning verilator: {:?} {:?}",
+            options.executable,
+            args.join(" ")
+        );
 
         let mut child = command
             .stdin(Stdio::null())
