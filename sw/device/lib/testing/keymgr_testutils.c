@@ -16,6 +16,8 @@
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -86,6 +88,13 @@ void keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
       mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
   info = rstmgr_testutils_reason_get();
 
+  // Check the last word of the retention SRAM creator area to determine the
+  // type of the ROM.
+  bool is_using_test_rom =
+      retention_sram_get()
+          ->reserved_creator[ARRAYSIZE((retention_sram_t){0}.reserved_creator) -
+                             1] == TEST_ROM_IDENTIFIER;
+
   // POR reset.
   if (info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Powered up for the first time, program flash");
@@ -130,7 +139,14 @@ void keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     LOG_INFO("Keymgr entered Init State");
 
     // Advance to CreatorRootKey state.
-    keymgr_testutils_advance_state(keymgr, &kCreatorParams);
+    if (is_using_test_rom) {
+      LOG_INFO("Using test_rom, setting inputs and advancing state...");
+      keymgr_testutils_advance_state(keymgr, &kCreatorParams);
+    } else {
+      LOG_INFO("Using rom, only advancing state...");
+      CHECK_DIF_OK(dif_keymgr_advance_state_raw(keymgr));
+      keymgr_testutils_wait_for_operation_done(keymgr);
+    }
     keymgr_testutils_check_state(keymgr, kDifKeymgrStateCreatorRootKey);
     LOG_INFO("Keymgr entered CreatorRootKey State");
   }
