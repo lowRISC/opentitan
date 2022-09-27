@@ -29,10 +29,10 @@ class edn_alert_vseq extends edn_base_vseq;
     cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.add_h_user_data({fips, genbits});
 
     // Send INS cmd
-    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(0), .flags(1), .glen(0));
+    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(0), .flags(MuBi4True), .glen(0));
 
     // Send GEN cmd w/ GLEN 1 (request single genbits)
-    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(1), .glen(1));
+    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4True), .glen(1));
     // Load constant genbits data
     cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.add_h_user_data({fips, genbits});
     // Request data
@@ -54,7 +54,7 @@ class edn_alert_vseq extends edn_base_vseq;
     m_endpoint_pull_seq.start(p_sequencer.endpoint_sequencer_h[endpoint_port]);
 
     // Send GEN cmd w/ GLEN 1 (request single genbits)
-    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(1), .glen(1));
+    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4True), .glen(1));
 
     // Load constant genbits data
     cfg.m_csrng_agent_cfg.m_genbits_push_agent_cfg.add_h_user_data({fips, genbits});

@@ -17,7 +17,7 @@ class edn_smoke_vseq extends edn_base_vseq;
         create("m_endpoint_pull_seq[0]");
 
     // Send instantiate cmd
-    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(0), .flags(0), .glen(0));
+    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::INS), .clen(0), .flags(MuBi4False), .glen(0));
 
     // Request data
     m_endpoint_pull_seq[0] = push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)::type_id::
@@ -28,7 +28,7 @@ class edn_smoke_vseq extends edn_base_vseq;
     join_none
 
     // Send generate cmd
-    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(0), .glen(1));
+    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False), .glen(1));
   endtask
 
 endclass
