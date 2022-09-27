@@ -312,6 +312,25 @@ dif_result_t dif_keymgr_advance_state(const dif_keymgr_t *keymgr,
   return kDifOk;
 }
 
+dif_result_t dif_keymgr_advance_state_raw(const dif_keymgr_t *keymgr) {
+  if (keymgr == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!is_ready(keymgr)) {
+    return kDifLocked;
+  }
+
+  // Advance state.
+  start_operation(keymgr,
+                  (start_operation_params_t){
+                      .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+                      .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_ADVANCE,
+                  });
+
+  return kDifOk;
+}
+
 dif_result_t dif_keymgr_disable(const dif_keymgr_t *keymgr) {
   if (keymgr == NULL) {
     return kDifBadArg;
