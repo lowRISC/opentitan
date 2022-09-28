@@ -336,9 +336,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
     uint byte_cnt = 0;
     uint SPI_FLASH_PAGE_SIZE = 256;
 
-    // Set CSB inactive times to reasonable values.
-    cfg.m_spi_agent_cfg.min_idle_ns_after_csb_drop = 20;
-    cfg.m_spi_agent_cfg.max_idle_ns_after_csb_drop = 100;
+    // Set CSB inactive times to reasonable values. sys_clk is at 24 MHz, and
+    // it needs to capture CSB pulses.
+    cfg.m_spi_agent_cfg.min_idle_ns_after_csb_drop = 50;
+    cfg.m_spi_agent_cfg.max_idle_ns_after_csb_drop = 200;
 
     // Configure the spi_agent for flash mode and add command info.
     spi_host_agent_configure_flash_cmds();
