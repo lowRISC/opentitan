@@ -18,7 +18,7 @@
   fusesoc_core: lowrisc:dv:chip_sim:0.1
 
   // Testplan hjson file, excluding the connectivity tests.
-  testplan: "{proj_root}/hw/top_earlgrey/data/chip_testplan.hjson:-conn"
+  testplan: "{proj_root}/hw/top_earlgrey/data/chip_testplan.hjson:-conn:-no_dv"
 
   // RAL spec - used to generate the RAL model.
   ral_spec: "{proj_root}/hw/top_earlgrey/data/top_earlgrey.hjson"
