@@ -46,6 +46,9 @@ waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_earlgrey.sv} -regexp {.
 waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div4_secure' is connected to 'pwrmgr' port 'clk_esc_i', and used as a clock 'clk_i' at tlul_socket_1n.sv} \
       -comment "The tool for reasons unknown is unable to trace through a prim buf wrap cell to understand the clock is being used as a clock. If a direct assign is used, the error goes away."
 
+waive -rules CLOCK_USE -location {top_earlgrey.sv} -regexp {'clkmgr_aon_clocks.clk_io_div4_powerup' is connected to 'pwrmgr' port 'clk_lc_i', and used as a clock 'clk_i' at tlul_socket_1n.sv} \
+      -comment "The tool for reasons unknown is unable to trace through a prim buf wrap cell to understand the clock is being used as a clock. If a direct assign is used, the error goes away."
+
 # Most SAME_NAME_TYPE issues have been fixed. There are however some that overlap due to similar terminology.
 # Since these functions / parameters / signals live in different scopes, this is acceptable, and we can waive them.
 waive -rules SAME_NAME_TYPE -location {aes_sbox_canright_pkg.sv} -msg {'theta' is used as a reg here, and as a function at} \

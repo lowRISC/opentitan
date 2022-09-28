@@ -21,6 +21,8 @@ module pwrmgr
   input rst_main_ni,
   input clk_lc_i,
   input rst_lc_ni,
+  input clk_esc_i,
+  input rst_esc_ni,
 
   // Bus Interface
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -90,18 +92,23 @@ module pwrmgr
 
   logic clk_lc;
   logic rst_lc_n;
+  assign clk_lc = clk_lc_i;
+  assign rst_lc_n = rst_lc_ni;
+
+  logic clk_esc;
+  logic rst_esc_n;
   prim_clock_buf #(
     .NoFpgaBuf(1'b1)
   ) u_esc_clk_buf (
-    .clk_i(clk_lc_i),
-    .clk_o(clk_lc)
+    .clk_i(clk_esc_i),
+    .clk_o(clk_esc)
   );
 
   prim_clock_buf #(
     .NoFpgaBuf(1'b1)
   ) u_esc_rst_buf (
-    .clk_i(rst_lc_ni),
-    .clk_o(rst_lc_n)
+    .clk_i(rst_esc_ni),
+    .clk_o(rst_esc_n)
   );
 
   logic esc_rst_req_d, esc_rst_req_q;
@@ -109,8 +116,8 @@ module pwrmgr
     .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
     .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
   ) u_esc_rx (
-    .clk_i(clk_lc),
-    .rst_ni(rst_lc_n),
+    .clk_i(clk_esc),
+    .rst_ni(rst_esc_n),
     .esc_req_o(esc_rst_req_d),
     .esc_rx_o(esc_rst_rx_o),
     .esc_tx_i(esc_rst_tx_i)
@@ -136,8 +143,8 @@ module pwrmgr
   prim_clock_timeout #(
     .TimeOutCnt(EscTimeOutCnt)
   ) u_esc_timeout (
-    .clk_chk_i(clk_lc),
-    .rst_chk_ni(rst_lc_n),
+    .clk_chk_i(clk_esc),
+    .rst_chk_ni(rst_esc_n),
     .clk_i,
     .rst_ni,
     // if any ip clock enable is turned on, then the escalation

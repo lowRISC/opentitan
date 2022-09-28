@@ -59,6 +59,8 @@ module pwrmgr_bind;
     .rst_ni,
     .clk_lc_i,
     .rst_lc_ni,
+    .clk_esc_i,
+    .rst_esc_ni,
     .clk_slow_i,
     .rst_slow_ni,
     .rst_main_ni,
