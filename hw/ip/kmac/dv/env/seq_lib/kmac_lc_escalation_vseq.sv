@@ -61,6 +61,7 @@ class kmac_lc_escalation_vseq extends kmac_app_vseq;
       kmac_sw_lock_check();
 
       // TODO: Add checking for kmac app request.
+      kmac_app_lock_check();
     end
   endtask
 

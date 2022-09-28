@@ -970,6 +970,7 @@ class kmac_base_vseq extends cip_base_vseq #(
           send_kmac_app_req(kmac_app_mode);
           wait (cfg.under_reset);
         join_any
+        p_sequencer.kmac_app_sequencer_h[kmac_app_mode].stop_sequences();
         disable fork;
         `DV_CHECK_EQ_FATAL(cfg.under_reset, 1,
             $sformatf("App interface %0s should not response during fatal error", mode.name))
