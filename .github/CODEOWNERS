@@ -24,8 +24,6 @@
 
 # Bazel build rules
 *.bzl               @cfrantz @drewmacrae
-BUILD               @cfrantz @drewmacrae
-BUILD.bazel         @cfrantz @drewmacrae
 /WORKSPACE          @cfrantz @drewmacrae
 /.bazelrc           @cfrantz @drewmacrae
 
@@ -72,6 +70,6 @@ COPYING*            @mundaym
 /util/licence-checker.hjson  @mundaym
 
 # CI and testing
-/ci/                @milesdai @rswarbrick
+/ci/                @drewmacrae @milesdai @rswarbrick
 # /test/            # TBD
-azure-pipelines.yml @milesdai @rswarbrick
+azure-pipelines.yml @drewmacrae @milesdai @rswarbrick
