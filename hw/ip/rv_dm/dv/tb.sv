@@ -21,7 +21,7 @@ module tb;
   pins_if #(1) devmode_if (devmode);
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   tl_if regs_tl_if(.clk(clk), .rst_n(rst_n));
-  tl_if rom_tl_if(.clk(clk), .rst_n(rst_n));
+  tl_if mem_tl_if(.clk(clk), .rst_n(rst_n));
   tl_if sba_tl_if(.clk(clk), .rst_n(rst_n));
   jtag_if jtag_if();
   rv_dm_if rv_dm_if(.clk(clk), .rst_n(rst_n));
@@ -46,8 +46,8 @@ module tb;
     .regs_tl_d_i          (regs_tl_if.h2d),
     .regs_tl_d_o          (regs_tl_if.d2h),
 
-    .rom_tl_d_i           (rom_tl_if.h2d),
-    .rom_tl_d_o           (rom_tl_if.d2h),
+    .mem_tl_d_i           (mem_tl_if.h2d),
+    .mem_tl_d_o           (mem_tl_if.d2h),
 
     .sba_tl_h_o           (sba_tl_if.h2d),
     .sba_tl_h_i           (sba_tl_if.d2h),
@@ -72,7 +72,7 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(
         null, "*.env.m_tl_agent_rv_dm_regs_reg_block*", "vif", regs_tl_if);
     uvm_config_db#(virtual tl_if)::set(
-        null, "*.env.m_tl_agent_rv_dm_debug_mem_reg_block*", "vif", rom_tl_if);
+        null, "*.env.m_tl_agent_rv_dm_debug_mem_reg_block*", "vif", mem_tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_sba_agent*", "vif", sba_tl_if);
     uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_agent*", "vif", jtag_if);
     uvm_config_db#(virtual rv_dm_if)::set(null, "*.env*", "rv_dm_vif", rv_dm_if);

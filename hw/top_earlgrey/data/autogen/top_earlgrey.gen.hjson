@@ -4993,7 +4993,7 @@
       }
       base_addrs:
       {
-        rom: 0x00010000
+        mem: 0x00010000
         regs: 0x41200000
       }
       clock_connections:
@@ -5115,7 +5115,7 @@
           index: -1
         }
         {
-          name: rom_tl_d
+          name: mem_tl_d
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -5124,7 +5124,7 @@
           inst_name: rv_dm
           default: ""
           end_idx: -1
-          top_signame: rv_dm_rom_tl_d
+          top_signame: rv_dm_mem_tl_d
           index: -1
         }
       ]
@@ -7141,8 +7141,8 @@
         DbgTriggerEn: "1"
         DbgHwBreakNum: "4"
         SecureIbex: "1"
-        DmHaltAddr: tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0]
-        DmExceptionAddr: tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0]
+        DmHaltAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]
+        DmExceptionAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]
         PipeLine: "0"
       }
       clock_srcs:
@@ -7386,7 +7386,7 @@
           name: DmHaltAddr
           desc: Halt address
           type: int unsigned
-          default: tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0]
+          default: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]
           expose: "true"
           name_top: RvCoreIbexDmHaltAddr
         }
@@ -7394,7 +7394,7 @@
           name: DmExceptionAddr
           desc: Exception address
           type: int unsigned
-          default: tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0]
+          default: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]
           expose: "true"
           name_top: RvCoreIbexDmExceptionAddr
         }
@@ -8145,9 +8145,9 @@
       [
         main.tl_rv_dm__regs
       ]
-      rv_dm.rom_tl_d:
+      rv_dm.mem_tl_d:
       [
-        main.tl_rv_dm__rom
+        main.tl_rv_dm__mem
       ]
       rom_ctrl.rom_tl:
       [
@@ -8471,7 +8471,7 @@
         rv_core_ibex.corei:
         [
           rom_ctrl.rom
-          rv_dm.rom
+          rv_dm.mem
           sram_ctrl_main.ram
           flash_ctrl.mem
         ]
@@ -8479,7 +8479,7 @@
         [
           rom_ctrl.rom
           rom_ctrl.regs
-          rv_dm.rom
+          rv_dm.mem
           rv_dm.regs
           sram_ctrl_main.ram
           peri
@@ -8587,7 +8587,7 @@
           pipeline: true
         }
         {
-          name: rv_dm.rom
+          name: rv_dm.mem
           type: device
           clock: clk_main_i
           reset: rst_main_ni
@@ -9077,7 +9077,7 @@
           index: -1
         }
         {
-          name: tl_rv_dm__rom
+          name: tl_rv_dm__mem
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -9085,7 +9085,7 @@
           width: 1
           inst_name: main
           default: ""
-          top_signame: rv_dm_rom_tl_d
+          top_signame: rv_dm_mem_tl_d
           index: -1
         }
         {
@@ -17729,7 +17729,7 @@
         index: -1
       }
       {
-        name: rom_tl_d
+        name: mem_tl_d
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -17738,7 +17738,7 @@
         inst_name: rv_dm
         default: ""
         end_idx: -1
-        top_signame: rv_dm_rom_tl_d
+        top_signame: rv_dm_mem_tl_d
         index: -1
       }
       {
@@ -18996,7 +18996,7 @@
         index: -1
       }
       {
-        name: tl_rv_dm__rom
+        name: tl_rv_dm__mem
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -19004,7 +19004,7 @@
         width: 1
         inst_name: main
         default: ""
-        top_signame: rv_dm_rom_tl_d
+        top_signame: rv_dm_mem_tl_d
         index: -1
       }
       {
@@ -21458,7 +21458,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: rv_dm_rom_tl_d_req
+        signame: rv_dm_mem_tl_d_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -21469,7 +21469,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: rv_dm_rom_tl_d_rsp
+        signame: rv_dm_mem_tl_d_rsp
         width: 1
         type: req_rsp
         end_idx: -1

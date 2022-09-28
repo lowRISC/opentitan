@@ -32,7 +32,7 @@ initial force dut.rst_spi_host1_ni = rst_n;
 
 // Device TileLink interface connections
 `CONNECT_TL_DEVICE_IF(rv_dm__regs, dut, clk_main_i, rst_n)
-`CONNECT_TL_DEVICE_IF(rv_dm__rom, dut, clk_main_i, rst_n)
+`CONNECT_TL_DEVICE_IF(rv_dm__mem, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rom_ctrl__rom, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rom_ctrl__regs, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(peri, dut, clk_fixed_i, rst_n)

@@ -32,11 +32,11 @@ module xbar_main_bind;
     .h2d    (tl_rv_dm__regs_o),
     .d2h    (tl_rv_dm__regs_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_dm__rom (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rv_dm__mem (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_rv_dm__rom_o),
-    .d2h    (tl_rv_dm__rom_i)
+    .h2d    (tl_rv_dm__mem_o),
+    .d2h    (tl_rv_dm__mem_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_rom_ctrl__rom (
     .clk_i  (clk_main_i),

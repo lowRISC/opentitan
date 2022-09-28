@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module rv_dm_rom_reg_top (
+module rv_dm_mem_reg_top (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,

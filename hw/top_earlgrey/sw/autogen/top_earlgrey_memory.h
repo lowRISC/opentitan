@@ -642,22 +642,22 @@
  */
 #define TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES 0x1000
 /**
- * Peripheral base address for rom device on rv_dm in top earlgrey.
+ * Peripheral base address for mem device on rv_dm in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_RV_DM_ROM_BASE_ADDR 0x10000
+#define TOP_EARLGREY_RV_DM_MEM_BASE_ADDR 0x10000
 
 /**
- * Peripheral size for rom device on rv_dm in top earlgrey.
+ * Peripheral size for mem device on rv_dm in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_RV_DM_ROM_BASE_ADDR and
- * `TOP_EARLGREY_RV_DM_ROM_BASE_ADDR + TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_RV_DM_MEM_BASE_ADDR and
+ * `TOP_EARLGREY_RV_DM_MEM_BASE_ADDR + TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES 0x1000
 /**
  * Peripheral base address for rv_plic in top earlgrey.
  *

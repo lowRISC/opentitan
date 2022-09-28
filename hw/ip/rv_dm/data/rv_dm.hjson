@@ -8,7 +8,7 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "host",   name: "sba" }
     { protocol: "tlul", direction: "device", name: "regs" }
-    { protocol: "tlul", direction: "device", name: "rom" }
+    { protocol: "tlul", direction: "device", name: "mem" }
   ],
   scan: "true", // Enable `scanmode_i` port
   scan_reset: "true", // Enable `scan_rst_ni` port
@@ -102,13 +102,14 @@
   registers: {
     regs:[
     ]
-    rom: [
-      // ROM size (given as `items` below) must be a power of two.
+    mem: [
+      // Debug memory size (given as `items` below) must be a power of two.
       { window: {
-          name: "ROM"
+          name: "MEM"
           items: "1024" // 4 KiB
-          swaccess: "ro",
-          desc: '''Access window into the debug ROM.'''
+          swaccess: "rw",
+          byte-write: "true",
+          desc: '''Access window into the debug memory.'''
         }
       }
     ]

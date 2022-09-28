@@ -29,7 +29,7 @@
       req_fifo_pass: true,
       rsp_fifo_pass: false,
     },
-    { name:      "rv_dm.rom",
+    { name:      "rv_dm.mem",
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
@@ -121,9 +121,9 @@
     },
   ],
   connections: {
-    rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.rom", "sram_ctrl_main.ram", "flash_ctrl.mem"],
+    rv_core_ibex.corei:  ["rom_ctrl.rom", "rv_dm.mem", "sram_ctrl_main.ram", "flash_ctrl.mem"],
     rv_core_ibex.cored:  [
-      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.rom", "rv_dm.regs",
+      "rom_ctrl.rom", "rom_ctrl.regs", "rv_dm.mem", "rv_dm.regs",
       "sram_ctrl_main.ram", "flash_ctrl.mem", "peri", "flash_ctrl.core", "flash_ctrl.prim",
       "aes", "hmac",
       "rv_plic", "sram_ctrl_main.ram", "sram_ctrl_main.regs",

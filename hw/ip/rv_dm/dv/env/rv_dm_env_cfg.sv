@@ -13,7 +13,7 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
   rand jtag_dmi_reg_block jtag_dmi_ral;
 
   // A constant that can be referenced from anywhere.
-  string rom_ral_name = "rv_dm_debug_mem_reg_block";
+  string mem_ral_name = "rv_dm_debug_mem_reg_block";
 
   `uvm_object_utils_begin(rv_dm_env_cfg)
     `uvm_field_object(m_jtag_agent_cfg,   UVM_DEFAULT)
@@ -27,8 +27,8 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     list_of_alerts = rv_dm_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_fault";
 
-    // Set up second RAL model for ROM memory and associated collateral
-    ral_model_names.push_back(rom_ral_name);
+    // Set up second RAL model for debug memory and associated collateral
+    ral_model_names.push_back(mem_ral_name);
 
     // both RAL models use same clock frequency
     clk_freqs_mhz["rv_dm_debug_mem_reg_block"] = clk_freq_mhz;
@@ -38,7 +38,7 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
 
     // Both, the regs and the debug mem TL device (in the DUT) only support 1 outstanding.
     m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
-    m_tl_agent_cfgs[rom_ral_name].max_outstanding_req = 1;
+    m_tl_agent_cfgs[mem_ral_name].max_outstanding_req = 1;
 
     // Create jtag agent config obj
     m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
@@ -75,7 +75,7 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     // The backdoor HDL paths are set incorrectly on the debug mem RAL structures by the reggen
     // tool. We just remove all HDL paths and skip backdoor writes entirely.
     // TODO: Enable backdoor writes later.
-    if (ral.get_name() == rom_ral_name) begin
+    if (ral.get_name() == mem_ral_name) begin
       rv_dm_debug_mem_reg_block debug_mem_ral;
       uvm_reg regs[$];
 

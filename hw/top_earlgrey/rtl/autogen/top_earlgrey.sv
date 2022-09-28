@@ -104,9 +104,9 @@ module top_earlgrey #(
   parameter int RvCoreIbexDbgHwBreakNum = 4,
   parameter bit RvCoreIbexSecureIbex = 1,
   parameter int unsigned RvCoreIbexDmHaltAddr =
-      tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0],
+      tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0],
   parameter int unsigned RvCoreIbexDmExceptionAddr =
-      tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0],
+      tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0],
   parameter bit RvCoreIbexPipeLine = 0
 ) (
   // Multiplexed I/O
@@ -621,8 +621,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       main_tl_rv_dm__sba_rsp;
   tlul_pkg::tl_h2d_t       rv_dm_regs_tl_d_req;
   tlul_pkg::tl_d2h_t       rv_dm_regs_tl_d_rsp;
-  tlul_pkg::tl_h2d_t       rv_dm_rom_tl_d_req;
-  tlul_pkg::tl_d2h_t       rv_dm_rom_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       rv_dm_mem_tl_d_req;
+  tlul_pkg::tl_d2h_t       rv_dm_mem_tl_d_rsp;
   tlul_pkg::tl_h2d_t       rom_ctrl_rom_tl_req;
   tlul_pkg::tl_d2h_t       rom_ctrl_rom_tl_rsp;
   tlul_pkg::tl_h2d_t       rom_ctrl_regs_tl_req;
@@ -2147,8 +2147,8 @@ module top_earlgrey #(
       .sba_tl_h_i(main_tl_rv_dm__sba_rsp),
       .regs_tl_d_i(rv_dm_regs_tl_d_req),
       .regs_tl_d_o(rv_dm_regs_tl_d_rsp),
-      .rom_tl_d_i(rv_dm_rom_tl_d_req),
-      .rom_tl_d_o(rv_dm_rom_tl_d_rsp),
+      .mem_tl_d_i(rv_dm_mem_tl_d_req),
+      .mem_tl_d_o(rv_dm_mem_tl_d_rsp),
       .scanmode_i,
       .scan_rst_ni,
 
@@ -2798,9 +2798,9 @@ module top_earlgrey #(
     .tl_rv_dm__regs_o(rv_dm_regs_tl_d_req),
     .tl_rv_dm__regs_i(rv_dm_regs_tl_d_rsp),
 
-    // port: tl_rv_dm__rom
-    .tl_rv_dm__rom_o(rv_dm_rom_tl_d_req),
-    .tl_rv_dm__rom_i(rv_dm_rom_tl_d_rsp),
+    // port: tl_rv_dm__mem
+    .tl_rv_dm__mem_o(rv_dm_mem_tl_d_req),
+    .tl_rv_dm__mem_i(rv_dm_mem_tl_d_rsp),
 
     // port: tl_rom_ctrl__rom
     .tl_rom_ctrl__rom_o(rom_ctrl_rom_tl_req),

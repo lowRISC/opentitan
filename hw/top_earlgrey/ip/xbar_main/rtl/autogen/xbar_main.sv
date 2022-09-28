@@ -11,7 +11,7 @@
 //     -> sm1_28
 //       -> rom_ctrl.rom
 //     -> sm1_29
-//       -> rv_dm.rom
+//       -> rv_dm.mem
 //     -> sm1_30
 //       -> sram_ctrl_main.ram
 //     -> sm1_31
@@ -23,7 +23,7 @@
 //     -> sm1_33
 //       -> rom_ctrl.regs
 //     -> sm1_29
-//       -> rv_dm.rom
+//       -> rv_dm.mem
 //     -> sm1_34
 //       -> rv_dm.regs
 //     -> sm1_30
@@ -146,8 +146,8 @@ module xbar_main (
   // Device interfaces
   output tlul_pkg::tl_h2d_t tl_rv_dm__regs_o,
   input  tlul_pkg::tl_d2h_t tl_rv_dm__regs_i,
-  output tlul_pkg::tl_h2d_t tl_rv_dm__rom_o,
-  input  tlul_pkg::tl_d2h_t tl_rv_dm__rom_i,
+  output tlul_pkg::tl_h2d_t tl_rv_dm__mem_o,
+  input  tlul_pkg::tl_d2h_t tl_rv_dm__mem_i,
   output tlul_pkg::tl_h2d_t tl_rom_ctrl__rom_o,
   input  tlul_pkg::tl_d2h_t tl_rom_ctrl__rom_i,
   output tlul_pkg::tl_h2d_t tl_rom_ctrl__regs_o,
@@ -583,8 +583,8 @@ module xbar_main (
   assign tl_rom_ctrl__rom_o = tl_sm1_28_ds_h2d;
   assign tl_sm1_28_ds_d2h = tl_rom_ctrl__rom_i;
 
-  assign tl_rv_dm__rom_o = tl_sm1_29_ds_h2d;
-  assign tl_sm1_29_ds_d2h = tl_rv_dm__rom_i;
+  assign tl_rv_dm__mem_o = tl_sm1_29_ds_h2d;
+  assign tl_sm1_29_ds_d2h = tl_rv_dm__mem_i;
 
   assign tl_sram_ctrl_main__ram_o = tl_sm1_30_ds_h2d;
   assign tl_sm1_30_ds_d2h = tl_sram_ctrl_main__ram_i;
@@ -678,7 +678,7 @@ module xbar_main (
       dev_sel_s1n_27 = 3'd0;
 
     end else if ((tl_s1n_27_us_h2d.a_address &
-                  ~(ADDR_MASK_RV_DM__ROM)) == ADDR_SPACE_RV_DM__ROM) begin
+                  ~(ADDR_MASK_RV_DM__MEM)) == ADDR_SPACE_RV_DM__MEM) begin
       dev_sel_s1n_27 = 3'd1;
 
     end else if ((tl_s1n_27_us_h2d.a_address &
@@ -703,7 +703,7 @@ end
       dev_sel_s1n_32 = 5'd1;
 
     end else if ((tl_s1n_32_us_h2d.a_address &
-                  ~(ADDR_MASK_RV_DM__ROM)) == ADDR_SPACE_RV_DM__ROM) begin
+                  ~(ADDR_MASK_RV_DM__MEM)) == ADDR_SPACE_RV_DM__MEM) begin
       dev_sel_s1n_32 = 5'd2;
 
     end else if ((tl_s1n_32_us_h2d.a_address &

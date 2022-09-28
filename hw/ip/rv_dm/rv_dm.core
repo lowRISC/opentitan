@@ -20,7 +20,7 @@ filesets:
     files:
       - rtl/rv_dm_reg_pkg.sv
       - rtl/rv_dm_regs_reg_top.sv
-      - rtl/rv_dm_rom_reg_top.sv
+      - rtl/rv_dm_mem_reg_top.sv
       - rtl/rv_dm.sv
     file_type: systemVerilogSource
 

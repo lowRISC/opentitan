@@ -351,14 +351,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES = 32'h1000;
 
   /**
-   * Peripheral base address for rom device on rv_dm in top earlgrey.
+   * Peripheral base address for mem device on rv_dm in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RV_DM_ROM_BASE_ADDR = 32'h10000;
+  parameter int unsigned TOP_EARLGREY_RV_DM_MEM_BASE_ADDR = 32'h10000;
 
   /**
-   * Peripheral size in bytes for rom device on rv_dm in top earlgrey.
+   * Peripheral size in bytes for mem device on rv_dm in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES = 32'h1000;
 
   /**
    * Peripheral base address for rv_plic in top earlgrey.

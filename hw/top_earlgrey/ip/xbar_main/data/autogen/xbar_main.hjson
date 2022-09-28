@@ -39,7 +39,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_rv_dm__rom"
+      name:   "tl_rv_dm__mem"
       act:    "req"
       package: "tlul_pkg"
     }

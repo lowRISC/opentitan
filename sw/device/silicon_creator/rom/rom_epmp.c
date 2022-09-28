@@ -45,9 +45,9 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   const epmp_region_t mmio = {
       .start = TOP_EARLGREY_MMIO_BASE_ADDR,
       .end = TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES};
-  const epmp_region_t debug_rom = {.start = TOP_EARLGREY_RV_DM_ROM_BASE_ADDR,
-                                   .end = TOP_EARLGREY_RV_DM_ROM_BASE_ADDR +
-                                          TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES};
+  const epmp_region_t debug_rom = {.start = TOP_EARLGREY_RV_DM_MEM_BASE_ADDR,
+                                   .end = TOP_EARLGREY_RV_DM_MEM_BASE_ADDR +
+                                          TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES};
   const epmp_region_t stack_guard = {.start = (uintptr_t)_stack_start,
                                      .end = (uintptr_t)_stack_start + 4};
   const epmp_region_t ram = {.start = TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
@@ -142,8 +142,8 @@ void rom_epmp_unlock_rom_ext_r(epmp_region_t region) {
 }
 
 void rom_epmp_config_debug_rom(lifecycle_state_t lc_state) {
-  const uint32_t pmpaddr = (TOP_EARLGREY_RV_DM_ROM_BASE_ADDR >> 2) |
-                           ((TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES - 1) >> 3);
+  const uint32_t pmpaddr = (TOP_EARLGREY_RV_DM_MEM_BASE_ADDR >> 2) |
+                           ((TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES - 1) >> 3);
   // Update the hardware configuration (CSRs).
   //
   // Entry is hardcoded as 13. Make sure to modify hardcoded values if changing
