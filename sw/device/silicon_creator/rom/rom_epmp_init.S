@@ -80,7 +80,7 @@ rom_epmp_init:
   csrw pmpaddr11, t0
 
   // Debug ROM
-  li   t0, NAPOT(TOP_EARLGREY_RV_DM_ROM_BASE_ADDR, TOP_EARLGREY_RV_DM_ROM_SIZE_BYTES)
+  li   t0, NAPOT(TOP_EARLGREY_RV_DM_MEM_BASE_ADDR, TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES)
   csrw pmpaddr13, t0
 
   // Stack guard

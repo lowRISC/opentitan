@@ -12,7 +12,7 @@ package rv_dm_reg_pkg;
 
   // Address widths within the block
   parameter int RegsAw = 2;
-  parameter int RomAw = 12;
+  parameter int MemAw = 12;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
@@ -45,8 +45,8 @@ package rv_dm_reg_pkg;
     4'b 0001  // index[0] RV_DM_ALERT_TEST
   };
 
-  // Window parameters for rom interface
-  parameter logic [RomAw-1:0] RV_DM_ROM_OFFSET = 12'h 0;
-  parameter int unsigned      RV_DM_ROM_SIZE   = 'h 1000;
+  // Window parameters for mem interface
+  parameter logic [MemAw-1:0] RV_DM_MEM_OFFSET = 12'h 0;
+  parameter int unsigned      RV_DM_MEM_SIZE   = 'h 1000;
 
 endpackage

@@ -36,8 +36,8 @@ module rv_dm
   output tlul_pkg::tl_d2h_t  regs_tl_d_o,
 
   // bus device with debug memory, for an execution based technique
-  input  tlul_pkg::tl_h2d_t  rom_tl_d_i,
-  output tlul_pkg::tl_d2h_t  rom_tl_d_o,
+  input  tlul_pkg::tl_h2d_t  mem_tl_d_i,
+  output tlul_pkg::tl_d2h_t  mem_tl_d_o,
 
   // bus host, for system bus accesses
   output tlul_pkg::tl_h2d_t  sba_tl_h_o,
@@ -85,8 +85,8 @@ module rv_dm
   // CSR Nodes //
   ///////////////
 
-  tlul_pkg::tl_h2d_t rom_tl_win_h2d;
-  tlul_pkg::tl_d2h_t rom_tl_win_d2h;
+  tlul_pkg::tl_h2d_t mem_tl_win_h2d;
+  tlul_pkg::tl_d2h_t mem_tl_win_d2h;
   rv_dm_reg_pkg::rv_dm_regs_reg2hw_t regs_reg2hw;
   logic regs_intg_error, rom_intg_error;
   logic sba_gate_intg_error, rom_gate_intg_error;
@@ -102,13 +102,13 @@ module rv_dm
     .devmode_i (1'b1           )
   );
 
-  rv_dm_rom_reg_top u_reg_rom (
+  rv_dm_mem_reg_top u_reg_mem (
     .clk_i,
     .rst_ni,
-    .tl_i      (rom_tl_d_i    ),
-    .tl_o      (rom_tl_d_o    ),
-    .tl_win_o  (rom_tl_win_h2d),
-    .tl_win_i  (rom_tl_win_d2h),
+    .tl_i      (mem_tl_d_i    ),
+    .tl_o      (mem_tl_d_o    ),
+    .tl_win_o  (mem_tl_win_h2d),
+    .tl_win_i  (mem_tl_win_d2h),
     .intg_err_o(),
     .devmode_i (1'b1          )
   );
@@ -344,17 +344,17 @@ module rv_dm
 `endif
 
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  tlul_pkg::tl_h2d_t rom_tl_win_h2d_gated;
-  tlul_pkg::tl_d2h_t rom_tl_win_d2h_gated;
+  tlul_pkg::tl_h2d_t mem_tl_win_h2d_gated;
+  tlul_pkg::tl_d2h_t mem_tl_win_d2h_gated;
   tlul_lc_gate #(
     .NumGatesPerDirection(2)
   ) u_tlul_lc_gate_rom (
     .clk_i,
     .rst_ni,
-    .tl_h2d_i(rom_tl_win_h2d),
-    .tl_d2h_o(rom_tl_win_d2h),
-    .tl_h2d_o(rom_tl_win_h2d_gated),
-    .tl_d2h_i(rom_tl_win_d2h_gated),
+    .tl_h2d_i(mem_tl_win_h2d),
+    .tl_d2h_o(mem_tl_win_d2h),
+    .tl_h2d_o(mem_tl_win_h2d_gated),
+    .tl_d2h_i(mem_tl_win_d2h_gated),
     .lc_en_i (lc_hw_debug_en[EnRom]),
     .err_o   (rom_gate_intg_error)
   );
@@ -388,8 +388,8 @@ module rv_dm
     .rvalid_i    (device_rvalid),
     .rerror_i    ('0),
 
-    .tl_o        (rom_tl_win_d2h_gated),
-    .tl_i        (rom_tl_win_h2d_gated)
+    .tl_o        (mem_tl_win_d2h_gated),
+    .tl_i        (mem_tl_win_h2d_gated)
   );
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -455,8 +455,8 @@ module rv_dm
   `ASSERT_KNOWN(TlRegsDValidKnown_A, regs_tl_d_o.d_valid)
   `ASSERT_KNOWN(TlRegsAReadyKnown_A, regs_tl_d_o.a_ready)
 
-  `ASSERT_KNOWN(TlRomDValidKnown_A, rom_tl_d_o.d_valid)
-  `ASSERT_KNOWN(TlRomAReadyKnown_A, rom_tl_d_o.a_ready)
+  `ASSERT_KNOWN(TlMemDValidKnown_A, mem_tl_d_o.d_valid)
+  `ASSERT_KNOWN(TlMemAReadyKnown_A, mem_tl_d_o.a_ready)
 
   `ASSERT_KNOWN(TlSbaAValidKnown_A, sba_tl_h_o.a_valid)
   `ASSERT_KNOWN(TlSbaDReadyKnown_A, sba_tl_h_o.d_ready)

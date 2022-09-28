@@ -15,11 +15,11 @@ module rv_dm_bind;
 
   bind rv_dm tlul_assert #(
     .EndpointType("Device")
-  ) tlul_assert_device_rom (
+  ) tlul_assert_device_mem (
     .clk_i,
     .rst_ni,
-    .h2d  (rom_tl_d_i),
-    .d2h  (rom_tl_d_o)
+    .h2d  (mem_tl_d_i),
+    .d2h  (mem_tl_d_o)
   );
 
   bind rv_dm tlul_assert #(
@@ -38,6 +38,6 @@ module rv_dm_bind;
     .d2h    (regs_tl_d_o)
   );
 
-  // TODO: What about 'rv_dm_rom_csr_assert_fpv?
+  // TODO: What about 'rv_dm_mem_csr_assert_fpv?
 
 endmodule

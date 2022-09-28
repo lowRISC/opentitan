@@ -91,7 +91,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // JTAG DMI register model
   rand jtag_dmi_reg_block jtag_dmi_ral;
   // A constant that can be referenced from anywhere.
-  string rv_dm_rom_ral_name = "rv_dm_debug_mem_reg_block";
+  string rv_dm_mem_ral_name = "rv_dm_debug_mem_reg_block";
   parameter uint RV_DM_JTAG_IDCODE = `BUILD_SEED;
   // Design uses 5 bits for IR.
   parameter uint JTAG_IR_LEN = 5;
@@ -122,7 +122,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     // Set up second RAL model for ROM memory and associated collateral
     if (use_jtag_dmi == 1) begin
-      ral_model_names.push_back(rv_dm_rom_ral_name);
+      ral_model_names.push_back(rv_dm_mem_ral_name);
     end
 
     super.initialize(csr_base_addr);
@@ -154,7 +154,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     if (use_jtag_dmi == 1) begin
       // Both, the regs and the debug mem TL device (in the DUT) only support 1 outstanding.
       m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
-      m_tl_agent_cfgs[rv_dm_rom_ral_name].max_outstanding_req = 1;
+      m_tl_agent_cfgs[rv_dm_mem_ral_name].max_outstanding_req = 1;
 
       m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
       m_jtag_agent_cfg.if_mode = dv_utils_pkg::Host;
@@ -186,7 +186,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     // ral_model_names = chip_reg_block // 1 entry
     if (use_jtag_dmi == 1) begin
-      clk_freqs_mhz[rv_dm_rom_ral_name] = clk_freq_mhz;
+      clk_freqs_mhz[rv_dm_mem_ral_name] = clk_freq_mhz;
       jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_riscv_agent_cfg.m_jtag_agent_cfg);
       // Fix the reset values of these fields based on our design.
       `uvm_info(`gfn, "Fixing reset values in jtag_dmi_ral", UVM_LOW)
@@ -212,7 +212,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     if (!$cast(chip_ral, ral)) return;
     // Out of reset, the link is in disconnected state.
     chip_ral.usbdev.intr_state.disconnected.set_reset(1'b1);
-    if (ral.get_name() == rv_dm_rom_ral_name) begin
+    if (ral.get_name() == rv_dm_mem_ral_name) begin
       rv_dm_debug_mem_reg_block debug_mem_ral;
       uvm_reg regs[$];
 

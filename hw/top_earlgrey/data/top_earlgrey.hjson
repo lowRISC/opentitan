@@ -611,7 +611,7 @@
         IdcodeValue: "jtag_id_pkg::JTAG_IDCODE",
       }
       // Note that this module also contains a bus host.
-      base_addrs: {rom: "0x00010000", regs: "0x41200000"}
+      base_addrs: {mem: "0x00010000", regs: "0x41200000"}
     },
     { name: "rv_plic",
       type: "rv_plic",
@@ -767,8 +767,8 @@
                    DbgTriggerEn: "1",
                    DbgHwBreakNum: "4",
                    SecureIbex: "1",
-                   DmHaltAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::HaltAddress[31:0]",
-                   DmExceptionAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__ROM + dm::ExceptionAddress[31:0]",
+                   DmHaltAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]",
+                   DmExceptionAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]",
                    PipeLine: "0"
                   },
       clock_srcs: {
