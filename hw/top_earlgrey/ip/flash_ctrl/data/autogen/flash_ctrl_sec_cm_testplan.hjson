@@ -263,8 +263,8 @@
        1. a host transaction was granted to the muxed partition, this is illegal
        @ tb.dut.u_eflash.gen_flash_cores[0].u_core.host_gnt
        force tb.dut.u_eflash.gen_flash_cores[0].u_core.muxed_part = 1;
-       2. a host transaction was granted last cycle but somehow controller
-          operations have been kicked off, this is illegal
+       2. there are outstanding host transactions yet controller operations have also
+       started
        @ tb.dut.u_eflash.gen_flash_cores[0].u_core.host_gnt_q
        force tb.dut.u_eflash.gen_flash_cores[0].u_core.ctrl_fsm_idle to 0
 

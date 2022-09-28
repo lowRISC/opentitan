@@ -29,18 +29,26 @@ class flash_ctrl_phy_host_grant_err_vseq extends flash_ctrl_err_vseq;
       end
 
       if (add_err1 == 0 && add_err2 == 0) begin
+	 `JDBG(("SETERR"))
+    cfg.scb_h.exp_alert["recov_err"] = 1;
+    cfg.scb_h.alert_chk_max_delay["recov_err"] = 2000;
+    cfg.scb_h.exp_alert_contd["recov_err"] = 10000;
+
+
         randcase
-          1: begin
-            add_err1 = 1;
-            @(posedge cfg.flash_ctrl_vif.host_gnt);
-            `DV_CHECK(uvm_hdl_force(path1, 1))
-          end
+//          1: begin
+//            add_err1 = 1;
+//            @(posedge cfg.flash_ctrl_vif.host_gnt);
+//            `DV_CHECK(uvm_hdl_force(path1, 1))
+//          end
           1: begin
             add_err2 = 1;
-            @(posedge cfg.flash_ctrl_vif.host_gnt_q);
+            wait(cfg.flash_ctrl_vif.host_outstanding != 0);
             `DV_CHECK(uvm_hdl_force(path2, 0))
           end
         endcase // randcase
+      end else begin // if (add_err1 == 0 && add_err2 == 0)
+	 `JDBG(("UNSETERR"))
       end
     end // repeat (2)
 
