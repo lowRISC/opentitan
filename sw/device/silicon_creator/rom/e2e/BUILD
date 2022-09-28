@@ -23,8 +23,12 @@ opentitan_functest(
         exit_failure = "NO_FAILURE_MESSAGE",
         exit_success = "BFV:01495202(?s:.*)BFV:01495202",
     ),
+    dv = dv_params(
+        rom = "//sw/device/silicon_creator/rom",
+    ),
     signed = True,
     targets = [
+        "dv",
         "cw310_rom",
         "verilator",
     ],
