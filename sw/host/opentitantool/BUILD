@@ -55,13 +55,6 @@ rust_binary(
     ],
 )
 
-filegroup(
-    name = "test_resources",
-    srcs = [
-        ":opentitantool",
-    ],
-)
-
 pkg_files(
     name = "binary",
     srcs = [":opentitantool"],

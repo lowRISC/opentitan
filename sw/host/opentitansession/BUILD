@@ -28,8 +28,3 @@ rust_binary(
         "//third_party/rust/crates:thiserror",
     ],
 )
-
-filegroup(
-    name = "test_resources",
-    srcs = [":opentitansession"],
-)
