@@ -58,6 +58,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // after a flash_status access, delete this queue as the uncertain window is only a few cycles
   flash_status_t flash_status_tl_pre_val_q[$];
 
+  // for TPM mode
+  local spi_item tpm_read_sw_q[$];
+  local spi_item tpm_write_spi_q[$];
+  local spi_item tpm_write_sw_q[$];
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -166,12 +170,25 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           latch_flash_status(set_busy, update_wel, wel_val);
         end
         SpiModeTpm: begin
-          // TODO, add soon
+          if (item.write_command) begin
+            `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
+            tpm_write_spi_q.push_back(item);
+          end else begin
+            `DV_CHECK_EQ(tpm_read_sw_q.size, 1)
+            tpm_item_compare(item, tpm_read_sw_q.pop_front(), "read");
+          end
         end
         default: `uvm_fatal(`gfn, $sformatf("Unexpected mode: %0d", `gmv(ral.control.mode)))
       endcase
     end // forever
   endtask
+
+  virtual function void tpm_item_compare(spi_item from_spi, spi_item from_sw, string msg);
+    if (!from_spi.compare(from_sw)) begin
+      `uvm_error(`gfn, $sformatf("Compare failed TPM %s, SPI item:\n%s SW item:\n%s",
+            msg, from_spi.sprint(), from_sw.sprint()))
+    end
+  endfunction
 
   // update flash_status to the value of the last item
   virtual function void latch_flash_status(bit set_busy, bit update_wel, bit wel_val);
@@ -761,6 +778,67 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       "last_read_addr", "upload_status", "upload_status2": begin
         do_read_check = 1;
       end
+      "tpm_cmd_addr": begin
+        if (!write && channel == DataChannel) begin
+          bit [7:0] cmd = get_field_val(ral.tpm_cmd_addr.cmd, item.d_data);
+          bit [TPM_ADDR_WIDTH-1:0] addr = get_field_val(ral.tpm_cmd_addr.addr, item.d_data);
+          spi_item tpm_item = spi_item::type_id::create("tpm_item", this);
+          do_read_check = 0;
+
+          // the size is temporarily stored in read_size even if it's a write item.
+          // set read_size to 0 for write, when the item is fully collected
+          `uvm_info(`gfn, $sformatf("SW received cmd: 0x%0x, addr = 0x%0x", cmd, addr), UVM_MEDIUM)
+          tpm_item.read_size = cmd[TPM_CMD_DIR_BIT_POS-1:0] + 1;
+          tpm_item.write_command = cmd[TPM_CMD_DIR_BIT_POS] == TPM_CMD_WRITE_BIT_VALUE;
+          `DV_CHECK_FATAL(tpm_item.read_size inside {[1:MAX_TPM_SIZE]});
+          for (int i = 0; i < TPM_ADDR_WIDTH_BYTE; i++) begin
+            tpm_item.address_q.push_front(addr[8*i +: 8]);
+          end
+          if (tpm_item.write_command) begin // TPM write
+            `DV_CHECK_EQ_FATAL(tpm_write_sw_q.size, 0)
+            tpm_write_sw_q.push_back(tpm_item);
+          end else begin // TPM read
+            // before we receive a new cmd for read, the previous one should be done
+            `DV_CHECK_EQ_FATAL(tpm_read_sw_q.size, 0)
+            tpm_read_sw_q.push_back(tpm_item);
+          end
+        end
+      end
+      "tpm_read_fifo": begin
+        if (write && channel == AddrChannel) begin
+          uint num_bytes;
+          int size_to_done;
+
+          `DV_CHECK_EQ_FATAL(tpm_read_sw_q.size, 1)
+          size_to_done = tpm_read_sw_q[0].read_size - tpm_read_sw_q[0].data.size;
+          `DV_CHECK_GT(size_to_done, 0)
+
+          if (size_to_done >= 4) begin
+            num_bytes = 4;
+          end else begin
+            num_bytes = size_to_done;
+          end
+          for (int i = 0; i < num_bytes; i++) begin
+            tpm_read_sw_q[0].data.push_back(item.a_data[8*i +: 8]);
+          end
+        end
+      end
+      "tpm_write_fifo": begin
+        if (!write && channel == DataChannel) begin
+          do_read_check = 0;
+          // the 2nd item's addr and cmd may be already ready before the 1st item to be read out
+          `DV_CHECK_LE(tpm_write_sw_q.size, 2)
+          tpm_write_sw_q[0].data.push_back(item.d_data);
+          `DV_CHECK_LE(tpm_write_sw_q[0].data.size, tpm_write_sw_q[0].read_size)
+
+          // clear read_size after finishing collecting the write item and then compare
+          if (tpm_write_sw_q[0].data.size == tpm_write_sw_q[0].read_size) begin
+            tpm_write_sw_q[0].read_size = 0;
+            `DV_CHECK_EQ_FATAL(tpm_write_spi_q.size, 1)
+            tpm_item_compare(tpm_write_spi_q.pop_front(), tpm_write_sw_q.pop_front(), "write");
+          end
+        end
+      end
       default: begin
         // TODO the other regs
       end
@@ -910,6 +988,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     flash_status_q.delete();
     flash_status_settle_q.delete();
     flash_status_tl_pre_val_q.delete();
+    tpm_read_sw_q.delete();
+    tpm_write_spi_q.delete();
+    tpm_write_sw_q.delete();
 
     // used in seq
     cfg.next_read_buffer_addr = 0;
@@ -932,5 +1013,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     `DV_CHECK_EQ(flash_status_q.size, 0)
     `DV_CHECK_EQ(flash_status_settle_q.size, 0)
     `DV_CHECK_EQ(flash_status_tl_pre_val_q.size, 0)
+    `DV_CHECK_EQ(tpm_read_sw_q.size, 0)
+    `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
+    `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
   endfunction
 endclass
