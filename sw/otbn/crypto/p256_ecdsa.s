@@ -38,14 +38,14 @@ p256_ecdsa_verify:
  * Populate the variables rnd and k with randomness, and setup data pointers.
  */
 p256_ecdsa_setup_rand:
-  /* Obtain the blinding constant from URND, and write it to `rnd` in DMEM. */
-  bn.wsrr   w0, 0x2 /* URND */
-  la        x10, rnd
-  bn.sid    x0, 0(x10)
-
   /* Obtain the nonce (k) from RND. */
   bn.wsrr   w0, 0x1 /* RND */
-  la        x10, k
+  la        x10, k0
+  bn.sid    x0, 0(x10)
+
+  /* Write all-zero to the second share of k. */
+  bn.xor    w0, w0, w0
+  la        x10, k1
   bn.sid    x0, 0(x10)
 
   ret
@@ -88,10 +88,14 @@ x:
 y:
   .zero 32
 
-/* Private key (d). */
-.globl d
+/* Private key (d) in two shares: d = (d0 + d1) mod n. */
+.globl d0
 .balign 32
-d:
+d0:
+  .zero 32
+.globl d1
+.balign 32
+d1:
   .zero 32
 
 /* Verification result x_r (aka x_1). */
@@ -102,14 +106,13 @@ x_r:
 
 .section .scratchpad
 
-/* Secret scalar k. */
-.globl k
+/* Secret scalar (k) in two shares: k = (k0 + k1) mod n */
+.globl k0
 .balign 32
-k:
+k0:
   .zero 32
 
-/* Random number for blinding. */
-.globl rnd
+.globl k1
 .balign 32
-rnd:
+k1:
   .zero 32

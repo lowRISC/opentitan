@@ -32,9 +32,9 @@ p256_base_mult_test:
 .data
 
 /* scalar d */
-.globl d
+.globl d0
 .balign 32
-d:
+d0:
   .word 0xc7df1a56
   .word 0xfbd94efe
   .word 0xaa847f52
@@ -43,19 +43,10 @@ d:
   .word 0xe5f2cbee
   .word 0x9144233d
   .word 0xc0fbe256
-
-/* blinding parameter rnd */
-.globl rnd
+.globl d1
 .balign 32
-rnd:
-  .word 0x7ab203c3
-  .word 0xd6ee4951
-  .word 0xd5b89b43
-  .word 0x409d2b56
-  .word 0x8e9d2186
-  .word 0x1de0f8ec
-  .word 0x0fa0bf9a
-  .word 0xa21c2147
+d1:
+  .zero 32
 
 /* result buffer x-coordinate */
 .globl x

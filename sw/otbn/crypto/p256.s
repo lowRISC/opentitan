@@ -912,14 +912,16 @@ proj_double:
  * double-and-add-always) is used.
  * Due to the P-256 optimized implementations of the called routines for
  * point addition and doubling, this routine is limited to P-256.
- * The routine makes use of blinding by additive splitting the
- * exponent/scalar k into a random number (rnd) and rnd-k. The double-and-add
- * loop operates on both shares in parallel applying Shamir's trick.
+ *
+ * The routine receives the scalar in two shares k0, k1 such that
+ *   k = (k0 + k1) mod n
+ * The double-and-add loop operates on both shares in parallel applying
+ * Shamir's trick.
  *
  * @param[in]  x21: dptr_x, pointer to affine x-coordinate in dmem
  * @param[in]  x22: dptr_y, pointer to affine y-coordinate in dmem
- * @param[in]  w0: k, scalar for multiplication
- * @param[in]  w1: rnd, blinding parameter
+ * @param[in]  w0: k0, first share of scalar for multiplication
+ * @param[in]  w1: k1, second share of scalar for multiplication
  * @param[in]  w27: b, curve domain parameter
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus, 2^256 > p > 2^255.
@@ -929,27 +931,10 @@ proj_double:
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x3, x10, w0 to w26
+ * clobbered registers: x2, x3, x10, w0 to w29
  * clobbered flag groups: FG0
  */
 scalar_mult_int:
-
-  /* load order of base point G of P-256
-     w29 <= n = dmem[p256_n] */
-  li        x2, 29
-  la        x3, p256_n
-  bn.lid    x2, 0(x3)
-
-  /* store n to MOD WSR */
-  bn.wsrw   0, w29
-
-  /* 1st share (reduced rnd)
-     rnd = w1 <= rnd mod n */
-  bn.addm   w1, w1, w31
-
-  /* 2nd share (k-rnd)
-     w0 = w0 - w1 = k - rnd mod n */
-  bn.subm   w0, w0, w1
 
   /* load field modulus p from dmem
      w29 <= p = dmem[p256_p] */
@@ -1006,12 +991,11 @@ scalar_mult_int:
        P = (w6, w7, w26) */
     jal       x1, fetch_proj_randomize
 
-    /* probe if MSb of either of the two scalars (rnd or k-rnd) but not both
-       is 1.
-       If only one MSb is set, select P for addition
-       If both MSbs are set, select 2P for addition
-       (If neither MSB is set, also 2P will be selected but this will be
-        discarded late) */
+    /* probe if MSb of either of the two scalars (k0 or k1) but not both is 1.
+       - If only one MSb is set, select P for addition
+       - If both MSbs are set, select 2P for addition
+       - If neither MSB is set, also 2P will be selected but this will be
+         discarded later */
     bn.xor    w8, w0, w1
 
     /* P = (w8, w9, w10)
@@ -1031,7 +1015,7 @@ scalar_mult_int:
     jal       x1, proj_add
 
     /* probe if MSb of either one or both of the two
-       scalars (rnd or k-rnd) is 1.*/
+       scalars (k0 or k1) is 1.*/
     bn.or     w8, w0, w1
 
     /* select doubling result (Q) or addition result (Q+P)
@@ -1100,12 +1084,18 @@ scalar_mult_int:
  * k^(-1) mod n, and our Barrett multiplication implementation accepts any
  * operands a and b such that a * b < 2^256 * p and fully reduces the result.
  *
- * @param[in]  dmem[k]:   random secret scalar (256 bits)
- * @param[in]  dmem[rnd]: random number for blinding (256 bits)
+ * This routine assumes that the secret scalars d and k are provided in two
+ * shares each (d0/d1 and k0/k1 respectively), where
+ *   d = (d0 + d1) mod n
+ *   k = (k0 + k1) mod n
+ *
+ * @param[in]  dmem[k0]:  first share of secret scalar (256 bits)
+ * @param[in]  dmem[k1]:  second share of secret scalar (256 bits)
  * @param[in]  dmem[msg]: message to be signed (256 bits)
  * @param[in]  dmem[r]:   dmem buffer for r component of signature (256 bits)
  * @param[in]  dmem[s]:   dmem buffer for s component of signature (256 bits)
- * @param[in]  dmem[d]:   private key d
+ * @param[in]  dmem[d0]:  first share of private key d
+ * @param[in]  dmem[d1]:  second share of private key d
  *
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
@@ -1118,15 +1108,15 @@ p256_sign:
   /* init all-zero register */
   bn.xor    w31, w31, w31
 
-  /* load secret random scalar k from dmem: w0 = dmem[k] */
-  la        x16, k
+  /* load first share of secret scalar k from dmem: w0 = dmem[k0] */
+  la        x16, k0
   li        x2, 0
   bn.lid    x2, 0(x16)
 
-  /* load random number for blinding from dmem: w1 = dmem[rnd] */
-  la        x17, rnd
+  /* load second share of secret scalar k from dmem: w1 = dmem[k1] */
+  la        x16, k1
   li        x2, 1
-  bn.lid    x2, 0(x17)
+  bn.lid    x2, 0(x16)
 
   /* scalar multiplication with base point
      (x_1, y_1) = (w11, w12) <= k*G = w0*(dmem[p256_gx], dmem[p256_gy]) */
@@ -1144,21 +1134,41 @@ p256_sign:
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
 
-  /* re-load secret random number k from dmem: w0 <= k = dmem[k] */
-  la        x16, k
+  /* re-load first share of secret scalar k from dmem: w0 = dmem[k0] */
+  la        x16, k0
   li        x2, 0
+  bn.lid    x2, 0(x16)
+
+  /* re-load second share of secret scalar k from dmem: w1 = dmem[k1] */
+  la        x16, k1
+  li        x2, 1
   bn.lid    x2, 0(x16)
 
   /* modular multiplicative inverse of k
      w1 <= k^-1 mod n */
   jal       x1, mod_inv
 
-  /* w19 = k^-1*d mod n; w24 = d = dmem[d] */
-  la        x23, d
+  /* w24 = d0 = dmem[d0] */
+  la        x23, d0
   li        x2, 24
   bn.lid    x2, 0(x23)
+
+  /* w2 = k^-1*d0 mod n */
   bn.mov    w25, w1
   jal       x1, mod_mul_256x256
+  bn.mov    w2, w19
+
+  /* w24 = d1 = dmem[d1] */
+  la        x23, d1
+  li        x2, 24
+  bn.lid    x2, 0(x23)
+
+  /* w19 = k^-1*d1 mod n */
+  jal       x1, mod_mul_256x256
+
+  /* w19 <= w2*w19 mod n = (k^-1*d0 + k^-1*d1) mod n
+                         = (k^-1*d) mod n */
+  bn.addm   w19, w2, w19
 
   /* w24 = r <= w11  mod n */
   bn.addm   w24, w11, w31
@@ -1203,10 +1213,15 @@ p256_sign:
  *
  * Performs a scalar multiplication of a scalar with the base point G of curve
  * P-256.
+ *
+ * This routine assumes that the scalar d is provided in two shares, d0 and d1,
+ * where:
+ *   d = (d0 + d1) mod n
+ *
  * This routine runs in constant time.
  *
- * @param[in]     dmem[rnd]: random number for blinding (256 bits)
- * @param[in]     dmem[d]:   scalar d (256 bits)
+ * @param[in]     dmem[d0]:  first share of scalar d (256 bits)
+ * @param[in]     dmem[d1]:  second share of scalar d (256 bits)
  * @param[in,out] dmem[x]:   affine x-coordinate (256 bits)
  * @param[in,out] dmem[y]:   affine y-coordinate (256 bits)
  *
@@ -1220,18 +1235,18 @@ p256_base_mult:
   /* init all-zero register */
   bn.xor    w31, w31, w31
 
-  /* load scalar d from dmem: w0 = dmem[d] */
-  la        x16, d
+  /* load first share of scalar d from dmem: w0 = dmem[d0] */
+  la        x16, d0
   li        x2, 0
   bn.lid    x2, 0(x16)
 
-  /* load random number for blinding from dmem: w1 = dmem[rnd] */
-  la        x17, rnd
+  /* load second share of scalar d from dmem: w1 = dmem[d0] */
+  la        x16, d1
   li        x2, 1
-  bn.lid    x2, 0(x17)
+  bn.lid    x2, 0(x16)
 
   /* call internal scalar multiplication routine
-     R = (x_a, y_a) = (w11, w12) <= k*P = w0*P */
+     R = (x_a, y_a) = (w11, w12) <= d*P = (w0 + w1)*P */
   la        x21, p256_gx
   la        x22, p256_gy
   jal       x1, scalar_mult_int
@@ -1628,11 +1643,15 @@ p256_verify:
  *         with R, P being valid P-256 curve points in projective form,
  *              k being a 256 bit scalar.
  *
+ * This routine assumes that the scalar k is provided in two shares, k0 and k1,
+ * where:
+ *   k = (k0 + k1) mod n
+ *
  * Sets up context and calls internal scalar multiplication routine.
  * This routine runs in constant time.
  *
- * @param[in]      dmem[k]:   scalar k (256 bits)
- * @param[in]      dmem[rnd]: random number for blinding (256 bits)
+ * @param[in]      dmem[k0]:  first share of scalar k (256 bits)
+ * @param[in]      dmem[k1]:  second share of scalar k (256 bits)
  * @param[in,out]  dmem[x]:   affine x-coordinate in dmem
  * @param[in,out]  dmem[y]:   affine y-coordinate in dmem
  *
@@ -1647,15 +1666,15 @@ p256_scalar_mult:
   /* init all-zero register */
   bn.xor    w31, w31, w31
 
-  /* load private key d from dmem: w0 = dmem[d] */
-  la        x16, d
+  /* load first share of scalar from dmem: w0 = dmem[k0] */
+  la        x16, k0
   li        x2, 0
   bn.lid    x2, 0(x16)
 
-  /* load random number for blinding from dmem: w1 = dmem[rnd] */
-  la        x17, rnd
+  /* load second share of scalar from dmem: w1 = dmem[k1] */
+  la        x16, k1
   li        x2, 1
-  bn.lid    x2, 0(x17)
+  bn.lid    x2, 0(x16)
 
   /* call internal scalar multiplication routine
      R = (x_a, y_a) = (w11, w12) <= k*P = w0*P */
@@ -1767,16 +1786,14 @@ p256_gy:
 
 .section .bss
 
-/* random scalar k */
+/* random scalar k (in two shares) */
 .balign 32
-.weak k
-k:
+.weak k0
+k0:
   .zero 32
-
-/* randomness for blinding */
 .balign 32
-.weak rnd
-rnd:
+.weak k1
+k1:
   .zero 32
 
 /* message digest */
@@ -1809,10 +1826,14 @@ x:
 y:
   .zero 32
 
-/* private key d */
+/* private key d (in two shares) */
 .balign 32
-.weak d
-d:
+.weak d0
+d_share0:
+  .zero 32
+.balign 32
+.weak d1
+d_share1:
   .zero 32
 
 /* verification result x_r (aka x_1) */

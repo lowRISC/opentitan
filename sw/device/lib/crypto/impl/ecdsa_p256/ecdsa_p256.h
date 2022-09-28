@@ -47,10 +47,13 @@ typedef struct ecdsa_p256_signature_t {
 /**
  * A type that holds an ECDSA/P-256 private key.
  *
- * The private key consists of a single integer d, computed modulo n.
+ * The private key consists of a single integer d, computed modulo n. The key
+ * is represented in two shares, d0 and d1, such that d = (d0 + d1) mod n. The
+ * shares d0 and d1 are also both computed modulo n.
  */
 typedef struct ecdsa_p256_private_key_t {
-  uint32_t d[kP256ScalarNumWords];
+  uint32_t d0[kP256ScalarNumWords];
+  uint32_t d1[kP256ScalarNumWords];
 } ecdsa_p256_private_key_t;
 
 /**

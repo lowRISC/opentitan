@@ -42,7 +42,8 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, r);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, s);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, y);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, d);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, d0);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, d1);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x_r);
 
 static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa);
@@ -53,7 +54,8 @@ static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p256_ecdsa, r);
 static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p256_ecdsa, s);
 static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(p256_ecdsa, x);
 static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p256_ecdsa, y);
-static const otbn_addr_t kOtbnVarD = OTBN_ADDR_T_INIT(p256_ecdsa, d);
+static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_ecdsa, d0);
+static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_ecdsa, d1);
 static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(p256_ecdsa, x_r);
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -251,7 +253,12 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, msg, kOtbnVarMsg) ==
         kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, private_key_d,
-                               kOtbnVarD) == kOtbnOk);
+                               kOtbnVarD0) == kOtbnOk);
+
+  // Write second share of d (all-zero for this test).
+  uint8_t d1[32] = {0};
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, d1, kOtbnVarD1) ==
+        kOtbnOk);
 
   // Call OTBN to perform operation, and wait for it to complete.
   CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
