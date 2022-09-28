@@ -175,7 +175,7 @@ module spi_tpm
     12'h 010, // 013:010 Interrupt Status
     12'h 014, // 017:014 Interface Capability
     12'h 018, // 01B:018 Status_x
-    12'h 020, // 023:020 Hash Start
+    12'h 028, // 02B:028 Hash Start
     12'h F00, // F03:F00 DID_VID
     12'h F04  // F04:F04 RID
   };
