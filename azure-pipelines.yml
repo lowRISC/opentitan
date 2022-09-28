@@ -227,37 +227,6 @@ jobs:
       includePatterns:
         - "/sw/***"
 
-- job: cw310_sw_build
-  displayName: CW310 Bitstream Software
-  # Build Earl Grey Software required for CW310 FPGA synthesis
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool:
-    vmImage: ubuntu-20.04
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      . util/build_consts.sh
-      ci/bazelisk.sh build \
-        //hw/ip/otp_ctrl/data:img_rma \
-        //sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem \
-        //sw/device/lib/testing/test_rom:test_rom_fpga_cw310_bin
-      mkdir -p $BIN_DIR/sw/device/otp_img
-      mkdir -p $BIN_DIR/sw/device/lib/testing/test_rom
-      cp $(ci/scripts/target-location.sh //hw/ip/otp_ctrl/data:img_rma) $BIN_DIR/sw/device/otp_img/otp_img_fpga_cw310.vmem
-      TEST_ROM=$(ci/scripts/target-location.sh //sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem)
-      TEST_ROM_DIR=$(dirname $TEST_ROM)
-      TEST_ROM_TARGET=$BIN_DIR/sw/device/lib/testing/test_rom
-      cp $TEST_ROM $TEST_ROM_TARGET/test_rom_fpga_cw310.scr.39.vmem
-      cp $TEST_ROM_DIR/*fpga_cw310.elf $TEST_ROM_TARGET/test_rom_fpga_cw310.elf
-      cp $TEST_ROM_DIR/*fpga_cw310.bin $TEST_ROM_TARGET/test_rom_fpga_cw310.bin
-    displayName: Build embedded targets
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/sw/***"
-
 - job: chip_englishbreakfast_verilator
   displayName: Verilated English Breakfast
   # Build Verilator simulation of the English Breakfast toplevel design
@@ -443,8 +412,6 @@ jobs:
   # Build CW310-hyperdebug variant of the Earl Grey toplevel design using Vivado
   dependsOn:
     - lint
-    # The bootrom is built into the FPGA image at synthesis time.
-    - cw310_sw_build
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'master'))
   pool: ci-public
   timeoutInMinutes: 180
@@ -458,18 +425,17 @@ jobs:
       mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
       mkdir -p $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
       ci/bazelisk.sh build //hw/bitstream/vivado:fpga_cw310_hyperdebug
-      cp -r -t $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
-        $($REPO_TOP/bazelisk.sh cquery --output=starlark --starlark:expr "' '.join([x.path for x in target.files.to_list()])" //hw/bitstream/vivado:fpga_cw310_hyperdebug)
-      cp -t $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
-        $($REPO_TOP/bazelisk.sh cquery --output=starlark --starlark:expr "' '.join([x.path for x in target.files.to_list()])" //hw/bitstream/vivado:hyperdebug)
+      cp -rLvt $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
+        $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310_hyperdebug)
+      cp -rLvt $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
+        $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:hyperdebug)
     displayName: Build bitstream with Vivado
   - bash: |
       . util/build_consts.sh
       echo Synthesis log
-      cat $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/synth_1/runme.log || true
-
+      cat $OUT_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/build.fpga_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/synth_1/runme.log || true
       echo Implementation log
-      cat $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/impl_1/runme.log || true
+      cat $OUT_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/build.fpga_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/impl_1/runme.log || true
     displayName: Display synthesis & implementation logs
   - template: ci/upload-artifacts-template.yml
     parameters:
