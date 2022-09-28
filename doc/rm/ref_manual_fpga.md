@@ -96,14 +96,15 @@ These cached bitstreams can be downloaded and used as-is, or we can splice in fr
 
 ### Building bitstreams on CI and uploading artifacts to GCS
 
-The `chip_earlgrey_cw310` job produces a bitstream and MMI files, which are a necessary input for splicing.
-Specifically, this job runs `ci/scripts/build-bitstream-vivado.sh` and produces the following files:
+The `chip_earlgrey_cw310` CI job builds the `//hw/bitstream/vivado:standard` target which will build a bitstream with the test ROM and RMA OTP image.
+This target will also produce bitstreams with the ROM spliced in and the DEV OTP image spliced in.
+The following files are produced as a result:
 
-* `lowrisc_systems_chip_earlgrey_cw310_0.1.bit`
-* `rom.mmi`
+* `fpga_cw310_rom.bit` (ROM, RMA OTP image)
+* `fpga_cw310_rom_otp_dev.bit` (ROM, DEV OTP image)
+* `lowrisc_systems_chip_earlgrey_cw310_0.1.bit` (test ROM, RMA OTP image)
 * `otp.mmi`
-
-The `chip_earlgrey_cw310_splice_rom` job receives those files and splices the ROM into the bitstream.
+* `rom.mmi`
 
 If CI is working on the `master` branch, it puts selected build artifacts into a tarball, which it then uploads to the GCS bucket. The latest tarball is available here: https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz
 
