@@ -22,6 +22,9 @@ package spi_agent_pkg;
   parameter byte TPM_WAIT            = 8'h00;
   parameter byte TPM_START           = 8'h01;
   parameter byte MAX_TPM_SIZE        = 64;
+  parameter byte TPM_CMD_DIR_BIT_POS = 7;
+  parameter bit TPM_CMD_WRITE_BIT_VALUE = 0;
+  parameter bit TPM_CMD_READ_BIT_VALUE  = 1;
 
   // transaction type
   typedef enum {
@@ -83,12 +86,12 @@ package spi_agent_pkg;
   // formart: {write, 0, size-1 (6 bits)}
   function automatic bit [7:0] get_tpm_cmd(bit write, uint size);
     `DV_CHECK_LE(size, MAX_TPM_SIZE, , , msg_id)
-    return {!write, 1'b0, 6'(size - 1)};
+    return {write ? TPM_CMD_WRITE_BIT_VALUE : TPM_CMD_READ_BIT_VALUE, 1'b0, 6'(size - 1)};
   endfunction
 
   function automatic void decode_tpm_cmd(input bit [7:0] cmd,
                                          output bit write, output uint size);
-    write = cmd[7];
+    write = (cmd[TPM_CMD_DIR_BIT_POS] == TPM_CMD_WRITE_BIT_VALUE) ? 1 : 0;
     `DV_CHECK_EQ(cmd[6], 0, , , msg_id)
     size = cmd[5:0] + 1;
     `DV_CHECK_LE(size, MAX_TPM_SIZE, , , msg_id)

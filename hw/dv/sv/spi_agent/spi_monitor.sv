@@ -29,61 +29,61 @@ class spi_monitor extends dv_base_monitor#(
   endfunction
 
   virtual task run_phase(uvm_phase phase);
-    collect_trans(phase);
+    forever collect_trans(phase);
   endtask
 
-  // collect transactions forever
+  // collect transactions
   virtual protected task collect_trans(uvm_phase phase);
+    bit flash_opcode_received;
+
+    wait (cfg.en_monitor);
+    wait (&cfg.vif.csb === 0);
+    active_csb = cfg.vif.get_active_csb();
+
     host_item   = spi_item::type_id::create("host_item", this);
     device_item = spi_item::type_id::create("device_item", this);
-
-    forever begin
-      bit flash_opcode_received;
-      wait(cfg.en_monitor);
-      @(negedge cfg.vif.csb);
-      active_csb = cfg.vif.get_active_csb();
-
-      // indicate that this the first byte in a spi transaction
-      host_item.first_byte = 1;
-      cmd = CmdOnly;
-      cmd_byte = 0;
-
-      fork
-        begin : isolation_thread
-          fork
-            begin : csb_deassert_thread
-              wait(cfg.vif.csb[active_csb] == 1'b1);
-            end
-            begin : main_mon_thread
-              case (cfg.spi_func_mode)
-                SpiModeGeneric: collect_curr_trans();
-                SpiModeFlash: collect_flash_trans(host_item, flash_opcode_received);
-                SpiModeTpm: collect_tpm_trans(host_item);
-                default: begin
-                  `uvm_fatal(`gfn, $sformatf("Invalid mode %s", cfg.spi_func_mode.name))
-                end
-              endcase
-            end : main_mon_thread
-          join_any
-          disable fork;
-        end : isolation_thread
-      join
-      // write to host_analysis_port
-      case (cfg.spi_func_mode)
-        SpiModeFlash: begin
-          if (flash_opcode_received) begin
-            host_analysis_port.write(host_item);
-            host_item.mon_item_complete = 1;
+    fork
+      begin : isolation_thread
+        fork
+          begin : csb_deassert_thread
+            wait(cfg.vif.csb[active_csb] == 1'b1);
           end
+          begin : main_mon_thread
+            case (cfg.spi_func_mode)
+              SpiModeGeneric: begin
+                // indicate that this the first byte in a spi transaction
+                host_item.first_byte = 1;
+                cmd = CmdOnly;
+                cmd_byte = 0;
+                collect_curr_trans();
+              end
+              SpiModeFlash: collect_flash_trans(host_item, flash_opcode_received);
+              SpiModeTpm: collect_tpm_trans(host_item);
+              default: begin
+                `uvm_fatal(`gfn, $sformatf("Invalid mode %s", cfg.spi_func_mode.name))
+              end
+            endcase
+          end : main_mon_thread
+        join_any
+        disable fork;
+      end : isolation_thread
+    join
+    // write to host_analysis_port
+    case (cfg.spi_func_mode)
+      SpiModeFlash: begin
+        if (flash_opcode_received) begin
+          host_analysis_port.write(host_item);
+          host_item.mon_item_complete = 1;
         end
-        SpiModeTpm: begin
-          if (host_item.address_q.size > 0) begin
-            host_analysis_port.write(host_item);
-          end
+      end
+      SpiModeTpm: begin
+        if (host_item.address_q.size > 0) begin
+          host_analysis_port.write(host_item);
+          wait(cfg.vif.csb[active_csb] == 1'b1);
         end
-        default: ; // do nothing, in SpiModeGeneric, it writes to fifo for each byte
-      endcase
-    end
+      end
+      default: ; // do nothing, in SpiModeGeneric, it writes to fifo for each byte
+    endcase
   endtask : collect_trans
 
   virtual protected task collect_curr_trans();
@@ -243,11 +243,12 @@ class spi_monitor extends dv_base_monitor#(
     uint size;
     bit[7:0] cmd, tpm_rsp;
 
+    cfg.wait_sck_edge(LeadingEdge);
     // read the 1st byte to get TPM direction and size
     sample_and_check_byte(.num_lanes(1), .is_device_rsp(0), .data(cmd), .check_data_not_z(1));
     decode_tpm_cmd(cmd, item.write_command, size);
     if (!item.write_command) item.read_size = size;
-
+    `uvm_info(`gfn, $sformatf("Received TPM command: 0x%0x", cmd), UVM_MEDIUM)
     // read 3 bytes address
     fork
       begin : tpm_sio_0
@@ -255,15 +256,16 @@ class spi_monitor extends dv_base_monitor#(
       end
       begin : tpm_sio_1
         bit[7:0] data;
-        // check returned data is always 0, which indicates SPI device in the WAIT state
-        repeat (TPM_ADDR_WIDTH_BYTE) begin
+        // check the data of the last byte is 0, which indicates SPI device in the WAIT state
+        for (int i = 0; i < TPM_ADDR_WIDTH_BYTE; i++) begin
+          bit last_byte = (i == TPM_ADDR_WIDTH_BYTE - 1);
           sample_and_check_byte(.num_lanes(1), .is_device_rsp(1), .data(data),
-                                .check_data_not_z(1));
-          `DV_CHECK_EQ(data, TPM_WAIT)
+                                .check_data_not_z(last_byte));
         end
+        `DV_CHECK_EQ(data, TPM_WAIT)
       end
     join
-
+    `uvm_info(`gfn, $sformatf("Received TPM addr: %p", item.address_q), UVM_MEDIUM)
     // poll TPM_START
     `DV_SPINWAIT(
       do begin
@@ -277,9 +279,10 @@ class spi_monitor extends dv_base_monitor#(
     for (int i = 0; i < size; i++) begin
       sample_and_check_byte(.num_lanes(1), .is_device_rsp(!item.write_command),
                             .data(item.data[i]), .check_data_not_z(1));
-      `uvm_info(`gfn, $sformatf("collect %s data for TPM: 0x%p",
-                              item.write_command ? "write" : "read", item.data[i]), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("collect %s data for TPM, idx %0d: 0x%0x",
+                              item.write_command ? "write" : "read", i, item.data[i]), UVM_MEDIUM)
     end
+    item.print();
   endtask
 
   // address is 3 or 4 bytes
