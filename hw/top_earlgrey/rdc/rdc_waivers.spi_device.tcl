@@ -12,3 +12,7 @@
 set_rule_status -rule {W_RST_COMBO_LOGIC} -status {Waived}  \
   -expression {(SourceReset=~"*.u_spi_device.u_reg.u_control_rst_*xfifo.q*")} \
   -comment {rst_rx,txfifo are reset signals directly connected to the registers.q}
+
+set_rule_status -rule {W_RST_COMBO_LOGIC} -status {Waived} \
+  -expression {(SourceReset=~"*.u_spi_device.rst_*_buf")}  \
+  -comment {rst csb, tpm_csb are reset merging with scan chain.}
