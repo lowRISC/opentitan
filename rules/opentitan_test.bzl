@@ -151,7 +151,6 @@ def verilator_params(
     required_data = [
         "@//hw:verilator",
         "@//hw:fusesoc_ignore",
-        "@//sw/host/opentitantool:test_resources",
     ]
     required_tags = ["verilator"]
     kwargs.update(
@@ -219,16 +218,13 @@ def cw310_params(
     required_test_cmds = [
         "--interface=cw310",
     ]
-    required_data = [
-        "@//sw/host/opentitantool:test_resources",
-    ]
     required_tags = [
         "cw310",
         "exclusive",
     ]
     kwargs.update(
         args = default_args + args,
-        data = required_data + data,
+        data = data,
         exit_success = exit_success,
         exit_failure = exit_failure,
         local = local,
