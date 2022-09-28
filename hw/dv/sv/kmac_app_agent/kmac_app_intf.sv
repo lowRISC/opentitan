@@ -71,6 +71,6 @@ interface kmac_app_intf (input clk, input rst_n);
   // Done should be asserted after last, before we start another request
   `ASSERT(DoneAssertAfterLast_A,
     (kmac_data_req.last && kmac_data_req.valid && kmac_data_rsp.ready) |=>
-    !kmac_data_req.valid throughout rsp_done[->1], clk, !rst_n)
+    !kmac_data_req.valid throughout rsp_done[->1], clk, !rst_n || rsp_error)
 
 endinterface

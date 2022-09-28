@@ -91,7 +91,8 @@ module tb;
   for (genvar i = 0; i < kmac_pkg::NumAppIntf; i++) begin : gen_kmac_app_intf
     assign app_req[i]                   = kmac_app_if[i].kmac_data_req;
     assign kmac_app_if[i].kmac_data_rsp = app_rsp[i];
-    assign kmac_if.app_err_o[i] = app_rsp[i].error;
+    assign kmac_if.app_req[i] = app_req[i];
+    assign kmac_if.app_rsp[i] = app_rsp[i];
 
     initial begin
       uvm_config_db#(virtual kmac_app_intf)::set(null,
