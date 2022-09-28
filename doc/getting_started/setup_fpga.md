@@ -43,7 +43,7 @@ By default, the bitstream is built with a version of the boot ROM used for testi
 There is also a version of the boot ROM used in production (called the _ROM_; pulled from `sw/device/silicon_creator/rom`).
 This can be spliced into the bitstream to overwrite the testing boot ROM as described in the [FPGA Reference Manual]({{< relref "ref_manual_fpga.md#boot-rom-development" >}}).
 However, if you do not want to do the splicing yourself, both versions of the bitstream are available in the download as `*.bit.orig` and `*.bit.splice` (containing the test ROM and the ROM respectively).
-The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest/latest.txt).
+The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest.txt).
 
 ### Build an FPGA bitstream
 
@@ -419,7 +419,7 @@ To download the bitstream:
 1. On the left sidebar, expand the "Azure Pipelines" menu.
 1. Open the "CI (CW310's Earl Grey Bitstream)" job and click on "View more details on Azure Pipelines".
 1. Click on "1 artifact produced".
-1. Click on the three dots for "partial-build-bin-chip_earlgrey_cw310_splice_rom".
+1. Click on the three dots for "partial-build-bin-chip_earlgrey_cw310".
 1. You can either download the artifact directly or download with the URL.
 
 Note that Azure does not allow you to download the artifact with `wget` or `curl` by default, so to use the download URL, you need to specify a `user-agent` header.
