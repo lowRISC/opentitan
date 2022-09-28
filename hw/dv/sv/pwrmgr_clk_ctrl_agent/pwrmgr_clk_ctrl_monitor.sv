@@ -38,6 +38,7 @@ class pwrmgr_clk_ctrl_monitor extends dv_base_monitor #(
     if (cfg.clk_ctrl_en) begin
       if (cfg.vif.pwr_ast_req.io_clk_en == 0) cfg.clk_rst_vif.stop_clk();
       if (cfg.vif.pwr_clk_req.io_ip_clk_en == 0) cfg.esc_clk_rst_vif.stop_clk();
+      if (cfg.vif.pwr_clk_req.io_ip_clk_en == 0) cfg.lc_clk_rst_vif.stop_clk();
       fork
         monitor_pwr_ast_o();
         ctrl_main_clk();
@@ -133,9 +134,11 @@ class pwrmgr_clk_ctrl_monitor extends dv_base_monitor #(
         if (val == P_EDGE) begin
           repeat ($urandom_range(ESC_CLK_DELAY_MIN, ESC_CLK_DELAY_MAX)) @cfg.vif.cb;
           cfg.esc_clk_rst_vif.start_clk();
+          cfg.lc_clk_rst_vif.start_clk();
         end else begin
           repeat ($urandom_range(ESC_CLK_DELAY_MIN, ESC_CLK_DELAY_MAX)) @cfg.vif.cb;
           cfg.esc_clk_rst_vif.stop_clk();
+          cfg.lc_clk_rst_vif.stop_clk();
         end
       end
     end
@@ -150,9 +153,11 @@ class pwrmgr_clk_ctrl_monitor extends dv_base_monitor #(
         if (val == P_EDGE) begin
           repeat ($urandom_range(ESC_RST_DELAY_MIN, ESC_RST_DELAY_MAX)) @cfg.vif.cb;
           cfg.esc_clk_rst_vif.drive_rst_pin(0);
+          cfg.lc_clk_rst_vif.drive_rst_pin(0);
         end else begin
           repeat ($urandom_range(ESC_RST_DELAY_MIN, ESC_RST_DELAY_MAX)) @cfg.vif.cb;
           cfg.esc_clk_rst_vif.drive_rst_pin(1);
+          cfg.lc_clk_rst_vif.drive_rst_pin(1);
         end
       end
     end // forever begin

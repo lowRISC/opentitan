@@ -351,7 +351,8 @@
       clock_srcs: {
         clk_i: "io_div4",
         clk_slow_i: "aon",
-        clk_lc_i: {
+        clk_lc_i: "io_div4",
+        clk_esc_i: {
           clock: "io_div4",
           group: "secure"
         }
@@ -367,7 +368,11 @@
         },
         rst_lc_ni: {
           name: "lc_io_div4",
-          domain: "0"
+          domain: "Aon"
+        },
+        rst_esc_ni: {
+          name: "lc_io_div4",
+          domain: "Aon"
         },
         rst_slow_ni: {
           name: "por_aon",
@@ -393,7 +398,7 @@
       reset_connections: {
         rst_ni: {
           name: "lc_io_div4",
-          domain: "0"
+          domain: "Aon"
         },
         rst_por_ni: {
           name: "por_io_div4",

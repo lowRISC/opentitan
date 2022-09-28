@@ -9,6 +9,7 @@ class pwrmgr_clk_ctrl_agent_cfg extends dv_base_agent_cfg;
   virtual pwrmgr_clk_ctrl_if vif;
   virtual clk_rst_if clk_rst_vif;
   virtual clk_rst_if esc_clk_rst_vif;
+  virtual clk_rst_if lc_clk_rst_vif;
   `uvm_object_utils_begin(pwrmgr_clk_ctrl_agent_cfg)
   `uvm_object_utils_end
 

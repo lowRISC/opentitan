@@ -15,6 +15,7 @@ module tb;
 
   wire clk, rst_n;
   wire clk_esc, rst_esc_n;
+  wire clk_lc, rst_lc_n;
   wire clk_slow, rst_slow_n;
   wire aon_clk, aon_rst_n;
   wire devmode;
@@ -24,6 +25,10 @@ module tb;
   clk_rst_if clk_rst_if (
     .clk  (clk),
     .rst_n(rst_n)
+  );
+  clk_rst_if lc_clk_rst_if (
+    .clk  (clk_lc),
+    .rst_n(rst_lc_n)
   );
   clk_rst_if esc_clk_rst_if (
     .clk  (clk_esc),
@@ -77,8 +82,10 @@ module tb;
     .clk_slow_i (clk_slow),
     .rst_slow_ni(rst_slow_n),
     .rst_main_ni(pwrmgr_if.rst_main_n),
-    .clk_lc_i  (clk_esc),
-    .rst_lc_ni (rst_esc_n),
+    .clk_lc_i  (clk_lc),
+    .rst_lc_ni (rst_lc_n),
+    .clk_esc_i  (clk_esc),
+    .rst_esc_ni (rst_esc_n),
 
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),
@@ -128,11 +135,13 @@ module tb;
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     esc_clk_rst_if.set_active();
+    lc_clk_rst_if.set_active();
     slow_clk_rst_if.set_active();
     aon_clk_rst_if.set_active();
 
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "esc_clk_rst_vif", esc_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "lc_clk_rst_vif", lc_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif", aon_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "slow_clk_rst_vif", slow_clk_rst_if);
     uvm_config_db#(devmode_vif)::set(null, "*.env", "devmode_vif", devmode_if);

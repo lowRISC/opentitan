@@ -27,6 +27,11 @@ class pwrmgr_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get esc_clk_rst_vif from uvm_config_db")
     end
     if (!uvm_config_db#(virtual clk_rst_if)::get(
+            this, "", "lc_clk_rst_vif", cfg.lc_clk_rst_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get lc_clk_rst_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual clk_rst_if)::get(
             this, "", "aon_clk_rst_vif", cfg.aon_clk_rst_vif
         )) begin
       `uvm_fatal(`gfn, "failed to get aon_clk_rst_vif from uvm_config_db")
@@ -65,6 +70,11 @@ class pwrmgr_env extends cip_base_env #(
             this, "", "esc_clk_rst_vif", cfg.m_pcc_agent_cfg.esc_clk_rst_vif
         )) begin
       `uvm_fatal(`gfn, "failed to get clk_rst_vif to cfg.m_pcc_agent_cfg.esc_clk_rst_vif")
+    end
+    if (!uvm_config_db#(virtual clk_rst_if)::get(
+            this, "", "lc_clk_rst_vif", cfg.m_pcc_agent_cfg.lc_clk_rst_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get clk_rst_vif to cfg.m_pcc_agent_cfg.lc_clk_rst_vif")
     end
 
   endfunction
