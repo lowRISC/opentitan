@@ -45,16 +45,14 @@ mode:
 
 /* All constants below must be 256b-aligned. */
 
-/* random scalar k */
-.global k
+/* random scalar k (in two shares) */
+.global k0
 .balign 32
-k:
+k0:
   .zero 32
-
-/* randomness for blinding */
+.global k1
 .balign 32
-.global rnd
-rnd:
+k1:
   .zero 32
 
 /* message digest */
@@ -87,10 +85,14 @@ x:
 y:
   .zero 32
 
-/* private key d */
-.globl d
+/* private key d (in two shares) */
+.globl d0
 .balign 32
-d:
+d0:
+  .zero 32
+.globl d1
+.balign 32
+d1:
   .zero 32
 
 /* verification result x_r (aka x_1) */

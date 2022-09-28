@@ -73,8 +73,10 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, r);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, s);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, x);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, y);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, d);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, d0);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, d1);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k0);
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, k1);
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, x_r);
 
 static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa_sca);
@@ -85,9 +87,11 @@ static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p256_ecdsa_sca, r);
 static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p256_ecdsa_sca, s);
 static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(p256_ecdsa_sca, x);
 static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p256_ecdsa_sca, y);
-static const otbn_addr_t kOtbnVarD = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d);
+static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d0);
+static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, d1);
 static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(p256_ecdsa_sca, x_r);
-static const otbn_addr_t kOtbnVarK = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k);
+static const otbn_addr_t kOtbnVarK0 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k0);
+static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k1);
 
 /**
  * Simple serial 'd' (set private key) command handler.
@@ -149,10 +153,16 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
   SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, msg,
                                   kOtbnVarMsg) == kOtbnOk);
   SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, private_key_d,
-                                  kOtbnVarD) == kOtbnOk);
-
-  SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, k, kOtbnVarK) ==
+                                  kOtbnVarD0) == kOtbnOk);
+  SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, k, kOtbnVarK0) ==
            kOtbnOk);
+
+  // Write all-zero values for second shares of d and k.
+  uint8_t zero[32] = {0};
+  SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, zero,
+                                  kOtbnVarD1) == kOtbnOk);
+  SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, zero,
+                                  kOtbnVarK1) == kOtbnOk);
 
   // Call OTBN to perform operation, and wait for it to complete.
   LOG_INFO("Execute");

@@ -26,10 +26,13 @@ static const ecdsa_p256_public_key_t kPublicKey = {
           0x5954f0a4, 0x155f3e00, 0x874bc63c},
 };
 
-// Private key (d)
+// Private key (d) in two shares
 static const ecdsa_p256_private_key_t kPrivateKey = {
-    .d = {0xaf57b4cd, 0x744c9f1c, 0x8b7e0c02, 0x283e93e9, 0x0d18f00c,
-          0xda0b6cf4, 0x8fe6bb7a, 0x5545a0b7},
+    .d0 = {0xaf57b4cd, 0x744c9f1c, 0x8b7e0c02, 0x283e93e9, 0x0d18f00c,
+           0xda0b6cf4, 0x8fe6bb7a, 0x5545a0b7},
+    // TODO(#15409): add real data here to ensure the second share is
+    // incorporated.
+    .d1 = {0},
 };
 
 hmac_error_t compute_digest(void) {

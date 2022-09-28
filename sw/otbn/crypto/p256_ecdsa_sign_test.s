@@ -36,9 +36,9 @@ ecdsa_sign_test:
 .data
 
 /* nonce k */
-.globl k
+.globl k0
 .balign 32
-k:
+k0:
   .word 0xfe6d1071
   .word 0x21d0a016
   .word 0xb0b2c781
@@ -48,18 +48,11 @@ k:
   .word 0x74210263
   .word 0x1420fc41
 
-/* random number for blinding */
-.globl rnd
+/* second share of k (all-zero)*/
+.globl k1
 .balign 32
-rnd:
-  .word 0x7ab203c3
-  .word 0xd6ee4951
-  .word 0xd5b89b43
-  .word 0x409d2b56
-  .word 0x8e9d2186
-  .word 0x1de0f8ec
-  .word 0x0fa0bf9a
-  .word 0xa21c2147
+k1:
+  .zero 32
 
 /* message digest */
 .globl msg
@@ -75,9 +68,9 @@ msg:
   .word 0x06d71207
 
 /* private key d */
-.globl d
+.globl d0
 .balign 32
-d:
+d0:
   .word 0xc7df1a56
   .word 0xfbd94efe
   .word 0xaa847f52
@@ -86,6 +79,12 @@ d:
   .word 0xe5f2cbee
   .word 0x9144233d
   .word 0xc0fbe256
+
+/* second share of d (all-zero) */
+.globl d1
+.balign 32
+d1:
+  .zero 32
 
 /* signature R */
 .globl r

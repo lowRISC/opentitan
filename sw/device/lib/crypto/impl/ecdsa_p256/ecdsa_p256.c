@@ -17,8 +17,11 @@ OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, r);     // The signature scalar R.
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, s);     // The signature scalar S.
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x);     // The public key x-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, y);     // The public key y-coordinate.
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, d);     // The private key scalar d.
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x_r);   // Verification result.
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa,
+                         d0);  // The private key scalar d (share 0).
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa,
+                         d1);  // The private key scalar d (share 1).
+OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x_r);  // Verification result.
 
 static const otbn_app_t kOtbnAppEcdsa = OTBN_APP_T_INIT(p256_ecdsa);
 static const otbn_addr_t kOtbnVarEcdsaMode = OTBN_ADDR_T_INIT(p256_ecdsa, mode);
@@ -27,7 +30,8 @@ static const otbn_addr_t kOtbnVarEcdsaR = OTBN_ADDR_T_INIT(p256_ecdsa, r);
 static const otbn_addr_t kOtbnVarEcdsaS = OTBN_ADDR_T_INIT(p256_ecdsa, s);
 static const otbn_addr_t kOtbnVarEcdsaX = OTBN_ADDR_T_INIT(p256_ecdsa, x);
 static const otbn_addr_t kOtbnVarEcdsaY = OTBN_ADDR_T_INIT(p256_ecdsa, y);
-static const otbn_addr_t kOtbnVarEcdsaD = OTBN_ADDR_T_INIT(p256_ecdsa, d);
+static const otbn_addr_t kOtbnVarEcdsaD0 = OTBN_ADDR_T_INIT(p256_ecdsa, d0);
+static const otbn_addr_t kOtbnVarEcdsaD1 = OTBN_ADDR_T_INIT(p256_ecdsa, d1);
 static const otbn_addr_t kOtbnVarEcdsaXr = OTBN_ADDR_T_INIT(p256_ecdsa, x_r);
 
 /* Mode is represented by a single word, 1 for sign and 2 for verify */
@@ -57,9 +61,11 @@ otbn_error_t ecdsa_p256_sign(const ecdsa_p256_message_digest_t *digest,
   OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256ScalarNumWords,
                                               digest->h, kOtbnVarEcdsaMsg));
 
-  // Set the private key.
-  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(&otbn, kP256ScalarNumWords,
-                                              private_key->d, kOtbnVarEcdsaD));
+  // Set the private key shares.
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
+      &otbn, kP256ScalarNumWords, private_key->d0, kOtbnVarEcdsaD0));
+  OTBN_RETURN_IF_ERROR(otbn_copy_data_to_otbn(
+      &otbn, kP256ScalarNumWords, private_key->d1, kOtbnVarEcdsaD1));
 
   // Start the OTBN routine.
   OTBN_RETURN_IF_ERROR(otbn_execute_app(&otbn));
