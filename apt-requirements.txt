@@ -34,6 +34,7 @@ libncursesw5
 libssl-dev
 libudev-dev
 libusb-1.0-0
+lld
 lsb-release
 make
 ninja-build
