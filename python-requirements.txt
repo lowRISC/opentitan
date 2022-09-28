@@ -6,6 +6,7 @@
 hjson==3.1.0
 libcst==0.4.1
 mako==1.1.6
+numpy==1.19.5
 pluralizer==1.2.0
 pycryptodome==3.15.0
 pyelftools==0.29
