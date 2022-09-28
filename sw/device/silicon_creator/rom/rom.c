@@ -456,7 +456,11 @@ void rom_main(void) {
   shutdown_finalize(rom_try_boot());
 }
 
-void rom_interrupt_handler(void) { shutdown_finalize(rom_irq_error()); }
+void rom_interrupt_handler(void) {
+  register rom_error_t error asm("a0") = rom_irq_error();
+  asm volatile("tail shutdown_finalize;" ::"r"(error));
+  OT_UNREACHABLE();
+}
 
 // We only need a single handler for all ROM interrupts, but we want to
 // keep distinct symbols to make writing tests easier.  In the ROM,
