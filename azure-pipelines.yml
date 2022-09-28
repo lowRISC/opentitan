@@ -139,27 +139,16 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Confirm no .bazelrc-site files
 
-- job: download_bazel_dependencies
-  displayName: Prefetch Bazel deps
-  # Download Bazel fetched dependencies
+- job: airgapped_bazel_build
+  displayName: Test an airgapped Bazel build
   dependsOn: checkout
+  condition: eq(variables['Build.Reason'], 'PullRequest')
   pool:
     vmImage: ubuntu-20.04
   steps:
   - template: ci/checkout-template.yml
-  - bash: |
-      set -x -e
-      util/prep-bazel-airgapped-build.sh || {
-        echo -n "##vso[task.logissue type=warning]Failed to prefetch Bazel dependencies";
-        exit 1;
-      }
-      rm -rf bazel-airgapped/bitstreams-cache
-      tar -cf bazel-airgapped.tar.gz bazel-airgapped
-    displayName: Pre-fetch and package Bazel dependencies
-    continueOnError: True # This step is flaky on the ubuntu-18.04 image
-  - publish: $(System.DefaultWorkingDirectory)/bazel-airgapped.tar.gz
-    artifact: bazel-dependencies
-    condition: eq(variables['Agent.JobStatus'], 'Succeeded')
+  - template: ci/install-package-dependencies.yml
+  - bash: ci/scripts/test-airgapped-build.sh
 
 - job: slow_lints
   displayName: Quality (in-depth lint)
