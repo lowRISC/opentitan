@@ -1125,9 +1125,9 @@
               `sec_mmio_check_counters()`.
             - Verify that a failed sec_mmio check triggers an illegal instruction exception.
             '''
-      tags: ["rom", "no_dv", "fpga", "silicon"]
+      tags: ["rom", "dv", "verilator", "fpga", "silicon"]
       stage: V2
-      tests: []
+      tests: ["rom_e2e_static_critical"]
     }
 
     {
