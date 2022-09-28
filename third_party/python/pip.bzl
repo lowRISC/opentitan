@@ -39,6 +39,8 @@ def _pip_wheel_impl(rctx):
         "-m",
         "pip",
         "install",
+        "-U",
+        "--ignore-installed",
         "wheel",
     ]
     rctx.report_progress("Installing the Python wheel package")
