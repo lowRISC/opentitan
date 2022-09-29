@@ -23,7 +23,8 @@
    *
    * Interrupt vectors in Ibex have 32 4-byte entries for 32 possible interrupts.
    * The vector must be 256-byte aligned, as Ibex's vectoring mechanism
-   * requires that.
+   * requires that. This section will be padded with `unimp` (`0xc0001073`) if
+   * needed depending on the alignment of the next section.
    *
    * Only the following will be used by Ibex:
    * - Exception Handler (Entry 0)
@@ -35,54 +36,20 @@
    * More information about Ibex's interrupts can be found here:
    *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
    */
-  .balign 256
+  .balignl 256, 0xc0001073
   .global _rom_ext_interrupt_vector
   .type _rom_ext_interrupt_vector, @function
 _rom_ext_interrupt_vector:
-  // RISC-V Standard (Vectored) Interrupt Handlers:
+  // Entry 0: exception handler.
+  j rom_ext_exception_handler
 
-  // Exception and User Software Interrupt Handler.
-  unimp
-  // Supervisor Software Interrupt Handler.
-  unimp
-  // Reserved.
-  unimp
-  // Machine Software Interrupt Handler.
-  unimp
-
-  // User Timer Interrupt Handler.
-  unimp
-  // Supervisor Timer Interrupt Handler.
-  unimp
-  // Reserved.
-  unimp
-  // Machine Timer Interrupt Handler.
-  unimp
-
-  // User External Interrupt Handler.
-  unimp
-  // Supervisor External Interrupt Handler.
-  unimp
-  // Reserved.
-  unimp
-  // Machine External Interrupt Handler.
-  unimp
-
-  // Reserved.
-  unimp
-  unimp
-  unimp
-  unimp
-
-  // Vendor Interrupt Handlers:
-
-  // On Ibex interrupt ids 16-30 are for "fast" interrupts.
-  .rept 15
-  unimp
+  // Entries 1-30: interrupt handlers.
+  .rept 30
+  j rom_ext_interrupt_handler
   .endr
 
-  // On Ibex interrupt id 31 is for non-maskable interrupts.
-  unimp
+  // Entry 31: non-maskable interrupt handler.
+  j rom_ext_nmi_handler
   .size _rom_ext_interrupt_vector, .-_rom_ext_interrupt_vector
 
   // Re-enable compressed instructions, linker relaxation.
@@ -153,14 +120,6 @@ _rom_ext_start_boot:
   la   sp, (_stack_end - 16)
 
   /**
-   * Set well-defined interrupt/exception handlers
-   *
-   * The lowest two bits should be `0b01` to ensure we use vectored interrupts.
-   */
-  la   t0, (_rom_ext_interrupt_vector + 1)
-  csrw mtvec, t0
-
-  /**
    * Setup C Runtime
    */
 
@@ -200,6 +159,18 @@ _rom_ext_start_boot:
   li a5, 0x0
   li a6, 0x0
   li a7, 0x0
+
+  /**
+   * Set well-defined interrupt/exception handlers
+   *
+   * The lowest two bits should be `0b01` to ensure we use vectored interrupts.
+   * We set the handlers only after making sure that we can execute some code,
+   * i.e. `crt_section_copy` and `crt_section_clear`, to avoid a double-fault
+   * condition. Any exceptions and interrupts occuring before this line will be
+   * handled by the ROM.
+   */
+  la   t0, (_rom_ext_interrupt_vector + 1)
+  csrw mtvec, t0
 
   /**
    * Jump to C Code
