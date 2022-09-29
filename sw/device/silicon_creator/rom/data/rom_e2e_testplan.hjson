@@ -787,8 +787,7 @@
             |         Off         |      B     |     A     |  Yes  |
             |         On          |   Virtual  |     A     |  No   |
             |         On          |   Virtual  |     B     |  No   |
-            |         Invalid     |   Virtual  |     A     |  Yes  |
-            |         Invalid     |   Virtual  |     B     |  Yes  |
+            |         Invalid     |      A     |     A     |  Yes  |
             '''
       tags: ["rom", "no_dv", "fpga", "silicon"]
       stage: V2

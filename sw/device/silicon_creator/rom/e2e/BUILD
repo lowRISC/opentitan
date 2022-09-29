@@ -206,6 +206,16 @@ MSG_STARTING_ROM_EXT = "Starting ROM_EXT"
 
 MSG_BOOT_FAULT = "BFV:"
 
+MSG_STORE_ACCESS_FAULT = "BFV:07495202(?s:.*)BFV:07495202"
+
+MSG_ILLEGAL_INSTRUCTION_FAULT = "BFV:02495202(?s:.*)BFV:02495202"
+
+SLOT_A_OFFSET = "0x0"
+
+SLOT_B_OFFSET = "0x80000"
+
+FLASH_SIZE = "0x100000"
+
 opentitan_functest(
     name = "rom_ext_a_flash_a",
     cw310 = cw310_params(
@@ -216,7 +226,71 @@ opentitan_functest(
     targets = ["cw310_rom"],
 )
 
-# TODO(#13511): Add a positive test for slot_b.
+opentitan_multislot_flash_binary(
+    name = "rom_ext_b_flash_b_image",
+    srcs = {
+        "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
+            "key": "test_key_0",
+            "offset": SLOT_B_OFFSET,
+        },
+    },
+    image_size = FLASH_SIZE,
+)
+
+opentitan_functest(
+    name = "rom_ext_b_flash_b",
+    cw310 = cw310_params(
+        exit_failure = MSG_BOOT_FAULT,
+        exit_success = MSG_STARTING_ROM_EXT,
+    ),
+    key = "multislot",
+    ot_flash_binary = ":rom_ext_b_flash_b_image",
+    targets = ["cw310_rom"],
+)
+
+opentitan_multislot_flash_binary(
+    name = "rom_ext_a_flash_b_image",
+    srcs = {
+        "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": {
+            "key": "test_key_0",
+            "offset": SLOT_B_OFFSET,
+        },
+    },
+    image_size = FLASH_SIZE,
+)
+
+opentitan_functest(
+    name = "rom_ext_a_flash_b",
+    cw310 = cw310_params(
+        exit_failure = MSG_STARTING_ROM_EXT,
+        exit_success = MSG_STORE_ACCESS_FAULT,
+    ),
+    key = "multislot",
+    ot_flash_binary = ":rom_ext_a_flash_b_image",
+    targets = ["cw310_rom"],
+)
+
+opentitan_multislot_flash_binary(
+    name = "rom_ext_b_flash_a_image",
+    srcs = {
+        "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
+            "key": "test_key_0",
+            "offset": SLOT_A_OFFSET,
+        },
+    },
+    image_size = FLASH_SIZE,
+)
+
+opentitan_functest(
+    name = "rom_ext_b_flash_a",
+    cw310 = cw310_params(
+        exit_failure = MSG_STARTING_ROM_EXT,
+        exit_success = MSG_STORE_ACCESS_FAULT,
+    ),
+    key = "multislot",
+    ot_flash_binary = ":rom_ext_b_flash_a_image",
+    targets = ["cw310_rom"],
+)
 
 opentitan_functest(
     name = "rom_ext_v_flash_a",
@@ -228,10 +302,47 @@ opentitan_functest(
     targets = ["cw310_rom"],
 )
 
+opentitan_multislot_flash_binary(
+    name = "rom_ext_v_flash_b_image",
+    srcs = {
+        "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
+            "key": "test_key_0",
+            "offset": SLOT_B_OFFSET,
+        },
+    },
+    image_size = FLASH_SIZE,
+)
+
+opentitan_functest(
+    name = "rom_ext_v_flash_b",
+    cw310 = cw310_params(
+        exit_failure = MSG_BOOT_FAULT,
+        exit_success = MSG_STARTING_ROM_EXT,
+    ),
+    key = "multislot",
+    ot_flash_binary = ":rom_ext_v_flash_b_image",
+    targets = ["cw310_rom"],
+)
+
+opentitan_functest(
+    name = "rom_ext_a_flash_a_bad_addr_trans",
+    cw310 = cw310_params(
+        exit_failure = MSG_STARTING_ROM_EXT,
+        exit_success = MSG_ILLEGAL_INSTRUCTION_FAULT,
+    ),
+    ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a_bad_address_translation",
+    targets = ["cw310_rom"],
+)
+
 test_suite(
     name = "address_translation",
     tests = [
         "rom_ext_a_flash_a",
-        "rom_ext_v_flash_a"
+        "rom_ext_a_flash_a_bad_addr_trans",
+        "rom_ext_a_flash_b",
+        "rom_ext_b_flash_a",
+        "rom_ext_b_flash_b",
+        "rom_ext_v_flash_a",
+        "rom_ext_v_flash_b",
     ],
 )
