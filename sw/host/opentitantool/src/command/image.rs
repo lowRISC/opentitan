@@ -204,9 +204,11 @@ pub struct DigestCommand {
 }
 
 /// Response format for the digest command.
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, Annotate)]
 pub struct DigestResponse {
-    pub digest: String,
+    #[serde(with = "serde_bytes")]
+    #[annotate(comment = "SHA256 Digest excluding the image signature bytes", format = hexstr)]
+    pub digest: Vec<u8>,
 }
 
 impl CommandDispatch for DigestCommand {
@@ -222,7 +224,7 @@ impl CommandDispatch for DigestCommand {
             file.write(&digest.to_le_bytes())?;
         }
         Ok(Some(Box::new(DigestResponse {
-            digest: format!("0x{}", hex::encode(&digest.to_be_bytes())),
+            digest: digest.to_be_bytes(),
         })))
     }
 }
