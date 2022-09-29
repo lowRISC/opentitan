@@ -401,7 +401,6 @@ def is_inst(module):
 def get_base_and_size(name_to_block: Dict[str, IpBlock],
                       inst: Dict[str, object],
                       ifname: Optional[str]) -> Tuple[int, int]:
-    min_device_spacing = 0x1000
 
     block = name_to_block.get(inst['type'])
     if block is None:
@@ -444,8 +443,8 @@ def get_base_and_size(name_to_block: Dict[str, IpBlock],
 
                 bytes_used = memory_size
 
-    # Round up to min_device_spacing if necessary
-    size_byte = max(bytes_used, min_device_spacing)
+    # Round up to next power of 2.
+    size_byte = 1 << (bytes_used - 1).bit_length()
 
     if isinstance(base_addr, str):
         base_addr = int(base_addr, 0)

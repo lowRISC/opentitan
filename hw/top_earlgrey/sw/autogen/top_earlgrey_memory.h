@@ -79,7 +79,7 @@
  * address between #TOP_EARLGREY_UART0_BASE_ADDR and
  * `TOP_EARLGREY_UART0_BASE_ADDR + TOP_EARLGREY_UART0_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_UART0_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_UART0_SIZE_BYTES 0x40
 /**
  * Peripheral base address for uart1 in top earlgrey.
  *
@@ -96,7 +96,7 @@
  * address between #TOP_EARLGREY_UART1_BASE_ADDR and
  * `TOP_EARLGREY_UART1_BASE_ADDR + TOP_EARLGREY_UART1_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_UART1_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_UART1_SIZE_BYTES 0x40
 /**
  * Peripheral base address for uart2 in top earlgrey.
  *
@@ -113,7 +113,7 @@
  * address between #TOP_EARLGREY_UART2_BASE_ADDR and
  * `TOP_EARLGREY_UART2_BASE_ADDR + TOP_EARLGREY_UART2_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_UART2_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_UART2_SIZE_BYTES 0x40
 /**
  * Peripheral base address for uart3 in top earlgrey.
  *
@@ -130,7 +130,7 @@
  * address between #TOP_EARLGREY_UART3_BASE_ADDR and
  * `TOP_EARLGREY_UART3_BASE_ADDR + TOP_EARLGREY_UART3_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_UART3_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_UART3_SIZE_BYTES 0x40
 /**
  * Peripheral base address for gpio in top earlgrey.
  *
@@ -147,7 +147,7 @@
  * address between #TOP_EARLGREY_GPIO_BASE_ADDR and
  * `TOP_EARLGREY_GPIO_BASE_ADDR + TOP_EARLGREY_GPIO_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_GPIO_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_GPIO_SIZE_BYTES 0x40
 /**
  * Peripheral base address for spi_device in top earlgrey.
  *
@@ -181,7 +181,7 @@
  * address between #TOP_EARLGREY_I2C0_BASE_ADDR and
  * `TOP_EARLGREY_I2C0_BASE_ADDR + TOP_EARLGREY_I2C0_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_I2C0_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_I2C0_SIZE_BYTES 0x80
 /**
  * Peripheral base address for i2c1 in top earlgrey.
  *
@@ -198,7 +198,7 @@
  * address between #TOP_EARLGREY_I2C1_BASE_ADDR and
  * `TOP_EARLGREY_I2C1_BASE_ADDR + TOP_EARLGREY_I2C1_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_I2C1_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_I2C1_SIZE_BYTES 0x80
 /**
  * Peripheral base address for i2c2 in top earlgrey.
  *
@@ -215,7 +215,7 @@
  * address between #TOP_EARLGREY_I2C2_BASE_ADDR and
  * `TOP_EARLGREY_I2C2_BASE_ADDR + TOP_EARLGREY_I2C2_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_I2C2_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_I2C2_SIZE_BYTES 0x80
 /**
  * Peripheral base address for pattgen in top earlgrey.
  *
@@ -232,7 +232,7 @@
  * address between #TOP_EARLGREY_PATTGEN_BASE_ADDR and
  * `TOP_EARLGREY_PATTGEN_BASE_ADDR + TOP_EARLGREY_PATTGEN_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_PATTGEN_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_PATTGEN_SIZE_BYTES 0x40
 /**
  * Peripheral base address for rv_timer in top earlgrey.
  *
@@ -249,7 +249,7 @@
  * address between #TOP_EARLGREY_RV_TIMER_BASE_ADDR and
  * `TOP_EARLGREY_RV_TIMER_BASE_ADDR + TOP_EARLGREY_RV_TIMER_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_RV_TIMER_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_RV_TIMER_SIZE_BYTES 0x200
 /**
  * Peripheral base address for core device on otp_ctrl in top earlgrey.
  *
@@ -283,7 +283,7 @@
  * address between #TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR and
  * `TOP_EARLGREY_OTP_CTRL_PRIM_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_PRIM_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_OTP_CTRL_PRIM_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_OTP_CTRL_PRIM_SIZE_BYTES 0x20
 /**
  * Peripheral base address for lc_ctrl in top earlgrey.
  *
@@ -300,7 +300,7 @@
  * address between #TOP_EARLGREY_LC_CTRL_BASE_ADDR and
  * `TOP_EARLGREY_LC_CTRL_BASE_ADDR + TOP_EARLGREY_LC_CTRL_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_LC_CTRL_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_LC_CTRL_SIZE_BYTES 0x100
 /**
  * Peripheral base address for alert_handler in top earlgrey.
  *
@@ -317,7 +317,7 @@
  * address between #TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR and
  * `TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR + TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_ALERT_HANDLER_SIZE_BYTES 0x800
 /**
  * Peripheral base address for spi_host0 in top earlgrey.
  *
@@ -334,7 +334,7 @@
  * address between #TOP_EARLGREY_SPI_HOST0_BASE_ADDR and
  * `TOP_EARLGREY_SPI_HOST0_BASE_ADDR + TOP_EARLGREY_SPI_HOST0_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SPI_HOST0_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_SPI_HOST0_SIZE_BYTES 0x40
 /**
  * Peripheral base address for spi_host1 in top earlgrey.
  *
@@ -351,7 +351,7 @@
  * address between #TOP_EARLGREY_SPI_HOST1_BASE_ADDR and
  * `TOP_EARLGREY_SPI_HOST1_BASE_ADDR + TOP_EARLGREY_SPI_HOST1_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SPI_HOST1_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_SPI_HOST1_SIZE_BYTES 0x40
 /**
  * Peripheral base address for usbdev in top earlgrey.
  *
@@ -385,7 +385,7 @@
  * address between #TOP_EARLGREY_PWRMGR_AON_BASE_ADDR and
  * `TOP_EARLGREY_PWRMGR_AON_BASE_ADDR + TOP_EARLGREY_PWRMGR_AON_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_PWRMGR_AON_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_PWRMGR_AON_SIZE_BYTES 0x80
 /**
  * Peripheral base address for rstmgr_aon in top earlgrey.
  *
@@ -402,7 +402,7 @@
  * address between #TOP_EARLGREY_RSTMGR_AON_BASE_ADDR and
  * `TOP_EARLGREY_RSTMGR_AON_BASE_ADDR + TOP_EARLGREY_RSTMGR_AON_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_RSTMGR_AON_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_RSTMGR_AON_SIZE_BYTES 0x80
 /**
  * Peripheral base address for clkmgr_aon in top earlgrey.
  *
@@ -419,7 +419,7 @@
  * address between #TOP_EARLGREY_CLKMGR_AON_BASE_ADDR and
  * `TOP_EARLGREY_CLKMGR_AON_BASE_ADDR + TOP_EARLGREY_CLKMGR_AON_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_CLKMGR_AON_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_CLKMGR_AON_SIZE_BYTES 0x80
 /**
  * Peripheral base address for sysrst_ctrl_aon in top earlgrey.
  *
@@ -436,7 +436,7 @@
  * address between #TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR and
  * `TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR + TOP_EARLGREY_SYSRST_CTRL_AON_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SYSRST_CTRL_AON_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_SYSRST_CTRL_AON_SIZE_BYTES 0x100
 /**
  * Peripheral base address for adc_ctrl_aon in top earlgrey.
  *
@@ -453,7 +453,7 @@
  * address between #TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR and
  * `TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR + TOP_EARLGREY_ADC_CTRL_AON_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_ADC_CTRL_AON_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_ADC_CTRL_AON_SIZE_BYTES 0x80
 /**
  * Peripheral base address for pwm_aon in top earlgrey.
  *
@@ -470,7 +470,7 @@
  * address between #TOP_EARLGREY_PWM_AON_BASE_ADDR and
  * `TOP_EARLGREY_PWM_AON_BASE_ADDR + TOP_EARLGREY_PWM_AON_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_PWM_AON_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_PWM_AON_SIZE_BYTES 0x80
 /**
  * Peripheral base address for pinmux_aon in top earlgrey.
  *
@@ -504,7 +504,7 @@
  * address between #TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR and
  * `TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR + TOP_EARLGREY_AON_TIMER_AON_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_AON_TIMER_AON_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_AON_TIMER_AON_SIZE_BYTES 0x40
 /**
  * Peripheral base address for ast in top earlgrey.
  *
@@ -521,7 +521,7 @@
  * address between #TOP_EARLGREY_AST_BASE_ADDR and
  * `TOP_EARLGREY_AST_BASE_ADDR + TOP_EARLGREY_AST_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_AST_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_AST_SIZE_BYTES 0x400
 /**
  * Peripheral base address for sensor_ctrl in top earlgrey.
  *
@@ -538,7 +538,7 @@
  * address between #TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR and
  * `TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR + TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_SENSOR_CTRL_SIZE_BYTES 0x40
 /**
  * Peripheral base address for regs device on sram_ctrl_ret_aon in top earlgrey.
  *
@@ -555,7 +555,7 @@
  * address between #TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR and
  * `TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_SIZE_BYTES 0x20
 /**
  * Peripheral base address for ram device on sram_ctrl_ret_aon in top earlgrey.
  *
@@ -589,7 +589,7 @@
  * address between #TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR and
  * `TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_CORE_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_FLASH_CTRL_CORE_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_FLASH_CTRL_CORE_SIZE_BYTES 0x200
 /**
  * Peripheral base address for prim device on flash_ctrl in top earlgrey.
  *
@@ -606,7 +606,7 @@
  * address between #TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR and
  * `TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR + TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_FLASH_CTRL_PRIM_SIZE_BYTES 0x80
 /**
  * Peripheral base address for mem device on flash_ctrl in top earlgrey.
  *
@@ -640,7 +640,7 @@
  * address between #TOP_EARLGREY_RV_DM_REGS_BASE_ADDR and
  * `TOP_EARLGREY_RV_DM_REGS_BASE_ADDR + TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_RV_DM_REGS_SIZE_BYTES 0x4
 /**
  * Peripheral base address for mem device on rv_dm in top earlgrey.
  *
@@ -691,7 +691,7 @@
  * address between #TOP_EARLGREY_AES_BASE_ADDR and
  * `TOP_EARLGREY_AES_BASE_ADDR + TOP_EARLGREY_AES_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_AES_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_AES_SIZE_BYTES 0x100
 /**
  * Peripheral base address for hmac in top earlgrey.
  *
@@ -759,7 +759,7 @@
  * address between #TOP_EARLGREY_KEYMGR_BASE_ADDR and
  * `TOP_EARLGREY_KEYMGR_BASE_ADDR + TOP_EARLGREY_KEYMGR_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_KEYMGR_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_KEYMGR_SIZE_BYTES 0x100
 /**
  * Peripheral base address for csrng in top earlgrey.
  *
@@ -776,7 +776,7 @@
  * address between #TOP_EARLGREY_CSRNG_BASE_ADDR and
  * `TOP_EARLGREY_CSRNG_BASE_ADDR + TOP_EARLGREY_CSRNG_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_CSRNG_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_CSRNG_SIZE_BYTES 0x80
 /**
  * Peripheral base address for entropy_src in top earlgrey.
  *
@@ -793,7 +793,7 @@
  * address between #TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR and
  * `TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR + TOP_EARLGREY_ENTROPY_SRC_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_ENTROPY_SRC_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_ENTROPY_SRC_SIZE_BYTES 0x100
 /**
  * Peripheral base address for edn0 in top earlgrey.
  *
@@ -810,7 +810,7 @@
  * address between #TOP_EARLGREY_EDN0_BASE_ADDR and
  * `TOP_EARLGREY_EDN0_BASE_ADDR + TOP_EARLGREY_EDN0_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_EDN0_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_EDN0_SIZE_BYTES 0x80
 /**
  * Peripheral base address for edn1 in top earlgrey.
  *
@@ -827,7 +827,7 @@
  * address between #TOP_EARLGREY_EDN1_BASE_ADDR and
  * `TOP_EARLGREY_EDN1_BASE_ADDR + TOP_EARLGREY_EDN1_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_EDN1_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_EDN1_SIZE_BYTES 0x80
 /**
  * Peripheral base address for regs device on sram_ctrl_main in top earlgrey.
  *
@@ -844,7 +844,7 @@
  * address between #TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR and
  * `TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR + TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_SIZE_BYTES 0x20
 /**
  * Peripheral base address for ram device on sram_ctrl_main in top earlgrey.
  *
@@ -878,7 +878,7 @@
  * address between #TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR and
  * `TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR + TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_ROM_CTRL_REGS_SIZE_BYTES 0x80
 /**
  * Peripheral base address for rom device on rom_ctrl in top earlgrey.
  *
@@ -912,7 +912,7 @@
  * address between #TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR and
  * `TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR + TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES 0x1000
+#define TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES 0x100
 
 /**
  * MMIO Region

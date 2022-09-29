@@ -179,8 +179,8 @@ def find_pow2_size(addr, min_size, next_value):
     if i > diff:
         i = min_size
 
-    # Shall be greater than 4kB
-    assert i >= 0x1000
+    # Minimum size is one 32bit register.
+    assert i >= 0x4
 
     return i
 

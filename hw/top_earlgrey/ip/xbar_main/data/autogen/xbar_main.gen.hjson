@@ -171,7 +171,7 @@
       [
         {
           base_addr: 0x41200000
-          size_byte: 0x1000
+          size_byte: 0x4
         }
       ]
       xbar: false
@@ -227,7 +227,7 @@
       [
         {
           base_addr: 0x411e0000
-          size_byte: 0x1000
+          size_byte: 0x80
         }
       ]
       xbar: false
@@ -267,7 +267,7 @@
       [
         {
           base_addr: 0x40300000
-          size_byte: 0x1000
+          size_byte: 0x40
         }
       ]
       xbar: false
@@ -285,7 +285,7 @@
       [
         {
           base_addr: 0x40310000
-          size_byte: 0x1000
+          size_byte: 0x40
         }
       ]
       xbar: false
@@ -322,7 +322,7 @@
       [
         {
           base_addr: 0x41000000
-          size_byte: 0x1000
+          size_byte: 0x200
         }
       ]
       xbar: false
@@ -341,7 +341,7 @@
       [
         {
           base_addr: 0x41008000
-          size_byte: 0x1000
+          size_byte: 0x80
         }
       ]
       xbar: false
@@ -417,7 +417,7 @@
       [
         {
           base_addr: 0x41100000
-          size_byte: 0x1000
+          size_byte: 0x100
         }
       ]
       xbar: false
@@ -436,7 +436,7 @@
       [
         {
           base_addr: 0x41160000
-          size_byte: 0x1000
+          size_byte: 0x100
         }
       ]
       xbar: false
@@ -455,7 +455,7 @@
       [
         {
           base_addr: 0x41150000
-          size_byte: 0x1000
+          size_byte: 0x80
         }
       ]
       xbar: false
@@ -474,7 +474,7 @@
       [
         {
           base_addr: 0x41170000
-          size_byte: 0x1000
+          size_byte: 0x80
         }
       ]
       xbar: false
@@ -493,7 +493,7 @@
       [
         {
           base_addr: 0x41180000
-          size_byte: 0x1000
+          size_byte: 0x80
         }
       ]
       xbar: false
@@ -550,7 +550,7 @@
       [
         {
           base_addr: 0x41140000
-          size_byte: 0x1000
+          size_byte: 0x100
         }
       ]
       xbar: false
@@ -569,7 +569,7 @@
       [
         {
           base_addr: 0x411f0000
-          size_byte: 0x1000
+          size_byte: 0x100
         }
       ]
       xbar: false
@@ -587,7 +587,7 @@
       [
         {
           base_addr: 0x411c0000
-          size_byte: 0x1000
+          size_byte: 0x20
         }
       ]
       xbar: false
