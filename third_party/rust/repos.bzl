@@ -28,7 +28,7 @@ def rust_repos(rules_rust = None, safe_ftdi = None, serde_annotate = None):
     http_archive_or_local(
         name = "serde_annotate",
         local = serde_annotate,
-        sha256 = "48775889028e42dbb684b6f5442a6e3cea8bee206be7e1eb46ec0a0fce79e6c4",
-        strip_prefix = "serde-annotate-0.0.2",
-        url = "https://github.com/lowRISC/serde-annotate/archive/refs/tags/v0.0.2.tar.gz",
+        sha256 = "e5d82f7519eac85daa5b52d85c597285ba761cad7138694c222be102346421ae",
+        strip_prefix = "serde-annotate-0.0.3",
+        url = "https://github.com/lowRISC/serde-annotate/archive/refs/tags/v0.0.3.tar.gz",
     )

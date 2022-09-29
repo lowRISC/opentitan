@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use erased_serde::Serialize;
+use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
@@ -34,7 +34,7 @@ impl CommandDispatch for UpdateUsrAccess {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         let mut bs = fs::read(&self.input)?;
         usr_access_set(
             &mut bs,

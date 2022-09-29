@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Result};
-use erased_serde::Serialize;
+use serde_annotate::Annotate;
 use std::any::Any;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -46,7 +46,7 @@ impl BootstrapCommand {
     fn bootstrap_using_direct_emulator_integration(
         &self,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         ensure!(
             !(self.filename.len() > 1 || self.filename[0].contains('@')),
             "The `emulator` protocol does not support image assembly"
@@ -72,7 +72,7 @@ impl CommandDispatch for BootstrapCommand {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         // The `min_values` structopt attribute should take care of this, but it doesn't.
         ensure!(
             !self.filename.is_empty(),

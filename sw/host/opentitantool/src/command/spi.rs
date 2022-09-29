@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use erased_serde::Serialize;
+use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::{self, File};
 use std::io::{self, Write};
@@ -63,7 +63,7 @@ impl CommandDispatch for SpiSfdp {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport)?;
@@ -105,7 +105,7 @@ impl CommandDispatch for SpiReadId {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport)?;
@@ -154,7 +154,7 @@ impl CommandDispatch for SpiRead {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport)?;
@@ -204,7 +204,7 @@ impl CommandDispatch for SpiErase {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport)?;
@@ -246,7 +246,7 @@ impl CommandDispatch for SpiProgram {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
         let spi = context.params.create(transport)?;
@@ -293,7 +293,7 @@ impl CommandDispatch for SpiCommand {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         // None of the SPI commands care about the prior context, but they do
         // care about the `bus` parameter in the current node.
         self.command.run(self, transport)

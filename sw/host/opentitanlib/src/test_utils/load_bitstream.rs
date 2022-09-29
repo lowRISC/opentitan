@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use erased_serde::Serialize;
+use serde_annotate::Annotate;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use structopt::StructOpt;
@@ -32,7 +32,7 @@ pub struct LoadBitstream {
 }
 
 impl LoadBitstream {
-    pub fn init(&self, transport: &TransportWrapper) -> Result<Option<Box<dyn Serialize>>> {
+    pub fn init(&self, transport: &TransportWrapper) -> Result<Option<Box<dyn Annotate>>> {
         if let Some(bitstream) = &self.bitstream {
             self.load(transport, bitstream)
         } else {
@@ -44,7 +44,7 @@ impl LoadBitstream {
         &self,
         transport: &TransportWrapper,
         file: &Path,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         log::info!("Loading bitstream: {:?}", file);
         let payload = std::fs::read(file)?;
         let progress = app::progress_bar(payload.len() as u64);
