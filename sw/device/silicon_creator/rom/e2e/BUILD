@@ -15,6 +15,11 @@ load(
     "//rules:opentitan.bzl",
     "opentitan_multislot_flash_binary",
 )
+load(
+    "//rules:manifest.bzl",
+    "CONST",
+    "manifest",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -364,4 +369,42 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
+)
+
+MSG_SHUTDOWN = {
+    "test": "BFV:0142500d\r\nLCV:02108421\r\n",
+    "dev": "BFV:0142500d\r\nLCV:21084210\r\n",
+    "prod": "BFV:0142500d\r\nLCV:2318c631\r\n",
+    "prod_end": "BFV:0142500d\r\nLCV:25294a52\r\n",
+    "rma": "BFV:0142500d\r\nLCV:2739ce73\r\n",
+}
+
+LC_STATES = ["rma"]
+
+manifest(
+    name = "manifest_bad_identifier",
+    address_translation = CONST.FALSE,
+    identifier = 0,
+)
+
+# TODO(#14270): Add remaining lifecycle states.
+[opentitan_functest(
+    name = "shutdown_output_{}".format(lc_state),
+    srcs = ["empty_test.c"],
+    cw310 = cw310_params(
+        bitstream = "@//hw/bitstream:rom",
+        exit_failure = MSG_PASS,
+        exit_success = MSG_SHUTDOWN[lc_state],
+    ),
+    manifest = ":manifest_bad_identifier",
+    signed = False,
+    targets = ["cw310_rom"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+) for lc_state in LC_STATES]
+
+test_suite(
+    name = "shutdown_output",
+    tests = ["shutdown_output_{}".format(lc_state) for lc_state in LC_STATES],
 )
