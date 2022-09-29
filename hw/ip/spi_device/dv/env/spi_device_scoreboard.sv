@@ -265,7 +265,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // transaction, save to flash_status_q. it's ok that HW update status to any value in both Q.
   virtual task forever_latch_flash_status();
     forever begin
-      @(negedge cfg.spi_host_agent_cfg.vif.csb);
+      @(negedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
       if (flash_status_q.size > 0) begin
         flash_status_settle_q.delete();
         flash_status_settle_q.push_back(flash_status_q[$]);
