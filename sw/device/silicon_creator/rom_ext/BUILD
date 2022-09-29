@@ -190,3 +190,22 @@ opentitan_flash_binary(
         "//sw/device/silicon_creator/lib:manifest_def",
     ],
 )
+
+manifest(
+    name = "manifest_bad_address_translation",
+    address_translation = 0,
+    identifier = CONST.ROM_EXT,
+)
+
+opentitan_flash_binary(
+    name = "rom_ext_slot_a_bad_address_translation",
+    srcs = ["rom_ext_start.S"],
+    manifest = ":manifest_bad_address_translation",
+    signed = True,
+    deps = [
+        ":ld_slot_a",
+        ":rom_ext",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/lib:manifest_def",
+    ],
+)
