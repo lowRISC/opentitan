@@ -23,7 +23,7 @@
       desc: '''Verify that ROM can properly report errors over UART.
 
             - Attempt to boot without a valid ROM_EXT.
-            - Verify that we can receive the 28 character long (`LCV:xxxxxxxx\r\nBFV:xxxxxxxx\r\n`) error
+            - Verify that we can receive the 28 character long (`BFV:xxxxxxxx\r\nLCV:xxxxxxxx\r\n`) error
               output in all life cycle states where Ibex is enabled, i.e. TEST_UNLOCKED*, PROD,
               PROD_END, DEV, and RMA.
                 - BFV should be 0142500d for all life cycle states.
