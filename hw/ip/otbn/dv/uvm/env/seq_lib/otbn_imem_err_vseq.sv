@@ -18,6 +18,10 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
     logic [127:0]    key;
     logic [63:0]     nonce;
 
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsALU", 0)
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsRF", 0)
+    `DV_ASSERT_CTRL_REQ("SecWipeAsserts", 0)
+
     elf_path = pick_elf_path();
     `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)
     load_elf(elf_path, 1'b1);
@@ -58,6 +62,10 @@ class otbn_imem_err_vseq extends otbn_base_vseq;
     // Looks like the injected error should have some effect. Wait until the ISS and RTL move to a
     // locked state.
     reset_if_locked();
+
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsALU", 1)
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsRF", 1)
+    `DV_ASSERT_CTRL_REQ("SecWipeAsserts", 1)
   endtask
 
 endclass

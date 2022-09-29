@@ -8,6 +8,9 @@ class otbn_zero_state_err_urnd_vseq extends otbn_single_vseq;
 
   task body();
     do_end_addr_check = 0;
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsALU", 0)
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsRF", 0)
+    `DV_ASSERT_CTRL_REQ("SecWipeAsserts", 0)
     fork
       begin
         super.body();
@@ -29,6 +32,9 @@ class otbn_zero_state_err_urnd_vseq extends otbn_single_vseq;
       end
     join
 
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsALU", 1)
+    `DV_ASSERT_CTRL_REQ("BlankingAssertsRF", 1)
+    `DV_ASSERT_CTRL_REQ("SecWipeAsserts", 1)
   endtask : body
 
 endclass : otbn_zero_state_err_urnd_vseq
