@@ -11,6 +11,10 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
+load(
+    "//rules:opentitan.bzl",
+    "opentitan_multislot_flash_binary",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -195,5 +199,39 @@ opentitan_functest(
         "//sw/device/lib/ujson",
         "//sw/device/silicon_creator/rom/e2e/json:chip_specific_startup",
         "//sw/device/silicon_creator/rom/e2e/json:command",
+    ],
+)
+
+MSG_STARTING_ROM_EXT = "Starting ROM_EXT"
+
+MSG_BOOT_FAULT = "BFV:"
+
+opentitan_functest(
+    name = "rom_ext_a_flash_a",
+    cw310 = cw310_params(
+        exit_failure = MSG_BOOT_FAULT,
+        exit_success = MSG_STARTING_ROM_EXT,
+    ),
+    ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    targets = ["cw310_rom"],
+)
+
+# TODO(#13511): Add a positive test for slot_b.
+
+opentitan_functest(
+    name = "rom_ext_v_flash_a",
+    cw310 = cw310_params(
+        exit_failure = MSG_BOOT_FAULT,
+        exit_success = MSG_STARTING_ROM_EXT,
+    ),
+    ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
+    targets = ["cw310_rom"],
+)
+
+test_suite(
+    name = "address_translation",
+    tests = [
+        "rom_ext_a_flash_a",
+        "rom_ext_v_flash_a"
     ],
 )
