@@ -30,66 +30,34 @@ licenses([
 ])
 
 # Generated Targets
-# buildifier: disable=out-of-order-load
-# buildifier: disable=load-on-top
-load(
-    "@rules_rust//cargo:cargo_build_script.bzl",
-    "cargo_build_script",
-)
-
-cargo_build_script(
-    name = "serde_build_script",
-    srcs = glob(["**/*.rs"]),
-    build_script_env = {
-    },
-    crate_features = [
-        "default",
-        "derive",
-        "serde_derive",
-        "std",
-    ],
-    crate_root = "build.rs",
-    data = glob(["**"]),
-    edition = "2015",
-    rustc_flags = [
-        "--cap-lints=allow",
-    ],
-    tags = [
-        "cargo-raze",
-        "manual",
-    ],
-    version = "1.0.144",
-    visibility = ["//visibility:private"],
-    deps = [
-    ],
-)
 
 rust_library(
-    name = "serde",
+    name = "serde_bytes",
     srcs = glob(["**/*.rs"]),
     crate_features = [
         "default",
-        "derive",
-        "serde_derive",
         "std",
     ],
     crate_root = "src/lib.rs",
     data = [],
-    edition = "2015",
-    proc_macro_deps = [
-        "@raze__serde_derive__1_0_144//:serde_derive",
-    ],
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=serde",
+        "crate-name=serde_bytes",
         "manual",
     ],
-    version = "1.0.144",
+    version = "0.11.7",
     # buildifier: leave-alone
     deps = [
-        ":serde_build_script",
+        "@raze__serde__1_0_145//:serde",
     ],
 )
+
+# Unsupported target "test_derive" with type "test" omitted
+
+# Unsupported target "test_partialeq" with type "test" omitted
+
+# Unsupported target "test_serde" with type "test" omitted

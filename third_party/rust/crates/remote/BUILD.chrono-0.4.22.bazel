@@ -64,7 +64,7 @@ rust_library(
     version = "0.4.22",
     # buildifier: leave-alone
     deps = [
-        "@raze__iana_time_zone__0_1_48//:iana_time_zone",
+        "@raze__iana_time_zone__0_1_50//:iana_time_zone",
         "@raze__num_integer__0_1_45//:num_integer",
         "@raze__num_traits__0_2_15//:num_traits",
         "@raze__time__0_1_44//:time",

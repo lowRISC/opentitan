@@ -52,6 +52,6 @@ rust_library(
     deps = [
         "@raze__getrandom__0_2_7//:getrandom",
         "@raze__redox_syscall__0_2_16//:redox_syscall",
-        "@raze__thiserror__1_0_35//:thiserror",
+        "@raze__thiserror__1_0_37//:thiserror",
     ],
 )
