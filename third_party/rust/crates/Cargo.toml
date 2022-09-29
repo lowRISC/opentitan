@@ -46,6 +46,7 @@ regex = "1.5.4"
 rsa = "0.5.0"
 rusb = "0.8.1"
 serde = { version="1.0.130", features=["serde_derive"] }
+serde_bytes = "0.11"
 serde_json = "1.0.69"
 serialport = "4.0.1"
 sha2 = "0.10.1"
