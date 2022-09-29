@@ -131,8 +131,8 @@
     }
 
     {
-      name: spi_device_tpm_locality
-      uvm_test_seq: spi_device_tpm_locality_vseq
+      name: spi_device_tpm_sts_read
+      uvm_test_seq: spi_device_tpm_sts_read_vseq
     }
 
     {

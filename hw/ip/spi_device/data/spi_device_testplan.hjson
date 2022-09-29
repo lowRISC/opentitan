@@ -201,7 +201,7 @@
             - Ensure that the data returned is correct for the given locality.
             - Randomise TPM_CFG.invalid_locality and confirm response.'''
       stage: V2
-      tests: ["spi_device_tpm_locality"]
+      tests: ["spi_device_tpm_sts_read"]
     }
     {
       name: pass_cmd_filtering

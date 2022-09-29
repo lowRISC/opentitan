@@ -4,8 +4,8 @@
 
 // TPM Locality test, making transactions of various locality
 // Targeting HW sts register, randomizing it and checking data returned to host
-class spi_device_tpm_locality_vseq extends spi_device_tpm_base_vseq;
-  `uvm_object_utils(spi_device_tpm_locality_vseq)
+class spi_device_tpm_sts_read_vseq extends spi_device_tpm_base_vseq;
+  `uvm_object_utils(spi_device_tpm_sts_read_vseq)
   `uvm_object_new
 
   virtual task body();
@@ -28,7 +28,7 @@ class spi_device_tpm_locality_vseq extends spi_device_tpm_base_vseq;
       cfg.clk_rst_vif.wait_clks(100);
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(locality_idx, locality_idx < MAX_TPM_LOCALITY;)
 
-      tpm_addr = get_tpm_addr(locality_idx);
+      tpm_addr = get_tpm_addr(locality_idx, TPM_STS_OFFSET);
 
       spi_host_xfer_tpm_item(.write(0), .tpm_size(4), .addr(tpm_addr),
                               .payload_q(returned_bytes));
@@ -42,4 +42,4 @@ class spi_device_tpm_locality_vseq extends spi_device_tpm_base_vseq;
     end
   endtask : body
 
-endclass : spi_device_tpm_locality_vseq
+endclass : spi_device_tpm_sts_read_vseq
