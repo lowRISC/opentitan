@@ -151,7 +151,7 @@ class OTBNState:
 
     def set_next_pc(self, next_pc: int) -> None:
         '''Overwrite the next program counter, e.g. as result of a jump.'''
-        assert(self.is_pc_valid(next_pc))
+        assert (self.is_pc_valid(next_pc))
         self._pc_next_override = next_pc
 
     def edn_urnd_step(self, urnd_data: int) -> None:
@@ -365,6 +365,9 @@ class OTBNState:
         # Make any error bits visible
         self.ext_regs.write('ERR_BITS', self._err_bits, True)
 
+        # Clear the "we should stop soon" flag
+        self.pending_halt = False
+
         if self.lock_immediately:
             assert should_lock
             self.set_fsm_state(FsmState.LOCKED)
@@ -389,6 +392,11 @@ class OTBNState:
             elif self._fsm_state in [FsmState.WIPING_BAD, FsmState.WIPING_GOOD]:
                 assert should_lock
                 self._next_fsm_state = FsmState.WIPING_BAD
+            elif self._init_sec_wipe_state in [InitSecWipeState.IN_PROGRESS]:
+                # Make it so that we run stop method until initial secure wipe
+                # is done. Otherwise we would have missed the pending halt.
+                assert should_lock
+                self.pending_halt = True
             elif self._init_sec_wipe_state == InitSecWipeState.DONE:
                 assert should_lock
                 self._next_fsm_state = FsmState.LOCKED
@@ -397,9 +405,6 @@ class OTBNState:
 
         # Clear any pending request in the RND EDN client
         self.ext_regs.rnd_forget()
-
-        # Clear the "we should stop soon" flag
-        self.pending_halt = False
 
         # Clear RMA request flag
         self.rma_req = False
