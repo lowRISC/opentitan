@@ -210,7 +210,7 @@ class spi_monitor extends dv_base_monitor#(
     end : loop_forever
   endtask : collect_curr_trans
 
-  virtual protected task collect_flash_trans(spi_item item, output bit flash_opcode_received);
+  virtual protected task collect_flash_trans(spi_item item, ref bit flash_opcode_received);
     int num_addr_bytes;
     flash_opcode_received = 0;
     // for mode 1 and 3, get the leading edges out of the way
