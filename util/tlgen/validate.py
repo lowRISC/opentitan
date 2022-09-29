@@ -112,6 +112,12 @@ Crossbar configuration format.
     }
 }
 
+# Minimum device spacing that is checked during validation
+# by inspecting the base addresses. Note that the validation
+# script also ensures that base addresses are aligned with
+# to this granularity.
+MIN_DEVICE_SPACING = 0x1000
+
 
 def check_keys(obj, control, prefix=""):
     """ Check the keys recursively.
@@ -215,9 +221,24 @@ def isOverlap(range1, range2):  # Tuple[int,int] -> Tuple[int,int] -> bool
     return not (range2[1] < range1[0] or range2[0] > range1[1])
 
 
+def isNotMinSpacing(range1, range2):  # Tuple[int,int] -> Tuple[int,int] -> bool
+    return not (range2[0] < range1[0] - MIN_DEVICE_SPACING or
+                range2[0] >= range1[0] + MIN_DEVICE_SPACING)
+
+
+def isNotAligned(base):  # Tuple[int,int] -> bool
+    return ((base & (MIN_DEVICE_SPACING - 1)) != 0)
+
+
 # Tuple[int,int] -> List[Tuple[]] -> bool
 def checkAddressOverlap(addr, ranges):
     result = [x for x in ranges if isOverlap(x, addr)]
+    return len(result) != 0
+
+
+# Tuple[int,int] -> List[Tuple[]] -> bool
+def checkAddressSpacing(addr, ranges):
+    result = [x for x in ranges if isNotMinSpacing(x, addr)]
     return len(result) != 0
 
 
@@ -287,6 +308,13 @@ def validate(obj: OrderedDict) -> Xbar:  # OrderedDict -> Xbar
 
                 addr_entry = (address_from, address_to)
 
+                if isNotAligned(address_from):
+                    log.error(
+                        "Address bases must be aligned to 0x%x blocks. "
+                        "Check the config. Addr(0x%x - 0x%x)."
+                        % (MIN_DEVICE_SPACING, addr_entry[0], addr_entry[1]))
+                    raise SystemExit("Base alignment error occurred")
+
                 if checkBaseSizeOverlap(address_from, size):
                     log.error(
                         "Size mask and base address are overlapping. "
@@ -296,8 +324,15 @@ def validate(obj: OrderedDict) -> Xbar:  # OrderedDict -> Xbar
 
                 if checkAddressOverlap(addr_entry, addr_ranges):
                     log.error(
-                        "Address is overlapping. Check the config. Addr(0x%x - 0x%x)"
+                        "Address is overlapping. Check the config. Addr(0x%x - 0x%x). "
                         % (addr_entry[0], addr_entry[1]))
+                    raise SystemExit("Address overlapping error occurred")
+
+                if checkAddressSpacing(addr_entry, addr_ranges):
+                    log.error(
+                        "Address bases must be spaced at least 0x%x apart. "
+                        "Check the config. Addr(0x%x - 0x%x)."
+                        % (MIN_DEVICE_SPACING, addr_entry[0], addr_entry[1]))
                     raise SystemExit("Address overlapping error occurred")
 
                 addr_ranges.append(addr_entry)
