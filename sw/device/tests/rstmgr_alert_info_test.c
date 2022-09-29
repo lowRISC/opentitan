@@ -83,7 +83,7 @@ enum {
   kRoundOneDelay = 100,           // us
   kRoundTwoDelay = 100,           // us
   kRoundThreeDelay = 1000,        // us
-  kRoundFourDelay = 2500,         // us
+  kRoundFourDelay = 2800,         // us
 };
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
