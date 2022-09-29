@@ -20,7 +20,7 @@
 `include "spi_device_tx_async_fifo_reset_vseq.sv"
 `include "spi_device_rx_async_fifo_reset_vseq.sv"
 `include "spi_device_abort_vseq.sv"
-`include "spi_device_tpm_locality_vseq.sv"
+`include "spi_device_tpm_sts_read_vseq.sv"
 `include "spi_device_tpm_rw_vseq.sv"
 `include "spi_device_pass_base_vseq.sv"
 `include "spi_device_pass_cmd_filtering_vseq.sv"

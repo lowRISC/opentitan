@@ -36,7 +36,7 @@ filesets:
       - seq_lib/spi_device_tx_async_fifo_reset_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_rx_async_fifo_reset_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_abort_vseq.sv: {is_include_file: true}
-      - seq_lib/spi_device_tpm_locality_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_device_tpm_sts_read_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_tpm_rw_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_pass_base_vseq.sv: {is_include_file: true}
       - seq_lib/spi_device_pass_cmd_filtering_vseq.sv: {is_include_file: true}

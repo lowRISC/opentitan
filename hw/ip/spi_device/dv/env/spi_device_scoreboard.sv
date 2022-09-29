@@ -174,8 +174,15 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
             tpm_write_spi_q.push_back(item);
           end else begin
-            `DV_CHECK_EQ(tpm_read_sw_q.size, 1)
-            tpm_item_compare(item, tpm_read_sw_q.pop_front(), "read");
+            bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
+            bit [7:0] exp_q[$];
+
+            if (cfg.is_hw_return_reg(addr, item.read_size, exp_q)) begin
+              `DV_CHECK_Q_EQ(item.data, exp_q)
+            end else begin
+              `DV_CHECK_EQ(tpm_read_sw_q.size, 1)
+              tpm_item_compare(item, tpm_read_sw_q.pop_front(), "read");
+            end
           end
         end
         default: `uvm_fatal(`gfn, $sformatf("Unexpected mode: %0d", `gmv(ral.control.mode)))

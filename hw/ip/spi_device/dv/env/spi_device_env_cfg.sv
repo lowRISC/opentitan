@@ -98,8 +98,97 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
 
   // return 0/1 for active or inactive
   function automatic bit get_locality_active(byte index);
-    uvm_reg_field access_fld = ral.get_field_by_name($sformatf("access_%0d", index));
-    byte access_val = `gmv(access_fld);
+    byte access_val = `gmv(get_tpm_access_reg_field(index));
     return access_val[TPM_ACTIVE_LOCALITY_BIT_POS];
   endfunction
+
+  function automatic uvm_reg_field get_tpm_access_reg_field(byte index);
+    return ral.get_field_by_name($sformatf("access_%0d", index));
+  endfunction
+
+  function automatic void get_reg_val_in_byte_q(dv_base_reg csr, uint num_bytes,
+                                                output bit [7:0] data_q[$]);
+    bit [TL_DW-1:0] val = `gmv(csr);
+    for (int i = 0; i < num_bytes; i++) data_q.push_back(val[8*i +: 8]);
+  endfunction
+
+  `define CREATE_TPM_CASE_STMT(TPM_NAME, CSR_NAME) \
+    ``TPM_NAME``_OFFSET: begin \
+      if (addr[1:0] >= ``TPM_NAME``_BYTE_SIZE) return 0; \
+      get_reg_val_in_byte_q(ral.``CSR_NAME``, ``TPM_NAME``_BYTE_SIZE, reg_data_q); \
+    end
+  // return 1 and exp SPI return data if the TPM read value is directly from HW-returned registers
+  function automatic bit is_hw_return_reg(bit [TPM_ADDR_WIDTH-1:0] addr,
+                                          uint read_size,
+                                          output bit [7:0] data_q[$]);
+    bit [TPM_ADDR_WIDTH-1:0] base_addr = addr & TPM_BASE_ADDR_MASK;
+    bit base_addr_match = (base_addr == TPM_BASE_ADDR);
+    bit [TPM_LOCALITY_LSB_POS-1:0] aligned_offset;
+    int locality;
+    bit [7:0] reg_data_q[$], invalid_return_q[$];
+
+    // CRB mode doesn't return directly from HW
+    if (`gmv(ral.tpm_cfg.tpm_mode) == TpmCrbMode) return 0;
+    // if chk isn't disabled, it needs to match the base addr
+    if (!`gmv(ral.tpm_cfg.tpm_reg_chk_dis) && !base_addr_match) begin
+      return 0;
+    end
+
+    locality = get_locality_from_addr(addr);
+
+    for (int i = 0; i < read_size; i++) begin
+      if (i < 4) invalid_return_q.push_back('hff);
+      else       invalid_return_q.push_back(0);
+    end
+    // handle invalid locality
+    if (locality >= MAX_TPM_LOCALITY) begin
+      if (!`gmv(ral.tpm_cfg.tpm_reg_chk_dis) &&
+          `gmv(ral.tpm_cfg.invalid_locality) &&
+          base_addr_match) begin
+        data_q = invalid_return_q;
+        `uvm_info(`gfn, "return 'hff due to invalid locality", UVM_MEDIUM)
+        return 1;
+      end
+      return 0;
+    end
+
+    aligned_offset = {addr[TPM_LOCALITY_LSB_POS-1:2], 2'd0};
+    // if locality is inactive, return 'hff for TPM_STS
+    if (!get_locality_active(locality) && aligned_offset == TPM_STS_OFFSET) begin
+      data_q = invalid_return_q;
+      `uvm_info(`gfn, "return 'hff due to reading TPM_STS on an inactive locality", UVM_MEDIUM)
+      return 1;
+    end
+
+    case (aligned_offset)
+      TPM_ACCESS_OFFSET: begin
+        bit [7:0] reg_val;
+
+        if (addr[1:0] >= TPM_ACCESS_BYTE_SIZE) return 0;
+        reg_val = `gmv(get_tpm_access_reg_field(locality));
+        reg_data_q.push_back(reg_val);
+      end
+      `CREATE_TPM_CASE_STMT(TPM_INT_ENABLE, tpm_int_enable)
+      `CREATE_TPM_CASE_STMT(TPM_INT_VECTOR, tpm_int_vector)
+      `CREATE_TPM_CASE_STMT(TPM_INT_STATUS, tpm_int_status)
+      `CREATE_TPM_CASE_STMT(TPM_INTF_CAPABILITY, tpm_intf_capability)
+      `CREATE_TPM_CASE_STMT(TPM_STS, tpm_sts)
+      `CREATE_TPM_CASE_STMT(TPM_DID_VID, tpm_did_vid)
+      `CREATE_TPM_CASE_STMT(TPM_RID, tpm_rid)
+      default: return 0;
+    endcase
+
+    for (int i = 0; i < read_size; i++) begin
+      int offset = i + addr[1:0];
+
+      // if read exceeds the reg size, return 0
+      if (offset < reg_data_q.size) data_q.push_back(reg_data_q[offset]);
+      else                          data_q.push_back(0);
+    end
+
+    `uvm_info(`gfn, $sformatf("Read on the hw-returned reg, addr 0x%0x, data %p",
+                              addr, data_q), UVM_MEDIUM)
+    return 1;
+  endfunction : is_hw_return_reg
+  `undef CREATE_TPM_CASE_STMT
 endclass

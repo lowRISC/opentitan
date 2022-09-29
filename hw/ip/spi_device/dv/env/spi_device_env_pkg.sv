@@ -103,16 +103,31 @@ package spi_device_env_pkg;
   parameter uint FW_FLASH_CSB_ID                 = 0; // for both FW and flash/passthrough mode
   parameter uint TPM_CSB_ID                      = 1;
 
-  parameter bit[7:0] TPM_WRITE_CMD               = 8'h03;
-  parameter bit[7:0] TPM_READ_CMD                = 8'h83;
-  parameter byte TPM_START                       = 8'h01;
-  parameter byte TPM_WAIT                        = 8'h00;
-  parameter bit[11:0] TPM_HW_STS_OFFSET          = 12'h018;
-  parameter bit[11:0] TPM_HW_INT_CAP_OFFSET      = 12'h014;
   parameter bit[23:0] TPM_BASE_ADDR              = 24'hD40000;
+  parameter bit[23:0] TPM_BASE_ADDR_MASK         = 24'hFF0000;
   parameter byte TPM_ACTIVE_LOCALITY_BIT_POS     = 5;
   parameter byte MAX_SUPPORT_TPM_SIZE            = 64;
   parameter byte MAX_TPM_LOCALITY                = 5;
+  parameter byte TPM_LOCALITY_LSB_POS            = 12;
+  parameter byte TPM_LOCALITY_WIDTH              = 4;
+  // TPM HW-returned register offset
+  parameter bit[11:0] TPM_ACCESS_OFFSET          = 0;
+  parameter byte      TPM_ACCESS_BYTE_SIZE       = 1;
+  parameter bit[11:0] TPM_INT_ENABLE_OFFSET      = 12'h8;
+  parameter byte      TPM_INT_ENABLE_BYTE_SIZE   = 4;
+  parameter bit[11:0] TPM_INT_VECTOR_OFFSET      = 12'hC;
+  parameter byte      TPM_INT_VECTOR_BYTE_SIZE   = 1;
+  parameter bit[11:0] TPM_INT_STATUS_OFFSET      = 12'h10;
+  parameter byte      TPM_INT_STATUS_BYTE_SIZE   = 4;
+  parameter bit[11:0] TPM_INTF_CAPABILITY_OFFSET = 12'h14;
+  parameter byte      TPM_INTF_CAPABILITY_BYTE_SIZE = 4;
+  parameter bit[11:0] TPM_STS_OFFSET             = 12'h18;
+  parameter byte      TPM_STS_BYTE_SIZE          = 4;
+  parameter bit[11:0] TPM_DID_VID_OFFSET         = 12'hF00;
+  parameter byte      TPM_DID_VID_BYTE_SIZE      = 4;
+  parameter bit[11:0] TPM_RID_OFFSET             = 12'hF04;
+  parameter byte      TPM_RID_BYTE_SIZE          = 1;
+
 
   parameter uint     NUM_INTERNAL_PROCESSED_CMD  = 11; // exclude WREN, WRDI, EN4B, EX4B
   parameter bit[7:0] READ_JEDEC                  = 8'h9F;
@@ -187,8 +202,16 @@ package spi_device_env_pkg;
   endfunction
 
   // Get TPM address for locality TODO expand to other HW regs
-  function automatic bit[23:0] get_tpm_addr(bit[3:0] locality);
-    return TPM_BASE_ADDR | (locality << 12) | TPM_HW_STS_OFFSET;
+  function automatic bit[23:0] get_tpm_addr(bit[3:0] locality,
+                                            bit [TPM_LOCALITY_LSB_POS-1:0] base_offset);
+    return TPM_BASE_ADDR | (locality << TPM_LOCALITY_LSB_POS) | base_offset;
+  endfunction
+
+  // return locality index from the addr
+  function automatic bit[23:0] get_locality_from_addr(bit[TPM_ADDR_WIDTH-1:0] addr);
+    uint loc = addr[TPM_LOCALITY_LSB_POS + TPM_LOCALITY_WIDTH - 1 : TPM_LOCALITY_LSB_POS];
+    `DV_CHECK_LE(loc, MAX_TPM_LOCALITY, , , msg_id)
+    return loc;
   endfunction
 
   // return the index the cmd_filter for the input opcode
