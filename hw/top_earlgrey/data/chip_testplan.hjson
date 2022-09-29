@@ -2947,7 +2947,7 @@
                  the previous dump is valid.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_rstmgr_cpu_info"]
    }
 
    {
