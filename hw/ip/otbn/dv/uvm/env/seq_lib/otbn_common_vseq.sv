@@ -114,18 +114,15 @@ class otbn_common_vseq extends otbn_base_vseq;
     uvm_reg_field fatal_cause;
     super.check_sec_cm_fi_resp(if_proxy);
 
-    if (if_proxy.sec_cm_type == SecCmPrimOnehot) begin
-      fatal_cause = ral.fatal_alert_cause.reg_intg_violation;
+    if (if_proxy.sec_cm_type == SecCmPrimCount &&
+        !uvm_re_match("*.u_tlul_adapter_sram_*", if_proxy.path)) begin
+      // Faults injected into the counters of an OTBN TLUL adapter manifest as bus integrity
+      // violation.
+      fatal_cause = ral.fatal_alert_cause.bus_intg_violation;
     end else begin
-      if (if_proxy.sec_cm_type == SecCmPrimCount &&
-          !uvm_re_match("*.u_tlul_adapter_sram_*", if_proxy.path)) begin
-        // Faults injected into the counters of an OTBN TLUL adapter manifest as bus integrity
-        // violation.
-        fatal_cause = ral.fatal_alert_cause.bus_intg_violation;
-      end else begin
-        fatal_cause = ral.fatal_alert_cause.bad_internal_state;
-      end
+      fatal_cause = ral.fatal_alert_cause.bad_internal_state;
     end
+
     csr_utils_pkg::csr_rd_check(.ptr(fatal_cause), .compare_value(1));
     `DV_WAIT(!(cfg.model_agent_cfg.vif.status inside {otbn_pkg::StatusBusyExecute,
                                                       otbn_pkg::StatusBusySecWipeInt}));
@@ -136,10 +133,12 @@ class otbn_common_vseq extends otbn_base_vseq;
     if (enable) begin
       $asserton(0, "tb.dut.u_otbn_core.u_otbn_controller.ControllerStateValid");
       $asserton(0, "tb.MatchingStatus_A");
+      $asserton(0, "tb.MatchingReqURND_A");
       $asserton(0, "tb.dut.u_otbn_core.u_otbn_start_stop_control.StartStopStateValid_A");
     end else begin
       $assertoff(0, "tb.dut.u_otbn_core.u_otbn_controller.ControllerStateValid");
       $assertoff(0, "tb.MatchingStatus_A");
+      $assertoff(0, "tb.MatchingReqURND_A");
       $assertoff(0, "tb.dut.u_otbn_core.u_otbn_start_stop_control.StartStopStateValid_A");
     end
     if (if_proxy.sec_cm_type == SecCmPrimCount) begin
@@ -179,7 +178,11 @@ class otbn_common_vseq extends otbn_base_vseq;
       begin
         bit [31:0] err_val = 32'd1 << 20;
         `uvm_info(`gfn, "injecting fsm error into ISS", UVM_HIGH)
-        cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+        if (!uvm_re_match("*u_otbn_start_stop_control*", if_proxy.path)) begin
+          cfg.model_agent_cfg.vif.lock_immediately(err_val);
+        end else begin
+          cfg.model_agent_cfg.vif.send_err_escalation(err_val);
+        end
       end
     join
   endtask : sec_cm_inject_fault
