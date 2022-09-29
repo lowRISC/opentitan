@@ -19,6 +19,7 @@ filesets:
       - lowrisc:prim:flop
       - lowrisc:prim:flop_en
       - lowrisc:prim:flop_2sync
+      - lowrisc:prim:rst_sync
       - lowrisc:prim:arbiter
       - lowrisc:prim:fifo
       - lowrisc:prim:alert
