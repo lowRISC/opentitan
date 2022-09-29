@@ -16,7 +16,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   localparam int PropagationToSlowTimeoutInNanoSeconds = 15_000;
   localparam int FetchEnTimeoutNs = 40_000;
 
-  localparam int MaxCyclesBeforeEnable = 6;
+  localparam int MaxCyclesBeforeEnable = 12;
 
   // Random wakeups and resets.
   rand wakeups_t wakeups;
@@ -77,7 +77,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cycles_before_core_clk_en inside {[0 : MaxCyclesBeforeEnable]};
   }
   constraint cycles_before_io_clk_en_c {
-    cycles_before_io_clk_en inside {[0 : MaxCyclesBeforeEnable]};
+    cycles_before_io_clk_en inside {[0 : MaxCyclesBeforeEnable - 3]};
   }
   constraint cycles_before_usb_clk_en_c {
     cycles_before_usb_clk_en inside {[0 : MaxCyclesBeforeEnable]};
@@ -147,7 +147,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       // Undo any pending resets.
       cfg.pwrmgr_vif.rst_main_n = 1'b1;
       cfg.pwrmgr_vif.update_resets(0);
-      clear_escalation_reset();
     end
 
     `uvm_info(`gfn, "waiting for fast active after applying reset", UVM_MEDIUM)
@@ -192,15 +191,11 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
         // A short slow clock reset should suffice.
         cfg.slow_clk_rst_vif.apply_reset(.pre_reset_dly_clks(0), .reset_width_clks(5));
       end
-      begin
-        cfg.esc_clk_rst_vif.apply_reset();
-      end
-      begin
-        cfg.lc_clk_rst_vif.apply_reset();
-      end
-      begin
-        cfg.aon_clk_rst_vif.apply_reset();
-      end
+      cfg.esc_clk_rst_vif.apply_reset();
+      cfg.lc_clk_rst_vif.apply_reset();
+      // Escalation resets are cleared when reset goes active.
+      clear_escalation_reset();
+      cfg.aon_clk_rst_vif.apply_reset();
     join
   endtask
 
@@ -306,27 +301,44 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     logic [MaxCyclesBeforeEnable:0] io_clk_val_sr;
     logic [MaxCyclesBeforeEnable:0] usb_clk_val_sr;
     logic [MaxCyclesBeforeEnable:0] main_pd_val_sr;
-
     fork
       `SLOW_DETECT("core_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en)
       `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.core_clk_en, core_clk_val_sr)
       `SLOW_ASSIGN("core_clk_val", cycles_before_core_clk_en, core_clk_val_sr,
                    cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.core_clk_val)
+
       `SLOW_DETECT("io_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en)
       `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en, io_clk_val_sr)
-      `SLOW_ASSIGN("io_clk_val", cycles_before_io_clk_en, io_clk_val_sr,
-                   cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.io_clk_val)
+      forever
+        @(io_clk_val_sr[cycles_before_io_clk_en]) begin
+          logic new_value = io_clk_val_sr[cycles_before_io_clk_en];
+          `uvm_info(`gfn, $sformatf(
+                    "slow_responder: Driving %0s to %b after %0d AON cycles.",
+                    "io_clk_val",
+                    new_value,
+                    cycles_before_io_clk_en
+                    ), UVM_MEDIUM)
+          if (new_value == 1) cfg.clk_rst_vif.start_clk();
+          else cfg.clk_rst_vif.stop_clk();
+          repeat (2) @cfg.slow_clk_rst_vif.cb;
+          cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.io_clk_val <= new_value;
+          drop_objection("io_clk_val");
+        end
+
       `SLOW_DETECT("usb_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en)
       `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en, usb_clk_val_sr)
       `SLOW_ASSIGN("usb_clk_val", cycles_before_usb_clk_en, usb_clk_val_sr,
                    cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.usb_clk_val)
+
       `SLOW_DETECT("main_pok", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n)
       `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.main_pd_n, main_pd_val_sr)
       `SLOW_ASSIGN("main_pok", cycles_before_main_pok, main_pd_val_sr,
                    cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.main_pok)
     join_none
   endtask : slow_responder
-  `undef SLOW_RESPONSE
+  `undef SLOW_DETECT
+  `undef SLOW_SHIFT_SR
+  `undef SLOW_ASSIGN
 
   // Generates expected responses for the fast fsm.
   // - Completes the reset handshake with the rstmgr for lc and sys resets: soon after a
@@ -347,7 +359,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   task fast_responder();
     fork
-
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req begin
           raise_objection("rst_lc_src_n");
@@ -357,10 +368,16 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           // And clear all reset requests when rst_lc_req[1] goes low, because when
           // peripherals are reset they should drop their reset requests.
           if (cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req[1] == 1'b0) begin
+            cfg.esc_clk_rst_vif.drive_rst_pin(1);
+            cfg.lc_clk_rst_vif.drive_rst_pin(1);
+            repeat (2) cfg.esc_clk_rst_vif.wait_clks(2);
             cfg.pwrmgr_vif.update_resets('0);
             cfg.pwrmgr_vif.update_sw_rst_req(prim_mubi_pkg::MuBi4False);
-            clear_escalation_reset();
             `uvm_info(`gfn, "Clearing resets", UVM_MEDIUM)
+          end else begin
+            cfg.esc_clk_rst_vif.drive_rst_pin(0);
+            cfg.lc_clk_rst_vif.drive_rst_pin(0);
+            clear_escalation_reset();
           end
           drop_objection("rst_lc_src_n");
         end
@@ -372,14 +389,30 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                                 cycles_before_rst_sys_src)
           drop_objection("rst_sys_src_n");
         end
+
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en begin
+          logic new_value = cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en;
           raise_objection("io_status");
-          `FAST_RESPONSE_ACTION("io_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.io_status,
-                                cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en,
-                                cycles_before_io_status)
+          `uvm_info(`gfn, $sformatf(
+                    "fast_responder: Will drive %0s to %b in %0d fast clock cycles",
+                    "io_status",
+                    new_value,
+                    cycles_before_io_status
+                    ), UVM_HIGH)
+          cfg.clk_rst_vif.wait_clks(cycles_before_io_status);
+          if (new_value) cfg.esc_clk_rst_vif.start_clk();
+          else cfg.esc_clk_rst_vif.stop_clk();
+          cfg.clk_rst_vif.wait_clks(2);
+          cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.io_status <= new_value;
+          `uvm_info(`gfn, $sformatf(
+                    "fast_responder: Driving %0s to %b",
+                    "io_status",
+                    cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en
+                    ), UVM_HIGH)
           drop_objection("io_status");
         end
+
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en begin
           raise_objection("main_status");
@@ -446,7 +479,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   task process_low_power_hint();
     // Timeout if the low power transition waits too long for WFI.
     `DV_SPINWAIT(wait(cfg.pwrmgr_vif.pwr_cpu.core_sleeping);,
-                 "timeout waiting for core_sleeping", 100_000)
+                 "timeout waiting for core_sleeping",
+                 100_000)
     `uvm_info(`gfn, "In process_low_power_hint pre forks", UVM_MEDIUM)
     fork
       begin : isolation_fork
@@ -541,7 +575,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     if (expected_resets != init_reset_status) begin
       `DV_SPINWAIT(wait(cfg.pwrmgr_vif.reset_status != init_reset_status);,
                    $sformatf("reset_status wait timeout exp:%x  init:%x",
-                             expected_resets, init_reset_status), 15_000)
+                             expected_resets, init_reset_status),
+                   15_000)
     end
     `DV_CHECK_EQ(cfg.pwrmgr_vif.reset_status, expected_resets)
   endtask
@@ -566,9 +601,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   task fast_check_wake_info(wakeups_t reasons, wakeups_t prior_reasons = '0, bit fall_through,
-                       bit prior_fall_through = '0, bit abort, bit prior_abort = '0);
-     pwrmgr_reg_pkg::pwrmgr_hw2reg_wake_info_reg_t initial_value, exp_value;
-     initial_value = cfg.pwrmgr_vif.wake_info;
+                            bit prior_fall_through = '0, bit abort, bit prior_abort = '0);
+    pwrmgr_reg_pkg::pwrmgr_hw2reg_wake_info_reg_t initial_value, exp_value;
+    initial_value = cfg.pwrmgr_vif.wake_info;
 
     if (disable_wakeup_capture) begin
       exp_value.reasons = prior_reasons;
@@ -584,7 +619,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                    $sformatf("wake info wait timeout  exp:%p  init:%p",
                              exp_value, initial_value), 15_000)
     end
-  endtask // fast_check_wake_info
+  endtask : fast_check_wake_info
 
   // Checks the wake_info CSR matches expectations depending on capture disable.
   // The per-field "prior_" arguments support cases where the wake_info register was not
@@ -627,10 +662,10 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   // bad_bits = {done, good}
   task add_rom_rsp_noise();
-    bit[MUBI4W*2-1:0] bad_bits;
+    bit [MUBI4W*2-1:0] bad_bits;
     int delay;
 
-    repeat(10) begin
+    repeat (10) begin
       delay = $urandom_range(5, 10);
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_bits,
                                          bad_bits[MUBI4W*2-1:MUBI4W] != prim_mubi_pkg::MuBi4True;
@@ -640,7 +675,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       cfg.pwrmgr_vif.rom_ctrl = bad_bits;
       #(delay * 10ns);
     end
-  endtask // add_rom_rsp_nose
+  endtask : add_rom_rsp_noise
 
   // Drive rom_ctrl at post reset stage
   virtual task init_rom_response();

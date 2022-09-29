@@ -22,7 +22,7 @@ interface pwrmgr_ast_sva_if (
   // not more than 2 cycles.
   localparam int MIN_CLK_WAIT_CYCLES = 0;
   localparam int MIN_PDN_WAIT_CYCLES = 0;
-  localparam int MAX_CLK_WAIT_CYCLES = 10;
+  localparam int MAX_CLK_WAIT_CYCLES = 20;
   localparam int MAX_PDN_WAIT_CYCLES = 110;
 
   bit disable_sva;

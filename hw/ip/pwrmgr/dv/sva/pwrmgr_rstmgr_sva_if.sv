@@ -33,7 +33,7 @@ interface pwrmgr_rstmgr_sva_if
 
   // Number of cycles for the LC/SYS reset handshake.
   localparam int MIN_LC_SYS_CYCLES = 0;
-  localparam int MAX_LC_SYS_CYCLES = 24;
+  localparam int MAX_LC_SYS_CYCLES = 30;
   `define LC_SYS_CYCLES ##[MIN_LC_SYS_CYCLES:MAX_LC_SYS_CYCLES]
 
   // Number of cycles for the output resets.

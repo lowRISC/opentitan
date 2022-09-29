@@ -31,6 +31,7 @@ class pwrmgr_clk_ctrl_monitor extends dv_base_monitor #(
 
   // collect transactions forever - already forked in dv_base_monitor::run_phase
   virtual protected task collect_trans(uvm_phase phase);
+    cfg.clk_ctrl_en = 0;
     cfg.vif.wait_for_reset();
 
     `uvm_info(`gfn, $sformatf("clk_ctrl %s", (cfg.clk_ctrl_en)? "enabled" :

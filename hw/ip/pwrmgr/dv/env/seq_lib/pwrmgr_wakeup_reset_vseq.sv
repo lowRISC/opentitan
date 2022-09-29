@@ -4,6 +4,9 @@
 
 // The wakeup_reset test randomly enables wakeups and resets, info capture, and interrupts,
 // and sends wakeups and resets in close temporal proximity at random times.
+// Notice it makes no sense to send escalation reset requests while in low
+// power, when the clocks are stopped, or while the system is already in reset
+// since escalation should not be triggered with reset active.
 class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
   `uvm_object_utils(pwrmgr_wakeup_reset_vseq)
 
@@ -16,6 +19,9 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
     (wakeups_en & wakeups) != 0;
   }
   constraint disable_wakeup_capture_c {disable_wakeup_capture == 1'b0;}
+
+  // Disabling escalation resets per comment above.
+  constraint escalation_reset_c {escalation_reset == 0;}
 
   // Cause some delays for the rom_ctrl done and good inputs. Simple, enough to hold the
   // transition to active state.
@@ -54,10 +60,9 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       // Enable resets.
       enabled_resets = resets_en & resets;
       `uvm_info(`gfn, $sformatf(
-                "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b",
+                "Enabled resets=0x%x, power_reset=%b, sw_reset=%b",
                 enabled_resets,
                 power_glitch_reset,
-                escalation_reset,
                 sw_rst_from_rstmgr
                 ), UVM_MEDIUM)
       csr_wr(.ptr(ral.reset_en[0]), .value(resets_en));
@@ -102,14 +107,13 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
             cfg.pwrmgr_vif.glitch_power_reset();
             enabled_resets = 0;
           end
-          if (escalation_reset) send_escalation_reset();
           `uvm_info(`gfn, $sformatf(
-                    "Sending reset=%b, power_glitch=%b, escalation=%b",
+                    "Sending reset=%b, power_glitch=%b",
                     resets,
-                    power_glitch_reset,
-                    escalation_reset
+                    power_glitch_reset
                     ), UVM_MEDIUM)
         end
+
         begin
           cfg.aon_clk_rst_vif.wait_clks(cycles_before_wakeup);
           cfg.pwrmgr_vif.update_wakeups(wakeups);
@@ -144,7 +148,6 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
         end
         twirl_rom_response();
       join
-
 
       wait_for_fast_fsm_active();
 
