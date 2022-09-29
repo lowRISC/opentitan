@@ -24,11 +24,12 @@ elfutils-libelf
 elfutils-libelf-devel
 libftdi
 libftdi-devel
-openssl-devel
 libudev-devel
 libusbx
-redhat-lsb-core
+lld
 make
+openssl-devel
+redhat-lsb-core
 # A requirement of the prebuilt clang toolchain.
 ncurses
 ninja-build
