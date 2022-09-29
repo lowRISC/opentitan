@@ -28,7 +28,7 @@ class tl_reg_adapter #(type ITEM_T = tl_seq_item) extends uvm_reg_adapter;
     ITEM_T bus_req;
     bus_req = ITEM_T::type_id::create("bus_req");
 
-    // TODO: add a knob to contrl the randomization in case TLUL implementation changes and does
+    // TODO: add a knob to control the randomization in case TLUL implementation changes and does
     // not support partial read/write
     // randomize CSR partial or full read
     // for partial read DUT (except memory) always return the entire 4 bytes bus data
