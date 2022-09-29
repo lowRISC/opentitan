@@ -45,44 +45,46 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
     $assertoff(0, "tb.dut.u_cdc.u_clr_reqack.SyncReqAckHoldReq");
 
     for (int i = 0; i < num_of_target_states; ++i) begin
-      `uvm_info(`gfn, $sformatf("Starting new round%0d", i), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("Starting new round %0d", i), UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
       setup_interrupt(.enable(en_intr));
 
       fork
-         create_any_reset_event();
-         begin
-            int wait_time_ns = 10000;
-            `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state == dv2rtl_st(reset_index));,
-                         $sformatf("Timed out waiting for state %s", reset_index.name),
-                         wait_time_ns)
+        create_any_reset_event();
+        begin
+          int wait_time_ns = 10000;
+          `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state == dv2rtl_st(reset_index));,
+                       $sformatf("Timed out waiting for state %s", reset_index.name),
+                       wait_time_ns)
 
-            @cfg.clk_rst_vif.cbn;
-            `DV_CHECK(uvm_hdl_force(path, 1))
-            @cfg.clk_rst_vif.cb;
-
-         end
+          @cfg.clk_rst_vif.cbn;
+          `uvm_info(`gfn, $sformatf("Will cause invalid state forcing %s = 1", path), UVM_MEDIUM)
+          `DV_CHECK(uvm_hdl_force(path, 1))
+          @cfg.clk_rst_vif.cb;
+        end
       join
       @cfg.clk_rst_vif.cb;
       `DV_CHECK(uvm_hdl_release(path))
       `DV_CHECK(cfg.pwrmgr_vif.fast_state, pwrmgr_pkg::FastPwrStateInvalid)
-
+      `uvm_info(`gfn, "All good, resetting for next round", UVM_MEDIUM)
       repeat(10) @cfg.clk_rst_vif.cb;
       apply_reset();
       reset_index++;
+      wait_for_fast_fsm_active();
     end
   endtask
 
   task create_any_reset_event();
     resets_t enabled_resets = resets_en & resets;
     `uvm_info(`gfn, $sformatf(
-       "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b",
-                              enabled_resets,
-                              power_glitch_reset,
-                              escalation_reset,
-                              sw_rst_from_rstmgr
-                              ), UVM_MEDIUM)
+              "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b",
+              enabled_resets,
+              power_glitch_reset,
+              escalation_reset,
+              sw_rst_from_rstmgr
+              ), UVM_MEDIUM)
 
+    `uvm_info(`gfn, "Trying to write to reset_en CSR", UVM_MEDIUM)
     csr_wr(.ptr(ral.reset_en[0]), .value(resets_en));
     // This is necessary to propagate reset_en.
     wait_for_csr_to_propagate_to_slow_domain();

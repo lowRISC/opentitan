@@ -16,9 +16,9 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
 
   constraint cpu_interrupt_c {
     cpu_interrupt dist {
-                        1 := 2,
-                        0 := 6
-                        };
+      1 := 2,
+      0 := 6
+    };
   }
 
   rand bit flash_idle;
@@ -53,11 +53,11 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
       setup_interrupt(.enable(en_intr));
       // Enable wakeups.
       enabled_wakeups = wakeups_en & wakeups;
-      `DV_CHECK(enabled_wakeups,
-                $sformatf("Some wakeup must be enabled: wkups=%b, wkup_en=%b",
-                          wakeups, wakeups_en))
-      `uvm_info(`gfn, $sformatf("Enabled wakeups=0x%x (wkups=%x  wkup_en=%x)",
-                                enabled_wakeups, wakeups, wakeups_en), UVM_MEDIUM)
+      `DV_CHECK(enabled_wakeups, $sformatf(
+                "Some wakeup must be enabled: wkups=%b, wkup_en=%b", wakeups, wakeups_en))
+      `uvm_info(`gfn, $sformatf(
+                "Enabled wakeups=0x%x (wkups=%x  wkup_en=%x)", enabled_wakeups, wakeups, wakeups_en
+                ), UVM_MEDIUM)
       csr_wr(.ptr(ral.wakeup_en[0]), .value(wakeups_en));
       `uvm_info(`gfn, $sformatf("%0sabling wakeup capture", disable_wakeup_capture ? "Dis" : "En"),
                 UVM_MEDIUM)

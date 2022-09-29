@@ -66,15 +66,10 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
       if (escalation_reset) send_escalation_reset();
       cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
 
-      cfg.slow_clk_rst_vif.wait_clks(2);
-      // Wait until fast clock comes back
-      repeat(4) @cfg.clk_rst_vif.cb;
-
-      // This read is not always possible since the CPU may be off.
-      check_reset_status(enabled_resets);
+      `uvm_info(`gfn, "Wait for Fast State NE FastPwrStateActive", UVM_MEDIUM)
+      `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
 
       // Check fast state is not FastPwrStateActive for a while
-      `uvm_info(`gfn, "Check Fast State NE FastPwrStateActive", UVM_MEDIUM)
       repeat(20) begin
         @cfg.slow_clk_rst_vif.cb;
         `DV_CHECK_NE(cfg.pwrmgr_vif.fast_state, pwrmgr_pkg::FastPwrStateActive)

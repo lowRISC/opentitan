@@ -46,6 +46,7 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
     cfg.invalid_st_test = 1;
 
     wait_for_fast_fsm_active();
+    `uvm_info(`gfn, "At body start", UVM_MEDIUM)
     check_wake_status('0);
     reset_index = DVWaitFallThrough;
 
@@ -54,7 +55,7 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       setup_interrupt(.enable(en_intr));
       fork
-        stat_lowpower_transition();
+        start_lowpower_transition();
         begin
           int wait_time_ns = 10000;
           `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state == dv2rtl_st(reset_index));,
@@ -62,6 +63,7 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
                        wait_time_ns)
 
           @cfg.clk_rst_vif.cbn;
+          `uvm_info(`gfn, "Injecting invalid slow state", UVM_MEDIUM)
           `DV_CHECK(uvm_hdl_force(path, 1))
           @cfg.clk_rst_vif.cb;
         end
@@ -74,10 +76,11 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
 
       apply_reset();
       reset_index++;
+      wait_for_fast_fsm_active();
     end // for (int i = 0; i < 4; ++i)
   endtask
 
-  task stat_lowpower_transition();
+  task start_lowpower_transition();
     wakeups_t enabled_wakeups = wakeups_en & wakeups;
     `DV_CHECK(enabled_wakeups, $sformatf(
        "Some wakeup must be enabled: wkups=%b, wkup_en=%b", wakeups, wakeups_en))
@@ -99,14 +102,7 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
     // Now bring it back.
     cfg.clk_rst_vif.wait_clks(cycles_before_wakeup);
     cfg.pwrmgr_vif.update_wakeups(wakeups);
-    // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
-    // This read will not work in the chip, since the processor will be asleep.
-    cfg.slow_clk_rst_vif.wait_clks(4);
-    // wait for clock is on
-    cfg.clk_rst_vif.wait_clks(10);
 
-    check_wake_status(enabled_wakeups);
-    `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
     wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
 
     // wakeups should be registered.
@@ -114,7 +110,7 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
 
     wait_for_fast_fsm_active();
     `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
-  endtask // stat_lowpower_transition
+  endtask : start_lowpower_transition
 
   function pwrmgr_pkg::fast_pwr_state_e dv2rtl_st(reset_index_e idx);
     case (idx)
@@ -137,6 +133,6 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
         `uvm_error("dv2rma_st", $sformatf("unknown index:%0d", idx))
       end
     endcase
-  endfunction // dv2rtl_st
+  endfunction : dv2rtl_st
 
-endclass // pwrmgr_lowpower_invalid_vseq
+endclass : pwrmgr_lowpower_invalid_vseq
