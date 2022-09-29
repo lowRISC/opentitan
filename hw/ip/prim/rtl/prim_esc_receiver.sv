@@ -155,11 +155,11 @@ module prim_esc_receiver
 
   always_comb begin : p_fsm
     // default
-    state_d  = state_q;
-    resp_pd  = 1'b0;
-    resp_nd  = 1'b1;
-    esc_req  = 1'b0;
-    ping_en  = 1'b0;
+    state_d = state_q;
+    resp_pd = 1'b0;
+    resp_nd = 1'b1;
+    esc_req = 1'b0;
+    ping_en = 1'b0;
 
     unique case (state_q)
       // wait for the esc_p/n diff pair
@@ -177,8 +177,8 @@ module prim_esc_receiver
         resp_pd = ~resp_pq;
         resp_nd = resp_pq;
         if (esc_level) begin
-          state_d  = EscResp;
-          esc_req  = 1'b1;
+          state_d = EscResp;
+          esc_req = 1'b1;
         end
       end
       // finish ping response. in case esc_level is again asserted,
@@ -189,8 +189,8 @@ module prim_esc_receiver
         resp_nd = resp_pq;
         ping_en = 1'b1;
         if (esc_level) begin
-          state_d  = EscResp;
-          esc_req  = 1'b1;
+          state_d = EscResp;
+          esc_req = 1'b1;
         end
       end
       // we have got an escalation enable pulse,
@@ -198,10 +198,10 @@ module prim_esc_receiver
       EscResp: begin
         state_d = Idle;
         if (esc_level) begin
-          state_d  = EscResp;
-          resp_pd  = ~resp_pq;
-          resp_nd  = resp_pq;
-          esc_req  = 1'b1;
+          state_d = EscResp;
+          resp_pd = ~resp_pq;
+          resp_nd = resp_pq;
+          esc_req = 1'b1;
         end
       end
       // we have a signal integrity issue at one of
@@ -218,14 +218,14 @@ module prim_esc_receiver
           resp_nd = ~resp_pq;
         end
       end
-      default : state_d = Idle;
+      default: state_d = Idle;
     endcase
 
     // bail out if a signal integrity issue has been detected
     if (sigint_detected && (state_q != SigInt)) begin
-      state_d  = SigInt;
-      resp_pd  = 1'b0;
-      resp_nd  = 1'b0;
+      state_d = SigInt;
+      resp_pd = 1'b0;
+      resp_nd = 1'b0;
     end
   end
 
@@ -250,24 +250,23 @@ module prim_esc_receiver
   `ASSERT_KNOWN(EscEnKnownO_A, esc_req_o)
   `ASSERT_KNOWN(RespPKnownO_A, esc_rx_o)
 
-  `ASSERT(SigIntCheck0_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=>
-      esc_rx_o.resp_p == esc_rx_o.resp_n)
+  `ASSERT(SigIntCheck0_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> esc_rx_o.resp_p == esc_rx_o.resp_n)
   `ASSERT(SigIntCheck1_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> state_q == SigInt)
   // auto-escalate in case of signal integrity issue
   `ASSERT(SigIntCheck2_A, esc_tx_i.esc_p == esc_tx_i.esc_n |=> esc_req_o)
   // correct diff encoding
-  `ASSERT(DiffEncCheck_A, esc_tx_i.esc_p ^ esc_tx_i.esc_n |=>
-      esc_rx_o.resp_p ^ esc_rx_o.resp_n)
+  `ASSERT(DiffEncCheck_A, esc_tx_i.esc_p ^ esc_tx_i.esc_n |=> esc_rx_o.resp_p ^ esc_rx_o.resp_n)
   // disable in case of signal integrity issue
   `ASSERT(PingRespCheck_A, state_q == Idle ##1 $rose(esc_tx_i.esc_p) ##1 $fell(esc_tx_i.esc_p) |->
       $rose(esc_rx_o.resp_p) ##1 $fell(esc_rx_o.resp_p),
       clk_i, !rst_ni || (esc_tx_i.esc_p == esc_tx_i.esc_n))
   // escalation response needs to continuously toggle
-  `ASSERT(EscRespCheck_A, esc_tx_i.esc_p && $past(esc_tx_i.esc_p) &&
+  `ASSERT(EscRespCheck_A, ##1 esc_tx_i.esc_p && $past(esc_tx_i.esc_p) &&
       (esc_tx_i.esc_p ^ esc_tx_i.esc_n) && $past(esc_tx_i.esc_p ^ esc_tx_i.esc_n)
       |=> esc_rx_o.resp_p != $past(esc_rx_o.resp_p))
   // detect escalation pulse
-  `ASSERT(EscEnCheck_A, esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) && state_q != SigInt
+  `ASSERT(EscEnCheck_A,
+          esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) && state_q != SigInt
       ##1 esc_tx_i.esc_p && (esc_tx_i.esc_p ^ esc_tx_i.esc_n) |-> esc_req_o)
   // make sure the counter does not wrap around
   `ASSERT(EscCntWrap_A, &timeout_cnt |=> timeout_cnt != 0)
