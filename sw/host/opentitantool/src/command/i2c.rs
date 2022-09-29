@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use erased_serde::Serialize;
+use serde_annotate::Annotate;
 use std::any::Any;
 use structopt::StructOpt;
 
@@ -29,7 +29,7 @@ impl CommandDispatch for I2cRawRead {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
         let i2c_bus = context.params.create(transport)?;
@@ -53,7 +53,7 @@ impl CommandDispatch for I2cRawWrite {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::I2C).ok()?;
         let context = context.downcast_ref::<I2cCommand>().unwrap();
         let i2c_bus = context.params.create(transport)?;
@@ -89,7 +89,7 @@ impl CommandDispatch for I2cCommand {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         // None of the I2C commands care about the prior context, but they do
         // care about the `bus` parameter in the current node.
         self.command.run(self, transport)
