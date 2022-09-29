@@ -36,6 +36,10 @@ void rstmgr_testutils_compare_alert_info(
 
   CHECK_DIF_OK(dif_rstmgr_alert_info_dump_read(
       rstmgr, actual_alert_dump, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &size_read));
+  CHECK(dump_size == size_read,
+        "The expected alert info dump size (%d) is not equal to "
+        "the observed dump size (%d).",
+        dump_size, size_read);
   CHECK_ARRAYS_EQ(actual_alert_dump, expected_alert_dump, dump_size);
 }
 
@@ -48,6 +52,10 @@ void rstmgr_testutils_compare_cpu_info(
 
   CHECK_DIF_OK(dif_rstmgr_cpu_info_dump_read(
       rstmgr, actual_cpu_dump, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &size_read));
+  CHECK(dump_size == size_read,
+        "The expected cpu info dump size (%d) is not equal to "
+        "the observed dump size (%d).",
+        dump_size, size_read);
   CHECK_ARRAYS_EQ(actual_cpu_dump, expected_cpu_dump, dump_size);
 }
 
