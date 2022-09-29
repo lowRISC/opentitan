@@ -12,6 +12,7 @@ filesets:
       # Needed because the generic prim_flop_2sync has a
       # dependency on prim:flop.
       - lowrisc:prim:flop_2sync
+      - lowrisc:prim:mubi
       - lowrisc:prim:cdc_rand_delay
     files:
       - rtl/prim_rst_sync.sv
