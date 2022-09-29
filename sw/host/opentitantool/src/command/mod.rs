@@ -19,7 +19,7 @@ pub mod update_usr_access;
 pub mod version;
 
 use anyhow::Result;
-use erased_serde::Serialize;
+use serde_annotate::Annotate;
 use std::any::Any;
 use structopt::StructOpt;
 
@@ -35,7 +35,7 @@ impl CommandDispatch for NoOp {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         Ok(None)
     }
 }

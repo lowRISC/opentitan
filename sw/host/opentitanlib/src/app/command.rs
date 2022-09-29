@@ -4,8 +4,8 @@
 
 use crate::app::TransportWrapper;
 use anyhow::Result;
-use erased_serde::Serialize;
 pub use opentitantool_derive::*;
+use serde_annotate::Annotate;
 use std::any::Any;
 
 /// The `CommandDispatch` trait should be implemented for all leaf structures
@@ -21,5 +21,5 @@ pub trait CommandDispatch {
         &self,
         context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>>;
+    ) -> Result<Option<Box<dyn Annotate>>>;
 }
