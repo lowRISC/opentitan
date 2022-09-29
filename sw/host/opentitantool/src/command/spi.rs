@@ -95,8 +95,9 @@ pub struct SpiReadId {
     length: usize,
 }
 
-#[derive(Debug, serde::Serialize)]
+#[derive(Debug, serde::Serialize, Annotate)]
 pub struct SpiReadIdResponse {
+    #[annotate(format = hex)]
     jedec_id: Vec<u8>,
 }
 
