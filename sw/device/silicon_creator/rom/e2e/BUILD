@@ -18,6 +18,24 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
+MSG_STARTING_ROM_EXT = "Starting ROM_EXT"
+
+MSG_BOOT_FAULT = "BFV:"
+
+MSG_STORE_ACCESS_FAULT = "BFV:07495202(?s:.*)BFV:07495202"
+
+MSG_ILLEGAL_INSTRUCTION_FAULT = "BFV:02495202(?s:.*)BFV:02495202"
+
+MSG_PASS = "PASS!"
+
+MSG_BAD_KEY = "BFV:02535603(?s:.*)BFV:02535603"
+
+SLOT_A_OFFSET = "0x0"
+
+SLOT_B_OFFSET = "0x80000"
+
+FLASH_SIZE = "0x100000"
+
 opentitan_functest(
     name = "rom_e2e_shutdown_exception_c",
     srcs = ["rom_e2e_shutdown_exception_c_test.c"],
@@ -202,20 +220,6 @@ opentitan_functest(
     ],
 )
 
-MSG_STARTING_ROM_EXT = "Starting ROM_EXT"
-
-MSG_BOOT_FAULT = "BFV:"
-
-MSG_STORE_ACCESS_FAULT = "BFV:07495202(?s:.*)BFV:07495202"
-
-MSG_ILLEGAL_INSTRUCTION_FAULT = "BFV:02495202(?s:.*)BFV:02495202"
-
-SLOT_A_OFFSET = "0x0"
-
-SLOT_B_OFFSET = "0x80000"
-
-FLASH_SIZE = "0x100000"
-
 opentitan_functest(
     name = "rom_ext_a_flash_a",
     cw310 = cw310_params(
@@ -344,5 +348,20 @@ test_suite(
         "rom_ext_b_flash_b",
         "rom_ext_v_flash_a",
         "rom_ext_v_flash_b",
+    ],
+)
+
+opentitan_functest(
+    name = "sigverify_key_auth",
+    srcs = ["empty_test.c"],
+    cw310 = cw310_params(
+        exit_failure = MSG_PASS,
+        exit_success = MSG_BAD_KEY,
+    ),
+    key = "unauthorized_0",
+    signed = True,
+    targets = ["cw310_rom"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

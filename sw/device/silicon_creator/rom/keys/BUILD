@@ -15,3 +15,8 @@ filegroup(
     name = "test_private_key_0",
     srcs = ["test_key_0_rsa_3072_exp_f4.der"],
 )
+
+filegroup(
+    name = "unauthorized_private_key_0",
+    srcs = ["unauthorized_rsa_3072_exp_f4.der"],
+)
