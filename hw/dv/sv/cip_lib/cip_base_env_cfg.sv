@@ -5,13 +5,13 @@
 class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg #(RAL_T);
   // Downstream agent cfg objects.
 
-  // if the block supports only one RAL, just use `m_tl_agent_cfg`
-  // if there are multiple RALs, `m_tl_agent_cfg` is the default one for RAL with type `RAL_T`
-  // for the other RAL, can get from ral_models[string] and agent cfg from m_tl_agent_cfgs[string]
+  // If the block supports only one RAL, just use `m_tl_agent_cfg`.
+  // If there are multiple RALs, `m_tl_agent_cfg` is the default one for RAL with type `RAL_T`.
+  // For the other RAL, can get from ral_models[string] and agent cfg from m_tl_agent_cfgs[string].
   tl_agent_cfg        m_tl_agent_cfg;
   rand tl_agent_cfg   m_tl_agent_cfgs[string];
 
-  // Override this alert name at `initialize` if it's not as below
+  // Override this alert name at `initialize` if it's not as below.
   string              tl_intg_alert_name = "fatal_fault";
   string              sec_cm_alert_name  = "fatal_fault";
 
@@ -21,10 +21,10 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // Format: tl_intg_alert_fields[ral.a_reg.a_field] = value
   uvm_reg_data_t      tl_intg_alert_fields[dv_base_reg_field];
 
-  // flag to indicate tl mem acess are gated due to local or global escalation
+  // Flag to indicate tl mem acess are gated due to local or global escalation.
   bit                 tl_mem_access_gated;
 
-  // Similar as the associative array above, if DUT has shadow registers, these two associative
+  // Similar to the associative array above, if DUT has shadow registers, these two associative
   // arrays contains register fields related to shadow register's update and storage error status.
   uvm_reg_data_t      shadow_update_err_status_fields[dv_base_reg_field];
   uvm_reg_data_t      shadow_storage_err_status_fields[dv_base_reg_field];
@@ -36,7 +36,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   rand uint edn_clk_freq_mhz;
   rand clk_freq_diff_e tlul_and_edn_clk_freq_diff;
 
-  // Common interfaces - intrrupts, alerts, edn clk.
+  // Common interfaces - interrupts, alerts, edn clk.
   intr_vif            intr_vif;
   devmode_vif         devmode_vif;
   rst_shadowed_vif    rst_shadowed_vif;
