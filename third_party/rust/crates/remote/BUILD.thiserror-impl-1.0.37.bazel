@@ -32,7 +32,7 @@ licenses([
 # Generated Targets
 
 rust_proc_macro(
-    name = "ghost",
+    name = "thiserror_impl",
     srcs = glob(["**/*.rs"]),
     crate_features = [
     ],
@@ -44,10 +44,10 @@ rust_proc_macro(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=ghost",
+        "crate-name=thiserror-impl",
         "manual",
     ],
-    version = "0.1.6",
+    version = "1.0.37",
     # buildifier: leave-alone
     deps = [
         "@raze__proc_macro2__1_0_45//:proc_macro2",
@@ -55,9 +55,3 @@ rust_proc_macro(
         "@raze__syn__1_0_101//:syn",
     ],
 )
-
-# Unsupported target "autotraits" with type "test" omitted
-
-# Unsupported target "compiletest" with type "test" omitted
-
-# Unsupported target "readme" with type "test" omitted
