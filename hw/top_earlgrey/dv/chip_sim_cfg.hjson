@@ -1326,6 +1326,15 @@
       run_opts: ["+sw_test_timeout_ns=7_000_000"]
     }
     {
+      name: chip_sw_rv_core_ibex_lockstep_glitch
+      uvm_test_seq: chip_sw_rv_core_ibex_lockstep_glitch_vseq
+      sw_images: ["sw/device/tests:aes_smoketest:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      // This test currently stops without completing all transactions, so we
+      // have to disable the final assertions.
+      run_opts: ["+disable_assert_final_checks"]
+    }
+    {
       name: chip_sw_usb_ast_clk_calib
       uvm_test_seq: "chip_sw_usb_ast_clk_calib_vseq"
       sw_images: ["//sw/device/tests/sim_dv:ast_usb_clk_calib:1"]
