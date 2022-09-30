@@ -2937,6 +2937,18 @@
       tests: []
    }
 
+   {
+    name: chip_sw_rv_core_ibex_lockstep_glitch
+    desc: '''Verify lockstep checking of the Ibex core.
+
+             Ensure suitable alerts are triggered when:
+             - Outputs from the lockstep or the main core are corrupted.
+             - Inputs into the lockstep core are corrupted.
+          '''
+    stage: V2S
+    tests: ["chip_sw_rv_core_ibex_lockstep_glitch"]
+   }
+
     ////////////////////////////
     // System level scenarios //
     ////////////////////////////
