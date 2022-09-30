@@ -344,54 +344,9 @@ module tb;
   // needed for sequences that trigger alerts (locking OTBN) without telling the model.
   `DV_ASSERT_CTRL("otbn_status_assert_en", tb.MatchingStatus_A)
 
-  // We need to turn off blanking related assertions in redundancy related fault injection tests.
-  `DV_ASSERT_CTRL("BlankingAssertsALU", tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingBignumAluXOp_A)
-  `DV_ASSERT_CTRL("BlankingAssertsALU",
-                  tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingBignumAluYOpA_A)
-  `DV_ASSERT_CTRL("BlankingAssertsALU",
-                  tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingBignumAluYOpShft_A)
-  `DV_ASSERT_CTRL("BlankingAssertsALU",
-                  tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingBignumAluYResUsed_A)
-  `DV_ASSERT_CTRL("BlankingAssertsALU",
-                  tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingBignumAluShftA_A)
-  `DV_ASSERT_CTRL("BlankingAssertsALU",
-                  tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingBignumAluShftB_A)
-  `DV_ASSERT_CTRL("BlankingAssertsALU",
-                  tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingBignumAluShftRes_A)
-  `DV_ASSERT_CTRL("BlankingAssertsALU",
-                  tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingBignumAluLogicOpA_A)
-  `DV_ASSERT_CTRL("BlankingAssertsALU",
-                  tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingBignumAluLogicShft_A)
-  `DV_ASSERT_CTRL("BlankingAssertsALU",
-                  tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingBignumAluLogicRes_A)
-  `DV_ASSERT_CTRL("BlankingAssertsALU", tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingIsprMod_A)
-  `DV_ASSERT_CTRL("BlankingAssertsALU", tb.dut.u_otbn_core.u_otbn_alu_bignum.BlankingIsprACC_A)
-  `DV_ASSERT_CTRL("BlankingAssertsRF", tb.dut.u_otbn_core.u_otbn_rf_bignum.BlankingBignumRegReadA_A)
-  `DV_ASSERT_CTRL("BlankingAssertsRF", tb.dut.u_otbn_core.u_otbn_rf_bignum.BlankingBignumRegReadB_A)
-
   // We need to turn off DMEM related assertions in the tests where we force internals of DMEM to generate errors
   `DV_ASSERT_CTRL("DMemAsserts", tb.dut.u_otbn_core.u_otbn_lsu.DMemRValidAfterReq)
   `DV_ASSERT_CTRL("DMemAsserts", tb.dut.u_otbn_core.OnlyWriteLoadDataBaseWhenDMemValid_A)
   `DV_ASSERT_CTRL("DMemAsserts", tb.dut.u_otbn_core.OnlyWriteLoadDataBignumWhenDMemValid_A)
-
-  // GPR assertions for secure wipe
-  for (genvar i = 2; i < NGpr; ++i) begin : gen_sec_wipe_gpr_asserts
-    `DV_ASSERT_CTRL("SecWipeAsserts",
-                    tb.dut.gen_sec_wipe_gpr_asserts[i].InitSecWipeNonZeroBaseRegs_A)
-    `DV_ASSERT_CTRL("SecWipeAsserts", tb.dut.gen_sec_wipe_gpr_asserts[i].SecWipeChangedBaseRegs_A)
-  end
-
-  // WDR assertions for secure wipe
-  for (genvar i = 0; i < NWdr; ++i) begin : gen_sec_wipe_wdr_asserts
-    `DV_ASSERT_CTRL("SecWipeAsserts",
-                    tb.dut.gen_sec_wipe_wdr_asserts[i].InitSecWipeNonZeroWideRegs_A)
-    `DV_ASSERT_CTRL("SecWipeAsserts", tb.dut.gen_sec_wipe_wdr_asserts[i].SecWipeChangedWideRegs_A)
-  end
-
-  `DV_ASSERT_CTRL("SecWipeAsserts", tb.dut.SecWipeNonZeroMod_A)
-  `DV_ASSERT_CTRL("SecWipeAsserts", tb.dut.SecWipeNonZeroACC_A)
-  `DV_ASSERT_CTRL("SecWipeAsserts", tb.dut.SecWipeNonZeroFlags_A)
-  `DV_ASSERT_CTRL("SecWipeAsserts", tb.dut.SecWipeInvalidCallStack_A)
-  `DV_ASSERT_CTRL("SecWipeAsserts", tb.dut.SecWipeInvalidLoopStack_A)
 
 endmodule
