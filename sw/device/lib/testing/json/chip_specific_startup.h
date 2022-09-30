@@ -1,8 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_E2E_JSON_CHIP_SPECIFIC_STARTUP_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_E2E_JSON_CHIP_SPECIFIC_STARTUP_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_CHIP_SPECIFIC_STARTUP_H_
+#define OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_CHIP_SPECIFIC_STARTUP_H_
 
 #include "sw/device/lib/ujson/ujson_derive.h"
 #ifdef __cplusplus
@@ -25,4 +25,4 @@ UJSON_SERDE_STRUCT(ChipStartup, chip_startup_t, STRUCT_CHIP_STARTUP);
 #ifdef __cplusplus
 }
 #endif
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_E2E_JSON_CHIP_SPECIFIC_STARTUP_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_CHIP_SPECIFIC_STARTUP_H_

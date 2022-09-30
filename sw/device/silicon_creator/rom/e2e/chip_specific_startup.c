@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/rom/e2e/json/chip_specific_startup.h"
+#include "sw/device/lib/testing/json/chip_specific_startup.h"
 
 #include <stdbool.h>
 
@@ -10,10 +10,10 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/json/command.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/silicon_creator/rom/e2e/json/command.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
