@@ -693,7 +693,7 @@ module kmac
 
   always_comb begin
     // Default value
-    kmac_st_d = KmacIdle;
+    kmac_st_d = kmac_st;
 
     entropy_in_keyblock = 1'b 0;
     kmac_state_error = 1'b 0;

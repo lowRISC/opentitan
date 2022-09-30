@@ -161,7 +161,7 @@ module kmac_core
   // Next state and output logic
   // SEC_CM: FSM.SPARSE
   always_comb begin
-    st_d = StKmacIdle;
+    st_d = st;
 
     en_kmac_datapath = 1'b 0;
     en_key_write = 1'b 0;
