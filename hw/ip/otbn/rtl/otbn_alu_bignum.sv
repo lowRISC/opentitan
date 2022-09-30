@@ -845,18 +845,22 @@ module otbn_alu_bignum
   `ASSERT_KNOWN(RegIntgErrKnown_A, reg_intg_violation_err_o)
 
   // Blanking Assertions
+  // All blanking assertions are reset with predec_error or overall error in the whole system
+  // -indicated by operation_commit_i port- as OTBN does not guarantee blanking in the case
+  // of an error.
+
   // adder_x_res related blanking
   `ASSERT(BlankingBignumAluXOp_A,
           !expected_adder_x_en |-> {adder_x_op_a_blanked, adder_x_op_b_blanked,adder_x_res} == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // adder_y_res related blanking
   `ASSERT(BlankingBignumAluYOpA_A,
           !expected_adder_y_op_a_en |-> adder_y_op_a_blanked == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
   `ASSERT(BlankingBignumAluYOpShft_A,
           !expected_adder_y_op_shifter_en |-> adder_y_op_shifter_res_blanked == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // Adder Y must be blanked when its result is not used, with one exception: For `BN.SUBM` with
   // `a >= b` (thus the result of Adder X has the carry bit set), the result of Adder Y is not used
@@ -864,44 +868,44 @@ module otbn_alu_bignum
   `ASSERT(BlankingBignumAluYResUsed_A,
           !adder_y_res_used && !(operation_i.op == AluOpBignumSubm && adder_x_res[WLEN+1])
           |-> {x_res_operand_a_mux_out, adder_y_op_b} == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // shifter_res related blanking
   `ASSERT(BlankingBignumAluShftA_A,
           !expected_shifter_a_en |-> shifter_operand_a_blanked == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   `ASSERT(BlankingBignumAluShftB_A,
           !expected_shifter_b_en |-> shifter_operand_b_blanked == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   `ASSERT(BlankingBignumAluShftRes_A,
           !(expected_shifter_a_en || expected_shifter_b_en) |-> shifter_res == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   // logical_res related blanking
   `ASSERT(BlankingBignumAluLogicOpA_A,
           !expected_logic_a_en |-> logical_op_a_blanked == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || alu_predec_error_o  || !operation_commit_i)
 
   `ASSERT(BlankingBignumAluLogicShft_A,
           !expected_logic_shifter_en |-> logical_op_shifter_res_blanked == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
   `ASSERT(BlankingBignumAluLogicRes_A,
           !(expected_logic_a_en || expected_logic_shifter_en) |-> logical_res == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || alu_predec_error_o || !operation_commit_i)
 
 
   // MOD ISPR Blanking
   `ASSERT(BlankingIsprMod_A,
           !(|mod_wr_en) |-> ispr_mod_bignum_wdata_intg_blanked == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
 
   // ACC ISPR Blanking
   `ASSERT(BlankingIsprACC_A,
           !(|ispr_acc_wr_en_o) |-> ispr_acc_bignum_wdata_intg_blanked == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || ispr_predec_error_o || alu_predec_error_o || !operation_commit_i)
 
 
 endmodule
