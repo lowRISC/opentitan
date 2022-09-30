@@ -243,9 +243,65 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddrDisabled;
+    info.opcode = SpiFlashReadJedec;
+    info.num_lanes = 1;
+    info.dummy_cycles = 0;
+    info.write_command = 0;
+    agent_cfg.add_cmd_info(info);
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    info.addr_mode = SpiFlashAddrDisabled;
     info.opcode = SpiFlashReadSts1;
     info.num_lanes = 1;
     info.dummy_cycles = 0;
+    info.write_command = 0;
+    agent_cfg.add_cmd_info(info);
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    info.addr_mode = SpiFlashAddrDisabled;
+    info.opcode = SpiFlashReadSts2;
+    info.num_lanes = 1;
+    info.dummy_cycles = 0;
+    info.write_command = 0;
+    agent_cfg.add_cmd_info(info);
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    info.addr_mode = SpiFlashAddrDisabled;
+    info.opcode = SpiFlashReadSts3;
+    info.num_lanes = 1;
+    info.dummy_cycles = 0;
+    info.write_command = 0;
+    agent_cfg.add_cmd_info(info);
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    info.addr_mode = SpiFlashAddrCfg;
+    info.opcode = SpiFlashReadNormal;
+    info.num_lanes = 1;
+    info.dummy_cycles = 0;
+    info.write_command = 0;
+    agent_cfg.add_cmd_info(info);
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    info.addr_mode = SpiFlashAddrCfg;
+    info.opcode = SpiFlashReadFast;
+    info.num_lanes = 1;
+    info.dummy_cycles = 8;
+    info.write_command = 0;
+    agent_cfg.add_cmd_info(info);
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    info.addr_mode = SpiFlashAddrCfg;
+    info.opcode = SpiFlashReadDual;
+    info.num_lanes = 2;
+    info.dummy_cycles = 8;
+    info.write_command = 0;
+    agent_cfg.add_cmd_info(info);
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    info.addr_mode = SpiFlashAddrCfg;
+    info.opcode = SpiFlashReadQuad;
+    info.num_lanes = 4;
+    info.dummy_cycles = 8;
     info.write_command = 0;
     agent_cfg.add_cmd_info(info);
 

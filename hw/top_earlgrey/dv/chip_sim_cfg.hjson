@@ -501,6 +501,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_spi_device_pass_through
+      uvm_test_seq: chip_sw_spi_passthrough_vseq
+      sw_images: ["//sw/device/tests/sim_dv:spi_passthrough_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_gpio
       uvm_test_seq: chip_sw_gpio_vseq
       sw_images: ["//sw/device/tests/sim_dv:gpio_test:1"]
@@ -1442,6 +1448,7 @@
       tests: ["xbar_chip_smoke",
               "chip_sw_uart_tx_rx",
               "chip_sw_spi_host_tx_rx",
+              "chip_sw_spi_device_pass_through",
               "chip_sw_i2c_host_tx_rx",
               "chip_plic_all_irqs",
               "chip_sw_example_flash",

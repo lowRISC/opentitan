@@ -154,14 +154,14 @@
               testbench.
             - Verify the flash commands which pass through spi_host0, are received on chip IOs.
             - Verify spi_host1 doesn't send out any data from spi_device
-            - Run with min (6MHz), typical (30-48Mhz) and max(48MHz) SPI clk frequencies.
+            - Run with min (6MHz), typical (24Mhz) and max (30MHz) SPI clk frequencies.
             - Run with single, dual and quad SPI modes.
             - Testbench should test the following commands:
               - Read Normal, Fast Read, Fast Dual, Fast Quad, Chip Erase, Program
 
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_spi_device_pass_through"]
     }
     {
       name: chip_sw_spi_device_pass_through_filter

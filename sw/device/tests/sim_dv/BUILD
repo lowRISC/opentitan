@@ -773,6 +773,25 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "spi_passthrough_test",
+    srcs = ["spi_passthrough_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:spi_device",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "rv_dm_ndm_reset_req",
     srcs = ["rv_dm_ndm_reset_req.c"],
     targets = ["dv"],
