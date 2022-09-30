@@ -377,11 +377,13 @@
       name: filesystem_support
       desc: '''
             Enable ECC and disable scrambling for all regions.
-            Initialize flash with random bits. Erase some random regions / pages and keep the pages.
-            Do write and read back test for random page and check
-             - If pages are in the erased page list, write data should be random and
+            Initialize flash with erased state (FlashMemInitSet).
+            Execute random number of writes without writing the same location twice.
+            Record all write locations(Minimum resolution of location is 8bytes).
+            After that, execute write and read back test for random page and check
+             - If the locations are in the written record, write data should be all 0 and
                readback data should match with the written data.
-             - If pages are not in the erase page, write data should be all 0 and
+             - If the locations are not in the written record, write data should be random and
                readback data should match with the written data.
             '''
       stage: V2

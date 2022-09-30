@@ -183,6 +183,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Internal use only.
   bit       en_always_any = 0;
 
+  bit       en_all_info_acc = 0;
   // tlul error transaction counter
   // compare at the end of sim
   int       tlul_core_exp_cnt = 0;
@@ -191,6 +192,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   int       tlul_eflash_exp_cnt = 0;
   int       tlul_eflash_obs_cnt = 0;
 
+  // Store program data for read back check
+  data_q_t prog_data[flash_op_t];
 
   `uvm_object_utils(flash_ctrl_env_cfg)
   `uvm_object_new

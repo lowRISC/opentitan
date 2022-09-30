@@ -66,6 +66,7 @@ class flash_ctrl_base_test #(
     void'($value$plusargs("en_always_read=%0d", cfg.en_always_read));
     void'($value$plusargs("en_always_erase=%0d", cfg.en_always_erase));
     void'($value$plusargs("en_always_prog=%0d", cfg.en_always_prog));
+    void'($value$plusargs("en_all_info_acc=%0d", cfg.en_all_info_acc));
     if (cfg.en_always_all) begin
       cfg.en_always_read = 1;
       cfg.en_always_prog = 1;
