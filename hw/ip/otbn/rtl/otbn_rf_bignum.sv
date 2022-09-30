@@ -165,11 +165,11 @@ module otbn_rf_bignum
 
   `ASSERT(BlankingBignumRegReadA_A,
           !rd_en_a_i |->  rd_data_a_intg_o == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || predec_error_o || !wr_commit_i)
 
   `ASSERT(BlankingBignumRegReadB_A,
           !rd_en_b_i |->  rd_data_b_intg_o == '0,
-          clk_i, !rst_ni)
+          clk_i, !rst_ni || predec_error_o || !wr_commit_i)
 
   // Make sure we're not outputting X. This indicates that something went wrong during the initial
   // secure wipe.
