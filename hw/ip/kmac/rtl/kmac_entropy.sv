@@ -461,7 +461,7 @@ module kmac_entropy
   // State: Next State and Output Logic
   // SEC_CM: FSM.SPARSE
   always_comb begin
-    st_d = StRandReset;
+    st_d = st;
     sparse_fsm_error_o = 1'b 0;
 
     // Default Timer values

@@ -201,7 +201,7 @@ module sha3
   // StSqueeze: only run_i, done_i signal is allowed
 
   always_comb begin
-    st_d = StIdle_sparse;
+    st_d = st;
 
     // default output values
     keccak_start = 1'b 0;

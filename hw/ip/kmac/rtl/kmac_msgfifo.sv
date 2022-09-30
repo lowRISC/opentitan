@@ -190,7 +190,7 @@ module kmac_msgfifo
   end
 
   always_comb begin
-    flush_st_d = FlushIdle;
+    flush_st_d = flush_st;
 
     msgfifo_flush_done = 1'b 0;
 

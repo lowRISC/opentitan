@@ -294,7 +294,7 @@ module sha3pad
   end
 
   always_comb begin
-    st_d = StPadIdle;
+    st_d = st;
 
     // FSM output : default values
     keccak_run_o = 1'b 0;

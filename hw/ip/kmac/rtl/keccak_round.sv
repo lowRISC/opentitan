@@ -192,7 +192,7 @@ module keccak_round
   // SEC_CM: FSM.SPARSE
   always_comb begin
     // Default values
-    keccak_st_d = StIdle;
+    keccak_st_d = keccak_st;
 
     xor_message    = 1'b 0;
     update_storage = 1'b 0;
