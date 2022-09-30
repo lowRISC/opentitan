@@ -969,7 +969,6 @@
                                      ],
       'lc_ctrl.lc_nvm_debug_en'    : ['flash_ctrl.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_en'     : ['sram_ctrl_main.lc_hw_debug_en',
-                                      'sram_ctrl_ret_aon.lc_hw_debug_en',
                                       'pinmux_aon.lc_hw_debug_en',
                                       'csrng.lc_hw_debug_en',
                                       'rv_dm.lc_hw_debug_en',
