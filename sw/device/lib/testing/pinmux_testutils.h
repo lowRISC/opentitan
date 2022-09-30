@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 

@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 
 ujson_rust(
     name = "chip_specific_startup",
-    srcs = ["//sw/device/silicon_creator/rom/e2e/json:chip_specific_startup"],
+    srcs = ["//sw/device/lib/testing/json:chip_specific_startup"],
 )
 
 rust_binary(

@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 
 ujson_rust(
     name = "e2e_command",
-    srcs = ["//sw/device/silicon_creator/rom/e2e/json:command"],
+    srcs = ["//sw/device/lib/testing/json:command"],
     defines = ["opentitanlib=crate"],
 )
 

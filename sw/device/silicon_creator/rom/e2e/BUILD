@@ -241,11 +241,11 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:sram_ctrl",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/json:chip_specific_startup",
+        "//sw/device/lib/testing/json:command",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
-        "//sw/device/silicon_creator/rom/e2e/json:chip_specific_startup",
-        "//sw/device/silicon_creator/rom/e2e/json:command",
     ],
 )
 

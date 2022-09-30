@@ -27,11 +27,25 @@ ujson_t ujson_ottf_console(void);
  * @param data_ A pointer to the data to send.
  */
 #define RESP_OK(responder_, uj_ctx_, data_)    \
-  do {                                         \
+  ({                                           \
     TRY(ujson_putbuf(uj_ctx_, "RESP_OK:", 8)); \
     TRY(responder_(uj_ctx_, data_));           \
     TRY(ujson_putbuf(uj_ctx_, "\r\n", 2));     \
-  } while (0)
+    OK_STATUS();                               \
+  })
+
+/**
+ * Respond with an OK result and JSON encoded OK_STATUS object.
+ *
+ * @param uj_ctx_ A `ujson_t` representing the IO context.
+ * @param args... An optional integer to be reported in the status.
+ */
+#define RESP_OK_STATUS(uj_ctx_, ...)                  \
+  ({                                                  \
+    status_t sts = OK_STATUS(__VA_ARGS__);            \
+    RESP_OK(ujson_serialize_status_t, uj_ctx_, &sts); \
+    sts;                                              \
+  })
 
 /**
  * Respond with an ERR result and JSON encoded `status_t`.
