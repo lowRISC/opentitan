@@ -25,8 +25,6 @@ def rust_deps():
         iso_date = "2022-03-22",
         edition = "2021",
     )
-    raze_fetch_remote_crates(
-        elf2tab__0_10_0_dev="../../src/elf2tab",
-    )
+    raze_fetch_remote_crates()
     ftdi_fetch_remote_crates()
     rules_rust_tools_rust_analyzer_fetch_remote_crates()
