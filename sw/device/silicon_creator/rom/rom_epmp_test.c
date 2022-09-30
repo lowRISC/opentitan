@@ -175,7 +175,8 @@ static bool execute(const void *pc, ibex_exc_t expect) {
 }
 
 /**
- * An instruction that has no bits set.
+ * An instruction that has all bits set. This value is specifically chosen to
+ * match an erased flash.
  *
  * Attempts to execute this instruction, `unimp`, will result in an illegal
  * instruction exception.
@@ -183,7 +184,7 @@ static bool execute(const void *pc, ibex_exc_t expect) {
  * Note that if compressed instructions are enabled only the first two bytes
  * will be decoded (as `c.unimp`).
  */
-static const uint32_t kUnimpInstruction = 0;
+static const uint32_t kUnimpInstruction = UINT32_MAX;
 
 /**
  * Illegal instruction residing in .rodata.
@@ -310,7 +311,8 @@ static void test_noexec_mmio(void) {
  */
 static void test_unlock_exec_eflash(void) {
   // Define a region to unlock (this is somewhat arbitrary but must be word-
-  // aligned).
+  // aligned and beyond the ROM region, since this same image is placed in the
+  // flash).
   uint32_t *eflash = (uint32_t *)TOP_EARLGREY_EFLASH_BASE_ADDR;
   size_t eflash_len = TOP_EARLGREY_EFLASH_SIZE_BYTES / sizeof(eflash[0]);
   uint32_t *image = &eflash[eflash_len / 5];
@@ -325,7 +327,9 @@ static void test_unlock_exec_eflash(void) {
 
   // Verify that execution within the region succeeds.
   // The image must consist of `unimp` instructions so that an illegal
-  // instruction exception is generated.
+  // instruction exception is generated. Because the region is not written and
+  // tests begin with the flash erased, this instruction is expected to be
+  // UINT32_MAX.
   CHECK(image[0] == kUnimpInstruction);
   CHECK(execute(&image[0], kIbexExcIllegalInstrFault));
   CHECK(image[image_len - 1] == kUnimpInstruction);
