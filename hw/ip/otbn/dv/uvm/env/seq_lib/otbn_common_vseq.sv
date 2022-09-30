@@ -190,16 +190,10 @@ class otbn_common_vseq extends otbn_base_vseq;
   virtual task pre_run_sec_cm_fi_vseq();
     sb_setting = cfg.en_scb;
     cfg.en_scb = 1;
-    `DV_ASSERT_CTRL_REQ("BlankingAssertsALU", 0)
-    `DV_ASSERT_CTRL_REQ("BlankingAssertsRF", 0)
-    `DV_ASSERT_CTRL_REQ("SecWipeAsserts", 0)
   endtask : pre_run_sec_cm_fi_vseq
 
   virtual task post_run_sec_cm_fi_vseq();
     cfg.en_scb = sb_setting;
-    `DV_ASSERT_CTRL_REQ("BlankingAssertsALU", 1)
-    `DV_ASSERT_CTRL_REQ("BlankingAssertsRF", 1)
-    `DV_ASSERT_CTRL_REQ("SecWipeAsserts", 1)
   endtask : post_run_sec_cm_fi_vseq
 
 
