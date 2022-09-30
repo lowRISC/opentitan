@@ -2039,7 +2039,7 @@ module top_earlgrey #(
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[1]),
       .cfg_i(ast_ram_1p_cfg),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-      .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
+      .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
       .otp_en_sram_ifetch_i(prim_mubi_pkg::MuBi8False),
       .regs_tl_i(sram_ctrl_ret_aon_regs_tl_req),
       .regs_tl_o(sram_ctrl_ret_aon_regs_tl_rsp),
