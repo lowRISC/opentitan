@@ -2,11 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_PINMUX_H_
-#define OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_PINMUX_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_PINMUX_H_
+#define OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_PINMUX_H_
 #include "sw/device/lib/ujson/ujson_derive.h"
 
+// Note: these definitions rely on constants from top_earlgrey.h
+// and therefore this library cannot be used with the `ujson_rust`
+// bazel rule.  Instead, these constants are imported into rust
+// by way of a bindgen rule and recreated as Rust datatypes with
+// appropriate aliases to be used by other `ujson` libraries.
+#ifndef RUST_PREPROCESSOR_EMIT
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#endif
 // clang-format off
 
 #define TOP_EARLGREY_PINMUX_PERIPHERAL_IN(_, value) \
@@ -328,4 +335,4 @@ C_ONLY(UJSON_SERDE_ENUM(DirectPads, direct_pads_t, TOP_EARLGREY_DIRECT_PADS, WIT
 C_ONLY(UJSON_SERDE_ENUM(MuxedPads, muxed_pads_t, TOP_EARLGREY_MUXED_PADS, WITH_UNKNOWN));
 
 // clang-format on
-#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AUTOGEN_PINMUX_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_PINMUX_H_
