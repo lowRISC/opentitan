@@ -13,7 +13,7 @@ MEMORY {
   ram_main(rwx) : ORIGIN = 0x10000000, LENGTH = 0x20000
   rom(rx) : ORIGIN = 0x00008000, LENGTH = 0x8000
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = 0x80000
-  owner_virtual(rx): ORIGIN = 0xa0000000, LENGTH = 0x80000
+  owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = 0x80000
 }
 
 /**

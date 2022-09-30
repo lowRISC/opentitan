@@ -33,6 +33,14 @@ def flags(mem):
         flags_str += "x"
 
     return flags_str
+
+def get_virtual_memory_size(top):
+    for mod in top["module"]:
+        if "memory" in mod:
+            for _, mem in mod["memory"].items():
+                if mem["label"] == "eflash":
+                    return hex(int(mem["size"], 0) // 2)
+    return None
 %>\
 
 /**
@@ -51,8 +59,8 @@ MEMORY {
 % for m in top["memory"]:
   ${m["name"]}(${memory_to_flags(m)}) : ORIGIN = ${m["base_addr"]}, LENGTH = ${m["size"]}
 % endfor
-  rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = 0x80000
-  owner_virtual(rx): ORIGIN = 0xa0000000, LENGTH = 0x80000
+  rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = ${get_virtual_memory_size(top)}
+  owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = ${get_virtual_memory_size(top)}
 }
 
 /**
