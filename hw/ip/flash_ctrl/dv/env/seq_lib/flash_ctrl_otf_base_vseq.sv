@@ -90,6 +90,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     solve flash_program_data before rand_op;
     solve rand_op.partition before rand_op.prog_sel, rand_op.addr;
     solve rand_op.addr before rand_op.otf_addr;
+    solve rand_op.addr before rand_op.num_words;
 
     rand_op.partition dist { FlashPartData := 1, [FlashPartInfo:FlashPartInfo2] :/ 1};
     rand_op.addr[TL_AW-1:BusAddrByteW] == 'h0;
@@ -105,6 +106,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       rand_op.prog_sel == 0;
     }
     rand_op.otf_addr == rand_op.addr[BusAddrByteW-2:0];
+    rand_op.num_words inside {[1:16]};
+    rand_op.addr[5:0] + ((rand_op.num_words - 1) * 4) < 64;
   }
   constraint special_info_acc_c {
     allow_spec_info_acc dist { 3'h7 := 1, 3'h0 := 1, [1:6] :/ 2};
@@ -122,6 +125,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
       if (cfg.en_always_prog) rand_info[i][j][k].program_en = MuBi4True;
       if (cfg.en_always_erase) rand_info[i][j][k].erase_en = MuBi4True;
     end
+    if (cfg.en_all_info_acc) allow_spec_info_acc = 3'h7;
   endfunction // post_randomize
 
   virtual task pre_start();
@@ -246,7 +250,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
   // @arg: wd  : number of 4byte (TL bus unit) : default : 16
   // @arg: in_err : inject fatal error causes flash access disable
   task prog_flash(ref flash_op_t flash_op, input int bank, int num, int wd = 16,
-                  bit in_err = 0);
+                  bit in_err = 0, bit store_prog_data = 0);
     data_q_t flash_data_chunk;
     flash_otf_item exp_item;
     bit poll_fifo_status = ~in_err;
@@ -259,6 +263,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     int page;
     bit overflow = 0;
     bit drop = 0;
+
     flash_mp_region_cfg_t my_region;
 
     is_odd = flash_op.otf_addr[2];
@@ -411,6 +416,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         csr_rd(.ptr(ral.err_code), .value(ldata), .backdoor(1));
         `uvm_info("prog_flash", $sformatf("skip sb path due to err_code:%x", ldata), UVM_MEDIUM)
       end else begin
+        if (store_prog_data) cfg.prog_data[flash_op] = flash_program_data;
+
         flash_otf_print_data64(flash_program_data, "wdata");
         `uvm_create_obj(flash_otf_item, exp_item)
 

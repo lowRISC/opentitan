@@ -382,7 +382,7 @@
     {
       name: flash_ctrl_fs_sup
       uvm_test_seq: flash_ctrl_filesystem_support_vseq
-      run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_all=1"]
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_all=1", "+en_all_info_acc=1"]
       reseed: 5
     }
     {
