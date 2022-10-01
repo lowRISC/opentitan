@@ -7,6 +7,10 @@ class chip_sw_inject_scramble_seed_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
+  localparam uint ISO_PART_SIZE = 8 * flash_phy_pkg::DataWidth/8;
+  localparam uint ISO_PART_ADDR = flash_ctrl_pkg::IsolatedInfoPage *
+                                  (flash_ctrl_pkg::WordsPerPage * (flash_ctrl_pkg::DataWidth / 8));
+  rand bit [7:0] iso_part_data [ISO_PART_SIZE];
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
@@ -31,6 +35,18 @@ class chip_sw_inject_scramble_seed_vseq extends chip_sw_base_vseq;
     // make sure we are in prod state
     cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
 
+    // Randomize the expected data and write it into flash.
+    `DV_CHECK_STD_RANDOMIZE_FATAL(iso_part_data);
+    for (int i = 0; i < ISO_PART_SIZE; i++) begin
+      // write some data into isolated partition
+      cfg.mem_bkdr_util_h[FlashBank0Info].write8(ISO_PART_ADDR + i, iso_part_data[i]);
+    end
+
+  endtask // dut_init
+
+  virtual task cpu_init();
+    super.cpu_init();
+    sw_symbol_backdoor_overwrite("kIsoPartExpData", iso_part_data);
   endtask
 
 
@@ -55,6 +71,10 @@ class chip_sw_inject_scramble_seed_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, "Received C side acknowledgement", UVM_LOW)
 
     spi_device_load_bootstrap({cfg.sw_images[SwTypeTest], ".64.vmem"});
+
+    // After bootstrap, we need to write the expected values again,
+    // since the boot-strap process wiped out the previous version.
+    sw_symbol_backdoor_overwrite("kIsoPartExpData", iso_part_data);
 
     `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Hello World");,
              "timeout waiting for Hello World",
