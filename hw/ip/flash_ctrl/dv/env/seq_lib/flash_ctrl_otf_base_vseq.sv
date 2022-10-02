@@ -138,7 +138,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     void'($value$plusargs("csr_test_mode=%0b", csr_test_mode));
     void'($value$plusargs("run_%0s", run_seq_name));
     if (csr_test_mode == 1 ||
-        run_seq_name inside{"tl_intg_err"}) begin
+        run_seq_name inside{"tl_intg_err", "sec_cm_fi"}) begin
       super.pre_start();
     end else begin
       flash_init_c.constraint_mode(0);

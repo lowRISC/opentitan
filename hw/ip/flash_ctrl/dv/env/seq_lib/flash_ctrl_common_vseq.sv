@@ -35,11 +35,20 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
   endtask // pre_start
 
   virtual task body();
+    string path;
     if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
+    if (common_seq_type == "sec_cm_fi") begin
+      // Prevent 'x' propagate data path while force corrupt fifo ptr.
+      path = {"tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd",
+              ".u_rd_storage.gen_normal_fifo.storage_rdata[74:0]"};
+      `DV_CHECK(uvm_hdl_deposit(path, 0))
+      path = {"tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd",
+              ".u_rd_storage.gen_normal_fifo.storage_rdata[74:0]"};
+      `DV_CHECK(uvm_hdl_deposit(path, 0))
     // Each run of sec_cm takes about 10 min.
     // Limit num_trans of sec_cm to 5.
-    if (common_seq_type == "sec_cm_fi") run_sec_cm_fi_vseq(5);
-    else run_common_vseq_wrapper(num_trans);
+      run_sec_cm_fi_vseq(5);
+    end else run_common_vseq_wrapper(num_trans);
   endtask : body
 
   task run_tl_intg_err_vseq_sub(string ral_name);
@@ -61,8 +70,20 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
   endtask // check_tl_intg_error_response
 
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
+    bit flash_dis = 1;
     `uvm_info(`gfn, $sformatf("path: %s", if_proxy.path), UVM_MEDIUM)
-    super.check_sec_cm_fi_resp(if_proxy);
+
+    if (!uvm_re_match("*.u_host_outstanding_cnt*", if_proxy.path)) begin
+      csr_rd_check(.ptr(ral.fault_status.host_gnt_err), .compare_value(1));
+      flash_dis = 0;
+    end else begin
+      super.check_sec_cm_fi_resp(if_proxy);
+    end
+    if (!uvm_re_match("*.u_flash_hw_if.*", if_proxy.path)) begin
+      csr_rd_check(.ptr(ral.std_fault_status.lcmgr_err), .compare_value(1));
+      // skip debug_state check because state is corrupted.
+      flash_dis = 0;
+    end
 
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
@@ -71,9 +92,6 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
             !uvm_re_match("*.u_rd_storage.*", if_proxy.path)) begin
           csr_rd_check(.ptr(ral.std_fault_status.fifo_err), .compare_value(1));
         end
-        if (!uvm_re_match("*.u_flash_hw_if.*", if_proxy.path)) begin
-          csr_rd_check(.ptr(ral.std_fault_status.lcmgr_err), .compare_value(1));
-        end
       end
       SecCmPrimSparseFsmFlop: begin
         if (!uvm_re_match("*.flash_cores*", if_proxy.path)) begin
@@ -81,9 +99,6 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
         end
         if (!uvm_re_match("*.u_ctrl_arb.*", if_proxy.path)) begin
           csr_rd_check(.ptr(ral.std_fault_status.arb_fsm_err), .compare_value(1));
-        end
-        if (!uvm_re_match("*.u_flash_hw_if.*", if_proxy.path)) begin
-          csr_rd_check(.ptr(ral.std_fault_status.lcmgr_err), .compare_value(1));
         end
       end
       SecCmPrimOnehot: begin
@@ -94,9 +109,11 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
       end
     endcase
 
-    csr_rd_check(.ptr(ral.debug_state),
-                 .compare_value(flash_ctrl_env_pkg::FlashLcDisabled));
-    flash_access_after_disabled();
+    if (flash_dis) begin
+      csr_rd_check(.ptr(ral.debug_state),
+                   .compare_value(flash_ctrl_env_pkg::FlashLcDisabled));
+      flash_access_after_disabled();
+    end
   endtask // check_sec_cm_fi_resp
 
    virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
@@ -110,6 +127,9 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.u_rsp_order_fifo");
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.u_rsp_order_fifo");
           $asserton(0, "tb.dut.u_to_rd_fifo.u_rspfifo.DataKnown_A");
+          $asserton(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
+          $asserton(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.RdTxnCheck_A");
+          $asserton(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.RdTxnCheck_A");
         end else begin
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.u_rd_storage");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.u_rd_storage");
@@ -118,6 +138,10 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.u_rsp_order_fifo");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.u_rsp_order_fifo");
           $assertoff(0, "tb.dut.u_to_rd_fifo.u_rspfifo.DataKnown_A");
+          $assertoff(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
+          $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.RdTxnCheck_A");
+          $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.RdTxnCheck_A");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.rvalidHighWhenRspFifoFull");
         end
       end
       SecCmPrimSparseFsmFlop: begin
