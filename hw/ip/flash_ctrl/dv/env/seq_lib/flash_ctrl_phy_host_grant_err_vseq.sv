@@ -39,7 +39,11 @@ class flash_ctrl_phy_host_grant_err_vseq extends flash_ctrl_err_base_vseq;
         $assertoff(0, "tb.dut.u_to_rd_fifo.TlOutPayloadKnown_A");
         $assertoff(0, "tb.dut.u_to_rd_fifo.u_rspfifo.DataKnown_A");
         $assertoff(0, "tb.dut.tlul_assert_device.dKnown_A");
-
+        $assertoff(0, "tb.dut.MemRspPayLoad_A");
+        $assertoff(0, "tb.dut.u_tl_adapter_eflash.TlOutPayloadKnown_A");
+        $assertoff(0, "tb.dut.u_tl_adapter_eflash.u_rspfifo.DataKnown_A");
+        $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_host_rsp_fifo.DataKnown_A");
+        $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_host_rsp_fifo.DataKnown_A");
         // set error counter high number to skip unpredictable error
         cfg.scb_h.exp_tl_rsp_intg_err = 1;
         cfg.tlul_eflash_exp_cnt = 1;

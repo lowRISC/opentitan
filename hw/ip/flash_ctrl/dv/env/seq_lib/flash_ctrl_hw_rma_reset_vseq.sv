@@ -121,9 +121,11 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
     if (enable) begin
       $asserton(0, "tb.dut.u_flash_mp.NoReqWhenErr_A");
       $asserton(0, "tb.dut.u_flash_hw_if.u_addr_sync_reqack.SyncReqAckHoldReq");
+      $asserton(0, "tb.dut.u_flash_hw_if.ProgRdVerify_A");
     end else begin
       $assertoff(0, "tb.dut.u_flash_mp.NoReqWhenErr_A");
       $assertoff(0, "tb.dut.u_flash_hw_if.u_addr_sync_reqack.SyncReqAckHoldReq");
+      $assertoff(0, "tb.dut.u_flash_hw_if.ProgRdVerify_A");
     end
   endfunction // update_assert
 endclass // flash_ctrl_hw_rma_reset_vseq

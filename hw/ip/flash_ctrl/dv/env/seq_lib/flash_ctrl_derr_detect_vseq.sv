@@ -53,6 +53,8 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
       end
     join_any
     disable fork;
+    // Add drain time
+    #10us;
     if (cfg.derr_created[0] + cfg.derr_created[1] > 0) begin
       fatal_cnt = cfg.scb_h.alert_count["fatal_err"];
       `DV_CHECK_NE(fatal_cnt, 0, "fatal alert is not detected",

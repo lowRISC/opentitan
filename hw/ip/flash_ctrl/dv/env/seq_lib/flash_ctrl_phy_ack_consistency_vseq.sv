@@ -43,6 +43,7 @@ class flash_ctrl_phy_ack_consistency_vseq extends flash_ctrl_phy_host_grant_err_
             `DV_CHECK(uvm_hdl_force(path2, 1))
           end
         endcase // randcase
+        cfg.otf_scb_h.comp_off = 1;
       end
     end // repeat (2)
     check_fault(ral.fault_status.spurious_ack);

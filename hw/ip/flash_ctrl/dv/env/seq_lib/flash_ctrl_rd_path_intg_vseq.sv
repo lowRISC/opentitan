@@ -29,6 +29,7 @@ class flash_ctrl_rd_path_intg_vseq extends flash_ctrl_rw_vseq;
       path2 = {"tb.dut.u_eflash.gen_flash_cores[1].u_core",
                $sformatf(".u_rd.gen_bufs[0].u_rd_buf.data_i[%0d]", idx2)};
 
+      cfg.clk_rst_vif.wait_clks(10);
       `uvm_info(`gfn, $sformatf("Assert read path err idx1:%0d idx2:%0d", idx1, idx2), UVM_LOW)
       `DV_CHECK(uvm_hdl_force(path1, 1'b0))
       `DV_CHECK(uvm_hdl_force(path2, 1'b0))
@@ -53,14 +54,14 @@ class flash_ctrl_rd_path_intg_vseq extends flash_ctrl_rw_vseq;
         saw_err |= local_saw_err;
 
         if ((i % 2)== 1) tl_addr += 4;
-       end
-       csr_utils_pkg::wait_no_outstanding_access();
-       `DV_CHECK_EQ(saw_err, 1)
+      end
+      csr_utils_pkg::wait_no_outstanding_access();
+      `DV_CHECK_EQ(saw_err, 1)
 
       // Check fault_status register and err_code register to make sure
       // host read only triggers fault_status.phy_storage_err
-       csr_rd_check(.ptr(ral.fault_status.phy_storage_err), .compare_value(1));
-       csr_rd_check(.ptr(ral.err_code), .compare_value(0));
+      csr_rd_check(.ptr(ral.fault_status.phy_storage_err), .compare_value(1));
+      csr_rd_check(.ptr(ral.err_code), .compare_value(0));
 
       `uvm_info(`gfn, "Wait until all drain", UVM_LOW)
       cfg.clk_rst_vif.wait_clks(100);
