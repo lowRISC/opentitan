@@ -262,7 +262,7 @@ class spi_monitor extends dv_base_monitor#(
           sample_and_check_byte(.num_lanes(1), .is_device_rsp(1), .data(data),
                                 .check_data_not_z(last_byte));
         end
-        `DV_CHECK_EQ(data, TPM_WAIT)
+        `DV_CHECK_EQ(data, 0)
       end
     join
     `uvm_info(`gfn, $sformatf("Received TPM addr: %p", item.address_q), UVM_MEDIUM)
@@ -270,8 +270,7 @@ class spi_monitor extends dv_base_monitor#(
     `DV_SPINWAIT(
       do begin
         cfg.read_byte(.num_lanes(1), .is_device_rsp(1), .data(tpm_rsp));
-        `DV_CHECK(tpm_rsp inside {TPM_WAIT, TPM_START})
-      end while (tpm_rsp == TPM_WAIT);
+      end while (tpm_rsp[0] == TPM_WAIT);
       , , TPM_START_MAX_WAIT_TIME_NS)
     `uvm_info(`gfn, "Received TPM START", UVM_MEDIUM)
 
