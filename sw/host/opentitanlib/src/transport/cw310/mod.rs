@@ -222,6 +222,9 @@ impl Transport for CW310 {
                 fpga_program.progress.as_ref().map(Box::as_ref),
             )?;
             Ok(None)
+        } else if let Some(_) = action.downcast_ref::<FpgaReset>() {
+            self.device.borrow().reset_sam3u()?;
+            Ok(None)
         } else if let Some(_) = action.downcast_ref::<SetPll>() {
             const TARGET_FREQ: u32 = 100_000_000;
             let usb = self.device.borrow();
@@ -256,3 +259,6 @@ pub struct FpgaProgram<'a> {
 
 /// Command for Transport::dispatch().
 pub struct SetPll {}
+
+/// Command for Transport::dispatch(). Resets the CW310's SAM3U chip.
+pub struct FpgaReset {}

@@ -14,6 +14,7 @@ rust_binary(
         "src/command/console.rs",
         "src/command/emulator.rs",
         "src/command/fpga.rs",
+        "src/command/fpga_reset.rs",
         "src/command/gpio.rs",
         "src/command/hello.rs",
         "src/command/i2c.rs",

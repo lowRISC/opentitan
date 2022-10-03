@@ -10,5 +10,6 @@ use opentitanlib::app::command::CommandDispatch;
 /// Commands for interacting with an FPGA instance.
 pub enum FpgaCommand {
     LoadBitstream(crate::command::load_bitstream::LoadBitstream),
+    Reset(crate::command::fpga_reset::FpgaReset),
     SetPll(crate::command::set_pll::SetPll),
 }
