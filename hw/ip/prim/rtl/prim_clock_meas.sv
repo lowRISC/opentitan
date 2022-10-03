@@ -127,7 +127,11 @@ module prim_clock_meas #(
         end
       end
 
+      //VCS coverage off
+      // pragma coverage off
       default:;
+      //VCS coverage on
+      // pragma coverage on
 
     endcase // unique case (state_q)
   end

@@ -109,7 +109,14 @@ module prim_sync_reqack (
         end
       end
 
+      //VCS coverage off
+      // pragma coverage off
+
       default: ;
+
+      //VCS coverage on
+      // pragma coverage on
+
     endcase
   end
 
@@ -146,7 +153,14 @@ module prim_sync_reqack (
         end
       end
 
+      //VCS coverage off
+      // pragma coverage off
+
       default: ;
+
+      //VCS coverage on
+      // pragma coverage on
+
     endcase
   end
 

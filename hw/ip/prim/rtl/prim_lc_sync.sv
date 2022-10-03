@@ -70,6 +70,9 @@ module prim_lc_sync #(
     `ASSERT(OutputDelay_A, rst_ni |-> ##2 lc_en_o == {NumCopies{$past(lc_en_in_sva_q, 1)}})
 `endif
   end else begin : gen_no_flops
+    //VCS coverage off
+    // pragma coverage off
+
     // This unused companion logic helps remove lint errors
     // for modules where clock and reset are used for assertions only
     // or nothing at all.
@@ -82,6 +85,8 @@ module prim_lc_sync #(
          unused_logic <= lc_en_i;
       end
     end
+    //VCS coverage on
+    // pragma coverage on
 
     assign lc_en = lc_en_i;
 
