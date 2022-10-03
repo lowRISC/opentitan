@@ -380,6 +380,10 @@ package kmac_pkg;
     // ErrSwCmdSequence
     ErrSwCmdSequence = 8'h 08,
 
+    // ErrSwHashingWithoutEntropyReady
+    //  - Sw issues KMAC op without Entropy setting.
+    ErrSwHashingWithoutEntropyReady = 8'h 09,
+
     // Error Shadow register update
     ErrShadowRegUpdate = 8'h C0,
 

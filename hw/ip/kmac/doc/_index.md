@@ -307,6 +307,7 @@ Value | Error Code | Description
 0x06  | UnexpectedModeStrength | SHA3 mode and Keccak Strength combination is not expected.
 0x07  | IncorrectFunctionName | In KMAC mode, the PREFIX has the value other than `encoded_string("KMAC")`
 0x08  | SwCmdSequence | SW does not follow the guided sequence, `start` -> `process` -> {`run` ->} `done`
+0x09  | SwHashingWithoutEntropyReady | SW requests KMAC op without proper config of Entropy in KMAC. This error occurs if KMAC IP masking feature is enabled.
 0x80  | Sha3Control | SW may receive Sha3Control error along with `SwCmdSequence` error. Can be ignored.
 
 #### KeyNotValid (0x01)

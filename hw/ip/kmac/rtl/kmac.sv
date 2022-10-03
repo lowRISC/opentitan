@@ -1092,7 +1092,9 @@ module kmac
   );
 
   // Error checker
-  kmac_errchk u_errchk (
+  kmac_errchk #(
+    .EnMasking (EnMasking)
+  ) u_errchk (
     .clk_i,
     .rst_ni,
 
@@ -1104,6 +1106,8 @@ module kmac
     .cfg_prefix_6B_i(reg_ns_prefix[47:0]), // first 6B of PREFIX
 
     .cfg_en_unsupported_modestrength_i (cfg_en_unsupported_modestrength),
+
+    .entropy_ready_pulse_i (entropy_ready),
 
     // SW commands
     .sw_cmd_i(sw_cmd),
@@ -1118,6 +1122,8 @@ module kmac
 
     // LC escalation
     .lc_escalate_en_i (lc_escalate_en[4]),
+
+    .err_processed_i (err_processed),
 
     .error_o            (errchecker_err),
     .sparse_fsm_error_o (kmac_errchk_state_error)
