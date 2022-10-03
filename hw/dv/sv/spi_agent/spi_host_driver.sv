@@ -227,8 +227,7 @@ class spi_host_driver extends spi_driver;
         sck_pulses += 8;
         issue_data(.transfer_data(dummy_bytes), .returned_data(returned_bytes), .last_data(0));
         tpm_rsp = returned_bytes[0];
-        `DV_CHECK(tpm_rsp inside {TPM_WAIT, TPM_START})
-      end while (tpm_rsp == TPM_WAIT);
+      end while (tpm_rsp[0] == TPM_WAIT);
       , , TPM_START_MAX_WAIT_TIME_NS)
 
     `uvm_info(`gfn, "Received TPM START", UVM_HIGH)
