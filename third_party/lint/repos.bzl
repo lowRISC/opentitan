@@ -20,6 +20,10 @@ def lint_repos(lowrisc_lint = None):
         sha256 = "e3bb0dc8b0274ea1aca75f1f8c0c835adbe589708ea89bf698069d0790701ea3",
         strip_prefix = "buildtools-5.1.0",
         url = "https://github.com/bazelbuild/buildtools/archive/refs/tags/5.1.0.tar.gz",
+        patches = [
+            Label("//third_party/lint:0001-enable-buildifier-test-without-sandbox.patch"),
+        ],
+        patch_args = ["-p1"],
     )
 
     http_archive_or_local(
