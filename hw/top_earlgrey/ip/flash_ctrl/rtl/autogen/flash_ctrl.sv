@@ -1458,8 +1458,10 @@ module flash_ctrl
        `PHY_CORE.u_rd.u_rd_storage.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
        alert_tx_o[1])
 
+     // Outstanding count error is merged into host_gnt_err instead of being an
+     // individual count error.
      `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyHostCnt_A,
-       `PHY_CORE.u_host_outstanding_cnt, alert_tx_o[1])
+       `PHY_CORE.u_host_outstanding_cnt, alert_tx_o[2])
    end
    `endif
 
