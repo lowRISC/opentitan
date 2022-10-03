@@ -47,7 +47,9 @@ module kmac_errchk
   import kmac_pkg::*;
   import sha3_pkg::sha3_mode_e;
   import sha3_pkg::keccak_strength_e;
-(
+#(
+  parameter bit EnMasking = 1'b 1
+) (
   input clk_i,
   input rst_ni,
 
@@ -62,6 +64,9 @@ module kmac_errchk
   // the blocks even with err_modestrength.
   input        cfg_en_unsupported_modestrength_i,
 
+  // Entropy Ready Status to check if SW initiated the hahs without entropy cfg
+  input        entropy_ready_pulse_i,
+
   // SW commands: Only valid command is sent out to the rest of the modules
   input  kmac_cmd_e sw_cmd_i,
   output kmac_cmd_e sw_cmd_o,
@@ -75,6 +80,9 @@ module kmac_errchk
 
   // Life cycle
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+
+  // Error processed indicator
+  input err_processed_i,
 
   output err_t error_o,
   output logic sparse_fsm_error_o
@@ -155,6 +163,14 @@ module kmac_errchk
   // KMAC operation.
   logic err_prefix;
 
+  // `err_entropy_ready` occurs when SW initiated the hashing op. without
+  // configuring the entropy. This error may happen only when EnMasking is
+  // set.
+  logic err_entropy_ready;
+
+  // entropy_ready is a pulse signal. Logic needs to store the state.
+  logic cfg_entropy_ready;
+
   // Signal to block the SW command propagation
   logic block_swcmd;
 
@@ -217,7 +233,8 @@ module kmac_errchk
 
   assign block_swcmd =  (err_swsequence)
                      || (err_modestrength
-                         && !cfg_en_unsupported_modestrength_i);
+                         && !cfg_en_unsupported_modestrength_i)
+                     || err_entropy_ready;
 
   // sw_cmd_o latch
   // To reduce the command path delay, sw_cmd is latched here
@@ -252,6 +269,39 @@ module kmac_errchk
       end
     end
   end : check_prefix
+
+  if (EnMasking) begin : g_entropy_chk
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni)              cfg_entropy_ready <= 1'b 0;
+      else if (err_processed_i) cfg_entropy_ready <= 1'b 0;
+      else if (entropy_ready_pulse_i && st == StIdle) begin
+        cfg_entropy_ready <= 1'b 1;
+      end
+    end
+
+    always_comb begin : check_entropy_ready
+      err_entropy_ready = 1'b 0;
+
+      if (st == StIdle && st_d == StMsgFeed && kmac_en_i) begin
+        if (!cfg_entropy_ready) begin
+          err_entropy_ready = 1'b 1;
+        end
+      end
+    end : check_entropy_ready
+
+  end else begin : g_pseudo_entropy_chk
+
+    // If EnMasking is 0, entropy module is not generated.
+    // tying the error signal to 0.
+    assign err_entropy_ready = 1'b 0;
+
+    assign cfg_entropy_ready = 1'b 1;
+
+    logic unused_cfg_entropy_ready;
+    assign unused_cfg_entropy_ready = cfg_entropy_ready;
+
+  end
 
   always_comb begin : recode_st
     unique case (st)
@@ -299,6 +349,18 @@ module kmac_errchk
                  info:  { 5'h 0,
                           {err_swsequence, err_modestrength, err_prefix},
                           16'h 0000
+                        }
+               };
+      end
+
+      err_entropy_ready: begin
+        err = '{ valid: 1'b 1,
+                 code:  ErrSwHashingWithoutEntropyReady,
+                 info:  { 8'({ err_entropy_ready,
+                               err_swsequence,
+                               err_modestrength,
+                               err_prefix}),
+                          16'({kmac_en_i, cfg_entropy_ready})
                         }
                };
       end
