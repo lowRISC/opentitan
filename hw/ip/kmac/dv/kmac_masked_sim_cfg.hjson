@@ -14,5 +14,5 @@
   en_build_modes: ["enable_mask_mode"]
 
   // exclusion files
-  vcs_cov_excl_files: ["{proj_root}/hw/ip/kmac/dv/cov/kmac_masked_terminal_st_excl.el"]
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/kmac/dv/cov/kmac_base_terminal_st_excl.el"]
 }
