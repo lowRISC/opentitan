@@ -109,20 +109,16 @@ buildifier(
 
 buildifier_test(
     name = "buildifier_check",
-    srcs = glob(
-        [
-            "**/*.bazel",
-            "**/*.bzl",
-            "**/BUILD",
-        ],
-        exclude = [
-            "WORKSPACE",  # Prevent Buildifier from inserting unnecessary newlines.
-            "**/vendor/**",
-            "build/**",
-        ],
-    ),
+    no_sandbox = True,
+    workspace = "//:WORKSPACE",
     diff_command = "diff -u",
     mode = "diff",
+    verbose = True,
+    exclude_patterns = [
+        "./WORKSPACE",  # Prevent Buildifier from inserting unnecessary newlines.
+        "./**/vendor/**",
+        "./build/**",
+    ],
 )
 
 html_coverage_report(
