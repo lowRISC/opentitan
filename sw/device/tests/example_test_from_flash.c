@@ -3,18 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * This template serves as a starting point for writing software chip-level
- * tests that use the OpenTitan Test Framework (OTTF). This template is intended
- * to be copied and modified according to the instructions below.
+ * This template serves as a starting point for writing software top-level
+ * tests that use the OpenTitan Test Framework (OTTF), and run at the flash
+ * boot stage. This template is intended to be copied and modified according to
+ * the instructions below.
  *
  * Plese delete all instructional comments after editing this template.
  */
-
-/**
- * Uncomment if you want to initialize the non-volatile scratch region below
- * using UINT32_MAX.
- */
-// #include <stdint.h>
 
 /**
  * Uncomment if you want to log messages with `LOG_{INFO,WARNING,ERROR,FATAL()`.
@@ -32,7 +27,7 @@
  * Set `enable_concurrency` to true if this test should run as a FreeRTOS
  * task (enabling the test to spawn additional concurrent FreeRTOS tasks).
  * When `enable_concurrency` is set to false, this test will run as a
- * bare-metal program. Note, for the majority of chip-level tests, this
+ * bare-metal program. Note, for the majority of top-level tests, this
  * should be set to false.
  *
  * Set `can_clobber_uart` to true if this test will reconfigure the UART in
@@ -73,7 +68,7 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
 // void ottf_external_isr(void) {}
 
 /**
- * Place data that will need to persist across resets by placing it in the
+ * Save data that will need to persist across resets by placing it in the
  * ".non_volatile_scratch" section. OpenTitan's flash is mapped to its address
  * space for reads. Thus, these variables can be read as usual. Write to this
  * region with the flash controller DIFs, obeying flash constraints. Since the
@@ -81,7 +76,7 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
  * values of variables in this section are always `0xff`, regardless of any
  * initialization in the source code. In order to avoid confusion, don't
  * initialize or assign to these values. If needed, they can be initialized at
- * runtime during flash controller DIFs.
+ * runtime via flash controller DIFs.
  */
 // OT_SECTION(".non_volatile_scratch") uint32_t non_volatile_data[2];
 
