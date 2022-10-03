@@ -36,6 +36,9 @@ module prim_pulse_sync (
   // source active must come far enough such that the destination domain has time
   // to create a valid pulse.
 `ifdef INC_ASSERT
+  //VCS coverage off
+  // pragma coverage off
+
   logic src_active_flag;
 
   // source active flag tracks whether there is an ongoing "toggle" event.
@@ -50,6 +53,9 @@ module prim_pulse_sync (
       src_active_flag <= 1'b1;
     end
   end
+
+  //VCS coverage on
+  // pragma coverage on
 
  `ASSERT(SrcPulseCheck_M, src_pulse_i |-> !src_active_flag, clk_src_i, !rst_src_ni)
 `endif

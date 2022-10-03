@@ -45,7 +45,7 @@
 // a delta is observed between the transit register and the current hardware value,
 // and a new handshake event is generated.
 //
-// The thrid scenario can be folded into the second scenario. The only difference
+// The third scenario can be folded into the second scenario. The only difference
 // is that of the 4 cases identified, only case 2 can happen since there is never a
 // software initiated update.
 
@@ -71,7 +71,7 @@ module prim_reg_cdc_arb #(
   // ds allows us to sample the destination domain register
   // one cycle earlier instead of waiting for it to be reflected
   // in the qs.
-  // This is important because a genearl use case is that interrupts
+  // This is important because a general use case is that interrupts
   // are captured alongside payloads from the destination domain into
   // the source domain. If we rely on `qs` only, then it is very likely
   // that the software observed value will be behind the interrupt
@@ -246,9 +246,12 @@ module prim_reg_cdc_arb #(
 
     // once hardware makes an update request, we must eventually see an update pulse
     `ASSERT(ReqTimeout_A, $rose(id_q == SelHwReq) |-> s_eventually(src_update_o),
-      clk_src_i, !rst_src_ni)
+            clk_src_i, !rst_src_ni)
 
     `ifdef INC_ASSERT
+      //VCS coverage off
+      // pragma coverage off
+
       logic async_flag;
       always_ff @(posedge clk_dst_i or negedge rst_dst_ni or posedge src_update_o) begin
         if (!rst_dst_ni) begin
@@ -260,9 +263,12 @@ module prim_reg_cdc_arb #(
         end
       end
 
-     // once hardware makes an update request, we must eventually see an update pulse
-     `ASSERT(UpdateTimeout_A, $rose(async_flag) |-> s_eventually(src_update_o),
-       clk_src_i, !rst_src_ni)
+      //VCS coverage on
+      // pragma coverage on
+
+      // once hardware makes an update request, we must eventually see an update pulse
+      `ASSERT(UpdateTimeout_A, $rose(async_flag) |-> s_eventually(src_update_o),
+              clk_src_i, !rst_src_ni)
     `endif
 
   end else begin : gen_passthru
