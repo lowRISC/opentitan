@@ -1214,7 +1214,7 @@ module spi_tpm
   // If the command and the address have been shifted, the Locality, command
   // type should be matched with the shifted register.
   `ASSERT(CmdAddrInfo_A,
-          $fell(cmdaddr_shift_en) && !csb_i && sys_clk_tpm_cfg.tpm_en |->
+          $fell(cmdaddr_shift_en) && !csb_i && sys_clk_tpm_cfg.tpm_en && is_tpm_reg |->
             (locality == sck_cmdaddr_wdata_q[15:12]) &&
             (cmd_type == sck_cmdaddr_wdata_q[31]),
           clk_in_i, !rst_n)
