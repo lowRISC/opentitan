@@ -30,7 +30,7 @@ export BITSTREAM="--offline --list ${SHA}"
 
 # We will lose serial access when we reboot, but if tests fail we should reboot
 # in case we've crashed the UART handler on the CW310's SAM3U
-trap 'python3 ./util/fpga/cw310_reboot.py' EXIT
+trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --interface=cw310 fpga reset' EXIT
 
 cw310_tags=( "cw310_test_rom" "cw310_rom" )
 for tag in "${cw310_tags[@]}"; do
