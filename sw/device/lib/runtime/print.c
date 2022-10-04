@@ -292,14 +292,17 @@ static size_t write_status(buffer_sink_t out, status_t value, bool as_json) {
   len += out.sink(out.data, start, end - start);
   len += out.sink(out.data, "\"", as_json ? 1 : 0);
 
-  // print the module id and arg.
-  len += out.sink(out.data, ":[", 2);
+  len += out.sink(out.data, ":", 1);
   if (err) {
     // All error codes include the module identifier.
+    len += out.sink(out.data, "[", 1);
     len += out.sink(out.data, mod, sizeof(mod));
+    len += write_digits(out, arg, 0, 0, 10, kDigitsLow);
+    len += out.sink(out.data, "]", 1);
+  } else {
+    // Ok codes include only the arg
+    len += write_digits(out, arg, 0, 0, 10, kDigitsLow);
   }
-  len += write_digits(out, arg, 0, 0, 10, kDigitsLow);
-  len += out.sink(out.data, "]", 1);
   len += out.sink(out.data, "}", as_json ? 1 : 0);
   return len;
 }

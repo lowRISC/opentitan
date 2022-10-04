@@ -278,14 +278,14 @@ TEST_F(PrintfTest, BinaryWithWidth) {
 
 TEST_F(PrintfTest, StatusOk) {
   status_t value = OK_STATUS();
-  EXPECT_EQ(base_printf("Hello, %r\n", value), 14);
-  EXPECT_EQ(buf_, "Hello, Ok:[0]\n");
+  EXPECT_EQ(base_printf("Hello, %r\n", value), 12);
+  EXPECT_EQ(buf_, "Hello, Ok:0\n");
 }
 
 TEST_F(PrintfTest, StatusOkWithArg) {
   status_t value = OK_STATUS(12345);
-  EXPECT_EQ(base_printf("Hello, %r\n", value), 18);
-  EXPECT_EQ(buf_, "Hello, Ok:[12345]\n");
+  EXPECT_EQ(base_printf("Hello, %r\n", value), 16);
+  EXPECT_EQ(buf_, "Hello, Ok:12345\n");
 }
 
 TEST_F(PrintfTest, StatusError) {
