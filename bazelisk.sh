@@ -91,8 +91,8 @@ function outquery_starlark_expr() {
 
 function do_outquery() {
     local qexpr="$1"
-    local args="$2"
-    "$file" cquery "$args" \
+    shift
+    "$file" cquery "$@" \
         --output=starlark --starlark:expr="$qexpr" \
         --ui_event_filters=-info --noshow_progress
 }
