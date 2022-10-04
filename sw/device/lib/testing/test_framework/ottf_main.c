@@ -33,11 +33,41 @@
 OT_ASSERT_MEMBER_OFFSET(ottf_test_config_t, enable_concurrency, 0);
 OT_ASSERT_MEMBER_SIZE(ottf_test_config_t, enable_concurrency, 1);
 
+// Pointer to the current FreeRTOS Task Control Block, which should be non-NULL
+// when OTTF concurrency is enabled, and test code is executed within FreeRTOS
+// tasks.
+extern void *pxCurrentTCB;
+
+// `extern` declarations to give the inline functions in the corresponding
+// header a link location.
+extern bool ottf_task_create(TaskFunction_t task_function,
+                             const char *task_name,
+                             configSTACK_DEPTH_TYPE task_stack_depth,
+                             uint32_t task_priority);
+extern void ottf_task_yield(void);
+extern void ottf_task_delete_self(void);
+extern char *ottf_task_get_self_name(void);
+
 // UART for communication with host.
 static dif_uart_t uart0;
 
 // A global random number generator testutil handle.
 rand_testutils_rng_t rand_testutils_rng_ctx;
+
+// The OTTF overrides the default machine ecall exception handler to implement
+// FreeRTOS context switching, required for supporting cooperative scheduling.
+void ottf_machine_ecall_handler(void) {
+  if (pxCurrentTCB != NULL) {
+    // If the pointer to the current TCB is not NULL, we are operating in
+    // concurrency mode. In this case, our default behavior is to assume a
+    // context switch has been requested.
+    vTaskSwitchContext();
+    return;
+  }
+  LOG_ERROR(
+      "OTTF currently only supports use of machine-mode ecall for FreeRTOS "
+      "context switching.");
+}
 
 static void init_uart(void) {
   CHECK_DIF_OK(dif_uart_init(
@@ -98,9 +128,9 @@ void _ottf_main(void) {
   // Run the test.
   if (kOttfTestConfig.enable_concurrency) {
     // Run `test_main()` in a FreeRTOS task, allowing other FreeRTOS tasks to
-    // be spawned, if requested in the main test task.
-    xTaskCreate(test_wrapper, "TestTask", configMINIMAL_STACK_SIZE, NULL,
-                tskIDLE_PRIORITY + 1, NULL);
+    // be spawned, if requested in the main test task. Note, we spawn the main
+    // test task at a priority level of 0.
+    ottf_task_create(test_wrapper, "test_main", kOttfFreeRtosMinStackSize, 0);
     vTaskStartScheduler();
   } else {
     // Otherwise, launch `test_main()` on bare-metal.
