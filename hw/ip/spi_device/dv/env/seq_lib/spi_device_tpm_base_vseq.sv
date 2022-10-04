@@ -7,20 +7,25 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
   `uvm_object_utils(spi_device_tpm_base_vseq)
   `uvm_object_new
 
+  localparam bit [TPM_ADDR_WIDTH-1:0] TPM_ADDR_WORD_ALIGN_MASK = '1 << 2;
   // tpm_addr constraint knobs
   rand bit        is_hw_reg_offset; // offset matches to one of the hw_reg
   rand bit        is_hw_reg_region; // is at region 'hD4_xxxx
   rand bit        is_valid_locality;
+  rand bit        is_addr_word_aligned;
 
   rand bit [TPM_ADDR_WIDTH-1:0] tpm_addr;
 
   constraint tpm_addr_c {
-    solve is_hw_reg_offset, is_hw_reg_region, is_valid_locality before tpm_addr;
+    solve is_hw_reg_offset, is_hw_reg_region, is_valid_locality,
+          is_addr_word_aligned before tpm_addr;
 
-    is_hw_reg_offset -> tpm_addr[TPM_OFFSET_WIDTH-1:0] inside {ALL_TPM_HW_REG_OFFSETS};
+    is_hw_reg_offset -> (tpm_addr[TPM_OFFSET_WIDTH-1:0] & TPM_ADDR_WORD_ALIGN_MASK)
+                        inside {ALL_TPM_HW_REG_OFFSETS};
     is_hw_reg_region -> tpm_addr inside {[24'hD4_0000:24'hD4_FFFF]};
     is_valid_locality ->
       tpm_addr[TPM_OFFSET_WIDTH+TPM_LOCALITY_WIDTH-1:TPM_OFFSET_WIDTH] < MAX_TPM_LOCALITY;
+    is_addr_word_aligned -> tpm_addr[1:0] == 0;
   }
 
   rand uint tpm_size;
@@ -39,7 +44,7 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
   // randomize all the TPM transaction related fields - addr, write, size.
   virtual function void randomize_tpm_trans();
     `DV_CHECK(this.randomize(is_hw_reg_offset, is_hw_reg_region, is_valid_locality, tpm_addr,
-                             tpm_size, tpm_write))
+                             is_addr_word_aligned, tpm_size, tpm_write))
   endfunction
   // Configure clocks and tpm, generate a word.
   virtual task tpm_init(tpm_cfg_mode_e mode, bit is_hw_return = $random);
@@ -60,12 +65,13 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     ral.tpm_cfg.tpm_mode.set(mode);
     if (is_hw_return) begin
       ral.tpm_cfg.hw_reg_dis.set(0);
+      ral.tpm_cfg.tpm_reg_chk_dis.set(0);
       ral.tpm_cfg.invalid_locality.set(1);
     end else begin
       `DV_CHECK_RANDOMIZE_FATAL(ral.tpm_cfg.hw_reg_dis)
+      `DV_CHECK_RANDOMIZE_FATAL(ral.tpm_cfg.tpm_reg_chk_dis)
       `DV_CHECK_RANDOMIZE_FATAL(ral.tpm_cfg.invalid_locality)
     end
-    `DV_CHECK_RANDOMIZE_FATAL(ral.tpm_cfg.tpm_reg_chk_dis)
     csr_update(.csr(ral.tpm_cfg));
     `uvm_info(`gfn, ral.tpm_cfg.sprint(), UVM_MEDIUM)
   endtask : tpm_init

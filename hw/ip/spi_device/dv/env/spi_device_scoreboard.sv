@@ -178,11 +178,16 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           latch_flash_status(set_busy, update_wel, wel_val);
         end
         SpiModeTpm: begin
+          bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
           if (item.write_command) begin
-            `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
-            tpm_write_spi_q.push_back(item);
+            if (is_invalid_locality_hw_rsp(addr)) begin
+              `uvm_info(`gfn, $sformatf("drop this item due to writing to invalid locality\n%s",
+                                        item.sprint()), UVM_MEDIUM)
+            end else begin
+              `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
+              tpm_write_spi_q.push_back(item);
+            end
           end else begin
-            bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
             bit [TL_DW-1:0] exp_q[$];
 
             if (is_tpm_reg(addr, item.read_size, exp_q)) begin
@@ -205,10 +210,29 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
   endfunction
 
-  // if the reg is smaller than 32 bit, padding with all 1s at the end
+  // if the reg is smaller than 32 bit, padding with all 1s at MSB
   function bit[TL_DW-1:0] get_reg_val_with_all_1s_padding(bit[TL_DW-1:0] val, uint num_bytes);
     for (int i = num_bytes; i < 4; i++) val[8*i +: 8] = '1;
     return val;
+  endfunction
+
+  function bit is_match_to_tpm_base_addr(bit[TPM_ADDR_WIDTH-1:0] addr);
+    bit [TPM_ADDR_WIDTH-1:0] base_addr = addr & TPM_BASE_ADDR_MASK;
+    return (base_addr == TPM_BASE_ADDR);
+  endfunction
+
+  // return true when it's bigger than max locality and invalid locality check is enabled
+  // if true, the access to this addr is reponsed by HW
+  //  - for read, return 'hff
+  //  - for write, drop
+  function bit is_invalid_locality_hw_rsp(bit[TPM_ADDR_WIDTH-1:0] addr);
+    if (get_locality_from_addr(addr) >= MAX_TPM_LOCALITY &&
+        !`gmv(ral.tpm_cfg.tpm_reg_chk_dis) &&
+        `gmv(ral.tpm_cfg.invalid_locality) &&
+        is_match_to_tpm_base_addr(addr)) begin
+      return 1;
+    end
+    return 0;
   endfunction
 
   `define CREATE_TPM_CASE_STMT(TPM_NAME, CSR_NAME) \
@@ -224,8 +248,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   function automatic bit is_tpm_reg(bit [TPM_ADDR_WIDTH-1:0] addr,
                                     uint read_size,
                                     output bit [TL_DW-1:0] exp_value_q[$]);
-    bit [TPM_ADDR_WIDTH-1:0] base_addr = addr & TPM_BASE_ADDR_MASK;
-    bit base_addr_match = (base_addr == TPM_BASE_ADDR);
+    bit base_addr_match = is_match_to_tpm_base_addr(addr);
     bit [TPM_OFFSET_WIDTH-1:0] aligned_offset;
     int locality;
     bit [TL_DW-1:0] reg_val;
@@ -241,9 +264,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     // handle invalid locality
     if (locality >= MAX_TPM_LOCALITY) begin
-      if (!`gmv(ral.tpm_cfg.tpm_reg_chk_dis) &&
-          `gmv(ral.tpm_cfg.invalid_locality) &&
-          base_addr_match) begin
+      if (is_invalid_locality_hw_rsp(addr)) begin
         exp_value_q = {'1};
         `uvm_info(`gfn, "return 'hff due to invalid locality", UVM_MEDIUM)
         return 1;

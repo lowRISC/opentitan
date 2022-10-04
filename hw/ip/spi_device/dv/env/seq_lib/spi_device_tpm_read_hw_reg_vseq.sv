@@ -27,9 +27,6 @@ class spi_device_tpm_read_hw_reg_vseq extends spi_device_tpm_base_vseq;
     is_hw_reg_region == 1;
     is_hw_reg_offset == 1;
     tpm_write == 0;
-
-    // TODO
-    is_valid_locality == 1;
   }
 
   virtual task body();
