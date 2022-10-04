@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -50,33 +51,6 @@ static void entropy_data_flush(dif_entropy_src_t *entropy_src) {
 }
 
 /**
- * Configures the entropy source module in firmware override mode.
- *
- * Output is routed to firmware, and the fw_override mode is enabled to get data
- * post-health tests and before the pre conditioner block.
- *
- * @param entropy An entropy source instance.
- */
-static void entropy_with_fw_override_enable(dif_entropy_src_t *entropy_src) {
-  const dif_entropy_src_fw_override_config_t fw_override_config = {
-      .entropy_insert_enable = true,
-      .buffer_threshold = kEntropyFifoBufferSize,
-  };
-  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
-      entropy_src, fw_override_config, kDifToggleEnabled));
-  const dif_entropy_src_config_t config = {
-      .fips_enable = true,
-      .route_to_firmware = true,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .health_test_threshold_scope = false, /*default*/
-      .health_test_window_size = 0x0200,    /*default*/
-      .alert_threshold = 2,                 /*default*/
-  };
-  CHECK_DIF_OK(
-      dif_entropy_src_configure(entropy_src, config, kDifToggleEnabled));
-}
-
-/**
  * Test the firmware override path.
  *
  * This tests disconnects the observation buffer from the entropy src
@@ -88,7 +62,9 @@ static void entropy_with_fw_override_enable(dif_entropy_src_t *entropy_src) {
  */
 void test_firmware_override(dif_entropy_src_t *entropy) {
   CHECK_DIF_OK(dif_entropy_src_set_enabled(entropy, kDifToggleDisabled));
-  entropy_with_fw_override_enable(entropy);
+  entropy_testutils_fw_override_enable(entropy, kEntropyFifoBufferSize,
+                                       /*route_to_firmware=*/true,
+                                       /*bypass_conditioner=*/false);
   entropy_data_flush(entropy);
 
   // Read data from the observation FIFO and write it back into the

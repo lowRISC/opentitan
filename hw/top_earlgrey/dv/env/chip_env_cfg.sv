@@ -182,6 +182,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     otp_images[lc_ctrl_state_pkg::LcStDev] = "otp_ctrl_img_dev.vmem";
     otp_images[lc_ctrl_state_pkg::LcStProd] = "otp_ctrl_img_prod.vmem";
     otp_images[lc_ctrl_state_pkg::LcStRma] = "otp_ctrl_img_rma.vmem";
+    otp_images[lc_ctrl_state_pkg::LcStTestUnlocked0] = "otp_ctrl_img_test_unlocked0.vmem";
 
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)

@@ -20,6 +20,7 @@ dif_entropy_src_config_t entropy_testutils_config_default(void) {
   return (dif_entropy_src_config_t){
       .fips_enable = true,
       .route_to_firmware = false,
+      .bypass_conditioner = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_window_size = 0x0200,
       .alert_threshold = 2,
@@ -95,6 +96,30 @@ void entropy_testutils_boot_mode_init(void) {
   CHECK_DIF_OK(dif_edn_set_boot_mode(&edn1));
   CHECK_DIF_OK(dif_edn_configure(&edn0));
   CHECK_DIF_OK(dif_edn_configure(&edn1));
+}
+
+void entropy_testutils_fw_override_enable(dif_entropy_src_t *entropy_src,
+                                          uint8_t buffer_threshold,
+                                          bool route_to_firmware,
+                                          bool bypass_conditioner) {
+  const dif_entropy_src_fw_override_config_t fw_override_config = {
+      .entropy_insert_enable = true,
+      .buffer_threshold = buffer_threshold,
+  };
+  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
+      entropy_src, fw_override_config, kDifToggleEnabled));
+
+  const dif_entropy_src_config_t config = {
+      .fips_enable = true,
+      .route_to_firmware = route_to_firmware,
+      .bypass_conditioner = bypass_conditioner,
+      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
+      .health_test_threshold_scope = false,
+      .health_test_window_size = 0x0200,
+      .alert_threshold = 2,
+  };
+  CHECK_DIF_OK(
+      dif_entropy_src_configure(entropy_src, config, kDifToggleEnabled));
 }
 
 void entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
