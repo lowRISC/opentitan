@@ -7,20 +7,42 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
   `uvm_object_utils(spi_device_tpm_base_vseq)
   `uvm_object_new
 
-  bit             tpm_cfg_en;
-  tpm_cfg_mode_e  tpm_cfg_mode;
-  rand bit        tpm_cfg_hw_reg_dis;
-  rand bit        tpm_cfg_reg_chk_dis;
-  rand bit        tpm_cfg_inv_locality;
-  rand bit [23:0] tpm_address;
+  // tpm_addr constraint knobs
+  rand bit        is_hw_reg_offset; // offset matches to one of the hw_reg
+  rand bit        is_hw_reg_region; // is at region 'hD4_xxxx
+  rand bit        is_valid_locality;
 
-  // Constrain within the range of TPM HW regs to be used in locality tests
-  constraint tpm_address_c {
-    tpm_address inside {[24'hD4_00_00:24'hD4_FF_FF]};
+  rand bit [TPM_ADDR_WIDTH-1:0] tpm_addr;
+
+  constraint tpm_addr_c {
+    solve is_hw_reg_offset, is_hw_reg_region, is_valid_locality before tpm_addr;
+
+    is_hw_reg_offset -> tpm_addr[TPM_OFFSET_WIDTH-1:0] inside {ALL_TPM_HW_REG_OFFSETS};
+    is_hw_reg_region -> tpm_addr inside {[24'hD4_0000:24'hD4_FFFF]};
+    is_valid_locality ->
+      tpm_addr[TPM_OFFSET_WIDTH+TPM_LOCALITY_WIDTH-1:TPM_OFFSET_WIDTH] < MAX_TPM_LOCALITY;
   }
 
+  rand uint tpm_size;
+
+  constraint tpm_size_c {
+    tpm_size dist {
+      [1:3]              :/ 1,
+      4                  :/ 2,
+      [5:MAX_SUPPORT_TPM_SIZE-1] :/ 2,
+      MAX_SUPPORT_TPM_SIZE       :/ 1
+    };
+  }
+
+  rand uint tpm_write;
+
+  // randomize all the TPM transaction related fields - addr, write, size.
+  virtual function void randomize_tpm_trans();
+    `DV_CHECK(this.randomize(is_hw_reg_offset, is_hw_reg_region, is_valid_locality, tpm_addr,
+                             tpm_size, tpm_write))
+  endfunction
   // Configure clocks and tpm, generate a word.
-  virtual task tpm_init();
+  virtual task tpm_init(tpm_cfg_mode_e mode, bit is_hw_return = $random);
     cfg.spi_host_agent_cfg.csid = TPM_CSB_ID;
     // Only SPI mode 0 is supported (CPHA=0, CPOL=0).
     cfg.spi_host_agent_cfg.sck_polarity[TPM_CSB_ID] = 0;
@@ -35,23 +57,18 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     csr_update(.csr(ral.cfg));
 
     ral.tpm_cfg.en.set(1'b1);
-    ral.tpm_cfg.tpm_mode.set(TpmCrbMode); // TODO randomize for locality test
-    ral.tpm_cfg.hw_reg_dis.set(1); // TODO randomize for locality test
-    ral.tpm_cfg.tpm_reg_chk_dis.set(1); // TODO randomize for locality test
-    ral.tpm_cfg.invalid_locality.set(0); // TODO randomize for locality test
+    ral.tpm_cfg.tpm_mode.set(mode);
+    if (is_hw_return) begin
+      ral.tpm_cfg.hw_reg_dis.set(0);
+      ral.tpm_cfg.invalid_locality.set(1);
+    end else begin
+      `DV_CHECK_RANDOMIZE_FATAL(ral.tpm_cfg.hw_reg_dis)
+      `DV_CHECK_RANDOMIZE_FATAL(ral.tpm_cfg.invalid_locality)
+    end
+    `DV_CHECK_RANDOMIZE_FATAL(ral.tpm_cfg.tpm_reg_chk_dis)
     csr_update(.csr(ral.tpm_cfg));
     `uvm_info(`gfn, ral.tpm_cfg.sprint(), UVM_MEDIUM)
   endtask : tpm_init
-
-  // Randomise other fields in TPM_CFG.
-  virtual task tpm_configure_locality();
-    ral.tpm_cfg.tpm_mode.set(TpmFifoMode); // FIFO Mode
-    ral.tpm_cfg.hw_reg_dis.set(0);
-    ral.tpm_cfg.tpm_reg_chk_dis.set(0);
-    ral.tpm_cfg.invalid_locality.set(1);
-    csr_update(.csr(ral.tpm_cfg));
-    `uvm_info(`gfn, ral.tpm_cfg.sprint(), UVM_MEDIUM)
-  endtask : tpm_configure_locality
 
   // Check the CMD_ADDR/wrFIFO contents.
   virtual task wait_and_check_tpm_cmd_addr(bit [7:0] exp_cmd, bit [23:0] exp_addr);
