@@ -11,4 +11,5 @@ use opentitanlib::app::command::CommandDispatch;
 pub enum FpgaCommand {
     LoadBitstream(crate::command::load_bitstream::LoadBitstream),
     SetPll(crate::command::set_pll::SetPll),
+    UpdateUsrAccess(crate::command::update_usr_access::UpdateUsrAccess),
 }

@@ -68,8 +68,8 @@ def _bitstream_splice_impl(ctx):
             inputs = [spliced],
             arguments = [
                 "--rcfile=",
-                "--logging",
-                "info",
+                "--logging=info",
+                "fpga",
                 "update-usr-access",
                 spliced.path,
                 output.path,
