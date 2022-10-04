@@ -806,7 +806,7 @@ module spi_tpm
       end
 
       RegHashStart: begin
-        isck_hw_reg_word = 32'h 0000_0000;
+        isck_hw_reg_word = 32'h FFFF_FFFF;
       end
 
       RegId: begin
