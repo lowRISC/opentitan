@@ -311,6 +311,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_example_concurrency
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:example_concurrency_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_clkmgr_escalation_reset
       uvm_test_seq: chip_sw_clkmgr_escalation_reset_vseq
       sw_images: ["//sw/device/tests/sim_dv:clkmgr_escalation_reset_test:1"]
@@ -1287,7 +1293,8 @@
               "chip_plic_all_irqs",
               "chip_sw_example_flash",
               "chip_sw_example_rom",
-              "chip_sw_example_manufacturer"]
+              "chip_sw_example_manufacturer",
+              "chip_sw_example_concurrency"]
               // TODO: add this test after enabling HW verification: "rom_e2e_smoke"]
     }
     {
