@@ -26,7 +26,6 @@ static_assert((TOP_EARLGREY_EFLASH_SIZE_BYTES % 2) == 0,
  * @return Pointer to the manifest of the first owner boot stage image in slot
  * A.
  */
-// TODO(#7893): Should these be volatile?
 inline const manifest_t *rom_ext_boot_policy_manifest_a_get(void) {
   return (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
                               CHIP_ROM_EXT_SIZE_MAX);
