@@ -1039,6 +1039,31 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "csrng_lc_hw_debug_en_test",
+    srcs = ["csrng_lc_hw_debug_en_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:csrng_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "inject_scramble_seed",
     srcs = ["inject_scramble_seed.c"],
     targets = ["dv"],

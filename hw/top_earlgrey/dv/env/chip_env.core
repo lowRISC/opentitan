@@ -98,6 +98,7 @@ filesets:
       - seq_lib/chip_rv_dm_ndm_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_callback_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_entropy_src_fuse_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_csrng_lc_hw_debug_en_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_usb_ast_clk_calib_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_i2c_host_tx_rx_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}

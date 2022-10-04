@@ -564,6 +564,7 @@ opentitan_functest(
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -578,6 +579,7 @@ opentitan_functest(
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

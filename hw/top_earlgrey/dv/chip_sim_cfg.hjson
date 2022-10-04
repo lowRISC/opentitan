@@ -187,6 +187,12 @@
               {gen_otp_images_cmd_opts}
         ''',
         '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_unlocked0.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --out {run_dir}/otp_ctrl_img_test_unlocked0.vmem \
+              {gen_otp_images_cmd_opts}
+        ''',
+         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_dev.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_owner_sw_cfg.hjson \
@@ -911,6 +917,15 @@
       sw_images: ["//sw/device/tests:entropy_src_kat_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=18_000_000"]
+    }
+    {
+      name: chip_sw_csrng_lc_hw_debug_en_test
+      uvm_test_seq: chip_sw_csrng_lc_hw_debug_en_vseq
+      sw_images: ["//sw/device/tests/sim_dv:csrng_lc_hw_debug_en_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=15_000_000", "+rng_srate_value_min=15",
+                 "+use_otp_image=LcStTestUnlocked0"]
+      run_timeout_mins: 60
     }
     {
       name: chip_sw_csrng_kat_test

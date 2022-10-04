@@ -26,6 +26,7 @@ class ConfigTest : public EntropySrcTest {
   dif_entropy_src_config_t config_ = {
       .fips_enable = false,
       .route_to_firmware = false,
+      .bypass_conditioner = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_window_size = 1};
 };
@@ -56,6 +57,7 @@ TEST_F(ConfigTest, Locked) {
 struct ConfigParams {
   bool fips_enable;
   bool route_to_firmware;
+  bool bypass_conditioner;
   dif_entropy_src_single_bit_mode_t single_bit_mode;
   bool health_test_threshold_scope;
   uint16_t health_test_window_size;
@@ -70,21 +72,24 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
   const ConfigParams &test_param = GetParam();
   config_.fips_enable = test_param.fips_enable;
   config_.route_to_firmware = test_param.route_to_firmware;
+  config_.bypass_conditioner = test_param.bypass_conditioner;
   config_.single_bit_mode = test_param.single_bit_mode;
   config_.health_test_threshold_scope = test_param.health_test_threshold_scope;
   config_.health_test_window_size = test_param.health_test_window_size;
   config_.alert_threshold = test_param.alert_threshold;
 
+  EXPECT_READ32(ENTROPY_SRC_REGWEN_REG_OFFSET, 1);
+
   multi_bit_bool_t route_to_firmware_mubi =
       test_param.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
-
-  EXPECT_READ32(ENTROPY_SRC_REGWEN_REG_OFFSET, 1);
+  multi_bit_bool_t bypass_conditioner_mubi =
+      test_param.bypass_conditioner ? kMultiBitBool4True : kMultiBitBool4False;
 
   EXPECT_WRITE32(
       ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
       {
           {ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_OFFSET, route_to_firmware_mubi},
-          {ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_OFFSET, kMultiBitBool4False},
+          {ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_OFFSET, bypass_conditioner_mubi},
       });
 
   multi_bit_bool_t fips_enable_mubi =
@@ -139,29 +144,32 @@ INSTANTIATE_TEST_SUITE_P(
     ConfigTestAllParams, ConfigTestAllParams,
     testing::Values(
         // Test FIPS enabled.
-        ConfigParams{true, false, kDifEntropySrcSingleBitModeDisabled, false,
-                     0xFFFF, 2, kDifToggleEnabled},
+        ConfigParams{true, false, false, kDifEntropySrcSingleBitModeDisabled,
+                     false, 0xFFFF, 2, kDifToggleEnabled},
         // Test route to firmware.
-        ConfigParams{false, true, kDifEntropySrcSingleBitModeDisabled, false, 2,
-                     kDifToggleEnabled},
-        // Test single_bit_mode
-        ConfigParams{false, false, kDifEntropySrcSingleBitMode0, false, 512, 2,
-                     kDifToggleEnabled},
-        ConfigParams{false, false, kDifEntropySrcSingleBitMode1, false, 256, 2,
-                     kDifToggleEnabled},
-        ConfigParams{false, false, kDifEntropySrcSingleBitMode2, false, 128, 2,
-                     kDifToggleEnabled},
-        ConfigParams{false, false, kDifEntropySrcSingleBitMode3, false, 64, 2,
-                     kDifToggleEnabled},
+        ConfigParams{false, true, false, kDifEntropySrcSingleBitModeDisabled,
+                     false, 2, kDifToggleEnabled},
+        // Test bypass conditioner.
+        ConfigParams{false, false, true, kDifEntropySrcSingleBitModeDisabled,
+                     false, 2, kDifToggleEnabled},
+        // Test single_bit_mode.
+        ConfigParams{false, false, false, kDifEntropySrcSingleBitMode0, false,
+                     512, 2, kDifToggleEnabled},
+        ConfigParams{false, false, false, kDifEntropySrcSingleBitMode1, false,
+                     256, 2, kDifToggleEnabled},
+        ConfigParams{false, false, false, kDifEntropySrcSingleBitMode2, false,
+                     128, 2, kDifToggleEnabled},
+        ConfigParams{false, false, false, kDifEntropySrcSingleBitMode3, false,
+                     64, 2, kDifToggleEnabled},
         // Test alerts disabled.
-        ConfigParams{false, false, kDifEntropySrcSingleBitMode0, false, 1, 0,
-                     kDifToggleDisabled},
+        ConfigParams{false, false, false, kDifEntropySrcSingleBitMode0, false,
+                     1, 0, kDifToggleDisabled},
         // Test all disabled.
-        ConfigParams{false, false, kDifEntropySrcSingleBitMode0, false, 1, 2,
-                     kDifToggleDisabled},
+        ConfigParams{false, false, false, kDifEntropySrcSingleBitMode0, false,
+                     1, 2, kDifToggleDisabled},
         // Test all enabled.
-        ConfigParams{true, true, kDifEntropySrcSingleBitMode0, true, 32, 2,
-                     kDifToggleEnabled}));
+        ConfigParams{true, true, false, kDifEntropySrcSingleBitMode0, true, 32,
+                     2, kDifToggleEnabled}));
 
 class FwOverrideConfigTest : public EntropySrcTest {
  protected:
