@@ -353,6 +353,8 @@ module spi_tpm
 
   logic [FifoRegSize-1:0] isck_fifoaddr; // latched from sck_cmdaddr_wdata_d
   logic                   sck_fifoaddr_latch;
+  // isck_fifoaddr_latch converts sck_fifoaddr_latch by half SPI_CLK period.
+  logic                   isck_fifoaddr_latch;
 
   logic isck_fifoaddr_inc;
 
@@ -523,7 +525,38 @@ module spi_tpm
 
   assign check_hw_reg = (cmdaddr_bitcnt == 5'h 1D);
 
+  // sck_fifoaddr_latch & isck_fifoaddr_latch.
+  //
+  // isck_fifoaddr_latch is used to latch `isck_fifoaddr` as the name implies.
+  // The sck_fifoaddr_latch is high at the last beat of the address field as
+  // shown below.
+  //           _   _   _   _   _
+  // SPI_CLK _/ \_/ \_/ \_/ \_/ \_
+  //           ___ ___ ___ ___ ___
+  // bitcnt   X 0 X ..X 1EX 1FX
+  //
+  // But the data is valid second half of the 'h 1F phase. However, the
+  // latching logic latches @ clk_out_i (Inverted SPI_CLK). So it latches at
+  // a cycle earlier.
+  //
+  //                       | err here
+  //            _   _   _   _   _
+  // iSPI_CLK _/ \_/ \_/ \_/ \_/ \_
+  //         ___ ___ ___ ___ ___
+  // bitcnt  X 0 X ..X 1EX 1FX
+  //
+  //
+  // isck_fifoaddr_latch delays sck_fifoaddr_latch for the logic latches the
+  // address correctly.
   assign sck_fifoaddr_latch = (cmdaddr_bitcnt == 5'h 1F);
+
+  always_ff @(posedge clk_out_i or negedge rst_n) begin
+    if (!rst_n) begin
+      isck_fifoaddr_latch <= 1'b 0;
+    end else begin
+      isck_fifoaddr_latch <= sck_fifoaddr_latch;
+    end
+  end
 
   always_ff @(posedge clk_in_i or negedge rst_n) begin
     if (!rst_n) begin
@@ -543,10 +576,9 @@ module spi_tpm
   always_ff @(posedge clk_out_i or negedge rst_n) begin
     if (!rst_n) begin
       isck_fifoaddr <= '0;
-    end else if (sck_fifoaddr_latch) begin
-      // TODO: latch sck_fifoaddr_latch into isck_fifoaddr_latch?
+    end else if (isck_fifoaddr_latch) begin
       // Shall assert when sck_st_q moves away from StAddr
-      isck_fifoaddr <= sck_cmdaddr_wdata_d[FifoRegSize-1:0];
+      isck_fifoaddr <= sck_cmdaddr_wdata_q[FifoRegSize-1:0];
     end else if (isck_fifoaddr_inc) begin
       isck_fifoaddr <= isck_fifoaddr + 1'b 1;
     end
