@@ -803,5 +803,36 @@ TEST_F(ReadOutputTest, Read) {
   }
 }
 
+class ReadBindingTest : public DifKeymgrInitialized {};
+
+TEST_P(BadArgsTwo, ReadBinding) {
+  auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
+  auto output =
+      GetGoodBadPtrArg<dif_keymgr_binding_value_t>(std::get<1>(GetParam()));
+
+  EXPECT_DIF_BADARG(dif_keymgr_read_binding(keymgr, output));
+}
+
+TEST_F(ReadBindingTest, Read) {
+  constexpr size_t kNumBindingWords = 8;
+  constexpr size_t kNumBindings = 2;
+  constexpr std::array<std::array<uint32_t, kNumBindingWords>, kNumBindings>
+      kExpected{{{0x8D, 0x25, 0x44, 0x0A, 0xEC, 0x1C, 0xAC, 0x0E},
+                 {0x44, 0x5B, 0x90, 0x39, 0x24, 0x72, 0xA7, 0xCB}}};
+  constexpr std::array<uint32_t, kNumBindings> kShareRegOffsets{
+      {KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET,
+       KEYMGR_ATTEST_SW_BINDING_0_REG_OFFSET}};
+
+  for (size_t i = 0; i < kNumBindings; ++i) {
+    for (size_t j = 0; j < kNumBindingWords; ++j) {
+      EXPECT_READ32(kShareRegOffsets[i] + j * 4, kExpected[i][j]);
+    }
+  }
+
+  dif_keymgr_binding_value_t output;
+  EXPECT_DIF_OK(dif_keymgr_read_binding(&keymgr_, &output));
+  EXPECT_THAT(kExpected[0], ::testing::ElementsAreArray(output.sealing));
+  EXPECT_THAT(kExpected[1], ::testing::ElementsAreArray(output.attestation));
+}
 }  // namespace
 }  // namespace dif_keymgr_unittest

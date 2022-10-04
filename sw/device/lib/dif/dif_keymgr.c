@@ -557,3 +557,20 @@ dif_result_t dif_keymgr_read_output(const dif_keymgr_t *keymgr,
 
   return kDifOk;
 }
+
+dif_result_t dif_keymgr_read_binding(const dif_keymgr_t *keymgr,
+                                     dif_keymgr_binding_value_t *output) {
+  if (keymgr == NULL || output == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_memcpy_from_mmio32(keymgr->base_addr,
+                                 KEYMGR_SEALING_SW_BINDING_0_REG_OFFSET,
+                                 output->sealing, sizeof(output->sealing));
+
+  mmio_region_memcpy_from_mmio32(
+      keymgr->base_addr, KEYMGR_ATTEST_SW_BINDING_0_REG_OFFSET,
+      output->attestation, sizeof(output->attestation));
+
+  return kDifOk;
+}
