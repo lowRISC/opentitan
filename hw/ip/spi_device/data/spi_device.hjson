@@ -1149,7 +1149,8 @@
           name: "invalid_locality"
           desc: '''If 1, TPM submodule returns the invalid data (0xFF) for the
             out of the max Locality request.
-            If it is a write request, it discards the request.
+            If it is a write request, HW still uploads the command and address.
+            SW needs to process the incoming invalid command.
 
             If 0, TPM submodule uploads the TPM command and address. The SW may
             write 0xFF to the read FIFO.
