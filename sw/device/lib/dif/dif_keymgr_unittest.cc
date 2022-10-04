@@ -834,5 +834,27 @@ TEST_F(ReadBindingTest, Read) {
   EXPECT_THAT(kExpected[0], ::testing::ElementsAreArray(output.sealing));
   EXPECT_THAT(kExpected[1], ::testing::ElementsAreArray(output.attestation));
 }
+
+class ReadMaxKeyVersionTest : public DifKeymgrInitialized {};
+
+TEST_P(BadArgsTwo, ReadMaxKeyVersion) {
+  auto keymgr = GetGoodBadPtrArg<dif_keymgr_t>(std::get<0>(GetParam()));
+  auto version =
+      GetGoodBadPtrArg<dif_keymgr_max_key_version_t>(std::get<1>(GetParam()));
+
+  EXPECT_DIF_BADARG(dif_keymgr_read_max_key_version(keymgr, version));
+}
+
+TEST_F(ReadMaxKeyVersionTest, Read) {
+  EXPECT_READ32(KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET, 0xa093ed64);
+  EXPECT_READ32(KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET, 0x874d53e);
+  EXPECT_READ32(KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET, 0x874df4a);
+
+  dif_keymgr_max_key_version_t versions;
+  EXPECT_DIF_OK(dif_keymgr_read_max_key_version(&keymgr_, &versions));
+  EXPECT_THAT(0xa093ed64, versions.creator_max_key_version);
+  EXPECT_THAT(0x874d53e, versions.owner_int_max_key_version);
+  EXPECT_THAT(0x874df4a, versions.owner_max_key_version);
+}
 }  // namespace
 }  // namespace dif_keymgr_unittest

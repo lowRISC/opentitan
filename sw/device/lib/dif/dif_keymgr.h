@@ -504,6 +504,31 @@ typedef struct dif_keymgr_binding_value {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_read_binding(const dif_keymgr_t *keymgr,
                                      dif_keymgr_binding_value_t *output);
+
+typedef struct dif_keymgr_max_key_version {
+  /**
+   * Max creator key version.
+   */
+  uint32_t creator_max_key_version;
+  /**
+   * Max owner intermediate key version.
+   */
+  uint32_t owner_int_max_key_version;
+  /**
+   * Max owner key version.
+   */
+  uint32_t owner_max_key_version;
+} dif_keymgr_max_key_version_t;
+
+/**
+ * Reads the max key version of each stage.
+ *
+ * @param keymgr A key manager handle.
+ * @param version Struct with the max versions set.
+ * @return dif_result_t
+ */
+dif_result_t dif_keymgr_read_max_key_version(
+    const dif_keymgr_t *keymgr, dif_keymgr_max_key_version_t *versions);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
