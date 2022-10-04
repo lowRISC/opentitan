@@ -201,7 +201,7 @@ typedef struct dif_rv_core_ibex_crash_dump_info {
   /**
    * The crash dump state for the current execution.
    */
-  dif_rv_core_ibex_crash_dump_state_t fault_stage;
+  dif_rv_core_ibex_crash_dump_state_t fault_state;
 
   /**
    * The crash dump state for the previous execution. It will only contain valid

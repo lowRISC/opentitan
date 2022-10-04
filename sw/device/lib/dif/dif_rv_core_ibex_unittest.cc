@@ -51,12 +51,12 @@ std::ostream &operator<<(std::ostream &os,
 std::ostream &operator<<(std::ostream &os,
                          const dif_rv_core_ibex_crash_dump_info_t &info) {
   return os << "{\n"
-            << "fault_stage = {\n"
-            << "  .mtval = " << info.fault_stage.mtval << ",\n"
-            << "  .mpec = " << info.fault_stage.mpec << ",\n"
-            << "  .mdaa = " << info.fault_stage.mdaa << ",\n"
-            << "  .mnpc = " << info.fault_stage.mnpc << ",\n"
-            << "  .mcpc = " << info.fault_stage.mcpc << ",\n"
+            << "fault_state = {\n"
+            << "  .mtval = " << info.fault_state.mtval << ",\n"
+            << "  .mpec = " << info.fault_state.mpec << ",\n"
+            << "  .mdaa = " << info.fault_state.mdaa << ",\n"
+            << "  .mnpc = " << info.fault_state.mnpc << ",\n"
+            << "  .mcpc = " << info.fault_state.mcpc << ",\n"
             << "},\n"
             << "previous_fault_state = {\n"
             << "  .mtval = " << info.previous_fault_state.mtval << ",\n"
@@ -601,7 +601,7 @@ class ParseCrashDumpTest : public RvCoreIbexTestInitialized {};
 
 TEST_F(ParseCrashDumpTest, DoubleFault) {
   dif_rv_core_ibex_crash_dump_info_t ref = {
-      .fault_stage = {.mtval = 0x55555555,
+      .fault_state = {.mtval = 0x55555555,
                       .mpec = 0x51555555,
                       .mdaa = 0x55515555,
                       .mnpc = 0x55555155,
@@ -621,7 +621,7 @@ TEST_F(ParseCrashDumpTest, DoubleFault) {
 
 TEST_F(ParseCrashDumpTest, SingleFault) {
   dif_rv_core_ibex_crash_dump_info_t ref = {
-      .fault_stage = {.mtval = 0x55555555,
+      .fault_state = {.mtval = 0x55555555,
                       .mpec = 0x51555555,
                       .mdaa = 0x55515555,
                       .mnpc = 0x55555155,
