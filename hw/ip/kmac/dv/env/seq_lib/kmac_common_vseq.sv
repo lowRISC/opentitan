@@ -20,10 +20,9 @@ class kmac_common_vseq extends kmac_base_vseq;
       // Shadow storage fatal error might cause req to drop without ack.
       $assertoff(0,
       "tb.dut.gen_entropy.u_prim_sync_reqack_data.u_prim_sync_reqack.SyncReqAckHoldReq");
-      $assertoff(0,
-      "tb.dut.gen_entropy.u_prim_sync_reqack_data.u_prim_sync_reqack.SyncReqAckAckNeedsReq");
-      $assertoff(0, "tb.edn_if[0].ReqHighUntilAck_A");
-      $assertoff(0, "tb.edn_if[0].AckAssertedOnlyWhenReqAsserted_A");
+      disable_edn_asserts();
+    end else if (common_seq_type == "stress_all_with_rand_reset") begin
+      disable_edn_asserts();
     end
   endtask
 

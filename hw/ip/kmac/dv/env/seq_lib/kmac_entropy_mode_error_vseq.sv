@@ -17,9 +17,6 @@ class kmac_entropy_mode_error_vseq extends kmac_edn_timeout_error_vseq;
     kmac_err_type dist {kmac_pkg::ErrIncorrectEntropyMode :/ 4, kmac_pkg::ErrNone :/ 1};
   }
 
-  // No assertions to disable.
-  virtual function void disable_asserts();
-  endfunction
 
   virtual task check_err_code();
     kmac_pkg::err_t kmac_err = '{valid: 1'b1,

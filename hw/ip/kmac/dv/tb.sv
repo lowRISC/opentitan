@@ -47,8 +47,11 @@ module tb;
   `DV_ALERT_IF_CONNECT
 
   // dut
-
-  kmac #(.EnMasking(`EN_MASKING)) dut (
+`ifdef EN_MASKING
+  kmac #(.EnMasking(1)) dut (
+`else
+  kmac #(.EnMasking(0)) dut (
+`endif
     .clk_i              (clk            ),
     .rst_ni             (rst_n          ),
     .rst_shadowed_ni    (rst_shadowed_n ),
@@ -115,18 +118,6 @@ module tb;
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
-  end
-
-  // This assertion only exists when en_masking parameter is set.
-  // This assertion will not be true if Kmac is interrupted by lc_escalate_en signal.
-  if (`EN_MASKING) begin : gen_assert_disable_for_masking_mode
-    initial begin
-      bit disable_lc_asserts;
-      void'($value$plusargs("disable_lc_asserts=%0b", disable_lc_asserts));
-      if (disable_lc_asserts) begin
-        $assertoff(0, tb.dut.u_sha3.u_keccak.u_keccak_p.gen_selperiod_chk.SelStayTwoCycleIfTrue_A);
-      end
-    end
   end
 
 endmodule

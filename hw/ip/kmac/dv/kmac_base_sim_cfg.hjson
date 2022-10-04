@@ -63,12 +63,11 @@
   build_modes: [
     {
       name: enable_mask_mode
-      build_opts: ["+define+EN_MASKING=1"]
+      build_opts: ["+define+EN_MASKING"]
       run_opts: ["+enable_masking=1"]
     }
     {
       name: disable_mask_mode
-      build_opts: ["+define+EN_MASKING=0"]
       run_opts: ["+enable_masking=0"]
     }
   ]
@@ -188,7 +187,6 @@
     {
       name: "{variant}_lc_escalation"
       uvm_test_seq: kmac_lc_escalation_vseq
-      run_opts: ["+disable_lc_asserts=1"]
     }
     {
       name: kmac_stress_all

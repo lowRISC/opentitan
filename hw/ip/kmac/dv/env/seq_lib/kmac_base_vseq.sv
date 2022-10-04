@@ -984,4 +984,9 @@ class kmac_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.wait_clks($urandom_range(100, 2000));
   endtask
 
+  // EDN is only used in kmac masked version.
+  virtual function void disable_edn_asserts();
+    if (cfg.enable_masking) cfg.kmac_vif.disable_edn_asserts();
+  endfunction
+
 endclass : kmac_base_vseq
