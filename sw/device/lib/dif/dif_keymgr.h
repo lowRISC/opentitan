@@ -480,7 +480,30 @@ typedef struct dif_keymgr_output {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_read_output(const dif_keymgr_t *keymgr,
                                     dif_keymgr_output_t *output);
+/**
+ * Attestation and sealing binding value.
+ */
+typedef struct dif_keymgr_binding_value {
+  /**
+   * Sealing binding value.
+   */
+  uint32_t sealing[8];
+  /**
+   * Attestation binding value.
+   */
+  uint32_t attestation[8];
+} dif_keymgr_binding_value_t;
 
+/**
+ * Reads both the attestation or the binding value set.
+ *
+ * @param keymgr A key manager handle.
+ * @param[out] output Value read.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_keymgr_read_binding(const dif_keymgr_t *keymgr,
+                                     dif_keymgr_binding_value_t *output);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
