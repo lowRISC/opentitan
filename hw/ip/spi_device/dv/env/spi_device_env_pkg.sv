@@ -215,7 +215,6 @@ package spi_device_env_pkg;
   // return locality index from the addr
   function automatic bit[23:0] get_locality_from_addr(bit[TPM_ADDR_WIDTH-1:0] addr);
     uint loc = addr[TPM_OFFSET_WIDTH + TPM_LOCALITY_WIDTH - 1 : TPM_OFFSET_WIDTH];
-    `DV_CHECK_LE(loc, MAX_TPM_LOCALITY, , , msg_id)
     return loc;
   endfunction
 
