@@ -9,15 +9,14 @@ class spi_device_tpm_sts_read_vseq extends spi_device_tpm_base_vseq;
   `uvm_object_new
 
   virtual task body();
-    bit [23:0] tpm_addr;
+    bit [23:0] tpm_sts_addr;
     bit [7:0] returned_bytes[$];
     uint locality_idx;
 
     spi_device_init();
 
     // randomised tpm configuration.
-    tpm_init();
-    tpm_configure_locality();
+    tpm_init(.mode(TpmFifoMode), .is_hw_return(1));
     repeat (num_trans) begin
       `DV_CHECK_RANDOMIZE_FATAL(ral.tpm_access_0)
       `DV_CHECK_RANDOMIZE_FATAL(ral.tpm_access_1)
@@ -28,9 +27,9 @@ class spi_device_tpm_sts_read_vseq extends spi_device_tpm_base_vseq;
       cfg.clk_rst_vif.wait_clks(100);
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(locality_idx, locality_idx < MAX_TPM_LOCALITY;)
 
-      tpm_addr = get_tpm_addr(locality_idx, TPM_STS_OFFSET);
+      tpm_sts_addr = get_tpm_addr(locality_idx, TPM_STS_OFFSET);
 
-      spi_host_xfer_tpm_item(.write(0), .tpm_size(4), .addr(tpm_addr),
+      spi_host_xfer_tpm_item(.write(0), .tpm_size(4), .addr(tpm_sts_addr),
                               .payload_q(returned_bytes));
       if (cfg.get_locality_active(locality_idx) == 1) begin
         `DV_CHECK_CASE_EQ({returned_bytes[3], returned_bytes[2], returned_bytes[1],

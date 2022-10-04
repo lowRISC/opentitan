@@ -164,7 +164,7 @@
     {
       name: tpm_read
       desc: '''
-            - Set TPM_CFG.TPM_MODE to 0 and set TPM_CFG.EN.
+            - Set TPM_CFG.TPM_MODE to CRB mode and set TPM_CFG.EN.
             - Randomise other fields in TPM_CFG.
             - Assert the tpm_csb.
             - Send TPM read command over the SPI bus with a randomised address.
@@ -182,7 +182,7 @@
     {
       name: tpm_write
       desc: '''
-            - Set TPM_CFG.TPM_MODE to 0 and set TPM_CFG.EN.
+            - Set TPM_CFG.TPM_MODE to CRB mode and set TPM_CFG.EN.
             - Randomise other fields in TPM_CFG.
             - Assert the tpm_csb.
             - Send TPM write command with a randomised address.
@@ -192,7 +192,7 @@
             - Check that the TPM submodule accepts write data without the WAIT state if the write FIFO is empty.
             - Otherwise, check WAIT until the write FIFO becomes available (empty).'''
       stage: V2
-      tests: ["spi_device_tpm_write"]
+      tests: ["spi_device_tpm_rw"]
     }
     {
       name: tpm_locality
@@ -201,7 +201,7 @@
             - Ensure that the data returned is correct for the given locality.
             - Randomise TPM_CFG.invalid_locality and confirm response.'''
       stage: V2
-      tests: ["spi_device_tpm_sts_read"]
+      tests: ["spi_device_tpm_sts_read", "spi_device_tpm_read_hw_reg"]
     }
     {
       name: pass_cmd_filtering

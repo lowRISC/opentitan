@@ -106,8 +106,8 @@
     }
 
     {
-      name: spi_device_tpm_write
-      uvm_test_seq: spi_device_tpm_write_vseq
+      name: spi_device_tpm_read_hw_reg
+      uvm_test_seq: spi_device_tpm_read_hw_reg_vseq
     }
 
     {

@@ -62,6 +62,14 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   local spi_item tpm_read_sw_q[$];
   local spi_item tpm_write_spi_q[$];
   local spi_item tpm_write_sw_q[$];
+  // when host reads a TPM HW reg, SW may update its value at the same time
+  // it's ok that host reads either the old value or the new one.
+  // Store the old value here and clear this array when the SPI transaction is completed
+  local bit[TL_DW-1:0] tpm_hw_reg_pre_val_aa[string];
+  localparam string ALL_TPM_HW_REG_NAMES[] = {
+    "tpm_access_0", "tpm_access_1", "tpm_sts", "tpm_intf_capability",
+    "tpm_int_enable", "tpm_int_status", "tpm_int_vector", "tpm_did_vid", "tpm_rid"};
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -175,10 +183,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             tpm_write_spi_q.push_back(item);
           end else begin
             bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
-            bit [7:0] exp_q[$];
+            bit [TL_DW-1:0] exp_q[$];
 
-            if (cfg.is_hw_return_reg(addr, item.read_size, exp_q)) begin
-              `DV_CHECK_Q_EQ(item.data, exp_q)
+            if (is_tpm_reg(addr, item.read_size, exp_q)) begin
+              compare_tpm_hw_reg(item.data, exp_q, addr[1:0]);
             end else begin
               `DV_CHECK_EQ(tpm_read_sw_q.size, 1)
               tpm_item_compare(item, tpm_read_sw_q.pop_front(), "read");
@@ -196,6 +204,126 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             msg, from_spi.sprint(), from_sw.sprint()))
     end
   endfunction
+
+  // if the reg is smaller than 32 bit, padding with all 1s at the end
+  function bit[TL_DW-1:0] get_reg_val_with_all_1s_padding(bit[TL_DW-1:0] val, uint num_bytes);
+    for (int i = num_bytes; i < 4; i++) val[8*i +: 8] = '1;
+    return val;
+  endfunction
+
+  `define CREATE_TPM_CASE_STMT(TPM_NAME, CSR_NAME) \
+    ``TPM_NAME``_OFFSET: begin \
+      exp_value_q.push_back(get_reg_val_with_all_1s_padding(`gmv(ral.``CSR_NAME``), \
+                                                            ``TPM_NAME``_BYTE_SIZE)); \
+      if (tpm_hw_reg_pre_val_aa.exists(`"CSR_NAME`")) begin \
+        exp_value_q.push_back(get_reg_val_with_all_1s_padding( \
+          tpm_hw_reg_pre_val_aa[`"CSR_NAME`"], ``TPM_NAME``_BYTE_SIZE)); \
+      end \
+    end
+  // return 1 and exp SPI return data if the TPM read value is directly from HW-returned registers
+  function automatic bit is_tpm_reg(bit [TPM_ADDR_WIDTH-1:0] addr,
+                                    uint read_size,
+                                    output bit [TL_DW-1:0] exp_value_q[$]);
+    bit [TPM_ADDR_WIDTH-1:0] base_addr = addr & TPM_BASE_ADDR_MASK;
+    bit base_addr_match = (base_addr == TPM_BASE_ADDR);
+    bit [TPM_OFFSET_WIDTH-1:0] aligned_offset;
+    int locality;
+    bit [TL_DW-1:0] reg_val;
+
+    // CRB mode doesn't return directly from HW
+    if (`gmv(ral.tpm_cfg.tpm_mode) == TpmCrbMode) return 0;
+    // if chk isn't disabled, it needs to match the base addr
+    if (!`gmv(ral.tpm_cfg.tpm_reg_chk_dis) && !base_addr_match) begin
+      return 0;
+    end
+
+    locality = get_locality_from_addr(addr);
+
+    // handle invalid locality
+    if (locality >= MAX_TPM_LOCALITY) begin
+      if (!`gmv(ral.tpm_cfg.tpm_reg_chk_dis) &&
+          `gmv(ral.tpm_cfg.invalid_locality) &&
+          base_addr_match) begin
+        exp_value_q = {'1};
+        `uvm_info(`gfn, "return 'hff due to invalid locality", UVM_MEDIUM)
+        return 1;
+      end
+      return 0;
+    end
+
+    aligned_offset = {addr[TPM_OFFSET_WIDTH-1:2], 2'd0};
+    // if locality is inactive, return 'hff for TPM_STS
+    foreach (tpm_hw_reg_pre_val_aa[i]) $display("aa %s, %h", i, tpm_hw_reg_pre_val_aa[i]);
+    if (aligned_offset == TPM_STS_OFFSET) begin
+      bit cur_locality_active = cfg.get_locality_active(locality);
+      bit pre_locality_active = cur_locality_active;
+      string access_name = $sformatf("tpm_access_%0d", locality);
+
+      if (tpm_hw_reg_pre_val_aa.exists(access_name)) begin
+        pre_locality_active = tpm_hw_reg_pre_val_aa[access_name][TPM_ACTIVE_LOCALITY_BIT_POS];
+        `uvm_info(`gfn, $sformatf("%s = 0x%0x", access_name, tpm_hw_reg_pre_val_aa[access_name]),
+                  UVM_MEDIUM)
+      end
+      if (!cur_locality_active || !pre_locality_active) exp_value_q = {'1};
+      `uvm_info(`gfn, "return 'hff due to reading TPM_STS on an inactive locality", UVM_MEDIUM)
+
+      // when both are inactive, return. Otherwise, it has more than 1 exp value
+      if (!cur_locality_active && !pre_locality_active) return 1;
+    end
+
+    case (aligned_offset)
+      TPM_ACCESS_OFFSET: begin
+        string access_reg_name = $sformatf("tpm_access_%0d", locality);
+        const int size = 1;
+
+        reg_val = `gmv(cfg.get_tpm_access_reg_field(locality));
+        reg_val = get_reg_val_with_all_1s_padding(reg_val, size);
+        exp_value_q.push_back(reg_val);
+
+        if (tpm_hw_reg_pre_val_aa.exists(access_reg_name)) begin
+          reg_val = get_reg_val_with_all_1s_padding(tpm_hw_reg_pre_val_aa[access_reg_name], size);
+          exp_value_q.push_back(reg_val);
+        end
+      end
+      TPM_HASH_START_OFFSET: begin
+        exp_value_q = {'1};
+      end
+      `CREATE_TPM_CASE_STMT(TPM_INT_ENABLE, tpm_int_enable)
+      `CREATE_TPM_CASE_STMT(TPM_INT_VECTOR, tpm_int_vector)
+      `CREATE_TPM_CASE_STMT(TPM_INT_STATUS, tpm_int_status)
+      `CREATE_TPM_CASE_STMT(TPM_INTF_CAPABILITY, tpm_intf_capability)
+      `CREATE_TPM_CASE_STMT(TPM_STS, tpm_sts)
+      `CREATE_TPM_CASE_STMT(TPM_DID_VID, tpm_did_vid)
+      `CREATE_TPM_CASE_STMT(TPM_RID, tpm_rid)
+      default: return 0;
+    endcase
+
+    `uvm_info(`gfn, $sformatf("Read on the hw-returned reg, addr 0x%0x, data %p",
+                              addr, exp_value_q), UVM_MEDIUM)
+    return 1;
+  endfunction : is_tpm_reg
+  `undef CREATE_TPM_CASE_STMT
+
+  // act_byte_q contains all received bytes data
+  // exp_word_q shows all the possible values on word format as SW may program the HW regs during
+  // the SPI transaction
+  virtual function void compare_tpm_hw_reg(bit [7:0] act_byte_q[$], bit [TL_DW-1:0] exp_word_q[$],
+                                           bit [1:0] addr_2lsb);
+    int offset = addr_2lsb;
+    bit [TL_DW-1:0] act_word;
+    // have it align with addr_2lsb and same size as act_byte_q
+    bit [TL_DW-1:0] updated_exp_word_q[$];
+    for (int i = 0;  i < act_byte_q.size && offset < 4; i++, offset++) begin
+      act_word[8*i +: 8] = act_byte_q[i];
+      foreach (exp_word_q[j]) begin
+        updated_exp_word_q[j][8*i +: 8] = exp_word_q[j][8*offset +: 8];
+      end
+    end
+    if (!(act_word inside {updated_exp_word_q})) begin
+      `uvm_error(`gfn, $sformatf("Compare TPM reg failed, offset: %0d, act: 0x%0x, exp: %p",
+                                addr_2lsb, act_word, updated_exp_word_q))
+    end
+  endfunction : compare_tpm_hw_reg
 
   // update flash_status to the value of the last item
   virtual function void latch_flash_status(bit set_busy, bit update_wel, bit wel_val);
@@ -684,6 +812,21 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     // if incoming access is a write to a valid csr, then make updates right away
     // don't update flash_status predict value as it's updated at the end of spi transaction
     if (write && channel == AddrChannel && csr.get_name != "flash_status") begin
+      // store the previous value if it's a TPM HW reg and SPI interface is busy
+      if (!cfg.spi_host_agent_cfg.vif.csb[TPM_CSB_ID] &&
+          csr.get_name inside {ALL_TPM_HW_REG_NAMES}) begin
+        // the value of TPM_ACCESS_0-3 is in the CSR tpm_access_0
+        // TPM_ACCESS_4 is in the CSR tpm_access_1
+        if (csr.get_name == "tpm_access_0") begin
+          foreach(ral.tpm_access_0.access[i]) begin
+            tpm_hw_reg_pre_val_aa[$sformatf("tpm_access_%0d", i)] = `gmv(ral.tpm_access_0.access[i]);
+          end
+        end else if (csr.get_name == "tpm_access_1") begin
+          tpm_hw_reg_pre_val_aa["tpm_access_4"] = `gmv(csr);
+        end else begin
+          tpm_hw_reg_pre_val_aa[csr.get_name] = `gmv(csr);
+        end
+      end
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
@@ -998,6 +1141,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     tpm_read_sw_q.delete();
     tpm_write_spi_q.delete();
     tpm_write_sw_q.delete();
+    tpm_hw_reg_pre_val_aa.delete();
 
     // used in seq
     cfg.next_read_buffer_addr = 0;

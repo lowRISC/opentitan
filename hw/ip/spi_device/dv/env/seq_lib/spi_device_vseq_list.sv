@@ -15,7 +15,7 @@
 `include "spi_device_rx_timeout_vseq.sv"
 `include "spi_device_byte_transfer_vseq.sv"
 `include "spi_device_tpm_base_vseq.sv"
-`include "spi_device_tpm_write_vseq.sv"
+`include "spi_device_tpm_read_hw_reg_vseq.sv"
 `include "spi_device_bit_transfer_vseq.sv"
 `include "spi_device_tx_async_fifo_reset_vseq.sv"
 `include "spi_device_rx_async_fifo_reset_vseq.sv"

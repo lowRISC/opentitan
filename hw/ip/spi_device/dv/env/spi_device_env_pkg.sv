@@ -108,7 +108,7 @@ package spi_device_env_pkg;
   parameter byte TPM_ACTIVE_LOCALITY_BIT_POS     = 5;
   parameter byte MAX_SUPPORT_TPM_SIZE            = 64;
   parameter byte MAX_TPM_LOCALITY                = 5;
-  parameter byte TPM_LOCALITY_LSB_POS            = 12;
+  parameter byte TPM_OFFSET_WIDTH                = 12;
   parameter byte TPM_LOCALITY_WIDTH              = 4;
   // TPM HW-returned register offset
   parameter bit[11:0] TPM_ACCESS_OFFSET          = 0;
@@ -123,11 +123,16 @@ package spi_device_env_pkg;
   parameter byte      TPM_INTF_CAPABILITY_BYTE_SIZE = 4;
   parameter bit[11:0] TPM_STS_OFFSET             = 12'h18;
   parameter byte      TPM_STS_BYTE_SIZE          = 4;
+  parameter bit[11:0] TPM_HASH_START_OFFSET      = 12'h28;
+  parameter byte      TPM_HASH_START_BYTE_SIZE   = 1;
   parameter bit[11:0] TPM_DID_VID_OFFSET         = 12'hF00;
   parameter byte      TPM_DID_VID_BYTE_SIZE      = 4;
   parameter bit[11:0] TPM_RID_OFFSET             = 12'hF04;
   parameter byte      TPM_RID_BYTE_SIZE          = 1;
-
+  parameter bit[11:0] ALL_TPM_HW_REG_OFFSETS[] = {
+      TPM_ACCESS_OFFSET, TPM_INT_ENABLE_OFFSET, TPM_INT_VECTOR_OFFSET,
+      TPM_INT_STATUS_OFFSET, TPM_INT_STATUS_OFFSET, TPM_STS_OFFSET,
+      TPM_HASH_START_OFFSET, TPM_DID_VID_OFFSET, TPM_RID_OFFSET};
 
   parameter uint     NUM_INTERNAL_PROCESSED_CMD  = 11; // exclude WREN, WRDI, EN4B, EX4B
   parameter bit[7:0] READ_JEDEC                  = 8'h9F;
@@ -203,13 +208,13 @@ package spi_device_env_pkg;
 
   // Get TPM address for locality TODO expand to other HW regs
   function automatic bit[23:0] get_tpm_addr(bit[3:0] locality,
-                                            bit [TPM_LOCALITY_LSB_POS-1:0] base_offset);
-    return TPM_BASE_ADDR | (locality << TPM_LOCALITY_LSB_POS) | base_offset;
+                                            bit [TPM_OFFSET_WIDTH-1:0] base_offset);
+    return TPM_BASE_ADDR | (locality << TPM_OFFSET_WIDTH) | base_offset;
   endfunction
 
   // return locality index from the addr
   function automatic bit[23:0] get_locality_from_addr(bit[TPM_ADDR_WIDTH-1:0] addr);
-    uint loc = addr[TPM_LOCALITY_LSB_POS + TPM_LOCALITY_WIDTH - 1 : TPM_LOCALITY_LSB_POS];
+    uint loc = addr[TPM_OFFSET_WIDTH + TPM_LOCALITY_WIDTH - 1 : TPM_OFFSET_WIDTH];
     `DV_CHECK_LE(loc, MAX_TPM_LOCALITY, , , msg_id)
     return loc;
   endfunction
