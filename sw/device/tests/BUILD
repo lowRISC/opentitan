@@ -664,6 +664,16 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "example_concurrency_test",
+    srcs = ["example_concurrency_test.c"],
+    deps = [
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "example_test_from_flash",
     srcs = ["example_test_from_flash.c"],
     deps = [
