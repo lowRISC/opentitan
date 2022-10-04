@@ -26,7 +26,7 @@
 #define configCHECK_FOR_STACK_OVERFLOW 1
 #define configMINIMAL_STACK_SIZE 256  // in words
 #define configSTACK_DEPTH_TYPE uint16_t
-#define configTOTAL_HEAP_SIZE ((size_t)0x800u)
+#define configTOTAL_HEAP_SIZE ((size_t)0x8000u)
 #define configUSE_MALLOC_FAILED_HOOK 1
 
 // Other
