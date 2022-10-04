@@ -515,9 +515,6 @@ module spi_tpm
     end
   end
 
-  // Push to CmdAddr buffer if the command is not processed by HW.
-  assign sck_cmdaddr_wvalid = cmdaddr_bitcnt == 5'h 1F && !is_hw_reg;
-
   // Control signals:
   //  latch_cmd_type
   assign latch_cmd_type = (cmdaddr_bitcnt == 5'h 0) && (sck_st_q == StIdle);
@@ -952,6 +949,12 @@ module spi_tpm
     sck_p2s_valid = 1'b 0;
     sck_data_sel  = SelWait;
 
+    // Upload commands when HW needs SW returning data.
+    //
+    // if host issues to invalid locality or return-by-HW registers, TPM HW
+    // does not push the command and address to FIFO.
+    sck_cmdaddr_wvalid = 1'b 0;
+
     unique case (sck_st_q)
       StIdle: begin
         cmdaddr_shift_en = 1'b 1;
@@ -994,6 +997,8 @@ module spi_tpm
             // If out of TPM register (not staring with 0xD4_XXXX) or
             // TPM mode is CRB, always processed by SW
             sck_st_d = StWait;
+
+            sck_cmdaddr_wvalid = 1'b 1;
           end else if (is_hw_reg) begin
             // If read command and HW REG, then return by HW
             // is_hw_reg contains (is_tpm_reg && (locality < NumLocality))
@@ -1005,10 +1010,15 @@ module spi_tpm
           end else begin
             // Other read command sends to Wait, till SW response
             sck_st_d = StWait;
+
+            sck_cmdaddr_wvalid = 1'b 1;
           end
         end // cmdaddr_bitcnt == 5'h 1F
 
         if (cmdaddr_bitcnt == 5'h 1F && cmd_type == Write) begin
+          // Always upload for SW to process
+          sck_cmdaddr_wvalid = 1'b 1;
+
           if (~|sck_wrfifo_wdepth) begin
             // Write command and FIFO is empty. Ready to push
             // TODO: Change the state machine to send start byte at
