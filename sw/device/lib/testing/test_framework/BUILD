@@ -132,7 +132,7 @@ cc_library(
         "//sw/device/lib/testing/test_rom:english_breakfast_test_rom_manifest",
     ],
     # The manifest section should be populated anytime this is added as a
-    # dependency, even if kManifest is not referenced by software.
+    # dependency, even if the manifest is not referenced by software.
     alwayslink = True,
 )
 

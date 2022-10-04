@@ -29,25 +29,21 @@ OTTF_DEFINE_TEST_CONFIG();
         #addr_ " must be word aligned");
 
 void boot_measurements_test(void) {
-  CHECK(kManifest.usage_constraints.selector_bits == 0,
-        "Selector bits must be 0");
-  const volatile char *manifest_start = (const volatile char *)&kManifest;
-  const char *manifest_end = (const char *)manifest_start + sizeof(manifest_t);
-  const volatile char *signed_region_start =
-      manifest_start + sizeof(sigverify_rsa_buffer_t);
-  const char *signed_region_end =
-      (const char *)manifest_start + kManifest.length;
-  size_t manifest_signed_region_size = manifest_end - signed_region_start;
-  size_t signed_region_size = signed_region_end - signed_region_start;
-  dif_hmac_t hmac;
+  const manifest_t *manifest = manifest_def_get();
+  CHECK(manifest->usage_constraints.selector_bits == 0);
+  const char *signed_region_start =
+      (const char *)manifest + sizeof(sigverify_rsa_buffer_t);
+  const char *manifest_end = (const char *)manifest + sizeof(manifest_t);
+  const char *image_end = (const char *)manifest + manifest->length;
+  size_t signed_region_size = image_end - signed_region_start;
 
-  CHECK_WORD_ALIGNED(manifest_start);
-  CHECK_WORD_ALIGNED(manifest_end);
+  CHECK_WORD_ALIGNED(manifest);
   CHECK_WORD_ALIGNED(signed_region_start);
-  CHECK_WORD_ALIGNED(signed_region_end);
-  CHECK_WORD_ALIGNED(manifest_signed_region_size);
+  CHECK_WORD_ALIGNED(manifest_end);
+  CHECK_WORD_ALIGNED(image_end);
   CHECK_WORD_ALIGNED(signed_region_size);
 
+  dif_hmac_t hmac;
   CHECK_DIF_OK(
       dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
   CHECK_DIF_OK(dif_hmac_mode_sha256_start(
@@ -55,22 +51,7 @@ void boot_measurements_test(void) {
                  .digest_endianness = kDifHmacEndiannessLittle,
                  .message_endianness = kDifHmacEndiannessLittle,
              }));
-
-  // Copy the part of the manifest that's in the signed region to
-  // memory before pushing to hmac since it's volatile.
-  // Note: this array is larger than `manifest_signed_region_size` since VLAs
-  // are optional in C11.
-  char manifest_signed_region[sizeof(manifest_t)];
-  for (size_t i = 0; i < manifest_signed_region_size; ++i) {
-    manifest_signed_region[i] =
-        *((const volatile char *)signed_region_start + i);
-  }
-  hmac_testutils_push_message(&hmac, manifest_signed_region,
-                              manifest_signed_region_size);
-  // Rest of the image
-  hmac_testutils_push_message(&hmac, manifest_end,
-                              signed_region_size - manifest_signed_region_size);
-
+  hmac_testutils_push_message(&hmac, signed_region_start, signed_region_size);
   CHECK_DIF_OK(dif_hmac_process(&hmac));
   dif_hmac_digest_t act_digest;
   hmac_testutils_finish_polled(&hmac, &act_digest);

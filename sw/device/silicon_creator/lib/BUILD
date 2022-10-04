@@ -232,7 +232,7 @@ dual_cc_library(
         "//sw/device/lib/base:macros",
     ],
     # The manifest section should be populated anytime this is added as a
-    # dependency, even if kManifest is not referenced by software.
+    # dependency, even if the manifest is not referenced by software.
     alwayslink = True,
 )
 

@@ -11,13 +11,8 @@
 #include "sw/device/silicon_creator/lib/manifest.h"
 
 /**
- * Manifest definition.
- *
- * Declaration of the manifest that resides in the .manifest section. This
- * should be defined with known values, such as `code_start`, `code_end`, and
- * `entry_point`, populated. The remaining fields will be updated in the binary
- * by the signer tool.
+ * Gets the manifest of the current boot stage.
  */
-extern const volatile manifest_t kManifest OT_SECTION(".manifest");
+const manifest_t *manifest_def_get(void);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MANIFEST_DEF_H_
