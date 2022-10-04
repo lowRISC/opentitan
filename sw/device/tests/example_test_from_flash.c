@@ -45,6 +45,10 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
  *
  * See `sw/device/lib/testing/test_framework/ottf_isrs.c` for implementation
  * details of the default OTTF exception handlers.
+ *
+ * Note, the `ottf_machine_ecall_handler` cannot be overridden when using the
+ * full OTTF, as it it used to implement FreeRTOS context switching. See its
+ * implementation in `sw/device/lib/testing/test_framework/ottf_main.c`.
  */
 // void ottf_exception_handler(void) {}
 // void ottf_instr_misaligned_fault_handler(void) {}
@@ -52,7 +56,6 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = false,
 // void ottf_illegal_instr_fault_handler(void) {}
 // void ottf_breakpoint_handler(void) {}
 // void ottf_load_store_fault_handler(void) {}
-// void ottf_machine_ecall_handler(void) {}
 // void ottf_user_ecall_handler(void) {}
 
 /**
