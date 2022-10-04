@@ -35,7 +35,6 @@ enum RootCommandHierarchy {
     Fpga(command::fpga::FpgaCommand),
     I2c(command::i2c::I2cCommand),
     Image(command::image::Image),
-    UpdateUsrAccess(command::update_usr_access::UpdateUsrAccess),
     NoOp(command::NoOp),
     Rsa(command::rsa::Rsa),
     Spi(command::spi::SpiCommand),

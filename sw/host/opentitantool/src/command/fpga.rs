@@ -12,4 +12,5 @@ pub enum FpgaCommand {
     LoadBitstream(crate::command::load_bitstream::LoadBitstream),
     Reset(crate::command::fpga_reset::FpgaReset),
     SetPll(crate::command::set_pll::SetPll),
+    UpdateUsrAccess(crate::command::update_usr_access::UpdateUsrAccess),
 }
