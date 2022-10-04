@@ -574,3 +574,19 @@ dif_result_t dif_keymgr_read_binding(const dif_keymgr_t *keymgr,
 
   return kDifOk;
 }
+
+dif_result_t dif_keymgr_read_max_key_version(
+    const dif_keymgr_t *keymgr, dif_keymgr_max_key_version_t *versions) {
+  if (keymgr == NULL || versions == NULL) {
+    return kDifBadArg;
+  }
+
+  versions->creator_max_key_version = mmio_region_read32(
+      keymgr->base_addr, KEYMGR_MAX_CREATOR_KEY_VER_SHADOWED_REG_OFFSET);
+  versions->owner_int_max_key_version = mmio_region_read32(
+      keymgr->base_addr, KEYMGR_MAX_OWNER_INT_KEY_VER_SHADOWED_REG_OFFSET);
+  versions->owner_max_key_version = mmio_region_read32(
+      keymgr->base_addr, KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET);
+
+  return kDifOk;
+}
