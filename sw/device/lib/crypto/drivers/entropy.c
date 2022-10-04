@@ -71,7 +71,7 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
   // The application command header is not specified as a register in the
   // hardware specification, so the fields are mapped here by hand. The
   // command register also accepts arbitrary 32bit data.
-  static const uint32_t kAppCmdBitFlag0 = 8;
+  static const bitfield_field32_t kAppCmdFieldFlag0 = ENTROPY_CMD(0xf, 8);
   static const bitfield_field32_t kAppCmdFieldCmdId = ENTROPY_CMD(0xf, 0);
   static const bitfield_field32_t kAppCmdFieldCmdLen = ENTROPY_CMD(0xf, 4);
   static const bitfield_field32_t kAppCmdFieldGlen = ENTROPY_CMD(0x7ffff, 12);
@@ -97,7 +97,7 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
   reg = bitfield_field32_write(reg, kAppCmdFieldGlen, cmd.generate_len);
 
   if (launder32(cmd.disable_trng_input) == kHardenedBoolTrue) {
-    reg = bitfield_bit32_write(reg, kAppCmdBitFlag0, true);
+    reg = bitfield_field32_write(reg, kAppCmdFieldFlag0, kMultiBitBool4True);
   }
 
   abs_mmio_write32(reg_address, reg);
