@@ -210,6 +210,7 @@ cc_library(
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
     ],
 )
 

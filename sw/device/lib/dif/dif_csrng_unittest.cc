@@ -216,7 +216,8 @@ class CommandTest : public DifCsrngTest {
 };
 
 TEST_F(CommandTest, InstantiateOk) {
-  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET, 0x00000101);
+  EXPECT_WRITE32(CSRNG_CMD_REQ_REG_OFFSET,
+                 0x00000001 | kMultiBitBool4True << 8);
   EXPECT_DIF_OK(dif_csrng_instantiate(&csrng_, kDifCsrngEntropySrcToggleDisable,
                                       &seed_material_));
 

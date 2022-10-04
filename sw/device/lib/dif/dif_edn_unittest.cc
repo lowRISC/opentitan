@@ -270,7 +270,8 @@ class CommandTest : public DifEdnTest {
 };
 
 TEST_F(CommandTest, InstantiateOk) {
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000101);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                 0x00000001 | kMultiBitBool4True << 8);
   EXPECT_DIF_OK(dif_edn_instantiate(&edn_, kDifEdnEntropySrcToggleDisable,
                                     &seed_material_));
 
