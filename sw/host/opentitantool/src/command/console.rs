@@ -30,6 +30,9 @@ pub struct Console {
     #[structopt(short, long, help = "Log console output to a file")]
     logfile: Option<String>,
 
+    #[structopt(long, help = "Send a string into the console at startup.")]
+    send: Option<String>,
+
     #[structopt(
         short,
         long, parse(try_from_str=humantime::parse_duration),
@@ -99,6 +102,10 @@ impl CommandDispatch for Console {
                 None
             };
             let uart = self.params.create(transport)?;
+            if let Some(send) = self.send.as_ref() {
+                log::info!("Sending: {:?}", send);
+                uart.write(send.as_bytes())?;
+            }
             console.interact(&*uart, Some(&mut stdin), Some(&mut stdout))?
         };
         if !self.quiet {
