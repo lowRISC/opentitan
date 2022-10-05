@@ -31,6 +31,17 @@ impl UartParams {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+#[repr(u8)]
+pub enum FlowControl {
+    // No flow control.
+    None = 0,
+    // Pause aka XOFF aka Ctrl-S ("Stop")
+    Pause = 19,
+    // Resume aka XON aka Ctrl-Q ("Quit Stopping")
+    Resume = 17,
+}
+
 /// A trait which represents a UART.
 pub trait Uart {
     /// Returns the UART baudrate.  May return zero for virtual UARTs.
@@ -38,6 +49,11 @@ pub trait Uart {
 
     /// Sets the UART baudrate.  May do nothing for virtual UARTs.
     fn set_baudrate(&self, baudrate: u32) -> Result<()>;
+
+    /// Enables software flow control for `write`s.
+    fn set_flow_control(&self, _flow_control: bool) -> Result<()> {
+        unimplemented!();
+    }
 
     /// Reads UART receive data into `buf`, returning the number of bytes read.
     /// This function _may_ block.
