@@ -92,7 +92,6 @@ class aes_base_vseq extends cip_base_vseq #(
   virtual task set_ctrl_aux_shadowed(bit val);
     csr_wr(.ptr(ral.ctrl_aux_shadowed), .value(val), .en_shadow_wr(1'b1), .blocking(1));
   endtask // set_ctrl_aux_shadowed
-
   virtual task prng_reseed();
     bit [TL_DW:0] reg_val = '0;
     reg_val[5] = 1'b1;

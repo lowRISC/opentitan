@@ -22,6 +22,7 @@ class aes_readability_vseq extends aes_base_vseq;
   aes_seq_item cfg_item;
   aes_message_item my_message;
   string str              ="";
+  logic [31:0]          reg_read;
 
   task body();
     aes_seq_item cfg_item       = new();         // the configuration for this message
@@ -34,7 +35,8 @@ class aes_readability_vseq extends aes_base_vseq;
 
     // turnoff keymask
     cfg.key_mask = 0;
-
+    // make sure we write at least a full data word
+    cfg.message_len_min = 16;
 
     // generate list of messages //
     aes_message_init();
@@ -90,34 +92,73 @@ class aes_readability_vseq extends aes_base_vseq;
       end
     end
 
+
+    // read output regs before clear
+     foreach (data_item.data_out[idx]) begin
+      csr_rd(.ptr(ral.data_out[idx]), .value(data_item.data_out[idx]), .blocking(1));
+     end
+    // read IV before clear
+     foreach (data_item.iv[idx]) begin
+      csr_rd(.ptr(ral.iv[idx]), .value(data_item.iv[idx]), .blocking(1));
+     end
+
+
     // clear regs
     clear_regs(2'b11);
     csr_spinwait(.ptr(ral.status.idle) , .exp_data(1'b1));
 
 
-    // check input and output data //
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.data_in[0]", check_item.data_in[0]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.data_in[1]", check_item.data_in[1]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.data_in[2]", check_item.data_in[2]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.data_in[3]", check_item.data_in[3]);
+
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share0[0]", check_item.key[0][0]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share0[1]", check_item.key[0][1]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share0[2]", check_item.key[0][2]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share0[3]", check_item.key[0][3]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share0[4]", check_item.key[0][4]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share0[5]", check_item.key[0][5]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share0[6]", check_item.key[0][6]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share0[7]", check_item.key[0][7]);
+
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share1[0]", check_item.key[1][0]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share1[1]", check_item.key[1][1]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share1[2]", check_item.key[1][2]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share1[3]", check_item.key[1][3]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share1[4]", check_item.key[1][4]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share1[5]", check_item.key[1][5]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share1[6]", check_item.key[1][6]);
+    uvm_hdl_read("tb.dut.u_reg.hw2reg.key_share1[7]", check_item.key[1][7]);
+
+
     foreach (data_item.data_in[idx]) begin
-      csr_rd(.ptr(ral.data_in[idx]), .value(check_item.data_in[idx]), .blocking(1));
+      if ((check_item.data_in[idx] == data_item.data_in[idx]) ||
+         (check_item.data_out[idx] == data_item.data_out[idx])) begin
+        `uvm_fatal(`gfn, $sformatf("----| Data reg was did not clear |---- %s", str))
+      end
+    end
+
+    foreach (data_item.data_out[idx]) begin
       csr_rd(.ptr(ral.data_out[idx]), .value(check_item.data_out[idx]), .blocking(1));
-      if ((check_item.data_in[idx] == 32'd0) || (check_item.data_out[idx] == 32'd0)) begin
-        `uvm_fatal(`gfn, $sformatf("----| Data reg was 0 |---- %s", str))
+      if (data_item.data_out[idx] == check_item.data_out[idx] ) begin
+        `uvm_fatal(`gfn, $sformatf("----| data out reg was not cleared |---- %s", str))
       end
     end
 
     // check IV
-     foreach (data_item.iv[idx]) begin
+    foreach (data_item.iv[idx]) begin
       csr_rd(.ptr(ral.iv[idx]), .value(check_item.iv[idx]), .blocking(1));
-      if ((check_item.iv[idx] == 32'd0) || (check_item.iv[idx] == 32'd0)) begin
-        `uvm_fatal(`gfn, $sformatf("----| IV reg was 0 |---- %s", str))
+      if (data_item.iv[idx] == check_item.iv[idx] ) begin
+        `uvm_fatal(`gfn, $sformatf("----| IV reg was not cleared |---- %s", str))
       end
-     end
+    end
 
-      // check key is pseudo random
+    // check key is pseudo random
     foreach (cfg_item.key[0][idx]) begin
-      csr_rd(.ptr(ral.key_share0[idx]), .value(check_item.key[0][idx]), .blocking(1));
-      csr_rd(.ptr(ral.key_share1[idx]), .value(check_item.key[1][idx]), .blocking(1));
-      if ((check_item.key[0][idx] == 32'd0) || (check_item.key[1][idx] == 32'd0)) begin
-        `uvm_fatal(`gfn, $sformatf("----| Key reg was 0 |---- %s", str))
+      if ((check_item.key[0][idx] == data_item.key[0][idx]) ||
+         (check_item.key[1][idx] == data_item.key[1][idx])) begin
+        `uvm_fatal(`gfn, $sformatf("----| Key reg was not cleared |---- %s", str))
       end
     end
 
