@@ -27,7 +27,7 @@ module aes_err_injection_bind;
      .rst_ni       (rst_ni)
     );
 
-  // bind fault inject if to round counter
+  // bind fault inject if to round counter fsm
   bind aes_ctr_fsm signal_force
     #(.Signal("aes_ctr_cs"),
       .IfName("aes_ctr_fi_vif"),
