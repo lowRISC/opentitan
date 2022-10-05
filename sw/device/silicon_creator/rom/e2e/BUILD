@@ -13,6 +13,7 @@ load(
 )
 load(
     "//rules:opentitan.bzl",
+    "opentitan_flash_binary",
     "opentitan_multislot_flash_binary",
 )
 load(
@@ -40,6 +41,21 @@ SLOT_A_OFFSET = "0x0"
 SLOT_B_OFFSET = "0x80000"
 
 FLASH_SIZE = "0x100000"
+
+opentitan_flash_binary(
+    name = "empty_test_slot_a",
+    srcs = ["empty_test.c"],
+    devices = [
+        "fpga_cw310",
+        "sim_dv",
+        "sim_verilator",
+    ],
+    signed = True,
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    ],
+)
 
 opentitan_functest(
     name = "rom_e2e_shutdown_exception_c",
@@ -76,14 +92,14 @@ opentitan_functest(
 
 opentitan_functest(
     name = "rom_e2e_smoke",
-    srcs = ["empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom",
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom",
     ),
-    signed = True,
+    key = "test_key_0",
+    ot_flash_binary = ":empty_test_slot_a",
     targets = [
         "cw310_rom",
         "verilator",
@@ -93,9 +109,6 @@ opentitan_functest(
         timeout = "eternal",
         rom = "//sw/device/silicon_creator/rom",
     ),
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
 )
 
 opentitan_functest(
@@ -126,27 +139,24 @@ opentitan_functest(
 # bitstream before it's sent to the CW310 FPGA.
 opentitan_functest(
     name = "e2e_bootup_success_otp_dev",
-    srcs = ["empty_test.c"],
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_dev",
         # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
     ),
-    signed = True,
+    key = "test_key_0",
+    ot_flash_binary = ":empty_test_slot_a",
     targets = ["cw310_rom"],
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
 )
 
 opentitan_functest(
     name = "e2e_bootup_no_rom_ext_signature",
-    srcs = ["empty_test.c"],
     cw310 = cw310_params(
         exit_failure = DEFAULT_TEST_SUCCESS_MSG,
         exit_success = DEFAULT_TEST_FAILURE_MSG,
     ),
+    ot_flash_binary = ":empty_test_slot_a",
     signed = False,
     targets = ["cw310_rom"],
     verilator = verilator_params(
@@ -154,14 +164,10 @@ opentitan_functest(
         exit_success = DEFAULT_TEST_FAILURE_MSG,
         rom = "//sw/device/silicon_creator/rom",
     ),
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
 )
 
 opentitan_functest(
     name = "e2e_bootup_bad_rom_ext_signature",
-    srcs = ["empty_test.c"],
     args = [],
     cw310 = cw310_params(
         test_cmds = [
@@ -170,17 +176,14 @@ opentitan_functest(
             "--rom-ext=\"$(location {flash})\"",
         ],
     ),
-    signed = True,
+    key = "test_key_0",
+    ot_flash_binary = ":empty_test_slot_a",
     targets = ["cw310_rom"],
     test_harness = "//sw/host/tests/rom/e2e_bootup_bad_rom_ext_signature",
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
 )
 
 opentitan_functest(
     name = "e2e_bootstrap_entry",
-    srcs = ["empty_test.c"],
     cw310 = cw310_params(
         test_cmds = [
             "--rom-kind=rom",
@@ -188,15 +191,13 @@ opentitan_functest(
             "--bootstrap=\"$(location {flash})\"",
         ],
     ),
+    ot_flash_binary = ":empty_test_slot_a",
     # We don't want the `empty_test` to run, but we _also_ don't want some
     # leftover flash image from a previous test to run.  So, bootstrap an
     # unsigned image to force a boot failure.
     signed = False,
     targets = ["cw310_rom"],
     test_harness = "//sw/host/tests/rom/e2e_bootstrap_entry",
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
 )
 
 opentitan_functest(
@@ -358,17 +359,13 @@ test_suite(
 
 opentitan_functest(
     name = "sigverify_key_auth",
-    srcs = ["empty_test.c"],
     cw310 = cw310_params(
         exit_failure = MSG_PASS,
         exit_success = MSG_BAD_KEY,
     ),
     key = "unauthorized_0",
-    signed = True,
+    ot_flash_binary = ":empty_test_slot_a",
     targets = ["cw310_rom"],
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
 )
 
 MSG_SHUTDOWN = {
@@ -390,18 +387,15 @@ manifest(
 # TODO(#14270): Add remaining lifecycle states.
 [opentitan_functest(
     name = "shutdown_output_{}".format(lc_state),
-    srcs = ["empty_test.c"],
     cw310 = cw310_params(
         bitstream = "@//hw/bitstream:rom",
         exit_failure = MSG_PASS,
         exit_success = MSG_SHUTDOWN[lc_state],
     ),
     manifest = ":manifest_bad_identifier",
+    ot_flash_binary = ":empty_test_slot_a",
     signed = False,
     targets = ["cw310_rom"],
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
 ) for lc_state in LC_STATES]
 
 test_suite(
