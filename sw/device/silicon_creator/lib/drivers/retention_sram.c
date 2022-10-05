@@ -7,6 +7,7 @@
 #include <assert.h>
 
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/base/memory.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sram_ctrl_regs.h"  // Generated.
@@ -25,7 +26,7 @@ retention_sram_t *retention_sram_get(void) {
 }
 
 void retention_sram_clear(void) {
-  *retention_sram_get() = (retention_sram_t){0};
+  memset(retention_sram_get(), 0, sizeof(retention_sram_t));
 }
 
 void retention_sram_init(void) {

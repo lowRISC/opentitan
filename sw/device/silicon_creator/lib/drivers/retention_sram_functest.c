@@ -15,32 +15,25 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 // Variables of type `retention_sram_t` are static to reduce stack usage.
-retention_sram_t ones;
-retention_sram_t zeros;
-retention_sram_t result;
-retention_sram_t ret;
-uint64_t raw[sizeof(retention_sram_t) / sizeof(uint64_t)];
+static retention_sram_t ret;
+static uint64_t raw[sizeof(retention_sram_t) / sizeof(uint64_t)];
 
 static rom_error_t retention_sram_clear_test(void) {
-  volatile retention_sram_t *ret = retention_sram_get();
+  retention_sram_t *ret = retention_sram_get();
 
   // Set every bit in the retention SRAM to one.
-  // Note: memset cannot be used directly because it discards the volatile
-  // qualifier.
-  memset(&ones, 0xff, sizeof(retention_sram_t));
-  *ret = ones;
+  memset(ret, 0xff, sizeof(retention_sram_t));
 
   // Clear the retention SRAM (set every bit to zero).
   retention_sram_clear();
 
   // Check that the retention SRAM was fully cleared.
-  // Note: memcmp cannot be used directly because it discards the volatile
-  // qualifier.
-  memset(&zeros, 0, sizeof(retention_sram_t));
-  result = *ret;
-  if (memcmp(&zeros, &result, sizeof(retention_sram_t)) != 0) {
-    LOG_ERROR("Retention SRAM not cleared.");
-    return kErrorUnknown;  // Unreachable.
+  char *buf = (char *)ret;
+  for (size_t i = 0; i < sizeof(retention_sram_t); i += 4, buf += 4) {
+    if (read_32(buf) != 0) {
+      LOG_ERROR("Retention SRAM not cleared.");
+      return kErrorUnknown;  // Unreachable.
+    }
   }
   return kErrorOk;
 }
