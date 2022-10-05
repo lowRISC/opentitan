@@ -51,7 +51,7 @@ OT_ASSERT_SIZE(retention_sram_t, 4096);
  *
  * @return A pointer to the retention SRAM.
  */
-volatile retention_sram_t *retention_sram_get(void);
+retention_sram_t *retention_sram_get(void);
 
 /**
  * Clear the retention SRAM by setting every word to 0.

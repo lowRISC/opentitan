@@ -90,7 +90,7 @@ bool test_main(void) {
 
   // Use the part of the retention SRAM reserved for the silicon owner to
   // store the test phase.
-  volatile uint32_t *phase = &retention_sram_get()->reserved_owner[0];
+  uint32_t *phase = &retention_sram_get()->reserved_owner[0];
 
   if (bitfield_bit32_read(reason, kRstmgrReasonPowerOn)) {
     sec_mmio_init();
