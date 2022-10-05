@@ -7,8 +7,8 @@ class jtag_riscv_csr_seq extends jtag_riscv_base_seq;
 
   rand bit [  DMI_OPW-1:0] op;
   rand bit [DMI_DATAW-1:0] data;
-  // Need to convert from csr(byte) address to word address if not in rv_dm mode.
-  rand bit [DMI_ADDRW+1:0] addr;
+  // This is not DTM address, but address for the CSR registers
+  rand bit [DMI_DATAW+1:0] addr;
   rand bit                 do_write;
 
   constraint op_c {

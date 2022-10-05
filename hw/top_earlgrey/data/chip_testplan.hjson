@@ -3229,9 +3229,9 @@
     }
 
     {
-      name: chip_sw_exit_test_locked
+      name: chip_sw_exit_test_unlocked_bootstrap
       desc: '''End to end test to ensure rom boot strap can be performed after
-      exiting TEST_LOCKED.
+      transitioning from TEST states to PROD staets. .
 
       - Pre-load the device into TEST_UNLOCKED state and ROM_EXEC_EN = 0.
       - In the same power cycle, advance device to PROD, PROD_END or DEV through LC JTAG request and
@@ -3242,7 +3242,7 @@
       X-ref'ed with manuf_ft_exit_token from manufacturing test plan.
       '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_exit_test_unlocked_bootstrap"]
     }
 
     {
@@ -3266,7 +3266,7 @@
       X-ref'ed with manuf_ft_sku_individualization from manufacturing test plan.
       '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_inject_scramble_seed"]
     }
   ]
 }
