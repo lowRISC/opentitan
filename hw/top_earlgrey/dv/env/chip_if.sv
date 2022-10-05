@@ -481,6 +481,24 @@ interface chip_if;
     end
   end : gen_pwm_if_conn
 
+  // Functional (muxed) interface: PATTGEN
+  // each channel has pda, pcl
+
+  bit __enable_pattgen = 0;
+
+  pattgen_if #(NUM_PATTGEN_CH) pattgen_if();
+  assign pattgen_if.rst_ni = `PATTGEN_HIER.rst_ni;
+  assign pattgen_if.clk_i  = `PATTGEN_HIER.clk_i;
+  assign pattgen_if.pda_tx = !__enable_pattgen ? {NUM_PATTGEN_CH{1'bz}} : {ios[IoB11], ios[IoB9]};
+  assign pattgen_if.pcl_tx = !__enable_pattgen ? {NUM_PATTGEN_CH{1'bz}} : {ios[IoB12], ios[IoB10]};
+
+  initial begin
+    uvm_config_db#(virtual pattgen_if)::set(null, "*.env.m_pattgen_agent*", "vif", pattgen_if);
+  end
+  function automatic void enable_pattgen(bit enable);
+    __enable_pattgen = enable;
+  endfunction
+
   // Functional (muxed) interface: external clock source.
   //
   // The reset port is passive only.

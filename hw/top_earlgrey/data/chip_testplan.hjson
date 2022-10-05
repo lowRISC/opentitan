@@ -462,7 +462,7 @@
             - Verify both pattgen channels independently.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_pattgen_ios"]
     }
 
     // PWM (pre-verified IP) integration tests:

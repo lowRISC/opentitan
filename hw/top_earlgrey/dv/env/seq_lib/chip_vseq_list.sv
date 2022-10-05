@@ -63,3 +63,4 @@
 `include "chip_sw_i2c_host_tx_rx_vseq.sv"
 `include "chip_sw_inject_scramble_seed_vseq.sv"
 `include "chip_sw_exit_test_unlocked_bootstrap_vseq.sv"
+`include "chip_sw_patt_ios_vseq.sv"

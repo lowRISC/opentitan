@@ -14,6 +14,13 @@ class pattgen_agent_cfg extends dv_base_agent_cfg;
 
   uint length[NUM_PATTGEN_CHANNELS-1:0];
 
+  // pre-divider check enable
+  bit [NUM_PATTGEN_CHANNELS-1:0] chk_prediv;
+
+  // expected clk_cnt value
+  // calculated by 2 * (pattgen.PREDIV_CH + 1)
+  uint div[NUM_PATTGEN_CHANNELS];
+
   `uvm_object_utils_begin(pattgen_agent_cfg)
     `uvm_field_int(error_injected,  UVM_DEFAULT)
     `uvm_field_sarray_int(polarity, UVM_DEFAULT)

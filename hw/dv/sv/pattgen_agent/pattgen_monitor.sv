@@ -33,6 +33,7 @@ class pattgen_monitor extends dv_base_monitor #(
         automatic uint channel = i;
         collect_channel_trans(channel);
         reset_thread();
+        mon_pcl(channel);
       join_none
     end
   endtask : collect_trans
@@ -46,6 +47,8 @@ class pattgen_monitor extends dv_base_monitor #(
       wait(cfg.en_monitor);
       dut_item = pattgen_item::type_id::create("dut_item");
       bit_cnt = 0;
+      `uvm_info(`gfn, $sformatf("PATTGEN_MON%d start: bit_cnt:%0d  len:%0d",
+                                channel, bit_cnt, cfg.length[channel]), UVM_MEDIUM)
       fork
         begin : isolation_thread
           fork
@@ -55,7 +58,8 @@ class pattgen_monitor extends dv_base_monitor #(
                 wait(cfg.vif.rst_ni);
                 get_pattgen_bit(channel, bit_data);
                 `uvm_info(`gfn, $sformatf("\n--> monitor: channel %0d, polar %b, data[%0d] %b",
-                    channel, cfg.polarity[channel], bit_cnt, bit_data), UVM_DEBUG)
+                                          channel, cfg.polarity[channel], bit_cnt, bit_data),
+                          UVM_HIGH)
                 dut_item.data_q.push_back(bit_data);
                 bit_cnt++;
               end while (bit_cnt < cfg.length[channel]);
@@ -67,7 +71,7 @@ class pattgen_monitor extends dv_base_monitor #(
                 // monitor only pushes item if chan_done intr is asserted
                 item_port[channel].write(dut_item);
                 `uvm_info(`gfn, $sformatf("\n--> monitor: send dut_item for channel %0d\n%s",
-                    channel, dut_item.sprint()), UVM_DEBUG)
+                                          channel, dut_item.sprint()), UVM_MEDIUM)
                 bit_cnt = 0;
                 cfg.channel_done[channel] = 1'b0;
               end
@@ -100,7 +104,7 @@ class pattgen_monitor extends dv_base_monitor #(
     @(posedge cfg.error_injected[channel]);
     bit_cnt = 0;
     `uvm_info(`gfn, $sformatf("\n--> monitor: drop dut_item for channel %0d\n%s",
-        channel, item.sprint()), UVM_DEBUG)
+                              channel, item.sprint()), UVM_DEBUG)
     @(negedge cfg.error_injected[channel]);
   endtask: error_channel_process
 
@@ -124,11 +128,7 @@ class pattgen_monitor extends dv_base_monitor #(
         begin : isolation_thread
           fork
             begin
-              if (cfg.polarity[channel]) begin
-                @(negedge cfg.vif.pcl_tx[channel]);
-              end else begin
-                @(posedge cfg.vif.pcl_tx[channel]);
-              end
+              get_pcl_edge(channel);
               bit_o = cfg.vif.pda_tx[channel];
               stop_thread = 1'b1;
             end
@@ -142,4 +142,38 @@ class pattgen_monitor extends dv_base_monitor #(
     end
   endtask : get_pattgen_bit
 
+  // Monitor vif.pcl_tx[channel]
+  // This task runs with cfg.chk_prediv[channel].
+  // if chk_prediv is set, check free running counter 'free_run_cnt'
+  // is matched with expected 'div' value to assure
+  // pattgen clk div is accurate.
+  virtual task mon_pcl(int channel);
+    int free_run_cnt, skip_one_cyc;
+
+    wait(cfg.chk_prediv[channel]);
+    get_pcl_edge(channel);
+    `uvm_info(`gfn, $sformatf("monitor: start mon_pcl channel %0d", channel), UVM_MEDIUM)
+
+    fork
+      forever begin
+        @(posedge cfg.vif.clk_i);
+        free_run_cnt++;
+      end
+      forever begin
+        get_pcl_edge(channel);
+        #1;
+        `DV_CHECK_EQ(free_run_cnt, cfg.div[channel])
+        free_run_cnt = 0;
+      end
+    join_none
+  endtask // mon_pcl
+
+  // Wait edge based on the polarity
+  task get_pcl_edge(int channel);
+    if (cfg.polarity[channel]) begin
+      @(negedge cfg.vif.pcl_tx[channel]);
+    end else begin
+      @(posedge cfg.vif.pcl_tx[channel]);
+    end
+  endtask
 endclass : pattgen_monitor
