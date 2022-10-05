@@ -12,7 +12,7 @@
 
 // The context is declared as weak so that the ROM and ROM_EXT may
 // override its location.
-OT_WEAK volatile sec_mmio_ctx_t sec_mmio_ctx;
+OT_WEAK sec_mmio_ctx_t sec_mmio_ctx;
 
 enum {
   // Value with good hamming weight used to mask the stored expected value.

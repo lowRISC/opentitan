@@ -6,7 +6,7 @@
 
 namespace rom_test {
 extern "C" {
-volatile sec_mmio_ctx_t sec_mmio_ctx;
+sec_mmio_ctx_t sec_mmio_ctx;
 
 void sec_mmio_init(void) { MockSecMmio::Instance().Init(); }
 

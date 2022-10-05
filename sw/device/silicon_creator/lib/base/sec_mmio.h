@@ -108,7 +108,7 @@ OT_ASSERT_SIZE(sec_mmio_ctx_t, 8016);  // Checked by linker script.
 
 // The sec_mmio_ctx is referenced here to be able to use it inside the
 // `SEC_MMIO_WRITE_INCREMENT()` macro.
-extern volatile sec_mmio_ctx_t sec_mmio_ctx;
+extern sec_mmio_ctx_t sec_mmio_ctx;
 
 /**
  * Increment the expected count of register writes by `value`.
