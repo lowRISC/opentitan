@@ -13,6 +13,18 @@ ujson_rust(
     defines = ["opentitanlib=crate"],
 )
 
+ujson_rust(
+    name = "gpio",
+    srcs = ["//sw/device/lib/testing/json:gpio"],
+    defines = ["opentitanlib=crate"],
+)
+
+ujson_rust(
+    name = "pinmux_config",
+    srcs = ["//sw/device/lib/testing/json:pinmux_config"],
+    defines = ["opentitanlib=crate"],
+)
+
 filegroup(
     name = "config",
     srcs = glob(["src/app/config/*.json"]),
@@ -72,6 +84,7 @@ rust_library(
         "src/test_utils/bootstrap.rs",
         "src/test_utils/e2e_command.rs",
         "src/test_utils/epmp.rs",
+        "src/test_utils/gpio.rs",
         "src/test_utils/init.rs",
         "src/test_utils/load_bitstream.rs",
         "src/test_utils/mod.rs",
@@ -133,11 +146,14 @@ rust_library(
         "//sw/device:is_english_breakfast": [],
         "//conditions:default": [
             "src/chip/earlgrey.rs",
+            "src/test_utils/pinmux_config.rs",
         ],
     }),
     compile_data = [
         ":config",
+        ":gpio",
         ":e2e_command",
+        ":pinmux_config",
     ],
     crate_features = select({
         "//sw/device:is_english_breakfast": ["english_breakfast"],
@@ -148,6 +164,8 @@ rust_library(
     ],
     rustc_env = {
         "e2e_command": "$(location :e2e_command)",
+        "gpio": "$(location :gpio)",
+        "pinmux_config": "$(location :pinmux_config)",
     },
     deps = [
         "//sw/host/opentitanlib/bindgen",
@@ -197,6 +215,8 @@ rust_test(
     name = "opentitanlib_test",
     compile_data = [
         ":e2e_command",
+        ":gpio",
+        ":pinmux_config",
         "src/bootstrap/simple.bin",
         "src/spiflash/SFDP_MX66L1G.bin",
     ],
@@ -214,5 +234,7 @@ rust_test(
     ],
     rustc_env = {
         "e2e_command": "$(location :e2e_command)",
+        "gpio": "$(location :gpio)",
+        "pinmux_config": "$(location :pinmux_config)",
     },
 )

@@ -5,7 +5,7 @@
 use crate::with_unknown;
 
 with_unknown! {
-    pub enum PinmuxPeripheralIn: u32 {
+    pub enum PinmuxPeripheralIn: u32 [default = Self::End] {
         GpioGpio0 = bindgen::earlgrey::top_earlgrey_pinmux_peripheral_in_kTopEarlgreyPinmuxPeripheralInGpioGpio0,
         GpioGpio1 = bindgen::earlgrey::top_earlgrey_pinmux_peripheral_in_kTopEarlgreyPinmuxPeripheralInGpioGpio1,
         GpioGpio2 = bindgen::earlgrey::top_earlgrey_pinmux_peripheral_in_kTopEarlgreyPinmuxPeripheralInGpioGpio2,
@@ -66,7 +66,7 @@ with_unknown! {
         End = bindgen::earlgrey::top_earlgrey_pinmux_peripheral_in_kTopEarlgreyPinmuxPeripheralInLast + 1,
     }
 
-    pub enum PinmuxInsel: u32 {
+    pub enum PinmuxInsel: u32 [default = Self::End] {
         ConstantZero = bindgen::earlgrey::top_earlgrey_pinmux_insel_kTopEarlgreyPinmuxInselConstantZero,
         ConstantOne = bindgen::earlgrey::top_earlgrey_pinmux_insel_kTopEarlgreyPinmuxInselConstantOne,
         Ioa0 = bindgen::earlgrey::top_earlgrey_pinmux_insel_kTopEarlgreyPinmuxInselIoa0,
@@ -119,7 +119,7 @@ with_unknown! {
         End = bindgen::earlgrey::top_earlgrey_pinmux_insel_kTopEarlgreyPinmuxInselLast + 1,
     }
 
-    pub enum PinmuxMioOut: u32 {
+    pub enum PinmuxMioOut: u32 [default = Self::End] {
         Ioa0 = bindgen::earlgrey::top_earlgrey_pinmux_mio_out_kTopEarlgreyPinmuxMioOutIoa0,
         Ioa1 = bindgen::earlgrey::top_earlgrey_pinmux_mio_out_kTopEarlgreyPinmuxMioOutIoa1,
         Ioa2 = bindgen::earlgrey::top_earlgrey_pinmux_mio_out_kTopEarlgreyPinmuxMioOutIoa2,
@@ -170,7 +170,7 @@ with_unknown! {
         End = bindgen::earlgrey::top_earlgrey_pinmux_mio_out_kTopEarlgreyPinmuxMioOutLast + 1,
     }
 
-    pub enum PinmuxOutsel: u32 {
+    pub enum PinmuxOutsel: u32 [default = Self::End] {
         ConstantZero = bindgen::earlgrey::top_earlgrey_pinmux_outsel_kTopEarlgreyPinmuxOutselConstantZero,
         ConstantOne = bindgen::earlgrey::top_earlgrey_pinmux_outsel_kTopEarlgreyPinmuxOutselConstantOne,
         ConstantHighZ = bindgen::earlgrey::top_earlgrey_pinmux_outsel_kTopEarlgreyPinmuxOutselConstantHighZ,
@@ -252,7 +252,7 @@ with_unknown! {
         End = bindgen::earlgrey::top_earlgrey_pinmux_outsel_kTopEarlgreyPinmuxOutselLast + 1,
     }
 
-    pub enum DirectPads: u32 {
+    pub enum DirectPads: u32 [default = Self::End] {
         UsbdevUsbDp = bindgen::earlgrey::top_earlgrey_direct_pads_kTopEarlgreyDirectPadsUsbdevUsbDp,
         UsbdevUsbDn = bindgen::earlgrey::top_earlgrey_direct_pads_kTopEarlgreyDirectPadsUsbdevUsbDn,
         SpiHost0Sd0 = bindgen::earlgrey::top_earlgrey_direct_pads_kTopEarlgreyDirectPadsSpiHost0Sd0,
@@ -272,7 +272,7 @@ with_unknown! {
         End = bindgen::earlgrey::top_earlgrey_direct_pads_kTopEarlgreyDirectPadsLast + 1,
     }
 
-    pub enum MuxedPads: u32 {
+    pub enum MuxedPads: u32 [default = Self::End] {
         Ioa0 = bindgen::earlgrey::top_earlgrey_muxed_pads_kTopEarlgreyMuxedPadsIoa0,
         Ioa1 = bindgen::earlgrey::top_earlgrey_muxed_pads_kTopEarlgreyMuxedPadsIoa1,
         Ioa2 = bindgen::earlgrey::top_earlgrey_muxed_pads_kTopEarlgreyMuxedPadsIoa2,
@@ -322,4 +322,15 @@ with_unknown! {
         Ior13 = bindgen::earlgrey::top_earlgrey_muxed_pads_kTopEarlgreyMuxedPadsIor13,
         End = bindgen::earlgrey::top_earlgrey_muxed_pads_kTopEarlgreyMuxedPadsLast + 1,
     }
+}
+
+#[allow(non_camel_case_types)]
+pub mod ujson_alias {
+    use super::*;
+    // Create aliases for the C names of these types so that the ujson
+    // created structs can access these structures by their C names.
+    pub type pinmux_peripheral_in_t = PinmuxPeripheralIn;
+    pub type pinmux_insel_t = PinmuxInsel;
+    pub type pinmux_mio_out_t = PinmuxMioOut;
+    pub type pinmux_outsel_t = PinmuxOutsel;
 }
