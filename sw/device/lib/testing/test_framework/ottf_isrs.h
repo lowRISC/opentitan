@@ -4,6 +4,9 @@
 
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_ISRS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_ISRS_H_
+#include <stdint.h>
+
+void ottf_generic_fault_print(const char *reason, uint32_t mcause);
 
 /**
  * OTTF exception handler.
