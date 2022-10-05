@@ -46,13 +46,29 @@ module prim_lc_sync #(
       .d_i(lc_en_i),
       .q_o(lc_en)
     );
-    // Without the sampled rst_ni pre-condition, this may cause false assertion failures
-    // right after a reset release, since the "iff disable" condition with the rst_ni is
-    // sampled in the "observed" SV scheduler region after all assignments have been
-    // evaluated. This is a simulation artifact due to reset synchronization in RTL, which
-    // releases rst_ni on the active clock edge. This causes the assertion to evaluate
-    // although the reset was actually 0 when entering this simulation cycle.
-    `ASSERT(OutputDelay_A, rst_ni |-> ##2 lc_en_o == {NumCopies{$past(lc_en_i, 2)}})
+
+// Note regarding SVA below:
+//
+// 1) Without the sampled rst_ni pre-condition, this may cause false assertion failures right after
+// a reset release, since the "disable iff" condition with the rst_ni is sampled in the "observed"
+// SV scheduler region after all assignments have been evaluated (see also LRM section 16.12, page
+// 423). This is a simulation artifact due to reset synchronization in RTL, which releases rst_ni
+// on the active clock edge. This causes the assertion to evaluate although the reset was actually
+// 0 when entering this simulation cycle.
+//
+// 2) Similarly to 1) there can be sampling mismatches of the lc_en_i signal since that signal may
+// originate from a different clock domain. I.e., in cases where the lc_en_i signal changes exactly
+// at the same time that the clk_i signal rises, the SVA will not pick up that change in that clock
+// cycle, whereas RTL will because SVAs sample values in the "preponed" region. To that end we make
+// use of an RTL helper variable to sample the lc_en_i signal, hence ensuring that there are no
+// sampling mismatches.
+`ifdef INC_ASSERT
+      lc_ctrl_pkg::lc_tx_t lc_en_in_sva_q;
+      always_ff @(posedge clk_i) begin
+        lc_en_in_sva_q <= lc_en_i;
+      end
+    `ASSERT(OutputDelay_A, rst_ni |-> ##2 lc_en_o == {NumCopies{$past(lc_en_in_sva_q, 1)}})
+`endif
   end else begin : gen_no_flops
     // This unused companion logic helps remove lint errors
     // for modules where clock and reset are used for assertions only
