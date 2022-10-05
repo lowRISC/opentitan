@@ -77,6 +77,11 @@ macro_rules! with_unknown {
         $crate::__impl_fmt_unknown!(Octal, "{:o}", "{:#o}", $Enum { $($enumerator),* });
         $crate::__impl_fmt_unknown!(Binary, "{:b}", "{:#b}", $Enum { $($enumerator),* });
 
+        impl From<$Enum> for $type {
+            fn from(v: $Enum) -> $type {
+                v.0
+            }
+        }
         // Manually implement Serialize and Deserialize to have tight control over how
         // the struct is serialized.
         const _: () = {
