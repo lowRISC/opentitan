@@ -6,8 +6,8 @@ load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load(
     "//rules:opentitan_test.bzl",
-    "opentitan_functest",
     "cw310_params",
+    "opentitan_functest",
     "verilator_params",
 )
 load("//rules:linker.bzl", "ld_library")
@@ -230,8 +230,8 @@ cc_library(
         ":ottf_flow_control",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:uart",
-        "//sw/device/lib/ujson",
         "//sw/device/lib/runtime:print",
+        "//sw/device/lib/ujson",
     ],
 )
 
@@ -260,23 +260,26 @@ dual_cc_library(
 )
 
 _FLOW_CONTROL_MESSAGE = (
-    "Mary had a little lamb, its fleece was white as snow. "
-    + "Everywhere that Mary went the lamb was sure to go."
-    + "\n"
+    "Mary had a little lamb, its fleece was white as snow. " +
+    "Everywhere that Mary went the lamb was sure to go." +
+    "\n"
 )
 
 opentitan_functest(
     name = "ottf_flow_control_functest",
     srcs = ["ottf_flow_control_functest.c"],
-    deps = [
-        ":check",
-        ":ottf_main",
-        ":ottf_flow_control",
-        ":ujson_ottf",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/lib/ujson",
-    ],
+    cw310 = cw310_params(
+        test_cmds = [
+            "--exec=\"fpga load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
+            "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
+            "--exec \"console --quiet --exit-success=BUSY --exit-failure=PASS|FAIL\"",
+            "console",
+            "--flow-control",
+            "--send=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
+            "--exit-success=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
+            "--exit-failure=\"PASS|FAIL\"",
+        ],
+    ),
     targets = [
         "verilator",
         "cw310_test_rom",
@@ -291,20 +294,16 @@ opentitan_functest(
             "--exit-failure=\"PASS|FAIL\"",
         ],
     ),
-    cw310 = cw310_params(
-        test_cmds = [
-            "--exec=\"fpga load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
-            "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
-            "--exec \"console --quiet --exit-success=BUSY --exit-failure=PASS|FAIL\"",
-            "console",
-            "--flow-control",
-            "--send=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
-            "--exit-success=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
-            "--exit-failure=\"PASS|FAIL\"",
-        ],
-    )
+    deps = [
+        ":check",
+        ":ottf_flow_control",
+        ":ottf_main",
+        ":ujson_ottf",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/ujson",
+    ],
 )
-
 
 cc_library(
     name = "freertos_config",

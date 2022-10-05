@@ -20,7 +20,7 @@ static status_t ottf_putbuf(void *io, const char *buf, size_t len) {
 
 static status_t ottf_getc(void *io) {
   const dif_uart_t *uart = (const dif_uart_t *)io;
-  uint8_t byte = 0x99;
+  uint8_t byte;
   TRY(dif_uart_byte_receive_polled(uart, &byte));
   TRY(ottf_flow_control(uart, kFlowControlAuto));
   return OK_STATUS(byte);
