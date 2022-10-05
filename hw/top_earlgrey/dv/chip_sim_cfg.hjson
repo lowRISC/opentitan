@@ -1307,13 +1307,77 @@
               "chip_sw_hmac_enc_jitter_en",
               "chip_sw_keymgr_key_derivation_jitter_en",
               "chip_sw_kmac_mode_kmac_jitter_en",
-              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"
-             ]
+              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"]
     }
     {
       name: xcelium_ci
       tests: ["chip_plic_all_irqs"]
       reseed: 1
+    }
+    {
+      name: xcelium_ci_0
+      tests: ["chip_plic_all_irqs"]
+              // TODO(#14532): enable these tests slowly to ensure no CI breakages.
+              // "chip_sw_clkmgr_jitter",
+              // "chip_sw_kmac_app_rom",
+              // "chip_sw_rstmgr_sw_rst",
+              // "chip_sw_hmac_enc",
+              // "chip_sw_aes_enc_jitter_en",
+              // "chip_sw_rom_ctrl_integrity_check",
+              // "chip_sw_lc_walkthrough_testunlocks",
+              // "chip_prim_tl_access"]
+    }
+    {
+      name: xcelium_ci_1
+      tests: ["chip_plic_all_irqs"]
+              // TODO(#14532): enable these tests slowly to ensure no CI breakages.
+              // "chip_sw_rv_core_ibex_address_translation",
+              // "chip_sw_rv_timer_irq",
+              // "chip_sw_spi_device_tx_rx",
+              // "chip_sw_usb_ast_clk_calib",
+              // "chip_sw_lc_walkthrough_dev",
+              // "chip_sw_kmac_mode_cshake",
+              // "chip_sw_plic_sw_irq",
+              // "chip_sw_aes_enc"]
+    }
+    {
+      name: xcelium_ci_2
+      tests: ["chip_plic_all_irqs"]
+              // TODO(#14532): enable these tests slowly to ensure no CI breakages.
+              // "chip_sw_pwrmgr_main_power_glitch_reset",
+              // "chip_tap_straps_prod",
+              // "chip_sw_kmac_mode_kmac",
+              // "chip_rv_dm_ndm_reset_req",
+              // "chip_sw_kmac_idle",
+              // "chip_sw_sensor_ctrl_status",
+              // "chip_sw_lc_walkthrough_rma",
+              // "chip_sw_entropy_src_kat_test"]
+    }
+    {
+      name: xcelium_ci_3
+      tests: ["chip_plic_all_irqs"]
+              // TODO(#14532): enable these tests slowly to ensure no CI breakages.
+              // "chip_tap_straps_dev",
+              // "chip_sw_pwrmgr_deep_sleep_power_glitch_reset",
+              // "chip_sw_sram_ctrl_ret_scrambled_access",
+              // "chip_sw_lc_walkthrough_prodend",
+              // "chip_sw_rstmgr_sw_req",
+              // "chip_sw_aes_idle",
+              // "chip_sw_pwrmgr_sleep_power_glitch_reset",
+              // "chip_sw_pwrmgr_sleep_disabled"]
+    }
+    {
+      name: xcelium_ci_4
+      tests: ["chip_plic_all_irqs"]
+              // TODO(#14532): enable these tests slowly to ensure no CI breakages.
+              // "chip_sw_sram_ctrl_main_scrambled_access",
+              // "chip_sw_aes_entropy",
+              // "chip_sw_sleep_pin_mio_dio_val",
+              // "chip_sw_entropy_src_ast_rng_req",
+              // "chip_sw_csrng_kat_test",
+              // "chip_sw_kmac_mode_kmac_jitter_en",
+              // "chip_sw_lc_walkthrough_prod",
+              // "chip_sw_sysrst_ctrl_inputs"]
     }
   ]
 }
