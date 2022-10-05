@@ -40,7 +40,7 @@ status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio) {
     default:
       return INVALID_ARGUMENT();
   }
-  return RESP_OK_STATUS();
+  return RESP_OK_STATUS(uj);
 }
 
 status_t gpio_get(ujson_t *uj, const dif_gpio_t *gpio) {
