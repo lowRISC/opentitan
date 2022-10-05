@@ -10,7 +10,19 @@ package(default_visibility = ["//visibility:public"])
 
 ujson_rust(
     name = "e2e_command",
-    srcs = ["//sw/device/silicon_creator/rom/e2e/json:command"],
+    srcs = ["//sw/device/lib/testing/json:command"],
+    defines = ["opentitanlib=crate"],
+)
+
+ujson_rust(
+    name = "gpio",
+    srcs = ["//sw/device/lib/testing/json:gpio"],
+    defines = ["opentitanlib=crate"],
+)
+
+ujson_rust(
+    name = "pinmux_config",
+    srcs = ["//sw/device/lib/testing/json:pinmux_config"],
     defines = ["opentitanlib=crate"],
 )
 
@@ -114,9 +126,11 @@ rust_library(
         "src/spiflash/sfdp.rs",
         "src/test_utils/bootstrap.rs",
         "src/test_utils/e2e_command.rs",
+        "src/test_utils/gpio.rs",
         "src/test_utils/init.rs",
         "src/test_utils/load_bitstream.rs",
         "src/test_utils/mod.rs",
+        "src/test_utils/pinmux_config.rs",
         "src/test_utils/rpc.rs",
         "src/test_utils/status.rs",
         "src/transport/common/mod.rs",
@@ -172,13 +186,17 @@ rust_library(
     ],
     compile_data = [
         ":config",
+        ":gpio",
         ":e2e_command",
+        ":pinmux_config",
     ],
     proc_macro_deps = [
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
     rustc_env = {
         "e2e_command": "$(location :e2e_command)",
+        "gpio": "$(location :gpio)",
+        "pinmux_config": "$(location :pinmux_config)",
     },
     deps = [
         ":bindgen_alert",
@@ -227,6 +245,8 @@ rust_test(
     name = "opentitanlib_test",
     compile_data = [
         ":e2e_command",
+        ":gpio",
+        ":pinmux_config",
         "src/bootstrap/simple.bin",
         "src/spiflash/SFDP_MX66L1G.bin",
     ],
@@ -244,5 +264,7 @@ rust_test(
     ],
     rustc_env = {
         "e2e_command": "$(location :e2e_command)",
+        "gpio": "$(location :gpio)",
+        "pinmux_config": "$(location :pinmux_config)",
     },
 )

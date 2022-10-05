@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::with_unknown;
 use bindgen_earlgrey;
 
 with_unknown! {
@@ -65,7 +66,14 @@ with_unknown! {
         UsbdevSense = bindgen_earlgrey::top_earlgrey_pinmux_peripheral_in_kTopEarlgreyPinmuxPeripheralInUsbdevSense,
         End = bindgen_earlgrey::top_earlgrey_pinmux_peripheral_in_kTopEarlgreyPinmuxPeripheralInLast + 1,
     }
+}
+impl Default for PinmuxPeripheralIn {
+    fn default() -> Self {
+        Self::End
+    }
+}
 
+with_unknown! {
     pub enum PinmuxInsel: u32 {
         ConstantZero = bindgen_earlgrey::top_earlgrey_pinmux_insel_kTopEarlgreyPinmuxInselConstantZero,
         ConstantOne = bindgen_earlgrey::top_earlgrey_pinmux_insel_kTopEarlgreyPinmuxInselConstantOne,
@@ -118,7 +126,14 @@ with_unknown! {
         Ior13 = bindgen_earlgrey::top_earlgrey_pinmux_insel_kTopEarlgreyPinmuxInselIor13,
         End = bindgen_earlgrey::top_earlgrey_pinmux_insel_kTopEarlgreyPinmuxInselLast + 1,
     }
+}
+impl Default for PinmuxInsel {
+    fn default() -> Self {
+        Self::End
+    }
+}
 
+with_unknown! {
     pub enum PinmuxMioOut: u32 {
         Ioa0 = bindgen_earlgrey::top_earlgrey_pinmux_mio_out_kTopEarlgreyPinmuxMioOutIoa0,
         Ioa1 = bindgen_earlgrey::top_earlgrey_pinmux_mio_out_kTopEarlgreyPinmuxMioOutIoa1,
@@ -169,7 +184,14 @@ with_unknown! {
         Ior13 = bindgen_earlgrey::top_earlgrey_pinmux_mio_out_kTopEarlgreyPinmuxMioOutIor13,
         End = bindgen_earlgrey::top_earlgrey_pinmux_mio_out_kTopEarlgreyPinmuxMioOutLast + 1,
     }
+}
+impl Default for PinmuxMioOut {
+    fn default() -> Self {
+        Self::End
+    }
+}
 
+with_unknown! {
     pub enum PinmuxOutsel: u32 {
         ConstantZero = bindgen_earlgrey::top_earlgrey_pinmux_outsel_kTopEarlgreyPinmuxOutselConstantZero,
         ConstantOne = bindgen_earlgrey::top_earlgrey_pinmux_outsel_kTopEarlgreyPinmuxOutselConstantOne,
@@ -251,7 +273,14 @@ with_unknown! {
         SysrstCtrlAonZ3Wakeup = bindgen_earlgrey::top_earlgrey_pinmux_outsel_kTopEarlgreyPinmuxOutselSysrstCtrlAonZ3Wakeup,
         End = bindgen_earlgrey::top_earlgrey_pinmux_outsel_kTopEarlgreyPinmuxOutselLast + 1,
     }
+}
+impl Default for PinmuxOutsel {
+    fn default() -> Self {
+        Self::End
+    }
+}
 
+with_unknown! {
     pub enum DirectPads: u32 {
         UsbdevUsbDp = bindgen_earlgrey::top_earlgrey_direct_pads_kTopEarlgreyDirectPadsUsbdevUsbDp,
         UsbdevUsbDn = bindgen_earlgrey::top_earlgrey_direct_pads_kTopEarlgreyDirectPadsUsbdevUsbDn,
@@ -271,7 +300,14 @@ with_unknown! {
         SpiHost0Csb = bindgen_earlgrey::top_earlgrey_direct_pads_kTopEarlgreyDirectPadsSpiHost0Csb,
         End = bindgen_earlgrey::top_earlgrey_direct_pads_kTopEarlgreyDirectPadsLast + 1,
     }
+}
+impl Default for DirectPads {
+    fn default() -> Self {
+        Self::End
+    }
+}
 
+with_unknown! {
     pub enum MuxedPads: u32 {
         Ioa0 = bindgen_earlgrey::top_earlgrey_muxed_pads_kTopEarlgreyMuxedPadsIoa0,
         Ioa1 = bindgen_earlgrey::top_earlgrey_muxed_pads_kTopEarlgreyMuxedPadsIoa1,
@@ -322,4 +358,20 @@ with_unknown! {
         Ior13 = bindgen_earlgrey::top_earlgrey_muxed_pads_kTopEarlgreyMuxedPadsIor13,
         End = bindgen_earlgrey::top_earlgrey_muxed_pads_kTopEarlgreyMuxedPadsLast + 1,
     }
+}
+impl Default for MuxedPads {
+    fn default() -> Self {
+        Self::End
+    }
+}
+
+#[allow(non_camel_case_types)]
+pub mod ujson_alias {
+    use super::*;
+    // Create aliases for the C names of these types so that the ujson
+    // created structs can access these structures by their C names.
+    pub type pinmux_peripheral_in_t = PinmuxPeripheralIn;
+    pub type pinmux_insel_t = PinmuxInsel;
+    pub type pinmux_mio_out_t = PinmuxMioOut;
+    pub type pinmux_outsel_t = PinmuxOutsel;
 }
