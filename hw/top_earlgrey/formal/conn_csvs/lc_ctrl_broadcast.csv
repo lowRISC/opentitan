@@ -31,7 +31,6 @@ CONNECTION, LC_CPU_EN_RV_CORE_IBEX, top_earlgrey.u_lc_ctrl, lc_cpu_en_o, top_ear
 CONNECTION, LC_HW_DEBUG_EN_PWRMGR,         top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_pwrmgr_aon,        lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_CLKMGR,         top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_clkmgr_aon,        lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_PINMUX,         top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_pinmux_aon,        lc_hw_debug_en_i
-CONNECTION, LC_HW_DEBUG_EN_SRAM_CTRL_RET,  top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_sram_ctrl_ret_aon, lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_SRAM_CTRL_MAIN, top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_sram_ctrl_main,    lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_RV_DM,          top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_rv_dm,             lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_CSRNG,          top_earlgrey.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.u_csrng,             lc_hw_debug_en_i
