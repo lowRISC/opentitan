@@ -4,8 +4,14 @@
 
 #include <stdbool.h>
 
+#include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
-bool test_main(void) { return true; }
+bool test_main(void) {
+#ifdef EMPTY_TEST_MSG
+  LOG_INFO(OT_STRINGIFY(EMPTY_TEST_MSG));
+#endif
+  return true;
+}
