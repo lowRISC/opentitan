@@ -570,6 +570,35 @@ fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Resu
     Ok(())
 }
 
+fn test_bootstrap_watchdog_check(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
+    let _bs = BootstrapTest::start(transport, opts.init.bootstrap.options.reset_delay)?;
+    let spi = transport.spi("0")?;
+    let uart = transport.uart("0")?;
+    let mut console = UartConsole {
+        timeout: Some(Duration::new(2, 0)),
+        exit_success: Some(Regex::new(r".+")?),
+        exit_failure: Some(Regex::new(r".+")?),
+        ..Default::default()
+    };
+
+    // Verify that the chip is in bootstrap by checking if it responds to `READ_SFDP` (`0x5a`).
+    let _sfdp = SpiFlash::read_sfdp(&*spi)?;
+
+    // Release bootstrap pin strapping and verify that we don't receive
+    // anything over UART until the console times out.
+    uart.clear_rx_buffer()?;
+    transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
+    let result = console.interact(&*uart, None, Some(&mut std::io::stdout()))?;
+    if result != ExitStatus::Timeout {
+        bail!("FAIL: {:?}", result);
+    };
+
+    // Verify that the chip is still in bootstrap.
+    let _sfdp = SpiFlash::read_sfdp(&*spi)?;
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Opts::from_args();
     opts.init.init_logging();
@@ -600,6 +629,7 @@ fn main() -> Result<()> {
         execute_test!(test_bootstrap_phase2_erase, &opts, &transport, erase_cmd);
     }
     execute_test!(test_bootstrap_phase2_read, &opts, &transport);
+    execute_test!(test_bootstrap_watchdog_check, &opts, &transport);
 
     Ok(())
 }

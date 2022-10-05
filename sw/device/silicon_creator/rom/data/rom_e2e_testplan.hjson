@@ -238,7 +238,7 @@
             '''
       tags: ["rom", "no_dv", "fpga", "silicon"]
       stage: V2
-      tests: []
+      tests: ["e2e_bootstrap_entry"]
     }
 
     {
