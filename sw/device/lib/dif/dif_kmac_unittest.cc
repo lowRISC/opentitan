@@ -145,6 +145,9 @@ class KmacTest : public testing::Test, public mock_mmio::MmioTest {
     bool entropy_ready = false;
     bool err_processed = false;
     bool enable_unsupported_mode_strength = false;
+    uint16_t entropy_hash_threshold = 0;
+    uint16_t entropy_wait_timer = 0;
+    uint16_t entropy_prescaler = 0;
   } config_reg_;
 
   KmacTest() { EXPECT_DIF_OK(dif_kmac_init(dev().region(), &kmac_)); }
@@ -646,14 +649,18 @@ class KmacConfigureTest : public KmacTest {
       .entropy_fast_process = false,
       .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
                        0x70410fef},
-      .entropy_reseed_interval = 4985,
-      .entropy_wait_timer = 9562,
+      .entropy_hash_threshold = 0x03ff,
+      .entropy_wait_timer = 0xffff,
+      .entropy_prescaler = 0x03ff,
       .message_big_endian = false,
       .output_big_endian = false,
       .sideload = false,
       .msg_mask = true,
   };
   KmacConfigureTest() {
+    config_reg_.entropy_hash_threshold = kmac_config_.entropy_hash_threshold,
+    config_reg_.entropy_wait_timer = kmac_config_.entropy_wait_timer,
+    config_reg_.entropy_prescaler = kmac_config_.entropy_prescaler,
     config_reg_.msg_big_endian = kmac_config_.message_big_endian;
     config_reg_.state_big_endian = kmac_config_.output_big_endian;
     config_reg_.entropy_mode = kmac_config_.entropy_mode;
@@ -667,10 +674,16 @@ class KmacConfigureTest : public KmacTest {
 
 TEST_F(KmacConfigureTest, Success) {
   EXPECT_READ32(KMAC_STATUS_REG_OFFSET, {{KMAC_STATUS_SHA3_IDLE_BIT, true}});
+  EXPECT_WRITE32(
+      KMAC_ENTROPY_PERIOD_REG_OFFSET,
+      {{KMAC_ENTROPY_PERIOD_PRESCALER_OFFSET, kmac_config_.entropy_prescaler},
+       {KMAC_ENTROPY_PERIOD_WAIT_TIMER_OFFSET,
+        kmac_config_.entropy_wait_timer}});
+  EXPECT_WRITE32_SHADOWED(
+      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
+      {{KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_OFFSET,
+        kmac_config_.entropy_hash_threshold}});
   ExpectConfig();
-  EXPECT_WRITE32(KMAC_ENTROPY_PERIOD_REG_OFFSET,
-                 {{KMAC_ENTROPY_PERIOD_WAIT_TIMER_OFFSET,
-                   kmac_config_.entropy_wait_timer}});
   ExpectEntropySeed(kmac_config_.entropy_seed);
   EXPECT_DIF_OK(dif_kmac_configure(&kmac_, kmac_config_));
 }
@@ -786,6 +799,23 @@ TEST_F(KmacGetErrorTest, BadArg) {
   EXPECT_DIF_BADARG(dif_kmac_get_error(nullptr, &error_));
 
   EXPECT_DIF_BADARG(dif_kmac_get_error(&kmac_, nullptr));
+}
+
+class KmacGetHashCounterTest : public KmacTest {
+ protected:
+  uint32_t hash_ctr_;
+};
+
+TEST_F(KmacGetHashCounterTest, Success) {
+  EXPECT_READ32(KMAC_ENTROPY_REFRESH_HASH_CNT_REG_OFFSET,
+                {{KMAC_PARAM_HASH_CNT_W, 0}});
+  EXPECT_DIF_OK(dif_kmac_get_hash_counter(&kmac_, &hash_ctr_));
+}
+
+TEST_F(KmacGetHashCounterTest, BadArg) {
+  EXPECT_DIF_BADARG(dif_kmac_get_hash_counter(nullptr, &hash_ctr_));
+
+  EXPECT_DIF_BADARG(dif_kmac_get_hash_counter(&kmac_, nullptr));
 }
 
 class KmacSqueezeTest : public KmacTest {

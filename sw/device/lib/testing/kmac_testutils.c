@@ -15,11 +15,11 @@ void kmac_testutils_config(dif_kmac_t *kmac, bool sideload) {
       .entropy_fast_process = true,
       // No need to have real entropy for tests.
       .entropy_seed = {0},
-      // Ignored because the entropy source is software.
-      .entropy_reseed_interval = 0,
+      .entropy_hash_threshold = 0,
       // Ignored because the entropy source is software.
       .entropy_wait_timer = 0,
       // Leave message as the little-endian default.
+      .entropy_prescaler = 0,
       .message_big_endian = false,
       // Leave output as the little-endian default.
       .output_big_endian = false,

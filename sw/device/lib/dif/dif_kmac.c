@@ -200,6 +200,30 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
     return kDifLocked;
   }
 
+  // Write entropy period register.
+  uint32_t entropy_period_reg = 0;
+  entropy_period_reg = bitfield_field32_write(
+      entropy_period_reg, KMAC_ENTROPY_PERIOD_WAIT_TIMER_FIELD,
+      config.entropy_wait_timer);
+  entropy_period_reg = bitfield_field32_write(
+      entropy_period_reg, KMAC_ENTROPY_PERIOD_PRESCALER_FIELD,
+      config.entropy_prescaler);
+
+  mmio_region_write32(kmac->base_addr, KMAC_ENTROPY_PERIOD_REG_OFFSET,
+                      entropy_period_reg);
+
+  // Write threshold register.
+  uint32_t entropy_threshold_reg =
+      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_RESVAL;
+  entropy_threshold_reg = bitfield_field32_write(
+      entropy_threshold_reg,
+      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_FIELD,
+      config.entropy_hash_threshold);
+
+  mmio_region_write32_shadowed(
+      kmac->base_addr, KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
+      entropy_threshold_reg);
+
   // Write configuration register.
   uint32_t cfg_reg = 0;
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_ENDIANNESS_BIT,
@@ -222,14 +246,6 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
 
   mmio_region_write32_shadowed(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET,
                                cfg_reg);
-
-  // Write entropy period register.
-  uint32_t entropy_period_reg = 0;
-  entropy_period_reg = bitfield_field32_write(
-      entropy_period_reg, KMAC_ENTROPY_PERIOD_WAIT_TIMER_FIELD,
-      config.entropy_wait_timer);
-  mmio_region_write32(kmac->base_addr, KMAC_ENTROPY_PERIOD_REG_OFFSET,
-                      entropy_period_reg);
 
   // Write entropy seed registers.
   for (int i = 0; i < kDifKmacEntropySeedWords; ++i) {
@@ -584,8 +600,6 @@ dif_result_t dif_kmac_mode_kmac_start(
   mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 
   return poll_state(kmac, KMAC_STATUS_SHA3_ABSORB_BIT);
-
-  return kDifOk;
 }
 
 dif_result_t dif_kmac_absorb(const dif_kmac_t *kmac,
@@ -800,6 +814,21 @@ dif_result_t dif_kmac_get_status(const dif_kmac_t *kmac,
   kmac_status->faults = bitfield_field32_read(
       reg, (bitfield_field32_t){.mask = 0x03,
                                 .index = KMAC_STATUS_ALERT_FATAL_FAULT_BIT});
+
+  return kDifOk;
+}
+
+dif_result_t dif_kmac_get_hash_counter(const dif_kmac_t *kmac,
+                                       uint32_t *hash_ctr) {
+  if (kmac == NULL || hash_ctr == NULL) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = mmio_region_read32(kmac->base_addr,
+                                    KMAC_ENTROPY_REFRESH_HASH_CNT_REG_OFFSET);
+
+  *hash_ctr =
+      bitfield_field32_read(reg, KMAC_ENTROPY_REFRESH_HASH_CNT_HASH_CNT_FIELD);
 
   return kDifOk;
 }
