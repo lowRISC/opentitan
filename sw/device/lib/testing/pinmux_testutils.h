@@ -7,9 +7,7 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/testing/json/pinmux_config.h"
 
 /**
  * Default pinmux initialization.

@@ -4,8 +4,6 @@
 
 #include "sw/device/lib/testing/pinmux_testutils.h"
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
@@ -56,22 +54,4 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   // Configure USBDEV SENSE outputs to be high-Z (IOC7)
   CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc7,
                                         kTopEarlgreyPinmuxOutselConstantHighZ));
-}
-
-status_t pinmux_config(dif_pinmux_t *pinmux, const pinmux_config_t *config) {
-  for (size_t i = 0; i < ARRAYSIZE(config->input.peripheral); ++i) {
-    if (config->input.peripheral[i] == kPinmuxPeripheralInEnd) {
-      break;
-    }
-    TRY(dif_pinmux_input_select(pinmux, config->input.peripheral[i],
-                                config->input.selector[i]));
-  }
-  for (size_t i = 0; i < ARRAYSIZE(config->output.mio); ++i) {
-    if (config->output.mio[i] == kPinmuxMioOutEnd) {
-      break;
-    }
-    TRY(dif_pinmux_output_select(pinmux, config->output.mio[i],
-                                 config->output.selector[i]));
-  }
-  return OK_STATUS();
 }

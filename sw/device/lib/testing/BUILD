@@ -191,11 +191,9 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:status",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/runtime:hart",
-        "//sw/device/lib/testing/json:pinmux_config",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )

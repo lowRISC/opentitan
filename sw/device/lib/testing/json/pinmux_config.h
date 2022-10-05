@@ -5,6 +5,9 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_PINMUX_CONFIG_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_PINMUX_CONFIG_H_
 #include "sw/device/lib/ujson/ujson_derive.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 //  Dependencies between usjon structure definitions can be a little tricky:
 //  - If not generating an implementation, we can just include the dependency.
@@ -15,6 +18,7 @@
 #if UJSON_SERDE_IMPL == 0
 #include "sw/device/lib/testing/json/pinmux.h"
 #endif
+// clang-format off
 
 #define STRUCT_PINMUX_INPUT_SELECTION(field, string) \
   field(peripheral, pinmux_peripheral_in_t, 16)      \
@@ -32,4 +36,17 @@ UJSON_SERDE_STRUCT(PinmuxOutputSelection, pinmux_output_selection_t,
       field(output, pinmux_output_selection_t)
 UJSON_SERDE_STRUCT(PinmuxConfig, pinmux_config_t, STRUCT_PINMUX_CONFIG);
 
+// clang-format on
+#ifndef RUST_PREPROCESSOR_EMIT
+#include "sw/device/lib/dif/dif_pinmux.h"
+/**
+ * Configure the pinmux with a specific configuration.
+ *
+ * This function is specific to top_earlgrey and top_englishbreakfast.
+ */
+status_t pinmux_config(ujson_t *uj, dif_pinmux_t *pinmux);
+#endif  // RUST_PREPROCESSOR_EMIT
+#ifdef __cplusplus
+}
+#endif
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_PINMUX_CONFIG_H_
