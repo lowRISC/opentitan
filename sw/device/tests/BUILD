@@ -1075,6 +1075,28 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "gpio_pinmux_test",
+    srcs = ["gpio_pinmux_test.c"],
+    targets = [
+        "verilator",
+    ],
+    test_harness = "//sw/host/tests/chip/gpio",
+    verilator = verilator_params(
+        timeout = "eternal",
+        test_cmds = [],
+    ),
+    deps = [
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/json:gpio",
+        "//sw/device/lib/testing/json:pinmux_config",
+        "//sw/device/lib/testing/test_framework:ottf_flow_control",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "hmac_enc_test",
     srcs = ["hmac_enc_test.c"],
     deps = [

@@ -19,6 +19,7 @@ pub trait UartSend {
 impl<T: Serialize> UartSend for T {
     fn send(&self, uart: &dyn Uart) -> Result<()> {
         let s = serde_json::to_string(self)?;
+        log::info!("Sending: {}", s);
         uart.write(s.as_bytes())?;
         Ok(())
     }
