@@ -2,7 +2,14 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load(
+    "//rules:opentitan_test.bzl",
+    "opentitan_functest",
+    "cw310_params",
+    "verilator_params",
+)
 load("//rules:linker.bzl", "ld_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -220,12 +227,84 @@ cc_library(
     srcs = ["ujson_ottf.c"],
     hdrs = ["ujson_ottf.h"],
     deps = [
-        ":ottf_main",
+        ":ottf_flow_control",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/ujson",
+        "//sw/device/lib/runtime:print",
     ],
 )
+
+dual_cc_library(
+    name = "ottf_flow_control",
+    srcs = dual_inputs(
+        device = ["ottf_flow_control.c"],
+    ),
+    hdrs = ["ottf_flow_control.h"],
+    deps = dual_inputs(
+        device = [
+            ":check",
+            ":ottf_start",
+            ":ottf_main",
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/dif:rv_plic",
+            "//sw/device/lib/runtime:ibex",
+            "//sw/device/lib/runtime:irq",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ],
+        shared = [
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/dif:uart",
+        ],
+    ),
+)
+
+_FLOW_CONTROL_MESSAGE = (
+    "Mary had a little lamb, its fleece was white as snow. "
+    + "Everywhere that Mary went the lamb was sure to go."
+    + "\n"
+)
+
+opentitan_functest(
+    name = "ottf_flow_control_functest",
+    srcs = ["ottf_flow_control_functest.c"],
+    deps = [
+        ":check",
+        ":ottf_main",
+        ":ottf_flow_control",
+        ":ujson_ottf",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/ujson",
+    ],
+    targets = [
+        "verilator",
+        "cw310_test_rom",
+    ],
+    verilator = verilator_params(
+        test_cmds = [
+            "--exec \"console --quiet --exit-success=BUSY --exit-failure=PASS|FAIL\"",
+            "console",
+            "--flow-control",
+            "--send=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
+            "--exit-success=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
+            "--exit-failure=\"PASS|FAIL\"",
+        ],
+    ),
+    cw310 = cw310_params(
+        test_cmds = [
+            "--exec=\"fpga load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
+            "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
+            "--exec \"console --quiet --exit-success=BUSY --exit-failure=PASS|FAIL\"",
+            "console",
+            "--flow-control",
+            "--send=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
+            "--exit-success=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
+            "--exit-failure=\"PASS|FAIL\"",
+        ],
+    )
+)
+
 
 cc_library(
     name = "freertos_config",

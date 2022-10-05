@@ -47,7 +47,7 @@ static const char *exception_reason[] = {
     "Reserved",
 };
 
-static void generic_fault_print(const char *reason, uint32_t mcause) {
+void ottf_generic_fault_print(const char *reason, uint32_t mcause) {
   uint32_t mepc = ibex_mepc_read();
   uint32_t mtval = ibex_mtval_read();
   LOG_ERROR("FAULT: %s. MCAUSE=%08x MEPC=%08x MTVAL=%08x", reason, mcause, mepc,
@@ -56,7 +56,7 @@ static void generic_fault_print(const char *reason, uint32_t mcause) {
 
 static void generic_fault_handler(void) {
   uint32_t mcause = ibex_mcause_read();
-  generic_fault_print(exception_reason[mcause & kIbexExcMax], mcause);
+  ottf_generic_fault_print(exception_reason[mcause & kIbexExcMax], mcause);
   abort();
 }
 
@@ -133,24 +133,24 @@ void ottf_user_ecall_handler(void);
 
 OT_WEAK
 void ottf_software_isr(void) {
-  generic_fault_print("Software IRQ", ibex_mcause_read());
+  ottf_generic_fault_print("Software IRQ", ibex_mcause_read());
   abort();
 }
 
 OT_WEAK
 void ottf_timer_isr(void) {
-  generic_fault_print("Timer IRQ", ibex_mcause_read());
+  ottf_generic_fault_print("Timer IRQ", ibex_mcause_read());
   abort();
 }
 
 OT_WEAK
 void ottf_external_isr(void) {
-  generic_fault_print("External IRQ", ibex_mcause_read());
+  ottf_generic_fault_print("External IRQ", ibex_mcause_read());
   abort();
 }
 
 static void generic_internal_irq_handler(void) {
-  generic_fault_print("Internal IRQ", ibex_mcause_read());
+  ottf_generic_fault_print("Internal IRQ", ibex_mcause_read());
   abort();
 }
 
