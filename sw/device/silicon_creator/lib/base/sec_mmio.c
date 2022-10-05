@@ -31,14 +31,15 @@ enum {
  * Increments the `sec_mmio_ctx.last_index`.
  */
 static void upsert_register(uint32_t addr, uint32_t value) {
+  const size_t last_index = sec_mmio_ctx.last_index;
   size_t i = 0;
-  for (; i < sec_mmio_ctx.last_index; ++i) {
+  for (; launder32(i) < last_index; ++i) {
     if (sec_mmio_ctx.addrs[i] == addr) {
       sec_mmio_ctx.values[i] = value;
       break;
     }
   }
-  if (i == sec_mmio_ctx.last_index && i < kSecMmioRegFileSize) {
+  if (launder32(i) == last_index && launder32(i) < kSecMmioRegFileSize) {
     sec_mmio_ctx.addrs[i] = addr;
     sec_mmio_ctx.values[i] = value;
     ++sec_mmio_ctx.last_index;
@@ -107,22 +108,22 @@ void sec_mmio_write32_shadowed(uint32_t addr, uint32_t value) {
 }
 
 void sec_mmio_check_values(uint32_t rnd_offset) {
+  const uint32_t last_index = sec_mmio_ctx.last_index;
   // Pick a random starting offset.
-  uint32_t offset =
-      ((uint64_t)rnd_offset * (uint64_t)sec_mmio_ctx.last_index) >> 32;
+  uint32_t offset = ((uint64_t)rnd_offset * (uint64_t)last_index) >> 32;
   enum { kStep = 1 };
   size_t i;
-  for (i = 0; launder32(i) < sec_mmio_ctx.last_index; ++i) {
+  for (i = 0; launder32(i) < last_index; ++i) {
     uint32_t read_value = abs_mmio_read32(sec_mmio_ctx.addrs[offset]);
     HARDENED_CHECK_EQ(read_value ^ kSecMmioMaskVal,
                       sec_mmio_ctx.values[offset]);
     offset += kStep;
-    if (offset >= sec_mmio_ctx.last_index) {
-      offset -= sec_mmio_ctx.last_index;
+    if (offset >= last_index) {
+      offset -= last_index;
     }
   }
   // Check for loop completion.
-  HARDENED_CHECK_EQ(i, sec_mmio_ctx.last_index);
+  HARDENED_CHECK_EQ(i, last_index);
   ++sec_mmio_ctx.check_count;
 }
 
