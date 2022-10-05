@@ -22,7 +22,7 @@ using ::testing::Eq;
 class SecMmioTest : public rom_test::RomTest {
  protected:
   void SetUp() override { sec_mmio_init(); }
-  volatile sec_mmio_ctx_t *ctx_ = &::sec_mmio_ctx;
+  sec_mmio_ctx_t *ctx_ = &::sec_mmio_ctx;
   rom_test::MockAbsMmio mmio_;
 };
 
