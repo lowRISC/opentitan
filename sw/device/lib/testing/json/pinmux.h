@@ -5,6 +5,9 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_PINMUX_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_PINMUX_H_
 #include "sw/device/lib/ujson/ujson_derive.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 // Note: these definitions rely on constants from top_earlgrey.h
 // and therefore this library cannot be used with the `ujson_rust`
@@ -335,4 +338,7 @@ C_ONLY(UJSON_SERDE_ENUM(DirectPads, direct_pads_t, TOP_EARLGREY_DIRECT_PADS, WIT
 C_ONLY(UJSON_SERDE_ENUM(MuxedPads, muxed_pads_t, TOP_EARLGREY_MUXED_PADS, WITH_UNKNOWN));
 
 // clang-format on
+#ifdef __cplusplus
+}
+#endif
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_JSON_PINMUX_H_
