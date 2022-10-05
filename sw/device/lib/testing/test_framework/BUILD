@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan.bzl", "OPENTITAN_CPU")
 load("//rules:linker.bzl", "ld_library")
 
@@ -220,11 +221,35 @@ cc_library(
     srcs = ["ujson_ottf.c"],
     hdrs = ["ujson_ottf.h"],
     deps = [
-        ":ottf_main",
+        ":ottf_flow_control",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/ujson",
     ],
+)
+
+dual_cc_library(
+    name = "ottf_flow_control",
+    srcs = dual_inputs(
+        device = ["ottf_flow_control.c"],
+    ),
+    hdrs = ["ottf_flow_control.h"],
+    deps = dual_inputs(
+        device = [
+            ":check",
+            ":ottf_start",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/dif:rv_plic",
+            "//sw/device/lib/runtime:ibex",
+            "//sw/device/lib/runtime:irq",
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        ],
+        shared = [
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/dif:uart",
+        ],
+    ),
 )
 
 cc_library(
