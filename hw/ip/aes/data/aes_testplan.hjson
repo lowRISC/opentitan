@@ -138,7 +138,7 @@
       desc: '''
             Verify that injecting bit errors in one of the statemachines or the round counter triggers an error '''
       stage: V2S
-      tests: ["aes_fi"]
+        tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
   ]
 

@@ -167,6 +167,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
                                                3'b100 :/ 1 };}
 
   function void post_randomize();
+    `uvm_info(`gfn, $sformatf("Use KEY MAST: %b", use_key_mask), UVM_LOW)
     if (use_key_mask) key_mask = 1;
 
     case(host_resp_speed)

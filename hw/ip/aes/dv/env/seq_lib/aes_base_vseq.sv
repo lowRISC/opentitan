@@ -64,6 +64,7 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_ctrl[7:2]  = aes_pkg::AES_ECB;   // 6'b00_0001
     aes_ctrl[10:8] = aes_pkg::AES_128;   // 3'b001
     csr_wr(.ptr(ral.ctrl_shadowed), .value(aes_ctrl), .en_shadow_wr(1'b1), .blocking(1));
+    // set key touch force //
     csr_wr(.ptr(ral.ctrl_aux_shadowed), .value(cfg.do_reseed), .en_shadow_wr(1'b1), .blocking(1));
   endtask // aes_init
 
@@ -87,6 +88,9 @@ class aes_base_vseq extends cip_base_vseq #(
     csr_update(ral.trigger);
   endtask // clear_registers
 
+  virtual task set_ctrl_aux_shadowed(bit val);
+    csr_wr(.ptr(ral.ctrl_aux_shadowed), .value(val), .en_shadow_wr(1'b1), .blocking(1));
+  endtask // set_ctrl_aux_shadowed
 
   virtual task prng_reseed();
     bit [TL_DW:0] reg_val = '0;
@@ -94,6 +98,10 @@ class aes_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.trigger), .value(reg_val));
   endtask // prng_reseed
 
+  virtual task set_regwen(bit val);
+    ral.ctrl_aux_regwen.set(val);
+    csr_update(.csr(ral.ctrl_aux_regwen), .en_shadow_wr(1'b0), .blocking(1));
+  endtask // set_regwen
 
   virtual task set_force_zero_mask(bit val);
     ral.ctrl_shadowed.operation.set(val);

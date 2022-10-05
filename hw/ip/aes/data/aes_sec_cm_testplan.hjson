@@ -27,80 +27,82 @@
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["aes_tl_intg_err"]
     }
     {
       name: sec_cm_lc_escalate_en_intersig_mubi
       desc: "Verify the countermeasure(s) LC_ESCALATE_EN.INTERSIG.MUBI."
       stage: V2S
-      tests: []
+      tests: ["aes_alert_reset"]
     }
     {
       name: sec_cm_main_config_shadow
       desc: "Verify the countermeasure(s) MAIN.CONFIG.SHADOW."
       stage: V2S
-      tests: []
+      tests: ["aes_shadow_reg_errors"]
     }
     {
       name: sec_cm_main_config_sparse
       desc: "Verify the countermeasure(s) MAIN.CONFIG.SPARSE."
       stage: V2S
-      tests: []
+        tests: ["aes_stress", "aes_smoke"]
     }
     {
       name: sec_cm_aux_config_shadow
       desc: "Verify the countermeasure(s) AUX.CONFIG.SHADOW."
       stage: V2S
-      tests: []
+      tests: ["aes_shadow_reg_errors"]
     }
     {
       name: sec_cm_aux_config_regwen
       desc: "Verify the countermeasure(s) AUX.CONFIG.REGWEN."
       stage: V2S
-      tests: []
+        tests: ["aes_stress", "aes_readability"]
     }
     {
       name: sec_cm_key_sideload
       desc: "Verify the countermeasure(s) KEY.SIDELOAD."
       stage: V2S
-      tests: []
+      tests: ["aes_stress","aes_sideload"]
     }
     {
       name: sec_cm_key_sw_unreadable
       desc: "Verify the countermeasure(s) KEY.SW_UNREADABLE."
       stage: V2S
-      tests: []
+      tests: ["aes_readability"]
     }
     {
       name: sec_cm_data_reg_sw_unreadable
       desc: "Verify the countermeasure(s) DATA_REG.SW_UNREADABLE."
       stage: V2S
-      tests: []
+      tests: ["aes_readability"]
     }
     {
       name: sec_cm_key_sec_wipe
       desc: "Verify the countermeasure(s) KEY.SEC_WIPE."
       stage: V2S
-      tests: []
+      tests: ["aes_readability"]
     }
     {
       name: sec_cm_iv_config_sec_wipe
       desc: "Verify the countermeasure(s) IV.CONFIG.SEC_WIPE."
       stage: V2S
-      tests: []
+      tests: ["aes_readability"]
     }
     {
       name: sec_cm_data_reg_sec_wipe
       desc: "Verify the countermeasure(s) DATA_REG.SEC_WIPE."
       stage: V2S
-      tests: []
+      tests: ["aes_readability"]
     }
+      //  TODO: I think this is need a bind to read the internal state
     {
       name: sec_cm_data_reg_key_sca
       desc: "Verify the countermeasure(s) DATA_REG.KEY.SCA."
       stage: V2S
       tests: []
     }
+      // TODO how do we verify this?
     {
       name: sec_cm_key_masking
       desc: "Verify the countermeasure(s) KEY.MASKING."
@@ -111,74 +113,75 @@
       name: sec_cm_main_fsm_sparse
       desc: "Verify the countermeasure(s) MAIN.FSM.SPARSE."
       stage: V2S
-      tests: []
+        tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
     {
       name: sec_cm_main_fsm_redun
       desc: "Verify the countermeasure(s) MAIN.FSM.REDUN."
       stage: V2S
-      tests: []
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
     {
       name: sec_cm_cipher_fsm_sparse
       desc: "Verify the countermeasure(s) CIPHER.FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
     {
       name: sec_cm_cipher_fsm_redun
       desc: "Verify the countermeasure(s) CIPHER.FSM.REDUN."
       stage: V2S
-      tests: []
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
     {
       name: sec_cm_cipher_ctr_redun
       desc: "Verify the countermeasure(s) CIPHER.CTR.REDUN."
       stage: V2S
-      tests: []
+      tests: ["aes_cipher_fi", "aes_control_fi", "aes_cipher_fi"]
     }
     {
       name: sec_cm_ctr_fsm_sparse
       desc: "Verify the countermeasure(s) CTR.FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
     {
       name: sec_cm_ctr_fsm_redun
       desc: "Verify the countermeasure(s) CTR.FSM.REDUN."
       stage: V2S
-      tests: []
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
     {
       name: sec_cm_ctrl_sparse
       desc: "Verify the countermeasure(s) CTRL.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
     {
       name: sec_cm_main_fsm_global_esc
       desc: "Verify the countermeasure(s) MAIN.FSM.GLOBAL_ESC."
       stage: V2S
-      tests: []
+      tests: ["aes_fi"]
     }
     {
       name: sec_cm_main_fsm_local_esc
       desc: "Verify the countermeasure(s) MAIN.FSM.LOCAL_ESC."
       stage: V2S
-      tests: []
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
     {
       name: sec_cm_cipher_fsm_local_esc
       desc: "Verify the countermeasure(s) CIPHER.FSM.LOCAL_ESC."
       stage: V2S
-      tests: []
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
     {
       name: sec_cm_ctr_fsm_local_esc
       desc: "Verify the countermeasure(s) CTR.FSM.LOCAL_ESC."
       stage: V2S
-      tests: []
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
+      // TODO how to check is this? I think we talked about this not beeing feasible
     {
       name: sec_cm_data_reg_local_esc
       desc: "Verify the countermeasure(s) DATA_REG.LOCAL_ESC."

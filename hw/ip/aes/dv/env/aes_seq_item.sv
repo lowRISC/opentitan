@@ -134,6 +134,7 @@ class aes_seq_item extends uvm_sequence_item;
 
   function void post_randomize();
     bit [3:0]           index;
+    `uvm_info(`gfn, $sformatf("Key Mask %b", key_mask), UVM_LOW)
     if (key_mask) begin
       case (key_len)
         3'b001: begin

@@ -179,6 +179,11 @@
       uvm_test: aes_fi_test
       uvm_test_seq: aes_ctr_fi_vseq
     }
+    {
+      name: aes_readability
+      uvm_test: aes_fi_test
+      uvm_test_seq: aes_readability_vseq
+    }
   ]
 
   // List of regressions.
