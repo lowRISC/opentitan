@@ -784,7 +784,6 @@
       tests: ["lc_hw_debug_en_pwrmgr",
               "lc_hw_debug_en_clkmgr",
               "lc_hw_debug_en_pinmux",
-              "lc_hw_debug_en_sram_ctrl_ret",
               "lc_hw_debug_en_sram_ctrl_main",
               "lc_hw_debug_en_rv_dm",
               "lc_hw_debug_en_csrng"]
