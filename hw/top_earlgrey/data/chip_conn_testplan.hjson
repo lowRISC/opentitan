@@ -1392,5 +1392,16 @@
               "ast_cc2"]
       tags: ["conn"]
     }
+
+    /////////////////////////////////
+    // flash_ctrl_nvm_debug_en.csv //
+    /////////////////////////////////
+    {
+      name: flash_ctrl_nvm_debug
+      desc: "Verify the connectivity between the lc_ctrl output and the flash_ctrl input."
+      stage: V2
+      tests: ["flash_ctrl_nvm_debug_en"]
+      tags: ["conn"]
+    }
   ]
 }
