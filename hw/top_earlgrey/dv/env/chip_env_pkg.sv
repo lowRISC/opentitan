@@ -46,6 +46,7 @@ package chip_env_pkg;
   import tl_main_pkg::ADDR_SPACE_RV_CORE_IBEX__CFG;
   import rv_core_ibex_reg_pkg::RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET;
   import i2c_agent_pkg::*;
+  import pattgen_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
