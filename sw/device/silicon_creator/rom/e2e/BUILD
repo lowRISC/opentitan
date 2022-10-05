@@ -36,6 +36,11 @@ MSG_PASS = "PASS!"
 
 MSG_BAD_KEY = "BFV:02535603(?s:.*)BFV:02535603"
 
+SLOTS = [
+    "a",
+    "b",
+]
+
 SLOT_A_OFFSET = "0x0"
 
 SLOT_B_OFFSET = "0x80000"
@@ -401,4 +406,90 @@ manifest(
 test_suite(
     name = "shutdown_output",
     tests = ["shutdown_output_{}".format(lc_state) for lc_state in LC_STATES],
+)
+
+SEC_VERS = [
+    0,
+    1,
+]
+
+[manifest(
+    name = "manifest_sec_ver_{}".format(sec_ver),
+    address_translation = CONST.FALSE,
+    identifier = CONST.ROM_EXT,
+    security_version = sec_ver,
+) for sec_ver in SEC_VERS]
+
+[opentitan_flash_binary(
+    name = "empty_test_slot_{}_sec_ver_{}".format(slot, sec_ver),
+    srcs = ["empty_test.c"],
+    devices = ["fpga_cw310"],
+    local_defines = [
+        "EMPTY_TEST_MSG=\"slot={} security_version={}\"".format(slot, sec_ver),
+    ],
+    manifest = ":manifest_sec_ver_{}".format(sec_ver),
+    signed = True,
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+    ],
+) for slot in SLOTS for sec_ver in SEC_VERS]
+
+[opentitan_multislot_flash_binary(
+    name = "sec_ver_{}_{}_image".format(sec_ver_a, sec_ver_b),
+    srcs = {
+        ":empty_test_slot_a_sec_ver_{}".format(sec_ver_a): {
+            "key": "test_key_0",
+            "offset": SLOT_A_OFFSET,
+        },
+        ":empty_test_slot_b_sec_ver_{}".format(sec_ver_b): {
+            "key": "test_key_0",
+            "offset": SLOT_B_OFFSET,
+        },
+    },
+    devices = ["fpga_cw310"],
+    image_size = FLASH_SIZE,
+) for sec_ver_a in SEC_VERS for sec_ver_b in SEC_VERS]
+
+# [[sec_ver_a, sec_ver_b, correct_slot, correct_sec_ver], ...]
+BOOT_POLICY_NEWER_CASES = [
+    [
+        0,
+        0,
+        "a",
+        0,
+    ],
+    [
+        0,
+        1,
+        "b",
+        1,
+    ],
+    [
+        1,
+        0,
+        "a",
+        1,
+    ],
+    [
+        1,
+        1,
+        "a",
+        1,
+    ],
+]
+
+[opentitan_functest(
+    name = "boot_policy_newer_a_{}_b_{}".format(sec_ver_a, sec_ver_b),
+    cw310 = cw310_params(
+        exit_success = "slot={} security_version={}".format(correct_slot, correct_sec_ver),
+    ),
+    key = "multislot",
+    ot_flash_binary = ":sec_ver_{}_{}_image".format(sec_ver_a, sec_ver_b),
+    targets = ["cw310_rom"],
+) for sec_ver_a, sec_ver_b, correct_slot, correct_sec_ver in BOOT_POLICY_NEWER_CASES]
+
+test_suite(
+    name = "boot_policy_newer",
+    tests = ["boot_policy_newer_a_{}_b_{}".format(sec_ver_a, sec_ver_b) for sec_ver_a, sec_ver_b, _, _ in BOOT_POLICY_NEWER_CASES],
 )
