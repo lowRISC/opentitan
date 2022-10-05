@@ -39,7 +39,7 @@ the manifest is 896 bytes.
 | `length`              | 4            | 4                 | 824            | `uint32_t`     |
 | `version_major`       | 4            | 4                 | 828            | `uint32_t`     |
 | `version_minor`       | 4            | 4                 | 832            | `uint32_t`     |
-| `security_vesion`     | 4            | 4                 | 836            | `uint32_t`     |
+| `security_version`    | 4            | 4                 | 836            | `uint32_t`     |
 | `timestamp`           | 8            | 8                 | 840            | `uint64_t`     |
 | `binding_value`       | 32           | 4                 | 848            | `uint32_t[8]`  |
 | `max_key_version`     | 4            | 4                 | 880            | `uint32_t`     |
