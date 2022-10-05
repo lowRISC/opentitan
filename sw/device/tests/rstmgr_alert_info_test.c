@@ -82,8 +82,7 @@ enum {
   kEscalationPhase2Micros = 100,  // us
   kRoundOneDelay = 100,           // us
   kRoundTwoDelay = 100,           // us
-  kRoundThreeDelay = 1000,        // us
-  kRoundFourDelay = 2800,         // us
+  kRoundThreeDelay = 1000         // us
 };
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
@@ -875,8 +874,17 @@ bool test_main(void) {
     collect_alert_dump_and_compare(kRound3);
     global_test_round = kRound4;
     prgm_alert_handler_round4();
-    busy_spin_micros(kRoundFourDelay);
-    CHECK(false, "Should have reset before this line");
+    // Previously, this test assumed that escalation would always happen
+    // within a fixed amount of time.  However, that is not necessarily
+    // the case for ping timeouts.  The ping mechanism randomly selects a
+    // peripheral to check.  However, since the selection vector is larger
+    // than the number of peripherals we have, it does not always select a valid
+    // peripheral. When the alert handler does not select a valid peripheral,
+    // it simply moves on to the test the next ping. However the max wait time
+    // until the next ping is checked is in the mS range.
+    // Therefore, the test should not make that assumption and just wait in
+    // place.
+    wait_for_interrupt();
   } else if (rst_info == kDifRstmgrResetInfoEscalation && event_idx == 4) {
     collect_alert_dump_and_compare(kRound4);
 
