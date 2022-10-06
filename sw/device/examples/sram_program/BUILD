@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:opentitan.bzl", "opentitan_ram_binary")
-load("//rules:opentitan_gdb_test.bzl", "opentitan_gdb_fpga_cw310_test")
+load("//rules:opentitan_gdb_test.bzl", "opentitan_gdb_test")
 load("//rules:linker.bzl", "ld_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -37,8 +37,8 @@ opentitan_ram_binary(
     ],
 )
 
-opentitan_gdb_fpga_cw310_test(
-    name = "sram_program_fpga_cw310_test",
+opentitan_gdb_test(
+    name = "sram_program_verilator_test",
     timeout = "short",
     exit_success_pattern = "sram_program\\.c:47\\] PC: 0x1000208c, SRAM: \\[0x10000000, 0x10020000\\)",
     gdb_script = """
@@ -122,10 +122,11 @@ opentitan_gdb_fpga_cw310_test(
         echo :::: Done.\\n
     """,
     gdb_script_symlinks = {
-        ":sram_program_fpga_cw310.elf": "sram_program.elf",
-        "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+        ":sram_program_sim_verilator.elf": "sram_program.elf",
+        "//sw/device/silicon_creator/rom:rom_sim_verilator.elf": "rom.elf",
     },
-    rom_bitstream = "//hw/bitstream:rom",
+    rom_vmem = "//sw/device/silicon_creator/rom:rom_sim_verilator_vmem",
+    otp_vmem = "//hw/ip/otp_ctrl/data:img_rma",
     rom_kind = "Rom",
     tags = [
         "flaky",

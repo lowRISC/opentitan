@@ -4,7 +4,7 @@
 
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 
-def _opentitan_gdb_fpga_cw310_test(ctx):
+def _opentitan_gdb_test(ctx):
     test_script = '''#!/usr/bin/env bash
         set -e
 
@@ -25,12 +25,20 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
         set -x
 
         run_opentitantool() {{
-            ./opentitantool --rcfile= --logging=info --interface=cw310 "$@"
+            ./opentitantool --rcfile= --logging=info --interface=verilator "$@"
         }}
 
-        run_opentitantool fpga load-bitstream --rom-kind={rom_kind} rom.bit
+        (run_opentitantool \\
+            --verilator-bin ./verilator \\
+            --verilator-rom ./rom.vmem \\
+            --verilator-otp ./otp.vmem \\
+            console \\
+            --exit-success='{exit_success_pattern}' \\
+            |& prefix_lines CONSOLE "$COLOR_RED") &
 
-        (openocd -f /usr/share/openocd/scripts/interface/ftdi/olimex-arm-usb-tiny-h.cfg \\
+        sleep 12
+
+        (openocd -f {openocd_interface_config} \\
             -c "adapter speed 0; transport select jtag; reset_config trst_and_srst" \\
             -f {openocd_earlgrey_config} \\
             |& prefix_lines OPENOCD "$COLOR_PURPLE") &
@@ -42,18 +50,18 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
         (/tools/riscv/bin/riscv32-unknown-elf-gdb --command=script.gdb \\
             |& prefix_lines GDB "$COLOR_GREEN") &
 
-        run_opentitantool console \\
-            --timeout 5s \\
-            --exit-success='{exit_success_pattern}' \\
-            |& prefix_lines CONSOLE "$COLOR_RED"
+
+        sleep 120
 
         # Send TERM signal to OpenOCD and wait for all background jobs to complete. Note
         # that GDB will exit naturally at the end of its script.
         kill $OPENOCD_PID
+        kill $VERILATOR_PID
         wait
     '''.format(
         rom_kind = ctx.attr.rom_kind,
         openocd_earlgrey_config = ctx.file._openocd_earlgrey_config.path,
+        openocd_interface_config = ctx.file._openocd_interface_config.path,
         exit_success_pattern = ctx.attr.exit_success_pattern,
     )
 
@@ -85,14 +93,18 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
         # for generated files. Symlinking the runtime files wherever
         # Bazel will run `test_script_file` sidesteps the issue.
         symlinks = {
+            "verilator": ctx.file._verilator,
             "opentitantool": ctx.file._opentitantool,
-            "rom.bit": ctx.file.rom_bitstream,
+            "rom.vmem": ctx.file.rom_vmem,
+            "otp.vmem": ctx.file.otp_vmem,
             "script.gdb": gdb_script_file,
         },
         files = [
             ctx.file._openocd_earlgrey_config,
+            ctx.file._openocd_interface_config,
             ctx.file._opentitantool,
-            ctx.file.rom_bitstream,
+            ctx.file.rom_vmem,
+            ctx.file.otp_vmem,
             gdb_script_file,
         ],
     )
@@ -106,17 +118,22 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
 # Orchestrate opentitantool, OpenOCD, and GDB to load the given program into
 # SRAM and execute it in-place. This rule assumes that a CW310 FPGA and an
 # ARM-USB-TINY-H JTAG debugger are attached to the host.
-opentitan_gdb_fpga_cw310_test = rv_rule(
-    implementation = _opentitan_gdb_fpga_cw310_test,
+opentitan_gdb_test = rv_rule(
+    implementation = _opentitan_gdb_test,
     attrs = {
         "exit_success_pattern": attr.string(mandatory = True),
         "gdb_script": attr.string(mandatory = True),
         "gdb_script_symlinks": attr.label_keyed_string_dict(allow_files = True),
-        "rom_bitstream": attr.label(
+        "rom_vmem": attr.label(
+            mandatory = True,
+            allow_single_file = True,
+        ),
+        "otp_vmem": attr.label(
             mandatory = True,
             allow_single_file = True,
         ),
         "rom_kind": attr.string(mandatory = True),
+        "_verilator": attr.label( default = "//hw:verilator", allow_single_file = True, cfg = "exec",),
         "_opentitantool": attr.label(
             default = "//sw/host/opentitantool",
             allow_single_file = True,
@@ -125,6 +142,15 @@ opentitan_gdb_fpga_cw310_test = rv_rule(
         "_openocd_earlgrey_config": attr.label(
             default = "//util/openocd/target:lowrisc-earlgrey.cfg",
             allow_single_file = True,
+        ),
+        "_openocd_interface_config": attr.label(
+            default = "//util/openocd/interface:sim-jtagdpi.cfg",
+            allow_single_file = True,
+        ),
+        "_gen_mem_img": attr.label(
+            default = "//hw/ip/rom_ctrl/util:gen_vivado_mem_image",
+            executable = True,
+            cfg = "exec",
         ),
     },
     test = True,
