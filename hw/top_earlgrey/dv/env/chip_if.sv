@@ -332,15 +332,41 @@ interface chip_if;
   // Note: In an actual implementation, fewer GPIOs may be in use. For testing, we try to connect as
   // many as the `gpio` peripheral supports. As of now, the other functions muxed with these IOs
   // do not need to be enabled in GPIO tests.
-  pins_if #(31) gpio_pins_if(
-    .pins({ios[IoA0], ios[IoA1], ios[IoA2], ios[IoA3],
-           ios[IoA4], ios[IoA5], ios[IoA6], ios[IoB0],
-           ios[IoB1], ios[IoB2], ios[IoB3], ios[IoB4],
-           ios[IoB5], ios[IoB6], ios[IoB7], ios[IoB8],
-           ios[IoC5], ios[IoC6], ios[IoC7], ios[IoC9],
-           ios[IoC10], ios[IoC11], ios[IoC12], ios[IoR0],
-           ios[IoR1], ios[IoR2], ios[IoR3], ios[IoR4],
-           ios[IoR5], ios[IoR6], ios[IoR7]})
+  pins_if #(32) gpio_pins_if(
+    .pins({
+      ios[ IoC9], // GPIO31
+      ios[ IoC8], // GPIO30
+      ios[ IoC7], // GPIO29
+      ios[ IoC6], // GPIO28
+      ios[ IoC5], // GPIO27
+      ios[ IoC4], // GPIO26
+      ios[ IoC3], // GPIO25
+      ios[ IoC2], // GPIO24
+      ios[ IoC1], // GPIO23
+      ios[ IoC0], // GPIO22
+      ios[IoB12], // GPIO21
+      ios[IoB11], // GPIO20
+      ios[IoB10], // GPIO19
+      ios[ IoB9], // GPIO18
+      ios[ IoB8], // GPIO17
+      ios[ IoB7], // GPIO16
+      ios[ IoB6], // GPIO15
+      ios[ IoB5], // GPIO14
+      ios[ IoB4], // GPIO13
+      ios[ IoB3], // GPIO12
+      ios[ IoB2], // GPIO11
+      ios[ IoB1], // GPIO10
+      ios[ IoB0], // GPIO09
+      ios[ IoA8], // GPIO08
+      ios[ IoA7], // GPIO07
+      ios[ IoA6], // GPIO06
+      ios[ IoA5], // GPIO05
+      ios[ IoA4], // GPIO04
+      ios[ IoA3], // GPIO03
+      ios[ IoA2], // GPIO02
+      ios[ IoA1], // GPIO01
+      ios[ IoA0]  // GPIO00
+    })
   );
 
   // Functional (muxed) interface: JTAG (valid during debug enabled LC state only).
