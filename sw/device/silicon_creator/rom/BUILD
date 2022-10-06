@@ -102,6 +102,7 @@ opentitan_rom_binary(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:stdasm",
         "//sw/device/lib/crt",
