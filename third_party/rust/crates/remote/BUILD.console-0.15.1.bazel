@@ -57,11 +57,11 @@ rust_library(
         "crate-name=console",
         "manual",
     ],
-    version = "0.15.2",
+    version = "0.15.1",
     # buildifier: leave-alone
     deps = [
-        "@raze__lazy_static__1_4_0//:lazy_static",
         "@raze__libc__0_2_133//:libc",
+        "@raze__once_cell__1_14_0//:once_cell",
         "@raze__terminal_size__0_1_17//:terminal_size",
     ],
 )

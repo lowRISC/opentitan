@@ -4,8 +4,8 @@
 
 use anyhow::Result;
 use directories::ProjectDirs;
+use erased_serde::Serialize;
 use log::LevelFilter;
-use serde_annotate::Annotate;
 use std::env::ArgsOs;
 use std::ffi::OsString;
 use std::io::ErrorKind;
@@ -100,7 +100,7 @@ impl InitializeTest {
 
     // Print the result of a command.
     // If there is an error and `RUST_BACKTRACE=1`, print a backtrace.
-    pub fn print_result(operation: &str, result: Result<Option<Box<dyn Annotate>>>) -> Result<()> {
+    pub fn print_result(operation: &str, result: Result<Option<Box<dyn Serialize>>>) -> Result<()> {
         match result {
             Ok(Some(value)) => {
                 log::info!("{}: success.", operation);

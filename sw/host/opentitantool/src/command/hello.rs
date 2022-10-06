@@ -8,7 +8,7 @@
 //! the command framework for opentitantool.
 
 use anyhow::Result;
-use serde_annotate::Annotate;
+use erased_serde::Serialize;
 use std::any::Any;
 use structopt::StructOpt;
 
@@ -33,7 +33,7 @@ impl CommandDispatch for HelloWorld {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn Serialize>>> {
         // Is the world cruel or not?
         let msg = if self.cruel {
             "Hello cruel World!"
@@ -57,7 +57,7 @@ impl CommandDispatch for HelloPeople {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn Serialize>>> {
         // The `hello people` command produces no result.
         Ok(None)
     }
@@ -88,7 +88,7 @@ impl CommandDispatch for GoodbyeCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn Serialize>>> {
         Ok(Some(Box::new(GoodbyeMessage {
             message: "Goodbye!".to_owned(),
         })))

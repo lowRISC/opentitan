@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Result};
-use serde_annotate::Annotate;
+use erased_serde::Serialize;
 use serialport::SerialPortType;
 use std::any::Any;
 use std::cell::RefCell;
@@ -180,7 +180,7 @@ impl Transport for CW310 {
         Ok(Rc::clone(inner.spi.as_ref().unwrap()))
     }
 
-    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Serialize>>> {
         if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
             // Open the console UART.  We do this first so we get the receiver
             // started and the uart buffering data for us.

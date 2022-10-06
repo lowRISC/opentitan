@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use serde_annotate::Annotate;
+use erased_serde::Serialize;
 use std::any::Any;
 use structopt::StructOpt;
 
@@ -20,7 +20,7 @@ impl CommandDispatch for SetPll {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn Serialize>>> {
         log::info!("Programming the CDCE906 PLL chip with defaults");
         Ok(transport.dispatch(&cw310::SetPll {})?)
     }

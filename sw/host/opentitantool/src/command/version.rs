@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
+use erased_serde::Serialize;
 use regex::Regex;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::collections::BTreeMap;
 use structopt::StructOpt;
@@ -44,7 +44,7 @@ impl CommandDispatch for Version {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn Serialize>>> {
         let properties = get_volatile_status();
         Ok(Some(Box::new(VersionResponse {
             version: properties.get("BUILD_GIT_VERSION").unwrap().to_string(),

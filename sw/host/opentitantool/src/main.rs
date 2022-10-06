@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#![feature(min_specialization)]
 use anyhow::Result;
 use atty::Stream;
 use directories::ProjectDirs;
+use erased_serde::Serialize;
 use log::LevelFilter;
-use serde_annotate::Annotate;
 use serde_annotate::ColorProfile;
 use std::env::{args_os, ArgsOs};
 use std::ffi::OsString;
@@ -157,7 +156,7 @@ fn parse_command_line(opts: Opts, mut args: ArgsOs) -> Result<Opts> {
 
 // Print the result of a command.
 // If there is an error and `RUST_BACKTRACE=1`, print a backtrace.
-fn print_command_result(opts: &Opts, result: Result<Option<Box<dyn Annotate>>>) -> Result<()> {
+fn print_command_result(opts: &Opts, result: Result<Option<Box<dyn Serialize>>>) -> Result<()> {
     match result {
         Ok(Some(value)) => {
             log::info!("Command result: success.");
@@ -166,7 +165,7 @@ fn print_command_result(opts: &Opts, result: Result<Option<Box<dyn Annotate>>>) 
             } else {
                 ColorProfile::default()
             };
-            let doc = serde_annotate::serialize(value.as_ref())?;
+            let doc = serde_annotate::serialize(&value)?;
             let string = match opts.format {
                 Format::Json => doc.to_json().color(profile).to_string(),
                 Format::Json5 => doc.to_json5().color(profile).to_string(),

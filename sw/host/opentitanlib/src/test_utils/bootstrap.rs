@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use serde_annotate::Annotate;
+use erased_serde::Serialize;
 use std::path::{Path, PathBuf};
 use structopt::StructOpt;
 
@@ -21,7 +21,7 @@ pub struct Bootstrap {
 }
 
 impl Bootstrap {
-    pub fn init(&self, transport: &TransportWrapper) -> Result<Option<Box<dyn Annotate>>> {
+    pub fn init(&self, transport: &TransportWrapper) -> Result<Option<Box<dyn Serialize>>> {
         if let Some(bootstrap) = &self.bootstrap {
             self.load(transport, bootstrap)?;
         }
