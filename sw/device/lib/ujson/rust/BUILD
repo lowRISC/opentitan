@@ -16,6 +16,8 @@ rust_test(
     name = "roundtrip_test",
     srcs = [
         "roundtrip_test.rs",
+    ],
+    compile_data = [
         ":example",
     ],
     data = ["//sw/device/lib/ujson:example_roundtrip"],

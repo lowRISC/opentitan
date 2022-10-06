@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:cargo.bzl", "cargo_raze")
-load("@rules_rust//rust:defs.bzl", "rust_analyzer")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -24,17 +23,6 @@ filegroup(
 alias(
     name = "gen_rust_project",
     actual = "@rules_rust//tools/rust_analyzer:gen_rust_project",
-)
-
-# Do not use directly, run `:gen_rust_project` instead.
-rust_analyzer(
-    name = "rust_analyzer",
-    targets = [
-        "//sw/host/opentitanlib:opentitanlib",
-        "//sw/host/opentitanlib/opentitantool_derive:opentitantool_derive",
-        "//sw/host/opentitansession:opentitansession",
-        "//sw/host/opentitantool:opentitantool",
-    ],
 )
 
 cargo_raze(

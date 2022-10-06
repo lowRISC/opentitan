@@ -2,19 +2,18 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@//rules:repo.bzl", "http_archive_or_local")
 
 def rust_repos(rules_rust = None, safe_ftdi = None, serde_annotate = None):
     # We use forked/patched Rust Bazel rules to enable caching repository rules
-    # required for air-gapped Bazel builds. See lowRISC/opentitan:#12515 for
+    # required for air-gapped Bazel builds. See lowRISC/opentitan:#15300 for
     # more details.
     http_archive_or_local(
         name = "rules_rust",
         local = rules_rust,
-        sha256 = "7ee424554cce89befd439b553ef9094d68ccbcbf33013194bd0effa1d4463a9b",
-        strip_prefix = "rules_rust-repo-cache-20220601_01",
-        url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/repo-cache-20220601_01.tar.gz",
+        sha256 = "408a3ab2816eecabf6caf7b21ec07e0dcfde88a18267a0bc8fbd7d98ec08797d",
+        strip_prefix = "rules_rust-sha-retrieval-bugfix-20221006_01",
+        url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/sha-retrieval-bugfix-20221006_01.tar.gz",
     )
 
     http_archive_or_local(
