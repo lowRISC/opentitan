@@ -217,6 +217,23 @@
       stage: V2
       tests: ["{variant}_entropy_mode_error"]
    }
+    {
+      name: entropy_ready_error
+      desc: ''' Test kmac responses correctly when entropy_ready field is not set.
+            Based on kmac app sequence, this sequence does not write `1` to
+            `ral.cfg_shadowed.entropy_ready` field before a kmac operation.
+            **Check**:
+            - If masking is enabled and the kmac operation is EDN mode:
+              - If it is a SW operation, check error related registers including `err_code`,
+                `status`, and `interrupt`.
+              - If it is an APP operation, check keymgr interface responses with error bit sets to
+                `1`.
+            - If masking is not enabled or the operation does not require entropy:
+              - Check no error triggered.
+            '''
+      stage: V2
+      tests: ["{variant}_entropy_ready_error"]
+   }
    {
       name: lc_escalation
       desc: '''
