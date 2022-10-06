@@ -176,7 +176,7 @@
                                fi ''']
   // Add run modes.
   run_modes: [
-    // Generates OTP images with different LC states with cannonical values,
+    // Generates OTP images with different LC states with canonical values,
     // pseudo-randomized with the same test seed.
     {
       name: gen_otp_images_mode
@@ -186,9 +186,14 @@
               --out {run_dir}/otp_ctrl_img_raw.vmem \
               {gen_otp_images_cmd_opts}
         ''',
-         '''{gen_otp_images_cmd} \
+        '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_dev.hjson \
               --out {run_dir}/otp_ctrl_img_dev.vmem \
+              {gen_otp_images_cmd_opts}
+        ''',
+        '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_prod.hjson \
+              --out {run_dir}/otp_ctrl_img_prod.vmem \
               {gen_otp_images_cmd_opts}
         ''',
         '''{gen_otp_images_cmd} \
@@ -395,7 +400,8 @@
       uvm_test_seq: chip_sw_inject_scramble_seed_vseq
       sw_images: ["//sw/device/tests/sim_dv:inject_scramble_seed:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+lc_at_prod=1", "+flash_program_latency=5", "+sw_test_timeout_ns=150_000_000"]
+      run_opts: ["+use_otp_image=LcStProd", "+flash_program_latency=5",
+                 "+sw_test_timeout_ns=150_000_000"]
       run_timeout_mins: 180
     }
     {
@@ -959,7 +965,7 @@
       uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
       sw_images: ["//sw/device/tests/sim_dv:keymgr_key_derivation_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+lc_at_prod=1", "+sw_test_timeout_ns=20_000_000"]
+      run_opts: ["+use_otp_image=LcStProd", "+sw_test_timeout_ns=20_000_000"]
     }
     {
       name: chip_sw_keymgr_key_derivation_jitter_en
@@ -1261,7 +1267,7 @@
       name: chip_tap_straps_prod
       uvm_test_seq: chip_tap_straps_vseq
       en_run_modes: ["strap_tests_mode"]
-      run_opts: ["+lc_at_prod=1"]
+      run_opts: ["+use_otp_image=LcStProd"]
       run_timeout_mins: 120
     }
     {
