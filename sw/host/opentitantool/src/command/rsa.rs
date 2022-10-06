@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use erased_serde::Serialize;
+use serde_annotate::Annotate;
 use std::any::Any;
 use std::path::PathBuf;
 use structopt::StructOpt;
@@ -49,7 +49,7 @@ impl CommandDispatch for RsaKeyShowCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         let key = match RsaPublicKey::from_pkcs1_der_file(&self.der_file) {
             Ok(key) => Ok(key),
             Err(_) => match RsaPrivateKey::from_pkcs8_der_file(&self.der_file) {
@@ -84,7 +84,7 @@ impl CommandDispatch for RsaKeyGenerateCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         let private_key = RsaPrivateKey::new()?;
         let mut der_file = self.output_dir.to_owned();
         der_file.push(&self.basename);
@@ -138,7 +138,7 @@ impl CommandDispatch for RsaSignCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         let signature = self.private_key.sign(&self.digest)?;
         if let Some(output) = &self.output {
             signature.write_to_file(output)?;
@@ -171,7 +171,7 @@ impl CommandDispatch for RsaVerifyCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         let key = RsaPublicKey::from_pkcs1_der_file(&self.der_file)?;
         let digest = Sha256Digest::from_str(&self.digest)?;
         let signature = Signature::from_str(&self.signature)?;

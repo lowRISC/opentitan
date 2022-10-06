@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use erased_serde::Serialize;
+use serde_annotate::Annotate;
 use std::any::Any;
 use structopt::StructOpt;
 
@@ -30,7 +30,7 @@ impl CommandDispatch for GpioRead {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
         let value = gpio_pin.read()?;
@@ -59,7 +59,7 @@ impl CommandDispatch for GpioWrite {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
 
@@ -87,7 +87,7 @@ impl CommandDispatch for GpioSetMode {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
         gpio_pin.set_mode(self.mode)?;
@@ -114,7 +114,7 @@ impl CommandDispatch for GpioSetPullMode {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         let gpio_pin = transport.gpio_pin(&self.pin)?;
         gpio_pin.set_pull_mode(self.pull_mode)?;
@@ -134,7 +134,7 @@ impl CommandDispatch for GpioApplyStrapping {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         transport.apply_pin_strapping(&self.name)?;
         Ok(None)
@@ -153,7 +153,7 @@ impl CommandDispatch for GpioRemoveStrapping {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::GPIO).ok()?;
         transport.remove_pin_strapping(&self.name)?;
         Ok(None)
