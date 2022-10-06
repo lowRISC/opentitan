@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{anyhow, ensure, Result};
-use erased_serde::Serialize;
+use serde_annotate::Annotate;
 use std::any::Any;
 use std::convert::TryInto;
 use std::fs::File;
@@ -54,7 +54,7 @@ impl CommandDispatch for AssembleCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         // The `min_values` structopt attribute should take care of this, but it doesn't.
         ensure!(
             !self.filename.is_empty(),
@@ -80,7 +80,7 @@ impl CommandDispatch for ManifestShowCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         let image = image::Image::read_from_file(&self.image)?;
         let manifest_def: ManifestSpec = image.borrow_manifest()?.try_into()?;
         Ok(Some(Box::new(manifest_def)))
@@ -132,7 +132,7 @@ impl CommandDispatch for ManifestUpdateCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         let mut image = image::Image::read_from_file(&self.image)?;
 
         // Update the size field in the manifest to reflect the actual size of the image.
@@ -178,7 +178,7 @@ impl CommandDispatch for ManifestVerifyCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         let image = image::Image::read_from_file(&self.image)?;
         let manifest: ManifestSpec = image.borrow_manifest()?.try_into()?;
         let modulus = manifest.modulus().ok_or(anyhow!("Invalid modulus"))?;
@@ -204,9 +204,11 @@ pub struct DigestCommand {
 }
 
 /// Response format for the digest command.
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, Annotate)]
 pub struct DigestResponse {
-    pub digest: String,
+    #[serde(with = "serde_bytes")]
+    #[annotate(comment = "SHA256 Digest excluding the image signature bytes", format = hexstr)]
+    pub digest: Vec<u8>,
 }
 
 impl CommandDispatch for DigestCommand {
@@ -214,7 +216,7 @@ impl CommandDispatch for DigestCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Serialize>>> {
+    ) -> Result<Option<Box<dyn Annotate>>> {
         let image = image::Image::read_from_file(&self.image)?;
         let digest = image.compute_digest();
         if let Some(bin) = &self.bin {
@@ -222,7 +224,7 @@ impl CommandDispatch for DigestCommand {
             file.write(&digest.to_le_bytes())?;
         }
         Ok(Some(Box::new(DigestResponse {
-            digest: format!("0x{}", hex::encode(&digest.to_be_bytes())),
+            digest: digest.to_be_bytes(),
         })))
     }
 }

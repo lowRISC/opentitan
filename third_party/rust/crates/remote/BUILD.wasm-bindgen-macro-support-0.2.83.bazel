@@ -51,9 +51,9 @@ rust_library(
     version = "0.2.83",
     # buildifier: leave-alone
     deps = [
-        "@raze__proc_macro2__1_0_43//:proc_macro2",
+        "@raze__proc_macro2__1_0_45//:proc_macro2",
         "@raze__quote__1_0_21//:quote",
-        "@raze__syn__1_0_100//:syn",
+        "@raze__syn__1_0_101//:syn",
         "@raze__wasm_bindgen_backend__0_2_83//:wasm_bindgen_backend",
         "@raze__wasm_bindgen_shared__0_2_83//:wasm_bindgen_shared",
     ],

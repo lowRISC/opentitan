@@ -230,7 +230,7 @@ alias(
 
 alias(
     name = "proc_macro2",
-    actual = "@raze__proc_macro2__1_0_43//:proc_macro2",
+    actual = "@raze__proc_macro2__1_0_45//:proc_macro2",
     tags = [
         "cargo-raze",
         "manual",
@@ -302,7 +302,16 @@ alias(
 
 alias(
     name = "serde",
-    actual = "@raze__serde__1_0_144//:serde",
+    actual = "@raze__serde__1_0_145//:serde",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
+    name = "serde_bytes",
+    actual = "@raze__serde_bytes__0_11_7//:serde_bytes",
     tags = [
         "cargo-raze",
         "manual",
@@ -356,7 +365,7 @@ alias(
 
 alias(
     name = "syn",
-    actual = "@raze__syn__1_0_100//:syn",
+    actual = "@raze__syn__1_0_101//:syn",
     tags = [
         "cargo-raze",
         "manual",
@@ -374,7 +383,7 @@ alias(
 
 alias(
     name = "thiserror",
-    actual = "@raze__thiserror__1_0_35//:thiserror",
+    actual = "@raze__thiserror__1_0_37//:thiserror",
     tags = [
         "cargo-raze",
         "manual",
