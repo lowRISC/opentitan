@@ -142,7 +142,7 @@ typedef struct epmp_state {
   uint32_t mseccfg;
 } epmp_state_t;
 
-extern volatile epmp_state_t epmp_state;
+extern epmp_state_t epmp_state;
 
 /**
  * Configure the given PMP entry in state using the Top-Of-Range addressing
