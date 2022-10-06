@@ -65,7 +65,7 @@ ujson_rust = rule(
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_rustfmt": attr.label(
-            default = "@rules_rust//rust/toolchain:current_exec_rustfmt_files",
+            default = "@rules_rust//rust/toolchain:current_rustfmt_files",
             cfg = "exec",
         ),
     },

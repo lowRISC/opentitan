@@ -149,13 +149,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @python3_toolchains//... \
     @remotejdk11_linux//... \
     @riscv-compliance//... \
-    @rust_linux_x86_64//... \
-    @rust_darwin_aarch64_toolchains//... \
-    @rust_darwin_x86_64_toolchains//... \
-    @rust_freebsd_x86_64_toolchains//... \
-    @rust_linux_aarch64_toolchains//... \
-    @rust_linux_x86_64_toolchains//... \
-    @rust_windows_x86_64_toolchains//...
+    @rust_linux_x86_64__x86_64-unknown-linux-gnu_tools//...
   cp -R "$(${BAZELISK} info output_base)"/external/${BAZEL_PYTHON_WHEEL_REPO} \
     ${BAZEL_AIRGAPPED_DIR}/
   # We don't need all bitstreams in the cache, we just need the latest one so
