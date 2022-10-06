@@ -305,21 +305,35 @@ TEST_F(CommandTest, InstantiateBadArgs) {
 
 TEST_F(CommandTest, ReseedOk) {
   EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000002);
-  EXPECT_DIF_OK(dif_edn_reseed(&edn_, &seed_material_));
+  EXPECT_DIF_OK(
+      dif_edn_reseed(&edn_, kDifEdnEntropySrcToggleEnable, &seed_material_));
+
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000002);
+  EXPECT_DIF_OK(dif_edn_reseed(&edn_, kDifEdnEntropySrcToggleEnable, nullptr));
+
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000102);
+  EXPECT_DIF_OK(
+      dif_edn_reseed(&edn_, kDifEdnEntropySrcToggleDisable, &seed_material_));
+
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000102);
+  EXPECT_DIF_OK(dif_edn_reseed(&edn_, kDifEdnEntropySrcToggleDisable, nullptr));
 
   seed_material_.data[0] = 0x5a5a5a5a;
   seed_material_.len = 1;
   EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000012);
   EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
-  EXPECT_DIF_OK(dif_edn_reseed(&edn_, &seed_material_));
+  EXPECT_DIF_OK(
+      dif_edn_reseed(&edn_, kDifEdnEntropySrcToggleEnable, &seed_material_));
 }
 
 TEST_F(CommandTest, ReseedBadArgs) {
-  EXPECT_DIF_BADARG(dif_edn_reseed(nullptr, &seed_material_));
+  EXPECT_DIF_BADARG(
+      dif_edn_reseed(nullptr, kDifEdnEntropySrcToggleEnable, &seed_material_));
 
   // Failed overflow check.
   seed_material_.len = 16;
-  EXPECT_DIF_BADARG(dif_edn_reseed(&edn_, &seed_material_));
+  EXPECT_DIF_BADARG(
+      dif_edn_reseed(&edn_, kDifEdnEntropySrcToggleEnable, &seed_material_));
 }
 
 TEST_F(CommandTest, UpdateOk) {
