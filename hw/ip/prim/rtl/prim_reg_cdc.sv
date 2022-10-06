@@ -61,10 +61,15 @@ module prim_reg_cdc #(
       src_busy_q <= '0;
     end else if (src_req) begin
       src_busy_q <= 1'b1;
-    end else if (src_busy_q && src_ack) begin
+    end else if (src_ack) begin
       src_busy_q <= 1'b0;
     end
   end
+
+  // A src_ack should only be sent if there was a src_req.
+  // src_busy_q asserts whenever there is a src_req.  By association,
+  // whenever src_ack is seen, then src_busy must be high.
+  `ASSERT(SrcAckBusyChk_A, src_ack |-> src_busy_q, clk_src_i, !rst_src_ni)
 
   assign src_busy_o = src_busy_q;
 
