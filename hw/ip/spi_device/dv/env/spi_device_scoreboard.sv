@@ -1063,7 +1063,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   // when receive a spi rx data, save it in rx_fifo and then write to rx_mem
   // when rx_fifo is full (size=2) and no space in sram, drop it
-  virtual function void receive_spi_rx_data(bit [TL_DW:0] data);
+  virtual function void receive_spi_rx_data(bit [TL_DW-1:0] data);
     if (get_rx_sram_space_bytes() >= SRAM_WORD_SIZE || rx_word_q.size < 2) begin
       rx_word_q.push_back(data);
       update_rx_mem_fifo_and_wptr();
