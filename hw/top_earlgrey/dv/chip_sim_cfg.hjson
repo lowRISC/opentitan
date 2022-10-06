@@ -231,12 +231,12 @@
       run_opts: ["+stub_cpu=1"]
     }
     {
-      // Append stub cpu mode to csr_tests_mode, run with 20 reseeds.
+      // Append stub cpu mode to csr_tests_mode.
       name: csr_tests_mode
       en_run_modes: ["stub_cpu_mode"]
     }
     {
-      // Append stub cpu mode to mem_tests_mode, run with 20 reseeds.
+      // Append stub cpu mode to mem_tests_mode.
       name: mem_tests_mode
       en_run_modes: ["stub_cpu_mode"]
       reseed: 20
