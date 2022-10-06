@@ -39,7 +39,7 @@ opentitan_ram_binary(
 
 opentitan_gdb_test(
     name = "sram_program_verilator_test",
-    timeout = "short",
+    timeout = "moderate",
     exit_success_pattern = "sram_program\\.c:47\\] PC: 0x1000208c, SRAM: \\[0x10000000, 0x10020000\\)",
     gdb_script = """
         target extended-remote :3333
@@ -125,7 +125,7 @@ opentitan_gdb_test(
         ":sram_program_sim_verilator.elf": "sram_program.elf",
         "//sw/device/silicon_creator/rom:rom_sim_verilator.elf": "rom.elf",
     },
-    rom_vmem = "//sw/device/silicon_creator/rom:rom_sim_verilator_vmem",
+    rom_vmem = "//sw/device/silicon_creator/rom:rom_sim_verilator_scr_vmem",
     otp_vmem = "//hw/ip/otp_ctrl/data:img_rma",
     rom_kind = "Rom",
     tags = [

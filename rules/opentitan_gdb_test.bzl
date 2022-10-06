@@ -36,7 +36,7 @@ def _opentitan_gdb_test(ctx):
             --exit-success='{exit_success_pattern}' \\
             |& prefix_lines CONSOLE "$COLOR_RED") &
 
-        sleep 12
+        sleep 40
 
         (openocd -f {openocd_interface_config} \\
             -c "adapter speed 0; transport select jtag; reset_config trst_and_srst" \\
