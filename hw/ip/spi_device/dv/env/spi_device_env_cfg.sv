@@ -16,6 +16,10 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   // read by the SPI host, in order to update the other part
   bit [TL_AW-1:0]     read_buffer_ptr;
 
+  // clock only needs to be configured once. flash and TPM sequences may start in parallel.
+  // This prevents clk from being configured multiple times
+  bit                 spi_clk_configured;
+
   `uvm_object_utils_begin(spi_device_env_cfg)
     `uvm_field_object(spi_host_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(spi_device_agent_cfg, UVM_DEFAULT)

@@ -42,7 +42,7 @@ class spi_device_rx_timeout_vseq extends spi_device_base_vseq;
     uint       avail_bytes;
     uint       avail_data;
 
-    spi_device_init();
+    spi_device_fw_init();
 
     for (int i = 1; i <= num_trans; i++) begin
       `uvm_info(`gfn, $sformatf("starting sequence %0d/%0d", i, num_trans), UVM_LOW)

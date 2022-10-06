@@ -16,7 +16,7 @@ class spi_device_tx_async_fifo_reset_vseq extends spi_device_base_vseq;
     uint       avail_data;
     bit [31:0] host_data_exp_q[$];
 
-    spi_device_init();
+    spi_device_fw_init();
     `DV_CHECK_STD_RANDOMIZE_FATAL(host_data)
     `DV_CHECK_STD_RANDOMIZE_FATAL(device_data)
     // Fill TX SRAM FIFO with some data, which will be transfered to TX async FIFO

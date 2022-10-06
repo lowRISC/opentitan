@@ -103,8 +103,8 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
       0 :/ 1
     };
   }
-  virtual task spi_device_init();
-    super.spi_device_init();
+  virtual task spi_device_fw_init();
+    super.spi_device_fw_init();
     cfg.spi_host_agent_cfg.en_extra_dly_btw_sck  = en_extra_dly;
     cfg.spi_host_agent_cfg.en_extra_dly_btw_word = en_extra_dly;
   endtask
@@ -116,7 +116,7 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
       bit done_tx_write, done_rx_read, done_xfer;
       `uvm_info(`gfn, $sformatf("starting sequence %0d/%0d", i, num_trans), UVM_LOW)
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      spi_device_init();
+      spi_device_fw_init();
       fork
         begin
           process_tx_write(tx_total_bytes);

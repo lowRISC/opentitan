@@ -12,7 +12,7 @@ class spi_device_abort_vseq extends spi_device_base_vseq;
     bit        tx_fifo_full = 0;
     bit            abort_done = 0;
 
-    spi_device_init();
+    spi_device_fw_init();
     `DV_CHECK_RANDOMIZE_FATAL(this)
     `DV_CHECK_STD_RANDOMIZE_FATAL(device_data)
 

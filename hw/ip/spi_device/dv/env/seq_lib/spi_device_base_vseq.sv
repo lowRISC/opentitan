@@ -124,13 +124,20 @@ class spi_device_base_vseq extends cip_base_vseq #(
     csr_rd_check(.ptr(ral.async_fifo_level.rxlvl), .compare_value(0));
   endtask
 
-  virtual task spi_device_init();
-    // set clk period
-    if (spi_freq_faster) begin
-      cfg.spi_host_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps / core_spi_freq_ratio;
-    end else begin
-      cfg.spi_host_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps * core_spi_freq_ratio;
+  // configure the clock frequence
+  virtual task spi_clk_init();
+    if (!cfg.spi_clk_configured) begin
+      if (spi_freq_faster) begin
+        cfg.spi_host_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps / core_spi_freq_ratio;
+      end else begin
+        cfg.spi_host_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps * core_spi_freq_ratio;
+      end
+      cfg.spi_clk_configured = 1;
     end
+  endtask
+
+  virtual task spi_device_fw_init();
+    spi_clk_init();
     // update host agent
     cfg.spi_host_agent_cfg.sck_polarity[0] = sck_polarity;
     cfg.spi_host_agent_cfg.sck_phase[0] = sck_phase;

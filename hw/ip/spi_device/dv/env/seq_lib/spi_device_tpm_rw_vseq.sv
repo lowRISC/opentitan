@@ -10,7 +10,7 @@ class spi_device_tpm_rw_vseq extends spi_device_tpm_base_vseq;
   virtual task body();
     bit [7:0] spi_byte_q[$];
     bit [7:0] sw_byte_q[$];
-    spi_device_init();
+    spi_device_fw_init();
 
     // randomised tpm configuration.
     tpm_init(TpmCrbMode);

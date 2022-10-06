@@ -25,7 +25,7 @@ class spi_device_rx_async_fifo_reset_vseq extends spi_device_txrx_vseq;
     uint       avail_data;
     bit [31:0] host_data_exp_q[$];
 
-    spi_device_init();
+    spi_device_fw_init();
     `DV_CHECK_STD_RANDOMIZE_FATAL(host_data)
     `DV_CHECK_STD_RANDOMIZE_FATAL(device_data)
     wait_for_tx_avail_bytes(SRAM_WORD_SIZE, SramSpaceAvail, avail_bytes);
