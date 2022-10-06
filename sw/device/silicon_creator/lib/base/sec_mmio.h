@@ -62,16 +62,6 @@ enum {
  */
 typedef struct sec_mmio_ctx {
   /**
-   * List of expected register values.
-   */
-  uint32_t values[kSecMmioRegFileSize];
-
-  /**
-   * List of expected register addresses.
-   */
-  uint32_t addrs[kSecMmioRegFileSize];
-
-  /**
    * Represents the expected number of register values.
    */
   uint32_t last_index;
@@ -91,6 +81,14 @@ typedef struct sec_mmio_ctx {
    * `sec_mmio_check_counters()` functions.
    */
   uint32_t check_count;
+  /**
+   * List of expected register values.
+   */
+  uint32_t values[kSecMmioRegFileSize];
+  /**
+   * List of expected register addresses.
+   */
+  uint32_t addrs[kSecMmioRegFileSize];
 } sec_mmio_ctx_t;
 
 /**
@@ -98,12 +96,12 @@ typedef struct sec_mmio_ctx {
  * extension. It's layout is therefore fixed and any changes must be applied
  * to both boot stages.
  */
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, values, 0);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, addrs, 4000);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, last_index, 8000);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, write_count, 8004);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, expected_write_count, 8008);
-OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, check_count, 8012);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, last_index, 0);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, write_count, 4);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, expected_write_count, 8);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, check_count, 12);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, values, 16);
+OT_ASSERT_MEMBER_OFFSET(sec_mmio_ctx_t, addrs, 4016);
 OT_ASSERT_SIZE(sec_mmio_ctx_t, 8016);  // Checked by linker script.
 
 // The sec_mmio_ctx is referenced here to be able to use it inside the
