@@ -295,9 +295,10 @@ package entropy_src_env_pkg;
   function automatic int ideal_threshold_recommendation(int window_size, health_test_e test,
                                                         bit per_line, which_ht_e hi_low,
                                                         real desired_sigma);
-    int n, minv, maxv;
+    int n;
     real p, mean, stddev;
     int result, upper_threshold, lower_threshold;
+    string msg;
 
     case(test)
       adaptp_ht: begin
@@ -328,9 +329,75 @@ package entropy_src_env_pkg;
     upper_threshold = (upper_threshold > n) ? n : upper_threshold;
     lower_threshold = (lower_threshold < 0) ? 0 : lower_threshold;
 
-    return (hi_low == high_test) ? upper_threshold : lower_threshold;
+    result = (hi_low == high_test) ? upper_threshold : lower_threshold;
+
+    msg = {
+        "Threshold Calculation\n",
+        $sformatf("window_size: %d\n", window_size),
+        $sformatf("test: %s\n", test.name()),
+        $sformatf("per_line: %d\n", per_line),
+        $sformatf("high or low: %s\n", hi_low.name()),
+        $sformatf("desired sigma: %f\n", desired_sigma),
+        $sformatf("n: %d, p: %f\n", n, p),
+        $sformatf("mean: %f, stddev: %f\n", mean, stddev),
+        $sformatf("result: %d\n", result),
+        $sformatf("result (hex): 0x%04h\n", result[15:0])
+    };
+
+    `uvm_info("entropy_src_env_pkg::ideal_threshold_recommendation", msg, UVM_DEBUG)
+
+    return result;
 
   endfunction
+
+  // Returns the number of sigma between the threshold and the mean.
+  //
+  // To be used for calculating the actual sigma-values associated with a threshold when sampling
+  // coverpoints. This function is effectively the inverse of ideal_threshold_recommendation.
+  //
+  function automatic real ideal_threshold_to_sigma(int window_size, health_test_e test,
+                                                  bit per_line, which_ht_e hi_low,
+                                                  int actual_threshold);
+    int n;
+    real p, mean, stddev;
+    real result, offset;
+
+    case(test)
+      adaptp_ht: begin
+        // number of trials is equal to number of bits, either in the whole window or per line
+        n = per_line ? (window_size / RNG_BUS_WIDTH) : window_size;
+        p = 0.5;
+      end
+      bucket_ht: begin
+        n = (window_size / RNG_BUS_WIDTH);
+        p = 1.0/real'(1 << RNG_BUS_WIDTH);
+      end
+      markov_ht: begin
+        n = per_line ? (window_size / RNG_BUS_WIDTH / 2) : window_size / 2;
+        p = 0.5;
+      end
+      default: begin
+        `dv_fatal("Invalid test!", "entropy_src_env_pkg::ideal_threshold_recommendation")
+      end
+    endcase
+    mean   = p * n;
+    stddev = $sqrt(p * (1 - p) * n);
+
+    offset = actual_threshold - mean;
+
+    // Low thresholds should always below the mean.
+    // Invert to make offset a positive number (assuming the threshold is on the correct side).
+    // NOTE: The bucket test only has a high threshold.
+    if ( (hi_low != high_test) && (test != bucket_ht) ) begin
+      offset = offset * -1;
+    end
+
+    // If offset is less than zero it means that the threshold is beyond the mean.
+    // Just count it as zero.
+    return (offset < 0) ? 0 : offset / stddev;
+
+  endfunction
+
 
   // package sources
   `include "entropy_src_dut_cfg.sv"

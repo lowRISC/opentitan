@@ -462,7 +462,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     low_test             = is_low_test(test);
     continuous_test      = (test == "repcnt") || (test == "repcnts");
 
-    // TODO: Implement ONE-WAY thresholds
     threshold_field_name = fips_mode ? "fips_thresh" : "bypass_thresh";
     threshold_reg_name  = $sformatf("%s_thresholds", test);
 
@@ -511,15 +510,24 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int value, minval, maxval;
     bit fail_hi, fail_lo;
     bit total_scope;
+    int threshold_hi, threshold_lo;
+    real sigma_hi, sigma_lo;
 
-    int window_size = fips_mode ? ral.health_test_windows.fips_window.get_mirrored_value() :
-                                  ral.health_test_windows.bypass_window.get_mirrored_value();
-    // TODO (Priority 3): write a function to map actual thresholds to their corresponding sigma
-    // (assuming ideal noise inputs), so we can pull the sigma values from the actual
-    // register values, as opposed to the config.
-    real sigma = cfg.dut_cfg.adaptp_sigma;
+    int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
+                                  `gmv(ral.health_test_windows.bypass_window);
+
+    threshold_hi = fips_mode ? `gmv(ral.adaptp_hi_thresholds.fips_thresh) :
+                               `gmv(ral.adaptp_hi_thresholds.bypass_thresh);
+
+    threshold_lo = fips_mode ? `gmv(ral.adaptp_lo_thresholds.fips_thresh) :
+                               `gmv(ral.adaptp_lo_thresholds.bypass_thresh);
 
     total_scope = (ral.conf.threshold_scope.get_mirrored_value() == MuBi4True);
+
+    sigma_hi = ideal_threshold_to_sigma(window_size, adaptp_ht, !total_scope,
+                                        high_test, threshold_hi);
+    sigma_lo = ideal_threshold_to_sigma(window_size, adaptp_ht, !total_scope,
+                                        low_test, threshold_lo);
 
     value = calc_adaptp_test(window, maxval, minval);
 
@@ -534,12 +542,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
 
     if (ht_is_active()) begin
-      cov_vif.cg_win_ht_sample(adaptp_ht, high_test, window_size, fail_hi);
-      cov_vif.cg_win_ht_sample(adaptp_ht, low_test, window_size, fail_lo);
-      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, high_test, window_size, !total_scope,
-                                              sigma, fail_hi);
-      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, low_test, window_size, !total_scope,
-                                              sigma, fail_lo);
+      cov_vif.cg_win_ht_sample(adaptp_ht, high_test, window_size * RNG_BUS_WIDTH, fail_hi);
+      cov_vif.cg_win_ht_sample(adaptp_ht, low_test, window_size * RNG_BUS_WIDTH, fail_lo);
+      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, high_test, window_size * RNG_BUS_WIDTH,
+                                              !total_scope, sigma_hi, fail_hi);
+      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, low_test, window_size * RNG_BUS_WIDTH,
+                                              !total_scope, sigma_lo, fail_lo);
     end
 
     return (fail_hi || fail_lo);
@@ -548,13 +556,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   function bit evaluate_bucket_test(queue_of_rng_val_t window, bit fips_mode);
     int value;
     bit fail;
+    int threshold;
+    real sigma;
 
-    int window_size = fips_mode ? ral.health_test_windows.fips_window.get_mirrored_value() :
-                                  ral.health_test_windows.bypass_window.get_mirrored_value();
-    // TODO (Priority 3): write a function to map actual thresholds to their corresponding sigma
-    // (assuming ideal noise inputs), so we can pull the sigma values from the actual
-    // register values, as opposed to the config.
-    real sigma = cfg.dut_cfg.adaptp_sigma;
+    int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
+                                  `gmv(ral.health_test_windows.bypass_window);
+
+    threshold = fips_mode ? `gmv(ral.bucket_thresholds.fips_thresh) :
+                            `gmv(ral.bucket_thresholds.bypass_thresh);
+
+    sigma = ideal_threshold_to_sigma(window_size, bucket_ht, 0, high_test, threshold);
 
     value = calc_bucket_test(window);
 
@@ -575,14 +586,24 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int value, minval, maxval;
     bit fail_hi, fail_lo;
     bit total_scope;
-    int window_size = fips_mode ? ral.health_test_windows.fips_window.get_mirrored_value() :
-                                  ral.health_test_windows.bypass_window.get_mirrored_value();
-    // TODO (Priority 3): write a function to map actual thresholds to their corresponding sigma
-    // (assuming ideal noise inputs), so we can pull the sigma values from the actual
-    // register values, as opposed to the config.
-    real sigma = cfg.dut_cfg.adaptp_sigma;
+    int threshold_hi, threshold_lo;
+    real sigma_hi, sigma_lo;
+
+    int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
+                                  `gmv(ral.health_test_windows.bypass_window);
+
+    threshold_hi = fips_mode ? `gmv(ral.markov_hi_thresholds.fips_thresh) :
+                               `gmv(ral.markov_hi_thresholds.bypass_thresh);
+
+    threshold_lo = fips_mode ? `gmv(ral.markov_lo_thresholds.fips_thresh) :
+                               `gmv(ral.markov_lo_thresholds.bypass_thresh);
 
     total_scope = (ral.conf.threshold_scope.get_mirrored_value() == prim_mubi_pkg::MuBi4True);
+
+    sigma_hi = ideal_threshold_to_sigma(window_size, markov_ht, !total_scope,
+                                        high_test, threshold_hi);
+    sigma_lo = ideal_threshold_to_sigma(window_size, markov_ht, !total_scope,
+                                        low_test, threshold_lo);
 
     value = calc_markov_test(window, maxval, minval);
 
@@ -595,14 +616,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     fail_hi = check_threshold("markov_hi", fips_mode, total_scope ? value : maxval);
     if (fail_hi) predict_failure_logs("markov_hi");
 
-
     if (ht_is_active()) begin
       cov_vif.cg_win_ht_sample(markov_ht, high_test, window_size, fail_hi);
       cov_vif.cg_win_ht_sample(markov_ht, low_test, window_size, fail_lo);
       cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, high_test, window_size, !total_scope,
-                                              sigma, fail_hi);
+                                              sigma_hi, fail_hi);
       cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, low_test, window_size, !total_scope,
-                                              sigma, fail_lo);
+                                              sigma_hi, fail_lo);
     end
 
     return (fail_hi || fail_lo);
@@ -744,8 +764,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       if (main_sm_exp_alert_cond) begin
         if (!fw_ov_insert && !threshold_alert_active && !main_sm_escalates) begin
           if (dut_phase == STARTUP) begin
-            fmt = "New alert anticpated with >= 2 failing windows."
-                + " (supercedes count/threshold of %01d/%01d)";
+            fmt =  "New alert anticpated with >= 2 failing windows.";
+            fmt += "(supercedes count/threshold of %01d/%01d)";
           end else begin
             fmt = "New alert anticpated! Fail count (%01d) >= threshold (%01d)";
           end
@@ -1111,8 +1131,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       bad_redundancy = mubi4_test_invalid(
           prim_mubi_pkg::mubi4_t'(get_reg_fld_mirror_value(ral, reg_name, mubi_field)));
     end else begin
-      bit thresh     = get_reg_fld_mirror_value(ral, "alert_threshold", "alert_threshold");
-      bit thresh_inv = get_reg_fld_mirror_value(ral, "alert_threshold", "alert_threshold_inv");
+      bit [15:0] thresh     = get_reg_fld_mirror_value(ral, "alert_threshold", "alert_threshold");
+      bit [15:0] thresh_inv = get_reg_fld_mirror_value(ral, "alert_threshold",
+                                                       "alert_threshold_inv");
       bad_redundancy = (thresh != ~thresh_inv);
     end
 
@@ -1961,8 +1982,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
       `uvm_info(`gfn, $sformatf("phase: %s\n", dut_fsm_phase.name), UVM_HIGH)
 
-      window_size = rng_window_size(seed_idx, is_fips_mode,
-                                    fw_ov_insert, cfg.dut_cfg.fips_window_size);
+      window_size = rng_window_size(seed_idx, is_fips_mode, fw_ov_insert,
+                                    `gmv(ral.health_test_windows.fips_window) * RNG_BUS_WIDTH);
 
       `uvm_info(`gfn, $sformatf("window_size: %08d\n", window_size), UVM_HIGH)
 
