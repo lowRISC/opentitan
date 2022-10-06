@@ -90,23 +90,20 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     super.enable_dut();
   endtask
 
-  virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg,
-                                realtime pause=default_cfg_pause,
-                                bit do_disable=1'b0,
-                                output bit completed,
-                                output bit regwen);
+  virtual task try_apply_base_configuration(entropy_src_dut_cfg newcfg,
+                                            realtime pause,
+                                            output bit completed);
+
     int hi_thresh, lo_thresh;
     mubi4_t threshold_scope = newcfg.ht_threshold_scope;
 
-
-    if (do_disable) begin
-      disable_dut();
-    end
+    completed = 0;
 
     // TODO: Separate sigmas for bypass and FIPS operation
 
     if (!newcfg.default_ht_thresholds) begin
       // AdaptP thresholds
+      `uvm_info(`gfn, "Setting ADAPTP thresholds", UVM_DEBUG)
       m_rng_push_seq.threshold_rec(newcfg.fips_window_size, adaptp_ht,
                                    threshold_scope != MuBi4True,
                                    newcfg.adaptp_sigma, lo_thresh, hi_thresh);
@@ -121,6 +118,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       csr_update(.csr(ral.adaptp_lo_thresholds));
 
       // Bucket thresholds
+      `uvm_info(`gfn, "Setting BUCKET thresholds", UVM_DEBUG)
       m_rng_push_seq.threshold_rec(newcfg.fips_window_size, bucket_ht, 0,
                                    newcfg.bucket_sigma, lo_thresh, hi_thresh);
       ral.bucket_thresholds.fips_thresh.set(hi_thresh[15:0]);
@@ -130,6 +128,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       csr_update(.csr(ral.bucket_thresholds));
 
       // Markov Thresholds
+      `uvm_info(`gfn, "Setting MARKOV thresholds", UVM_DEBUG)
       m_rng_push_seq.threshold_rec(newcfg.fips_window_size, markov_ht,
                                    threshold_scope != MuBi4True,
                                    newcfg.markov_sigma, lo_thresh, hi_thresh);
@@ -148,9 +147,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // get written last
     // Note there is no need to disable the dut again for the remaining registers
     // it has already been done above.
-    super.entropy_src_init(.newcfg(newcfg), .pause(pause), .do_disable(1'b0),
-                           .completed(completed), .regwen(regwen));
-
+    super.try_apply_base_configuration(.newcfg(newcfg), .pause(pause), .completed(completed));
   endtask
 
   task pre_start();
@@ -567,7 +564,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     bit reconfig_complete;
     bit regwen;
 
-    entropy_src_dut_cfg altcfg=cfg.dut_cfg;
+    entropy_src_dut_cfg altcfg=new cfg.dut_cfg;
     if (do_reset) begin
       apply_reset(.kind("HARD_DUT_ONLY"));
       post_apply_reset(.reset_kind("HARD"));
@@ -577,6 +574,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     do begin
       `DV_CHECK_RANDOMIZE_FATAL(altcfg);
+      if (!do_reset) begin
+        // Don't change the ht_threshold_scope or window sizes without a reset otherwise the one-way
+        // HT thresholds will not allow us to apply sensible ranges, and any following health tests
+        // will likely fail.
+        altcfg.bypass_window_size   = cfg.dut_cfg.bypass_window_size;
+        altcfg.fips_window_size     = cfg.dut_cfg.fips_window_size;
+        altcfg.ht_threshold_scope   = cfg.dut_cfg.ht_threshold_scope;
+      end
       entropy_src_init(.newcfg(altcfg),
                        .do_disable(1'b1),
                        .completed(reconfig_complete),

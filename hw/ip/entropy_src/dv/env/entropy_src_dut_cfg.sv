@@ -56,7 +56,7 @@ class entropy_src_dut_cfg extends uvm_object;
   // Fixed DUT configurations (TODO:RANDOMIZE) //
   ///////////////////////////////////////////////
 
-  uint fips_window_size, bypass_window_size, boot_mode_retry_limit;
+  uint boot_mode_retry_limit;
 
   ///////////////////////
   // Randomized fields //
@@ -69,6 +69,8 @@ class entropy_src_dut_cfg extends uvm_object;
                                 entropy_data_reg_enable, rng_bit_enable, ht_threshold_scope;
 
   rand int                      observe_fifo_thresh;
+
+  rand int                      fips_window_size, bypass_window_size;
 
   rand bit [15:0]               alert_threshold;
   rand bit [15:0]               alert_threshold_inv;
@@ -95,6 +97,16 @@ class entropy_src_dut_cfg extends uvm_object;
   /////////////////
   // Constraints //
   /////////////////
+
+  constraint bypass_window_size_c { bypass_window_size dist {
+      384 :/ 1 };}
+
+  constraint fips_window_size_c { fips_window_size dist {
+     512  :/ 1,
+     1024 :/ 1,
+     2048 :/ 5,
+     4096 :/ 1,
+     8192 :/ 1 };}
 
   constraint sw_regupd_c {sw_regupd dist {
       1 :/ sw_regupd_pct,
@@ -299,6 +311,7 @@ class entropy_src_dut_cfg extends uvm_object;
   function void post_randomize();
     // temporary variable to map randomized integer variables to the range [0, 1]
     real tmp_r;
+    bit bad_alert_threshold_inv = 0;
 
     tmp_r = real'(adaptp_sigma_i)/{$bits(adaptp_sigma_i){1'b1}};
     adaptp_sigma = adaptp_sigma_min + (adaptp_sigma_max - adaptp_sigma_min) * tmp_r;
@@ -311,7 +324,6 @@ class entropy_src_dut_cfg extends uvm_object;
 
     if (use_invalid_mubi) begin
       prim_mubi_pkg::mubi4_t invalid_mubi_val;
-      bit bad_alert_threshold_inv = 0;
 
       invalid_mubi_val = get_rand_mubi4_val(.t_weight(0), .f_weight(0), .other_weight(1));
 
@@ -334,14 +346,15 @@ class entropy_src_dut_cfg extends uvm_object;
         default: begin
           `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
         end
-      endcase
-      if (!bad_alert_threshold_inv) begin
-        alert_threshold_inv = ~alert_threshold;
-      end else if (alert_threshold_inv == ~alert_threshold) begin
-        // In the unlikely event that the random value of alert_threshold_inv satisfies
-        // our inverse condition force it a known unacceptable value
-        alert_threshold_inv = (alert_threshold == 0) ? 16'h1 : alert_threshold;
-      end
+      endcase // case (which_invalid_mubi)
+    end
+
+    if (!bad_alert_threshold_inv) begin
+      alert_threshold_inv = ~alert_threshold;
+    end else if (alert_threshold_inv == ~alert_threshold) begin
+      // In the unlikely event that the random value of alert_threshold_inv satisfies
+      // our inverse condition force it a known unacceptable value
+      alert_threshold_inv = (alert_threshold == 0) ? 16'h1 : alert_threshold;
     end
   endfunction
 

@@ -13,8 +13,6 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.en_scb                      = 1;
     cfg.alert_max_delay             = 5;
 
-    cfg.dut_cfg.fips_window_size            = 2048;
-    cfg.dut_cfg.bypass_window_size          = 384;
     cfg.dut_cfg.boot_mode_retry_limit       = 10;
     cfg.sim_duration                = 20ms;
     // On average two hard failures per simulation
@@ -37,10 +35,11 @@ class entropy_src_rng_test extends entropy_src_base_test;
 
     cfg.dut_cfg.entropy_data_reg_enable_pct = 50;
     cfg.dut_cfg.route_software_pct          = 50;
-    cfg.otp_en_es_fw_read_pct       = 50;
-    cfg.otp_en_es_fw_over_pct       = 50;
+    cfg.otp_en_es_fw_read_pct               = 50;
+    cfg.otp_en_es_fw_over_pct               = 50;
 
-    cfg.dut_cfg.type_bypass_pct             = 50;
+    cfg.dut_cfg.type_bypass_pct             = 25;
+    cfg.dut_cfg.ht_threshold_scope_pct      = 50;
     cfg.dut_cfg.default_ht_thresholds_pct   = 0;
 
     // Sometimes read data from the Observe FIFO (but always take entropy from RNG)
