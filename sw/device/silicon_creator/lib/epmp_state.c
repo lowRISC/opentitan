@@ -9,7 +9,7 @@
 
 // The context is declared as weak so that the ROM and ROM_EXT may
 // override its location.
-OT_WEAK volatile epmp_state_t epmp_state;
+OT_WEAK epmp_state_t epmp_state;
 
 /**
  * Extern declarations of inline functions.
@@ -23,7 +23,7 @@ extern void epmp_state_configure_napot(uint32_t entry, epmp_region_t region,
 
 rom_error_t epmp_state_check(void) {
   uint32_t checks = 0;
-  volatile const epmp_state_t *s = &epmp_state;
+  const epmp_state_t *s = &epmp_state;
 #define CHECK_CSR(reg, value) \
   do {                        \
     uint32_t csr;             \
