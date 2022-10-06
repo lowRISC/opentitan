@@ -100,6 +100,27 @@ module spid_addr_4b (
   ////////////////
   // Generates spi_cfg_addr_4b_en to broadcast to other submodules
 
+  logic addr_4b_en_locked;
+  logic addr_4b_en_lock_condition;
+  logic addr_4b_en_unlock_condition;
+  logic addr_4b_en_sw_update_condition;
+
+  assign addr_4b_en_lock_condition = spi_reg_cfg_addr_4b_en_sync ? spi_addr_4b_clr_i :
+                                                                   spi_addr_4b_set_i;
+  assign addr_4b_en_unlock_condition = (spi_reg_cfg_addr_4b_en_sync == spi_cfg_addr_4b_en_o);
+  assign addr_4b_en_sw_update_condition = (spi_reg_cfg_addr_4b_en_sync != spi_cfg_addr_4b_en_o);
+
+
+  always_ff @(posedge spi_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      addr_4b_en_locked <= 1'b 0;
+    end else if (!addr_4b_en_locked & addr_4b_en_lock_condition) begin
+      addr_4b_en_locked <= 1'b 1;
+    end else if (addr_4b_en_locked & addr_4b_en_unlock_condition) begin
+      addr_4b_en_locked <= 1'b 0;
+    end
+  end
+
   always_ff @(posedge spi_clk_i or negedge sys_rst_ni) begin
     if (!sys_rst_ni) begin
       spi_cfg_addr_4b_en_o <= 1'b 0;
@@ -109,8 +130,8 @@ module spid_addr_4b (
     end else if (spi_addr_4b_clr_i) begin
       // EX4B command raises the clear event
       spi_cfg_addr_4b_en_o <= 1'b 0;
-    end else if (spi_csb_asserted_pulse_i
-      && (spi_cfg_addr_4b_en_o != spi_reg_cfg_addr_4b_en_sync)) begin
+    end else if (spi_csb_asserted_pulse_i & !addr_4b_en_locked &
+                 addr_4b_en_sw_update_condition) begin
       // Update
       spi_cfg_addr_4b_en_o <= spi_reg_cfg_addr_4b_en_sync;
     end
