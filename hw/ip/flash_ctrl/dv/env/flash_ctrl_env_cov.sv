@@ -64,7 +64,7 @@ class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
   covergroup eviction_cg with function sample (int idx, bit[1:0] op,
                                                bit [1:0] scr_ecc);
     evic_idx_cp : coverpoint idx {
-      bins evic_idx[] = {1, 2, 4, 8};
+      bins evic_idx[] = {[0:3]};
     }
     evic_op_cp : coverpoint op {
       bins evic_op[] = {1, 2};

@@ -184,15 +184,6 @@
       tests: ["flash_ctrl_error_mp"]
     }
     {
-      name: error_rd
-      desc: '''
-            Perform accesses in order to provoke read data error. Test both, Software interface and
-            Hardware interface. Related covergroup is error_cg.
-            '''
-      stage: V2S
-      tests: []
-    }
-    {
       name: error_prog_win
       desc: '''
             Perform accesses in order to provoke the 'program resolution' error.
@@ -254,15 +245,6 @@
             '''
       stage: V2
       tests: ["flash_ctrl_stress_all"]
-    }
-    {
-      name: error_flash_phy
-      desc: '''
-            Perform accesses in order to provoke native flash error. Test both, Software interface
-            and Hardware interface. Related covergroup is error_cg.
-            '''
-      stage: V2S
-      tests: []
     }
     {
       name: secret_partition

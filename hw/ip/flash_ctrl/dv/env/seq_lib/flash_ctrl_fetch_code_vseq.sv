@@ -18,6 +18,8 @@
 // exec_key==CODE_EXEC_KEY, instr_type=MuBi4True  - Allowed, Data Match, No TL Error - Code Access
 // exec_key!=CODE_EXEC_KEY, instr_type=MuBi4False - Allowed, Data Match, No TL Error - Data Access
 // exec_key!=CODE_EXEC_KEY, instr_type=MuBi4True  - Denied,  Data 0,     TL Error    - Code Access
+//   x (Don't care)       , instr_type=None       - Denied,              TL Error
+
 
 class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
   `uvm_object_utils(flash_ctrl_fetch_code_vseq)
@@ -25,8 +27,11 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
   `uvm_object_new
 
   // Code Allowed/Denied Flags
-  localparam bit CODE_FETCH_ALLOWED = 0;
-  localparam bit CODE_FETCH_DENIED = 1;
+  typedef enum bit [1:0] {
+     CODE_FETCH_ALLOWED,
+     CODE_FETCH_DENIED,
+     CODE_FETCH_ERR
+  } code_fetch_type_e;
 
   // Class Members
   bit  poll_fifo_status = 1;
@@ -217,6 +222,7 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
 
     // Iterate
     num_trans = $urandom_range(32, 64);
+
     for (int i = 0; i < num_trans; i++) begin
 
       `uvm_info(`gfn, $sformatf("Iteration : %0d / %0d", i + 1, num_trans), UVM_LOW)
@@ -227,6 +233,10 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
       // Randomize the Members of the Class (Use Flash Read, and a Data Partition)
       `DV_CHECK_RANDOMIZE_WITH_FATAL(this, flash_op.op == FlashOpRead;
                                            flash_op.partition == FlashPartData;)
+      instr_type = get_rand_mubi4_val(.t_weight(2),
+                                      .f_weight(2),
+                                      .other_weight(1));
+
       `uvm_info(`gfn, $sformatf(
          "Flash Op : Bank: %0d, flash_op: %0p, flash_op_data: %0p, EXEC Key: 0x%0x, instr_type: %s",
            bank, flash_op, flash_op_data, exec_key, instr_type.name()), UVM_LOW)
@@ -247,13 +257,14 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
       `uvm_info(`gfn, $sformatf("Code Fetch Type : %s (%s)", instr_type.name(), msg), UVM_LOW)
 
       // Model Expected Functionality
-      if (exec_key == CODE_EXEC_KEY) begin
+      if (exec_key == CODE_EXEC_KEY &&
+          instr_type inside {MuBi4True, MuBi4False}) begin
         check_code_access(CODE_FETCH_ALLOWED);
       end else begin
         unique case (instr_type)
           MuBi4False: check_code_access(CODE_FETCH_ALLOWED);
           MuBi4True: check_code_access(CODE_FETCH_DENIED);
-          default:`uvm_error(`gfn, "Programming Error Identified (Instruction Type), FAIL")
+          default: check_code_access(CODE_FETCH_ERR);
         endcase
       end
 
@@ -287,14 +298,15 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
   endtask : init_flash_regions
 
   // Task to Check Code Access
-  virtual task check_code_access(input bit opt);
-    bit comp;
+  virtual task check_code_access(code_fetch_type_e opt);
+    bit comp, exp_err;
     // Local Variables
     addr_t read_addr;
     data_t rdata;
     data_t rdata_unused;
 
     // Note : opt 'CODE_FETCH_ALLOWED' - Access Allowed, 'CODE_FETCH_DENIED' - Access Denied
+    exp_err = (opt != CODE_FETCH_ALLOWED);
 
     // Delete Data Queues
     flash_op_data.delete();
@@ -310,7 +322,7 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
       read_addr = flash_op.addr + 4 * i;
       // Note: rdata is omitted, as it cannot be directly compared with Backdoor reads
       do_direct_read(.addr(read_addr), .mask('1), .blocking(cfg.block_host_rd), .check_rdata(0),
-                     .instr_type(instr_type), .rdata(rdata_unused), .exp_err_rsp(opt),
+                     .instr_type(instr_type), .rdata(rdata_unused), .exp_err_rsp(exp_err),
                      .completed(comp));
       cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
     end
@@ -318,10 +330,11 @@ class flash_ctrl_fetch_code_vseq extends flash_ctrl_base_vseq;
 
     // Check SW Read Data vs Host Direct Read Data (stored in cfg.flash_rd_data)
     foreach (flash_op_data[i]) begin
-      if (opt == CODE_FETCH_ALLOWED)  // Expect Data to Match
-      begin
+      if (opt == CODE_FETCH_ALLOWED) begin  // Expect Data to Match
         rdata = cfg.flash_rd_data.pop_front();
         `DV_CHECK_EQ(rdata, flash_op_data[i])
+      end else if (opt == CODE_FETCH_ERR) begin
+        `DV_CHECK_NE(rdata, flash_op_data[i])
       end else  begin // Expect Data to Read Zero
         `DV_CHECK_EQ(rdata, '0)
       end

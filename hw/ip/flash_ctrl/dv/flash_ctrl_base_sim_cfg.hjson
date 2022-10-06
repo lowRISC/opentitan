@@ -329,6 +329,12 @@
       reseed: 40
     }
     {
+      name: flash_ctrl_rw_evict_all_en
+      uvm_test_seq: flash_ctrl_rw_evict_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_read=1", "+en_always_prog=1"]
+      reseed: 40
+    }
+    {
       name: flash_ctrl_re_evict
       uvm_test_seq: flash_ctrl_re_evict_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_read=1"]
@@ -343,7 +349,7 @@
     }
     {
       name: flash_ctrl_sec_cm
-      run_timeout_mins: 120
+      run_timeout_mins: 180
     }
     {
       name: flash_ctrl_sec_info_access
@@ -417,9 +423,10 @@
     }
     {
       // For test clean up run subset of tests
-      name: sub
-      tests: ["flash_ctrl_smoke",
-              "flash_ctrl_smoke_hw"
+      name: evict
+      tests: ["flash_ctrl_rw_evict",
+              "flash_ctrl_re_evict",
+              "flash_ctrl_rw_evict_all_en"
               ]
     }
     {

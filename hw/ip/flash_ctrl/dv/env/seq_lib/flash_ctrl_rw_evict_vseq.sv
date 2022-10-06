@@ -22,7 +22,7 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
       begin
         rd_cache_t entry;
 
-        while (idx < 30 && cfg.flash_ctrl_vif.fatal_err == 0) begin
+        while (idx < 50 && cfg.flash_ctrl_vif.fatal_err == 0) begin
           `DV_CHECK_RANDOMIZE_FATAL(this)
           rand_op.addr[OTFBankId] = bank;
           ctrl = rand_op;
@@ -71,7 +71,7 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
                   end
                   readback_flash(ctrl, bank, 1, fractions);
                 end
-                1: begin
+                3: begin
                   addr_q.push_back(entry);
                   if (addr_q.size > 4) begin
                     rd_cache_t old_ent = addr_q.pop_front();
@@ -108,7 +108,7 @@ class flash_ctrl_rw_evict_vseq extends flash_ctrl_legacy_base_vseq;
       end // fork begin
       begin
         time timeout_ns = 100_000_000;
-        evict_trans = $urandom_range(4, 20);
+        evict_trans = $urandom_range(10, 20);
         `uvm_info("seq", $sformatf("wait evict start %0d", evict_trans), UVM_MEDIUM)
         `DV_SPINWAIT( wait(idx == evict_trans);,
                       $sformatf("Timed out waiting for evict trans %0d idx:%0d",

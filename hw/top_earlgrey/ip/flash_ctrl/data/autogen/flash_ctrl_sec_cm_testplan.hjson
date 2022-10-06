@@ -158,7 +158,7 @@
        - Debug state is changed to 'flash_ctrl_env_pkg::FlashLcDisabled' state
       '''
       stage: V2S
-      tests: ["flash_ctrl_rd_path_intg", "flash_ctrl_access_after_disable"]
+      tests: ["flash_ctrl_rd_intg", "flash_ctrl_access_after_disable"]
     }
     {
       name: sec_cm_mem_disable_config_mubi
