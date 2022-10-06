@@ -21,9 +21,13 @@ class spi_device_tpm_read_hw_reg_vseq extends spi_device_tpm_base_vseq;
     };
   }
 
+  rand bit direct_return_for_hw_reg;
+
   // Override this to test more in the extended test
   constraint tpm_addition_for_read_hw_reg_c {
     tpm_mode == TpmFifoMode;
+    // have it always return by HW, so that this seq doesn't need to have SW to read/prepare data
+    direct_return_for_hw_reg == 1;
     is_hw_reg_region == 1;
     is_hw_reg_offset == 1;
     tpm_write == 0;
@@ -42,7 +46,7 @@ class spi_device_tpm_read_hw_reg_vseq extends spi_device_tpm_base_vseq;
       bit upstream_spi_done;
       bit [7:0] returned_bytes[$]; // this is checked in scb
       `uvm_info(`gfn, $sformatf("starting sequence %0d/%0d", i, num_trans), UVM_LOW)
-      tpm_init(.mode(tpm_mode), .is_hw_return(1));
+      tpm_init(.mode(tpm_mode), .is_hw_return(direct_return_for_hw_reg));
 
       fork
         while (!upstream_spi_done) begin

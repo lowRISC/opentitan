@@ -180,13 +180,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         SpiModeTpm: begin
           bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
           if (item.write_command) begin
-            if (is_invalid_locality_hw_rsp(addr)) begin
-              `uvm_info(`gfn, $sformatf("drop this item due to writing to invalid locality\n%s",
-                                        item.sprint()), UVM_MEDIUM)
-            end else begin
-              `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
-              tpm_write_spi_q.push_back(item);
-            end
+            `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
+            tpm_write_spi_q.push_back(item);
           end else begin
             bit [TL_DW-1:0] exp_q[$];
 
@@ -221,20 +216,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     return (base_addr == TPM_BASE_ADDR);
   endfunction
 
-  // return true when it's bigger than max locality and invalid locality check is enabled
-  // if true, the access to this addr is reponsed by HW
-  //  - for read, return 'hff
-  //  - for write, drop
-  function bit is_invalid_locality_hw_rsp(bit[TPM_ADDR_WIDTH-1:0] addr);
-    if (get_locality_from_addr(addr) >= MAX_TPM_LOCALITY &&
-        !`gmv(ral.tpm_cfg.tpm_reg_chk_dis) &&
-        `gmv(ral.tpm_cfg.invalid_locality) &&
-        is_match_to_tpm_base_addr(addr)) begin
-      return 1;
-    end
-    return 0;
-  endfunction
-
   `define CREATE_TPM_CASE_STMT(TPM_NAME, CSR_NAME) \
     ``TPM_NAME``_OFFSET: begin \
       exp_value_q.push_back(get_reg_val_with_all_1s_padding(`gmv(ral.``CSR_NAME``), \
@@ -264,7 +245,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     // handle invalid locality
     if (locality >= MAX_TPM_LOCALITY) begin
-      if (is_invalid_locality_hw_rsp(addr)) begin
+      if (`gmv(ral.tpm_cfg.invalid_locality)) begin
         exp_value_q = {'1};
         `uvm_info(`gfn, "return 'hff due to invalid locality", UVM_MEDIUM)
         return 1;
@@ -272,9 +253,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       return 0;
     end
 
+    // if hw_reg is disabled, return 0 and the request will be uploaded
+    if (`gmv(ral.tpm_cfg.hw_reg_dis)) return 0;
+
     aligned_offset = {addr[TPM_OFFSET_WIDTH-1:2], 2'd0};
     // if locality is inactive, return 'hff for TPM_STS
-    foreach (tpm_hw_reg_pre_val_aa[i]) $display("aa %s, %h", i, tpm_hw_reg_pre_val_aa[i]);
     if (aligned_offset == TPM_STS_OFFSET) begin
       bit cur_locality_active = cfg.get_locality_active(locality);
       bit pre_locality_active = cur_locality_active;

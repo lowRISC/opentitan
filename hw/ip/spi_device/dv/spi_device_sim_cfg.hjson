@@ -111,6 +111,11 @@
     }
 
     {
+      name: spi_device_tpm_all
+      uvm_test_seq: spi_device_tpm_all_vseq
+    }
+
+    {
       name: spi_device_bit_transfer
       uvm_test_seq: spi_device_bit_transfer_vseq
     }
