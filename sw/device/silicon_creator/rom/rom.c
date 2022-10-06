@@ -12,6 +12,7 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
@@ -235,12 +236,10 @@ static rom_error_t rom_verify(const manifest_t *manifest,
   hmac_digest_t act_digest;
   hmac_sha256_final(&act_digest);
 
-  static_assert(
-      sizeof(boot_measurements.rom_ext.data) == sizeof(act_digest.digest),
-      "Unexpected ROM_EXT digest size.");
-  for (size_t i = 0; i < ARRAYSIZE(act_digest.digest); ++i) {
-    boot_measurements.rom_ext.data[i] = act_digest.digest[i];
-  }
+  static_assert(sizeof(boot_measurements.rom_ext) == sizeof(act_digest),
+                "Unexpected ROM_EXT digest size.");
+  memcpy(&boot_measurements.rom_ext, &act_digest,
+         sizeof(boot_measurements.rom_ext));
 
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomVerify, 2);
   return sigverify_rsa_verify(&manifest->signature, key, &act_digest, lc_state,
