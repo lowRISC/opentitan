@@ -315,13 +315,6 @@ class flash_ctrl_scoreboard #(
                   end
                end
             end
-            "exec": begin
-              bit is_exec_key = `gmv(ral.exec) == CODE_EXEC_KEY;
-              tlul_pkg::tl_a_user_t a_user = item.a_user;
-              if (cfg.en_cov) begin
-                cov.fetch_code_cg.sample(is_exec_key, a_user.instr_type);
-              end
-            end
             default: begin
             // TODO: Uncomment once func cover is implemented
             // `uvm_info(`gfn, $sformatf("Not for func coverage: %0s", csr.get_full_name()))
@@ -833,9 +826,14 @@ class flash_ctrl_scoreboard #(
 
   // Check if the input tl_seq_item has any tl errors.
   virtual function bit get_flash_instr_type_err(tl_seq_item item, tl_channels_e channel);
-
+    bit is_exec_key = `gmv(ral.exec) == CODE_EXEC_KEY;
     // Local Variable
     tlul_pkg::tl_a_user_t a_user = item.a_user;
+    if (cfg.en_cov) begin
+      if (channel == AddrChannel) begin
+        cov.fetch_code_cg.sample(is_exec_key, a_user.instr_type);
+      end
+    end
 
     // If Data Access, or a Write, or the CODE_EXEC_KEY Matches
     if (((a_user.instr_type == MuBi4False) || (item.a_opcode != tlul_pkg::Get)) ||

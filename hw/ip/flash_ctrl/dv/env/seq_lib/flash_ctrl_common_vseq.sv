@@ -35,19 +35,21 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
   endtask // pre_start
 
   virtual task body();
-    string path;
+    string path[] = {
+      {"tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd",
+              ".u_rd_storage.gen_normal_fifo.storage_rdata[74:0]"},
+      {"tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd",
+              ".u_rd_storage.gen_normal_fifo.storage_rdata[74:0]"},
+      "tb.dut.u_to_rd_fifo.u_rspfifo.gen_normal_fifo.storage_rdata[39:0]"
+    };
     if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
     if (common_seq_type == "sec_cm_fi") begin
-      // Prevent 'x' propagate data path while force corrupt fifo ptr.
-      path = {"tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd",
-              ".u_rd_storage.gen_normal_fifo.storage_rdata[74:0]"};
-      `DV_CHECK(uvm_hdl_deposit(path, 0))
-      path = {"tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd",
-              ".u_rd_storage.gen_normal_fifo.storage_rdata[74:0]"};
-      `DV_CHECK(uvm_hdl_deposit(path, 0))
+      for (int i = 0; i < path.size(); i++) begin
+        `DV_CHECK(uvm_hdl_deposit(path[i], 0))
+      end
     // Each run of sec_cm takes about 10 min.
-    // Limit num_trans of sec_cm to 5.
-      run_sec_cm_fi_vseq(5);
+    // Limit num_trans of sec_cm to 10.
+      run_sec_cm_fi_vseq(10);
     end else run_common_vseq_wrapper(num_trans);
   endtask : body
 
@@ -130,6 +132,7 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
           $asserton(0, "tb.dut.tlul_assert_device.gen_device.dDataKnown_A");
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.RdTxnCheck_A");
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.RdTxnCheck_A");
+          $asserton(0, "tb.dut.RspPayLoad_A");
         end else begin
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.u_rd_storage");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.u_rd_storage");
@@ -142,6 +145,7 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.RdTxnCheck_A");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.RdTxnCheck_A");
           $assertoff(0, "tb.dut.u_to_rd_fifo.rvalidHighWhenRspFifoFull");
+          $assertoff(0, "tb.dut.RspPayLoad_A");
         end
       end
       SecCmPrimSparseFsmFlop: begin

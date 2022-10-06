@@ -5,7 +5,7 @@
 // This sequence sends read traffic with error injection
 // at the output of read_buffer.
 // Read response will trigger fatal_err.storage_err.
-class flash_ctrl_rd_path_intg_vseq extends flash_ctrl_rw_vseq;
+class flash_ctrl_rd_path_intg_vseq extends flash_ctrl_legacy_base_vseq;
   `uvm_object_utils(flash_ctrl_rd_path_intg_vseq)
   `uvm_object_new
 

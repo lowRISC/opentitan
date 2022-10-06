@@ -37,13 +37,13 @@ class flash_ctrl_disable_vseq extends flash_ctrl_otf_base_vseq;
       1: begin
         cfg.flash_ctrl_vif.lc_escalate_en =
           get_rand_lc_tx_val(.t_weight(1), .f_weight(1), .other_weight(4));
-        is_disable = (cfg.flash_ctrl_vif.lc_escalate_en == lc_ctrl_pkg::On);
+        is_disable = (cfg.flash_ctrl_vif.lc_escalate_en != lc_ctrl_pkg::Off);
       end
       1: begin
         mubi4_t dis_val;
         dis_val = get_rand_mubi4_val(.t_weight(1), .f_weight(1), .other_weight(4));
         csr_wr(.ptr(ral.dis), .value(dis_val));
-        is_disable = (dis_val == MuBi4True);
+        is_disable = (dis_val != MuBi4False);
       end
     endcase // randcase
     exp_err = is_disable;
