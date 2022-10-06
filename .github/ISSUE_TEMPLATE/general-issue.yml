@@ -1,0 +1,15 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: General Issue
+description: A blank issue for general purpose use.
+title: "[component] Title"
+body:
+- type: textarea
+  attributes:
+    label: Description
+    value: |
+      Give a description of the problem, listing similar issues and if able:
+      - Assign the issue to someone familiar with it.
+      - Add appropriate labels.
