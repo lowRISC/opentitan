@@ -43,6 +43,7 @@
 `include "chip_sw_sram_ctrl_scrambled_access_vseq.sv"
 `include "chip_sw_sleep_pin_mio_dio_val_vseq.sv"
 `include "chip_sw_sleep_pin_wake_vseq.sv"
+`include "chip_sw_sleep_pin_retention_vseq.sv"
 `include "chip_sw_pwm_pulses_vseq.sv"
 `include "chip_sw_keymgr_key_derivation_vseq.sv"
 `include "chip_sw_ast_clk_outputs_vseq.sv"
