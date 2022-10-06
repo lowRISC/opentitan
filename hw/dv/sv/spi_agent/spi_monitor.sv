@@ -16,6 +16,10 @@ class spi_monitor extends dv_base_monitor#(
   int cmd_byte;
   bit [CSB_WIDTH-1:0] active_csb;
 
+  // store the data across multiple CSB in case host sends byte transfers
+  bit [7:0] generic_mode_host_byte_q[$];
+  bit [7:0] generic_mode_device_byte_q[$];
+
   // Analysis port for the collected transfer.
   uvm_analysis_port #(spi_item) host_analysis_port;
   uvm_analysis_port #(spi_item) device_analysis_port;
@@ -177,12 +181,18 @@ class spi_monitor extends dv_base_monitor#(
 
       // sending less than 7 bits will not be captured, byte to be re-sent
       if (num_samples >= 7) begin
-        host_item.data.push_back(host_byte);
-        device_item.data.push_back(device_byte);
+        generic_mode_host_byte_q.push_back(host_byte);
+        generic_mode_device_byte_q.push_back(device_byte);
       end
+      // in generic mode, these queue should always have same size
+      `DV_CHECK_EQ_FATAL(generic_mode_host_byte_q.size, generic_mode_device_byte_q.size)
+      `DV_CHECK_LE(generic_mode_host_byte_q.size, cfg.num_bytes_per_trans_in_mon)
       // sending transactions when collect a word data
-      if (host_item.data.size == cfg.num_bytes_per_trans_in_mon &&
-          device_item.data.size == cfg.num_bytes_per_trans_in_mon) begin
+      if (generic_mode_host_byte_q.size == cfg.num_bytes_per_trans_in_mon) begin
+        host_item.data = generic_mode_host_byte_q;
+        device_item.data = generic_mode_device_byte_q;
+        generic_mode_host_byte_q.delete();
+        generic_mode_device_byte_q.delete();
         if (host_item.first_byte == 1 && cfg.decode_commands == 1)  begin
           cmdtmp = spi_cmd_e'(host_byte);
           `uvm_info(`gfn, $sformatf("spi_monitor: cmdtmp \n%0h", cmdtmp), UVM_DEBUG)

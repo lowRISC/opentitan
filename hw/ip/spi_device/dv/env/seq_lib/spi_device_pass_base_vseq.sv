@@ -317,8 +317,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     cfg.spi_device_agent_cfg.host_bit_dir = 0;
     cfg.spi_device_agent_cfg.device_bit_dir = 0;
 
-    cfg.spi_host_agent_cfg.num_bytes_per_trans_in_mon = 1;
-    cfg.spi_device_agent_cfg.num_bytes_per_trans_in_mon = 1;
     ral.cfg.tx_order.set(cfg.spi_host_agent_cfg.host_bit_dir);
     ral.cfg.rx_order.set(cfg.spi_host_agent_cfg.device_bit_dir);
 
