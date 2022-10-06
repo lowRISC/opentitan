@@ -52,7 +52,7 @@ rust_library(
         "crate-name=iana-time-zone",
         "manual",
     ],
-    version = "0.1.50",
+    version = "0.1.48",
     # buildifier: leave-alone
     deps = [
     ],

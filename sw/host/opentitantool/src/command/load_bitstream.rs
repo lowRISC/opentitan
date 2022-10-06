@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use serde_annotate::Annotate;
+use erased_serde::Serialize;
 use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
@@ -39,7 +39,7 @@ impl CommandDispatch for LoadBitstream {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn Serialize>>> {
         log::info!("Loading bitstream: {:?}", self.filename);
         let bitstream = fs::read(&self.filename)?;
         let progress = app::progress_bar(bitstream.len() as u64);

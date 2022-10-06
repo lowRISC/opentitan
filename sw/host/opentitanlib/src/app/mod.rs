@@ -15,8 +15,8 @@ use crate::transport::{ProxyOps, Transport, TransportError};
 use anyhow::Result;
 use std::time::Duration;
 
+use erased_serde::Serialize;
 use indicatif::{ProgressBar, ProgressStyle};
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -114,7 +114,7 @@ impl TransportWrapper {
     }
 
     /// Invoke non-standard functionality of some Transport implementations.
-    pub fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+    pub fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Serialize>>> {
         self.transport.borrow().dispatch(action)
     }
 

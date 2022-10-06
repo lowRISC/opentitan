@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use serde_annotate::Annotate;
+use erased_serde::Serialize;
 use std::any::Any;
 use structopt::StructOpt;
 
@@ -21,7 +21,7 @@ impl CommandDispatch for TransportInit {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn Serialize>>> {
         // Configure all GPIO pins to default direction and level, according to
         // configuration files provided.
         transport.apply_default_pin_configurations()?;

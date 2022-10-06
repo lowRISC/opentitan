@@ -57,8 +57,8 @@ rust_library(
     deps = [
         "@raze__erased_serde__0_3_23//:erased_serde",
         "@raze__inventory__0_2_3//:inventory",
-        "@raze__once_cell__1_15_0//:once_cell",
-        "@raze__serde__1_0_145//:serde",
+        "@raze__once_cell__1_14_0//:once_cell",
+        "@raze__serde__1_0_144//:serde",
     ],
 )
 

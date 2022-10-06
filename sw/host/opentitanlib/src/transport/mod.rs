@@ -121,7 +121,7 @@ pub trait Transport {
     }
 
     /// Invoke non-standard functionality of some Transport implementations.
-    fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn serde_annotate::Annotate>>> {
+    fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         Err(TransportError::UnsupportedOperation.into())
     }
 }

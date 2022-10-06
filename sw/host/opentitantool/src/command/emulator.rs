@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use serde_annotate::Annotate;
+use erased_serde::Serialize;
 use std::any::Any;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -28,7 +28,7 @@ impl CommandDispatch for EmuGetState {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::EMULATOR)
@@ -89,7 +89,7 @@ impl CommandDispatch for EmuStart {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::EMULATOR)
@@ -115,7 +115,7 @@ impl CommandDispatch for EmuStop {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn Serialize>>> {
         transport
             .capabilities()?
             .request(Capability::EMULATOR)

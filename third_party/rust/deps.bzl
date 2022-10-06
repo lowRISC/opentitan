@@ -19,8 +19,7 @@ def rust_deps():
     rust_register_toolchains(
         include_rustc_srcs = True,
         edition = "2018",
-        version = "nightly",
-        iso_date = "2022-09-28",
+        version = "1.60.0",
     )
     rust_repository_set(
         name = "rust_opentitan_rv32imc",
