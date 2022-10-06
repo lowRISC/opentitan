@@ -195,13 +195,32 @@
       tests: ["spi_device_tpm_rw"]
     }
     {
-      name: tpm_locality
+      name: tpm_hw_reg
       desc: '''
-            - Make transactions of varying locality to the tpm submodule.
-            - Ensure that the data returned is correct for the given locality.
-            - Randomise TPM_CFG.invalid_locality and confirm response.'''
+            - Configure `TPM_CFG` as follows to have DUT directly respond for the access to the HW
+              registers.
+              - Set `tpm_mode` to fifo mode.
+              - Set `hw_reg_dis` to 0.
+              - Set `tpm_reg_chk_dis` to 0.
+              - Set `invalid_locality` to 1.
+            - Send SPI transactions of varying HW registers. In the meanwhile, SW updates the HW
+              registers.
+            - Ensure that the data returned is correct for the given address and active locality.'''
       stage: V2
       tests: ["spi_device_tpm_sts_read", "spi_device_tpm_read_hw_reg"]
+    }
+    {
+      name: tpm_fully_random_case
+      desc: '''
+            - Configure `TPM_CFG.EN` to On and fully randomize other TPM configuration.
+            - Run these 3 threads to randomly access TPM HW registers and other addresses.
+              - Host issues random TPM reads/writes to spi_device.
+              - SW polls the TPM interrupt `tpm_header_not_empty`, then read command/address and
+                the corresponding FIFO.
+              - SW randomly updates TPM HW registers.
+            - Ensure all the data is correct in the scoreboard.'''
+      stage: V2
+      tests: ["spi_device_tpm_all"]
     }
     {
       name: pass_cmd_filtering
