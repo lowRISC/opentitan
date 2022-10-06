@@ -24,7 +24,7 @@ class spi_device_bit_transfer_vseq extends spi_device_base_vseq;
     for (int i = 1; i <= num_trans; i++) begin
       `uvm_info(`gfn, $sformatf("starting sequence %0d/%0d", i, num_trans), UVM_LOW)
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      spi_device_init();
+      spi_device_fw_init();
       repeat ($urandom_range(8)) begin
         bit [31:0] host_data_exp_q[$];
         `DV_CHECK_STD_RANDOMIZE_FATAL(host_data)

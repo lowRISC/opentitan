@@ -48,6 +48,7 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
   endfunction
   // Configure clocks and tpm, generate a word.
   virtual task tpm_init(tpm_cfg_mode_e mode, bit is_hw_return = $random);
+    spi_clk_init();
     cfg.spi_host_agent_cfg.csid = TPM_CSB_ID;
     // Only SPI mode 0 is supported (CPHA=0, CPOL=0).
     cfg.spi_host_agent_cfg.sck_polarity[TPM_CSB_ID] = 0;

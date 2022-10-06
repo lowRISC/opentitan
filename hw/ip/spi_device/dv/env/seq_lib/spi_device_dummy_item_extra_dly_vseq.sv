@@ -15,8 +15,8 @@ class spi_device_dummy_item_extra_dly_vseq extends spi_device_txrx_vseq;
     en_extra_dly == 1;
   }
 
-  virtual task spi_device_init();
-    super.spi_device_init();
+  virtual task spi_device_fw_init();
+    super.spi_device_fw_init();
     // use more aggressive delay, but if higher than below values, timeout may happen
     randcase
       1: begin

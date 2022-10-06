@@ -299,7 +299,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
   // Task for flash or pass init
   virtual task spi_device_flash_pass_init();
-    spi_device_init();
+    spi_clk_init();
     `uvm_info(`gfn, "Initialize flash/passthrough mode", UVM_MEDIUM)
 
     // TODO, #14940. EN4B/EX4B may fail if the next item comes very shortly

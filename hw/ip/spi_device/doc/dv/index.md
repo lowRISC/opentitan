@@ -70,7 +70,7 @@ The `spi_device_base_vseq` virtual sequence is extended from `cip_base_vseq` and
 All test sequences are extended from `spi_device_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows:
-* spi_device_init:            Fully randomize SPI Device control following CSRs and configure TX/RX SRAM FIFO size as following
+* spi_device_fw_init:         Fully randomize SPI Device control following CSRs and configure TX/RX SRAM FIFO size for FW mode as following
   * clock polarity/phase(CPOL, CPHA), bit direction(tx/rx_order), mode, fifo interrupt level(txlvl, rxlvl)
   * TX/RX SRAM FIFO size: from 100 to 1900 and higher distribute for TX size / RX size = 1, 1/2 or 2/1
 * spi_host_xfer_bytes:        Send bytes of data to DUT (SPI Device) through spi_host_driver

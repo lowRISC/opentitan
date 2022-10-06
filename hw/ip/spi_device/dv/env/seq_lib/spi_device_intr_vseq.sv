@@ -13,7 +13,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
 
     for (int i = 1; i <= num_trans; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      spi_device_init();
+      spi_device_fw_init();
 
       // fill tx async fifo to avoid sending out unknown data
       if (!is_tx_async_fifo_filled) begin

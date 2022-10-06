@@ -13,8 +13,6 @@ class spi_device_tpm_sts_read_vseq extends spi_device_tpm_base_vseq;
     bit [7:0] returned_bytes[$];
     uint locality_idx;
 
-    spi_device_init();
-
     // randomised tpm configuration.
     tpm_init(.mode(TpmFifoMode), .is_hw_return(1));
     repeat (num_trans) begin
