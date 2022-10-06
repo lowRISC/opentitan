@@ -8,4 +8,4 @@
 
 // This symbol is declared as weak so that the ROM and ROM_EXT may
 // override its location.
-OT_WEAK volatile boot_measurements_t boot_measurements;
+OT_WEAK boot_measurements_t boot_measurements;
