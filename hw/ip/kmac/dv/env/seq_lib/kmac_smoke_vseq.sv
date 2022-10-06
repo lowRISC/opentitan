@@ -130,7 +130,10 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       end
 
       if (cfg.enable_masking && kmac_err_type == kmac_pkg::ErrIncorrectEntropyMode) begin
-        if (!entropy_fetched) check_err();
+        if (!entropy_fetched) begin
+          check_err();
+          continue;
+        end
       end else if (cfg.enable_masking) begin
         entropy_fetched = 1;
       end
