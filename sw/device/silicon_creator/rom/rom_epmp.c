@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
+#include "sw/device/lib/base/memory.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -85,7 +86,7 @@ void rom_epmp_state_init(lifecycle_state_t lc_state) {
   // The actual hardware configuration is performed separately, either by reset
   // logic or in assembly. This code must be kept in sync with any changes
   // to the hardware configuration.
-  epmp_state = (epmp_state_t){0};
+  memset(&epmp_state, 0, sizeof(epmp_state));
   epmp_state_configure_tor(1, rom_text, kEpmpPermLockedReadExecute);
   epmp_state_configure_napot(2, rom, kEpmpPermLockedReadOnly);
   epmp_state_configure_napot(5, eflash, kEpmpPermLockedReadOnly);

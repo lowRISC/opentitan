@@ -375,7 +375,7 @@ void rom_main(void) {
   LOG_INFO("Starting ROM ePMP functional test.");
 
   // Initialize shadow copy of the ePMP register configuration.
-  epmp_state = (epmp_state_t){0};
+  memset(&epmp_state, 0, sizeof(epmp_state));
   rom_epmp_state_init(kLcStateProd);
   CHECK(epmp_state_check() == kErrorOk);
 
