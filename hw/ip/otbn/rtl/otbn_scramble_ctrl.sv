@@ -226,6 +226,7 @@ module otbn_scramble_ctrl
 
   prim_sync_reqack_data #(
     .Width($bits(otp_ctrl_pkg::otbn_otp_key_rsp_t)-1),
+    .EnRstChks(1'b1),
     .DataSrc2Dst(1'b0)
   ) u_otp_key_req_sync (
     .clk_src_i (clk_i),

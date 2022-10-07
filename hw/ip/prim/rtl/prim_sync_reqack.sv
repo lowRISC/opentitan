@@ -25,7 +25,9 @@
 
 `include "prim_assert.sv"
 
-module prim_sync_reqack (
+module prim_sync_reqack #(
+  parameter bit EnRstChks = 1'b0 // Enable reset-related assertion checks, disabled by default.
+) (
   input  clk_src_i,       // REQ side, SRC domain
   input  rst_src_ni,      // REQ side, SRC domain
   input  clk_dst_i,       // ACK side, DST domain
@@ -194,12 +196,14 @@ module prim_sync_reqack (
   `ASSERT(SyncReqAckAckNeedsReq, dst_ack_i |->
       dst_req_o, clk_dst_i, !rst_src_ni || !rst_dst_ni)
 
-  // Always reset both domains. Both resets need to be active at the same time.
-  `ASSERT(SyncReqAckRstSrc, $fell(rst_src_ni) |->
-      (##[0:$] !rst_dst_ni within !rst_src_ni [*1:$]),
-      clk_src_i, 0)
-  `ASSERT(SyncReqAckRstDst, $fell(rst_dst_ni) |->
-      (##[0:$] !rst_src_ni within !rst_dst_ni [*1:$]),
-      clk_dst_i, 0)
+  if (EnRstChks) begin : gen_assert_en_rst_chks
+    // Always reset both domains. Both resets need to be active at the same time.
+    `ASSERT(SyncReqAckRstSrc, $fell(rst_src_ni) |->
+        (##[0:$] !rst_dst_ni within !rst_src_ni [*1:$]),
+        clk_src_i, 0)
+    `ASSERT(SyncReqAckRstDst, $fell(rst_dst_ni) |->
+        (##[0:$] !rst_src_ni within !rst_dst_ni [*1:$]),
+        clk_dst_i, 0)
+  end
 
 endmodule

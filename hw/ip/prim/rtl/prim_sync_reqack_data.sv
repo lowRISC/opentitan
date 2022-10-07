@@ -18,6 +18,8 @@
 
 module prim_sync_reqack_data #(
   parameter int unsigned Width       = 1,
+  parameter bit          EnRstChks   = 1'b0, // Enable reset-related assertion checks, disabled by
+                                             // default.
   parameter bit          DataSrc2Dst = 1'b1, // Direction of data flow: 1'b1 = SRC to DST,
                                              //                         1'b0 = DST to SRC
   parameter bit          DataReg     = 1'b0  // Enable optional register stage for data,
@@ -42,7 +44,9 @@ module prim_sync_reqack_data #(
   ////////////////////////////////////
   // REQ/ACK synchronizer primitive //
   ////////////////////////////////////
-  prim_sync_reqack u_prim_sync_reqack (
+  prim_sync_reqack #(
+    .EnRstChks(EnRstChks)
+  ) u_prim_sync_reqack (
     .clk_src_i,
     .rst_src_ni,
     .clk_dst_i,
