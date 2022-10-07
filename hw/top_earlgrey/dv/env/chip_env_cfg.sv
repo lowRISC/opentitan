@@ -135,6 +135,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // create uart agent config obj
     foreach (m_uart_agent_cfgs[i]) begin
       m_uart_agent_cfgs[i] = uart_agent_cfg::type_id::create($sformatf("m_uart_agent_cfg%0d", i));
+      // Do not create uart agent fcov in chip level test.
+      m_uart_agent_cfgs[i].en_cov = 0;
     end
 
     // create spi device agent config obj
