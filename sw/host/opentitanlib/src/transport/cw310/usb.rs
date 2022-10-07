@@ -335,6 +335,7 @@ impl Backend {
         // This isn't really documented well in the python implementation:
         // There appears to be a header on the bitstream which we do not
         // want to send to the board.
+        // A differente dummy comment
         let mut stream = bitstream[0x7C..].to_vec();
 
         // Then, we need to extend the buffer a little to make sure we send
@@ -352,7 +353,6 @@ impl Backend {
         Ok(())
     }
 
-    
     /// Program a bitstream into the FPGA.
     pub fn fpga_program(
         &self,
