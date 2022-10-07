@@ -13,6 +13,7 @@
 
     // The partition and item names must correspond with the OTP memory map.
     partitions: [
+        // TODO(#15351): this should probably be removed from the RAW image.
         {
             name:  "SECRET1",
             lock:  "False",
