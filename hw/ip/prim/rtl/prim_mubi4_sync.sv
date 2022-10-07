@@ -137,6 +137,9 @@ module prim_mubi4_sync
     end
   end else begin : gen_no_flops
 
+    //VCS coverage off
+    // pragma coverage off
+
     // This unused companion logic helps remove lint errors
     // for modules where clock and reset are used for assertions only
     // This logic will be removed for synthesis since it is unloaded.
@@ -148,6 +151,9 @@ module prim_mubi4_sync
          unused_logic <= mubi_i;
       end
     end
+
+    //VCS coverage on
+    // pragma coverage on
 
     assign mubi = MuBi4Width'(mubi_i);
 
