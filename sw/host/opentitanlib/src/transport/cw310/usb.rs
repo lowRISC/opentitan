@@ -352,6 +352,7 @@ impl Backend {
         Ok(())
     }
 
+    
     /// Program a bitstream into the FPGA.
     pub fn fpga_program(
         &self,
