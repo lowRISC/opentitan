@@ -6,9 +6,15 @@
 
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/test_framework/check.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+dif_rv_plic_t ottf_plic;
 
 // Fault reasons from
 // https://riscv.org/wp-content/uploads/2017/05/riscv-privileged-v1.10.pdf
@@ -144,7 +150,25 @@ void ottf_timer_isr(void) {
 }
 
 OT_WEAK
+bool ottf_flow_control_isr(void) { return false; }
+
+OT_WEAK
 void ottf_external_isr(void) {
+  const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+  dif_rv_plic_irq_id_t plic_irq_id;
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&ottf_plic, kPlicTarget, &plic_irq_id));
+
+  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
+      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+
+  if (peripheral == kTopEarlgreyPlicPeripheralUart0 &&
+      ottf_flow_control_isr()) {
+    // Complete the IRQ at PLIC.
+    CHECK_DIF_OK(
+        dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
+    return;
+  }
+
   ottf_generic_fault_print("External IRQ", ibex_mcause_read());
   abort();
 }

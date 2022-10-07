@@ -21,7 +21,7 @@ status_t ottf_flow_control_test(ujson_t *uj) {
   // are enough to allow a flow-control event to happen.  The FPGA is
   // fast enough that we have to spend more time in the busy loop to
   // provoke a flow-control event.
-  size_t limit = kDeviceType == kDeviceSimVerilator ? 10 : 60;
+  size_t limit = kDeviceType == kDeviceSimVerilator ? 10 : 100;
   for (size_t i = 0; i < limit; ++i) {
     // Print a bunch of stuff so that ibex will be busy
     // driving the transmitter while the host sends data

@@ -6,6 +6,13 @@
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_ISRS_H_
 #include <stdint.h>
 
+#include "sw/device/lib/dif/dif_rv_plic.h"
+
+/**
+ * OTTF global PLIC interface.
+ */
+extern dif_rv_plic_t ottf_plic;
+
 /**
  * OTTF fault printing function.
  *
