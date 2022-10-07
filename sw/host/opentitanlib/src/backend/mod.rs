@@ -47,8 +47,8 @@ pub struct BackendOpts {
     #[structopt(flatten)]
     ti50emulator_opts: ti50emulator::Ti50EmulatorOpts,
 
-    #[structopt(long, help = "Configuration files")]
-    conf: Option<PathBuf>,
+    #[structopt(long, number_of_values(1), help = "Configuration files")]
+    conf: Vec<PathBuf>,
 }
 
 #[derive(Error, Debug)]
@@ -60,7 +60,7 @@ pub enum Error {
 /// Creates the requested backend interface according to [`BackendOpts`].
 pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     let interface = args.interface.as_str();
-    let (backend, conf) = match interface {
+    let (backend, default_conf) = match interface {
         "" => (create_empty_transport()?, None),
         "proxy" => (proxy::create(&args.proxy_opts)?, None),
         "verilator" => (
@@ -91,8 +91,14 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     };
     let mut env = TransportWrapper::new(backend);
 
-    for conf_file in args.conf.as_ref().map(PathBuf::as_ref).or(conf) {
-        process_config_file(&mut env, conf_file)?
+    if args.conf.is_empty() {
+        for conf_file in default_conf {
+            // Zero or one iteration
+            process_config_file(&mut env, conf_file)?
+        }
+    }
+    for conf_file in &args.conf {
+        process_config_file(&mut env, conf_file.as_ref())?
     }
     Ok(env)
 }
