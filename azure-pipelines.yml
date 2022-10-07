@@ -503,7 +503,7 @@ jobs:
 - job: execute_fpga_tests_cw310
   displayName: CW310 Tests
   # Execute tests on ChipWhisperer CW310 FPGA board
-  pool: FPGA
+  pool: FPGA-2
   timeoutInMinutes: 45
   dependsOn:
     - chip_earlgrey_cw310
