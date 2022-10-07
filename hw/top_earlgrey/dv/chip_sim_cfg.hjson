@@ -176,7 +176,7 @@
                                fi ''']
   // Add run modes.
   run_modes: [
-    // Generates OTP images with different LC states with cannonical values,
+    // Generates OTP images with different LC states with canonical values,
     // pseudo-randomized with the same test seed.
     {
       name: gen_otp_images_mode
@@ -186,13 +186,19 @@
               --out {run_dir}/otp_ctrl_img_raw.vmem \
               {gen_otp_images_cmd_opts}
         ''',
-         '''{gen_otp_images_cmd} \
+        '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_dev.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_owner_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
               --out {run_dir}/otp_ctrl_img_dev.vmem \
               {gen_otp_images_cmd_opts}
         ''',
         '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_rma.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_owner_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
               --out {run_dir}/otp_ctrl_img_rma.vmem \
               {gen_otp_images_cmd_opts}
         ''',
