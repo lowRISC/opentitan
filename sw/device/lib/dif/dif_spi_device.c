@@ -139,6 +139,30 @@ dif_result_t dif_spi_device_configure(dif_spi_device_handle_t *spi,
   return kDifOk;
 }
 
+dif_result_t dif_spi_device_set_passthrough_mode(dif_spi_device_handle_t *spi,
+                                                 dif_toggle_t enable) {
+  if (spi == NULL || !dif_is_valid_toggle(enable)) {
+    return kDifBadArg;
+  }
+  uint32_t control =
+      mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET);
+  uint32_t mode = bitfield_field32_read(control, SPI_DEVICE_CONTROL_MODE_FIELD);
+  if (mode != SPI_DEVICE_CONTROL_MODE_VALUE_FLASHMODE &&
+      mode != SPI_DEVICE_CONTROL_MODE_VALUE_PASSTHROUGH) {
+    return kDifBadArg;
+  }
+  if (dif_toggle_to_bool(enable)) {
+    control = bitfield_field32_write(control, SPI_DEVICE_CONTROL_MODE_FIELD,
+                                     SPI_DEVICE_CONTROL_MODE_VALUE_PASSTHROUGH);
+  } else {
+    control = bitfield_field32_write(control, SPI_DEVICE_CONTROL_MODE_FIELD,
+                                     SPI_DEVICE_CONTROL_MODE_VALUE_FLASHMODE);
+  }
+  mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_CONTROL_REG_OFFSET,
+                      control);
+  return kDifOk;
+}
+
 dif_result_t dif_spi_device_reset_generic_tx_fifo(
     dif_spi_device_handle_t *spi) {
   if (spi == NULL) {
