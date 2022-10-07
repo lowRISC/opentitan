@@ -19,13 +19,14 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static flow_control_t flow_control_state;
 #define FLOW_CONTROL_LOW_WATERMARK 4
 #define FLOW_CONTROL_HIGH_WATERMARK 16
-
 const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
-dif_rv_plic_t ottf_plic;
-uint32_t ottf_flow_control_intr;
+
+// The flow_control_state and ottf_flow_control_intr varibles are shared between
+// the interrupt service handler and user code.
+static volatile flow_control_t flow_control_state;
+volatile uint32_t ottf_flow_control_intr;
 
 void ottf_flow_control_enable(void) {
   CHECK_DIF_OK(dif_rv_plic_init(
@@ -51,6 +52,8 @@ void ottf_flow_control_enable(void) {
   flow_control_state = kFlowControlAuto;
   irq_global_ctrl(true);
   irq_external_ctrl(true);
+  // Make sure we're in the Resume state and we emit a Resume to the UART.
+  ottf_flow_control(ottf_console(), kFlowControlResume);
 }
 
 // This version of the function is safe to call from within the ISR.
@@ -79,35 +82,16 @@ static status_t manage_flow_control(const dif_uart_t *uart,
 }
 
 bool ottf_flow_control_isr(void) {
-  ottf_flow_control_intr += 1;
   dif_uart_t *uart = ottf_console();
+  ottf_flow_control_intr += 1;
   bool rx;
   CHECK_DIF_OK(dif_uart_irq_is_pending(uart, kDifUartIrqRxWatermark, &rx));
   if (rx) {
-    manage_flow_control(uart, kFlowControlPause);
+    manage_flow_control(uart, kFlowControlAuto);
     CHECK_DIF_OK(dif_uart_irq_acknowledge(uart, kDifUartIrqRxWatermark));
     return true;
   }
   return false;
-}
-
-void ottf_external_isr(void) {
-  dif_rv_plic_irq_id_t plic_irq_id;
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&ottf_plic, kPlicTarget, &plic_irq_id));
-
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-
-  if (peripheral == kTopEarlgreyPlicPeripheralUart0 &&
-      ottf_flow_control_isr()) {
-    // Complete the IRQ at PLIC.
-    CHECK_DIF_OK(
-        dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
-    return;
-  }
-
-  ottf_generic_fault_print("External IRQ", ibex_mcause_read());
-  abort();
 }
 
 // The public API has to save and restore interrupts to avoid an

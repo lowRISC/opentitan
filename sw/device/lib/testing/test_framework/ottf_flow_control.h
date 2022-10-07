@@ -42,16 +42,18 @@ status_t ottf_flow_control(const dif_uart_t *uart, flow_control_t ctrl);
  * Enable flow control for the OTTF console.
  *
  * Enables flow control on the UART associated with the OTTF console. Flow
- * control is managed by enabling the RX watermark ISR and sending a `Pause`
+ * control is managed by enabling the RX watermark IRQ and sending a `Pause`
  * (aka XOFF) when the RX FIFO depth reaches 16 bytes.  A `Resume` (aka XON) is
  * sent when the RX FIFO has been drained to 4 bytes.
  *
+ * This function configures UART interrupts at the PLIC and enables interrupts
+ * at the CPU.
  */
 void ottf_flow_control_enable(void);
 
 /**
  * The number of flow control interrupts that have occurred.
  */
-extern uint32_t ottf_flow_control_intr;
+extern volatile uint32_t ottf_flow_control_intr;
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_FLOW_CONTROL_H_
