@@ -813,6 +813,7 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
