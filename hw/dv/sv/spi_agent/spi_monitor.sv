@@ -280,6 +280,8 @@ class spi_monitor extends dv_base_monitor#(
     `DV_SPINWAIT(
       do begin
         cfg.read_byte(.num_lanes(1), .is_device_rsp(1), .data(tpm_rsp));
+        // current TPM design could only return these values
+        `DV_CHECK_FATAL(tpm_rsp inside {TPM_START, TPM_WAIT, '1})
       end while (tpm_rsp[0] == TPM_WAIT);
       , , TPM_START_MAX_WAIT_TIME_NS)
     `uvm_info(`gfn, "Received TPM START", UVM_MEDIUM)
@@ -291,7 +293,6 @@ class spi_monitor extends dv_base_monitor#(
       `uvm_info(`gfn, $sformatf("collect %s data for TPM, idx %0d: 0x%0x",
                               item.write_command ? "write" : "read", i, item.data[i]), UVM_MEDIUM)
     end
-    item.print();
   endtask
 
   // address is 3 or 4 bytes

@@ -442,7 +442,7 @@
             - Configure passthrough or flash mode.
             - Issue TPM read/write interleaving with flash transactions.'''
       stage: V2
-      tests: []
+      tests: ["spi_device_flash_and_tpm"]
     }
   ]
   covergroups: [

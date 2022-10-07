@@ -301,9 +301,12 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   virtual task spi_device_flash_pass_init();
     spi_clk_init();
     `uvm_info(`gfn, "Initialize flash/passthrough mode", UVM_MEDIUM)
-
+    cfg.spi_host_agent_cfg.csb_sel_in_cfg = 0;
     // TODO, #14940. EN4B/EX4B may fail if the next item comes very shortly
     cfg.spi_host_agent_cfg.min_idle_ns_after_csb_drop = 500;
+
+    // avoid updating these CSRs at the same time as tpm_init
+    cfg.spi_cfg_sema.get();
 
     // TODO, fixed config for now
     cfg.spi_host_agent_cfg.sck_polarity[0] = 0;
@@ -326,7 +329,24 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
     ral.cfg.cpol.set(1'b0);
     ral.cfg.cpha.set(1'b0);
-    csr_update(.csr(ral.cfg)); // TODO check if randomization possible
+
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.mailbox_addr.addr,
+        // the 4th byte needs to be 0 if the cmd only contains 3 bytes address
+        // constrain this byte 50% to be 0.
+        value[31:24] dist {0 :/ 1, [1:$] :/ 1};
+
+        // configure mailbox base address to very big so avoid read buffer overlaps with mailbox
+        // which isn't allowed in flash mode.
+        // 4th byte address may be off. In order to simplify the addr/size constraint for flash mode
+        // as they needs to either in mailbox region or start from the last read buffer address.
+        device_mode == FlashMode -> value[31:24] == 0 && value[23:22] > 1;
+        )
+    csr_update(ral.mailbox_addr);
+    ral.cfg.mailbox_en.set(1); // TODO, randomize it
+
+    csr_update(.csr(ral.cfg));
+    cfg.spi_cfg_sema.put();
+
     // Set the passthrough or flash mode mode
     `DV_CHECK(device_mode inside {FlashMode, PassthroughMode});
     ral.control.mode.set(device_mode);
@@ -358,21 +378,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       ral.intercept_en.status.set(1);
       csr_update(ral.intercept_en);
     end
-
-    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.mailbox_addr.addr,
-        // the 4th byte needs to be 0 if the cmd only contains 3 bytes address
-        // constrain this byte 50% to be 0.
-        value[31:24] dist {0 :/ 1, [1:$] :/ 1};
-
-        // configure mailbox base address to very big so avoid read buffer overlaps with mailbox
-        // which isn't allowed in flash mode.
-        // 4th byte address may be off. In order to simplify the addr/size constraint for flash mode
-        // as they needs to either in mailbox region or start from the last read buffer address.
-        device_mode == FlashMode -> value[31:24] == 0 && value[23:22] > 1;
-        )
-    csr_update(ral.mailbox_addr);
-    ral.cfg.mailbox_en.set(1); // TODO, randomize it
-    csr_update(ral.cfg);
 
     // randomize jedec
     `DV_CHECK_RANDOMIZE_FATAL(ral.jedec_cc.cc)
@@ -660,8 +665,11 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
   virtual task read_and_check_4b_en();
     cfg.clk_rst_vif.wait_clks(10);
+    // avoid accessing this CSR at the same time as tpm_init
+    cfg.spi_cfg_sema.get();
     csr_rd_check(.ptr(ral.cfg.addr_4b_en),
                  .compare_value(cfg.spi_device_agent_cfg.flash_addr_4b_en));
+    cfg.spi_cfg_sema.put();
   endtask
 
   virtual task random_write_spi_mem(int start_addr, int end_addr, string msg_region = "mem",
