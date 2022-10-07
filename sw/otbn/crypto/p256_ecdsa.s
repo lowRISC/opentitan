@@ -26,7 +26,7 @@ start:
 
 .text
 p256_ecdsa_sign:
-  jal      x1, p256_ecdsa_setup_rand
+  jal      x1, p256_generate_k
   jal      x1, p256_sign
   ecall
 
@@ -34,21 +34,6 @@ p256_ecdsa_verify:
   jal      x1, p256_verify
   ecall
 
-/**
- * Populate the variables rnd and k with randomness, and setup data pointers.
- */
-p256_ecdsa_setup_rand:
-  /* Obtain the nonce (k) from RND. */
-  bn.wsrr   w0, 0x1 /* RND */
-  la        x10, k0
-  bn.sid    x0, 0(x10)
-
-  /* Write all-zero to the second share of k. */
-  bn.xor    w0, w0, w0
-  la        x10, k1
-  bn.sid    x0, 0(x10)
-
-  ret
 
 .bss
 
