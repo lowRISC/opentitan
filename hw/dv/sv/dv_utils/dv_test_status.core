@@ -7,6 +7,8 @@ description: "DV test status reporting utilities"
 
 filesets:
   files_dv:
+    depend:
+      - lowrisc:prim:util
     files:
       - dv_test_status_pkg.sv
     file_type: systemVerilogSource
