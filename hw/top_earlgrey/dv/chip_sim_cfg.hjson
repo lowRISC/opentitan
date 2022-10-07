@@ -195,6 +195,14 @@
               {gen_otp_images_cmd_opts}
         ''',
         '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_prod.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_owner_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --out {run_dir}/otp_ctrl_img_prod.vmem \
+              {gen_otp_images_cmd_opts}
+        ''',
+        '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_rma.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
               --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_owner_sw_cfg.hjson \
