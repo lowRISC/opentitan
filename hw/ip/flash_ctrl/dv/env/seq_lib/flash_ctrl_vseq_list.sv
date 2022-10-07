@@ -58,3 +58,4 @@
 `include "flash_ctrl_phy_arb_redun_vseq.sv"
 `include "flash_ctrl_phy_host_grant_err_vseq.sv"
 `include "flash_ctrl_phy_ack_consistency_vseq.sv"
+`include "flash_ctrl_config_regwen_vseq.sv"
