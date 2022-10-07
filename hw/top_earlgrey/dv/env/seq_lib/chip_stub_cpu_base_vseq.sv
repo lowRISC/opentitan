@@ -45,12 +45,7 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
-    // make sure jtag rst triggers
-    cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
     super.dut_init(reset_kind);
-    if (cfg.jtag_riscv_map == null && cfg.use_jtag_dmi == 0) begin
-      cfg.chip_vif.tap_straps_if.drive(JtagTapNone);
-    end
     // Program the AST with the configuration data loaded in OTP creator SW config region.
     if (cfg.use_jtag_dmi == 0) do_ast_cfg();
   endtask

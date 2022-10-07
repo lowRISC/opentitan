@@ -21,27 +21,24 @@ class chip_sw_uart_smoke_vseq extends chip_sw_base_vseq;
 
   virtual task body();
     super.body();
-    configure_and_connect_uart(uart_idx);
-    if ("signed" inside {cfg.sw_image_flags[SwTypeTest]}) begin
-      // The ROM enables weak pull down on IOC3,4, which contends with the weak pull up we set in
-      // chip_if. TODO: Revisit the whole default pull down strategy.
-      cfg.chip_vif.no_x_check[IoC4:IoC3] = '1;
-    end
-  endtask
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
 
-  // Configures the UART agent and connects uart_if to the chip IOs for the given instance.
-  virtual function void configure_and_connect_uart(int instance_num);
-    `DV_CHECK_FATAL(instance_num inside {[0:NUM_UARTS-1]})
-    `uvm_info(`gfn, $sformatf("Configuring and connecting UART%0d", instance_num), UVM_LOW)
-    cfg.m_uart_agent_cfgs[instance_num].set_parity(1'b0, 1'b0);
-    cfg.m_uart_agent_cfgs[instance_num].set_baud_rate(cfg.uart_baud_rate);
-    cfg.chip_vif.enable_uart(instance_num, 1);
-  endfunction
+    `uvm_info(`gfn, $sformatf("Configuring and connecting UART%0d", uart_idx), UVM_LOW)
+    cfg.m_uart_agent_cfgs[uart_idx].set_parity(1'b0, 1'b0);
+    cfg.m_uart_agent_cfgs[uart_idx].set_baud_rate(cfg.uart_baud_rate);
+    cfg.m_uart_agent_cfgs[uart_idx].en_tx_monitor = 1;
+    cfg.m_uart_agent_cfgs[uart_idx].en_rx_monitor = 1;
+    cfg.chip_vif.enable_uart(uart_idx, 1);
+  endtask
 
   virtual task post_start();
     super.post_start();
     // Disconnect the UART interface.
-    cfg.chip_vif.enable_uart(uart_idx, 0);
+    cfg.m_uart_agent_cfgs[uart_idx].en_tx_monitor = 0;
+    cfg.m_uart_agent_cfgs[uart_idx].en_rx_monitor = 0;
+    // TODO: The SW test needs to release the pinmux to UART connection before we can disconnect the
+    // UART interface from the chip IOs. Not doing so will result in X-prop.
+    // cfg.chip_vif.enable_uart(uart_idx, 0);
   endtask
 
 endclass : chip_sw_uart_smoke_vseq

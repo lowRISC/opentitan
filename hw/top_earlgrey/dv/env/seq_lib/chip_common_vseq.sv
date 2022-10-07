@@ -31,6 +31,11 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
   endtask : body
 
   virtual task pre_start();
+    // CSR tests write to chip CSRs, which includes the pinmux registers. Random writes to the
+    // pinmux may inadvertently connect the chip IOs to peripherals, causing Xs to propagate, if
+    // the chip MIOs are not initialized. Hence, we weakly pull down ALL MIOs for these tests.
+    cfg.chip_vif.ios_if.pins_pd[IoR13:IoA0] = '1;
+
     super.pre_start();
     // Disable assertions failed due to CSR random write value.
     $assertoff(0,
@@ -45,6 +50,7 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
         "tb.dut.top_earlgrey.u_adc_ctrl_aon.u_adc_ctrl_core.u_adc_ctrl_fsm.LpSampleCntCfg_M");
     $asserton(0,
         "tb.dut.top_earlgrey.u_adc_ctrl_aon.u_adc_ctrl_core.u_adc_ctrl_fsm.NpSampleCntCfg_M");
+    cfg.chip_vif.ios_if.pins_pd[IoR13:IoA0] = '0;
   endtask
 
 endclass
