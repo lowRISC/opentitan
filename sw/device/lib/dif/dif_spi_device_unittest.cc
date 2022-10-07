@@ -192,10 +192,19 @@ TEST_F(ConfigTest, ComplexInit) {
                  });
 
   EXPECT_DIF_OK(dif_spi_device_configure(&spi_, config));
+  EXPECT_READ32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                {
+                    {SPI_DEVICE_CONTROL_MODE_OFFSET, 0},
+                    {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
+                });
+  EXPECT_DIF_BADARG(
+      dif_spi_device_set_passthrough_mode(&spi_, kDifToggleDisabled));
 }
 
 TEST_F(ConfigTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_spi_device_configure(nullptr, kDefaultConfig));
+  EXPECT_DIF_BADARG(
+      dif_spi_device_set_passthrough_mode(nullptr, kDifToggleEnabled));
   EXPECT_DIF_BADARG(dif_spi_device_reset_generic_tx_fifo(nullptr));
   EXPECT_DIF_BADARG(dif_spi_device_reset_generic_rx_fifo(nullptr));
   EXPECT_DIF_BADARG(
@@ -1038,6 +1047,35 @@ TEST_F(FlashTest, NullArgs) {
   EXPECT_DIF_BADARG(
       dif_spi_device_get_flash_status_registers(nullptr, &uint32_arg));
   EXPECT_DIF_BADARG(dif_spi_device_get_flash_status_registers(&spi_, nullptr));
+}
+
+TEST_F(FlashTest, PassthroughToggle) {
+  EXPECT_READ32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                {
+                    {SPI_DEVICE_CONTROL_MODE_OFFSET,
+                     SPI_DEVICE_CONTROL_MODE_VALUE_PASSTHROUGH},
+                    {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
+                });
+  EXPECT_WRITE32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CONTROL_MODE_OFFSET,
+                      SPI_DEVICE_CONTROL_MODE_VALUE_FLASHMODE},
+                     {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_set_passthrough_mode(&spi_, kDifToggleDisabled));
+  EXPECT_READ32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                {
+                    {SPI_DEVICE_CONTROL_MODE_OFFSET,
+                     SPI_DEVICE_CONTROL_MODE_VALUE_FLASHMODE},
+                    {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
+                });
+  EXPECT_WRITE32(SPI_DEVICE_CONTROL_REG_OFFSET,
+                 {
+                     {SPI_DEVICE_CONTROL_MODE_OFFSET,
+                      SPI_DEVICE_CONTROL_MODE_VALUE_PASSTHROUGH},
+                     {SPI_DEVICE_CONTROL_SRAM_CLK_EN_BIT, 1},
+                 });
+  EXPECT_DIF_OK(dif_spi_device_set_passthrough_mode(&spi_, kDifToggleEnabled));
 }
 
 TEST_F(FlashTest, MailboxConfigTest) {

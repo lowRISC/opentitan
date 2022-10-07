@@ -159,6 +159,20 @@ dif_result_t dif_spi_device_configure(dif_spi_device_handle_t *spi,
                                       dif_spi_device_config_t config);
 
 /**
+ * Turn on/off passthrough without changing any other configuration.
+ *
+ * This changes the mode to one of flash mode or passthrough mode. The current
+ * mode must be one of those, else this function will fail.
+ *
+ * @param spi A SPI handle.
+ * @param enable Whether to turn on passthrough mode.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_device_set_passthrough_mode(dif_spi_device_handle_t *spi,
+                                                 dif_toggle_t enable);
+
+/**
  * Resets the asynchronous TX FIFO in generic mode.
  *
  * This function should only be called when the upstream spi host is held in
