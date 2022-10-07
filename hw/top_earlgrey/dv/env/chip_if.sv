@@ -82,31 +82,27 @@ interface chip_if;
   // DO NOT manipulate this signal in test sequences directly. Use the individual functional
   // interfaces below instead.
   wire [IoNumTotal-1:0] ios;
-  bit [IoNumTotal-1:0]  no_x_check;  // 1 - DIO, 0 - MIO.
 
   // Functional interface: for testing ALL chip IOs, such as pinmux and padctrl tests.
   pins_if#(.Width(IoNumTotal), .PullStrength("Weak")) ios_if(.pins(ios));
 
-  // Weak pulls for each IO.
+  // Weak pulls for DIOs.
   //
-  // All IOs are weak-pulled by default, using the ios_if interface. All IOs are pulled down, except
-  // for the 4 below.
+  // These weak pulls enable all DIOs to reflect a legal value. Active low signals are pulled up,
+  // the rest are pulled down.
   initial begin
-    // Enable weak pulldown on most signals.
-    ios_if.pins_pd = '1;
-    // These are "inactive high".
+    // Enable weak pull downs on DIOs.
+    ios_if.pins_pd[AstMisc:PorN] = '1;
+
+    // These are active low, so pull up.
     ios_if.pins_pu[PorN] = 1;
     ios_if.pins_pu[UsbP] = 1;
-    ios_if.pins_pu[IoR4] = 1;  // JTAG t_rst_n.
     ios_if.pins_pu[IoR8] = 1;
     ios_if.pins_pu[IoR9] = 1;
 
+    // These are chip outputs - no needs of pulls.
     ios_if.pins_pd[SpiHostCsL] = 0;
     ios_if.pins_pd[SpiHostClk] = 0;
-
-    // Disable X check on these dedicated IOs.
-    no_x_check[AstMisc:PorN] = '1;
-    no_x_check[IoR9:IoR8] = '1;
   end
 
   // X-check monitor on the muxed chip IOs.
@@ -114,17 +110,17 @@ interface chip_if;
   // Chip IOs must always either be undriven or driven to a known value. Xs indicate multiple
   // drivers, which is an issue likely caused by multiple functions simultaneously attempting to
   // control the shared (muxed) pads.
-  for (genvar i = 0; i < IoNumTotal; i++) begin : gen_ios_x_check
+  for (genvar i = IoA0; i < IoNumTotal; i++) begin : gen_mios_x_check
     wire glitch_free_io;
     assign #1ps glitch_free_io = ios[i];
 
     chip_io_e named_io = chip_io_e'(i);
     always @(glitch_free_io) begin
-      if (!no_x_check[i] && glitch_free_io === 1'bx) begin
+      if (glitch_free_io === 1'bx) begin
         `uvm_error(MsgId, $sformatf("Detected an X on %0s", named_io.name()))
       end
     end
-  end : gen_ios_x_check
+  end : gen_mios_x_check
 
   // Functional interfaces.
   //
@@ -155,22 +151,24 @@ interface chip_if;
   // monitor above will throw a fatal error and exit the simulation.
 
   // Functional (dedicated) interface (input): power on reset input.
-  pins_if #(1) por_n_if(.pins(ios[PorN]));
+  pins_if #(.Width(1), .PullStrength("Weak")) por_n_if(.pins(ios[PorN]));
 
   // Functional (dedicated) interface (inout): USB.
   // TODO!
 
   // Functional (dedicated) interface (input): CC1, CC2.
-  pins_if #(2) cc_if(.pins(ios[CC2:CC1]));
+  pins_if #(.Width(2), .PullStrength("Weak")) cc_if(.pins(ios[CC2:CC1]));
 
   // Functional (dedicated) interface (analog input): flash test volt.
-  pins_if #(1) flash_test_volt_if(.pins(ios[FlashTestVolt]));
+  pins_if #(.Width(1), .PullStrength("Weak")) flash_test_volt_if(.pins(ios[FlashTestVolt]));
 
   // Functional (dedicated) interface (input): flash test mode0.
-  pins_if #(2) flash_test_mode_if(.pins(ios[FlashTestMode1:FlashTestMode0]));
+  pins_if #(.Width(2), .PullStrength("Weak")) flash_test_mode_if(
+    .pins(ios[FlashTestMode1:FlashTestMode0])
+  );
 
   // Functional (dedicated) interface (analog input): OTP ext volt.
-  pins_if #(1) otp_ext_volt_if(.pins(ios[OtpExtVolt]));
+  pins_if #(.Width(1), .PullStrength("Weak")) otp_ext_volt_if(.pins(ios[OtpExtVolt]));
 
 
   // Functional (dedicated) interface: SPI host interface (drives traffic into the chip).
@@ -265,28 +263,63 @@ interface chip_if;
 
 
   // Functional (dedicated) interface (inout): EC reset.
-  pins_if #(1) ec_rst_l_if(.pins(ios[IoR8]));
+  pins_if #(.Width(1), .PullStrength("Weak")) ec_rst_l_if(.pins(ios[IoR8]));
 
   // Functional (dedicated) interface (inout): flash write protect.
-  pins_if #(1) flash_wp_l_if(.pins(ios[IoR9]));
+  pins_if #(.Width(1), .PullStrength("Weak")) flash_wp_l_if(.pins(ios[IoR9]));
 
   // Functional (dedicated) interface (inout): power button.
-  pins_if #(1) pwrb_in_if(.pins(ios[IoR13]));  // TODO: move to R0.
+  pins_if #(.Width(1), .PullStrength("Weak")) pwrb_in_if(.pins(ios[IoR13]));  // TODO: move to R0.
 
   // Functional (muxed) interface: sysrst_ctrl.
   // TODO: Replace with sysrst_ctrl IP level interface.
   // TODO; combine all into 1 single sysrst_ctrl_if.
-  pins_if #(8) sysrst_ctrl_if(.pins({ios[IoR6], ios[IoR5], ios[IoC9], ios[IoC7],
-                                     ios[IoB9], ios[IoB8], ios[IoB6], ios[IoB3]}));
+  pins_if #(.Width(8), .PullStrength("Weak")) sysrst_ctrl_if(
+    .pins({ios[IoR6], ios[IoR5], ios[IoC9], ios[IoC7],
+           ios[IoB9], ios[IoB8], ios[IoB6], ios[IoB3]})
+  );
 
   // Functional (dedicated) interface (input): AST misc.
-  pins_if #(1) ast_misc_if(.pins(ios[AstMisc]));
+  pins_if #(.Width(1), .PullStrength("Weak")) ast_misc_if(.pins(ios[AstMisc]));
 
   // Functional (muxed) interface: DFT straps.
-  pins_if #(2) dft_straps_if(.pins(ios[IoC4:IoC3]));
+  pins_if #(.Width(2), .PullStrength("Weak")) dft_straps_if(.pins(ios[IoC4:IoC3]));
 
   // Functional (muxed) interface: TAP straps.
-  pins_if #(2) tap_straps_if(.pins({ios[IoC5], ios[IoC8]}));
+  pins_if #(.Width(2), .PullStrength("Weak")) tap_straps_if(.pins({ios[IoC5], ios[IoC8]}));
+
+  // Weakly pulldown TAP & DFT strap pins in DFT-enabled LC states.
+  //
+  // The TAP strap sampling logic continuously samples the strap values in DFT-enabled LC
+  // state to allow fast-switching back and forth between LC and RV_DM TAPs. The TAP strap pins are
+  // muxed IOs which are unconnected to any interface by default, leaving them in an undriven state.
+  // The test may put the chip in such an LC state for various reasons. Such tests may not even
+  // set the TAP strap pins or exercise the JTAG interface. The side-effect of this is, when the
+  // continuous strap sampling logic samples an undriven value, it results in X-propagation. To
+  // avoid that, it is necessary to weakly pull down the strap pins. The DFT strap pins have a
+  // same issue, except that it is sampled only once during power up.
+  //
+  // The pinmux version of lc_dft_en is used below because it goes through synchronizers.
+  wire pinmux_lc_dft_en = (`PINMUX_HIER.u_pinmux_strap_sampling.lc_dft_en[0] == lc_ctrl_pkg::On);
+  wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.strap_en_i;
+  initial begin
+    fork
+      forever @(pwrmgr_fast_pwr_state_strap_en or pinmux_lc_dft_en) begin
+        // TAP straps are continuously sampled in active power.
+        if (pinmux_lc_dft_en || pwrmgr_fast_pwr_state_strap_en) begin
+          tap_straps_if.pins_pd = '1;
+        end else begin
+          tap_straps_if.pins_pd = '0;
+        end
+        // DFT straps are sampled only once, during a specific pwrmgr FSM state.
+        if (pinmux_lc_dft_en && pwrmgr_fast_pwr_state_strap_en) begin
+          dft_straps_if.pins_pd = '1;
+        end else begin
+          dft_straps_if.pins_pd = '0;
+        end
+      end
+    join_none
+  end
 
   // Set JTAG TAP straps during the next powerup.
   //
@@ -302,12 +335,11 @@ interface chip_if;
   //
   // This method is non-blocking - it immediately returns back to the caller after spawning a
   // thread. Care must be taken to ensure the calling thread is not killed unless desired.
-  wire pwrmgr_pkg::fast_pwr_state_e pwrmgr_fast_pwr_state = `PWRMGR_HIER.u_fsm.state_q;
   function automatic void set_tap_straps_on_powerup(chip_jtag_tap_e tap_strap);
     fork begin
-      wait (pwrmgr_fast_pwr_state == pwrmgr_pkg::FastPwrStateStrap);
+      wait (pwrmgr_fast_pwr_state_strap_en);
       tap_straps_if.drive(tap_strap);
-      wait (pwrmgr_fast_pwr_state != pwrmgr_pkg::FastPwrStateStrap);
+      wait (!pwrmgr_fast_pwr_state_strap_en);
       tap_straps_if.drive_en('0);
     end join_none
   endfunction
@@ -317,30 +349,32 @@ interface chip_if;
   // Similar in behavior to set_tap_straps_on_next_powerup(), but used for setting the DFT straps.
   function automatic void set_dft_straps_on_powerup(bit [1:0] dft_strap);
     fork begin
-      wait (pwrmgr_fast_pwr_state == pwrmgr_pkg::FastPwrStateStrap);
+      wait (pwrmgr_fast_pwr_state_strap_en);
       dft_straps_if.drive(dft_strap);
-      wait (pwrmgr_fast_pwr_state != pwrmgr_pkg::FastPwrStateStrap);
+      wait (!pwrmgr_fast_pwr_state_strap_en);
       dft_straps_if.drive_en('0);
     end join_none
   endfunction
 
   // Functional (muxed) interface: SW straps.
-  pins_if #(3) sw_straps_if(.pins(ios[IoC2:IoC0]));
+  pins_if #(.Width(3), .PullStrength("Weak")) sw_straps_if(.pins(ios[IoC2:IoC0]));
 
   // Functional (muxed) interface: GPIOs.
   //
-  // Note: In an actual implementation, fewer GPIOs may be in use. For testing, we try to connect as
-  // many as the `gpio` peripheral supports. As of now, the other functions muxed with these IOs
-  // do not need to be enabled in GPIO tests.
-  pins_if #(31) gpio_pins_if(
-    .pins({ios[IoA0], ios[IoA1], ios[IoA2], ios[IoA3],
-           ios[IoA4], ios[IoA5], ios[IoA6], ios[IoB0],
-           ios[IoB1], ios[IoB2], ios[IoB3], ios[IoB4],
-           ios[IoB5], ios[IoB6], ios[IoB7], ios[IoB8],
-           ios[IoC5], ios[IoC6], ios[IoC7], ios[IoC9],
-           ios[IoC10], ios[IoC11], ios[IoC12], ios[IoR0],
-           ios[IoR1], ios[IoR2], ios[IoR3], ios[IoR4],
-           ios[IoR5], ios[IoR6], ios[IoR7]})
+  // The pins allocated for GPIOs overlap with several other functions, but that is ok. For pre-Si
+  // DV, the directed tests that verify the GPIOs are not likely to also enable other functions that
+  // overlap with these pins. If they do, we could set masks and limit the GPIOs to a smaller
+  // subset. The selection below prevents as much contention as possible on the IOs, considering
+  // various modes the testbench AND the device can be in.
+  pins_if #(.Width(NUM_GPIOS), .PullStrength("Weak")) gpios_if(
+    .pins({ios[IoR13], ios[IoR12], ios[IoR11], ios[IoR10],
+           ios[IoR7], ios[IoR6], ios[IoR5], ios[IoR4],
+           ios[IoR3], ios[IoR2], ios[IoR1], ios[IoR0],
+           ios[IoC12], ios[IoC11], ios[IoC10], ios[IoC9],
+           ios[IoB12], ios[IoB11], ios[IoB10], ios[IoB9],
+           ios[IoB8], ios[IoB7], ios[IoB6], ios[IoA8],
+           ios[IoA7], ios[IoA6], ios[IoA5], ios[IoA4],
+           ios[IoA3], ios[IoA2], ios[IoA1], ios[IoA0]})
   );
 
   // Functional (muxed) interface: JTAG (valid during debug enabled LC state only).
@@ -351,7 +385,6 @@ interface chip_if;
   // window of time when the TAP straps are set. It is upto the test sequence to orchestrate it
   // correctly. Disconnect the TAP strap interface to free up the muxed IOs.
   wire __enable_jtag = (|(tap_straps_if.pins_oe & tap_straps_if.pins_o));
-  wire lc_hw_debug_en = (`LC_CTRL_HIER.lc_hw_debug_en_o == lc_ctrl_pkg::On);
   jtag_if jtag_if();
 
   assign ios[IoR0] = __enable_jtag ? jtag_if.tms : 1'bz;
@@ -365,6 +398,7 @@ interface chip_if;
   jtag_if flash_ctrl_jtag_if();
 
   // TODO: Revisit this logic.
+  wire lc_hw_debug_en = (`LC_CTRL_HIER.lc_hw_debug_en_o == lc_ctrl_pkg::On);
   assign flash_ctrl_jtag_enabled = enable_flash_ctrl_jtag && lc_hw_debug_en;
   assign ios[IoB0] = flash_ctrl_jtag_enabled ? flash_ctrl_jtag_if.tms : 1'bz;
   assign flash_ctrl_jtag_if.tdo = flash_ctrl_jtag_enabled ? ios[IoB1] : 1'bz;
@@ -372,17 +406,19 @@ interface chip_if;
   assign ios[IoB3] = flash_ctrl_jtag_enabled ? flash_ctrl_jtag_if.tck : 1'bz;
 
   // Functional (muxed) interface: AST2PAD.
-  pins_if #(9) ast2pad_if(.pins({ios[IoA0], ios[IoA1], ios[IoB3], ios[IoB4],
-                                 ios[IoB5], ios[IoC0], ios[IoC4], ios[IoC7],
-                                 ios[IoC9]}));
+  pins_if #(.Width(9), .PullStrength("Weak")) ast2pad_if(
+    .pins({ios[IoA0], ios[IoA1], ios[IoB3], ios[IoB4], ios[IoB5], ios[IoC0], ios[IoC4], ios[IoC7],
+           ios[IoC9]})
+  );
 
   // Functional (muxed) interface: PAD2AST.
-  pins_if #(8) pad2ast_if(.pins({ios[IoA4], ios[IoA5], ios[IoB0], ios[IoB1],
-                                 ios[IoB2], ios[IoC1], ios[IoC2], ios[IoC3]}));
+  pins_if #(.Width(8), .PullStrength("Weak")) pad2ast_if(
+    .pins({ios[IoA4], ios[IoA5], ios[IoB0], ios[IoB1], ios[IoB2], ios[IoC1], ios[IoC2], ios[IoC3]})
+  );
 
   // Functional (muxed) interface: Pin wake up signal.
   // TODO: For these tests, use chip_pins_if instead, so that any pin can be configured to wakeup.
-  pins_if #(1) pinmux_wkup_if(.pins(ios[IoB7]));
+  pins_if #(.Width(1), .PullStrength("Weak")) pinmux_wkup_if(.pins(ios[IoB7]));
 
   // Functional (muxed) interface: UARTs.
   localparam chip_io_e AssignedUartTxIos[NUM_UARTS] = {IoC4, IoB5, IoA5, IoA1};
@@ -644,7 +680,7 @@ interface chip_if;
     dft_straps_if.disconnect();
     tap_straps_if.disconnect();
     sw_straps_if.disconnect();
-    gpio_pins_if.disconnect();
+    gpios_if.disconnect();
     enable_flash_ctrl_jtag = 0;
     ast2pad_if.disconnect();
     pad2ast_if.disconnect();

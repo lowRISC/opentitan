@@ -8,7 +8,7 @@ package chip_common_pkg;
   import dv_utils_pkg::uint;
 
   // Chip composition (number of hardware resources).
-  parameter dv_utils_pkg::uint NUM_GPIOS = 16;
+  parameter dv_utils_pkg::uint NUM_GPIOS = 32;
   parameter dv_utils_pkg::uint NUM_UARTS = 4;
   parameter dv_utils_pkg::uint NUM_SPI_HOSTS = 2;
   parameter dv_utils_pkg::uint NUM_I2CS = 3;
