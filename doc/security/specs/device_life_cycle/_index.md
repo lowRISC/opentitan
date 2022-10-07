@@ -159,7 +159,7 @@ Once provisioned, these tokens are no longer readable by software.
     <td>OTP</td>
     <td>
 
-Transition from TEST_UNLOCKED state via OTP write. This is a mutually exclusive state to
+Transition from TEST_UNLOCKED or TEST_LOCKED state via OTP write. PROD is a mutually exclusive state to
 DEV and PROD_END.
 
 To enter this state, a TEST_EXIT token is required.
