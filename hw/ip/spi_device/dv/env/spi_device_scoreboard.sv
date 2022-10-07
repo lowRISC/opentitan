@@ -180,7 +180,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         SpiModeTpm: begin
           bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
           if (item.write_command) begin
-            `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
+            // TLUL may respond too slow and we may have 2 items in this queue
+            `DV_CHECK_LE(tpm_write_spi_q.size, 1)
             tpm_write_spi_q.push_back(item);
           end else begin
             bit [TL_DW-1:0] exp_q[$];
@@ -984,11 +985,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           `DV_CHECK_LE(tpm_write_sw_q.size, 2)
           tpm_write_sw_q[0].data.push_back(item.d_data);
           `DV_CHECK_LE(tpm_write_sw_q[0].data.size, tpm_write_sw_q[0].read_size)
-
           // clear read_size after finishing collecting the write item and then compare
           if (tpm_write_sw_q[0].data.size == tpm_write_sw_q[0].read_size) begin
             tpm_write_sw_q[0].read_size = 0;
-            `DV_CHECK_EQ_FATAL(tpm_write_spi_q.size, 1)
+            `DV_CHECK_LE(tpm_write_spi_q.size, 2)
             tpm_item_compare(tpm_write_spi_q.pop_front(), tpm_write_sw_q.pop_front(), "write");
           end
         end

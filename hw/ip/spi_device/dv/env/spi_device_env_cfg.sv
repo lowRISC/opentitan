@@ -20,6 +20,10 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   // This prevents clk from being configured multiple times
   bit                 spi_clk_configured;
 
+  // test may have 2 threads to configure spi_device for flash and TPM mode.
+  // both may access the same csr `CFG`, have this to avoid accessing it at the same time.
+  semaphore           spi_cfg_sema = new(1);
+
   `uvm_object_utils_begin(spi_device_env_cfg)
     `uvm_field_object(spi_host_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(spi_device_agent_cfg, UVM_DEFAULT)

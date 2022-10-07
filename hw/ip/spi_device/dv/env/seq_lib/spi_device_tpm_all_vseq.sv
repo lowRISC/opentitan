@@ -47,7 +47,7 @@ class spi_device_tpm_all_vseq extends spi_device_tpm_read_hw_reg_vseq;
 
           csr_rd(.ptr(ral.intr_state.tpm_header_not_empty), .value(tpm_intr));
           if (tpm_intr) begin
-            csr_wr(.ptr(ral.intr_state.tpm_header_not_empty), .value(tpm_intr));
+            clear_tpm_interrupt();
             while (1) begin
               csr_rd(.ptr(ral.tpm_status.cmdaddr_notempty), .value(cmdaddr_notempty_val));
               if (!cmdaddr_notempty_val) break;
