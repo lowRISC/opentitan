@@ -90,7 +90,7 @@
       name: sec_cm_ctrl_config_regwen
       desc: "Verify the countermeasure(s) CTRL.CONFIG.REGWEN."
       stage: V2S
-      tests: ["flash_ctrl_csr_rw"]
+      tests: ["flash_ctrl_config_regwen"]
     }
     {
       name: sec_cm_data_regions_config_regwen
@@ -270,7 +270,7 @@
       name: sec_cm_phy_ack_ctrl_consistency
       desc: '''Verify the countermeasure(s) PHY_ACK.CTRL.CONSISTENCY.
 
-      Triiger tb.dut.u_eflash.gen_flash_cores[0].u_core.spurious_ack_o as follows:
+      Trigger tb.dut.u_eflash.gen_flash_cores[0].u_core.spurious_ack_o as follows:
       @ tb.dut.u_eflash.gen_flash_cores[0].u_core.ctrl_fsm_idle
       force tb.dut.u_eflash.gen_flash_cores[0].u_core.ctrl_rsp_vld = 1 or
       @ tb.dut.u_eflash.gen_flash_cores[0].u_core.host_outstanding[1:0] == 0
