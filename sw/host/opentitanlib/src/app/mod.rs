@@ -123,10 +123,16 @@ impl TransportWrapper {
     /// string as is.
     fn map_name(map: &HashMap<String, String>, name: &str) -> String {
         let name = name.to_uppercase();
-        // TODO(#8769): Support multi-level aliasing, either by
-        // flattening after parsing all files, or by repeated lookup
-        // here.
-        map.get(&name).cloned().unwrap_or(name)
+        match map.get(&name) {
+            Some(v) => {
+                if v.eq(&name) {
+                    name
+                } else {
+                    Self::map_name(map, v)
+                }
+            }
+            None => name,
+        }
     }
 
     /// Apply given configuration to a single pins.
