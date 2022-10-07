@@ -53,6 +53,14 @@ If a transaction matches multiple regions, the lowest indexed region has priorit
 
 For details on how to program the related registers, please see {{< regref "IBUS_ADDR_MATCHING_0" >}} and {{< regref "IBUS_REMAP_ADDR_0" >}}.
 
+### Translation and Instruction Caching
+
+The simple address translation scheme used in this design is not aware of the processor context, specifically, any instruction caching done in the core.
+This means if the address translation scheme were to change, instructions that are already cached may not reflect the updated address setting.
+
+In order to correctly utilize simple address translation along with instruction caching, it is recommended that after the address is updated a `FENCE.I` instruction is issued.
+The `FENCE.I` instruction forces the instruction cache to flush, and this aligns the core to the new address setting.
+
 ## Random Number Generation
 
 The wrapper has a connection to the [Entropy Distribution Network (EDN)]({{< relref "hw/ip/edn/doc" >}}) with a register based interface.
