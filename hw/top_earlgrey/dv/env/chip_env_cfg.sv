@@ -180,6 +180,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // By default, assume these OTP image paths.
     otp_images[lc_ctrl_state_pkg::LcStRaw] = "otp_ctrl_img_raw.vmem";
     otp_images[lc_ctrl_state_pkg::LcStDev] = "otp_ctrl_img_dev.vmem";
+    otp_images[lc_ctrl_state_pkg::LcStProd] = "otp_ctrl_img_prod.vmem";
     otp_images[lc_ctrl_state_pkg::LcStRma] = "otp_ctrl_img_rma.vmem";
 
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)

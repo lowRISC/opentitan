@@ -37,6 +37,17 @@ otp_image(
     src = ":otp_ctrl_dev_json",
 )
 
+otp_json(
+    name = "otp_ctrl_prod_json",
+    lc_count = 5,
+    lc_state = "PROD",
+)
+
+otp_image(
+    name = "img_prod",
+    src = ":otp_ctrl_prod_json",
+)
+
 filegroup(
     name = "all_files",
     srcs = glob(["**"]),
@@ -46,6 +57,7 @@ pkg_files(
     name = "package",
     srcs = [
         ":img_dev",
+        ":img_prod",
         ":img_rma",
     ],
     prefix = "earlgrey/otp",
