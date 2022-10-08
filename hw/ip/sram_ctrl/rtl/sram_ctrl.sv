@@ -400,6 +400,8 @@ module sram_ctrl
     .tl_d2h_o(ram_tl_o),
     .tl_h2d_o(ram_tl_in_gated),
     .tl_d2h_i(ram_tl_out_gated),
+    .flush_req_i('0),
+    .flush_ack_o(),
     .lc_en_i (lc_tlul_gate_en),
     .err_o   (bus_integ_error[2])
   );
