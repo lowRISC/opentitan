@@ -2396,7 +2396,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // as the reset is only important for clearing 32-bit half-SHA-words.
   assign pfifo_precon_clr = fw_ov_mode_entropy_insert ?
                             !es_enable_fo[9] & !pfifo_precon_not_empty :
-                            module_en_pulse_fo[5];
+                            module_en_pulse_fo[5] & !pfifo_precon_not_empty;
 
   assign pfifo_precon_pop = (pfifo_cond_push && sha3_msgfifo_ready);
 
