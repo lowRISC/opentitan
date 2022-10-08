@@ -437,6 +437,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    recov_alert_state;
   logic                    es_fw_ov_wr_alert;
   logic                    es_fw_ov_disable_alert;
+  logic                    fw_ov_corrupted;
 
   logic                    stale_seed_processing;
   logic                    main_sm_enable;
@@ -481,6 +482,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        sha3_start_mask_q, sha3_start_mask_d;
   logic        main_sm_extd_en_n_d, main_sm_extd_en_n_q;
   logic        sha3_flush_q, sha3_flush_d;
+  logic [1:0]  fw_ov_corrupted_q, fw_ov_corrupted_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -498,6 +500,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_start_mask_q      <= '0;
       main_sm_extd_en_n_q    <= 1'b1;
       sha3_done_q            <= prim_mubi_pkg::MuBi4False;
+      fw_ov_corrupted_q      <= 2'b00;
     end else begin
       ht_failed_q            <= ht_failed_d;
       ht_done_pulse_q        <= ht_done_pulse_d;
@@ -513,6 +516,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       main_sm_extd_en_n_q    <= main_sm_extd_en_n_d;
       mubi_mod_en_dly_q      <= mubi_mod_en_dly_d;
       sha3_done_q            <= sha3_done_d;
+      fw_ov_corrupted_q      <= fw_ov_corrupted_d;
     end
   end
 
@@ -2109,7 +2113,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.recov_alert_sts.es_fw_ov_disable_alert.de = es_fw_ov_disable_alert;
   assign hw2reg.recov_alert_sts.es_fw_ov_disable_alert.d  = es_fw_ov_disable_alert;
 
-
   // repcnt fail counter
   // SEC_CM: CTR.REDUN
   entropy_src_cntr_reg #(
@@ -2597,7 +2600,20 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign sha3_flush_d = stale_seed_processing ? 1'b1 :
                         main_stage_push_raw ? 1'b0 :
                         sha3_flush_q;
-  assign main_stage_push = main_stage_push_raw & !sha3_flush_q;
+
+  // If the user incorrectly disables the fw_ov SHA3 processing while
+  // data is in the pipeline, it can potentially scramble two outputs.
+  // Thus in addition to triggering a recoverable alert, we mark the
+  // following _two_ outputs as corrupted and to not let them in the
+  // esfinal FIFO
+  assign fw_ov_corrupted_d = es_fw_ov_disable_alert ? 2'b11 :
+                             !es_bypass_mode && main_stage_push_raw ? {1'b0, fw_ov_corrupted_q[1]} :
+                             fw_ov_corrupted_q;
+
+  assign fw_ov_corrupted = (|fw_ov_corrupted_q) & !es_bypass_mode;
+
+
+  assign main_stage_push = main_stage_push_raw & !sha3_flush_q & !fw_ov_corrupted;
 
   // If the SHA3 processing endures all the way through a disable pulse, the SM may miss
   // disable events entirely.  This extends any disable pulses until they can be seen
