@@ -1787,7 +1787,7 @@
             - Verify that the z3_wakeup output at the chip IOs is reflecting the value of 1.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup"]
     }
 
     // ADC_CTRL (pre-verified IP) integration tests:
