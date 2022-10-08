@@ -33,6 +33,8 @@
              "xbar_main_bind",
              "xbar_peri_bind"]
 
+  top_dv_path: "{proj_root}/hw/top_earlgrey/dv"
+
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
@@ -46,8 +48,8 @@
                 "{proj_root}/hw/dv/verilator/memutil_dpi_scrambled_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
-                "{proj_root}/hw/top_earlgrey/dv/chip_smoketests.hjson",
-                "{proj_root}/hw/top_earlgrey/dv/chip_rom_tests.hjson",
+                "{top_dv_path}/chip_smoketests.hjson",
+                "{top_dv_path}/chip_rom_tests.hjson",
                 ]
 
   // Override existing project defaults to supply chip-specific values.
@@ -64,23 +66,23 @@
     // IPs. See `hw/dv/tools/dvsim/common_sim_cfg.hjson` for the default value.
     {
       name: default_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover.cfg+{proj_root}/hw/top_earlgrey/dv/autogen/xbar_tgl_excl.cfg"
+      value: "-cm_hier {top_dv_path}/cov/chip_cover.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg -cm_fsmcfg {top_dv_path}/cov/chip_fsm.cfg"
     }
     // Used by 'cover_reg_top' only builds - we only cover the *_reg_top of
     // the non-pre-verified modules at the chip level. See
     // `hw/dv/tools/dvsim/common_sim_cfg.hjson` for the default value.
     {
       name: cover_reg_top_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover_reg_top.cfg+{proj_root}/hw/top_earlgrey/dv/autogen/xbar_tgl_excl.cfg"
+      value: "-cm_hier {top_dv_path}/cov/chip_cover_reg_top.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg"
     }
     {
       name: xbar_build_mode_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover_reg_top.cfg+{proj_root}/hw/top_earlgrey/dv/autogen/xbar_tgl_excl.cfg"
+      value: "-cm_hier {top_dv_path}/cov/chip_cover_reg_top.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg"
     }
     // Used by the UNR flow.
     {
       name: vcs_unr_cfg_file
-      value: "{proj_root}/hw/top_earlgrey/dv/cov/unr.cfg"
+      value: "{top_dv_path}/cov/unr.cfg"
     }
 
     // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`.
@@ -100,7 +102,7 @@
   ]
 
   // exclusion files
-  vcs_cov_excl_files: ["{proj_root}/hw/top_earlgrey/dv/cov/conn_ast_mem_cfg.el"]
+  vcs_cov_excl_files: ["{top_dv_path}/cov/conn_ast_mem_cfg.el"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 3
