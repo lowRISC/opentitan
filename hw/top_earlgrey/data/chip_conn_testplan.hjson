@@ -506,6 +506,7 @@
               "clkmgr_powerup_clk_pinmux_clk",
               "clkmgr_powerup_clk_pwm_clk",
               "clkmgr_powerup_clk_pwrmgr_clk",
+              "clkmgr_powerup_clk_pwrmgr_lc_clk",
               "clkmgr_powerup_clk_rstmgr_por_clk",
               "clkmgr_powerup_clk_rstmgr_io4_clk"]
       tags: ["conn"]
@@ -578,7 +579,6 @@
               "clkmgr_secure_clk_lc_ctrl_clk",
               "clkmgr_secure_clk_otbn_otp_clk",
               "clkmgr_secure_clk_otp_ctrl_clk",
-              "clkmgr_secure_clk_pwrmgr_clk",
               "clkmgr_secure_clk_rv_core_ibex_clk",
               "clkmgr_secure_clk_rv_core_ibex_otp_clk",
               "clkmgr_secure_clk_sensor_ctrl_clk"]
@@ -928,6 +928,7 @@
       tests: ["rstmgr_lc_io_div4_aon_aon_timer_rst_ni",
               "rstmgr_lc_io_div4_aon_clkmgr_rst_ni",
               "rstmgr_lc_io_div4_aon_clkmgr_rst_io_div4_ni",
+              "rstmgr_lc_io_div4_aon_pwrmgr_rst_lc_ni",
               "rstmgr_lc_io_div4_aon_pinmux_rst_ni",
               "rstmgr_lc_io_div4_aon_sram_ctrl_ret_rst_otp_ni",
               "rstmgr_lc_io_div4_aon_rstmgr_rst_ni"]
@@ -950,7 +951,6 @@
               "rstmgr_lc_io_div4_d0_lc_ctrl_rst_ni",
               "rstmgr_lc_io_div4_d0_otbn_rst_otp_ni",
               "rstmgr_lc_io_div4_d0_otp_ctrl_rst_ni",
-              "rstmgr_lc_io_div4_d0_pwrmgr_rst_lc_ni",
               "rstmgr_lc_io_div4_d0_rv_core_ibex_rst_esc_ni",
               "rstmgr_lc_io_div4_d0_rv_core_ibex_rst_otp_ni",
               "rstmgr_lc_io_div4_d0_sram_ctrl_main_rst_otp_ni"]

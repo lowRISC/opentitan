@@ -30,8 +30,6 @@ CONNECTION, CLKMGR_SECURE_CLK_OTBN_OTP_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.
 CONNECTION, CLKMGR_SECURE_CLK_OTP_CTRL_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_otp_ctrl, clk_i
 CONNECTION, CLKMGR_SECURE_CLK_OTP_CTRL_EDN_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_main_secure,    top_earlgrey.u_otp_ctrl, clk_edn_i
 
-CONNECTION, CLKMGR_SECURE_CLK_PWRMGR_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_pwrmgr_aon, clk_lc_i
-
 CONNECTION, CLKMGR_SECURE_CLK_RV_CORE_IBEX_CLK,     top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_rv_core_ibex, clk_esc_i
 CONNECTION, CLKMGR_SECURE_CLK_RV_CORE_IBEX_OTP_CLK, top_earlgrey.u_clkmgr_aon, clocks_o.clk_io_div4_secure, top_earlgrey.u_rv_core_ibex, clk_otp_i
 
