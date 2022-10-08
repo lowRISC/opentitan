@@ -29,6 +29,10 @@ module tlul_lc_gate
   output tl_h2d_t tl_h2d_o,
   input  tl_d2h_t tl_d2h_i,
 
+  // Flush control signaling
+  input flush_req_i,
+  output logic flush_ack_o,
+
   // LC control signal
   input  lc_tx_t  lc_en_i,
   output logic err_o
@@ -102,14 +106,36 @@ module tlul_lc_gate
   // Minimum Hamming weight: 3
   // Maximum Hamming weight: 5
   //
-  localparam int StateWidth = 8;
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 5 -n 9 \
+  //      -s 686407169 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: --
+  //  4: --
+  //  5: |||||||||||||||||||| (60.00%)
+  //  6: ||||||||||||| (40.00%)
+  //  7: --
+  //  8: --
+  //  9: --
+  //
+  // Minimum Hamming distance: 5
+  // Maximum Hamming distance: 6
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 6
+  //
+  localparam int StateWidth = 9;
   typedef enum logic [StateWidth-1:0] {
-    StActive = 8'b11101010,
-    StOutstanding = 8'b11010001,
-    StError = 8'b00100111,
-    StErrorOutstanding = 8'b00011100
+    StActive = 9'b100100001,
+    StOutstanding = 9'b011100111,
+    StFlush = 9'b001001100,
+    StError = 9'b010111010,
+    StErrorOutstanding = 9'b100010110
   } state_e;
-
 
   state_e state_d, state_q;
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StError)
@@ -136,10 +162,11 @@ module tlul_lc_gate
     state_d = state_q;
     err_en = Off;
     err_o = '0;
+    flush_ack_o = '0;
 
     unique case (state_q)
       StActive: begin
-        if (lc_tx_test_false_loose(lc_en_i)) begin
+        if (lc_tx_test_false_loose(lc_en_i) || flush_req_i) begin
           state_d = StOutstanding;
         end
       end
@@ -147,7 +174,17 @@ module tlul_lc_gate
       StOutstanding: begin
         block_cmd = 1'b1;
         if (outstanding_txn == '0) begin
+          state_d = lc_tx_test_false_loose(lc_en_i) ? StError : StFlush;
+        end
+      end
+
+      StFlush: begin
+        block_cmd = 1'b1;
+        flush_ack_o = 1'b1;
+        if (lc_tx_test_false_loose(lc_en_i)) begin
           state_d = StError;
+        end else if (!flush_req_i) begin
+          state_d = StActive;
         end
       end
 

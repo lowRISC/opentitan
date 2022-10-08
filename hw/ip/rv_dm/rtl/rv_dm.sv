@@ -183,9 +183,10 @@ module rv_dm
 
   logic reset_req_en;
   logic ndmreset_req;
+  logic ndmreset_req_qual;
   // SEC_CM: DM_EN.CTRL.LC_GATED
   assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en[EnResetReq]);
-  assign ndmreset_req_o = ndmreset_req & reset_req_en;
+  assign ndmreset_req_o = ndmreset_req_qual & reset_req_en;
 
   logic dmi_en;
   // SEC_CM: DM_EN.CTRL.LC_GATED
@@ -219,7 +220,9 @@ module rv_dm
     .tl_h2d_o(sba_tl_h_o),
     .tl_d2h_i(sba_tl_h_i),
     .lc_en_i (lc_hw_debug_en[EnSba]),
-    .err_o   (sba_gate_intg_error)
+    .err_o   (sba_gate_intg_error),
+    .flush_req_i('0),
+    .flush_ack_o()
   );
 
   tlul_adapter_host #(
@@ -355,6 +358,8 @@ module rv_dm
     .tl_d2h_o(mem_tl_win_d2h),
     .tl_h2d_o(mem_tl_win_h2d_gated),
     .tl_d2h_i(mem_tl_win_d2h_gated),
+    .flush_req_i(ndmreset_req),
+    .flush_ack_o(ndmreset_req_qual),
     .lc_en_i (lc_hw_debug_en[EnRom]),
     .err_o   (rom_gate_intg_error)
   );

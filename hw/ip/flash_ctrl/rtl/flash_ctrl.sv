@@ -515,6 +515,8 @@ module flash_ctrl
     .tl_d2h_o(tl_win_d2h[0]),
     .tl_h2d_o(prog_tl_h2d),
     .tl_d2h_i(prog_tl_d2h),
+    .flush_req_i('0),
+    .flush_ack_o(),
     .lc_en_i(lc_ctrl_pkg::mubi4_to_lc_inv(flash_disable[ProgFifoIdx])),
     .err_o(tl_prog_gate_intg_err)
   );
@@ -1294,6 +1296,8 @@ module flash_ctrl
     .tl_d2h_o(mem_tl_o),
     .tl_h2d_o(gate_tl_h2d),
     .tl_d2h_i(gate_tl_d2h),
+    .flush_req_i('0),
+    .flush_ack_o(),
     .lc_en_i(host_enable),
     .err_o(tl_gate_intg_err)
   );
