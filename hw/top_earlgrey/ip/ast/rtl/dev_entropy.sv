@@ -17,7 +17,7 @@ module dev_entropy #(
   input rst_ni,                             // Entropy Reset
   input clk_dev_i,                          // Device Clock
   input rst_dev_ni,                         // Device Reset
-  input dev_en,                             // Device Enable
+  input dev_en_i,                           // Device Enable
   input [EntropyRateWidth-1:0] dev_rate_i,  // Entropy Rate
   input dev_ack_i,                          // Write Valid (EDN_ACK)
   input [32-1:0] dev_data_i,                // Write Data (EDN_BUS)
@@ -38,7 +38,7 @@ prim_flop_2sync #(
 ) u_dev_en_dev_sync (
   .clk_i ( clk_dev_i ),
   .rst_ni ( rst_dev_ni ),
-  .d_i ( dev_en ),
+  .d_i ( dev_en_i ),
   .q_o ( dev_en_dev )
 );
 
@@ -48,10 +48,12 @@ prim_flop_2sync #(
 ///////////////////////////////////////
 logic fast_start, rate_pulse, rready;
 logic [7-1:0] fast_cnt;
-logic [(1<<EntropyRateWidth)-1:0] erate_cnt;
-logic [32-1:0] dev_rate;
+logic [(1<<EntropyRateWidth)-1:0] erate_cnt, dev_rate;
 
 // Sync dev_rate_i to Device clock
+// A simplified synchrnization is used instead of a pulse synchronize.
+// The rate might go through a different value for one clk_dev_i cycle.
+// In most cases the rate will be set ahead of the dev_en_i
 logic [EntropyRateWidth-1:0] dev_rate_sync;
 
 prim_flop_2sync #(
@@ -76,13 +78,13 @@ always_ff @( posedge clk_dev_i, negedge rst_dev_ni ) begin
   end
 end
 
-assign dev_rate = fast_start ? '0 : ((1 << dev_rate_sync) - 1);
+assign dev_rate = fast_start ? '0 : ((1<<EntropyRateWidth)'(1'b1) << dev_rate_sync) - 1;
 
 always_ff @( posedge clk_dev_i, negedge rst_dev_ni ) begin
   if ( !rst_dev_ni ) begin
     erate_cnt <= '0;
   end else if ( rate_pulse ) begin
-    erate_cnt <= dev_rate[(1<<EntropyRateWidth)-1:0];
+    erate_cnt <= dev_rate;
   end else if ( erate_cnt != '0 ) begin
     erate_cnt <= erate_cnt - 1'b1;
   end
@@ -256,8 +258,6 @@ assign dev_data_o = rdata && rate_pulse;
 // Unused Signals
 ///////////////////////
 logic unused_sigs;
-assign unused_sigs = ^{ depth[6-1:0],
-                        dev_rate[31:16]
-                      };
+assign unused_sigs = ^{ depth[6-1:0] };
 
 endmodule : dev_entropy
