@@ -602,7 +602,7 @@ adc #(
 // Entropy (Always ON)
 ///////////////////////////////////////
 localparam int EntropyRateWidth = 4;
-logic [EntropyRateWidth-1:0] entropy_rate_o;
+logic [EntropyRateWidth-1:0] entropy_rate;
 logic vcmain_pok_por_sys, rst_src_sys_n;
 
 // Sync clk_src_sys_jen_i to clk_sys
@@ -631,13 +631,25 @@ prim_flop_2sync #(
 
 assign rst_src_sys_n = scan_mode ? scan_reset_n : vcmain_pok_por_sys;
 
-assign entropy_rate_o = 4'd5;
+`ifndef SYNTHESIS
+logic [EntropyRateWidth-1:0] dv_entropy_rate_value;
+
+initial begin : erate_plusargs
+  dv_entropy_rate_value = EntropyRateWidth'($urandom_range(0, (2**EntropyRateWidth -1)));
+  void'($value$plusargs("entropy_rate_value=%0d", dv_entropy_rate_value));
+  `ASSERT_I(DvErateValueCheck, dv_entropy_rate_value inside {[0:(2**EntropyRateWidth -1)]})
+end
+
+assign entropy_rate = dv_entropy_rate_value;
+`else
+assign entropy_rate = EntropyRateWidth'(5);
+`endif
 
 ast_entropy #(
   .EntropyRateWidth ( EntropyRateWidth )
 ) u_entropy (
   .entropy_rsp_i ( entropy_rsp_i ),
-  .entropy_rate_i ( entropy_rate_o[EntropyRateWidth-1:0] ),
+  .entropy_rate_i ( entropy_rate[EntropyRateWidth-1:0] ),
   .clk_ast_es_i ( clk_ast_es_i ),
   .rst_ast_es_ni ( rst_ast_es_ni ),
   .clk_src_sys_i ( clk_sys ),
@@ -889,7 +901,7 @@ end
 assign ot0_alert_src = '{p: intg_err, n: !intg_err};
 
 // USB PU-P and PU-N value selection
-assign usb_io_pu_cal_o = (1 << (UsbCalibWidth[5-1:0]/2));
+assign usb_io_pu_cal_o = UsbCalibWidth'(1 << (UsbCalibWidth[5-1:0]/2));
 
 
 ///////////////////////////////////////
@@ -962,7 +974,6 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst_o.main_pok)            // TODO
 //
 // ES
-`ASSERT_KNOWN(EntropyRateKnownO_A, entropy_rate_o, clk_ast_es_i, rst_ast_es_ni)          // TODO
 `ASSERT_KNOWN(EntropyReeqKnownO_A, entropy_req_o, clk_ast_es_i,rst_ast_es_ni)            // TODO
 // Alerts
 `ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)

@@ -104,7 +104,7 @@ dev_entropy #(
   .rst_ni ( rst_ast_es_ni ),
   .clk_dev_i ( clk_src_sys_i ),
   .rst_dev_ni ( rst_src_sys_ni ),
-  .dev_en ( dev0_en ),
+  .dev_en_i ( dev0_en ),
   .dev_rate_i ( entropy_rate_i[EntropyRateWidth-1:0] ),
   .dev_ack_i ( dev0_ack ),
   .dev_data_i ( edn_bus[32-1:0] ),
