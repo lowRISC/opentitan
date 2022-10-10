@@ -353,3 +353,23 @@ void flash_ctrl_testutils_counter_set_at_least(
                                    ARRAYSIZE(new_val)),
         "Flash write failed");
 }
+
+// At the beginning of the simulation (Verilator, VCS,etc.),
+// the content of the flash might be all-zeros, and thus,
+// the NVM counter's inital value might be 256.
+// In that case, flash_ctrl_testutils_counter_set_at_least() will not increment
+// This function can be used to initialize a NVM counter to zero by filling
+// its flash region with non-zero values.
+void flash_ctrl_testutils_counter_init_zero(dif_flash_ctrl_state_t *flash_state,
+                                            size_t counter) {
+  uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0xaa,
+                                                                          0xbb};
+  for (int ii = 0; ii < kNonVolatileCounterFlashWords; ii++) {
+    CHECK(flash_ctrl_testutils_erase_and_write_page(
+              flash_state,
+              (uint32_t)&kNvCounters[counter][ii] -
+                  TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+              0, new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val)),
+          "Flash write failed");
+  }
+}

@@ -56,6 +56,7 @@
 `include "chip_rv_dm_ndm_reset_vseq.sv"
 `include "chip_sw_alert_handler_escalation_vseq.sv"
 `include "chip_sw_alert_handler_entropy_vseq.sv"
+`include "chip_sw_alert_handler_lpg_clkoff_vseq.sv"
 `include "chip_sw_lc_ctrl_program_error_vseq.sv"
 `include "chip_sw_entropy_src_fuse_vseq.sv"
 `include "chip_sw_csrng_lc_hw_debug_en_vseq.sv"

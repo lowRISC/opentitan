@@ -266,4 +266,18 @@ void flash_ctrl_testutils_set_counter(dif_flash_ctrl_state_t *flash_state,
                                       uint32_t *strike_counter,
                                       uint32_t new_val);
 
+/**
+ * At the beginning of the simulation (Verilator, VCS,etc.),
+ * the content of the flash might be all-zeros, and thus,
+ * the NVM counter's inital value might be 256.
+ * In that case, flash_ctrl_testutils_counter_set_at_least() will not increment
+ * This function can be used to initialize a NVM counter to zero by filling
+ * its flash region with non-zero values.
+ *
+ * @param flash_state A flash_ctrl handle
+ * @param counter The ID of the NVM counter, [0, 2]
+ **/
+void flash_ctrl_testutils_counter_init_zero(dif_flash_ctrl_state_t *flash_state,
+                                            size_t counter);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_
