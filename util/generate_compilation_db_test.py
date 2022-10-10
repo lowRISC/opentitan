@@ -4,7 +4,7 @@
 
 import unittest
 
-from generate_compilation_db import BazelAqueryAction, BazelAqueryResults
+from generate_compilation_db import BazelAqueryResults, PathBuilder
 
 
 class TestGenerateCompilationDb(unittest.TestCase):
@@ -38,6 +38,48 @@ class TestGenerateCompilationDb(unittest.TestCase):
             'sw/device/lib/crypto/otbn_util.c',
             'external/bazel_tools/tools/cpp/grep-includes.sh'
         ])
+
+
+class TestPathBuilder(unittest.TestCase):
+
+    def test_normal_checkout(self):
+        paths = PathBuilder("/foo/bar/opentitan-repo/util/source.py")
+        self.assertEqual(paths.top_dir, "/foo/bar/opentitan-repo")
+        self.assertEqual(paths.bazelisk_script,
+                         "/foo/bar/opentitan-repo/bazelisk.sh")
+        self.assertEqual(paths.bazel_exec_root,
+                         "/foo/bar/opentitan-repo/bazel-opentitan-repo")
+
+    def test_worktree(self):
+        paths = PathBuilder(
+            "/foo/bar/opentitan-repo/some-worktree/util/source.py")
+        self.assertEqual(paths.top_dir,
+                         "/foo/bar/opentitan-repo/some-worktree")
+        self.assertEqual(paths.bazelisk_script,
+                         "/foo/bar/opentitan-repo/some-worktree/bazelisk.sh")
+        self.assertEqual(
+            paths.bazel_exec_root,
+            "/foo/bar/opentitan-repo/some-worktree/bazel-some-worktree")
+
+    def test_relative_path(self):
+        paths = PathBuilder(
+            "foo/bar/opentitan-repo/some-worktree/util/source.py")
+        self.assertEqual(paths.top_dir, "foo/bar/opentitan-repo/some-worktree")
+        self.assertEqual(paths.bazelisk_script,
+                         "foo/bar/opentitan-repo/some-worktree/bazelisk.sh")
+        self.assertEqual(
+            paths.bazel_exec_root,
+            "foo/bar/opentitan-repo/some-worktree/bazel-some-worktree")
+
+    def test_relative_path_short(self):
+        paths = PathBuilder("foo/util/source.py")
+        self.assertEqual(paths.top_dir, "foo")
+        self.assertEqual(paths.bazelisk_script, "foo/bazelisk.sh")
+        self.assertEqual(paths.bazel_exec_root, "foo/bazel-foo")
+
+    def test_relative_path_too_short(self):
+        with self.assertRaises(Exception):
+            PathBuilder("util/source.py")
 
 
 # A pared-down example of Bazel aquery output. Generated with `./bazelisk.sh
@@ -77,7 +119,10 @@ BAZEL_AQUERY_RESULTS_SMALL = r"""
     "actionKey": "e0abcf3f57dcd54d61576eb49b6a4911ed9fc6af72d3dd61548d6e396e8736c4",
     "mnemonic": "CppCompile",
     "configurationId": 1,
-    "arguments": ["/usr/bin/gcc", "-Wall", "-iquote", ".", "-isystem", "external/googletest/googlemock", "-fno-canonical-system-headers", "-c", "sw/device/lib/crypto/otbn_util.c", "-o", "bazel-out/k8-fastbuild/bin/sw/device/lib/crypto/_objs/otbn_util/otbn_util.pic.o"],
+    "arguments": ["/usr/bin/gcc", "-Wall", "-iquote", ".", "-isystem",
+        "external/googletest/googlemock", "-fno-canonical-system-headers", "-c",
+        "sw/device/lib/crypto/otbn_util.c", "-o",
+        "bazel-out/k8-fastbuild/bin/sw/device/lib/crypto/_objs/otbn_util/otbn_util.pic.o"],
     "inputDepSetIds": [2],
     "outputIds": [7, 8],
     "discoversInputs": true,

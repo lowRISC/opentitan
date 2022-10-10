@@ -93,13 +93,26 @@ class BazelAqueryAction:
         self.input_dep_set_ids = action.get('inputDepSetIds', [])
 
 
+class PathBuilder:
+    """Helper class that builds useful paths relative to this source file."""
+
+    def __init__(self, script_path):
+        util_dir = os.path.dirname(script_path)
+        self.top_dir = os.path.dirname(util_dir)
+        if self.top_dir == '':
+            raise Exception('Could not find parent of the util directory.')
+        self.bazelisk_script = os.path.join(self.top_dir, 'bazelisk.sh')
+        # Bazel creates a symlink to execRoot based on the workspace name.
+        # https://bazel.build/remote/output-directories
+        self.bazel_exec_root = os.path.join(
+            self.top_dir, f"bazel-{os.path.basename(self.top_dir)}")
+
+
 def main(args):
-    script_path = os.path.realpath(__file__)
-    utils_dir = os.path.dirname(script_path)
-    top_dir = os.path.dirname(utils_dir)
+    paths = PathBuilder(os.path.realpath(__file__))
 
     bazel_aquery_command = [
-        os.path.join(top_dir, 'bazelisk.sh'),
+        paths.bazelisk_script,
         'aquery',
         '--output=jsonproto',
         args.target,
@@ -124,12 +137,9 @@ def main(args):
         for artifact in aquery_results.iter_artifacts_for_dep_sets(
                 action.input_dep_set_ids):
             compile_commands.append({
-                'directory':
-                os.path.join(top_dir, "bazel-opentitan"),
-                'arguments':
-                action.arguments,
-                'file':
-                artifact,
+                'directory': paths.bazel_exec_root,
+                'arguments': action.arguments,
+                'file': artifact,
             })
 
     compile_commands_json = json.dumps(compile_commands,
