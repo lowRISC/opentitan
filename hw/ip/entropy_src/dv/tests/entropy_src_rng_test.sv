@@ -15,9 +15,8 @@ class entropy_src_rng_test extends entropy_src_base_test;
 
     cfg.dut_cfg.boot_mode_retry_limit       = 10;
     cfg.sim_duration                = 20ms;
-    // On average two hard failures per simulation
-    cfg.hard_mtbf                   = 10ms;
-    cfg.mean_rand_reconfig_time     = 1ms;
+    cfg.hard_mtbf                   = 3ms;
+    cfg.mean_rand_reconfig_time     = 3ms;
     // The random alerts only need to happen frequently enough to
     // close coverage
     cfg.mean_rand_csr_alert_time    = 20ms;
@@ -47,9 +46,14 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.otp_en_es_fw_read_pct               = 50;
     cfg.otp_en_es_fw_over_pct               = 50;
 
-    cfg.dut_cfg.type_bypass_pct             = 75;
     cfg.dut_cfg.ht_threshold_scope_pct      = 50;
     cfg.dut_cfg.default_ht_thresholds_pct   = 0;
+
+    // Preferentially generate non-fips data, with the understanding that this test
+    // will automatically switch the DUT from non-fips to fips mode once a seed
+    // is observed, or else will otherwise reconfigure
+    cfg.dut_cfg.fips_enable_pct             = 25;
+    cfg.dut_cfg.type_bypass_pct             = 75;
 
     // Sometimes read data from the Observe FIFO (but always take entropy from RNG)
     cfg.dut_cfg.fw_read_pct                 = 50;
@@ -57,13 +61,12 @@ class entropy_src_rng_test extends entropy_src_base_test;
     // Sometimes inject data, even if not configured
     cfg.spurious_inject_entropy_pct = 50;
 
-    cfg.dut_cfg.rng_bit_enable_pct          = 50;
+    cfg.dut_cfg.rng_bit_enable_pct          = 80;
 
-    cfg.dut_cfg.fips_enable_pct             = 25;
-    cfg.dut_cfg.module_enable_pct           = 100;
+    cfg.dut_cfg.module_enable_pct           = 0;
     cfg.dut_cfg.bad_mubi_cfg_pct            = 50;
-    cfg.induce_targeted_transition_pct      = 25;
-    cfg.dut_cfg.tight_thresholds_pct        = 75;
+    cfg.dut_cfg.tight_thresholds_pct        = 50;
+    cfg.induce_targeted_transition_pct      = 75;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
 
