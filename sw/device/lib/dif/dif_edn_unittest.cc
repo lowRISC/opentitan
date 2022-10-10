@@ -111,25 +111,36 @@ TEST_F(SetModeTest, Auto) {
                  });
 
   dif_edn_auto_params_t params = {
-      .reseed_material =
-          {
-              .len = 5,
-              .data = {1, 2, 3, 4, 5},
-          },
-      .generate_material =
-          {
-              .len = 7,
-              .data = {6, 7, 8, 9, 10, 11, 12},
-          },
+      .instantiate_cmd = {.cmd = 1 | kMultiBitBool4False << 8,
+                          .seed_material =
+                              {
+                                  .len = 3,
+                                  .data = {1, 2, 3},
+                              }},
+      .reseed_cmd = {.cmd = 11,
+                     .seed_material =
+                         {
+                             .len = 4,
+                             .data = {4, 5, 6, 7},
+                         }},
+      .generate_cmd = {.cmd = 12,
+                       .seed_material =
+                           {
+                               .len = 5,
+                               .data = {8, 9, 10, 11, 12},
+                           }},
       .reseed_interval = 42,
   };
 
-  for (size_t i = 0; i < params.reseed_material.len; ++i) {
-    EXPECT_WRITE32(EDN_RESEED_CMD_REG_OFFSET, params.reseed_material.data[i]);
+  EXPECT_WRITE32(EDN_RESEED_CMD_REG_OFFSET, params.reseed_cmd.cmd);
+  for (size_t i = 0; i < params.reseed_cmd.seed_material.len; ++i) {
+    EXPECT_WRITE32(EDN_RESEED_CMD_REG_OFFSET,
+                   params.reseed_cmd.seed_material.data[i]);
   }
-  for (size_t i = 0; i < params.generate_material.len; ++i) {
+  EXPECT_WRITE32(EDN_GENERATE_CMD_REG_OFFSET, params.generate_cmd.cmd);
+  for (size_t i = 0; i < params.generate_cmd.seed_material.len; ++i) {
     EXPECT_WRITE32(EDN_GENERATE_CMD_REG_OFFSET,
-                   params.generate_material.data[i]);
+                   params.generate_cmd.seed_material.data[i]);
   }
   EXPECT_WRITE32(EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET,
                  params.reseed_interval);
@@ -144,7 +155,13 @@ TEST_F(SetModeTest, Auto) {
 
   EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, 1);
 
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 1 | kMultiBitBool4False << 8);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                 1 | params.instantiate_cmd.seed_material.len << 4 |
+                     kMultiBitBool4False << 8);
+  for (size_t i = 0; i < params.instantiate_cmd.seed_material.len; ++i) {
+    EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                   params.instantiate_cmd.seed_material.data[i]);
+  }
 
   EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, 1);
 
@@ -331,7 +348,6 @@ TEST_F(CommandTest, UpdateOk) {
   EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
                  0x00000004 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_edn_update(&edn_, &seed_material_));
-
   seed_material_.data[0] = 0x5a5a5a5a;
   seed_material_.len = 1;
   EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
