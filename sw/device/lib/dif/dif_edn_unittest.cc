@@ -144,7 +144,7 @@ TEST_F(SetModeTest, Auto) {
 
   EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, 1);
 
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 1);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 1 | kMultiBitBool4False << 8);
 
   EXPECT_READ32(EDN_SW_CMD_STS_REG_OFFSET, 1);
 
@@ -275,13 +275,15 @@ TEST_F(CommandTest, InstantiateOk) {
   EXPECT_DIF_OK(dif_edn_instantiate(&edn_, kDifEdnEntropySrcToggleDisable,
                                     &seed_material_));
 
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000001);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                 0x00000001 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_edn_instantiate(&edn_, kDifEdnEntropySrcToggleEnable,
                                     &seed_material_));
 
   seed_material_.data[0] = 0x5a5a5a5a;
   seed_material_.len = 1;
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000011);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                 0x00000011 | kMultiBitBool4False << 8);
   EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
   EXPECT_DIF_OK(dif_edn_instantiate(&edn_, kDifEdnEntropySrcToggleEnable,
                                     &seed_material_));
@@ -305,12 +307,14 @@ TEST_F(CommandTest, InstantiateBadArgs) {
 }
 
 TEST_F(CommandTest, ReseedOk) {
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000002);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                 0x00000002 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_edn_reseed(&edn_, &seed_material_));
 
   seed_material_.data[0] = 0x5a5a5a5a;
   seed_material_.len = 1;
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000012);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                 0x00000012 | kMultiBitBool4False << 8);
   EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
   EXPECT_DIF_OK(dif_edn_reseed(&edn_, &seed_material_));
 }
@@ -324,12 +328,14 @@ TEST_F(CommandTest, ReseedBadArgs) {
 }
 
 TEST_F(CommandTest, UpdateOk) {
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000004);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                 0x00000004 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_edn_update(&edn_, &seed_material_));
 
   seed_material_.data[0] = 0x5a5a5a5a;
   seed_material_.len = 1;
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000014);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                 0x00000014 | kMultiBitBool4False << 8);
   EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x5a5a5a5a);
   EXPECT_DIF_OK(dif_edn_update(&edn_, &seed_material_));
 }
@@ -340,11 +346,13 @@ TEST_F(CommandTest, UpdateBadArgs) {
 
 TEST_F(CommandTest, GenerateOk) {
   // 512bits = 16 x 32bit = 4 x 128bit blocks
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00004003);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                 0x00004003 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_edn_generate_start(&edn_, /*len=*/16));
 
   // 576bits = 18 x 32bit = 5 x 128bit blocks (rounded up)
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00005003);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                 0x00005003 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_edn_generate_start(&edn_, /*len=*/18));
 }
 
@@ -354,7 +362,8 @@ TEST_F(CommandTest, GenerateBadArgs) {
 }
 
 TEST_F(CommandTest, UninstantiateOk) {
-  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000005);
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
+                 0x00000005 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_edn_uninstantiate(&edn_));
 }
 
