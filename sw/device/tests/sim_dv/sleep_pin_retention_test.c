@@ -86,11 +86,27 @@ void ottf_external_isr(void) {
  * DV env checks all PIN value. SW simply drives the GPIO and invert the value
  * for retention.
  */
-void gpio_test(int round) {
+void gpio_test(dif_pwrmgr_t *pwrmgr, dif_gpio_t *gpio, int round) {
+  uint8_t gpio_val = 0;
+
   LOG_INFO("Current Test Round: %1d", round);
 
+  // 1. Randomly choose GPIO value
+  gpio_val = rand_testutils_gen32_range(0, 255);
+
+  // 2. Drive GPIO with the chosen value.
+  CHECK_DIF_OK(dif_gpio_write_masked(gpio, (dif_gpio_mask_t)0x000000FF,
+                                     (dif_gpio_state_t)gpio_val));
+
+  // 3. Send the chosen value to SV via LOG_INFO.
+  //
+  // The format is:
+  //
+  //     Chosen GPIO value: %2x
+  LOG_INFO("Chosen GPIO value: %2x", gpio_val);
+
   // 5. Initiate sleep mode
-  pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceThree,
+  pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceThree,
                                     pwrmgr_domain_cfg);
   // 6. WFI()
   LOG_INFO("Entering low power mode.");
@@ -170,7 +186,7 @@ bool test_main(void) {
   // Set wakeup condition. Always use GPIO[8] for Pinmux PIN Wakeup.
 
   for (int i = kRounds - 1; i >= 0; i--) {
-    gpio_test(i);
+    gpio_test(&pwrmgr, &gpio, i);
   }
 
   return result;
