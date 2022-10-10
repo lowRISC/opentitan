@@ -654,7 +654,7 @@ interface chip_if;
     uvm_config_db#(virtual tl_if)::set(
         null, "*.env.m_tl_agent_chip_reg_block*", "vif", cpu_d_tl_if);
 
-    uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_host_if);
+    uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_host_agent*", "vif", spi_host_if);
 
     // foreach (alert_if[i]) begin
     //   uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",

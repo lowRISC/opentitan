@@ -17,7 +17,7 @@ class chip_env extends cip_base_env #(
   jtag_riscv_agent       m_jtag_riscv_agent;
   jtag_riscv_reg_adapter m_jtag_riscv_reg_adapter;
   // spi host agent that transmits trasnactions to dut spi device
-  spi_agent              m_spi_agent;
+  spi_agent              m_spi_host_agent;
   pwm_monitor            m_pwm_monitor[NUM_PWM_CHANNELS];
   pattgen_agent          m_pattgen_agent;
 
@@ -108,8 +108,8 @@ class chip_env extends cip_base_env #(
     m_jtag_riscv_reg_adapter.cfg = cfg.m_jtag_riscv_agent_cfg;
 
     // dut spi device, tb spi host
-    m_spi_agent = spi_agent::type_id::create("m_spi_agent", this);
-    uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_agent*", "cfg", cfg.m_spi_agent_cfg);
+    m_spi_host_agent = spi_agent::type_id::create("m_spi_host_agent", this);
+    uvm_config_db#(spi_agent_cfg)::set(this, "m_spi_host_agent*", "cfg", cfg.m_spi_host_agent_cfg);
 
     // instantiate pwm_monitor
     foreach (m_pwm_monitor[i]) begin
@@ -154,8 +154,8 @@ class chip_env extends cip_base_env #(
       virtual_sequencer.jtag_sequencer_h = m_jtag_riscv_agent.sequencer;
     end
 
-    if (cfg.is_active && cfg.m_spi_agent_cfg.is_active) begin
-      virtual_sequencer.spi_sequencer_h = m_spi_agent.sequencer;
+    if (cfg.is_active && cfg.m_spi_host_agent_cfg.is_active) begin
+      virtual_sequencer.spi_sequencer_h = m_spi_host_agent.sequencer;
     end
 
     // The chip level scoreboard is intentionally kept lightweight, since most tests are directed,
