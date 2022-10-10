@@ -4,7 +4,8 @@
 
 import unittest
 
-from generate_compilation_db import BazelAqueryResults, PathBuilder
+from generate_compilation_db import (BazelAqueryAction, BazelAqueryResults,
+                                     PathBuilder)
 
 
 class TestGenerateCompilationDb(unittest.TestCase):
@@ -32,11 +33,40 @@ class TestGenerateCompilationDb(unittest.TestCase):
                          'sw/device/lib/crypto/otbn_util.h')
 
         self.assertEqual(list(results.iter_artifacts_for_dep_sets([2])), [
-            'bazel-out/k8-fastbuild/internal/_middlemen/' +
-            '_S_Ssw_Sdevice_Slib_Scrypto_Cotbn_Uutil-BazelCppSemantics_build_arch_k8-fastbuild',
-            'external/local_config_cc/builtin_include_directory_paths',
             'sw/device/lib/crypto/otbn_util.c',
-            'external/bazel_tools/tools/cpp/grep-includes.sh'
+        ])
+
+
+class TestBazelAqueryAction(unittest.TestCase):
+
+    def test_transform_arguments_for_clangd(self):
+        # Empty arguments is a no-op.
+        action = BazelAqueryAction({'arguments': []})
+        self.assertEqual(action.transform_arguments_for_clangd(), [])
+
+        # No-op when compiler doesn't look like it targets RISC-V.
+        action = BazelAqueryAction({'arguments': ['foo']})
+        self.assertEqual(action.transform_arguments_for_clangd(), ['foo'])
+
+        # Same, but with more flags.
+        action = BazelAqueryAction({
+            'arguments':
+            ['foo', '-march=rv32imc', 'bar', '-mabi=ilp32', 'baz']
+        })
+        self.assertEqual(
+            action.transform_arguments_for_clangd(),
+            ['foo', '-march=rv32imc', 'bar', '-mabi=ilp32', 'baz'])
+
+        # Insert `--target` flag when the compiler looks like it targets RISC-V.
+        action = BazelAqueryAction({
+            'arguments': [
+                'path/lowrisc_rv32imcb/compiler', '-march=rv32imc',
+                '-mabi=ilp32'
+            ]
+        })
+        self.assertEqual(action.transform_arguments_for_clangd(), [
+            'path/lowrisc_rv32imcb/compiler', '--target=riscv32',
+            '-march=rv32imc', '-mabi=ilp32'
         ])
 
 
