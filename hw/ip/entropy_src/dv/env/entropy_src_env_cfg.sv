@@ -21,7 +21,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   virtual pins_if#(8)   otp_en_es_fw_read_vif;
   virtual pins_if#(8)   otp_en_es_fw_over_vif;
 
-
   // Configuration for DUT CSRs (held in a separate object for easy re-randomization)
   entropy_src_dut_cfg dut_cfg;
 

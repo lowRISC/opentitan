@@ -231,14 +231,14 @@ class entropy_src_dut_cfg extends uvm_object;
           [6  : 10] :/ 1,
           [11 : 20] :/ 1,
           [21 : 40] :/ 1,
-          41        :/ 0
+          [41 : 80] :/ 0
         };
       } else {
         repcnt_thresh_bypass dist {
           [6  : 10] :/ 0,
           [11 : 20] :/ 0,
           [21 : 40] :/ 0,
-          41        :/ 1
+          [41 : 80] :/ 1
         };
       }
     }
@@ -250,14 +250,14 @@ class entropy_src_dut_cfg extends uvm_object;
           [6  : 10] :/ 1,
           [11 : 20] :/ 1,
           [21 : 40] :/ 1,
-          41        :/ 0
+          [41 : 80] :/ 0
         };
       } else {
         repcnt_thresh_fips dist {
           [6  : 10] :/ 0,
           [11 : 20] :/ 0,
           [21 : 40] :/ 0,
-          41        :/ 1
+          [41 : 80] :/ 1
         };
       }
     }
