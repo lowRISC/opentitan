@@ -176,9 +176,6 @@ static rom_error_t rom_init(void) {
   // This function is a NOP unless ROM is built for an fpga.
   device_fpga_version_print();
 
-  // Read boot data from flash
-  HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
-
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/1);
 
@@ -407,6 +404,9 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
  */
 static rom_error_t rom_try_boot(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 1);
+
+  // Read boot data from flash
+  HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
 
   boot_policy_manifests_t manifests = boot_policy_manifests_get();
   uint32_t flash_exec = 0;
