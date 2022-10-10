@@ -50,7 +50,8 @@ void entropy_testutils_auto_mode_init(void) {
       .reseed_material =
           {
               .len = 1,
-              .data = {0x00000002},  // Reseed from entropy source only.
+              .data = {0x00000002 |  // Reseed from entropy source only.
+                       kMultiBitBool4False << 8},
           },
       .generate_material =
           {
@@ -67,7 +68,8 @@ void entropy_testutils_auto_mode_init(void) {
       .reseed_material =
           {
               .len = 1,
-              .data = {0x00000002},  // Reseed from entropy source only.
+              .data = {0x00000002 |  // Reseed from entropy source only.
+                       kMultiBitBool4False << 8},
           },
       .generate_material =
           {
