@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -21,6 +22,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 // PLIC structures
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
+static dif_gpio_t gpio;
 static dif_pwrmgr_t pwrmgr;
 static dif_pinmux_t pinmux;
 static dif_pwrmgr_domain_config_t pwrmgr_domain_cfg;
@@ -44,6 +46,9 @@ static const uint8_t kGpioVal = 0x00;
 
 // To wakeup and maintain GPIO, for now test enters to normal sleep only.
 static const bool deepPowerdown = false;
+
+// Num of GPIO Pads to test
+enum { kNumGpioPads = 8 };
 
 /**
  * External interrupt handler.
@@ -92,6 +97,27 @@ void gpio_test(int round) {
   wait_for_interrupt();
 }
 
+/**
+ * Configure GPIO
+ *
+ * gpio_init() configures first 8 MIO PADs to GPIO[7:0].
+ */
+void gpio_init(const dif_pinmux_t *pinmux, const dif_gpio_t *gpio) {
+  // Drive GPIO first
+  CHECK_DIF_OK(dif_gpio_write_masked(gpio, (dif_gpio_mask_t)0x000000FF,
+                                     (dif_gpio_state_t)0x00000000));
+
+  // Configure PINMUX to GPIO
+  for (int i = 0; i < kNumGpioPads; i++) {
+    CHECK_DIF_OK(dif_pinmux_input_select(
+        pinmux, kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i,
+        kTopEarlgreyPinmuxInselIoa0 + i));
+    CHECK_DIF_OK(
+        dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoa0 + i,
+                                 kTopEarlgreyPinmuxOutselGpioGpio0 + i));
+  }
+}
+
 bool test_main(void) {
   bool result = true;
 
@@ -111,6 +137,8 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(
+      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
 
   // Enable all the AON interrupts used in this test.
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
@@ -135,6 +163,9 @@ bool test_main(void) {
   }
 
   LOG_INFO("Num Rounds: %3d", kRounds);
+
+  // Select IOA0:IOA7 to GPIO
+  gpio_init(&pinmux, &gpio);
 
   // Set wakeup condition. Always use GPIO[8] for Pinmux PIN Wakeup.
 
