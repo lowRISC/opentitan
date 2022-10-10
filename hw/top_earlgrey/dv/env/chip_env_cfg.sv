@@ -121,6 +121,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     has_devmode = 0;
     list_of_alerts = chip_common_pkg::LIST_OF_ALERTS;
 
+    // No need to cover all kinds of interity errors as they are tested in block-level.
+    en_tl_intg_err_cov = 0;
+
     // Set up second RAL model for ROM memory and associated collateral
     if (use_jtag_dmi == 1) begin
       ral_model_names.push_back(rv_dm_mem_ral_name);

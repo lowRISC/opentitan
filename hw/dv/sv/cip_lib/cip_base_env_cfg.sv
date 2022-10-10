@@ -3,6 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg #(RAL_T);
+  // control knobs to enable/disable covergroups
+  // these are default enabled. If en_cov is off, these will be disabled as well.
+  bit en_tl_err_cov      = 1;
+  bit en_tl_intg_err_cov = 1;
+
   // Downstream agent cfg objects.
 
   // If the block supports only one RAL, just use `m_tl_agent_cfg`.
