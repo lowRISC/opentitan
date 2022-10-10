@@ -47,15 +47,32 @@ void entropy_testutils_auto_mode_init(void) {
   const dif_edn_auto_params_t edn0_params = {
       // EDN0 provides lower-quality entropy.  Let one generate command return 8
       // blocks, and reseed every 32 generates.
-      .reseed_material =
+      .instantiate_cmd =
           {
-              .len = 1,
-              .data = {0x00000002 |  // Reseed from entropy source only.
-                       kMultiBitBool4False << 8},
+              .cmd = 0x00000001 |  // Reseed from entropy source only.
+                     kMultiBitBool4False << 8,
+              .seed_material =
+                  {
+                      .len = 0,
+                  },
           },
-      .generate_material =
+      .reseed_cmd =
           {
-              .len = 1, .data = {0x00008003},  // One generate returns 8 blocks.
+              .cmd = 0x00008002 |  // One generate returns 8 blocks, reseed
+                                   // from entropy source only.
+                     kMultiBitBool4False << 8,
+              .seed_material =
+                  {
+                      .len = 0,
+                  },
+          },
+      .generate_cmd =
+          {
+              .cmd = 0x00008003,  // One generate returns 8 blocks.
+              .seed_material =
+                  {
+                      .len = 0,
+                  },
           },
       .reseed_interval = 32,  // Reseed every 32 generates.
   };
@@ -65,15 +82,32 @@ void entropy_testutils_auto_mode_init(void) {
   const dif_edn_auto_params_t edn1_params = {
       // EDN1 provides highest-quality entropy.  Let one generate command
       // return 1 block, and reseed after every generate.
-      .reseed_material =
+      .instantiate_cmd =
           {
-              .len = 1,
-              .data = {0x00000002 |  // Reseed from entropy source only.
-                       kMultiBitBool4False << 8},
+              .cmd = 0x00000001 |  // Reseed from entropy source only.
+                     kMultiBitBool4False << 8,
+              .seed_material =
+                  {
+                      .len = 0,
+                  },
           },
-      .generate_material =
+      .reseed_cmd =
           {
-              .len = 1, .data = {0x00001003},  // One generate returns 1 block.
+              .cmd = 0x00001002 |  // One generate returns 1 block, reseed
+                                   // from entropy source only.
+                     kMultiBitBool4False << 8,
+              .seed_material =
+                  {
+                      .len = 0,
+                  },
+          },
+      .generate_cmd =
+          {
+              .cmd = 0x00001003,  // One generate returns 1 block.
+              .seed_material =
+                  {
+                      .len = 0,
+                  },
           },
       .reseed_interval = 4,  // Reseed after every 4 generates.
   };

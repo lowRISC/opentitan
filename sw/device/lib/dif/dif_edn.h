@@ -52,7 +52,7 @@ enum {
 };
 
 /**
- * CSRNG additional parameters for instantiate and generate commands.
+ * CSRNG seed material for instantiate, reseed and generate commands.
  */
 typedef struct dif_edn_seed_material {
   /**
@@ -63,23 +63,42 @@ typedef struct dif_edn_seed_material {
    */
   size_t len;
   /**
-   * Seed material used in CSRNG instantiate or generate call.
+   * Seed material used in CSRNG instantiate, reseed or generate call.
    */
   uint32_t data[kDifEntropySeedMaterialMaxWordLen];
 } dif_edn_seed_material_t;
+
+/**
+ * CSRNG command parameters for instantiate, reseed and generate commands.
+ */
+typedef struct dif_edn_cmd {
+  /**
+   * The CSRNG application interface command header. For details, refer to the
+   * CSRNG documentation.
+   */
+  uint32_t cmd;
+  /**
+   * Optional seed material.
+   */
+  dif_edn_seed_material_t seed_material;
+} dif_edn_cmd_t;
 
 /**
  * Auto-generate EDN module configuration parameters.
  */
 typedef struct dif_edn_auto_params {
   /**
+   * CSRNG instantiate command material.
+   */
+  dif_edn_cmd_t instantiate_cmd;
+  /**
    * CSRNG reseed command material.
    */
-  dif_edn_seed_material_t reseed_material;
+  dif_edn_cmd_t reseed_cmd;
   /**
    * CSRNG generate command material.
    */
-  dif_edn_seed_material_t generate_material;
+  dif_edn_cmd_t generate_cmd;
   /**
    * Number of generate calls that can be made before a reseed request is made.
    */

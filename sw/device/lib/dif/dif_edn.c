@@ -96,15 +96,19 @@ dif_result_t dif_edn_set_auto_mode(const dif_edn_t *edn,
   mmio_region_write32(edn->base_addr, EDN_CTRL_REG_OFFSET, ctrl_reg);
 
   // Fill the reseed command FIFO.
-  for (size_t i = 0; i < config.reseed_material.len; ++i) {
+  mmio_region_write32(edn->base_addr, EDN_RESEED_CMD_REG_OFFSET,
+                      config.reseed_cmd.cmd);
+  for (size_t i = 0; i < config.reseed_cmd.seed_material.len; ++i) {
     mmio_region_write32(edn->base_addr, EDN_RESEED_CMD_REG_OFFSET,
-                        config.reseed_material.data[i]);
+                        config.reseed_cmd.seed_material.data[i]);
   }
 
   // Fill the generate command FIFO.
-  for (size_t i = 0; i < config.generate_material.len; ++i) {
+  mmio_region_write32(edn->base_addr, EDN_GENERATE_CMD_REG_OFFSET,
+                      config.generate_cmd.cmd);
+  for (size_t i = 0; i < config.generate_cmd.seed_material.len; ++i) {
     mmio_region_write32(edn->base_addr, EDN_GENERATE_CMD_REG_OFFSET,
-                        config.generate_material.data[i]);
+                        config.generate_cmd.seed_material.data[i]);
   }
 
   // Set the maximum number of requests between reseeds.
@@ -127,8 +131,12 @@ dif_result_t dif_edn_set_auto_mode(const dif_edn_t *edn,
 
   // Command CSRNG Instantiate.  As soon as CSRNG acknowledges this command,
   // EDN will start automatically sending reseed and generate commands.
-  DIF_RETURN_IF_ERROR(
-      dif_edn_instantiate(edn, kDifEdnEntropySrcToggleEnable, NULL));
+  const dif_edn_entropy_src_toggle_t entropy_src_enable =
+      ((config.instantiate_cmd.cmd & 0xF00) >> 8) == kMultiBitBool4True
+          ? kDifEdnEntropySrcToggleDisable
+          : kDifEdnEntropySrcToggleEnable;
+  DIF_RETURN_IF_ERROR(dif_edn_instantiate(
+      edn, entropy_src_enable, &config.instantiate_cmd.seed_material));
 
   // Wait until CSRNG acknowledges command.
   ready = false;
