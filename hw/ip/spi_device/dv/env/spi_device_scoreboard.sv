@@ -593,6 +593,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     update_cmdfifo_status();
     update_addrfifo_status();
 
+    if (item.payload_q.size > PAYLOAD_FIFO_SIZE) begin // overflow
+      payload_depth_exp = PAYLOAD_FIFO_SIZE;
+      intr_trigger_pending[PayloadOverflow] = 1;
+    end else begin
+      payload_depth_exp = item.payload_q.size;
+    end
     payload_depth_exp = item.payload_q.size > 256 ? 256 : item.payload_q.size;
     void'(ral.upload_status2.payload_depth.predict(.value(payload_depth_exp),
                                                    .kind(UVM_PREDICT_READ)));
@@ -870,7 +876,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             spi_device_intr_e intr = spi_device_intr_e'(i);
             // TODO, only test these interrupts for now
             if (!(i inside {ReadbufFlip, ReadbufWatermark,
-                            CmdFifoNotEmpty, PayloadNotEmpty})) begin
+                            CmdFifoNotEmpty, PayloadNotEmpty, PayloadOverflow})) begin
               continue;
             end
             if (!intr_trigger_pending[i]) begin

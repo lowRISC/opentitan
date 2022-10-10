@@ -585,11 +585,12 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     int cmdfifo_depth_val, addrfifo_depth_val, payload_depth_val;
     int payload_base_offset;
     bit busy_val;
-    bit intr_cmdfifo, intr_payload;
+    bit intr_cmdfifo, intr_payload, intr_overflow;
 
     csr_rd(ral.intr_state, intr_state_val);
     intr_cmdfifo = get_field_val(ral.intr_state.upload_cmdfifo_not_empty, intr_state_val);
     intr_payload = get_field_val(ral.intr_state.upload_payload_not_empty, intr_state_val);
+    intr_overflow = get_field_val(ral.intr_state.upload_payload_overflow, intr_state_val);
     if (intr_cmdfifo == 0 && intr_payload == 0) return;
 
     // read these status after interrupts occur, so that scb doesn't need to model it
@@ -605,6 +606,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     intr_state_val = 0;
     if (intr_cmdfifo) intr_state_val[CmdFifoNotEmpty] = 1;
     if (intr_payload) intr_state_val[PayloadNotEmpty] = 1;
+    if (intr_overflow) intr_state_val[PayloadOverflow] = 1;
     csr_wr(ral.intr_state, intr_state_val);
 
     if (intr_cmdfifo) `DV_CHECK_GT(cmdfifo_depth_val, 0)
