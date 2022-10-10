@@ -118,11 +118,55 @@ opentitan_functest(
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/runtime:ibex",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "alert_handler_lpg_clkoff_test",
+    srcs = ["alert_handler_lpg_clkoff_test.c"],
+    cw310 = cw310_params(timeout = "moderate"),
+    targets = [
+        # The test requires the Ibex core to wait long enough
+        # before checking for the ping_timeout error.
+        # The wait-time for the Verilator would be around
+        # 32M*8us = 256s (kClockFreqPeripheralHz = 125K).
+        # Thus it is not not recommended to run this test on
+        # Verilator as this wait-time looks impractical. It should still
+        # be run as part of the DV nightly regression.
+        "cw310_test_rom",
+        "dv",
+    ],
+    deps = [
+        "//hw/top_earlgrey:alert_handler_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:clkmgr",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",

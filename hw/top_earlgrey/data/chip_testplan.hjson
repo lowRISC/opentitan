@@ -1405,7 +1405,7 @@
               the IP's fatal alert resumes after clock is turned back on.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_alert_handler_lpg_clock_off"]
     }
     {
       name: chip_sw_alert_handler_lpg_reset_toggle
