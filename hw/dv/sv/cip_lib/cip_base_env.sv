@@ -106,6 +106,12 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     foreach (cfg.m_tl_agent_cfgs[i]) begin
       cfg.m_tl_agent_cfgs[i].synchronise_ports = 1'b1;
     end
+
+    // if en_cov is off, disable all other functional coverage
+    if (!cfg.en_cov) begin
+      cfg.en_tl_err_cov = 0;
+      cfg.en_tl_intg_err_cov = 0;
+    end
   endfunction
 
   virtual function void connect_phase(uvm_phase phase);
@@ -152,4 +158,3 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
   endfunction : end_of_elaboration_phase
 
 endclass
-

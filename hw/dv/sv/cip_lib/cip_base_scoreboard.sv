@@ -71,32 +71,35 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       if (has_mem) begin
         get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access_err, has_wo_mem, has_ro_mem);
       end
+      if (cfg.en_tl_err_cov) begin
+        tl_errors_cgs_wrap[ral_name] = new($sformatf("tl_errors_cgs_wrap[%0s]", ral_name));
+        if (!has_csr) begin
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_size_err.option.weight = 0;
+        end
+        if (!has_unmapped) begin
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_unmapped_err.option.weight = 0;
+        end
+        if (!has_mem_byte_access_err) begin
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_byte_access_err.option.weight = 0;
+        end
+        if (!has_wo_mem) begin
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_wo_err.option.weight = 0;
+        end
+        if (!has_ro_mem) begin
+          tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_ro_err.option.weight = 0;
+        end
 
-      tl_errors_cgs_wrap[ral_name] = new($sformatf("tl_errors_cgs_wrap[%0s]", ral_name));
-      if (!has_csr) begin
-        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_csr_size_err.option.weight = 0;
       end
-      if (!has_unmapped) begin
-        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_unmapped_err.option.weight = 0;
-      end
-      if (!has_mem_byte_access_err) begin
-        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_byte_access_err.option.weight = 0;
-      end
-      if (!has_wo_mem) begin
-        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_wo_err.option.weight = 0;
-      end
-      if (!has_ro_mem) begin
-        tl_errors_cgs_wrap[ral_name].tl_errors_cg.cp_mem_ro_err.option.weight = 0;
-      end
+      if (cfg.en_tl_intg_err_cov) begin
+        if (has_mem) begin
+          tl_intg_err_mem_subword_cgs_wrap[ral_name] = new(
+              $sformatf("tl_intg_err_mem_subword_cgs_wrap[%0s]", ral_name));
+        end
 
-      if (has_mem) begin
-        tl_intg_err_mem_subword_cgs_wrap[ral_name] = new(
-            $sformatf("tl_intg_err_mem_subword_cgs_wrap[%0s]", ral_name));
-      end
-
-      tl_intg_err_cgs_wrap[ral_name] = new($sformatf("tl_intg_err_cgs_wrap[%0s]", ral_name));
-      if (!has_mem || !has_csr) begin
-        tl_intg_err_cgs_wrap[ral_name].tl_intg_err_cg.cp_is_mem.option.weight = 0;
+        tl_intg_err_cgs_wrap[ral_name] = new($sformatf("tl_intg_err_cgs_wrap[%0s]", ral_name));
+        if (!has_mem || !has_csr) begin
+          tl_intg_err_cgs_wrap[ral_name].tl_intg_err_cg.cp_is_mem.option.weight = 0;
+        end
       end
     end
   endfunction
@@ -416,14 +419,16 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
             .throw_error(cfg.m_tl_agent_cfgs[ral_name].check_tl_errs)));
 
       // sample covergroup
-      tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
-                                            is_mem_addr(item, ral_name));
+      if (cfg.en_tl_intg_err_cov) begin
+        tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
+                                              is_mem_addr(item, ral_name));
 
-      if (tl_intg_err_mem_subword_cgs_wrap.exists(ral_name)) begin
-        tl_intg_err_mem_subword_cgs_wrap[ral_name].sample(
-            .tl_intg_err_type(tl_intg_err_type),
-            .write(item.a_opcode != tlul_pkg::Get),
-            .num_enable_bytes($countones(item.a_mask)));
+        if (tl_intg_err_mem_subword_cgs_wrap.exists(ral_name)) begin
+          tl_intg_err_mem_subword_cgs_wrap[ral_name].sample(
+              .tl_intg_err_type(tl_intg_err_type),
+              .write(item.a_opcode != tlul_pkg::Get),
+              .num_enable_bytes($countones(item.a_mask)));
+        end
       end
     end
 
@@ -444,7 +449,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
       // these errors all have the same outcome. Only sample coverages when there is just one
       // error, so that we know the error actually triggers the outcome
-      if ($onehot({unmapped_err, mem_byte_access_err, mem_wo_err, mem_ro_err,
+      if (cfg.en_tl_err_cov && $onehot({unmapped_err, mem_byte_access_err, mem_wo_err, mem_ro_err,
                    bus_intg_err, byte_wr_err, csr_size_err, tl_item_err})) begin
         tl_errors_cgs_wrap[ral_name].sample(.unmapped_err(unmapped_err),
                                             .csr_size_err(csr_size_err),
