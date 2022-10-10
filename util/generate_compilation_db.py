@@ -18,17 +18,23 @@ Caveat: this tool only emits the commands for building C/C++ code.
 Example:
   util/generate_compilation_db.py --target //sw/... --out compile_commands.json
 
+Tip: If your IDE complains that it cannot find headers, e.g. "gmock/gmock.h", it
+might be telling the truth. Try building the relevant target with Bazel
+(specifying "--config=riscv32" as necessary) and then restart clangd.
+
 [0]: https://github.com/bazelbuild/bazel/blob/master/src/main/protobuf/analysis_v2.proto
 [1]: https://clang.llvm.org/docs/JSONCompilationDatabase.html
-
 """
 
 import argparse
 import json
+import logging
 import os
 import subprocess
 import sys
-from typing import Dict, List
+from typing import Dict, List, Tuple
+
+logger = logging.getLogger('generate_compilation_db')
 
 
 def build_id_lookup_dict(dicts: List[Dict]):
@@ -67,6 +73,7 @@ class BazelAqueryResults:
 
     def iter_artifacts_for_dep_sets(self, dep_set_ids: List[int]):
         """Iterate the reconstructed paths of all artifacts related to `dep_set_ids`."""
+        SOURCE_EXTENSIONS = [".h", ".c", ".cc"]
 
         dep_set_id_stack = dep_set_ids
         while len(dep_set_id_stack) > 0:
@@ -77,6 +84,10 @@ class BazelAqueryResults:
                 artifact = self.artifacts_[direct_artifact_id]
                 path_fragment_id = artifact['pathFragmentId']
                 path = self.reconstruct_path(path_fragment_id)
+                if path.startswith("external/"):
+                    continue
+                if not any(path.endswith(ext) for ext in SOURCE_EXTENSIONS):
+                    continue
                 yield path
 
             for transitive_dep_set_id in dep_set.get('transitiveDepSetIds',
@@ -91,6 +102,26 @@ class BazelAqueryAction:
         self.mnemonic = action.get('mnemonic', None)
         self.arguments = action.get('arguments', None)
         self.input_dep_set_ids = action.get('inputDepSetIds', [])
+
+    def transform_arguments_for_clangd(self) -> List[str]:
+        """Return modified arguments for compatibility with Clangd.
+
+        It appears that Clangd fails to infer the desired target from the
+        compiler name. For instance, this is the path to our cross-compiler:
+        `external/crt/toolchains/lowrisc_rv32imcb/wrappers/clang`. Specifically,
+        Clangd fails to launch a compiler instance if it sees `--march=rv32imc`
+        or `--mabi=ilp32`.
+
+        This function explicitly tells Clangd which target we want by inserting
+        a `--target=riscv32` flag as needed.
+        """
+        args = self.arguments
+        if not args:
+            return args
+        compiler_path = args[0]
+        if 'lowrisc_rv32imcb' in compiler_path:
+            return [compiler_path, '--target=riscv32'] + args[1:]
+        return args
 
 
 class PathBuilder:
@@ -108,15 +139,19 @@ class PathBuilder:
             self.top_dir, f"bazel-{os.path.basename(self.top_dir)}")
 
 
-def main(args):
-    paths = PathBuilder(os.path.realpath(__file__))
-
+def build_compile_commands(
+        paths: PathBuilder,
+        device_build: bool) -> Tuple[List[Dict], List[Dict]]:
     bazel_aquery_command = [
         paths.bazelisk_script,
         'aquery',
         '--output=jsonproto',
-        args.target,
     ]
+    if device_build:
+        bazel_aquery_command.append('--config=riscv32')
+    bazel_aquery_command.append(args.target)
+
+    logger.info("Running bazel command: %s", bazel_aquery_command)
     try:
         completed_process = subprocess.run(bazel_aquery_command,
                                            stdout=subprocess.PIPE,
@@ -127,24 +162,51 @@ def main(args):
         raise
     except BaseException:
         raise
-    aquery_results = BazelAqueryResults(completed_process.stdout)
+
+    logger.info("Processing output from bazel aquery")
+    aquery_results = BazelAqueryResults(
+        completed_process.stdout.decode('utf-8'))
 
     compile_commands = []
+    unittest_compile_commands = []
     for action in aquery_results.actions:
         if action.mnemonic != 'CppCompile' or action.arguments == []:
             continue
 
+        arguments = action.transform_arguments_for_clangd()
+
         for artifact in aquery_results.iter_artifacts_for_dep_sets(
                 action.input_dep_set_ids):
-            compile_commands.append({
+            command = {
                 'directory': paths.bazel_exec_root,
-                'arguments': action.arguments,
+                'arguments': arguments,
                 'file': artifact,
-            })
+            }
 
-    compile_commands_json = json.dumps(compile_commands,
-                                       sort_keys=True,
-                                       indent=4)
+            if artifact.endswith("_unittest.cc"):
+                unittest_compile_commands.append(command)
+            else:
+                compile_commands.append(command)
+
+    return (compile_commands, unittest_compile_commands)
+
+
+def main(args):
+    paths = PathBuilder(os.path.realpath(__file__))
+
+    device_commands, device_unittest_commands = build_compile_commands(
+        paths, device_build=True)
+    host_commands, host_unittest_commands = build_compile_commands(
+        paths, device_build=False)
+
+    # In case there are conflicting host and device commands for "*_unittest.cc"
+    # sources, we strategically place the host commands first. Conversely, we
+    # favor the device commands for non-test sources.
+    all_compile_commands = device_commands + host_commands + \
+        host_unittest_commands + device_unittest_commands
+
+    logger.info("Writing compile commands to %s", args.out)
+    compile_commands_json = json.dumps(all_compile_commands, indent=4)
     if not args.out:
         print(compile_commands_json)
         return
@@ -161,6 +223,14 @@ if __name__ == '__main__':
     parser.add_argument(
         '--out',
         help='Path of output file for compilation DB. Defaults to stdout.')
+
+    if len(sys.argv) == 1:
+        parser.print_help()
+        sys.exit(1)
+
     args = parser.parse_args()
+
+    logging.basicConfig(format='%(asctime)s %(message)s')
+    logger.setLevel(logging.DEBUG)
 
     main(args)
