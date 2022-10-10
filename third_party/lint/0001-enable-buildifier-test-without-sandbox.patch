@@ -1,8 +1,8 @@
 diff --git a/buildifier/buildifier.bzl b/buildifier/buildifier.bzl
-index 42445e7..69f3341 100644
+index 42445e7..0957f94 100644
 --- a/buildifier/buildifier.bzl
 +++ b/buildifier/buildifier.bzl
-@@ -34,8 +34,24 @@ def buildifier(**kwargs):
+@@ -34,8 +34,25 @@ def buildifier(**kwargs):
  def _buildifier_test_impl(ctx):
      return [buildifier_impl_factory(ctx, test_rule = True)]
  
@@ -15,13 +15,14 @@ index 42445e7..69f3341 100644
 +
 +def buildifier_test(**kwargs):
 +    """
-+    Wrapper for the _buildifier_test rule. Adds tags to disable sandboxing.
++    Wrapper for the _buildifier_test rule. Optionally disables sandboxing and caching.
 +
 +    Args:
 +      **kwargs: all parameters for _buildifier_test
 +    """
-+    if kwargs.get("no-sandbox", False):
++    if kwargs.get("no_sandbox", False):
 +        tags = kwargs.get("tags", [])
++
 +        # Note: the "external" tag is a workaround for bazelbuild#15516.
 +        for t in ["no-sandbox", "no-cache", "external"]:
 +            if t not in tags:
@@ -29,7 +30,7 @@ index 42445e7..69f3341 100644
 +        kwargs["tags"] = tags
 +    _buildifier_test(**kwargs)
 diff --git a/buildifier/internal/factory.bzl b/buildifier/internal/factory.bzl
-index 779c789..0ae3bc1 100644
+index 779c789..34a4997 100644
 --- a/buildifier/internal/factory.bzl
 +++ b/buildifier/internal/factory.bzl
 @@ -46,6 +46,10 @@ def buildifier_attr_factory(test_rule = False):
@@ -43,16 +44,15 @@ index 779c789..0ae3bc1 100644
          "mode": attr.string(
              default = "fix" if not test_rule else "diff",
              doc = "Formatting mode",
-@@ -80,7 +84,7 @@ def buildifier_attr_factory(test_rule = False):
+@@ -80,7 +84,6 @@ def buildifier_attr_factory(test_rule = False):
      if test_rule:
          attrs.update({
              "srcs": attr.label_list(
 -                allow_empty = False,
-+                allow_empty = True,
                  allow_files = [
                      ".bazel",
                      ".bzl",
-@@ -91,12 +95,13 @@ def buildifier_attr_factory(test_rule = False):
+@@ -91,12 +94,13 @@ def buildifier_attr_factory(test_rule = False):
                  ],
                  doc = "A list of labels representing the starlark files to include in the test",
              ),
@@ -72,7 +72,7 @@ index 779c789..0ae3bc1 100644
              ),
          })
  
-@@ -147,15 +152,24 @@ def buildifier_impl_factory(ctx, test_rule = False):
+@@ -147,15 +151,24 @@ def buildifier_impl_factory(ctx, test_rule = False):
          args.append("-add_tables=%s" % ctx.file.add_tables.path)
  
      exclude_patterns_str = ""
@@ -98,7 +98,7 @@ index 779c789..0ae3bc1 100644
      }
      ctx.actions.expand_template(
          template = ctx.file._runner,
-@@ -167,6 +181,8 @@ def buildifier_impl_factory(ctx, test_rule = False):
+@@ -167,6 +180,8 @@ def buildifier_impl_factory(ctx, test_rule = False):
      runfiles = [ctx.executable.buildifier]
      if test_rule:
          runfiles.extend(ctx.files.srcs)
