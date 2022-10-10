@@ -45,8 +45,8 @@ class chip_sw_spi_device_tpm_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.enable_spi_tpm = 1;
 
     // Directly set the expected cs_id
-    cfg.m_spi_agent_cfg.csb_sel_in_cfg = 1;
-    cfg.m_spi_agent_cfg.csid = 1;
+    cfg.m_spi_host_agent_cfg.csb_sel_in_cfg = 1;
+    cfg.m_spi_host_agent_cfg.csid = 1;
 
     // enable spi agent interface to begin
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Begin TPM Test",

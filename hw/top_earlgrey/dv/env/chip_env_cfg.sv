@@ -84,7 +84,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   rand spi_agent_cfg        m_spi_device_agent_cfgs[NUM_SPI_HOSTS];
   rand jtag_riscv_agent_cfg m_jtag_riscv_agent_cfg;
   rand jtag_agent_cfg       m_jtag_agent_cfg;
-  rand spi_agent_cfg        m_spi_agent_cfg;
+  rand spi_agent_cfg        m_spi_host_agent_cfg;
   pwm_monitor_cfg           m_pwm_monitor_cfg[NUM_PWM_CHANNELS];
   rand i2c_agent_cfg        m_i2c_agent_cfgs[NUM_I2CS];
   rand pattgen_agent_cfg    m_pattgen_agent_cfg;
@@ -112,7 +112,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
   `uvm_object_utils_begin(chip_env_cfg)
     `uvm_field_object(m_jtag_riscv_agent_cfg, UVM_DEFAULT)
-    `uvm_field_object(m_spi_agent_cfg,        UVM_DEFAULT)
+    `uvm_field_object(m_spi_host_agent_cfg,   UVM_DEFAULT)
     `uvm_field_object(jtag_dmi_ral,           UVM_DEFAULT)
   `uvm_object_utils_end
 
@@ -171,7 +171,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     end
 
     // create spi agent config obj
-    m_spi_agent_cfg = spi_agent_cfg::type_id::create("m_spi_agent_cfg");
+    m_spi_host_agent_cfg = spi_agent_cfg::type_id::create("m_spi_host_agent_cfg");
 
     // create pwm monitor config obj
     foreach (m_pwm_monitor_cfg[i]) begin

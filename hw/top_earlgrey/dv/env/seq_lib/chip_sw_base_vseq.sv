@@ -239,7 +239,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 1;
     info.dummy_cycles = 8;
     info.write_command = 0;
-    cfg.m_spi_agent_cfg.add_cmd_info(info);
+    cfg.m_spi_host_agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddrDisabled;
@@ -247,7 +247,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 1;
     info.dummy_cycles = 0;
     info.write_command = 0;
-    cfg.m_spi_agent_cfg.add_cmd_info(info);
+    cfg.m_spi_host_agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddrDisabled;
@@ -255,7 +255,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 0;
     info.dummy_cycles = 0;
     info.write_command = 0;
-    cfg.m_spi_agent_cfg.add_cmd_info(info);
+    cfg.m_spi_host_agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddrDisabled;
@@ -263,7 +263,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 0;
     info.dummy_cycles = 0;
     info.write_command = 0;
-    cfg.m_spi_agent_cfg.add_cmd_info(info);
+    cfg.m_spi_host_agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddr3b;
@@ -271,9 +271,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 1;
     info.dummy_cycles = 0;
     info.write_command = 1;
-    cfg.m_spi_agent_cfg.add_cmd_info(info);
+    cfg.m_spi_host_agent_cfg.add_cmd_info(info);
 
-    cfg.m_spi_agent_cfg.spi_func_mode = SpiModeFlash;
+    cfg.m_spi_host_agent_cfg.spi_func_mode = SpiModeFlash;
   endfunction
 
   // Periodically probe the device for its busy bit and wait for up to
@@ -341,8 +341,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Set CSB inactive times to reasonable values. sys_clk is at 24 MHz, and
     // it needs to capture CSB pulses.
-    cfg.m_spi_agent_cfg.min_idle_ns_after_csb_drop = 50;
-    cfg.m_spi_agent_cfg.max_idle_ns_after_csb_drop = 200;
+    cfg.m_spi_host_agent_cfg.min_idle_ns_after_csb_drop = 50;
+    cfg.m_spi_host_agent_cfg.max_idle_ns_after_csb_drop = 200;
 
     // Configure the spi_agent for flash mode and add command info.
     spi_host_agent_configure_flash_cmds();
@@ -365,7 +365,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       .spinwait_delay_ns(5000));
 
     // sdo from chip is unknown, ignore checking that
-    cfg.m_spi_agent_cfg.en_monitor_checks = 0;
+    cfg.m_spi_host_agent_cfg.en_monitor_checks = 0;
 
     read_sw_frames(sw_image, sw_byte_q);
 
