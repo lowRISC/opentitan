@@ -64,7 +64,10 @@ module tb;
     .clk  (clk),
     .rst_n(rst_n)
   );
-  flash_ctrl_if flash_ctrl_if ();
+  flash_ctrl_if flash_ctrl_if (
+    .clk  (clk),
+    .rst_n(rst_n)
+  );
   flash_phy_prim_if fpp_if (
     .clk  (clk),
     .rst_n(rst_n)

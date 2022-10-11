@@ -53,7 +53,8 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
             rma_seed = $urandom;  // Random RMA Seed
             send_rma_req(rma_seed);
             `uvm_info("Test", "RMA REQUEST DONE", UVM_LOW)
-            cfg.flash_ctrl_vif.rma_req = lc_ctrl_pkg::Off;
+
+            cfg.flash_ctrl_vif.rma_req <= lc_ctrl_pkg::Off;
           end
           begin
             // exceptions
@@ -103,9 +104,9 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
                 end
                 2'b10: begin
                   if (reset_index inside {DVWaitAddrKey, DVWaitDataKey}) begin
-                    cfg.flash_ctrl_vif.rma_req = lc_ctrl_pkg::On;
+                    cfg.flash_ctrl_vif.rma_req <= lc_ctrl_pkg::On;
                     cfg.clk_rst_vif.wait_clks(2);
-                    cfg.flash_ctrl_vif.rma_req = lc_ctrl_pkg::Off;
+                    cfg.flash_ctrl_vif.rma_req <= lc_ctrl_pkg::Off;
                   end
                 end
                 2'b11: begin

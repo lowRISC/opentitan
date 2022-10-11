@@ -87,6 +87,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task pre_start();
     `uvm_create_on(callback_vseq, p_sequencer);
+    cfg.flash_ctrl_vif.rma_req <= lc_ctrl_pkg::Off;
+    cfg.flash_ctrl_vif.rma_seed <= LC_FLASH_RMA_SEED_DEFAULT;
     otp_model();  // Start OTP Model
     super.pre_start();
     cfg.alert_max_delay_in_ns = cfg.alert_max_delay * (cfg.clk_rst_vif.clk_period_ps / 1000.0);
@@ -1082,9 +1084,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("RMA Seed : 0x%08x", rma_seed), UVM_LOW)
 
     // Set Seed and Send Req
-    @(posedge cfg.clk_rst_vif.clk);
-    cfg.flash_ctrl_vif.rma_seed = rma_seed;
-    cfg.flash_ctrl_vif.rma_req = lc_ctrl_pkg::On;
+    cfg.flash_ctrl_vif.rma_seed <= rma_seed;
+    cfg.flash_ctrl_vif.rma_req <= lc_ctrl_pkg::On;
 
     // RMA Start Time
     start_time = $time();
