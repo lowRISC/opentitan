@@ -24,6 +24,10 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   // both may access the same csr `CFG`, have this to avoid accessing it at the same time.
   semaphore           spi_cfg_sema = new(1);
 
+  // in some sequence, both SW and HW may want to update this interrupt at the same time,
+  // which is hard to handle in scb. In this case, disable the checker.
+  // as long as all TPM requests can be read out and compared correctly, it's sufficient.
+  bit                 en_check_tpm_not_empty_intr = 1;
   `uvm_object_utils_begin(spi_device_env_cfg)
     `uvm_field_object(spi_host_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(spi_device_agent_cfg, UVM_DEFAULT)
@@ -42,6 +46,9 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
 
     sram_start_addr = ral.get_addr_from_offset(SRAM_OFFSET);
     sram_end_addr   = sram_start_addr + SRAM_SIZE - 1;
+
+    // only support 1 outstanding TL item
+    m_tl_agent_cfg.max_outstanding_req = 1;
   endfunction
 
   function spi_device_reg_cmd_info get_cmd_info_reg_by_opcode(bit [7:0] opcode);
