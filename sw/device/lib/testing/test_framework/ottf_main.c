@@ -38,16 +38,6 @@ OT_ASSERT_MEMBER_SIZE(ottf_test_config_t, enable_concurrency, 1);
 // tasks.
 extern void *pxCurrentTCB;
 
-// `extern` declarations to give the inline functions in the corresponding
-// header a link location.
-extern bool ottf_task_create(TaskFunction_t task_function,
-                             const char *task_name,
-                             configSTACK_DEPTH_TYPE task_stack_depth,
-                             uint32_t task_priority);
-extern void ottf_task_yield(void);
-extern void ottf_task_delete_self(void);
-extern char *ottf_task_get_self_name(void);
-
 // UART for communication with host.
 static dif_uart_t uart0;
 
@@ -67,6 +57,25 @@ void ottf_machine_ecall_handler(void) {
   LOG_ERROR(
       "OTTF currently only supports use of machine-mode ecall for FreeRTOS "
       "context switching.");
+}
+
+bool ottf_task_create(TaskFunction_t task_function, const char *task_name,
+                      configSTACK_DEPTH_TYPE task_stack_depth,
+                      uint32_t task_priority) {
+  return xTaskCreate(/*pvTaskCode=*/task_function, /*pcName=*/task_name,
+                     /*usStackDepth=*/task_stack_depth, /*pvParameters=*/NULL,
+                     /*uxPriority=*/tskIDLE_PRIORITY + 1 + task_priority,
+                     /*pxCreatedTask=*/NULL) == pdPASS
+             ? true
+             : false;
+}
+
+void ottf_task_yield(void) { taskYIELD(); }
+
+void ottf_task_delete_self(void) { vTaskDelete(/*xTask=*/NULL); }
+
+char *ottf_task_get_self_name(void) {
+  return pcTaskGetName(/*xTaskToQuery=*/NULL);
 }
 
 static void init_uart(void) {

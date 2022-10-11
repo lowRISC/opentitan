@@ -8,7 +8,6 @@
 #include <stdbool.h>
 
 #include "external/freertos/include/FreeRTOS.h"
-#include "external/freertos/include/task.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -70,18 +69,9 @@ extern bool manufacturer_post_test_hook(void);
  * @param task_priority The numerical priority of the task.
  * @return A boolean encoding the success of the operation.
  */
-inline bool ottf_task_create(TaskFunction_t task_function,
-                             const char *task_name,
-                             configSTACK_DEPTH_TYPE task_stack_depth,
-                             uint32_t task_priority) {
-  return xTaskCreate(/*pvTaskCode=*/task_function, /*pcName=*/task_name,
-                     /*usStackDepth=*/task_stack_depth, /*pvParameters=*/NULL,
-                     /*uxPriority=*/tskIDLE_PRIORITY + 1 + task_priority,
-                     /*pxCreatedTask=*/NULL) == pdPASS
-             ? true
-             : false;
-}
-
+bool ottf_task_create(TaskFunction_t task_function, const char *task_name,
+                      configSTACK_DEPTH_TYPE task_stack_depth,
+                      uint32_t task_priority);
 /**
  * Yield control flow to another FreeRTOS task of equal or higher priority.
  *
@@ -90,7 +80,7 @@ inline bool ottf_task_create(TaskFunction_t task_function,
  * documentation for more details:
  * https://www.freertos.org/a00020.html#taskYIELD.
  */
-inline void ottf_task_yield(void) { taskYIELD(); }
+void ottf_task_yield(void);
 
 /**
  * Delete the calling FreeRTOS task.
@@ -98,7 +88,7 @@ inline void ottf_task_yield(void) { taskYIELD(); }
  * See the FreeRTOS `vTaskDelete` documentation for more details:
  * https://www.freertos.org/a00126.html.
  */
-inline void ottf_task_delete_self(void) { vTaskDelete(/*xTask=*/NULL); }
+void ottf_task_delete_self(void);
 
 /**
  * Returns the name of the currently executing FreeRTOS task.
@@ -106,8 +96,6 @@ inline void ottf_task_delete_self(void) { vTaskDelete(/*xTask=*/NULL); }
  * See the FreeRTOS `pcTaskGetName` documentation for more details:
  * https://www.freertos.org/a00021.html#pcTaskGetName.
  */
-inline char *ottf_task_get_self_name(void) {
-  return pcTaskGetName(/*xTaskToQuery=*/NULL);
-}
+char *ottf_task_get_self_name(void);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_MAIN_H_

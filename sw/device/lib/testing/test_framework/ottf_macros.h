@@ -11,7 +11,6 @@
 #define OTTF_CONTEXT_SIZE (OTTF_WORD_SIZE * 30)
 #define OTTF_TASK_DELETE_SELF_OR_DIE \
   ottf_task_delete_self();           \
-  abort();                           \
-  CHECK(false);
+  abort();
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_MACROS_H_
