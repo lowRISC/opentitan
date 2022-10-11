@@ -69,7 +69,9 @@ class BazelAqueryResults:
                 break
             id = path_fragment['parentId']
 
-        return os.path.join(*reversed(labels))
+        # For our purposes, `os.sep.join()` should be equivalent to
+        # `os.path.join()`, but without the additional overhead.
+        return os.sep.join(reversed(labels))
 
     def iter_artifacts_for_dep_sets(self, dep_set_ids: List[int]):
         """Iterate the reconstructed paths of all artifacts related to `dep_set_ids`."""
