@@ -1102,8 +1102,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
               `uvm_info(`gfn, "Polling RMA ACK ...", UVM_LOW)
               #10ms;  // Jump Ahead (Not Sampling Clocks)
               @(posedge cfg.clk_rst_vif.clk);  // Align to Clock
-              if (cfg.flash_ctrl_vif.rma_ack == lc_ctrl_pkg::On) done = 1;
+              if (cfg.flash_ctrl_vif.rma_ack == lc_ctrl_pkg::On ||
+                  cfg.rma_ack_polling_stop == 1) done = 1;
             end while (done == 0);
+            if (cfg.rma_ack_polling_stop) begin
+              `uvm_info(`gfn, "Polling is stopped by external task", UVM_LOW)
+            end
           end
           begin  // Timeout - Unexpected
             `uvm_info(`gfn, "Starting RMA Timeout Check ...", UVM_LOW)
