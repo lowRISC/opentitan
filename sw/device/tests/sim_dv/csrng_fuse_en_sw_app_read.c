@@ -39,43 +39,12 @@ static const uint32_t kOtpCsrngFwReadBitOffset =
      OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET) *
     8;
 
-enum {
-  kExpectedOutputLen = 16,
-};
-
 /**
  * CTR DRBG Known-Answer-Test (KAT) for GENERATE command.
  */
 static void test_fuse_enable(const dif_csrng_t *csrng) {
   csrng_testutils_fips_instantiate_kat(csrng, /*fail_expected=*/false);
-  LOG_INFO("%s", __func__);
-
-  uint32_t got[kExpectedOutputLen];
-
-  csrng_testutils_cmd_generate_run(csrng, got, kExpectedOutputLen);
-  csrng_testutils_cmd_generate_run(csrng, got, kExpectedOutputLen);
-  const dif_csrng_internal_state_t kExpectedState = {
-      .reseed_counter = 3,
-      .v = {0xe73e3392, 0x7d2e92b1, 0x1a0bac9d, 0x53c78ac6},
-
-      .key = {0x66d1b85a, 0xc19d4dfd, 0x053b73e3, 0xe9dc0f90, 0x3f015bc8,
-              0x4436e5fd, 0x1cccc697, 0x1a1c6e5f},
-      .instantiated = true,
-      .fips_compliance = false,
-  };
-  csrng_testutils_check_internal_state(csrng, &kExpectedState);
-
-  // TODO(#13342): csrng does not provide a linear output order. For example,
-  // note the test vector output word order: 12,13,14,15 8,9,10,11 4,5,6,7
-  // 0,1,2,3.
-  const uint32_t kExpectedOutput[kExpectedOutputLen] = {
-      0xe48bb8cb, 0x1012c84c, 0x5af8a7f1, 0xd1c07cd9, 0xdf82ab22, 0x771c619b,
-      0xd40fccb1, 0x87189e99, 0x510494b3, 0x64f7ac0c, 0x2581f391, 0x80b1dc2f,
-      0x793e01c5, 0x87b107ae, 0xdb17514c, 0xa43c41b7,
-  };
-
-  CHECK_ARRAYS_EQ(got, kExpectedOutput, kExpectedOutputLen,
-                  "Generate command KAT output mismatch");
+  csrng_testutils_fips_generate_kat(csrng);
 }
 
 /**

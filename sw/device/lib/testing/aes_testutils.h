@@ -33,4 +33,25 @@ inline bool aes_testutils_get_status(dif_aes_t *aes, dif_aes_status_t flag) {
   IBEX_SPIN_FOR(aes_testutils_get_status((aes_), (flag_)) == (value_),    \
                 (timeout_usec_))
 
+#if !OT_IS_ENGLISH_BREAKFAST
+/**
+ * Initializes the entropy complex for performing AES SCA measurements with
+ * masking switched off.
+ *
+ * Initializes CSRNG and EDN0 to produce a fixed seed which after being loaded
+ * into AES causes the AES masking PRNG to output an all-zero vector. Entropy
+ * src and EDN1 are left untouched.
+ */
+void aes_testutils_masking_prng_zero_output_seed(void);
+
+/**
+ * CTR_DRBG Known-Answer-Test (KAT) using the CSRNG SW application interface.
+ *
+ * Initializes CSRNG and then runs multiple generate and a reseed command to
+ * ensure the seed leading to an all-zero output of the AES masking PRNG can
+ * repeatedly be generated.
+ */
+void aes_testutils_csrng_kat(void);
+#endif
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_AES_TESTUTILS_H_

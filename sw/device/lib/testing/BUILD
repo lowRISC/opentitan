@@ -47,8 +47,11 @@ cc_library(
     hdrs = ["aes_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:edn",
         "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )

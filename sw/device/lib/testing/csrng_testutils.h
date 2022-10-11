@@ -33,6 +33,45 @@ void csrng_testutils_check_internal_state(
     const dif_csrng_t *csrng, const dif_csrng_internal_state_t *expected);
 
 /**
+ * CTR_DRBG Known-Answer-Test (KAT) for INSTANTIATE command.
+ *
+ * @param csrng A CSRNG handle.
+ * @param fail_expected Expected fail.
+ * @param seed_material Seed material to use for the command.
+ * @param expected_state Expected CSRNG internal state after the command.
+ */
+void csrng_testutils_kat_instantiate(
+    const dif_csrng_t *csrng, bool fail_expected,
+    const dif_csrng_seed_material_t *seed_material,
+    const dif_csrng_internal_state_t *expected_state);
+
+/**
+ * CTR_DRBG Known-Answer-Test (KAT) for GENERATE command.
+ *
+ * @param csrng A CSRNG handle.
+ * @param num_generates Number of GENERATE commands to run.
+ * @param output_len Number of output words to read from CSRNG after the last
+ * command.
+ * @param expected_output Expected CSRNG output after the last command.
+ * @param expected_state Expected CSRNG internal state after the last command.
+ */
+void csrng_testutils_kat_generate(
+    const dif_csrng_t *csrng, uint32_t num_generates, uint32_t output_len,
+    const uint32_t *expected_output,
+    const dif_csrng_internal_state_t *expected_state);
+
+/**
+ * CTR_DRBG Known-Answer-Test (KAT) for RESEED command.
+ *
+ * @param csrng A CSRNG handle.
+ * @param seed_material Seed material to use for the command.
+ * @param expected_state Expected CSRNG internal state after the command.
+ */
+void csrng_testutils_kat_reseed(
+    const dif_csrng_t *csrng, const dif_csrng_seed_material_t *seed_material,
+    const dif_csrng_internal_state_t *expected_state);
+
+/**
  * CTR DRBG Known-Answer-Test (KAT) for INSTANTIATE command.
  *
  * @param csrng Handle.
