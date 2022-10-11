@@ -560,6 +560,42 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_otp_ctrl_lc_signals_test_unlocked0
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"],
+      // Use the image as basis, but clear provitioning state of the SECRET2
+      // partition so that the test can make front-door accesses to that partition.
+      run_opts: ["+use_otp_image=LcStTestUnlocked0", "+otp_clear_secret2=1"]
+    }
+    {
+      name: chip_sw_otp_ctrl_lc_signals_dev
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"],
+      // Use the image as basis, but clear provitioning state of the SECRET2
+      // partition so that the test can make front-door accesses to that partition.
+      run_opts: ["+use_otp_image=LcStDev", "+otp_clear_secret2=1"]
+    }
+    {
+      name: chip_sw_otp_ctrl_lc_signals_prod
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"],
+      // Use the image as basis, but clear provitioning state of the SECRET2
+      // partition so that the test can make front-door accesses to that partition.
+      run_opts: ["+use_otp_image=LcStProd", "+otp_clear_secret2=1"]
+    }
+    {
+      name: chip_sw_otp_ctrl_lc_signals_rma
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"],
+      // Use the image as basis, but clear provitioning state of the SECRET2
+      // partition so that the test can make front-door accesses to that partition.
+      run_opts: ["+use_otp_image=LcStRma", "+otp_clear_secret2=1"]
+    }
+    {
       // Set higher reseed value to reach all kmac_data to lc_ctrl toggle coverage.
       name: chip_sw_lc_ctrl_transition
       uvm_test_seq: chip_sw_lc_ctrl_transition_vseq
