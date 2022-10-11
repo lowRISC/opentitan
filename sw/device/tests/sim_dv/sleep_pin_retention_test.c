@@ -86,8 +86,10 @@ void ottf_external_isr(void) {
  * DV env checks all PIN value. SW simply drives the GPIO and invert the value
  * for retention.
  */
-void gpio_test(dif_pwrmgr_t *pwrmgr, dif_gpio_t *gpio, int round) {
+void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio, int round) {
   uint8_t gpio_val = 0;
+  dif_pinmux_pad_kind_t pad_kind;
+  dif_pinmux_sleep_mode_t pad_mode;
 
   LOG_INFO("Current Test Round: %1d", round);
 
@@ -104,6 +106,15 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_gpio_t *gpio, int round) {
   //
   //     Chosen GPIO value: %2x
   LOG_INFO("Chosen GPIO value: %2x", gpio_val);
+
+  // 4. Configure PINMUX Retention value opposite to the chosen value.
+  pad_kind = kDifPinmuxPadKindMio;
+  for (int i = 0; i < kNumGpioPads; i++) {
+    // GPIO are assigned starting from MIO0
+    pad_mode = ((gpio_val >> i) & 0x1) ? kDifPinmuxSleepModeLow
+                                       : kDifPinmuxSleepModeHigh;
+    CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(pinmux, i, pad_kind, pad_mode));
+  }
 
   // 5. Initiate sleep mode
   pwrmgr_testutils_enable_low_power(pwrmgr, kDifPwrmgrWakeupRequestSourceThree,
@@ -186,7 +197,7 @@ bool test_main(void) {
   // Set wakeup condition. Always use GPIO[8] for Pinmux PIN Wakeup.
 
   for (int i = kRounds - 1; i >= 0; i--) {
-    gpio_test(&pwrmgr, &gpio, i);
+    gpio_test(&pwrmgr, &pinmux, &gpio, i);
   }
 
   return result;
