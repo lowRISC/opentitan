@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
+      - lowrisc:tlul:socket_1n
       - lowrisc:prim:edge_detector
       - lowrisc:prim:ram_2p_adv
       - lowrisc:ip:usb_fs_nb_pe
