@@ -26,6 +26,29 @@ static bool dai_finished(const dif_otp_ctrl_t *otp_ctrl) {
   return bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiIdle);
 }
 
+void otp_ctrl_testutils_dai_access_error_check(const dif_otp_ctrl_t *otp_ctrl,
+                                               exp_test_result_t exp_result,
+                                               int32_t address) {
+  dif_otp_ctrl_status_t status;
+  CHECK_DIF_OK(dif_otp_ctrl_get_status(otp_ctrl, &status));
+  if (exp_result == kExpectFailed) {
+    if (!bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiError)) {
+      LOG_ERROR("Expected a DAI error for access to 0x%x", address);
+    }
+    if (status.causes[kDifOtpCtrlStatusCodeDaiError] !=
+        kDifOtpCtrlErrorLockedAccess) {
+      LOG_ERROR("Expected access locked error for access to 0x%x", address);
+    }
+  } else {
+    if (bitfield_bit32_read(status.codes, kDifOtpCtrlStatusCodeDaiError)) {
+      LOG_ERROR("No DAI error expected for access to 0x%x", address);
+    }
+    if (status.causes[kDifOtpCtrlStatusCodeDaiError] != kDifOtpCtrlErrorOk) {
+      LOG_ERROR("No DAI error code expected for access to 0x%x", address);
+    }
+  }
+}
+
 void otp_ctrl_testutils_wait_for_dai(const dif_otp_ctrl_t *otp_ctrl) {
   IBEX_SPIN_FOR(dai_finished(otp_ctrl), kOtpDaiTimeoutUs);
 }
