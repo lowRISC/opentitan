@@ -34,8 +34,8 @@ dual_cc_library(
         shared = [
             ":error",
             "//sw/device/lib/base:macros",
+            "//sw/device/silicon_creator/lib:crc32",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-            "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
         ],
