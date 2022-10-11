@@ -10,6 +10,15 @@
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 
 /**
+ * Print current life cycle state to the console.
+ *
+ * Reads the life cycle state register and prints the life cycle state as a
+ * human readable string. The function errors out in locked/invalid life
+ * cycle states where the CPU should not be executing code.
+ */
+void lc_ctrl_testutils_lc_state_log_or_die(const dif_lc_ctrl_state_t *state);
+
+/**
  * Checks whether Lifecycle Controller state has debug functions enabled.
  *
  * There could be implications for tests with debug functions enabled. For
