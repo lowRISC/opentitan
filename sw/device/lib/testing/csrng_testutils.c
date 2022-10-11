@@ -5,7 +5,14 @@
 #include "sw/device/lib/testing/csrng_testutils.h"
 
 #include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/testing/test_framework/check.h"
+
+#include "csrng_regs.h"  // Generated
+
+enum {
+  kNumOutputWordsMax = 16,
+};
 
 void csrng_testutils_cmd_ready_wait(const dif_csrng_t *csrng) {
   dif_csrng_cmd_status_t cmd_status;
@@ -46,11 +53,64 @@ void csrng_testutils_check_internal_state(
                   "CSRNG internal K buffer mismatch.");
 }
 
+void csrng_testutils_kat_instantiate(
+    const dif_csrng_t *csrng, bool fail_expected,
+    const dif_csrng_seed_material_t *seed_material,
+    const dif_csrng_internal_state_t *expected_state) {
+  LOG_INFO("CSRNG KAT instantiate");
+  CHECK_DIF_OK(dif_csrng_uninstantiate(csrng));
+
+  // Instantiate CSRNG - use the provided seed material only.
+  csrng_testutils_cmd_ready_wait(csrng);
+  CHECK_DIF_OK(dif_csrng_instantiate(csrng, kDifCsrngEntropySrcToggleDisable,
+                                     seed_material));
+
+  // Check the internal state of created CSRNG instance.
+  const dif_csrng_internal_state_t kZeroState = {};
+  csrng_testutils_check_internal_state(
+      csrng, fail_expected ? &kZeroState : expected_state);
+}
+
+void csrng_testutils_kat_generate(
+    const dif_csrng_t *csrng, size_t num_generates, size_t output_len,
+    const uint32_t *expected_output,
+    const dif_csrng_internal_state_t *expected_state) {
+  LOG_INFO("CSRNG KAT generate");
+
+  // Run the generate and check the output.
+  uint32_t got[kNumOutputWordsMax];
+  for (int i = 0; i < num_generates; ++i) {
+    csrng_testutils_cmd_generate_run(csrng, got, output_len);
+  }
+  CHECK_ARRAYS_EQ(got, expected_output, output_len,
+                  "Generate command KAT output mismatch");
+
+  // Check the internal state.
+  csrng_testutils_check_internal_state(csrng, expected_state);
+}
+
+void csrng_testutils_kat_reseed(
+    const dif_csrng_t *csrng, const dif_csrng_seed_material_t *seed_material,
+    const dif_csrng_internal_state_t *expected_state) {
+  LOG_INFO("CSRNG KAT reseed");
+
+  // Reseed CSRNG - use the provided seed material only.
+  csrng_testutils_cmd_ready_wait(csrng);
+  CHECK_DIF_OK(csrng_send_app_cmd(
+      csrng->base_addr, CSRNG_CMD_REQ_REG_OFFSET,
+      (csrng_app_cmd_t){
+          .id = kCsrngAppCmdReseed,
+          .entropy_src_enable = kDifCsrngEntropySrcToggleDisable,
+          .seed_material = seed_material,
+      }));
+
+  // Check the internal state.
+  csrng_testutils_check_internal_state(csrng, expected_state);
+}
+
 void csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
                                           bool fail_expected) {
-  LOG_INFO("%s", __func__);
-
-  // CTR DRBG Known-Answer-Tests (KATs).
+  // CTR_DRBG Known-Answer-Tests (KATs).
   //
   // Test vector sourced from NIST's CAVP website:
   // https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/random-number-generators
@@ -79,18 +139,12 @@ void csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
   // - ReturnedBits =
   // d1c07cd95af8a7f11012c84ce48bb8cb87189e99d40fccb1771c619bdf82ab2280b1dc2f2581f39164f7ac0c510494b3a43c41b7db17514c87b107ae793e01c5
 
-  CHECK_DIF_OK(dif_csrng_uninstantiate(csrng));
   const dif_csrng_seed_material_t kEntropyInput = {
       .seed_material = {0x73bec010, 0x9262474c, 0x16a30f76, 0x531b51de,
                         0x2ee494e5, 0xdfec9db3, 0xcb7a879d, 0x5600419c,
                         0xca79b0b0, 0xdda33b5c, 0xa468649e, 0xdf5d73fa},
       .seed_material_len = 12,
   };
-  csrng_testutils_cmd_ready_wait(csrng);
-
-  CHECK_DIF_OK(dif_csrng_instantiate(csrng, kDifCsrngEntropySrcToggleDisable,
-                                     &kEntropyInput));
-
   const dif_csrng_internal_state_t kExpectedState = {
       .reseed_counter = 1,
       .v = {0x06b8f59e, 0x43c0b2c2, 0x21052502, 0x217b5214},
@@ -99,33 +153,14 @@ void csrng_testutils_fips_instantiate_kat(const dif_csrng_t *csrng,
       .instantiated = true,
       .fips_compliance = false,
   };
-  const dif_csrng_internal_state_t kZeroState = {};
-
-  csrng_testutils_check_internal_state(
-      csrng, fail_expected ? &kZeroState : &kExpectedState);
+  csrng_testutils_kat_instantiate(csrng, fail_expected, &kEntropyInput,
+                                  &kExpectedState);
 }
 
 void csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng) {
-  LOG_INFO("Generate KAT");
-
   enum {
     kExpectedOutputLen = 16,
   };
-  uint32_t got[kExpectedOutputLen];
-
-  csrng_testutils_cmd_generate_run(csrng, got, kExpectedOutputLen);
-  csrng_testutils_cmd_generate_run(csrng, got, kExpectedOutputLen);
-  const dif_csrng_internal_state_t kExpectedState = {
-      .reseed_counter = 3,
-      .v = {0xe73e3392, 0x7d2e92b1, 0x1a0bac9d, 0x53c78ac6},
-
-      .key = {0x66d1b85a, 0xc19d4dfd, 0x053b73e3, 0xe9dc0f90, 0x3f015bc8,
-              0x4436e5fd, 0x1cccc697, 0x1a1c6e5f},
-      .instantiated = true,
-      .fips_compliance = false,
-  };
-  csrng_testutils_check_internal_state(csrng, &kExpectedState);
-
   // TODO(#13342): csrng does not provide a linear output order. For example,
   // note the test vector output word order: 12,13,14,15 8,9,10,11 4,5,6,7
   // 0,1,2,3.
@@ -134,9 +169,16 @@ void csrng_testutils_fips_generate_kat(const dif_csrng_t *csrng) {
       0xd40fccb1, 0x87189e99, 0x510494b3, 0x64f7ac0c, 0x2581f391, 0x80b1dc2f,
       0x793e01c5, 0x87b107ae, 0xdb17514c, 0xa43c41b7,
   };
-
-  CHECK_ARRAYS_EQ(got, kExpectedOutput, kExpectedOutputLen,
-                  "Generate command KAT output mismatch");
+  const dif_csrng_internal_state_t kExpectedState = {
+      .reseed_counter = 3,
+      .v = {0xe73e3392, 0x7d2e92b1, 0x1a0bac9d, 0x53c78ac6},
+      .key = {0x66d1b85a, 0xc19d4dfd, 0x053b73e3, 0xe9dc0f90, 0x3f015bc8,
+              0x4436e5fd, 0x1cccc697, 0x1a1c6e5f},
+      .instantiated = true,
+      .fips_compliance = false,
+  };
+  csrng_testutils_kat_generate(csrng, 2, kExpectedOutputLen, kExpectedOutput,
+                               &kExpectedState);
 }
 
 void csrng_testutils_cmd_status_check(const dif_csrng_t *csrng) {
