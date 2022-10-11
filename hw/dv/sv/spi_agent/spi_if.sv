@@ -28,6 +28,7 @@ interface spi_if
   bit         sck_polarity;
   bit         sck_phase;
 
+  bit         en_chk = 1;
   string      msg_id = "spi_if";
   //---------------------------------
   // common tasks
@@ -61,6 +62,6 @@ interface spi_if
   // check only 1 csb can be active
   initial forever begin
     @(csb);
-    `DV_CHECK_LE($countones(CSB_WIDTH'(~csb)), 1, , , msg_id)
+    if (en_chk) `DV_CHECK_LE($countones(CSB_WIDTH'(~csb)), 1, , , msg_id)
   end
 endinterface : spi_if
