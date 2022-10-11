@@ -983,7 +983,6 @@ module chip_earlgrey_cw310 #(
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
-    .SecAesSkipPRNGReseeding(1'b1),
     .KmacEnMasking(0),
     .SecKmacCmdDelay(40),
     .SecKmacIdleAcceptSwMsg(1'b1),

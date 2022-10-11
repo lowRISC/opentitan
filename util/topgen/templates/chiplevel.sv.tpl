@@ -1055,7 +1055,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesSBoxImpl(aes_pkg::SBoxImplDom),
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
-    .SecAesSkipPRNGReseeding(1'b1),
     .KmacEnMasking(0),
     .SecKmacCmdDelay(40),
     .SecKmacIdleAcceptSwMsg(1'b1),
