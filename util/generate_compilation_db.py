@@ -149,7 +149,7 @@ def build_compile_commands(
     ]
     if device_build:
         bazel_aquery_command.append('--config=riscv32')
-    bazel_aquery_command.append(args.target)
+    bazel_aquery_command.append(f'mnemonic("CppCompile", {args.target})')
 
     logger.info("Running bazel command: %s", bazel_aquery_command)
     try:
@@ -170,8 +170,8 @@ def build_compile_commands(
     compile_commands = []
     unittest_compile_commands = []
     for action in aquery_results.actions:
-        if action.mnemonic != 'CppCompile' or action.arguments == []:
-            continue
+        assert action.mnemonic == 'CppCompile'
+        assert action.arguments != []
 
         arguments = action.transform_arguments_for_clangd()
 
