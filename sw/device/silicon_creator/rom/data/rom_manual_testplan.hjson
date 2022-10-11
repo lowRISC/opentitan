@@ -25,5 +25,27 @@
       stage: V2
       tests: []
     }
+    {
+      name: rom_manual_cpuctrl_layout
+      desc: '''Verify that the mask for the `cputctrl` CSR in `rom_init()` is up to date.
+
+            See [Ibex documentation][1] for details.
+
+            - Verify that the first six bits of the `CPUCTRL` CSR match what
+              `rom_init()` and `CREATOR_SW_CFG_CPUCTRL` OTP item expect:
+              - Bit 8: `ic_scr_key_valid`
+              - Bit 7: `double_fault_seen`
+              - Bit 6: `sync_exec_seen`
+              - Bits 5:3: `dummy_instr_mask`
+              - Bit 2: `dummy_instr_en`
+              - Bit 1: `data_ind_timing`
+              - Bit 0: `icache_enable`
+
+            [1]: https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-and-status-register-cpuctrlsts
+            '''
+      tags: ["manual"]
+      stage: V2
+      tests: []
+    }
   ]
 }
