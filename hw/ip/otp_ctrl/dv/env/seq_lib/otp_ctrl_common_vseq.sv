@@ -11,6 +11,9 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
   string prim_otp_alert_name = "fatal_prim_otp_alert";
   string integ_err_alert_name = "fatal_bus_integ_error";
 
+  // This flag is used to identify if the sec_cm or tl_intg_err uses prim_otp_tl_i/o.
+  protected bit is_prim_otp;
+
   constraint dai_addr_c {
     dai_addr dist {
         [0 : (PartInfo[LifeCycleIdx].offset - 1)]    :/ 1,
@@ -39,10 +42,6 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     // two clock cycles for lc_async mode, one clock cycle for driving dft_en, one more clock cycle
     // so there is no racing condition.
     cfg.clk_rst_vif.wait_clks(4);
-  endtask
-
-  virtual task post_start();
-    super.post_start();
   endtask
 
   virtual task body();
@@ -96,16 +95,16 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     endcase
   endtask : wait_to_issue_reset
 
-  // This task overrides the check for `prim_onehot_check`.
-  // Alerts coming from the `u_otp` module will only bypass OTP_CTRL, it won't affect the OTP_CTRL
-  // and will fire its own alerts.
-  virtual task check_sec_tl_intg_error_resp(string proxy_path);
-    if (!uvm_re_match("*.u_otp.*", proxy_path)) begin
+  // This task overrides the check for `prim_onehot_check` and `tl_intg_error`.
+  // Alerts coming from the `prim_otp` module will only bypass OTP_CTRL, it won't affect the
+  // OTP_CTRL and will fire its own alerts.
+  virtual task check_tl_intg_error_response();
+    if (is_prim_otp) begin
       repeat ($urandom_range(5, 20)) begin
         wait_alert_trigger(prim_otp_alert_name, .wait_complete(1));
       end
     end else begin
-      super.check_sec_tl_intg_error_resp(proxy_path);
+      super.check_tl_intg_error_response();
     end
   endtask
 
@@ -120,14 +119,21 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     end
   endtask
 
+  // In tl_intg_err test, override this task to set is_prim_otp flag.
+  virtual task run_tl_intg_err_vseq_sub(string ral_name);
+    if (ral_name == "otp_ctrl_prim_reg_block") is_prim_otp = 1;
+    else                                       is_prim_otp = 0;
+    super.run_tl_intg_err_vseq_sub(ral_name);
+  endtask
+
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
     bit [TL_DW-1:0] exp_status_val, rdata0, rdata1;
     string prim_otp_alert_name = "fatal_prim_otp_alert";
     string integ_err_alert_name = "fatal_bus_integ_error";
 
-    // Alerts coming from the `u_otp` module will only bypass OTP_CTRL, it won't affect the
+    // Alerts coming from the `prim_otp` module will only bypass OTP_CTRL, it won't affect the
     // OTP_CTRL and will fire its own alerts.
-    if (!uvm_re_match("*.u_otp.*", if_proxy.path)) begin
+    if (is_prim_otp) begin
       check_sec_cm_alert(if_proxy.sec_cm_type.name, prim_otp_alert_name);
 
     // Alerts coming from the `u_tlul_lc_gate` module will only trigger bus_integrity alerts, and
@@ -208,6 +214,10 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
     endcase
+
+    // Set the flag to store if the error injection is on prim_tlul_if or core_tlul_if.
+    if (!uvm_re_match("*.u_otp.*", if_proxy.path)) is_prim_otp = 1;
+    else                                           is_prim_otp = 0;
   endfunction: sec_cm_fi_ctrl_svas
 
 endclass
