@@ -1623,12 +1623,14 @@
         "chip_sw_sram_ctrl_execution_main",               // lc_hw_debug_en_o: sram_ctrl main
         // TODO: ref chip_sw_rv_dm_lc_disabled (#14147)   // lc_hw_debug_en_o: rv_dm
         "chip_sw_keymgr_key_derivation",                  // lc_keymgr_en_o: keymgr
-        // TODO: add disable test (#15272)                // lc_keymgr_en_o: keymgr
         "chip_sw_clkmgr_external_clk_src_for_lc",         // lc_clk_byp_req_o: clkmgr
         "chip_sw_flash_rma_unlocked",                     // lc_flash_rma_req_o, lc_flash_rma_seed_o: flash_ctrl
-        "chip_sw_otp_ctrl_program",                       // lc_check_byp_en_o: otp_ctrl
+        "chip_sw_lc_ctrl_transition",                     // lc_check_byp_en_o: otp_ctrl
         "chip_sw_flash_ctrl_lc_rw_en",                    // lc_creator*, lc_seed*, lc_owner*, lc_iso*: flash_ctrl
-        // TODO: ref chip_sw_otp_ctrl_lc_signals (#14139) // lc_creator*, lc_seed*: OTP
+        "chip_sw_otp_ctrl_lc_signals_test_unlocked0",     // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i
+        "chip_sw_otp_ctrl_lc_signals_dev",                // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i
+        "chip_sw_otp_ctrl_lc_signals_prod",               // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i
+        "chip_sw_otp_ctrl_lc_signals_rma",                // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i
       ]
     }
 
@@ -2532,7 +2534,7 @@
       name: chip_sw_otp_ctrl_lc_signals
       desc: '''Verify the broadcast signals from LC ctrl.
 
-            - `lc_creator_seed_sw_rw_en_i`: verify that the secret2 partition is locked.
+            - `lc_creator_seed_sw_rw_en_i`: verify that the SECRET2 partition is locked.
             - `lc_seed_hw_rd_en_i`: verify that the keymgr outputs a default value when enabled.
             - `lc_dft_en_i`: verify that the test interface within OTP ctrl is accessible.
             - `lc_check_byp_en_i`: verify that the background check during LC ctrl state
@@ -2540,14 +2542,24 @@
 
             Note that `lc_escalate_en_i` is verified via a connectivity test.
 
+            The `lc_seed_hw_rd_en_i` signal can be tested by attempting a keymgr advance operation
+            into the CreatorRootKey state, which should fail since the root key will be tied off to
+            all-zero when the SECRET2 partition is not locked in OTP.
+
             X-ref'ed with chip_sw_lc_ctrl_broadcast test, which verifies the connectivity of the LC
             decoded outputs to other IPs.
             '''
       stage: V2
       tests: [
-        "chip_prim_tl_access",        // lc_dft_en_i
-        "chip_sw_lc_ctrl_transition", // lc_check_byp_en_i
-        // TODO(#14139): access control signals.
+        // lc_dft_en_i
+        "chip_prim_tl_access",
+        // lc_check_byp_en_i
+        "chip_sw_lc_ctrl_transition",
+        // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, also checks lc_keymgr_en_i since it uses the keymgr.
+        "chip_sw_otp_ctrl_lc_signals_test_unlocked0",
+        "chip_sw_otp_ctrl_lc_signals_dev",
+        "chip_sw_otp_ctrl_lc_signals_prod",
+        "chip_sw_otp_ctrl_lc_signals_rma",
         ]
     }
     {
