@@ -162,6 +162,15 @@
       tests: ["spi_device_perf"]
     }
     {
+      name: csb_read
+      desc: '''Read CSB value from CSR and check the correctness
+
+               This feature is for debug only, so it's sufficient to verify with this direct sequence:
+               - Assign both CSB pins with random values and read the CSB CSRs to check the values'''
+      stage: V2
+      tests: ["spi_device_csb_read"]
+    }
+    {
       name: tpm_read
       desc: '''
             - Set TPM_CFG.TPM_MODE to CRB mode and set TPM_CFG.EN.

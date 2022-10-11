@@ -96,6 +96,11 @@
     }
 
     {
+      name: spi_device_csb_read
+      uvm_test_seq: spi_device_csb_read_vseq
+    }
+
+    {
       name: spi_device_byte_transfer
       uvm_test_seq: spi_device_byte_transfer_vseq
     }

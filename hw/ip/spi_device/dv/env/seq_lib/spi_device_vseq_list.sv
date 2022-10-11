@@ -12,6 +12,7 @@
 `include "spi_device_dummy_item_extra_dly_vseq.sv"
 `include "spi_device_intr_vseq.sv"
 `include "spi_device_perf_vseq.sv"
+`include "spi_device_csb_read_vseq.sv"
 `include "spi_device_rx_timeout_vseq.sv"
 `include "spi_device_byte_transfer_vseq.sv"
 `include "spi_device_tpm_base_vseq.sv"
