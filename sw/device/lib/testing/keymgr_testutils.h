@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_KEYMGR_TESTUTILS_H_
 
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 
@@ -46,6 +47,51 @@ static const dif_keymgr_state_params_t kOwnerIntParams = {
                       0x23fb480c, 0xb012ae5e, 0xf1394d28, 0x1940ceeb},
     .max_key_version = 0xaa,
 };
+
+/**
+ * Struct to hold the creator or owner secrets for the key manager.
+ */
+typedef struct keymgr_testutils_secret {
+  uint32_t value[8];
+} keymgr_testutils_secret_t;
+
+/**
+ * Key manager Creator Secret stored in info flash page.
+ */
+static const keymgr_testutils_secret_t kCreatorSecret = {
+    .value = {0x4e919d54, 0x322288d8, 0x4bd127c7, 0x9f89bc56, 0xb4fb0fdf,
+              0x1ca1567b, 0x13a0e876, 0xa6521d8f}};
+
+/**
+ * Key manager Owner Secret stored in info flash page.
+ */
+static const keymgr_testutils_secret_t kOwnerSecret = {.value = {
+                                                           0xa6521d8f,
+                                                           0x13a0e876,
+                                                           0x1ca1567b,
+                                                           0xb4fb0fdf,
+                                                           0x9f89bc56,
+                                                           0x4bd127c7,
+                                                           0x322288d8,
+                                                           0x4e919d54,
+                                                       }};
+
+/**
+ * Programs flash with secrets so that the keymgr can be advanced to
+ * CreatorRootKey state.
+ *
+ * This is normally a subfunction of keymgr_testutils_startup, but some tests
+ * use the function separately as well.
+ *
+ * @param flash An initialized flash_ctrl handle.
+ * @param creator_secret The creator secret to be programmed to flash.
+ * @param owner_secret The owner secret to be programmed to flash.
+ *
+ */
+void keymgr_testutils_flash_init(
+    dif_flash_ctrl_state_t *flash,
+    const keymgr_testutils_secret_t *creator_secret,
+    const keymgr_testutils_secret_t *owner_secret);
 
 /**
  * Programs flash, restarts, and advances keymgr to CreatorRootKey state.

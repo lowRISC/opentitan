@@ -33,54 +33,35 @@ enum {
 
   /** Owner Secret flash info page ID. */
   kFlashInfoPageIdOwnerSecret = 2,
-
-  /** Key manager secret word size. */
-  kSecretWordSize = 8,
-};
-
-/**
- * Key manager Creator Secret stored in info flash page.
- */
-static const uint32_t kCreatorSecret[kSecretWordSize] = {
-    0x4e919d54, 0x322288d8, 0x4bd127c7, 0x9f89bc56,
-    0xb4fb0fdf, 0x1ca1567b, 0x13a0e876, 0xa6521d8f};
-
-/**
- * Key manager Owner Secret stored in info flash page.
- */
-static const uint32_t kOwnerSecret[kSecretWordSize] = {
-    0xa6521d8f, 0x13a0e876, 0x1ca1567b, 0xb4fb0fdf,
-    0x9f89bc56, 0x4bd127c7, 0x322288d8, 0x4e919d54,
 };
 
 static void write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
-                            const uint32_t *data) {
+                            const keymgr_testutils_secret_t *data) {
   uint32_t address = flash_ctrl_testutils_info_region_setup(
       flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId);
 
   CHECK(flash_ctrl_testutils_erase_and_write_page(
-      flash, address, kFlashInfoPartitionId, data,
-      kDifFlashCtrlPartitionTypeInfo, kSecretWordSize));
+      flash, address, kFlashInfoPartitionId, data->value,
+      kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(data->value)));
 
-  uint32_t readback_data[kSecretWordSize];
-  CHECK(flash_ctrl_testutils_read(flash, address, kFlashInfoPartitionId,
-                                  readback_data, kDifFlashCtrlPartitionTypeInfo,
-                                  kSecretWordSize, 0));
-  CHECK_ARRAYS_EQ(data, readback_data, kSecretWordSize);
+  keymgr_testutils_secret_t readback_data;
+  CHECK(flash_ctrl_testutils_read(
+      flash, address, kFlashInfoPartitionId, readback_data.value,
+      kDifFlashCtrlPartitionTypeInfo, ARRAYSIZE(readback_data.value), 0));
+  CHECK_ARRAYS_EQ(data->value, readback_data.value, ARRAYSIZE(data->value));
 }
 
-static void init_flash(void) {
-  dif_flash_ctrl_state_t flash;
-
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-
+void keymgr_testutils_flash_init(
+    dif_flash_ctrl_state_t *flash,
+    const keymgr_testutils_secret_t *creator_secret,
+    const keymgr_testutils_secret_t *owner_secret) {
   // Initialize flash secrets.
-  write_info_page(&flash, kFlashInfoPageIdCreatorSecret, kCreatorSecret);
-  write_info_page(&flash, kFlashInfoPageIdOwnerSecret, kOwnerSecret);
+  write_info_page(flash, kFlashInfoPageIdCreatorSecret, creator_secret);
+  write_info_page(flash, kFlashInfoPageIdOwnerSecret, owner_secret);
 }
 
 void keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
+  dif_flash_ctrl_state_t flash;
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
 
@@ -99,7 +80,10 @@ void keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   if (info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Powered up for the first time, program flash");
 
-    init_flash();
+    CHECK_DIF_OK(dif_flash_ctrl_init_state(
+        &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+
+    keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret);
 
     // Lock otp secret partition.
     dif_otp_ctrl_t otp;
