@@ -292,12 +292,13 @@ static void rom_pre_boot_check(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 4);
 
   // Check the cpuctrl CSR.
-  // Note: We don't mask the CSR value here to include exception flags
-  // (bits 6 and 7) in the check.
   uint32_t cpuctrl_csr;
   uint32_t cpuctrl_otp =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_CPUCTRL_OFFSET);
   CSR_READ(CSR_REG_CPUCTRL, &cpuctrl_csr);
+  // We only mask the 8th bit (`ic_scr_key_valid`) to include exception flags
+  // (bits 6 and 7) in the check.
+  cpuctrl_csr = bitfield_bit32_write(cpuctrl_csr, 8, false);
   if (launder32(cpuctrl_csr) != cpuctrl_otp) {
     HARDENED_UNREACHABLE();
   }
