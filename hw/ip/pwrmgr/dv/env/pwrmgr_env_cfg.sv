@@ -14,7 +14,7 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
 
   // ext component cfgs
   alert_esc_agent_cfg        m_esc_agent_cfg;
-  pwrmgr_clk_ctrl_agent_cfg  m_pcc_agent_cfg;
+
   // set expected alert
   // since pwrmgr has one alert, use single bit q
   bit exp_alert_q[$];
@@ -53,11 +53,6 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
     m_esc_agent_cfg.is_alert = 0;
     // Disable escalation ping coverage.
     m_esc_agent_cfg.en_ping_cov = 0;
-
-    // pwrmgr_clk_ctrl_agent config
-    m_pcc_agent_cfg = pwrmgr_clk_ctrl_agent_cfg::type_id::create("m_pcc_agent_cfg");
-    m_pcc_agent_cfg.is_active = 0;
-    m_pcc_agent_cfg.en_cov = 0;
   endfunction
 
 endclass

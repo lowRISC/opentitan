@@ -11,7 +11,6 @@ class pwrmgr_env extends cip_base_env #(
   `uvm_component_utils(pwrmgr_env)
 
   alert_esc_agent       m_esc_agent;
-  pwrmgr_clk_ctrl_agent m_pcc_agent;
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -58,24 +57,6 @@ class pwrmgr_env extends cip_base_env #(
     m_esc_agent = alert_esc_agent::type_id::create("m_esc_agent", this);
     uvm_config_db#(alert_esc_agent_cfg)::set(this, "m_esc_agent", "cfg", cfg.m_esc_agent_cfg);
     cfg.m_esc_agent_cfg.en_cov = cfg.en_cov;
-
-    m_pcc_agent = pwrmgr_clk_ctrl_agent::type_id::create("m_pcc_agent", this);
-    uvm_config_db#(pwrmgr_clk_ctrl_agent_cfg)::set(this, "m_pcc_agent", "cfg", cfg.m_pcc_agent_cfg);
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "clk_rst_vif", cfg.m_pcc_agent_cfg.clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get clk_rst_vif to cfg.m_pcc_agent_cfg.clk_rst_vif")
-    end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "esc_clk_rst_vif", cfg.m_pcc_agent_cfg.esc_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get clk_rst_vif to cfg.m_pcc_agent_cfg.esc_clk_rst_vif")
-    end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "lc_clk_rst_vif", cfg.m_pcc_agent_cfg.lc_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get clk_rst_vif to cfg.m_pcc_agent_cfg.lc_clk_rst_vif")
-    end
 
   endfunction
 
