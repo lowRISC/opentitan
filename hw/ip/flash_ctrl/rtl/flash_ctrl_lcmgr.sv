@@ -555,6 +555,7 @@ module flash_ctrl_lcmgr
       // Invalid catch-all state
       default: begin
         dis_access_o = lc_ctrl_pkg::On;
+        state_err = 1'b1;
         state_d = StInvalid;
       end
 
@@ -868,6 +869,7 @@ module flash_ctrl_lcmgr
 
       default: begin
         rma_state_d = StRmaInvalid;
+        fsm_err = 1'b1;
       end
 
     endcase // unique case (rma_state_q)
