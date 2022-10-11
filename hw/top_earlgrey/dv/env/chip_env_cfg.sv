@@ -222,6 +222,13 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     m_tl_agent_cfg.max_outstanding_req = 8;
   endfunction
 
+  // Disable functional coverage of comportable IP-specific specialized registers.
+  // Chip level testbench does not sample these coverpoints.
+  protected virtual function void pre_build_ral_settings(dv_base_reg_block ral);
+    super.pre_build_ral_settings(ral);
+    ral.set_en_dv_reg_cov(0);
+  endfunction
+
   // Apply RAL fixes before it is locked.
   protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
     RAL_T chip_ral;

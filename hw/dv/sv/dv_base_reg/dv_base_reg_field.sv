@@ -17,6 +17,9 @@ class dv_base_reg_field extends uvm_reg_field;
   // This is used for get_field_by_name
   string alias_name = "";
 
+  // Default mubi_width = 0 indicates this register field is not a mubi type.
+  protected int mubi_width;
+
   // variable for mubi coverage, which is only created when this is a mubi reg
   dv_base_mubi_cov mubi_cov;
 
@@ -136,7 +139,6 @@ class dv_base_reg_field extends uvm_reg_field;
     foreach (flds[i]) begin
       lockable_flds.push_back(flds[i]);
       flds[i].regwen_fld = this;
-      flds[i].create_lockable_fld_cov();
     end
   endfunction
 
@@ -144,9 +146,14 @@ class dv_base_reg_field extends uvm_reg_field;
     lockable_field_cov = dv_base_lockable_field_cov::type_id::create(`gfn);
   endfunction
 
-  function void create_mubi_cov(int mubi_width);
+  function void create_mubi_cov(int width);
     mubi_cov = dv_base_mubi_cov::type_id::create(`gfn);
-    mubi_cov.create_cov(mubi_width);
+    mubi_cov.create_cov(width);
+  endfunction
+
+  function void create_cov();
+    if (mubi_width > 0)     create_mubi_cov(mubi_width);
+    if (regwen_fld != null) create_lockable_fld_cov();
   endfunction
 
   // Returns true if this field can lock the specified register/field, else return false.
@@ -173,6 +180,22 @@ class dv_base_reg_field extends uvm_reg_field;
 
   function void get_lockable_flds(ref dv_base_reg_field lockable_flds_q[$]);
     lockable_flds_q = lockable_flds;
+  endfunction
+
+  // Return if the RAL block is locked or not.
+  function bit is_locked();
+    uvm_reg_block blk = this.get_parent().get_parent();
+    return blk.is_locked();
+  endfunction
+
+  // If the register field is a mubi type, set the mubi width before the RAL is locked.
+  function void set_mubi_width(int width);
+    if (is_locked()) `uvm_fatal(`gfn, "Cannot set mubi width when the block is locked")
+    mubi_width = width;
+  endfunction
+
+  function int get_mubi_width();
+    return mubi_width;
   endfunction
 
   // shadow register field read will clear its phase tracker
