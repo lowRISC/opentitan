@@ -27,6 +27,11 @@ class chip_sw_lc_walkthrough_vseq extends chip_sw_base_vseq;
     super.pre_start();
   endtask
 
+  virtual task apply_reset(string kind = "HARD");
+    super.apply_reset();
+    set_otp_creator_sw_cfg_rom_exec_en(1);
+  endtask
+
   virtual task body();
     bit [TokenWidthBit-1:0] otp_exit_token_bits, otp_unlock_token_bits, otp_rma_token_bits;
     bit [7:0] selected_dest_state[];

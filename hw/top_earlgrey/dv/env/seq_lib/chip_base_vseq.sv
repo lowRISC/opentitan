@@ -34,6 +34,7 @@ class chip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
+    lc_ctrl_state_pkg::lc_state_e lc_state;
     // Note: The JTAG reset does not have a dedicated pad and is muxed with other chip IOs.
     // These IOs have pad attributes that are driven from registers, and as long as
     // the reset line of those registers is X, the registers and hence the pad outputs
@@ -224,6 +225,27 @@ class chip_base_vseq #(
                 ), UVM_MEDIUM)
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset + i * 4,
                                        cfg.creator_sw_cfg_ast_cfg_data[i]);
+    end
+  endfunction
+
+  // Set the ROM_EXEC_EN bit in OTP if we are not in RAW state
+  virtual function void set_otp_creator_sw_cfg_rom_exec_en(bit [31:0] value);
+    lc_ctrl_state_pkg::lc_state_e lc_state;
+    logic [31:0] otp_raw_val;
+    logic [31:0] chk_vector;
+
+    // Set rom_exec_en only when we are not in RAW state.
+    lc_state = cfg.mem_bkdr_util_h[Otp].otp_read_lc_partition_state();
+
+    // If we are already 1, we cannot set to 0.
+    // This should probably be relocated to mem_bkdr_util eventually as an option for writes
+    otp_raw_val = cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset);
+    chk_vector = ~value & (otp_raw_val ^ value);
+    `DV_CHECK(chk_vector == '0);
+
+    if (lc_state != LcStRaw) begin
+      `uvm_info(`gfn, "Automatically set rom_exec_en", UVM_LOW)
+      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, value);
     end
   endfunction
 

@@ -9,7 +9,16 @@ virtual function void otp_write_lc_partition_state(lc_ctrl_state_pkg::lc_state_e
   for (int i = 0; i < LcStateSize; i += 4) begin
     write32(i + LcStateOffset, lc_state[i*8+:32]);
   end
-endfunction
+endfunction : otp_write_lc_partition_state
+
+virtual function lc_ctrl_state_pkg::lc_state_e otp_read_lc_partition_state();
+  lc_ctrl_state_pkg::lc_state_e lc_state;
+  for (int i = 0; i < LcStateSize; i += 4) begin
+    lc_state[i*8 +: 32] = read32(i + LcStateOffset);
+  end
+
+  return lc_state;
+endfunction : otp_read_lc_partition_state
 
 virtual function void otp_write_lc_partition_cnt(lc_ctrl_state_pkg::lc_cnt_e lc_cnt);
   for (int i = 0; i < LcTransitionCntSize; i += 4) begin
