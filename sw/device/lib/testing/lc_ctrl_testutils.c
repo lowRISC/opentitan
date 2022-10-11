@@ -10,6 +10,51 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+void lc_ctrl_testutils_lc_state_log_or_die(const dif_lc_ctrl_state_t *state) {
+  switch (*state) {
+    case kDifLcCtrlStateTestUnlocked0:
+      LOG_INFO("Life cycle state: TEST_UNLOCKED0");
+      break;
+    case kDifLcCtrlStateTestUnlocked1:
+      LOG_INFO("Life cycle state: TEST_UNLOCKED1");
+      break;
+    case kDifLcCtrlStateTestUnlocked2:
+      LOG_INFO("Life cycle state: TEST_UNLOCKED2");
+      break;
+    case kDifLcCtrlStateTestUnlocked3:
+      LOG_INFO("Life cycle state: TEST_UNLOCKED3");
+      break;
+    case kDifLcCtrlStateTestUnlocked4:
+      LOG_INFO("Life cycle state: TEST_UNLOCKED4");
+      break;
+    case kDifLcCtrlStateTestUnlocked5:
+      LOG_INFO("Life cycle state: TEST_UNLOCKED5");
+      break;
+    case kDifLcCtrlStateTestUnlocked6:
+      LOG_INFO("Life cycle state: TEST_UNLOCKED6");
+      break;
+    case kDifLcCtrlStateTestUnlocked7:
+      LOG_INFO("Life cycle state: TEST_UNLOCKED7");
+      break;
+    case kDifLcCtrlStateDev:
+      LOG_INFO("Life cycle state: DEV");
+      break;
+    case kDifLcCtrlStateProd:
+      LOG_INFO("Life cycle state: PROD");
+      break;
+    case kDifLcCtrlStateProdEnd:
+      LOG_INFO("Life cycle state: PROD_END");
+      break;
+    case kDifLcCtrlStateRma:
+      LOG_INFO("Life cycle state: RMA");
+      break;
+    default:
+      CHECK(false, "CPU is executing in locked/invalid life cycle state: %d",
+            (uint32_t)state);
+      break;
+  }
+}
+
 bool lc_ctrl_testutils_debug_func_enabled(const dif_lc_ctrl_t *lc_ctrl) {
   dif_lc_ctrl_state_t state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(lc_ctrl, &state));
