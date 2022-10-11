@@ -33,6 +33,10 @@ class spi_device_tpm_all_vseq extends spi_device_tpm_read_hw_reg_vseq;
 
   virtual task body();
     bit main_body_done;
+
+    // both SW and HW may want to update this interrupt at the same time,
+    // scb can't predict this interrupt properly.
+    cfg.en_check_tpm_not_empty_intr = 0;
     fork
       begin
         super.body();

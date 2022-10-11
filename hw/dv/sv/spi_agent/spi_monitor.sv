@@ -276,6 +276,8 @@ class spi_monitor extends dv_base_monitor#(
       end
     join
     `uvm_info(`gfn, $sformatf("Received TPM addr: %p", item.address_q), UVM_MEDIUM)
+    req_analysis_port.write(item);
+
     // poll TPM_START
     `DV_SPINWAIT(
       do begin

@@ -725,7 +725,17 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       bit [31:0] start_addr, offset, read_buffer_addr;
 
       upstream_spi_req_fifo.get(item);
-      if (!cfg.is_read_buffer_cmd(item)) continue;
+      if (cfg.spi_host_agent_cfg.spi_func_mode == SpiModeTpm) begin
+        bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
+        // comparison is done when the item is transfered completedly
+        bit [TL_DW-1:0] ignored_returned_q[$];
+        if (item.write_command || !is_tpm_reg(addr, item.read_size, ignored_returned_q)) begin
+          update_pending_intr_w_delay(TpmHeaderNotEmpty);
+        end
+        continue;
+      end else if (!cfg.is_read_buffer_cmd(item)) begin
+        continue;
+      end
 
       start_addr = convert_addr_from_byte_queue(item.address_q);
       `DV_SPINWAIT(
@@ -884,11 +894,20 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       "intr_state": begin
         if (!write && channel == DataChannel) begin
           bit [NumSpiDevIntr-1:0] intr_exp = `gmv(csr);
+          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+          spi_device_intr_e intr;
+
           foreach (intr_exp[i]) begin
-            spi_device_intr_e intr = spi_device_intr_e'(i);
-            // TODO, only test these interrupts for now
-            if (!(i inside {ReadbufFlip, ReadbufWatermark,
-                            CmdFifoNotEmpty, PayloadNotEmpty, PayloadOverflow})) begin
+            intr = spi_device_intr_e'(i); // cast to enum to get interrupt name
+            if (cfg.en_cov) begin
+              cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
+              cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
+            end
+
+            // generic_* interrupts are tested in the direct test - spi_device_intr_vseq.
+            if (!(i inside {ReadbufFlip, ReadbufWatermark, PayloadOverflow,
+                            CmdFifoNotEmpty, PayloadNotEmpty, TpmHeaderNotEmpty}) ||
+                (i == TpmHeaderNotEmpty && !cfg.en_check_tpm_not_empty_intr)) begin
               continue;
             end
             if (!intr_trigger_pending[i]) begin
