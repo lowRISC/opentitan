@@ -56,7 +56,7 @@ class chip_sw_sleep_pin_retention_vseq extends chip_sw_base_vseq;
       // Init the variables
       printed_log = "";
 
-      // TODO: Receive values from SW via sw_logger_vif
+      // Receive values from SW via sw_logger_vif
       `DV_WAIT(cfg.sw_logger_vif.printed_log == $sformatf("Current Test Round: %1d", round))
 
       exp_str = "Chosen GPIO value:";
@@ -72,7 +72,7 @@ class chip_sw_sleep_pin_retention_vseq extends chip_sw_base_vseq;
 
       `uvm_info(`gfn, $sformatf("Received GPIO value: %2x", gpio_val), UVM_LOW)
 
-      // TODO: Check PIN
+      // Check PIN
       gpio_sample = sample_gpio();
       `uvm_info(`gfn,
                 $sformatf("Captured GPIO value: %2x", gpio_sample),
@@ -96,7 +96,7 @@ class chip_sw_sleep_pin_retention_vseq extends chip_sw_base_vseq;
 
       repeat (5) @(cfg.chip_vif.pwrmgr_low_power_if.cb);
 
-      // TODO: Wake up DUT
+      // Wake up DUT
       cfg.chip_vif.ios_if.drive_pin(IoA8, 1'b 1);
       repeat (3) @(cfg.chip_vif.pwrmgr_low_power_if.cb);
       cfg.chip_vif.ios_if.drive_pin(IoA8, 1'b 0);
