@@ -419,6 +419,12 @@
       run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_all=1"]
       reseed: 1
     }
+    {
+      name: flash_ctrl_rma_err
+      uvm_test_seq: flash_ctrl_hw_rma_err_vseq
+      run_opts: ["+flash_program_latency=5", "+test_timeout_ns=300_000_000_000"]
+      reseed: 3
+    }
  ]
 
   // List of regressions.
