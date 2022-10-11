@@ -199,6 +199,26 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "sysrst_ctrl_ulp_z3_wakeup_test",
+    srcs = ["sysrst_ctrl_ulp_z3_wakeup_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "sysrst_ctrl_reset_test",
     srcs = ["sysrst_ctrl_reset_test.c"],
     targets = ["dv"],
