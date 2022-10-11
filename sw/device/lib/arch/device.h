@@ -69,8 +69,7 @@ extern const uint64_t kClockFreqCpuHz;
 /**
  * The peripheral clock frequency of the device, in hertz.
  * This is the operating clock used by timers, uarts,
- * other peripheral interfaces and the software interface
- * to the USB controller.
+ * other peripheral interfaces.
  */
 extern const uint64_t kClockFreqPeripheralHz;
 
@@ -82,7 +81,8 @@ extern const uint64_t kClockFreqHiSpeedPeripheralHz;
 
 /**
  * The USB clock frequency of the device, in hertz.
- * This is the operating clock used by the USB phy interface.
+ * This is the operating clock used by the USB phy interface and USB's software
+ * interface.
  */
 extern const uint64_t kClockFreqUsbHz;
 
