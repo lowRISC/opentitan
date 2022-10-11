@@ -3,7 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // interface for OTP, Life cycle, RMA, PWRMGR and KEYMGR
-interface flash_ctrl_if ();
+interface flash_ctrl_if (
+  input logic clk,
+  input logic rst_n
+);
 
   import lc_ctrl_pkg::*;
   import pwrmgr_pkg::*;
@@ -26,8 +29,8 @@ interface flash_ctrl_if ();
 
   keymgr_flash_t                    keymgr;
 
-  lc_tx_t                           rma_req = lc_ctrl_pkg::Off;
-  lc_flash_rma_seed_t               rma_seed = LC_FLASH_RMA_SEED_DEFAULT;
+  lc_tx_t                           rma_req;
+  lc_flash_rma_seed_t               rma_seed;
   lc_tx_t                           rma_ack;
 
   otp_ctrl_pkg::flash_otp_key_req_t otp_req;
@@ -62,4 +65,10 @@ interface flash_ctrl_if ();
   logic        host_gnt;
   logic ctrl_fsm_idle;
   logic [1:0] host_outstanding;
+
+  clocking cb @(posedge clk);
+    default input #1step output #2;
+    output    rma_req, rma_seed;
+    input     rma_ack;
+  endclocking
 endinterface : flash_ctrl_if
