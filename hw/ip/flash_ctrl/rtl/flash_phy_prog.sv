@@ -85,8 +85,7 @@ module flash_phy_prog import flash_phy_pkg::*; (
     StCalcMask      = 11'b00000001110,
     StScrambleData  = 11'b00011101001,
     StCalcEcc       = 11'b00111010100,
-    StDisabled      = 11'b10001000000,
-    StInvalid       = 11'b10010011011
+    StDisabled      = 11'b10001000000
   } state_e;
   state_e state_d, state_q;
 
@@ -286,13 +285,8 @@ module flash_phy_prog import flash_phy_pkg::*; (
         state_d = StDisabled;
       end
 
-      StInvalid: begin
-        state_d = StInvalid;
-        fsm_err_o = 1'b1;
-      end
-
       default: begin
-        state_d = StInvalid;
+        fsm_err_o = 1'b1;
       end
 
     endcase // unique case (state_q)

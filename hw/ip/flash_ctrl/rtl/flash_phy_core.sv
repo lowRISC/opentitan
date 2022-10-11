@@ -96,8 +96,7 @@ module flash_phy_core
     StCtrlRead = 10'b0010100110,
     StCtrlProg = 10'b1111101101,
     StCtrl     = 10'b1101000010,
-    StDisable  = 10'b0000111011,
-    StInvalid  = 10'b0101110100
+    StDisable  = 10'b0000111011
   } state_e;
 
   state_e state_q, state_d;
@@ -378,14 +377,9 @@ module flash_phy_core
         state_d = StDisable;
       end
 
-      StInvalid: begin
-        ctrl_fsm_idle = 1'b1;
-        state_d = StInvalid;
-        fsm_err = 1'b1;
-      end
-
       default: begin
-        state_d = StInvalid;
+        ctrl_fsm_idle = 1'b1;
+        fsm_err = 1'b1;
       end
 
     endcase // unique case (state_q)

@@ -110,8 +110,7 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
     StHw       = 10'b1111101110,
     StSwActive = 10'b1100101001,
     StSwIdle   = 10'b1000000010,
-    StDisabled = 10'b0100010101,
-    StInvalid  = 10'b0011001001
+    StDisabled = 10'b0100010101
   } arb_state_e;
 
   flash_sel_e func_sel;
@@ -181,14 +180,8 @@ module flash_ctrl_arb import flash_ctrl_pkg::*; (
         state_d = StDisabled;
       end
 
-
-      StInvalid: begin
-        state_d = StInvalid;
-        fsm_err_o = 1'b1;
-      end
-
       default: begin
-        state_d = StInvalid;
+        fsm_err_o = 1'b1;
       end
     endcase // unique case (state_q)
 
