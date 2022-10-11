@@ -111,9 +111,9 @@ static void rsa_encrypt(otbn_t *otbn_ctx, const uint8_t *modulus,
 
   // Write input arguments.
   uint32_t mode = 1;  // mode 1 => encrypt
-  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(mode), &mode,
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(uint32_t), &mode,
                                kOtbnVarRsaMode) == kOtbnOk);
-  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(n_limbs), &n_limbs,
+  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(uint32_t), &n_limbs,
                                kOtbnVarRsaNLimbs) == kOtbnOk);
   CHECK(otbn_copy_data_to_otbn(otbn_ctx, size_bytes, modulus,
                                kOtbnVarRsaModulus) == kOtbnOk);
