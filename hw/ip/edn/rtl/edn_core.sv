@@ -75,9 +75,9 @@ module edn_core import edn_pkg::*;
   logic [31:0]             max_reqs_between_reseed_bus;
   logic                    csrng_cmd_ack;
   logic                    csrng_cmd_ack_gated;
-  logic                    send_rescmd;
+  logic                    send_rescmd, send_rescmd_gtd;
   logic                    cmd_sent;
-  logic                    send_gencmd;
+  logic                    send_gencmd, send_gencmd_gtd;
   logic                    boot_send_gencmd;
   logic                    sw_cmd_req_load;
   logic [31:0]             sw_cmd_req_bus;
@@ -430,8 +430,9 @@ module edn_core import edn_pkg::*;
 
   assign cs_cmd_req_out_d =
          (!edn_enable_fo[11]) ? '0 :
-         send_rescmd ? sfifo_rescmd_rdata :
-         (send_gencmd || boot_send_gencmd) ? sfifo_gencmd_rdata :
+         send_rescmd ? (send_rescmd_gtd ? sfifo_rescmd_rdata : cs_cmd_req_out_q) :
+         send_gencmd ? (send_gencmd_gtd ? sfifo_gencmd_rdata : cs_cmd_req_out_q) :
+         boot_send_gencmd ? sfifo_gencmd_rdata :
          cs_cmd_req_q;
 
   assign cs_cmd_req_vld_out_d =
@@ -490,10 +491,13 @@ module edn_core import edn_pkg::*;
     .err_o    ()
   );
 
+  // Gate rescmd FIFO operations in case of CSRNG backpressure.
+  assign send_rescmd_gtd = send_rescmd && csrng_cmd_i.csrng_req_ready;
+
   // feedback cmd back into rescmd fifo
   assign send_rescmd_d =
          (!edn_enable_fo[15]) ? '0 :
-         send_rescmd;
+         send_rescmd_gtd;
 
   assign sfifo_rescmd_push =
          send_rescmd_q ? 1'b1  :
@@ -503,7 +507,7 @@ module edn_core import edn_pkg::*;
          auto_req_mode_busy ? cs_cmd_req_out_q :
          reseed_cmd_bus;
 
-  assign sfifo_rescmd_pop = send_rescmd;
+  assign sfifo_rescmd_pop = send_rescmd_gtd;
 
   assign sfifo_rescmd_clr =
          (!edn_enable_fo[16]) ? '0 :
@@ -534,10 +538,13 @@ module edn_core import edn_pkg::*;
     .err_o    ()
   );
 
+  // Gate gencmd FIFO operations in case of CSRNG backpressure.
+  assign send_gencmd_gtd = send_gencmd && csrng_cmd_i.csrng_req_ready;
+
   // feedback cmd back into gencmd fifo
   assign send_gencmd_d =
          (!edn_enable_fo[17]) ? '0 :
-         send_gencmd;
+         send_gencmd_gtd;
 
   assign sfifo_gencmd_push =
          boot_wr_cmd_genfifo ? 1'b1 :
@@ -549,7 +556,7 @@ module edn_core import edn_pkg::*;
          auto_req_mode_busy ? cs_cmd_req_out_q :
          generate_cmd_bus;
 
-  assign sfifo_gencmd_pop = send_gencmd || boot_send_gencmd;
+  assign sfifo_gencmd_pop = send_gencmd_gtd || boot_send_gencmd;
 
   assign sfifo_gencmd_clr =
          (!edn_enable_fo[18]) ? '0 :
@@ -625,7 +632,7 @@ module edn_core import edn_pkg::*;
          (cmd_fifo_rst_fo[3] || main_sm_done_pulse) ? '0 :
          capt_gencmd_fifo_cnt ? (sfifo_gencmd_depth) :
          capt_rescmd_fifo_cnt ? (sfifo_rescmd_depth) :
-         (send_gencmd || boot_send_gencmd || send_rescmd)? (cmd_fifo_cnt_q-1) :
+         (send_gencmd_gtd || boot_send_gencmd || send_rescmd_gtd)? (cmd_fifo_cnt_q-1) :
          cmd_fifo_cnt_q;
 
   assign cmd_sent = (cmd_fifo_cnt_q == RescmdFifoIdxWidth'(1));
