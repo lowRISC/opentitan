@@ -79,6 +79,12 @@ def to_upper_snake_case(s: str) -> str:
     return r
 
 
+def sanitize_name(s: str) -> str:
+    """Remove special characters from name."""
+    r = s.replace("-", '_').replace(" ", "_")
+    return r
+
+
 def first_line(s: str) -> str:
     """Returns the first line of a multi-line string"""
 
@@ -187,14 +193,11 @@ def gen_field_definitions(
         raise TypeError(type(reg))
 
     for field in fields:
-        if field.bits.width() == width:
-            genout(fieldout, "],\n")
-            break
         genout(fieldout, "\n{} OFFSET({}) NUMBITS({}) [", field.name.upper(),
                field.bits.lsb, field.bits.width())
         if getattr(field, 'enum', None) is not None:
             for enum in field.enum:
-                genout(fieldout, "\n{} = {},", enum.name.upper(), enum.value)
+                genout(fieldout, "\n{} = {},", sanitize_name(enum.name).upper(), enum.value)
             genout(fieldout, "\n],")
         else:
             genout(fieldout, "],")
