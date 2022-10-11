@@ -8,7 +8,6 @@ filesets:
   files_dv:
     depend:
       - lowrisc:ip:pwrmgr_pkg
-      - lowrisc:dv:pwrmgr_clk_ctrl_common_pkg
     files:
       - pwrmgr_rstmgr_sva_if.sv
     file_type: systemVerilogSource

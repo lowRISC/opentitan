@@ -7,7 +7,6 @@
 // these assertions will also be useful at full chip level.
 interface pwrmgr_rstmgr_sva_if
   import pwrmgr_pkg::*, pwrmgr_reg_pkg::NumRstReqs;
-  import pwrmgr_clk_ctrl_common_pkg::*;
 (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -43,7 +42,7 @@ interface pwrmgr_rstmgr_sva_if
 
   // output reset cycle with a clk enable disable
   localparam int MIN_MAIN_RST_CYCLES = 0;
-  localparam int MAX_MAIN_RST_CYCLES = pwrmgr_clk_ctrl_common_pkg::MAIN_CLK_DELAY_MAX;
+  localparam int MAX_MAIN_RST_CYCLES = 258;
   `define MAIN_RST_CYCLES ##[MIN_MAIN_RST_CYCLES:MAX_MAIN_RST_CYCLES]
 
   // The timing of the escalation reset is determined by the slow clock, but will not propagate if
