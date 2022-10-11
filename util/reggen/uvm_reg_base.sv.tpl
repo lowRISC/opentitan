@@ -196,6 +196,11 @@ ${apply_regwen(rb, reg, inst)}\
   % endif
 % endif
 ${make_ral_pkg_window_instances(reg_width, esc_if_name, rb)}
+
+      // Create functional coverage for comportable IP-specific specialized registers.
+      // This function can only be called if it is a root block to get the correct gating condition
+      // and avoid creating duplicated cov.
+      if (this.get_parent() == null && en_dv_reg_cov) create_cov();
     endfunction : build
   endclass : ${reg_block_name}
 
@@ -445,7 +450,7 @@ reg_field_name, field)">\
 % endif
       ${fname}.set_original_access("${field_access}");
 % if field.mubi:
-      ${fname}.create_mubi_cov(.mubi_width(${field_size}));
+      ${fname}.set_mubi_width(${field_size});
 % endif
 % if field_tags:
       // create field tags

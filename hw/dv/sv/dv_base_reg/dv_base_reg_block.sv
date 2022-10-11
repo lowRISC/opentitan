@@ -56,6 +56,10 @@ class dv_base_reg_block extends uvm_reg_block;
   // Custom RAL models may support sub-word CSR writes smaller than CSR width.
   protected bit supports_sub_word_csr_writes = 1'b0;
 
+  // Enables functional coverage of comportable IP-specific specialized registers, such as regwen
+  // and mubi. This flag can only be disabled before invoking `create_dv_reg_cov`.
+  protected bit en_dv_reg_cov = 1;
+
   bit has_unmapped_addrs;
   addr_range_t unmapped_addr_ranges[$];
 
@@ -111,6 +115,20 @@ class dv_base_reg_block extends uvm_reg_block;
   virtual function void build(uvm_reg_addr_t base_addr,
                               csr_excl_item csr_excl = null);
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
+  endfunction
+
+  // This function is invoked at the end of `build` method in uvm_reg_base.sv template to create
+  // IP-specific functional coverage for this block and its registers and fields.
+  function void create_cov();
+    dv_base_reg_block blks[$];
+    dv_base_reg regs[$];
+
+    get_dv_base_reg_blocks(blks);
+    foreach (blks[i]) blks[i].create_cov();
+
+    get_dv_base_regs(regs);
+    foreach (regs[i]) regs[i].create_cov();
+    // Create block-specific covergroups here.
   endfunction
 
   function void get_dv_base_reg_blocks(ref dv_base_reg_block blks[$]);
@@ -403,6 +421,18 @@ class dv_base_reg_block extends uvm_reg_block;
       `downcast(retval, super.get_field_by_name(name))
     end
     return retval;
+  endfunction
+
+  function void set_en_dv_reg_cov(bit val);
+    uvm_reg csrs[$];
+    get_registers(csrs);
+    `DV_CHECK_FATAL(!csrs.size(),
+        "Cannot set en_dv_base_reg_cov when covergroups are built already!")
+    en_dv_reg_cov = val;
+  endfunction
+
+  function bit get_en_dv_reg_cov();
+    return en_dv_reg_cov;
   endfunction
 
 endclass
