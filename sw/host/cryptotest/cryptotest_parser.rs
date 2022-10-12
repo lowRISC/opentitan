@@ -276,7 +276,7 @@ impl Struct {
                     ty: FieldType::Array(Scalar::Vec(Int::from_name(int)?, count.parse()?)),
                     annots,
                 });
-            } else if c_file.starts_with("}") {
+            } else if c_file.starts_with('}') {
                 break;
             } else {
                 return Err(Error::ExpectedField);
@@ -304,7 +304,7 @@ fn munch_comments<'a>(c_file: &mut &'a str) -> Vec<&'a str> {
         if !c_file.starts_with("//") {
             return comments;
         }
-        let comment_end = c_file.find("\n").unwrap_or(c_file.len());
+        let comment_end = c_file.find('\n').unwrap_or(c_file.len());
         let (comment, rest) = c_file.split_at(comment_end);
         comments.push(comment);
         *c_file = rest;
@@ -317,7 +317,7 @@ fn parse_annotation(comment: &str) -> Result<Option<Annotation>, Error> {
         None => return Ok(None),
     };
 
-    match comment.split(" ").collect::<Vec<_>>().as_slice() {
+    match comment.split(' ').collect::<Vec<_>>().as_slice() {
         ["struct"] => Ok(Some(Annotation::Struct)),
         ["len", field, units] => {
             let units = match *units {
