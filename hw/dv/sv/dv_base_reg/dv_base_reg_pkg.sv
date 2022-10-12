@@ -68,9 +68,9 @@ package dv_base_reg_pkg;
     string        msg_id = {dv_base_reg_pkg::msg_id, "::decode_csr_or_field"};
 
     if ($cast(csr, ptr)) begin
-      // return csr object with null field; set the mask to all 1s and shift to 0
+      // return csr object with null field; set the mask to the width's all 1s and shift to 0
       result.csr = csr;
-      result.mask = '1;
+      result.mask = (1 << csr.get_n_bits()) - 1;
       result.shift = 0;
     end
     else if ($cast(fld, ptr)) begin

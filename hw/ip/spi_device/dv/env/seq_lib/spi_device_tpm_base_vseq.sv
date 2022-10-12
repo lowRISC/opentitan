@@ -49,7 +49,11 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
   // Configure clocks and tpm, generate a word.
   virtual task tpm_init(tpm_cfg_mode_e mode, bit is_hw_return = $random);
     spi_clk_init();
-    cfg.spi_host_agent_cfg.csid = TPM_CSB_ID;
+
+    // avoid accessing these CSRs at the same time as tpm_init
+    cfg.spi_cfg_sema.get();
+
+    cfg.spi_host_agent_cfg.csb_sel_in_cfg = 0;
     // Only SPI mode 0 is supported (CPHA=0, CPOL=0).
     cfg.spi_host_agent_cfg.sck_polarity[TPM_CSB_ID] = 0;
     cfg.spi_host_agent_cfg.sck_phase[TPM_CSB_ID] = 0;
@@ -61,6 +65,7 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     ral.cfg.cpol.set(1'b0);
     ral.cfg.cpha.set(1'b0);
     csr_update(.csr(ral.cfg));
+    cfg.spi_cfg_sema.put();
 
     ral.tpm_cfg.en.set(1'b1);
     ral.tpm_cfg.tpm_mode.set(mode);
@@ -82,6 +87,7 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     bit [31:0] cmd_addr_data;
     bit [7:0] act_cmd;
     bit [23:0] act_addr;
+    bit[TL_DW-1:0] intr_state_val = 0;
 
     csr_spinwait(.ptr(ral.intr_state.tpm_header_not_empty), .exp_data(1));
     // Check command and address fifo
@@ -92,8 +98,18 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     `DV_CHECK_CASE_EQ(act_addr, exp_addr)
 
     // clear the interrupt
-    csr_wr(ral.intr_state.tpm_header_not_empty, 1);
+    clear_tpm_interrupt();
   endtask : wait_and_check_tpm_cmd_addr
+
+  // Check the CMD_ADDR/wrFIFO contents.
+  virtual task clear_tpm_interrupt();
+    bit[TL_DW-1:0] intr_state_val = 0;
+
+    // only clear TPM interrupt, don't clear flash related interrupt,
+    // as the other thread processes that one
+    intr_state_val[TpmHeaderNotEmpty] = 1;
+    csr_wr(ral.intr_state, intr_state_val);
+  endtask : clear_tpm_interrupt
 
   virtual task wait_and_process_tpm_fifo(bit write,
                                          uint exp_num_bytes,

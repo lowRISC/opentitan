@@ -33,7 +33,7 @@ CONNECTION, RSTMGR_USB_D0_USBDEV_RST_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst
 CONNECTION, RSTMGR_USB_AON_D0_USBDEV_RST_AON_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_usb_aon_n[1], top_earlgrey.u_usbdev, rst_aon_ni
 CONNECTION, RSTMGR_POR_IO_DIV4_AON_PWRMGR_RST_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_por_io_div4_n[0], top_earlgrey.u_pwrmgr_aon, rst_ni
 CONNECTION, RSTMGR_POR_AON_D0_PWRMGR_RST_MAIN_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_por_aon_n[1], top_earlgrey.u_pwrmgr_aon, rst_main_ni
-CONNECTION, RSTMGR_LC_IO_DIV4_D0_PWRMGR_RST_LC_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1], top_earlgrey.u_pwrmgr_aon, rst_lc_ni
+CONNECTION, RSTMGR_LC_IO_DIV4_AON_PWRMGR_RST_LC_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[0], top_earlgrey.u_pwrmgr_aon, rst_lc_ni
 CONNECTION, RSTMGR_POR_AON_AON_PWRMGR_RST_SLOW_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_por_aon_n[0], top_earlgrey.u_pwrmgr_aon, rst_slow_ni
 CONNECTION, RSTMGR_POR_IO_DIV4_AON_RSTMGR_RST_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_por_io_div4_n[0], top_earlgrey.u_rstmgr_aon, rst_por_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_AON_RSTMGR_RST_NI, top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[0], top_earlgrey.u_rstmgr_aon, rst_ni

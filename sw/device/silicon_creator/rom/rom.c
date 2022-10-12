@@ -176,9 +176,6 @@ static rom_error_t rom_init(void) {
   // This function is a NOP unless ROM is built for an fpga.
   device_fpga_version_print();
 
-  // Read boot data from flash
-  HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
-
   sec_mmio_check_values(rnd_uint32());
   sec_mmio_check_counters(/*expected_check_count=*/1);
 
@@ -295,12 +292,13 @@ static void rom_pre_boot_check(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomPreBootCheck, 4);
 
   // Check the cpuctrl CSR.
-  // Note: We don't mask the CSR value here to include exception flags
-  // (bits 6 and 7) in the check.
   uint32_t cpuctrl_csr;
   uint32_t cpuctrl_otp =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_CPUCTRL_OFFSET);
   CSR_READ(CSR_REG_CPUCTRL, &cpuctrl_csr);
+  // We only mask the 8th bit (`ic_scr_key_valid`) to include exception flags
+  // (bits 6 and 7) in the check.
+  cpuctrl_csr = bitfield_bit32_write(cpuctrl_csr, 8, false);
   if (launder32(cpuctrl_csr) != cpuctrl_otp) {
     HARDENED_UNREACHABLE();
   }
@@ -407,6 +405,9 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
  */
 static rom_error_t rom_try_boot(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 1);
+
+  // Read boot data from flash
+  HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
 
   boot_policy_manifests_t manifests = boot_policy_manifests_get();
   uint32_t flash_exec = 0;

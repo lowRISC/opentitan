@@ -154,6 +154,10 @@ status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
     ch = TRY(ujson_getc(uj));
   }
   int64_t value = 0;
+
+  if (!(ch >= '0' && ch <= '9')) {
+    return NOT_FOUND();
+  }
   status_t s;
   while (ch >= '0' && ch <= '9') {
     value *= 10;
@@ -365,17 +369,17 @@ status_t ujson_deserialize_status_t(ujson_t *uj, status_t *value) {
   TRY(ujson_consume(uj, '{'));
   TRY(ujson_deserialize_private_status_t(uj, &code));
   TRY(ujson_consume(uj, ':'));
-  TRY(ujson_consume(uj, '['));
-  if (code != kPrivateStatusOk) {
+  if (TRY(ujson_consume_maybe(uj, '['))) {
     char module[4];
     TRY(ujson_parse_qs(uj, module, sizeof(module)));
     module_id = MAKE_MODULE_ID(module[0], module[1], module[2]);
     TRY(ujson_consume(uj, ','));
+    TRY(ujson_deserialize_uint32_t(uj, &arg));
+    TRY(ujson_consume(uj, ']'));
+  } else {
+    TRY(ujson_deserialize_uint32_t(uj, &arg));
   }
-  TRY(ujson_deserialize_uint32_t(uj, &arg));
-  TRY(ujson_consume(uj, ']'));
   TRY(ujson_consume(uj, '}'));
-
   *value = status_create((absl_status_t)code, module_id, __FILE__, arg);
   return OK_STATUS();
 }

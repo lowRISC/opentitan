@@ -47,8 +47,8 @@ rsa_decrypt:
 zero_work_buf:
   la     x3, work_buf
   bn.xor w0, w0, w0
-  /* The buffer is 480 bytes long, which needs fourteen 256b words. */
-  loopi 14, 1
+  /* The buffer is 512 bytes long, which needs sixteen 256b words. */
+  loopi 16, 1
     bn.sid x0, 0(x3++)
   ret
 
@@ -60,9 +60,9 @@ zero_work_buf:
 cp_work_buf:
   la  x3, work_buf
   la  x4, inout
-  /* The buffers are 480 bytes long, which we can load/store with
-     fourteen 256b words. */
-  loopi 14, 2
+  /* The buffers are 512 bytes long, which we can load/store with
+     sixteen 256b words. */
+  loopi 16, 2
     bn.lid x0, 0(x3++)
     bn.sid x0, 0(x4++)
   ret
@@ -109,32 +109,38 @@ dptr_out:
 
 /* (End of fixed-layout section) */
 
-
 /* Modulus (n) */
+.balign 32
 .globl modulus
 modulus:
   .zero 512
 
 /* private exponent (d) */
+.balign 32
 .globl exp
 exp:
   .zero 512
 
 /* input/output data */
+.balign 32
 .globl inout
 inout:
   .zero 512
 
-
-.section .scratchpad
+.balign 32
 m0d:
   /* filled by modload */
+  /* could go in scratchpad if there was space */
   .zero 32
 
+.section .scratchpad
+
+.balign 32
 RR:
   /* filled by modload */
   .zero 512
 
 /* working data */
+.balign 32
 work_buf:
-  .zero 480
+  .zero 512

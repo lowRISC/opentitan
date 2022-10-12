@@ -35,6 +35,7 @@ module top_earlgrey #(
   // parameters for spi_host0
   // parameters for spi_host1
   // parameters for usbdev
+  parameter bit UsbdevStub = 0,
   parameter int UsbdevRcvrWakeTimeUs = 100,
   // parameters for pwrmgr_aon
   // parameters for rstmgr_aon
@@ -1611,6 +1612,7 @@ module top_earlgrey #(
   );
   usbdev #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[21:21]),
+    .Stub(UsbdevStub),
     .RcvrWakeTimeUs(UsbdevRcvrWakeTimeUs)
   ) u_usbdev (
 

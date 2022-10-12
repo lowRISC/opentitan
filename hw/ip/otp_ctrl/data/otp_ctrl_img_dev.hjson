@@ -9,107 +9,10 @@
 {
     // Seed to be used for generation of partition randomized values.
     // Can be overridden on the command line with the --seed switch.
-    seed: 01931961561863975174
+    seed: 94259314771464387
 
     // The partition and item names must correspond with the OTP memory map.
     partitions: [
-        {
-            name:  "CREATOR_SW_CFG",
-            items: [
-                {
-                    name:  "CREATOR_SW_CFG_DIGEST",
-                    value: "0x0",
-                },
-                {
-                    name: "CREATOR_SW_CFG_USE_SW_RSA_VERIFY",
-                    // Use software mod_exp implementation for signature
-                    // verification. See the definition of `hardened_bool_t` in
-                    // sw/device/lib/base/hardened.h.
-                    value: "0x739",
-                },
-                {
-                    name: "CREATOR_SW_CFG_KEY_IS_VALID",
-                    // Mark the first two keys as valid and remaining as
-                    // invalid since we have currently only two keys. See the
-                    // definition of `hardened_byte_bool_t` in
-                    // sw/device/lib/base/hardened.h.
-                    value: "0x4b4b4b4b4b4ba5a5",
-                },
-                {
-                    name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
-                    // Default value for flash scramble / ecc / he_en
-                    value: "0x0",
-                },
-                {
-                    name: "CREATOR_SW_CFG_ROM_EXEC_EN",
-                    // ROM execution is enabled if this item is set to a
-                    // non-zero value.
-                    value: "0xffffffff",
-                },
-                {
-                    name: "CREATOR_SW_CFG_CPUCTRL",
-                    // Value to write to the cpuctrl CSR in `rom_init()`.
-                    // See: https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-register-cpuctrl
-                    value: "0x1",
-                },
-                {
-                    name:  "CREATOR_SW_CFG_JITTER_EN",
-                    value: "0x9",
-                },
-                {
-                    name: "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT",
-                    // Value of the min_security_version_rom_ext field of the
-                    // default boot data.
-                    value: "0x0",
-                },
-                {
-                    name: "CREATOR_SW_CFG_MIN_SEC_VER_BL0",
-                    // Value of the min_security_version_bl0 field of the
-                    // default boot data.
-                    value: "0x0",
-                },
-                {
-                    name: "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN",
-                    // Enable the default boot data in PROD and PROD_END life
-                    // cycle states. See the definition of `hardened_bool_t` in
-                    // sw/device/lib/base/hardened.h.
-                    value: "0x739",
-                },
-            ],
-        }
-        {
-            name:  "OWNER_SW_CFG",
-            items: [
-                {
-                    name:  "OWNER_SW_CFG_DIGEST",
-                    value: "0x0",
-                }
-            ],
-        }
-        {
-            name:  "HW_CFG",
-            // If set to true, this computes the HW digest value
-            // and locks the partition.
-            lock:  "True",
-            items: [
-                {
-                    name:  "DEVICE_ID",
-                    value: "<random>",
-                },
-                {
-                    name:  "EN_CSRNG_SW_APP_READ",
-                    value: false,
-                },
-                {
-                    name:  "EN_ENTROPY_SRC_FW_READ",
-                    value: true,
-                },
-                {
-                    name: "EN_ENTROPY_SRC_FW_OVER",
-                    value: false,
-                }
-            ],
-        }
         {
             name:  "SECRET0",
             lock:  "True",

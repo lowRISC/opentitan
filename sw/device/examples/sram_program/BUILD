@@ -40,7 +40,7 @@ opentitan_ram_binary(
 opentitan_gdb_fpga_cw310_test(
     name = "sram_program_fpga_cw310_test",
     timeout = "short",
-    exit_success_pattern = "sram_program\\.c:47\\] PC: 0x1000208c, SRAM: \\[0x10000000, 0x10020000\\)",
+    exit_success_pattern = "sram_program\\.c:47\\] PC: 0x100020e0, SRAM: \\[0x10000000, 0x10020000\\)",
     gdb_script = """
         target extended-remote :3333
 

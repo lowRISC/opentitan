@@ -14,16 +14,6 @@
     // The partition and item names must correspond with the OTP memory map.
     partitions: [
         {
-            name:  "SECRET1",
-            lock:  "False",
-            items: [
-                {
-                    name:  "FLASH_DATA_KEY_SEED",
-                    value: "<random>",
-                }
-            ],
-        }
-        {
             name:  "LIFE_CYCLE",
             // Can be one of the following strings:
             // RAW, TEST_UNLOCKED0-3, TEST_LOCKED0-2, DEV, PROD, PROD_END, RMA, SCRAP

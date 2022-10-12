@@ -145,6 +145,22 @@ TEST(UJson, ParseInteger) {
 #undef INT
 #undef SIMPLE_INT
 
+TEST(UJson, ParseIntegerError) {
+  SourceSink ss;
+  ujson uj = ss.UJson();
+  uint32_t t;
+  status_t s;
+
+  // Empty string.
+  s = ujson_parse_integer(&uj, (void *)&t, sizeof(t));
+  EXPECT_EQ(status_err(s), kResourceExhausted);
+
+  // Non integer character.
+  ss.Reset("q");
+  s = ujson_parse_integer(&uj, (void *)&t, sizeof(t));
+  EXPECT_EQ(status_err(s), kNotFound);
+}
+
 TEST(UJson, SerializeString) {
   SourceSink ss;
   ujson uj = ss.UJson();
@@ -205,11 +221,11 @@ TEST(UJson, SerializeStatus) {
 
   val = OK_STATUS(1234);
   EXPECT_TRUE(status_ok(ujson_serialize_status_t(&uj, &val)));
-  EXPECT_EQ(ss.Sink(), R"json({"Ok":[1234]})json");
+  EXPECT_EQ(ss.Sink(), R"json({"Ok":1234})json");
 }
 
 TEST(UJson, DeerializeStatus) {
-  SourceSink ss(R"json({"Ok":[1234]})json");
+  SourceSink ss(R"json({"Ok":1234})json");
   ujson uj = ss.UJson();
   status_t val;
   const char *code;

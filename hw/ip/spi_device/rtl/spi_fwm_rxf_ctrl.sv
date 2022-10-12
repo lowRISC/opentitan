@@ -177,6 +177,8 @@ module spi_fwm_rxf_ctrl #(
 
   // Next State & output logic
   always_comb begin
+    // default output value
+    st_next     = st;
     fifo_ready = 1'b0;
     update_wdata = 1'b0;
     clr_byte_enable = 1'b0;

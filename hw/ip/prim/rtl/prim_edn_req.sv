@@ -19,6 +19,8 @@ module prim_edn_req
   parameter int OutWidth = 32,
   // Repetition check for incoming edn data
   parameter bit RepCheck = 0,
+  // Disable reset-related assertion checks inside prim_sync_reqack primitives.
+  parameter bit EnRstChks = 0,
 
   // EDN Request latency checker
   //
@@ -56,6 +58,7 @@ module prim_edn_req
   localparam int SyncWidth = $bits({edn_i.edn_fips, edn_i.edn_bus});
   prim_sync_reqack_data #(
     .Width(SyncWidth),
+    .EnRstChks(EnRstChks),
     .DataSrc2Dst(1'b0),
     .DataReg(1'b0)
   ) u_prim_sync_reqack_data (

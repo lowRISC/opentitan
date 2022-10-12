@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -25,34 +26,6 @@ enum {
 };
 
 /**
- * Configures the entropy source module in firmware override mode.
- *
- * Output is routed to firmware, and the fw_override mode is enabled to get data
- * post-health tests and before the pre conditioner block.
- *
- * @param entropy An entropy source instance.
- */
-static void entropy_with_fw_override_enable(dif_entropy_src_t *entropy_src) {
-  const dif_entropy_src_fw_override_config_t fw_override_config = {
-      .entropy_insert_enable = true,
-      .buffer_threshold = kEntropyFifoBufferSize,
-  };
-  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
-      entropy_src, fw_override_config, kDifToggleEnabled));
-
-  const dif_entropy_src_config_t config = {
-      .fips_enable = true,
-      .route_to_firmware = true,
-      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
-      .health_test_threshold_scope = false, /*default*/
-      .health_test_window_size = 0x0200,    /*default*/
-      .alert_threshold = 2,                 /*default*/
-  };
-  CHECK_DIF_OK(
-      dif_entropy_src_configure(entropy_src, config, kDifToggleEnabled));
-}
-
-/**
  * Cleanly disables the SHA3 conditioner while in SHA3 mode, prompting
  * the release of a conditioned seed.
  *
@@ -61,7 +34,6 @@ static void entropy_with_fw_override_enable(dif_entropy_src_t *entropy_src) {
  *
  * @param entropy An entropy source instance.
  */
-
 static void stop_sha3_conditioner(dif_entropy_src_t *entropy_src) {
   uint32_t fail_count = 0;
   dif_result_t op_result;
@@ -82,7 +54,6 @@ static void stop_sha3_conditioner(dif_entropy_src_t *entropy_src) {
  *
  * @param entropy An entropy source instance.
  */
-
 static void flush_sha3_conditioner(dif_entropy_src_t *entropy_src) {
   // Start and stop the conditioner, without adding any new entropy.
   CHECK_DIF_OK(dif_entropy_src_conditioner_start(entropy_src));
@@ -106,10 +77,11 @@ static void flush_sha3_conditioner(dif_entropy_src_t *entropy_src) {
  * See:
  * https://csrc.nist.gov/projects/cryptographic-algorithm-validation-program/secure-hashing
  */
-
 void test_sha384_kat(dif_entropy_src_t *entropy_src) {
-  CHECK_DIF_OK(dif_entropy_src_set_enabled(entropy_src, kDifToggleDisabled));
-  entropy_with_fw_override_enable(entropy_src);
+  entropy_testutils_stop_all();
+  entropy_testutils_fw_override_enable(entropy_src, kEntropyFifoBufferSize,
+                                       /*route_to_firmware=*/true,
+                                       /*bypass_conditioner=*/false);
 
   // Though most of the entropy_src state is cleared on disable, the
   // SHA3 conditioner accumulates entropy even from aborted seeds. For

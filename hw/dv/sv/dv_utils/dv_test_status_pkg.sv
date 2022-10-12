@@ -10,6 +10,12 @@ package dv_test_status_pkg;
   // signature along with a banner. The signature can be used by external scripts to determine if
   // the test passed or failed.
   function automatic void dv_test_status(bit passed);
+`ifdef INC_ASSERT
+    if (prim_util_pkg::end_of_simulation) begin
+      $fatal("prim_util_pkg::end_of_simulation was already signaled!");
+    end
+    prim_util_pkg::end_of_simulation = 1'b1;
+`endif
     if (passed) begin
       $display("\nTEST PASSED CHECKS");
       $display(" _____         _                                  _ _ ");

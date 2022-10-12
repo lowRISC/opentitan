@@ -20,7 +20,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   intr_vif                                     interrupt_vif;
   virtual entropy_src_cov_if                   cov_vif;
 
-  // used by collect_entropy to determine the FSMs phase
+  // used by health_test_scoring_thread to predict the FSMs phase
   int seed_idx             = 0;
   int entropy_data_seeds   = 0;
   int entropy_data_drops   = 0;
@@ -30,6 +30,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   int observe_fifo_drops   = 0;
 
   bit dut_pipeline_enabled = 0;
+  bit ht_fips_mode = 0;
+
   // The FW_OV pipeline is controlled by two variables: SHA3_START and MODULE_ENABLE
   // The MODULE_ENABLE signal has different delays when shutting down the FW_OV pipeline
   // so we track it in a separate variable for fw_ov
@@ -40,6 +42,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // and entropy data FIFOs are empty.  However, we can note when they have been explicitly cleared
   // and use that to anticipate any alerts that may come about background diable events
   bit fifos_cleared = 1;
+
+  // Queue of RNG data for health testing
+  queue_of_rng_val_t               health_test_data_q;
 
   // Queue of seeds for predicting reads to entropy_data CSR
   bit [CSRNG_BUS_WIDTH - 1:0]      entropy_data_q[$];
@@ -81,6 +86,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   int                              continuous_fail_count;
   bit                              cont_fail_in_last_sample;
 
+  // Ext. HT counters.
+  // Like the continuous tests, these failures can in principle happen many times
+  // per window, however only one failure per window gets registered toward the
+  // total alert count.
+  int                              extht_fail_count;
+  int                              extht_fail_in_last_sample;
+
   // TODO: Document method for clearing alerts in programmer's guide
   // TODO: Add health check failure and clearing to integration tests.
   bit threshold_alert_active = 1'b0;
@@ -96,6 +108,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       csrng_fifo;
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH)))
       rng_fifo;
+  uvm_tlm_analysis_fifo#(entropy_src_xht_item) xht_fifo;
 
   // Interrupt Management Variables
 
@@ -142,6 +155,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     rng_fifo   = new("rng_fifo", this);
     csrng_fifo = new("csrng_fifo", this);
+    xht_fifo   = new("xht_fifo", this);
 
     if (!uvm_config_db#(virtual entropy_src_cov_if)::get
        (null, "*.env" , "entropy_src_cov_if", cov_vif)) begin
@@ -160,6 +174,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         process_csrng();
         process_interrupts();
         process_fifo_exceptions();
+        health_test_scoring_thread();
+        process_xht_events();
       join_none
     end
   endtask
@@ -462,7 +478,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     low_test             = is_low_test(test);
     continuous_test      = (test == "repcnt") || (test == "repcnts");
 
-    // TODO: Implement ONE-WAY thresholds
     threshold_field_name = fips_mode ? "fips_thresh" : "bypass_thresh";
     threshold_reg_name  = $sformatf("%s_thresholds", test);
 
@@ -511,15 +526,24 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int value, minval, maxval;
     bit fail_hi, fail_lo;
     bit total_scope;
+    int threshold_hi, threshold_lo;
+    real sigma_hi, sigma_lo;
 
-    int window_size = fips_mode ? ral.health_test_windows.fips_window.get_mirrored_value() :
-                                  ral.health_test_windows.bypass_window.get_mirrored_value();
-    // TODO (Priority 3): write a function to map actual thresholds to their corresponding sigma
-    // (assuming ideal noise inputs), so we can pull the sigma values from the actual
-    // register values, as opposed to the config.
-    real sigma = cfg.dut_cfg.adaptp_sigma;
+    int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
+                                  `gmv(ral.health_test_windows.bypass_window);
+
+    threshold_hi = fips_mode ? `gmv(ral.adaptp_hi_thresholds.fips_thresh) :
+                               `gmv(ral.adaptp_hi_thresholds.bypass_thresh);
+
+    threshold_lo = fips_mode ? `gmv(ral.adaptp_lo_thresholds.fips_thresh) :
+                               `gmv(ral.adaptp_lo_thresholds.bypass_thresh);
 
     total_scope = (ral.conf.threshold_scope.get_mirrored_value() == MuBi4True);
+
+    sigma_hi = ideal_threshold_to_sigma(window_size, adaptp_ht, !total_scope,
+                                        high_test, threshold_hi);
+    sigma_lo = ideal_threshold_to_sigma(window_size, adaptp_ht, !total_scope,
+                                        low_test, threshold_lo);
 
     value = calc_adaptp_test(window, maxval, minval);
 
@@ -534,12 +558,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
 
     if (ht_is_active()) begin
-      cov_vif.cg_win_ht_sample(adaptp_ht, high_test, window_size, fail_hi);
-      cov_vif.cg_win_ht_sample(adaptp_ht, low_test, window_size, fail_lo);
-      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, high_test, window_size, !total_scope,
-                                              sigma, fail_hi);
-      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, low_test, window_size, !total_scope,
-                                              sigma, fail_lo);
+      cov_vif.cg_win_ht_sample(adaptp_ht, high_test, window_size * RNG_BUS_WIDTH, fail_hi);
+      cov_vif.cg_win_ht_sample(adaptp_ht, low_test, window_size * RNG_BUS_WIDTH, fail_lo);
+      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, high_test, window_size * RNG_BUS_WIDTH,
+                                              !total_scope, sigma_hi, fail_hi);
+      cov_vif.cg_win_ht_deep_threshold_sample(adaptp_ht, low_test, window_size * RNG_BUS_WIDTH,
+                                              !total_scope, sigma_lo, fail_lo);
     end
 
     return (fail_hi || fail_lo);
@@ -548,13 +572,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   function bit evaluate_bucket_test(queue_of_rng_val_t window, bit fips_mode);
     int value;
     bit fail;
+    int threshold;
+    real sigma;
 
-    int window_size = fips_mode ? ral.health_test_windows.fips_window.get_mirrored_value() :
-                                  ral.health_test_windows.bypass_window.get_mirrored_value();
-    // TODO (Priority 3): write a function to map actual thresholds to their corresponding sigma
-    // (assuming ideal noise inputs), so we can pull the sigma values from the actual
-    // register values, as opposed to the config.
-    real sigma = cfg.dut_cfg.adaptp_sigma;
+    int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
+                                  `gmv(ral.health_test_windows.bypass_window);
+
+    threshold = fips_mode ? `gmv(ral.bucket_thresholds.fips_thresh) :
+                            `gmv(ral.bucket_thresholds.bypass_thresh);
+
+    sigma = ideal_threshold_to_sigma(window_size, bucket_ht, 0, high_test, threshold);
 
     value = calc_bucket_test(window);
 
@@ -575,14 +602,24 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int value, minval, maxval;
     bit fail_hi, fail_lo;
     bit total_scope;
-    int window_size = fips_mode ? ral.health_test_windows.fips_window.get_mirrored_value() :
-                                  ral.health_test_windows.bypass_window.get_mirrored_value();
-    // TODO (Priority 3): write a function to map actual thresholds to their corresponding sigma
-    // (assuming ideal noise inputs), so we can pull the sigma values from the actual
-    // register values, as opposed to the config.
-    real sigma = cfg.dut_cfg.adaptp_sigma;
+    int threshold_hi, threshold_lo;
+    real sigma_hi, sigma_lo;
+
+    int window_size = fips_mode ? `gmv(ral.health_test_windows.fips_window) :
+                                  `gmv(ral.health_test_windows.bypass_window);
+
+    threshold_hi = fips_mode ? `gmv(ral.markov_hi_thresholds.fips_thresh) :
+                               `gmv(ral.markov_hi_thresholds.bypass_thresh);
+
+    threshold_lo = fips_mode ? `gmv(ral.markov_lo_thresholds.fips_thresh) :
+                               `gmv(ral.markov_lo_thresholds.bypass_thresh);
 
     total_scope = (ral.conf.threshold_scope.get_mirrored_value() == prim_mubi_pkg::MuBi4True);
+
+    sigma_hi = ideal_threshold_to_sigma(window_size, markov_ht, !total_scope,
+                                        high_test, threshold_hi);
+    sigma_lo = ideal_threshold_to_sigma(window_size, markov_ht, !total_scope,
+                                        low_test, threshold_lo);
 
     value = calc_markov_test(window, maxval, minval);
 
@@ -595,36 +632,49 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     fail_hi = check_threshold("markov_hi", fips_mode, total_scope ? value : maxval);
     if (fail_hi) predict_failure_logs("markov_hi");
 
-
     if (ht_is_active()) begin
       cov_vif.cg_win_ht_sample(markov_ht, high_test, window_size, fail_hi);
       cov_vif.cg_win_ht_sample(markov_ht, low_test, window_size, fail_lo);
       cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, high_test, window_size, !total_scope,
-                                              sigma, fail_hi);
+                                              sigma_hi, fail_hi);
       cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, low_test, window_size, !total_scope,
-                                              sigma, fail_lo);
+                                              sigma_hi, fail_lo);
     end
 
     return (fail_hi || fail_lo);
   endfunction
 
-  function evaluate_external_ht(queue_of_rng_val_t window, bit fips_mode);
-    int value;
+  function void evaluate_external_ht(entropy_src_xht_rsp_t xht_rsp, bit fips_mode);
+    int value_hi, value_lo;
     bit fail_hi, fail_lo;
+    string msg;
 
-    value = calc_extht_test(window);
+    value_hi = xht_rsp.test_cnt_hi;
+    value_lo = xht_rsp.test_cnt_lo;
 
-    update_watermark("extht_lo", fips_mode, value);
-    update_watermark("extht_hi", fips_mode, value);
+    fail_hi = xht_rsp.test_fail_hi_pulse;
+    fail_lo = xht_rsp.test_fail_lo_pulse;
 
-    fail_lo = check_threshold("extht_lo", fips_mode, value);
+    update_watermark("extht_lo", fips_mode, value_lo);
+    update_watermark("extht_hi", fips_mode, value_hi);
+
     if (fail_lo) predict_failure_logs("extht_lo");
 
-    fail_hi = check_threshold("extht_hi", fips_mode, value);
     if (fail_hi) predict_failure_logs("extht_hi");
 
-    return (fail_hi || fail_lo);
+    extht_fail_count += (fail_hi || fail_lo);
+    extht_fail_in_last_sample = fail_hi || fail_lo;
   endfunction
+
+  task process_xht_events();
+    entropy_src_xht_item item;
+    forever begin
+      xht_fifo.get(item);
+      if(!item.req.clear) begin
+        evaluate_external_ht(item.rsp, ht_fips_mode);
+      end
+    end
+  endtask
 
   // The repetition counts are always running
   function bit evaluate_repcnt_test(bit fips_mode, int value);
@@ -683,19 +733,22 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     windowed_fail_count = evaluate_adaptp_test(window, fips_mode) +
                           evaluate_bucket_test(window, fips_mode) +
-                          evaluate_markov_test(window, fips_mode) +
-                          evaluate_external_ht(window, fips_mode);
+                          evaluate_markov_test(window, fips_mode);
 
     // Are there any failures this in the last sample (continuous or windowed)?
     // Note: If the last sample in the window has a continuous HT failure, then
     // this sample has already been added to the failure counts
-    sample_fail_count = (windowed_fail_count != 0) & ~cont_fail_in_last_sample;
+    sample_fail_count = (windowed_fail_count != 0);
 
     // Add the number of continuous fails (excluding the last sample)
     // to any failure in this sample.
-    total_fail_count = sample_fail_count + continuous_fail_count;
+    total_fail_count = sample_fail_count +
+                       (continuous_fail_count - cont_fail_in_last_sample) +
+                       (extht_fail_count      - extht_fail_in_last_sample);
 
-    if (sample_fail_count) begin
+    // To avoid double counting only mark a sample failure if there haven't
+    // already been continuous or extht failures at the same time.
+    if (sample_fail_count && !(cont_fail_in_last_sample || extht_fail_in_last_sample)) begin
       any_fail_count_regval = `gmv(alert_summary_field);
       // Just add any failure in the last sample as the previous samples
       // were added as they occurred.
@@ -707,6 +760,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
 
     continuous_fail_count = 0;
+    extht_fail_count = 0;
 
     return total_fail_count;
   endfunction
@@ -744,8 +798,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       if (main_sm_exp_alert_cond) begin
         if (!fw_ov_insert && !threshold_alert_active && !main_sm_escalates) begin
           if (dut_phase == STARTUP) begin
-            fmt = "New alert anticpated with >= 2 failing windows."
-                + " (supercedes count/threshold of %01d/%01d)";
+            fmt =  "New alert anticpated with >= 2 failing windows.";
+            fmt += "(supercedes count/threshold of %01d/%01d)";
           end else begin
             fmt = "New alert anticpated! Fail count (%01d) >= threshold (%01d)";
           end
@@ -922,6 +976,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     if (rst_type == Enable) begin
       clear_ht_stat_predictions();
+      health_test_data_q.delete();
     end
 
     // Internal CSRNG stores are cleared on Disable and HardReset events
@@ -1111,8 +1166,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       bad_redundancy = mubi4_test_invalid(
           prim_mubi_pkg::mubi4_t'(get_reg_fld_mirror_value(ral, reg_name, mubi_field)));
     end else begin
-      bit thresh     = get_reg_fld_mirror_value(ral, "alert_threshold", "alert_threshold");
-      bit thresh_inv = get_reg_fld_mirror_value(ral, "alert_threshold", "alert_threshold_inv");
+      bit [15:0] thresh     = get_reg_fld_mirror_value(ral, "alert_threshold", "alert_threshold");
+      bit [15:0] thresh_inv = get_reg_fld_mirror_value(ral, "alert_threshold",
+                                                       "alert_threshold_inv");
       bad_redundancy = (thresh != ~thresh_inv);
     end
 
@@ -1721,8 +1777,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit             sw_bypass;
     bit             fips_enable;
     bit             is_fips_mode;
-    bit             fw_ov_insert;
-    entropy_phase_e dut_phase;
     bit             predict_conditioned;
 
     route_sw    = (`gmv(ral.entropy_control.es_route) == MuBi4True);
@@ -1731,15 +1785,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     is_fips_mode = fips_enable && !(route_sw && sw_bypass);
 
-    fw_ov_insert = (cfg.otp_en_es_fw_over                        == MuBi8True) &&
-                   (`gmv(ral.fw_ov_control.fw_ov_mode)           == MuBi4True) &&
-                   (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
-
-    dut_phase = convert_seed_idx_to_phase(seed_idx,
-                                          is_fips_mode,
-                                          fw_ov_insert);
-
-    predict_conditioned = !((route_sw && sw_bypass) || (dut_phase == BOOT));
+    predict_conditioned = is_fips_mode;
 
     return predict_conditioned;
 
@@ -1845,7 +1891,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // halts and asserts disable_detected.
   task wait_rng_queue(output rng_val_t val, output bit disable_detected);
     push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH))  rng_item;
-    bit bit_sel_enable = (ral.conf.rng_bit_enable.get_mirrored_value() == MuBi4True);
+    bit bit_sel_enable = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
     int n_items        = bit_sel_enable ? RNG_BUS_WIDTH : 1;
     disable_detected   = 0;
 
@@ -1855,18 +1901,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
 
     for (int i = 0; i < n_items; i++) begin : rng_loop
-      fork : isolation_fork
-        begin
-          fork
-            rng_fifo.peek(rng_item);
-            begin
-              wait(!dut_pipeline_enabled);
-              `uvm_info(`gfn, "Disable detected (waiting A)", UVM_MEDIUM);
-            end
-          join_any
-          disable fork;
-        end
-      join : isolation_fork
+      `DV_SPINWAIT_EXIT(rng_fifo.peek(rng_item);,
+                        wait(!dut_pipeline_enabled);)
       // Pop any data off the rng_fifo below to resolve potential
       // race conditions if a new RNG word appears in the same
       // cycle that the dut is disabled.
@@ -1882,13 +1918,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   endtask
 
   task collect_entropy();
-
-    bit [15:0]                window_size;
-    entropy_phase_e           dut_fsm_phase;
-    rng_val_t                 rng_val;
-    queue_of_rng_val_t        window;
-    int                       window_rng_frames;
-    int                       pass_requirement, pass_count, startup_fail_count;
     // Two levels of repacking to mimic the structure of the DUT
     // first RNG samples are packed into 32-bit TL DW's
     // then those are packed into 64-bit chunks suitable
@@ -1897,177 +1926,212 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit [SHACondWidth:0]      repacked_entropy_sha;
     int                       repack_idx_tl  = 0;
     int                       repack_idx_sha = 0;
-    bit                       ht_fips_mode;
-    bit                       disable_detected;
     bit                       fw_ov_insert;
-    bit                       is_fips_mode;
-    bit                       fips_enable, es_route, es_type;
-    int                       failures_in_window;
+    bit                       disable_detected;
+    rng_val_t                 rng_val;
+    string                    fmt, msg;
 
     bit                       predict_conditioning;
-    string                    msg;
-
 
     localparam int RngPerTlDw = TL_DW / RNG_BUS_WIDTH;
 
     wait_enabled();
 
-    fips_enable = (ral.conf.fips_enable.get_mirrored_value()         == MuBi4True);
-    es_route    = (ral.entropy_control.es_route.get_mirrored_value() == MuBi4True);
-    es_type     = (ral.entropy_control.es_type.get_mirrored_value()  == MuBi4True);
-
-    is_fips_mode  = fips_enable && !(es_route && es_type);
-
     fw_ov_insert = (cfg.otp_en_es_fw_over == MuBi8True) &&
-                   (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&
-                   (ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value() == MuBi4True);
-    predict_conditioning = do_condition_data();
-
-    pass_count = 0;
-    startup_fail_count = 0;
-
-    window.delete();
+                   (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True) &&
+                   (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
 
     forever begin : collect_entropy_loop
+      wait_rng_queue(rng_val, disable_detected);
 
-      `uvm_info(`gfn, $sformatf("SEED_IDX: %01d", seed_idx), UVM_FULL)
+      if (disable_detected) begin
+        // Exit this task.
+        return;
+      end else begin
+        // Add this data to health check windows
+        health_test_data_q.push_back(rng_val);
 
-      dut_fsm_phase = convert_seed_idx_to_phase(seed_idx, is_fips_mode, fw_ov_insert);
+        // Pack this data for redistribution
+        repacked_entropy_tl = {rng_val,
+                               repacked_entropy_tl[RNG_BUS_WIDTH +: (TL_DW - RNG_BUS_WIDTH)]};
+        repack_idx_tl++;
+        `uvm_info(`gfn, $sformatf("repack_idx_tl: %0d", repack_idx_tl), UVM_DEBUG)
+        if (repack_idx_tl == RngPerTlDw) begin
+          repack_idx_tl = 0;
+          // publish this 32 bit word to the observe FIFO
+          observe_fifo_q.push_back(repacked_entropy_tl);
 
-      case (dut_fsm_phase)
-        BOOT: begin
-          pass_requirement = 1;
-          ht_fips_mode     = 0;
-        end
-        STARTUP: begin
-          pass_requirement = 2;
-          ht_fips_mode     = 1;
-        end
-        CONTINUOUS: begin
-          pass_requirement = 1;
-          ht_fips_mode     = 1;
-        end
-        HALTED: begin
-          // When in the post-boot, halted state the DUT will continue to monitor health checks, but
-          // not output CSRNG data or data to the TL ENTROPY_DATA register.
-          // In this cass the pass_requirement and ht_fips_mode values don't mean anything
-          pass_requirement = 0;
-          ht_fips_mode     = 0;
-        end
-        default: begin
-          `uvm_fatal(`gfn, "Invalid predicted dut state (bug in environment)")
-        end
-      endcase
-
-      `uvm_info(`gfn, $sformatf("phase: %s\n", dut_fsm_phase.name), UVM_HIGH)
-
-      window_size = rng_window_size(seed_idx, is_fips_mode,
-                                    fw_ov_insert, cfg.dut_cfg.fips_window_size);
-
-      `uvm_info(`gfn, $sformatf("window_size: %08d\n", window_size), UVM_HIGH)
-
-      // Note on RNG bit enable and window frame count:
-      // When rng_bit_enable is selected, the function below repacks the data so that
-      // the selected bit fills a whole frame.
-      // This mirrors the DUT's behavior of repacking the data before the health checks
-      //
-      // Thus the number of (repacked) window frames is the same regardless of whether
-      // the bit select is enabled.
-
-      window_rng_frames = window_size / RNG_BUS_WIDTH;
-
-      window.delete();
-      // Should the next window be added to the previous SHA3 message?
-      // In boot or bypass mode the answer is "no"
-
-      while (window.size() < window_rng_frames) begin
-        string fmt;
-        wait_rng_queue(rng_val, disable_detected);
-
-        if (disable_detected) begin
-          // Exit this task.
-          return;
-        end else begin
-          // Add this data to health check windows
-          window.push_back(rng_val);
-
-          // Pack this data for redistribution
-          repacked_entropy_tl = {rng_val,
-                                 repacked_entropy_tl[RNG_BUS_WIDTH +: (TL_DW - RNG_BUS_WIDTH)]};
-          repack_idx_tl++;
-          `uvm_info(`gfn, $sformatf("repack_idx_tl: %0d", repack_idx_tl), UVM_DEBUG)
-          if (repack_idx_tl == RngPerTlDw) begin
-            repack_idx_tl = 0;
-            // publish this 32 bit word to the observe FIFO
-            observe_fifo_q.push_back(repacked_entropy_tl);
-
-            // Now repack the TL_DW width blocks into the larger SHA blocks
-            // to publish to the correct processing fifo.
-            // Since the raw and sha-conditioned data are handled differently
-            // on disable events they go into different FIFOs
-            //
-            repacked_entropy_sha = {repacked_entropy_tl,
-                                    repacked_entropy_sha[TL_DW +: (SHACondWidth - TL_DW)]};
-            repack_idx_sha++;
-            if (repack_idx_sha == SHACondWidth/TL_DW) begin
-              repack_idx_sha = 0;
-              if (!fw_ov_insert) begin
-                if (predict_conditioning) begin
-                  sha_process_q.push_back(repacked_entropy_sha);
-                  msg = $sformatf("RNG SHA word: %016x, count: 0x%01x",
-                                  repacked_entropy_sha, sha_process_q.size());
-                  `uvm_info(`gfn, msg, UVM_HIGH)
-                end else begin
-                  `uvm_info(`gfn, $sformatf("RNG RAW word: %016x", repacked_entropy_sha) , UVM_HIGH)
-                  raw_process_q.push_back(repacked_entropy_sha);
-                end
+          // Now repack the TL_DW width blocks into the larger SHA blocks
+          // to publish to the correct processing fifo.
+          // Since the raw and sha-conditioned data are handled differently
+          // on disable events they go into different FIFOs
+          //
+          repacked_entropy_sha = {repacked_entropy_tl,
+                                  repacked_entropy_sha[TL_DW +: (SHACondWidth - TL_DW)]};
+          repack_idx_sha++;
+          if (repack_idx_sha == SHACondWidth/TL_DW) begin
+            repack_idx_sha = 0;
+            if (!fw_ov_insert) begin
+              predict_conditioning = do_condition_data();
+              if (predict_conditioning) begin
+                sha_process_q.push_back(repacked_entropy_sha);
+                msg = $sformatf("RNG SHA word: %016x, count: 0x%01x",
+                                repacked_entropy_sha, sha_process_q.size());
+                `uvm_info(`gfn, msg, UVM_HIGH)
+              end else begin
+                `uvm_info(`gfn, $sformatf("RNG RAW word: %016x", repacked_entropy_sha) , UVM_HIGH)
+                raw_process_q.push_back(repacked_entropy_sha);
               end
             end
           end
+        end
+      end
+    end
+  endtask
+
+  task health_test_scoring_thread();
+    bit [15:0]                window_size;
+    entropy_phase_e           dut_fsm_phase;
+    int                       window_rng_frames;
+    int                       pass_requirement, pass_count, startup_fail_count;
+    bit                       fw_ov_insert;
+    bit                       is_fips_mode;
+    bit                       fips_enable, es_route, es_type;
+    int                       failures_in_window;
+    rng_val_t                 rng_val;
+    queue_of_rng_val_t        window;
+
+    string                    msg;
+
+    forever begin : simulation_loop
+
+      wait_enabled();
+
+      fips_enable = (`gmv(ral.conf.fips_enable)         == MuBi4True);
+      es_route    = (`gmv(ral.entropy_control.es_route) == MuBi4True);
+      es_type     = (`gmv(ral.entropy_control.es_type)  == MuBi4True);
+
+      is_fips_mode  = fips_enable && !(es_route && es_type);
+
+      fw_ov_insert = (cfg.otp_en_es_fw_over == MuBi8True) &&
+                     (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True) &&
+                     (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
+
+      pass_count = 0;
+      startup_fail_count = 0;
+      seed_idx = 0;
+
+      forever begin : enabled_loop
+
+        window.delete();
+
+        `uvm_info(`gfn, $sformatf("SEED_IDX: %01d", seed_idx), UVM_FULL)
+
+        dut_fsm_phase = convert_seed_idx_to_phase(seed_idx, is_fips_mode, fw_ov_insert);
+
+        case (dut_fsm_phase)
+          BOOT: begin
+            pass_requirement = 1;
+            ht_fips_mode     = 0;
+          end
+          STARTUP: begin
+            pass_requirement = 2;
+            ht_fips_mode     = 1;
+          end
+          CONTINUOUS: begin
+            pass_requirement = 1;
+            ht_fips_mode     = 1;
+          end
+          HALTED: begin
+            // When in the post-boot, halted state the DUT will continue to monitor health checks,
+            // but not output CSRNG data or data to the TL ENTROPY_DATA register.
+            // In this cass the pass_requirement and ht_fips_mode values don't mean anything
+            pass_requirement = 0;
+            ht_fips_mode     = 0;
+          end
+          default: begin
+            `uvm_fatal(`gfn, "Invalid predicted dut state (bug in environment)")
+          end
+        endcase
+
+        `uvm_info(`gfn, $sformatf("phase: %s\n", dut_fsm_phase.name), UVM_HIGH)
+
+        window_size = rng_window_size(seed_idx, is_fips_mode, fw_ov_insert,
+                                      `gmv(ral.health_test_windows.fips_window) * RNG_BUS_WIDTH);
+
+        `uvm_info(`gfn, $sformatf("window_size: %08d\n", window_size), UVM_HIGH)
+
+        // Note on RNG bit enable and window frame count:
+        // When rng_bit_enable is selected, the function below repacks the data so that
+        // the selected bit fills a whole frame.
+        // This mirrors the DUT's behavior of repacking the data before the health checks
+        //
+        // Thus the number of (repacked) window frames is the same regardless of whether
+        // the bit select is enabled.
+
+        window_rng_frames = window_size / RNG_BUS_WIDTH;
+
+        while (window.size() < window_rng_frames) begin
+          string fmt;
+
+          if(health_test_data_q.size() == 0) begin
+            `DV_SPINWAIT_EXIT(wait(health_test_data_q.size() > 0);,
+                              wait(!dut_pipeline_enabled);)
+            if(health_test_data_q.size() == 0) break;
+          end
+
+          rng_val = health_test_data_q.pop_front();
+          window.push_back(rng_val);
 
           fmt = "RNG element: %0x, idx: %0d";
           `uvm_info(`gfn, $sformatf(fmt, rng_val, window.size()), UVM_DEBUG)
 
           // Update the repetition counts, which are updated continuously.
           // The other health checks only operate on complete windows, and are processed later.
-          // TODO: Confirm how repcnt is applied in bit-select mode
           update_repcnts(ht_fips_mode, rng_val);
         end
-      end
 
-      `uvm_info(`gfn, "FULL_WINDOW", UVM_FULL)
-      failures_in_window = health_check_rng_data(window, ht_fips_mode);
-      if (failures_in_window > 0) begin
-        pass_count = 0;
-        // Most failures are handled in the alert counter registers
-        // However the startup phase has special handling.
-        startup_fail_count++;
-      end else begin
-        pass_count++;
-        if (startup_fail_count < 2) startup_fail_count = 0;
-      end
+        if(window.size() < window_rng_frames && !dut_pipeline_enabled) break;
 
-      process_failures(failures_in_window, fw_ov_insert, dut_fsm_phase, startup_fail_count);
+        `DV_SPINWAIT_EXIT(wait(cfg.m_xht_agent_cfg.vif.req.window_wrap_pulse);,
+                          wait(!dut_pipeline_enabled);)
+        if (!cfg.m_xht_agent_cfg.vif.req.window_wrap_pulse) break;
+        cfg.clk_rst_vif.wait_clks(1);
+        `uvm_info(`gfn, "FULL_WINDOW", UVM_FULL)
+        failures_in_window = health_check_rng_data(window, ht_fips_mode);
 
-      window.delete();
+        if (failures_in_window > 0) begin
+          pass_count = 0;
+          // Most failures are handled in the alert counter registers
+          // However the startup phase has special handling.
+          startup_fail_count++;
+        end else begin
+          pass_count++;
+          if (startup_fail_count < 2) startup_fail_count = 0;
+        end
 
-      // Once in the halted state, or in the fw_ov_insert_entropy mode, pre-tested data is
-      // discarded after the health checks
-      if ((dut_fsm_phase == HALTED) || fw_ov_insert) begin
-        continue;
-      end
+        process_failures(failures_in_window, fw_ov_insert, dut_fsm_phase, startup_fail_count);
 
-      `uvm_info(`gfn, $sformatf("pass_requirement: %01d", pass_requirement), UVM_HIGH)
-      `uvm_info(`gfn, $sformatf("raw_process_q.size: %01d", raw_process_q.size()), UVM_HIGH)
-      `uvm_info(`gfn, $sformatf("sha_process_q.size: %01d", sha_process_q.size()), UVM_HIGH)
+        window.delete();
 
-      if (pass_count >= pass_requirement && !threshold_alert_active && !main_sm_escalates) begin
-        package_and_release_entropy();
-        // update counters for processing next seed:
-        pass_count = 0;
-        seed_idx++;
-      end
-    end : collect_entropy_loop
+        // Once in the halted state, or in the fw_ov_insert_entropy mode, pre-tested data is
+        // discarded after the health checks
+        if ((dut_fsm_phase == HALTED) || fw_ov_insert) begin
+          continue;
+        end
+
+        `uvm_info(`gfn, $sformatf("pass_requirement: %01d", pass_requirement), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("raw_process_q.size: %01d", raw_process_q.size()), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("sha_process_q.size: %01d", sha_process_q.size()), UVM_HIGH)
+
+        if (pass_count >= pass_requirement && !threshold_alert_active && !main_sm_escalates) begin
+          package_and_release_entropy();
+          // update counters for processing next seed:
+          pass_count = 0;
+          seed_idx++;
+        end
+      end : enabled_loop
+    end : simulation_loop
   endtask
 
   function void package_and_release_entropy();

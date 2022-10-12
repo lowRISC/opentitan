@@ -72,6 +72,7 @@ class chip_base_vseq #(
   // cycle) and  performs immediate post-reset steps to prime the design for stimulus. The
   // base class method invoked by super.dut_init() applies the reset.
   virtual task dut_init(string reset_kind = "HARD");
+    bit otp_clear_hw_cfg, otp_clear_secret0, otp_clear_secret1, otp_clear_secret2;
     // Connect the external clock source if the test needs it.
     //
     // TODO: This is a functional interface which should ideally be connected only in the extended
@@ -95,6 +96,25 @@ class chip_base_vseq #(
     cfg.mem_bkdr_util_h[FlashBank1Info].set_mem();
     // Backdoor load the OTP image.
     cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
+    // Plusargs to selectively clear the provisioning state of some of the OTP partitions.
+    // This is useful in tests that make front-door accesses for provisioning purposes.
+    void'($value$plusargs("otp_clear_hw_cfg=%0d", otp_clear_hw_cfg));
+    void'($value$plusargs("otp_clear_secret0=%0d", otp_clear_secret0));
+    void'($value$plusargs("otp_clear_secret1=%0d", otp_clear_secret1));
+    void'($value$plusargs("otp_clear_secret2=%0d", otp_clear_secret2));
+    if (otp_clear_hw_cfg) begin
+        cfg.mem_bkdr_util_h[Otp].otp_clear_hw_cfg_partition();
+    end
+    if (otp_clear_secret0) begin
+        cfg.mem_bkdr_util_h[Otp].otp_clear_secret0_partition();
+    end
+    if (otp_clear_secret1) begin
+        cfg.mem_bkdr_util_h[Otp].otp_clear_secret1_partition();
+    end
+    if (otp_clear_secret2) begin
+        cfg.mem_bkdr_util_h[Otp].otp_clear_secret2_partition();
+    end
+
     initialize_otp_sig_verify();
     initialize_otp_creator_sw_cfg_ast_cfg();
     callback_vseq.pre_dut_init();

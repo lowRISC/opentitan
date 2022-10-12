@@ -4,6 +4,26 @@
 
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_ISRS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_OTTF_ISRS_H_
+#include <stdint.h>
+
+#include "sw/device/lib/dif/dif_rv_plic.h"
+
+/**
+ * OTTF global PLIC interface.
+ */
+extern dif_rv_plic_t ottf_plic;
+
+/**
+ * OTTF fault printing function.
+ *
+ * Called by exception handlers to print a fault code for unhandled
+ * exceptions or interrupts. The printed message will be in the standard OTTF
+ * form that can be detected by test automation.
+ *
+ * @param reason A string describing the fault reason.
+ * @param mcause The value of the mcause register for this fault.
+ */
+void ottf_generic_fault_print(const char *reason, uint32_t mcause);
 
 /**
  * OTTF exception handler.

@@ -65,17 +65,21 @@ package entropy_src_pkg;
     logic active;
     logic [15:0] thresh_hi;
     logic [15:0] thresh_lo;
+    logic [15:0] health_test_window;
     logic window_wrap_pulse;
     logic threshold_scope;
   } entropy_src_xht_req_t;
 
   typedef struct packed {
-    logic[15:0] test_cnt;
+    logic[15:0] test_cnt_hi;
+    logic[15:0] test_cnt_lo;
+    logic continuous_test;
     logic test_fail_hi_pulse;
     logic test_fail_lo_pulse;
   } entropy_src_xht_rsp_t;
 
   parameter entropy_src_xht_req_t ENTROPY_SRC_XHT_REQ_DEFAULT = '{default: '0};
-  parameter entropy_src_xht_rsp_t ENTROPY_SRC_XHT_RSP_DEFAULT = '{default: '0};
+  parameter entropy_src_xht_rsp_t ENTROPY_SRC_XHT_RSP_DEFAULT =
+      '{test_cnt_lo: 16'hffff, default: '0};
 
 endpackage : entropy_src_pkg

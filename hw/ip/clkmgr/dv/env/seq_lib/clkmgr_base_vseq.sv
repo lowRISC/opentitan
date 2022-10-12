@@ -91,9 +91,6 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     mubi_mode = ClkmgrMubiNone;
     `DV_GET_ENUM_PLUSARG(clkmgr_mubi_e, mubi_mode, clkmgr_mubi_mode)
     `uvm_info(`gfn, $sformatf("mubi_mode = %s", mubi_mode.name), UVM_MEDIUM)
-    // Disable the assertions requiring strict mubi4 and lc_tx_t to test non-strict-true values.
-    $assertoff(0, "prim_mubi4_sync");
-    $assertoff(0, "prim_lc_sync");
     cfg.clkmgr_vif.init(.idle({NUM_TRANS{MuBi4True}}), .scanmode(scanmode), .lc_debug_en(Off));
     cfg.clkmgr_vif.update_io_ip_clk_en(1'b1);
     cfg.clkmgr_vif.update_main_ip_clk_en(1'b1);

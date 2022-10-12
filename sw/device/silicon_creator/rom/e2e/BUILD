@@ -45,8 +45,6 @@ SLOT_A_OFFSET = "0x0"
 
 SLOT_B_OFFSET = "0x80000"
 
-FLASH_SIZE = "0x100000"
-
 opentitan_flash_binary(
     name = "empty_test_slot_a",
     srcs = ["empty_test.c"],
@@ -249,7 +247,6 @@ opentitan_multislot_flash_binary(
             "offset": SLOT_B_OFFSET,
         },
     },
-    image_size = FLASH_SIZE,
 )
 
 opentitan_functest(
@@ -271,7 +268,6 @@ opentitan_multislot_flash_binary(
             "offset": SLOT_B_OFFSET,
         },
     },
-    image_size = FLASH_SIZE,
 )
 
 opentitan_functest(
@@ -293,7 +289,6 @@ opentitan_multislot_flash_binary(
             "offset": SLOT_A_OFFSET,
         },
     },
-    image_size = FLASH_SIZE,
 )
 
 opentitan_functest(
@@ -325,7 +320,6 @@ opentitan_multislot_flash_binary(
             "offset": SLOT_B_OFFSET,
         },
     },
-    image_size = FLASH_SIZE,
 )
 
 opentitan_functest(
@@ -448,7 +442,6 @@ SEC_VERS = [
         },
     },
     devices = ["fpga_cw310"],
-    image_size = FLASH_SIZE,
 ) for sec_ver_a in SEC_VERS for sec_ver_b in SEC_VERS]
 
 # [[sec_ver_a, sec_ver_b, correct_slot, correct_sec_ver], ...]

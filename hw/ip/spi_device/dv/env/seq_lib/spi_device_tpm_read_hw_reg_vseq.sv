@@ -67,10 +67,10 @@ class spi_device_tpm_read_hw_reg_vseq extends spi_device_tpm_base_vseq;
           `DV_WAIT(cfg.spi_host_agent_cfg.vif.csb[TPM_CSB_ID] == 1)
         end
         begin
-          repeat ($urandom_range(10, 20)) begin
+          repeat ($urandom_range(20, 50)) begin
               randomize_tpm_trans();
               spi_host_xfer_tpm_item(.write(tpm_write), .tpm_size(tpm_size), .addr(tpm_addr),
-                                    .payload_q(returned_bytes));
+                                     .payload_q(returned_bytes));
           end
           upstream_spi_done = 1;
         end

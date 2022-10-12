@@ -13,6 +13,7 @@ class entropy_src_env extends cip_base_env #(
   push_pull_agent#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH))         m_rng_agent;
   push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))  m_csrng_agent;
   push_pull_agent#(.HostDataWidth(0))                                      m_aes_halt_agent;
+  entropy_src_xht_agent                                                    m_xht_agent;
 
   `uvm_component_new
 
@@ -53,7 +54,14 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_aes_halt_agent_cfg.agent_type          = push_pull_agent_pkg::PullAgent;
     cfg.m_aes_halt_agent_cfg.if_mode             = dv_utils_pkg::Device;
     cfg.m_aes_halt_agent_cfg.pull_handshake_type = push_pull_agent_pkg::FourPhase;
-    cfg.m_aes_halt_agent_cfg.en_cov              = cfg.en_cov;
+
+    m_xht_agent = entropy_src_xht_agent::type_id::create("m_xht_agent", this);
+    uvm_config_db#(entropy_src_xht_agent_cfg)::set(this, "m_xht_agent*",
+                                                   "cfg", cfg.m_xht_agent_cfg);
+    cfg.m_xht_agent_cfg.start_default_seq = 1'b0;
+    cfg.m_xht_agent_cfg.if_mode           = dv_utils_pkg::Device;
+    cfg.m_xht_agent_cfg.en_cov            = cfg.en_cov;
+    cfg.m_xht_agent_cfg.is_active         = 1'b1;
 
     uvm_config_db#(virtual entropy_subsys_fifo_exception_if#(1))::get(this, "", "precon_fifo_vif",
         cfg.precon_fifo_vif);
@@ -82,12 +90,14 @@ class entropy_src_env extends cip_base_env #(
 
     m_rng_agent.monitor.analysis_port.connect(scoreboard.rng_fifo.analysis_export);
     m_csrng_agent.monitor.analysis_port.connect(scoreboard.csrng_fifo.analysis_export);
+    m_xht_agent.monitor.analysis_port.connect(scoreboard.xht_fifo.analysis_export);
 
     scoreboard.interrupt_vif = cfg.interrupt_vif;
 
     virtual_sequencer.csrng_sequencer_h    = m_csrng_agent.sequencer;
     virtual_sequencer.rng_sequencer_h      = m_rng_agent.sequencer;
     virtual_sequencer.aes_halt_sequencer_h = m_aes_halt_agent.sequencer;
+    virtual_sequencer.xht_sequencer        = m_xht_agent.sequencer;
 
   endfunction
 

@@ -139,3 +139,29 @@ virtual function void otp_write_hw_cfg_partition(
 
   write64(HwCfgDigestOffset, digest);
 endfunction
+
+// Functions that clear the provisioning state of the buffered partitions.
+// This is useful in tests that make front-door accesses for provisioning purposes.
+virtual function void otp_clear_secret0_partition();
+  for (int i = 0; i < Secret0Size; i += 4) begin
+    write32(i + Secret0Offset, 32'h0);
+  end
+endfunction
+
+virtual function void otp_clear_secret1_partition();
+  for (int i = 0; i < Secret1Size; i += 4) begin
+    write32(i + Secret1Offset, 32'h0);
+  end
+endfunction
+
+virtual function void otp_clear_secret2_partition();
+  for (int i = 0; i < Secret2Size; i += 4) begin
+    write32(i + Secret2Offset, 32'h0);
+  end
+endfunction
+
+virtual function void otp_clear_hw_cfg_partition();
+  for (int i = 0; i < HwCfgSize; i += 4) begin
+    write32(i + HwCfgOffset, 32'h0);
+  end
+endfunction

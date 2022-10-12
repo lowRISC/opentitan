@@ -180,7 +180,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         SpiModeTpm: begin
           bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
           if (item.write_command) begin
-            `DV_CHECK_EQ(tpm_write_spi_q.size, 0)
+            // TLUL may respond too slow and we may have 2 items in this queue
+            `DV_CHECK_LE(tpm_write_spi_q.size, 1)
             tpm_write_spi_q.push_back(item);
           end else begin
             bit [TL_DW-1:0] exp_q[$];
@@ -573,7 +574,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     bit [31:0] payload_start_addr = get_converted_addr(PAYLOAD_FIFO_START_ADDR);
     int payload_depth_exp;
     upload_cmd_q.push_back(item.opcode);
-    intr_trigger_pending[CmdFifoNotEmpty] = 1;
+    update_pending_intr_w_delay(CmdFifoNotEmpty);
 
     if (item.address_q.size > 0) begin
       bit[31:0] addr = convert_addr_from_byte_queue(item.address_q);
@@ -587,11 +588,17 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       `uvm_info(`gfn, $sformatf("write upload payload idx %0d, mem addr 0x%0x, val: 0x%0x",
                 i, addr, item.payload_q[i]), UVM_MEDIUM)
     end
-    if (item.payload_q.size > 0) intr_trigger_pending[PayloadNotEmpty] = 1;
+    if (item.payload_q.size > 0) update_pending_intr_w_delay(PayloadNotEmpty);
 
     update_cmdfifo_status();
     update_addrfifo_status();
 
+    if (item.payload_q.size > PAYLOAD_FIFO_SIZE) begin // overflow
+      payload_depth_exp = PAYLOAD_FIFO_SIZE;
+      intr_trigger_pending[PayloadOverflow] = 1;
+    end else begin
+      payload_depth_exp = item.payload_q.size;
+    end
     payload_depth_exp = item.payload_q.size > 256 ? 256 : item.payload_q.size;
     void'(ral.upload_status2.payload_depth.predict(.value(payload_depth_exp),
                                                    .kind(UVM_PREDICT_READ)));
@@ -718,7 +725,17 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       bit [31:0] start_addr, offset, read_buffer_addr;
 
       upstream_spi_req_fifo.get(item);
-      if (!cfg.is_read_buffer_cmd(item)) continue;
+      if (cfg.spi_host_agent_cfg.spi_func_mode == SpiModeTpm) begin
+        bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
+        // comparison is done when the item is transfered completedly
+        bit [TL_DW-1:0] ignored_returned_q[$];
+        if (item.write_command || !is_tpm_reg(addr, item.read_size, ignored_returned_q)) begin
+          update_pending_intr_w_delay(TpmHeaderNotEmpty);
+        end
+        continue;
+      end else if (!cfg.is_read_buffer_cmd(item)) begin
+        continue;
+      end
 
       start_addr = convert_addr_from_byte_queue(item.address_q);
       `DV_SPINWAIT(
@@ -750,17 +767,29 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
     if (offset >= threshold && threshold > 0 && !read_buffer_watermark_triggered) begin
       read_buffer_watermark_triggered = 1;
-      intr_trigger_pending[ReadbufWatermark] = 1;
+      update_pending_intr_w_delay(ReadbufWatermark);
       `uvm_info(`gfn, $sformatf("read buffer watermark is triggered, addr: 0x%0x", addr),
                 UVM_MEDIUM)
     end
     if (addr % READ_BUFFER_HALF_SIZE == 0) begin
       // after flip, WM can be triggered again
       read_buffer_watermark_triggered = 0;
-      intr_trigger_pending[ReadbufFlip] = 1;
+      update_pending_intr_w_delay(ReadbufFlip);
       `uvm_info(`gfn, $sformatf("read buffer flip is triggered, addr: 0x%0x", addr),
                 UVM_MEDIUM)
     end
+  endfunction
+
+  // flash/tpm interrupt is updated from spi domain to sys clk domain, which takes 2+ cycles.
+  // allow the 1st interrupt read doesn't aligned with the exp value, but if SW issues 2 interrupt
+  // read with no delay, the 2nd one may also doesn't match.
+  // add some cycle delays to make it close to design behavior, so that the 2nd interrupt read
+  // must match.
+  virtual function void update_pending_intr_w_delay(spi_device_intr_e intr, int delay_cyc = 3);
+    fork begin
+      cfg.clk_rst_vif.wait_n_clks(delay_cyc);
+      intr_trigger_pending[intr] = 1;
+    end join_none
   endfunction
 
   // process_tl_access:this task processes incoming access into the IP over tl interface
@@ -865,11 +894,20 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       "intr_state": begin
         if (!write && channel == DataChannel) begin
           bit [NumSpiDevIntr-1:0] intr_exp = `gmv(csr);
+          bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
+          spi_device_intr_e intr;
+
           foreach (intr_exp[i]) begin
-            spi_device_intr_e intr = spi_device_intr_e'(i);
-            // TODO, only test these interrupts for now
-            if (!(i inside {ReadbufFlip, ReadbufWatermark,
-                            CmdFifoNotEmpty, PayloadNotEmpty})) begin
+            intr = spi_device_intr_e'(i); // cast to enum to get interrupt name
+            if (cfg.en_cov) begin
+              cov.intr_cg.sample(intr, intr_en[intr], intr_exp[intr]);
+              cov.intr_pins_cg.sample(intr, cfg.intr_vif.pins[intr]);
+            end
+
+            // generic_* interrupts are tested in the direct test - spi_device_intr_vseq.
+            if (!(i inside {ReadbufFlip, ReadbufWatermark, PayloadOverflow,
+                            CmdFifoNotEmpty, PayloadNotEmpty, TpmHeaderNotEmpty}) ||
+                (i == TpmHeaderNotEmpty && !cfg.en_check_tpm_not_empty_intr)) begin
               continue;
             end
             if (!intr_trigger_pending[i]) begin
@@ -984,11 +1022,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           `DV_CHECK_LE(tpm_write_sw_q.size, 2)
           tpm_write_sw_q[0].data.push_back(item.d_data);
           `DV_CHECK_LE(tpm_write_sw_q[0].data.size, tpm_write_sw_q[0].read_size)
-
           // clear read_size after finishing collecting the write item and then compare
           if (tpm_write_sw_q[0].data.size == tpm_write_sw_q[0].read_size) begin
             tpm_write_sw_q[0].read_size = 0;
-            `DV_CHECK_EQ_FATAL(tpm_write_spi_q.size, 1)
+            `DV_CHECK_LE(tpm_write_spi_q.size, 2)
             tpm_item_compare(tpm_write_spi_q.pop_front(), tpm_write_sw_q.pop_front(), "write");
           end
         end

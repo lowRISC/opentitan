@@ -13,6 +13,7 @@ module usbdev
   import usbdev_reg_pkg::*;
   import prim_util_pkg::vbits;
 #(
+  parameter bit Stub = 1'b0,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   // Max time (in microseconds) from rx_enable_o high to the
   // external differential receiver outputting valid data (when
@@ -107,8 +108,15 @@ module usbdev
   localparam int RXFifoWidth = NBufWidth + (1+SizeWidth)         +  4  + 1;
   localparam int RXFifoDepth = 4;
 
-  usbdev_reg2hw_t reg2hw;
-  usbdev_hw2reg_t hw2reg;
+  usbdev_reg2hw_t reg2hw, reg2hw_regtop;
+  usbdev_hw2reg_t hw2reg, hw2reg_regtop;
+
+  logic rst_n;
+  if (Stub) begin : gen_stubbed_reset
+    assign rst_n = '0;
+  end else begin : gen_no_stubbed_reset
+    assign rst_n = rst_ni;
+  end
 
   tlul_pkg::tl_h2d_t tl_sram_h2d;
   tlul_pkg::tl_d2h_t tl_sram_d2h;
@@ -180,8 +188,8 @@ module usbdev
   logic         us_tick;
 
   assign us_tick = (ns_cnt == 6'd48);
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       ns_cnt <= '0;
     end else begin
       if (us_tick) begin
@@ -219,7 +227,7 @@ module usbdev
     .OutputZeroIfEmpty(1'b0)
   ) usbdev_avfifo (
     .clk_i,
-    .rst_ni,
+    .rst_ni    (rst_n),
     .clr_i     (1'b0),
 
     .wvalid_i  (reg2hw.avbuffer.qe),
@@ -244,7 +252,7 @@ module usbdev
     .OutputZeroIfEmpty(1'b1)
   ) usbdev_rxfifo (
     .clk_i,
-    .rst_ni,
+    .rst_ni    (rst_n),
     .clr_i     (1'b0),
 
     .wvalid_i  (rx_wvalid),
@@ -432,7 +440,7 @@ module usbdev
     .SramAw         (SramAw)
   ) usbdev_impl (
     .clk_48mhz_i          (clk_i),
-    .rst_ni               (rst_ni),
+    .rst_ni               (rst_n),
 
     // Pins
     .usb_d_i              (usb_rx_d),
@@ -481,7 +489,7 @@ module usbdev
     .us_tick_i            (us_tick),
 
     // control
-    .connect_en_i       (connect_en),
+    .connect_en_i         (connect_en),
     .devaddr_i            (reg2hw.usbctrl.device_address.q),
     .clr_devaddr_o        (clr_devaddr),
     .in_ep_enabled_i      (ep_in_enable),
@@ -532,7 +540,7 @@ module usbdev
     .EnSync(1'b0)
   ) gen_event (
     .clk_i,
-    .rst_ni,
+    .rst_ni           (rst_n),
     .d_i              ({link_disconnect, link_reset, link_suspend,
                         host_lost, link_powered}),
     .q_sync_o         (),
@@ -563,71 +571,102 @@ module usbdev
     end
   end
 
-  // TL-UL to SRAM adapter
-  tlul_adapter_sram #(
-    .SramAw(SramAw),
-    .ByteAccess(0)
-  ) u_tlul2sram (
-    .clk_i,
-    .rst_ni,
+  if (Stub) begin : gen_stubbed_memory
+    // Stub this window off with an error responder if stubbed.
+    tlul_err_resp u_tlul_err_resp (
+      .clk_i,
+      .rst_ni,
+      .tl_h_i(tl_sram_h2d),
+      .tl_h_o(tl_sram_d2h)
+    );
 
-    .tl_i        (tl_sram_h2d),
-    .tl_o        (tl_sram_d2h),
-    .en_ifetch_i (prim_mubi_pkg::MuBi4False),
-    .req_o       (sw_mem_a_req),
-    .req_type_o  (),
-    .gnt_i       (sw_mem_a_req),  //Always grant when request
-    .we_o        (sw_mem_a_write),
-    .addr_o      (sw_mem_a_addr),
-    .wdata_o     (sw_mem_a_wdata),
-    .wmask_o     (),           // Not used
-    .intg_error_o(),
-    .rdata_i     (sw_mem_a_rdata),
-    .rvalid_i    (sw_mem_a_rvalid),
-    .rerror_i    (sw_mem_a_rerror)
-  );
+    // Tie off unused signals
+    assign sw_mem_a_req    = '0;
+    assign sw_mem_a_write  = '0;
+    assign sw_mem_a_addr   = '0;
+    assign sw_mem_a_wdata  = '0;
+    assign sw_mem_a_rvalid = '0;
+    assign sw_mem_a_rdata  = '0;
+    assign sw_mem_a_rerror = '0;
 
-  // SRAM Wrapper
-  prim_ram_2p_adv #(
-    .Depth (SramDepth),
-    .Width (SramDw),    // 32 x 512 --> 2kB
-    .DataBitsPerMask(8),
+    assign usb_mem_b_rdata = '0;
 
-    .EnableECC           (0), // No Protection
-    .EnableParity        (0),
-    .EnableInputPipeline (0),
-    .EnableOutputPipeline(0)
-  ) u_memory_2p (
-    .clk_i,
-    .rst_ni,
-    .a_req_i    (sw_mem_a_req),
-    .a_write_i  (sw_mem_a_write),
-    .a_addr_i   (sw_mem_a_addr),
-    .a_wdata_i  (sw_mem_a_wdata),
-    .a_wmask_i  ({SramDw{1'b1}}),
-    .a_rvalid_o (sw_mem_a_rvalid),
-    .a_rdata_o  (sw_mem_a_rdata),
-    .a_rerror_o (sw_mem_a_rerror),
+    logic unused_usb_mem_b_sigs;
+    assign unused_usb_mem_b_sigs = ^{
+      ram_cfg_i,
+      usb_mem_b_req,
+      usb_mem_b_write,
+      usb_mem_b_addr,
+      usb_mem_b_wdata,
+      usb_mem_b_rdata
+    };
+  end else begin : gen_no_stubbed_memory
+    // TL-UL to SRAM adapter
+    tlul_adapter_sram #(
+      .SramAw(SramAw),
+      .ByteAccess(0)
+    ) u_tlul2sram (
+      .clk_i,
+      .rst_ni,
 
-    .b_req_i    (usb_mem_b_req),
-    .b_write_i  (usb_mem_b_write),
-    .b_addr_i   (usb_mem_b_addr),
-    .b_wdata_i  (usb_mem_b_wdata),
-    .b_wmask_i  ({SramDw{1'b1}}),
-    .b_rvalid_o (),
-    .b_rdata_o  (usb_mem_b_rdata),
-    .b_rerror_o (),
-    .cfg_i      (ram_cfg_i)
-  );
+      .tl_i        (tl_sram_h2d),
+      .tl_o        (tl_sram_d2h),
+      .en_ifetch_i (prim_mubi_pkg::MuBi4False),
+      .req_o       (sw_mem_a_req),
+      .req_type_o  (),
+      .gnt_i       (sw_mem_a_req),  //Always grant when request
+      .we_o        (sw_mem_a_write),
+      .addr_o      (sw_mem_a_addr),
+      .wdata_o     (sw_mem_a_wdata),
+      .wmask_o     (),           // Not used
+      .intg_error_o(),
+      .rdata_i     (sw_mem_a_rdata),
+      .rvalid_i    (sw_mem_a_rvalid),
+      .rerror_i    (sw_mem_a_rerror)
+    );
+
+    // SRAM Wrapper
+    prim_ram_2p_adv #(
+      .Depth (SramDepth),
+      .Width (SramDw),    // 32 x 512 --> 2kB
+      .DataBitsPerMask(8),
+
+      .EnableECC           (0), // No Protection
+      .EnableParity        (0),
+      .EnableInputPipeline (0),
+      .EnableOutputPipeline(0)
+    ) u_memory_2p (
+      .clk_i,
+      .rst_ni,
+      .a_req_i    (sw_mem_a_req),
+      .a_write_i  (sw_mem_a_write),
+      .a_addr_i   (sw_mem_a_addr),
+      .a_wdata_i  (sw_mem_a_wdata),
+      .a_wmask_i  ({SramDw{1'b1}}),
+      .a_rvalid_o (sw_mem_a_rvalid),
+      .a_rdata_o  (sw_mem_a_rdata),
+      .a_rerror_o (sw_mem_a_rerror),
+
+      .b_req_i    (usb_mem_b_req),
+      .b_write_i  (usb_mem_b_write),
+      .b_addr_i   (usb_mem_b_addr),
+      .b_wdata_i  (usb_mem_b_wdata),
+      .b_wmask_i  ({SramDw{1'b1}}),
+      .b_rvalid_o (),
+      .b_rdata_o  (usb_mem_b_rdata),
+      .b_rerror_o (),
+      .cfg_i      (ram_cfg_i)
+    );
+  end
 
   logic [NumAlerts-1:0] alert_test, alerts;
 
   // Register module
   usbdev_reg_top u_reg (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // this reset is not stubbed off so that the registers are still accessible.
     .clk_aon_i,
-    .rst_aon_ni,
+    .rst_aon_ni, // this reset is not stubbed off so that the registers are still accessible.
 
     .tl_i (tl_i),
     .tl_o (tl_o),
@@ -635,13 +674,24 @@ module usbdev
     .tl_win_o (tl_sram_h2d),
     .tl_win_i (tl_sram_d2h),
 
-    .reg2hw,
-    .hw2reg,
+    .reg2hw(reg2hw_regtop),
+    .hw2reg(hw2reg_regtop),
 
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o (alerts[0]),
     .devmode_i (1'b1)
   );
+
+  // Stub off all register connections to reg_top.
+  if (Stub) begin : gen_stubbed
+    logic unused_sigs;
+    assign reg2hw = '0;
+    assign hw2reg_regtop = '0;
+    assign unused_sigs = ^{reg2hw_regtop, hw2reg};
+  end else begin : gen_not_stubbed
+    assign reg2hw = reg2hw_regtop;
+    assign hw2reg_regtop = hw2reg;
+  end
 
   // Alerts
   assign alert_test = {
@@ -649,13 +699,15 @@ module usbdev
     reg2hw.alert_test.qe
   };
 
+  // TDODO: stub alerts
+
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
       .IsFatal(i)
     ) u_prim_alert_sender (
       .clk_i,
-      .rst_ni,
+      .rst_ni, // this reset is not stubbed off so that the pings still work.
       .alert_test_i  ( alert_test[i] ),
       .alert_req_i   ( alerts[0]     ),
       .alert_ack_o   (               ),
@@ -668,7 +720,7 @@ module usbdev
   // Interrupts
   prim_intr_hw #(.Width(1)) intr_hw_pkt_received (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_pkt_received),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.pkt_received.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.pkt_received.q),
@@ -681,7 +733,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_hw_pkt_sent (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (sent_event_pending),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.pkt_sent.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.pkt_sent.q),
@@ -694,7 +746,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_disconnected (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_disconnect),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.disconnected.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.disconnected.q),
@@ -707,7 +759,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_powered (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_powered),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.powered.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.powered.q),
@@ -720,7 +772,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_host_lost (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_host_lost),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.host_lost.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.host_lost.q),
@@ -733,7 +785,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_link_reset (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_link_reset),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.link_reset.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.link_reset.q),
@@ -746,7 +798,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_link_suspend (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_link_suspend),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.link_suspend.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.link_suspend.q),
@@ -759,7 +811,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_link_resume (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_link_resume),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.link_resume.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.link_resume.q),
@@ -772,7 +824,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_av_empty (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_av_empty),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.av_empty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.av_empty.q),
@@ -785,7 +837,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_rx_full (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_rx_full),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_full.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_full.q),
@@ -798,7 +850,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_av_overflow (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_av_overflow),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.av_overflow.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.av_overflow.q),
@@ -811,7 +863,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_link_in_err (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_in_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.link_in_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.link_in_err.q),
@@ -824,7 +876,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_link_out_err (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_out_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.link_out_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.link_out_err.q),
@@ -837,7 +889,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_rx_crc_err (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_rx_crc_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_crc_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_crc_err.q),
@@ -850,7 +902,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_rx_pid_err (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_rx_pid_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_pid_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_pid_err.q),
@@ -863,7 +915,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_rx_bitstuff_err (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_rx_bitstuff_err),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.rx_bitstuff_err.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.rx_bitstuff_err.q),
@@ -876,7 +928,7 @@ module usbdev
 
   prim_intr_hw #(.Width(1)) intr_frame (
     .clk_i,
-    .rst_ni,
+    .rst_ni, // not stubbed off so that the interrupt regs still work.
     .event_intr_i           (event_frame),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.frame.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.frame.q),
@@ -899,7 +951,7 @@ module usbdev
 
   usbdev_iomux i_usbdev_iomux (
     .clk_i,
-    .rst_ni,
+    .rst_ni             (rst_n),
 
     // Register interface
     .hw2reg_sense_o     (hw2reg.phy_pins_sense),
@@ -958,8 +1010,8 @@ module usbdev
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       usb_rcvr_ok_counter_q <= RcvrWakeTimeWidth'(RcvrWakeTimeUs + 1);
     end else begin
       usb_rcvr_ok_counter_q <= usb_rcvr_ok_counter_d;
@@ -985,8 +1037,8 @@ module usbdev
   assign usb_ref_val_d = usb_ref_pulse_o                           ? 1'b1 :
       (!link_active || host_lost || usb_ref_disable) ? 1'b0 : usb_ref_val_q;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_n) begin
+    if (!rst_n) begin
       usb_ref_val_q <= 1'b0;
     end else begin
       usb_ref_val_q <= usb_ref_val_d;

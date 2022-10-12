@@ -4,7 +4,7 @@
 
 use anyhow::{Context, Result};
 use serialport::ClearBuffer;
-use serialport::SerialPort;
+use serialport::{FlowControl, SerialPort};
 use std::cell::RefCell;
 use std::io::ErrorKind;
 use std::time::Duration;
@@ -48,6 +48,17 @@ impl Uart for SerialPortUart {
             .borrow_mut()
             .set_baud_rate(baudrate)
             .map_err(|_| UartError::InvalidSpeed(baudrate))?;
+        Ok(())
+    }
+
+    fn set_flow_control(&self, flow_control: bool) -> Result<()> {
+        if flow_control {
+            self.port
+                .borrow_mut()
+                .set_flow_control(FlowControl::Software)?;
+        } else {
+            self.port.borrow_mut().set_flow_control(FlowControl::None)?;
+        }
         Ok(())
     }
 

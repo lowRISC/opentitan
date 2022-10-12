@@ -801,11 +801,23 @@
             `CREATOR_SW_CFG_ROM_EXEC_EN` should be set to `0`.
 
             - Verify that ROM can be debugged in TEST, DEV, and RMA life cycle states.
+              - Test debugging with commands to GDB connected via OpenOCD and JTAG
+              - Read back GDB responses to check they match expected behaviour
               - Connect a debugger and verify that ROM halts very early in `rom_start.S`.
-              - Step over the `wfi` instruction.
+              - Trial the following activities within GDB, ensuring the correct
+                behaviour is seen:
+                - Halting execution and resetting
+                - Setting, hitting and deleting breakpoints using all available hardware breakpoints
+                - Single stepping
+                  - In particular single step over `wfi`
+                - Reading and writing all registers
+                - Reading all CSRs and writing some (write set TBD)
+                - Reading and writing memory (both SRAM and device)
+                - Setting the PC to jump to some location
+                - Executing code from GDB (using the call command)
               - Verify that ROM fails to boot with `BFV:0142500d`.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "no_dv", "fpga", "silicon"]
       stage: V2
       tests: []
     }

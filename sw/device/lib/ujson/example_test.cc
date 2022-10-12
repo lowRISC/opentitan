@@ -150,4 +150,38 @@ TEST(Derive, DirectionDeserialize) {
   EXPECT_EQ(d, static_cast<direction>(35));
 }
 
+TEST(Derive, FuzzyBoolSerialize) {
+  fuzzy_bool d = kFuzzyBoolTrue;
+  SourceSink ss;
+  ujson_t uj = ss.UJson();
+  EXPECT_TRUE(status_ok(ujson_serialize_fuzzy_bool(&uj, &d)));
+  EXPECT_EQ(ss.Sink(), R"json("True")json");
+
+  ss.Reset();
+  d = kFuzzyBoolFalse;
+  EXPECT_TRUE(status_ok(ujson_serialize_fuzzy_bool(&uj, &d)));
+  EXPECT_EQ(ss.Sink(), R"json("False")json");
+
+  ss.Reset();
+  d = static_cast<fuzzy_bool>(75);
+  EXPECT_TRUE(status_ok(ujson_serialize_fuzzy_bool(&uj, &d)));
+  EXPECT_EQ(ss.Sink(), R"json(75)json");
+}
+
+TEST(Derive, FuzzyBoolDeserialize) {
+  fuzzy_bool d;
+  SourceSink ss(R"json("False")json");
+  ujson_t uj = ss.UJson();
+  EXPECT_TRUE(status_ok(ujson_deserialize_fuzzy_bool(&uj, &d)));
+  EXPECT_EQ(d, kFuzzyBoolFalse);
+
+  ss.Reset(R"json("True")json");
+  EXPECT_TRUE(status_ok(ujson_deserialize_fuzzy_bool(&uj, &d)));
+  EXPECT_EQ(d, kFuzzyBoolTrue);
+
+  ss.Reset(R"json(35)json");
+  EXPECT_TRUE(status_ok(ujson_deserialize_fuzzy_bool(&uj, &d)));
+  EXPECT_EQ(d, static_cast<fuzzy_bool>(35));
+}
+
 }  // namespace

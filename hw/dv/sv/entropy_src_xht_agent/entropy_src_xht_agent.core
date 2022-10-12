@@ -1,0 +1,30 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:entropy_src_xht_agent:0.1"
+description: "entropy_src external HT DV UVM agent"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
+      - lowrisc:ip:entropy_src_pkg
+      - lowrisc:dv:digestpp_dpi:0.1
+    files:
+      - entropy_src_xht_if.sv
+      - entropy_src_xht_agent_pkg.sv
+      - entropy_src_xht_item.sv: {is_include_file: true}
+      - entropy_src_xht_agent_cfg.sv: {is_include_file: true}
+      - entropy_src_xht_device_driver.sv: {is_include_file: true}
+      - entropy_src_xht_monitor.sv: {is_include_file: true}
+      - entropy_src_xht_sequencer.sv: {is_include_file: true}
+      - entropy_src_xht_agent.sv: {is_include_file: true}
+      - seq_lib/entropy_src_xht_base_device_seq.sv: {is_include_file: true}
+      - seq_lib/entropy_src_xht_seq_list.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

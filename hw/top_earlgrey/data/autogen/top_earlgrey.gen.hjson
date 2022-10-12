@@ -2381,6 +2381,14 @@
       param_list:
       [
         {
+          name: Stub
+          desc: Stub out the core of entropy_src logic
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: UsbdevStub
+        }
+        {
           name: RcvrWakeTimeUs
           desc: Maximum number of microseconds for the differential receiver to become operational
           type: int

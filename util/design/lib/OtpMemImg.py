@@ -339,7 +339,6 @@ class OtpMemImg(OtpMemMap):
 
         # Key accounting
         img_config_check = img_config.copy()
-        del img_config_check['seed']
         del img_config_check['partitions']
         _check_unused_keys(img_config_check, 'in image config')
 
