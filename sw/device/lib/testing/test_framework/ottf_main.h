@@ -7,7 +7,6 @@
 
 #include <stdbool.h>
 
-#include "external/freertos/include/FreeRTOS.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -52,6 +51,16 @@ extern bool manufacturer_pre_test_hook(void);
 extern bool manufacturer_post_test_hook(void);
 
 /**
+ * Forward declaration of the function pointer prototype to which FreeRTOS (and
+ * transitively OTTF) task functions must conform.  We use a forward declaration
+ * here to hide FreeRTOS internals from OTTF users.
+ *
+ * This declaration should match the `TaskFunction_t` type declaration in
+ * `<freertos kernel>/include/projdefs.h`.
+ */
+typedef void (*ottf_task_t)(void *);
+
+/**
  * Create a FreeRTOS task.
  *
  * Tasks should be implemented as functions that never return. However, they may
@@ -69,7 +78,7 @@ extern bool manufacturer_post_test_hook(void);
  * @param task_priority The numerical priority of the task.
  * @return A boolean encoding the success of the operation.
  */
-bool ottf_task_create(TaskFunction_t task_function, const char *task_name,
+bool ottf_task_create(ottf_task_t task_function, const char *task_name,
                       configSTACK_DEPTH_TYPE task_stack_depth,
                       uint32_t task_priority);
 /**
