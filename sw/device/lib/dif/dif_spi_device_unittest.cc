@@ -1792,17 +1792,17 @@ TEST_F(TpmTest, CommandAndData) {
                 {
                     {SPI_DEVICE_TPM_STATUS_CMDADDR_NOTEMPTY_BIT, 0},
                     {SPI_DEVICE_TPM_STATUS_RDFIFO_NOTEMPTY_BIT, 1},
-                    {SPI_DEVICE_TPM_STATUS_RDFIFO_DEPTH_OFFSET, 3},
+                    {SPI_DEVICE_TPM_STATUS_RDFIFO_DEPTH_OFFSET, 14},
                     {SPI_DEVICE_TPM_STATUS_WRFIFO_DEPTH_OFFSET, 4},
                 });
-  EXPECT_EQ(dif_spi_device_tpm_write_data(&spi_, /*length=*/2, data),
+  EXPECT_EQ(dif_spi_device_tpm_write_data(&spi_, /*length=*/9, data),
             kDifOutOfRange);
 
   EXPECT_READ32(SPI_DEVICE_TPM_STATUS_REG_OFFSET,
                 {
                     {SPI_DEVICE_TPM_STATUS_CMDADDR_NOTEMPTY_BIT, 0},
-                    {SPI_DEVICE_TPM_STATUS_RDFIFO_NOTEMPTY_BIT, 0},
-                    {SPI_DEVICE_TPM_STATUS_RDFIFO_DEPTH_OFFSET, 0},
+                    {SPI_DEVICE_TPM_STATUS_RDFIFO_NOTEMPTY_BIT, 1},
+                    {SPI_DEVICE_TPM_STATUS_RDFIFO_DEPTH_OFFSET, 15},
                     {SPI_DEVICE_TPM_STATUS_WRFIFO_DEPTH_OFFSET, 4},
                 });
   EXPECT_EQ(dif_spi_device_tpm_write_data(&spi_, /*length=*/5, data),

@@ -10,7 +10,7 @@
 
 #include "spi_device_regs.h"  // Generated.
 
-#define DIF_SPI_DEVICE_TPM_FIFO_DEPTH 4
+#define DIF_SPI_DEVICE_TPM_FIFO_DEPTH 16
 
 const uint16_t kDifSpiDeviceBufferLen = SPI_DEVICE_BUFFER_SIZE_BYTES;
 
@@ -1550,7 +1550,9 @@ dif_result_t dif_spi_device_tpm_write_data(dif_spi_device_handle_t *spi,
   if (result != kDifOk) {
     return result;
   }
-  if (DIF_SPI_DEVICE_TPM_FIFO_DEPTH - status.read_fifo_occupancy < length) {
+  if ((DIF_SPI_DEVICE_TPM_FIFO_DEPTH - status.read_fifo_occupancy) *
+          sizeof(uint32_t) <
+      length) {
     return kDifOutOfRange;
   }
   for (int i = 0; i < length; i += 4) {

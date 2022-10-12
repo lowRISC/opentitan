@@ -48,7 +48,7 @@ class spi_host_tpm_seq extends spi_base_seq;
                                    foreach (address_q[i]) {
                                      address_q[i] == local::address_q[i];
                                    }
-                                   payload_q.size() == 0; // no used for tpm
+                                   payload_q.size() == 0; // not used for tpm
                                    data.size == local::data_q.size();
                                    foreach (data_q[i]) {
                                      data[i] == local::data_q[i];
