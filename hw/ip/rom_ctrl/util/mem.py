@@ -6,10 +6,10 @@
 import re
 import subprocess
 import tempfile
-from typing import BinaryIO, IO, List, Optional, TextIO, Tuple
+from typing import Any, BinaryIO, Dict, IO, List, Optional, TextIO, Tuple
 
 from elftools.elf.elffile import ELFFile  # type: ignore
-from util.design.secded_gen import ecc_encode_some  # type: ignore
+from util.design.secded_gen import ecc_encode_some, load_secded_config  # type: ignore
 
 
 class MemChunk:
@@ -47,20 +47,21 @@ class MemChunk:
                 toks.append(f'{word:0{word_chars}X}')
             outfile.write(' '.join(toks) + '\n')
 
-    def add_ecc32(self) -> None:
+    def add_ecc32(self, config: Dict[str, Any]) -> None:
         '''Add ECC32 integrity bits
 
         This extends the input words (which are assumed to be 32-bit) by 7
         bits, to make 39-bit words.
 
         '''
-        self.words = ecc_encode_some('inv_hsiao', 32, self.words)[0]
+        self.words = ecc_encode_some(config, 'inv_hsiao', 32, self.words)[0]
 
 
 class MemFile:
     def __init__(self, width: int, chunks: List[MemChunk]):
         self.width = width
         self.chunks = chunks
+        self.config = load_secded_config()
 
     def __str__(self) -> str:
         return ('MemFile(width={}, chunks_len={})'
@@ -319,7 +320,7 @@ class MemFile:
         '''
         assert self.width <= 32
         for chunk in self.chunks:
-            chunk.add_ecc32()
+            chunk.add_ecc32(self.config)
         self.width = 39
 
     def collisions(self) -> List[Tuple[int, int]]:
