@@ -346,5 +346,4 @@ module tb;
     $timeformat(-9, 1, " ns", 9);
     run_test();
   end
-
 endmodule

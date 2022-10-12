@@ -60,6 +60,7 @@ class flash_ctrl_rd_path_intg_vseq extends flash_ctrl_legacy_base_vseq;
 
       // Check fault_status register and err_code register to make sure
       // host read only triggers fault_status.phy_storage_err
+      collect_err_cov_status(ral.fault_status);
       csr_rd_check(.ptr(ral.fault_status.phy_storage_err), .compare_value(1));
       csr_rd_check(.ptr(ral.err_code), .compare_value(0));
 

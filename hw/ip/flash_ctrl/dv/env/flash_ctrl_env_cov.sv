@@ -36,20 +36,44 @@ class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
     }
   endgroup : erase_susp_cg
 
-  covergroup error_cg with function sample(input bit [NumFlashErrBits-1:0] err_val);
-
-    option.per_instance = 1;
-    option.name         = "error_cg";
-
+  covergroup sw_error_cg with function sample(input bit [NumFlashErrBits-1:0] err_val);
     `DV_FCOV_EXPR_SEEN(op_err,          err_val[FlashOpErr])
     `DV_FCOV_EXPR_SEEN(mp_err,          err_val[FlashMpErr])
     `DV_FCOV_EXPR_SEEN(rd_err,          err_val[FlashRdErr])
     `DV_FCOV_EXPR_SEEN(prog_err,        err_val[FlashProgErr])
     `DV_FCOV_EXPR_SEEN(prog_win_err,    err_val[FlashProgWinErr])
     `DV_FCOV_EXPR_SEEN(prog_type_err,   err_val[FlashProgTypeErr])
-    `DV_FCOV_EXPR_SEEN(flash_macro_err, err_val[FlashMacroErr])
     `DV_FCOV_EXPR_SEEN(update_err,      err_val[FlashUpdateErr])
-  endgroup : error_cg
+  endgroup : sw_error_cg
+
+  covergroup std_fault_cg with function sample(input bit [31:0] err_val);
+    `DV_FCOV_EXPR_SEEN(reg_intg_err,   err_val[FlashStdFaultRegIntgErr])
+    `DV_FCOV_EXPR_SEEN(prog_intg_err,  err_val[FlashStdFaultProgIntgErr])
+    `DV_FCOV_EXPR_SEEN(lcmgr_err,      err_val[FlashStdFaultLcmgrErr])
+    `DV_FCOV_EXPR_SEEN(lcmgr_intg_err, err_val[FlashStdFaultLcmgrIntgErr])
+    `DV_FCOV_EXPR_SEEN(arb_fsm_err,    err_val[FlashStdFaultArbFsmErr])
+    `DV_FCOV_EXPR_SEEN(storage_err,    err_val[FlashStdFaultStorageErr])
+    `DV_FCOV_EXPR_SEEN(phy_fsm_err,    err_val[FlashStdFaultPhyFsmErr])
+    `DV_FCOV_EXPR_SEEN(ctrl_cnt_err,   err_val[FlashStdFaultCtrlCntErr])
+    `DV_FCOV_EXPR_SEEN(fifo_err,       err_val[FlashStdFaultFifoErr])
+  endgroup
+
+  covergroup hw_error_cg with function sample(input bit [31:0] err_val);
+    `DV_FCOV_EXPR_SEEN(op_err,          err_val[FlashFaultOpErr])
+    `DV_FCOV_EXPR_SEEN(mp_err,          err_val[FlashFaultMpErr])
+    `DV_FCOV_EXPR_SEEN(rd_err,          err_val[FlashFaultRdErr])
+    `DV_FCOV_EXPR_SEEN(prog_err,        err_val[FlashFaultProgErr])
+    `DV_FCOV_EXPR_SEEN(prog_win_err,    err_val[FlashFaultProgWinErr])
+    `DV_FCOV_EXPR_SEEN(prog_type_err,   err_val[FlashFaultProgTypeErr])
+// Disable for now
+//    `DV_FCOV_EXPR_SEEN(flash_macro_err, err_val[FlashFaultFlashMacroErr])
+    `DV_FCOV_EXPR_SEEN(seed_err,        err_val[FlashFaultSeedErr])
+    `DV_FCOV_EXPR_SEEN(phy_relbl_err,   err_val[FlashFaultPhyRelblErr])
+    `DV_FCOV_EXPR_SEEN(phy_storage_err, err_val[FlashFaultPhyStorageErr])
+    `DV_FCOV_EXPR_SEEN(spurious_ack,    err_val[FlashFaultSpuriousAck])
+    `DV_FCOV_EXPR_SEEN(arb_err,         err_val[FlashFaultArbErr])
+    `DV_FCOV_EXPR_SEEN(host_gnt_err,    err_val[FlashFaultHostGntErr])
+  endgroup
 
   covergroup fifo_lvl_cg with function sample (bit[4:0] prog, bit[4:0] rd);
     prog_lvl_cp: coverpoint prog {
@@ -92,11 +116,13 @@ class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
     super.new(name, parent);
     control_cg = new();
     erase_susp_cg = new();
-    error_cg = new();
+    sw_error_cg = new();
     fifo_lvl_cg = new();
     eviction_cg = new();
     fetch_code_cg = new();
     rma_init_cg = new();
+    std_fault_cg = new();
+    hw_error_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);

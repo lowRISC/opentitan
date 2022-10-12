@@ -178,7 +178,7 @@
       name: error_mp
       desc: '''
             Perform accesses in order to provoke memory permission errors. Test the Software
-            interface (Erase, Program, Read). Related covergroup is error_cg.
+            interface (Erase, Program, Read). Related covergroup is sw_error_cg.
             '''
       stage: V2
       tests: ["flash_ctrl_error_mp"]
@@ -187,7 +187,7 @@
       name: error_prog_win
       desc: '''
             Perform accesses in order to provoke the 'program resolution' error.
-            Test via the Software interface. Related covergroup is error_cg.
+            Test via the Software interface. Related covergroup is sw_error_cg.
             '''
       stage: V2
       tests: ["flash_ctrl_error_prog_win"]
@@ -196,7 +196,7 @@
       name: error_prog_type
       desc: '''
             Perform accesses in order to provoke the 'program type' error.
-            Test via the Software interface. Related covergroup is error_cg.
+            Test via the Software interface. Related covergroup is sw_error_cg.
             '''
       stage: V2
       tests: ["flash_ctrl_error_prog_type"]
@@ -415,7 +415,7 @@
             '''
     }
     {
-      name: error_cg
+      name: sw_error_cg
       desc: '''
             Covers following error scenarios given in Flash error code register:
             - op_err: Undefined operation.

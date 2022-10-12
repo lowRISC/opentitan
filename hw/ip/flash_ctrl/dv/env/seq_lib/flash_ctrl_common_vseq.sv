@@ -76,12 +76,14 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
     `uvm_info(`gfn, $sformatf("path: %s", if_proxy.path), UVM_MEDIUM)
 
     if (!uvm_re_match("*.u_host_outstanding_cnt*", if_proxy.path)) begin
+      collect_err_cov_status(ral.fault_status);
       csr_rd_check(.ptr(ral.fault_status.host_gnt_err), .compare_value(1));
       flash_dis = 0;
     end else begin
       super.check_sec_cm_fi_resp(if_proxy);
     end
     if (!uvm_re_match("*.u_flash_hw_if.*", if_proxy.path)) begin
+      collect_err_cov_status(ral.std_fault_status);
       csr_rd_check(.ptr(ral.std_fault_status.lcmgr_err), .compare_value(1));
       // skip debug_state check because state is corrupted.
       flash_dis = 0;
@@ -92,14 +94,22 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
         if (!uvm_re_match("*.u_host_rsp_fifo.*", if_proxy.path) |
             !uvm_re_match("*.u_to_rd_fifo.*", if_proxy.path) |
             !uvm_re_match("*.u_rd_storage.*", if_proxy.path)) begin
+          collect_err_cov_status(ral.std_fault_status);
           csr_rd_check(.ptr(ral.std_fault_status.fifo_err), .compare_value(1));
+        end
+        if (!uvm_re_match("*.u_flash_ctrl_rd.u_cnt*", if_proxy.path) |
+            !uvm_re_match("*.u_flash_ctrl_prog.u_cnt*", if_proxy.path)) begin
+          collect_err_cov_status(ral.std_fault_status);
+          csr_rd_check(.ptr(ral.std_fault_status.ctrl_cnt_err), .compare_value(1));
         end
       end
       SecCmPrimSparseFsmFlop: begin
-        if (!uvm_re_match("*.flash_cores*", if_proxy.path)) begin
+        if (!uvm_re_match("*.gen_flash_cores*", if_proxy.path)) begin
+          collect_err_cov_status(ral.std_fault_status);
           csr_rd_check(.ptr(ral.std_fault_status.phy_fsm_err), .compare_value(1));
         end
         if (!uvm_re_match("*.u_ctrl_arb.*", if_proxy.path)) begin
+          collect_err_cov_status(ral.std_fault_status);
           csr_rd_check(.ptr(ral.std_fault_status.arb_fsm_err), .compare_value(1));
         end
       end
@@ -163,4 +173,15 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
       end
     endcase
    endfunction
+
+  virtual task write_and_check_update_error(dv_base_reg shadowed_csr);
+    super.write_and_check_update_error(shadowed_csr);
+    collect_err_cov_status(ral.err_code);
+  endtask // write_and_check_update_error
+
+  virtual task poke_and_check_storage_error(dv_base_reg shadowed_csr);
+    super.poke_and_check_storage_error(shadowed_csr);
+    collect_err_cov_status(ral.std_fault_status);
+  endtask
+
 endclass

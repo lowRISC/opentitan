@@ -1319,4 +1319,22 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::On;
   endfunction // all_sw_rw_en
 
+  // Collect cover poiint by reading csr
+  // ral.std_fault_status
+  // ral.fault_status
+  // ral.err_code
+  task collect_err_cov_status(dv_base_reg ptr);
+    uvm_reg_data_t rdata;
+    if (cfg.en_cov) begin
+      csr_rd(.ptr(ptr), .value(rdata), .backdoor(1));
+      if (ptr.get_name == "std_fault_status") begin
+        cfg.scb_h.cov.std_fault_cg.sample(rdata);
+      end else if (ptr.get_name == "err_code") begin
+        cfg.scb_h.cov.sw_error_cg.sample(rdata);
+      end else begin
+        cfg.scb_h.cov.hw_error_cg.sample(rdata);
+      end
+    end
+  endtask
+
 endclass : flash_ctrl_base_vseq
