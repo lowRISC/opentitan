@@ -215,6 +215,11 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
       jtag_dmi_ral.sbcs.sbasize.set_reset(32);
       apply_jtag_dmi_ral_csr_excl();
     end
+
+    // This TL agent is used in stub_cpu mode and connected with ibex data port.
+    // It can have up to 8 outstanding items due to the async fifos in the xbar.
+    // However, the actual ibex data port can only support 1 outstanding item.
+    m_tl_agent_cfg.max_outstanding_req = 8;
   endfunction
 
   // Apply RAL fixes before it is locked.
