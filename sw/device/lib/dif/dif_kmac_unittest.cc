@@ -588,7 +588,7 @@ TEST_F(AbsorbalignmentMessage, Success) {
 class ConfigLock : public KmacTest {};
 
 TEST_F(ConfigLock, Locked) {
-  EXPECT_READ32(KMAC_CFG_REGWEN_REG_OFFSET, true);
+  EXPECT_READ32(KMAC_CFG_REGWEN_REG_OFFSET, 0);
 
   bool lock = false;
   EXPECT_EQ(dif_kmac_config_is_locked(&kmac_, &lock), kDifOk);
@@ -596,7 +596,7 @@ TEST_F(ConfigLock, Locked) {
 }
 
 TEST_F(ConfigLock, Unlocked) {
-  EXPECT_READ32(KMAC_CFG_REGWEN_REG_OFFSET, false);
+  EXPECT_READ32(KMAC_CFG_REGWEN_REG_OFFSET, 1);
 
   bool lock = true;
   EXPECT_EQ(dif_kmac_config_is_locked(&kmac_, &lock), kDifOk);
