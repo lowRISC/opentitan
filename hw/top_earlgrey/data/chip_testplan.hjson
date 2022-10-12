@@ -2162,7 +2162,7 @@
             - The newly fetched entropy and the old entropy stored in flash should not match.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_csrng_lc_hw_debug_en_test"]
     }
     {
       name: chip_sw_csrng_known_answer_tests
