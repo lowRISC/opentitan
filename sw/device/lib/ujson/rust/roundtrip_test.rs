@@ -22,7 +22,7 @@ with_unknown! {
 
 fn roundtrip(name: &str, data: &str) -> Result<String> {
     let mut command = Command::new(&std::env::var("ROUNDTRIP_CLIENT")?);
-    command.args(&[name]);
+    command.args([name]);
     let mut child = command
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
