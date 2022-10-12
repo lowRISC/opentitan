@@ -47,12 +47,12 @@ impl CommandDispatch for LoadBitstream {
             progress.inc(chunk as u64);
         });
         let operation = cw310::FpgaProgram {
-            bitstream: bitstream,
+            bitstream,
             rom_kind: self.rom_kind,
             rom_reset_pulse: self.rom_reset_pulse,
             rom_timeout: self.rom_timeout,
             progress: Some(pfunc),
         };
-        Ok(transport.dispatch(&operation)?)
+        transport.dispatch(&operation)
     }
 }

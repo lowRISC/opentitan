@@ -140,7 +140,7 @@ impl CommandDispatch for ManifestUpdateCommand {
 
         // Apply the manifest values to the image.
         if let Some(manifest) = &self.manifest {
-            let def = ManifestSpec::read_from_file(&manifest)?;
+            let def = ManifestSpec::read_from_file(manifest)?;
             image.overwrite_manifest(def)?;
         }
 
@@ -148,9 +148,9 @@ impl CommandDispatch for ManifestUpdateCommand {
             let (keypub, keypriv) = load_key(key_file)?;
             image.update_modulus(keypub.modulus())?;
             if self.sign {
-                let private_key = keypriv.ok_or(anyhow!(
-                    "The supplied key_file does not contain a private key"
-                ))?;
+                let private_key = keypriv.ok_or_else(|| {
+                    anyhow!("The supplied key_file does not contain a private key")
+                })?;
                 // Compute the digest over the image, sign it and update it.
                 image.update_signature(private_key.sign(&image.compute_digest())?)?;
             }
@@ -161,7 +161,7 @@ impl CommandDispatch for ManifestUpdateCommand {
             image.update_signature(signature)?;
         }
 
-        image.write_to_file(&self.output.as_ref().unwrap_or(&self.image))?;
+        image.write_to_file(self.output.as_ref().unwrap_or(&self.image))?;
         Ok(None)
     }
 }
@@ -181,8 +181,12 @@ impl CommandDispatch for ManifestVerifyCommand {
     ) -> Result<Option<Box<dyn Annotate>>> {
         let image = image::Image::read_from_file(&self.image)?;
         let manifest: ManifestSpec = image.borrow_manifest()?.try_into()?;
-        let modulus = manifest.modulus().ok_or(anyhow!("Invalid modulus"))?;
-        let signature = manifest.signature().ok_or(anyhow!("Invalid signature"))?;
+        let modulus = manifest
+            .modulus()
+            .ok_or_else(|| anyhow!("Invalid modulus"))?;
+        let signature = manifest
+            .signature()
+            .ok_or_else(|| anyhow!("Invalid signature"))?;
         let digest = Sha256Digest::from_le_bytes(image.compute_digest().to_le_bytes())?;
         let key = RsaPublicKey::new(Modulus::from_le_bytes(modulus.to_le_bytes())?)?;
         let signature = Signature::from_le_bytes(signature.to_le_bytes())?;
@@ -221,7 +225,7 @@ impl CommandDispatch for DigestCommand {
         let digest = image.compute_digest();
         if let Some(bin) = &self.bin {
             let mut file = File::create(bin)?;
-            file.write(&digest.to_le_bytes())?;
+            file.write_all(&digest.to_le_bytes())?;
         }
         Ok(Some(Box::new(DigestResponse {
             digest: digest.to_be_bytes(),

@@ -182,6 +182,7 @@ impl CommandDispatch for RsaVerifyCommand {
 
 #[derive(Debug, StructOpt, CommandDispatch)]
 /// RSA commands.
+#[allow(clippy::large_enum_variant)]
 pub enum Rsa {
     Key(RsaKeySubcommands),
     Sign(RsaSignCommand),

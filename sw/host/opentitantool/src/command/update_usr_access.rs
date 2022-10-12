@@ -38,7 +38,7 @@ impl CommandDispatch for UpdateUsrAccess {
         let mut bs = fs::read(&self.input)?;
         usr_access_set(
             &mut bs,
-            self.usr_access.unwrap_or_else(|| usr_access_timestamp()),
+            self.usr_access.unwrap_or_else(usr_access_timestamp),
         )?;
         fs::write(&self.output, bs)?;
         Ok(None)
