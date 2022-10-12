@@ -213,6 +213,19 @@
       stage: V2
       tests: []
     }
+    {
+      name: chip_sw_spi_device_tpm
+      desc: '''Verify the basic operation of the spi tpm mode..
+
+            - The testbench sends a known payload over the chip's SPI device tpm input port.
+            - The testbench sends a read command.
+            - The software test should playback the data received in the write command as the read
+              response.
+            - The testbench should check if the written and read data match.
+            '''
+      stage: V2
+      tests: ["chip_sw_spi_device_tpm_test"]
+    }
 
     // SPI_HOST (pre-verified IP) integration tests:
     {

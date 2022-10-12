@@ -173,14 +173,16 @@ interface chip_if;
 
   // Functional (dedicated) interface: SPI host interface (drives traffic into the chip).
   bit enable_spi_host = 1;
+  bit enable_spi_tpm  = 0;
   spi_if spi_host_if(.rst_n(`SPI_DEVICE_HIER.rst_ni),
                      .sio({ios[SpiDevD3], ios[SpiDevD2], ios[SpiDevD1], ios[SpiDevD0]}));
-  assign ios[SpiDevClk] = enable_spi_host ? spi_host_if.sck : 1'bz;
-  assign ios[SpiDevCsL] = enable_spi_host ? spi_host_if.csb : 1'bz;
+  assign ios[SpiDevClk] = enable_spi_host | enable_spi_tpm ? spi_host_if.sck : 1'bz;
+  assign ios[SpiDevCsL] = enable_spi_host ? spi_host_if.csb[0] : 1'bz;
+  assign ios[IoA7]      = enable_spi_tpm  ? spi_host_if.csb[1] : 1'bz;
   initial begin
     do begin
-      spi_host_if.disconnect(!enable_spi_host);
-      @(enable_spi_host);
+      spi_host_if.disconnect(!enable_spi_host & !enable_spi_tpm);
+      @(enable_spi_host | enable_spi_tpm);
     end while (1);
   end
 

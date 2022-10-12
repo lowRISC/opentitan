@@ -105,6 +105,7 @@ filesets:
       - seq_lib/chip_sw_csrng_lc_hw_debug_en_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_usb_ast_clk_calib_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_i2c_host_tx_rx_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_spi_device_tpm_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_patt_ios_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rv_core_ibex_lockstep_glitch_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}

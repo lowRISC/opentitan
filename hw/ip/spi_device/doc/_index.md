@@ -48,7 +48,7 @@ title: "SPI Device HWIP Technical Specification"
 - Shared SPI with other SPI Device functionalities. Unique CS# for the TPM
   - Flash or Passthrough mode can be active with TPM mode.
     Generic and TPM modes are mutually exclusive.
-- HW processed registers for the read requests
+- HW processed registers for read requests during FIFO mode
   - TPM_ACCESS_x, TPM_STS_x, TPM_INTF_CAPABILITY, TPM_INT_ENABLE, TPM_INT_STATUS, TPM_INT_VECTOR, TPM_DID_VID, TPM_RID
   - TPM_HASH_START returns FFh
 - 5 Locality (compile-time parameter)
@@ -866,8 +866,12 @@ The SW may configure TPM_CFG.hw_reg_dis and/or TPM_CFG.invalid_locality to fully
 
 ### TPM mode: FIFO and CRB
 
-The HW returns the return-by-HW registers for the read request in the TPM FIFO mode.
-In the TPM CRB mode (TPM_CFG.tpm_mode is 1), the logic always upload the command and address to the SW and waits for the read FIFO data even the received address falls into the managed address.
+The TPM protocol supports two protocol interfaces: FIFO and CRB (Command Response Buffer).
+In terms of hardware design, these two interfaces differ in how return-by-HW registers are handled.
+
+In FIFO mode, when {{< regref "TPM_CFG.tpm_mode" >}} is set to 0, HW registers reads must be returned after a maximum of 1 wait state.
+In CRB mode, when {{< regref "TPM_CFG.tpm_mode" >}} is set to 1, there are no such restrictions.
+The logic always uploads both the command and address to the SW and waits for the return data in CRB mode.
 
 ### Return-by-HW register update
 
