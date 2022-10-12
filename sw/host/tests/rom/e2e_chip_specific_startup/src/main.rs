@@ -39,7 +39,7 @@ fn test_chip_specific_startup(opts: &Opts, transport: &TransportWrapper) -> Resu
     let response = ChipStartup::recv(&*uart, opts.timeout, false)?;
 
     // FIXME(cfrantz): ast_init_done should really be true.
-    assert!(response.ast_init_done == false);
+    assert!(!response.ast_init_done);
     assert!(response.sram.scr_key_valid);
     assert!(response.sram.scr_key_seed_valid);
     assert!(response.sram.init_done);

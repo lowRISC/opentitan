@@ -33,8 +33,6 @@ macro_rules! execute_test {
         println!("Starting test {}...", stringify!($test));
         let result = $test($($args)*);
         println!("Finished test {}: {:?}", stringify!($test), result);
-        if result.is_err() {
-            return result;
-        }
+        let _ = result?;
     };
 }
