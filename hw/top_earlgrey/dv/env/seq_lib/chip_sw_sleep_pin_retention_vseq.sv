@@ -28,7 +28,7 @@ class chip_sw_sleep_pin_retention_vseq extends chip_sw_base_vseq;
     // revise code to get value from gpio_if not from ios_if.
     logic [7:0] result;
 
-    result = cfg.chip_vif.ios_if.pins_o[IoA7:IoA0];
+    result = cfg.chip_vif.ios_if.pins[IoA7:IoA0];
 
     return result;
   endfunction : sample_gpio

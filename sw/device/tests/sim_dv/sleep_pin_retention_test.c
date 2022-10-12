@@ -86,7 +86,8 @@ void ottf_external_isr(void) {
  * DV env checks all PIN value. SW simply drives the GPIO and invert the value
  * for retention.
  */
-void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio, int round) {
+void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
+               int round) {
   uint8_t gpio_val = 0;
   dif_pinmux_pad_kind_t pad_kind;
   dif_pinmux_sleep_mode_t pad_mode;
@@ -113,7 +114,8 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio, int
     // GPIO are assigned starting from MIO0
     pad_mode = ((gpio_val >> i) & 0x1) ? kDifPinmuxSleepModeLow
                                        : kDifPinmuxSleepModeHigh;
-    CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(pinmux, i, pad_kind, pad_mode));
+    CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(
+        pinmux, kTopEarlgreyPinmuxMioOutIoa0 + i, pad_kind, pad_mode));
   }
 
   // 5. Initiate sleep mode
@@ -122,6 +124,12 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio, int
   // 6. WFI()
   LOG_INFO("Entering low power mode.");
   wait_for_interrupt();
+
+  // 7. Turn-off retention.
+  for (int i = 0; i < kNumGpioPads; i++) {
+    CHECK_DIF_OK(dif_pinmux_pad_sleep_clear_state(
+        pinmux, kTopEarlgreyPinmuxMioOutIoa0 + i, pad_kind));
+  }
 }
 
 /**
@@ -131,6 +139,8 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio, int
  */
 void gpio_init(const dif_pinmux_t *pinmux, const dif_gpio_t *gpio) {
   // Drive GPIO first
+  CHECK_DIF_OK(
+      dif_gpio_output_set_enabled_all(gpio, (dif_gpio_state_t)0x000000FFu));
   CHECK_DIF_OK(dif_gpio_write_masked(gpio, (dif_gpio_mask_t)0x000000FF,
                                      (dif_gpio_state_t)0x00000000));
 
