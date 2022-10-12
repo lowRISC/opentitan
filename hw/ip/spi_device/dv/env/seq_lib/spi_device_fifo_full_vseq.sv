@@ -10,7 +10,7 @@ class spi_device_fifo_full_vseq extends spi_device_txrx_vseq;
 
   // additional constraint for tx_total_bytes to transfer more data
   constraint tx_total_bytes_additional_c {
-    tx_total_bytes inside {[5 * SRAM_SIZE : 10 * SRAM_SIZE]};
+    tx_total_bytes inside {[5 * SRAM_SIZE : 7 * SRAM_SIZE]};
   }
 
   constraint tx_delay_c {
@@ -21,7 +21,7 @@ class spi_device_fifo_full_vseq extends spi_device_txrx_vseq;
     rx_delay dist {
       0              :/ 1,
       [1   : 100]    :/ 1,
-      [101 : 10_000] :/ 8
+      [101 : 2_000]  :/ 8
     };
   }
 
