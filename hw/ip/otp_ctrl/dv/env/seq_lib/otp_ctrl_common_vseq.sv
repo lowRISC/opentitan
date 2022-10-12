@@ -45,7 +45,13 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
   endtask
 
   virtual task body();
-    run_common_vseq_wrapper(num_trans);
+    if (common_seq_type == "sec_cm_fi") begin
+      // OTP_CTRL has many sec_cm items, so too many iterations of this test will consume too much
+      // simulation time and eventually causes timeout. So we reduce to 10 iterations.
+      run_sec_cm_fi_vseq(10);
+    end else begin
+      run_common_vseq_wrapper(num_trans);
+    end
   endtask : body
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
