@@ -1818,19 +1818,31 @@ class qsubOptions():
 
         args = getattr(self.args, 'command_args', [])
         args = getattr(self.args, 'xterm_args', args)
+        # ---------------- command file -------------
+        cwd = os.getcwd()
+        command_file = cwd + '/command_file_' + str(os.getpid())
+        try:
+            with open(command_file, 'w') as f_command:
+                command_temp = str(self.args.command)
+                command_temp = command_temp.replace('"', '')
+                f_command.write(command_temp)
+        except IOError:
+            error_msg = 'Error: problem with open File: ' + str(f_command)
+            raise IOError(error_msg)
 
-        exestring = ' '.join([program] + options + [self.args.command] + args)
+        os.chmod(command_file, 0o0777)
+        exestring = ' '.join([program] + options + [command_file] + args)
         exestring = exestring.replace('-pe lammpi 1', '')
         exestring = exestring.replace('-slot', '-pe make')
         exestring = exestring.replace('-ll ', '-l ')
         exestring = exestring.replace('-t 0', '')
         #        exestring = exestring.replace('-j y','')
-
+        print('INFO: sge command file = ' + command_file)
         if mode == 'echo':
             return (exestring)
         elif mode == 'local':
             import subprocess
-            p = subprocess.Popen(exestring,
+            p = subprocess.Popen(command_file,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
                                  shell=True)
