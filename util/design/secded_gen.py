@@ -374,6 +374,7 @@ def _ecc_pick_code(config: Dict[str, Any], codetype: str, k: int) -> Tuple[int, 
     raise Exception(f'ECC for length {k} of type {codetype} unsupported')
 
 
+@functools.lru_cache(maxsize=None)
 def _ecc_encode(k: int,
                 m: int, bitmasks: List[int], invert: int,
                 dataword: int) -> int:
@@ -592,6 +593,7 @@ def _inv_hamming_code(k, m):
 # k = data bits
 # m = parity bits
 # generate hamming code
+@functools.lru_cache(maxsize=None)
 def _hamming_code(k, m):
 
     n = k + m
