@@ -63,5 +63,9 @@ build:ubsan --strip=never
 build:ubsan --copt -fno-omit-frame-pointer
 build:ubsan --linkopt -fsanitize=undefined
 
+# Enable the rust 'clippy' linter.
+build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
+build --output_groups=+clippy_checks
+
 # Import site-specific configuration.
 try-import .bazelrc-site
