@@ -205,7 +205,7 @@ pub struct SessionStopResult {}
 fn stop_session(run_file_fn: impl FnOnce(u16) -> PathBuf, port: u16) -> Result<Box<dyn Serialize>> {
     // Read the pid file corresponding to the requested TCP port.
     let path = run_file_fn(port);
-    let pid: i32 = FromStr::from_str(&fs::read_to_string(&path)?.trim())?;
+    let pid: i32 = FromStr::from_str(fs::read_to_string(&path)?.trim())?;
     // Send signal to daemon process, asking it to terminate.
     signal::kill(Pid::from_raw(pid), Signal::SIGTERM)?;
     // Wait for daemon process to stop.
@@ -245,7 +245,7 @@ fn main() -> Result<()> {
                 // Report any error to parent process though stdout pipe.
                 serde_json::to_writer::<io::Stdout, Result<SessionStartResult, String>>(
                     io::stdout(),
-                    &Err(format!("{}", e).to_string()),
+                    &Err(format!("{}", e)),
                 )?;
                 process::exit(1)
             }
@@ -256,7 +256,7 @@ fn main() -> Result<()> {
     let base_dirs = BaseDirs::new().unwrap();
     let run_user_dir = base_dirs
         .runtime_dir()
-        .ok_or(anyhow!("No /run/user directory"))?;
+        .ok_or_else(|| anyhow!("No /run/user directory"))?;
     let run_file_fn = |port: u16| {
         let mut p = PathBuf::from(run_user_dir);
         p.push(format!("opentitansession.{}.pid", port));
