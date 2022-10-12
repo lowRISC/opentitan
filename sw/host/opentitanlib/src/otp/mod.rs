@@ -5,6 +5,8 @@
 pub mod alert_handler;
 pub mod alert_handler_regs;
 pub mod lc_state;
+// TODO(lowRISC/opentitan#15443): Fix this lint.
+#[allow(clippy::module_inception)]
 pub mod otp;
 pub mod otp_img;
 pub mod otp_mmap;
@@ -26,7 +28,7 @@ mod tests {
         let result = vmem.generate(keys, &lc_state)?;
         let expected = std::fs::read_to_string(testdata!("output.vmem"))?;
         let expected = expected
-            .split("\n")
+            .split('\n')
             .filter(|s| !s.is_empty())
             .collect::<Vec<&str>>();
 

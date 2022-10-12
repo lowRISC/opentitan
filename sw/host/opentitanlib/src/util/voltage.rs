@@ -46,7 +46,7 @@ mod tests {
     fn test_conversions() -> Result<()> {
         assert_eq!(Voltage(2.5).as_volts(), 2.5);
         assert_eq!(Voltage(2.5).as_millivolts(), 2500);
-        assert_eq!(Voltage(3.141592654).as_millivolts(), 3141);
+        assert_eq!(Voltage(3.1173).as_millivolts(), 3117);
         Ok(())
     }
 }

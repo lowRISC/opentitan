@@ -162,7 +162,7 @@ impl<Msg: DeserializeOwned + Serialize, T: CommandHandler<Msg>> JsonSocketServer
                     Self::process_any_requests(conn, &mut self.command_handler)?;
                 }
                 // Return whether this connection object should be dropped.
-                return Ok((conn.rx_eof && (conn.tx_buf.len() == 0)) || conn.broken);
+                Ok((conn.rx_eof && (conn.tx_buf.is_empty())) || conn.broken)
             }
             None => bail!("Connection don't exist token:{:#X}", event.token().0),
         }
@@ -267,7 +267,7 @@ impl Connection {
 
     // Transmit as much data out of tx_buf as socket will allow.
     fn write(&mut self) -> Result<()> {
-        while self.tx_buf.len() > 0 {
+        while !self.tx_buf.is_empty() {
             match self.socket.write(&self.tx_buf) {
                 Ok(n) => {
                     if n < self.tx_buf.len() {

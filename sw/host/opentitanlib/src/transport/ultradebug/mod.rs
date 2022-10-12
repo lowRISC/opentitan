@@ -53,14 +53,14 @@ impl Ultradebug {
 
     /// Construct an `ftdi::Device` for the specified `interface` on the Ultradebug device.
     pub fn from_interface(&self, interface: ftdi::Interface) -> Result<ftdi::Device> {
-        Ok(ftdi::Device::from_description_serial(
+        ftdi::Device::from_description_serial(
             interface,
             self.usb_vid.unwrap_or(Ultradebug::VID_GOOGLE),
             self.usb_pid.unwrap_or(Ultradebug::PID_ULTRADEBUG),
             None,
             self.usb_serial.clone(),
         )
-        .context("FTDI error")?)
+        .context("FTDI error")
     }
 
     // Create an instance of an MPSSE context bound to Ultradebug interface B.

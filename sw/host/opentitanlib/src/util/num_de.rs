@@ -84,9 +84,7 @@ where
         }
     }
 
-    deserializer.deserialize_string(Visitor {
-        0: PhantomData::<T>,
-    })
+    deserializer.deserialize_string(Visitor(PhantomData::<T>))
 }
 
 /// Placeholder type for values that cannot be resolved during deserialization.

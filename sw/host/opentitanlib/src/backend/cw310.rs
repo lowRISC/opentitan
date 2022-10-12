@@ -24,7 +24,7 @@ pub fn create(args: &BackendOpts) -> Result<Box<dyn Transport>> {
         .cw310_uarts
         .as_ref()
         .map(|v| v.split(',').collect::<Vec<&str>>())
-        .unwrap_or(Vec::new());
+        .unwrap_or_default();
     Ok(Box::new(CW310::new(
         args.usb_vid,
         args.usb_pid,

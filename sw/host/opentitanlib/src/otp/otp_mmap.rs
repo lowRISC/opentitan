@@ -123,7 +123,7 @@ impl OtpMap {
                     .digests
                     .iter_mut()
                     .find(|v| v.name == "CnstyDigest")
-                    .ok_or(anyhow!("Couldn't find digest info"))?;
+                    .ok_or_else(|| anyhow!("Couldn't find digest info"))?;
 
                 const IV_SIZE: usize = std::mem::size_of::<DigestIV>();
                 const CNST_SIZE: usize = std::mem::size_of::<DigestCnst>();

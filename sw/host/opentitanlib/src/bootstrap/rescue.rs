@@ -88,7 +88,7 @@ impl Frame {
         // cryptolib.
         let min_addr = match payload[Self::HEADER_ALIGNMENT..]
             .chunks(Self::HEADER_ALIGNMENT)
-            .position(|c| &c[0..4] == &Self::MAGIC_HEADER && &c[4..8] != &Self::CRYPTOLIB_TELL)
+            .position(|c| c[0..4] == Self::MAGIC_HEADER && c[4..8] != Self::CRYPTOLIB_TELL)
         {
             Some(n) => (n + 1) * Self::HEADER_ALIGNMENT,
             None => bail!(RescueError::ImageFormatError),
@@ -97,7 +97,7 @@ impl Frame {
         // Find third occurrence of magic value.
         let max_addr = match payload[min_addr + Self::HEADER_ALIGNMENT..]
             .chunks(Self::HEADER_ALIGNMENT)
-            .position(|c| &c[0..4] == &Self::MAGIC_HEADER)
+            .position(|c| c[0..4] == Self::MAGIC_HEADER)
         {
             Some(n) => (n + 1) * Self::HEADER_ALIGNMENT + min_addr,
             None => payload.len(),
@@ -106,7 +106,7 @@ impl Frame {
         // Trim trailing 0xff bytes.
         let max_addr = (payload[..max_addr]
             .chunks(4)
-            .rposition(|c| c != &[0xff; 4])
+            .rposition(|c| c != [0xff; 4])
             .unwrap_or(0)
             + 1)
             * 4;
@@ -119,7 +119,7 @@ impl Frame {
             let nonempty_addr = addr
                 + payload[addr..]
                     .chunks(4)
-                    .position(|c| c != &[0xff; 4])
+                    .position(|c| c != [0xff; 4])
                     .unwrap()
                     * 4;
             let skip_addr = nonempty_addr & !Self::FLASH_SECTOR_MASK;
@@ -144,7 +144,9 @@ impl Frame {
             addr += Self::DATA_LEN;
             frame_num += 1;
         }
-        frames.last_mut().map(|f| f.header.frame_num |= Self::EOF);
+        if let Some(f) = frames.last_mut() {
+            f.header.frame_num |= Self::EOF;
+        }
         frames
             .iter_mut()
             .for_each(|f| f.header.hash = f.header_hash());
@@ -259,13 +261,13 @@ impl Rescue {
                 if !self.expect_string(uart, "Bldr |") {
                     continue;
                 }
-                uart.write(&['r' as u8])?;
+                uart.write(b"r")?;
                 eprint!("a.");
                 while stopwatch.elapsed() < timeout {
                     if !self.expect_string(uart, "oops?|") {
                         continue;
                     }
-                    uart.write(&['r' as u8])?;
+                    uart.write(b"r")?;
                     eprint!("b.");
                     if self.expect_string(uart, "escue") {
                         eprintln!("c: Entered rescue mode!");

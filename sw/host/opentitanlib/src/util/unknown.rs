@@ -253,7 +253,7 @@ mod tests {
     #[test]
     fn test_serde_error() -> Result<()> {
         let json = r#"{"a":"True","b":"False","c":-1}"#;
-        let de = serde_json::from_str::<SomeBools>(&json);
+        let de = serde_json::from_str::<SomeBools>(json);
         let err = de.unwrap_err().to_string();
         assert_eq!(
             err,

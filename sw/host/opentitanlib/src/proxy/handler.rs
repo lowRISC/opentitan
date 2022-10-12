@@ -186,7 +186,7 @@ impl<'a> TransportCommandHandler<'a> {
                         // SPI instance.
                         self.spi_chip_select
                             .entry(id.to_string())
-                            .or_insert(Vec::new())
+                            .or_default()
                             .push(instance.assert_cs()?);
                         Ok(Response::Spi(SpiResponse::AssertChipSelect))
                     }

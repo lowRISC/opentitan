@@ -78,8 +78,8 @@ impl<T: Flavor> Hyperdebug<T> {
         usb_serial: Option<&str>,
     ) -> Result<Self> {
         let device = UsbBackend::new(
-            usb_vid.unwrap_or(T::get_default_usb_vid()),
-            usb_pid.unwrap_or(T::get_default_usb_pid()),
+            usb_vid.unwrap_or_else(T::get_default_usb_vid),
+            usb_pid.unwrap_or_else(T::get_default_usb_pid),
             usb_serial,
         )?;
 
@@ -171,18 +171,18 @@ impl<T: Flavor> Hyperdebug<T> {
         };
         let result = Hyperdebug::<T> {
             spi_names,
-            spi_interface: spi_interface.ok_or(TransportError::CommunicationError(
-                "Missing SPI interface".to_string(),
-            ))?,
+            spi_interface: spi_interface.ok_or_else(|| {
+                TransportError::CommunicationError("Missing SPI interface".to_string())
+            })?,
             i2c_names,
-            i2c_interface: i2c_interface.ok_or(TransportError::CommunicationError(
-                "Missing I2C interface".to_string(),
-            ))?,
+            i2c_interface: i2c_interface.ok_or_else(|| {
+                TransportError::CommunicationError("Missing I2C interface".to_string())
+            })?,
             uart_ttys,
             inner: Rc::new(Inner {
-                console_tty: console_tty.ok_or(TransportError::CommunicationError(
-                    "Missing console interface".to_string(),
-                ))?,
+                console_tty: console_tty.ok_or_else(|| {
+                    TransportError::CommunicationError("Missing console interface".to_string())
+                })?,
                 usb_device: RefCell::new(device),
                 gpio: Default::default(),
                 spis: Default::default(),
@@ -334,11 +334,10 @@ impl Inner {
                                 .context("communication error")?;
                             if seen_echo {
                                 callback(line);
-                            } else {
-                                if line.len() >= cmd.len() && line[line.len() - cmd.len()..] == *cmd
-                                {
-                                    seen_echo = true;
-                                }
+                            } else if line.len() >= cmd.len()
+                                && line[line.len() - cmd.len()..] == *cmd
+                            {
+                                seen_echo = true;
                             }
                             line_start = i + 1;
                         }
@@ -438,7 +437,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             }
             _ => Err(TransportError::InvalidInstance(
                 TransportInterfaceType::Uart,
-                instance.to_string().into(),
+                instance.to_string(),
             )
             .into()),
         }

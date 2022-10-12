@@ -84,7 +84,7 @@ impl Subprocess {
         while deadline > Instant::now() {
             {
                 let a = self.accumulated_output.lock().unwrap();
-                if let Some(captures) = re.captures(&a.as_str()) {
+                if let Some(captures) = re.captures(a.as_str()) {
                     let val = captures.get(1).expect("expected a capture");
                     return Ok(val.as_str().to_owned());
                 }

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{bail, ensure, Result};
 use std::convert::TryInto;
 
 /// PRESENT block cipher.
@@ -15,9 +15,11 @@ pub struct Present {
 
 impl Present {
     pub fn try_new_rounds(key: Vec<u8>, rounds: usize) -> Result<Present> {
-        if rounds < 1 || rounds > 254 {
-            bail!("unsupported number of rounds {}", rounds);
-        }
+        ensure!(
+            (1..=254).contains(&rounds),
+            "unsupported number of rounds {}",
+            rounds
+        );
 
         let round_keys = match key.len() {
             10 => generate_round_keys_80(key, rounds),

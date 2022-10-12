@@ -64,7 +64,7 @@ impl Bus for ProxyI2c {
                 for pair in resp.iter().zip(transaction.iter_mut()) {
                     match pair {
                         (I2cTransferResponse::Read { data }, Transfer::Read(rbuf)) => {
-                            rbuf.clone_from_slice(&data);
+                            rbuf.clone_from_slice(data);
                         }
                         (I2cTransferResponse::Write, Transfer::Write(_)) => (),
                         _ => bail!(ProxyError::UnexpectedReply()),

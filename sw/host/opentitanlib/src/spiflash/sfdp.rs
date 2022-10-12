@@ -492,6 +492,7 @@ mod test {
     #[rustfmt::skip]
     const SFDP_MX66L1G: &[u8; 512] = include_bytes!("SFDP_MX66L1G.bin");
 
+    #[allow(clippy::bool_assert_comparison)]
     #[test]
     fn test_decode_mx66l1g() -> Result<()> {
         let sfdp = Sfdp::try_from(&SFDP_MX66L1G[..])?;

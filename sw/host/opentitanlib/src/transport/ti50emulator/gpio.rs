@@ -80,7 +80,7 @@ impl GpioConfiguration {
     /// Update current GPIO configurations by applying changes
     /// encoded in `buf`.
     pub fn update(&mut self, buf: &[u8]) -> Result<()> {
-        if buf.len() > 0 {
+        if !buf.is_empty() {
             for data in buf.iter() {
                 match GpioStateUpdate::try_from(*data)? {
                     GpioStateUpdate::Value(value) => {
@@ -347,7 +347,7 @@ impl GpioPin for Ti50GpioPin {
         self.check_state()?;
         self.reconnect()?;
         self.update_dut_state()?;
-        return self.validate_and_read();
+        self.validate_and_read()
     }
 
     /// Sets the value of the GPIO pin to `value`.
@@ -355,7 +355,7 @@ impl GpioPin for Ti50GpioPin {
         self.check_state()?;
         self.reconnect()?;
         self.update_dut_state()?;
-        return self.validate_and_write(value);
+        self.validate_and_write(value)
     }
 
     /// Sets the mode of the GPIO pin as input, output, or open drain I/O.

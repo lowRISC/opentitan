@@ -205,7 +205,7 @@ impl Ti50I2cBus {
                 data.len()
             );
             Ti50BusControl::send_write_request(fd, deadline, addr, data.len() as u16)?;
-            Ti50I2cBus::tx(fd, &data[..], deadline)?;
+            Ti50I2cBus::tx(fd, data, deadline)?;
             return Ti50BusControl::recv_write_response(fd, deadline);
         }
         bail!(I2cError::Generic("Invalid socket".to_string()));
