@@ -30,7 +30,6 @@ fusesoc_build(
         "//:cores",
     ],
     data = ["//hw/ip/otbn:all_files"],
-    flags = ["--verilator_options=--threads 1"],
     output_groups = {
         "binary": ["sim-verilator/Vchip_sim_tb"],
     },
@@ -47,11 +46,9 @@ filegroup(
 )
 
 # This is used in CI steps that do not want to run Verilator tests, and thus
-# do not want to accidentally build the Verilator model. This causes the
-# //hw:verilator target to not emit any files, which will break any tests that
-# actually rely on this; builds will succeed, tests will fail.
-#
-# FIXME(lowRISC/opentitan#12259): This is a temporary workaround.
+# do not want to build the Verilator model. This causes the //hw:verilator
+# target to not emit any files, which will break any tests that rely on this;
+# builds will succeed, tests will fail.
 config_setting(
     name = "disable_verilator_build",
     values = {"define": "DISABLE_VERILATOR_BUILD=true"},
