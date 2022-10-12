@@ -33,6 +33,11 @@ rust_binary(
         "//sw/host/opentitanlib/opentitantool_derive",
     ],
     stamp = 1,
+    tags = [
+        # Only until we figure out how to deal with version.rs including
+        # the bazel voltatile-status.txt file.
+        "no-clippy",
+    ],
     deps = [
         "//sw/host/opentitanlib",
         "//third_party/rust/crates:anyhow",

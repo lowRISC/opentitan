@@ -22,6 +22,6 @@ impl CommandDispatch for SetPll {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         log::info!("Programming the CDCE906 PLL chip with defaults");
-        Ok(transport.dispatch(&cw310::SetPll {})?)
+        transport.dispatch(&cw310::SetPll {})
     }
 }

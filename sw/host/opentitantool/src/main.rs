@@ -22,6 +22,7 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::backend;
 
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, StructOpt, CommandDispatch)]
 enum RootCommandHierarchy {
     // Not flattened because `Bootstrap` is a leaf command.
@@ -196,7 +197,7 @@ where
     let command = RootCommandHierarchy::from_iter(
         std::iter::once(OsString::from("opentitantool")).chain(args),
     );
-    print_command_result(opts, command.run(opts, &transport))?;
+    print_command_result(opts, command.run(opts, transport))?;
     Ok(())
 }
 

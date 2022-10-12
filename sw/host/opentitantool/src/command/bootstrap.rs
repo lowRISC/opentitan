@@ -51,9 +51,9 @@ impl BootstrapCommand {
             !(self.filename.len() > 1 || self.filename[0].contains('@')),
             "The `emulator` protocol does not support image assembly"
         );
-        Ok(transport.dispatch(&transport::Bootstrap {
+        transport.dispatch(&transport::Bootstrap {
             image_path: PathBuf::from(&self.filename[0]),
-        })?)
+        })
     }
 
     fn payload(&self) -> Result<Vec<u8>> {
@@ -85,7 +85,7 @@ impl CommandDispatch for BootstrapCommand {
         let payload = self.payload()?;
         let progress = app::progress_bar(payload.len() as u64);
         Bootstrap::update_with_progress(
-            &transport,
+            transport,
             &self.bootstrap_options,
             &payload,
             |_, chunk| {
