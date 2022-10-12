@@ -1,0 +1,45 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Andreas Kurth <adk@lowrisc.org>
+Date: Wed, 12 Oct 2022 12:52:14 +0000
+Subject: [PATCH] Fix lint
+
+Signed-off-by: Andreas Kurth <adk@lowrisc.org>
+---
+ src/dm_mem.sv |  14 +++++++++-------
+ 1 file changed, 9 insertions(+), 5 deletions(-)
+
+diff --git a/src/dm_mem.sv b/src/dm_mem.sv
+index c1cc0e87b..cb95e2fc0 100644
+--- a/src/dm_mem.sv
++++ b/src/dm_mem.sv
+@@ -265,12 +265,13 @@ module dm_mem #(
+           // core can write data registers
+           [DataBaseAddr:DataEndAddr]: begin
+             data_valid_o = 1'b1;
+-            for (int dc = 0; dc < dm::DataCount; dc++) begin
++            for (int unsigned dc = 0; dc < dm::DataCount; dc++) begin
+               if ((addr_i[DbgAddressBits-1:2] - DataBaseAddr[DbgAddressBits-1:2]) == dc) begin
+-                for (int i = 0; i < $bits(be_i); i++) begin
++                for (int unsigned i = 0; i < $bits(be_i); i++) begin
+                   if (be_i[i]) begin
+                     if (i>3) begin // for upper 32bit data write (only used for BusWidth ==  64)
+-                      if ((dc+1) < dm::DataCount) begin // ensure we write to an implemented data register
++                      // ensure we write to an implemented data register
++                      if (dc < (dm::DataCount - 1)) begin
+                         data_bits[dc+1][(i-4)*8+:8] = wdata_i[i*8+:8];
+                       end
+                     end else begin // for lower 32bit data write
+@@ -310,8 +311,11 @@ module dm_mem #(
+ 
+           [DataBaseAddr:DataEndAddr]: begin
+             rdata_d = {
+-                      data_i[$clog2(dm::DataCount)'(((addr_i[DbgAddressBits-1:3] - DataBaseAddr[DbgAddressBits-1:3]) << 1) + 1'b1)],
+-                      data_i[$clog2(dm::DataCount)'(((addr_i[DbgAddressBits-1:3] - DataBaseAddr[DbgAddressBits-1:3]) << 1))]
++                      data_i[$clog2(dm::DataCount)'(((addr_i[DbgAddressBits-1:3]
++                                                      - DataBaseAddr[DbgAddressBits-1:3]) << 1)
++                                                    + 1'b1)],
++                      data_i[$clog2(dm::DataCount)'(((addr_i[DbgAddressBits-1:3]
++                                                      - DataBaseAddr[DbgAddressBits-1:3]) << 1))]
+                       };
+           end
+ 

@@ -81,6 +81,9 @@ waive -rules ONE_BRANCH    -location {dm_mem.sv} -regexp {unique case statement 
       -comment "easier to write this way for extendability"
 waive -rules NOT_READ -location {dm_mem.sv} -regexp {Signal 'ac_ar.(regno.13.|zero1)' is not read from in module 'dm_mem'} \
       -comment "These bits and fields are not used, but all other bits and fields are used"
+waive -rules LOOP_VAR_OP -location {dm_mem.sv} \
+      -msg {Loop variable 'dc' is in arithmetic expression 'dc < (dm::DataCount - 1)' with non-constant terms} \
+      -comment "This is incorrect because all terms except the loop variable are constant in the arithmetic expression."
 
 # dm_sba
 waive -rules HIER_BRANCH_NOT_READ  -location {dm_sba.sv}            -regexp {Net 'dmactive_i' is not read from in module 'dm_sba'} \
