@@ -497,7 +497,10 @@ class cip_base_vseq #(
         else break;
       end
     end
-    if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.sample(), {NUM_MAX_INTERRUPTS{1'b0}})
+    if (!cfg.under_reset) begin
+      dv_utils_pkg::interrupt_t mask = dv_utils_pkg::interrupt_t'((1 << cfg.num_interrupts) - 1);
+      `DV_CHECK_EQ(cfg.intr_vif.sample() & mask, '0)
+    end
   endtask
 
   virtual task check_no_fatal_alerts();

@@ -185,8 +185,8 @@ class reset_class;
     child_clk_rst_vif.set_active();
     `DV_CHECK_RANDOMIZE_FATAL(this);
 
-    apply_resets();
     set_quiescent();
+    apply_resets();
 
     // Run with child clock faster than reference.
     set_child_period(ChildClkFaster);
