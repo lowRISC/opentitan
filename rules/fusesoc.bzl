@@ -36,6 +36,11 @@ def _fusesoc_build_impl(ctx):
         verilator_options = ctx.attr.verilator_options[BuildSettingInfo].value
         flags.append("--verilator_options={}".format(" ".join(verilator_options)))
 
+    cores_roots = {}
+    for c in ctx.files.cores:
+        if c.dirname not in cores_roots:
+            cores_roots[c.dirname] = True
+
     # Note: the `fileset_top` flag used above is specific to the OpenTitan
     # project to select the correct RTL fileset.
     ctx.actions.run(
@@ -43,8 +48,8 @@ def _fusesoc_build_impl(ctx):
         outputs = outputs,
         inputs = ctx.files.srcs + ctx.files.cores,
         arguments = [
-            "--cores-root={}".format(c.dirname)
-            for c in ctx.files.cores
+            "--cores-root={}".format(c)
+            for c in cores_roots.keys()
         ] + [
             "run",
             "--flag=fileset_top",
