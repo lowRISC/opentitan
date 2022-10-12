@@ -83,7 +83,7 @@ impl Uart for UltradebugUart {
 
     fn write(&self, mut buf: &[u8]) -> Result<()> {
         let inner = self.inner.borrow();
-        while buf.len() > 0 {
+        while !buf.is_empty() {
             let n = inner.device.write_data(buf).context("UART write error")?;
             buf = &buf[n as usize..];
         }

@@ -65,11 +65,7 @@ impl Uart for SerialPortUart {
     /// Reads UART receive data into `buf`, returning the number of bytes read.
     /// This function _may_ block.
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        Ok(self
-            .port
-            .borrow_mut()
-            .read(buf)
-            .context("UART read error")?)
+        self.port.borrow_mut().read(buf).context("UART read error")
     }
 
     /// Reads UART receive data into `buf`, returning the number of bytes read.
@@ -83,12 +79,12 @@ impl Uart for SerialPortUart {
             _ => result,
         };
         port.set_timeout(Self::FOREVER).context("UART read error")?;
-        Ok(len.context("UART read error")?)
+        len.context("UART read error")
     }
 
     /// Writes data from `buf` to the UART.
     fn write(&self, mut buf: &[u8]) -> Result<()> {
-        while buf.len() > 0 {
+        while !buf.is_empty() {
             let written = self
                 .port
                 .borrow_mut()

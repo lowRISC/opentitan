@@ -35,7 +35,7 @@ impl UartParams {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum FlowControl {
     // No flow control.

@@ -147,9 +147,9 @@ impl<'a> Bootstrap<'a> {
             return Ok(());
         }
         let updater: Box<dyn UpdateProtocol> = match options.protocol {
-            BootstrapProtocol::Primitive => Box::new(primitive::Primitive::new(&options)),
-            BootstrapProtocol::Legacy => Box::new(legacy::Legacy::new(&options)),
-            BootstrapProtocol::Rescue => Box::new(rescue::Rescue::new(&options)),
+            BootstrapProtocol::Primitive => Box::new(primitive::Primitive::new(options)),
+            BootstrapProtocol::Legacy => Box::new(legacy::Legacy::new(options)),
+            BootstrapProtocol::Rescue => Box::new(rescue::Rescue::new(options)),
             BootstrapProtocol::Eeprom => Box::new(eeprom::Eeprom::new()),
             BootstrapProtocol::Emulator => {
                 // Not intended to be implemented by this struct.
@@ -174,7 +174,7 @@ impl<'a> Bootstrap<'a> {
         payload: &[u8],
         progress: &dyn Fn(u32, u32),
     ) -> Result<()> {
-        updater.verify_capabilities(&self, transport)?;
+        updater.verify_capabilities(self, transport)?;
         let perform_bootstrap_reset = updater.uses_common_bootstrap_reset();
 
         if perform_bootstrap_reset {
@@ -183,7 +183,7 @@ impl<'a> Bootstrap<'a> {
             transport.reset_target(self.reset_delay, self.clear_uart_rx)?;
             log::info!("Performing bootstrap...");
         }
-        let result = updater.update(&self, transport, payload, progress);
+        let result = updater.update(self, transport, payload, progress);
 
         if perform_bootstrap_reset {
             log::info!("Releasing bootstrap pins...");

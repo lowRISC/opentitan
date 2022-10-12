@@ -62,7 +62,7 @@ impl Ti50Emulator {
                 instance_directory: instance_directory.clone(),
                 process: EmulatorProcess::init(
                     &instance_directory,
-                    &executable_directory,
+                    executable_directory,
                     executable,
                 )?,
                 emulator: None,

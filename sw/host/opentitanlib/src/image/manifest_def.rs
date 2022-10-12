@@ -168,9 +168,8 @@ impl<T: ParseInt + fmt::LowerHex, const N: usize> ManifestPacked<[T; N]>
     fn unpack(self, name: &'static str) -> Result<[T; N]> {
         let results = self.map(|e| e.unpack(name));
         if let Some(err_idx) = results.iter().position(Result::is_err) {
-            match IntoIterator::into_iter(results).nth(err_idx).unwrap()? {
-                _ => unreachable!(),
-            }
+            IntoIterator::into_iter(results).nth(err_idx).unwrap()?;
+            unreachable!();
         } else {
             Ok(results.map(|x| x.unwrap()))
         }
@@ -178,7 +177,7 @@ impl<T: ParseInt + fmt::LowerHex, const N: usize> ManifestPacked<[T; N]>
 
     fn overwrite(&mut self, o: Self) {
         // Only perform the overwrite if all elements of `o` are present.
-        if o.iter().fold(true, |prev, v| prev && v.0.is_some()) {
+        if o.iter().all(|v| v.0.is_some()) {
             *self = o;
         }
     }

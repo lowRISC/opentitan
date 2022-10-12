@@ -108,14 +108,10 @@ impl Uart for Ti50Uart {
                     .set_read_timeout(Some(timeout))
                     .context("Set timeoout")?;
                 match socket.read(buf) {
-                    Ok(n) => {
-                        return Ok(n);
-                    }
+                    Ok(n) => Ok(n),
                     Err(error) => match error.kind() {
-                        ErrorKind::TimedOut | ErrorKind::WouldBlock => return Ok(0),
-                        _ => {
-                            return Err(error).context("UART read error?");
-                        }
+                        ErrorKind::TimedOut | ErrorKind::WouldBlock => Ok(0),
+                        _ => Err(error).context("UART read error?"),
                     },
                 }
             }
@@ -149,6 +145,6 @@ impl Uart for Ti50Uart {
             .bytes()
             .take_while(Result::is_ok)
             .count();
-        return Ok(());
+        Ok(())
     }
 }

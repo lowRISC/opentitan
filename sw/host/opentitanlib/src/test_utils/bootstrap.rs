@@ -32,7 +32,7 @@ impl Bootstrap {
         let payload = std::fs::read(file)?;
         let progress = app::progress_bar(payload.len() as u64);
         bootstrap::Bootstrap::update_with_progress(
-            &transport,
+            transport,
             &self.options,
             &payload,
             |_, chunk| {

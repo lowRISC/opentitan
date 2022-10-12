@@ -92,8 +92,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     let mut env = TransportWrapper::new(backend);
 
     if args.conf.is_empty() {
-        for conf_file in default_conf {
-            // Zero or one iteration
+        if let Some(conf_file) = default_conf {
             process_config_file(&mut env, conf_file)?
         }
     }

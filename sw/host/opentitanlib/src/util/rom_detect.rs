@@ -15,7 +15,7 @@ use crate::uart::console::{ExitStatus, UartConsole};
 use crate::util::usr_access::usr_access_get;
 
 arg_enum! {
-    #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq)]
+    #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
     pub enum RomKind {
         TestRom,
         Rom,
@@ -31,10 +31,10 @@ pub struct RomDetect {
 impl RomDetect {
     pub fn new(kind: RomKind, bitstream: &[u8], timeout: Option<Duration>) -> Result<RomDetect> {
         Ok(RomDetect {
-            kind: kind,
+            kind,
             usr_access: usr_access_get(bitstream)?,
             console: UartConsole {
-                timeout: timeout,
+                timeout,
                 exit_success: Some(Regex::new(r"(\w*ROM):([^\r\n]+)[\r\n]").unwrap()),
                 ..Default::default()
             },

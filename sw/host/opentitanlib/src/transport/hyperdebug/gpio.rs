@@ -31,7 +31,7 @@ impl GpioPin for HyperdebugGpioPin {
             Err(TransportError::CommunicationError("No output from gpioget".to_string()).into());
         self.inner
             .execute_command(&format!("gpioget {}", &self.pinname), |line| {
-                result = Ok(line.trim_start().starts_with("1"))
+                result = Ok(line.trim_start().starts_with('1'))
             })?;
         result
     }
@@ -39,7 +39,7 @@ impl GpioPin for HyperdebugGpioPin {
     /// Sets the value of the GPIO pin `id` to `value`.
     fn write(&self, value: bool) -> Result<()> {
         self.inner.execute_command(
-            &format!("gpioset {} {}", &self.pinname, if value { 1 } else { 0 }),
+            &format!("gpioset {} {}", &self.pinname, u32::from(value)),
             |_| {},
         )
     }

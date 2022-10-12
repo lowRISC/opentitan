@@ -86,7 +86,7 @@ impl Inner {
     fn send_json_request(&self, req: Request) -> Result<()> {
         let mut conn = self.writer.borrow_mut();
         serde_json::to_writer(&mut *conn, &Message::Req(req))?;
-        conn.write(&[b'\n'])?;
+        conn.write_all(&[b'\n'])?;
         conn.flush()?;
         Ok(())
     }

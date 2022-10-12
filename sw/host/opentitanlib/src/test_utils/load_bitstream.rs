@@ -58,6 +58,6 @@ impl LoadBitstream {
             rom_timeout: self.rom_timeout,
             progress: Some(pfunc),
         };
-        Ok(transport.dispatch(&operation)?)
+        transport.dispatch(&operation)
     }
 }

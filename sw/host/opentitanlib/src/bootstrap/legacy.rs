@@ -71,12 +71,7 @@ impl Frame {
     fn from_payload(payload: &[u8]) -> Vec<Frame> {
         let mut frames = Vec::new();
 
-        let max_addr = (payload
-            .chunks(4)
-            .rposition(|c| c != &[0xff; 4])
-            .unwrap_or(0)
-            + 1)
-            * 4;
+        let max_addr = (payload.chunks(4).rposition(|c| c != [0xff; 4]).unwrap_or(0) + 1) * 4;
 
         let mut frame_num = 0;
         let mut addr = 0;
@@ -85,7 +80,7 @@ impl Frame {
             let nonempty_addr = addr
                 + payload[addr..]
                     .chunks(4)
-                    .position(|c| c != &[0xff; 4])
+                    .position(|c| c != [0xff; 4])
                     .unwrap()
                     * 4;
             let skip_addr = nonempty_addr & !Self::FLASH_SECTOR_MASK;
@@ -110,7 +105,9 @@ impl Frame {
             addr += Self::DATA_LEN;
             frame_num += 1;
         }
-        frames.last_mut().map(|f| f.header.frame_num |= Self::EOF);
+        if let Some(f) = frames.last_mut() {
+            f.header.frame_num |= Self::EOF;
+        }
         frames
             .iter_mut()
             .for_each(|f| f.header.hash = f.header_hash());
@@ -295,7 +292,7 @@ impl UpdateProtocol for Legacy {
             }
 
             if response[..Frame::HASH_LEN] == frames[first_unacked_index].frame_hash() {
-                first_unacked_index = first_unacked_index + 1;
+                first_unacked_index += 1;
             } else if response[..Frame::HASH_LEN] == frames[second_unacked_index].frame_hash() {
                 first_unacked_index = second_unacked_index + 1;
             } else {

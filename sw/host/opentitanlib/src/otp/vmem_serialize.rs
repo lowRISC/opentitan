@@ -54,7 +54,7 @@ pub type DigestIV = u64;
 pub type DigestCnst = u128;
 
 /// Digest information for an OTP partition.
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum DigestType {
     Unlocked,
     Software,
@@ -143,11 +143,7 @@ impl VmemPartition {
         for (k, chunk) in data_bytes.chunks(8).enumerate() {
             data_blocks.push(u64::from_le_bytes(chunk.try_into().unwrap()));
             let byte_offset = k * 8;
-            data_blocks_defined.push(
-                defined[byte_offset..byte_offset + 8]
-                    .iter()
-                    .fold(false, |a, &b| a || b),
-            );
+            data_blocks_defined.push(defined[byte_offset..byte_offset + 8].iter().any(|b| *b));
         }
 
         if let Some(key_name) = &self.key_name {

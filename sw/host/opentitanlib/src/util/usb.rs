@@ -102,14 +102,11 @@ impl UsbBackend {
     //
 
     pub fn claim_interface(&mut self, iface: u8) -> Result<()> {
-        Ok(self.handle.claim_interface(iface).context("USB error")?)
+        self.handle.claim_interface(iface).context("USB error")
     }
 
     pub fn active_config_descriptor(&self) -> Result<rusb::ConfigDescriptor> {
-        Ok(self
-            .device
-            .active_config_descriptor()
-            .context("USB error")?)
+        self.device.active_config_descriptor().context("USB error")
     }
 
     pub fn bus_number(&self) -> u8 {
@@ -117,14 +114,13 @@ impl UsbBackend {
     }
 
     pub fn port_numbers(&self) -> Result<Vec<u8>> {
-        Ok(self.device.port_numbers().context("USB error")?)
+        self.device.port_numbers().context("USB error")
     }
 
     pub fn read_string_descriptor_ascii(&self, idx: u8) -> Result<String> {
-        Ok(self
-            .handle
+        self.handle
             .read_string_descriptor_ascii(idx)
-            .context("USB error")?)
+            .context("USB error")
     }
 
     //
@@ -140,10 +136,9 @@ impl UsbBackend {
         index: u16,
         buf: &[u8],
     ) -> Result<usize> {
-        Ok(self
-            .handle
+        self.handle
             .write_control(request_type, request, value, index, buf, self.timeout)
-            .context("USB error")?)
+            .context("USB error")
     }
 
     /// Issue a USB control request with optional device-to-host data.
@@ -155,10 +150,9 @@ impl UsbBackend {
         index: u16,
         buf: &mut [u8],
     ) -> Result<usize> {
-        Ok(self
-            .handle
+        self.handle
             .read_control(request_type, request, value, index, buf, self.timeout)
-            .context("USB error")?)
+            .context("USB error")
     }
 
     /// Read bulk data bytes to given USB endpoint.

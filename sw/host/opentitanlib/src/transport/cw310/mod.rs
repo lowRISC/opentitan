@@ -222,10 +222,10 @@ impl Transport for CW310 {
                 fpga_program.progress.as_ref().map(Box::as_ref),
             )?;
             Ok(None)
-        } else if let Some(_) = action.downcast_ref::<FpgaReset>() {
+        } else if action.downcast_ref::<FpgaReset>().is_some() {
             self.device.borrow().reset_sam3u()?;
             Ok(None)
-        } else if let Some(_) = action.downcast_ref::<SetPll>() {
+        } else if action.downcast_ref::<SetPll>().is_some() {
             const TARGET_FREQ: u32 = 100_000_000;
             let usb = self.device.borrow();
             usb.pll_enable(true)?;
@@ -254,7 +254,7 @@ pub struct FpgaProgram<'a> {
     pub rom_timeout: Duration,
     /// A progress function to provide user feedback.
     /// Will be called with the address and length of each chunk sent to the target device.
-    pub progress: Option<Box<dyn Fn(u32, u32) -> () + 'a>>,
+    pub progress: Option<Box<dyn Fn(u32, u32) + 'a>>,
 }
 
 /// Command for Transport::dispatch().

@@ -128,7 +128,7 @@ impl CmdChipSelect {
     fn new(assert_chip_select: bool) -> Self {
         Self {
             packet_id: USB_SPI_PKT_ID_CMD_CHIP_SELECT,
-            flags: if assert_chip_select { 1 } else { 0 },
+            flags: u16::from(assert_chip_select),
         }
     }
 }
@@ -158,7 +158,7 @@ impl HyperdebugSpiTarget {
             USB_SPI_REQ_ENABLE,
             0, /* wValue */
             spi_interface.interface as u16,
-            &mut [],
+            &[],
         )?;
 
         // Exclusively claim SPI interface, preparing for bulk transfers.
@@ -195,7 +195,7 @@ impl HyperdebugSpiTarget {
         let chunk =
             std::cmp::min(resp.max_write_chunk, resp.max_read_chunk).next_power_of_two() / 2;
         Ok(Self {
-            inner: Rc::clone(&inner),
+            inner: Rc::clone(inner),
             interface: *spi_interface,
             _target_idx: idx,
             max_chunk_size: chunk as usize,
@@ -227,7 +227,7 @@ impl HyperdebugSpiTarget {
     /// Receive data for a single SPI operation, using one or more USB packets.
     fn receive(&self, rbuf: &mut [u8]) -> Result<()> {
         let mut resp = RspTransferStart::new();
-        let bytecount = self.usb_read_bulk(&mut resp.as_bytes_mut())?;
+        let bytecount = self.usb_read_bulk(resp.as_bytes_mut())?;
         ensure!(
             bytecount >= 4,
             TransportError::CommunicationError(
@@ -249,7 +249,7 @@ impl HyperdebugSpiTarget {
         let mut index = databytes;
         while index < rbuf.len() {
             let mut resp = RspTransferContinue::new();
-            let bytecount = self.usb_read_bulk(&mut resp.as_bytes_mut())?;
+            let bytecount = self.usb_read_bulk(resp.as_bytes_mut())?;
             ensure!(
                 bytecount > 4,
                 TransportError::CommunicationError(
@@ -269,7 +269,7 @@ impl HyperdebugSpiTarget {
                 )
             );
             let databytes = bytecount - 4;
-            rbuf[index..index + databytes].clone_from_slice(&resp.data[0..0 + databytes]);
+            rbuf[index..index + databytes].clone_from_slice(&resp.data[0..databytes]);
             index += databytes;
         }
         Ok(())
@@ -295,10 +295,10 @@ impl HyperdebugSpiTarget {
 
     fn _do_assert_cs(&self, assert: bool) -> Result<()> {
         let req = CmdChipSelect::new(assert);
-        self.usb_write_bulk(&req.as_bytes())?;
+        self.usb_write_bulk(req.as_bytes())?;
 
         let mut resp = RspChipSelect::new();
-        let bytecount = self.usb_read_bulk(&mut resp.as_bytes_mut())?;
+        let bytecount = self.usb_read_bulk(resp.as_bytes_mut())?;
         ensure!(
             bytecount >= 4,
             TransportError::CommunicationError("Unrecognized reponse to CHIP_SELECT".to_string())
@@ -325,11 +325,10 @@ impl HyperdebugSpiTarget {
 
     /// Receive one USB packet.
     fn usb_read_bulk(&self, buf: &mut [u8]) -> Result<usize> {
-        Ok(self
-            .inner
+        self.inner
             .usb_device
             .borrow()
-            .read_bulk(self.interface.in_endpoint, buf)?)
+            .read_bulk(self.interface.in_endpoint, buf)
     }
 }
 

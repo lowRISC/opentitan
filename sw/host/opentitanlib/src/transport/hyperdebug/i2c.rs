@@ -73,11 +73,11 @@ impl HyperdebugI2cBus {
         usb_handle.claim_interface(i2c_interface.interface)?;
 
         Ok(Self {
-            inner: Rc::clone(&inner),
+            inner: Rc::clone(inner),
             interface: *i2c_interface,
             bus_idx: idx,
-            max_read_size: 0x8000 as usize,
-            max_write_size: 0x1000 as usize,
+            max_read_size: 0x8000,
+            max_write_size: 0x1000,
         })
     }
 
@@ -95,7 +95,7 @@ impl HyperdebugI2cBus {
             // Short format header
             let mut req = CmdTransferShort {
                 port: self.bus_idx | (((wbuf.len() & 0x0F00) >> 4) as u8),
-                addr: addr,
+                addr,
                 write_count: (wbuf.len() & 0x00FF) as u8,
                 read_count: rbuf.len() as u8,
                 data: [0; USB_MAX_SIZE - 4],
@@ -108,7 +108,7 @@ impl HyperdebugI2cBus {
             // Long format header
             let mut req = CmdTransferLong {
                 port: self.bus_idx | (((wbuf.len() & 0x0F00) >> 4) as u8),
-                addr: addr,
+                addr,
                 write_count: (wbuf.len() & 0x00FF) as u8,
                 read_count: (rbuf.len() & 0x007F) as u8,
                 read_count1: (rbuf.len() >> 7) as u8,
@@ -129,7 +129,7 @@ impl HyperdebugI2cBus {
         }
 
         let mut resp = RspTransfer::new();
-        let bytecount = self.usb_read_bulk(&mut resp.as_bytes_mut())?;
+        let bytecount = self.usb_read_bulk(resp.as_bytes_mut())?;
         ensure!(
             bytecount >= 4,
             TransportError::CommunicationError("Unrecognized response to I2C request".to_string())
@@ -170,17 +170,16 @@ impl HyperdebugI2cBus {
 
     /// Receive one USB packet.
     fn usb_read_bulk(&self, buf: &mut [u8]) -> Result<usize> {
-        Ok(self
-            .inner
+        self.inner
             .usb_device
             .borrow()
-            .read_bulk(self.interface.in_endpoint, buf)?)
+            .read_bulk(self.interface.in_endpoint, buf)
     }
 }
 
 impl Bus for HyperdebugI2cBus {
     fn run_transaction(&self, addr: u8, mut transaction: &mut [Transfer]) -> Result<()> {
-        while transaction.len() > 0 {
+        while !transaction.is_empty() {
             match transaction {
                 [Transfer::Write(wbuf), Transfer::Read(rbuf), ..] => {
                     // Hyperdebug can do I2C write followed by I2C read as a single USB

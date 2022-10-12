@@ -134,7 +134,7 @@ impl Target for ProxySpi {
                     match pair {
                         (SpiTransferResponse::Read { data }, Transfer::Read(rbuf))
                         | (SpiTransferResponse::Both { data }, Transfer::Both(_, rbuf)) => {
-                            rbuf.clone_from_slice(&data);
+                            rbuf.clone_from_slice(data);
                         }
                         (SpiTransferResponse::Write, Transfer::Write(_)) => (),
                         _ => bail!(ProxyError::UnexpectedReply()),

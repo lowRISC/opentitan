@@ -36,7 +36,7 @@ pub fn create(args: &VerilatorOpts) -> Result<Box<dyn Transport>> {
         flash_image: args.verilator_flash.clone(),
         otp_image: args.verilator_otp.clone(),
         extra_args: args.verilator_args.clone(),
-        timeout: args.verilator_timeout.clone(),
+        timeout: args.verilator_timeout,
     };
     Ok(Box::new(Verilator::from_options(options)?))
 }

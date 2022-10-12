@@ -44,7 +44,7 @@ pub fn process_config_file(env: &mut TransportWrapper, conf_file: &Path) -> Resu
             .ok_or_else(|| Error::ConfigNotFound(conf_file.to_path_buf()))?
     } else {
         read_into_string(conf_file, &mut string)
-            .map_err(|e| Error::ConfigReadError(conf_file.to_path_buf(), e.into()))?
+            .map_err(|e| Error::ConfigReadError(conf_file.to_path_buf(), e))?
     };
     let res: ConfigurationFile = serde_annotate::from_str(conf_data)
         .map_err(|e| Error::ConfigParseError(conf_file.to_path_buf(), e.into()))?;

@@ -346,7 +346,9 @@ impl Backend {
         // Finally, chunk the payload into 2k chunks and send it to the
         // bulk endpoint.
         for chunk in stream.chunks(2048) {
-            progress.map(|prg| prg(0, chunk.len() as u32));
+            if let Some(prg) = progress {
+                prg(0, chunk.len() as u32)
+            }
             self.usb.write_bulk(Backend::BULK_OUT_EP, chunk)?;
         }
         Ok(())
@@ -523,7 +525,7 @@ impl Backend {
         base |= u8::try_from((vals.denominator & 0x100) >> 8)?;
         base |= u8::try_from((vals.numerator & 0xf00) >> 7)?;
         self.pll_write(3 + offset, base)?;
-        self.pll_write(13 + pll_num, (vals.outdiv & 0x7f).try_into()?)?;
+        self.pll_write(13 + pll_num, vals.outdiv & 0x7f)?;
 
         // Enable high-speed mode if fvco is above 180 MHz.
         const FVCO_HIGH_SPEED: u32 = 180_000_000;

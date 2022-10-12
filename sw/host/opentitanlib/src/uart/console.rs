@@ -24,7 +24,7 @@ pub struct UartConsole {
     pub newline: bool,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ExitStatus {
     None,
     CtrlC,
@@ -172,13 +172,11 @@ impl UartConsole {
             ExitStatus::ExitSuccess => self
                 .exit_success
                 .as_ref()
-                .map(|rx| rx.captures(&self.buffer))
-                .flatten(),
+                .and_then(|rx| rx.captures(&self.buffer)),
             ExitStatus::ExitFailure => self
                 .exit_failure
                 .as_ref()
-                .map(|rx| rx.captures(&self.buffer))
-                .flatten(),
+                .and_then(|rx| rx.captures(&self.buffer)),
             _ => None,
         }
     }

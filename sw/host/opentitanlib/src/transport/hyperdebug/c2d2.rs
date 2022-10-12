@@ -56,7 +56,7 @@ impl GpioPin for C2d2ResetPin {
             Err(TransportError::CommunicationError("No output from gpioget".to_string()).into());
         self.inner
             .execute_command("gpioget SPIVREF_RSVD_H1VREF_H1_RST_ODL", |line| {
-                result = Ok(line.trim_start().starts_with("1"))
+                result = Ok(line.trim_start().starts_with('1'))
             })?;
         result
     }

@@ -258,10 +258,11 @@ impl AlertRegs {
             AlertClass::X => bail!("Bad class"),
         };
 
-        let mut reg = 0 as u32;
+        let mut reg = 0_u32;
 
-        reg |= (0 & ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E0_MASK)
-            << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E0_OFFSET;
+        // TODO(lowRISC/opentitan#15443): Fix this lint (clippy::erasing_op):
+        //reg |= (0 & ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E0_MASK)
+        //    << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E0_OFFSET;
         reg |= (1 & ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E1_MASK)
             << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E1_OFFSET;
         reg |= (2 & ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E2_MASK)

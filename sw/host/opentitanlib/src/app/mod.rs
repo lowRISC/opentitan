@@ -167,7 +167,7 @@ impl TransportWrapper {
     /// configuration files under a given strapping name.
     pub fn apply_pin_strapping(&self, strapping_name: &str) -> Result<()> {
         if let Some(strapping_conf_map) = self.strapping_conf_map.get(strapping_name) {
-            self.apply_pin_configurations(&strapping_conf_map)
+            self.apply_pin_configurations(strapping_conf_map)
         } else {
             Err(TransportError::InvalidStrappingName(strapping_name.to_string()).into())
         }
@@ -178,9 +178,9 @@ impl TransportWrapper {
     /// files, outside of any "strappings" section.
     pub fn remove_pin_strapping(&self, strapping_name: &str) -> Result<()> {
         if let Some(strapping_conf_map) = self.strapping_conf_map.get(strapping_name) {
-            for (pin_name, _conf) in strapping_conf_map {
+            for pin_name in strapping_conf_map.keys() {
                 if let Some(default_pin_conf) = self.pin_conf_map.get(pin_name) {
-                    self.apply_pin_configuration(&pin_name, &default_pin_conf)?;
+                    self.apply_pin_configuration(pin_name, default_pin_conf)?;
                 }
             }
             Ok(())
@@ -203,19 +203,19 @@ impl TransportWrapper {
         if let Some(pin_mode) = pin_conf.mode {
             pin_conf_map
                 .entry(Self::map_name(pin_map, &pin_conf.name))
-                .or_insert(Default::default())
+                .or_default()
                 .mode = Some(pin_mode);
         }
         if let Some(pull_mode) = pin_conf.pull_mode {
             pin_conf_map
                 .entry(Self::map_name(pin_map, &pin_conf.name))
-                .or_insert(Default::default())
+                .or_default()
                 .pull_mode = Some(pull_mode);
         }
         if let Some(level) = pin_conf.level {
             pin_conf_map
                 .entry(Self::map_name(pin_map, &pin_conf.name))
-                .or_insert(Default::default())
+                .or_default()
                 .level = Some(level);
         }
     }

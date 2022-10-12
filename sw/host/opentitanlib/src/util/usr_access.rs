@@ -24,7 +24,7 @@ fn find_cmd(bitstream: &[u8], cmd: &[u8; 4]) -> Result<usize> {
         .chunks(4)
         .enumerate()
         .find(|(_, op)| *op == cmd)
-        .ok_or(Error::CommandNotFound(u32::from_be_bytes(*cmd)))?
+        .ok_or_else(|| Error::CommandNotFound(u32::from_be_bytes(*cmd)))?
         .0
         * 4)
 }
@@ -66,7 +66,7 @@ fn remove_crc(bitstream: &mut [u8]) {
 }
 
 pub fn usr_access_get(bitstream: &[u8]) -> Result<u32> {
-    let i = find_cmd(&bitstream, &WRITE_USR_ACCESS)?;
+    let i = find_cmd(bitstream, &WRITE_USR_ACCESS)?;
     if (i + 8) > bitstream.len() {
         return Err(Error::CommandNotFound(u32::from_be_bytes(WRITE_USR_ACCESS)).into());
     }

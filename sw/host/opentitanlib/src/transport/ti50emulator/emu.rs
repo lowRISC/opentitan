@@ -69,7 +69,7 @@ impl EmulatorProcess {
         Ok(Self {
             executable_directory: executable_directory.to_owned(),
             executable: executable.to_owned(),
-            runtime_directory: runtime_directory.clone(),
+            runtime_directory,
             current_args: HashMap::from([(
                 String::from("exec"),
                 EmuValue::String(String::from(executable)),
@@ -90,9 +90,10 @@ impl EmulatorProcess {
 
     pub fn get_id(&self) -> u64 {
         if let Some(proc) = &self.proc {
-            return ((self.power_cycle_count as u64) << 32) + (proc.id() as u64);
+            ((self.power_cycle_count as u64) << 32) + (proc.id() as u64)
+        } else {
+            EMULATOR_INVALID_ID
         }
-        return EMULATOR_INVALID_ID;
     }
 
     pub fn get_configurations(&self) -> Result<EmulatorConfig> {
@@ -124,7 +125,7 @@ impl EmulatorProcess {
             let reader = BufReader::new(file);
             let config: EmulatorConfig =
                 serde_json::from_reader(reader).context("Configuration parsing error")?;
-            return Ok(config);
+            Ok(config)
         } else {
             bail!(EmuError::RuntimeError(format!(
                 "Ti50Emulator sub-process exit with error: {}",
@@ -141,11 +142,9 @@ impl EmulatorProcess {
                     if status.success() {
                         log::info!("Ti50Emulator exit with status {}", status);
                         self.state = EmuState::Off;
-                    } else {
-                        if self.state != EmuState::Error {
-                            log::info!("Ti50Emulator sub-process exit with error: {}", status);
-                            self.state = EmuState::Error;
-                        }
+                    } else if self.state != EmuState::Error {
+                        log::info!("Ti50Emulator sub-process exit with error: {}", status);
+                        self.state = EmuState::Error;
                     }
                     self.power_cycle_count += 1;
                     self.proc = None;
@@ -161,13 +160,11 @@ impl EmulatorProcess {
                     )));
                 }
             }
-        } else {
-            if self.state == EmuState::On {
-                self.state = EmuState::Error;
-                bail!(EmuError::RuntimeError(
-                    "Non sub-process found but state indicate that Emulator is ON".to_string()
-                ));
-            }
+        } else if self.state == EmuState::On {
+            self.state = EmuState::Error;
+            bail!(EmuError::RuntimeError(
+                "Non sub-process found but state indicate that Emulator is ON".to_string()
+            ));
         }
         Ok(())
     }
@@ -176,13 +173,12 @@ impl EmulatorProcess {
     fn spawn_process(&mut self) -> Result<()> {
         let socket_path = self.runtime_directory.join("control_soc");
 
-        let mut args_list = Vec::new();
-
-        args_list.push(OsString::from("--path"));
-        args_list.push(self.runtime_directory.clone().into_os_string());
-
-        args_list.push(OsString::from("--control_socket"));
-        args_list.push(socket_path.clone().into_os_string());
+        let mut args_list = vec![
+            OsString::from("--path"),
+            self.runtime_directory.clone().into_os_string(),
+            OsString::from("--control_socket"),
+            socket_path.clone().into_os_string(),
+        ];
 
         match self.current_args.get("apps") {
             Some(EmuValue::StringList(apps)) => {
@@ -252,9 +248,9 @@ impl EmulatorProcess {
                     }
                 }
             }
-            return Err(EmuError::StartFailureCause(
+            Err(EmuError::StartFailureCause(
                 "Waiting for sub-process failed".to_string(),
-            ));
+            ))
         });
 
         log::info!("Spawning Ti50Emulator sub-process");
@@ -333,12 +329,10 @@ impl EmulatorProcess {
                 pid,
             ))
             .into());
-        } else {
-            if self.state == EmuState::Error {
-                log::warn!("Stop sub-process don't exist clean error state");
-                self.cleanup()?;
-                self.state = EmuState::Off;
-            }
+        } else if self.state == EmuState::Error {
+            log::warn!("Stop sub-process don't exist clean error state");
+            self.cleanup()?;
+            self.state = EmuState::Off;
         }
         Ok(())
     }
@@ -371,17 +365,16 @@ impl EmulatorProcess {
 
     /// Update content of resource with data from `source`, overwrite file if it already exist.
     fn update_resource(&self, key: &str, source: &Path) -> Result<()> {
-        let name = source.file_name().ok_or(EmuError::InvalidArgumentValue(
-            String::from(key),
-            source.display().to_string(),
-        ))?;
+        let name = source.file_name().ok_or_else(|| {
+            EmuError::InvalidArgumentValue(String::from(key), source.display().to_string())
+        })?;
         let destination = self.runtime_directory.join(name);
         log::debug!(
             "Update resource:{:?} with data from path: {:?}",
             key,
             source,
         );
-        fs::copy(&source, &destination).with_context(|| {
+        fs::copy(source, &destination).with_context(|| {
             format!(
                 "Failed to copy resource file: {} to runtime directory: {}",
                 &source.display(),
@@ -414,11 +407,11 @@ impl EmulatorProcess {
             if allowed.contains(key.as_str()) {
                 match item {
                     EmuValue::FilePath(path) => {
-                        self.update_resource(&key, path)?;
+                        self.update_resource(key, path)?;
                     }
                     EmuValue::FilePathList(path_list) => {
                         for path in path_list.iter() {
-                            self.update_resource(&key, path)?;
+                            self.update_resource(key, path)?;
                         }
                     }
                     _ => {}
