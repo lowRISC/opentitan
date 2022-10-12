@@ -545,9 +545,6 @@ module flash_ctrl_lcmgr
       StInvalid: begin
         dis_access_o = lc_ctrl_pkg::On;
         state_err = 1'b1;
-        // Setting PhaseInvalid causes Vivado to erroneously infer combo loops. For details, see
-        // https://github.com/lowRISC/opentitan/issues/10204
-        //phase = PhaseInvalid;
         rma_ack_d = lc_ctrl_pkg::Off;
         state_d = StInvalid;
       end
@@ -573,7 +570,9 @@ module flash_ctrl_lcmgr
 
   end // always_comb
 
-  // if disable is seen any state other than StRmaRsp, transition to invalid state
+  // If state is already invalid, disable has no impact.
+  // If state is currently in StRmaRsp with a successful RMA transition, also do not
+  // transition to disabled state as we need to continue acknowledging lc_ctrl.
   `ASSERT(DisableChk_A, prim_mubi_pkg::mubi4_test_true_loose(disable_i) & state_q != StRmaRsp
           |=> state_q == StDisabled)
 

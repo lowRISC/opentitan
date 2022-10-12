@@ -5,18 +5,33 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
+#include "sw/device/lib/dif/dif_rv_plic.h"
+#include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
+#include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
+// PLIC structures
+static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 static dif_pwrmgr_t pwrmgr;
 static dif_pinmux_t pinmux;
+static dif_pwrmgr_domain_config_t pwrmgr_domain_cfg;
+static dif_rv_plic_t plic;
+
+static plic_isr_ctx_t plic_ctx = {.rv_plic = &plic, .hart_id = kPlicTarget};
+static pwrmgr_isr_ctx_t pwrmgr_isr_ctx = {
+    .pwrmgr = &pwrmgr,
+    .plic_pwrmgr_start_irq_id = kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
+    .expected_irq = kDifPwrmgrIrqWakeup,
+    .is_only_irq = true};
 
 // SV randomizes the round of entering/exiting sleep then set this volatile
 // variable via backdoor_overwrite.
@@ -27,10 +42,105 @@ static volatile const uint8_t kRounds = 2;
 // LOG_INFO().
 static const uint8_t kGpioVal = 0x00;
 
+// To wakeup and maintain GPIO, for now test enters to normal sleep only.
+static const bool deepPowerdown = false;
+
+/**
+ * External interrupt handler.
+ */
+void ottf_external_isr(void) {
+  dif_pwrmgr_irq_t irq_id;
+  top_earlgrey_plic_peripheral_t peripheral;
+
+  isr_testutils_pwrmgr_isr(plic_ctx, pwrmgr_isr_ctx, &peripheral, &irq_id);
+
+  // Check that both the peripheral and the irq id is correct
+  CHECK(peripheral == kTopEarlgreyPlicPeripheralPwrmgrAon,
+        "IRQ peripheral: %d is incorrect", peripheral);
+  CHECK(irq_id == kDifPwrmgrIrqWakeup, "IRQ ID: %d is incorrect", irq_id);
+
+  // Clear PINMUX WKUP_CAUSE reg
+  CHECK_DIF_OK(dif_pinmux_wakeup_cause_clear(&pinmux));
+}
+
+/**
+ * A round of GPIO[7:0] retention value test.
+ *
+ * The test sequence is:
+ *
+ * 1. Randomly choose GPIO[7:0] value using rand_testutils.
+ * 2. Drive GPIO with the chosen value.
+ * 3. Send the chosen values to SV via LOG_INFO.
+ * 4. Configure PINMUX Retention value opposit to the chosen value for
+ *    GPIO[7:0].
+ * 5. Initiate sleep mode (assuming pinmux pin wake up has been configured.)
+ * 6. WFI()
+ * 7. At this point, chip has been waken up by DV. Send a log to DV that chip
+ *    has waken up.
+ *
+ * DV env checks all PIN value. SW simply drives the GPIO and invert the value
+ * for retention.
+ */
+void gpio_test(int round) {
+  LOG_INFO("Current Test Round: %1d", round);
+
+  // 5. Initiate sleep mode
+  pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceThree,
+                                    pwrmgr_domain_cfg);
+  // 6. WFI()
+  LOG_INFO("Entering low power mode.");
+  wait_for_interrupt();
+}
+
 bool test_main(void) {
-  bool result = false;
+  bool result = true;
+
+  dif_pinmux_index_t detector;
+  dif_pinmux_wakeup_config_t wakeup_cfg;
+
+  // Default Deep Power Down
+
+  // Enable global and external IRQ at Ibex.
+  irq_global_ctrl(true);
+  irq_external_ctrl(true);
+
+  // Initialize power manager
+  CHECK_DIF_OK(dif_pwrmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_rv_plic_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+  CHECK_DIF_OK(dif_pinmux_init(
+      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+
+  // Enable all the AON interrupts used in this test.
+  rv_plic_testutils_irq_range_enable(&plic, kPlicTarget,
+                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup,
+                                     kTopEarlgreyPlicIrqIdPwrmgrAonWakeup);
+  // Enable pwrmgr interrupt
+  CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
+
+  // Wakeup configs
+  wakeup_cfg.mode = kDifPinmuxWakeupModePositiveEdge;
+  wakeup_cfg.signal_filter = false;
+  wakeup_cfg.pad_type = 0;                              // MIO
+  wakeup_cfg.pad_select = kTopEarlgreyPinmuxInselIoa8;  // MIO08
+
+  // Configure Wakeup Detector 0
+  CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(&pinmux, 0, wakeup_cfg));
+
+  if (deepPowerdown == false) {
+    // Configure Normal Sleep
+    pwrmgr_domain_cfg = kDifPwrmgrDomainOptionMainPowerInLowPower |
+                        kDifPwrmgrDomainOptionUsbClockInActivePower;
+  }
 
   LOG_INFO("Num Rounds: %3d", kRounds);
+
+  // Set wakeup condition. Always use GPIO[8] for Pinmux PIN Wakeup.
+
+  for (int i = kRounds - 1; i >= 0; i--) {
+    gpio_test(i);
+  }
 
   return result;
 }

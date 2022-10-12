@@ -13,6 +13,7 @@ package chip_common_pkg;
   parameter dv_utils_pkg::uint NUM_SPI_HOSTS = 2;
   parameter dv_utils_pkg::uint NUM_I2CS = 3;
   parameter dv_utils_pkg::uint NUM_PWM_CHANNELS = pwm_reg_pkg::NOutputs;
+  parameter dv_utils_pkg::uint NUM_PATTGEN_CH = pattgen_agent_pkg::NUM_PATTGEN_CHANNELS;
 
   // Buffer is half of SPI_DEVICE Dual Port SRAM
   parameter dv_utils_pkg::uint SPI_FRAME_BYTE_SIZE = spi_device_reg_pkg::SPI_DEVICE_BUFFER_SIZE/2;

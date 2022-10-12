@@ -85,28 +85,6 @@ module tb;
 
   `DV_ALERT_IF_CONNECT
 
-  // TODO(#8758): This disables an assertion that fires if we happen to drop the edn_rst_n line
-  // before rst_n when the EDN is providing data to the DUT. The proper fix is either to change the
-  // design, change the assertion, or change the DV code so this doesn't happen.
-`define RND_REQ_PATH \
-    dut.u_prim_edn_rnd_req.u_prim_sync_reqack_data.gen_assert_data_dst2src
-
-`define URND_REQ_PATH \
-    dut.u_prim_edn_urnd_req.u_prim_sync_reqack_data.gen_assert_data_dst2src
-  always @(negedge edn_rst_n or posedge edn_rst_n) begin
-    if (!edn_rst_n) begin
-      $assertoff(0, `RND_REQ_PATH.SyncReqAckDataHoldDst2SrcA);
-      $assertoff(0, `URND_REQ_PATH.SyncReqAckDataHoldDst2SrcA);
-      $assertoff(0, `RND_REQ_PATH.SyncReqAckDataHoldDst2SrcB);
-      $assertoff(0, `URND_REQ_PATH.SyncReqAckDataHoldDst2SrcB);
-    end else begin
-      $asserton(0, `RND_REQ_PATH.SyncReqAckDataHoldDst2SrcA);
-      $asserton(0, `URND_REQ_PATH.SyncReqAckDataHoldDst2SrcA);
-      $asserton(0, `RND_REQ_PATH.SyncReqAckDataHoldDst2SrcB);
-      $asserton(0, `URND_REQ_PATH.SyncReqAckDataHoldDst2SrcB);
-    end
-  end
-
   // dut
   otbn # (
     .RndCnstOtbnKey(TestScrambleKey),

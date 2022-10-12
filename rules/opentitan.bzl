@@ -534,9 +534,9 @@ def _assemble_flash_image_impl(ctx):
         "false",
         "--output",
         output.path,
-        "--size",
-        ctx.attr.image_size,
     ]
+    if ctx.attr.image_size:
+        arguments.append("--size={}".format(ctx.attr.image_size))
     for binary, offset in ctx.attr.binaries.items():
         inputs.extend(binary.files.to_list())
         arguments.append("{}@{}".format(binary.files.to_list()[0].path, offset))
@@ -554,7 +554,7 @@ def _assemble_flash_image_impl(ctx):
 assemble_flash_image = rv_rule(
     implementation = _assemble_flash_image_impl,
     attrs = {
-        "image_size": attr.string(),
+        "image_size": attr.int(default = 0, doc = "Size of the assembled image"),
         "output": attr.string(),
         "binaries": attr.label_keyed_string_dict(allow_empty = False),
         "_opentitantool": attr.label(
@@ -784,7 +784,7 @@ pick_correct_archive_for_device = rv_rule(
 def opentitan_multislot_flash_binary(
         name,
         srcs,
-        image_size,
+        image_size = 0,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM):
     """A helper macro for generating multislot OpenTitan binary flash images.
@@ -799,7 +799,8 @@ def opentitan_multislot_flash_binary(
       @param name: The name of this rule.
       @param srcs: A dictionary of `opentitan_flash_binary` targets (to stitch
                    together) as keys, and key/offset configurations as values.
-      @param image_size: The final flash image_size to pass to `opentitantool`.
+      @param image_size: The final flash image_size to pass to `opentitantool`
+                         (optional).
       @param devices: List of devices to build the target for.
       @param platform: The target platform for the artifacts.
     Emits rules:

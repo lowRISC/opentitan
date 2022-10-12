@@ -13,8 +13,6 @@ class entropy_src_fw_ov_test extends entropy_src_base_test;
     cfg.en_scb                              = 1;
     cfg.alert_max_delay                     = 5;
 
-    cfg.dut_cfg.fips_window_size            = 2048;
-    cfg.dut_cfg.bypass_window_size          = 384;
     cfg.dut_cfg.boot_mode_retry_limit       = 10;
     cfg.sim_duration                        = 10ms;
     cfg.hard_mtbf                           = 100s;

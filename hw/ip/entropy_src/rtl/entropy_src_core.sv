@@ -310,7 +310,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [HalfRegWidth-1:0] extht_lo_bypass_threshold_oneway;
   logic                    extht_lo_bypass_threshold_wr;
   logic [HalfRegWidth-1:0] extht_lo_threshold;
-  logic [HalfRegWidth-1:0] extht_event_cnt;
+  logic [HalfRegWidth-1:0] extht_event_cnt_hi;
+  logic [HalfRegWidth-1:0] extht_event_cnt_lo;
   logic [HalfRegWidth-1:0] extht_hi_event_hwm_fips;
   logic [HalfRegWidth-1:0] extht_hi_event_hwm_bypass;
   logic [HalfRegWidth-1:0] extht_lo_event_hwm_fips;
@@ -321,6 +322,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [EighthRegWidth-1:0] extht_lo_fail_count;
   logic                     extht_hi_fail_pulse;
   logic                     extht_lo_fail_pulse;
+  logic                     extht_cont_test;
   logic                     extht_hi_fails_cntr_err;
   logic                     extht_lo_fails_cntr_err;
   logic                     extht_hi_alert_cntr_err;
@@ -435,6 +437,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                    recov_alert_state;
   logic                    es_fw_ov_wr_alert;
   logic                    es_fw_ov_disable_alert;
+  logic                    fw_ov_corrupted;
 
   logic                    stale_seed_processing;
   logic                    main_sm_enable;
@@ -479,6 +482,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        sha3_start_mask_q, sha3_start_mask_d;
   logic        main_sm_extd_en_n_d, main_sm_extd_en_n_q;
   logic        sha3_flush_q, sha3_flush_d;
+  logic [1:0]  fw_ov_corrupted_q, fw_ov_corrupted_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -496,6 +500,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_start_mask_q      <= '0;
       main_sm_extd_en_n_q    <= 1'b1;
       sha3_done_q            <= prim_mubi_pkg::MuBi4False;
+      fw_ov_corrupted_q      <= 2'b00;
     end else begin
       ht_failed_q            <= ht_failed_d;
       ht_done_pulse_q        <= ht_done_pulse_d;
@@ -511,6 +516,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       main_sm_extd_en_n_q    <= main_sm_extd_en_n_d;
       mubi_mod_en_dly_q      <= mubi_mod_en_dly_d;
       sha3_done_q            <= sha3_done_d;
+      fw_ov_corrupted_q      <= fw_ov_corrupted_d;
     end
   end
 
@@ -1920,13 +1926,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign entropy_src_xht_o.thresh_hi = extht_hi_threshold;
   assign entropy_src_xht_o.thresh_lo = extht_lo_threshold;
   assign entropy_src_xht_o.window_wrap_pulse = health_test_done_pulse;
+  assign entropy_src_xht_o.health_test_window = health_test_window;
   assign entropy_src_xht_o.threshold_scope = threshold_scope;
   // get inputs from external health test
-  assign extht_event_cnt = entropy_src_xht_i.test_cnt;
+  assign extht_event_cnt_hi = entropy_src_xht_i.test_cnt_hi;
+  assign extht_event_cnt_lo = entropy_src_xht_i.test_cnt_lo;
   assign extht_hi_fail_pulse = entropy_src_xht_i.test_fail_hi_pulse;
   assign extht_lo_fail_pulse = entropy_src_xht_i.test_fail_lo_pulse;
-
-
+  assign extht_cont_test = entropy_src_xht_i.continuous_test;
 
   entropy_src_watermark_reg #(
     .RegWidth(HalfRegWidth),
@@ -1935,8 +1942,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && !es_bypass_mode),
-    .value_i             (extht_event_cnt),
+    .event_i             ((extht_cont_test || health_test_done_pulse) && !es_bypass_mode),
+    .value_i             (extht_event_cnt_hi),
     .value_o             (extht_hi_event_hwm_fips)
   );
 
@@ -1947,8 +1954,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && es_bypass_mode),
-    .value_i             (extht_event_cnt),
+    .event_i             ((extht_cont_test || health_test_done_pulse) && es_bypass_mode),
+    .value_i             (extht_event_cnt_hi),
     .value_o             (extht_hi_event_hwm_bypass)
   );
 
@@ -1977,8 +1984,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && !es_bypass_mode),
-    .value_i             (extht_event_cnt),
+    .event_i             ((extht_cont_test || health_test_done_pulse) && !es_bypass_mode),
+    .value_i             (extht_event_cnt_lo),
     .value_o             (extht_lo_event_hwm_fips)
   );
 
@@ -1989,8 +1996,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .clk_i               (clk_i),
     .rst_ni              (rst_ni),
     .clear_i             (health_test_clr),
-    .event_i             (health_test_done_pulse && es_bypass_mode),
-    .value_i             (extht_event_cnt),
+    .event_i             ((extht_cont_test || health_test_done_pulse) && es_bypass_mode),
+    .value_i             (extht_event_cnt_lo),
     .value_o             (extht_lo_event_hwm_bypass)
   );
 
@@ -2105,7 +2112,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign hw2reg.recov_alert_sts.es_fw_ov_disable_alert.de = es_fw_ov_disable_alert;
   assign hw2reg.recov_alert_sts.es_fw_ov_disable_alert.d  = es_fw_ov_disable_alert;
-
 
   // repcnt fail counter
   // SEC_CM: CTR.REDUN
@@ -2396,7 +2402,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // as the reset is only important for clearing 32-bit half-SHA-words.
   assign pfifo_precon_clr = fw_ov_mode_entropy_insert ?
                             !es_enable_fo[9] & !pfifo_precon_not_empty :
-                            module_en_pulse_fo[5];
+                            module_en_pulse_fo[5] & !pfifo_precon_not_empty;
 
   assign pfifo_precon_pop = (pfifo_cond_push && sha3_msgfifo_ready);
 
@@ -2594,7 +2600,20 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign sha3_flush_d = stale_seed_processing ? 1'b1 :
                         main_stage_push_raw ? 1'b0 :
                         sha3_flush_q;
-  assign main_stage_push = main_stage_push_raw & !sha3_flush_q;
+
+  // If the user incorrectly disables the fw_ov SHA3 processing while
+  // data is in the pipeline, it can potentially scramble two outputs.
+  // Thus in addition to triggering a recoverable alert, we mark the
+  // following _two_ outputs as corrupted and to not let them in the
+  // esfinal FIFO
+  assign fw_ov_corrupted_d = es_fw_ov_disable_alert ? 2'b11 :
+                             !es_bypass_mode && main_stage_push_raw ? {1'b0, fw_ov_corrupted_q[1]} :
+                             fw_ov_corrupted_q;
+
+  assign fw_ov_corrupted = (|fw_ov_corrupted_q) & !es_bypass_mode;
+
+
+  assign main_stage_push = main_stage_push_raw & !sha3_flush_q & !fw_ov_corrupted;
 
   // If the SHA3 processing endures all the way through a disable pulse, the SM may miss
   // disable events entirely.  This extends any disable pulses until they can be seen

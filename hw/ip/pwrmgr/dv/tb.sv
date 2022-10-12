@@ -62,13 +62,6 @@ module tb;
     .rst_slow_n
   );
 
-  pwrmgr_clk_ctrl_if pcc_if(
-    .clk (aon_clk),
-    .rst_n,
-    .clk_slow,
-    .rst_slow_n
-  );
-
   `DV_ALERT_IF_CONNECT
 
   // dut
@@ -152,7 +145,6 @@ module tb;
         null, "*.env", "pwrmgr_clock_enables_sva_vif", dut.pwrmgr_clock_enables_sva_if);
     uvm_config_db#(virtual pwrmgr_rstmgr_sva_if)::set(null, "*.env", "pwrmgr_rstmgr_sva_vif",
                                                       dut.pwrmgr_rstmgr_sva_if);
-    uvm_config_db#(virtual pwrmgr_clk_ctrl_if)::set(null, "*.env.m_pcc_agent*", "vif", pcc_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end // initial begin

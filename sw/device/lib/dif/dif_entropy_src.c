@@ -63,19 +63,12 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
   }
 
   // ENTROPY_CONTROL register configuration.
-
-  // Conditioning bypass is hardcoded to disabled. Conditioning bypass is not
-  // intended as a regular mode of operation. If, in the future, we want to
-  // expose the ES_TYPE field in the future, we need to check the ES_ROUTE ==
-  // true if ES_TYPE == true, and FIPS_ENABLE == false if ES_ROUTE and ES_TYPE
-  // are both true.
-  uint32_t es_route_val =
-      config.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
   uint32_t entropy_ctrl_reg = bitfield_field32_write(
-      0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD, es_route_val);
+      0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD,
+      config.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False);
   entropy_ctrl_reg = bitfield_field32_write(
       entropy_ctrl_reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
-      kMultiBitBool4False);
+      config.bypass_conditioner ? kMultiBitBool4True : kMultiBitBool4False);
   mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET, entropy_ctrl_reg);
 

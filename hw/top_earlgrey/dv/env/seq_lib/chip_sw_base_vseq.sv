@@ -606,6 +606,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
       end
        DecLcStTestLocked6: begin
         if (dest_state inside {DecLcStTestUnlocked7, DecLcStScrap}) valid_transition = 1;
+       end
+       DecLcStTestUnlocked0,
+       DecLcStTestUnlocked1,
+       DecLcStTestUnlocked2,
+       DecLcStTestUnlocked3,
+       DecLcStTestUnlocked4,
+       DecLcStTestUnlocked5,
+       DecLcStTestUnlocked6,
+       DecLcStTestUnlocked7: begin
+        if (dest_state inside {DecLcStProd, DecLcStScrap}) valid_transition = 1;
       end
      default: `uvm_fatal(`gfn, $sformatf("%0s src state not supported", src_state.name))
     endcase
@@ -642,6 +652,51 @@ class chip_sw_base_vseq extends chip_base_vseq;
     wait_lc_status(LcTransitionSuccessful);
     `uvm_info(`gfn, "LC transition request succeed!", UVM_LOW)
   endtask
+
+  // Use JTAG interface to program OTP fields.
+  virtual task jtag_otp_program32(int addr,
+                                  bit [31:0] data,
+                                  output bit err);
+
+    bit [TL_DW-1:0] status;
+    bit [TL_DW-1:0] err_mask = 0;
+    bit idle = 0;
+    int base_addr = top_earlgrey_pkg::TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR;
+    jtag_riscv_agent_pkg::jtag_write_csr(base_addr +
+                                         ral.otp_ctrl_core.direct_access_address.get_offset(),
+                                         p_sequencer.jtag_sequencer_h,
+                                         addr);
+
+    jtag_riscv_agent_pkg::jtag_write_csr(base_addr +
+                                         ral.otp_ctrl_core.direct_access_wdata[0].get_offset(),
+                                         p_sequencer.jtag_sequencer_h,
+                                         data[31:0]);
+
+    jtag_riscv_agent_pkg::jtag_write_csr(base_addr +
+                                         ral.otp_ctrl_core.direct_access_cmd.get_offset(),
+                                         p_sequencer.jtag_sequencer_h,
+                                         1 << ral.otp_ctrl_core.direct_access_cmd.wr.get_lsb_pos());
+
+
+    while (!idle) begin
+      jtag_riscv_agent_pkg::jtag_read_csr(base_addr +
+                                          ral.otp_ctrl_core.status.get_offset(),
+                                          p_sequencer.jtag_sequencer_h,
+                                          status);
+
+      idle = status >> (ral.otp_ctrl_core.status.dai_idle.get_lsb_pos()) & TL_DW'(1'b1);
+
+      err_mask = ~((1 << ral.otp_ctrl_core.status.dai_idle.get_lsb_pos()) |
+                   (1 << ral.otp_ctrl_core.status.check_pending.get_lsb_pos()));
+
+      `uvm_info(`gfn, $sformatf("Waiting for DAI to become idle = 1, actual: %d!", idle),
+         UVM_MEDIUM)
+
+      // If any bits other than dai_idle and check pending are set, error back.
+      err = |(status & err_mask);
+    end
+  endtask : jtag_otp_program32
+
 
   // End the test with status.
   //

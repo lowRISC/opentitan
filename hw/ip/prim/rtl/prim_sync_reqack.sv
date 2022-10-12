@@ -10,6 +10,8 @@
 // Notes:
 // - Once asserted, the source (SRC) domain is not allowed to de-assert REQ without ACK.
 // - The destination (DST) domain is not allowed to send an ACK without a REQ.
+// - When resetting one domain, also the other domain needs to be reset with both resets being
+//   active at the same time.
 // - This module works both when syncing from a faster to a slower clock domain and vice versa.
 // - Internally, this module uses a non-return-to-zero, two-phase handshake protocol. Assuming the
 //   DST domain responds with an ACK immediately, the latency from asserting the REQ in the
@@ -23,7 +25,9 @@
 
 `include "prim_assert.sv"
 
-module prim_sync_reqack (
+module prim_sync_reqack #(
+  parameter bit EnRstChks = 1'b0 // Enable reset-related assertion checks, disabled by default.
+) (
   input  clk_src_i,       // REQ side, SRC domain
   input  rst_src_ni,      // REQ side, SRC domain
   input  clk_dst_i,       // ACK side, DST domain
@@ -109,7 +113,14 @@ module prim_sync_reqack (
         end
       end
 
+      //VCS coverage off
+      // pragma coverage off
+
       default: ;
+
+      //VCS coverage on
+      // pragma coverage on
+
     endcase
   end
 
@@ -146,7 +157,14 @@ module prim_sync_reqack (
         end
       end
 
+      //VCS coverage off
+      // pragma coverage off
+
       default: ;
+
+      //VCS coverage on
+      // pragma coverage on
+
     endcase
   end
 
@@ -172,9 +190,20 @@ module prim_sync_reqack (
 
   // SRC domain can only de-assert REQ after receiving ACK.
   `ASSERT(SyncReqAckHoldReq, $fell(src_req_i) && req_chk_i |->
-      $fell(src_ack_o), clk_src_i, !rst_src_ni || !req_chk_i)
+      $fell(src_ack_o), clk_src_i, !rst_src_ni || !rst_dst_ni || !req_chk_i)
 
   // DST domain cannot assert ACK without REQ.
-  `ASSERT(SyncReqAckAckNeedsReq, dst_ack_i |-> dst_req_o, clk_dst_i, !rst_dst_ni)
+  `ASSERT(SyncReqAckAckNeedsReq, dst_ack_i |->
+      dst_req_o, clk_dst_i, !rst_src_ni || !rst_dst_ni)
+
+  if (EnRstChks) begin : gen_assert_en_rst_chks
+    // Always reset both domains. Both resets need to be active at the same time.
+    `ASSERT(SyncReqAckRstSrc, $fell(rst_src_ni) |->
+        (##[0:$] !rst_dst_ni within !rst_src_ni [*1:$]),
+        clk_src_i, 0)
+    `ASSERT(SyncReqAckRstDst, $fell(rst_dst_ni) |->
+        (##[0:$] !rst_src_ni within !rst_dst_ni [*1:$]),
+        clk_dst_i, 0)
+  end
 
 endmodule

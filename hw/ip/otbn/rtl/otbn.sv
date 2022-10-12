@@ -1017,6 +1017,7 @@ module otbn
   // internal entropy width of 256 bit.
 
   prim_edn_req #(
+    .EnRstChks(1'b1),
     .OutWidth(EdnDataWidth),
     // SEC_CM: RND.BUS.CONSISTENCY
     .RepCheck(1'b1)
@@ -1036,6 +1037,7 @@ module otbn
   );
 
   prim_edn_req #(
+    .EnRstChks(1'b1),
     .OutWidth(EdnDataWidth)
   ) u_prim_edn_urnd_req (
     .clk_i,

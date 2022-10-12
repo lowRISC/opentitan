@@ -26,6 +26,15 @@ typedef enum test_status {
   kTestStatusInBootRom = 0xb090,  // 'bogo', BOotrom GO
 
   /**
+   * Indicates that the CPU has seen ROM_EXEC_EN = 0 and will now stop
+   * execution.
+   *
+   * Writing this value to #kDeviceTestStatusAddress must not stop simulation of
+   * the current device.
+   */
+  kTestStatusInBootRomHalt = 0xb057,  // 'bost', BOotrom STop
+
+  /**
    * Indicates that the CPU has started executing the test code.
    *
    * Writing this value to #kDeviceTestStatusAddress must not stop simulation of

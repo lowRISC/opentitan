@@ -33,6 +33,8 @@
              "xbar_main_bind",
              "xbar_peri_bind"]
 
+  top_dv_path: "{proj_root}/hw/top_earlgrey/dv"
+
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
@@ -46,8 +48,8 @@
                 "{proj_root}/hw/dv/verilator/memutil_dpi_scrambled_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/memutil/otbn_memutil_sim_opts.hjson",
                 "{proj_root}/hw/ip/otbn/dv/tracer/otbn_tracer_sim_opts.hjson",
-                "{proj_root}/hw/top_earlgrey/dv/chip_smoketests.hjson",
-                "{proj_root}/hw/top_earlgrey/dv/chip_rom_tests.hjson",
+                "{top_dv_path}/chip_smoketests.hjson",
+                "{top_dv_path}/chip_rom_tests.hjson",
                 ]
 
   // Override existing project defaults to supply chip-specific values.
@@ -64,23 +66,23 @@
     // IPs. See `hw/dv/tools/dvsim/common_sim_cfg.hjson` for the default value.
     {
       name: default_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover.cfg+{proj_root}/hw/top_earlgrey/dv/autogen/xbar_tgl_excl.cfg"
+      value: "-cm_hier {top_dv_path}/cov/chip_cover.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg -cm_fsmcfg {top_dv_path}/cov/chip_fsm.cfg"
     }
     // Used by 'cover_reg_top' only builds - we only cover the *_reg_top of
     // the non-pre-verified modules at the chip level. See
     // `hw/dv/tools/dvsim/common_sim_cfg.hjson` for the default value.
     {
       name: cover_reg_top_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover_reg_top.cfg+{proj_root}/hw/top_earlgrey/dv/autogen/xbar_tgl_excl.cfg"
+      value: "-cm_hier {top_dv_path}/cov/chip_cover_reg_top.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg"
     }
     {
       name: xbar_build_mode_vcs_cov_cfg_file
-      value: "-cm_hier {proj_root}/hw/top_earlgrey/dv/cov/chip_cover_reg_top.cfg+{proj_root}/hw/top_earlgrey/dv/autogen/xbar_tgl_excl.cfg"
+      value: "-cm_hier {top_dv_path}/cov/chip_cover_reg_top.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg"
     }
     // Used by the UNR flow.
     {
       name: vcs_unr_cfg_file
-      value: "{proj_root}/hw/top_earlgrey/dv/cov/unr.cfg"
+      value: "{top_dv_path}/cov/unr.cfg"
     }
 
     // This defaults to 'ip' in `hw/data/common_project_cfg.hjson`.
@@ -100,7 +102,8 @@
   ]
 
   // exclusion files
-  vcs_cov_excl_files: ["{proj_root}/hw/top_earlgrey/dv/cov/conn_ast_mem_cfg.el"]
+  vcs_cov_excl_files: ["{top_dv_path}/cov/conn_ast_mem_cfg.el",
+                       "{top_dv_path}/cov/edn1_unr_tied_off_ports.el"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 3
@@ -176,7 +179,7 @@
                                fi ''']
   // Add run modes.
   run_modes: [
-    // Generates OTP images with different LC states with cannonical values,
+    // Generates OTP images with different LC states with canonical values,
     // pseudo-randomized with the same test seed.
     {
       name: gen_otp_images_mode
@@ -186,13 +189,33 @@
               --out {run_dir}/otp_ctrl_img_raw.vmem \
               {gen_otp_images_cmd_opts}
         ''',
+        '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_test_unlocked0.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --out {run_dir}/otp_ctrl_img_test_unlocked0.vmem \
+              {gen_otp_images_cmd_opts}
+        ''',
          '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_dev.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_owner_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
               --out {run_dir}/otp_ctrl_img_dev.vmem \
               {gen_otp_images_cmd_opts}
         ''',
         '''{gen_otp_images_cmd} \
+              --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_prod.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_owner_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
+              --out {run_dir}/otp_ctrl_img_prod.vmem \
+              {gen_otp_images_cmd_opts}
+        ''',
+        '''{gen_otp_images_cmd} \
               --img-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_rma.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_creator_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_owner_sw_cfg.hjson \
+              --add-cfg {gen_otp_images_cfg_dir}/otp_ctrl_img_hw_cfg.hjson \
               --out {run_dir}/otp_ctrl_img_rma.vmem \
               {gen_otp_images_cmd_opts}
         ''',
@@ -356,6 +379,13 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_pattgen_ios
+      uvm_test_seq: chip_sw_patt_ios_vseq
+      sw_images: ["//sw/device/tests/sim_dv:pattgen_ios_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=5_000_000"]
+    }
+    {
       name: chip_sw_uart_tx_rx
       uvm_test_seq: chip_sw_uart_tx_rx_vseq
       sw_images: ["//sw/device/tests/sim_dv:uart_tx_rx_test:1"]
@@ -402,6 +432,14 @@
       sw_images: ["//sw/device/tests/sim_dv:inject_scramble_seed:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+lc_at_prod=1", "+flash_program_latency=5", "+sw_test_timeout_ns=150_000_000"]
+      run_timeout_mins: 180
+    }
+    {
+      name: chip_sw_exit_test_unlocked_bootstrap
+      uvm_test_seq: chip_sw_exit_test_unlocked_bootstrap_vseq
+      sw_images: ["//sw/device/tests/sim_dv:exit_test_unlocked_bootstrap:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+flash_program_latency=5", "+sw_test_timeout_ns=150_000_000"]
       run_timeout_mins: 180
     }
     {
@@ -520,6 +558,42 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:lc_ctrl_otp_hw_cfg_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_otp_ctrl_lc_signals_test_unlocked0
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"],
+      // Use the image as basis, but clear provitioning state of the SECRET2
+      // partition so that the test can make front-door accesses to that partition.
+      run_opts: ["+use_otp_image=LcStTestUnlocked0", "+otp_clear_secret2=1"]
+    }
+    {
+      name: chip_sw_otp_ctrl_lc_signals_dev
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"],
+      // Use the image as basis, but clear provitioning state of the SECRET2
+      // partition so that the test can make front-door accesses to that partition.
+      run_opts: ["+use_otp_image=LcStDev", "+otp_clear_secret2=1"]
+    }
+    {
+      name: chip_sw_otp_ctrl_lc_signals_prod
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"],
+      // Use the image as basis, but clear provitioning state of the SECRET2
+      // partition so that the test can make front-door accesses to that partition.
+      run_opts: ["+use_otp_image=LcStProd", "+otp_clear_secret2=1"]
+    }
+    {
+      name: chip_sw_otp_ctrl_lc_signals_rma
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_lc_signals_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"],
+      // Use the image as basis, but clear provitioning state of the SECRET2
+      // partition so that the test can make front-door accesses to that partition.
+      run_opts: ["+use_otp_image=LcStRma", "+otp_clear_secret2=1"]
     }
     {
       // Set higher reseed value to reach all kmac_data to lc_ctrl toggle coverage.
@@ -891,6 +965,15 @@
       run_opts: ["+sw_test_timeout_ns=18_000_000"]
     }
     {
+      name: chip_sw_csrng_lc_hw_debug_en_test
+      uvm_test_seq: chip_sw_csrng_lc_hw_debug_en_vseq
+      sw_images: ["//sw/device/tests/sim_dv:csrng_lc_hw_debug_en_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=15_000_000", "+rng_srate_value_min=15",
+                 "+use_otp_image=LcStTestUnlocked0"]
+      run_timeout_mins: 60
+    }
+    {
       name: chip_sw_csrng_kat_test
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:csrng_kat_test:1"]
@@ -916,7 +999,8 @@
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:entropy_src_csrng_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=18_000_000", "+rng_srate_value_min=15"]
+      run_opts: ["+sw_test_timeout_ns=18_000_000", "+rng_srate_value_min=15",
+                 "+rng_srate_value_max=30"]
       run_timeout_mins: 120
     }
     {
@@ -1278,6 +1362,15 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       // Timeout based on a ~7 minute dvsim runtime.
       run_opts: ["+sw_test_timeout_ns=7_000_000"]
+    }
+    {
+      name: chip_sw_rv_core_ibex_lockstep_glitch
+      uvm_test_seq: chip_sw_rv_core_ibex_lockstep_glitch_vseq
+      sw_images: ["sw/device/tests:aes_smoketest:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      // This test currently stops without completing all transactions, so we
+      // have to disable the final assertions.
+      run_opts: ["+disable_assert_final_checks"]
     }
     {
       name: chip_sw_usb_ast_clk_calib

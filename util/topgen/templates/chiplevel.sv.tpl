@@ -1070,6 +1070,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
+    .UsbdevStub(1'b1),
 % else:
     .SecAesMasking(1'b0),
     .SecAesSBoxImpl(aes_pkg::SBoxImplLut),

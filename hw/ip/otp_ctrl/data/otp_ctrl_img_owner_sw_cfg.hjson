@@ -1,0 +1,195 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Use the gen-otp-img.py script to convert this configuration into
+// a MEM file for preloading the OTP in FPGA synthesis or simulation.
+//
+
+{
+    // The partition and item names must correspond with the OTP memory map.
+    partitions: [
+        {
+            name:  "OWNER_SW_CFG",
+            items: [
+                {
+                    name:  "OWNER_SW_CFG_DIGEST",
+                    value: "0x0",
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_BOOTSTRAP_EN",
+                    // Enable bootstrap. See `hardened_bool_t` in
+                    // sw/device/lib/base/hardened.h.
+                    value: "0x739",
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN",
+                    // Set to 0x739 to use the ROM_EXT hash measurement as the
+                    // key manager attestation binding value.
+                    value: "0x0",
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_CLASS_EN"
+                    // Set the enables to kAlertEnableNone.
+                    // See `alert_enable_t`
+                    // in sw/device/silicon_creator/lib/drivers/alert.h
+                    value: "0xa9a9a9a9",
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_ESCALATION"
+                    // Set the esclation policies to kAlertEscalateNone.
+                    // See `alert_escalate_t`
+                    // in sw/device/silicon_creator/lib/drivers/alert.h
+                    value: "0xd1d1d1d1",
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION"
+                    // Set the classifiactions to kAlertClassX.
+                    // See `alert_class_t`
+                    // in sw/device/silicon_creator/lib/drivers/alert.h
+                    value: [
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                    ],
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION"
+                    // Set the classifiactions to kAlertClassX.
+                    // See `alert_class_t`
+                    // in sw/device/silicon_creator/lib/drivers/alert.h
+                    value: [
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                        "0x94949494",
+                    ],
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH"
+                    // Set the alert accumulation thresholds to 0 per class.
+                    value: [
+                        "0x00000000",
+                        "0x00000000",
+                        "0x00000000",
+                        "0x00000000",
+                    ],
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES"
+                    // Set the alert timeout cycles to 0 per class.
+                    value: [
+                        "0x00000000",
+                        "0x00000000",
+                        "0x00000000",
+                        "0x00000000",
+                    ],
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES"
+                    // Set the alert phase cycles to 0,10,10,0xFFFFFFFF for
+                    // classes A and B, and to all zeros for classes C and D.
+                    value: [
+                        "0x0", "0xa", "0xa", "0xFFFFFFFF",
+                        "0x0", "0xa", "0xa", "0xFFFFFFFF",
+                        "0x0", "0x0", "0x0", "0x0",
+                        "0x0", "0x0", "0x0", "0x0",
+                    ],
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
+                    value: "0x36ed9cb0",
+                }
+            ],
+        }
+    ]
+}

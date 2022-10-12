@@ -38,10 +38,9 @@ dif_result_t csrng_send_app_cmd(mmio_region_t base_addr, ptrdiff_t offset,
   reg = bitfield_field32_write(reg, kAppCmdFieldCmdLen, cmd_len);
   reg = bitfield_field32_write(
       reg, kAppCmdFieldFlag0,
-      // When entropy src is enabled, we just need to program "not true".
       (cmd.entropy_src_enable == kDifCsrngEntropySrcToggleDisable)
           ? kMultiBitBool4True
-          : 0);
+          : kMultiBitBool4False);
   reg = bitfield_field32_write(reg, kAppCmdFieldGlen, cmd.generate_len);
   mmio_region_write32(base_addr, offset, reg);
 

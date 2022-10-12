@@ -227,7 +227,7 @@ module spid_readsram
   end
 
   always_comb begin
-    st_d = StIdle;
+    st_d = st_q;
 
     fifo_wvalid = 1'b 0;
 

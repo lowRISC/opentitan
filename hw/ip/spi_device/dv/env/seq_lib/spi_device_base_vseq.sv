@@ -99,6 +99,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
     delay_after_reset_before_access_csr();
+    void'(cfg.spi_cfg_sema.try_get());
+    cfg.spi_cfg_sema.put();
   endtask
 
   virtual task read_and_check_all_csrs_after_reset();

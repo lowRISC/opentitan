@@ -4,12 +4,20 @@
 
 use anyhow::Result;
 use opentitanlib::test_utils::status::Status;
+use opentitanlib::with_unknown;
 use std::io::{Read, Write};
 use std::process::{Command, Stdio};
 
 mod example {
     // Bring in the auto-generated sources.
     include!(env!("example"));
+}
+
+with_unknown! {
+    enum FuzzyBool: u32 {
+        False = 0,
+        True = 100,
+    }
 }
 
 fn roundtrip(name: &str, data: &str) -> Result<String> {
@@ -24,6 +32,7 @@ fn roundtrip(name: &str, data: &str) -> Result<String> {
     let mut stdin = child.stdin.take().unwrap();
     eprintln!("sent: {}", data);
     stdin.write_all(data.as_bytes())?;
+    stdin.write_all(b"\n")?;
 
     let mut s = String::new();
     let mut stdout = child.stdout.take().unwrap();
@@ -90,6 +99,33 @@ mod test {
         let before = example::Direction::IntValue(45);
         let after = roundtrip("direction", &serde_json::to_string(&before)?)?;
         let after = serde_json::from_str::<example::Direction>(&after)?;
+        assert_eq!(before, after);
+        Ok(())
+    }
+
+    #[test]
+    fn test_fuzzy_true() -> Result<()> {
+        let before = FuzzyBool::True;
+        let after = roundtrip("fuzzy_bool", &serde_json::to_string(&before)?)?;
+        let after = serde_json::from_str::<FuzzyBool>(&after)?;
+        assert_eq!(before, after);
+        Ok(())
+    }
+
+    #[test]
+    fn test_fuzzy_false() -> Result<()> {
+        let before = FuzzyBool::False;
+        let after = roundtrip("fuzzy_bool", &serde_json::to_string(&before)?)?;
+        let after = serde_json::from_str::<FuzzyBool>(&after)?;
+        assert_eq!(before, after);
+        Ok(())
+    }
+
+    #[test]
+    fn test_fuzzy_maybe() -> Result<()> {
+        let before = FuzzyBool(49);
+        let after = roundtrip("fuzzy_bool", &serde_json::to_string(&before)?)?;
+        let after = serde_json::from_str::<FuzzyBool>(&after)?;
         assert_eq!(before, after);
         Ok(())
     }

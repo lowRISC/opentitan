@@ -12,6 +12,7 @@ Hsiao SECDED codes, refer to https://ieeexplore.ieee.org/document/8110065.g
 """
 
 import argparse
+import functools
 import itertools
 import logging as log
 import math
@@ -402,6 +403,7 @@ def _ecc_encode(k: int,
     return codeword
 
 
+@functools.lru_cache(maxsize = 1024)
 def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
     log.info(f"Encoding ECC for {hex(dataword)}")
 

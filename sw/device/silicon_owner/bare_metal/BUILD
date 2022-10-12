@@ -128,7 +128,6 @@ opentitan_multislot_flash_binary(
             "offset": "0x10000",
         },
     },
-    image_size = "0x11000",
 )
 
 BOOT_SUCCESS_MSG = "Bare metal PASS!"
@@ -170,7 +169,6 @@ opentitan_multislot_flash_binary(
             "offset": "0x10000",
         },
     },
-    image_size = "0x13000",
 )
 
 opentitan_functest(

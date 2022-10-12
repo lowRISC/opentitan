@@ -192,6 +192,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   int       tlul_eflash_exp_cnt = 0;
   int       tlul_eflash_obs_cnt = 0;
 
+  // stop rma process
+  bit       rma_ack_polling_stop = 0;
+
   // Store program data for read back check
   data_q_t prog_data[flash_op_t];
 

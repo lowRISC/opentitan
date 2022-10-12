@@ -104,8 +104,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "Shutting down", UVM_LOW)
 
     `uvm_info(`gfn, "Disabling DUT", UVM_MEDIUM)
-    ral.module_enable.module_enable.set(prim_mubi_pkg::MuBi4False);
-    csr_update(.csr(ral.module_enable));
+    disable_dut();
 
     `uvm_info(`gfn, "Checking diagnostics", UVM_MEDIUM)
     check_ht_diagnostics();
@@ -125,6 +124,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   task disable_dut();
     csr_wr(.ptr(ral.module_enable.module_enable), .value(MuBi4False));
+
     // Disabling the module will clear the error state,
     // as well as the observe and entropy_data FIFOs
     // Clear all interupts here
@@ -142,8 +142,8 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   // Helper function to entropy_src_init. Tries to apply the the new configuration
   // Does not check for invalid MuBi or threshold alert values
-  task try_apply_base_configuration(entropy_src_dut_cfg newcfg, realtime pause,
-                                    output bit completed);
+  virtual task try_apply_base_configuration(entropy_src_dut_cfg newcfg, realtime pause,
+                                            output bit completed);
 
     completed = 0;
 
@@ -151,6 +151,11 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.entropy_control.es_type.set(newcfg.type_bypass);
     ral.entropy_control.es_route.set(newcfg.route_software);
     csr_update(.csr(ral.entropy_control));
+    #(pause);
+
+    ral.health_test_windows.fips_window.set(newcfg.fips_window_size/RNG_BUS_WIDTH);
+    ral.health_test_windows.bypass_window.set(newcfg.bypass_window_size/RNG_BUS_WIDTH);
+    csr_update(.csr(ral.health_test_windows));
     #(pause);
 
     // Thresholds for the continuous health checks:
@@ -175,8 +180,13 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.fw_ov_control));
     #(pause);
 
-    ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4False);
+    ral.fw_ov_sha3_start.fw_ov_insert_start.set(newcfg.fw_ov_insert_start);
     csr_update(.csr(ral.fw_ov_sha3_start));
+    #(pause);
+
+    ral.alert_threshold.alert_threshold.set(newcfg.alert_threshold);
+    ral.alert_threshold.alert_threshold_inv.set(newcfg.alert_threshold_inv);
+    csr_update(.csr(ral.alert_threshold));
     #(pause);
 
     ral.observe_fifo_thresh.observe_fifo_thresh.set(newcfg.observe_fifo_thresh);
@@ -200,8 +210,10 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     if (newcfg.module_enable == MuBi4True) begin
       // Use the enable method to invoke any callbacks.
       enable_dut();
+    end else if (newcfg.module_enable == MuBi4False) begin
+      disable_dut();
     end else begin
-      // Explicitly write the non-true (False or invalid) enable value
+      // Explicitly write the invalid enable value
       // to the module_enable register.
       ral.module_enable.set(newcfg.module_enable);
       csr_update(.csr(ral.module_enable));
@@ -244,8 +256,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     end
 
     if (do_disable) begin
-      ral.module_enable.set(MuBi4False);
-      csr_update(.csr(ral.module_enable));
+      disable_dut();
       `uvm_info(`gfn, "DUT Disabled", UVM_MEDIUM)
     end
 
@@ -290,8 +301,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     `uvm_info(`gfn, "Moving DUT into a safe configuration", UVM_MEDIUM)
     // explicitly clear module_enable to allow module writes
-    ral.module_enable.module_enable.set(MuBi4False);
-    csr_update(.csr(ral.module_enable));
+    disable_dut();
 
     // Clear all interrupts
     csr_wr(.ptr(ral.intr_state), .value(32'hf));

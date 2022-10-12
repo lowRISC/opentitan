@@ -749,6 +749,8 @@ module otp_ctrl
     .tl_h2d_o(prim_tl_h2d_gated),
     .tl_d2h_i(prim_tl_d2h_gated),
     .lc_en_i (lc_dft_en[0]),
+    .flush_req_i('0),
+    .flush_ack_o(),
     .err_o   (intg_error[2])
   );
 

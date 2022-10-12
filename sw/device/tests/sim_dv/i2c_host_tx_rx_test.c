@@ -114,7 +114,8 @@ static void en_plic_irqs(dif_rv_plic_t *plic) {
         plic, plic_irqs[i], kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
 
     // Assign a default priority
-    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, plic_irqs[i], 0x1));
+    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(plic, plic_irqs[i],
+                                              kDifRvPlicMaxPriority));
   }
 
   // Enable the external IRQ at Ibex.
