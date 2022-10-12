@@ -11,9 +11,9 @@ def rust_repos(rules_rust = None, safe_ftdi = None, serde_annotate = None):
     http_archive_or_local(
         name = "rules_rust",
         local = rules_rust,
-        sha256 = "408a3ab2816eecabf6caf7b21ec07e0dcfde88a18267a0bc8fbd7d98ec08797d",
-        strip_prefix = "rules_rust-sha-retrieval-bugfix-20221006_01",
-        url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/sha-retrieval-bugfix-20221006_01.tar.gz",
+        sha256 = "f52d8585a797eb2b7af6535457a65f7b1a3548c76fe8e962355dba23186ec9ef",
+        strip_prefix = "rules_rust-configurable-bindgen-libcxx-dir-20221018_01",
+        url = "https://github.com/lowRISC/rules_rust/archive/refs/tags/configurable-bindgen-libcxx-dir-20221018_01.tar.gz",
     )
 
     http_archive_or_local(
