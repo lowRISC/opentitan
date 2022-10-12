@@ -20,7 +20,7 @@ MAKE			= make
 CTAGS			= ctags
 
 # vsim configuration
-VVERSION                = "10.7b"
+VVERSION		= "10.7b"
 
 VLIB			= vlib-$(VVERSION)
 VWORK			= work
@@ -33,26 +33,26 @@ VOPT			= vopt-$(VVERSION)
 VOPT_FLAGS		= -debugdb -fsmdebug -pedanticerrors #=mnprft
 
 VSIM			= vsim-$(VVERSION)
-VSIM_HOME               = /usr/pack/modelsim-$(VVERSION)-kgf/questasim
-VSIM_FLAGS              =  # user defined
+VSIM_HOME		= /usr/pack/modelsim-$(VVERSION)-kgf/questasim
+VSIM_FLAGS		=  # user defined
 ALL_VSIM_FLAGS		= $(VSIM_FLAGS) -sv_lib remote_bitbang/librbs_vsim
 VSIM_DEBUG_FLAGS	= -debugdb
-VSIM_GUI_FLAGS          = -gui -debugdb
-VSIM_SCRIPT_BATCH       = vsim_batch.tcl
-VSIM_SCRIPT_GUI         = vsim_gui.tcl
+VSIM_GUI_FLAGS		= -gui -debugdb
+VSIM_SCRIPT_BATCH	= vsim_batch.tcl
+VSIM_SCRIPT_GUI	= vsim_gui.tcl
 
-VCS                     = vcs-2017.03-kgf vcs
-VCS_HOME                = /usr/pack/vcs-2017.03-kgf
-VCS_FLAGS               =
-SIMV_FLAGS              =
+VCS			= vcs-2017.03-kgf vcs
+VCS_HOME		= /usr/pack/vcs-2017.03-kgf
+VCS_FLAGS		=
+SIMV_FLAGS		=
 
 # verilator configuration
 VERILATOR		= verilator
-VERI_FLAGS              =
-VERI_COMPILE_FLAGS      =
-VERI_TRACE              =
-VERI_DIR                = cobj_dir
-VERI_CFLAGS             = -O2
+VERI_FLAGS		=
+VERI_COMPILE_FLAGS	=
+VERI_TRACE		=
+VERI_DIR		= cobj_dir
+VERI_CFLAGS		= -O2
 
 # RTL source files
 RTLSRC_TB_PKG		:=
@@ -67,13 +67,13 @@ RTLSRC_TB		:= boot_rom.sv \
 				tb_test_env.sv \
 				tb_top.sv
 
-RTLSRC_VERI_TB          := boot_rom.sv \
+RTLSRC_VERI_TB		:= boot_rom.sv \
 				dp_ram.sv \
 				mm_ram.sv \
 				SimJTAG.sv \
 				tb_top_verilator.sv
 
-RTLSRC_INCDIR           := riscv/rtl/include
+RTLSRC_INCDIR		:= riscv/rtl/include common_cells/include
 
 RTLSRC_FPNEW_PKG	:= fpnew/src/fpnew_pkg.sv
 RTLSRC_RISCV_PKG	+= $(addprefix riscv/rtl/include/,\
@@ -81,7 +81,10 @@ RTLSRC_RISCV_PKG	+= $(addprefix riscv/rtl/include/,\
 				../../bhv/include/cv32e40p_tracer_pkg.sv)
 RTLSRC_DM_PKG		+= ../src/dm_pkg.sv
 
-RTLSRC_PKG 		= $(RTLSRC_FPNEW_PKG) dm_tb_pkg.sv $(RTLSRC_RISCV_PKG) $(RTLSRC_DM_PKG)
+RTLSRC_COMMON_PKG	:= common_cells/src/cdc_reset_ctrlr_pkg.sv
+
+RTLSRC_PKG		= $(RTLSRC_FPNEW_PKG) dm_tb_pkg.sv $(RTLSRC_RISCV_PKG) \
+			$(RTLSRC_DM_PKG) $(RTLSRC_COMMON_PKG)
 RTLSRC_RISCV		:= $(addprefix riscv/rtl/,\
 				../bhv/cv32e40p_sim_clock_gate.sv \
 				../bhv/cv32e40p_tracer.sv \
@@ -109,13 +112,15 @@ RTLSRC_RISCV		:= $(addprefix riscv/rtl/,\
 				cv32e40p_prefetch_controller.sv \
 				cv32e40p_sleep_unit.sv \
 				cv32e40p_core.sv)
-RTLSRC_COMMON           := $(addprefix common_cells/src/,\
-				cdc_2phase.sv fifo_v2.sv fifo_v3.sv\
-				rstgen.sv rstgen_bypass.sv)
+RTLSRC_COMMON		:= $(addprefix common_cells/src/,\
+				spill_register_flushable.sv spill_register.sv \
+				cdc_2phase.sv cdc_2phase_clearable.sv \
+				cdc_reset_ctrlr.sv cdc_4phase.sv \
+				deprecated/fifo_v2.sv fifo_v3.sv \
+				rstgen.sv rstgen_bypass.sv sync.sv)
 RTLSRC_TECH		:= $(addprefix tech_cells_generic/src/,\
-				cluster_clock_inverter.sv pulp_clock_mux2.sv\
-				cluster_clock_gating.sv)
-RTLSRC_DEBUG            := ../debug_rom/debug_rom.sv
+				rtl/tc_clk.sv)
+RTLSRC_DEBUG		:= ../debug_rom/debug_rom.sv
 RTLSRC_DEBUG		+= $(addprefix ../src/,\
 				dm_csrs.sv dmi_cdc.sv dmi_jtag.sv \
 				dmi_jtag_tap.sv dm_mem.sv \
@@ -124,12 +129,12 @@ RTLSRC_DEBUG		+= $(addprefix ../src/,\
 RTLSRC			+= $(RTLSRC_RISCV) $(RTLSRC_COMMON) $(RTLSRC_TECH) $(RTLSRC_DEBUG)
 
 # versions for this tb
-CV32E40P_SHA            = f9d63290eea738cb0a6fbf1e77bbd18555015a03
-FPU_SHA                 = v0.6.1
-COMMON_SHA              = 337f54a7cdfdad78b124cbdd2a627db3e0939141
-TECH_SHA                = b35652608124b7ea813818b14a00ca76edd7599d
+CV32E40P_SHA		= f9d63290eea738cb0a6fbf1e77bbd18555015a03
+FPU_SHA		= v0.6.1
+COMMON_SHA		= v1.24.0
+TECH_SHA		= v0.2.3
 
-RAM_START_ADDR          = 0x1c000000
+RAM_START_ADDR		= 0x1c000000
 
 # TODO: clean this up
 RTLSRC_VLOG_TB_TOP	:= $(basename $(notdir $(RTLSRC_TB_TOP)))
@@ -157,7 +162,7 @@ vlib: .lib-rtl
 
 # rebuild if we change some sourcefile
 .build-rtl: .lib-rtl $(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB)
-	$(VLOG) -work $(VWORK) +incdir+$(RTLSRC_INCDIR) $(VLOG_FLAGS) \
+	$(VLOG) -work $(VWORK) $(addprefix +incdir+,$(RTLSRC_INCDIR)) $(VLOG_FLAGS) \
 	$(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB)
 	touch .build-rtl
 
@@ -172,10 +177,10 @@ vsim-all: .opt-rtl
 
 vcsify: $(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB) remote_bitbang/librbs_vcs.so
 	$(VCS) +vc -sverilog -race=all -ignore unique_checks -full64 \
-		-timescale=1ns/1ps \
+		-timescale=1ns/1ps -assert svaext \
 		-CC "-I$(VCS_HOME)/include -O3 -march=native" $(VCS_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC) $(RTLSRC_TB_PKG) $(RTLSRC_TB) \
-		+incdir+$(RTLSRC_INCDIR)
+		$(addprefix +incdir+,$(RTLSRC_INCDIR))
 
 vcs-clean:
 	rm -rf simv* *.daidir *.vpd *.db csrc ucli.key vc_hdrs.h
@@ -199,8 +204,8 @@ verilate: testbench_verilator
 testbench_verilator: $(RTLSRC_VERI_TB) $(RTLSRC_PKG) $(RTLSRC) \
 			remote_bitbang/librbs_veri.so
 	$(VERILATOR) --cc --sv --exe $(VERI_TRACE) \
-		--Wno-lint --Wno-UNOPTFLAT --Wno-BLKANDNBLK \
-		--Wno-MODDUP +incdir+$(RTLSRC_INCDIR) --top-module \
+		--Wno-lint --Wno-UNOPTFLAT --Wno-BLKANDNBLK --Wno-COMBDLY \
+		--Wno-MODDUP $(addprefix +incdir+,$(RTLSRC_INCDIR)) --top-module \
 		tb_top_verilator --Mdir $(VERI_DIR) \
 		-CFLAGS "-std=gnu++11 $(VERI_CFLAGS)" $(VERI_COMPILE_FLAGS) \
 		$(RTLSRC_PKG) $(RTLSRC_VERI_TB) $(RTLSRC) \
@@ -296,6 +301,13 @@ prog-clean:
 veri-run: verilate prog/test.hex
 	./testbench_verilator $(VERI_FLAGS) \
 		"+firmware=prog/test.hex"
+
+# run openocd testbench
+# Use OPENOCD to point to openocd binary
+# Use OPENOCD_SCRIPT to point to test script
+.PHONY: test-openocd
+test-openocd:
+	./veri-run-openocd.py
 
 .PHONY: vsim-run
 vsim-run: vsim-all prog/test.hex

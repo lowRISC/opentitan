@@ -197,6 +197,12 @@ package dm;
     DTM_WRITE = 2'h2
   } dtm_op_e;
 
+  typedef enum logic [1:0] {
+    DTM_SUCCESS = 2'h0,
+    DTM_ERR     = 2'h2,
+    DTM_BUSY    = 2'h3
+  } dtm_op_status_e;
+
   typedef struct packed {
     logic [31:29] sbversion;
     logic [28:23] zero0;
@@ -214,8 +220,6 @@ package dm;
     logic         sbaccess16;
     logic         sbaccess8;
   } sbcs_t;
-
-  localparam logic [1:0] DTM_SUCCESS = 2'h0;
 
   typedef struct packed {
     logic [6:0]  addr;

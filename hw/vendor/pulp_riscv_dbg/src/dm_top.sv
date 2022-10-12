@@ -86,6 +86,7 @@ module dm_top #(
   logic [dm::DataCount-1:0][31:0]   data_csrs_mem;
   logic [dm::DataCount-1:0][31:0]   data_mem_csrs;
   logic                             data_valid;
+  logic                             ndmreset;
   logic [19:0]                      hartsel;
   // System Bus Access Module
   logic [BusWidth-1:0]              sbaddress_csrs_sba;
@@ -104,6 +105,7 @@ module dm_top #(
   logic                             sberror_valid;
   logic [2:0]                       sberror;
 
+  assign ndmreset_o = ndmreset;
 
   dm_csrs #(
     .NrHarts(NrHarts),
@@ -120,7 +122,7 @@ module dm_top #(
     .dmi_resp_valid_o,
     .dmi_resp_ready_i,
     .dmi_resp_o,
-    .ndmreset_o,
+    .ndmreset_o              ( ndmreset              ),
     .dmactive_o,
     .hartsel_o               ( hartsel               ),
     .hartinfo_i,
@@ -201,6 +203,7 @@ module dm_top #(
     .clk_i,
     .rst_ni,
     .debug_req_o,
+    .ndmreset_i              ( ndmreset              ),
     .hartsel_i               ( hartsel               ),
     .haltreq_i               ( haltreq               ),
     .resumereq_i             ( resumereq             ),

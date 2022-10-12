@@ -37,20 +37,20 @@ index 350c6c5..38d7b51 100644
 -  logic        resp_queue_empty;
 -  logic        resp_queue_push;
 -  logic        resp_queue_pop;
-   logic [31:0] resp_queue_data;
  
    localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'h0, dm::DataCount} - 8'h1);
+   localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'(dm::ProgBuf0 + {4'h0, dm::ProgBufSize} - 8'h1);
 @@ -181,9 +178,6 @@ module dm_csrs #(
- 
-   // a successful response returns zero
-   assign dmi_resp_o.resp = dm::DTM_SUCCESS;
+
+   dm::dmi_resp_t resp_queue_inp;
+
 -  assign dmi_resp_valid_o     = ~resp_queue_empty;
 -  assign dmi_req_ready_o      = ~resp_queue_full;
 -  assign resp_queue_push      = dmi_req_valid_i & dmi_req_ready_o;
    // SBA
    assign sbautoincrement_o = sbcs_q.sbautoincrement;
    assign sbreadonaddr_o    = sbcs_q.sbreadonaddr;
-@@ -551,28 +545,29 @@ module dm_csrs #(
+@@ -579,28 +573,29 @@ module dm_csrs #(
    assign progbuf_o   = progbuf_q;
    assign data_o      = data_q;
  
@@ -63,10 +63,10 @@ index 350c6c5..38d7b51 100644
 +
    // response FIFO
 -  fifo_v2 #(
--    .dtype            ( logic [31:0]         ),
--    .DEPTH            ( 2                    )
+-    .dtype            ( logic [$bits(dmi_resp_o)-1:0] ),
+-    .DEPTH            ( 2                             )
 +  prim_fifo_sync #(
-+    .Width   (32),
++    .Width   ($bits(dmi_resp_o)),
 +    .Pass    (1'b0),
 +    .Depth   (2)
    ) i_fifo (
@@ -79,17 +79,17 @@ index 350c6c5..38d7b51 100644
 -    .empty_o          ( resp_queue_empty     ),
 -    .alm_full_o       (                      ),
 -    .alm_empty_o      (                      ),
--    .data_i           ( resp_queue_data      ),
+-    .data_i           ( resp_queue_inp       ),
 -    .push_i           ( resp_queue_push      ),
--    .data_o           ( dmi_resp_o.data      ),
+-    .data_o           ( dmi_resp_o           ),
 -    .pop_i            ( resp_queue_pop       )
 +    .clk_i   ( clk_i                ),
 +    .rst_ni  ( dmi_rst_ni           ), // reset only when system is re-set
 +    .clr_i   ( 1'b0                 ),
-+    .wdata_i ( resp_queue_data      ),
++    .wdata_i ( resp_queue_inp       ),
 +    .wvalid_i( dmi_req_valid_i      ),
 +    .wready_o( dmi_req_ready_o      ),
-+    .rdata_o ( dmi_resp_o.data      ),
++    .rdata_o ( dmi_resp_o           ),
 +    .rvalid_o( dmi_resp_valid_o     ),
 +    .rready_i( dmi_resp_ready_i     ),
 +    .full_o  (                      ), // Unused
@@ -287,12 +287,12 @@ index 0c188c0..a804da0 100644
    // ----------------
 -  logic tck_n, tck_ni;
 -
--  cluster_clock_inverter i_tck_inv (
+-  tc_clk_inverter i_tck_inv (
 -    .clk_i ( tck_i  ),
 -    .clk_o ( tck_ni )
 -  );
 -
--  pulp_clock_mux2 i_dft_tck_mux (
+-  tc_clk_mux2 i_dft_tck_mux (
 -    .clk0_i    ( tck_ni     ),
 -    .clk1_i    ( tck_i      ), // bypass the inverted clock for testing
 -    .clk_sel_i ( testmode_i ),
