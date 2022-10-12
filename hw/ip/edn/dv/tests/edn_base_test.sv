@@ -24,13 +24,15 @@ class edn_base_test extends cip_base_test #(
   // the run_phase; as such, nothing more needs to be done
 
   virtual function void configure_env();
-    cfg.enable_pct                            = 100;
+    cfg.enable_pct = 100;
 
-    cfg.m_csrng_agent_cfg.cmd_ack_zero_delays = 0; // Can't handle cmd ack too soon after req
-    cfg.m_csrng_agent_cfg.min_cmd_ack_dly     = 4;
-    cfg.m_csrng_agent_cfg.max_cmd_ack_dly     = 32;
-    cfg.m_csrng_agent_cfg.min_genbits_dly     = 0;
-    cfg.m_csrng_agent_cfg.max_genbits_dly     = 32;
+    cfg.m_csrng_agent_cfg.cmd_zero_delays = 0; // For cmd_ack and cmd_ready
+    cfg.m_csrng_agent_cfg.min_cmd_ack_dly = 4;
+    cfg.m_csrng_agent_cfg.max_cmd_ack_dly = 32;
+    cfg.m_csrng_agent_cfg.min_genbits_dly = 0;
+    cfg.m_csrng_agent_cfg.max_genbits_dly = 32;
+    cfg.m_csrng_agent_cfg.min_cmd_rdy_dly = 0;
+    cfg.m_csrng_agent_cfg.max_cmd_rdy_dly = 1;
   endfunction
 
 endclass : edn_base_test

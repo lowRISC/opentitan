@@ -103,7 +103,7 @@ class csrng_monitor extends dv_base_monitor #(
     csrng_item   cs_item;
     forever begin
       @(cfg.vif.cmd_push_if.mon_cb);
-      if (cfg.vif.cmd_push_if.mon_cb.valid) begin
+      if ((cfg.vif.cmd_push_if.mon_cb.valid) && (cfg.vif.cmd_push_if.mon_cb.ready)) begin
         // TODO: sample any covergroups
         // TODO: Implement suggestion in PR #5456
         cs_item = csrng_item::type_id::create("cs_item");

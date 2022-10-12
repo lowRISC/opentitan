@@ -33,7 +33,7 @@ class csrng_agent extends dv_base_agent #(
     cfg.m_cmd_push_agent_cfg.is_active   = cfg.is_active;
     cfg.m_cmd_push_agent_cfg.agent_type  = PushAgent;
     cfg.m_cmd_push_agent_cfg.if_mode     = cfg.if_mode;
-    cfg.m_cmd_push_agent_cfg.zero_delays = cfg.cmd_ack_zero_delays;
+    cfg.m_cmd_push_agent_cfg.zero_delays = cfg.cmd_zero_delays;
 
     m_genbits_push_agent = push_pull_agent#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)::type_id::
                            create("m_genbits_push_agent", this);
@@ -46,6 +46,8 @@ class csrng_agent extends dv_base_agent #(
       cfg.m_genbits_push_agent_cfg.device_delay_min = cfg.min_genbits_rdy_dly;
       cfg.m_genbits_push_agent_cfg.device_delay_max = cfg.max_genbits_rdy_dly;
     end else begin
+      cfg.m_cmd_push_agent_cfg.device_delay_min = cfg.min_cmd_rdy_dly;
+      cfg.m_cmd_push_agent_cfg.device_delay_max = cfg.max_cmd_rdy_dly;
       cfg.has_req_fifo = 1;
       cfg.m_genbits_push_agent_cfg.if_mode = dv_utils_pkg::Host;
     end
