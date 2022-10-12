@@ -125,15 +125,40 @@ package flash_ctrl_env_pkg;
   parameter bit MP_VIOLATION = 1;
 
   // Flash Error Bits (flash_ctrl.err_code)
-  parameter uint NumFlashErrBits  = 8;
+  parameter uint NumFlashErrBits  = 7;
   parameter uint FlashOpErr       = 0;
   parameter uint FlashMpErr       = 1;
   parameter uint FlashRdErr       = 2;
   parameter uint FlashProgErr     = 3;
   parameter uint FlashProgWinErr  = 4;
   parameter uint FlashProgTypeErr = 5;
-  parameter uint FlashMacroErr    = 6;
-  parameter uint FlashUpdateErr   = 7;
+  parameter uint FlashUpdateErr   = 6;
+
+  // Flash STD Fault Bits (flash_ctrl.std_fault_status)
+  parameter uint FlashStdFaultRegIntgErr   = 0;
+  parameter uint FlashStdFaultProgIntgErr  = 1;
+  parameter uint FlashStdFaultLcmgrErr     = 2;
+  parameter uint FlashStdFaultLcmgrIntgErr = 3;
+  parameter uint FlashStdFaultArbFsmErr    = 4;
+  parameter uint FlashStdFaultStorageErr   = 5;
+  parameter uint FlashStdFaultPhyFsmErr    = 6;
+  parameter uint FlashStdFaultCtrlCntErr   = 7;
+  parameter uint FlashStdFaultFifoErr      = 8;
+
+  // Flash Fault Bits (flash_ctrl.fault_status)
+  parameter uint FlashFaultOpErr         = 0;
+  parameter uint FlashFaultMpErr         = 1;
+  parameter uint FlashFaultRdErr         = 2;
+  parameter uint FlashFaultProgErr       = 3;
+  parameter uint FlashFaultProgWinErr    = 4;
+  parameter uint FlashFaultProgTypeErr   = 5;
+  parameter uint FlashFaultFlashMacroErr = 6;
+  parameter uint FlashFaultSeedErr       = 7;
+  parameter uint FlashFaultPhyRelblErr   = 8;
+  parameter uint FlashFaultPhyStorageErr = 9;
+  parameter uint FlashFaultSpuriousAck   = 10;
+  parameter uint FlashFaultArbErr        = 11;
+  parameter uint FlashFaultHostGntErr    = 12;
 
   // From flash_ctrl_lcmgr.sv
   parameter logic [10:0] FlashLcDisabled = 11'b11111100011;

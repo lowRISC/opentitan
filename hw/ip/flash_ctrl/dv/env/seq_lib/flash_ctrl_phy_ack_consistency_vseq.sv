@@ -47,5 +47,7 @@ class flash_ctrl_phy_ack_consistency_vseq extends flash_ctrl_phy_host_grant_err_
       end
     end // repeat (2)
     check_fault(ral.fault_status.spurious_ack);
+    collect_err_cov_status(ral.fault_status);
+    csr_rd_check(.ptr(ral.err_code), .compare_value(0));
   endtask
 endclass

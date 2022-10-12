@@ -332,7 +332,7 @@ class flash_ctrl_scoreboard #(
           // for read, update predication at address phase and compare at data phase
           if(!uvm_re_match("err_code*",csr.get_name())) begin
             if (cfg.en_cov) begin
-              cov.error_cg.sample(item.d_data);
+              cov.sw_error_cg.sample(item.d_data);
             end
           end
           case (csr.get_name())

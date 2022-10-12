@@ -58,6 +58,8 @@ class flash_ctrl_phy_host_grant_err_vseq extends flash_ctrl_err_base_vseq;
     end // repeat (2)
 
     check_fault(ral.fault_status.host_gnt_err);
+    collect_err_cov_status(ral.fault_status);
+    csr_rd_check(.ptr(ral.err_code), .compare_value(0));
     cfg.tlul_core_exp_cnt = cfg.tlul_core_obs_cnt;
   endtask
 
