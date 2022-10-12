@@ -32,7 +32,7 @@ struct Opts {
 
 fn corrupt_rom_ext(rom_ext_path: &PathBuf) -> Result<NamedTempFile> {
     // Read image file
-    let mut buffer = match std::fs::read(&rom_ext_path) {
+    let mut buffer = match std::fs::read(rom_ext_path) {
         Ok(file) => file,
         Err(error) => panic!("Problem reading the file: {:?}", error),
     };

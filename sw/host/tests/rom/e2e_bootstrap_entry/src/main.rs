@@ -1,6 +1,7 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+#![allow(clippy::bool_assert_comparison)]
 
 use anyhow::{bail, Result};
 use regex::Regex;
@@ -237,6 +238,7 @@ fn test_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         sfdp.jedec.write_granularity,
         WriteGranularity::Granularity64Bytes
     );
+
     assert_eq!(sfdp.jedec.write_en_required, true);
     assert_eq!(sfdp.jedec.write_en_opcode, 0x50);
     assert_eq!(sfdp.jedec.erase_opcode_4kib, 0x20);
@@ -333,7 +335,7 @@ fn test_bootstrap_phase1_page_program(opts: &Opts, transport: &TransportWrapper)
     SpiFlash::from_spi(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
         // Note: We must start at a flash-word-aligned address.
-        .program(&*spi, 0x80330, &0x4552544f_00000000u64.to_le_bytes())?;
+        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
@@ -370,7 +372,7 @@ fn test_bootstrap_phase1_erase(
     // Send `erase_cmd` to transition to phase 2.
     erase()?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552544f_00000000u64.to_le_bytes())?;
+        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
 
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
@@ -412,7 +414,7 @@ fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Resu
         // Send CHIP_ERASE to transition to phase 2.
         .chip_erase(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552544f_00000000u64.to_le_bytes())?;
+        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
 
     // Remove strapping so that chip fails to boot instead of going into bootstrap.
     transport.remove_pin_strapping("ROM_BOOTSTRAP")?;
@@ -430,7 +432,7 @@ fn test_bootstrap_phase1_read(opts: &Opts, transport: &TransportWrapper) -> Resu
     let mut buf: [u8; 8] = [0xa5; 8];
     SpiFlash::from_spi(&*spi)?.read(&*spi, 0x80330, &mut buf)?;
     log::info!("Received: {:?}", &buf);
-    assert_ne!(u64::from_le_bytes(buf), 0x4552544f_00000000u64);
+    assert_ne!(u64::from_le_bytes(buf), 0x4552_544f_0000_0000u64);
 
     Ok(())
 }
@@ -477,7 +479,7 @@ fn test_bootstrap_phase2_page_program(opts: &Opts, transport: &TransportWrapper)
         // Send CHIP_ERASE to transition to phase 2.
         .chip_erase(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552544f_00000000u64.to_le_bytes())?;
+        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
 
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
@@ -515,7 +517,7 @@ fn test_bootstrap_phase2_erase(
     // Send `erase_cmd` to transition to phase 2.
     erase()?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552544f_00000000u64.to_le_bytes())?;
+        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?;
     // Erase again.
     erase()?;
 
@@ -546,12 +548,12 @@ fn test_bootstrap_phase2_read(opts: &Opts, transport: &TransportWrapper) -> Resu
         // Send CHIP_ERASE to transition to phase 2.
         .chip_erase(&*spi)?
         // Write "OTRE" to the identifier field of the manifest in the second slot.
-        .program(&*spi, 0x80330, &0x4552544f_00000000u64.to_le_bytes())?
+        .program(&*spi, 0x80330, &0x4552_544f_0000_0000_u64.to_le_bytes())?
         // Read 8 bytes starting from 0x80330.
         .read(&*spi, 0x80330, &mut read_buf)?;
     let received = u64::from_le_bytes(read_buf);
     log::info!("Received: {:#x}", received);
-    assert_ne!(received, 0x4552544f_00000000u64);
+    assert_ne!(received, 0x4552_544f_0000_0000_u64);
 
     let mut console = UartConsole {
         timeout: Some(Duration::new(1, 0)),
