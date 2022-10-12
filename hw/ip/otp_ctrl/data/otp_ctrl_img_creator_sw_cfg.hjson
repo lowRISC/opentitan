@@ -51,7 +51,8 @@
                 },
                 {
                     name: "CREATOR_SW_CFG_CPUCTRL",
-                    // Value to write to the cpuctrl CSR in `rom_init()`.
+                    // Value to write to the `cpuctrl` CSR in `rom_init()`.
+                    // Note: Only bits 5:0 are written to the `cpuctrl` CSR.
                     // See: https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-register-cpuctrl
                     value: "0x1",
                 },
