@@ -80,6 +80,7 @@ class SgeLauncher(Launcher):
             sgeJob.args.b = 'y'  # This is a binary file
             sgeJob.args.o = self.deploy.get_log_path() + '.sge'
             cmd = str(sgeJob.execute(mode='echo'))
+            print('INFO: SGE command line : "' + str(cmd) + '"')
             # ---------------
             self.process = subprocess.Popen(shlex.split(cmd),
                                             bufsize=4096,
