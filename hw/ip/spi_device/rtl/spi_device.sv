@@ -336,9 +336,6 @@ module spi_device
   logic flash_sck_readbuf_watermark, flash_sck_readbuf_flip;
 
   // TPM ===============================================================
-  // pulse signal to set once from tpm_status_cmdaddr_notempty
-  logic intr_tpm_cmdaddr_notempty;
-
   // Interface
   logic tpm_mosi, tpm_miso, tpm_miso_en;
   assign tpm_mosi = cio_sd_i[0];
@@ -708,10 +705,15 @@ module spi_device
     .intr_o                 (intr_readbuf_flip_o              )
   );
 
+  // cmdaddr_notempty is a level signal. Issue has been discussed in
+  //   https://github.com/lowRISC/opentitan/issues/15282.
+  //
+  // TODO: Remove `prim_intr_hw` and ditect connect from status(level)
+  // assign intr_o = (status | test) & enable;
   prim_intr_hw #(.Width(1)) u_intr_tpm_cmdaddr_notempty (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (intr_tpm_cmdaddr_notempty                ),
+    .event_intr_i           (tpm_status_cmdaddr_notempty              ),
     .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tpm_header_not_empty.q),
     .reg2hw_intr_test_q_i   (reg2hw.intr_test.tpm_header_not_empty.q  ),
     .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tpm_header_not_empty.qe ),
@@ -1796,19 +1798,6 @@ module spi_device
   //////////////////
   // TPM over SPI //
   //////////////////
-  // Interrupt: Creating a pulse signal
-  prim_edge_detector #(
-    .Width (1),
-    .EnSync (1'b 0)
-  ) u_cmdaddr_notempty_edge (
-    .clk_i,
-    .rst_ni,
-    .d_i               (tpm_status_cmdaddr_notempty),
-    .q_sync_o          (),
-    .q_posedge_pulse_o (intr_tpm_cmdaddr_notempty),
-    .q_negedge_pulse_o ()
-  );
-
   // Instance of spi_tpm
   spi_tpm #(
     // CmdAddrFifoDepth
