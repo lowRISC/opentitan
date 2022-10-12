@@ -2,8 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This sequence accesses the rv_dm mem interface with randomly backdoor-loaded LC state. If the LC
-// state gates the rv_dm mem interface (via lc_debug_en), we are expecting to see a TLUL d_error.
+// This sequence accesses the rv_dm mem interface via JTAG and the TL-UL bus with randomly
+// backdoor-loaded LC state. If the LC state gates the rv_dm mem interface (via lc_debug_en), we
+// are expecting to see a d_error on the TL-UL bus and on JTAG we expect a read-write test to an RW
+// reg to fail.
+//
+// Note that although this sequence runs in stub CPU mode, it still backdoor loads a valid ROM image
+// so that the ROM check can complete successfully. This is needed since the TAP straps are
+// currently sampled after the ROM check succeeds.
+//
+// TODO(#15624): the ROM dependency can be removed once the pwrmgr FSM has been simplified (due
+// to the reset domain reorg). The strap sampling pulse will then be issued earlier, before the ROM
+// check is performed.
+
 class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
   `uvm_object_utils(chip_rv_dm_lc_disabled_vseq)
 
@@ -12,7 +23,7 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
   rand lc_state_e lc_state;
 
   constraint num_trans_c {
-    num_trans inside {[2:20]};
+    num_trans inside {[5:10]};
   }
 
   // Add constraint to avoid lc_escalate_en being broadcasted and causes fatal alerts.
@@ -23,9 +34,10 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
   virtual function void set_handles();
     super.set_handles();
     jtag_dmi_ral = cfg.jtag_dmi_ral;
-  endfunction // set_handles
+  endfunction
 
   virtual task pre_start();
+    // Select RV_DM TAP via the TAP straps.
     cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
     super.pre_start();
     max_outstanding_accesses = 1;
@@ -40,8 +52,30 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
     join
   endtask
 
-  task rv_dm_activate();
-    // "Activate" the DM to so that DM_CSRs can be written to.
+  virtual task dut_init(string reset_kind = "HARD");
+    super.dut_init(reset_kind);
+    `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
+    // This vseq derives from the chip_stub_cpu_base_vseq, hence the ROM has to be loaded explicitly.
+    `ifdef DISABLE_ROM_INTEGRITY_CHECK
+        cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
+    `else
+        cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
+    `endif
+
+    // TODO(#15624): remove this part later.
+    `uvm_info(`gfn, "Wait for ROM check to complete", UVM_MEDIUM)
+    // In case we are in PROD* or DEV, we need to wait until the strap sampling pulse
+    // is released after the ROM check.
+    if (lc_state inside {LcStDev, LcStProd, LcStProdEnd}) begin
+      wait_rom_check_done();
+      // The strap sampling pulse is released a few cycles after the ROM check completes.
+      cfg.clk_rst_vif.wait_clks(100);
+    end
+
+    `uvm_info(`gfn, "Attempt to activate RV_DM via JTAG.", UVM_MEDIUM)
+    // RV_DM needs to be activated for the registers to work properly.
+    // We always attempt to write this via the JTAG - even in states where the RV_DM is locked
+    // so that incorrect gating behavior is not masked by the RV_DM being disabled.
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
     cfg.clk_rst_vif.wait_clks(5);
   endtask
@@ -56,6 +90,7 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
     super.initialize_otp_sig_verify();
   endfunction
 
+  // Returns true if the RV_DM is accessible in a certain life cycle state.
   virtual function bit allow_rv_dm_access();
     if (lc_state inside {LcStTestUnlocked0, LcStTestUnlocked1, LcStTestUnlocked2,
         LcStTestUnlocked3, LcStTestUnlocked4, LcStTestUnlocked5, LcStTestUnlocked6,
@@ -86,31 +121,53 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
   endtask
 
   // Access check via TL-UL bus.
-  // TODO.
+  virtual task rw_csr_addr_with_gating(uvm_reg csr, bit gated);
+    dv_base_reg dv_reg;
+    dv_base_reg_field flds[$];
+    bit [TL_AW-1:0] addr = csr.get_address();
+    bit [TL_DW-1:0] data = $urandom();
+    `downcast(dv_reg, csr)
+    dv_reg.get_dv_base_reg_fields(flds);
+    if (flds[0].get_access() inside {"RW", "WO"}) begin
+      `uvm_info(`gfn, $sformatf("Write addr %0h, write adata %0h, exp error %0d",
+                addr, data, gated), UVM_HIGH);
+      tl_access(.addr(addr), .write(1), .data(data), .exp_err_rsp(gated));
+    end
+    // Most RV_DM registers cannot be predicted correctly.
+    // We hence only check whether the accesses below error out or not.
+    // In case of an error, the data read back must be all ones.
+    if (flds[0].get_access() inside {"RW", "RO"}) begin
+      `uvm_info(`gfn, $sformatf("Read addr %0h, exp error %0d",
+                addr, gated), UVM_HIGH);
+      tl_access(.addr(addr), .write(0), .data(data), .exp_err_rsp(gated), .exp_data('1),
+                .check_exp_data(gated));
+    end
+  endtask
+
+  virtual task rand_rw_regs(uvm_reg regs[$], bit gated);
+    `DV_CHECK_NE(regs.size(), 0)
+    regs.shuffle();
+    foreach (regs[i]) rw_csr_addr_with_gating(regs[i], gated);
+  endtask
 
   virtual task body();
-
     for (int trans_i = 1; trans_i <= num_trans; trans_i++) begin
-      // uvm_reg rv_dm_mem_regs[$];
-
+      uvm_reg rv_dm_mem_regs[$];
+      // Re-randomize the life cycle state in most iterations.
       if (trans_i > 1 && $urandom_range(0, 4)) dut_init();
       `uvm_info(`gfn, $sformatf("Run iterations %0d/%0d with lc_state %0s", trans_i, num_trans,
                 lc_state.name), UVM_LOW)
-      rv_dm_activate();
-      // if ($urandom_range(0, 1)) begin
-      // Check the RV_DM gating. Since the serial interface wires
-      // are gated with the lc_dft_en signal, it is sufficient to check an
-      // RW'able register to verify whether the gating works or not.
-      rv_dm_jtag_access_check(~allow_rv_dm_access());
-      // end
-
-
-      // if ($urandom_range(0, 1)) begin
-      // rv_dm_activate
-      //   `uvm_info(`gfn, "Check RV_DM MEM access", UVM_HIGH)
-      //   jtag_dmi_ral.get_registers(rv_dm_mem_regs);
-      //   rand_rw_prim_regs(rv_dm_mem_regs, ~allow_rv_dm_access());
-      // end
+      // Check the RV_DM gating via JTAG. Since the serial JTAG interface wires are gated with the
+      // lc_dft_en signal, it is sufficient to check an RW'able register to verify whether the
+      // gating works or not.
+      if ($urandom_range(0, 1)) begin
+        rv_dm_jtag_access_check(~allow_rv_dm_access());
+      end
+      // Check RV_DM gating via the TL-UL bus.
+      if ($urandom_range(0, 1)) begin
+        ral.rv_dm_mem.get_registers(rv_dm_mem_regs);
+        rand_rw_regs(rv_dm_mem_regs, ~allow_rv_dm_access());
+      end
     end
   endtask : body
 
