@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // directly test all the interrupt one by one
+// also test async fifo status - empty and full
 class spi_device_intr_vseq extends spi_device_txrx_vseq;
   `uvm_object_utils(spi_device_intr_vseq)
   `uvm_object_new
@@ -14,6 +15,10 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
     for (int i = 1; i <= num_trans; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
       spi_device_fw_init();
+
+      // txf_empty and rxf_full value isn't guaranteed as it needs SPI to be live to update it
+      csr_rd_check(.ptr(ral.status.rxf_empty), .compare_value(1));
+      csr_rd_check(.ptr(ral.status.txf_full), .compare_value(0));
 
       // fill tx async fifo to avoid sending out unknown data
       if (!is_tx_async_fifo_filled) begin
@@ -31,7 +36,8 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
 
       repeat (NumSpiDevIntr) begin
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(spi_dev_intr,
-                                           spi_dev_intr != NumSpiDevIntr;)
+            spi_dev_intr inside {RxFifoFull, RxFifoGeLevel, TxFifoLtLevel,
+                                 RxFwModeErr, RxFifoOverflow, TxFifoUnderflow};)
         `uvm_info(`gfn, $sformatf("\nTesting %0s", spi_dev_intr.name), UVM_LOW)
         drive_and_check_one_intr(spi_dev_intr);
 
@@ -52,17 +58,25 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
         // just below fifo full
         spi_host_xfer_bytes(sram_host_byte_size - SRAM_WORD_SIZE, device_bytes_q);
         wait_for_rx_avail_bytes(sram_host_byte_size - SRAM_WORD_SIZE, SramDataAvail, avail_bytes);
+        cfg.clk_rst_vif.wait_clks(4); // for interrupt to triggered
         check_interrupts(.interrupts(1 << RxFifoFull), .check_set(0));
 
         // fifo should be full
         spi_host_xfer_bytes(SRAM_WORD_SIZE, device_bytes_q);
         wait_for_rx_avail_bytes(sram_host_byte_size, SramDataAvail, avail_bytes);
         check_interrupts(.interrupts(1 << RxFifoFull), .check_set(1));
+        csr_rd_check(.ptr(ral.status.rxf_full), .compare_value(0));
+
+        // wait for some delay to move out of async fifo, then check it's empty
+        cfg.clk_rst_vif.wait_clks(20);
+        csr_rd_check(.ptr(ral.status.rxf_empty), .compare_value(1));
 
         // fill async fifo and check fifo doesn't overflow
         spi_host_xfer_bytes(ASYNC_FIFO_SIZE, device_bytes_q);
         cfg.clk_rst_vif.wait_clks(4); // for interrupt to triggered
         check_interrupts(.interrupts(1 << RxFifoOverflow), .check_set(0));
+        // check async fifo status
+        csr_rd_check(.ptr(ral.status.rxf_empty), .compare_value(0));
 
         // fill 1 word and check fifo overflow
         spi_host_xfer_bytes(SRAM_WORD_SIZE, device_bytes_q);
@@ -70,6 +84,8 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
         check_interrupts(.interrupts(1 << RxFifoGeLevel),
                          .check_set(rx_watermark_lvl inside {[1:sram_host_byte_size]}));
 
+        // need spi clock to run in order to update rxf_full
+        csr_rd_check(.ptr(ral.status.rxf_full), .compare_value(1));
         // clean up rx fifo
         process_rx_read(sram_host_byte_size + ASYNC_FIFO_SIZE);
       end
@@ -131,10 +147,15 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
           if (aligned_watermark > ASYNC_FIFO_SIZE) begin
             cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
             check_interrupts(.interrupts(1 << TxFifoLtLevel), .check_set(0));
+            csr_rd_check(.ptr(ral.status.txf_full), .compare_value(1));
           end
 
           // send one word and fifo is less than watermark
           spi_host_xfer_bytes(SRAM_WORD_SIZE, device_bytes_q);
+          // txf_empty relies on spi clock to update.
+          if (aligned_watermark != 0) begin
+            csr_rd_check(.ptr(ral.status.txf_empty), .compare_value(0));
+          end
           cfg.clk_rst_vif.wait_clks(4); // for interrupt to triggered
           check_interrupts(.interrupts(1 << TxFifoLtLevel), .check_set(1));
 
@@ -155,9 +176,13 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
         cfg.clk_rst_vif.wait_clks(4); // for interrupt to triggered
         check_interrupts(.interrupts(1 << TxFifoUnderflow), .check_set(1));
 
+        // this needs spi clock to update. When it's empty and we keep spi clock live to make
+        // it underflow, we can guarantee this empty is set.
+        csr_rd_check(.ptr(ral.status.txf_empty), .compare_value(1));
         // clean up rx fifo
         process_rx_read(SRAM_WORD_SIZE);
       end
+      default: `uvm_fatal(`gfn, $sformatf("unexpected intr %s", spi_dev_intr.name))
     endcase
   endtask : drive_and_check_one_intr
 endclass : spi_device_intr_vseq
