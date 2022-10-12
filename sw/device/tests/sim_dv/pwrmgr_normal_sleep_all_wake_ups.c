@@ -30,20 +30,9 @@
   4: aon_timer
   5: sensor_ctrl
 
-#define PWRMGR_PARAM_NUM_WKUPS 6
-
-#define PWRMGR_PARAM_SYSRST_CTRL_AON_WKUP_REQ_IDX 0
-#define PWRMGR_PARAM_ADC_CTRL_AON_WKUP_REQ_IDX 1
-#define PWRMGR_PARAM_PINMUX_AON_PIN_WKUP_REQ_IDX 2
-#define PWRMGR_PARAM_PINMUX_AON_USB_WKUP_REQ_IDX 3
-#define PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX 4
-#define PWRMGR_PARAM_SENSOR_CTRL_WKUP_REQ_IDX 5
-
  */
 
 OTTF_DEFINE_TEST_CONFIG();
-
-static const uint32_t kPinmuxWkupDetector5 = 5;
 
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.

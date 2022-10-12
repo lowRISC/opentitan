@@ -200,7 +200,6 @@ void execute_test(uint32_t wakeup_source, bool deep_sleep) {
   // Configure wakeup device
   kTestWakeupSources[wakeup_source].config(
       kTestWakeupSources[wakeup_source].dif_handle);
-  // Normal sleep
   dif_pwrmgr_domain_config_t cfg;
   CHECK_DIF_OK(dif_pwrmgr_get_domain_config(&pwrmgr, &cfg));
   cfg = cfg & (kDifPwrmgrDomainOptionIoClockInLowPower |

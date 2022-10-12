@@ -963,16 +963,16 @@
             This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
             working correctly as expected. X-ref'ed with all individual IP tests. For each wakeup
             source clear and enable `wake_info` CSR, enable the wakeup from that source with the
-            `wakeup_en` CSR, bring the chip to low power, optionally disabling the source's clock,
-            have the source issue a wakeup event and verify `wake_info` indicates the expected
-            wakeup.
+            `wakeup_en` CSR, bring the chip to both normal and low power sleep, optionally
+            disabling the source's clock, have the source issue a wakeup event and verify
+            `wake_info` indicates the expected wakeup.
 
             Each test should perform a minimum of 2 low power transitions to ensure there are no
             state dependent corner cases with wakeup interactions.
 
             '''
       stage: V2
-      tests: [""]
+      tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
     }
     {
       name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
@@ -982,7 +982,7 @@
             This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
             working correctly as expected. X-ref'ed with all individual IP tests. For each wakeup
             source clear and enable `wake_info` CSR, enable the wakeup from that source with the
-            `wakeup_en` CSR, bring the chip to low power, optionally disabling the source's clock,
+            `wakeup_en` CSR, bring the chip to normal sleep, optionally disabling the source's clock,
             have the source issue a wakeup event and verify `wake_info` indicates the expected
             wakeup.
             '''
