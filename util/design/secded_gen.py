@@ -19,7 +19,7 @@ import math
 import random
 import hjson
 import subprocess
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 from pathlib import Path
 
 COPYRIGHT = """// Copyright lowRISC contributors.
@@ -137,7 +137,7 @@ def calc_bitmasks(k, m, codes, dec):
     if dec:
         for j in range(m):
             fanin_masks[j] += 1 << (k + j)
-    return fanin_masks
+    return tuple(fanin_masks)
 
 
 def print_secded_enum_and_util_fns(cfgs):
@@ -356,9 +356,8 @@ def verify(cfgs):
     return error
 
 
-def _ecc_pick_code(codetype: str, k: int) -> Tuple[int, List[int], int]:
+def _ecc_pick_code(config: Dict[str, Any], codetype: str, k: int) -> Tuple[int, List[int], int]:
     # first check to see if bit width is supported among configuration
-    config = hjson.load(SECDED_CFG_PATH.open())
 
     codes = None
     bitmasks = None
@@ -403,11 +402,10 @@ def _ecc_encode(k: int,
     return codeword
 
 
-@functools.lru_cache(maxsize = 1024)
-def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
+def ecc_encode(config: Dict[str, Any], codetype: str, k: int, dataword: int) -> Tuple[int, int]:
     log.info(f"Encoding ECC for {hex(dataword)}")
 
-    m, bitmasks, invert = _ecc_pick_code(codetype, k)
+    m, bitmasks, invert = _ecc_pick_code(config, codetype, k)
     codeword = _ecc_encode(k, m, bitmasks, invert, dataword)
 
     # Debug printouts
@@ -416,10 +414,11 @@ def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
     return int(codeword, 2), m
 
 
-def ecc_encode_some(codetype: str,
+def ecc_encode_some(config: Dict[str, Any],
+                    codetype: str,
                     k: int,
                     datawords: int) -> Tuple[List[int], int]:
-    m, bitmasks, invert = _ecc_pick_code(codetype, k)
+    m, bitmasks, invert = _ecc_pick_code(config, codetype, k)
     codewords = [int(_ecc_encode(k, m, bitmasks, invert, w), 2)
                  for w in datawords]
     return codewords, m
@@ -899,6 +898,10 @@ targets:
 
 '''.format(module_name, module_name, module_name, module_name, module_name)
         f.write(outstr)
+
+
+def load_secded_config() -> Dict[str, Any]:
+    return hjson.load(SECDED_CFG_PATH.open())
 
 
 def main():

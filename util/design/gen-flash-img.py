@@ -11,12 +11,13 @@ import argparse
 import math
 import re
 from pathlib import Path
+from typing import Dict, Any
 
 import secded_gen
 
 
-def _add_intg_ecc(in_val: int) -> str:
-    result, m = secded_gen.ecc_encode("hamming", 64, in_val)
+def _add_intg_ecc(config: Dict[str, Any], in_val: int) -> str:
+    result, m = secded_gen.ecc_encode(config, "hamming", 64, in_val)
 
     m_nibbles = math.ceil(m / 4)
     result = format(result, '0' + str(16 + m_nibbles) + 'x')
@@ -25,8 +26,8 @@ def _add_intg_ecc(in_val: int) -> str:
     return result[1:]
 
 
-def _add_reliability_ecc(in_val: int) -> str:
-    result, m = secded_gen.ecc_encode("hamming", 68, in_val)
+def _add_reliability_ecc(config: Dict[str, Any], in_val: int) -> str:
+    result, m = secded_gen.ecc_encode(config, "hamming", 68, in_val)
 
     m_nibbles = math.ceil((68 + m) / 4)
     result = format(result, '0' + str(m_nibbles) + 'x')
@@ -50,6 +51,8 @@ def main():
     # search only for lines that contain data, skip all other comments
     result = re.findall(r"^@.*$", vmem_orig, flags=re.MULTILINE)
 
+    config = secded_gen.load_secded_config()
+
     output = []
     for line in result:
         items = line.split()
@@ -58,8 +61,8 @@ def main():
             if re.match(r"^@", item):
                 result += item
             else:
-                data_w_intg_ecc = _add_intg_ecc(int(item, 16))
-                full_ecc = _add_reliability_ecc(int(data_w_intg_ecc, 16))
+                data_w_intg_ecc = _add_intg_ecc(config, int(item, 16))
+                full_ecc = _add_reliability_ecc(config, int(data_w_intg_ecc, 16))
                 result += f' {full_ecc}'
 
         # add processed element to output

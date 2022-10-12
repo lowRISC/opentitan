@@ -13,7 +13,7 @@ import hjson  # type: ignore
 from Crypto.Hash import cSHAKE256
 
 from mem import MemChunk, MemFile
-from util.design.secded_gen import ecc_encode_some  # type: ignore
+from util.design.secded_gen import ecc_encode_some, load_secded_config  # type: ignore
 
 ROM_BASE_WORD = 0x8000 // 4
 ROM_SIZE_WORDS = 8192
@@ -285,6 +285,7 @@ class Scrambler:
         self.nonce = nonce
         self.key = key
         self.rom_size_words = rom_size_words
+        self.config = load_secded_config()
 
         self._addr_width = (rom_size_words - 1).bit_length()
 
@@ -504,7 +505,7 @@ class Scrambler:
                 w39 = w32 | (chk_bits << 32)
                 clr39 = self.unscramble_word(39, log_addr, w39)
                 clr32 = clr39 & mask32
-                exp39 = ecc_encode_some('inv_hsiao', 32, [clr32])[0][0]
+                exp39 = ecc_encode_some(self.config, 'inv_hsiao', 32, [clr32])[0][0]
                 if clr39 != exp39:
                     # The checksum doesn't match. Excellent!
                     found_mismatch = True
