@@ -1195,7 +1195,7 @@
       uvm_test_seq: "{name}_common_vseq"
       run_opts: ["+run_tl_errors"]
       en_run_modes: ["stub_cpu_mode"]
-      reseed: 20
+      reseed: 30
     }
     {
       name: chip_prim_tl_access
