@@ -5,6 +5,18 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [0.6.0] - 2022-10-11
+### Fixed
+- Testbench build (#141, #142)
+- remote_bitbang tb build for newer GCC versions (#133) [@epsilon537](https://github.com/noytzach)
+- 32-bit access to abstract data (#27) [@Silabs-ArjanB](https://github.com/Silabs-ArjanB)
+- `dm_mem`: Clear state of hart upon ndmreset (#140) [@andreaskurth](https://github.com/andreaskurth)
+- `dmi_jtag_tap`: Bring all state to initial value in test-logic-reset (#139) [@andreaskurth](https://github.com/andreaskurth)
+- Fix DMI response when command or SBA are busy (#138) [@andreaskurth](https://github.com/andreaskurth)
+
+### Changed
+- Add expontential backoff to read_dmi in tb (#134) [@colluca](https://github.com/colluca)
+
 ## [0.5.1] - 2022-04-12
 ### Fixed
 - Fixed dmi_bscane_tap top-level signals

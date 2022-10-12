@@ -13,6 +13,24 @@
 
 #include "remote_bitbang.h"
 
+//Public globals, declared in remote_bitbang.h
+
+int rbs_err;
+
+unsigned char tck;
+unsigned char tms;
+unsigned char tdi;
+unsigned char trstn;
+unsigned char tdo;
+unsigned char quit;
+
+int socket_fd;
+int client_fd;
+
+//static const ssize_t buf_size = 64 * 1024;
+char recv_buf[64 * 1024];
+ssize_t recv_start, recv_end;
+
 int rbs_init(uint16_t port)
 {
     socket_fd  = 0;
@@ -118,6 +136,11 @@ void rbs_reset()
     trstn = 0;
 }
 
+void rbs_set()
+{
+    trstn = 1;
+}
+
 void rbs_set_pins(char _tck, char _tms, char _tdi)
 {
     tck = _tck;
@@ -170,24 +193,23 @@ void rbs_execute_command()
     case 'r':
         if (VERBOSE)
             fprintf(stderr, "r-reset\n");
-        rbs_reset();
-        break; // This is wrong. 'r' has other bits that indicated TRST and
-               // SRST.
+        rbs_set(); //r-reset command deasserts TRST. See: openocd/blob/master/doc/manual/jtag/drivers/remote_bitbang.txt
+        break; 
     case 's':
         if (VERBOSE)
             fprintf(stderr, "s-reset\n");
-        rbs_reset();
-        break; // This is wrong.
+        rbs_set(); //s-reset command deasserts TRST. See: openocd/blob/master/doc/manual/jtag/drivers/remote_bitbang.txt
+        break;
     case 't':
         if (VERBOSE)
             fprintf(stderr, "t-reset\n");
-        rbs_reset();
-        break; // This is wrong.
+        rbs_reset(); //t-reset command asserts TRST. See: openocd/blob/master/doc/manual/jtag/drivers/remote_bitbang.txt
+        break;
     case 'u':
         if (VERBOSE)
             fprintf(stderr, "u-reset\n");
-        rbs_reset();
-        break; // This is wrong.
+        rbs_reset(); //u-reset command asserts TRST. See: openocd/blob/master/doc/manual/jtag/drivers/remote_bitbang.txt
+        break;
     case '0':
         if (VERBOSE)
             fprintf(stderr, "Write 0 0 0\n");

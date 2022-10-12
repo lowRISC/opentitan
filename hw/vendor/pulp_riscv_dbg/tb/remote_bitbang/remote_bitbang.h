@@ -8,21 +8,21 @@
 
 #define VERBOSE 0
 
-int rbs_err;
+extern int rbs_err;
 
-unsigned char tck;
-unsigned char tms;
-unsigned char tdi;
-unsigned char trstn;
-unsigned char tdo;
-unsigned char quit;
+extern unsigned char tck;
+extern unsigned char tms;
+extern unsigned char tdi;
+extern unsigned char trstn;
+extern unsigned char tdo;
+extern unsigned char quit;
 
-int socket_fd;
-int client_fd;
+extern int socket_fd;
+extern int client_fd;
 
-static const ssize_t buf_size = 64 * 1024;
-char recv_buf[64 * 1024];
-ssize_t recv_start, recv_end;
+//static const ssize_t buf_size = 64 * 1024;
+extern char recv_buf[64 * 1024];
+extern ssize_t recv_start, recv_end;
 
 // Create a new server, listening for connections from localhost on the given
 // port.
@@ -44,8 +44,8 @@ void rbs_accept();
 // simulation to run.
 void rbs_execute_command();
 
-// Reset. Currently does nothing.
-void rbs_reset();
+void rbs_reset(); //Assert TRST
+void rbs_set(); //Deassert TRST
 
 void rbs_set_pins(char _tck, char _tms, char _tdi);
 
