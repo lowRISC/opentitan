@@ -439,6 +439,8 @@
             and RMA, regardless of the value on DFT SW straps.
             '''
       stage: V2
+      // TODO: add chip_tap_straps_test_unlocked0 also (#14147)
+      // TODO: add chip_tap_straps_test_locked0 also (#14147)
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma"]
     }
 
@@ -605,7 +607,7 @@
       tests: ["chip_tap_straps_rma"]
     }
     {
-      name: chip_sw_rv_dm_lc_disabled
+      name: chip_rv_dm_lc_disabled
       desc: '''Verify that the debug capabilities are disabled in certain life cycle stages.
 
             - Put life cycle on states other than Test, RMA and DEV.
@@ -616,7 +618,9 @@
             - X-ref'ed with `chip_tap_strap_sampling`
             '''
       stage: V2
-      tests: []
+      tests: [// Checks rv_dm from both JTAG and CPU side in stub CPU mode.
+              "chip_rv_dm_lc_disabled"
+      ]
     }
 
     // RV_TIMER (pre-verified IP) integration tests:
@@ -1501,6 +1505,8 @@
             correctness.
             '''
       stage: V2
+      // TODO: add chip_tap_straps_test_unlocked0 also (#14147)
+      // TODO: add chip_tap_straps_test_locked0 also (#14147)
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma"]
     }
     {
@@ -1616,10 +1622,11 @@
         "chip_tap_straps_dev",                            // lc_dft_en_o, lc_hw_debug_en_o: pinmux
         "chip_tap_straps_prod",                           // lc_dft_en_o, lc_hw_debug_en_o: pinmux
         "chip_tap_straps_rma",                            // lc_dft_en_o, lc_hw_debug_en_o: pinmux
+        // TODO: add chip_tap_straps_test_unlocked0 also (#14147)
         "chip_sw_rom_ctrl_integrity_check",               // lc_dft_en_o, lc_hw_debug_en_o: pwrmgr
         "chip_sw_clkmgr_external_clk_src_for_sw",         // lc_hw_debug_en_o: clkmgr
         "chip_sw_sram_ctrl_execution_main",               // lc_hw_debug_en_o: sram_ctrl main
-        // TODO: ref chip_sw_rv_dm_lc_disabled (#14147)   // lc_hw_debug_en_o: rv_dm
+        "chip_rv_dm_lc_disabled"                          // lc_hw_debug_en_o: rv_dm
         "chip_sw_keymgr_key_derivation",                  // lc_keymgr_en_o: keymgr
         "chip_sw_clkmgr_external_clk_src_for_lc",         // lc_clk_byp_req_o: clkmgr
         "chip_sw_flash_rma_unlocked",                     // lc_flash_rma_req_o, lc_flash_rma_seed_o: flash_ctrl

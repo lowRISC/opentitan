@@ -54,6 +54,7 @@
 `include "chip_sw_repeat_reset_wkup_vseq.sv"
 `include "chip_sw_rstmgr_alert_info_vseq.sv"
 `include "chip_rv_dm_ndm_reset_vseq.sv"
+`include "chip_rv_dm_lc_disabled_vseq.sv"
 `include "chip_sw_alert_handler_escalation_vseq.sv"
 `include "chip_sw_alert_handler_entropy_vseq.sv"
 `include "chip_sw_alert_handler_lpg_clkoff_vseq.sv"
