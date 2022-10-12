@@ -880,6 +880,27 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "pwrmgr_random_sleep_all_wake_ups",
+    srcs = ["pwrmgr_random_sleep_all_wake_ups.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests/sim_dv:pwrmgr_sleep_all_wake_ups_impl",
+    ],
+)
+
+opentitan_functest(
     name = "adc_ctrl_sleep_debug_cable_wakeup_test",
     srcs = ["adc_ctrl_sleep_debug_cable_wakeup_test.c"],
     targets = ["dv"],

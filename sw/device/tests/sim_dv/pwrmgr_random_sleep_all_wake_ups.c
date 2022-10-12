@@ -19,9 +19,9 @@
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 /*
-  PWRMGR DEEP SLEEP ALL WAKE UPS TEST
+  PWRMGR RANDOM SLEEP ALL WAKE UPS TEST
 
-  This test runs power manager wake up from deep sleep mode by
+  This test runs power manager wake up from normal or deep sleep mode by
   wake up inputs.
 
   There are 6 wake up inputs.
@@ -33,6 +33,12 @@
   5: sensor_ctrl
 
   #5 is excluded because sensor_ctrl is not in the aon domain.
+
+  There are 10 cases to be tested. For each wake up this tests the normal and
+  deep sleep in succession; for example, case 2 is adc_ctrl normal sleep and
+  case 3 is adc_ctrl deep sleep.
+
+  This is tracked by a flash_ctrl counter, given there are resets involved.
  */
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -44,6 +50,10 @@ static void delay_n_clear(uint32_t delay_in_us) {
   busy_spin_micros(delay_in_us);
   CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_clear(&pwrmgr));
 }
+
+int get_wakeup_unit(uint32_t count) { return count / 2; }
+
+bool get_deep_sleep(uint32_t count) { return (count % 2) == 1; }
 
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.
@@ -71,20 +81,37 @@ bool test_main(void) {
                                              /*he_en*/ false);
 
   uint32_t wakeup_count = flash_ctrl_testutils_counter_get(0);
+  int wakeup_unit = get_wakeup_unit(wakeup_count);
+  bool deep_sleep = get_deep_sleep(wakeup_count);
 
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
     LOG_INFO("POR reset");
-    execute_test(wakeup_count, /*deep_sleep=*/true);
-  } else {
-    check_wakeup_reason(wakeup_count);
-    LOG_INFO("Woke up by source %d", wakeup_count);
-    cleanup(wakeup_count);
-    if (wakeup_count == PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX) {
-      return true;
-    }
+    execute_test(wakeup_unit, deep_sleep);
+    check_wakeup_reason(wakeup_unit);
+    LOG_INFO("Woke up by source %d", wakeup_unit);
+    cleanup(wakeup_unit);
     flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
+    wakeup_count = flash_ctrl_testutils_counter_get(0);
+    wakeup_unit = get_wakeup_unit(wakeup_count);
+    deep_sleep = get_deep_sleep(wakeup_count);
     delay_n_clear(4);
-    execute_test(wakeup_count + 1, /*deep_sleep=*/true);
+    execute_test(wakeup_unit, deep_sleep);
+  } else {
+    for (int i = 0; i < 2; ++i) {
+      check_wakeup_reason(wakeup_unit);
+      LOG_INFO("Woke up by source %d", wakeup_unit);
+      cleanup(wakeup_unit);
+      if (wakeup_unit == PWRMGR_PARAM_AON_TIMER_AON_WKUP_REQ_IDX &&
+          deep_sleep) {
+        return true;
+      }
+      flash_ctrl_testutils_counter_increment(&flash_ctrl, 0);
+      wakeup_count = flash_ctrl_testutils_counter_get(0);
+      wakeup_unit = get_wakeup_unit(wakeup_count);
+      deep_sleep = get_deep_sleep(wakeup_count);
+      delay_n_clear(4);
+      execute_test(wakeup_unit, deep_sleep);
+    }
   }
 
   // Turn off the AON timer hardware completely before exiting.
