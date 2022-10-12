@@ -25,91 +25,153 @@
   testpoints: [
     {
       name: sec_cm_mem_scramble
-      desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
+      desc: '''Verify the countermeasure(s) MEM.SCRAMBLE.
+            Scrambling memory reads and writes are used by the DV simulation framework
+            for reading from and writing to memory models.
+            Hence there is no need to have a directed test for this countermeasure.
+            '''
       stage: V2S
       tests: ["otbn_smoke"]
     }
     {
       name: sec_cm_data_mem_integrity
-      desc: "Verify the countermeasure(s) DATA.MEM.INTEGRITY."
+      desc: '''Verify the countermeasure(s) DATA.MEM.INTEGRITY.
+            Run an OTBN program multiple times and corrupt the DMEM while the OTBN
+            is still running.
+            '''
       stage: V2S
-      tests: ["otbn_imem_err", "otbn_dmem_err"]
+      tests: ["otbn_dmem_err"]
     }
     {
       name: sec_cm_instruction_mem_integrity
-      desc: "Verify the countermeasure(s) INSTRUCTION.MEM.INTEGRITY."
+      desc: '''Verify the countermeasure(s) INSTRUCTION.MEM.INTEGRITY.
+            Run an OTBN program multiple times and corrupt the IMEM while the OTBN
+            is still running.
+            '''
       stage: V2S
-      tests: ["otbn_imem_err", "otbn_dmem_err"]
+      tests: ["otbn_imem_err"]
     }
     {
       name: sec_cm_bus_integrity
-      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      desc: '''Verify the countermeasure(s) BUS.INTEGRITY.
+            This entry is covered by tl_access_test.
+            '''
       stage: V2S
       tests: ["otbn_tl_intg_err"]
     }
     {
       name: sec_cm_controller_fsm_global_esc
-      desc: "Verify the countermeasure(s) CONTROLLER.FSM.GLOBAL_ESC."
+      desc: '''Verify the countermeasure(s) CONTROLLER.FSM.GLOBAL_ESC.
+            Run an OTBN program, drive lc_escalate_en_i port randomly to
+            see global escalation locking up OTBN.
+            '''
       stage: V2S
       tests: ["otbn_escalate"]
     }
     {
       name: sec_cm_controller_fsm_local_esc
-      desc: "Verify the countermeasure(s) CONTROLLER.FSM.LOCAL_ESC."
+      desc: '''Verify the countermeasure(s) CONTROLLER.FSM.LOCAL_ESC.
+            The controller FSM moves to a terminal error state upon local escalation.
+            1. IMEM/DMEM error tests to see local escalation related with integrity Checking
+            2. Zero state URND test to see local escalation regarding a URND value of all zeros
+            3. Illegal memory access test to see local escalation while having illegal read and
+               write accesses to the IMEM when the OTBN is busy.
+            4. Bad internal state errors that are triggered by otbn_sec_cm test will also cause
+               local escalation to the locked state.
+            '''
       stage: V2S
-      tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc"]
+      tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc",
+              "otbn_sec_cm"]
     }
     {
       name: sec_cm_controller_fsm_sparse
-      desc: "Verify the countermeasure(s) CONTROLLER.FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) CONTROLLER.FSM.SPARSE.
+            This countermeasure is verified with a standardized test.
+            '''
       stage: V2S
       tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_scramble_key_sideload
-      desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
+      desc: '''Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD
+
+            Simulation can't really prove that the sideload key is unreachable by SW.
+            However, from defined CSRs and memory returned data, there is no way to read
+            scramble key by SW.
+            '''
       stage: V2S
       tests: ["otbn_single"]
     }
     {
       name: sec_cm_scramble_ctrl_fsm_local_esc
-      desc: "Verify the countermeasure(s) SCRAMBLE_CTRL.FSM.LOCAL_ESC."
+      desc: '''Verify the countermeasure(s) SCRAMBLE_CTRL.FSM.LOCAL_ESC.
+            The scramble controller FSM moves to a terminal error state upon local escalation.
+            1. IMEM/DMEM error tests to see local escalation related with integrity Checking
+            2. Zero state URND test to see local escalation regarding a URND value of all zeros
+            3. Illegal memory access test to see local escalation while having illegal read and
+               write accesses to the IMEM when the OTBN is busy.
+            4. Bad internal state errors that are triggered by otbn_sec_cm test will also cause
+               local escalation to the locked state.
+            '''
       stage: V2S
-      tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc"]
+      tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc",
+              "otbn_sec_cm"]
     }
     {
       name: sec_cm_scramble_ctrl_fsm_sparse
-      desc: "Verify the countermeasure(s) SCRAMBLE_CTRL.FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) SCRAMBLE_CTRL.FSM.SPARSE.
+            This countermeasure is verified with a standardized test.
+            '''
       stage: V2S
       tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_start_stop_ctrl_fsm_global_esc
-      desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.GLOBAL_ESC."
+      desc: '''Verify the countermeasure(s) START_STOP_CTRL.FSM.GLOBAL_ESC.
+            Run an OTBN program, drive lc_escalate_en_i port randomly to
+            see global escalation locking up the start-stop control FSM in OTBN.
+            '''
       stage: V2S
       tests: ["otbn_escalate"]
     }
     {
       name: sec_cm_start_stop_ctrl_fsm_local_esc
-      desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.LOCAL_ESC."
+      desc: '''Verify the countermeasure(s) START_STOP_CTRL.FSM.LOCAL_ESC.
+            The start stop FSM moves to a terminal error state upon local escalation.
+            1. IMEM/DMEM error tests to see local escalation related with integrity Checking
+            2. Zero state URND test to see local escalation regarding a URND value of all zeros
+            3. Illegal memory access test to see local escalation while having illegal read and
+               write accesses to the IMEM when the OTBN is busy.
+            4. Bad internal state errors that are triggered by otbn_sec_cm test will also cause
+               local escalation to the locked state.
+            '''
       stage: V2S
-      tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc"]
+      tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc", "otbn_sec_cm"]
     }
     {
       name: sec_cm_start_stop_ctrl_fsm_sparse
-      desc: "Verify the countermeasure(s) START_STOP_CTRL.FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) START_STOP_CTRL.FSM.SPARSE.
+            This countermeasure is verified with a standardized test.
+            '''
       stage: V2S
       tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_data_reg_sw_sca
-      desc: "Verify the countermeasure(s) DATA_REG_SW.SCA."
+      desc: '''Verify the countermeasure(s) DATA_REG_SW.SCA.
+            Since this is related with unused parts of the datapath not changing throughout
+            an OTBN run this security countermeasure is verified with assertions.
+            '''
       stage: V2S
       tests: ["otbn_single"]
     }
     {
       name: sec_cm_ctrl_redun
-      desc: "Verify the countermeasure(s) CTRL.REDUN."
+      desc: '''Verify the countermeasure(s) CTRL.REDUN.
+            Pick a possible control flow path to inject faults. Expect to see a fatal error raised
+            because of a mismatch between predecoder and decoder.
+            Possible control flow paths are listed in the countermeasure description.
+            '''
       stage: V2S
       tests: ["otbn_ctrl_redun"]
     }
@@ -117,27 +179,27 @@
       name: sec_cm_pc_ctrl_flow_redun
       desc: ''' Verify the countermeasure(s) PC.CTRL_FLOW.REDUN.
                 Wait for a read request and istrn fetch request valid.
-                Corrupt the insn_prefetch_addr.
+                Corrupt the insn_prefetch_addr to have a redundancy failure between
+                predecoder and decoder that results with a fatal error.
             '''
       stage: V2S
       tests: ["otbn_pc_ctrl_flow_redun"]
     }
     {
       name: sec_cm_rnd_bus_consistency
-      desc: '''
-      RND.BUS.CONSISTENCY:
-      Expect to trigger RND_FIPS_CHK_FAIL recoverable error for FIPS bit being low in any word of the received RND data.
-      '''
+      desc: '''Verify the countermeasure(s) RND.BUS.CONSISTENCY.
+            Expect to trigger RND_FIPS_CHK_FAIL recoverable error for FIPS bit being low in any
+            word of the received RND data.
+            '''
       stage: V2S
       tests: ["otbn_rnd_sec_cm"]
     }
     {
       name: sec_cm_rnd_rng_digest
-      desc: '''
-      RND.RNG.DIGEST:
-      Randomly send the same EDN word for incoming RND data.
-      Expect to trigger RND_REP_CHK_FAIL recoverable error for repeated EDN words.
-      '''
+      desc: '''Verify the countermeasure(s) RND.RNG.DIGEST.
+            Randomly send the same EDN word for incoming RND data.
+            Expect to trigger RND_REP_CHK_FAIL recoverable error for repeated EDN words.
+            '''
       stage: V2S
       tests: ["otbn_rnd_sec_cm"]
     }
@@ -149,13 +211,17 @@
     }
     {
       name: sec_cm_rf_base_data_reg_sw_glitch_detect
-      desc: "Verify the countermeasure(s) RF_BASE.DATA_REG_SW.GLITCH_DETECT."
+      desc: '''Verify the countermeasure(s) RF_BASE.DATA_REG_SW.GLITCH_DETECT.
+            This countermeasure is verified with a standardized test.
+            '''
       stage: V2S
       tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_stack_wr_ptr_ctr_redun
-      desc: "Verify the countermeasure(s) STACK_WR_PTR.CTR.REDUN."
+      desc: '''Verify the countermeasure(s) STACK_WR_PTR.CTR.REDUN.
+            This countermeasure is verified with a standardized test.
+            '''
       stage: V2S
       tests: ["otbn_sec_cm"]
     }
@@ -167,86 +233,128 @@
     }
     {
       name: sec_cm_rf_bignum_data_reg_sw_glitch_detect
-      desc: "Verify the countermeasure(s) RF_BIGNUM.DATA_REG_SW.GLITCH_DETECT."
+      desc: '''Verify the countermeasure(s) RF_BIGNUM.DATA_REG_SW.GLITCH_DETECT.
+            This countermeasure is verified with a standardized test.
+            '''
       stage: V2S
       tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_loop_stack_ctr_redun
-      desc: "Verify the countermeasure(s) LOOP_STACK.CTR.REDUN."
+      desc: '''Verify the countermeasure(s) LOOP_STACK.CTR.REDUN.
+            This countermeasure is verified with a standardized test.
+            '''
       stage: V2S
       tests: ["otbn_sec_cm"]
     }
     {
       name: sec_cm_loop_stack_addr_integrity
-      desc: "Verify the countermeasure(s) LOOP_STACK.ADDR.INTEGRITY."
+      desc: '''Verify the countermeasure(s) LOOP_STACK.ADDR.INTEGRITY.
+            Corrupt loop stack when it has valid data inside. Expect to see fatal error
+            related with integrity failure.
+            '''
       stage: V2S
       tests: ["otbn_stack_addr_integ_chk"]
     }
     {
       name: sec_cm_call_stack_addr_integrity
-      desc: "Verify the countermeasure(s) CALL_STACK.ADDR.INTEGRITY."
+      desc: '''Verify the countermeasure(s) CALL_STACK.ADDR.INTEGRITY.
+            Corrupt call stack when it has valid data inside. Expect to see fatal error
+            related with integrity failure.
+            '''
       stage: V2S
       tests: ["otbn_stack_addr_integ_chk"]
     }
     {
       name: sec_cm_start_stop_ctrl_state_consistency
-      desc: "Verify the countermeasure(s) START_STOP_CTRL.STATE.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) START_STOP_CTRL.STATE.CONSISTENCY.
+            Inject different types of errors into the internal handshake on secure wipes
+            between the controller and the start-stop controller. Expect to see LOCKED
+            status.
+            '''
       stage: V2S
       tests: ["otbn_sec_wipe_err"]
     }
     {
       name: sec_cm_data_mem_sec_wipe
-      desc: "Verify the countermeasure(s) DATA.MEM.SEC_WIPE."
+      desc: '''Verify the countermeasure(s) DATA.MEM.SEC_WIPE.
+            Since this is related with rotating scrambling keys for memory module it can
+            be verified with assertions.
+            Related assertions: DmemSecWipeRequiresUrndKey_A and DmemSecWipeRequiresOtpKey_A
+            '''
       stage: V2S
       tests: ["otbn_single"]
     }
     {
       name: sec_cm_instruction_mem_sec_wipe
-      desc: "Verify the countermeasure(s) INSTRUCTION.MEM.SEC_WIPE."
+      desc: '''Verify the countermeasure(s) INSTRUCTION.MEM.SEC_WIPE.
+            Since this is related with rotating scrambling keys for memory module it can
+            be verified with assertions.
+            Related assertions: ImemSecWipeRequiresUrndKey_A and ImemSecWipeRequiresOtpKey_A
+            '''
       stage: V2S
       tests: ["otbn_single"]
     }
     {
       name: sec_cm_data_reg_sw_sec_wipe
-      desc: "Verify the countermeasure(s) DATA_REG_SW.SEC_WIPE."
+      desc: '''Verify the countermeasure(s) DATA_REG_SW.SEC_WIPE.
+            Golden model of OTBN in Python models secure wiping cycle accurately. So in every
+            test at least one internal secure wipe because of exiting a reset. Hence there
+            is no need for a specific test.
+            '''
       stage: V2S
       tests: ["otbn_single"]
     }
     {
       name: sec_cm_write_mem_integrity
-      desc: "Verify the countermeasure(s) WRITE.MEM.INTEGRITY."
+      desc: '''Verify the countermeasure(s) WRITE.MEM.INTEGRITY.
+            DV environment calculates CRC values independently from RTL with every memory write
+            over the bus and than calculates it with the design. otbn_multi does not use backdoor
+            writes to memory so it's guaranteed to see CRC checking for IMEM and DMEM there.
+            '''
       stage: V2S
       tests: ["otbn_multi"]
     }
     {
       name: sec_cm_ctrl_flow_count
-      desc: "Verify the countermeasure(s) CTRL_FLOW.COUNT."
+      desc: '''Verify the countermeasure(s) CTRL_FLOW.COUNT.
+            Golden model of OTBN in Python models instruction counter register cycle accurately.
+            So in every test there is a comparison between model instruction counter value and
+            design instruction counter value. Hence there is no need for a specific test.
+            '''
       stage: V2S
       tests: ["otbn_single"]
     }
     {
       name: sec_cm_ctrl_flow_sca
-      desc: "Verify the countermeasure(s) CTRL_FLOW.SCA."
+      desc: '''Verify the countermeasure(s) CTRL_FLOW.SCA.
+            Since this is related with unused parts of the control path not changing
+            throughout an OTBN run this security countermeasure is verified with assertions.
+            '''
       stage: V2S
       tests: ["otbn_single"]
     }
     {
       name: sec_cm_data_mem_sw_noaccess
-      desc: "Verify the countermeasure(s) DATA.MEM.SW_NOACCESS."
+      desc: '''Verify the countermeasure(s) DATA.MEM.SW_NOACCESS.
+            Read write access using tl_access task is tested with the first Kib of address in
+            DMEM. Expected result is a error response from the TLUL bus.
+            '''
       stage: V2S
       tests: ["otbn_sw_no_acc"]
     }
     {
       name: sec_cm_key_sideload
-      desc: '''Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD.
+      desc: '''Verify the countermeasure(s) KEY.SIDELOAD.
+            DV environment cannot verify the architectural chioce of having sideloaded keys. OTBN
+            on top using this architecture, also raises an error in the case of invalid sideload keys.
 
-            Simulation can't really prove that the sideload key is unreachable by SW.
-            However, from defined CSRs and memory returned data, there is no way to read
-            scramble key by SW.
+            Invalid sideload keys are allowed in the sideload key sequence fifty percent of the
+            time by default. In that scenario OTBN would generate a KEY_INVALID recoverable software error.
+            This happens test agnostic so otbn_single is mapped to represent an OTBN run in general.
             '''
       stage: V2S
-      tests: ["{name}_smoke"]
+      tests: ["otbn_single"]
     }
     {
       name: sec_cm_tlul_fifo_ctr_redun
