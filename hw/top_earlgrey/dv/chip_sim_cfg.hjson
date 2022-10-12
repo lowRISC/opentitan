@@ -1376,6 +1376,13 @@
       run_timeout_mins: 120
     }
     {
+      name: chip_rv_dm_lc_disabled
+      build_mode: "cover_reg_top"
+      uvm_test_seq: "chip_rv_dm_lc_disabled_vseq"
+      en_run_modes: ["stub_cpu_mode"]
+      run_opts: ["+en_scb=0", "+en_scb_tl_err_chk=0", "+use_jtag_dmi=1"]
+    }
+    {
       name: chip_sw_rv_core_ibex_address_translation
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests:rv_core_ibex_address_translation_test:1"]
