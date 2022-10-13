@@ -36,12 +36,15 @@
     }
     { name: "generic_rx_error"
       desc: "SDI in FwMode has error"
+      type: "event"
     }
     { name: "generic_rx_overflow"
       desc: "RX Async FIFO overflow"
+      type: "event"
     }
     { name: "generic_tx_underflow"
       desc: "TX Async FIFO underflow"
+      type: "event"
     }
     { name: "upload_cmdfifo_not_empty"
       desc: "Upload Command FIFO is not empty"
@@ -60,6 +63,7 @@
         written payload index CSR to figure out the starting address of the
         last 256B.
         '''
+      type: "event"
     }
     { name: "readbuf_watermark"
       desc: '''Read Buffer Threshold event.
@@ -73,9 +77,11 @@
 
         The host system accesses other side of buffer.
         '''
+      type: "event"
     }
     { name: "tpm_header_not_empty"
       desc: "TPM Header(Command/Address) buffer available"
+      type: "status"
     }
   ],
   alert_list: [

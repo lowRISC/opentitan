@@ -710,7 +710,10 @@ module spi_device
   //
   // TODO: Remove `prim_intr_hw` and ditect connect from status(level)
   // assign intr_o = (status | test) & enable;
-  prim_intr_hw #(.Width(1)) u_intr_tpm_cmdaddr_notempty (
+  prim_intr_hw #(
+    .Width (1       ),
+    .IntrT ("Status")
+  ) u_intr_tpm_cmdaddr_notempty (
     .clk_i,
     .rst_ni,
     .event_intr_i           (tpm_status_cmdaddr_notempty              ),
