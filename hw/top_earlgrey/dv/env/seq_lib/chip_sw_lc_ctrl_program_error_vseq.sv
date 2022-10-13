@@ -33,11 +33,16 @@ class chip_sw_lc_ctrl_program_error_vseq extends chip_sw_base_vseq;
 
     `uvm_info(`gfn, $sformatf("post trans observed"), UVM_LOW)
 
+    // This is used for toggle coverage collection purpose to cover the `lc_err_o` transition from
+    // 1 to 0.
+    void'(cfg.chip_vif.signal_probe_otp_ctrl_lc_err_o(SignalProbeRelease));
+
     // check to ensure that we see an otp error
     jtag_read_csr(ral.lc_ctrl.status.get_offset(),
       p_sequencer.jtag_sequencer_h,
       status_val);
 
     `DV_CHECK_FATAL(status_val & (1 << LcOtpError));
+
   endtask
 endclass
