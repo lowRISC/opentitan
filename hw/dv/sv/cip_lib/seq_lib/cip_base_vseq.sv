@@ -540,57 +540,51 @@ class cip_base_vseq #(
 
       repeat ($urandom_range(num_alerts, num_alerts * 10)) begin
         bit [BUS_DW-1:0] alert_req = $urandom_range(0, (1'b1 << num_alerts) - 1);
+        // Write random value to alert_test register.
         csr_wr(.ptr(alert_test_csr), .value(alert_req));
         `uvm_info(`gfn, $sformatf("Write alert_test with val %0h", alert_req), UVM_HIGH)
-        fork
-          begin
-            for (int i = 0; i < num_alerts; i++) begin
-              automatic int index = i;
-              automatic string alert_name = cfg.list_of_alerts[index];
-              if (alert_req[index]) begin
-                fork
-                  begin
-                    // if previous alert_handler just finish, there is a max of two clock_cycle
-                    // pause in between
-                    wait_alert_trigger(alert_name, .max_wait_cycle(2));
+        for (int i = 0; i < num_alerts; i++) begin
+          string alert_name = cfg.list_of_alerts[i];
 
-                    // write alert_test during alert handshake will be ignored
-                    if ($urandom_range(1, 10) == 10) begin
-                      csr_wr(.ptr(alert_test_csr), .value(1'b1 << index));
-                      `uvm_info(`gfn, "Write alert_test again during alert handshake", UVM_HIGH)
-                    end
+          // If the field has already been written, check if the corresponding alert fires
+          // correctly and check if writing to this alert_test field again won't corrupt the
+          // current alert mechanism.
+          if (alert_req[i]) begin
+            // if previous alert_handler just finish, there is a max of two clock_cycle
+            // pause in between
+            wait_alert_trigger(alert_name, .max_wait_cycle(2));
 
-                    // drive alert response sequence
-                    drive_alert_rsp_and_check_handshake(alert_name, index);
-                  end
-                join_none
-              end else begin
-                fork
-                  begin
-                    cfg.clk_rst_vif.wait_clks($urandom_range(0, 3));
-                    `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 0,
-                                 $sformatf("alert_test did not set alert:%0s", alert_name))
+            // write alert_test during alert handshake will be ignored
+            if ($urandom_range(1, 10) == 10) begin
+              csr_wr(.ptr(alert_test_csr), .value(1'b1 << i));
+              `uvm_info(`gfn, "Write alert_test again during alert handshake", UVM_HIGH)
+            end
 
-                    // test alert_test write when there is ongoing alert handshake
-                    if ($urandom_range(1, 10) == 10) begin
-                      `uvm_info(`gfn,
-                                $sformatf("Write alert_test with val %0h during alert_handshake",
-                                1'b1 << index), UVM_HIGH)
-                      csr_wr(.ptr(alert_test_csr), .value(1'b1 << index));
-                      `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
-                                        cfg.clk_rst_vif.wait_clks(1);,
-                                        cfg.clk_rst_vif.wait_clks(2);,
-                                        $sformatf("expect alert_%0d:%0s to fire",
-                                                  index, alert_name))
-                      drive_alert_rsp_and_check_handshake(alert_name, index);
-                    end
-                  end
-                join_none
-              end
-            end // end for loop
-            wait fork;
+            // drive alert response sequence
+            drive_alert_rsp_and_check_handshake(alert_name, i);
+
+         // If the field has not been written, check if the corresponding alert does not fire.
+         // Randomly decide to write this field and check if the alert fires.
+         end else begin
+           cfg.clk_rst_vif.wait_clks($urandom_range(0, 3));
+           `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 0,
+                        $sformatf("alert_test did not set alert:%0s", alert_name))
+
+            // write alert_test field when there is ongoing alert handshake
+            if ($urandom_range(1, 10) == 10) begin
+              `uvm_info(`gfn,
+                        $sformatf("Write alert_test with val %0h during alert_handshake",
+                        1'b1 << i), UVM_HIGH)
+              csr_wr(.ptr(alert_test_csr), .value(1'b1 << i));
+              `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
+                                cfg.clk_rst_vif.wait_clks(1);,
+                                cfg.clk_rst_vif.wait_clks(2);,
+                                $sformatf("expect alert_%0d:%0s to fire",
+                                          i, alert_name))
+              drive_alert_rsp_and_check_handshake(alert_name, i);
+            end
           end
-        join
+        end // end for loop
 
         // check no alert triggers continuously
         foreach (cfg.list_of_alerts[i]) begin
