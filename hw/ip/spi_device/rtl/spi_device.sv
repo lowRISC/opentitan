@@ -1790,8 +1790,6 @@ module spi_device
     .passthrough_o,
     .passthrough_i,
 
-    .mailbox_hit_i (1'b 0),
-
     .event_cmd_filtered_o ()
   );
 
