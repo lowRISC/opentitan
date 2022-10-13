@@ -896,6 +896,40 @@ Due to the CDC issue, the SW is only permitted to update the registers when the 
 1. When the FIFO is empty, the TPM sends `START` to the host system, receives the payload, and stores the data into the write FIFO.
 1. The SW, in the meantime, reads TPM_CMD_ADDR then reads the write FIFO data when the FIFO is available.
 
+### TPM_CMDADDR_NOTEMPTY Interrupt
+
+`TPM_CMDADDR_NOTEMPTY` interrupt remains high even SW clears the interrupt unless the cause is disappeared.
+SW should mask the interrupt if SW wants to process the event in a deferred way.
+
+```c
+void spi_tpm_isr() {
+  uint32_t irq_deferred = 0;
+  uint32_t irq_status = spi_tpm_get_irq_status();
+  if (irq_status & kSpiTpmFifoIrq) {
+    irq_deferred |= kSpiTpmFifoIrq;
+    schedule_deferred_work(spi_tpm_deferred_work);
+  }
+  // ...
+  spi_tpm_mask_irq(irq_deferred);
+}
+
+void spi_tpm_deferred_work() {
+  uint32_t irq_handled = 0;
+  uint32_t irq_status = spi_tpm_get_irq_status();
+  if (irq_status & kSpiTpmFifoIrq) {
+    spi_tpm_handle_fifo_irq();
+    irq_handled |= kSpiTpmFifoIrq;
+  }
+  // ...
+  // Now that we think the FIFO has been emptied, clear the latched status.
+  spi_tpm_clear_irq_status(irq_handled);
+  spi_tpm_unmask_irq(irq_handled);
+  // If the FIFO received more data after handling, the interrupt would assert
+  // again here.
+}
+```
+
+
 ### TPM Interrupt
 
 The TPM submodule does not process the TPM over SPI interrupt.
