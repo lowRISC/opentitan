@@ -209,12 +209,15 @@ class entropy_src_dut_cfg extends uvm_object;
       [6  : 10] :/ 0,
       [11 : 80] :/ 10};}
 
-  // TODO: Update dist to satisfy cover points
   constraint alert_threshold_c {alert_threshold dist {
-      1 :/ 2,
-      2 :/ 5,
-      3 :/ 1,
-      4 :/ 1};}
+      1             :/ 3,
+      2             :/ 5,
+      // This bin should hit the next two higher alert_cnt_cg CPs. All values in this range will
+      //  sometimes get an alert.
+      [3:10]        :/ 3,
+      // All remaining possible values
+      [11:16'hffff] :/ 1
+   };}
 
   constraint default_ht_thresholds_c {default_ht_thresholds dist {
       1 :/ default_ht_thresholds_pct,
