@@ -2511,7 +2511,8 @@
       name: chip_sw_otp_ctrl_program_error
       desc: '''Verify the otp program error.
 
-            - Initiate an illegal program request from LC ctrl to OTP ctrl.
+            - Initiate an illegal program request from LC ctrl to OTP ctrl by forcing the
+              `lc_otp_program_i`.
             - Verify that the LC ctrl triggers an alert when the OTP ctrl responds back with a
               program error.
             '''
