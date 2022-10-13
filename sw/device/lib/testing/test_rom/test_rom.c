@@ -5,6 +5,7 @@
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
@@ -82,6 +83,17 @@ bool rom_test_main(void) {
       wait_for_interrupt();
     }
   }
+
+  // Initialize Ibex cpuctrl (contains icache / security feature enablements).
+  uint32_t cpuctrl_csr;
+  CSR_READ(CSR_REG_CPUCTRL, &cpuctrl_csr);
+  uint32_t cpuctrl_otp_val = abs_mmio_read32(
+      TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_CPUCTRL_OFFSET);
+  cpuctrl_csr = bitfield_field32_write(
+      cpuctrl_csr, (bitfield_field32_t){.mask = 0x3f, .index = 0},
+      cpuctrl_otp_val);
+  CSR_WRITE(CSR_REG_CPUCTRL, cpuctrl_csr);
 #endif
 
   // Initial sec_mmio, required by bootstrap and its dependencies.
