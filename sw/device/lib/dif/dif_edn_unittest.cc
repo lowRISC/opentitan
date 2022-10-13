@@ -332,6 +332,9 @@ TEST_F(CommandTest, UpdateOk) {
                  0x00000004 | kMultiBitBool4False << 8);
   EXPECT_DIF_OK(dif_edn_update(&edn_, &seed_material_));
 
+  EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET, 0x00000004);
+  EXPECT_DIF_OK(dif_edn_update(&edn_, nullptr));
+
   seed_material_.data[0] = 0x5a5a5a5a;
   seed_material_.len = 1;
   EXPECT_WRITE32(EDN_SW_CMD_REQ_REG_OFFSET,
