@@ -17,20 +17,26 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   logic [JTAG_IRW-1:0]  selected_ir;
   uint                  selected_ir_len;
 
-  // reset signals
+  // do reset signals (function)
+  virtual function void do_reset_signals();
+    if (cfg.if_mode == Host) begin
+      cfg.vif.tck_en <= 1'b0;
+      cfg.vif.tms <= 1'b0;
+      cfg.vif.tdi <= 1'b0;
+      selected_ir = '{default:0};
+      selected_ir_len = 0;
+    end
+    else begin
+      cfg.vif.tdo <= 1'b0;
+    end
+  endfunction
+
+  // reset signals task
   virtual task reset_signals();
+    do_reset_signals();
     forever begin
       @(negedge cfg.vif.trst_n);
-      if (cfg.if_mode == Host) begin
-        cfg.vif.tck_en <= 1'b0;
-        `HOST_CB.tms <= 1'b0;
-        `HOST_CB.tdi <= 1'b0;
-        selected_ir = '{default:0};
-        selected_ir_len = 0;
-      end
-      else begin
-        `DEVICE_CB.tdo <= 1'b0;
-      end
+      do_reset_signals();
       @(posedge cfg.vif.trst_n);
     end
   endtask

@@ -6,11 +6,13 @@
 interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
 
   // interface pins
+  // TODO; make these wires and add `_oe` versions to internally control the driving of these
+  // signals.
   logic tck;
   logic trst_n;
-  wire  tms;
-  wire  tdi;
-  wire  tdo;
+  logic tms;
+  logic tdi;
+  logic tdo;
 
   // generate local tck
   bit   tck_en;
@@ -28,7 +30,7 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
   clocking device_cb @(posedge tck);
     input  tms;
     input  tdi;
-    output tdo;
+    // output tdo; TODO: add this back later once device mode is supported.
   endclocking
   modport device_mp(clocking device_cb, input trst_n);
 
