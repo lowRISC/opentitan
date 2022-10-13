@@ -240,6 +240,20 @@ name:
       reseed: 5
     }
 
+    {
+      name: "otbn_rf_bignum_intg_err"
+      uvm_test_seq: "otbn_rf_bignum_intg_err_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 10
+    }
+
+    {
+      name: "otbn_rf_base_intg_err"
+      uvm_test_seq: "otbn_rf_base_intg_err_vseq"
+      en_run_modes: ["build_otbn_rig_binary_mode"]
+      reseed: 10
+    }
+
     // This test runs several sequences back-to-back. Unlike otbn_multi, these
     // sequences can include imem or dmem error sequences. We shouldn't need
     // many seeds here because each test runs several operations.
@@ -338,7 +352,7 @@ name:
          "otbn_multi_err", "otbn_imem_err", "otbn_dmem_err",
          "otbn_stress_all", "otbn_escalate", "otbn_illegal_mem_acc",
          "otbn_zero_state_err_urnd", "otbn_sw_errs_fatal_chk",
-         "otbn_rnd_sec_cm", "otbn_mac_bignum_acc_err",
+         "otbn_rnd_sec_cm", "otbn_mac_bignum_acc_err", "otbn_rf_base_intg_err",
          "otbn_controller_ispr_rdata_err", "otbn_alu_bignum_mod_err"
       ]
 
@@ -366,6 +380,7 @@ name:
         "otbn_tl_intg_err", "otbn_sec_cm", "otbn_pc_ctrl_flow_redun",
         "otbn_rnd_sec_cm", "otbn_alu_bignum_mod_err",
         "otbn_controller_ispr_rdata_err", "otbn_mac_bignum_acc_err",
+        "otbn_rf_base_intg_err",
         "otbn_sec_wipe_err", "otbn_urnd_err",
         # V2S but known broken
         # "otbn_passthru_mem_tl_intg_err",

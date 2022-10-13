@@ -145,7 +145,7 @@
       name: sec_cm_rf_base_data_reg_sw_integrity
       desc: "Verify the countermeasure(s) RF_BASE.DATA_REG_SW.INTEGRITY."
       stage: V2S
-      tests: ["otbn_csr_rw"]
+      tests: ["otbn_rf_base_intg_err"]
     }
     {
       name: sec_cm_rf_base_data_reg_sw_glitch_detect
@@ -163,7 +163,7 @@
       name: sec_cm_rf_bignum_data_reg_sw_integrity
       desc: "Verify the countermeasure(s) RF_BIGNUM.DATA_REG_SW.INTEGRITY."
       stage: V2S
-      tests: ["otbn_csr_rw"]
+      tests: ["otbn_rf_bignum_intg_err"]
     }
     {
       name: sec_cm_rf_bignum_data_reg_sw_glitch_detect

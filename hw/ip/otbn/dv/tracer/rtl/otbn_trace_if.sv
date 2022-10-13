@@ -55,6 +55,9 @@ interface otbn_trace_if
   input logic [otbn_pkg::ExtWLEN-1:0] rf_bignum_wr_data_intg,
   input logic                         rf_bignum_wr_data_intg_sel,
 
+  input logic [otbn_pkg::ExtWLEN-1:0] rf_bignum_rd_data_a_intg,
+  input logic [otbn_pkg::ExtWLEN-1:0] rf_bignum_rd_data_b_intg,
+
   input logic [31:0]              insn_fetch_resp_data,
   input logic [ImemAddrWidth-1:0] insn_fetch_resp_addr,
   input logic                     insn_fetch_resp_valid,
@@ -146,6 +149,7 @@ interface otbn_trace_if
   logic [WLEN-1:0] rf_bignum_wr_data;
   logic [WLEN-1:0] rf_bignum_wr_data_stripped_intg, rf_bignum_wr_new_data, rf_bignum_wr_old_data;
   logic [BaseWordsPerWLEN-1:0] unused_bignum_intg_data;
+  logic [ExtWLEN-1:0] unused_bignum_rd_data;
 
   logic [ExtWLEN-1:0] bignum_rf [NWdr];
 
@@ -173,6 +177,10 @@ interface otbn_trace_if
     assign unused_bignum_intg_data[i] =
         ^rf_bignum_wr_data_intg[i*BaseIntgWidth+32 +: (BaseIntgWidth - 32)];
   end
+
+  // Ignore integrity included rdata as it is only used when probing RTL to inject errors in a
+  // UVM sequence.
+  assign unused_bignum_rd_data = rf_bignum_rd_data_a_intg ^ rf_bignum_rd_data_b_intg;
 
   // Use the intg_sel signal to pick where the new write data should come from
   assign rf_bignum_wr_new_data =
@@ -447,6 +455,37 @@ interface otbn_trace_if
   assign controller_bad_int_i.spr_secwipe_acks = u_otbn_controller.spurious_secure_wipe_ack_q;
   assign controller_bad_int_i.state_err = u_otbn_controller.state_error;
   assign controller_bad_int_i.controller_mubi_err = u_otbn_controller.mubi_err_q;
+
+  // Only define force/release functions if we're not running Verilator. This is because the version
+  // we currently use does not support force/release.
+  `ifndef VERILATOR
+
+  // Force the `rd_data_a_intg_o` signal to `should_val`.  This function needs to be static because
+  // its argument must live as least as long as the `force` statement is in effect.
+  function static void force_rf_bignum_rd_data_a_intg(
+      input logic [otbn_pkg::ExtWLEN-1:0] should_val
+    );
+    force u_otbn_rf_bignum.rd_data_a_intg_o = should_val;
+  endfunction
+
+  // Force the `rd_data_b_intg_o` signal to `should_val`.  This function needs to be static because
+  // its argument must live as least as long as the `force` statement is in effect.
+  function static void force_rf_bignum_rd_data_b_intg(
+      input logic [otbn_pkg::ExtWLEN-1:0] should_val
+    );
+    force u_otbn_rf_bignum.rd_data_b_intg_o = should_val;
+  endfunction
+
+  // Release the forcing of the `rd_data_a_intg_o` signal.
+  function automatic void release_rf_bignum_rd_data_a_intg();
+    release u_otbn_rf_bignum.rd_data_a_intg_o;
+  endfunction
+
+  // Release the forcing of the `rd_data_b_intg_o` signal.
+  function automatic void release_rf_bignum_rd_data_b_intg();
+    release u_otbn_rf_bignum.rd_data_b_intg_o;
+  endfunction
+  `endif // VERILATOR
 
 endinterface
 
