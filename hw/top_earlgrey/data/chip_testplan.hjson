@@ -2961,6 +2961,16 @@
     tests: ["chip_sw_rv_core_ibex_lockstep_glitch"]
    }
 
+   {
+    name: chip_sw_rv_core_ibex_pc_intg_check
+    desc: '''Verify PC integrity checking in the Ibex core.
+
+             Ensure the appropriate alert occurs when the PC is corrupted.
+          '''
+    stage: V2S
+    tests: ["chip_sw_rv_core_ibex_pc_intg_check"]
+   }
+
     ////////////////////////////
     // System level scenarios //
     ////////////////////////////
