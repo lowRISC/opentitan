@@ -199,7 +199,6 @@ module spi_device_reg_top (
   logic intr_state_readbuf_flip_qs;
   logic intr_state_readbuf_flip_wd;
   logic intr_state_tpm_header_not_empty_qs;
-  logic intr_state_tpm_header_not_empty_wd;
   logic intr_enable_we;
   logic intr_enable_generic_rx_full_qs;
   logic intr_enable_generic_rx_full_wd;
@@ -1848,15 +1847,15 @@ module spi_device_reg_top (
   //   F[tpm_header_not_empty]: 11:11
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_intr_state_tpm_header_not_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_tpm_header_not_empty_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.tpm_header_not_empty.de),
@@ -19172,8 +19171,6 @@ module spi_device_reg_top (
   assign intr_state_readbuf_watermark_wd = reg_wdata[9];
 
   assign intr_state_readbuf_flip_wd = reg_wdata[10];
-
-  assign intr_state_tpm_header_not_empty_wd = reg_wdata[11];
   assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
 
   assign intr_enable_generic_rx_full_wd = reg_wdata[0];
