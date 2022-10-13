@@ -133,6 +133,10 @@ package spi_device_env_pkg;
       TPM_ACCESS_OFFSET, TPM_INT_ENABLE_OFFSET, TPM_INT_VECTOR_OFFSET,
       TPM_INT_STATUS_OFFSET, TPM_INT_STATUS_OFFSET, TPM_STS_OFFSET,
       TPM_HASH_START_OFFSET, TPM_DID_VID_OFFSET, TPM_RID_OFFSET};
+  parameter string ALL_TPM_HW_REG_NAMES[] = {
+      "tpm_access_0", "tpm_access_1", "tpm_access_2", "tpm_access_3", "tpm_access_4",
+      "tpm_sts", "tpm_intf_capability", "tpm_int_enable", "tpm_int_status", "tpm_int_vector",
+      "tpm_did_vid", "tpm_rid", "tpm_hash_start"};
 
   parameter uint     NUM_INTERNAL_PROCESSED_CMD  = 11; // exclude WREN, WRDI, EN4B, EX4B
   parameter bit[7:0] READ_JEDEC                  = 8'h9F;

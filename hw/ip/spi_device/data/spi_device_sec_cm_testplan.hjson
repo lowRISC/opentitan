@@ -27,7 +27,7 @@
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["spi_device_tl_intg_err"]
     }
   ]
 }

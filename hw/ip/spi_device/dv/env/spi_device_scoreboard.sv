@@ -66,9 +66,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // it's ok that host reads either the old value or the new one.
   // Store the old value here and clear this array when the SPI transaction is completed
   local bit[TL_DW-1:0] tpm_hw_reg_pre_val_aa[string];
-  localparam string ALL_TPM_HW_REG_NAMES[] = {
-    "tpm_access_0", "tpm_access_1", "tpm_sts", "tpm_intf_capability",
-    "tpm_int_enable", "tpm_int_status", "tpm_int_vector", "tpm_did_vid", "tpm_rid"};
 
   `uvm_component_new
 
@@ -105,10 +102,20 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       upstream_spi_host_fifo.get(item);
       `uvm_info(`gfn, $sformatf("upstream received host spi item:\n%0s", item.sprint()),
                 UVM_MEDIUM)
+      if (cfg.en_cov) begin
+        cov.all_modes_cg.sample(`gmv(ral.control.mode), `gmv(ral.tpm_cfg.en));
+      end
+
       case (cfg.spi_host_agent_cfg.spi_func_mode)
         SpiModeGeneric: begin
           `DV_CHECK_EQ(`gmv(ral.control.mode), GenericMode)
           receive_spi_rx_data({item.data[3], item.data[2], item.data[1], item.data[0]});
+          if (cfg.en_cov) begin
+            cov.bit_order_clk_cfg_cg.sample(cfg.spi_host_agent_cfg.host_bit_dir,
+                                            cfg.spi_host_agent_cfg.device_bit_dir,
+                                            cfg.spi_host_agent_cfg.sck_polarity[FW_FLASH_CSB_ID],
+                                            cfg.spi_host_agent_cfg.sck_phase[FW_FLASH_CSB_ID]);
+          end
         end
         SpiModeFlash: begin
           internal_process_cmd_e cmd_type;
@@ -176,25 +183,64 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           end // if (!cfg.is_read_buffer_cmd(item))
 
           latch_flash_status(set_busy, update_wel, wel_val);
+          if (`gmv(ral.tpm_cfg.en)) begin
+            cov.tpm_interleave_with_flash_item_cg.sample(.is_tpm_item(0), .is_flash_item(1));
+          end
         end
         SpiModeTpm: begin
           bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
+          bit is_hw_return;
           if (item.write_command) begin
             // TLUL may respond too slow and we may have 2 items in this queue
             `DV_CHECK_LE(tpm_write_spi_q.size, 1)
             tpm_write_spi_q.push_back(item);
           end else begin
             bit [TL_DW-1:0] exp_q[$];
+            is_hw_return = is_tpm_reg(addr, item.read_size, exp_q);
 
-            if (is_tpm_reg(addr, item.read_size, exp_q)) begin
+            if (is_hw_return) begin
               compare_tpm_hw_reg(item.data, exp_q, addr[1:0]);
             end else begin
               `DV_CHECK_EQ(tpm_read_sw_q.size, 1)
               tpm_item_compare(item, tpm_read_sw_q.pop_front(), "read");
             end
           end
+          if (cfg.en_cov) begin : tpm_cov
+            bit [TPM_ADDR_WIDTH-1:0] aligned_addr = addr;
+            bit [TPM_OFFSET_WIDTH-1:0] aligned_offset = {addr[TPM_OFFSET_WIDTH-1:2], 2'd0};
+            bit is_in_tpm_region, is_valid_locality, is_hw_reg_offset, is_word_aligned;
+            int locality = get_locality_from_addr(addr);
+
+            aligned_addr[1:0] = 0;
+            is_in_tpm_region = (addr inside {[24'hD4_0000:24'hD4_FFFF]});
+            is_valid_locality = (
+                addr[TPM_OFFSET_WIDTH+TPM_LOCALITY_WIDTH-1:TPM_OFFSET_WIDTH] < MAX_TPM_LOCALITY);
+            is_hw_reg_offset = (
+                aligned_addr[TPM_OFFSET_WIDTH-1:0] inside {ALL_TPM_HW_REG_OFFSETS});
+            is_word_aligned = (addr[1:0] == 0);
+            cov.tpm_cfg_cg.sample(`gmv(ral.tpm_cfg.tpm_mode),
+                                  `gmv(ral.tpm_cfg.hw_reg_dis),
+                                  `gmv(ral.tpm_cfg.tpm_reg_chk_dis),
+                                  `gmv(ral.tpm_cfg.invalid_locality),
+                                  item.write_command,
+                                  is_in_tpm_region,
+                                  is_valid_locality,
+                                  is_hw_reg_offset,
+                                  is_word_aligned);
+            cov.tpm_transfer_size_cg.sample(item.write_command, is_hw_return, item.data.size);
+
+            if (aligned_offset == TPM_STS_OFFSET && locality < MAX_TPM_LOCALITY) begin
+              bit active = cfg.get_locality_active(locality);
+              cov.tpm_sts_cg.sample(item.write_command, active, is_hw_return, locality);
+            end
+
+            if (`gmv(ral.control.mode) inside {FlashMode, PassthroughMode}) begin
+              cov.tpm_interleave_with_flash_item_cg.sample(.is_tpm_item(1), .is_flash_item(0));
+            end
+          end : tpm_cov
         end
-        default: `uvm_fatal(`gfn, $sformatf("Unexpected mode: %0d", `gmv(ral.control.mode)))
+        default: `uvm_fatal(`gfn, $sformatf("Unexpected mode: %0d",
+                                            cfg.spi_host_agent_cfg.spi_func_mode))
       endcase
     end // forever
   endtask
@@ -225,6 +271,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         exp_value_q.push_back(get_reg_val_with_all_1s_padding( \
           tpm_hw_reg_pre_val_aa[`"CSR_NAME`"], ``TPM_NAME``_BYTE_SIZE)); \
       end \
+      if (cfg.en_cov) cov.tpm_read_hw_reg_cg_wraps[`"CSR_NAME`"].sample(); \
     end
   // return 1 and exp SPI return data if the TPM read value is directly from HW-returned registers
   function automatic bit is_tpm_reg(bit [TPM_ADDR_WIDTH-1:0] addr,
@@ -289,9 +336,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           reg_val = get_reg_val_with_all_1s_padding(tpm_hw_reg_pre_val_aa[access_reg_name], size);
           exp_value_q.push_back(reg_val);
         end
+        if (cfg.en_cov) cov.tpm_read_hw_reg_cg_wraps[access_reg_name].sample();
       end
       TPM_HASH_START_OFFSET: begin
         exp_value_q = {'1};
+        if (cfg.en_cov) cov.tpm_read_hw_reg_cg_wraps["tpm_hash_start"].sample();
       end
       `CREATE_TPM_CASE_STMT(TPM_INT_ENABLE, tpm_int_enable)
       `CREATE_TPM_CASE_STMT(TPM_INT_VECTOR, tpm_int_vector)
@@ -1049,6 +1098,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // read data from mem then update tx fifo and tx_rptr
   virtual function void update_tx_fifo_and_rptr();
     uint filled_bytes = get_tx_sram_filled_bytes();
+    uint tx_limit = `gmv(ral.txf_addr.limit);
+
+    // LSB 2 bits are ignored by design
+    tx_limit[1:0] = 0;
     // move data to fifo
     while (tx_word_q.size < 2 && filled_bytes >= SRAM_WORD_SIZE) begin
       tx_word_q.push_back(tx_mem.read(tx_rptr_exp[SRAM_MSB:0]));
@@ -1058,6 +1111,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                      .increment(SRAM_WORD_SIZE),
                                      .sram_size_bytes(`GET_TX_ALLOCATED_SRAM_SIZE_BYTES));
       filled_bytes -= SRAM_WORD_SIZE;
+    end
+    // sample when the fifo is full
+    if (cfg.en_cov && filled_bytes == tx_limit) begin
+      cov.fw_tx_fifo_size_cg.sample(tx_limit);
     end
   endfunction
 
@@ -1146,6 +1203,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                      .increment(SRAM_WORD_SIZE),
                                      .sram_size_bytes(`GET_RX_ALLOCATED_SRAM_SIZE_BYTES));
       space_bytes -= SRAM_WORD_SIZE;
+    end
+    // sample when the fifo is full
+    if (cfg.en_cov && space_bytes == 0) begin
+      cov.fw_rx_fifo_size_cg.sample(`gmv(ral.rxf_addr.limit));
     end
   endfunction
 
