@@ -349,8 +349,11 @@ bool test_main(void) {
     csrng_static_generate_run(got, ARRAYSIZE(got));
     static_assert(ARRAYSIZE(got) == ARRAYSIZE(nv_csrng_output),
                   "Array size mismatch.");
-    for (size_t i = 0; i < ARRAYSIZE(got); ++i) {
-      CHECK(got[i] != nv_csrng_output[i], "Unexpected word match.");
+
+    if (lc_state == kDifLcCtrlStateDev) {
+      CHECK_ARRAYS_EQ(got, nv_csrng_output, ARRAYSIZE(got));
+    } else {
+      CHECK_ARRAYS_NE(got, nv_csrng_output, ARRAYSIZE(got));
     }
     return true;
   }
