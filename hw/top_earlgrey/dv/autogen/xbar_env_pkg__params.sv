@@ -219,9 +219,11 @@ tl_host_t xbar_hosts[$] = '{
         "rv_core_ibex__cfg"}}
     ,
     '{"rv_dm__sba", 2, '{
-        "rv_dm__regs",
         "rom_ctrl__rom",
         "rom_ctrl__regs",
+        "rv_dm__mem",
+        "rv_dm__regs",
+        "sram_ctrl_main__ram",
         "uart0",
         "uart1",
         "uart2",
@@ -255,17 +257,16 @@ tl_host_t xbar_hosts[$] = '{
         "flash_ctrl__core",
         "flash_ctrl__prim",
         "flash_ctrl__mem",
-        "hmac",
-        "kmac",
         "aes",
         "entropy_src",
         "csrng",
         "edn0",
         "edn1",
+        "hmac",
         "rv_plic",
         "otbn",
         "keymgr",
-        "rv_core_ibex__cfg",
+        "kmac",
         "sram_ctrl_main__regs",
-        "sram_ctrl_main__ram"}}
+        "rv_core_ibex__cfg"}}
 };
