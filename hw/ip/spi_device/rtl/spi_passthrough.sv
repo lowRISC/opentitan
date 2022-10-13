@@ -123,15 +123,6 @@ module spi_passthrough
   output passthrough_req_t passthrough_o,
   input  passthrough_rsp_t passthrough_i,
 
-  // Mailbox indicator
-  //
-  // If a read command falls into the mailbox address and the mailbox feature is
-  // enabled, the `Read Command` process module sends a signal to passthrough to
-  // take the control of the SPI line. If this signal asserts during Address
-  // phase, passthrough drops CSb to SPI Flash device and waits host's CSb
-  // de-assertion.
-  input mailbox_hit_i,
-
   // event
   // `cmd_filtered`: indicator of the incoming command filtered out
   output event_cmd_filtered_o
@@ -334,14 +325,6 @@ module spi_passthrough
 
   // event
   assign event_cmd_filtered_o = filter;
-
-  // Mailbox hit.
-  logic mailbox_hit;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) mailbox_hit <= 1'b 0; // reset by CSb
-    else if (mailbox_hit_i) mailbox_hit <= 1'b 1; // set by event
-  end
 
   //////////////
   // Datapath //
@@ -799,13 +782,7 @@ module spi_passthrough
       StAddress: begin
         // based on state, addr_phase is set. So just check if counter reaches 0
         if (addrcnt == '0) begin
-          if (mailbox_hit) begin
-            // In Address phase, mailbox region hits. Then Passthrough filteres
-            // the command and deligates the control to ReadCmd submodule.
-            st_d = StFilter;
-
-            filter = 1'b 1;
-          end else if (cmd_info.mbyte_en) begin
+          if (cmd_info.mbyte_en) begin
             st_d = StMByte;
 
             mbyte_set = 1'b 1;
@@ -839,9 +816,6 @@ module spi_passthrough
   ///////////////
   // Assertion //
   ///////////////
-
-  // Mailbox hit happens in the middle of Address phase, not at the end of it.
-  `ASSERT(MailboxHitConflictAddrCnt_A, mailbox_hit_i |-> (addrcnt != 0))
 
   // Assume when payload_swap_en is set, the direction is PayloadIn & only
   // Single mode is used
