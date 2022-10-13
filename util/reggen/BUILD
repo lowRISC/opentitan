@@ -78,6 +78,16 @@ py_library(
 )
 
 py_library(
+    name = "interrupt",
+    srcs = ["interrupt.py"],
+    deps = [
+        ":bits",
+        ":lib",
+        ":signal",
+    ],
+)
+
+py_library(
     name = "html_helpers",
     srcs = ["html_helpers.py"],
 )
@@ -97,6 +107,7 @@ py_library(
         ":clocking",
         ":countermeasure",
         ":inter_signal",
+        ":interrupt",
         ":lib",
         ":params",
         ":reg_block",
