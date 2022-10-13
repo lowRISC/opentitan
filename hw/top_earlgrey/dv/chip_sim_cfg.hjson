@@ -1417,7 +1417,8 @@
     }
     {
       name: xcelium_ci_0
-      tests: ["chip_sw_clkmgr_jitter",
+      tests: ["chip_plic_all_irqs",
+              "chip_sw_clkmgr_jitter",
               "chip_sw_kmac_app_rom",
               "chip_sw_rstmgr_sw_rst",
               "chip_sw_hmac_enc",
@@ -1430,16 +1431,15 @@
     }
     {
       name: xcelium_ci_1
-      tests: ["chip_plic_all_irqs"]
-              // TODO(#14532): enable these tests slowly to ensure no CI breakages.
-              // "chip_sw_rv_core_ibex_address_translation",
-              // "chip_sw_rv_timer_irq",
-              // "chip_sw_spi_device_tx_rx",
-              // "chip_sw_usb_ast_clk_calib",
+      tests: ["chip_sw_rv_core_ibex_address_translation",
+              "chip_sw_rv_timer_irq",
+              "chip_sw_spi_device_tx_rx",
+              "chip_sw_usb_ast_clk_calib",
+              "chip_sw_kmac_mode_cshake",
+              "chip_sw_plic_sw_irq",
+              "chip_sw_aes_enc"]
+              // TODO(#15371): this currently failing on nightly regression
               // "chip_sw_lc_walkthrough_dev",
-              // "chip_sw_kmac_mode_cshake",
-              // "chip_sw_plic_sw_irq",
-              // "chip_sw_aes_enc"]
     }
     {
       name: xcelium_ci_2
