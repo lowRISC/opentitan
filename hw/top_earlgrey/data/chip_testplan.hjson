@@ -588,7 +588,7 @@
       name: chip_rv_dm_access_after_wakeup
       desc: '''Verify RV_DM works after wakes up from sleep.
 
-            - Put the chip into sleep mode and then wake up.
+            - Put the chip into normal sleep mode and then wake up.
             - Access some RV_DM CSRs to ensure that RV_DM doesn't need a full reset to work.
             '''
       stage: V2
