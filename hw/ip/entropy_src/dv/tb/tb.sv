@@ -39,7 +39,7 @@ module tb;
       rng_if(.clk(clk), .rst_n(csrng_rst_n));
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       csrng_if(.clk(clk), .rst_n(csrng_rst_n));
-  push_pull_if#(.HostDataWidth(0)) aes_halt_if(.clk(clk), .rst_n(csrng_rst_n));
+  push_pull_if#(.HostDataWidth(0)) aes_halt_if(.clk(clk), .rst_n(csrng_rst_n && rst_n));
   entropy_src_xht_if xht_if(.clk(clk), .rst_n(rst_n));
   entropy_src_path_if entropy_src_path_if (.entropy_src_hw_if_i(entropy_src_hw_if_i));
   entropy_src_assert_if entropy_src_assert_if (.entropy_src_hw_if_i(entropy_src_hw_if_i));

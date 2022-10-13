@@ -808,7 +808,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
           // The DUT should either set the alert, or crash the sim.
           // If we succeed, sample this alert_threshold as covered successfully.
-          cov_vif.cg_alert_cnt_sample(alert_threshold);
+          cov_vif.cg_alert_cnt_sample(alert_threshold, 1);
         end else if (main_sm_escalates) begin
           fmt = "Main SM in error state, overrides recov alert (Fail cnt: %01d,  thresh: %01d)";
         end else if(threshold_alert_active) begin
@@ -1481,6 +1481,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                                    invalid_es_type);
             end
             "alert_threshold": begin
+              cov_vif.cg_alert_cnt_sample(item.a_data, 0);
               check_redundancy_val("alert_threshold", "", "es_thresh_cfg_alert",
                                    invalid_alert_threshold);
             end

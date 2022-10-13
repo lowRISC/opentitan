@@ -607,7 +607,7 @@ interface entropy_src_cov_if
 
   endgroup : win_ht_deep_threshold_cg
 
-  covergroup alert_cnt_cg with function sample(bit [15:0] threshold);
+  covergroup alert_cnt_cg with function sample(bit [15:0] threshold, bit has_fired);
 
     option.name         = "alert_cnt_cg";
     option.per_instance = 1;
@@ -616,8 +616,20 @@ interface entropy_src_cov_if
       bins one     = {1};
       bins two     = {2};
       bins high    = { [3:6] };
-      bins higher  = { [6:10] };
+      bins higher  = { [7:10] };
       bins highest = { [11:16'hffff] };
+    }
+
+    // We sample this coverpoint both when the setting is applied at the register
+    // and when the alert is detected.
+    cp_has_fired : coverpoint has_fired;
+
+    cr_cross : cross cp_threshold, cp_has_fired {
+      // For the highest bin (>10) it is unlikely that one would actually use this bin, and it
+      // would be particularly time intensive to check that the highest values are reached.  Thus
+      // we do not require coverage to check that alerts are observed for this bin.
+      ignore_bins ignore_a= binsof(cp_threshold) intersect { 16'hffff } &&
+                            binsof(cp_has_fired) intersect { 1 };
     }
   endgroup : alert_cnt_cg
 
@@ -797,8 +809,8 @@ interface entropy_src_cov_if
                                          fail);
   endfunction
 
-  function automatic void cg_alert_cnt_sample(int threshold);
-    alert_cnt_cg_inst.sample(threshold);
+  function automatic void cg_alert_cnt_sample(int threshold, bit has_fired);
+    alert_cnt_cg_inst.sample(threshold, has_fired);
   endfunction
 
   function automatic void cg_observe_fifo_threshold_sample(int threshold);

@@ -17,6 +17,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // just before enabling.
   int csrng_pull_seq_seed_offset = 0;
 
+  // Flag to suspend exceptions/reconfigs when testing certain DUT conditions.
+  int do_not_disturb = 0;
+
   rand uint dly_to_access_intr;
   rand uint dly_to_access_alert_sts;
   rand uint dly_to_insert_entropy;
@@ -90,6 +93,17 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     end
     super.enable_dut();
   endtask
+
+  virtual task disable_dut();
+    // In case an undetected failure is encountered, reset the RNG on disable. This will clear any
+    // simulated failures during random reconfig events even if the DUT has not detected them with
+    // an alert.
+    // NOTE: This should not change the average frequency of simulated RNG failures, given that the
+    // instantaneous likelihood of failure is designed to be independent of history.
+    m_rng_push_seq.reset_rng();
+    super.disable_dut();
+  endtask;
+
 
   virtual task try_apply_base_configuration(entropy_src_dut_cfg newcfg,
                                             realtime pause,
@@ -224,7 +238,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       `uvm_info(`gfn, "HT Failure: Disabling DUT", UVM_HIGH)
       disable_dut();
       wait_no_outstanding_access();
-      m_rng_push_seq.reset_rng();
     end
   endtask
 
@@ -634,9 +647,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         fork
           entropy_inject_thread();
           interrupt_handler_thread();
-          forced_alert_thread();
-          reconfig_timer_thread();
           reinit_monitor_thread();
+          if (!do_not_disturb) begin
+            forced_alert_thread();
+            reconfig_timer_thread();
+          end
         join
 
         if(!continue_sim) break;
