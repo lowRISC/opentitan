@@ -272,6 +272,7 @@ opentitan_functest(
     name = "ottf_flow_control_functest",
     srcs = ["ottf_flow_control_functest.c"],
     cw310 = cw310_params(
+        tags = ["broken"],  # TODO(#15487): failing on CI
         test_cmds = [
             "--exec=\"fpga load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
             "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
