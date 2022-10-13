@@ -474,7 +474,9 @@ Interrupts are critical and common enough to attempt to standardize across the p
 Where possible (exceptions for inherited IP that is too tricky to convert) all interrupts shall have common naming, hardware interface, and software interface.
 These are described in this section.
 
-Interrupts are latched indications of defined peripheral events that have occurred and not yet been addressed by the local processor.
+### Event Type Interrupt
+
+Event type interrupts are latched indications of defined peripheral events that have occurred and not yet been addressed by the local processor.
 All interrupts are sent to the processor as active-high level (as opposed to edge) interrupts.
 Events themselves can be edge or level, active high or low, as defined by the associated peripheral.
 For instance, the GPIO module might detect the rising or falling edge of one its input bits as an interrupt event.
@@ -504,6 +506,35 @@ More details follow.
 }
 {{< /wavejson >}}
 
+### Status Type Interrupt
+
+Status type interrupts forwards the internal status signals to the local processor.
+They may or may not be latched inside the hw module.
+The difference between the event type and status type interrupt is the persistence.
+The status type interrupts do not drop the interrupt lines until the cause signals are dropped by the processor or hardware logic
+SW is responsible to mask the interrupts if they want to process the interrupt in a deferred way.
+
+{{< wavejson >}}
+{
+  signal: [
+    { name: 'Clock',                  wave: 'p.............' },
+    { name: 'event',                  wave: '0..1......0...' },
+    { name: 'INTR_ENABLE',            wave: '1.............' },
+    { name: 'INTR_STATE',             wave: '0...1......0..' },
+    { name: 'intr_o',                 wave: '0...1......0..' },
+    { name: 'SW addresses the cause', wave: '0.........10..' },
+  ],
+  head: {
+    text: 'Interrupt Latching and Clearing',
+  },
+  foot: {
+    text: 'status lasts until processor addresses the cause',
+    tock: 0
+  },
+}
+{{< /wavejson >}}
+
+
 ### Interrupts per module
 
 A peripheral generates a separate interrupt for each event and sends them all as bundle to the local processor's interrupt module.
@@ -524,9 +555,10 @@ The three registers are the `INTR_STATE` register, the `INTR_ENABLE` register, a
 They are placed at the top of the peripheral's address map in that order automatically by the `reggen` tool.
 
 The `INTR_ENABLE` register is readable and writeable by the CPU (`rw`), with one bit per interrupt which, when true, enables the interrupt of the module to be reported to the output to the processor.
-The `INTR_STATE` register is readable by the CPU and each bit may be written with `1` to clear it (`rw1c`), so that a read of the register indicates the current state of all latched interrupts, and a write of `1` to any field clears the state of the corresponding interrupt.
-`INTR_TEST` is a write-only (`wo`) register that allows software to test the reporting of the interrupt, simulating a trigger of the original event, the setting of the `INTR_STATE` register, and the raised level of the interrupt output to the processor (modulo the effect of `INTR_ENABLE`).
+The `INTR_STATE` register for the event type interrupt is readable by the CPU and each bit may be written with `1` to clear it (`rw1c`), so that a read of the register indicates the current state of all latched interrupts, and a write of `1` to any field clears the state of the corresponding interrupt.
+`INTR_TEST` for the event type interrupt is a write-only (`wo`) register that allows software to test the reporting of the interrupt, simulating a trigger of the original event, the setting of the `INTR_STATE` register, and the raised level of the interrupt output to the processor (modulo the effect of `INTR_ENABLE`).
 No modifications to other portions of the hardware (eg. clearing of FIFO pointers) occurs.
+`INTR_STATE` and `INTR_TEST` for the status type interrupt differ from them in the event type interrupts. The details will be described later (TBD).
 See the next section for the hardware implementation.
 
 The contents of the `INTR_STATE` register do **not** take into consideration the enable value, but rather show the raw state of all latched hardware interrupt events.
