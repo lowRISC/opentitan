@@ -60,6 +60,8 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     if (common_seq_type == "stress_all_with_rand_reset") begin
       cfg.otp_ctrl_vif.release_part_access_mubi();
       cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
+      // Set dft_en to On to allow the csr_test to check all registers' default value after reset.
+      cfg.otp_ctrl_vif.drive_lc_dft_en(lc_ctrl_pkg::On);
       otp_ctrl_init();
       otp_pwr_init();
       super.apply_resets_concurrently(reset_duration_ps);
