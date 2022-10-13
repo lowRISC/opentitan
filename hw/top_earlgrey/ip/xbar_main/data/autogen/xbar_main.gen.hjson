@@ -96,9 +96,11 @@
     ]
     rv_dm.sba:
     [
-      rv_dm.regs
       rom_ctrl.rom
       rom_ctrl.regs
+      rv_dm.mem
+      rv_dm.regs
+      sram_ctrl_main.ram
       peri
       spi_host0
       spi_host1
@@ -106,19 +108,18 @@
       flash_ctrl.core
       flash_ctrl.prim
       flash_ctrl.mem
-      hmac
-      kmac
       aes
       entropy_src
       csrng
       edn0
       edn1
+      hmac
       rv_plic
       otbn
       keymgr
-      rv_core_ibex.cfg
+      kmac
       sram_ctrl_main.regs
-      sram_ctrl_main.ram
+      rv_core_ibex.cfg
     ]
   }
   nodes:
