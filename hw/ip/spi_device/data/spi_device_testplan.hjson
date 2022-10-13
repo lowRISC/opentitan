@@ -453,70 +453,94 @@
       stage: V2
       tests: ["spi_device_flash_and_tpm"]
     }
+    {
+      name: tpm_and_flash_trans_with_min_inactive_time
+      desc: '''
+            Issue these transactions with 2 sys_clk inactive time in between.
+            - 2 tpm transactions.
+            - 2 flash transactions.
+            - a tpm transaction and a flash transaction.'''
+      stage: V2
+      tests: []
+    }
+    {
+      name: stress_all
+      desc: '''
+            - Combine above sequences in one test to run sequentially, except csr sequences.
+            - Test modes switch among FW, flash, passthrough and tpm.
+            - Randomly add reset between each sequence'''
+      stage: V2
+      tests: []
+    }
   ]
   covergroups: [
     {
-      name: spi_device_tpm_all_modes_cg
+      name: all_modes_cg
       desc: '''
             Cover every combination of all possible modes:
-            - All modes perform tx/rx interleaved tpm tx/rx.'''
+            - FW mode, passthrough mode and flash mode.
+            Cover passthrough mode and flash mode with TPM mode enabled.'''
     }
+    // FW mode
     {
-      name: spi_device_tpm_states_cg
+      name: bit_order_clk_cfg_cg
       desc: '''
-            Cover all tpm states on the SPI bus (WAIT, INVALID, ETC).'''
-    }
-    {
-      name: spi_device_fifo_fsm_cg
-      desc: '''
-            Cover all fsm states for RX/TX FIFO.'''
-    }
-    {
-      name: spi_device_abort_all_cg
-      desc: '''
-            Cover the correct abort functionality for all modes.
+            Cover all configurations of rx/tx order in SPI_DEVICE.CFG for FW mode.
+            Note: Flash or TPM mode always use the fixed bit order.
 
-            TODO: Functionality of abort to be clarified.'''
-    }
-    {
-      name: spi_device_txrx_order_cg
-      desc: '''
-            Verify that data being tx/rx is valid regardless of bit order and that the functionality behaves as expected:
-
-            Cover all configurations of rx/tx order in SPI_DEVICE.CFG for all valid modes.'''
-    }
-    {
-      name: spi_device_sram_size_cg
-      desc: '''
-            Cover the SramAw local parameter to confirm all sizes 1 - 32kB.'''
-    }
-    {
-      name: spi_device_sck_config_cg
-      desc: '''
             Cover all combinations of SPI_DEVICE.CFG.CPOL and SPI_DEVICE.CFG.CPHA.
+            Cross both bit order and clock configure.'''
+    }
+    {
+      name: fw_tx_fifo_size_cg
+      desc: '''
+            Cover these values are used to configure TX fifo size for FW mode.
+            - min(1 word), typical(half of SRAM size), max(SRAM size - 1 word)
+            Sample this when fifo is full.'''
+    }
+    {
+      name: fw_rx_fifo_size_cg
+      desc: '''
+            The same CG as `fw_tx_fifo_size_cg` for RX.'''
+    }
+    // TPM mode
+    {
+      name: tpm_cfg_cg
+      desc: '''
+            Cover all combinations of these configurations in CSR `tpm_cfg`:
+              - tpm_mode, hw_reg_dis, tpm_reg_chk_dis, invalid_locality.
+            Cover these address mode:
+             - TPM address in both valid and invalid locality.
+             - TPM address in/outside TPM address region ('hd4_xxxx).
+             - TPM offset matching to any HW return register.
+             - Both word aligned and unaligned.
+            Cross above with TPM read and write transactions.
 
-            Cover valid combinations for each mode.'''
+            This CG is sampled when receiving a TPM request.'''
     }
     {
-      name: spi_device_pass_addr_swap_cg
+      name: tpm_read_hw_reg_cg
       desc: '''
-            Cover all bits enable for address translation.
-            Cover all bits values for address translation.'''
+            Cover TPM read on all HW returned registered.'''
     }
     {
-      name: spi_device_pass_payload_swap_cg
+      name: tpm_transfer_size_cg
       desc: '''
-            Cover all bits enable for payload translation.
-            Cover all bits values for payload translation.'''
+            Cover both TPM read and write.
+            Cover request HW returned and SW handled.
+            Cross above with various payload size.
+              - min (1B), typical (4B), max (64B).'''
     }
     {
-      name: spi_device_pass_cmd_filter_cg
+      name: tpm_sts_cg
       desc: '''
-            Cover all possible bits for command filter.
-            Every opcode should be enabled and filtering checked.'''
+            Cover `tpm_sts` read and write on an active/inactive tpm access.
+            Cover `tpm_sts` read with HW returned and SW handled.
+            Cross above with all locality.'''
     }
+    // flash/passthrough mode
     {
-      name: spi_device_cmd_info_cg
+      name: flash_cmd_info_cg
       desc: '''
             Cover all opcode enabled in cmd info.
             Cover all payload direction.
@@ -527,13 +551,40 @@
             Cover busy enable.
             Cover all dummy sizes.
             Cover all payload enables.
-            This is not configuration coverage, cover only if we have relevant
-            transaction with opcode configured and enabled in cmd_info slot.
 
-            TODO: Consider relevant crosses between opcode and other items.'''
+            cross payload directions, address modes, addr/payload swap enable.
+            cross payload directions, address modes, payload enables.
+            '''
     }
     {
-      name: spi_device_payload_size_cg
+      name: passthrough_addr_swap_cg
+      desc: '''
+            Cover address swap on a transaction with both payload direction (read and program).
+            Cover all bits toggled on the swap address and mask.
+            Cross with filter enabled and disabled.'''
+    }
+    {
+      name: passthrough_payload_swap_cg
+      desc: '''
+            Cover payload swap on a transaction with both payload direction (read and program).
+            Cover all bits toggled on the swap payload and mask.
+            Cross with filter enabled and disabled.'''
+    }
+    {
+      name: passthrough_cmd_filter_cg
+      desc: '''
+            Cover all possible bits for command filter.
+            Every opcode should be enabled and filtering checked.'''
+    }
+    {
+      name: flash_status_cg
+      desc: '''
+            Cover all status bits toggled.
+            Cross above with host reading status and SW reading status.
+            Cover SW updating flash_status while CSB is active.'''
+    }
+    {
+      name: flash_upload_payload_size_cg
       desc: '''
             Cover supported payload sizes for IN transactions.
             Cover supported payload sizes for OUT transactions.
@@ -541,19 +592,27 @@
             Cover payload size of upload transaction exceeds 256B limit (wrap around).'''
     }
     {
-      name: spi_device_read_commands_cg
+      name: flash_busy_bit_cg
       desc: '''
-            Cover read status commands.
-            Cover read JEDEC command.
-            Cover read SFDP command.
-            Cover all other read commands configurable in slots up to 10.
-            Cover dummy cycle for all read commands.
-            Cover INTERCEPT_EN with all applicable read commands.'''
+            Cover host sends flash commands while busy bit is set.
+            Cover above with filter enabled/disabled on that command.
+            '''
     }
     {
-      name: spi_device_mailbox_cg
+      name: flash_read_commands_cg
       desc: '''
-            Cover commands targeting inside mailbox space.
+            Cover read status/read JEDEC/read SFDP and all other read commands configurable in the
+              first 10 slots.
+            Cover dummy cycle.
+            Cover filter enabled/disabled.
+            Cover various payload size
+            Cover INTERCEPT_EN.
+            Cross all above items.'''
+    }
+    {
+      name: passthrough_mailbox_cg
+      desc: '''
+            Cover read commands targeting inside mailbox space.
             Cover command starting outside mailbox and crossing into mailbox space.
             Cover command starting in mailbox comming outside mailbox space.
             Cover command starting outside mailbox and crossing the entire mailbox space and coming
@@ -561,15 +620,21 @@
             Cross above with filter on and off.'''
     }
     {
-      name: spi_device_4B_address_management_cg
+      name: flash_mailbox_cg
       desc: '''
-            Cover all possible combinations of EN4B and EX4B.
-            Cross with various read commands.'''
+            Cover read commands targeting inside mailbox space in the flash mode.'''
+    }
+    {
+      name: spi_device_4B_enter_exit_command_cg
+      desc: '''
+            Cover both EN4B and EX4B commands.
+            Cross this with the previous `cfg_addr_4b_en` value.
+            '''
     }
     {
       name: spi_device_buffer_boundary_cg
       desc: '''
-            Cover buffer boundary crossing (buffer flip).'''
+            Cover buffer boundary crossing (2 buffer flips).'''
     }
     {
       name: spi_device_lanes_cg
@@ -585,10 +650,9 @@
             Cross this with the previous flash_status.wel value.'''
     }
     {
-      name: TPM_with_flash_or_passthrough_mode_cg
+      name: tpm_interleave_with_flash_item_cg
       desc: '''
-            Cover TPM read/write with flash_mode enabled.
-            Cover TPM read/write with passthrough enabled.'''
+            Cover TPM transactions interleaving with flash transactions.'''
     }
   ]
 }
