@@ -12,6 +12,7 @@ from reggen.access import SWAccess, HWAccess
 from reggen.bus_interfaces import BusInterfaces
 from reggen.clocking import Clocking, ClockingItem
 from reggen.field import Field
+from reggen.interrupt import Interrupt
 from reggen.signal import Signal
 from reggen.lib import check_int, check_list, check_str_dict, check_str
 from reggen.multi_register import MultiRegister
@@ -503,7 +504,7 @@ class RegBlock:
                        storage_err_alert=None)
         self.add_register(reg)
 
-    def make_intr_regs(self, interrupts: Sequence[Signal]) -> None:
+    def make_intr_regs(self, interrupts: Sequence[Interrupt]) -> None:
         assert interrupts
         assert interrupts[-1].bits.msb < self._reg_width
 

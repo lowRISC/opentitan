@@ -11,6 +11,7 @@ import hjson  # type: ignore
 from reggen.alert import Alert
 from reggen.bus_interfaces import BusInterfaces
 from reggen.clocking import Clocking, ClockingItem
+from reggen.interrupt import Interrupt
 from reggen.inter_signal import InterSignal
 from reggen.lib import (check_keys, check_name, check_int, check_bool, check_list)
 from reggen.params import ReggenParams, LocalParam
@@ -98,7 +99,7 @@ class IpBlock:
                  params: ReggenParams,
                  reg_blocks: Dict[Optional[str], RegBlock],
                  alias_impl: Optional[str],
-                 interrupts: Sequence[Signal],
+                 interrupts: Sequence[Interrupt],
                  no_auto_intr: bool,
                  alerts: List[Alert],
                  no_auto_alert: bool,
@@ -179,9 +180,9 @@ class IpBlock:
 
         init_block = RegBlock(regwidth, params)
 
-        interrupts = Signal.from_raw_list('interrupt_list for block {}'
-                                          .format(name),
-                                          rd.get('interrupt_list', []))
+        interrupts = Interrupt.from_raw_list('interrupt_list for block {}'
+                                             .format(name),
+                                             rd.get('interrupt_list', []))
         alerts = Alert.from_raw_list('alert_list for block {}'
                                      .format(name),
                                      rd.get('alert_list', []))
