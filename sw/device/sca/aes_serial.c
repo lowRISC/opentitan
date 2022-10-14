@@ -51,6 +51,13 @@ enum {
    * am not sure whether we are supporting it or not.
    */
   kNumBatchOpsMax = 81,
+  /**
+   * Max number of encryptions that can be captured before we rewrite the key to
+   * reset the internal block counter. Otherwise, the AES peripheral might
+   * trigger the reseeding of the internal masking PRNG which disturbs SCA
+   * measurements.
+   */
+  kBlockCtrMax = 8191,
 };
 
 /**
@@ -73,6 +80,12 @@ bool sample_fixed = true;
  */
 uint8_t key_fixed[kAesKeyLength];
 
+/**
+ * Block counter variable for manually handling reseeding operations of the
+ * masking PRNG inside the AES peripheral.
+ */
+static uint32_t block_ctr;
+
 static dif_aes_t aes;
 
 dif_aes_transaction_t transaction = {
@@ -82,21 +95,22 @@ dif_aes_transaction_t transaction = {
     .masking = kDifAesMaskingInternalPrng,
     .manual_operation = kDifAesManualOperationManual,
     .key_provider = kDifAesKeySoftwareProvided,
-    .mask_reseeding = kDifAesReseedPerBlock,
+    .mask_reseeding = kDifAesReseedPer8kBlock,
     .reseed_on_key_change = false,
     .reseed_on_key_change_lock = false,
 };
 
 /**
- * Simple serial 'k' (set key) command handler.
+ * Configure key.
  *
- * This function does not use key shares to simplify side-channel analysis.
- * The key must be `kAesKeyLength` bytes long.
+ * This function configures the provided key into the AES peripheral. It does
+ * not use key shares to simplify side-channel analysis. The second share is
+ * all zero. The key must be `kAesKeyLength` bytes long.
  *
  * @param key Key.
  * @param key_len Key length.
  */
-static void aes_serial_set_key(const uint8_t *key, size_t key_len) {
+static void aes_key_config(const uint8_t *key, size_t key_len) {
   SS_CHECK(key_len == kAesKeyLength);
   dif_aes_key_share_t key_shares;
   memcpy(key_shares.share0, key, sizeof(key_shares.share0));
@@ -105,15 +119,16 @@ static void aes_serial_set_key(const uint8_t *key, size_t key_len) {
 }
 
 /**
- * Set key with shares.
+ * Mask and configure key.
  *
- * This function uses key shares.
- * The key must be `kAesKeyLength` bytes long.
+ * This function masks the provided key using a software PRNG and then
+ * configures the key into the AES peripheral. The key must be
+ * `kAesKeyLength` bytes long.
  *
  * @param key Key.
  * @param key_len Key length.
  */
-static void aes_serial_set_key_share(const uint8_t *key, size_t key_len) {
+static void aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
   SS_CHECK(key_len == kAesKeyLength);
   dif_aes_key_share_t key_shares;
   prng_rand_bytes((uint8_t *)key_shares.share1, key_len);
@@ -128,6 +143,24 @@ static void aes_serial_set_key_share(const uint8_t *key, size_t key_len) {
  */
 static void aes_manual_trigger(void) {
   SS_CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerStart));
+}
+
+/**
+ * Simple serial 't' (key set) command handler.
+ *
+ * This command is designed to set the fixed_key variable and in addition also
+ * configures the key into the AES peripheral.
+ *
+ * The key must be `kAesKeyLength` bytes long.
+ *
+ * @param key Key.
+ * @param key_len Key length.
+ */
+static void aes_serial_key_set(const uint8_t *key, size_t key_len) {
+  SS_CHECK(key_len == kAesKeyLength);
+  memcpy(key_fixed, key, key_len);
+  aes_key_config(key_fixed, key_len);
+  block_ctr = 0;
 }
 
 /**
@@ -194,6 +227,15 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
                                       size_t plaintext_len) {
   SS_CHECK(plaintext_len == kAesTextLength);
 
+  block_ctr++;
+  // Rewrite the key to reset the internal block counter. Otherwise, the AES
+  // peripheral might trigger the reseeding of the internal masking PRNG which
+  // disturbs SCA measurements.
+  if (block_ctr > kBlockCtrMax) {
+    aes_key_config(key_fixed, kAesKeyLength);
+    block_ctr = 1;
+  }
+
   sca_set_trigger_high();
   aes_serial_encrypt(plaintext, plaintext_len);
   sca_set_trigger_low();
@@ -230,6 +272,15 @@ static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
   uint32_t num_encryptions = 0;
   SS_CHECK(data_len == sizeof(num_encryptions));
   num_encryptions = read_32(data);
+
+  block_ctr += num_encryptions;
+  // Rewrite the key to reset the internal block counter. Otherwise, the AES
+  // peripheral might trigger the reseeding of the internal masking PRNG which
+  // disturbs SCA measurements.
+  if (block_ctr > kBlockCtrMax) {
+    aes_key_config(key_fixed, kAesKeyLength);
+    block_ctr = num_encryptions;
+  }
 
   sca_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
@@ -347,7 +398,7 @@ static void aes_serial_fvsr_key_batch_encrypt(const uint8_t *data,
 
   sca_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
-    aes_serial_set_key_share(batch_keys[i], kAesKeyLength);
+    aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
     aes_serial_encrypt(batch_plaintexts[i], kAesTextLength);
   }
   sca_set_trigger_low();
@@ -382,7 +433,7 @@ bool test_main(void) {
 
   LOG_INFO("Initializing simple serial interface to capture board.");
   simple_serial_init(sca_get_uart());
-  simple_serial_register_handler('k', aes_serial_set_key);
+  simple_serial_register_handler('k', aes_serial_key_set);
   simple_serial_register_handler('p', aes_serial_single_encrypt);
   simple_serial_register_handler('b', aes_serial_batch_encrypt);
   simple_serial_register_handler('t', aes_serial_fvsr_key_set);
