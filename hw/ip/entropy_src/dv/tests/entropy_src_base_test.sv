@@ -33,8 +33,11 @@ class entropy_src_base_test extends cip_base_test #(
     cfg.otp_en_es_fw_read_pct          = 100;
     cfg.otp_en_es_fw_over_pct          = 100;
     cfg.dut_cfg.me_regwen_pct          = 100;
+    cfg.dut_cfg.sw_regupd_pct          = 100;
+
     cfg.dut_cfg.module_enable_pct      = 100;
     cfg.dut_cfg.type_bypass_pct        = 100;
+    cfg.dut_cfg.preconfig_disable_pct  = 100;
     // Unless testing bad MuBi's the initial value for fw_ov_insert_start should always be false
     cfg.dut_cfg.fw_ov_insert_start_pct = 0;
 

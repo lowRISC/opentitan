@@ -769,9 +769,6 @@ interface entropy_src_cov_if
                                               bit module_enable);
     string msg, fmt;
 
-    fmt = "offset: %01d, regupd: %01d, mod_en: %01d";
-    msg = $sformatf(fmt, offset, sw_regupd, module_enable);
-    `uvm_info("", msg, UVM_LOW)
     sw_update_cg_inst.sample(offset, sw_regupd, module_enable);
 
   endfunction

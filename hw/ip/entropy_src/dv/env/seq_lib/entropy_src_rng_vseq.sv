@@ -532,6 +532,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         if (do_background_procs) begin
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_alert_value);
           msg = $sformatf("Generating alert via ERR_CODE_TEST with err_code %d", csr_alert_value);
+          expect_fatal_alerts = 1'b1;
           `uvm_info(`gfn, msg, UVM_MEDIUM)
           csr_wr(.ptr(ral.err_code_test.err_code_test), .value(csr_alert_value));
           // This may generate an alert.  Most codes, except code 22 (mismatched counter primitives)
@@ -576,16 +577,20 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   task random_reconfig(bit do_reset);
     bit reconfig_complete;
     bit regwen;
+    bit sw_locked = (`gmv(ral.sw_regupd.sw_regupd) == 0);
 
     entropy_src_dut_cfg altcfg=new cfg.dut_cfg;
-    if (do_reset) begin
-      apply_reset(.kind("HARD_DUT_ONLY"));
-      post_apply_reset(.reset_kind("HARD"));
-    end
-    wait(cfg.under_reset == 0);
-    do_reenable = 0;
+
+    // Force a reset if the device is currently locked via sw_regupd
 
     do begin
+      if (do_reset) begin
+        apply_reset(.kind("HARD_DUT_ONLY"));
+        post_apply_reset(.reset_kind("HARD"));
+      end
+      wait(cfg.under_reset == 0);
+      do_reenable = 0;
+
       `DV_CHECK_RANDOMIZE_FATAL(altcfg);
       if (!do_reset) begin
         // Don't change the ht_threshold_scope or window sizes without a reset otherwise the one-way
@@ -595,21 +600,35 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         altcfg.fips_window_size     = cfg.dut_cfg.fips_window_size;
         altcfg.ht_threshold_scope   = cfg.dut_cfg.ht_threshold_scope;
       end
+
+      // Force the DUT to not absorb the new config (to test write protect), unless
+      // the configuration explicitly says to disable before reconfiguring
+      if(!altcfg.preconfig_disable) begin
+        enable_dut();
+      end
+
       entropy_src_init(.newcfg(altcfg),
-                       .do_disable(1'b1),
                        .completed(reconfig_complete),
                        .regwen(regwen));
       if (!reconfig_complete) begin
         // Don't do any more bad MuBi's settings this round.
         `uvm_info(`gfn, "Disabling Bad Mubi settings for now", UVM_MEDIUM)
-         altcfg.bad_mubi_cfg_pct = 0;
+        altcfg.bad_mubi_cfg_pct = 0;
+      end else begin
+        // Capture the current DUT settings in cfg.dut_cfg
+        // This presents the results of the update
+        // to the scoreboard for review.
+        check_reconfig();
       end
-    end while (!reconfig_complete && continue_sim);
+      // Even if the reconfig proceeded without an exception, we try to configure again
+      // after disabling and resetting the device.
+      if (reconfig_complete && regwen) begin
+        altcfg.preconfig_disable_pct = 100;
+        sw_locked = (`gmv(ral.sw_regupd.sw_regupd) == 0);
+        if (sw_locked) do_reset = 1;
+      end
+    end while (!reconfig_complete && !regwen && continue_sim);
     init_successful = 1;
-    // Capture the current DUT settings in cfg.dut_cfg
-    // This presents the results of the update
-    // to the scoreboard for review.
-    check_reconfig();
     if (regwen || do_reset) begin
        cfg.dut_cfg = altcfg;
        `uvm_info(`gfn, "DUT Reconfigured", UVM_LOW)

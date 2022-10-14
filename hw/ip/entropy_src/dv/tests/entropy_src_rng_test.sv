@@ -31,7 +31,8 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.dut_cfg.markov_sigma_min            = 3.0;
     cfg.dut_cfg.markov_sigma_max            = 6.0;
 
-    cfg.dut_cfg.sw_regupd_pct               = 100;
+    cfg.dut_cfg.sw_regupd_pct               = 50;
+    cfg.dut_cfg.preconfig_disable_pct       = 50;
 
     cfg.dut_cfg.entropy_data_reg_enable_pct = 50;
     cfg.dut_cfg.route_software_pct          = 50;

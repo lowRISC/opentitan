@@ -23,6 +23,11 @@ class entropy_src_dut_cfg extends uvm_object;
   // Constraint knob for module_enable field
   uint          module_enable_pct;
 
+  // Knob to control whether the DUT is disabled before initialization.
+  // Not disabling the device will leave many registers in an unconfigurable state.
+  // This is intentional as it prevents many unpredictable behaviors.
+  uint          preconfig_disable_pct;
+
   // Constraint knob for SW-accessible REGWEN-related fields
   uint          me_regwen_pct, sw_regupd_pct;
 
@@ -63,6 +68,7 @@ class entropy_src_dut_cfg extends uvm_object;
   ///////////////////////
 
   rand bit                      sw_regupd, me_regwen;
+  rand bit                      preconfig_disable;
   rand bit [1:0]                rng_bit_sel;
 
   rand prim_mubi_pkg::mubi4_t   module_enable, fips_enable, route_software, type_bypass,
@@ -97,6 +103,10 @@ class entropy_src_dut_cfg extends uvm_object;
   /////////////////
   // Constraints //
   /////////////////
+
+  constraint preconfig_disable_c { preconfig_disable dist {
+      1 :/ preconfig_disable_pct,
+      0 :/ (100 - preconfig_disable_pct) };}
 
   constraint bypass_window_size_c { bypass_window_size dist {
       384 :/ 1 };}
