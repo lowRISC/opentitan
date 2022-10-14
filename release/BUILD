@@ -8,7 +8,7 @@ load("//third_party/github:rules.bzl", "release")
 package(default_visibility = ["//visibility:public"])
 
 pkg_tar(
-    name = "opentitan",
+    name = "earlgrey",
     srcs = [
         "//hw:package",
         "//hw/bitstream/vivado:package",
@@ -23,9 +23,9 @@ pkg_tar(
 )
 
 release(
-    name = "release",
+    name = "earlgrey-release",
     artifacts = {
-        ":opentitan": "Opentitan software and FPGA artifacts",
+        ":earlgrey": "Opentitan Earlgrey software and FPGA artifacts",
     },
     tags = ["manual"],
 )
