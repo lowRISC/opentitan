@@ -736,8 +736,9 @@ proj_to_affine:
  * the field GF(m).
  * For inverse computation Fermat's little theorem is used, i.e.
  * we compute x^-1 = x^(m-2) mod m.
- * For exponentiation we use a standard, variable time (!) square and multiply
- * algorithm.
+ * For exponentiation we use a standard, variable time square and multiply
+ * algorithm. (The timing varies based on the modulus alone, not the input x,
+ * so it is safe to use for a non-secret modulus and a secret operand).
  *
  * @param[in]  w0: x, a 256 bit operand with x < m
  * @param[in]  w29: m, modulus, 2^256 > m > 2^255.
@@ -1143,6 +1144,11 @@ p256_sign:
   la        x16, k1
   li        x2, 1
   bn.lid    x2, 0(x16)
+
+  /* Combine the shares of k for inversion.
+     TODO(#15507): modify inversion to handle k in shares.
+       w0 <= (w0 + w1) mod n = k */
+  bn.addm   w0, w0, w1
 
   /* modular multiplicative inverse of k
      w1 <= k^-1 mod n */
