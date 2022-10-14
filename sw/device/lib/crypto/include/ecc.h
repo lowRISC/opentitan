@@ -107,17 +107,25 @@ typedef struct ecc_curve {
 /**
  * Performs the key generation for ECDSA operation.
  *
- * Computes private key (d) and public key (Q) keys for ECDSA
- * operation.
+ * Computes private key (d) and public key (Q) keys for ECDSA operation.
  *
- * The domain_parameter field of the `elliptic_curve` is required
- * only for a custom curve. For named curves this field is ignored
- * and can be set to NULL.
+ * The caller should allocate and partially populate the blinded key struct,
+ * including populating the key configuration and allocating space for the
+ * keyblob. The caller should indicate the length of the allocated keyblob;
+ * this function will return an error if the keyblob length does not match
+ * expectations. For hardware-backed keys, the keyblob length is 0 and the
+ * keyblob pointer may be `NULL`. For non-hardware-backed keys, the keyblob
+ * should be twice the length of the key. The value in the `checksum` field of
+ * the blinded key struct will be populated by the key generation function.
  *
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @param private_key Pointer to the blinded private key (d) struct
- * @param public_key Pointer to the unblinded public key (Q) struct
- * @return Result of the ECDSA key generation
+ * The `domain_parameter` field of the `elliptic_curve` is required only for a
+ * custom curve. For named curves this field is ignored and can be set to
+ * `NULL`.
+ *
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @param[out] private_key Pointer to the blinded private key (d) struct.
+ * @param[out] public_key Pointer to the unblinded public key (Q) struct.
+ * @return Result of the ECDSA key generation.
  */
 crypto_status_t otcrypto_ecdsa_keygen(ecc_curve_t *elliptic_curve,
                                       crypto_blinded_key_t *private_key,
@@ -126,15 +134,15 @@ crypto_status_t otcrypto_ecdsa_keygen(ecc_curve_t *elliptic_curve,
 /**
  * Performs the ECDSA digital signature generation.
  *
- * The domain_parameter field of the `elliptic_curve` is required
+ * The `domain_parameter` field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
- * and can be set to NULL.
+ * and can be set to `NULL`.
  *
- * @param private_key Pointer to the blinded private key (d) struct
- * @param input_message Input message to be signed
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @param signature Pointer to the signature struct with (r,s) values
- * @return Result of the ECDSA signature generation
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param input_message Input message to be signed.
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of the ECDSA signature generation.
  */
 crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
                                     crypto_const_uint8_buf_t input_message,
@@ -148,15 +156,15 @@ crypto_status_t otcrypto_ecdsa_sign(const crypto_blinded_key_t *private_key,
  * signature generation is deterministically generated from the
  * private key and the input message. Refer to RFC6979 for details.
  *
- * The domain_parameter field of the `elliptic_curve` is required
+ * The `domain_parameter` field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
- * and can be set to NULL.
+ * and can be set to `NULL`.
  *
- * @param private_key Pointer to the blinded private key (d) struct
- * @param input_message Input message to be signed
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @param signature Pointer to the signature struct with (r,s) values
- * @return Result of the deterministic ECDSA signature
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param input_message Input message to be signed.
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of the deterministic ECDSA signature.
  * generation
  */
 crypto_status_t otcrypto_deterministic_ecdsa_sign(
@@ -167,16 +175,17 @@ crypto_status_t otcrypto_deterministic_ecdsa_sign(
 /**
  * Performs the ECDSA digital signature verification.
  *
- * The domain_parameter field of the `elliptic_curve` is required
+ * The `domain_parameter` field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
- * and can be set to NULL.
+ * and can be set to `NULL`.
  *
- * @param public_key Pointer to the unblinded public key (Q) struct
- * @param input_message Input message to be signed for verification
- * @param signature Pointer to the signature to be verified
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @param verification_result Result of verification (Pass/Fail)
- * @return Result of the ECDSA verification operation
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param input_message Input message to be signed for verification.
+ * @param signature Pointer to the signature to be verified.
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @param[out] verification_result Result of signature verification
+ * (Pass/Fail).
+ * @return Result of the ECDSA verification operation.
  */
 crypto_status_t otcrypto_ecdsa_verify(
     const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
@@ -186,17 +195,25 @@ crypto_status_t otcrypto_ecdsa_verify(
 /**
  * Performs the key generation for ECDH key agreement.
  *
- * Computes private key (d) and public key (Q) keys for ECDSA
- * operation.
+ * Computes private key (d) and public key (Q) keys for ECDSA operation.
  *
- * The domain_parameter field of the `elliptic_curve` is required
- * only for a custom curve. For named curves this field is ignored
- * and can be set to NULL.
+ * The `domain_parameter` field of the `elliptic_curve` is required only for a
+ * custom curve. For named curves this field is ignored and can be set to
+ * `NULL`.
  *
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @param private_key Pointer to the blinded private key (d) struct
- * @param public_key Pointer to the unblinded public key (Q) struct
- * @return Result of the ECDH key generation
+ * The caller should allocate and partially populate the blinded key struct,
+ * including populating the key configuration and allocating space for the
+ * keyblob. The caller should indicate the length of the allocated keyblob;
+ * this function will return an error if the keyblob length does not match
+ * expectations. For hardware-backed keys, the keyblob length is 0 and the
+ * keyblob pointer may be `NULL`. For non-hardware-backed keys, the keyblob
+ * should be twice the length of the key. The value in the `checksum` field of
+ * the blinded key struct will be populated by the key generation function.
+ *
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @param[out] private_key Pointer to the blinded private key (d) struct.
+ * @param[out] public_key Pointer to the unblinded public key (Q) struct.
+ * @return Result of the ECDH key generation.
  */
 crypto_status_t otcrypto_ecdh_keygen(ecc_curve_t *elliptic_curve,
                                      crypto_blinded_key_t *private_key,
@@ -205,15 +222,15 @@ crypto_status_t otcrypto_ecdh_keygen(ecc_curve_t *elliptic_curve,
 /**
  * Performs Elliptic Curve Diffie Hellman shared secret generation.
  *
- * The domain_parameter field of the `elliptic_curve` is required
+ * The `domain_parameter` field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
- * and can be set to NULL.
+ * and can be set to `NULL`.
  *
- * @param private_key Pointer to the blinded private key (d) struct
- * @param public_key Pointer to the unblinded public key (Q) struct
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @param shared_secret Pointer to generated blinded shared key struct
- * @return Result of ECDH shared secret generation
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @param[out] shared_secret Pointer to generated blinded shared key struct.
+ * @return Result of ECDH shared secret generation.
  */
 crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
                               const ecc_public_key_t *public_key,
@@ -226,11 +243,20 @@ crypto_status_t otcrypto_ecdh(const crypto_blinded_key_t *private_key,
  * Computes the private exponent (d) and public key (Q) based on
  * Curve25519.
  *
- * No domain_parameter is needed and is automatically set for Ed25519.
+ * No `domain_parameter` is needed and is automatically set for Ed25519.
  *
- * @param private_key Pointer to the blinded private key struct
- * @param public_key Pointer to the unblinded public key struct
- * @return Result of the Ed25519 key generation
+ * The caller should allocate and partially populate the blinded key struct,
+ * including populating the key configuration and allocating space for the
+ * keyblob. The caller should indicate the length of the allocated keyblob;
+ * this function will return an error if the keyblob length does not match
+ * expectations. For hardware-backed keys, the keyblob length is 0 and the
+ * keyblob pointer may be `NULL`. For non-hardware-backed keys, the keyblob
+ * should be twice the length of the key. The value in the `checksum` field of
+ * the blinded key struct will be populated by the key generation function.
+ *
+ * @param[out] private_key Pointer to the blinded private key struct.
+ * @param[out] public_key Pointer to the unblinded public key struct.
+ * @return Result of the Ed25519 key generation.
  */
 crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
                                         crypto_unblinded_key_t *public_key);
@@ -238,11 +264,11 @@ crypto_status_t otcrypto_ed25519_keygen(crypto_blinded_key_t *private_key,
 /**
  * Generates an Ed25519 digital signature.
  *
- * @param private_key Pointer to the blinded private key struct
- * @param input_message Input message to be signed
- * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
- * @param signature Pointer to the EdDSA signature with (r,s) values
- * @return Result of the EdDSA signature generation
+ * @param private_key Pointer to the blinded private key struct.
+ * @param input_message Input message to be signed.
+ * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode.
+ * @param[out] signature Pointer to the EdDSA signature with (r,s) values.
+ * @return Result of the EdDSA signature generation.
  */
 crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
                                       crypto_const_uint8_buf_t input_message,
@@ -252,13 +278,13 @@ crypto_status_t otcrypto_ed25519_sign(const crypto_blinded_key_t *private_key,
 /**
  * Verifies an Ed25519 signature.
  *
- * @param public_key Pointer to the unblinded public key struct
- * @param input_message Input message to be signed for verification
- * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
- * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature
- * verification (Pass/Fail)
- * @return Result of the EdDSA verification operation
+ * @param public_key Pointer to the unblinded public key struct.
+ * @param input_message Input message to be signed for verification.
+ * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode.
+ * @param signature Pointer to the signature to be verified.
+ * @param[out] verification_result Result of signature verification
+ * (Pass/Fail).
+ * @return Result of the EdDSA verification operation.
  */
 crypto_status_t otcrypto_ed25519_verify(
     const crypto_unblinded_key_t *public_key,
@@ -271,11 +297,20 @@ crypto_status_t otcrypto_ed25519_verify(
  * Computes the private scalar (d) and public key (Q) based on
  * Curve25519.
  *
- * No domain_parameter is needed and is automatically set for X25519.
+ * No `domain_parameter` is needed and is automatically set for X25519.
  *
- * @param private_key Pointer to the blinded private key struct
- * @param public_key Pointer to the unblinded public key struct
- * @return Result of the X25519 key generation
+ * The caller should allocate and partially populate the blinded key struct,
+ * including populating the key configuration and allocating space for the
+ * keyblob. The caller should indicate the length of the allocated keyblob;
+ * this function will return an error if the keyblob length does not match
+ * expectations. For hardware-backed keys, the keyblob length is 0 and the
+ * keyblob pointer may be `NULL`. For non-hardware-backed keys, the keyblob
+ * should be twice the length of the key. The value in the `checksum` field of
+ * the blinded key struct will be populated by the key generation function.
+ *
+ * @param[out] private_key Pointer to the blinded private key struct.
+ * @param[out] public_key Pointer to the unblinded public key struct.
+ * @return Result of the X25519 key generation.
  */
 crypto_status_t otcrypto_x25519_keygen(crypto_blinded_key_t *private_key,
                                        crypto_unblinded_key_t *public_key);
@@ -283,10 +318,10 @@ crypto_status_t otcrypto_x25519_keygen(crypto_blinded_key_t *private_key,
 /**
  * Performs the X25519 Diffie Hellman shared secret generation.
  *
- * @param private_key Pointer to blinded private key (u-coordinate)
- * @param public_key Pointer to the public scalar from the sender
- * @param shared_secret Pointer to shared secret key (u-coordinate)
- * @return Result of the X25519 operation
+ * @param private_key Pointer to blinded private key (u-coordinate).
+ * @param public_key Pointer to the public scalar from the sender.
+ * @param[out] shared_secret Pointer to shared secret key (u-coordinate).
+ * @return Result of the X25519 operation.
  */
 crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
                                 const crypto_unblinded_key_t *public_key,
@@ -298,17 +333,16 @@ crypto_status_t otcrypto_x25519(const crypto_blinded_key_t *private_key,
  * Initializes OTBN and starts the OTBN routine to compute the private
  * key (d) and public key (Q) for ECDSA operation.
  *
- * The domain_parameter field of the `elliptic_curve` is required
+ * The `domain_parameter` field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
- * and can be set to NULL.
+ * and can be set to `NULL`.
  *
  * Returns `kCryptoStatusOK` if the operation was successfully
  * started, or`kCryptoStatusInternalError` if the operation cannot be
  * started.
  *
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return Result of asynchronous ECDSA keygen start
- * operation.
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @return Result of asynchronous ECDSA keygen start operation.
  */
 crypto_status_t otcrypto_ecdsa_keygen_async_start(ecc_curve_t *elliptic_curve);
 
@@ -320,10 +354,9 @@ crypto_status_t otcrypto_ecdsa_keygen_async_start(ecc_curve_t *elliptic_curve);
  * `kCryptoStatusAsyncIncomplete` if the OTBN is busy or
  * `kCryptoStatusInternalError` if there is an error.
  *
- * @param private_key Pointer to the blinded private key (d) struct
- * @param public_key Pointer to the unblinded public key (Q) struct
- * @return Result of asynchronous ECDSA keygen
- * finalize operation
+ * @param[out] private_key Pointer to the blinded private key (d) struct.
+ * @param[out] public_key Pointer to the unblinded public key (Q) struct.
+ * @return Result of asynchronous ECDSA keygen finalize operation.
  */
 crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
     crypto_blinded_key_t *private_key, ecc_public_key_t *public_key);
@@ -332,14 +365,14 @@ crypto_status_t otcrypto_ecdsa_keygen_async_finalize(
  * Starts the asynchronous ECDSA digital signature generation.
  *
  * Initializes OTBN and starts the OTBN routine to compute the digital
- * signature on the input message. The domain_parameter field of the
+ * signature on the input message. The `domain_parameter` field of the
  * `elliptic_curve` is required only for a custom curve. For named
- * curves this field is ignored and can be set to NULL.
+ * curves this field is ignored and can be set to `NULL`.
  *
- * @param private_key Pointer to the blinded private key (d) struct
- * @param input_message Input message to be signed
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return Result of async ECDSA start operation
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param input_message Input message to be signed.
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @return Result of async ECDSA start operation.
  */
 crypto_status_t otcrypto_ecdsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
@@ -352,8 +385,8 @@ crypto_status_t otcrypto_ecdsa_sign_async_start(
  * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN is
  * busy or `kCryptoStatusInternalError` if there is an error.
  *
- * @param signature Pointer to the signature struct with (r,s) values
- * @return Result of async ECDSA finalize operation
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of async ECDSA finalize operation.
  */
 crypto_status_t otcrypto_ecdsa_sign_async_finalize(ecc_signature_t *signature);
 
@@ -361,14 +394,14 @@ crypto_status_t otcrypto_ecdsa_sign_async_finalize(ecc_signature_t *signature);
  * Starts the asynchronous deterministic ECDSA digital signature generation.
  *
  * Initializes OTBN and starts the OTBN routine to compute the digital
- * signature on the input message. The domain_parameter field of the
+ * signature on the input message. The `domain_parameter` field of the
  * `elliptic_curve` is required only for a custom curve. For named
- * curves this field is ignored and can be set to NULL.
+ * curves this field is ignored and can be set to `NULL`.
  *
- * @param private_key Pointer to the blinded private key (d) struct
- * @param input_message Input message to be signed
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return Result of async ECDSA start operation
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param input_message Input message to be signed.
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @return Result of async ECDSA start operation.
  */
 crypto_status_t otcrypto_deterministic_ecdsa_sign_async_start(
     const crypto_blinded_key_t *private_key,
@@ -385,9 +418,8 @@ crypto_status_t otcrypto_deterministic_ecdsa_sign_async_start(
  * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN is
  * busy or `kCryptoStatusInternalError` if there is an error.
  *
- * @param signature Pointer to the signature struct with (r,s) values
- * @return Result of async deterministic ECDSA finalize
- * operation
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of async deterministic ECDSA finalize operation.
  */
 crypto_status_t otcrypto_ecdsa_deterministic_sign_async_finalize(
     ecc_signature_t *signature);
@@ -396,15 +428,15 @@ crypto_status_t otcrypto_ecdsa_deterministic_sign_async_finalize(
  * Starts the asynchronous ECDSA digital signature verification.
  *
  * Initializes OTBN and starts the OTBN routine to recover ‘r’ value
- * from the input signature ‘s’ value. The domain_parameter field of
+ * from the input signature ‘s’ value. The `domain_parameter` field of
  * `elliptic_curve` is required only for a custom curve. For named
- * curves this field is ignored and can be set to NULL.
+ * curves this field is ignored and can be set to `NULL`.
  *
- * @param public_key Pointer to the unblinded public key (Q) struct
- * @param input_message Input message to be signed for verification
- * @param signature Pointer to the signature to be verified
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return Result of async ECDSA verify start function
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param input_message Input message to be signed for verification.
+ * @param signature Pointer to the signature to be verified.
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @return Result of async ECDSA verify start function.
  */
 crypto_status_t otcrypto_ecdsa_verify_async_start(
     const ecc_public_key_t *public_key, crypto_const_uint8_buf_t input_message,
@@ -419,9 +451,9 @@ crypto_status_t otcrypto_ecdsa_verify_async_start(
  * The computed signature is compared against the input signature
  * and a PASS or FAIL is returned.
  *
- * @param verification_result Returns the result of verification
- * @return Result of async ECDSA verify finalize
- * operation
+ * @param[out] verification_result Result of signature verification
+ * (Pass/Fail).
+ * @return Result of async ECDSA verify finalize operation.
  */
 crypto_status_t otcrypto_ecdsa_verify_async_finalize(
     verification_status_t *verification_result);
@@ -432,17 +464,16 @@ crypto_status_t otcrypto_ecdsa_verify_async_finalize(
  * Initializes OTBN and starts the OTBN routine to compute the private
  * key (d) and public key (Q) for ECDH operation.
  *
- * The domain_parameter field of the `elliptic_curve` is required
+ * The `domain_parameter` field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
- * and can be set to NULL.
+ * and can be set to `NULL`.
  *
  * Returns `kCryptoStatusOK` if the operation was successfully
  * started, or`kCryptoStatusInternalError` if the operation cannot be
  * started.
  *
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return Result of asynchronous ECDH keygen start
- * operation.
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @return Result of asynchronous ECDH keygen start operation.
  */
 crypto_status_t otcrypto_ecdh_keygen_async_start(ecc_curve_t *elliptic_curve);
 
@@ -454,10 +485,9 @@ crypto_status_t otcrypto_ecdh_keygen_async_start(ecc_curve_t *elliptic_curve);
  * `kCryptoStatusAsyncIncomplete` if the OTBN is busy or
  * `kCryptoStatusInternalError` if there is an error.
  *
- * @param private_key Pointer to the blinded private key (d) struct
- * @param public_key Pointer to the unblinded public key (Q) struct
- * @return Result of asynchronous ECDH keygen
- * finalize operation
+ * @param[out] private_key Pointer to the blinded private key (d) struct.
+ * @param[out] public_key Pointer to the unblinded public key (Q) struct.
+ * @return Result of asynchronous ECDH keygen finalize operation.
  */
 crypto_status_t otcrypto_ecdh_keygen_async_finalize(
     crypto_blinded_key_t *private_key, ecc_public_key_t *public_key);
@@ -466,14 +496,14 @@ crypto_status_t otcrypto_ecdh_keygen_async_finalize(
  * Starts the asynchronous Elliptic Curve Diffie Hellman shared
  * secret generation.
  *
- * The domain_parameter field of the `elliptic_curve` is required
+ * The `domain_parameter` field of the `elliptic_curve` is required
  * only for a custom curve. For named curves this field is ignored
- * and can be set to NULL.
+ * and can be set to `NULL`.
  *
- * @param private_key Pointer to the blinded private key (d) struct
- * @param public_key Pointer to the unblinded public key (Q) struct
- * @param elliptic_curve Pointer to the elliptic curve to be used
- * @return Result of async ECDH start operation
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param elliptic_curve Pointer to the elliptic curve to be used.
+ * @return Result of async ECDH start operation.
  */
 crypto_status_t otcrypto_ecdh_async_start(
     const crypto_blinded_key_t *private_key, const ecc_public_key_t *public_key,
@@ -487,8 +517,8 @@ crypto_status_t otcrypto_ecdh_async_start(
  * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN
  * is busy or `kCryptoStatusInternalError` if there is an error.
  *
- * @param shared_secret Pointer to generated blinded shared key struct
- * @return Result of async ECDH finalize operation
+ * @param[out] shared_secret Pointer to generated blinded shared key struct.
+ * @return Result of async ECDH finalize operation.
  */
 crypto_status_t otcrypto_ecdh_async_finalize(
     crypto_blinded_key_t *shared_secret);
@@ -499,10 +529,9 @@ crypto_status_t otcrypto_ecdh_async_finalize(
  * Initializes OTBN and starts the OTBN routine to compute the private
  * exponent (d) and public key (Q) based on Curve25519.
  *
- * No domain_parameter is needed and is automatically set for X25519.
+ * No `domain_parameter` is needed and is automatically set for X25519.
  *
- * @return Result of asynchronous ed25519 keygen start
- * operation.
+ * @return Result of asynchronous ed25519 keygen start operation.
  */
 crypto_status_t otcrypto_ed25519_keygen_async_start();
 
@@ -514,10 +543,9 @@ crypto_status_t otcrypto_ed25519_keygen_async_start();
  * if the OTBN is busy or `kCryptoStatusInternalError` if there is an
  * error.
  *
- * @param private_key Pointer to the blinded private key struct
- * @param public_key Pointer to the unblinded public key struct
- * @return Result of asynchronous ed25519 keygen
- * finalize operation.
+ * @param[out] private_key Pointer to the blinded private key struct.
+ * @param[out] public_key Pointer to the unblinded public key struct.
+ * @return Result of asynchronous ed25519 keygen finalize operation.
  */
 crypto_status_t otcrypto_ed25519_keygen_async_finalize(
     crypto_blinded_key_t *private_key, crypto_unblinded_key_t *public_key);
@@ -526,14 +554,14 @@ crypto_status_t otcrypto_ed25519_keygen_async_finalize(
  * Starts the asynchronous Ed25519 digital signature generation.
  *
  * Initializes OTBN and starts the OTBN routine to compute the digital
- * signature on the input message. The domain_parameter field for
+ * signature on the input message. The `domain_parameter` field for
  * Ed25519 is automatically set.
  *
- * @param private_key Pointer to the blinded private key struct
- * @param input_message Input message to be signed
- * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
- * @param signature Pointer to the EdDSA signature to get (r) value
- * @return Result of async Ed25519 start operation
+ * @param private_key Pointer to the blinded private key struct.
+ * @param input_message Input message to be signed.
+ * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode.
+ * @param[out] signature Pointer to the EdDSA signature to get (r) value.
+ * @return Result of async Ed25519 start operation.
  */
 crypto_status_t otcrypto_ed25519_sign_async_start(
     const crypto_blinded_key_t *private_key,
@@ -547,8 +575,8 @@ crypto_status_t otcrypto_ed25519_sign_async_start(
  * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN is
  * busy or `kCryptoStatusInternalError` if there is an error.
  *
- * @param signature Pointer to the EdDSA signature to get (s) value
- * @return Result of async Ed25519 finalize operation
+ * @param[out] signature Pointer to the EdDSA signature to get (s) value.
+ * @return Result of async Ed25519 finalize operation.
  */
 crypto_status_t otcrypto_ed25519_sign_async_finalize(
     ecc_signature_t *signature);
@@ -557,16 +585,13 @@ crypto_status_t otcrypto_ed25519_sign_async_finalize(
  * Starts the asynchronous Ed25519 digital signature verification.
  *
  * Initializes OTBN and starts the OTBN routine to verify the
- * signature. The domain_parameter for Ed25519 is set automatically.
+ * signature. The `domain_parameter` for Ed25519 is set automatically.
  *
- * @param public_key Pointer to the unblinded public key struct
- * @param input_message Input message to be signed for verification
- * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode
- * @param signature Pointer to the signature to be verified
- * @param verification_result Returns the result of signature
- * verification (Pass/Fail)
- * @return Result of async Ed25519 verification start
- * function
+ * @param public_key Pointer to the unblinded public key struct.
+ * @param input_message Input message to be signed for verification.
+ * @param sign_mode Parameter for EdDSA or Hash EdDSA sign mode.
+ * @param signature Pointer to the signature to be verified.
+ * @return Result of async Ed25519 verification start operation.
  */
 crypto_status_t otcrypto_ed25519_verify_async_start(
     const crypto_unblinded_key_t *public_key,
@@ -581,9 +606,9 @@ crypto_status_t otcrypto_ed25519_verify_async_start(
  * `kCryptoStatusAsyncIncomplete` if the OTBN is busy or
  * `kCryptoStatusInternalError` if there is an error.
  *
- * @param verification_result Returns the result of verification
- * @return Result of async Ed25519 verification
- * finalize function
+ * @param[out] verification_result Result of signature verification
+ * (Pass/Fail).
+ * @return Result of async Ed25519 verification finalize operation.
  */
 crypto_status_t otcrypto_ed25519_verify_async_finalize(
     verification_status_t *verification_result);
@@ -594,10 +619,9 @@ crypto_status_t otcrypto_ed25519_verify_async_finalize(
  * Initializes OTBN and starts the OTBN routine to compute the private
  * exponent (d) and public key (Q) based on Curve25519.
  *
- * No domain_parameter is needed and is automatically set for X25519.
+ * No `domain_parameter` is needed and is automatically set for X25519.
  *
- * @return Result of asynchronous X25519 keygen start
- * operation.
+ * @return Result of asynchronous X25519 keygen start operation.
  */
 crypto_status_t otcrypto_x25519_keygen_async_start();
 
@@ -609,10 +633,9 @@ crypto_status_t otcrypto_x25519_keygen_async_start();
  * if the OTBN is busy or `kCryptoStatusInternalError` if there is an
  * error.
  *
- * @param private_key Pointer to the blinded private key struct
- * @param public_key Pointer to the unblinded public key struct
- * @return Result of asynchronous X25519 keygen
- * finalize operation.
+ * @param[out] private_key Pointer to the blinded private key struct.
+ * @param[out] public_key Pointer to the unblinded public key struct.
+ * @return Result of asynchronous X25519 keygen finalize operation.
  */
 crypto_status_t otcrypto_x25519_keygen_async_finalize(
     crypto_blinded_key_t *private_key, crypto_unblinded_key_t *public_key);
@@ -625,10 +648,9 @@ crypto_status_t otcrypto_x25519_keygen_async_finalize(
  * Hellman shared secret generation based on Curve25519. The
  * domain parameter is automatically set for X25519 API.
  *
- * @param private_key Pointer to the blinded private key
- * (u-coordinate)
- * @param public_key Pointer to the public scalar from the sender
- * @return Result of the async X25519 start operation
+ * @param private_key Pointer to the blinded private key (u-coordinate).
+ * @param public_key Pointer to the public scalar from the sender.
+ * @return Result of the async X25519 start operation.
  */
 crypto_status_t otcrypto_x25519_async_start(
     const crypto_blinded_key_t *private_key,
@@ -642,8 +664,8 @@ crypto_status_t otcrypto_x25519_async_start(
  * status is done, or `kCryptoStatusAsyncIncomplete` if the OTBN
  * is busy or `kCryptoStatusInternalError` if there is an error.
  *
- * @param shared_secret Pointer to shared secret key (u-coordinate)
- * @return Result of async X25519 finalize operation
+ * @param[out] shared_secret Pointer to shared secret key (u-coordinate).
+ * @return Result of async X25519 finalize operation.
  */
 crypto_status_t otcrypto_x25519_async_finalize(
     crypto_blinded_key_t *shared_secret);

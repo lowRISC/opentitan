@@ -82,10 +82,23 @@ typedef struct rsa_public_key {
  * Computes RSA private key (d) and RSA public key exponent (e) and
  * modulus (n).
  *
- * @param required_key_len Requested key length
- * @param rsa_public_key Pointer to RSA public exponent struct
- * @param rsa_private_key Pointer to RSA private exponent struct
- * @return Result of the RSA key generation
+ * The caller should allocate and partially populate all blinded and unblinded
+ * key structs underneath `rsa_private_key` and `rsa_public_key`. For unblinded
+ * keys, this means setting the key mode, allocating a buffer for the key
+ * material, and recording the length of the allocated buffer in `key_length`.
+ * If the buffer size does not match expectations, this function will return an
+ * error.  For blinded key structs, the caller should fully populate the key
+ * configuration and allocate space for the keyblob. As for unblinded keys, the
+ * caller should record the allocated buffer length and this function will
+ * return an error if the keyblob length does not match expectations. The
+ * keyblob should be twice the length of the key. The value in the `checksum`
+ * field of the blinded key struct will be populated by the key generation
+ * function.
+ *
+ * @param required_key_len Requested key length.
+ * @param[out] rsa_public_key Pointer to RSA public exponent struct.
+ * @param[out] rsa_private_key Pointer to RSA private exponent struct.
+ * @return Result of the RSA key generation.
  */
 crypto_status_t otcrypto_rsa_keygen(rsa_key_size_t required_key_len,
                                     rsa_public_key_t *rsa_public_key,
@@ -100,12 +113,12 @@ crypto_status_t otcrypto_rsa_keygen(rsa_key_size_t required_key_len,
  * `signature`. If the user-set length and the output length does not
  * match, an error message will be returned.
  *
- * @param rsa_private_key Pointer to RSA private exponent struct
- * @param input_message Input message to be signed
- * @param padding_mode Padding scheme to be used for the data
- * @param hash_mode Hashing scheme to be used for the signature scheme
- * @param signature Pointer to generated signature struct
- * @return The result of the RSA sign generation
+ * @param rsa_private_key Pointer to RSA private exponent struct.
+ * @param input_message Input message to be signed.
+ * @param padding_mode Padding scheme to be used for the data.
+ * @param hash_mode Hashing scheme to be used for the signature scheme.
+ * @param[out] signature Pointer to generated signature struct.
+ * @return The result of the RSA sign generation.
  */
 crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
                                   crypto_const_uint8_buf_t input_message,
@@ -119,14 +132,14 @@ crypto_status_t otcrypto_rsa_sign(const rsa_private_key_t *rsa_private_key,
  * The generated signature is compared against the input signature and
  * PASS / FAIL is returned.
  *
- * @param rsa_public_key Pointer to RSA public exponent struct
- * @param input_message Input message to be signed for verification
- * @param padding_mode Padding scheme to be used for the data
- * @param hash_mode Hashing scheme to be used for the signature scheme
- * @param signature Pointer to the input signature to be verified
- * @param verification_result Returns the result of signature
- * verification (Pass/Fail)
- * @return The status of the RSA verify operation
+ * @param rsa_public_key Pointer to RSA public exponent struct.
+ * @param input_message Input message to be signed for verification.
+ * @param padding_mode Padding scheme to be used for the data.
+ * @param hash_mode Hashing scheme to be used for the signature scheme.
+ * @param signature Pointer to the input signature to be verified.
+ * @param[out] verification_result Result of signature verification
+ * (Pass/Fail).
+ * @return Result of the RSA verify operation.
  */
 crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
                                     crypto_const_uint8_buf_t input_message,
@@ -145,8 +158,8 @@ crypto_status_t otcrypto_rsa_verify(const rsa_public_key_t *rsa_public_key,
  * started, or`kCryptoStatusInternalError` if the operation cannot be
  * started.
  *
- * @param required_key_len Requested key length
- * @return Result of async RSA keygen start operation
+ * @param required_key_len Requested key length.
+ * @return Result of async RSA keygen start operation.
  */
 crypto_status_t otcrypto_rsa_keygen_async_start(
     rsa_key_size_t required_key_len);
@@ -159,10 +172,9 @@ crypto_status_t otcrypto_rsa_keygen_async_start(
  * or `kCryptoStatusAsyncIncomplete` if the OTBN is busy or
  * `kCryptoStatusInternalError` if there is an error.
  *
- * @param rsa_public_key Pointer to RSA public exponent struct
- * @param rsa_private_key Pointer to RSA private exponent struct
- * @return Result of asynchronous RSA keygen finalize
- * operation
+ * @param[out] rsa_public_key Pointer to RSA public exponent struct.
+ * @param[out] rsa_private_key Pointer to RSA private exponent struct.
+ * @return Result of asynchronous RSA keygen finalize operation.
  */
 crypto_status_t otcrypto_rsa_keygen_async_finalize(
     rsa_public_key_t *rsa_public_key, rsa_private_key_t *rsa_private_key);
@@ -177,11 +189,11 @@ crypto_status_t otcrypto_rsa_keygen_async_finalize(
  * started, or`kCryptoStatusInternalError` if the operation cannot be
  * started.
  *
- * @param rsa_private_key Pointer to RSA private exponent struct
- * @param input_message Input message to be signed
- * @param padding_mode Padding scheme to be used for the data
- * @param hash_mode Hashing scheme to be used for the signature scheme
- * @return Result of async RSA sign start operation
+ * @param rsa_private_key Pointer to RSA private exponent struct.
+ * @param input_message Input message to be signed.
+ * @param padding_mode Padding scheme to be used for the data.
+ * @param hash_mode Hashing scheme to be used for the signature scheme.
+ * @return Result of async RSA sign start operation.
  */
 crypto_status_t otcrypto_rsa_sign_async_start(
     const rsa_private_key_t *rsa_private_key,
@@ -201,8 +213,8 @@ crypto_status_t otcrypto_rsa_sign_async_start(
  * `signature`. If the user-set length and the output length does not
  * match, an error message will be returned.
  *
- * @param signature Pointer to generated signature struct
- * @return Result of async RSA sign finalize operation
+ * @param[out] signature Pointer to generated signature struct.
+ * @return Result of async RSA sign finalize operation.
  */
 crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_uint8_buf_t *signature);
 
@@ -212,9 +224,9 @@ crypto_status_t otcrypto_rsa_sign_async_finalize(crypto_uint8_buf_t *signature);
  * Initializes OTBN and starts the OTBN routine to recover the message
  * from the input signature.
  *
- * @param rsa_public_key Pointer to RSA public exponent struct
- * @param signature Pointer to the input signature to be verified
- * @return Result of async RSA verify start operation
+ * @param rsa_public_key Pointer to RSA public exponent struct.
+ * @param signature Pointer to the input signature to be verified.
+ * @return Result of async RSA verify start operation.
  */
 crypto_status_t otcrypto_rsa_verify_async_start(
     const rsa_public_key_t *rsa_public_key, crypto_const_uint8_buf_t signature);
@@ -228,12 +240,12 @@ crypto_status_t otcrypto_rsa_verify_async_start(
  * The (hash of) recovered message is compared against the input
  * message and a PASS or FAIL is returned.
  *
- * @param input_message Input message to be signed for verification
- * @param padding_mode Padding scheme to be used for the data
- * @param hash_mode Hashing scheme to be used for the signature scheme
- * @param verification_result Returns the result of verification
- * @return Result of async RSA verify finalize
- * operation
+ * @param input_message Input message to be signed for verification.
+ * @param padding_mode Padding scheme to be used for the data.
+ * @param hash_mode Hashing scheme to be used for the signature scheme.
+ * @param[out] verification_result Result of signature verification
+ * (Pass/Fail).
+ * @return Result of async RSA verify finalize operation.
  */
 crypto_status_t otcrypto_rsa_verify_async_finalize(
     crypto_const_uint8_buf_t input_message, rsa_padding_t padding_mode,
