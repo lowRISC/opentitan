@@ -446,6 +446,8 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
 
           sram_fifos[index].get(rcv_item);
           seed_valid = rcv_item.d_data[0];
+          nonce      = rcv_item.d_data[1+:SramNonceWidth];
+          key        = rcv_item.d_data[SramNonceWidth+1+:SramKeyWidth];
           part_locked = {`gmv(ral.secret1_digest[0]), `gmv(ral.secret1_digest[1])} != '0;
 
           // seed is valid as long as secret1 is locked
