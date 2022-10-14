@@ -54,9 +54,10 @@ TL host interface into SPI Device.
 
 ### SPI Device agent
 [spi agent]({{< relref "hw/dv/sv/spi_agent/doc" >}}) is used to drive and monitor SPI items.
-Following special behavior is supported in spi_host_driver
-* Toggle clock when SPI is in idle state (csb=1)
-* During data transfer, there may be very long delay between each bit or byte of data
+There are 2 spi_agents in the testbench to serve as a SPI host and a SPI device.
+* The host agent is connected to the upstream port to drive stimulus for FW mode, TPM mode and flash mode.
+* The device agent is connected to the passthrough port.
+When host sends a flash transaction with passthrough enabled, the device agent receives it and provides the return data when it's a read command.
 
 ### UVM RAL Model
 The SPI Device RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
@@ -81,7 +82,8 @@ Some of the most commonly used tasks / functions are as follows:
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The following covergroups have been developed to prove that the test intent has been adequately met:
 * common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
-* TODO, add more
+* Other spi_device covergroups are defined the `spi_device_env_cov` class, which thoroughly covers all design features.
+Refer to the testplan covergroups sections for the detail descriptions.
 
 ### Self-checking strategy
 #### Scoreboard
