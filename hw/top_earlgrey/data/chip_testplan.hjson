@@ -47,7 +47,9 @@
             on all UART ports across the instances.
             '''
       stage: V1
-      tests: ["chip_sw_uart_tx_rx", "chip_sw_uart_tx_rx_idx1", "chip_sw_uart_tx_rx_idx2",
+      tests: ["chip_sw_uart_tx_rx",
+              "chip_sw_uart_tx_rx_idx1",
+              "chip_sw_uart_tx_rx_idx2",
               "chip_sw_uart_tx_rx_idx3"]
     }
     {
@@ -365,11 +367,49 @@
       name: chip_sw_pin_mux
       desc: '''Verify the MIO muxing at input and output sides.
 
-            SW programs MIO INSEL and OUTSEL CSRs to connect and verify each muxed source. At the
-            moment, GPIOs are the only mux inputs.
+            Check that muxed peripherals are correctly connected to the pinmux
+            and that their IOs can be mapped to arbitrary muxed pads at
+            runtime.
+
+            Since each test exercising a muxed peripheral needs to set up the
+            pinmux, this testpoint is covered by cross referencing individual
+            tests of all peripherals that are connected to the pinmux
+            matrix.
             '''
       stage: V2
-      tests: []
+      tests: [
+        // GPIO
+        "chip_sw_gpio",
+        // UART0-4
+        "chip_sw_uart_tx_rx",
+        "chip_sw_uart_tx_rx_idx1",
+        "chip_sw_uart_tx_rx_idx2",
+        "chip_sw_uart_tx_rx_idx3"
+        // I2C0 - I2C2
+        // TODO(#15483): enable support for multi instance
+        // TODO(#14111): add chip_sw_i2c_device_tx_rx once implemented
+        "chip_sw_i2c_host_tx_rx",
+        // SPI_HOST1
+        // TODO(#15483): enable support for multi instance
+        "chip_sw_spi_host_tx_rx",
+        // pattgen
+        "chip_sw_pattgen_ios",
+        // PWM
+        "chip_sw_sleep_pwm_pulses",
+        // sysrst_ctrl
+        // TODO(#14115): add chip_sw_sysrst_ctrl_in_irq once implemented
+        "chip_sw_pwrmgr_sysrst_ctrl_reset",
+        "chip_sw_sysrst_ctrl_inputs",
+        "chip_sw_sysrst_ctrl_outputs",
+        "chip_sw_sysrst_ctrl_reset",
+        "chip_sw_sysrst_ctrl_ec_rst_l",
+        // more complext test involving SW straps
+        "chip_sw_uart_tx_rx_bootstrap"
+        // Will be tested as part of foundry testing:
+        // - flash_ctrl TDO output
+        // - sensor_ctrl AST debug output
+        // - otp_ctrl test signal output
+      ]
     }
     {
       name: chip_sw_sleep_pin_mio_dio_val
