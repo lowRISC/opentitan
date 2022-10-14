@@ -32,10 +32,29 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
   endtask  // adc_ctrl_init
 
   virtual task apply_reset(string kind = "HARD");
-    if (kind == "HARD") begin
-      cfg.clk_aon_rst_vif.apply_reset();
-    end
-    super.apply_reset(kind);
+    // Define 3 kinds of resets - "HARD". "AON", "CORE".
+    // HARD reset: reset both, AON and CORE, such that AON encompasses the CORE,
+    // as mandated by the spec. AON and CORE: apply those resets individually.
+    case (kind)
+      "HARD": begin
+        fork
+          begin
+            // Use the main(fast) clock period to constrain the random delay,
+            // so we can ensure all resets will be issued within the smallest clock cycle of the
+            // design.
+            int dly_ps = $urandom_range(0, cfg.clk_rst_vif.clk_period_ps);
+            #(dly_ps * 1ps);
+            cfg.clk_aon_rst_vif.apply_reset(.rst_n_scheme(0)); // AON reset.
+          end
+          begin
+            super.apply_reset(kind); // CORE reset,
+          end
+        join
+      end
+      "CORE": super.apply_reset("HARD");
+      "AON": cfg.clk_aon_rst_vif.apply_reset();
+      default: `uvm_fatal(`gfn, $sformatf("does not support apply_reset kind: %0s!", kind))
+    endcase
   endtask  // apply_reset
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
@@ -164,6 +183,3 @@ class adc_ctrl_base_vseq extends cip_base_vseq #(
   endfunction
 
 endclass : adc_ctrl_base_vseq
-
-
-
