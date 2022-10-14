@@ -5,11 +5,16 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/sca/lib/prng.h"
 #include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
+
+#if !OT_IS_ENGLISH_BREAKFAST
+#include "sw/device/lib/testing/aes_testutils.h"
+#endif
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -442,6 +447,14 @@ bool test_main(void) {
 
   LOG_INFO("Initializing AES unit.");
   init_aes();
+
+#if !OT_IS_ENGLISH_BREAKFAST
+  if (transaction.masking == kDifAesMaskingForceZero) {
+    LOG_INFO("Initializing entropy complex.");
+    aes_testutils_masking_prng_zero_output_seed();
+    CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
+  }
+#endif
 
   LOG_INFO("Starting simple serial packet handling.");
   while (true) {

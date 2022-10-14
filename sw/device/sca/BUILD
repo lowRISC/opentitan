@@ -6,6 +6,15 @@ load("//rules:opentitan.bzl", "opentitan_flash_binary")
 
 package(default_visibility = ["//visibility:public"])
 
+alias(
+    name = "aes_serial_aes_testutils",
+    actual = select({
+        "//sw/device:is_english_breakfast": "//sw/device:nothing",
+        "//conditions:default": "//sw/device/lib/testing:aes_testutils",
+    }),
+    visibility = ["//visibility:private"],
+)
+
 opentitan_flash_binary(
     name = "aes_serial",
     srcs = ["aes_serial.c"],
@@ -14,6 +23,8 @@ opentitan_flash_binary(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/sca/lib:prng",

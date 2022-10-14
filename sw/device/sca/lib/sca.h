@@ -169,24 +169,4 @@ void seed_lfsr(uint32_t seed);
  */
 uint32_t next_lfsr(void);
 
-/**
- * Prints an error message over UART if the given DIF evaluates to anthing but
- * kDifOk.
- * TODO: Remove once there is a CHECK_DIF_OK version that does not require test
- * library dependencies.
- */
-#define CHECK_DIF_OK(dif_call, ...)                  \
-  do {                                               \
-    if (dif_call != kDifOk) {                        \
-      /* NOTE: because the condition in this if      \
-         statement can be statically determined,     \
-         only one of the below string constants      \
-         will be included in the final binary.*/     \
-      if (OT_VA_ARGS_COUNT(_, ##__VA_ARGS__) == 0) { \
-        LOG_ERROR("DIF-fail: " #dif_call);           \
-      } else {                                       \
-        LOG_ERROR("DIF-fail: " __VA_ARGS__);         \
-      }                                              \
-    }                                                \
-  } while (false)
 #endif  // OPENTITAN_SW_DEVICE_SCA_LIB_SCA_H_
