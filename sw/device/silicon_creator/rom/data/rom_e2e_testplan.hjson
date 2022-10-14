@@ -536,37 +536,26 @@
             PROD_END for the sake of simplicity.
 
 
-            - Write the image to the chip. See the table below.
-              - The other slot remains empty.
-            - Verify that the chip outputs the expected `BFV` over UART.
-            - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
+            - For `slot` in {`slot_a`, `slot_b`}
+              - Write the image to `slot`.
+                - The other slot remains empty.
+              - Verify that the chip outputs the expected `BFV` over UART.
+              - Repeat for all life cycle states: TEST, DEV, PROD, PROD_END, and RMA.
 
-            | Slot |     Case                          |   `BFV`                         |
-            |:----:|:---------------------------------:|:-------------------------------:|
-            |   b  | `identitfier = 0`                 | `kErrorBootPolicyBadIdentifier` |
-            |   b  | `length < CHIP_ROM_EXT_SIZE_MIN`  | `kErrorBootPolicyBadLength`     |
-            |   b  | `length > CHIP_ROM_EXT_SIZE_MIN`  | `kErrorBootPolicyBadLength`     |
-            |   b  | `code_start = code_end`           | `kErrorManifestBadCodeRegion`   |
-            |   b  | `code_start < CHIP_MANIFEST_SIZE` | `kErrorManifestBadCodeRegion`   |
-            |   b  | `code_end > length`               | `kErrorManifestBadCodeRegion`   |
-            |   b  | `code_start` in range, unaligned  | `kErrorManifestBadCodeRegion`   |
-            |   b  | `code_end` in range, unaligned    | `kErrorManifestBadCodeRegion`   |
-            |   b  | `entry_point < code_start`        | `kErrorManifestBadCodeRegion`   |
-            |   b  | `entry_point >= code_end`         | `kErrorManifestBadCodeRegion`   |
-            |   b  | `entry_point` in range, unaligned | `kErrorManifestBadCodeRegion`   |
-            |   b  | `security_version = 0`            | `kErrorBootPolicyRollback`      |
-            |   a  | `identitfier = 0`                 | `0142500d`                      |
-            |   a  | `length < CHIP_ROM_EXT_SIZE_MIN`  | `0142500d`                      |
-            |   a  | `length > CHIP_ROM_EXT_SIZE_MIN`  | `0142500d`                      |
-            |   a  | `code_start = code_end`           | `0142500d`                      |
-            |   a  | `code_start < CHIP_MANIFEST_SIZE` | `0142500d`                      |
-            |   a  | `code_end > length`               | `0142500d`                      |
-            |   a  | `code_start` in range, unaligned  | `0142500d`                      |
-            |   a  | `code_end` in range, unaligned    | `0142500d`                      |
-            |   a  | `entry_point < code_start`        | `0142500d`                      |
-            |   a  | `entry_point >= code_end`         | `0142500d`                      |
-            |   a  | `entry_point` in range, unaligned | `0142500d`                      |
-            |   a  | `security_version = 0`            | `0142500d`                      |
+            | Case                                | `BFV`                             |
+            | :---------------------------------: | :-------------------------------: |
+            | `identitfier = 0`                   | `kErrorBootPolicyBadIdentifier`   |
+            | `length < CHIP_ROM_EXT_SIZE_MIN`    | `kErrorBootPolicyBadLength`       |
+            | `length > CHIP_ROM_EXT_SIZE_MAX`    | `kErrorBootPolicyBadLength`       |
+            | `code_start = code_end`             | `kErrorManifestBadCodeRegion`     |
+            | `code_start < CHIP_MANIFEST_SIZE`   | `kErrorManifestBadCodeRegion`     |
+            | `code_end > length`                 | `kErrorManifestBadCodeRegion`     |
+            | `code_start` in range, unaligned    | `kErrorManifestBadCodeRegion`     |
+            | `code_end` in range, unaligned      | `kErrorManifestBadCodeRegion`     |
+            | `entry_point < code_start`          | `kErrorManifestBadCodeRegion`     |
+            | `entry_point >= code_end`           | `kErrorManifestBadCodeRegion`     |
+            | `entry_point` in range, unaligned   | `kErrorManifestBadCodeRegion`     |
+            | `security_version = 0`              | `kErrorBootPolicyRollback`        |
             '''
       tags: ["rom", "no_dv", "fpga", "silicon"]
       stage: V2
