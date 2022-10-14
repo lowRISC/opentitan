@@ -60,3 +60,6 @@
 `include "flash_ctrl_phy_ack_consistency_vseq.sv"
 `include "flash_ctrl_config_regwen_vseq.sv"
 `include "flash_ctrl_hw_rma_err_vseq.sv"
+`include "flash_ctrl_lcmgr_intg_vseq.sv"
+`include "flash_ctrl_hw_read_seed_err_vseq.sv"
+`include "flash_ctrl_hw_prog_rma_wipe_err_vseq.sv"

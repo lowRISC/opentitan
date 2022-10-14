@@ -60,6 +60,7 @@ interface flash_ctrl_if (
   logic [10:0] prog_state1;
   logic [10:0] lcmgr_state;
   logic        init;
+  logic        hw_rvalid;
 
   // v2s error injection
   logic        host_gnt;
