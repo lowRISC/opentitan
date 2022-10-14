@@ -21,7 +21,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   virtual entropy_src_cov_if                   cov_vif;
 
   // used by health_test_scoring_thread to predict the FSMs phase
+  // when constructing seeds
   int seed_idx             = 0;
+  // number of seeds output since enable (or reset)
+  int seeds_out            = 0;
+
   int entropy_data_seeds   = 0;
   int entropy_data_drops   = 0;
   int csrng_seeds          = 0;
@@ -30,7 +34,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   int observe_fifo_drops   = 0;
 
   bit dut_pipeline_enabled = 0;
-  int seeds_since_enable = 0;
   bit ht_fips_mode = 0;
 
   // The FW_OV pipeline is controlled by two variables: SHA3_START and MODULE_ENABLE
@@ -915,6 +918,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end else begin
       while (entropy_data_q.size() > 0) begin : seed_trial_loop
         bit [TL_DW - 1:0] prediction;
+
         `uvm_info(`gfn, $sformatf("seed_tl_read_cnt: %01d", seed_tl_read_cnt), UVM_FULL)
         match_found = try_seed_tl(entropy_data_q[0], item.d_data, prediction);
         if (match_found) begin
@@ -928,17 +932,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             seed_tl_read_cnt = 0;
             full_seed = entropy_data_q.pop_front();
             entropy_data_seeds++;
-
-            // Check to see whether a recov_alert should be expected
-            `uvm_info(`gfn, $sformatf("Seeds since enable: %d", seeds_since_enable), UVM_DEBUG)
-            `uvm_info(`gfn, $sformatf("full_seed: %097x", full_seed), UVM_DEBUG)
-            `uvm_info(`gfn, $sformatf("prev_csrng_seed: %097x", prev_csrng_seed), UVM_DEBUG)
-            if (seeds_since_enable != 0 && full_seed == prev_csrng_seed) begin
-              `uvm_info(`gfn, "Repeated seed, expecting recov_alert", UVM_MEDIUM)
-              `DV_CHECK_FATAL(ral.recov_alert_sts.es_bus_cmp_alert.predict(1'b1));
-              set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
-            end
-            prev_csrng_seed = full_seed;
 
           end else if (seed_tl_read_cnt > CSRNG_BUS_WIDTH / TL_DW) begin
             `uvm_error(`gfn, "testbench error: too many segments read from candidate seed")
@@ -992,7 +985,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     if (rst_type == Enable) begin
       clear_ht_stat_predictions();
-      seeds_since_enable = 0;
+      seeds_out = 0;
       health_test_data_q.delete();
     end
 
@@ -1723,6 +1716,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             end
           end
         end
+        "recov_alert_sts": begin
+          for (int i=0; i < TL_DW; i++) begin
+            if (item.d_data[i]) begin
+              cov_vif.cg_recov_alert_sample(i);
+            end
+          end
+        end
         default: begin
         end
       endcase
@@ -2197,17 +2197,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       `uvm_info(`gfn, $sformatf("process_csrng: new item: %096h\n", item.d_data), UVM_HIGH)
 
       // Check to see whether a recov_alert should be expected
-      `uvm_info(`gfn, $sformatf("Seeds since enable: %d", seeds_since_enable), UVM_DEBUG)
-      `uvm_info(`gfn, $sformatf("item.d_data: %097x", item.d_data), UVM_DEBUG)
-      `uvm_info(`gfn, $sformatf("prev_csrng_seed: %097x", prev_csrng_seed), UVM_DEBUG)
-      if (seeds_since_enable != 0 && item.d_data == prev_csrng_seed) begin
+      if (seeds_out != 0 && get_csrng_seed(item.d_data) == prev_csrng_seed) begin
         `uvm_info(`gfn, "Repeated seed, expecting recov_alert", UVM_MEDIUM)
-        // TODO: Establish a coverpoint to confirm that this has been seen on this interface
         `DV_CHECK_FATAL(ral.recov_alert_sts.es_bus_cmp_alert.predict(1'b1));
-        set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+        set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
       end
 
       prev_csrng_seed = item.d_data;
+      seeds_out++;
 
       while (fips_csrng_q.size() > 0) begin : seed_trial_loop
         bit [FIPS_CSRNG_BUS_WIDTH - 1:0] prediction;
@@ -2227,7 +2224,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end : seed_trial_loop
       `DV_CHECK_EQ_FATAL(match_found, 1,
                          "All candidate csrng seeds have been checked, with no match")
-      seeds_since_enable++;
     end
   endtask
 

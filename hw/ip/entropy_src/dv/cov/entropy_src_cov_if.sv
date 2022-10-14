@@ -356,6 +356,7 @@ interface entropy_src_cov_if
     // Cross coverage points
 
     // Entropy data interface is tested with all valid configurations
+
     cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit_enable,
         cp_rng_bit_sel, cp_es_type;
 
@@ -675,6 +676,16 @@ interface entropy_src_cov_if
 
   endgroup : one_way_ht_threshold_reg_cg
 
+  covergroup recov_alert_cg with function sample(int alert_bit);
+    option.name         = "recov_alert_cg";
+    option.per_instance = 1;
+
+    cp_alert_bit : coverpoint alert_bit {
+      bins alert_bits[] = {0, 1, 2, 3, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+    }
+  endgroup : recov_alert_cg
+
+
   `DV_FCOV_INSTANTIATE_CG(err_test_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(mubi_err_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(sm_err_cg, en_full_cov)
@@ -690,6 +701,7 @@ interface entropy_src_cov_if
   `DV_FCOV_INSTANTIATE_CG(alert_cnt_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(observe_fifo_threshold_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(one_way_ht_threshold_reg_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(recov_alert_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_err_test_sample(bit [4:0] err_code);
@@ -817,6 +829,11 @@ interface entropy_src_cov_if
   function automatic void cg_one_way_ht_threshold_reg_sample(int offset, bit rejected, bit fips);
     one_way_ht_threshold_reg_cg_inst.sample(offset, rejected, fips);
   endfunction
+
+  function automatic void cg_recov_alert_sample(int which_bit);
+    recov_alert_cg_inst.sample(which_bit);
+  endfunction
+
 
   // Sample the csrng_hw_cg whenever data is output on the csrng pins
   logic csrng_if_req, csrng_if_ack;
