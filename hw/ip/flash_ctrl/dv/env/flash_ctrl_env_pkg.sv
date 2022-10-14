@@ -30,6 +30,22 @@ package flash_ctrl_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"recov_err", "fatal_std_err", "fatal_err",
                                        "fatal_prim_flash_alert", "recov_prim_flash_alert"};
 
+  // Some paths are added multiple times to accomodate
+  // indexing in the loop
+  parameter string LIST_OF_READ_SEED_FORCE_PATHS[] = {
+    "tb.dut.u_flash_hw_if.op",
+    "tb.dut.u_flash_hw_if.op",
+    "tb.dut.u_flash_hw_if.part_sel",
+    "tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.data_i[31:0]",
+    "tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.data_i[31:0]"
+  };
+
+  parameter string LIST_OF_PROG_RMA_WIPE_FORCE_PATHS[] = {
+    "tb.dut.u_eflash.gen_flash_cores[0].u_core.gen_prog_data.u_prog.data_i[31:0]",
+    "tb.dut.u_eflash.gen_flash_cores[0].u_core.gen_prog_data.u_prog.data_i[31:0]",
+    "tb.dut.u_flash_hw_if.rma_num_words"
+  };
+
   parameter uint NUM_ALERTS = 5;
   parameter uint FlashNumPages = flash_ctrl_pkg::NumBanks * flash_ctrl_pkg::PagesPerBank;
   parameter uint FlashSizeBytes = FlashNumPages * flash_ctrl_pkg::WordsPerPage *
@@ -305,6 +321,7 @@ package flash_ctrl_env_pkg;
 
   // Parameter for Probing into the DUT RMA FSM
   parameter string PRB_RMA_FSM = "tb.dut.u_flash_hw_if.state_q";
+
   // Taken from enum type lcmgr_state_e in flash_ctrl_lcmgr.sv
   parameter uint RMA_FSM_STATE_ST_RMA_RSP = 11'b10110001010;
 
