@@ -187,12 +187,11 @@
       stage: V2S
       tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
-      // TODO how to check is this? I think we talked about this not beeing feasible
     {
       name: sec_cm_data_reg_local_esc
       desc: "Verify the countermeasure(s) DATA_REG.LOCAL_ESC."
       stage: V2S
-      tests: []
+      tests: ["aes_alert_reset"]
     }
   ]
 }
