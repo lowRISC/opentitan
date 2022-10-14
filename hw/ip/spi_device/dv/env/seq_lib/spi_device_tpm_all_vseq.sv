@@ -51,12 +51,15 @@ class spi_device_tpm_all_vseq extends spi_device_tpm_read_hw_reg_vseq;
 
           csr_rd(.ptr(ral.intr_state.tpm_header_not_empty), .value(tpm_intr));
           if (tpm_intr) begin
-            clear_tpm_interrupt();
-            while (1) begin
-              csr_rd(.ptr(ral.tpm_status.cmdaddr_notempty), .value(cmdaddr_notempty_val));
-              if (!cmdaddr_notempty_val) break;
+            csr_rd_check(.ptr(ral.tpm_status.cmdaddr_notempty), .compare_value(1));
+            do begin
               process_tpm_fifo();
-            end;
+              // it's intented to exit even if it's not empty.
+              // Since it's a level interrupt, will get notified again.
+              if ($urandom_range(0, 2) == 0) break;
+              csr_rd(.ptr(ral.tpm_status.cmdaddr_notempty), .value(cmdaddr_notempty_val));
+            end while (cmdaddr_notempty_val);
+            clear_tpm_interrupt();
           end else if (main_body_done) begin
             break;
           end
