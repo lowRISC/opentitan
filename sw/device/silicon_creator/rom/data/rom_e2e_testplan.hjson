@@ -1157,5 +1157,26 @@
       stage: V2
       tests: []
     }
+
+    {
+      name: rom_bootstrap_rma
+      desc: '''End to end test to ensure RMA mode can be activated by halting ROM execution.
+
+      - This test must be run with the real ROM.
+      - Pre-load the device into PROD or PROD_END state.
+      - Backdoor load CREATOR_SW_CONFIG_RMA_SPIN_CYCLES and SPIN_EN.
+        - The value for CREATOR_SW_CONFIG_RMA_SPIN_CYCLES should be small, just enough
+          for the DV agent to activate the life cycle JTAG interface.
+      - Drive software strap to the RMA bootstrap value.
+      - The test contains two iterations.
+      - In iteration 1, do not issue the life cycle rma command. ROM should timeout on spin cycles
+        and automatically reset the device. Check to ensure device has reset via backdoor CSR.
+      - In iteration 2, issue the life cycle RMA command and ensure RMA transition can be successfully
+        completed.
+      '''
+      tags: ["rom", "dv"]
+      stage: V2
+      tests: []
+    }
   ]
 }
