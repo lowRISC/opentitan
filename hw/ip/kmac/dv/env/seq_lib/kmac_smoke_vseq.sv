@@ -124,7 +124,12 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       if (cfg.enable_masking && kmac_err_type == kmac_pkg::ErrWaitTimerExpired &&
           entropy_mode == EntropyModeEdn) begin
-        if (entropy_fetched == 0) check_err();
+        if (entropy_fetched == 0) begin
+          check_err();
+          // Edn wait timer expired will lock entropy FSM, so the other operations cannot proceed
+          // unless the entropy is provided.
+          continue;
+        end
       end else if (cfg.enable_masking && entropy_mode == EntropyModeEdn) begin
         entropy_fetched = 1;
       end
