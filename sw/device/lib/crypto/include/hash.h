@@ -75,10 +75,10 @@ typedef struct hash_context hash_context_t;
  * This function hashes the `input_message` using the `hash_mode_t`
  * hash function and returns a `digest`.
  *
- * @param input_message Input message to be hashed
- * @param hash_mode Required hash mode for the digest
- * @param digest Output digest after hashing the input message
- * @return Result of the hash operation
+ * @param input_message Input message to be hashed.
+ * @param hash_mode Required hash mode for the digest.
+ * @param[out] digest Output digest after hashing the input message.
+ * @return Result of the hash operation.
  */
 crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
                               hash_mode_t hash_mode,
@@ -101,13 +101,13 @@ crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
  * length and the output length does not match, an error message will
  * be returned.
  *
- * @param input_message Input message for extendable output function
- * @param hash_mode Required extendable output function
- * @param function_name_string NIST Function name string
- * @param customization_string Customization string for cSHAKE
- * @param required_output_len Required output length, in bytes
- * @param digest Output from the extendable output function
- * @return Result of the xof operation
+ * @param input_message Input message for extendable output function.
+ * @param hash_mode Required extendable output function.
+ * @param function_name_string NIST Function name string.
+ * @param customization_string Customization string for cSHAKE.
+ * @param required_output_len Required output length, in bytes.
+ * @param[out] digest Output from the extendable output function.
+ * @return Result of the xof operation.
  */
 crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
                              xof_mode_t xof_mode,
@@ -129,9 +129,9 @@ crypto_status_t otcrypto_xof(crypto_const_uint8_buf_t input_message,
  * populates the required fields are internal to the specific hash
  * implementation.
  *
- * @param ctx Pointer to the generic hash context struct
- * @param hash_mode Required hash mode
- * @return Result of the hash init operation
+ * @param ctx Pointer to the generic hash context struct.
+ * @param hash_mode Required hash mode.
+ * @return Result of the hash init operation.
  */
 crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
                                    hash_mode_t hash_mode);
@@ -146,9 +146,9 @@ crypto_status_t otcrypto_hash_init(hash_context_t *const ctx,
  *
  * #otcrypto_hash_init should be called before this function.
  *
- * @param ctx Pointer to the generic hash context struct
- * @param input_message Input message to be hashed
- * @return Result of the hash update operation
+ * @param ctx Pointer to the generic hash context struct.
+ * @param input_message Input message to be hashed.
+ * @return Result of the hash update operation.
  */
 crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
                                      crypto_const_uint8_buf_t input_message);
@@ -167,9 +167,9 @@ crypto_status_t otcrypto_hash_update(hash_context_t *const ctx,
  * length and the output length does not match, an error message will
  * be returned.
  *
- * @param ctx Pointer to the generic hash context struct
- * @param digest Output digest after hashing the input blocks
- * @return Result of the hash final operation
+ * @param ctx Pointer to the generic hash context struct.
+ * @param[out] digest Output digest after hashing the input blocks.
+ * @return Result of the hash final operation.
  */
 crypto_status_t otcrypto_hash_final(hash_context_t *const ctx,
                                     crypto_uint8_buf_t *digest);

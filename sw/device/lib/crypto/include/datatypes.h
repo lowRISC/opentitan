@@ -27,13 +27,15 @@ extern "C" {
  */
 typedef enum crypto_status {
   // Status is OK; no errors.
-  kCryptoStatusOK = 0x4d39,
+  kCryptoStatusOK = 0xc6c5,
   // Invalid input arguments; wrong length or invalid type.
-  kCryptoStatusBadArgs = 0xbd57,
-  // Inconsistencies when cross-checking results, witness,checksum.
-  kCryptoStatusInternalError = 0x86ba,
+  kCryptoStatusBadArgs = 0xe9cb,
+  // Error after which it is OK to retry (e.g. timeout).
+  kCryptoStatusInternalError = 0x5eb2,
+  // Error after which it is not OK to retry (e.g. integrity check).
+  kCryptoStatusFatalError = 0xd176,
   // An asynchronous operation is still in progress.
-  kCryptoStatusAsyncIncomplete = 0xd30f,
+  kCryptoStatusAsyncIncomplete = 0x37e1,
 } crypto_status_t;
 
 /**
@@ -244,67 +246,88 @@ typedef enum key_mode {
 } key_mode_t;
 
 /**
+ * Enum to denote key security level.
+ *
+ * At high security levels, the crypto library will prioritize
+ * protecting the key from sophisticated attacks, even at large
+ * performance costs. If the security level is low, the crypto
+ * library will still try to protect the key, but may forgo the
+ * most costly protections against e.g. sophisticated physical
+ * attacks.
+ *
+ * Values are hardened.
+ */
+typedef enum crypto_key_security_level {
+  // Security level low.
+  kSecurityLevelLow = 0xef61,
+  // Security level medium.
+  kSecurityLevelMedium = 0x33db,
+  // Security level high.
+  kSecurityLevelHigh = 0xd4bd,
+} crypto_key_security_level_t;
+
+/**
+ * Enum to denote the crypto library version.
+ *
+ * In future updates, this enum will be extended to preserve some
+ * level of backwards-compatibility despite changes to internal
+ * details (for example, the preferred masking scheme for blinded
+ * keys).
+ *
+ * Values are hardened.
+ */
+typedef enum crypto_lib_version {
+  // Version 1.
+  kCryptoLibVersion1 = 0x46be,
+} crypto_lib_version_t;
+
+/**
+ * Struct to represent the configuration of a blinded key.
+ */
+typedef struct crypto_key_config {
+  // Crypto library version for this key.
+  const crypto_lib_version_t version;
+  // Mode for which the key usage is intended.
+  const key_mode_t key_mode;
+  // Length in bytes of the unblinded form of this key.
+  const size_t key_length;
+  // Whether the hardware key manager should produce this key.
+  const hardened_bool_t hw_backed;
+  // Diversification input for key manager (ignored and may be
+  // `NULL` if `hw_backed` is false).
+  crypto_const_uint8_buf_t diversification_hw_backed;
+  // Whether the key should be exportable (if this is true,
+  // `hw_backed` must be false).
+  const hardened_bool_t exportable;
+  // Key security level.
+  const crypto_key_security_level_t security_level;
+} crypto_key_config_t;
+
+/**
  * Struct to handle unmasked key type.
  */
 typedef struct crypto_unblinded_key {
-  /**
-   * Mode for which the key usage is intended.
-   */
+  // Mode for which the key usage is intended.
   key_mode_t key_mode;
-  /**
-   * Key length in bytes.
-   */
+  // Key length in bytes.
   size_t key_length;
-  /**
-   * Implementation specific, storage provided by caller.
-   *
-   * Length in bytes must be equal to `key_length`.
-   */
+  // Implementation specific, storage provided by caller.
   uint32_t *key;
-  /**
-   * Implementation specific, checksum for this struct.
-   */
+  // Implementation specific, checksum for this struct.
   uint32_t checksum;
 } crypto_unblinded_key_t;
 
 /**
  * Struct to handle masked key type.
- *
- * Representation is internal to the implementation.
- *
- * Note: The crypto_blinded_key_t struct should include
- * “size_t key_length” and “key_mode_t key_mode” as one of the
- * parameters to check length of the keyblob and the mode intended.
- * The struct should also include a “uint32_t checksum” parameter for
- * integrity purposes. The way the checksum is computed is a
- * implementation specific details.
  */
 typedef struct crypto_blinded_key {
-  /**
-   * Mode for which the key usage is intended.
-   */
-  key_mode_t key_mode;
-  /**
-   * Key length in bytes.
-   */
-  size_t key_length;
-  /**
-   * Implementation specific, storage provided by caller.
-   *
-   * Length in bytes must be equal to `key_length`.
-   */
-  uint32_t *key_blob;
-  /**
-   * True if and only if this represents a hardware-backed key.
-   *
-   * In the case of sideloaded keys, `key_blob` contains the handle used to
-   * generate the key from the key manager, rather than the actual key
-   * material.
-   */
-  hardened_bool_t sideloaded;
-  /**
-   * Implementation specific, checksum for this struct.
-   */
+  // Key configuration information.
+  const crypto_key_config_t config;
+  // Length of key material.
+  const size_t keyblob_length;
+  // Implementation specific, storage provided by caller.
+  uint32_t *keyblob;
+  // Implementation specific, checksum for this struct.
   uint32_t checksum;
 } crypto_blinded_key_t;
 

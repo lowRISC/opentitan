@@ -95,44 +95,52 @@ typedef enum aes_padding {
 typedef struct gcm_ghash_context gcm_ghash_context_t;
 
 /**
- * Performs the AES initialization operation.
+ * Generates a new AES key.
  *
- * The `aes_mode` and `aes_operation` are selected and the `key`, `iv`
- * are loaded into the register.
+ * The caller should allocate and partially populate the blinded
+ * key struct, including populating the key configuration and
+ * allocating space for the keyblob. The caller should indicate
+ * the length of the allocated keyblob; this function will
+ * return an error if the keyblob length does not match
+ * expectations. For hardware-backed keys, the keyblob length is 0
+ * and the keyblob pointer may be `NULL`. For non-hardware-backed keys,
+ * the keyblob should be twice the length of the key. The value in
+ * the `checksum` field of the blinded key struct will be populated
+ * by the key generation function.
  *
- * @param key Pointer to the blinded key struct with key shares
- * @param iv Initialization vector, used for CBC, CFB, OFB, CTR modes
- * @param aes_mode Required AES mode of operation
- * @param aes_operation Required AES operation (encrypt or decrypt)
- * @return The result of the init operation
+ * @param[out] key Destination blinded key struct.
+ * @return The result of the cipher operation.
  */
-crypto_status_t otcrypto_aes_init(const crypto_blinded_key_t *key,
-                                  crypto_uint8_buf_t iv,
-                                  block_cipher_mode_t aes_mode,
-                                  aes_operation_t aes_operation);
+crypto_status_t otcrypto_aes_keygen(crypto_blinded_key_t *key);
 
 /**
- * Performs the AES cipher operation.
- *
- * The #otcrypto_aes_init should be called before this function,
- * to initialize the key, AES mode and AES cipher operation.
+ * Performs the AES operation.
  *
  * The input data in the `cipher_input` is first padded using the
  * `aes_padding` scheme and the output is copied to `cipher_output`.
  *
  * The caller should allocate space for the `cipher_output` buffer,
- * (same length as input), and set the length of expected output in
- * the `len` field of the output. If the user-set length and the
- * output length does not match, an error message will be returned.
+ * (same length as input, rounded up to the next full block), and
+ * set the length of expected output in the `len` field of the
+ * output. If the user-set length and the output length do not
+ * match, an error message will be returned.
  *
- * @param cipher_input Input data to be ciphered
- * @param aes_padding Padding scheme to be used for the data
- * @param cipher_output Output data after cipher operation
- * @return The result of the cipher operation
+ * @param key Pointer to the blinded key struct with key shares.
+ * @param iv Initialization vector, used for CBC, CFB, OFB, CTR modes.
+ * @param aes_mode Required AES mode of operation.
+ * @param aes_operation Required AES operation (encrypt or decrypt).
+ * @param cipher_input Input data to be ciphered.
+ * @param aes_padding Padding scheme to be used for the data.
+ * @param[out] cipher_output Output data after cipher operation.
+ * @return The result of the cipher operation.
  */
-crypto_status_t otcrypto_aes_cipher(crypto_const_uint8_buf_t cipher_input,
-                                    aes_padding_t aes_padding,
-                                    crypto_uint8_buf_t *cipher_output);
+crypto_status_t otcrypto_aes(const crypto_blinded_key_t *key,
+                             crypto_uint8_buf_t iv,
+                             block_cipher_mode_t aes_mode,
+                             aes_operation_t aes_operation,
+                             crypto_const_uint8_buf_t cipher_input,
+                             aes_padding_t aes_padding,
+                             crypto_uint8_buf_t *cipher_output);
 
 /**
  * Performs the AES-GCM authenticated encryption operation.
@@ -148,14 +156,14 @@ crypto_status_t otcrypto_aes_cipher(crypto_const_uint8_buf_t cipher_input,
  * `ciphertext` and `auth_tag`. If the user-set length and the output
  * length does not match, an error message will be returned.
  *
- * @param key Pointer to the blinded gcm-key struct
- * @param plaintext Input data to be encrypted and authenticated
- * @param iv Initialization vector for the encryption function
- * @param aad Additional authenticated data
- * @param tag_len Length of authentication tag to be generated
- * @param ciphertext Encrypted output data, same length as input data
- * @param auth_tag Generated authentication tag
- * @return Result of the authenticated encryption
+ * @param key Pointer to the blinded gcm-key struct.
+ * @param plaintext Input data to be encrypted and authenticated.
+ * @param iv Initialization vector for the encryption function.
+ * @param aad Additional authenticated data.
+ * @param tag_len Length of authentication tag to be generated.
+ * @param[out] ciphertext Encrypted output data, same length as input data.
+ * @param[out] auth_tag Generated authentication tag.
+ * @return Result of the authenticated encryption.
  * operation
  */
 crypto_status_t otcrypto_aes_encrypt_gcm(
@@ -175,13 +183,13 @@ crypto_status_t otcrypto_aes_encrypt_gcm(
  * in the `len` field of `plaintext`. If the user-set length and the
  * output length does not match, an error message will be returned.
  *
- * @param key Pointer to the blinded gcm-key struct
- * @param ciphertext Input data to be decrypted
- * @param iv Initialization vector for the decryption function
- * @param aad Additional authenticated data
- * @param auth_tag Authentication tag to be verified
- * @param plaintext Decrypted plaintext data, same len as input data
- * @return Result of the authenticated decryption
+ * @param key Pointer to the blinded gcm-key struct.
+ * @param ciphertext Input data to be decrypted.
+ * @param iv Initialization vector for the decryption function.
+ * @param aad Additional authenticated data.
+ * @param auth_tag Authentication tag to be verified.
+ * @param[out] plaintext Decrypted plaintext data, same len as input data.
+ * @return Result of the authenticated decryption.
  * operation
  */
 crypto_status_t otcrypto_aes_decrypt_gcm(const crypto_blinded_key_t *key,
@@ -203,9 +211,9 @@ crypto_status_t otcrypto_aes_decrypt_gcm(const crypto_blinded_key_t *key,
  * This function initializes the GHASH context and must be called
  * to create a context object.
  *
- * @param hash_subkey Hash subkey (H), 16 bytes
- * @param ctx Output GHASH context object, caller-allocated
- * @return Result of the operation
+ * @param hash_subkey Hash subkey (H), 16 bytes.
+ * @param[out] ctx Output GHASH context object, caller-allocated.
+ * @return Result of the operation.
  */
 crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
                                         gcm_ghash_context_t *ctx);
@@ -224,9 +232,9 @@ crypto_status_t otcrypto_gcm_ghash_init(const crypto_blinded_key_t *hash_subkey,
  * not a multiple of 128 bits, it will be right-padded with zeros.
  * The input length must not be zero.
  *
- * @param ctx GHASH context object
- * @param input Input buffer
- * @return Result of the operation
+ * @param ctx GHASH context object.
+ * @param input Input buffer.
+ * @return Result of the operation.
  */
 crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
                                           crypto_const_uint8_buf_t input);
@@ -244,9 +252,9 @@ crypto_status_t otcrypto_gcm_ghash_update(gcm_ghash_context_t *ctx,
  * extracts the digest from the GHASH context. The digest buffer must
  * be 16 bytes.
  *
- * @param ctx GHASH context object
- * @param digest Output buffer for digest, 16 bytes
- * @return Result of the operation
+ * @param ctx GHASH context object.
+ * @param[out] digest Output buffer for digest, 16 bytes.
+ * @return Result of the operation.
  */
 crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
                                          crypto_uint8_buf_t digest);
@@ -263,10 +271,10 @@ crypto_status_t otcrypto_gcm_ghash_final(gcm_ghash_context_t *ctx,
  * The caller-allocated output buffer must be the same length as the
  * input.
  *
- * @param key AES key for the GCTR operation
- * @param input Input buffer
- * @param output Output buffer (same length as input)
- * @return Result of the operation
+ * @param key AES key for the GCTR operation.
+ * @param input Input buffer.
+ * @param[out] output Output buffer (same length as input).
+ * @return Result of the operation.
  */
 crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
                                       crypto_const_uint8_buf_t input,
@@ -283,10 +291,10 @@ crypto_status_t otcrypto_aes_gcm_gctr(const crypto_blinded_key_t *key,
  * in the `len` field of `wrapped_key`. If the user-set length and the
  * output length does not match, an error message will be returned.
  *
- * @param key_to_wrap Pointer to the blinded key to be wrapped
- * @param key_kek Input Pointer to the blinded encryption key
- * @param wrapped_key Pointer to the output wrapped key
- * @return Result of the aes-kwp encrypt operation
+ * @param key_to_wrap Pointer to the blinded key to be wrapped.
+ * @param key_kek Input Pointer to the blinded encryption key.
+ * @param[out] wrapped_key Pointer to the output wrapped key.
+ * @return Result of the aes-kwp encrypt operation.
  */
 crypto_status_t otcrypto_aes_kwp_encrypt(
     const crypto_blinded_key_t *key_to_wrap,
@@ -298,10 +306,10 @@ crypto_status_t otcrypto_aes_kwp_encrypt(
  * This decrypt function takes a wrapped key `wrapped_key` and using
  * encryption key `key_kek` outputs an unwrapped key `unwrapped_key`.
  *
- * @param wrapped_key Pointer to the input wrapped key
- * @param key_kek Input Pointer to the blinded encryption key
- * @param unwrapped_key Pointer to the output unwrapped key struct
- * @return Result of the aes-kwp decrypt operation
+ * @param wrapped_key Pointer to the input wrapped key.
+ * @param key_kek Input Pointer to the blinded encryption key.
+ * @param[out] unwrapped_key Pointer to the output unwrapped key struct.
+ * @return Result of the aes-kwp decrypt operation.
  */
 crypto_status_t otcrypto_aes_kwp_decrypt(crypto_const_uint8_buf_t wrapped_key,
                                          const crypto_blinded_key_t *key_kek,
