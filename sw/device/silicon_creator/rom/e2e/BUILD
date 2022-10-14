@@ -36,14 +36,12 @@ MSG_PASS = "PASS!"
 
 MSG_BAD_KEY = "BFV:02535603(?s:.*)BFV:02535603"
 
-SLOTS = [
-    "a",
-    "b",
-]
 
-SLOT_A_OFFSET = "0x0"
 
-SLOT_B_OFFSET = "0x80000"
+SLOTS = {
+    "a": "0x0",
+    "b": "0x80000",
+}
 
 opentitan_flash_binary(
     name = "empty_test_slot_a",
@@ -264,7 +262,7 @@ opentitan_multislot_flash_binary(
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
             "key": "test_key_0",
-            "offset": SLOT_B_OFFSET,
+            "offset": SLOTS["b"],
         },
     },
 )
@@ -285,7 +283,7 @@ opentitan_multislot_flash_binary(
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": {
             "key": "test_key_0",
-            "offset": SLOT_B_OFFSET,
+            "offset": SLOTS["b"],
         },
     },
 )
@@ -306,7 +304,7 @@ opentitan_multislot_flash_binary(
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
             "key": "test_key_0",
-            "offset": SLOT_A_OFFSET,
+            "offset": SLOTS["a"],
         },
     },
 )
@@ -337,7 +335,7 @@ opentitan_multislot_flash_binary(
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
             "key": "test_key_0",
-            "offset": SLOT_B_OFFSET,
+            "offset": SLOTS["b"],
         },
     },
 )
@@ -454,11 +452,11 @@ SEC_VERS = [
     srcs = {
         ":empty_test_slot_a_sec_ver_{}".format(sec_ver_a): {
             "key": "test_key_0",
-            "offset": SLOT_A_OFFSET,
+            "offset": SLOTS["a"],
         },
         ":empty_test_slot_b_sec_ver_{}".format(sec_ver_b): {
             "key": "test_key_0",
-            "offset": SLOT_B_OFFSET,
+            "offset": SLOTS["b"],
         },
     },
     devices = ["fpga_cw310"],
