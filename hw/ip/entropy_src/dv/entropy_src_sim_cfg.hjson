@@ -81,7 +81,7 @@
     }
 
     {
-      name: entropy_src_alert
+      name: entropy_src_functional_alerts
       uvm_test: entropy_src_alert_test
       uvm_test_seq: entropy_src_alert_vseq
     }

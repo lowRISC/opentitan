@@ -92,10 +92,12 @@
     {
       name: alerts
       desc: '''
-            Verify es_alert_count_met asserts as expected.
+            Verify that all recoverable alerts are asserted as expected.
+            Any alerts not encountered as part of the usual entropy_src_rng test will be generated
+            by the `entropy_src_functional_alerts` test.
             '''
       stage: V2
-      tests: ["entropy_src_alert"]
+      tests: ["entropy_src_functional_alerts", "entropy_src_rng"]
     }
     {
       name: stress_all

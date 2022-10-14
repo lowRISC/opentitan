@@ -9,15 +9,17 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
 
   int seed_cnt;
 
-  push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq;
+  push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq;
 
   task body();
 
     seed_cnt = cfg.seed_cnt;
 
     // Create rng host sequence
-    m_rng_push_seq = push_pull_indefinite_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
+    m_rng_push_seq = push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH)::type_id::
                      create("m_rng_push_seq");
+
+    m_rng_push_seq.num_trans = 96;
 
     fork
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
@@ -31,8 +33,6 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
           // Update the count of remaining seeds to read
           seed_cnt -= available_seeds;
         end while (seed_cnt > 0);
-        m_rng_push_seq.stop(.hard(0));
-        m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
       end
     join
   endtask : body

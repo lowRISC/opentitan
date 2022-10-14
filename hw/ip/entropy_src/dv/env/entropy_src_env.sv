@@ -63,8 +63,10 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_xht_agent_cfg.en_cov            = cfg.en_cov;
     cfg.m_xht_agent_cfg.is_active         = 1'b1;
 
-    uvm_config_db#(virtual entropy_subsys_fifo_exception_if#(1))::get(this, "", "precon_fifo_vif",
-        cfg.precon_fifo_vif);
+    if (!uvm_config_db#(virtual entropy_subsys_fifo_exception_if#(1))::get(this, "",
+                        "precon_fifo_vif", cfg.precon_fifo_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get precon_fifo_vif from uvm_config_db")
+    end
 
     if (!uvm_config_db#(virtual pins_if#(8))::get(this, "", "otp_en_es_fw_read_vif",
         cfg.otp_en_es_fw_read_vif)) begin
