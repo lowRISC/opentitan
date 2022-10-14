@@ -425,6 +425,27 @@
       run_opts: ["+flash_program_latency=5", "+test_timeout_ns=300_000_000_000"]
       reseed: 3
     }
+    {
+      name: flash_ctrl_lcmgr_intg
+      uvm_test_seq: flash_ctrl_lcmgr_intg_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1",
+                 "+en_always_all=1", "+bypass_alert_ready_to_end_check=1"]
+      reseed: 3
+    }
+    {
+      name: flash_ctrl_hw_read_seed_err
+      uvm_test_seq: flash_ctrl_hw_read_seed_err_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1",
+                 "+en_always_all=1", "+bypass_alert_ready_to_end_check=1"]
+      reseed: 20
+    }
+    {
+      name: flash_ctrl_hw_prog_rma_wipe_err
+      uvm_test_seq: flash_ctrl_hw_prog_rma_wipe_err_vseq
+      run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+flash_program_latency=5",
+                 "+en_always_all=1", "+bypass_alert_ready_to_end_check=1"]
+      reseed: 20
+    }
  ]
 
   // List of regressions.

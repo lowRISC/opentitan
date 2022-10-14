@@ -1337,4 +1337,31 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  task init_controller(bit non_blocking = 0);
+    int wait_timeout_ns = 50000; // 50 us
+
+    csr_wr(.ptr(ral.init), .value(1));
+    `uvm_info(`gfn,"init_controller: OTP",UVM_LOW)
+    otp_model();
+    if (non_blocking == 0) begin
+       `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rd_buf_en == 1);,
+                    "Timed out waiting for rd_buf_en",
+                    wait_timeout_ns)
+       cfg.clk_rst_vif.wait_clks(10);
+    end
+  endtask
+
+  // Use uvm_hdl_read / force flip 2 bits out of 32 bit bus
+  // Assuming the input path should be 32bit bus
+  function void flip_2bits(string path);
+    bit [31:0] rdata;
+    int        idx[32];
+    foreach (idx[i]) idx[i] = i;
+    `DV_CHECK(uvm_hdl_read(path, rdata));
+    idx.shuffle();
+    rdata[idx[0]] = ~rdata[idx[0]];
+    rdata[idx[1]] = ~rdata[idx[1]];
+    `DV_CHECK(uvm_hdl_force(path, rdata));
+  endfunction
+
 endclass : flash_ctrl_base_vseq

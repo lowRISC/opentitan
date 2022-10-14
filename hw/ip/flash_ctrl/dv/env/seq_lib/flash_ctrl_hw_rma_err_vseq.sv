@@ -75,6 +75,7 @@ class flash_ctrl_hw_rma_err_vseq extends flash_ctrl_hw_rma_vseq;
                          .timeout_ns(100_000_000));
             cfg.clk_rst_vif.wait_clks(3);
             `uvm_info(`gfn, "RMA FAIL DUE TO Wipe out write data failure (expected)", UVM_LOW)
+            collect_err_cov_status(ral.std_fault_status);
             csr_rd_check(.ptr(ral.std_fault_status.lcmgr_err), .compare_value(1));
           end
         join_any
@@ -100,7 +101,7 @@ class flash_ctrl_hw_rma_err_vseq extends flash_ctrl_hw_rma_vseq;
 
         `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rma_state == StRmaEraseWait);,
                      , state_wait_timeout_ns)
-        `DV_CHECK(uvm_hdl_force(path, $urandom))
+        flip_2bits(path);
         cfg.clk_rst_vif.wait_clks(10);
         `DV_CHECK(uvm_hdl_release(path))
         // Fatal alert (std_fault_status.lcmgr_err) is checked in the other thread by

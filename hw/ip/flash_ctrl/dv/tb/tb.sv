@@ -123,6 +123,8 @@ module tb;
   assign flash_ctrl_if.host_outstanding =
                tb.dut.u_eflash.gen_flash_cores[0].u_core.host_outstanding[1:0];
 
+  assign flash_ctrl_if.hw_rvalid =
+               tb.dut.u_flash_hw_if.rvalid_i;
 
   wire flash_test_v;
   assign (pull1, pull0) flash_test_v = 1'b1;

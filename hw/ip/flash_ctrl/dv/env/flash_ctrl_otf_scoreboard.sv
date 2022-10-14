@@ -31,6 +31,9 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   bit comp_off = 0;
   bit derr_expected = 0;
 
+  // monitor_tb_mem off
+  bit mem_mon_off = 0;
+
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     foreach (eg_exp_ctrl_fifo[i]) begin
@@ -390,28 +393,30 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     string name = $sformatf("mon_tb_mem%0d", bank);
     forever begin
       @(posedge cfg.flash_ctrl_mem_vif[bank].mem_wr);
-      `uvm_info("mem_if", "got posedge wr", UVM_MEDIUM)
-      `uvm_create_obj(flash_otf_mem_entry, rcv)
-      rcv.mem_addr = cfg.flash_ctrl_mem_vif[bank].mem_addr;
-      rcv.mem_wdata = cfg.flash_ctrl_mem_vif[bank].mem_wdata;
-      rcv.mem_part = cfg.flash_ctrl_mem_vif[bank].mem_part;
-      rcv.mem_info_sel = cfg.flash_ctrl_mem_vif[bank].mem_info_sel;
-      @(negedge cfg.flash_ctrl_mem_vif[bank].clk_i);
-      if (rcv.mem_part == FlashPartData) begin
-        `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].data_mem_req, 1,,, name)
-      end else begin
-         case (rcv.mem_info_sel)
-           0: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info0_mem_req, 1,,, name)
-           1: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info1_mem_req, 1,,, name)
-           2: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info2_mem_req, 1,,, name)
-           default: `uvm_error(name, $sformatf("bank%0d infosel%0d doesn't exists",
-                                               bank, rcv.mem_info_sel))
-         endcase
-      end
+      if (mem_mon_off == 0) begin
+        `uvm_info("mem_if", "got posedge wr", UVM_MEDIUM)
+        `uvm_create_obj(flash_otf_mem_entry, rcv)
+        rcv.mem_addr = cfg.flash_ctrl_mem_vif[bank].mem_addr;
+        rcv.mem_wdata = cfg.flash_ctrl_mem_vif[bank].mem_wdata;
+        rcv.mem_part = cfg.flash_ctrl_mem_vif[bank].mem_part;
+        rcv.mem_info_sel = cfg.flash_ctrl_mem_vif[bank].mem_info_sel;
+        @(negedge cfg.flash_ctrl_mem_vif[bank].clk_i);
+        if (rcv.mem_part == FlashPartData) begin
+          `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].data_mem_req, 1,,, name)
+        end else begin
+          case (rcv.mem_info_sel)
+            0: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info0_mem_req, 1,,, name)
+            1: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info1_mem_req, 1,,, name)
+            2: `DV_CHECK_EQ(cfg.flash_ctrl_mem_vif[bank].info2_mem_req, 1,,, name)
+            default: `uvm_error(name, $sformatf("bank%0d infosel%0d doesn't exists",
+                                                bank, rcv.mem_info_sel))
+          endcase
+        end
 
-      // collect ref data
-      eg_exp_lm_fifo[bank].get(exp);
-      lm_wdata_comp(exp, rcv, bank);
+        // collect ref data
+        eg_exp_lm_fifo[bank].get(exp);
+        lm_wdata_comp(exp, rcv, bank);
+      end
     end
   endtask // monitor_tb_mem
 
