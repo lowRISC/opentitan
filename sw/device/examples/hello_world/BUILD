@@ -60,4 +60,5 @@ pkg_files(
     name = "package",
     srcs = [":pre_package"],
     prefix = "earlgrey/examples",
+    visibility = ["//visibility:public"],
 )
