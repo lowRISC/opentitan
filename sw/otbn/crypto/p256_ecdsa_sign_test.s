@@ -35,7 +35,7 @@ ecdsa_sign_test:
 
 .data
 
-/* nonce k */
+/* first share of nonce k (first 128 bits of k, then 128 0s) */
 .globl k0
 .balign 32
 k0:
@@ -43,16 +43,17 @@ k0:
   .word 0x21d0a016
   .word 0xb0b2c781
   .word 0x9590ef5d
+  .zero 16
+
+/* second share of nonce k (128 0s, then last 128 bits of k) */
+.globl k1
+.balign 32
+k1:
+  .zero 16
   .word 0x3fdfa379
   .word 0x1b76ebe8
   .word 0x74210263
   .word 0x1420fc41
-
-/* second share of k (all-zero)*/
-.globl k1
-.balign 32
-k1:
-  .zero 32
 
 /* message digest */
 .globl msg
