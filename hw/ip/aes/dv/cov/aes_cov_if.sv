@@ -293,11 +293,6 @@ interface aes_cov_if
   endgroup // aes_reg_interleave_cg
 
 
-  //TODO
-  //LC escalate -> FSM DEADLOCK
-  // will be covered by Assertion
-
-
   ///////////////////////////////////
   // Instantiation Macros          //
   ///////////////////////////////////
