@@ -139,18 +139,18 @@ cc_library(
     ],
 )
 
-manifest(
-    name = "manifest_standard",
-    address_translation = CONST.FALSE,
-    identifier = CONST.ROM_EXT,
-    visibility = ["//visibility:public"],
-)
+manifest({
+    "name": "manifest_standard",
+    "address_translation": CONST.FALSE,
+    "identifier": CONST.ROM_EXT,
+    "visibility": ["//visibility:public"],
+})
 
-manifest(
-    name = "manifest_virtual",
-    address_translation = CONST.TRUE,
-    identifier = CONST.ROM_EXT,
-)
+manifest({
+    "name": "manifest_virtual",
+    "address_translation": CONST.TRUE,
+    "identifier": CONST.ROM_EXT,
+})
 
 opentitan_flash_binary(
     name = "rom_ext_slot_a",
@@ -191,11 +191,11 @@ opentitan_flash_binary(
     ],
 )
 
-manifest(
-    name = "manifest_bad_address_translation",
-    address_translation = 0,
-    identifier = CONST.ROM_EXT,
-)
+manifest({
+    "name": "manifest_bad_address_translation",
+    "address_translation": 0,
+    "identifier": CONST.ROM_EXT,
+})
 
 opentitan_flash_binary(
     name = "rom_ext_slot_a_bad_address_translation",

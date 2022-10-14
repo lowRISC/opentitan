@@ -133,7 +133,7 @@ def _manifest_impl(ctx):
         data_runfiles = ctx.runfiles(files = [file]),
     )
 
-manifest = rule(
+_manifest = rule(
     implementation = _manifest_impl,
     attrs = {
         "signature": attr.string(doc = "Image signature as a hex-encoded string"),
@@ -158,3 +158,7 @@ manifest = rule(
         "entry_point": attr.int(doc = "Offset of the first instruction in the image"),
     },
 )
+
+def manifest(d):
+    _manifest(**d)
+    return d["name"]
