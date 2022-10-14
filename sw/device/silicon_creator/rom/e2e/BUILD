@@ -397,11 +397,11 @@ MSG_SHUTDOWN = {
 
 LC_STATES = ["rma"]
 
-manifest(
-    name = "manifest_bad_identifier",
-    address_translation = CONST.FALSE,
-    identifier = 0,
-)
+manifest({
+    "name": "manifest_bad_identifier",
+    "address_translation": CONST.FALSE,
+    "identifier": 0,
+})
 
 # TODO(#14270): Add remaining lifecycle states.
 [opentitan_functest(
@@ -427,12 +427,12 @@ SEC_VERS = [
     1,
 ]
 
-[manifest(
-    name = "manifest_sec_ver_{}".format(sec_ver),
-    address_translation = CONST.FALSE,
-    identifier = CONST.ROM_EXT,
-    security_version = sec_ver,
-) for sec_ver in SEC_VERS]
+[manifest({
+    "name": "manifest_sec_ver_{}".format(sec_ver),
+    "address_translation": CONST.FALSE,
+    "identifier": CONST.ROM_EXT,
+    "security_version": sec_ver,
+}) for sec_ver in SEC_VERS]
 
 [opentitan_flash_binary(
     name = "empty_test_slot_{}_sec_ver_{}".format(slot, sec_ver),

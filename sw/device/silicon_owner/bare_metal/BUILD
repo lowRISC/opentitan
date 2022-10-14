@@ -62,17 +62,17 @@ cc_library(
     ],
 )
 
-manifest(
-    name = "manifest_standard",
-    address_translation = CONST.FALSE,
-    identifier = CONST.OWNER,
-)
+manifest({
+    "name": "manifest_standard",
+    "address_translation": CONST.FALSE,
+    "identifier": CONST.OWNER,
+})
 
-manifest(
-    name = "manifest_virtual",
-    address_translation = CONST.TRUE,
-    identifier = CONST.OWNER,
-)
+manifest({
+    "name": "manifest_virtual",
+    "address_translation": CONST.TRUE,
+    "identifier": CONST.OWNER,
+})
 
 opentitan_flash_binary(
     name = "bare_metal_slot_a",
