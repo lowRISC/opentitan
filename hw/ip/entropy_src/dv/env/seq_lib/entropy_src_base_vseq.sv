@@ -244,7 +244,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // were locked. (Likely intentionally)
   virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg,
                                 realtime pause=default_cfg_pause,
-                                bit do_disable=1'b0,
                                 output bit completed,
                                 output bit regwen);
     completed = 0;
@@ -255,7 +254,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       cfg.entropy_src_assert_vif.assert_off_alert();
     end
 
-    if (do_disable) begin
+    if (newcfg.preconfig_disable) begin
       disable_dut();
       `uvm_info(`gfn, "DUT Disabled", UVM_MEDIUM)
     end

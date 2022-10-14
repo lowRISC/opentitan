@@ -30,6 +30,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   int observe_fifo_drops   = 0;
 
   bit dut_pipeline_enabled = 0;
+  int seeds_since_enable = 0;
   bit ht_fips_mode = 0;
 
   // The FW_OV pipeline is controlled by two variables: SHA3_START and MODULE_ENABLE
@@ -65,8 +66,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // 32-bit segment of this seed (as determented by seed_tl_read_cnt)
   bit [CSRNG_BUS_WIDTH - 1:0]      tl_best_seed_candidate;
 
-  // The previous output seed.  We need to track this to determine whether to expect "recov_alert"
-  bit [CSRNG_BUS_WIDTH - 1:0]      prev_csrng_seed;
+  // The previous output seed (+ fips bit)  We need to track this to determine whether to expect
+  // the bus_cmp recov_alert
+  bit [CSRNG_BUS_WIDTH : 0]        prev_csrng_seed;
 
   // Number of 32-bit TL reads to the current (active) seed
   // Ranges from 0 (no data read out) to CSRNG_BUS_WIDTH/TL_DW (seed fully read out)
@@ -920,10 +922,24 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           `DV_CHECK_FATAL(csr.predict(.value(prediction), .kind(UVM_PREDICT_READ)))
           seed_tl_read_cnt++;
           if (seed_tl_read_cnt == CSRNG_BUS_WIDTH / TL_DW) begin
+            bit [CSRNG_BUS_WIDTH - 1:0] full_seed;
+
             full_seed_found = 1;
             seed_tl_read_cnt = 0;
-            void'(entropy_data_q.pop_front());
+            full_seed = entropy_data_q.pop_front();
             entropy_data_seeds++;
+
+            // Check to see whether a recov_alert should be expected
+            `uvm_info(`gfn, $sformatf("Seeds since enable: %d", seeds_since_enable), UVM_DEBUG)
+            `uvm_info(`gfn, $sformatf("full_seed: %097x", full_seed), UVM_DEBUG)
+            `uvm_info(`gfn, $sformatf("prev_csrng_seed: %097x", prev_csrng_seed), UVM_DEBUG)
+            if (seeds_since_enable != 0 && full_seed == prev_csrng_seed) begin
+              `uvm_info(`gfn, "Repeated seed, expecting recov_alert", UVM_MEDIUM)
+              `DV_CHECK_FATAL(ral.recov_alert_sts.es_bus_cmp_alert.predict(1'b1));
+              set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+            end
+            prev_csrng_seed = full_seed;
+
           end else if (seed_tl_read_cnt > CSRNG_BUS_WIDTH / TL_DW) begin
             `uvm_error(`gfn, "testbench error: too many segments read from candidate seed")
           end
@@ -976,6 +992,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     if (rst_type == Enable) begin
       clear_ht_stat_predictions();
+      seeds_since_enable = 0;
       health_test_data_q.delete();
     end
 
@@ -997,7 +1014,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     if(rst_type == HardReset) begin
       sha_process_q.delete();
       raw_process_q.delete();
+      repack_idx_fw_ov = 0;
     end
+
     if (rst_type == Disable) begin
       raw_process_q.delete();
     end
@@ -1193,8 +1212,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     string msg;
 
-    sw_regupd = ral.sw_regupd.sw_regupd.get_mirrored_value;
-    module_enabled = ral.module_enable.module_enable.get_mirrored_value == MuBi4True;
+    sw_regupd = `gmv(ral.sw_regupd.sw_regupd);
+    module_enabled = `gmv(ral.module_enable.module_enable) == MuBi4True;
     dut_reg_locked = !sw_regupd || module_enabled;
 
     // if access was to a valid csr, get the csr handle
@@ -1319,6 +1338,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "extht_lo_total_fails": begin
       end
       "alert_threshold": begin
+        locked_reg_access = dut_reg_locked;
       end
       "alert_summary_fail_counts": begin
       end
@@ -1366,18 +1386,22 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         if (locked_reg_access) begin
           string msg = $sformatf("Attempt to write while locked: %s", csr.get_name());
           `uvm_info(`gfn, msg, UVM_FULL)
-          cov_vif.cg_sw_update_sample(
-              csr.get_offset(),
-              ral.sw_regupd.sw_regupd.get_mirrored_value(),
-              ral.module_enable.module_enable.get_mirrored_value() == MuBi4True
-          );
+          // Cover sw_update_sample if this if the new data represents an attempted change
+          // to the previous value (one that can be confirmed by a follow-up read).
+          if (item.a_data != `gmv(csr)) begin
+            cov_vif.cg_sw_update_sample(
+                csr.get_offset(),
+                ral.sw_regupd.sw_regupd.get_mirrored_value(),
+                ral.module_enable.module_enable.get_mirrored_value() == MuBi4True
+            );
+          end
         end else begin
           string msg = $sformatf("Unlocked write to: %s", csr.get_name());
           `uvm_info(`gfn, msg, UVM_FULL)
           if (one_way_threshold) begin
             predict_one_way_threshold(csr, item.a_data, threshold_increases);
           end else begin
-            void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+            `DV_CHECK(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
           end
           // Special handling for registers with broader impacts
           case (csr.get_name())
@@ -2157,14 +2181,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     fips_csrng_q.push_back(fips_csrng);
 
-    // Check to see whether a recov_alert should be expected
-    if (seed_idx != 0 && csrng_seed == prev_csrng_seed) begin
-      `uvm_info(`gfn, "Repeated seed, expecting recov_alert", UVM_MEDIUM)
-      set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
-    end
-
-    prev_csrng_seed = csrng_seed;
-
   endfunction
 
   virtual task process_csrng();
@@ -2179,6 +2195,19 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         continue;
       end
       `uvm_info(`gfn, $sformatf("process_csrng: new item: %096h\n", item.d_data), UVM_HIGH)
+
+      // Check to see whether a recov_alert should be expected
+      `uvm_info(`gfn, $sformatf("Seeds since enable: %d", seeds_since_enable), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("item.d_data: %097x", item.d_data), UVM_DEBUG)
+      `uvm_info(`gfn, $sformatf("prev_csrng_seed: %097x", prev_csrng_seed), UVM_DEBUG)
+      if (seeds_since_enable != 0 && item.d_data == prev_csrng_seed) begin
+        `uvm_info(`gfn, "Repeated seed, expecting recov_alert", UVM_MEDIUM)
+        // TODO: Establish a coverpoint to confirm that this has been seen on this interface
+        `DV_CHECK_FATAL(ral.recov_alert_sts.es_bus_cmp_alert.predict(1'b1));
+        set_exp_alert(.alert_name("recov_alert"), .is_fatal(0));
+      end
+
+      prev_csrng_seed = item.d_data;
 
       while (fips_csrng_q.size() > 0) begin : seed_trial_loop
         bit [FIPS_CSRNG_BUS_WIDTH - 1:0] prediction;
@@ -2198,6 +2227,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end : seed_trial_loop
       `DV_CHECK_EQ_FATAL(match_found, 1,
                          "All candidate csrng seeds have been checked, with no match")
+      seeds_since_enable++;
     end
   endtask
 
