@@ -8,6 +8,10 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
 
+# This package must be kept in sync with get_otp_images() from //rules:otp.bzl.
+# That is, each OTP image referenced by the macro should have a definition in
+# this BUILD file.
+
 autogen_hjson_header(
     name = "otp_ctrl_regs",
     srcs = [
@@ -57,6 +61,18 @@ otp_json(
 otp_image(
     name = "img_prod",
     src = ":otp_ctrl_prod_json",
+)
+
+otp_json(
+    name = "otp_exec_disabled_json",
+    creator_sw_cfg_rom_exec_en = "0x0",
+    lc_count = 8,
+    lc_state = "RMA",
+)
+
+otp_image(
+    name = "img_exec_disabled",
+    src = ":otp_exec_disabled_json",
 )
 
 filegroup(

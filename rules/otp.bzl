@@ -9,6 +9,32 @@ configuration which is then consumed to produce the OTP VMEM image file for
 preloading the OTP in FPGA synthesis or simulation.
 """
 
+def get_otp_images():
+    """Returns a list of (otp_name, img_target) tuples.
+
+    Each tuple corresponds to an OTP image defined in //hw/ip/otp_ctrl/data. The
+    otp_name is a short, unique suffix of the image target, e.g. "rma". The
+    img_target is the full path of the OTP image target.
+    """
+
+    img_targets = [
+        "//hw/ip/otp_ctrl/data:img_dev",
+        "//hw/ip/otp_ctrl/data:img_rma",
+        "//hw/ip/otp_ctrl/data:img_test_unlocked0",
+        "//hw/ip/otp_ctrl/data:img_prod",
+        "//hw/ip/otp_ctrl/data:img_exec_disabled",
+    ]
+
+    out = []
+    for img_target in img_targets:
+        [_, img_target_name] = img_target.rsplit(":")
+        otp_name = img_target_name.removeprefix("img_")
+        out.append((
+            otp_name,
+            img_target,
+        ))
+    return out
+
 def _otp_json_impl(ctx):
     """Bazel rule for generating JSON specifications for OTP configurations."""
 
@@ -38,7 +64,7 @@ def _otp_json_impl(ctx):
                 "CREATOR_SW_CFG_RNG_EN": "0x739",
                 # ROM execution is enabled if this item is set to a non-zero
                 # value.
-                "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
+                "CREATOR_SW_CFG_ROM_EXEC_EN": ctx.attr.creator_sw_cfg_rom_exec_en,
                 # Value to write to the cpuctrl CSR in `rom_init()`.
                 # See:
                 # https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html#cpu-control-register-cpuctrl
@@ -185,6 +211,7 @@ otp_json = rule(
         # definition file (default: hw/ip/lc_ctrl/data/lc_ctrl_state.hjson)
         "lc_state": attr.string(doc = "Life cycle state", default = "RMA"),
         "lc_count": attr.int(doc = "Life cycle count", default = 8),
+        "creator_sw_cfg_rom_exec_en": attr.string(default = "0xffffffff"),
     },
 )
 

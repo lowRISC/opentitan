@@ -4,6 +4,7 @@
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
+load("//rules:otp.bzl", "get_otp_images")
 load("//rules:splice.bzl", "bitstream_splice")
 
 package(default_visibility = ["//visibility:public"])
@@ -80,14 +81,17 @@ bitstream_splice(
     tags = ["manual"],
 )
 
-# Splice in the dev OTP image, replacing the RMA image.
-bitstream_splice(
-    name = "fpga_cw310_rom_otp_dev",
-    src = ":fpga_cw310_rom",
-    data = "//hw/ip/otp_ctrl/data:img_dev",
-    meminfo = ":otp_mmi",
-    tags = ["manual"],
-)
+# Splice OTP images into the ROM bitstream.
+[
+    bitstream_splice(
+        name = "fpga_cw310_rom_otp_" + otp_name,
+        src = ":fpga_cw310_rom",
+        data = img_target,
+        meminfo = ":otp_mmi",
+        tags = ["manual"],
+    )
+    for (otp_name, img_target) in get_otp_images()
+]
 
 # Standalone CW310 image for use with hyperdebug.
 fusesoc_build(
@@ -139,10 +143,12 @@ pkg_files(
     name = "standard",
     srcs = [
         ":fpga_cw310_rom",
-        ":fpga_cw310_rom_otp_dev",
         ":fpga_cw310_test_rom",
         ":otp_mmi",
         ":rom_mmi",
+    ] + [
+        ":fpga_cw310_rom_otp_" + otp_name
+        for (otp_name, _) in get_otp_images()
     ],
     prefix = "earlgrey/fpga_cw310/standard",
     tags = ["manual"],
