@@ -30,9 +30,11 @@ _BFV_TEMPLATE = "{}{}(?s:.*){}{}".format(MSG_BOOT_FAULT, "{0}", MSG_BOOT_FAULT, 
 
 MSG_STARTING_ROM_EXT = "Starting ROM_EXT"
 
-MSG_STORE_ACCESS_FAULT = _BFV_TEMPLATE.format("07495202")
+MSG_INSTRUCTION_ACCESS_FAULT = _BFV_TEMPLATE.format("01495202")
 
 MSG_ILLEGAL_INSTRUCTION_FAULT = _BFV_TEMPLATE.format("02495202")
+
+MSG_STORE_ACCESS_FAULT = _BFV_TEMPLATE.format("07495202")
 
 MSG_PASS = "PASS!"
 
@@ -75,7 +77,7 @@ opentitan_functest(
         # Note: This test never prints a failure message so it will fail only
         # when it times out.
         exit_failure = "NO_FAILURE_MESSAGE",
-        exit_success = "BFV:01495202(?s:.*)BFV:01495202",
+        exit_success = MSG_INSTRUCTION_ACCESS_FAULT,
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom",
@@ -89,7 +91,7 @@ opentitan_functest(
     verilator = verilator_params(
         timeout = "eternal",
         exit_failure = "NO_FAILURE_MESSAGE",
-        exit_success = "BFV:01495202(?s:.*)BFV:01495202",
+        exit_success = MSG_INSTRUCTION_ACCESS_FAULT,
         rom = "//sw/device/silicon_creator/rom",
     ),
     deps = [
