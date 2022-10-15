@@ -435,6 +435,7 @@ test_suite(
 SEC_VERS = [
     0,
     1,
+    2,
 ]
 
 [manifest({
@@ -520,6 +521,53 @@ test_suite(
         t["b"],
     ) for t in BOOT_POLICY_NEWER_CASES],
 )
+
+BOOT_POLICY_ROLLBACK_CASES = [
+    # TODO(#14473): Enable after OTP splicing is ready.
+    # {
+    #     "a": 0,
+    #     "b": 0,
+    #     "exit_success": MSG_BOOT_POLICY_ROLLBACK,
+    # },
+    {
+        "a": 0,
+        "b": 1,
+        "exit_success": "slot=0x20080000, security_version=1",
+    },
+    {
+        "a": 2,
+        "b": 0,
+        "exit_success": "slot=0x20000000, security_version=2",
+    },
+    {
+        "a": 1,
+        "b": 1,
+        "exit_success": "slot=0x20000000, security_version=1",
+    },
+]
+
+[opentitan_functest(
+    name = "boot_policy_rollback_a_{}_b_{}".format(
+        t["a"],
+        t["b"],
+    ),
+    cw310 = cw310_params(
+        exit_success = t["exit_success"],
+    ),
+    key = "multislot",
+    ot_flash_binary = ":sec_ver_{}_{}_image".format(
+        t["a"],
+        t["b"],
+    ),
+    targets = ["cw310_rom"],
+) for t in BOOT_POLICY_ROLLBACK_CASES]
+
+test_suite(
+    name = "boot_policy_rollback",
+    tests = ["boot_policy_rollback_a_{}_b_{}".format(
+        t["a"],
+        t["b"],
+    ) for t in BOOT_POLICY_ROLLBACK_CASES],
 )
 
 SIGVERIFY_MOD_EXP_CASES = [
