@@ -11,9 +11,11 @@ class flash_ctrl_err_base_vseq extends flash_ctrl_rw_vseq;
     fork
       begin
         run_main_event();
+        `JDBG(("main end"))
       end
       begin
         run_error_event();
+        `JDBG(("err end"))
       end
     join
     clean_up();

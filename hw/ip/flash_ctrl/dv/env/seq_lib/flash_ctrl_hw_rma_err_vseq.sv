@@ -20,11 +20,8 @@ class flash_ctrl_hw_rma_err_vseq extends flash_ctrl_hw_rma_vseq;
 
     `uvm_info(`gfn, "FLASH_CTRL_HW_RMA", UVM_LOW)
 
-    // Keep this assertoff for temporary until prim_sync issue is resolved.
-    $assertoff(0, "tb.dut.u_flash_hw_if.u_sync_rma_req.gen_flops.OutputDelay_A");
-    // These are valid assertoff's.
     $assertoff(0, "tb.dut.u_flash_hw_if.ProgRdVerify_A");
-
+    $assertoff(0, "tb.dut.u_flash_hw_if.DisableChk_A");
     // RMA TESTS
 
     // INITIALIZE FLASH REGIONS

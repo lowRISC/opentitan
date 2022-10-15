@@ -53,6 +53,8 @@ class flash_ctrl_scoreboard #(
 
   bit skip_read_check = 0;
 
+  // Ingoring on going alert check
+  bit stop_alert_check = 0;
   flash_phy_pkg::rd_buf_t evict_q[NumBanks][$];
 
   // utility function to word-align an input TL address
@@ -285,18 +287,20 @@ class flash_ctrl_scoreboard #(
           // coverage collection
           case (csr_wr_name)
             "control": begin
-               csr_rd(.ptr(ral.control), .value(data), .backdoor(1'b1));
-               curr_op = get_field_val(ral.control.op, data);
-               erase_sel = get_field_val(ral.control.erase_sel, data);
-               part_sel = get_field_val(ral.control.partition_sel, data);
-               info_sel = get_field_val(ral.control.info_sel, data);
-               part = calc_part(part_sel, info_sel);
-               flash_op_cov.partition  = part;
-               flash_op_cov.erase_type = erase_sel;
-               flash_op_cov.op = curr_op;
-               if (cfg.en_cov) begin
-                 cov.control_cg.sample(flash_op_cov);
-               end
+              if (skip_read_check == 0) begin
+                csr_rd(.ptr(ral.control), .value(data), .backdoor(1'b1));
+                curr_op = get_field_val(ral.control.op, data);
+                erase_sel = get_field_val(ral.control.erase_sel, data);
+                part_sel = get_field_val(ral.control.partition_sel, data);
+                info_sel = get_field_val(ral.control.info_sel, data);
+                part = calc_part(part_sel, info_sel);
+                flash_op_cov.partition  = part;
+                flash_op_cov.erase_type = erase_sel;
+                flash_op_cov.op = curr_op;
+                if (cfg.en_cov) begin
+                  cov.control_cg.sample(flash_op_cov);
+                end
+              end
             end
             "erase_suspend": begin
                csr_rd(.ptr(ral.erase_suspend), .value(data), .backdoor(1'b1));
@@ -420,7 +424,9 @@ class flash_ctrl_scoreboard #(
     // post test checks - ensure that all local fifos and queues are empty
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, eflash_tl_a_chan_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, eflash_tl_d_chan_fifo)
-    `DV_CHECK_EQ(eflash_addr_phase_queue.size, 0)
+    if (!cfg.flush_tlul) begin
+      `DV_CHECK_EQ(eflash_addr_phase_queue.size, 0)
+    end
     if (cfg.scb_check && cfg.check_full_scb_mem_model) begin
       cfg.check_mem_model();
     end
@@ -876,5 +882,21 @@ class flash_ctrl_scoreboard #(
       end
     end
   endfunction
+
+  virtual task check_alert_triggered(string alert_name);
+    if (stop_alert_check) begin
+      exp_alert[alert_name] = 0;
+      exp_alert_contd[alert_name] = 0;
+      return;
+    end else begin
+      repeat(alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + alert_chk_max_delay[alert_name]) begin
+        cfg.clk_rst_vif.wait_n_clks(1);
+        if (under_alert_handshake[alert_name] || cfg.under_reset) return;
+      end
+      if (stop_alert_check) return;
+      `uvm_error(`gfn, $sformatf("alert %0s did not trigger max_delay:%0d",
+                                 alert_name, alert_chk_max_delay[alert_name]))
+    end
+  endtask
 
 endclass : flash_ctrl_scoreboard

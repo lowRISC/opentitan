@@ -198,6 +198,9 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Store program data for read back check
   data_q_t prog_data[flash_op_t];
 
+  // Flush all pending tlul
+  bit       flush_tlul;
+
   `uvm_object_utils(flash_ctrl_env_cfg)
   `uvm_object_new
 

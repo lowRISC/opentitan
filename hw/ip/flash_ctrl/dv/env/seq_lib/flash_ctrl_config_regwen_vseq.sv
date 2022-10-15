@@ -8,6 +8,7 @@
 // While operation is on going, try write random data but register value should not be changed.
 // Finally, release flash_ctrl.ctrl_regwen and does write and readback check
 // with a random data.
+// This test include no flash data transaction.
 class flash_ctrl_config_regwen_vseq extends flash_ctrl_otf_base_vseq;
   `uvm_object_utils(flash_ctrl_config_regwen_vseq)
   `uvm_object_new
@@ -24,7 +25,7 @@ class flash_ctrl_config_regwen_vseq extends flash_ctrl_otf_base_vseq;
   task body();
     uvm_reg_data_t exp_data, dumb_data;
     cfg.scb_h.skip_read_check = 1;
-
+    cfg.scb_check = 0;
     // Write and read back control register
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(ctrl_data)
     // Capture for expected data after regwen force '0'

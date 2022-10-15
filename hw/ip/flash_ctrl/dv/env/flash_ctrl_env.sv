@@ -88,4 +88,21 @@ class flash_ctrl_env #(
 
   endfunction
 
+  task run_phase(uvm_phase phase);
+    fork
+      super.run_phase(phase);
+      flush_tlul();
+    join_none
+  endtask // run_phase
+
+  task flush_tlul();
+    wait(cfg.flush_tlul);
+    foreach (m_tl_agents[i]) begin
+      m_tl_agents[i].cfg.a_source_pend_q.delete();
+      m_tl_agents[i].cfg.vif.rst_n = 0;
+      repeat(2) @(m_tl_agents[i].cfg.vif.mon_cb);
+      m_tl_agents[i].cfg.vif.rst_n = 1;
+    end
+  endtask // flush_tlul
+
 endclass

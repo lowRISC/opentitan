@@ -49,7 +49,8 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
       end
     // Each run of sec_cm takes about 10 min.
     // Limit num_trans of sec_cm to 10.
-      run_sec_cm_fi_vseq(10);
+    // XXX back to 10
+      run_sec_cm_fi_vseq(1);
     end else run_common_vseq_wrapper(num_trans);
   endtask : body
 

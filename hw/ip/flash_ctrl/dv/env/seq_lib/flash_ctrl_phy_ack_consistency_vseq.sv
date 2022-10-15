@@ -31,15 +31,20 @@ class flash_ctrl_phy_ack_consistency_vseq extends flash_ctrl_phy_host_grant_err_
       end
 
       if (add_err1 == 0 && add_err2 == 0) begin
+         cfg.otf_scb_h.mem_mon_off = 1;
+         $assertoff(0, "tb.dut");
         randcase
           1: begin
+            // This force will trigger unwanted fatal_std_err and sw err as well.
             add_err1 = 1;
             @(posedge cfg.flash_ctrl_vif.ctrl_fsm_idle);
+            `JDBG(("assert_err:add_err1"))
             `DV_CHECK(uvm_hdl_force(path1, 1))
           end
           1: begin
             add_err2 = 1;
             wait(cfg.flash_ctrl_vif.host_outstanding == 0);
+            `JDBG(("assert_err:add_err2"))
             `DV_CHECK(uvm_hdl_force(path2, 1))
           end
         endcase // randcase
@@ -48,6 +53,17 @@ class flash_ctrl_phy_ack_consistency_vseq extends flash_ctrl_phy_host_grant_err_
     end // repeat (2)
     check_fault(ral.fault_status.spurious_ack);
     collect_err_cov_status(ral.fault_status);
-    csr_rd_check(.ptr(ral.err_code), .compare_value(0));
-  endtask
+
+    // sw error can be unpredictably triggered. (err_code.prog_err)
+    // In stead of checking err_code == 0,
+    // make sure hw_fault.prog_err doesn't happen.
+    csr_rd_check(.ptr(ral.fault_status.prog_err), .compare_value(0));
+
+    // Give some drain time
+    cfg.clk_rst_vif.wait_n_clks(100);
+    cfg.flush_tlul = 1;
+    p_sequencer.stop_sequences();
+
+  endtask // run_error_event
+
 endclass
