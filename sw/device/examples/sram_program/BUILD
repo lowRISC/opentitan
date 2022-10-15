@@ -106,6 +106,9 @@ opentitan_gdb_fpga_cw310_test(
         monitor reg pmpcfg0 0x9f9f9f9f
         monitor reg pmpaddr0 0x7fffffff
 
+        echo :::: Value of CREATOR_SW_CFG_ROM_EXEC_EN.\\n
+        monitor mdw 0x40131108
+
         echo :::: Load the SRAM program onto the device and check integrity.\\n
         file sram_program.elf
         load sram_program.elf
@@ -125,10 +128,7 @@ opentitan_gdb_fpga_cw310_test(
         ":sram_program_fpga_cw310.elf": "sram_program.elf",
         "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
     },
-    rom_bitstream = "//hw/bitstream:rom",
+    rom_bitstream = "//hw/bitstream:rom_otp_exec_disabled",
     rom_kind = "Rom",
-    tags = [
-        "flaky",
-        "manual",
-    ],
+    tags = ["manual"],
 )
