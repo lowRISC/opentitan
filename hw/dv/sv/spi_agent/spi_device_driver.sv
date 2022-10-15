@@ -28,14 +28,17 @@ class spi_device_driver extends spi_driver;
       `DV_CHECK_EQ(cfg.vif.disconnected, 0)
 
       active_csb = req.csb_sel;
+      $cast(rsp, req.clone());
+      rsp.set_id_info(req);
+
       wait (!under_reset && !cfg.vif.csb[active_csb]);
       fork
         begin: iso_fork
           fork
             case (cfg.spi_func_mode)
-              SpiModeGeneric: send_rx_item(req);
-              SpiModeFlash: send_flash_item(req);
-              SpiModeTpm: send_tpm_item(req);
+              SpiModeGeneric: send_rx_item(req, rsp);
+              SpiModeFlash: send_flash_item(req, rsp);
+              SpiModeTpm: send_tpm_item(req, rsp);
               default: begin
                 `uvm_fatal(`gfn, $sformatf("Invalid mode %s", cfg.spi_func_mode.name))
               end
@@ -47,11 +50,12 @@ class spi_device_driver extends spi_driver;
         end: iso_fork
       join
       seq_item_port.item_done();
+      seq_item_port.put_response(rsp);
       `uvm_info(`gfn, "\n  dev_drv: item done", UVM_HIGH)
     end
   endtask : get_and_drive
 
-  virtual task send_rx_item(spi_item item);
+  virtual task send_rx_item(spi_item item, spi_item rsp);
     logic [3:0] sio_bits;
     bit         bits_q[$];
     int         max_tx_bits;
@@ -73,9 +77,10 @@ class spi_device_driver extends spi_driver;
                                 bits_q.size(), sio_bits[0]), UVM_DEBUG)
 
     end
+    // TODO, ideally we should capture the data device receives and put in rsp.
   endtask : send_rx_item
 
-  virtual task send_flash_item(spi_item item);
+  virtual task send_flash_item(spi_item item, spi_item rsp);
     logic [3:0] sio_bits;
     bit         bits_q[$];
     logic [7:0] data[$] = {item.payload_q};
@@ -83,25 +88,37 @@ class spi_device_driver extends spi_driver;
 
     `uvm_info(`gfn, $sformatf("sending rx_item:\n%s", item.sprint()), UVM_MEDIUM)
 
-    if (item.write_command) return;
+    fork
+      begin : thread_collect_payload
+        forever begin
+          logic [7:0] byte_data;
+          cfg.read_byte(item.num_lanes, !item.write_command, byte_data);
+          rsp.payload_q.push_back(byte_data);
+        end
+      end : thread_collect_payload
 
-    if (cfg.byte_order) cfg.swap_byte_order(data);
-    bits_q = {>> 1 {data}};
+      begin : thread_send_read_data
+        if (!item.write_command) begin
+          if (cfg.byte_order) cfg.swap_byte_order(data);
+          bits_q = {>> 1 {data}};
 
-    if (item.num_lanes == 1) spi_mode = Standard;
-    else if (item.num_lanes == 2) spi_mode = Dual;
-    else spi_mode = Quad;
+          if (item.num_lanes == 1) spi_mode = Standard;
+          else if (item.num_lanes == 2) spi_mode = Dual;
+          else spi_mode = Quad;
 
-    forever begin
-      cfg.wait_sck_edge(DrivingEdge);
-      for (int i = 0; i < item.num_lanes; i++) begin
-        sio_bits[i] = bits_q.size > 0 ? bits_q.pop_front() : $urandom_range(0, 1);
-      end
-      send_data_to_sio(spi_mode, sio_bits);
-    end
+          forever begin
+            cfg.wait_sck_edge(DrivingEdge);
+            for (int i = 0; i < item.num_lanes; i++) begin
+              sio_bits[i] = bits_q.size > 0 ? bits_q.pop_front() : $urandom_range(0, 1);
+            end
+            send_data_to_sio(spi_mode, sio_bits);
+          end
+        end
+      end : thread_send_read_data
+    join
   endtask : send_flash_item
 
-  virtual task send_tpm_item(spi_item item);
+  virtual task send_tpm_item(spi_item item, spi_item rsp);
     // TODO, this mode isn't used in OT project
     `uvm_fatal(`gfn, "TPM device mode isn't supported")
   endtask : send_tpm_item

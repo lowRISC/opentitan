@@ -31,11 +31,11 @@ class spi_device_seq extends spi_base_seq;
 
   virtual task send_rsp(ref spi_item item_q[$]);
     forever begin
-      spi_item  rsp;
       wait(item_q.size > 0);
       rsp = item_q.pop_front();
       start_item(rsp);
       finish_item(rsp);
+      get_response(rsp);
     end
   endtask
 

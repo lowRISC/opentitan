@@ -34,6 +34,7 @@ class spi_device_flash_seq extends dv_base_seq #(
       rsp.payload_q = byte_data_q;
       start_item(rsp);
       finish_item(rsp);
+      get_response(rsp);
     end while (is_forever_rsp_seq);
   endtask
 
