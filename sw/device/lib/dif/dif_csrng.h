@@ -192,6 +192,14 @@ typedef enum dif_csrng_entropy_src_toggle {
   kDifCsrngEntropySrcToggleEnable = 0,
 } dif_csrng_entropy_src_toggle_t;
 
+enum {
+  /**
+   * Maximum seed material number of uint32_t words supported in CSRNG
+   * instantiate and seed commands.
+   */
+  kDifCsrngSeedMaterialMaxWordLen = 12,
+};
+
 /**
  * CSRNG common transaction parameters.
  */
@@ -205,7 +213,7 @@ typedef struct dif_csrng_seed_material {
   /**
    * Seed material used in CSRNG
    */
-  uint32_t seed_material[12];
+  uint32_t seed_material[kDifCsrngSeedMaterialMaxWordLen];
 } dif_csrng_seed_material_t;
 
 /**
