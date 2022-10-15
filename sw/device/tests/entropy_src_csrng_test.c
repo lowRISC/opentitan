@@ -11,6 +11,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -119,24 +120,22 @@ static void csrng_generate_output_check(void) {
  * Verifies that the entropy req interrupt is triggered on CSRNG instantiate and
  * reseed commands.
  */
-static void test_csrng_sw_entropy_req_interrupt(void) {
+static void test_csrng_sw_entropy_req_interrupt(
+    const dif_csrng_seed_material_t *seed_material) {
   entropy_testutils_stop_all();
   CHECK_DIF_OK(dif_entropy_src_configure(
       &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
-  // Instantiate the CSRNG instance with no seed material to use the seed
-  // provided by entropy_src exclusively.
-  const dif_csrng_seed_material_t kEntropyInput = {0};
   csrng_testutils_cmd_ready_wait(&csrng);
   csrng_entropy_req_irq_enable();
   CHECK_DIF_OK(dif_csrng_instantiate(&csrng, kDifCsrngEntropySrcToggleEnable,
-                                     &kEntropyInput));
+                                     seed_material));
   csrng_entropy_req_irq_block_wait();
   csrng_generate_output_check();
 
   csrng_entropy_req_irq_enable();
-  CHECK_DIF_OK(dif_csrng_reseed(&csrng, &kEntropyInput));
+  CHECK_DIF_OK(dif_csrng_reseed(&csrng, seed_material));
   csrng_entropy_req_irq_block_wait();
   csrng_generate_output_check();
 
@@ -148,32 +147,32 @@ static void test_csrng_sw_entropy_req_interrupt(void) {
  * Verifies that the entropy req interrupt is triggered on EDN instantiate and
  * reseed commands.
  */
-static void test_csrng_edn_entropy_req_interrupt(void) {
+static void test_csrng_edn_entropy_req_interrupt(
+    const dif_edn_seed_material_t *seed_material) {
   entropy_testutils_stop_all();
   CHECK_DIF_OK(dif_entropy_src_configure(
       &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
-  const dif_edn_seed_material_t kEntropyInput = {0};
   CHECK_DIF_OK(dif_edn_configure(&edn0));
   csrng_entropy_req_irq_enable();
-  CHECK_DIF_OK(dif_edn_instantiate(&edn0, kDifEdnEntropySrcToggleEnable,
-                                   &kEntropyInput));
+  CHECK_DIF_OK(
+      dif_edn_instantiate(&edn0, kDifEdnEntropySrcToggleEnable, seed_material));
   csrng_entropy_req_irq_block_wait();
 
   csrng_entropy_req_irq_enable();
-  CHECK_DIF_OK(dif_edn_reseed(&edn0, &kEntropyInput));
+  CHECK_DIF_OK(dif_edn_reseed(&edn0, seed_material));
   csrng_entropy_req_irq_block_wait();
   CHECK_DIF_OK(dif_edn_uninstantiate(&edn0));
 
   CHECK_DIF_OK(dif_edn_configure(&edn1));
   csrng_entropy_req_irq_enable();
-  CHECK_DIF_OK(dif_edn_instantiate(&edn1, kDifEdnEntropySrcToggleEnable,
-                                   &kEntropyInput));
+  CHECK_DIF_OK(
+      dif_edn_instantiate(&edn1, kDifEdnEntropySrcToggleEnable, seed_material));
   csrng_entropy_req_irq_block_wait();
 
   csrng_entropy_req_irq_enable();
-  CHECK_DIF_OK(dif_edn_reseed(&edn1, &kEntropyInput));
+  CHECK_DIF_OK(dif_edn_reseed(&edn1, seed_material));
   csrng_entropy_req_irq_block_wait();
   CHECK_DIF_OK(dif_edn_uninstantiate(&edn1));
 
@@ -205,14 +204,30 @@ void ottf_external_isr(void) {
 bool test_main(void) {
   init_peripherals();
 
+  // Get test random parameters before we disable the entropy complex.
+  // rand_testutils relies on the ibex rnd CSR which is connected to EDN0.
+  dif_csrng_seed_material_t csrng_seed;
+  csrng_seed.seed_material_len =
+      rand_testutils_gen32_range(/*min=*/0, kDifCsrngSeedMaterialMaxWordLen);
+  for (size_t i = 0; i < csrng_seed.seed_material_len; ++i) {
+    csrng_seed.seed_material[i] = rand_testutils_gen32();
+  }
+
+  dif_edn_seed_material_t edn_seed;
+  edn_seed.len =
+      rand_testutils_gen32_range(/*min=*/0, kDifEntropySeedMaterialMaxWordLen);
+  for (size_t i = 0; i < edn_seed.len; ++i) {
+    edn_seed.data[i] = rand_testutils_gen32();
+  }
+
   uint32_t num_iterations = kTestParamNumIterationsSim;
   if (kDeviceType != kDeviceSimDV && kDeviceType != kDeviceSimVerilator) {
     num_iterations = kTestParamNumIterationsOther;
   }
 
   for (size_t i = 0; i < num_iterations; ++i) {
-    test_csrng_sw_entropy_req_interrupt();
-    test_csrng_edn_entropy_req_interrupt();
+    test_csrng_sw_entropy_req_interrupt(&csrng_seed);
+    test_csrng_edn_entropy_req_interrupt(&edn_seed);
   }
 
   return true;

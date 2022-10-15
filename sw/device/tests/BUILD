@@ -630,6 +630,7 @@ opentitan_functest(
         "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
