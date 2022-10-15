@@ -208,7 +208,6 @@ class flash_ctrl_scoreboard #(
     bit            addr_phase_write = (write && channel == AddrChannel);
     bit            data_phase_read = (!write && channel == DataChannel);
     bit            data_phase_write = (write && channel == DataChannel);
-    flash_op_t     flash_op_cov;
     bit            erase_req;
     if (skip_read_check) do_read_check = 0;
     // if access was to a valid csr, get the csr handle
@@ -285,18 +284,21 @@ class flash_ctrl_scoreboard #(
           // coverage collection
           case (csr_wr_name)
             "control": begin
-               csr_rd(.ptr(ral.control), .value(data), .backdoor(1'b1));
-               curr_op = get_field_val(ral.control.op, data);
-               erase_sel = get_field_val(ral.control.erase_sel, data);
-               part_sel = get_field_val(ral.control.partition_sel, data);
-               info_sel = get_field_val(ral.control.info_sel, data);
-               part = calc_part(part_sel, info_sel);
-               flash_op_cov.partition  = part;
-               flash_op_cov.erase_type = erase_sel;
-               flash_op_cov.op = curr_op;
-               if (cfg.en_cov) begin
-                 cov.control_cg.sample(flash_op_cov);
-               end
+              if (skip_read_check == 0) begin
+                csr_rd(.ptr(ral.control), .value(data), .backdoor(1'b1));
+                curr_op = get_field_val(ral.control.op, data);
+                erase_sel = get_field_val(ral.control.erase_sel, data);
+                part_sel = get_field_val(ral.control.partition_sel, data);
+                info_sel = get_field_val(ral.control.info_sel, data);
+                part = calc_part(part_sel, info_sel);
+                if (cfg.en_cov) begin
+                  flash_op_t     flash_op_cov;
+                  flash_op_cov.partition  = part;
+                  flash_op_cov.erase_type = erase_sel;
+                  flash_op_cov.op = curr_op;
+                  cov.control_cg.sample(flash_op_cov);
+                end
+              end
             end
             "erase_suspend": begin
                csr_rd(.ptr(ral.erase_suspend), .value(data), .backdoor(1'b1));
