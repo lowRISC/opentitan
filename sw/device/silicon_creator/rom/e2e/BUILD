@@ -447,7 +447,7 @@ SEC_VERS = [
     srcs = ["empty_test.c"],
     devices = ["fpga_cw310"],
     local_defines = [
-        "EMPTY_TEST_MSG=\"slot={} security_version={}\"".format(slot, sec_ver),
+        'EMPTY_TEST_MSG=\\"slot=%p,\\ security_version=%01d\\",manifest_def_get(),manifest_def_get()->security_version',
     ],
     manifest = ":manifest_sec_ver_{}".format(sec_ver),
     signed = True,
@@ -472,47 +472,52 @@ SEC_VERS = [
     devices = ["fpga_cw310"],
 ) for sec_ver_a in SEC_VERS for sec_ver_b in SEC_VERS]
 
-# [[sec_ver_a, sec_ver_b, correct_slot, correct_sec_ver], ...]
 BOOT_POLICY_NEWER_CASES = [
-    [
-        0,
-        0,
-        "a",
-        0,
-    ],
-    [
-        0,
-        1,
-        "b",
-        1,
-    ],
-    [
-        1,
-        0,
-        "a",
-        1,
-    ],
-    [
-        1,
-        1,
-        "a",
-        1,
-    ],
+    {
+        "a": 0,
+        "b": 0,
+        "exit_success": "slot=0x20000000, security_version=0",
+    },
+    {
+        "a": 0,
+        "b": 1,
+        "exit_success": "slot=0x20080000, security_version=1",
+    },
+    {
+        "a": 1,
+        "b": 0,
+        "exit_success": "slot=0x20000000, security_version=1",
+    },
+    {
+        "a": 1,
+        "b": 1,
+        "exit_success": "slot=0x20000000, security_version=1",
+    },
 ]
 
 [opentitan_functest(
-    name = "boot_policy_newer_a_{}_b_{}".format(sec_ver_a, sec_ver_b),
+    name = "boot_policy_newer_a_{}_b_{}".format(
+        t["a"],
+        t["b"],
+    ),
     cw310 = cw310_params(
-        exit_success = "slot={} security_version={}".format(correct_slot, correct_sec_ver),
+        exit_success = t["exit_success"],
     ),
     key = "multislot",
-    ot_flash_binary = ":sec_ver_{}_{}_image".format(sec_ver_a, sec_ver_b),
+    ot_flash_binary = ":sec_ver_{}_{}_image".format(
+        t["a"],
+        t["b"],
+    ),
     targets = ["cw310_rom"],
-) for sec_ver_a, sec_ver_b, correct_slot, correct_sec_ver in BOOT_POLICY_NEWER_CASES]
+) for t in BOOT_POLICY_NEWER_CASES]
 
 test_suite(
     name = "boot_policy_newer",
-    tests = ["boot_policy_newer_a_{}_b_{}".format(sec_ver_a, sec_ver_b) for sec_ver_a, sec_ver_b, _, _ in BOOT_POLICY_NEWER_CASES],
+    tests = ["boot_policy_newer_a_{}_b_{}".format(
+        t["a"],
+        t["b"],
+    ) for t in BOOT_POLICY_NEWER_CASES],
+)
 )
 
 SIGVERIFY_MOD_EXP_CASES = [
