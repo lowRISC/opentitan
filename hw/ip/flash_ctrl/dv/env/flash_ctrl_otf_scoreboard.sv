@@ -20,8 +20,8 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
   // tb memory model
   // This is used for the last mile write data integrity check
-  bit[flash_phy_pkg::FullDataWidth] data_mem[NumBanks][bit[BankAddrW-1:0]];
-  bit[flash_phy_pkg::FullDataWidth] info_mem[NumBanks][InfoTypes][bit[BankAddrW-1:0]];
+  bit[flash_phy_pkg::FullDataWidth-1:0] data_mem[NumBanks][bit[BankAddrW-1:0]];
+  bit[flash_phy_pkg::FullDataWidth-1:0] info_mem[NumBanks][InfoTypes][bit[BankAddrW-1:0]];
 
   // register double written entries
   bit corrupt_entry[rd_cache_t];

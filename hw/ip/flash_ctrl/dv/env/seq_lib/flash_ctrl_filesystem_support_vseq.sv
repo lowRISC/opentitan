@@ -17,10 +17,10 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
   flash_op_t my_op;
   data_q_t readback_data[flash_op_t];
   flash_op_t check_ent_q[$];
+  mem_addr_q_t addr_q;
 
   virtual task body();
     int round;
-    mem_addr_q_t addr_q;
 
     special_info_acc_c.constraint_mode(0);
     flash_program_data_c.constraint_mode(0);
@@ -126,15 +126,32 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
 
   // Program flash.
   // Program all 0 or random data depends on 'all_zero' value.
+  // If program address is in global 'addr_q', program all zero
+  // to the address.
   // Afte program, store write data for readback check.
   task filesys_ctrl_prgm(flash_op_t flash_op_p, bit all_zero, output data_q_t wdata);
     bit poll_fifo_status = 1;
+    bit [BusBankAddrW-1:0] mem_addr = (flash_op_p.addr >> 3);
+    bit                    ovwr_zero = 0;
 
-    `uvm_info(`gfn, $sformatf("PROGRAM ADDRESS: 0x%0h", flash_op_p.addr), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("PROGRAM ADDRESS: 0x%0h", flash_op_p.addr), UVM_MEDIUM)
     // Randomize Write Data
     for (int j = 0; j < flash_op_p.num_words; j++) begin
-      flash_program_data[j] = (all_zero)? 'h0 : $urandom();
+      if (j % 2 == 0) begin
+        foreach (addr_q[i]) begin
+          if (mem_addr == addr_q[i]) begin
+            ovwr_zero = 1;
+            break;
+          end
+        end
+      end
+
+      flash_program_data[j] = (all_zero | ovwr_zero)? 'h0 : $urandom();
       wdata.push_back(flash_program_data[j]);
+      if (j % 2 == 1) begin
+        ovwr_zero = 0;
+        mem_addr++;
+      end
     end
 
     flash_ctrl_start_op(flash_op_p);
@@ -178,18 +195,7 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
 
     size = flash_op_r.num_words / 2;
     if (serr) begin
-      int        err_idx, bank;
-      flash_dv_part_e partition;
-      addr_t aligned_addr;
-      aligned_addr = flash_op_r.addr;
-      bank = flash_op_r.addr[OTFBankId];
-      partition = flash_op_r.partition;
-      aligned_addr[31:OTFBankId] = 'h0;
-      for (int i = 0; i < size; i++) begin
-        err_idx = $urandom_range(0, 75);
-        cfg.flash_bit_flip(cfg.mem_bkdr_util_h[partition][bank], aligned_addr, err_idx);
-        aligned_addr += 8;
-      end
+      filesystem_add_bit_err(flash_op_r.partition, flash_op_r.addr, size);
     end
     flash_ctrl_start_op(flash_op_r);
     flash_ctrl_read(flash_op_r.num_words, rdata, poll_fifo_status);
@@ -205,15 +211,7 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
 
     for (int i = 0; i < flash_op_r.num_words; i++) begin
       if (serr & (i % 2 == 0)) begin
-        int        err_idx, bank;
-        flash_dv_part_e partition;
-        addr_t aligned_addr;
-        aligned_addr = tl_addr;
-        bank = tl_addr[OTFBankId];
-        partition = flash_op_r.partition;
-        aligned_addr[31:OTFBankId] = 'h0;
-        err_idx = $urandom_range(0, 75);
-        cfg.flash_bit_flip(cfg.mem_bkdr_util_h[partition][bank], aligned_addr, err_idx);
+        filesystem_add_bit_err(flash_op_r.partition, tl_addr, 1);
       end
       do_direct_read(.addr(tl_addr), .mask('1), .blocking(1), .rdata(unit_rdata),
                      .completed(completed));
@@ -232,5 +230,34 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
       flash_op.addr += 8;
     end
   endfunction // generate_all_addr
+
+  function void filesystem_add_bit_err(flash_dv_part_e partition, addr_t addr, int size);
+    int err_idx, bank;
+    addr_t per_bank_addr;
+    bit [flash_phy_pkg::FullDataWidth-1:0] mem_data;
+
+    bank = addr[OTFBankId];
+    for (int i = 0; i < size; i++) begin
+      per_bank_addr = addr;
+      per_bank_addr[31:OTFBankId] = 'h0;
+
+      if (!cfg.serr_addr_tbl[addr].exists(partition)) begin
+        cfg.serr_addr_tbl[addr][partition] = 1;
+        err_idx = $urandom_range(0, 75);
+        cfg.flash_bit_flip(cfg.mem_bkdr_util_h[partition][bank], per_bank_addr, err_idx);
+        // Flip the same bit in the reference mem model.
+        if (partition == FlashPartData) begin
+          mem_data = cfg.otf_scb_h.data_mem[bank][per_bank_addr>>3];
+          mem_data[err_idx] = ~mem_data[err_idx];
+          cfg.otf_scb_h.data_mem[bank][per_bank_addr>>3] = mem_data;
+        end else begin
+          mem_data = cfg.otf_scb_h.info_mem[bank][partition>>1][per_bank_addr>>3];
+          mem_data[err_idx] = ~mem_data[err_idx];
+          cfg.otf_scb_h.info_mem[bank][partition>>1][per_bank_addr>>3] = mem_data;
+        end
+      end
+      addr += 8;
+    end
+  endfunction // filesystem_add_bit_err
 
 endclass // flash_ctrl_filesystem_support_vseq
