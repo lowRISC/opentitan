@@ -6,12 +6,13 @@
 
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/manifest_def.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
 #ifdef EMPTY_TEST_MSG
-  LOG_INFO(OT_STRINGIFY(EMPTY_TEST_MSG));
+  LOG_INFO(EMPTY_TEST_MSG);
 #endif
   return true;
 }
