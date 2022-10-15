@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library", "py_test")
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
@@ -20,6 +20,12 @@ py_binary(
     name = "gen_vivado_mem_image",
     srcs = ["gen_vivado_mem_image.py"],
     deps = [":mem"],
+)
+
+py_test(
+    name = "gen_vivado_mem_image_test",
+    srcs = ["gen_vivado_mem_image_test.py"],
+    deps = [":gen_vivado_mem_image"],
 )
 
 py_binary(
