@@ -6,8 +6,8 @@
   target_dir: "lowrisc_ibex",
 
   upstream: {
-    url: "https://github.com/lowRISC/ibex.git",
-    rev: "master",
+    url: "https://github.com/GregAC/ibex.git",
+    rev: "new_fetch_enable",
   },
 
   mapping: [
