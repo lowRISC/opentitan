@@ -122,6 +122,7 @@ module ibex_top import ibex_pkg::*; #(
   output logic [63:0]                  rvfi_ext_mcycle,
   output logic [31:0]                  rvfi_ext_mhpmcounters [10],
   output logic [31:0]                  rvfi_ext_mhpmcountersh [10],
+  output logic                         rvfi_ext_ic_scr_key_valid,
 `endif
 
   // CPU Control Signals
@@ -369,6 +370,7 @@ module ibex_top import ibex_pkg::*; #(
     .rvfi_ext_mcycle,
     .rvfi_ext_mhpmcounters,
     .rvfi_ext_mhpmcountersh,
+    .rvfi_ext_ic_scr_key_valid,
 `endif
 
     .fetch_enable_i        (fetch_enable_buf),
@@ -1109,10 +1111,17 @@ module ibex_top import ibex_pkg::*; #(
     // Should only see a request response if we're expecting one
     `ASSERT(PendingAccessTrackingCorrect, data_rvalid_i |-> pending_dside_accesses_q[0])
 
-    // data_rdata_i and data_rdata_intg_i are only relevant to reads. Check neither are X on
-    // a response to a read.
-    `ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i},
-        data_rvalid_i & pending_dside_accesses_q[0].is_read)
+    if (SecureIbex) begin : g_secure_ibex_mem_assert
+      // For SecureIbex responses to both writes and reads must specify rdata and rdata_intg (for
+      // writes rdata is effectively ignored by rdata_intg still checked against rdata)
+      `ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i},
+          data_rvalid_i)
+    end else begin : g_no_secure_ibex_mem_assert
+      // Without SecureIbex data_rdata_i and data_rdata_intg_i are only relevant to reads. Check
+      // neither are X on a response to a read.
+      `ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i},
+          data_rvalid_i & pending_dside_accesses_q[0].is_read)
+    end
 
     // data_err_i relevant to both reads and writes. Check it isn't X on any response.
     `ASSERT_KNOWN_IF(IbexDataRErrPayloadX, data_err_i, data_rvalid_i)

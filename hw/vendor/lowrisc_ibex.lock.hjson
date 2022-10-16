@@ -8,7 +8,7 @@
 {
   upstream:
   {
-    url: https://github.com/lowRISC/ibex.git
-    rev: 37745c5c729110d0cde2c8fb1c9c0e7365feea0f
+    url: https://github.com/GregAC/ibex.git
+    rev: f09416e27c283dd63753e006268c46b8787d3c63
   }
 }

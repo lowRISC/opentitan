@@ -7,6 +7,7 @@
 import argparse
 import os
 import sys
+import subprocess
 import pathlib3x as pathlib
 
 from ibex_cmd import get_sim_opts
@@ -14,7 +15,7 @@ import riscvdv_interface
 from scripts_lib import run_one, format_to_cmd
 from test_entry import read_test_dot_seed, get_test_entry
 from metadata import RegressionMetadata
-from test_run_result import TestRunResult
+from test_run_result import TestRunResult, Failure_Modes
 
 import logging
 logger = logging.getLogger(__name__)
@@ -80,17 +81,22 @@ def _main() -> int:
     trr.dir_test.mkdir(exist_ok=True, parents=True)
     trr.rtl_cmds   = [format_to_cmd(cmd) for cmd in sim_cmds]
     trr.rtl_stdout = trr.dir_test / 'rtl_sim_stdstreams.log'
-    trr.export(write_yaml=True)
 
     # Write all sim_cmd output into a single logfile
     with open(trr.rtl_stdout, 'wb') as sim_fd:
 
-        for cmd in trr.rtl_cmds:
-            # Note that we don't capture the success or failure of the subprocess:
+        try:
+            for cmd in trr.rtl_cmds:
+                # Note that we don't capture the success or failure of the subprocess:
+                sim_fd.write(f"Running run-rtl command :\n{' '.join(cmd)}\n".encode())
+                run_one(md.verbose, cmd,
+                        redirect_stdstreams=sim_fd,
+                        timeout_s=md.run_rtl_timeout_s,
+                        reraise=True)  # Allow us to catch timeout exceptions at this level
+        except subprocess.TimeoutExpired:
+            trr.failure_mode = Failure_Modes.TIMEOUT
 
-            sim_fd.write(f"Running run-rtl command :\n{' '.join(cmd)}\n".encode())
-            run_one(md.verbose, cmd, redirect_stdstreams=sim_fd, timeout_s=1800)
-
+    trr.export(write_yaml=True)
     # Always return 0 (success), even if the test failed. We've successfully
     # generated a log either way.
     return 0

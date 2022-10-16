@@ -11,6 +11,10 @@ class ibex_mem_intf_response_agent_cfg extends uvm_object;
   // interface handle used by driver & monitor
   virtual ibex_mem_intf vif;
 
+  // When set write responses have a fixed 32'hffffffff for rdata and matching correct rintg. When
+  // unset both rdata and rintg fields are x for write responses
+  bit fixed_data_write_response = 1'b0;
+
   // delay between request and grant
   int unsigned gnt_delay_min = 0;
   int unsigned gnt_delay_max = 10;
@@ -40,12 +44,13 @@ class ibex_mem_intf_response_agent_cfg extends uvm_object;
   }
 
   `uvm_object_utils_begin(ibex_mem_intf_response_agent_cfg)
-    `uvm_field_int(gnt_delay_min,       UVM_DEFAULT)
-    `uvm_field_int(gnt_delay_max,       UVM_DEFAULT)
-    `uvm_field_int(valid_delay_min,     UVM_DEFAULT)
-    `uvm_field_int(valid_delay_max,     UVM_DEFAULT)
-    `uvm_field_int(zero_delays,         UVM_DEFAULT)
-    `uvm_field_int(zero_delay_pct,      UVM_DEFAULT)
+    `uvm_field_int(fixed_data_write_response, UVM_DEFAULT)
+    `uvm_field_int(gnt_delay_min,             UVM_DEFAULT)
+    `uvm_field_int(gnt_delay_max,             UVM_DEFAULT)
+    `uvm_field_int(valid_delay_min,           UVM_DEFAULT)
+    `uvm_field_int(valid_delay_max,           UVM_DEFAULT)
+    `uvm_field_int(zero_delays,               UVM_DEFAULT)
+    `uvm_field_int(zero_delay_pct,            UVM_DEFAULT)
   `uvm_object_utils_end
 
 endclass

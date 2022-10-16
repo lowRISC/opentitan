@@ -39,6 +39,10 @@ class riscv_pmp_cfg extends uvm_object;
   // allowing all access restrictions to be enforced.
   bit enable_pmp_exception_handler = 1'b1;
 
+  // Don't generate the usual PMP setup section, instead generate a setup that provides a single
+  // region allowing full access to all of memory from both U mode and M mode.
+  bit suppress_pmp_setup = 0;
+
   // Setting this bit to 1'b1 enables generation of the directed stream of instructions to test
   // write accesses to all supported pmpaddr[i] CSRs.
   bit enable_write_pmp_csr;
@@ -141,6 +145,7 @@ class riscv_pmp_cfg extends uvm_object;
     get_int_arg_value("+pmp_granularity=", pmp_granularity);
     get_bool_arg_value("+pmp_randomize=", pmp_randomize);
     get_bool_arg_value("+pmp_allow_addr_overlap=", pmp_allow_addr_overlap);
+    get_bool_arg_value("+suppress_pmp_setup=", suppress_pmp_setup);
     get_bool_arg_value("+enable_write_pmp_csr=", enable_write_pmp_csr);
     get_hex_arg_value("+pmp_max_offset=", pmp_max_offset);
     `uvm_info(`gfn, $sformatf("pmp max offset: 0x%0x", pmp_max_offset), UVM_LOW)
@@ -305,6 +310,15 @@ class riscv_pmp_cfg extends uvm_object;
   // TODO(udinator) - implement function to return hardware masked pmpaddr "representation"
   function bit [XLEN - 1 : 0] convert_addr2pmp(bit [XLEN - 1 : 0] addr);
     `uvm_info(`gfn, "Placeholder function, need to implement", UVM_LOW)
+  endfunction
+
+  // Generates code to setup a single PMP region allowing full access to all memory
+  function void gen_pmp_enable_all(riscv_reg_t scratch_reg, ref string instr[$]);
+    // Setup region 0 to NAPOT covering the whole 32-bit address space, with RWX permissions and no
+    // lock.
+    instr.push_back($sformatf("li x%0d, 0x1fffffff", scratch_reg));
+    instr.push_back($sformatf("csrw 0x%0x, x%0d", PMPADDR0, scratch_reg));
+    instr.push_back($sformatf("csrw 0x%0x, 0x1f", PMPCFG0));
   endfunction
 
   // This function parses the pmp_cfg[] array to generate the actual instructions to set up

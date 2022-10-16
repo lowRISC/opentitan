@@ -251,6 +251,8 @@ PMP
   * NA4
   * NAPOT
 
+* ``cp_napot_addr_modes`` - When NAPOT is enabled check that each address mode is seen at least once.
+
 * ``cp_region_priv_bits`` - Each region configured with all possible permissions including locked/unlocked.
 
   * Different permissions with MML enabled and disabled, separate cover points for R/W/X/L values with and without MML.

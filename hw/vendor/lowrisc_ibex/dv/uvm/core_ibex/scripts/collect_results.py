@@ -10,7 +10,7 @@ import io
 import pathlib3x as pathlib
 import dataclasses
 from metadata import RegressionMetadata, LockedMetadata
-from test_run_result import TestRunResult
+from test_run_result import TestRunResult, Failure_Modes
 import scripts_lib as ibex_lib
 from typing import List, TextIO
 
@@ -159,10 +159,14 @@ def main() -> int:
         for f in md.tests_pickle_files:
             try:
                 trr = TestRunResult.construct_from_pickle(f)
-                summary_dict[f"{trr.testname}.{trr.seed}"] = ('PASS' if trr.passed else 'FAILED')
+                summary_dict[f"{trr.testname}.{trr.seed}"] = \
+                    ('PASS' if trr.passed else
+                     'FAILED' + (" {T}" if (trr.failure_mode == Failure_Modes.TIMEOUT) else ""))
                 if trr.passed:
                     passing_tests.append(trr)
                 else:
+                    if (trr.failure_mode == Failure_Modes.TIMEOUT):
+                        trr.failure_message = f"[FAILURE] Simulation timed-out [{md.run_rtl_timeout_s}s].\n"
                     failing_tests.append(trr)
             except RuntimeError as e:
                 failing_tests.append(

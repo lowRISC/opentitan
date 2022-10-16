@@ -81,6 +81,9 @@ class core_ibex_base_test extends uvm_test;
     string cosim_log_file;
     bit [31:0] pmp_num_regions;
     bit [31:0] pmp_granularity;
+    bit [31:0] mhpm_counter_num;
+    bit        secure_ibex;
+    bit        icache;
 
     super.build_phase(phase);
     $value$plusargs("timeout_in_cycles=%0d", timeout_in_cycles);
@@ -119,9 +122,24 @@ class core_ibex_base_test extends uvm_test;
       pmp_granularity = '0;
     end
 
+    if (!uvm_config_db#(bit [31:0])::get(null, "", "MHPMCounterNum", mhpm_counter_num)) begin
+      mhpm_counter_num = '0;
+    end
+
+    if (!uvm_config_db#(bit)::get(null, "", "SecureIbex", secure_ibex)) begin
+      secure_ibex = '0;
+    end
+
+    if (!uvm_config_db#(bit)::get(null, "", "ICache", icache)) begin
+      icache = '0;
+    end
+
     cosim_cfg.pmp_num_regions = pmp_num_regions;
     cosim_cfg.pmp_granularity = pmp_granularity;
+    cosim_cfg.mhpm_counter_num = mhpm_counter_num;
     cosim_cfg.relax_cosim_check = cfg.disable_cosim;
+    cosim_cfg.secure_ibex = secure_ibex;
+    cosim_cfg.icache = icache;
 
     uvm_config_db#(core_ibex_cosim_cfg)::set(null, "*cosim_agent*", "cosim_cfg", cosim_cfg);
 
