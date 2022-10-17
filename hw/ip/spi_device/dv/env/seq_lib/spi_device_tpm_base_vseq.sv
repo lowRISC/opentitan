@@ -65,8 +65,11 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     ral.cfg.cpol.set(1'b0);
     ral.cfg.cpha.set(1'b0);
     csr_update(.csr(ral.cfg));
-    cfg.spi_cfg_sema.put();
 
+    // tpm_cfg needs to be included in cfg.spi_cfg_sema, because tpm and flash may be enabled
+    // in 2 separate threads, but when tpm is on, sck polariy/phase needs to be 'b00, while flash
+    // can support 'b11. Hence, when enable flash mode, need to check tpm_cfg.en before setting
+    // sck polariy/phase.
     ral.tpm_cfg.en.set(1'b1);
     ral.tpm_cfg.tpm_mode.set(mode);
     if (is_hw_return) begin
@@ -80,6 +83,7 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     end
     csr_update(.csr(ral.tpm_cfg));
     `uvm_info(`gfn, ral.tpm_cfg.sprint(), UVM_MEDIUM)
+    cfg.spi_cfg_sema.put();
   endtask : tpm_init
 
   // Check the CMD_ADDR/wrFIFO contents.

@@ -31,4 +31,11 @@ class spi_device_mailbox_vseq extends spi_device_intercept_vseq;
       ReadAddrOutsideMailbox     :/ 1
     };
   }
+
+  virtual task pre_start();
+    // always set both mailbox enables
+    cfg_mailbox_en_pct = 100;
+    intercept_mailbox_en_pct = 100;
+    super.pre_start();
+  endtask
 endclass : spi_device_mailbox_vseq

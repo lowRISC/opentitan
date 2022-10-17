@@ -18,6 +18,10 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
   bit allow_write_enable_disable;
   bit allow_addr_cfg_cmd;
+
+  // mailbox knobs
+  int cfg_mailbox_en_pct = 70;
+  int intercept_mailbox_en_pct = 70;
   // we can only hold one payload, set it busy to avoid payload is overwritten before read out.
   // TODO, set this for all vseq, since uploading another payload with clearing busy bit isn't a
   // correct use case.
@@ -299,6 +303,9 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
   // Task for flash or pass init
   virtual task spi_device_flash_pass_init();
+    bit enable;
+    bit [1:0] sck_polarity_phase;
+
     spi_clk_init();
     `uvm_info(`gfn, "Initialize flash/passthrough mode", UVM_MEDIUM)
     cfg.spi_host_agent_cfg.csb_sel_in_cfg = 0;
@@ -308,11 +315,20 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     // avoid updating these CSRs at the same time as tpm_init
     cfg.spi_cfg_sema.get();
 
-    // TODO, fixed config for now
-    cfg.spi_host_agent_cfg.sck_polarity[0] = 0;
-    cfg.spi_host_agent_cfg.sck_phase[0] = 0;
-    cfg.spi_device_agent_cfg.sck_polarity[0] = 0;
-    cfg.spi_device_agent_cfg.sck_phase[0] = 0;
+    if (`gmv(ral.tpm_cfg.en)) begin
+      sck_polarity_phase = 0;
+    end else begin
+      // flash mode only supports these 2 values.
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(sck_polarity_phase,
+          sck_polarity_phase inside {0, 'b11};)
+    end
+    cfg.spi_host_agent_cfg.sck_polarity[0] = sck_polarity_phase[0];
+    cfg.spi_host_agent_cfg.sck_phase[0] = sck_polarity_phase[1];
+    cfg.spi_device_agent_cfg.sck_polarity[0] = sck_polarity_phase[0];
+    cfg.spi_device_agent_cfg.sck_phase[0] = sck_polarity_phase[1];
+
+    ral.cfg.cpol.set(sck_polarity_phase[0]);
+    ral.cfg.cpha.set(sck_polarity_phase[1]);
 
     // bit dir is only supported in fw mode. Need to be 0 for other modes
     cfg.spi_host_agent_cfg.host_bit_dir = 0;
@@ -327,9 +343,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     cfg.spi_host_agent_cfg.flash_addr_4b_en = ral.cfg.addr_4b_en.get();
     cfg.spi_device_agent_cfg.flash_addr_4b_en = ral.cfg.addr_4b_en.get();
 
-    ral.cfg.cpol.set(1'b0);
-    ral.cfg.cpha.set(1'b0);
-
     `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.mailbox_addr.addr,
         // the 4th byte needs to be 0 if the cmd only contains 3 bytes address
         // constrain this byte 50% to be 0.
@@ -342,7 +355,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
         device_mode == FlashMode -> value[31:24] == 0 && value[23:22] > 1;
         )
     csr_update(ral.mailbox_addr);
-    ral.cfg.mailbox_en.set(1); // TODO, randomize it
+    enable = $urandom_range(0, 99) < cfg_mailbox_en_pct;
+    ral.cfg.mailbox_en.set(enable);
 
     csr_update(.csr(ral.cfg));
     cfg.spi_cfg_sema.put();
@@ -368,7 +382,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(ral.intercept_en.status)
       `DV_CHECK_RANDOMIZE_FATAL(ral.intercept_en.jedec)
       `DV_CHECK_RANDOMIZE_FATAL(ral.intercept_en.sfdp)
-      ral.intercept_en.mbx.set(1); // TODO, randomize it
+      enable = $urandom_range(0, 99) < intercept_mailbox_en_pct;
+      ral.intercept_en.mbx.set(enable);
       csr_update(ral.intercept_en);
     end
 
