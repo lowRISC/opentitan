@@ -19,6 +19,9 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
     int repeat_count = 1;
     super.body();
 
+    // Give the pin a default value.
+    cfg.chip_vif.pinmux_wkup_if.set_pulldown_en(1'b1);
+
     if ($value$plusargs("do_random=%b", twice_each) && twice_each) begin
       repeat_count = 2;
     end
