@@ -14,7 +14,7 @@ class chip_sw_spi_device_tpm_vseq extends chip_sw_base_vseq;
   virtual task tpm_txn (bit wr, bit [23:0] addr, bit [7:0] data_q[$] = {0},
                         int len, output logic [7:0] rdata_q[]);
     spi_host_tpm_seq m_host_tpm_seq;
-    `uvm_create_on(m_host_tpm_seq, p_sequencer.spi_sequencer_h)
+    `uvm_create_on(m_host_tpm_seq, p_sequencer.spi_host_sequencer_h)
 
     // Common attribute assignments
     m_host_tpm_seq.write_command = wr;

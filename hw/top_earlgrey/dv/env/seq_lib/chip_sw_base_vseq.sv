@@ -229,17 +229,17 @@ class chip_sw_base_vseq extends chip_base_vseq;
     endcase
   endfunction
 
-  // Configure the spi_host agent to use flash mode, and add the specification
-  // for the following common commands: ReadSFDP, ReadStatus1, WriteEnable,
-  // ChipErase, and PageProgram.
-  virtual function void spi_host_agent_configure_flash_cmds();
+  // Configure the provided spi_agent_cfg to use flash mode, and add the
+  // specification for the following common commands:
+  //   ReadSFDP, ReadStatus1, WriteEnable, ChipErase, and PageProgram.
+  virtual function void spi_agent_configure_flash_cmds(spi_agent_cfg agent_cfg);
     spi_flash_cmd_info info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddrDisabled;
     info.opcode = SpiFlashReadSfdp;
     info.num_lanes = 1;
     info.dummy_cycles = 8;
     info.write_command = 0;
-    cfg.m_spi_host_agent_cfg.add_cmd_info(info);
+    agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddrDisabled;
@@ -247,7 +247,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 1;
     info.dummy_cycles = 0;
     info.write_command = 0;
-    cfg.m_spi_host_agent_cfg.add_cmd_info(info);
+    agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddrDisabled;
@@ -255,7 +255,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 0;
     info.dummy_cycles = 0;
     info.write_command = 0;
-    cfg.m_spi_host_agent_cfg.add_cmd_info(info);
+    agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddrDisabled;
@@ -263,7 +263,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 0;
     info.dummy_cycles = 0;
     info.write_command = 0;
-    cfg.m_spi_host_agent_cfg.add_cmd_info(info);
+    agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddr3b;
@@ -271,9 +271,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
     info.num_lanes = 1;
     info.dummy_cycles = 0;
     info.write_command = 1;
-    cfg.m_spi_host_agent_cfg.add_cmd_info(info);
+    agent_cfg.add_cmd_info(info);
 
-    cfg.m_spi_host_agent_cfg.spi_func_mode = SpiModeFlash;
+    agent_cfg.spi_func_mode = SpiModeFlash;
   endfunction
 
   // Periodically probe the device for its busy bit and wait for up to
@@ -285,7 +285,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       uint timeout_ns = default_spinwait_timeout_ns,
       uint min_interval_ns = 1000);
     spi_host_flash_seq m_spi_host_seq;
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
     `DV_SPINWAIT(
       while (1) begin
         cfg.clk_rst_vif.wait_clks($urandom_range(1, 100));
@@ -314,7 +314,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       uint busy_timeout_ns = default_spinwait_timeout_ns,
       uint busy_poll_interval_ns = 1000);
     spi_host_flash_seq m_spi_host_seq;
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
     m_spi_host_seq.opcode = SpiFlashWriteEnable;
     `uvm_send(m_spi_host_seq);
 
@@ -345,7 +345,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.m_spi_host_agent_cfg.max_idle_ns_after_csb_drop = 200;
 
     // Configure the spi_agent for flash mode and add command info.
-    spi_host_agent_configure_flash_cmds();
+    spi_agent_configure_flash_cmds(cfg.m_spi_host_agent_cfg);
 
     // Wait for the commands to be ready
     csr_spinwait(
@@ -369,7 +369,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     read_sw_frames(sw_image, sw_byte_q);
 
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
     m_spi_host_seq.opcode = SpiFlashChipErase;
     spi_host_flash_issue_write_cmd(
       .write_command(m_spi_host_seq),
@@ -377,7 +377,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       .busy_poll_interval_ns(1_000_000));
 
     while (sw_byte_q.size > byte_cnt) begin
-      `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+      `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
       m_spi_host_seq.opcode = SpiFlashPageProgram;
       m_spi_host_seq.address_q = {byte_cnt[23:16], byte_cnt[15:8], byte_cnt[7:0]};
       if (SPI_FLASH_PAGE_SIZE < (sw_byte_q.size() - byte_cnt)) begin

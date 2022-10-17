@@ -60,7 +60,7 @@ class chip_sw_spi_tx_rx_vseq extends chip_sw_base_vseq;
 
   virtual task send_spi_host_rx_data(ref bit [7:0] device_data[$],input int size);
     spi_host_seq m_spi_host_seq;
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)
     if (size == SPI_DEVICE_DATA_SIZE) begin
       `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
                                      data.size() == size;
