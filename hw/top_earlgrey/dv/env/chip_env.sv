@@ -155,7 +155,7 @@ class chip_env extends cip_base_env #(
     end
 
     if (cfg.is_active && cfg.m_spi_host_agent_cfg.is_active) begin
-      virtual_sequencer.spi_sequencer_h = m_spi_host_agent.sequencer;
+      virtual_sequencer.spi_host_sequencer_h = m_spi_host_agent.sequencer;
     end
 
     // The chip level scoreboard is intentionally kept lightweight, since most tests are directed,

@@ -12,7 +12,7 @@ class chip_virtual_sequencer extends cip_base_virtual_sequencer #(
   spi_sequencer        spi_device_sequencer_hs[NUM_SPI_HOSTS];
   i2c_sequencer        i2c_sequencer_hs[NUM_I2CS];
   jtag_riscv_sequencer jtag_sequencer_h;
-  spi_sequencer        spi_sequencer_h;
+  spi_sequencer        spi_host_sequencer_h;
 
   // Grab packets from UART TX port for in-sequence checking.
   uvm_tlm_analysis_fifo #(uart_item) uart_tx_fifos[NUM_UARTS];
