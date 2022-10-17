@@ -10,8 +10,6 @@ class spi_device_base_vseq extends cip_base_vseq #(
     );
   `uvm_object_utils(spi_device_base_vseq)
 
-  bit do_spi_device_mem_cfg = 1'b1;
-
   bit [1:0] spi_mode = 0; // TODO fixed value in spec now
 
   rand bit sck_polarity;
@@ -94,6 +92,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
 
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
+    cfg.do_spi_clk_configure = 1;
+    cfg.do_spi_device_fw_mem_cfg = 1;
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -128,13 +128,14 @@ class spi_device_base_vseq extends cip_base_vseq #(
 
   // configure the clock frequence
   virtual task spi_clk_init();
-    if (!cfg.spi_clk_configured) begin
+    if (cfg.do_spi_clk_configure) begin
+      cfg.spi_host_agent_cfg.csb_sel_in_cfg = 0;
       if (spi_freq_faster) begin
         cfg.spi_host_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps / core_spi_freq_ratio;
       end else begin
         cfg.spi_host_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps * core_spi_freq_ratio;
       end
-      cfg.spi_clk_configured = 1;
+      cfg.do_spi_clk_configure = 0;
     end
   endtask
 
@@ -169,11 +170,11 @@ class spi_device_base_vseq extends cip_base_vseq #(
     `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
     csr_update(.csr(ral.intr_enable));
 
-    if (do_spi_device_mem_cfg) begin
+    if (cfg.do_spi_device_fw_mem_cfg) begin
       set_sram_host_addr_range(sram_host_base_addr, sram_host_limit_addr);
       set_sram_device_addr_range(sram_device_base_addr, sram_device_limit_addr);
       // only configure sram once
-      do_spi_device_mem_cfg = 0;
+      cfg.do_spi_device_fw_mem_cfg = 0;
       sram_host_base_addr.rand_mode(0);
       sram_host_limit_addr.rand_mode(0);
       sram_device_base_addr.rand_mode(0);
@@ -276,6 +277,13 @@ class spi_device_base_vseq extends cip_base_vseq #(
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq, data.size() == num_bytes;)
     `uvm_send(m_spi_host_seq)
     device_data = m_spi_host_seq.rsp.data;
+  endtask
+
+  // send dummy item
+  virtual task spi_host_xfer_dummy_item();
+    spi_host_dummy_seq m_spi_host_seq;
+    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+    `uvm_send(m_spi_host_seq)
   endtask
 
   // write spi device data to send when incoming host traffic arrives

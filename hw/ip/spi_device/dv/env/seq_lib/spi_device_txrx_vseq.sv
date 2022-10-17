@@ -252,11 +252,4 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
     `uvm_info(`gfn, "done process_spi_xfer", UVM_MEDIUM)
   endtask : process_spi_xfer
 
-  // send dummy item
-  virtual task spi_host_xfer_dummy_item();
-    spi_host_dummy_seq m_spi_host_seq;
-    `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
-    `uvm_send(m_spi_host_seq)
-  endtask
-
 endclass : spi_device_txrx_vseq

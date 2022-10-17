@@ -8,6 +8,7 @@
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "spi_device_sec_cm_testplan.hjson"]
   testpoints: [
     {
@@ -470,7 +471,7 @@
             - Test modes switch among FW, flash, passthrough and tpm.
             - Randomly add reset between each sequence'''
       stage: V2
-      tests: []
+      tests: ["spi_device_stress_all"]
     }
   ]
   covergroups: [

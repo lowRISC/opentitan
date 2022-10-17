@@ -53,7 +53,6 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
     // avoid accessing these CSRs at the same time as tpm_init
     cfg.spi_cfg_sema.get();
 
-    cfg.spi_host_agent_cfg.csb_sel_in_cfg = 0;
     // Only SPI mode 0 is supported (CPHA=0, CPOL=0).
     cfg.spi_host_agent_cfg.sck_polarity[TPM_CSB_ID] = 0;
     cfg.spi_host_agent_cfg.sck_phase[TPM_CSB_ID] = 0;

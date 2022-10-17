@@ -308,7 +308,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
 
     spi_clk_init();
     `uvm_info(`gfn, "Initialize flash/passthrough mode", UVM_MEDIUM)
-    cfg.spi_host_agent_cfg.csb_sel_in_cfg = 0;
+
     // TODO, #14940. EN4B/EX4B may fail if the next item comes very shortly
     cfg.spi_host_agent_cfg.min_idle_ns_after_csb_drop = 500;
 
