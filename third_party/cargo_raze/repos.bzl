@@ -16,6 +16,7 @@ def raze_repos(local = None):
             Label("//third_party/cargo_raze:pr-488-c11-fixes.patch"),
             Label("//third_party/cargo_raze:pr-491-local-paths.patch"),
             Label("//third_party/cargo_raze:pr-492-skip-submodules.patch"),
+            Label("//third_party/cargo_raze:repo-name.patch"),
         ],
         patch_args = ["-p1"],
     )
