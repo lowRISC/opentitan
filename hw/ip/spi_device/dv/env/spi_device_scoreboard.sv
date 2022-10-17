@@ -183,7 +183,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           end // if (!cfg.is_read_buffer_cmd(item))
 
           latch_flash_status(set_busy, update_wel, wel_val);
-          if (`gmv(ral.tpm_cfg.en)) begin
+          if (cfg.en_cov && `gmv(ral.tpm_cfg.en)) begin
             cov.tpm_interleave_with_flash_item_cg.sample(.is_tpm_item(0), .is_flash_item(1));
           end
         end

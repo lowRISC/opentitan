@@ -182,22 +182,27 @@ class spi_host_driver extends spi_driver;
     issue_data(cmd_addr_bytes, dummy_return_q);
 
     // align to DrivingEdge, if the item has more to send
-    if (req.dummy_cycles > 0 || req.payload_q.size > 0 ) cfg.wait_sck_edge(DrivingEdge);
-    cfg.vif.sio_out <= 'dz;
-
-    repeat (req.dummy_cycles) begin
+    if (req.dummy_cycles || req.payload_q.size || req.read_size) begin
       cfg.wait_sck_edge(DrivingEdge);
-    end
-    // drive data
-    if (req.write_command) begin
-      issue_data(req.payload_q, dummy_return_q);
-    end else begin
-      repeat (req.read_size) begin
-        logic [7:0] data;
-        cfg.read_byte(.num_lanes(req.num_lanes), .is_device_rsp(1), .data(data));
-        rsp.payload_q.push_back(data);
+      cfg.vif.sio_out <= 'dz;
+
+      if (req.dummy_cycles > 0) begin
+        repeat (req.dummy_cycles) begin
+          cfg.wait_sck_edge(SamplingEdge);
+        end
+        if (req.payload_q.size || req.read_size) cfg.wait_sck_edge(DrivingEdge);
       end
-      `uvm_info(`gfn, $sformatf("collect read data for flash: 0x%p", rsp.payload_q), UVM_MEDIUM)
+      // drive data
+      if (req.write_command) begin
+        issue_data(req.payload_q, dummy_return_q);
+      end else begin
+        repeat (req.read_size) begin
+          logic [7:0] data;
+          cfg.read_byte(.num_lanes(req.num_lanes), .is_device_rsp(1), .data(data));
+          rsp.payload_q.push_back(data);
+        end
+        `uvm_info(`gfn, $sformatf("collect read data for flash: 0x%p", rsp.payload_q), UVM_MEDIUM)
+      end
     end
 
     wait(sck_pulses == 0);
