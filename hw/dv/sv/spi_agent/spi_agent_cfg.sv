@@ -39,6 +39,7 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   spi_mode_e       spi_mode;
   // Cmd info configs
   spi_flash_cmd_info cmd_infos[bit[7:0]];
+  // Controls address size for flash_cmd_info of type SpiFlashAddrCfg.
   bit              flash_addr_4b_en;
 
   // set this mode before starting an item

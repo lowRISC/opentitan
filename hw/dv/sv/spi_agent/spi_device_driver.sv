@@ -2,6 +2,22 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// The spi_device_driver responds to bus transactions initiated by a SPI host,
+// and its responses depend on cfg.spi_func_mode.
+//
+// For SpiModeGeneric, the driver waits for CSB to be asserted, then drives
+// the contents of spi_item.data sequentially, timed with the SPI host's clock
+// output.
+//
+// For SpiModeFlash, the spi_item must be submitted at exactly the moment when
+// the driver is to begin driving the response. The driver sends the contents
+// of spi_item.payload_q sequentially, timed with the SPI host's clock output.
+// Note that spi_device_driver does NOT observe the command, address, or dummy
+// cycles, and it assumes those phases have already passed. For this mode,
+// spi_device_driver is anticipated to be used in conjunction with the
+// spi_monitor's req_analysis_port, which writes a spi_item into the
+// spi_sequencer's connected req_analysis_fifo at the moment those phases have
+// completed.
 class spi_device_driver extends spi_driver;
   `uvm_component_utils(spi_device_driver)
   `uvm_component_new
