@@ -20,6 +20,9 @@ class entropy_src_dut_cfg extends uvm_object;
   // Constraint knobs  //
   ///////////////////////
 
+  // Constraint knob for enabling interrupts (per line)
+  uint          en_intr_pct;
+
   // Constraint knob for module_enable field
   uint          module_enable_pct;
 
@@ -67,6 +70,8 @@ class entropy_src_dut_cfg extends uvm_object;
   // Randomized fields //
   ///////////////////////
 
+  rand bit [NumEntropySrcIntr-1:0] en_intr;
+
   rand bit                      sw_regupd, me_regwen;
   rand bit                      preconfig_disable;
   rand bit [1:0]                rng_bit_sel;
@@ -104,9 +109,14 @@ class entropy_src_dut_cfg extends uvm_object;
   // Constraints //
   /////////////////
 
+
   constraint preconfig_disable_c { preconfig_disable dist {
       1 :/ preconfig_disable_pct,
       0 :/ (100 - preconfig_disable_pct) };}
+
+  constraint en_intr_c { foreach ( en_intr[i] ) en_intr[i] dist {
+      1 :/ en_intr_pct,
+      0 :/ (100 - en_intr_pct) };}
 
   constraint bypass_window_size_c { bypass_window_size dist {
       384 :/ 1 };}
