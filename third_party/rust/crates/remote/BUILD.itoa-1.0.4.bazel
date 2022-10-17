@@ -26,62 +26,33 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "MIT"
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
 ])
 
 # Generated Targets
-# buildifier: disable=out-of-order-load
-# buildifier: disable=load-on-top
-load(
-    "@rules_rust//cargo:cargo_build_script.bzl",
-    "cargo_build_script",
-)
 
-cargo_build_script(
-    name = "CoreFoundation_sys_build_script",
-    srcs = glob(["**/*.rs"]),
-    build_script_env = {
-    },
-    crate_features = [
-    ],
-    crate_root = "build.rs",
-    data = glob(["**"]),
-    edition = "2015",
-    links = "CoreFoundation",
-    rustc_flags = [
-        "--cap-lints=allow",
-    ],
-    tags = [
-        "cargo-raze",
-        "manual",
-    ],
-    version = "0.1.4",
-    visibility = ["//visibility:private"],
-    deps = [
-    ],
-)
+# Unsupported target "bench" with type "bench" omitted
 
 rust_library(
-    name = "CoreFoundation_sys",
+    name = "itoa",
     srcs = glob(["**/*.rs"]),
     crate_features = [
     ],
     crate_root = "src/lib.rs",
     data = [],
-    edition = "2015",
+    edition = "2018",
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-raze",
-        "crate-name=CoreFoundation-sys",
+        "crate-name=itoa",
         "manual",
     ],
-    version = "0.1.4",
+    version = "1.0.4",
     # buildifier: leave-alone
     deps = [
-        ":CoreFoundation_sys_build_script",
-        "@raze__libc__0_2_135//:libc",
-        "@raze__mach__0_1_2//:mach",
     ],
 )
+
+# Unsupported target "test" with type "test" omitted

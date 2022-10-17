@@ -85,7 +85,7 @@ rust_library(
     deps = [
         ":IOKit_sys_build_script",
         "@raze__CoreFoundation_sys__0_1_4//:CoreFoundation_sys",
-        "@raze__libc__0_2_133//:libc",
+        "@raze__libc__0_2_135//:libc",
         "@raze__mach__0_1_2//:mach",
     ],
 )

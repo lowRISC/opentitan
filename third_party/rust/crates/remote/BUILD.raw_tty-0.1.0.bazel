@@ -53,6 +53,6 @@ rust_library(
     version = "0.1.0",
     # buildifier: leave-alone
     deps = [
-        "@raze__libc__0_2_133//:libc",
+        "@raze__libc__0_2_135//:libc",
     ],
 )

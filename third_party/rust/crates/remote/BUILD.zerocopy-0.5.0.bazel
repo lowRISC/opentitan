@@ -40,7 +40,7 @@ rust_library(
     data = [],
     edition = "2018",
     proc_macro_deps = [
-        "@raze__zerocopy_derive__0_3_1//:zerocopy_derive",
+        "@raze__zerocopy_derive__0_3_2//:zerocopy_derive",
     ],
     rustc_flags = [
         "--cap-lints=allow",

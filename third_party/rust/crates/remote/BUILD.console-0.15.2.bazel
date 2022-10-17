@@ -61,7 +61,7 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         "@raze__lazy_static__1_4_0//:lazy_static",
-        "@raze__libc__0_2_133//:libc",
+        "@raze__libc__0_2_135//:libc",
         "@raze__terminal_size__0_1_17//:terminal_size",
     ],
 )
