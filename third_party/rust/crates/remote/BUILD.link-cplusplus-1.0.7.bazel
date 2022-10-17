@@ -30,16 +30,44 @@ licenses([
 ])
 
 # Generated Targets
+# buildifier: disable=out-of-order-load
+# buildifier: disable=load-on-top
+load(
+    "@rules_rust//cargo:cargo_build_script.bzl",
+    "cargo_build_script",
+)
 
-# Unsupported target "get_timezone" with type "example" omitted
-
-# Unsupported target "stress-test" with type "example" omitted
+cargo_build_script(
+    name = "link_cplusplus_build_script",
+    srcs = glob(["**/*.rs"]),
+    build_script_env = {
+    },
+    crate_features = [
+        "default",
+    ],
+    crate_root = "build.rs",
+    data = glob(["**"]),
+    edition = "2018",
+    links = "cplusplus",
+    rustc_flags = [
+        "--cap-lints=allow",
+    ],
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+    version = "1.0.7",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@raze__cc__1_0_73//:cc",
+    ],
+)
 
 rust_library(
-    name = "iana_time_zone",
+    name = "link_cplusplus",
     srcs = glob(["**/*.rs"]),
     crate_features = [
-        "fallback",
+        "default",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -49,11 +77,12 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=iana-time-zone",
+        "crate-name=link-cplusplus",
         "manual",
     ],
-    version = "0.1.50",
+    version = "1.0.7",
     # buildifier: leave-alone
     deps = [
+        ":link_cplusplus_build_script",
     ],
 )

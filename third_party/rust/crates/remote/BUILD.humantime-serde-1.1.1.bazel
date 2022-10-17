@@ -26,15 +26,13 @@ package(default_visibility = [
 ])
 
 licenses([
-    "notice",  # MIT from expression "(MIT OR Apache-2.0) AND Unicode-DFS-2016"
+    "notice",  # MIT from expression "MIT OR Apache-2.0"
 ])
 
 # Generated Targets
 
-# Unsupported target "xid" with type "bench" omitted
-
 rust_library(
-    name = "unicode_ident",
+    name = "humantime_serde",
     srcs = glob(["**/*.rs"]),
     crate_features = [
     ],
@@ -46,15 +44,13 @@ rust_library(
     ],
     tags = [
         "cargo-raze",
-        "crate-name=unicode-ident",
+        "crate-name=humantime-serde",
         "manual",
     ],
-    version = "1.0.4",
+    version = "1.1.1",
     # buildifier: leave-alone
     deps = [
+        "@raze__humantime__2_1_0//:humantime",
+        "@raze__serde__1_0_145//:serde",
     ],
 )
-
-# Unsupported target "compare" with type "test" omitted
-
-# Unsupported target "static_size" with type "test" omitted

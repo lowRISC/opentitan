@@ -45,6 +45,7 @@ cargo_build_script(
     crate_features = [
         "default",
         "proc-macro",
+        "span-locations",
     ],
     crate_root = "build.rs",
     data = glob(["**"]),
@@ -68,6 +69,7 @@ rust_library(
     crate_features = [
         "default",
         "proc-macro",
+        "span-locations",
     ],
     crate_root = "src/lib.rs",
     data = [],
@@ -84,7 +86,7 @@ rust_library(
     # buildifier: leave-alone
     deps = [
         ":proc_macro2_build_script",
-        "@raze__unicode_ident__1_0_4//:unicode_ident",
+        "@raze__unicode_ident__1_0_5//:unicode_ident",
     ],
 )
 

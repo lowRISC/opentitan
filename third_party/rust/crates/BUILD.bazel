@@ -130,6 +130,15 @@ alias(
 )
 
 alias(
+    name = "humantime_serde",
+    actual = "@raze__humantime_serde__1_1_1//:humantime_serde",
+    tags = [
+        "cargo-raze",
+        "manual",
+    ],
+)
+
+alias(
     name = "indicatif",
     actual = "@raze__indicatif__0_16_2//:indicatif",
     tags = [
@@ -320,7 +329,7 @@ alias(
 
 alias(
     name = "serde_json",
-    actual = "@raze__serde_json__1_0_85//:serde_json",
+    actual = "@raze__serde_json__1_0_86//:serde_json",
     tags = [
         "cargo-raze",
         "manual",
