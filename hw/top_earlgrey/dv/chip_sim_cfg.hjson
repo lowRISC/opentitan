@@ -918,7 +918,7 @@
       // Disable scoreboard to avoid incorrect alert prediction from the alert_monitor. Due to the
       // cross-domain alert senders and receivers, the monitor from the chip level did not support
       // processing alerts accurately from both ends.
-      run_opts: ["+en_scb=0"]
+      run_opts: ["+en_scb=0", "+sw_test_timeout_ns=24000000"]
     }
     {
       name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
