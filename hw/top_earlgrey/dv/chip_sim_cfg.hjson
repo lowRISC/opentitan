@@ -765,6 +765,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_sysrst_ctrl_in_irq
+      uvm_test_seq: chip_sw_sysrst_ctrl_in_irq_vseq
+      sw_images: ["//sw/device/tests/sim_dv:sysrst_ctrl_in_irq_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_sysrst_ctrl_reset
       uvm_test_seq: chip_sw_sysrst_ctrl_reset_vseq
       sw_images: ["//sw/device/tests/sim_dv:sysrst_ctrl_reset_test:1"]

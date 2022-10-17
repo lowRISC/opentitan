@@ -1680,13 +1680,15 @@
               pins to trigger an interrupt by writing to key_intr_ctl register.
             - Program the key_intr_debounce_ctl register to debounce an appropriate time.
             - Enable the interrupt at SYSRST ctrl as well as at the PLIC.
+            - Create glitches only for some time less than detection time and check that there is no
+            - interrupt triggered.
             - Glitch the inputs at the chip IOs before stabilizing on the programmed transitions.
             - SW services the interrupt when triggered, verifies the pin input value and
               key_intr_status for correctness and clears the interrupt status.
-            - Verify separately, eack key combination sufccessfully generates an interrupt.
+            - Verify separately, each key combination sufccessfully generates an interrupt.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_sysrst_ctrl_in_irq"]
     }
     {
       name: chip_sw_sysrst_ctrl_sleep_wakeup
