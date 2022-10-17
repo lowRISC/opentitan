@@ -38,6 +38,8 @@ MSG_STORE_ACCESS_FAULT = _BFV_TEMPLATE.format("07495202")
 
 MSG_PASS = "PASS!"
 
+MSG_SIGVERIFY_BAD_ENCODED_MSG = _BFV_TEMPLATE.format("01535603")
+
 MSG_SIGVERIFY_BAD_KEY = _BFV_TEMPLATE.format("02535603")
 
 MSG_BOOT_POLICY_BAD_IDENTIFIER = _BFV_TEMPLATE.format("0142500d")
@@ -55,8 +57,8 @@ SLOTS = {
     "b": "0x80000",
 }
 
-opentitan_flash_binary(
-    name = "empty_test_slot_a",
+[opentitan_flash_binary(
+    name = "empty_test_slot_{}".format(slot),
     srcs = ["empty_test.c"],
     devices = [
         "fpga_cw310",
@@ -66,9 +68,9 @@ opentitan_flash_binary(
     signed = True,
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
     ],
-)
+) for slot in SLOTS]
 
 opentitan_functest(
     name = "rom_e2e_shutdown_exception_c",
@@ -809,5 +811,78 @@ opentitan_functest(
     targets = ["cw310_rom"],
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+[genrule(
+    name = "empty_test_slot_{}_corrupted_{}_bin_signed_{}".format(slot, device, key),
+    srcs = ["empty_test_slot_{}_{}_bin_signed_{}".format(slot, device, key)],
+    outs = ["empty_test_slot_{}_bad_signature_{}_bin_signed_{}".format(slot, device, key)],
+    cmd_bash = "cat $(SRCS) > $(OUTS) && dd if=/dev/zero of=$(OUTS) bs=4 seek=7 count=1 conv=notrunc status=none".format(slot),
+) for slot in SLOTS for device in ["fpga_cw310"] for key in ["test_key_0"]]
+
+BOOT_POLICY_VALID_CASES = [
+    {
+        "desc": "good",
+        "suffix": "",
+    },
+    {
+        "desc": "bad",
+        "suffix": "_corrupted",
+    },
+]
+
+[
+    opentitan_multislot_flash_binary(
+        name = "boot_policy_valid_img_a_{}_b_{}".format(
+            a["desc"],
+            b["desc"],
+        ),
+        srcs = {
+            ":empty_test_slot_a{}".format(a["suffix"]): {
+                "key": "test_key_0",
+                "offset": SLOTS["a"],
+            },
+            ":empty_test_slot_b{}".format(b["suffix"]): {
+                "key": "test_key_0",
+                "offset": SLOTS["b"],
+            },
+        },
+        devices = ["fpga_cw310"],
+    )
+    for a in BOOT_POLICY_VALID_CASES
+    for b in BOOT_POLICY_VALID_CASES
+]
+
+[
+    opentitan_functest(
+        name = "boot_policy_valid_a_{}_b_{}".format(
+            a["desc"],
+            b["desc"],
+        ),
+        cw310 = cw310_params(
+            exit_failure = MSG_PASS if a["desc"] == b["desc"] and a["desc"] == "bad" else DEFAULT_TEST_FAILURE_MSG,
+            exit_success = MSG_SIGVERIFY_BAD_ENCODED_MSG if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
+        ),
+        key = "multislot",
+        ot_flash_binary = ":boot_policy_valid_img_a_{}_b_{}".format(
+            a["desc"],
+            b["desc"],
+        ),
+        targets = ["cw310_rom"],
+    )
+    for a in BOOT_POLICY_VALID_CASES
+    for b in BOOT_POLICY_VALID_CASES
+]
+
+test_suite(
+    name = "boot_policy_valid",
+    tests = [
+        "boot_policy_valid_a_{}_b_{}".format(
+            a["desc"],
+            b["desc"],
+        )
+        for a in BOOT_POLICY_VALID_CASES
+        for b in BOOT_POLICY_VALID_CASES
     ],
 )
