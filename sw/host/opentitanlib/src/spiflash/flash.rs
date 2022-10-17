@@ -173,7 +173,7 @@ impl SpiFlash {
     pub fn from_sfdp(sfdp: Sfdp) -> Self {
         let (erase_sz, erase_op) = match sfdp.jedec.block_erase_size {
             BlockEraseSize::Block4KiB => (4096, sfdp.jedec.erase_opcode_4kib),
-            _ => (sfdp.jedec.sector[0].size, sfdp.jedec.sector[0].erase_opcode),
+            _ => (sfdp.jedec.erase[0].size, sfdp.jedec.erase[0].opcode),
         };
         SpiFlash {
             size: sfdp.jedec.density,
