@@ -193,14 +193,19 @@ def gen_field_definitions(
         raise TypeError(type(reg))
 
     for field in fields:
-        genout(fieldout, "\n{} OFFSET({}) NUMBITS({}) [", field.name.upper(),
-               field.bits.lsb, field.bits.width())
-        if getattr(field, 'enum', None) is not None:
-            for enum in field.enum:
-                genout(fieldout, "\n{} = {},", sanitize_name(enum.name).upper(), enum.value)
-            genout(fieldout, "\n],")
+        if field.auto_split:
+            for sub_field_id in range(field.bits.lsb, field.bits.width()):
+                genout(fieldout, "\n{} OFFSET({}) NUMBITS({}) [],",
+                       "{}_{}".format(field.name.upper(), sub_field_id), sub_field_id, 1)
         else:
-            genout(fieldout, "],")
+            genout(fieldout, "\n{} OFFSET({}) NUMBITS({}) [", field.name.upper(),
+                   field.bits.lsb, field.bits.width())
+            if getattr(field, 'enum', None) is not None:
+                for enum in field.enum:
+                    genout(fieldout, "\n{} = {},", sanitize_name(enum.name).upper(), enum.value)
+                genout(fieldout, "\n],")
+            else:
+                genout(fieldout, "],")
     else:
         genout(fieldout, "\n],\n")
 

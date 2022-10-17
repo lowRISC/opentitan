@@ -482,7 +482,8 @@ class RegBlock:
                                 bits=signal.bits,
                                 resval=0,
                                 enum=None,
-                                mubi=False))
+                                mubi=False,
+                                auto_split=False))
 
         reg = Register(self.offset,
                        reg_name,
