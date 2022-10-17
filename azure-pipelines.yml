@@ -566,7 +566,6 @@ jobs:
       assets: |
           $(Build.ArtifactStagingDirectory)/dist-final/*
 
-
 - job: build_docker_containers
   displayName: "Build Docker Containers"
   pool:
@@ -595,3 +594,24 @@ jobs:
       command: build
       Dockerfile: ./site/redirector/Dockerfile
       buildContext: ./site/redirector
+
+- job: bazel_build_release_package
+  displayName: "Bazel build release package"
+  pool: ci-public
+  continueOnError: True
+  timeoutInMinutes: 180
+  # TODO: uncomment the condition and dependencies before merging
+  # condition: and(eq(variables['Build.SourceBranchName'], 'master'), ne(variables.bitstreamStrategy, 'cached'))
+  # dependsOn:
+  #   - chip_earlgrey_cw310
+  #   - execute_verilated_tests
+  dependsOn:
+    - checkout
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - bash: |
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      ci/bazelisk.sh build //release:earlgrey
+      # Need to pass verilator_options to match the invocation used in ci/scripts/run-verilator-tests.sh
+      # ci/bazelisk.sh build //release:earlgrey --//hw:verilator_options=--threads,1
