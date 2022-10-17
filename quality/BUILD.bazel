@@ -131,7 +131,6 @@ rustfmt_test(
         "//sw/host/opentitansession",
         "//sw/host/opentitantool",
         "//sw/host/tests/rom/e2e_bootstrap_entry",
-        "//sw/host/tests/rom/e2e_bootup_bad_rom_ext_signature",
         "//sw/host/tests/rom/e2e_chip_specific_startup",
         "//sw/device/lib/ujson/rust:roundtrip_test",
     ],
