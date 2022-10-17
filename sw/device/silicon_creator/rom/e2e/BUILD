@@ -186,22 +186,6 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "e2e_bootup_bad_rom_ext_signature",
-    args = [],
-    cw310 = cw310_params(
-        test_cmds = [
-            "--bitstream=\"$(location //hw/bitstream:rom)\"",
-            "--rom-kind=rom",
-            "--rom-ext=\"$(location {flash})\"",
-        ],
-    ),
-    key = "test_key_0",
-    ot_flash_binary = ":empty_test_slot_a",
-    targets = ["cw310_rom"],
-    test_harness = "//sw/host/tests/rom/e2e_bootup_bad_rom_ext_signature",
-)
-
-opentitan_functest(
     name = "e2e_bootstrap_entry",
     cw310 = cw310_params(
         test_cmds = [
