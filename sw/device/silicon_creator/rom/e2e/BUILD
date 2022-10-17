@@ -186,22 +186,6 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "e2e_bootup_no_rom_ext_signature",
-    cw310 = cw310_params(
-        exit_failure = DEFAULT_TEST_SUCCESS_MSG,
-        exit_success = DEFAULT_TEST_FAILURE_MSG,
-    ),
-    ot_flash_binary = ":empty_test_slot_a",
-    signed = False,
-    targets = ["cw310_rom"],
-    verilator = verilator_params(
-        exit_failure = DEFAULT_TEST_SUCCESS_MSG,
-        exit_success = DEFAULT_TEST_FAILURE_MSG,
-        rom = "//sw/device/silicon_creator/rom",
-    ),
-)
-
-opentitan_functest(
     name = "e2e_bootup_bad_rom_ext_signature",
     args = [],
     cw310 = cw310_params(
