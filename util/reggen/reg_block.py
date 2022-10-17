@@ -1,7 +1,6 @@
 # Copyright lowRISC contributors.
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
 '''Code representing the registers, windows etc. for a block'''
 
 import re
@@ -12,7 +11,7 @@ from reggen.access import SWAccess, HWAccess
 from reggen.bus_interfaces import BusInterfaces
 from reggen.clocking import Clocking, ClockingItem
 from reggen.field import Field
-from reggen.interrupt import Interrupt
+from reggen.interrupt import Interrupt, IntrType
 from reggen.signal import Signal
 from reggen.lib import check_int, check_list, check_str_dict, check_str
 from reggen.multi_register import MultiRegister
@@ -22,6 +21,7 @@ from reggen.window import Window
 
 
 class RegBlock:
+
     def __init__(self, reg_width: int, params: ReggenParams):
 
         self._addrsep = (reg_width + 7) // 8
@@ -66,9 +66,7 @@ class RegBlock:
         self.async_if = False
 
     @staticmethod
-    def build_blocks(block: 'RegBlock',
-                     raw: object,
-                     bus: BusInterfaces,
+    def build_blocks(block: 'RegBlock', raw: object, bus: BusInterfaces,
                      clocks: Clocking,
                      is_alias: bool) -> Dict[Optional[str], 'RegBlock']:
         '''Build a dictionary of blocks for a 'registers' field in the hjson
@@ -92,10 +90,8 @@ class RegBlock:
         if isinstance(raw, list):
             # This is the simple syntax
             block.add_raw_registers(raw,
-                                    'registers field at top-level',
-                                    clocks,
-                                    bus.device_async.get(None),
-                                    is_alias)
+                                    'registers field at top-level', clocks,
+                                    bus.device_async.get(None), is_alias)
             return {None: block}
 
         # This is the more complicated syntax
@@ -108,22 +104,17 @@ class RegBlock:
             if idx > 0:
                 block = RegBlock(block._reg_width, block._params)
 
-            rb_key = check_str(r_key,
-                               'the key for item {} of '
-                               'the registers dictionary at top-level'
-                               .format(idx + 1))
-            rb_val = check_list(r_val,
-                                'the value for item {} of '
-                                'the registers dictionary at top-level'
-                                .format(idx + 1))
+            rb_key = check_str(
+                r_key, 'the key for item {} of '
+                'the registers dictionary at top-level'.format(idx + 1))
+            rb_val = check_list(
+                r_val, 'the value for item {} of '
+                'the registers dictionary at top-level'.format(idx + 1))
 
-            block.add_raw_registers(rb_val,
-                                    'item {} of the registers '
-                                    'dictionary at top-level'
-                                    .format(idx + 1),
-                                    clocks,
-                                    bus.device_async.get(r_key),
-                                    is_alias)
+            block.add_raw_registers(
+                rb_val, 'item {} of the registers '
+                'dictionary at top-level'.format(idx + 1), clocks,
+                bus.device_async.get(r_key), is_alias)
             block.validate()
 
             assert rb_key not in ret
@@ -132,12 +123,8 @@ class RegBlock:
 
         return ret
 
-    def add_raw_registers(self,
-                          raw: object,
-                          what: str,
-                          clocks: Clocking,
-                          async_if: Optional[str],
-                          is_alias: bool) -> None:
+    def add_raw_registers(self, raw: object, what: str, clocks: Clocking,
+                          async_if: Optional[str], is_alias: bool) -> None:
 
         # the interface is fully asynchronous
         if async_if:
@@ -146,14 +133,12 @@ class RegBlock:
 
         rl = check_list(raw, 'registers field at top-level')
         for entry_idx, entry_raw in enumerate(rl):
-            where = ('entry {} of the top-level registers field'
-                     .format(entry_idx + 1))
+            where = (
+                'entry {} of the top-level registers field'.format(entry_idx +
+                                                                   1))
             self.add_raw(where, entry_raw, clocks, is_alias)
 
-    def add_raw(self,
-                where: str,
-                raw: object,
-                clocks: Clocking,
+    def add_raw(self, where: str, raw: object, clocks: Clocking,
                 is_alias: bool) -> None:
         entry = check_str_dict(raw, where)
 
@@ -180,14 +165,14 @@ class RegBlock:
                     assert other_keys
                     raise ValueError('At offset {:#x}, {} has key {}, which '
                                      'should give its type. But it also has '
-                                     'other keys too: {}.'
-                                     .format(self.offset,
-                                             where, t, ', '.join(other_keys)))
+                                     'other keys too: {}.'.format(
+                                         self.offset, where, t,
+                                         ', '.join(other_keys)))
                 entry_type = t
                 entry_body = t_body
 
-        entry_where = ('At offset {:#x}, {}, type {!r}'
-                       .format(self.offset, where, entry_type))
+        entry_where = ('At offset {:#x}, {}, type {!r}'.format(
+            self.offset, where, entry_type))
 
         handlers[entry_type](entry_where, entry_body, clocks, is_alias)
 
@@ -232,43 +217,29 @@ class RegBlock:
             assert isinstance(clk, ClockingItem)
             self.clocks[name] = clk
 
-    def _handle_register(self,
-                         where: str,
-                         body: object,
-                         clocks: Clocking,
+    def _handle_register(self, where: str, body: object, clocks: Clocking,
                          is_alias: bool) -> None:
-        reg = Register.from_raw(self._reg_width,
-                                self.offset,
-                                self._params,
-                                body,
-                                clocks,
-                                is_alias)
+        reg = Register.from_raw(self._reg_width, self.offset, self._params,
+                                body, clocks, is_alias)
 
         self._validate_async(reg.async_name, reg.async_clk)
         self._validate_sync(reg.sync_name, reg.sync_clk)
 
         self.add_register(reg)
 
-    def _handle_reserved(self,
-                         where: str,
-                         body: object,
-                         clocks: Optional[Clocking],
-                         is_alias: bool) -> None:
+    def _handle_reserved(self, where: str, body: object,
+                         clocks: Optional[Clocking], is_alias: bool) -> None:
         if is_alias:
             raise ValueError('Aliasing reserved regions is not supported yet')
         nreserved = check_int(body, 'body of ' + where)
         if nreserved <= 0:
             raise ValueError('Reserved count in {} is {}, '
-                             'which is not positive.'
-                             .format(where, nreserved))
+                             'which is not positive.'.format(where, nreserved))
 
         self.offset += self._addrsep * nreserved
 
-    def _handle_skipto(self,
-                       where: str,
-                       body: object,
-                       clocks: Optional[Clocking],
-                       is_alias: bool) -> None:
+    def _handle_skipto(self, where: str, body: object,
+                       clocks: Optional[Clocking], is_alias: bool) -> None:
         if is_alias:
             raise ValueError('The skipto command is not supported in '
                              'alias register definitions')
@@ -276,45 +247,35 @@ class RegBlock:
         skipto = check_int(body, 'body of ' + where)
         if skipto < self.offset:
             raise ValueError('Destination of skipto in {} is {:#x}, '
-                             'is less than the current offset, {:#x}.'
-                             .format(where, skipto, self.offset))
+                             'is less than the current offset, {:#x}.'.format(
+                                 where, skipto, self.offset))
         if skipto % self._addrsep:
             raise ValueError('Destination of skipto in {} is {:#x}, '
-                             'not a multiple of addrsep, {:#x}.'
-                             .format(where, skipto, self._addrsep))
+                             'not a multiple of addrsep, {:#x}.'.format(
+                                 where, skipto, self._addrsep))
         self.offset = skipto
 
-    def _handle_window(self,
-                       where: str,
-                       body: object,
-                       clocks: Optional[Clocking],
-                       is_alias: bool) -> None:
+    def _handle_window(self, where: str, body: object,
+                       clocks: Optional[Clocking], is_alias: bool) -> None:
         if is_alias:
             raise ValueError('Aliasing window regions is not supported yet')
 
-        window = Window.from_raw(self.offset,
-                                 self._reg_width, self._params, body)
+        window = Window.from_raw(self.offset, self._reg_width, self._params,
+                                 body)
         if window.name is not None:
             lname = window.name.lower()
             if lname in self.name_to_offset:
-                raise ValueError('Window {} (at offset {:#x}) has the '
-                                 'same name as something at offset {:#x}.'
-                                 .format(window.name, window.offset,
-                                         self.name_to_offset[lname]))
+                raise ValueError(
+                    'Window {} (at offset {:#x}) has the '
+                    'same name as something at offset {:#x}.'.format(
+                        window.name, window.offset,
+                        self.name_to_offset[lname]))
         self.add_window(window)
 
-    def _handle_multireg(self,
-                         where: str,
-                         body: object,
-                         clocks: Clocking,
+    def _handle_multireg(self, where: str, body: object, clocks: Clocking,
                          is_alias: bool) -> None:
-        mr = MultiRegister(self.offset,
-                           self._addrsep,
-                           self._reg_width,
-                           self._params,
-                           body,
-                           clocks,
-                           is_alias)
+        mr = MultiRegister(self.offset, self._addrsep, self._reg_width,
+                           self._params, body, clocks, is_alias)
 
         # validate async schemes
         self._validate_async(mr.async_name, mr.async_clk)
@@ -326,10 +287,9 @@ class RegBlock:
                 raise ValueError('Multiregister {} (at offset {:#x}) expands '
                                  'to a register with name {} (at offset '
                                  '{:#x}), but this already names something at '
-                                 'offset {:#x}.'
-                                 .format(mr.reg.name, mr.reg.offset,
-                                         reg.name, reg.offset,
-                                         self.name_to_offset[lname]))
+                                 'offset {:#x}.'.format(
+                                     mr.reg.name, mr.reg.offset, reg.name,
+                                     reg.offset, self.name_to_offset[lname]))
             self._add_flat_reg(reg)
             if mr.dv_compact is False:
                 self.type_regs.append(reg)
@@ -347,9 +307,9 @@ class RegBlock:
         lname = reg.name.lower()
         if lname in self.name_to_offset:
             raise ValueError('Register {} (at offset {:#x}) has the same '
-                             'name as something at offset {:#x}.'
-                             .format(reg.name, reg.offset,
-                                     self.name_to_offset[lname]))
+                             'name as something at offset {:#x}.'.format(
+                                 reg.name, reg.offset,
+                                 self.name_to_offset[lname]))
         self._add_flat_reg(reg)
 
         self.registers.append(reg)
@@ -408,14 +368,16 @@ class RegBlock:
         for wenname in self.wennames:
             # check the REGWEN naming convention
             if re.fullmatch(r'(.+_)*REGWEN(_[0-9]+)?', wenname) is None:
-                raise ValueError("Regwen name {} must have the suffix '_REGWEN'"
-                                 .format(wenname))
+                raise ValueError(
+                    "Regwen name {} must have the suffix '_REGWEN'".format(
+                        wenname))
 
             wen_reg = self.name_to_flat_reg.get(wenname.lower())
             if wen_reg is None:
-                raise ValueError('One or more registers use {} as a '
-                                 'write-enable, but there is no such register.'
-                                 .format(wenname))
+                raise ValueError(
+                    'One or more registers use {} as a '
+                    'write-enable, but there is no such register.'.format(
+                        wenname))
 
             wen_reg.check_valid_regwen()
 
@@ -450,14 +412,11 @@ class RegBlock:
 
     _FieldFormatter = Callable[[bool, str], str]
 
-    def _add_intr_alert_reg(self,
-                            signals: Sequence[Signal],
-                            reg_name: str,
+    def _add_intr_alert_reg(self, signals: Sequence[Signal], reg_name: str,
                             reg_desc: str,
-                            field_desc_fmt: Optional[Union[str, _FieldFormatter]],
-                            swaccess: str,
-                            hwaccess: str,
-                            is_testreg: bool,
+                            field_desc_fmt: Optional[Union[str,
+                                                           _FieldFormatter]],
+                            swaccess: str, hwaccess: str, is_testreg: bool,
                             reg_tags: List[str]) -> None:
         swaccess_obj = SWAccess('RegBlock._make_intr_alert_reg()', swaccess)
         hwaccess_obj = HWAccess('RegBlock._make_intr_alert_reg()', hwaccess)
@@ -472,98 +431,152 @@ class RegBlock:
                 width = signal.bits.width()
                 field_desc = field_desc_fmt(width > 1, signal.name)
 
-            fields.append(Field(signal.name,
-                                None,  # no alias target
-                                field_desc or signal.desc,
-                                tags=[],
-                                swaccess=swaccess_obj,
-                                hwaccess=hwaccess_obj,
-                                hwqe=is_testreg,
-                                bits=signal.bits,
-                                resval=0,
-                                enum=None,
-                                mubi=False,
-                                auto_split=False))
+            fields.append(
+                Field(
+                    signal.name,
+                    None,  # no alias target
+                    field_desc or signal.desc,
+                    tags=[],
+                    swaccess=swaccess_obj,
+                    hwaccess=hwaccess_obj,
+                    hwqe=is_testreg,
+                    bits=signal.bits,
+                    resval=0,
+                    enum=None,
+                    mubi=False,
+                    auto_split=False))
 
-        reg = Register(self.offset,
-                       reg_name,
-                       None,  # no alias target
-                       reg_desc,
-                       async_name="",
-                       async_clk=None,
-                       sync_name="",
-                       sync_clk=None,
-                       hwext=is_testreg,
-                       hwqe=is_testreg,
-                       hwre=False,
-                       regwen=None,
-                       tags=reg_tags,
-                       resval=None,
-                       shadowed=False,
-                       fields=fields,
-                       update_err_alert=None,
-                       storage_err_alert=None)
+        reg = Register(
+            self.offset,
+            reg_name,
+            None,  # no alias target
+            reg_desc,
+            async_name="",
+            async_clk=None,
+            sync_name="",
+            sync_clk=None,
+            hwext=is_testreg,
+            hwqe=is_testreg,
+            hwre=False,
+            regwen=None,
+            tags=reg_tags,
+            resval=None,
+            shadowed=False,
+            fields=fields,
+            update_err_alert=None,
+            storage_err_alert=None)
         self.add_register(reg)
 
     def make_intr_regs(self, interrupts: Sequence[Interrupt]) -> None:
+        """Create INTR_STATE, INTR_ENABLE, INTR_TEST CSRs.
+
+        ip.hjson + reggen support two interrupt types. Each type requires
+        different swaccess:
+
+        Field             | Event | Status
+        ------------------|-------|--------
+        INTR_STATE.field  | rw1c  | ro
+        INTR_ENABLE.field | rw    | rw
+        INTR_TEST.field   | wo    | wo
+
+        make_intr_regs create three Register instances based on the table above.
+
+        INTR_TEST.field of Status type differs from its of Event type. Even the
+        swaccess is wo, the value remains unlike Event type. For example, if SW
+        writes 1 to the field, INTR_STATE.field remains high until SW writes 0
+        to INTR_TEST.field.
+        """
+
+        # key: IntrType(JsonEnum)
+        # value: swaccess of (INTR_STATE, INTR_ENABLE, INTR_TEST)
+
+        swaccesses = ['rw1c', 'rw', 'ro', 'wo']
+        swaccesses_obj = list(
+            map(lambda x: SWAccess('RegBlock.make_intr_regs()', x),
+                swaccesses))
+        swaccess_dict = {
+            IntrType.Event:
+            (swaccesses_obj[0], swaccesses_obj[1], swaccesses_obj[3]),
+            IntrType.Status:
+            (swaccesses_obj[2], swaccesses_obj[1], swaccesses_obj[3])
+        }
+
+        hwaccess_rw = HWAccess('RegBlock.make_intr_regs()', 'hrw')
         assert interrupts
         assert interrupts[-1].bits.msb < self._reg_width
 
-        self._add_intr_alert_reg(interrupts,
-                                 'INTR_STATE',
-                                 'Interrupt State Register',
-                                 None,
-                                 'rw1c',
-                                 'hrw',
-                                 False,
-                                 # Some POR routines have the potential to
-                                 # unpredictably set some `intr_state` fields
-                                 # for various IPs, so we exclude all
-                                 # `intr_state` accesses from CSR checks to
-                                 # prevent this from occurring.
-                                 #
-                                 # An example of an `intr_state` mismatch error
-                                 # occurring due to a POR routine can be seen in
-                                 # issue #6888.
-                                 ["excl:CsrAllTests:CsrExclAll"])
-        self._add_intr_alert_reg(interrupts,
-                                 'INTR_ENABLE',
-                                 'Interrupt Enable Register',
-                                 lambda w, n: ('Enable interrupt when '
-                                               '{}!!INTR_STATE.{} is set.'
-                                               .format('corresponding bit in '
-                                                       if w else '',
-                                                       n)),
-                                 'rw',
-                                 'hro',
-                                 False,
-                                 [])
-        self._add_intr_alert_reg(interrupts,
-                                 'INTR_TEST',
-                                 'Interrupt Test Register',
-                                 lambda w, n: ('Write 1 to force '
-                                               '{}!!INTR_STATE.{} to 1.'
-                                               .format('corresponding bit in '
-                                                       if w else '',
-                                                       n)),
-                                 'wo',
-                                 'hro',
-                                 True,
-                                 # intr_test csr is WO so reads back 0s
-                                 ["excl:CsrNonInitTests:CsrExclWrite"])
+        # INTR_STATE
+        fields = []
+        for interrupt in interrupts:
+            fields.append(
+                Field(
+                    interrupt.name,
+                    None,  # no alias target
+                    interrupt.desc,
+                    tags=[],
+                    swaccess=swaccess_dict[interrupt.intr_type][0],
+                    hwaccess=hwaccess_rw,
+                    hwqe=False,
+                    bits=interrupt.bits,
+                    resval=0,
+                    enum=None,
+                    mubi=False,
+                    auto_split=False))
+
+        self.add_register(
+            Register(
+                self.offset,
+                'INTR_STATE',
+                None,  # no alias target
+                'Interrupt State Register',
+                async_name="",
+                async_clk=None,
+                sync_name="",
+                sync_clk=None,
+                hwext=False,
+                hwqe=False,
+                hwre=False,
+                regwen=None,
+                # Some POR routines have the potential to unpredictably set
+                # some `intr_state` fields for various IPs, so we exclude all
+                # `intr_state` accesses from CSR checks to prevent this from
+                # occurring.
+                #
+                # An example of an `intr_state` mismatch error occurring due to
+                # a POR routine can be seen in issue #6888.
+                tags=["excl:CsrAllTests:CsrExclAll"],
+                resval=None,
+                shadowed=False,
+                fields=fields,
+                update_err_alert=None,
+                storage_err_alert=None))
+
+        self._add_intr_alert_reg(
+            interrupts, 'INTR_ENABLE', 'Interrupt Enable Register',
+            lambda w, n: ('Enable interrupt when '
+                          '{}!!INTR_STATE.{} is set.'.format(
+                              'corresponding bit in '
+                              if w else '', n)), 'rw', 'hro', False, [])
+        self._add_intr_alert_reg(
+            interrupts,
+            'INTR_TEST',
+            'Interrupt Test Register',
+            lambda w, n: ('Write 1 to force '
+                          '{}!!INTR_STATE.{} to 1.'.format(
+                              'corresponding bit in ' if w else '', n)),
+            'wo',
+            'hro',
+            True,
+            # intr_test csr is WO so reads back 0s
+            ["excl:CsrNonInitTests:CsrExclWrite"])
 
     def make_alert_regs(self, alerts: List[Alert]) -> None:
         assert alerts
         assert len(alerts) < self._reg_width
-        self._add_intr_alert_reg(alerts,
-                                 'ALERT_TEST',
-                                 'Alert Test Register',
+        self._add_intr_alert_reg(alerts, 'ALERT_TEST', 'Alert Test Register',
                                  ('Write 1 to trigger '
-                                  'one alert event of this kind.'),
-                                 'wo',
-                                 'hro',
-                                 True,
-                                 [])
+                                  'one alert event of this kind.'), 'wo',
+                                 'hro', True, [])
 
     def get_addr_width(self) -> int:
         '''Calculate the number of bits to address every byte of the block'''
@@ -615,18 +628,15 @@ class RegBlock:
             # First, check existence of the register to be aliased
             if alias_reg.alias_target is None:
                 raise ValueError('No alias target register defined for '
-                                 'alias name {} in {}'
-                                 .format(alias_reg.name, where))
+                                 'alias name {} in {}'.format(
+                                     alias_reg.name, where))
 
             target = alias_reg.alias_target.lower()
             if target not in self.name_to_flat_reg:
                 raise ValueError('Aliased target register {} with alias '
                                  'name {} does not exist in reg '
-                                 'block {} ({}).'
-                                 .format(target,
-                                         alias_reg.name,
-                                         self.name,
-                                         where))
+                                 'block {} ({}).'.format(
+                                     target, alias_reg.name, self.name, where))
 
             # This is the register we want to alias over.
             reg = self.name_to_flat_reg[target]
@@ -636,26 +646,20 @@ class RegBlock:
                 alias_wenreg =\
                     alias_block.name_to_flat_reg[alias_reg.regwen.lower()]
                 if alias_wenreg.alias_target != reg.regwen:
-                    raise ValueError('Alias wenreg {} with generic name {} '
-                                     'is not the same register as generic '
-                                     'wenreg {} in aliased target register {} '
-                                     'with alias name {} in reg block {} ({}).'
-                                     .format(alias_reg.name,
-                                             alias_wenreg.alias_target,
-                                             reg.regwen,
-                                             target,
-                                             alias_reg.name,
-                                             self.name,
-                                             where))
+                    raise ValueError(
+                        'Alias wenreg {} with generic name {} '
+                        'is not the same register as generic '
+                        'wenreg {} in aliased target register {} '
+                        'with alias name {} in reg block {} ({}).'.format(
+                            alias_reg.name, alias_wenreg.alias_target,
+                            reg.regwen, target, alias_reg.name, self.name,
+                            where))
 
             elif alias_reg.regwen is not None or reg.regwen is not None:
                 raise ValueError('Missing regwen define in aliased target '
                                  'register {} with alias name {} in reg '
-                                 'block {} ({}).'
-                                 .format(target,
-                                         alias_reg.name,
-                                         self.name,
-                                         where))
+                                 'block {} ({}).'.format(
+                                     target, alias_reg.name, self.name, where))
 
             # Check that the non-overridable attributes match, and override the
             # attributes.
@@ -671,18 +675,15 @@ class RegBlock:
             # First, check existence of the register to be aliased
             if alias_mr.alias_target is None:
                 raise ValueError('No alias target multiregister defined for '
-                                 'alias name {} in {}'
-                                 .format(alias_mr.name, where))
+                                 'alias name {} in {}'.format(
+                                     alias_mr.name, where))
 
             target = alias_mr.alias_target.lower()
             if target not in name_to_multiregs:
                 raise ValueError('Aliased target multiregister {} with alias '
                                  'name {} does not exist in reg '
-                                 'block {} ({}).'
-                                 .format(target,
-                                         alias_mr.name,
-                                         self.name,
-                                         where))
+                                 'block {} ({}).'.format(
+                                     target, alias_mr.name, self.name, where))
 
             # This is the register we want to alias over. Check that the
             # non-overridable attributes match, and override the attributes.
@@ -712,8 +713,7 @@ class RegBlock:
         for reg in self.registers:
             if reg.alias_target is None:
                 raise ValueError('No alias target register defined for '
-                                 'alias name {} in {}'
-                                 .format(reg.name, where))
+                                 'alias name {} in {}'.format(reg.name, where))
             reg.scrub_alias(where)
             # Replace regwen name also.
             if reg.regwen is not None:
@@ -724,8 +724,8 @@ class RegBlock:
             # First, check existence of the register to be aliased
             if alias_mr.alias_target is None:
                 raise ValueError('No alias target multiregister defined for '
-                                 'alias name {} in {}'
-                                 .format(alias_mr.name, where))
+                                 'alias name {} in {}'.format(
+                                     alias_mr.name, where))
             alias_mr.scrub_alias(where)
 
         # Make a shallow copy of this dict, since we are about to modify the
