@@ -4,7 +4,7 @@
 
 from typing import Dict, List, Optional
 
-from design.mubi import prim_mubi # type: ignore
+from design.mubi import prim_mubi  # type: ignore
 
 from reggen.access import SWAccess, HWAccess
 from reggen.bits import Bits
@@ -35,7 +35,7 @@ OPTIONAL_FIELDS = {
     ],
     'hwaccess': [
         's', "hardware access permission, copied from "
-        "register if not prvided in field. "
+        "register if not provided in field. "
         "(Tool adds if not provided.)"
     ],
     'hwqe': [
@@ -59,6 +59,13 @@ OPTIONAL_FIELDS = {
     'mubi': [
         'b',
         "boolean flag for whether the field is a multi-bit type"
+    ],
+    'auto_split': [
+        'b',
+        "boolean flag which determines whether the field "
+        "should be automatically separated into 1-bit sub-fields."
+        "This flag is used as a hint for automatically generated "
+        "software headers with register description."
     ]
 }
 
@@ -75,7 +82,8 @@ class Field:
                  bits: Bits,
                  resval: Optional[int],
                  enum: Optional[List[EnumEntry]],
-                 mubi: bool):
+                 mubi: bool,
+                 auto_split: bool):
         self.name = name
         self.alias_target = alias_target
         self.desc = desc
@@ -87,6 +95,7 @@ class Field:
         self.resval = resval
         self.enum = enum
         self.mubi = mubi
+        self.auto_split = auto_split
 
     @staticmethod
     def from_raw(reg_name: str,
@@ -149,9 +158,10 @@ class Field:
 
         raw_hwqe = rd.get('hwqe', default_hwqe)
         hwqe = check_bool(raw_hwqe, 'hwqe field for {}'.format(where))
-
         raw_mubi = rd.get('mubi', False)
         is_mubi = check_bool(raw_mubi, 'mubi field for {}'.format(where))
+        raw_auto_split = rd.get('auto_split', False)
+        is_auto_split = check_bool(raw_auto_split, 'auto_split field for {}'.format(where))
 
         # Currently internal shadow registers do not support hw write type
         if not hwext and shadowed and hwaccess.allows_write():
@@ -239,7 +249,7 @@ class Field:
                 enum_val_to_name[entry.value] = entry.name
 
         return Field(name, alias_target, desc, tags, swaccess, hwaccess,
-                     hwqe, bits, resval, enum, is_mubi)
+                     hwqe, bits, resval, enum, is_mubi, is_auto_split)
 
     def has_incomplete_enum(self) -> bool:
         return (self.enum is not None and
@@ -317,7 +327,7 @@ class Field:
 
             ret.append(Field(name, alias_target, desc,
                              self.tags, self.swaccess, self.hwaccess, self.hwqe,
-                             bits, self.resval, enum, self.mubi))
+                             bits, self.resval, enum, self.mubi, self.auto_split))
 
         return ret
 
@@ -335,7 +345,7 @@ class Field:
 
         return Field(self.name + suffix, alias_target,
                      desc, self.tags, self.swaccess, self.hwaccess, self.hwqe,
-                     self.bits, self.resval, enum, self.mubi)
+                     self.bits, self.resval, enum, self.mubi, self.auto_split)
 
     def _asdict(self) -> Dict[str, object]:
         rd = {

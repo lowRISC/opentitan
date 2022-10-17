@@ -17,6 +17,7 @@
     { name: "gpio",
       width: 32,
       desc: "raised if any of GPIO pin detects configured interrupt mode"
+      auto_split: "true"
     }
   ],
   alert_list: [
@@ -151,7 +152,9 @@
       hwext: "true",
       hwqe: "true",
       fields: [
-        { bits: "31:0" }
+        { bits: "31:0",
+          auto_split: "true"
+        }
       ],
     },
     { name: "MASKED_OE_LOWER",
