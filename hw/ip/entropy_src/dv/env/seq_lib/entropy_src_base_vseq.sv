@@ -225,7 +225,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     #(pause);
 
     if (do_interrupt) begin
-      ral.intr_enable.set(en_intr);
+      ral.intr_enable.set(newcfg.en_intr);
       csr_update(ral.intr_enable);
     end
 

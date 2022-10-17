@@ -10,7 +10,7 @@ class entropy_src_intr_test extends entropy_src_base_test;
   function void configure_env();
     super.configure_env();
 
-    cfg.en_scb                              = 0;
+    cfg.en_scb                              = 1;
     cfg.dut_cfg.route_software_pct          = 100;
     cfg.dut_cfg.entropy_data_reg_enable_pct = 100;
     cfg.dut_cfg.route_software_pct          = 100;

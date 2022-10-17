@@ -20,7 +20,7 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.mean_rand_reconfig_time     = 1ms;
     // The random alerts only need to happen frequently enough to
     // close coverage
-    cfg.mean_rand_csr_alert_time    = -1;
+    cfg.mean_rand_csr_alert_time    = 20ms;
     cfg.soft_mtbf                   = 7500us;
 
     // Apply standards ranging from strict to relaxed

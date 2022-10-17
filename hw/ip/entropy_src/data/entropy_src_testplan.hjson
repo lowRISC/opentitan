@@ -87,7 +87,7 @@
             Verify es_fifo_err interrupt asserts as predicted.
             '''
       stage: V2
-      tests: ["entropy_src_intr"]
+      tests: ["entropy_src_rng"]
     }
     {
       name: alerts

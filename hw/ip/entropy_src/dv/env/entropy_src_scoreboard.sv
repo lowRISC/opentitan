@@ -128,6 +128,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   bit [NumEntropySrcIntr - 1:0] known_intr_state = '0;
 
   bit [NumEntropySrcIntr - 1:0] intr_en_mask = '0;
+  bit [NumEntropySrcIntr - 1:0] intr_test = '0;
+  bit                           intr_test_active = '0;
 
   // Indicates that the observe fifo should have data in it.
   // Switches to OBSERVE_FIFO_THRESHOLD when:
@@ -1008,6 +1010,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       sha_process_q.delete();
       raw_process_q.delete();
       repack_idx_fw_ov = 0;
+      intr_test = '0;
+      intr_test_active = 0;
     end
 
     if (rst_type == Disable) begin
@@ -1064,8 +1068,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // Update our behavioral predictions based on new interrupts
   // from_csr: 1 if the new information was observed from the intr_state register
   //           0 if it was observed from the interrupt pins
-  function void handle_new_interrupts(bit [NumEntropySrcIntr - 1:0] new_events);
+  function void handle_new_interrupts(bit [NumEntropySrcIntr - 1:0] new_events,
+                                      bit from_csr);
     string msg;
+
     if (new_events[ObserveFifoReady]) begin
       bit [6:0] obs_fifo_threshold =
           ral.observe_fifo_thresh.observe_fifo_thresh.get_mirrored_value();
@@ -1083,6 +1089,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   function void clear_interrupts(bit [NumEntropySrcIntr - 1:0] clear_mask);
     known_intr_state &= ~clear_mask;
+    intr_test &= ~clear_mask;
     `uvm_info(`gfn, $sformatf("clear_mask: %01h", clear_mask), UVM_FULL)
     `uvm_info(`gfn, $sformatf("known_data: %01h", known_intr_state), UVM_FULL)
   endfunction
@@ -1095,8 +1102,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       `uvm_info(`gfn, "WAITING FOR INTERRUPT", UVM_DEBUG)
       @(interrupt_vif.pins);
       new_intrs = interrupt_vif.pins & ~known_intr_state;
-      handle_new_interrupts(new_intrs);
+      handle_new_interrupts(new_intrs, 0);
       for (i = i.first(); i < i.last(); i = i.next()) begin
+        cov.intr_pins_cg.sample(i, interrupt_vif.pins[i]);
         if (new_intrs[i]) begin
           `uvm_info(`gfn, $sformatf("INTERRUPT RECEIVED: %0s", i.name), UVM_FULL)
         end
@@ -1408,6 +1416,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             "intr_enable": begin
               intr_en_mask = item.a_data;
             end
+            "intr_test": begin
+               intr_test = item.a_data;
+               intr_test_active = 1;
+            end
             "sw_regupd": begin
               bit disabled, sw_regupd;
               sw_regupd = ral.sw_regupd.sw_regupd.get_mirrored_value();
@@ -1681,9 +1693,21 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           // interrupt pins.)
           bit [NumEntropySrcIntr - 1:0] new_events = '0;
           bit [NumEntropySrcIntr - 1:0] to_handle = '0;
+          entropy_src_intr_e i;
           new_events = item.d_data & ~known_intr_state;
           to_handle = new_events & ~intr_en_mask;
-          handle_new_interrupts(to_handle);
+          for (i = i.first(); i < i.last(); i = i.next()) begin
+            // Don't sample int_cg if this was triggered as a test, only if it showed up
+            // in normal operation.
+            if(!intr_test_active) begin
+              cov.intr_cg.sample(i, intr_en_mask[i], item.d_data[i]);
+            end
+            if(intr_test_active) begin
+              cov.intr_test_cg.sample(i, intr_test[i], intr_en_mask[i], item.d_data[i]);
+            end
+            // Sample cov.inter_pins_cg in process_interrupts()
+          end
+          handle_new_interrupts(to_handle, 1);
         end
         "entropy_data": begin
           // TODO(Enhancement): Ideally the scoreboard would have monitor access to the
