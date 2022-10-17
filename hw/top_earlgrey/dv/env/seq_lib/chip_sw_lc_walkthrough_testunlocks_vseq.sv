@@ -23,6 +23,11 @@ class chip_sw_lc_walkthrough_testunlocks_vseq extends chip_sw_base_vseq;
     super.pre_start();
   endtask
 
+  virtual task apply_reset(string kind = "HARD");
+    super.apply_reset();
+    set_otp_creator_sw_cfg_rom_exec_en(1);
+  endtask
+
   virtual task body();
     bit [TokenWidthBit-1:0] otp_exit_token_bits, otp_unlock_token_bits;
     dec_lc_state_e curr_state = DecLcStTestLocked0;
