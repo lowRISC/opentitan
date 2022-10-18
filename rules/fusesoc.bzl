@@ -21,12 +21,16 @@ dependencies so the FuseSoC rules can be sandboxed.
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 
+def _corefiles2rootarg(core):
+    return core.dirname
+
 def _fusesoc_build_impl(ctx):
     dirname = "build.{}".format(ctx.label.name)
     out_dir = ctx.actions.declare_directory(dirname)
     flags = [ctx.expand_location(f, ctx.attr.srcs) for f in ctx.attr.flags]
     outputs = [out_dir]
     groups = {}
+    args = ctx.actions.args()
     for group, files in ctx.attr.output_groups.items():
         deps = [ctx.actions.declare_file("{}/{}".format(dirname, f)) for f in files]
         outputs.extend(deps)
@@ -36,10 +40,26 @@ def _fusesoc_build_impl(ctx):
         verilator_options = ctx.attr.verilator_options[BuildSettingInfo].value
         flags.append("--verilator_options={}".format(" ".join(verilator_options)))
 
-    cores_roots = {}
-    for c in ctx.files.cores:
-        if c.dirname not in cores_roots:
-            cores_roots[c.dirname] = True
+    args.add_all(
+        ctx.files.cores,
+        uniquify = True,
+        map_each = _corefiles2rootarg,
+        format_each = "--cores-root=%s",
+    )
+
+    args.add_all([
+        "run",
+        "--flag=fileset_top",
+    ])
+    args.add(ctx.attr.target, format = "--target=%s")
+    args.add_all([
+        "--setup",
+        "--build",
+    ])
+    args.add(out_dir.path, format = "--build-root=%s")
+
+    args.add_all(ctx.attr.systems)
+    args.add_all(flags)
 
     # Note: the `fileset_top` flag used above is specific to the OpenTitan
     # project to select the correct RTL fileset.
@@ -47,17 +67,7 @@ def _fusesoc_build_impl(ctx):
         mnemonic = "FuseSoC",
         outputs = outputs,
         inputs = ctx.files.srcs + ctx.files.cores,
-        arguments = [
-            "--cores-root={}".format(c)
-            for c in cores_roots.keys()
-        ] + [
-            "run",
-            "--flag=fileset_top",
-            "--target={}".format(ctx.attr.target),
-            "--setup",
-            "--build",
-            "--build-root={}".format(out_dir.path),
-        ] + ctx.attr.systems + flags,
+        arguments = [args],
         executable = "fusesoc",
         use_default_shell_env = False,
         execution_requirements = {
