@@ -93,6 +93,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq, false));
       CHECK_DIF_OK(dif_${p.name}_irq_acknowledge(&${p.inst_name}, irq));
       break;
     }
@@ -193,8 +195,9 @@ static void peripheral_irqs_trigger(void) {
   ${indent}     irq <= ${p.end_irq}; ++irq) {
   ${indent}  ${p.name}_irq_expected = irq;
   ${indent}  LOG_INFO("Triggering ${p.inst_name} IRQ %d.", irq);
-  ${indent}  CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq));
+  ${indent}  CHECK_DIF_OK(dif_${p.name}_irq_force(&${p.inst_name}, irq, true));
 
+  ${indent}  // TODO: Make race-condition free
   ${indent}  CHECK(${p.name}_irq_serviced == irq,
   ${indent}        "Incorrect ${p.inst_name} IRQ serviced: exp = %d, obs = %d", irq,
   ${indent}        ${p.name}_irq_serviced);

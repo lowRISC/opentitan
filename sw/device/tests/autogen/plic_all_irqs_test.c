@@ -178,6 +178,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, false));
       CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(&adc_ctrl_aon, irq));
       break;
     }
@@ -198,6 +200,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_alert_handler_irq_force(&alert_handler, irq, false));
       CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(&alert_handler, irq));
       break;
     }
@@ -218,6 +222,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq, false));
       CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer_aon, irq));
       break;
     }
@@ -238,6 +244,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, false));
       CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
       break;
     }
@@ -258,6 +266,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_edn_irq_force(&edn0, irq, false));
       CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn0, irq));
       break;
     }
@@ -278,6 +288,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_edn_irq_force(&edn1, irq, false));
       CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn1, irq));
       break;
     }
@@ -298,6 +310,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_entropy_src_irq_force(&entropy_src, irq, false));
       CHECK_DIF_OK(dif_entropy_src_irq_acknowledge(&entropy_src, irq));
       break;
     }
@@ -318,6 +332,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_flash_ctrl_irq_force(&flash_ctrl, irq, false));
       CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge(&flash_ctrl, irq));
       break;
     }
@@ -338,6 +354,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_gpio_irq_force(&gpio, irq, false));
       CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio, irq));
       break;
     }
@@ -358,6 +376,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_hmac_irq_force(&hmac, irq, false));
       CHECK_DIF_OK(dif_hmac_irq_acknowledge(&hmac, irq));
       break;
     }
@@ -378,6 +398,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, false));
       CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c0, irq));
       break;
     }
@@ -398,6 +420,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, false));
       CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c1, irq));
       break;
     }
@@ -418,6 +442,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, false));
       CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c2, irq));
       break;
     }
@@ -438,6 +464,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_keymgr_irq_force(&keymgr, irq, false));
       CHECK_DIF_OK(dif_keymgr_irq_acknowledge(&keymgr, irq));
       break;
     }
@@ -458,6 +486,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_kmac_irq_force(&kmac, irq, false));
       CHECK_DIF_OK(dif_kmac_irq_acknowledge(&kmac, irq));
       break;
     }
@@ -478,6 +508,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_otbn_irq_force(&otbn, irq, false));
       CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn, irq));
       break;
     }
@@ -498,6 +530,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq, false));
       CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge(&otp_ctrl, irq));
       break;
     }
@@ -518,6 +552,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_pattgen_irq_force(&pattgen, irq, false));
       CHECK_DIF_OK(dif_pattgen_irq_acknowledge(&pattgen, irq));
       break;
     }
@@ -538,6 +574,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq, false));
       CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(&pwrmgr_aon, irq));
       break;
     }
@@ -558,6 +596,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_rv_timer_irq_force(&rv_timer, irq, false));
       CHECK_DIF_OK(dif_rv_timer_irq_acknowledge(&rv_timer, irq));
       break;
     }
@@ -578,6 +618,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl, irq, false));
       CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge(&sensor_ctrl, irq));
       break;
     }
@@ -598,6 +640,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_spi_device_irq_force(&spi_device, irq, false));
       CHECK_DIF_OK(dif_spi_device_irq_acknowledge(&spi_device, irq));
       break;
     }
@@ -618,6 +662,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host0, irq, false));
       CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host0, irq));
       break;
     }
@@ -638,6 +684,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq, false));
       CHECK_DIF_OK(dif_spi_host_irq_acknowledge(&spi_host1, irq));
       break;
     }
@@ -658,6 +706,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, false));
       CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge(&sysrst_ctrl_aon, irq));
       break;
     }
@@ -678,6 +728,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq, false));
       CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart0, irq));
       break;
     }
@@ -698,6 +750,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, false));
       CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart1, irq));
       break;
     }
@@ -718,6 +772,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, false));
       CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart2, irq));
       break;
     }
@@ -738,6 +794,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, false));
       CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart3, irq));
       break;
     }
@@ -758,6 +816,8 @@ void ottf_external_isr(void) {
             "status = %x",
             irq, snapshot);
 
+      // TODO: Check Interrupt type then clear INTR_TEST if needed.
+      CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, false));
       CHECK_DIF_OK(dif_usbdev_irq_acknowledge(&usbdev, irq));
       break;
     }
@@ -1035,8 +1095,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifAdcCtrlIrqMatchDone; ++irq) {
     adc_ctrl_irq_expected = irq;
     LOG_INFO("Triggering adc_ctrl_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq));
+    CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(adc_ctrl_irq_serviced == irq,
           "Incorrect adc_ctrl_aon IRQ serviced: exp = %d, obs = %d", irq,
           adc_ctrl_irq_serviced);
@@ -1048,8 +1109,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifAlertHandlerIrqClassd; ++irq) {
     alert_handler_irq_expected = irq;
     LOG_INFO("Triggering alert_handler IRQ %d.", irq);
-    CHECK_DIF_OK(dif_alert_handler_irq_force(&alert_handler, irq));
+    CHECK_DIF_OK(dif_alert_handler_irq_force(&alert_handler, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(alert_handler_irq_serviced == irq,
           "Incorrect alert_handler IRQ serviced: exp = %d, obs = %d", irq,
           alert_handler_irq_serviced);
@@ -1061,8 +1123,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifAonTimerIrqWdogTimerBark; ++irq) {
     aon_timer_irq_expected = irq;
     LOG_INFO("Triggering aon_timer_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq));
+    CHECK_DIF_OK(dif_aon_timer_irq_force(&aon_timer_aon, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(aon_timer_irq_serviced == irq,
           "Incorrect aon_timer_aon IRQ serviced: exp = %d, obs = %d", irq,
           aon_timer_irq_serviced);
@@ -1074,8 +1137,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifCsrngIrqCsFatalErr; ++irq) {
     csrng_irq_expected = irq;
     LOG_INFO("Triggering csrng IRQ %d.", irq);
-    CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq));
+    CHECK_DIF_OK(dif_csrng_irq_force(&csrng, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(csrng_irq_serviced == irq,
           "Incorrect csrng IRQ serviced: exp = %d, obs = %d", irq,
           csrng_irq_serviced);
@@ -1087,8 +1151,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifEdnIrqEdnFatalErr; ++irq) {
     edn_irq_expected = irq;
     LOG_INFO("Triggering edn0 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_edn_irq_force(&edn0, irq));
+    CHECK_DIF_OK(dif_edn_irq_force(&edn0, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(edn_irq_serviced == irq,
           "Incorrect edn0 IRQ serviced: exp = %d, obs = %d", irq,
           edn_irq_serviced);
@@ -1100,8 +1165,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifEdnIrqEdnFatalErr; ++irq) {
     edn_irq_expected = irq;
     LOG_INFO("Triggering edn1 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_edn_irq_force(&edn1, irq));
+    CHECK_DIF_OK(dif_edn_irq_force(&edn1, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(edn_irq_serviced == irq,
           "Incorrect edn1 IRQ serviced: exp = %d, obs = %d", irq,
           edn_irq_serviced);
@@ -1113,8 +1179,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifEntropySrcIrqEsFatalErr; ++irq) {
     entropy_src_irq_expected = irq;
     LOG_INFO("Triggering entropy_src IRQ %d.", irq);
-    CHECK_DIF_OK(dif_entropy_src_irq_force(&entropy_src, irq));
+    CHECK_DIF_OK(dif_entropy_src_irq_force(&entropy_src, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(entropy_src_irq_serviced == irq,
           "Incorrect entropy_src IRQ serviced: exp = %d, obs = %d", irq,
           entropy_src_irq_serviced);
@@ -1126,8 +1193,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifFlashCtrlIrqCorrErr; ++irq) {
     flash_ctrl_irq_expected = irq;
     LOG_INFO("Triggering flash_ctrl IRQ %d.", irq);
-    CHECK_DIF_OK(dif_flash_ctrl_irq_force(&flash_ctrl, irq));
+    CHECK_DIF_OK(dif_flash_ctrl_irq_force(&flash_ctrl, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(flash_ctrl_irq_serviced == irq,
           "Incorrect flash_ctrl IRQ serviced: exp = %d, obs = %d", irq,
           flash_ctrl_irq_serviced);
@@ -1139,8 +1207,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifGpioIrqGpio31; ++irq) {
     gpio_irq_expected = irq;
     LOG_INFO("Triggering gpio IRQ %d.", irq);
-    CHECK_DIF_OK(dif_gpio_irq_force(&gpio, irq));
+    CHECK_DIF_OK(dif_gpio_irq_force(&gpio, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(gpio_irq_serviced == irq,
           "Incorrect gpio IRQ serviced: exp = %d, obs = %d", irq,
           gpio_irq_serviced);
@@ -1152,8 +1221,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifHmacIrqHmacErr; ++irq) {
     hmac_irq_expected = irq;
     LOG_INFO("Triggering hmac IRQ %d.", irq);
-    CHECK_DIF_OK(dif_hmac_irq_force(&hmac, irq));
+    CHECK_DIF_OK(dif_hmac_irq_force(&hmac, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(hmac_irq_serviced == irq,
           "Incorrect hmac IRQ serviced: exp = %d, obs = %d", irq,
           hmac_irq_serviced);
@@ -1165,8 +1235,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c0 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq));
+    CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(i2c_irq_serviced == irq,
           "Incorrect i2c0 IRQ serviced: exp = %d, obs = %d", irq,
           i2c_irq_serviced);
@@ -1178,8 +1249,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c1 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq));
+    CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(i2c_irq_serviced == irq,
           "Incorrect i2c1 IRQ serviced: exp = %d, obs = %d", irq,
           i2c_irq_serviced);
@@ -1191,8 +1263,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifI2cIrqHostTimeout; ++irq) {
     i2c_irq_expected = irq;
     LOG_INFO("Triggering i2c2 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq));
+    CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(i2c_irq_serviced == irq,
           "Incorrect i2c2 IRQ serviced: exp = %d, obs = %d", irq,
           i2c_irq_serviced);
@@ -1204,8 +1277,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifKeymgrIrqOpDone; ++irq) {
     keymgr_irq_expected = irq;
     LOG_INFO("Triggering keymgr IRQ %d.", irq);
-    CHECK_DIF_OK(dif_keymgr_irq_force(&keymgr, irq));
+    CHECK_DIF_OK(dif_keymgr_irq_force(&keymgr, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(keymgr_irq_serviced == irq,
           "Incorrect keymgr IRQ serviced: exp = %d, obs = %d", irq,
           keymgr_irq_serviced);
@@ -1217,8 +1291,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifKmacIrqKmacErr; ++irq) {
     kmac_irq_expected = irq;
     LOG_INFO("Triggering kmac IRQ %d.", irq);
-    CHECK_DIF_OK(dif_kmac_irq_force(&kmac, irq));
+    CHECK_DIF_OK(dif_kmac_irq_force(&kmac, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(kmac_irq_serviced == irq,
           "Incorrect kmac IRQ serviced: exp = %d, obs = %d", irq,
           kmac_irq_serviced);
@@ -1230,8 +1305,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifOtbnIrqDone; ++irq) {
     otbn_irq_expected = irq;
     LOG_INFO("Triggering otbn IRQ %d.", irq);
-    CHECK_DIF_OK(dif_otbn_irq_force(&otbn, irq));
+    CHECK_DIF_OK(dif_otbn_irq_force(&otbn, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(otbn_irq_serviced == irq,
           "Incorrect otbn IRQ serviced: exp = %d, obs = %d", irq,
           otbn_irq_serviced);
@@ -1243,8 +1319,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifOtpCtrlIrqOtpError; ++irq) {
     otp_ctrl_irq_expected = irq;
     LOG_INFO("Triggering otp_ctrl IRQ %d.", irq);
-    CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq));
+    CHECK_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(otp_ctrl_irq_serviced == irq,
           "Incorrect otp_ctrl IRQ serviced: exp = %d, obs = %d", irq,
           otp_ctrl_irq_serviced);
@@ -1256,8 +1333,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifPattgenIrqDoneCh1; ++irq) {
     pattgen_irq_expected = irq;
     LOG_INFO("Triggering pattgen IRQ %d.", irq);
-    CHECK_DIF_OK(dif_pattgen_irq_force(&pattgen, irq));
+    CHECK_DIF_OK(dif_pattgen_irq_force(&pattgen, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(pattgen_irq_serviced == irq,
           "Incorrect pattgen IRQ serviced: exp = %d, obs = %d", irq,
           pattgen_irq_serviced);
@@ -1269,8 +1347,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifPwrmgrIrqWakeup; ++irq) {
     pwrmgr_irq_expected = irq;
     LOG_INFO("Triggering pwrmgr_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq));
+    CHECK_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_aon, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(pwrmgr_irq_serviced == irq,
           "Incorrect pwrmgr_aon IRQ serviced: exp = %d, obs = %d", irq,
           pwrmgr_irq_serviced);
@@ -1282,8 +1361,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifRvTimerIrqTimerExpiredHart0Timer0; ++irq) {
     rv_timer_irq_expected = irq;
     LOG_INFO("Triggering rv_timer IRQ %d.", irq);
-    CHECK_DIF_OK(dif_rv_timer_irq_force(&rv_timer, irq));
+    CHECK_DIF_OK(dif_rv_timer_irq_force(&rv_timer, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(rv_timer_irq_serviced == irq,
           "Incorrect rv_timer IRQ serviced: exp = %d, obs = %d", irq,
           rv_timer_irq_serviced);
@@ -1295,8 +1375,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifSensorCtrlIrqInitStatusChange; ++irq) {
     sensor_ctrl_irq_expected = irq;
     LOG_INFO("Triggering sensor_ctrl IRQ %d.", irq);
-    CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl, irq));
+    CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(sensor_ctrl_irq_serviced == irq,
           "Incorrect sensor_ctrl IRQ serviced: exp = %d, obs = %d", irq,
           sensor_ctrl_irq_serviced);
@@ -1308,8 +1389,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifSpiDeviceIrqTpmHeaderNotEmpty; ++irq) {
     spi_device_irq_expected = irq;
     LOG_INFO("Triggering spi_device IRQ %d.", irq);
-    CHECK_DIF_OK(dif_spi_device_irq_force(&spi_device, irq));
+    CHECK_DIF_OK(dif_spi_device_irq_force(&spi_device, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(spi_device_irq_serviced == irq,
           "Incorrect spi_device IRQ serviced: exp = %d, obs = %d", irq,
           spi_device_irq_serviced);
@@ -1321,8 +1403,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifSpiHostIrqSpiEvent; ++irq) {
     spi_host_irq_expected = irq;
     LOG_INFO("Triggering spi_host0 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host0, irq));
+    CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host0, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(spi_host_irq_serviced == irq,
           "Incorrect spi_host0 IRQ serviced: exp = %d, obs = %d", irq,
           spi_host_irq_serviced);
@@ -1334,8 +1417,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifSpiHostIrqSpiEvent; ++irq) {
     spi_host_irq_expected = irq;
     LOG_INFO("Triggering spi_host1 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq));
+    CHECK_DIF_OK(dif_spi_host_irq_force(&spi_host1, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(spi_host_irq_serviced == irq,
           "Incorrect spi_host1 IRQ serviced: exp = %d, obs = %d", irq,
           spi_host_irq_serviced);
@@ -1347,8 +1431,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifSysrstCtrlIrqEventDetected; ++irq) {
     sysrst_ctrl_irq_expected = irq;
     LOG_INFO("Triggering sysrst_ctrl_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq));
+    CHECK_DIF_OK(dif_sysrst_ctrl_irq_force(&sysrst_ctrl_aon, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(sysrst_ctrl_irq_serviced == irq,
           "Incorrect sysrst_ctrl_aon IRQ serviced: exp = %d, obs = %d", irq,
           sysrst_ctrl_irq_serviced);
@@ -1363,8 +1448,9 @@ static void peripheral_irqs_trigger(void) {
          irq <= kDifUartIrqRxParityErr; ++irq) {
       uart_irq_expected = irq;
       LOG_INFO("Triggering uart0 IRQ %d.", irq);
-      CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq));
+      CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq, true));
 
+      // TODO: Make race-condition free
       CHECK(uart_irq_serviced == irq,
             "Incorrect uart0 IRQ serviced: exp = %d, obs = %d", irq,
             uart_irq_serviced);
@@ -1377,8 +1463,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifUartIrqRxParityErr; ++irq) {
     uart_irq_expected = irq;
     LOG_INFO("Triggering uart1 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq));
+    CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(uart_irq_serviced == irq,
           "Incorrect uart1 IRQ serviced: exp = %d, obs = %d", irq,
           uart_irq_serviced);
@@ -1390,8 +1477,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifUartIrqRxParityErr; ++irq) {
     uart_irq_expected = irq;
     LOG_INFO("Triggering uart2 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq));
+    CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(uart_irq_serviced == irq,
           "Incorrect uart2 IRQ serviced: exp = %d, obs = %d", irq,
           uart_irq_serviced);
@@ -1403,8 +1491,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifUartIrqRxParityErr; ++irq) {
     uart_irq_expected = irq;
     LOG_INFO("Triggering uart3 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq));
+    CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(uart_irq_serviced == irq,
           "Incorrect uart3 IRQ serviced: exp = %d, obs = %d", irq,
           uart_irq_serviced);
@@ -1416,8 +1505,9 @@ static void peripheral_irqs_trigger(void) {
        irq <= kDifUsbdevIrqLinkOutErr; ++irq) {
     usbdev_irq_expected = irq;
     LOG_INFO("Triggering usbdev IRQ %d.", irq);
-    CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq));
+    CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, true));
 
+    // TODO: Make race-condition free
     CHECK(usbdev_irq_serviced == irq,
           "Incorrect usbdev IRQ serviced: exp = %d, obs = %d", irq,
           usbdev_irq_serviced);
