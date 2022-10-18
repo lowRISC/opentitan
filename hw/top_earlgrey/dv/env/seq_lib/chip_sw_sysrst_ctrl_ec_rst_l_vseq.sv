@@ -18,6 +18,7 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
 
   localparam int PAD_KEY0 = 0;
   localparam int PAD_KEY1 = 1;
+  localparam int PAD_KEY2 = 2;
 
   typedef enum {
     PHASE_INITIAL               = 0,
@@ -32,9 +33,22 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
   logic       output_ec_rst_read_values;
   logic       ec_rst_timer_over;
 
+  virtual task pre_start();
+    super.pre_start();
+    sysrst_init();
+  endtask
+
   virtual function void write_test_phase(input test_phases_e phase);
     sw_symbol_backdoor_overwrite("kTestPhase", {<<8{phase}});
   endfunction
+
+  // Initialize the pad mio input to 0 to avoid having X values in the initial test phase.
+  virtual task sysrst_init();
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(PAD_KEY0, 0);
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(PAD_KEY1, 0);
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(PAD_KEY2, 0);
+    cfg.chip_vif.pwrb_in_if.drive_pin(0, 0);
+  endtask
 
   virtual task set_combo0_pads_low();
     cfg.chip_vif.sysrst_ctrl_if.drive_pin(PAD_KEY0, 0);
