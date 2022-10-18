@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright lowRISC contributors.
+    Licensed under the Apache License, Version 2.0, see LICENSE for details.
+    SPDX-License-Identifier: Apache-2.0
+-->
+<!--
+   Exclusions for XHT related ports that have not yet been exercised (yet can be waived for V2)
+-->
+<refinement-file-root>
+  <information comment-version="1" creation-time="Mon 17 Oct 2022 18:11:34 PDT" creator="martin.lueker-boden" csCheck="true" save-ref-method="seq" tool-version="Cadence vManager21.03" rules-signature-c="5d15c37ee928c5507f402e54ad4cbf3f">
+    <ucm-files>
+    </ucm-files>
+    <ccf-files>
+    </ccf-files>
+  </information>
+  <rules>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_cov_if/one_way_ht_threshold_cg/cp_offset/&quot;one_way_regs[80]&quot;" entityType="coverbin" excTime="1666055307" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_cov_if/one_way_ht_threshold_cg/cp_offset/&quot;one_way_regs[84]&quot;" entityType="coverbin" excTime="1666055312" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_cov_if/one_way_ht_threshold_cg/cr_cross/&quot;auto[0],one_way_regs[80],auto[1]&quot;" entityType="coverbin" excTime="1666112152" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_cov_if/one_way_ht_threshold_cg/cr_cross/&quot;auto[0],one_way_regs[80],auto[0]&quot;" entityType="coverbin" excTime="1666112148" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_cov_if/one_way_ht_threshold_cg/cr_cross/&quot;auto[0],one_way_regs[84],auto[0]&quot;" entityType="coverbin" excTime="1666112158" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_cov_if/one_way_ht_threshold_cg/cr_cross/&quot;auto[0],one_way_regs[84],auto[1]&quot;" entityType="coverbin" excTime="1666112166" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_cov_if/one_way_ht_threshold_cg/cr_cross/&quot;auto[1],one_way_regs[80],auto[0]&quot;" entityType="coverbin" excTime="1666112182" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_cov_if/one_way_ht_threshold_cg/cr_cross/&quot;auto[1],one_way_regs[80],auto[1]&quot;" entityType="coverbin" excTime="1666112189" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_cov_if/one_way_ht_threshold_cg/cr_cross/&quot;auto[1],one_way_regs[84],auto[0]&quot;" entityType="coverbin" excTime="1666112195" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_cov_if/one_way_ht_threshold_cg/cr_cross/&quot;auto[1],one_way_regs[84],auto[1]&quot;" entityType="coverbin" excTime="1666112199" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/&quot;entropy_src_xht_i.continuous_test&quot;" entityType="toggle" excTime="1666055353" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/&quot;entropy_src_xht_i.test_fail_hi_pulse&quot;" entityType="toggle" excTime="1666055358" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/&quot;entropy_src_xht_i.test_fail_lo_pulse&quot;" entityType="toggle" excTime="1666055364" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+  </rules>
+  <cache-map>
+  </cache-map>
+</refinement-file-root>
