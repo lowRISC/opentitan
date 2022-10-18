@@ -201,15 +201,25 @@ jobs:
     # Set the remote cache GCP key path
   - bash: |
       set -x -e
-      # This command builds all software and runs all unit tests that run on
-      # the host.
+      # This command builds all software and runs all unit tests that run on the
+      # host, with a few exceptions:
+      # * It excludes //quality because that's the purview of `slow_lints`.
+      # * It excludes the tests from //third_party/riscv-compliance because
+      #   they're already covered by `execute_fpga_tests_cw310`.
+      # * It excludes //hw:all to avoid building Verilator, which is pulled in
+      #   because //... effectively asks to build //hw:verilator_real and other
+      #   targets in //hw:all that depend on it. Note that this is only a
+      #   shallow exclusion; tests deeper under //hw will still be found.
       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
       ci/bazelisk.sh test \
       --build_tests_only=false \
       --test_output=errors \
       --define DISABLE_VERILATOR_BUILD=true \
       --test_tag_filters=-broken,-cw310,-verilator,-dv \
-      //sw/...
+      -- //... \
+      -//quality/... \
+      -//third_party/riscv-compliance/... \
+      -//hw:all
     displayName: Build & test SW
   - bash: |
       set -x -e
