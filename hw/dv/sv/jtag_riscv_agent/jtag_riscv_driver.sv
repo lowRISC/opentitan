@@ -68,7 +68,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
     send_riscv_ir_req(JtagDmiAccess);
 
     if (drive_req.activate_rv_dm) begin
-      activate_rv_dm();
+      activate_rv_dm(drive_req.status);
     end else begin
       if (cfg.is_rv_dm) begin
         bit [DMI_DATAW-1:0] sbcs_val = (2'b10 << SbAccess) | ('b1 << SbBusy);
@@ -178,7 +178,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
     end
   endtask
 
-  protected virtual task activate_rv_dm();
+  protected virtual task activate_rv_dm(output jtag_op_status_e activation_status);
     bit [bus_params_pkg::BUS_DW-1:0] dmctrl_val, sbcs_val;
     bit [DMI_OPW-1:0] status;
     int cnter;
@@ -196,6 +196,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
       end else begin
         `uvm_error(`gfn, msg)
       end
+      activation_status = DmiFail;
       return;
     end
 
@@ -209,6 +210,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
     `DV_CHECK_EQ(sbcs_val[SbAccess32], 1, "expect SBA width to be 32 bits!", error, msg_id)
 
     cfg.rv_dm_activated = 1;
+    activation_status = DmiNoErr;
   endtask
 
   protected virtual task wait_sbcs_idle();
