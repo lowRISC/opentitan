@@ -8,7 +8,8 @@
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      // TODO #5484, comment these 2 lines out because spi host memory is dummy
                      // "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     // Integrity error is tested in a SW test.
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_wo_intg_testplan.hjson",
                      "hw/ip/tlul/data/tlul_testplan.hjson",
                      "sw/device/silicon_creator/rom/data/rom_e2e_testplan.hjson",
                      "hw/top_earlgrey/data/chip_conn_testplan.hjson"]
