@@ -167,24 +167,25 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public SpiHostTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_spi_host_irq_force(nullptr, kDifSpiHostIrqError));
+  EXPECT_DIF_BADARG(dif_spi_host_irq_force(nullptr, kDifSpiHostIrqError, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_DIF_BADARG(
-      dif_spi_host_irq_force(nullptr, static_cast<dif_spi_host_irq_t>(32)));
+  EXPECT_DIF_BADARG(dif_spi_host_irq_force(
+      nullptr, static_cast<dif_spi_host_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(SPI_HOST_INTR_TEST_REG_OFFSET,
                  {{SPI_HOST_INTR_TEST_ERROR_BIT, true}});
-  EXPECT_DIF_OK(dif_spi_host_irq_force(&spi_host_, kDifSpiHostIrqError));
+  EXPECT_DIF_OK(dif_spi_host_irq_force(&spi_host_, kDifSpiHostIrqError, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(SPI_HOST_INTR_TEST_REG_OFFSET,
                  {{SPI_HOST_INTR_TEST_SPI_EVENT_BIT, true}});
-  EXPECT_DIF_OK(dif_spi_host_irq_force(&spi_host_, kDifSpiHostIrqSpiEvent));
+  EXPECT_DIF_OK(
+      dif_spi_host_irq_force(&spi_host_, kDifSpiHostIrqSpiEvent, true));
 }
 
 class IrqGetEnabledTest : public SpiHostTest {};

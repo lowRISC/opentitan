@@ -176,12 +176,12 @@ class IrqForceTest : public OtpCtrlTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
   EXPECT_DIF_BADARG(
-      dif_otp_ctrl_irq_force(nullptr, kDifOtpCtrlIrqOtpOperationDone));
+      dif_otp_ctrl_irq_force(nullptr, kDifOtpCtrlIrqOtpOperationDone, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_DIF_BADARG(
-      dif_otp_ctrl_irq_force(nullptr, static_cast<dif_otp_ctrl_irq_t>(32)));
+  EXPECT_DIF_BADARG(dif_otp_ctrl_irq_force(
+      nullptr, static_cast<dif_otp_ctrl_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
@@ -189,12 +189,13 @@ TEST_F(IrqForceTest, Success) {
   EXPECT_WRITE32(OTP_CTRL_INTR_TEST_REG_OFFSET,
                  {{OTP_CTRL_INTR_TEST_OTP_OPERATION_DONE_BIT, true}});
   EXPECT_DIF_OK(
-      dif_otp_ctrl_irq_force(&otp_ctrl_, kDifOtpCtrlIrqOtpOperationDone));
+      dif_otp_ctrl_irq_force(&otp_ctrl_, kDifOtpCtrlIrqOtpOperationDone, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(OTP_CTRL_INTR_TEST_REG_OFFSET,
                  {{OTP_CTRL_INTR_TEST_OTP_ERROR_BIT, true}});
-  EXPECT_DIF_OK(dif_otp_ctrl_irq_force(&otp_ctrl_, kDifOtpCtrlIrqOtpError));
+  EXPECT_DIF_OK(
+      dif_otp_ctrl_irq_force(&otp_ctrl_, kDifOtpCtrlIrqOtpError, true));
 }
 
 class IrqGetEnabledTest : public OtpCtrlTest {};

@@ -168,7 +168,8 @@ dif_result_t dif_spi_device_irq_acknowledge(const dif_spi_device_t *spi_device,
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_force(const dif_spi_device_t *spi_device,
-                                      dif_spi_device_irq_t irq) {
+                                      dif_spi_device_irq_t irq,
+                                      const bool val) {
   if (spi_device == NULL) {
     return kDifBadArg;
   }
@@ -178,7 +179,7 @@ dif_result_t dif_spi_device_irq_force(const dif_spi_device_t *spi_device,
     return kDifBadArg;
   }
 
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
   mmio_region_write32(spi_device->base_addr, SPI_DEVICE_INTR_TEST_REG_OFFSET,
                       intr_test_reg);
 

@@ -147,10 +147,12 @@ dif_result_t dif_edn_irq_acknowledge(const dif_edn_t *edn, dif_edn_irq_t irq);
  *
  * @param edn A edn handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_edn_irq_force(const dif_edn_t *edn, dif_edn_irq_t irq);
+dif_result_t dif_edn_irq_force(const dif_edn_t *edn, dif_edn_irq_t irq,
+                               const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.

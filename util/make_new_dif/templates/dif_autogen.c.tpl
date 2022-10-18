@@ -298,7 +298,8 @@ dif_result_t dif_${ip.name_snake}_init(
   OT_WARN_UNUSED_RESULT
   dif_result_t dif_${ip.name_snake}_irq_force(
     const dif_${ip.name_snake}_t *${ip.name_snake},
-    dif_${ip.name_snake}_irq_t irq) {
+    dif_${ip.name_snake}_irq_t irq,
+    const bool val) {
 
     if (${ip.name_snake} == NULL) {
       return kDifBadArg;
@@ -309,7 +310,7 @@ dif_result_t dif_${ip.name_snake}_init(
       return kDifBadArg;
     }
 
-    uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+    uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
   % if ip.name_snake == "rv_timer":
     uint32_t reg_offset = 0;
     if (!${ip.name_snake}_get_irq_reg_offset(kDif${ip.name_camel}IntrRegTest,

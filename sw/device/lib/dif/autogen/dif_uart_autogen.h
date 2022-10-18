@@ -169,10 +169,12 @@ dif_result_t dif_uart_irq_acknowledge(const dif_uart_t *uart,
  *
  * @param uart A uart handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_uart_irq_force(const dif_uart_t *uart, dif_uart_irq_t irq);
+dif_result_t dif_uart_irq_force(const dif_uart_t *uart, dif_uart_irq_t irq,
+                                const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.

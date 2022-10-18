@@ -221,7 +221,8 @@ dif_result_t dif_gpio_irq_acknowledge(const dif_gpio_t *gpio,
 }
 
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_gpio_irq_force(const dif_gpio_t *gpio, dif_gpio_irq_t irq) {
+dif_result_t dif_gpio_irq_force(const dif_gpio_t *gpio, dif_gpio_irq_t irq,
+                                const bool val) {
   if (gpio == NULL) {
     return kDifBadArg;
   }
@@ -231,7 +232,7 @@ dif_result_t dif_gpio_irq_force(const dif_gpio_t *gpio, dif_gpio_irq_t irq) {
     return kDifBadArg;
   }
 
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
   mmio_region_write32(gpio->base_addr, GPIO_INTR_TEST_REG_OFFSET,
                       intr_test_reg);
 

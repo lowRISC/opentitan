@@ -176,12 +176,12 @@ class IrqForceTest : public FlashCtrlTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
   EXPECT_DIF_BADARG(
-      dif_flash_ctrl_irq_force(nullptr, kDifFlashCtrlIrqProgEmpty));
+      dif_flash_ctrl_irq_force(nullptr, kDifFlashCtrlIrqProgEmpty, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_DIF_BADARG(
-      dif_flash_ctrl_irq_force(nullptr, static_cast<dif_flash_ctrl_irq_t>(32)));
+  EXPECT_DIF_BADARG(dif_flash_ctrl_irq_force(
+      nullptr, static_cast<dif_flash_ctrl_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
@@ -189,13 +189,13 @@ TEST_F(IrqForceTest, Success) {
   EXPECT_WRITE32(FLASH_CTRL_INTR_TEST_REG_OFFSET,
                  {{FLASH_CTRL_INTR_TEST_PROG_EMPTY_BIT, true}});
   EXPECT_DIF_OK(
-      dif_flash_ctrl_irq_force(&flash_ctrl_, kDifFlashCtrlIrqProgEmpty));
+      dif_flash_ctrl_irq_force(&flash_ctrl_, kDifFlashCtrlIrqProgEmpty, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(FLASH_CTRL_INTR_TEST_REG_OFFSET,
                  {{FLASH_CTRL_INTR_TEST_CORR_ERR_BIT, true}});
   EXPECT_DIF_OK(
-      dif_flash_ctrl_irq_force(&flash_ctrl_, kDifFlashCtrlIrqCorrErr));
+      dif_flash_ctrl_irq_force(&flash_ctrl_, kDifFlashCtrlIrqCorrErr, true));
 }
 
 class IrqGetEnabledTest : public FlashCtrlTest {};

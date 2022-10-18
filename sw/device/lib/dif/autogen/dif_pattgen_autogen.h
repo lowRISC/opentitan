@@ -145,11 +145,12 @@ dif_result_t dif_pattgen_irq_acknowledge(const dif_pattgen_t *pattgen,
  *
  * @param pattgen A pattgen handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pattgen_irq_force(const dif_pattgen_t *pattgen,
-                                   dif_pattgen_irq_t irq);
+                                   dif_pattgen_irq_t irq, const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.

@@ -149,11 +149,12 @@ dif_result_t dif_aon_timer_irq_acknowledge(const dif_aon_timer_t *aon_timer,
  *
  * @param aon_timer A aon_timer handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aon_timer_irq_force(const dif_aon_timer_t *aon_timer,
-                                     dif_aon_timer_irq_t irq);
+                                     dif_aon_timer_irq_t irq, const bool val);
 
 #ifdef __cplusplus
 }  // extern "C"

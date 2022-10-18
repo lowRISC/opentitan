@@ -170,26 +170,26 @@ class IrqForceTest : public AonTimerTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
   EXPECT_DIF_BADARG(
-      dif_aon_timer_irq_force(nullptr, kDifAonTimerIrqWkupTimerExpired));
+      dif_aon_timer_irq_force(nullptr, kDifAonTimerIrqWkupTimerExpired, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_DIF_BADARG(
-      dif_aon_timer_irq_force(nullptr, static_cast<dif_aon_timer_irq_t>(32)));
+  EXPECT_DIF_BADARG(dif_aon_timer_irq_force(
+      nullptr, static_cast<dif_aon_timer_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(AON_TIMER_INTR_TEST_REG_OFFSET,
                  {{AON_TIMER_INTR_TEST_WKUP_TIMER_EXPIRED_BIT, true}});
-  EXPECT_DIF_OK(
-      dif_aon_timer_irq_force(&aon_timer_, kDifAonTimerIrqWkupTimerExpired));
+  EXPECT_DIF_OK(dif_aon_timer_irq_force(&aon_timer_,
+                                        kDifAonTimerIrqWkupTimerExpired, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(AON_TIMER_INTR_TEST_REG_OFFSET,
                  {{AON_TIMER_INTR_TEST_WDOG_TIMER_BARK_BIT, true}});
   EXPECT_DIF_OK(
-      dif_aon_timer_irq_force(&aon_timer_, kDifAonTimerIrqWdogTimerBark));
+      dif_aon_timer_irq_force(&aon_timer_, kDifAonTimerIrqWdogTimerBark, true));
 }
 
 }  // namespace

@@ -149,7 +149,7 @@ dif_result_t dif_otp_ctrl_irq_acknowledge(const dif_otp_ctrl_t *otp_ctrl,
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_irq_force(const dif_otp_ctrl_t *otp_ctrl,
-                                    dif_otp_ctrl_irq_t irq) {
+                                    dif_otp_ctrl_irq_t irq, const bool val) {
   if (otp_ctrl == NULL) {
     return kDifBadArg;
   }
@@ -159,7 +159,7 @@ dif_result_t dif_otp_ctrl_irq_force(const dif_otp_ctrl_t *otp_ctrl,
     return kDifBadArg;
   }
 
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
   mmio_region_write32(otp_ctrl->base_addr, OTP_CTRL_INTR_TEST_REG_OFFSET,
                       intr_test_reg);
 

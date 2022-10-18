@@ -166,24 +166,25 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public PattgenTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_pattgen_irq_force(nullptr, kDifPattgenIrqDoneCh0));
+  EXPECT_DIF_BADARG(
+      dif_pattgen_irq_force(nullptr, kDifPattgenIrqDoneCh0, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
   EXPECT_DIF_BADARG(
-      dif_pattgen_irq_force(nullptr, static_cast<dif_pattgen_irq_t>(32)));
+      dif_pattgen_irq_force(nullptr, static_cast<dif_pattgen_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(PATTGEN_INTR_TEST_REG_OFFSET,
                  {{PATTGEN_INTR_TEST_DONE_CH0_BIT, true}});
-  EXPECT_DIF_OK(dif_pattgen_irq_force(&pattgen_, kDifPattgenIrqDoneCh0));
+  EXPECT_DIF_OK(dif_pattgen_irq_force(&pattgen_, kDifPattgenIrqDoneCh0, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(PATTGEN_INTR_TEST_REG_OFFSET,
                  {{PATTGEN_INTR_TEST_DONE_CH1_BIT, true}});
-  EXPECT_DIF_OK(dif_pattgen_irq_force(&pattgen_, kDifPattgenIrqDoneCh1));
+  EXPECT_DIF_OK(dif_pattgen_irq_force(&pattgen_, kDifPattgenIrqDoneCh1, true));
 }
 
 class IrqGetEnabledTest : public PattgenTest {};

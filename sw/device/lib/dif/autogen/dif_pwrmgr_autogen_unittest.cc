@@ -151,19 +151,19 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public PwrmgrTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_pwrmgr_irq_force(nullptr, kDifPwrmgrIrqWakeup));
+  EXPECT_DIF_BADARG(dif_pwrmgr_irq_force(nullptr, kDifPwrmgrIrqWakeup, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
   EXPECT_DIF_BADARG(
-      dif_pwrmgr_irq_force(nullptr, static_cast<dif_pwrmgr_irq_t>(32)));
+      dif_pwrmgr_irq_force(nullptr, static_cast<dif_pwrmgr_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(PWRMGR_INTR_TEST_REG_OFFSET,
                  {{PWRMGR_INTR_TEST_WAKEUP_BIT, true}});
-  EXPECT_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_, kDifPwrmgrIrqWakeup));
+  EXPECT_DIF_OK(dif_pwrmgr_irq_force(&pwrmgr_, kDifPwrmgrIrqWakeup, true));
 }
 
 class IrqGetEnabledTest : public PwrmgrTest {};

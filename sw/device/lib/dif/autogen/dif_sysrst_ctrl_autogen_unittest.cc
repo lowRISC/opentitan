@@ -156,20 +156,20 @@ class IrqForceTest : public SysrstCtrlTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
   EXPECT_DIF_BADARG(
-      dif_sysrst_ctrl_irq_force(nullptr, kDifSysrstCtrlIrqEventDetected));
+      dif_sysrst_ctrl_irq_force(nullptr, kDifSysrstCtrlIrqEventDetected, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
   EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_force(
-      nullptr, static_cast<dif_sysrst_ctrl_irq_t>(32)));
+      nullptr, static_cast<dif_sysrst_ctrl_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(SYSRST_CTRL_INTR_TEST_REG_OFFSET,
                  {{SYSRST_CTRL_INTR_TEST_EVENT_DETECTED_BIT, true}});
-  EXPECT_DIF_OK(
-      dif_sysrst_ctrl_irq_force(&sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected));
+  EXPECT_DIF_OK(dif_sysrst_ctrl_irq_force(
+      &sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected, true));
 }
 
 class IrqGetEnabledTest : public SysrstCtrlTest {};

@@ -152,11 +152,13 @@ dif_result_t dif_sensor_ctrl_irq_acknowledge(
  *
  * @param sensor_ctrl A sensor_ctrl handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_irq_force(const dif_sensor_ctrl_t *sensor_ctrl,
-                                       dif_sensor_ctrl_irq_t irq);
+                                       dif_sensor_ctrl_irq_t irq,
+                                       const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.

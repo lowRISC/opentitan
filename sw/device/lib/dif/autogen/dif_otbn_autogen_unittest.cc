@@ -152,18 +152,18 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public OtbnTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_otbn_irq_force(nullptr, kDifOtbnIrqDone));
+  EXPECT_DIF_BADARG(dif_otbn_irq_force(nullptr, kDifOtbnIrqDone, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
   EXPECT_DIF_BADARG(
-      dif_otbn_irq_force(nullptr, static_cast<dif_otbn_irq_t>(32)));
+      dif_otbn_irq_force(nullptr, static_cast<dif_otbn_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(OTBN_INTR_TEST_REG_OFFSET, {{OTBN_INTR_TEST_DONE_BIT, true}});
-  EXPECT_DIF_OK(dif_otbn_irq_force(&otbn_, kDifOtbnIrqDone));
+  EXPECT_DIF_OK(dif_otbn_irq_force(&otbn_, kDifOtbnIrqDone, true));
 }
 
 class IrqGetEnabledTest : public OtbnTest {};

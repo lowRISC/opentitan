@@ -155,19 +155,21 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public AdcCtrlTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_force(nullptr, kDifAdcCtrlIrqMatchDone));
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_irq_force(nullptr, kDifAdcCtrlIrqMatchDone, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_DIF_BADARG(
-      dif_adc_ctrl_irq_force(nullptr, static_cast<dif_adc_ctrl_irq_t>(32)));
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_force(
+      nullptr, static_cast<dif_adc_ctrl_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(ADC_CTRL_INTR_TEST_REG_OFFSET,
                  {{ADC_CTRL_INTR_TEST_MATCH_DONE_BIT, true}});
-  EXPECT_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_, kDifAdcCtrlIrqMatchDone));
+  EXPECT_DIF_OK(
+      dif_adc_ctrl_irq_force(&adc_ctrl_, kDifAdcCtrlIrqMatchDone, true));
 }
 
 class IrqGetEnabledTest : public AdcCtrlTest {};

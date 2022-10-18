@@ -165,24 +165,25 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public UsbdevTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_usbdev_irq_force(nullptr, kDifUsbdevIrqPktReceived));
+  EXPECT_DIF_BADARG(
+      dif_usbdev_irq_force(nullptr, kDifUsbdevIrqPktReceived, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
   EXPECT_DIF_BADARG(
-      dif_usbdev_irq_force(nullptr, static_cast<dif_usbdev_irq_t>(32)));
+      dif_usbdev_irq_force(nullptr, static_cast<dif_usbdev_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(USBDEV_INTR_TEST_REG_OFFSET,
                  {{USBDEV_INTR_TEST_PKT_RECEIVED_BIT, true}});
-  EXPECT_DIF_OK(dif_usbdev_irq_force(&usbdev_, kDifUsbdevIrqPktReceived));
+  EXPECT_DIF_OK(dif_usbdev_irq_force(&usbdev_, kDifUsbdevIrqPktReceived, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(USBDEV_INTR_TEST_REG_OFFSET,
                  {{USBDEV_INTR_TEST_LINK_OUT_ERR_BIT, true}});
-  EXPECT_DIF_OK(dif_usbdev_irq_force(&usbdev_, kDifUsbdevIrqLinkOutErr));
+  EXPECT_DIF_OK(dif_usbdev_irq_force(&usbdev_, kDifUsbdevIrqLinkOutErr, true));
 }
 
 class IrqGetEnabledTest : public UsbdevTest {};

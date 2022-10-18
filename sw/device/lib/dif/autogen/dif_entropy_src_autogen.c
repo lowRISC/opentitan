@@ -147,7 +147,8 @@ dif_result_t dif_entropy_src_irq_acknowledge(
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_force(const dif_entropy_src_t *entropy_src,
-                                       dif_entropy_src_irq_t irq) {
+                                       dif_entropy_src_irq_t irq,
+                                       const bool val) {
   if (entropy_src == NULL) {
     return kDifBadArg;
   }
@@ -157,7 +158,7 @@ dif_result_t dif_entropy_src_irq_force(const dif_entropy_src_t *entropy_src,
     return kDifBadArg;
   }
 
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
   mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_INTR_TEST_REG_OFFSET,
                       intr_test_reg);
 

@@ -170,24 +170,25 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public CsrngTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_csrng_irq_force(nullptr, kDifCsrngIrqCsCmdReqDone));
+  EXPECT_DIF_BADARG(
+      dif_csrng_irq_force(nullptr, kDifCsrngIrqCsCmdReqDone, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
   EXPECT_DIF_BADARG(
-      dif_csrng_irq_force(nullptr, static_cast<dif_csrng_irq_t>(32)));
+      dif_csrng_irq_force(nullptr, static_cast<dif_csrng_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(CSRNG_INTR_TEST_REG_OFFSET,
                  {{CSRNG_INTR_TEST_CS_CMD_REQ_DONE_BIT, true}});
-  EXPECT_DIF_OK(dif_csrng_irq_force(&csrng_, kDifCsrngIrqCsCmdReqDone));
+  EXPECT_DIF_OK(dif_csrng_irq_force(&csrng_, kDifCsrngIrqCsCmdReqDone, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(CSRNG_INTR_TEST_REG_OFFSET,
                  {{CSRNG_INTR_TEST_CS_FATAL_ERR_BIT, true}});
-  EXPECT_DIF_OK(dif_csrng_irq_force(&csrng_, kDifCsrngIrqCsFatalErr));
+  EXPECT_DIF_OK(dif_csrng_irq_force(&csrng_, kDifCsrngIrqCsFatalErr, true));
 }
 
 class IrqGetEnabledTest : public CsrngTest {};

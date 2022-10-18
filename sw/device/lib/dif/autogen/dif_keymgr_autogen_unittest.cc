@@ -158,19 +158,19 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public KeymgrTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_keymgr_irq_force(nullptr, kDifKeymgrIrqOpDone));
+  EXPECT_DIF_BADARG(dif_keymgr_irq_force(nullptr, kDifKeymgrIrqOpDone, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
   EXPECT_DIF_BADARG(
-      dif_keymgr_irq_force(nullptr, static_cast<dif_keymgr_irq_t>(32)));
+      dif_keymgr_irq_force(nullptr, static_cast<dif_keymgr_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(KEYMGR_INTR_TEST_REG_OFFSET,
                  {{KEYMGR_INTR_TEST_OP_DONE_BIT, true}});
-  EXPECT_DIF_OK(dif_keymgr_irq_force(&keymgr_, kDifKeymgrIrqOpDone));
+  EXPECT_DIF_OK(dif_keymgr_irq_force(&keymgr_, kDifKeymgrIrqOpDone, true));
 }
 
 class IrqGetEnabledTest : public KeymgrTest {};

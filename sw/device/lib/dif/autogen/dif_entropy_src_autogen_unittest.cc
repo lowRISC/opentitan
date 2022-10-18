@@ -175,27 +175,27 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public EntropySrcTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(
-      dif_entropy_src_irq_force(nullptr, kDifEntropySrcIrqEsEntropyValid));
+  EXPECT_DIF_BADARG(dif_entropy_src_irq_force(
+      nullptr, kDifEntropySrcIrqEsEntropyValid, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
   EXPECT_DIF_BADARG(dif_entropy_src_irq_force(
-      nullptr, static_cast<dif_entropy_src_irq_t>(32)));
+      nullptr, static_cast<dif_entropy_src_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(ENTROPY_SRC_INTR_TEST_REG_OFFSET,
                  {{ENTROPY_SRC_INTR_TEST_ES_ENTROPY_VALID_BIT, true}});
-  EXPECT_DIF_OK(dif_entropy_src_irq_force(&entropy_src_,
-                                          kDifEntropySrcIrqEsEntropyValid));
+  EXPECT_DIF_OK(dif_entropy_src_irq_force(
+      &entropy_src_, kDifEntropySrcIrqEsEntropyValid, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(ENTROPY_SRC_INTR_TEST_REG_OFFSET,
                  {{ENTROPY_SRC_INTR_TEST_ES_FATAL_ERR_BIT, true}});
-  EXPECT_DIF_OK(
-      dif_entropy_src_irq_force(&entropy_src_, kDifEntropySrcIrqEsFatalErr));
+  EXPECT_DIF_OK(dif_entropy_src_irq_force(&entropy_src_,
+                                          kDifEntropySrcIrqEsFatalErr, true));
 }
 
 class IrqGetEnabledTest : public EntropySrcTest {};

@@ -225,11 +225,12 @@ dif_result_t dif_usbdev_irq_acknowledge(const dif_usbdev_t *usbdev,
  *
  * @param usbdev A usbdev handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_irq_force(const dif_usbdev_t *usbdev,
-                                  dif_usbdev_irq_t irq);
+                                  dif_usbdev_irq_t irq, const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.
