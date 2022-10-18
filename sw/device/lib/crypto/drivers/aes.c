@@ -13,17 +13,6 @@
 #include "aes_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// Static assertions for enum values.
-OT_ASSERT_ENUM_VALUE(kAesCipherModeEcb, AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeCbc, AES_CTRL_SHADOWED_MODE_VALUE_AES_CBC);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeCfb, AES_CTRL_SHADOWED_MODE_VALUE_AES_CFB);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeOfb, AES_CTRL_SHADOWED_MODE_VALUE_AES_OFB);
-OT_ASSERT_ENUM_VALUE(kAesCipherModeCtr, AES_CTRL_SHADOWED_MODE_VALUE_AES_CTR);
-
-OT_ASSERT_ENUM_VALUE(kAesKeyLen128, AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128);
-OT_ASSERT_ENUM_VALUE(kAesKeyLen192, AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_192);
-OT_ASSERT_ENUM_VALUE(kAesKeyLen256, AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_256);
-
 enum {
   kBase = TOP_EARLGREY_AES_BASE_ADDR,
 
@@ -62,29 +51,14 @@ static aes_error_t aes_write_key(aes_key_t key) {
     return kAesOk;
   }
 
-  size_t key_words;
-  switch (key.key_len) {
-    case kAesKeyLen128:
-      key_words = kAesKeyWordLen128;
-      break;
-    case kAesKeyLen192:
-      key_words = kAesKeyWordLen192;
-      break;
-    case kAesKeyLen256:
-      key_words = kAesKeyWordLen256;
-      break;
-    default:
-      return kAesInternalError;
-  }
-
   uint32_t share0 = kBase + AES_KEY_SHARE0_0_REG_OFFSET;
   uint32_t share1 = kBase + AES_KEY_SHARE1_0_REG_OFFSET;
 
-  for (size_t i = 0; i < key_words; ++i) {
+  for (size_t i = 0; i < key.key_len; ++i) {
     abs_mmio_write32(share0 + i * sizeof(uint32_t), key.key_shares[0][i]);
     abs_mmio_write32(share1 + i * sizeof(uint32_t), key.key_shares[1][i]);
   }
-  for (size_t i = key_words; i < 8; ++i) {
+  for (size_t i = key.key_len; i < 8; ++i) {
     // NOTE: all eight share registers must be written; in the case we don't
     // have enough key data, we fill it with zeroes.
     abs_mmio_write32(share0 + i * sizeof(uint32_t), 0);
@@ -150,11 +124,56 @@ static aes_error_t aes_begin(aes_key_t key, const aes_block_t *iv,
   }
   HARDENED_CHECK_EQ(sideload_written, kHardenedBoolTrue);
 
-  // Set the mode and the key length.
-  ctrl_reg =
-      bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD, key.mode);
-  ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
-                                    key.key_len);
+  // Translate the cipher mode to the hardware-encoding value and write the
+  // control reg field.
+  switch (key.mode) {
+    case kAesCipherModeEcb:
+      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_ECB);
+      break;
+    case kAesCipherModeCbc:
+      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_CBC);
+      break;
+    case kAesCipherModeCfb:
+      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_CFB);
+      break;
+    case kAesCipherModeOfb:
+      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_OFB);
+      break;
+    case kAesCipherModeCtr:
+      ctrl_reg = bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_MODE_FIELD,
+                                        AES_CTRL_SHADOWED_MODE_VALUE_AES_CTR);
+      break;
+    default:
+      // Invalid value.
+      return kAesInternalError;
+  }
+
+  // Translate the key length to the hardware-encoding value and write the
+  // control reg field.
+  switch (key.key_len) {
+    case kAesKeyWordLen128:
+      ctrl_reg =
+          bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
+                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_128);
+      break;
+    case kAesKeyWordLen192:
+      ctrl_reg =
+          bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
+                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_192);
+      break;
+    case kAesKeyWordLen256:
+      ctrl_reg =
+          bitfield_field32_write(ctrl_reg, AES_CTRL_SHADOWED_KEY_LEN_FIELD,
+                                 AES_CTRL_SHADOWED_KEY_LEN_VALUE_AES_256);
+      break;
+    default:
+      // Invalid value.
+      return kAesInternalError;
+  }
 
   // Never enable manual operation.
   ctrl_reg = bitfield_bit32_write(

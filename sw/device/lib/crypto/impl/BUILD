@@ -15,13 +15,23 @@ cc_library(
 )
 
 cc_library(
+    name = "aes",
+    srcs = ["aes.c"],
+    hdrs = ["//sw/device/lib/crypto/include:aes.h"],
+    deps = [
+        ":integrity_check",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:aes",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "integrity_check",
     srcs = ["integrity_check.c"],
-    hdrs = [
-        "integrity_check.h",
-        "//sw/device/lib/crypto/include:datatypes.h",
-    ],
+    hdrs = ["integrity_check.h"],
     deps = [
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/crypto/include:datatypes",
     ],
 )

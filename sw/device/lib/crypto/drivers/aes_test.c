@@ -72,7 +72,7 @@ bool test_main(void) {
   aes_key_t key = {
       .mode = kAesCipherModeCtr,
       .sideload = kHardenedBoolFalse,
-      .key_len = kAesKeyLen128,
+      .key_len = 4,
       .key_shares = {share0, share1},
   };
   CHECK(aes_encrypt_begin(key, &kIv) == kAesOk);

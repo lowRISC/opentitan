@@ -9,3 +9,9 @@ load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 
 # Export all headers.
 exports_files(glob(["*.h"]))
+
+# No source file for datatypes.h, so create a library with just the header.
+cc_library(
+    name = "datatypes",
+    hdrs = ["datatypes.h"],
+)

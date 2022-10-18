@@ -31,7 +31,7 @@ static const uint32_t kKey256[8] = {
  * Authenticated data for testing.
  */
 static const uint32_t kAadLen = 18;
-static uint8_t kAad[20] = {
+static uint8_t kAad[18] = {
     // aad = 'authenticated data'
     //     = 61757468656e746963617465642064617461
     0x61, 0x75, 0x74, 0x68, 0x65, 0x6e, 0x74, 0x69, 0x63,
@@ -62,7 +62,7 @@ static uint8_t kCiphertext256[32] = {
 const aes_gcm_test_t kAesGcmTestvectors[3] = {
     // Empty input, empty aad, 96-bit IV, 128-bit key
     {
-        .key_len = kAesKeyLen128,
+        .key_len = 128 / (8 * sizeof(uint32_t)),
         .key = kKey128,
         .iv_len = 12,
         .iv =
@@ -82,7 +82,7 @@ const aes_gcm_test_t kAesGcmTestvectors[3] = {
 
     // Empty input, empty aad, 128-bit IV, 128-bit key
     {
-        .key_len = kAesKeyLen128,
+        .key_len = 128 / (8 * sizeof(uint32_t)),
         .key = kKey128,
         .iv_len = 16,
         .iv =
@@ -102,7 +102,7 @@ const aes_gcm_test_t kAesGcmTestvectors[3] = {
 
     // 128-bit IV, 256-bit key, real message and aad
     {
-        .key_len = kAesKeyLen256,
+        .key_len = 256 / (8 * sizeof(uint32_t)),
         .key = kKey256,
         .iv_len = 16,
         .iv =
