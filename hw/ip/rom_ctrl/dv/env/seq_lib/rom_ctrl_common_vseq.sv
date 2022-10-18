@@ -33,9 +33,8 @@ class rom_ctrl_common_vseq extends rom_ctrl_base_vseq;
   endfunction
 
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
-    rom_ctrl_pkg::fsm_state_e rdata_state;
     super.check_sec_cm_fi_resp(if_proxy);
-    `DV_CHECK_EQ(rdata_state, rom_ctrl_pkg::Invalid)
+    `DV_CHECK_EQ(cfg.rom_ctrl_vif.checker_fsm_state, rom_ctrl_pkg::Invalid)
   endtask : check_sec_cm_fi_resp
 
   virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);

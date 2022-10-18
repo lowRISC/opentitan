@@ -65,6 +65,8 @@ module tb;
     .kmac_data_o          (kmac_data_out)
   );
 
+  assign rom_ctrl_if.checker_fsm_state = dut.gen_fsm_scramble_enabled.u_checker_fsm.state_q;
+
   // Instantitate the memory backdoor util instance.
   `define ROM_CTRL_MEM_HIER \
     tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.gen_generic.u_impl_generic.mem
