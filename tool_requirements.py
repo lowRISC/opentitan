@@ -26,7 +26,7 @@ __TOOL_REQUIREMENTS__ = {
         'as_needed': True
     },
     'hugo_extended': {
-        'min_version': '0.82.0',
+        'min_version': '0.104.3',
         'as_needed': True
     },
     'verible': {

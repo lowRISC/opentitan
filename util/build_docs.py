@@ -409,9 +409,9 @@ def install_hugo(install_dir):
                         '/hugo_extended_{version}_Linux-64bit.tar.gz').format(
                             version=HUGO_EXTENDED_VERSION)
 
-    elif platform.system() == 'Darwin' and platform.machine() == 'x86_64':
+    elif platform.system() == 'Darwin':
         download_url = ('https://github.com/gohugoio/hugo/releases/download/v{version}'
-                        '/hugo_extended_{version}_macOS-64bit.tar.gz').format(
+                        '/hugo_extended_{version}_darwin-universal.tar.gz').format(
                             version=HUGO_EXTENDED_VERSION)
 
     else:
