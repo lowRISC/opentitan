@@ -28,6 +28,12 @@ class chip_sw_sysrst_ctrl_outputs_vseq extends chip_sw_base_vseq;
   logic [3:0] loopback_pad_read_values;
   logic [7:0] output_pad_read_values;
 
+  virtual task pre_start();
+    super.pre_start();
+    // Initialize the pad input to 0 to avoid having X values in the initial test phase.
+    set_loopback_pads(0);
+  endtask
+
   virtual function void write_test_phase(input test_phases_e phase);
     sw_symbol_backdoor_overwrite("kTestPhase", {<<8{phase}});
   endfunction
