@@ -18,7 +18,9 @@ Finally, we provide the same set of information for all available [top level des
 ## Results of tool-flows
 
 * [DV simulation summary results, with coverage (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/summary/latest/report.html)
-* [FPV summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/formal/summary/latest/report.html)
+* [FPV sec_cm results (weekly)](https://reports.opentitan.org/hw/top_earlgrey/formal/sec_cm/summary/latest/report.html)
+* [FPV ip results (weekly)](https://reports.opentitan.org/hw/top_earlgrey/formal/ip/summary/latest/report.html)
+* [FPV prim results (weekly)](https://reports.opentitan.org/hw/top_earlgrey/formal/prim/summary/latest/report.html)
 * [AscentLint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/ascentlint/summary/latest/report.html)
 * [Verilator lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/verilator/summary/latest/report.html)
 * [Style lint summary results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/veriblelint/summary/latest/report.html)
