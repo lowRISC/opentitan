@@ -1,0 +1,238 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// This batch cfg script contains IPs that already have a DV testbench.
+// FPV only verifies the security countermeasure assertions.
+// So this batch cfg file does not collect FPV coverage.
+
+{
+  flow: formal
+
+  sub_flow: fpv
+
+  name: top_earlgrey_sec_cm_fpv
+
+  import_cfgs: [// common server configuration for results upload
+                "{proj_root}/hw/data/common_project_cfg.hjson"]
+
+  rel_path: "hw/top_earlgrey/formal/sec_cm/summary"
+
+  cov: false
+
+  use_cfgs: [
+             {
+               name: aes_masking_sec_cm
+               dut: aes
+               fusesoc_core: lowrisc:dv:aes_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/aes/masking/{sub_flow}/{tool}"
+               defines: "EN_MASKING=1"
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: aes_no_masking_sec_cm
+               dut: aes
+               fusesoc_core: lowrisc:dv:aes_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/aes/no_masking/{sub_flow}/{tool}"
+               defines: "EN_MASKING=0"
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: alert_handler_sec_cm
+               dut: alert_handler
+               fusesoc_core: lowrisc:opentitan:top_earlgrey_alert_handler_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/top_earlgrey/ip_autogen/alert_handler/{sub_flow}/{tool}"
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: clkmgr_sec_cm
+               dut: clkmgr
+               fusesoc_core: lowrisc:dv:clkmgr_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/clkmgr/{sub_flow}/{tool}"
+               task: "FpvSecCm"
+             }
+             {
+               name: csrng_sec_cm
+               dut: csrng
+               fusesoc_core: lowrisc:dv:csrng_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/csrng/{sub_flow}/{tool}"
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: edn_sec_cm
+               dut: edn
+               fusesoc_core: lowrisc:dv:edn_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/edn/{sub_flow}/{tool}"
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: entropy_src_sec_cm
+               dut: entropy_src
+               fusesoc_core: lowrisc:dv:entropy_src_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/entropy_src/{sub_flow}/{tool}"
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: flash_ctrl_sec_cm
+               dut: flash_ctrl
+               fusesoc_core: lowrisc:dv:flash_ctrl_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/flash_ctrl/{sub_flow}/{tool}"
+               overrides: [
+                 {
+                   name:  design_level
+                   value: "top"
+                 }
+               ]
+               stopats: ["*u_state_regs.state_o", "*u_rma_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: keymgr_sec_cm
+               dut: keymgr
+               fusesoc_core: lowrisc:dv:keymgr_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/keymgr/{sub_flow}/{tool}"
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: kmac_sec_cm
+               dut: kmac
+               fusesoc_core: lowrisc:dv:kmac_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/kmac/{sub_flow}/{tool}"
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: lc_ctrl_sec_cm
+               dut: lc_ctrl
+               fusesoc_core: lowrisc:dv:lc_ctrl_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/lc_ctrl/{sub_flow}/{tool}"
+               stopats: ["*u_lc_ctrl_fsm.u_fsm_state_regs.state_o",
+                         "*u_lc_ctrl_fsm.u_state_regs.state_o",
+                         "*u_lc_ctrl_fsm.u_cnt_regs.state_o",
+                         "*u_lc_ctrl_kmac_if.u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: otp_ctrl_sec_cm
+               dut: otp_ctrl
+               fusesoc_core: lowrisc:dv:otp_ctrl_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/otp_ctrl/{sub_flow}/{tool}"
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: otbn_sec_cm
+               dut: otbn
+               fusesoc_core: lowrisc:dv:otbn_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/otbn/{sub_flow}/{tool}"
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: pwrmgr_sec_cm
+               dut: pwrmgr
+               fusesoc_core: lowrisc:dv:pwrmgr_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/pwrmgr/{sub_flow}/{tool}"
+               overrides: [
+                 {
+                   name:  design_level
+                   value: "top"
+                 }
+               ]
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: rom_ctrl_sec_cm
+               dut: rom_ctrl
+               fusesoc_core: lowrisc:dv:rom_ctrl_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rom_ctrl/{sub_flow}/{tool}"
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: rstmgr_sec_cm
+               dut: rstmgr
+               fusesoc_core: lowrisc:dv:rstmgr_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/rstmgr/{sub_flow}/{tool}"
+               overrides: [
+                 {
+                   name:  design_level
+                   value: "top"
+                 }
+               ]
+               stopats: ["*u_state_regs.state_o"]
+               task: "FpvSecCm"
+             }
+             {
+               name: sram_ctrl_sec_cm
+               dut: sram_ctrl
+               fusesoc_core: lowrisc:dv:sram_ctrl_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/sram_ctrl/{sub_flow}/{tool}"
+               task: "FpvSecCm"
+             }
+
+
+             // Other non-standard countermeasure checks.
+             //
+             // This testbench verifies once LC_CTRL goes to terminal state, there is no way to
+             // revert back to functional states.
+             {
+               name: lc_ctrl_sec_cm_fsm
+               dut: lc_ctrl_fsm
+               fusesoc_core: lowrisc:ip:lc_ctrl
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/lc_ctrl/fsm/{sub_flow}/{tool}"
+             }
+             // This testbench verifies once keymgr goes to terminal state, there is no way to
+             // revert back to functional states.
+             {
+               name: keymgr_sec_cm_fsm
+               dut: keymgr_ctrl
+               fusesoc_core: lowrisc:ip:keymgr
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/keymgr/fsm/{sub_flow}/{tool}"
+               cov: false
+             }
+             // This testbench verifies once esc request is received, it should always trigger a
+             // reset request.
+             {
+               name: pwrmgr_esc_unstoppable
+               dut: pwrmgr
+               fusesoc_core: lowrisc:dv:pwrmgr_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/pwrmgr/{sub_flow}/{tool}"
+               overrides: [
+                 {
+                   name:  design_level
+                   value: "top"
+                 }
+               ]
+               task: "PwrmgrSecCmEsc"
+             }
+            ]
+}
