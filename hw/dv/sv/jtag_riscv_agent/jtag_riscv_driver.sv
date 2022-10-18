@@ -69,6 +69,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
 
     if (drive_req.activate_rv_dm) begin
       activate_rv_dm();
+      drive_req.status = DmiNoErr;
     end else begin
       if (cfg.is_rv_dm) begin
         bit [DMI_DATAW-1:0] sbcs_val = (2'b10 << SbAccess) | ('b1 << SbBusy);
@@ -187,7 +188,9 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
     while (dmctrl_val == 0 && cnter < cfg.max_rv_dm_activation_attempts) begin
       cnter++;
       send_csr_req(.op(DmiWrite), .data(1), .addr(DmControl), .dout(dmctrl_val), .status(status));
+      `DV_CHECK_EQ(status, DmiNoErr, "active_rv_dm control write failed!")
       send_csr_req(.op(DmiRead), .data(0), .addr(DmControl), .dout(dmctrl_val), .status(status));
+      `DV_CHECK_EQ(status, DmiNoErr, "active_rv_dm control read failed!")
     end
     if (cnter >= cfg.max_rv_dm_activation_attempts) begin
       string msg = $sformatf("Could not activate RV_DM after %0d attempts!", cnter);
@@ -203,6 +206,7 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
     // Once the sbcs value is not 0, then RV_DM jtag is ready.
     while (sbcs_val == 0)  begin
       send_csr_req(.op(DmiRead), .data(0), .addr(Sbcs), .dout(sbcs_val), .status(status));
+      `DV_CHECK_EQ(status, DmiNoErr, "active_rv_dm sbcs read failed!")
     end
 
     // Ensure the RV_DM is set to correct bus width.
