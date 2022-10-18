@@ -15,14 +15,32 @@ if [expr {$slack_ns < 0}] {
 # Enable bitstream identification via USR_ACCESS register.
 set_property BITSTREAM.CONFIG.USR_ACCESS TIMESTAMP [current_design]
 
-# Dump MMI for Boot ROM.
-
-proc generate_mmi {filename brams addr_space_name mem_type loc_prefix designtask_count} {
+# Generate an MMI file for the given BRAM cells.
+#
+# Args:
+#   filename:            Path to the output file.
+#   brams:               A list of BRAM cells.
+#   mem_type:            The BRAM type, e.g. "RAMB36".
+#   fake_word_width:     If non-zero, pretend that $brams covers
+#                        `fake_word_width` bits. Influences the values of the
+#                        MMI's <AddressSpace> and <DataWidth> tags.
+#   addr_end_multiplier: A coefficient applied to the address space. Influences
+#                        the values of the MMI's <AddressSpace> and
+#                        <AddressRange> tags.
+#   designtask_count:    A number used for logging with `send_msg`.
+proc generate_mmi {filename brams mem_type fake_word_width addr_end_multiplier designtask_count} {
     send_msg "${designtask_count}-1" INFO "Dumping MMI to ${filename}"
+
+    if {[llen $brams] == 0} {
+        send_msg "${designtask_count}-1" INFO "Cannot make MMI for zero BRAMs"
+        return
+    }
 
     set workroot [file dirname [info script]]
     set filepath "${workroot}/${filename}"
     set fileout [open $filepath "w"]
+
+    set fake_slice_width [expr $fake_word_width / [llen $brams]]
 
     # Calculate the overall address space.
     set space 0
@@ -32,11 +50,10 @@ proc generate_mmi {filename brams addr_space_name mem_type loc_prefix designtask
         if {$slice_begin eq {} || $slice_end eq {}} {
             send_msg "${designtask_count}-2" ERROR "Extraction of ${filename} information failed."
         }
-
-        # The scrambled Boot ROM is actually 39 bits wide but the updatemem tool segfaults
-        # for slice sizes not divisible by 8.
-        if {$filename eq "rom.mmi" && [expr {($slice_end - $slice_begin + 1) < 8}]} {
-            set slice_end [expr {$slice_begin + 7}]
+        set slice_width [expr {$slice_end - $slice_begin + 1}]
+        if {$slice_width < $fake_slice_width} {
+            set slice_end [expr {$slice_begin + $fake_slice_width - 1}]
+            set slice_width $fake_slice_width
         }
         set addr_begin [get_property ram_addr_begin [get_cells $inst]]
         set addr_end [get_property ram_addr_end [get_cells $inst]]
@@ -45,20 +62,19 @@ proc generate_mmi {filename brams addr_space_name mem_type loc_prefix designtask
         }
 
         # Calculate total number of bits.
-        set space [expr {$space + ($addr_end - $addr_begin + 1) * ($slice_end - $slice_begin + 1)}]
+        set space [expr {$space + ($addr_end - $addr_begin + 1) * $slice_width}]
+        set last_slice_width $slice_width
     }
-
-    if {$filename eq "otp.mmi"} {
-        set space [expr {$space * 16}]
-    }
+    set space [expr {($space * $addr_end_multiplier / 8) - 1}]
 
     # Generate the MMI.
-    set space [expr {($space / 8) - 1}]
     puts $fileout "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
     puts $fileout "<MemInfo Version=\"1\" Minor=\"1\">"
     puts $fileout "  <Processor Endianness=\"Little\" InstPath=\"dummy\">"
-    puts $fileout "  <AddressSpace Name=\"$addr_space_name\" Begin=\"0\" End=\"$space\">"
+    puts $fileout "  <AddressSpace Name=\"dummy_addrspace\" Begin=\"0\" End=\"$space\">"
     puts $fileout "      <BusBlock>"
+
+    set loc_prefix "${mem_type}_"
 
     set part [get_property PART [current_design]]
     foreach inst [lsort -dictionary $brams] {
@@ -66,16 +82,14 @@ proc generate_mmi {filename brams addr_space_name mem_type loc_prefix designtask
         set loc [string trimleft $loc $loc_prefix]
         set slice_begin [get_property ram_slice_begin [get_cells $inst]]
         set slice_end [get_property ram_slice_end [get_cells $inst]]
-        # The scrambled Boot ROM is actually 39 bits wide but the updatemem tool segfaults
-        # for slice sizes not divisible by 4.
-        if {$filename eq "rom.mmi" && [expr {($slice_end - $slice_begin + 1) < 4}]} {
-            set slice_end [expr {$slice_begin + 3}]
+        set slice_width [expr {$slice_end - $slice_begin + 1}]
+        if {$slice_width < $fake_slice_width} {
+            set slice_end [expr {$slice_begin + $fake_slice_width - 1}]
+            set slice_width $fake_slice_width
         }
         set addr_begin [get_property ram_addr_begin [get_cells $inst]]
         set addr_end [get_property ram_addr_end [get_cells $inst]]
-        if {$filename eq "otp.mmi"} {
-            set addr_end [expr {($addr_end + 1) * 16 - 1}]
-        }
+        set addr_end [expr {($addr_end + 1) * $addr_end_multiplier - 1}]
         puts $fileout "        <BitLane MemType=\"$mem_type\" Placement=\"$loc\">"
         puts $fileout "          <DataWidth MSB=\"$slice_end\" LSB=\"$slice_begin\"/>"
         puts $fileout "          <AddressRange Begin=\"$addr_begin\" End=\"$addr_end\"/>"
@@ -93,6 +107,16 @@ proc generate_mmi {filename brams addr_space_name mem_type loc_prefix designtask
     send_msg "${designtask_count}-4" INFO "MMI dumped to ${filepath}"
 }
 
+# Dump INIT_XX strings for the given BRAMs to an output file.
+#
+# In the output file, the BRAMs and their INIT_XX strings will be sorted in
+# increasing order. This proc is a time-saver because the Vivado GUI's property
+# viewer does not sort the INIT_XX strings numerically.
+#
+# Args:
+#   filename:         Where to write
+#   brams:            A list of BRAM cells.
+#   designtask_count: A number used for logging with `send_msg`.
 proc dump_init_strings {filename brams designtask_count} {
     # For each OTP BRAM, dump all the INIT_XX strings.
     send_msg "${designtask_count}-1" INFO "Dumping INIT_XX strings to ${filename}"
@@ -124,9 +148,31 @@ proc dump_init_strings {filename brams designtask_count} {
     send_msg "${designtask_count}-4" INFO "INIT_XX strings dumped to ${filepath}"
 }
 
-set brams [split [get_cells -hierarchical -filter { PRIMITIVE_TYPE =~ BMEM.bram.* && NAME =~ *u_rom_ctrl*}] " "]
-generate_mmi "rom.mmi" $brams "rom" "RAMB36" "RAMB36_" 1
+# The scrambled Boot ROM is actually 39 bits wide, but we need to pretend that
+# it's 40 bits, or else we will be unable to encode our ROM data in a MEM file
+# that updatemem will understand.
+#
+# Suppose we did not pad the width, leaving it at 39 bits. Now, if we encode a
+# word as a 10-digit hex string, updatemem would splice an additional zero bit
+# into the bitstream because each hex digit is strictly 4 bits. If we wrote four
+# words at a time, as a 39-digit hex string (39*4 is nicely divisible by 4),
+# updatemem would fail to parse the hex string, saying something like "Data
+# segment starting at 0x00000000, has exceeded data limits." The longest hex
+# string it will accept is 16 digits, or 64 bits.
+#
+# A hack that works is to pretend the data width is actually 40 bits. Updatemem
+# seems to write that extra zero bit into the ether without complaint.
+set rom_brams [split [get_cells -hierarchical -filter { PRIMITIVE_TYPE =~ BMEM.bram.* && NAME =~ *u_rom_ctrl*}] " "]
+generate_mmi "rom.mmi" $rom_brams "RAMB36" 40 1 1
 
-set brams [split [get_cells -hierarchical -filter { PRIMITIVE_TYPE =~ BMEM.bram.* && NAME =~ *u_otp_ctrl*}] " "]
-generate_mmi "otp.mmi" $brams "otp" "RAMB18" "RAMB18_" 2
-dump_init_strings "otp_init_strings.txt" $brams 3
+# OTP does not require faking the word width, but it has its own quirk. It seems
+# each 22-bit OTP word is followed by 15 zero words. The MMI's <AddressSpace>
+# and <AddressRange> tags need to account for this or else updatemem will think
+# that its data input overruns the address space. The workaround is to pretend
+# the address space is 16 times larger than we would normally compute.
+set otp_brams [split [get_cells -hierarchical -filter { PRIMITIVE_TYPE =~ BMEM.bram.* && NAME =~ *u_otp_ctrl*}] " "]
+generate_mmi "otp.mmi" $otp_brams "RAMB18" 0 16 2
+
+# For debugging purposes, dump the INIT_XX strings for ROM and OTP.
+dump_init_strings "rom_init_strings.txt" $rom_brams 3
+dump_init_strings "otp_init_strings.txt" $otp_brams 4
