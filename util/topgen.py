@@ -6,6 +6,7 @@ r"""Top Module Generator
 """
 import argparse
 import logging as log
+import os
 import random
 import shutil
 import sys
@@ -28,10 +29,11 @@ from reggen.inter_signal import InterSignal
 from reggen.ip_block import IpBlock
 from reggen.countermeasure import CounterMeasure
 from reggen.lib import check_list
+from topgen import entropy_buffer_generator as ebg
 from topgen import get_hjsonobj_xbars
 from topgen import intermodule as im
 from topgen import lib as lib
-from topgen import merge_top, search_ips, validate_top
+from topgen import merge_top, search_ips, strong_random, validate_top
 from topgen.c_test import TopGenCTest
 from topgen.clocks import Clocks
 from topgen.gen_dv import gen_dv
@@ -56,6 +58,16 @@ GENCMD = ("// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson\n"
 SRCTREE_TOP = Path(__file__).parent.parent.resolve()
 
 TOPGEN_TEMPLATE_PATH = Path(__file__).parent / "topgen/templates"
+
+# Size and path to the entropy buffer.
+# This buffer is generated using Mersenne Twister PRNG seeded with rnd_cnst_seed
+# and deleted in the end."
+# This buffer will not be created If a different one is provided by args.entropy_buffer.
+# Module strong_random fetches entropy from the buffer to generate random bit-vectors
+# and permutations.
+BUFFER_SIZE = 20000
+
+PATH_TO_BUFFER = "util/topgen/entropy_buffer.txt"
 
 
 def ipgen_render(template_name: str, topname: str, params: Dict,
@@ -899,20 +911,6 @@ def _process_top(topcfg, args, cfg_path, out_path, pass_idx):
     log.info("Detected crossbars: %s" %
              (", ".join([x["name"] for x in xbar_objs])))
 
-    # If specified, override the seed for random netlist constant computation.
-    if args.rnd_cnst_seed:
-        log.warning("Commandline override of rnd_cnst_seed with {}.".format(
-            args.rnd_cnst_seed))
-        topcfg["rnd_cnst_seed"] = args.rnd_cnst_seed
-    # Otherwise, we either take it from the top_{topname}.hjson if present, or
-    # randomly generate a new seed if not.
-    else:
-        random.seed()
-        new_seed = random.getrandbits(64)
-        if topcfg.setdefault("rnd_cnst_seed", new_seed) == new_seed:
-            log.warning(
-                "No rnd_cnst_seed specified, setting to {}.".format(new_seed))
-
     topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
     if error != 0:
         raise SystemExit("Error occured while validating top.hjson")
@@ -1038,6 +1036,9 @@ def main():
         type=int,
         metavar="<seed>",
         help="Custom seed for RNG to compute netlist constants.")
+    parser.add_argument(
+        "--entropy_buffer",
+        help="A file with entropy.")
     # Miscellaneous: only return the list of blocks and exit.
     parser.add_argument("--get_blocks",
                         default=False,
@@ -1085,6 +1086,32 @@ def main():
                                 object_pairs_hook=OrderedDict)
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
+
+    # Initialize RNG for compile-time netlist constants.
+    if args.entropy_buffer:
+        if args.rnd_cnst_seed:
+            log.error("'entropy_buffer' option cannot be used with 'rnd_cnst_seed option'")
+            # error out
+            raise SystemExit(sys.exc_info()[1])
+        else:
+            # generate entropy from a buffer
+            strong_random.load(SRCTREE_TOP / args.entropy_buffer)
+    else:
+        # If specified, override the seed for random netlist constant computation.
+        if args.rnd_cnst_seed:
+            log.warning("Commandline override of rnd_cnst_seed with {}.".format(
+                args.rnd_cnst_seed))
+            topcfg["rnd_cnst_seed"] = args.rnd_cnst_seed
+        # Otherwise, we either take it from the top_{topname}.hjson if present, or
+        # randomly generate a new seed if not.
+        else:
+            random.seed()
+            new_seed = random.getrandbits(64)
+            if topcfg.setdefault("rnd_cnst_seed", new_seed) == new_seed:
+                log.warning(
+                    "No rnd_cnst_seed specified, setting to {}.".format(new_seed))
+        ebg.gen_buffer(BUFFER_SIZE, SRCTREE_TOP / PATH_TO_BUFFER, False, topcfg["rnd_cnst_seed"])
+        strong_random.load(SRCTREE_TOP / PATH_TO_BUFFER)
 
     # TODO, long term, the levels of dependency should be automatically determined instead
     # of hardcoded.  The following are a few examples:
@@ -1134,6 +1161,11 @@ def main():
 
     topname = topcfg["name"]
 
+    if not args.entropy_buffer:
+        # Delete entropy buffer since it is no longer needed.
+        # This buffer can always be re-generated from the seed using entropy_buffer_generator
+        os.remove(SRCTREE_TOP / PATH_TO_BUFFER)
+
     # Create the chip-level RAL only
     if args.top_ral:
         # See above: we only need `completeconfig` and `name_to_block`, not all
@@ -1165,7 +1197,15 @@ def main():
     genhjson_path = genhjson_dir / ("top_%s.gen.hjson" % completecfg["name"])
 
     # Header for HJSON
-    gencmd = """//
+    if args.entropy_buffer:
+        gencmd = """//
+// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
+//                -o hw/top_{topname}/ \\
+//                --hjson-only \\
+//                --entropy-buffer {path}
+""".format(topname=topname, path = args.entropy_buffer)
+    else:
+        gencmd = """//
 // util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
 //                -o hw/top_{topname}/ \\
 //                --hjson-only \\
@@ -1187,11 +1227,18 @@ def main():
                 fout.write(template_contents)
 
         # Header for SV files
-        gencmd = warnhdr + """//
+        if args.entropy_buffer:
+            gencmd = warnhdr + """//
+// util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
+//                -o hw/top_{topname}/ \\
+//                --entropy-buffer {path}
+""".format(topname=topname, path = args.entropy_buffer)
+        else:
+            gencmd = warnhdr + """//
 // util/topgen.py -t hw/top_{topname}/data/top_{topname}.hjson \\
 //                -o hw/top_{topname}/ \\
 //                --rnd_cnst_seed {seed}
-""".format(topname=topname, seed=topcfg["rnd_cnst_seed"])
+""".format(topname=topname, seed=completecfg["rnd_cnst_seed"])
 
         # SystemVerilog Top:
         # "toplevel.sv.tpl" -> "rtl/autogen/top_{topname}.sv"

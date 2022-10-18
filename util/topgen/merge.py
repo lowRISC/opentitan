@@ -3,14 +3,13 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging as log
-import random
 import re
 from collections import OrderedDict
 from copy import deepcopy
 from math import ceil, log2
 from typing import Dict, List, Union, Tuple
 
-from topgen import c, lib
+from topgen import c, lib, strong_random
 from .clocks import Clocks
 from .resets import Resets
 from reggen.ip_block import IpBlock
@@ -20,7 +19,7 @@ from reggen.params import LocalParam, Parameter, RandParameter, MemSizeParameter
 def _get_random_data_hex_literal(width):
     """ Fetch 'width' random bits and return them as hex literal"""
     width = int(width)
-    literal_str = hex(random.getrandbits(width))
+    literal_str = hex(strong_random.getrandbits(width))
     return literal_str
 
 
@@ -30,7 +29,7 @@ def _get_random_perm_hex_literal(numel):
     num_elements = int(numel)
     width = int(ceil(log2(num_elements)))
     idx = [x for x in range(num_elements)]
-    random.shuffle(idx)
+    strong_random.shuffle(idx)
     literal_str = ""
     for k in idx:
         literal_str += format(k, '0' + str(width) + 'b')
@@ -48,8 +47,6 @@ def elaborate_instances(top, name_to_block: Dict[str, IpBlock]):
     more details of what gets added.
 
     '''
-    # Initialize RNG for compile-time netlist constants.
-    random.seed(int(top['rnd_cnst_seed']))
 
     for instance in top['module']:
         block = name_to_block[instance['type']]
