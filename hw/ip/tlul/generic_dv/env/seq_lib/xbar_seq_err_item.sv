@@ -15,5 +15,7 @@ class xbar_seq_err_item extends cip_tl_seq_item;
     no_d_error_c.constraint_mode(0);
   endfunction
 
+  // Remove modification on a_user, so it's freely randomized
+  function void post_randomize();
+  endfunction
 endclass
-
