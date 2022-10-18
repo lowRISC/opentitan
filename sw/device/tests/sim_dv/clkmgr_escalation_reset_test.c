@@ -106,6 +106,12 @@ void ottf_external_isr(void) {
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(&alert_handler,
                                                   expected_alert, &is_cause));
     CHECK(is_cause);
+
+    // Once this is handled, do not trigger interrupt again and wait for
+    // system to escalate into reset.
+    LOG_INFO("Disable IRQ classa");
+    CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+        &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleDisabled));
     // Fatal alerts are only cleared by reset.
 
     // Check the clkmgr has a fatal error.
@@ -216,11 +222,7 @@ static void execute_test(dif_aon_timer_t *aon_timer) {
 
   // Trigger the clkmgr fatal error to start escalation.
   LOG_INFO("Ready for error injection");
-
-  busy_spin_micros(kEscalationPhase0MicrosCpu);
-
-  // This should never run since escalation turns the CPU off.
-  CHECK(false, "The alert handler failed to escalate");
+  abort();
 }
 
 bool test_main(void) {
@@ -263,13 +265,14 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(&alert_handler,
                                                   expected_alert, &is_cause));
     CHECK(!is_cause);
+    // Turn off the AON timer hardware completely before exiting.
+    aon_timer_testutils_shutdown(&aon_timer);
+    return true;
 
   } else {
     LOG_ERROR("Unexpected rst_info=0x%x", rst_info);
     return false;
   }
 
-  // Turn off the AON timer hardware completely before exiting.
-  aon_timer_testutils_shutdown(&aon_timer);
-  return true;
+  return false;
 }
