@@ -27,7 +27,7 @@ if {$env(COV) == 1} {
 #-------------------------------------------------------------------------
 
 # TODO: check if we can add `-bbox_m prim_ram_1p` to all `FpvSecCm` tests.
-if {$env(DUT_TOP) == "flash_ctrl_sec_cm"} {
+if {$env(DUT_TOP) == "flash_ctrl"} {
   analyze -sv09 \
     +define+FPV_ON \
     +define+FPV_SEC_CM_ON+FPV_ALERT_NO_SIGINT_ERR+$env(FPV_DEFINES) \
