@@ -6,7 +6,7 @@
 // This sequence access prim_tlul access with randomly backdoor-loaded LC state.
 // If the LC state gates the prim_tlul interface, we are expecting to see a TLUL d_error.
 // In current chip-level design, only otp_ctrl's prim_tl_i/o will be gated by lc_dft_en_i.
-class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
+class chip_prim_tl_access_vseq extends chip_common_vseq;
   `uvm_object_utils(chip_prim_tl_access_vseq)
 
   `uvm_object_new

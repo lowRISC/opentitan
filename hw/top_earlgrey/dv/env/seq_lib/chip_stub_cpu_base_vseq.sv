@@ -67,6 +67,10 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
 
     if (cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset) ==
         prim_mubi_pkg::MuBi4True) begin
+
+      // Wait for AST tlul interface reset signal set to 1.
+      `DV_WAIT(cfg.chip_vif.ast_rst == 1;)
+
       for (int i = 0; i < ast_pkg::AstRegsNum; i++) begin
         data = cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset + i * 4);
         `uvm_info(`gfn, $sformatf("Writing 0x%0h to 0x%0h", data, ast_addr), UVM_MEDIUM)

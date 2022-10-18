@@ -560,6 +560,8 @@ interface chip_if;
 
   wire pwrmgr_low_power = `PWRMGR_HIER.low_power_o;
 
+  wire ast_tlul_rst = `AST_HIER.rst_ast_tlul_ni;
+
   // alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
   //                                   .rst_n(`ALERT_HANDLER_HIER.rst_ni));
   // for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_alert_rx_conn
