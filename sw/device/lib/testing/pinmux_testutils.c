@@ -44,6 +44,21 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
                                         kTopEarlgreyPinmuxOutselUart0Tx));
 
 #if !OT_IS_ENGLISH_BREAKFAST
+  // Enable pull-ups on UART0 RX
+  // Pull-ups are available only on certain platforms.
+  if (kDeviceType == kDeviceSimDV) {
+    dif_pinmux_pad_attr_t out_attr;
+    dif_pinmux_pad_attr_t in_attr = {
+        .slew_rate = 0,
+        .drive_strength = 0,
+        .flags = kDifPinmuxPadAttrPullResistorEnable |
+                 kDifPinmuxPadAttrPullResistorUp};
+
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, kTopEarlgreyMuxedPadsIoc3,
+                                            kDifPinmuxPadKindMio, in_attr,
+                                            &out_attr));
+  };
+
   // Configure UART1 RX input to connect to MIO pad IOB4
   CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
                                        kTopEarlgreyPinmuxPeripheralInUart1Rx,
