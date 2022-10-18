@@ -47,7 +47,6 @@ class flash_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(flash_ctrl_env_cfg));
   endgroup : sw_error_cg
 
   covergroup std_fault_cg with function sample(input bit [31:0] err_val);
-    `DV_FCOV_EXPR_SEEN(reg_intg_err,   err_val[FlashStdFaultRegIntgErr])
     `DV_FCOV_EXPR_SEEN(prog_intg_err,  err_val[FlashStdFaultProgIntgErr])
     `DV_FCOV_EXPR_SEEN(lcmgr_err,      err_val[FlashStdFaultLcmgrErr])
     `DV_FCOV_EXPR_SEEN(lcmgr_intg_err, err_val[FlashStdFaultLcmgrIntgErr])

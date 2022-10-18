@@ -55,6 +55,7 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
             endcase
           end // repeat (cfg.otf_num_rw)
           // Check std_fault.prog_intg_err,  err_code.prog_err
+          collect_err_cov_status(ral.std_fault_status);
           csr_rd_check(.ptr(ral.std_fault_status.prog_intg_err), .compare_value(1));
           csr_rd_check(.ptr(ral.err_code.prog_err), .compare_value(1));
           csr_rd_check(.ptr(ral.op_status.err), .compare_value(1));
