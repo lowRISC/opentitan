@@ -1649,3 +1649,61 @@ test_suite(
         redact.lower(),
     ) for lc_state in structs.to_dict(CONST.LCV) for redact in REDACT],
 )
+
+[opentitan_multislot_flash_binary(
+    name = "boot_policy_valid_img_a_{}_b_{}".format(
+        "empty" if offset == "0x0" else "bad",
+        "empty" if offset != "0x0" else "bad",
+    ),
+    srcs = {
+        ":empty_test_slot_{}_corrupted".format(slot): {
+            "key": "test_key_0",
+            "offset": offset,
+        },
+    },
+    devices = ["fpga_cw310"],
+) for slot, offset in SLOTS.items()]
+
+SIGVERIFY_BAD_CASES = [
+    {
+        "desc": "bad",
+        "suffix": "_corrupted",
+    },
+    {
+        "desc": "empty",
+        "suffix": "_empty",
+    },
+]
+
+[
+    opentitan_functest(
+        name = "sigverify_always_a_{}_b_{}".format(
+            a["desc"],
+            b["desc"],
+        ),
+        cw310 = cw310_params(
+            exit_failure = MSG_PASS,
+            exit_success = DEFAULT_TEST_FAILURE_MSG,
+        ),
+        key = "multislot",
+        ot_flash_binary = ":boot_policy_valid_img_a_{}_b_{}".format(
+            a["desc"],
+            b["desc"] if a != b and b != "empty" else "bad",
+        ),
+        targets = ["cw310_rom"],
+    )
+    for a in SIGVERIFY_BAD_CASES
+    for b in SIGVERIFY_BAD_CASES
+]
+
+test_suite(
+    name = "sigverify_always",
+    tests = [
+        "sigverify_always_a_{}_b_{}".format(
+            a["desc"],
+            b["desc"],
+        )
+        for a in SIGVERIFY_BAD_CASES
+        for b in SIGVERIFY_BAD_CASES
+    ],
+)
