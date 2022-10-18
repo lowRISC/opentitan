@@ -42,7 +42,10 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
-  xcelium_cov_refine_files: ["{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_UNR.vRefine"]
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_UNR.vRefine",
+                             // TODO(V3): Finalize coverage on ExtHT ports,
+			     //           & Remove the following exclusion file
+                             "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_extht_exclusions.vRefine"]
 
   // Default UVM test and seq class name.
   uvm_test: entropy_src_base_test
