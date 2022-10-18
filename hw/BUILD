@@ -34,7 +34,10 @@ fusesoc_build(
         "binary": ["sim-verilator/Vchip_sim_tb"],
     },
     systems = ["lowrisc:dv:chip_verilator_sim"],
-    tags = ["verilator"],
+    tags = [
+        "manual",
+        "verilator",
+    ],
     target = "sim",
     verilator_options = ":verilator_options",
 )
