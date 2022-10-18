@@ -74,7 +74,7 @@
       name: conditioning
       desc: '''
             Verify genbits seeds in bypass mode as predicted.
-            Verify genbits seeds after shah3 conditioning as predicted.
+            Verify genbits seeds after sha3 conditioning as predicted.
             '''
       stage: V2
       tests: ["entropy_src_rng"]
@@ -109,12 +109,14 @@
       tests: ["entropy_src_stress_all"]
     }
     {
-      name: fifo_errs
+      name: functional_errors
       desc: '''
-            Verify they never occur with asserts
+            Verify that all possible classes of fatal errors (FIFOs, Counters, state machine
+            exceptions, etc.) have been generated.  These errors typically violate assumptions
+            made by the scoreboard, and thus cannot be managed by other tests.
             '''
       stage: V2
-      tests: ["entropy_src_err"]
+      tests: ["entropy_src_functional_errors"]
     }
   ]
   covergroups: [

@@ -71,7 +71,10 @@ interface entropy_src_cov_if
 
     cp_which_err: coverpoint which_fifo_err;
 
-    cr_fifo_err: cross cp_which_fifo, cp_which_err;
+    cr_fifo_err: cross cp_which_fifo, cp_which_err {
+      ignore_bins no_write_err = binsof(cp_which_fifo) intersect { sfifo_esfinal, sfifo_esrng } &&
+                                 binsof(cp_which_err) intersect { write };
+    }
 
   endgroup : fifo_err_cg
 
