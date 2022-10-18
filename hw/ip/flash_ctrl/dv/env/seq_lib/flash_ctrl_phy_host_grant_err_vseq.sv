@@ -26,7 +26,7 @@ class flash_ctrl_phy_host_grant_err_vseq extends flash_ctrl_err_base_vseq;
     // The purpose of this 'force' is to check dut can assert fatal error and
     // fault_status.host_gnr err.
     // So turn off all assertion and check those stauts then force to shut down the test.
-    $assertoff(0, "tb.dut");
+//    $assertoff(0, "tb.dut");
     cfg.scb_h.exp_tl_rsp_intg_err = 1;
     cfg.tlul_eflash_exp_cnt = 1;
     cfg.tlul_core_exp_cnt = 1;
