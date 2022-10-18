@@ -4,6 +4,7 @@
 #![allow(clippy::bool_assert_comparison)]
 
 use anyhow::{bail, Result};
+use humantime::parse_duration;
 use regex::Regex;
 use std::matches;
 use std::ops::Drop;
@@ -251,6 +252,56 @@ fn test_sfdp(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(sfdp.jedec.support_fast_read_222, false);
     assert_eq!(sfdp.jedec.support_fast_read_444, false);
     assert_eq!(sfdp.jedec.density, opts.flash_size);
+
+    assert_eq!(sfdp.jedec.erase[0].size, 4096);
+    assert_eq!(sfdp.jedec.erase[0].opcode, 0x20);
+    assert_eq!(
+        sfdp.jedec.erase[0].time.as_ref().unwrap().typical,
+        parse_duration("144 ms")?
+    );
+    assert_eq!(
+        sfdp.jedec.erase[0].time.as_ref().unwrap().maximum,
+        parse_duration("288 ms")?
+    );
+
+    // The other erase types are not supported.
+    assert_eq!(sfdp.jedec.erase[1].opcode, 0);
+    assert_eq!(sfdp.jedec.erase[2].opcode, 0);
+    assert_eq!(sfdp.jedec.erase[3].opcode, 0);
+
+    let rev_b = sfdp.jedec.rev_b.as_ref().expect("rev_b parameters");
+    assert_eq!(rev_b.page_size, 256);
+    assert_eq!(rev_b.page_program_time.typical, parse_duration("768 us")?);
+    assert_eq!(rev_b.byte_program_time.typical, parse_duration("48 us")?);
+    assert_eq!(
+        rev_b.additional_byte_program_time.typical,
+        parse_duration("48 us")?
+    );
+    assert_eq!(rev_b.chip_erase_time.typical, parse_duration("192 ms")?);
+    assert_eq!(rev_b.suspend_resume_supported, false);
+    assert_eq!(rev_b.deep_powerdown_supported, false);
+    assert_eq!(rev_b.status_register_polling, 1);
+
+    // We don't support the hold/reset disable feature.
+    assert_eq!(rev_b.hold_or_reset_disable, false);
+    // We don't support quad or 444 modes.
+    assert_eq!(rev_b.quad_enable_requirements, 0);
+    assert_eq!(rev_b.mode_444_enable, 0);
+    assert_eq!(rev_b.mode_444_disable, 0);
+
+    // We don't support 4b addressing.
+    assert_eq!(rev_b.enter_4b_addressing, 0);
+    assert_eq!(rev_b.exit_4b_addressing, 0);
+    // We support the 0x66/0x99 reset sequence.
+    assert_eq!(rev_b.soft_reset_support, 0x10);
+    // We don't have a non-volatile status register 1.
+    assert_eq!(rev_b.status_reg1_write_enable, 0);
+
+    // TODO(cfrantz): Work with alphan to eliminate the Rev D and Rev F
+    // extensions from our BFPT: we don't support any of the options and
+    // modes encoded in those extensions.
+    assert!(sfdp.jedec.rev_d.is_some());
+    assert!(sfdp.jedec.rev_f.is_some());
     Ok(())
 }
 
