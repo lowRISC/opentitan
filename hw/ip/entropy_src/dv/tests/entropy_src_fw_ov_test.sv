@@ -17,7 +17,7 @@ class entropy_src_fw_ov_test extends entropy_src_base_test;
     cfg.sim_duration                        = 10ms;
     cfg.hard_mtbf                           = 100s;
     cfg.mean_rand_reconfig_time             = 1ms;
-    cfg.mean_rand_csr_alert_time            = 10ms;
+    cfg.mean_rand_csr_alert_time            = 5ms;
     cfg.soft_mtbf                           = 7500us;
 
     // Apply truly impossible standards, to confirm that HT's don't matter here

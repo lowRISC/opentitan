@@ -111,11 +111,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   rand which_ht_e       which_ht;
 
   rand uint  which_cntr_replicate;
-  constraint which_cntr_replicate_c {which_cntr_replicate inside {[0:RNG_BUS_WIDTH-1]};}
 
-  int        num_bins = 2**RNG_BUS_WIDTH;
   rand uint  which_bin;
-  constraint which_bin_c {which_bin inside {[0:num_bins-1]};}
 
   /////////////////
   // Constraints //
@@ -133,6 +130,50 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
       1                         :/ spurious_inject_entropy_pct,
       0                         :/ (100 - spurious_inject_entropy_pct) };}
 
+  // Scale the frequency of each error code with the number of sub cover points (number of counters
+  // etc)
+  // Let the RNG test manage the CSR-driven errors
+  constraint which_err_code_c {
+    which_err_code dist {
+      sfifo_esrng_err   :/ 2,
+      sfifo_observe_err :/ 3,
+      sfifo_esfinal_err :/ 2,
+      es_ack_sm_err     :/ 2,
+      es_main_sm_err    :/ 2,
+      es_cntr_err       :/ 60,
+      fifo_write_err    :/ 2,
+      fifo_read_err     :/ 3,
+      fifo_state_err    :/ 3};}
+
+  constraint which_cntr_replicate_c {which_cntr_replicate inside {[0:RNG_BUS_WIDTH-1]};}
+  int        num_bins = 2**RNG_BUS_WIDTH;
+  constraint which_bin_c {which_bin inside {[0:num_bins-1]};}
+
+  // Choose the counter to probe by the number of bins or channels with each counter
+  constraint which_cntr_c {which_cntr dist {
+    window_cntr     :/ 1,
+    repcnt_ht_cntr  :/ 4,
+    repcnts_ht_cntr :/ 1,
+    adaptp_ht_cntr  :/ 4,
+    bucket_ht_cntr  :/ 16,
+    markov_ht_cntr  :/ 4};}
+
+  // Write errors no longer apply to the esfinal or esrng fifos
+  // so exclude those combinations when targetting a specific fifo or error condition
+  constraint which_fifo_err_c {
+    which_err_code inside {sfifo_esrng_err, sfifo_esfinal_err} ->
+      which_fifo_err inside {read, state};
+    which_err_code == fifo_write_err -> which_fifo_err == write;
+    which_err_code == fifo_read_err -> which_fifo_err == read;
+    which_err_code == fifo_state_err -> which_fifo_err == state;
+  }
+
+  constraint which_fifo_c {
+    which_err_code == fifo_write_err -> which_fifo == sfifo_observe;
+    which_err_code == sfifo_observe_err -> which_fifo == sfifo_observe;
+    which_err_code == sfifo_esrng_err -> which_fifo == sfifo_esrng;
+    which_err_code == sfifo_esfinal_err -> which_fifo == sfifo_esfinal;
+  }
 
   ///////////////
   // Functions //

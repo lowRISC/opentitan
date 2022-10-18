@@ -12,7 +12,7 @@ class entropy_src_alert_test extends entropy_src_base_test;
 
     cfg.en_scb                              = 1;
     cfg.dut_cfg.fips_enable_pct             = 100;
-    cfg.dut_cfg.entropy_data_reg_enable_pct = 100;
+    cfg.dut_cfg.entropy_data_reg_enable_pct = 0;
     cfg.dut_cfg.rng_bit_enable_pct          = 0;
     cfg.dut_cfg.fw_read_pct                 = 0;
     cfg.dut_cfg.fw_over_pct                 = 0;

@@ -2227,7 +2227,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         set_exp_alert(.alert_name("recov_alert"), .is_fatal(0), .max_delay(cfg.alert_max_delay));
       end
 
-      prev_csrng_seed = item.d_data;
+      prev_csrng_seed = get_csrng_seed(item.d_data);
       seeds_out++;
 
       while (fips_csrng_q.size() > 0) begin : seed_trial_loop
