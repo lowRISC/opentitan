@@ -99,6 +99,12 @@ package chip_env_pkg;
     LcOtpError
   } lc_ctrl_status_e;
 
+  typedef enum bit[1:0] {
+    SysrstCtrlPadKey0 = 0,
+    SysrstCtrlPadKey1 = 1,
+    SysrstCtrlPadKey2 = 2
+  } sysrst_ctrl_pad_key_idx_e;
+
   // Typical SPI flash opcodes.
   typedef enum bit [7:0] {
     SpiFlashReadJedec    = 8'h9F,

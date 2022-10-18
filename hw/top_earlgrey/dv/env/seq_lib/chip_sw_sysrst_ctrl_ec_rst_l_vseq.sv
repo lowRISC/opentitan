@@ -16,17 +16,13 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
   localparam string PWRMGR_RSTREQ_PATH = "tb.dut.top_earlgrey.u_pwrmgr_aon.rstreqs_i[0]";
   localparam string RST_AON_NI_PATH = "tb.dut.top_earlgrey.u_sysrst_ctrl_aon.rst_aon_ni";
 
-  localparam int PAD_KEY0 = 0;
-  localparam int PAD_KEY1 = 1;
-  localparam int PAD_KEY2 = 2;
-
   typedef enum {
-    PHASE_INITIAL               = 0,
-    PHASE_COMBO_RESET           = 1,
-    PHASE_OVERRIDE_SETUP        = 2,
-    PHASE_OVERRIDE_ZEROS        = 3,
-    PHASE_OVERRIDE_ONES         = 4,
-    PHASE_DONE                  = 5
+    PhaseInitial       = 0,
+    PhaseComboReset    = 1,
+    PhaseOverrideSetup = 2,
+    PhaseOverrideZeros = 3,
+    PhaseOverrideOnes  = 4,
+    PhaseDone          = 5
   } test_phases_e;
 
   logic [1:0] output_pad_read_values;
@@ -35,29 +31,25 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
 
   virtual task pre_start();
     super.pre_start();
-    sysrst_init();
+    // Initialize the pad input to 0 to avoid having X values in the initial test phase.
+    cfg.chip_vif.sysrst_ctrl_if.pins_pd[SysrstCtrlPadKey0] = 1;
+    cfg.chip_vif.sysrst_ctrl_if.pins_pd[SysrstCtrlPadKey1] = 1;
+    cfg.chip_vif.sysrst_ctrl_if.pins_pd[SysrstCtrlPadKey2] = 1;
+    cfg.chip_vif.pwrb_in_if.pins_pd[0] = 1;
   endtask
 
   virtual function void write_test_phase(input test_phases_e phase);
     sw_symbol_backdoor_overwrite("kTestPhase", {<<8{phase}});
   endfunction
 
-  // Initialize the pad mio input to 0 to avoid having X values in the initial test phase.
-  virtual task sysrst_init();
-    cfg.chip_vif.sysrst_ctrl_if.drive_pin(PAD_KEY0, 0);
-    cfg.chip_vif.sysrst_ctrl_if.drive_pin(PAD_KEY1, 0);
-    cfg.chip_vif.sysrst_ctrl_if.drive_pin(PAD_KEY2, 0);
-    cfg.chip_vif.pwrb_in_if.drive_pin(0, 0);
-  endtask
-
   virtual task set_combo0_pads_low();
-    cfg.chip_vif.sysrst_ctrl_if.drive_pin(PAD_KEY0, 0);
-    cfg.chip_vif.sysrst_ctrl_if.drive_pin(PAD_KEY1, 0);
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(SysrstCtrlPadKey0, 0);
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(SysrstCtrlPadKey1, 0);
   endtask
 
   virtual task set_combo0_pads_high();
-    cfg.chip_vif.sysrst_ctrl_if.drive_pin(PAD_KEY0, 1);
-    cfg.chip_vif.sysrst_ctrl_if.drive_pin(PAD_KEY1, 1);
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(SysrstCtrlPadKey0, 1);
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(SysrstCtrlPadKey1, 1);
   endtask
 
   virtual task check_ec_rst_pads(bit exp_ec_rst_l);
@@ -151,7 +143,7 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.pinmux_wkup_if.drive_en_pin(0, 0);
     set_combo0_pads_high();
 
-    write_test_phase(PHASE_INITIAL);
+    write_test_phase(PhaseInitial);
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
@@ -168,24 +160,24 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
         check_ec_rst_with_transition(PWRMGR_RSTREQ_PATH, 1'b0);
         check_ec_rst_with_transition(RST_AON_NI_PATH , 1'b0);
         sync_with_sw();
-        write_test_phase(PHASE_COMBO_RESET);
+        write_test_phase(PhaseComboReset);
         `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
         `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
         `DV_WAIT(ec_rst_timer_over)
 
-        write_test_phase(PHASE_OVERRIDE_SETUP);
+        write_test_phase(PhaseOverrideSetup);
         sync_with_sw();
         check_ec_rst_pads(1'b0);
 
-        write_test_phase(PHASE_OVERRIDE_ZEROS);
+        write_test_phase(PhaseOverrideZeros);
         sync_with_sw();
         check_output_pads(1'b0, 1'b0);
 
-        write_test_phase(PHASE_OVERRIDE_ONES);
+        write_test_phase(PhaseOverrideOnes);
         sync_with_sw();
         check_output_pads(1'b1, 1'b1);
 
-        write_test_phase(PHASE_DONE);
+        write_test_phase(PhaseDone);
       end
     join
   endtask
