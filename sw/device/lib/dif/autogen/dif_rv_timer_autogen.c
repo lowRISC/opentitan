@@ -205,7 +205,7 @@ dif_result_t dif_rv_timer_irq_acknowledge(const dif_rv_timer_t *rv_timer,
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_timer_irq_force(const dif_rv_timer_t *rv_timer,
-                                    dif_rv_timer_irq_t irq) {
+                                    dif_rv_timer_irq_t irq, const bool val) {
   if (rv_timer == NULL) {
     return kDifBadArg;
   }
@@ -215,7 +215,7 @@ dif_result_t dif_rv_timer_irq_force(const dif_rv_timer_t *rv_timer,
     return kDifBadArg;
   }
 
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
   uint32_t reg_offset = 0;
   if (!rv_timer_get_irq_reg_offset(kDifRvTimerIntrRegTest, irq, &reg_offset)) {
     return kDifBadArg;

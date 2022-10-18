@@ -164,11 +164,13 @@ dif_result_t dif_entropy_src_irq_acknowledge(
  *
  * @param entropy_src A entropy_src handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_force(const dif_entropy_src_t *entropy_src,
-                                       dif_entropy_src_irq_t irq);
+                                       dif_entropy_src_irq_t irq,
+                                       const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.

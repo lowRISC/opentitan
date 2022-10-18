@@ -134,7 +134,7 @@ dif_result_t dif_adc_ctrl_irq_acknowledge(const dif_adc_ctrl_t *adc_ctrl,
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_adc_ctrl_irq_force(const dif_adc_ctrl_t *adc_ctrl,
-                                    dif_adc_ctrl_irq_t irq) {
+                                    dif_adc_ctrl_irq_t irq, const bool val) {
   if (adc_ctrl == NULL) {
     return kDifBadArg;
   }
@@ -144,7 +144,7 @@ dif_result_t dif_adc_ctrl_irq_force(const dif_adc_ctrl_t *adc_ctrl,
     return kDifBadArg;
   }
 
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
   mmio_region_write32(adc_ctrl->base_addr, ADC_CTRL_INTR_TEST_REG_OFFSET,
                       intr_test_reg);
 

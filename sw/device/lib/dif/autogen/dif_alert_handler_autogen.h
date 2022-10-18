@@ -138,11 +138,13 @@ dif_result_t dif_alert_handler_irq_acknowledge(
  *
  * @param alert_handler A alert_handler handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_irq_force(
-    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq);
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq,
+    const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.

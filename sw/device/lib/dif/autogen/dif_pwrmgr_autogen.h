@@ -140,11 +140,12 @@ dif_result_t dif_pwrmgr_irq_acknowledge(const dif_pwrmgr_t *pwrmgr,
  *
  * @param pwrmgr A pwrmgr handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_irq_force(const dif_pwrmgr_t *pwrmgr,
-                                  dif_pwrmgr_irq_t irq);
+                                  dif_pwrmgr_irq_t irq, const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.

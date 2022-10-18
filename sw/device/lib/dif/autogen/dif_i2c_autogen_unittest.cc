@@ -164,23 +164,24 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public I2cTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(dif_i2c_irq_force(nullptr, kDifI2cIrqFmtWatermark));
+  EXPECT_DIF_BADARG(dif_i2c_irq_force(nullptr, kDifI2cIrqFmtWatermark, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_DIF_BADARG(dif_i2c_irq_force(nullptr, static_cast<dif_i2c_irq_t>(32)));
+  EXPECT_DIF_BADARG(
+      dif_i2c_irq_force(nullptr, static_cast<dif_i2c_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(I2C_INTR_TEST_REG_OFFSET,
                  {{I2C_INTR_TEST_FMT_WATERMARK_BIT, true}});
-  EXPECT_DIF_OK(dif_i2c_irq_force(&i2c_, kDifI2cIrqFmtWatermark));
+  EXPECT_DIF_OK(dif_i2c_irq_force(&i2c_, kDifI2cIrqFmtWatermark, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(I2C_INTR_TEST_REG_OFFSET,
                  {{I2C_INTR_TEST_HOST_TIMEOUT_BIT, true}});
-  EXPECT_DIF_OK(dif_i2c_irq_force(&i2c_, kDifI2cIrqHostTimeout));
+  EXPECT_DIF_OK(dif_i2c_irq_force(&i2c_, kDifI2cIrqHostTimeout, true));
 }
 
 class IrqGetEnabledTest : public I2cTest {};

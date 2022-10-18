@@ -347,16 +347,18 @@ namespace {
     EXPECT_DIF_BADARG(dif_${ip.name_snake}_irq_force(
         nullptr, 
       % if ip.irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0));
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}));
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
+        true));
   }
 
   TEST_F(IrqForceTest, BadIrq) {
     EXPECT_DIF_BADARG(dif_${ip.name_snake}_irq_force(
         nullptr, 
-        static_cast<dif_${ip.name_snake}_irq_t>(32)));
+        static_cast<dif_${ip.name_snake}_irq_t>(32),
+        true));
   }
 
   TEST_F(IrqForceTest, Success) {
@@ -375,10 +377,11 @@ namespace {
     EXPECT_DIF_OK(dif_${ip.name_snake}_irq_force(
         &${ip.name_snake}_,
       % if ip.irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0));
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
       % else:
-        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}));
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
       % endif
+        true));
 
   % if len(ip.irqs) > 1 or ip.irqs[0].width > 1:
     // Force last IRQ.
@@ -397,10 +400,11 @@ namespace {
     EXPECT_DIF_OK(dif_${ip.name_snake}_irq_force(
         &${ip.name_snake}_,
       % if ip.irqs[0].width > 1:
-        kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}${ip.irqs[0].width - 1}));
+        kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}${ip.irqs[0].width - 1},
       % else:
-        kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}));
+        kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel},
       % endif
+        true));
   % endif
   }
 

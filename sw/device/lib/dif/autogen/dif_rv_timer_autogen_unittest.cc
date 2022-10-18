@@ -157,20 +157,20 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public RvTimerTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(
-      dif_rv_timer_irq_force(nullptr, kDifRvTimerIrqTimerExpiredHart0Timer0));
+  EXPECT_DIF_BADARG(dif_rv_timer_irq_force(
+      nullptr, kDifRvTimerIrqTimerExpiredHart0Timer0, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
-  EXPECT_DIF_BADARG(
-      dif_rv_timer_irq_force(nullptr, static_cast<dif_rv_timer_irq_t>(32)));
+  EXPECT_DIF_BADARG(dif_rv_timer_irq_force(
+      nullptr, static_cast<dif_rv_timer_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(RV_TIMER_INTR_TEST0_REG_OFFSET, {{0, true}});
-  EXPECT_DIF_OK(dif_rv_timer_irq_force(&rv_timer_,
-                                       kDifRvTimerIrqTimerExpiredHart0Timer0));
+  EXPECT_DIF_OK(dif_rv_timer_irq_force(
+      &rv_timer_, kDifRvTimerIrqTimerExpiredHart0Timer0, true));
 }
 
 class IrqGetEnabledTest : public RvTimerTest {};

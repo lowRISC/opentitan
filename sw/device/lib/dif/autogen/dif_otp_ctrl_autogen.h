@@ -167,11 +167,12 @@ dif_result_t dif_otp_ctrl_irq_acknowledge(const dif_otp_ctrl_t *otp_ctrl,
  *
  * @param otp_ctrl A otp_ctrl handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_irq_force(const dif_otp_ctrl_t *otp_ctrl,
-                                    dif_otp_ctrl_irq_t irq);
+                                    dif_otp_ctrl_irq_t irq, const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.

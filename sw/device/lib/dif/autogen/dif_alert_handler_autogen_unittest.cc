@@ -152,26 +152,26 @@ class IrqForceTest : public AlertHandlerTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
   EXPECT_DIF_BADARG(
-      dif_alert_handler_irq_force(nullptr, kDifAlertHandlerIrqClassa));
+      dif_alert_handler_irq_force(nullptr, kDifAlertHandlerIrqClassa, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
   EXPECT_DIF_BADARG(dif_alert_handler_irq_force(
-      nullptr, static_cast<dif_alert_handler_irq_t>(32)));
+      nullptr, static_cast<dif_alert_handler_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(ALERT_HANDLER_INTR_TEST_REG_OFFSET,
                  {{ALERT_HANDLER_INTR_TEST_CLASSA_BIT, true}});
-  EXPECT_DIF_OK(
-      dif_alert_handler_irq_force(&alert_handler_, kDifAlertHandlerIrqClassa));
+  EXPECT_DIF_OK(dif_alert_handler_irq_force(&alert_handler_,
+                                            kDifAlertHandlerIrqClassa, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(ALERT_HANDLER_INTR_TEST_REG_OFFSET,
                  {{ALERT_HANDLER_INTR_TEST_CLASSD_BIT, true}});
-  EXPECT_DIF_OK(
-      dif_alert_handler_irq_force(&alert_handler_, kDifAlertHandlerIrqClassd));
+  EXPECT_DIF_OK(dif_alert_handler_irq_force(&alert_handler_,
+                                            kDifAlertHandlerIrqClassd, true));
 }
 
 class IrqGetEnabledTest : public AlertHandlerTest {};

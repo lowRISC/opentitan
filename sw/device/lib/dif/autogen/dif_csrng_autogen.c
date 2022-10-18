@@ -141,8 +141,8 @@ dif_result_t dif_csrng_irq_acknowledge(const dif_csrng_t *csrng,
 }
 
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_csrng_irq_force(const dif_csrng_t *csrng,
-                                 dif_csrng_irq_t irq) {
+dif_result_t dif_csrng_irq_force(const dif_csrng_t *csrng, dif_csrng_irq_t irq,
+                                 const bool val) {
   if (csrng == NULL) {
     return kDifBadArg;
   }
@@ -152,7 +152,7 @@ dif_result_t dif_csrng_irq_force(const dif_csrng_t *csrng,
     return kDifBadArg;
   }
 
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
   mmio_region_write32(csrng->base_addr, CSRNG_INTR_TEST_REG_OFFSET,
                       intr_test_reg);
 

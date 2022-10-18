@@ -137,7 +137,7 @@ dif_result_t dif_spi_host_irq_acknowledge(const dif_spi_host_t *spi_host,
 
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_host_irq_force(const dif_spi_host_t *spi_host,
-                                    dif_spi_host_irq_t irq) {
+                                    dif_spi_host_irq_t irq, const bool val) {
   if (spi_host == NULL) {
     return kDifBadArg;
   }
@@ -147,7 +147,7 @@ dif_result_t dif_spi_host_irq_force(const dif_spi_host_t *spi_host,
     return kDifBadArg;
   }
 
-  uint32_t intr_test_reg = bitfield_bit32_write(0, index, true);
+  uint32_t intr_test_reg = bitfield_bit32_write(0, index, val);
   mmio_region_write32(spi_host->base_addr, SPI_HOST_INTR_TEST_REG_OFFSET,
                       intr_test_reg);
 

@@ -190,12 +190,14 @@ dif_result_t dif_${ip.name_snake}_init(
    *
    * @param ${ip.name_snake} A ${ip.name_snake} handle.
    * @param irq An interrupt request.
+   * @param val Value to be set.
    * @return The result of the operation.
    */
   OT_WARN_UNUSED_RESULT
   dif_result_t dif_${ip.name_snake}_irq_force(
     const dif_${ip.name_snake}_t *${ip.name_snake},
-    dif_${ip.name_snake}_irq_t irq);
+    dif_${ip.name_snake}_irq_t irq,
+    const bool val);
 
 % if ip.name_snake != "aon_timer":
   /**

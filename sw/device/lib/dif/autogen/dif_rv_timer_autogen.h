@@ -145,11 +145,12 @@ dif_result_t dif_rv_timer_irq_acknowledge(const dif_rv_timer_t *rv_timer,
  *
  * @param rv_timer A rv_timer handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_timer_irq_force(const dif_rv_timer_t *rv_timer,
-                                    dif_rv_timer_irq_t irq);
+                                    dif_rv_timer_irq_t irq, const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.

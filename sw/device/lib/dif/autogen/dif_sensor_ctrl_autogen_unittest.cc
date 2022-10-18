@@ -175,27 +175,27 @@ TEST_F(IrqAcknowledgeTest, Success) {
 class IrqForceTest : public SensorCtrlTest {};
 
 TEST_F(IrqForceTest, NullArgs) {
-  EXPECT_DIF_BADARG(
-      dif_sensor_ctrl_irq_force(nullptr, kDifSensorCtrlIrqIoStatusChange));
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_force(
+      nullptr, kDifSensorCtrlIrqIoStatusChange, true));
 }
 
 TEST_F(IrqForceTest, BadIrq) {
   EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_force(
-      nullptr, static_cast<dif_sensor_ctrl_irq_t>(32)));
+      nullptr, static_cast<dif_sensor_ctrl_irq_t>(32), true));
 }
 
 TEST_F(IrqForceTest, Success) {
   // Force first IRQ.
   EXPECT_WRITE32(SENSOR_CTRL_INTR_TEST_REG_OFFSET,
                  {{SENSOR_CTRL_INTR_TEST_IO_STATUS_CHANGE_BIT, true}});
-  EXPECT_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_,
-                                          kDifSensorCtrlIrqIoStatusChange));
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_force(
+      &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, true));
 
   // Force last IRQ.
   EXPECT_WRITE32(SENSOR_CTRL_INTR_TEST_REG_OFFSET,
                  {{SENSOR_CTRL_INTR_TEST_INIT_STATUS_CHANGE_BIT, true}});
-  EXPECT_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl_,
-                                          kDifSensorCtrlIrqInitStatusChange));
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_force(
+      &sensor_ctrl_, kDifSensorCtrlIrqInitStatusChange, true));
 }
 
 class IrqGetEnabledTest : public SensorCtrlTest {};

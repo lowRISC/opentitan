@@ -145,11 +145,13 @@ dif_result_t dif_sysrst_ctrl_irq_acknowledge(
  *
  * @param sysrst_ctrl A sysrst_ctrl handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sysrst_ctrl_irq_force(const dif_sysrst_ctrl_t *sysrst_ctrl,
-                                       dif_sysrst_ctrl_irq_t irq);
+                                       dif_sysrst_ctrl_irq_t irq,
+                                       const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.

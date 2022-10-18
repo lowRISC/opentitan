@@ -171,10 +171,12 @@ dif_result_t dif_gpio_irq_acknowledge(const dif_gpio_t *gpio,
  *
  * @param gpio A gpio handle.
  * @param irq An interrupt request.
+ * @param val Value to be set.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_gpio_irq_force(const dif_gpio_t *gpio, dif_gpio_irq_t irq);
+dif_result_t dif_gpio_irq_force(const dif_gpio_t *gpio, dif_gpio_irq_t irq,
+                                const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.
