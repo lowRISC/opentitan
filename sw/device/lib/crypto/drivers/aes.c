@@ -199,6 +199,27 @@ aes_error_t aes_decrypt_begin(const aes_key_t key, const aes_block_t *iv) {
 }
 
 aes_error_t aes_update(aes_block_t *dest, const aes_block_t *src) {
+  if (dest != NULL) {
+    // Check that either the output is valid or AES is busy, to avoid spinning
+    // forever if the user passes a non-null `dest` when there is no output
+    // pending.
+    uint32_t reg = abs_mmio_read32(kBase + AES_STATUS_REG_OFFSET);
+    if (bitfield_bit32_read(reg, AES_STATUS_IDLE_BIT) &&
+        !bitfield_bit32_read(reg, AES_STATUS_OUTPUT_VALID_BIT)) {
+      return kAesInternalError;
+    }
+
+    aes_error_t err = spin_until(AES_STATUS_OUTPUT_VALID_BIT);
+    if (err != kAesOk) {
+      return err;
+    }
+
+    uint32_t offset = kBase + AES_DATA_OUT_0_REG_OFFSET;
+    for (size_t i = 0; i < ARRAYSIZE(dest->data); ++i) {
+      dest->data[i] = abs_mmio_read32(offset + i * sizeof(uint32_t));
+    }
+  }
+
   if (src != NULL) {
     aes_error_t err = spin_until(AES_STATUS_INPUT_READY_BIT);
     if (err != kAesOk) {
@@ -208,18 +229,6 @@ aes_error_t aes_update(aes_block_t *dest, const aes_block_t *src) {
     uint32_t offset = kBase + AES_DATA_IN_0_REG_OFFSET;
     for (size_t i = 0; i < ARRAYSIZE(src->data); ++i) {
       abs_mmio_write32(offset + i * sizeof(uint32_t), src->data[i]);
-    }
-  }
-
-  if (dest != NULL) {
-    aes_error_t err = spin_until(AES_STATUS_OUTPUT_VALID_BIT);
-    if (err != kAesOk) {
-      return err;
-    }
-
-    uint32_t offset = kBase + AES_DATA_OUT_0_REG_OFFSET;
-    for (size_t i = 0; i < ARRAYSIZE(dest->data); ++i) {
-      dest->data[i] = abs_mmio_read32(offset + i * sizeof(uint32_t));
     }
   }
 

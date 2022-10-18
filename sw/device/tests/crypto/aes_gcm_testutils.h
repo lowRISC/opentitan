@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_TESTS_CRYPTO_AES_GCM_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_TESTS_CRYPTO_AES_GCM_TESTUTILS_H_
 
+#include <stdbool.h>
+
 #include "sw/device/lib/crypto/drivers/aes.h"
 
 #ifdef __cplusplus
