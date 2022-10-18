@@ -285,12 +285,14 @@ static_assert(kBfptTablePointer % sizeof(uint32_t) == 0,
 /**
  * BFPT 12th Word
  * --------------
- * [31: 9]: Erase/program suspend/resume (not supported, 0x0)
+ * [31:31]: Suspend/Resume supported (not supported, 0x1)
+ * [30: 9]: Suspend/Resume latencies for erase & program (not supported)
  * [ 8: 8]: Reserved
  * [ 7: 0]: Prohibited ops during suspend (not supported, 0x0)
  */
 #define BFPT_WORD_12(X) \
- X(31,  9, kBfptNotSupported) & \
+ X(31, 31, 0x1) & \
+ X(30,  9, kBfptNotSupported) & \
  X( 7,  0, kBfptNotSupported)
 
 /**
