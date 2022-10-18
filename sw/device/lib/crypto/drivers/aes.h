@@ -4,10 +4,6 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_AES_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_AES_H_
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 
@@ -142,7 +138,7 @@ aes_error_t aes_decrypt_begin(const aes_key_t key, const aes_block_t *iv);
  * operation; there is a delay as a block makes it way through the hardware;
  * outputs are delayed one input from when it is fed into the hardware.
  *
- * Therefore, this function works thus:
+ * Therefore, this function works as follows:
  * 1. The contents of `src` are fed into the hardware (unless it is null, in
  *    which case this step is skipped).
  * 2. The contents of `dest` are filled with the hardware's output (again,
