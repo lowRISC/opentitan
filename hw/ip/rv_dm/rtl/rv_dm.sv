@@ -102,16 +102,10 @@ module rv_dm
     .devmode_i (1'b1           )
   );
 
-  rv_dm_mem_reg_top u_reg_mem (
-    .clk_i,
-    .rst_ni,
-    .tl_i      (mem_tl_d_i    ),
-    .tl_o      (mem_tl_d_o    ),
-    .tl_win_o  (mem_tl_win_h2d),
-    .tl_win_i  (mem_tl_win_d2h),
-    .intg_err_o(),
-    .devmode_i (1'b1          )
-  );
+  // We are not instantiating the generated rv_dm_mem_reg_top, since the registers are actually
+  // implemented inside the vendored-in rv_dm module from the PULP project.
+  assign mem_tl_win_h2d = mem_tl_d_i;
+  assign mem_tl_d_o = mem_tl_win_d2h;
 
   // Alerts
   logic [NumAlerts-1:0] alert_test, alerts;
@@ -374,7 +368,8 @@ module rv_dm
     .Outstanding(1),
     .ByteAccess(1),
     .CmdIntgCheck(1),
-    .EnableRspIntgGen(1)
+    .EnableRspIntgGen(1),
+    .EnableDataIntgGen(1)
   ) tl_adapter_device_mem (
     .clk_i,
     .rst_ni,
