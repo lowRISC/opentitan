@@ -409,32 +409,12 @@ In this example, the RNG lines are scored individually (i.e., {{< regref "CONF.T
 
 ## Initialization
 
-The following code snippet demonstrates initializing the ENTROPY_SRC block for entropy bit generation.
+To initialize the ENTROPY_SRC block, see the Device Interface Functions (DIFs) section.
 
-```cpp
-
-void entropy_src_init(unsigned int rate) {
-
-  // set the configuration enable bits (rng mode, all health tests enabled)
-  *CONF_REG = 0x1;
-
-  // the ENTROPY_SRC interrupts can optionally be enabled
-}
-```
 
 ## Entropy Processing
 
-The following code snippet demonstrates reading entropy bits from the ENTROPY_SRC block.
-
-```cpp
-
-int entropy_src_entropy(unsigned int numEntropyBits) {
-
-  // read numEntropyBits, check for ENTROPY_SRC_INTR_STATE bit 0
-  return *ENTROPY_DATA_REG;
-
-}
-```
+Once entropy has been prepared for delivery, it can be consumed by either hardware (CSRNG block hardware instance) or by a software interface (CSRNG software instance).
 
 Note that when software makes frequent re-seed requests to CSRNG, any stored up entropy seeds in the final entropy FIFO will quickly consumed.
 Once the FIFO is empty, subsequent entropy seed requests will have to wait the worst case latency time while new entropy is being created.
