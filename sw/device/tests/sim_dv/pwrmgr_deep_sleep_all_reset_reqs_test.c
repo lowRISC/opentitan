@@ -72,10 +72,6 @@ enum {
   kEscalationPhase2Micros = 50,                               // 50 us
 };
 
-uint32_t cycle_rescaling_factor() {
-  return kDeviceType == kDeviceSimDV ? 1 : 10;
-}
-
 static_assert(
     kWdogBarkMicros < kWdogBiteMicros &&
         kWdogBarkMicros > kEscalationPhase0Micros &&
@@ -189,28 +185,24 @@ static void alert_handler_config(void) {
       {.phase = kDifAlertHandlerClassStatePhase0,
        .signal = 0,
        .duration_cycles =
-           udiv64_slow(kEscalationPhase0Micros * kClockFreqPeripheralHz,
-                       1000000, NULL) *
-           cycle_rescaling_factor()},
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros) *
+           alert_handler_testutils_cycle_rescaling_factor()},
       {.phase = kDifAlertHandlerClassStatePhase1,
        .signal = 1,
        .duration_cycles =
-           udiv64_slow(kEscalationPhase1Micros * kClockFreqPeripheralHz,
-                       1000000, NULL) *
-           cycle_rescaling_factor()},
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase1Micros) *
+           alert_handler_testutils_cycle_rescaling_factor()},
       {.phase = kDifAlertHandlerClassStatePhase2,
        .signal = 3,
        .duration_cycles =
-           udiv64_slow(kEscalationPhase2Micros * kClockFreqPeripheralHz,
-                       1000000, NULL) *
-           cycle_rescaling_factor()}};
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase2Micros) *
+           alert_handler_testutils_cycle_rescaling_factor()}};
 
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
       .accumulator_threshold = 0,
-      .irq_deadline_cycles =
-          udiv64_slow(10 * kClockFreqPeripheralHz, 1000000, NULL) *
-          cycle_rescaling_factor(),
+      .irq_deadline_cycles = alert_handler_testutils_get_cycles_from_us(10) *
+                             alert_handler_testutils_cycle_rescaling_factor(),
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
@@ -241,10 +233,10 @@ static void trigger_escalate(dif_aon_timer_t *aon_timer,
                              const dif_pwrmgr_t *pwrmgr) {
   uint64_t bark_cycles =
       udiv64_slow(kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL) *
-      cycle_rescaling_factor();
+      alert_handler_testutils_cycle_rescaling_factor();
   uint64_t bite_cycles =
       udiv64_slow(kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL) *
-      cycle_rescaling_factor();
+      alert_handler_testutils_cycle_rescaling_factor();
 
   CHECK(bite_cycles < UINT32_MAX,
         "The value %u can't fit into the 32 bits timer counter.", bite_cycles);

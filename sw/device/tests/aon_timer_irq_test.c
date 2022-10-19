@@ -211,9 +211,9 @@ bool test_main(void) {
       &plic, kPlicTarget, kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired,
       kTopEarlgreyPlicIrqIdAonTimerAonWdogTimerBark);
 
-  // Executing the test using randon time bounds calculated from the clock
+  // Executing the test using random time bounds calculated from the clock
   // frequency to make sure the aon timer is generating the interrupt after the
-  // choosen time and there's no error in the reference time measurement. This
+  // chosen time and there's no error in the reference time measurement. This
   // calculation is required as the various platforms used for testing have
   // differing clocks frequencies. A minimum amount of cycles is required for
   // the interrupt to note the elapsed time so the test fails with an
