@@ -384,7 +384,7 @@ interface chip_if;
   // Whether the desired JTAG TAP will actually selected or not depends on the LC state and the
   // window of time when the TAP straps are set. It is upto the test sequence to orchestrate it
   // correctly. Disconnect the TAP strap interface to free up the muxed IOs.
-  wire __enable_jtag = (|(tap_straps_if.pins_oe & tap_straps_if.pins_o));
+  wire __enable_jtag = |tap_straps_if.pins_oe;
   jtag_if jtag_if();
 
   assign ios[IoR0] = __enable_jtag ? jtag_if.tms : 1'bz;
@@ -392,6 +392,16 @@ interface chip_if;
   assign ios[IoR2] = __enable_jtag ? jtag_if.tdi : 1'bz;
   assign ios[IoR3] = __enable_jtag ? jtag_if.tck : 1'bz;
   assign ios[IoR4] = __enable_jtag ? jtag_if.trst_n : 1'bz;
+
+  function automatic void set_tdo_pull(bit value);
+    if (value) begin
+      ios_if.pins_pd[IoR1] = 0;
+      ios_if.pins_pu[IoR1] = 1;
+    end else begin
+      ios_if.pins_pu[IoR1] = 0;
+      ios_if.pins_pd[IoR1] = 1;
+    end
+  endfunction
 
   // Functional (muxed) interface: Flash controller JTAG.
   bit enable_flash_ctrl_jtag, flash_ctrl_jtag_enabled;
