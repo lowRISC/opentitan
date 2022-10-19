@@ -61,6 +61,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     randomize_dft_straps();
     `DV_CHECK_STD_RANDOMIZE_FATAL(select_jtag)
     cfg.chip_vif.tap_straps_if.drive(select_jtag);
+    cfg.chip_vif.set_tdo_pull(0);
 
     super.dut_init(reset_kind);
     // in LcStProd, we can only select LC tap at boot.
@@ -143,7 +144,6 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   virtual task init_rv_dm(bit exp_to_be_activated = 1);
     jtag_riscv_dm_activation_seq jtag_dm_activation_seq =
         jtag_riscv_dm_activation_seq::type_id::create("jtag_dm_activation_seq");
-
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 1;
     if (!exp_to_be_activated) cfg.m_jtag_riscv_agent_cfg.allow_rv_dm_activation_fail = 1;
     jtag_dm_activation_seq.start(p_sequencer.jtag_sequencer_h);
@@ -157,7 +157,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
 
   virtual task test_jtag_tap();
     cfg.clk_rst_vif.wait_clks(100);
-    `uvm_info(`gfn, $sformatf("Testing jtag tab %s", select_jtag), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("Testing jtag tap %s", select_jtag), UVM_LOW)
     case (select_jtag)
       JtagTapRvDm: begin
         test_rv_dm_access_via_jtag();
@@ -236,6 +236,10 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     `DV_CHECK_FATAL(uvm_hdl_release(path_dft_tap_rsp))
 
     $asserton(1, "tb.dut.top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.DftTapOff1_A");
+
+    // The random force/release toggling above means trst_n could be left in an active state.
+    // Wiggle the trst_n pin and make sure it returns to an inactive value.
+    cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
   endtask
 
   // if no tap is selected, expect to read all 0s
@@ -244,12 +248,14 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
       randcase
         // enable rv_dm
         1: begin
+          `uvm_info(`gfn, "Testing rv_dm to make sure it cannot be activated", UVM_LOW)
           cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
           init_rv_dm(.exp_to_be_activated(0));
         end
         // enable LC
         1: begin
           bit [TL_DW-1:0] rdata;
+          `uvm_info(`gfn, "Testing lc_ctrl to make sure it cannot be read", UVM_LOW)
           cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 0;
           lc_csrs.shuffle();
           jtag_riscv_agent_pkg::jtag_read_csr(lc_csrs[0].get_offset(),
