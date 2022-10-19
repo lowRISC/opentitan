@@ -505,7 +505,7 @@
             - Verify the alert upto the NMI stage or full reset, and alert cause is from ibex.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_data_integrity_escalation"]
     }
 
     // RV_DM (JTAG) tests:
