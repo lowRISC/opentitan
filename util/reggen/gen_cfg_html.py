@@ -89,7 +89,10 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
     if not cfgs.inter_signals:
         genout(outfile, "<p><em>Inter-Module Signals: none</em></p>\n")
     else:
-        genout(outfile, "<p><em>Inter-Module Signals:</em> <a href=\"/doc/rm/comportability_specification/#inter-signal-handling\">Reference</a></p>\n")
+        genout(outfile,
+               "<p><em>Inter-Module Signals:</em>\n" +
+               "<a href=\"/doc/rm/comportability_specification/#inter-signal-handling\">\n" +
+               "Reference</a></p>\n")
 
         genout(outfile,
                "<table class=\"cfgtable\">\n" +
@@ -117,7 +120,7 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
                    "    <tr>\n" +
                    "      <td>" + name + "</td>\n" +
                    "      <td>" + pkg_struct + "</td>\n" +
-                   "      <td>" + sig_type+ "</td>\n" +
+                   "      <td>" + sig_type + "</td>\n" +
                    "      <td>" + act + "</td>\n" +
                    "      <td>" + width + "</td>\n" +
                    "      <td>" + desc + "</td>\n" +
@@ -134,11 +137,12 @@ def gen_cfg_html(cfgs: IpBlock, outfile: TextIO) -> None:
         genout(outfile, "<p><i>Interrupts:</i></p>\n")
         genout(
             outfile, "<table class=\"cfgtable\"><tr><th>Interrupt Name</th>" +
-            "<th>Description</th></tr>\n")
+            "<th>Type</th><th>Description</th></tr>\n")
         for x in cfgs.interrupts:
             genout(outfile,
-                   '<tr><td>{}</td>{}</tr>'
+                   '<tr><td>{}</td><td>{}</td>{}</tr>'
                    .format(name_width(x),
+                           x.intr_type.name,
                            render_td(x.desc, rnames, None)))
         genout(outfile, "</table>\n")
 
