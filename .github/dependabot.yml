@@ -9,7 +9,7 @@ updates:
     schedule:
       # Updates are scheduled at the beginning of the work week.
       interval: "weekly"
-      day: "Monday"
+      day: "monday"
       time: "02:00"
       # US Pacific Time
       timezone: "America/Los_Angeles"
