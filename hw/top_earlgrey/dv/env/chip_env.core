@@ -56,6 +56,7 @@ filesets:
       - seq_lib/chip_sw_alert_handler_escalation_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_alert_handler_lpg_clkoff_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_all_escalation_resets_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_data_integrity_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_clkmgr_escalation_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_full_aon_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_deep_power_glitch_vseq.sv: {is_include_file: true}

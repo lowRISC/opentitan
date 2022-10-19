@@ -126,26 +126,29 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlMainSramKey,
-      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlMainSramNonce);
-    _sram_bkdr_write32(addr, data, 1, key, nonce);
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlMainSramNonce,
+      bit [38:0] flip_bits = '0);
+    _sram_bkdr_write32(addr, data, 1, key, nonce, flip_bits);
   endfunction
 
   virtual function void ret_sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key = RndCnstSramCtrlRetAonSramKey,
-      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce);
-    _sram_bkdr_write32(addr, data, 0, key, nonce);
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce = RndCnstSramCtrlRetAonSramNonce,
+      bit [38:0] flip_bits = '0);
+    _sram_bkdr_write32(addr, data, 0, key, nonce, flip_bits);
   endfunction
 
   // scrambled address may cross the tile, this function will find out what tile the address is
   // located and backdoor write to it.
-  protected virtual function void _sram_bkdr_write32(
+  protected function void _sram_bkdr_write32(
       bit [bus_params_pkg::BUS_AW-1:0] addr,
       bit [31:0] data,
       bit is_main_ram, // if 1, main ram, otherwise, ret ram
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key,
-      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce);
+      bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce,
+      bit [38:0] flip_bits);
 
     chip_mem_e mem;
     int        num_tiles;
@@ -183,7 +186,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // write the scrambled data into the targetted memory tile
     mem = chip_mem_e'(mem + tile_idx);
-    cfg.mem_bkdr_util_h[mem].write39integ(addr_scr & addr_mask, data_scr);
+    cfg.mem_bkdr_util_h[mem].write39integ(addr_scr & addr_mask, data_scr ^ flip_bits);
   endfunction
 
   virtual task body();

@@ -14,6 +14,7 @@
 `include "chip_jtag_base_vseq.sv"
 `include "chip_prim_tl_access_vseq.sv"
 `include "chip_sw_all_escalation_resets_vseq.sv"
+`include "chip_sw_data_integrity_vseq.sv"
 `include "chip_sw_clkmgr_escalation_reset_vseq.sv"
 `include "chip_sw_full_aon_reset_vseq.sv"
 `include "chip_sw_deep_power_glitch_vseq.sv"
