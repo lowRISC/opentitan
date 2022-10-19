@@ -104,7 +104,7 @@ opentitan_gdb_fpga_cw310_test(
         # Write "L NAPOT X W R" to pmp{0,1,2,3}cfg in pmpcfg0. Crucially, this
         # value is no less permissive than whatever the current value is.
         monitor reg pmpcfg0 0x9f9f9f9f
-        monitor reg pmpaddr0 0x7fffffff
+        monitor reg pmpaddr0 0xffffffff
 
         echo :::: Value of CREATOR_SW_CFG_ROM_EXEC_EN.\\n
         monitor mdw 0x40131108
