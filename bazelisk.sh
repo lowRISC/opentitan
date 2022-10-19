@@ -18,6 +18,7 @@ cd "$(dirname "$0")"
 : "${CURL_FLAGS:=--silent}"
 : "${REPO_TOP:=$(git rev-parse --show-toplevel)}"
 : "${BINDIR:=.bin}"
+: "${BAZEL_BIN:=$(which bazel)}"
 
 readonly release="v1.11.0"
 declare -A hashes=(
@@ -99,19 +100,22 @@ function do_outquery() {
 
 function main() {
     local bindir="${REPO_TOP}/${BINDIR}"
-    local file="${bindir}/bazelisk"
+    local file="${BAZEL_BIN:-${bindir}/bazelisk}"
     local lockfile="${bindir}/bazelisk.lock"
 
-    if ! up_to_date "$file"; then
-        # Grab the lock, blocking until success. Upon success, check again
-        # whether we're up to date (because some other process might have
-        # downloaded bazelisk in the meantime). If not, download it ourselves.
-        mkdir -p "$bindir"
-        (flock -x 9; up_to_date "$file" || prepare) 9>>"$lockfile"
-    fi
-    if ! check_hash "$file"; then
-        echo "sha256sum doesn't match expected value"
-        exit 1
+    # Are we using bazel from the user's PATH or using bazelisk?
+    if expr match "${file}" ".*bazelisk$" >/dev/null; then
+        if ! up_to_date "$file"; then
+            # Grab the lock, blocking until success. Upon success, check again
+            # whether we're up to date (because some other process might have
+            # downloaded bazelisk in the meantime). If not, download it ourselves.
+            mkdir -p "$bindir"
+            (flock -x 9; up_to_date "$file" || prepare) 9>>"$lockfile"
+        fi
+        if ! check_hash "$file"; then
+            echo "sha256sum doesn't match expected value"
+            exit 1
+        fi
     fi
 
     case "$1" in
