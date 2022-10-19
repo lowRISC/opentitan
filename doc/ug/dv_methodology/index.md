@@ -64,7 +64,7 @@ The testplan is parsed into a data structure that serves the following purposes:
 *  Provide the ability to insert the testplan and coverage plan as tables into the DV document itself, so that all of the required information is in one place
 *  Annotate the nightly regression results to allow us to track our progress towards executing the testplan and coverage collection
 
-The [testplanner]({{< relref "util/dvsim/doc/testplanner.md" >}}) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
+The [testplanner]({{< relref "util/dvsim/doc/testplanner" >}}) tool provides some additional information on the Hjson testplan anatomy and some of the features and constructs supported.
 The [build_docs]({{< relref "doc/ug/documentation" >}}) tool works in conjunction with the `testplanner` tool to enable its insertion into the DV document as a table.
 
 ### DV document

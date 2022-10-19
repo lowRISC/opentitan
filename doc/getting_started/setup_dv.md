@@ -40,7 +40,7 @@ The DV documentation is not expected to be completed in full detail at this poin
 However, it is expected to list all the verification components needed and depict the planned testbench as a block diagram.
 Under the 'design verification' directory in the OpenTitan team drive, some sample testbench block diagrams are available in the `.svg` format, which can be used as a template.
 The Hjson testplan, on the other hand, is required to be completed.
-Please refer to the [testplanner tool]({{< relref "util/dvsim/doc/testplanner.md" >}}) documentation for additional details on how to write the Hjson testplan.
+Please refer to the [testplanner tool]({{< relref "util/dvsim/doc/testplanner" >}}) documentation for additional details on how to write the Hjson testplan.
 Once done, these documents are to be reviewed with the designer(s) and other project members for completeness and clarity.
 
 ## UVM RAL Model

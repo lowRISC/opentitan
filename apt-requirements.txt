@@ -50,4 +50,5 @@ srecord
 tree
 xsltproc
 zlib1g-dev
+xsltproc
 xz-utils
