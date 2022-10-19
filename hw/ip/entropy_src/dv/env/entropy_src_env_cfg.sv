@@ -36,6 +36,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // (For tracking errors during FW_OV mode)
   virtual entropy_subsys_fifo_exception_if#(1) precon_fifo_vif;
 
+  // Pointer to the FSM state tracking interface.
+  // (Coverage completion requires earlier notice of following state).
+  virtual entropy_src_fsm_cov_if fsm_tracking_vif;
+
   //
   // Variables for controlling test duration.  Depending on the test there are two options:
   // fixed duration in time or total number of seeds.
@@ -72,10 +76,13 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   uint          otp_en_es_fw_read_pct, otp_en_es_fw_over_pct;
 
   // Behavioral constrint knob: dictates how often each sequence
-  // performs a seurvey of the health test diagnostics.
+  // performs a survey of the health test diagnostics.
   // (100% corresponds to a full diagnostic chack after every HT alert,
   // If less than 100%, this full-diagnostic is skipped after some alerts)
   uint          do_check_ht_diag_pct;
+
+  // Constraint knob to limit how often the RNG vseq forces a yet-unseen FSM transition
+  uint          induce_targeted_transition_pct;
 
   /////////////////////////////////////////////////////////////////
   // Implementation-specific constants related to the DUT        //
@@ -113,6 +120,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   rand uint  which_cntr_replicate;
 
   rand uint  which_bin;
+
+  rand bit   induce_targeted_transition;
 
   /////////////////
   // Constraints //
@@ -174,6 +183,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     which_err_code == sfifo_esrng_err -> which_fifo == sfifo_esrng;
     which_err_code == sfifo_esfinal_err -> which_fifo == sfifo_esfinal;
   }
+
+  constraint induce_targeted_transition_c {induce_targeted_transition dist {
+    1                         :/ induce_targeted_transition_pct,
+    0                         :/ (100 - induce_targeted_transition_pct) };}
 
   ///////////////
   // Functions //
@@ -248,6 +261,20 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   function void post_randomize();
     dut_cfg.randomize();
+    super.post_randomize();
+  endfunction
+
+  function void pre_randomize();
+    check_knob_vals();
+    super.pre_randomize();
+  endfunction
+
+  function void check_knob_vals();
+    `DV_CHECK(spurious_inject_entropy_pct <= 100);
+    `DV_CHECK(otp_en_es_fw_read_pct <= 100);
+    `DV_CHECK(otp_en_es_fw_over_pct <= 100);
+    `DV_CHECK(do_check_ht_diag_pct <= 100);
+    `DV_CHECK(induce_targeted_transition_pct <= 100);
   endfunction
 
 endclass

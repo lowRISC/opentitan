@@ -50,7 +50,9 @@ class entropy_src_base_test extends cip_base_test #(
     cfg.soft_mtbf                 = -1.0;
     cfg.hard_mtbf                 = -1.0;
 
-    cfg.dut_cfg.bad_mubi_cfg_pct  = 0;
+    cfg.dut_cfg.bad_mubi_cfg_pct       = 0;
+    cfg.induce_targeted_transition_pct = 0;
+
   endfunction
 
 endclass : entropy_src_base_test

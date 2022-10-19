@@ -13,6 +13,7 @@ filesets:
       - lowrisc:ip:entropy_src
     files:
       - entropy_src_cov_if.sv
+      - entropy_src_fsm_cov_if.sv
       - entropy_src_cov_bind.sv
     file_type: systemVerilogSource
 

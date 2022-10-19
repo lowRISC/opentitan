@@ -68,6 +68,11 @@ class entropy_src_env extends cip_base_env #(
       `uvm_fatal(get_full_name(), "failed to get precon_fifo_vif from uvm_config_db")
     end
 
+    if (!uvm_config_db#(virtual entropy_src_fsm_cov_if)::get(this, "",
+                        "main_sm_cov_vif", cfg.fsm_tracking_vif)) begin
+      `uvm_fatal(get_full_name(), "failed to get fsm_tracking_vif from uvm_config_db")
+    end
+
     if (!uvm_config_db#(virtual pins_if#(8))::get(this, "", "otp_en_es_fw_read_vif",
         cfg.otp_en_es_fw_read_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get otp_en_es_fw_read_vif from uvm_config_db")
