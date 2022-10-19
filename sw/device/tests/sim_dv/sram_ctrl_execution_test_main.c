@@ -173,11 +173,13 @@ void do_execute_test(bool debug_func, bool ifetch_en) {
 
   CHECK_DIF_OK(dif_sram_ctrl_exec_set_enabled(&sram_ctrl, kDifToggleEnabled));
   exception_observed = false;
+  icache_invalidate();
   execute_code_in_sram();
   CHECK(exception_observed == csr_enabled_exception_expected,
         "Expected exception not observed whilst executing from SRAM!");
   CHECK_DIF_OK(dif_sram_ctrl_exec_set_enabled(&sram_ctrl, kDifToggleDisabled));
   exception_observed = false;
+  icache_invalidate();
   execute_code_in_sram();
   CHECK(exception_observed == csr_disabled_exception_expected,
         "Expected exception not observed whilst executing from SRAM!");
