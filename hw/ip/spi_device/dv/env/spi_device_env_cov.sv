@@ -60,6 +60,7 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     }
   endgroup
 
+  // TPM related
   covergroup tpm_cfg_cg with function sample(
       // CSR cfg
       tpm_cfg_mode_e tpm_mode, bit hw_reg_dis, bit tpm_reg_chk_dis, bit invalid_locality,
@@ -108,6 +109,156 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     }
   endgroup
 
+  // flash/passthrough related
+  covergroup flash_cmd_info_cg with function sample(
+      bit is_flash, bit[7:0] opcode, bit is_write, spi_flash_addr_mode_e addr_mode,
+      bit addr_swap_en, bit payload_swap_en, bit upload, bit busy, int dummy_cycles,
+      bit num_lanes);
+    cp_is_flash: coverpoint is_flash;
+    cp_opcode: coverpoint opcode {
+      bins internal_process_ops[]   = {`ALL_INTERNAL_PROCESS_CMDS};
+    }
+    cp_is_write:        coverpoint is_write;
+    cp_addr_mode:       coverpoint addr_mode;
+    cp_addr_swap_en:    coverpoint addr_swap_en;
+    cp_payload_swap_en: coverpoint payload_swap_en;
+    cp_upload:          coverpoint upload;
+    cp_busy:            coverpoint busy;
+    cp_dummy_cycles:    coverpoint dummy_cycles {
+      bins values[]   = {[0:8]};
+    }
+    cp_num_lanes: coverpoint num_lanes {
+      bins valids[]   = {0, 1, 2, 4};
+      illegal_bins others = default;
+    }
+
+    cr_modeXdirXaddrXswap: cross cp_is_flash, cp_is_write, cp_addr_mode, cp_addr_swap_en,
+                                 cp_payload_swap_en;
+    cr_modeXdirXdummyXnum_lanes: cross cp_is_flash, cp_is_write, cp_dummy_cycles, cp_num_lanes;
+  endgroup
+
+  covergroup passthrough_addr_swap_cg with function sample(
+      bit addr_swap_en, bit[TL_DW-1:0] data, bit[TL_DW-1:0] mask);
+    cp_addr_swap_en: coverpoint addr_swap_en;
+    cp_data: coverpoint data {
+      bins values[8] = {[0:$]};
+    }
+    cp_mask: coverpoint mask{
+      bins values[8] = {[0:$]};
+    }
+
+    cr_all: cross cp_addr_swap_en, cp_data, cp_mask;
+  endgroup
+
+  covergroup passthrough_payload_swap_cg with function sample(
+      bit payload_swap_en, bit[TL_DW-1:0] data, bit[TL_DW-1:0] mask);
+    cp_payload_swap_en: coverpoint payload_swap_en;
+    cp_data: coverpoint data {
+      bins values[8]   = {[0:$]};
+    }
+    cp_mask: coverpoint mask{
+      bins values[8]   = {[0:$]};
+    }
+
+    cr_all: cross cp_payload_swap_en, cp_data, cp_mask;
+  endgroup
+
+  covergroup passthrough_cmd_filter_cg with function sample(
+      bit [7:0] opcode, bit filtered);
+    cp_opcode:   coverpoint opcode;
+    cp_filtered: coverpoint filtered;
+
+    cr_all: cross cp_opcode, cp_filtered;
+  endgroup
+
+  covergroup flash_status_cg with function sample(
+      bit [23:0] status, bit is_host_read,
+      bit sw_read_while_csb_active);
+    cp_busy_bit:                 coverpoint status[0];
+    cp_wel_bit:                  coverpoint status[1];
+    cp_other_status:             coverpoint status[23:2];
+    cp_is_host_read:             coverpoint is_host_read;
+    cp_sw_read_while_csb_active: coverpoint sw_read_while_csb_active;
+
+    cr_all_except_csb: cross cp_busy_bit, cp_wel_bit, cp_other_status, cp_is_host_read;
+    cr_busyXwelXcsb: cross cp_busy_bit, cp_wel_bit, cp_sw_read_while_csb_active;
+  endgroup
+
+  covergroup flash_upload_payload_size_cg with function sample(
+      bit is_write, int payload_size);
+    cp_is_write: coverpoint is_write;
+    cp_payload_size: coverpoint payload_size {
+      bins frequent_use_values[] = {[0:4], 256};
+      bins excess_fifo           = {[257:$]};
+    }
+
+    cr_all: cross cp_is_write, cp_payload_size;
+  endgroup
+
+  // sample this when receiving a command while busy bit is set
+  // the command will be blocked regardless of filter enabled or not
+  covergroup flash_command_while_busy_set_cg with function sample(bit filtered);
+    cp_filtered: coverpoint filtered;
+  endgroup
+
+  covergroup flash_read_commands_cg with function sample(
+      bit [7:0] opcode, int dummy_cycles, bit filtered,
+      int payload_size, int intercept_en);
+    cp_opcode: coverpoint opcode {
+      bins internal_process_ops[]   = {`ALL_INTERNAL_PROCESS_CMDS};
+    }
+    cp_filtered: coverpoint filtered;
+    cp_payload_size: coverpoint payload_size {
+      bins frequent_use_values[] = {[0:4], 256};
+      bins excess_fifo[]         = {[257:$]};
+    }
+    cr_all: cross cp_opcode, cp_filtered, cp_payload_size;
+  endgroup
+
+  covergroup passthrough_mailbox_cg with function sample(
+      bit [7:0] opcode, read_addr_size_type_e addr_type, bit filtered);
+    cp_opcode: coverpoint opcode {
+      bins read_ops[]   = {`ALL_READ_CMDS};
+    }
+    cp_addr_type: coverpoint addr_type;
+    cp_filtered: coverpoint filtered;
+    cr_all: cross cp_opcode, cp_addr_type, cp_filtered;
+  endgroup
+
+  covergroup flash_mailbox_cg with function sample(bit [7:0] opcode);
+    cp_opcode: coverpoint opcode {
+      bins read_ops[]   = {`ALL_READ_CMDS};
+    }
+  endgroup
+
+  covergroup spi_device_addr_4b_enter_exit_command_cg with function sample(
+      bit addr_4b_en, bit prev_addr_4b_en);
+    cp_addr_4b_en: coverpoint addr_4b_en;
+    cp_prev_addr_4b_en: coverpoint prev_addr_4b_en;
+    cr_all: cross cp_addr_4b_en, cp_prev_addr_4b_en;
+  endgroup
+
+  covergroup sw_update_addr4b_cg with function sample(bit update = 1);
+    cp_update: coverpoint update {
+      bins done = {1};
+    }
+  endgroup
+
+  covergroup spi_device_write_enable_disable_cg with function sample(
+      int wr_en, bit prev_wr_en);
+    cp_wr_en: coverpoint wr_en;
+    cp_prev_wr_en: coverpoint prev_wr_en;
+    cr_all: cross cp_wr_en, cp_prev_wr_en;
+  endgroup
+
+  covergroup spi_device_buffer_boundary_cg with function sample(
+      bit [7:0] opcode, bit flip_position);
+    cp_opcode: coverpoint opcode {
+      bins read_ops[]   = {`ALL_READ_CMDS};
+    }
+    cp_flip_position: coverpoint flip_position;
+  endgroup
+
   covergroup tpm_interleave_with_flash_item_cg with function sample(
       bit is_tpm_item, bit is_flash_item);
     cp_interleave: coverpoint {is_tpm_item, is_flash_item} {
@@ -126,9 +277,24 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     bit_order_clk_cfg_cg = new();
     fw_tx_fifo_size_cg = new();
     fw_rx_fifo_size_cg = new();
+    // tpm
     tpm_cfg_cg = new();
     tpm_transfer_size_cg = new();
     tpm_sts_cg = new();
+    // flash/passthrough
+    flash_cmd_info_cg = new();
+    passthrough_addr_swap_cg = new();
+    passthrough_payload_swap_cg = new();
+    passthrough_cmd_filter_cg = new();
+    flash_status_cg = new();
+    flash_upload_payload_size_cg = new();
+    flash_command_while_busy_set_cg = new();
+    flash_read_commands_cg = new();
+    passthrough_mailbox_cg = new();
+    flash_mailbox_cg = new();
+    spi_device_addr_4b_enter_exit_command_cg = new();
+    sw_update_addr4b_cg = new();
+    spi_device_write_enable_disable_cg = new();
     tpm_interleave_with_flash_item_cg = new();
   endfunction : new
 

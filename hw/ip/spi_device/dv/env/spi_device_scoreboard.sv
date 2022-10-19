@@ -154,10 +154,20 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                 check_read_cmd_data_for_non_read_buffer(item, downstream_item);
               end
               InternalProcessCfgCmd: begin
+                // wel is the first bit of `flash_status.status`
+                bit prev_wel = `gmv(ral.flash_status.status) & 1'b1;
                 if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_en4b, item.opcode)) begin
+                  if (cfg.en_cov) begin
+                    cov.spi_device_addr_4b_enter_exit_command_cg.sample(
+                        .addr_4b_en(1), .prev_addr_4b_en(`gmv(ral.cfg.addr_4b_en)));
+                  end
                   void'(ral.cfg.addr_4b_en.predict(.value(1), .kind(UVM_PREDICT_WRITE)));
                   `uvm_info(`gfn, "Enable 4b addr due to cmd EN4B", UVM_MEDIUM)
                 end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_ex4b, item.opcode)) begin
+                  if (cfg.en_cov) begin
+                    cov.spi_device_addr_4b_enter_exit_command_cg.sample(
+                        .addr_4b_en(0), .prev_addr_4b_en(`gmv(ral.cfg.addr_4b_en)));
+                  end
                   void'(ral.cfg.addr_4b_en.predict(.value(0), .kind(UVM_PREDICT_WRITE)));
                   `uvm_info(`gfn, "Disable 4b addr due to cmd EX4B", UVM_MEDIUM)
                 end else if (`GET_OPCODE_VALID_AND_MATCH(cmd_info_wren, item.opcode)) begin
@@ -168,6 +178,9 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                   wel_val = 0;
                 end else begin
                   `uvm_fatal(`gfn, $sformatf("shouldn't enter here, opcode 0x%0x", item.opcode))
+                end
+                if (cfg.en_cov && update_wel) begin
+                  cov.spi_device_write_enable_disable_cg.sample(wel_val, prev_wel);
                 end
               end
               UploadCmd: begin
@@ -182,10 +195,46 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             end
           end // if (!cfg.is_read_buffer_cmd(item))
 
+          if (cfg.en_cov) begin : handle_fcov
+            bit is_filter = !is_opcode_passthrough(item.opcode);
+            if (`gmv(ral.flash_status.busy)) begin
+              cov.flash_command_while_busy_set_cg.sample(is_filter);
+            end
+            if (cfg.spi_host_agent_cfg.is_opcode_supported(item.opcode)) begin
+              spi_flash_cmd_info info = cfg.spi_host_agent_cfg.cmd_infos[item.opcode];
+              spi_device_reg_cmd_info reg_cmd_info = cfg.get_cmd_info_reg_by_opcode(item.opcode);
+              bit is_flash = `gmv(ral.control.mode) == FlashMode;
+              bit addr_swap_en, payload_swap_en, upload, busy;
+              if (reg_cmd_info != null) begin
+                addr_swap_en = `gmv(reg_cmd_info.addr_swap_en);
+                payload_swap_en = `gmv(reg_cmd_info.payload_swap_en);
+                upload = `gmv(reg_cmd_info.upload);
+                busy = `gmv(reg_cmd_info.busy);
+              end
+
+              cov.flash_cmd_info_cg.sample(
+                  is_flash, item.opcode, item.write_command, info.addr_mode, addr_swap_en,
+                  payload_swap_en, upload, busy, info.dummy_cycles, info.num_lanes);
+
+              if (!is_flash) begin // passthrough
+                bit [TL_DW-1:0] addr_mask = `gmv(ral.addr_swap_mask);
+                bit [TL_DW-1:0] addr_data = `gmv(ral.addr_swap_data);
+                bit [TL_DW-1:0] payload_mask = `gmv(ral.payload_swap_mask);
+                bit [TL_DW-1:0] payload_data = `gmv(ral.payload_swap_data);
+
+                cov.passthrough_addr_swap_cg.sample(addr_swap_en, addr_data, addr_mask);
+                cov.passthrough_payload_swap_cg.sample(payload_swap_en, payload_data, payload_mask);
+              end
+              cov.passthrough_cmd_filter_cg.sample(item.opcode, is_filter);
+              cov.flash_read_commands_cg.sample(item.opcode, info.dummy_cycles, is_filter,
+                                                item.payload_q.size, is_intercepted);
+            end
+            if (`gmv(ral.tpm_cfg.en)) begin
+              cov.tpm_interleave_with_flash_item_cg.sample(.is_tpm_item(0), .is_flash_item(1));
+            end
+          end : handle_fcov
+
           latch_flash_status(set_busy, update_wel, wel_val);
-          if (cfg.en_cov && `gmv(ral.tpm_cfg.en)) begin
-            cov.tpm_interleave_with_flash_item_cg.sample(.is_tpm_item(0), .is_flash_item(1));
-          end
         end
         SpiModeTpm: begin
           bit [TPM_ADDR_WIDTH-1:0] addr = convert_addr_from_byte_queue(item.address_q);
@@ -529,6 +578,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           $sformatf("status mismatch, offset %0d, act: 0x%0h, exp: 0x%0h",
               offset, item.payload_q[i], status[offset * 8 +: 8]))
     end
+
+    if (cfg.en_cov) begin
+      cov.flash_status_cg.sample(.status(status), .is_host_read(1), .sw_read_while_csb_active(0));
+    end
   endfunction
 
   virtual function void check_internal_processed_read_jedec(spi_item item);
@@ -580,10 +633,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
   // this doesn't handle read cmd falling in read buffer
   virtual function void check_read_cmd_data_for_non_read_buffer(spi_item up_item,
                                                                 spi_item dn_item);
-    bit [31:0] start_addr;
-    // TODO, sample this for coverage
-    read_addr_size_type_e read_addr_size_type;
+    bit [31:0] start_addr, cur_addr;
     bit is_passthru = `gmv(ral.control.mode) == PassthroughMode;
+    // these vairables are for coverage collection
+    read_addr_size_type_e read_addr_size_type;
+    bit start_at_mailbox, end_at_mailbox, been_mailbox;
 
     foreach (up_item.address_q[i]) begin
       if (i > 0) start_addr = start_addr << 8;
@@ -591,13 +645,16 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
     start_addr = convert_addr_from_byte_queue(up_item.address_q);
 
+    if (cfg.is_in_mailbox_region(start_addr)) start_at_mailbox = 1;
+
     if (dn_item != null) `DV_CHECK_EQ(up_item.payload_q.size, dn_item.payload_q.size)
     foreach (up_item.payload_q[i]) begin
-      bit [31:0] cur_addr = start_addr + i;
+      cur_addr = start_addr + i;
 
       if (cfg.is_in_mailbox_region(cur_addr)) begin
         bit [31:0] offset = cur_addr % MAILBOX_BUFFER_SIZE;
         compare_mem_byte(MAILBOX_START_ADDR, offset, up_item.payload_q[i], i, "Mailbox");
+        been_mailbox = 1;
       end else begin // out of mbx region
         string str;
 
@@ -616,7 +673,24 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       end
     end
 
-    // TODO, sample read_addr_size_type for coverage
+    if (cfg.is_in_mailbox_region(cur_addr)) end_at_mailbox = 1;
+    if (cfg.en_cov) begin
+      if (is_passthru) begin
+        bit filtered = (dn_item == null);
+        case ({start_at_mailbox, been_mailbox, end_at_mailbox})
+          3'b111: read_addr_size_type = ReadAddrWithinMailbox;
+          3'b011: read_addr_size_type = ReadAddrCrossIntoMailbox;
+          3'b110: read_addr_size_type = ReadAddrCrossOutOfMailbox;
+          3'b010: read_addr_size_type = ReadAddrCrossAllMailbox;
+          3'b000: read_addr_size_type = ReadAddrOutsideMailbox;
+          default: `uvm_fatal(`gfn, $sformatf("Unexpected values 0b%b",
+                                            {start_at_mailbox, been_mailbox, end_at_mailbox}))
+        endcase
+        cov.passthrough_mailbox_cg.sample(up_item.opcode, read_addr_size_type, filtered);
+      end else begin // flash mode
+        cov.flash_mailbox_cg.sample(up_item.opcode);
+      end
+    end
   endfunction
 
   virtual function void process_upload_cmd(spi_item item);
@@ -658,6 +732,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                                                          .kind(UVM_PREDICT_READ)));
     end else begin
       void'(ral.upload_status2.payload_start_idx.predict(.value(0), .kind(UVM_PREDICT_READ)));
+    end
+
+    if (cfg.en_cov) begin
+      cov.flash_upload_payload_size_cg.sample(item.write_command, item.payload_q.size);
     end
   endfunction
 
@@ -796,7 +874,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
                              payload_idx, "Read buffer");
             read_buffer_addr = start_addr + payload_idx; // it's kept until reset
             payload_idx++; // clear to 0 when transaction is done
-            predict_read_buffer_intr(read_buffer_addr + 1);
+            predict_read_buffer_intr(read_buffer_addr + 1, item.opcode);
             `DV_CHECK_EQ(item.payload_q.size, payload_idx)
           end
           if (item.mon_item_complete) break;
@@ -810,7 +888,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
   endtask
 
-  virtual function void predict_read_buffer_intr(int addr);
+  virtual function void predict_read_buffer_intr(int addr, bit [7:0] opcode);
     int threshold = `gmv(ral.read_threshold);
     int offset = addr % READ_BUFFER_HALF_SIZE;
 
@@ -826,6 +904,11 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       update_pending_intr_w_delay(ReadbufFlip);
       `uvm_info(`gfn, $sformatf("read buffer flip is triggered, addr: 0x%0x", addr),
                 UVM_MEDIUM)
+      if (cfg.en_cov) begin
+        // flip at full buffer size or half
+        bit flip_position = addr % READ_BUFFER_SIZE == 0;
+        cov.spi_device_buffer_boundary_cg.sample(opcode, flip_position);
+      end
     end
   endfunction
 
@@ -909,6 +992,12 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           tpm_hw_reg_pre_val_aa[csr.get_name] = `gmv(csr);
         end
       end
+      if (cfg.en_cov && csr.get_name == "cfg") begin
+        bit pre_addr4b = `gmv(ral.cfg.addr_4b_en);
+        bit cur_addr4b = get_field_val(ral.cfg.addr_4b_en, item.a_data);
+        // cover that the addr4b is updated by SW
+        if (pre_addr4b != cur_addr4b) cov.sw_update_addr4b_cg.sample();
+      end
       void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
     end
 
@@ -936,6 +1025,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
           `DV_CHECK(item.d_data inside {exp_data_q},
                     $sformatf("act (0x%0x) != exp %p", item.d_data, exp_data_q))
           flash_status_tl_pre_val_q.delete();
+          if (cfg.en_cov) begin
+            cov.flash_status_cg.sample(.status(item.d_data), .is_host_read(0),
+                .sw_read_while_csb_active(!cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]));
+          end
         end
         // check is done above and predict is done after spi item completes. can return now
         return;
