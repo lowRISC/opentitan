@@ -61,6 +61,7 @@ cc_library(
     deps = [
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )

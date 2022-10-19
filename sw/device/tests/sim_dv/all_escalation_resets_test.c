@@ -49,6 +49,7 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "alert_handler_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -84,19 +85,17 @@ enum {
 };
 
 /**
- * Program the alert handler to escalate on alerts upto phase 2 (i.e. reset).
+ * Program the alert handler to escalate on alerts through NMI and then reset.
  * Also program the aon timer with:
  * - bark after escalation starts, so the interrupt is suppressed by escalation,
  * - bite after escalation reset, so we should not get timer reset.
  */
 enum {
-  kWdogBarkMicros = 2000,          // 2 ms
-  kWdogBiteMicros = 6000,          // 6 ms
-  kEscalationStartMicros = 1000,   // 1 ms
-  kEscalationPhase0Micros = 1000,  // 1 ms
-  kEscalationPhase1Micros = 1000,  // 1 ms
-  kEscalationPhase2Micros = 1000,  // 1 ms
-  kEscalationPhase3Micros = 1000,  // 1 ms
+  kWdogBarkMicros = 200,          // 200 us
+  kWdogBiteMicros = 600,          // 600 us
+  kEscalationStartMicros = 100,   // 100 us
+  kEscalationPhase0Micros = 100,  // 100 us
+  kEscalationPhase1Micros = 100,  // 100 us
   kMaxResets = 2,
   kMaxInterrupts = 30,
 };
@@ -546,23 +545,18 @@ static void alert_handler_config(void) {
   dif_alert_handler_escalation_phase_t esc_phases[] = {
       {.phase = kDifAlertHandlerClassStatePhase0,
        .signal = 0,
-       .duration_cycles = udiv64_slow(
-           kEscalationPhase0Micros * kClockFreqPeripheralHz, 1000000,
-           /*rem_out=*/NULL)},
+       .duration_cycles =
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros) *
+           alert_handler_testutils_cycle_rescaling_factor()},
       {.phase = kDifAlertHandlerClassStatePhase1,
-       .signal = 1,
-       .duration_cycles = udiv64_slow(
-           kEscalationPhase1Micros * kClockFreqPeripheralHz, 1000000,
-           /*rem_out=*/NULL)},
-      {.phase = kDifAlertHandlerClassStatePhase2,
        .signal = 3,
-       .duration_cycles = udiv64_slow(
-           kEscalationPhase2Micros * kClockFreqPeripheralHz, 1000000,
-           /*rem_out=*/NULL)}};
+       .duration_cycles =
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase1Micros) *
+           alert_handler_testutils_cycle_rescaling_factor()}};
 
   uint32_t deadline_cycles =
-      udiv64_slow(kEscalationStartMicros * kClockFreqPeripheralHz, 1000000,
-                  /*rem_out=*/NULL);
+      alert_handler_testutils_get_cycles_from_us(kEscalationStartMicros) *
+      alert_handler_testutils_cycle_rescaling_factor();
   LOG_INFO("Configuring class A with %d cycles and %d occurrences",
            deadline_cycles, UINT16_MAX);
   dif_alert_handler_class_config_t class_config[] = {{
@@ -856,6 +850,33 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   wait_for_interrupt();
 }
 
+void check_alert_dump() {
+  dif_rstmgr_alert_info_dump_segment_t dump[DIF_RSTMGR_ALERT_INFO_MAX_SIZE];
+  size_t seg_size;
+  alert_info_t actual_info;
+
+  CHECK_DIF_OK(dif_rstmgr_alert_info_dump_read(
+      &rstmgr, dump, DIF_RSTMGR_ALERT_INFO_MAX_SIZE, &seg_size));
+
+  LOG_INFO("DUMP SIZE %d", seg_size);
+  for (int i = 0; i < seg_size; i++) {
+    LOG_INFO("DUMP:%d: 0x%x", i, dump[i]);
+  }
+
+  actual_info = alert_info_dump_to_struct(dump, seg_size);
+  LOG_INFO("The alert info crash dump:");
+  alert_info_to_string(&actual_info);
+  // Check alert cause.
+  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+    if (i == kExpectedAlertNumber) {
+      CHECK(actual_info.alert_cause[i], "Expected alert cause %d to be set", i);
+    } else {
+      CHECK(!actual_info.alert_cause[i], "Expected alert cause %d to be clear",
+            i);
+    }
+  }
+}
+
 bool test_main(void) {
   // Enable global and external IRQ at Ibex.
   irq_global_ctrl(true);
@@ -905,6 +926,8 @@ bool test_main(void) {
 
   if (rst_info == kDifRstmgrResetInfoPor) {
     LOG_INFO("Booting for the first time, starting test");
+    // Enable rstmgr alert info capture.
+    CHECK_DIF_OK(dif_rstmgr_alert_info_set_enabled(&rstmgr, kDifToggleEnabled));
     execute_test(&aon_timer);
   } else if (rst_info == kDifRstmgrResetInfoEscalation) {
     restore_fault_checker(&fault_checker);
@@ -912,10 +935,11 @@ bool test_main(void) {
     LOG_INFO("Booting for the second time due to escalation reset");
 
     int interrupt_count = flash_ctrl_testutils_counter_get(kCounterInterrupt);
-    CHECK(interrupt_count > 0, "Expected at least one regular interrupt");
-
     int nmi_interrupt_count = flash_ctrl_testutils_counter_get(kCounterNmi);
-    CHECK(nmi_interrupt_count > 0, "Expected at least one nmi");
+    if (kExpectedAlertNumber != kTopEarlgreyAlertIdFlashCtrlFatalStdErr) {
+      CHECK(interrupt_count > 0, "Expected at least one regular interrupt");
+      CHECK(nmi_interrupt_count > 0, "Expected at least one nmi");
+    }
 
     // Check the alert handler cause is cleared.
     bool is_cause = true;
