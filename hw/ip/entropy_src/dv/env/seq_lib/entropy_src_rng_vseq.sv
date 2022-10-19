@@ -44,6 +44,29 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // Signal to start and stop the RNG when it becomes halted in boot/bypass modes
   int do_reenable = 0;
 
+  bit interrupt_handler_active = 0;
+
+  // List of states to specfically hit for main_sm transition coverage
+  localparam int NumRareMainFsmStates = 4;
+
+  entropy_src_main_sm_pkg::state_e [NumRareMainFsmStates - 1:0] rare_fsm_states = {
+     entropy_src_main_sm_pkg::BootPostHTChk,
+     entropy_src_main_sm_pkg::StartupFail1,
+     entropy_src_main_sm_pkg::Sha3Quiesce,
+     entropy_src_main_sm_pkg::ContHTStart
+  };
+
+  // A checklist vector with each bit corresponding to each of the rare_fsm_states above.
+  // To force all rare transitions to Idle simply initialize the rare_state_to_idle_checklist to
+  // all zeros.  For transitions which are frequently found in regression the forced transition
+  // can be skipped by initializing the corresponding bit to 1.
+  //
+  // If needed, this scheme can in principle be expanded to other rare transitions (for instance
+  // to AlertState) by creating another checklist variable and updating the task
+  // targeted_transition_thread()
+
+  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_checklist = 4'b0000;
+
   constraint dly_to_access_intr_c {
     dly_to_access_intr dist {
       0                   :/ 1,
@@ -71,9 +94,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   constraint dly_to_reenable_dut_c {
     dly_to_reenable_dut dist {
-      [1      :100]       :/ 3,
-      [101    :1000]      :/ 2,
-      [1001   :10_000]    :/ 1
+      [1      :10]       :/ 3,
+      [101    :100]      :/ 2,
+      [1001   :1000]     :/ 1
     };
   }
 
@@ -249,9 +272,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     // avoid zero delay loop during reset
     wait(!cfg.under_reset);
-    // read interrupt
+
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_intr)
     cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
+
+    interrupt_handler_active = 1;
     csr_rd(.ptr(ral.intr_state), .value(intr_status));
 
     if (intr_status != 0) begin
@@ -277,6 +302,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       `uvm_info(`gfn, $sformatf("Found %d entropy_data bundles", bundles_found), UVM_HIGH)
       do_reenable = 1;
     end
+
+    // There is no risk of deactivating the DUT now.
+    interrupt_handler_active = 0;
 
     // If a health test error is detected, break the loop and reconfigure
     if (intr_status[HealthTestFailed]) begin
@@ -471,11 +499,97 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // Assumes that continue_sim has already
     // been set to 1
     if (delta > 0) begin
-      #(delta);
+      `DV_SPINWAIT_EXIT(#(delta);, wait(~continue_sim))
     end
     do_background_procs = 0;
     continue_sim = 0;
     `uvm_info(`gfn, "Exiting main timer", UVM_LOW)
+  endtask
+
+  // Helper task to targeted_transition_thread.
+  //
+  // When trying to precisely time a register write to trigger a particular FSM transition, it is
+  // necessary to temporarily remove any tl_agent delays.  This function removes delays on the
+  // a_valid signal before writing the desired register.  Once the write is complete the delays
+  // are restored.
+  //
+  // Note: It is important to use a frontdoor csr_wr, as opposed to a csr_poke, because such though
+  // backdoor writes will realize the desired transition they will not be captured by the tl_monitor
+  // and will confuse the scoreboard.
+  task immed_csr_wr(input uvm_object ptr, input uvm_reg_data_t value);
+    bit use_seq_item_a_valid_delay_orig;
+    int unsigned a_valid_delay_min_orig;
+    int unsigned a_valid_delay_max_orig;
+
+    // Back up the original tl_agent config
+    use_seq_item_a_valid_delay_orig = cfg.m_tl_agent_cfg.use_seq_item_a_valid_delay;
+    a_valid_delay_min_orig =  cfg.m_tl_agent_cfg.a_valid_delay_min;
+    a_valid_delay_max_orig =  cfg.m_tl_agent_cfg.a_valid_delay_max;
+
+    // Configure the tl_agent to issue the command immediately
+    cfg.m_tl_agent_cfg.use_seq_item_a_valid_delay = 0;
+    cfg.m_tl_agent_cfg.a_valid_delay_min = 0;
+    cfg.m_tl_agent_cfg.a_valid_delay_max = 0;
+
+    csr_wr(.ptr(ptr), .value(value));
+
+    // Restore the CSR agent configurations
+    cfg.m_tl_agent_cfg.use_seq_item_a_valid_delay = use_seq_item_a_valid_delay_orig;
+    cfg.m_tl_agent_cfg.a_valid_delay_min = a_valid_delay_min_orig;
+    cfg.m_tl_agent_cfg.a_valid_delay_max = a_valid_delay_max_orig;
+
+  endtask
+
+  // A thread to poll the state of the DUT and inject CSR events to stimulate uncovered transitions
+  // One example BootPostHTCheck -> Idle
+  task targeted_transition_thread();
+    string msg;
+    while(do_background_procs && continue_sim) begin
+      bit [TL_DW - 1:0] val;
+
+      if (&rare_state_to_idle_checklist) begin
+        break;
+      end
+
+      // In order to not interrupt the interrupt handler (which would cause unpredictable observe
+      // FIFO underflow alerts in the DUT and crash the sim) we only perform targeted shutdown when
+      // the interrupt handler is not running.
+      //
+      // Wait until the interrupt handler is done or one clock cycle, whichever is longer.
+      // In either case shutdown if a thread shutdown is requested
+      fork
+        if(interrupt_handler_active) begin
+          `DV_WAIT(!interrupt_handler_active || !do_background_procs);
+        end
+        cfg.clk_rst_vif.wait_clks(1);
+      join
+
+      if (!do_background_procs || !continue_sim) break;
+
+      for (int i=0; i < NumRareMainFsmStates; i++) begin
+        if (cfg.fsm_tracking_vif.next_state == rare_fsm_states[i]) begin
+
+          if (!rare_state_to_idle_checklist[i]) begin
+            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(induce_targeted_transition, cfg);
+            if (cfg.induce_targeted_transition) begin
+              msg = $sformatf("Forcing disable from state %s", rare_fsm_states[i].name());
+              `uvm_info(`gfn, msg, UVM_HIGH)
+              // First immediately disable the device, _then_ call disable_dut()
+              // to clean things up properly.
+              immed_csr_wr(.ptr(ral.module_enable), .value({28'h0, MuBi4False}));
+              disable_dut();
+              do_background_procs = 0;
+              rare_state_to_idle_checklist[i] = 1'b1;
+              break;
+            end
+          end
+          // If other types of transitions need to be stimulated they can be executed here.
+        end
+      end
+    end
+
+    `uvm_info(`gfn, $sformatf("rare enable mask: %01x",  rare_state_to_idle_checklist), UVM_HIGH)
+
   endtask
 
   // Keep an eye on the number of SEEDS received on the
@@ -670,6 +784,11 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
           if (!do_not_disturb) begin
             forced_alert_thread();
             reconfig_timer_thread();
+          end
+          // Start the targetted transition thread, unless it is clear from the cfg that it will
+          // never actually induce any transitions.
+          if (cfg.induce_targeted_transition_pct != 0) begin
+            targeted_transition_thread();
           end
         join
 

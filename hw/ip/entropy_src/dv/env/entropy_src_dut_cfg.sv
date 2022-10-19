@@ -381,4 +381,28 @@ class entropy_src_dut_cfg extends uvm_object;
     end
   endfunction
 
+  function void pre_randomize();
+    check_knob_vals();
+    super.pre_randomize();
+  endfunction
+
+  function void check_knob_vals();
+    `DV_CHECK(en_intr_pct <= 100);
+    `DV_CHECK(module_enable_pct <= 100);
+    `DV_CHECK(preconfig_disable_pct <= 100);
+    `DV_CHECK(me_regwen_pct <= 100);
+    `DV_CHECK(sw_regupd_pct <= 100);
+    `DV_CHECK(fips_enable_pct <= 100);
+    `DV_CHECK(entropy_data_reg_enable_pct <= 100);
+    `DV_CHECK(ht_threshold_scope_pct <= 100);
+    `DV_CHECK(rng_bit_enable_pct <= 100);
+    `DV_CHECK(route_software_pct <= 100);
+    `DV_CHECK(type_bypass_pct <= 100);
+    `DV_CHECK(fw_read_pct <= 100);
+    `DV_CHECK(fw_over_pct <= 100);
+    `DV_CHECK(fw_ov_insert_start_pct <= 100);
+    `DV_CHECK(default_ht_thresholds_pct <= 100);
+    `DV_CHECK(bad_mubi_cfg_pct <= 100);
+  endfunction
+
 endclass

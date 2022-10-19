@@ -17,6 +17,7 @@ package entropy_src_env_pkg;
   import entropy_src_pkg::*;
   import prim_mubi_pkg::*;
   import entropy_subsys_fifo_exception_pkg::*;
+  import entropy_src_main_sm_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
