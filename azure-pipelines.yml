@@ -280,6 +280,9 @@ jobs:
       cp $(ci/scripts/target-location.sh //hw:verilator) \
         "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
     displayName: Copy //hw:verilator to $BIN_DIR
+  # TODO: Debugging: remove this job
+  - publish: /tmp/verilator_exec_log.json
+    artifact: Verilator Bazel Execution Log
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
@@ -595,11 +598,27 @@ jobs:
       Dockerfile: ./site/redirector/Dockerfile
       buildContext: ./site/redirector
 
+- job: debug_verilator_caching
+  displayName: "DEBUG: test verilator build in separate job"
+  pool: ci-public
+  continueOnError: True
+  timeoutInMinutes: 60
+  dependsOn:
+    - checkout
+  steps:
+    - template: ci/checkout-template.yml
+    - template: ci/install-package-dependencies.yml
+    - bash: |
+        ci/bazelisk.sh build //hw:verilator --execution_log_json_file=/tmp/verilator_exec_log_release.json
+    - publish: /tmp/verilator_exec_log_release.json
+      artifact: release_exec_log
+      displayName: "Upload Bazel execution log"
+
 - job: bazel_build_release_package
   displayName: "Bazel build release package"
   pool: ci-public
   continueOnError: True
-  timeoutInMinutes: 180
+  timeoutInMinutes: 240
   # TODO: uncomment the condition and dependencies before merging
   # condition: and(eq(variables['Build.SourceBranchName'], 'master'), ne(variables.bitstreamStrategy, 'cached'))
   # dependsOn:
@@ -612,6 +631,5 @@ jobs:
   - template: ci/install-package-dependencies.yml
   - bash: |
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/bazelisk.sh build //release:earlgrey
       # Need to pass verilator_options to match the invocation used in ci/scripts/run-verilator-tests.sh
-      # ci/bazelisk.sh build //release:earlgrey --//hw:verilator_options=--threads,1
+      ci/bazelisk.sh build //release:earlgrey --//hw:verilator_options=--threads,1
