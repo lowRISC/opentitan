@@ -796,3 +796,18 @@ test_suite(
         slot,
     ) for t in BOOT_POLICY_BAD_MANIFEST_CASES for slot in SLOTS],
 )
+
+opentitan_functest(
+    name = "shutdown_watchdog",
+    srcs = ["hang_test.c"],
+    cw310 = cw310_params(
+        exit_success = "Returning after 5 seconds",
+    ),
+    local_defines = [
+        "HANG_SECS=5",
+    ],
+    targets = ["cw310_rom"],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
