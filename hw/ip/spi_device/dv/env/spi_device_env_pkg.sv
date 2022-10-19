@@ -155,8 +155,14 @@ package spi_device_env_pkg;
   parameter bit[7:0] EN4B                        = 8'hB7;
   parameter bit[7:0] EX4B                        = 8'hE9;
 
-  parameter bit[7:0] READ_CMD_LIST[] = {READ_NORMAL, READ_FAST, READ_DUAL,
-                                        READ_QUAD, READ_DUALIO, READ_QUADIO};
+  `define ALL_READ_CMDS \
+      READ_NORMAL, READ_FAST, READ_DUAL, READ_QUAD, READ_DUALIO, READ_QUADIO
+  `define ALL_INTERNAL_PROCESS_CMDS \
+      READ_JEDEC, READ_SFDP, READ_STATUS_1, READ_STATUS_2, READ_STATUS_3, `ALL_READ_CMDS
+  parameter bit[7:0] READ_CMD_LIST[] = {`ALL_READ_CMDS};
+  // exclude WREN, WRDI, EN4B, EX4B
+  parameter bit[7:0] INTERNAL_PROCESS_CMD_LIST[] = {`ALL_INTERNAL_PROCESS_CMDS};
+
   string msg_id = "spi_device_env_pkg";
 
   // functions
