@@ -32,7 +32,7 @@ aliases:
 
   1. "we", "us" or "our" refers to lowRISC Community Interest Company, company
      registration number 09272283, with VAT registration number 327 0252 32 and
-     whose registered address is at 4a Newmarket Road, Cambridge, CB5 8DT, UK.
+     whose registered address is at 7 Hills Road, Cambridge, CB2 1GE, UK.
 
 1. You should read these terms carefully before using this website. We do not
    permit you to access this website or use any content if you do not comply

@@ -161,5 +161,5 @@ or telephone: 0303 123 1113
 
 We are lowRISC Community Interest Company is a not-for-profit, private company
 limited by guarantee, registered in England and Wales with Company number
-09272283. Our registered office address is 4a Newmarket Road, Cambridge, CB5
-8DT, UK.
+09272283. Our registered office address is 7 Hills Road, Cambridge, CB2 1GE,
+UK.
