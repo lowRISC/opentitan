@@ -588,10 +588,6 @@ interface chip_if;
                                             == pwrmgr_pkg::FastPwrStateLowPower;
   assign pwrmgr_low_power_if.deep_powerdown = ~`PWRMGR_HIER.pwr_ast_i.main_pok;
 
-  // Use this until we decide what to do with m_tl_agent_rv_dm_debug_mem_reg_block
-  // TODO reveiw m_tl_agent_rv_dm_debug_mem_reg_block.
-  tl_if dmi_tbd_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
-
   // Stub CPU envorinment.
   //
   // The initial value is sought from a plusarg. It can however, be set by the sequence on the fly
@@ -657,10 +653,6 @@ interface chip_if;
         null, "*.env.m_tl_agent_chip_reg_block*", "vif", cpu_d_tl_if);
 
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_agent*", "vif", spi_host_if);
-
-    uvm_config_db#(virtual clk_rst_if)::set(
-        null, "*.env", "clk_rst_vif_rv_dm_debug_mem_reg_block", cpu_clk_rst_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_rv_dm*", "vif", dmi_tbd_if);
 
     // foreach (alert_if[i]) begin
     //   uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.m_alert_agent_%0s",

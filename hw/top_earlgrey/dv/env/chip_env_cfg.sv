@@ -124,11 +124,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // No need to cover all kinds of interity errors as they are tested in block-level.
     en_tl_intg_err_cov = 0;
 
-    // Set up second RAL model for ROM memory and associated collateral
-    if (use_jtag_dmi == 1) begin
-      ral_model_names.push_back(rv_dm_mem_ral_name);
-    end
-
     super.initialize(csr_base_addr);
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
 
@@ -162,9 +157,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
     m_jtag_riscv_agent_cfg.use_jtag_dmi = use_jtag_dmi;
     if (use_jtag_dmi == 1) begin
-      // Both, the regs and the debug mem TL device (in the DUT) only support 1 outstanding.
+      // Both, the regs only supports 1 outstanding.
       m_tl_agent_cfgs[RAL_T::type_name].max_outstanding_req = 1;
-      m_tl_agent_cfgs[rv_dm_mem_ral_name].max_outstanding_req = 1;
 
       m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
       m_jtag_agent_cfg.if_mode = dv_utils_pkg::Host;
@@ -198,7 +192,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     // ral_model_names = chip_reg_block // 1 entry
     if (use_jtag_dmi == 1) begin
-      clk_freqs_mhz[rv_dm_mem_ral_name] = clk_freq_mhz;
       jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_riscv_agent_cfg.m_jtag_agent_cfg);
       // Fix the reset values of these fields based on our design.
       `uvm_info(`gfn, "Fixing reset values in jtag_dmi_ral", UVM_LOW)
@@ -232,31 +225,27 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Apply RAL fixes before it is locked.
   protected virtual function void post_build_ral_settings(dv_base_reg_block ral);
     RAL_T chip_ral;
+    uvm_reg regs[$];
     super.post_build_ral_settings(ral);
     if (!$cast(chip_ral, ral)) return;
     // Out of reset, the link is in disconnected state.
     chip_ral.usbdev.intr_state.disconnected.set_reset(1'b1);
-    if (ral.get_name() == rv_dm_mem_ral_name) begin
-      rv_dm_debug_mem_reg_block debug_mem_ral;
-      uvm_reg regs[$];
 
-      ral.get_registers(regs);
-      foreach (regs[i]) begin
-        regs[i].clear_hdl_path("ALL");
-      end
-
-      // ROM within the debug mem is RO - it ignores writes instead of throwing an error response.
-      `downcast(debug_mem_ral, ral)
-      debug_mem_ral.rom.set_write_to_ro_mem_ok(1);
-      debug_mem_ral.rom.set_mem_partial_write_support(1);
-
-      // TODO(#10837): Accesses to unmapped regions of debug mem RAL space does not return an error
-      // response. Fix this if design is updated.
-      debug_mem_ral.set_unmapped_access_ok(1);
-
-      // Debug mem does not error on any type of sub-word writes.
-      debug_mem_ral.set_supports_sub_word_csr_writes(1);
+    chip_ral.rv_dm_mem.get_registers(regs);
+    foreach (regs[i]) begin
+      regs[i].clear_hdl_path("ALL");
     end
+
+    // ROM within the debug mem is RO - it ignores writes instead of throwing an error response.
+    chip_ral.rv_dm_mem.rom.set_write_to_ro_mem_ok(1);
+    chip_ral.rv_dm_mem.rom.set_mem_partial_write_support(1);
+
+    // TODO(#10837): Accesses to unmapped regions of debug mem RAL space does not return an error
+    // response. Fix this if design is updated.
+    chip_ral.rv_dm_mem.set_unmapped_access_ok(1);
+
+    // Debug mem does not error on any type of sub-word writes.
+    chip_ral.rv_dm_mem.set_supports_sub_word_csr_writes(1);
   endfunction
 
   // Apply RAL exclusions externally since the RAL itself is considered generic. The IP it is used

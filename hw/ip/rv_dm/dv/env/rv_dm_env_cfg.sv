@@ -13,7 +13,7 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
   rand jtag_dmi_reg_block jtag_dmi_ral;
 
   // A constant that can be referenced from anywhere.
-  string mem_ral_name = "rv_dm_debug_mem_reg_block";
+  string mem_ral_name = "rv_dm_mem_reg_block";
 
   `uvm_object_utils_begin(rv_dm_env_cfg)
     `uvm_field_object(m_jtag_agent_cfg,   UVM_DEFAULT)
@@ -31,7 +31,7 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     ral_model_names.push_back(mem_ral_name);
 
     // both RAL models use same clock frequency
-    clk_freqs_mhz["rv_dm_debug_mem_reg_block"] = clk_freq_mhz;
+    clk_freqs_mhz["rv_dm_mem_reg_block"] = clk_freq_mhz;
 
     super.initialize(csr_base_addr);
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
@@ -76,7 +76,7 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     // tool. We just remove all HDL paths and skip backdoor writes entirely.
     // TODO: Enable backdoor writes later.
     if (ral.get_name() == mem_ral_name) begin
-      rv_dm_debug_mem_reg_block debug_mem_ral;
+      rv_dm_mem_reg_block debug_mem_ral;
       uvm_reg regs[$];
 
       ral.get_registers(regs);

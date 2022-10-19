@@ -68,11 +68,11 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(
         null, "*.env", "clk_rst_vif_rv_dm_regs_reg_block", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(
-        null, "*.env", "clk_rst_vif_rv_dm_debug_mem_reg_block", clk_rst_if);
+        null, "*.env", "clk_rst_vif_rv_dm_mem_reg_block", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(
         null, "*.env.m_tl_agent_rv_dm_regs_reg_block*", "vif", regs_tl_if);
     uvm_config_db#(virtual tl_if)::set(
-        null, "*.env.m_tl_agent_rv_dm_debug_mem_reg_block*", "vif", mem_tl_if);
+        null, "*.env.m_tl_agent_rv_dm_mem_reg_block*", "vif", mem_tl_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_sba_agent*", "vif", sba_tl_if);
     uvm_config_db#(virtual jtag_if)::set(null, "*.env.m_jtag_agent*", "vif", jtag_if);
     uvm_config_db#(virtual rv_dm_if)::set(null, "*.env*", "rv_dm_vif", rv_dm_if);

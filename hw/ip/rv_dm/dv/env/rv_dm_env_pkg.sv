@@ -16,7 +16,7 @@ package rv_dm_env_pkg;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
   import rv_dm_regs_ral_pkg::*;
-  import rv_dm_debug_mem_ral_pkg::*;
+  import rv_dm_mem_ral_pkg::*;
   import rv_dm_reg_pkg::NrHarts;
   import rv_dm_reg_pkg::NumAlerts;
   import sba_access_utils_pkg::*;

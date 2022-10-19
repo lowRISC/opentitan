@@ -310,7 +310,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
           default: `uvm_fatal(`gfn, $sformatf("Unknown regs CSR: %0s", csr.get_name()))
         endcase
       end
-      "rv_dm_debug_mem_reg_block": begin
+      "rv_dm_mem_reg_block": begin
         case (1)
           (!uvm_re_match("halted", csr.get_name())): begin
           end
