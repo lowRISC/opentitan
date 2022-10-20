@@ -7,6 +7,14 @@ load("@rules_rust//bindgen:bindgen.bzl", "rust_bindgen_library")
 
 package(default_visibility = ["//visibility:public"])
 
+cc_library(
+    name = "difs",
+    hdrs = ["difs.h"],
+    deps = [
+        "//sw/device/lib/dif:lc_ctrl",
+    ],
+)
+
 rust_bindgen_library(
     name = "alert",
     bindgen_flags = [
@@ -19,6 +27,20 @@ rust_bindgen_library(
     rustc_flags = [
         "--allow=non_snake_case",
         "--allow=non_upper_case_globals",
+    ],
+)
+
+rust_bindgen_library(
+    name = "dif",
+    bindgen_flags = [
+        "--allowlist-type=dif_lc_ctrl_state",
+    ],
+    cc_lib = ":difs",
+    header = "difs.h",
+    rustc_flags = [
+        "--allow=non_snake_case",
+        "--allow=non_upper_case_globals",
+        "--allow=non_camel_case_types",
     ],
 )
 
@@ -82,6 +104,7 @@ rust_library(
     srcs = ["lib.rs"],
     deps = [
         ":alert",
+        ":dif",
         ":earlgrey",
         ":hardened",
         ":multibits",
