@@ -230,7 +230,6 @@ If the AES unit is busy and running in CBC or CTR mode, the AES unit itself upda
 The cipher core architecture of the AES unit is derived from the architecture proposed by Satoh et al.: ["A compact Rijndael Hardware Architecture with S-Box Optimization"](https://link.springer.com/chapter/10.1007%2F3-540-45682-1_15).
 The expected circuit area in a 110nm CMOS technology is in the order of 12 - 22 kGE (unmasked implementation, AES-128 only).
 The expected circuit area of the entire AES unit with masking enabled is around 110 kGE.
-For more details, refer to the [nightly OpenTitan synthesis results](https://reports.opentitan.org/hw/top_earlgrey/syn/latest/results.html).
 
 For a description of the various sub modules, see the following sections.
 
