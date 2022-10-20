@@ -105,15 +105,21 @@ class BitstreamCache(object):
         except FileNotFoundError:
             return True
 
-    def Get(self, file):
+    def Get(self, file, **kwargs):
         """Perform an HTTP GET from the GCP bitstream bucket.
 
         Args:
             file: Filename in the bucket to retrieve.
+            kwargs: Any query parameters to include in the request
         Returns:
             bytes
         """
-        response = urllib.request.urlopen(self.bucket_url + file)
+        url_parts = urllib.parse.urlparse(self.bucket_url)
+        path = urllib.parse.quote(url_parts.path + file)
+        query = urllib.parse.urlencode(kwargs)
+        url = url_parts._replace(path=path, query=query).geturl()
+
+        response = urllib.request.urlopen(url)
         return response.read()
 
     def GetBitstreamsAvailable(self, refresh):
@@ -138,13 +144,29 @@ class BitstreamCache(object):
                         f'Bitstream cache missing {self.latest_update}.')
                 sys.exit(1)
             return
-        document = self.Get('').decode('utf-8')
-        et = xml.etree.ElementTree.fromstring(document)
-        for content in et.findall('Contents', XMLNS):
-            for key in content.findall('Key', XMLNS):
-                m = re.search(r'bitstream-([0-9A-Fa-f]+).tar.gz', key.text)
-                if m:
-                    self.available[m.group(1)] = key.text
+
+        # Fetching the list of all entries in the cache may require multiple
+        # requests since GCP will paginate long reponses. Markers are used to
+        # fetch subsequent pages.
+        # See the GCP docs and the XML REST API reference for more details:
+        # https://cloud.google.com/storage/docs/paginate-results
+        # https://cloud.google.com/storage/docs/xml-api/get-bucket-list
+        marker = ''
+        while True:
+            document = self.Get('', marker=marker).decode('utf-8')
+            et = xml.etree.ElementTree.fromstring(document)
+            for content in et.findall('Contents', XMLNS):
+                for key in content.findall('Key', XMLNS):
+                    m = re.search(r'bitstream-([0-9A-Fa-f]+).tar.gz', key.text)
+                    if m:
+                        self.available[m.group(1)] = key.text
+            # Handle any pagination
+            is_truncated_elt = et.find('IsTruncated', XMLNS)
+            if (is_truncated_elt is not None) and (is_truncated_elt.text == 'true'):
+                marker = et.find('NextMarker', XMLNS).text
+            else:
+                break
+
         latest = self.Get('master/latest.txt').decode('utf-8').split('\n')
         self.available['latest'] = latest[1]
 
