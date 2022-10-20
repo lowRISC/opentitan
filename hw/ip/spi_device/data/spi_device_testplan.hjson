@@ -172,6 +172,15 @@
       tests: ["spi_device_csb_read"]
     }
     {
+      name: mem_parity
+      desc: '''Test memory parity error
+
+               pick a random mem address to inject parity errors and read it back,
+               then check it returns d_error with all 1s data.'''
+      stage: V2
+      tests: ["spi_device_mem_parity"]
+    }
+    {
       name: tpm_read
       desc: '''
             - Set TPM_CFG.TPM_MODE to CRB mode and set TPM_CFG.EN.

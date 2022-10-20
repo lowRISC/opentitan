@@ -107,6 +107,13 @@
       name: spi_device_rx_timeout
       uvm_test_seq: spi_device_rx_timeout_vseq
     }
+    // This test reuses the same structure as tl_intg_err.
+    {
+      name: "spi_device_mem_parity"
+      uvm_test_seq: "spi_device_mem_parity_vseq"
+      run_opts: ["+en_scb=0", "+en_scb_tl_err_chk=0"]
+      reseed: 20
+    }
 
     {
       name: spi_device_tpm_read_hw_reg
