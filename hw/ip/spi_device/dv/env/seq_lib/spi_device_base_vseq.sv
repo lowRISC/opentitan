@@ -94,6 +94,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     super.apply_reset(kind);
     cfg.do_spi_clk_configure = 1;
     cfg.do_spi_device_fw_mem_cfg = 1;
+    cfg.do_addr_4b_cfg = 1;
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");

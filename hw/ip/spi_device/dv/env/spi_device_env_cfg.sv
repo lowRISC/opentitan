@@ -27,6 +27,9 @@ class spi_device_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_device_reg_block)
   // both may access the same csr `CFG`, have this to avoid accessing it at the same time.
   semaphore           spi_cfg_sema = new(1);
 
+  // TODO(#15543) SW can only configure addr_4b after reset
+  bit                 do_addr_4b_cfg;
+
   // in some sequence, both SW and HW may want to update this interrupt at the same time,
   // which is hard to handle in scb. In this case, disable the checker.
   // as long as all TPM requests can be read out and compared correctly, it's sufficient.
