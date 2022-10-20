@@ -186,7 +186,7 @@ def cw310_params(
             "--exit-failure={exit_failure}",
         ],
         # CW310-specific Parameters
-        bitstream = "@//hw/bitstream:test_rom",
+        bitstream = None,  # A bitstream value of None will cause the default bitstream values to be used
         rom_kind = None,
         # None
         timeout = "short",
@@ -313,20 +313,33 @@ def opentitan_functest(
             # Copy `cw310` for each `target`. This is not a deep copy, thus we
             # also copy tags below.
             cw310_ = cw310_params() if not cw310 else dict(cw310.items())
-            if "test_rom" in target:
+            cw310_["tags"] = [t for t in cw310_["tags"]]
+
+            # If the cw310 parameter was not provided or was provided without
+            # the bitstream field, determine the bitstream argument based on
+            # the target. Otherwise, use the provided bitstream argument.
+            DEFAULT_BITSTREAM = {
+                "cw310_test_rom": "@//hw/bitstream:test_rom",
+                "cw310_rom": "@//hw/bitstream:rom",
+            }
+            if (cw310 == None) or (cw310.get("bitstream") == None):
+                cw310_["bitstream"] = DEFAULT_BITSTREAM[target]
+
+            # If the bitstream field was provided, it will already have been copied into cw310_
+
+            # Fill in the remaining bitstream arguments
+            if target == "cw310_test_rom":
                 cw310_["rom_kind"] = "testrom"
-                cw310_["bitstream"] = "@//hw/bitstream:test_rom"
-                cw310_["tags"] = [t for t in cw310_["tags"]] + ["cw310_test_rom"]
+                cw310_["tags"].append("cw310_test_rom")
                 target_params["fpga_cw310_test_rom"] = cw310_
-            elif "rom" in target:
+            elif target == "cw310_rom":
                 cw310_["rom_kind"] = "rom"
-                cw310_["bitstream"] = "@//hw/bitstream:rom"
-                cw310_["tags"] = [t for t in cw310_["tags"]] + ["cw310_rom"]
+                cw310_["tags"].append("cw310_rom")
                 target_params["fpga_cw310_rom"] = cw310_
             else:
-                fail("Expected to find `test_rom` or `rom` in the target name")
+                fail("Expected `cw310_test_rom` or `cw310_rom` as the target name")
         else:
-            fail("invalid target. Target must be in {}".format(VALID_TARGETS))
+            fail("Invalid target. Target must be in {}".format(VALID_TARGETS))
     devices_to_build_for = collections.uniq(devices_to_build_for)
 
     # Handle the special case were the test is run at the ROM stage.
