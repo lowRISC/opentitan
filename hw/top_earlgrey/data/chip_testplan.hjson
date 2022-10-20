@@ -1476,7 +1476,7 @@
               won't trigger a ping timeout error on that block.
            '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_alert_handler_lpg_reset_toggle"]
    }
    {
       name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
