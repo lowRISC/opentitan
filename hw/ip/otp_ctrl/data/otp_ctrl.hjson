@@ -375,6 +375,30 @@
       default: "4",
       local: "true"
     },
+    { name: "CreatorSwCfgRmaSpinEnOffset",
+      desc: "Offset of CREATOR_SW_CFG_RMA_SPIN_EN",
+      type: "int",
+      default: "284",
+      local: "true"
+    },
+    { name: "CreatorSwCfgRmaSpinEnSize",
+      desc: "Size of CREATOR_SW_CFG_RMA_SPIN_EN",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+    { name: "CreatorSwCfgRmaSpinCyclesOffset",
+      desc: "Offset of CREATOR_SW_CFG_RMA_SPIN_CYCLES",
+      type: "int",
+      default: "288",
+      local: "true"
+    },
+    { name: "CreatorSwCfgRmaSpinCyclesSize",
+      desc: "Size of CREATOR_SW_CFG_RMA_SPIN_CYCLES",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
     { name: "CreatorSwCfgDigestOffset",
       desc: "Offset of CREATOR_SW_CFG_DIGEST",
       type: "int",
