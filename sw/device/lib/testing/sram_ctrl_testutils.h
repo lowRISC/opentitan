@@ -11,13 +11,6 @@
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
 
 /**
- * Test buffer size in words and bytes.
- */
-#define SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS 4
-#define SRAM_CTRL_TESTUTILS_DATA_NUM_BYTES \
-  (SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS * sizeof(uint32_t))
-
-/**
  * A typed representation of the test data.
  */
 typedef struct sram_ctrl_testutils_data {
