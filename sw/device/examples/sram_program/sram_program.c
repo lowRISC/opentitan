@@ -4,9 +4,8 @@
 
 #include <stdint.h>
 
-#include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
@@ -47,3 +46,8 @@ void sram_main() {
   LOG_INFO("PC: %p, SRAM: [%p, %p)", pc, kSramStart, kSramEnd);
   CHECK(pc >= kSramStart && pc < kSramEnd, "PC is outside the main SRAM");
 }
+
+// Reference functions that the debugger may wish to call. This prevents the
+// compiler from dropping them as unused functions and has the side benefit of
+// preventing their includes from appearing unused.
+void debugger_support_functions() { (void)icache_invalidate; }

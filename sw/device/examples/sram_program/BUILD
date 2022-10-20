@@ -40,7 +40,7 @@ opentitan_ram_binary(
 opentitan_gdb_fpga_cw310_test(
     name = "sram_program_fpga_cw310_test",
     timeout = "short",
-    exit_success_pattern = "sram_program\\.c:47\\] PC: 0x100020e0, SRAM: \\[0x10000000, 0x10020000\\)",
+    exit_success_pattern = "sram_program\\.c:\\d+\\] PC: 0x100020e0, SRAM: \\[0x10000000, 0x10020000\\)",
     gdb_script = """
         target extended-remote :3333
 
@@ -114,10 +114,15 @@ opentitan_gdb_fpga_cw310_test(
         load sram_program.elf
         compare-sections
 
-        echo :::: Update registers before calling sram_main().\\n
+        echo :::: Update registers before calling functions.\\n
         set $sp = _stack_end
         set $gp = __global_pointer$
         info registers
+
+        # When testing SRAM execution, we want to be sure the code is running
+        # out of SRAM and not the instruction cache.
+        echo :::: Invalidate the icache.\\n
+        print icache_invalidate()
 
         echo :::: Call sram_main().\\n
         print sram_main()
