@@ -19,7 +19,9 @@ A primary objective of the EDN block is to provide a simpler hardware interface 
 - There are two interrupts that are supported:
   - CSRNG application command has completed.
   - An internal FIFO error has occurred.
-- No alerts are supported by this revision.
+- There are two alerts that are implemented in is revision:
+  - A fatal alert to report common security fatal errors and EDN specific fatal errors. A list of fatal errors are listed in the {{< regref "ERR_CODE" >}} register.
+  - A recoverable alert to report recoverable error. A list of fatal errors are listed in the {{< regref "RECOV_ALERT_STS" >}} register.
 
 ## Description
 
@@ -143,7 +145,7 @@ To ensure that the most recently enabled EDN will get next priority for physical
 
 If using boot-time request mode, the CSRNG seed material used for the first-activated EDN is the special pre-FIPS seed, which is specifically tested quickly to improve latency.
 The first random values distributed from this EDN will therefore be available roughly 2ms after reset.
-The `entropy_src` only creates only one pre-FIPS seed, so any other EDNs must wait for their seeds to pass the full FIPS-recommended health checks.
+The `entropy_src` only creates one pre-FIPS seed, so any other EDNs must wait for their seeds to pass the full FIPS-recommended health checks.
 This means that each subsequent EDN must wait an additional 5ms before it can start distributing data.
 For instance, if there are three boot-time request mode EDN's in the system, the first will start distributing data 2ms after reset, the second will start distributing data 7ms after reset, and the third will start distributing data 12ms after reset.
 
