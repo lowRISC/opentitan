@@ -79,13 +79,13 @@ static const uint8_t kBackdoorExpectedBytes[SRAM_CTRL_BACKDOOR_TEST_BYTES];
  */
 static void test_ram_write_read_pattern(void) {
   // Write first pattern to the start of SRAM, and read it out.
-  sram_ctrl_testutils_write(kRetSramStartAddr, &kRamTestPattern1);
-  CHECK(sram_ctrl_testutils_read_check_eq(kRetSramStartAddr, &kRamTestPattern1),
+  sram_ctrl_testutils_write(kRetSramStartAddr, kRamTestPattern1);
+  CHECK(sram_ctrl_testutils_read_check_eq(kRetSramStartAddr, kRamTestPattern1),
         "Read-Write first pattern failed");
 
   // Write second pattern to the start of SRAM, and read it out.
-  sram_ctrl_testutils_write(kRetSramStartAddr, &kRamTestPattern2);
-  CHECK(sram_ctrl_testutils_read_check_eq(kRetSramStartAddr, &kRamTestPattern2),
+  sram_ctrl_testutils_write(kRetSramStartAddr, kRamTestPattern2);
+  CHECK(sram_ctrl_testutils_read_check_eq(kRetSramStartAddr, kRamTestPattern2),
         "Read-Write second pattern failed");
 }
 
@@ -102,7 +102,7 @@ static void test_ram_write_read_pattern(void) {
  */
 static void test_ram_scrambling(const dif_sram_ctrl_t *sram_ctrl) {
   // Write the pattern at the start of RAM.
-  sram_ctrl_testutils_write(kRetSramStartAddr, &kRamTestPattern1);
+  sram_ctrl_testutils_write(kRetSramStartAddr, kRamTestPattern1);
 
   sram_ctrl_testutils_scramble(sram_ctrl);
 

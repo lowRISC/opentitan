@@ -248,19 +248,19 @@ static bool reentry_after_system_reset(void) {
 static void prepare_for_scrambling(void) {
   // Make sure we can write and read to the retention SRAM.
   sram_ctrl_testutils_write(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-                            &kRamTestPattern2);
+                            kRamTestPattern2);
   sram_ctrl_testutils_write(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-                            &kRamTestPattern1);
+                            kRamTestPattern1);
   CHECK(sram_ctrl_testutils_read_check_eq(
-      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, &kRamTestPattern1));
+      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, kRamTestPattern1));
 
   // Make sure we can write and read the buffer in MAIN SRAM.
   sram_ctrl_testutils_write((uintptr_t)&sram_ctrl_main_scramble_buffer,
-                            &kRamTestPattern1);
+                            kRamTestPattern1);
   sram_ctrl_testutils_write((uintptr_t)&sram_ctrl_main_scramble_buffer,
-                            &kRamTestPattern2);
+                            kRamTestPattern2);
   CHECK(sram_ctrl_testutils_read_check_eq(
-      (uintptr_t)&sram_ctrl_main_scramble_buffer, &kRamTestPattern2));
+      (uintptr_t)&sram_ctrl_main_scramble_buffer, kRamTestPattern2));
 }
 
 /**
@@ -291,9 +291,9 @@ bool test_main(void) {
   if (reentry_after_system_reset()) {
     // Second boot, check the values.
     CHECK(sram_ctrl_testutils_read_check_neq(
-        TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, &kRamTestPattern1));
+        TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, kRamTestPattern1));
     CHECK(sram_ctrl_testutils_read_check_neq(
-        TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, &kRamTestPattern2));
+        TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, kRamTestPattern2));
 
     // Statistically there is always a chance that after changing the scrambling
     // key the ECC bits are correct and no IRQ is triggered. So we tolerate a
