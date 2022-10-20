@@ -79,32 +79,9 @@ static_assert(BACKDOOR_TEST_WORDS == 16,
 #define BACKDOOR_MAIN_RAM_OFFSET \
   (TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_SIZE_BYTES / 8)
 
-/**
- * The offset in the retention SRAM where we will copy the data
- * read from the main SRAM that was written by the backdoor. This
- * location needs to be after SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS which
- * is the end of where the scrambled data is located.
- */
-#define RET_RAM_COPY_OFFSET SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS
-
-/**
- * The offset in the retention SRAM to store the ECC error count.
- */
-#define ECC_ERROR_COUNT_OFFSET \
-  ((RET_RAM_COPY_OFFSET * sizeof(uint32_t)) + BACKDOOR_TEST_BYTES)
-
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_sram_ctrl_t sram_ctrl;
-
-/**
- * MAIN SRAM scrambling test buffer.
- *
- * This buffer is initialized with a known pattern, which will be overwritten
- * with a pseudo-random data as the result of MAIN SRAM scrambling.
- */
-static volatile uint32_t
-    sram_ctrl_main_scramble_buffer[SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS];
 
 /**
  * Test pattern to be written and read from SRAM.
@@ -125,6 +102,32 @@ static const uint32_t kRamTestPattern2[] = {
     0x304C6528,
     0xFAEFD5CC,
 };
+
+static_assert(sizeof(kRamTestPattern1) == sizeof(kRamTestPattern2),
+              "Buffer size Unmatched.");
+
+/**
+ * The offset in the retention SRAM where we will copy the data
+ * read from the main SRAM that was written by the backdoor. This
+ * location needs to be after `sizeof(kRamTestPattern)` in words
+ * which is the end of where the scrambled data is located.
+ */
+#define RET_RAM_COPY_OFFSET ARRAYSIZE(kRamTestPattern1)
+
+/**
+ * The offset in the retention SRAM to store the ECC error count.
+ */
+#define ECC_ERROR_COUNT_OFFSET \
+  ((RET_RAM_COPY_OFFSET * sizeof(uint32_t)) + BACKDOOR_TEST_BYTES)
+
+/**
+ * MAIN SRAM scrambling test buffer.
+ *
+ * This buffer is initialized with a known pattern, which will be overwritten
+ * with a pseudo-random data as the result of MAIN SRAM scrambling.
+ */
+static volatile uint32_t
+    sram_ctrl_main_scramble_buffer[sizeof(kRamTestPattern1)];
 
 /**
  * Expected data for the backdoor write test, to be written from the testbench.
@@ -149,7 +152,7 @@ static const uint32_t kRetRamBackdoorOffset =
 /**
  * Retention SRAM start address (inclusive).
  */
-static const uintptr_t kRetSramAddr =
+static const uintptr_t kRetSramBaseAddr =
     TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
 
 /**
@@ -217,7 +220,7 @@ static noreturn void main_sram_scramble(void) {
         [kCopyFromAddr] "r"(sram_ctrl_main_scramble_buffer),
         [kCopyToAddr] "r"(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR),
         [kCopyToEndAddr] "r"(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
-                             (SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS * 4)),
+                             (ARRAYSIZE(kRamTestPattern1) * 4)),
 
         [kOffsetCopyFromAddr] "r"(kMainRamBackdoorOffset),
         [kOffsetCopyToAddr] "r"(kRetRamBackdoorOffset),
@@ -248,15 +251,15 @@ static bool reentry_after_system_reset(void) {
 static void prepare_for_scrambling(void) {
   // Make sure we can write and read to the retention SRAM.
   sram_ctrl_testutils_write(
-      kRetSramAddr,
+      kRetSramBaseAddr,
       (sram_ctrl_testutils_data_t){.words = kRamTestPattern2,
                                    .len = ARRAYSIZE(kRamTestPattern2)});
   sram_ctrl_testutils_write(
-      kRetSramAddr,
+      kRetSramBaseAddr,
       (sram_ctrl_testutils_data_t){.words = kRamTestPattern1,
                                    .len = ARRAYSIZE(kRamTestPattern1)});
 
-  CHECK_ARRAYS_EQ((uint32_t *)kRetSramAddr, kRamTestPattern1,
+  CHECK_ARRAYS_EQ((uint32_t *)kRetSramBaseAddr, kRamTestPattern1,
                   ARRAYSIZE(kRamTestPattern1));
 
   // Make sure we can write and read the buffer in MAIN SRAM.
@@ -279,7 +282,7 @@ static void prepare_for_scrambling(void) {
  * the number of integrity exceptions.
  */
 void ottf_internal_isr(void) {
-  mmio_region_t mem_region = mmio_region_from_addr(kRetSramAddr);
+  mmio_region_t mem_region = mmio_region_from_addr(kRetSramBaseAddr);
   uint32_t exception_count =
       mmio_region_read32(mem_region, ECC_ERROR_COUNT_OFFSET);
   mmio_region_write32(mem_region, ECC_ERROR_COUNT_OFFSET, ++exception_count);
@@ -300,18 +303,18 @@ bool test_main(void) {
 
   if (reentry_after_system_reset()) {
     // Second boot, check the values.
-    CHECK_ARRAYS_NE((uint32_t *)kRetSramAddr, kRamTestPattern1,
+    CHECK_ARRAYS_NE((uint32_t *)kRetSramBaseAddr, kRamTestPattern1,
                     ARRAYSIZE(kRamTestPattern1));
 
-    CHECK_ARRAYS_NE((uint32_t *)kRetSramAddr, kRamTestPattern2,
+    CHECK_ARRAYS_NE((uint32_t *)kRetSramBaseAddr, kRamTestPattern2,
                     ARRAYSIZE(kRamTestPattern2));
 
     // Statistically there is always a chance that after changing the scrambling
     // key the ECC bits are correct and no IRQ is triggered. So we tolerate a
     // minimum of false positives.
     uint32_t ecc_errors = mmio_region_read32(
-        mmio_region_from_addr(kRetSramAddr), ECC_ERROR_COUNT_OFFSET);
-    uint32_t false_positives = SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS - ecc_errors;
+        mmio_region_from_addr(kRetSramBaseAddr), ECC_ERROR_COUNT_OFFSET);
+    uint32_t false_positives = ARRAYSIZE(kRamTestPattern1) - ecc_errors;
 
     if (false_positives > 0) {
       if (false_positives > ECC_ERRORS_FALSE_POSITIVE_FLOOR_LIMIT) {
@@ -323,12 +326,12 @@ bool test_main(void) {
                false_positives);
     }
 
-    sram_ctrl_testutils_check_backdoor_write(kRetSramAddr, BACKDOOR_TEST_WORDS,
-                                             RET_RAM_COPY_OFFSET,
-                                             kBackdoorExpectedBytes);
+    sram_ctrl_testutils_check_backdoor_write(
+        kRetSramBaseAddr, BACKDOOR_TEST_WORDS, RET_RAM_COPY_OFFSET,
+        kBackdoorExpectedBytes);
   } else {
     // First boot, prepare the test.
-    mmio_region_write32(mmio_region_from_addr(kRetSramAddr),
+    mmio_region_write32(mmio_region_from_addr(kRetSramBaseAddr),
                         ECC_ERROR_COUNT_OFFSET, 0);
 
     prepare_for_scrambling();

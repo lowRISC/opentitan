@@ -19,29 +19,6 @@ void sram_ctrl_testutils_write(uintptr_t address,
 }
 
 /**
- * Reads data from `address` in SRAM and compares against `expected`.
- *
- * The read data is word by word compared against the expected data.
- * Caller can request to check for equality or inequality through `eq`.
- */
-static bool read_from_ram_check(uintptr_t address,
-                                const sram_ctrl_testutils_data_t expected,
-                                bool eq) {
-  mmio_region_t region = mmio_region_from_addr(address);
-  for (size_t index = 0; index < expected.len; ++index) {
-    uint32_t read_word = mmio_region_read32(region, sizeof(uint32_t) * index);
-    if ((read_word == expected.words[index]) != eq) {
-      LOG_INFO("READ_WORD[%x], CONTROL_WORD[%x], INDEX = %d", read_word,
-               expected.words[index], index);
-
-      return false;
-    }
-  }
-
-  return true;
-}
-
-/**
  * Checks whether the SRAM scramble operation has finished.
  */
 static bool scramble_finished(const dif_sram_ctrl_t *sram_ctrl) {

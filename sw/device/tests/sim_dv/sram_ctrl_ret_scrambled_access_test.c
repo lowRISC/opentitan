@@ -19,6 +19,53 @@
 #define SRAM_CTRL_BACKDOOR_TEST_BYTES \
   SRAM_CTRL_BACKDOOR_TEST_WORDS * sizeof(uint32_t)
 
+/**
+ * Note that there are `2^32` valid code words and that each non-valid code
+ * word triggers an error. Therefore, the probability that a random 39-bit
+ * word triggers an error is: `(2^39 - 2^32)/ 2^39 = 127/128`. Then the
+ * probability that all `BACKDOOR_TEST_WORDS` triggers an errors is
+ * `(127/128)^BACKDOOR_TEST_WORDS` after re-scrambling.
+ *
+ * The Generic formula:
+ *
+ *               (w-i)
+ *             127
+ * Pr(i) =  -------- x (w choose i)
+ *                w
+ *             128
+ * Where:
+ *      w = The number of words tested.
+ *      i = The number of words that may not generate errors.
+ *      Pr(i) = Probability that i words will not generate an ECC error.
+ *
+ * So for i in (0..3):
+ *
+ * ``` Python
+ * from math import comb
+ * w = 16
+ * t = 0
+ * for i in range(4):
+ *    p = ((127**(w-i))/(128**w)) * comb(w,i)
+ *    t += p
+ *    print(f'Pr({i}): { round(p, 4)},\tsum{{Pr(0-{i})}}: {round(t, 6)}')
+ * ```
+ * ```
+ * Pr(0): 0.8821,   sum{Pr(0-0)}: 0.882064
+ * Pr(1): 0.1111,   sum{Pr(0-1)}: 0.99319
+ * Pr(2): 0.0066,   sum{Pr(0-2)}: 0.999753
+ * Pr(3): 0.0002,   sum{Pr(0-3)}: 0.999994
+ * ```
+ * So by choosing 1 as the floor limit we will a have probability of `1 -
+ * 0.99319 = 0.68%` that this test would fail randomly due to ECC errors not
+ * being generated.
+ */
+#define ECC_ERRORS_FALSE_POSITIVE_FLOOR_LIMIT 1
+
+static_assert(SRAM_CTRL_BACKDOOR_TEST_WORDS == 16,
+              "BACKDOOR_TEST_WORDS changed, so "
+              "ECC_ERRORS_FALSE_POSITIVE_FLOOR_LIMIT should be "
+              "computed again");
+
 /* The offset into the retention SRAM where we will backdoor write data.
  * This can be anywhere except at the base address which is
  * already used in the test for the scramble check.
@@ -112,13 +159,22 @@ static void test_ram_scrambling(const dif_sram_ctrl_t *sram_ctrl) {
                                    .len = ARRAYSIZE(kRamTestPattern1)});
 
   sram_ctrl_testutils_scramble(sram_ctrl);
-  mmio_region_t region = mmio_region_from_addr(kRetSramStartAddr);
-  for (int i = 0; i < ARRAYSIZE(kRamTestPattern1); ++i) {
-    uint32_t read_data = mmio_region_read32(region, sizeof(uint32_t) * i);
-    CHECK(read_data != kRamTestPattern1[i]);
+  // Reading before comparing just to make sure it will always read all the
+  // words and the right amount of ECC errors will be generated.
+  uint32_t tmp_buffer[ARRAYSIZE(kRamTestPattern1)];
+  memcpy(tmp_buffer, (const uint8_t *)kRetSramStartAddr, sizeof(tmp_buffer));
+  CHECK_ARRAYS_NE(tmp_buffer, kRamTestPattern1, ARRAYSIZE(kRamTestPattern1));
+
+  uint32_t false_positives =
+      ARRAYSIZE(kRamTestPattern1) - integrity_exception_count;
+
+  if (false_positives > 0) {
+    CHECK(false_positives > ECC_ERRORS_FALSE_POSITIVE_FLOOR_LIMIT,
+          "Failed as it didn't generate enough ECC errors(%d/%d)",
+          false_positives, ECC_ERRORS_FALSE_POSITIVE_FLOOR_LIMIT);
+    LOG_INFO("Passing with a remark, %d words didn't generate ECC errors",
+             false_positives);
   }
-  CHECK(integrity_exception_count == SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS,
-        "Scramble read exception count differs from expected.");
 }
 
 /**
