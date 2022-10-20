@@ -113,17 +113,25 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(bad_req)
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(read_addr_after_write)
         randomize_req(req);
-        `uvm_info(`gfn, $sformatf("Starting transaction %0d/%0d: %0s",
+        `uvm_info(`gfn, $sformatf("Starting %s transaction %0d/%0d: %0s",
+                                  bad_req ? "bad" : "good",
                                   j, num_trans, req.sprint(uvm_default_line_printer)), UVM_MEDIUM)
         sba_access(.jtag_dmi_ral(jtag_dmi_ral), .cfg(cfg.m_jtag_agent_cfg), .req(req));
         `DV_CHECK(!req.timed_out)
         `DV_CHECK(!req.is_busy_err)
-        if (bad_req) begin
-          `DV_CHECK(req.is_err inside {SbaErrBadAlignment, SbaErrBadSize})
-        end
-        if (req.is_err == SbaErrOther) begin
-          // Reset the DUT to clear the intg error.
-          dut_init();
+        if (req.bus_op == BusOpRead && !req.readonaddr && !req.readondata) begin
+          // No SBA access, so no error reporting.
+          `DV_CHECK_EQ(req.is_err, SbaErrNone)
+        end else begin
+          if (bad_req) begin
+            `DV_CHECK(!(req.is_err inside {SbaErrNone, SbaErrTimeout}),
+                      $sformatf("Incorrect sberror: %0s", req.sprint(uvm_default_line_printer)))
+          end
+          if (req.is_err == SbaErrOther) begin
+            // TODO: Verify alert fired.
+            // Reset the DUT to clear the intg error.
+            dut_init();
+          end
         end
       end
       sba_tl_device_seq_stop();
@@ -162,12 +170,35 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
 
 endclass
 
+// Returns responses from the TL side with longer delays to generate sbbusy cases.
+class rv_dm_delayed_resp_sba_tl_access_vseq extends rv_dm_sba_tl_access_vseq;
+  `uvm_object_utils(rv_dm_delayed_resp_sba_tl_access_vseq)
+  `uvm_object_new
+
+  constraint min_rsp_delay_c {
+    if (cfg.zero_delays) {
+      min_rsp_delay == 0;
+    } else {
+      min_rsp_delay dist {[10:100] :/ 1, [101:500] :/ 7, [501:2000] :/ 2};
+    }
+  }
+
+endclass
+
 // Drive random traffic out the SBA TL interface with more weightage on accesses that will result
 // in sberror begin flagged, either due to a bad request or a bad response via d_error / d_chan
 // intg err.
 class rv_dm_bad_sba_tl_access_vseq extends rv_dm_sba_tl_access_vseq;
   `uvm_object_utils(rv_dm_bad_sba_tl_access_vseq)
   `uvm_object_new
+
+  constraint min_rsp_delay_c {
+    if (cfg.zero_delays) {
+      min_rsp_delay == 0;
+    } else {
+      min_rsp_delay dist {[0:100] :/ 8, [101:500] :/ 2};
+    }
+  }
 
   constraint bad_req_c {
     bad_req dist {0 :/ 6, 1 :/ 4};
@@ -188,6 +219,14 @@ endclass
 class rv_dm_autoincr_sba_tl_access_vseq extends rv_dm_sba_tl_access_vseq;
   `uvm_object_utils(rv_dm_autoincr_sba_tl_access_vseq)
   `uvm_object_new
+
+  constraint min_rsp_delay_c {
+    if (cfg.zero_delays) {
+      min_rsp_delay == 0;
+    } else {
+      min_rsp_delay dist {[0:100] :/ 8, [101:500] :/ 2};
+    }
+  }
 
   constraint bad_req_c {
     bad_req dist {0 :/ 7, 1 :/ 3};

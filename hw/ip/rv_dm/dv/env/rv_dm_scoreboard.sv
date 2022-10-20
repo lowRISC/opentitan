@@ -228,8 +228,10 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
     shift = 8 * sba_item.addr[BUS_SZW-1:0];
     word_aligned_addr = sba_item.addr & ('1 << BUS_SZW);
     `DV_CHECK_EQ(word_aligned_addr, sba_tl_item.a_addr, msg)
+
     // TLUL access size will always be full word.
     `DV_CHECK_EQ(sba_tl_item.a_size, $clog2(bus_params_pkg::BUS_DBW), msg)
+
     if (sba_item.bus_op == BusOpRead) begin
       `DV_CHECK_EQ(sba_tl_item.a_opcode, tlul_pkg::Get, msg)
       // SBA system shifts the read data based on transfer size. The higher order bits that are
@@ -239,8 +241,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       // TLUL adapter host does full word reads with all byte lanes enabled.
       `DV_CHECK_EQ(sba_tl_item.a_mask, '1, msg)
     end else begin
-      logic [BUS_DW-1:0] word_mask;
-      logic [BUS_DBW-1:0] byte_mask;
+      bit [BUS_DW-1:0] word_mask;
+      bit [BUS_DBW-1:0] byte_mask;
+      logic [BUS_DW-1:0] act_data;
 
       // Anything less than word access should be PutPartialData.
       if (sba_item.size < SbaAccessSize32b) begin
@@ -248,6 +251,7 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
       end else begin
         `DV_CHECK_EQ(sba_tl_item.a_opcode, tlul_pkg::PutFullData, msg)
       end
+
       // SBA system shifts the write data based on transfer size. TLUL adapter further masks the
       // don't care higher order bits for correct ECC computation.
       for (int i = 0; i < (1 << sba_item.size); i++) begin
@@ -255,10 +259,12 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
         byte_mask[i] = 1'b1;
       end
       data = (sba_item.wdata[0] & word_mask) << shift;
-      `DV_CHECK_EQ(data, sba_tl_item.a_data, msg)
+      act_data = sba_tl_item.a_data & (word_mask << shift);
+      `DV_CHECK_EQ(data, act_data, msg)
       byte_mask <<= sba_item.addr[BUS_SZW-1:0];
       `DV_CHECK_EQ(byte_mask, sba_tl_item.a_mask, msg)
     end
+
     // d_chan intg error is reported as "other" error and takes precedence over transaction error.
     if (!sba_tl_item.is_d_chan_intg_ok(.throw_error(0))) begin
       `DV_CHECK_EQ(sba_item.is_err, sba_access_utils_pkg::SbaErrOther)

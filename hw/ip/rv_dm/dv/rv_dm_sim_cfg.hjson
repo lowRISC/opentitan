@@ -140,6 +140,12 @@
       reseed: 20
     }
     {
+      name: rv_dm_delayed_resp_sba_tl_access
+      uvm_test_seq: rv_dm_delayed_resp_sba_tl_access_vseq
+      run_opts: ["+zero_delays=0"]
+      reseed: 20
+    }
+    {
       name: rv_dm_bad_sba_tl_access
       uvm_test_seq: rv_dm_bad_sba_tl_access_vseq
       reseed: 20
