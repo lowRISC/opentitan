@@ -178,7 +178,7 @@ static void aes_serial_key_set(const uint8_t *key, size_t key_len) {
  * @param plaintext Plaintext.
  * @param plaintext_len Length of the plaintext.
  */
-static void aes_serial_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
+static void aes_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
   bool ready = false;
   do {
     SS_CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusInputReady, &ready));
@@ -242,7 +242,7 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
   }
 
   sca_set_trigger_high();
-  aes_serial_encrypt(plaintext, plaintext_len);
+  aes_encrypt(plaintext, plaintext_len);
   sca_set_trigger_low();
 
   aes_send_ciphertext(false);
@@ -291,7 +291,7 @@ static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     uint8_t plaintext[kAesTextLength];
     prng_rand_bytes(plaintext, kAesTextLength);
-    aes_serial_encrypt(plaintext, kAesTextLength);
+    aes_encrypt(plaintext, kAesTextLength);
   }
   sca_set_trigger_low();
 
@@ -404,7 +404,7 @@ static void aes_serial_fvsr_key_batch_encrypt(const uint8_t *data,
   sca_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
-    aes_serial_encrypt(batch_plaintexts[i], kAesTextLength);
+    aes_encrypt(batch_plaintexts[i], kAesTextLength);
   }
   sca_set_trigger_low();
 
