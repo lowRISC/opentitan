@@ -548,6 +548,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_i2c_device_tx_rx
+      uvm_test_seq: chip_sw_i2c_device_tx_rx_vseq
+      sw_images: ["//sw/device/tests/sim_dv:i2c_device_tx_rx_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_spi_device_tx_rx
       uvm_test_seq: chip_sw_spi_device_tx_rx_vseq
       sw_images: ["//sw/device/tests/sim_dv:spi_tx_rx_test:1"]
@@ -1742,6 +1748,7 @@
               "chip_sw_spi_host_tx_rx",
               "chip_sw_spi_device_pass_through",
               "chip_sw_i2c_host_tx_rx",
+              "chip_sw_i2c_device_tx_rx",
               "chip_plic_all_irqs",
               "chip_sw_example_flash",
               "chip_sw_example_rom",

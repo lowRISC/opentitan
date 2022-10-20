@@ -267,7 +267,7 @@
             Verify all instances of I2C in the chip.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_i2c_device_tx_rx"]
     }
 
     // USB (pre-verified IP) integration tests:

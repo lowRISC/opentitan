@@ -9,6 +9,7 @@
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/i2c_testutils.h"
@@ -187,9 +188,7 @@ bool test_main(void) {
 
   uint8_t tx_fifo_lvl;
   CHECK_DIF_OK(dif_i2c_get_fifo_levels(&i2c, NULL, NULL, &tx_fifo_lvl, NULL));
-  // Write expected data to tx fifo.
-  while (tx_fifo_lvl > 0 && tx_empty_irq_seen == false) {
-  }
+  IBEX_SPIN_FOR(!(tx_fifo_lvl > 0 && tx_empty_irq_seen == false), 100);
   i2c_testutils_target_rd(&i2c, kI2cByteCount, expected_data);
   tx_empty_irq_seen = false;
 
