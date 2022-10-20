@@ -70,11 +70,32 @@ macro_rules! with_unknown {
             )*
         }
 
+        #[allow(dead_code)]
+        impl $Enum {
+            pub fn is_known_value(&self) -> bool {
+                match *self {
+                    $(
+                        $Enum::$enumerator => true,
+                    )*
+                    _ => false,
+                }
+            }
+        }
+
         impl From<$Enum> for $type {
             fn from(v: $Enum) -> $type {
                 v.0
             }
         }
+
+        $crate::__impl_try_from!(i8, $Enum);
+        $crate::__impl_try_from!(i16, $Enum);
+        $crate::__impl_try_from!(i32, $Enum);
+        $crate::__impl_try_from!(i64, $Enum);
+        $crate::__impl_try_from!(u8, $Enum);
+        $crate::__impl_try_from!(u16, $Enum);
+        $crate::__impl_try_from!(u32, $Enum);
+        $crate::__impl_try_from!(u64, $Enum);
 
         // Implement the various display traits.
         $crate::__impl_fmt_unknown!(Display, "{}", "{}", $Enum { $($enumerator),* });
@@ -150,6 +171,18 @@ macro_rules! with_unknown {
 }
 
 #[macro_export]
+macro_rules! __impl_try_from {
+    ($from_type:ty, $Enum:ident) => {
+        impl TryFrom<$from_type> for $Enum {
+            type Error = std::num::TryFromIntError;
+            fn try_from(value: $from_type) -> Result<Self, Self::Error> {
+                Ok($Enum(value.try_into()?))
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! __expand_visit_fn {
     ($visit_func:ident, $ser_type:ty, $Enum:ident, $enum_type:ty) => {
         fn $visit_func<E>(self, value: $ser_type) -> Result<Self::Value, E>
@@ -202,7 +235,7 @@ mod tests {
     use serde::{Deserialize, Serialize};
 
     with_unknown! {
-        pub enum HardenedBool: u32 {
+        enum HardenedBool: u32 {
             True = 0x739,
             False = 0x14d,
         }
@@ -219,11 +252,14 @@ mod tests {
     fn test_display() -> Result<()> {
         let t = HardenedBool::True;
         assert_eq!(t.to_string(), "True");
+        assert!(t.is_known_value());
 
         let f = HardenedBool::False;
         assert_eq!(f.to_string(), "False");
+        assert!(f.is_known_value());
 
         let j = HardenedBool(0x6A);
+        assert!(!j.is_known_value());
         assert_eq!(j.to_string(), "HardenedBool(106)");
         assert_eq!(format!("{:x}", j), "HardenedBool(6a)");
         assert_eq!(format!("{:#x}", j), "HardenedBool(0x6a)");
