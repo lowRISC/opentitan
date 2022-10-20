@@ -177,8 +177,8 @@ otp_json(
         ),
         otp_partition(
             name = "LIFE_CYCLE",
-            count = 0,
-            state = "RAW",
+            count = 1,
+            state = "TEST_UNLOCKED0",
         ),
     ],
     seed = "01931961561863975174",
