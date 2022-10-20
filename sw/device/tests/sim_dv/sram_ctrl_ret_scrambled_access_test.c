@@ -42,27 +42,21 @@ static const uintptr_t kRetSramStartAddr =
 /**
  * First test pattern to be written and read from SRAM.
  */
-static const sram_ctrl_testutils_data_t kRamTestPattern1 = {
-    .words =
-        {
-            0xA5A5A5A5,
-            0xA5A5A5A5,
-            0xA5A5A5A5,
-            0xA5A5A5A5,
-        },
+static const uint32_t kRamTestPattern1[] = {
+    0xA5A5A5A5,
+    0xA5A5A5A5,
+    0xA5A5A5A5,
+    0xA5A5A5A5,
 };
 
 /**
  * Second test pattern to be written and read from SRAM.
  */
-static const sram_ctrl_testutils_data_t kRamTestPattern2 = {
-    .words =
-        {
-            0x5A5A5A5A,
-            0x5A5A5A5A,
-            0x5A5A5A5A,
-            0x5A5A5A5A,
-        },
+static const uint32_t kRamTestPattern2[] = {
+    0x5A5A5A5A,
+    0x5A5A5A5A,
+    0x5A5A5A5A,
+    0x5A5A5A5A,
 };
 
 /** Expected data for the backdoor write test, to be written from the testbench.
@@ -79,14 +73,24 @@ static const uint8_t kBackdoorExpectedBytes[SRAM_CTRL_BACKDOOR_TEST_BYTES];
  */
 static void test_ram_write_read_pattern(void) {
   // Write first pattern to the start of SRAM, and read it out.
-  sram_ctrl_testutils_write(kRetSramStartAddr, kRamTestPattern1);
-  CHECK(sram_ctrl_testutils_read_check_eq(kRetSramStartAddr, kRamTestPattern1),
-        "Read-Write first pattern failed");
+  sram_ctrl_testutils_write(
+      kRetSramStartAddr,
+      (sram_ctrl_testutils_data_t){.words = kRamTestPattern1,
+                                   .len = ARRAYSIZE(kRamTestPattern1)});
+
+  CHECK_ARRAYS_EQ((uint32_t *)kRetSramStartAddr, kRamTestPattern1,
+                  ARRAYSIZE(kRamTestPattern1),
+                  "Read-Write first pattern failed");
 
   // Write second pattern to the start of SRAM, and read it out.
-  sram_ctrl_testutils_write(kRetSramStartAddr, kRamTestPattern2);
-  CHECK(sram_ctrl_testutils_read_check_eq(kRetSramStartAddr, kRamTestPattern2),
-        "Read-Write second pattern failed");
+  sram_ctrl_testutils_write(
+      kRetSramStartAddr,
+      (sram_ctrl_testutils_data_t){.words = kRamTestPattern2,
+                                   .len = ARRAYSIZE(kRamTestPattern2)});
+
+  CHECK_ARRAYS_EQ((uint32_t *)kRetSramStartAddr, kRamTestPattern2,
+                  ARRAYSIZE(kRamTestPattern2),
+                  "Read-Write second pattern failed");
 }
 
 /**
@@ -102,14 +106,16 @@ static void test_ram_write_read_pattern(void) {
  */
 static void test_ram_scrambling(const dif_sram_ctrl_t *sram_ctrl) {
   // Write the pattern at the start of RAM.
-  sram_ctrl_testutils_write(kRetSramStartAddr, kRamTestPattern1);
+  sram_ctrl_testutils_write(
+      kRetSramStartAddr,
+      (sram_ctrl_testutils_data_t){.words = kRamTestPattern1,
+                                   .len = ARRAYSIZE(kRamTestPattern1)});
 
   sram_ctrl_testutils_scramble(sram_ctrl);
-
   mmio_region_t region = mmio_region_from_addr(kRetSramStartAddr);
-  for (int i = 0; i < SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS; ++i) {
+  for (int i = 0; i < ARRAYSIZE(kRamTestPattern1); ++i) {
     uint32_t read_data = mmio_region_read32(region, sizeof(uint32_t) * i);
-    CHECK(read_data != kRamTestPattern1.words[i]);
+    CHECK(read_data != kRamTestPattern1[i]);
   }
   CHECK(integrity_exception_count == SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS,
         "Scramble read exception count differs from expected.");

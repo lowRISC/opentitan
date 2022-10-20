@@ -21,7 +21,8 @@
  * A typed representation of the test data.
  */
 typedef struct sram_ctrl_testutils_data {
-  uint32_t words[SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS];
+  const uint32_t *words;
+  size_t len;
 } sram_ctrl_testutils_data_t;
 
 /**
@@ -29,24 +30,6 @@ typedef struct sram_ctrl_testutils_data {
  */
 void sram_ctrl_testutils_write(uintptr_t address,
                                const sram_ctrl_testutils_data_t data);
-
-/**
- * Reads data from `address` in SRAM and compares against `expected`.
- *
- * The data is checked for equality.
- */
-OT_WARN_UNUSED_RESULT
-bool sram_ctrl_testutils_read_check_eq(
-    uintptr_t address, const sram_ctrl_testutils_data_t expected);
-
-/**
- * Reads data from `address` in SRAM and compares against `expected`.
- *
- * The data is checked for inequality.
- */
-OT_WARN_UNUSED_RESULT
-bool sram_ctrl_testutils_read_check_neq(
-    uintptr_t address, const sram_ctrl_testutils_data_t expected);
 
 /**
  * Triggers the SRAM scrambling operation.
