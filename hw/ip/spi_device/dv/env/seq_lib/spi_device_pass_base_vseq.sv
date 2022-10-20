@@ -339,9 +339,12 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     ral.cfg.tx_order.set(cfg.spi_host_agent_cfg.host_bit_dir);
     ral.cfg.rx_order.set(cfg.spi_host_agent_cfg.device_bit_dir);
 
-    `DV_CHECK_RANDOMIZE_FATAL(ral.cfg.addr_4b_en)
-    cfg.spi_host_agent_cfg.flash_addr_4b_en = ral.cfg.addr_4b_en.get();
-    cfg.spi_device_agent_cfg.flash_addr_4b_en = ral.cfg.addr_4b_en.get();
+    if (cfg.do_addr_4b_cfg) begin
+      `DV_CHECK_RANDOMIZE_FATAL(ral.cfg.addr_4b_en)
+      cfg.spi_host_agent_cfg.flash_addr_4b_en = ral.cfg.addr_4b_en.get();
+      cfg.spi_device_agent_cfg.flash_addr_4b_en = ral.cfg.addr_4b_en.get();
+      cfg.do_addr_4b_cfg = 0;
+    end
 
     `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.mailbox_addr.addr,
         // the 4th byte needs to be 0 if the cmd only contains 3 bytes address
