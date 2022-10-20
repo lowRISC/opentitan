@@ -149,8 +149,11 @@ module tb;
   `define SIM_SRAM_IF u_sim_sram.u_sim_sram_if
 
   // Instantiate & connect the simulation SRAM inside the CPU (rv_core_ibex) using forces.
+  bit en_sim_sram = 1'b1;
+  wire sel_sim_sram = !dut.chip_if.stub_cpu & en_sim_sram;
+
   sim_sram u_sim_sram (
-    .clk_i    (`CPU_HIER.clk_i),
+    .clk_i    (sel_sim_sram ? `CPU_HIER.clk_i : 0),
     .rst_ni   (`CPU_HIER.rst_ni),
     .tl_in_i  (tlul_pkg::tl_h2d_t'(`CPU_HIER.u_tlul_req_buf.out_o)),
     .tl_in_o  (),
@@ -158,15 +161,11 @@ module tb;
     .tl_out_i ()
   );
 
-  bit en_sim_sram = 1'b1;
-
   initial begin
     void'($value$plusargs("en_sim_sram=%0b", en_sim_sram));
     if (!dut.chip_if.stub_cpu && en_sim_sram) begin
       `SIM_SRAM_IF.start_addr = SW_DV_START_ADDR;
       force `CPU_HIER.u_tlul_rsp_buf.in_i = u_sim_sram.tl_in_o;
-    end else begin
-      force u_sim_sram.clk_i = 1'b0;
     end
   end
 
