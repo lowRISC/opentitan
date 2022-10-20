@@ -54,7 +54,7 @@ filesets:
       - seq_lib/chip_jtag_base_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_alert_handler_entropy_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_alert_handler_escalation_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_alert_handler_lpg_clkoff_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_alert_handler_shorten_ping_wait_cycle_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_all_escalation_resets_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_data_integrity_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_full_aon_reset_vseq.sv: {is_include_file: true}
