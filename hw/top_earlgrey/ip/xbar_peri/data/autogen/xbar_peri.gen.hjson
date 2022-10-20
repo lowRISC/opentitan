@@ -18,7 +18,7 @@
   {
     rst_peri_ni:
     {
-      name: sys_io_div4
+      name: lc_io_div4
       domain: "0"
     }
   }

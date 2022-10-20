@@ -225,6 +225,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.esc_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
     cfg.lc_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
     cfg.aon_clk_rst_vif.set_freq_mhz(cfg.clk_rst_vif.clk_freq_mhz);
+    set_ndmreset_req('0);
     control_assertions(0);
   endtask
 
@@ -260,6 +261,10 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     --objection_count;
     `uvm_info(`gfn, $sformatf("Dropping objection to %0d for %0s", objection_count, label),
               UVM_HIGH)
+  endfunction
+
+  virtual function void set_ndmreset_req(logic value);
+    cfg.pwrmgr_vif.cpu_i.ndmreset_req = value;
   endfunction
 
   // Generates expected responses for the slow fsm.

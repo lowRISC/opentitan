@@ -66,6 +66,9 @@ module pwrmgr
   input  [NumWkups-1:0] wakeups_i,
   input  [NumRstReqs-1:0] rstreqs_i,
 
+  // cpu related inputs
+  input  ndmreset_req_i,
+
   // pinmux and other peripherals
   output logic strap_o,
   output logic low_power_o,
@@ -85,6 +88,24 @@ module pwrmgr
   output intr_wakeup_o
 
 );
+  ////////////////////////////////////////////////////
+  // Input handling                                 //
+  ////////////////////////////////////////////////////
+
+  logic ndmreset_req_q;
+  logic ndm_req_valid;
+
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_ndm_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(ndmreset_req_i),
+    .q_o(ndmreset_req_q)
+  );
+
+  assign ndm_req_valid = ndmreset_req_q;
 
   ////////////////////////////
   ///  escalation detections
@@ -165,6 +186,7 @@ module pwrmgr
   assign peri_reqs_raw.rstreqs[ResetMainPwrIdx] = slow_rst_req;
   // SEC_CM: ESC_RX.CLK.LOCAL_ESC, CTRL_FLOW.GLOBAL_ESC
   assign peri_reqs_raw.rstreqs[ResetEscIdx] = esc_rst_req_q | esc_timeout;
+  assign peri_reqs_raw.rstreqs[ResetNdmIdx] = ndm_req_valid;
 
   ////////////////////////////
   ///  Software reset request

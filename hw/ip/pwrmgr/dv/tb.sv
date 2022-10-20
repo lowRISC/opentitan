@@ -103,6 +103,7 @@ module tb;
     .fetch_en_o(pwrmgr_if.fetch_en),
     .wakeups_i (pwrmgr_if.wakeups_i),
     .rstreqs_i (pwrmgr_if.rstreqs_i),
+    .ndmreset_req_i(pwrmgr_if.cpu_i.ndmreset_req),
 
     .lc_dft_en_i     (pwrmgr_if.lc_dft_en),
     .lc_hw_debug_en_i(pwrmgr_if.lc_hw_debug_en),

@@ -85,7 +85,7 @@
     { name: "NumHwResets",
       desc: "Number of hardware reset requests, inclusive of pwrmgr's 2 internal resets",
       type: "int",
-      default: "4",
+      default: "5",
       local: "true"
     },
 
@@ -243,7 +243,7 @@
         },
 
         // reset requests include escalation reset + peripheral requests
-        { bits: "7:4",
+        { bits: "8:4",
           hwaccess: "hrw",
           name: "HW_REQ",
           desc: '''

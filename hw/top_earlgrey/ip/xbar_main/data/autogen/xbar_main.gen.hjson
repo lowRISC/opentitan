@@ -22,27 +22,27 @@
   {
     rst_main_ni:
     {
-      name: sys
+      name: lc
       domain: "0"
     }
     rst_fixed_ni:
     {
-      name: sys_io_div4
+      name: lc_io_div4
       domain: "0"
     }
     rst_usb_ni:
     {
-      name: sys_usb
+      name: lc_usb
       domain: "0"
     }
     rst_spi_host0_ni:
     {
-      name: sys_io
+      name: lc_io
       domain: "0"
     }
     rst_spi_host1_ni:
     {
-      name: sys_io_div2
+      name: lc_io_div2
       domain: "0"
     }
   }
