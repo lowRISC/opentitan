@@ -61,7 +61,7 @@ Prefer `while(true){}` infinite loops rather than `for(;;)`
 
 ### Comments
 
-Comments should use the `// C99-style` for consistency with C++.
+Non-doc comments should use the `// C99-style` for consistency with C++.
 
 <!-- To render a backtick in inline code in markdown, you need to double the surrounding backticks.
 https://daringfireball.net/projects/markdown/syntax#code -->
@@ -71,8 +71,8 @@ Example:
 ```c
 // `ptr` can never be NULL for reasons.
 ```
-Documentation comments should start with `/*` and non-doc comments should start with `//`.
-Example:
+
+Documentation comments should use Doxygen-style `/** ... */` blocks. Examples:
 
 ```c
 /**
@@ -84,6 +84,29 @@ void sort(int array[], size_t size){
     ...
   }
 }
+```
+
+This also applies to `struct` and `enum` members:
+
+```c
+/**
+ * Boot data stored in the flash info partition.
+ */
+typedef struct boot_data {
+  /**
+   * SHA-256 digest of boot data.
+   *
+   * The region covered by this digest starts immediately after this field and
+   * ends at the end of the entry.
+   */
+  hmac_digest_t digest;
+  ...
+  /**
+   * Boot data identifier.
+   */
+  uint32_t identifier;
+  ...
+} boot_data_t;
 ```
 
 Note also [Public function (API) documentation](#public-function-api-documentation) below.
