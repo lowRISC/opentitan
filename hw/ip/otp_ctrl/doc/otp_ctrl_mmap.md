@@ -23,6 +23,8 @@ It has been generated with ./util/design/gen-otp-mmap.py
 |         |                |            |      32bit       |          CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT           |     0x110      |     4      |
 |         |                |            |      32bit       |            CREATOR_SW_CFG_MIN_SEC_VER_BL0             |     0x114      |     4      |
 |         |                |            |      32bit       |      CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN      |     0x118      |     4      |
+|         |                |            |      32bit       |              CREATOR_SW_CFG_RMA_SPIN_EN               |     0x11C      |     4      |
+|         |                |            |      32bit       |            CREATOR_SW_CFG_RMA_SPIN_CYCLES             |     0x120      |     4      |
 |         |                |            |      64bit       | [CREATOR_SW_CFG_DIGEST](#Reg_creator_sw_cfg_digest_0) |     0x358      |     8      |
 |    2    |  OWNER_SW_CFG  |    800     |      32bit       |           OWNER_SW_CFG_ROM_ERROR_REPORTING            |     0x360      |     4      |
 |         |                |            |      32bit       |             OWNER_SW_CFG_ROM_BOOTSTRAP_EN             |     0x364      |     4      |

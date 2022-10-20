@@ -176,6 +176,14 @@
                     name: "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN",
                     size: "4"
                 }
+                {
+                    name: "CREATOR_SW_CFG_RMA_SPIN_EN",
+                    size: "4"
+                }
+                {
+                    name: "CREATOR_SW_CFG_RMA_SPIN_CYCLES",
+                    size: "4"
+                }
             ],
             desc: '''Software configuration partition for
             device-specific calibration data (Clock, LDO,
