@@ -6,7 +6,7 @@
   crash_dump_srcs = ['alert', 'cpu']
   # long term change this to a method where the generating function
   # can query the pwrmgr for how many internal resets it has
-  total_hw_resets = num_rstreqs+2
+  total_hw_resets = num_rstreqs+3
 %>
 
 # RSTMGR register template

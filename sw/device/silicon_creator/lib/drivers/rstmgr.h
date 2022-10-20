@@ -66,7 +66,7 @@ typedef enum rstmgr_reason {
   /**
    * Last used bit index (inclusive).
    */
-  kRstmgrReasonLast = 7,
+  kRstmgrReasonLast = 8,
 } rstmgr_reason_t;
 
 /**

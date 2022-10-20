@@ -558,7 +558,7 @@ interface chip_if;
 
   for (genvar i = 0; i < NUM_PWM_CHANNELS; i++) begin : gen_pwm_if_conn
     pwm_if pwm_if(.clk  (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
-                  .rst_n(`RSTMGR_HIER.resets_o.rst_sys_aon_n[0]),
+                  .rst_n(`RSTMGR_HIER.resets_o.rst_lc_aon_n[0]),
                   .pwm  (mios[AssignedPwmIos[i]]));
 
     initial begin

@@ -154,13 +154,10 @@ interface rstmgr_cascading_sva_if (
     `CASCADED_ASSERTS(CascadeLcToSys, lc_rst_or_sys_req_n[pd], rst_sys_src_n[pd], SysCycles, clk_i)
 
     // Controlled by rst_sys_src_n.
-    // rst_sys_aon_n[Domain0Sel] is not used by anyone
-    if (pd == rstmgr_pkg::DomainAonSel) begin : gen_sys_aon_chk
-      `CASCADED_ASSERTS(CascadeSysToSysAon, rst_sys_src_n[pd], resets_o.rst_sys_aon_n[pd],
-                        SysCycles, clk_aon_i)
-    end
-    `CASCADED_ASSERTS(CascadeSysToSysIoDiv4, rst_sys_src_n[pd], resets_o.rst_sys_io_div4_n[pd],
+    if (pd == rstmgr_pkg::DomainAonSel) begin : gen_sys_io_div4_chk
+      `CASCADED_ASSERTS(CascadeSysToSysIoDiv4, rst_sys_src_n[pd], resets_o.rst_sys_io_div4_n[pd],
                       SysCycles, clk_io_div4_i)
+    end
   end
 
   // Aon to POR
@@ -182,8 +179,8 @@ interface rstmgr_cascading_sva_if (
   // Controlled by rst_sys_src_n.
   `CASCADED_ASSERTS(CascadeSysToSys, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
                     resets_o.rst_sys_n[rstmgr_pkg::Domain0Sel], PeriCycles, clk_main_i)
-  `CASCADED_ASSERTS(CascadeSysToSysShadowed, rst_sys_src_n[rstmgr_pkg::Domain0Sel],
-                    resets_o.rst_sys_shadowed_n[rstmgr_pkg::Domain0Sel], SysCycles, clk_main_i)
+  `CASCADED_ASSERTS(CascadeLcToLcShadowed, rst_lc_src_n[rstmgr_pkg::Domain0Sel],
+                    resets_o.rst_lc_shadowed_n[rstmgr_pkg::Domain0Sel], SysCycles, clk_main_i)
 
   `undef FALL_ASSERT
   `undef RISE_ASSERTS

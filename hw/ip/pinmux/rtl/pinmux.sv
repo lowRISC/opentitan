@@ -19,6 +19,7 @@ module pinmux
 ) (
   input                            clk_i,
   input                            rst_ni,
+  input                            rst_sys_ni,
   // Scan enable
   input  prim_mubi_pkg::mubi4_t    scanmode_i,
   // Slow always-on clock
@@ -269,7 +270,7 @@ module pinmux
     .TargetCfg (TargetCfg)
   ) u_pinmux_strap_sampling (
     .clk_i,
-    .rst_ni,
+    .rst_ni (rst_sys_ni),
     .scanmode_i,
     // To padring side
     .out_padring_o  ( {dio_out_o,  mio_out_o}  ),

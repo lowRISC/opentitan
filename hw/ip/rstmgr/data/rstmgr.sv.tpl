@@ -297,8 +297,8 @@ module rstmgr
     .clk_i (clk_por),
     .scanmode_i(prim_mubi_pkg::mubi4_test_true_strict(rst_ctrl_scanmode[0])),
     .scan_rst_ni,
-    .rst_req_i(pwr_i.rst_sys_req | {PowerDomains{ndm_req_valid}}),
-    .rst_parent_ni(rst_lc_src_n),
+    .rst_req_i(pwr_i.rst_sys_req),
+    .rst_parent_ni(rst_por_aon_n),
     .rst_no(rst_sys_src_n)
   );
 

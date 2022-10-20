@@ -19,6 +19,7 @@ package pwrmgr_pkg;
   typedef enum logic [1:0] {
     IntReqMainPwr,
     IntReqEsc,
+    IntReqNdm,
     IntReqLastIdx
   } pwr_int_rst_req_e;
 
@@ -29,6 +30,7 @@ package pwrmgr_pkg;
   parameter int TotalResetWidth = HwResetWidth + NumSwRstReq;
   parameter int ResetMainPwrIdx = pwrmgr_reg_pkg::NumRstReqs + int'(IntReqMainPwr);
   parameter int ResetEscIdx = pwrmgr_reg_pkg::NumRstReqs + int'(IntReqEsc);
+  parameter int ResetNdmIdx = pwrmgr_reg_pkg::NumRstReqs + int'(IntReqNdm);
   parameter int ResetSwReqIdx = TotalResetWidth - 1;
 
   // pwrmgr to ast
@@ -155,6 +157,18 @@ package pwrmgr_pkg;
   typedef struct packed {
     logic core_sleeping;
   } pwr_cpu_t;
+
+  // cpu reset requests and status
+  typedef struct packed {
+    logic ndmreset_req;
+  } pwrmgr_cpu_t;
+
+  // exported resets
+
+  // default value for pwrmgr_ast_rsp_t (for dangling ports)
+  parameter pwrmgr_cpu_t PWRMGR_CPU_DEFAULT = '{
+    ndmreset_req: '0
+  };
 
   // default value (for dangling ports)
   parameter pwr_cpu_t PWR_CPU_DEFAULT = '{

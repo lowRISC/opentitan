@@ -105,6 +105,12 @@
 
     { struct:  "logic",
       type:    "uni",
+      name:    "ndmreset_req",
+      act:     "rcv",
+    },
+
+    { struct:  "logic",
+      type:    "uni",
       name:    "strap",
       act:     "req",
       package: "",

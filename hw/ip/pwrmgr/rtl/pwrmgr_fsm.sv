@@ -92,12 +92,18 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   // resets are valid
   logic reset_valid;
 
+  // reset_valid is registered
+  logic reset_valid_reg;
+
   // reset hint to rstmgr
   reset_cause_e reset_cause_q, reset_cause_d;
 
   // reset request
-  logic direct_rst_req;
   logic reset_req;
+  logic direct_rst_req;
+  logic ndmreset_req;
+  logic hw_rst_req;
+  logic sw_rst_req;
 
   // strap sample should only happen on cold boot or when the
   // the system goes through a reset cycle
@@ -123,15 +129,41 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 &
                              pwr_rst_i.rst_sys_src_n == '0;
 
+  // Any reset request was asserted.
   assign reset_req = |reset_reqs_i;
+
+  // Any peripheral triggererd hardware reset request.
+  assign hw_rst_req = |reset_reqs_i[NumRstReqs-1:0];
+
+  // Direct reset request that bypass checks.
   assign direct_rst_req = reset_reqs_i[ResetEscIdx] |
                           reset_reqs_i[ResetMainPwrIdx];
+
+  // Ndm reset request.
+  assign ndmreset_req = reset_reqs_i[ResetNdmIdx];
+
+  // Software triggered reset request.
+  assign sw_rst_req = reset_reqs_i[ResetSwReqIdx];
 
   // when in low power path, resets are controlled by domain power down
   // when in reset path, all resets must be asserted
   // when the reset cause is something else, it is invalid
   assign reset_valid = reset_cause_q == LowPwrEntry ? main_pd_ni | pd_n_rsts_asserted :
-                       reset_cause_q == HwReq       ? all_rsts_asserted : 1'b0;
+                       reset_cause_q == HwReq       ? (reset_valid_reg | all_rsts_asserted) : 1'b0;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      reset_valid_reg <= 1'b0;
+    end
+    else begin
+      if ({reset_valid_reg, reset_valid} == 2'b01) begin
+        reset_valid_reg <= reset_valid;
+      end
+      else if (state_d == FastPwrStateReleaseLcRst) begin
+        reset_valid_reg <= reset_valid;
+      end
+    end
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -275,7 +307,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateReleaseLcRst: begin
         rst_lc_req_d = '0;  // release rst_lc_n for all power domains
-
+        rst_sys_req_d = '0; // release rst_sys_n for all power domains
         // once all resets are released continue to otp initilization
         if (&pwr_rst_i.rst_lc_src_n) begin
           state_d = FastPwrStateOtpInit;
@@ -312,24 +344,23 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
           wkup_o = (pwrup_cause_i == Wake) & (reset_cause_q == LowPwrEntry);
           // This constitutes the end of a reset cycle
           reset_ongoing_d = 1'b0;
-          state_d = FastPwrStateRomCheck;
+          state_d = FastPwrStateStrap;
         end
       end
 
       FastPwrStateRomCheck: begin
         // zero outgoing low power indication
         low_power_d = '0;
-        rst_sys_req_d = '0;
         reset_cause_d = ResetNone;
 
         if (mubi4_test_true_strict(rom_intg_chk_ok)) begin
-          state_d = FastPwrStateStrap;
+          state_d = FastPwrStateActive;
         end
       end
 
       FastPwrStateStrap: begin
         strap_o = ~strap_sampled;
-        state_d =  FastPwrStateActive;
+        state_d =  FastPwrStateRomCheck;
       end
 
       FastPwrStateActive: begin
@@ -420,8 +451,12 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateResetPrep: begin
         reset_cause_d = HwReq;
-        rst_lc_req_d = {PowerDomains{1'b1}};
-        rst_sys_req_d = {PowerDomains{1'b1}};
+        rst_lc_req_d = {PowerDomains{reset_req}};
+        rst_sys_req_d = {PowerDomains{(hw_rst_req |
+                                       direct_rst_req |
+                                       sw_rst_req) |
+                                      (ndmreset_req & !lc_dft_en_i)}};
+
         clr_slow_req_o = 1'b1;
         // okay to be pending here, since reset is already asserted
         // if the handshake were attacked in any way, the device
