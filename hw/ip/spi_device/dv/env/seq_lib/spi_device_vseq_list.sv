@@ -15,6 +15,7 @@
 `include "spi_device_csb_read_vseq.sv"
 `include "spi_device_rx_timeout_vseq.sv"
 `include "spi_device_byte_transfer_vseq.sv"
+`include "spi_device_mem_parity_vseq.sv"
 `include "spi_device_tpm_base_vseq.sv"
 `include "spi_device_tpm_read_hw_reg_vseq.sv"
 `include "spi_device_tpm_all_vseq.sv"
