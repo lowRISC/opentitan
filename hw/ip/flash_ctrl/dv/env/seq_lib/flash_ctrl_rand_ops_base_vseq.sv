@@ -29,7 +29,7 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
   }
 
   constraint flash_op_c {
-    flash_op.op inside {FlashOpRead, FlashOpProgram};
+    flash_op.op inside {FlashOpRead, FlashOpProgram, FlashOpErase};
     flash_op.addr inside {[0 : FlashSizeBytes - 1]};
 
     if (!cfg.seq_cfg.op_allow_invalid) {flash_op.op != flash_ctrl_pkg::FlashOpInvalid;}
@@ -312,7 +312,6 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
       // TODO: randomly enable interrupts.
 
       // Send num_flash_ops_per_cfg number of ops with this configuration.
-      num_flash_ops_per_cfg = 1;
       for (int j = 1; j <= num_flash_ops_per_cfg; j++) begin
         data_q_t exp_data;
 
@@ -321,7 +320,6 @@ class flash_ctrl_rand_ops_base_vseq extends flash_ctrl_base_vseq;
         if (!randomize(flash_op, flash_op_data)) begin
           `uvm_fatal(`gfn, "Randomization failed for flash_op & flash_op_data!")
         end
-        flash_op.addr = 0;
         `uvm_info(`gfn, $sformatf(
                   "Starting flash_ctrl op: %0d/%0d: %p", j, num_flash_ops_per_cfg, flash_op),
                   UVM_LOW)
