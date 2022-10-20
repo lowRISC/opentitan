@@ -184,6 +184,83 @@ mod_mul_256x256:
 
   ret
 
+/**
+ * Masked 256-bit modular multiplication.
+ *
+ * Returns two shares c0, c1 in the range [0,m-1] such that:
+ *   (c0 + c1) mod p = ((a0 + a1) * (b0 + b1)) mod p
+ *
+ * This subroutine uses `mod_mul_256x256` internally; see the documentation for
+ * `mod_mul_256x256` for usage restrictions and details about the inputs p and
+ * u.
+ *
+ * The operands a and b should be provided in two shares each (a0, a1, b0, b1)
+ * such that each share is in the range [0, m-1] and:
+ *   a = (a0 + a1) mod m
+ *   b = (b0 + b1) mod m
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w0: a0, first share of operand a
+ * @param[in]  w1: a1, second share of operand a
+ * @param[in]  w4: b0, first share of operand b
+ * @param[in]  w5: b1, second share of operand b
+ * @param[in]  w29: p, modulus of P-256 underlying finite field
+ * @param[in]  w28: u, lower 256 bit of Barrett constant for curve P-256
+ * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus of P-256 underlying finite field
+ * @param[out] w4: c0, first share of result
+ * @param[out] w5: c1, second share of result
+ *
+ * clobbered registers: w3, w4, w5, w6, w19, w20, w21, w22, w23, w24, w25
+ * clobbered flag groups: FG0
+ */
+masked_mod_mul_256x256:
+  /* Fetch a new random masking value and reduce mod m.
+       w3 <= URND() mod m = r */
+  bn.wsrr   w3, 2 /* URND */
+  bn.addm   w3, w3, w31
+
+  /* Compute first share: c0 = (r + a0*b0 + a0*b1) mod m. */
+
+  /* w19 <= (w5*w0) mod m = (b1*a0) mod m */
+  bn.mov    w24, w5
+  bn.mov    w25, w0
+  jal       x1, mod_mul_256x256
+
+  /* w6 <= (w19 + w3) mod m = (b1*a0 + r) mod m */
+  bn.addm   w6, w19, w3
+
+  /* w19 <= (w4*w0) mod m = (b0*a0) mod m */
+  bn.mov    w24, w4
+  bn.mov    w25, w0
+  jal       x1, mod_mul_256x256
+
+  /* w24 <= w4 = b0 */
+  bn.mov    w24, w4
+
+  /* w4 <= (w6 + w19) mod m = (b1*a0 + r + b0*a0) mod m = c0 */
+  bn.addm   w4, w6, w19
+
+  /* Compute second share: c1 = (a1*b0 - r + a1*b1) mod m. */
+
+  /* w19 <= (w24*w1) mod m = (b0*a1) mod m */
+  bn.mov    w25, w1
+  jal       x1, mod_mul_256x256
+
+  /* w3 <= (w19 - w3) mod m = (b0*a1 - r) mod m */
+  bn.subm   w3, w19, w3
+
+  /* w19 <= (w5*w1) mod m = (b1*a1) mod m */
+  bn.mov    w24, w5
+  bn.mov    w25, w1
+  jal       x1, mod_mul_256x256
+
+  /* w5 <= (w3 + w19) mod m = (b0*a1 - r + b1*a1) mod m = c1 */
+  bn.addm   w5, w3, w19
+
+  ret
+
 
 /**
  * Checks if a point is a valid curve point on curve P-256 (secp256r1)
@@ -742,16 +819,25 @@ proj_to_affine:
  * algorithm. (The timing varies based on the modulus alone, not the input x,
  * so it is safe to use for a non-secret modulus and a secret operand).
  *
- * @param[in]  w0: x, a 256 bit operand with x < m
+ * The input x is accepted in two shares x0, x1 such that:
+ *   0 <= x0 < m
+ *   0 <= x1 < m
+ *   x = (x0 + x1) mod m
+ *
+ * The output is returned in the same sharing scheme.
+ *
+ * @param[in]  w0: x0, first share of x
+ * @param[in]  w1: x1, second share of x
  * @param[in]  w29: m, modulus, 2^256 > m > 2^255.
  * @param[in]  w28: u, lower 256 bit of pre-computed Barrett constant
  * @param[in]  w31, all-zero
  * @param[in]  MOD: m, modulus
- * @param[out]  w1: x_inv, modular multiplicative inverse
+ * @param[out]  w4: x_inv0, first share of modular multiplicative inverse
+ * @param[out]  w5: x_inv1, second share of modular multiplicative inverse
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: w1, w2, w3, w19, w24, w25
+ * clobbered registers: w1, w2, w3, w4, w5, w6, w19, w24, w25
  * clobbered flag groups: FG0
  */
 mod_inv:
@@ -761,33 +847,56 @@ mod_inv:
   bn.wsrr   w2, 0
   bn.subi   w2, w2, 2
 
-  /* init square and multiply: w1 = 1 */
-  bn.addi   w1, w31, 1
+  /* Init square and multiply with two shares such that (w4 + w5) mod m = 1.
+       w4 <= URND() mod m = t0
+       w5 <= (1 - w4) mod m = t1
+       t = (t0 + t1) mod m = 1 */
+  bn.wsrr   w4, 2 /* URND */
+  bn.addm   w4, w4, w31
+  bn.addi   w5, w31, 1
+  bn.subm   w5, w5, w4
 
   /* square and multiply loop */
-  loopi     256, 14
-
-    /* square: w3 = w19 = w24*w25 = w1^2  mod m */
-    bn.mov    w24, w1
-    bn.mov    w25, w1
+  loopi     256, 19
+    /* w3 <= w4^2 mod m = t0^2 mod m */
+    bn.mov    w24, w4
+    bn.mov    w25, w4
     jal       x1, mod_mul_256x256
     bn.mov    w3, w19
+
+    /* w19 <= (w4*w5) mod m = (t0*t1) mod m */
+    bn.mov    w24, w4
+    bn.mov    w25, w5
+    jal       x1, mod_mul_256x256
+
+    /* w4 <= (w19 + w19 + w3) mod m = (t0^2 + 2*t0*t1) mod m */
+    bn.addm  w4, w19, w19
+    bn.addm  w4, w4, w3
+
+    /* w5 <= w5^2 mod m = t1^2 mod m */
+    bn.mov    w24, w5
+    bn.mov    w25, w5
+    jal       x1, mod_mul_256x256
+    bn.mov    w5, w19
+
+    /* Squaring step complete, new intermediate result t' such that:
+        t' = (w4 + w5) mod m = (t0 + t1)^2 mod m = t^2 mod m */
 
     /* shift MSB into carry flag
        w2 = 2*w2 = w2 << 1 */
     bn.add    w2, w2, w2
 
     /* skip multiplication if C flag not set */
-    bn.sel    w1, w1, w3, C
     csrrs     x2, 0x7c0, x0
     andi      x2, x2, 1
     beq       x2, x0, nomul
 
-    /* multiply: w1 = w19 = w24*w25 = w3*w0  mod m */
-    bn.mov    w24, w3
-    bn.mov    w25, w0
-    jal       x1, mod_mul_256x256
-    bn.mov    w1, w19
+    /* Masked multiply with k to get a new intermediate value t in two
+        shares.
+          w4 <= t0'
+          w5 <= t1'
+          such that (t0' + t1') mod m = (k*t) mod m */
+    jal       x1, masked_mod_mul_256x256
 
     nomul:
     nop
@@ -1147,63 +1256,75 @@ p256_sign:
   li        x2, 1
   bn.lid    x2, 0(x16)
 
-  /* Combine the shares of k for inversion.
-     TODO(#15507): modify inversion to handle k in shares.
-       w0 <= (w0 + w1) mod n = k */
-  bn.addm   w0, w0, w1
-
   /* modular multiplicative inverse of k
-     w1 <= k^-1 mod n */
+     w0, w1 <= k^-1 mod n */
   jal       x1, mod_inv
+  bn.mov    w0, w4
+  bn.mov    w1, w5
 
-  /* w24 = d0 = dmem[d0] */
+  /* w4 = d0 = dmem[d0] */
   la        x23, d0
-  li        x2, 24
+  li        x2, 4
   bn.lid    x2, 0(x23)
 
-  /* w2 = k^-1*d0 mod n */
-  bn.mov    w25, w1
-  jal       x1, mod_mul_256x256
-  bn.mov    w2, w19
-
-  /* w24 = d1 = dmem[d1] */
+  /* w5 = d1 = dmem[d1] */
   la        x23, d1
-  li        x2, 24
+  li        x2, 5
   bn.lid    x2, 0(x23)
 
-  /* w19 = k^-1*d1 mod n */
-  jal       x1, mod_mul_256x256
+  /* Masked multiply of d and k^-1.
+       w4 <= kd0
+       w5 <= kd1
+       such that (kd0 + kd1) mod n = (d*k^-1) mod n */
+  jal       x1, masked_mod_mul_256x256
 
-  /* w19 <= w2*w19 mod n = (k^-1*d0 + k^-1*d1) mod n
-                         = (k^-1*d) mod n */
-  bn.addm   w19, w2, w19
+  /* w11 <= w11  mod n = r */
+  bn.addm   w11, w11, w31
 
-  /* w24 = r <= w11  mod n */
-  bn.addm   w24, w11, w31
-
-  /* store r of signature in dmem: dmem[r] <= r = w24 */
+  /* Store r of signature in dmem.
+       dmem[r] <= r = w11 */
   la        x19, r
-  li        x2, 24
+  li        x2, 11
   bn.sid    x2, 0(x19)
 
-  /* w0 = w19 <= w24*w25 = w24*w19 = r*k^-1*d  mod n */
-  bn.mov    w25, w19
+  /* w4 <= w11*w4 = (r*kd0) mod n */
+  bn.mov    w24, w11
+  bn.mov    w25, w4
   jal       x1, mod_mul_256x256
-  bn.mov    w0, w19
+  bn.mov    w4, w19
 
-  /* load message from dmem: w24 = msg <= dmem[msg] */
+  /* w19 <= w11*w5 = (r*kd1) mod n */
+  bn.mov    w24, w11
+  bn.mov    w25, w5
+  jal       x1, mod_mul_256x256
+
+  /* w4 <= (w4 + w19) mod n = (r*k^-1*d) mod n */
+  bn.addm   w4, w4, w19
+
+  /* Load message from dmem.
+       w5 = msg <= dmem[msg] */
   la        x18, msg
-  li        x2, 24
+  li        x2, 5
   bn.lid    x2, 0(x18)
 
-  /* w19 = k^-1*msg <= w25*w24 = w1*w24  mod n */
+  /* w19 <= w5*w0 = (msg*k_inv0) mod n */
+  bn.mov    w24, w5
+  bn.mov    w25, w0
+  jal       x1, mod_mul_256x256
+
+  /* w0 <= (w4 + w19) mod n = (r*k^-1*d + msg*k_inv0) mod n */
+  bn.addm   w0, w4, w19
+
+  /* w19 <= w5*w1 = (msg*k_inv1) mod n */
+  bn.mov    w24, w5
   bn.mov    w25, w1
   jal       x1, mod_mul_256x256
 
-  /* w0 = s <= w19 + w0 = k^-1*msg + r*k^-1*d  mod n */
-  bn.addm   w0, w19, w0
+  /* w0 <= (w0 + w19) mod n = (k^-1*msg + r*k^-1*d) mod n = s */
+  bn.addm   w0, w0, w19
 
-  /* store s of signature in dmem: dmem[s] <= s = w0 */
+  /* Store s of signature in dmem.
+       dmem[s] <= w0 = s */
   la        x20, s
   li        x2, 0
   bn.sid    x2, 0(x20)
