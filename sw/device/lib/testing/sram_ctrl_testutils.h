@@ -28,7 +28,7 @@ typedef struct sram_ctrl_testutils_data {
  * Writes `data` at the `address` in RAM.
  */
 void sram_ctrl_testutils_write(uintptr_t address,
-                               const sram_ctrl_testutils_data_t *data);
+                               const sram_ctrl_testutils_data_t data);
 
 /**
  * Reads data from `address` in SRAM and compares against `expected`.
@@ -37,7 +37,7 @@ void sram_ctrl_testutils_write(uintptr_t address,
  */
 OT_WARN_UNUSED_RESULT
 bool sram_ctrl_testutils_read_check_eq(
-    uintptr_t address, const sram_ctrl_testutils_data_t *expected);
+    uintptr_t address, const sram_ctrl_testutils_data_t expected);
 
 /**
  * Reads data from `address` in SRAM and compares against `expected`.
@@ -46,7 +46,7 @@ bool sram_ctrl_testutils_read_check_eq(
  */
 OT_WARN_UNUSED_RESULT
 bool sram_ctrl_testutils_read_check_neq(
-    uintptr_t address, const sram_ctrl_testutils_data_t *expected);
+    uintptr_t address, const sram_ctrl_testutils_data_t expected);
 
 /**
  * Triggers the SRAM scrambling operation.
