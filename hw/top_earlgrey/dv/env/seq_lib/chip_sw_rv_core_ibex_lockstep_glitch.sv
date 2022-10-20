@@ -150,6 +150,11 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       // the lockstep core to produce the output to compare.
       int unsigned delay_clks = hdl_read_int_unsigned($sformatf("%s.LockstepOffset", lockstep_path),
                                                       "Could not read LockstepOffset parameter.");
+
+      // Wait one more clock cycle if forcing `core_busy_o` to 0 for one clock cycle.
+      // Because forcing this port causes the u_ibex_lockstep clk_i's en_latch to reset to 0 for
+      // one clock cycle.
+      if (output_ports[port_idx].name == "core_busy_o") ++delay_clks;
       cfg.chip_vif.cpu_clk_rst_if.wait_n_clks(delay_clks);
     end
 
