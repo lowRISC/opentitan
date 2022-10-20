@@ -422,7 +422,7 @@ static dif_result_t kmac_get_digest(uint32_t *out, size_t len) {
  * This function configures KMAC to use software entropy.
  */
 static void kmac_init(void) {
-  CHECK_DIF_OK(
+  SS_CHECK_DIF_OK(
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 
   dif_kmac_config_t config = (dif_kmac_config_t){
@@ -432,7 +432,7 @@ static void kmac_init(void) {
       .entropy_fast_process = false,
       .msg_mask = true,
   };
-  CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
+  SS_CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
   kmac_block_until_idle();
 }
