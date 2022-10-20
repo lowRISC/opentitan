@@ -109,27 +109,21 @@ static volatile uint32_t
 /**
  * Test pattern to be written and read from SRAM.
  */
-static const sram_ctrl_testutils_data_t kRamTestPattern1 = {
-    .words =
-        {
-            0xA5A5A5A5,
-            0xA23DE94C,
-            0xD82A4FB0,
-            0xE3CA4D62,
-        },
+static const uint32_t kRamTestPattern1[] = {
+    0xA5A5A5A5,
+    0xA23DE94C,
+    0xD82A4FB0,
+    0xE3CA4D62,
 };
 
 /**
  * Test pattern to be written and read from SRAM.
  */
-static const sram_ctrl_testutils_data_t kRamTestPattern2 = {
-    .words =
-        {
-            0x5A5A5A5A,
-            0x3CFB4A77,
-            0x304C6528,
-            0xFAEFD5CC,
-        },
+static const uint32_t kRamTestPattern2[] = {
+    0x5A5A5A5A,
+    0x3CFB4A77,
+    0x304C6528,
+    0xFAEFD5CC,
 };
 
 /**
@@ -151,6 +145,12 @@ static const uint32_t kMainRamBackdoorOffset =
 static const uint32_t kRetRamBackdoorOffset =
     TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR +
     (RET_RAM_COPY_OFFSET * sizeof(uint32_t));
+
+/**
+ * Retention SRAM start address (inclusive).
+ */
+static const uintptr_t kRetSramAddr =
+    TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
 
 /**
  * Performs scrambling, saves the test relevant data and resets the system.
@@ -247,20 +247,31 @@ static bool reentry_after_system_reset(void) {
  */
 static void prepare_for_scrambling(void) {
   // Make sure we can write and read to the retention SRAM.
-  sram_ctrl_testutils_write(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-                            kRamTestPattern2);
-  sram_ctrl_testutils_write(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-                            kRamTestPattern1);
-  CHECK(sram_ctrl_testutils_read_check_eq(
-      TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, kRamTestPattern1));
+  sram_ctrl_testutils_write(
+      kRetSramAddr,
+      (sram_ctrl_testutils_data_t){.words = kRamTestPattern2,
+                                   .len = ARRAYSIZE(kRamTestPattern2)});
+  sram_ctrl_testutils_write(
+      kRetSramAddr,
+      (sram_ctrl_testutils_data_t){.words = kRamTestPattern1,
+                                   .len = ARRAYSIZE(kRamTestPattern1)});
+
+  CHECK_ARRAYS_EQ((uint32_t *)kRetSramAddr, kRamTestPattern1,
+                  ARRAYSIZE(kRamTestPattern1));
 
   // Make sure we can write and read the buffer in MAIN SRAM.
-  sram_ctrl_testutils_write((uintptr_t)&sram_ctrl_main_scramble_buffer,
-                            kRamTestPattern1);
-  sram_ctrl_testutils_write((uintptr_t)&sram_ctrl_main_scramble_buffer,
-                            kRamTestPattern2);
-  CHECK(sram_ctrl_testutils_read_check_eq(
-      (uintptr_t)&sram_ctrl_main_scramble_buffer, kRamTestPattern2));
+  sram_ctrl_testutils_write(
+      (uintptr_t)&sram_ctrl_main_scramble_buffer,
+      (sram_ctrl_testutils_data_t){.words = kRamTestPattern1,
+                                   .len = ARRAYSIZE(kRamTestPattern1)});
+
+  sram_ctrl_testutils_write(
+      (uintptr_t)&sram_ctrl_main_scramble_buffer,
+      (sram_ctrl_testutils_data_t){.words = kRamTestPattern2,
+                                   .len = ARRAYSIZE(kRamTestPattern2)});
+
+  CHECK_ARRAYS_EQ(sram_ctrl_main_scramble_buffer, kRamTestPattern2,
+                  ARRAYSIZE(kRamTestPattern2));
 }
 
 /**
@@ -268,8 +279,7 @@ static void prepare_for_scrambling(void) {
  * the number of integrity exceptions.
  */
 void ottf_internal_isr(void) {
-  mmio_region_t mem_region =
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR);
+  mmio_region_t mem_region = mmio_region_from_addr(kRetSramAddr);
   uint32_t exception_count =
       mmio_region_read32(mem_region, ECC_ERROR_COUNT_OFFSET);
   mmio_region_write32(mem_region, ECC_ERROR_COUNT_OFFSET, ++exception_count);
@@ -290,17 +300,17 @@ bool test_main(void) {
 
   if (reentry_after_system_reset()) {
     // Second boot, check the values.
-    CHECK(sram_ctrl_testutils_read_check_neq(
-        TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, kRamTestPattern1));
-    CHECK(sram_ctrl_testutils_read_check_neq(
-        TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, kRamTestPattern2));
+    CHECK_ARRAYS_NE((uint32_t *)kRetSramAddr, kRamTestPattern1,
+                    ARRAYSIZE(kRamTestPattern1));
+
+    CHECK_ARRAYS_NE((uint32_t *)kRetSramAddr, kRamTestPattern2,
+                    ARRAYSIZE(kRamTestPattern2));
 
     // Statistically there is always a chance that after changing the scrambling
     // key the ECC bits are correct and no IRQ is triggered. So we tolerate a
     // minimum of false positives.
     uint32_t ecc_errors = mmio_region_read32(
-        mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR),
-        ECC_ERROR_COUNT_OFFSET);
+        mmio_region_from_addr(kRetSramAddr), ECC_ERROR_COUNT_OFFSET);
     uint32_t false_positives = SRAM_CTRL_TESTUTILS_DATA_NUM_WORDS - ecc_errors;
 
     if (false_positives > 0) {
@@ -313,14 +323,13 @@ bool test_main(void) {
                false_positives);
     }
 
-    sram_ctrl_testutils_check_backdoor_write(
-        TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR, BACKDOOR_TEST_WORDS,
-        RET_RAM_COPY_OFFSET, kBackdoorExpectedBytes);
+    sram_ctrl_testutils_check_backdoor_write(kRetSramAddr, BACKDOOR_TEST_WORDS,
+                                             RET_RAM_COPY_OFFSET,
+                                             kBackdoorExpectedBytes);
   } else {
     // First boot, prepare the test.
-    mmio_region_write32(
-        mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR),
-        ECC_ERROR_COUNT_OFFSET, 0);
+    mmio_region_write32(mmio_region_from_addr(kRetSramAddr),
+                        ECC_ERROR_COUNT_OFFSET, 0);
 
     prepare_for_scrambling();
     main_sram_scramble();
