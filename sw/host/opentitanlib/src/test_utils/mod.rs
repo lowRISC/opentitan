@@ -4,6 +4,7 @@
 
 pub mod bootstrap;
 pub mod e2e_command;
+pub mod epmp;
 pub mod init;
 pub mod load_bitstream;
 pub mod rpc;

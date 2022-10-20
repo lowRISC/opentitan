@@ -74,6 +74,7 @@ rust_library(
         "src/spiflash/sfdp.rs",
         "src/test_utils/bootstrap.rs",
         "src/test_utils/e2e_command.rs",
+        "src/test_utils/epmp.rs",
         "src/test_utils/init.rs",
         "src/test_utils/load_bitstream.rs",
         "src/test_utils/mod.rs",
