@@ -142,11 +142,14 @@ function main() {
             shift
             local qexpr outfile
             qexpr="$(outquery_starlark_expr outquery)"
-            outfile=$(do_outquery "$qexpr" "$@")
+            outfiles=$(do_outquery "$qexpr" "$@")
             "$file" build "$@"
-            # shellcheck disable=SC2059
-            # We are intentionally using $command_template as a format string.
-            eval "$(printf "$command_template" "$outfile")"
+            for outfile in $outfiles ; do
+                # shellcheck disable=SC2059
+                # We are intentionally using a variable as a format string.
+                cmd="$(printf "$command_template" "$outfile")"
+                eval "$cmd"
+            done
             ;;
         *)
             exec "$file" "$@"
