@@ -92,7 +92,7 @@ module otbn_loop_controller
   logic [StackDepthW-1:0] loop_stack_rd_idx;
 
   logic [31:0]               loop_counters [LoopStackDepth];
-  logic [LoopStackDepth-1:0] loop_counter_err;
+  logic [LoopStackDepth-1:0] loop_counter_err, loop_counter_err_d, loop_counter_err_q;
 
   // The loop controller maintains a loop stack. The top of the loop stack is the innermost loop and
   // is valid when current_loop_valid is set. The loop controller tracks the current address vs the
@@ -237,9 +237,22 @@ module otbn_loop_controller
       .err_o     (loop_counter_err[i_count])
     );
 
+    assign loop_counter_err_d[i_count] = loop_counter_err_q[i_count] | loop_counter_err[i_count];
+
     // Cannot clear and set prim_count in the same cycle
     `ASSERT(NoLoopCountClrAndSet_A, !(state_reset_i & loop_count_set))
   end
+
+  prim_flop #(
+    .Width(LoopStackDepth),
+    .ResetValue('0)
+  ) u_loop_counter_err_flop (
+    .clk_i,
+    .rst_ni,
+
+    .d_i(loop_counter_err_d),
+    .q_o(loop_counter_err_q)
+  );
 
   assign current_loop.loop_iterations = loop_counters[loop_stack_rd_idx];
 
@@ -264,8 +277,9 @@ module otbn_loop_controller
     .err_o      (current_loop_intg_err)
   );
 
-  assign hw_err_o =
-    (|loop_counter_err) | loop_stack_cnt_err | ((|current_loop_intg_err) & current_loop_valid);
+  assign hw_err_o = (|loop_counter_err_d) |
+                    loop_stack_cnt_err    |
+                    ((|current_loop_intg_err) & current_loop_valid);
 
   assign predec_err_o =
     (loop_end_addr_predec_i != new_loop_end_addr_full[ImemAddrWidth-1:0]) & loop_start_req_i;

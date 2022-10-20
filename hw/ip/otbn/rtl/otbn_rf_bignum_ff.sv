@@ -91,7 +91,7 @@ module otbn_rf_bignum_ff
 
   assign unused_addr = ^rd_addr_a_i ^ ^rd_addr_b_i ^ ^wr_addr_i;
 
-  logic we_err;
+  logic we_err, we_err_d;
   logic [1:0][NWdr-1:0] we_onehot_unbuf, we_onehot_buf;
 
   for (genvar k = 0; k < 2; k++) begin : g_check
@@ -126,13 +126,17 @@ module otbn_rf_bignum_ff
     .err_o(we_err)
   );
 
-  // We need to register this to avoid timing loops.
-  always_ff @(posedge clk_i or negedge rst_ni) begin : p_err
-    if (!rst_ni) begin
-      we_err_o <= '0;
-    end else begin
-      we_err_o <= we_err;
-    end
-  end
+  assign we_err_d = we_err | we_err_o;
+
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_we_err_flop (
+    .clk_i,
+    .rst_ni,
+
+    .d_i(we_err_d),
+    .q_o(we_err_o)
+  );
 
 endmodule
