@@ -215,6 +215,7 @@ jobs:
       --build_tests_only=false \
       --test_output=errors \
       --define DISABLE_VERILATOR_BUILD=true \
+      --build_tag_filters=-vivado \
       --test_tag_filters=-broken,-cw310,-verilator,-dv \
       -- //... \
       -//quality/... \

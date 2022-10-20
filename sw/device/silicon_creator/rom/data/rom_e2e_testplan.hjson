@@ -843,7 +843,7 @@
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2
-      tests: []
+      tests: ["//sw/device/examples/sram_program:rom_e2e_jtag_inject_tests"]
     }
 
 

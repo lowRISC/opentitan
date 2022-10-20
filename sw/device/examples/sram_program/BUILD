@@ -5,6 +5,8 @@
 load("//rules:opentitan.bzl", "opentitan_ram_binary")
 load("//rules:opentitan_gdb_test.bzl", "opentitan_gdb_fpga_cw310_test")
 load("//rules:linker.bzl", "ld_library")
+load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
+load("//rules:splice.bzl", "bitstream_splice")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -37,11 +39,7 @@ opentitan_ram_binary(
     ],
 )
 
-opentitan_gdb_fpga_cw310_test(
-    name = "sram_program_fpga_cw310_test",
-    timeout = "short",
-    exit_success_pattern = "sram_program\\.c:\\d+\\] PC: 0x100020e0, SRAM: \\[0x10000000, 0x10020000\\)",
-    gdb_script = """
+GDB_SCRIPT = """
         target extended-remote :3333
 
         echo :::: Send OpenOCD the 'reset halt' command.\\n
@@ -128,12 +126,70 @@ opentitan_gdb_fpga_cw310_test(
         print sram_main()
 
         echo :::: Done.\\n
-    """,
-    gdb_script_symlinks = {
-        ":sram_program_fpga_cw310.elf": "sram_program.elf",
-        "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
-    },
-    rom_bitstream = "//hw/bitstream:rom_otp_exec_disabled",
-    rom_kind = "Rom",
-    tags = ["manual"],
+"""
+
+OTP_IMAGES = [
+    "test_unlocked0",
+    "dev",
+    "rma",
+]
+
+[
+    otp_image(
+        name = "img_{}_exec_disabled".format(otp_name),
+        src = "//hw/ip/otp_ctrl/data:otp_json_" + otp_name,
+        overlays = [
+            "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
+        ],
+        visibility = ["//visibility:private"],
+    )
+    for otp_name in OTP_IMAGES
+]
+
+[
+    bitstream_splice(
+        name = "rom_otp_{}_exec_disabled".format(otp_name),
+        src = "//hw/bitstream:rom",
+        data = "img_{}_exec_disabled".format(otp_name),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = [
+            "manual",
+            "vivado",
+        ],
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for otp_name in OTP_IMAGES
+]
+
+[
+    opentitan_gdb_fpga_cw310_test(
+        name = "sram_program_fpga_cw310_test_otp_" + otp_name,
+        timeout = "short",
+        exit_success_pattern = "sram_program\\.c:\\d+\\] PC: 0x100020e0, SRAM: \\[0x10000000, 0x10020000\\)",
+        gdb_script = GDB_SCRIPT,
+        gdb_script_symlinks = {
+            ":sram_program_fpga_cw310.elf": "sram_program.elf",
+            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+        },
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_kind = "Rom",
+        tags = [
+            "cw310",
+            "vivado",
+        ],
+    )
+    for otp_name in OTP_IMAGES
+]
+
+test_suite(
+    name = "rom_e2e_jtag_inject_tests",
+    tags = [
+        "cw310",
+        "vivado",
+    ],
+    tests = ["sram_program_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_IMAGES],
 )
