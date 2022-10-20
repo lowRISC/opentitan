@@ -801,8 +801,8 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "sram_ctrl_execution_test_main",
-    srcs = ["sram_ctrl_execution_test_main.c"],
+    name = "sram_ctrl_execution_main_test",
+    srcs = ["sram_ctrl_execution_main_test.c"],
     targets = ["dv"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",

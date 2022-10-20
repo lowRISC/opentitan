@@ -1178,7 +1178,7 @@
     {
       name: chip_sw_sram_ctrl_execution_main
       uvm_test_seq: chip_sw_sram_ctrl_execution_main_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_execution_test_main:1"]
+      sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_execution_main_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
