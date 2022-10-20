@@ -56,6 +56,7 @@ module otbn_stack
   logic [StackDepthW-1:0] stack_rd_idx, stack_wr_idx;
   logic [StackDepthW:0]   next_stack_wr_ptr;
   logic [StackDepthW-1:0] next_stack_rd_idx;
+  logic                   cnt_err, cnt_err_d, cnt_err_q;
 
   logic stack_empty;
   logic stack_full;
@@ -86,8 +87,23 @@ module otbn_stack
     .step_i     ((StackDepthW+1)'(1'b1)),
     .cnt_o      (stack_wr_ptr),
     .cnt_next_o (next_stack_wr_ptr),
-    .err_o      (cnt_err_o)
+    .err_o      (cnt_err)
   );
+
+  assign cnt_err_d = cnt_err_q | cnt_err;
+
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_cnt_err_flop (
+    .clk_i,
+    .rst_ni,
+
+    .d_i(cnt_err_d),
+    .q_o(cnt_err_q)
+  );
+
+  assign cnt_err_o = cnt_err_d;
 
   always_ff @(posedge clk_i) begin
     if (stack_write) begin

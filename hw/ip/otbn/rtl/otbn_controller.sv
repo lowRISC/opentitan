@@ -188,7 +188,7 @@ module otbn_controller
   logic internal_fatal_err;
   logic done_complete;
   logic executing;
-  logic state_error;
+  logic state_error, state_error_d, state_error_q;
   logic spurious_secure_wipe_ack_q, spurious_secure_wipe_ack_d;
   logic mubi_err_q, mubi_err_d;
 
@@ -340,9 +340,10 @@ module otbn_controller
       spurious_secure_wipe_ack_q <= spurious_secure_wipe_ack_d;
     end
   end
-  assign spurious_secure_wipe_ack_d = secure_wipe_ack_i &
-                                      ~secure_wipe_running_q &
-                                      ~secure_wipe_running_i;
+  assign spurious_secure_wipe_ack_d = spurious_secure_wipe_ack_q |
+                                      (secure_wipe_ack_i      &
+                                       ~secure_wipe_running_q &
+                                       ~secure_wipe_running_i);
 
   // Stall a cycle on loads to allow load data writeback to happen the following cycle. Stall not
   // required on stores as there is no response to deal with.
@@ -503,6 +504,19 @@ module otbn_controller
     end
   end
 
+  assign state_error_d = state_error | state_error_q;
+
+  prim_flop #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_state_error_flop (
+    .clk_i,
+    .rst_ni,
+
+    .d_i(state_error_d),
+    .q_o(state_error_q)
+  );
+
   `ASSERT(InsnAlwaysValidInStall, state_q == OtbnStateStall |-> insn_valid_i)
 
   // Anything that moves us or keeps us in the stall state should cause `stall` to be asserted
@@ -550,7 +564,7 @@ module otbn_controller
   assign illegal_insn_static = insn_illegal_i | ispr_err;
 
   assign fatal_software_err       = software_err & software_errs_fatal_i;
-  assign bad_internal_state_err   = |{state_error, loop_hw_err, rf_base_call_stack_hw_err_i,
+  assign bad_internal_state_err   = |{state_error_d, loop_hw_err, rf_base_call_stack_hw_err_i,
                                       rf_bignum_spurious_we_err, spurious_secure_wipe_ack_q,
                                       mubi_err_q};
   assign reg_intg_violation_err   = rf_bignum_intg_err | ispr_rdata_intg_err;
