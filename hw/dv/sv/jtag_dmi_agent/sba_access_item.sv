@@ -44,6 +44,11 @@ class sba_access_item extends uvm_sequence_item;
     `uvm_field_int (timed_out,                UVM_DEFAULT)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  function new (string name = "");
+    super.new(name);
+    is_err = SbaErrNone;
+    is_busy_err = 0;
+    timed_out = 0;
+  endfunction : new
 
 endclass

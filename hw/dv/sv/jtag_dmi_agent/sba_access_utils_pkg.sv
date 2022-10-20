@@ -93,8 +93,12 @@ package sba_access_utils_pkg;
     if (req.bus_op == BusOpRead) begin
       case ({req.readondata, req.readonaddr})
         2'b00: begin
-          `uvm_info(MsgId, {"readonaddr and readondata are not set. ",
-                            "Read request will not be triggered. Returning."}, UVM_MEDIUM)
+          // No SBA read will be triggered. Read sbdata0 and and check status anyway (25% of the
+          // time). The external scoreboard is expected to verify that no SBA transaction is seen.
+          if (!cfg.in_reset && !$urandom_range(0, 3)) begin  // 25%
+            csr_rd(.ptr(jtag_dmi_ral.sbdata0), .value(rdata));
+            `BUSYWAIT_AND_EXIT_ON_ERR
+          end
         end
         2'b01: begin
           // SBA read already triggered on write to sbaddress0. Read sbdata0 to fetch the response
@@ -112,21 +116,25 @@ package sba_access_utils_pkg;
               csr_rd(.ptr(jtag_dmi_ral.sbdata0), .value(rdata));
             end
           end
-          // The previous step triggered an SBA read. Wait for it to complete.
-          `BUSYWAIT_AND_EXIT_ON_ERR
 
           // Read sbdata req.autoincrement+1 number of times.
           //
           // Randomly also inject reads to sbaddress0 to verify address is correctly incremented
-          // (done externally by the scoreboard).
+          // (checked by sba_access_monitor or the external scoreboard).
           for (int i = 0; i < req.autoincrement + 1; i++) begin
+            // The previous step triggered an SBA read. Wait for it to complete.
+            `BUSYWAIT_AND_EXIT_ON_ERR
+            if (!cfg.in_reset && i > 0 && !$urandom_range(0, 3)) begin  //25%
+              csr_rd(.ptr(jtag_dmi_ral.sbaddress0), .value(rdata));
+            end
+            // Before the last read, set readondata to 0 to prevent new SBA read triggers.
+            if (!cfg.in_reset && i == req.autoincrement) begin
+              wdata = get_csr_val_with_updated_field(jtag_dmi_ral.sbcs.sbreadondata, wdata, 0);
+              csr_wr(.ptr(jtag_dmi_ral.sbcs), .value(wdata), .predict(1));
+            end
             if (!cfg.in_reset) begin
               csr_rd(.ptr(jtag_dmi_ral.sbdata0), .value(rdata));
               req.rdata[i] = rdata;
-            end
-            `BUSYWAIT_AND_EXIT_ON_ERR
-            if (i > 0 && !cfg.in_reset && !$urandom_range(0, 3)) begin  //25%
-              csr_rd(.ptr(jtag_dmi_ral.sbaddress0), .value(rdata));
             end
           end
         end

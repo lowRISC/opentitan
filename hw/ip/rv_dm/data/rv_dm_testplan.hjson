@@ -206,34 +206,35 @@
             - Write to SBA registers to inject randomized 8/16/32bit writes and reads.
             - Randomize readonaddr and readondata settings and ensure those have the intended
               effect.
-            - Inject a new SBA traffic before the previous one completes - verify that the
-              sbbusyerror asserts.
-            - Randomly inject TL intg error and bus access error on the response channel and ensure
-              no deadlocks. The SBA host interface does not support signaling of errors, so this
-              has no effect.
-            - Randomly also enable abautoincrement.
-            - The TL intg error on SBA TL interface is intentionally not wired to an alert - verify
-              no alerts occur.
-            - Hav.
+            - Generate sbbusy = 1 scenario by picking a very large response delay, since JTAG
+              accesses are much slower (SBA TL accesses tend to complete faster than JTAG can
+              read the SBCS register).
             '''
       stage: V2
-      tests: ["rv_dm_sba_tl_access"]
+      tests: ["rv_dm_sba_tl_access", "rv_dm_delayed_resp_sba_tl_access"]
     }
     {
       name: bad_sba
       desc: '''
-            Verify attempts to make bad SBA accesses results in sberror sticky bit getting set.
+            Verify attempts to make bad SBA accesses results in the error sticky bits getting set.
 
             - Enable debug by setting lc_hw_debug_en to true and activate the dm.
-            - Inject a randomized SBA access that is not aligned to the size of the transfer and
-              verify that the sberror bit is set to 3.
-            - Inject a randomized SBA access that is greater that the supported transfer size and
-              verify that the sberror bit is set to 4.
+            - Build on the previous `sba` test and randomly inject errors in the following
+              ways:
+              - Inject a response error on the TL response channel (d_error = 1) and verify that
+                the sberror bit is set to 2.
+              - Inject a randomized SBA access that is not aligned to the size of the transfer and
+                verify that the sberror bit is set to 3.
+              - Inject a randomized SBA access that is greater that the supported transfer size and
+                verify that the sberror bit is set to 4.
+              - Inject an integrity error on the TL response channel and verify that the sberror
+                bit is set to 7. Verify that an alert is seen. Reset the DUT.
+              - Inject a new SBA traffic before the previous one completes - verify that the
+                sbbusyerror asserts. This is achieved by setting a large TL response delay (TODO).
+              - Have more than one of these types of errors trigger at the same time.
 
             Note: The following error scenarios are not supported by the design:
             - pulp-platform/riscv-dbg#128: response timeout (sberror = 1) is not implemented.
-            - pulp-platform/riscv-dbg#86: bad address (sberror = 2) is not defined or implemented.
-            - 'Other' error cases (sberror = 7) is not defined.
             '''
       stage: V2
       tests: ["rv_dm_bad_sba_tl_access"]
@@ -253,6 +254,7 @@
             - Repeat the same procedure for reads. For reads, set the readondata register and read
               the sbdata0 a randomized number of times - each read should trigger a new SBA TL read
               access.
+            - Intermittently also generate busy and error conditions.
             '''
       stage: V2
       tests: ["rv_dm_autoincr_sba_tl_access"]

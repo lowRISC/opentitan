@@ -57,8 +57,6 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
     end
     if (jtag_dmi_ral.sbcs.sbaccess128.get_reset()) begin
       sba_addrs.push_back(jtag_dmi_ral.sbdata2.get_address());
-    end
-    if (jtag_dmi_ral.sbcs.sbaccess128.get_reset()) begin
       sba_addrs.push_back(jtag_dmi_ral.sbdata3.get_address());
     end
     `uvm_info(`gfn, $sformatf("sba_addrs: %0p", sba_addrs), UVM_LOW)
@@ -101,8 +99,9 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
       csr = jtag_dmi_ral.default_map.get_reg_by_offset(dmi_item.addr);
 
       if (dmi_item.req_op == DmiOpRead) begin
-        process_sba_csr_read(csr, dmi_item);
-        void'(csr.predict(.value(dmi_item.rdata), .kind(UVM_PREDICT_READ)));
+        if (process_sba_csr_read(csr, dmi_item)) begin
+          void'(csr.predict(.value(dmi_item.rdata), .kind(UVM_PREDICT_READ)));
+        end
       end
       else if (dmi_item.req_op == DmiOpWrite) begin
         void'(csr.predict(.value(dmi_item.wdata), .kind(UVM_PREDICT_WRITE)));
@@ -115,12 +114,22 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
   //
   // If the sbcs register is read, and sbbusy bit drops on a pending write, we consider the
   // transaction to have completed - we write the predicted SBA transaction to the analysis port.
-  virtual protected function void process_sba_csr_read(uvm_reg csr, jtag_dmi_item dmi_item);
+  //
+  // Returns a bit to the caller indicating whether to predict the CSR read or not.
+  virtual protected function bit process_sba_csr_read(uvm_reg csr, jtag_dmi_item dmi_item);
+    uvm_reg_data_t readondata  = `gmv(jtag_dmi_ral.sbcs.sbreadondata);
+    uvm_reg_data_t readonaddr  = `gmv(jtag_dmi_ral.sbcs.sbreadonaddr);
+    uvm_reg_data_t sbbusy      = `gmv(jtag_dmi_ral.sbcs.sbbusy);
+    uvm_reg_data_t sbbusyerror = `gmv(jtag_dmi_ral.sbcs.sbbusyerror);
+    uvm_reg_data_t sberror     = `gmv(jtag_dmi_ral.sbcs.sberror);
+    bit do_predict = 1;
+
     case (csr.get_name())
       "sbcs": begin
-        uvm_reg_data_t sbbusy       = get_field_val(jtag_dmi_ral.sbcs.sbbusy, dmi_item.rdata);
-        uvm_reg_data_t sbbusyerror  = get_field_val(jtag_dmi_ral.sbcs.sbbusyerror, dmi_item.rdata);
-        uvm_reg_data_t sberror      = get_field_val(jtag_dmi_ral.sbcs.sberror, dmi_item.rdata);
+        // Update the status bits from transaction item.
+        sbbusy      = get_field_val(jtag_dmi_ral.sbcs.sbbusy, dmi_item.rdata);
+        sbbusyerror = get_field_val(jtag_dmi_ral.sbcs.sbbusyerror, dmi_item.rdata);
+        sberror     = get_field_val(jtag_dmi_ral.sbcs.sberror, dmi_item.rdata);
 
         // We should have predicted an SBA access if any of the status bits got set.
         if (sbbusy || sbbusyerror) begin
@@ -130,7 +139,7 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
         end
 
         // Check if we correctly predicted busy error.
-        `DV_CHECK_EQ(sbbusyerror, jtag_dmi_ral.sbcs.sbbusyerror.get_mirrored_value())
+        `DV_CHECK_EQ(sbbusyerror, `gmv(jtag_dmi_ral.sbcs.sbbusyerror))
         if (sbbusyerror) sba_req_q[0].is_busy_err = 1'b1;
 
         // Check if we correctly predicted the malformed SBA access request errors.
@@ -140,56 +149,62 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
         // sberror to the sba_access_item that is written to the analysis port. The external entity
         // reading from this port is expected to verify the correctness of these errors.
         if (sberror inside {SbaErrNone, SbaErrBadAlignment, SbaErrBadSize}) begin
-          `DV_CHECK_EQ(sberror, jtag_dmi_ral.sbcs.sberror.get_mirrored_value())
+          `DV_CHECK_EQ(sberror, `gmv(jtag_dmi_ral.sbcs.sberror))
         end
 
-        if (sba_req_q.size() > 0) begin
+        if (sba_req_q.size()) begin
           if (sberror) sba_req_q[0].is_err = sba_access_err_e'(sberror);
           if (!sbbusy) begin
-            // Write the predicted SBA transaction to the analysis port when sbbusy de-asserts in
-            // the following scenarios - a bus write, a bus read when readondata is set.
-            if (sba_req_q[0].bus_op == BusOpWrite ||
-                (sba_req_q[0].bus_op == BusOpRead && `gmv(jtag_dmi_ral.sbcs.sbreadondata))) begin
-              ITEM_T tr = sba_req_q.pop_front();
-              analysis_port.write(tr);
+            // Write the predicted SBA write transaction to the analysis port.
+            if (sba_req_q[0].bus_op == BusOpWrite) begin
+              analysis_port.write(sba_req_q.pop_front());
               predict_autoincr_sba_addr();
             end
           end
         end
       end
       "sbaddress0": begin
-        `DV_CHECK_EQ(dmi_item.rdata, jtag_dmi_ral.sbaddress0.get_mirrored_value())
+        uvm_reg_data_t exp_addr = `gmv(jtag_dmi_ral.sbaddress0);
+        uvm_reg_data_t autoincrement = `gmv(jtag_dmi_ral.sbcs.sbautoincrement);
+        if (autoincrement) begin
+          sba_access_size_e size = sba_access_size_e'(`gmv(jtag_dmi_ral.sbcs.sbaccess));
+          // Depending on when the sbaddress0 is read, the predicted sbaddress0 value could be off
+          // (less than) the observed by at most 1 increment value.
+          `DV_CHECK(dmi_item.rdata inside {exp_addr, exp_addr + (1 << size)})
+          // Skip updating the mirrored value (at the call site) since we predict the addr
+          // separately.
+          do_predict = 0;
+        end else begin
+          `DV_CHECK_EQ(dmi_item.rdata, exp_addr)
+        end
       end
       "sbdata0": begin
         // `DV_CHECK_EQ(dmi_item.rdata, jtag_dmi_ral.sbdata0.get_mirrored_value())
-        if (sba_req_q.size() > 0) begin
-          // If SBA read access completed, then return the data read from this register. We count on
-          // stimulus to have read the sbcs register before to ensure the access actually completed.
-          // The external scoreboard is expected to verify the correctness of externally indicated
-          // errors SbaErrTimeout, SbaErrBadAddr and SbaErrOther, when the stimulus reads the sbcs
-          // register during a pending SBA read transaction.
-          //
-          // The stimulus (in sba_access_utils_pkg::sba_access()) terminates SBA access on sbdata0
-          // read when readonaddr is set and readondata is not set. If readondata is set, then
-          // accesses terminate at sbcs read. The monitor bases its predictions on this behavior.
-          if (sba_req_q[0].bus_op == BusOpRead &&
-              !jtag_dmi_ral.sbcs.sbbusy.get_mirrored_value() &&
-              (`gmv(jtag_dmi_ral.sbcs.sbreadonaddr) && !`gmv(jtag_dmi_ral.sbcs.sbreadondata))) begin
-            ITEM_T tr = sba_req_q.pop_front();
-            tr.rdata[0] = dmi_item.rdata;
-            analysis_port.write(tr);
+        // If SBA read access completed, then return the data read from this register. We count
+        // on stimulus to have read the sbcs register before to ensure the access actually
+        // completed. The external scoreboard is expected to verify the correctness of externally
+        // indicated errors SbaErrTimeout, SbaErrBadAddr and SbaErrOther, when the stimulus reads
+        // the sbcs register during a pending SBA read transaction.
+        //
+        // The stimulus (in sba_access_utils_pkg::sba_access()) terminates the SBA access after
+        // reading sbdata0 on read transactions.
+        if (sba_req_q.size()) begin
+          if (sba_req_q[0].bus_op == BusOpRead && !sbbusy) begin
+            sba_req_q[0].rdata[0] = dmi_item.rdata;
+            analysis_port.write(sba_req_q.pop_front());
+            predict_autoincr_sba_addr();
           end
         end
         // If readondata is set, then a read to this register will trigger a new SBA read.
-        if (jtag_dmi_ral.sbcs.sbreadondata.get_mirrored_value()) begin
+        if (readondata) begin
           void'(predict_sba_req(BusOpRead));
         end
-        void'(csr.predict(.value(dmi_item.rdata), .kind(UVM_PREDICT_READ)));
       end
       default: begin
-        `uvm_info(`gfn, $sformatf("Read to SBA CSR %0s is unsupported", csr.`gfn), UVM_LOW)
+        `uvm_fatal(`gfn, $sformatf("Read to SBA CSR %0s is unsupported", csr.`gfn))
       end
     endcase
+    return do_predict;
   endfunction
 
   // Predict what is expected to happen if one of the SBA registers is written.
@@ -209,14 +224,14 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
         void'(predict_sba_req(BusOpWrite));
       end
       default: begin
-        `uvm_info(`gfn, $sformatf("Write to SBA CSR %0s is unsupported", csr.`gfn), UVM_LOW)
+        `uvm_fatal(`gfn, $sformatf("Write to SBA CSR %0s is unsupported", csr.`gfn))
       end
     endcase
   endfunction
 
   virtual task monitor_ready_to_end();
     forever begin
-      if (sba_req_q.size() == 0) begin
+      if (!sba_req_q.size()) begin
         ok_to_end = 1'b1;
         wait (sba_req_q.size());
       end else begin
@@ -248,9 +263,9 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
   // item: The returned expected request predicted to be sent.
   // returns 1 if a new SBA request is expected to be sent, else 0.
   virtual protected function bit predict_sba_req(input bus_op_e bus_op);
-    uvm_reg_addr_t addr = jtag_dmi_ral.sbaddress0.get_mirrored_value();
-    uvm_reg_data_t data = jtag_dmi_ral.sbdata0.get_mirrored_value();
-    sba_access_size_e size = sba_access_size_e'(jtag_dmi_ral.sbcs.sbaccess.get_mirrored_value());
+    uvm_reg_addr_t addr = `gmv(jtag_dmi_ral.sbaddress0);
+    uvm_reg_data_t data = `gmv(jtag_dmi_ral.sbdata0);
+    sba_access_size_e size = sba_access_size_e'(`gmv(jtag_dmi_ral.sbcs.sbaccess));
     sba_access_item item;
 
     // Is the address aligned?
@@ -267,7 +282,7 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
     end
 
     // Is there already a pending transaction?
-    if (jtag_dmi_ral.sbcs.sbbusy.get_mirrored_value()) begin
+    if (`gmv(jtag_dmi_ral.sbcs.sbbusy)) begin
       void'(jtag_dmi_ral.sbcs.sbbusyerror.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
       return 0;
     end
@@ -294,11 +309,13 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
   // If autoincr is set then predict the new address. Invoked after the successful completion of
   // previous transfer.
   virtual function void predict_autoincr_sba_addr();
-    if (jtag_dmi_ral.sbcs.sbautoincrement.get_mirrored_value()) begin
-      sba_access_size_e size = sba_access_size_e'(jtag_dmi_ral.sbcs.sbaccess.get_mirrored_value());
-      uvm_reg_data_t addr = jtag_dmi_ral.sbaddress0.get_mirrored_value();
+    if (`gmv(jtag_dmi_ral.sbcs.sbautoincrement)) begin
+      sba_access_size_e size = sba_access_size_e'(`gmv(jtag_dmi_ral.sbcs.sbaccess));
+      uvm_reg_data_t addr = `gmv(jtag_dmi_ral.sbaddress0);
       void'(jtag_dmi_ral.sbaddress0.predict(.value(addr + (1 << size)),
                                             .kind(UVM_PREDICT_DIRECT)));
+      `uvm_info(`gfn, $sformatf("Predicted sbaddr after autoincr: 0x%0h -> 0x%0h",
+                                addr, `gmv(jtag_dmi_ral.sbaddress0)), UVM_HIGH)
     end
   endfunction
 
