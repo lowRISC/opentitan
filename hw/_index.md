@@ -13,8 +13,7 @@ See the [Hardware Development Stages]({{< relref "/doc/project/development_stage
 
 Next, we focus on all available [processor cores](#processor-cores) and provide links to their design specifications, DV documents and the DV simulation results.
 
-Finally, we provide the same set of information for all available [top level designs](#top-level-designs), including an additional dashboard with preliminary synthesis results for some of these designs.
-
+Finally, we provide the same set of information for all available [top level designs](#top-level-designs).
 
 ## Results of tool-flows
 
@@ -48,7 +47,6 @@ Finally, we provide the same set of information for all available [top level des
 * [Verilator lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/verilator/latest/report.html)
 * [Style lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/lint/veriblelint/latest/report.html)
 * [DV Style lint results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/dv/lint/veriblelint/latest/report.html)
-* [Synthesis results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/syn/latest/report.html)
 * [CDC results (nightly)](https://reports.opentitan.org/hw/top_earlgrey/cdc/latest/report.html)
 
 ### Earl Grey-specific comportable IPs
