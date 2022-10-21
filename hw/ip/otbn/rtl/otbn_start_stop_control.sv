@@ -341,7 +341,7 @@ module otbn_start_stop_control
                     mubi4_test_false_strict(wipe_after_urnd_refresh_q)) ||
                    (spurious_urnd_ack_error && !(state_q inside {OtbnStartStopStateHalt,
                                                                  OtbnStartStopStateLocked}) &&
-                    init_sec_wipe_done_q));
+                    init_sec_wipe_done_q) || (mubi_err_d && !mubi_err_q));
 
   assign addr_cnt_d = addr_cnt_inc ? (addr_cnt_q + 6'd1) : 6'd0;
 
