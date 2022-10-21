@@ -399,7 +399,9 @@
             resval: "1",
           },
         ],
-        tags: [// Don't reset other IPs as it will affect CSR access on these IPs
+        tags: [// Don't reset other IPs as it will affect CSR access on these IPs.
+               // In addition, rapid flips of these bits can occasionally cause the reset
+               // consistency checkers to trigger alerts, which also update err_code bits.
                "excl:CsrAllTests:CsrExclWrite"]
       }
     }
