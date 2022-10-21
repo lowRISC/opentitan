@@ -45,7 +45,7 @@
             '''
       tags: ["manual"]
       stage: V2
-      tests: []
+      tests: ["rom_e2e_c_init"]
     }
   ]
 }

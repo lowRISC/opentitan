@@ -46,6 +46,7 @@ CONST = struct(
             BAD_CODE_REGION = 0x024d410d,
         ),
         UNKNOWN = 0xffffffff,
+        OK = 0x739,
     ),
     # Must match the definitions in shutdown.h.
     SHUTDOWN = struct(

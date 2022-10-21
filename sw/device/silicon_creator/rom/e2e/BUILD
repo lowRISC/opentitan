@@ -188,6 +188,49 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "rom_e2e_c_init",
+    srcs = ["rom_e2e_c_init_test.c"],
+    cw310 = cw310_params(
+        exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
+        exit_success = MSG_PASS,
+    ),
+    signed = True,
+    targets = [
+        "cw310_rom",
+    ],
+    deps = [
+        "//hw/ip/uart/data:uart_regs",
+        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/base:static_critical_boot_measurements",
+        "//sw/device/silicon_creator/lib/base:static_critical_epmp_state",
+        "//sw/device/silicon_creator/lib/base:static_critical_sec_mmio",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:pinmux",
+        "//sw/device/silicon_creator/lib/drivers:uart",
+    ],
+)
+
+# Same as `:e2e_bootup_success`, but the Dev OTP image is spliced into the
+# bitstream before it's sent to the CW310 FPGA.
+opentitan_functest(
+    name = "e2e_bootup_success_otp_dev",
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom_otp_dev",
+        # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
+        # bitstream target can fetch pre-spliced bitstream from GCP.
+        tags = ["manual"],
+    ),
+    key = "test_key_0",
+    ot_flash_binary = ":empty_test_slot_a",
+    targets = ["cw310_rom"],
+)
+
+opentitan_functest(
     name = "e2e_bootstrap_entry",
     cw310 = cw310_params(
         test_cmds = [
