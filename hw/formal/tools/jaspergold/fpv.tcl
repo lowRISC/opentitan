@@ -134,6 +134,17 @@ if {$env(DUT_TOP) == "pinmux_tb"} {
   clock -rate -default clk_i
   reset -expr {!rst_ni !rst_main_ni}
 
+} elseif {$env(DUT_TOP) == "rstmgr"} {
+  clock clk_main_i
+  clock clk_i -both_edges
+  clock clk_io_i -factor 1
+  clock clk_io_div2_i -factor 1
+  clock clk_io_div4_i -factor 1
+  clock clk_usb_i -factor 1
+  clock clk_aon_i -factor 2
+  clock -rate -default clk_i
+  reset -expr {!rst_ni !rst_por_ni}
+
 } else {
   clock clk_i -both_edges
   reset -expr {!rst_ni}
