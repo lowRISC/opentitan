@@ -271,7 +271,11 @@ module tb;
 
   // Check that if the modelled EDN requests are matching with the requests from DUT
   `ASSERT(MatchingReqRND_A, dut.u_otbn_core.edn_rnd_req_o == edn_rnd_req_model, clk, !rst_n)
-  `ASSERT(MatchingReqURND_A, dut.u_otbn_core.edn_urnd_req_o == edn_urnd_req_model, clk, !rst_n)
+  // Disable checking URND in the case of Locked status since it's modelling is not exactly accurate
+  // for that state.
+  // TODO (#15710): Fix modelling of URND in the locked state.
+  `ASSERT(MatchingReqURND_A, dut.u_otbn_core.edn_urnd_req_o == edn_urnd_req_model,
+    clk, !rst_n || model_if.status == otbn_pkg::StatusLocked)
 
   initial begin
     mem_bkdr_util imem_util, dmem_util;
