@@ -377,7 +377,7 @@ module otbn_controller
   // running involves `secure_wipe_running_i`, which is high for the initial secure wipe, and
   // `secure_wipe_req_o`, which is high for post-execution secure wipes.
   assign locking_o = (state_d == OtbnStateLocked) & (~(secure_wipe_running_i | secure_wipe_req_o) |
-                                                     urnd_reseed_err_i);
+                                                     urnd_reseed_err_i | mubi_err_d);
 
   assign start_secure_wipe = executing & (done_complete | err);
 
