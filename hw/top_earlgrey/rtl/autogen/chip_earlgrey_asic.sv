@@ -1070,6 +1070,7 @@ module chip_earlgrey_asic #(
   //////////////////////
   top_earlgrey #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
+    .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
   ) top_earlgrey (
     // ast connections

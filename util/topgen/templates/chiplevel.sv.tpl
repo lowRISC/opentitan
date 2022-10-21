@@ -910,6 +910,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
 % else:
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
+    .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
 % endif
   ) top_${top["name"]} (
