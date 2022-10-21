@@ -436,9 +436,10 @@ module chip_earlgrey_verilator (
   assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
 
   top_earlgrey #(
-    .SramCtrlRetAonInstrExec(0),
+    .PinmuxAonTargetCfg(PinmuxTargetCfg),
+    .SecAesAllowForcingMasks(1'b1),
     .SramCtrlMainInstrExec(1),
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
+    .SramCtrlRetAonInstrExec(0)
   ) top_earlgrey (
     // update por / reset connections, this is not quite right here
     .por_n_i                      (por_n             ),
