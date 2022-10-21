@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/base/hardened_asm.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/stdasm.h"
 
@@ -34,11 +35,11 @@ typedef enum hardened_bool {
   /**
    * The truthy value, expected to be used like #true.
    */
-  kHardenedBoolTrue = 0x739u,
+  kHardenedBoolTrue = HARDENED_BOOL_TRUE,
   /**
    * The falsey value, expected to be used like #false.
    */
-  kHardenedBoolFalse = 0x1d4u,
+  kHardenedBoolFalse = HARDENED_BOOL_FALSE,
 } hardened_bool_t;
 
 /**
@@ -54,11 +55,11 @@ typedef enum hardened_byte_bool {
   /**
    * The truthy value.
    */
-  kHardenedByteBoolTrue = 0xa5,
+  kHardenedByteBoolTrue = HARDENED_BYTE_BOOL_TRUE,
   /**
    * The falsy value.
    */
-  kHardenedByteBoolFalse = 0x4b,
+  kHardenedByteBoolFalse = HARDENED_BYTE_BOOL_FALSE,
 } hardened_byte_bool_t;
 
 /*

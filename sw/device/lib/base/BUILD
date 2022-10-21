@@ -122,7 +122,10 @@ cc_test(
 cc_library(
     name = "hardened",
     srcs = ["hardened.c"],
-    hdrs = ["hardened.h"],
+    hdrs = [
+        "hardened.h",
+        "hardened_asm.h",
+    ],
     deps = [
         ":macros",
         ":memory",
