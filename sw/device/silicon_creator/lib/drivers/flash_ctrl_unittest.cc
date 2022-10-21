@@ -287,6 +287,19 @@ TEST_F(TransferTest, ProgDataOk) {
             kErrorOk);
 }
 
+TEST_F(TransferTest, ProgInfoOk) {
+  // Address of the `kFlashCtrlInfoPageOwnerSlot0` page, see `info_page_addr`.
+  const uint32_t addr =
+      1 * FLASH_CTRL_PARAM_BYTES_PER_BANK + 2 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+  ExpectTransferStart(1, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_PROG,
+                      addr + 0x01234567, words_.size());
+  ExpectProgData(words_);
+  ExpectWaitForDone(true, false);
+  EXPECT_EQ(flash_ctrl_info_write(kFlashCtrlInfoPageOwnerSlot0, 0x01234567,
+                                  words_.size(), &words_.front()),
+            kErrorOk);
+}
+
 TEST_F(TransferTest, EraseDataPageOk) {
   ExpectTransferStart(0, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_ERASE, 0x01234567,
                       1);
