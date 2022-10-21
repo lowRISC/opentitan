@@ -634,7 +634,7 @@
             - If waking up from deep sleep, an activation is required for RV_DM CSR accesses to work.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_rv_dm_access_after_wakeup"]
     }
     {
       name: chip_sw_rv_dm_jtag_tap_sel

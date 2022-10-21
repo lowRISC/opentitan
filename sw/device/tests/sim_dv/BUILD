@@ -699,6 +699,37 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "rv_dm_access_after_wakeup",
+    srcs = ["rv_dm_access_after_wakeup.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/dif:rv_timer",
+        "//sw/device/lib/dif:sysrst_ctrl",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "rom_ctrl_integrity_check_test",
     srcs = ["rom_ctrl_integrity_check_test.c"],
     targets = ["dv"],
