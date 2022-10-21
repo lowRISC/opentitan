@@ -43,4 +43,4 @@ _chip_info_start = _chip_info_end - _chip_info_size;
  * NOTE: This value must match the size of the RX region in
  * hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh.
  */
-_epmp_reset_rx_size = 1024;
+_epmp_reset_rx_size = 2048;

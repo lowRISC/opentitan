@@ -37,7 +37,7 @@ localparam pmp_cfg_t pmp_cfg_rst[16] = '{
 localparam [33:0] pmp_addr_rst[16] = '{
   34'h00000000, // rgn 0
   34'h00000000, // rgn 1
-  34'h000081fc, // rgn 2  [ROM: base=0x0000_8000 size=0x400 (1KiB)]
+  34'h000083fc, // rgn 2  [ROM: base=0x0000_8000 size=0x800 (2KiB)]
   34'h00000000, // rgn 3
   34'h00000000, // rgn 4
   34'h00000000, // rgn 5
