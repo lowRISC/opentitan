@@ -1437,11 +1437,10 @@
               "chip_sw_rstmgr_sw_rst",
               "chip_sw_hmac_enc",
               "chip_sw_aes_enc_jitter_en",
-              "chip_sw_rom_ctrl_integrity_check"]
+              "chip_sw_rom_ctrl_integrity_check",
               // TODO(#15371): this currently failing on nightly regression
               // "chip_sw_lc_walkthrough_testunlocks",
-              // TODO(#15459): chip_prim_tl_access is currently failing on Xcelium
-              // "chip_prim_tl_access"]
+              "chip_prim_tl_access"]
     }
     {
       name: xcelium_ci_1
