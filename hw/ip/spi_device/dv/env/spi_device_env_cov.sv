@@ -210,7 +210,7 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     cp_filtered: coverpoint filtered;
     cp_payload_size: coverpoint payload_size {
       bins frequent_use_values[] = {[0:4], 256};
-      bins excess_fifo[]         = {[257:$]};
+      bins excess_fifo           = {[257:$]};
     }
     cr_all: cross cp_opcode, cp_filtered, cp_payload_size;
   endgroup
