@@ -53,20 +53,19 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
     end else run_common_vseq_wrapper(num_trans);
   endtask : body
 
+  bit prim_tl_intg_error;
+
   task run_tl_intg_err_vseq_sub(string ral_name);
-    if (!uvm_re_match("*prim_reg_block*", ral_name)) return;
-    else super.run_tl_intg_err_vseq_sub(ral_name);
+    if (!uvm_re_match("*prim_reg_block*", ral_name)) prim_tl_intg_error = 1;
+    else prim_tl_intg_error = 0;
+    super.run_tl_intg_err_vseq_sub(ral_name);
   endtask
 
-  bit skip_check_tl_intg_error;
-  virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy);
-    super.sec_cm_inject_fault(if_proxy);
-    // disable error check for prim_reg for now
-    if (!uvm_re_match("*u_prim_reg*", if_proxy.path)) skip_check_tl_intg_error = 1;
-    else skip_check_tl_intg_error = 0;
-  endtask
   virtual task check_tl_intg_error_response();
-    if (!skip_check_tl_intg_error) begin
+    if (prim_tl_intg_error) begin
+      repeat ($urandom_range(5, 10))
+        wait_alert_trigger("fatal_prim_flash_alert");
+    end else begin
       super.check_tl_intg_error_response();
     end
   endtask // check_tl_intg_error_response
