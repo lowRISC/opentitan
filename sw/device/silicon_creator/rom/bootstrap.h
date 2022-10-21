@@ -11,15 +11,6 @@
 extern "C" {
 #endif
 
-enum {
-  /**
-   * Mask for the bootstrap pins.
-   *
-   * We expect strong pull-ups on GPIO pins 22, 23, and 24.
-   */
-  kBootstrapPinMask = (1 << 22) | (1 << 23) | (1 << 24),
-};
-
 /**
  * Checks whether bootstrap is requested.
  *

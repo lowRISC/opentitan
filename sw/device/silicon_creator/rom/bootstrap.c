@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
@@ -341,10 +342,10 @@ hardened_bool_t bootstrap_requested(void) {
 
   // A single read is sufficient since we expect strong pull-ups on the strap
   // pins.
-  res ^= kBootstrapPinMask;
+  res ^= SW_STRAP_BOOTSTRAP;
   res ^=
       abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET) &
-      kBootstrapPinMask;
+      SW_STRAP_MASK;
   if (launder32(res) != kHardenedBoolTrue) {
     return kHardenedBoolFalse;
   }
