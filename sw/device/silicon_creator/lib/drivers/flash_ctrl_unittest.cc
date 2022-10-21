@@ -263,6 +263,21 @@ TEST_F(TransferTest, ReadDataOk) {
   EXPECT_EQ(words_out, words_);
 }
 
+TEST_F(TransferTest, ReadInfoOk) {
+  // Address of the `kFlashCtrlInfoPageOwnerSlot0` page, see `info_page_addr`.
+  const uint32_t addr =
+      1 * FLASH_CTRL_PARAM_BYTES_PER_BANK + 2 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+  ExpectTransferStart(1, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_READ,
+                      addr + 0x01234567, words_.size());
+  ExpectReadData(words_);
+  ExpectWaitForDone(true, false);
+  std::vector<uint32_t> words_out(words_.size());
+  EXPECT_EQ(flash_ctrl_info_read(kFlashCtrlInfoPageOwnerSlot0, 0x01234567,
+                                 words_.size(), &words_out.front()),
+            kErrorOk);
+  EXPECT_EQ(words_out, words_);
+}
+
 TEST_F(TransferTest, ProgDataOk) {
   ExpectTransferStart(0, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_PROG, 0x01234567,
                       words_.size());
