@@ -5,7 +5,7 @@
 .section .text.start
 
 /**
- * Standalone test for 3072 bit RSA Montgomery constant computation. 
+ * Standalone test for 3072 bit RSA Montgomery constant computation.
  *
  * Copies the message to wide registers for comparison (starting at
  * w0). See comment at the end of the file for expected values.
