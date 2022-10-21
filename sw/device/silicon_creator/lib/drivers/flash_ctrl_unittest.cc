@@ -308,6 +308,17 @@ TEST_F(TransferTest, EraseDataPageOk) {
             kErrorOk);
 }
 
+TEST_F(TransferTest, EraseInfoPageOk) {
+  // Address of the `kFlashCtrlInfoPageOwnerSlot0` page, see `info_page_addr`.
+  const uint32_t addr =
+      1 * FLASH_CTRL_PARAM_BYTES_PER_BANK + 2 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+  ExpectTransferStart(1, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_ERASE, addr, 1);
+  ExpectWaitForDone(true, false);
+  EXPECT_EQ(flash_ctrl_info_erase(kFlashCtrlInfoPageOwnerSlot0,
+                                  kFlashCtrlEraseTypePage),
+            kErrorOk);
+}
+
 TEST_F(TransferTest, ProgAcrossWindows) {
   static const uint32_t kWinSize = FLASH_CTRL_PARAM_REG_BUS_PGM_RES_BYTES;
   static const uint32_t kManyWordsSize = 2 * kWinSize / sizeof(uint32_t);
