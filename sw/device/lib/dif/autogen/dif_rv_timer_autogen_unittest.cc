@@ -56,6 +56,39 @@ TEST_F(AlertForceTest, Success) {
       dif_rv_timer_alert_force(&rv_timer_, kDifRvTimerAlertFatalFault));
 }
 
+class IrqGetTypeTest : public RvTimerTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_rv_timer_irq_get_type(
+      nullptr, kDifRvTimerIrqTimerExpiredHart0Timer0, &type));
+
+  EXPECT_DIF_BADARG(dif_rv_timer_irq_get_type(
+      &rv_timer_, kDifRvTimerIrqTimerExpiredHart0Timer0, nullptr));
+
+  EXPECT_DIF_BADARG(dif_rv_timer_irq_get_type(
+      nullptr, kDifRvTimerIrqTimerExpiredHart0Timer0, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_rv_timer_irq_get_type(
+      &rv_timer_,
+      static_cast<dif_rv_timer_irq_t>(kDifRvTimerIrqTimerExpiredHart0Timer0 +
+                                      1),
+      &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_rv_timer_irq_get_type(
+      &rv_timer_, kDifRvTimerIrqTimerExpiredHart0Timer0, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public RvTimerTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

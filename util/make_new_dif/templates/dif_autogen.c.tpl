@@ -27,6 +27,8 @@
 ${autogen_banner}
 
 #include <stdint.h>
+
+#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
 
 #include "${ip.name_snake}_regs.h"  // Generated.
@@ -131,11 +133,11 @@ dif_result_t dif_${ip.name_snake}_init(
   % endif
 
   /**
-   * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
-   * HJSON does NOT have a field "no_auto_intr_regs = true", then the
-   * "<ip>_INTR_COMMON_<irq>_BIT" macro can be used. Otherwise, special cases
-   * will exist, as templated below.
+   * Get the corresponding interrupt register bit offset of the IRQ.
    */
+  ## If the IP's HJSON does NOT have a field "no_auto_intr_regs = true", then
+  ## the "<ip>_INTR_COMMON_<irq>_BIT" macro can be used. Otherwise, special
+  ## cases will exist, as templated below.
   static bool ${ip.name_snake}_get_irq_bit_index(
     dif_${ip.name_snake}_irq_t irq,
     bitfield_bit32_index_t *index_out) {
@@ -171,6 +173,49 @@ dif_result_t dif_${ip.name_snake}_init(
     }
 
     return true;
+  }
+
+  static dif_irq_type_t irq_types[] = {
+  % for irq in ip.irqs:
+    ## This handles the GPIO IP case where there is a multi-bit interrupt.
+    % if irq.width > 1:
+      % if irq.type == "event":
+        ${', '.join(["kDifIrqTypeEvent"] * irq.width) + ','}
+      % else:
+        ${', '.join(["kDifIrqTypeStatus"] * irq.width) + ','}
+      % endif
+    ## This handles all other IPs.
+    % else:
+      % if irq.type == "event":
+        kDifIrqTypeEvent,
+      % else:
+        kDifIrqTypeStatus,
+      % endif
+    % endif
+  % endfor
+  };
+
+  OT_WARN_UNUSED_RESULT
+  dif_result_t dif_${ip.name_snake}_irq_get_type(
+    const dif_${ip.name_snake}_t *${ip.name_snake},
+    dif_${ip.name_snake}_irq_t irq,
+    dif_irq_type_t *type) {
+
+    % if ip.irqs[-1].width == 1:
+      if (${ip.name_snake} == NULL ||
+          type == NULL ||
+          irq == kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel} + 1) {
+    % else:
+      if (${ip.name_snake} == NULL ||
+          type == NULL ||
+          irq == kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}${ip.irqs[-1].width - 1} + 1) {
+    % endif
+      return kDifBadArg;
+    }
+
+    *type = irq_types[irq];
+
+    return kDifOk;
   }
 
   OT_WARN_UNUSED_RESULT

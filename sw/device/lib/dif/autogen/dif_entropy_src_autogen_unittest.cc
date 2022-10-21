@@ -62,6 +62,38 @@ TEST_F(AlertForceTest, Success) {
                                             kDifEntropySrcAlertFatalAlert));
 }
 
+class IrqGetTypeTest : public EntropySrcTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_entropy_src_irq_get_type(
+      nullptr, kDifEntropySrcIrqEsEntropyValid, &type));
+
+  EXPECT_DIF_BADARG(dif_entropy_src_irq_get_type(
+      &entropy_src_, kDifEntropySrcIrqEsEntropyValid, nullptr));
+
+  EXPECT_DIF_BADARG(dif_entropy_src_irq_get_type(
+      nullptr, kDifEntropySrcIrqEsEntropyValid, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_entropy_src_irq_get_type(
+      &entropy_src_,
+      static_cast<dif_entropy_src_irq_t>(kDifEntropySrcIrqEsFatalErr + 1),
+      &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_entropy_src_irq_get_type(
+      &entropy_src_, kDifEntropySrcIrqEsEntropyValid, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public EntropySrcTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

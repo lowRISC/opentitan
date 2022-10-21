@@ -54,6 +54,35 @@ TEST_F(AlertForceTest, Success) {
   EXPECT_DIF_OK(dif_pwrmgr_alert_force(&pwrmgr_, kDifPwrmgrAlertFatalFault));
 }
 
+class IrqGetTypeTest : public PwrmgrTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(
+      dif_pwrmgr_irq_get_type(nullptr, kDifPwrmgrIrqWakeup, &type));
+
+  EXPECT_DIF_BADARG(
+      dif_pwrmgr_irq_get_type(&pwrmgr_, kDifPwrmgrIrqWakeup, nullptr));
+
+  EXPECT_DIF_BADARG(
+      dif_pwrmgr_irq_get_type(nullptr, kDifPwrmgrIrqWakeup, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_pwrmgr_irq_get_type(
+      &pwrmgr_, static_cast<dif_pwrmgr_irq_t>(kDifPwrmgrIrqWakeup + 1), &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_pwrmgr_irq_get_type(&pwrmgr_, kDifPwrmgrIrqWakeup, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public PwrmgrTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

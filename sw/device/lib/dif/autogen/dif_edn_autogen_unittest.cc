@@ -59,6 +59,35 @@ TEST_F(AlertForceTest, Success) {
   EXPECT_DIF_OK(dif_edn_alert_force(&edn_, kDifEdnAlertFatalAlert));
 }
 
+class IrqGetTypeTest : public EdnTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(
+      dif_edn_irq_get_type(nullptr, kDifEdnIrqEdnCmdReqDone, &type));
+
+  EXPECT_DIF_BADARG(
+      dif_edn_irq_get_type(&edn_, kDifEdnIrqEdnCmdReqDone, nullptr));
+
+  EXPECT_DIF_BADARG(
+      dif_edn_irq_get_type(nullptr, kDifEdnIrqEdnCmdReqDone, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_edn_irq_get_type(
+      &edn_, static_cast<dif_edn_irq_t>(kDifEdnIrqEdnFatalErr + 1), &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_edn_irq_get_type(&edn_, kDifEdnIrqEdnCmdReqDone, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public EdnTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

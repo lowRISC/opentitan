@@ -54,6 +54,37 @@ TEST_F(AlertForceTest, Success) {
   EXPECT_DIF_OK(dif_usbdev_alert_force(&usbdev_, kDifUsbdevAlertFatalFault));
 }
 
+class IrqGetTypeTest : public UsbdevTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(
+      dif_usbdev_irq_get_type(nullptr, kDifUsbdevIrqPktReceived, &type));
+
+  EXPECT_DIF_BADARG(
+      dif_usbdev_irq_get_type(&usbdev_, kDifUsbdevIrqPktReceived, nullptr));
+
+  EXPECT_DIF_BADARG(
+      dif_usbdev_irq_get_type(nullptr, kDifUsbdevIrqPktReceived, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_usbdev_irq_get_type(
+      &usbdev_, static_cast<dif_usbdev_irq_t>(kDifUsbdevIrqLinkOutErr + 1),
+      &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(
+      dif_usbdev_irq_get_type(&usbdev_, kDifUsbdevIrqPktReceived, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public UsbdevTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

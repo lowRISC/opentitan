@@ -10,6 +10,7 @@
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
+#include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
@@ -69,8 +70,12 @@ void isr_testutils_adc_ctrl_isr(
   CHECK_DIF_OK(dif_adc_ctrl_irq_clear_causes(adc_ctrl_ctx.adc_ctrl,
                                              kDifAdcCtrlIrqCauseAll));
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(adc_ctrl_ctx.adc_ctrl, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_adc_ctrl_irq_get_type(adc_ctrl_ctx.adc_ctrl, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(adc_ctrl_ctx.adc_ctrl, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -107,9 +112,14 @@ void isr_testutils_alert_handler_isr(
           irq, snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(
-      dif_alert_handler_irq_acknowledge(alert_handler_ctx.alert_handler, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_alert_handler_irq_get_type(alert_handler_ctx.alert_handler,
+                                              irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_alert_handler_irq_acknowledge(
+        alert_handler_ctx.alert_handler, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -145,8 +155,12 @@ void isr_testutils_aon_timer_isr(
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(aon_timer_ctx.aon_timer, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_aon_timer_irq_get_type(aon_timer_ctx.aon_timer, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(aon_timer_ctx.aon_timer, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -180,8 +194,12 @@ void isr_testutils_csrng_isr(
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_csrng_irq_acknowledge(csrng_ctx.csrng, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_csrng_irq_get_type(csrng_ctx.csrng, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_csrng_irq_acknowledge(csrng_ctx.csrng, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -214,8 +232,12 @@ void isr_testutils_edn_isr(plic_isr_ctx_t plic_ctx, edn_isr_ctx_t edn_ctx,
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_edn_irq_acknowledge(edn_ctx.edn, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_edn_irq_get_type(edn_ctx.edn, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_edn_irq_acknowledge(edn_ctx.edn, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -251,9 +273,14 @@ void isr_testutils_entropy_src_isr(
           irq, snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
   CHECK_DIF_OK(
-      dif_entropy_src_irq_acknowledge(entropy_src_ctx.entropy_src, irq));
+      dif_entropy_src_irq_get_type(entropy_src_ctx.entropy_src, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(
+        dif_entropy_src_irq_acknowledge(entropy_src_ctx.entropy_src, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -289,8 +316,14 @@ void isr_testutils_flash_ctrl_isr(
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge(flash_ctrl_ctx.flash_ctrl, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(
+      dif_flash_ctrl_irq_get_type(flash_ctrl_ctx.flash_ctrl, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(
+        dif_flash_ctrl_irq_acknowledge(flash_ctrl_ctx.flash_ctrl, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -323,8 +356,12 @@ void isr_testutils_gpio_isr(plic_isr_ctx_t plic_ctx, gpio_isr_ctx_t gpio_ctx,
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_gpio_irq_acknowledge(gpio_ctx.gpio, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_gpio_irq_get_type(gpio_ctx.gpio, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_gpio_irq_acknowledge(gpio_ctx.gpio, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -357,8 +394,12 @@ void isr_testutils_hmac_isr(plic_isr_ctx_t plic_ctx, hmac_isr_ctx_t hmac_ctx,
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_hmac_irq_acknowledge(hmac_ctx.hmac, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_hmac_irq_get_type(hmac_ctx.hmac, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_hmac_irq_acknowledge(hmac_ctx.hmac, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -391,8 +432,12 @@ void isr_testutils_i2c_isr(plic_isr_ctx_t plic_ctx, i2c_isr_ctx_t i2c_ctx,
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_i2c_irq_acknowledge(i2c_ctx.i2c, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_i2c_irq_get_type(i2c_ctx.i2c, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_i2c_irq_acknowledge(i2c_ctx.i2c, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -426,8 +471,12 @@ void isr_testutils_keymgr_isr(
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_keymgr_irq_acknowledge(keymgr_ctx.keymgr, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_keymgr_irq_get_type(keymgr_ctx.keymgr, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_keymgr_irq_acknowledge(keymgr_ctx.keymgr, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -460,8 +509,12 @@ void isr_testutils_kmac_isr(plic_isr_ctx_t plic_ctx, kmac_isr_ctx_t kmac_ctx,
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_kmac_irq_acknowledge(kmac_ctx.kmac, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_kmac_irq_get_type(kmac_ctx.kmac, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_kmac_irq_acknowledge(kmac_ctx.kmac, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -494,8 +547,12 @@ void isr_testutils_otbn_isr(plic_isr_ctx_t plic_ctx, otbn_isr_ctx_t otbn_ctx,
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_otbn_irq_acknowledge(otbn_ctx.otbn, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_otbn_irq_get_type(otbn_ctx.otbn, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_otbn_irq_acknowledge(otbn_ctx.otbn, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -530,8 +587,12 @@ void isr_testutils_otp_ctrl_isr(
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge(otp_ctrl_ctx.otp_ctrl, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_otp_ctrl_irq_get_type(otp_ctrl_ctx.otp_ctrl, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_otp_ctrl_irq_acknowledge(otp_ctrl_ctx.otp_ctrl, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -565,8 +626,12 @@ void isr_testutils_pattgen_isr(
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_pattgen_irq_acknowledge(pattgen_ctx.pattgen, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_pattgen_irq_get_type(pattgen_ctx.pattgen, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_pattgen_irq_acknowledge(pattgen_ctx.pattgen, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -600,8 +665,12 @@ void isr_testutils_pwrmgr_isr(
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(pwrmgr_ctx.pwrmgr, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_pwrmgr_irq_get_type(pwrmgr_ctx.pwrmgr, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge(pwrmgr_ctx.pwrmgr, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -637,8 +706,12 @@ void isr_testutils_rv_timer_isr(
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_rv_timer_irq_acknowledge(rv_timer_ctx.rv_timer, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_rv_timer_irq_get_type(rv_timer_ctx.rv_timer, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_rv_timer_irq_acknowledge(rv_timer_ctx.rv_timer, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -674,9 +747,14 @@ void isr_testutils_sensor_ctrl_isr(
           irq, snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
   CHECK_DIF_OK(
-      dif_sensor_ctrl_irq_acknowledge(sensor_ctrl_ctx.sensor_ctrl, irq));
+      dif_sensor_ctrl_irq_get_type(sensor_ctrl_ctx.sensor_ctrl, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(
+        dif_sensor_ctrl_irq_acknowledge(sensor_ctrl_ctx.sensor_ctrl, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -712,8 +790,14 @@ void isr_testutils_spi_device_isr(
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_spi_device_irq_acknowledge(spi_device_ctx.spi_device, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(
+      dif_spi_device_irq_get_type(spi_device_ctx.spi_device, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(
+        dif_spi_device_irq_acknowledge(spi_device_ctx.spi_device, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -748,8 +832,12 @@ void isr_testutils_spi_host_isr(
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_spi_host_irq_acknowledge(spi_host_ctx.spi_host, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_spi_host_irq_get_type(spi_host_ctx.spi_host, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_spi_host_irq_acknowledge(spi_host_ctx.spi_host, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -785,9 +873,14 @@ void isr_testutils_sysrst_ctrl_isr(
           irq, snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
   CHECK_DIF_OK(
-      dif_sysrst_ctrl_irq_acknowledge(sysrst_ctrl_ctx.sysrst_ctrl, irq));
+      dif_sysrst_ctrl_irq_get_type(sysrst_ctrl_ctx.sysrst_ctrl, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(
+        dif_sysrst_ctrl_irq_acknowledge(sysrst_ctrl_ctx.sysrst_ctrl, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -820,8 +913,12 @@ void isr_testutils_uart_isr(plic_isr_ctx_t plic_ctx, uart_isr_ctx_t uart_ctx,
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_uart_irq_acknowledge(uart_ctx.uart, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_uart_irq_get_type(uart_ctx.uart, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_uart_irq_acknowledge(uart_ctx.uart, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,
@@ -855,8 +952,12 @@ void isr_testutils_usbdev_isr(
           snapshot);
   }
 
-  // Acknowledge the IRQ at the peripheral.
-  CHECK_DIF_OK(dif_usbdev_irq_acknowledge(usbdev_ctx.usbdev, irq));
+  // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+  dif_irq_type_t type;
+  CHECK_DIF_OK(dif_usbdev_irq_get_type(usbdev_ctx.usbdev, irq, &type));
+  if (type == kDifIrqTypeEvent) {
+    CHECK_DIF_OK(dif_usbdev_irq_acknowledge(usbdev_ctx.usbdev, irq));
+  }
 
   // Complete the IRQ at the PLIC.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(plic_ctx.rv_plic, plic_ctx.hart_id,

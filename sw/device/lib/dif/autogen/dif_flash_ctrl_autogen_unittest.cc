@@ -62,6 +62,37 @@ TEST_F(AlertForceTest, Success) {
       &flash_ctrl_, kDifFlashCtrlAlertRecovPrimFlashAlert));
 }
 
+class IrqGetTypeTest : public FlashCtrlTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_irq_get_type(nullptr, kDifFlashCtrlIrqProgEmpty, &type));
+
+  EXPECT_DIF_BADARG(dif_flash_ctrl_irq_get_type(
+      &flash_ctrl_, kDifFlashCtrlIrqProgEmpty, nullptr));
+
+  EXPECT_DIF_BADARG(
+      dif_flash_ctrl_irq_get_type(nullptr, kDifFlashCtrlIrqProgEmpty, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_flash_ctrl_irq_get_type(
+      &flash_ctrl_,
+      static_cast<dif_flash_ctrl_irq_t>(kDifFlashCtrlIrqCorrErr + 1), &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_flash_ctrl_irq_get_type(&flash_ctrl_,
+                                            kDifFlashCtrlIrqProgEmpty, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public FlashCtrlTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

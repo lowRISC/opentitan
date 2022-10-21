@@ -59,6 +59,37 @@ TEST_F(AlertForceTest, Success) {
   EXPECT_DIF_OK(dif_csrng_alert_force(&csrng_, kDifCsrngAlertFatalAlert));
 }
 
+class IrqGetTypeTest : public CsrngTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(
+      dif_csrng_irq_get_type(nullptr, kDifCsrngIrqCsCmdReqDone, &type));
+
+  EXPECT_DIF_BADARG(
+      dif_csrng_irq_get_type(&csrng_, kDifCsrngIrqCsCmdReqDone, nullptr));
+
+  EXPECT_DIF_BADARG(
+      dif_csrng_irq_get_type(nullptr, kDifCsrngIrqCsCmdReqDone, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_csrng_irq_get_type(
+      &csrng_, static_cast<dif_csrng_irq_t>(kDifCsrngIrqCsFatalErr + 1),
+      &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(
+      dif_csrng_irq_get_type(&csrng_, kDifCsrngIrqCsCmdReqDone, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public CsrngTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

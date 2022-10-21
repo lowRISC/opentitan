@@ -115,6 +115,19 @@ typedef enum dif_otp_ctrl_irq {
 typedef uint32_t dif_otp_ctrl_irq_state_snapshot_t;
 
 /**
+ * Returns the type of a given interrupt (i.e., event or status) for this IP.
+ *
+ * @param otp_ctrl A otp_ctrl handle.
+ * @param irq An interrupt request.
+ * @param[out] type Out-param for the interrupt type.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_otp_ctrl_irq_get_type(const dif_otp_ctrl_t *otp_ctrl,
+                                       dif_otp_ctrl_irq_t irq,
+                                       dif_irq_type_t *type);
+
+/**
  * Returns the state of all interrupts (i.e., pending or not) for this IP.
  *
  * @param otp_ctrl A otp_ctrl handle.

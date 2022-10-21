@@ -56,6 +56,37 @@ TEST_F(AlertForceTest, Success) {
       dif_adc_ctrl_alert_force(&adc_ctrl_, kDifAdcCtrlAlertFatalFault));
 }
 
+class IrqGetTypeTest : public AdcCtrlTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_irq_get_type(nullptr, kDifAdcCtrlIrqMatchDone, &type));
+
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_irq_get_type(&adc_ctrl_, kDifAdcCtrlIrqMatchDone, nullptr));
+
+  EXPECT_DIF_BADARG(
+      dif_adc_ctrl_irq_get_type(nullptr, kDifAdcCtrlIrqMatchDone, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_adc_ctrl_irq_get_type(
+      &adc_ctrl_, static_cast<dif_adc_ctrl_irq_t>(kDifAdcCtrlIrqMatchDone + 1),
+      &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(
+      dif_adc_ctrl_irq_get_type(&adc_ctrl_, kDifAdcCtrlIrqMatchDone, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public AdcCtrlTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

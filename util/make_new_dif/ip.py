@@ -52,6 +52,8 @@ class Irq:
         _multiline_description = irq["desc"][0].upper() + irq["desc"][1:]
         self.description = _multiline_description.replace("\n", " ")
         self.width = irq["width"] if "width" in irq else 1
+        self.type = irq["type"] if "type" in irq else "event"
+        assert self.type == "event" or self.type == "status"
 
 
 class Parameter:

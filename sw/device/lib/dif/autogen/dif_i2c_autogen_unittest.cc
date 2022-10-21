@@ -54,6 +54,35 @@ TEST_F(AlertForceTest, Success) {
   EXPECT_DIF_OK(dif_i2c_alert_force(&i2c_, kDifI2cAlertFatalFault));
 }
 
+class IrqGetTypeTest : public I2cTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(
+      dif_i2c_irq_get_type(nullptr, kDifI2cIrqFmtWatermark, &type));
+
+  EXPECT_DIF_BADARG(
+      dif_i2c_irq_get_type(&i2c_, kDifI2cIrqFmtWatermark, nullptr));
+
+  EXPECT_DIF_BADARG(
+      dif_i2c_irq_get_type(nullptr, kDifI2cIrqFmtWatermark, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_i2c_irq_get_type(
+      &i2c_, static_cast<dif_i2c_irq_t>(kDifI2cIrqHostTimeout + 1), &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_i2c_irq_get_type(&i2c_, kDifI2cIrqFmtWatermark, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public I2cTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

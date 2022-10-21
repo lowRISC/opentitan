@@ -54,6 +54,35 @@ TEST_F(AlertForceTest, Success) {
   EXPECT_DIF_OK(dif_uart_alert_force(&uart_, kDifUartAlertFatalFault));
 }
 
+class IrqGetTypeTest : public UartTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(
+      dif_uart_irq_get_type(nullptr, kDifUartIrqTxWatermark, &type));
+
+  EXPECT_DIF_BADARG(
+      dif_uart_irq_get_type(&uart_, kDifUartIrqTxWatermark, nullptr));
+
+  EXPECT_DIF_BADARG(
+      dif_uart_irq_get_type(nullptr, kDifUartIrqTxWatermark, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_uart_irq_get_type(
+      &uart_, static_cast<dif_uart_irq_t>(kDifUartIrqRxParityErr + 1), &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_uart_irq_get_type(&uart_, kDifUartIrqTxWatermark, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public UartTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

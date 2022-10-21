@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/dif/dif_base.h"
+
 #include "pinmux_regs.h"  // Generated.
 
 OT_WARN_UNUSED_RESULT

@@ -62,6 +62,37 @@ TEST_F(AlertForceTest, Success) {
       dif_otp_ctrl_alert_force(&otp_ctrl_, kDifOtpCtrlAlertRecovPrimOtpAlert));
 }
 
+class IrqGetTypeTest : public OtpCtrlTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_otp_ctrl_irq_get_type(
+      nullptr, kDifOtpCtrlIrqOtpOperationDone, &type));
+
+  EXPECT_DIF_BADARG(dif_otp_ctrl_irq_get_type(
+      &otp_ctrl_, kDifOtpCtrlIrqOtpOperationDone, nullptr));
+
+  EXPECT_DIF_BADARG(dif_otp_ctrl_irq_get_type(
+      nullptr, kDifOtpCtrlIrqOtpOperationDone, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_otp_ctrl_irq_get_type(
+      &otp_ctrl_, static_cast<dif_otp_ctrl_irq_t>(kDifOtpCtrlIrqOtpError + 1),
+      &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_otp_ctrl_irq_get_type(
+      &otp_ctrl_, kDifOtpCtrlIrqOtpOperationDone, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public OtpCtrlTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

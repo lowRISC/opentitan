@@ -87,20 +87,82 @@ namespace {
 % endif
 
 % if ip.irqs:
+  class IrqGetTypeTest : public ${ip.name_camel}Test {};
+
+  TEST_F(IrqGetTypeTest, NullArgs) {
+    dif_irq_type_t type;
+
+    EXPECT_DIF_BADARG(dif_${ip.name_snake}_irq_get_type(
+        nullptr,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
+      % else:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
+      % endif
+        &type));
+
+    EXPECT_DIF_BADARG(dif_${ip.name_snake}_irq_get_type(
+        &${ip.name_snake}_,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
+      % else:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
+      % endif
+        nullptr));
+
+    EXPECT_DIF_BADARG(dif_${ip.name_snake}_irq_get_type(
+        nullptr,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
+      % else:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
+      % endif
+        nullptr));
+  }
+
+  TEST_F(IrqGetTypeTest, BadIrq) {
+    dif_irq_type_t type;
+
+    EXPECT_DIF_BADARG(dif_${ip.name_snake}_irq_get_type(
+        &${ip.name_snake}_,
+      % if ip.irqs[-1].width == 1:
+        static_cast<dif_${ip.name_snake}_irq_t>(
+            kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel} + 1),
+      % else:
+        static_cast<dif_${ip.name_snake}_irq_t>(
+            kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}${ip.irqs[-1].width - 1} + 1),
+      % endif
+        &type));
+  }
+
+  TEST_F(IrqGetTypeTest, Success) {
+    dif_irq_type_t type;
+
+    EXPECT_DIF_OK(dif_${ip.name_snake}_irq_get_type(
+        &${ip.name_snake}_,
+      % if ip.irqs[0].width > 1:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel}0,
+      % else:
+        kDif${ip.name_camel}Irq${ip.irqs[0].name_camel},
+      % endif
+        &type));
+    EXPECT_EQ(type, 0);
+  }
+
   class IrqGetStateTest : public ${ip.name_camel}Test {};
 
   TEST_F(IrqGetStateTest, NullArgs) {
     dif_${ip.name_snake}_irq_state_snapshot_t irq_snapshot = 0;
 
     EXPECT_DIF_BADARG(dif_${ip.name_snake}_irq_get_state(
-        nullptr, 
+        nullptr,
       % if ip.name_snake == "rv_timer":
         0,
       % endif
         &irq_snapshot));
 
     EXPECT_DIF_BADARG(dif_${ip.name_snake}_irq_get_state(
-        &${ip.name_snake}_, 
+        &${ip.name_snake}_,
       % if ip.name_snake == "rv_timer":
         0,
       % endif
