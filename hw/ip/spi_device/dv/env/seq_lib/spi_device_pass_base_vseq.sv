@@ -557,6 +557,9 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
                 UVM_MEDIUM)
     end
 
+    if ($urandom_range(0, 99) < allow_dummy_trans_pct) begin
+      spi_host_xfer_dummy_item();
+    end
     // randomly read last_read_addr for scb to check
     if ($urandom_range(0, 2) == 0) begin
       bit [TL_DW-1:0] rdata;

@@ -10,7 +10,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
     );
   `uvm_object_utils(spi_device_base_vseq)
 
-  bit [1:0] spi_mode = 0; // TODO fixed value in spec now
+  // knob to control sending dummy transaction or incompleted opcode
+  int allow_dummy_trans_pct = 5;
 
   rand bit sck_polarity;
   rand bit sck_phase;
@@ -153,7 +154,7 @@ class spi_device_base_vseq extends cip_base_vseq #(
     cfg.spi_host_agent_cfg.num_bytes_per_trans_in_mon = 4;
 
     // update device rtl
-    ral.control.mode.set(spi_mode);
+    ral.control.mode.set(GenericMode);
     csr_update(.csr(ral.control));
     ral.cfg.cpol.set(sck_polarity);
     ral.cfg.cpha.set(sck_phase);
@@ -284,6 +285,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
   virtual task spi_host_xfer_dummy_item();
     spi_host_dummy_seq m_spi_host_seq;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
+                                   csb_sel inside {FW_FLASH_CSB_ID, TPM_CSB_ID};)
     `uvm_send(m_spi_host_seq)
   endtask
 

@@ -159,5 +159,9 @@ class spi_device_tpm_base_vseq extends spi_device_base_vseq;
                                    })
     `uvm_send(m_host_tpm_seq)
     payload_q = m_host_tpm_seq.rsp.data;
+
+    if ($urandom_range(0, 99) < allow_dummy_trans_pct) begin
+      spi_host_xfer_dummy_item();
+    end
   endtask
 endclass : spi_device_tpm_base_vseq

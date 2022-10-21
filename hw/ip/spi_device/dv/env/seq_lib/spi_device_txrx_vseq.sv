@@ -20,7 +20,6 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
   rand uint rx_delay;
   rand uint spi_delay;
 
-  rand bit  en_dummy_host_xfer;
   rand bit  en_extra_dly;
 
   // helper rand variable
@@ -65,13 +64,6 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
 
   constraint num_trans_c {
     num_trans inside {[2:3]};
-  }
-
-  constraint en_dummy_host_xfer_c {
-    en_dummy_host_xfer dist {
-      0 :/ 4,
-      1 :/ 1 // 20% enable dummy transfer
-    };
   }
 
   // lower 2 bits are ignored, use word granularity to contrain the sram setting
@@ -131,7 +123,8 @@ class spi_device_txrx_vseq extends spi_device_base_vseq;
           done_xfer = 1;
         end
         begin // drive dummy host item
-          while (!done_xfer && en_dummy_host_xfer) begin
+          bit en_dummy = $urandom_range(0, 99) < allow_dummy_trans_pct;
+          while (!done_xfer && en_dummy) begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(tx_delay)
             cfg.clk_rst_vif.wait_clks(tx_delay);
             spi_host_xfer_dummy_item();

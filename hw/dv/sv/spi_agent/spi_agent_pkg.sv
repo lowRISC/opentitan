@@ -31,7 +31,8 @@ package spi_agent_pkg;
     // device dut
     SpiTransNormal,    // normal SPI trans
     SpiTransSckNoCsb,  // bad SPI trans with sck but no csb
-    SpiTransCsbNoSck   // bad SPI trans with csb but no sck
+    SpiTransCsbNoSck,  // bad SPI trans with csb but no sck
+    SpiTransIncompleteOpcode  // bad SPI trans with incompleted opcode for flash/tpm mode only
   } spi_trans_type_e;
 
   // sck edge type - used by driver and monitor

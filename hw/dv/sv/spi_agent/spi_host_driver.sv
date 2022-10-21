@@ -94,6 +94,11 @@ class spi_host_driver extends spi_driver;
         end
         SpiTransSckNoCsb: drive_sck_no_csb_item();
         SpiTransCsbNoSck: drive_csb_no_sck_item();
+        SpiTransIncompleteOpcode: begin
+          int num_bits = $urandom_range(1, 7);
+          // invoke `drive_normal_item` to send less than 8 bits data as incompleted opcode
+          drive_normal_item(.partial_byte(1), .num_bits(num_bits));
+        end
         default: `uvm_fatal(`gfn, $sformatf("Invalid type %s", req.item_type.name))
       endcase
 
@@ -107,20 +112,14 @@ class spi_host_driver extends spi_driver;
   endtask
 
   task issue_data(input bit [7:0] transfer_data[$], output bit [7:0] returned_data[$],
-                  input bit last_data = 1);
+                  input bit last_data = 1, input int num_bits = 8);
     for (int i = 0; i < transfer_data.size(); i++) begin
       bit [7:0] host_byte;
       bit [7:0] device_byte;
       int       which_bit;
-      bit [3:0] num_bits;
 
       if (transfer_data.size == 0) return;
 
-      if (cfg.partial_byte == 1) begin
-        num_bits = cfg.bits_to_transfer;
-      end else begin
-        num_bits = 8;
-      end
       host_byte = transfer_data[i];
       for (int j = 0; j < num_bits; j++) begin
         // drive sio early so that it is stable at the sampling edge
@@ -139,10 +138,12 @@ class spi_host_driver extends spi_driver;
     end
   endtask
 
-  task drive_normal_item();
+  task drive_normal_item(bit partial_byte = cfg.partial_byte,
+                         int num_bits = cfg.partial_byte ? cfg.bits_to_transfer : 8);
     cfg.vif.csb[active_csb] <= 1'b0;
-    if ((req.data.size() == 1) && (cfg.partial_byte == 1)) begin
-      sck_pulses = cfg.bits_to_transfer;
+    if ((req.data.size() == 1) && (partial_byte == 1)) begin
+      sck_pulses = num_bits;
+      num_bits = num_bits;
     end else begin
       sck_pulses = req.data.size() * 8;
     end
@@ -151,7 +152,7 @@ class spi_host_driver extends spi_driver;
     cfg.wait_sck_edge(LeadingEdge);
 
     // drive data
-    issue_data(req.data, rsp.data);
+    issue_data(req.data, rsp.data, , num_bits);
 
     wait(sck_pulses == 0);
   endtask
