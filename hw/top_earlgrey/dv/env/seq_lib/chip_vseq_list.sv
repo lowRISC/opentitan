@@ -71,3 +71,4 @@
 `include "chip_sw_patt_ios_vseq.sv"
 `include "chip_sw_spi_device_tpm_vseq.sv"
 `include "chip_sw_aes_masking_off_vseq.sv"
+`include "chip_sw_flash_host_gnt_err_inj_vseq.sv"
