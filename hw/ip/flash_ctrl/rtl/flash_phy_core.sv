@@ -414,17 +414,21 @@ module flash_phy_core
   // if host grant is encountered, transactions return in-band
   // error until all transactions are flushed.
   logic phy_rd_err;
-  assign rd_err_o = phy_rd_err |
-                    // After host_gnt_rd_err asserts, no more host requests
-                    // are granted until all transactions are flushed. This means
-                    // the last outstanding transaction is by definition the "error".
-                    (host_gnt_rd_err & host_req_done_o & host_outstanding == 1'b1) |
-                    // If ctrl_fsm_idle inexplicably goes low while there are host transactions
-                    // the transaction handling may be irreversibly broken.
-                    // The host_oustanding_rd_err makes a best effort attempt to cleanly
-                    // recover.  It responds with in-band error controller transactions until the
-                    // all pending transactions are flushed.
-                    (host_outstanding_rd_err & rd_done_o);
+  assign rd_err_o = phy_rd_err;
+
+
+  // After host_gnt_rd_err asserts, no more host requests
+  // are granted until all transactions are flushed. This means
+  // the last outstanding transaction is by definition the "error".
+  //
+  // If ctrl_fsm_idle inexplicably goes low while there are host transactions
+  // the transaction handling may be irreversibly broken.
+  // The host_oustanding_rd_err makes a best effort attempt to cleanly
+  // recover.  It responds with in-band error controller transactions until the
+  // all pending transactions are flushed.
+  logic arb_host_gnt_err;
+  assign arb_host_gnt_err = (host_gnt_rd_err & host_outstanding == 1'b1) |
+                            (host_outstanding_rd_err);
 
   flash_phy_rd u_rd (
     .clk_i,
@@ -446,10 +450,13 @@ module flash_phy_core
     .data_err_o(phy_rd_err),
     .data_o(rd_data_o),
     .idle_o(rd_stage_idle),
+     // a catastrophic arbitration error has been observed, just dump
+     // dump returns until all transactions are flushed.
+    .arb_err_i(arb_host_gnt_err),
     .req_o(flash_rd_req),
     .ack_i(ack),
     .done_i(done),
-    .data_i(flash_rdata),
+    .data_i(arb_host_gnt_err ? {FullDataWidth{1'b1}} : flash_rdata),
     //scramble unit interface
     .calc_req_o(rd_calc_req),
     .calc_addr_o(rd_calc_addr),
