@@ -2,67 +2,37 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 
 def _opentitan_gdb_fpga_cw310_test(ctx):
-    test_script = '''#!/usr/bin/env bash
-        set -e
-
-        # Do not mask failures in the left-hand side of pipelines.
-        set -o pipefail
-
-        COLOR_RED='\\x1b[0;31m'
-        COLOR_GREEN='\\x1b[0;32m'
-        COLOR_PURPLE='\\x1b[0;35m'
-
-        function prefix_lines() {{
-            LABEL="$1"
-            COLOR="$2"
-            COLOR_RESET='\\x1b[m'
-            sed -Eu "s/(.*)/$COLOR[$LABEL]$COLOR_RESET \\1/"
-        }}
-
-        set -x
-
-        run_opentitantool() {{
-            ./opentitantool --rcfile= --logging=info --interface=cw310 "$@"
-        }}
-
-        run_opentitantool fpga load-bitstream --rom-kind={rom_kind} rom.bit
-
-        (openocd -f /usr/share/openocd/scripts/interface/ftdi/olimex-arm-usb-tiny-h.cfg \\
-            -c "adapter speed 0; transport select jtag; reset_config trst_and_srst" \\
-            -f {openocd_earlgrey_config} \\
-            |& prefix_lines OPENOCD "$COLOR_PURPLE") &
-        OPENOCD_PID=$!
-
-        # For debugging, it may be useful to use `--init-command`, which causes
-        # GDB to drop to the interactive prompt when the script ends rather than
-        # exiting.
-        (/tools/riscv/bin/riscv32-unknown-elf-gdb --command=script.gdb \\
-            |& prefix_lines GDB "$COLOR_GREEN") &
-
-        run_opentitantool console \\
-            --timeout 5s \\
-            --exit-success='{exit_success_pattern}' \\
-            |& prefix_lines CONSOLE "$COLOR_RED"
-
-        # Send TERM signal to OpenOCD and wait for all background jobs to complete. Note
-        # that GDB will exit naturally at the end of its script.
-        kill $OPENOCD_PID
-        wait
-    '''.format(
-        rom_kind = ctx.attr.rom_kind,
-        openocd_earlgrey_config = ctx.file._openocd_earlgrey_config.path,
-        exit_success_pattern = ctx.attr.exit_success_pattern,
-    )
-
     # Write the GDB script to disk and load it with GDB's `--command` argument.
     # This enables us to separate lines with whitespace, whereas if we piped the
     # string into GDB's stdin, each newline would cause it to repeat the
     # previous command.
     gdb_script_file = ctx.actions.declare_file("{}.gdb".format(ctx.label.name))
     test_script_file = ctx.actions.declare_file("{}.sh".format(ctx.label.name))
+
+    # This dummy script exists because test rules are a kind of executable rule,
+    # and executable rules *must* produce an output file.
+    test_script = """#!/usr/bin/env bash
+    set -ex
+    {coordinator_script} \\
+      --rom-kind={rom_kind} \\
+      --openocd-earlgrey-config={openocd_earlgrey_config} \\
+      --exit-success-pattern={exit_success_pattern} \\
+      --bitstream-path={bitstream_path} \\
+      --gdb-script-path={gdb_script_path} \\
+      --opentitantool-path={opentitantool_path}
+    """.format(
+        coordinator_script = shell.quote(ctx.executable._coordinator.short_path),
+        rom_kind = shell.quote(ctx.attr.rom_kind),
+        openocd_earlgrey_config = shell.quote(ctx.file._openocd_earlgrey_config.path),
+        exit_success_pattern = shell.quote(ctx.attr.exit_success_pattern),
+        bitstream_path = shell.quote(ctx.file.rom_bitstream.short_path),
+        gdb_script_path = shell.quote(gdb_script_file.short_path),
+        opentitantool_path = shell.quote(ctx.file._opentitantool.short_path),
+    )
 
     ctx.actions.write(output = gdb_script_file, content = ctx.attr.gdb_script)
     ctx.actions.write(output = test_script_file, content = test_script)
@@ -80,27 +50,19 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
         symlinks = gdb_script_symlinks_flipped,
         files = gdb_script_symlinks_flipped.values(),
     )
+
     test_script_runfiles = ctx.runfiles(
-        # Relative paths provided by `File.path` seem to not work
-        # for generated files. Symlinking the runtime files wherever
-        # Bazel will run `test_script_file` sidesteps the issue.
-        symlinks = {
-            "opentitantool": ctx.file._opentitantool,
-            "rom.bit": ctx.file.rom_bitstream,
-            "script.gdb": gdb_script_file,
-        },
         files = [
             ctx.file._openocd_earlgrey_config,
             ctx.file._opentitantool,
             ctx.file.rom_bitstream,
             gdb_script_file,
         ],
-    )
-    runfiles = test_script_runfiles.merge(gdb_script_runfiles)
+    ).merge(ctx.attr._coordinator.data_runfiles)
 
     return [DefaultInfo(
         executable = test_script_file,
-        runfiles = runfiles,
+        runfiles = test_script_runfiles.merge(gdb_script_runfiles),
     )]
 
 # Orchestrate opentitantool, OpenOCD, and GDB to load the given program into
@@ -117,6 +79,11 @@ opentitan_gdb_fpga_cw310_test = rv_rule(
             allow_single_file = True,
         ),
         "rom_kind": attr.string(mandatory = True),
+        "_coordinator": attr.label(
+            default = "//rules/scripts:gdb_test_coordinator",
+            cfg = "exec",
+            executable = True,
+        ),
         "_opentitantool": attr.label(
             default = "//sw/host/opentitantool",
             allow_single_file = True,
