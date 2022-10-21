@@ -583,8 +583,9 @@ module flash_ctrl_lcmgr
 
   localparam int unsigned PageCntWidth = prim_util_pkg::vbits(PagesPerBank + 1);
   localparam int unsigned WordCntWidth = prim_util_pkg::vbits(BusWordsPerPage + 1);
-  localparam int unsigned BeatCntWidth = prim_util_pkg::vbits(WidthMultiple);
-  localparam int unsigned MaxBeatCnt = WidthMultiple - 1;
+  localparam int unsigned MaxRmaProgBurst = WidthMultiple * 2;
+  localparam int unsigned BeatCntWidth = prim_util_pkg::vbits(MaxRmaProgBurst);
+  localparam int unsigned MaxBeatCnt = MaxRmaProgBurst - 1;
 
   logic page_cnt_ld;
   logic page_cnt_incr;
@@ -598,7 +599,7 @@ module flash_ctrl_lcmgr
   logic [PageCntWidth-1:0] page_cnt, end_page;
   logic [WordCntWidth-1:0] word_cnt;
   logic [BeatCntWidth-1:0] beat_cnt;
-  logic [WidthMultiple-1:0][BusWidth-1:0] prog_data;
+  logic [MaxBeatCnt:0][BusWidth-1:0] prog_data;
 
   assign end_page = RmaWipeEntries[rma_wipe_idx].start_page +
                     RmaWipeEntries[rma_wipe_idx].num_pages;
@@ -638,7 +639,7 @@ module flash_ctrl_lcmgr
     .set_cnt_i('0),
     .incr_en_i(word_cnt_incr),
     .decr_en_i(1'b0),
-    .step_i(WordCntWidth'(WidthMultiple)),
+    .step_i(WordCntWidth'(MaxRmaProgBurst)),
     .cnt_o(word_cnt),
     .cnt_next_o(),
     .err_o(word_err_d)
@@ -732,7 +733,7 @@ module flash_ctrl_lcmgr
 
   assign rma_part_sel = RmaWipeEntries[rma_wipe_idx].part;
   assign rma_info_sel = RmaWipeEntries[rma_wipe_idx].info_sel;
-  assign rma_num_words = WidthMultiple - 1;
+  assign rma_num_words = MaxBeatCnt;
 
   // this variable is specifically here to work around some tooling issues identified in #9661.
   // Certain tools identify rma_wipe_req as part of a combinational loop.
@@ -913,14 +914,16 @@ module flash_ctrl_lcmgr
   // assertion
 
 `ifdef INC_ASSERT
-  logic [DataWidth-1:0] rma_data_q, rma_data;
+  localparam int MaxRmaDataWidth = MaxRmaProgBurst * BusWidth;
+  localparam int ShiftWidth = (MaxRmaProgBurst - 1) * BusWidth;
+  logic [MaxRmaDataWidth-1:0] rma_data_q, rma_data;
   always_ff @(posedge clk_i) begin
     if (rma_start && rvalid_i && rready_o) begin
       rma_data_q <= rma_data;
     end
   end
 
-  assign rma_data = {rdata_i, rma_data_q[DataWidth-1 : BusWidth]};
+  assign rma_data = {rdata_i, rma_data_q[MaxRmaDataWidth-1 -: ShiftWidth]};
 
   // check the rma programmed value actually matches what was read back
   `ASSERT(ProgRdVerify_A, rma_start & rd_cnt_en & done_i |-> prog_data == rma_data)
