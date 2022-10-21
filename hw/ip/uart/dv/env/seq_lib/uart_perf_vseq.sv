@@ -32,4 +32,8 @@ class uart_perf_vseq extends uart_fifo_full_vseq;
     };
   }
 
+  // don't use the slowest baud rate, otherwise, it may take over 1hr
+  constraint baud_rate_extra_c {
+    baud_rate >= BaudRate115200;
+  }
 endclass : uart_perf_vseq
