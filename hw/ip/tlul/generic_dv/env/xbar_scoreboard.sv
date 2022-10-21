@@ -109,7 +109,14 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
       rsp.d_source    = tr.a_source;
       rsp.d_size      = tr.a_size;
       rsp.d_error     = 1;
-      rsp.d_data      = rsp.a_opcode == tlul_pkg::Get ? '1 : 0;
+      if (rsp.a_opcode == tlul_pkg::Get) begin
+        tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(rsp.a_user);
+        // if an error occurs, when it's an instrution, return all 0
+        // since it's an illegal instruction, otherwise, return all 1s
+        rsp.d_data = a_user.instr_type == prim_mubi_pkg::MuBi4True ? 0 : '1;
+      end else begin
+        rsp.d_data = 0;
+      end
       rsp.d_opcode    = rsp.a_opcode == tlul_pkg::Get ?
                         tlul_pkg::AccessAckData : tlul_pkg::AccessAck;
       rsp.d_user      = rsp.compute_d_user;
