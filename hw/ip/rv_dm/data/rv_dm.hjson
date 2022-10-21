@@ -235,10 +235,14 @@
           ]
         }
       },
-      // ROM size (given as `items` below) must be a power of two.
+      // Note that this region starts at `0x800` and contains the HaltAddress,
+      // ResumeAddress and ExceptionAddress locations.
       { window: {
           name: "ROM"
-          items: "512" // 2 KiB
+          // ROM size (given as `items` below) must be a power of two.
+          // The 512 x 4 = 2 KiB are enough to hold the 19 x 8 = 0x98 bytes
+          // currently allocated in the debug ROM.
+          items: "512"
           swaccess: "ro",
           desc: '''Access window into the debug ROM.'''
         }
