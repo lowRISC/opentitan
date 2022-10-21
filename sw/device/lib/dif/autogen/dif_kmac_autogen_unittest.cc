@@ -60,6 +60,34 @@ TEST_F(AlertForceTest, Success) {
   EXPECT_DIF_OK(dif_kmac_alert_force(&kmac_, kDifKmacAlertFatalFaultErr));
 }
 
+class IrqGetTypeTest : public KmacTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_kmac_irq_get_type(nullptr, kDifKmacIrqKmacDone, &type));
+
+  EXPECT_DIF_BADARG(
+      dif_kmac_irq_get_type(&kmac_, kDifKmacIrqKmacDone, nullptr));
+
+  EXPECT_DIF_BADARG(
+      dif_kmac_irq_get_type(nullptr, kDifKmacIrqKmacDone, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_kmac_irq_get_type(
+      &kmac_, static_cast<dif_kmac_irq_t>(kDifKmacIrqKmacErr + 1), &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_kmac_irq_get_type(&kmac_, kDifKmacIrqKmacDone, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public KmacTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

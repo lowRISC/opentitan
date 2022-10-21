@@ -59,6 +59,32 @@ TEST_F(AlertForceTest, Success) {
   EXPECT_DIF_OK(dif_otbn_alert_force(&otbn_, kDifOtbnAlertRecov));
 }
 
+class IrqGetTypeTest : public OtbnTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_otbn_irq_get_type(nullptr, kDifOtbnIrqDone, &type));
+
+  EXPECT_DIF_BADARG(dif_otbn_irq_get_type(&otbn_, kDifOtbnIrqDone, nullptr));
+
+  EXPECT_DIF_BADARG(dif_otbn_irq_get_type(nullptr, kDifOtbnIrqDone, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_otbn_irq_get_type(
+      &otbn_, static_cast<dif_otbn_irq_t>(kDifOtbnIrqDone + 1), &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_otbn_irq_get_type(&otbn_, kDifOtbnIrqDone, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public OtbnTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

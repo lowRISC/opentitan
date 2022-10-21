@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/dif/dif_base.h"
+
 #include "i2c_regs.h"  // Generated.
 
 OT_WARN_UNUSED_RESULT
@@ -44,10 +46,7 @@ dif_result_t dif_i2c_alert_force(const dif_i2c_t *i2c, dif_i2c_alert_t alert) {
 }
 
 /**
- * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
- * HJSON does NOT have a field "no_auto_intr_regs = true", then the
- * "<ip>_INTR_COMMON_<irq>_BIT" macro can be used. Otherwise, special cases
- * will exist, as templated below.
+ * Get the corresponding interrupt register bit offset of the IRQ.
  */
 static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
                                   bitfield_bit32_index_t *index_out) {
@@ -105,6 +104,25 @@ static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
   }
 
   return true;
+}
+
+static dif_irq_type_t irq_types[] = {
+    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent, kDifIrqTypeEvent,
+};
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_i2c_irq_get_type(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
+                                  dif_irq_type_t *type) {
+  if (i2c == NULL || type == NULL || irq == kDifI2cIrqHostTimeout + 1) {
+    return kDifBadArg;
+  }
+
+  *type = irq_types[irq];
+
+  return kDifOk;
 }
 
 OT_WARN_UNUSED_RESULT

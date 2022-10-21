@@ -61,6 +61,35 @@ TEST_F(AlertForceTest, Success) {
   EXPECT_DIF_OK(dif_keymgr_alert_force(&keymgr_, kDifKeymgrAlertFatalFaultErr));
 }
 
+class IrqGetTypeTest : public KeymgrTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(
+      dif_keymgr_irq_get_type(nullptr, kDifKeymgrIrqOpDone, &type));
+
+  EXPECT_DIF_BADARG(
+      dif_keymgr_irq_get_type(&keymgr_, kDifKeymgrIrqOpDone, nullptr));
+
+  EXPECT_DIF_BADARG(
+      dif_keymgr_irq_get_type(nullptr, kDifKeymgrIrqOpDone, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_keymgr_irq_get_type(
+      &keymgr_, static_cast<dif_keymgr_irq_t>(kDifKeymgrIrqOpDone + 1), &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_keymgr_irq_get_type(&keymgr_, kDifKeymgrIrqOpDone, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public KeymgrTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

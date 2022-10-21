@@ -56,6 +56,38 @@ TEST_F(AlertForceTest, Success) {
       dif_spi_device_alert_force(&spi_device_, kDifSpiDeviceAlertFatalFault));
 }
 
+class IrqGetTypeTest : public SpiDeviceTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_spi_device_irq_get_type(
+      nullptr, kDifSpiDeviceIrqGenericRxFull, &type));
+
+  EXPECT_DIF_BADARG(dif_spi_device_irq_get_type(
+      &spi_device_, kDifSpiDeviceIrqGenericRxFull, nullptr));
+
+  EXPECT_DIF_BADARG(dif_spi_device_irq_get_type(
+      nullptr, kDifSpiDeviceIrqGenericRxFull, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_spi_device_irq_get_type(
+      &spi_device_,
+      static_cast<dif_spi_device_irq_t>(kDifSpiDeviceIrqTpmHeaderNotEmpty + 1),
+      &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_spi_device_irq_get_type(
+      &spi_device_, kDifSpiDeviceIrqGenericRxFull, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public SpiDeviceTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

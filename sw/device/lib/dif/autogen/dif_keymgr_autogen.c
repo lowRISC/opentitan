@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/dif/dif_base.h"
+
 #include "keymgr_regs.h"  // Generated.
 
 OT_WARN_UNUSED_RESULT
@@ -48,10 +50,7 @@ dif_result_t dif_keymgr_alert_force(const dif_keymgr_t *keymgr,
 }
 
 /**
- * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
- * HJSON does NOT have a field "no_auto_intr_regs = true", then the
- * "<ip>_INTR_COMMON_<irq>_BIT" macro can be used. Otherwise, special cases
- * will exist, as templated below.
+ * Get the corresponding interrupt register bit offset of the IRQ.
  */
 static bool keymgr_get_irq_bit_index(dif_keymgr_irq_t irq,
                                      bitfield_bit32_index_t *index_out) {
@@ -64,6 +63,23 @@ static bool keymgr_get_irq_bit_index(dif_keymgr_irq_t irq,
   }
 
   return true;
+}
+
+static dif_irq_type_t irq_types[] = {
+    kDifIrqTypeEvent,
+};
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_keymgr_irq_get_type(const dif_keymgr_t *keymgr,
+                                     dif_keymgr_irq_t irq,
+                                     dif_irq_type_t *type) {
+  if (keymgr == NULL || type == NULL || irq == kDifKeymgrIrqOpDone + 1) {
+    return kDifBadArg;
+  }
+
+  *type = irq_types[irq];
+
+  return kDifOk;
 }
 
 OT_WARN_UNUSED_RESULT

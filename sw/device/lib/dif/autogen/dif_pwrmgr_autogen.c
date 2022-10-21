@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#include "sw/device/lib/dif/dif_base.h"
+
 #include "pwrmgr_regs.h"  // Generated.
 
 OT_WARN_UNUSED_RESULT
@@ -45,10 +47,7 @@ dif_result_t dif_pwrmgr_alert_force(const dif_pwrmgr_t *pwrmgr,
 }
 
 /**
- * Get the corresponding interrupt register bit offset of the IRQ. If the IP's
- * HJSON does NOT have a field "no_auto_intr_regs = true", then the
- * "<ip>_INTR_COMMON_<irq>_BIT" macro can be used. Otherwise, special cases
- * will exist, as templated below.
+ * Get the corresponding interrupt register bit offset of the IRQ.
  */
 static bool pwrmgr_get_irq_bit_index(dif_pwrmgr_irq_t irq,
                                      bitfield_bit32_index_t *index_out) {
@@ -61,6 +60,23 @@ static bool pwrmgr_get_irq_bit_index(dif_pwrmgr_irq_t irq,
   }
 
   return true;
+}
+
+static dif_irq_type_t irq_types[] = {
+    kDifIrqTypeEvent,
+};
+
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwrmgr_irq_get_type(const dif_pwrmgr_t *pwrmgr,
+                                     dif_pwrmgr_irq_t irq,
+                                     dif_irq_type_t *type) {
+  if (pwrmgr == NULL || type == NULL || irq == kDifPwrmgrIrqWakeup + 1) {
+    return kDifBadArg;
+  }
+
+  *type = irq_types[irq];
+
+  return kDifOk;
 }
 
 OT_WARN_UNUSED_RESULT

@@ -56,6 +56,38 @@ TEST_F(AlertForceTest, Success) {
                                             kDifSysrstCtrlAlertFatalFault));
 }
 
+class IrqGetTypeTest : public SysrstCtrlTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_get_type(
+      nullptr, kDifSysrstCtrlIrqEventDetected, &type));
+
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_get_type(
+      &sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected, nullptr));
+
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_get_type(
+      nullptr, kDifSysrstCtrlIrqEventDetected, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_sysrst_ctrl_irq_get_type(
+      &sysrst_ctrl_,
+      static_cast<dif_sysrst_ctrl_irq_t>(kDifSysrstCtrlIrqEventDetected + 1),
+      &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_sysrst_ctrl_irq_get_type(
+      &sysrst_ctrl_, kDifSysrstCtrlIrqEventDetected, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public SysrstCtrlTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

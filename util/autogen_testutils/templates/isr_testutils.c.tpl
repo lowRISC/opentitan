@@ -5,6 +5,7 @@
 ${autogen_banner}
 
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
+#include "sw/device/lib/dif/dif_base.h"
 
 #include "sw/device/lib/dif/dif_rv_plic.h"
 % for ip in ips_with_difs:
@@ -62,10 +63,15 @@ ${autogen_banner}
           kDifAdcCtrlIrqCauseAll));
     % endif
 
-      // Acknowledge the IRQ at the peripheral.
-      CHECK_DIF_OK(dif_${ip.name_snake}_irq_acknowledge(
-          ${ip.name_snake}_ctx.${ip.name_snake},
-          irq));
+      // Acknowledge the IRQ at the peripheral if IRQ is of the event type.
+      dif_irq_type_t type;
+      CHECK_DIF_OK(dif_${ip.name_snake}_irq_get_type(
+          ${ip.name_snake}_ctx.${ip.name_snake}, irq, &type));
+      if (type == kDifIrqTypeEvent) {
+        CHECK_DIF_OK(dif_${ip.name_snake}_irq_acknowledge(
+            ${ip.name_snake}_ctx.${ip.name_snake},
+            irq));
+      }
 
       // Complete the IRQ at the PLIC.
       CHECK_DIF_OK(dif_rv_plic_irq_complete(

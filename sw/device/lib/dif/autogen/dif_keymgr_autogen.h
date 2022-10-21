@@ -94,6 +94,19 @@ typedef enum dif_keymgr_irq {
 typedef uint32_t dif_keymgr_irq_state_snapshot_t;
 
 /**
+ * Returns the type of a given interrupt (i.e., event or status) for this IP.
+ *
+ * @param keymgr A keymgr handle.
+ * @param irq An interrupt request.
+ * @param[out] type Out-param for the interrupt type.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_keymgr_irq_get_type(const dif_keymgr_t *keymgr,
+                                     dif_keymgr_irq_t irq,
+                                     dif_irq_type_t *type);
+
+/**
  * Returns the state of all interrupts (i.e., pending or not) for this IP.
  *
  * @param keymgr A keymgr handle.

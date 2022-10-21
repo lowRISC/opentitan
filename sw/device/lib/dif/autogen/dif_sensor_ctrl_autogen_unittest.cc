@@ -62,6 +62,38 @@ TEST_F(AlertForceTest, Success) {
                                             kDifSensorCtrlAlertFatalAlert));
 }
 
+class IrqGetTypeTest : public SensorCtrlTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_get_type(
+      nullptr, kDifSensorCtrlIrqIoStatusChange, &type));
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_get_type(
+      &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, nullptr));
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_get_type(
+      nullptr, kDifSensorCtrlIrqIoStatusChange, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_sensor_ctrl_irq_get_type(
+      &sensor_ctrl_,
+      static_cast<dif_sensor_ctrl_irq_t>(kDifSensorCtrlIrqInitStatusChange + 1),
+      &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_sensor_ctrl_irq_get_type(
+      &sensor_ctrl_, kDifSensorCtrlIrqIoStatusChange, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public SensorCtrlTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

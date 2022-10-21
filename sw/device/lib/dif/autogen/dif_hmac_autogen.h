@@ -98,6 +98,18 @@ typedef enum dif_hmac_irq {
 typedef uint32_t dif_hmac_irq_state_snapshot_t;
 
 /**
+ * Returns the type of a given interrupt (i.e., event or status) for this IP.
+ *
+ * @param hmac A hmac handle.
+ * @param irq An interrupt request.
+ * @param[out] type Out-param for the interrupt type.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_hmac_irq_get_type(const dif_hmac_t *hmac, dif_hmac_irq_t irq,
+                                   dif_irq_type_t *type);
+
+/**
  * Returns the state of all interrupts (i.e., pending or not) for this IP.
  *
  * @param hmac A hmac handle.

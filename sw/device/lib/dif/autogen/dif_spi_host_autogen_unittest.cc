@@ -56,6 +56,37 @@ TEST_F(AlertForceTest, Success) {
       dif_spi_host_alert_force(&spi_host_, kDifSpiHostAlertFatalFault));
 }
 
+class IrqGetTypeTest : public SpiHostTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(
+      dif_spi_host_irq_get_type(nullptr, kDifSpiHostIrqError, &type));
+
+  EXPECT_DIF_BADARG(
+      dif_spi_host_irq_get_type(&spi_host_, kDifSpiHostIrqError, nullptr));
+
+  EXPECT_DIF_BADARG(
+      dif_spi_host_irq_get_type(nullptr, kDifSpiHostIrqError, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_spi_host_irq_get_type(
+      &spi_host_, static_cast<dif_spi_host_irq_t>(kDifSpiHostIrqSpiEvent + 1),
+      &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(
+      dif_spi_host_irq_get_type(&spi_host_, kDifSpiHostIrqError, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public SpiHostTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {

@@ -125,6 +125,20 @@ dif_result_t dif_${ip.name_snake}_init(
   typedef uint32_t dif_${ip.name_snake}_irq_state_snapshot_t;
 
   /**
+   * Returns the type of a given interrupt (i.e., event or status) for this IP.
+   *
+   * @param ${ip.name_snake} A ${ip.name_snake} handle.
+   * @param irq An interrupt request.
+   * @param[out] type Out-param for the interrupt type.
+   * @return The result of the operation.
+   */
+  OT_WARN_UNUSED_RESULT
+  dif_result_t dif_${ip.name_snake}_irq_get_type(
+    const dif_${ip.name_snake}_t *${ip.name_snake},
+    dif_${ip.name_snake}_irq_t irq,
+    dif_irq_type_t *type);
+
+  /**
    * Returns the state of all interrupts (i.e., pending or not) for this IP.
    *
    * @param ${ip.name_snake} A ${ip.name_snake} handle.

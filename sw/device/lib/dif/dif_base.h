@@ -105,6 +105,26 @@ typedef enum dif_toggle {
 } dif_toggle_t;
 
 /**
+ * An interrupt type: event, or status.
+ *
+ * This enum may be used instead when describing an interrupt type.
+ * Specifically, event interrupts require software to manually clear them by
+ * writing to the interrupt status register (after handling the root cause),
+ * while status interrupts clear immediately when the root cause of the iterrupt
+ * has been handled.
+ */
+typedef enum dif_irq_type {
+  /**
+   * Event type interrupt.
+   */
+  kDifIrqTypeEvent = 0,
+  /**
+   * Status type interrupt.
+   */
+  kDifIrqTypeStatus = 1,
+} dif_irq_type_t;
+
+/**
  * Checks if a DIF toggle type is valid.
  *
  * @param val A potential dif_toggle_t value.

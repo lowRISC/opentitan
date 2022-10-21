@@ -36,6 +36,38 @@ TEST_F(InitTest, Success) {
   EXPECT_DIF_OK(dif_alert_handler_init(dev().region(), &alert_handler_));
 }
 
+class IrqGetTypeTest : public AlertHandlerTest {};
+
+TEST_F(IrqGetTypeTest, NullArgs) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_alert_handler_irq_get_type(
+      nullptr, kDifAlertHandlerIrqClassa, &type));
+
+  EXPECT_DIF_BADARG(dif_alert_handler_irq_get_type(
+      &alert_handler_, kDifAlertHandlerIrqClassa, nullptr));
+
+  EXPECT_DIF_BADARG(dif_alert_handler_irq_get_type(
+      nullptr, kDifAlertHandlerIrqClassa, nullptr));
+}
+
+TEST_F(IrqGetTypeTest, BadIrq) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_BADARG(dif_alert_handler_irq_get_type(
+      &alert_handler_,
+      static_cast<dif_alert_handler_irq_t>(kDifAlertHandlerIrqClassd + 1),
+      &type));
+}
+
+TEST_F(IrqGetTypeTest, Success) {
+  dif_irq_type_t type;
+
+  EXPECT_DIF_OK(dif_alert_handler_irq_get_type(
+      &alert_handler_, kDifAlertHandlerIrqClassa, &type));
+  EXPECT_EQ(type, 0);
+}
+
 class IrqGetStateTest : public AlertHandlerTest {};
 
 TEST_F(IrqGetStateTest, NullArgs) {
