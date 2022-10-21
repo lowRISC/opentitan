@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -25,7 +26,7 @@ enum {
  */
 typedef struct pinmux_input {
   top_earlgrey_pinmux_peripheral_in_t periph;
-  top_earlgrey_pinmux_insel_t pad_insel;
+  top_earlgrey_pinmux_insel_t insel;
   top_earlgrey_muxed_pads_t pad;
 } pinmux_input_t;
 
@@ -33,8 +34,9 @@ typedef struct pinmux_input {
  * An MIO pad and a peripheral output to link it to.
  */
 typedef struct pinmux_output {
-  top_earlgrey_pinmux_mio_out_t pad;
-  top_earlgrey_pinmux_outsel_t periph;
+  top_earlgrey_pinmux_mio_out_t mio;
+  top_earlgrey_pinmux_outsel_t outsel;
+  top_earlgrey_muxed_pads_t pad;
 } pinmux_output_t;
 
 /**
@@ -42,7 +44,7 @@ typedef struct pinmux_output {
  */
 static const pinmux_input_t kInputUart0 = {
     .periph = kTopEarlgreyPinmuxPeripheralInUart0Rx,
-    .pad_insel = kTopEarlgreyPinmuxInselIoc3,
+    .insel = kTopEarlgreyPinmuxInselIoc3,
     .pad = kTopEarlgreyMuxedPadsIoc3,
 };
 
@@ -50,28 +52,42 @@ static const pinmux_input_t kInputUart0 = {
  * UART TX pin.
  */
 static const pinmux_output_t kOutputUart0 = {
-    .pad = kTopEarlgreyPinmuxMioOutIoc4,
-    .periph = kTopEarlgreyPinmuxOutselUart0Tx,
+    .mio = kTopEarlgreyPinmuxMioOutIoc4,
+    .outsel = kTopEarlgreyPinmuxOutselUart0Tx,
+    .pad = kTopEarlgreyMuxedPadsIoc4,
 };
 
 /**
  * SW strap pins.
- *
  */
+#define PINMUX_ASSERT_EQ_(a, b) \
+  static_assert((a) == (b), "Unexpected software strap configuration.")
+
+PINMUX_ASSERT_EQ_(SW_STRAP_0_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio22);
+PINMUX_ASSERT_EQ_(SW_STRAP_0_INSEL, kTopEarlgreyPinmuxInselIoc0);
+PINMUX_ASSERT_EQ_(SW_STRAP_0_PAD, kTopEarlgreyMuxedPadsIoc0);
 static const pinmux_input_t kInputSwStrap0 = {
-    .periph = kTopEarlgreyPinmuxPeripheralInGpioGpio22,
-    .pad_insel = kTopEarlgreyPinmuxInselIoc0,
-    .pad = kTopEarlgreyMuxedPadsIoc0,
+    .periph = SW_STRAP_0_PERIPH,
+    .insel = SW_STRAP_0_INSEL,
+    .pad = SW_STRAP_0_PAD,
 };
+
+PINMUX_ASSERT_EQ_(SW_STRAP_1_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio23);
+PINMUX_ASSERT_EQ_(SW_STRAP_1_INSEL, kTopEarlgreyPinmuxInselIoc1);
+PINMUX_ASSERT_EQ_(SW_STRAP_1_PAD, kTopEarlgreyMuxedPadsIoc1);
 static const pinmux_input_t kInputSwStrap1 = {
-    .periph = kTopEarlgreyPinmuxPeripheralInGpioGpio23,
-    .pad_insel = kTopEarlgreyPinmuxInselIoc1,
-    .pad = kTopEarlgreyMuxedPadsIoc1,
+    .periph = SW_STRAP_1_PERIPH,
+    .insel = SW_STRAP_1_INSEL,
+    .pad = SW_STRAP_1_PAD,
 };
+
+PINMUX_ASSERT_EQ_(SW_STRAP_2_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio24);
+PINMUX_ASSERT_EQ_(SW_STRAP_2_INSEL, kTopEarlgreyPinmuxInselIoc2);
+PINMUX_ASSERT_EQ_(SW_STRAP_2_PAD, kTopEarlgreyMuxedPadsIoc2);
 static const pinmux_input_t kInputSwStrap2 = {
-    .periph = kTopEarlgreyPinmuxPeripheralInGpioGpio24,
-    .pad_insel = kTopEarlgreyPinmuxInselIoc2,
-    .pad = kTopEarlgreyMuxedPadsIoc2,
+    .periph = SW_STRAP_2_PERIPH,
+    .insel = SW_STRAP_2_INSEL,
+    .pad = SW_STRAP_2_PAD,
 };
 
 /**
@@ -82,7 +98,7 @@ static const pinmux_input_t kInputSwStrap2 = {
 static void configure_input(pinmux_input_t input) {
   abs_mmio_write32(kBase + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET +
                        input.periph * sizeof(uint32_t),
-                   input.pad_insel);
+                   input.insel);
 }
 
 /**
@@ -104,8 +120,8 @@ static void enable_pull_down(top_earlgrey_muxed_pads_t pad) {
  */
 static void configure_output(pinmux_output_t output) {
   abs_mmio_write32(
-      kBase + PINMUX_MIO_OUTSEL_0_REG_OFFSET + output.pad * sizeof(uint32_t),
-      output.periph);
+      kBase + PINMUX_MIO_OUTSEL_0_REG_OFFSET + output.mio * sizeof(uint32_t),
+      output.outsel);
 }
 
 void pinmux_init(void) {

@@ -409,6 +409,7 @@ cc_library(
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
