@@ -293,16 +293,5 @@
       stage: V2S
       tests: ["flash_ctrl_sec_cm"]
     }
-    {
-      name: rma_write_process_error
-      desc: '''Verify error handling process duing the rma wipe process.
-      In normal rma process, inject bit error at the write path
-      (tb.dut.u_eflash.gen_flash_cores[0].u_core.gen_prog_data.u_prog.pack_data).
-      This should make debug_state to flash_ctrl_env_pkg::FlashLcIvalid and
-      fatal error (std_fault_status.lcmgr_err) should be triggered.
-      '''
-      stage: V2S
-      tests: ["flash_ctrl_rma_err"]
-    }
   ]
 }
