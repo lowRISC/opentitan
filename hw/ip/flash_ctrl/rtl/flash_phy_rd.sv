@@ -53,6 +53,7 @@ module flash_phy_rd
   output logic intg_ecc_err_o,
   output logic [BusFullWidth-1:0] data_o,
   output logic idle_o, // the entire read pipeline is idle
+  input arb_err_i, // a catastrophic arbitration error was observed
 
   // interface with scramble unit
   output logic calc_req_o,
@@ -676,7 +677,8 @@ module flash_phy_rd
   assign data_valid_o = flash_rsp_match | (|buf_rsp_match);
 
   // integrity and reliability ECC errors always cause in band errors
-  assign data_err_o   = data_valid_o & (muxed_err | intg_err | (|buf_rsp_match & buf_rsp_err));
+  assign data_err_o   = data_valid_o & (muxed_err | intg_err | (|buf_rsp_match & buf_rsp_err)) |
+                        arb_err_i;
 
   // integrity ECC error can also cause out of band alert
   assign intg_ecc_err_o = data_valid_o & intg_err;
