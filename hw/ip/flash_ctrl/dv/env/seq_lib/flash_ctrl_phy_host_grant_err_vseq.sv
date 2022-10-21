@@ -46,8 +46,9 @@ class flash_ctrl_phy_host_grant_err_vseq extends flash_ctrl_err_base_vseq;
     cfg.scb_h.do_alert_check = 0;
     cfg.scb_h.stop_alert_check = 1;
     // Give some drain time
-    cfg.clk_rst_vif.wait_n_clks(100);
+    cfg.clk_rst_vif.wait_clks(100);
     cfg.flush_tlul = 1;
+    cfg.clk_rst_vif.wait_clks(10);
     p_sequencer.stop_sequences();
   endtask
 

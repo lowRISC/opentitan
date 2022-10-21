@@ -97,12 +97,13 @@ class flash_ctrl_env #(
 
   task flush_tlul();
     wait(cfg.flush_tlul);
+    `uvm_info(`gfn, "flush_tlul is called...", UVM_LOW)
     foreach (m_tl_agents[i]) begin
       m_tl_agents[i].cfg.a_source_pend_q.delete();
-      m_tl_agents[i].cfg.vif.rst_n = 0;
-      repeat(2) @(m_tl_agents[i].cfg.vif.mon_cb);
-      m_tl_agents[i].cfg.vif.rst_n = 1;
     end
+    cfg.reset_asserted();
+    @(posedge cfg.clk_rst_vif.rst_n);
+    cfg.reset_deasserted();
   endtask // flush_tlul
 
 endclass
