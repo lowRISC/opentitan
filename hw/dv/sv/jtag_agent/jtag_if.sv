@@ -56,6 +56,8 @@ interface jtag_if #(time JtagDefaultTckPeriodNs = 20ns) ();
     trst_n <= 1'b0;
     wait_tck(cycles);
     trst_n <= 1'b1;
+    // Give time for subsequent events to get away from the reset edge
+    wait_tck(1);
   endtask
 
   // Generate the tck, with UartDefaultClkPeriodNs period as default
