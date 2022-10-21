@@ -103,7 +103,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       `uvm_info(`gfn, $sformatf("upstream received host spi item:\n%0s", item.sprint()),
                 UVM_MEDIUM)
       if (cfg.en_cov) begin
-        cov.all_modes_cg.sample(`gmv(ral.control.mode), `gmv(ral.tpm_cfg.en));
+        cov.all_modes_cg.sample(device_mode_e'(`gmv(ral.control.mode)), `gmv(ral.tpm_cfg.en));
       end
 
       case (cfg.spi_host_agent_cfg.spi_func_mode)
@@ -267,7 +267,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             is_hw_reg_offset = (
                 aligned_addr[TPM_OFFSET_WIDTH-1:0] inside {ALL_TPM_HW_REG_OFFSETS});
             is_word_aligned = (addr[1:0] == 0);
-            cov.tpm_cfg_cg.sample(`gmv(ral.tpm_cfg.tpm_mode),
+            cov.tpm_cfg_cg.sample(tpm_cfg_mode_e'(`gmv(ral.tpm_cfg.tpm_mode)),
                                   `gmv(ral.tpm_cfg.hw_reg_dis),
                                   `gmv(ral.tpm_cfg.tpm_reg_chk_dis),
                                   `gmv(ral.tpm_cfg.invalid_locality),
