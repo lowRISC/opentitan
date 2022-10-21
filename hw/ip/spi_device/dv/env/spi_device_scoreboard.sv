@@ -509,6 +509,19 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
         flash_status_settle_q.push_back(flash_status_q[$]);
         flash_status_q.delete();
       end
+      // if this is the end of a normal flash transaction, flash_status is handled after receiving
+      // the item from spi_monitor.
+      // But if it's a dummy transaction, the rising CSB also updates flash_status, but spi_monitor
+      // doesn't send any item for it, so need to update flash_status here
+      @(posedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
+      // this small delay allows the other thread to process flash_status when it's not a dummy
+      // transaction.
+      #1ps;
+      // this flash_status_settle_q isn't empty, then this is a dummy transaction
+      if (flash_status_settle_q.size) begin
+        latch_flash_status(.set_busy(0), .update_wel(0), .wel_val(0));
+        `uvm_info(`gfn, "latch flash_status due to a dummy item", UVM_MEDIUM)
+      end
     end
   endtask
 
