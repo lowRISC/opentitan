@@ -138,10 +138,3 @@ pub_y:
 /* signature verification result x_res */
 sig_xres:
   .zero 64
-
-
-/* Expected values in wide register file (x-coordinate of result):
-   [w1, w0] is x_res == sig_r
- w0  = 0x49d29eef0235d77ec16c09de12d35b3856e186cf9a1a30fc2b23ce3ab68c28d8
- w1  = 0x00000000000000000000000000000000b2fcf95c7c0d8125b45990dbd3c43053
-*/

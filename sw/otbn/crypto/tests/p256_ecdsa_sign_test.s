@@ -98,8 +98,3 @@ r:
 .balign 32
 s:
   .zero 32
-
-/* Expected values wide register file (w0=R, w1=S):
-w0 = 0x815215ad7dd27f336b35843cbe064de299504edd0c7d87dd1147ea5680a9674a
-w1 = 0xa3991e01c444042086e30cd999e589ad4dad9404e90a6d17d0b1051ec93fd605
-*/

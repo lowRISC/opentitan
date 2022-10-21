@@ -99,7 +99,3 @@ y:
 .balign 32
 x_r:
   .zero 32
-
-/* Expected values wide register file (w0=x_r == R):
-w0 = 0x815215ad7dd27f336b35843cbe064de299504edd0c7d87dd1147ea5680a9674a
-*/

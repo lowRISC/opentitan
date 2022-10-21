@@ -59,10 +59,3 @@ x:
 .balign 32
 y:
   .zero 32
-
-/* Expected values in wide register file (x- and y-coordinates of result):
-   w0 is affine x-coordinate of resulting point,
-   w1 is affine y-coordinate of resulting point.
- w0  = 0xb5511a6afacdc5461628ce58db6c8bf36ec0c0b2f36b06899773b7b3bfa8c334
- w1  = 0x42a1c6971f31c14343dd09eab53a17fa7f7a11d0ab9c6924a87070589e008c2e
-*/

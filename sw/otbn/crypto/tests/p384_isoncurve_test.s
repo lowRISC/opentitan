@@ -86,13 +86,3 @@ point_y:
   .word 0x03afe2c2
   .word 0xaaafcad2
   .zero 16
-
-/* Expected values in wide register file:
-   [w1, w0] is right side result of Weierstrass equation,
-   [w3, w2] is right side result of Weierstrass equation.
-   Point is on curve if [w3,w2] == [w1,w0].
- w0  = 0xfb192142f51950228765c0f69371a6a63aaff417aacdf679abcbea36b6c505b8
- w1  = 0x000000000000000000000000000000008075470ebf2179fe3a1f1fdf4b445503
- w2  = 0xfb192142f51950228765c0f69371a6a63aaff417aacdf679abcbea36b6c505b8
- w3  = 0x000000000000000000000000000000008075470ebf2179fe3a1f1fdf4b445503
-*/

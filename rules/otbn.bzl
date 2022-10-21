@@ -160,13 +160,7 @@ def _otbn_sim_test(ctx):
     # Extract the output .elf file from the output group.
     elf = providers[1].elf.to_list()[0]
 
-    # Create a file with expected values (always w0=0).
-    # TODO: update existing tests to include expected-value files.
-    exp_file = ctx.actions.declare_file("{}.exp".format(ctx.label.name))
-    ctx.actions.write(
-        output = exp_file,
-        content = "w0 = 0\n",
-    )
+    exp_file = ctx.file.exp
 
     # Create a simple script that runs the OTBN test wrapper on the .elf file
     # using the provided simulator path.
@@ -298,6 +292,7 @@ otbn_sim_test = rv_rule(
     attrs = {
         "srcs": attr.label_list(allow_files = True),
         "deps": attr.label_list(providers = [DefaultInfo]),
+        "exp": attr.label(allow_single_file = True),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_otbn_as": attr.label(
             default = "//hw/ip/otbn/util:otbn_as",
