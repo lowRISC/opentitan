@@ -110,6 +110,7 @@ filesets:
       - seq_lib/chip_sw_patt_ios_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rv_core_ibex_lockstep_glitch_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_aes_masking_off_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_flash_host_gnt_err_inj_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
       - alerts_if.sv
       - ast_ext_clk_if.sv

@@ -967,6 +967,18 @@
       stage: V2
       tests: ["chip_sw_all_escalation_resets"]
     }
+    {
+      name: chip_sw_flash_ctrl_escalation_reset
+      desc: '''Verify the flash ctrl fatal error does not disturb escalation process
+            and operation of ibex core.
+
+            Trigger an internal fatal fault (host_gnt_err) from flash_ctrl
+            and let it escalate to reset. Upon alert escalation reset,
+            the internal status should be clean and should not send out more alerts.
+            '''
+      stage: V2
+      tests: ["chip_sw_flash_crash_alert"]
+    }
 
     // PWRMGR tests:
     {
