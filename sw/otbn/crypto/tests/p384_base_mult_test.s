@@ -92,12 +92,3 @@ p1_x:
 /* result buffer y-coordinate */
 p1_y:
   .zero 64
-
-/* Expected values in wide register file (x- and y-coordinates of result):
-   [w1, w0] is affine x-coordinate of resulting point,
-   [w3, w2] is affine y-coordinate of resulting point.
- w0  = 0x394d8b7047e806616c30f2d8ee0e2beb5869de54b1cac6097b8294604877f3d1
- w1  = 0x00000000000000000000000000000000ca230836b439d7011a9ea916cf60d89e
- w2  = 0x82b63bf3928c3e92cea028a9ec18818cc7e55880bf3aff6ec31ef079c181f90f
- w3  = 0x00000000000000000000000000000000aaafcad203afe2c268eef2d1d65e905d
-*/

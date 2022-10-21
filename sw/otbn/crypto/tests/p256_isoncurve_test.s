@@ -66,8 +66,3 @@ y:
   .word 0x43dd09ea
   .word 0x1f31c143
   .word 0x42a1c697
-
-/* Expected values wide register file (w0=R, w1=S):
-w0 = 0xb103b614b389c6b8e1a08330a6ce0b9c4b3726ec0bf61f6bdd66af03a4af5660
-w1 = 0xb103b614b389c6b8e1a08330a6ce0b9c4b3726ec0bf61f6bdd66af03a4af5660
-*/
