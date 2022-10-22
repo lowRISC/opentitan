@@ -115,9 +115,9 @@ _rom_shadow_stack:
   // is allocated executable space in ROM by the linker.
   .section .crt, "ax"
 
-  // Linker relaxations are disabled until `__global_pointer$` is setup below,
-  // because otherwise some sequences may be turned into gp-relative sequences,
-  // which is incorrect when `gp` is not initialized.
+  // Linker relaxations are disabled until `gp` is set below, because otherwise
+  // some sequences may be turned into `gp`-relative sequences, which is
+  // incorrect when `gp` is not initialized.
   .option push
   .option norelax
 
@@ -128,12 +128,9 @@ _rom_shadow_stack:
   .global _rom_start_boot
   .type _rom_start_boot, @function
 _rom_start_boot:
-
-  /**
-   * The interrupts are disabled globally on reset. However, We cannot disable
-   * exceptions, or Ibex's non-maskable interrupts (interrupt 31), so we still
-   * need to be careful.
-   */
+  // Set up the global pointer and re-enable linker relaxations.
+  la gp, __global_pointer$
+  .option pop
 
   // Check if we should halt here.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
@@ -145,15 +142,6 @@ _rom_start_boot:
   j .L_halt_loop
 
 .L_exec_en:
-  // Set up the global pointer.
-  //
-  // This requires that we disable linker relaxations, or it will be relaxed to
-  // `mv gp, gp`, so we disabled relaxations at the start of `_rom_start_boot`.
-  la gp, __global_pointer$
-
-  // Re-enable linker relaxations.
-  .option pop
-
   // Configure the power manager to enable resets.
   // Note: this enables all types of reset request for simplicity.
   li t0, TOP_EARLGREY_PWRMGR_AON_BASE_ADDR
