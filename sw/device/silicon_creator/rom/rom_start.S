@@ -2,16 +2,20 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/hardened_asm.h"
 #include "sw/device/lib/base/multibits_asm.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "aon_timer_regs.h"
 #include "ast_regs.h"
 #include "clkmgr_regs.h"
 #include "csrng_regs.h"
 #include "edn_regs.h"
 #include "entropy_src_regs.h"
+#include "gpio_regs.h"
+#include "lc_ctrl_regs.h"
 #include "otp_ctrl_regs.h"
+#include "pinmux_regs.h"
 #include "pwrmgr_regs.h"
 #include "sensor_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
@@ -176,7 +180,7 @@ _rom_start_boot:
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET(a0)
   li   t1, MULTIBIT_ASM_BOOL4_TRUE
-  bne  t0, t1, .L_ast_init_skip
+  bne  t0, t1, .L_ast_init_end
 
   // Copy the AST configuration from OTP.
   li   a0, (TOP_EARLGREY_AST_BASE_ADDR)
@@ -193,7 +197,93 @@ _rom_start_boot:
   li   a0, TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
   sw   t0, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
 
-.L_ast_init_skip:
+.L_ast_init_end:
+  // Check if we are trying to transition to RMA. If so, busy loop for
+  // CREATOR_SW_CFG_RMA_SPIN_CYCLES to let the transition start and continue
+  // looping while lc_ctrl is not ready. Reset if the CPU is still executing at
+  // the end.
+  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_EN_OFFSET(a0)
+  li   t6, HARDENED_BOOL_TRUE
+  bne  t0, t6, .L_rma_spin_skip
+
+  li   a1, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw   t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_EN_OFFSET(a1)
+  beq  t1, t6, .L_rma_spin_init
+  unimp
+  unimp
+  unimp
+  unimp
+
+.L_rma_spin_init:
+  csrw mcycle, zero
+  li   a0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
+  sw   zero, AON_TIMER_WDOG_CTRL_REG_OFFSET(a0)
+
+  // Configure strap pins.
+  //
+  // | GPIO Pin:        | 24             | 23             | 22               |
+  // |                  | (SW_STRAP_2)   | (SW_STRAP_1)   | (SW_STRAP_0)     |
+  // |------------------+----------------+----------------+------------------|
+  // | RMA Entry Value: | Strong pull-up | Strong pull-up | Strong pull-down |
+  // |------------------+----------------+----------------+------------------|
+  // | Configuration:   | Input          | Input          | Input            |
+  // |                  | Pull-down      | Pull-down      | Pull-up          |
+  li   a0, (TOP_EARLGREY_PINMUX_AON_BASE_ADDR + \
+            PINMUX_MIO_PAD_ATTR_0_REG_OFFSET)
+  li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT) | \
+           (1 << PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT)
+  sw   t0, (SW_STRAP_0_PAD * 4)(a0)
+  li   t0, (1 << PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT)
+  sw   t0, (SW_STRAP_1_PAD * 4)(a0)
+  sw   t0, (SW_STRAP_2_PAD * 4)(a0)
+  li   a0, (TOP_EARLGREY_PINMUX_AON_BASE_ADDR + \
+            PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET)
+  li   t0, SW_STRAP_0_INSEL
+  sw   t0, (SW_STRAP_0_PERIPH * 4)(a0)
+  li   t0, SW_STRAP_1_INSEL
+  sw   t0, (SW_STRAP_1_PERIPH * 4)(a0)
+  li   t0, SW_STRAP_2_INSEL
+  sw   t0, (SW_STRAP_2_PERIPH * 4)(a0)
+
+  li   a0, TOP_EARLGREY_GPIO_BASE_ADDR
+  lw   t0, GPIO_DATA_IN_REG_OFFSET(a0)
+  li   t5, SW_STRAP_MASK
+  and  t0, t0, t5
+  li   t4, (HARDENED_BOOL_TRUE ^ SW_STRAP_RMA_ENTRY)
+  xor  t0, t0, t4
+  bne  t0, t6, .L_exec_en
+
+  li   t6, HARDENED_BOOL_TRUE
+  li   a1, TOP_EARLGREY_GPIO_BASE_ADDR
+  lw   t1, GPIO_DATA_IN_REG_OFFSET(a1)
+  and  t1, t1, t5
+  xor  t1, t1, t4
+  beq  t1, t6, .L_rma_spin_cycles_loop
+  unimp
+  unimp
+  unimp
+  unimp
+
+.L_rma_spin_cycles_loop:
+  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_CYCLES_OFFSET(a0)
+  csrr t1, mcycle
+  bltu t1, t0, .L_rma_spin_cycles_loop
+.L_rma_spin_lc_ctrl_loop:
+  li   a0, TOP_EARLGREY_LC_CTRL_BASE_ADDR
+  lw   t0, LC_CTRL_STATUS_REG_OFFSET(a0)
+  andi t0, t0, (1 << LC_CTRL_STATUS_READY_BIT)
+  beqz t0, .L_rma_spin_lc_ctrl_loop
+  unimp
+  unimp
+  unimp
+  unimp
+
+.L_rma_spin_skip:
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
   li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
