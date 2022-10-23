@@ -21,12 +21,18 @@ class entropy_src_fw_ov_test extends entropy_src_base_test;
     cfg.soft_mtbf                           = 7500us;
 
     // Apply truly impossible standards, to confirm that HT's don't matter here
-    cfg.dut_cfg.adaptp_sigma_min            = 0.0;
-    cfg.dut_cfg.adaptp_sigma_max            = 0.0;
-    cfg.dut_cfg.bucket_sigma_min            = 0.0;
-    cfg.dut_cfg.bucket_sigma_max            = 0.0;
-    cfg.dut_cfg.markov_sigma_min            = 0.0;
-    cfg.dut_cfg.markov_sigma_max            = 0.0;
+    cfg.dut_cfg.adaptp_sigma_min_typ        = 0.0;
+    cfg.dut_cfg.adaptp_sigma_min_tight      = 0.0;
+    cfg.dut_cfg.adaptp_sigma_max_typ        = 0.0;
+    cfg.dut_cfg.adaptp_sigma_max_tight      = 0.0;
+    cfg.dut_cfg.bucket_sigma_min_typ        = 0.0;
+    cfg.dut_cfg.bucket_sigma_min_tight      = 0.0;
+    cfg.dut_cfg.bucket_sigma_max_typ        = 0.0;
+    cfg.dut_cfg.bucket_sigma_max_tight      = 0.0;
+    cfg.dut_cfg.markov_sigma_min_typ        = 0.0;
+    cfg.dut_cfg.markov_sigma_min_tight      = 0.0;
+    cfg.dut_cfg.markov_sigma_max_typ        = 0.0;
+    cfg.dut_cfg.markov_sigma_max_tight      = 0.0;
 
     cfg.dut_cfg.sw_regupd_pct               = 50;
 

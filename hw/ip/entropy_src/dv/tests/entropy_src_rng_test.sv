@@ -24,12 +24,20 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.soft_mtbf                   = 7500us;
 
     // Apply standards ranging from strict to relaxed
-    cfg.dut_cfg.adaptp_sigma_min            = 3.0;
-    cfg.dut_cfg.adaptp_sigma_max            = 6.0;
-    cfg.dut_cfg.bucket_sigma_min            = 3.0;
-    cfg.dut_cfg.bucket_sigma_max            = 6.0;
-    cfg.dut_cfg.markov_sigma_min            = 3.0;
-    cfg.dut_cfg.markov_sigma_max            = 6.0;
+    cfg.dut_cfg.adaptp_sigma_min_tight      = 0.5;
+    cfg.dut_cfg.bucket_sigma_max_tight      = 2.0;
+    cfg.dut_cfg.adaptp_sigma_min_typ        = 3.0;
+    cfg.dut_cfg.adaptp_sigma_max_typ        = 6.0;
+
+    cfg.dut_cfg.bucket_sigma_min_tight      = 0.5;
+    cfg.dut_cfg.bucket_sigma_max_tight      = 2.0;
+    cfg.dut_cfg.bucket_sigma_min_typ        = 3.0;
+    cfg.dut_cfg.bucket_sigma_max_typ        = 6.0;
+
+    cfg.dut_cfg.markov_sigma_min_tight      = 0.5;
+    cfg.dut_cfg.markov_sigma_max_tight      = 2.0;
+    cfg.dut_cfg.markov_sigma_min_typ        = 3.0;
+    cfg.dut_cfg.markov_sigma_max_typ        = 6.0;
 
     cfg.dut_cfg.sw_regupd_pct               = 50;
     cfg.dut_cfg.preconfig_disable_pct       = 50;
@@ -39,7 +47,7 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.otp_en_es_fw_read_pct               = 50;
     cfg.otp_en_es_fw_over_pct               = 50;
 
-    cfg.dut_cfg.type_bypass_pct             = 25;
+    cfg.dut_cfg.type_bypass_pct             = 75;
     cfg.dut_cfg.ht_threshold_scope_pct      = 50;
     cfg.dut_cfg.default_ht_thresholds_pct   = 0;
 
@@ -51,10 +59,11 @@ class entropy_src_rng_test extends entropy_src_base_test;
 
     cfg.dut_cfg.rng_bit_enable_pct          = 50;
 
-    cfg.dut_cfg.fips_enable_pct             = 50;
+    cfg.dut_cfg.fips_enable_pct             = 25;
     cfg.dut_cfg.module_enable_pct           = 100;
     cfg.dut_cfg.bad_mubi_cfg_pct            = 50;
     cfg.induce_targeted_transition_pct      = 25;
+    cfg.dut_cfg.tight_thresholds_pct        = 75;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
 
