@@ -103,7 +103,6 @@ sudo $APT_CMD update || {
 ci_reqs="$TMPDIR/apt-requirements-ci.txt"
 cp apt-requirements.txt "$ci_reqs"
 echo "verilator-${VERILATOR_VERSION}" >> "$ci_reqs"
-echo "openocd-${OPENOCD_VERSION}" >> "$ci_reqs"
 echo rsync >> "$ci_reqs"
 
 # NOTE: We use sed to remove all comments from apt-requirements-ci.txt,
