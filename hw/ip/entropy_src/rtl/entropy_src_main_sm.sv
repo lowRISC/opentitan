@@ -304,8 +304,6 @@ module entropy_src_main_sm #(
       Sha3Quiesce: begin
         if (!enable_i || fw_ov_ent_insert_i) begin
           state_d = Idle;
-        end else if (alert_thresh_fail_i) begin
-          state_d = AlertState;
         end else begin
           state_d = ContHTStart;
         end
