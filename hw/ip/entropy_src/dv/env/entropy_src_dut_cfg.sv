@@ -46,10 +46,15 @@ class entropy_src_dut_cfg extends uvm_object;
   uint          fw_read_pct, fw_over_pct, fw_ov_insert_start_pct;
 
   // Health test-related knobs
+  //
+  // Knob for selecting special tighter thresholds for more stringent testing of alert conditions.
+  uint          tight_thresholds_pct;
+
   // Real constraints on sigma ranges (floating point value)
-  real adaptp_sigma_max, adaptp_sigma_min;
-  real markov_sigma_max, markov_sigma_min;
-  real bucket_sigma_max, bucket_sigma_min;
+  // The range of each threshold depends on whether the particular test is intended to be tight
+  real adaptp_sigma_max_typ, adaptp_sigma_max_tight, adaptp_sigma_min_typ, adaptp_sigma_min_tight;
+  real markov_sigma_max_typ, markov_sigma_max_tight, markov_sigma_min_typ, markov_sigma_min_tight;
+  real bucket_sigma_max_typ, bucket_sigma_max_tight, bucket_sigma_min_typ, bucket_sigma_min_tight;
 
   // Knob to leave thresholds at default, completely disabling them
   uint          default_ht_thresholds_pct;
@@ -88,19 +93,32 @@ class entropy_src_dut_cfg extends uvm_object;
 
   rand prim_mubi_pkg::mubi4_t   fw_read_enable, fw_over_enable, fw_ov_insert_start;
 
+  // Bit to leave thresholds at default values (effectively disabling HTs)
+  rand int                      default_ht_thresholds;
+
+  // Bit to select tight thresholds (very likely for HTs to fail even by coincidence)
+  rand bit                      tight_thresholds;
+
+  // When using tight thresholds randomly one test is to be tightened.
+  // (Allowing all tests to be simultaneously tightened means a very low probability all tests
+  // passing, which often means zero coverage for actually generating seeds or simulating HT
+  // PASS events.)
+  rand health_test_e which_tight_ht;
+
   // Note: These integer-valued fields are used to derive their real-valued counterparts.
   rand int unsigned adaptp_sigma_i, markov_sigma_i, bucket_sigma_i;
 
+  // Randomized ranges, to be set in post_randomize after the actual tight HT's are selected
+  real adaptp_sigma_min, markov_sigma_min, bucket_sigma_min;
+  real adaptp_sigma_max, markov_sigma_max, bucket_sigma_max;
+
   // Randomized real values: to be managed in post_randomize
-  // Controlled by the knobs <test>_sigma_max, <test>_sigma_min
+  // Controlled by the knobs <test>_sigma_max_<typ/tight>, and <test>_sigma_min_<typ/tight>
   real              adaptp_sigma, markov_sigma, bucket_sigma;
 
   // Thresholds for repcnt repcnts
   rand bit [15:0]   repcnt_thresh_bypass, repcnt_thresh_fips,
                     repcnts_thresh_bypass, repcnts_thresh_fips;
-
-  // Bit to leave thresholds at default values (effectively disabling HTs)
-  rand int          default_ht_thresholds;
 
   rand bit             use_invalid_mubi;
   rand invalid_mubi_e  which_invalid_mubi;
@@ -176,6 +194,10 @@ class entropy_src_dut_cfg extends uvm_object;
       prim_mubi_pkg::MuBi4True  :/ ht_threshold_scope_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - ht_threshold_scope_pct)};}
 
+  constraint tight_thresholds_c {tight_thresholds dist {
+      1 :/ tight_thresholds_pct,
+      0 :/ (100 - tight_thresholds_pct) };}
+
   // Bins arranged according to likelihood of false positive for the REPCNT test
   // 6-10: > 1 in 1024 chance of a false positive (fairly likely, great for abusive tests)
   // 10-20: > 1 in 2^20 false positive chance. (More rare, and overly conservative thresholding
@@ -185,26 +207,44 @@ class entropy_src_dut_cfg extends uvm_object;
   // > 40:  Threshold is weaker than NIST standards (unless there is some known statistical defect
   //        in the RNG source which means that the false positive rate is still > 1 in 2^40)
   //
-  // The last bin captures this most relaxed
-  //
-  // TODO: Establish usable constraints for repcnt thresholds < 40
-  // Temporarily disable the tighter bins, to allow seeds to pass.  The previous bins were
-  // previously so tight that no seed outputs were ever observed.  Even though each individual HT
-  // may pass with reasonable probability, if multiple HT thresholds are set tightly, the
-  // probability of all passing approaches zero, and we never see any entropy outputs.
-  constraint repcnt_thresh_bypass_c {repcnt_thresh_bypass dist {
-      [6  : 10] :/ 0,
-      [11 : 20] :/ 0,
-      [21 : 40] :/ 0,
-      41        :/ 10};}
+  // The last bin captures this most relaxed threshold with just one value 41 (>40)
+  constraint repcnt_thresh_bypass_c {
+      solve tight_thresholds, which_tight_ht before repcnt_thresh_bypass;
+      if (tight_thresholds && (which_tight_ht == repcnt_ht) ) {
+        repcnt_thresh_bypass dist {
+          [6  : 10] :/ 1,
+          [11 : 20] :/ 1,
+          [21 : 40] :/ 1,
+          41        :/ 0
+        };
+      } else {
+        repcnt_thresh_bypass dist {
+          [6  : 10] :/ 0,
+          [11 : 20] :/ 0,
+          [21 : 40] :/ 0,
+          41        :/ 1
+        };
+      }
+    }
 
-  // TODO: Establish usable constraints for repcnt thresholds < 40
-  // See similar TODO note above for further details
-  constraint repcnt_thresh_fips_c {repcnt_thresh_fips dist {
-      [6  : 10] :/ 0,
-      [11 : 20] :/ 0,
-      [21 : 40] :/ 0,
-      41        :/ 10};}
+  constraint repcnt_thresh_fips_c {
+      solve tight_thresholds, which_tight_ht before repcnt_thresh_fips;
+      if (tight_thresholds && (which_tight_ht == repcnt_ht) ) {
+        repcnt_thresh_fips dist {
+          [6  : 10] :/ 1,
+          [11 : 20] :/ 1,
+          [21 : 40] :/ 1,
+          41        :/ 0
+        };
+      } else {
+        repcnt_thresh_fips dist {
+          [6  : 10] :/ 0,
+          [11 : 20] :/ 0,
+          [21 : 40] :/ 0,
+          41        :/ 1
+        };
+      }
+    }
 
   // Make the bin sizes for the repcnts test 1/4 as small as the corresponding repcnt bins sizes,
   // since the likelihood of coincidental
@@ -213,21 +253,43 @@ class entropy_src_dut_cfg extends uvm_object;
   //
   // As with the repcnt test, the highest bin would (for an assumed ideal RNG noice source)
 
-  // TODO: Establish usable constraints for repcnts thresholds < 10
-  // See similar TODO note above for further details
-  constraint repcnts_thresh_bypass_c {repcnts_thresh_bypass dist {
-      [2  :  3] :/ 0,
-      [4  :  5] :/ 0,
-      [6  : 10] :/ 0,
-      11       :/ 10};}
+  constraint repcnts_thresh_bypass_c {
+      solve tight_thresholds, which_tight_ht before repcnts_thresh_bypass;
+      if (tight_thresholds && (which_tight_ht == repcnts_ht) ) {
+        repcnts_thresh_bypass dist {
+          [2  :  3] :/ 1,
+          [4  :  5] :/ 1,
+          [6  : 10] :/ 1,
+          11        :/ 0
+        };
+      } else {
+        repcnts_thresh_bypass dist {
+          [2  :  3] :/ 0,
+          [4  :  5] :/ 0,
+          [6  : 10] :/ 0,
+          11        :/ 1
+        };
+      }
+    }
 
-  // TODO: Establish usable constraints for repcnts thresholds < 10
-  // See similar TODO note above for further details
-  constraint repcnts_thresh_fips_c {repcnts_thresh_fips dist {
-      [2  :  3] :/ 0,
-      [4  :  5] :/ 0,
-      [6  : 10] :/ 0,
-      [11 : 80] :/ 10};}
+  constraint repcnts_thresh_fips_c {
+      solve tight_thresholds, which_tight_ht before repcnts_thresh_fips;
+      if (tight_thresholds && (which_tight_ht == repcnts_ht) ) {
+        repcnts_thresh_fips dist {
+          [2  :  3] :/ 1,
+          [4  :  5] :/ 1,
+          [6  : 10] :/ 1,
+          11        :/ 0
+        };
+      } else {
+        repcnts_thresh_fips dist {
+          [2  :  3] :/ 0,
+          [4  :  5] :/ 0,
+          [6  : 10] :/ 0,
+          11        :/ 1
+        };
+      }
+    }
 
   constraint alert_threshold_c {alert_threshold dist {
       1             :/ 3,
@@ -337,12 +399,24 @@ class entropy_src_dut_cfg extends uvm_object;
     bit bad_alert_threshold_inv = 0;
 
     tmp_r = real'(adaptp_sigma_i)/{$bits(adaptp_sigma_i){1'b1}};
+    adaptp_sigma_min = tight_thresholds && (which_tight_ht == adaptp_ht) ? adaptp_sigma_min_tight :
+                                                                           adaptp_sigma_min_typ;
+    adaptp_sigma_max = tight_thresholds && (which_tight_ht == adaptp_ht) ? adaptp_sigma_max_tight :
+                                                                           adaptp_sigma_max_typ;
     adaptp_sigma = adaptp_sigma_min + (adaptp_sigma_max - adaptp_sigma_min) * tmp_r;
 
     tmp_r = real'(markov_sigma_i)/{$bits(markov_sigma_i){1'b1}};
+    markov_sigma_min = tight_thresholds && (which_tight_ht == markov_ht) ? markov_sigma_min_tight :
+                                                                           markov_sigma_min_typ;
+    markov_sigma_max = tight_thresholds && (which_tight_ht == markov_ht) ? markov_sigma_max_tight :
+                                                                           markov_sigma_max_typ;
     markov_sigma = markov_sigma_min + (markov_sigma_max - markov_sigma_min) * tmp_r;
 
     tmp_r = real'(bucket_sigma_i)/{$bits(bucket_sigma_i){1'b1}};
+    bucket_sigma_min = tight_thresholds && (which_tight_ht == bucket_ht) ? bucket_sigma_min_tight :
+                                                                           bucket_sigma_min_typ;
+    bucket_sigma_max = tight_thresholds && (which_tight_ht == bucket_ht) ? bucket_sigma_max_tight :
+                                                                           bucket_sigma_max_typ;
     bucket_sigma = bucket_sigma_min + (bucket_sigma_max - bucket_sigma_min) * tmp_r;
 
     if (use_invalid_mubi) begin
