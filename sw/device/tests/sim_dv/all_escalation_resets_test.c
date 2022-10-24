@@ -7,10 +7,13 @@
 // alert for the corresponding IP.
 //
 // The test checks that the alert handler state indicates the correct alert
-// prior to the alert, which is checked in the alert triggered interrupt. The
+// prior to the alert, which is checked in the alert triggered NMI. The
 // test also checks that the alert handler cleared that state after reset.
 // It also checks that for some IPs the corresponding bit in the fatal error
 // CSR is set in the interrupt, and it is also cleared after reset.
+//
+// For extra checking, the rstmgr is  configured to capture the alert info
+// on reset, which is also used to check the alert cause is as expected.
 //
 // As a backup the aon timer is programmed to bark and bite, but these are
 // expected not to happen since the escalation takes precedence.
@@ -91,10 +94,10 @@ enum {
  * - bite after escalation reset, so we should not get timer reset.
  */
 enum {
-  kWdogBarkMicros = 200,          // 200 us
-  kWdogBiteMicros = 600,          // 600 us
-  kEscalationStartMicros = 100,   // 100 us
-  kEscalationPhase0Micros = 100,  // 100 us
+  kWdogBarkMicros = 400,          // 400 us
+  kWdogBiteMicros = 900,          // 900 us
+  kEscalationStartMicros = 300,   // 300 us
+  kEscalationPhase0Micros = 200,  // 200 us
   kEscalationPhase1Micros = 100,  // 100 us
   kMaxResets = 2,
   kMaxInterrupts = 30,
@@ -161,7 +164,7 @@ static const char *csrng_inst_name = "csrng";
 static const char *edn0_inst_name = "edn0";
 static const char *edn1_inst_name = "edn1";
 static const char *entropy_src_inst_name = "entropy_src";
-// TODO test u_eflash.u_flash alert 35?
+// TODO test u_eflash.u_flash alert 37, 38?
 static const char *flash_ctrl_inst_name = "flash_ctrl";
 static const char *gpio_inst_name = "gpio";
 static const char *hmac_inst_name = "hmac";
@@ -170,20 +173,20 @@ static const char *i2c1_inst_name = "i2c1";
 static const char *i2c2_inst_name = "i2c2";
 static const char *keymgr_inst_name = "keymgr";
 static const char *kmac_inst_name = "kmac";
-// TODO test fatal prog and fatal check, alerts 14 and 15. They don't have
-// onehot_checkers. But we will probably need to cause both u_reg, and
-// u_reg_tap checkers.
+// TODO: test lc_ctrl fatal_state, alert 17.
 static const char *lc_ctrl_inst_name = "lc_ctrl";
 static const char *otbn_inst_name = "otbn";
-// TODO test fatal macro and fatal check, alerts 11 and 12.
+// TODO test fatal macro, fatal check, and fatal prim, alerts 11, 12, and 14.
+// They don't have onehot_checkers, cause both u_reg, and u_reg_tap checkers?
 static const char *otp_ctrl_inst_name = "otp_ctrl";
 static const char *pattgen_inst_name = "pattgen";
 static const char *pinmux_inst_name = "pinmux";
 static const char *pwm_inst_name = "pwm";
 static const char *pwrmgr_inst_name = "pwrmgr";
 static const char *rom_ctrl_inst_name = "rom_ctrl";
+// TODO: test rstmgr fatal consistency, alert 24.
 static const char *rstmgr_inst_name = "rstmgr";
-// TODO we don't yet test fatal SW error, alert 57.
+// TODO: test rv_core_ibex fatal SW error, alert 57.
 static const char *rv_core_ibex_inst_name = "rv_core_ibex";
 static const char *rv_dm_inst_name = "rv_dm";
 static const char *rv_plic_inst_name = "rv_plic";
@@ -438,6 +441,16 @@ void ottf_external_isr(void) {
                            fault_checker.type);
   }
 
+  // Stop the alert handler from sending regular interrupts.
+  LOG_INFO("Disable IRQ classa");
+  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+      &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleDisabled));
+
+  uint16_t accum_count;
+  CHECK_DIF_OK(dif_alert_handler_get_accumulator(
+      &alert_handler, kDifAlertHandlerClassA, &accum_count));
+  LOG_INFO("Accumulator count %d", accum_count);
+
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
@@ -558,10 +571,10 @@ static void alert_handler_config(void) {
       alert_handler_testutils_get_cycles_from_us(kEscalationStartMicros) *
       alert_handler_testutils_cycle_rescaling_factor();
   LOG_INFO("Configuring class A with %d cycles and %d occurrences",
-           deadline_cycles, UINT16_MAX);
+           deadline_cycles, 0);
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
-      .accumulator_threshold = UINT16_MAX,
+      .accumulator_threshold = 0,
       .irq_deadline_cycles = deadline_cycles,
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
@@ -935,9 +948,12 @@ bool test_main(void) {
     LOG_INFO("Booting for the second time due to escalation reset");
 
     int interrupt_count = flash_ctrl_testutils_counter_get(kCounterInterrupt);
+    // It seems possible the NMI ends up beating the regular interrupt, so
+    // the regular interrupt may not be run.
+    LOG_INFO("The regular interrupt count is %d", interrupt_count);
+
     int nmi_interrupt_count = flash_ctrl_testutils_counter_get(kCounterNmi);
     if (kExpectedAlertNumber != kTopEarlgreyAlertIdFlashCtrlFatalStdErr) {
-      CHECK(interrupt_count > 0, "Expected at least one regular interrupt");
       CHECK(nmi_interrupt_count > 0, "Expected at least one nmi");
     }
 
@@ -950,10 +966,11 @@ bool test_main(void) {
     // Check the fault register is clear.
     fault_checker.function(/*enable=*/false, fault_checker.ip_inst,
                            fault_checker.type);
+    return true;
   } else {
     LOG_ERROR("Unexpected rst_info=0x%x", rst_info);
     return false;
   }
 
-  return true;
+  return false;
 }

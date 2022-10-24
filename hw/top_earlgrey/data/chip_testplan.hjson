@@ -940,8 +940,7 @@
             should not attempt to send out more alerts.
             '''
       stage: V2
-      tests: ["chip_sw_clkmgr_escalation_reset",
-              "chip_sw_all_escalation_resets"]
+      tests: ["chip_sw_all_escalation_resets"]
     }
 
     // PWRMGR tests:
@@ -1316,6 +1315,28 @@
             '''
       stage: V2
       tests: ["chip_sw_alert_handler_escalation"]
+    }
+    {
+      name: chip_sw_all_escalation_resets
+      desc: '''Verify escalation from all unit integrity errors
+
+            Inject integrity errors in any unit that has a one-hot checker for CSR register
+            writes, and verify escalation is triggered. Allow escalation to go through reset.
+            Use the rstmgr alert info and the unit's fault CSRs to check the alert cause is right.
+            Each run of the test randomly chooses some one-hot checker for the error to be injected.
+            Keep state across resets in flash to check the expected interrupts and the right number
+            of resets occur.
+            - Verify the integrity error results in a regular interrupt.
+            - Verify the first escalation results in NMI serviced by the CPU.
+            - Verify the alert id in both these interrupts.
+            - Verify the unit's fault CSR correctly captured the fault kind.
+            - Verify any timer interrupts are disabled by escalation.
+            - Verify after the escalation reset all faults are cleared, and that the alert
+              info captured the correct alert.
+            - Check that no additional resets occur.
+            '''
+      stage: V2
+      tests: ["chip_sw_all_escalation_resets"]
     }
     {
       name: chip_sw_alert_handler_irqs
