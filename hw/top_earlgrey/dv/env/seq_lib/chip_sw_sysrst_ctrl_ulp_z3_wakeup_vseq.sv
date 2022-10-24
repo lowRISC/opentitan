@@ -7,10 +7,10 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq)
   `uvm_object_new
 
-  localparam string PAD_PWRB_PATH      = "tb.dut.IOR13";
-  localparam string PAD_ACPRESENT_PATH = "tb.dut.IOC7";
-  localparam string PAD_LIDOPEN_PATH   = "tb.dut.IOC9";
-  localparam string PAD_Z3WAKEUP_PATH  = "tb.dut.IOB7";
+  //localparam string PAD_PWRB_PATH      = "tb.dut.IOR13";
+  //localparam string PAD_ACPRESENT_PATH = "tb.dut.IOC7";
+  //localparam string PAD_LIDOPEN_PATH   = "tb.dut.IOC9";
+  //localparam string PAD_Z3WAKEUP_PATH  = "tb.dut.IOB7";
 
   // The value of configured debounce value
   localparam uint DEBOUNCE_SW_VALUE = 20;
@@ -24,10 +24,23 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     PHASE_DONE                  = 5
   } test_phases_e;
 
+  virtual task pre_start();
+    super.pre_start();
+    // Initialize the pad input to 0 to avoid having X values in the initial test phase.
+    cfg.chip_vif.pwrb_in_if.pins_pd[0] = 1;
+    cfg.chip_vif.sysrst_ctrl_if.pins_pd[3] = 1;
+    cfg.chip_vif.sysrst_ctrl_if.pins_pd[2] = 1;
+    // Same for output
+    cfg.chip_vif.pinmux_wkup_if.pins_pd[0] = 1;
+  endtask
+
   virtual function void drive_zero_pads();
-    `DV_CHECK(uvm_hdl_force(PAD_PWRB_PATH, 1'b0));
-    `DV_CHECK(uvm_hdl_force(PAD_ACPRESENT_PATH, 1'b0));
-    `DV_CHECK(uvm_hdl_force(PAD_LIDOPEN_PATH, 1'b0));
+    //`DV_CHECK(uvm_hdl_force(PAD_PWRB_PATH, 1'b0));
+    cfg.chip_vif.pwrb_in_if.drive_pin(0, 1'b0);
+    //`DV_CHECK(uvm_hdl_force(PAD_ACPRESENT_PATH, 1'b0));
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(3, 1'b0);
+    //`DV_CHECK(uvm_hdl_force(PAD_LIDOPEN_PATH, 1'b0));
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(2, 1'b0);
   endfunction
 
   virtual task glitch_lid_open();
@@ -35,11 +48,13 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     bit glitchy_bit = 1'b1;
     // The following loop ends before the second sampling of debounce happens
     for (int i = 0; i < glitch_loop_cnt ; i++) begin
-      `DV_CHECK(uvm_hdl_force(PAD_LIDOPEN_PATH, glitchy_bit));
+      //`DV_CHECK(uvm_hdl_force(PAD_LIDOPEN_PATH, glitchy_bit));
+      cfg.chip_vif.sysrst_ctrl_if.drive_pin(2, glitchy_bit);
       cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
       glitchy_bit = ~glitchy_bit;
     end
-    `DV_CHECK(uvm_hdl_force(PAD_LIDOPEN_PATH, 1'b1));
+    //`DV_CHECK(uvm_hdl_force(PAD_LIDOPEN_PATH, 1'b1));
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(2, 1'b1);
   endtask
 
   virtual function void write_test_phase(test_phases_e phase);
@@ -50,7 +65,8 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
 
   virtual function check_wakeup_pin();
     logic wakeup_result;
-    `DV_CHECK(uvm_hdl_read(PAD_Z3WAKEUP_PATH, wakeup_result));
+    //`DV_CHECK(uvm_hdl_read(PAD_Z3WAKEUP_PATH, wakeup_result));
+    wakeup_result = cfg.chip_vif.pinmux_wkup_if.sample_pin(0);
     `DV_CHECK_EQ_FATAL(wakeup_result, 1'b1);
   endfunction
 
