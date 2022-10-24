@@ -45,7 +45,7 @@ class InitTest : public PinmuxTest {
            static_cast<uint32_t>(index) * sizeof(uint32_t);
   }
 
-  uint32_t RegPadAttr(top_earlgrey_pinmux_insel_t pad) {
+  uint32_t RegPadAttr(top_earlgrey_muxed_pads_t pad) {
     return base_ + PINMUX_MIO_PAD_ATTR_0_REG_OFFSET +
            static_cast<uint32_t>(pad) * sizeof(uint32_t);
   }
@@ -73,18 +73,18 @@ TEST_F(InitTest, WithBootstrap) {
   // The inputs that will be configured.
   EXPECT_CALL(otp_, read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_EN_OFFSET))
       .WillOnce(Return(kHardenedBoolTrue));
+  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc0),
+                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
+  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc1),
+                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
+  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc2),
+                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio22),
                      kTopEarlgreyPinmuxInselIoc0)
-  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyPinmuxInselIoc0),
-                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio23),
                      kTopEarlgreyPinmuxInselIoc1)
-  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyPinmuxInselIoc1),
-                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio24),
                      kTopEarlgreyPinmuxInselIoc2)
-  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyPinmuxInselIoc2),
-                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1}});
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInUart0Rx),
                      kTopEarlgreyPinmuxInselIoc3);
 
