@@ -15,7 +15,7 @@ Note that it is tightly coupled to the `opentitan_gdb_fpga_cw310_test` rule.
 import selectors
 import subprocess
 import sys
-from typing import Dict, List, NewType, TextIO, Tuple
+from typing import Dict, List, NewType, Optional, TextIO, Tuple
 
 import rich
 import typer
@@ -99,7 +99,7 @@ app = typer.Typer(pretty_exceptions_enable=False)
 @app.command()
 def main(rom_kind: str = typer.Option(...),
          openocd_earlgrey_config: str = typer.Option(...),
-         exit_success_pattern: str = typer.Option(...),
+         exit_success_pattern: Optional[str] = typer.Option(None),
          bitstream_path: str = typer.Option(...),
          gdb_script_path: str = typer.Option(...),
          opentitantool_path: str = typer.Option(...)):
@@ -137,8 +137,9 @@ def main(rom_kind: str = typer.Option(...),
         "console",
         "--timeout",
         "5s",
-        "--exit-success=" + exit_success_pattern,
     ]
+    if exit_success_pattern is not None:
+        console_command.append("--exit-success=" + exit_success_pattern)
 
     # Wait until we've finished loading the bitstream.
     subprocess.run(load_bitstream_command, check=True)
