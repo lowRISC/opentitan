@@ -1167,5 +1167,24 @@
       stage: V2
       tests: []
     }
+
+    {
+      name: rom_e2e_weak_straps
+      desc: '''Verify that ROM can differentiate strong pull-ups/-downs from weak pull-ups/-downs.
+
+      - For `strap` in {all 64 strap values}
+        - Verify that ROM boots as usual unless `strap == bootstrap` or `strap == rma_entry`.
+
+      Each iteration should be pretty fast since the next stage is empty.
+      If the above test takes a long time to run in DV, consider the following (or a subset of):
+
+      - For `strap` in {`bootstrap`, `rma_entry`}
+        - Apply all combinations of `strap` where pin values are the same but at least one pin uses weak pull-down.
+        - Verify that ROM boots as usual.
+      '''
+      tags: ["rom", "fpga", "dv", "silicon"]
+      stage: V2
+      tests: []
+    }
   ]
 }
