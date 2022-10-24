@@ -31,7 +31,8 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.sysrst_ctrl_if.pins_pd[3] = 1;
     cfg.chip_vif.sysrst_ctrl_if.pins_pd[2] = 1;
     // Same for output
-    cfg.chip_vif.pinmux_wkup_if.pins_pd[0] = 1;
+    //cfg.chip_vif.pinmux_wkup_if.pins_pd[0] = 1;
+    cfg.chip_vif.sysrst_ctrl_if.pins_pd[5] = 1;
   endtask
 
   virtual function void drive_zero_pads();
@@ -66,7 +67,8 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
   virtual function check_wakeup_pin();
     logic wakeup_result;
     //`DV_CHECK(uvm_hdl_read(PAD_Z3WAKEUP_PATH, wakeup_result));
-    wakeup_result = cfg.chip_vif.pinmux_wkup_if.sample_pin(0);
+    wakeup_result = cfg.chip_vif.sysrst_ctrl_if.sample_pin(5);
+    //wakeup_result = cfg.chip_vif.pinmux_wkup_if.sample_pin(0);
     `DV_CHECK_EQ_FATAL(wakeup_result, 1'b1);
   endfunction
 

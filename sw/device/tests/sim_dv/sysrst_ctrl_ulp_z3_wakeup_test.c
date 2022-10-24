@@ -61,7 +61,7 @@ static const dif_pinmux_index_t kPeripheralOutputs[] = {
 };
 
 static const dif_pinmux_index_t kOutputPads[] = {
-    kTopEarlgreyPinmuxMioOutIob7,
+    kTopEarlgreyPinmuxMioOutIob8,
 };
 
 /**
