@@ -15,24 +15,21 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
 
     # This dummy script exists because test rules are a kind of executable rule,
     # and executable rules *must* produce an output file.
-    test_script = """#!/usr/bin/env bash
-    set -ex
-    {coordinator_script} \\
-      --rom-kind={rom_kind} \\
-      --openocd-earlgrey-config={openocd_earlgrey_config} \\
-      --exit-success-pattern={exit_success_pattern} \\
-      --bitstream-path={bitstream_path} \\
-      --gdb-script-path={gdb_script_path} \\
-      --opentitantool-path={opentitantool_path}
-    """.format(
-        coordinator_script = shell.quote(ctx.executable._coordinator.short_path),
-        rom_kind = shell.quote(ctx.attr.rom_kind),
-        openocd_earlgrey_config = shell.quote(ctx.file._openocd_earlgrey_config.path),
-        exit_success_pattern = shell.quote(ctx.attr.exit_success_pattern),
-        bitstream_path = shell.quote(ctx.file.rom_bitstream.short_path),
-        gdb_script_path = shell.quote(gdb_script_file.short_path),
-        opentitantool_path = shell.quote(ctx.file._opentitantool.short_path),
-    )
+    test_script = """
+        #!/usr/bin/env bash
+        set -ex
+        {} """.format(shell.quote(ctx.executable._coordinator.short_path))
+    args = [
+        ("--gdb-script-path", gdb_script_file.short_path),
+        ("--openocd-earlgrey-config", ctx.file._openocd_earlgrey_config.path),
+        ("--bitstream-path", ctx.file.rom_bitstream.short_path),
+        ("--rom-kind", ctx.attr.rom_kind),
+        ("--opentitantool-path", ctx.file._opentitantool.short_path),
+    ]
+    if ctx.attr.exit_success_pattern != None:
+        args.append(("--exit-success-pattern", ctx.attr.exit_success_pattern))
+    arg_lines = ["{}={}".format(flag, shell.quote(value)) for flag, value in args]
+    test_script += " \\\n".join(arg_lines)
 
     ctx.actions.write(output = gdb_script_file, content = ctx.attr.gdb_script)
     ctx.actions.write(output = test_script_file, content = test_script)
@@ -71,7 +68,7 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
 opentitan_gdb_fpga_cw310_test = rv_rule(
     implementation = _opentitan_gdb_fpga_cw310_test,
     attrs = {
-        "exit_success_pattern": attr.string(mandatory = True),
+        "exit_success_pattern": attr.string(),
         "gdb_script": attr.string(mandatory = True),
         "gdb_script_symlinks": attr.label_keyed_string_dict(allow_files = True),
         "rom_bitstream": attr.label(
