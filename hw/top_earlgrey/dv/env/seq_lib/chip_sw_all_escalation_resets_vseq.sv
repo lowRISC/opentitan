@@ -24,7 +24,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*entropy_src*prim_reg_we_check*", TopEarlgreyAlertIdEntropySrcFatalAlert},
     '{"*flash_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdFlashCtrlFatalStdErr},
     // TODO test u_eflash.u_flash alert TopEarlgreyAlertIdFlashCtrlFatalErr and
-    // TopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert.
+    // TODO TopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert.
     '{"*gpio*prim_reg_we_check*", TopEarlgreyAlertIdGpioFatalFault},
     '{"*hmac*prim_reg_we_check*", TopEarlgreyAlertIdHmacFatalFault},
     '{"*i2c0*prim_reg_we_check*", TopEarlgreyAlertIdI2c0FatalFault},
@@ -32,14 +32,14 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*i2c2*prim_reg_we_check*", TopEarlgreyAlertIdI2c2FatalFault},
     '{"*keymgr*prim_reg_we_check*", TopEarlgreyAlertIdKeymgrFatalFaultErr},
     '{"*kmac*prim_reg_we_check*", TopEarlgreyAlertIdKmacFatalFaultErr},
-    // TODO test fatal prog and fatal check, alerts TopEarlgreyAlertIdLcCtrlFatalProgError and
-    // TopEarlgreyAlertIdLcCtrlFatalStateError. They don't have onehot_checkers, so they need an
-    // alternative mechanism.
-    // TODO We will probably need to cause both u_reg, and u_reg_tap checkers.
+    // TODO TopEarlgreyAlertIdLcCtrlFatalProgError: done in sw/device/tests/sim_dv/lc_ctrl_program_error.c?
+    // TODO TopEarlgreyAlertIdLcCtrlFatalStateError. These don't have onehot_checkers, so they need an
+    // alternative mechanism: maybe need to cause both u_reg, and u_reg_tap checkers?
     '{"*lc_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdLcCtrlFatalBusIntegError},
     '{"*otbn*prim_reg_we_check*", TopEarlgreyAlertIdOtbnFatal},
-    // TODO test fatal macro and fatal check, alerts TopEarlgreyAlertIdOtpCtrlFatalMacroError,
-    // TopEarlgreyAlertIdOtpCtrlFatalCheckError, and TopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert.
+    // TODO TopEarlgreyAlertIdOtpCtrlFatalMacroError,
+    // TODO TopEarlgreyAlertIdOtpCtrlFatalCheckError
+    // TODO TopEarlgreyAlertIdOtpCtrlFatalPrimOtpAlert.
     '{"*otp_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdOtpCtrlFatalBusIntegError},
     '{"*pattgen*prim_reg_we_check*", TopEarlgreyAlertIdPattgenFatalFault},
     '{"*pinmux*prim_reg_we_check*", TopEarlgreyAlertIdPinmuxAonFatalFault},
@@ -47,9 +47,11 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*pwrmgr*prim_reg_we_check*", TopEarlgreyAlertIdPwrmgrAonFatalFault},
     '{"*rom_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdRomCtrlFatal},
     '{"*rstmgr*prim_reg_we_check*", TopEarlgreyAlertIdRstmgrAonFatalFault},
-    // TODO test TopEarlgreyAlertIdRvCoreIbexFatalSwErr
+    // TODO kTopEarlgreyAlertIdRstmgrAonFatalCnstyFault
+    // TODO TopEarlgreyAlertIdRvCoreIbexFatalSwErr
     '{"*rv_core_ibex*prim_reg_we_check*", TopEarlgreyAlertIdRvCoreIbexFatalHwErr},
     '{"*rv_dm*prim_reg_we_check*", TopEarlgreyAlertIdRvDmFatalFault},
+    // TODO kTopEarlgreyAlertIdRvPlicFatalFault
     '{"*rv_timer*prim_reg_we_check*", TopEarlgreyAlertIdRvTimerFatalFault},
     '{"*sensor_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdSensorCtrlFatalAlert},
     '{"*spi_device*prim_reg_we_check*", TopEarlgreyAlertIdSpiDeviceFatalFault},
