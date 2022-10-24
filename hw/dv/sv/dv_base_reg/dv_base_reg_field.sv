@@ -23,6 +23,9 @@ class dv_base_reg_field extends uvm_reg_field;
   // variable for mubi coverage, which is only created when this is a mubi reg
   dv_base_mubi_cov mubi_cov;
 
+  // variable for shadowed coverage, which is only created when this is a shadowed reg
+  local dv_base_shadowed_field_cov shadowed_cov;
+
   `uvm_object_utils(dv_base_reg_field)
   `uvm_object_new
 
@@ -151,9 +154,15 @@ class dv_base_reg_field extends uvm_reg_field;
     mubi_cov.create_cov(width);
   endfunction
 
+  function void create_shadowed_fld_cov();
+    shadowed_cov = dv_base_shadowed_field_cov::type_id::create(`gfn);
+  endfunction
+
   function void create_cov();
+    string csr_name = this.get_parent().get_name();
     if (mubi_width > 0)     create_mubi_cov(mubi_width);
     if (regwen_fld != null) create_lockable_fld_cov();
+    if (!uvm_re_match("*_shadowed", csr_name)) create_shadowed_fld_cov();
   endfunction
 
   // Returns true if this field can lock the specified register/field, else return false.
@@ -224,7 +233,12 @@ class dv_base_reg_field extends uvm_reg_field;
     uvm_reg_data_t committed_val_temp = committed_val & mask;
     `uvm_info(`gfn, $sformatf("shadow_val %0h, commmit_val %0h", shadowed_val_temp,
                               committed_val_temp), UVM_HIGH)
+    sample_shadow_field_cov(.storage_err(1));
     return shadowed_val_temp != committed_val_temp;
+  endfunction
+
+  function void sample_shadow_field_cov(bit update_err = 0, bit storage_err = 0);
+    if (shadowed_cov != null) shadowed_cov.shadow_field_errs_cg.sample(update_err, storage_err);
   endfunction
 
   function void update_staged_val(uvm_reg_data_t val);

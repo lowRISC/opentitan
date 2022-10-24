@@ -243,6 +243,7 @@ class dv_base_reg extends uvm_reg;
              flds[i].update_shadowed_val(~wr_data);
           end else begin
             shadow_update_err = 1;
+            flds[i].sample_shadow_field_cov(.update_err(1));
           end
         end
       end
