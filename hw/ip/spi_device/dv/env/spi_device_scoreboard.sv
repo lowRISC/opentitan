@@ -515,8 +515,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       // doesn't send any item for it, so need to update flash_status here
       @(posedge cfg.spi_host_agent_cfg.vif.csb[FW_FLASH_CSB_ID]);
       // this small delay allows the other thread to process flash_status when it's not a dummy
-      // transaction.
-      #1ps;
+      // transaction. The non-dummy item thread already adds 1ps for downstream to add an item.
+      #2ps;
       // this flash_status_settle_q isn't empty, then this is a dummy transaction
       if (flash_status_settle_q.size) begin
         latch_flash_status(.set_busy(0), .update_wel(0), .wel_val(0));
