@@ -608,7 +608,8 @@ module spi_host
   `ASSERT_KNOWN(CioSckEnKnownO_A, cio_sck_en_o)
   `ASSERT_KNOWN(CioCsbKnownO_A, cio_csb_o)
   `ASSERT_KNOWN(CioCsbEnKnownO_A, cio_csb_en_o)
-  `ASSERT_KNOWN(CioSdKnownO_A, cio_sd_o)
+  `ASSERT_KNOWN_IF(CioSdKnownO_A, cio_sd_o, !passthrough_i.passthrough_en |
+    (passthrough_i.passthrough_en && passthrough_i.csb_en && !passthrough_i.csb))
   `ASSERT_KNOWN(CioSdEnKnownO_A, cio_sd_en_o)
   `ASSERT_KNOWN(IntrSpiEventKnownO_A, intr_spi_event_o)
   `ASSERT_KNOWN(IntrErrorKnownO_A, intr_error_o)
