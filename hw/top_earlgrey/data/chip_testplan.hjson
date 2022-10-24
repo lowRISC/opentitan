@@ -422,7 +422,7 @@
               chip is back in active power.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_sleep_pin_retention"]
     }
     {
       name: chip_sw_tap_strap_sampling
@@ -1409,7 +1409,7 @@
               the IP's fatal alert resumes after clock is turned back on.
             '''
       stage: V2
-      tests: ["chip_sw_alert_handler_lpg_clock_off"]
+      tests: ["chip_sw_alert_handler_lpg_clkoff"]
     }
     {
       name: chip_sw_alert_handler_lpg_reset_toggle
@@ -2031,7 +2031,7 @@
             X-ref'ed with EDN test/env.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_kmac_entropy"]
     }
     {
       name: chip_sw_kmac_idle
