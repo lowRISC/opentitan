@@ -10,30 +10,55 @@ class otbn_escalate_vseq extends otbn_base_vseq;
 
   `uvm_object_new
 
+  typedef enum integer {
+    GO_IMMEDIATELY,
+    GO_BEFORE,
+    GO_DURING,
+    GO_SEC_WIPE_STATE,
+    GO_AFTER
+  } escalate_timing_e;
+
   task body();
-    string       elf_path;
-    int unsigned bda_idx;
-    bit          go_before, go_during, go_after;
-    bit          select_rma_req;
+    string                  elf_path;
+    bit                     select_rma_req;
+    escalate_timing_e       escalate_timing;
+    otbn_pkg::otbn_start_stop_state_e start_stop_state_for_escalate;
 
     elf_path = pick_elf_path();
     `uvm_info(`gfn, $sformatf("Loading OTBN binary from `%0s'", elf_path), UVM_LOW)
 
     // Pick whether we're going to send RMA request or escalation to OTBN.
-    select_rma_req = $urandom_range(0, 1);
+    select_rma_req = $urandom_range(1);
 
-    // Pick whether we're going before (5%), during (90%), or after (5%).
-    bda_idx = $urandom_range(100);
-    go_before = bda_idx < 5;
-    go_during = 5 <= bda_idx && bda_idx < 95;
-    go_after = 95 <= bda_idx;
+    // Choose when we send the lc_ctrl stimulus
+    // Immediate - Within 5 cycles of simulation start and before we run the OTBN program
+    // Before - Within 100 cycles of simulation start and before we run the OTBN program
+    // During - During the OTBN run
+    // Sec Wipe State - When we observe a particular state of the secure wipe process
+    // After - After the OTBN run is complete
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(escalate_timing,
+      escalate_timing dist {
+        GO_IMMEDIATELY     := 15,
+        GO_BEFORE          := 15,
+        GO_DURING          := 35,
+        GO_SEC_WIPE_STATE  := 30,
+        GO_AFTER           :=  5
+      };
+    )
 
     fork
       load_elf(elf_path, .backdoor(1'b0));
-      if (go_before) send_lc_ctrl_stimulus(100, select_rma_req);
+      begin
+        if (escalate_timing == GO_IMMEDIATELY) begin
+          send_lc_ctrl_stimulus(5, select_rma_req);
+        end
+        else if (escalate_timing == GO_BEFORE) begin
+          send_lc_ctrl_stimulus(100, select_rma_req);
+        end
+      end
     join
 
-    if (go_before) begin
+    if (escalate_timing inside {GO_IMMEDIATELY, GO_BEFORE}) begin
       // At this point, we've sent our escalation/rma signal already. Wait for the fatal alert to
       // trigger -in the case of an escalation- and then return. Note that if we send a RMA
       // request, we do not necessarily expect a fatal alert but still want to reset in order to
@@ -42,7 +67,7 @@ class otbn_escalate_vseq extends otbn_base_vseq;
       return;
     end
 
-    if (go_after) begin
+    if (escalate_timing == GO_AFTER) begin
       // We want to send the escalation/RMA signal after OTBN is finished. Run an operation, send
       // the signal, then wait for the fatal alert.
       run_otbn();
@@ -51,17 +76,38 @@ class otbn_escalate_vseq extends otbn_base_vseq;
       return;
     end
 
-    // This is the interesting case. Start OTBN running. When this task returns, we'll be in the
-    // middle of a run.
-    start_running_otbn(.check_end_addr(1'b0));
+
+    `uvm_info(`gfn, "Going during", UVM_LOW)
+
+    if (escalate_timing == GO_DURING) begin
+      // Start OTBN running. When this task returns, we'll be in the middle of a run.
+      start_running_otbn(.check_end_addr(1'b0));
+    end else begin // GO_SEC_WIPE_STATE
+      // Randomly choose a state of secure wipe to send the stimulus in
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(start_stop_state_for_escalate,
+        start_stop_state_for_escalate inside {
+          otbn_pkg::OtbnStartStopSecureWipeWdrUrnd,
+          otbn_pkg::OtbnStartStopSecureWipeAccModBaseUrnd,
+          otbn_pkg::OtbnStartStopSecureWipeAllZero,
+          otbn_pkg::OtbnStartStopSecureWipeComplete
+        };
+      )
+      // Start running OTBN and wait for the state to reach the chosen one in parallel. Fork exits
+      // only once we've hit the chosen state
+      fork
+        start_running_otbn(.check_end_addr(1'b0));
+        wait (cfg.trace_vif.otbn_start_stop_state == start_stop_state_for_escalate);
+      join
+    end
 
     // Send an escalation/RMA signal immediately (the randomisation about where we should strike
-    // has already been done inside start_running_otbn())
+    // has already been done inside start_running_otbn() for GO_DURING)
     send_lc_ctrl_stimulus(1, select_rma_req);
 
     // Wait for an alert to come out before returning
     wait_alert_and_reset();
   endtask
+
 
   task send_lc_ctrl_stimulus(int unsigned max_cycles, bit select_rma_req);
     if (select_rma_req) begin
