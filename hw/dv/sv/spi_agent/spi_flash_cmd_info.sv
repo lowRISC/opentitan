@@ -29,7 +29,7 @@ class spi_flash_cmd_info extends uvm_sequence_item;
     write_command || num_lanes == 0 -> dummy_cycles == 0;
     dummy_cycles dist {
       0     :/ 1,
-      [2:7] :/ 1,
+      [1:7] :/ 1,
       8     :/ 1
     };
   }

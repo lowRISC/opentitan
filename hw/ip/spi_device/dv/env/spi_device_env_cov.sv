@@ -134,7 +134,7 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
 
     cr_modeXdirXaddrXswap: cross cp_is_flash, cp_is_write, cp_addr_mode, cp_addr_swap_en,
                                  cp_payload_swap_en;
-    cr_modeXdirXdummyXnum_lanes: cross cp_is_flash, cp_is_write, cp_dummy_cycles, cp_num_lanes;
+    cr_modeXdummyXnum_lanes: cross cp_is_flash, cp_dummy_cycles, cp_num_lanes;
   endgroup
 
   covergroup passthrough_addr_swap_cg with function sample(
@@ -176,7 +176,11 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
       bit sw_read_while_csb_active);
     cp_busy_bit:                 coverpoint status[0];
     cp_wel_bit:                  coverpoint status[1];
-    cp_other_status:             coverpoint status[23:2];
+    cp_other_status:             coverpoint status[23:2] {
+      // reduce bins for other_status, as they're not specially handled,
+      // so that, cross coverage can be hit easier.
+      option.auto_bin_max = 8;
+    }
     cp_is_host_read:             coverpoint is_host_read;
     cp_sw_read_while_csb_active: coverpoint sw_read_while_csb_active;
 
@@ -245,7 +249,7 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
   endgroup
 
   covergroup spi_device_write_enable_disable_cg with function sample(
-      int wr_en, bit prev_wr_en);
+      bit wr_en, bit prev_wr_en);
     cp_wr_en: coverpoint wr_en;
     cp_prev_wr_en: coverpoint prev_wr_en;
     cr_all: cross cp_wr_en, cp_prev_wr_en;

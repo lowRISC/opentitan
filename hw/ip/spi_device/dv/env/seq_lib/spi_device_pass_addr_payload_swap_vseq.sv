@@ -11,7 +11,7 @@ class spi_device_pass_addr_payload_swap_vseq extends spi_device_pass_cmd_filteri
     super.pre_start();
     allow_addr_swap = 1;
     allow_payload_swap = 1;
-    addr_payload_swap_pct = 80;
+    addr_payload_swap_pct = 100;
   endtask : pre_start
 
 endclass : spi_device_pass_addr_payload_swap_vseq
