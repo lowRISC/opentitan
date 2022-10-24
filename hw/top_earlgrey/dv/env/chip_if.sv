@@ -103,6 +103,7 @@ interface chip_if;
     // These are chip outputs - no needs of pulls.
     ios_if.pins_pd[SpiHostCsL] = 0;
     ios_if.pins_pd[SpiHostClk] = 0;
+    ios_if.pins_pd[SpiHostD3:SpiHostD0] = 0;
   end
 
   // X-check monitor on the muxed chip IOs.
@@ -187,79 +188,44 @@ interface chip_if;
   end
 
   // Functional (dedicated) interface: SPI device 0 interface (receives traffic from the chip).
-  // TODO: Update spi_if to emit all signals as inout ports.
-  // spi_if spi_device0_if(.rst_n(`SPI_HOST_HIER(0).rst_ni),
-  //                         .sck(ios[SpiHostClk]),
-  //                         .csb(ios[SpiHostCsL]),
-  //                         .sio(ios[SpiHostD3:SpiHostD0]));
-  // dut is spi host, tb emulates spi flash device
-  localparam int SpiHostMaxDataIos = 4;
-  localparam int SpiHostNumDataIos[NUM_SPI_HOSTS] = {
-    SpiHostMaxDataIos,
-    2
-  };
-
-  localparam chip_io_e AssignedSpiHostsDataIo[NUM_SPI_HOSTS][SpiHostMaxDataIos] = '{
-    '{SpiHostD0, SpiHostD1, SpiHostD2, SpiHostD3},
-    '{IoB2, IoB3, IoB3, IoB3}
-  };
-
-  localparam chip_io_e AssignedSpiHostsClkIo[NUM_SPI_HOSTS] = '{
-    SpiHostClk,
-    IoB0
-  };
-
-  localparam chip_io_e AssignedSpiHostsCsLIo[NUM_SPI_HOSTS] = '{
-    SpiHostCsL,
-    IoB1
-  };
-
   bit [NUM_SPI_HOSTS-1:0] __enable_spi_device = 0;
-  spi_if spi_device_if[NUM_SPI_HOSTS-1:0]();
-  assign spi_device_if[0].rst_n = `SPI_HOST_HIER(0).rst_ni;
-  assign spi_device_if[1].rst_n = `SPI_HOST_HIER(1).rst_ni;
+  spi_if spi_device0_if(
+    .rst_n(`SPI_HOST_HIER(0).rst_ni),
+    .sio({ios[SpiHostD3], ios[SpiHostD2], ios[SpiHostD1], ios[SpiHostD0]}));
 
-  // TODO: Generate oe directly from spi_if later, it needs to take into account dual / quad
-  // read.  For now, assume single lane.
-  bit [3:0] sio_oe = {1'b1, 1'b1, 1'b1, 1'b0};
-  for (genvar i = 0; i < NUM_SPI_HOSTS; i++) begin : gen_spi_device_if_conn
-    // These are always input
-    assign spi_device_if[i].sck = ios[AssignedSpiHostsClkIo[i]];
+  assign spi_device0_if.sck = __enable_spi_device[0] ? ios[SpiHostClk] : 1'bz;
+  assign spi_device0_if.csb = __enable_spi_device[0] ? {'1, ios[SpiHostCsL]} : '1;
 
-    for (genvar k = 1; k < spi_agent_pkg::CSB_WIDTH; k++) begin : gen_csb_tieoff
-       assign spi_device_if[i].csb[k] = 1'b1;
-    end
+  initial begin
+    uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents0",
+                                         "vif", spi_device0_if);
+    do begin
+      spi_device0_if.disconnect(!__enable_spi_device[0]);
+      @(__enable_spi_device[0]);
+    end while(1);
+  end
 
-    assign spi_device_if[i].csb[0] = ios[AssignedSpiHostsCsLIo[i]];
+  // Functional (muxed) interface: SPI device 1 interface (receives traffic from the chip).
+  spi_if spi_device1_if(
+    .rst_n(`SPI_HOST_HIER(1).rst_ni),
+    .sio({ios[IoB3], ios[IoB3], ios[IoB3], ios[IoB2]}));
 
-    for (genvar j = 0; j < SpiHostNumDataIos[i]; j++) begin : gen_spi_device_sio_conn
-      assign ios[AssignedSpiHostsDataIo[i][j]] = __enable_spi_device[i] & sio_oe[j] ?
-                                                 spi_device_if[i].sio[j] : 1'bz;
-      assign spi_device_if[i].sio[j] = ~sio_oe[j] ? ios[AssignedSpiHostsDataIo[i][j]] : 1'bz;
-    end
+  assign spi_device1_if.sck = __enable_spi_device[1] ? ios[IoB0] : 1'bz;
+  assign spi_device1_if.csb = __enable_spi_device[1] ? {'1, ios[IoB1]} : '1;
 
-    initial begin
-      uvm_config_db#(virtual spi_if)::set(null, $sformatf("*.env.m_spi_device_agents%0d*", i),
-                                           "vif", spi_device_if[i]);
-    end
+  initial begin
+    uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents1",
+                                         "vif", spi_device1_if);
+    do begin
+      spi_device1_if.disconnect(!__enable_spi_device[1]);
+      @(__enable_spi_device[1]);
+    end while(1);
   end
 
   // Enables tb spi_device, which connects to dut spi_host
   function automatic void enable_spi_device(int inst_num, bit enable);
     `DV_CHECK_FATAL(inst_num inside {[0:NUM_SPI_HOSTS-1]}, , MsgId)
     `uvm_info(MsgId, $sformatf("enable spi device"), UVM_LOW)
-
-    ios_if.pins_pu[AssignedSpiHostsClkIo[inst_num]] = enable;
-    ios_if.pins_pd[AssignedSpiHostsClkIo[inst_num]] = 0;
-
-    ios_if.pins_pu[AssignedSpiHostsCsLIo[inst_num]] = enable;
-    ios_if.pins_pd[AssignedSpiHostsCsLIo[inst_num]] = 0;
-
-    for (int i = 0; i < SpiHostNumDataIos[inst_num]; i++) begin
-      ios_if.pins_pu[AssignedSpiHostsDataIo[inst_num][i]] = enable;
-      ios_if.pins_pd[AssignedSpiHostsDataIo[inst_num][i]] = 0;
-    end
-
     __enable_spi_device[inst_num] = enable;
   endfunction // enable_spi_device
 
