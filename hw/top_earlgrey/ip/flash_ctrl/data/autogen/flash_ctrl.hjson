@@ -536,7 +536,9 @@
                This is a shortcut mechanism used by the software to completely
                kill flash in case of emergency.
 
-               To disable, set this field to anything other than kMultiBitBool4False.
+               Since this register is rw0c instead of rw, to disable, write any value in the form of
+               0xxx or xxx0, where x could be either 0 or 1.
+
               '''
             resval: false,
           },
