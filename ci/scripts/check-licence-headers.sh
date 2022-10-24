@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# A wrapper around licence-checker.py, used for CI.
+# A wrapper around //quality:license_check, used for CI.
 #
 # Expects a single argument, which is the pull request's target branch
 # (usually "master").
