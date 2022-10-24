@@ -26,8 +26,9 @@ if {$env(COV) == 1} {
 # read design
 #-------------------------------------------------------------------------
 
-# TODO: check if we can add `-bbox_m prim_ram_1p` to all `FpvSecCm` tests.
-if {$env(DUT_TOP) == "flash_ctrl"} {
+# Blackbox prim_count, prim_double_lfsr, and prim_onehot_check to create security countermeasures.
+# Blackbox prim_ram_1p and prim_ram_1p_scr to avoid compiling memory blocks.
+if {$env(TASK) == "FpvSecCm"} {
   analyze -sv09 \
     +define+FPV_ON \
     +define+FPV_SEC_CM_ON+FPV_ALERT_NO_SIGINT_ERR+$env(FPV_DEFINES) \
@@ -35,14 +36,7 @@ if {$env(DUT_TOP) == "flash_ctrl"} {
     -bbox_m prim_double_lfsr \
     -bbox_m prim_onehot_check \
     -bbox_m prim_ram_1p \
-    -f [glob *.scr]
-} elseif {$env(TASK) == "FpvSecCm"} {
-  analyze -sv09 \
-    +define+FPV_ON \
-    +define+FPV_SEC_CM_ON+FPV_ALERT_NO_SIGINT_ERR+$env(FPV_DEFINES) \
-    -bbox_m prim_count \
-    -bbox_m prim_double_lfsr \
-    -bbox_m prim_onehot_check \
+    -bbox_m prim_ram_1p_scr \
     -f [glob *.scr]
 } elseif {$env(DUT_TOP) == "pinmux_tb"} {
   analyze -sv09 \
