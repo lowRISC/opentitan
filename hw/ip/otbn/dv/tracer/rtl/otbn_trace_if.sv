@@ -456,6 +456,14 @@ interface otbn_trace_if
   assign controller_bad_int_i.state_err = u_otbn_controller.state_error;
   assign controller_bad_int_i.controller_mubi_err = u_otbn_controller.mubi_err_q;
 
+  // Probe Start Stop Control module FSM to inject escalate signals in specific states.
+  otbn_start_stop_state_e otbn_start_stop_state;
+  // Use this to mute Verilator unused errors.
+  otbn_start_stop_state_e unused_start_stop_state;
+
+  assign otbn_start_stop_state = u_otbn_start_stop_control.state_q;
+  assign unused_start_stop_state = otbn_start_stop_state;
+
   // Only define force/release functions if we're not running Verilator. This is because the version
   // we currently use does not support force/release.
   `ifndef VERILATOR
