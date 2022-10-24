@@ -181,6 +181,14 @@
       tests: ["spi_device_mem_parity"]
     }
     {
+      name: mem_cfg
+      desc: '''Test cfg_i connectivity between spi_device and prim_ram_2p.
+
+               Randomly set dut.ram_cfg_i and check this value is propagated to prim_mem_2p.'''
+      stage: V2
+      tests: ["spi_device_ram_cfg"]
+    }
+    {
       name: tpm_read
       desc: '''
             - Set TPM_CFG.TPM_MODE to CRB mode and set TPM_CFG.EN.

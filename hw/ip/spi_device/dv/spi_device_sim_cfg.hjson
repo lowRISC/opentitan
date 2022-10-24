@@ -116,6 +116,12 @@
     }
 
     {
+      name: "spi_device_ram_cfg"
+      uvm_test_seq: "spi_device_ram_cfg_vseq"
+      reseed: 20
+    }
+
+    {
       name: spi_device_tpm_read_hw_reg
       uvm_test_seq: spi_device_tpm_read_hw_reg_vseq
     }
