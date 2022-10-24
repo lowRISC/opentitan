@@ -118,8 +118,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     uvm_reg_data_t data;
 
     bit init_busy;
-    super.apply_reset(kind);
     if (kind == "HARD") begin
+      cfg.clk_rst_vif.apply_reset();
       cfg.clk_rst_vif.wait_clks(cfg.post_reset_delay_clks);
     end
 
@@ -261,11 +261,10 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       bit clear_op_status = 1'b1, time timeout_ns = 10_000_000
   );  // Added because mass(bank) erase is longer then default timeout.
     uvm_reg_data_t data;
-    bit done;
-    `DV_SPINWAIT(do begin
-        csr_rd(.ptr(ral.op_status), .value(data));
-        done = get_field_val(ral.op_status.done, data);
-      end while (done == 1'b0);, "wait_flash_op_done timeout occurred!", timeout_ns)
+    csr_spinwait(.ptr(ral.op_status),
+                 .exp_data(1'b1),
+                 .timeout_ns(timeout_ns));
+
     if (clear_op_status) begin
       data = get_csr_val_with_updated_field(ral.op_status.done, data, 0);
       csr_wr(.ptr(ral.op_status), .value(data));

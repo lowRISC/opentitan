@@ -422,7 +422,9 @@ class flash_ctrl_scoreboard #(
     // post test checks - ensure that all local fifos and queues are empty
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, eflash_tl_a_chan_fifo)
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(tl_seq_item, eflash_tl_d_chan_fifo)
-    `DV_CHECK_EQ(eflash_addr_phase_queue.size, 0)
+    if (cfg.en_scb) begin
+      `DV_CHECK_EQ(eflash_addr_phase_queue.size, 0)
+    end
     if (cfg.scb_check && cfg.check_full_scb_mem_model) begin
       cfg.check_mem_model();
     end

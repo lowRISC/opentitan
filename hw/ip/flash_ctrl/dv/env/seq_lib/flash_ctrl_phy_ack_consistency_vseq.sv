@@ -31,6 +31,7 @@ class flash_ctrl_phy_ack_consistency_vseq extends flash_ctrl_phy_host_grant_err_
       end
 
       if (add_err1 == 0 && add_err2 == 0) begin
+        $assertoff(0, "tb.dut.u_flash_mp.NoReqWhenErr_A");
         randcase
           1: begin
             add_err1 = 1;
@@ -48,6 +49,10 @@ class flash_ctrl_phy_ack_consistency_vseq extends flash_ctrl_phy_host_grant_err_
     end // repeat (2)
     check_fault(ral.fault_status.spurious_ack);
     collect_err_cov_status(ral.fault_status);
-    csr_rd_check(.ptr(ral.err_code), .compare_value(0));
+    // sw error can be unpredictably triggered. (err_code.prog_err)
+    // In stead of checking err_code == 0,
+    // make sure hw_fault.prog_err doesn't happen.
+    csr_rd_check(.ptr(ral.fault_status.prog_err), .compare_value(0));
+    drain_n_finish_err_event();
   endtask
 endclass

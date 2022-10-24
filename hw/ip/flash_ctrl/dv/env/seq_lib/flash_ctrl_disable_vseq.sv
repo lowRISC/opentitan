@@ -21,11 +21,12 @@ class flash_ctrl_disable_vseq extends flash_ctrl_otf_base_vseq;
        `uvm_info("SEQ", $sformatf("disable is set"), UVM_MEDIUM)
        csr_utils_pkg::wait_no_outstanding_access();
        cfg.m_tl_agent_cfg.check_tl_errs = 0;
-
     end
     `uvm_info("SEQ", $sformatf("disable txn start"), UVM_MEDIUM)
     // mp error or tlul error expected
 
+    // Wait until disable is set.
+    cfg.clk_rst_vif.wait_clks(10);
     send_rand_ops(1, exp_err);
 
     `DV_CHECK_EQ(cfg.tlul_core_obs_cnt, cfg.tlul_core_exp_cnt)
@@ -43,7 +44,8 @@ class flash_ctrl_disable_vseq extends flash_ctrl_otf_base_vseq;
         mubi4_t dis_val;
         dis_val = get_rand_mubi4_val(.t_weight(1), .f_weight(1), .other_weight(4));
         csr_wr(.ptr(ral.dis), .value(dis_val));
-        is_disable = (dis_val != MuBi4False);
+        // DIS acts as true if program value is 4b0xxx or xxx0.
+        is_disable = ~(dis_val[3] & dis_val[0]);
       end
     endcase // randcase
     exp_err = is_disable;
