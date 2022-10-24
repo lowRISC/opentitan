@@ -246,10 +246,10 @@
 
       The phy arbiter for controller and host is redundant.
       The arbiter has two instance underneath that are constantly compared to each other.
+      tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[0].u_req_buf.out_o[1:0]
       tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[1].u_req_buf.out_o[1:0]
-      tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[0]
-      tb.dut.u_eflash.gen_flash_cores[0].u_core.u_host_arb.gen_input_bufs[1]
-      make output of both mismatch and check fault_status.arb_err is triggered.
+
+      Make output of both mismatch and check fault_status.arb_err is triggered.
       '''
       stage: V2S
       tests: ["flash_ctrl_phy_arb_redun"]

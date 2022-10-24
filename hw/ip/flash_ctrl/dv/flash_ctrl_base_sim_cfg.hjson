@@ -409,15 +409,15 @@
     {
       name: flash_ctrl_phy_ack_consistency
       uvm_test_seq: flash_ctrl_phy_ack_consistency_vseq
-      run_opts: ["+scb_otf_en=1", "+otf_num_rw=5", "+otf_num_hr=5", "+ecc_mode=1",
-                 "+en_always_all=1", "+bypass_alert_ready_to_end_check=1"]
+      run_opts: ["+scb_otf_en=1", "+otf_num_rw=5", "+otf_num_hr=10", "+ecc_mode=1",
+                 "+otf_rd_pct=4", "+en_always_all=1", "+bypass_alert_ready_to_end_check=1"]
       reseed: 5
     }
     {
       name: flash_ctrl_config_regwen
       uvm_test_seq: flash_ctrl_config_regwen_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=1", "+en_always_all=1"]
-      reseed: 1
+      reseed: 5
     }
     {
       name: flash_ctrl_rma_err
@@ -430,7 +430,7 @@
       uvm_test_seq: flash_ctrl_lcmgr_intg_vseq
       run_opts: ["+scb_otf_en=1", "+ecc_mode=1",
                  "+en_always_all=1", "+bypass_alert_ready_to_end_check=1"]
-      reseed: 3
+      reseed: 20
     }
     {
       name: flash_ctrl_hw_read_seed_err

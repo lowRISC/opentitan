@@ -20,10 +20,9 @@ class flash_ctrl_hw_rma_err_vseq extends flash_ctrl_hw_rma_vseq;
 
     `uvm_info(`gfn, "FLASH_CTRL_HW_RMA", UVM_LOW)
 
-    // Keep this assertoff for temporary until prim_sync issue is resolved.
-    $assertoff(0, "tb.dut.u_flash_hw_if.u_sync_rma_req.gen_flops.OutputDelay_A");
     // These are valid assertoff's.
     $assertoff(0, "tb.dut.u_flash_hw_if.ProgRdVerify_A");
+    $assertoff(0, "tb.dut.u_flash_hw_if.DisableChk_A");
 
     // RMA TESTS
 
@@ -72,7 +71,7 @@ class flash_ctrl_hw_rma_err_vseq extends flash_ctrl_hw_rma_vseq;
             csr_spinwait(.ptr(ral.debug_state),
                          .exp_data(flash_ctrl_env_pkg::FlashLcInvalid),
                          .spinwait_delay_ns(500_000),
-                         .timeout_ns(100_000_000));
+                         .timeout_ns(200_000_000));
             cfg.clk_rst_vif.wait_clks(3);
             `uvm_info(`gfn, "RMA FAIL DUE TO Wipe out write data failure (expected)", UVM_LOW)
             collect_err_cov_status(ral.std_fault_status);

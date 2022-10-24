@@ -23,7 +23,6 @@ class flash_ctrl_phy_host_grant_err_vseq extends flash_ctrl_err_base_vseq;
      // This can happen when host_read is sent to info partition (by force).
      // After that, fatal error happen. So turning off these assertion
      // just to make sure test run to complete.
-     $assertoff(0, "tb.dut");
 
      // set error counter high number to skip unpredictable error
      cfg.scb_h.exp_tl_rsp_intg_err = 1;
@@ -39,8 +38,7 @@ class flash_ctrl_phy_host_grant_err_vseq extends flash_ctrl_err_base_vseq;
     `DV_CHECK(uvm_hdl_release(path))
 
     collect_err_cov_status(ral.fault_status);
-    csr_rd_check(.ptr(ral.err_code), .compare_value(0));
-    cfg.tlul_core_exp_cnt = cfg.tlul_core_obs_cnt;
+    drain_n_finish_err_event();
   endtask
 
   task launch_host_rd();
@@ -64,4 +62,8 @@ class flash_ctrl_phy_host_grant_err_vseq extends flash_ctrl_err_base_vseq;
     end
     csr_utils_pkg::wait_no_outstanding_access();
   endtask // launch_host_rd
+
+  task clean_up();
+    init_controller();
+  endtask // clean_up
 endclass

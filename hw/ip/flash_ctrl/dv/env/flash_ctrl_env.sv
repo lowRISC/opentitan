@@ -85,7 +85,6 @@ class flash_ctrl_env #(
     // flash_ctrl_base_test.
     // So this value has to be updated 'after' build_phase.
     cfg.m_fpp_agent_cfg.scb_otf_en = cfg.scb_otf_en;
-
   endfunction
 
 endclass

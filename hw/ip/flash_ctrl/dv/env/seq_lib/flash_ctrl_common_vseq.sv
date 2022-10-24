@@ -61,6 +61,39 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
     super.run_tl_intg_err_vseq_sub(ral_name);
   endtask
 
+  // Override from hw/dv/sv/cip_lib/seq_lib/cip_base_vseq__sec_cm_fi.svh
+  task test_sec_cm_fi();
+    sec_cm_base_if_proxy if_proxy_q[$] = sec_cm_pkg::sec_cm_if_proxy_q;
+
+    if_proxy_q.shuffle();
+    while (if_proxy_q.size) begin
+      sec_cm_base_if_proxy if_proxy = if_proxy_q.pop_front();
+
+      sec_cm_fi_ctrl_svas(if_proxy, .enable(0));
+      sec_cm_inject_fault(if_proxy);
+
+      // Randomly force the cnt to normal value (error will be cleared) to make sure design latches
+      // the error
+      if ($urandom_range(0, 1)) begin
+        sec_cm_restore_fault(if_proxy);
+      end
+
+      // when a fault occurs at the reg_we_check, it's treated as a TL intg error
+      if (if_proxy.sec_cm_type == SecCmPrimOnehot &&
+          !uvm_re_match("*u_prim_reg_we_check*", if_proxy.path)) begin
+        if (!uvm_re_match("*u_eflash*", if_proxy.path)) prim_tl_intg_error = 1;
+        check_tl_intg_error_response();
+      end else begin
+        check_sec_cm_fi_resp(if_proxy);
+      end
+
+      sec_cm_fi_ctrl_svas(if_proxy, .enable(1));
+      // issue hard reset for fatal alert to recover
+      prim_tl_intg_error = 0;
+      dut_init("HARD");
+    end
+  endtask : test_sec_cm_fi
+
   virtual task check_tl_intg_error_response();
     if (prim_tl_intg_error) begin
       repeat ($urandom_range(5, 10))
