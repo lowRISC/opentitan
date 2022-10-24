@@ -928,6 +928,12 @@
       run_opts: ["+sw_test_timeout_ns=35000000"]
     }
     {
+      name: chip_sw_aes_masking_off
+      uvm_test_seq: chip_sw_aes_masking_off_vseq
+      sw_images: ["//sw/device/tests:aes_masking_off_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_alert_test
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests/autogen:alert_test:1"]
