@@ -216,7 +216,7 @@ name:
       name: "otbn_escalate"
       uvm_test_seq: "otbn_escalate_vseq"
       en_run_modes: ["build_otbn_rig_binary_mode"]
-      reseed: 20
+      reseed: 60
     }
 
     {
