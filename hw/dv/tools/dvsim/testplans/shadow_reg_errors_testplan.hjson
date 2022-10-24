@@ -83,4 +83,17 @@
       tests: ["{name}_shadow_reg_errors_with_csr_rw"]
     }
   ]
+
+  covergroups: [
+    {
+      name: shadow_field_errs_cg
+      desc: '''Cover all shadow register errors for each register field.
+
+            For all register fields within the shadowed register, this coverpoint covers the
+            following errors:
+            - Update error
+            - Storage error
+            '''
+    }
+  ]
 }
