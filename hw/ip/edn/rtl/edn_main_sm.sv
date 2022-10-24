@@ -315,7 +315,10 @@ module edn_main_sm #(
       Error: begin
         main_sm_err_o = 1'b1;
       end
-      default: state_d = Error;
+      default: begin
+        main_sm_err_o = 1'b1;
+        state_d = Error;
+      end
     endcase
   end
 

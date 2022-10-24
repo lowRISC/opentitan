@@ -41,8 +41,7 @@ module edn_ack_sm (
   typedef enum logic [StateWidth-1:0] {
     Idle      = 6'b101101, // idle (hamming distance = 3)
     DataWait  = 6'b111010, // wait for data to return
-    AckPls    = 6'b010110, // signal ack to endpoint
-    Error     = 6'b001000  // illegal state reached and hang
+    AckPls    = 6'b010110  // signal ack to endpoint
   } state_e;
 
   state_e state_d, state_q;
@@ -78,10 +77,7 @@ module edn_ack_sm (
         ack_o = 1'b1;
         state_d = Idle;
       end
-      Error: begin
-        ack_sm_err_o = 1'b1;
-      end
-      default: state_d = Error;
+      default: ack_sm_err_o = 1'b1;
     endcase
   end
 
