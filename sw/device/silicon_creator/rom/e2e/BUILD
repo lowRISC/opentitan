@@ -996,7 +996,6 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
         gdb_script = SRAM_JTAG_INJECTION_GDB_SCRIPT,
         gdb_script_symlinks = {
             "//sw/device/examples/sram_program:sram_program_fpga_cw310.elf": "sram_program.elf",
-            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
         rom_kind = "Rom",
@@ -1015,4 +1014,55 @@ test_suite(
         "vivado",
     ],
     tests = ["sram_program_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
+)
+
+[
+    opentitan_gdb_fpga_cw310_test(
+        name = "asm_interrupt_handler_fpga_cw310_test_otp_" + otp_name,
+        timeout = "short",
+        gdb_script = """
+            target extended-remote :3333
+
+            echo :::: Send OpenOCD the 'reset halt' command.\\n
+            monitor reset halt
+
+            echo :::: Load ROM symbols into GDB.\\n
+            file rom.elf
+
+            echo :::: Set breakpoint on exception handler.\\n
+            break _asm_exception_handler
+
+            echo :::: Attempt to trigger an exception.\\n
+            set $pc = 0
+            continue
+            printf ":::: PC=%p. Expected PC=%p.\\n", $pc, _asm_exception_handler
+
+            if $pc == _asm_exception_handler
+                echo :::: Test passed!\\n
+                quit 0
+            else
+                echo :::: Test failed!\\n
+                quit 1
+            end
+        """,
+        gdb_script_symlinks = {
+            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+        },
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_kind = "Rom",
+        tags = [
+            "cw310",
+            "vivado",
+        ],
+    )
+    for otp_name in OTP_CFGS_EXEC_DISABLED
+]
+
+test_suite(
+    name = "rom_e2e_asm_interrupt_handler",
+    tags = [
+        "cw310",
+        "vivado",
+    ],
+    tests = ["asm_interrupt_handler_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
 )
