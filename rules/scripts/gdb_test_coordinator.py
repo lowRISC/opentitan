@@ -130,6 +130,7 @@ def main(rom_kind: str = typer.Option(...),
         # GDB to drop to the interactive prompt when the script ends rather than
         # exit.
         "/tools/riscv/bin/riscv32-unknown-elf-gdb",
+        "--batch",
         "--command=" + gdb_script_path,
     ]
     console_command = opentitantool_prefix + [
@@ -172,8 +173,9 @@ def main(rom_kind: str = typer.Option(...),
             background.push(proc)
             continue
 
+        print(f"{background.get_name(proc)} exited with code {returncode}")
+
         if returncode != 0:
-            print(f"{background.get_name(proc)} exited with code {returncode}")
             sys.exit(returncode)
 
         background.forget(proc)
