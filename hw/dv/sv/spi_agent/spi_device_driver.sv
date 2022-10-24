@@ -124,8 +124,14 @@ class spi_device_driver extends spi_driver;
 
           forever begin
             cfg.wait_sck_edge(DrivingEdge);
-            for (int i = 0; i < item.num_lanes; i++) begin
-              sio_bits[i] = bits_q.size > 0 ? bits_q.pop_front() : $urandom_range(0, 1);
+            // The first bit in bits_q is the MSB, which is driven on the sio
+            // lane with the highest active index.
+            for (int i = $high(sio_bits); i >= $low(sio_bits); i--) begin
+              if (i >= item.num_lanes) begin
+                sio_bits[i] = 1'bz;
+              end else begin
+                sio_bits[i] = bits_q.size > 0 ? bits_q.pop_front() : $urandom_range(0, 1);
+              end
             end
             send_data_to_sio(spi_mode, sio_bits);
           end
