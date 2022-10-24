@@ -564,7 +564,7 @@
             Cover number of payload lanes (single, dual and quad modes or no payload).
 
             cross mode, payload directions, address modes, addr/payload swap enable.
-            cross mode, payload directions, dummy sizes, number of lanes.
+            cross mode, dummy sizes, number of lanes.
             '''
     }
     {

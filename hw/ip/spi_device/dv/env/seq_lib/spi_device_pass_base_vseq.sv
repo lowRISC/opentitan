@@ -11,7 +11,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   // knob to enable testing addr/payload swap
   bit allow_addr_swap;
   bit allow_payload_swap;
-  int addr_payload_swap_pct = 30;
+  int addr_payload_swap_pct = 50;
 
   bit allow_intercept;
   bit allow_upload;
