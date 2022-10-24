@@ -212,13 +212,9 @@ module rstmgr_reg_top (
   logic sw_rst_ctrl_n_7_we;
   logic sw_rst_ctrl_n_7_qs;
   logic sw_rst_ctrl_n_7_wd;
-  logic err_code_we;
   logic err_code_reg_intg_err_qs;
-  logic err_code_reg_intg_err_wd;
   logic err_code_reset_consistency_err_qs;
-  logic err_code_reset_consistency_err_wd;
   logic err_code_fsm_err_qs;
-  logic err_code_fsm_err_wd;
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
 
@@ -1136,15 +1132,15 @@ module rstmgr_reg_top (
   //   F[reg_intg_err]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_reg_intg_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (err_code_we),
-    .wd     (err_code_reg_intg_err_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.reg_intg_err.de),
@@ -1162,15 +1158,15 @@ module rstmgr_reg_top (
   //   F[reset_consistency_err]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_reset_consistency_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (err_code_we),
-    .wd     (err_code_reset_consistency_err_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.reset_consistency_err.de),
@@ -1188,15 +1184,15 @@ module rstmgr_reg_top (
   //   F[fsm_err]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fsm_err (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (err_code_we),
-    .wd     (err_code_fsm_err_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.err_code.fsm_err.de),
@@ -1369,13 +1365,6 @@ module rstmgr_reg_top (
   assign sw_rst_ctrl_n_7_we = addr_hit[26] & reg_we & !reg_error;
 
   assign sw_rst_ctrl_n_7_wd = reg_wdata[0];
-  assign err_code_we = addr_hit[27] & reg_we & !reg_error;
-
-  assign err_code_reg_intg_err_wd = reg_wdata[0];
-
-  assign err_code_reset_consistency_err_wd = reg_wdata[1];
-
-  assign err_code_fsm_err_wd = reg_wdata[2];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -1407,7 +1396,7 @@ module rstmgr_reg_top (
     reg_we_check[24] = sw_rst_ctrl_n_5_gated_we;
     reg_we_check[25] = sw_rst_ctrl_n_6_gated_we;
     reg_we_check[26] = sw_rst_ctrl_n_7_gated_we;
-    reg_we_check[27] = err_code_we;
+    reg_we_check[27] = 1'b0;
   end
 
   // Read data return

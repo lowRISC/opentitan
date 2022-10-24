@@ -408,7 +408,7 @@
       desc: '''
         A bit vector of all the errors that have occurred in reset manager
       ''',
-      swaccess: "rw1c",
+      swaccess: "ro",
       hwaccess: "hrw",
       fields: [
         { bits: "0",
