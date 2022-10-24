@@ -69,3 +69,4 @@
 `include "chip_sw_exit_test_unlocked_bootstrap_vseq.sv"
 `include "chip_sw_patt_ios_vseq.sv"
 `include "chip_sw_spi_device_tpm_vseq.sv"
+`include "chip_sw_aes_masking_off_vseq.sv"

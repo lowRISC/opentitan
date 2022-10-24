@@ -1947,6 +1947,26 @@
       stage: V2
       tests: ["chip_sw_aes_sideload"]
     }
+    {
+      name: chip_sw_aes_masking_off
+      desc: '''Verify the AES masking off feature for ES.
+
+            - Perform known-answer test using CSRNG SW application interface.
+            - Verify CSRNG produces the deterministic seed leading to an all-zero output of the AES masking PRNG.
+            - Configure EDN to perform a CSRNG instantiate followed by repeated generate and reseed commands using the maximum amount of additional data and no entropy input in automatic mode.
+            - Let CSRNG produce and forward to EDN the deterministic seed leading to an all-zero output of the AES masking PRNG.
+            - Initialize AES and set the force_masks configuration bit.
+            - Configure an AES key of which the second share is zero.
+            - Trigger a reseed operation of the masking PRNG inside AES to load the deterministic seed produced by CSRNG and distributed by EDN.
+            - Verify that the masking PRNG outputs an all-zero vector.
+            - Encrypt a message of multiple blocks using AES.
+            - Verify that the second share of the initial, intermediate and output state is zero.
+            - Verify that the second share of the SubBytes input and output is zero.
+            - Verify that the produced cipher text is correct.
+            '''
+      stage: V2S
+      tests: ["chip_sw_aes_masking_off"]
+    }
 
     // HMAC (pre-verified IP) integration tests:
     {
