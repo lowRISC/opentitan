@@ -706,7 +706,7 @@ module pinmux_assert_fpv
 
   // Fatal alert related assertions
   `ASSUME(TriggerAfterAlertInit_S, $stable(rst_ni) == 0 |->
-          pinmux.u_reg.u_chk.intg_err_o == 0 [*10])
+          pinmux.u_reg.intg_err_o == 0 [*10])
   `ASSERT(TlIntgFatalAlert_A, pinmux.u_reg.intg_err_o |-> (##[0:7] (alert_tx_o[0].alert_p)) [*2])
 
 endmodule : pinmux_assert_fpv
