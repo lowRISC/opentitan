@@ -94,14 +94,32 @@ class edn_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        // FIXME
+        if (data_phase_read) begin
+          bit [NumEdnIntr-1:0] intr_en  = `gmv(ral.intr_enable);
+          bit [NumEdnIntr-1:0] intr_exp = `gmv(ral.intr_state);
+          foreach (intr_exp[i]) begin
+            edn_intr_e intr = edn_intr_e'(i);
+            `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
+                              $sformatf("Interrupt_pin: %0s", intr.name));
+            if (cfg.en_cov) begin
+              cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
+              cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+            end
+          end
+        end
         do_read_check = 1'b0;
       end
       "intr_enable": begin
         // FIXME
       end
       "intr_test": begin
-        // FIXME
+        if (addr_phase_write && cfg.en_cov) begin
+          bit [NumEdnIntr-1:0] intr_en  = `gmv(ral.intr_enable);
+          bit [NumEdnIntr-1:0] intr_exp = `gmv(ral.intr_state) | item.a_data;
+          foreach (intr_exp[i]) begin
+            cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
+          end
+        end
       end
       "ctrl": begin
       end
@@ -123,6 +141,9 @@ class edn_scoreboard extends cip_base_scoreboard #(
       "max_num_reqs_between_reseeds": begin
       end
       "recov_alert_sts": begin
+      end
+      "alert_test": begin
+        // Do nothing.
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
