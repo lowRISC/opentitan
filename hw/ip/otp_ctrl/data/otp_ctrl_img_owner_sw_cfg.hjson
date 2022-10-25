@@ -186,6 +186,18 @@
                     ],
                 },
                 {
+                    name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV",
+                    value: "0x36ed9cb0",
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD",
+                    value: "0x36ed9cb0",
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END",
+                    value: "0x36ed9cb0",
+                },
+                {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
                     value: "0x36ed9cb0",
                 }
