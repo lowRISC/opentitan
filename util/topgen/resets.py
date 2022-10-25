@@ -187,12 +187,11 @@ class Resets:
         for reset in top_resets:
             for dom in domains:
                 if dom not in reset.domains:
-                    doml = dom.lower()
-                    ret[f'unused_d{doml}_rst_{reset.name}'] = \
+                    ret[f'rst_{reset.name}_n[{domains.index(dom)}]'] = \
                         f'{reset.path}[rstmgr_pkg::Domain{dom}Sel]'
 
                     if reset.shadowed:
-                        ret[f'unused_d{doml}_rst_{reset.name}_shadowed'] = \
+                        ret[f'rst_{reset.name}_shadowed_n[{domains.index(dom)}]'] = \
                             f'{reset.shadow_path}[rstmgr_pkg::Domain{dom}Sel]'
 
         return ret
