@@ -56,7 +56,7 @@ endif
 sw_build: pre_run
 	@echo "[make]: sw_build"
 ifneq (${sw_images},)
-	# Loop through the list of sw_images and invoke Bazel on each.
+	# Loop through the list of sw_images and prepare to invoke Bazel on each.
 	# `sw_images` is a space-separated list of tests to be built into an image.
 	# Optionally, each item in the list can have additional metadata / flags using
 	# the delimiter ':'. The format is as follows:
@@ -65,13 +65,8 @@ ifneq (${sw_images},)
 	# If one delimiter is detected, then the full string is considered to be the
 	# <Bazel label>. If two delimiters are detected, then it must be <Bazel label>
 	# followed by <index>. The <flag> is considered optional.
-	#
-	# After the images are built, we use `bazel cquery ...` to locate the built
-	# software artifacts so they can be copied to the test bench run directory.
-	# We only copy device SW images, and do not copy host-side artifacts (like
-	# opentitantool) that are also dependencies of the Bazel test target that
-	# encode the software image targets.
 	set -e; \
+	target_labels=""; \
 	for sw_image in ${sw_images}; do \
 		if [[ -z $$sw_image ]]; then \
 			echo "ERROR: SW image \"$$sw_image\" is malformed."; \
@@ -88,38 +83,46 @@ ifneq (${sw_images},)
 			echo "SW image \"$$bazel_label\" is prebuilt - copying sources."; \
 			cp ${proj_root}/$${prebuilt_path} $${run_dir}/`basename $${prebuilt_path}`; \
 		else \
-			echo "Building SW image \"$${bazel_label}\"."; \
-			bazel_opts="${sw_build_opts} --define DISABLE_VERILATOR_BUILD=true"; \
-			if [[ -z $${BAZEL_PYTHON_WHEELS_REPO} ]]; then \
-				echo "Building \"$${bazel_label}\" on network connected machine."; \
-				bazel_cmd="./bazelisk.sh"; \
-			else \
-				echo "Building \"$${bazel_label}\" on air-gapped machine."; \
-				bazel_opts+=" --distdir=$${BAZEL_DISTDIR} --repository_cache=$${BAZEL_CACHE}"; \
-				bazel_cmd="bazel"; \
-			fi; \
-			echo "Building with command: $${bazel_cmd} build $${bazel_opts} $${bazel_label}"; \
-			$${bazel_cmd} build $${bazel_opts} $${bazel_label}; \
-			for dep in $$($${bazel_cmd} cquery "labels(data, $${bazel_label})" \
-				--ui_event_filters=-info \
-				--noshow_progress \
-				--output=starlark); do \
-				if [[ $$dep != //hw* ]] && [[ $$dep != //util* ]] && [[ $$dep != //sw/host* ]]; then \
-					for artifact in $$($${bazel_cmd} cquery $${dep} \
-						--ui_event_filters=-info \
-						--noshow_progress \
-						--output=starlark \
-						--starlark:expr="\"\\n\".join([f.path for f in target.files.to_list()])"); do \
-						cp -f $${artifact} $${run_dir}/$$(basename $${artifact}); \
-						if [[ $$artifact == *.scr.vmem ]]; then \
-							cp -f "$$(echo $${artifact} | cut -d. -f 1).elf" \
-								$${run_dir}/$$(basename "$${artifact%.*.scr.vmem}.elf"); \
-						fi; \
-					done; \
-				fi; \
-			done; \
+			bazel_labels+=$${bazel_label}+" "; \
 		fi; \
-	done;
+	done; \
+	if [[ ! -z $${bazel_labels} ]]; then \
+		echo "Building Targets: \"$${bazel_labels}\"."; \
+		bazel_opts="${sw_build_opts} --define DISABLE_VERILATOR_BUILD=true"; \
+		if [[ -z $${BAZEL_PYTHON_WHEELS_REPO} ]]; then \
+			echo "on network connected machine."; \
+			bazel_cmd="./bazelisk.sh"; \
+		else \
+			echo "on an air-gapped machine."; \
+			bazel_opts+=" --distdir=$${BAZEL_DISTDIR} --repository_cache=$${BAZEL_CACHE}"; \
+			bazel_cmd="bazel"; \
+		fi; \
+		# After the images are built, we use `bazel cquery ...` to locate the built
+		# software artifacts so they can be copied to the test bench run directory.
+		# We only copy device SW images, and do not copy host-side artifacts (like
+		# opentitantool) that are also dependencies of the Bazel test target that
+		# encode the software image targets.
+		echo "Building with command: $${bazel_cmd} build $${bazel_opts} $${bazel_labels}"; \
+		$${bazel_cmd} build $${bazel_opts} $${bazel_labels}; \
+		for dep in $$($${bazel_cmd} cquery "labels(data, $${bazel_labels})" \
+			--ui_event_filters=-info \
+			--noshow_progress \
+			--output=starlark); do \
+			if [[ $$dep != //hw* ]] && [[ $$dep != //util* ]] && [[ $$dep != //sw/host* ]]; then \
+				for artifact in $$($${bazel_cmd} cquery $${dep} \
+					--ui_event_filters=-info \
+					--noshow_progress \
+					--output=starlark \
+					--starlark:expr="\"\\n\".join([f.path for f in target.files.to_list()])"); do \
+					cp -f $${artifact} $${run_dir}/$$(basename $${artifact}); \
+					if [[ $$artifact == *.scr.vmem ]]; then \
+						cp -f "$$(echo $${artifact} | cut -d. -f 1).elf" \
+						$${run_dir}/$$(basename "$${artifact%.*.scr.vmem}.elf"); \
+					fi; \
+				done; \
+			fi; \
+		done; \
+	fi;
 endif
 
 simulate: sw_build
