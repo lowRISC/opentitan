@@ -9,6 +9,9 @@
 waive -rules {RESET_DRIVER RESET_MUX} -location {spi_tpm.sv} \
       -regexp {'rst_n' is driven} \
       -comment "Async reset generated from TPM_CS#"
+waive -rules {RESET_MUX} -location {spi_device.sv} \
+      -regexp {'sys_tpm_rst_n' is driven by a multiplexer} \
+      -comment {The mux is scan mux}
 
 waive -rules TERMINAL_STATE -location {spi_tpm.sv} \
     -regexp {'(StEnd|StInvalid)'} \

@@ -28,7 +28,7 @@ waive -rules CLOCK_MUX -location {clkmgr.sv top_earlgrey.sv} -regexp {.*clk_io_d
       -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
 
 # scan reset is a legal asynchronous reset
-waive -rules RESET_USE -location {top_earlgrey.sv} -regexp {'scan_rst_ni' is connected to .* port 'scan_rst_ni', and used as an asynchronous reset or set 'rst_ni' at} \
+waive -rules RESET_USE -location {top_earlgrey.sv} -regexp {'scan_rst_ni' is connected to .* port 'scan_rst_ni', and used as an asynchronous reset or set 'rst_.*ni' at} \
       -comment "Scan reset is a legal asynchronous reset"
 
 # intentionally unused
