@@ -60,6 +60,8 @@ set ri_create_outputs_in_create_env true
 set ri_print_module_nand2_counts true
 # enable analysis of large arrays
 set ri_max_total_range_bits 100000
+set ri_rdc_stop_at_clock_path_in_obs_analysis true
+set ri_rdc_no_observability_on_clock_nodes true
 
 #########################
 ## Analyze & Elaborate ##
