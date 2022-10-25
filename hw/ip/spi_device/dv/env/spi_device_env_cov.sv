@@ -299,6 +299,7 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     spi_device_addr_4b_enter_exit_command_cg = new();
     sw_update_addr4b_cg = new();
     spi_device_write_enable_disable_cg = new();
+    spi_device_buffer_boundary_cg = new();
     tpm_interleave_with_flash_item_cg = new();
   endfunction : new
 

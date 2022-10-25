@@ -199,6 +199,8 @@
     {
       name: spi_device_read_buffer_direct
       uvm_test_seq: spi_device_read_buffer_direct_vseq
+      // it's a direct test, and checking is done in seq
+      run_opts: ["+en_scb=0"]
     }
 
     {

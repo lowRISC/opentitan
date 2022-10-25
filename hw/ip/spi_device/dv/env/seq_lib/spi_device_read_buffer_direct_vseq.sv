@@ -11,6 +11,10 @@ class spi_device_read_buffer_direct_vseq extends spi_device_flash_mode_vseq;
   task body();
     int start_addr = 0;
     int payload_size;
+
+    // scb is off for this test. Enable CSR auto_predict, otherwise, csr_update doesn't work
+    // correctly as `needs_update` may be wrong due to the incorrect mirrored value.
+    ral.default_map.set_auto_predict(1);
     spi_device_flash_pass_init();
 
     // disable watermark event
