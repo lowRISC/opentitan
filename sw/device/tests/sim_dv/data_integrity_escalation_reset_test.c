@@ -186,15 +186,7 @@ void ottf_load_integrity_error_handler(void) {
 
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-
-  if (peripheral == kTopEarlgreyPlicPeripheralAonTimerAon) {
-    uint32_t irq =
-        (irq_id - (dif_rv_plic_irq_id_t)
-                      kTopEarlgreyPlicIrqIdAonTimerAonWkupTimerExpired);
-
-    // We should not get aon timer interrupts since escalation suppresses them.
-    CHECK(false, "Unexpected aon timer interrupt %d", irq);
-  } else if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
+  if (peripheral == kTopEarlgreyPlicPeripheralAlertHandler) {
     LOG_INFO("Got expected alert handler interrupt %d", irq_id);
 
     // Disable these interrupts from alert_handler so they don't keep happening
@@ -209,6 +201,8 @@ void ottf_load_integrity_error_handler(void) {
     // should not prevent escalation from continuing.
     CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, irq_id, kPlicTarget,
                                              kDifToggleEnabled));
+  } else {
+    CHECK(false, "Unexpected peripheral %d for ISR", peripheral);
   }
 
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
