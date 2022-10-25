@@ -1693,3 +1693,23 @@ opentitan_functest(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+opentitan_functest(
+    name = "power_virus_systemtest",
+    srcs = ["power_virus_systemtest.c"],
+    targets = [
+        # TODO(#14814): add more targets
+        "cw310_test_rom",
+        "dv",
+    ],
+    deps = [
+        "//hw/ip/adc_ctrl/data:adc_ctrl_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:adc_ctrl",
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
