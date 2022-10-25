@@ -924,7 +924,7 @@ module spi_device
     .clk_o(rst_rxfifo_n)
   );
 
-  logic tpm_rst_n;
+  logic tpm_rst_n, sys_tpm_rst_n;
 
   prim_clock_mux2 #(
     .NoFpgaBufG(1'b1)
@@ -933,6 +933,26 @@ module spi_device
     .clk1_i (scan_rst_ni),
     .sel_i  (prim_mubi_pkg::mubi4_test_true_strict(scanmode[TpmRstSel])),
     .clk_o  (tpm_rst_n)
+  );
+
+  // TPM Read FIFO uses TPM CSb as a reset.
+  // The write port is clocked at SYS_CLK. Metastability may occur as CSb may
+  // be asserted, de-asserted independent of SYS_CLK. This reset synchronizer
+  // (sync to SYS_CLK), may delay the reset signal by 2 SYS_CLK when TPM_CSb
+  // is de-asserted. However, Read FIFO is being used after TPM module
+  // receives the command (8 SPI_CLK), then 24bit address (24 SPI_CLK). So,
+  // there are plenty of time to synced reset being released unless SYS_CLK:
+  // SPI_CLK is <1:12.
+  prim_rst_sync #(
+    .ActiveHigh (1'b 0),
+    .SkipScan   (1'b 0)
+  ) u_tpm_csb_rst_sync (
+    .clk_i (clk_i),
+    .d_i   (tpm_rst_n),
+    .q_o   (sys_tpm_rst_n),
+
+    .scan_rst_ni,
+    .scanmode_i (scanmode[TpmRstSel])
   );
 
   // SRAM clock
@@ -1807,9 +1827,11 @@ module spi_device
     .clk_in_i  (clk_spi_in_buf ),
     .clk_out_i (clk_spi_out_buf),
 
-    .sys_clk_i  (clk_i    ),
-    .sys_rst_ni (rst_ni   ),
-    .rst_n      (tpm_rst_n),
+    .sys_clk_i (clk_i),
+
+    .sys_rst_ni      (rst_ni       ),
+    .rst_n           (tpm_rst_n    ),
+    .sys_sync_rst_ni (sys_tpm_rst_n),
 
     .csb_i     (sck_tpm_csb_buf), // used as data only
     .mosi_i    (tpm_mosi       ),

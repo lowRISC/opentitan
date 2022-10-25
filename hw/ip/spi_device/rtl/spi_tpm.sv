@@ -75,6 +75,7 @@ module spi_tpm
 
   input sys_rst_ni,
   input rst_n,
+  input sys_sync_rst_ni,
 
   // SPI interface
   input        csb_i, // TPM needs separate CS#
@@ -1205,7 +1206,7 @@ module spi_tpm
     .OutputZeroIfEmpty (1'b 1)
   ) u_rdfifo (
     .clk_wr_i  (sys_clk_i),
-    .rst_wr_ni (rst_n),     // Need synchronizer?
+    .rst_wr_ni (sys_sync_rst_ni),
     .wvalid_i  (sys_rdfifo_wvalid_i),
     .wready_o  (sys_rdfifo_wready_o),
     .wdata_i   (sys_rdfifo_wdata_i),
