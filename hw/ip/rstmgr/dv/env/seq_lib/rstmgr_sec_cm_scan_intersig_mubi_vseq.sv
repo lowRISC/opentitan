@@ -40,7 +40,17 @@ class rstmgr_sec_cm_scan_intersig_mubi_vseq extends rstmgr_smoke_vseq;
       end
       cfg.io_div4_clk_rst_vif.wait_clks(scanmode_to_scan_rst_cycles);
       delay = $urandom_range(0, 30);
-      cfg.clk_rst_vif.wait_clks(delay);
+      fork
+        // This waits for a certain number of cycles or for a change in scan_rst_ni,
+        //  whichever is sooner, or it could end up skipping a full scan reset.
+        begin : isolation_fork
+          fork
+            @cfg.rstmgr_vif.scan_rst_ni;
+            cfg.clk_rst_vif.wait_clks(delay);
+          join_any
+          disable fork;
+        end
+      join
     end
   endtask : add_noise
 endclass : rstmgr_sec_cm_scan_intersig_mubi_vseq
