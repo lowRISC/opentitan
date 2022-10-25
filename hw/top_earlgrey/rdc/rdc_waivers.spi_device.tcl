@@ -16,3 +16,17 @@ set_rule_status -rule {W_RST_COMBO_LOGIC} -status {Waived}  \
 set_rule_status -rule {W_RST_COMBO_LOGIC} -status {Waived} \
   -expression {(SourceReset=~"*.u_spi_device.rst_*_buf")}  \
   -comment {rst csb, tpm_csb are reset merging with scan chain.}
+
+
+# RDC could not catch the relation between CSb and SCK. (SCK negedge to CSb
+# de-assertion shall take 5ns at minimum)
+#
+# However, if CSb mis-behaved, the logic may/maynot push entries to CMDADDR
+# FIFO and WR FIFO.
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(MetaStableFlop=~"*.u_spi_tpm.u_cmdaddr_buffer.fifo_wptr*")} \
+  -comment {when csb de-asserted, SCK should be quiescent. If not, the behavior is unpredictable}
+
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(MetaStableFlop=~"*.u_spi_tpm.u_wrfifo.fifo_wptr*")} \
+  -comment {when csb de-asserted, SCK should be quiescent. If not, the behavior is unpredictable}
