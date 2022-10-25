@@ -590,23 +590,22 @@
 // partial hierarchical path within the DUT. The generated function accepts 2 arguments - the first
 // indicates the probe action (sample, force or release) of type dv_utils_pkg::signal_probe_e. The
 // second argument is the value to be forced. If sample action is chosen, then it returns the
-// sampled value. In other cases, it returns Xs, which can be ignored by void-casting the function
-// call.
+// sampled value (for other actions as well).
 //
 // The suggested naming convention for the function is:
 //   signal_probe_<DUT_or_IP_block_name>_<signal_name>
 //
 // This macro must be invoked in an interface or module.
 `ifndef DV_CREATE_SIGNAL_PROBE_FUNCTION
-`define DV_CREATE_SIGNAL_PROBE_FUNCTION(FUNC_NAME_, SIGNAL_PATH_)                       \
-  function static uvm_hdl_data_t FUNC_NAME_(dv_utils_pkg::signal_probe_e kind,          \
-                                            uvm_hdl_data_t value = '0);                 \
-    case (kind)                                                                         \
-      dv_utils_pkg::SignalProbeSample:  return SIGNAL_PATH_;                            \
-      dv_utils_pkg::SignalProbeForce:   force SIGNAL_PATH_ = value;                     \
-      dv_utils_pkg::SignalProbeRelease: release SIGNAL_PATH_;                           \
-      default:            `uvm_fatal(`"FUNC_NAME_`", $sformatf("Bad value: %0d", kind)) \
-    endcase                                                                             \
-    return 'x;                                                                          \
+`define DV_CREATE_SIGNAL_PROBE_FUNCTION(FUNC_NAME_, SIGNAL_PATH_, SIGNAL_WIDTH_ = uvm_pkg::UVM_HDL_MAX_WIDTH) \
+  function static logic [SIGNAL_WIDTH_-1:0] FUNC_NAME_(dv_utils_pkg::signal_probe_e kind,     \
+                                                       logic [SIGNAL_WIDTH_-1:0] value = '0); \
+    case (kind)                                                                               \
+      dv_utils_pkg::SignalProbeSample: ;                                                      \
+      dv_utils_pkg::SignalProbeForce: force SIGNAL_PATH_ = value;                             \
+      dv_utils_pkg::SignalProbeRelease: release SIGNAL_PATH_;                                 \
+      default: `uvm_fatal(`"FUNC_NAME_`", $sformatf("Bad value: %0d", kind))                  \
+    endcase                                                                                   \
+    return SIGNAL_PATH_;                                                                      \
   endfunction
 `endif
