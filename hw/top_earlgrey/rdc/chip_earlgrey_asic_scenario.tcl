@@ -64,12 +64,21 @@ set_reset_scenario { \
 set_reset_scenario { \
   { {top_earlgrey.u_spi_device.u_reg.u_control_rst_rxfifo.q[0]} \
     {reset  { @t0 0 } { #10 1} { #4 0 }} } \
-  { top_earlgrey.u_spi_device.u_reg.u_control_mode.q \
+  { top_earlgrey.u_spi_device.u_reg.u_control_mode.q[0] \
     {constraint {@t0 0}}} \
   } -name SpidRstRxFifo -comment "SPI_DEVICE Async RX FIFO Functional Reset"
 set_reset_scenario { \
   { {top_earlgrey.u_spi_device.u_reg.u_control_rst_txfifo.q[0]} \
     {reset  { @t0 0 } { #10 1} { #4 0 }} } \
-  { top_earlgrey.u_spi_device.u_reg.u_control_mode.q \
+  { top_earlgrey.u_spi_device.u_reg.u_control_mode.q[0] \
     {constraint {@t0 0}}} \
   } -name SpidRstTxFifo -comment "SPI_DEVICE Async TX FIFO Functional Reset"
+
+# SPI_DEVICE TPM CSb Reset. SPID IP reset should be stable
+set_reset_scenario { \
+  { {top_earlgrey.u_spi_device.rst_tpm_csb_buf} \
+    {reset { @t0 1} {#10 0}} } \
+  { u_ast.vcaon_pok { constraint { @t0 1 } } } \
+  { POR_N           { constraint { @t0 1 } } } \
+  { top_earlgrey.u_spi_device.rst_ni { constraint { @t0 1 } } } \
+} -name RstSpidTpmCsb -comment "SPI_DEVICE TPM CSb Assertion"
