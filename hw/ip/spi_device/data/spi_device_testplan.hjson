@@ -479,7 +479,7 @@
             - 2 flash transactions.
             - a tpm transaction and a flash transaction.'''
       stage: V2
-      tests: []
+      tests: ["spi_device_flash_and_tpm_min_idle"]
     }
     {
       name: stress_all

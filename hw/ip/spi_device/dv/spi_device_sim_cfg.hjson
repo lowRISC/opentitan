@@ -210,6 +210,11 @@
       name: spi_device_flash_and_tpm
       uvm_test_seq: spi_device_flash_and_tpm_vseq
     }
+
+    {
+      name: spi_device_flash_and_tpm_min_idle
+      uvm_test_seq: spi_device_flash_and_tpm_min_idle_vseq
+    }
   ]
 
   // List of regressions.

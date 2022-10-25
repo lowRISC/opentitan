@@ -25,6 +25,9 @@ class spi_device_flash_mode_vseq extends spi_device_intercept_vseq;
     // in order to exercise watermark and flip events
     large_payload_weight = 6;
 
+    // always read the last_read_addr for check
+    read_last_read_addr_pct = 100;
+
     mailbox_addr_size_c.constraint_mode(0);
     forever_read_buffer_update_nonblocking();
 
