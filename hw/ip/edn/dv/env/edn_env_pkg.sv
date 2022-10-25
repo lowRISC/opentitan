@@ -30,7 +30,8 @@ package edn_env_pkg;
   // types
   typedef enum int {
     CmdReqDone  = 0,
-    FifoErr     = 1
+    FifoErr     = 1,
+    NumEdnIntr  = 2
   } edn_intr_e;
 
   typedef enum int {
