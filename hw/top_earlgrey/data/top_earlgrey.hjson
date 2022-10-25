@@ -1174,8 +1174,6 @@
     pads: [
       // Special manually connected pads
       { name: 'POR_N'           , type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'System reset'},
-      { name: 'USB_P'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
-      { name: 'USB_N'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
       { name: 'CC1'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 1'},
       { name: 'CC2'             , type: 'InputStd',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 2'},
       { name: 'FLASH_TEST_VOLT' , type: 'AnalogIn0',    bank: 'VCC' , connection: 'manual', desc: 'Flash test voltage input'},
@@ -1183,18 +1181,20 @@
       { name: 'FLASH_TEST_MODE1', type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'Flash test mode signal'},
       { name: 'OTP_EXT_VOLT'    , type: 'AnalogIn1',    bank: 'VCC' , connection: 'manual', desc: 'OTP external voltage input'},
       // Dedicated IOs
-      { name: 'SPI_HOST_D0'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
-      { name: 'SPI_HOST_D1'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
-      { name: 'SPI_HOST_D2'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
-      { name: 'SPI_HOST_D3'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
-      { name: 'SPI_HOST_CLK'    , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host clock'},
-      { name: 'SPI_HOST_CS_L'   , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host chip select'},
-      { name: 'SPI_DEV_D0'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
-      { name: 'SPI_DEV_D1'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
-      { name: 'SPI_DEV_D2'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
-      { name: 'SPI_DEV_D3'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
-      { name: 'SPI_DEV_CLK'     , type: 'InputStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device clock'},
-      { name: 'SPI_DEV_CS_L'    , type: 'InputStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device chip select'},
+      { name: 'USB_P'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'direct', desc: 'USB P signal'},
+      { name: 'USB_N'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'direct', desc: 'USB N signal'},
+      { name: 'SPI_HOST_D0'     , type: 'BidirStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_D1'     , type: 'BidirStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_D2'     , type: 'BidirStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_D3'     , type: 'BidirStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_CLK'    , type: 'BidirStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI host clock'},
+      { name: 'SPI_HOST_CS_L'   , type: 'BidirStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI host chip select'},
+      { name: 'SPI_DEV_D0'      , type: 'BidirStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_D1'      , type: 'BidirStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_D2'      , type: 'BidirStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_D3'      , type: 'BidirStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_CLK'     , type: 'InputStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI device clock'},
+      { name: 'SPI_DEV_CS_L'    , type: 'InputStd',     bank: 'VIOA', connection: 'direct', desc: 'SPI device chip select'},
       // IOA
       { name: 'IOA0'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOA1'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
@@ -1290,8 +1290,8 @@
     //
     signals: [
       // USB
-      { instance: 'usbdev',          port: 'usb_dp',         connection: 'manual', pad: ''             , desc: ''},
-      { instance: 'usbdev',          port: 'usb_dn',         connection: 'manual', pad: ''             , desc: ''},
+      { instance: 'usbdev',          port: 'usb_dp',         connection: 'direct', pad: 'USB_P'        , desc: ''},
+      { instance: 'usbdev',          port: 'usb_dn',         connection: 'direct', pad: 'USB_N'        , desc: ''},
       // SPI Host0
       { instance: 'spi_host0',       port: 'sck',            connection: 'direct', pad: 'SPI_HOST_CLK' , desc: ''},
       { instance: 'spi_host0',       port: 'csb',            connection: 'direct', pad: 'SPI_HOST_CS_L', desc: ''},
@@ -1425,8 +1425,7 @@
         remove_pads: [
           'CC1', 'CC2',
           'FLASH_TEST_VOLT', 'OTP_EXT_VOLT'
-          'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1',
-          'USB_P', 'USB_N'
+          'FLASH_TEST_MODE0', 'FLASH_TEST_MODE1'
         ],
 
         add_pads: [
@@ -1436,8 +1435,6 @@
           { name: 'JTAG_SRST_N',      type: 'InputStd', bank: 'VCC', connection: 'manual', desc: 'JTAG header SRST, triggers POR'}
           // Custom USB pads
           { name: 'IO_USB_CONNECT',  type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_DP_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
-          { name: 'IO_USB_DN_TX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_USB_D_RX',     type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_USB_DP_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}
           { name: 'IO_USB_DN_RX',    type: 'BidirStd', bank: 'VCC', connection: 'manual', desc: 'Manual USB UPHY signal for FPGA target'}

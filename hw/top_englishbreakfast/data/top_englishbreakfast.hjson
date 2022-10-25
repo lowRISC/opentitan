@@ -755,8 +755,8 @@
     // Optionally, each pad can also have a 'desc' field for further description.
     pads: [
       // Special manually connected pads
-      { name: 'POR_N'           , type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'System reset'},
-      { name: 'USB_P'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
+      { name: 'POR_N'           , type: 'InputStd', bank: 'VCC' , connection: 'direct', desc: 'System reset'},
+      { name: 'USB_P'           , type: 'BidirTol', bank: 'VCC' , connection: 'direct', desc: 'USB P signal'},
       { name: 'USB_N'           , type: 'BidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
       { name: 'CC1'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 1'},
       { name: 'CC2'             , type: 'InputStd', bank: 'AVCC', connection: 'manual', desc: 'ADC input 2'},
@@ -868,28 +868,28 @@
     //         DIO is manual, there is no way to automatically infer the corresponding pad type).
     //
     signals: [
-      // SPI Host0
-      { instance: 'spi_host0',       port: 'sck',   connection: 'direct', pad: 'SPI_HOST_CLK' , desc: ''},
-      { instance: 'spi_host0',       port: 'csb',   connection: 'direct', pad: 'SPI_HOST_CS_L', desc: ''},
-      { instance: 'spi_host0',       port: 'sd[0]', connection: 'direct', pad: 'SPI_HOST_D0'  , desc: ''},
-      { instance: 'spi_host0',       port: 'sd[1]', connection: 'direct', pad: 'SPI_HOST_D1'  , desc: ''},
-      { instance: 'spi_host0',       port: 'sd[2]', connection: 'direct', pad: 'SPI_HOST_D2'  , desc: ''},
-      { instance: 'spi_host0',       port: 'sd[3]', connection: 'direct', pad: 'SPI_HOST_D3'  , desc: ''},
-      // SPI Device
-      { instance: 'spi_device',      port: 'sck',   connection: 'direct', pad: 'SPI_DEV_CLK'  , desc: ''},
-      { instance: 'spi_device',      port: 'csb',   connection: 'direct', pad: 'SPI_DEV_CS_L' , desc: ''},
-      { instance: 'spi_device',      port: 'sd[0]', connection: 'direct', pad: 'SPI_DEV_D0'   , desc: ''},
-      { instance: 'spi_device',      port: 'sd[1]', connection: 'direct', pad: 'SPI_DEV_D1'   , desc: ''},
-      { instance: 'spi_device',      port: 'sd[2]', connection: 'direct', pad: 'SPI_DEV_D2'   , desc: ''},
-      { instance: 'spi_device',      port: 'sd[3]', connection: 'direct', pad: 'SPI_DEV_D3'   , desc: ''},
       // USBDEV
-      { instance: 'usbdev',          port: 'usb_dp',         connection: 'manual', pad: ''             , desc: ''},
-      { instance: 'usbdev',          port: 'usb_dn',         connection: 'manual', pad: ''             , desc: ''},
+      { instance: 'usbdev',          port: 'usb_dp', connection: 'direct', pad: 'USB_P'        , desc: ''},
+      { instance: 'usbdev',          port: 'usb_dn', connection: 'direct', pad: 'USB_N'        , desc: ''},
+      // SPI Host0
+      { instance: 'spi_host0',       port: 'sck',    connection: 'direct', pad: 'SPI_HOST_CLK' , desc: ''},
+      { instance: 'spi_host0',       port: 'csb',    connection: 'direct', pad: 'SPI_HOST_CS_L', desc: ''},
+      { instance: 'spi_host0',       port: 'sd[0]',  connection: 'direct', pad: 'SPI_HOST_D0'  , desc: ''},
+      { instance: 'spi_host0',       port: 'sd[1]',  connection: 'direct', pad: 'SPI_HOST_D1'  , desc: ''},
+      { instance: 'spi_host0',       port: 'sd[2]',  connection: 'direct', pad: 'SPI_HOST_D2'  , desc: ''},
+      { instance: 'spi_host0',       port: 'sd[3]',  connection: 'direct', pad: 'SPI_HOST_D3'  , desc: ''},
+      // SPI Device
+      { instance: 'spi_device',      port: 'sck',    connection: 'direct', pad: 'SPI_DEV_CLK'  , desc: ''},
+      { instance: 'spi_device',      port: 'csb',    connection: 'direct', pad: 'SPI_DEV_CS_L' , desc: ''},
+      { instance: 'spi_device',      port: 'sd[0]',  connection: 'direct', pad: 'SPI_DEV_D0'   , desc: ''},
+      { instance: 'spi_device',      port: 'sd[1]',  connection: 'direct', pad: 'SPI_DEV_D1'   , desc: ''},
+      { instance: 'spi_device',      port: 'sd[2]',  connection: 'direct', pad: 'SPI_DEV_D2'   , desc: ''},
+      { instance: 'spi_device',      port: 'sd[3]',  connection: 'direct', pad: 'SPI_DEV_D3'   , desc: ''},
       // MIOs
-      { instance: "gpio",            port: '',      connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "uart0",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "flash_ctrl",      port: '',      connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: 'usbdev',          port: 'sense', connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "gpio",            port: '',       connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "uart0",           port: '',       connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "flash_ctrl",      port: '',       connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: 'usbdev',          port: 'sense',  connection: 'muxed' , pad: ''             , desc: ''},
     ],
 
     // Number of wakeup detectors to instantiate, and bitwidth for the wakeup counters.

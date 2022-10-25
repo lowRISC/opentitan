@@ -14,14 +14,14 @@ module chip_earlgrey_asic #(
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
-  inout USB_P, // Manual Pad
-  inout USB_N, // Manual Pad
   inout CC1, // Manual Pad
   inout CC2, // Manual Pad
   inout FLASH_TEST_VOLT, // Manual Pad
   inout FLASH_TEST_MODE0, // Manual Pad
   inout FLASH_TEST_MODE1, // Manual Pad
   inout OTP_EXT_VOLT, // Manual Pad
+  inout USB_P, // Dedicated Pad for usbdev_usb_dp
+  inout USB_N, // Dedicated Pad for usbdev_usb_dn
   inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D2, // Dedicated Pad for spi_host0_sd
@@ -136,8 +136,8 @@ module chip_earlgrey_asic #(
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO usbdev_usb_dn
-      BidirStd  // DIO usbdev_usb_dp
+      DualBidirTol, // DIO usbdev_usb_dn
+      DualBidirTol  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
       BidirOd, // MIO Pad 46
@@ -210,8 +210,6 @@ module chip_earlgrey_asic #(
 
   // Manual pads
   logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
-  logic manual_in_usb_p, manual_out_usb_p, manual_oe_usb_p;
-  logic manual_in_usb_n, manual_out_usb_n, manual_oe_usb_n;
   logic manual_in_cc1, manual_out_cc1, manual_oe_cc1;
   logic manual_in_cc2, manual_out_cc2, manual_oe_cc2;
   logic manual_in_flash_test_volt, manual_out_flash_test_volt, manual_oe_flash_test_volt;
@@ -221,8 +219,6 @@ module chip_earlgrey_asic #(
   logic manual_in_ast_misc, manual_out_ast_misc, manual_oe_ast_misc;
 
   pad_attr_t manual_attr_por_n;
-  pad_attr_t manual_attr_usb_p;
-  pad_attr_t manual_attr_usb_n;
   pad_attr_t manual_attr_cc1;
   pad_attr_t manual_attr_cc2;
   pad_attr_t manual_attr_flash_test_volt;
@@ -265,14 +261,14 @@ module chip_earlgrey_asic #(
       scan_role_pkg::DioPadSpiHostD2ScanRole,
       scan_role_pkg::DioPadSpiHostD1ScanRole,
       scan_role_pkg::DioPadSpiHostD0ScanRole,
+      scan_role_pkg::DioPadUsbNScanRole,
+      scan_role_pkg::DioPadUsbPScanRole,
       scan_role_pkg::DioPadOtpExtVoltScanRole,
       scan_role_pkg::DioPadFlashTestMode1ScanRole,
       scan_role_pkg::DioPadFlashTestMode0ScanRole,
       scan_role_pkg::DioPadFlashTestVoltScanRole,
       scan_role_pkg::DioPadCc2ScanRole,
       scan_role_pkg::DioPadCc1ScanRole,
-      scan_role_pkg::DioPadUsbNScanRole,
-      scan_role_pkg::DioPadUsbPScanRole,
       scan_role_pkg::DioPadPorNScanRole
     }),
     .MioScanRole ({
@@ -340,14 +336,14 @@ module chip_earlgrey_asic #(
       IoBankVioa, // SPI_HOST_D2
       IoBankVioa, // SPI_HOST_D1
       IoBankVioa, // SPI_HOST_D0
+      IoBankVcc, // USB_N
+      IoBankVcc, // USB_P
       IoBankVcc, // OTP_EXT_VOLT
       IoBankVcc, // FLASH_TEST_MODE1
       IoBankVcc, // FLASH_TEST_MODE0
       IoBankVcc, // FLASH_TEST_VOLT
       IoBankAvcc, // CC2
       IoBankAvcc, // CC1
-      IoBankVcc, // USB_N
-      IoBankVcc, // USB_P
       IoBankVcc  // POR_N
     }),
     .MioPadBank ({
@@ -415,14 +411,14 @@ module chip_earlgrey_asic #(
       BidirStd, // SPI_HOST_D2
       BidirStd, // SPI_HOST_D1
       BidirStd, // SPI_HOST_D0
+      DualBidirTol, // USB_N
+      DualBidirTol, // USB_P
       AnalogIn1, // OTP_EXT_VOLT
       InputStd, // FLASH_TEST_MODE1
       InputStd, // FLASH_TEST_MODE0
       AnalogIn0, // FLASH_TEST_VOLT
       InputStd, // CC2
       InputStd, // CC1
-      DualBidirTol, // USB_N
-      DualBidirTol, // USB_P
       InputStd  // POR_N
     }),
     .MioPadType ({
@@ -496,14 +492,14 @@ module chip_earlgrey_asic #(
       SPI_HOST_D2,
       SPI_HOST_D1,
       SPI_HOST_D0,
+      USB_N,
+      USB_P,
       OTP_EXT_VOLT,
       FLASH_TEST_MODE1,
       FLASH_TEST_MODE0,
       FLASH_TEST_VOLT,
       CC2,
       CC1,
-      USB_N,
-      USB_P,
       POR_N
     }),
 
@@ -574,14 +570,14 @@ module chip_earlgrey_asic #(
         dio_in[DioSpiHost0Sd2],
         dio_in[DioSpiHost0Sd1],
         dio_in[DioSpiHost0Sd0],
+        dio_in[DioUsbdevUsbDn],
+        dio_in[DioUsbdevUsbDp],
         manual_in_otp_ext_volt,
         manual_in_flash_test_mode1,
         manual_in_flash_test_mode0,
         manual_in_flash_test_volt,
         manual_in_cc2,
         manual_in_cc1,
-        manual_in_usb_n,
-        manual_in_usb_p,
         manual_in_por_n
       }),
     .dio_out_i ({
@@ -600,14 +596,14 @@ module chip_earlgrey_asic #(
         dio_out[DioSpiHost0Sd2],
         dio_out[DioSpiHost0Sd1],
         dio_out[DioSpiHost0Sd0],
+        dio_out[DioUsbdevUsbDn],
+        dio_out[DioUsbdevUsbDp],
         manual_out_otp_ext_volt,
         manual_out_flash_test_mode1,
         manual_out_flash_test_mode0,
         manual_out_flash_test_volt,
         manual_out_cc2,
         manual_out_cc1,
-        manual_out_usb_n,
-        manual_out_usb_p,
         manual_out_por_n
       }),
     .dio_oe_i ({
@@ -626,14 +622,14 @@ module chip_earlgrey_asic #(
         dio_oe[DioSpiHost0Sd2],
         dio_oe[DioSpiHost0Sd1],
         dio_oe[DioSpiHost0Sd0],
+        dio_oe[DioUsbdevUsbDn],
+        dio_oe[DioUsbdevUsbDp],
         manual_oe_otp_ext_volt,
         manual_oe_flash_test_mode1,
         manual_oe_flash_test_mode0,
         manual_oe_flash_test_volt,
         manual_oe_cc2,
         manual_oe_cc1,
-        manual_oe_usb_n,
-        manual_oe_usb_p,
         manual_oe_por_n
       }),
     .dio_attr_i ({
@@ -652,14 +648,14 @@ module chip_earlgrey_asic #(
         dio_attr[DioSpiHost0Sd2],
         dio_attr[DioSpiHost0Sd1],
         dio_attr[DioSpiHost0Sd0],
+        dio_attr[DioUsbdevUsbDn],
+        dio_attr[DioUsbdevUsbDp],
         manual_attr_otp_ext_volt,
         manual_attr_flash_test_mode1,
         manual_attr_flash_test_mode0,
         manual_attr_flash_test_volt,
         manual_attr_cc2,
         manual_attr_cc1,
-        manual_attr_usb_n,
-        manual_attr_usb_p,
         manual_attr_por_n
       }),
 
@@ -1030,20 +1026,6 @@ module chip_earlgrey_asic #(
   ///////////////////////////////
 
   // TODO: generalize this USB mux code and align with other tops.
-
-  // Connect the D+ pad
-  // Note that we use two pads in parallel for the D+ channel to meet electrical specifications.
-  assign dio_in[DioUsbdevUsbDp] = manual_in_usb_p;
-  assign manual_out_usb_p = dio_out[DioUsbdevUsbDp];
-  assign manual_oe_usb_p = dio_oe[DioUsbdevUsbDp];
-  assign manual_attr_usb_p = dio_attr[DioUsbdevUsbDp];
-
-  // Connect the D- pads
-  // Note that we use two pads in parallel for the D- channel to meet electrical specifications.
-  assign dio_in[DioUsbdevUsbDn] = manual_in_usb_n;
-  assign manual_out_usb_n = dio_out[DioUsbdevUsbDn];
-  assign manual_oe_usb_n = dio_oe[DioUsbdevUsbDn];
-  assign manual_attr_usb_n = dio_attr[DioUsbdevUsbDn];
 
   logic usb_rx_d;
 

@@ -19,6 +19,8 @@ module chip_earlgrey_cw310 #(
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
+  inout USB_P, // Dedicated Pad for usbdev_usb_dp
+  inout USB_N, // Dedicated Pad for usbdev_usb_dn
   inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
   inout SPI_HOST_D2, // Dedicated Pad for spi_host0_sd
@@ -37,8 +39,6 @@ module chip_earlgrey_cw310 #(
   inout POR_BUTTON_N, // Manual Pad
   inout JTAG_SRST_N, // Manual Pad
   inout IO_USB_CONNECT, // Manual Pad
-  inout IO_USB_DP_TX, // Manual Pad
-  inout IO_USB_DN_TX, // Manual Pad
   inout IO_USB_D_RX, // Manual Pad
   inout IO_USB_DP_RX, // Manual Pad
   inout IO_USB_DN_RX, // Manual Pad
@@ -146,8 +146,8 @@ module chip_earlgrey_cw310 #(
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO usbdev_usb_dn
-      BidirStd  // DIO usbdev_usb_dp
+      DualBidirTol, // DIO usbdev_usb_dn
+      DualBidirTol  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
       BidirOd, // MIO Pad 46
@@ -224,8 +224,6 @@ module chip_earlgrey_cw310 #(
   logic manual_in_por_button_n, manual_out_por_button_n, manual_oe_por_button_n;
   logic manual_in_jtag_srst_n, manual_out_jtag_srst_n, manual_oe_jtag_srst_n;
   logic manual_in_io_usb_connect, manual_out_io_usb_connect, manual_oe_io_usb_connect;
-  logic manual_in_io_usb_dp_tx, manual_out_io_usb_dp_tx, manual_oe_io_usb_dp_tx;
-  logic manual_in_io_usb_dn_tx, manual_out_io_usb_dn_tx, manual_oe_io_usb_dn_tx;
   logic manual_in_io_usb_d_rx, manual_out_io_usb_d_rx, manual_oe_io_usb_d_rx;
   logic manual_in_io_usb_dp_rx, manual_out_io_usb_dp_rx, manual_oe_io_usb_dp_rx;
   logic manual_in_io_usb_dn_rx, manual_out_io_usb_dn_rx, manual_oe_io_usb_dn_rx;
@@ -240,8 +238,6 @@ module chip_earlgrey_cw310 #(
   pad_attr_t manual_attr_por_button_n;
   pad_attr_t manual_attr_jtag_srst_n;
   pad_attr_t manual_attr_io_usb_connect;
-  pad_attr_t manual_attr_io_usb_dp_tx;
-  pad_attr_t manual_attr_io_usb_dn_tx;
   pad_attr_t manual_attr_io_usb_d_rx;
   pad_attr_t manual_attr_io_usb_dp_rx;
   pad_attr_t manual_attr_io_usb_dn_rx;
@@ -279,8 +275,6 @@ module chip_earlgrey_cw310 #(
       BidirStd, // IO_USB_DN_RX
       BidirStd, // IO_USB_DP_RX
       BidirStd, // IO_USB_D_RX
-      BidirStd, // IO_USB_DN_TX
-      BidirStd, // IO_USB_DP_TX
       BidirStd, // IO_USB_CONNECT
       InputStd, // JTAG_SRST_N
       InputStd, // POR_BUTTON_N
@@ -299,6 +293,8 @@ module chip_earlgrey_cw310 #(
       BidirStd, // SPI_HOST_D2
       BidirStd, // SPI_HOST_D1
       BidirStd, // SPI_HOST_D0
+      DualBidirTol, // USB_N
+      DualBidirTol, // USB_P
       InputStd  // POR_N
     }),
     .MioPadType ({
@@ -365,8 +361,6 @@ module chip_earlgrey_cw310 #(
       IO_USB_DN_RX,
       IO_USB_DP_RX,
       IO_USB_D_RX,
-      IO_USB_DN_TX,
-      IO_USB_DP_TX,
       IO_USB_CONNECT,
       JTAG_SRST_N,
       POR_BUTTON_N,
@@ -385,6 +379,8 @@ module chip_earlgrey_cw310 #(
       SPI_HOST_D2,
       SPI_HOST_D1,
       SPI_HOST_D0,
+      USB_N,
+      USB_P,
       POR_N
     }),
 
@@ -448,8 +444,6 @@ module chip_earlgrey_cw310 #(
         manual_in_io_usb_dn_rx,
         manual_in_io_usb_dp_rx,
         manual_in_io_usb_d_rx,
-        manual_in_io_usb_dn_tx,
-        manual_in_io_usb_dp_tx,
         manual_in_io_usb_connect,
         manual_in_jtag_srst_n,
         manual_in_por_button_n,
@@ -468,6 +462,8 @@ module chip_earlgrey_cw310 #(
         dio_in[DioSpiHost0Sd2],
         dio_in[DioSpiHost0Sd1],
         dio_in[DioSpiHost0Sd0],
+        dio_in[DioUsbdevUsbDn],
+        dio_in[DioUsbdevUsbDp],
         manual_in_por_n
       }),
     .dio_out_i ({
@@ -479,8 +475,6 @@ module chip_earlgrey_cw310 #(
         manual_out_io_usb_dn_rx,
         manual_out_io_usb_dp_rx,
         manual_out_io_usb_d_rx,
-        manual_out_io_usb_dn_tx,
-        manual_out_io_usb_dp_tx,
         manual_out_io_usb_connect,
         manual_out_jtag_srst_n,
         manual_out_por_button_n,
@@ -499,6 +493,8 @@ module chip_earlgrey_cw310 #(
         dio_out[DioSpiHost0Sd2],
         dio_out[DioSpiHost0Sd1],
         dio_out[DioSpiHost0Sd0],
+        dio_out[DioUsbdevUsbDn],
+        dio_out[DioUsbdevUsbDp],
         manual_out_por_n
       }),
     .dio_oe_i ({
@@ -510,8 +506,6 @@ module chip_earlgrey_cw310 #(
         manual_oe_io_usb_dn_rx,
         manual_oe_io_usb_dp_rx,
         manual_oe_io_usb_d_rx,
-        manual_oe_io_usb_dn_tx,
-        manual_oe_io_usb_dp_tx,
         manual_oe_io_usb_connect,
         manual_oe_jtag_srst_n,
         manual_oe_por_button_n,
@@ -530,6 +524,8 @@ module chip_earlgrey_cw310 #(
         dio_oe[DioSpiHost0Sd2],
         dio_oe[DioSpiHost0Sd1],
         dio_oe[DioSpiHost0Sd0],
+        dio_oe[DioUsbdevUsbDn],
+        dio_oe[DioUsbdevUsbDp],
         manual_oe_por_n
       }),
     .dio_attr_i ({
@@ -541,8 +537,6 @@ module chip_earlgrey_cw310 #(
         manual_attr_io_usb_dn_rx,
         manual_attr_io_usb_dp_rx,
         manual_attr_io_usb_d_rx,
-        manual_attr_io_usb_dn_tx,
-        manual_attr_io_usb_dp_tx,
         manual_attr_io_usb_connect,
         manual_attr_jtag_srst_n,
         manual_attr_por_button_n,
@@ -561,6 +555,8 @@ module chip_earlgrey_cw310 #(
         dio_attr[DioSpiHost0Sd2],
         dio_attr[DioSpiHost0Sd1],
         dio_attr[DioSpiHost0Sd0],
+        dio_attr[DioUsbdevUsbDn],
+        dio_attr[DioUsbdevUsbDp],
         manual_attr_por_n
       }),
 
@@ -581,17 +577,6 @@ module chip_earlgrey_cw310 #(
   logic usb_tx_d;
   logic usb_tx_se0;
   logic usb_rx_enable;
-
-  // DioUsbdevUsbDn
-  assign manual_attr_io_usb_dn_tx = '0;
-  assign manual_out_io_usb_dn_tx = dio_out[DioUsbdevUsbDn];
-  assign manual_oe_io_usb_dn_tx = 1'b1;
-  assign dio_in[DioUsbdevUsbDn] = manual_in_io_usb_dn_rx;
-  // DioUsbdevUsbDp
-  assign manual_attr_io_usb_dp_tx = '0;
-  assign manual_out_io_usb_dp_tx = dio_out[DioUsbdevUsbDp];
-  assign manual_oe_io_usb_dp_tx = 1'b1;
-  assign dio_in[DioUsbdevUsbDp] = manual_in_io_usb_dp_rx;
 
   assign manual_attr_io_usb_oe_n = '0;
   assign manual_out_io_usb_oe_n = ~dio_oe[DioUsbdevUsbDp];
@@ -624,12 +609,7 @@ module chip_earlgrey_cw310 #(
     manual_in_io_usb_connect,
     manual_in_io_usb_oe_n,
     manual_in_io_usb_speed,
-    manual_in_io_usb_suspend,
-    // DP and DN are broken out into multiple unidirectional pins
-    dio_oe[DioUsbdevUsbDp],
-    dio_oe[DioUsbdevUsbDn],
-    dio_attr[DioUsbdevUsbDp],
-    dio_attr[DioUsbdevUsbDn]
+    manual_in_io_usb_suspend
   };
 
 

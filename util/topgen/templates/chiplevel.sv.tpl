@@ -358,18 +358,6 @@ module chip_${top["name"]}_${target["name"]} #(
   logic usb_tx_use_d_se0;
   logic usb_rx_enable;
 
-  // Connect the DP pad
-  assign dio_in[DioUsbdevUsbDp] = manual_in_usb_p;
-  assign manual_out_usb_p = dio_out[DioUsbdevUsbDp];
-  assign manual_oe_usb_p = dio_oe[DioUsbdevUsbDp];
-  assign manual_attr_usb_p = dio_attr[DioUsbdevUsbDp];
-
-  // Connect the DN pad
-  assign dio_in[DioUsbdevUsbDn] = manual_in_usb_n;
-  assign manual_out_usb_n = dio_out[DioUsbdevUsbDn];
-  assign manual_oe_usb_n = dio_oe[DioUsbdevUsbDn];
-  assign manual_attr_usb_n = dio_attr[DioUsbdevUsbDn];
-
   // Connect DN pullup
   assign manual_out_io_usb_dnpullup0 = usb_dn_pullup_en;
   assign manual_oe_io_usb_dnpullup0 = 1'b1;
@@ -397,17 +385,6 @@ module chip_${top["name"]}_${target["name"]} #(
   logic usb_tx_d;
   logic usb_tx_se0;
   logic usb_rx_enable;
-
-  // DioUsbdevUsbDn
-  assign manual_attr_io_usb_dn_tx = '0;
-  assign manual_out_io_usb_dn_tx = dio_out[DioUsbdevUsbDn];
-  assign manual_oe_io_usb_dn_tx = 1'b1;
-  assign dio_in[DioUsbdevUsbDn] = manual_in_io_usb_dn_rx;
-  // DioUsbdevUsbDp
-  assign manual_attr_io_usb_dp_tx = '0;
-  assign manual_out_io_usb_dp_tx = dio_out[DioUsbdevUsbDp];
-  assign manual_oe_io_usb_dp_tx = 1'b1;
-  assign dio_in[DioUsbdevUsbDp] = manual_in_io_usb_dp_rx;
 
   assign manual_attr_io_usb_oe_n = '0;
   assign manual_out_io_usb_oe_n = ~dio_oe[DioUsbdevUsbDp];
@@ -440,12 +417,7 @@ module chip_${top["name"]}_${target["name"]} #(
     manual_in_io_usb_connect,
     manual_in_io_usb_oe_n,
     manual_in_io_usb_speed,
-    manual_in_io_usb_suspend,
-    // DP and DN are broken out into multiple unidirectional pins
-    dio_oe[DioUsbdevUsbDp],
-    dio_oe[DioUsbdevUsbDn],
-    dio_attr[DioUsbdevUsbDp],
-    dio_attr[DioUsbdevUsbDn]
+    manual_in_io_usb_suspend
   };
 
 % endif
@@ -867,20 +839,6 @@ module chip_${top["name"]}_${target["name"]} #(
   ///////////////////////////////
 
   // TODO: generalize this USB mux code and align with other tops.
-
-  // Connect the D+ pad
-  // Note that we use two pads in parallel for the D+ channel to meet electrical specifications.
-  assign dio_in[DioUsbdevUsbDp] = manual_in_usb_p;
-  assign manual_out_usb_p = dio_out[DioUsbdevUsbDp];
-  assign manual_oe_usb_p = dio_oe[DioUsbdevUsbDp];
-  assign manual_attr_usb_p = dio_attr[DioUsbdevUsbDp];
-
-  // Connect the D- pads
-  // Note that we use two pads in parallel for the D- channel to meet electrical specifications.
-  assign dio_in[DioUsbdevUsbDn] = manual_in_usb_n;
-  assign manual_out_usb_n = dio_out[DioUsbdevUsbDn];
-  assign manual_oe_usb_n = dio_oe[DioUsbdevUsbDn];
-  assign manual_attr_usb_n = dio_attr[DioUsbdevUsbDn];
 
   logic usb_rx_d;
 

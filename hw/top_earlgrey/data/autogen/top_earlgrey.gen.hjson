@@ -10292,28 +10292,12 @@
         idx: 0
       }
       {
-        name: USB_P
-        type: DualBidirTol
-        bank: VCC
-        connection: manual
-        desc: USB P signal
-        idx: 1
-      }
-      {
-        name: USB_N
-        type: DualBidirTol
-        bank: VCC
-        connection: manual
-        desc: USB N signal
-        idx: 2
-      }
-      {
         name: CC1
         type: InputStd
         bank: AVCC
         connection: manual
         desc: ADC input 1
-        idx: 3
+        idx: 1
       }
       {
         name: CC2
@@ -10321,7 +10305,7 @@
         bank: AVCC
         connection: manual
         desc: ADC input 2
-        idx: 4
+        idx: 2
       }
       {
         name: FLASH_TEST_VOLT
@@ -10329,7 +10313,7 @@
         bank: VCC
         connection: manual
         desc: Flash test voltage input
-        idx: 5
+        idx: 3
       }
       {
         name: FLASH_TEST_MODE0
@@ -10337,7 +10321,7 @@
         bank: VCC
         connection: manual
         desc: Flash test mode signal
-        idx: 6
+        idx: 4
       }
       {
         name: FLASH_TEST_MODE1
@@ -10345,7 +10329,7 @@
         bank: VCC
         connection: manual
         desc: Flash test mode signal
-        idx: 7
+        idx: 5
       }
       {
         name: OTP_EXT_VOLT
@@ -10353,6 +10337,22 @@
         bank: VCC
         connection: manual
         desc: OTP external voltage input
+        idx: 6
+      }
+      {
+        name: USB_P
+        type: DualBidirTol
+        bank: VCC
+        connection: direct
+        desc: USB P signal
+        idx: 7
+      }
+      {
+        name: USB_N
+        type: DualBidirTol
+        bank: VCC
+        connection: direct
+        desc: USB N signal
         idx: 8
       }
       {
@@ -10852,18 +10852,18 @@
       {
         instance: usbdev
         port: usb_dp
-        connection: manual
-        pad: ""
+        connection: direct
+        pad: USB_P
         desc: ""
-        attr: BidirStd
+        attr: DualBidirTol
       }
       {
         instance: usbdev
         port: usb_dn
-        connection: manual
-        pad: ""
+        connection: direct
+        pad: USB_N
         desc: ""
-        attr: BidirStd
+        attr: DualBidirTol
       }
       {
         instance: spi_host0
@@ -11211,9 +11211,9 @@
         width: 1
         type: inout
         idx: -1
-        pad: ""
-        attr: BidirStd
-        connection: manual
+        pad: USB_P
+        attr: DualBidirTol
+        connection: direct
         desc: ""
         glob_idx: 0
       }
@@ -11222,9 +11222,9 @@
         width: 1
         type: inout
         idx: -1
-        pad: ""
-        attr: BidirStd
-        connection: manual
+        pad: USB_N
+        attr: DualBidirTol
+        connection: direct
         desc: ""
         glob_idx: 1
       }
@@ -12484,8 +12484,6 @@
           OTP_EXT_VOLT
           FLASH_TEST_MODE0
           FLASH_TEST_MODE1
-          USB_P
-          USB_N
         ]
         add_pads:
         [
@@ -12512,20 +12510,6 @@
           }
           {
             name: IO_USB_CONNECT
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB UPHY signal for FPGA target
-          }
-          {
-            name: IO_USB_DP_TX
-            type: BidirStd
-            bank: VCC
-            connection: manual
-            desc: Manual USB UPHY signal for FPGA target
-          }
-          {
-            name: IO_USB_DN_TX
             type: BidirStd
             bank: VCC
             connection: manual
