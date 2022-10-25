@@ -1274,13 +1274,14 @@ def main():
         # generate chip level xbar and alert_handler TB
         tb_files = [
             "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
-            "tb__alert_handler_connect.sv", "xbar_tgl_excl.cfg"
+            "tb__alert_handler_connect.sv", "xbar_tgl_excl.cfg",
+            "rstmgr_tgl_excl.cfg"
         ]
         for fname in tb_files:
             tpl_fname = "%s.tpl" % (fname)
             xbar_chip_data_path = TOPGEN_TEMPLATE_PATH / tpl_fname
             template_contents = generate_top(completecfg, name_to_block,
-                                             str(xbar_chip_data_path))
+                                             str(xbar_chip_data_path), gencmd=gencmd)
 
             rendered_dir = out_path / "dv/autogen"
             rendered_dir.mkdir(parents=True, exist_ok=True)
