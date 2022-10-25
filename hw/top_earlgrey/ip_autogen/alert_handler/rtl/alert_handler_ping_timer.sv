@@ -123,7 +123,14 @@ module alert_handler_ping_timer import alert_pkg::*; #(
   );
 
   logic [IdDw-1:0] id_to_ping_d, id_to_ping_q;
-  assign id_to_ping_d = lfsr_state[PING_CNT_DW +: IdDw];
+  // The subtraction below ensures that the alert ID is always in range. If
+  // all alerts are enabled, an alert ID drawn in this way will always be
+  // valid. This comes at the cost of a bias towards certain alert IDs that
+  // will be pinged twice as often on average - but it ensures that we have
+  // less alert IDs that need to be skipped since they are invalid.
+  assign id_to_ping_d = (lfsr_state[PING_CNT_DW +: IdDw] >= NAlerts) ?
+                        lfsr_state[PING_CNT_DW +: IdDw] - NAlerts    :
+                        lfsr_state[PING_CNT_DW +: IdDw];
 
   // we need to hold the ID stable while the ping is ongoing since this will result in
   // spurious ping responses otherwise.
