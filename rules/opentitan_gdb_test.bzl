@@ -11,7 +11,6 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
     # string into GDB's stdin, each newline would cause it to repeat the
     # previous command.
     gdb_script_file = ctx.actions.declare_file("{}.gdb".format(ctx.label.name))
-    test_script_file = ctx.actions.declare_file("{}.sh".format(ctx.label.name))
 
     # This dummy script exists because test rules are a kind of executable rule,
     # and executable rules *must* produce an output file.
@@ -32,7 +31,7 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
     test_script += " \\\n".join(arg_lines)
 
     ctx.actions.write(output = gdb_script_file, content = ctx.attr.gdb_script)
-    ctx.actions.write(output = test_script_file, content = test_script)
+    ctx.actions.write(output = ctx.outputs.executable, content = test_script)
 
     # Construct a dict that we can pass to `ctx.runfiles()`, mapping symlink
     # names to real file paths.
@@ -58,7 +57,6 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
     ).merge(ctx.attr._coordinator.data_runfiles)
 
     return [DefaultInfo(
-        executable = test_script_file,
         runfiles = test_script_runfiles.merge(gdb_script_runfiles),
     )]
 
