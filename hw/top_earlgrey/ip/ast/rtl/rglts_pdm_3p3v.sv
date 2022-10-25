@@ -10,16 +10,18 @@
 // *Module Description: Regulators (MAIN & AON) & PDM Logic @3.3V
 //############################################################################
 
+`include "prim_assert.sv"
+
 module rglts_pdm_3p3v (
   input vcc_pok_h_i,                       // VCC Exist @3.3v
-  input vcaon_pok_por_h_i,                 // VCAON_POK_POR (1.1v) @1.1v
-  input vcmain_pok_por_h_i,                // VCMAIN_POK_POR (1.1v) @1.1v
-  input [1:0] vio_pok_h_i,                 // vioa/b_pok signals (1.1v) @3.3v
-  input clk_src_aon_h_i,                   // AON Clock (1.1v) @3.3v
-  input main_pd_h_ni,                      // MAIN Regulator Power Down (1.1v) @3.3v
-  input por_sync_h_ni,                     // POR (Sync to AON clock) (1.1v) @3.3v
-  input [1:0] otp_power_seq_h_i,           // MMR0,24 in @3.3v
-  input scan_mode_h_i,                     // Scan Mode
+  input vcaon_pok_por_h_i,                 // VCAON_POK_POR @1.1v
+  input vcmain_pok_por_h_i,                // VCMAIN_POK_POR @1.1v
+  input [2-1:0] vio_pok_h_i,               // vioa/b_pok signals @1.1v
+  input clk_src_aon_h_i,                   // AON Clock @1.1v
+  input main_pd_h_ni,                      // MAIN Regulator Power Down @1.1v
+  input por_sync_h_ni,                     // POR (Sync to AON clock) @1.1v
+  input [2-1:0] otp_power_seq_h_i,         // MMR0,24 in @1.1v
+  input scan_mode_h_i,                     // Scan Mode @1.1v
   input vcaon_supp_i,                      //
   input vcmain_supp_i,                     //
   output logic rglssm_vmppr_h_o,           // Regulators SM at VMPPR (vcmaim_pok_por_reset) @3.3v
@@ -41,9 +43,9 @@ module rglts_pdm_3p3v (
 
 // Turn 1.1v into 3.3v signals
 ////////////////////////////////////////
-assign vcaon_pok_por_h_o  = vcaon_pok_por_h_i;   // Level Shifter
-assign vcmain_pok_por_h_o = vcmain_pok_por_h_i;  // Level Shifter
-assign vio_pok_h_o[1:0] = vio_pok_h_i[1:0];      // Level Shifter
+assign vcaon_pok_por_h_o = vcaon_pok_por_h_i;    // Level Up Shifter
+assign vcmain_pok_por_h_o = vcmain_pok_por_h_i;  // Level Up Shifter
+assign vio_pok_h_o[1:0] = vio_pok_h_i[1:0];      // Level Up Shifter
 
 
 ///////////////////////////////////////
@@ -54,10 +56,40 @@ logic [9-1:0] dly_cnt, hc2lc_val, lc2hc_val;  // upto 255 aon clock (1275us)
 
 // DV Hook
 logic [1:0] dv_hook, dft_sel;
+
+`ifndef SYNTHESIS
+initial begin
+  // Regulator Power-up time (non cold power-up) selected according to 'dv_hook' value:
+  //
+  //   0: hc2lc_val=HC2LCOC;    lc2hc_val=LC2HCOC;
+  //   1: hc2lc_val=HC2LCOC*2;  lc2hc_val=LC2HCOC*2;
+  //   2: hc2lc_val=9'd2;       lc2hc_val=9'd6;
+  //   3: hc2lc_val=9'd4;       lc2hc_val=9'd12;
+  //
+  if ( !$value$plusargs("accelerate_regulators_power_up_time=%d", dv_hook) ) begin
+    dv_hook = 2'd0;
+  end
+  `ASSERT_I(accelerate_regulators_power_up_time, dv_hook inside {[0:3]})
+end
+`else
 assign dv_hook = 2'd0;
+`endif
 
 localparam int unsigned HC2LCOC = ast_pkg::Hc2LcTrCyc;
 localparam int unsigned LC2HCOC = ast_pkg::Lc2HcTrCyc;
+logic [9-1:0] cld_pu_val;
+
+`ifndef SYNTHESIS
+initial begin
+  // Cold Power-up time can be selected between 2 and LC2HCOC (default: ast_pkg::Lc2HcTrCyc)
+  if ( !$value$plusargs("accelerate_cold_power_up_time=%d", cld_pu_val) ) begin
+    cld_pu_val = LC2HCOC[9-1:0];
+  end
+  `ASSERT_I(accelerate_cold_power_up_time, cld_pu_val inside {[2:LC2HCOC[9-1:0]]})
+end
+`else
+assign cld_pu_val = LC2HCOC[9-1:0];
+`endif
 
 // Force 2'b11 to reduce LDOs time & double LDOs start-up time
 assign dft_sel = dv_hook;
@@ -132,7 +164,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
     rglssm_brout_h_o <= 1'b0;        //
     fla_pdm_h        <= 1'b1;        // !((rgls_sm == RGLS_VCMON) || (rgls_sm == RGLS_BROUT))
     //
-    dly_cnt          <= LC2HCOC[9-1:0];  // VCMAIN Regulator power-up time
+    dly_cnt          <= cld_pu_val;  // VCMAIN Regulator power-up time
     //
     rgls_sm          <= RGLS_CLDPU;  // Power VCMAIN (Cold)
   end else begin
