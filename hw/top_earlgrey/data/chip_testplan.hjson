@@ -2202,7 +2202,11 @@
       name: chip_sw_entropy_src_cs_aes_halt
       desc: '''Verify the aes halt handshake with CSRNG.
 
-            Details TBD.
+            - Check that the AES block halts when the edn signals that sufficient entropy isn't
+              available to reseed via assertions.
+            - TODO: If the above assertion isn't covered... modify the above test to consume
+              entropy more quickly, by writing more quickly to the AES and KMAC and possibly
+              triggering reseeds by touching a block repeatedly.
             '''
       stage: V2
       tests: []
