@@ -326,7 +326,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4False);
     csr_update(.csr(ral.fw_ov_sha3_start));
 
-    ral.alert_threshold.reset();
     csr_wr(.ptr(ral.alert_threshold), .value(ral.alert_threshold.get_reset()));
 
     `uvm_info(`gfn, "Safe configuration", UVM_MEDIUM)
