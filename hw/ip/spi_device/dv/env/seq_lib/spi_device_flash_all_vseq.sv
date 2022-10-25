@@ -7,7 +7,9 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
   `uvm_object_utils(spi_device_flash_all_vseq)
   `uvm_object_new
 
-  int write_flash_status_pct = 30;
+  int write_flash_status_pct = 20;
+  int read_flash_status_pct  = 20;
+  int read_addr4b_pct        = 20;
 
   constraint device_mode_c {
     device_mode inside {PassthroughMode, FlashMode};
@@ -47,11 +49,13 @@ class spi_device_flash_all_vseq extends spi_device_pass_base_vseq;
       for (int j = 0; j < 20; ++j) begin
         if ($urandom_range(0, 99) < write_flash_status_pct) begin
           random_access_flash_status(.write(1), .busy(1));
-        end else if ($urandom_range(0, 1)) begin
+        end
+        if ($urandom_range(0, 99) < read_flash_status_pct) begin
           random_access_flash_status(.write(0));
         end
-
-        if ($urandom_range(0, 1)) read_and_check_4b_en();
+        if ($urandom_range(0, 99) < read_addr4b_pct) begin
+          read_and_check_4b_en();
+        end
 
         randomize_op_addr_size();
         `uvm_info(`gfn, $sformatf("Testing op_num %0d/20, op = 0x%0h", j, opcode), UVM_MEDIUM)

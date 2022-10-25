@@ -30,6 +30,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   // knob to control read_buffer_update thread
   bit stop_forever_read_buffer_update;
   bit read_buffer_update_ongoing;
+  int read_last_read_addr_pct = 20;
 
   rand device_mode_e device_mode;
 
@@ -309,9 +310,6 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
     spi_clk_init();
     `uvm_info(`gfn, "Initialize flash/passthrough mode", UVM_MEDIUM)
 
-    // TODO, #14940. EN4B/EX4B may fail if the next item comes very shortly
-    cfg.spi_host_agent_cfg.min_idle_ns_after_csb_drop = 500;
-
     // avoid updating these CSRs at the same time as tpm_init
     cfg.spi_cfg_sema.get();
 
@@ -561,7 +559,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       spi_host_xfer_dummy_item();
     end
     // randomly read last_read_addr for scb to check
-    if ($urandom_range(0, 2) == 0) begin
+    if ($urandom_range(0, 99) < read_last_read_addr_pct) begin
       bit [TL_DW-1:0] rdata;
 
       // This is synced from the other clock domain. It takes around 3-4 cycles.

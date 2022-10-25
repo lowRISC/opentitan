@@ -137,6 +137,11 @@ class spi_device_base_vseq extends cip_base_vseq #(
       end else begin
         cfg.spi_host_agent_cfg.sck_period_ps = cfg.clk_rst_vif.clk_period_ps * core_spi_freq_ratio;
       end
+
+      // min inactive time needs to be 2 core clks.
+      cfg.spi_host_agent_cfg.min_idle_ns_after_csb_drop = cfg.clk_rst_vif.clk_period_ps / 1000 * 2;
+      cfg.spi_host_agent_cfg.max_idle_ns_after_csb_drop = cfg.clk_rst_vif.clk_period_ps / 1000 * 10;
+
       cfg.do_spi_clk_configure = 0;
     end
   endtask
