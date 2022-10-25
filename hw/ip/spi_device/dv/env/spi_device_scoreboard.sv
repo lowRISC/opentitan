@@ -84,7 +84,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    fork
+    if (cfg.en_scb) fork
       process_upstream_spi_host_fifo();
       process_upstream_spi_device_fifo();
       process_downstream_spi_fifo();
@@ -658,8 +658,6 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
     end
     start_addr = convert_addr_from_byte_queue(up_item.address_q);
 
-    if (cfg.is_in_mailbox_region(start_addr)) start_at_mailbox = 1;
-
     if (dn_item != null) `DV_CHECK_EQ(up_item.payload_q.size, dn_item.payload_q.size)
     foreach (up_item.payload_q[i]) begin
       cur_addr = start_addr + i;
@@ -667,6 +665,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       if (cfg.is_in_mailbox_region(cur_addr)) begin
         bit [31:0] offset = cur_addr % MAILBOX_BUFFER_SIZE;
         compare_mem_byte(MAILBOX_START_ADDR, offset, up_item.payload_q[i], i, "Mailbox");
+        if (i == 0) start_at_mailbox = 1;
         been_mailbox = 1;
       end else begin // out of mbx region
         string str;
