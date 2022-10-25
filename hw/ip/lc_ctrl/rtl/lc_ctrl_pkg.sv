@@ -38,6 +38,8 @@ package lc_ctrl_pkg;
 
   parameter int TxWidth = 4;
 
+  // Note that changing this encoding has implications on isolation cell
+  // values in RTL. Do not change this unless absolutely needed.
   typedef enum logic [TxWidth-1:0] {
     On  = 4'b0101,
     Off = 4'b1010

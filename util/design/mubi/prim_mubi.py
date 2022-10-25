@@ -39,6 +39,8 @@ def mubi_value_as_hexstr(sel: bool, width: int):
     true_val = ''
     false_val = ''
 
+    # Note that changing this encoding has implications on isolation cell
+    # values in RTL. Do not change this unless absolutely needed.
     for k in range(1, nibble + 1):
         true_val = ('6' if (k % 2) else '9') + true_val
         false_val = ('9' if (k % 2) else '6') + false_val
