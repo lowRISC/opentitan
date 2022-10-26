@@ -384,9 +384,6 @@ module spi_tpm
     (2**RdFifoOffsetW == RdFifoNumBytes) || (RdFifoNumBytes == 1))
   `ASSERT_INIT(RdFifoDepthPoT_A, 2**$clog2(RdFifoDepth) == RdFifoDepth)
 
-  assign sys_rdfifo_depth_o    = sys_rdfifo_wdepth;
-  assign sys_rdfifo_notempty_o = |sys_rdfifo_wdepth;
-
   // If cmdaddr_shift_en is 1, the logic stacks the incoming MOSI into cmdaddr
   // register.
   logic       cmdaddr_shift_en;
@@ -1220,6 +1217,22 @@ module spi_tpm
     .rdepth_o  (isck_rdfifo_rdepth)
 
   );
+
+  // When CS# is de-asserted, there's chance the sys_rdfifo becomes metastable
+  // as RDFIFO reset is CS# (after async assert, sync de-assert rst sync logic)
+  // One solution is to change the rst sync to sync assert sync de-assert.
+  // However, it creates extra latency to the CS# inactive time. In this
+  // module, the logic simply latches the depth signal to remove the
+  // metastable state.
+  prim_flop_2sync #(
+    .Width (RdFifoPtrW)
+  ) u_rdfifo_depth_sync (
+    .clk_i  (sys_clk_i),
+    .rst_ni (sys_rst_ni),
+    .d_i    (sys_rdfifo_wdepth),
+    .q_o    (sys_rdfifo_depth_o)
+  );
+  assign sys_rdfifo_notempty_o = |sys_rdfifo_depth_o;
 
   // Logic Not Used
   logic unused_logic;
