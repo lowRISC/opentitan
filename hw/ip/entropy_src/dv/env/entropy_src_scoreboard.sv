@@ -733,6 +733,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                                      bit fips_mode);
     int           windowed_fail_count;
     int           total_fail_count;
+    int           overcount;
     bit           sample_fail_count;
     uvm_reg_field alert_summary_field = ral.alert_summary_fail_counts.any_fail_count;
     int           any_fail_count_regval;
@@ -749,9 +750,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     // Add the number of continuous fails (excluding the last sample)
     // to any failure in this sample.
-    total_fail_count = sample_fail_count +
-                       (continuous_fail_count - cont_fail_in_last_sample) +
-                       (extht_fail_count      - extht_fail_in_last_sample);
+    total_fail_count = sample_fail_count + continuous_fail_count + extht_fail_count;
+
+    // Implementation artifact:
+    // Account for the fact that simultaneous failures for windowed, continuous and ExtHT tests
+    // only get counted once in the total failure count if they coincidentally occur in the last
+    // sample.
+    overcount = sample_fail_count + cont_fail_in_last_sample + extht_fail_in_last_sample;
+    overcount -= (overcount >= 1);
+    total_fail_count -= overcount;
 
     // To avoid double counting only mark a sample failure if there haven't
     // already been continuous or extht failures at the same time.
