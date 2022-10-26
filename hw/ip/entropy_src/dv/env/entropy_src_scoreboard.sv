@@ -2142,8 +2142,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
         if(window.size() < window_rng_frames && !dut_pipeline_enabled) break;
 
+        // Wait for the XHT to complete, but give up no later than two cycles after the DUT has
+        // disabled.
         `DV_SPINWAIT_EXIT(wait(cfg.m_xht_agent_cfg.vif.req.window_wrap_pulse);,
-                          wait(!dut_pipeline_enabled);)
+                          wait(!dut_pipeline_enabled);
+                          cfg.clk_rst_vif.wait_clks(2);)
         if (!cfg.m_xht_agent_cfg.vif.req.window_wrap_pulse) break;
         cfg.clk_rst_vif.wait_clks(1);
         `uvm_info(`gfn, "FULL_WINDOW", UVM_FULL)
