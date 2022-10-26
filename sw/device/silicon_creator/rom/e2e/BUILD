@@ -379,6 +379,7 @@ opentitan_functest(
 
 test_suite(
     name = "address_translation",
+    tags = ["manual"],
     tests = [
         "rom_ext_a_flash_a",
         "rom_ext_a_flash_a_bad_addr_trans",
@@ -625,6 +626,7 @@ BOOT_POLICY_ROLLBACK_CASES = [
 
 test_suite(
     name = "boot_policy_rollback",
+    tags = ["manual"],
     tests = ["boot_policy_rollback_a_{}_b_{}".format(
         t["a"],
         t["b"],
@@ -662,6 +664,7 @@ SIGVERIFY_MOD_EXP_CASES = [
 
 test_suite(
     name = "sigverify_mod_exp",
+    tags = ["manual"],
     tests = ["sigverify_mod_exp_{}".format(t["name"]) for t in SIGVERIFY_MOD_EXP_CASES],
 )
 
@@ -852,6 +855,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
 
 test_suite(
     name = "boot_policy_bad_manifest",
+    tags = ["manual"],
     tests = ["boot_policy_bad_manifest_{}_{}".format(
         t["name"],
         slot,
@@ -936,6 +940,7 @@ BOOT_POLICY_VALID_CASES = [
 
 test_suite(
     name = "boot_policy_valid",
+    tags = ["manual"],
     tests = [
         "boot_policy_valid_a_{}_b_{}".format(
             a["desc"],
