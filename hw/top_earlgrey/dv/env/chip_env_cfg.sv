@@ -210,9 +210,10 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     end
 
     // This TL agent is used in stub_cpu mode and connected with ibex data port.
-    // It can have up to 8 outstanding items due to the async fifos in the xbar.
+    // It can have up to 3 outstanding items, because req/rsp fifo can each hold 1 and
+    // there can also be a pending response in the peripheral.
     // However, the actual ibex data port can only support 1 outstanding item.
-    m_tl_agent_cfg.max_outstanding_req = 8;
+    m_tl_agent_cfg.max_outstanding_req = 3;
   endfunction
 
   // Disable functional coverage of comportable IP-specific specialized registers.
