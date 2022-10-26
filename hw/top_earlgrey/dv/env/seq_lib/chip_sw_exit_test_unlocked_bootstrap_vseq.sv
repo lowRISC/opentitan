@@ -14,53 +14,12 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
 
   rand bit [7:0] lc_exit_token[TokenWidthByte];
 
-  typedef struct packed {
-    lc_ctrl_state_pkg::lc_state_e lc_state;
-    lc_ctrl_state_pkg::dec_lc_state_e dec_lc_state;
-  } lc_state_t;
-
-  lc_state_t unlocked_states[8] = '{
-    '{
-      lc_state: LcStTestUnlocked0,
-      dec_lc_state: DecLcStTestUnlocked0
-     },
-    '{
-      lc_state: LcStTestUnlocked1,
-      dec_lc_state: DecLcStTestUnlocked1
-     },
-    '{
-      lc_state: LcStTestUnlocked2,
-      dec_lc_state: DecLcStTestUnlocked2
-     },
-    '{
-      lc_state: LcStTestUnlocked3,
-      dec_lc_state: DecLcStTestUnlocked3
-     },
-    '{
-      lc_state: LcStTestUnlocked4,
-      dec_lc_state: DecLcStTestUnlocked4
-     },
-    '{
-      lc_state: LcStTestUnlocked5,
-      dec_lc_state: DecLcStTestUnlocked5
-     },
-    '{
-      lc_state: LcStTestUnlocked6,
-      dec_lc_state: DecLcStTestUnlocked6
-     },
-    '{
-      lc_state: LcStTestUnlocked7,
-      dec_lc_state: DecLcStTestUnlocked7
-     }
-  };
-
   virtual task dut_init(string reset_kind = "HARD");
     bit [TokenWidthBit-1:0] otp_exit_token_bits;
-    lc_state_t temp;
     super.dut_init(reset_kind);
 
     // make sure we are in one of the unlocked states
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(unlocked_states[unlocked_idx].lc_state);
+    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(UnlockedStates[unlocked_idx].lc_state);
 
     // backdoorload the otp tokens and associated digest
     otp_exit_token_bits = dec_otp_token_from_lc_csrs(lc_exit_token);
@@ -96,10 +55,8 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
     `uvm_info(`gfn, $sformatf("rv_dm_activated: %0d", cfg.m_jtag_riscv_agent_cfg.rv_dm_activated),
               UVM_LOW)
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
-    jtag_otp_program32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, 1, err);
-    if (err) begin
-      `uvm_error(`gfn, "Otp program failed")
-    end
+    jtag_otp_program32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, 1);
+
 
     // Reset tap interface for switch.
     reset_jtag_tap();
@@ -116,7 +73,7 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
     // TODO: Should consider applying a random large delay here to simulate different
     // host side timing.
     // Transition device into production state.
-    jtag_lc_state_transition(unlocked_states[unlocked_idx].dec_lc_state,
+    jtag_lc_state_transition(UnlockedStates[unlocked_idx].dec_lc_state,
                              DecLcStProd, {<<8{lc_exit_token}});
 
     // LC state transition requires a chip reset.
@@ -130,15 +87,14 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
     // bootstrap the same image
     spi_device_load_bootstrap({cfg.sw_images[SwTypeTest], ".64.vmem"});
 
-    `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log ==
-                      "ROM and flash execution successful");,
-                 "timeout waiting for C side acknowledgement",
-                 cfg.sw_test_timeout_ns)
+  endtask : body
 
-    `uvm_info(`gfn, "Received C side acknowledgement", UVM_LOW)
+  task post_start();
+    // Disconnect straps driving so that subsequent tests can make use of this interface
+    // without any assumptions.
+    cfg.chip_vif.sw_straps_if.disconnect();
+  endtask : post_start
 
-
-  endtask
 
 
 
