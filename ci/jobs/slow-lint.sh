@@ -11,6 +11,9 @@
 
 set -e
 
+echo -e "\n### Check tags on Bazel artifacts"
+ci/scripts/check-bazel-tags.sh
+
 echo -e "\n### Ensure all generated files are clean and up-to-date"
 ci/scripts/check-generated.sh
 
