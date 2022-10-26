@@ -68,7 +68,7 @@ $content
   always_comb begin : p_outmux
     rdata_o = '0;
     if (addr_q < $$clog2(RomSize)'(RomSize)) begin
-        rdata_o = mem[addr_q];
+      rdata_o = mem[addr_q];
     end
   end
 
@@ -88,9 +88,8 @@ $content
 def read_bin():
 
     with open(filename + ".img", 'rb') as f:
-        rom = binascii.hexlify(f.read())
-        rom = map(''.join, zip(rom[::2], rom[1::2]))
-
+        rom = bytes.hex(f.read())
+        rom = list(map(''.join, zip(rom[::2], rom[1::2])))
 
     # align to 64 bit
     align = (int((len(rom) + 7) / 8 )) * 8;

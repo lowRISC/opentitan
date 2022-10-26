@@ -5,7 +5,7 @@ debug_rom = debug_rom.sv debug_rom_one_scratch.sv
 GCC?=riscv64-unknown-elf-gcc
 OBJCOPY?=riscv64-unknown-elf-objcopy
 OBJDUMP?=riscv64-unknown-elf-objdump
-PYTHON?=python
+PYTHON?=python3
 
 all: $(debug_rom)
 

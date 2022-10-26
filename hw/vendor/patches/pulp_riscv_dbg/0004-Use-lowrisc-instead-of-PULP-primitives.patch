@@ -1,24 +1,12 @@
-From 083977618f162badfe0bca957454c266c1cf38dd Mon Sep 17 00:00:00 2001
-From: Timothy Chen <timothytim@google.com>
-Date: Wed, 11 May 2022 09:16:11 -0700
-Subject: [PATCH 1/2] [PATCH] Use lowrisc instead of PULP primitives
+From 773f105ac58f00214e64c7574531b11d7b11bc43 Mon Sep 17 00:00:00 2001
+From: Michael Schaffner <msf@google.com>
+Date: Tue, 25 Oct 2022 18:27:27 -0700
+Subject: [PATCH 4/4] Use lowrisc instead of PULP primitives
 
 Signed-off-by: Michael Schaffner <msf@google.com>
 
-[PATCH] Simplify reset synchronization in dmi_cdc
-This can be done because trst_n and other reset timing
-can be assumed to be done during graceful periods only.
-
-Signed-off-by: Timothy Chen <timothytim@google.com>
----
- src/dm_csrs.sv      |  45 +++++++---------
- src/dmi_cdc.sv      | 127 ++++++++++++++++++++++++--------------------
- src/dmi_jtag.sv     |   8 ++-
- src/dmi_jtag_tap.sv |  21 ++++----
- 4 files changed, 105 insertions(+), 96 deletions(-)
-
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
-index 350c6c5..38d7b51 100644
+index 581c3f7..ee13a50 100644
 --- a/src/dm_csrs.sv
 +++ b/src/dm_csrs.sv
 @@ -79,6 +79,7 @@ module dm_csrs #(
@@ -40,10 +28,10 @@ index 350c6c5..38d7b51 100644
  
    localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'h0, dm::DataCount} - 8'h1);
    localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'(dm::ProgBuf0 + {4'h0, dm::ProgBufSize} - 8'h1);
-@@ -181,9 +178,6 @@ module dm_csrs #(
-
+@@ -180,9 +177,6 @@ module dm_csrs #(
+ 
    dm::dmi_resp_t resp_queue_inp;
-
+ 
 -  assign dmi_resp_valid_o     = ~resp_queue_empty;
 -  assign dmi_req_ready_o      = ~resp_queue_full;
 -  assign resp_queue_push      = dmi_req_valid_i & dmi_req_ready_o;
@@ -251,7 +239,7 @@ index f9d66fd..debb070 100644
  
  endmodule : dmi_cdc
 diff --git a/src/dmi_jtag.sv b/src/dmi_jtag.sv
-index 0712f8c..e040a3a 100644
+index 6be89a6..a7e5bff 100644
 --- a/src/dmi_jtag.sv
 +++ b/src/dmi_jtag.sv
 @@ -22,9 +22,10 @@ module dmi_jtag #(
@@ -267,7 +255,7 @@ index 0712f8c..e040a3a 100644
    output logic         dmi_rst_no,
    output dm::dmi_req_t dmi_req_o,
    output logic         dmi_req_valid_o,
-@@ -301,6 +302,9 @@ module dmi_jtag #(
+@@ -327,6 +328,9 @@ module dmi_jtag #(
    // CDC
    // ---------
    dmi_cdc i_dmi_cdc (
@@ -278,10 +266,10 @@ index 0712f8c..e040a3a 100644
      .tck_i                ( tck              ),
      .trst_ni              ( trst_ni          ),
 diff --git a/src/dmi_jtag_tap.sv b/src/dmi_jtag_tap.sv
-index 0c188c0..a804da0 100644
+index 53f0fa9..3f91356 100644
 --- a/src/dmi_jtag_tap.sv
 +++ b/src/dmi_jtag_tap.sv
-@@ -178,18 +178,15 @@ module dmi_jtag_tap #(
+@@ -185,18 +185,15 @@ module dmi_jtag_tap #(
    // ----------------
    // DFT
    // ----------------
@@ -309,6 +297,3 @@ index 0c188c0..a804da0 100644
    );
  
    // TDO changes state at negative edge of TCK
--- 
-2.36.1.124.g0e6072fb45-goog
-

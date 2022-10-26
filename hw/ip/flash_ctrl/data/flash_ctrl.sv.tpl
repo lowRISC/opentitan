@@ -534,6 +534,7 @@ module flash_ctrl
     .en_ifetch_i (prim_mubi_pkg::MuBi4False),
     .req_o       (sw_wvalid),
     .req_type_o  (),
+    .req_error_i (1'b0),
     .gnt_i       (sw_wready),
     .we_o        (),
     .addr_o      (),
@@ -646,6 +647,7 @@ module flash_ctrl
     .en_ifetch_i (prim_mubi_pkg::MuBi4False),
     .req_o       (adapter_req),
     .req_type_o  (),
+    .req_error_i (1'b0),
     // if there is no valid read operation, don't hang the
     // bus, just let things normally return
     .gnt_i       (sw_rfifo_rvalid | rd_no_op_d),
@@ -1321,6 +1323,7 @@ module flash_ctrl
     .en_ifetch_i (flash_exec_en),
     .req_o       (flash_host_req),
     .req_type_o  (),
+    .req_error_i (1'b0),
     .gnt_i       (flash_host_req_rdy),
     .we_o        (),
     .addr_o      (flash_host_addr),
