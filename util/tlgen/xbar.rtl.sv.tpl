@@ -204,11 +204,12 @@ ${"end" if loop.last else ""}
 % for block in xbar.nodes:
 <%
   stripped_name = block.name.replace('.', '__')
+  # TODO #15754: Pass this parameter through the tlgen script instead of hardcoding
 %>\
   % if block.node_type.name   == "ASYNC_FIFO":
   tlul_fifo_async #(
-    .ReqDepth        (4),// At least 4 to make async work
-    .RspDepth        (4) // At least 4 to make async work
+    .ReqDepth        (1),
+    .RspDepth        (1)
   ) u_${stripped_name} (
     .clk_h_i      (${block.clocks[0]}),
     .rst_h_ni     (${block.resets[0]}),

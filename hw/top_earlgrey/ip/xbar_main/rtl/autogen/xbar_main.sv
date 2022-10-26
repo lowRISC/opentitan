@@ -1018,8 +1018,8 @@ end
     .tl_d_i       (tl_sm1_34_ds_d2h)
   );
   tlul_fifo_async #(
-    .ReqDepth        (4),// At least 4 to make async work
-    .RspDepth        (4) // At least 4 to make async work
+    .ReqDepth        (1),
+    .RspDepth        (1)
   ) u_asf_35 (
     .clk_h_i      (clk_main_i),
     .rst_h_ni     (rst_main_ni),
@@ -1045,8 +1045,8 @@ end
     .tl_d_i       (tl_sm1_36_ds_d2h)
   );
   tlul_fifo_async #(
-    .ReqDepth        (4),// At least 4 to make async work
-    .RspDepth        (4) // At least 4 to make async work
+    .ReqDepth        (1),
+    .RspDepth        (1)
   ) u_asf_37 (
     .clk_h_i      (clk_main_i),
     .rst_h_ni     (rst_main_ni),
@@ -1072,8 +1072,8 @@ end
     .tl_d_i       (tl_sm1_38_ds_d2h)
   );
   tlul_fifo_async #(
-    .ReqDepth        (4),// At least 4 to make async work
-    .RspDepth        (4) // At least 4 to make async work
+    .ReqDepth        (1),
+    .RspDepth        (1)
   ) u_asf_39 (
     .clk_h_i      (clk_main_i),
     .rst_h_ni     (rst_main_ni),
@@ -1099,8 +1099,8 @@ end
     .tl_d_i       (tl_sm1_40_ds_d2h)
   );
   tlul_fifo_async #(
-    .ReqDepth        (4),// At least 4 to make async work
-    .RspDepth        (4) // At least 4 to make async work
+    .ReqDepth        (1),
+    .RspDepth        (1)
   ) u_asf_41 (
     .clk_h_i      (clk_main_i),
     .rst_h_ni     (rst_main_ni),
