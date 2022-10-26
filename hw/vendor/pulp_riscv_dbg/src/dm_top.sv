@@ -44,6 +44,7 @@ module dm_top #(
   input  logic [BusWidth/8-1:0] slave_be_i,
   input  logic [BusWidth-1:0]   slave_wdata_i,
   output logic [BusWidth-1:0]   slave_rdata_o,
+  output logic                  slave_err_o,
 
   output logic                  master_req_o,
   output logic [BusWidth-1:0]   master_add_o,
@@ -224,7 +225,8 @@ module dm_top #(
     .addr_i                  ( slave_addr_i          ),
     .wdata_i                 ( slave_wdata_i         ),
     .be_i                    ( slave_be_i            ),
-    .rdata_o                 ( slave_rdata_o         )
+    .rdata_o                 ( slave_rdata_o         ),
+    .err_o                   ( slave_err_o           )
   );
 
 endmodule : dm_top

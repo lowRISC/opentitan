@@ -53,7 +53,7 @@ module debug_rom_one_scratch (
   always_comb begin : p_outmux
     rdata_o = '0;
     if (addr_q < $clog2(RomSize)'(RomSize)) begin
-        rdata_o = mem[addr_q];
+      rdata_o = mem[addr_q];
     end
   end
 

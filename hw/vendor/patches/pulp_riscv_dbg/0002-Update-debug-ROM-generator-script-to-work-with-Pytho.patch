@@ -1,0 +1,71 @@
+From 0a9bcf19b39f74c4d67606e9fae66ccecc861c39 Mon Sep 17 00:00:00 2001
+From: Michael Schaffner <msf@google.com>
+Date: Tue, 25 Oct 2022 19:38:16 -0700
+Subject: [PATCH 2/4] Update debug ROM generator script to work with Python3
+
+Signed-off-by: Michael Schaffner <msf@google.com>
+
+diff --git a/debug_rom/Makefile b/debug_rom/Makefile
+index b23370a..931e253 100644
+--- a/debug_rom/Makefile
++++ b/debug_rom/Makefile
+@@ -5,7 +5,7 @@ debug_rom = debug_rom.sv debug_rom_one_scratch.sv
+ GCC?=riscv64-unknown-elf-gcc
+ OBJCOPY?=riscv64-unknown-elf-objcopy
+ OBJDUMP?=riscv64-unknown-elf-objdump
+-PYTHON?=python
++PYTHON?=python3
+ 
+ all: $(debug_rom)
+ 
+diff --git a/debug_rom/debug_rom.sv b/debug_rom/debug_rom.sv
+index 0299db6..78ce0d6 100644
+--- a/debug_rom/debug_rom.sv
++++ b/debug_rom/debug_rom.sv
+@@ -59,7 +59,7 @@ module debug_rom (
+   always_comb begin : p_outmux
+     rdata_o = '0;
+     if (addr_q < $clog2(RomSize)'(RomSize)) begin
+-        rdata_o = mem[addr_q];
++      rdata_o = mem[addr_q];
+     end
+   end
+ 
+diff --git a/debug_rom/debug_rom_one_scratch.sv b/debug_rom/debug_rom_one_scratch.sv
+index af7e67c..5f23377 100644
+--- a/debug_rom/debug_rom_one_scratch.sv
++++ b/debug_rom/debug_rom_one_scratch.sv
+@@ -53,7 +53,7 @@ module debug_rom_one_scratch (
+   always_comb begin : p_outmux
+     rdata_o = '0;
+     if (addr_q < $clog2(RomSize)'(RomSize)) begin
+-        rdata_o = mem[addr_q];
++      rdata_o = mem[addr_q];
+     end
+   end
+ 
+diff --git a/debug_rom/gen_rom.py b/debug_rom/gen_rom.py
+index b8cb60b..d78ce46 100755
+--- a/debug_rom/gen_rom.py
++++ b/debug_rom/gen_rom.py
+@@ -68,7 +68,7 @@ $content
+   always_comb begin : p_outmux
+     rdata_o = '0;
+     if (addr_q < $$clog2(RomSize)'(RomSize)) begin
+-        rdata_o = mem[addr_q];
++      rdata_o = mem[addr_q];
+     end
+   end
+ 
+@@ -88,9 +88,8 @@ $content
+ def read_bin():
+ 
+     with open(filename + ".img", 'rb') as f:
+-        rom = binascii.hexlify(f.read())
+-        rom = map(''.join, zip(rom[::2], rom[1::2]))
+-
++        rom = bytes.hex(f.read())
++        rom = list(map(''.join, zip(rom[::2], rom[1::2])))
+ 
+     # align to 64 bit
+     align = (int((len(rom) + 7) / 8 )) * 8;
