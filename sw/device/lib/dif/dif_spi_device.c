@@ -1353,10 +1353,6 @@ dif_result_t dif_spi_device_tpm_get_data_status(
       mmio_region_read32(spi->dev.base_addr, SPI_DEVICE_TPM_STATUS_REG_OFFSET);
   status->cmd_addr_valid =
       bitfield_bit32_read(reg_val, SPI_DEVICE_TPM_STATUS_CMDADDR_NOTEMPTY_BIT);
-  status->read_fifo_not_empty =
-      bitfield_bit32_read(reg_val, SPI_DEVICE_TPM_STATUS_RDFIFO_NOTEMPTY_BIT);
-  status->read_fifo_occupancy =
-      bitfield_field32_read(reg_val, SPI_DEVICE_TPM_STATUS_RDFIFO_DEPTH_FIELD);
   status->write_fifo_occupancy =
       bitfield_field32_read(reg_val, SPI_DEVICE_TPM_STATUS_WRFIFO_DEPTH_FIELD);
   return kDifOk;
@@ -1574,9 +1570,9 @@ dif_result_t dif_spi_device_tpm_write_data(dif_spi_device_handle_t *spi,
   if (result != kDifOk) {
     return result;
   }
-  if ((DIF_SPI_DEVICE_TPM_FIFO_DEPTH - status.read_fifo_occupancy) *
-          sizeof(uint32_t) <
-      length) {
+
+  // TODO: Ensure the received length is greater than FIFO SIZE
+  if (DIF_SPI_DEVICE_TPM_FIFO_DEPTH * sizeof(uint32_t) < length) {
     return kDifOutOfRange;
   }
   for (int i = 0; i < length; i += 4) {

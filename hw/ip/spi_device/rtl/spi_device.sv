@@ -83,11 +83,8 @@ module spi_device
   localparam int unsigned TpmWrFifoDepth  = 64; // 64B
   localparam int unsigned TpmRdFifoDepth  = 16;
   localparam int unsigned TpmWrFifoPtrW   = $clog2(TpmWrFifoDepth+1);
-  localparam int unsigned TpmRdFifoPtrW   = $clog2(TpmRdFifoDepth+1);
   `ASSERT_INIT(TpmWrPtrMatch_A,
     TpmWrFifoPtrW == spi_device_reg_pkg::TpmWrFifoPtrW)
-  `ASSERT_INIT(TpmRdPtrMatch_A,
-    TpmRdFifoPtrW == spi_device_reg_pkg::TpmRdFifoPtrW)
 
   // Derived parameters
 
@@ -365,8 +362,7 @@ module spi_device
   logic cfg_tpm_invalid_locality, cfg_tpm_reg_chk_dis;
 
   // TPM_STATUS
-  logic tpm_status_cmdaddr_notempty, tpm_status_rdfifo_notempty;
-  logic [TpmRdFifoPtrW-1:0] tpm_status_rdfifo_depth;
+  logic tpm_status_cmdaddr_notempty;
   logic [TpmWrFifoPtrW-1:0] tpm_status_wrfifo_depth;
 
   // TPM ---------------------------------------------------------------
@@ -1871,8 +1867,6 @@ module spi_device
     .sys_rdfifo_wready_o (tpm_rdfifo_wready),
 
     .sys_cmdaddr_notempty_o (tpm_status_cmdaddr_notempty),
-    .sys_rdfifo_notempty_o  (tpm_status_rdfifo_notempty ),
-    .sys_rdfifo_depth_o     (tpm_status_rdfifo_depth    ),
     .sys_wrfifo_depth_o     (tpm_status_wrfifo_depth    )
   );
 
@@ -1895,8 +1889,6 @@ module spi_device
   //  STATUS:
   assign hw2reg.tpm_status = '{
     cmdaddr_notempty: '{ de: 1'b 1, d: tpm_status_cmdaddr_notempty },
-    rdfifo_notempty:  '{ de: 1'b 1, d: tpm_status_rdfifo_notempty  },
-    rdfifo_depth:     '{ de: 1'b 1, d: tpm_status_rdfifo_depth     },
     wrfifo_depth:     '{ de: 1'b 1, d: tpm_status_wrfifo_depth     }
   };
 

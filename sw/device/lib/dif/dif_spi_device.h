@@ -1007,10 +1007,6 @@ dif_result_t dif_spi_device_tpm_configure(dif_spi_device_handle_t *spi,
 typedef struct dif_spi_device_tpm_data_status {
   /** True if a command and address have been captured and are can be read. */
   bool cmd_addr_valid;
-  /** True if there is data still to be read from the Read FIFO. */
-  bool read_fifo_not_empty;
-  /** Current Read FIFO occupancy. */
-  uint8_t read_fifo_occupancy;
   /** Current Write FIFO occupancy. */
   uint8_t write_fifo_occupancy;
 } dif_spi_device_tpm_data_status_t;
