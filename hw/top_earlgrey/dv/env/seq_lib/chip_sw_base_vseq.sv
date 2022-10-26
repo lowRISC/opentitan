@@ -658,8 +658,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   // Use JTAG interface to program OTP fields.
   virtual task jtag_otp_program32(int addr,
-                                  bit [31:0] data,
-                                  output bit err);
+                                  bit [31:0] data);
 
     bit [TL_DW-1:0] status;
     bit [TL_DW-1:0] err_mask = 0;
@@ -687,7 +686,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                           p_sequencer.jtag_sequencer_h,
                                           status);
 
-      idle = status >> (ral.otp_ctrl_core.status.dai_idle.get_lsb_pos()) & TL_DW'(1'b1);
+      idle = dv_base_reg_pkg::get_field_val(ral.otp_ctrl_core.status.dai_idle, status);
 
       err_mask = ~((1 << ral.otp_ctrl_core.status.dai_idle.get_lsb_pos()) |
                    (1 << ral.otp_ctrl_core.status.check_pending.get_lsb_pos()));
@@ -696,7 +695,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
          UVM_MEDIUM)
 
       // If any bits other than dai_idle and check pending are set, error back.
-      err = |(status & err_mask);
+      `DV_CHECK((status & err_mask) == '0, "Otp program failed")
     end
   endtask : jtag_otp_program32
 

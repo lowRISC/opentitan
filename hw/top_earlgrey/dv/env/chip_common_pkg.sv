@@ -216,4 +216,44 @@ package chip_common_pkg;
     SpiHostClk, // DIO 14
     SpiHostCsL  // DIO 15
   };
+
+  typedef struct packed {
+    lc_ctrl_state_pkg::lc_state_e lc_state;
+    lc_ctrl_state_pkg::dec_lc_state_e dec_lc_state;
+  } lc_state_t;
+
+  parameter lc_state_t UnlockedStates[8] = '{
+    '{
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked0,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked0
+     },
+    '{
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked1,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked1
+     },
+    '{
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked2,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked2
+     },
+    '{
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked3,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked3
+     },
+    '{
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked4,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked4
+     },
+    '{
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked5,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked5
+     },
+    '{
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked6,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked6
+     },
+    '{
+      lc_state: lc_ctrl_state_pkg::LcStTestUnlocked7,
+      dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked7
+     }
+  };
 endpackage

@@ -79,9 +79,8 @@ bool rom_test_main(void) {
 
   if (otp_val == 0) {
     test_status_set(kTestStatusInBootRomHalt);
-    while (1) {
-      wait_for_interrupt();
-    }
+    // Abort simply forever loops on a wait_for_interrupt;
+    abort();
   }
 
   // Initialize Ibex cpuctrl (contains icache / security feature enablements).

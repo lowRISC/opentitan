@@ -29,14 +29,17 @@ bool test_main(void) {
       TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
       OTP_CTRL_PARAM_CREATOR_SW_CFG_ROM_EXEC_EN_OFFSET);
 
-  if (state == kDifLcCtrlStateTestUnlocked0 || (rom_en == 0)) {
+  if (rom_en == 0) {
     // The test should never reach here
-    CHECK(false);
+    CHECK(false,
+          "Unexpected branch - code not expected to execute since ROM "
+          "execution is disabled");
   } else if (state == kDifLcCtrlStateProd && rom_en > 0) {
     // The test environment is waiting for this message
     LOG_INFO("ROM and flash execution successful");
     return true;
   }
 
+  LOG_INFO("Current state is 0x%x, rom_en is 0x%x", state, rom_en);
   return false;
 }
