@@ -55,7 +55,7 @@
             |:-----------------------:|:--------:|
             |   0xe2290aa5 (None)     | 0142500d |
             |   0x3367d3d4 (Error)    | 0042500d |
-            |   0x1e791123 (Module)   | 0100000d |
+            |   0x1e791123 (Module)   | 0000000d |
             |   0x48eb4bd9 (All)      | ffffffff |
             '''
       tags: ["rom", "no_dv", "fpga", "silicon"]
@@ -229,11 +229,11 @@
             - For TEST, DEV, PROD, PROD_END, and RMA life cycle states:
               - Apply bootstrap pin strapping.
               - Reset the chip.
-              - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
+              - Verify that the chip responds to `READ_SFDP` (`0x5a`) correctly.
               - Release bootstrap pin strapping and wait for 2 seconds.
                 - Note: Watchdog is always disabled in TEST and RMA. In other states, the threshold
                   is set to `OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES`.
-              - Verify that the chip responds to `READ_STATUS` (`0x05`) with `0x00`.
+              - Verify that the chip responds to `READ_SFDP` (`0x5a`) correctly.
               - Verify that there was no output from UART.
             '''
       tags: ["rom", "no_dv", "fpga", "silicon"]
