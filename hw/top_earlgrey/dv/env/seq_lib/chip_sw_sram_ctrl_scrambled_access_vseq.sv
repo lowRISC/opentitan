@@ -184,6 +184,17 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     end
   endtask
 
+  virtual task cpu_init();
+    super.cpu_init();
+    // Init SRAM to avoid the software reading X after scrambling.
+    for (int ram_idx = 0; ram_idx < cfg.num_ram_ret_tiles; ram_idx++) begin
+      cfg.mem_bkdr_util_h[chip_mem_e'(RamRet0 + ram_idx)].set_mem();
+    end
+    for (int ram_idx = 0; ram_idx < cfg.num_ram_main_tiles; ram_idx++) begin
+      cfg.mem_bkdr_util_h[chip_mem_e'(RamMain0 + ram_idx)].set_mem();
+    end
+  endtask: cpu_init
+
   virtual task body();
     string mem_sel;
     super.body();
