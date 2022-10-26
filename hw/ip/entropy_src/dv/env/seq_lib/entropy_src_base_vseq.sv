@@ -24,7 +24,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   virtual entropy_src_cov_if   cov_vif;
 
-  realtime default_cfg_pause = 50us;
 
   constraint do_check_ht_diag_c {
     do_check_ht_diag dist {
@@ -247,7 +246,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   // Outputs REGWEN = 0, if the device coniguration was attempted when most registers
   // were locked. (Likely intentionally)
   virtual task entropy_src_init(entropy_src_dut_cfg newcfg=cfg.dut_cfg,
-                                realtime pause=default_cfg_pause,
+                                realtime pause=cfg.configuration_pause_time,
                                 output bit completed,
                                 output bit regwen);
     completed = 0;
