@@ -5034,6 +5034,7 @@
       [
         {
           name: jtag
+          desc: JTAG signals for the RISC-V TAP.
           struct: jtag
           package: jtag_pkg
           type: req_rsp
@@ -5046,6 +5047,11 @@
         }
         {
           name: lc_hw_debug_en
+          desc:
+            '''
+            Multibit life cycle hardware debug enable signal coming from life cycle controller,
+            asserted when the hardware debug mechanisms are enabled in the system.
+            '''
           struct: lc_tx
           package: lc_ctrl_pkg
           type: uni
@@ -5058,6 +5064,11 @@
         }
         {
           name: unavailable
+          desc:
+            '''
+            This signal indicates to the debug module that the main processor is not available
+            for debug (e.g. due to a low-power state).
+            '''
           struct: logic
           type: uni
           act: rcv
@@ -5068,6 +5079,7 @@
         }
         {
           name: ndmreset_req
+          desc: Non-debug module reset request going to the system reset infrastructure.
           struct: logic
           type: uni
           act: req
@@ -5082,6 +5094,11 @@
         }
         {
           name: dmactive
+          desc:
+            '''
+            This signal indicates whether the debug module is active and can be used to prevent
+            power down of the core and bus-attached peripherals.
+            '''
           struct: logic
           type: uni
           act: req
@@ -5091,6 +5108,7 @@
         }
         {
           name: debug_req
+          desc: This is the debug request interrupt going to the main processor.
           struct: logic [rv_dm_reg_pkg::NrHarts-1:0]
           type: uni
           act: req
@@ -17622,6 +17640,7 @@
       }
       {
         name: jtag
+        desc: JTAG signals for the RISC-V TAP.
         struct: jtag
         package: jtag_pkg
         type: req_rsp
@@ -17634,6 +17653,11 @@
       }
       {
         name: lc_hw_debug_en
+        desc:
+          '''
+          Multibit life cycle hardware debug enable signal coming from life cycle controller,
+          asserted when the hardware debug mechanisms are enabled in the system.
+          '''
         struct: lc_tx
         package: lc_ctrl_pkg
         type: uni
@@ -17646,6 +17670,11 @@
       }
       {
         name: unavailable
+        desc:
+          '''
+          This signal indicates to the debug module that the main processor is not available
+          for debug (e.g. due to a low-power state).
+          '''
         struct: logic
         type: uni
         act: rcv
@@ -17656,6 +17685,7 @@
       }
       {
         name: ndmreset_req
+        desc: Non-debug module reset request going to the system reset infrastructure.
         struct: logic
         type: uni
         act: req
@@ -17670,6 +17700,11 @@
       }
       {
         name: dmactive
+        desc:
+          '''
+          This signal indicates whether the debug module is active and can be used to prevent
+          power down of the core and bus-attached peripherals.
+          '''
         struct: logic
         type: uni
         act: req
@@ -17679,6 +17714,7 @@
       }
       {
         name: debug_req
+        desc: This is the debug request interrupt going to the main processor.
         struct: logic [rv_dm_reg_pkg::NrHarts-1:0]
         type: uni
         act: req

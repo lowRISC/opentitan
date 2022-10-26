@@ -42,6 +42,7 @@
       name:    "jtag",
       act:     "rsp",
       package: "jtag_pkg",
+      desc:    "JTAG signals for the RISC-V TAP."
     },
     { struct:  "lc_tx"
       type:    "uni"
@@ -49,6 +50,10 @@
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
+      desc:    '''
+               Multibit life cycle hardware debug enable signal coming from life cycle controller,
+               asserted when the hardware debug mechanisms are enabled in the system.
+               '''
     },
     // TBD: should we connect this to the clock manager?
     { struct:  "logic"
@@ -56,21 +61,31 @@
       name:    "unavailable"
       act:     "rcv"
       default: "1'b0"
+      desc:    '''
+               This signal indicates to the debug module that the main processor is not available
+               for debug (e.g. due to a low-power state).
+               '''
     },
     { struct:  "logic"
       type:    "uni"
       name:    "ndmreset_req"
       act:     "req"
+      desc:    "Non-debug module reset request going to the system reset infrastructure."
     },
     { struct:  "logic"
       type:    "uni"
       name:    "dmactive"
       act:     "req"
+      desc:    '''
+               This signal indicates whether the debug module is active and can be used to prevent
+               power down of the core and bus-attached peripherals.
+               '''
     },
     { struct:  "logic [rv_dm_reg_pkg::NrHarts-1:0]"
       type:    "uni"
       name:    "debug_req"
       act:     "req"
+      desc:    "This is the debug request interrupt going to the main processor."
     },
   ]
   countermeasures: [
