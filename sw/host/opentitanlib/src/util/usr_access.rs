@@ -8,6 +8,7 @@ use std::convert::TryInto;
 use thiserror::Error;
 
 use chrono::{Datelike, Timelike, Utc};
+use crc::Crc;
 
 const WRITE_USR_ACCESS: [u8; 4] = [0x30, 0x01, 0xa0, 0x01];
 const WRITE_CRC_REG: [u8; 4] = [0x30, 0x00, 0x00, 0x01];
@@ -94,6 +95,12 @@ pub fn usr_access_timestamp() -> u32 {
         | now.hour() << 12
         | now.minute() << 6
         | now.second()
+}
+
+/// Returns the crc32 hash of the bitstream to be used as a USR_ACCESS value
+pub fn usr_access_crc32(bitstream: &mut [u8]) -> Result<u32> {
+    usr_access_set(bitstream, 0)?; // Clear usr_access before hashing
+    Ok(Crc::<u32>::new(&crc::CRC_32_ISO_HDLC).checksum(bitstream))
 }
 
 pub fn usr_access_set(bitstream: &mut [u8], val: u32) -> Result<()> {
