@@ -10,6 +10,7 @@ module tb;
   import chip_env_pkg::*;
   import chip_common_pkg::*;
   import top_pkg::*;
+  import top_earlgrey_pkg::*;
   import chip_test_pkg::*;
   import xbar_test_pkg::*;
   import mem_bkdr_util_pkg::mem_bkdr_util;
@@ -71,79 +72,79 @@ module tb;
   chip_earlgrey_asic dut (
 `endif
     // Dedicated Pads
-    .POR_N(dut.chip_if.ios[PorN]), // Manual Pad
-    .USB_P(dut.chip_if.ios[UsbP]), // Manual Pad
-    .USB_N(dut.chip_if.ios[UsbN]), // Manual Pad
-    .CC1(dut.chip_if.ios[CC1]), // Manual Pad
-    .CC2(dut.chip_if.ios[CC2]), // Manual Pad
-    .FLASH_TEST_VOLT(dut.chip_if.ios[FlashTestVolt]), // Manual Pad
-    .FLASH_TEST_MODE0(dut.chip_if.ios[FlashTestMode0]), // Manual Pad
-    .FLASH_TEST_MODE1(dut.chip_if.ios[FlashTestMode1]), // Manual Pad
-    .OTP_EXT_VOLT(dut.chip_if.ios[OtpExtVolt]), // Manual Pad
-    .SPI_HOST_D0(dut.chip_if.ios[SpiHostD0]), // Dedicated Pad for spi_host0_sd
-    .SPI_HOST_D1(dut.chip_if.ios[SpiHostD1]), // Dedicated Pad for spi_host0_sd
-    .SPI_HOST_D2(dut.chip_if.ios[SpiHostD2]), // Dedicated Pad for spi_host0_sd
-    .SPI_HOST_D3(dut.chip_if.ios[SpiHostD3]), // Dedicated Pad for spi_host0_sd
-    .SPI_HOST_CLK(dut.chip_if.ios[SpiHostClk]), // Dedicated Pad for spi_host0_sck
-    .SPI_HOST_CS_L(dut.chip_if.ios[SpiHostCsL]), // Dedicated Pad for spi_host0_csb
-    .SPI_DEV_D0(dut.chip_if.ios[SpiDevD0]), // Dedicated Pad for spi_device_sd
-    .SPI_DEV_D1(dut.chip_if.ios[SpiDevD1]), // Dedicated Pad for spi_device_sd
-    .SPI_DEV_D2(dut.chip_if.ios[SpiDevD2]), // Dedicated Pad for spi_device_sd
-    .SPI_DEV_D3(dut.chip_if.ios[SpiDevD3]), // Dedicated Pad for spi_device_sd
-    .SPI_DEV_CLK(dut.chip_if.ios[SpiDevClk]), // Dedicated Pad for spi_device_sck
-    .SPI_DEV_CS_L(dut.chip_if.ios[SpiDevCsL]), // Dedicated Pad for spi_device_csb
-    .IOR8(dut.chip_if.ios[IoR8]), // Dedicated Pad for sysrst_ctrl_aon_ec_rst_l
-    .IOR9(dut.chip_if.ios[IoR9]), // Dedicated Pad for sysrst_ctrl_aon_flash_wp_l
-    .AST_MISC(dut.chip_if.ios[AstMisc]), // Manual Pad
+    .POR_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadPorN]),
+    .USB_P(dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
+    .USB_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbN]),
+    .CC1(dut.chip_if.dios[top_earlgrey_pkg::DioPadCc1]),
+    .CC2(dut.chip_if.dios[top_earlgrey_pkg::DioPadCc2]),
+    .FLASH_TEST_VOLT(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestVolt]),
+    .FLASH_TEST_MODE0(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestMode0]),
+    .FLASH_TEST_MODE1(dut.chip_if.dios[top_earlgrey_pkg::DioPadFlashTestMode1]),
+    .OTP_EXT_VOLT(dut.chip_if.dios[top_earlgrey_pkg::DioPadOtpExtVolt]),
+    .SPI_HOST_D0(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD0]),
+    .SPI_HOST_D1(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD1]),
+    .SPI_HOST_D2(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD2]),
+    .SPI_HOST_D3(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostD3]),
+    .SPI_HOST_CLK(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostClk]),
+    .SPI_HOST_CS_L(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiHostCsL]),
+    .SPI_DEV_D0(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevD0]),
+    .SPI_DEV_D1(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevD1]),
+    .SPI_DEV_D2(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevD2]),
+    .SPI_DEV_D3(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevD3]),
+    .SPI_DEV_CLK(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevClk]),
+    .SPI_DEV_CS_L(dut.chip_if.dios[top_earlgrey_pkg::DioPadSpiDevCsL]),
+    .IOR8(dut.chip_if.dios[top_earlgrey_pkg::DioPadIor8]),
+    .IOR9(dut.chip_if.dios[top_earlgrey_pkg::DioPadIor9]),
+    .AST_MISC(dut.chip_if.ast_misc),
 
     // Muxed Pads
-    .IOA0(dut.chip_if.ios[IoA0]), // MIO Pad 0
-    .IOA1(dut.chip_if.ios[IoA1]), // MIO Pad 1
-    .IOA2(dut.chip_if.ios[IoA2]), // MIO Pad 2
-    .IOA3(dut.chip_if.ios[IoA3]), // MIO Pad 3
-    .IOA4(dut.chip_if.ios[IoA4]), // MIO Pad 4
-    .IOA5(dut.chip_if.ios[IoA5]), // MIO Pad 5
-    .IOA6(dut.chip_if.ios[IoA6]), // MIO Pad 6
-    .IOA7(dut.chip_if.ios[IoA7]), // MIO Pad 7
-    .IOA8(dut.chip_if.ios[IoA8]), // MIO Pad 8
-    .IOB0(dut.chip_if.ios[IoB0]), // MIO Pad 9
-    .IOB1(dut.chip_if.ios[IoB1]), // MIO Pad 10
-    .IOB2(dut.chip_if.ios[IoB2]), // MIO Pad 11
-    .IOB3(dut.chip_if.ios[IoB3]), // MIO Pad 12
-    .IOB4(dut.chip_if.ios[IoB4]), // MIO Pad 13
-    .IOB5(dut.chip_if.ios[IoB5]), // MIO Pad 14
-    .IOB6(dut.chip_if.ios[IoB6]), // MIO Pad 15
-    .IOB7(dut.chip_if.ios[IoB7]), // MIO Pad 16
-    .IOB8(dut.chip_if.ios[IoB8]), // MIO Pad 17
-    .IOB9(dut.chip_if.ios[IoB9]), // MIO Pad 18
-    .IOB10(dut.chip_if.ios[IoB10]), // MIO Pad 19
-    .IOB11(dut.chip_if.ios[IoB11]), // MIO Pad 20
-    .IOB12(dut.chip_if.ios[IoB12]), // MIO Pad 21
-    .IOC0(dut.chip_if.ios[IoC0]), // MIO Pad 22
-    .IOC1(dut.chip_if.ios[IoC1]), // MIO Pad 23
-    .IOC2(dut.chip_if.ios[IoC2]), // MIO Pad 24
-    .IOC3(dut.chip_if.ios[IoC3]), // MIO Pad 25
-    .IOC4(dut.chip_if.ios[IoC4]), // MIO Pad 26
-    .IOC5(dut.chip_if.ios[IoC5]), // MIO Pad 27
-    .IOC6(dut.chip_if.ios[IoC6]), // MIO Pad 28
-    .IOC7(dut.chip_if.ios[IoC7]), // MIO Pad 29
-    .IOC8(dut.chip_if.ios[IoC8]), // MIO Pad 30
-    .IOC9(dut.chip_if.ios[IoC9]), // MIO Pad 31
-    .IOC10(dut.chip_if.ios[IoC10]), // MIO Pad 32
-    .IOC11(dut.chip_if.ios[IoC11]), // MIO Pad 33
-    .IOC12(dut.chip_if.ios[IoC12]), // MIO Pad 34
-    .IOR0(dut.chip_if.ios[IoR0]), // MIO Pad 35
-    .IOR1(dut.chip_if.ios[IoR1]), // MIO Pad 36
-    .IOR2(dut.chip_if.ios[IoR2]), // MIO Pad 37
-    .IOR3(dut.chip_if.ios[IoR3]), // MIO Pad 38
-    .IOR4(dut.chip_if.ios[IoR4]), // MIO Pad 39
-    .IOR5(dut.chip_if.ios[IoR5]), // MIO Pad 40
-    .IOR6(dut.chip_if.ios[IoR6]), // MIO Pad 41
-    .IOR7(dut.chip_if.ios[IoR7]), // MIO Pad 42
-    .IOR10(dut.chip_if.ios[IoR10]), // MIO Pad 43
-    .IOR11(dut.chip_if.ios[IoR11]), // MIO Pad 44
-    .IOR12(dut.chip_if.ios[IoR12]), // MIO Pad 45
-    .IOR13(dut.chip_if.ios[IoR13])  // MIO Pad 46
+    .IOA0(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa0]),
+    .IOA1(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa1]),
+    .IOA2(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa2]),
+    .IOA3(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa3]),
+    .IOA4(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa4]),
+    .IOA5(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa5]),
+    .IOA6(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa6]),
+    .IOA7(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa7]),
+    .IOA8(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoa8]),
+    .IOB0(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob0]),
+    .IOB1(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob1]),
+    .IOB2(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob2]),
+    .IOB3(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob3]),
+    .IOB4(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob4]),
+    .IOB5(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob5]),
+    .IOB6(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob6]),
+    .IOB7(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob7]),
+    .IOB8(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob8]),
+    .IOB9(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob9]),
+    .IOB10(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob10]),
+    .IOB11(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob11]),
+    .IOB12(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob12]),
+    .IOC0(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc0]),
+    .IOC1(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc1]),
+    .IOC2(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc2]),
+    .IOC3(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc3]),
+    .IOC4(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc4]),
+    .IOC5(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc5]),
+    .IOC6(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc6]),
+    .IOC7(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc7]),
+    .IOC8(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc8]),
+    .IOC9(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc9]),
+    .IOC10(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc10]),
+    .IOC11(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc11]),
+    .IOC12(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc12]),
+    .IOR0(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor0]),
+    .IOR1(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor1]),
+    .IOR2(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor2]),
+    .IOR3(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor3]),
+    .IOR4(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor4]),
+    .IOR5(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor5]),
+    .IOR6(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor6]),
+    .IOR7(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor7]),
+    .IOR10(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor10]),
+    .IOR11(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor11]),
+    .IOR12(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor12]),
+    .IOR13(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor13])
   );
 
   `define SIM_SRAM_IF u_sim_sram.u_sim_sram_if
@@ -376,7 +377,7 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env*", "clk_rst_vif", clk_rst_if);
   end
   assign dut.POR_N = xbar_mode ? rst_n : 1'bz;
-  assign rst_n = xbar_mode ? 1'bz : dut.chip_if.ios[PorN];
+  assign rst_n = xbar_mode ? 1'bz : dut.chip_if.dios[top_earlgrey_pkg::DioPadPorN];
 
   `include "../autogen/tb__xbar_connect.sv"
   `include "../autogen/tb__alert_handler_connect.sv"

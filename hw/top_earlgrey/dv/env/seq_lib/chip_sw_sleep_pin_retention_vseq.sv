@@ -4,104 +4,68 @@
 
 class chip_sw_sleep_pin_retention_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_sleep_pin_retention_vseq)
-
   `uvm_object_new
 
-  import chip_common_pkg::*;
+  localparam int unsigned GpiosTested = 8;    // first 8 GPIOs.
+  localparam int unsigned GpioForWakeup = 8;  // 8th GPIO pin used for wakeup.
 
   rand bit [7:0] rounds;
-
-  constraint rounds_c { rounds inside {[8'h 1 : 8'h 7]}; }
+  constraint rounds_c { rounds inside {[1:7]}; }
 
   virtual task cpu_init();
-    bit [7:0] byte_arr [];
-    byte_arr = '{rounds};
-
+    bit [7:0] rounds_byte_arr [] = '{rounds};
     super.cpu_init();
-
-    sw_symbol_backdoor_overwrite("kRounds", byte_arr);
-
+    sw_symbol_backdoor_overwrite("kRounds", rounds_byte_arr);
   endtask : cpu_init
-
-  function logic [7:0] sample_gpio();
-    // TODO: After https://github.com/lowRISC/opentitan/pull/15339 is merged,
-    // revise code to get value from gpio_if not from ios_if.
-    logic [7:0] result;
-
-    result = cfg.chip_vif.ios_if.pins[IoA7:IoA0];
-
-    return result;
-  endfunction : sample_gpio
 
   virtual task body();
     super.body();
 
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
 
-    // Drive GPIO8 (IoA8) to 0
-    cfg.chip_vif.ios_if.drive_pin(IoA8, 1'b 0);
+    // Drive wakeup pin to 0.
+    cfg.chip_vif.gpios_if.drive_pin(GpioForWakeup, 0);
 
-    // GPIO[7:0] to input mode.
-    // TODO: After https://github.com/lowRISC/opentitan/pull/15339 is merged,
-    // revise code to get value from gpio_if not from ios_if.
-    cfg.chip_vif.ios_if.pins_oe[IoA7:IoA0] = '0;
+    // Treat test GPIOs as chip outputs.
+    cfg.chip_vif.gpios_if.pins_oe[GpiosTested-1:0] = '0;
 
     for (int round = rounds - 1 ; round >= 0 ; round--) begin
-      bit   [7:0] gpio_val;
-      logic [7:0] gpio_sample;
-
-      string exp_str;
-      string printed_log;
-
-      // Init the variables
-      printed_log = "";
+      logic [GpiosTested-1:0] gpio_exp, gpio_act;
 
       // Receive values from SW via sw_logger_vif
-      `DV_WAIT(cfg.sw_logger_vif.printed_log == $sformatf("Current Test Round: %1d", round))
-
-      exp_str = "Chosen GPIO value:";
+      `DV_WAIT(string'(cfg.sw_logger_vif.printed_log) ==
+               $sformatf("Current Test Round: %1d", round))
 
       `DV_SPINWAIT(
-          while (printed_log.substr(0, exp_str.len()-1) != exp_str) begin
+          string printed_log = "";
+          string log = "Chosen GPIO value:";
+          while (printed_log.substr(0, log.len() - 1) != log) begin
             @(cfg.sw_logger_vif.printed_log_event);
-            printed_log = cfg.sw_logger_vif.printed_log;
+            printed_log = string'(cfg.sw_logger_vif.printed_log);
           end)
 
       `DV_CHECK_FATAL(cfg.sw_logger_vif.printed_arg[0] inside {[0:255]})
-      gpio_val = cfg.sw_logger_vif.printed_arg[0][7:0];
+      gpio_exp = cfg.sw_logger_vif.printed_arg[0][7:0];
+      `uvm_info(`gfn, $sformatf("Expected GPIOs value: 0x%0h", gpio_exp), UVM_LOW)
 
-      `uvm_info(`gfn, $sformatf("Received GPIO value: %2x", gpio_val), UVM_LOW)
-
-      // Check PIN
-      gpio_sample = sample_gpio();
-      `uvm_info(`gfn,
-                $sformatf("Captured GPIO value: %2x", gpio_sample),
-                UVM_LOW)
-      `DV_CHECK(gpio_sample === gpio_val,
-                $sformatf("GPIO value mismatch: Exp[%2x] / Rcv[%2x]",
-                          gpio_val, gpio_sample))
+      gpio_act = cfg.chip_vif.gpios_if.pins[GpiosTested-1:0];
+      `uvm_info(`gfn, $sformatf("Actual GPIOs value: 0x%0h", gpio_act), UVM_LOW)
+      `DV_CHECK(gpio_act === gpio_exp)
 
       // Wait sleep (normal vs deep)
-      `DV_WAIT(cfg.chip_vif.pwrmgr_low_power_if.in_sleep == 1'b 1)
+      `DV_WAIT(cfg.chip_vif.pwrmgr_low_power_if.in_sleep)
       repeat (5) @(cfg.chip_vif.pwrmgr_low_power_if.cb);
 
-      // Check PIN value
-      gpio_sample = sample_gpio();
-      `uvm_info(`gfn,
-                $sformatf("Captured Retention GPIO value: %2x", gpio_sample),
-                UVM_LOW)
-      `DV_CHECK((gpio_sample ^ gpio_val) === 'hFF,
-                $sformatf("GPIO retention value mismatch: Exp[%2x] / Rcv[%2x]",
-                          gpio_val ^ 8'hFF, gpio_sample))
-
-      repeat (5) @(cfg.chip_vif.pwrmgr_low_power_if.cb);
+      gpio_act = cfg.chip_vif.gpios_if.pins[GpiosTested-1:0];
+      `uvm_info(`gfn, $sformatf("Actual GPIOs value during sleep: 0x%0h", gpio_act), UVM_LOW)
+      `DV_CHECK((gpio_act ^ gpio_exp) === 'hFF)
 
       // Wake up DUT
-      cfg.chip_vif.ios_if.drive_pin(IoA8, 1'b 1);
+      repeat (5) @(cfg.chip_vif.pwrmgr_low_power_if.cb);
+      cfg.chip_vif.gpios_if.drive_pin(GpioForWakeup, 1);
       repeat (3) @(cfg.chip_vif.pwrmgr_low_power_if.cb);
-      cfg.chip_vif.ios_if.drive_pin(IoA8, 1'b 0);
+      cfg.chip_vif.gpios_if.drive_pin(GpioForWakeup, 0);
     end
-
   endtask : body
 
 endclass : chip_sw_sleep_pin_retention_vseq

@@ -170,17 +170,11 @@ void draw_pinmux_ret(const uint32_t num_pins, uint8_t *arr,
  */
 void print_chosen_values(void) {
   LOG_INFO("BEGIN Chosen Retention Types");
-  for (int io = 0; io < 2; io++) {
-    int max_pads = (io) ? NUM_DIO_PADS : NUM_MIO_PADS;
-    for (int i = 0; i < max_pads; i++) {
-      if (io == 1) {
-        // DIO
-        LOG_INFO("DIO [%d]: %x", i, kDioPads[i]);
-      } else {
-        // MIO
-        LOG_INFO("MIO [%d]: %x", i, kMioPads[i]);
-      }
-    }
+  for (int i = 0; i < NUM_MIO_PADS; ++i) {
+    LOG_INFO("MIO [%d]: %x", i, kMioPads[i]);
+  }
+  for (int i = 0; i < NUM_DIO_PADS; ++i) {
+    LOG_INFO("DIO [%d]: %x", i, kDioPads[i]);
   }
   LOG_INFO("END Chosen Retention Types");
 }
@@ -257,6 +251,14 @@ bool test_main(void) {
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
     uint32_t deep_powerdown_en = rand_testutils_gen32_range(0, 1);
     bool deepsleep = (deep_powerdown_en) ? true : false;
+
+    // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be
+    // disabled for this test. Remove this later.
+    dif_pinmux_pad_attr_t out_attr;
+    dif_pinmux_pad_attr_t in_attr = {0};
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoc3,
+                                            kDifPinmuxPadKindMio, in_attr,
+                                            &out_attr));
 
     if (!deepsleep) {
       // Enable all the AON interrupts used in this test.

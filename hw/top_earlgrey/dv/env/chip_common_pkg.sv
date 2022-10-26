@@ -67,77 +67,6 @@ package chip_common_pkg;
     LcCtrlSignalNumTotal
   } lc_ctrl_signal_e;
 
-  // Chip IOs.
-  //
-  // This aggregates all chip IOs as seen at the pads.
-  typedef enum {
-    // Dedicated pads
-    PorN,
-    UsbP,
-    UsbN,
-    CC1,
-    CC2,
-    FlashTestVolt,
-    FlashTestMode0,
-    FlashTestMode1,
-    OtpExtVolt,
-    SpiHostD[0:3],  // 9
-    SpiHostClk,
-    SpiHostCsL,
-    SpiDevD[0:3],  // 15
-    SpiDevClk,
-    SpiDevCsL,
-    AstMisc,
-
-    // Muxed Pads:
-    IoA[0:8],  // 22
-    IoB[0:12],  // 31
-    IoC[0:12],  // 44
-
-    // Note: IOR[8:9] are dedicated IOs used by sysrst_ctrl.
-    IoR[0:13],  // 56
-
-    // Total number of pads, including dedicated and muxed.
-    IoNumTotal  // 70
-  } chip_io_e;
-
-  // Chip Peripherals.
-  typedef enum {
-    AdcCtrl,
-    Aes,
-    AlertHandler,
-    AonTimer,
-    Ast,
-    Clkmgr,
-    Csrng,
-    Edn,
-    EntropySrc,
-    FlashCtrl,
-    Gpio,
-    Hmac,
-    I2c,
-    Keymgr,
-    Kmac,
-    LcCtrl,
-    Otbn,
-    OtpCtrl,
-    SramCtrlMain,
-    SramCtrlRet,
-    Pattgen,
-    Pinmux,
-    Pwrmgr,
-    Pwm,
-    RomCrl,
-    RstMgr,
-    RvDm,
-    RvTimer,
-    SpiDevice,
-    SpiHost,
-    SysRstCtrl,
-    Uart,
-    UsbDev
-  } chip_peripheral_e;
-
   typedef enum bit [1:0] {
     JtagTapNone = 2'b00,
     JtagTapLc = 2'b01,
@@ -145,76 +74,25 @@ package chip_common_pkg;
     JtagTapDft = 2'b11
   } chip_jtag_tap_e;
 
-  // TOP MIO/ DIO connection map
-  parameter int unsigned NumMioPads = top_earlgrey_pkg::MioPadCount;
-  parameter int unsigned NumDioPads = top_earlgrey_pkg::DioCount;
-
-  parameter chip_io_e MioPads [NumMioPads] = '{
-    IoA0,  // MIO2
-    IoA1,  // MIO3
-    IoA2,  // MIO4
-    IoA3,  // MIO5
-    IoA4,  // MIO6
-    IoA5,  // MIO7
-    IoA6,  // MIO8
-    IoA7,  // MIO9
-    IoA8,  // MIO10
-    IoB0,  // MIO11
-    IoB1,  // MIO12
-    IoB2,  // MIO13
-    IoB3,  // MIO14
-    IoB4,  // MIO15
-    IoB5,  // MIO16
-    IoB6,  // MIO17
-    IoB7,  // MIO18
-    IoB8,  // MIO19
-    IoB9,  // MIO20
-    IoB10, // MIO21
-    IoB11, // MIO22
-    IoB12, // MIO23
-    IoC0,  // MIO24
-    IoC1,  // MIO25
-    IoC2,  // MIO26
-    IoC3,  // MIO27
-    IoC4,  // MIO28
-    IoC5,  // MIO29
-    IoC6,  // MIO30
-    IoC7,  // MIO31
-    IoC8,  // MIO32
-    IoC9,  // MIO33
-    IoC10, // MIO34
-    IoC11, // MIO35
-    IoC12, // MIO36
-    IoR0,  // MIO37
-    IoR1,  // MIO38
-    IoR2,  // MIO39
-    IoR3,  // MIO40
-    IoR4,  // MIO41
-    IoR5,  // MIO42
-    IoR6,  // MIO43
-    IoR7,  // MIO44
-    IoR10, // MIO45
-    IoR11, // MIO46
-    IoR12, // MIO47
-    IoR13  // MIO48
-  };
-  parameter chip_io_e DioPads [NumDioPads] = '{
-    UsbP,       // DIO 0
-    UsbN,       // DIO 1
-    SpiHostD0,  // DIO 2
-    SpiHostD1,  // DIO 3
-    SpiHostD2,  // DIO 4
-    SpiHostD3,  // DIO 5
-    SpiDevD0,   // DIO 6
-    SpiDevD1,   // DIO 7
-    SpiDevD2,   // DIO 8
-    SpiDevD3,   // DIO 9
-    IoR8,       // DIO 10 EC_RST_L
-    IoR9,       // DIO 11 FLASH_WP_L
-    SpiDevClk,  // DIO 12
-    SpiDevCsL,  // DIO 13
-    SpiHostClk, // DIO 14
-    SpiHostCsL  // DIO 15
+  // This maps the DIO on the pinmux / peripheral side to the DIO on the pad side, both of
+  // which have different enum numbering in top_earlgrey_pkg.sv.
+  parameter top_earlgrey_pkg::dio_pad_e DioToDioPadMap [top_earlgrey_pkg::DioCount] = '{
+    top_earlgrey_pkg::DioPadUsbP,       /* DioUsbdevUsbDp */
+    top_earlgrey_pkg::DioPadUsbN,       /* DioUsbdevUsbDn */
+    top_earlgrey_pkg::DioPadSpiHostD0,  /* DioSpiHost0Sd0 */
+    top_earlgrey_pkg::DioPadSpiHostD1,  /* DioSpiHost0Sd1 */
+    top_earlgrey_pkg::DioPadSpiHostD2,  /* DioSpiHost0Sd2 */
+    top_earlgrey_pkg::DioPadSpiHostD3,  /* DioSpiHost0Sd3 */
+    top_earlgrey_pkg::DioPadSpiDevD0,   /* DioSpiDeviceSd0 */
+    top_earlgrey_pkg::DioPadSpiDevD1,   /* DioSpiDeviceSd1 */
+    top_earlgrey_pkg::DioPadSpiDevD2,   /* DioSpiDeviceSd2 */
+    top_earlgrey_pkg::DioPadSpiDevD3,   /* DioSpiDeviceSd3 */
+    top_earlgrey_pkg::DioPadIor8,       /* DioSysrstCtrlAonEcRstL */
+    top_earlgrey_pkg::DioPadIor9,       /* DioSysrstCtrlAonFlashWpL */
+    top_earlgrey_pkg::DioPadSpiDevClk,  /* DioSpiDeviceSck */
+    top_earlgrey_pkg::DioPadSpiDevCsL,  /* DioSpiDeviceCsb */
+    top_earlgrey_pkg::DioPadSpiHostClk, /* DioSpiHost0Sck */
+    top_earlgrey_pkg::DioPadSpiHostCsL  /* DioSpiHost0Csb */
   };
 
   typedef struct packed {
@@ -256,4 +134,5 @@ package chip_common_pkg;
       dec_lc_state: lc_ctrl_state_pkg::DecLcStTestUnlocked7
      }
   };
+
 endpackage

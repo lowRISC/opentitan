@@ -83,6 +83,14 @@ bool test_main(void) {
 
     LOG_INFO("pinmux_init end");
 
+    // TODO(lowrisc/opentitan#15889): The weak pull on IOC3 needs to be
+    // disabled for this test. Remove this later.
+    dif_pinmux_pad_attr_t out_attr;
+    dif_pinmux_pad_attr_t in_attr = {0};
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoc3,
+                                            kDifPinmuxPadKindMio, in_attr,
+                                            &out_attr));
+
     // Random choose low power or deep powerdown
     uint32_t deep_powerdown_en = rand_testutils_gen32_range(0, 1);
 
