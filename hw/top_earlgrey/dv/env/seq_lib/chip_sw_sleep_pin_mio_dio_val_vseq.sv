@@ -4,273 +4,162 @@
 
 class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_sleep_pin_mio_dio_val_vseq)
-
   `uvm_object_new
 
-  import chip_common_pkg::*;  // chip_io_e
-
-  localparam int unsigned NumMioPads = top_earlgrey_pkg::MioPadCount;
-  localparam int unsigned NumDioPads = top_earlgrey_pkg::DioCount;
-
   typedef enum bit [2:0] {
-    Ret0,  // PAD driving 0 while in retention
-    Ret1,  // PAD driving 1 while in retention
-    HighZ, // PAD is input mode while in retention
-    RetP,  // PAD keeps the prev. value while in retention
+    Ret0,   // PAD driving 0 while in retention
+    Ret1,   // PAD driving 1 while in retention
+    HighZ,  // PAD is input mode while in retention
+    RetP,   // PAD keeps the prev. value while in retention
     RetSkip // Skip the test
   } pad_ret_t;
 
-  pad_ret_t [NumMioPads-1:0] mio_pad_ret;
-  pad_ret_t [NumDioPads-1:0] dio_pad_ret;
+  pad_ret_t [top_earlgrey_pkg::MioPadCount-1:0] mio_pad_ret;
+  pad_ret_t [top_earlgrey_pkg::DioCount-1:0]    dio_pad_ret;
 
-  typedef pad_ret_t pads_ret_t[IoNumTotal];
-  pads_ret_t pad_ret;
-
-  string ios_to_miodio [IoNumTotal];
-
-  bit [IoNumTotal-1:0] highz_oe;
-
-  task pre_start();
-    super.pre_start();
-
-    // Create io -> miodio
-    ios_to_miodio = '{default: "Unmapped"};
-    foreach (MioPads[i]) begin
-      `DV_CHECK_STREQ(ios_to_miodio[MioPads[i]], "Unmapped",
-        $sformatf("MioPads cannot map to chip_io_e correctly: %s",
-          ios_to_miodio[MioPads[i]]))
-      ios_to_miodio[MioPads[i]] = $sformatf("MIO [%2d]", i);
-    end
-    foreach (DioPads[i]) begin
-      `DV_CHECK_STREQ(ios_to_miodio[DioPads[i]], "Unmapped",
-        $sformatf("DioPads cannot map to chip_io_e correctly: %s",
-          ios_to_miodio[DioPads[i]]))
-      ios_to_miodio[DioPads[i]] = $sformatf("DIO [%2d]", i);
-    end
-
-  endtask : pre_start
-
-  task dut_init(string reset_kind = "HARD");
-    super.dut_init();
-
-    // Force LC state to Prod in order to disable strap.
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
-  endtask : dut_init
-
-  // SW sends chosen values via sw_logger_if. receive_chosen_value waits and
-  // stores the values to the list.
+  // Fetch the pad and retention type under test.
   //
-  // The transfer begins with "BEGIN Chosen Retention Types" and ends with
-  // "END Chosen Retention Types".
-  // In between, the data format is:
-  //
+  // The SW test randomizes and writes the pad type, the pad number and the type of the retention
+  // being tested in the following format:
   //   {M/D}IO [pad_num]: {0,1,2}
   //
-  // For example, "MIO [14]: 2" indicates the MIO 14 will be configured as
-  // High-Z mode in deep powerdown.
+  // For example, "MIO [14]: 2" indicates the MIO 14 will be configured as High-Z mode in deep
+  // powerdown.
+
+  // These are written to the log device (sw_logger_if). This task monitors the log events in
+  // sw_logger_if and retrieves this information and stores it into d|mio_pad_ret variables.
+  //
+  // These transfers are wrapped between the logs "BEGIN Chosen Retention Types" and "END Chosen
+  // Retention Types", which are trigger events.
   task receive_chosen_values();
-    string       printed_log;
-    int unsigned idx;
-    pad_ret_t    pad_type;
+    localparam string StartEvent = "BEGIN Chosen Retention Types";
+    localparam string EndEvent = "END Chosen Retention Types";
 
-    string rcv_str;
-
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "BEGIN Chosen Retention Types")
-
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == StartEvent)
     forever begin
-      @(cfg.sw_logger_vif.printed_log_event);
+      string printed_log;
 
-      // Check if format matches
+      @(cfg.sw_logger_vif.printed_log_event);
       printed_log = string'(cfg.sw_logger_vif.printed_log);
 
-      // Check exit condition
-      if (printed_log == "END Chosen Retention Types") break;
+      if (printed_log == EndEvent) break;
 
-      case (printed_log.substr(0,4))
-
+      case (printed_log.substr(0, 4))
         "DIO [": begin
-          idx      = cfg.sw_logger_vif.printed_arg[0];
-          pad_type = pad_ret_t'(cfg.sw_logger_vif.printed_arg[1]);
-          assert (cfg.sw_logger_vif.printed_arg[1] inside {[0:3]});
-
-          dio_pad_ret[idx] = pad_type;
+          int idx = cfg.sw_logger_vif.printed_arg[0];
+          pad_ret_t pad_ret_type = pad_ret_t'(cfg.sw_logger_vif.printed_arg[1]);
+          `DV_CHECK(cfg.sw_logger_vif.printed_arg[1] inside {[0:3]})
+          dio_pad_ret[idx] = pad_ret_type;
         end
-
         "MIO [": begin
-          idx      = cfg.sw_logger_vif.printed_arg[0];
-          pad_type = pad_ret_t'(cfg.sw_logger_vif.printed_arg[1]);
-          assert (cfg.sw_logger_vif.printed_arg[1] inside {[0:3]});
-
-          mio_pad_ret[idx] = pad_type;
+          int idx = cfg.sw_logger_vif.printed_arg[0];
+          pad_ret_t pad_ret_type = pad_ret_t'(cfg.sw_logger_vif.printed_arg[1]);
+          `DV_CHECK(cfg.sw_logger_vif.printed_arg[1] inside {[0:3]});
+          mio_pad_ret[idx] = pad_ret_type;
         end
-
         default: begin
-          `uvm_info(`gfn,
-            $sformatf("Unexpected SW Log is received: %s", printed_log),
-            UVM_LOW)
+          `uvm_info(`gfn, $sformatf("Unexpected SW log: %s",
+                                    cfg.sw_logger_vif.printed_log), UVM_LOW)
         end
-
       endcase
-
-    end // forever
-
-    // Convert received maps to Ios
-    pad_ret = miodio_to_ios(mio_pad_ret, dio_pad_ret);
-
-    // Print the received types
-    rcv_str = "BEGIN Received PAD Retention Types:";
-    foreach (dio_pad_ret[i]) begin
-      rcv_str = {rcv_str, "\n",
-                 $sformatf("  DIO [%d]: %d", i, dio_pad_ret[i])};
     end
-    foreach (mio_pad_ret[i]) begin
-      rcv_str = {rcv_str, "\n",
-                 $sformatf("  MIO [%d]: %d", i, mio_pad_ret[i])};
-    end
-    rcv_str = {rcv_str, "\n", "END Received PAD Retention Types"};
-    `uvm_info(`gfn, rcv_str, UVM_LOW)
 
-    rcv_str = "";
-    foreach (pad_ret[i]) begin
-      chip_io_e pad = chip_io_e'(i);
-      rcv_str = {rcv_str, "\n",
-                 $sformatf(" IO[%2d/%20s]: %9s %s",
-                   i, pad.name, pad_ret[i].name, ios_to_miodio[i])};
+    // Log the chosen pad retention tests.
+    begin
+      string msg = {"\n", StartEvent, "\n"};
+      foreach (dio_pad_ret[i]) msg = {msg, $sformatf("  DIO [%d]: %d\n", i, dio_pad_ret[i])};
+      foreach (mio_pad_ret[i]) msg = {msg, $sformatf("  MIO [%d]: %d\n", i, mio_pad_ret[i])};
+      msg = {msg, EndEvent, "\n"};
+      `uvm_info(`gfn, msg, UVM_LOW)
     end
-    `uvm_info(`gfn, rcv_str, UVM_LOW)
   endtask : receive_chosen_values
 
-  function pads_ret_t miodio_to_ios(
-    pad_ret_t [NumMioPads-1:0] mio,
-    pad_ret_t [NumDioPads-1:0] dio
-  );
-    // Default Skip
-    pads_ret_t result;
-    result = '{default: RetSkip};
+  // Checks the retention values of all eligible MIO and DIO pads.
+  //
+  // The eligibility for check is determined by the members mio_pad_ret and dio_pad_ret fetched from
+  // the SW test.
+  function void check_pad_retention_out();
+    for (int i = 0; i < top_earlgrey_pkg::MioPadCount; i++) begin
+      string msg = $sformatf("for MIO[%0d]", i);
 
-    foreach (MioPads[i]) begin
-      assert(result[MioPads[i]] == RetSkip)
-      result[MioPads[i]] = mio[i];
+      case (mio_pad_ret[i])
+        Ret0: `DV_CHECK_CASE_EQ(cfg.chip_vif.mios_if.pins[i], 1'b0, msg)
+        Ret1: `DV_CHECK_CASE_EQ(cfg.chip_vif.mios_if.pins[i], 1'b1, msg)
+        HighZ: begin
+          logic exp = 1'bz;
+          if (cfg.chip_vif.mios_if.pins_pd[i]) exp = 0;
+          if (cfg.chip_vif.mios_if.pins_pu[i]) exp = 1;
+          `DV_CHECK_CASE_EQ(cfg.chip_vif.mios_if.pins[i], exp, msg)
+        end
+        RetP, RetSkip: ;
+        default: `uvm_fatal(`gfn, "Invalid choice!")
+      endcase
     end
 
-    foreach (DioPads[i]) begin
-      assert(result[DioPads[i]] == RetSkip)
-      result[DioPads[i]] = dio[i];
-    end
+    for (int i = 0; i < top_earlgrey_pkg::DioCount; i++) begin
+      string msg = $sformatf("for DIO[%0d]", i);
+      // Note that dios_if enumerates the DIOs in chip_earlgrey_asic, which is different from the
+      // DIOs enumerated in pinmux. The former is provided by top_earlgrey_pkg::dio_pad_e and the
+      // latter, by top_earlgrey_pkg::dio_e. The chip_common_pkg::DioToDioPadMap maps the pinmux's
+      // enumeration to the chip level's enumeration.
+      int mapped_idx = DioToDioPadMap[i];
 
-    return result;
-  endfunction : miodio_to_ios
-
-
-  // Check Ret0, Ret1 sampled values with expected.
-  // global member variables: ios_to_miodio, pad_ret
-  function void check_pad_retention_out(logic [IoNumTotal-1:0] sampled);
-    foreach (pad_ret[i]) begin
-      bit pad_sampled    = sampled[i];
-      bit pad_expected   = (pad_ret[i] == Ret1) ? 1'b 1 : 1'b 0;
-      chip_io_e pad_name = chip_io_e'(i);
-
-      // Skip if not candidate.
-      if (!(pad_ret[i] inside {Ret0, Ret1})) continue;
-
-      `DV_CHECK(pad_sampled == pad_expected,
-                $sformatf(
-                  "IO[%2d/%s] %s: sampled(%b) / exp(%b)",
-                  i, pad_name.name, ios_to_miodio[i],
-                  pad_sampled, pad_expected))
+      case (dio_pad_ret[i])
+        Ret0: `DV_CHECK_CASE_EQ(cfg.chip_vif.dios_if.pins[mapped_idx], 1'b0, msg)
+        Ret1: `DV_CHECK_CASE_EQ(cfg.chip_vif.dios_if.pins[mapped_idx], 1'b1, msg)
+        HighZ: begin
+          logic exp = 1'bz;
+          if (cfg.chip_vif.dios_if.pins_pd[mapped_idx]) exp = 0;
+          if (cfg.chip_vif.dios_if.pins_pu[mapped_idx]) exp = 1;
+          `DV_CHECK_CASE_EQ(cfg.chip_vif.dios_if.pins[mapped_idx], exp, msg)
+        end
+        RetP, RetSkip: ;
+        default: `uvm_fatal(`gfn, "Invalid choice!")
+      endcase
     end
   endfunction : check_pad_retention_out
 
-  function bit [IoNumTotal-1:0] build_highz_oe(pads_ret_t ret);
-    bit [IoNumTotal-1:0] result = '0;
-    int find[$];
-
-    find = ret.find_index(x) with (x == HighZ);
-    foreach(find[i]) begin
-      result[find[i]] = 1'b 1;
-    end
-
-    return result;
-  endfunction : build_highz_oe
-
   task check_pads_retention_type();
-    logic [IoNumTotal-1:0] pad;
-    /**
-     * How to check 0, 1, High-Z
-     *
-     * For 0, 1, DUT drives the PADs. First, let ENV high-Z any PADs interface
-     * and capture. The signal should match with the config. Then, repeat with
-     * Pull-down mode, then Pull-up mode. The values should same in all cases.
-     *
-     * For High-Z, DUT is in input mode. In this case, the PAD attributes may
-     * affect the signal. To confirm, ENV drives 0 and samples, then drives
-     * 1 and samples. In each case, the sampled value should match to the
-     * driving value not X or othe values.
-     */
+    logic [top_earlgrey_pkg::MioPadCount-1:0] mio_pads;
+    logic [top_earlgrey_pkg::DioCount-1:0]    dio_pads;
+
+    // How to check 0, 1, High-Z
+    //
+    // For 0, 1, DUT drives the PADs. First, let ENV high-Z any PADs interface
+    // and capture. The signal should match with the config. Then, repeat with
+    // Pull-down mode, then Pull-up mode. The values should same in all cases.
+    //
+    // For High-Z, DUT is in input mode. In this case, the PAD attributes may
+    // affect the signal. To confirm, ENV drives 0 and samples, then drives
+    // 1 and samples. In each case, the sampled value should match to the
+    // driving value not X or other values.
 
     // High-Z for all ports
-    `uvm_info(`gfn, "Testing Retention Outputs", UVM_LOW)
-    cfg.chip_vif.ios_if.pins_pd = '0;
-    cfg.chip_vif.ios_if.pins_pu = '0;
-    pad = cfg.chip_vif.ios_if.sample();
-
-    check_pad_retention_out(pad);
+    `uvm_info(`gfn, "Testing Retention Outputs with no pulls", UVM_LOW)
+    cfg.chip_vif.dios_if.pins_pd = '0;
+    cfg.chip_vif.dios_if.pins_pu = '0;
+    cfg.chip_vif.mios_if.pins_pd = '0;
+    cfg.chip_vif.mios_if.pins_pu = '0;
+    @(cfg.chip_vif.pwrmgr_low_power_if.cb);
+    check_pad_retention_out();
 
     // Pull-down then check
     `uvm_info(`gfn, "Testing Retention Outputs with Pull-down", UVM_LOW)
-    cfg.chip_vif.ios_if.pins_pd = '1;
-    cfg.chip_vif.ios_if.pins_pu = '0;
+    cfg.chip_vif.dios_if.pins_pd = '1;
+    cfg.chip_vif.dios_if.pins_pu = '0;
+    cfg.chip_vif.mios_if.pins_pd = '1;
+    cfg.chip_vif.mios_if.pins_pu = '0;
     @(cfg.chip_vif.pwrmgr_low_power_if.cb);
-    pad = cfg.chip_vif.ios_if.sample();
-
-    check_pad_retention_out(pad);
+    check_pad_retention_out();
 
     // Pull-up then check
     `uvm_info(`gfn, "Testing Retention Outputs with Pull-up", UVM_LOW)
-    cfg.chip_vif.ios_if.pins_pd = '0;
-    cfg.chip_vif.ios_if.pins_pu = '1;
+    cfg.chip_vif.dios_if.pins_pd = '0;
+    cfg.chip_vif.dios_if.pins_pu = '1;
+    cfg.chip_vif.mios_if.pins_pd = '0;
+    cfg.chip_vif.mios_if.pins_pu = '1;
     @(cfg.chip_vif.pwrmgr_low_power_if.cb);
-    pad = cfg.chip_vif.ios_if.sample();
-
-    check_pad_retention_out(pad);
-
-
-    // Build High-Z drive map (highz_oe)
-    highz_oe = build_highz_oe(pad_ret);
-
-    cfg.chip_vif.ios_if.pins_pd = '0;
-    cfg.chip_vif.ios_if.pins_pu = '0;
-
-    // High-Z check: Drive 0 then check
-    cfg.chip_vif.ios_if.pins_o = '0;
-    cfg.chip_vif.ios_if.pins_oe = highz_oe;
-    @(cfg.chip_vif.pwrmgr_low_power_if.cb);
-    pad = cfg.chip_vif.ios_if.sample();
-
-    for (int i = 0; i < IoNumTotal; i++) begin
-      if (highz_oe[i]) begin
-        chip_io_e pad_name = chip_io_e'(i);
-        `DV_CHECK_EQ(pad[i], 1'b 0,
-          $sformatf("High-Z Drive0 failed: IO[%2d/%9s] %s %p",
-            i, pad_name.name, ios_to_miodio[i], pad[i]))
-      end
-    end
-
-    // High-Z check: Drive 1 then check
-    cfg.chip_vif.ios_if.pins_o = '1;
-    cfg.chip_vif.ios_if.pins_oe = highz_oe;
-    @(cfg.chip_vif.pwrmgr_low_power_if.cb);
-    pad = cfg.chip_vif.ios_if.sample();
-
-    for (int i = 0; i < IoNumTotal; i++) begin
-      if (highz_oe[i]) begin
-        chip_io_e pad_name = chip_io_e'(i);
-        `DV_CHECK_EQ(pad[i], 1'b 1,
-          $sformatf("High-Z Drive1 failed: IO[%2d/%9s] %s %p",
-            i, pad_name.name, ios_to_miodio[i], pad[i]))
-      end
-    end
-
+    check_pad_retention_out();
   endtask : check_pads_retention_type
 
   virtual task body();
@@ -280,17 +169,14 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
 
     // TODO: Get expected MIO DIO value from SW
-    fork
-      receive_chosen_values();
-    join_none
+    receive_chosen_values();
 
     // Wait until Chip enters Low Power Mode
     wait (cfg.chip_vif.pwrmgr_low_power_if.in_sleep);
     @(cfg.chip_vif.pwrmgr_low_power_if.cb);
 
     // Release any driver interfaces.
-    cfg.chip_vif.disconnect_all_interfaces(
-      .disconnect_default_pulls(1'b 0));
+    cfg.chip_vif.disconnect_all_interfaces(.disconnect_default_pulls(0));
 
     @(cfg.chip_vif.pwrmgr_low_power_if.cb);
 
@@ -298,7 +184,8 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
 
     check_pads_retention_type();
 
-    // If `chech_pad_retention_type()` runs without uvm_error and reach this point, the test passed full check
+    // If `chech_pad_retention_type()` runs without uvm_error and reach this point, the test passed
+    // full check
     override_test_status_and_finish(.passed(1'b 1));
 
   endtask : body

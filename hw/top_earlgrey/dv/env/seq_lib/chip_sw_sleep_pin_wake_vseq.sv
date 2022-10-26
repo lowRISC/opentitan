@@ -21,88 +21,11 @@
 //
 class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_sleep_pin_wake_vseq)
-
   `uvm_object_new
-
-  import chip_common_pkg::*;  // chip_io_e
-
-  localparam int unsigned NumMioPads = top_earlgrey_pkg::MioPadCount;
-  localparam int unsigned NumDioPads = top_earlgrey_pkg::DioCount;
-
-  localparam chip_io_e MioPads [NumMioPads] = '{
-    IoA0,  // MIO2
-    IoA1,  // MIO3
-    IoA2,  // MIO4
-    IoA3,  // MIO5
-    IoA4,  // MIO6
-    IoA5,  // MIO7
-    IoA6,  // MIO8
-    IoA7,  // MIO9
-    IoA8,  // MIO10
-    IoB0,  // MIO11
-    IoB1,  // MIO12
-    IoB2,  // MIO13
-    IoB3,  // MIO14
-    IoB4,  // MIO15
-    IoB5,  // MIO16
-    IoB6,  // MIO17
-    IoB7,  // MIO18
-    IoB8,  // MIO19
-    IoB9,  // MIO20
-    IoB10, // MIO21
-    IoB11, // MIO22
-    IoB12, // MIO23
-    IoC0,  // MIO24
-    IoC1,  // MIO25
-    IoC2,  // MIO26
-    IoC3,  // MIO27
-    IoC4,  // MIO28
-    IoC5,  // MIO29
-    IoC6,  // MIO30
-    IoC7,  // MIO31
-    IoC8,  // MIO32
-    IoC9,  // MIO33
-    IoC10, // MIO34
-    IoC11, // MIO35
-    IoC12, // MIO36
-    IoR0,  // MIO37
-    IoR1,  // MIO38
-    IoR2,  // MIO39
-    IoR3,  // MIO40
-    IoR4,  // MIO41
-    IoR5,  // MIO42
-    IoR6,  // MIO43
-    IoR7,  // MIO44
-    IoR10, // MIO45
-    IoR11, // MIO46
-    IoR12, // MIO47
-    IoR13  // MIO48
-  };
-  localparam chip_io_e DioPads [NumDioPads] = '{
-    UsbP,       // DIO 0
-    UsbN,       // DIO 1
-    SpiHostD0,  // DIO 2
-    SpiHostD1,  // DIO 3
-    SpiHostD2,  // DIO 4
-    SpiHostD3,  // DIO 5
-    SpiDevD0,   // DIO 6
-    SpiDevD1,   // DIO 7
-    SpiDevD2,   // DIO 8
-    SpiDevD3,   // DIO 9
-    IoR8,       // DIO 10 EC_RST_L
-    IoR9,       // DIO 11 FLASH_WP_L
-    SpiDevClk,  // DIO 12
-    SpiDevCsL,  // DIO 13
-    SpiHostClk, // DIO 14
-    SpiHostCsL  // DIO 15
-  };
-
-  // mio0_dio1 and pad_sel values come from SW
-  int unsigned mio0_dio1;
-  int unsigned pad_sel;
 
   // The detector module to be used (total 8)
   rand bit [7:0] detector_idx;
+  constraint pinmux_detector_c {detector_idx inside {[8'h0 : 8'h7]};}
 
   // Random delay (in ns)
   // - Fast FSM to enter Low power : 18.8 us
@@ -110,9 +33,6 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
   //
   // delay should cover the edge case
   rand int unsigned exit_delay;
-
-  constraint pinmux_detector_c {detector_idx inside {[8'h0 : 8'h7]};}
-
   constraint exit_delay_range_c {
     // Distribution
     exit_delay dist {
@@ -122,26 +42,17 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     };
   }
 
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init(reset_kind);
-
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
-  endtask : dut_init
-
   virtual task cpu_init();
-    bit [7:0] byte_arr [];
-
+    bit [7:0] byte_arr [] = '{detector_idx};
     super.cpu_init();
-
-    // Turn off Mux
-    cfg.chip_vif.enable_flash_ctrl_jtag = 1'b 0;
-
-    byte_arr = '{detector_idx};
     sw_symbol_backdoor_overwrite("kWakeupSel", byte_arr);
-
   endtask : cpu_init
 
   virtual task body();
+    // SW-randomized values.
+    top_earlgrey_pkg::pad_type_e pad_type;
+    int unsigned pad_idx;
+
     string printed_log;
     super.body();
 
@@ -156,57 +67,47 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     @(cfg.sw_logger_vif.printed_log_event);
 
     printed_log = string'(cfg.sw_logger_vif.printed_log);
-    assert (printed_log.substr(0,9) == "Pad Select") ;
+    `DV_CHECK_STREQ(printed_log.substr(0, 9), "Pad Select")
 
     // SW sends a log with chosen mode, pad formatted as below:
-    //   Pad Selection: {mio0_dio1} / {pad_sel}
-    mio0_dio1 = cfg.sw_logger_vif.printed_arg[0];
-    pad_sel   = cfg.sw_logger_vif.printed_arg[1];
+    //   Pad Selection: {pad_type} / {pad_idx}
+    pad_type = top_earlgrey_pkg::pad_type_e'(cfg.sw_logger_vif.printed_arg[0]);
+    pad_idx  = cfg.sw_logger_vif.printed_arg[1];
+    `uvm_info(`gfn, $sformatf("%0s[%0d] is chosen for wakeup", pad_type.name(), pad_idx), UVM_LOW)
 
-    `uvm_info(`gfn, $sformatf("VSEQ: Pad Selection %d / %d", mio0_dio1, pad_sel), UVM_LOW)
+    // Enable weak pulls on MIOs as well to avoid assertion errors.
+    cfg.chip_vif.disconnect_all_interfaces(.disconnect_default_pulls(0));
 
-    cfg.chip_vif.disconnect_all_interfaces(.disconnect_default_pulls(1'b 1));
-    cfg.chip_vif.ios_if.pins_pd                      = '1;
-    cfg.chip_vif.ios_if.pins_pd[SpiHostD3:SpiHostD0] = '1;
-    cfg.chip_vif.ios_if.pins_pu[SpiDevCsL]           = 1'b 1;
-    cfg.chip_vif.ios_if.pins_pu[UsbP]                = 1'b 1;
-    cfg.chip_vif.ios_if.pins_pd[UsbN]                = 1'b 1;
+    drive_pad(pad_type, pad_idx, 0);
+    // TODO: replace with pwrmgr low_power signal probe.
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Entering low power mode.")
+    #(exit_delay * 1ns);
+    drive_pad(pad_type, pad_idx, 1);
 
-    // Drive selected pad to 0
-    if (mio0_dio1) begin
-      cfg.chip_vif.ios_if.drive_pin(DioPads[pad_sel], 1'b 0);
-    end else begin
-      cfg.chip_vif.ios_if.drive_pin(MioPads[pad_sel-2], 1'b 0);
-    end
-
-    // Wait until chip enters low power (sleep or deep sleep).
-    `DV_WAIT(
-        cfg.sw_logger_vif.printed_log == "Entering low power mode."
-    )
-
-    // Wait #exit_delay ns before asserting a PAD
-    #(exit_delay * 1ns)
-
-    // Drive the Pin to high
-    `uvm_info(`gfn, "Driving a PAD to wake up the chip", UVM_LOW)
-
-    // Drive the pin using DPI `uvm_hdl_force()` function
-    if (mio0_dio1) begin
-      // DIO drive
-      cfg.chip_vif.ios_if.drive_pin(DioPads[pad_sel], 1'b1);
-    end else begin
-      // MIO drive. First 2 are tie-0, tie-1
-      if (pad_sel inside {0, 1}) begin
-        `uvm_error(`gfn, "pad_sel valu 0, 1 are not permitted.")
-      end else begin
-        cfg.chip_vif.ios_if.drive_pin(MioPads[pad_sel-2], 1'b1);
-      end
-    end
-
+    // After some time, the SW reboots and start over again. The ROM requires the SW strap pins to
+    // be driven to legal values. TODO: Find a better way to do this automatically.
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
+    cfg.chip_vif.sw_straps_if.drive(0);
   endtask : body
 
-  virtual task post_start();
-    super.post_start();
-  endtask : post_start
+  function void drive_pad(top_earlgrey_pkg::pad_type_e pad_type, int unsigned pad_idx, logic value);
+    `uvm_info(`gfn, $sformatf("Driving %0s[%0d] to %0b", pad_type.name(), pad_idx, value), UVM_LOW)
+    case (pad_type)
+      top_earlgrey_pkg::DioPad: begin
+        `DV_CHECK(pad_idx inside {[0:top_earlgrey_pkg::DioCount-1]})
+        // DIO from the pinmux peripheral side needs to be mapped to the pad side. This mapping is
+        // provided by chip_common_pkg::DioToDioPadMap.
+        cfg.chip_vif.dios_if.drive_pin(DioToDioPadMap[pad_idx], value);
+      end
+      top_earlgrey_pkg::MioPad: begin
+        // On the pinmux peripheral side, the MIO pad numbering starts at 2 (index 0 and 1 are
+        // reserved for tie-high and tie-low indications).
+        pad_idx = pad_idx - 2;
+        `DV_CHECK(pad_idx inside {[0:MioPadCount-1]})
+        cfg.chip_vif.mios_if.drive_pin(pad_idx, value);
+      end
+      default: `uvm_fatal(`gfn, $sformatf("Invalid pad type: %0d", pad_type))
+    endcase
+  endfunction
 
 endclass : chip_sw_sleep_pin_wake_vseq
