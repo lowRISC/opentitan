@@ -5,7 +5,7 @@
 // This is split off from pwrmgr_bind so that we can instantiate that in chip top, but
 // specialize the bind of pwrmgr_rstmgr_sva_if for top_earlgrey, which is needed in order
 // to hook up ndm_sys_req because pwrmgr doesn't see it.
-module pwrmgr_rstmgr_bind;
+module pwrmgr_unit_bind;
 
   bind pwrmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
     .clk_i,
@@ -29,6 +29,18 @@ module pwrmgr_rstmgr_bind;
     // The inputs from rstmgr.
     .rst_lc_src_n(pwr_rst_i.rst_lc_src_n),
     .rst_sys_src_n(pwr_rst_i.rst_sys_src_n)
+  );
+
+  bind pwrmgr pwrmgr_ast_sva_if #(
+    .CheckClocks(1'b0)
+  ) pwrmgr_ast_sva_if (
+    .clk_slow_i,
+    .rst_slow_ni,
+    // Leave clk_*_i inputs unconnected as they are not used by assertions in unit tests.
+    // The pwrmgr outputs.
+    .pwr_ast_o,
+    // The pwrmgr input.
+    .pwr_ast_i
   );
 
 endmodule
