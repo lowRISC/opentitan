@@ -17,6 +17,9 @@ class spi_host_dummy_seq extends spi_base_seq;
                                                     SpiTransIncompleteOpcode};
                                    if (cfg.spi_func_mode == SpiModeGeneric) {
                                     item_type != SpiTransIncompleteOpcode;
+                                   } else {
+                                    // TODO(#15721), dummy CSB without clock affects flash mode
+                                    item_type != SpiTransCsbNoSck;
                                    }
                                    csb_sel == local::csb_sel;
                                    data.size() == 1; // use for SpiTransIncompleteOpcode
