@@ -101,6 +101,12 @@ package top_${top["name"]}_pkg;
     ${lib.Name.from_snake_case("dio_count").as_camel_case()} = ${total}
   } dio_e;
 
+  // Enumeration for the types of pads.
+  typedef enum {
+    MioPad,
+    DioPad
+  } pad_type_e;
+
   // Raw MIO/DIO input array indices on chip-level.
   // TODO: Does not account for target specific stubbed/added pads.
   // Need to make a target-specific package for those.
@@ -121,6 +127,17 @@ package top_${top["name"]}_pkg;
 % endfor
     ${lib.Name.from_snake_case("dio_pad_count").as_camel_case()}
   } dio_pad_e;
+
+<%
+    instances = sorted(set(inst for (inst, _), __ in helper.devices()))
+%>\
+  // List of peripheral instantiated in this chip.
+  typedef enum {
+% for inst in instances:
+    ${lib.Name.from_snake_case(f"peripheral_{inst}").as_camel_case()},
+% endfor
+    ${lib.Name.from_snake_case("peripheral_count").as_camel_case()}
+  } peripheral_e;
 
   // TODO: Enumeration for PLIC Interrupt source peripheral.
   // TODO: Enumeration for PLIC Interrupt Ids.

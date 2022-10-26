@@ -839,6 +839,12 @@ package top_earlgrey_pkg;
     DioCount = 16
   } dio_e;
 
+  // Enumeration for the types of pads.
+  typedef enum {
+    MioPad,
+    DioPad
+  } pad_type_e;
+
   // Raw MIO/DIO input array indices on chip-level.
   // TODO: Does not account for target specific stubbed/added pads.
   // Need to make a target-specific package for those.
@@ -919,6 +925,54 @@ package top_earlgrey_pkg;
     DioPadIor9 = 22,
     DioPadCount
   } dio_pad_e;
+
+  // List of peripheral instantiated in this chip.
+  typedef enum {
+    PeripheralAdcCtrlAon,
+    PeripheralAes,
+    PeripheralAlertHandler,
+    PeripheralAonTimerAon,
+    PeripheralAst,
+    PeripheralClkmgrAon,
+    PeripheralCsrng,
+    PeripheralEdn0,
+    PeripheralEdn1,
+    PeripheralEntropySrc,
+    PeripheralFlashCtrl,
+    PeripheralGpio,
+    PeripheralHmac,
+    PeripheralI2c0,
+    PeripheralI2c1,
+    PeripheralI2c2,
+    PeripheralKeymgr,
+    PeripheralKmac,
+    PeripheralLcCtrl,
+    PeripheralOtbn,
+    PeripheralOtpCtrl,
+    PeripheralPattgen,
+    PeripheralPinmuxAon,
+    PeripheralPwmAon,
+    PeripheralPwrmgrAon,
+    PeripheralRomCtrl,
+    PeripheralRstmgrAon,
+    PeripheralRvCoreIbex,
+    PeripheralRvDm,
+    PeripheralRvPlic,
+    PeripheralRvTimer,
+    PeripheralSensorCtrl,
+    PeripheralSpiDevice,
+    PeripheralSpiHost0,
+    PeripheralSpiHost1,
+    PeripheralSramCtrlMain,
+    PeripheralSramCtrlRetAon,
+    PeripheralSysrstCtrlAon,
+    PeripheralUart0,
+    PeripheralUart1,
+    PeripheralUart2,
+    PeripheralUart3,
+    PeripheralUsbdev,
+    PeripheralCount
+  } peripheral_e;
 
   // TODO: Enumeration for PLIC Interrupt source peripheral.
   // TODO: Enumeration for PLIC Interrupt Ids.
