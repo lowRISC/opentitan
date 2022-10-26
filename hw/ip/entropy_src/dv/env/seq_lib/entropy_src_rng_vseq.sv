@@ -17,9 +17,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // just before enabling.
   int csrng_pull_seq_seed_offset = 0;
 
-  // Flag to suspend exceptions/reconfigs when testing certain DUT conditions.
-  int do_not_disturb = 0;
-
   rand uint dly_to_access_intr;
   rand uint dly_to_access_alert_sts;
   rand uint dly_to_insert_entropy;
@@ -244,6 +241,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     if (switch_to_fips_mode) begin
       `uvm_info(`gfn, "SWITCHING to FIPS mode", UVM_MEDIUM)
       csr_wr(.ptr(ral.conf.fips_enable), .value(MuBi4True));
+      if (`gmv(ral.entropy_control.es_route) == MuBi4True) begin
+        csr_wr(.ptr(ral.entropy_control.es_type), .value(MuBi4False));
+      end
     end
 
     if (check_sw_update_explicit &&
@@ -259,6 +259,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       // useful for logging, but it may not be worth the complexity here.
     end
 
+    wait_no_outstanding_access();
     enable_dut();
 
   endtask
@@ -267,7 +268,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     bit [TL_DW - 1:0] intr_status;
     bit               interrupt_shutdown = 0;
 
-    `uvm_info(`gfn, "process interrupts", UVM_HIGH)
+    `uvm_info(`gfn, "process interrupts", UVM_DEBUG)
 
     // avoid zero delay loop during reset
     wait(!cfg.under_reset);
@@ -383,10 +384,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   endfunction
 
   function void randomize_csr_alert_time();
+    string msg;
     if (cfg.mean_rand_csr_alert_time > 0) begin
       sched_csr_alert_time = randomize_failure_time(cfg.mean_rand_csr_alert_time);
       // randomize_failure_time uses negative values to communicate errors
-      `uvm_info(`gfn, $sformatf("sched_csr_alert_time: %g", sched_csr_alert_time), UVM_FULL)
+      msg = $sformatf("sched_csr_alert_time: %0.2f ms", sched_csr_alert_time/1ms);
+      `uvm_info(`gfn, msg, UVM_FULL)
       `DV_CHECK_FATAL(sched_csr_alert_time >= 0, "Failed to schedule CSR alert event")
     end else begin
       // Use a negative value here to communicate no scheduled events
@@ -398,7 +401,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     string lockable_conf_regs [] = '{
         "conf", "entropy_control", "health_test_windows", "repcnt_thresholds", "repcnts_thresholds",
         "adaptp_hi_thresholds", "adaptp_lo_thresholds", "bucket_thresholds", "markov_hi_thresholds",
-        "markov_lo_thresholds", "fw_ov_control", "observe_fifo_thresh"
+        "markov_lo_thresholds", "fw_ov_control", "observe_fifo_thresh", "alert_threshold"
     };
     foreach (lockable_conf_regs[i]) begin
       bit [TL_DW - 1:0] val;
@@ -627,6 +630,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     csr_rd(.ptr(ral.conf.fips_enable), .value(fips_enable));
     csr_rd(.ptr(ral.entropy_control.es_route), .value(es_route));
 
+    // We don't need to monitor the CSRNG bus if nothing will be coming on it, or
+    // if the DUT is already configured to output FIPS data.
     boot_mode_csrng = fips_enable != MuBi4True &&
                       es_route != MuBi4True;
 
@@ -680,11 +685,16 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   endtask
 
   task reconfig_timer_thread();
-    realtime delta;
-    string msg;
+    realtime delta = -1, random_delta, timeout_delta, init_time;
+    string  msg;
 
+    init_time = $realtime();
 
-    if (cfg.mean_rand_reconfig_time <= 0) begin
+    timeout_delta = !cfg.generates_seeds(mubi4_t'(`gmv(ral.entropy_control.es_route)),
+                                         mubi4_t'(`gmv(ral.conf.entropy_data_reg_enable))) ?
+                    cfg.max_silent_reconfig_time : -1;
+
+    if (cfg.mean_rand_reconfig_time <= 0 && timeout_delta <= 0) begin
       `uvm_info(`gfn, "Skipping reconfig timer thread", UVM_LOW)
       return;
     end
@@ -693,10 +703,27 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     randomize_unexpected_config_time();
     if (sched_reconfig_time > 0) begin
-      delta = (sched_reconfig_time - $realtime());
-      msg  = $sformatf("Triggering reconfig after %0.2f ms", delta/1ms);
+      random_delta = (sched_reconfig_time - init_time);
+    end
+
+    case ({random_delta > 0, timeout_delta > 0})
+      2'b11: delta = random_delta < timeout_delta ? random_delta : timeout_delta;
+      2'b10: delta = random_delta;
+      2'b01: delta = timeout_delta;
+      2'b00: delta = -1;
+      default: delta = -1;
+    endcase
+
+    msg = $sformatf("random_delta: %0.2fms, timeout_delta: %0.2fms, delta: %0.2fms",
+                    random_delta/1ms, timeout_delta/1ms, delta/1ms);
+    `uvm_info(`gfn, msg, UVM_DEBUG)
+
+    if(delta > 0) begin
+      msg  = $sformatf("Schedling reconfig after %0.2f ms", delta/1ms);
+      `uvm_info(`gfn, msg, UVM_MEDIUM)
       `DV_SPINWAIT_EXIT(#(delta);, wait(!do_background_procs);)
-      if(do_background_procs) begin
+      if(!do_background_procs) begin
+        msg  = $sformatf("Reconfig pre-empted after %0.2f ms", ($realtime()-init_time)/1ms);
         `uvm_info(`gfn, msg, UVM_MEDIUM)
       end
       // Stop other background procs (if they haven't been already)
@@ -717,9 +744,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     int preconfig_disable_pct_orig = cfg.dut_cfg.preconfig_disable_pct;
     entropy_src_dut_cfg altcfg=new cfg.dut_cfg;
 
-    // Force a reset if the device is currently locked via sw_regupd
-
     do begin
+      string msg;
+
       if (do_reset) begin
         apply_reset(.kind("HARD_DUT_ONLY"));
         post_apply_reset(.reset_kind("HARD"));
@@ -727,6 +754,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       wait(cfg.under_reset == 0);
       do_reenable = 0;
 
+      `uvm_info(`gfn, "Generating new random config", UVM_MEDIUM)
+      // Make a new copy of the DUT cfg.
+      altcfg = new cfg.dut_cfg;
       `DV_CHECK_RANDOMIZE_FATAL(altcfg);
       if (!do_reset) begin
         // Don't change the ht_threshold_scope or window sizes without a reset otherwise the one-way
@@ -749,26 +779,30 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       if (!reconfig_complete) begin
         // Don't do any more bad MuBi's settings this round.
         `uvm_info(`gfn, "Disabling Bad Mubi settings for now", UVM_MEDIUM)
-        altcfg.bad_mubi_cfg_pct = 0;
+        cfg.dut_cfg.bad_mubi_cfg_pct = 0;
       end else begin
         // Capture the current DUT settings in cfg.dut_cfg
         // This presents the results of the update
         // to the scoreboard for review.
         check_reconfig();
       end
-      // Even if the reconfig proceeded without an exception, we try to configure again
-      // after disabling and resetting the device.
-      if (reconfig_complete && regwen) begin
-        altcfg.preconfig_disable_pct = 100;
+      // Even if the reconfig proceeded without an exception, we check to see
+      // if there were any obstacles to configuration. If so configure again
+      // after disabling and, if necessary, resetting the device.
+      if (reconfig_complete && !regwen) begin
+        cfg.dut_cfg.preconfig_disable_pct = 100;
         sw_locked = (`gmv(ral.sw_regupd.sw_regupd) == 0);
+        // Force a reset if the device is currently locked via sw_regupd
         if (sw_locked) do_reset = 1;
       end
-    end while (!reconfig_complete && !regwen && continue_sim);
+    end while (!(reconfig_complete && regwen) && continue_sim);
+
+    check_reconfig();
+
     init_successful = 1;
     if (regwen || do_reset) begin
-       cfg.dut_cfg = altcfg;
        `uvm_info(`gfn, "DUT Reconfigured", UVM_LOW)
-       `uvm_info(`gfn, cfg.dut_cfg.convert2string(), UVM_LOW)
+       `uvm_info(`gfn, altcfg.convert2string(), UVM_LOW)
     end
 
     // Write the new config to dut_cfg
@@ -778,6 +812,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     cfg.dut_cfg.bad_mubi_cfg_pct = bad_mubi_cfg_pct_orig;
     cfg.dut_cfg.preconfig_disable_pct = preconfig_disable_pct_orig;
 
+    // Don't enable here, let the main loop do that explicitly
   endtask
 
   task body();
@@ -808,10 +843,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
           entropy_inject_thread();
           interrupt_handler_thread();
           reinit_monitor_thread();
-          if (!do_not_disturb) begin
-            forced_alert_thread();
-            reconfig_timer_thread();
-          end
+          forced_alert_thread();
+          reconfig_timer_thread();
           // Start the targetted transition thread, unless it is clear from the cfg that it will
           // never actually induce any transitions.
           if (cfg.induce_targeted_transition_pct != 0) begin

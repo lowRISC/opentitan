@@ -21,6 +21,12 @@ class entropy_src_rng_test extends entropy_src_base_test;
     // The random alerts only need to happen frequently enough to
     // close coverage
     cfg.mean_rand_csr_alert_time    = 20ms;
+    // The following should be enough to confirm that OTP-silenced configurations are not
+    // outputting any seeds.
+    // TODO (V3/Enhancement): Add coverpoints (with sampling ifs) and assertions to
+    // confirm that data is actually being dropped in the DUT. (Silent configs are not counted
+    // by existing CP's as we only sample when seeds are generated)
+    cfg.max_silent_reconfig_time    = 100us;
     cfg.soft_mtbf                   = 7500us;
 
     // Apply standards ranging from strict to relaxed

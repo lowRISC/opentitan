@@ -63,6 +63,12 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Default: Negative, meaning no random reconfigs
   realtime mean_rand_csr_alert_time = -1;
 
+  // Maximum time to wait for non-seed generating DUT configurations
+  realtime max_silent_reconfig_time = -1;
+
+  // Time to pause between register configs.
+  realtime configuration_pause_time = 0ns;
+
   int      seed_cnt;
 
   // The AST/RNG does not pay attention to the entropy_src `ready` backpressure signal on the RNG
@@ -294,6 +300,22 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     `DV_CHECK(otp_en_es_fw_over_pct <= 100);
     `DV_CHECK(do_check_ht_diag_pct <= 100);
     `DV_CHECK(induce_targeted_transition_pct <= 100);
+  endfunction
+
+  // Some combinations of environment and DUT configurations do not generate seeds. This function
+  // helps vseqs identify these inactive configurations to more quickly prompt a reconfiguration
+  // to get more coverage in a given run.
+  function bit generates_seeds(mubi4_t route_software, mubi4_t entropy_data_reg_enable);
+    if (route_software == MuBi4True) begin
+      return (otp_en_es_fw_read == MuBi8True) && (entropy_data_reg_enable == MuBi4True);
+    end
+    return 1;
+  endfunction
+
+  // Similar to generates_seeds(), returns true if a configuration should be able to
+  // generate observe_data
+  function bit generates_observe_data(mubi4_t fw_read_enable);
+     return (otp_en_es_fw_over == MuBi8True) && (fw_read_enable == MuBi4True);
   endfunction
 
 endclass

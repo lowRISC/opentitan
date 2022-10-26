@@ -39,7 +39,7 @@ class entropy_src_env extends cip_base_env #(
     // tests which use a fixed (non-random) RNG sequence.  So the backpressure support is done
     // on a test by test basis.
     cfg.m_rng_agent_cfg.zero_delays = 0;
-    cfg.m_rng_agent_cfg.host_delay_min = 6;
+    cfg.m_rng_agent_cfg.host_delay_min = 1;
     cfg.m_rng_agent_cfg.host_delay_max = 12;
     cfg.m_rng_agent_cfg.ignore_push_host_backpressure = cfg.rng_ignores_backpressure;
 

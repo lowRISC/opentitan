@@ -50,6 +50,7 @@ class entropy_src_base_test extends cip_base_test #(
     // in one of the derived test classes.
     cfg.mean_rand_reconfig_time   = -1.0;
     cfg.mean_rand_csr_alert_time  = -1.0;
+    cfg.max_silent_reconfig_time  = -1.0;
     cfg.soft_mtbf                 = -1.0;
     cfg.hard_mtbf                 = -1.0;
 
