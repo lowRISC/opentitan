@@ -294,7 +294,7 @@
             - Check interrupts (connected, pkt_received, pkt_sent, av_empty, rx_full) are triggered
               correcly.
             '''
-      stage: V2
+      stage: V3
       tests: []
     }
     {
@@ -309,7 +309,7 @@
             - Re-enable data transfer and ensure data correctness.
             - Observe valid reference pulse usb_ref_val/pulse_o.
             '''
-      stage: V2
+      stage: V3
       tests: []
     }
     {
@@ -336,7 +336,7 @@
                   USB.
             - Re-enable data transfer and ensure data correctness.
             '''
-      stage: V2
+      stage: V3
       tests: []
     }
     {
@@ -351,7 +351,7 @@
             - Stop sending any frame and check the `host_lost` interrupt. Ensure `use_ref_*` behave
               correctly.
             '''
-      stage: V2
+      stage: V3
       tests: []
     }
     {
@@ -361,7 +361,7 @@
             - Drive random value on `usb_state_debug_i`.
             - Ensure the CSR `wake_debug` returns correctly value.
             '''
-      stage: V2
+      stage: V3
       tests: []
     }
     {
@@ -370,7 +370,7 @@
 
             - TODO
             '''
-      stage: V2
+      stage: V3
       tests: []
     }
 
@@ -575,6 +575,7 @@
 
             - Program some CSRs / mem that are under life cycle reset tree and system reset tree.
             - Configure RV_DM to send NDM reset request to reset sytem reset tree.
+            - While NDM reset is ongoing, ensure the RV_DM debug module registers can still be accessed.
             - Read the programmed CSRs / mem to ensure that everything under system reset tree is
               reset to the original values, while values under life cycle reset will be preserved.
             - Read CSRs / mem in the debug domain to ensure that the values survive the reset.
@@ -599,8 +600,9 @@
       name: chip_rv_dm_access_after_wakeup
       desc: '''Verify RV_DM works after wakes up from sleep.
 
-            - Put the chip into sleep mode and then wake up.
-            - Access some RV_DM CSRs to ensure that RV_DM doesn't need a full reset to work.
+            - Put the chip into sleep mode and then wake up (both deep sleep and normal sleep).
+            - If waking up from normal sleep, an activation should not be required for RV_DM CSR accesses to work.
+            - If waking up from deep sleep, an activation is required for RV_DM CSR accesses to work.
             '''
       stage: V2
       tests: []
@@ -633,6 +635,16 @@
             '''
       stage: V2
       tests: ["chip_rv_dm_lc_disabled"]
+    }
+    {
+      name: chip_rv_dm_access_after_hw_reset
+      desc: '''Verify RV_DM works after a watchdog or escalated reset.
+
+            - Access some RV_DM CSRs both before and after resets.
+            - An activation would be required, and the tap strap would also be sampled again.
+            '''
+      stage: V3
+      tests: []
     }
 
     // RV_TIMER (pre-verified IP) integration tests:
