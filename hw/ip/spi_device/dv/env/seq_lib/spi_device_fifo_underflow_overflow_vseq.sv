@@ -14,7 +14,7 @@ class spi_device_fifo_underflow_overflow_vseq extends spi_device_txrx_vseq;
 
   virtual task body();
     // overflow will occur in this test, disable overflow assertion in RTL
-    $assertoff(0, "tb.dut.u_s2p.BitcountOverflow_A");
+    fifo_underflow_overflow_sva_control(.enable(0));
 
     allow_underflow_overflow = 1;
     // when underflow, sio may be unknown, disable checking it
@@ -22,7 +22,7 @@ class spi_device_fifo_underflow_overflow_vseq extends spi_device_txrx_vseq;
     super.body();
     cfg.spi_host_agent_cfg.en_monitor_checks = 1;
 
-    $asserton(0, "tb.dut.u_s2p.BitcountOverflow_A");
+    fifo_underflow_overflow_sva_control(.enable(1));
   endtask
 
   // there may be some data left due to under/overflow, need to flush out all data
