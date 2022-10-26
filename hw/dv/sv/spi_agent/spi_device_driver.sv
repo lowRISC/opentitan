@@ -46,6 +46,9 @@ class spi_device_driver extends spi_driver;
       active_csb = req.csb_sel;
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
+      // The response should read the payload actually consumed, not start with
+      // it filled out.
+      rsp.payload_q = '{};
 
       wait (!under_reset && !cfg.vif.csb[active_csb]);
       fork

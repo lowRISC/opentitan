@@ -65,7 +65,7 @@ class spi_host_flash_seq extends spi_base_seq;
                                     }
                                    }
                                   // TODO, consolidate data and payload later
-                                  data.size == 1;)
+                                  data.size == 0;)
     finish_item(req);
     get_response(rsp);
   endtask
