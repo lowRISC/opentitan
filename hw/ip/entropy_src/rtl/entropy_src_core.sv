@@ -441,6 +441,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic                    stale_seed_processing;
   logic                    main_sm_enable;
+  logic                    ht_data_in_flight;
   logic                    cond_data_in_flight;
 
   logic                    unused_err_code_test_bit;
@@ -527,7 +528,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // register lock gating
   //--------------------------------------------
 
-  assign es_hw_regwen = reg2hw.sw_regupd.q && mubi4_test_false_loose(mubi_module_en_raw_fanout[0]);
+  // Allow writes only if
+  // 1. SW_REGUPD is true,
+  // 2. The DUT is disabled
+  //    - This includes also a brief 2-cycle post-disable period where the window_cntr is enabled.
+  //      Hence the extra term of ht_data_in_flight
+  assign es_hw_regwen = reg2hw.sw_regupd.q &&
+                        mubi4_test_false_loose(mubi_module_en_raw_fanout[0]) &&
+                        !ht_data_in_flight;
   assign hw2reg.regwen.de = 1'b1;
   assign hw2reg.regwen.d = es_hw_regwen;
 
@@ -1468,7 +1476,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   ) u_prim_count_window_cntr (
     .clk_i,
     .rst_ni,
-    .clr_i(!es_enable_fo[5]),
+    .clr_i(!(es_enable_fo[5] || ht_data_in_flight)),
     .set_i(health_test_done_pulse),
     .set_cnt_i(HalfRegWidth'(0)),
     .incr_en_i(health_test_esbus_vld),
@@ -1478,6 +1486,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .cnt_next_o(),
     .err_o(window_cntr_err)
   );
+
+  // Keep the counter running so long as there is still data flowing up to the health checks
+  assign ht_data_in_flight = (sfifo_esrng_pop | pfifo_esbit_pop);
 
   // Window wrap condition
   assign health_test_done_pulse = (window_cntr >= health_test_window);
