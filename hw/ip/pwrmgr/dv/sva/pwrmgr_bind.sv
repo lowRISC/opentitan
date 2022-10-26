@@ -34,15 +34,6 @@ module pwrmgr_bind;
     .usb_clk_en(pwr_ast_o.usb_clk_en)
   );
 
-  bind pwrmgr pwrmgr_ast_sva_if pwrmgr_ast_sva_if (
-    .clk_slow_i,
-    .rst_slow_ni,
-    // The pwrmgr outputs.
-    .pwr_ast_o,
-    // The pwrmgr input.
-    .pwr_ast_i
-  );
-
   bind pwrmgr clkmgr_pwrmgr_sva_if clkmgr_pwrmgr_sva_if (
     .clk_i,
     .rst_ni,
