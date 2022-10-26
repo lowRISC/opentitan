@@ -73,6 +73,20 @@ SLOTS = {
 ) for slot in SLOTS]
 
 opentitan_functest(
+    name = "rom_e2e_flash_ctrl_init",
+    srcs = ["rom_e2e_flash_ctrl_init_test.c"],
+    signed = True,
+    targets = [
+        "cw310_rom",
+    ],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+    ],
+)
+
+opentitan_functest(
     name = "rom_e2e_shutdown_exception_c",
     srcs = ["rom_e2e_shutdown_exception_c_test.c"],
     cw310 = cw310_params(
