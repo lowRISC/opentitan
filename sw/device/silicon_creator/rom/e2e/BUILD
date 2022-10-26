@@ -68,6 +68,7 @@ SLOTS = {
     deps = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 ) for slot in SLOTS]
 
@@ -462,7 +463,7 @@ SEC_VERS = [
     srcs = ["empty_test.c"],
     devices = ["fpga_cw310"],
     local_defines = [
-        shell.quote("EMPTY_TEST_MSG=\"slot=%p, security_version=%01d\",manifest_def_get(),manifest_def_get()->security_version"),
+        shell.quote("EMPTY_TEST_MSG=\"slot=%p, security_version=%01d, lc_state=0x%08x\", manifest_def_get(), manifest_def_get()->security_version, lifecycle_raw_state_get()"),
     ],
     manifest = ":manifest_sec_ver_{}".format(sec_ver),
     signed = True,
@@ -491,32 +492,64 @@ BOOT_POLICY_NEWER_CASES = [
     {
         "a": 0,
         "b": 0,
-        "exit_success": "slot=0x20000000, security_version=0",
+        "exit_success": "slot=0x20000000, security_version=0, lc_state=0x{}",
     },
     {
         "a": 0,
         "b": 1,
-        "exit_success": "slot=0x20080000, security_version=1",
+        "exit_success": "slot=0x20080000, security_version=1, lc_state=0x{}",
     },
     {
         "a": 1,
         "b": 0,
-        "exit_success": "slot=0x20000000, security_version=1",
+        "exit_success": "slot=0x20000000, security_version=1, lc_state=0x{}",
     },
     {
         "a": 1,
         "b": 1,
-        "exit_success": "slot=0x20000000, security_version=1",
+        "exit_success": "slot=0x20000000, security_version=1, lc_state=0x{}",
     },
 ]
 
+LC_STATES_BOOT_POLICY_NEWER = [k.lower() for k in structs.to_dict(CONST.LCV)]
+
+[otp_image(
+    name = "otp_img_boot_policy_newer_{}".format(lc_state),
+    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+    overlays = [
+        "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
+        "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
+        "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+    ],
+    tags = ["vivado"],
+) for lc_state in LC_STATES_BOOT_POLICY_NEWER]
+
+# Splice OTP images into bitstreams
+[
+    bitstream_splice(
+        name = "bitstream_boot_policy_newer_{}".format(lc_state),
+        src = "@//hw/bitstream:rom",
+        data = ":otp_img_boot_policy_newer_{}".format(lc_state),
+        meminfo = "@//hw/bitstream:otp_mmi",
+        tags = ["vivado"],
+        update_usr_access = True,
+    )
+    for lc_state in LC_STATES_BOOT_POLICY_NEWER
+]
+
 [opentitan_functest(
-    name = "boot_policy_newer_a_{}_b_{}".format(
+    name = "boot_policy_newer_{}_a_{}_b_{}".format(
+        lc_state,
         t["a"],
         t["b"],
     ),
     cw310 = cw310_params(
-        exit_success = t["exit_success"],
+        bitstream = ":bitstream_boot_policy_newer_{}".format(lc_state),
+        exit_success = t["exit_success"].format(hex(getattr(
+            CONST.LCV,
+            lc_state.upper(),
+        ))),
+        tags = ["vivado"],
     ),
     key = "multislot",
     ot_flash_binary = ":sec_ver_{}_{}_image".format(
@@ -524,14 +557,16 @@ BOOT_POLICY_NEWER_CASES = [
         t["b"],
     ),
     targets = ["cw310_rom"],
-) for t in BOOT_POLICY_NEWER_CASES]
+) for lc_state in LC_STATES_BOOT_POLICY_NEWER for t in BOOT_POLICY_NEWER_CASES]
 
 test_suite(
     name = "boot_policy_newer",
-    tests = ["boot_policy_newer_a_{}_b_{}".format(
+    tags = ["manual"],
+    tests = ["boot_policy_newer_{}_a_{}_b_{}".format(
+        lc_state,
         t["a"],
         t["b"],
-    ) for t in BOOT_POLICY_NEWER_CASES],
+    ) for lc_state in LC_STATES_BOOT_POLICY_NEWER for t in BOOT_POLICY_NEWER_CASES],
 )
 
 BOOT_POLICY_ROLLBACK_CASES = [
