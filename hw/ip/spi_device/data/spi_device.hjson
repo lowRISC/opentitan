@@ -1176,14 +1176,6 @@
           name: "cmdaddr_notempty"
           desc: "If 1, the TPM_CMD_ADDR has a valid data. This status is reported via the interrupt also."
         } // f: cmdaddr_notempty
-        { bits: "1"
-          name: "rdfifo_notempty"
-          desc: "If 1, the TPM_READ_FIFO still has pending data."
-        } // f: rdfifo_notempty
-        { bits: "7+TpmRdFifoPtrW:8"
-          name: "rdfifo_depth"
-          desc: "This field represents the current read FIFO depth"
-        } // f: rdfifo_depth
         { bits: "15+TpmWrFifoPtrW:16"
           name: "wrfifo_depth"
           desc: "This field represents the current write FIFO depth."

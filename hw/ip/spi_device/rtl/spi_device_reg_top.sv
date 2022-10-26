@@ -1513,8 +1513,6 @@ module spi_device_reg_top (
   logic tpm_cfg_invalid_locality_qs;
   logic tpm_cfg_invalid_locality_wd;
   logic tpm_status_cmdaddr_notempty_qs;
-  logic tpm_status_rdfifo_notempty_qs;
-  logic [4:0] tpm_status_rdfifo_depth_qs;
   logic [6:0] tpm_status_wrfifo_depth_qs;
   logic tpm_access_0_we;
   logic [7:0] tpm_access_0_access_0_qs;
@@ -18472,58 +18470,6 @@ module spi_device_reg_top (
     .qs     (tpm_status_cmdaddr_notempty_qs)
   );
 
-  //   F[rdfifo_notempty]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0)
-  ) u_tpm_status_rdfifo_notempty (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.tpm_status.rdfifo_notempty.de),
-    .d      (hw2reg.tpm_status.rdfifo_notempty.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (tpm_status_rdfifo_notempty_qs)
-  );
-
-  //   F[rdfifo_depth]: 12:8
-  prim_subreg #(
-    .DW      (5),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (5'h0)
-  ) u_tpm_status_rdfifo_depth (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-
-    // from register interface
-    .we     (1'b0),
-    .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.tpm_status.rdfifo_depth.de),
-    .d      (hw2reg.tpm_status.rdfifo_depth.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (tpm_status_rdfifo_depth_qs)
-  );
-
   //   F[wrfifo_depth]: 22:16
   prim_subreg #(
     .DW      (7),
@@ -21456,8 +21402,6 @@ module spi_device_reg_top (
 
       addr_hit[66]: begin
         reg_rdata_next[0] = tpm_status_cmdaddr_notempty_qs;
-        reg_rdata_next[1] = tpm_status_rdfifo_notempty_qs;
-        reg_rdata_next[12:8] = tpm_status_rdfifo_depth_qs;
         reg_rdata_next[22:16] = tpm_status_wrfifo_depth_qs;
       end
 

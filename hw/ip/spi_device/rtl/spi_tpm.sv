@@ -134,8 +134,6 @@ module spi_tpm
 
   // TPM_STATUS
   output logic                  sys_cmdaddr_notempty_o,
-  output logic                  sys_rdfifo_notempty_o,
-  output logic [RdFifoPtrW-1:0] sys_rdfifo_depth_o,
   output logic [WrFifoPtrW-1:0] sys_wrfifo_depth_o
 );
 
@@ -371,7 +369,7 @@ module spi_tpm
   // Read FIFO uses inverted SCK (clk_out_i)
   logic                     isck_rdfifo_rvalid, isck_rdfifo_rready;
   logic [RdFifoWidth-1:0]   isck_rdfifo_rdata;
-  logic [RdFifoPtrW-1:0]    sys_rdfifo_wdepth, isck_rdfifo_rdepth;
+  logic [RdFifoPtrW-1:0]    isck_rdfifo_rdepth;
 
   logic [RdFifoOffsetW-1:0]     isck_rdfifo_idx;
   logic                         isck_rd_byte_sent;
@@ -1207,7 +1205,7 @@ module spi_tpm
     .wvalid_i  (sys_rdfifo_wvalid_i),
     .wready_o  (sys_rdfifo_wready_o),
     .wdata_i   (sys_rdfifo_wdata_i),
-    .wdepth_o  (sys_rdfifo_wdepth),
+    .wdepth_o  (),
 
     .clk_rd_i  (clk_out_i),
     .rst_rd_ni (rst_n),
@@ -1217,22 +1215,6 @@ module spi_tpm
     .rdepth_o  (isck_rdfifo_rdepth)
 
   );
-
-  // When CS# is de-asserted, there's chance the sys_rdfifo becomes metastable
-  // as RDFIFO reset is CS# (after async assert, sync de-assert rst sync logic)
-  // One solution is to change the rst sync to sync assert sync de-assert.
-  // However, it creates extra latency to the CS# inactive time. In this
-  // module, the logic simply latches the depth signal to remove the
-  // metastable state.
-  prim_flop_2sync #(
-    .Width (RdFifoPtrW)
-  ) u_rdfifo_depth_sync (
-    .clk_i  (sys_clk_i),
-    .rst_ni (sys_rst_ni),
-    .d_i    (sys_rdfifo_wdepth),
-    .q_o    (sys_rdfifo_depth_o)
-  );
-  assign sys_rdfifo_notempty_o = |sys_rdfifo_depth_o;
 
   // Logic Not Used
   logic unused_logic;
