@@ -459,4 +459,15 @@ class spi_device_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  virtual function void fifo_underflow_overflow_sva_control(bit enable);
+    if (enable) begin
+      $asserton(0, "tb.dut.u_txf_underflow.SrcPulseCheck_M");
+      $asserton(0, "tb.dut.u_txf_underflow.DstPulseCheck_A");
+      $asserton(0, "tb.dut.u_rxf_overflow.SrcPulseCheck_M");
+    end else begin
+      $assertoff(0, "tb.dut.u_txf_underflow.SrcPulseCheck_M");
+      $assertoff(0, "tb.dut.u_txf_underflow.DstPulseCheck_A");
+      $assertoff(0, "tb.dut.u_rxf_overflow.SrcPulseCheck_M");
+    end
+  endfunction
 endclass : spi_device_base_vseq

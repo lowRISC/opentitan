@@ -12,6 +12,8 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
     spi_device_intr_e spi_dev_intr;
     bit               is_tx_async_fifo_filled;
 
+    // overflow will occur in this test, disable overflow assertion in RTL
+    fifo_underflow_overflow_sva_control(.enable(0));
     for (int i = 1; i <= num_trans; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
       spi_device_fw_init();
@@ -46,7 +48,7 @@ class spi_device_intr_vseq extends spi_device_txrx_vseq;
       end
       `uvm_info(`gfn, $sformatf("finished run %0d/%0d", i, num_trans), UVM_LOW)
     end
-
+    fifo_underflow_overflow_sva_control(.enable(1));
   endtask : body
 
   task drive_and_check_one_intr(spi_device_intr_e spi_dev_intr);
