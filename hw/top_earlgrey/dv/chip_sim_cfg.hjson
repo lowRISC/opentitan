@@ -348,13 +348,6 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_clkmgr_escalation_reset
-      uvm_test_seq: chip_sw_clkmgr_escalation_reset_vseq
-      sw_images: ["//sw/device/tests/sim_dv:clkmgr_escalation_reset_test:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+bypass_alert_ready_to_end_check=1"]
-    }
-    {
       name: chip_sw_all_escalation_resets
       uvm_test_seq: chip_sw_all_escalation_resets_vseq
       sw_images: ["//sw/device/tests/sim_dv:all_escalation_resets_test:1"]
