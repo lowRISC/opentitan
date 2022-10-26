@@ -1089,12 +1089,11 @@
               - `CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG` controls the scrambling, ecc, and he
                 settings for the boot partitions `kFlashCtrlInfoPageBootData0` and
                 `kFlashCtrlInfoPageBootData1`.
-            - Verify that `kFlashCtrlInfoPageCreatorSecret` is locked down.
             - Verify that flash_ctrl is initialized.
             '''
       tags: ["rom", "no_dv", "fpga", "silicon"]
       stage: V2
-      tests: ["rom_keymgr_init"]
+      tests: []
     }
 
     {
