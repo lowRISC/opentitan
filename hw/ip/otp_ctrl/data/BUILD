@@ -60,6 +60,9 @@ otp_json(
                 # states. See the definition of `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": "0x739",
+                # TODO: This is a temporary workaround for #15728 in which the
+                # ROM fails the AST initialization in non-RMA lifecycle states
+                "CREATOR_SW_CFG_AST_INIT_EN": "0x9",
             },
         ),
     ],
