@@ -61,7 +61,7 @@ static const dif_pinmux_index_t kPeripheralOutputs[] = {
 };
 
 static const dif_pinmux_index_t kOutputPads[] = {
-    kTopEarlgreyPinmuxMioOutIob8,
+    kTopEarlgreyPinmuxMioOutIob7,
 };
 
 /**
@@ -89,10 +89,11 @@ static void wait_next_test_phase(void) {
   uint8_t current_phase = kTestPhase;
   // Set WFI status for testbench synchronization
   // No WFI instruction is issued
+  LOG_INFO("Prev test phase = %0d", kTestPhase);
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
   IBEX_SPIN_FOR(current_phase != kTestPhase, kTestPhaseTimeoutUsec);
-  LOG_INFO("Test phase = %0d", kTestPhase);
+  LOG_INFO("Next test phase = %0d", kTestPhase);
 }
 
 /**
@@ -116,11 +117,11 @@ static void configure_wakeup(void) {
 
 static void go_to_sleep(void) {
   // Wakeup source is from sysrst_ctrl (source one).
+  LOG_INFO("Going to sleep.");
+  test_status_set(kTestStatusInWfi);
   rstmgr_testutils_pre_reset(&rstmgr);
   pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceOne,
                                     0);
-  LOG_INFO("Going to sleep.");
-  test_status_set(kTestStatusInWfi);
   wait_for_interrupt();
 }
 
@@ -157,7 +158,7 @@ bool test_main(void) {
         pinmux_setup();
         break;
       case kTestPhaseDriveZero:
-        configure_wakeup();
+        //configure_wakeup();
         LOG_INFO("kTestPhaseDriveZero");
         break;
       case kTestPhaseWaitNoWakeup:
