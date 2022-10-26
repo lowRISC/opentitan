@@ -55,18 +55,6 @@ All hardware interfaces of the debug system are documented in the [PULP RISC-V D
 
 {{< incGenFromIpDesc "../data/rv_dm.hjson" "hwcfg" >}}
 
-The table below lists other debug module signals.
-
-Signal                     | Direction        | Type                               | Description
----------------------------|------------------|------------------------------------|---------------
-`lc_hw_debug_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`             | Multibit life cycle hardware debug enable signal coming from life cycle controller, asserted when the hardware debug mechanisms are enabled in the system.
-`ndmreset_req_o`           | `output`         | `logic`                            | Non-debug module reset request going to the system reset infrastructure.
-`dmactive_o`               | `output`         | `logic`                            | This signal indicates whether the debug module is active and can be used to prevent power down of the core and bus-attached peripherals.
-`debug_req_o`              | `output`         | `logic`                            | This is the debug request interrupt going to the main processor.
-`unavailable_i`            | `input`          | `logic`                            | This signal indicates to the debug module that the main processor is not available for debug (e.g. due to a low-power state).
-`jtag_i`                   | `input`          | `jtag_pkg::jtag_req_t`             | JTAG input signals
-`jtag_o`                   | `output`         | `jtag_pkg::jtag_rsp_t`             | JTAG output signals
-
 ### Life Cycle Control
 
 Debug system functionality is controlled by the [HW_DEBUG_EN]({{< relref "hw/ip/lc_ctrl/doc/#hw_debug_en" >}}) function of the life cycle controller.
@@ -138,3 +126,7 @@ The debug system wrapper provides a TL-UL host bus interface for SBA.
 output tlul_pkg::tl_h2d_t  tl_h_o,
 input  tlul_pkg::tl_d2h_t  tl_h_i,
 ```
+
+## Register Table
+
+{{< incGenFromIpDesc "../data/rv_dm.hjson" "registers" >}}
