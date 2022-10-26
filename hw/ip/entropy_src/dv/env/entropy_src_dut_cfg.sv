@@ -158,9 +158,25 @@ class entropy_src_dut_cfg extends uvm_object;
       prim_mubi_pkg::MuBi4True  :/ fw_read_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - fw_read_pct) };}
 
-  constraint fw_over_enable_c {fw_over_enable dist {
-      prim_mubi_pkg::MuBi4True  :/ fw_over_pct,
-      prim_mubi_pkg::MuBi4False :/ (100 - fw_over_pct) };}
+  // The fw_over_enable parameter should do nothing if fw_read_enable is False.  Since various
+  // several covergroups look to confirm this non-fw_ov behavior we set fw_over_enable to a
+  // 50/50 distribution when fw_read_enable is False, regardless of the value of fw_over_pct.
+  //
+  // The actual distribution of simulated DUT behaviors should be uneffected.
+  constraint fw_over_enable_c {
+      solve fw_read_enable before fw_over_enable;
+      if (fw_read_enable == MuBi4True) {
+        fw_over_enable dist {
+          prim_mubi_pkg::MuBi4True  :/ fw_over_pct,
+          prim_mubi_pkg::MuBi4False :/ (100 - fw_over_pct)
+        };
+      } else {
+        fw_over_enable dist {
+          prim_mubi_pkg::MuBi4True  :/ 50,
+          prim_mubi_pkg::MuBi4False :/ 50
+        };
+      }
+    }
 
   constraint fw_ov_insert_start_c {fw_ov_insert_start dist {
       prim_mubi_pkg::MuBi4True  :/ fw_ov_insert_start_pct,
