@@ -3133,9 +3133,12 @@
             - X-ref'd with manuf_cp_test_lock from the manufacturing testplan.
             - X-ref'd with chip_lc_scrap.
             - X-ref'd with chip_tap_strap_sampling
+            - X-ref'd with chip_sw_lc_walkthrough
+            - X-ref'd with chip_rv_dm_lc_disabled
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_lc_walkthrough_testunlocks",
+              "chip_rv_dm_lc_disabled"]
     }
     {
       name: chip_sw_lc_walkthrough
