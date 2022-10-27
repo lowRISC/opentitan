@@ -35,8 +35,6 @@ module tb;
 
   wire cio_scl_i;
   wire cio_sda_i;
-  wire cio_scl_o;
-  wire cio_sda_o;
   wire cio_scl_en_o;
   wire cio_sda_en_o;
 
@@ -63,10 +61,10 @@ module tb;
     .alert_tx_o              (alert_tx   ),
 
     .cio_scl_i               (cio_scl_i             ),
-    .cio_scl_o               (cio_scl_o             ),
+    .cio_scl_o               (/*hardcoded to 0*/    ),
     .cio_scl_en_o            (cio_scl_en_o          ),
     .cio_sda_i               (cio_sda_i             ),
-    .cio_sda_o               (cio_sda_o             ),
+    .cio_sda_o               (/*hardcoded to 0*/    ),
     .cio_sda_en_o            (cio_sda_en_o          ),
 
     .intr_fmt_watermark_o    (intr_fmt_watermark    ),
@@ -87,11 +85,19 @@ module tb;
     .intr_host_timeout_o     (intr_host_timeout     )
   );
 
-  // virtual open drain
-  assign i2c_if.scl_i = (cio_scl_en_o) ? cio_scl_o : ~cio_scl_o;
-  assign i2c_if.sda_i = (cio_sda_en_o) ? cio_sda_o : ~cio_sda_o;
-  assign cio_scl_i = i2c_if.scl_o;
-  assign cio_sda_i = i2c_if.sda_o;
+  // Model open-drain behavior
+  wire scl, sda;
+  assign scl = (cio_scl_en_o) ? 1'b0 : 1'bz;
+  assign sda = (cio_sda_en_o) ? 1'b0 : 1'bz;
+  assign scl = (i2c_if.scl_o) ? 1'bz : 1'b0;
+  assign sda = (i2c_if.sda_o) ? 1'bz : 1'b0;
+  assign (weak0, weak1) scl = 1'b1;
+  assign (weak0, weak1) sda = 1'b1;
+
+  assign i2c_if.scl_i = scl;
+  assign i2c_if.sda_i = sda;
+  assign cio_scl_i = scl;
+  assign cio_sda_i = sda;
 
   // host -> device if
   assign i2c_if.clk_i  = clk;
