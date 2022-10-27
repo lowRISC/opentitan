@@ -568,14 +568,17 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // check if csr write size greater or equal to csr width
   virtual function bit is_tl_csr_write_size_gte_csr_width(tl_seq_item item, string ral_name);
+    uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
+    dv_base_reg       csr;
+    dv_base_reg_block blk;
     if (!is_tl_access_mapped_addr(item, ral_name) || is_mem_addr(item, ral_name)) return 1;
-    if (cfg.ral_models[ral_name].get_supports_sub_word_csr_writes()) return 1;
+    // The RAL may be composed of sub-blocks each with its own settings. Find the
+    // sub-block to which this address (CSR) belongs.
+    `downcast(csr, cfg.ral_models[ral_name].default_map.get_reg_by_offset(addr))
+    `downcast(blk, csr.get_parent())
+    if (blk.get_supports_sub_word_csr_writes()) return 1;
     if (item.is_write()) begin
-      dv_base_reg    csr;
-      uvm_reg_addr_t addr = cfg.ral_models[ral_name].get_normalized_addr(item.a_addr);
       uint           csr_msb_pos;
-      `DV_CHECK_FATAL($cast(csr,
-                            cfg.ral_models[ral_name].default_map.get_reg_by_offset(addr)))
       csr_msb_pos = csr.get_msb_pos();
       if (csr_msb_pos >= 24 && item.a_mask[3:0] != 'b1111 ||
           csr_msb_pos >= 16 && item.a_mask[2:0] != 'b111  ||
