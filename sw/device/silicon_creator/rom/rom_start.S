@@ -17,10 +17,19 @@
 #include "otp_ctrl_regs.h"
 #include "pinmux_regs.h"
 #include "pwrmgr_regs.h"
+#include "rv_core_ibex_regs.h"
 #include "sensor_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
 
+// This macro defines convenience labels for tests that use a debugger.
+#define LABEL_FOR_TEST(kName_) .local kName_ ; kName_: ;
+
 .equ UNIMP, 0xc0001073
+// We will configure the watchdog timers to reset the chip in the event that the
+// ROM stalls. The watchdog's bite and bark thresholds are set to 1 and 1.1
+// seconds, respectively, assuming a clock frequency of 200 kHz.
+.equ WDOG_BITE_THOLD, 0x30d400
+.equ WDOG_BARK_THOLD, WDOG_BITE_THOLD * 11 / 10
 
 /**
  * ROM interrupt vectors.
@@ -40,15 +49,15 @@
   /**
    * Initial RISC-V vectored exception/interrupt handlers.
    *
-   * After reset all interrupts are disabled. Only exceptions (interrupt 0) and
-   * non-maskable interrupts (interrupt 31) are possible. For simplicity however
-   * we just set all interrupt handlers to the same exception handler.
+   * After reset, all interrupts are disabled. Only exceptions (interrupt 0) and
+   * non-maskable interrupts (interrupt 31) are possible. For simplicity,
+   * however, we just set all interrupt handlers to the same exception handler.
    *
-   * Since the C runtime is not initialized immediately after reset the initial
+   * Since the C runtime is not initialized immediately after reset, the initial
    * interrupt vector must only call functions written in assembly. Once the C
-   * runtime is intialized the interrupt vector should be replaced.
+   * runtime is intialized, the interrupt vector should be replaced.
    *
-   * If the hardware is operating correctly the assembly interrupt handlers
+   * If the hardware is operating correctly, the assembly interrupt handlers
    * should never be called.
    *
    * Note that the Ibex reset handler (entry point) immediately follows this
@@ -136,6 +145,7 @@ _rom_start_boot:
   la gp, __global_pointer$
   .option pop
 
+LABEL_FOR_TEST(kRomStartBootMaybeHalt)
   // Check if we should halt here.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
@@ -145,7 +155,13 @@ _rom_start_boot:
   wfi
   j .L_halt_loop
 
+LABEL_FOR_TEST(kRomStartBootExecEn)
 .L_exec_en:
+  // Enable NMIs from the watchdog timer.
+  li t0, TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR
+  li t1, (1 << RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT)
+  sw t1, RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET(t0)
+
   // Configure the power manager to enable resets.
   // Note: this enables all types of reset request for simplicity.
   li t0, TOP_EARLGREY_PWRMGR_AON_BASE_ADDR
@@ -156,20 +172,19 @@ _rom_start_boot:
   li t1, (1 << PWRMGR_CFG_CDC_SYNC_SYNC_BIT)
   sw t1, PWRMGR_CFG_CDC_SYNC_REG_OFFSET(t0)
 
-  // Setup the watchdog bite timer in order to reset the chip if the ROM stalls.
-  // The value below corresponds to 1 s for a clock frequency of 200 kHz.
-  // Since interrupts are disabled the watchdog bark will have no effect
-  // therefore the bark threshold is just set to the highest possible value.
+  // Configure the watchdog's bark and bite thresholds.
   li t0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
-  li t1, 0x30d40
-  sw t1, AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET(t0)
-  li t1, 0xffffffff
+  li t1, WDOG_BARK_THOLD
   sw t1, AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET(t0)
+  li t1, WDOG_BITE_THOLD
+LABEL_FOR_TEST(kRomStartStoreT1ToBiteThold)
+  sw t1, AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET(t0)
 
   // Enable the watchdog timer.
   li t1, (1 << AON_TIMER_WDOG_CTRL_ENABLE_BIT)
   sw t1, AON_TIMER_WDOG_CTRL_REG_OFFSET(t0)
 
+LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   // Clear all the machine-defined interrupts, `MEIE`, `MTIE`, and `MSIE` fields
   // of `mie`.
   li   t0, 0xFFFF0888
