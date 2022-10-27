@@ -73,7 +73,7 @@ opentitan_gdb_fpga_cw310_test = rv_rule(
             mandatory = True,
             allow_single_file = True,
         ),
-        "rom_kind": attr.string(mandatory = True),
+        "rom_kind": attr.string(mandatory = True, values = ["Rom", "TestRom"]),
         "_coordinator": attr.label(
             default = "//rules/scripts:gdb_test_coordinator",
             cfg = "exec",
