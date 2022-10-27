@@ -58,11 +58,20 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.sysrst_ctrl_if.drive_pin(5, 1'b1);
   endtask
 
+  /*
   virtual function void write_test_phase(test_phases_e phase);
     bit [7:0] test_phase[1];
     test_phase[0] = phase;
     sw_symbol_backdoor_overwrite("kTestPhase", test_phase);
+    test_phase[0] = PHASE_CACHE_INVALIDATE;
+    sw_symbol_backdoor_overwrite("kTestPhase", );
   endfunction
+  */
+
+  virtual function void write_test_phase(input test_phases_e phase);
+    sw_symbol_backdoor_overwrite("kTestPhase", {<<8{phase}});
+  endfunction
+
 
   virtual function check_wakeup_pin();
     logic wakeup_result;

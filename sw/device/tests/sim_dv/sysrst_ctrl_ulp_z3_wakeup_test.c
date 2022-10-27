@@ -19,7 +19,8 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 // This is updated by the sv component of the test
-static volatile const uint8_t kTestPhase = 0;
+// Now `kTestPhase` is relocated to RamMain0
+static volatile uint8_t kTestPhase = 0;
 
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
@@ -92,7 +93,13 @@ static void wait_next_test_phase(void) {
   LOG_INFO("Prev test phase = %0d", kTestPhase);
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
-  IBEX_SPIN_FOR(current_phase != kTestPhase, kTestPhaseTimeoutUsec);
+  // IBEX_SPIN_FOR(current_phase != kTestPhase, kTestPhaseTimeoutUsec);
+  const ibex_timeout_t timeout_ = ibex_timeout_init(kTestPhaseTimeoutUsec);
+  while (current_phase == kTestPhase) {
+    CHECK(!ibex_timeout_check(&timeout_), "Timed out\n");
+    //kTestPhase = 0xff;
+  }
+
   LOG_INFO("Next test phase = %0d", kTestPhase);
 }
 
@@ -158,7 +165,7 @@ bool test_main(void) {
         pinmux_setup();
         break;
       case kTestPhaseDriveZero:
-        //configure_wakeup();
+        configure_wakeup();
         LOG_INFO("kTestPhaseDriveZero");
         break;
       case kTestPhaseWaitNoWakeup:
