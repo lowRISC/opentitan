@@ -239,8 +239,8 @@ package flash_ctrl_pkg;
     rd_en:       MuBi4True,
     prog_en:     MuBi4False,
     erase_en:    MuBi4False,
-    scramble_en: MuBi4False,
-    ecc_en:      MuBi4False, // TODO, update to 1 once tb supports ECC
+    scramble_en: MuBi4True,
+    ecc_en:      MuBi4True,
     he_en:       MuBi4True
   };
 
