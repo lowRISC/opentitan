@@ -111,6 +111,35 @@ You can see all tests available under a given directory using `bazel query`, e.g
 ```console
 bazel query 'tests(//sw/device/tests/...)'
 ```
+### Tags and wildcards
+
+TLDR: `bazelisk.sh test --test_tag_filters=-cw310,-verilator,-vivado,-jtag,-eternal,-broken --build_tag_filters=-vivado,-verilator //...`
+*Should* be able to run all the tests and build steps in OpenTitan that don't require optional setup steps, and
+
+You may find it useful to use wildcards to build/test all targets in the OpenTitan repository instead of individual targets.
+`//sw/...` is shorthand for all targets in `sw` that isn't tagged with manual.
+If a a target (a test or build artifact) relies on optional parts of the "Getting Started" guide they should be tagged so they can be filtered out and users can `bazelisk.sh test //...` once they filter out the appropriate tags.
+We maintain or use the following tags to support this:
+* `broken` is used to tag tests that are committed but should not be expected by CI or others to pass.
+* `cw310_test_rom`, `cw310_rom`, and `cw310_other` are used to tag tests that depend on a correctly setup cw310 "Bergen Board" to emulate OpenTitan.
+  The `cw310` prefix may be used in `--test_tag_filters` to enable concise filtering.
+  Loading the bitstream is the slowest part of the test, so these tags can group tests with common bitstreams to accelerate the tests.
+* `verilator` is used to tag tests that depend on a verilated model of OpenTitan that can take a significant time to build.
+  Verilated tests can still be built with `--define DISABLE_VERILATOR_BUILD`, but they will skip the invocation of Verilator and cannot be run.
+* `vivado` is used to tag tests that critically depend on Vivado.
+* `jtag` is used to tag tests that rely on a USB JTAG adapter connected like we have in CI.
+* `manual` is a Bazel builtin that prevents targets from matching wildcards.
+  Test suites are typically tagged manual so their contents match, but test suites don't get built or run unless they're intentionally invoked.
+  Intermediate build artifacts may also be tagged with manual to prevent them from being unintentionally built if they cause other problems.
+
+`ci/scripts/check-bazel-tags.sh` performs some useful queries to ensure these tags are applied.
+These tags can then be used to filter tests using `--build_tests_only --test_tag_filters=-cw310,-verilator,-vivado`.
+These tags can also be used to filter builds using `--build_tag_filters=-cw310,-verilator`.
+
+`--build_tests_only` is important when matching wildcards if you aren't using
+`--build_tag_filters` to prevent `bazelisk.sh test //...` from building targets that are filtered out by `--test_tag_filters`.
+
+There is no way to filter out dependencies of a test\_suite such as `//sw/device/tests:uart_smoketest` (Which is a suite that's assembled by the `opentitan_functest` rule) from a build.
 
 ### Running on-device Tests
 
