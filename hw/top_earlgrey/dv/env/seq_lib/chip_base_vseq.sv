@@ -140,9 +140,11 @@ class chip_base_vseq #(
   endtask
 
   virtual task wait_rom_check_done();
-    // The CSR tests (handled by this class) need to wait until the rom_ctrl block has finished
-    // running KMAC before they can start issuing reads and writes. Otherwise, they might write to a
-    // KMAC register while KMAC is in operation. This would have no effect and a subsequent read
+    // The CSR tests (handled by this class) need to wait until the lc_ctrl has initialized and
+    // rom_ctrl block has finished running KMAC before they can start issuing reads and writes.
+    // Otherwise, they might write to a KMAC register while KMAC is in operation, or access a
+    // register that is gated by life cycle.
+    // This would either generate an error or have no effect and a subsequent read
     // from the register would show a mismatched value. We handle this by considering rom_ctrl's
     // operation as "part of reset".
     // Same for the test that uses jtag to access CSRs. We need to wait until rom check is done.
@@ -157,6 +159,9 @@ class chip_base_vseq #(
     `uvm_info(`gfn, "rom_ctrl check started", UVM_MEDIUM)
     csr_spinwait(.ptr(ral.kmac.cfg_regwen), .exp_data(1), .backdoor(1), .spinwait_delay_ns(1000));
     `uvm_info(`gfn, "rom_ctrl check done after reset", UVM_HIGH)
+    csr_spinwait(.ptr(ral.lc_ctrl.status.ready), .exp_data(1), .backdoor(1),
+                 .spinwait_delay_ns(1000));
+    `uvm_info(`gfn, "lc_ctrl has been initialized", UVM_HIGH)
   endtask
 
   virtual task pre_start();

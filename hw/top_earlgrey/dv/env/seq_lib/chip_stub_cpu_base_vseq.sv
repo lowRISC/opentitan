@@ -29,6 +29,14 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     super.pre_start();
   endtask
 
+  virtual task post_apply_reset(string reset_kind = "HARD");
+    super.post_apply_reset(reset_kind);
+
+    // Wait until rom_ctrl and lc_ctrl have finished to ensure stub_cpu
+    // does not conflict with any background power-up activity
+    wait_rom_check_done();
+  endtask
+
   task post_start();
     super.post_start();
 
