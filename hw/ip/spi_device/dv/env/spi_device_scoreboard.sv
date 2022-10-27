@@ -472,7 +472,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       if (!match) begin
         `DV_CHECK_LE(flash_status_q.size, 1)
         while (flash_status_q.size > 0) begin
-          bit[TL_DW-1:0] predict_val = flash_status_q.pop_front();
+          flash_status_t predict_val = flash_status_q.pop_front();
           if (predict_val == rdata) begin
             match = 1;
             void'(ral.flash_status.predict(.value(predict_val), .kind(UVM_PREDICT_READ)));
@@ -485,8 +485,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
 
       if (!match) begin
         `uvm_error(`gfn,
-                   $sformatf("flash_status mismatch, backdoor value: 0x%0x, exp: 0x%0x, or %p",
-                   rdata, `gmv(ral.flash_status), flash_status_q))
+                   $sformatf("flash_status mismatch, backdoor value: 0x%0x, exp: 0x%0x",
+                   rdata, `gmv(ral.flash_status)))
       end
 
       // when this is just updated, TL interface may read back old value and it's ok, it will get
@@ -518,7 +518,7 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       // transaction. The non-dummy item thread already adds 1ps for downstream to add an item.
       #2ps;
       // this flash_status_settle_q isn't empty, then this is a dummy transaction
-      if (flash_status_settle_q.size) begin
+      if (flash_status_q.size || flash_status_settle_q.size) begin
         latch_flash_status(.set_busy(0), .update_wel(0), .wel_val(0));
         `uvm_info(`gfn, "latch flash_status due to a dummy item", UVM_MEDIUM)
       end
@@ -1028,7 +1028,10 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
       "flash_status": begin
         if (write && channel == AddrChannel) begin
           // store the item in a queue as flash_status is updated at the end of spi transaction
-          flash_status_q.push_back(item.a_data);
+          flash_status_t flash_status = item.a_data;
+          // busy field is W0C. Setting to 1 has no effect
+          flash_status.busy = flash_status.busy & `gmv(ral.flash_status.busy);
+          flash_status_q.push_back(flash_status);
         end
         if (!write && channel == DataChannel) begin
           // it's ok to read back old value once.

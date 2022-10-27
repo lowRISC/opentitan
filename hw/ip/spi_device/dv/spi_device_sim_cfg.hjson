@@ -76,6 +76,7 @@
     {
       name: spi_device_extreme_fifo_size
       uvm_test_seq: spi_device_extreme_fifo_size_vseq
+      run_timeout_mins: 90
     }
 
     {

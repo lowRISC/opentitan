@@ -5,7 +5,6 @@
 // Combine most of the spi_device sequences in one test to run sequentially, except csr sequences.
 // mainly test these:
 // - Modes switch among FW, flash, passthrough and tpm.
-// - send some dummy transactions along with normal transactions
 // - Randomly add reset between each sequence
 class spi_device_stress_all_vseq extends spi_device_base_vseq;
   `uvm_object_utils(spi_device_stress_all_vseq)
@@ -14,7 +13,6 @@ class spi_device_stress_all_vseq extends spi_device_base_vseq;
   constraint num_trans_c {
     num_trans inside {[3:5]};
   }
-  rand bit en_dummy_host_xfer;
 
   task body();
     int num_flash_tpm_seq;
@@ -56,19 +54,7 @@ class spi_device_stress_all_vseq extends spi_device_base_vseq;
         common_vseq.common_seq_type = "intr_test";
       end
 
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(en_dummy_host_xfer)
-      fork
-        begin : main_seq
-          spi_vseq.start(p_sequencer);
-          done_xfer = 1;
-        end : main_seq
-        begin : dummy_item_seq
-          while (!done_xfer && en_dummy_host_xfer) begin
-            cfg.clk_rst_vif.wait_clks($urandom_range(10, 1000));
-            spi_host_xfer_dummy_item();
-          end
-        end : dummy_item_seq
-      join
+      spi_vseq.start(p_sequencer);
     end
   endtask : body
 endclass : spi_device_stress_all_vseq
