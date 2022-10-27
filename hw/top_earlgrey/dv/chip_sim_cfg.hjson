@@ -1550,6 +1550,78 @@
       // Starting the chip in prod LC state frees up all MIOs for this test.
       run_opts: ["+use_otp_image=OtpTypeLcStProd"]
       reseed: 10
+        {
+      name: chip_sw_clkmgr_jitter_reduced_freq
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:clkmgr_jitter_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+cal_sys_clk_70mhz=1"]
+    }
+    {
+      name: chip_sw_flash_ctrl_ops_jitter_en_reduced_freq
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:flash_ctrl_ops_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=14_000_000", "+en_jitter=1", "+cal_sys_clk_70mhz=1"]
+    }
+    {
+      name: chip_sw_flash_ctrl_access_jitter_en_reduced_freq
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:flash_ctrl_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+en_jitter=1", "+cal_sys_clk_70mhz=1"]
+    }
+    {
+      name: chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:otbn_ecdsa_op_irq_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=33_000_000", "+rng_srate_value=30", "+en_jitter=1", "+cal_sys_clk_70mhz=1"]
+      run_timeout_mins: 1000
+    }
+    {
+      name: chip_sw_aes_enc_jitter_en_reduced_freq
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:aes_smoketest:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=26_000_000", "+en_jitter=1", "+cal_sys_clk_70mhz=1"]
+    }
+    {
+      name: chip_sw_hmac_enc_jitter_en_reduced_freq
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:hmac_enc_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+en_jitter=1", "+cal_sys_clk_70mhz=1"]
+    }
+    {
+      name: chip_sw_keymgr_key_derivation_jitter_en_reduced_freq
+      uvm_test_seq: chip_sw_keymgr_key_derivation_vseq
+      sw_images: ["//sw/device/tests/sim_dv:keymgr_key_derivation_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=20_000_000", "+en_jitter=1", "+cal_sys_clk_70mhz=1"]
+    }
+    {
+      name: chip_sw_kmac_mode_kmac_jitter_en_reduced_freq
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:kmac_mode_kmac_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+en_jitter=1", "+cal_sys_clk_70mhz=1"]
+    }
+    {
+      name: chip_sw_sram_ctrl_main_scrambled_access_jitter_en_reduced_freq
+      uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
+      sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_main_scrambled_access_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+mem_sel=main",
+                 "+sw_test_timeout_ns=12_000_000",
+                 "+en_jitter=1", "+en_scb_tl_err_chk=0", "+cal_sys_clk_70mhz=1"]
+    }
+    {
+      name: chip_sw_flash_init_reduced_freq
+      uvm_test_seq: chip_sw_flash_init_vseq
+      sw_images: ["//sw/device/tests/sim_dv:flash_init_test:0:test_in_rom"]
+      en_run_modes: ["sw_test_mode_common"]
+      run_opts: ["+sw_test_timeout_ns=25_000_000", "+cal_sys_clk_70mhz=1"]
     }
   ]
 
@@ -1580,6 +1652,18 @@
               "chip_sw_keymgr_key_derivation_jitter_en",
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"]
+    }
+    {
+      name: jitter_reduced_freq
+      tests: ["chip_sw_clkmgr_jitter_reduced_freq",
+              "chip_sw_flash_ctrl_ops_jitter_en_reduced_freq",
+              "chip_sw_flash_ctrl_access_jitter_en_reduced_freq",
+              "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
+              "chip_sw_aes_enc_jitter_en_reduced_freq",
+              "chip_sw_hmac_enc_jitter_en_reduced_freq",
+              "chip_sw_keymgr_key_derivation_jitter_en_reduced_freq",
+              "chip_sw_kmac_mode_kmac_jitter_en_reduced_freq",
+              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en_reduced_freq"]
     }
     {
       name: xcelium_ci_0
