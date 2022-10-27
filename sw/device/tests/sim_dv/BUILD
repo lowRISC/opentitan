@@ -871,8 +871,8 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "sram_ctrl_main_scrambled_access_test",
-    srcs = ["sram_ctrl_main_scrambled_access_test.c"],
+    name = "sram_ctrl_scrambled_access_test",
+    srcs = ["sram_ctrl_scrambled_access_test.c"],
     targets = ["dv"],
     deps = [
         "//hw/ip/sram_ctrl/data:sram_ctrl_regs",
@@ -887,21 +887,6 @@ opentitan_functest(
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing:sram_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_functest(
-    name = "sram_ctrl_ret_scrambled_access_test",
-    srcs = ["sram_ctrl_ret_scrambled_access_test.c"],
-    targets = ["dv"],
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:sram_ctrl_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/lib/testing/test_framework:status",
     ],
 )
 
