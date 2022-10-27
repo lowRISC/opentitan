@@ -24,18 +24,22 @@ class csrng_device_driver extends csrng_driver;
     forever begin
       seq_item_port.get_next_item(req);
       `uvm_info(`gfn, $sformatf("Received item: %s", req.convert2string()), UVM_HIGH)
-      $cast(rsp, req.clone());
-      rsp.set_id_info(req);
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(
-          cmd_ack_dly, cmd_ack_dly inside {cfg.min_cmd_ack_dly, cfg.max_cmd_ack_dly};)
-      repeat(cmd_ack_dly) @(cfg.vif.device_cb);
-      cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b1;
-      `DV_CHECK_STD_RANDOMIZE_FATAL(rsp_sts)
-      cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= rsp_sts;
-      @(cfg.vif.device_cb);
-      cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
-      cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= 1'b0;
-      `uvm_info(`gfn, "item sent", UVM_HIGH)
+
+      `DV_SPINWAIT_EXIT(
+          $cast(rsp, req.clone());
+          rsp.set_id_info(req);
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(
+              cmd_ack_dly, cmd_ack_dly inside {cfg.min_cmd_ack_dly, cfg.max_cmd_ack_dly};)
+          repeat(cmd_ack_dly) @(cfg.vif.device_cb);
+          cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b1;
+          `DV_CHECK_STD_RANDOMIZE_FATAL(rsp_sts)
+          cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= rsp_sts;
+          @(cfg.vif.device_cb);
+          cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
+          cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= 1'b0;,
+          wait(cfg.under_reset);)
+
+      `uvm_info(`gfn, cfg.under_reset ? "item dropped due to reset" : "item sent", UVM_HIGH)
       seq_item_port.item_done(rsp);
     end
   endtask

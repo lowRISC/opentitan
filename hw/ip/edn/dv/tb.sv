@@ -17,6 +17,7 @@ module tb;
   wire   devmode;
   wire   intr_edn_cmd_req_done, intr_edn_fatal_err;
   wire [NUM_MAX_INTERRUPTS-1:0]   interrupts;
+  wire edn_disable_o;
   edn_pkg::edn_req_t [MAX_NUM_ENDPOINTS - 1:0] endpoint_req;
   edn_pkg::edn_rsp_t [MAX_NUM_ENDPOINTS - 1:0] endpoint_rsp;
 
@@ -25,11 +26,13 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  csrng_if csrng_if(.clk(clk), .rst_n(rst_n));
+  csrng_if csrng_if(.clk(clk), .rst_n(edn_disable_o === 1 ? ~edn_disable_o : rst_n));
   push_pull_if#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
        endpoint_if[MAX_NUM_ENDPOINTS](.clk(clk), .rst_n(rst_n));
   edn_path_if edn_path_if (.edn_i(edn_i));
   edn_assert_if edn_assert_if (.edn_i(edn_i));
+
+  assign edn_disable_o = edn_path_if.edn_disable_o;
 
   `DV_ALERT_IF_CONNECT
 

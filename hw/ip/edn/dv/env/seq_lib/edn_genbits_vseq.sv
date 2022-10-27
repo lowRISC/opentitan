@@ -62,6 +62,25 @@ class edn_genbits_vseq extends edn_base_vseq;
       join_none;
     end
 
+    fork begin
+      bit[MAX_NUM_ENDPOINTS-1:0] fifo_valid = 0;
+      while (fifo_valid == 0) begin
+        for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
+          string path = $sformatf("tb.dut.u_edn_core.gen_ep_blk[%0d].u_edn_ack_sm_ep.fifo_not_empty_i", i);
+          `DV_CHECK(uvm_hdl_read(path, fifo_valid[i]))
+        end
+        cfg.clk_rst_vif.wait_clks(1);
+      end
+      cfg.clk_rst_vif.wait_clks($urandom_range(0, 5));
+      csr_wr(.ptr(ral.ctrl.edn_enable), .value(prim_mubi_pkg::MuBi4False));
+      cfg.edn_path_vif.drive_edn_disable(1);
+      $display("Cindy debug disabled");
+      cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+      csr_wr(.ptr(ral.ctrl.edn_enable), .value(prim_mubi_pkg::MuBi4True));
+      $display("Cindy debug enabled");
+      cfg.edn_path_vif.drive_edn_disable(0);
+    end join_none;
+
     if (cfg.auto_req_mode == MuBi4True) begin
       if (num_cs_reqs <= 2) begin
         num_reqs_between_reseeds = 1;

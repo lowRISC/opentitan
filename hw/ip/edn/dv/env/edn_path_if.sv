@@ -11,6 +11,7 @@ interface edn_path_if
 
   import uvm_pkg::*;
 
+  logic edn_disable_o;
   string core_path = "tb.dut.u_edn_core";
 
   function automatic string fifo_err_path(string fifo_name, string which_path);
@@ -28,4 +29,8 @@ interface edn_path_if
   function automatic string cntr_err_path();
     return {core_path, ".u_prim_count_max_reqs_cntr.err_o"};
   endfunction // cntr_err_path
+
+  function automatic drive_edn_disable(bit val);
+    edn_disable_o = val;
+  endfunction
 endinterface // edn_path_if
