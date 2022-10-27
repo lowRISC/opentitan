@@ -1803,6 +1803,13 @@
               This is an asynchronous error.
             '''
           },
+          { bits: "7",
+            name: "macro_err",
+            desc: '''
+              A recoverable error has been encountered in the flash macro.
+              Please read the flash macro status registers for more details.
+            '''
+          },
         ]
       },
 
@@ -1928,42 +1935,36 @@
             '''
           },
           { bits: "6",
-            name: "flash_macro_err",
-            desc: '''
-              The flash life cycle management interface encountered a native flash macro error.
-            '''
-          },
-          { bits: "7",
             name: "seed_err",
             desc: '''
               The seed reading process encountered an unexpected error.
             '''
           },
-          { bits: "8",
+          { bits: "7",
             name: "phy_relbl_err",
             desc: '''
               The flash macro encountered a storage reliability ECC error.
             '''
           },
-          { bits: "9",
+          { bits: "8",
             name: "phy_storage_err",
             desc: '''
               The flash macro encountered a storage integrity ECC error.
             '''
           },
-          { bits: "10",
+          { bits: "9",
             name: "spurious_ack",
             desc: '''
               The flash emitted an unexpected acknowledgement.
             '''
           },
-          { bits: "11",
+          { bits: "10",
             name: "arb_err",
             desc: '''
               The phy arbiter encountered inconsistent results.
             '''
           },
-          { bits: "12",
+          { bits: "11",
             name: "host_gnt_err",
             desc: '''
               A host transaction was granted with illegal properties.
