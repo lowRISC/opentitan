@@ -43,6 +43,9 @@ enum {
   kTestPhaseCheckScrambledInit1 = 4,
   kTestPhaseCheckBackdoor0 = 5,
   kTestPhaseCheckBackdoor1 = 6,
+  kTestPhaseKeymgrPrep = 7,
+  kTestPhaseKeymgrTest0 = 8,
+  kTestPhaseKeymgrTest1 = 9,
 };
 
 enum {
@@ -335,6 +338,13 @@ bool rom_test_main(void) {
     case kTestPhaseCheckBackdoor0:
     case kTestPhaseCheckBackdoor1:
       check_scrambled_backdoor_data();
+      break;
+    case kTestPhaseKeymgrPrep:
+    case kTestPhaseKeymgrTest0:
+    case kTestPhaseKeymgrTest1:
+      flash_init();
+      test_status_set(kTestStatusInWfi);
+      wait_for_interrupt();
       break;
     default:
       break;

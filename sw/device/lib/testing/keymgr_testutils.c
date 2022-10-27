@@ -36,9 +36,16 @@ enum {
 };
 
 static void write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
-                            const keymgr_testutils_secret_t *data) {
-  uint32_t address = flash_ctrl_testutils_info_region_setup(
-      flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId);
+                            const keymgr_testutils_secret_t *data,
+                            bool scramble) {
+  uint32_t address;
+  if (scramble) {
+    address = flash_ctrl_testutils_info_region_scrambled_setup(
+        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId);
+  } else {
+    address = flash_ctrl_testutils_info_region_setup(
+        flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId);
+  }
 
   CHECK(flash_ctrl_testutils_erase_and_write_page(
       flash, address, kFlashInfoPartitionId, data->value,
@@ -56,8 +63,10 @@ void keymgr_testutils_flash_init(
     const keymgr_testutils_secret_t *creator_secret,
     const keymgr_testutils_secret_t *owner_secret) {
   // Initialize flash secrets.
-  write_info_page(flash, kFlashInfoPageIdCreatorSecret, creator_secret);
-  write_info_page(flash, kFlashInfoPageIdOwnerSecret, owner_secret);
+  write_info_page(flash, kFlashInfoPageIdCreatorSecret, creator_secret,
+                  /*scramble=*/true);
+  write_info_page(flash, kFlashInfoPageIdOwnerSecret, owner_secret,
+                  /*scramble=*/true);
 }
 
 void keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {

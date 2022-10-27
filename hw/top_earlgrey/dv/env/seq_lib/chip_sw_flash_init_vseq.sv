@@ -37,14 +37,14 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   localparam uint ISO_PART_PAGE_ID = flash_ctrl_pkg::IsolatedInfoPage;
 
   localparam uint NUM_TEST_WORDS = 16;
-  localparam uint NUM_TEST_PHASES = 8;
-  localparam uint UNSCRAMBLED_TEST0 = 0;
-  localparam uint UNSCRAMBLED_TEST1 = 1;
-  localparam uint UNSCRAMBLED_TEST2 = 2;
-  localparam uint SCRAMBLED_TEST0 = 3;
-  localparam uint SCRAMBLED_TEST1 = 4;
-  localparam uint BACKDOOR_TEST0 = 5;
-  localparam uint BACKDOOR_TEST1 = 6;
+  typedef enum {
+    UnscrambledTest[0:2],
+    ScrambledTest[0:1],
+    BackdoorTest[0:1],
+    KeyMgrPrep,
+    KeyMgrTest[0:1],
+    LastPhase
+  } test_phases_e;
 
   bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] sram_ret_nonce;
   bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] sram_ret_key;
@@ -58,7 +58,8 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   rand bit [31:0] iso_part_data[NUM_TEST_WORDS];
   rand bit [31:0] bank0_page0_data[NUM_TEST_WORDS];
   rand bit [31:0] bank1_page0_data[NUM_TEST_WORDS];
-
+  rand bit [otp_ctrl_reg_pkg::CreatorRootKeyShare0Size*8-1:0] root_key0;
+  rand bit [otp_ctrl_reg_pkg::CreatorRootKeyShare0Size*8-1:0] root_key1;
   bit [FlashKeyWidth-1:0] flash_data_key;
   bit [FlashKeyWidth-1:0] flash_addr_key;
 
@@ -95,6 +96,8 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     `DV_CHECK_STD_RANDOMIZE_FATAL(iso_part_data)
     `DV_CHECK_STD_RANDOMIZE_FATAL(bank0_page0_data)
     `DV_CHECK_STD_RANDOMIZE_FATAL(bank1_page0_data)
+    `DV_CHECK_STD_RANDOMIZE_FATAL(root_key0)
+    `DV_CHECK_STD_RANDOMIZE_FATAL(root_key1)
   endtask
 
   virtual function bit [KeyWidthAddrBits-1:0] get_flash_otp_key(
@@ -275,6 +278,7 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
 
   virtual task body();
     bit [7:0] array_data[1];
+    bit random_data = 0;
     super.body();
     check_hdl_paths();
 
@@ -282,6 +286,7 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     cfg.en_scb_mem_chk = 0;
     // Write randomly generated data to retention SRAM for use in SW.
     ret_backdoor_data_write();
+
     // Fork the tasks for monitoring the key updates and
     // checking the keymgr seed update where applicable.
     fork
@@ -289,45 +294,71 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
       get_keys();
       check_keymgr_seeds();
     join_none
+
+    // Allow most test phases to write seed partition, but do not allow hardware to read
+    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
+    cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::Secret2DigestOffset, 0);
+
     // Looping through all test phases.
-    for (int current_phase = 0; current_phase < NUM_TEST_PHASES; current_phase++) begin
+    for (int current_phase = UnscrambledTest0; current_phase <= LastPhase; current_phase++) begin
       // Backdoor overwrite the SW variable for the test phase.
       array_data[0] = current_phase;
       sw_symbol_backdoor_overwrite("kTestPhase", array_data, SwTypeRom);
-      if (current_phase < NUM_TEST_PHASES - 1) begin
-        // Backdoor write to the flash only for the backdoor tests.
-        if (current_phase < BACKDOOR_TEST0) begin
-          write_scrambled = 0;
-        end else begin
-          write_scrambled = 1;
-        end
-        // Check the keymgr receives updated keys during the unscrambled tests.
-        if (current_phase <= UNSCRAMBLED_TEST2) begin
-          do_keymgr_check = 1;
-        end else begin
-          do_keymgr_check = 0;
-        end
+      `uvm_info(`gfn, $sformatf("Testing %d", current_phase), UVM_LOW)
+
+      if (current_phase < LastPhase) begin
+        do_keymgr_check = 0;
+        write_scrambled = 0;
+        random_data = 0;
+        case (current_phase)
+          UnscrambledTest0, UnscrambledTest1, UnscrambledTest2,
+          ScrambledTest0, ScrambledTest1: begin
+            random_data = 1;
+          end
+
+          BackdoorTest0, BackdoorTest1: begin
+            write_scrambled = 1;
+            random_data = 1;
+          end
+
+          KeyMgrPrep: begin
+            write_scrambled = 1;
+          end
+
+          KeyMgrTest0: begin
+            do_keymgr_check = 1;
+            `uvm_info(`gfn, $sformatf("Lock OTP secret2 partition and enable seed reading"),
+                      UVM_LOW)
+
+            // The actual data is irrelevant as long as the partition becomes locked.
+            cfg.mem_bkdr_util_h[Otp].otp_write_secret2_partition(
+              .rma_unlock_token('0), .creator_root_key0('0), .creator_root_key1('0));
+          end
+
+          KeyMgrTest1: begin
+            `uvm_info(`gfn, $sformatf("Zero secret2 partition and disable seed reading"),
+                      UVM_LOW)
+            cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::Secret2DigestOffset, 0);
+            do_keymgr_check = 1;
+          end
+
+          default:;
+
+        endcase // case (current_phase)
+
         // Wait for the test to start and enter the WFI state,
+        `uvm_info(`gfn, $sformatf("Wating to be in test"), UVM_MEDIUM)
         `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+        `uvm_info(`gfn, $sformatf("Wating to be see WFI"), UVM_MEDIUM)
         `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
+
         // Randomize the data and keys for the next test phase.
-        randomize_data();
-        randomize_keys();
-        ret_backdoor_data_write();
-        // Before the last unscrambled test the LC_STATE is set to Prod,
-        // this will cause the lc_seed_hw_rd_en to be low and a check can be made
-        // that the keymgr seeds are not updated during initialization.
-        // After this test set the LC_STATE back to the default Rma.
-        if (current_phase == UNSCRAMBLED_TEST1) begin
-          cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
-          exp_lc_st = DV_EXP_PROD;
-          `uvm_info("SEQ", "SET_PROD", UVM_MEDIUM)
-        end else if (current_phase == UNSCRAMBLED_TEST2) begin
-          cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStRma);
-          exp_lc_st = DV_EXP_RMA;
-          `uvm_info("SEQ", "SET_RMA", UVM_MEDIUM)
+        if (random_data) begin
+          randomize_data();
+          randomize_keys();
+          ret_backdoor_data_write();
         end
-        // Reset for the next test phase.
+
         apply_reset();
         cfg.clk_rst_vif.wait_clks(1000);
       end else begin
