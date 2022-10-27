@@ -61,6 +61,7 @@ class i2c_base_seq extends dv_base_seq #(
     start_item(req);
     `DV_CHECK_RANDOMIZE_WITH_FATAL(req,
                                    data_q.size() == local::data_q.size();
+                                   bus_op == BusOpWrite;
                                    foreach (data_q[i]) {
                                      data_q[i] == local::data_q[i];
                                    })

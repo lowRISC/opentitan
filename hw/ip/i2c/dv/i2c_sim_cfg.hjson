@@ -120,6 +120,11 @@
       name: i2c_host_stress_all
       uvm_test_seq: i2c_host_stress_all_vseq
     }
+
+    {
+      name: i2c_device_smoke
+      uvm_test_seq: i2c_device_smoke_vseq
+    }
   ]
 
   // List of regressions.
