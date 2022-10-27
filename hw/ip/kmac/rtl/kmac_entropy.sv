@@ -203,6 +203,10 @@ module kmac_entropy
   logic aux_rand_d, aux_rand_q;
   logic aux_update;
 
+  // Randomness for controlling PRNG updates. This only matters for clock cycles
+  // where the PRNG output is not actually used.
+  logic [3:0] lfsr_en_rand_d, lfsr_en_rand_q;
+
   // Entropy valid signal
   // FSM set and clear the valid signal, rand_consume signal clear the valid
   // signal. Split the set, clear to make entropy valid while FSM is processing
@@ -443,6 +447,21 @@ module kmac_entropy
 
   // Auxiliary randomness -----------------------------------------------------
 
+  // LFSR enable randomness ===================================================
+  assign lfsr_en_rand_d =
+      aux_update ? lfsr_data_permuted[EntropyLfsrW - 2 -: 4] : // refresh
+                   {1'b0, lfsr_en_rand_q[3:1]};                // shift out
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      lfsr_en_rand_q <= '0;
+    end else begin
+      lfsr_en_rand_q <= lfsr_en_rand_d;
+    end
+  end
+
+  // LFSR enable randomness ---------------------------------------------------
+
   // Randomness outputs =======================================================
   assign rand_data_o = lfsr_data_permuted;
   assign rand_aux_o = aux_rand_q;
@@ -560,6 +579,8 @@ module kmac_entropy
 
       StRandReady: begin
         timer_enable = 1'b 1; // If limit is zero, timer won't work
+
+        lfsr_en = lfsr_en_rand_q[0];
 
         if (rand_consumed_i &&
             ((fast_process_i && in_keyblock_i) || !fast_process_i)) begin
