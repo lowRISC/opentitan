@@ -18,6 +18,7 @@ int main(int argc, char **argv) {
   // Data signals - we don't really care about the data fed to the module.
   // The whole tracing is really just about control signals.
   tb.m_core.rand_i = 0x0123456789ABCDEF;
+  tb.m_core.rand_aux_i = 0x0;
   tb.m_core.s_i[0] = 0x01234567;
   tb.m_core.s_i[1] = 0x89ABCDEF;
   tb.m_core.s_i[2] = 0x01234567;

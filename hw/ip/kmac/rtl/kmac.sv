@@ -188,6 +188,7 @@ module kmac
   // SHA3 Entropy interface
   logic sha3_rand_valid, sha3_rand_early, sha3_rand_consumed;
   logic [sha3_pkg::StateW/2-1:0] sha3_rand_data;
+  logic sha3_rand_aux;
 
   // FIFO related signals
   logic msgfifo_empty, msgfifo_full;
@@ -864,6 +865,7 @@ module kmac
     .rand_valid_i    (sha3_rand_valid),
     .rand_early_i    (sha3_rand_early),
     .rand_data_i     (sha3_rand_data),
+    .rand_aux_i      (sha3_rand_aux),
     .rand_consumed_o (sha3_rand_consumed),
 
     // N, S: Used in cSHAKE mode
@@ -1175,6 +1177,7 @@ module kmac
       .rand_valid_o    (sha3_rand_valid),
       .rand_early_o    (sha3_rand_early),
       .rand_data_o     (sha3_rand_data),
+      .rand_aux_o      (sha3_rand_aux),
       .rand_consumed_i (sha3_rand_consumed),
 
       // Status from internal logic
@@ -1231,6 +1234,7 @@ module kmac
     assign sha3_rand_valid = 1'b 1;
     assign sha3_rand_early = 1'b 1;
     assign sha3_rand_data = '0;
+    assign sha3_rand_aux = '0;
     assign unused_sha3_rand_consumed = sha3_rand_consumed;
 
     logic [NumSeedsEntropyLfsr-1:0]       unused_seed_update;

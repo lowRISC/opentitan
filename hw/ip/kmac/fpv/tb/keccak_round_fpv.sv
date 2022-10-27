@@ -57,6 +57,7 @@ module keccak_round_fpv #(
     .rand_valid_i (1'b1),
     .rand_early_i (1'b1),
     .rand_data_i  ('0),
+    .rand_aux_i   ('0),
     .rand_consumed_o (),
 
     .complete_o (masked_complete),
@@ -80,6 +81,7 @@ module keccak_round_fpv #(
     .rand_valid_i (1'b1),
     .rand_early_i (1'b1),
     .rand_data_i  ('0),
+    .rand_aux_i   ('0),
     .rand_consumed_o (),
 
     .complete_o (unmasked_complete),
