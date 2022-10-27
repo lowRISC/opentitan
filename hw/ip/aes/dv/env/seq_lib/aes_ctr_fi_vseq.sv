@@ -14,7 +14,6 @@ class aes_ctr_fi_vseq extends aes_base_vseq;
   bit  wait_for_alert_clear = 0;
   bit  alert = 0;
 
-
   localparam bit FORCE   = 0;
   localparam bit RELEASE = 1;
 
@@ -47,7 +46,7 @@ class aes_ctr_fi_vseq extends aes_base_vseq;
             // workaround for vcs issue
             if_size = cfg.aes_ctr_fsm_fi_vif[if_num].get_if_size();
             if (!randomize(target) with {
-              target inside { [0:if_size -1]};}) begin
+              target inside { [0:if_size - 1]};}) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
             cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
@@ -68,8 +67,7 @@ class aes_ctr_fi_vseq extends aes_base_vseq;
         cfg.aes_ctr_fsm_fi_vif[if_num].force_signal(target, RELEASE, force_value);
         `uvm_info(`gfn, $sformatf("Finish"), UVM_MEDIUM)
         disable fork;
-        end // fork
+      end // fork
     join
   endtask : body
-
 endclass
