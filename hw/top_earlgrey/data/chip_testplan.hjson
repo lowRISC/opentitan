@@ -2868,10 +2868,19 @@
       name: chip_sw_ast_sys_clk_jitter
       desc: '''Verify that the AST sys clk jitter control.
 
-            Details TBD.
+            X-ref with chip_sw_clkmgr_jitter
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_clkmgr_jitter",
+              "chip_sw_flash_ctrl_ops_jitter_en",
+              "chip_sw_flash_ctrl_access_jitter_en",
+              "chip_sw_otbn_ecdsa_op_irq_jitter_en",
+              "chip_sw_aes_enc_jitter_en",
+              "chip_sw_hmac_enc_jitter_en",
+              "chip_sw_keymgr_key_derivation_jitter_en",
+              "chip_sw_kmac_mode_kmac_jitter_en",
+              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en",
+              "chip_sw_edn_entropy_reqs_jitter"]
     }
     {
       name: chip_sw_ast_usb_clk_calib
