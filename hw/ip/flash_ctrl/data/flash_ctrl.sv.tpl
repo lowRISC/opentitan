@@ -914,6 +914,7 @@ module flash_ctrl
   // An excessive number of recoverable errors may also indicate an attack
   logic recov_err;
   assign recov_err = (sw_ctrl_done & |sw_ctrl_err) |
+                     flash_phy_rsp.macro_err |
                      update_err;
 
   logic fatal_err;
@@ -1037,6 +1038,7 @@ module flash_ctrl
   assign hw2reg.err_code.prog_win_err.d     = 1'b1;
   assign hw2reg.err_code.prog_type_err.d    = 1'b1;
   assign hw2reg.err_code.update_err.d       = 1'b1;
+  assign hw2reg.err_code.macro_err.d        = 1'b1;
   assign hw2reg.err_code.op_err.de          = sw_ctrl_err.invalid_op_err;
   assign hw2reg.err_code.mp_err.de          = sw_ctrl_err.mp_err;
   assign hw2reg.err_code.rd_err.de          = sw_ctrl_err.rd_err;
@@ -1044,6 +1046,7 @@ module flash_ctrl
   assign hw2reg.err_code.prog_win_err.de    = sw_ctrl_err.prog_win_err;
   assign hw2reg.err_code.prog_type_err.de   = sw_ctrl_err.prog_type_err;
   assign hw2reg.err_code.update_err.de      = update_err;
+  assign hw2reg.err_code.macro_err.de       = flash_phy_rsp.macro_err;
   assign hw2reg.err_addr.d                  = {ctrl_err_addr, {BusByteWidth{1'h0}}};
   assign hw2reg.err_addr.de                 = sw_ctrl_err.mp_err |
                                               sw_ctrl_err.rd_err |
@@ -1060,7 +1063,6 @@ module flash_ctrl
   assign hw2reg.fault_status.prog_err.d         = 1'b1;
   assign hw2reg.fault_status.prog_win_err.d     = 1'b1;
   assign hw2reg.fault_status.prog_type_err.d    = 1'b1;
-  assign hw2reg.fault_status.flash_macro_err.d  = 1'b1;
   assign hw2reg.fault_status.seed_err.d         = 1'b1;
   assign hw2reg.fault_status.phy_relbl_err.d    = 1'b1;
   assign hw2reg.fault_status.phy_storage_err.d  = 1'b1;
@@ -1073,7 +1075,6 @@ module flash_ctrl
   assign hw2reg.fault_status.prog_err.de        = hw_err.prog_err;
   assign hw2reg.fault_status.prog_win_err.de    = hw_err.prog_win_err;
   assign hw2reg.fault_status.prog_type_err.de   = hw_err.prog_type_err;
-  assign hw2reg.fault_status.flash_macro_err.de = flash_phy_rsp.macro_err;
   assign hw2reg.fault_status.seed_err.de        = seed_err;
   assign hw2reg.fault_status.phy_relbl_err.de   = flash_phy_rsp.storage_relbl_err;
   assign hw2reg.fault_status.phy_storage_err.de = flash_phy_rsp.storage_intg_err;
