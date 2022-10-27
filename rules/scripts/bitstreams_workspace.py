@@ -63,7 +63,6 @@ parser.add_argument(
 
 
 class BitstreamCache(object):
-
     def __init__(self, bucket_url, cachedir, latest_update, offline=False):
         """Initialize the Bitstream Cache Manager."""
         if bucket_url[-1] != '/':
@@ -162,7 +161,8 @@ class BitstreamCache(object):
                         self.available[m.group(1)] = key.text
             # Handle any pagination
             is_truncated_elt = et.find('IsTruncated', XMLNS)
-            if (is_truncated_elt is not None) and (is_truncated_elt.text == 'true'):
+            if (is_truncated_elt is not None) and (is_truncated_elt.text
+                                                   == 'true'):
                 marker = et.find('NextMarker', XMLNS).text
             else:
                 break
@@ -265,6 +265,11 @@ class BitstreamCache(object):
         return datetime.datetime.now().isoformat()
 
     def _ConstructBazelString(self, build_file: Path, key: str) -> str:
+        # If `key` passed in is "latest", this updates the `key` to be the hash
+        # that "latest" points to.
+        if key == 'latest':
+            key = self.available['latest']
+
         files_by_extension = self.GetFromCache(key)
 
         if len(files_by_extension.get('orig', set())) != 1 or \
