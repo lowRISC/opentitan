@@ -1144,7 +1144,7 @@
             state dependent corner cases with power glitch handling.
             '''
       stage: V2
-      tests: [""]
+      tests: ["chip_sw_pwrmgr_random_sleep_power_glitch_reset"]
     }
     {
       name: chip_sw_pwrmgr_deep_sleep_power_glitch_reset
