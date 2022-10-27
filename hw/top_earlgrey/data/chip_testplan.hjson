@@ -2536,8 +2536,7 @@
               (unique, non-zero data).
             '''
       stage: V2
-      tests: ["chip_sw_sram_ctrl_ret_scrambled_access",
-              "chip_sw_sram_ctrl_main_scrambled_access",
+      tests: ["chip_sw_sram_ctrl_scrambled_access",
               "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"]
     }
     {

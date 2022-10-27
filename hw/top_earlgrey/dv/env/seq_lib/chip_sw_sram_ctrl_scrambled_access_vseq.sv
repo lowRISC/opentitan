@@ -134,19 +134,21 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  virtual task ret_backdoor_write();
+  virtual task ret_backdoor_write(int addr);
     int retval;
     bit scr_key_valid;
+    int offset = addr - top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR;
     forever begin
       retval = uvm_hdl_read(SRAM_CTRL_RET_SCR_KEY_VALID_PATH, scr_key_valid);
       `DV_CHECK_EQ(retval, 1, $sformatf(
                    "uvm_hdl_read failed for %0s", SRAM_CTRL_RET_SCR_KEY_VALID_PATH))
       // Wait for sram_ctrl.STATUS.SCR_KEY_VALID.
       if (scr_key_valid == 1) begin
+        `uvm_info(`gfn, $sformatf("ret_backdoor_write start %x", offset), UVM_LOW)
         // Write the data to a known offset in the SRAM. The random byte data
         // is used little-endian.
         for (int i = 0; i < BACKDOOR_DATA_WORDS; i++) begin
-          ret_sram_bkdr_write32((BACKDOOR_RET_OFFSET + i) * 4, {
+         ret_sram_bkdr_write32(offset + (i * 4), {
                                 backdoor_data[(i*4)+3],
                                 backdoor_data[(i*4)+2],
                                 backdoor_data[(i*4)+1],
@@ -159,19 +161,21 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  virtual task main_backdoor_write();
+  virtual task main_backdoor_write(int addr);
     int retval;
     bit scr_key_valid;
+    int offset = addr - top_earlgrey_pkg::TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR;
     forever begin
       retval = uvm_hdl_read(SRAM_CTRL_MAIN_SCR_KEY_VALID_PATH, scr_key_valid);
       `DV_CHECK_EQ(retval, 1, $sformatf(
                    "uvm_hdl_read failed for %0s", SRAM_CTRL_MAIN_SCR_KEY_VALID_PATH))
       // Wait for sram_ctrl.STATUS.SCR_KEY_VALID.
       if (scr_key_valid == 1) begin
+        `uvm_info(`gfn, $sformatf("main_backdoor_write start %x", offset), UVM_LOW)
         // Write the data to a known offset in the SRAM. The random byte data
         // is used little-endian.
         for (int i = 0; i < BACKDOOR_DATA_WORDS; i++) begin
-          main_sram_bkdr_write32((BACKDOOR_MAIN_OFFSET + i) * 4, {
+          main_sram_bkdr_write32(offset + (i * 4), {
                                  backdoor_data[(i*4)+3],
                                  backdoor_data[(i*4)+2],
                                  backdoor_data[(i*4)+1],
@@ -195,8 +199,15 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     end
   endtask: cpu_init
 
+  virtual task sync_with_sw();
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
+  endtask:sync_with_sw
+
   virtual task body();
     string mem_sel;
+    int main_sram_offset;
+    int ret_sram_offset ;
     super.body();
 
     // Disable SRAM data integrity checks.
@@ -207,25 +218,24 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
 
     sw_symbol_backdoor_overwrite("kBackdoorExpectedBytes", backdoor_data);
 
-    // This sequence can test main or retention SRAM by setting
-    // plusarg +mem_sel to "ret" for retention SRAM. Any other value
-    // will test main SRAM. The relevant tasks are forked based
-    // on this choice.
-    if ($value$plusargs("mem_sel=%s", mem_sel)) begin
-      if (mem_sel == "ret") begin
-        fork
-          get_ret_keys();
-          ret_backdoor_write();
-        join_none
-      end else begin
-        fork
-          get_main_keys();
-          main_backdoor_write();
-        join_none
-      end
-    end else begin
-      `uvm_error(`gfn, "mem_sel plusarg not found.")
-    end
+    sync_with_sw();
+    ret_sram_offset = int'(cfg.sw_logger_vif.printed_arg[0]);
+    main_sram_offset = int'(cfg.sw_logger_vif.printed_arg[1]);
+
+    `uvm_info(`gfn, $sformatf("Testing main sram addr: %x", main_sram_offset), UVM_LOW);
+    fork
+      get_main_keys();
+      main_backdoor_write(main_sram_offset);
+    join_none
+
+    sync_with_sw();
+
+    `uvm_info(`gfn, $sformatf("Testing ret sram addr: %x", ret_sram_offset), UVM_LOW);
+    fork
+      get_ret_keys();
+      ret_backdoor_write(ret_sram_offset);
+    join_none
+
   endtask
 
 endclass : chip_sw_sram_ctrl_scrambled_access_vseq

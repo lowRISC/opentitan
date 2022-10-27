@@ -418,4 +418,9 @@
   if (expr_) {            \
   }
 
+/**
+ *  This macro is used to align an offset to point to a 32b value.
+ */
+#define OT_ALIGN_MEM(x) (uint32_t)(4 + (((uintptr_t)(x)-1) & ~3))
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_BASE_MACROS_H_
