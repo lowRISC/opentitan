@@ -33,12 +33,10 @@ module tb;
   wire intr_host_timeout;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
-  wire cio_scl_i;
-  wire cio_sda_i;
-  wire cio_scl_o;
-  wire cio_sda_o;
-  wire cio_scl_en_o;
-  wire cio_sda_en_o;
+  wire cio_scl;
+  wire cio_sda;
+  wire cio_scl_en;
+  wire cio_sda_en;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -46,7 +44,28 @@ module tb;
   pins_if #(1) devmode_if(devmode);
 
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  i2c_if i2c_if();
+
+  wire scl, sda;
+  i2c_if i2c_if(
+    .clk_i(clk),
+    .rst_ni(rst_n),
+    .scl_io(scl),
+    .sda_io(sda)
+  );
+
+  // Model PAD behavior
+  i2c_port_conv i2c_port_conv (
+    .scl_oe_i(cio_scl_en),
+    .sda_oe_i(cio_sda_en),
+    .scl_o(cio_scl),
+    .sda_o(cio_sda),
+    .scl_io(scl),
+    .sda_io(sda)
+  );
+
+  // Model external pull-up resistor
+  assign (weak0, weak1) scl = 1'b1;
+  assign (weak0, weak1) sda = 1'b1;
 
   // clk and rst_n is used for alert_if in `DV_ALERT_IF_CONNECT
   `DV_ALERT_IF_CONNECT
@@ -62,12 +81,12 @@ module tb;
     .alert_rx_i              (alert_rx   ),
     .alert_tx_o              (alert_tx   ),
 
-    .cio_scl_i               (cio_scl_i             ),
-    .cio_scl_o               (cio_scl_o             ),
-    .cio_scl_en_o            (cio_scl_en_o          ),
-    .cio_sda_i               (cio_sda_i             ),
-    .cio_sda_o               (cio_sda_o             ),
-    .cio_sda_en_o            (cio_sda_en_o          ),
+    .cio_scl_i               (cio_scl               ),
+    .cio_scl_o               (/*hardcoded to 0*/    ),
+    .cio_scl_en_o            (cio_scl_en            ),
+    .cio_sda_i               (cio_sda               ),
+    .cio_sda_o               (/*hardcoded to 0*/    ),
+    .cio_sda_en_o            (cio_sda_en            ),
 
     .intr_fmt_watermark_o    (intr_fmt_watermark    ),
     .intr_rx_watermark_o     (intr_rx_watermark     ),
@@ -86,16 +105,6 @@ module tb;
     .intr_ack_stop_o         (intr_ack_stop         ),
     .intr_host_timeout_o     (intr_host_timeout     )
   );
-
-  // virtual open drain
-  assign i2c_if.scl_i = (cio_scl_en_o) ? cio_scl_o : ~cio_scl_o;
-  assign i2c_if.sda_i = (cio_sda_en_o) ? cio_sda_o : ~cio_sda_o;
-  assign cio_scl_i = i2c_if.scl_o;
-  assign cio_sda_i = i2c_if.sda_o;
-
-  // host -> device if
-  assign i2c_if.clk_i  = clk;
-  assign i2c_if.rst_ni = rst_n;
 
   // interrupt
   assign interrupts[FmtWatermark]   = intr_fmt_watermark;

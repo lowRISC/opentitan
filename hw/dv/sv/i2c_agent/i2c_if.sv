@@ -5,15 +5,23 @@
 import i2c_agent_pkg::*;
 import uvm_pkg::*;
 
-interface i2c_if;
-  logic clk_i;
-  logic rst_ni;
+interface i2c_if(
+  input clk_i,
+  input rst_ni,
+  inout wire scl_io,
+  inout wire sda_io
+);
 
   // standard i2c interface pins
   logic scl_i;
   logic scl_o;
   logic sda_i;
   logic sda_o;
+
+  assign scl_i = scl_io;
+  assign sda_i = sda_io;
+  assign scl_io = scl_o ? 1'bz : 1'b0;
+  assign sda_io = sda_o ? 1'bz : 1'b0;
 
   string msg_id = "i2c_if";
 
