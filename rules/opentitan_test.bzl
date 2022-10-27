@@ -375,8 +375,8 @@ def opentitan_functest(
     for target, params in target_params.items():
         # Set test name.
         test_name = "{}_{}".format(name, target)
-        if "manual" not in params.get("tags"):
-            all_tests.append(test_name)
+
+        all_tests.append(test_name)
 
         # The args/data lists will hold all of the test arguments/artifacts that
         # need to be present at runtime.
@@ -525,6 +525,12 @@ def opentitan_functest(
             env = env,
             **params
         )
+
+    # Guarantee that the test suite will only run tests in `all_tests`. This
+    # check is necessary because `test_suite()` defaults to all the tests in the
+    # caller's BUILD file when its `tests` attribute is the empty list.
+    if all_tests == []:
+        fail("Zero tests generated for :{}, test_suite() would run the wrong tests.".format(name))
 
     ############################################################################
     # Instantiate a suite of tests to run the same test on each hardware target.
