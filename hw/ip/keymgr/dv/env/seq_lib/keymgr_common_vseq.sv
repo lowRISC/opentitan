@@ -47,12 +47,20 @@ class keymgr_common_vseq extends keymgr_base_vseq;
                             dv_base_reg_block models[$] = {},
                             string ral_name = "");
     csr_vseq_done = 0;
+    // in these 2 test, we have a separate thread to invoke csr_rw
+    // but `working_state` needs couple cylces to be updated after fault injection, it's hard to
+    // predict its value cycle accurately. Exclude it and read it out after FI for check.
+    if (common_seq_type inside {"shadow_reg_errors_with_csr_rw", "tl_intg_err"}) begin
+      ral.get_excl_item().add_excl(ral.working_state.`gfn, CsrExclWriteCheck, CsrRwTest);
+    end
     super.run_csr_vseq(csr_test_type, num_test_csrs, do_rand_wr_and_reset, models, ral_name);
     csr_vseq_done = 1;
   endtask
 
   virtual task check_tl_intg_error_response();
     super.check_tl_intg_error_response();
+    // wait until csr_rw seq is done, as below operation may affect csr_rw to predict CSR values
+    wait (csr_vseq_done);
     check_state_after_non_operation_fault();
   endtask
 
@@ -65,6 +73,8 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     // an advance operation.
     if (`gmv(ral.fault_status.shadow) && common_seq_type != "shadow_reg_errors_with_csr_rw" &&
       !ral.control_shadowed.get_shadow_storage_err()) begin
+      // wait until csr_rw seq is done, as below operation may affect csr_rw to predict CSR values
+      wait (csr_vseq_done);
       check_state_after_non_operation_fault();
     end
   endtask
@@ -72,16 +82,12 @@ class keymgr_common_vseq extends keymgr_base_vseq;
   // Check state is StInvalid when there is an non-operation fault like integrity error, storage
   // error.
   virtual task check_state_after_non_operation_fault();
-    // wait until csr_rw seq is done, as below operation may affect csr_rw to predict CSR values
-    wait(csr_vseq_done);
-
     // issue an advance operation and check that state enters StInvalid
     keymgr_advance(.wait_done(0));
     // waiting for done is called separately as this one expects to be failed
     csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpDoneFail),
                  .spinwait_delay_ns($urandom_range(0, 100)));
-    read_current_state();
-    `DV_CHECK_EQ(current_state, keymgr_pkg::StInvalid)
+    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
   endtask
 
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
@@ -107,17 +113,10 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     endcase
     csr_rd_check(.ptr(ral.fault_status), .compare_value(exp));
 
-    // after an advance, keymgr should enter StInvalid
-    keymgr_advance();
-    csr_rd_check(.ptr(ral.op_status), .compare_value(keymgr_pkg::OpDoneFail));
-    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
+    check_state_after_non_operation_fault();
   endtask : check_sec_cm_fi_resp
 
    virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
-    // TODO, remove this after #8464 is solved
-    // $assertoff(0, "tb.dut.u_kmac_if.u_cnt.u_prim_count_if.ErrorTriggerAlert");
-
-    // TODO, review if we need to disable all these for prim_count
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
         if (enable) begin
@@ -138,7 +137,16 @@ class keymgr_common_vseq extends keymgr_base_vseq;
           $assertoff(0, "tb.dut.KmacDataKnownO_A");
         end
       end
-      SecCmPrimSparseFsmFlop, SecCmPrimOnehot: begin
+      SecCmPrimSparseFsmFlop: begin
+        if (enable) begin
+          $asserton(0, "tb.dut.u_ctrl.LoadKey_A");
+          $asserton(0, "tb.dut.u_sideload_ctrl.KmacKeySource_a");
+        end else begin
+          $assertoff(0, "tb.dut.u_ctrl.LoadKey_A");
+          $assertoff(0, "tb.dut.u_sideload_ctrl.KmacKeySource_a");
+        end
+      end
+      SecCmPrimOnehot: begin
         // No need to disable any assertion
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
