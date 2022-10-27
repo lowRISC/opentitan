@@ -1472,8 +1472,7 @@
               "chip_sw_hmac_enc",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_rom_ctrl_integrity_check",
-              // TODO(#15371): this currently failing on nightly regression
-              // "chip_sw_lc_walkthrough_testunlocks",
+              "chip_sw_lc_walkthrough_testunlocks",
               "chip_prim_tl_access"]
     }
     {
@@ -1484,9 +1483,8 @@
               "chip_sw_usb_ast_clk_calib",
               "chip_sw_kmac_mode_cshake",
               "chip_sw_plic_sw_irq",
-              "chip_sw_aes_enc"]
-              // TODO(#15371): this currently failing on nightly regression
-              // "chip_sw_lc_walkthrough_dev",
+              "chip_sw_aes_enc",
+              "chip_sw_lc_walkthrough_dev"]
     }
     {
       name: xcelium_ci_2
