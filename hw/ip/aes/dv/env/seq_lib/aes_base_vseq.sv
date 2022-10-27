@@ -620,6 +620,10 @@ class aes_base_vseq extends cip_base_vseq #(
             // reset dut
             rst_set = 1;
             done    = 1;
+            // To avoid assertions firing erroneously due to resetting AES prior to the EDN
+            // interface, pull all resets concurrently. See
+            // https://github.com/lowRISC/opentitan/issues/13573 for details.
+            apply_resets_concurrently();
             dut_init("HARD");
           end
         end else begin
