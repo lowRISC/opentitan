@@ -161,8 +161,8 @@ class BitstreamCache(object):
                         self.available[m.group(1)] = key.text
             # Handle any pagination
             is_truncated_elt = et.find('IsTruncated', XMLNS)
-            if (is_truncated_elt is not None) and (is_truncated_elt.text
-                                                   == 'true'):
+            if (is_truncated_elt is not None) and \
+               (is_truncated_elt.text == 'true'):
                 marker = et.find('NextMarker', XMLNS).text
             else:
                 break
