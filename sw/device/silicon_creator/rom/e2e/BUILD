@@ -1499,6 +1499,7 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
         rom_kind = "Rom",
         tags = [
             "cw310",
+            "exclusive",
             "vivado",
         ],
     )
@@ -1550,6 +1551,7 @@ test_suite(
         rom_kind = "Rom",
         tags = [
             "cw310",
+            "exclusive",
             "vivado",
         ],
     )
@@ -1567,6 +1569,92 @@ test_suite(
 
 # Dict that also includes an invalid redaction value for test purposes.
 REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
+
+# Ensure that the watchdog restarts the ROM even when the bite threshold has
+# been artificially inflated.
+[
+    opentitan_gdb_fpga_cw310_test(
+        name = "rom_e2e_asm_watchdog_fpga_cw310_test_otp_" + otp_name,
+        timeout = "short",
+        gdb_script = """
+            target extended-remote :3333
+
+            echo :::: Send OpenOCD the 'reset halt' command.\\n
+            monitor reset halt
+
+            echo :::: Load ROM symbols into GDB.\\n
+            file rom.elf
+
+            echo :::: Run until we check whether ROM execution is enabled.\\n
+            break kRomStartBootMaybeHalt
+            continue
+
+            printf ":::: PC=%p. Expected PC=%p.\\n", $pc, kRomStartBootMaybeHalt
+            if $pc != kRomStartBootMaybeHalt
+                quit 42
+            end
+
+            echo :::: Pretend execution is enabled.\\n
+            set $pc = kRomStartBootExecEn
+
+            break kRomStartStoreT1ToBiteThold
+            continue
+            printf ":::: PC=%p. Expected PC=%p.\\n", $pc, kRomStartStoreT1ToBiteThold
+            if $pc != kRomStartStoreT1ToBiteThold
+                quit 43
+            end
+
+            # Set the bite threshold to UINT32_MAX. We want to exercise that the
+            # bark causes control to reach the interrupt handler.
+            set $t1 = 0xffffffff
+
+            echo :::: Run until right after configuring the watchdog timer.\\n
+            break kRomStartWatchdogEnabled
+            continue
+
+            printf ":::: PC=%p. Expected PC=%p.\\n", $pc, kRomStartWatchdogEnabled
+            if $pc != kRomStartWatchdogEnabled
+                quit 44
+            end
+
+            echo :::: Set breakpoint on NMI handler.\\n
+            delete breakpoints
+            break _asm_exception_handler
+
+            echo :::: Wait for interrupt.\\n
+            set $pc = kRomStartBootMaybeHalt
+            echo :::: Continue.\\n
+            continue
+
+            printf ":::: PC=%p. Expected PC=%p.\\n", $pc, _asm_exception_handler
+            if $pc != _asm_exception_handler
+                quit 45
+            end
+        """,
+        gdb_script_symlinks = {
+            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+        },
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_kind = "Rom",
+        tags = [
+            "cw310",
+            "exclusive",
+            "vivado",
+        ],
+    )
+    for otp_name in OTP_CFGS_EXEC_DISABLED
+]
+
+test_suite(
+    name = "rom_e2e_asm_watchdog",
+    tags = [
+        "cw310",
+        "vivado",
+    ],
+    tests = ["rom_e2e_asm_watchdog_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
+)
+
+# Shutdown Redact Test
 
 REDACT.update({"INVALID": 0x0})
 

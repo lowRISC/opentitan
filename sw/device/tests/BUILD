@@ -272,6 +272,11 @@ opentitan_functest(
 opentitan_functest(
     name = "aon_timer_irq_test",
     srcs = ["aon_timer_irq_test.c"],
+    targets = [
+        "dv",
+        "verilator",
+        "cw310_test_rom",
+    ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
@@ -291,6 +296,11 @@ opentitan_functest(
 opentitan_functest(
     name = "aon_timer_smoketest",
     srcs = ["aon_timer_smoketest.c"],
+    targets = [
+        "dv",
+        "verilator",
+        "cw310_test_rom",
+    ],
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
@@ -853,6 +863,11 @@ opentitan_functest(
 opentitan_functest(
     name = "flash_ctrl_idle_low_power_test",
     srcs = ["flash_ctrl_idle_low_power_test.c"],
+    targets = [
+        "dv",
+        "verilator",
+        "cw310_test_rom",
+    ],
     verilator = verilator_params(
         tags = [
             "broken",
