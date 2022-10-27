@@ -444,31 +444,22 @@ interface chip_if;
   };
 
   // This part unfortunately has to be hardcoded since the macro cannot interpret a genvar.
-  // TODO: Update i2c_if to emit all signals as inout ports.
-  i2c_if i2c_if[NUM_I2CS-1:0]();
-  assign i2c_if[0].clk_i  = `I2C_HIER(0).clk_i;
-  assign i2c_if[0].rst_ni = `I2C_HIER(0).rst_ni;
-  assign i2c_if[1].clk_i  = `I2C_HIER(1).clk_i;
-  assign i2c_if[1].rst_ni = `I2C_HIER(1).rst_ni;
-  assign i2c_if[2].clk_i  = `I2C_HIER(2).clk_i;
-  assign i2c_if[2].rst_ni = `I2C_HIER(2).rst_ni;
+  wire [NUM_I2CS-1:0]i2c_clks = {`I2C_HIER(2).clk_i, `I2C_HIER(1).clk_i, `I2C_HIER(0).clk_i};
+  wire [NUM_I2CS-1:0]i2c_rsts = {`I2C_HIER(2).rst_ni, `I2C_HIER(1).rst_ni, `I2C_HIER(0).rst_ni};
 
-  for (genvar i = 0; i < NUM_I2CS; i++) begin : gen_i2c_if_connections
+  for (genvar i = 0; i < NUM_I2CS; i++) begin : gen_i2c_if
+    i2c_if i2c_if(
+      .clk_i(i2c_clks[i]),
+      .rst_ni(i2c_rsts[i]),
+      .scl_io(ios[AssignedI2cSclIos[i]]),
+      .sda_io(ios[AssignedI2cSdaIos[i]])
+    );
 
     // connect to agents
     initial begin
       uvm_config_db#(virtual i2c_if)::set(null, $sformatf("*.env.m_i2c_agent%0d*", i),
-      "vif", i2c_if[i]);
+      "vif", i2c_if);
     end
-
-    assign i2c_if[i].scl_i = ios[AssignedI2cSclIos[i]];
-    assign i2c_if[i].sda_i = ios[AssignedI2cSdaIos[i]];
-    assign ios[AssignedI2cSclIos[i]] = !__enable_i2c[i] ? 1'bz :
-                                       i2c_if[i].scl_o  ? 1'bz : 1'b0;
-
-    assign ios[AssignedI2cSdaIos[i]] = !__enable_i2c[i] ? 1'bz :
-                                       i2c_if[i].sda_o  ? 1'bz : 1'b0;
-
   end
 
   function automatic void enable_i2c(int inst_num, bit enable);
