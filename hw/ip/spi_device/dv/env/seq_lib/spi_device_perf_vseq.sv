@@ -9,11 +9,6 @@ class spi_device_perf_vseq extends spi_device_txrx_vseq;
   `uvm_object_utils(spi_device_perf_vseq)
   `uvm_object_new
 
-  // additional constraint for tx_total_bytes to transfer more data
-  constraint tx_total_bytes_additional_c {
-    tx_total_bytes inside {[5 * SRAM_SIZE : 10 * SRAM_SIZE]};
-  }
-
   constraint tx_delay_c {
     tx_delay inside {[0 : 1]};
   }
@@ -23,7 +18,7 @@ class spi_device_perf_vseq extends spi_device_txrx_vseq;
   }
 
   constraint num_trans_c {
-    num_trans inside {[2:3]};
+    num_trans == 2;
   }
 
 endclass : spi_device_perf_vseq

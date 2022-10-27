@@ -65,6 +65,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   rand bit [31:0] read_end_addr;
   rand uint payload_size;
   rand read_addr_size_type_e read_addr_size_type;
+  bit mailbox_en;
 
   int large_payload_weight = 2;
   constraint payload_size_c {
@@ -114,7 +115,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       // flash mode doesn't support mailbox boundary crossing.
       read_addr_size_type inside {ReadAddrWithinMailbox, ReadAddrOutsideMailbox};
       // this is read buffer
-      if (read_addr_size_type == ReadAddrOutsideMailbox && opcode inside {READ_CMD_LIST}) {
+      if ((!mailbox_en || read_addr_size_type == ReadAddrOutsideMailbox) &&
+          opcode inside {READ_CMD_LIST}) {
         read_start_addr == cfg.next_read_buffer_addr;
       }
     }
@@ -139,6 +141,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
   function void randomize_op_addr_size();
     mbx_start_addr = cfg.get_mbx_base_addr();
     mbx_end_addr   = mbx_start_addr + MAILBOX_BUFFER_SIZE;
+    mailbox_en = `gmv(ral.cfg.mailbox_en);
     `DV_CHECK_FATAL(this.randomize(opcode, valid_op,
       read_start_addr, read_end_addr, payload_size, read_addr_size_type))
   endfunction
@@ -581,8 +584,8 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
                                           bit [21:0] other_status = $urandom());
     if (write) begin
       bit [23:0] status_val = {other_status, wel, busy};
-      `uvm_info(`gfn, $sformatf("program flash_status: 0x%0h", ral.flash_status.get()), UVM_MEDIUM)
       csr_wr(.ptr(ral.flash_status), .value(status_val));
+      `uvm_info(`gfn, $sformatf("program flash_status: 0x%0h", ral.flash_status.get()), UVM_MEDIUM)
 
       cfg.clk_rst_vif.wait_clks(10);
     end else begin

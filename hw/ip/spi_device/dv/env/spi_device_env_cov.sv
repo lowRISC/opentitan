@@ -32,7 +32,8 @@ class spi_device_env_cov extends cip_base_env_cov #(.CFG_T(spi_device_env_cfg));
     cp_tpm_enabled: coverpoint tpm_enabled;
     cr_all: cross cp_mode, cp_tpm_enabled {
       // FW mode can't run with TPM enabled
-      illegal_bins invalid = binsof(cp_mode) intersect { GenericMode } &&
+      // but if we turn the mode on without realling sending transactions, it's fine.
+      ignore_bins invalid = binsof(cp_mode) intersect { GenericMode } &&
                              binsof(cp_tpm_enabled) intersect { 1 };
     }
   endgroup
