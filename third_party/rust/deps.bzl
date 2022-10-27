@@ -30,7 +30,7 @@ def rust_deps():
         version = "nightly",
         exec_triple = "x86_64-unknown-linux-gnu",
         extra_target_triples = ["riscv32imc-unknown-none-elf"],
-        iso_date = "2022-03-22",
+        iso_date = "2022-09-21",
         edition = "2021",
     )
     rust_bindgen_dependencies()
