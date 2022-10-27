@@ -22,6 +22,7 @@ module sha3_fpv
   input                     rand_valid_i,
   input                     rand_early_i,
   input        [StateW-1:0] rand_data_i,
+  input                     rand_aux_i,
   output logic              rand_consumed_o,
 
   // N, S: Used in cSHAKE mode only

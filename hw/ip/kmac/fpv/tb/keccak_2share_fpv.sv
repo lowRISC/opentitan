@@ -13,6 +13,7 @@ module keccak_2share_fpv #(
   input                    rand_valid_i,
   input                    rand_early_i,
   input        [Width-1:0] rand_i,
+  input                    rand_aux_i,
   input        [Width-1:0] state_i,
   output logic             done_o,
   output logic [Width-1:0] state_o
@@ -143,6 +144,7 @@ module keccak_2share_fpv #(
     .rnd_i        (round),
     .phase_sel_i  (sel_mux),
     .cycle_i      (cycle),
+    .rand_aux_i   (rand_aux_i),
     .rand_i       (rand_i[Width/2-1:0]), // keccak_2share requires just Width/2 randomness bits.
     .s_i          (keccak_in),
     .s_o          (keccak_out)
@@ -169,6 +171,7 @@ module keccak_2share_fpv #(
     .rnd_i      (round),
     .phase_sel_i('0),
     .cycle_i    ('0),
+    .rand_aux_i ('0),
     .rand_i     ('0),
     .s_i        ('{golden_state}),
     .s_o        (golden_state_d)

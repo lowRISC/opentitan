@@ -47,6 +47,7 @@ module sha3pad_fpv
 
   logic rand_valid, rand_early, rand_consumed;
   logic [799:0] rand_data;
+  logic rand_aux;
 
   sha3pad #(
     .EnMasking(EnMasking)
@@ -95,6 +96,7 @@ module sha3pad_fpv
     .rand_valid_i    (rand_valid),
     .rand_early_i    (rand_early),
     .rand_data_i     (rand_data),
+    .rand_aux_i      (rand_aux),
     .rand_consumed_o (rand_consumed),
 
     .state_o    (state),

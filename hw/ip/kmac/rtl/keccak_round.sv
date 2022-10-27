@@ -41,6 +41,7 @@ module keccak_round
   input                    rand_valid_i,
   input                    rand_early_i,
   input      [Width/2-1:0] rand_data_i,
+  input                    rand_aux_i,
   output logic             rand_consumed_o,
 
   output logic             complete_o, // Indicates full round is done
@@ -121,6 +122,7 @@ module keccak_round
   // Random value and valid signal used in Keccak_p
   logic               keccak_rand_consumed;
   logic [Width/2-1:0] keccak_rand_data;
+  logic               keccak_rand_aux;
 
   //////////////////////
   // Keccak Round FSM //
@@ -441,6 +443,7 @@ module keccak_round
     .rnd_i           (round),
     .phase_sel_i     (phase_sel),
     .cycle_i         (cycle),
+    .rand_aux_i      (keccak_rand_aux),
     .rand_i          (keccak_rand_data),
     .s_i             (storage),
     .s_o             (keccak_out)
@@ -450,6 +453,7 @@ module keccak_round
   assign rand_consumed_o = keccak_rand_consumed;
 
   assign keccak_rand_data = rand_data_i;
+  assign keccak_rand_aux = rand_aux_i;
 
   // Round number
   // This primitive is used to place a hardened counter
