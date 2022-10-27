@@ -18,6 +18,7 @@
 `include "chip_sw_full_aon_reset_vseq.sv"
 `include "chip_sw_deep_power_glitch_vseq.sv"
 `include "chip_sw_main_power_glitch_vseq.sv"
+`include "chip_sw_random_power_glitch_vseq.sv"
 `include "chip_sw_sysrst_ctrl_vseq.sv"
 `include "chip_sw_random_sleep_all_reset_vseq.sv"
 `include "chip_sw_deep_sleep_all_reset_vseq.sv"

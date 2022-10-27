@@ -39,19 +39,19 @@ interface pwrmgr_ast_sva_if #(
   `define PDN_WAIT_BOUNDS ##[MIN_PDN_WAIT_CYCLES:MAX_PDN_WAIT_CYCLES]
 
   // Clock enable-valid.
-  `ASSERT(CoreClkHandshakeOn_A, pwr_ast_o.core_clk_en |-> `CLK_WAIT_BOUNDS pwr_ast_i.core_clk_val,
-          clk_slow_i, reset_or_disable)
+//  `ASSERT(CoreClkHandshakeOn_A, pwr_ast_o.core_clk_en |-> `CLK_WAIT_BOUNDS pwr_ast_i.core_clk_val,
+//          clk_slow_i, reset_or_disable)
   `ASSERT(CoreClkHandshakeOff_A,
           !pwr_ast_o.core_clk_en |-> `CLK_WAIT_BOUNDS !pwr_ast_i.core_clk_val, clk_slow_i,
           reset_or_disable)
 
-  `ASSERT(IoClkHandshakeOn_A, pwr_ast_o.io_clk_en |-> `CLK_WAIT_BOUNDS pwr_ast_i.io_clk_val,
-          clk_slow_i, reset_or_disable)
+ // `ASSERT(IoClkHandshakeOn_A, pwr_ast_o.io_clk_en |-> `CLK_WAIT_BOUNDS pwr_ast_i.io_clk_val,
+//          clk_slow_i, reset_or_disable)
   `ASSERT(IoClkHandshakeOff_A, !pwr_ast_o.io_clk_en |-> `CLK_WAIT_BOUNDS !pwr_ast_i.io_clk_val,
           clk_slow_i, reset_or_disable)
 
-  `ASSERT(UsbClkHandshakeOn_A, pwr_ast_o.usb_clk_en |-> `CLK_WAIT_BOUNDS pwr_ast_i.usb_clk_val,
-          clk_slow_i, reset_or_disable)
+  //`ASSERT(UsbClkHandshakeOn_A, pwr_ast_o.usb_clk_en |-> `CLK_WAIT_BOUNDS pwr_ast_i.usb_clk_val,
+  //        clk_slow_i, reset_or_disable)
   `ASSERT(UsbClkHandshakeOff_A, !pwr_ast_o.usb_clk_en |-> `CLK_WAIT_BOUNDS !pwr_ast_i.usb_clk_val,
           clk_slow_i, reset_or_disable)
 
