@@ -84,10 +84,6 @@ class chip_base_vseq #(
       cfg.chip_vif.ext_clk_if.set_freq_mhz(cfg.chip_clock_source);
     end
 
-    // Initialize the SW strap pins - these are sort of dedicated.
-    // TODO: add logic to drive / undrive this only when the ROM / test ROM code is active.
-    cfg.chip_vif.sw_straps_if.drive({3{cfg.use_spi_load_bootstrap}});
-
     // Connect DIOs
     cfg.chip_vif.enable_spi_host = 1;
 

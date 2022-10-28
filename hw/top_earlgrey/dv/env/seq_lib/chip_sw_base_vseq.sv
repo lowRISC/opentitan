@@ -21,6 +21,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual task dut_init(string reset_kind = "HARD");
     // Reset the sw_test_status.
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusUnderReset;
+
+    // Initialize the SW strap pins - these are sort of dedicated.
+    // TODO: add logic to drive / undrive this only when the ROM / test ROM code is active.
+    cfg.chip_vif.sw_straps_if.drive({3{cfg.use_spi_load_bootstrap}});
+
     // Bring the chip out of reset.
     super.dut_init(reset_kind);
   endtask
