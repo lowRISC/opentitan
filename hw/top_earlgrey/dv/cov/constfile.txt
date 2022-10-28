@@ -1,0 +1,7 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// Syntax: instance {Top.M1} {x} {1'b0}
+// TODO: This is unsupported!
+// instance {tb.dut.top_earlgrey.u_pinmux_aon} {mio_attr_o[0][8:4]}   {5'b00000}

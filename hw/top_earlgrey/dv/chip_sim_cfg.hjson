@@ -103,7 +103,8 @@
 
   // exclusion files
   vcs_cov_excl_files: ["{top_dv_path}/cov/conn_ast_mem_cfg.el",
-                       "{top_dv_path}/cov/edn1_unr_tied_off_ports.el"]
+                       "{top_dv_path}/cov/edn1_unr_tied_off_ports.el",
+                       "{top_dv_path}/cov/pinmux_pad_attr.el"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 3
@@ -155,6 +156,13 @@
       name: fast_sim
       build_opts: ["+define+DISABLE_ROM_INTEGRITY_CHECK"]
     }
+    // TODO: VCS does not support MDAs in constfiles. Most RTL ports in OpenTitan are structs, so
+    // this method currently does not work for our needs. Revisit later.
+    // {
+    //   name: vcs_cov
+    //   build_opts: ["-cm_constfile {top_dv_path}/cov/constfile.txt"]
+    //   is_sim_mode: 1
+    // }
   ]
 
   // Add options needed to compile against otbn_memutil, otbn_tracer, and
