@@ -267,6 +267,44 @@ otp_json(
 )
 
 otp_json(
+    name = "otp_json_prod_end",
+    partitions = [
+        otp_partition(
+            name = "SECRET0",
+            items = {
+                "TEST_UNLOCK_TOKEN": "<random>",
+                "TEST_EXIT_TOKEN": "<random>",
+            },
+            lock = True,
+        ),
+        otp_partition(
+            name = "SECRET1",
+            items = {
+                "FLASH_ADDR_KEY_SEED": "<random>",
+                "FLASH_DATA_KEY_SEED": "<random>",
+                "SRAM_DATA_KEY_SEED": "<random>",
+            },
+            lock = True,
+        ),
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                "RMA_TOKEN": "<random>",
+                "CREATOR_ROOT_KEY_SHARE0": "<random>",
+                "CREATOR_ROOT_KEY_SHARE1": "<random>",
+            },
+            lock = False,
+        ),
+        otp_partition(
+            name = "LIFE_CYCLE",
+            count = 5,
+            state = "PROD_END",
+        ),
+    ],
+    seed = "14555711126514784208",
+)
+
+otp_json(
     name = "otp_json_rma",
     partitions = [
         otp_partition(
@@ -317,6 +355,16 @@ otp_image(
 otp_image(
     name = "img_prod",
     src = ":otp_json_prod",
+    overlays = [
+        ":otp_json_creator_sw_cfg",
+        ":otp_json_owner_sw_cfg",
+        ":otp_json_hw_cfg",
+    ],
+)
+
+otp_image(
+    name = "img_prod_end",
+    src = ":otp_json_prod_end",
     overlays = [
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
