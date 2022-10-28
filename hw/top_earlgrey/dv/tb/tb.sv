@@ -360,6 +360,27 @@ module tb;
   end
 `endif
 
+  initial begin
+    // The chip_padctrl_attributes test verifies the input / output connections of the pads to
+    // peripherals and fully verifies all pad attributes. In doing so, Xs may end up propagating
+    // into the peripheral. We hence, disable SVAs in these blocks while the test is running.
+    forever @dut.chip_if.chip_padctrl_attributes_test_sva_disable begin
+      if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
+        $assertoff(0, dut.top_earlgrey.u_pinmux_aon);
+        $assertoff(0, dut.top_earlgrey.u_spi_device);
+        $assertoff(0, dut.top_earlgrey.u_spi_host0);
+        $assertoff(0, dut.top_earlgrey.u_sysrst_ctrl_aon);
+        $assertoff(0, dut.top_earlgrey.u_usbdev);
+      end else begin
+        $asserton(0, dut.top_earlgrey.u_pinmux_aon);
+        $asserton(0, dut.top_earlgrey.u_spi_device);
+        $asserton(0, dut.top_earlgrey.u_spi_host0);
+        $asserton(0, dut.top_earlgrey.u_sysrst_ctrl_aon);
+        $asserton(0, dut.top_earlgrey.u_usbdev);
+      end
+    end
+  end
+
   // Control assertions in the DUT with UVM resource string "dut_assert_en".
   `DV_ASSERT_CTRL("dut_assert_en", tb.dut)
 
