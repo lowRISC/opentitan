@@ -8,11 +8,17 @@
  * Tile-Link UL adapter for Register interface
  */
 
-module tlul_adapter_reg import tlul_pkg::*; #(
-  parameter  bit EnableDataIntgGen = 1'b0,
-  parameter  int RegAw = 8,
-  parameter  int RegDw = 32, // Shall be matched with TL_DW
-  localparam int RegBw = RegDw/8
+module tlul_adapter_reg
+  import tlul_pkg::*;
+  import prim_mubi_pkg::mubi4_t;
+#(
+  parameter  bit CmdIntgCheck      = 0,  // 1: Enable command integrity check
+  parameter  bit EnableRspIntgGen  = 0,  // 1: Generate response integrity
+  parameter  bit EnableDataIntgGen = 0,  // 1: Generate response data integrity
+  parameter  int RegAw             = 8,  // Width of register address
+  parameter  int RegDw             = 32, // Shall be matched with TL_DW
+  parameter  int AccessLatency     = 0,  // 0: same cycle, 1: next cycle
+  localparam int RegBw             = RegDw/8
 ) (
   input clk_i,
   input rst_ni,
@@ -21,6 +27,10 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   input  tl_h2d_t tl_i,
   output tl_d2h_t tl_o,
 
+  // control interface
+  input  mubi4_t  en_ifetch_i,
+  output logic    intg_error_o,
+
   // Register interface
   output logic             re_o,
   output logic             we_o,
@@ -28,9 +38,14 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   output logic [RegDw-1:0] wdata_o,
   output logic [RegBw-1:0] be_o,
   input                    busy_i,
+  // The following two signals are expected
+  // to be returned in AccessLatency cycles.
   input        [RegDw-1:0] rdata_i,
+  // This can be a write or read error.
   input                    error_i
 );
+
+  `ASSERT_INIT(AllowedLatency_A, AccessLatency inside {0, 1})
 
   localparam int IW  = $bits(tl_i.a_source);
   localparam int SZW = $bits(tl_i.a_size);
@@ -38,8 +53,8 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   logic outstanding_q;    // Indicates current request is pending
   logic a_ack, d_ack;
 
-  logic [RegDw-1:0] rdata_q;
-  logic             error_q, err_internal;
+  logic [RegDw-1:0] rdata, rdata_q;
+  logic             error_q, error, err_internal, instr_error, intg_error;
 
   logic addr_align_err;     // Size and alignment
   logic malformed_meta_err; // User signal format error or unsupported
@@ -87,50 +102,102 @@ module tlul_adapter_reg import tlul_pkg::*; #(
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      rdata_q <= '0;
-      error_q <= 1'b0;
-    end else if (a_ack) begin
-      rdata_q <= (error_i || err_internal || wr_req) ? '1 : rdata_i;
-      error_q <= error_i | err_internal;
+  if (AccessLatency == 1) begin : gen_access_latency1
+    logic wr_req_q, rd_req_q;
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        rdata_q  <= '0;
+        error_q  <= 1'b0;
+        wr_req_q <= 1'b0;
+        rd_req_q <= 1'b0;
+      end else begin
+        rd_req_q <= rd_req;
+        wr_req_q <= wr_req;
+        // Addressing phase
+        if (a_ack) begin
+          error_q <= err_internal;
+        // Response phase
+        end else begin
+          error_q <= error;
+          rdata_q <= rdata;
+        end
+      end
     end
+    assign rdata = (error_i || error_q || wr_req_q) ? '1      :
+                   (rd_req_q)                       ? rdata_i :
+                                                      rdata_q; // backpressure case
+    assign error = (rd_req_q || wr_req_q) ? (error_q || error_i) :
+                                            error_q; // backpressure case
+  end else begin : gen_access_latency0
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        rdata_q <= '0;
+        error_q <= 1'b0;
+      end else if (a_ack) begin
+        rdata_q <= (error_i || err_internal || wr_req) ? '1 : rdata_i;
+        error_q <= error_i || err_internal;
+      end
+    end
+    assign rdata = rdata_q;
+    assign error = error_q;
   end
 
-  logic [DataIntgWidth-1:0] data_intg;
-  if (EnableDataIntgGen) begin : gen_data_intg
-    logic [DataMaxWidth-1:0] unused_data;
-
-    tlul_data_integ_enc u_data_gen (
-      .data_i(DataMaxWidth'(rdata_q)),
-      .data_intg_o({data_intg, unused_data})
-    );
-  end else begin : gen_tieoff_data_intg
-    assign data_intg = '0;
-  end
-
-  logic req_valid;
-  assign req_valid = tl_i.a_valid;
-
-  assign tl_o = '{
+  tlul_pkg::tl_d2h_t tl_o_pre;
+  assign tl_o_pre = '{
     // busy is selected based on address
     // thus if there is no valid transaction, we should ignore busy
-    a_ready:  ~(outstanding_q | req_valid & busy_i),
+    a_ready:  ~(outstanding_q | tl_i.a_valid & busy_i),
     d_valid:  outstanding_q,
     d_opcode: rspop_q,
     d_param:  '0,
     d_size:   reqsz_q,
     d_source: reqid_q,
     d_sink:   '0,
-    d_data:   rdata_q,
-    d_user:   '{default: '0, data_intg: data_intg},
-    d_error:  error_q
+    d_data:   rdata,
+    d_user:   '0,
+    d_error:  error
   };
+
+  // outgoing integrity generation
+  tlul_rsp_intg_gen #(
+    .EnableRspIntgGen(EnableRspIntgGen),
+    .EnableDataIntgGen(EnableDataIntgGen)
+  ) u_rsp_intg_gen (
+    .tl_i(tl_o_pre),
+    .tl_o(tl_o)
+  );
+
+  if (CmdIntgCheck) begin : gen_cmd_intg_check
+    logic intg_error_q;
+    tlul_cmd_intg_chk u_cmd_intg_chk (
+      .tl_i(tl_i),
+      .err_o(intg_error)
+    );
+    // permanently latch integrity error until reset
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        intg_error_q <= 1'b0;
+      end else if (intg_error) begin
+        intg_error_q <= 1'b1;
+      end
+    end
+    assign intg_error_o = intg_error_q;
+  end else begin : gen_no_cmd_intg_check
+    assign intg_error = 1'b0;
+    assign intg_error_o = 1'b0;
+  end
 
   ////////////////////
   // Error Handling //
   ////////////////////
-  assign err_internal = addr_align_err | malformed_meta_err | tl_err;
+
+  // An instruction type transaction is only valid if en_ifetch is enabled
+  // If the instruction type is completely invalid, also considered an instruction error
+  assign instr_error = prim_mubi_pkg::mubi4_test_invalid(tl_i.a_user.instr_type) |
+                       (prim_mubi_pkg::mubi4_test_true_strict(tl_i.a_user.instr_type) &
+                        prim_mubi_pkg::mubi4_test_false_loose(en_ifetch_i));
+
+  assign err_internal = addr_align_err | malformed_meta_err | tl_err | instr_error | intg_error;
 
   // Don't allow unsupported values.
   assign malformed_meta_err = tl_a_user_chk(tl_i.a_user);
