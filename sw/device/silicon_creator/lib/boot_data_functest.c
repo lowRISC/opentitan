@@ -7,7 +7,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
-#include "sw/device/silicon_creator/lib/crc32.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/test_main.h"
@@ -30,7 +29,8 @@ static const flash_ctrl_info_page_t kPages[2] = {
  * Boot data entry used in tests.
  */
 boot_data_t kTestBootData = (boot_data_t){
-    .checksum = 0x7622f7f7,
+    .digest = {{0x00f0046c, 0x34e7a3d5, 0x93b15c2e, 0x77cbd502, 0x3d0530f6,
+                0xa58d38b2, 0x60693f97, 0x67e132d9}},
     .identifier = kBootDataIdentifier,
     .is_valid = kBootDataValidEntry,
     // `kBootDataDefaultCounterVal` + 1 for consistency.
@@ -154,8 +154,8 @@ static rom_error_t compare_boot_data(const boot_data_t *lhs,
 /**
  * Checks whether a boot data entry is valid.
  *
- * This function checks the `identifier`, `checksum`, and counter fields of a
- * boot data entry.
+ * This function checks the `identifier`, `digest`, and counter fields of a boot
+ * data entry.
  *
  * @param boot_data A boot data entry.
  * @return The result of the operation.
@@ -163,8 +163,8 @@ static rom_error_t compare_boot_data(const boot_data_t *lhs,
 static rom_error_t check_boot_data(const boot_data_t *boot_data,
                                    uint32_t counter) {
   enum {
-    kChecksumRegionOffset = sizeof(boot_data->checksum),
-    kChecksumRegionSize = sizeof(boot_data_t) - sizeof(boot_data->checksum),
+    kDigestRegionOffset = sizeof(boot_data->digest),
+    kDigestRegionSize = sizeof(boot_data_t) - sizeof(boot_data->digest),
   };
 
   if (boot_data->identifier != kBootDataIdentifier) {
@@ -175,10 +175,12 @@ static rom_error_t check_boot_data(const boot_data_t *boot_data,
     return kErrorUnknown;
   }
 
-  uint32_t act_checksum;
-  act_checksum = crc32((const char *)boot_data + kChecksumRegionOffset,
-                       kChecksumRegionSize);
-  if (memcmp(&act_checksum, &boot_data->checksum, sizeof(act_checksum)) != 0) {
+  hmac_digest_t act_digest;
+  hmac_sha256_init();
+  hmac_sha256_update((const char *)boot_data + kDigestRegionOffset,
+                     kDigestRegionSize);
+  hmac_sha256_final(&act_digest);
+  if (memcmp(&act_digest, &boot_data->digest, sizeof(act_digest)) != 0) {
     return kErrorUnknown;
   }
   return kErrorOk;
@@ -292,7 +294,7 @@ rom_error_t write_page_switch_test(void) {
   // to page 1.
   for (size_t i = 0; i < kBootDataEntriesPerPage + 1; ++i) {
     RETURN_IF_ERROR(boot_data_write(&kTestBootData));
-    // Check `identifier`, `checksum`, and `counter` fields.
+    // Check `identifier`, `digest`, and `counter` fields.
     RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data_act));
     RETURN_IF_ERROR(check_boot_data(&boot_data_act, ++counter_exp));
     if (i > 0) {
@@ -316,7 +318,7 @@ rom_error_t write_page_switch_test(void) {
   // page 0.
   for (size_t i = 1; i < kBootDataEntriesPerPage + 1; ++i) {
     RETURN_IF_ERROR(boot_data_write(&kTestBootData));
-    // Check `identifier`, `checksum`, and `counter` fields.
+    // Check `identifier`, `digest`, and `counter` fields.
     RETURN_IF_ERROR(boot_data_read(kLcStateProd, &boot_data_act));
     RETURN_IF_ERROR(check_boot_data(&boot_data_act, ++counter_exp));
     // Previous entry must be invalidated.
