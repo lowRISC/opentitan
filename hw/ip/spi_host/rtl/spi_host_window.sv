@@ -35,16 +35,18 @@ module spi_host_window (
   ) u_adapter_rx (
     .clk_i,
     .rst_ni,
-    .tl_i    (rx_win_i),
-    .tl_o    (rx_win_o),
-    .we_o    (rx_we),
-    .re_o    (rx_ready_o),
-    .addr_o  (),
-    .wdata_o (),
-    .be_o    (),
-    .rdata_i (rx_data_i),
-    .error_i (rx_access_error),
-    .busy_i  ('0)
+    .tl_i        (rx_win_i),
+    .tl_o        (rx_win_o),
+    .en_ifetch_i (prim_mubi_pkg::MuBi4False),
+    .intg_error_o(),
+    .we_o        (rx_we),
+    .re_o        (rx_ready_o),
+    .addr_o      (),
+    .wdata_o     (),
+    .be_o        (),
+    .rdata_i     (rx_data_i),
+    .error_i     (rx_access_error),
+    .busy_i      ('0)
   );
 
   // translate bitmask to byte mask

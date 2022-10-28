@@ -384,6 +384,9 @@ module ${mod_name} (
     .tl_i (tl_reg_h2d),
     .tl_o (tl_reg_d2h),
 
+    .en_ifetch_i(prim_mubi_pkg::MuBi4False),
+    .intg_error_o(),
+
     .we_o    (reg_we),
     .re_o    (reg_re),
     .addr_o  (reg_addr),
