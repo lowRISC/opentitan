@@ -95,19 +95,25 @@
       stage: V2S
       tests: ["aes_readability"]
     }
-      //  TODO: I think this is need a bind to read the internal state
     {
       name: sec_cm_data_reg_key_sca
-      desc: "Verify the countermeasure(s) DATA_REG.KEY.SCA."
+      desc: '''
+            Verify the countermeasure(s) DATA_REG.KEY.SCA.
+            SVAs inside aes_cipher_core.sv check that the internal state register gets cleared with pseudo-random data at the end of the last round of every encryption.
+            '''
       stage: V2S
-      tests: []
+      tests: ["aes_stress"]
     }
-      // TODO how do we verify this?
     {
       name: sec_cm_key_masking
-      desc: "Verify the countermeasure(s) KEY.MASKING."
+      desc: '''
+            Verify the countermeasure(s) KEY.MASKING.
+            SVAs inside aes_cipher_core.sv are used to check some aspects of the masking countermeasure.
+            However, the actual verification of the masking countermeasure cannot be done in DV though.
+            FPGA measurements and formal masking verification tools are used for that purpose.
+            '''
       stage: V2S
-      tests: []
+      tests: ["aes_stress"]
     }
     {
       name: sec_cm_main_fsm_sparse
