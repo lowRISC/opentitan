@@ -23,21 +23,10 @@
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/tests/otbn_randomness_impl.h"
 
 #include "alert_handler_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-OTBN_DECLARE_APP_SYMBOLS(randomness);
-OTBN_DECLARE_SYMBOL_ADDR(randomness, rv);
-OTBN_DECLARE_SYMBOL_ADDR(randomness, fail_idx);
-OTBN_DECLARE_SYMBOL_ADDR(randomness, rnd_out);
-OTBN_DECLARE_SYMBOL_ADDR(randomness, urnd_out);
-
-static const otbn_app_t kOtbnAppCfiTest = OTBN_APP_T_INIT(randomness);
-static const otbn_addr_t kVarRv = OTBN_ADDR_T_INIT(randomness, rv);
-static const otbn_addr_t kVarFailIdx = OTBN_ADDR_T_INIT(randomness, fail_idx);
-static const otbn_addr_t kVarRndOut = OTBN_ADDR_T_INIT(randomness, rnd_out);
-static const otbn_addr_t kVarUrndOut = OTBN_ADDR_T_INIT(randomness, urnd_out);
 
 typedef struct entropy_src_test_context {
   otbn_t otbn;
@@ -111,17 +100,6 @@ static void otp_ctrl_test(entropy_src_test_context_t *ctx) {
   };
   CHECK_DIF_OK(dif_otp_ctrl_configure(&ctx->otp, config));
   otp_ctrl_testutils_wait_for_dai(&ctx->otp);
-}
-
-/**
- * Load the randomness app and start its execution, which
- * will request entropy from the edn.
- */
-static void otbn_test(entropy_src_test_context_t *ctx) {
-  LOG_INFO("%s", __func__);
-
-  CHECK(otbn_load_app(&ctx->otbn, kOtbnAppCfiTest) == kOtbnOk);
-  CHECK(otbn_execute(&ctx->otbn) == kOtbnOk);
 }
 
 /**
@@ -265,14 +243,14 @@ bool test_main() {
     LOG_INFO("Entropy src test %d/%d", i, loop);
     alert_handler_test(&ctx);
     aes_test(&ctx);
-    otbn_test(&ctx);
+    otbn_randomness_test_start(&ctx.otbn);
     keymgr_test(&ctx);
     otp_ctrl_test(&ctx);
     kmac_test(&ctx);
     ibex_test(&ctx);
 
     AES_TESTUTILS_WAIT_FOR_STATUS(&ctx.aes, kDifAesStatusIdle, true, 100000);
-    CHECK(otbn_busy_wait_for_done(&ctx.otbn) == kOtbnOk);
+    CHECK(otbn_randomness_test_end(&ctx.otbn, /*skip_otbn_done_check=*/false));
     keymgr_testutils_wait_for_operation_done(&ctx.kmgr);
     keymgr_testutils_check_state(&ctx.kmgr, kDifKeymgrStateInitialized);
   }

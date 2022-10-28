@@ -702,6 +702,7 @@ opentitan_functest(
     name = "entropy_src_edn_reqs_test",
     srcs = ["entropy_src_edn_reqs_test.c"],
     deps = [
+        ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -724,7 +725,6 @@ opentitan_functest(
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/otbn/code-snippets:randomness",
     ],
 )
 
@@ -1085,10 +1085,26 @@ opentitan_functest(
     ],
 )
 
+cc_library(
+    name = "otbn_randomness_impl",
+    srcs = ["otbn_randomness_impl.c"],
+    hdrs = ["otbn_randomness_impl.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:otbn",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/otbn/code-snippets:randomness",
+    ],
+)
+
 opentitan_functest(
     name = "otbn_randomness_test",
     srcs = ["otbn_randomness_test.c"],
     deps = [
+        ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:clkmgr",
@@ -1102,7 +1118,6 @@ opentitan_functest(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/otbn/code-snippets:randomness",
     ],
 )
 
