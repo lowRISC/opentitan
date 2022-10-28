@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -19,16 +20,12 @@ extern "C" {
  */
 typedef struct boot_data {
   /**
-   * CRC32 checksum of boot data.
+   * SHA-256 digest of boot data.
    *
-   * The region covered by this checksum starts immediately after this field and
+   * The region covered by this digest starts immediately after this field and
    * ends at the end of the entry.
    */
-  uint32_t checksum;
-  /**
-   * Boot data identifier.
-   */
-  uint32_t identifier;
+  hmac_digest_t digest;
   /**
    * Invalidation field.
    *
@@ -37,9 +34,13 @@ typedef struct boot_data {
    * `kBootDataValidEntry`, which matches the value of unwritten flash words,
    * but it is skipped so that the entry can be invalidated at a later time. An
    * entry can be invalidated by writing `kBootDataInvalidEntry` to this field
-   * resulting in a checksum mismatch.
+   * resulting in a digest mismatch.
    */
   uint64_t is_valid;
+  /**
+   * Boot data identifier.
+   */
+  uint32_t identifier;
   /**
    * Counter.
    *
@@ -58,16 +59,16 @@ typedef struct boot_data {
   /**
    * Padding to make the size of `boot_data_t` a power of two.
    */
-  uint8_t padding[36];
+  uint8_t padding[8];
 } boot_data_t;
 
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, checksum, 0);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 4);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 8);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, counter, 16);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_rom_ext, 20);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_bl0, 24);
-OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 28);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 32);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 40);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, counter, 44);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_rom_ext, 48);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, min_security_version_bl0, 52);
+OT_ASSERT_MEMBER_OFFSET(boot_data_t, padding, 56);
 OT_ASSERT_SIZE(boot_data_t, 64);
 
 enum {
@@ -146,8 +147,8 @@ rom_error_t boot_data_read(lifecycle_state_t lc_state, boot_data_t *boot_data);
 /**
  * Writes the given boot data to the flash info partition.
  *
- * This function updates the `identifier`, `counter`, and `checksum` fields of
- * the given `boot_data` before writing it to the flash.
+ * This function updates the `identifier`, `counter`, and `digest` fields of the
+ * given `boot_data` before writing it to the flash.
  *
  * @param boot_data[out] Boot data.
  * @return The result of the operation.
@@ -157,11 +158,11 @@ rom_error_t boot_data_write(const boot_data_t *boot_data);
 /**
  * Checks whether a boot data entry is valid.
  *
- * This function checks the `identifier` and `checksum` fields of the given
+ * This function checks the `identifier` and `digest` fields of the given
  * `boot_data` entry.
  *
  * @param boot_data A buffer that holds a boot data entry.
- * @return Whether the checksum of the entry is valid.
+ * @return Whether the digest of the entry is valid.
  */
 rom_error_t boot_data_check(const boot_data_t *boot_data);
 

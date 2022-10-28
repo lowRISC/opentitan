@@ -10,8 +10,8 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
-#include "sw/device/silicon_creator/lib/crc32.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
+#include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -44,26 +44,28 @@ static const flash_ctrl_info_page_t kPages[2] = {
 };
 
 /**
- * Computes the checksum of a boot data entry.
+ * Computes the SHA-256 digest of a boot data entry.
  *
- * The region covered by this checksum starts immediately after the `identifier`
+ * The region covered by this digest starts immediately after the `identifier`
  * field and ends at the end of the entry.
  *
  * @param boot_data A boot data entry.
- * @param[out] checksum Checksum of the boot data entry.
+ * @param[out] digest Digest of the boot data entry.
  * @return The result of the operation.
  */
-static void boot_data_checksum_compute(const void *boot_data,
-                                       uint32_t *checksum) {
+static void boot_data_digest_compute(const void *boot_data,
+                                     hmac_digest_t *digest) {
   enum {
-    kChecksumRegionOffset = sizeof((boot_data_t){0}.checksum),
-    kChecksumRegionSize = sizeof(boot_data_t) - kChecksumRegionOffset,
+    kDigestRegionOffset = sizeof((boot_data_t){0}.digest),
+    kDigestRegionSize = sizeof(boot_data_t) - kDigestRegionOffset,
   };
-  static_assert(offsetof(boot_data_t, checksum) == 0,
-                "`checksum` must be the first field of `boot_data_t`.");
+  static_assert(offsetof(boot_data_t, digest) == 0,
+                "`digest` must be the first field of `boot_data_t`.");
 
-  *checksum = crc32((const char *)boot_data + kChecksumRegionOffset,
-                    kChecksumRegionSize);
+  hmac_sha256_init();
+  hmac_sha256_update((const char *)boot_data + kDigestRegionOffset,
+                     kDigestRegionSize);
+  hmac_sha256_final(digest);
 }
 
 /**
@@ -114,16 +116,16 @@ static rom_error_t boot_data_sniff(flash_ctrl_info_page_t page, size_t index,
                 "is_valid must be 0 for invalid entries.");
 
   enum {
-    kIdentifierOffset = offsetof(boot_data_t, identifier),
     kIsValidOffset = offsetof(boot_data_t, is_valid),
+    kIdentifierOffset = offsetof(boot_data_t, identifier),
   };
   static_assert(
-      kIsValidOffset - kIdentifierOffset == sizeof((boot_data_t){0}.identifier),
-      "identifier and is_valid must be consecutive.");
+      kIdentifierOffset - kIsValidOffset == sizeof((boot_data_t){0}.is_valid),
+      "is_valid and identifier must be consecutive.");
 
   *masked_identifier = 0;
   uint32_t buf[3];
-  const uint32_t offset = index * sizeof(boot_data_t) + kIdentifierOffset;
+  const uint32_t offset = index * sizeof(boot_data_t) + kIsValidOffset;
   HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read(page, offset, 3, buf));
   *masked_identifier = buf[0] & buf[1] & buf[2];
   return kErrorOk;
@@ -165,23 +167,18 @@ static rom_error_t boot_data_entry_write_impl(flash_ctrl_info_page_t page,
                                               const boot_data_t *boot_data,
                                               hardened_bool_t erase) {
   // This function assumes the following layout for the first three fields.
-  OT_ASSERT_MEMBER_OFFSET(boot_data_t, checksum, 0);
-  OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 4);
-  OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 8);
+  OT_ASSERT_MEMBER_OFFSET(boot_data_t, digest, 0);
+  OT_ASSERT_MEMBER_OFFSET(boot_data_t, is_valid, 32);
+  OT_ASSERT_MEMBER_OFFSET(boot_data_t, identifier, 40);
 
   if (erase == kHardenedBoolTrue) {
     RETURN_IF_ERROR(flash_ctrl_info_erase(page, kFlashCtrlEraseTypePage));
   }
 
-  // Write the checksum and identifier.
-  enum {
-    kFirstWriteNumBytes =
-        sizeof(boot_data->checksum) + sizeof(boot_data->identifier),
-    kFirstWriteNumWords = kFirstWriteNumBytes / sizeof(uint32_t),
-  };
+  // Write digest
   const uint32_t offset = index * sizeof(boot_data_t);
   RETURN_IF_ERROR(
-      flash_ctrl_info_write(page, offset, kFirstWriteNumWords, boot_data));
+      flash_ctrl_info_write(page, offset, kHmacDigestNumWords, boot_data));
   // Write the rest of the entry, skipping over `is_valid`.
   enum {
     kSecondWriteOffsetBytes = offsetof(boot_data_t, identifier),
@@ -242,7 +239,7 @@ static rom_error_t boot_data_entry_write(flash_ctrl_info_page_t page,
  *
  * This function handles write permissions for the given page and sets the
  * `is_valid` field of the given entry to `kBootDataInvalidEntry` which will
- * cause the checksum checks to fail in subsequent reads.
+ * cause the digest checks to fail in subsequent reads.
  *
  * This function must be called only after the new entry is successfully
  * written since writes can potentially be interrupted.
@@ -356,7 +353,7 @@ static rom_error_t boot_data_page_info_update_impl(
   size_t j = 0;
   for (; launder32(i) < first_empty_index && launder32(j) < first_empty_index;
        --i, ++j) {
-    // Check the checksum only if this entry can be valid.
+    // Check the digest only if this entry can be valid.
     if (sniff_results[i] == kBootDataIdentifier) {
       HARDENED_RETURN_IF_ERROR(boot_data_entry_read(page, i, &buf));
       rom_error_t is_valid = boot_data_check(&buf);
@@ -536,9 +533,9 @@ static rom_error_t boot_data_default_get(lifecycle_state_t lc_state,
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT_OFFSET);
   boot_data->min_security_version_bl0 =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_MIN_SEC_VER_BL0_OFFSET);
-  // We cannot use a constant checksum since some fields are read from the OTP
-  // and we check the checksum of the cached boot data entry in rom.c
-  boot_data_checksum_compute(boot_data, &boot_data->checksum);
+  // We cannot use a constant digest since some fields are read from the OTP
+  // and we check the digest of the cached boot data entry in rom.c
+  boot_data_digest_compute(boot_data, &boot_data->digest);
 
   return res;
 }
@@ -570,7 +567,7 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
     // Note: Not checking for wraparound since a successful write will
     // invalidate the old entry.
     new_entry.counter = last_entry.counter + 1;
-    boot_data_checksum_compute(&new_entry, &new_entry.checksum);
+    boot_data_digest_compute(&new_entry, &new_entry.digest);
     if (active_page.has_empty_entry == kHardenedBoolTrue) {
       RETURN_IF_ERROR(boot_data_entry_write(active_page.page,
                                             active_page.first_empty_index,
@@ -591,7 +588,7 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
     // Erase the first page and write the entry there if the active page cannot
     // be found, i.e. the storage is not initialized yet.
     new_entry.counter = kBootDataDefaultCounterVal + 1;
-    boot_data_checksum_compute(&new_entry, &new_entry.checksum);
+    boot_data_digest_compute(&new_entry, &new_entry.digest);
     RETURN_IF_ERROR(
         boot_data_entry_write(kPages[0], 0, &new_entry, kHardenedBoolTrue));
   }
@@ -600,32 +597,48 @@ rom_error_t boot_data_write(const boot_data_t *boot_data) {
 }
 
 /**
- * Checks whether the checksum of a boot data entry is valid.
+ * Shares for producing the `error` value in `boot_data_check()`. First 8
+ * shares are generated using the `sparse-fsm-encode` script while the last
+ * share is `kErrorOk ^ kBootDataInvalid ^ kBootDataIdentifier ^
+ * kCheckShares[0] ^ ... ^ kCheckShares[7]` so that xor'ing all shares with
+ * the initial value of `error`, i.e. `kErrorBootDataInvalid`, and
+ * `kBootDataIdentifier` produces `kErrorOk`.
+ *
+ * Encoding generated with
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 8 -n 32 \
+ *     -s 49105412 --language=c
+ *
+ * Minimum Hamming distance: 12
+ * Maximum Hamming distance: 23
+ * Minimum Hamming weight: 13
+ * Maximum Hamming weight: 20
+ */
+static const uint32_t kCheckShares[kHmacDigestNumWords + 1] = {
+    0xe021e1a9, 0xf81e8365, 0xbf8322db, 0xc7a37080, 0x271a933f,
+    0xdd8ce33f, 0x7585d574, 0x951777af, 0x381dee3a,
+};
+
+/**
+ * Checks whether the digest of a boot data entry is valid.
  *
  * @param boot_data A buffer that holds a boot data entry.
- * @return Whether the checksum of the entry is valid.
+ * @return Whether the digest of the entry is valid.
  */
 rom_error_t boot_data_check(const boot_data_t *boot_data) {
-  static_assert(offsetof(boot_data_t, checksum) == 0,
-                "`checksum` must be the first field of `boot_data_t`.");
+  static_assert(offsetof(boot_data_t, digest) == 0,
+                "`digest` must be the first field of `boot_data_t`.");
 
-  uint32_t act_checksum;
-  boot_data_checksum_compute(boot_data, &act_checksum);
-
-  /**
-   * Shares for producing the `error` value.
-   *
-   * `kShare0` is an arbitrary constant with a high hamming-weight while
-   * `kShare1` is defined such that xoring it with `kErrorBootDataInvalid ^
-   * kBootDataIdentifier ^ kShare0` results in `kErrorOk`.
-   */
-  enum {
-    kShare0 = 0xe021e1a9,
-    kShare1 = kErrorBootDataInvalid ^ kBootDataIdentifier ^ kShare0 ^ kErrorOk,
-  };
   rom_error_t error = kErrorBootDataInvalid;
-  error ^= boot_data->checksum ^ act_checksum ^ kShare0;
-  error ^= boot_data->identifier ^ kShare1;
+  hmac_digest_t act_digest;
+  boot_data_digest_compute(boot_data, &act_digest);
+
+  size_t i = 0;
+  for (; launder32(i) < kHmacDigestNumWords; ++i) {
+    error ^=
+        boot_data->digest.digest[i] ^ act_digest.digest[i] ^ kCheckShares[i];
+  }
+  HARDENED_CHECK_EQ(i, kHmacDigestNumWords);
+  error ^= boot_data->identifier ^ kCheckShares[kHmacDigestNumWords];
   if (launder32(error) == kErrorOk) {
     HARDENED_CHECK_EQ(error, kErrorOk);
     return error;
