@@ -14,20 +14,9 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/tests/otbn_randomness_impl.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-OTBN_DECLARE_APP_SYMBOLS(randomness);
-OTBN_DECLARE_SYMBOL_ADDR(randomness, rv);
-OTBN_DECLARE_SYMBOL_ADDR(randomness, fail_idx);
-OTBN_DECLARE_SYMBOL_ADDR(randomness, rnd_out);
-OTBN_DECLARE_SYMBOL_ADDR(randomness, urnd_out);
-
-static const otbn_app_t kOtbnAppCfiTest = OTBN_APP_T_INIT(randomness);
-static const otbn_addr_t kVarRv = OTBN_ADDR_T_INIT(randomness, rv);
-static const otbn_addr_t kVarFailIdx = OTBN_ADDR_T_INIT(randomness, fail_idx);
-static const otbn_addr_t kVarRndOut = OTBN_ADDR_T_INIT(randomness, rnd_out);
-static const otbn_addr_t kVarUrndOut = OTBN_ADDR_T_INIT(randomness, urnd_out);
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -129,17 +118,6 @@ static void otbn_init_irq(void) {
   irq_external_ctrl(true);
 }
 
-/**
- * LOG_INFO with a 256b unsigned integer as hexadecimal number with a prefix.
- */
-static void print_uint256(otbn_t *ctx, const otbn_addr_t var,
-                          const char *prefix) {
-  uint32_t data[32 / sizeof(uint32_t)];
-  CHECK(otbn_copy_data_from_otbn(ctx, /*len_bytes=*/32, var, &data) == kOtbnOk);
-  LOG_INFO("%s0x%08x%08x%08x%08x%08x%08x%08x%08x", prefix, data[7], data[6],
-           data[5], data[4], data[3], data[2], data[1], data[0]);
-}
-
 void initialize_clkmgr(void) {
   mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_clkmgr_init(addr, &clkmgr));
@@ -177,9 +155,7 @@ bool test_main(void) {
   // Start an OTBN operation, write the OTBN clk hint to 0 within clkmgr and
   // verify that the OTBN clk hint status within clkmgr reads 1 (OTBN is not
   // idle).
-  CHECK(otbn_load_app(&otbn_ctx, kOtbnAppCfiTest) == kOtbnOk);
-
-  CHECK(otbn_execute(&otbn_ctx) == kOtbnOk);
+  otbn_randomness_test_start(&otbn_ctx);
 
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kOtbnClock, kDifToggleDisabled, kDifToggleEnabled);
@@ -194,22 +170,8 @@ bool test_main(void) {
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kOtbnClock, kDifToggleEnabled, kDifToggleEnabled);
 
+  otbn_randomness_test_log_results(&otbn_ctx);
+
   // Check for successful test execution (self-reported).
-  uint32_t rv;
-  CHECK(otbn_copy_data_from_otbn(&otbn_ctx, /*len_bytes=*/4, kVarRv, &rv) ==
-        kOtbnOk);
-
-  // Log some of the random numbers we got (for manual checks).
-  print_uint256(&otbn_ctx, kVarRndOut, "rnd = ");
-  print_uint256(&otbn_ctx, kVarUrndOut, "urnd = ");
-
-  if (rv != 0) {
-    uint32_t fail_idx;
-    CHECK(otbn_copy_data_from_otbn(&otbn_ctx, /*len_bytes=*/4, kVarFailIdx,
-                                   &fail_idx) == kOtbnOk,
-          "ERROR: Test with index %d failed.", fail_idx);
-    return false;
-  }
-
-  return true;
+  return otbn_randomness_test_end(&otbn_ctx, /*skip_otbn_done_check=*/true);
 }
