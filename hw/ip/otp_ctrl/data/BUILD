@@ -424,6 +424,28 @@ otp_image(
     ],
 )
 
+# Create a bootstrap-disabling overlay
+otp_json(
+    name = "otp_json_bootstrap_disabled",
+    partitions = [
+        otp_partition(
+            name = "OWNER_SW_CFG",
+            items = {"OWNER_SW_CFG_ROM_BOOTSTRAP_EN": "0x1d4"},
+        ),
+    ],
+)
+
+otp_image(
+    name = "img_bootstrap_disabled",
+    src = ":otp_json_rma",
+    overlays = [
+        ":otp_json_creator_sw_cfg",
+        ":otp_json_owner_sw_cfg",
+        ":otp_json_hw_cfg",
+        ":otp_json_bootstrap_disabled",
+    ],
+)
+
 filegroup(
     name = "otp_imgs",
     srcs = [
