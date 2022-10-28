@@ -14,64 +14,69 @@ module edn_ack_sm (
   output logic               ack_o,
   input logic                fifo_not_empty_i,
   output logic               fifo_pop_o,
+  output logic               fifo_clr_o,
   output logic               ack_sm_err_o
 );
 
-// Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 6 \
-//      -s 2299232677 --language=sv
-//
-// Hamming distance histogram:
-//
-//  0: --
-//  1: --
-//  2: --
-//  3: |||||||||||||||||||| (50.00%)
-//  4: ||||||||||||| (33.33%)
-//  5: |||||| (16.67%)
-//  6: --
-//
-// Minimum Hamming distance: 3
-// Maximum Hamming distance: 5
-// Minimum Hamming weight: 1
-// Maximum Hamming weight: 4
-//
-
-  localparam int StateWidth = 6;
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 4 -n 6 \
+  //      -s 2299232677 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (50.00%)
+  //  4: ||||||||||||| (33.33%)
+  //  5: |||||| (16.67%)
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 5
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 4
+  //
+  localparam int StateWidth = 9;
   typedef enum logic [StateWidth-1:0] {
-    Idle      = 6'b101101, // idle (hamming distance = 3)
-    DataWait  = 6'b111010, // wait for data to return
-    AckPls    = 6'b010110, // signal ack to endpoint
-    Error     = 6'b001000  // illegal state reached and hang
+    Disabled      = 9'b100110010, // Disabled
+    EndPointClear = 9'b110001110, // Clear out end point before beginning
+    Idle          = 9'b001011100, // idle (hamming distance = 3)
+    DataWait      = 9'b011101011, // wait for data to return
+    AckPls        = 9'b000100101, // signal ack to endpoint
+    Error         = 9'b111010001  // illegal state reached and hang
   } state_e;
-
   state_e state_d, state_q;
 
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Idle)
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Disabled)
 
   always_comb begin
     state_d = state_q;
     ack_o = 1'b0;
+    fifo_clr_o = 1'b0;
     fifo_pop_o = 1'b0;
     ack_sm_err_o = 1'b0;
     unique case (state_q)
-      Idle: begin
+      Disabled: begin
         if (enable_i) begin
-          if (req_i) begin
-            if (fifo_not_empty_i) begin
-              fifo_pop_o = 1'b1;
-            end
-            state_d = DataWait;
+          state_d = EndPointClear;
+          fifo_clr_o = 1'b1;
+        end
+      end
+      EndPointClear: begin
+        state_d = Idle;
+      end
+      Idle: begin
+        if (req_i) begin
+          if (fifo_not_empty_i) begin
+            fifo_pop_o = 1'b1;
           end
+          state_d = DataWait;
         end
       end
       DataWait: begin
-        if (!enable_i) begin
-          state_d = Idle;
-        end else begin
-          if (fifo_not_empty_i) begin
-            state_d = AckPls;
-          end
+        if (fifo_not_empty_i) begin
+          state_d = AckPls;
         end
       end
       AckPls: begin
@@ -82,7 +87,16 @@ module edn_ack_sm (
         ack_sm_err_o = 1'b1;
       end
       default: state_d = Error;
-    endcase
+    endcase // unique case (state_q)
+
+    // If disable is seen when not in error state,
+    // clear out everything and return to default.
+    if (!enable_i && !ack_sm_err_o) begin
+      state_d = Disabled;
+      ack_o = 1'b0;
+      fifo_pop_o = 1'b0;
+      fifo_clr_o = 1'b0;
+    end
   end
 
 endmodule

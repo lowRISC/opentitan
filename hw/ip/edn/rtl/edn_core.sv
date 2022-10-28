@@ -49,7 +49,7 @@ module edn_core import edn_pkg::*;
   localparam int CSGenBitsWidth = 128;
   localparam int EndPointBusWidth = 32;
   localparam int RescmdFifoIdxWidth = $clog2(RescmdFifoDepth);
-  localparam int EdnEnableCopies = 28;
+  localparam int EdnEnableCopies = 26;
   localparam int FifoRstCopies = 4;
   localparam int BootReqCopies = 2;
 
@@ -601,7 +601,7 @@ module edn_core import edn_pkg::*;
   assign csrng_cmd_o.csrng_req_valid = sfifo_output_not_empty;
   assign csrng_cmd_o.csrng_req_bus = sfifo_output_rdata;
 
-  assign sfifo_output_clr = !edn_enable_fo[27];
+  assign sfifo_output_clr = !edn_enable_fo[25];
   assign sfifo_output_push = cs_cmd_req_vld_out_q;
   assign sfifo_output_wdata = cs_cmd_req_out_q;
   assign sfifo_output_pop = sfifo_output_not_empty && csrng_cmd_i.csrng_req_ready;
@@ -725,9 +725,7 @@ module edn_core import edn_pkg::*;
   );
 
   for (genvar i = 0; i < NumEndPoints; i=i+1) begin : gen_arb
-
     assign packer_arb_req[i] = !packer_ep_rvalid[i] && edn_i[i].edn_req;
-
   end
 
   //--------------------------------------------
@@ -809,7 +807,6 @@ module edn_core import edn_pkg::*;
   //--------------------------------------------
 
   for (genvar i = 0; i < NumEndPoints; i=i+1) begin : gen_ep_blk
-
     prim_packer_fifo #(
       .InW(CSGenBitsWidth),
       .OutW(EndPointBusWidth),
@@ -827,12 +824,11 @@ module edn_core import edn_pkg::*;
       .depth_o    ()
     );
 
-    assign packer_ep_clr[i] = !edn_enable_fo[24];
     assign packer_ep_push[i] = packer_arb_valid && packer_ep_wready[i] && packer_arb_gnt[i];
     assign packer_ep_wdata[i] = packer_cs_rdata;
 
     // fips indication
-    assign edn_fips_d[i] = !edn_enable_fo[25] ? 1'b0 :
+    assign edn_fips_d[i] = packer_ep_clr[i] ? 1'b0 :
            (packer_ep_push[i] && packer_ep_wready[i]) ?  csrng_fips_q :
            edn_fips_q[i];
     assign edn_o[i].edn_fips = edn_fips_q[i];
@@ -845,11 +841,12 @@ module edn_core import edn_pkg::*;
     edn_ack_sm u_edn_ack_sm_ep (
       .clk_i            (clk_i),
       .rst_ni           (rst_ni),
-      .enable_i         (edn_enable_fo[26]),
+      .enable_i         (edn_enable_fo[24]),
       .req_i            (edn_i[i].edn_req),
       .ack_o            (packer_ep_ack[i]),
       .fifo_not_empty_i (packer_ep_rvalid[i]),
       .fifo_pop_o       (packer_ep_rready[i]),
+      .fifo_clr_o       (packer_ep_clr[i]),
       .ack_sm_err_o     (edn_ack_sm_err[i])
     );
 
