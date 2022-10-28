@@ -5,6 +5,7 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -44,74 +45,91 @@ void entropy_testutils_auto_mode_init(void) {
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
   // Re-enable EDN0 in auto mode.
-  const dif_edn_auto_params_t edn0_params = {
-      // EDN0 provides lower-quality entropy.  Let one generate command return 8
-      // blocks, and reseed every 32 generates.
-      .instantiate_cmd =
-          {
-              .cmd = 0x00000001 |  // Reseed from entropy source only.
-                     kMultiBitBool4False << 8,
-              .seed_material =
-                  {
-                      .len = 0,
-                  },
-          },
-      .reseed_cmd =
-          {
-              .cmd = 0x00008002 |  // One generate returns 8 blocks, reseed
-                                   // from entropy source only.
-                     kMultiBitBool4False << 8,
-              .seed_material =
-                  {
-                      .len = 0,
-                  },
-          },
-      .generate_cmd =
-          {
-              .cmd = 0x00008003,  // One generate returns 8 blocks.
-              .seed_material =
-                  {
-                      .len = 0,
-                  },
-          },
-      .reseed_interval = 32,  // Reseed every 32 generates.
-  };
-  CHECK_DIF_OK(dif_edn_set_auto_mode(&edn0, edn0_params));
+  CHECK_DIF_OK(dif_edn_set_auto_mode(
+      &edn0,
+      (dif_edn_auto_params_t){
+          // EDN0 provides lower-quality entropy.  Let one generate command
+          // return 8
+          // blocks, and reseed every 32 generates.
+          .instantiate_cmd =
+              {
+                  .cmd = csrng_cmd_header_build(kCsrngAppCmdInstantiate,
+                                                kDifCsrngEntropySrcToggleEnable,
+                                                /*cmd_len=*/0,
+                                                /*generate_len=*/0),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          .reseed_cmd =
+              {
+                  .cmd = csrng_cmd_header_build(
+                      kCsrngAppCmdReseed, kDifCsrngEntropySrcToggleEnable,
+                      /*cmd_len=*/0, /*generate_len=*/0),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          .generate_cmd =
+              {
+                  // Generate 8 128-bit blocks.
+                  .cmd = csrng_cmd_header_build(kCsrngAppCmdGenerate,
+                                                kDifCsrngEntropySrcToggleEnable,
+                                                /*cmd_len=*/0,
+                                                /*generate_len=*/8),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          // Reseed every 32 generates.
+          .reseed_interval = 32,
+      }));
 
   // Re-enable EDN1 in auto mode.
-  const dif_edn_auto_params_t edn1_params = {
-      // EDN1 provides highest-quality entropy.  Let one generate command
-      // return 1 block, and reseed after every generate.
-      .instantiate_cmd =
-          {
-              .cmd = 0x00000001 |  // Reseed from entropy source only.
-                     kMultiBitBool4False << 8,
-              .seed_material =
-                  {
-                      .len = 0,
-                  },
-          },
-      .reseed_cmd =
-          {
-              .cmd = 0x00001002 |  // One generate returns 1 block, reseed
-                                   // from entropy source only.
-                     kMultiBitBool4False << 8,
-              .seed_material =
-                  {
-                      .len = 0,
-                  },
-          },
-      .generate_cmd =
-          {
-              .cmd = 0x00001003,  // One generate returns 1 block.
-              .seed_material =
-                  {
-                      .len = 0,
-                  },
-          },
-      .reseed_interval = 4,  // Reseed after every 4 generates.
-  };
-  CHECK_DIF_OK(dif_edn_set_auto_mode(&edn1, edn1_params));
+  CHECK_DIF_OK(dif_edn_set_auto_mode(
+      &edn1,
+      (dif_edn_auto_params_t){
+          // EDN1 provides highest-quality entropy.  Let one generate command
+          // return 1 block, and reseed after every generate.
+          .instantiate_cmd =
+              {
+                  .cmd = csrng_cmd_header_build(kCsrngAppCmdInstantiate,
+                                                kDifCsrngEntropySrcToggleEnable,
+                                                /*cmd_len=*/0,
+                                                /*generate_len=*/0),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          .reseed_cmd =
+              {
+                  .cmd = csrng_cmd_header_build(
+                      kCsrngAppCmdReseed, kDifCsrngEntropySrcToggleEnable,
+                      /*cmd_len=*/0, /*generate_len=*/0),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          .generate_cmd =
+              {
+                  // Generate 1 128-bit block.
+                  .cmd = csrng_cmd_header_build(kCsrngAppCmdGenerate,
+                                                kDifCsrngEntropySrcToggleEnable,
+                                                /*cmd_len=*/0,
+                                                /*generate_len=*/1),
+                  .seed_material =
+                      {
+                          .len = 0,
+                      },
+              },
+          // Reseed after every 4 generates.
+          .reseed_interval = 4,
+      }));
 }
 
 void entropy_testutils_boot_mode_init(void) {

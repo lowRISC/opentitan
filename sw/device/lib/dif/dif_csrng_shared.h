@@ -62,6 +62,27 @@ typedef struct csrng_app_cmd {
 } csrng_app_cmd_t;
 
 /**
+ * Builds a CSRNG command header.
+ *
+ * Build a CSRNG command header following the CSRNG specification. The caller is
+ * responsible for verifying the correctness of the parameters passed into this
+ * function.
+ *
+ * @param id CSRNG command ID.
+ * @param entropy_src_enable Entropy source enable flag. Mapped to flag0 in the
+ * command header.
+ * @param cmd_len The overall command lend. It should be set to the number of
+ * seed material words, or zero.
+ * @param generate_len Number of 128bit blocks to request if the command ID is
+ * set to `kCsrngAppCmdGenerate`.
+ * @return CSRNG command header in `uint32_t` format.
+ */
+OT_WARN_UNUSED_RESULT
+uint32_t csrng_cmd_header_build(
+    csrng_app_cmd_id_t id, dif_csrng_entropy_src_toggle_t entropy_src_enable,
+    uint32_t cmd_len, uint32_t generate_len);
+
+/**
  * Writes application command `cmd` to the CSRNG_CMD_REQ_REG register.
  * Returns the result of the operation.
  */
