@@ -274,10 +274,33 @@ void flash_ctrl_testutils_set_counter(dif_flash_ctrl_state_t *flash_state,
  * This function can be used to initialize a NVM counter to zero by filling
  * its flash region with non-zero values.
  *
- * @param flash_state A flash_ctrl handle
- * @param counter The ID of the NVM counter, [0, 2]
+ * @param flash_state A flash_ctrl handle.
+ * @param counter The ID of the NVM counter, [0, 2].
  **/
 void flash_ctrl_testutils_counter_init_zero(dif_flash_ctrl_state_t *flash_state,
                                             size_t counter);
+
+/**
+ * Init the backdoor API, it should be called before
+ * `flash_ctrl_testutils_backdoor_wait_update`.
+ *
+ * @param flash_state A flash_ctrl handle.
+ */
+void flash_ctrl_testutils_backdoor_init(dif_flash_ctrl_state_t *flash_state);
+
+/**
+ * This is a backdoor API to be used with dvsim testbench.
+ * Backdoor variables present on flash may not be updated when read by software
+ * after written in the testbench due to the cache. So this function implements
+ * a workaround to invalidate the cache and force it to update. Before using
+ * this function `flash_ctrl_testutils_backdoor_init` should be called.
+ *
+ * @param flash_state A flash_ctrl handle.
+ * @param addr The address to a `const uint32_t` variable where the testbench
+ * will write to.
+ * @param timeout Timeout.
+ */
+void flash_ctrl_testutils_backdoor_wait_update(
+    dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_

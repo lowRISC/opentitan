@@ -12,6 +12,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "flash_ctrl_regs.h"
@@ -372,4 +373,27 @@ void flash_ctrl_testutils_counter_init_zero(dif_flash_ctrl_state_t *flash_state,
               0, new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val)),
           "Flash write failed");
   }
+}
+
+void flash_ctrl_testutils_backdoor_init(dif_flash_ctrl_state_t *flash_state) {
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      flash_state,
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+
+  flash_ctrl_testutils_default_region_access(flash_state,
+                                             /*rd_en*/ true,
+                                             /*prog_en*/ true,
+                                             /*erase_en*/ true,
+                                             /*scramble_en*/ false,
+                                             /*ecc_en*/ false,
+                                             /*he_en*/ false);
+}
+
+void flash_ctrl_testutils_backdoor_wait_update(
+    dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout) {
+  static uint32_t data = UINT32_MAX;
+  CHECK(flash_ctrl_testutils_write(
+      flash_state, (uint32_t)addr - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR, 0,
+      &data, kDifFlashCtrlPartitionTypeData, 1));
+  IBEX_SPIN_FOR(UINT32_MAX != *(uint32_t *)addr, timeout);
 }
