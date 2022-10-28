@@ -207,6 +207,26 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "e2e_bootstrap_disabled",
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom_otp_bootstrap_disabled",
+        tags = [
+            "vivado",
+        ],
+        test_cmds = [
+            "--bitstream=\"$(location {bitstream})\"",
+        ],
+    ),
+    # Since the bitstream disables bootstrap, there is no firmware to
+    # load into the chip.  However, opentitan_functest wants to build a
+    # binary target.  We'll build an unsigned do-nothing binary.
+    ot_flash_binary = ":empty_test_slot_a",
+    signed = False,
+    targets = ["cw310_rom"],
+    test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
+)
+
+opentitan_functest(
     name = "e2e_chip_specific_startup",
     srcs = ["chip_specific_startup.c"],
     args = [],
