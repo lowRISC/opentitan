@@ -30,6 +30,9 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
     ]
     if ctx.attr.exit_success_pattern != None:
         args.append(("--exit-success-pattern", ctx.attr.exit_success_pattern))
+    for output in ctx.attr.gdb_expect_output_sequence:
+        args.append(("--gdb-expect-output-sequence", output))
+
     arg_lines = ["{}={}".format(flag, shell.quote(value)) for flag, value in args]
     test_script += " \\\n".join(arg_lines)
 
@@ -80,6 +83,7 @@ opentitan_gdb_fpga_cw310_test = rv_rule(
             allow_single_file = True,
         ),
         "rom_kind": attr.string(mandatory = True, values = ["Rom", "TestRom"]),
+        "gdb_expect_output_sequence": attr.string_list(),
         "_coordinator": attr.label(
             default = "//rules/scripts:gdb_test_coordinator",
             cfg = "exec",

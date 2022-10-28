@@ -15,7 +15,7 @@ Note that it is tightly coupled to the `opentitan_gdb_fpga_cw310_test` rule.
 import selectors
 import subprocess
 import sys
-from typing import Dict, List, NewType, Optional, TextIO, Tuple
+from typing import Callable, Dict, List, NewType, Optional, TextIO, Tuple
 
 import rich
 import typer
@@ -34,8 +34,11 @@ class BackgroundProcessGroup:
         self.names: Dict[subprocess.Popen, str] = {}
         self.console = rich.console.Console(color_system="256")
 
-    def run(self, command: List[str], label: str,
-            style: ConsoleStyle) -> subprocess.Popen:
+    def run(self,
+            command: List[str],
+            label: str,
+            style: ConsoleStyle,
+            callback: Callable[[str], None] = None) -> subprocess.Popen:
         proc = subprocess.Popen(command,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT,
@@ -48,6 +51,9 @@ class BackgroundProcessGroup:
         def echo(line):
             self.console.print(f"[{label}] ", style=style, end='')
             print(line, flush=True)
+
+            if callback is not None:
+                callback(line)
 
         self.selector.register(proc.stdout, selectors.EVENT_READ, echo)
         return proc
@@ -102,6 +108,7 @@ def main(rom_kind: str = typer.Option(...),
          openocd_earlgrey_config: str = typer.Option(...),
          openocd_jtag_adapter_config: str = typer.Option(...),
          gdb_path: str = typer.Option(...),
+         gdb_expect_output_sequence: List[str] = typer.Option(None),
          gdb_script_path: str = typer.Option(...),
          bitstream_path: str = typer.Option(...),
          opentitantool_path: str = typer.Option(...),
@@ -144,6 +151,21 @@ def main(rom_kind: str = typer.Option(...),
     if exit_success_pattern is not None:
         console_command.append("--exit-success=" + exit_success_pattern)
 
+    # When `gdb_expect_output_sequence` is non-empty, change the definition of
+    # success for GDB. If the given lines are a subsequence of GDB's output,
+    # then GDB was successful, regardless of its exit status.
+    gdb_alternative_success_mode = gdb_expect_output_sequence != []
+
+    def gdb_maybe_consume_expected_line(line: str):
+        """Pops the front of `gdb_expect_output_sequence` if `line` matches.
+        """
+        if gdb_expect_output_sequence == []:
+            return
+        assert gdb_alternative_success_mode
+        want_line = gdb_expect_output_sequence[0]
+        if want_line.rstrip() == line.rstrip():
+            gdb_expect_output_sequence.pop(0)
+
     # Wait until we've finished loading the bitstream.
     subprocess.run(load_bitstream_command, check=True)
 
@@ -158,13 +180,25 @@ def main(rom_kind: str = typer.Option(...),
     background.block_until_line_contains(
         openocd, "Examined RISC-V core; found 1 harts")
 
-    background.run(gdb_command, "GDB", COLOR_GREEN)
+    gdb = background.run(gdb_command,
+                         "GDB",
+                         COLOR_GREEN,
+                         callback=gdb_maybe_consume_expected_line)
     background.run(console_command, "CONSOLE", COLOR_RED)
 
     while not background.empty():
         background.maybe_print_output(timeout_seconds=1)
 
         proc = background.pop()
+
+        # If we are defining GDB's success by checking output lines and we've
+        # seen all of the expected lines, kill GDB and ignore its return code.
+        if proc == gdb and gdb_alternative_success_mode and gdb_expect_output_sequence == []:
+            print("Terminating GDB now that it has printed the expected lines")
+            gdb.terminate()
+            gdb.wait()
+            background.forget(gdb)
+            continue
 
         # When OpenOCD is the only remaining process, send it the TERM signal
         # and wait for it to exit. GDB will exit naturally at the end of its
