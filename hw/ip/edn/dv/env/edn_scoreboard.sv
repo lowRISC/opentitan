@@ -23,6 +23,9 @@ class edn_scoreboard extends cip_base_scoreboard #(
   // local queues to hold incoming packets pending comparison
   bit[FIPS_ENDPOINT_BUS_WIDTH - 1:0]   endpoint_data_q[$];
 
+  // Sample interrupt pins at read data phase. This is used to compare with intr_state read value.
+  bit [NumEdnIntr-1:0] intr_pins;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -94,16 +97,16 @@ class edn_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
+        if (addr_phase_read) intr_pins = cfg.intr_vif.pins;
         if (data_phase_read) begin
-          bit [NumEdnIntr-1:0] intr_en  = `gmv(ral.intr_enable);
-          bit [NumEdnIntr-1:0] intr_exp = `gmv(ral.intr_state);
-          foreach (intr_exp[i]) begin
+          bit [NumEdnIntr-1:0] intr_en = `gmv(ral.intr_enable);
+          foreach (intr_pins[i]) begin
             edn_intr_e intr = edn_intr_e'(i);
-            `DV_CHECK_CASE_EQ(cfg.intr_vif.pins[i], (intr_en[i] & intr_exp[i]),
+            `DV_CHECK_CASE_EQ(intr_pins[i], (intr_en[i] & item.d_data[i]),
                               $sformatf("Interrupt_pin: %0s", intr.name));
             if (cfg.en_cov) begin
               cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
-              cov.intr_pins_cg.sample(i, cfg.intr_vif.pins[i]);
+              cov.intr_pins_cg.sample(i, intr_pins[i]);
             end
           end
         end
