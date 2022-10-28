@@ -825,6 +825,7 @@ opentitan_functest(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_device",
