@@ -35,19 +35,19 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   localparam int IW  = $bits(tl_i.a_source);
   localparam int SZW = $bits(tl_i.a_size);
 
-  logic outstanding;    // Indicates current request is pending
+  logic outstanding_q;    // Indicates current request is pending
   logic a_ack, d_ack;
 
-  logic [RegDw-1:0] rdata;
-  logic             error, err_internal;
+  logic [RegDw-1:0] rdata_q;
+  logic             error_q, err_internal;
 
   logic addr_align_err;     // Size and alignment
   logic malformed_meta_err; // User signal format error or unsupported
   logic tl_err;             // Common TL-UL error checker
 
-  logic [IW-1:0]  reqid;
-  logic [SZW-1:0] reqsz;
-  tl_d_op_e       rspop;
+  logic [IW-1:0]  reqid_q;
+  logic [SZW-1:0] reqsz_q;
+  tl_d_op_e       rspop_q;
 
   logic rd_req, wr_req;
 
@@ -69,31 +69,31 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni)    outstanding <= 1'b0;
-    else if (a_ack) outstanding <= 1'b1;
-    else if (d_ack) outstanding <= 1'b0;
+    if (!rst_ni)    outstanding_q <= 1'b0;
+    else if (a_ack) outstanding_q <= 1'b1;
+    else if (d_ack) outstanding_q <= 1'b0;
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      reqid <= '0;
-      reqsz <= '0;
-      rspop <= AccessAck;
+      reqid_q <= '0;
+      reqsz_q <= '0;
+      rspop_q <= AccessAck;
     end else if (a_ack) begin
-      reqid <= tl_i.a_source;
-      reqsz <= tl_i.a_size;
+      reqid_q <= tl_i.a_source;
+      reqsz_q <= tl_i.a_size;
       // Return AccessAckData regardless of error
-      rspop <= (rd_req) ? AccessAckData : AccessAck ;
+      rspop_q <= (rd_req) ? AccessAckData : AccessAck ;
     end
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      rdata  <= '0;
-      error <= 1'b0;
+      rdata_q <= '0;
+      error_q <= 1'b0;
     end else if (a_ack) begin
-      rdata <= (error_i || err_internal || wr_req) ? '1 : rdata_i;
-      error <= error_i | err_internal;
+      rdata_q <= (error_i || err_internal || wr_req) ? '1 : rdata_i;
+      error_q <= error_i | err_internal;
     end
   end
 
@@ -102,7 +102,7 @@ module tlul_adapter_reg import tlul_pkg::*; #(
     logic [DataMaxWidth-1:0] unused_data;
 
     tlul_data_integ_enc u_data_gen (
-      .data_i(DataMaxWidth'(rdata)),
+      .data_i(DataMaxWidth'(rdata_q)),
       .data_intg_o({data_intg, unused_data})
     );
   end else begin : gen_tieoff_data_intg
@@ -115,22 +115,22 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   assign tl_o = '{
     // busy is selected based on address
     // thus if there is no valid transaction, we should ignore busy
-    a_ready:  ~(outstanding | req_valid & busy_i),
-    d_valid:  outstanding,
-    d_opcode: rspop,
+    a_ready:  ~(outstanding_q | req_valid & busy_i),
+    d_valid:  outstanding_q,
+    d_opcode: rspop_q,
     d_param:  '0,
-    d_size:   reqsz,
-    d_source: reqid,
+    d_size:   reqsz_q,
+    d_source: reqid_q,
     d_sink:   '0,
-    d_data:   rdata,
+    d_data:   rdata_q,
     d_user:   '{default: '0, data_intg: data_intg},
-    d_error:  error
+    d_error:  error_q
   };
 
   ////////////////////
   // Error Handling //
   ////////////////////
-  assign err_internal = addr_align_err | malformed_meta_err | tl_err ;
+  assign err_internal = addr_align_err | malformed_meta_err | tl_err;
 
   // Don't allow unsupported values.
   assign malformed_meta_err = tl_a_user_chk(tl_i.a_user);
