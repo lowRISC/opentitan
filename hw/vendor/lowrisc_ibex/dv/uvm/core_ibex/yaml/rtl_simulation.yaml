@@ -25,7 +25,7 @@
         vcs
           -full64
           -f <core_ibex>/ibex_dv.f
-          -l <tb_dir>/<rtl_log>
+          -l <tb_build_log>
           -sverilog
           -ntb_opts uvm-1.2
           +define+UVM
@@ -71,7 +71,7 @@
             +UVM_VERBOSITY=UVM_LOW
             +bin=<binary>
             +ibex_tracer_file_base=<rtl_trace>
-            +cosim_log_file=<test_dir>/<iss_cosim_trace>
+            +cosim_log_file=<iss_cosim_trace>
             <sim_opts> <wave_opts> <cov_opts>
     cov_opts: >
       -cm line+tgl+assert+fsm+branch
@@ -208,7 +208,7 @@
           -suppress 2583
           -mfcu -cuname design_cuname
           -sv -o design_opt
-          -l <tb_build_logj>
+          -l <tb_build_log>
           -outdir <tb_dir>/qrun.out
   sim:
     cmd:

@@ -48,6 +48,12 @@ void riscv_cosim_set_csr(Cosim *cosim, const int csr_id,
   cosim->set_csr(csr_id, (uint32_t)csr_val[0]);
 }
 
+void riscv_cosim_set_ic_scr_key_valid(Cosim *cosim, svBit valid) {
+  assert(cosim);
+
+  cosim->set_ic_scr_key_valid(valid);
+}
+
 void riscv_cosim_notify_dside_access(Cosim *cosim, svBit store,
                                      svBitVecVal *addr, svBitVecVal *data,
                                      svBitVecVal *be, svBit error,
@@ -100,7 +106,7 @@ void riscv_cosim_write_mem_byte(Cosim *cosim, const svBitVecVal *addr,
   cosim->backdoor_write_mem(addr[0], 1, &byte);
 }
 
-int riscv_cosim_get_insn_cnt(Cosim *cosim) {
+unsigned int riscv_cosim_get_insn_cnt(Cosim *cosim) {
   assert(cosim);
 
   return cosim->get_insn_cnt();

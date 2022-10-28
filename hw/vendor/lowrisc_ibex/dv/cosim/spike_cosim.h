@@ -5,17 +5,20 @@
 #ifndef SPIKE_COSIM_H_
 #define SPIKE_COSIM_H_
 
+#include <stdint.h>
+
+#include <deque>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "cosim.h"
 #include "riscv/devices.h"
 #include "riscv/log_file.h"
 #include "riscv/processor.h"
 #include "riscv/simif.h"
 
-#include <stdint.h>
-#include <deque>
-#include <memory>
-#include <string>
-#include <vector>
+#define IBEX_MARCHID 22
 
 class SpikeCosim : public simif_t, public Cosim {
  private:
@@ -66,13 +69,20 @@ class SpikeCosim : public simif_t, public Cosim {
 
   void leave_nmi_mode();
 
-  int insn_cnt;
+  bool change_cpuctrlsts_sync_exc_seen(bool flag);
+  void set_cpuctrlsts_double_fault_seen();
+  void handle_cpuctrl_exception_entry();
+
+  void initial_proc_setup(uint32_t start_pc, uint32_t start_mtvec,
+                          uint32_t mhpm_counter_num);
+
+  unsigned int insn_cnt;
 
  public:
   SpikeCosim(const std::string &isa_string, uint32_t start_pc,
              uint32_t start_mtvec, const std::string &trace_log_path,
              bool secure_ibex, bool icache_en, uint32_t pmp_num_regions,
-             uint32_t pmp_granularity);
+             uint32_t pmp_granularity, uint32_t mhpm_counter_num);
 
   // simif_t implementation
   virtual char *addr_to_mem(reg_t addr) override;
@@ -99,6 +109,7 @@ class SpikeCosim : public simif_t, public Cosim {
   void set_debug_req(bool debug_req) override;
   void set_mcycle(uint64_t mcycle) override;
   void set_csr(const int csr_num, const uint32_t new_val) override;
+  void set_ic_scr_key_valid(bool valid) override;
   void notify_dside_access(const DSideAccessInfo &access_info) override;
   // The spike co-simulator assumes iside and dside accesses within a step are
   // disjoint. If both access the same address within a step memory faults may
@@ -108,7 +119,7 @@ class SpikeCosim : public simif_t, public Cosim {
   void set_iside_error(uint32_t addr) override;
   const std::vector<std::string> &get_errors() override;
   void clear_errors() override;
-  int get_insn_cnt() override;
+  unsigned int get_insn_cnt() override;
 };
 
 #endif  // SPIKE_COSIM_H_

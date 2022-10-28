@@ -4,7 +4,7 @@
 
 package ibex_cosim_agent_pkg;
   import uvm_pkg::*;
-  import ibex_mem_intf_agent_pkg::*;
+  import ibex_mem_intf_pkg::*;
 
   `include "uvm_macros.svh"
 

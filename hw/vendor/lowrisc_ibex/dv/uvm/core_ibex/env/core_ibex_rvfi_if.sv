@@ -34,6 +34,8 @@ interface core_ibex_rvfi_if(input logic clk);
   logic [31:0] ext_mhpmcounters [10];
   logic [31:0] ext_mhpmcountersh [10];
 
+  logic        ext_ic_scr_key_valid;
+
   clocking monitor_cb @(posedge clk);
     input reset;
     input valid;
@@ -63,6 +65,7 @@ interface core_ibex_rvfi_if(input logic clk);
     input ext_mcycle;
     input ext_mhpmcounters;
     input ext_mhpmcountersh;
+    input ext_ic_scr_key_valid;
   endclocking
 
   task automatic wait_clks(input int num);

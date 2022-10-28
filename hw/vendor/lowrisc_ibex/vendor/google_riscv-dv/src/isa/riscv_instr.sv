@@ -161,6 +161,9 @@ class riscv_instr extends uvm_object;
         end
       end
     end
+    if (!cfg.no_ecall) begin
+      basic_instr = {basic_instr, ECALL};
+    end
     if (cfg.no_dret == 0) begin
       basic_instr = {basic_instr, DRET};
     end

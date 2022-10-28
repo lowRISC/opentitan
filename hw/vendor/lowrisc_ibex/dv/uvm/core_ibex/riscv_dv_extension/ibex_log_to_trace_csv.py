@@ -29,6 +29,7 @@ try:
 finally:
     sys.path = _OLD_SYS_PATH
 
+from test_run_result import Failure_Modes
 
 INSTR_RE = \
     re.compile(r"^\s*(?P<time>\d+)\s+(?P<cycle>\d+)\s+(?P<pc>[0-9a-f]+)\s+"
@@ -195,7 +196,9 @@ def check_ibex_uvm_log(uvm_log):
     failed = False
 
     error_linenum = None
+    error_line = None
     log_out = []
+    failure_mode = Failure_Modes.NONE
 
     with open(uvm_log, "r") as log:
         # Simulation log has report summary at the end, which references
@@ -212,6 +215,7 @@ def check_ibex_uvm_log(uvm_log):
                 'Error' in line) \
                     and not test_result_seen:
                 error_linenum = linenum
+                error_line = line
                 failed = True
 
             if 'RISC-V UVM TEST PASSED' in line:
@@ -238,7 +242,13 @@ def check_ibex_uvm_log(uvm_log):
                            for linenum, line in enumerate(log, 1)
                            if linenum in range(error_linenum-5, error_linenum+5)]
 
-    return (passed, log_out)
+            if ('Test failed due to wall-clock timeout.' in error_line):
+
+                failure_mode = Failure_Modes.TIMEOUT
+            else:
+                failure_mode = Failure_Modes.LOG_ERROR
+
+    return (passed, log_out, failure_mode)
 
 
 def main():

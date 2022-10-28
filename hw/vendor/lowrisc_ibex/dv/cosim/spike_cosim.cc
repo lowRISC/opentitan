@@ -34,8 +34,9 @@
 SpikeCosim::SpikeCosim(const std::string &isa_string, uint32_t start_pc,
                        uint32_t start_mtvec, const std::string &trace_log_path,
                        bool secure_ibex, bool icache_en,
-                       uint32_t pmp_num_regions, uint32_t pmp_granularity)
-    : nmi_mode(false), pending_iside_error(false) {
+                       uint32_t pmp_num_regions, uint32_t pmp_granularity,
+                       uint32_t mhpm_counter_num)
+    : nmi_mode(false), pending_iside_error(false), insn_cnt(0) {
   FILE *log_file = nullptr;
   if (trace_log_path.length() != 0) {
     log = std::make_unique<log_file_t>(trace_log_path.c_str());
@@ -54,12 +55,11 @@ SpikeCosim::SpikeCosim(const std::string &isa_string, uint32_t start_pc,
 #endif
 
   processor->set_pmp_num(pmp_num_regions);
+  processor->set_mhpm_counter_num(mhpm_counter_num);
   processor->set_pmp_granularity(1 << (pmp_granularity + 2));
   processor->set_ibex_flags(secure_ibex, icache_en);
 
-  processor->set_mmu_capability(IMPL_MMU_SBARE);
-  processor->get_state()->pc = start_pc;
-  processor->get_state()->mtvec->write(start_mtvec);
+  initial_proc_setup(start_pc, start_mtvec, mhpm_counter_num);
 
   if (log) {
     processor->set_debug(true);
@@ -233,6 +233,9 @@ bool SpikeCosim::step(uint32_t write_reg, uint32_t write_reg_data,
       if (!check_sync_trap(write_reg, pc, initial_spike_pc)) {
         return false;
       }
+
+      handle_cpuctrl_exception_entry();
+
       // This is all the checking possible when consider a
       // synchronously-trapping instruction that never retired.
       return true;
@@ -242,9 +245,13 @@ bool SpikeCosim::step(uint32_t write_reg, uint32_t write_reg_data,
   // We reached a retired instruction, so check spike and the dut behaved
   // consistently.
 
-  if (!sync_trap && pc_is_mret(pc) && nmi_mode) {
-    // Do handling for recoverable NMI
-    leave_nmi_mode();
+  if (!sync_trap && pc_is_mret(pc)) {
+    change_cpuctrlsts_sync_exc_seen(false);
+
+    if (nmi_mode) {
+      // Do handling for recoverable NMI
+      leave_nmi_mode();
+    }
   }
 
   if (pending_iside_error) {
@@ -440,6 +447,58 @@ void SpikeCosim::leave_nmi_mode() {
 #endif
 }
 
+void SpikeCosim::handle_cpuctrl_exception_entry() {
+  bool old_sync_exc_seen = change_cpuctrlsts_sync_exc_seen(true);
+
+  if (old_sync_exc_seen) {
+    set_cpuctrlsts_double_fault_seen();
+  }
+}
+
+bool SpikeCosim::change_cpuctrlsts_sync_exc_seen(bool flag) {
+  bool old_flag = false;
+  uint32_t cpuctrlsts = processor->get_csr(CSR_CPUCTRLSTS);
+
+  // If sync_exc_seen (bit 6) is already set update old_flag to match
+  if (cpuctrlsts & 0x40) {
+    old_flag = true;
+  }
+
+  cpuctrlsts = (cpuctrlsts & 0x1bf) | (flag ? 0x40 : 0);
+  processor->put_csr(CSR_CPUCTRLSTS, cpuctrlsts);
+
+  return old_flag;
+}
+
+void SpikeCosim::set_cpuctrlsts_double_fault_seen() {
+  uint32_t cpuctrlsts = processor->get_csr(CSR_CPUCTRLSTS);
+  // Set double_fault_seen  (bit 7)
+  cpuctrlsts = (cpuctrlsts & 0x17f) | 0x80;
+  processor->put_csr(CSR_CPUCTRLSTS, cpuctrlsts);
+}
+
+void SpikeCosim::initial_proc_setup(uint32_t start_pc, uint32_t start_mtvec,
+                                    uint32_t mhpm_counter_num) {
+  processor->get_state()->pc = start_pc;
+  processor->get_state()->mtvec->write(start_mtvec);
+
+  processor->get_state()->csrmap[CSR_MARCHID] =
+      std::make_shared<const_csr_t>(processor.get(), CSR_MARCHID, IBEX_MARCHID);
+
+  processor->set_mmu_capability(IMPL_MMU_SBARE);
+
+  for (int i = 0; i < processor->TM.count(); ++i) {
+    processor->TM.tdata2_write(processor.get(), i, 0);
+    processor->TM.tdata1_write(processor.get(), i, 0x28001048);
+  }
+
+  for (int i = 0; i < mhpm_counter_num; i++) {
+    processor->get_state()->csrmap[CSR_MHPMEVENT3 + i] =
+        std::make_shared<const_csr_t>(processor.get(), CSR_MHPMEVENT3 + i,
+                                      1 << i);
+  }
+}
+
 void SpikeCosim::set_mip(uint32_t mip) {
   processor->get_state()->mip->write_with_mask(0xffffffff, mip);
 }
@@ -464,11 +523,29 @@ void SpikeCosim::set_debug_req(bool debug_req) {
 }
 
 void SpikeCosim::set_mcycle(uint64_t mcycle) {
-  // TODO: Spike decrements mcycle on write to hack around an issue it has with
-  // correctly writing minstret. Preferably this write would use a backdoor
-  // access and avoid that decrement but backdoor access isn't part of the
-  // public CSR interface.
-  processor->get_state()->mcycle->write(mcycle + 1);
+  uint32_t upper_mcycle = mcycle >> 32;
+  uint32_t lower_mcycle = mcycle & 0xffffffff;
+
+  // Spike decrements the MCYCLE CSR when you write to it to hack around an
+  // issue it has with incorrectly setting minstret/mcycle when there's an
+  // explicit write to them. There's no backdoor write available via the public
+  // interface to skip this. To complicate matters we can only write 32 bits at
+  // a time and get a decrement each time.
+
+  // Write the lower half first, incremented twice due to the double decrement
+  processor->get_state()->csrmap[CSR_MCYCLE]->write(lower_mcycle + 2);
+
+  if ((processor->get_state()->csrmap[CSR_MCYCLE]->read() & 0xffffffff) == 0) {
+    // If the lower half is 0 at this point then the upper half will get
+    // decremented, so increment it first.
+    upper_mcycle++;
+  }
+
+  // Set the upper half
+  processor->get_state()->csrmap[CSR_MCYCLEH]->write(upper_mcycle);
+
+  // TODO: Do a neater job of this, a more recent spike release should allow us
+  // to write all 64 bits at once at least.
 }
 
 void SpikeCosim::set_csr(const int csr_num, const uint32_t new_val) {
@@ -479,6 +556,10 @@ void SpikeCosim::set_csr(const int csr_num, const uint32_t new_val) {
 #else
   processor->put_csr(csr_num, new_val);
 #endif
+}
+
+void SpikeCosim::set_ic_scr_key_valid(bool valid) {
+  processor->set_ic_scr_key_valid(valid);
 }
 
 void SpikeCosim::notify_dside_access(const DSideAccessInfo &access_info) {
@@ -503,7 +584,7 @@ void SpikeCosim::clear_errors() { errors.clear(); }
 
 void SpikeCosim::fixup_csr(int csr_num, uint32_t csr_val) {
   switch (csr_num) {
-    case CSR_MSTATUS:
+    case CSR_MSTATUS: {
       reg_t mask =
           MSTATUS_MIE | MSTATUS_MPIE | MSTATUS_MPRV | MSTATUS_MPP | MSTATUS_TW;
 
@@ -514,6 +595,24 @@ void SpikeCosim::fixup_csr(int csr_num, uint32_t csr_val) {
       processor->put_csr(csr_num, new_val);
 #endif
       break;
+    }
+    case CSR_MCAUSE: {
+      uint32_t any_interrupt = csr_val & 0x80000000;
+      uint32_t int_interrupt = csr_val & 0x40000000;
+
+      reg_t new_val = (csr_val & 0x0000001f) | any_interrupt;
+
+      if (any_interrupt && int_interrupt) {
+        new_val |= 0x7fffffe0;
+      }
+
+#ifdef OLD_SPIKE
+      processor->set_csr(csr_num, new_val);
+#else
+      processor->put_csr(csr_num, new_val);
+#endif
+      break;
+    }
   }
 }
 
@@ -725,4 +824,4 @@ bool SpikeCosim::pc_is_mret(uint32_t pc) {
   return insn == 0x30200073;
 }
 
-int SpikeCosim::get_insn_cnt() { return insn_cnt; }
+unsigned int SpikeCosim::get_insn_cnt() { return insn_cnt; }

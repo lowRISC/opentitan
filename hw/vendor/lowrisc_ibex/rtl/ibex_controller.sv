@@ -44,7 +44,9 @@ module ibex_controller #(
   output logic                  id_in_ready_o,           // ID stage is ready for new instr
   output logic                  controller_run_o,        // Controller is in standard instruction
                                                          // run mode
-
+  input  logic                  instr_exec_i,            // Execution control, when clear ID/EX
+                                                         // stage stops accepting instructions from
+                                                         // IF
   // to prefetcher
   output logic                  instr_req_o,             // start fetching instructions
   output logic                  pc_set_o,                // jump to address set by pc_mux
@@ -58,8 +60,8 @@ module ibex_controller #(
   // LSU
   input  logic [31:0]           lsu_addr_last_i,         // for mtval
   input  logic                  load_err_i,
-  input  logic                  load_intg_err_i,
   input  logic                  store_err_i,
+  input  logic                  mem_resp_intg_err_i,
   output logic                  wb_exception_o,          // Instruction in WB taking an exception
   output logic                  id_exception_o,          // Instruction in ID taking an exception
 
@@ -82,6 +84,7 @@ module ibex_controller #(
   output ibex_pkg::dbg_cause_e  debug_cause_o,
   output logic                  debug_csr_save_o,
   output logic                  debug_mode_o,
+  output logic                  debug_mode_entering_o,
   input  logic                  debug_single_step_i,
   input  logic                  debug_ebreakm_i,
   input  logic                  debug_ebreaku_i,
@@ -114,6 +117,7 @@ module ibex_controller #(
 
   logic nmi_mode_q, nmi_mode_d;
   logic debug_mode_q, debug_mode_d;
+  dbg_cause_e debug_cause_d, debug_cause_q;
   logic load_err_q, load_err_d;
   logic store_err_q, store_err_d;
   logic exc_req_q, exc_req_d;
@@ -142,6 +146,7 @@ module ibex_controller #(
   logic enter_debug_mode_prio_q;
   logic enter_debug_mode;
   logic ebreak_into_debug;
+  logic irq_enabled;
   logic handle_irq;
   logic id_wb_pending;
 
@@ -231,7 +236,7 @@ module ibex_controller #(
   // Is there an instruction in ID or WB that has yet to complete?
   assign id_wb_pending = instr_valid_i | ~ready_wb_i;
 
-  // Exception/fault prioritisation is taken from Table 3.7 of Priviledged Spec v1.11
+  // Logic to determine which exception takes priority where multiple are possible.
   if (WritebackStage) begin : g_wb_exceptions
     always_comb begin
       instr_fetch_err_prio = 0;
@@ -305,55 +310,55 @@ module ibex_controller #(
   // irq_nm_int_cause.
 
   if (MemECC) begin : g_intg_irq_int
-    logic        load_intg_err_irq_pending_q, load_intg_err_irq_pending_d;
-    logic [31:0] load_intg_err_addr_q, load_intg_err_addr_d;
-    logic        load_intg_err_irq_set, load_intg_err_irq_clear;
+    logic        mem_resp_intg_err_irq_pending_q, mem_resp_intg_err_irq_pending_d;
+    logic [31:0] mem_resp_intg_err_addr_q, mem_resp_intg_err_addr_d;
+    logic        mem_resp_intg_err_irq_set, mem_resp_intg_err_irq_clear;
     logic        entering_nmi;
 
     assign entering_nmi = nmi_mode_d & ~nmi_mode_q;
 
     // Load integerity error internal interrupt
     always_comb begin
-      load_intg_err_addr_d        = load_intg_err_addr_q;
-      load_intg_err_irq_set       = 1'b0;
-      load_intg_err_irq_clear     = 1'b0;
+      mem_resp_intg_err_addr_d        = mem_resp_intg_err_addr_q;
+      mem_resp_intg_err_irq_set       = 1'b0;
+      mem_resp_intg_err_irq_clear     = 1'b0;
 
-      if (load_intg_err_irq_pending_q) begin
+      if (mem_resp_intg_err_irq_pending_q) begin
         // Clear ECC error interrupt when it is handled. External NMI takes a higher priority so
         // don't clear the ECC error interrupt if an external NMI is present.
         if (entering_nmi & !irq_nm_ext_i) begin
-          load_intg_err_irq_clear = 1'b1;
+          mem_resp_intg_err_irq_clear = 1'b1;
         end
-      end else if (load_intg_err_i) begin
+      end else if (mem_resp_intg_err_i) begin
         // When an ECC error is seen set the ECC error interrupt and capture the address that saw
         // the error. If there is already an ecc error IRQ pending ignore any ECC errors coming in.
-        load_intg_err_addr_d        = lsu_addr_last_i;
-        load_intg_err_irq_set       = 1'b1;
+        mem_resp_intg_err_addr_d        = lsu_addr_last_i;
+        mem_resp_intg_err_irq_set       = 1'b1;
       end
     end
 
-    assign load_intg_err_irq_pending_d =
-      (load_intg_err_irq_pending_q & ~load_intg_err_irq_clear) | load_intg_err_irq_set;
+    assign mem_resp_intg_err_irq_pending_d =
+      (mem_resp_intg_err_irq_pending_q & ~mem_resp_intg_err_irq_clear) | mem_resp_intg_err_irq_set;
 
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
-        load_intg_err_irq_pending_q <= 1'b0;
-        load_intg_err_addr_q        <= '0;
+        mem_resp_intg_err_irq_pending_q <= 1'b0;
+        mem_resp_intg_err_addr_q        <= '0;
       end else begin
-        load_intg_err_irq_pending_q <= load_intg_err_irq_pending_d;
-        load_intg_err_addr_q        <= load_intg_err_addr_d;
+        mem_resp_intg_err_irq_pending_q <= mem_resp_intg_err_irq_pending_d;
+        mem_resp_intg_err_addr_q        <= mem_resp_intg_err_addr_d;
       end
     end
 
     // As integrity error is the only internal interrupt implement, set irq_nm_* signals directly
     // within this generate block.
-    assign irq_nm_int = load_intg_err_irq_set | load_intg_err_irq_pending_q;
+    assign irq_nm_int       = mem_resp_intg_err_irq_set | mem_resp_intg_err_irq_pending_q;
     assign irq_nm_int_cause = NMI_INT_CAUSE_ECC;
-    assign irq_nm_int_mtval = load_intg_err_addr_q;
+    assign irq_nm_int_mtval = mem_resp_intg_err_addr_q;
   end else begin : g_no_intg_irq_int
-    logic unused_load_intg_err_i;
+    logic unused_mem_resp_intg_err_i;
 
-    assign unused_load_intg_err_i = load_intg_err_i;
+    assign unused_mem_resp_intg_err_i = mem_resp_intg_err_i;
 
     // No integrity checking on incoming load data so no internal interrupts
     assign irq_nm_int       = 1'b0;
@@ -397,12 +402,16 @@ module ibex_controller #(
   // ibex_core) source. For internal sources the cause is specified via irq_nm_int_cause.
   assign irq_nm = irq_nm_ext_i | irq_nm_int;
 
+  // MIE bit only applies when in M mode
+  assign irq_enabled = csr_mstatus_mie_i | (priv_mode_i == PRIV_LVL_U);
+
   // Interrupts including NMI are ignored,
-  // - while in debug mode [Debug Spec v0.13.2, p.39],
+  // - while in debug mode,
   // - while in NMI mode (nested NMIs are not supported, NMI has highest priority and
-  //   cannot be interrupted by regular interrupts).
-  assign handle_irq = ~debug_mode_q & ~nmi_mode_q &
-      (irq_nm | (irq_pending_i & csr_mstatus_mie_i));
+  //   cannot be interrupted by regular interrupts),
+  // - while single stepping.
+  assign handle_irq = ~debug_mode_q & ~debug_single_step_i & ~nmi_mode_q &
+      (irq_nm | (irq_pending_i & irq_enabled));
 
   // generate ID of fast interrupts, highest priority to lowest ID
   always_comb begin : gen_mfip_id
@@ -416,6 +425,26 @@ module ibex_controller #(
   end
 
   assign unused_irq_timer = irqs_i.irq_timer;
+
+  // Record the debug cause outside of the FSM
+  // The decision to enter debug_mode and the write of the cause to DCSR happen
+  // in seperate steps within the FSM. Hence, there are a small number of cycles
+  // where a change in external stimulus can cause the cause to be recorded incorrectly.
+  assign debug_cause_d = trigger_match_i                    ? DBG_CAUSE_TRIGGER :
+                         ebrk_insn_prio & ebreak_into_debug ? DBG_CAUSE_EBREAK  :
+                         debug_req_i                        ? DBG_CAUSE_HALTREQ :
+                         do_single_step_d                   ? DBG_CAUSE_STEP    :
+                                                              DBG_CAUSE_NONE ;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      debug_cause_q <= DBG_CAUSE_NONE;
+    end else begin
+      debug_cause_q <= debug_cause_d;
+    end
+  end
+
+  assign debug_cause_o = debug_cause_q;
 
   /////////////////////
   // Core controller //
@@ -453,8 +482,8 @@ module ibex_controller #(
     flush_id               = 1'b0;
 
     debug_csr_save_o       = 1'b0;
-    debug_cause_o          = DBG_CAUSE_EBREAK;
     debug_mode_d           = debug_mode_q;
+    debug_mode_entering_o  = 1'b0;
     nmi_mode_d             = nmi_mode_q;
 
     perf_tbranch_o         = 1'b0;
@@ -615,7 +644,7 @@ module ibex_controller #(
           csr_save_if_o    = 1'b1;
           csr_save_cause_o = 1'b1;
 
-          // interrupt priorities according to Privileged Spec v1.11 p.31
+          // Prioritise interrupts as required by the architecture
           if (irq_nm && !nmi_mode_q) begin
             exc_cause_o =
               irq_nm_ext_i ? ExcCauseIrqNm :
@@ -657,16 +686,10 @@ module ibex_controller #(
         debug_csr_save_o = 1'b1;
 
         csr_save_cause_o = 1'b1;
-        if (trigger_match_i) begin
-          debug_cause_o = DBG_CAUSE_TRIGGER;     // (priority 4)
-        end else if (debug_req_i) begin
-          debug_cause_o = DBG_CAUSE_HALTREQ;     // (priority 1)
-        end else begin
-          debug_cause_o = DBG_CAUSE_STEP;        // (priority 0, lowest)
-        end
 
         // enter debug mode
-        debug_mode_d = 1'b1;
+        debug_mode_d          = 1'b1;
+        debug_mode_entering_o = 1'b1;
 
         ctrl_fsm_ns  = DECODE;
       end
@@ -677,7 +700,7 @@ module ibex_controller #(
         // 2. EBREAK with forced entry into debug mode (ebreakm or ebreaku set).
         // regular ebreak's go through FLUSH.
         //
-        // for 1. do not update dcsr and dpc, for 2. do so [Debug Spec v0.13.2, p.39]
+        // for 1. do not update dcsr and dpc, for 2. do so
         // jump to debug exception handler in debug memory
         flush_id      = 1'b1;
         pc_mux_o      = PC_EXC;
@@ -693,11 +716,11 @@ module ibex_controller #(
 
           // dcsr
           debug_csr_save_o = 1'b1;
-          debug_cause_o    = DBG_CAUSE_EBREAK;
         end
 
         // enter debug mode
-        debug_mode_d = 1'b1;
+        debug_mode_d          = 1'b1;
+        debug_mode_entering_o = 1'b1;
 
         ctrl_fsm_ns  = DECODE;
       end
@@ -746,34 +769,17 @@ module ibex_controller #(
             end
             ebrk_insn_prio: begin
               if (debug_mode_q | ebreak_into_debug) begin
-                /*
-                 * EBREAK in debug mode re-enters debug mode
-                 *
-                 * "The only exception is EBREAK. When that is executed in Debug
-                 * Mode, it halts the hart again but without updating dpc or
-                 * dcsr." [Debug Spec v0.13.2, p.39]
-                 */
+                // EBREAK enters debug mode when dcsr.ebreakm or dcsr.ebreaku is set and we're in
+                // M or U mode respectively. If we're already in debug mode we re-enter debug mode.
 
-                /*
-                 * dcsr.ebreakm == 1:
-                 * "EBREAK instructions in M-mode enter Debug Mode."
-                 * [Debug Spec v0.13.2, p.42]
-                 */
                 pc_set_o         = 1'b0;
                 csr_save_id_o    = 1'b0;
                 csr_save_cause_o = 1'b0;
                 ctrl_fsm_ns      = DBG_TAKEN_ID;
                 flush_id         = 1'b0;
               end else begin
-                /*
-                 * "The EBREAK instruction is used by debuggers to cause control
-                 * to be transferred back to a debugging environment. It
-                 * generates a breakpoint exception and performs no other
-                 * operation. [...] ECALL and EBREAK cause the receiving
-                 * privilege mode's epc register to be set to the address of the
-                 * ECALL or EBREAK instruction itself, not the address of the
-                 * following instruction." [Privileged Spec v1.11, p.40]
-                 */
+                // If EBREAK won't enter debug mode (dcsr.ebreakm/u not set) then raise a breakpoint
+                // exception.
                 exc_cause_o      = ExcCauseBreakpoint;
               end
             end
@@ -811,7 +817,7 @@ module ibex_controller #(
 
         // Entering debug mode due to either single step or debug_req. Ensure
         // registers are set for exception but then enter debug handler rather
-        // than exception handler [Debug Spec v0.13.2, p.44]
+        // than exception handler
         // Leave all other signals as is to ensure CSRs and PC get set as if
         // core was entering exception handler, entry to debug mode will then
         // see the appropriate state and setup dpc correctly.
@@ -819,7 +825,7 @@ module ibex_controller #(
         // If an EBREAK instruction is causing us to enter debug mode on the
         // same cycle as a debug_req or single step, honor the EBREAK and
         // proceed to DBG_TAKEN_ID, as it has the highest priority.
-        // [Debug Spec v1.0.0-STABLE, p.53]
+        //
         // cause==EBREAK    -> prio 3 (highest)
         // cause==debug_req -> prio 2
         // cause==step      -> prio 1 (lowest)
@@ -833,6 +839,11 @@ module ibex_controller #(
         ctrl_fsm_ns = RESET;
       end
     endcase
+
+    if (~instr_exec_i) begin
+      // Hold halt_if high when instr_exec_i is low to stop accepting instructions from the IF stage
+      halt_if = 1'b1;
+    end
   end
 
   assign flush_id_o = flush_id;

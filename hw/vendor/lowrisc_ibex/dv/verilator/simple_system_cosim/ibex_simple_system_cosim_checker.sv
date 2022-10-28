@@ -2,7 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module ibex_simple_system_cosim_checker (
+module ibex_simple_system_cosim_checker #(
+  parameter bit                 SecureIbex     = 1'b0,
+  parameter bit                 ICache         = 1'b0,
+  parameter bit                 PMPEnable      = 1'b0,
+  parameter int unsigned        PMPGranularity = 0,
+  parameter int unsigned        PMPNumRegions  = 4,
+  parameter int unsigned        MHPMCounterNum  = 0
+) (
   input clk_i,
   input rst_ni,
 
@@ -18,11 +25,18 @@ module ibex_simple_system_cosim_checker (
   input logic        host_dmem_err
 );
   import "DPI-C" function chandle get_spike_cosim;
+  import "DPI-C" function void create_cosim(bit secure_ibex, bit icache_en,
+    bit [31:0] pmp_num_regions, bit [31:0] pmp_granularity, bit [31:0] mhpm_counter_num);
+
   import ibex_pkg::*;
 
   chandle cosim_handle;
 
   initial begin
+    localparam int unsigned LocalPMPGranularity = PMPEnable ? PMPGranularity : 0;
+    localparam int unsigned LocalPMPNumRegions  = PMPEnable ? PMPNumRegions  : 0;
+
+    create_cosim(SecureIbex, ICache, LocalPMPNumRegions, LocalPMPGranularity, MHPMCounterNum);
     cosim_handle = get_spike_cosim();
   end
 
@@ -38,6 +52,7 @@ module ibex_simple_system_cosim_checker (
         riscv_cosim_set_csr(cosim_handle, int'(CSR_MHPMCOUNTER3H) + i,
           u_top.rvfi_ext_mhpmcountersh[i]);
       end
+      riscv_cosim_set_ic_scr_key_valid(cosim_handle, u_top.rvfi_ext_ic_scr_key_valid);
 
       if (riscv_cosim_step(cosim_handle, u_top.rvfi_rd_addr, u_top.rvfi_rd_wdata,
                            u_top.rvfi_pc_rdata, u_top.rvfi_trap) == 0)

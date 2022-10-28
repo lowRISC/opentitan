@@ -1208,7 +1208,7 @@ package riscv_instr_pkg;
     WAW_HAZARD
   } hazard_e;
 
-  bit [11:0] default_include_csr_write[$] = {MSCRATCH};
+  riscv_csr_t default_include_csr_write[$] = {MSCRATCH};
 
   `include "riscv_core_setting.sv"
 
@@ -1244,6 +1244,8 @@ package riscv_instr_pkg;
     // The offset from the address of <main> - automatically populated by the
     // PMP generation routine.
     bit [XLEN - 1 : 0]    offset;
+    // The size of the region in case of NAPOT and overlap in case of TOR.
+    integer addr_mode;
 `else
   typedef struct{
     rand bit                   l;
@@ -1258,6 +1260,8 @@ package riscv_instr_pkg;
     // The offset from the address of <main> - automatically populated by the
     // PMP generation routine.
     rand bit [XLEN - 1 : 0]    offset;
+    // The size of the region in case of NAPOT and allows for top less than bottom in TOR when 0.
+    rand integer addr_mode;
 `endif
   } pmp_cfg_reg_t;
 

@@ -11,7 +11,7 @@ interface core_ibex_dut_probe_if(input logic clk);
   logic                    ebreak;
   logic                    dret;
   logic                    mret;
-  ibex_pkg::fetch_enable_t fetch_enable;
+  ibex_pkg::ibex_mubi_t    fetch_enable;
   logic                    core_sleep;
   logic                    alert_minor;
   logic                    alert_major_internal;
@@ -19,6 +19,8 @@ interface core_ibex_dut_probe_if(input logic clk);
   logic                    debug_req;
   ibex_pkg::priv_lvl_e     priv_mode;
   ibex_pkg::ctrl_fsm_e     ctrl_fsm_cs;
+  logic                    debug_mode;
+  logic                    double_fault_seen;
 
   clocking dut_cb @(posedge clk);
     output fetch_enable;
@@ -36,6 +38,8 @@ interface core_ibex_dut_probe_if(input logic clk);
     input alert_major_bus;
     input priv_mode;
     input ctrl_fsm_cs;
+    input debug_mode;
+    input double_fault_seen;
   endclocking
 
   initial begin

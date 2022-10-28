@@ -16,9 +16,9 @@
 
 class riscv_csr_instr extends riscv_instr;
   // Privileged CSR filter
-  static bit [11:0]  exclude_reg[$];
-  static bit [11:0]  include_reg[$];
-  static bit [11:0]  include_write_reg[$];
+  static riscv_instr_pkg::privileged_reg_t exclude_reg[$];
+  static riscv_instr_pkg::privileged_reg_t include_reg[$];
+  static riscv_instr_pkg::privileged_reg_t include_write_reg[$];
 
   // When set writes to read-only CSRs can be generated
   static bit allow_ro_write;
@@ -91,7 +91,10 @@ class riscv_csr_instr extends riscv_instr;
       include_reg = {cfg.invalid_priv_mode_csrs};
     end else if (cfg.gen_all_csrs_by_default) begin
       allow_ro_write = cfg.gen_csr_ro_write;
-      include_reg = {implemented_csr, custom_csr};
+      include_reg = {implemented_csr};
+      foreach (custom_csr[r]) begin
+        default_include_csr_write.push_back(riscv_csr_t'(custom_csr[r]));
+      end
 
       create_include_write_reg(cfg.add_csr_write, cfg.remove_csr_write, default_include_csr_write);
     end else begin
@@ -106,7 +109,7 @@ class riscv_csr_instr extends riscv_instr;
     end
   endfunction : create_csr_filter
 
-  static function void create_include_write_reg(privileged_reg_t add_csr[], privileged_reg_t remove_csr[], bit [11:0] initial_csrs[$]);
+  static function void create_include_write_reg(privileged_reg_t add_csr[], privileged_reg_t remove_csr[], riscv_csr_t initial_csrs[$]);
     include_write_reg.delete();
 
     foreach (initial_csrs[r]) begin

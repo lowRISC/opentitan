@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include <svdpi.h>
 #include <cassert>
 #include <memory>
 #include "cosim.h"
@@ -18,6 +19,19 @@ class SimpleSystemCosim : public SimpleSystem {
 
   ~SimpleSystemCosim() {}
 
+  void CreateCosim(bool secure_ibex, bool icache_en, uint32_t pmp_num_regions,
+                   uint32_t pmp_granularity, uint32_t mhpm_counter_num) {
+    _cosim = std::make_unique<SpikeCosim>(
+        GetIsaString(), 0x100080, 0x100001, "simple_system_cosim.log",
+        secure_ibex, icache_en, pmp_num_regions, pmp_granularity,
+        mhpm_counter_num);
+
+    _cosim->add_memory(0x100000, 1024 * 1024);
+    _cosim->add_memory(0x20000, 4096);
+
+    CopyMemAreaToCosim(&_ram, 0x100000);
+  }
+
  protected:
   void CopyMemAreaToCosim(MemArea *area, uint32_t base_addr) {
     auto mem_data = area->Read(0, area->GetSizeWords());
@@ -29,16 +43,6 @@ class SimpleSystemCosim : public SimpleSystem {
     if (exit_app) {
       return ret_code;
     }
-
-    // TODO: Enable PMP in appropriate configurations
-    _cosim = std::make_unique<SpikeCosim>(GetIsaString(), 0x100080, 0x100001,
-                                          "simple_system_cosim.log", false,
-                                          false, 0, 0);
-
-    _cosim->add_memory(0x100000, 1024 * 1024);
-    _cosim->add_memory(0x20000, 4096);
-
-    CopyMemAreaToCosim(&_ram, 0x100000);
 
     return 0;
   }
@@ -58,7 +62,18 @@ SimpleSystemCosim *simple_system_cosim;
 extern "C" {
 void *get_spike_cosim() {
   assert(simple_system_cosim);
+  assert(simple_system_cosim->_cosim);
+
   return static_cast<Cosim *>(simple_system_cosim->_cosim.get());
+}
+
+void create_cosim(svBit secure_ibex, svBit icache_en,
+                  const svBitVecVal *pmp_num_regions,
+                  const svBitVecVal *pmp_granularity,
+                  const svBitVecVal *mhpm_counter_num) {
+  assert(simple_system_cosim);
+  simple_system_cosim->CreateCosim(secure_ibex, icache_en, pmp_num_regions[0],
+                                   pmp_granularity[0], mhpm_counter_num[0]);
 }
 }
 

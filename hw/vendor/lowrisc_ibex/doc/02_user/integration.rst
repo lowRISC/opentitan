@@ -210,9 +210,12 @@ Interfaces
 +----------------------------+-------------------------+-----+----------------------------------------+
 | ``fetch_enable_i``         | 4                       | in  | Allow the core to fetch instructions.  |
 |                            |                         |     | If this bit is set low, the core will  |
-|                            |                         |     | pause fetching new instructions. A     |
-|                            |                         |     | multi-bit encoding scheme is used. See |
-|                            |                         |     | `FetchEnableOn` / `FetchEnableOff` in  |
+|                            |                         |     | pause fetching new instructions and    |
+|                            |                         |     | immediately halt once any in-flight    |
+|                            |                         |     | instructions in the ID/EX and WB       |
+|                            |                         |     | stages have finished. A multi-bit      |
+|                            |                         |     | encoding scheme is used. See           |
+|                            |                         |     | `IbexMuBiOn` / `IbexMuBiOff` in        |
 |                            |                         |     | :file:`rtl/ibex_pkg.sv`                |
 +----------------------------+-------------------------+-----+----------------------------------------+
 | ``core_sleep_o``           | 1                       | out | Core in WFI with no outstanding data   |

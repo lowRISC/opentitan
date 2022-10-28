@@ -16,6 +16,7 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
   input rst_ni,
 
   input ibex_pkg::pmp_cfg_t  csr_pmp_cfg     [PMPNumRegions],
+  input logic[33:0]          csr_pmp_addr    [PMPNumRegions],
   input logic                pmp_req_err     [3],
   input pmp_mseccfg_t        csr_pmp_mseccfg,
 
@@ -110,6 +111,8 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
 
     logic misaligned_pmp_err_last;
 
+    logic [31:0] pmp_addr_napot_valid [PMPNumRegions];
+
     assign pmp_iside_match      = g_pmp.pmp_i.region_match_all[PMP_I];
     assign pmp_iside2_match     = g_pmp.pmp_i.region_match_all[PMP_I2];
     assign pmp_dside_match      = g_pmp.pmp_i.region_match_all[PMP_D];
@@ -152,9 +155,26 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
                                        cs_registers_i.priv_mode_id_o,
                                        g_pmp.pmp_i.region_basic_perm_check[PMP_D][i_region]);
 
+      // Each cycle this assignment creates either the value 0 if the mode is not NAPOT or 1 bit is
+      // set based on how large the NAPOT region is. The size of the NAPOT region is essentially
+      // encoded by how many consecutive ones there are after the last 0. This encoding is
+      // specified in the "Physical Memory Protection" section of the RISC-V privileged spec.
+      for (genvar i = 0; i < 32; i += 1) begin : g_pmp_napot_region_fcov
+        assign pmp_addr_napot_valid[i_region][i] = csr_pmp_cfg[i_region].mode == PMP_MODE_NAPOT &&
+          (csr_pmp_addr[i_region][i+2:2] == {1'b0, {i{1'b1}}});
+      end
+
       covergroup pmp_region_cg @(posedge clk_i);
         option.per_instance = 1;
         option.name = "pmp_region_cg";
+
+        // This coverpoint converts pmp_add_napot_valid into 32 bins. The onehot call makes sure
+        // that when the entry is not in NAPOT mode, then no bin is selected. The clog2 call
+        // converts the value 0...010...0 to the index of the one bit that is set.
+        cp_napot_addr_modes: coverpoint $clog2(pmp_addr_napot_valid[i_region])
+          iff ($onehot(pmp_addr_napot_valid[i_region])) {
+          bins napot_addr[] = { [0:31] };
+        }
 
         cp_warl_check_pmpcfg : coverpoint
           g_pmp_fcov_signals.g_pmp_region_fcov[i_region].fcov_warl_check_pmpcfg;
@@ -192,13 +212,19 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
         // Wildcards in crosses are not supported by VCS. As a workaround we are using `with`
         // keyword and basic logic expressions to constraint the condition as appropriate.
         pmp_iside_mode_cross : cross cp_region_mode, pmp_iside_req_err
-          iff (g_pmp_fcov_signals.g_pmp_region_fcov[i_region].fcov_pmp_region_ichan_access);
+          iff (g_pmp_fcov_signals.g_pmp_region_fcov[i_region].fcov_pmp_region_ichan_access) {
+            illegal_bins illegal_off_mode_match = binsof(cp_region_mode) intersect {PMP_MODE_OFF};
+          }
 
         pmp_iside2_mode_cross : cross cp_region_mode, pmp_iside2_req_err
-          iff (g_pmp_fcov_signals.g_pmp_region_fcov[i_region].fcov_pmp_region_ichan2_access);
+          iff (g_pmp_fcov_signals.g_pmp_region_fcov[i_region].fcov_pmp_region_ichan2_access) {
+            illegal_bins illegal_off_mode_match = binsof(cp_region_mode) intersect {PMP_MODE_OFF};
+          }
 
         pmp_dside_mode_cross : cross cp_region_mode, pmp_dside_req_err
-          iff (g_pmp_fcov_signals.g_pmp_region_fcov[i_region].fcov_pmp_region_dchan_access);
+          iff (g_pmp_fcov_signals.g_pmp_region_fcov[i_region].fcov_pmp_region_dchan_access) {
+            illegal_bins illegal_off_mode_match = binsof(cp_region_mode) intersect {PMP_MODE_OFF};
+          }
 
         pmp_iside_priv_bits_cross :
           cross cp_region_priv_bits, cp_req_type_iside, cp_priv_lvl_iside, pmp_iside_req_err
@@ -364,7 +390,7 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
                                                     MML_XRM, MML_XRM_XU, MML_RM_RU} &&
              binsof(cp_priv_lvl_dside) intersect {PRIV_LVL_M} &&
              binsof(cp_req_type_dside) intersect {PMP_ACC_WRITE} &&
-             binsof(pmp_dside_req_err) intersect {1});
+             binsof(pmp_dside_req_err) intersect {0});
           illegal_bins illegal_user_allow_write =
             // Ensuring MML is high and we are not in a W allowed configuration in User Mode
             (binsof(cp_region_priv_bits) intersect {MML_NONE, MML_RU, MML_WRM_RU, MML_XU, MML_XRU,
@@ -372,7 +398,7 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
                                                     MML_XRM, MML_XRM_XU, MML_RM_RU} &&
              binsof(cp_priv_lvl_dside) intersect {PRIV_LVL_U} &&
              binsof(cp_req_type_dside) intersect {PMP_ACC_WRITE} &&
-             binsof(pmp_dside_req_err) intersect {1});
+             binsof(pmp_dside_req_err) intersect {0});
 
           // Will never see a write access denied when write is allowed
           illegal_bins illegal_deny_write =

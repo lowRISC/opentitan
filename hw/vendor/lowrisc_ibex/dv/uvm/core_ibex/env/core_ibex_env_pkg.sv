@@ -23,6 +23,7 @@ package core_ibex_env_pkg;
 
   `include "core_ibex_vseqr.sv"
   `include "core_ibex_env_cfg.sv"
+  `include "core_ibex_scoreboard.sv"
   `include "core_ibex_env.sv"
 
 endpackage

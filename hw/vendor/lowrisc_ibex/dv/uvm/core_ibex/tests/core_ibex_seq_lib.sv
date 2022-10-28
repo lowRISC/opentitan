@@ -66,6 +66,10 @@ class core_base_seq #(type REQ = uvm_sequence_item) extends uvm_sequence#(REQ);
     is_started = 1'b0;
   endtask
 
+  virtual task wait_for_stop();
+    wait (seq_finished == 1'b1);
+  endtask
+
 endclass
 
 // Interrupt sequences

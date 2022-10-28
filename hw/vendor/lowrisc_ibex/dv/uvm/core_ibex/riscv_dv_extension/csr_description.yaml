@@ -366,56 +366,60 @@
       msb: 1
       lsb: 0
 
-# CPUCTRL
+# TODO: Bit 8 of this CSR is whether the icache scramble key is valid. This
+# could be 0 or 1 depending upon the Ibex config and depending upon the current
+# state of the scramble key. We need a way for the CSR test generator to deal
+# with fields where it cannot predict the value. Until then leave this CSR out.
 #
-- csr: cpuctrl
-  description: >
-    CPU control register (custom)
-  address: 0x7C0
-  privilege_mode: M
-  rv32:
-    - field_name: double_fault_seen
-      description: >
-        A synchronous exception was observed when the sync_exc_seen field was set
-      type: RW
-      reset_val: 0
-      msb: 7
-      lsb: 7
-    - field_name: sync_exc_seen
-      description: >
-        A synchronous exception has been observed
-      type: RW
-      reset_val: 0
-      msb: 6
-      lsb: 6
-    - field_name: dumm_instr_mask
-      description: >
-        Mask to control frequency of dummy instruction insertion
-      type: WARL
-      reset_val: 0
-      msb: 5
-      lsb: 3
-    - field_name: dummy_instr_en
-      description: >
-        Enable or disable dummy instruction insertion
-      type: WARL
-      reset_val: 0
-      msb: 2
-      lsb: 2
-    - field_name: data_ind_timing
-      description: >
-        Enable or disable data-independent timing features
-      type: WARL
-      reset_val: 0
-      msb: 1
-      lsb: 1
-    - field_name: icache_enable
-      description: >
-        Enable or disable the instruction cache
-      type: WARL
-      reset_val: 0
-      msb: 0
-      lsb: 0
+# CPUCTRLSTS
+#- csr: cpuctrlsts
+#  description: >
+#    CPU control register (custom)
+#  address: 0x7C0
+#  privilege_mode: M
+#  rv32:
+#    - field_name: double_fault_seen
+#      description: >
+#        A synchronous exception was observed when the sync_exc_seen field was set
+#      type: RW
+#      reset_val: 0
+#      msb: 7
+#      lsb: 7
+#    - field_name: sync_exc_seen
+#      description: >
+#        A synchronous exception has been observed
+#      type: RW
+#      reset_val: 0
+#      msb: 6
+#      lsb: 6
+#    - field_name: dumm_instr_mask
+#      description: >
+#        Mask to control frequency of dummy instruction insertion
+#      type: WARL
+#      reset_val: 0
+#      msb: 5
+#      lsb: 3
+#    - field_name: dummy_instr_en
+#      description: >
+#        Enable or disable dummy instruction insertion
+#      type: WARL
+#      reset_val: 0
+#      msb: 2
+#      lsb: 2
+#    - field_name: data_ind_timing
+#      description: >
+#        Enable or disable data-independent timing features
+#      type: WARL
+#      reset_val: 0
+#      msb: 1
+#      lsb: 1
+#    - field_name: icache_enable
+#      description: >
+#        Enable or disable the instruction cache
+#      type: WARL
+#      reset_val: 0
+#      msb: 0
+#      lsb: 0
 
 # SECURESEED
 - csr: secureseed

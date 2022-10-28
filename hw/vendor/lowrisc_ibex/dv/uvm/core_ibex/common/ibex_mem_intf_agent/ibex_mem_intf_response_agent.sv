@@ -17,6 +17,8 @@ class ibex_mem_intf_response_agent extends uvm_agent;
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
+    bit secure_ibex;
+
     super.build_phase(phase);
     monitor = ibex_mem_intf_monitor::type_id::create("monitor", this);
     cfg = ibex_mem_intf_response_agent_cfg::type_id::create("cfg", this);
@@ -26,6 +28,12 @@ class ibex_mem_intf_response_agent extends uvm_agent;
     end
     if(!uvm_config_db#(virtual ibex_mem_intf)::get(this, "", "vif", cfg.vif))
       `uvm_fatal("NOVIF",{"virtual interface must be set for: ",get_full_name(),".vif"});
+
+    if (!uvm_config_db#(bit)::get(null, "", "SecureIbex", secure_ibex)) begin
+      secure_ibex = 1'b0;
+    end
+
+    cfg.fixed_data_write_response = secure_ibex;
   endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);
