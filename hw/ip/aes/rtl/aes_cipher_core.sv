@@ -749,6 +749,82 @@ module aes_cipher_core import aes_pkg::*;
       (SecSBoxImpl == SBoxImplLut ||
        SecSBoxImpl == SBoxImplCanright)))
 
+  // Signals used for assertions only.
+  logic prd_clearing_equals_output, unused_prd_clearing_equals_output;
+  assign prd_clearing_equals_output = (prd_clearing_128 == add_round_key_out);
+  assign unused_prd_clearing_equals_output = prd_clearing_equals_output;
+
+  // Ensure that the state register gets cleared with pseudo-random data at the end of the last
+  // round. The following two scenarios are unlikely but not illegal:
+  // 1. The newly loaded initial state matches the previous output (the round counter is only
+  //    cleared upon loading the new initial state).
+  // 2. The previous pseudo-random data is equal to the previous output.
+  // Otherwise, we must see an alert e.g. because the state multiplexer got glitched.
+  `ASSERT(AesSecCmDataRegKeySca, (state_we == SP2V_HIGH) &&
+      ((key_len_i == AES_128 && u_aes_cipher_control.rnd_ctr == 4'd10) ||
+       (key_len_i == AES_192 && u_aes_cipher_control.rnd_ctr == 4'd12) ||
+       (key_len_i == AES_256 && u_aes_cipher_control.rnd_ctr == 4'd14)) |=>
+      (state_q != $past(add_round_key_out)) ||
+      (state_q == $past(state_init_i)) ||
+      $past(prd_clearing_equals_output) || alert_o)
+
+  if (SecMasking) begin : gen_sec_cm_key_masking_svas
+      // The number of clock cycles a regular AES round takes - only used for assertions.
+      localparam int unsigned NumCyclesPerRound = (SecSBoxImpl == SBoxImplDom) ? 5 : 1;
+      logic unused_param;
+      assign unused_param = (NumCyclesPerRound == 1);
+      // Ensure that SubBytes gets fresh PRD input for every evaluation unless mask forcing is
+      // enabled. We effectively check that the PRNG has been updated at least once within the
+      // last NumCyclesPerRound cycles. This also holds for the very first round, as the PRNG
+      // is always updated in the last cycle of the IDLE state and/or the first cycle of the
+      // INIT state.
+      `ASSERT(AesSecCmKeyMaskingPrdSubBytes,
+          sub_bytes_en == SP2V_HIGH && ($past(sub_bytes_en) == SP2V_LOW ||
+              ($past(sub_bytes_out_req) == SP2V_HIGH &&
+               $past(sub_bytes_out_ack) == SP2V_HIGH)) |=>
+          $past(prd_sub_bytes) != $past(prd_sub_bytes, NumCyclesPerRound + 1) ||
+          SecAllowForcingMasks && force_masks_i)
+
+      // Ensure that the PRNG has been updated between masking the input and starting the first
+      // SubBytes evaluation/KeyExpand operation unless mask forcing is enabled. For AES-256,
+      // we just spend 1 cycle in the INIT state and KeyExpand isn't evaluating its S-Boxes,
+      // i.e., no fresh randomness is required. For the other key lengths, KeyExpand evaluates
+      // its S-Boxes which takes NumCyclesPerRound cycles. When computing the start key for
+      // decryption, the input isn't loaded and the PRNG is thus not advanced.
+      `ASSERT(AesSecCmKeyMaskingInitialPrngUpdateSubBytes,
+          sub_bytes_en == SP2V_HIGH && $past(sub_bytes_en) == SP2V_LOW |=>
+          (key_len_i == AES_256 &&
+              $past(prd_masking) != $past(prd_masking, 3)) ||
+          ((key_len_i == AES_128 || key_len_i == AES_192) &&
+              $past(prd_masking) != $past(prd_masking, NumCyclesPerRound + 2)) ||
+          (SecAllowForcingMasks && force_masks_i))
+      `ASSERT(AesSecCmKeyMaskingInitialPrngUpdateKeyExpand,
+          key_expand_en == SP2V_HIGH && $past(key_expand_en) == SP2V_LOW |=>
+          (key_len_i == AES_256 &&
+              $past(prd_masking) != $past(prd_masking, 3)) ||
+          ((key_len_i == AES_128 || key_len_i == AES_192) &&
+              $past(prd_masking) != $past(prd_masking, 2)) ||
+          (SecAllowForcingMasks && force_masks_i) || dec_key_gen_o == SP2V_HIGH)
+
+      // Ensure none of the state shares keeps being constant during encryption/decryption
+      // unless mask forcing is enabled. Even though unlikely it's not impossible that one
+      // share remains constant throughout one round. The SVAs thus only fire if a share
+      // remains constant across two rounds.
+      for (genvar s = 0; s < NumShares; s++) begin : gen_sec_cm_key_masking_share_svas
+        `ASSERT(AesSecCmKeyMaskingStateShare, state_we == SP2V_HIGH &&
+            (crypt_i == SP2V_HIGH || crypt_o == SP2V_HIGH) |=>
+            state_q[s] != $past(state_q[s], NumCyclesPerRound) ||
+            $past(state_q[s], NumCyclesPerRound) != $past(state_q[s], 2*NumCyclesPerRound) ||
+            (SecAllowForcingMasks && force_masks_i) || dec_key_gen_o == SP2V_HIGH)
+        `ASSERT(AesSecCmKeyMaskingOutputShare,
+            (out_valid_o == SP2V_HIGH && $past(out_valid_o) == SP2V_LOW) &&
+            (crypt_o == SP2V_HIGH) |=>
+            $past(state_o[s]) != $past(state_q[s], NumCyclesPerRound) ||
+            $past(state_q[s], NumCyclesPerRound) != $past(state_q[s], 2*NumCyclesPerRound) ||
+            (SecAllowForcingMasks && force_masks_i) || dec_key_gen_o == SP2V_HIGH)
+      end
+  end
+
 // the code below is not meant to be synthesized,
 // but it is intended to be used in simulation and FPV
 `ifndef SYNTHESIS
