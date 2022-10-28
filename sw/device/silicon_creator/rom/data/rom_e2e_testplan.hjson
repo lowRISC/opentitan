@@ -843,7 +843,7 @@
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2
-      tests: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_jtag_inject_tests"]
+      tests: []
     }
 
 
@@ -906,7 +906,7 @@
             '''
       tags: ["rom", "no_dv", "fpga", "silicon"]
       stage: V2
-      tests: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_asm_interrupt_handler"]
+      tests: []
     }
 
     {
