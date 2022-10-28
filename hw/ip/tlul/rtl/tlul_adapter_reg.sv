@@ -6,6 +6,14 @@
 
 /**
  * Tile-Link UL adapter for Register interface
+ *
+ * TODO(#15822): Note that due to some modules with special needs (like
+ * the vendored-in RV_DM), this module has been extended so that it
+ * supports use cases outside of the generated reg_top module. This makes
+ * this adapter and its parameterization options a bit heavy.
+ *
+ * We should in the future come back to this and refactor / align the
+ * module and its parameterization needs.
  */
 
 module tlul_adapter_reg
