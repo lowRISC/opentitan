@@ -1574,7 +1574,7 @@ REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
 # been artificially inflated.
 [
     opentitan_gdb_fpga_cw310_test(
-        name = "rom_e2e_asm_watchdog_fpga_cw310_test_otp_" + otp_name,
+        name = "rom_e2e_asm_watchdog_bark_fpga_cw310_test_otp_" + otp_name,
         timeout = "short",
         gdb_script = """
             target extended-remote :3333
@@ -1645,13 +1645,82 @@ REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
     for otp_name in OTP_CFGS_EXEC_DISABLED
 ]
 
+# Ensure that the watchdog's bite restarts the ROM.
+[
+    opentitan_gdb_fpga_cw310_test(
+        name = "rom_e2e_asm_watchdog_bite_fpga_cw310_test_otp_" + otp_name,
+        timeout = "short",
+        gdb_expect_output_sequence = [
+            ":::: Wait for interrupt.",
+            "Hart 0 unexpectedly reset!",
+        ],
+        gdb_script = """
+            target extended-remote :3333
+
+            echo :::: Send OpenOCD the 'reset halt' command.\\n
+            monitor reset halt
+
+            echo :::: Load ROM symbols into GDB.\\n
+            file rom.elf
+
+            echo :::: Run until we check whether ROM execution is enabled.\\n
+            break kRomStartBootMaybeHalt
+            continue
+
+            printf ":::: PC=%p. Expected PC=%p.\\n", $pc, kRomStartBootMaybeHalt
+            if $pc != kRomStartBootMaybeHalt
+                quit 42
+            end
+
+            echo :::: Pretend execution is enabled.\\n
+            set $pc = kRomStartBootExecEn
+
+            echo :::: Run until right after configuring the watchdog timer.\\n
+            break kRomStartWatchdogEnabled
+            continue
+
+            printf ":::: PC=%p. Expected PC=%p.\\n", $pc, kRomStartWatchdogEnabled
+            if $pc != kRomStartWatchdogEnabled
+                quit 43
+            end
+
+            echo :::: Set breakpoint on NMI handler.\\n
+            delete breakpoints
+            break _asm_exception_handler
+
+            echo :::: Wait for interrupt.\\n
+            set $pc = kRomStartBootMaybeHalt
+            echo :::: Continue.\\n
+            continue
+
+            # Not reached.
+            quit 123
+        """,
+        gdb_script_symlinks = {
+            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+        },
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_kind = "Rom",
+        tags = [
+            "cw310",
+            "exclusive",
+            "vivado",
+        ],
+    )
+    for otp_name in OTP_CFGS_EXEC_DISABLED
+]
+
 test_suite(
     name = "rom_e2e_asm_watchdog",
     tags = [
         "cw310",
         "vivado",
     ],
-    tests = ["rom_e2e_asm_watchdog_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
+    tests = [
+        "rom_e2e_asm_watchdog_" + type + "_fpga_cw310_test_otp_" + otp_name
+        for otp_name in OTP_CFGS_EXEC_DISABLED
+        for type in ("bite", "bark")
+    ],
 )
 
 # Shutdown Redact Test
