@@ -254,25 +254,18 @@ module rv_dm
   // Debug Memory Port (TL-UL Device) //
   //////////////////////////////////////
 
-  localparam int unsigned AddressWidthWords = BusWidth - $clog2(BusWidth/8);
-
   logic                         device_req;
   logic                         device_we;
+  logic                         device_re;
   logic [BusWidth/8-1:0]        device_be;
-  logic   [BusWidth-1:0]        device_wmask;
   logic   [BusWidth-1:0]        device_wdata;
   logic   [BusWidth-1:0]        device_rdata;
-  logic                         device_rvalid;
+  logic                         device_err;
 
-  logic [BusWidth-1:0]          device_addr_b;
-  logic [AddressWidthWords-1:0] device_addr_w;
+  logic [BusWidth-1:0]          device_addr_aligned;
+  logic [MemAw-1:0]             device_addr;
 
-  // Bit-write masks are byte-aligned, so we can reduce them to byte-write enables here.
-  for (genvar k = 0; k < BusWidth/8; k++) begin : gen_byte_write
-    assign device_be[k] = &device_wmask[8*k +: 8];
-  end
-
-  assign device_addr_b = {device_addr_w, {$clog2(BusWidth/8){1'b0}}};
+  assign device_addr_aligned = BusWidth'(device_addr);
 
   logic [NrHarts-1:0] debug_req_en;
   logic [NrHarts-1:0] debug_req;
@@ -362,43 +355,33 @@ module rv_dm
   // SEC_CM: DM_EN.CTRL.LC_GATED, EXEC.CTRL.MUBI
   assign en_ifetch = mubi4_bool_to_mubi(lc_tx_test_true_strict(lc_hw_debug_en[EnFetch]));
 
-  tlul_adapter_sram #(
-    .SramAw(AddressWidthWords),
-    .SramDw(BusWidth),
-    .Outstanding(1),
-    .ByteAccess(1),
-    .CmdIntgCheck(1),
-    .EnableRspIntgGen(1),
-    .EnableDataIntgGen(1)
-  ) tl_adapter_device_mem (
+  tlul_adapter_reg #(
+    .CmdIntgCheck     (1),
+    .EnableRspIntgGen (1),
+    .EnableDataIntgGen(1),
+    .RegAw            (MemAw),
+    .RegDw            (BusWidth),
+    .AccessLatency    (1)
+  ) i_tlul_adapter_reg (
     .clk_i,
     .rst_ni,
+    .tl_i        (mem_tl_win_h2d_gated),
+    .tl_o        (mem_tl_win_d2h_gated),
     // SEC_CM: EXEC.CTRL.MUBI
     .en_ifetch_i (en_ifetch),
-    .req_o       (device_req),
-    .req_type_o  (),
-    .gnt_i       (1'b1),
-    .we_o        (device_we),
-    .addr_o      (device_addr_w),
-    .wdata_o     (device_wdata),
-    .wmask_o     (device_wmask),
     // SEC_CM: BUS.INTEGRITY
     .intg_error_o(rom_intg_error),
+    .re_o        (device_re),
+    .we_o        (device_we),
+    .addr_o      (device_addr),
+    .wdata_o     (device_wdata),
+    .be_o        (device_be),
+    .busy_i      (1'b0),
     .rdata_i     (device_rdata),
-    .rvalid_i    (device_rvalid),
-    .rerror_i    ('0),
-
-    .tl_o        (mem_tl_win_d2h_gated),
-    .tl_i        (mem_tl_win_h2d_gated)
+    .error_i     (device_err)
   );
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      device_rvalid <= '0;
-    end else begin
-      device_rvalid <= device_req & ~device_we;
-    end
-  end
+  assign device_req = device_we || device_re;
 
   ///////////////////////////
   // Debug Module Instance //
@@ -425,10 +408,11 @@ module rv_dm
     .hartinfo_i            (hartinfo              ),
     .slave_req_i           (device_req            ),
     .slave_we_i            (device_we             ),
-    .slave_addr_i          (device_addr_b         ),
+    .slave_addr_i          (device_addr_aligned   ),
     .slave_be_i            (device_be             ),
     .slave_wdata_i         (device_wdata          ),
     .slave_rdata_o         (device_rdata          ),
+    .slave_err_o           (device_err            ),
     .master_req_o          (host_req              ),
     .master_add_o          (host_add              ),
     .master_we_o           (host_we               ),
