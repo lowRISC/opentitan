@@ -203,7 +203,6 @@ cc_library(
         "dif_csrng.h",
         "dif_csrng_shared.h",
     ],
-    visibility = ["//visibility:private"],
     deps = [
         ":base",
         "//sw/device/lib/base:bitfield",

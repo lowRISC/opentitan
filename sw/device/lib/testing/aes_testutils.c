@@ -7,6 +7,7 @@
 #if !OT_IS_ENGLISH_BREAKFAST
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -94,8 +95,10 @@ void aes_testutils_masking_prng_zero_output_seed(void) {
   dif_edn_auto_params_t edn0_params = {
       .instantiate_cmd =
           {
-              .cmd = 0x000000c1 |              // Instantiate, clen = 12 words.
-                     kMultiBitBool4True << 8,  // Use the provided seed only.
+              .cmd = csrng_cmd_header_build(kCsrngAppCmdInstantiate,
+                                            kDifCsrngEntropySrcToggleDisable,
+                                            kEdnSeedMaterialLen,
+                                            /*generate_len=*/0),
               .seed_material =
                   {
                       .len = kEdnSeedMaterialLen,
@@ -103,8 +106,10 @@ void aes_testutils_masking_prng_zero_output_seed(void) {
           },
       .reseed_cmd =
           {
-              .cmd = 0x000000c2 |              // Reseed, clen = 12 words.
-                     kMultiBitBool4True << 8,  // Use provided seed only.
+              .cmd = csrng_cmd_header_build(kCsrngAppCmdReseed,
+                                            kDifCsrngEntropySrcToggleDisable,
+                                            kEdnSeedMaterialLen,
+                                            /*generate_len=*/0),
               .seed_material =
                   {
                       .len = kEdnSeedMaterialLen,
@@ -112,9 +117,10 @@ void aes_testutils_masking_prng_zero_output_seed(void) {
           },
       .generate_cmd =
           {
-              .cmd = 0x00001003 |  // 1 generate returns 1 block.
-                     kMultiBitBool4True
-                         << 8,  // Don't use entropy from the entropy src.
+              .cmd = csrng_cmd_header_build(kCsrngAppCmdGenerate,
+                                            kDifCsrngEntropySrcToggleDisable,
+                                            /*cmd_len=*/0,
+                                            /*generate_len=*/1),
               .seed_material =
                   {
                       .len = 0,
