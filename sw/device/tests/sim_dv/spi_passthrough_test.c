@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
@@ -20,6 +21,10 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
+
+// Bit map of command slots to be filtered. This is supplied by the DV
+// environment.
+const volatile uint32_t kFilteredCommands;
 
 static dif_pinmux_t pinmux;
 static dif_spi_device_handle_t spi_device;
@@ -219,10 +224,11 @@ void init_spi_device(void) {
   CHECK_DIF_OK(dif_spi_device_set_passthrough_intercept_config(
       &spi_device, intercept_config));
 
-  // Set up passthrough filter to allow all commands.
+  // Set up passthrough filter to allow all commands, initially.
   CHECK_DIF_OK(dif_spi_device_set_all_passthrough_command_filters(
       &spi_device, kDifToggleDisabled));
 
+  uint32_t filters = kFilteredCommands;
   dif_spi_device_flash_command_t read_commands[] = {
       {
           // Slot 0: ReadStatus1
@@ -303,6 +309,10 @@ void init_spi_device(void) {
   };
   for (int i = 0; i < ARRAYSIZE(read_commands); ++i) {
     uint8_t slot = i + kSpiDeviceReadCommandSlotBase;
+    if (bitfield_bit32_read(filters, slot)) {
+      CHECK_DIF_OK(dif_spi_device_set_passthrough_command_filter(
+          &spi_device, read_commands[i].opcode, kDifToggleEnabled));
+    }
     CHECK_DIF_OK(dif_spi_device_set_flash_command_slot(
         &spi_device, slot, kDifToggleEnabled, read_commands[i]));
   }
@@ -350,6 +360,10 @@ void init_spi_device(void) {
   };
   for (int i = 0; i < ARRAYSIZE(write_commands); ++i) {
     uint8_t slot = i + kSpiDeviceWriteCommandSlotBase;
+    if (bitfield_bit32_read(filters, slot)) {
+      CHECK_DIF_OK(dif_spi_device_set_passthrough_command_filter(
+          &spi_device, write_commands[i].opcode, kDifToggleEnabled));
+    }
     CHECK_DIF_OK(dif_spi_device_set_flash_command_slot(
         &spi_device, slot, kDifToggleEnabled, write_commands[i]));
   }
