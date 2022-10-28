@@ -62,6 +62,7 @@ class RegressionMetadata(scripts_lib.testdata_cls):
     tests_and_counts: List[Tuple[str, int]] = field(default_factory=list)
     isa_ibex: Optional[str] = None
     isa_iss: Optional[str] = None
+    run_rtl_timeout_s: int = 1800
 
     # Files that control the regression, specify configurations, tests, etc
     ibex_configs                : pathlib.Path = field(init=False, compare=False, default_factory=pathlib.Path)

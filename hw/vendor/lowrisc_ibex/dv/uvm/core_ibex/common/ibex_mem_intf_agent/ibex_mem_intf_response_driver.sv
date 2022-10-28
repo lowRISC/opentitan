@@ -119,10 +119,25 @@ class ibex_mem_intf_response_driver extends uvm_driver #(ibex_mem_intf_seq_item)
       if(cfg.vif.response_driver_cb.reset) continue;
       cfg.vif.wait_clks(tr.rvalid_delay);
       if(~cfg.vif.response_driver_cb.reset) begin
-        cfg.vif.response_driver_cb.rvalid <=  1'b1;
-        cfg.vif.response_driver_cb.error  <=  tr.error;
-        cfg.vif.response_driver_cb.rdata  <=  tr.data;
-        cfg.vif.response_driver_cb.rintg  <=  tr.intg;
+        cfg.vif.response_driver_cb.rvalid <= 1'b1;
+        cfg.vif.response_driver_cb.error  <= tr.error;
+        if (tr.read_write == READ) begin
+          cfg.vif.response_driver_cb.rdata <= tr.data;
+          cfg.vif.response_driver_cb.rintg <= tr.intg;
+        end else begin
+          // rdata and intg fields aren't relevant to write responses
+          if (cfg.fixed_data_write_response) begin
+            // when fixed_data_write_response is set, set rdata to fixed value with correct matching
+            // rintg field.
+            cfg.vif.response_driver_cb.rdata <= 32'hffffffff;
+            cfg.vif.response_driver_cb.rintg <=
+              prim_secded_pkg::prim_secded_inv_39_32_enc(32'hffffffff)[38:32];
+          end else begin
+            // when fixed_data_write_response is not set, drive the irrelevant fields to x.
+            cfg.vif.response_driver_cb.rdata <= 'x;
+            cfg.vif.response_driver_cb.rintg <= 'x;
+          end
+        end
       end
     end
   endtask : send_read_data

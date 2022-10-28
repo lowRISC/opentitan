@@ -6,7 +6,7 @@
 
 SPIKE_PCS="riscv-riscv riscv-disasm riscv-fdt"
 
-if !(pkg-config --exists $SPIKE_PCS)
+if ! (pkg-config --exists "$SPIKE_PCS")
 then
   echo "Failed to find Spike pkg-config packages. Did you add lib/pkgconfig"\
        "from your spike install to PKG_CONFIG_PATH?"

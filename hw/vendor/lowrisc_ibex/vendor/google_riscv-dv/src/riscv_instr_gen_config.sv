@@ -90,7 +90,7 @@ class riscv_instr_gen_config extends uvm_object;
   // Can overlap with the other GPRs used in the random generation,
   // as PMP exception handler is hardcoded and does not include any
   // random instructions.
-  rand riscv_reg_t       pmp_reg;
+  rand riscv_reg_t       pmp_reg[2];
   // Use a random register for stack pointer/thread pointer
   rand riscv_reg_t       sp;
   rand riscv_reg_t       tp;
@@ -161,6 +161,8 @@ class riscv_instr_gen_config extends uvm_object;
   bit                    no_load_store;      // No load/store instruction
   bit                    no_csr_instr;       // No csr instruction
   bit                    no_ebreak = 1;      // No ebreak instruction
+  // Only enable ecall if you have overriden the test_done mechanism.
+  bit                    no_ecall = 1;       // No ecall instruction
   bit                    no_dret = 1;        // No dret instruction
   bit                    no_fence;           // No fence instruction
   bit                    no_wfi = 1;         // No WFI instruction
@@ -428,10 +430,13 @@ class riscv_instr_gen_config extends uvm_object;
     !(scratch_reg inside {ZERO, sp, tp, ra, GP});
   }
 
-  // This reg is only used inside PMP exception routine,
+  // These registers is only used inside PMP exception routine,
   // so we can be a bit looser with constraints.
   constraint reserve_pmp_reg_c {
-    !(pmp_reg inside {ZERO, sp, tp});
+    foreach (pmp_reg[i]) {
+      !(pmp_reg[i] inside {ZERO, sp, tp, scratch_reg});
+    }
+    unique {pmp_reg};
   }
 
   constraint gpr_c {
@@ -485,6 +490,7 @@ class riscv_instr_gen_config extends uvm_object;
     `uvm_field_int(no_load_store, UVM_DEFAULT)
     `uvm_field_int(no_csr_instr, UVM_DEFAULT)
     `uvm_field_int(no_ebreak, UVM_DEFAULT)
+    `uvm_field_int(no_ecall, UVM_DEFAULT)
     `uvm_field_int(no_dret, UVM_DEFAULT)
     `uvm_field_int(no_fence, UVM_DEFAULT)
     `uvm_field_int(no_wfi, UVM_DEFAULT)
@@ -552,6 +558,7 @@ class riscv_instr_gen_config extends uvm_object;
     get_int_arg_value("+num_of_sub_program=", num_of_sub_program);
     get_int_arg_value("+instr_cnt=", instr_cnt);
     get_bool_arg_value("+no_ebreak=", no_ebreak);
+    get_bool_arg_value("+no_ecall=", no_ecall);
     get_bool_arg_value("+no_dret=", no_dret);
     get_bool_arg_value("+no_wfi=", no_wfi);
     get_bool_arg_value("+no_branch_jump=", no_branch_jump);

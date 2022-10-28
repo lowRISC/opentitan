@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`include "date_dpi.svh"
+
 class core_ibex_base_test extends uvm_test;
 
   core_ibex_env                                   env;
@@ -14,6 +16,7 @@ class core_ibex_base_test extends uvm_test;
   mem_model_pkg::mem_model                        mem;
   core_ibex_vseq                                  vseq;
   bit                                             enable_irq_seq;
+  longint                                         timeout_seconds = 1800; // wall-clock seconds
   int unsigned                                    timeout_in_cycles = 100000000;
   int unsigned                                    max_quit_count  = 1;
   // If no signature_addr handshake functionality is desired between the testbench and the generated
@@ -81,6 +84,9 @@ class core_ibex_base_test extends uvm_test;
     string cosim_log_file;
     bit [31:0] pmp_num_regions;
     bit [31:0] pmp_granularity;
+    bit [31:0] mhpm_counter_num;
+    bit        secure_ibex;
+    bit        icache;
 
     super.build_phase(phase);
     $value$plusargs("timeout_in_cycles=%0d", timeout_in_cycles);
@@ -119,9 +125,24 @@ class core_ibex_base_test extends uvm_test;
       pmp_granularity = '0;
     end
 
+    if (!uvm_config_db#(bit [31:0])::get(null, "", "MHPMCounterNum", mhpm_counter_num)) begin
+      mhpm_counter_num = '0;
+    end
+
+    if (!uvm_config_db#(bit)::get(null, "", "SecureIbex", secure_ibex)) begin
+      secure_ibex = '0;
+    end
+
+    if (!uvm_config_db#(bit)::get(null, "", "ICache", icache)) begin
+      icache = '0;
+    end
+
     cosim_cfg.pmp_num_regions = pmp_num_regions;
     cosim_cfg.pmp_granularity = pmp_granularity;
+    cosim_cfg.mhpm_counter_num = mhpm_counter_num;
     cosim_cfg.relax_cosim_check = cfg.disable_cosim;
+    cosim_cfg.secure_ibex = secure_ibex;
+    cosim_cfg.icache = icache;
 
     uvm_config_db#(core_ibex_cosim_cfg)::set(null, "*cosim_agent*", "cosim_cfg", cosim_cfg);
 
@@ -140,16 +161,20 @@ class core_ibex_base_test extends uvm_test;
     env.data_if_response_agent.monitor.item_collected_port.connect(
       this.test_done_port.analysis_export);
     env.irq_agent.monitor.irq_port.connect(this.irq_collected_port.analysis_export);
+    // Connect the data memory seq to the cosim agent
+    // This allows the cosim memory to be updated to match when we generate random data in
+    // response to a read from uninit memory.
+    vseq.data_intf_seq.cosim_agent = env.cosim_agent;
   endfunction
 
   virtual task run_phase(uvm_phase phase);
     enable_irq_seq = cfg.enable_irq_single_seq || cfg.enable_irq_multiple_seq;
     phase.raise_objection(this);
     cur_run_phase = phase;
-    dut_vif.dut_cb.fetch_enable <= ibex_pkg::FetchEnableOff;
+    dut_vif.dut_cb.fetch_enable <= ibex_pkg::IbexMuBiOff;
     clk_vif.wait_clks(100);
     load_binary_to_mem();
-    dut_vif.dut_cb.fetch_enable <= ibex_pkg::FetchEnableOn;
+    dut_vif.dut_cb.fetch_enable <= ibex_pkg::IbexMuBiOn;
     send_stimulus();
     wait_for_test_done();
     cur_run_phase = null;
@@ -193,38 +218,73 @@ class core_ibex_base_test extends uvm_test;
     end
   endfunction
 
-  // Use a RISCV_DV handshake signature to end the test.
-  // This process uses a different signature address (cfg.signature_addr - 0x4)
+  // Watch for all of the different critera for test pass/failure here
   virtual task wait_for_test_done();
+    longint timeout_timestamp, ts;
     bit result;
 
-    // Make use of the 'test_done_port' which subscribes to all memory interface items.
-    // We can then watch for the correct message in isolation.
     fork
+      // - Use a RISCV_DV handshake signature to end the test.
+      // This process uses a different signature address (cfg.signature_addr - 0x4)
+      // Make use of the 'test_done_port' which subscribes to all memory interface items.
+      // We can then watch for the correct message in isolation.
       begin
         wait_for_mem_txn((cfg.signature_addr - 4'h4), TEST_RESULT, test_done_port);
         result = signature_data_q.pop_front();
         if (result == TEST_PASS) begin
-          test_done = 1'b1;
-          `uvm_info(`gfn, "Test PASSED!", UVM_LOW)
-          vseq.stop();
-          check_perf_stats();
-          // De-assert fetch enable to finish the test
-          clk_vif.wait_clks(10);
-          dut_vif.dut_cb.fetch_enable <= ibex_pkg::FetchEnableOff;
-          // Wait some time for the remaining instruction to finish
-          clk_vif.wait_clks(3000);
+          `uvm_info(`gfn, "Test done due to RISCV-DV handshake (payload=TEST_PASS)", UVM_LOW)
         end else if (result == TEST_FAIL) begin
-          `uvm_fatal(`gfn, "Test FAILED!")
+          `uvm_fatal(`gfn, "Test failed due to RISCV-DV handshake (payload=TEST_FAIL)")
         end else begin
           `uvm_fatal(`gfn, "Incorrectly formed handshake received at test-control address.")
         end
       end
+      // - End the test if we see too many of the following...
+      //   - double_faults
+      begin
+        if (cfg.enable_double_fault_detector) begin
+          env.scoreboard.dfd_wait_for_pass_events();
+          if (cfg.is_double_fault_detected_fatal) begin
+            `uvm_fatal(`gfn, "Fatal threshold for double_fault detector reached.")
+          end
+          // If we get here, join this fork to end the test gracefully.
+          `uvm_info(`gfn, "Test done due to double_fault detector.", UVM_LOW)
+        end else begin
+          wait (test_done == 1'b1);
+        end
+      end
+      // - End the test by timeout if it doesn't terminate within a reasonable time.
       begin
         clk_vif.wait_clks(timeout_in_cycles);
         `uvm_fatal(`gfn, "TEST TIMEOUT!!")
       end
+      // - End the test gracefully by wall-clock timeout (gather coverage etc.)
+      //   The plusarg 'test_timeout_s' can be used to set this value.
+      begin
+        void'($value$plusargs("test_timeout_s=%0d", timeout_seconds));
+        `uvm_info(`gfn,
+                  $sformatf("Test wall-clock timeout is set to : %0ds", timeout_seconds),
+                  UVM_LOW)
+        timeout_timestamp = get_unix_timestamp() + timeout_seconds;
+        forever begin
+          // Check the wall-clock every 1000us of simulation time.
+          #1000us;
+          ts = get_unix_timestamp();
+          if (ts >= timeout_timestamp) break;
+        end
+        `uvm_fatal(`gfn,
+                   $sformatf("Test failed due to wall-clock timeout. [%0ds]", timeout_seconds))
+      end
     join_any
+
+    test_done = 1'b1;
+    vseq.stop();
+    check_perf_stats();
+    // De-assert fetch enable to finish the test
+    clk_vif.wait_clks(10);
+    dut_vif.dut_cb.fetch_enable <= ibex_pkg::IbexMuBiOff;
+    // Wait some time for the remaining instruction to finish
+    clk_vif.wait_clks(3000);
   endtask
 
 

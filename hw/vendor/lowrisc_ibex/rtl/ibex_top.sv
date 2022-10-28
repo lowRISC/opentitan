@@ -122,10 +122,11 @@ module ibex_top import ibex_pkg::*; #(
   output logic [63:0]                  rvfi_ext_mcycle,
   output logic [31:0]                  rvfi_ext_mhpmcounters [10],
   output logic [31:0]                  rvfi_ext_mhpmcountersh [10],
+  output logic                         rvfi_ext_ic_scr_key_valid,
 `endif
 
   // CPU Control Signals
-  input  fetch_enable_t                fetch_enable_i,
+  input  ibex_mubi_t                   fetch_enable_i,
   output logic                         alert_minor_o,
   output logic                         alert_major_internal_o,
   output logic                         alert_major_bus_o,
@@ -153,7 +154,7 @@ module ibex_top import ibex_pkg::*; #(
 
   // Clock signals
   logic                        clk;
-  logic                        core_busy_d, core_busy_q;
+  ibex_mubi_t                  core_busy_d, core_busy_q;
   logic                        clock_en;
   logic                        irq_pending;
   // Core <-> Register file signals
@@ -188,26 +189,45 @@ module ibex_top import ibex_pkg::*; #(
   logic                        lockstep_alert_major_internal, lockstep_alert_major_bus;
   logic                        lockstep_alert_minor;
   // Scramble signals
-  logic [SCRAMBLE_KEY_W-1:0]    scramble_key_q;
-  logic [SCRAMBLE_NONCE_W-1:0]  scramble_nonce_q;
-  logic                         scramble_key_valid_d, scramble_key_valid_q;
-  logic                         scramble_req_d, scramble_req_q;
+  logic [SCRAMBLE_KEY_W-1:0]   scramble_key_q;
+  logic [SCRAMBLE_NONCE_W-1:0] scramble_nonce_q;
+  logic                        scramble_key_valid_d, scramble_key_valid_q;
+  logic                        scramble_req_d, scramble_req_q;
 
-  fetch_enable_t fetch_enable_buf;
+  ibex_mubi_t                  fetch_enable_buf;
 
   /////////////////////
   // Main clock gate //
   /////////////////////
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      core_busy_q <= 1'b0;
-    end else begin
-      core_busy_q <= core_busy_d;
+  if (SecureIbex) begin : g_clock_en_secure
+    // For secure Ibex core_busy_q must be a specific multi-bit pattern to enable the clock.
+    prim_flop #(
+      .Width($bits(ibex_mubi_t)),
+      .ResetValue(IbexMuBiOff)
+    ) u_prim_core_busy_flop (
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+      .d_i   (core_busy_d),
+      .q_o   (core_busy_q)
+    );
+    assign clock_en = (core_busy_q != IbexMuBiOff) | debug_req_i | irq_pending | irq_nm_i;
+  end else begin : g_clock_en_non_secure
+    // For non secure Ibex only the bottom bit of core_busy_q is considered. Other FFs can be
+    // optimized away during synthesis.
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        core_busy_q <= IbexMuBiOff;
+      end else begin
+        core_busy_q <= core_busy_d;
+      end
     end
+    assign clock_en = core_busy_q[0] | debug_req_i | irq_pending | irq_nm_i;
+
+    logic unused_core_busy;
+    assign unused_core_busy = ^core_busy_q[$bits(ibex_mubi_t)-1:1];
   end
 
-  assign clock_en     = core_busy_q | debug_req_i | irq_pending | irq_nm_i;
   assign core_sleep_o = ~clock_en;
 
   prim_clock_gating core_clock_gate_i (
@@ -222,7 +242,7 @@ module ibex_top import ibex_pkg::*; #(
   ////////////////////////
 
   // Buffer security critical signals to prevent synthesis optimisation removing them
-  prim_buf #(.Width($bits(fetch_enable_t))) u_fetch_enable_buf (
+  prim_buf #(.Width($bits(ibex_mubi_t))) u_fetch_enable_buf (
     .in_i (fetch_enable_i),
     .out_o(fetch_enable_buf)
   );
@@ -369,6 +389,7 @@ module ibex_top import ibex_pkg::*; #(
     .rvfi_ext_mcycle,
     .rvfi_ext_mhpmcounters,
     .rvfi_ext_mhpmcountersh,
+    .rvfi_ext_ic_scr_key_valid,
 `endif
 
     .fetch_enable_i        (fetch_enable_buf),
@@ -769,9 +790,9 @@ module ibex_top import ibex_pkg::*; #(
     logic                         debug_req_local;
     crash_dump_t                  crash_dump_local;
     logic                         double_fault_seen_local;
-    fetch_enable_t                fetch_enable_local;
+    ibex_mubi_t                   fetch_enable_local;
 
-    logic                         core_busy_local;
+    ibex_mubi_t                   core_busy_local;
 
     assign buf_in = {
       hart_id_i,
@@ -1109,10 +1130,17 @@ module ibex_top import ibex_pkg::*; #(
     // Should only see a request response if we're expecting one
     `ASSERT(PendingAccessTrackingCorrect, data_rvalid_i |-> pending_dside_accesses_q[0])
 
-    // data_rdata_i and data_rdata_intg_i are only relevant to reads. Check neither are X on
-    // a response to a read.
-    `ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i},
-        data_rvalid_i & pending_dside_accesses_q[0].is_read)
+    if (SecureIbex) begin : g_secure_ibex_mem_assert
+      // For SecureIbex responses to both writes and reads must specify rdata and rdata_intg (for
+      // writes rdata is effectively ignored by rdata_intg still checked against rdata)
+      `ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i},
+          data_rvalid_i)
+    end else begin : g_no_secure_ibex_mem_assert
+      // Without SecureIbex data_rdata_i and data_rdata_intg_i are only relevant to reads. Check
+      // neither are X on a response to a read.
+      `ASSERT_KNOWN_IF(IbexDataRPayloadX, {data_rdata_i, data_rdata_intg_i},
+          data_rvalid_i & pending_dside_accesses_q[0].is_read)
+    end
 
     // data_err_i relevant to both reads and writes. Check it isn't X on any response.
     `ASSERT_KNOWN_IF(IbexDataRErrPayloadX, data_err_i, data_rvalid_i)
@@ -1125,4 +1153,8 @@ module ibex_top import ibex_pkg::*; #(
 
   `ASSERT_KNOWN(IbexDebugReqX, debug_req_i)
   `ASSERT_KNOWN(IbexFetchEnableX, fetch_enable_i)
+
+  // Dummy instructions may only write to register 0, which is a special register when dummy
+  // instructions are enabled.
+  `ASSERT(WaddrAZeroForDummyInstr, dummy_instr_id && rf_we_wb |-> rf_waddr_wb == '0)
 endmodule

@@ -462,11 +462,11 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
 
     `DV_FCOV_EXPR_SEEN(warl_check_cpuctrl,
                        fcov_csr_write &&
-                       (cs_registers_i.u_cpuctrl_csr.wr_data_i !=
+                       (cs_registers_i.u_cpuctrlsts_part_csr.wr_data_i !=
                        cs_registers_i.csr_wdata_int))
 
-    `DV_FCOV_EXPR_SEEN(double_fault, cs_registers_i.cpuctrl_d.double_fault_seen)
-    `DV_FCOV_EXPR_SEEN(icache_enable, cs_registers_i.cpuctrl_d.icache_enable)
+    `DV_FCOV_EXPR_SEEN(double_fault, cs_registers_i.cpuctrlsts_part_d.double_fault_seen)
+    `DV_FCOV_EXPR_SEEN(icache_enable, cs_registers_i.cpuctrlsts_part_d.icache_enable)
 
     cp_irq_pending: coverpoint id_stage_i.irq_pending_i | id_stage_i.irq_nm_i;
     cp_debug_req: coverpoint id_stage_i.controller_i.fcov_debug_req;
@@ -498,9 +498,9 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
     `DV_FCOV_EXPR_SEEN(debug_entry_id, id_stage_i.controller_i.fcov_debug_entry_id)
     `DV_FCOV_EXPR_SEEN(pipe_flush, id_stage_i.controller_i.fcov_pipe_flush)
     `DV_FCOV_EXPR_SEEN(single_step_taken, id_stage_i.controller_i.fcov_debug_single_step_taken)
+    `DV_FCOV_EXPR_SEEN(single_step_exception, id_stage_i.controller_i.do_single_step_d &&
+                                              id_stage_i.controller_i.fcov_pipe_flush)
     `DV_FCOV_EXPR_SEEN(insn_trigger_enter_debug, instr_id_matches_trigger_q)
-    `DV_FCOV_EXPR_SEEN(insn_trigger_exception, instr_id_matches_trigger_q &&
-                                               id_stage_i.controller_i.fcov_pipe_flush)
 
     cp_nmi_taken: coverpoint ((fcov_irqs[5] || fcov_irqs[4])) iff
                              (id_stage_i.controller_i.fcov_interrupt_taken);
@@ -551,7 +551,17 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
                                      (id_stage_i.controller_i.fcov_debug_single_step_taken) {
       // Not certain if InstrCategoryOtherIllegal can occur. Put it in illegal_bins for now and
       // revisit if any issues are seen
-      illegal_bins illegal = {InstrCategoryOther, InstrCategoryOtherIllegal};
+      illegal_bins illegal =
+        {InstrCategoryOther, InstrCategoryNone, InstrCategoryOtherIllegal
+         // [Debug Spec v1.0.0-STABLE, p.95]
+         // > dret is an instruction which only has meaning while Debug Mode
+         // We want to step over this to at-least specify how the Ibex does behave.
+         //
+         // [Debug Spec v1.0.0-STABLE, p.50]
+         // > If the instruction being stepped over is wfi and would normally stall the hart,
+         // > then instead the instruction is treated as nop.
+         // Again this will be useful coverage to verify we are testing this behaviour.
+        };
     }
 
     // Only sample the bus error from the first access of misaligned load/store when we are in

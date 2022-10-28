@@ -62,7 +62,7 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
 
     // TODO: Ensure log file on reset gets append rather than overwrite?
     cosim_handle = spike_cosim_init(cfg.isa_string, cfg.start_pc, cfg.start_mtvec, cfg.log_file,
-      cfg.pmp_num_regions, cfg.pmp_granularity);
+      cfg.pmp_num_regions, cfg.pmp_granularity, cfg.mhpm_counter_num, cfg.secure_ibex, cfg.icache);
 
     if (cosim_handle == null) begin
       `uvm_fatal(`gfn, "Could not initialise cosim")
@@ -131,6 +131,8 @@ class ibex_cosim_scoreboard extends uvm_scoreboard;
         riscv_cosim_set_csr(cosim_handle, CSR_MHPMCOUNTER3 + i, rvfi_instr.mhpmcounters[i]);
         riscv_cosim_set_csr(cosim_handle, CSR_MHPMCOUNTER3H + i, rvfi_instr.mhpmcountersh[i]);
       end
+
+      riscv_cosim_set_ic_scr_key_valid(cosim_handle, rvfi_instr.ic_scr_key_valid);
 
       if (!riscv_cosim_step(cosim_handle, rvfi_instr.rd_addr, rvfi_instr.rd_wdata, rvfi_instr.pc,
                             rvfi_instr.trap)) begin

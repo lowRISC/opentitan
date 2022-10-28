@@ -246,33 +246,41 @@ class fetch_enable_seq extends core_base_new_seq#(irq_seq_item);
   `uvm_object_utils(fetch_enable_seq)
   `uvm_object_new
 
-  ibex_pkg::fetch_enable_t fetch_enable;
-  int unsigned on_bias_pc = 50;
   int unsigned max_delay = 500;
-  int unsigned min_delay = 75;
-  rand int unsigned off_delay = 0;
+  int unsigned min_delay = 1;
+  bit all_off_values = 0;
 
   virtual task body();
-    dut_vif.dut_cb.fetch_enable <= ibex_pkg::FetchEnableOn;
-    if(off_delay == 0) begin
-      `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(off_delay,
-        // with {"CONSTRAINTS"}
-        off_delay inside {[min_delay : max_delay]};)
+    // SecureIbex configurations use a MUBI value for fetch enable so there are multiple off values,
+    // all should be tested. For other configurations only the bottom bit of the signal is used so
+    // there is a single off value
+    if (!uvm_config_db#(bit)::get(null, "", "SecureIbex", all_off_values)) begin
+      all_off_values = 0;
     end
+
+    dut_vif.dut_cb.fetch_enable <= ibex_pkg::IbexMuBiOn;
     super.body();
   endtask: body
 
   virtual task send_req();
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(fetch_enable,
-      // with {"CONSTRAINTS"}
-      fetch_enable dist {ibex_pkg::FetchEnableOn :/       on_bias_pc,
-                                          [0:15] :/ 100 - on_bias_pc};)
-    `uvm_info(`gfn, "Sending fetch enable request", UVM_LOW)
-    `uvm_info(`gfn, $sformatf("fetch_enable = %d", fetch_enable), UVM_LOW)
+    ibex_pkg::ibex_mubi_t fetch_enable_off;
+    int unsigned          off_delay;
 
-    dut_vif.dut_cb.fetch_enable <= fetch_enable;
+    if (all_off_values) begin
+      // Randomise the MUBI fetch_enable value to be one of the many possible off values
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(fetch_enable_off,
+        fetch_enable_off != ibex_pkg::IbexMuBiOn;)
+    end else begin
+      // Otherwise use single fixed off value
+      fetch_enable_off = ibex_pkg::IbexMuBiOff;
+    end
+
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(off_delay,
+      off_delay inside {[min_delay : max_delay]};)
+
+    dut_vif.dut_cb.fetch_enable <= fetch_enable_off;
     clk_vif.wait_clks(off_delay);
-    dut_vif.dut_cb.fetch_enable <= ibex_pkg::FetchEnableOn;
+    dut_vif.dut_cb.fetch_enable <= ibex_pkg::IbexMuBiOn;
 
   endtask
 

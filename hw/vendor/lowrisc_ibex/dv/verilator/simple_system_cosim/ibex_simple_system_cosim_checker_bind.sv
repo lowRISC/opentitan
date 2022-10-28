@@ -3,8 +3,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module ibex_simple_system_cosim_checker_bind;
-  bind ibex_simple_system ibex_simple_system_cosim_checker
-    u_ibex_simple_system_cosim_checker_bind (
+  bind ibex_simple_system ibex_simple_system_cosim_checker#(
+      .SecureIbex,
+      .ICache,
+      .PMPEnable,
+      .PMPGranularity,
+      .PMPNumRegions,
+      .MHPMCounterNum
+    ) u_ibex_simple_system_cosim_checker_bind (
       .clk_i            (IO_CLK),
       .rst_ni           (IO_RST_N),
 

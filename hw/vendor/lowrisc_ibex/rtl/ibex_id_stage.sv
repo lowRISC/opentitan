@@ -44,6 +44,7 @@ module ibex_id_stage #(
   output logic                      instr_first_cycle_id_o,
   output logic                      instr_valid_clear_o,   // kill instr in IF-ID reg
   output logic                      id_in_ready_o,         // ID stage is ready for next instr
+  input  logic                      instr_exec_i,
   output logic                      icache_inval_o,
 
   // Jumps and branches
@@ -130,11 +131,13 @@ module ibex_id_stage #(
   output logic                      nmi_mode_o,
 
   input  logic                      lsu_load_err_i,
+  input  logic                      lsu_load_resp_intg_err_i,
   input  logic                      lsu_store_err_i,
-  input  logic                      lsu_load_intg_err_i,
+  input  logic                      lsu_store_resp_intg_err_i,
 
   // Debug Signal
   output logic                      debug_mode_o,
+  output logic                      debug_mode_entering_o,
   output ibex_pkg::dbg_cause_e      debug_cause_o,
   output logic                      debug_csr_save_o,
   input  logic                      debug_req_i,
@@ -223,6 +226,8 @@ module ibex_id_stage #(
   logic        stall_wb;
   logic        flush_id;
   logic        multicycle_done;
+
+  logic        mem_resp_intg_err;
 
   // Immediate decoding and sign extension
   logic [31:0] imm_i_type;
@@ -535,8 +540,7 @@ module ibex_id_stage #(
   // Controller //
   ////////////////
 
-  // "Executing DRET outside of Debug Mode causes an illegal instruction exception."
-  // [Debug Spec v0.13.2, p.41]
+  // Executing DRET outside of Debug Mode causes an illegal instruction exception.
   assign illegal_dret_insn  = dret_insn_dec & ~debug_mode_o;
   // Some instructions can only be executed in M-Mode
   assign illegal_umode_insn = (priv_mode_i != PRIV_LVL_M) &
@@ -545,6 +549,8 @@ module ibex_id_stage #(
 
   assign illegal_insn_o = instr_valid_i &
       (illegal_insn_dec | illegal_csr_insn_i | illegal_dret_insn | illegal_umode_insn);
+
+  assign mem_resp_intg_err = lsu_load_resp_intg_err_i | lsu_store_resp_intg_err_i;
 
   ibex_controller #(
     .WritebackStage (WritebackStage),
@@ -579,6 +585,7 @@ module ibex_id_stage #(
     .instr_valid_clear_o(instr_valid_clear_o),
     .id_in_ready_o      (id_in_ready_o),
     .controller_run_o   (controller_run),
+    .instr_exec_i       (instr_exec_i),
 
     // to prefetcher
     .instr_req_o           (instr_req_o),
@@ -589,12 +596,12 @@ module ibex_id_stage #(
     .exc_cause_o           (exc_cause_o),
 
     // LSU
-    .lsu_addr_last_i(lsu_addr_last_i),
-    .load_err_i     (lsu_load_err_i),
-    .load_intg_err_i(lsu_load_intg_err_i),
-    .store_err_i    (lsu_store_err_i),
-    .wb_exception_o (wb_exception),
-    .id_exception_o (id_exception),
+    .lsu_addr_last_i    (lsu_addr_last_i),
+    .load_err_i         (lsu_load_err_i),
+    .mem_resp_intg_err_i(mem_resp_intg_err),
+    .store_err_i        (lsu_store_err_i),
+    .wb_exception_o     (wb_exception),
+    .id_exception_o     (id_exception),
 
     // jump/branch control
     .branch_set_i     (branch_set),
@@ -619,14 +626,15 @@ module ibex_id_stage #(
     .priv_mode_i          (priv_mode_i),
 
     // Debug Signal
-    .debug_mode_o       (debug_mode_o),
-    .debug_cause_o      (debug_cause_o),
-    .debug_csr_save_o   (debug_csr_save_o),
-    .debug_req_i        (debug_req_i),
-    .debug_single_step_i(debug_single_step_i),
-    .debug_ebreakm_i    (debug_ebreakm_i),
-    .debug_ebreaku_i    (debug_ebreaku_i),
-    .trigger_match_i    (trigger_match_i),
+    .debug_mode_o         (debug_mode_o),
+    .debug_mode_entering_o(debug_mode_entering_o),
+    .debug_cause_o        (debug_cause_o),
+    .debug_csr_save_o     (debug_csr_save_o),
+    .debug_req_i          (debug_req_i),
+    .debug_single_step_i  (debug_single_step_i),
+    .debug_ebreakm_i      (debug_ebreakm_i),
+    .debug_ebreaku_i      (debug_ebreaku_i),
+    .trigger_match_i      (trigger_match_i),
 
     .stall_id_i(stall_id),
     .stall_wb_i(stall_wb),

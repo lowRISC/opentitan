@@ -425,10 +425,11 @@ package ibex_pkg;
   // CSRs
   typedef enum logic[11:0] {
     // Machine information
-    CSR_MVENDORID = 12'hF11,
-    CSR_MARCHID   = 12'hF12,
-    CSR_MIMPID    = 12'hF13,
-    CSR_MHARTID   = 12'hF14,
+    CSR_MVENDORID  = 12'hF11,
+    CSR_MARCHID    = 12'hF12,
+    CSR_MIMPID     = 12'hF13,
+    CSR_MHARTID    = 12'hF14,
+    CSR_MCONFIGPTR = 12'hF15,
 
     // Machine trap setup
     CSR_MSTATUS   = 12'h300,
@@ -436,6 +437,10 @@ package ibex_pkg;
     CSR_MIE       = 12'h304,
     CSR_MTVEC     = 12'h305,
     CSR_MCOUNTEREN= 12'h306,
+    CSR_MSTATUSH  = 12'h310,
+
+    CSR_MENVCFG   = 12'h30A,
+    CSR_MENVCFGH  = 12'h31A,
 
     // Machine trap handling
     CSR_MSCRATCH  = 12'h340,
@@ -466,6 +471,8 @@ package ibex_pkg;
     CSR_PMPADDR14 = 12'h3BE,
     CSR_PMPADDR15 = 12'h3BF,
 
+    CSR_SCONTEXT  = 12'h5A8,
+
     // ePMP control
     CSR_MSECCFG   = 12'h747,
     CSR_MSECCFGH  = 12'h757,
@@ -476,7 +483,7 @@ package ibex_pkg;
     CSR_TDATA2    = 12'h7A2,
     CSR_TDATA3    = 12'h7A3,
     CSR_MCONTEXT  = 12'h7A8,
-    CSR_SCONTEXT  = 12'h7AA,
+    CSR_MSCONTEXT = 12'h7AA,
 
     // Debug/trace
     CSR_DCSR      = 12'h7b0,
@@ -579,7 +586,7 @@ package ibex_pkg;
     CSR_MHPMCOUNTER29H = 12'hB9D,
     CSR_MHPMCOUNTER30H = 12'hB9E,
     CSR_MHPMCOUNTER31H = 12'hB9F,
-    CSR_CPUCTRL        = 12'h7C0,
+    CSR_CPUCTRLSTS     = 12'h7C0,
     CSR_SECURESEED     = 12'h7C1
   } csr_num_e;
 
@@ -627,6 +634,11 @@ package ibex_pkg;
   // commit).
   localparam logic [31:0] CSR_MIMPID_VALUE = 32'b0;
 
+  // Machine Configuration Pointer
+  // 0 indicates the configuration data structure does not eixst. Ibex implementors may wish to
+  // alter this to point to their system specific configuration data structure.
+  localparam logic [31:0] CSR_MCONFIGPTR_VALUE = 32'b0;
+
   // These LFSR parameters have been generated with
   // $ opentitan/util/design/gen-lfsr-seed.py --width 32 --seed 2480124384 --prefix ""
   parameter int LfsrWidth = 32;
@@ -641,14 +653,14 @@ package ibex_pkg;
   parameter logic [SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault =
       64'hf79780bc735f3843;
 
-  // Fetch enable. Mult-bit signal used for security hardening. For non-secure implementation all
-  // bits other than the bottom bit are ignored.
-  typedef logic [3:0] fetch_enable_t;
+  // Mult-bit signal used for security hardening. For non-secure implementation all bits other than
+  // the bottom bit are ignored.
+  typedef logic [3:0] ibex_mubi_t;
 
   // Note that if adjusting these parameters it is assumed the bottom bit is set for On and unset
-  // for Off. This allows the use of FetchEnableOn/FetchEnableOff to work for both secure and
-  // non-secure Ibex. If this assumption is broken the RTL that uses the fetch_enable signal within
-  // `ibex_core` may need adjusting.
-  parameter fetch_enable_t FetchEnableOn  = 4'b0101;
-  parameter fetch_enable_t FetchEnableOff = 4'b1010;
+  // for Off. This allows the use of IbexMuBiOn/IbexMuBiOff to work for both secure and non-secure
+  // Ibex. If this assumption is broken the RTL that uses ibex_mubi_t types such as the fetch_enable
+  // and core_busy signals within `ibex_core` may need adjusting.
+  parameter ibex_mubi_t IbexMuBiOn  = 4'b0101;
+  parameter ibex_mubi_t IbexMuBiOff = 4'b1010;
 endpackage

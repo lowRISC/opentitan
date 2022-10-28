@@ -46,6 +46,7 @@ IBEX_CONFIG         := opentitan
 all: collect_results $(if $(filter 1,$(COV)),merge_cov,)
 
 # Build Stages
+.PHONY: core_config
 .PHONY: instr_gen_build
 .PHONY: instr_gen_run
 .PHONY: instr_gen_compile
@@ -103,15 +104,6 @@ clean:
 	rm -f $(EXT_DIR)/riscv_core_setting.sv
 	rm -rf $(OUT-DIR)
 
-.PHONY: core_config
-core_config:
-	@cp $(EXT_DIR)/riscv_core_setting.sv.default $(EXT_DIR)/riscv_core_setting.sv
-	@if [[ "$(IBEX_CONFIG)" == "small" ]] || \
-	    [[ "$(IBEX_CONFIG)" == "experimental-branch-predictor" ]]; \
-	then \
-	  patch -u $(EXT_DIR)/riscv_core_setting.sv -i $(EXT_DIR)/riscv_core_setting.nopmp.sv.patch; \
-	fi
-
 ###############################################################################
 # Setup the metadata for the regression, which can then be accessed by
 # all python scripts and testcases
@@ -159,6 +151,10 @@ comp-results = $(addsuffix trr.yaml,$(ts-dirs))
 rtl-sim-logfile := rtl_sim.log
 
 ###
+CORE-CONFIG-STAMP = $(METADATA-DIR)/core.config.stamp
+core_config: $(CORE-CONFIG-STAMP)
+core-config-var-deps := IBEX_CONFIG
+
 INSTR-GEN-BUILD-STAMP = $(METADATA-DIR)/instr.gen.build.stamp
 instr_gen_build: $(METADATA-DIR)/instr.gen.build.stamp
 instr-gen-build-var-deps := SIMULATOR SIGNATURE_ADDR  # Rebuild if these change
@@ -248,8 +244,24 @@ instr-gen-build-vars-prereq = \
 # Finally, $(instr-gen-build-vars-prereq) becomes a dependency of our target.
 ################## END EXAMPLE ###################
 
+core-config-vars-path := $(BUILD-DIR)/.cc.vars.mk
+-include $(core-config-vars-path)
+
+core-config-var-prereq = $(call vars-prereq,gen,Generate core configuration file,$(core-config-var-deps))
+$(CORE-CONFIG-STAMP): \
+  $(core-config-var-prereq) ./riscv_dv_extension/riscv_core_setting.tpl.sv \
+  scripts/render_config_template.py \
+  | $(BUILD-DIR)
+	@echo Generating core configuration file
+	$(verb)env PYTHONPATH=$(PYTHONPATH) \
+	  scripts/render_config_template.py \
+	    --dir-metadata $(METADATA-DIR) \
+	    $(EXT_DIR)/riscv_core_setting.tpl.sv > $(EXT_DIR)/riscv_core_setting.sv
+	$(call dump-vars,$(core-config-vars-path),gen,$(core-config-var-deps))
+	@touch $@
+
 $(METADATA-DIR)/instr.gen.build.stamp: \
-  $(instr-gen-build-vars-prereq) $(riscv-dv-files) core_config \
+  $(instr-gen-build-vars-prereq) $(riscv-dv-files) $(CORE-CONFIG-STAMP) \
   scripts/build_instr_gen.py \
   | $(BUILD-DIR)
 	@echo Building randomized test generator

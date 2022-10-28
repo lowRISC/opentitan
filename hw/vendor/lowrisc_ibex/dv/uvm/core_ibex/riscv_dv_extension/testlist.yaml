@@ -35,6 +35,9 @@
   gen_opts: >
     +instr_cnt=10000
     +num_of_sub_program=5
+    +gen_all_csrs_by_default=1
+    +add_csr_write=MSTATUS,MEPC,MCAUSE,MTVAL,0x7c0
+    +no_csr_instr=0
   rtl_test: core_ibex_base_test
 
 - test: riscv_rand_jump_test
@@ -84,6 +87,8 @@
     +directed_instr_2=riscv_multi_page_load_store_instr_stream,40
     +directed_instr_3=riscv_load_store_rand_addr_instr_stream,40
   rtl_test: core_ibex_base_test
+  sim_opts: >
+    +enable_bad_intg_on_uninit_access=0
 
 - test: riscv_illegal_instr_test
   description: >
@@ -209,6 +214,7 @@
   sim_opts: >
     +require_signature_addr=1
     +enable_debug_seq=1
+    +enable_bad_intg_on_uninit_access=0
   compare_opts:
     compare_final_value_only: 1
     verbose: 1
@@ -357,6 +363,7 @@
     +require_signature_addr=1
     +enable_debug_seq=1
     +enable_irq_multiple_seq=1
+    +enable_bad_intg_on_uninit_access=0
   compare_opts:
     compare_final_value_only: 1
 
@@ -383,6 +390,7 @@
   rtl_test: core_ibex_assorted_traps_interrupts_debug_test
   sim_opts: >
     +require_signature_addr=1
+    +enable_bad_intg_on_uninit_access=0
 
 - test: riscv_single_interrupt_test
   description: >
@@ -439,6 +447,7 @@
     +enable_irq_multiple_seq=1
     +enable_irq_nmi_seq=1
     +enable_nested_irq=1
+    +enable_bad_intg_on_uninit_access=0
   compare_opts:
     compare_final_value_only: 1
 
@@ -543,49 +552,45 @@
     +instr_cnt=10000
     +randomize_csr=1
     +enable_unaligned_load_store=1
+    +suppress_pmp_setup=1
   rtl_test: core_ibex_mem_error_test
   sim_opts: >
     +require_signature_addr=1
   compare_opts:
     compare_final_value_only: 1
 
-- test: riscv_perf_counter_test
-  description: >
-    Dump performance counters at EOT for any analysis
-  iterations: 5
-  gen_test: riscv_rand_instr_test
-  gen_opts: >
-    +require_signature_addr=1
-    +instr_cnt=10000
-    +num_of_sub_program=5
-  rtl_test: core_ibex_perf_test
-  sim_opts: >
-    +require_signature_addr=1
-
 - test: riscv_debug_single_step_test
   description: >
-    Randomly assert debug_req_i, and set dcsr.step to make ibex execute one isntruction and then re-enter debug mode
+    Randomly assert debug_req_i, and set dcsr.step to make ibex execute one insn then re-enter debug mode
+    The riscv-dv plusarg +enable_debug_single_step adds a short sequence of assembly (riscv_debug_rom_gen::gen_single_step_logic)
+    that single-steps for a randomized number of sequential instructions. It stops setting dcsr.step after
+    the counter reaches 0, and then starts the process again the next time an external debug stimulus is encountered.
   iterations: 15
   gen_test: riscv_instr_base_test
   gen_opts: >
     +require_signature_addr=1
     +gen_debug_section=1
-    +no_ebreak=1
+    +no_dret=0
+    +no_ebreak=0
+    +no_ecall=0
     +no_branch_jump=0
     +instr_cnt=10000
-    +no_csr_instr=1
-    +no_fence=1
-    +num_of_sub_program=2
+    +no_csr_instr=0
     +randomize_csr=1
+    +enable_illegal_csr_instruction=1
+    +enable_access_invalid_csr_level=1
+    +no_fence=0
+    +no_wfi=0
+    +num_of_sub_program=1
     +enable_debug_single_step=1
+    +illegal_instr_ratio=5
+    +hint_instr_ratio=1
   rtl_test: core_ibex_debug_single_step_test
   sim_opts: >
     +require_signature_addr=1
     +max_interval=1500
     +enable_debug_seq=1
-  compare_opts:
-    compare_final_value_only: 1
-    verbose: 1
+    +enable_bad_intg_on_uninit_access=0
 
 - test: riscv_reset_test
   description: >
@@ -731,8 +736,13 @@
     +directed_instr_0=riscv_load_store_rand_addr_instr_stream,50
     +mseccfg=MML:0,MMWP:0,RLB:0
   rtl_test: core_ibex_base_test
+  sim_opts: >
+    +enable_bad_intg_on_uninit_access=0
   rtl_params:
     PMPEnable: 1
+  sim_opts: >
+    +is_double_fault_detected_fatal=0
+    +enable_bad_intg_on_uninit_access=0
 
 - test: riscv_pmp_full_random_test
   desc: >
@@ -744,12 +754,20 @@
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
-    +pmp_max_offset=00024000
     +pmp_randomize=1
-    +pmp_allow_addr_overlap=1
+    +pmp_max_offset=00040000
+    +pmp_allow_illegal_tor=1
+    +directed_instr_0=riscv_load_store_rand_instr_stream,40
+    +directed_instr_1=riscv_load_store_hazard_instr_stream,40
+    +directed_instr_2=riscv_multi_page_load_store_instr_stream,40
+    +directed_instr_3=riscv_load_store_rand_addr_instr_stream,40
+  sim_opts: >
+    +is_double_fault_detected_fatal=0
+    +enable_bad_intg_on_uninit_access=0
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
+  timeout_s: 180
 
 - test: riscv_epmp_mml_test
   desc: >
@@ -817,6 +835,8 @@
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
+  sim_opts: >
+    +is_double_fault_detected_fatal=0
 
 - test: riscv_epmp_mml_read_only_test
   desc: >
@@ -847,6 +867,8 @@
     +pmp_region_15=L:1,X:1,W:1,R:1
     +enable_write_pmp_csr=1
     +mseccfg=MML:1,MMWP:0,RLB:0
+  sim_opts: >
+    +is_double_fault_detected_fatal=0
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
@@ -868,6 +890,8 @@
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
+  sim_opts: >
+    +is_double_fault_detected_fatal=0
 
 - test: riscv_epmp_rlb_test
   desc: >

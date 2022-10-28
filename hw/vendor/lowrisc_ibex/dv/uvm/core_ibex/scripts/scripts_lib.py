@@ -25,6 +25,7 @@ def run_one(verbose: bool,
             cmd: List[str],
             redirect_stdstreams: Optional[Union[str, pathlib.Path, IOBase]] = None,
             timeout_s: Optional[int] = None,
+            reraise: bool = False,
             env: Dict[str, str] = None) -> int:
     """Run a command, returning its retcode.
 
@@ -52,18 +53,17 @@ def run_one(verbose: bool,
                 f"redirect_stdstream called as {redirect_stdstreams} "
                 f"but that argument is invalid.")
 
+    cmd_str = ' '.join(shlex.quote(w) for w in cmd)
     if verbose:
         # The equivalent of bash -x
-        cmd_str = ' '.join(shlex.quote(w) for w in cmd)
-        redir_cmd = cmd_str
         if redirect_stdstreams is not None:
             if isinstance(redirect_stdstreams, str):
                 redir = f'>{shlex.quote(redirect_stdstreams)}'
             else:
                 redir = f'>>{shlex.quote(redirect_stdstreams.name)}'
-            redir_cmd = f'{cmd_str} {redir} 2>&1'
+            cmd_str = f'{cmd_str} {redir} 2>&1'
 
-        print('+ ' + redir_cmd, file=sys.stderr)
+        print('+ ' + cmd_str, file=sys.stderr)
 
         # Try to print the command to the file as well. This will fail if it's
         # a binary file: ignore the failure.
@@ -91,9 +91,12 @@ def run_one(verbose: bool,
         print(e)
         # print(ps.communicate()[0])
         return(1)
-    except subprocess.TimeoutExpired:
-        print("Error: Timeout[{}s]: {}".format(timeout_s, cmd))
-        return(1)
+    except subprocess.TimeoutExpired as e:
+        print("Error: Timeout[{}s]: {}".format(timeout_s, cmd_str))
+        if reraise:
+            raise e
+        else:
+            return(1)
     finally:
         if needs_closing:
             stdstream_dest.close()

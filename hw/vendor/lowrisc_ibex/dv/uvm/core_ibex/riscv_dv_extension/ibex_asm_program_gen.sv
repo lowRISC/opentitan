@@ -11,6 +11,50 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
   `uvm_object_utils(ibex_asm_program_gen)
   `uvm_object_new
 
+  virtual function void gen_program();
+    default_include_csr_write = {
+      MSCRATCH,
+      MVENDORID,
+      MARCHID,
+      MHARTID,
+      MCONFIGPTR,
+      MENVCFG,
+      MSTATUSH,
+      MIMPID,
+      MCYCLE,
+      MCYCLEH,
+      MHPMEVENT3,
+      MHPMEVENT4,
+      MHPMEVENT5,
+      MHPMEVENT6,
+      MHPMEVENT7,
+      MHPMEVENT8,
+      MHPMEVENT9,
+      MHPMEVENT10,
+      MHPMCOUNTER3,
+      MHPMCOUNTER4,
+      MHPMCOUNTER5,
+      MHPMCOUNTER6,
+      MHPMCOUNTER7,
+      MHPMCOUNTER8,
+      MHPMCOUNTER9,
+      MHPMCOUNTER10,
+      MHPMCOUNTER3H,
+      MHPMCOUNTER4H,
+      MHPMCOUNTER5H,
+      MHPMCOUNTER6H,
+      MHPMCOUNTER7H,
+      MHPMCOUNTER8H,
+      MHPMCOUNTER9H,
+      MHPMCOUNTER10H,
+      12'h7c1 // SECURESEED
+    };
+
+    riscv_csr_instr::create_csr_filter(cfg);
+
+    super.gen_program();
+  endfunction
+
   virtual function void gen_program_header();
     // Override the mstatus_mprv config because there is no current way to randomize writing to
     // mstatus.mprv in riscv-dv (it's constrained by set_mstatus_mprv argument to have either

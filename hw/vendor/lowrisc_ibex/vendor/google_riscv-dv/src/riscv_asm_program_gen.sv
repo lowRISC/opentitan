@@ -829,8 +829,15 @@ class riscv_asm_program_gen extends uvm_object;
   virtual function void setup_pmp(int hart);
     string instr[$];
     if (riscv_instr_pkg::support_pmp) begin
-      cfg.pmp_cfg.setup_pmp();
-      cfg.pmp_cfg.gen_pmp_instr('{cfg.scratch_reg, cfg.gpr[0]}, instr);
+      if(cfg.pmp_cfg.suppress_pmp_setup) begin
+        // When PMP setup is suppressed generate a configuration that gives unrestricted access to
+        // all memory for both M and U mode
+        cfg.pmp_cfg.gen_pmp_enable_all(cfg.scratch_reg, instr);
+      end else begin
+        cfg.pmp_cfg.setup_pmp();
+        cfg.pmp_cfg.gen_pmp_instr('{cfg.scratch_reg, cfg.gpr[0]}, instr);
+      end
+
       gen_section(get_label("pmp_setup", hart), instr);
     end
   endfunction
@@ -841,7 +848,7 @@ class riscv_asm_program_gen extends uvm_object;
   virtual function void gen_pmp_csr_write(int hart);
     string instr[$];
     if (riscv_instr_pkg::support_pmp && cfg.pmp_cfg.enable_write_pmp_csr) begin
-      cfg.pmp_cfg.gen_pmp_write_test({cfg.scratch_reg, cfg.pmp_reg}, instr);
+      cfg.pmp_cfg.gen_pmp_write_test({cfg.scratch_reg, cfg.pmp_reg[0]}, instr);
       gen_section(get_label("pmp_csr_write_test", hart), instr);
     end
   endfunction
@@ -1209,7 +1216,8 @@ class riscv_asm_program_gen extends uvm_object;
     gen_signature_handshake(instr, CORE_STATUS, INSTR_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     if (cfg.pmp_cfg.enable_pmp_exception_handler) begin
-      cfg.pmp_cfg.gen_pmp_exception_routine({cfg.gpr, cfg.scratch_reg, cfg.pmp_reg},
+      cfg.pmp_cfg.gen_pmp_exception_routine({cfg.gpr, cfg.scratch_reg, cfg.pmp_reg[0],
+                                             cfg.pmp_reg[1]},
                                             INSTRUCTION_ACCESS_FAULT,
                                             instr);
     end
@@ -1224,7 +1232,8 @@ class riscv_asm_program_gen extends uvm_object;
     gen_signature_handshake(instr, CORE_STATUS, LOAD_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     if (cfg.pmp_cfg.enable_pmp_exception_handler) begin
-      cfg.pmp_cfg.gen_pmp_exception_routine({cfg.gpr, cfg.scratch_reg, cfg.pmp_reg},
+      cfg.pmp_cfg.gen_pmp_exception_routine({cfg.gpr, cfg.scratch_reg, cfg.pmp_reg[0],
+                                             cfg.pmp_reg[1]},
                                             LOAD_ACCESS_FAULT,
                                             instr);
     end
@@ -1239,7 +1248,8 @@ class riscv_asm_program_gen extends uvm_object;
     gen_signature_handshake(instr, CORE_STATUS, STORE_FAULT_EXCEPTION);
     gen_signature_handshake(.instr(instr), .signature_type(WRITE_CSR), .csr(MCAUSE));
     if (cfg.pmp_cfg.enable_pmp_exception_handler) begin
-      cfg.pmp_cfg.gen_pmp_exception_routine({cfg.gpr, cfg.scratch_reg, cfg.pmp_reg},
+      cfg.pmp_cfg.gen_pmp_exception_routine({cfg.gpr, cfg.scratch_reg, cfg.pmp_reg[0],
+                                             cfg.pmp_reg[1]},
                                             STORE_AMO_ACCESS_FAULT,
                                             instr);
     end

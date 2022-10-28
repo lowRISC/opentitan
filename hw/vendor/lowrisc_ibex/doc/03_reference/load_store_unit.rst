@@ -61,6 +61,9 @@ The core can optionally generate and verify check bits sent alongside the data f
 Checkbits are generated and checked using an inverted 39/32 Hsaio code (see :file:`vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_enc.sv`).
 An :ref:`internal interrupt<internal-interrupts>` will be generated and a bus major alert signalled if there is a mismatch.
 Where load data has bad checkbits the write to the load's destination register will be suppressed.
+Ibex checks the integrity against the response data for both loads and stores.
+For stores the response data is otherwise ignored so the data can be any value provided the integrity is valid (``data_rdata_intg_i`` must match with ``data_rdata_i``).
+It is recommended for write responses some fixed value is placed on ``data_rdata_i`` and ``data_rdata_intg_i`` by the memory system Ibex is connected to in configurations where integrity is used.
 
 This feature is only used if the core is configured with the SecureIbex parameter set.
 For all other configurations, the integrity signals can be ignored.

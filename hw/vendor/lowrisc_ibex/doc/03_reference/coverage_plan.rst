@@ -222,10 +222,8 @@ Furthermore they can all occur together and must be appropriately prioritised (c
 
 * ``cp_debug_req`` - External debug request.
 * ``cp_single_step_taken`` - Instruction executed when debug single step enabled.
+* ``cp_single_step_exception`` - Single step over an instruction that takes an exception.
 * ``cp_insn_trigger_enter_debug`` - Instruction matches hardware trigger point.
-
-  * ``cp_insn_trigger_exception`` - Instruction matching trigger point causes exception
-
 * ``cp_debug_mode`` - Ibex operating in debug mode.
 * ``irq_wfi_cross``, ``debug_wfi_cross`` - Debug and Interrupt whilst sleeping with WFI
 
@@ -250,6 +248,8 @@ PMP
   * TOR
   * NA4
   * NAPOT
+
+* ``cp_napot_addr_modes`` - When NAPOT is enabled check that each address mode is seen at least once.
 
 * ``cp_region_priv_bits`` - Each region configured with all possible permissions including locked/unlocked.
 

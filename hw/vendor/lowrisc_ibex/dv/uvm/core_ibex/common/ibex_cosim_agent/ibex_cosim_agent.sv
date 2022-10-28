@@ -44,4 +44,11 @@ class ibex_cosim_agent extends uvm_agent;
   function void write_mem_byte(bit [31:0] addr, bit [7:0] d);
     riscv_cosim_write_mem_byte(scoreboard.cosim_handle, addr, d);
   endfunction
+
+  function void write_mem_word(bit [31:0] addr, bit [DATA_WIDTH-1:0] d);
+    for (int i = 0; i < DATA_WIDTH / 8; i++) begin
+      write_mem_byte(addr + i, d[7:0]);
+      d = d >> 8;
+    end
+  endfunction
 endclass : ibex_cosim_agent
