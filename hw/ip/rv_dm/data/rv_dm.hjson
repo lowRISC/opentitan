@@ -129,19 +129,15 @@
       // (debug ROM), some memory mapped CSRs and a RAM portion (program buffer). This region is
       // accessible over the TL interface only if debug mode is active.
       { skipto: "0x100" }
-      { multireg: {
-          cname: "HALTED"
-          name:  "HALTED"
-          desc: "Write to this address to acknowledge that the core has halted.",
-          count: "NrHarts"
-          swaccess: "wo",
-          hwaccess: "hrw", // updated by write to RESUMING
-          fields: [
-            { bits: "0",
-              resval: "0"
-            },
-          ]
-        }
+      { name:  "HALTED"
+        desc: "Write to this address to acknowledge that the core has halted.",
+        swaccess: "wo",
+        hwaccess: "hrw", // updated by write to RESUMING
+        fields: [
+          { bits: "0",
+            resval: "0" // core ID value
+          },
+        ]
       },
       { name: "GOING",
         desc: "Write to this address to acknowledge that the core is executing.",
@@ -153,19 +149,15 @@
           },
         ]
       },
-      { multireg: {
-          cname: "RESUMING"
-          name:  "RESUMING"
-          desc: "Write to this address to acknowledge that the core is resuming non-debug operation.",
-          count: "NrHarts"
-          swaccess: "wo",
-          hwaccess: "hro",
-          fields: [
-            { bits: "0",
-              resval: "0"
-            },
-          ]
-        }
+     {  name:  "RESUMING"
+        desc: "Write to this address to acknowledge that the core is resuming non-debug operation.",
+        swaccess: "wo",
+        hwaccess: "hro",
+        fields: [
+          { bits: "0",
+            resval: "0" // core ID value
+          },
+        ]
       },
       { name: "EXCEPTION",
         desc: "An exception was triggered while the core was in debug mode.",

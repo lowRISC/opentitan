@@ -51,7 +51,7 @@ package rv_dm_reg_pkg;
 
   typedef struct packed {
     logic        q;
-  } rv_dm_reg2hw_halted_mreg_t;
+  } rv_dm_reg2hw_halted_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -59,7 +59,7 @@ package rv_dm_reg_pkg;
 
   typedef struct packed {
     logic        q;
-  } rv_dm_reg2hw_resuming_mreg_t;
+  } rv_dm_reg2hw_resuming_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -88,7 +88,7 @@ package rv_dm_reg_pkg;
   typedef struct packed {
     logic        d;
     logic        de;
-  } rv_dm_hw2reg_halted_mreg_t;
+  } rv_dm_hw2reg_halted_reg_t;
 
   typedef struct packed {
     logic [31:0] d;
@@ -97,9 +97,9 @@ package rv_dm_reg_pkg;
 
   // Register -> HW type for mem interface
   typedef struct packed {
-    rv_dm_reg2hw_halted_mreg_t [0:0] halted; // [8867:8867]
+    rv_dm_reg2hw_halted_reg_t halted; // [8867:8867]
     rv_dm_reg2hw_going_reg_t going; // [8866:8866]
-    rv_dm_reg2hw_resuming_mreg_t [0:0] resuming; // [8865:8865]
+    rv_dm_reg2hw_resuming_reg_t resuming; // [8865:8865]
     rv_dm_reg2hw_exception_reg_t exception; // [8864:8864]
     rv_dm_reg2hw_whereto_reg_t whereto; // [8863:8832]
     rv_dm_reg2hw_abstractcmd_mreg_t [9:0] abstractcmd; // [8831:8512]
@@ -110,7 +110,7 @@ package rv_dm_reg_pkg;
 
   // HW -> register type for mem interface
   typedef struct packed {
-    rv_dm_hw2reg_halted_mreg_t [0:0] halted; // [34:33]
+    rv_dm_hw2reg_halted_reg_t halted; // [34:33]
     rv_dm_hw2reg_whereto_reg_t whereto; // [32:0]
   } rv_dm_mem_hw2reg_t;
 

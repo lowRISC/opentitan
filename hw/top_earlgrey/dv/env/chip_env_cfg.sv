@@ -236,17 +236,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     foreach (regs[i]) begin
       regs[i].clear_hdl_path("ALL");
     end
-
-    // ROM within the debug mem is RO - it ignores writes instead of throwing an error response.
-    chip_ral.rv_dm_mem.rom.set_write_to_ro_mem_ok(1);
-    chip_ral.rv_dm_mem.rom.set_mem_partial_write_support(1);
-
-    // TODO(#10837): Accesses to unmapped regions of debug mem RAL space does not return an error
-    // response. Fix this if design is updated.
-    chip_ral.rv_dm_mem.set_unmapped_access_ok(1);
-
-    // Debug mem does not error on any type of sub-word writes.
-    chip_ral.rv_dm_mem.set_supports_sub_word_csr_writes(1);
   endfunction
 
   // Apply RAL exclusions externally since the RAL itself is considered generic. The IP it is used
