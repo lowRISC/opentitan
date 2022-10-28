@@ -71,7 +71,7 @@ interface chip_if;
 `define SPI_HOST_HIER(i)    `TOP_HIER.u_spi_host``i
 `define SRAM_CTRL_MAIN_HIER `TOP_HIER.u_sram_ctrl_main
 `define SRAM_CTRL_RET_HIER  `TOP_HIER,u_sram_ctrl_ret_aon
-`define SYSRST_CTRL_HIER    `TOP_HIER.u_sysrst_ctrl
+`define SYSRST_CTRL_HIER    `TOP_HIER.u_sysrst_ctrl_aon
 `define UART_HIER(i)        `TOP_HIER.u_uart``i
 `define USBDEV_HIER         `TOP_HIER.u_usbdev
 
@@ -108,18 +108,26 @@ interface chip_if;
   // chip IOs. These situations result in X-prop / SVA errors thrown by the design.
   //
   // TODO: Fix the design / SVAs or the interface agents so that no default pulls are needed at all.
+  function automatic void cfg_default_weak_pulls_on_dios(bit enable);
+    if (enable) begin
+      // Enable weak pull downs on DIOs.
+      dios_if.pins_pd = '1;
+
+      // These are active low, so pull up.
+      dios_if.pins_pu[top_earlgrey_pkg::DioPadPorN] = 1;
+      dios_if.pins_pu[top_earlgrey_pkg::DioPadUsbP] = 1;
+      dios_if.pins_pu[top_earlgrey_pkg::DioPadIor8] = 1;
+      dios_if.pins_pu[top_earlgrey_pkg::DioPadIor9] = 1;
+
+      // No need of pulls for the SPI host peripheral.
+      dios_if.pins_pd[top_earlgrey_pkg::DioPadSpiHostCsL:top_earlgrey_pkg::DioPadSpiHostD0] = '0;
+    end else begin
+      dios_if.disconnect();
+    end
+  endfunction
+
   initial begin
-    // Enable weak pull downs on DIOs.
-    dios_if.pins_pd = '1;
-
-    // These are active low, so pull up.
-    dios_if.pins_pu[top_earlgrey_pkg::DioPadPorN] = 1;
-    dios_if.pins_pu[top_earlgrey_pkg::DioPadUsbP] = 1;
-    dios_if.pins_pu[top_earlgrey_pkg::DioPadIor8] = 1;
-    dios_if.pins_pu[top_earlgrey_pkg::DioPadIor9] = 1;
-
-    // No need of pulls for the SPI host peripheral.
-    dios_if.pins_pd[top_earlgrey_pkg::DioPadSpiHostCsL:top_earlgrey_pkg::DioPadSpiHostD0] = '0;
+    cfg_default_weak_pulls_on_dios(1);
   end
 
   // X-check monitor on the muxed chip IOs.
@@ -607,6 +615,10 @@ interface chip_if;
   wire usb_rst_n = `USBDEV_HIER.rst_ni;
   clk_rst_if usb_clk_rst_if(.clk(usb_clk), .rst_n(usb_rst_n));
 
+  wire io_div4_clk = `CLKMGR_HIER.clocks_o.clk_io_div4_powerup;
+  wire io_div4_rst_n = `RSTMGR_HIER.resets_o.rst_por_io_div4_n[0];
+  clk_rst_if io_div4_clk_rst_if(.clk(io_div4_clk), .rst_n(io_div4_rst_n));
+
   wire pwrmgr_low_power = `PWRMGR_HIER.low_power_o;
   wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_i.done;
 
@@ -821,6 +833,9 @@ interface chip_if;
     return path;
   endfunction
 
+  // Disable SVAs for padctrl attributes test.
+  bit chip_padctrl_attributes_test_sva_disable;
+
   /*
    * Helper methods for forcing internal signals.
    *
@@ -830,7 +845,7 @@ interface chip_if;
 
   // Signal probe function for LC program error signal in OTP ctrl.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_otp_ctrl_lc_err_o,
-      `OTP_CTRL_HIER.u_otp_ctrl_lci.lc_err_o)
+      `OTP_CTRL_HIER.u_otp_ctrl_lci.lc_err_o, 1)
 
   // Signal probe function for wait cycle mask in alert handler.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_alert_handler_ping_timer_wait_cyc_mask_i,
@@ -861,10 +876,22 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_mio_i,
       `PINMUX_HIER.periph_to_mio_i)
 
+  // Signal probe function for peripheral to MIO output enable in pinmux.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_mio_oe_i,
+      `PINMUX_HIER.periph_to_mio_oe_i)
+
   // Signal probe function for peripheral to DIO in pinmux.
   wire [UVM_HDL_MAX_WIDTH-1:0] dio_to_periph = `PINMUX_HIER.dio_to_periph_o;
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_i,
-      `PINMUX_HIER.periph_to_dio_i)
+  // We cannot force bits 12:13 since they are inputs. So we split the probe functions into two.
+  // TODO: Find a more elegant solution for this.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_i_11_0,
+      `PINMUX_HIER.periph_to_dio_i[11:0])
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_i_15_14,
+      `PINMUX_HIER.periph_to_dio_i[15:14])
+
+  // Signal probe function for peripheral to DIO output enable in pinmux.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_oe_i,
+      `PINMUX_HIER.periph_to_dio_oe_i)
 
 `undef TOP_HIER
 `undef ADC_CTRL_HIER
