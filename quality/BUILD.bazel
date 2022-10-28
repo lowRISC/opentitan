@@ -124,17 +124,24 @@ buildifier_test(
 
 # TODO(cfrantz): Find a way to keep this list of rust targets synchronized
 # with the full set of rust targets in the codebase.
+#
+# $ bazel query 'kind("rust_(binary|library|test)", //...)' | grep -v bindgen
+RUST_TARGETS = [
+    "//sw/device/lib/ujson/rust:roundtrip_test",
+    "//sw/host/cryptotest:cryptotest_parser",
+    "//sw/host/cryptotest:cryptotest_parser_test",
+    "//sw/host/opentitanlib:opentitanlib",
+    "//sw/host/opentitanlib:opentitanlib_test",
+    "//sw/host/opentitansession:opentitansession",
+    "//sw/host/opentitantool:opentitantool",
+    "//sw/host/tests/rom/e2e_bootstrap_disabled:e2e_bootstrap_disabled",
+    "//sw/host/tests/rom/e2e_bootstrap_entry:e2e_bootstrap_entry",
+    "//sw/host/tests/rom/e2e_chip_specific_startup:e2e_chip_specific_startup",
+]
+
 rustfmt_test(
     name = "rustfmt_check",
-    targets = [
-        "//sw/host/cryptotest:cryptotest_parser",
-        "//sw/host/opentitanlib",
-        "//sw/host/opentitansession",
-        "//sw/host/opentitantool",
-        "//sw/host/tests/rom/e2e_bootstrap_entry",
-        "//sw/host/tests/rom/e2e_chip_specific_startup",
-        "//sw/device/lib/ujson/rust:roundtrip_test",
-    ],
+    targets = RUST_TARGETS,
 )
 
 html_coverage_report(
