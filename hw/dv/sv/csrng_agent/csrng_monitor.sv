@@ -20,8 +20,6 @@ class csrng_monitor extends dv_base_monitor #(
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH)))
       csrng_cmd_fifo;
 
-  bit in_reset;
-
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -47,10 +45,10 @@ class csrng_monitor extends dv_base_monitor #(
   virtual protected task handle_reset();
     forever begin
       @(negedge cfg.vif.rst_n);
-      in_reset = 1;
+      cfg.under_reset = 1;
       // TODO: sample any reset-related covergroups
       @(posedge cfg.vif.rst_n);
-      in_reset = 0;
+      cfg.under_reset = 0;
     end
   endtask
 
@@ -138,7 +136,7 @@ class csrng_monitor extends dv_base_monitor #(
         // After picking up a request, wait until a response is sent before
         // detecting another request, as this is not a pipelined protocol.
         `DV_SPINWAIT_EXIT(while (!cfg.vif.mon_cb.cmd_rsp.csrng_rsp_ack) @(cfg.vif.mon_cb);,
-                          wait(in_reset))
+                          wait(cfg.under_reset))
         rsp_sts_ap.write(cfg.vif.cmd_rsp.csrng_rsp_sts);
        end
     end
