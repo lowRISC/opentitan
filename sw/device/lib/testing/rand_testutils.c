@@ -25,7 +25,7 @@ static const uint32_t kLfsrPolynomialCoefficients = 0x80000057;
 /**
  * The default timeout in usecs for fetching data from the entropy source.
  */
-static const uint32_t kEntropyFetchTimeoutMicros = 1000;
+static const uint32_t kEntropyFetchTimeoutMicros = 100000;
 
 rand_testutils_rng_t rand_testutils_init(dif_rv_core_ibex_t *rv_core_ibex) {
   CHECK(rv_core_ibex != NULL);
