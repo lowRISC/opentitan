@@ -1358,6 +1358,18 @@
       tags: ["conn"]
     }
 
+    //////////////////////////
+    // rstmgr_crashdump.csv //
+    //////////////////////////
+    {
+      name: rstmgr_crashdump
+      desc: '''Verify that the Ibex and alert_handler crashdump outputs are correctly connected to the rstmgr.'''
+      stage: V2
+      tests: ["alert_handler_rstmgr_crashdump",
+              "rv_core_ibex_rstmgr_crashdump"]
+      tags: ["conn"]
+    }
+
     /////////////////////////
     // analog_sigs.csv     //
     /////////////////////////
