@@ -627,6 +627,33 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "csrng_edn_concurrency_test",
+    srcs = ["csrng_edn_concurrency_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        ":otbn_randomness_impl",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:base",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:csrng_shared",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:otbn",
+        "//sw/device/lib/testing:csrng_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing:rv_plic_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "csrng_kat_test",
     srcs = ["csrng_kat_test.c"],
     deps = [

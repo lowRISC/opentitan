@@ -62,6 +62,8 @@ typedef enum dif_otbn_err_bits {
   kDifOtbnErrBitsIllegalInsn = (1 << 3),
   /** A LOOP error was observed. */
   kDifOtbnErrBitsLoop = (1 << 4),
+  /** A RND_FIPS_CHECK_FAIL error was observed. */
+  kDifOtbnErrBitsRndFipsChkFail = (1 << 7),
   /** A IMEM_INTG_VIOLATION error was observed. */
   kDifOtbnErrBitsImemIntgViolation = (1 << 16),
   /** A DMEM_INTG_VIOLATION error was observed. */
