@@ -292,4 +292,17 @@ class keymgr_base_vseq extends cip_base_vseq #(
       csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
     end
   endtask
+
+  virtual task check_after_fi();
+    bit issue_adv_or_gen = $urandom;
+    // after FI, keymgr should enter StInvalid state immediately
+    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
+    // issue any operation
+    keymgr_operations(.advance_state(issue_adv_or_gen), .num_gen_op(!issue_adv_or_gen),
+                      .wait_done(0));
+    // waiting for done is called separately as this one expects to be failed
+    csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpDoneFail),
+                 .spinwait_delay_ns($urandom_range(0, 100)));
+    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
+  endtask
 endclass : keymgr_base_vseq
