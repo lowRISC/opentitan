@@ -249,21 +249,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   endtask
 
-  // Check for any outstanding HT failures.  If so, disable the DUT (possibly checking the HT
-  // statistics) and reset the RNG input to the DUT.
-  // If a HT failure is detected, the DUT is left in the disabled state.
-  // It is anticipated that a new configuration will be applied immediately afterward.
-  task fix_ht_alerts();
-    bit alert_sts;
-    csr_rd(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(alert_sts));
-
-    if (alert_sts) begin
-      `uvm_info(`gfn, "HT Failure: Disabling DUT", UVM_HIGH)
-      disable_dut();
-      wait_no_outstanding_access();
-    end
-  endtask
-
   task process_interrupts();
     bit [TL_DW - 1:0] intr_status;
     bit               interrupt_shutdown = 0;
@@ -795,7 +780,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         if(!continue_sim) break;
         `uvm_info(`gfn, "Resuming single thread operation", UVM_LOW)
 
-        fix_ht_alerts();
+        // Disable the DUT and get HT stats.
+        disable_dut();
 
         //
         // Resetting and/or reconfiguring before the next loop.

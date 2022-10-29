@@ -123,13 +123,17 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask
 
   task disable_dut();
+    bit [TL_DW - 1:0] regval;
+
     csr_wr(.ptr(ral.module_enable.module_enable), .value(MuBi4False));
 
     // Disabling the module will clear the error state,
     // as well as the observe and entropy_data FIFOs
     // Clear all interupts here
     csr_wr(.ptr(ral.intr_state), .value(32'hf));
-    // Leave alerts alone as the handlers for those conditions need to see them
+
+    // Check, but do not clear alert_sts, as the handlers for those conditions may need to see them.
+    csr_rd(.ptr(ral.recov_alert_sts.es_main_sm_alert), .value(regval));
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
     if (do_check_ht_diag) begin
