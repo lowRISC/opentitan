@@ -69,6 +69,11 @@
     }
 
     {
+      name: edn_stress_all_with_rand_reset
+      uvm_test: edn_stress_all_test
+    }
+
+    {
       name: edn_intr
       uvm_test: edn_intr_test
       uvm_test_seq: edn_intr_vseq
