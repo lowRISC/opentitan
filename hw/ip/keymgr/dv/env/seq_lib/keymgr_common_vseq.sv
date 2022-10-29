@@ -61,7 +61,7 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     super.check_tl_intg_error_response();
     // wait until csr_rw seq is done, as below operation may affect csr_rw to predict CSR values
     wait (csr_vseq_done);
-    check_state_after_non_operation_fault();
+    check_after_fi();
   endtask
 
   virtual task read_check_shadow_reg_status(string msg_id);
@@ -75,19 +75,8 @@ class keymgr_common_vseq extends keymgr_base_vseq;
       !ral.control_shadowed.get_shadow_storage_err()) begin
       // wait until csr_rw seq is done, as below operation may affect csr_rw to predict CSR values
       wait (csr_vseq_done);
-      check_state_after_non_operation_fault();
+      check_after_fi();
     end
-  endtask
-
-  // Check state is StInvalid when there is an non-operation fault like integrity error, storage
-  // error.
-  virtual task check_state_after_non_operation_fault();
-    // issue an advance operation and check that state enters StInvalid
-    keymgr_advance(.wait_done(0));
-    // waiting for done is called separately as this one expects to be failed
-    csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpDoneFail),
-                 .spinwait_delay_ns($urandom_range(0, 100)));
-    csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
   endtask
 
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
@@ -113,7 +102,7 @@ class keymgr_common_vseq extends keymgr_base_vseq;
     endcase
     csr_rd_check(.ptr(ral.fault_status), .compare_value(exp));
 
-    check_state_after_non_operation_fault();
+    check_after_fi();
   endtask : check_sec_cm_fi_resp
 
    virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
