@@ -47,13 +47,17 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   bit interrupt_handler_active = 0;
 
   // List of states to specfically hit for main_sm transition coverage
-  localparam int NumRareMainFsmStates = 4;
+  localparam int NumRareMainFsmStates = 8;
 
   entropy_src_main_sm_pkg::state_e [NumRareMainFsmStates - 1:0] rare_fsm_states = {
-     entropy_src_main_sm_pkg::BootPostHTChk,
+     entropy_src_main_sm_pkg::StartupPass1,
      entropy_src_main_sm_pkg::StartupFail1,
-     entropy_src_main_sm_pkg::Sha3Quiesce,
-     entropy_src_main_sm_pkg::ContHTStart
+     entropy_src_main_sm_pkg::StartupHTStart,
+     entropy_src_main_sm_pkg::FWInsertMsg,
+     entropy_src_main_sm_pkg::BootPostHTChk,
+     entropy_src_main_sm_pkg::ContHTStart,
+     entropy_src_main_sm_pkg::FWInsertStart,
+     entropy_src_main_sm_pkg::Sha3MsgDone
   };
 
   // A checklist vector with each bit corresponding to each of the rare_fsm_states above.
@@ -65,7 +69,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // to AlertState) by creating another checklist variable and updating the task
   // targeted_transition_thread()
 
-  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_checklist = 4'b0000;
+  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_checklist = 8'b00000000;
+  bit [NumRareMainFsmStates - 1:0] rare_state_to_idle_backdoor = 8'b00100000;
 
   constraint dly_to_access_intr_c {
     dly_to_access_intr dist {
@@ -261,34 +266,43 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_intr)
     cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
 
+    `uvm_info(`gfn, "Asserting interrupt_handler_active", UVM_DEBUG)
     interrupt_handler_active = 1;
     csr_rd(.ptr(ral.intr_state), .value(intr_status));
 
     if (intr_status != 0) begin
       `uvm_info(`gfn, $sformatf("Handling Interrupts: %02h", intr_status), UVM_FULL)
     end else begin
+      interrupt_handler_active = 0;
       return;
     end
 
     // handle the Observe FIFO first as that will have no impact on other features
     if (intr_status[ObserveFifoReady]) begin
       int bundles_found;
+      `uvm_info(`gfn, "Reading observe FIFO", UVM_DEBUG)
       // Read all currently available data
       do_entropy_data_read(.source(TlSrcObserveFIFO),
                            .bundles_found(bundles_found));
+      `uvm_info(`gfn, $sformatf("Found %d observe FIFO bundles", bundles_found), UVM_FULL)
     end
 
     // Reading the ENTROPY_DATA reg may be slightly more impactful than the Observe
     // FIFO, as a restart may be needed.
     if (intr_status[EntropyValid]) begin
       int bundles_found;
+      `uvm_info(`gfn, "Reading entropy_data", UVM_DEBUG)
       do_entropy_data_read(.source(TlSrcEntropyDataReg),
                            .bundles_found(bundles_found));
-      `uvm_info(`gfn, $sformatf("Found %d entropy_data bundles", bundles_found), UVM_HIGH)
-      do_reenable = 1;
+      `uvm_info(`gfn, $sformatf("Found %d entropy_data bundles", bundles_found), UVM_FULL)
+      if (`gmv(ral.entropy_control.es_type)  == MuBi4True ||
+          `gmv(ral.conf.fips_enable)         == MuBi4False) begin
+        do_reenable = 1;
+      end
     end
 
     // There is no risk of deactivating the DUT now.
+    `uvm_info(`gfn, "Clearing interrupt_handler_active", UVM_DEBUG)
     interrupt_handler_active = 0;
 
     // If a health test error is detected, break the loop and reconfigure
@@ -540,11 +554,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       // FIFO underflow alerts in the DUT and crash the sim) we only perform targeted shutdown when
       // the interrupt handler is not running.
       //
-      // Wait until the interrupt handler is done or one clock cycle, whichever is longer.
-      // In either case shutdown if a thread shutdown is requested
+      // Wait until the interrupt handler is done (with a 1ms timeout) or one clock cycle, whichever
+      // is longer.  In either case shutdown if a thread shutdown is requested
       fork
         if(interrupt_handler_active) begin
-          `DV_WAIT(!interrupt_handler_active || !do_background_procs);
+          `DV_WAIT(!interrupt_handler_active || !do_background_procs,
+                   "Interrupt handler timed out", 1ms/1ns);
         end
         cfg.clk_rst_vif.wait_clks(1);
       join
@@ -559,8 +574,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
             if (cfg.induce_targeted_transition) begin
               msg = $sformatf("Forcing disable from state %s", rare_fsm_states[i].name());
               `uvm_info(`gfn, msg, UVM_HIGH)
-              // First immediately disable the device, _then_ call disable_dut()
-              // to clean things up properly.
+              // First immediately disable the device, with an ASAP frontdoor write and if needed
+              // a  preceeding backdoor write (timed to trigger in the next cycle, for states that
+              // almost always follow CSR operations such as enable signals)
+              // Finally call disable_dut() to clean things up properly.
+              if (rare_state_to_idle_backdoor[i]) begin
+                cfg.clk_rst_vif.wait_clks(1);
+                csr_poke(.ptr(ral.module_enable), .value({28'h0, MuBi4False}));
+              end
               immed_csr_wr(.ptr(ral.module_enable), .value({28'h0, MuBi4False}));
               disable_dut();
               do_background_procs = 0;
@@ -654,7 +675,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     end
 
     `uvm_info(`gfn, "Starting reconfig timer thread", UVM_LOW)
-
 
     randomize_unexpected_config_time();
     if (sched_reconfig_time > 0) begin
