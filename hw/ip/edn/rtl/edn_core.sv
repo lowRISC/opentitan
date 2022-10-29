@@ -49,11 +49,11 @@ module edn_core import edn_pkg::*;
   localparam int CSGenBitsWidth = 128;
   localparam int EndPointBusWidth = 32;
   localparam int RescmdFifoIdxWidth = $clog2(RescmdFifoDepth);
-  localparam int EdnEnableCopies = 26;
   localparam int FifoRstCopies = 4;
   localparam int BootReqCopies = 2;
 
   typedef enum logic [4:0] {
+    MuBiCheck,
     FatalErr,
     ReseedCmdErr,
     GenCmdErr,
@@ -79,11 +79,12 @@ module edn_core import edn_pkg::*;
     AckFsmEn,
     LastEdnEntry
   } edn_enable_e;
+  localparam int EdnEnableCopies = int'(LastEdnEntry);
 
   // signals
   logic event_edn_cmd_req_done;
   logic event_edn_fatal_err;
-  logic [EdnEnableCopies-1:1] edn_enable_fo;
+  logic [EdnEnableCopies-1:FatalErr] edn_enable_fo;
   logic [FifoRstCopies-1:1] cmd_fifo_rst_fo;
   logic [BootReqCopies-1:1] boot_req_mode_fo;
   logic edn_enable_pfa;
@@ -299,7 +300,7 @@ module edn_core import edn_pkg::*;
                              edn_ack_sm_err_sum;
 
   // set the interrupt sources
-  assign event_edn_fatal_err = (edn_enable_fo[1] && (
+  assign event_edn_fatal_err = (edn_enable_fo[FatalErr] && (
          sfifo_rescmd_err_sum ||
          sfifo_gencmd_err_sum ||
          sfifo_output_err_sum )) ||
@@ -338,10 +339,10 @@ module edn_core import edn_pkg::*;
 
   // set the err code source bits
   assign hw2reg.err_code.sfifo_rescmd_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_rescmd_err.de = edn_enable_fo[2] && sfifo_rescmd_err_sum;
+  assign hw2reg.err_code.sfifo_rescmd_err.de = edn_enable_fo[ReseedCmdErr] && sfifo_rescmd_err_sum;
 
   assign hw2reg.err_code.sfifo_gencmd_err.d = 1'b1;
-  assign hw2reg.err_code.sfifo_gencmd_err.de = edn_enable_fo[3] && sfifo_gencmd_err_sum;
+  assign hw2reg.err_code.sfifo_gencmd_err.de = edn_enable_fo[GenCmdErr] && sfifo_gencmd_err_sum;
 
   assign hw2reg.err_code.edn_ack_sm_err.d = 1'b1;
   assign hw2reg.err_code.edn_ack_sm_err.de = edn_ack_sm_err_sum;
@@ -358,13 +359,13 @@ module edn_core import edn_pkg::*;
 
  // set the err code type bits
   assign hw2reg.err_code.fifo_write_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_write_err.de = edn_enable_fo[6] && fifo_write_err_sum;
+  assign hw2reg.err_code.fifo_write_err.de = edn_enable_fo[FifoWrErr] && fifo_write_err_sum;
 
   assign hw2reg.err_code.fifo_read_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_read_err.de = edn_enable_fo[7] && fifo_read_err_sum;
+  assign hw2reg.err_code.fifo_read_err.de = edn_enable_fo[FifoRdErr] && fifo_read_err_sum;
 
   assign hw2reg.err_code.fifo_state_err.d = 1'b1;
-  assign hw2reg.err_code.fifo_state_err.de = edn_enable_fo[8] && fifo_status_err_sum;
+  assign hw2reg.err_code.fifo_state_err.de = edn_enable_fo[FifoStErr] && fifo_status_err_sum;
 
 
   // Error forcing
@@ -391,11 +392,11 @@ module edn_core import edn_pkg::*;
   // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_edn_enable;
   assign mubi_edn_enable = mubi4_t'(reg2hw.ctrl.edn_enable.q);
-  assign edn_enable_pfa = mubi4_test_invalid(mubi_edn_enable_fanout[0]);
+  assign edn_enable_pfa = mubi4_test_invalid(mubi_edn_enable_fanout[MuBiCheck]);
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.de = edn_enable_pfa;
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.d  = edn_enable_pfa;
 
-  for (genvar i = 1; i < EdnEnableCopies; i = i+1) begin : gen_mubi_en_copies
+  for (genvar i = FatalErr; i < LastEdnEntry; i = i+1) begin : gen_mubi_en_copies
     assign edn_enable_fo[i] = mubi4_test_true_strict(mubi_edn_enable_fanout[i]);
   end : gen_mubi_en_copies
 
@@ -470,23 +471,23 @@ module edn_core import edn_pkg::*;
   assign generate_cmd_bus = reg2hw.generate_cmd.q;
 
   assign cs_cmd_req_d =
-         (!edn_enable_fo[9]) ? '0 :
+         (!edn_enable_fo[CsrngCmdReq]) ? '0 :
          boot_wr_cmd_reg ? boot_ins_cmd :
          sw_cmd_req_load ? sw_cmd_req_bus :
          cs_cmd_req_q;
 
   assign cs_cmd_req_vld_d =
-         (!edn_enable_fo[10]) ? '0 :
+         (!edn_enable_fo[CsrngCmdReqValid]) ? '0 :
          (sw_cmd_req_load || boot_wr_cmd_reg); // cmd reg write
 
   assign cs_cmd_req_out_d =
-         (!edn_enable_fo[11]) ? '0 :
+         (!edn_enable_fo[CsrngCmdReqOut]) ? '0 :
          send_rescmd ? sfifo_rescmd_rdata :
          (send_gencmd || boot_send_gencmd) ? sfifo_gencmd_rdata :
          cs_cmd_req_q;
 
   assign cs_cmd_req_vld_out_d =
-         (!edn_enable_fo[12]) ? '0 :
+         (!edn_enable_fo[CsrngCmdReqValidOut]) ? '0 :
          (send_rescmd || send_gencmd || (boot_send_gencmd && cmd_sent)) ? 1'b1 :
          cs_cmd_req_vld_q;
 
@@ -503,7 +504,7 @@ module edn_core import edn_pkg::*;
          csrng_cmd_i.csrng_req_ready ? 1'b1 :
          sw_rdy_sts_q;
 
-  assign edn_enable_d = edn_enable_fo[13];
+  assign edn_enable_d = edn_enable_fo[EnDelay];
 
   // receive cmd ack
   assign csrng_cmd_ack = csrng_cmd_i.csrng_rsp_ack;
@@ -512,7 +513,7 @@ module edn_core import edn_pkg::*;
   assign hw2reg.sw_cmd_sts.cmd_sts.d = csrng_cmd_i.csrng_rsp_sts;
 
   assign intr_sts_gate_d =
-         !edn_enable_fo[14] ? 1'b0 :
+         !edn_enable_fo[IntrStatus] ? 1'b0 :
          main_sm_done_pulse ? 1'b1 :
          auto_set_intr_gate ? 1'b1 :
          auto_clr_intr_gate ? 1'b0 :
@@ -540,7 +541,7 @@ module edn_core import edn_pkg::*;
 
   // feedback cmd back into rescmd fifo
   assign send_rescmd_d =
-         (!edn_enable_fo[15]) ? '0 :
+         (!edn_enable_fo[SendReseedCmd]) ? '0 :
          send_rescmd;
 
   assign sfifo_rescmd_push =
@@ -554,7 +555,7 @@ module edn_core import edn_pkg::*;
   assign sfifo_rescmd_pop = send_rescmd;
 
   assign sfifo_rescmd_clr =
-         (!edn_enable_fo[16]) ? '0 :
+         (!edn_enable_fo[ReseedCmdClr]) ? '0 :
          (cmd_fifo_rst_fo[1] || main_sm_done_pulse);
 
   assign sfifo_rescmd_err =
@@ -584,7 +585,7 @@ module edn_core import edn_pkg::*;
 
   // feedback cmd back into gencmd fifo
   assign send_gencmd_d =
-         (!edn_enable_fo[17]) ? '0 :
+         (!edn_enable_fo[SendGenCmd]) ? '0 :
          send_gencmd;
 
   assign sfifo_gencmd_push =
@@ -600,7 +601,7 @@ module edn_core import edn_pkg::*;
   assign sfifo_gencmd_pop = send_gencmd || boot_send_gencmd;
 
   assign sfifo_gencmd_clr =
-         (!edn_enable_fo[18]) ? '0 :
+         (!edn_enable_fo[GenCmdClr]) ? '0 :
          (cmd_fifo_rst_fo[2] || main_sm_done_pulse);
 
   assign sfifo_gencmd_err =
@@ -632,7 +633,7 @@ module edn_core import edn_pkg::*;
   assign csrng_cmd_o.csrng_req_valid = sfifo_output_not_empty;
   assign csrng_cmd_o.csrng_req_bus = sfifo_output_rdata;
 
-  assign sfifo_output_clr = !edn_enable_fo[25];
+  assign sfifo_output_clr = !edn_enable_fo[OutputClr];
   assign sfifo_output_push = cs_cmd_req_vld_out_q;
   assign sfifo_output_wdata = cs_cmd_req_out_q;
   assign sfifo_output_pop = sfifo_output_not_empty && csrng_cmd_i.csrng_req_ready;
@@ -648,7 +649,7 @@ module edn_core import edn_pkg::*;
   edn_main_sm u_edn_main_sm (
     .clk_i                  (clk_i),
     .rst_ni                 (rst_ni),
-    .edn_enable_i           (edn_enable_fo[19]),
+    .edn_enable_i           (edn_enable_fo[MainFsmEn]),
     .boot_req_mode_i        (boot_req_mode_fo[1]),
     .auto_req_mode_i        (auto_req_mode_pfe),
     .sw_cmd_req_load_i      (sw_cmd_req_load),
@@ -703,7 +704,7 @@ module edn_core import edn_pkg::*;
 
 
   assign cmd_fifo_cnt_d =
-         (!edn_enable_fo[20]) ? '0 :
+         (!edn_enable_fo[CmdFifoCnt]) ? '0 :
          (cmd_fifo_rst_fo[3] || main_sm_done_pulse) ? '0 :
          capt_gencmd_fifo_cnt ? (sfifo_gencmd_depth) :
          capt_rescmd_fifo_cnt ? (sfifo_rescmd_depth) :
@@ -780,7 +781,7 @@ module edn_core import edn_pkg::*;
     .depth_o    ()
   );
 
-  assign packer_cs_clr = !edn_enable_fo[21];
+  assign packer_cs_clr = !edn_enable_fo[CsrngPackerClr];
   assign packer_cs_push = csrng_cmd_i.genbits_valid;
   assign packer_cs_wdata = csrng_cmd_i.genbits_bus;
   assign csrng_cmd_o.genbits_ready = packer_cs_wready;
@@ -788,7 +789,7 @@ module edn_core import edn_pkg::*;
   assign packer_arb_ready = packer_cs_rvalid;
 
   assign csrng_fips_d =
-         !edn_enable_fo[22] ? 1'b0 :
+         !edn_enable_fo[CsrngFipsEn] ? 1'b0 :
          (packer_cs_push && packer_cs_wready) ? csrng_cmd_i.genbits_fips :
          csrng_fips_q;
 
@@ -807,7 +808,7 @@ module edn_core import edn_pkg::*;
   assign cs_rdata_capt_d = cs_rdata_capt_vld ? packer_cs_rdata[63:0] : cs_rdata_capt_q;
 
   assign cs_rdata_capt_vld_d =
-         !edn_enable_fo[23] ? 1'b0 :
+         !edn_enable_fo[CsrngDataVld] ? 1'b0 :
          cs_rdata_capt_vld ? 1'b1 :
          cs_rdata_capt_vld_q;
 
@@ -872,7 +873,7 @@ module edn_core import edn_pkg::*;
     edn_ack_sm u_edn_ack_sm_ep (
       .clk_i            (clk_i),
       .rst_ni           (rst_ni),
-      .enable_i         (edn_enable_fo[24]),
+      .enable_i         (edn_enable_fo[AckFsmEn]),
       .req_i            (edn_i[i].edn_req),
       .ack_o            (packer_ep_ack[i]),
       .fifo_not_empty_i (packer_ep_rvalid[i]),
