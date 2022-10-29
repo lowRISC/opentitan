@@ -92,7 +92,7 @@ module tb;
     entropy_subsys_fifo_exception_if#(1) u_fifo_exc_if (.clk_i, .rst_ni, .wready_o, .wvalid_i);
 
   bind prim_sparse_fsm_flop : dut.u_entropy_src_core.u_entropy_src_main_sm.u_state_regs
-    entropy_src_fsm_cov_if u_fsm_cov_if (.clk_i, .state_i);
+    entropy_src_fsm_cov_if u_fsm_cov_if (.clk_i, .state_i, .state_o);
 
   initial begin
     // Drive clk and rst_n from clk_if

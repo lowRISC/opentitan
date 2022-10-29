@@ -405,24 +405,25 @@ class entropy_src_base_vseq extends cip_base_vseq #(
         `uvm_fatal(`gfn, "Invalid source for accessing TL entropy (environment error)")
       end
     endcase
-
-    do begin
-      `uvm_info(`gfn, "READING INTERRUPT STS", UVM_DEBUG)
-      csr_rd(.ptr(intr_field), .value(intr_status));
-      if (intr_status) begin
-        // Read and check entropy
-        `uvm_info(`gfn, $sformatf("Reading %d words", cnt_per_interrupt), UVM_HIGH)
-        for (int i = 0; i < cnt_per_interrupt; i++) begin
-          bit [TL_DW-1:0] entropy_tlul;
-          csr_rd(.ptr(data_reg), .value(entropy_tlul), .blocking(1'b1));
+    `DV_SPINWAIT(
+      do begin
+        `uvm_info(`gfn, "READING INTERRUPT STS", UVM_DEBUG)
+        csr_rd(.ptr(intr_field), .value(intr_status));
+        if (intr_status) begin
+          // Read and check entropy
+          `uvm_info(`gfn, $sformatf("Reading %d words", cnt_per_interrupt), UVM_HIGH)
+          for (int i = 0; i < cnt_per_interrupt; i++) begin
+            bit [TL_DW-1:0] entropy_tlul;
+            csr_rd(.ptr(data_reg), .value(entropy_tlul), .blocking(1'b1));
+          end
+          // Clear the appropriate interrupt bit
+          `uvm_info(`gfn, "CLEARING FIFO INTERRUPT", UVM_DEBUG)
+          csr_wr(.ptr(intr_field), .value(1'b1), .blocking(1'b1));
+          bundles_found++;
         end
-        // Clear the appropriate interrupt bit
-        `uvm_info(`gfn, "CLEARING FIFO INTERRUPT", UVM_DEBUG)
-        csr_wr(.ptr(intr_field), .value(1'b1), .blocking(1'b1));
-        bundles_found++;
-      end
-      done = (max_bundles >= 0) && (bundles_found >= max_bundles);
-    end while (intr_status && !done);
+        done = (max_bundles >= 0) && (bundles_found >= max_bundles);
+      end while (intr_status && !done);, // do begin
+    $sformatf("Timeout encountered while reading %s", source.name()), 250us/1ns)
   endtask
 
   task run_rng_host_seq(push_pull_host_seq#(entropy_src_pkg::RNG_BUS_WIDTH) m_rng_push_seq);
