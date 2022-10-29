@@ -12,6 +12,7 @@ module edn_ack_sm (
   input logic                enable_i,
   input logic                req_i,
   output logic               ack_o,
+  input logic                local_escalate_i,
   input logic                fifo_not_empty_i,
   output logic               fifo_pop_o,
   output logic               fifo_clr_o,
@@ -86,12 +87,19 @@ module edn_ack_sm (
       Error: begin
         ack_sm_err_o = 1'b1;
       end
-      default: state_d = Error;
+      default: begin
+        ack_sm_err_o = 1'b1;
+        state_d = Error;
+      end
     endcase // unique case (state_q)
 
+    // If local escalation is seen, transition directly to
+    // error state.
     // If disable is seen when not in error state,
     // clear out everything and return to default.
-    if (!enable_i && !ack_sm_err_o) begin
+    if (local_escalate_i) begin
+      state_d = Error;
+    end else if (!enable_i && !ack_sm_err_o) begin
       state_d = Disabled;
       ack_o = 1'b0;
       fifo_pop_o = 1'b0;

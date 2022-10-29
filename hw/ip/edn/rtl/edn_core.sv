@@ -53,6 +53,33 @@ module edn_core import edn_pkg::*;
   localparam int FifoRstCopies = 4;
   localparam int BootReqCopies = 2;
 
+  typedef enum logic [4:0] {
+    FatalErr,
+    ReseedCmdErr,
+    GenCmdErr,
+    FifoWrErr,
+    FifoRdErr,
+    FifoStErr,
+    CsrngCmdReq,
+    CsrngCmdReqValid,
+    CsrngCmdReqOut,
+    CsrngCmdReqValidOut,
+    EnDelay,
+    IntrStatus,
+    SendReseedCmd,
+    ReseedCmdClr,
+    SendGenCmd,
+    GenCmdClr,
+    OutputClr,
+    MainFsmEn,
+    CmdFifoCnt,
+    CsrngPackerClr,
+    CsrngFipsEn,
+    CsrngDataVld,
+    AckFsmEn,
+    LastEdnEntry
+  } edn_enable_e;
+
   // signals
   logic event_edn_cmd_req_done;
   logic event_edn_fatal_err;
@@ -264,15 +291,19 @@ module edn_core import edn_pkg::*;
   // interrupt for sw app interface only
   assign event_edn_cmd_req_done = csrng_cmd_ack_gated;
 
+  // Counter and fsm errors are structural errors and are always
+  // active regardless of the functional state.
+  logic fatal_loc_events;
+  assign fatal_loc_events =  edn_cntr_err_sum ||
+                             edn_main_sm_err_sum ||
+                             edn_ack_sm_err_sum;
+
   // set the interrupt sources
   assign event_edn_fatal_err = (edn_enable_fo[1] && (
          sfifo_rescmd_err_sum ||
          sfifo_gencmd_err_sum ||
-         sfifo_output_err_sum ||
-         edn_ack_sm_err_sum ||
-         edn_main_sm_err_sum)) ||
-         edn_cntr_err_sum;
-
+         sfifo_output_err_sum )) ||
+         fatal_loc_events;
 
   // set fifo errors that are single instances of source
   assign sfifo_rescmd_err_sum = (|sfifo_rescmd_err) ||
@@ -313,10 +344,10 @@ module edn_core import edn_pkg::*;
   assign hw2reg.err_code.sfifo_gencmd_err.de = edn_enable_fo[3] && sfifo_gencmd_err_sum;
 
   assign hw2reg.err_code.edn_ack_sm_err.d = 1'b1;
-  assign hw2reg.err_code.edn_ack_sm_err.de = edn_enable_fo[4] && edn_ack_sm_err_sum;
+  assign hw2reg.err_code.edn_ack_sm_err.de = edn_ack_sm_err_sum;
 
   assign hw2reg.err_code.edn_main_sm_err.d = 1'b1;
-  assign hw2reg.err_code.edn_main_sm_err.de = edn_enable_fo[5] && edn_main_sm_err_sum;
+  assign hw2reg.err_code.edn_main_sm_err.de = edn_main_sm_err_sum;
 
   assign hw2reg.err_code.edn_cntr_err.d = 1'b1;
   assign hw2reg.err_code.edn_cntr_err.de = edn_cntr_err_sum;
@@ -635,7 +666,7 @@ module edn_core import edn_pkg::*;
     .capt_rescmd_fifo_cnt_o (capt_rescmd_fifo_cnt),
     .send_rescmd_o          (send_rescmd),
     .cmd_sent_i             (cmd_sent),
-    .local_escalate_i       (edn_cntr_err_sum),
+    .local_escalate_i       (fatal_loc_events),
     .auto_req_mode_busy_o   (auto_req_mode_busy),
     .main_sm_busy_o         (main_sm_busy),
     .main_sm_state_o        (edn_main_sm_state),
@@ -847,6 +878,7 @@ module edn_core import edn_pkg::*;
       .fifo_not_empty_i (packer_ep_rvalid[i]),
       .fifo_pop_o       (packer_ep_rready[i]),
       .fifo_clr_o       (packer_ep_clr[i]),
+      .local_escalate_i (fatal_loc_events),
       .ack_sm_err_o     (edn_ack_sm_err[i])
     );
 
