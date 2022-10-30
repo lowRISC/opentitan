@@ -5,6 +5,7 @@
 // SHA3 core is a fully functional SHA3/SHAKE/cSHAKE hashing module.
 //
 // It instantiates a keccak_round with 1600 bits of the state.
+// Meaningless comment to trigger CI.
 
 `include "prim_assert.sv"
 
