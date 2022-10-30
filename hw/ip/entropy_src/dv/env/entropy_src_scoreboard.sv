@@ -1539,12 +1539,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               mubi4_t fw_ov_mubi  = prim_mubi_pkg::mubi4_t'(
                   ral.fw_ov_control.fw_ov_mode.get_mirrored_value());
 
-              bit fw_ov_mode      = (cfg.otp_en_es_fw_read == MuBi8True) &&
+              bit fw_ov_mode      = (cfg.otp_en_es_fw_over == MuBi8True) &&
                                     (fw_ov_mubi == MuBi4True);
               mubi4_t insert_mubi = prim_mubi_pkg::mubi4_t'(
                   ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value());
               bit fw_ov_insert    = fw_ov_mode && (insert_mubi == MuBi4True);
               bit do_disable_sha  = fw_ov_sha_enabled && (start_mubi == MuBi4False);
+
+              bit write_forbidden = is_fips_mode ? cfg.precon_fifo_vif.write_forbidden :
+                                                   cfg.bypass_fifo_vif.write_forbidden;
 
               check_redundancy_val("fw_ov_sha3_start", "fw_ov_insert_start",
                                    "fw_ov_sha3_start_field_alert", invalid_fw_ov_insert_start);
@@ -1554,7 +1557,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               if (is_fips_mode && fw_ov_insert && do_disable_sha) begin
                 uvm_reg_field recov_sts_fld = ral.recov_alert_sts.es_fw_ov_disable_alert;
                 if (fw_ov_pipe_enabled) begin
-                  if (cfg.precon_fifo_vif.write_forbidden) begin
+                  if (write_forbidden) begin
                     // SW _shouldn't_ turn off the SHA3 processing until the last data word
                     // has been processed.  However if it _does_, we should note an alert.
                     // We can also make an accurate prediction of the output (to pass our sims).
@@ -1765,57 +1768,68 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
   endtask
 
-  task process_fifo_exceptions();
-    mubi4_t fw_ov_mubi, insert_mubi;
-    bit fw_ov_mode, fw_ov_insert;
+  task monitor_fw_ov_write_exceptions(virtual entropy_subsys_fifo_exception_if#(1) vif,
+                                      bit active_in_fips_mode);
+    bit fw_ov_mode, fw_ov_insert, fips_enabled, es_route, es_type, is_fips_mode;
     int i;
 
-    fork
-      forever begin : precon_fifo
+    forever begin
+      @(vif.mon_cb);
 
-        @(cfg.precon_fifo_vif.mon_cb);
+      fw_ov_mode   = (cfg.otp_en_es_fw_over == MuBi8True) &&
+                     (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True);
+      fw_ov_insert = fw_ov_mode && (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
+      fips_enabled = `gmv(ral.conf.fips_enable) == MuBi4True;
+      es_route     = `gmv(ral.entropy_control.es_route) == MuBi4True;
+      es_type      = `gmv(ral.entropy_control.es_type) == MuBi4True;
+      is_fips_mode = fips_enabled && !(es_route && es_type);
 
-        fw_ov_mubi   = prim_mubi_pkg::mubi4_t'(`gmv(ral.fw_ov_control.fw_ov_mode));
-        insert_mubi  = prim_mubi_pkg::mubi4_t'(`gmv(ral.fw_ov_control.fw_ov_entropy_insert));
-        fw_ov_mode   = (cfg.otp_en_es_fw_read == MuBi8True) &&
-                       (fw_ov_mubi == MuBi4True);
-        fw_ov_insert = fw_ov_mode && (insert_mubi == MuBi4True);
+      // If we are not in FW_OV mode at this time, then this error event doesn't matter.
+      // (Such events seem to happen in normal HW-driven operation, but they do not
+      // reflect errors, as the HW chain has proper flow control)
+      if (!fw_ov_insert) continue;
 
-        // If we are not in FW_OV mode at this time, then this error event doesn't matter.
-        // (Such events seem to happen in normal HW-driven operation, but they do not
-        // reflect errors, as the HW chain has proper flow control)
-        if (!fw_ov_insert) continue;
+      // This fifo event also does matter if the FIFO is currently not active for FW_OV/FIPS mode
+      if (active_in_fips_mode ^ is_fips_mode) continue;
 
-        for (i=0; i<N_FIFO_ERR_TYPES; i++) begin
-          if (cfg.precon_fifo_vif.mon_cb.error_pulses[i]) begin
-            `uvm_info(`gfn, $sformatf("PRECON_FIFO: ERROR_CODE %d\n", i), UVM_HIGH)
-            case (i)
-              FIFO_WRITE_ERR: begin
-                if (!under_alert_handshake["recov_alert"]) begin
-                  `DV_CHECK_FATAL(ral.recov_alert_sts.es_fw_ov_wr_alert.predict(1'b1));
-                  set_exp_alert("recov_alert");
-                end
-                // Make a single-clock pulse to tell the TL process that this error has been
-                // identified and the ongoing write should be ignored.
-                ignore_fw_ov_data_pulse = 1;
-                fork
-                  begin
-                    cfg.clk_rst_vif.wait_clks(1);
-                    // Clear the last pulse (unless there is another event right behind the last
-                    // one)
-                    if (!cfg.precon_fifo_vif.error_pulses[FIFO_WRITE_ERR]) begin
-                      ignore_fw_ov_data_pulse = 0;
-                    end
+      for (i=0; i<N_FIFO_ERR_TYPES; i++) begin
+        if (vif.mon_cb.error_pulses[i]) begin
+          case (i)
+            FIFO_WRITE_ERR: begin
+              if (!under_alert_handshake["recov_alert"]) begin
+                uvm_reg_field fld = ral.recov_alert_sts.es_fw_ov_wr_alert;
+                `DV_CHECK_FATAL(fld.predict(1'b1, .kind(UVM_PREDICT_READ)));
+                set_exp_alert("recov_alert");
+              end
+              // Make a single-clock pulse to tell the TL process that this error has been
+              // identified and the ongoing write should be ignored.
+              ignore_fw_ov_data_pulse = 1;
+              fork
+                begin
+                  @(vif.mon_cb);
+                  // Clear the last pulse (unless there is another event right behind the last
+                  // one)
+                  if (!vif.mon_cb.error_pulses[FIFO_WRITE_ERR]) begin
+                    ignore_fw_ov_data_pulse = 0;
                   end
-                join_none
-              end
-              default: begin
-                // ignore other types as this FIFO has proper HW flow control at the other end.
-              end
-            endcase
-          end
+                end
+              join_none
+            end
+            default: begin
+              // ignore other types as this FIFO has proper HW flow control at the other end.
+            end
+          endcase
         end
-      end : precon_fifo
+      end
+    end
+  endtask
+
+  task process_fifo_exceptions();
+    fork
+      // The FW_OV_WR_DATA register is connected to the precon fifo in FIPS mode and the bypass
+      // FIFO in bypass mode.  Monitor them both for exceptions.
+      monitor_fw_ov_write_exceptions(cfg.precon_fifo_vif, 1);
+      monitor_fw_ov_write_exceptions(cfg.bypass_fifo_vif, 0);
     join_none
   endtask
 

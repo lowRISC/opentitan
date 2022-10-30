@@ -88,6 +88,9 @@ module tb;
   bind prim_packer_fifo : dut.u_entropy_src_core.u_prim_packer_fifo_precon
     entropy_subsys_fifo_exception_if#(1) u_fifo_exc_if (.clk_i, .rst_ni, .wready_o, .wvalid_i);
 
+  bind prim_packer_fifo : dut.u_entropy_src_core.u_prim_packer_fifo_bypass
+    entropy_subsys_fifo_exception_if#(1) u_fifo_exc_if (.clk_i, .rst_ni, .wready_o, .wvalid_i);
+
   bind prim_sparse_fsm_flop : dut.u_entropy_src_core.u_entropy_src_main_sm.u_state_regs
     entropy_src_fsm_cov_if u_fsm_cov_if (.clk_i, .state_i);
 
@@ -109,6 +112,8 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual entropy_subsys_fifo_exception_if#(1))::set(null, "*.env",
         "precon_fifo_vif", dut.u_entropy_src_core.u_prim_packer_fifo_precon.u_fifo_exc_if);
+    uvm_config_db#(virtual entropy_subsys_fifo_exception_if#(1))::set(null, "*.env",
+        "bypass_fifo_vif", dut.u_entropy_src_core.u_prim_packer_fifo_bypass.u_fifo_exc_if);
     uvm_config_db#(virtual entropy_src_fsm_cov_if)::set(null, "*.env", "main_sm_cov_vif",
         dut.u_entropy_src_core.u_entropy_src_main_sm.u_state_regs.u_fsm_cov_if);
     uvm_config_db#(virtual push_pull_if#(.HostDataWidth(entropy_src_pkg::RNG_BUS_WIDTH)))::set
