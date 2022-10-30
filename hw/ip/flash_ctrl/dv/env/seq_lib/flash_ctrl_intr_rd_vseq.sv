@@ -10,6 +10,8 @@ class flash_ctrl_intr_rd_vseq extends flash_ctrl_legacy_base_vseq;
 
   task pre_start();
     cfg.intr_mode = 1;
+    cfg.skip_init = 1;
+
     super.pre_start();
   endtask
   virtual task body();

@@ -27,7 +27,9 @@ class flash_ctrl_lcmgr_intg_vseq extends flash_ctrl_err_base_vseq;
 
       $assertoff(0, "tb.dut.u_flash_mp.NoReqWhenErr_A");
       `DV_CHECK(uvm_hdl_force(path, $urandom))
-      cfg.clk_rst_vif.wait_clks(10);
+      // Make sure this is not too long.
+      // If this is too long, it will causes other fatal errors.
+      cfg.clk_rst_vif.wait_clks(5);
       `DV_CHECK(uvm_hdl_release(path))
       collect_err_cov_status(ral.std_fault_status);
       csr_rd_check(.ptr(ral.std_fault_status.lcmgr_intg_err), .compare_value(1));

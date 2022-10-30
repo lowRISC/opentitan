@@ -132,6 +132,11 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
       `uvm_info(`gfn, $sformatf("MP regions values %p", mp_regions[k]), UVM_HIGH)
     end
 
+    for (int i = 1; i < 4; i++) begin
+      mp_info_pages[0][0][i].ecc_en = MuBi4True;
+      mp_info_pages[0][0][i].scramble_en = MuBi4True;
+    end
+
     foreach (mp_info_pages[i, j, k]) begin
       flash_ctrl_mp_info_page_cfg(i, j, k, mp_info_pages[i][j][k]);
       `uvm_info(`gfn, $sformatf("MP INFO regions values %p", mp_info_pages[i][j][k]), UVM_HIGH)
@@ -139,7 +144,6 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     //Enable Bank erase
     bank_erase_en = {NumBanks{1'b1}};
     flash_ctrl_bank_erase_cfg(.bank_erase_en(bank_erase_en));
-
     flash_op.op  = FlashOpProgram;
     flash_op_inv = flash_op;
     flash_op_rd  = flash_op;
@@ -155,6 +159,7 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     flash_op_inv.op       = FlashOpInvalid;
     flash_ctrl_start_op(flash_op_inv);
     wait_flash_op_done();
+
     ral.err_code.op_err.predict(expect_alert);
     check_exp_alert_status(expect_alert, "op_err", flash_op_inv, flash_op_data);
     cfg.scb_h.exp_alert["recov_err"] = 0;
@@ -182,7 +187,6 @@ class flash_ctrl_invalid_op_vseq extends flash_ctrl_base_vseq;
     flash_ctrl_start_op(flash_op_rd);
     flash_ctrl_read(flash_op_rd.num_words, flash_op_data, poll_fifo_status);
     wait_flash_op_done();
-
   endtask : do_op
 
 endclass : flash_ctrl_invalid_op_vseq

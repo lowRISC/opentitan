@@ -116,6 +116,7 @@ package flash_ctrl_env_pkg;
   parameter uint FlashCreatorPartStartAddr = 32'h00000800;  // Info Partition Page 1
   parameter uint FlashOwnerPartStartAddr = 32'h00001000;  // Info Partition Page 2
   parameter uint FlashIsolPartStartAddr = 32'h00001800;
+  parameter uint FlashIsolPartEndAddr   = 32'h00001FFF;
 
   parameter uint FlashData0StartAddr = 32'h00000000;
   parameter uint FlashData0EndAddr = 32'h00080000;
@@ -518,6 +519,21 @@ package flash_ctrl_env_pkg;
                                                req.part, req.info_sel))
     return FlashPartData;
   endfunction // get_part_name
+
+  // Struct convertion from rtl to dv.
+  function automatic flash_bank_mp_info_page_cfg_t conv2env_mp_info(info_page_cfg_t info);
+    flash_bank_mp_info_page_cfg_t env_info;
+
+    env_info.en    = info.en;
+    env_info.read_en       = info.rd_en;
+    env_info.program_en  = info.prog_en;
+    env_info.erase_en      = info.erase_en;
+    env_info.scramble_en = info.scramble_en;
+    env_info.ecc_en        = info.ecc_en;
+    env_info.he_en         = info.he_en;
+    return env_info;
+  endfunction
+
 
   // package sources
   `include "flash_mem_bkdr_util.sv"

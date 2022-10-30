@@ -236,13 +236,19 @@ class flash_ctrl_hw_sec_otp_vseq extends flash_ctrl_base_vseq;
     flash_bank_mp_info_page_cfg_t info_regions[flash_ctrl_reg_pkg::NumInfos0];
 
     foreach (info_regions[i]) begin
-      info_regions[i].en         = MuBi4True;
-      info_regions[i].read_en    = MuBi4True;
-      info_regions[i].program_en = MuBi4True;
-      info_regions[i].erase_en   = MuBi4True;
-    end
-
-    foreach (info_regions[i]) begin
+      // Get secret partition cfg from flash_ctrl_pkg
+      if ( i inside {1, 2}) begin
+        // Copy protection from hw_cfg.
+        info_regions[i] = conv2env_mp_info(flash_ctrl_pkg::CfgAllowRead);
+        // Update program and erase control for the test purpose.
+        info_regions[i].program_en = MuBi4True;
+        info_regions[i].erase_en   = MuBi4True;
+      end else begin
+        info_regions[i].en         = MuBi4True;
+        info_regions[i].read_en    = MuBi4True;
+        info_regions[i].program_en = MuBi4True;
+        info_regions[i].erase_en   = MuBi4True;
+      end
       flash_ctrl_mp_info_page_cfg(.bank(0), .info_part(0), .page(i), .page_cfg(info_regions[i]));
     end
 

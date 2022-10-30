@@ -87,11 +87,30 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task pre_start();
     `uvm_create_on(callback_vseq, p_sequencer);
+
+    //Create key before mem init
+    otp_addr_key = {$urandom, $urandom, $urandom, $urandom};
+    otp_addr_rand_key = {$urandom, $urandom, $urandom, $urandom};
+    otp_data_key = {$urandom, $urandom, $urandom, $urandom};
+    otp_data_rand_key = {$urandom, $urandom, $urandom, $urandom};
+
+    cfg.otp_addr_key = otp_addr_key;
+    cfg.otp_data_key = otp_data_key;
+
     cfg.flash_ctrl_vif.rma_req <= lc_ctrl_pkg::Off;
     cfg.flash_ctrl_vif.rma_seed <= LC_FLASH_RMA_SEED_DEFAULT;
     otp_model();  // Start OTP Model
     super.pre_start();
     cfg.alert_max_delay_in_ns = cfg.alert_max_delay * (cfg.clk_rst_vif.clk_period_ps / 1000.0);
+
+    // Some test needs pre init states.
+    // Use this option to skip waiting for buffer enable.
+    if (cfg.skip_init == 0) begin
+       csr_wr(.ptr(ral.init), .value(1));
+       `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rd_buf_en == 1 || cfg.skip_init_buf_en == 1);,
+                    "Timed out waiting for rd_buf_en",
+                    50_000)
+    end
   endtask : pre_start
 
   virtual task dut_shutdown();
@@ -108,6 +127,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       cfg.flash_mem_bkdr_init(part, flash_init);
       part = part.next();
     end while (part != part.first());
+    // After initialize flash, scramble secret partition
+    update_secret_partition();
+
     // Wait for flash_ctrl to finish initializing on every reset
     // We probably need a parameter to skip this for certain tests
     csr_spinwait(.ptr(ral.status.init_wip), .exp_data(1'b0));
@@ -261,11 +283,12 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       bit clear_op_status = 1'b1, time timeout_ns = 10_000_000
   );  // Added because mass(bank) erase is longer then default timeout.
     uvm_reg_data_t data;
-    csr_spinwait(.ptr(ral.op_status),
+    csr_spinwait(.ptr(ral.op_status.done),
                  .exp_data(1'b1),
                  .timeout_ns(timeout_ns));
 
     if (clear_op_status) begin
+      csr_rd(.ptr(ral.op_status), .value(data));
       data = get_csr_val_with_updated_field(ral.op_status.done, data, 0);
       csr_wr(.ptr(ral.op_status), .value(data));
     end
@@ -289,18 +312,18 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   virtual task wait_flash_ctrl_prog_fifo_not_full();
     // TODO: if intr enabled, then check interrupt, else check status.
     bit prog_full;
-    `DV_SPINWAIT(do begin
-        csr_rd(.ptr(ral.status.prog_full), .value(prog_full));
-      end while (prog_full);, "wait_flash_ctrl_prog_fifo_not_full timeout occurred!")
+    csr_spinwait(.ptr(ral.status.prog_full),
+                 .compare_op(CompareOpNe),
+                 .exp_data(1));
   endtask : wait_flash_ctrl_prog_fifo_not_full
 
   // Wait for rd fifo to not be empty.
   virtual task wait_flash_ctrl_rd_fifo_not_empty();
     // TODO: if intr enabled, then check interrupt, else check status.
     bit read_empty;
-    `DV_SPINWAIT(do begin
-        csr_rd(.ptr(ral.status.rd_empty), .value(read_empty));
-      end while (read_empty);, "wait_flash_ctrl_rd_fifo_not_empty timeout occurred!")
+    csr_spinwait(.ptr(ral.status.rd_empty),
+                 .compare_op(CompareOpNe),
+                 .exp_data(1));
   endtask : wait_flash_ctrl_rd_fifo_not_empty
 
   // Starts an Operation on the Flash Controller
@@ -503,7 +526,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     bit               poll_fifo_status;
     data_q_t          exp_data;
     flash_op_t        flash_op;
+    bit               scr_en;
 
+    scr_en = (flash_ctrl_pkg::CfgAllowRead.scramble_en == MuBi4True);
     // Flash Operation Assignments
     flash_op.op                         = op;
     flash_op.partition                  = FlashPartInfo;
@@ -544,14 +569,18 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         flash_ctrl_start_op(flash_op);
         flash_ctrl_write(flash_op_data, poll_fifo_status);
         wait_flash_op_done(.timeout_ns(cfg.seq_cfg.prog_timeout_ns));
-        if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op, exp_data);
+        if (cfg.seq_cfg.check_mem_post_tran) begin
+          cfg.flash_mem_bkdr_read_check(flash_op, exp_data, , scr_en);
+        end
       end
       flash_ctrl_pkg::FlashOpRead: begin
         // Read Frontdoor, Compare Backdoor
         flash_ctrl_start_op(flash_op);
         flash_ctrl_read(flash_op.num_words, flash_op_data, poll_fifo_status);
         wait_flash_op_done();
-        if (cfg.seq_cfg.check_mem_post_tran) cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data);
+        if (cfg.seq_cfg.check_mem_post_tran) begin
+          cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data, 1, scr_en);
+        end
       end
       default: `uvm_error(`gfn, "Flash Operation Unrecognised, FAIL")
     endcase
@@ -638,8 +667,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       forever begin  // addr
         @(posedge cfg.clk_rst_vif.rst_n);
         @(posedge cfg.flash_ctrl_vif.otp_req.addr_req);
-        otp_addr_key = {$urandom, $urandom, $urandom, $urandom};
-        otp_addr_rand_key = {$urandom, $urandom, $urandom, $urandom};
         otp_key_init_done[1] = 0;
         `uvm_info(`gfn, $sformatf("OTP Addr Key Applied to DUT : otp_addr_key : %0x",
           otp_addr_key), UVM_MEDIUM)
@@ -659,8 +686,6 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       forever begin  // data
         @(posedge cfg.clk_rst_vif.rst_n);
         @(posedge cfg.flash_ctrl_vif.otp_req.data_req);
-        otp_data_key = {$urandom, $urandom, $urandom, $urandom};
-        otp_data_rand_key = {$urandom, $urandom, $urandom, $urandom};
         otp_key_init_done[0] = 0;
         cfg.flash_ctrl_vif.otp_rsp.key = otp_data_key;
         cfg.flash_ctrl_vif.otp_rsp.rand_key = otp_data_rand_key;
@@ -891,7 +916,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
   endtask : do_flash_op_rma
 
   // Task to Program the Entire Flash Memory
-  virtual task flash_ctrl_write_extra(flash_op_t flash_op, data_q_t data, bit check_match = 1);
+  virtual task flash_ctrl_write_extra(flash_op_t flash_op, data_q_t data,
+                                      bit check_match = 1, bit scr_en = 0);
 
     // Local Signals
     uvm_reg_data_t           reg_data;
@@ -979,7 +1005,9 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     exp_data = cfg.calculate_expected_data(flash_op_copy, data_copy);
 
     if (cfg.seq_cfg.check_mem_post_tran) begin
-      cfg.flash_mem_bkdr_read_check(flash_op_copy, exp_data, check_match);
+      flash_op_copy.otf_addr = flash_op_copy.addr;
+      flash_op_copy.otf_addr[BusAddrByteW-2:OTFHostId] = 'h0;
+      cfg.flash_mem_bkdr_read_check(flash_op_copy, exp_data, check_match, scr_en);
     end
   endtask : flash_ctrl_write_extra
 
@@ -1362,5 +1390,40 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     rdata[idx[1]] = ~rdata[idx[1]];
     `DV_CHECK(uvm_hdl_force(path, rdata));
   endfunction
+
+  // Identify secret partition from flash_op.
+  function bit is_secret_part(flash_op_t op);
+    return ( op.partition == FlashPartInfo &&
+             op.addr inside {[FlashCreatorPartStartAddr:FlashIsolPartEndAddr]});
+  endfunction // is_secret_part
+
+  // Update secret partition with scrambled and ecc enabled data.
+  function void update_secret_partition(bit dis = 0);
+    uvm_hdl_data_t data;
+    flash_otf_item item;
+    bit [BankAddrW-1:0] mem_addr;
+    int                 page = 1;
+
+    repeat(3) begin
+      int page_st_addr = page*2048;
+
+      for (int addr = page_st_addr; addr < (page_st_addr + 8*256); addr += 8) begin
+        `uvm_create_obj(flash_otf_item, item)
+        data = cfg.mem_bkdr_util_h[FlashPartInfo][0].read(addr);
+        item.dq.push_back(data[31:0]);
+        item.dq.push_back(data[63:32]);
+        // only scr/ecc enable counts.
+        item.region.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
+        item.region.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
+        item.scramble(otp_addr_key, otp_data_key, addr, dis);
+        cfg.mem_bkdr_util_h[FlashPartInfo][0].write(addr, item.fq[0]);
+        mem_addr = addr >> 3;
+        cfg.otf_scb_h.info_mem[0][0][mem_addr] = item.fq[0];
+        cfg.scb_flash_info[addr] = item.fq[0][31:0];
+        cfg.scb_flash_info[addr+4] = item.fq[0][63:32];
+      end // for (int addr = page_st_addr; addr < (page_st_addr + 8*4); addr += 8)
+      page++;
+    end
+  endfunction // update_secret_partition
 
 endclass : flash_ctrl_base_vseq

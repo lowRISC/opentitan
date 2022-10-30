@@ -34,6 +34,9 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
   // monitor_tb_mem off
   bit mem_mon_off = 0;
 
+  // Stop egress forever process
+  bit stop = 0;
+
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
     foreach (eg_exp_ctrl_fifo[i]) begin
@@ -198,18 +201,30 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
               $sformatf("op:%s fq:%0d cnt:%0d rtlff:%0d", item.cmd.op.name(),
                         item.fq.size(), eg_exp_cnt++, eg_rtl_fifo[bank].used()),
               UVM_MEDIUM)
-
-    case (item.cmd.op)
-      FlashOpProgram:begin
-        process_write(item, bank);
-      end
-      FlashOpRead:begin
-        process_read(item, bank);
-      end
-      default:begin
-        // TODO support other commands
-      end
-    endcase
+    fork
+      begin : isolation_fork
+        fork
+          begin
+            case (item.cmd.op)
+              FlashOpProgram:begin
+                process_write(item, bank);
+              end
+              FlashOpRead:begin
+                process_read(item, bank);
+              end
+              default:begin
+                // Do nothing for the other commands
+              end
+            endcase // case (item.cmd.op)
+          end // fork begin
+          begin
+            wait (stop);
+          end
+        join_any
+        #0;
+        disable fork;
+      end // block: isolation_fork
+    join
   endtask
 
   // Scoreboard process read in following order.
@@ -316,6 +331,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     `uvm_info("process_write", $sformatf("process_write: addr:0x%x bank:%0d colsz:%0d ffsz:%0d",
                        exp.cmd.otf_addr, bank, col_sz, eg_rtl_ctrl_fifo[bank].used()), UVM_MEDIUM)
     eg_rtl_ctrl_fifo[bank].get(item);
+
     `uvm_create_obj(flash_otf_item, obs)
     obs = item;
 
@@ -335,6 +351,11 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     string str = $sformatf("%s_comp_bank%0d", rw, bank);
     bit    err = 0;
 
+    // Fatal alert from host interface can disturb core tlul
+    if (cfg.scb_h.alert_count["fatal_err"]) begin
+       `uvm_info(`gfn, "comparison skipped due to fatal error is detected", UVM_MEDIUM)
+       return;
+    end
     if (comp_off) return;
 
     foreach (obs[i]) begin
@@ -480,6 +501,10 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
        end
        data_mem[bank][rcv.mem_addr] = exp.req.prog_full_data;
      end else begin
+        `uvm_info(`gfn, $sformatf("bank:%0d sel:%0d addr:%x",
+                                  bank, rcv.mem_info_sel, rcv.mem_addr), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("scb_rd_data:%x prog_data:%x",
+             info_mem[bank][rcv.mem_info_sel][rcv.mem_addr], exp.req.prog_full_data), UVM_HIGH)
        if (info_mem[bank][rcv.mem_info_sel].exists(rcv.mem_addr)) begin
          corrupt_entry[entry] = 1;
          rd_data = info_mem[bank][rcv.mem_info_sel][rcv.mem_addr];

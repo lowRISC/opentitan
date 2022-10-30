@@ -17,12 +17,9 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
     ReadOnlyTest,
     WriteOnlyTest
   } test_type_e;
+  int          round = 0;
 
   virtual task body();
-    int round = 0;
-    flash_init = FlashMemInitRandomize;
-    reset_flash();
-
     // INITIALIZE FLASH REGIONS
     // All on to configure secret info_page_cfg
     all_sw_rw_en();
@@ -39,7 +36,10 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
       randcase
         1: check_lc_ctrl(cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en, FlashIsolPart, WriteOnlyTest);
         1: check_lc_ctrl(cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en, FlashIsolPart, ReadOnlyTest);
-      endcase
+      endcase // randcase
+
+      // Drain between iteration
+       #1us;
     end // repeat (10)
   endtask // body
 
@@ -47,7 +47,8 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
                      test_type_e test = AccessTest);
     flash_op_e flash_op;
     bit is_valid;
-
+    `uvm_info(`gfn, $sformatf("iter%0d:info:%s test:%s begin",
+                              round, part.name, test.name), UVM_HIGH)
     if (test == AccessTest) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flash_op,
                                          flash_op != FlashOpInvalid;)
@@ -73,6 +74,8 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
   task do_flash_op_info_part(flash_sec_part_e part, flash_op_e op, bit is_valid);
     data_q_t flash_op_data;
     flash_op_t flash_op;
+    bit scr_en;
+
     flash_op.op = op;
     flash_op.erase_type = FlashErasePage;
 
@@ -97,6 +100,13 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
     endcase
 
     flash_op_data = '{};
+    `uvm_info(`gfn, $sformatf("iter%0d:info:%s is_valid:%0b op:%p",
+                              round, part.name, is_valid, flash_op), UVM_HIGH)
+    if (part == FlashIsolPart) begin
+      scr_en = 1;
+    end else begin
+      scr_en = (flash_ctrl_pkg::CfgAllowRead.scramble_en == MuBi4True);
+    end
     case (op)
       FlashOpErase: begin
         if (!is_valid) set_otf_exp_alert("recov_err");
@@ -114,16 +124,21 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
         end
         // This task issues flash_ctrl.control write 32 times
         cfg.flash_mem_bkdr_init(flash_op.partition, FlashMemInitSet);
-        flash_ctrl_write_extra(flash_op, flash_op_data, is_valid);
-
+        flash_ctrl_write_extra(flash_op, flash_op_data, is_valid, scr_en);
       end
       FlashOpRead: begin
         if (!is_valid) set_otf_exp_alert("recov_err");
-        cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
+
+        if (scr_en) begin
+           // scramble secret partition
+           update_secret_partition();
+        end else begin
+           cfg.flash_mem_bkdr_write(.flash_op(flash_op), .scheme(FlashMemInitRandomize));
+        end
         flash_ctrl_start_op(flash_op);
         flash_ctrl_read(flash_op.num_words, flash_op_data, 1);
         wait_flash_op_done();
-        cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data, is_valid);
+        cfg.flash_mem_bkdr_read_check(flash_op, flash_op_data, is_valid, scr_en);
       end
       default: `uvm_error(`gfn, $sformatf("%s op is not supported in this task",
                                           op.name))
@@ -132,10 +147,11 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
 
   task init_sec_info_part();
     flash_bank_mp_info_page_cfg_t info_regions = '{default: MuBi4True};
-    info_regions.ecc_en = MuBi4False;
-    info_regions.scramble_en = MuBi4False;
-
     for (int i = 1; i < 4; i++) begin
+      if (i < 3) begin
+         info_regions.scramble_en = flash_ctrl_pkg::CfgAllowRead.scramble_en;
+         info_regions.ecc_en = flash_ctrl_pkg::CfgAllowRead.ecc_en;
+      end
       flash_ctrl_mp_info_page_cfg(0, 0, i, info_regions);
     end
   endtask // init_info_part

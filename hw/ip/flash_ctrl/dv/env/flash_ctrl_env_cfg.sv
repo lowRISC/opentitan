@@ -198,6 +198,14 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Store program data for read back check
   data_q_t prog_data[flash_op_t];
 
+  // Pointer for bkdr mem task.
+  logic [KeyWidth-1:0] otp_addr_key;
+  logic [KeyWidth-1:0] otp_data_key;
+
+  bit                  skip_init = 0;
+  bit                  skip_init_buf_en = 0;
+  bit                  wr_rnd_data = 1;
+
   `uvm_object_utils(flash_ctrl_env_cfg)
   `uvm_object_new
 
@@ -388,6 +396,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
         `uvm_error(`gfn, $sformatf("Undefined initialization scheme - %s", scheme.name()))
       end
     endcase
+
     // Update the memory model with the initialization data
     if (scb_check) update_partition_mem_model(part);
   endtask : flash_mem_bkdr_init
@@ -655,9 +664,27 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // TODO: support for partition.
   virtual function void flash_mem_bkdr_read_check(flash_op_t flash_op,
                                                   const ref data_q_t exp_data,
-                                                  input bit check_match = 1);
+                                                  input bit check_match = 1,
+                                                  bit scr_en = 0);
     data_q_t data;
-    flash_mem_bkdr_read(flash_op, data);
+    flash_otf_item item;
+
+    // If scramble is enabled, read data and descramble before return.
+    if (scr_en) begin
+      `uvm_create_obj(flash_otf_item, item)
+      flash_mem_otf_read(flash_op, item.fq);
+      flash_op.otf_addr = flash_op.addr;
+      flash_op.otf_addr[BusAddrByteW-2:OTFHostId] = 'h0;
+
+      item.region.scramble_en = MuBi4True;
+      item.region.ecc_en = MuBi4True;
+      item.mem_addr = flash_op.otf_addr>>3;
+      item.descramble(otp_addr_key, otp_data_key);
+      foreach (item.dq[i]) data[i] = item.dq[i];
+    end else begin
+      flash_mem_bkdr_read(flash_op, data);
+    end
+
     foreach (data[i]) begin
       if (check_match) begin
         `DV_CHECK_CASE_EQ(data[i], exp_data[i])

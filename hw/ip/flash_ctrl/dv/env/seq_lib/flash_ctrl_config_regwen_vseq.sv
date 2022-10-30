@@ -43,10 +43,10 @@ class flash_ctrl_config_regwen_vseq extends flash_ctrl_otf_base_vseq;
 
     // Launch long operation
     flash_program_data_c.constraint_mode(0);
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(rand_op, rand_op.op == FlashOpProgram;)
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(rand_op, rand_op.op == FlashOpProgram;
+                                          rand_op.partition == FlashPartData;)
     rand_op.addr[8:0] = 0;
     rand_op.num_words = 16;
-
     flash_ctrl_start_op(rand_op);
     csr_rd(.ptr(ral.control), .value(exp_data));
 
