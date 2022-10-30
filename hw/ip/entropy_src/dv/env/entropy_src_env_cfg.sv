@@ -32,9 +32,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   // handle to the interrupt interface
   dv_utils_pkg::intr_vif interrupt_vif;
-  // Pointer to the preconditioning fifo exception interface.
+  // Pointer to the preconditioning and bypass fifo exception interfaces.
   // (For tracking errors during FW_OV mode)
   virtual entropy_subsys_fifo_exception_if#(1) precon_fifo_vif;
+  virtual entropy_subsys_fifo_exception_if#(1) bypass_fifo_vif;
 
   // Pointer to the FSM state tracking interface.
   // (Coverage completion requires earlier notice of following state).
