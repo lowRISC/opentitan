@@ -44,6 +44,11 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
         // make sure all address are 8 byte aligned.
         rand_op.addr[2:0] = 'h0;
         rand_op.otf_addr[2:0] = 'h0;
+
+        // Secret partition is hard coded to scr/ecc enable during init.
+        // Cannot participate this test.
+        if (is_secret_part(rand_op)) continue;
+
         if (rand_op.num_words % 2) rand_op.num_words++;
 
         laddr_q = generate_all_addr(rand_op);
@@ -100,7 +105,14 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
         1: begin
           `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(rand_op,
                                                 rand_op.op == FlashOpProgram;)
+          // make sure all address are 8 byte aligned.
+          rand_op.addr[2:0] = 'h0;
+          rand_op.otf_addr[2:0] = 'h0;
+
+          if (rand_op.num_words % 2) rand_op.num_words++;
           my_op = rand_op;
+          if (is_secret_part(my_op)) continue;
+
           filesys_ctrl_prgm(.flash_op_p(my_op), .all_zero(0),
                             .wdata(readback_data[my_op]));
         end
@@ -134,7 +146,8 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
     bit [BusBankAddrW-1:0] mem_addr = (flash_op_p.addr >> 3);
     bit                    ovwr_zero = 0;
 
-    `uvm_info(`gfn, $sformatf("PROGRAM ADDRESS: 0x%0h", flash_op_p.addr), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("PROGRAM ADDRESS: 0x%0h flash_op:%p is_secret:%b",
+              flash_op_p.addr, flash_op_p, is_secret_part(flash_op_p)), UVM_MEDIUM)
     // Randomize Write Data
     for (int j = 0; j < flash_op_p.num_words; j++) begin
       if (j % 2 == 0) begin
@@ -191,8 +204,10 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
   task filesys_ctrl_read(flash_op_t flash_op_r, output data_q_t rdata, input bit serr);
     bit poll_fifo_status = 1;
     int size;
-    rdata = '{};
+     `uvm_info(`gfn, $sformatf("filesys_ctrl_read: flash_op:%p is_secret:%b",
+               flash_op_r, is_secret_part(flash_op_r)), UVM_MEDIUM)
 
+    rdata = '{};
     size = flash_op_r.num_words / 2;
     if (serr) begin
       filesystem_add_bit_err(flash_op_r.partition, flash_op_r.addr, size);

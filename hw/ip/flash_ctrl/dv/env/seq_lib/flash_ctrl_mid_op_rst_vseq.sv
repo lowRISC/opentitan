@@ -97,6 +97,11 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
     };
   }
 
+  task pre_start();
+    cfg.skip_init_buf_en = 1;
+    super.pre_start();
+  endtask // pre_start
+
   virtual task body();
     cfg.flash_ctrl_vif.lc_creator_seed_sw_rw_en = lc_ctrl_pkg::On;
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::On;
@@ -147,6 +152,7 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
       join
       wait_cfg_prog_rd();
     end
+
     // erase suspend interrupt
     fork
       begin : isolation_fork_erase_suspend
@@ -164,11 +170,13 @@ class flash_ctrl_mid_op_rst_vseq extends flash_ctrl_base_vseq;
       end : isolation_fork_erase_suspend
     join
     wait_cfg_prog_rd();
+
     // cleaning before full memory check
     for (int i = 0; i < NUM_TRANS; i++) begin
       do_erase(flash_op_q[i]);
       wait_flash_op_done(.timeout_ns(cfg.seq_cfg.erase_timeout_ns));
     end
+
     // read interrupt
     `DV_CHECK_RANDOMIZE_WITH_FATAL(this, flash_op.op == FlashOpRead;
                                          flash_op.partition == FlashPartData;

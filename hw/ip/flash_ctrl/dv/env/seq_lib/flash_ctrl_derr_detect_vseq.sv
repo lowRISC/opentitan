@@ -16,7 +16,7 @@ class flash_ctrl_derr_detect_vseq extends flash_ctrl_otf_base_vseq;
     cfg.scb_h.do_alert_check = 1;
     cfg.m_tl_agent_cfg.check_tl_errs = 0;
     cfg.m_tl_agent_cfgs["flash_ctrl_eflash_reg_block"].check_tl_errs = 0;
-
+    cfg.otf_scb_h.stop = 0;
     cfg.clk_rst_vif.wait_clks(5);
 
     fork

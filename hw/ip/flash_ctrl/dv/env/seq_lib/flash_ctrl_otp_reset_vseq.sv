@@ -31,6 +31,12 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
                 DVWaitRmaRsp        = 7
                 } reset_index_e;
 
+
+  task pre_start();
+    cfg.skip_init = 1;
+    super.pre_start();
+  endtask
+
   task body();
     int state_wait_timeout_ns = 50000; // 50 us
     int long_wait_timeout_ns = 5000000; // 5ms
@@ -38,6 +44,7 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
     string path;
     logic [RmaSeedWidth-1:0] rma_seed;
      cfg.scb_h.do_alert_check = 0;
+
     repeat(4) begin
       update_assert(.enable(0));
       fork begin

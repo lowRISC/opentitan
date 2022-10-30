@@ -72,7 +72,6 @@ class flash_ctrl_hw_rma_reset_vseq extends flash_ctrl_hw_rma_vseq;
           end
           `uvm_info("Test", "RESET", UVM_LOW)
           lc_ctrl_if_rst();  // Restore lc_ctrl_if to Reset Values
-          cfg.seq_cfg.disable_flash_init = 1;  // Disable Flash Random Initialisation
           apply_reset();
         end
       join_any
