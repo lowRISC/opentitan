@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -16,6 +17,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static dif_pinmux_t pinmux;
 static dif_sysrst_ctrl_t sysrst_ctrl;
+static dif_flash_ctrl_state_t flash;
 
 const uint32_t kTestPhaseTimeoutUsec = 100;
 
@@ -92,17 +94,18 @@ static void pinmux_setup(void) {
 }
 
 // Waits for the kTestPhase variable to be changed by a backdoor overwrite
-// from the testbench in chip_sw_sysrst_ctrl_outputs_vseq.sv. This will
-// indicate that the testbench is ready to proceed with the
-// next phase of the test.
-static void wait_next_test_phase(void) {
-  uint8_t current_phase = kTestPhase;
+// from the testbench in `chip_sw_sysrst_ctrl_ec_rst_l_vseq.sv`. This will
+// indicate that the testbench is ready to proceed with the next phase of the
+// test. The function `flash_ctrl_testutils_backdoor_wait_update` it's used to
+// deal with possible caching that can prevent the software to read the new
+// value of `kTestPhase`.
+static void sync_with_testbench(void) {
   // Set WFI status for testbench synchronization,
   // no actual WFI instruction is issued.
   test_status_set(kTestStatusInWfi);
   test_status_set(kTestStatusInTest);
-  IBEX_SPIN_FOR(current_phase != kTestPhase, kTestPhaseTimeoutUsec);
-  LOG_INFO("Test phase = %d", kTestPhase);
+  flash_ctrl_testutils_backdoor_wait_update(&flash, (uintptr_t)&kTestPhase,
+                                            kTestPhaseTimeoutUsec);
 }
 
 // Enables the sysrst_ctrl overrides for the output pins. Allows
@@ -141,6 +144,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR),
       &sysrst_ctrl));
+  flash_ctrl_testutils_backdoor_init(&flash);
 
   while (kTestPhase < kTestPhaseDone) {
     switch (kTestPhase) {
@@ -169,7 +173,7 @@ bool test_main(void) {
         LOG_ERROR("Unexpected test phase : %d", kTestPhase);
         break;
     }
-    wait_next_test_phase();
+    sync_with_testbench();
   }
   return true;
 }
