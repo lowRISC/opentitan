@@ -28,6 +28,10 @@
     <rule ccType="inst" domain="icc" entityName="entropy_src/&quot;entropy_src_xht_i.continuous_test&quot;" entityType="toggle" excTime="1666055353" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
     <rule ccType="inst" domain="icc" entityName="entropy_src/&quot;entropy_src_xht_i.test_fail_hi_pulse&quot;" entityType="toggle" excTime="1666055358" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
     <rule ccType="inst" domain="icc" entityName="entropy_src/&quot;entropy_src_xht_i.test_fail_lo_pulse&quot;" entityType="toggle" excTime="1666055364" name="exclude" reviewer="unknown" user="3" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="uvm_pkg/&quot;lockable_field_cov_of_entropy_src_reg_block.extht_hi_thresholds.fips_thresh&quot;" entityType="covergroup" excTime="1667143544" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="uvm_pkg/&quot;lockable_field_cov_of_entropy_src_reg_block.extht_hi_thresholds.bypass_thresh&quot;" entityType="covergroup" excTime="1667143544" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="uvm_pkg/&quot;lockable_field_cov_of_entropy_src_reg_block.extht_lo_thresholds.fips_thresh&quot;" entityType="covergroup" excTime="1667143544" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="uvm_pkg/&quot;lockable_field_cov_of_entropy_src_reg_block.extht_lo_thresholds.bypass_thresh&quot;" entityType="covergroup" excTime="1667143544" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
   </rules>
   <cache-map>
   </cache-map>
