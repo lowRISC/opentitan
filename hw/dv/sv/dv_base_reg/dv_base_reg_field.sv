@@ -89,10 +89,18 @@ class dv_base_reg_field extends uvm_reg_field;
     uvm_reg_data_t field_val = rw.value[0] & ((1 << get_n_bits())-1);
 
     // update intr_state mirrored value if this is an intr_test reg
-    if (is_intr_test_fld) begin
+    // if kind is UVM_PREDICT_DIRECT or UVM_PREDICT_READ, super.do_predict can handle
+    if (kind == UVM_PREDICT_WRITE && is_intr_test_fld) begin
       uvm_reg_field intr_state_fld = get_intr_state_field();
+      bit predict_val;
+      if (intr_state_fld.get_access == "RO") begin // status interrupt
+        predict_val = field_val;
+      end else begin // regular W1C interrupt
+        `DV_CHECK_STREQ(intr_state_fld.get_access, "W1C")
+        predict_val = field_val | `gmv(intr_state_fld);
+      end
       // use UVM_PREDICT_READ to avoid uvm_warning due to UVM_PREDICT_DIRECT
-      void'(intr_state_fld.predict(field_val | `gmv(intr_state_fld), .kind(UVM_PREDICT_READ)));
+      void'(intr_state_fld.predict(predict_val, .kind(UVM_PREDICT_READ)));
     end
 
     super.do_predict(rw, kind, be);
