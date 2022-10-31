@@ -74,6 +74,13 @@ set_reset_scenario { \
     {constraint {@t0 0}}} \
   } -name SpidRstTxFifo -comment "SPI_DEVICE Async TX FIFO Functional Reset"
 
+# SPI_DEVICE CSb Reset. IP reset should be stable
+set_reset_scenario { \
+ { {top_earlgrey.u_spi_device.rst_csb_buf} {reset { @t0 1 } { #10 0} } } \
+ { u_ast.vcaon_pok { constraint { @t0 1 } } } \
+ { top_earlgrey.u_spi_device.rst_ni { constraint { @t0 1 } } } \
+} -name RstSpidCsb -comment "SPI_DEVICE CSb Assertion"
+
 # SPI_DEVICE TPM CSb Reset. SPID IP reset should be stable
 set_reset_scenario { \
   { {top_earlgrey.u_spi_device.rst_tpm_csb_buf} \
