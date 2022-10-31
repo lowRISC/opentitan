@@ -14,14 +14,22 @@
  */
 const int kOtbnWlenBytes = 256 / 8;
 
+otbn_result_t otbn_busy_check(otbn_t *ctx, bool *is_busy) {
+  dif_otbn_status_t status;
+  if (dif_otbn_get_status(&ctx->dif, &status) != kDifOk) {
+    return kOtbnError;
+  }
+  *is_busy = status != kDifOtbnStatusIdle && status != kDifOtbnStatusLocked;
+  return kOtbnOk;
+}
+
 otbn_result_t otbn_busy_wait_for_done(otbn_t *ctx) {
   bool busy = true;
   while (busy) {
-    dif_otbn_status_t status;
-    if (dif_otbn_get_status(&ctx->dif, &status) != kDifOk) {
-      return kOtbnError;
+    otbn_result_t result = otbn_busy_check(ctx, &busy);
+    if (result != kOtbnOk) {
+      return result;
     }
-    busy = status != kDifOtbnStatusIdle && status != kDifOtbnStatusLocked;
   }
 
   dif_otbn_err_bits_t err_bits;

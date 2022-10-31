@@ -223,6 +223,15 @@ otbn_result_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
 otbn_result_t otbn_execute(otbn_t *ctx);
 
 /**
+ * Checks if OTBN is in busy status.
+ *
+ * @param ctx The context object
+ * @param[out] is_busy Set to true if OTBN is not in idle or in an error state.
+ * @return otbn_result_t The result of the operation.
+ */
+otbn_result_t otbn_busy_check(otbn_t *ctx, bool *is_busy);
+
+/**
  * Busy waits for OTBN to be done with the current operation.
  *
  * After an operation, triggered by a command, OTBN is back in idle state.
