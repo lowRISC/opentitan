@@ -1146,7 +1146,7 @@
     }
     {
       name: chip_sw_keymgr_sideload_kmac
-      uvm_test_seq: chip_sw_base_vseq
+      uvm_test_seq: chip_sw_keymgr_sideload_kmac_vseq
       sw_images: ["//sw/device/tests/sim_dv:keymgr_sideload_kmac_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=20_000_000"]

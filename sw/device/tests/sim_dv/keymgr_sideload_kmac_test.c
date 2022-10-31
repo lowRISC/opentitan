@@ -73,7 +73,7 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestKmac;
   keymgr_testutils_generate_versioned_key(keymgr, sideload_params);
-  LOG_INFO("Keymgr generated HW output for KMAC.");
+  LOG_INFO("Keymgr generated HW output for KMAC at OwnerIntKey State.");
 
   kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey, kCustomString,
                       kCustomStringLen, kKmacMessage, kKmacMessageLen,
