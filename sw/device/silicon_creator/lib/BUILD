@@ -275,6 +275,16 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "otbn_util_unittest",
+    srcs = ["otbn_util_unittest.cc"],
+    deps = [
+        ":otbn_util",
+        "//hw/ip/otbn/data:otbn_regs",
+        "@googletest//:gtest_main",
+    ],
+)
+
 dual_cc_library(
     name = "shutdown",
     srcs = dual_inputs(
