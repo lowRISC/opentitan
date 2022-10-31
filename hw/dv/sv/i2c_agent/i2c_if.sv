@@ -157,11 +157,11 @@ interface i2c_if(
                                  input bit bit_i);
     sda_o = 1'b1;
     wait_for_dly(tc.tClockLow);
-    `uvm_info(msg_id, "device_send_bit::Drive bit", UVM_MEDIUM)
+    `uvm_info(msg_id, "device_send_bit::Drive bit", UVM_HIGH)
     sda_o = bit_i;
     wait_for_dly(tc.tSetupBit);
     @(posedge scl_i);
-    `uvm_info(msg_id, "device_send_bit::Value sampled ", UVM_MEDIUM)
+    `uvm_info(msg_id, "device_send_bit::Value sampled ", UVM_HIGH)
     // flip sda_target2host during the clock pulse of scl_host2target causes sda_unstable irq
     sda_o = ~sda_o;
     wait_for_dly(tc.tSdaUnstable);
