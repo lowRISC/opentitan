@@ -95,6 +95,7 @@ ifneq (${sw_images},)
 				bazel_cmd="./bazelisk.sh"; \
 			else \
 				echo "Building \"$${bazel_label}\" on air-gapped machine."; \
+				bazel_opts+=" --define SPECIFY_BINDGEN_LIBSTDCXX=true"; \
 				bazel_opts+=" --distdir=$${BAZEL_DISTDIR} --repository_cache=$${BAZEL_CACHE}"; \
 				bazel_cmd="bazel"; \
 			fi; \
