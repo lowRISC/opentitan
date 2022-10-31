@@ -136,5 +136,37 @@ TEST_F(OtbnAppTest, OtbnLoadInvalidApp) {
   EXPECT_EQ(otbn_load_app(&otbn, app), kErrorOtbnInvalidArgument);
 }
 
+TEST_F(OtbnAppTest, OtbnExecuteApp) {
+  EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x01);
+  ExpectCmdRun(kOtbnCmdExecute, kOtbnErrBitsNoError, kOtbnStatusIdle);
+
+  otbn_t otbn;
+  otbn_init(&otbn);
+  // Pretend an app has already been loaded.
+  otbn.app_is_loaded = kHardenedBoolTrue;
+
+  EXPECT_EQ(otbn_execute_app(&otbn), kErrorOk);
+}
+
+TEST_F(OtbnAppTest, OtbnExecuteBusy) {
+  EXPECT_SEC_WRITE32(base_ + OTBN_CTRL_REG_OFFSET, 0x01);
+  ExpectCmdRun(kOtbnCmdExecute, kOtbnErrBitsNoError, kOtbnStatusBusyExecute);
+
+  otbn_t otbn;
+  otbn_init(&otbn);
+  // Pretend an app has already been loaded.
+  otbn.app_is_loaded = kHardenedBoolTrue;
+
+  EXPECT_EQ(otbn_execute_app(&otbn), kErrorOtbnExecutionFailed);
+}
+
+TEST_F(OtbnAppTest, OtbnExecuteNotLoaded) {
+  otbn_t otbn;
+  otbn_init(&otbn);
+
+  // No app has been loaded yet.
+  EXPECT_EQ(otbn_execute_app(&otbn), kErrorOtbnInvalidArgument);
+}
+
 }  // namespace
 }  // namespace otbn_util_unittest
