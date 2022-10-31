@@ -163,7 +163,7 @@ module entropy_src_main_sm
               state_d = StartupFail1;
             end else begin
               // Passed two consecutive tests
-              state_d = Sha3MsgDone;
+              state_d = Sha3Prep;
               rst_alert_cntr_o = 1'b1;
             end
           end
@@ -200,7 +200,7 @@ module entropy_src_main_sm
             if (alert_thresh_fail_i) begin
               state_d = AlertState;
             end else if (!ht_fail_pulse_i) begin
-              state_d = Sha3MsgDone;
+              state_d = Sha3Prep;
               rst_alert_cntr_o = 1'b1;
             end
           end
@@ -217,11 +217,6 @@ module entropy_src_main_sm
         if (!enable_i) begin
           state_d = Idle;
         end else if (!fw_ov_sha3_start_i) begin
-          state_d = Sha3MsgDone;
-        end
-      end
-      Sha3MsgDone: begin
-        if (!cs_aes_halt_ack_i) begin
           state_d = Sha3Prep;
         end
       end
@@ -246,13 +241,18 @@ module entropy_src_main_sm
       Sha3Done: begin
         if (!enable_i) begin
           sha3_done_o = prim_mubi_pkg::MuBi4True;
-          state_d = Sha3Quiesce;
+          state_d = Sha3MsgDone;
         end else begin
           if (main_stage_rdy_i) begin
             sha3_done_o = prim_mubi_pkg::MuBi4True;
             main_stage_push_o = 1'b1;
-            state_d = Sha3Quiesce;
+            state_d = Sha3MsgDone;
           end
+        end
+      end
+      Sha3MsgDone: begin
+        if (!cs_aes_halt_ack_i) begin
+          state_d = Sha3Quiesce;
         end
       end
       Sha3Quiesce: begin

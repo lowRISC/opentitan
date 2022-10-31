@@ -2442,8 +2442,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign msg_data[0] = pfifo_cond_wdata;
 
   // The SHA3 block cannot take messages except between the
-  // start and process pulses (Even though in this time it still asserts ready)
-  assign sha3_msg_end        = sha3_process;
+  // start and cs_aes_req pulses
+  assign sha3_msg_end        = cs_aes_halt_req;
 
   assign sha3_msg_rdy_mask_d = sha3_start ? 1'b1 :
                                sha3_msg_end ? 1'b0 :
