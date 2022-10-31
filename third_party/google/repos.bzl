@@ -42,3 +42,10 @@ def google_repos(
         strip_prefix = "googletest-release-1.11.0",
         url = "https://github.com/google/googletest/archive/refs/tags/release-1.11.0.zip",
     )
+
+    http_archive_or_local(
+        name = "rules_foreign_cc",
+        strip_prefix = "rules_foreign_cc-0.9.0",
+        sha256 = "2a4d07cd64b0719b39a7c12218a3e507672b82a97b98c6a89d38565894cf7c51",
+        url = "https://github.com/bazelbuild/rules_foreign_cc/archive/refs/tags/0.9.0.tar.gz",
+    )

@@ -98,11 +98,13 @@ app = typer.Typer(pretty_exceptions_enable=False)
 
 @app.command()
 def main(rom_kind: str = typer.Option(...),
+         openocd_path: str = typer.Option(...),
          openocd_earlgrey_config: str = typer.Option(...),
-         exit_success_pattern: Optional[str] = typer.Option(None),
-         bitstream_path: str = typer.Option(...),
+         openocd_jtag_adapter_config: str = typer.Option(...),
          gdb_script_path: str = typer.Option(...),
-         opentitantool_path: str = typer.Option(...)):
+         bitstream_path: str = typer.Option(...),
+         opentitantool_path: str = typer.Option(...),
+         exit_success_pattern: Optional[str] = typer.Option(None)):
 
     opentitantool_prefix = [
         opentitantool_path,
@@ -117,9 +119,9 @@ def main(rom_kind: str = typer.Option(...),
         bitstream_path,
     ]
     openocd_command = [
-        "openocd",
+        openocd_path,
         "-f",
-        "/usr/share/openocd/scripts/interface/ftdi/olimex-arm-usb-tiny-h.cfg",
+        openocd_jtag_adapter_config,
         "-c",
         "adapter speed 0; transport select jtag; reset_config trst_and_srst",
         "-f",
