@@ -80,6 +80,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
     list_of_alerts = edn_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_alert";
+    sec_cm_alert_name = "fatal_alert";
     super.initialize(csr_base_addr);
 
     // create config objects
