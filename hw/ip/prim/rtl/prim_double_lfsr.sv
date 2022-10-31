@@ -84,7 +84,7 @@ module prim_double_lfsr #(
     );
   end
 
-`ifndef SYNTHESIS
+`ifdef SIMULATION
 `ifndef VERILATOR
   // Ensure both LFSRs start off with the same default seed. if randomized in simulations.
   initial begin : p_sync_lfsr_default_seed
