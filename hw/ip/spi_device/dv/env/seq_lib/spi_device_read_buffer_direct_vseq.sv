@@ -51,9 +51,9 @@ class spi_device_read_buffer_direct_vseq extends spi_device_flash_mode_vseq;
     check_interrupts(.interrupts((1 << ReadbufWatermark)), .check_set(0));
 
     // testing ReadbufWatermark
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(read_threshold_val, read_threshold_val > 0;)
-    ral.read_threshold.set(read_threshold_val);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.read_threshold.threshold, value > 0;)
     csr_update(ral.read_threshold);
+    read_threshold_val = ral.read_threshold.get();
 
     if (read_threshold_val > 1) begin
       `uvm_info(`gfn, "reading from 0 to read_threshold_val - 2", UVM_MEDIUM)
