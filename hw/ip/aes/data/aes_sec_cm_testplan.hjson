@@ -189,9 +189,12 @@
     }
     {
       name: sec_cm_data_reg_local_esc
-      desc: "Verify the countermeasure(s) DATA_REG.LOCAL_ESC."
+      desc: '''
+            Verify the countermeasure(s) DATA_REG.LOCAL_ESC.
+            SVAs inside aes_core.sv are used to ensure that upon local escalation triggered through FI the cipher core doesn't release intermediate state into the readable output data or IV registers.
+            '''
       stage: V2S
-      tests: ["aes_alert_reset"]
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
   ]
 }

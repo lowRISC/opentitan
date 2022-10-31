@@ -960,4 +960,27 @@ module aes_core
   // Check parameters
   `ASSERT_INIT(AesNumSlicesCtr, NumSlicesCtr == 8)
 
+  // Signals used for assertions only.
+  logic [3:0][31:0] state_done_transposed, unused_state_done_transposed;
+  if (!SecMasking) begin : gen_state_done_transposed_unmasked
+    assign state_done_transposed = aes_transpose(state_done[0]);
+  end else begin : gen_state_done_transposed_masked
+    assign state_done_transposed = aes_transpose(state_done[0] ^ state_done[1]);
+  end
+  assign unused_state_done_transposed = state_done_transposed;
+
+  // Ensure that upon local escalation of any of the FSMs, no intermediate state is released from
+  // the cipher core into the software readable output data or IV registers.
+  `ASSERT(AesSecCmDataRegLocalEscDataOut, $changed(data_out_q) && alert_fatal_o &&
+      ($past(cipher_crypt, 2) == SP2V_HIGH || $past(cipher_crypt_busy, 2) == SP2V_HIGH) |=>
+      ($past(data_out_q) != $past(state_done_transposed, 2)) &&
+      ($past(data_out_q) != $past(state_done_transposed, 2) ^ $past(iv_q, 2)) &&
+      ($past(data_out_q) != $past(state_done_transposed, 2) ^ $past(data_in_prev_q, 2)))
+
+  `ASSERT(AesSecCmDataRegLocalEscIv, $changed(iv_q) && alert_fatal_o &&
+      ($past(cipher_crypt, 2) == SP2V_HIGH || $past(cipher_crypt_busy, 2) == SP2V_HIGH) |=>
+      ($past(iv_q) != $past(state_done_transposed, 2)) &&
+      ($past(iv_q) != $past(state_done_transposed, 2) ^ $past(iv_q, 2)) &&
+      ($past(iv_q) != $past(state_done_transposed, 2) ^ $past(data_in_prev_q, 2)))
+
 endmodule
