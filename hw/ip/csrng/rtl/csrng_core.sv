@@ -1017,7 +1017,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_prim_arbiter_ppc_acmd (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .req_chk_i(1'b1),
+    .req_chk_i(cs_enable_fo[1]),
     .req_i(cmd_arb_req),
     .data_i('{default: 1'b0}),
     .gnt_o(cmd_arb_gnt),
@@ -1423,7 +1423,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_prim_arbiter_ppc_updblk_arb (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .req_chk_i(1'b1),
+    .req_chk_i(cs_enable_fo[1]),
     .req_i({genblk_updblk_arb_req,cmdblk_updblk_arb_req}),
     .data_i(updblk_arb_din),
     .gnt_o({updblk_genblk_arb_req_rdy,updblk_cmdblk_arb_req_rdy}),
@@ -1516,7 +1516,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_prim_arbiter_ppc_benblk_arb (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
-    .req_chk_i(1'b1),
+    .req_chk_i(cs_enable_fo[1]),
     .req_i({genblk_benblk_arb_req,updblk_benblk_arb_req}),
     .data_i(benblk_arb_din),
     .gnt_o({genblk_benblk_arb_req_rdy,updblk_benblk_arb_req_rdy}),
