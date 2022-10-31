@@ -22,7 +22,6 @@ class aes_readability_vseq extends aes_base_vseq;
   aes_seq_item cfg_item;
   aes_message_item my_message;
   string str              ="";
-  logic [31:0]          reg_read;
 
   task body();
     aes_seq_item cfg_item       = new();         // the configuration for this message
