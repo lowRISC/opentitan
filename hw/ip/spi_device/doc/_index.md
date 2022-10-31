@@ -677,6 +677,13 @@ If `invalid_locality` configuration is set, the logic returns `INVALID` value to
 If the request is in the supported locality (0-4), the logic checks `TPM_ACCESS_x.activeLocality` then returns data based on the table 39 in the spec for Return-by-HW registers.
 Other registers in the table should be processed by SW.
 
+## Detecting Reliability Errors
+
+This version of the SPI_DEVICE IP implements the parity to detect bit flip errors on the internal SRAM.
+The HW checks the parity error when the SW reads data from the SRAM.
+The error is reported to the SW via TL D channel error signal.
+SW is recommended to discard the current context if any transaction is ongoing then to reset the IP.
+
 # Design Details
 
 ## Clock and Phase
