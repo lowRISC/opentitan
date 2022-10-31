@@ -309,7 +309,11 @@
           hwaccess: "hrw" // Updated by EN4B/EX4B
           desc: '''4B Address Mode enable.
 
-            This field configures the internal module to receive 32 bits of the SPI commands. The affected commands are the SPI read commands except QPI, and program commands.
+            This field configures the internal module to receive 32 bits of the
+            SPI commands. The affected commands are the SPI read commands
+            except QPI, and program commands. It is expected for SW to
+            configure this field at the configuration stage and leave the
+            updation to HW until next reset.
 
             Even though Read SFDP command has address fields, the SFDP command
             is not affected by this field. The command always parse 24 bits on
