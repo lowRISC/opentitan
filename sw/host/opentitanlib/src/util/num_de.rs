@@ -208,6 +208,19 @@ impl_parse_int_enc!(OctEncoded, 8, fmt::Octal, "0o");
 impl_parse_int_enc!(DecEncoded, 10, fmt::Display, "");
 impl_parse_int_enc!(HexEncoded, 16, fmt::LowerHex, "0x");
 
+impl ParseInt for Vec<u8> {
+    type FromStrRadixErr = ParseIntError;
+
+    fn from_str_radix(src: &str, radix: u32) -> Result<Self, ParseIntError> {
+        let mut bytes = vec![];
+        for digit_bytes in src.as_bytes().rchunks(2) {
+            let digits = std::str::from_utf8(digit_bytes).unwrap();
+            bytes.push(u8::from_str_radix(digits, radix)?);
+        }
+        Ok(bytes)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -236,5 +249,24 @@ mod test {
         assert_eq!(*data.dec, 77);
         assert_eq!(*data.hex, 119);
         Ok(())
+    }
+
+    #[test]
+    fn byte_field_test() {
+        assert_eq!(Vec::from_str("0x1"), Ok(vec![0x1]));
+        assert_eq!(
+            Vec::from_str("0x4b4b4b4b4b4ba5a5"),
+            Ok(vec![0xa5, 0xa5, 0x4b, 0x4b, 0x4b, 0x4b, 0x4b, 0x4b])
+        );
+        assert_eq!(
+            u64::from_ne_bytes(
+                Vec::from_str("0x4b4b4b4b4b4ba5a5")
+                    .unwrap()
+                    .try_into()
+                    .unwrap()
+            ),
+            u64::from_str("0x4b4b4b4b4b4ba5a5").unwrap()
+        );
+        assert!(Vec::from_str("-1").is_err());
     }
 }
