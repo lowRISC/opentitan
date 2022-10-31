@@ -37,6 +37,8 @@ interface fi_ctr_fsm_if
   function automatic void force_single_bit(int target);
     bit  read;
     $assertoff(0, "tb.dut");
+    $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscDataOut");
+    $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscIv");
     if (!uvm_hdl_check_path(intf_array[target])) begin
       `uvm_fatal("fi_ctr_fsm_if", $sformatf("PATH NOT EXISTING %m"))
     end

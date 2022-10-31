@@ -63,6 +63,8 @@ interface fi_control_if
   function automatic void force_single_bit(int target);
     bit  read;
     $assertoff(0, "tb.dut");
+    $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscDataOut");
+    $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscIv");
     if (!uvm_hdl_check_path(intf_array[target])) begin
       `uvm_fatal("fi_control_if", $sformatf("PATH NOT EXISTING %m"))
     end
@@ -86,6 +88,8 @@ interface fi_control_if
   function automatic void force_multi_bit(int target, bit [31:0] value);
     bit  read;
     $assertoff(0, "tb.dut");
+    $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscDataOut");
+    $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscIv");
     if (!uvm_hdl_check_path(intf_mul_array[target])) begin
       `uvm_fatal("fi_control_if", $sformatf("PATH NOT EXISTING %m"))
     end
