@@ -18,6 +18,7 @@
 namespace otbn_util_unittest {
 namespace {
 
+using ::testing::ElementsAre;
 using ::testing::Return;
 
 TEST(OtbnTest, OtbnInit) {
@@ -166,6 +167,53 @@ TEST_F(OtbnAppTest, OtbnExecuteNotLoaded) {
 
   // No app has been loaded yet.
   EXPECT_EQ(otbn_execute_app(&otbn), kErrorOtbnInvalidArgument);
+}
+
+class OtbnWriteTest : public OtbnTest {};
+
+TEST_F(OtbnWriteTest, Success) {
+  constexpr uint32_t kDestAddr = 6;
+  std::array<uint32_t, 2> test_data = {0x12345678, 0xabcdef01};
+
+  // Test assumption.
+  static_assert(
+      OTBN_DMEM_SIZE_BYTES >= sizeof(uint32_t) * test_data.size() + kDestAddr,
+      "OTBN DMEM size too small.");
+
+  EXPECT_CALL(rnd_, Uint32()).WillOnce(Return(0));
+  EXPECT_ABS_WRITE32(base_ + OTBN_DMEM_REG_OFFSET + kDestAddr, test_data[0]);
+  EXPECT_ABS_WRITE32(
+      base_ + OTBN_DMEM_REG_OFFSET + kDestAddr + sizeof(uint32_t),
+      test_data[1]);
+
+  otbn_t otbn;
+  otbn_init(&otbn);
+
+  EXPECT_EQ(otbn_copy_data_to_otbn(&otbn, 2, test_data.data(), kDestAddr),
+            kErrorOk);
+}
+
+class OtbnReadTest : public OtbnTest {};
+
+TEST_F(OtbnReadTest, Success) {
+  constexpr uint32_t kSrcAddr = 6;
+  std::array<uint32_t, 2> test_data = {0};
+
+  // Test assumption.
+  static_assert(
+      OTBN_DMEM_SIZE_BYTES >= sizeof(uint32_t) * test_data.size() + kSrcAddr,
+      "OTBN DMEM size too small.");
+
+  EXPECT_ABS_READ32(base_ + OTBN_DMEM_REG_OFFSET + kSrcAddr, 0x12345678);
+  EXPECT_ABS_READ32(base_ + OTBN_DMEM_REG_OFFSET + kSrcAddr + sizeof(uint32_t),
+                    0xabcdef01);
+
+  otbn_t otbn;
+  otbn_init(&otbn);
+
+  EXPECT_EQ(otbn_copy_data_from_otbn(&otbn, 2, kSrcAddr, test_data.data()),
+            kErrorOk);
+  EXPECT_THAT(test_data, ElementsAre(0x12345678, 0xabcdef01));
 }
 
 }  // namespace
