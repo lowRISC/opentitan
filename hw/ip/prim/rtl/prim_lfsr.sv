@@ -312,8 +312,9 @@ module prim_lfsr #(
   logic [LfsrDw-1:0] next_lfsr_state, coeffs;
 
   // Enable the randomization of DefaultSeed using DefaultSeedLocal in DV simulations.
-  `ifndef SIMULATION
-    localparam logic [LfsrDw-1:0] DefaultSeedLocal = DefaultSeed;
+  `ifdef SIMULATION
+  `ifdef VERILATOR
+      localparam logic [LfsrDw-1:0] DefaultSeedLocal = DefaultSeed;
 
   `else
     logic [LfsrDw-1:0] DefaultSeedLocal;
@@ -334,7 +335,12 @@ module prim_lfsr #(
       end
       $display("%m: DefaultSeed = 0x%0h, DefaultSeedLocal = 0x%0h", DefaultSeed, DefaultSeedLocal);
     end
-  `endif
+  `endif  // ifdef VERILATOR
+
+  `else
+    localparam logic [LfsrDw-1:0] DefaultSeedLocal = DefaultSeed;
+
+  `endif  // ifdef SIMULATION
 
   ////////////////
   // Galois XOR //
