@@ -156,18 +156,18 @@ impl AlertRegs {
             LcStateVal::Test => return Ok(alert),
         };
 
-        let class_enable = otp.read32("ROM_ALERT_CLASS_EN")?;
-        let class_escalate = otp.read32("ROM_ALERT_ESCALATION")?;
+        let class_enable = otp.read32("OWNER_SW_CFG_ROM_ALERT_CLASS_EN")?;
+        let class_escalate = otp.read32("OWNER_SW_CFG_ROM_ALERT_ESCALATION")?;
 
         for i in 0..ALERT_HANDLER_ALERT_CLASS_SHADOWED_MULTIREG_COUNT as usize {
-            let value = otp.read32_offset(Some("ROM_ALERT_CLASSIFICATION"), i * 4)?;
+            let value = otp.read32_offset("OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION", i * 4)?;
             let cls = AlertClass::try_from(value.to_le_bytes()[lc_shift])?;
             let enable = AlertEnable::try_from(class_enable.to_le_bytes()[cls.index()])?;
             alert.configure(i, cls, enable)?;
         }
 
         for i in 0..ALERT_HANDLER_LOC_ALERT_CLASS_SHADOWED_MULTIREG_COUNT as usize {
-            let value = otp.read32_offset(Some("ROM_LOCAL_ALERT_CLASSIFICATION"), i * 4)?;
+            let value = otp.read32_offset("OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION", i * 4)?;
             let cls = AlertClass::try_from(value.to_le_bytes()[lc_shift])?;
             let enable = AlertEnable::try_from(class_enable.to_le_bytes()[cls.index()])?;
             alert.local_configure(i, cls, enable)?;
@@ -177,15 +177,15 @@ impl AlertRegs {
             let mut phase_cycs = [0; ALERT_HANDLER_PARAM_N_PHASES as usize];
             for phase in 0..ALERT_HANDLER_PARAM_N_PHASES as usize {
                 phase_cycs[phase] = otp.read32_offset(
-                    Some("ROM_ALERT_PHASE_CYCLES"),
+                    "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES",
                     (i * phase_cycs.len() + phase) * 4,
                 )?;
             }
             let config = AlertClassConfig {
                 enabled: AlertEnable::try_from(class_enable.to_le_bytes()[i])?,
                 escalate: AlertEscalate::try_from(class_escalate.to_le_bytes()[i])?,
-                accum_thresh: otp.read32_offset(Some("ROM_ALERT_ACCUM_THRESH"), i * 4)?,
-                timeout_cyc: otp.read32_offset(Some("ROM_ALERT_TIMEOUT_CYCLES"), i * 4)?,
+                accum_thresh: otp.read32_offset("OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH", i * 4)?,
+                timeout_cyc: otp.read32_offset("OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES", i * 4)?,
                 phase_cycs,
             };
             alert.class_configure(AlertClass::from_index(i), &config)?;
@@ -443,19 +443,21 @@ mod test {
 
     // OTP values that corrispond to the above `TEST_REG` values.
     impl OtpRead for TestOtp {
-        fn read32_offset(&self, name: Option<&str>, offset: usize) -> Result<u32> {
-            let name = name.unwrap();
+        fn read32_offset(&self, name: &str, offset: usize) -> Result<u32> {
             Ok(match name {
-                "ROM_ALERT_CLASS_EN" => 0xa9a9a9a9,
-                "ROM_ALERT_ESCALATION" => 0xd1d1d1d1,
-                "ROM_ALERT_CLASSIFICATION" | "ROM_LOCAL_ALERT_CLASSIFICATION" => 0x94949494,
-                "ROM_ALERT_PHASE_CYCLES" => [
+                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN" => 0xa9a9a9a9,
+                "OWNER_SW_CFG_ROM_ALERT_ESCALATION" => 0xd1d1d1d1,
+                "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION"
+                | "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION" => 0x94949494,
+                "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES" => [
                     0x00000000, 0x0000000a, 0x0000000a, 0xffffffff, // Class 0
                     0x00000000, 0x0000000a, 0x0000000a, 0xffffffff, // Class 1
                     0x00000000, 0x00000000, 0x00000000, 0x00000000, // Class 2
                     0x00000000, 0x00000000, 0x00000000, 0x00000000, // Class 3
                 ][offset / 4],
-                "ROM_ALERT_ACCUM_THRESH" | "ROM_ALERT_TIMEOUT_CYCLES" => 0x00000000,
+                "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH" | "OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES" => {
+                    0x00000000
+                }
                 _ => panic!("No such OTP value {}", name),
             })
         }

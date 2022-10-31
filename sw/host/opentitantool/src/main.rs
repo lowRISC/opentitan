@@ -37,6 +37,7 @@ enum RootCommandHierarchy {
     I2c(command::i2c::I2cCommand),
     Image(command::image::Image),
     NoOp(command::NoOp),
+    Otp(command::otp::Otp),
     Rsa(command::rsa::Rsa),
     Spi(command::spi::SpiCommand),
     Transport(command::transport::TransportCommand),
