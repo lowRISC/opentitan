@@ -30,7 +30,6 @@ module aes_bind;
   bind aes aes_reseed_if u_aes_reseed_if (
     .clk_i                 (clk_i),
     .rst_ni                (rst_ni),
-    .local_esc             (lc_escalate_en_i),
     .entropy_clearing_req  (entropy_clearing_req),
     .entropy_clearing_ack  (entropy_clearing_ack),
     .entropy_masking_req   (entropy_masking_req),
@@ -45,17 +44,7 @@ module aes_bind;
     .ctrl_phase_i          (u_aes_core.u_aes_control.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.
                             u_aes_control_fsm.ctrl_phase_i),
     .ctrl_we_q             (u_aes_core.u_aes_control.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.
-                            u_aes_control_fsm.ctrl_we_q),
-    .block_ctr_decr        (u_aes_core.u_aes_control.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.
-                            u_aes_control_fsm.block_ctr_decr),
-    .block_ctr_expr        (u_aes_core.u_aes_control.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.
-                            u_aes_control_fsm.block_ctr_expr),
-    .add_round_key_out     (u_aes_core.u_aes_cipher_core.add_round_key_out),
-    .iv_q                  (u_aes_core.iv_q),
-    .iv_d                  (u_aes_core.iv_d),
-    .data_in_prev_q        (u_aes_core.data_in_prev_q),
-    .data_out_q            (u_aes_core.data_out_q),
-    .data_out_d            (u_aes_core.data_out_d)
+                            u_aes_control_fsm.ctrl_we_q)
   );
 
 if (`EN_MASKING) begin : gen_prng_bind
