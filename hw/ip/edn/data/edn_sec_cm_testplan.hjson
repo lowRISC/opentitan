@@ -39,19 +39,19 @@
       name: sec_cm_main_sm_fsm_sparse
       desc: "Verify the countermeasure(s) MAIN_SM.FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["edn_sec_cm"]
     }
     {
       name: sec_cm_ack_sm_fsm_sparse
       desc: "Verify the countermeasure(s) ACK_SM.FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["edn_sec_cm"]
     }
     {
       name: sec_cm_ctr_redun
       desc: "Verify the countermeasure(s) CTR.REDUN."
       stage: V2S
-      tests: []
+      tests: ["edn_sec_cm"]
     }
     {
       name: sec_cm_main_sm_ctr_local_esc

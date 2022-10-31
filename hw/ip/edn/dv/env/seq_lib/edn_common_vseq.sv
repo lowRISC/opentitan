@@ -20,12 +20,6 @@ class edn_common_vseq extends edn_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
-  // TODO: remove this when #15829 merged.
-  virtual task sec_cm_inject_fault(sec_cm_pkg::sec_cm_base_if_proxy if_proxy);
-    csr_wr(.ptr(ral.ctrl.edn_enable), .value(MuBi4True));
-    super.sec_cm_inject_fault(if_proxy);
-  endtask : sec_cm_inject_fault
-
   virtual task check_sec_cm_fi_resp(sec_cm_pkg::sec_cm_base_if_proxy if_proxy);
     if (!uvm_re_match("*.cnt_q*", if_proxy.path)) begin
       csr_rd_check(.ptr(ral.err_code.edn_cntr_err), .compare_value(1'b1));

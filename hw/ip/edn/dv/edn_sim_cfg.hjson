@@ -12,7 +12,7 @@
   tb: tb
 
   // Simulator used to sign off this block
-  tool: xcelium
+  tool: vcs
 
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:edn_sim:0.1
@@ -40,9 +40,6 @@
              "sec_cm_prim_sparse_fsm_flop_bind",
              "sec_cm_prim_count_bind",
              "sec_cm_prim_onehot_check_bind"]
-
-  // TODO: Redo for V2S
-  xcelium_cov_refine_files: ["{proj_root}/hw/ip/edn/dv/cov/edn_UNR.vRefine"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
