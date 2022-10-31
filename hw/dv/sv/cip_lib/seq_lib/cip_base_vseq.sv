@@ -437,6 +437,7 @@ class cip_base_vseq #(
   // generic task to check interrupt test reg functionality
   virtual task run_intr_test_vseq(int num_times = 1);
     dv_base_reg intr_csrs[$];
+    dv_base_reg intr_test_csrs[$];
 
     foreach (all_csrs[i]) begin
       string csr_name = all_csrs[i].get_name();
@@ -444,6 +445,9 @@ class cip_base_vseq #(
           !uvm_re_match("intr_enable*", csr_name) ||
           !uvm_re_match("intr_state*", csr_name)) begin
         intr_csrs.push_back(get_interrupt_csr(csr_name));
+      end
+      if (!uvm_re_match("intr_test*", csr_name)) begin
+        intr_test_csrs.push_back(get_interrupt_csr(csr_name));
       end
     end
 
@@ -481,6 +485,11 @@ class cip_base_vseq #(
         end // if (!uvm_re_match
       end // foreach (intr_csrs[i])
     end // for (int trans = 1; ...
+    // Write 0 to intr_test to clean up status interrupts, otherwise, status interrupts may remain
+    // active. And writing any value to a status interrupt CSR (intr_state) can't clear its value.
+    foreach (intr_test_csrs[i]) begin
+      csr_wr(.ptr(intr_test_csrs[i]), .value(0));
+    end
   endtask
 
   // Task to clear register intr status bits
