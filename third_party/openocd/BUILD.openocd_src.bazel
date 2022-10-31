@@ -1,0 +1,46 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+package(default_visibility = ["//visibility:public"])
+
+load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
+
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+)
+
+configure_make(
+    name = "build_openocd",
+    # Parallel build for speed. See discussion in this rules_foreign_cc issue:
+    # https://github.com/bazelbuild/rules_foreign_cc/issues/329
+    args = [
+        "-j",
+        "`nproc`",
+    ],
+    autogen = True,
+    autogen_command = "bootstrap",
+    # Tell the `bootstrap` script not to initialize submodules because (a) it's
+    # already been taken care of in repos.bzl and (b) it won't see the .git
+    # directory anyway.
+    autogen_options = ["nosubmodule"],
+    configure_in_place = True,
+    configure_options = [
+        "--enable-ftdi",
+        "--enable-verbose-jtag-io",
+        "--disable-vsllink",
+        "--enable-remote-bitbang",
+    ],
+    copts = ["-Wno-error=unused-variable"],
+    lib_source = ":all_srcs",
+    out_binaries = ["openocd"],
+)
+
+# This rule extracts the `openocd` binary from :build_openocd. The file is not
+# executable! Use //third_party/openocd if you want to `bazel run` the binary.
+filegroup(
+    name = "openocd_bin",
+    srcs = [":build_openocd"],
+    output_group = "openocd",
+)
