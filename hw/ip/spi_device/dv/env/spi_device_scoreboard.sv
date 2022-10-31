@@ -1151,6 +1151,8 @@ class spi_device_scoreboard extends cip_base_scoreboard #(.CFG_T (spi_device_env
             `DV_CHECK_EQ_FATAL(tpm_read_sw_q.size, 0)
             tpm_read_sw_q.push_back(tpm_item);
           end
+          // this is a status interrupt, clear it when it's read out.
+          void'(ral.intr_state.tpm_header_not_empty.predict(.value(0), .kind(UVM_PREDICT_READ)));
         end
       end
       "tpm_read_fifo": begin
