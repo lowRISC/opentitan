@@ -25,6 +25,7 @@ pub struct LcState {
 }
 
 #[repr(u32)]
+#[derive(Copy, Clone)]
 pub enum LcStateVal {
     Test = 0xb2865fbb,
     Dev = 0x0b5a75e0,

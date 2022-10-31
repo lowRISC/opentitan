@@ -21,6 +21,7 @@ rust_binary(
         "src/command/image.rs",
         "src/command/load_bitstream.rs",
         "src/command/mod.rs",
+        "src/command/otp.rs",
         "src/command/rsa.rs",
         "src/command/set_pll.rs",
         "src/command/spi.rs",

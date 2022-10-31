@@ -8,4 +8,3 @@ pub mod lc_state;
 // TODO(lowRISC/opentitan#15443): Fix this lint.
 #[allow(clippy::module_inception)]
 pub mod otp_img;
-
