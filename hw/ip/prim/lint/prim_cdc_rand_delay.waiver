@@ -8,12 +8,10 @@ waive -rules {IFDEF_CODE} -location {prim_cdc_rand_delay.sv} -regexp {.*containe
       -comment "Ifdefs are required for prim_rand_cdc_delay since it is turned on only for simulation."
 
 waive -rules {HIER_BRANCH_NOT_READ} -location {prim_cdc_rand_delay.sv} -regexp {.*dst_clk.*} \
-      -comment "Destination clock is only used when attempting to simulate random delays."
+      -comment "Destination clock is only used when simulating random delays."
 
-waive -rules {INPUT_NOT_READ} -location {prim_cdc_rand_delay.sv} -regexp {dst_clk|src_clk} \
-      -comment "Source/Destination clock is only used when attempting to simulate random delays."
+waive -rules {INPUT_NOT_READ} -location {prim_cdc_rand_delay.sv} -regexp {clk_i|rst_ni|prev_data_i} \
+      -comment "Clock, reset, and previous data are only used when simulating random delays."
 
-waive -rules {PARAM_NOT_USED} -location {prim_cdc_rand_delay.sv} -regexp {UseSourceClock|LatencyPs|JitterPs} \
-      -comment "Randomization parameters are only used when attempting to simulate random delays."
-
-
+waive -rules {PARAM_NOT_USED} -location {prim_cdc_rand_delay.sv} -regexp {Enable} \
+      -comment "Enable parameter is only used when simulating random delays."

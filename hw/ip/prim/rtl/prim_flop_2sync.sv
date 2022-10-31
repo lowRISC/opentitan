@@ -9,8 +9,7 @@
 module prim_flop_2sync #(
   parameter int               Width      = 16,
   parameter logic [Width-1:0] ResetValue = '0,
-  parameter int               CdcLatencyPs = 1000,
-  parameter int               CdcJitterPs = 1000
+  parameter bit               EnablePrimCdcRand = 1
 ) (
   input                    clk_i,
   input                    rst_ni,
@@ -19,20 +18,23 @@ module prim_flop_2sync #(
 );
 
   logic [Width-1:0] d_o;
+  logic [Width-1:0] intq;
+
+`ifdef SIMULATION
 
   prim_cdc_rand_delay #(
     .DataWidth(Width),
-    .UseSourceClock(0),
-    .LatencyPs(CdcLatencyPs),
-    .JitterPs(CdcJitterPs)
+    .Enable(EnablePrimCdcRand)
   ) u_prim_cdc_rand_delay (
-    .src_clk(),
-    .src_data(d_i),
-    .dst_clk(clk_i),
-    .dst_data(d_o)
+    .clk_i,
+    .rst_ni,
+    .src_data_i(d_i),
+    .prev_data_i(intq),
+    .dst_data_o(d_o)
   );
-
-  logic [Width-1:0] intq;
+`else // !`ifdef SIMULATION
+   always_comb d_o = d_i;
+`endif // !`ifdef SIMULATION
 
   prim_flop #(
     .Width(Width),

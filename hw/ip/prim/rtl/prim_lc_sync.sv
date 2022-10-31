@@ -67,7 +67,9 @@ module prim_lc_sync #(
       always_ff @(posedge clk_i) begin
         lc_en_in_sva_q <= lc_en_i;
       end
-    `ASSERT(OutputDelay_A, rst_ni |-> ##2 lc_en_o == {NumCopies{$past(lc_en_in_sva_q, 1)}})
+    `ASSERT(OutputDelay_A,
+            rst_ni |-> ##3 lc_en_o == {NumCopies{$past(lc_en_in_sva_q, 2)}} ||
+                           ($past(lc_en_in_sva_q, 2) != $past(lc_en_in_sva_q, 1)))
 `endif
   end else begin : gen_no_flops
     //VCS coverage off
