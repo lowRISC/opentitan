@@ -254,7 +254,8 @@ def generate_pkg_reqs():
         cmd_lines = textwrap.wrap(cmd,
                                   width=78,
                                   replace_whitespace=True,
-                                  subsequent_indent='    ')
+                                  subsequent_indent='    ',
+                                  break_on_hyphens=False)
         # Newlines need to be escaped
         cmd = " \\\n".join(cmd_lines)
 

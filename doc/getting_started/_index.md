@@ -75,7 +75,7 @@ It should show `~/.local/bin/pip3`.
 If it doesn't, add `~/.local/bin` to your `PATH`, e.g. by adding the following line to your `~/.bashrc` file:
 
 ```console {title=~/.bashrc}
-export PATH=$PATH:~/.local/bin
+export PATH=~/.local/bin:$PATH
 ```
 
 Now install additional Python dependencies:
