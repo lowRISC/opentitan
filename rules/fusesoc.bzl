@@ -31,6 +31,7 @@ def _fusesoc_build_impl(ctx):
     outputs = [out_dir]
     groups = {}
     args = ctx.actions.args()
+
     for group, files in ctx.attr.output_groups.items():
         deps = [ctx.actions.declare_file("{}/{}".format(dirname, f)) for f in files]
         outputs.extend(deps)
@@ -39,6 +40,10 @@ def _fusesoc_build_impl(ctx):
     if ctx.attr.verilator_options:
         verilator_options = ctx.attr.verilator_options[BuildSettingInfo].value
         flags.append("--verilator_options={}".format(" ".join(verilator_options)))
+
+    if ctx.attr.make_options:
+        make_options = ctx.attr.make_options[BuildSettingInfo].value
+        flags.append("--make_options={}".format(" ".join(make_options)))
 
     args.add_all(
         ctx.files.cores,
@@ -97,5 +102,6 @@ fusesoc_build = rule(
             doc = "Mapping of group name to lists of files in that named group",
         ),
         "verilator_options": attr.label(),
+        "make_options": attr.label(),
     },
 )
