@@ -8,21 +8,9 @@ _SEL_DEVICE_ID = 1
 _SEL_MANUF_STATE_CREATOR = (1 << 8)
 _SEL_MANUF_STATE_OWNER = (1 << 9)
 _SEL_LIFE_CYCLE_STATE = (1 << 10)
-_HEXSTR = "0123456789abcdef"
 
-def _hex(i):
-    # First "cast" i to a 32-bit unsigned int
-    i &= 0xFFFFFFFF
-    r = "0x"
-    r += _HEXSTR[(i >> 28) & 0xF]
-    r += _HEXSTR[(i >> 24) & 0xF]
-    r += _HEXSTR[(i >> 20) & 0xF]
-    r += _HEXSTR[(i >> 16) & 0xF]
-    r += _HEXSTR[(i >> 12) & 0xF]
-    r += _HEXSTR[(i >> 8) & 0xF]
-    r += _HEXSTR[(i >> 4) & 0xF]
-    r += _HEXSTR[(i >> 0) & 0xF]
-    return r
+def _hex(v):
+    return "0x{}".format(hex(v))
 
 def _manifest_impl(ctx):
     mf = {}
