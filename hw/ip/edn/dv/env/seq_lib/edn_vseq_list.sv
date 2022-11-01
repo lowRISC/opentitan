@@ -11,3 +11,4 @@
 `include "edn_intr_vseq.sv"
 `include "edn_alert_vseq.sv"
 `include "edn_err_vseq.sv"
+`include "edn_disable_vseq.sv"

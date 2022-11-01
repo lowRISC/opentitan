@@ -65,8 +65,14 @@ class edn_base_vseq extends cip_base_vseq #(
       `DV_CHECK_STD_RANDOMIZE_FATAL(glen)
       wr_cmd(.cmd_type("boot_ins"), .acmd(csrng_pkg::INS), .clen(0), .flags(flags), .glen(glen));
       `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
-      wr_cmd(.cmd_type("boot_gen"), .acmd(csrng_pkg::GEN), .clen(0), .flags(flags),
-             .glen(cfg.num_boot_reqs));
+      if (cfg.force_disable) begin
+        wr_cmd(.cmd_type("boot_gen"), .acmd(csrng_pkg::GEN), .clen(0), .flags(flags),
+               .glen(1'b1));
+      end
+      else begin
+        wr_cmd(.cmd_type("boot_gen"), .acmd(csrng_pkg::GEN), .clen(0), .flags(flags),
+               .glen(cfg.num_boot_reqs));
+      end
     end
 
     // Enable edn, set modes
