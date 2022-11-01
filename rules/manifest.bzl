@@ -4,7 +4,6 @@
 
 load("//rules:const.bzl", "CONST", "hex")
 
-_DEFAULT_USAGE = 0xa5a5a5a5
 _SEL_DEVICE_ID = 1
 _SEL_MANUF_STATE_CREATOR = (1 << 8)
 _SEL_MANUF_STATE_OWNER = (1 << 9)
@@ -76,9 +75,9 @@ def _manifest_impl(ctx):
     # Extend the device_id to 8 words, then set the selector_bits for each
     # non-default word.
     if len(device_id) < 8:
-        device_id.extend([_DEFAULT_USAGE] * (8 - len(device_id)))
+        device_id.extend([CONST.DEFAULT_USAGE_CONSTRAINTS] * (8 - len(device_id)))
     for i, d in enumerate(device_id):
-        if d != _DEFAULT_USAGE:
+        if d != CONST.DEFAULT_USAGE_CONSTRAINTS:
             selector_bits |= _SEL_DEVICE_ID << i
         device_id[i] = _hex(d)
     uc["device_id"] = device_id
@@ -88,19 +87,19 @@ def _manifest_impl(ctx):
         uc["manuf_state_creator"] = _hex(ctx.attr.manuf_state_creator)
         selector_bits |= _SEL_MANUF_STATE_CREATOR
     else:
-        uc["manuf_state_creator"] = _hex(_DEFAULT_USAGE)
+        uc["manuf_state_creator"] = _hex(CONST.DEFAULT_USAGE_CONSTRAINTS)
 
     if ctx.attr.manuf_state_owner:
         uc["manuf_state_owner"] = _hex(ctx.attr.manuf_state_owner)
         selector_bits |= _SEL_MANUF_STATE_OWNER
     else:
-        uc["manuf_state_owner"] = _hex(_DEFAULT_USAGE)
+        uc["manuf_state_owner"] = _hex(CONST.DEFAULT_USAGE_CONSTRAINTS)
 
     if ctx.attr.life_cycle_state:
         uc["life_cycle_state"] = _hex(ctx.attr.life_cycle_state)
         selector_bits |= _SEL_LIFE_CYCLE_STATE
     else:
-        uc["life_cycle_state"] = _hex(_DEFAULT_USAGE)
+        uc["life_cycle_state"] = _hex(CONST.DEFAULT_USAGE_CONSTRAINTS)
 
     # If the user supplied selector_bits, check if they make sense.
     if ctx.attr.selector_bits:
