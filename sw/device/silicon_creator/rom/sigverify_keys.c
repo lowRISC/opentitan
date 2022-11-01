@@ -27,7 +27,7 @@ const sigverify_rom_key_t kSigVerifyRsaKeys[kSigVerifyNumRsaKeys] = {
     [0] =
         {
             .key = TEST_KEY_0_RSA_3072_EXP_F4,
-            .key_type = kSigverifyKeyTypeTest,
+            .key_type = kSigverifyKeyTypeProd,
         },
 };
 
