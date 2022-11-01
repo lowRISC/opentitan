@@ -371,11 +371,12 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         end else begin
           state_d = FastPwrStateNvmIdleChk;
         end
+        //state_d = FastPwrStateNvmIdleChk;
       end
 
       FastPwrStateNvmIdleChk: begin
-
-        if (otp_idle_i && lc_idle_i && flash_idle_i) begin
+        //if (otp_idle_i && lc_idle_i && flash_idle_i) begin
+        if (lc_idle_i && flash_idle_i) begin
           state_d = FastPwrStateLowPowerPrep;
         end else begin
           ip_clk_en_d = 1'b1;

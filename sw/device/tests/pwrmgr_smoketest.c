@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
+#include "sw/device/lib/dif/dif_lc_ctrl.h"
+#include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/runtime/log.h"
@@ -62,8 +64,22 @@ bool test_main(void) {
 
     // Enter low power mode.
     LOG_INFO("Issue WFI to enter sleep");
-    wait_for_interrupt();
+    dif_otp_ctrl_t otp;
+    dif_otp_ctrl_status_t otp_status;
+    CHECK_DIF_OK(dif_otp_ctrl_init(
+        mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+    CHECK_DIF_OK(dif_otp_ctrl_get_status(&otp, &otp_status));
+    LOG_INFO("Otp status 0x%x", otp_status.codes);
 
+    dif_lc_ctrl_t lc;
+    dif_lc_ctrl_status_t lc_status;
+    CHECK_DIF_OK(dif_lc_ctrl_init(
+        mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR), &lc));
+    CHECK_DIF_OK(dif_lc_ctrl_get_status(&lc, &lc_status));
+    LOG_INFO("lc status 0x%x", lc_status);
+
+    wait_for_interrupt();
+    LOG_INFO("Does the test ever reach here?");
   } else if (pwrmgr_testutils_is_wakeup_reason(
                  &pwrmgr, kDifPwrmgrWakeupRequestSourceFive)) {
     LOG_INFO("Wakeup reset");

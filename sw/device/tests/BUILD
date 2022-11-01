@@ -1270,6 +1270,8 @@ opentitan_functest(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
