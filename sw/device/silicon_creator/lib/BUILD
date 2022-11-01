@@ -42,6 +42,15 @@ dual_cc_library(
     ),
 )
 
+cc_test(
+    name = "boot_data_unittest",
+    srcs = ["boot_data_unittest.cc"],
+    deps = [
+        dual_cc_device_library_of(":boot_data"),
+        "@googletest//:gtest_main",
+    ],
+)
+
 opentitan_functest(
     name = "boot_data_functest",
     srcs = ["boot_data_functest.c"],
