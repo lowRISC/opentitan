@@ -24,6 +24,7 @@ load(
 load("//rules:opentitan_gdb_test.bzl", "opentitan_gdb_fpga_cw310_test")
 load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
 load("//rules:splice.bzl", "bitstream_splice")
+load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@bazel_skylib//lib:structs.bzl", "structs")
 
 package(default_visibility = ["//visibility:public"])
@@ -438,7 +439,7 @@ SEC_VERS = [
     srcs = ["empty_test.c"],
     devices = ["fpga_cw310"],
     local_defines = [
-        'EMPTY_TEST_MSG=\\"slot=%p,\\ security_version=%01d\\",manifest_def_get(),manifest_def_get()->security_version',
+        shell.quote("EMPTY_TEST_MSG=\"slot=%p, security_version=%01d\",manifest_def_get(),manifest_def_get()->security_version"),
     ],
     manifest = ":manifest_sec_ver_{}".format(sec_ver),
     signed = True,
