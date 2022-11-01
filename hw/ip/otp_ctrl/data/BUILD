@@ -81,6 +81,8 @@ otp_json(
                 # Set to 0x739 to use the ROM_EXT hash measurement as the key
                 # manager attestation binding value.
                 "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": "0x0",
+                # Report errors without any redaction.
+                "OWNER_SW_CFG_ROM_ERROR_REPORTING": "0xe2290aa5",
                 # Set the enables to kAlertEnableNone.
                 # See `alert_enable_t` in
                 # sw/device/silicon_creator/lib/drivers/alert.h
