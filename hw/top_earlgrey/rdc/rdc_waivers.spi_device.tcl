@@ -30,3 +30,29 @@ set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
 set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
   -expression {(MetaStableFlop=~"*.u_spi_tpm.u_wrfifo.fifo_wptr*")} \
   -comment {when csb de-asserted, SCK should be quiescent. If not, the behavior is unpredictable}
+
+# TODO(#15886): Find better env setup to define the relation between CSb and
+#               all SCK generated clocks.
+# CSb to RX/TX FIFOs pointers E_RST_METASTABILITY
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.rst_csb_buf") && \
+    (ResetFlop=~"*u_spi_device.io_mode_outclk*") && \
+    (MetaStableFlop=~"*u_spi_device.u_fwmode.u_*x_fifo.fifo_*ptr*")} \
+  -comment {CSb does not conflict to SPI_CLK if host system follows the protocol}
+
+# CSb to Any SPI_CLK path (RDC could not figure out the relation between CSb and SPI_CLK)
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.rst_csb_buf") && \
+    (ClockDomains=~"SPI_DEV_*_CLK::SPI_DEV_*_CLK")} \
+  -comment {RDC does not correctly relate CSB and SCK domains}
+# Below waiver is from CSb to Passthrough SCK clock gating logic.
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.rst_csb_buf") && \
+    (ClockDomains=~"SPI_DEV_*_CLK::SPI_DEV_CLK")} \
+  -comment {RDC does not correctly relate CSB and SCK domains}
+
+# CONTROL.mode CSR does not change when CSb toggles
+set_rule_status -rule {E_RDC_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.rst_csb_buf") && \
+    (ObservableFlopReset=~"*u_reg.u_control_mode*")} \
+  -comment {CONTROL.mode is configured at the init time.}
