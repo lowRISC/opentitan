@@ -40,6 +40,42 @@ set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
     (MetaStableFlop=~"*u_spi_device.u_fwmode.u_*x_fifo.fifo_*ptr*")} \
   -comment {CSb does not conflict to SPI_CLK if host system follows the protocol}
 
+# Rx/Tx FIFO resets are issued when SPI is idle.
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.u_reg.u_control_rst_rxfifo*") && \
+    (MetaStableFlop=~"*u_spi_device.u_fwmode.u_rxf_ctrl.*")} \
+  -comment {Assumption is to reset RX/TX FIFO when SPI is idle}
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.u_reg.u_control_rst_rxfifo*") && \
+    (MetaStableFlop=~"*u_spi_device.rxf_full_q")} \
+  -comment {Assumption is to reset RX/TX FIFO when SPI is idle}
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.u_reg.u_control_rst_*xfifo*") && \
+    (ResetFlop=~"*u_spi_device.u_fwmode.u_rx_fifo.fifo_rptr_q*") && \
+    (MetaStableFlop=~"*u_spi_device.u_reg.u_reg_if.rdata_q*")} \
+  -comment {Assumption is to reset RX/TX FIFO when SPI is idle. \
+    SW reads FIFO PTR not at the same time.}
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.u_reg.u_control_rst_*xfifo*") && \
+    (MetastableFlopReset=~"*u_spi_device.u_reg.u_control_mode.q*")} \
+  -comment {CONTROL.mode dose not change.}
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.u_reg.u_control_rst_txfifo*") && \
+    (MetaStableFlop=~"*u_spi_device.txf_empty_q")} \
+  -comment {Assumption is to reset RX/TX FIFO when SPI is idle}
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.u_reg.u_control_rst_*xfifo*") && \
+    (ResetFlop=~"*u_spi_device.u_fwmode.u_tx_fifo.fifo_rptr_*") && \
+    (MetaStableFlop=~"*u_spi_device.u_reg.u_reg_if.rdata_q*")} \
+  -comment {Assumption is to reset RX/TX FIFO when SPI is idle. \
+    SW reads FIFO PTR not at the same time.}
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.u_reg.u_control_rst_*xfifo*") && \
+    (ResetFlop=~"*u_spi_device.u_fwmode.u_tx_fifo.fifo_rptr_q*") && \
+    (MetaStableFlop=~"*u_spi_device.u_p2s.out_shift*")} \
+  -comment {Assumption is to reset RX/TX FIFO when SPI is idle. \
+    SW reads FIFO PTR not at the same time.}
+
 # CSb to Any SPI_CLK path (RDC could not figure out the relation between CSb and SPI_CLK)
 set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
   -expression {(SourceReset=~"*u_spi_device.rst_csb_buf") && \
