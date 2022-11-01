@@ -374,16 +374,45 @@
       tests: []
     }
 
-    // PINMUX (pre-verified IP) integration tests:
+    // PINMUX & PADRING (pre-verified IP) integration tests:
     {
-      name: chip_sw_pin_mux
+      name: chip_pin_mux
       desc: '''Verify the MIO muxing at input and output sides.
 
-            SW programs MIO INSEL and OUTSEL CSRs to connect and verify each muxed source. At the
-            moment, GPIOs are the only mux inputs.
+            - Enable `stub_cpu` mode.
+            - Add a forcing interface to pinmux's pad-facing DIO and MIO ports, including the output
+              enables; and a sampling interface for the peripheral facing DIO and MIO ports.
+            - Similarly, add a driving / sampling interface for all DIOs and MIOs at the chip pads.
+            - In the output direction:
+              - Program all MIO outsel and pad attribute registers to random values.
+              - Force the pad-facing pinmux MIO ports and output enables to random values.
+              - Verify all MIO pad values for correctness.
+            - For the input direction:
+              - Program all MIO insel and pad attribute registers to random values.
+              - Drive the MIO pads to random values.
+              - Probe and sample the peripheral facing MIO ports of the pinmux and verify the values
+                for correctness.
+            - Follow a similar testing procedure for DIOs.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_padctrl_attributes"]
+    }
+    {
+      name: chip_padctrl_attributes
+      desc: '''Verify pad attribute settings for all MIO and DIO pads.
+
+            - Follow the same procedure as the `chip_pin_mux` test, ensuring the padctrl attribute
+              registers for all MIOs and DIOs are also randomized when verifying the outcomes.
+            - Verify weak pull enable, output inversion and virtual open drain and drive strength
+              (bit 0) signaling in the output direction.
+            - Verify weak pull enable and input inversion in the input direction.
+            - Verify multiple pad attributes for each pad set at the same time through
+              randomization.
+
+            Cross-references the `chip_pin_mux` test.
+            '''
+      stage: V2
+      tests: ["chip_padctrl_attributes"]
     }
     {
       name: chip_sw_sleep_pin_mio_dio_val
@@ -450,18 +479,13 @@
             top_earlgrey.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
             Verify top_earlgrey.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED*
             and RMA, regardless of the value on DFT SW straps.
+
+            Note: these tests require the ROM init stage to complete. So a test ROM image is loaded,
+            but the software does not test anything. The CPU boots and runs to completion while the
+            host (SV testbench) performs these stimulus / checks.
             '''
       stage: V2
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma"]
-    }
-
-    // PADCTRL tests:
-    {
-      name: chip_sw_padctrl_attributes
-      desc: '''Verify pad attribute settings for all MIO and DIO pads.
-            '''
-      stage: V2
-      tests: []
     }
 
     // PATTGEN (pre-verified IP) integration tests:
@@ -575,7 +599,8 @@
 
             - Program some CSRs / mem that are under life cycle reset tree and system reset tree.
             - Configure RV_DM to send NDM reset request to reset sytem reset tree.
-            - While NDM reset is ongoing, ensure the RV_DM debug module registers can still be accessed.
+            - While NDM reset is ongoing, ensure the RV_DM debug module registers can still be
+              accessed.
             - Read the programmed CSRs / mem to ensure that everything under system reset tree is
               reset to the original values, while values under life cycle reset will be preserved.
             - Read CSRs / mem in the debug domain to ensure that the values survive the reset.
@@ -601,7 +626,8 @@
       desc: '''Verify RV_DM works after wakes up from sleep.
 
             - Put the chip into sleep mode and then wake up (both deep sleep and normal sleep).
-            - If waking up from normal sleep, an activation should not be required for RV_DM CSR accesses to work.
+            - If waking up from normal sleep, an activation should not be required for RV_DM CSR
+              accesses to work.
             - If waking up from deep sleep, an activation is required for RV_DM CSR accesses to work.
             '''
       stage: V2
@@ -816,9 +842,8 @@
             turn off a transactional unit's clock, issue a CSR access to that unit, verify a
             watchdog event results, and verify the rstmgr crash dump info records the CSR address.
 
-            A stretch goal is to check the PC corresponds to the code performing
-            the CSR access (stretch since it could be difficult to maintain this
-            check).
+            A stretch goal is to check the PC corresponds to the code performing the CSR access
+            (stretch since it could be difficult to maintain this check).
             '''
       stage: V2
       tests: ["chip_sw_clkmgr_off_aes_trans",
@@ -1006,7 +1031,6 @@
 
             Each test should perform a minimum of 2 low power transitions to ensure there are no
             state dependent corner cases with wakeup interactions.
-
             '''
       stage: V2
       tests: ["chip_sw_pwrmgr_random_sleep_all_wake_ups"]
@@ -1019,9 +1043,9 @@
             This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
             working correctly as expected. X-ref'ed with all individual IP tests. For each wakeup
             source clear and enable `wake_info` CSR, enable the wakeup from that source with the
-            `wakeup_en` CSR, bring the chip to normal sleep, optionally disabling the source's clock,
-            have the source issue a wakeup event and verify `wake_info` indicates the expected
-            wakeup.
+            `wakeup_en` CSR, bring the chip to normal sleep, optionally disabling the source's
+            clock, have the source issue a wakeup event and verify `wake_info` indicates the
+            expected wakeup.
             '''
       stage: V2
       tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
@@ -1524,8 +1548,8 @@
                 `reverse_ping_timeout` calculated in the previous section.
               - Enter deep sleep.
             - On wake up from sleep:
-              - Ensure reset status is low power exit. A `kDifRstmgrResetInfoEscalation` signals that
-                there was a local escalation and should result in test failure.
+              - Ensure reset status is low power exit. A `kDifRstmgrResetInfoEscalation` signals
+                that there was a local escalation and should result in test failure.
               - Disable AON timer.
               - Check there are no flagged local alerts.
             '''
@@ -1662,7 +1686,9 @@
               - lc_iso_part_sw_rd_en_o: impacts flash_ctrl
               - lc_iso_part_sw_wr_en_o: impacts flash_ctrl
               - lc_seed_hw_rd_en_o: impacts flash_ctrl & otp_ctrl
-            - These outputs are enabled per the [life cycle architecture spec]({{< relref "doc/security/specs/device_life_cycle/#architecture" >}}).
+            - These outputs are enabled per the
+              [life cycle architecture spec]({{< relref "doc/security/specs/device_life_cycle/#architecture" >}}).
+
             X-ref'ed with the respective IP tests that consume these signals.
 
             Note that the following signals are already verified with connectivity tests and SVAs:
@@ -1979,12 +2005,17 @@
       desc: '''Verify the AES masking off feature for ES.
 
             - Perform known-answer test using CSRNG SW application interface.
-            - Verify CSRNG produces the deterministic seed leading to an all-zero output of the AES masking PRNG.
-            - Configure EDN to perform a CSRNG instantiate followed by repeated generate and reseed commands using the maximum amount of additional data and no entropy input in automatic mode.
-            - Let CSRNG produce and forward to EDN the deterministic seed leading to an all-zero output of the AES masking PRNG.
+            - Verify CSRNG produces the deterministic seed leading to an all-zero output of the AES
+              masking PRNG.
+            - Configure EDN to perform a CSRNG instantiate followed by repeated generate and reseed
+              commands using the maximum amount of additional data and no entropy input in automatic
+              mode.
+            - Let CSRNG produce and forward to EDN the deterministic seed leading to an all-zero
+              output of the AES masking PRNG.
             - Initialize AES and set the force_masks configuration bit.
             - Configure an AES key of which the second share is zero.
-            - Trigger a reseed operation of the masking PRNG inside AES to load the deterministic seed produced by CSRNG and distributed by EDN.
+            - Trigger a reseed operation of the masking PRNG inside AES to load the deterministic
+              seed produced by CSRNG and distributed by EDN.
             - Verify that the masking PRNG outputs an all-zero vector.
             - Encrypt a message of multiple blocks using AES.
             - Verify that the second share of the initial, intermediate and output state is zero.
@@ -2640,7 +2671,8 @@
         "chip_prim_tl_access",
         // lc_check_byp_en_i
         "chip_sw_lc_ctrl_transition",
-        // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, also checks lc_keymgr_en_i since it uses the keymgr.
+        // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, also checks lc_keymgr_en_i since it uses
+        // the keymgr.
         "chip_sw_otp_ctrl_lc_signals_test_unlocked0",
         "chip_sw_otp_ctrl_lc_signals_dev",
         "chip_sw_otp_ctrl_lc_signals_prod",
@@ -2709,9 +2741,11 @@
             - Enable RMA mode, and verify that the SW can access the flash. Ensure that the previous
               contents are inaccessible.
 
-            - RMA entry can be through the C side or the JTAG interface, both vectors should be tested.
+            - RMA entry can be through the C side or the JTAG interface, both vectors should be
+              tested.
 
-            - X-ref'ed with manuf_ft_provision_rma_token_and_personalization from the manufacturing testplan.
+            - X-ref'ed with manuf_ft_provision_rma_token_and_personalization from the manufacturing
+              testplan.
             '''
       stage: V2
       tests: []
