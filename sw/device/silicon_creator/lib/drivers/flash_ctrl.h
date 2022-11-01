@@ -23,7 +23,7 @@ extern "C" {
  * - Bit 0: Data (0) or information (1) partition.
  * - Bits 1-2: Information partition type [0, 2].
  */
-typedef enum flash_crtl_partition {
+typedef enum flash_ctrl_partition {
   /**
    * Data Partition.
    */
