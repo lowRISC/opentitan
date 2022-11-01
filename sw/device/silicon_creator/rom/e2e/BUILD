@@ -1172,7 +1172,10 @@ test_cases = [
         bitstream = bitstream_target,
         exit_failure = MSG_PASS,
         exit_success = MSG_BOOT_FAULT + bfv_val,
-        tags = ["vivado"],
+        tags = [
+            "broken",  # TODO: pending on the issues noted in #14271
+            "vivado",
+        ],
     ),
     signed = False,
     targets = ["cw310_rom"],
