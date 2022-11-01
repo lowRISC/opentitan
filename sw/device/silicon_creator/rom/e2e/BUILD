@@ -386,15 +386,31 @@ opentitan_functest(
     targets = ["cw310_rom"],
 )
 
-MSG_SHUTDOWN = {
-    "test": "BFV:0142500d\r\nLCV:02108421\r\n",
-    "dev": "BFV:0142500d\r\nLCV:21084210\r\n",
-    "prod": "BFV:0142500d\r\nLCV:2318c631\r\n",
-    "prod_end": "BFV:0142500d\r\nLCV:25294a52\r\n",
-    "rma": "BFV:0142500d\r\nLCV:2739ce73\r\n",
-}
+LC_STATES_SHUTDOWN_OUTPUT = [k.lower() for k in structs.to_dict(CONST.LCV)]
 
-LC_STATES = ["rma"]
+[otp_image(
+    name = "otp_img_shutdown_output_{}".format(lc_state),
+    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+    overlays = [
+        "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
+        "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
+        "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+    ],
+    tags = ["vivado"],
+) for lc_state in LC_STATES_SHUTDOWN_OUTPUT]
+
+# Splice OTP images into bitstreams
+[
+    bitstream_splice(
+        name = "bitstream_shutdown_output_{}".format(lc_state),
+        src = "@//hw/bitstream:rom",
+        data = ":otp_img_shutdown_output_{}".format(lc_state),
+        meminfo = "@//hw/bitstream:otp_mmi",
+        tags = ["vivado"],
+        update_usr_access = True,
+    )
+    for lc_state in LC_STATES_SHUTDOWN_OUTPUT
+]
 
 manifest({
     "name": "manifest_bad_identifier",
@@ -402,23 +418,30 @@ manifest({
     "identifier": 0,
 })
 
-# TODO(#14270): Add remaining lifecycle states.
 [opentitan_functest(
     name = "shutdown_output_{}".format(lc_state),
     cw310 = cw310_params(
-        bitstream = "@//hw/bitstream:rom",
+        bitstream = ":bitstream_shutdown_output_{}".format(lc_state),
         exit_failure = MSG_PASS,
-        exit_success = MSG_SHUTDOWN[lc_state],
+        exit_success = MSG_TEMPLATE_BFV_LCV.format(
+            hex(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),
+            hex(getattr(
+                CONST.LCV,
+                lc_state.upper(),
+            )),
+        ),
+        tags = ["vivado"],
     ),
     manifest = ":manifest_bad_identifier",
     ot_flash_binary = ":empty_test_slot_a",
     signed = False,
     targets = ["cw310_rom"],
-) for lc_state in LC_STATES]
+) for lc_state in LC_STATES_SHUTDOWN_OUTPUT]
 
 test_suite(
     name = "shutdown_output",
-    tests = ["shutdown_output_{}".format(lc_state) for lc_state in LC_STATES],
+    tags = ["manual"],
+    tests = ["shutdown_output_{}".format(lc_state) for lc_state in LC_STATES_SHUTDOWN_OUTPUT],
 )
 
 SEC_VERS = [
