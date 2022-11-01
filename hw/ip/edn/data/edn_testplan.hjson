@@ -82,6 +82,14 @@
       tests: ["edn_err"]
     }
     {
+      name: disable
+      desc: '''
+            Disable EDN in all states and verify proper operation when re-enabled.
+            '''
+      stage: V2
+      tests: ["edn_disable"]
+    }
+    {
       name: stress_all
       desc: '''
             Combine the other individual testpoints while injecting TL errors and running CSR tests

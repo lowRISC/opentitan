@@ -23,5 +23,6 @@ package edn_test_pkg;
   `include "edn_stress_all_test.sv"
   `include "edn_intr_test.sv"
   `include "edn_alert_test.sv"
+  `include "edn_disable_test.sv"
 
 endpackage

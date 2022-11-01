@@ -27,6 +27,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
   // Knobs & Weights
   uint   enable_pct, boot_req_mode_pct, auto_req_mode_pct, cmd_fifo_rst_pct,
+         force_disable_pct,
          min_num_boot_reqs, max_num_boot_reqs,
          min_num_ep_reqs, max_num_ep_reqs,
          invalid_mubi4_pct;
@@ -35,6 +36,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
   rand mubi4_t   enable, boot_req_mode, auto_req_mode, cmd_fifo_rst;
   rand uint      num_endpoints, num_boot_reqs;
+  rand bit       force_disable;
   rand bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]   boot_ins_cmd, boot_gen_cmd;
 
   rand fatal_err_e      which_fatal_err;
@@ -45,6 +47,9 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
 
   // Constraints
   // TODO: utilize suggestions in PR9535 to generate "other" values when testing alerts
+  constraint force_disable_c {force_disable dist {
+    1 :/ force_disable_pct,
+    0 :/ (100 - force_disable_pct) };}
   constraint enable_c {enable dist {
     MuBi4True  :/ enable_pct,
     MuBi4False :/ (100 - enable_pct) };}
@@ -124,6 +129,8 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
         num_endpoints)};
     str = {str,  $sformatf("\n\t |***** num_boot_reqs                : %10d *****| \t",
         num_boot_reqs)};
+    str = {str,  $sformatf("\n\t |***** force_disable                : %10d *****| \t",
+        force_disable)};
     str = {str,  $sformatf("\n\t |------------------- knobs ---------------------------| \t")};
     str = {str,  $sformatf("\n\t |***** enable_pct                   : %10d *****| \t",
         enable_pct)};
@@ -137,6 +144,8 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
         min_num_boot_reqs)};
     str = {str,  $sformatf("\n\t |***** max_num_boot_reqs            : %10d *****| \t",
         max_num_boot_reqs)};
+    str = {str,  $sformatf("\n\t |***** force_disable_pct            : %10d *****| \t",
+        force_disable_pct)};
     str = {str,  $sformatf("\n\t |*****************************************************| \t")};
     str = {str, "\n"};
     return str;

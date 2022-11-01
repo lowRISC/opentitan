@@ -149,6 +149,9 @@ class edn_scoreboard extends cip_base_scoreboard #(
         // Do nothing.
         // TODO: Found error in stress_all_with_rand_reset. Check if need to verify them.
       end
+      "main_sm_state": begin
+        do_read_check = 1'b0;
+      end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
       end
