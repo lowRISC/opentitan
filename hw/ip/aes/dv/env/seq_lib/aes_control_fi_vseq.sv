@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Test that injects random resets &
-// bit errors into FSMs
+// This test randomly forces critical control signals inside one of the independent, redundant
+// logic rails of the main control FSM. The test then checks that the DUT triggers a fatal
+// alert and cannot proceed until a reset is triggered.
 class aes_control_fi_vseq extends aes_base_vseq;
   `uvm_object_utils(aes_control_fi_vseq)
 

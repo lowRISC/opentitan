@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Test that injects random resets &
-// bit errors into FSMs
+// This test randomly injects resets and alert conditions such as:
+// - invalid mode configuration values, and
+// - life cycle escalation.
 class aes_alert_reset_vseq extends aes_base_vseq;
   `uvm_object_utils(aes_alert_reset_vseq)
 
