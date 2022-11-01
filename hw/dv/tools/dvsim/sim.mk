@@ -101,7 +101,8 @@ ifneq (${sw_images},)
 			fi; \
 			echo "Building with command: $${bazel_cmd} build $${bazel_opts} $${bazel_label}"; \
 			$${bazel_cmd} build $${bazel_opts} $${bazel_label}; \
-			for dep in $$($${bazel_cmd} cquery "labels(data, $${bazel_label})" \
+			for dep in $$($${bazel_cmd} cquery \
+				"labels(data, $${bazel_label}) union labels(srcs, $${bazel_label})" \
 				--ui_event_filters=-info \
 				--noshow_progress \
 				--output=starlark); do \
