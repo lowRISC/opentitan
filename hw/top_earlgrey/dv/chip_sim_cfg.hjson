@@ -488,7 +488,7 @@
     }
     {
       name: chip_sw_spi_device_tx_rx
-      uvm_test_seq: chip_sw_spi_tx_rx_vseq
+      uvm_test_seq: chip_sw_spi_device_tx_rx_vseq
       sw_images: ["//sw/device/tests/sim_dv:spi_tx_rx_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }

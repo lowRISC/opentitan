@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class chip_sw_spi_tx_rx_vseq extends chip_sw_base_vseq;
-  `uvm_object_utils(chip_sw_spi_tx_rx_vseq)
+class chip_sw_spi_device_tx_rx_vseq extends chip_sw_base_vseq;
+  `uvm_object_utils(chip_sw_spi_device_tx_rx_vseq)
 
   `uvm_object_new
 
@@ -72,4 +72,4 @@ class chip_sw_spi_tx_rx_vseq extends chip_sw_base_vseq;
     device_data = m_spi_host_seq.rsp.data;
   endtask
 
-endclass : chip_sw_spi_tx_rx_vseq
+endclass : chip_sw_spi_device_tx_rx_vseq
