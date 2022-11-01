@@ -24,36 +24,31 @@ load(
 load("//rules:opentitan_gdb_test.bzl", "opentitan_gdb_fpga_cw310_test")
 load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
 load("//rules:splice.bzl", "bitstream_splice")
+load("@bazel_skylib//lib:structs.bzl", "structs")
 
 package(default_visibility = ["//visibility:public"])
 
-MSG_BOOT_FAULT = "BFV:"
+MSG_TEMPLATE_BFV = "{}{}\r\n(?s:.*){}{}\r\n".format(
+    CONST.PREFIX.BFV,
+    "{0}",
+    CONST.PREFIX.BFV,
+    "{0}",
+)
 
-_BFV_TEMPLATE = "{}{}(?s:.*){}{}".format(MSG_BOOT_FAULT, "{0}", MSG_BOOT_FAULT, "{0}")
+MSG_TEMPLATE_BFV_LCV = "{}{}\r\n{}{}\r\n(?s:.*){}{}\r\n{}{}\r\n".format(
+    CONST.PREFIX.BFV,
+    "{0}",
+    CONST.PREFIX.LCV,
+    "{1}",
+    CONST.PREFIX.BFV,
+    "{0}",
+    CONST.PREFIX.LCV,
+    "{1}",
+)
 
 MSG_STARTING_ROM_EXT = "Starting ROM_EXT"
 
-MSG_INSTRUCTION_ACCESS_FAULT = _BFV_TEMPLATE.format("01495202")
-
-MSG_ILLEGAL_INSTRUCTION_FAULT = _BFV_TEMPLATE.format("02495202")
-
-MSG_STORE_ACCESS_FAULT = _BFV_TEMPLATE.format("07495202")
-
 MSG_PASS = "PASS!"
-
-MSG_SIGVERIFY_BAD_ENCODED_MSG = _BFV_TEMPLATE.format("01535603")
-
-MSG_SIGVERIFY_BAD_KEY = _BFV_TEMPLATE.format("02535603")
-
-MSG_BOOT_POLICY_BAD_IDENTIFIER = _BFV_TEMPLATE.format("0142500d")
-
-MSG_BOOT_POLICY_BAD_LENGTH = _BFV_TEMPLATE.format("0242500d")
-
-MSG_BOOT_POLICY_ROLLBACK = _BFV_TEMPLATE.format("0342500d")
-
-MSG_MANIFEST_BAD_ENTRY_POINT = _BFV_TEMPLATE.format("014d410d")
-
-MSG_MANIFEST_BAD_CODE_REGION = _BFV_TEMPLATE.format("024d410d")
 
 SLOTS = {
     "a": "0x0",
@@ -82,7 +77,7 @@ opentitan_functest(
         # Note: This test never prints a failure message so it will fail only
         # when it times out.
         exit_failure = "NO_FAILURE_MESSAGE",
-        exit_success = MSG_INSTRUCTION_ACCESS_FAULT,
+        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
     ),
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom",
@@ -96,7 +91,7 @@ opentitan_functest(
     verilator = verilator_params(
         timeout = "eternal",
         exit_failure = "NO_FAILURE_MESSAGE",
-        exit_success = MSG_INSTRUCTION_ACCESS_FAULT,
+        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
         rom = "//sw/device/silicon_creator/rom",
     ),
     deps = [
@@ -255,7 +250,7 @@ opentitan_functest(
 opentitan_functest(
     name = "rom_ext_a_flash_a",
     cw310 = cw310_params(
-        exit_failure = MSG_BOOT_FAULT,
+        exit_failure = CONST.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
     ),
     ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
@@ -275,7 +270,7 @@ opentitan_multislot_flash_binary(
 opentitan_functest(
     name = "rom_ext_b_flash_b",
     cw310 = cw310_params(
-        exit_failure = MSG_BOOT_FAULT,
+        exit_failure = CONST.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
     ),
     key = "multislot",
@@ -297,7 +292,7 @@ opentitan_functest(
     name = "rom_ext_a_flash_b",
     cw310 = cw310_params(
         exit_failure = MSG_STARTING_ROM_EXT,
-        exit_success = MSG_STORE_ACCESS_FAULT,
+        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.STORE_ACCESS)),
     ),
     key = "multislot",
     ot_flash_binary = ":rom_ext_a_flash_b_image",
@@ -318,7 +313,7 @@ opentitan_functest(
     name = "rom_ext_b_flash_a",
     cw310 = cw310_params(
         exit_failure = MSG_STARTING_ROM_EXT,
-        exit_success = MSG_STORE_ACCESS_FAULT,
+        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.STORE_ACCESS)),
     ),
     key = "multislot",
     ot_flash_binary = ":rom_ext_b_flash_a_image",
@@ -328,7 +323,7 @@ opentitan_functest(
 opentitan_functest(
     name = "rom_ext_v_flash_a",
     cw310 = cw310_params(
-        exit_failure = MSG_BOOT_FAULT,
+        exit_failure = CONST.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
     ),
     ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
@@ -348,7 +343,7 @@ opentitan_multislot_flash_binary(
 opentitan_functest(
     name = "rom_ext_v_flash_b",
     cw310 = cw310_params(
-        exit_failure = MSG_BOOT_FAULT,
+        exit_failure = CONST.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
     ),
     key = "multislot",
@@ -360,7 +355,7 @@ opentitan_functest(
     name = "rom_ext_a_flash_a_bad_addr_trans",
     cw310 = cw310_params(
         exit_failure = MSG_STARTING_ROM_EXT,
-        exit_success = MSG_ILLEGAL_INSTRUCTION_FAULT,
+        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
     ),
     ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a_bad_address_translation",
     targets = ["cw310_rom"],
@@ -383,7 +378,7 @@ opentitan_functest(
     name = "sigverify_key_auth",
     cw310 = cw310_params(
         exit_failure = MSG_PASS,
-        exit_success = MSG_SIGVERIFY_BAD_KEY,
+        exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.SIGVERIFY.BAD_KEY)),
     ),
     key = "unauthorized_0",
     ot_flash_binary = ":empty_test_slot_a",
@@ -520,7 +515,7 @@ BOOT_POLICY_ROLLBACK_CASES = [
     # {
     #     "a": 0,
     #     "b": 0,
-    #     "exit_success": MSG_BOOT_POLICY_ROLLBACK,
+    #     "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.ROLLBACK)),
     # },
     {
         "a": 0,
@@ -579,7 +574,7 @@ SIGVERIFY_MOD_EXP_CASES = [
     # {
     #     "name": "invalid",
     #     "use_sw_rsa_verify": 0,
-    #     "exit_success": MSG_ILLEGAL_INSTRUCTION_FAULT,
+    #     "exit_success": MSG_TEMPLATE_BFV.format(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION),
     # },
 ]
 
@@ -603,7 +598,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         "manifest": {
             "identifier": 0,
         },
-        "exit_success": MSG_BOOT_POLICY_BAD_IDENTIFIER,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER)),
     },
     {
         "name": "too_small",
@@ -611,7 +606,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "identifier": CONST.ROM_EXT,
             "length": CONST.ROM_EXT_SIZE_MIN - 1,
         },
-        "exit_success": MSG_BOOT_POLICY_BAD_LENGTH,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
     },
     {
         "name": "too_large",
@@ -619,7 +614,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "identifier": CONST.ROM_EXT,
             "length": CONST.ROM_EXT_SIZE_MAX + 1,
         },
-        "exit_success": MSG_BOOT_POLICY_BAD_LENGTH,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
     },
     {
         "name": "empty_code",
@@ -629,7 +624,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_start": CONST.MANIFEST_SIZE + 12,
             "code_end": CONST.MANIFEST_SIZE + 12,
         },
-        "exit_success": MSG_MANIFEST_BAD_CODE_REGION,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_in_manifest",
@@ -639,7 +634,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": CONST.MANIFEST_SIZE + 12,
             "entry_point": CONST.MANIFEST_SIZE + 8,
         },
-        "exit_success": MSG_MANIFEST_BAD_CODE_REGION,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_outside_image",
@@ -649,7 +644,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": CONST.MANIFEST_SIZE + 12,
             "entry_point": CONST.MANIFEST_SIZE + 8,
         },
-        "exit_success": MSG_MANIFEST_BAD_CODE_REGION,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_start_unaligned",
@@ -659,7 +654,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": CONST.MANIFEST_SIZE + 12,
             "entry_point": CONST.MANIFEST_SIZE + 8,
         },
-        "exit_success": MSG_MANIFEST_BAD_CODE_REGION,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_end_unaligned",
@@ -669,7 +664,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": CONST.MANIFEST_SIZE + 10,
             "entry_point": CONST.MANIFEST_SIZE + 8,
         },
-        "exit_success": MSG_MANIFEST_BAD_CODE_REGION,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "entry_before_code_start",
@@ -679,7 +674,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": CONST.MANIFEST_SIZE + 12,
             "entry_point": CONST.MANIFEST_SIZE + 4,
         },
-        "exit_success": MSG_MANIFEST_BAD_ENTRY_POINT,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
     },
     {
         "name": "entry_at_code_end",
@@ -689,7 +684,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": CONST.MANIFEST_SIZE + 12,
             "entry_point": CONST.MANIFEST_SIZE + 12,
         },
-        "exit_success": MSG_MANIFEST_BAD_ENTRY_POINT,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
     },
     {
         "name": "entry_unaligned",
@@ -699,7 +694,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "code_end": CONST.MANIFEST_SIZE + 12,
             "entry_point": CONST.MANIFEST_SIZE + 10,
         },
-        "exit_success": MSG_MANIFEST_BAD_ENTRY_POINT,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
     },
     # TODO(#14473): Enable after splicing the OTP with default boot_data
     # enabled in PROD and CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT set to 1.
@@ -712,7 +707,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
     #         "entry_point": CONST.MANIFEST_SIZE + 8,
     #         "security_version": 0,
     #     },
-    #     "exit_success": MSG_BOOT_POLICY_ROLLBACK,
+    #     "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.ROLLBACK)),
     # },
 ]
 
@@ -853,7 +848,7 @@ BOOT_POLICY_VALID_CASES = [
         ),
         cw310 = cw310_params(
             exit_failure = MSG_PASS if a["desc"] == b["desc"] and a["desc"] == "bad" else DEFAULT_TEST_FAILURE_MSG,
-            exit_success = MSG_SIGVERIFY_BAD_ENCODED_MSG if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
+            exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
         ),
         key = "multislot",
         ot_flash_binary = ":boot_policy_valid_img_a_{}_b_{}".format(
@@ -1191,7 +1186,7 @@ test_cases = [
     cw310 = cw310_params(
         bitstream = bitstream_target,
         exit_failure = MSG_PASS,
-        exit_success = MSG_BOOT_FAULT + bfv_val,
+        exit_success = MSG_TEMPLATE_BFV.format(bfv_val),
         tags = [
             "broken",  # TODO: pending on the issues noted in #14271
             "vivado",
