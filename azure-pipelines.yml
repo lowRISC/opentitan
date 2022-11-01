@@ -161,6 +161,7 @@ jobs:
   - template: ci/install-package-dependencies.yml
   - bash: ci/scripts/check-bazel-tags.sh
     displayName: Check Bazel Tags
+    continueOnError: True
   - bash: ci/scripts/check-generated.sh
     displayName: Check Generated
     # Ensure all generated files are clean and up-to-date
