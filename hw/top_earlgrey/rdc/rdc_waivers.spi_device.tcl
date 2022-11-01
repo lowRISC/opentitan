@@ -76,6 +76,15 @@ set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
   -comment {Assumption is to reset RX/TX FIFO when SPI is idle. \
     SW reads FIFO PTR not at the same time.}
 
+set_rule_status -rule {E_RDC_METASTABILITY} -status {Waived} \
+  -expression {(SourceReset=~"*u_spi_device.u_reg.u_control_rst_txfifo*") && \
+    (ResetFlop=~"*u_spi_device.u_fwmode.u_tx_fifo.fifo_rptr*") && \
+    (MetaStableFlop=~"*u_spi_device.u_fwmode.u_tx_fifo.storage*")} \
+  -comment {TXFIFO reset may cause the output data change (surely). \
+    RDC reports the RDC_METASTABILITY caused by this. \
+    To avoid the issue, rst_sync + data sync should be implemented. \
+    However, due to the lack of the SCK, rst_sync cannot be added.}
+
 # CSb to Any SPI_CLK path (RDC could not figure out the relation between CSb and SPI_CLK)
 set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
   -expression {(SourceReset=~"*u_spi_device.rst_csb_buf") && \
