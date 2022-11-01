@@ -59,19 +59,21 @@ set_reset_scenario { \
 #  They can be asserted only in Generic Mode. Keep Mode in Generic then assert
 #  reset.
 #
-# Assume control_mode is Generic mode `{constraint {@t0 0}}`
+# Assume control_mode is Generic mode `CONTROL.mode {constraint {@t0 0}}`
 # Then `CONTROL.rst_rxfifo` 0 -> 1 {after 10 clks} -> 0 {after 4 clks}
 set_reset_scenario { \
   { {top_earlgrey.u_spi_device.u_reg.u_control_rst_rxfifo.q[0]} \
     {reset  { @t0 0 } { #10 1} { #4 0 }} } \
-  { top_earlgrey.u_spi_device.u_reg.u_control_mode.q[0] \
-    {constraint {@t0 0}}} \
+  { top_earlgrey.u_spi_device.u_reg.u_control_mode.q \
+    {constraint { @t0 S } } } \
+  { top_earlgrey.u_spi_device.rst_csb_buf {constraint { @t0 1 } } } \
   } -name SpidRstRxFifo -comment "SPI_DEVICE Async RX FIFO Functional Reset"
 set_reset_scenario { \
   { {top_earlgrey.u_spi_device.u_reg.u_control_rst_txfifo.q[0]} \
     {reset  { @t0 0 } { #10 1} { #4 0 }} } \
-  { top_earlgrey.u_spi_device.u_reg.u_control_mode.q[0] \
-    {constraint {@t0 0}}} \
+  { top_earlgrey.u_spi_device.u_reg.u_control_mode.q \
+    {constraint { @t0 S } } } \
+  { top_earlgrey.u_spi_device.rst_csb_buf {constraint { @t0 1 } } } \
   } -name SpidRstTxFifo -comment "SPI_DEVICE Async TX FIFO Functional Reset"
 
 # SPI_DEVICE CSb Reset. IP reset should be stable
