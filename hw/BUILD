@@ -94,7 +94,11 @@ genrule(
 # relationships between verilog components.
 filegroup(
     name = "all_files",
-    srcs = glob(["**"]) + [
+    srcs = glob(
+        ["**"],
+        # TODO(lowRISC/opentitan#15882): make Verilator work with foundry repo present.
+        exclude = ["foundry/**"],
+    ) + [
         "//hw/ip:all_files",
         "//hw/top_earlgrey:all_files",
     ],
