@@ -183,7 +183,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         process_interrupts();
         process_fifo_exceptions();
         health_test_scoring_thread();
-        process_xht_events();
       join_none
     end
   endtask
@@ -2089,6 +2088,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     string                    msg;
 
     forever begin : simulation_loop
+      entropy_src_xht_item xht_item;
+      bit disable_detected = 0;
 
       wait_enabled();
 
@@ -2156,36 +2157,64 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
         window_rng_frames = window_size / RNG_BUS_WIDTH;
 
-        while (window.size() < window_rng_frames) begin
+        forever begin : window_loop
           string fmt;
+          bit [RNG_BUS_WIDTH - 1:0] xht_bus_val;
 
-          if(health_test_data_q.size() == 0) begin
-            `DV_SPINWAIT_EXIT(wait(health_test_data_q.size() > 0);,
-                              wait(!dut_pipeline_enabled);)
-            if(health_test_data_q.size() == 0) break;
+          // For synchronization purposes we wait to process each sample until it is visible on the
+          // as an event on xht bus. We then perform checks to ensure that the xht interface dataz
+          // matches the RNG data and that the window boundaries (as seen on the XHT bus) appear
+          // at the correct times.
+          //
+          // TODO(V3): perform a more complete check of the other XHT outputs.
+          //
+          forever begin : sample_loop
+            // Wait either for the next xht_item, or wait at most two clocks
+            // after a disable event.
+            `DV_SPINWAIT_EXIT(xht_fifo.peek(xht_item);,
+                              wait(!dut_pipeline_enabled);
+                              repeat(2) @(cfg.m_xht_agent_cfg.vif.mon_cb);)
+            disable_detected = !xht_fifo.try_get(xht_item);
+            if(disable_detected) break; // No events. DUT has shutdown
+            if(!xht_item.req.clear) begin
+              evaluate_external_ht(xht_item.rsp, ht_fips_mode);
+            end
+            if(xht_item.req.entropy_bit_valid || xht_item.req.window_wrap_pulse) break;
+          end : sample_loop
+
+          if(disable_detected) break; // No sample events. DUT has shutdown
+
+          if(xht_item.req.window_wrap_pulse) begin
+            `DV_CHECK(window.size() == window_rng_frames)
+            break;
+          end else begin
+            `DV_CHECK(window.size() < window_rng_frames)
           end
 
+          // No shutdown, or window close pulse, must be a sample.
+          `DV_CHECK(xht_item.req.entropy_bit_valid)
+
+          // Make sure that RNG data has been received and that it matches the
+          // ExtHT data
+          `DV_CHECK(health_test_data_q.size() > 0)
           rng_val = health_test_data_q.pop_front();
+
+          `DV_CHECK(xht_item.req.entropy_bit == rng_val)
           window.push_back(rng_val);
 
           fmt = "RNG element: %0x, idx: %0d";
-          `uvm_info(`gfn, $sformatf(fmt, rng_val, window.size()), UVM_DEBUG)
+          `uvm_info(`gfn, $sformatf(fmt, rng_val, window.size()), UVM_FULL)
 
           // Update the repetition counts, which are updated continuously.
           // The other health checks only operate on complete windows, and are processed later.
           update_repcnts(ht_fips_mode, rng_val);
         end
 
-        if(window.size() < window_rng_frames && !dut_pipeline_enabled) break;
+        if(disable_detected) break; // No events. DUT has shutdown
 
-        // Wait for the XHT to complete, but give up no later than two cycles after the DUT has
-        // disabled.
-        `DV_SPINWAIT_EXIT(wait(cfg.m_xht_agent_cfg.vif.req.window_wrap_pulse);,
-                          wait(!dut_pipeline_enabled);
-                          cfg.clk_rst_vif.wait_clks(2);)
-        if (!cfg.m_xht_agent_cfg.vif.req.window_wrap_pulse) break;
-        cfg.clk_rst_vif.wait_clks(1);
-        `uvm_info(`gfn, "FULL_WINDOW", UVM_FULL)
+        // Process end of window events
+        `DV_CHECK(xht_item.req.window_wrap_pulse)
+
         failures_in_window = health_check_rng_data(window, ht_fips_mode);
 
         if (failures_in_window > 0) begin
@@ -2199,7 +2228,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         end
 
         process_failures(failures_in_window, fw_ov_insert, dut_fsm_phase, startup_fail_count);
-
         window.delete();
 
         // Once in the halted state, or in the fw_ov_insert_entropy mode, pre-tested data is
@@ -2217,7 +2245,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           // update counters for processing next seed:
           pass_count = 0;
           seed_idx++;
-        end
+        end : window_loop
       end : enabled_loop
     end : simulation_loop
   endtask
