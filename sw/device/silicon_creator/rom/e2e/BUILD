@@ -11,7 +11,7 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
-load("//rules:const.bzl", "CONST")
+load("//rules:const.bzl", "CONST", "hex")
 load(
     "//rules:opentitan.bzl",
     "opentitan_flash_binary",

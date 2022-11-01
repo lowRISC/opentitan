@@ -16,3 +16,11 @@ CONST = struct(
     BL0_SIZE_MAX = 0x70000,
     DEFAULT_USAGE_CONSTRAINTS = 0xa5a5a5a5,
 )
+
+_HEX_MAP = "0123456789abcdef"
+
+def hex(v):
+    # First "cast" `v` to a 32-bit unsigned int
+    v &= 0xffffffff
+    hex_digits = [_HEX_MAP[(v >> i) & 0xf] for i in range(0, 32, 4)]
+    return "".join(reversed(hex_digits))
