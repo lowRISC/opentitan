@@ -531,6 +531,7 @@ jobs:
   - bash: |
       set -e
       . util/build_consts.sh
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/scripts/run-fpga-cw310-tests.sh || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
 
