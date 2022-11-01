@@ -31,7 +31,10 @@
     }
     {
       name: sec_cm_lc_escalate_en_intersig_mubi
-      desc: "Verify the countermeasure(s) LC_ESCALATE_EN.INTERSIG.MUBI."
+      desc: '''
+            Verify the countermeasure(s) LC_ESCALATE_EN.INTERSIG.MUBI.
+            Upon randomly switching the life cycle escalation input signal, it is ensured that the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
       stage: V2S
       tests: ["aes_alert_reset"]
     }
@@ -43,9 +46,13 @@
     }
     {
       name: sec_cm_main_config_sparse
-      desc: "Verify the countermeasure(s) MAIN.CONFIG.SPARSE."
+      desc: '''
+            Verify the countermeasure(s) MAIN.CONFIG.SPARSE.
+            Illegally encoded values are written into the main control register via register interface and it is ensured that the values are resolved to the correct legal values.
+            Internal wires carrying the corresponding signals are forced to invalid values and it is ensured that the DUT stops processing data and signals an alert.
+            '''
       stage: V2S
-        tests: ["aes_stress", "aes_smoke"]
+      tests: ["aes_stress", "aes_smoke", "aes_alert_reset"]
     }
     {
       name: sec_cm_aux_config_shadow
@@ -55,7 +62,10 @@
     }
     {
       name: sec_cm_aux_config_regwen
-      desc: "Verify the countermeasure(s) AUX.CONFIG.REGWEN."
+      desc: '''
+            Verify the countermeasure(s) AUX.CONFIG.REGWEN.
+            It is ensured that once the REGWEN bit is set to 0, the content of the CTRL_AUX_SHADOWED register cannot be altered anymore until reset.
+            '''
       stage: V2S
         tests: ["aes_stress", "aes_readability"]
     }
@@ -63,35 +73,50 @@
       name: sec_cm_key_sideload
       desc: "Verify the countermeasure(s) KEY.SIDELOAD."
       stage: V2S
-      tests: ["aes_stress","aes_sideload"]
+      tests: ["aes_stress", "aes_sideload"]
     }
     {
       name: sec_cm_key_sw_unreadable
-      desc: "Verify the countermeasure(s) KEY.SW_UNREADABLE."
+      desc: '''
+            Verify the countermeasure(s) KEY.SW_UNREADABLE.
+            It is ensured that the initial key registers cannot be read via register interface.
+            '''
       stage: V2S
       tests: ["aes_readability"]
     }
     {
       name: sec_cm_data_reg_sw_unreadable
-      desc: "Verify the countermeasure(s) DATA_REG.SW_UNREADABLE."
+      desc: '''
+            Verify the countermeasure(s) DATA_REG.SW_UNREADABLE.
+            It is ensured that the input data registers cannot be read via register interface.
+            '''
       stage: V2S
       tests: ["aes_readability"]
     }
     {
       name: sec_cm_key_sec_wipe
-      desc: "Verify the countermeasure(s) KEY.SEC_WIPE."
+      desc: '''
+            Verify the countermeasure(s) KEY.SEC_WIPE.
+            It is ensured that after triggering the clearing of the initial key registers with pseudo-random data, the content of these registers indeed changes to a different value.
+            '''
       stage: V2S
       tests: ["aes_readability"]
     }
     {
       name: sec_cm_iv_config_sec_wipe
-      desc: "Verify the countermeasure(s) IV.CONFIG.SEC_WIPE."
+      desc: '''
+            Verify the countermeasure(s) IV.CONFIG.SEC_WIPE.
+            It is ensured that after triggering the clearing of the IV registers with pseudo-random data, the values read back from these registers via register interface indeed change.
+            '''
       stage: V2S
       tests: ["aes_readability"]
     }
     {
       name: sec_cm_data_reg_sec_wipe
-      desc: "Verify the countermeasure(s) DATA_REG.SEC_WIPE."
+      desc: '''
+            Verify the countermeasure(s) DATA_REG.SEC_WIPE.
+            It is ensured that after triggering the clearing of the input and output data registers with pseudo-random data, the values read back from output data registers via register interface indeed change and that the content of the input data registers changes to a different value.
+            '''
       stage: V2S
       tests: ["aes_readability"]
     }
@@ -117,75 +142,111 @@
     }
     {
       name: sec_cm_main_fsm_sparse
-      desc: "Verify the countermeasure(s) MAIN.FSM.SPARSE."
+      desc: '''
+            Verify the countermeasure(s) MAIN.FSM.SPARSE.
+            It is ensured that upon randomly forcing bits in the state register of the main FSM, the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
       stage: V2S
-        tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
+        tests: ["aes_fi"]
     }
     {
       name: sec_cm_main_fsm_redun
-      desc: "Verify the countermeasure(s) MAIN.FSM.REDUN."
+      desc: '''
+            Verify the countermeasure(s) MAIN.FSM.REDUN.
+            It is ensured that upon randomly forcing the state, inputs or outputs of any of the independent, redundant logic rails of the main FSM to both valid and invalid encodings, the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
       stage: V2S
-      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi", "aes_ctr_fi"]
     }
     {
       name: sec_cm_cipher_fsm_sparse
-      desc: "Verify the countermeasure(s) CIPHER.FSM.SPARSE."
+      desc: '''
+            Verify the countermeasure(s) CIPHER.FSM.SPARSE.
+            It is ensured that upon randomly forcing bits in the state register of the cipher core FSM, the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
       stage: V2S
-      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
+      tests: ["aes_fi"]
     }
     {
       name: sec_cm_cipher_fsm_redun
-      desc: "Verify the countermeasure(s) CIPHER.FSM.REDUN."
+      desc: '''
+            Verify the countermeasure(s) CIPHER.FSM.REDUN.
+            It is ensured that upon randomly forcing the state, inputs or outputs of any of the independent, redundant logic rails of the cipher core FSM to both valid and invalid encodings, the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
       stage: V2S
       tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
     }
     {
       name: sec_cm_cipher_ctr_redun
-      desc: "Verify the countermeasure(s) CIPHER.CTR.REDUN."
+      desc: '''
+            Verify the countermeasure(s) CIPHER.CTR.REDUN.
+            It is ensured that upon randomly forcing the value of any of the independent, redundant logic rails of round counter inside the cipher core FSM, the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
       stage: V2S
       tests: ["aes_cipher_fi"]
     }
     {
       name: sec_cm_ctr_fsm_sparse
-      desc: "Verify the countermeasure(s) CTR.FSM.SPARSE."
-      stage: V2S
-      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
-    }
-    {
-      name: sec_cm_ctr_fsm_redun
-      desc: "Verify the countermeasure(s) CTR.FSM.REDUN."
-      stage: V2S
-      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
-    }
-    {
-      name: sec_cm_ctrl_sparse
-      desc: "Verify the countermeasure(s) CTRL.SPARSE."
-      stage: V2S
-      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
-    }
-    {
-      name: sec_cm_main_fsm_global_esc
-      desc: "Verify the countermeasure(s) MAIN.FSM.GLOBAL_ESC."
+      desc: '''
+            Verify the countermeasure(s) CTR.FSM.SPARSE.
+            It is ensured that upon randomly forcing bits in the state register of the CTR mode FSM, the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
       stage: V2S
       tests: ["aes_fi"]
     }
     {
-      name: sec_cm_main_fsm_local_esc
-      desc: "Verify the countermeasure(s) MAIN.FSM.LOCAL_ESC."
+      name: sec_cm_ctr_fsm_redun
+      desc: '''
+            Verify the countermeasure(s) CTR.FSM.REDUN.
+            It is ensured that upon randomly forcing the state, inputs or outputs of any of the independent, redundant logic rails of the CTR mode FSM to both valid and invalid encodings, the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
       stage: V2S
-      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
+      tests: ["aes_fi", "aes_control_fi", "aes_ctr_fi"]
+    }
+    {
+      name: sec_cm_ctrl_sparse
+      desc: '''
+            Verify the countermeasure(s) CTRL.SPARSE.
+            It is ensured that upon randomly forcing the value of any of these critical control signals to an invalid encoding, the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
+      stage: V2S
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi", "aes_ctr_fi"]
+    }
+    {
+      name: sec_cm_main_fsm_global_esc
+      desc: '''
+            Verify the countermeasure(s) MAIN.FSM.GLOBAL_ESC.
+            Upon randomly switching the life cycle escalation input signal, it is ensured that the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
+      stage: V2S
+      tests: ["aes_alert_reset"]
+    }
+    {
+      name: sec_cm_main_fsm_local_esc
+      desc: '''
+            Verify the countermeasure(s) MAIN.FSM.LOCAL_ESC.
+            Upon detecting a local alert condition it is ensured that the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
+      stage: V2S
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi", "aes_ctr_fi"]
     }
     {
       name: sec_cm_cipher_fsm_local_esc
-      desc: "Verify the countermeasure(s) CIPHER.FSM.LOCAL_ESC."
+      desc: '''
+            Verify the countermeasure(s) CIPHER.FSM.LOCAL_ESC.
+            Upon detecting a local alert condition it is ensured that the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
       stage: V2S
-      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
+      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi", "aes_ctr_fi"]
     }
     {
       name: sec_cm_ctr_fsm_local_esc
-      desc: "Verify the countermeasure(s) CTR.FSM.LOCAL_ESC."
+      desc: '''
+            Verify the countermeasure(s) CTR.FSM.LOCAL_ESC.
+            Upon detecting a local alert condition it is ensured that the DUT stops processing data, locks up and triggers a fatal alert.
+            '''
       stage: V2S
-      tests: ["aes_fi", "aes_control_fi", "aes_cipher_fi"]
+      tests: ["aes_fi", "aes_control_fi", "aes_ctr_fi"]
     }
     {
       name: sec_cm_data_reg_local_esc

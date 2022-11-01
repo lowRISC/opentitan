@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Test that injects random resets &
-// bit errors into FSMs
+// This test randomly forces the state registers in any of the main FSMs, cipher core FSMs, and
+// CTR mode FSMs. Each of these FSMs is replicated three times (multi-rail control logic). The
+// FSMs themselves use sparse state encodings.
+// The test then checks that the DUT triggers a fatal alert and cannot proceed until a reset
+// is triggered.
 class aes_fi_vseq extends aes_base_vseq;
   `uvm_object_utils(aes_fi_vseq)
 
@@ -14,7 +17,7 @@ class aes_fi_vseq extends aes_base_vseq;
   bit  wait_for_alert_clear = 0;
   bit  alert = 0;
 
-  typedef enum int { fsm = 0, cipher_fsm = 1, round_cntr = 2 } fi_t;
+  typedef enum int { main_fsm = 0, cipher_fsm = 1, ctr_fsm = 2 } fi_t;
 
   localparam bit FORCE   = 0;
   localparam bit RELEASE = 1;
@@ -77,7 +80,7 @@ class aes_fi_vseq extends aes_base_vseq;
   // (target select, rel = 0 : force signal)
   task force_signal(fi_t target, bit rel, int if_num);
     case (target)
-      fsm: begin
+      main_fsm: begin
         if (!rel) cfg.aes_fi_vif[if_num].force_state(force_state);
         else cfg.aes_fi_vif[if_num].release_state();
       end
@@ -87,7 +90,7 @@ class aes_fi_vseq extends aes_base_vseq;
         else cfg.aes_cipher_fi_vif[if_num].release_state();
       end
 
-      round_cntr: begin
+      ctr_fsm: begin
         if (!rel) cfg.aes_ctr_fi_vif[if_num].force_state(force_state);
         else cfg.aes_ctr_fi_vif[if_num].release_state();
       end
