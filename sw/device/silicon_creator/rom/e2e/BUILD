@@ -1102,23 +1102,20 @@ BFV_VALS = {
     "all": "ffffffff",
 }
 
-overlays = [
-    (
-        er_val,
-        otp_json(
-            name = "otp_json_{}_overlay".format(er_val),
-            partitions = [
-                otp_partition(
-                    name = "OWNER_SW_CFG",
-                    items = {"OWNER_SW_CFG_ROM_ERROR_REPORTING": ERROR_REDACT_VALUES[er_val]},
-                ),
-            ],
-        ),
-    )
+[
+    otp_json(
+        name = "otp_json_{}_overlay".format(er_val),
+        partitions = [
+            otp_partition(
+                name = "OWNER_SW_CFG",
+                items = {"OWNER_SW_CFG_ROM_ERROR_REPORTING": ERROR_REDACT_VALUES[er_val]},
+            ),
+        ],
+    ) 
     for er_val in ERROR_REDACT_VALUES.keys()
 ]
 
-otp_imgs = [
+[
     otp_image(
         name = "img_{}_{}".format(lc_state, er_val),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
@@ -1171,7 +1168,7 @@ test_cases = [
     cw310 = cw310_params(
         bitstream = bitstream_target,
         exit_failure = MSG_PASS,
-        exit_success = MSG_BOOT_FAULT + bfv_val,
+        exit_success = _BFV_TEMPLATE.format(bfv_val),
         tags = ["vivado"],
     ),
     signed = False,
