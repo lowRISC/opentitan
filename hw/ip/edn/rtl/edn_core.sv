@@ -67,9 +67,7 @@ module edn_core import edn_pkg::*;
     EnDelay,
     IntrStatus,
     SendReseedCmd,
-    ReseedCmdClr,
     SendGenCmd,
-    GenCmdClr,
     OutputClr,
     MainFsmEn,
     CmdFifoCnt,
@@ -554,9 +552,7 @@ module edn_core import edn_pkg::*;
 
   assign sfifo_rescmd_pop = send_rescmd;
 
-  assign sfifo_rescmd_clr =
-         (!edn_enable_fo[ReseedCmdClr]) ? '0 :
-         (cmd_fifo_rst_fo[1] || main_sm_done_pulse);
+  assign sfifo_rescmd_clr = (cmd_fifo_rst_fo[1] || main_sm_done_pulse);
 
   assign sfifo_rescmd_err =
          {(sfifo_rescmd_push && sfifo_rescmd_full),
@@ -600,9 +596,7 @@ module edn_core import edn_pkg::*;
 
   assign sfifo_gencmd_pop = send_gencmd || boot_send_gencmd;
 
-  assign sfifo_gencmd_clr =
-         (!edn_enable_fo[GenCmdClr]) ? '0 :
-         (cmd_fifo_rst_fo[2] || main_sm_done_pulse);
+  assign sfifo_gencmd_clr = (cmd_fifo_rst_fo[2] || main_sm_done_pulse);
 
   assign sfifo_gencmd_err =
          {(sfifo_gencmd_push && sfifo_gencmd_full),
