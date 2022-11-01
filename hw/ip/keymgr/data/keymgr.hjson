@@ -345,7 +345,10 @@
     }
     { name: "SIDE_LOAD_SEL.CTRL.CONSISTENCY",
       desc: '''
-        Sideload key slot select is checked for consistency against original software command.
+        Sideload key slot select is checked for consistency.
+        When a key slot is valid when it should not be, an error is triggered.
+        The reverse case is not checked, since an invalid key cannot be used
+        anyways.
       '''
     }
     { name: "CTRL.KEY.INTEGRITY",

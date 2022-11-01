@@ -101,6 +101,14 @@ package keymgr_pkg;
     Otbn
   } keymgr_key_dest_e;
 
+  // Enumeration for actual key slot idx
+  typedef enum logic [1:0] {
+    AesIdx,
+    KmacIdx,
+    OtbnIdx,
+    LastIdx
+  } keymgr_sideload_slot_idx_e;
+
   // Enumeration for key select
   typedef enum logic {
     HwKey = 0,
