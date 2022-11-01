@@ -7,9 +7,8 @@ load("//rules:fusesoc.bzl", "fusesoc_build")
 
 # This configuration exposes fusesoc's "verilator_options" option to the
 # command line. This is intended to allow CI to specifically build a single
-# -threaded Verilator model since the build environment there is more resource
-# -constrained.
-# By default and in all other cases, the Verilator model should be built to
+# -threaded Verilated model to suit it's resource constraints.
+# By default, the Verilated model should be built to
 # run with 4 threads.
 load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
 
@@ -17,6 +16,18 @@ string_list_flag(
     name = "verilator_options",
     build_setting_default = [
         "--threads",
+        "4",
+    ],
+)
+
+# This configuration exposes fusesoc's "make_options" to enable parallel
+# compilation of the verilated model. Compilation takes about 30m of cpu time
+# and 5m of time that isn't parallelized by this option, so this should reduce
+# the total runtime to ~12m.
+string_list_flag(
+    name = "make_options",
+    build_setting_default = [
+        "-j",
         "4",
     ],
 )
@@ -30,6 +41,7 @@ fusesoc_build(
         "//:cores",
     ],
     data = ["//hw/ip/otbn:all_files"],
+    make_options = ":make_options",
     output_groups = {
         "binary": ["sim-verilator/Vchip_sim_tb"],
     },
@@ -49,7 +61,7 @@ filegroup(
 )
 
 # This is used in CI steps that do not want to run Verilator tests, and thus
-# do not want to build the Verilator model. This causes the //hw:verilator
+# do not want to build the Verilated model. This causes the //hw:verilator
 # target to not emit any files, which will break any tests that rely on this;
 # builds will succeed, tests will fail.
 config_setting(

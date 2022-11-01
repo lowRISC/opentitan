@@ -22,6 +22,7 @@ case "$tl" in
         fusesoc_core=lowrisc:dv:chip_verilator_sim
         vname=Vchip_sim_tb
         verilator_options="--threads 4"
+        make_options="-j 4"
         ;;
     englishbreakfast)
         fileset=fileset_topgen
@@ -29,7 +30,7 @@ case "$tl" in
         vname=Vchip_englishbreakfast_verilator
         # Englishbreakfast on CI runs on a 2-core CPU
         verilator_options="--threads 2"
-
+        make_options="-j 2"
         util/topgen-fusesoc.py --files-root=. --topname=top_englishbreakfast
         ;;
     *)
@@ -51,7 +52,8 @@ fusesoc --cores-root=. \
   run --flag=$fileset --target=sim --setup --build \
   --build-root="$OBJ_DIR/hw" \
   $fusesoc_core \
-  --verilator_options="${verilator_options}"
+  --verilator_options="${verilator_options}" \
+  --make_options="${make_options}"
 
 cp "$OBJ_DIR/hw/sim-verilator/${vname}" \
    "$BIN_DIR/hw/top_${tl}/Vchip_${tl}_verilator"
