@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:autogen.bzl", "autogen_hjson_header")
-load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
+load("//rules:otp.bzl", "otp_alert_digest", "otp_image", "otp_json", "otp_partition")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("@bazel_skylib//rules:common_settings.bzl", "int_flag")
 
@@ -137,10 +137,6 @@ otp_json(
                     "0x0",
                     "0x0",
                 ],
-                "OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV": "0xf23b13fb",
-                "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD": "0x9c933414",
-                "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END": "0x68d8d091",
-                "OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA": "0x36ed9cb0",
             },
         ),
     ],
@@ -359,12 +355,19 @@ otp_json(
     seed = "01931961561863975174",
 )
 
+# Create an overlay for the alert_handler digest.
+otp_alert_digest(
+    name = "otp_json_alert_digest_cfg",
+    otp_img = ":otp_json_owner_sw_cfg",
+)
+
 otp_image(
     name = "img_dev",
     src = ":otp_json_dev",
     overlays = [
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
         ":otp_json_hw_cfg",
     ],
 )
@@ -375,6 +378,7 @@ otp_image(
     overlays = [
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
         ":otp_json_hw_cfg",
     ],
 )
@@ -385,6 +389,7 @@ otp_image(
     overlays = [
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
         ":otp_json_hw_cfg",
     ],
 )
@@ -395,6 +400,7 @@ otp_image(
     overlays = [
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
         ":otp_json_hw_cfg",
     ],
 )
@@ -405,6 +411,7 @@ otp_image(
     overlays = [
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
         ":otp_json_hw_cfg",
     ],
 )
@@ -415,6 +422,7 @@ otp_image(
     overlays = [
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
         ":otp_json_hw_cfg",
     ],
 )
@@ -436,6 +444,7 @@ otp_image(
     overlays = [
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
         ":otp_json_hw_cfg",
         ":otp_json_exec_disabled",
     ],
@@ -458,6 +467,7 @@ otp_image(
     overlays = [
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
+        ":otp_json_alert_digest_cfg",
         ":otp_json_hw_cfg",
         ":otp_json_bootstrap_disabled",
     ],

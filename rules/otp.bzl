@@ -104,6 +104,43 @@ otp_json = rule(
     },
 )
 
+def _otp_alert_digest_impl(ctx):
+    file = ctx.actions.declare_file("{}.json".format(ctx.attr.name))
+
+    outputs = [file]
+
+    inputs = [
+        ctx.file._opentitantool,
+        ctx.file.otp_img,
+    ]
+
+    args = ctx.actions.args()
+    args.add_all(("otp", "alert-digest", ctx.file.otp_img))
+    args.add("--output", file)
+
+    ctx.actions.run(
+        outputs = outputs,
+        inputs = inputs,
+        arguments = [args],
+        executable = ctx.file._opentitantool.path,
+    )
+
+    return [DefaultInfo(files = depset([file]))]
+
+otp_alert_digest = rule(
+    implementation = _otp_alert_digest_impl,
+    attrs = {
+        "otp_img": attr.label(
+            allow_single_file = [".json", ".hjson"],
+            doc = "The OTP image file containing alert_handler values.",
+        ),
+        "_opentitantool": attr.label(
+            default = "//sw/host/opentitantool:opentitantool",
+            allow_single_file = True,
+        ),
+    },
+)
+
 def _otp_image(ctx):
     output = ctx.actions.declare_file(ctx.attr.name + ".24.vmem")
     args = ctx.actions.args()
