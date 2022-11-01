@@ -2,7 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:manifest.bzl", "CONST", "manifest")
+load("//rules:const.bzl", "CONST")
+load("//rules:manifest.bzl", "manifest")
 load("//rules:opentitan.bzl", "opentitan_flash_binary")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")

@@ -11,6 +11,7 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
+load("//rules:const.bzl", "CONST")
 load(
     "//rules:opentitan.bzl",
     "opentitan_flash_binary",
@@ -18,7 +19,6 @@ load(
 )
 load(
     "//rules:manifest.bzl",
-    "CONST",
     "manifest",
 )
 load("//rules:opentitan_gdb_test.bzl", "opentitan_gdb_fpga_cw310_test")
