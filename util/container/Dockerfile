@@ -7,7 +7,6 @@
 
 # Global configuration options.
 ARG VERILATOR_VERSION=4.210
-ARG OPENOCD_VERSION=0.11.0
 ARG VERIBLE_VERSION=v0.0-2135-gb534c1fe
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
@@ -20,7 +19,6 @@ ARG GCC_VERSION=9
 # Main container image.
 FROM ubuntu:20.04 AS opentitan
 ARG VERILATOR_VERSION
-ARG OPENOCD_VERSION
 ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
 ARG RUST_VERSION
@@ -70,7 +68,6 @@ ENV TZ=UTC
 
 COPY apt-requirements.txt /tmp/apt-requirements.txt
 RUN echo "verilator-${VERILATOR_VERSION}" >>/tmp/apt-requirements.txt \
-    && echo "openocd-${OPENOCD_VERSION}"  >>/tmp/apt-requirements.txt \
     && sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
     && apt-get update \
     && xargs apt-get install -y </tmp/apt-requirements.txt \

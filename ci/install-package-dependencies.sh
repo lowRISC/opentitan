@@ -8,7 +8,6 @@ set -e
 usage()
 {
     echo "Usage: install-package-dependencies.sh --verilator-version V"
-    echo "                                       --openocd-version V"
     echo "                                       --verible-version V"
     echo "                                       --rust-version V"
     exit 1
@@ -20,11 +19,11 @@ error()
     exit 1
 }
 
+# TODO(#15846) Stop accepting --openocd-version once Private CI stops using it.
 long="verilator-version:,openocd-version:,verible-version:,rust-version:"
 ARGS="$(getopt -o "" -l "$long" -- "$@")" || usage
 
 VERILATOR_VERSION=
-OPENOCD_VERSION=
 VERIBLE_VERSION=
 
 eval set -- "$ARGS"
@@ -32,7 +31,7 @@ while :
 do
     case "$1" in
         --verilator-version) VERILATOR_VERSION="$2"; shift 2 ;;
-        --openocd-version)   OPENOCD_VERSION="$2";   shift 2 ;;
+        --openocd-version)   echo "Ignoring --openocd-version"; shift 2 ;;
         --verible-version)   VERIBLE_VERSION="$2";   shift 2 ;;
         --rust-version)      RUST_VERSION="$2";      shift 2 ;;
         --) shift; break ;;
@@ -42,7 +41,6 @@ done
 
 # Check that we've seen all the expected versions
 test -n "$VERILATOR_VERSION" || error "Missing --verilator-version"
-test -n "$OPENOCD_VERSION"   || error "Missing --openocd-version"
 test -n "$VERIBLE_VERSION"   || error "Missing --verible-version"
 test -n "$RUST_VERSION"      || error "Missing --rust-version"
 
@@ -103,7 +101,6 @@ sudo $APT_CMD update || {
 ci_reqs="$TMPDIR/apt-requirements-ci.txt"
 cp apt-requirements.txt "$ci_reqs"
 echo "verilator-${VERILATOR_VERSION}" >> "$ci_reqs"
-echo "openocd-${OPENOCD_VERSION}" >> "$ci_reqs"
 echo rsync >> "$ci_reqs"
 
 # NOTE: We use sed to remove all comments from apt-requirements-ci.txt,
