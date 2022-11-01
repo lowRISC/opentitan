@@ -27,7 +27,7 @@
       name: sec_cm_config_regwen
       desc: "Verify the countermeasure(s) CONFIG.REGWEN."
       stage: V2S
-      tests: []
+      tests: ["edn_regwen"]
     }
     {
       name: sec_cm_config_mubi
