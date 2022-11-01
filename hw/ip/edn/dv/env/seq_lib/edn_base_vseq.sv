@@ -19,7 +19,12 @@ class edn_base_vseq extends cip_base_vseq #(
   bit [18:0]                                    glen;
   bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]        cmd_data;
 
+  rand bit                                      set_regwen;
   virtual edn_cov_if                            cov_vif;
+
+  constraint regwen_c {
+    set_regwen == 0;
+  }
 
   virtual task body();
     cov_vif.cg_cfg_sample(.cfg(cfg));
@@ -100,6 +105,12 @@ class edn_base_vseq extends cip_base_vseq #(
         `DV_CHECK_STD_RANDOMIZE_FATAL(cmd_data)
         wr_cmd(.cmd_type("generate"), .cmd_data(cmd_data));
       end
+    end
+
+    // If set_regwen is set, write random value to the EDN, and expect the write won't be taken.
+    if (set_regwen) begin
+      csr_wr(.ptr(ral.regwen), .value(0));
+      csr_wr(.ptr(ral.ctrl), .value($urandom));
     end
   endtask
 
