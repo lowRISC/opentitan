@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// basic wake up sequence in place to verify that environment is hooked up correctly.
-// static test that is running same data set every time
+// Test to encrypt/decrypt NIST test vectors.
+// The output of the DUT is compared both against the output of the golden model
+// and against the known test vector output.
 
-
-//`include "nist_vectors.sv"
 import nist_vectors_pkg::*;
 class aes_nist_vectors_vseq extends aes_base_vseq;
   `uvm_object_utils(aes_nist_vectors_vseq)
