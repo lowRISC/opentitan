@@ -83,18 +83,19 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   // clear all keys when selected by software, or when
   // wipe command is received
   logic clr_all_keys;
+  logic [LastIdx-1:0] slot_clr;
   assign clr_all_keys = wipe_key_i |
                         !(clr_key_i inside {SideLoadClrIdle,
                                             SideLoadClrAes,
                                             SideLoadClrKmac,
                                             SideLoadClrOtbn});
-  logic aes_clr, kmac_clr, otbn_clr;
-  assign aes_clr  = clr_all_keys | (clr_key_i == SideLoadClrAes);
-  assign kmac_clr = clr_all_keys | (clr_key_i == SideLoadClrKmac);
-  assign otbn_clr = clr_all_keys | (clr_key_i == SideLoadClrOtbn);
+
+  assign slot_clr[AesIdx]  = clr_all_keys | (clr_key_i == SideLoadClrAes);
+  assign slot_clr[KmacIdx] = clr_all_keys | (clr_key_i == SideLoadClrKmac);
+  assign slot_clr[OtbnIdx] = clr_all_keys | (clr_key_i == SideLoadClrOtbn);
 
   logic clr;
-  assign clr = aes_clr | kmac_clr | otbn_clr;
+  assign clr = |slot_clr;
 
   always_comb begin
     keys_en = 1'b0;
@@ -137,9 +138,9 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   end
 
   import prim_mubi_pkg::mubi4_test_true_strict;
-  prim_mubi_pkg::mubi4_t [4:0] hw_key_sel;
+  prim_mubi_pkg::mubi4_t [LastIdx-1:0] hw_key_sel;
   prim_mubi4_sync #(
-    .NumCopies(5),
+    .NumCopies(int'(LastIdx)),
     .AsyncOn(0)
   ) u_mubi_buf (
     .clk_i('0),
@@ -148,18 +149,18 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .mubi_o(hw_key_sel)
   );
 
-  logic aes_sel, kmac_sel, otbn_sel;
-  assign aes_sel  = (dest_sel_i == Aes) & mubi4_test_true_strict(hw_key_sel[0]);
-  assign kmac_sel = (dest_sel_i == Kmac) & mubi4_test_true_strict(hw_key_sel[1]);
-  assign otbn_sel = (dest_sel_i == Otbn) & mubi4_test_true_strict(hw_key_sel[2]);
+  logic [LastIdx-1:0] slot_sel;
+  assign slot_sel[AesIdx] = (dest_sel_i == Aes) & mubi4_test_true_strict(hw_key_sel[AesIdx]);
+  assign slot_sel[KmacIdx] = (dest_sel_i == Kmac) & mubi4_test_true_strict(hw_key_sel[KmacIdx]);
+  assign slot_sel[OtbnIdx] = (dest_sel_i == Otbn) & mubi4_test_true_strict(hw_key_sel[OtbnIdx]);
 
   keymgr_sideload_key u_aes_key (
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
     .set_en_i(data_en_i),
-    .set_i(data_valid_i & aes_sel),
-    .clr_i(aes_clr),
+    .set_i(data_valid_i & slot_sel[AesIdx]),
+    .clr_i(slot_clr[AesIdx]),
     .entropy_i(entropy_i),
     .key_i(data_truncated),
     .valid_o(aes_key_o.valid),
@@ -173,8 +174,8 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .rst_ni,
     .en_i(keys_en),
     .set_en_i(data_en_i),
-    .set_i(data_valid_i & otbn_sel),
-    .clr_i(otbn_clr),
+    .set_i(data_valid_i & slot_sel[OtbnIdx]),
+    .clr_i(slot_clr[OtbnIdx]),
     .entropy_i(entropy_i),
     .key_i(data_i),
     .valid_o(otbn_key_o.valid),
@@ -187,44 +188,39 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
     .rst_ni,
     .en_i(keys_en),
     .set_en_i(data_en_i),
-    .set_i(data_valid_i & kmac_sel),
-    .clr_i(kmac_clr),
+    .set_i(data_valid_i & slot_sel[KmacIdx]),
+    .clr_i(slot_clr[KmacIdx]),
     .entropy_i(entropy_i),
     .key_i(data_truncated),
     .valid_o(kmac_sideload_key.valid),
     .key_o(kmac_sideload_key.key)
   );
 
-  // a sideload slot can only be selected if the original destination
-  // is also set.
-  // If the two values do not agree, (1/0 and 0/1), trigger an error.
-  logic [2:0] sideload_sel;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      sideload_sel <= '0;
-    end else if ((data_valid_i || data_en_i) && mubi4_test_true_strict(hw_key_sel[3])) begin
-      sideload_sel <= {otbn_sel, kmac_sel, aes_sel};
+  logic [LastIdx-1:0] valid_tracking_q;
+  for (genvar i = AesIdx; i < LastIdx; i++) begin : gen_tracking_valid
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        valid_tracking_q[i] <= '0;
+      end else if (slot_clr[i]) begin
+        valid_tracking_q[i] <= '0;
+      end else if (slot_sel[i])begin
+        valid_tracking_q[i] <= 1'b1;
+      end
     end
   end
-
-  keymgr_key_dest_e cfg;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      cfg <= None;
-    end else if ((data_valid_i || data_en_i) && mubi4_test_true_strict(hw_key_sel[4])) begin
-      cfg <= dest_sel_i;
-    end
-  end
-
-  // when data valid pulse is seen, capture both the original input and the eventual select.
-  // The two should always match
-  logic [2:0] dest_sel;
-  assign dest_sel[0] = cfg == Aes;
-  assign dest_sel[1] = cfg == Kmac;
-  assign dest_sel[2] = cfg == Otbn;
 
   // SEC_CM: SIDE_LOAD_SEL.CTRL.CONSISTENCY
-  assign sideload_sel_err_o = |(sideload_sel ^ dest_sel);
+  logic [LastIdx-1:0] valids;
+  assign valids[AesIdx] = aes_key_o.valid;
+  assign valids[KmacIdx] = kmac_sideload_key.valid;
+  assign valids[OtbnIdx] = otbn_key_o.valid;
+
+  // If valid tracking claims a valid should be 0 but 1 is observed, it is
+  // an error.
+  // Note the sideload error is not a direct constant comparision. Instead
+  // it provides hint when valids is allowed to be valid.  If valid becomes
+  // 1 outside that window, then an error is triggered.
+  assign sideload_sel_err_o = |(~valid_tracking_q & valids);
 
   // when directed by keymgr_ctrl, switch over to internal key and feed to kmac
   assign kmac_key_o = key_i.valid ? key_i : kmac_sideload_key;
