@@ -39,6 +39,7 @@ interface fi_cipher_if
 
   // multi bit forces
   string intf_mul_array[] = {
+    $sformatf("%s.%s", par_hier, "cyc_ctr_q"),
     $sformatf("%s.%s", par_hier, "rnd_ctr_o"),
     $sformatf("%s.%s", par_hier, "rnd_ctr_q"),
     $sformatf("%s.%s", par_hier, "state_sel_o"),
