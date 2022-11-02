@@ -101,6 +101,7 @@ def main(rom_kind: str = typer.Option(...),
          openocd_path: str = typer.Option(...),
          openocd_earlgrey_config: str = typer.Option(...),
          openocd_jtag_adapter_config: str = typer.Option(...),
+         gdb_path: str = typer.Option(...),
          gdb_script_path: str = typer.Option(...),
          bitstream_path: str = typer.Option(...),
          opentitantool_path: str = typer.Option(...),
@@ -131,7 +132,7 @@ def main(rom_kind: str = typer.Option(...),
         # For debugging, it may be useful to use `--init-command`, which causes
         # GDB to drop to the interactive prompt when the script ends rather than
         # exit.
-        "/tools/riscv/bin/riscv32-unknown-elf-gdb",
+        gdb_path,
         "--batch",
         "--command=" + gdb_script_path,
     ]
