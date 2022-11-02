@@ -1160,8 +1160,11 @@ test_suite(
     tests = ["asm_interrupt_handler_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
 )
 
-# Shutdown Redact Test
-# TODO: Add invalid option
+# Dict that also includes an invalid redaction value for test purposes.
+REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
+
+REDACT.update({"INVALID": 0x0})
+
 [
     otp_json(
         name = "otp_json_{}_overlay".format(k.lower()),
@@ -1174,7 +1177,7 @@ test_suite(
             ),
         ],
     )
-    for k, v in structs.to_dict(CONST.SHUTDOWN.REDACT).items()
+    for k, v in REDACT.items()
 ]
 
 [
@@ -1194,7 +1197,7 @@ test_suite(
         visibility = ["//visibility:private"],
     )
     for lc_state in structs.to_dict(CONST.LCV)
-    for redact in structs.to_dict(CONST.SHUTDOWN.REDACT)
+    for redact in REDACT
 ]
 
 [
@@ -1214,7 +1217,7 @@ test_suite(
         visibility = ["//visibility:private"],
     )
     for lc_state in structs.to_dict(CONST.LCV)
-    for redact in structs.to_dict(CONST.SHUTDOWN.REDACT)
+    for redact in REDACT
 ]
 
 [
@@ -1246,7 +1249,7 @@ test_suite(
         ],
     )
     for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
-    for redact, redact_val in structs.to_dict(CONST.SHUTDOWN.REDACT).items()
+    for redact, redact_val in REDACT.items()
 ]
 
 test_suite(
@@ -1255,5 +1258,5 @@ test_suite(
     tests = ["e2e_shutdown_redact_{}_{}".format(
         lc_state.lower(),
         redact.lower(),
-    ) for lc_state in structs.to_dict(CONST.LCV) for redact in structs.to_dict(CONST.SHUTDOWN.REDACT)],
+    ) for lc_state in structs.to_dict(CONST.LCV) for redact in REDACT],
 )
