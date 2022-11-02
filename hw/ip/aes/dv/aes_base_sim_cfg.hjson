@@ -168,6 +168,8 @@
       name: aes_control_fi
       uvm_test: aes_fi_test
       uvm_test_seq: aes_control_fi_vseq
+      reseed: 300 // Test must cover 150 bins. Overseed by 2x to get reasonable coverage.
+      run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
     }
     {
       name: aes_cipher_fi
