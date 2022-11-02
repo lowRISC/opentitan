@@ -9,10 +9,12 @@
 module fi_cipher_fsm_wrapper
   import uvm_pkg::*;
   import aes_env_pkg::*;
+  import aes_pkg::*;
   #( parameter string IfName = "vif"
   ) (
-    input logic clk_i,
-    input logic rst_ni
+    input logic             clk_i,
+    input logic             rst_ni,
+    input aes_cipher_ctrl_e aes_cipher_ctrl_cs
   );
 
   // declare interface

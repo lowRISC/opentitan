@@ -5,9 +5,11 @@
 // target specific signals inside the cipher core FSM
 interface fi_cipher_if
   import uvm_pkg::*;
+  import aes_pkg::*;
   (
-   input logic clk_i,
-   input logic rst_ni
+   input logic             clk_i,
+   input logic             rst_ni,
+   input aes_cipher_ctrl_e aes_cipher_ctrl_cs
    );
 
   `include "dv_fcov_macros.svh"
@@ -131,10 +133,20 @@ interface fi_cipher_if
     option.name                 = "aes_cipher_interleave_cg";
     type_option.merge_instances = 1;
 
+    // A fault is injected for each signal.
     cp_target: coverpoint target
       {
          bins signal_target[] = {[0:num_bins-1]};
       }
+
+    // A fault is injected in each state.  Ignore the error state because it is the result of
+    // a fault and not a regular operating condition in which faults are expected to be handled.
+    cp_state: coverpoint aes_cipher_ctrl_cs {
+      ignore_bins error = {aes_pkg::CIPHER_CTRL_ERROR};
+    }
+
+    // Each target signal is faulted in each state.
+    target_state_cross: cross cp_target, cp_state;
   endgroup
 
   //aes_cipher_fsm_cg my_cg = new(intf_array.size() + intf_mul_array.size() -1);
