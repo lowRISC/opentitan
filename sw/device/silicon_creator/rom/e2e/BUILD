@@ -717,6 +717,148 @@ test_suite(
     ) for lc_state in structs.to_dict(CONST.LCV) for t in BOOT_POLICY_ROLLBACK_CASES],
 )
 
+# Watchdog configuration test cases.
+#
+# These test cases verify the ROM correctly configures the watchdog in each life
+# cycle state. Tests are run for OTP configurations that disable the watchdog
+# and for OTP configurations that enable the watchdog.
+
+# Watchdog bite threshold for the watchdog-enabled cases. This is 2 seconds,
+# assuming a 200kHz clock.
+WATCHDOG_BITE_THRESHOLD = "0x61a80"
+
+# OTP overlay that enables the watchdog. The bite threshold is 2 seconds,
+# assuming a 200kHz clock.
+otp_json(
+    name = "otp_json_watchdog_enable",
+    partitions = [
+        otp_partition(
+            name = "OWNER_SW_CFG",
+            items = {"OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": WATCHDOG_BITE_THRESHOLD},
+        ),
+    ],
+)
+
+# OTP images that enable the watchdog.
+[otp_image(
+    name = "otp_img_watchdog_enable_{}".format(lc_state.lower()),
+    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
+    overlays = [
+        "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
+        "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
+        "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+        ":otp_json_watchdog_enable",
+    ],
+) for lc_state in structs.to_dict(CONST.LCV)]
+
+# Bitstreams with the watchdog-enable OTP images spliced in.
+[bitstream_splice(
+    name = "bitstream_watchdog_enable_{}".format(lc_state.lower()),
+    src = "//hw/bitstream:rom",
+    data = ":otp_img_watchdog_enable_{}".format(lc_state.lower()),
+    meminfo = "//hw/bitstream:otp_mmi",
+    tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+    update_usr_access = True,
+) for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()]
+
+# Creates a binary that confirms the watchdog is enabled and a binary that
+# confirms the watchdog is disabled.
+[opentitan_flash_binary(
+    name = "test_watchdog_{}".format(watchdog_config),
+    srcs = ["watchdog_test.c"],
+    devices = [
+        "fpga_cw310",
+        "sim_verilator",
+    ],
+    local_defines = [
+        "EXPECT_WATCHDOG_{}".format(watchdog_config.upper()),
+        "WATCHDOG_BITE_THRESHOLD={}".format(WATCHDOG_BITE_THRESHOLD),
+    ],
+    deps = [
+        "//hw/ip/aon_timer/data:aon_timer_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+) for watchdog_config in [
+    "disabled",
+    "enabled",
+]]
+
+WATCHDOG_TEST_CASES = {
+    "disable": {
+        "DEV": "disabled",
+        "PROD": "disabled",
+        "PROD_END": "disabled",
+        "RMA": "disabled",
+        "TEST_UNLOCKED0": "disabled",
+    },
+    "enable": {
+        "DEV": "enabled",
+        "PROD": "enabled",
+        "PROD_END": "enabled",
+        "RMA": "disabled",
+        "TEST_UNLOCKED0": "disabled",
+    },
+}
+
+# Bitstream targets (CW310) and otp images (verilator) for the watchdog config
+# tests. The format argument should be replaced with the desired life cycle
+# state.
+WATCHDOG_BITSTREAM = {
+    "disable": "//hw/bitstream:rom_otp_{}",
+    "enable": ":bitstream_watchdog_enable_{}",
+}
+
+WATCHDOG_OTP = {
+    "disable": "//hw/ip/otp_ctrl/data:img_{}",
+    "enable": ":otp_img_watchdog_enable_{}",
+}
+
+[opentitan_functest(
+    name = "watchdog_{}_{}".format(
+        otp_config,
+        lc_state.lower(),
+    ),
+    cw310 = cw310_params(
+        bitstream = WATCHDOG_BITSTREAM[otp_config].format(lc_state.lower()),
+        tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+    ),
+    ot_flash_binary = ":test_watchdog_{}".format(WATCHDOG_TEST_CASES[otp_config][lc_state]),
+    targets = [
+        "cw310_rom",
+        "verilator",
+    ],
+    verilator = verilator_params(
+        timeout = "eternal",
+        otp = WATCHDOG_OTP[otp_config].format(lc_state.lower()),
+        rom = "//sw/device/silicon_creator/rom:rom",
+        # Test cases that enable the watchdog time out in verilator, cause
+        # unknown.
+        tags = ["broken"] if WATCHDOG_TEST_CASES[otp_config][lc_state] == "enabled" else [],
+    ),
+) for otp_config in [
+    "disable",
+    "enable",
+] for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()]
+
+test_suite(
+    name = "rom_e2e_watchdog_reconfig",
+    tags = ["manual"],
+    tests = [
+        "watchdog_{}_{}".format(
+            otp_config,
+            lc_state.lower(),
+        )
+        for otp_config in [
+            "disable",
+            "enable",
+        ]
+        for lc_state in structs.to_dict(CONST.LCV)
+    ],
+)
+
 SIGVERIFY_MOD_EXP_CASES = [
     {
         "name": "sw",

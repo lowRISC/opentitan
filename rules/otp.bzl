@@ -51,6 +51,7 @@ def get_otp_images():
         "//hw/ip/otp_ctrl/data:img_rma",
         "//hw/ip/otp_ctrl/data:img_test_unlocked0",
         "//hw/ip/otp_ctrl/data:img_prod",
+        "//hw/ip/otp_ctrl/data:img_prod_end",
         "//hw/ip/otp_ctrl/data:img_exec_disabled",
         "//hw/ip/otp_ctrl/data:img_bootstrap_disabled",
     ]
