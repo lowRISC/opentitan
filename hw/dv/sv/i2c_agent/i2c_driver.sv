@@ -61,9 +61,13 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         cfg.vif.host_rstart(cfg.timing_cfg);
       end
       HostData: begin
-        for (int i = $bits(wr_data) -1; i >= 0; i--) begin
-          cfg.vif.host_data(cfg.timing_cfg, wr_data[i]);
+        `uvm_info(`gfn, $sformatf("Driving host item h%x", req.wdata), UVM_MEDIUM)
+        for (int i = $bits(req.wdata) -1; i >= 0; i--) begin
+          cfg.vif.host_data(cfg.timing_cfg, req.wdata[i]);
         end
+
+        // drive one more bit for ack
+        cfg.vif.host_data(cfg.timing_cfg, 1);
       end
       HostNAck: begin
         cfg.vif.host_nack(cfg.timing_cfg);
