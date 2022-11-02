@@ -7,14 +7,17 @@
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
+#include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/tests/otbn_randomness_impl.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
@@ -25,9 +28,7 @@ static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
 static dif_rv_plic_t plic;
 
-// Set by `ottf_external_isr()` and cleared by
-// `csrng_entropy_req_irq_enable()`.
-static volatile bool entropy_src_isr_csrng_req_set;
+static otbn_t otbn;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -41,8 +42,24 @@ enum {
    * The number of test iterations per target.
    */
   kTestParamNumIterationsSim = 1,
-  kTestParamNumIterationsOther = 100,
+  kTestParamNumIterationsOther = 20,
 };
+
+/**
+ * Interrupt flag IDs. Used to index the interrupt flags used in this test.
+ */
+typedef enum irq_flag_id {
+  kTestIrqFlagIdCsrngEntropyReq,
+  kTestIrqFlagIdEdn1CmdDone,
+  kTestIrqFlagIdEdn0CmdDone,
+  kTestIrqFlagCount,
+} irq_flag_id_t;
+
+/**
+ * Interrupt flags. Set by `ottf_external_isr()` and cleared by
+ * `plic_interrupts_enable()`.
+ */
+static volatile bool irq_flags[kTestIrqFlagCount];
 
 /**
  * Initializes the peripherals used in this test.
@@ -58,45 +75,74 @@ static void init_peripherals(void) {
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
+
+  CHECK(otbn_init(&otbn, mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR)) ==
+        kOtbnOk);
 }
 
 /**
- * Enables the CSRNG entropy request interrupt.
+ * Enables the interrupts required by this test.
  */
-static void csrng_entropy_req_irq_enable(void) {
+static void plic_interrupts_enable(void) {
   irq_external_ctrl(false);
   irq_global_ctrl(false);
 
-  entropy_src_isr_csrng_req_set = false;
+  for (size_t i = 0; i < kTestIrqFlagCount; ++i) {
+    irq_flags[i] = false;
+  }
 
-  dif_rv_plic_irq_id_t irq_id = kTopEarlgreyPlicIrqIdCsrngCsEntropyReq;
-  CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&plic, irq_id, /*priority=*/1u));
+  dif_rv_plic_irq_id_t irq_ids[] = {kTopEarlgreyPlicIrqIdCsrngCsEntropyReq,
+                                    kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone,
+                                    kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone};
+  for (size_t i = 0; i < ARRAYSIZE(irq_ids); ++i) {
+    CHECK_DIF_OK(
+        dif_rv_plic_irq_set_priority(&plic, irq_ids[i], /*priority=*/1u));
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
+        &plic, irq_ids[i], kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+  }
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, irq_id, kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
   CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
       &plic, kTopEarlgreyPlicTargetIbex0, /*threshold=*/0u));
 
   CHECK_DIF_OK(dif_csrng_irq_set_enabled(&csrng, kDifCsrngIrqCsEntropyReq,
                                          kDifToggleEnabled));
+  CHECK_DIF_OK(dif_edn_irq_set_enabled(&edn0, kDifEdnIrqEdnCmdReqDone,
+                                       kDifToggleEnabled));
+  CHECK_DIF_OK(dif_edn_irq_set_enabled(&edn1, kDifEdnIrqEdnCmdReqDone,
+                                       kDifToggleEnabled));
 
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 }
 
 /**
- * Blocks until a CSRNG entropy request interrupt is received.
+ * Blocks until the interrupt flag with `isr_id` is set to true by the
+ * `ottf_external_isr()` routine.
  */
-static void csrng_entropy_req_irq_block_wait(void) {
+static void irq_block_wait(irq_flag_id_t isr_id) {
   // The interrupt can come before we enter sleep, so we check beforehand.
   while (true) {
-    if (entropy_src_isr_csrng_req_set) {
+    if (irq_flags[isr_id]) {
       break;
     }
     wait_for_interrupt();
   }
-  CHECK_DIF_OK(dif_csrng_irq_set_enabled(&csrng, kDifCsrngIrqCsEntropyReq,
-                                         kDifToggleDisabled));
+  switch (isr_id) {
+    case kTestIrqFlagIdCsrngEntropyReq:
+      CHECK_DIF_OK(dif_csrng_irq_set_enabled(&csrng, kDifCsrngIrqCsEntropyReq,
+                                             kDifToggleDisabled));
+      break;
+    case kTestIrqFlagIdEdn0CmdDone:
+      CHECK_DIF_OK(dif_edn_irq_set_enabled(&edn0, kDifEdnIrqEdnCmdReqDone,
+                                           kDifToggleDisabled));
+      break;
+    case kTestIrqFlagIdEdn1CmdDone:
+      CHECK_DIF_OK(dif_edn_irq_set_enabled(&edn0, kDifEdnIrqEdnCmdReqDone,
+                                           kDifToggleDisabled));
+      break;
+    default:
+      CHECK(false, "Invalid isr_id: %d", isr_id);
+  }
 }
 
 /**
@@ -128,15 +174,15 @@ static void test_csrng_sw_entropy_req_interrupt(
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
   csrng_testutils_cmd_ready_wait(&csrng);
-  csrng_entropy_req_irq_enable();
+  plic_interrupts_enable();
   CHECK_DIF_OK(dif_csrng_instantiate(&csrng, kDifCsrngEntropySrcToggleEnable,
                                      seed_material));
-  csrng_entropy_req_irq_block_wait();
+  irq_block_wait(kTestIrqFlagIdCsrngEntropyReq);
   csrng_generate_output_check();
 
-  csrng_entropy_req_irq_enable();
+  plic_interrupts_enable();
   CHECK_DIF_OK(dif_csrng_reseed(&csrng, seed_material));
-  csrng_entropy_req_irq_block_wait();
+  irq_block_wait(kTestIrqFlagIdCsrngEntropyReq);
   csrng_generate_output_check();
 
   csrng_testutils_cmd_status_check(&csrng);
@@ -144,61 +190,176 @@ static void test_csrng_sw_entropy_req_interrupt(
 }
 
 /**
+ * Blocks until EDN is ready to process commands.
+ *
+ * @param edn A EDN instance.
+ */
+static void edn_ready_wait(const dif_edn_t *edn) {
+  bool ready = false;
+  while (!ready) {
+    CHECK_DIF_OK(dif_edn_get_status(edn, kDifEdnStatusReady, &ready));
+  }
+  bool ack_err;
+  CHECK_DIF_OK(dif_edn_get_status(edn, kDifEdnStatusCsrngAck, &ack_err));
+  CHECK(!ack_err, "Unexpected CSRNG ack error");
+}
+
+/**
+ * Throws test assertion if there are any errors detected in the EDN blocks.
+ */
+static void edn_errors_check(void) {
+  uint32_t fifo_errors;
+  uint32_t edn_errors;
+
+  CHECK_DIF_OK(dif_edn_get_errors(&edn0, &fifo_errors, &edn_errors));
+  CHECK(edn_errors == 0, "edn0 unexpected err: 0x%x", edn_errors);
+  CHECK(fifo_errors == 0, "edn0 unexpected fifo err: 0x%x", fifo_errors);
+
+  CHECK_DIF_OK(dif_edn_get_errors(&edn1, &fifo_errors, &edn_errors));
+  CHECK(edn_errors == 0, "edn1 unexpected err: 0x%x", edn_errors);
+  CHECK(fifo_errors == 0, "edn1 unexpected fifo err: 0x%x", fifo_errors);
+}
+
+/**
+ * Configures the `edn` instance.
+ *
  * Verifies that the entropy req interrupt is triggered on EDN instantiate and
  * reseed commands.
+ *
+ * @param edn A EDN instance.
+ * @param irq_flag_id The interrupt flag ID to poll after each command is sent
+ * to EDN.
+ * @param seed_material Seed material used in instantiate and reseed commands.
  */
-static void test_csrng_edn_entropy_req_interrupt(
-    const dif_edn_seed_material_t *seed_material) {
+static void edn_configure(const dif_edn_t *edn, irq_flag_id_t irq_flag_id,
+                          const dif_edn_seed_material_t *seed_material) {
+  CHECK_DIF_OK(dif_edn_configure(edn));
+
+  edn_ready_wait(edn);
+  plic_interrupts_enable();
+  CHECK_DIF_OK(
+      dif_edn_instantiate(edn, kDifEdnEntropySrcToggleEnable, seed_material));
+  irq_block_wait(kTestIrqFlagIdCsrngEntropyReq);
+  irq_block_wait(irq_flag_id);
+
+  edn_ready_wait(edn);
+  plic_interrupts_enable();
+  CHECK_DIF_OK(dif_edn_reseed(edn, seed_material));
+  irq_block_wait(kTestIrqFlagIdCsrngEntropyReq);
+  irq_block_wait(irq_flag_id);
+
+  edn_ready_wait(edn);
+}
+
+/**
+ * Initializes EDN instances using the `SW_CMD_REQ` interface and runs the OTBN
+ * randomness test to verify the entropy delivered by EDN0 and EDN1.
+ *
+ * @param seed_material Seed material used in EDN instantiate and reseed
+ * commands.
+ */
+static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   entropy_testutils_stop_all();
   CHECK_DIF_OK(dif_entropy_src_configure(
       &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
-  CHECK_DIF_OK(dif_edn_configure(&edn0));
-  csrng_entropy_req_irq_enable();
-  CHECK_DIF_OK(
-      dif_edn_instantiate(&edn0, kDifEdnEntropySrcToggleEnable, seed_material));
-  csrng_entropy_req_irq_block_wait();
+  edn_configure(&edn0, kTestIrqFlagIdEdn0CmdDone, seed_material);
+  edn_configure(&edn1, kTestIrqFlagIdEdn1CmdDone, seed_material);
 
-  csrng_entropy_req_irq_enable();
-  CHECK_DIF_OK(dif_edn_reseed(&edn0, seed_material));
-  csrng_entropy_req_irq_block_wait();
+  plic_interrupts_enable();
+
+  // Generate enough entropy for the otbn randomness test.
+  // The len provided here is in number of words as opposed to num of 128b
+  // blocks. The requested len **must** also be equal to the amount of entroy
+  // required by the OTBN randomness test, otherwise the Generate command will
+  // not be fully executed, causing a hang in the `irq_block_wait()` calls
+  // following the end of the OTBN test.
+  // EDN0: 20 words = 5x128b blocks
+  // EDN1: 44 words = 11x128b blocks
+  CHECK_DIF_OK(dif_edn_generate_start(&edn0, /*len=*/1));
+  CHECK_DIF_OK(dif_edn_generate_start(&edn1, /*len=*/1));
+  edn_ready_wait(&edn0);
+  edn_ready_wait(&edn1);
+  edn_errors_check();
+
+  LOG_INFO("OTBN:START");
+  otbn_randomness_test_start(&otbn);
+
+  bool busy = true;
+  while (busy) {
+    // Clearing `irq_flags` is ok here since there are no other in-flight
+    // commands being sent from the EDN instances to the CSRNG block.
+    if (irq_flags[kTestIrqFlagIdEdn0CmdDone]) {
+      irq_flags[kTestIrqFlagIdEdn0CmdDone] = false;
+      CHECK_DIF_OK(dif_edn_generate_start(&edn0, /*len=*/1));
+    }
+    if (irq_flags[kTestIrqFlagIdEdn1CmdDone]) {
+      irq_flags[kTestIrqFlagIdEdn1CmdDone] = false;
+      CHECK_DIF_OK(dif_edn_generate_start(&edn1, /*len=*/1));
+    }
+    // Check if OTBN is still running.
+    dif_otbn_status_t status;
+    CHECK_DIF_OK(dif_otbn_get_status(&otbn.dif, &status));
+    busy = status != kDifOtbnStatusIdle && status != kDifOtbnStatusLocked;
+  }
+
+  CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
+  LOG_INFO("OTBN:END");
+
+  // See comment above regarding generate command length and potential test
+  // locking issues.
+  irq_block_wait(kTestIrqFlagIdEdn1CmdDone);
+  irq_block_wait(kTestIrqFlagIdEdn0CmdDone);
+  LOG_INFO("DONE");
+
+  plic_interrupts_enable();
   CHECK_DIF_OK(dif_edn_uninstantiate(&edn0));
+  irq_block_wait(kTestIrqFlagIdEdn0CmdDone);
 
-  CHECK_DIF_OK(dif_edn_configure(&edn1));
-  csrng_entropy_req_irq_enable();
-  CHECK_DIF_OK(
-      dif_edn_instantiate(&edn1, kDifEdnEntropySrcToggleEnable, seed_material));
-  csrng_entropy_req_irq_block_wait();
-
-  csrng_entropy_req_irq_enable();
-  CHECK_DIF_OK(dif_edn_reseed(&edn1, seed_material));
-  csrng_entropy_req_irq_block_wait();
+  plic_interrupts_enable();
   CHECK_DIF_OK(dif_edn_uninstantiate(&edn1));
+  irq_block_wait(kTestIrqFlagIdEdn1CmdDone);
 
   csrng_testutils_recoverable_alerts_check(&csrng);
+  edn_errors_check();
 }
 
 void ottf_external_isr(void) {
-  top_earlgrey_plic_peripheral_t plic_peripheral;
-  dif_csrng_irq_t irq;
-  isr_testutils_csrng_isr(
-      (plic_isr_ctx_t){
-          .rv_plic = &plic,
-          .hart_id = kTopEarlgreyPlicTargetIbex0,
-      },
-      (csrng_isr_ctx_t){
-          .csrng = &csrng,
-          .plic_csrng_start_irq_id = kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone,
-          .expected_irq = kDifCsrngIrqCsEntropyReq,
-          .is_only_irq = false,
-      },
-      &plic_peripheral, &irq);
-  CHECK(plic_peripheral == kTopEarlgreyPlicPeripheralCsrng,
-        "Interrupt from incorrect peripheral: (expected: %d, got: %d)",
-        kTopEarlgreyPlicPeripheralCsrng, plic_peripheral);
-  CHECK(irq == kDifCsrngIrqCsEntropyReq);
-  entropy_src_isr_csrng_req_set = true;
+  // Claim the IRQ at the PLIC.
+  dif_rv_plic_irq_id_t plic_irq_id;
+  CHECK_DIF_OK(
+      dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &plic_irq_id));
+
+  // Get the peripheral the IRQ belongs to.
+  top_earlgrey_plic_peripheral_t peripheral_serviced =
+      (top_earlgrey_plic_peripheral_t)
+          top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+
+  // Get the IRQ that was fired from the PLIC IRQ ID and set the corresponding
+  // `irq_flags`.
+  if (peripheral_serviced == kTopEarlgreyPlicPeripheralCsrng) {
+    dif_csrng_irq_t irq =
+        (dif_csrng_irq_t)(plic_irq_id - kTopEarlgreyPlicIrqIdCsrngCsCmdReqDone);
+    CHECK(irq == kDifCsrngIrqCsEntropyReq, "Unexpected irq: 0x%x", irq);
+    CHECK_DIF_OK(dif_csrng_irq_acknowledge(&csrng, irq));
+    irq_flags[kTestIrqFlagIdCsrngEntropyReq] = true;
+  } else if (peripheral_serviced == kTopEarlgreyPlicPeripheralEdn0) {
+    dif_edn_irq_t irq =
+        (dif_edn_irq_t)(plic_irq_id - kTopEarlgreyPlicIrqIdEdn0EdnCmdReqDone);
+    CHECK(irq == kDifEdnIrqEdnCmdReqDone, "Unexpected irq: 0x%x", irq);
+    CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn0, irq));
+    irq_flags[kTestIrqFlagIdEdn0CmdDone] = true;
+  } else if (peripheral_serviced == kTopEarlgreyPlicPeripheralEdn1) {
+    dif_edn_irq_t irq =
+        (dif_edn_irq_t)(plic_irq_id - kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone);
+    CHECK(irq == kDifEdnIrqEdnCmdReqDone, "Unexpected irq: 0x%x", irq);
+    CHECK_DIF_OK(dif_edn_irq_acknowledge(&edn1, irq));
+    irq_flags[kTestIrqFlagIdEdn1CmdDone] = true;
+  }
+
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
+                                        plic_irq_id));
 }
 
 bool test_main(void) {
@@ -227,7 +388,7 @@ bool test_main(void) {
 
   for (size_t i = 0; i < num_iterations; ++i) {
     test_csrng_sw_entropy_req_interrupt(&csrng_seed);
-    test_csrng_edn_entropy_req_interrupt(&edn_seed);
+    test_edn_cmd_done(&edn_seed);
   }
 
   return true;

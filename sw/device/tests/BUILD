@@ -726,6 +726,7 @@ opentitan_functest(
         timeout = "long",
     ),
     deps = [
+        ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -733,7 +734,9 @@ opentitan_functest(
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/dif:otbn",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:otbn",
         "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:isr_testutils",
