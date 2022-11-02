@@ -182,12 +182,16 @@ module i2c_fsm (
     end
   end
 
-  // Clock stretching detection
+  // Clock stretching detection when i2c_ctrl is host
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_stretch
     if (!rst_ni) begin
       stretch <= '0;
-    end else if (scl_temp && !scl_i) begin
+    end else if (host_enable_i && scl_temp && !scl_i) begin
       stretch <= stretch + 1'b1;
+    end else if (target_enable_i && !scl_temp) begin
+      // for target mode, there is no need to increment because
+      // we do not currently support a timeout. (this may change)
+      stretch <= 1'b1;
     end else begin
       stretch <= '0;
     end
@@ -295,7 +299,7 @@ module i2c_fsm (
     end else if (start_det) begin
       bit_idx <= 4'd0;
     end else if (scl_i_q && !scl_i) begin
-      if (bit_ack) bit_idx <= 4'd0;
+      if (bit_ack) bit_idx <= 4'd1;
       else bit_idx <= bit_idx + 1'b1;
     end else begin
       bit_idx <= bit_idx;
@@ -1206,7 +1210,7 @@ module i2c_fsm (
       end
       // AcquireAckHold: target pulls SDA low while SCL is pulled low
       AcquireAckHold : begin
-        if (tcount_q == 20'd1 && bit_ack) begin
+        if (tcount_q == 20'd1) begin
           state_d = AcquireByte;
         end
       end
