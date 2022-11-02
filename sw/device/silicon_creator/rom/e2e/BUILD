@@ -1181,35 +1181,17 @@ REDACTION_LC_STATES = [
     "prod_end",
 ]
 
-ERROR_REDACT_VALUES = {
-    "none": "0xe2290aa5",
-    "error": "0x3367d3d4",
-    "module": "0x1e791123",
-    "all": "0x48eb4bd9",
-}
-
-BFV_VALS = {
-    "none": "0142500d",
-    "error": "0042500d",
-    "module": "0000000d",
-    "all": "ffffffff",
-}
-
-overlays = [
-    (
-        er_val,
-        otp_json(
-            name = "otp_json_{}_overlay".format(er_val),
-            partitions = [
-                otp_partition(
-                    name = "OWNER_SW_CFG",
-                    items = {"OWNER_SW_CFG_ROM_ERROR_REPORTING": ERROR_REDACT_VALUES[er_val]},
-                ),
-            ],
+[otp_json(
+    name = "otp_json_{}_overlay".format(k.lower()),
+    partitions = [
+        otp_partition(
+            name = "OWNER_SW_CFG",
+            items = {
+                "OWNER_SW_CFG_ROM_ERROR_REPORTING": v,
+            },
         ),
-    )
-    for er_val in ERROR_REDACT_VALUES.keys()
-]
+    ],
+) for k, v in structs.to_dict(CONST.SHUTDOWN.REDACT).items()]
 
 otp_imgs = [
     otp_image(

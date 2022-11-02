@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//lib:structs.bzl", "structs")
+
 CONST = struct(
     # Must match the definitions in hardened.h.
     TRUE = 0x739,
@@ -43,12 +45,19 @@ CONST = struct(
             BAD_ENTRY_POINT = 0x014d410d,
             BAD_CODE_REGION = 0x024d410d,
         ),
+        UNKNOWN = 0xffffffff,
     ),
     # Must match the definitions in shutdown.h.
     SHUTDOWN = struct(
         PREFIX = struct(
             LCV = "LCV:",
             BFV = "BFV:",
+        ),
+        REDACT = struct(
+            NONE = 0xe2290aa5,
+            ERROR = 0x3367d3d4,
+            MODULE = 0x1e791123,
+            ALL = 0x48eb4bd9,
         ),
     ),
 )
@@ -60,3 +69,18 @@ def hex(v):
     v &= 0xffffffff
     hex_digits = [_HEX_MAP[(v >> i) & 0xf] for i in range(0, 32, 4)]
     return "".join(reversed(hex_digits))
+
+_REDACTION_MAP = {
+    CONST.SHUTDOWN.REDACT.NONE: 0xffffffff,
+    CONST.SHUTDOWN.REDACT.ERROR: 0x00ffffff,
+    CONST.SHUTDOWN.REDACT.MODULE: 0x000000ff,
+}
+
+_REDACTION_LC_STATES = [CONST.LCV.DEV, CONST.LCV.PROD, CONST.LCV.PROD_END]
+
+def error_redact(error, lc_state, redact):
+    if lc_state not in _REDACTION_LC_STATES:
+        return error
+    if redact == CONST.SHUTDOWN.REDACT.ALL or redact not in _REDACTION_MAP:
+        return CONST.BFV.UNKNOWN
+    return error & _REDACTION_MAP.get(redact)
