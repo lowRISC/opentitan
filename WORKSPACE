@@ -111,3 +111,9 @@ hooks_repo(name = "manufacturer_test_hooks")
 # The nonhermetic_repo imports environment variables needed to run vivado.
 load("//rules:nonhermetic.bzl", "nonhermetic_repo")
 nonhermetic_repo(name = "nonhermetic")
+
+# Load this last
+# Monitor the workspace to check for git_repositories that will break airgapped builds
+# You can experimentally add git_repos below this check, but they shouldn't be comitted
+load("//rules:git_repo_check.bzl","git_repo_check")
+git_repo_check()
