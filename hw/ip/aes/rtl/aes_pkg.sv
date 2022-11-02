@@ -138,6 +138,39 @@ typedef struct packed {
   logic        fatal_fault;
 } alert_test_t;
 
+  // Sparse state encodings
+
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
+  //      -s 31468618 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 5
+  //
+  localparam int CipherCtrlStateWidth = 6;
+  typedef enum logic [CipherCtrlStateWidth-1:0] {
+    CIPHER_CTRL_IDLE        = 6'b001001,
+    CIPHER_CTRL_INIT        = 6'b100011,
+    CIPHER_CTRL_ROUND       = 6'b111101,
+    CIPHER_CTRL_FINISH      = 6'b010000,
+    CIPHER_CTRL_PRNG_RESEED = 6'b100100,
+    CIPHER_CTRL_CLEAR_S     = 6'b111010,
+    CIPHER_CTRL_CLEAR_KD    = 6'b001110,
+    CIPHER_CTRL_ERROR       = 6'b010111
+  } aes_cipher_ctrl_e;
+
 // Generic, sparse mux selector encodings
 
 // Encoding generated with:

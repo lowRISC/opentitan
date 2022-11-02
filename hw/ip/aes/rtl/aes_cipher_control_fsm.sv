@@ -79,38 +79,6 @@ module aes_cipher_control_fsm import aes_pkg::*;
   output logic             data_out_clear_d_o
 );
 
-  // Types
-  // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
-  //      -s 31468618 --language=sv
-  //
-  // Hamming distance histogram:
-  //
-  //  0: --
-  //  1: --
-  //  2: --
-  //  3: |||||||||||||||||||| (57.14%)
-  //  4: ||||||||||||||| (42.86%)
-  //  5: --
-  //  6: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
-  // Minimum Hamming weight: 1
-  // Maximum Hamming weight: 5
-  //
-  localparam int StateWidth = 6;
-  typedef enum logic [StateWidth-1:0] {
-    IDLE        = 6'b001001,
-    INIT        = 6'b100011,
-    ROUND       = 6'b111101,
-    FINISH      = 6'b010000,
-    PRNG_RESEED = 6'b100100,
-    CLEAR_S     = 6'b111010,
-    CLEAR_KD    = 6'b001110,
-    ERROR       = 6'b010111
-  } aes_cipher_ctrl_e;
-
   // cfg_valid_i is used for SVAs only.
   logic unused_cfg_valid;
   assign unused_cfg_valid = cfg_valid_i;
@@ -181,7 +149,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
     unique case (aes_cipher_ctrl_cs)
 
-      IDLE: begin
+      CIPHER_CTRL_IDLE: begin
         cyc_ctr_d = 3'd0;
 
         // Signal that we are ready, wait for handshake.
@@ -192,7 +160,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
             // start key for decryption.
             prng_reseed_d_o    = 1'b1;
             prng_reseed_done_d = 1'b0;
-            aes_cipher_ctrl_ns = PRNG_RESEED;
+            aes_cipher_ctrl_ns = CIPHER_CTRL_PRNG_RESEED;
 
           end else if (key_clear_i || data_out_clear_i) begin
             // Clear internal key registers. The cipher core muxes are used to clear the data
@@ -201,7 +169,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
             data_out_clear_d_o = data_out_clear_i;
 
             // To clear the data output registers, we must first clear the state.
-            aes_cipher_ctrl_ns = data_out_clear_i ? CLEAR_S : CLEAR_KD;
+            aes_cipher_ctrl_ns = data_out_clear_i ? CIPHER_CTRL_CLEAR_S : CIPHER_CTRL_CLEAR_KD;
 
           end else if (dec_key_gen_i || crypt_i) begin
             // Start encryption/decryption or generation of start key for decryption.
@@ -234,17 +202,17 @@ module aes_cipher_control_fsm import aes_pkg::*;
                            (key_len_i == AES_192) ? 4'd12 :
                                                     4'd14;
             rnd_ctr_d          = '0;
-            aes_cipher_ctrl_ns = INIT;
+            aes_cipher_ctrl_ns = CIPHER_CTRL_INIT;
 
           end else begin
             // Handshake without a valid command. We should never get here. If we do (e.g. via a
             // malicious glitch), error out immediately.
-            aes_cipher_ctrl_ns = ERROR;
+            aes_cipher_ctrl_ns = CIPHER_CTRL_ERROR;
           end
         end
       end
 
-      INIT: begin
+      CIPHER_CTRL_INIT: begin
         // Initial round: just add key to state
         add_rk_sel_o = ADD_RK_INIT;
 
@@ -276,17 +244,17 @@ module aes_cipher_control_fsm import aes_pkg::*;
             key_full_we_o        = 1'b1;
             rnd_ctr_d            = rnd_ctr_q + 4'b0001;
             cyc_ctr_d            = 3'd0;
-            aes_cipher_ctrl_ns   = ROUND;
+            aes_cipher_ctrl_ns   = CIPHER_CTRL_ROUND;
           end
         end else begin
           state_we_o         = ~dec_key_gen_q_i;
           rnd_ctr_d          = rnd_ctr_q + 4'b0001;
           cyc_ctr_d          = 3'd0;
-          aes_cipher_ctrl_ns = ROUND;
+          aes_cipher_ctrl_ns = CIPHER_CTRL_ROUND;
         end
       end
 
-      ROUND: begin
+      CIPHER_CTRL_ROUND: begin
         // Normal rounds
 
         // Select key words for add_round_key
@@ -328,7 +296,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
           // Are we doing the last regular round?
           if (rnd_ctr_q >= num_rounds_regular) begin
-            aes_cipher_ctrl_ns = FINISH;
+            aes_cipher_ctrl_ns = CIPHER_CTRL_FINISH;
 
             if (dec_key_gen_q_i) begin
               // Write decryption key.
@@ -342,14 +310,14 @@ module aes_cipher_control_fsm import aes_pkg::*;
                 // Go to idle state directly.
                 dec_key_gen_d_o    = 1'b0;
                 prng_reseed_d_o    = 1'b0;
-                aes_cipher_ctrl_ns = IDLE;
+                aes_cipher_ctrl_ns = CIPHER_CTRL_IDLE;
               end
             end
           end // rnd_ctr_q
         end // SubBytes/KeyExpand REQ/ACK
       end
 
-      FINISH: begin
+      CIPHER_CTRL_FINISH: begin
         // Final round
 
         // Select key words for add_round_key
@@ -408,11 +376,11 @@ module aes_cipher_control_fsm import aes_pkg::*;
           // regular round, we should clear dec_key_gen now.
           dec_key_gen_d_o     = 1'b0;
           prng_reseed_d_o     = 1'b0;
-          aes_cipher_ctrl_ns  = IDLE;
+          aes_cipher_ctrl_ns  = CIPHER_CTRL_IDLE;
         end
       end
 
-      PRNG_RESEED: begin
+      CIPHER_CTRL_PRNG_RESEED: begin
         // Keep requesting PRNG reseeding until it is acknowledged.
         prng_reseed_req_o = prng_reseed_q_i & ~prng_reseed_done_q;
 
@@ -420,18 +388,18 @@ module aes_cipher_control_fsm import aes_pkg::*;
         out_valid_o = prng_reseed_done_q;
         if (out_valid_o && out_ready_i) begin
           prng_reseed_d_o    = 1'b0;
-          aes_cipher_ctrl_ns = IDLE;
+          aes_cipher_ctrl_ns = CIPHER_CTRL_IDLE;
         end
       end
 
-      CLEAR_S: begin
+      CIPHER_CTRL_CLEAR_S: begin
         // Clear the state with pseudo-random data.
         state_we_o         = 1'b1;
         state_sel_o        = STATE_CLEAR;
-        aes_cipher_ctrl_ns = CLEAR_KD;
+        aes_cipher_ctrl_ns = CIPHER_CTRL_CLEAR_KD;
       end
 
-      CLEAR_KD: begin
+      CIPHER_CTRL_CLEAR_KD: begin
         // Clear internal key registers and/or external data output registers.
         if (key_clear_q_i) begin
           key_full_sel_o = KEY_FULL_CLEAR;
@@ -451,11 +419,11 @@ module aes_cipher_control_fsm import aes_pkg::*;
         if (out_ready_i) begin
           key_clear_d_o      = 1'b0;
           data_out_clear_d_o = 1'b0;
-          aes_cipher_ctrl_ns = IDLE;
+          aes_cipher_ctrl_ns = CIPHER_CTRL_IDLE;
         end
       end
 
-      ERROR: begin
+      CIPHER_CTRL_ERROR: begin
         // SEC_CM: CIPHER.FSM.LOCAL_ESC
         // Terminal error state
         alert_o = 1'b1;
@@ -463,7 +431,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
       // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
       default: begin
-        aes_cipher_ctrl_ns = ERROR;
+        aes_cipher_ctrl_ns = CIPHER_CTRL_ERROR;
         alert_o = 1'b1;
       end
     endcase
@@ -472,13 +440,13 @@ module aes_cipher_control_fsm import aes_pkg::*;
     // encoded signal becomes invalid, in case we have detected a fault in the round counter,
     // or if a fatal alert has been triggered.
     if (mux_sel_err_i || sp_enc_err_i || rnd_ctr_err_i || op_err_i || alert_fatal_i) begin
-      aes_cipher_ctrl_ns = ERROR;
+      aes_cipher_ctrl_ns = CIPHER_CTRL_ERROR;
     end
   end
 
   // SEC_CM: CIPHER.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, aes_cipher_ctrl_ns,
-      aes_cipher_ctrl_cs, aes_cipher_ctrl_e, IDLE)
+      aes_cipher_ctrl_cs, aes_cipher_ctrl_e, CIPHER_CTRL_IDLE)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_fsm
     if (!rst_ni) begin
@@ -532,13 +500,13 @@ module aes_cipher_control_fsm import aes_pkg::*;
       AES_256
       })
   `ASSERT(AesCipherControlStateValid, !alert_o |-> aes_cipher_ctrl_cs inside {
-      IDLE,
-      INIT,
-      ROUND,
-      FINISH,
-      PRNG_RESEED,
-      CLEAR_S,
-      CLEAR_KD
+      CIPHER_CTRL_IDLE,
+      CIPHER_CTRL_INIT,
+      CIPHER_CTRL_ROUND,
+      CIPHER_CTRL_FINISH,
+      CIPHER_CTRL_PRNG_RESEED,
+      CIPHER_CTRL_CLEAR_S,
+      CIPHER_CTRL_CLEAR_KD
       })
 
 endmodule
