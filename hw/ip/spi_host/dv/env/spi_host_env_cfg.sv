@@ -59,9 +59,6 @@ class spi_host_env_cfg extends cip_base_env_cfg #(.RAL_T(spi_host_reg_block));
     m_spi_agent_cfg.byte_order = SPI_HOST_BYTEORDER;
     // make spi behave as realistic spi. (set to 1 byte per transaction)
     m_spi_agent_cfg.num_bytes_per_trans_in_mon = 1;
-    // set the number of bytes in first segment
-    // needed for the agent to know when to take control of the bus
-    m_spi_agent_cfg.spi_cmd_width = num_cmd_bytes;
     // create the seq_cfg
     seq_cfg = spi_host_seq_cfg::type_id::create("seq_cfg");
 
