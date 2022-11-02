@@ -114,37 +114,6 @@ module aes_control_fsm
   output logic                                    input_ready_we_o
 );
 
-  // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
-  //      -s 31468618 --language=sv
-  //
-  // Hamming distance histogram:
-  //
-  //  0: --
-  //  1: --
-  //  2: --
-  //  3: |||||||||||||||||||| (57.14%)
-  //  4: ||||||||||||||| (42.86%)
-  //  5: --
-  //  6: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
-  // Minimum Hamming weight: 1
-  // Maximum Hamming weight: 5
-  //
-  localparam int StateWidth = 6;
-  typedef enum logic [StateWidth-1:0] {
-    IDLE        = 6'b001001,
-    LOAD        = 6'b100011,
-    PRNG_UPDATE = 6'b111101,
-    PRNG_RESEED = 6'b010000,
-    FINISH      = 6'b100100,
-    CLEAR_I     = 6'b111010,
-    CLEAR_CO    = 6'b001110,
-    ERROR       = 6'b010111
-  } aes_ctrl_e;
-
   // Signals
   aes_ctrl_e                aes_ctrl_ns, aes_ctrl_cs;
   logic                     prng_reseed_done_d, prng_reseed_done_q;
@@ -343,7 +312,7 @@ module aes_control_fsm
 
     unique case (aes_ctrl_cs)
 
-      IDLE: begin
+      CTRL_IDLE: begin
         // The core is about to start encryption/decryption or another action.
         start_core = start | key_iv_data_in_clear_i | data_out_clear_i | prng_reseed_i;
 
@@ -377,7 +346,7 @@ module aes_control_fsm
           // PRNG reseeding has highest priority.
           if (!SecMasking) begin
             prng_reseed_done_d = 1'b0;
-            aes_ctrl_ns        = PRNG_RESEED;
+            aes_ctrl_ns        = CTRL_PRNG_RESEED;
           end else begin
             // In case masking is enabled, also the masking PRNG inside the cipher core needs to
             // be reseeded.
@@ -387,13 +356,13 @@ module aes_control_fsm
             cipher_in_valid_o = 1'b1;
             if (cipher_in_ready_i) begin
               prng_reseed_done_d = 1'b0;
-              aes_ctrl_ns        = PRNG_RESEED;
+              aes_ctrl_ns        = CTRL_PRNG_RESEED;
             end
           end
 
         end else if (key_iv_data_in_clear_i || data_out_clear_i) begin
           // To clear registers, we must first request fresh pseudo-random data.
-          aes_ctrl_ns = PRNG_UPDATE;
+          aes_ctrl_ns = CTRL_PRNG_UPDATE;
 
         end else if (start) begin
           // Signal that we want to start encryption/decryption.
@@ -437,12 +406,12 @@ module aes_control_fsm
             // Do not yet clear a possible start trigger if we are just starting the generation of
             // the start key for decryption.
             start_we    = ~cipher_dec_key_gen_o;
-            aes_ctrl_ns = LOAD;
+            aes_ctrl_ns = CTRL_LOAD;
           end
         end
       end
 
-      LOAD: begin
+      CTRL_LOAD: begin
         // Signal that we have used the current key, IV, data input to register status tracking.
         key_init_load =  cipher_dec_key_gen_i; // This key is no longer "new", but still clean.
         key_init_arm  = ~cipher_dec_key_gen_i; // The key is still "new", prevent partial updates.
@@ -458,10 +427,10 @@ module aes_control_fsm
         ctr_incr_o   = doing_ctr;
 
         // Unless we are just generating the start key for decryption, we must update the PRNG.
-        aes_ctrl_ns  = !cipher_dec_key_gen_i ? PRNG_UPDATE : FINISH;
+        aes_ctrl_ns  = !cipher_dec_key_gen_i ? CTRL_PRNG_UPDATE : CTRL_FINISH;
       end
 
-      PRNG_UPDATE: begin
+      CTRL_PRNG_UPDATE: begin
         // Fresh pseudo-random data is used to:
         // - clear the state in the final cipher round,
         // - clear any other registers in the CLEAR_I/CO states.
@@ -478,7 +447,7 @@ module aes_control_fsm
           // Ongoing encryption/decryption operations have the highest priority. The clear triggers
           // might have become asserted after the handshake with the cipher core.
           if (cipher_crypt_i) begin
-            aes_ctrl_ns = FINISH;
+            aes_ctrl_ns = CTRL_FINISH;
 
           end else if (key_iv_data_in_clear_i || data_out_clear_i) begin
             // To clear the output data registers, we re-use the muxing resources of the cipher
@@ -490,17 +459,17 @@ module aes_control_fsm
             // We have work for the cipher core, perform handshake.
             cipher_in_valid_o = 1'b1;
             if (cipher_in_ready_i) begin
-              aes_ctrl_ns = CLEAR_I;
+              aes_ctrl_ns = CTRL_CLEAR_I;
             end
           end else begin
             // Another write to the trigger register must have overwritten the trigger bits that
             // actually caused us to enter this state. Just return.
-            aes_ctrl_ns = IDLE;
+            aes_ctrl_ns = CTRL_IDLE;
           end // cipher_crypt_i
         end // prng_data_ack_i
       end
 
-      PRNG_RESEED: begin
+      CTRL_PRNG_RESEED: begin
         // Request a reseed of the clearing PRNG.
         prng_reseed_req_o = ~prng_reseed_done_q;
 
@@ -509,7 +478,7 @@ module aes_control_fsm
             // Clear the trigger and return.
             prng_reseed_we     = 1'b1;
             prng_reseed_done_d = 1'b0;
-            aes_ctrl_ns        = IDLE;
+            aes_ctrl_ns        = CTRL_IDLE;
           end
 
         end else begin
@@ -520,12 +489,12 @@ module aes_control_fsm
             // Clear the trigger and return.
             prng_reseed_we     = 1'b1;
             prng_reseed_done_d = 1'b0;
-            aes_ctrl_ns        = IDLE;
+            aes_ctrl_ns        = CTRL_IDLE;
           end
         end
       end
 
-      FINISH: begin
+      CTRL_FINISH: begin
         // Wait for cipher core to finish.
 
         if (cipher_dec_key_gen_i) begin
@@ -533,7 +502,7 @@ module aes_control_fsm
           cipher_out_ready_o = 1'b1;
           if (cipher_out_valid_i) begin
             block_ctr_decr = 1'b1;
-            aes_ctrl_ns    = IDLE;
+            aes_ctrl_ns    = CTRL_IDLE;
           end
         end else begin
           // Handshake signals: We are ready once the output data registers can be written. Don't
@@ -583,12 +552,12 @@ module aes_control_fsm
           if (cipher_out_done) begin
             block_ctr_decr = 1'b1;
             data_out_we_o  = 1'b1;
-            aes_ctrl_ns    = IDLE;
+            aes_ctrl_ns    = CTRL_IDLE;
           end
         end
       end
 
-      CLEAR_I: begin
+      CTRL_CLEAR_I: begin
         // Clear input registers such as Initial Key, IV and input data registers.
         if (key_iv_data_in_clear_i) begin
           // Initial Key
@@ -606,10 +575,10 @@ module aes_control_fsm
           data_in_prev_sel_o = DIP_CLEAR;
           data_in_prev_we_o  = 1'b1;
         end
-        aes_ctrl_ns = CLEAR_CO;
+        aes_ctrl_ns = CTRL_CLEAR_CO;
       end
 
-      CLEAR_CO: begin
+      CTRL_CLEAR_CO: begin
         // Wait for cipher core to clear internal Full Key and Decryption Key registers and/or
         // the state register and clear output data registers afterwards.
 
@@ -633,11 +602,11 @@ module aes_control_fsm
             data_out_clear_we = 1'b1;
           end
 
-          aes_ctrl_ns = IDLE;
+          aes_ctrl_ns = CTRL_IDLE;
         end
       end
 
-      ERROR: begin
+      CTRL_ERROR: begin
         // SEC_CM: MAIN.FSM.GLOBAL_ESC
         // SEC_CM: MAIN.FSM.LOCAL_ESC
         // Terminal error state
@@ -646,7 +615,7 @@ module aes_control_fsm
 
       // We should never get here. If we do (e.g. via a malicious glitch), error out immediately.
       default: begin
-        aes_ctrl_ns = ERROR;
+        aes_ctrl_ns = CTRL_ERROR;
         alert_o = 1'b1;
       end
     endcase
@@ -655,12 +624,12 @@ module aes_control_fsm
     // encoded signal becomes invalid, or if the life cycle controller triggers an escalation.
     if (mux_sel_err_i || sp_enc_err_i || cipher_op_err ||
             lc_escalate_en_i != lc_ctrl_pkg::Off) begin
-      aes_ctrl_ns = ERROR;
+      aes_ctrl_ns = CTRL_ERROR;
     end
   end
 
   // SEC_CM: MAIN.FSM.SPARSE
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, aes_ctrl_ns, aes_ctrl_cs, aes_ctrl_e, IDLE)
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, aes_ctrl_ns, aes_ctrl_cs, aes_ctrl_e, CTRL_IDLE)
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_fsm
     if (!rst_ni) begin
@@ -892,13 +861,13 @@ module aes_control_fsm
       CIPH_INV
       })
   `ASSERT(AesControlStateValid, !alert_o |-> aes_ctrl_cs inside {
-      IDLE,
-      LOAD,
-      PRNG_UPDATE,
-      PRNG_RESEED,
-      FINISH,
-      CLEAR_I,
-      CLEAR_CO
+      CTRL_IDLE,
+      CTRL_LOAD,
+      CTRL_PRNG_UPDATE,
+      CTRL_PRNG_RESEED,
+      CTRL_FINISH,
+      CTRL_CLEAR_I,
+      CTRL_CLEAR_CO
       })
 
   // Check parameters
