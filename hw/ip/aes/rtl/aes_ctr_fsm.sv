@@ -23,29 +23,6 @@ module aes_ctr_fsm import aes_pkg::*;
   output logic                     ctr_we_o    // Sparsify using multi-rail.
 );
 
-  // Types
-  // $ ./sparse-fsm-encode.py -d 3 -m 3 -n 5 \
-  //      -s 31468618 --language=sv
-  //
-  // Hamming distance histogram:
-  //
-  //  0: --
-  //  1: --
-  //  2: --
-  //  3: |||||||||||||||||||| (66.67%)
-  //  4: |||||||||| (33.33%)
-  //  5: --
-  //
-  // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
-  //
-  localparam int StateWidth = 5;
-  typedef enum logic [StateWidth-1:0] {
-    IDLE  = 5'b01110,
-    INCR  = 5'b11000,
-    ERROR = 5'b00001
-  } aes_ctr_e;
-
   // Signals
   aes_ctr_e                 aes_ctr_ns, aes_ctr_cs;
   logic [SliceIdxWidth-1:0] ctr_slice_idx_d, ctr_slice_idx_q;
@@ -79,28 +56,28 @@ module aes_ctr_fsm import aes_pkg::*;
     ctr_carry_d     = ctr_carry_q;
 
     unique case (aes_ctr_cs)
-      IDLE: begin
+      CTR_IDLE: begin
         ready_o = 1'b1;
         if (incr_i == 1'b1) begin
           // Initialize slice index and carry bit.
           ctr_slice_idx_d = '0;
           ctr_carry_d     = 1'b1;
-          aes_ctr_ns      = INCR;
+          aes_ctr_ns      = CTR_INCR;
         end
       end
 
-      INCR: begin
+      CTR_INCR: begin
         // Increment slice index.
         ctr_slice_idx_d = ctr_slice_idx_q + SliceIdxWidth'(1);
         ctr_carry_d     = ctr_value[SliceSizeCtr];
         ctr_we_o        = 1'b1;
 
         if (ctr_slice_idx_q == {SliceIdxWidth{1'b1}}) begin
-          aes_ctr_ns = IDLE;
+          aes_ctr_ns = CTR_IDLE;
         end
       end
 
-      ERROR: begin
+      CTR_ERROR: begin
         // SEC_CM: CTR.FSM.LOCAL_ESC
         // Terminal error state
         alert_o = 1'b1;
@@ -109,14 +86,14 @@ module aes_ctr_fsm import aes_pkg::*;
       // We should never get here. If we do (e.g. via a malicious
       // glitch), error out immediately.
       default: begin
-        aes_ctr_ns = ERROR;
+        aes_ctr_ns = CTR_ERROR;
         alert_o = 1'b1;
       end
     endcase
 
     // Unconditionally jump into the terminal error state in case an error is detected.
     if (incr_err_i || mr_err_i) begin
-      aes_ctr_ns = ERROR;
+      aes_ctr_ns = CTR_ERROR;
     end
   end
 
@@ -132,7 +109,7 @@ module aes_ctr_fsm import aes_pkg::*;
   end
 
   // SEC_CM: CTR.FSM.SPARSE
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, aes_ctr_ns, aes_ctr_cs, aes_ctr_e, IDLE)
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, aes_ctr_ns, aes_ctr_cs, aes_ctr_e, CTR_IDLE)
 
   // Forward slice index.
   assign ctr_slice_idx_o = ctr_slice_idx_q;
@@ -141,8 +118,8 @@ module aes_ctr_fsm import aes_pkg::*;
   // Assertions //
   ////////////////
   `ASSERT(AesCtrStateValid, !alert_o |-> aes_ctr_cs inside {
-      IDLE,
-      INCR
+      CTR_IDLE,
+      CTR_INCR
       })
 
 endmodule
