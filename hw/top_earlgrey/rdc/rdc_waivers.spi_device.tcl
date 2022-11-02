@@ -101,3 +101,20 @@ set_rule_status -rule {E_RDC_METASTABILITY} -status {Waived} \
   -expression {(SourceReset=~"*u_spi_device.rst_csb_buf") && \
     (ObservableFlopReset=~"*u_reg.u_control_mode*")} \
   -comment {CONTROL.mode is configured at the init time.}
+
+
+# CPHA, CONTROL.mode waivers for main rst
+set_rule_status -rule {E_RST_METASTABILITY E_RDC_METASTABILITY} \
+  -status {Waived} \
+  -expression {(ResetFlop=~"*u_spi_device.u_reg.u_cfg_cp*") && \
+    (ClockDomains=="IO_DIV4_CLK::IO_DIV4_CLK")}\
+  -comment {If CPHA is set, MainReset, SwRsqRst, POK reset causes a single \
+    edge to SPI_DEV_IN or SPI_DEV_OUT clock. As the edge occurs at the same \
+    time with the IP reset, it may create metastability issue to many \
+    registers inside SPI_DEVICE IP. \
+    \
+    However, at the time when POR is released, or SW requsts the reset, SPI \
+    is assumes as quiescent or stalled. If SPI line is stalled, part of the \
+    internal content may not be reset. But, it can be solvable by setting \
+    invert to the CSb pad. \
+    }
