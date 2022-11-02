@@ -42,11 +42,7 @@ module aes_err_injection_bind;
   bind aes_control_fsm fi_control_fsm_wrapper
     #(.IfName("aes_control_fi_vif")
      )
-  u_fi_ctrl_fsm
-    (
-     .clk          (clk_i),
-     .rst_ni       (rst_ni)
-     );
+  u_fi_ctrl_fsm (.*);
 
   bind aes_cipher_control_fsm fi_cipher_fsm_wrapper
     #(.IfName("aes_cipher_control_fi_vif")

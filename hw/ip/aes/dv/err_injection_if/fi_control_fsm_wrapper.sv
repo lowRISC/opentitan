@@ -11,12 +11,12 @@ module fi_control_fsm_wrapper
   import aes_env_pkg::*;
   #( parameter string IfName = "vif"
   )
-  ( input clk,
+  ( input clk_i,
     input rst_ni
     );
 
   // declare interface
-  fi_control_if  fi_if (.clk_i  (clk), .rst_ni (rst_ni));
+  fi_control_if  fi_if (.*);
   initial begin
     uvm_config_db#(virtual fi_control_if)::set(null, "*",
       pick_if_name(IfName, $sformatf("%m")), fi_if);
