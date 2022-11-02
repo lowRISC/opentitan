@@ -119,7 +119,7 @@ class flash_ctrl_otp_reset_vseq extends flash_ctrl_base_vseq;
                 2'b11: begin
                   if (reset_index == DVWaitDataKey) begin
                     cfg.flash_ctrl_vif.lc_seed_hw_rd_en =
-                      get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(4));
+                      get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(9));
                   end
                 end
                 default: begin
