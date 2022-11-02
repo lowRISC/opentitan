@@ -15,7 +15,7 @@ ci/bazelisk.sh test \
     --test_tag_filters=verilator,-broken \
     --test_output=errors \
     --//hw:verilator_options=--threads,1 \
-    --//hw:make_options=-j,1 \
+    --//hw:make_options=-j,4 \
     //sw/device/tests:aes_smoketest_sim_verilator \
     //sw/device/tests:uart_smoketest_sim_verilator \
     //sw/device/tests:crt_test_sim_verilator \
