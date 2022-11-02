@@ -32,7 +32,8 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
       fork
         begin
           check_wr_stretch = 1'b1;
-          host_send_trans(1, WriteOnly);
+          cfg.trans_type = WriteOnly;
+          host_send_trans();
           check_wr_stretch = 1'b0;
           if (!cfg.under_reset) begin
             // host clock is stretched for every target's ACK thus
@@ -42,7 +43,8 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
           end
 
           check_rd_stretch = 1'b1;
-          host_send_trans(1, ReadOnly);
+          cfg.trans_type = ReadOnly;
+          host_send_trans();
           check_rd_stretch = 1'b0;
           if (!cfg.under_reset) begin
             // check_rd_stretchretch_timeout must be equal to 1
