@@ -29,14 +29,6 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     super.pre_start();
   endtask
 
-  virtual task post_apply_reset(string reset_kind = "HARD");
-    super.post_apply_reset(reset_kind);
-
-    // Wait until rom_ctrl and lc_ctrl have finished to ensure stub_cpu
-    // does not conflict with any background power-up activity
-    wait_rom_check_done();
-  endtask
-
   task post_start();
     super.post_start();
 
@@ -54,7 +46,12 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
+    // Wait until rom_ctrl and lc_ctrl have finished to ensure stub_cpu
+    // does not conflict with any background power-up activity
+    `uvm_info(`gfn, "Wait for ROM check to complete", UVM_MEDIUM)
+    wait_rom_check_done();
     // Program the AST with the configuration data loaded in OTP creator SW config region.
+    `uvm_info(`gfn, "Perform AST configuration", UVM_MEDIUM)
     if (cfg.use_jtag_dmi == 0) do_ast_cfg();
   endtask
 

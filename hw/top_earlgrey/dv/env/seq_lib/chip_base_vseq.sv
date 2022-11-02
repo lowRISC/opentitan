@@ -66,6 +66,34 @@ class chip_base_vseq #(
 
   chip_callback_vseq callback_vseq;
 
+  // This task populates the ROM with random but correctly scrambled and ECC encoded data with a
+  // valid KMAC digest at the end. It is used to ensure the ROM check can pass successfully, without
+  // having to rely on a ROM software build prior to running the simulation.
+  virtual function random_rom_init_with_digest();
+    bit [TL_DW-1:0] rnd_data;
+    `uvm_info(`gfn, "Random ROM init with digest", UVM_MEDIUM)
+
+    // Randomize the memory contents.
+    //
+    // We can't just use the mem_bkdr_util randomize_mem function because that doesn't obey the
+    // scrambling key. This wouldn't be a problem (the memory is supposed to be random!), except
+    // that we also need to pick ECC values that match.
+    for (int addr = 0; addr < RomMaxCheckAddr; addr += TL_DW/8) begin
+      `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
+      cfg.mem_bkdr_util_h[Rom].rom_encrypt_write32_integ(
+          addr,
+          rnd_data,
+          top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey,
+          top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce,
+          1'b1); // Enable scrambling.
+    end
+
+    // Update the ROM digest.
+    cfg.mem_bkdr_util_h[Rom].update_rom_digest(
+        top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey,
+        top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce);
+  endfunction
+
   // Iniitializes the DUT.
   //
   // Initializes DUT inputs, internal memories, etc., brings the DUT out of reset (performs a reset
@@ -114,8 +142,6 @@ class chip_base_vseq #(
     initialize_otp_sig_verify();
     initialize_otp_creator_sw_cfg_ast_cfg();
     callback_vseq.pre_dut_init();
-    // Randomize the ROM image. Subclasses that have an actual ROM image will load it later.
-    cfg.mem_bkdr_util_h[Rom].randomize_mem();
     // Initialize selected memories to all 0. This is required for some chip-level tests such as
     // otbn_mem_scramble that may intentionally read memories before writing them. Reading these
     // memories still triggeres ECC integrity errors that need to be handled by the test.
@@ -167,6 +193,14 @@ class chip_base_vseq #(
     `uvm_create_on(callback_vseq, p_sequencer);
     `DV_CHECK_RANDOMIZE_FATAL(callback_vseq)
     super.pre_start();
+    // Randomize the ROM image with valid ECC and digest. Subclasses that have an actual ROM image
+    // will load a "real" ROM image later. If the ROM integrity check is disabled, no digest needs
+    // to be calculated and we can just randomize the memory.
+    `ifdef DISABLE_ROM_INTEGRITY_CHECK
+      cfg.mem_bkdr_util_h[Rom].randomize_mem();
+    `else
+      random_rom_init_with_digest();
+    `endif
     do_dut_init = do_dut_init_save;
     // Now safe to do DUT init.
     if (do_dut_init) dut_init();

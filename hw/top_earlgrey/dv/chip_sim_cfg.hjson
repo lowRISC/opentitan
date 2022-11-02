@@ -258,15 +258,9 @@
     }
     {
       name: stub_cpu_mode
+      // Note that the chip_base_vseq will preload a random ROM image with valid ECC and digest
+      // so that the ROM check can succeed even if no ROM image is built and supplied via Bazel.
       en_run_modes: ["gen_otp_images_mode"]
-      run_opts: ["+stub_cpu=1"]
-    }
-    {
-      name: stub_cpu_mode_with_test_rom
-      en_run_modes: ["sw_test_mode_common"]
-      // The tests using this mode only require the ROM init check to succeed.
-      // The example_test_from_rom test is sufficient.
-      sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom"]
       run_opts: ["+stub_cpu=1"]
     }
     {
@@ -1446,7 +1440,7 @@
       name: chip_rv_dm_lc_disabled
       build_mode: "cover_reg_top"
       uvm_test_seq: "chip_rv_dm_lc_disabled_vseq"
-      en_run_modes: ["stub_cpu_mode_with_test_rom"]
+      en_run_modes: ["stub_cpu_mode"]
       run_opts: ["+en_scb=0", "+en_scb_tl_err_chk=0", "+use_jtag_dmi=1"]
     }
     {
