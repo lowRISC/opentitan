@@ -198,7 +198,7 @@ class spi_monitor extends dv_base_monitor#(
           `uvm_info(`gfn, $sformatf("spi_monitor: cmdtmp \n%0h", cmdtmp), UVM_DEBUG)
         end
         cmd_byte++;
-        if (cmd_byte == cfg.num_bytes_per_trans_in_mon)begin
+        if (cmd_byte == cfg.spi_cmd_width)begin
           cmd = cmdtmp;
           `uvm_info(`gfn, $sformatf("spi_monitor: cmd \n%0h", cmd), UVM_DEBUG)
         end
