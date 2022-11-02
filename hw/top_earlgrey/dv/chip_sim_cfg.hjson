@@ -1480,6 +1480,16 @@
       run_opts: ["+use_otp_image=LcStProd"]
       reseed: 10
     }
+    //--------------------------------------------
+    //
+    {
+      name: chip_sw_power_idle_load
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:chip_power_idle_load:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+en_scb_ping_chk=0"] // this is to disable ping-timeout check in cip_base_scoreboard, as it seems to be flawed.
+    }
+    //--------------------------------------------
   ]
 
   // List of regressions.
