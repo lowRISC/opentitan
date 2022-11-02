@@ -54,23 +54,13 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
-    `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
-    // This vseq derives from the chip_stub_cpu_base_vseq, hence the ROM has to be loaded explicitly.
-    `ifdef DISABLE_ROM_INTEGRITY_CHECK
-        cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
-    `else
-        cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
-    `endif
+    `uvm_info(`gfn, $sformatf("DUT Init with lc_state %0s", lc_state.name), UVM_LOW)
 
     // TODO(#15624): remove this part later.
-    `uvm_info(`gfn, "Wait for ROM check to complete", UVM_MEDIUM)
-    // In case we are in PROD* or DEV, we need to wait until the strap sampling pulse
-    // is released after the ROM check.
-    if (lc_state inside {LcStDev, LcStProd, LcStProdEnd}) begin
-      wait_rom_check_done();
-      // The strap sampling pulse is released a few cycles after the ROM check completes.
-      cfg.clk_rst_vif.wait_clks(100);
-    end
+    // We already wait for the ROM check to complete in the post_apply_reset sequence of
+    // chip_stub_cpu_base_vseq. However, we need to wait a few additional cycles here since
+    // the strap sampling pulse is released a few cycles after the ROM check completes.
+    cfg.clk_rst_vif.wait_clks(100);
 
     `uvm_info(`gfn, "Attempt to activate RV_DM via JTAG.", UVM_MEDIUM)
     // RV_DM needs to be activated for the registers to work properly.
