@@ -22,6 +22,8 @@ class aes_ctr_fi_vseq extends aes_base_vseq;
   rand int                  if_num;
   rand int                  target;
 
+  rand aes_pkg::aes_ctr_e   await_state;
+
   int                       if_size;
 
 
@@ -50,7 +52,14 @@ class aes_ctr_fi_vseq extends aes_base_vseq;
               target inside { [0:if_size - 1]};}) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
-            cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
+            `DV_CHECK_STD_RANDOMIZE_FATAL(await_state)
+            if (await_state == aes_pkg::CTR_INCR) begin
+              // The Incr state is difficult to hit with a random delay, but simply waiting for it
+              // works.
+              `DV_WAIT(cfg.aes_ctr_fsm_fi_vif[if_num].aes_ctr_cs == await_state)
+            end else begin
+              cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
+            end
             `uvm_info(`gfn, $sformatf("FORCING %h on if[%d]", force_value, if_num), UVM_MEDIUM)
             cfg.aes_ctr_fsm_fi_vif[if_num].force_signal(target, FORCE, force_value);
             wait_for_alert_clear = 1;
