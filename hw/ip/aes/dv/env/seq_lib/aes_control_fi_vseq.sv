@@ -22,6 +22,8 @@ class aes_control_fi_vseq extends aes_base_vseq;
   rand int                  if_num;
   rand int                  target;
 
+  rand aes_pkg::aes_ctrl_e  await_state;
+
   int                       if_size;
 
 
@@ -50,7 +52,21 @@ class aes_control_fi_vseq extends aes_base_vseq;
               target inside { [0:if_size - 1]};}) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
-            cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
+            `DV_CHECK_STD_RANDOMIZE_FATAL(await_state)
+            if (await_state inside {aes_pkg::CTRL_PRNG_UPDATE, aes_pkg::CTRL_CLEAR_I,
+                                          aes_pkg::CTRL_CLEAR_CO}) begin
+              // The PRNG Update state and the Clear states are difficult to hit with a random
+              // delay.  This writes the clear register to bring the FSM to the PRNG Update and then
+              // the Clear states, and it waits until the FSM has reached the required state.
+              clear_regs('{dataout: 1'b1, key_iv_data_in: 1'b1, default: 1'b0});
+              `DV_WAIT(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state)
+            end else if (await_state inside {aes_pkg::CTRL_LOAD, aes_pkg::CTRL_PRNG_RESEED}) begin
+              // The Load state and the PRNG Reseed state are also difficult to hit with a random
+              // delay, but for them simply waiting works.
+              `DV_WAIT(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state)
+            end else begin
+              cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
+            end
             `uvm_info(`gfn, $sformatf("FORCING %h on if[%d]", force_value, if_num), UVM_MEDIUM)
             cfg.aes_control_fi_vif[if_num].force_signal(target, FORCE, force_value);
             wait_for_alert_clear = 1;
