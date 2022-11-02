@@ -11,6 +11,14 @@ set -e
 SHA=$(git rev-parse HEAD)
 readonly SHA
 
+if [ $# == 0 ]; then
+    echo >&2 "Usage: run-fpga-cw310-tests.sh <cw310_tags>"
+    echo >&2 "E.g. ./run-fpga-cw310-tests.sh cw310_rom"
+    echo >&2 "E.g. ./run-fpga-cw310-tests.sh cw310_rom cw310_test_rom"
+    exit 1
+fi
+cw310_tags=("$@")
+
 # Copy bitstreams and related files into the cache directory so Bazel will have
 # the corresponding targets in the @bitstreams workspace.
 #
@@ -32,7 +40,6 @@ export BITSTREAM="--offline --list ${SHA}"
 # in case we've crashed the UART handler on the CW310's SAM3U
 trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --interface=cw310 fpga reset' EXIT
 
-cw310_tags=( "cw310_test_rom" "cw310_rom" )
 for tag in "${cw310_tags[@]}"; do
     ./bazelisk.sh query 'rdeps(//..., @bitstreams//...)' |
         xargs ci/bazelisk.sh test \

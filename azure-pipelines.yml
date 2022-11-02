@@ -514,9 +514,30 @@ jobs:
         gcpKeyFile: "gcpkey.json"
         bucketURI: "gs://opentitan-bitstreams/master"
 
-- job: execute_fpga_tests_cw310
-  displayName: CW310 Tests
-  # Execute tests on ChipWhisperer CW310 FPGA board
+- job: execute_test_rom_fpga_tests_cw310
+  displayName: CW310 Test ROM Tests
+  pool: FPGA
+  timeoutInMinutes: 45
+  dependsOn:
+    - chip_earlgrey_cw310
+    - sw_build
+  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+  steps:
+  - template: ci/checkout-template.yml
+  - template: ci/install-package-dependencies.yml
+  - template: ci/download-artifacts-template.yml
+    parameters:
+      downloadPartialBuildBinFrom:
+        - chip_earlgrey_cw310
+        - sw_build
+  - bash: |
+      set -e
+      . util/build_consts.sh
+      ci/scripts/run-fpga-cw310-tests.sh cw310_test_rom || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+    displayName: Execute tests
+
+- job: execute_rom_fpga_tests_cw310
+  displayName: CW310 ROM Tests
   pool: FPGA
   timeoutInMinutes: 45
   dependsOn:
@@ -535,7 +556,7 @@ jobs:
       set -e
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-cw310-tests.sh || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+      ci/scripts/run-fpga-cw310-tests.sh cw310_rom || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
     displayName: Execute tests
 
 - job: deploy_release_artifacts
@@ -560,9 +581,7 @@ jobs:
         - chip_englishbreakfast_verilator
   - bash: |
       . util/build_consts.sh
-
       ci/scripts/make_distribution.sh
-
       tar --list -f $BIN_DIR/opentitan-*.tar.xz
       # Put the resulting tar file into a directory the |publish| step below can reference.
       mkdir "$BUILD_ROOT/dist-final"
@@ -580,7 +599,6 @@ jobs:
       addChangeLog: false
       assets: |
           $(Build.ArtifactStagingDirectory)/dist-final/*
-
 
 - job: build_docker_containers
   displayName: "Build Docker Containers"
