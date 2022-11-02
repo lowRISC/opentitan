@@ -12,7 +12,9 @@ use anyhow::{anyhow, bail, Result};
 use serde::de::{self, Unexpected};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Debug, PartialEq, Eq)]
+use serde_annotate::Annotate;
+
+#[derive(Annotate, Serialize, Debug, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum OtpImgValue {
     Word(u64),
@@ -90,22 +92,25 @@ impl<'de> Deserialize<'de> for OtpImgValue {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImgItem {
     pub name: String,
     pub value: OtpImgValue,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImgPartition {
     pub name: String,
     pub items: Option<Vec<OtpImgItem>>,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImg {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<u64>,
+    // FIXME: Needed to get `OtpImgValue` serailization to emit hex values.
+    // See: https://github.com/cfrantz/serde-annotate/issues/5.
+    #[annotate(format = hex)]
     pub partitions: Vec<OtpImgPartition>,
 }
 

@@ -7,9 +7,9 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 
-use serde_annotate::{serialize, Annotate};
+use serde_annotate::{serialize, Annotate, Base};
 
 use structopt::StructOpt;
 
@@ -24,8 +24,6 @@ use opentitanlib::otp::otp_img::{OtpImg, OtpImgItem, OtpImgPartition, OtpImgValu
 pub struct AlertDigest {
     #[structopt(help = "OTP memory map file containing alert_handler config in HJSON format")]
     alert_cfg: PathBuf,
-    #[structopt(help = r#"Life cycle state ("TEST", "DEV", "PROD", PROD_END, "RMA")"#)]
-    lc_state: String,
     #[structopt(
         long,
         help = "Output file to write the new OTP overlay to instead of printing"
@@ -37,8 +35,6 @@ pub struct AlertDigest {
         help = "Override switch to specify a custom partition"
     )]
     partition: String,
-    #[structopt(long, help = "Override switch to specify a custom OTP item name")]
-    name: Option<String>,
 }
 
 impl CommandDispatch for AlertDigest {
@@ -50,48 +46,56 @@ impl CommandDispatch for AlertDigest {
         // From kErrorOk in ROM.
         const ERROR_OK: u32 = 0x739;
 
+        // Life cycle states to generate digests for.
+        let lc_states = [
+            ("OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD", LcStateVal::Prod),
+            (
+                "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END",
+                LcStateVal::ProdEnd,
+            ),
+            ("OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV", LcStateVal::Dev),
+            ("OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA", LcStateVal::Rma),
+        ];
+
         // Read in the OTP img description.
         let otp = OtpImg::from_file(&self.alert_cfg)?;
 
-        let lc_str = self.lc_state.to_uppercase();
-        let lc_state = match lc_str.as_ref() {
-            "TEST" => LcStateVal::Test,
-            "DEV" => LcStateVal::Dev,
-            "PROD" => LcStateVal::Prod,
-            "PROD_END" => LcStateVal::ProdEnd,
-            "RMA" => LcStateVal::Rma,
-            _ => bail!("invalid life cycle state {}", self.lc_state),
-        };
+        let mut items = Vec::<OtpImgItem>::new();
 
-        // Create model for alert_handler register states.
-        let alert = AlertRegs::try_new(lc_state, &otp)?;
+        for lc_state in lc_states {
+            // Create model for alert_handler register states.
+            let alert = AlertRegs::try_new(lc_state.1, &otp)?;
 
-        // Use alert_handler registers states to construct CRC32 checksum.
-        let crc32 = alert.crc32();
+            // Use alert_handler registers states to construct CRC32 checksum.
+            let crc32 = alert.crc32();
 
-        // Match digest format expected by ROM.
-        let digest = crc32 ^ lc_state as u32 ^ ERROR_OK;
+            // Match digest format expected by ROM.
+            let digest = crc32 ^ lc_state.1 as u32 ^ ERROR_OK;
 
-        let item_name = self
-            .name
-            .clone()
-            .unwrap_or(format!("OWNER_SW_CFG_ROM_ALERT_DIGEST_{}", self.lc_state).to_string());
+            items.push(OtpImgItem {
+                name: lc_state.0.to_owned(),
+                value: OtpImgValue::Word(digest as u64),
+            });
+        }
 
         // Construct OTP image overlay.
         let img_out = OtpImg {
             seed: None,
             partitions: vec![OtpImgPartition {
                 name: self.partition.clone(),
-                items: Some(vec![OtpImgItem {
-                    name: item_name,
-                    value: OtpImgValue::Word(digest as u64),
-                }]),
+                items: Some(items),
             }],
         };
 
         if let Some(output) = &self.output {
             let mut file = File::create(&output)?;
-            file.write_all(serialize(&img_out)?.to_json().to_string().as_bytes())?;
+            file.write_all(
+                serialize(&img_out)?
+                    .to_json()
+                    .bases(&[Base::Hex])
+                    .to_string()
+                    .as_bytes(),
+            )?;
             Ok(None)
         } else {
             Ok(Some(Box::new(img_out)))
