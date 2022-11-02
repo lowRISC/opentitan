@@ -51,52 +51,62 @@ To get started faster we use the web installer in the following.
 4. Now you need to click through the installer.
    Click "Next" on the first screen.
 
-   ![Vivado installation step 1](img/step1.png)
+   ![Vivado installation welcome screen](img/welcome.png)
 
 5. Type in your Xilinx User ID (your email address) and the associated password.
    Choose the "Download and Install Now" option.
    Click "Next" to continue.
 
-   ![Vivado installation step 2](img/step2.png)
+   ![Vivado installation install type screen](img/install_type.png)
 
-6. Click all "I Agree" checkboxes, and click on "Next" to continue.
+6. Choose "Vivado", and click on "Next" to continue.
 
-   ![Vivado installation step 3](img/step3.png)
+   ![Vivado installation product to install screen](img/product.png)
 
-7. Choose "Vivado", and click on "Next" to continue.
-
-   ![Vivado installation step 4](img/step4.png)
-
-8. Choose "Vivado HL Design Edition".
+7. Choose "Vivado HL Design Edition".
    This is required to enable support for the Xilinx Kintex 7 XC7K410T FPGA device found on the ChipWhisperer CW310 board.
    You'll need a commercial Vivado license for this FPGA device.
    Without a valid license, you are still able to install the Vivado HL Design Edition but you'll only be able to work with devices supported by the free WebPACK license.
    If you don't have a valid license and if you're only planning to work with devices supported by the free WebPACK license, you can also choose "Vivado HL WebPACK" instead.
 
-   ![Vivado installation step 5](img/step5.png)
+   ![Vivado installation edition screen](img/edition.png)
 
-9. Choose the features to install.
+8. Choose the features to install.
    You can restrict the features to the ones shown in the screenshot below.
    Click "Next" to continue.
 
-   ![Vivado installation step 6](img/step6.png)
+   ![Vivado installation features screen](img/features.png)
+
+9. Click all "I Agree" checkboxes, and click on "Next" to continue.
+
+   ![Vivado installation license agreements screen](img/license.png)
 
 10. Choose an installation location.
     Any location which doesn't have a whitespace in its path and enough free space is fine.
     We use `/tools` in our example, but a path in `/opt` or within the home directory works equally well.
     Click "Next" to continue.
 
-    ![Vivado installation step 7](img/step7.png)
+    ![Vivado installation install location screen](img/location.png)
 
 11. Double-check the installation summary and click on "Install" to start the installation process.
 
-    ![Vivado installation step 8](img/step8.png)
+    ![Vivado installation summary page screen](img/summary.png)
 
 12. Now Vivado is downloaded and installed, a process which can easily take multiple hours.
 
-    ![Vivado installation step 9](img/step9.png)
+    ![Vivado installation progress screen](img/progress.png)
 
 13. As soon as the installation has completed close the installer and you're now ready to use Vivado!
+
+## Adding binaries to `$PATH`
+
+OpenTitan's build system will be unable to invoke Vivado's `updatemem` command
+unless it has been added to your `PATH` variable. You can do this by adding the
+following command to your `.bashrc`:
+
+```
+source /tools/Xilinx/Vivado/2020.2/settings64.sh
+```
 
 ## Device permissions: udev rules
 
