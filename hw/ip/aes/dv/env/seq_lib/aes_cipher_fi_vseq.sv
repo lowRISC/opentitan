@@ -18,11 +18,13 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
   localparam bit FORCE   = 0;
   localparam bit RELEASE = 1;
 
-  rand bit [31:0]           force_value;
-  rand int                  if_num;
-  rand int                  target;
+  rand bit [31:0]                 force_value;
+  rand int                        if_num;
+  rand int                        target;
 
-  int                       if_size;
+  rand aes_pkg::aes_cipher_ctrl_e await_clear_state;
+
+  int                             if_size;
 
 
   task body();
@@ -50,7 +52,18 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
               target inside { [0:if_size - 1]};}) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
-            cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
+            `DV_CHECK_STD_RANDOMIZE_FATAL(await_clear_state)
+            if (await_clear_state inside {aes_pkg::CIPHER_CTRL_CLEAR_S,
+                                          aes_pkg::CIPHER_CTRL_CLEAR_KD}) begin
+              // The clear states are difficult to hit with a random delay.  This writes the clear
+              // register to bring the FSM into the clear state and then waits for the FSM to enter
+              // that state.
+              clear_regs('{dataout: 1'b1, default: 1'b0});
+              `DV_WAIT(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs
+                       == await_clear_state)
+            end else begin
+              cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
+            end
             `uvm_info(`gfn, $sformatf("FORCING %h on if[%d]", force_value, if_num), UVM_MEDIUM)
             cfg.aes_cipher_control_fi_vif[if_num].force_signal(target, FORCE, force_value);
             wait_for_alert_clear = 1;
