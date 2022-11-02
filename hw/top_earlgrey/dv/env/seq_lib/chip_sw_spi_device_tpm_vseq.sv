@@ -9,7 +9,7 @@ class chip_sw_spi_device_tpm_vseq extends chip_sw_base_vseq;
 
   rand bit [23:0] addr;
   rand bit [7:0] data_q[$];
-  constraint size_c  { data_q.size() <= 64; }
+  constraint size_c  { data_q.size() <= 64 && data_q.size > 0; }
 
   virtual task tpm_txn (bit wr, bit [23:0] addr, bit [7:0] data_q[$] = {0},
                         int len, output logic [7:0] rdata_q[]);

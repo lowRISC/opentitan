@@ -221,6 +221,8 @@ class spi_host_driver extends spi_driver;
     `uvm_info(`gfn, $sformatf("Driving TPM item: \n%s", req.sprint()), UVM_MEDIUM)
 
     `DV_CHECK_EQ_FATAL(req.address_q.size(), TPM_ADDR_WIDTH_BYTE)
+    // When issuing write command, data size cannot be 0.
+    `DV_CHECK(req.data.size() > 0 | !req.write_command)
     data_num_byte = req.write_command ? req.data.size() : req.read_size;
     cmd_bytes = {get_tpm_cmd(req.write_command, data_num_byte), req.address_q};
 
