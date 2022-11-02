@@ -11,6 +11,9 @@
 
 set -e
 
+echo -e "\n### Ensure bazel doesn't use 'git_repository's"
+ci/scripts/check-bazel-repos.sh
+
 echo -e "\n### Ensure all generated files are clean and up-to-date"
 ci/scripts/check-generated.sh
 
