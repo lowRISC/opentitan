@@ -76,6 +76,9 @@ void ottf_external_isr(void) {
   CHECK(peripheral == kTopEarlgreyPlicPeripheralAdcCtrlAon);
   CHECK(adc_ctrl_irq == kDifAdcCtrlIrqMatchDone);
   interrupt_serviced = true;
+
+  // Verify this interrupt was actually expected.
+  CHECK(interrupt_expected);
 }
 
 static void en_plic_irqs(dif_rv_plic_t *plic) {
