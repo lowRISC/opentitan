@@ -182,6 +182,7 @@
       name: aes_ctr_fi
       uvm_test: aes_fi_test
       uvm_test_seq: aes_ctr_fi_vseq
+      run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
     }
     {
       name: aes_readability
