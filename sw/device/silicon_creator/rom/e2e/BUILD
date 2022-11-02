@@ -30,20 +30,20 @@ load("@bazel_skylib//lib:structs.bzl", "structs")
 package(default_visibility = ["//visibility:public"])
 
 MSG_TEMPLATE_BFV = "{}{}\r\n(?s:.*){}{}\r\n".format(
-    CONST.PREFIX.BFV,
+    CONST.SHUTDOWN.PREFIX.BFV,
     "{0}",
-    CONST.PREFIX.BFV,
+    CONST.SHUTDOWN.PREFIX.BFV,
     "{0}",
 )
 
 MSG_TEMPLATE_BFV_LCV = "{}{}\r\n{}{}\r\n(?s:.*){}{}\r\n{}{}\r\n".format(
-    CONST.PREFIX.BFV,
+    CONST.SHUTDOWN.PREFIX.BFV,
     "{0}",
-    CONST.PREFIX.LCV,
+    CONST.SHUTDOWN.PREFIX.LCV,
     "{1}",
-    CONST.PREFIX.BFV,
+    CONST.SHUTDOWN.PREFIX.BFV,
     "{0}",
-    CONST.PREFIX.LCV,
+    CONST.SHUTDOWN.PREFIX.LCV,
     "{1}",
 )
 
@@ -266,7 +266,7 @@ opentitan_functest(
 opentitan_functest(
     name = "rom_ext_a_flash_a",
     cw310 = cw310_params(
-        exit_failure = CONST.PREFIX.BFV,
+        exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
     ),
     ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
@@ -286,7 +286,7 @@ opentitan_multislot_flash_binary(
 opentitan_functest(
     name = "rom_ext_b_flash_b",
     cw310 = cw310_params(
-        exit_failure = CONST.PREFIX.BFV,
+        exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
     ),
     key = "multislot",
@@ -339,7 +339,7 @@ opentitan_functest(
 opentitan_functest(
     name = "rom_ext_v_flash_a",
     cw310 = cw310_params(
-        exit_failure = CONST.PREFIX.BFV,
+        exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
     ),
     ot_flash_binary = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
@@ -359,7 +359,7 @@ opentitan_multislot_flash_binary(
 opentitan_functest(
     name = "rom_ext_v_flash_b",
     cw310 = cw310_params(
-        exit_failure = CONST.PREFIX.BFV,
+        exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
     ),
     key = "multislot",

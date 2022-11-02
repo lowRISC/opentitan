@@ -15,10 +15,6 @@ CONST = struct(
     BL0_SIZE_MIN = 896,
     BL0_SIZE_MAX = 0x70000,
     DEFAULT_USAGE_CONSTRAINTS = 0xa5a5a5a5,
-    PREFIX = struct(
-        LCV = "LCV:",
-        BFV = "BFV:",
-    ),
     # Must match the definitions in lc_ctrl_regs.h.
     LCV = struct(
         TEST_UNLOCKED0 = 0x02108421,
@@ -46,6 +42,13 @@ CONST = struct(
         MANIFEST = struct(
             BAD_ENTRY_POINT = 0x014d410d,
             BAD_CODE_REGION = 0x024d410d,
+        ),
+    ),
+    # Must match the definitions in shutdown.h.
+    SHUTDOWN = struct(
+        PREFIX = struct(
+            LCV = "LCV:",
+            BFV = "BFV:",
         ),
     ),
 )
