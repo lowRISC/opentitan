@@ -332,6 +332,32 @@ opentitan_functest(
 )
 
 cc_library(
+    name = "chip_sw_lc_ctrl_scrap_impl",
+    srcs = ["chip_sw_lc_ctrl_scrap_impl.c"],
+    hdrs = ["chip_sw_lc_ctrl_scrap_impl.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:lc_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:lc_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+opentitan_functest(
+    name = "chip_sw_lc_ctrl_scrap_test",
+    srcs = ["chip_sw_lc_ctrl_scrap_test.c"],
+    targets = ["dv"],
+    deps = [
+        ":chip_sw_lc_ctrl_scrap_impl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+cc_library(
     name = "lc_ctrl_transition_impl",
     srcs = ["lc_ctrl_transition_impl.c"],
     hdrs = ["lc_ctrl_transition_impl.h"],
