@@ -228,7 +228,7 @@ ${"end" if loop.last else ""}
     % if block.hrsp_pass != 1:
     .HRspPass  (1'b${block.hrsp_pass}),
     % endif
-    % if block.hdepth != 2:
+    % if block.hdepth != 1:
     .HReqDepth (4'h${block.hdepth}),
     .HRspDepth (4'h${block.hdepth}),
     % endif
@@ -238,7 +238,7 @@ ${"end" if loop.last else ""}
     % if block.drsp_pass != 2**(len(block.ds)) -1:
     .DRspPass  (${len(block.ds)}'h${"%x" % block.drsp_pass}),
     % endif
-    % if block.ddepth != 2:
+    % if block.ddepth != 1:
     .DReqDepth (${len(block.ds)*4}'h${"%x" % block.ddepth}),
     .DRspDepth (${len(block.ds)*4}'h${"%x" % block.ddepth}),
     % endif
@@ -260,7 +260,7 @@ ${"end" if loop.last else ""}
     % if block.hrsp_pass != 2**(len(block.us)) - 1:
     .HRspPass  (${len(block.us)}'h${"%x" % block.hrsp_pass}),
     % endif
-    % if block.hdepth != 2:
+    % if block.hdepth != 1:
     .HReqDepth (${len(block.us)*4}'h${"%x" % block.hdepth}),
     .HRspDepth (${len(block.us)*4}'h${"%x" % block.hdepth}),
     % endif
@@ -270,7 +270,7 @@ ${"end" if loop.last else ""}
     % if block.drsp_pass != 1:
     .DRspPass  (1'b${block.drsp_pass}),
     % endif
-    % if block.ddepth != 2:
+    % if block.ddepth != 1:
     .DReqDepth (4'h${block.ddepth}),
     .DRspDepth (4'h${block.ddepth}),
     % endif

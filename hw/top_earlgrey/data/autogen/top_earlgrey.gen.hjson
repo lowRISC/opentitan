@@ -8661,7 +8661,8 @@
           type: device
           clock: clk_main_i
           reset: rst_main_ni
-          pipeline: false
+          req_fifo_pass: false
+          rsp_fifo_pass: false
           inst_type: rom_ctrl
           addr_range:
           [
@@ -8672,7 +8673,7 @@
           ]
           xbar: false
           stub: false
-          req_fifo_pass: true
+          pipeline: true
         }
         {
           name: peri
@@ -8701,7 +8702,8 @@
           type: device
           clock: clk_spi_host0_i
           reset: rst_spi_host0_ni
-          pipeline: false
+          req_fifo_pass: false
+          rsp_fifo_pass: false
           inst_type: spi_host
           addr_range:
           [
@@ -8712,14 +8714,15 @@
           ]
           xbar: false
           stub: false
-          req_fifo_pass: true
+          pipeline: true
         }
         {
           name: spi_host1
           type: device
           clock: clk_spi_host1_i
           reset: rst_spi_host1_ni
-          pipeline: false
+          req_fifo_pass: false
+          rsp_fifo_pass: false
           inst_type: spi_host
           addr_range:
           [
@@ -8730,14 +8733,15 @@
           ]
           xbar: false
           stub: false
-          req_fifo_pass: true
+          pipeline: true
         }
         {
           name: usbdev
           type: device
           clock: clk_usb_i
           reset: rst_usb_ni
-          pipeline: false
+          req_fifo_pass: false
+          rsp_fifo_pass: false
           inst_type: usbdev
           addr_range:
           [
@@ -8748,7 +8752,7 @@
           ]
           xbar: false
           stub: false
-          req_fifo_pass: true
+          pipeline: true
         }
         {
           name: flash_ctrl.core
@@ -9021,7 +9025,8 @@
           type: device
           clock: clk_main_i
           reset: rst_main_ni
-          pipeline: false
+          req_fifo_pass: false
+          rsp_fifo_pass: false
           inst_type: sram_ctrl
           addr_range:
           [
@@ -9032,7 +9037,7 @@
           ]
           xbar: false
           stub: false
-          req_fifo_pass: true
+          pipeline: true
         }
         {
           name: sram_ctrl_main.ram

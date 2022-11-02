@@ -8,13 +8,27 @@
   reset_primary: "rst_main_ni", // Main reset, used in sockets
   other_reset_list: [ "rst_fixed_ni", "rst_spi_host0_ni", "rst_spi_host1_ni", "rst_usb_ni"] // Secondary clocks used by specific nodes
 
+  // Rationale for pipeline and req/rsp_fifo_pass:
+  // For host interfaces that are used during production state (corei/cored),
+  // minimize the amount of host introduced latency.  This is accomplished
+  // by setting pipeline to false.
+  // For host interfaces that are only used for debug, relax the timing by
+  // inserting a register slice and not allowing passthrough (more access
+  // latency. This is accomplished by setting `req/rsp_fifo_pass` to false,
+  // and implicitly using the default of pipeline true.
+  //
+  // For device interfaces, especially configuration registers, latency is
+  // not generally a concern, thus use `req/rsp_fifo_pass` false and pipeline
+  // true.
+  // For device accesses to memories (ram / rom / flash), performance is a concern,
+  // so use pipeline false where permissible by timing. If not, find a combination
+  // that works.
   nodes: [
     { name:  "rv_core_ibex.corei",
       type:  "host",
       clock: "clk_main_i",
       reset: "rst_main_ni",
       pipeline: false
-
     },
     { name:  "rv_core_ibex.cored",
       type:  "host",
@@ -54,7 +68,8 @@
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
-      pipeline:  false,
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
     },
     { name:      "peri",
       type:      "device",
@@ -67,19 +82,22 @@
       type:      "device",
       clock:     "clk_spi_host0_i",
       reset:     "rst_spi_host0_ni",
-      pipeline:  false
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
     },
     { name:      "spi_host1",
       type:      "device",
       clock:     "clk_spi_host1_i",
       reset:     "rst_spi_host1_ni",
-      pipeline:  false
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
     },
     { name:      "usbdev",
       type:      "device",
       clock:     "clk_usb_i",
       reset:     "rst_usb_ni",
-      pipeline:  false
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
     },
     { name:      "flash_ctrl.core",
       type:      "device",
@@ -95,6 +113,8 @@
       req_fifo_pass: false,
       rsp_fifo_pass: false,
     },
+    // Return and examine whether this path
+    // latency can be improved.
     { name:      "flash_ctrl.mem",
       type:      "device",
       clock:     "clk_main_i",
@@ -184,13 +204,14 @@
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
-      pipeline: false
+      req_fifo_pass: false,
+      rsp_fifo_pass: false,
     },
     { name:      "sram_ctrl_main.ram",
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
-      pipeline: false
+      pipeline:  false
     },
   ],
   connections: {
