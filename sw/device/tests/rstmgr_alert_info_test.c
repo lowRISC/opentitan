@@ -580,7 +580,9 @@ static void collect_alert_dump_and_compare(test_round_t round) {
   }
 
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_CLASSES; ++i) {
-    CHECK(kExpectedInfo[round].alert_info.class_accum_cnt[i] ==
+    // We cannot do an "equal" check here since some of the alerts may
+    // be fatal and cause the accumulated count to continuously grow.
+    CHECK(kExpectedInfo[round].alert_info.class_accum_cnt[i] <=
               actual_info.class_accum_cnt[i],
           "alert_info.class_accum_cnt[%d] mismatch exp:0x%x  obs:0x%x", i,
           kExpectedInfo[round].alert_info.class_accum_cnt[i],
