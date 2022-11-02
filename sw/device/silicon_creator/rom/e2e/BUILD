@@ -11,7 +11,7 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
-load("//rules:const.bzl", "CONST", "hex")
+load("//rules:const.bzl", "CONST", "error_redact", "hex")
 load(
     "//rules:opentitan.bzl",
     "opentitan_flash_binary",
@@ -1161,103 +1161,99 @@ test_suite(
 )
 
 # Shutdown Redact Test
-
-# Generate special OTP images
-# For DEV, PROD, and PROD_END, cycle through ROM_ERROR_REPORTING OTP item
-
-LC_STATES = [
-    "test_unlocked0",
-    "rma",
-    "dev",
-    "prod",
-    "prod_end",
+# TODO: Add invalid option
+[
+    otp_json(
+        name = "otp_json_{}_overlay".format(k.lower()),
+        partitions = [
+            otp_partition(
+                name = "OWNER_SW_CFG",
+                items = {
+                    "OWNER_SW_CFG_ROM_ERROR_REPORTING": "0x{}".format(hex(v)),
+                },
+            ),
+        ],
+    )
+    for k, v in structs.to_dict(CONST.SHUTDOWN.REDACT).items()
 ]
 
-# The LC states in which redaction is enabled. In all other states, there
-# should be no redaction.
-REDACTION_LC_STATES = [
-    "dev",
-    "prod",
-    "prod_end",
-]
-
-[otp_json(
-    name = "otp_json_{}_overlay".format(k.lower()),
-    partitions = [
-        otp_partition(
-            name = "OWNER_SW_CFG",
-            items = {
-                "OWNER_SW_CFG_ROM_ERROR_REPORTING": v,
-            },
-        ),
-    ],
-) for k, v in structs.to_dict(CONST.SHUTDOWN.REDACT).items()]
-
-otp_imgs = [
+[
     otp_image(
-        name = "img_{}_{}".format(lc_state, er_val),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        name = "img_{}_{}".format(
+            lc_state.lower(),
+            redact.lower(),
+        ),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
         overlays = [
             "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
-            ":otp_json_{}_overlay".format(er_val),
+            ":otp_json_{}_overlay".format(redact.lower()),
         ],
         tags = ["vivado"],
         visibility = ["//visibility:private"],
     )
-    for lc_state in LC_STATES
-    for er_val in ERROR_REDACT_VALUES.keys()
+    for lc_state in structs.to_dict(CONST.LCV)
+    for redact in structs.to_dict(CONST.SHUTDOWN.REDACT)
 ]
 
-# Splice OTP images into bitstreams
 [
     bitstream_splice(
-        name = "bitstream_{}_{}".format(lc_state, er_val),
+        name = "bitstream_{}_{}".format(
+            lc_state.lower(),
+            redact.lower(),
+        ),
         src = "//hw/bitstream:rom",
-        data = ":img_{}_{}".format(lc_state, er_val),
+        data = ":img_{}_{}".format(
+            lc_state.lower(),
+            redact.lower(),
+        ),
         meminfo = "//hw/bitstream:otp_mmi",
         tags = ["vivado"],
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
-    for lc_state in LC_STATES
-    for er_val in ERROR_REDACT_VALUES.keys()
+    for lc_state in structs.to_dict(CONST.LCV)
+    for redact in structs.to_dict(CONST.SHUTDOWN.REDACT)
 ]
 
-# Assemble the test cases:
-# (lc_state, er_val, bitstream_target, expected BFV)
-test_cases = [
-    (
-        lc_state,
-        er_val,
-        ":bitstream_{}_{}".format(lc_state, er_val),
-        BFV_VALS[er_val if lc_state in REDACTION_LC_STATES else "none"],
-    )
-    for lc_state in LC_STATES
-    for er_val in ERROR_REDACT_VALUES.keys()
-]
-
-[opentitan_functest(
-    name = "e2e_shutdown_redact_{}_{}".format(lc, er),
-    srcs = ["empty_test.c"],
-    cw310 = cw310_params(
-        bitstream = bitstream_target,
-        exit_failure = MSG_PASS,
-        exit_success = MSG_TEMPLATE_BFV.format(bfv_val),
-        tags = [
-            "vivado",
+[
+    opentitan_functest(
+        name = "e2e_shutdown_redact_{}_{}".format(
+            lc_state.lower(),
+            redact.lower(),
+        ),
+        srcs = ["empty_test.c"],
+        cw310 = cw310_params(
+            bitstream = "bitstream_{}_{}".format(
+                lc_state.lower(),
+                redact.lower(),
+            ),
+            exit_failure = MSG_PASS,
+            exit_success = MSG_TEMPLATE_BFV.format(hex(error_redact(
+                CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER,
+                lc_state_val,
+                redact_val,
+            ))),
+            tags = [
+                "vivado",
+            ],
+        ),
+        signed = False,
+        targets = ["cw310_rom"],
+        deps = [
+            "//sw/device/lib/testing/test_framework:ottf_main",
         ],
-    ),
-    signed = False,
-    targets = ["cw310_rom"],
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-) for lc, er, bitstream_target, bfv_val in test_cases]
+    )
+    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
+    for redact, redact_val in structs.to_dict(CONST.SHUTDOWN.REDACT).items()
+]
 
 test_suite(
     name = "rom_e2e_shutdown_redact",
     tags = ["manual"],
-    tests = ["e2e_shutdown_redact_{}_{}".format(lc, er) for lc, er, _, _ in test_cases],
+    tests = ["e2e_shutdown_redact_{}_{}".format(
+        lc_state.lower(),
+        redact.lower(),
+    ) for lc_state in structs.to_dict(CONST.LCV) for redact in structs.to_dict(CONST.SHUTDOWN.REDACT)],
 )
