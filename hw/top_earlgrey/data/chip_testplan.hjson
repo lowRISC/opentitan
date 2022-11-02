@@ -2235,14 +2235,13 @@
       name: chip_sw_csrng_edn_cmd
       desc: '''Verify incoming command interface from EDN.
 
-            - Have each EDN instance issue an instantiate command to CSRNG.
-            - When done, verify the reception of cmd req done interrupt.
+            - Have each EDN instance issue an instantiate, reseed and generate command to CSRNG.
+            - On each command done, verify the reception of edn cmd req done interrupt.
+            - Run OTBN randomness test to test the output from EDN0 and EDN1.
             - Check the data returned to EDN via connectivity assertion checks.
-            - TODO: explore the ability to generate predictable data and verify the received value.
-            Details TBD.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_entropy_src_csrng"]
     }
     {
       name: chip_sw_csrng_fuse_en_sw_app_read

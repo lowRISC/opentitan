@@ -284,9 +284,9 @@ dif_result_t dif_edn_get_status(const dif_edn_t *edn, dif_edn_status_t flag,
  * Queries the EDN error flags.
  *
  * @param edn An EDN handle.
- * @param unhealthy_fifos Bitset of FIFOs in an unhealthy state; indices are
- * `dif_edn_fifo_t`.
- * @param errors Bitset of errors relating to the above FIFOs; indices are
+ * @param[out] unhealthy_fifos Bitset of FIFOs in an unhealthy state; indices
+ * are `dif_edn_fifo_t`.
+ * @param[out] errors Bitset of errors relating to the above FIFOs; indices are
  * `dif_edn_error_t`.
  * @return The result of the operation.
  */
