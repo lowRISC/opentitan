@@ -612,5 +612,99 @@ bool test_main(void) {
     test_step_cnt++;
   }
 
+  /* TEST PHASE #2: TEST THE FATAL ALERTS (DV-only)
+
+    Use the same alert handler config from the previous phase:
+      - The timeout value is set to 256.
+      - All peripherals' alerts are enabled and locked.
+      - None of the alerts should trigger ping_timeout_alert
+
+    TEST:
+    for_each_peripheral
+      1- Wait for random time
+      2- Enable the peripheral's clock
+      3- Trigger the peripheral's fatal alert
+      4- Disable the peripheral's clock
+      5- Wait for 1ms
+      6- Enable the peripheral's clock
+      7- Confirm that fatal_alert is still there
+  */
+
+
+  while (test_step_cnt < 3 * ARRAYSIZE(kPeripherals)) {
+    // Run this test phase only in DV sim
+    if (kDeviceType == kDeviceSimDV) {
+      // Read the test_step_cnt and compute the test phase
+      // amd the peripheral ID to test
+      test_phase = test_step_cnt / ARRAYSIZE(kPeripherals);
+      peri_idx = test_step_cnt - (test_phase)*ARRAYSIZE(kPeripherals);
+
+      // Wait for a random time <= 1024 cycles
+      get_rand_words(&ibex, /*number of words*/ 1, &rnd_wait_time,
+                    /*max*/ 1 << 10);
+      busy_spin_micros(rnd_wait_time);
+
+      // Enable the clock of the peripheral just in case
+      set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleEnabled);
+      // Wait for 100us
+      busy_spin_micros(100 * 1);
+
+      // THIS PART SHOULD BE IMPLEMENTED BY SystemVerilog
+      // bilgiday: I KEEP THE FOLLOWING CODE 
+      // bilgiday: TO ILLUSTRATE WHAT I AM TRYING TO ACHIVE.
+      // SEE THIS DISCUSSION
+      // https://github.com/lowRISC/opentitan/pull/14858#discussion_r993874235
+      // Trigger the fatal alert via ALERT_TEST_REG of the peripheral
+      uint32_t alert_test_reg = bitfield_bit32_write(
+          0, kPeripherals[peri_idx].fatal_alert_bit, kDifToggleEnabled);
+      mmio_region_t base_addr =
+          mmio_region_from_addr(kPeripherals[peri_idx].base);
+      mmio_region_write32(base_addr, kPeripherals[peri_idx].offset,
+                          alert_test_reg);
+      
+      // Check if the alert is really triggered
+      CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+          &alert_handler, kPeripherals[peri_idx].alert_ids[0], &is_cause));
+      CHECK(is_cause, "is_cause for alert[%d] should be 1 but we got 0",
+            kPeripherals[peri_idx].alert_ids[0]);
+      
+      // Disable the clock of the peripheral
+      set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleDisabled);
+
+      // Clear the alert_handler.ALERT_CAUSE bit before re-enabling the clocks
+      CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+          &alert_handler, kPeripherals[peri_idx].alert_ids[0]));
+      // Verify that ALERT_CAUSE is actually cleared
+      CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+          &alert_handler, kPeripherals[peri_idx].alert_ids[0], &is_cause));
+      CHECK(!is_cause, "is_cause for alert[%d] should be 0 but we got 1",
+            kPeripherals[peri_idx].alert_ids[0]);
+
+      // Wait for 1000us
+      busy_spin_micros(100 * 10);
+
+      // Enable the clock of the peripheral
+      set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleEnabled);
+      // Wait for 100us
+      busy_spin_micros(100 * 1);
+
+
+      // Check if the fatal alert is still there
+      CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+          &alert_handler, kPeripherals[peri_idx].alert_ids[0], &is_cause));
+      CHECK(is_cause, "is_cause should be 1 but we got %d", is_cause);
+      // Increment the test counter
+      test_step_cnt++;
+    } else {
+      // TODO: This is only for testing the counters on the FPGA. 
+      // TODO: Remove it in the final version.  
+      // Increment the test counter
+      test_phase = test_step_cnt / ARRAYSIZE(kPeripherals);
+      peri_idx = test_step_cnt - (test_phase)*ARRAYSIZE(kPeripherals);
+      test_step_cnt++;
+      LOG_INFO("step_cnt = %d, phase = %d, peri_idx = %d", test_step_cnt, test_phase, peri_idx);
+    }
+  }
+
   return true;
 }
