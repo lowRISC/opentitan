@@ -637,35 +637,104 @@ SIGVERIFY_MOD_EXP_CASES = [
     {
         "name": "sw",
         "use_sw_rsa_verify": CONST.TRUE,
-        "exit_success": MSG_PASS,
+        "exit_success": {lc_state.lower(): MSG_PASS for lc_state in structs.to_dict(CONST.LCV)},
     },
-    # TODO(#14481): Enable after OTP splicing is ready.
     # TODO: Consider using a custom binary that prints the OTP item.
-    # {
-    #     "name": "otbn",
-    #     "use_sw_rsa_verify": CONST.FALSE,
-    #     "exit_success": MSG_PASS,
-    # },
-    # {
-    #     "name": "invalid",
-    #     "use_sw_rsa_verify": 0,
-    #     "exit_success": MSG_TEMPLATE_BFV.format(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION),
-    # },
+    {
+        "name": "otbn",
+        "use_sw_rsa_verify": CONST.FALSE,
+        "exit_success": {lc_state.lower(): MSG_PASS for lc_state in structs.to_dict(CONST.LCV)},
+    },
+    {
+        "name": "invalid",
+        "use_sw_rsa_verify": 0,
+        "exit_success": {
+            lc_state.lower(): MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_PASS
+            for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
+        },
+    },
 ]
 
-[opentitan_functest(
-    name = "sigverify_mod_exp_{}".format(t["name"]),
-    cw310 = cw310_params(
-        exit_success = t["exit_success"],
-    ),
-    ot_flash_binary = ":empty_test_slot_a",
-    targets = ["cw310_rom"],
-) for t in SIGVERIFY_MOD_EXP_CASES]
+[
+    otp_json(
+        name = "otp_json_sigverify_mod_exp_{}".format(t["name"]),
+        partitions = [
+            otp_partition(
+                name = "CREATOR_SW_CFG",
+                items = {"CREATOR_SW_CFG_USE_SW_RSA_VERIFY": "0x{}".format(hex(t["use_sw_rsa_verify"]))},
+            ),
+        ],
+    )
+    for t in SIGVERIFY_MOD_EXP_CASES
+]
+
+[
+    otp_image(
+        name = "otp_img_sigverify_mod_exp_{}_{}".format(
+            lc_state.lower(),
+            t["name"],
+        ),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
+        overlays = [
+            "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+            ":otp_json_sigverify_mod_exp_{}".format(t["name"]),
+        ],
+        visibility = ["//visibility:private"],
+    )
+    for lc_state in structs.to_dict(CONST.LCV)
+    for t in SIGVERIFY_MOD_EXP_CASES
+]
+
+[
+    bitstream_splice(
+        name = "bitstream_sigverify_mod_exp_{}_{}".format(
+            lc_state.lower(),
+            t["name"],
+        ),
+        src = "//hw/bitstream:rom",
+        data = ":otp_img_sigverify_mod_exp_{}_{}".format(
+            lc_state.lower(),
+            t["name"],
+        ),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = ["vivado"],
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for lc_state in structs.to_dict(CONST.LCV)
+    for t in SIGVERIFY_MOD_EXP_CASES
+]
+
+[
+    opentitan_functest(
+        name = "sigverify_mod_exp_{}_{}".format(
+            lc_state.lower(),
+            t["name"],
+        ),
+        cw310 = cw310_params(
+            bitstream = ":bitstream_sigverify_mod_exp_{}_{}".format(
+                lc_state.lower(),
+                t["name"],
+            ),
+            exit_success = t["exit_success"][lc_state.lower()],
+            tags = ["vivado"],
+        ),
+        ot_flash_binary = ":empty_test_slot_a",
+        targets = ["cw310_rom"],
+    )
+    for lc_state in structs.to_dict(CONST.LCV)
+    for t in SIGVERIFY_MOD_EXP_CASES
+]
 
 test_suite(
-    name = "sigverify_mod_exp",
+    name = "rom_e2e_sigverify_mod_exp",
     tags = ["manual"],
-    tests = ["sigverify_mod_exp_{}".format(t["name"]) for t in SIGVERIFY_MOD_EXP_CASES],
+    tests = ["sigverify_mod_exp_{}_{}".format(
+        lc_state.lower(),
+        t["name"],
+    ) for lc_state in structs.to_dict(CONST.LCV) for t in SIGVERIFY_MOD_EXP_CASES],
 )
 
 BOOT_POLICY_BAD_MANIFEST_CASES = [
