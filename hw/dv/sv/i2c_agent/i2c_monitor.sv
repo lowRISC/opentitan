@@ -39,8 +39,7 @@ class i2c_monitor extends dv_base_monitor #(
         begin: iso_fork
           fork
             begin
-              if (cfg.if_mode == Device) collect_device_item(phase);
-              else collect_host_item(phase);
+              collect_thread(phase);
             end
             begin // if (on-the-fly) reset is monitored, drop the item
               wait_for_reset_and_drop_item();
@@ -54,13 +53,8 @@ class i2c_monitor extends dv_base_monitor #(
     end
   endtask : run_phase
 
-  // collect transactions for 'target mode' dut.
-  virtual protected task collect_host_item(uvm_phase phase);
-    //TBD
-  endtask
-
-  // collect transactions for 'host mode' dut.
-  virtual protected task collect_device_item(uvm_phase phase);
+  // collect transactions forever
+  virtual protected task collect_thread(uvm_phase phase);
     i2c_item full_item;
     wait(cfg.en_monitor);
     if (mon_dut_item.stop ||
@@ -87,7 +81,7 @@ class i2c_monitor extends dv_base_monitor #(
           full_item.sprint()), UVM_DEBUG)
     end
     mon_dut_item.clear_data();
-  endtask: collect_device_item
+  endtask: collect_thread
 
   virtual protected task address_thread();
     i2c_item clone_item;
@@ -97,19 +91,19 @@ class i2c_monitor extends dv_base_monitor #(
     mon_dut_item.tran_id = num_dut_tran;
     for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
       cfg.vif.get_bit_data("host", cfg.timing_cfg, mon_dut_item.addr[i]);
-      `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]), UVM_HIGH)
     end
-    `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_HIGH)
     cfg.vif.get_bit_data("host", cfg.timing_cfg, rw_req);
-    `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", rw_req), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", rw_req), UVM_HIGH)
     mon_dut_item.bus_op = (rw_req) ? BusOpRead : BusOpWrite;
     // get ack after transmitting address
     mon_dut_item.drv_type = DevAck;
     `downcast(clone_item, mon_dut_item.clone());
-    `uvm_info(`gfn, $sformatf("Req analysis port: address thread"), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Req analysis port: address thread"), UVM_HIGH)
     req_analysis_port.write(clone_item);
     cfg.vif.wait_for_device_ack(cfg.timing_cfg);
-    `uvm_info(`gfn, "\nmonitor, address, detect TARGET ACK", UVM_MEDIUM)
+    `uvm_info(`gfn, "\nmonitor, address, detect TARGET ACK", UVM_HIGH)
   endtask : address_thread
 
   virtual protected task read_thread();

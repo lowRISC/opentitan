@@ -26,7 +26,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand uint                   num_wr_bytes;
   rand uint                   num_rd_bytes;
   rand uint                   num_data_ovf;
-  rand bit                    rw_bit; // 0 write, 1 read
+  rand bit                    rw_bit;
   rand bit   [7:0]            wr_data[$];
   rand bit   [9:0]            addr;  // support both 7-bit and 10-bit target address
   rand bit   [6:0]            target_addr0;  // Target Address 0
@@ -173,10 +173,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     }
   }
 
-  constraint rw_bit_c {
-    (cfg.trans_type == ReadOnly) -> rw_bit == 1;
-    (cfg.trans_type == WriteOnly) -> rw_bit == 0;
-  }
   `uvm_object_new
 
   virtual task pre_start();
