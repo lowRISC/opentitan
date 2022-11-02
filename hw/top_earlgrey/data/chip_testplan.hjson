@@ -1500,7 +1500,7 @@
               up from sleep modes.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_alert_handler_lpg_sleep_mode_pings"]
     }
     {
       name: chip_sw_alert_handler_lpg_clock_off
