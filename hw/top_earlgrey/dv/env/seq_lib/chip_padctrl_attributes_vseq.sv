@@ -163,11 +163,6 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     }
   }
 
-  virtual task post_apply_reset(string reset_kind = "HARD");
-    super.post_apply_reset(reset_kind);
-    `DV_WAIT(cfg.chip_vif.rom_ctrl_done)
-  endtask
-
   virtual task body();
     cfg.chip_vif.chip_padctrl_attributes_test_sva_disable = 1;
     // TODO: remove later, once default pulls on straps are refactored.
