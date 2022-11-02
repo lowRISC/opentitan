@@ -112,6 +112,12 @@ class edn_base_vseq extends cip_base_vseq #(
       csr_wr(.ptr(ral.regwen), .value(0));
       csr_wr(.ptr(ral.ctrl), .value($urandom));
     end
+
+    // Read and check ctrl register value. Check in scb.
+    if ($urandom_range(0, 19) == 19 || set_regwen) begin
+      bit [TL_DW-1:0] val;
+      csr_rd(.ptr(ral.ctrl), .value(val));
+    end
   endtask
 
   virtual task dut_shutdown();
