@@ -14,7 +14,7 @@ class i2c_base_seq extends dv_base_seq #(
   REQ req_q[$];
 
   // data to be sent to target dut
-  bit [7:0] data_q[$];
+  rand bit [7:0] data_q[$];
 
   // Stops running this sequence
   protected bit stop;

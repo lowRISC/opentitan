@@ -52,6 +52,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   // TODO: drive_host_item is WiP
   virtual task drive_host_item(i2c_item req);
+     `JDBG(("drv: %s", req.drv_type.name))
      unique case (req.drv_type)
       HostStart: begin
         cfg.vif.host_start(cfg.timing_cfg);

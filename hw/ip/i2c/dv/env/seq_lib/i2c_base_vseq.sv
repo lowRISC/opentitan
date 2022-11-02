@@ -214,10 +214,12 @@ class i2c_base_vseq extends cip_base_vseq #(
     i2c_base_seq m_base_seq;
 
     cfg.m_i2c_agent_cfg.if_mode = mode;
+    cfg.m_i2c_agent_cfg.mon_start = 1;
+     
     `uvm_info(`gfn, $sformatf("\n  initialize agent in mode %s", mode.name()), UVM_DEBUG)
     if (mode == Host) begin
-      // stop re-active seq when the agent switches to Host mode
-      p_sequencer.i2c_sequencer_h.stop_sequences();
+//      // stop re-active seq when the agent switches to Host mode
+//      p_sequencer.i2c_sequencer_h.stop_sequences();
     end else begin
       m_base_seq = i2c_base_seq::type_id::create("m_base_seq");
       `uvm_info(`gfn, $sformatf("\n  start i2c_sequence %s",
@@ -356,7 +358,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     // configure i2c_agent_cfg
     cfg.m_i2c_agent_cfg.timing_cfg = timing_cfg;
     `uvm_info(`gfn, $sformatf("\n  cfg.m_i2c_agent_cfg.timing_cfg\n%p",
-        cfg.m_i2c_agent_cfg.timing_cfg), UVM_DEBUG)
+        cfg.m_i2c_agent_cfg.timing_cfg), UVM_MEDIUM)
 
     //*** program ilvl
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmtilvl)

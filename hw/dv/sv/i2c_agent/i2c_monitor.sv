@@ -33,7 +33,10 @@ class i2c_monitor extends dv_base_monitor #(
   endtask : wait_for_reset_and_drop_item
 
   virtual task run_phase(uvm_phase phase);
-    wait(cfg.vif.rst_ni);
+//    wait(cfg.vif.rst_ni);
+     wait(cfg.mon_start);
+     
+     `JDBG(("MON: ifmode:%s", cfg.if_mode.name))
     forever begin
       fork
         begin: iso_fork
@@ -56,7 +59,7 @@ class i2c_monitor extends dv_base_monitor #(
 
   // collect transactions for 'target mode' dut.
   virtual protected task collect_host_item(uvm_phase phase);
-    //TBD
+     cfg.vif.wait_for_host_start(cfg.timing_cfg);
   endtask
 
   // collect transactions for 'host mode' dut.
@@ -74,6 +77,7 @@ class i2c_monitor extends dv_base_monitor #(
     mon_dut_item.start = 1'b1;
     // monitor address for non-chained reads
     address_thread();
+
     // monitor read/write data
     if (mon_dut_item.bus_op == BusOpRead) read_thread();
     else                                  write_thread();
@@ -86,6 +90,7 @@ class i2c_monitor extends dv_base_monitor #(
       `uvm_info(`gfn, $sformatf("\nmonitor, send full item to scb\n%s",
           full_item.sprint()), UVM_DEBUG)
     end
+
     mon_dut_item.clear_data();
   endtask: collect_device_item
 
