@@ -23,6 +23,7 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
         ("--openocd-path", ctx.file._openocd.short_path),
         ("--openocd-earlgrey-config", ctx.file._openocd_earlgrey_config.path),
         ("--openocd-jtag-adapter-config", ctx.file._openocd_jtag_adapter_config.path),
+        ("--gdb-path", ctx.file._gdb.short_path),
         ("--gdb-script-path", gdb_script_file.short_path),
         ("--bitstream-path", ctx.file.rom_bitstream.short_path),
         ("--opentitantool-path", ctx.file._opentitantool.short_path),
@@ -56,6 +57,7 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
             ctx.file._opentitantool,
             ctx.file._openocd,
             ctx.file.rom_bitstream,
+            ctx.file._gdb,
             gdb_script_file,
         ],
     ).merge(ctx.attr._coordinator.data_runfiles)
@@ -98,6 +100,11 @@ opentitan_gdb_fpga_cw310_test = rv_rule(
         ),
         "_openocd": attr.label(
             default = "//third_party/openocd:openocd_bin",
+            allow_single_file = True,
+            cfg = "exec",
+        ),
+        "_gdb": attr.label(
+            default = "@lowrisc_rv32imcb_files//:bin/riscv32-unknown-elf-gdb",
             allow_single_file = True,
             cfg = "exec",
         ),
