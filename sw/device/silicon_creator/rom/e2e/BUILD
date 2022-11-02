@@ -1203,6 +1203,7 @@ otp_imgs = [
             "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
             ":otp_json_{}_overlay".format(er_val),
         ],
+        tags = ["vivado"],
         visibility = ["//visibility:private"],
     )
     for lc_state in LC_STATES
@@ -1216,10 +1217,7 @@ otp_imgs = [
         src = "//hw/bitstream:rom",
         data = ":img_{}_{}".format(lc_state, er_val),
         meminfo = "//hw/bitstream:otp_mmi",
-        tags = [
-            "manual",
-            "vivado",
-        ],
+        tags = ["vivado"],
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
@@ -1248,7 +1246,6 @@ test_cases = [
         exit_failure = MSG_PASS,
         exit_success = MSG_TEMPLATE_BFV.format(bfv_val),
         tags = [
-            "broken",  # TODO: pending on the issues noted in #14271
             "vivado",
         ],
     ),
@@ -1260,7 +1257,7 @@ test_cases = [
 ) for lc, er, bitstream_target, bfv_val in test_cases]
 
 test_suite(
-    name = "rom_e2e_shutdown_error_redact",
-    tags = ["vivado"],
+    name = "rom_e2e_shutdown_redact",
+    tags = ["manual"],
     tests = ["e2e_shutdown_redact_{}_{}".format(lc, er) for lc, er, _, _ in test_cases],
 )
