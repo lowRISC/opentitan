@@ -66,9 +66,11 @@ SLOTS = {
     ],
     signed = True,
     deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
     ],
 ) for slot in SLOTS]
 
@@ -483,7 +485,10 @@ SEC_VERS = [
     manifest = ":manifest_sec_ver_{}".format(sec_ver),
     signed = True,
     deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
         "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
     ],
 ) for slot in SLOTS for sec_ver in SEC_VERS]
@@ -637,23 +642,39 @@ SIGVERIFY_MOD_EXP_CASES = [
     {
         "name": "sw",
         "use_sw_rsa_verify": CONST.TRUE,
-        "exit_success": {lc_state.lower(): MSG_PASS for lc_state in structs.to_dict(CONST.LCV)},
+        "exit_success": {lc_state.lower(): "use_sw_rsa_verify=0x00000739" for lc_state in structs.to_dict(CONST.LCV)},
     },
-    # TODO: Consider using a custom binary that prints the OTP item.
     {
         "name": "otbn",
         "use_sw_rsa_verify": CONST.FALSE,
-        "exit_success": {lc_state.lower(): MSG_PASS for lc_state in structs.to_dict(CONST.LCV)},
+        "exit_success": {lc_state.lower(): "use_sw_rsa_verify=0x000001d4" for lc_state in structs.to_dict(CONST.LCV)},
     },
     {
         "name": "invalid",
         "use_sw_rsa_verify": 0,
         "exit_success": {
-            lc_state.lower(): MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_PASS
+            lc_state.lower(): MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else "use_sw_rsa_verify=0x00000000"
             for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
         },
     },
 ]
+
+opentitan_flash_binary(
+    name = "empty_test_sigverify_mod_exp",
+    srcs = ["empty_test.c"],
+    devices = ["fpga_cw310"],
+    local_defines = [
+        shell.quote("EMPTY_TEST_MSG=\"use_sw_rsa_verify=0x%08x\", otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET)"),
+    ],
+    signed = True,
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    ],
+)
 
 [
     otp_json(
@@ -721,7 +742,7 @@ SIGVERIFY_MOD_EXP_CASES = [
             exit_success = t["exit_success"][lc_state.lower()],
             tags = ["vivado"],
         ),
-        ot_flash_binary = ":empty_test_slot_a",
+        ot_flash_binary = ":empty_test_sigverify_mod_exp",
         targets = ["cw310_rom"],
     )
     for lc_state in structs.to_dict(CONST.LCV)
@@ -876,7 +897,10 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
     )),
     signed = True,
     deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
         "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
     ],
 ) for t in BOOT_POLICY_BAD_MANIFEST_CASES for slot in SLOTS]
@@ -1346,7 +1370,10 @@ REDACT.update({"INVALID": 0x0})
         signed = False,
         targets = ["cw310_rom"],
         deps = [
+            "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:otp",
         ],
     )
     for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()

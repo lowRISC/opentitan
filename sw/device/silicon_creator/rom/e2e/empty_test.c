@@ -7,7 +7,10 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
+
+#include "otp_ctrl_regs.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
