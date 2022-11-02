@@ -152,6 +152,24 @@ module prim_edn_req
   // Assertions //
   ////////////////
 
+  // Check EDN data is valid: Not all zeros, all ones, or not the same as previous data.
+`ifdef INC_ASSERT
+  logic [OutWidth-1:0] data_prev, data_curr;
+
+  always_ff @(posedge ack_o or negedge rst_ni) begin
+    if (!rst_ni) begin
+      data_prev <= '0;
+      data_curr <= '0;
+    end else if (ack_o) begin
+      data_curr <= data_o;
+      data_prev <= data_curr;
+    end
+  end
+
+  `ASSERT(DataOutputValid_A, ack_o |-> (data_o != 0) && (data_o != '1))
+  `ASSERT(DataOutputDiffFromPrev_A, data_prev != 0 |-> data_prev != data_o)
+`endif
+
   // EDN Max Latency Checker
 `ifndef SYNTHESIS
   if (MaxLatency != 0) begin: g_maxlatency_assertion
