@@ -9,7 +9,7 @@ use std::path::PathBuf;
 
 use anyhow::{bail, Result};
 
-use serde_annotate::{serialize, Annotate};
+use serde_annotate::{Base, serialize, Annotate};
 
 use structopt::StructOpt;
 
@@ -79,7 +79,7 @@ impl CommandDispatch for AlertDigest {
 
         // Construct OTP image overlay.
         let img_out = OtpImg {
-            seed: None,
+            seed: Some(0xabcd),
             partitions: vec![OtpImgPartition {
                 name: self.partition.clone(),
                 items: Some(vec![OtpImgItem {
@@ -89,12 +89,14 @@ impl CommandDispatch for AlertDigest {
             }],
         };
 
+        let out_str = serialize(&img_out)?.to_json5().strict_numeric_limits(false).bases(&[Base::Hex]).to_string();
+
         if let Some(output) = &self.output {
             let mut file = File::create(&output)?;
-            file.write_all(serialize(&img_out)?.to_json().to_string().as_bytes())?;
+            file.write_all(out_str.as_bytes())?;
             Ok(None)
         } else {
-            Ok(Some(Box::new(img_out)))
+            Ok(Some(Box::new(out_str)))
         }
     }
 }

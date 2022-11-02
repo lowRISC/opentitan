@@ -12,7 +12,9 @@ use anyhow::{anyhow, bail, Result};
 use serde::de::{self, Unexpected};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Debug, PartialEq, Eq)]
+use serde_annotate::Annotate;
+
+#[derive(Annotate, Serialize, Debug, PartialEq, Eq)]
 #[serde(untagged)]
 pub enum OtpImgValue {
     Word(u64),
@@ -90,21 +92,23 @@ impl<'de> Deserialize<'de> for OtpImgValue {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImgItem {
     pub name: String,
+    #[annotate(format = hex)]
     pub value: OtpImgValue,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImgPartition {
     pub name: String,
     pub items: Option<Vec<OtpImgItem>>,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Annotate, Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct OtpImg {
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[annotate(format = hex)]
     pub seed: Option<u64>,
     pub partitions: Vec<OtpImgPartition>,
 }
@@ -171,9 +175,7 @@ impl std::str::FromStr for OtpImg {
 mod tests {
     use super::*;
     use std::str::FromStr;
-
     use serde_annotate::serialize;
-
     use lazy_static::lazy_static;
 
     const TEST_OTP_JSON: &str = r#"
@@ -250,7 +252,8 @@ mod tests {
 
     #[test]
     fn test_ser() {
-        let json = serialize(&*TEST_OTP).unwrap().to_hjson().to_string();
+        //let json = serialize(&*TEST_OTP).unwrap().to_hjson().to_string();
+        let json = serialize(&*TEST_OTP).unwrap().to_hjson().bases(&[serde_annotate::integer::Base::Hex]).to_string();
         let json_str = "{
   partitions: [
     {
