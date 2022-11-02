@@ -26,12 +26,12 @@ module tlul_socket_m1 #(
   parameter int unsigned  M         = 4,
   parameter bit [M-1:0]   HReqPass  = {M{1'b1}},
   parameter bit [M-1:0]   HRspPass  = {M{1'b1}},
-  parameter bit [M*4-1:0] HReqDepth = {M{4'h2}},
-  parameter bit [M*4-1:0] HRspDepth = {M{4'h2}},
+  parameter bit [M*4-1:0] HReqDepth = {M{4'h1}},
+  parameter bit [M*4-1:0] HRspDepth = {M{4'h1}},
   parameter bit           DReqPass  = 1'b1,
   parameter bit           DRspPass  = 1'b1,
-  parameter bit [3:0]     DReqDepth = 4'h2,
-  parameter bit [3:0]     DRspDepth = 4'h2
+  parameter bit [3:0]     DReqDepth = 4'h1,
+  parameter bit [3:0]     DRspDepth = 4'h1
 ) (
   input                     clk_i,
   input                     rst_ni,

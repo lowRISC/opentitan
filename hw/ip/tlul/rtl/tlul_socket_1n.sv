@@ -47,10 +47,10 @@ module tlul_socket_1n #(
   parameter bit           HRspPass     = 1'b1,
   parameter bit [N-1:0]   DReqPass     = {N{1'b1}},
   parameter bit [N-1:0]   DRspPass     = {N{1'b1}},
-  parameter bit [3:0]     HReqDepth    = 4'h2,
-  parameter bit [3:0]     HRspDepth    = 4'h2,
-  parameter bit [N*4-1:0] DReqDepth    = {N{4'h2}},
-  parameter bit [N*4-1:0] DRspDepth    = {N{4'h2}},
+  parameter bit [3:0]     HReqDepth    = 4'h1,
+  parameter bit [3:0]     HRspDepth    = 4'h1,
+  parameter bit [N*4-1:0] DReqDepth    = {N{4'h1}},
+  parameter bit [N*4-1:0] DRspDepth    = {N{4'h1}},
   parameter bit           ExplicitErrs = 1'b1,
 
   // The width of dev_select_i. We must be able to select any of the N devices

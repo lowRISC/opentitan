@@ -992,8 +992,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqDepth (4'h0),
-    .DRspDepth (4'h0),
+    .DReqPass  (1'b0),
+    .DRspPass  (1'b0),
     .M         (2)
   ) u_sm1_33 (
     .clk_i        (clk_main_i),
@@ -1296,8 +1296,8 @@ end
   tlul_socket_m1 #(
     .HReqDepth (8'h0),
     .HRspDepth (8'h0),
-    .DReqDepth (4'h0),
-    .DRspDepth (4'h0),
+    .DReqPass  (1'b0),
+    .DRspPass  (1'b0),
     .M         (2)
   ) u_sm1_55 (
     .clk_i        (clk_main_i),

@@ -162,11 +162,11 @@ def process_pipeline(xbar):
             if full_fifo:
                 dnode.hreq_pass = 0
                 dnode.hrsp_pass = 0
-                dnode.hdepth = 2
+                dnode.hdepth = 1
             elif fifo_passthru:
                 dnode.hreq_pass = req_pass
                 dnode.hrsp_pass = rsp_pass
-                dnode.hdepth = 2
+                dnode.hdepth = 1
             elif full_passthru:
                 dnode.hreq_pass = 1
                 dnode.hrsp_pass = 1
@@ -184,12 +184,12 @@ def process_pipeline(xbar):
             dnode.hreq_pass = dnode.hreq_pass & ~(1 << idx)
             if full_fifo:
                 log.info("fifo present no bypass")
-                dnode.hdepth = dnode.hdepth | (2 << idx * 4)
+                dnode.hdepth = dnode.hdepth | (1 << idx * 4)
             elif fifo_passthru:
                 log.info("fifo present with bypass")
                 dnode.hreq_pass = dnode.hreq_pass | (req_pass << idx)
                 dnode.hreq_pass = dnode.hrsp_pass | (rsp_pass << idx)
-                dnode.hdepth = dnode.hdepth | (2 << idx * 4)
+                dnode.hdepth = dnode.hdepth | (1 << idx * 4)
             elif full_passthru:
                 log.info("fifo not present")
                 dnode.hreq_pass = dnode.hreq_pass | (1 << idx)
@@ -241,11 +241,11 @@ def process_pipeline(xbar):
             unode.dreq_pass = unode.dreq_pass & ~(1 << idx)
             unode.drsp_pass = unode.drsp_pass & ~(1 << idx)
             if full_fifo:
-                unode.ddepth = unode.ddepth | (2 << idx * 4)
+                unode.ddepth = unode.ddepth | (1 << idx * 4)
             elif fifo_passthru:
                 unode.dreq_pass = unode.dreq_pass | (req_pass << idx)
                 unode.drsp_pass = unode.drsp_pass | (rsp_pass << idx)
-                unode.ddepth = unode.ddepth | (2 << idx * 4)
+                unode.ddepth = unode.ddepth | (1 << idx * 4)
             elif full_passthru:
                 unode.dreq_pass = unode.dreq_pass | (1 << idx)
                 unode.drsp_pass = unode.drsp_pass | (1 << idx)
@@ -259,12 +259,12 @@ def process_pipeline(xbar):
                 log.info("Fifo present with no passthrough")
                 unode.dreq_pass = 0
                 unode.drsp_pass = 0
-                unode.ddepth = 2
+                unode.ddepth = 1
             elif fifo_passthru:
                 log.info("Fifo present with passthrough")
                 unode.dreq_pass = req_pass
                 unode.drsp_pass = rsp_pass
-                unode.ddepth = 2
+                unode.ddepth = 1
             elif full_passthru:
                 log.info("No Fifo")
                 unode.dreq_pass = 1
