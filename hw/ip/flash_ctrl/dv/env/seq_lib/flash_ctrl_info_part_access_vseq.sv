@@ -60,7 +60,7 @@ class flash_ctrl_info_part_access_vseq extends flash_ctrl_hw_sec_otp_vseq;
                                          flash_op inside {FlashOpProgram, FlashOpErase};)
     end
 
-    sig = get_rand_lc_tx_val(.t_weight(1), .f_weight(1), .other_weight(4));
+    sig = get_rand_lc_tx_val(.t_weight(1), .f_weight(1), .other_weight(8));
     is_valid = is_lc_ctrl_valid(sig);
     cfg.clk_rst_vif.wait_clks(4);
     `uvm_info(`gfn, $sformatf("Check sig:0x%x(is_valid:%0d) part:%s op:%s testtype:%s",

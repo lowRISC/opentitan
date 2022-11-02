@@ -167,6 +167,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
                                         flash_mp_region_cfg_t region_cfg = cfg.default_region_cfg);
     uvm_reg_data_t data;
     uvm_reg csr;
+    update_mp_region_cfg_mubifalse(region_cfg);
     data = get_csr_val_with_updated_field(ral.mp_region_cfg[index].en, data,
                                           region_cfg.en);
     data = data | get_csr_val_with_updated_field(ral.mp_region_cfg[index].rd_en, data,
@@ -238,6 +239,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     end
     `uvm_info("mp_info_page_cfg", $sformatf("%s: %p", csr_name, page_cfg), UVM_DEBUG)
     csr = ral.get_reg_by_name(csr_name);
+    update_mp_info_cfg_mubifalse(page_cfg);
     data = get_csr_val_with_updated_field(csr.get_field_by_name("en"), data, page_cfg.en);
     data = data |
         get_csr_val_with_updated_field(csr.get_field_by_name("rd_en"), data, page_cfg.read_en);
@@ -537,7 +539,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     poll_fifo_status                    = 1;
 
     // Disable HW Access to Secret Partition from Life Cycle Controller Interface (Write/Read/Erase)
-    cfg.flash_ctrl_vif.lc_seed_hw_rd_en = lc_ctrl_pkg::Off;
+    cfg.flash_ctrl_vif.lc_seed_hw_rd_en =
+        get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(9));
 
     unique case (secret_part)
       FlashCreatorPart: begin
@@ -636,10 +639,13 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     cfg.flash_ctrl_vif.lc_owner_seed_sw_rw_en   = lc_ctrl_pkg::Off;
     cfg.flash_ctrl_vif.lc_seed_hw_rd_en         = lc_ctrl_pkg::On;
 
-    cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     = lc_ctrl_pkg::Off;
-    cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     = lc_ctrl_pkg::Off;
+    cfg.flash_ctrl_vif.lc_iso_part_sw_rd_en     =
+        get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(4));
+    cfg.flash_ctrl_vif.lc_iso_part_sw_wr_en     =
+        get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(4));
 
-    cfg.flash_ctrl_vif.lc_nvm_debug_en          = lc_ctrl_pkg::Off;
+    cfg.flash_ctrl_vif.lc_nvm_debug_en          =
+        get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(4));
     cfg.flash_ctrl_vif.lc_escalate_en           = lc_ctrl_pkg::Off;
 
     cfg.flash_ctrl_vif.rma_req                  = lc_ctrl_pkg::Off;
@@ -787,7 +793,8 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
               UVM_MEDIUM)
 
     // Disable HW Access to Secret Partition from Life Cycle Controller Interface (Write/Read/Erase)
-    cfg.flash_ctrl_vif.lc_seed_hw_rd_en = lc_ctrl_pkg::Off;  // Disable Secret Partition HW Access
+    cfg.flash_ctrl_vif.lc_seed_hw_rd_en =
+        get_rand_lc_tx_val(.t_weight(0), .f_weight(1), .other_weight(4));
 
     // Select Options
     unique case (part)
@@ -1425,5 +1432,39 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
       page++;
     end
   endfunction // update_secret_partition
+
+   function void update_mp_region_cfg_mubifalse(ref flash_mp_region_cfg_t cfg);
+      if (cfg.en != MuBi4True) cfg.en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.read_en != MuBi4True) cfg.read_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.program_en != MuBi4True) cfg.program_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.erase_en != MuBi4True) cfg.erase_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.scramble_en != MuBi4True) cfg.scramble_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.ecc_en != MuBi4True) cfg.ecc_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.he_en != MuBi4True) cfg.he_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+   endfunction
+
+   function void update_mp_info_cfg_mubifalse(ref flash_bank_mp_info_page_cfg_t cfg);
+      if (cfg.en != MuBi4True) cfg.en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.read_en != MuBi4True) cfg.read_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.program_en != MuBi4True) cfg.program_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.erase_en != MuBi4True) cfg.erase_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.scramble_en != MuBi4True) cfg.scramble_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.ecc_en != MuBi4True) cfg.ecc_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+      if (cfg.he_en != MuBi4True) cfg.he_en =
+              get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(9));
+   endfunction
 
 endclass : flash_ctrl_base_vseq
