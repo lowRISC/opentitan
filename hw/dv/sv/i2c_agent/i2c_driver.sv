@@ -106,7 +106,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         rd_data_cnt++;
       end
       WrData: begin
-        // nothing to do
+        // nothing to do here at the moment
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("\n  device_driver, received invalid request"))
@@ -129,7 +129,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   endtask : process_reset
 
   virtual task release_bus();
-    `uvm_info(`gfn, "Driver released the bus", UVM_HIGH)
+    `uvm_info(`gfn, "Driver released the bus", UVM_MEDIUM)
     cfg.vif.scl_o = 1'b1;
     cfg.vif.sda_o = 1'b1;
   endtask : release_bus

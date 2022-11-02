@@ -34,16 +34,25 @@ class i2c_base_seq extends dv_base_seq #(
   virtual task send_device_mode_txn();
     // get seq for agent running in Device mode
     bit [7:0] rdata;
-    forever begin
-      p_sequencer.req_analysis_fifo.get(req);
-      // if it's a read type response, randomize the return data
-      if (req.drv_type == RdData) begin
-        `DV_CHECK_STD_RANDOMIZE_FATAL(rdata)
-        req.rdata = rdata;
+    fork
+      forever begin
+        p_sequencer.req_analysis_fifo.get(req);
+        req_q.push_back(req);
       end
-      start_item(req);
-      finish_item(req);
-    end
+      forever begin
+        wait(req_q.size > 0);
+        rsp = req_q.pop_front();
+
+        // if it's a read type response, randomize the return data
+        if (rsp.drv_type == RdData) begin
+           `DV_CHECK_STD_RANDOMIZE_FATAL(rdata)
+           rsp.rdata = rdata;
+        end
+
+        start_item(rsp);
+        finish_item(rsp);
+      end
+    join
   endtask
 
   virtual task send_host_mode_txn();

@@ -25,7 +25,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     `uvm_info(`gfn, "\n--> end of sequence", UVM_DEBUG)
   endtask : body
 
-  virtual task host_send_trans(int max_trans = 1,
+  virtual task host_send_trans(int max_trans = num_trans, tran_type_e trans_type = ReadWrite,
                                bit read = 1'b1, bit stopbyte = 1'b0);
     bit last_tran, chained_read;
 
@@ -45,9 +45,19 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           // or when the previous transaction is completed
           if (fmt_item.stop || cur_tran == 1) begin
             `DV_CHECK_RANDOMIZE_FATAL(this)
+            // if trans_type is provided, then rw_bit is overridden
+            // otherwise, rw_bit is randomized
+            rw_bit = (trans_type  == WriteOnly) ? 1'b0 :
+                     ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
             get_timing_values();
             program_registers();
           end
+
+          // if trans_type is provided, then rw_bit is overridden
+          // otherwise, rw_bit is randomized
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rw_bit)
+          rw_bit = (trans_type  == WriteOnly) ? 1'b0 :
+                   ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
 
           // program address for folowing transaction types
           chained_read = fmt_item.read && fmt_item.rcont;
@@ -59,7 +69,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
 
           last_tran = (cur_tran == max_trans);
           `uvm_info(`gfn, $sformatf("\n  start sending %s transaction %0d/%0d",
-              (rw_bit) ? "READ" : "WRITE", cur_tran, max_trans), UVM_MEDIUM)
+              (rw_bit) ? "READ" : "WRITE", cur_tran, max_trans), UVM_DEBUG)
           if (chained_read) begin
             // keep programming chained read transaction
             program_control_read_to_target(last_tran);
@@ -70,14 +80,14 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
 
           `uvm_info(`gfn, $sformatf("\n  finish sending %s transaction, %0s at the end, %0d/%0d, ",
               (rw_bit) ? "read" : "write",
-              (fmt_item.stop) ? "stop" : "rstart", cur_tran, max_trans), UVM_MEDIUM)
+              (fmt_item.stop) ? "stop" : "rstart", cur_tran, max_trans), UVM_DEBUG)
 
           // check a completed transaction is programmed to the host/dut (stop bit must be issued)
           // and check if the host/dut is in idle before allow re-programming the timing registers
           if (fmt_item.stop) begin
             wait_for_reprogram_registers();
           end
-        end // for (uint cur_tran = 1; cur_tran <= max_trans; cur_tran++)
+        end
         complete_program_fmt_fifo = 1'b1;
       end
       if (read) begin
@@ -97,13 +107,13 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       rcont == 1'b0;
     )
     if (cfg.target_addr_mode == Addr7BitMode) begin
-      fmt_item.fbyte = {addr[6:0], rw_bit};
+      fmt_item.fbyte = (rw_bit) ? {addr[6:0], BusOpRead} : {addr[6:0], BusOpWrite};
     end else begin // Addr10BitMode
-      fmt_item.fbyte = {addr[9:0], rw_bit};
+      fmt_item.fbyte = (rw_bit) ? {addr[9:0], BusOpRead} : {addr[9:0], BusOpWrite};
     end
     `uvm_info(`gfn, $sformatf("\nprogram, %s address %x",
         fmt_item.fbyte[0] ? "read" : "write", fmt_item.fbyte[7:1]), UVM_DEBUG)
-    program_format_flag(fmt_item, "  program_address_to_target", 0);
+    program_format_flag(fmt_item, "  program_address_to_target");
   endtask : program_address_to_target
 
   virtual task program_control_read_to_target(bit last_tran);
@@ -135,7 +145,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           "with STOP, next transaction should begin with START" :
           "without STOP, next transaction should begin with RSTART"), UVM_DEBUG)
     end
-    program_format_flag(fmt_item, "  program number of bytes to read", 0);
+    program_format_flag(fmt_item, "  program number of bytes to read");
   endtask : program_control_read_to_target
 
   virtual task read_data_from_target();
@@ -203,7 +213,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
             "with STOP, next transaction should begin with START" :
             "without STOP, next transaction should begin with RSTART"), UVM_DEBUG)
       end
-      program_format_flag(fmt_item, "program_write_data_to_target", 0);
+      program_format_flag(fmt_item, "program_write_data_to_target");
     end
   endtask : program_write_data_to_target
 

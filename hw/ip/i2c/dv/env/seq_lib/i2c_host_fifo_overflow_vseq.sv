@@ -56,8 +56,7 @@ class i2c_host_fifo_overflow_vseq extends i2c_rx_tx_vseq;
           // -> verify the number of received fmt_watermark interrupt
           // -> verify fmt_data dropped is performed scoreboard
           if (check_fmt_overflow) begin
-            cfg.trans_type = WriteOnly;
-            host_send_trans();
+            host_send_trans(1, WriteOnly);
             check_fmt_overflow = 1'b0;
             // number of fmt_overflow received is at most num_data_ovf
             // since fmt_fifo can be drained thus decreasing cnt_fmt_overflow counter
@@ -74,8 +73,7 @@ class i2c_host_fifo_overflow_vseq extends i2c_rx_tx_vseq;
           // -> verify the number of received rx_overflow interrupt
           // -> verify the rx_data dropped is performed in scoreboard
           if (check_rx_overflow) begin
-            cfg.trans_type = ReadOnly;
-            host_send_trans();
+            host_send_trans(1, ReadOnly);
             check_rx_overflow = 1'b0;
             if (!cfg.under_reset) begin
               `DV_CHECK_EQ(cnt_rx_overflow, 1)
