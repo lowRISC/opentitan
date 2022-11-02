@@ -255,17 +255,17 @@ mod test {
     fn byte_field_test() {
         assert_eq!(Vec::from_str("0x1"), Ok(vec![0x1]));
         assert_eq!(
-            Vec::from_str("0x4b4b4b4b4b4ba5a5"),
-            Ok(vec![0xa5, 0xa5, 0x4b, 0x4b, 0x4b, 0x4b, 0x4b, 0x4b])
+            Vec::from_str("0x0706050403020100"),
+            Ok(vec![0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07])
         );
         assert_eq!(
             u64::from_ne_bytes(
-                Vec::from_str("0x4b4b4b4b4b4ba5a5")
+                Vec::from_str("0x0706050403020100")
                     .unwrap()
                     .try_into()
                     .unwrap()
             ),
-            u64::from_str("0x4b4b4b4b4b4ba5a5").unwrap()
+            u64::from_str("0x0706050403020100").unwrap()
         );
         assert!(Vec::from_str("-1").is_err());
     }
