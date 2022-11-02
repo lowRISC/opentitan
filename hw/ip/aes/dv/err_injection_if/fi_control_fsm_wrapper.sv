@@ -10,10 +10,10 @@ module fi_control_fsm_wrapper
   import uvm_pkg::*;
   import aes_env_pkg::*;
   #( parameter string IfName = "vif"
-  )
-  ( input clk_i,
-    input rst_ni
-    );
+  ) (
+    input logic clk_i,
+    input logic rst_ni
+  );
 
   // declare interface
   fi_control_if  fi_if (.*);
