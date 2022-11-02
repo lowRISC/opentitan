@@ -1877,7 +1877,7 @@
               correctness of the detected value that was forced in the AST for each channel.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_adc_ctrl_sleep_debug_cable_wakeup"]
     }
     {
       name: chip_sw_adc_ctrl_sleep_debug_cable_wakeup
