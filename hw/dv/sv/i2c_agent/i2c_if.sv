@@ -238,6 +238,7 @@ interface i2c_if(
   endtask: host_rstart
 
   task automatic host_data(ref timing_cfg_t tc, input bit bit_i);
+      scl_o = 1'b0;
       sda_o = bit_i;
       wait_for_dly(tc.tClockLow);
       wait_for_dly(tc.tSetupBit);
