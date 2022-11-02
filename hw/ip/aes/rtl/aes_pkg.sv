@@ -171,6 +171,37 @@ typedef struct packed {
     CIPHER_CTRL_ERROR       = 6'b010111
   } aes_cipher_ctrl_e;
 
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
+  //      -s 31468618 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (57.14%)
+  //  4: ||||||||||||||| (42.86%)
+  //  5: --
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 5
+  //
+  localparam int CtrlStateWidth = 6;
+  typedef enum logic [CtrlStateWidth-1:0] {
+    CTRL_IDLE        = 6'b001001,
+    CTRL_LOAD        = 6'b100011,
+    CTRL_PRNG_UPDATE = 6'b111101,
+    CTRL_PRNG_RESEED = 6'b010000,
+    CTRL_FINISH      = 6'b100100,
+    CTRL_CLEAR_I     = 6'b111010,
+    CTRL_CLEAR_CO    = 6'b001110,
+    CTRL_ERROR       = 6'b010111
+  } aes_ctrl_e;
+
 // Generic, sparse mux selector encodings
 
 // Encoding generated with:
