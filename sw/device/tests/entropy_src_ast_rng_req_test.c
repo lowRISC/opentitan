@@ -57,7 +57,7 @@ bool test_main() {
 
   // Verify that the FIFO depth is non-zero via SW - indicating the reception of
   // data over the AST RNG interface.
-  IBEX_SPIN_FOR(read_fifo_depth(&entropy_src) > 0, 1000);
+  IBEX_SPIN_FOR(read_fifo_depth(&entropy_src) > 0, 6000);
 
   return true;
 }
