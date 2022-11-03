@@ -485,10 +485,19 @@ module rv_core_ibex
     .core_sleep_o           (core_sleep)
   );
 
+  logic core_sleep_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      core_sleep_q <= '0;
+    end else begin
+      core_sleep_q <= core_sleep;
+    end
+  end
+
   prim_buf #(
     .Width(1)
   ) u_core_sleeping_buf (
-    .in_i(core_sleep),
+    .in_i(core_sleep_q),
     .out_o(pwrmgr_o.core_sleeping)
   );
 

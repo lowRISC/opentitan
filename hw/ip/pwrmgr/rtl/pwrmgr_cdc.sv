@@ -73,7 +73,11 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   // rom_ctrl signals
   input prim_mubi_pkg::mubi4_t rom_ctrl_done_i,
-  output prim_mubi_pkg::mubi4_t rom_ctrl_done_o
+  output prim_mubi_pkg::mubi4_t rom_ctrl_done_o,
+
+  // core sleeping
+  input core_sleeping_i,
+  output logic core_sleeping_o
 
 );
 
@@ -131,7 +135,6 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .d_i    (usb_ip_clk_status_i),
     .q_o    (slow_usb_ip_clk_status_o)
   );
-
 
   // Some of the AST signals are multi-bits themselves (such as clk_val)
   // thus they need to be delayed one more stage to check for stability
@@ -237,6 +240,15 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .rst_ni,
     .d_i(slow_usb_ip_clk_en_i),
     .q_o(usb_ip_clk_en_o)
+  );
+
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_sleeping_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(core_sleeping_i),
+    .q_o(core_sleeping_o)
   );
 
   prim_pulse_sync u_scdc_sync (

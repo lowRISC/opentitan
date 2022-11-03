@@ -263,10 +263,11 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
                             prim_mubi_pkg::MuBi4True :
                             prim_mubi_pkg::MuBi4False;
 
-  mubi4_t rom_intg_chk_ok;
-  assign rom_intg_chk_ok = mubi4_or_hi(
-                               mubi4_and_hi(rom_intg_chk_dis, rom_ctrl_done_i),
-                               mubi4_and_hi(rom_ctrl_done_i, rom_ctrl_good_i));
+  mubi4_t rom_intg_chk_done;
+  mubi4_t rom_intg_chk_good;
+  assign rom_intg_chk_done = mubi4_or_hi(mubi4_and_hi(rom_intg_chk_dis, rom_ctrl_done_i),
+                                         rom_ctrl_done_i);
+  assign rom_intg_chk_good = mubi4_or_hi(rom_intg_chk_dis, rom_ctrl_good_i);
 
   always_comb begin
     otp_init = 1'b0;
@@ -350,15 +351,22 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateStrap: begin
         strap_o = ~strap_sampled;
-        state_d =  FastPwrStateRomCheck;
+        state_d =  FastPwrStateRomCheckDone;
       end
 
-      FastPwrStateRomCheck: begin
+      FastPwrStateRomCheckDone: begin
         // zero outgoing low power indication
         low_power_d = '0;
         reset_cause_d = ResetNone;
 
-        if (mubi4_test_true_strict(rom_intg_chk_ok)) begin
+        // When done is observed, advance to good check
+        if (mubi4_test_true_strict(rom_intg_chk_done)) begin
+          state_d = FastPwrStateRomCheckGood;
+        end
+      end
+
+      FastPwrStateRomCheckGood: begin
+        if (mubi4_test_true_strict(rom_intg_chk_good)) begin
           state_d = FastPwrStateActive;
         end
       end
@@ -398,7 +406,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
           ip_clk_en_d = 1'b1;
           wkup_o = 1'b1;
           fall_through_o = 1'b1;
-          state_d = FastPwrStateRomCheck;
+          state_d = FastPwrStateRomCheckDone;
         end else begin
           state_d = FastPwrStateNvmIdleChk;
         end
@@ -412,7 +420,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
           ip_clk_en_d = 1'b1;
           wkup_o = 1'b1;
           abort_o = 1'b1;
-          state_d = FastPwrStateRomCheck;
+          state_d = FastPwrStateRomCheckDone;
         end
       end
 

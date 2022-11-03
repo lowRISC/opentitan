@@ -229,6 +229,7 @@ module pwrmgr
   prim_mubi_pkg::mubi4_t rom_ctrl_done;
   prim_mubi_pkg::mubi4_t rom_ctrl_good;
 
+  logic core_sleeping;
 
   ////////////////////////////
   ///  clk_slow_i domain declarations
@@ -422,7 +423,11 @@ module pwrmgr
 
     // rom_ctrl signals
     .rom_ctrl_done_i(rom_ctrl_i.done),
-    .rom_ctrl_done_o(rom_ctrl_done)
+    .rom_ctrl_done_o(rom_ctrl_done),
+
+    // core sleeping
+    .core_sleeping_i(pwr_cpu_i.core_sleeping),
+    .core_sleeping_o(core_sleeping)
 
   );
   // rom_ctrl_i.good is not synchronized as it acts as a "payload" signal
@@ -528,7 +533,7 @@ module pwrmgr
     .ack_pwrup_o         (ack_pwrup),
     .req_pwrdn_o         (req_pwrdn),
     .ack_pwrdn_i         (ack_pwrdn),
-    .low_power_entry_i   (pwr_cpu_i.core_sleeping & low_power_hint),
+    .low_power_entry_i   (core_sleeping & low_power_hint),
     .reset_reqs_i        (peri_reqs_masked.rstreqs),
     .fsm_invalid_i       (fsm_invalid),
     .clr_slow_req_o      (clr_slow_req),

@@ -61,7 +61,7 @@ module pwrmgr_bind;
     .slow_fsm_invalid,
     .fast_state(u_fsm.state_q),
     .rom_intg_chk_dis(u_fsm.rom_intg_chk_dis),
-    .rom_intg_chk_ok(u_fsm.rom_intg_chk_ok),
+    .rom_intg_chk_ok(prim_mubi_pkg::mubi4_and_hi(u_fsm.rom_intg_chk_done, u_fsm.rom_intg_chk_good)),
     .lc_dft_en_i,
     .lc_hw_debug_en_i,
     .main_pd_ni(u_slow_fsm.main_pd_ni),

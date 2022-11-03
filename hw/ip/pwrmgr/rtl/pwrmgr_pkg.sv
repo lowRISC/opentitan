@@ -201,8 +201,8 @@ package pwrmgr_pkg;
 
   // fast fsm state enum
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 17 -n 12 \
-  //      -s 4233784300 --language=sv
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 18 -n 12 \
+  //      -s 2594078347 --language=sv
   //
   // Hamming distance histogram:
   //
@@ -211,39 +211,40 @@ package pwrmgr_pkg;
   //  2: --
   //  3: --
   //  4: --
-  //  5: ||||||||||||||||| (30.15%)
-  //  6: |||||||||||||||||||| (35.29%)
-  //  7: |||||||||| (19.12%)
-  //  8: ||||| (9.56%)
-  //  9: | (2.21%)
-  // 10: | (2.21%)
-  // 11:  (1.47%)
-  // 12: --
+  //  5: ||||||||||||||||| (30.72%)
+  //  6: |||||||||||||||||||| (35.95%)
+  //  7: ||||||||| (16.99%)
+  //  8: |||| (8.50%)
+  //  9: || (4.58%)
+  // 10: | (1.96%)
+  // 11:  (0.65%)
+  // 12:  (0.65%)
   //
   // Minimum Hamming distance: 5
-  // Maximum Hamming distance: 11
+  // Maximum Hamming distance: 12
   // Minimum Hamming weight: 3
-  // Maximum Hamming weight: 9
+  // Maximum Hamming weight: 10
   //
   localparam int FastPwrStateWidth = 12;
   typedef enum logic [FastPwrStateWidth-1:0] {
-    FastPwrStateLowPower     = 12'b111010101011,
-    FastPwrStateEnableClocks = 12'b000011000010,
-    FastPwrStateReleaseLcRst = 12'b111011010110,
-    FastPwrStateOtpInit      = 12'b100101011010,
-    FastPwrStateLcInit       = 12'b010001111100,
-    FastPwrStateStrap        = 12'b010110111010,
-    FastPwrStateAckPwrUp     = 12'b010100100101,
-    FastPwrStateRomCheck     = 12'b101100000011,
-    FastPwrStateActive       = 12'b100001010101,
-    FastPwrStateDisClks      = 12'b010000010011,
-    FastPwrStateFallThrough  = 12'b111111011001,
-    FastPwrStateNvmIdleChk   = 12'b001111110011,
-    FastPwrStateLowPowerPrep = 12'b011101001111,
-    FastPwrStateNvmShutDown  = 12'b001010011111,
-    FastPwrStateResetPrep    = 12'b101000110000,
-    FastPwrStateReqPwrDn     = 12'b101101101100,
-    FastPwrStateInvalid      = 12'b100010001100
+    FastPwrStateLowPower     = 12'b101000110011,
+    FastPwrStateEnableClocks = 12'b001011101000,
+    FastPwrStateReleaseLcRst = 12'b110111110111,
+    FastPwrStateOtpInit      = 12'b000110011001,
+    FastPwrStateLcInit       = 12'b001100001110,
+    FastPwrStateStrap        = 12'b110000011000,
+    FastPwrStateAckPwrUp     = 12'b100001001101,
+    FastPwrStateRomCheckDone = 12'b011010100111,
+    FastPwrStateRomCheckGood = 12'b011101000011,
+    FastPwrStateActive       = 12'b100101101010,
+    FastPwrStateDisClks      = 12'b000001010010,
+    FastPwrStateFallThrough  = 12'b111110111100,
+    FastPwrStateNvmIdleChk   = 12'b010111001100,
+    FastPwrStateLowPowerPrep = 12'b101010000100,
+    FastPwrStateNvmShutDown  = 12'b000010111110,
+    FastPwrStateResetPrep    = 12'b001101111101,
+    FastPwrStateReqPwrDn     = 12'b111011010001,
+    FastPwrStateInvalid      = 12'b110110000010
   } fast_pwr_state_e;
 
   // Encoding generated with:
