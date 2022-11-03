@@ -629,8 +629,13 @@ opentitan_functest(
 opentitan_functest(
     name = "csrng_edn_concurrency_test",
     srcs = ["csrng_edn_concurrency_test.c"],
+    cw310 = cw310_params(
+        # FIXME #15980 Re-enable after EDN fatal alert is fixed.
+        tags = ["broken"],
+    ),
     verilator = verilator_params(
         timeout = "long",
+        tags = ["broken"],
     ),
     deps = [
         ":otbn_randomness_impl",

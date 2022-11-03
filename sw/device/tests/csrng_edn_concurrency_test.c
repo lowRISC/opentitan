@@ -335,8 +335,9 @@ static void main_task(void *task_parameters) {
         execution_state_update(kTestStateTearDown);
         break;
       }
-      execution_state_update(kTestStateSetup);
       csrng_testutils_recoverable_alerts_check(&csrng);
+      entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1);
+      execution_state_update(kTestStateSetup);
     }
     // The rest of this code block is executed when
     // `execute_state == kTestStateSetup`.
