@@ -70,7 +70,7 @@
       desc: "A mismatch detected inside any EDN counter moves the main state machine into a terminal error state."
     }
     { name: "CS_RDATA.BUS.CONSISTENCY"
-      desc: "Comparison on successive bus values for genbits returned from csrng that will destribute over the endpoint buses."
+      desc: "Comparison on successive bus values for genbits returned from csrng that will distribute over the endpoint buses."
     }
     { name: "TILE_LINK.BUS.INTEGRITY"
       desc: "Tilelink end-to-end bus integrity scheme."
@@ -87,7 +87,7 @@
         { bits: "0",
           desc: '''
                 When true, the CTRL can be written by software.
-                When false, this field read-only. Defaults true, write one to clear.
+                When false, this field read-only. Defaults true, write zero to clear.
                 Note that this needs to be cleared after initial configuration at boot in order to
                 lock in the listed register settings.
                 '''
