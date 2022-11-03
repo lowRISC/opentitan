@@ -20,15 +20,16 @@
 static dif_flash_ctrl_device_info_t flash_info;
 #define FLASH_WORD_SZ flash_info.bytes_per_word
 #define FLASH_PAGE_SZ flash_info.bytes_per_page
-#define FLASH_WORDS_PER_PAGE (FLASH_PAGE_SZ / FLASH_WORD_SZ)
+#define FLASH_UINT32_WORDS_PER_PAGE \
+  (FLASH_PAGE_SZ / FLASH_WORD_SZ) * (FLASH_WORD_SZ / sizeof(uint32_t))
 #define FLASH_PAGES_PER_BANK flash_info.data_pages
 #define FLASH_BANK_SZ (flash_info.data_pages * flash_info.bytes_per_page)
 
 static dif_flash_ctrl_state_t flash;
 
 /*
- * Basic test of page erase / program / read functions.
- * Tests pages from both the data and info partitions.
+ * Basic test of page erase / program / read functions. Tests pages from both
+ * the data and info partitions.
  */
 static void test_basic_io(void) {
   // The info partitions have no default access. Specifically set up a region.
@@ -70,7 +71,7 @@ static void test_basic_io(void) {
   CHECK(flash_ctrl_testutils_erase_page(&flash, flash_bank_1_addr,
                                         /*partition_id=*/0,
                                         kDifFlashCtrlPartitionTypeData));
-  for (int i = 0; i < FLASH_WORDS_PER_PAGE; ++i) {
+  for (int i = 0; i < FLASH_UINT32_WORDS_PER_PAGE; ++i) {
     CHECK_EQZ(~mmio_region_read32(flash_bank_1, i * sizeof(uint32_t)));
   }
 
@@ -79,39 +80,44 @@ static void test_basic_io(void) {
                                         /*partition_id=*/0,
                                         kDifFlashCtrlPartitionTypeInfo));
 
-  // Prepare an entire page of non-trivial data to program
-  // into flash.
-  uint32_t input_page[FLASH_WORDS_PER_PAGE];
-  uint32_t output_page[FLASH_WORDS_PER_PAGE];
-  memset(input_page, 0xa5, FLASH_WORDS_PER_PAGE * sizeof(uint32_t));
-  for (int i = 0; i < FLASH_WORDS_PER_PAGE; i += 2) {
+  // Prepare an entire page of non-trivial data to program into flash.
+  uint32_t input_page[FLASH_UINT32_WORDS_PER_PAGE];
+  uint32_t output_page[FLASH_UINT32_WORDS_PER_PAGE];
+  CHECK(sizeof(input_page) == flash_info.bytes_per_page,
+        "Unexpected buffer size. got: %d, want: %d", sizeof(input_page),
+        flash_info.bytes_per_page);
+  CHECK(sizeof(output_page) == flash_info.bytes_per_page,
+        "Unexpected buffer size. got: %d, want: %d", sizeof(input_page),
+        flash_info.bytes_per_page);
+  memset(input_page, 0xa5, FLASH_UINT32_WORDS_PER_PAGE * sizeof(uint32_t));
+  for (int i = 0; i < FLASH_UINT32_WORDS_PER_PAGE; i += 2) {
     input_page[i] ^= 0xffffffff;
   }
 
-  // Attempt to live-program an entire page, where the overall
-  // payload is much larger than the internal flash FIFO.
+  // Attempt to live-program an entire page, where the overall payload is much
+  // larger than the internal flash FIFO.
   CHECK(flash_ctrl_testutils_erase_and_write_page(
       &flash, flash_bank_1_addr, /*partition_id=*/0, input_page,
-      kDifFlashCtrlPartitionTypeData, FLASH_WORDS_PER_PAGE));
+      kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
   CHECK(flash_ctrl_testutils_read(&flash, flash_bank_1_addr, /*partition_id=*/0,
                                   output_page, kDifFlashCtrlPartitionTypeData,
-                                  FLASH_WORDS_PER_PAGE, /*delay=*/0));
-  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
+                                  FLASH_UINT32_WORDS_PER_PAGE, /*delay=*/0));
+  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 
   // Check from host side also.
-  for (int i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
+  for (int i = 0; i < FLASH_UINT32_WORDS_PER_PAGE; i++) {
     output_page[i] = mmio_region_read32(flash_bank_1, i * sizeof(uint32_t));
   }
-  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
+  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 
   // Similar check for info page.
   CHECK(flash_ctrl_testutils_erase_and_write_page(
       &flash, flash_bank_1_addr, /*partition_id=*/0, input_page,
-      kDifFlashCtrlPartitionTypeInfo, FLASH_WORDS_PER_PAGE));
+      kDifFlashCtrlPartitionTypeInfo, FLASH_UINT32_WORDS_PER_PAGE));
   CHECK(flash_ctrl_testutils_read(&flash, flash_bank_1_addr, /*partition_id=*/0,
                                   output_page, kDifFlashCtrlPartitionTypeInfo,
-                                  FLASH_WORDS_PER_PAGE, /*delay=*/0));
-  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
+                                  FLASH_UINT32_WORDS_PER_PAGE, /*delay=*/0));
+  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 
   // Set up default access for data partitions.
   flash_ctrl_testutils_default_region_access(
@@ -125,19 +131,20 @@ static void test_basic_io(void) {
   CHECK(flash_ctrl_testutils_erase_page(&flash, flash_bank_0_last_page_addr,
                                         /*partition_id=*/0,
                                         kDifFlashCtrlPartitionTypeData));
-  for (int i = 0; i < FLASH_WORDS_PER_PAGE; ++i) {
+  for (int i = 0; i < FLASH_UINT32_WORDS_PER_PAGE; ++i) {
     CHECK_EQZ(
         ~mmio_region_read32(flash_bank_0_last_page, i * sizeof(uint32_t)));
   }
 
   CHECK(flash_ctrl_testutils_write(
       &flash, flash_bank_0_last_page_addr, /*partition_id=*/0, input_page,
-      kDifFlashCtrlPartitionTypeData, FLASH_WORDS_PER_PAGE));
-  CHECK(flash_ctrl_testutils_read(
-      &flash, flash_bank_0_last_page_addr, /*partition_id=*/0, output_page,
-      kDifFlashCtrlPartitionTypeData, FLASH_WORDS_PER_PAGE, /*delay=*/0));
+      kDifFlashCtrlPartitionTypeData, FLASH_UINT32_WORDS_PER_PAGE));
+  CHECK(flash_ctrl_testutils_read(&flash, flash_bank_0_last_page_addr,
+                                  /*partition_id=*/0, output_page,
+                                  kDifFlashCtrlPartitionTypeData,
+                                  FLASH_UINT32_WORDS_PER_PAGE, /*delay=*/0));
 
-  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_WORDS_PER_PAGE);
+  CHECK_ARRAYS_EQ(output_page, input_page, FLASH_UINT32_WORDS_PER_PAGE);
 }
 
 static void test_memory_protection(void) {
@@ -204,8 +211,8 @@ static void test_memory_protection(void) {
   CHECK(!flash_ctrl_testutils_write(
       &flash, region_boundary_start, /*partition_id=*/0, words,
       kDifFlashCtrlPartitionTypeData, ARRAYSIZE(words)));
-  // Words in the good region should still match, while words in the bad
-  // region should be all-ones, since we erased.
+  // Words in the good region should still match, while words in the bad region
+  // should be all-ones, since we erased.
   for (int i = 0; i < ARRAYSIZE(words); ++i) {
     uint32_t expected = 0xffffffff;
     if (i < ARRAYSIZE(words) / 2) {
@@ -224,7 +231,7 @@ static void test_memory_protection(void) {
   CHECK(flash_ctrl_testutils_erase_page(&flash, ok_region_start,
                                         /*partition_id=*/0,
                                         kDifFlashCtrlPartitionTypeData));
-  for (int i = 0; i < FLASH_WORDS_PER_PAGE; i++) {
+  for (int i = 0; i < FLASH_UINT32_WORDS_PER_PAGE; i++) {
     CHECK_EQZ(~mmio_region_read32(ok_region, i * sizeof(uint32_t)));
   }
 }

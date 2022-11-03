@@ -139,7 +139,7 @@ bool flash_ctrl_testutils_erase_page(
  * @param partition_id The partition index.
  * @param data The data to program.
  * @param partition_type The partition type, data or info.
- * @param word_count The number of words to program.
+ * @param word_count The number of uint32_t words to program.
  * @return False if the operation produced an error.
  */
 OT_WARN_UNUSED_RESULT
@@ -159,7 +159,7 @@ bool flash_ctrl_testutils_write(dif_flash_ctrl_state_t *flash_state,
  * @param partition_id The partition index.
  * @param data The data to program.
  * @param partition_type The partition type, data or info.
- * @param word_count The number of words to program.
+ * @param word_count The number of uint32_t words to program.
  * @return False if the operation fails.
  */
 OT_WARN_UNUSED_RESULT
@@ -177,7 +177,7 @@ bool flash_ctrl_testutils_erase_and_write_page(
  * @param partition_id The partition index.
  * @param data_out The data read from the page.
  * @param partition_type The partition type, data or info.
- * @param word_count The number of words to read.
+ * @param word_count The number of uint32_t words to read.
  * @return The operation error flag.
  */
 OT_WARN_UNUSED_RESULT
