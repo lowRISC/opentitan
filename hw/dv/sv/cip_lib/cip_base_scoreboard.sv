@@ -269,6 +269,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       cfg.clk_rst_vif.wait_n_clks(1);
       if (under_alert_handshake[alert_name] || cfg.under_reset) return;
     end
+    if (!cfg.en_scb) return;
     `uvm_error(`gfn, $sformatf("alert %0s did not trigger max_delay:%0d",
                                alert_name, alert_chk_max_delay[alert_name]))
   endtask
