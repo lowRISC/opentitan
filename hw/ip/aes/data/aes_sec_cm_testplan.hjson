@@ -49,10 +49,10 @@
       desc: '''
             Verify the countermeasure(s) MAIN.CONFIG.SPARSE.
             Illegally encoded values are written into the main control register via register interface and it is ensured that the values are resolved to the correct legal values.
-            Internal wires carrying the corresponding signals are forced to invalid values and it is ensured that the DUT stops processing data and signals an alert.
+            Internal wires carrying the corresponding signals are forced to invalid values and depending on the target wire it is ensured that the DUT stops processing data and signals an alert.
             '''
       stage: V2S
-      tests: ["aes_stress", "aes_smoke", "aes_alert_reset"]
+      tests: ["aes_stress", "aes_smoke", "aes_alert_reset", "aes_core_fi"]
     }
     {
       name: sec_cm_aux_config_shadow

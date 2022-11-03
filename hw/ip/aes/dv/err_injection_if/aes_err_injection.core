@@ -20,6 +20,9 @@ filesets:
       - fi_cipher_if.sv
       - fi_ctr_fsm_wrapper.sv
       - fi_ctr_fsm_if.sv
+      - fi_core_wrapper.sv
+      - fi_core_if.sv
+
     file_type: systemVerilogSource
 
 targets:

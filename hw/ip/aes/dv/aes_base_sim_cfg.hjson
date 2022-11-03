@@ -185,6 +185,12 @@
       run_timeout_mins: 1 // Short test; if not done within 1 min, something's wrong.
     }
     {
+      name: aes_core_fi
+      uvm_test: aes_fi_test
+      uvm_test_seq: aes_core_fi_vseq
+      reseed: 70 // Test must cover 35 bins. Overseed by 2x to get reasonable coverage.
+    }
+    {
       name: aes_readability
       uvm_test: aes_fi_test
       uvm_test_seq: aes_readability_vseq
