@@ -31,9 +31,14 @@
     }
     {
       name: sec_cm_config_mubi
-      desc: "Verify the countermeasure(s) CONFIG.MUBI."
+      desc: '''Verify the countermeasure(s) CONFIG.MUBI.
+
+            Write non-Mubi4True or Mubi4False value to the ctrl register's mubi fields.
+            Verify that design triggers the corresponding recoverable alerts and error status.
+            Verify that design categorizes the value as Mubi4False.
+            '''
       stage: V2S
-      tests: []
+      tests: ["edn_alert"]
     }
     {
       name: sec_cm_main_sm_fsm_sparse
@@ -55,21 +60,33 @@
     }
     {
       name: sec_cm_main_sm_ctr_local_esc
-      desc: "Verify the countermeasure(s) MAIN_SM.CTR.LOCAL_ESC."
+      desc: '''Verify the countermeasure(s) MAIN_SM.CTR.LOCAL_ESC.
+
+            Verify that after the local escalation:
+            - The atal alert is firing continuously.
+            - Register `main_sm_state` goes to error state.
+            - No valid EDN responses.
+            '''
       stage: V2S
-      tests: []
+      tests: ["edn_sec_cm"]
     }
     {
       name: sec_cm_cs_rdata_bus_consistency
-      desc: "Verify the countermeasure(s) CS_RDATA.BUS.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) CS_RDATA.BUS.CONSISTENCY.
+
+            Load randomly generated but constant fips and genbits data from the CSRNG host driver
+            to create the consistency error.
+            Check the corresponding recoverable alert is fired and check the recov_alert_sts
+            register.
+             '''
       stage: V2S
-      tests: []
+      tests: ["edn_alert"]
     }
     {
       name: sec_cm_tile_link_bus_integrity
       desc: "Verify the countermeasure(s) TILE_LINK.BUS.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["edn_tl_intg_err"]
     }
   ]
 }

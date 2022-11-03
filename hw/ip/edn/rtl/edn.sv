@@ -117,9 +117,12 @@ module edn
   // Endpoint Asserts
   for (genvar i = 0; i < NumEndPoints; i = i+1) begin : gen_edn_if_asserts
     `ASSERT_KNOWN(EdnEndPointOut_A, edn_o[i])
+
     // This assertion checks that EDN data will be stable from edn_ack until the next edn request.
     `ASSERT(EdnDataStable_A, edn_o[i].edn_ack |=>
             $stable(edn_o[i].edn_bus) throughout edn_i[i].edn_req[->1])
+
+    `ASSERT(EdnFatalAlertNoRsp_A, alert[1] |-> edn_o[i].edn_ack == 0)
   end : gen_edn_if_asserts
 
   // CSRNG Asserts
