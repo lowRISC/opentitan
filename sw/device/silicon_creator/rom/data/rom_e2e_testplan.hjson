@@ -1109,9 +1109,9 @@
               - sealing sw binding equals the `binding_value` field of the manifest, and
               - max creator key version equals the `max_key_version` field of the manifest,
             '''
-      tags: ["rom", "no_dv", "fpga", "silicon"]
+      tags: ["rom", "dv", "verilator", "fpga", "silicon"]
       stage: V2
-      tests: ["rom_keymgr_init"]
+      tests: ["rom_e2e_keymgr_init"]
     }
 
     {
