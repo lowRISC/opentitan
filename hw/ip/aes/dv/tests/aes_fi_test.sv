@@ -27,8 +27,8 @@ class aes_fi_test extends aes_base_test;
     cfg.cfb_weight               = 5;
     cfg.ctr_weight               = 80;
 
-    cfg.message_len_min          = 7;    // one block (16bytes=128bits)
-    cfg.message_len_max          = 300;
+    cfg.message_len_min          = 1;    // one block (16bytes=128bits)
+    cfg.message_len_max          = 65;
     cfg.manual_operation_pct     = 0;
     cfg.use_key_mask             = 0;
 
