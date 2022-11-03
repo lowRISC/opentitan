@@ -25,6 +25,7 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
   virtual fi_control_if aes_control_fi_vif[Sp2VWidth];
   virtual fi_cipher_if aes_cipher_control_fi_vif[Sp2VWidth];
   virtual fi_ctr_fsm_if aes_ctr_fsm_fi_vif[Sp2VWidth];
+  virtual fi_core_if aes_core_fi_vif;
 
   rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
   // test environment constraints //
@@ -281,6 +282,10 @@ class aes_env_cfg extends cip_base_env_cfg #(.RAL_T(aes_reg_block));
                            aes_ctr_fsm_fi_vif[nn])) begin
         `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO ROUND COUNTER INJECT INTERFACE %d",nn))
       end
+    end
+    if (!uvm_config_db#(virtual fi_core_if)::get(null, "*.env", "aes_core_fi_vif",
+                         aes_core_fi_vif)) begin
+      `uvm_fatal(`gfn, "FAILED TO GET HANDLE TO CORE FAULT INJECTION INTERFACE")
     end
 
     // only support 1 outstanding TL item
