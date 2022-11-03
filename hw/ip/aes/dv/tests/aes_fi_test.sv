@@ -21,11 +21,11 @@ class aes_fi_test extends aes_base_test;
     cfg.num_messages_max         = 6;
     cfg.unbalanced               = 0;
     // message related knobs
-    cfg.ecb_weight               = 10;
-    cfg.cbc_weight               = 10;
-    cfg.ctr_weight               = 10;
-    cfg.ofb_weight               = 10;
-    cfg.cfb_weight               = 10;
+    cfg.ecb_weight               = 5;
+    cfg.cbc_weight               = 5;
+    cfg.ofb_weight               = 5;
+    cfg.cfb_weight               = 5;
+    cfg.ctr_weight               = 80;
 
     cfg.message_len_min          = 7;    // one block (16bytes=128bits)
     cfg.message_len_max          = 300;
