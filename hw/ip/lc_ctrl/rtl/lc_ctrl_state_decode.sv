@@ -62,6 +62,7 @@ module lc_ctrl_state_decode
       EscalateSt:  dec_lc_state = {DecLcStateNumRep{DecLcStEscalate}};
       PostTransSt: dec_lc_state = {DecLcStateNumRep{DecLcStPostTrans}};
       InvalidSt:   dec_lc_state = {DecLcStateNumRep{DecLcStInvalid}};
+      ScrapSt:     dec_lc_state = {DecLcStateNumRep{DecLcStScrap}};
       // Otherwise check and decode the life cycle state continously.
       default: begin
         // Note that we require that the valid signal from OTP is
