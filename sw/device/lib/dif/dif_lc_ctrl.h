@@ -99,7 +99,7 @@ typedef uint32_t dif_lc_ctrl_status_t;
  * some of these do not correspond to "real" lifecycle states, and cannot be
  * transitioned to.
  */
-typedef enum dif_lc_ctrl_state_t {
+typedef enum dif_lc_ctrl_state {
   /**
    * The initial post-manufacture state.
    *

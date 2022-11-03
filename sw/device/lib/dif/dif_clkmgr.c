@@ -64,7 +64,9 @@ dif_result_t dif_clkmgr_jitter_get_enabled(const dif_clkmgr_t *clkmgr,
 
   multi_bit_bool_t clk_jitter_val =
       mmio_region_read32(clkmgr->base_addr, CLKMGR_JITTER_ENABLE_REG_OFFSET);
-  *state = dif_multi_bit_bool_to_toggle(clk_jitter_val);
+  // The documentation states that kMultiBitBool4False disables the jittery
+  // clock and all other values enable the jittery clock.
+  *state = clk_jitter_val != kMultiBitBool4False;
 
   return kDifOk;
 }
