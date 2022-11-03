@@ -200,9 +200,6 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     jtag_pkg::jtag_req_t exp_jtag_req, act_jtag_req;
     jtag_pkg::jtag_rsp_t exp_jtag_rsp;
 
-    // forcing the internal jtag tdo causes this check to fail.
-    $assertoff(1, "tb.dut.top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.DftTapOff1_A");
-
     `uvm_info(`gfn, $sformatf("Testing DFT tap with dft_tap_en: %0d", dft_tap_en), UVM_LOW)
     repeat ($urandom_range(10, 5)) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(exp_jtag_req)
@@ -234,8 +231,6 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     `DV_CHECK_FATAL(uvm_hdl_release(path_tb_jtag_tms))
     `DV_CHECK_FATAL(uvm_hdl_release(path_tb_jtag_tdi))
     `DV_CHECK_FATAL(uvm_hdl_release(path_dft_tap_rsp))
-
-    $asserton(1, "tb.dut.top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.DftTapOff1_A");
 
     // The random force/release toggling above means trst_n could be left in an active state.
     // Wiggle the trst_n pin and make sure it returns to an inactive value.
