@@ -564,12 +564,11 @@ test_suite(
 )
 
 BOOT_POLICY_ROLLBACK_CASES = [
-    # TODO(#14473): Enable after OTP splicing is ready.
-    # {
-    #     "a": 0,
-    #     "b": 0,
-    #     "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.ROLLBACK)),
-    # },
+    {
+        "a": 0,
+        "b": 0,
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.ROLLBACK)),
+    },
     {
         "a": 0,
         "b": 1,
@@ -587,13 +586,54 @@ BOOT_POLICY_ROLLBACK_CASES = [
     },
 ]
 
+otp_json(
+    name = "otp_json_boot_policy_rollback",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": "1",
+            },
+        ),
+    ],
+)
+
+[otp_image(
+    name = "otp_img_boot_policy_rollback_{}".format(lc_state.lower()),
+    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
+    overlays = [
+        "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
+        "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
+        "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+        ":otp_json_boot_policy_rollback",
+    ],
+    visibility = ["//visibility:private"],
+) for lc_state in structs.to_dict(CONST.LCV)]
+
+[bitstream_splice(
+    name = "bitstream_boot_policy_rollback_{}".format(
+        lc_state.lower(),
+    ),
+    src = "//hw/bitstream:rom",
+    data = ":otp_img_boot_policy_rollback_{}".format(
+        lc_state.lower(),
+    ),
+    meminfo = "//hw/bitstream:otp_mmi",
+    tags = ["vivado"],
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+) for lc_state in structs.to_dict(CONST.LCV)]
+
 [opentitan_functest(
-    name = "boot_policy_rollback_a_{}_b_{}".format(
+    name = "boot_policy_rollback_{}_a_{}_b_{}".format(
+        lc_state.lower(),
         t["a"],
         t["b"],
     ),
     cw310 = cw310_params(
+        bitstream = "bitstream_boot_policy_rollback_{}".format(lc_state.lower()),
         exit_success = t["exit_success"],
+        tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
     ),
     key = "multislot",
     ot_flash_binary = ":sec_ver_{}_{}_image".format(
@@ -601,15 +641,16 @@ BOOT_POLICY_ROLLBACK_CASES = [
         t["b"],
     ),
     targets = ["cw310_rom"],
-) for t in BOOT_POLICY_ROLLBACK_CASES]
+) for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items() for t in BOOT_POLICY_ROLLBACK_CASES]
 
 test_suite(
-    name = "boot_policy_rollback",
+    name = "rom_e2e_boot_policy_rollback",
     tags = ["manual"],
-    tests = ["boot_policy_rollback_a_{}_b_{}".format(
+    tests = ["boot_policy_rollback_{}_a_{}_b_{}".format(
+        lc_state.lower(),
         t["a"],
         t["b"],
-    ) for t in BOOT_POLICY_ROLLBACK_CASES],
+    ) for lc_state in structs.to_dict(CONST.LCV) for t in BOOT_POLICY_ROLLBACK_CASES],
 )
 
 SIGVERIFY_MOD_EXP_CASES = [
