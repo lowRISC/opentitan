@@ -94,7 +94,7 @@ class aes_base_vseq extends cip_base_vseq #(
   endtask // set_ctrl_aux_shadowed
   virtual task prng_reseed();
     bit [TL_DW:0] reg_val = '0;
-    reg_val[5] = 1'b1;
+    reg_val[3] = 1'b1;
     csr_wr(.ptr(ral.trigger), .value(reg_val));
   endtask // prng_reseed
 
