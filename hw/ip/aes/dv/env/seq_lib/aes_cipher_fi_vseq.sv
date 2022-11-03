@@ -22,7 +22,7 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
   rand int                        if_num;
   rand int                        target;
 
-  rand aes_pkg::aes_cipher_ctrl_e await_clear_state;
+  rand aes_pkg::aes_cipher_ctrl_e await_state;
 
   int                             if_size;
 
@@ -52,15 +52,20 @@ class aes_cipher_fi_vseq extends aes_base_vseq;
               target inside { [0:if_size - 1]};}) begin
               `uvm_fatal(`gfn, $sformatf("Randomization failed"))
             end
-            `DV_CHECK_STD_RANDOMIZE_FATAL(await_clear_state)
-            if (await_clear_state inside {aes_pkg::CIPHER_CTRL_CLEAR_S,
-                                          aes_pkg::CIPHER_CTRL_CLEAR_KD}) begin
+            `DV_CHECK_STD_RANDOMIZE_FATAL(await_state)
+            if (await_state inside {aes_pkg::CIPHER_CTRL_CLEAR_S,
+                                    aes_pkg::CIPHER_CTRL_CLEAR_KD}) begin
               // The clear states are difficult to hit with a random delay.  This writes the clear
               // register to bring the FSM into the clear state and then waits for the FSM to enter
               // that state.
               clear_regs('{dataout: 1'b1, default: 1'b0});
-              `DV_WAIT(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs
-                       == await_clear_state)
+              `DV_WAIT(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs == await_state)
+            end else if (await_state == aes_pkg::CIPHER_CTRL_PRNG_RESEED) begin
+              // The PRNG Reseed state is also difficult to hit with a random delay. This writes the
+              // trigger register to bring the FSM into the PRNG Reseed state, and it waits until
+              // the FSM has reached that state.
+              prng_reseed();
+              `DV_WAIT(cfg.aes_cipher_control_fi_vif[if_num].aes_cipher_ctrl_cs == await_state)
             end else begin
               cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
             end

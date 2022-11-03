@@ -60,9 +60,15 @@ class aes_control_fi_vseq extends aes_base_vseq;
               // the Clear states, and it waits until the FSM has reached the required state.
               clear_regs('{dataout: 1'b1, key_iv_data_in: 1'b1, default: 1'b0});
               `DV_WAIT(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state)
-            end else if (await_state inside {aes_pkg::CTRL_LOAD, aes_pkg::CTRL_PRNG_RESEED}) begin
-              // The Load state and the PRNG Reseed state are also difficult to hit with a random
-              // delay, but for them simply waiting works.
+            end else if (await_state == aes_pkg::CTRL_PRNG_RESEED) begin
+              // The PRNG Reseed state is also difficult to hit with a random delay. This writes the
+              // trigger register to bring the FSM into the PRNG Reseed state, and it waits until
+              // the FSM has reached that state.
+              prng_reseed();
+              `DV_WAIT(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state)
+            end else if (await_state == aes_pkg::CTRL_LOAD) begin
+              // The Load state is also difficult to hit with a random delay, but simply waiting
+              // works.
               `DV_WAIT(cfg.aes_control_fi_vif[if_num].aes_ctrl_cs == await_state)
             end else begin
               cfg.clk_rst_vif.wait_clks(cfg.inj_delay);
