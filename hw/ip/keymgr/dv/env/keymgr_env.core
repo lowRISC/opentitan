@@ -33,7 +33,7 @@ filesets:
       - seq_lib/keymgr_sw_invalid_input_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_hwsw_invalid_input_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_kmac_rsp_err_vseq.sv: {is_include_file: true}
-      - seq_lib/keymgr_cmd_invalid_vseq.sv: {is_include_file: true}
+      - seq_lib/keymgr_custom_cm_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_sync_async_fault_cross_vseq.sv: {is_include_file: true}
       - seq_lib/keymgr_stress_all_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource

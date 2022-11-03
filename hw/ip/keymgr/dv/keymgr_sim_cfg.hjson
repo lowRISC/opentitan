@@ -116,8 +116,8 @@
     }
 
     {
-      name: keymgr_cmd_invalid
-      uvm_test_seq: keymgr_cmd_invalid_vseq
+      name: keymgr_custom_cm
+      uvm_test_seq: keymgr_custom_cm_vseq
     }
 
     {

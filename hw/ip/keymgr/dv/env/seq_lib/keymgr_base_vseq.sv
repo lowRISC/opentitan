@@ -15,6 +15,9 @@ class keymgr_base_vseq extends cip_base_vseq #(
   bit do_wait_for_init_done = 1'b1;
   bit seq_check_en = 1'b1;
 
+  // avoid multiple thread accessign this CSR at the same time, which causes UVM_WARNING
+  semaphore sema_update_control_csr;
+
   // do operations at StReset
   rand bit do_op_before_init;
   rand keymgr_pkg::keymgr_ops_e gen_operation;
@@ -35,6 +38,12 @@ class keymgr_base_vseq extends cip_base_vseq #(
   }
 
   `uvm_object_new
+
+  // callback task before LC enables keymgr
+  virtual task pre_start();
+    sema_update_control_csr = new(1);
+    super.pre_start();
+  endtask
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init();
@@ -216,10 +225,12 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   virtual task keymgr_advance(bit wait_done = 1);
     keymgr_pkg::keymgr_working_state_e exp_next_state = get_next_state(current_state);
+    sema_update_control_csr.get();
     `uvm_info(`gfn, $sformatf("Advance key manager state from %0s", current_state.name), UVM_MEDIUM)
     ral.control_shadowed.operation.set(keymgr_pkg::OpAdvance);
     csr_update(.csr(ral.control_shadowed));
     csr_wr(.ptr(ral.start), .value(1));
+    sema_update_control_csr.put();
 
     if (wait_done) begin
       wait_op_done();
@@ -233,12 +244,14 @@ class keymgr_base_vseq extends cip_base_vseq #(
   virtual task keymgr_generate(keymgr_pkg::keymgr_ops_e operation,
                                keymgr_pkg::keymgr_key_dest_e key_dest,
                                bit wait_done = 1);
+    sema_update_control_csr.get();
     `uvm_info(`gfn, "Generate key manager output", UVM_MEDIUM)
 
     ral.control_shadowed.operation.set(int'(operation));
     `DV_CHECK_RANDOMIZE_FATAL(ral.control_shadowed.cdi_sel)
     ral.control_shadowed.dest_sel.set(int'(key_dest));
     csr_update(.csr(ral.control_shadowed));
+    sema_update_control_csr.put();
     csr_wr(.ptr(ral.start), .value(1));
 
     if (wait_done) wait_op_done();
@@ -298,11 +311,17 @@ class keymgr_base_vseq extends cip_base_vseq #(
     // after FI, keymgr should enter StInvalid state immediately
     csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
     // issue any operation
-    keymgr_operations(.advance_state(issue_adv_or_gen), .num_gen_op(!issue_adv_or_gen),
-                      .wait_done(0));
+    issue_a_random_op(.wait_done(0));
     // waiting for done is called separately as this one expects to be failed
     csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpDoneFail),
                  .spinwait_delay_ns($urandom_range(0, 100)));
     csr_rd_check(.ptr(ral.working_state), .compare_value(keymgr_pkg::StInvalid));
+  endtask
+
+  virtual task issue_a_random_op(bit wait_done);
+    bit issue_adv_or_gen = $urandom;
+    // issue any operation
+    keymgr_operations(.advance_state(issue_adv_or_gen), .num_gen_op(!issue_adv_or_gen),
+                      .wait_done(wait_done));
   endtask
 endclass : keymgr_base_vseq

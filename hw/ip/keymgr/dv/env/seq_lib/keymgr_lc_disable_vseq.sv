@@ -45,7 +45,9 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
       // wait until enter a random state and add some delay
       1: begin
         keymgr_pkg::keymgr_working_state_e state;
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(state, state != keymgr_pkg::StInvalid;)
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(state,
+                                           state != keymgr_pkg::StInvalid;
+                                           state <= num_adv;)
         csr_spinwait(.ptr(ral.working_state), .exp_data(state),
                      // can't use too large delay, as it may jump over to next state and this
                      // csr_spinwait doesn't see it

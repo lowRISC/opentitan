@@ -139,15 +139,26 @@
     }
     {
       name: sec_cm_kmac_if_cmd_ctrl_consistency
-      desc: "Verify the countermeasure(s) KMAC_IF_CMD.CTRL.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) KMAC_IF_CMD.CTRL.CONSISTENCY.
+
+            - Inject one of these faults.
+              - Force `{u_ctrl.adv_en_o, u_ctrl.id_en_o, u_ctrl.gen_en_o}` to a non-onehot value.
+              - Change `{u_ctrl.adv_en_o, u_ctrl.id_en_o, u_ctrl.gen_en_o}` during a sideload
+                operation.
+            - Check the fatal alert is triggered and `fault_status.cmd` is set.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_custom_cm"]
     }
     {
       name: sec_cm_kmac_if_done_ctrl_consistency
-      desc: "Verify the countermeasure(s) KMAC_IF_DONE.CTRL.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) KMAC_IF_DONE.CTRL.CONSISTENCY.
+
+            - Set `kmac_data_i.done` when it's not in a valid done period.
+              - Valid done period is between dut sending out the last data and kmac returning
+                a response with `done`.
+            - Check the fatal alert is triggered and `fault_status.kmac_done` is set.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_custom_cm"]
     }
     {
       name: sec_cm_reseed_ctr_redun
@@ -157,15 +168,23 @@
     }
     {
       name: sec_cm_side_load_sel_ctrl_consistency
-      desc: "Verify the countermeasure(s) SIDE_LOAD_SEL.CTRL.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) SIDE_LOAD_SEL.CTRL.CONSISTENCY.
+
+            - Clear all sideload keys, and issue a sideload operation.
+            - Force `u_sideload_ctrl.valids` to a different and none-zero value, so that it enables
+              more sideload interfaces than expected.
+            - Check the fatal alert is triggered and `fault_status.side_ctrl_sel` is set.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_custom_cm"]
     }
     {
       name: sec_cm_ctrl_key_integrity
-      desc: "Verify the countermeasure(s) CTRL.KEY.INTEGRITY."
+      desc: '''Verify the countermeasure(s) CTRL.KEY.INTEGRITY.
+
+            - Flip up to 2 bits of the internal key (u_ctrl.key_state_q).
+            - Check the fatal alert is triggered and `fault_status.key_ecc` is set.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_custom_cm"]
     }
   ]
 }

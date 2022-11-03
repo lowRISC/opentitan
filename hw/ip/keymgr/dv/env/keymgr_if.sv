@@ -100,18 +100,6 @@ interface keymgr_if(input clk, input rst_n);
                                                      10'b0000110011,
                                                      10'b1011000111};
 
-  // for scb/seq to predict error/alert and sample coverage
-  bit is_cmd_err;
-  bit is_kmac_if_fsm_err;
-  bit is_ctrl_fsm_err;
-  bit is_ctrl_cnt_err;
-  bit is_kmac_if_cnt_err;
-  // invalid values
-  bit [2:0] force_cmds, prev_cmds;
-  bit [StateWidth-1:0] invalid_state, prev_state;
-  bit [KmacIfCntWitdh-1:0] kmac_if_invalid_cnt;
-  bit [CtrlCntCopies-1:0][CtrlCntWitdh:0] cnt_copies;
-
   // If we need to wait for internal signal to be certain value, we may not be able to get that
   // when the sim is close to end. Define a cnt and MaxWaitCycle to avoid sim hang
   int cnt_to_wait_for_internal_value;
@@ -150,12 +138,6 @@ interface keymgr_if(input clk, input rst_n);
     // edn related
     edn_interval  = 'h100;
     start_edn_req = 0;
-
-    is_cmd_err = 0;
-    is_kmac_if_fsm_err = 0;
-    is_ctrl_fsm_err = 0;
-    is_ctrl_cnt_err = 0;
-    is_kmac_if_cnt_err = 0;
   endfunction
 
   // randomize otp, lc, flash input data
@@ -349,116 +331,125 @@ interface keymgr_if(input clk, input rst_n);
     otbn_sideload_status <= SideLoadClear;
   endfunction
 
-  // TODO, create a more generic approach to verify sec_cm
-  task automatic force_cmd_err();
+  logic valid_done_window;
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      valid_done_window <= 0;
+    end else if (kmac_data_req.last) begin
+      valid_done_window <= 1;
+    end else if (kmac_data_rsp.done) begin
+      valid_done_window <= 0;
+    end
+  end
+
+  wire [2:0] op_enables = {tb.dut.u_ctrl.gen_en_o, tb.dut.u_ctrl.id_en_o,
+                           tb.dut.u_ctrl.adv_en_o};
+  kmac_pkg::app_rsp_t invalid_kmac_rsp;
+  logic [2:0] force_sideload_valids, pre_sideload_valids;
+  logic [keymgr_pkg::CDIs-1:0][keymgr_pkg::Shares-1:0][keymgr_pkg::KeyWidth-1:0]
+        force_internal_key, pre_internal_key;
+  task automatic inject_fault(keymgr_fault_inject_type_e fi_type);
     @(posedge clk);
-    // randcase
-    //   // force more than one force_cmds are issued
-    //   1: begin
-    //     `uvm_info(msg_id, "Force cmd", UVM_LOW)
-    //     prev_cmds = {tb.dut.u_ctrl.gen_en_o, tb.dut.u_ctrl.id_en_o, tb.dut.u_ctrl.adv_en_o};
-    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_cmds, $countones(force_cmds) > 1;, , msg_id)
+    `uvm_info(msg_id, $sformatf("injecting fault: %s", fi_type.name), UVM_LOW)
+    case (fi_type)
+      // force more than one force_cmds
+      FaultOpNotOnehot: begin
+        bit [2:0] force_cmds;
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_cmds, $countones(force_cmds) > 1;, , msg_id)
+        inject_cmd_err(force_cmds);
+      end
+      // force an ongoing operation to another one
+      FaultOpNotConsistent: begin
+        bit [2:0] force_cmds;
 
-    //     // these signals are wires, need force and then release at reset
-    //     if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = 1;
-    //     if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = 1;
-    //     if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = 1;
-    //     @(posedge clk);
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_cmds,
+                                           $countones(force_cmds) == 1;
+                                           force_cmds != op_enables;, , msg_id)
+        inject_cmd_err(force_cmds);
+      end
+      FaultKmacDoneError: begin
+        // wait until it's not a valid window to issue done
+        `DV_SPINWAIT(
+          while (1) begin
+            @(negedge clk);
+            if (!valid_done_window) break;
+          end, , 10_000, // TIMEOUT_NS_
+          msg_id
+        )
+        `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
+        // set `done` to 1, force the other fields to a random value to avoid X propagation
+        invalid_kmac_rsp.done = 1;
+        force tb.keymgr_kmac_intf.kmac_data_rsp = invalid_kmac_rsp;
+        @(negedge clk);
+        release tb.keymgr_kmac_intf.kmac_data_rsp;
+      end
+      FaultSideloadNotConsistent: begin
+        pre_sideload_valids = tb.dut.u_sideload_ctrl.valids;
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_sideload_valids,
+                                           // force to a different and non-zero value
+                                           force_sideload_valids != pre_sideload_valids;
+                                           force_sideload_valids != 0;, , msg_id)
+        force tb.dut.u_sideload_ctrl.valids = force_sideload_valids;
+        @(posedge clk);
 
-    //     if ($urandom_range(0, 1)) begin
-    //       if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = prev_cmds[0];
-    //       if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = prev_cmds[1];
-    //       if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = prev_cmds[2];
-    //       @(posedge clk);
-    //     end
+        `DV_WAIT(kmac_data_rsp.done, , 500_000, // TIMEOUT_NS_
+                  msg_id)
+        @(posedge clk);
+        release tb.dut.u_sideload_ctrl.valids;
+      end
+      FaultKeyIntgError: begin
+        pre_internal_key = tb.dut.u_ctrl.key_state_q;
+        // flip up to 2 bits
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_internal_key,
+                                           $countones(force_internal_key) inside {1, 2};, , msg_id)
+        force_internal_key = force_internal_key ^ pre_internal_key;
 
-    //     if (force_cmds[0]) release tb.dut.u_ctrl.adv_en_o;
-    //     if (force_cmds[1]) release tb.dut.u_ctrl.id_en_o;
-    //     if (force_cmds[2]) release tb.dut.u_ctrl.gen_en_o;
-    //     is_cmd_err = 1;
-    //   end
-    //   1: begin
-    //     `uvm_info(msg_id, "Force KMC_IF FSM", UVM_LOW)
-    //     prev_state = tb.dut.u_kmac_if.u_state_regs.state_raw;
-    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
-    //         !(invalid_state inside {KmacIfValidStates});,
-    //         , msg_id)
+        force tb.dut.u_ctrl.key_state_q = force_internal_key;
+        @(posedge clk);
 
-    //     force tb.dut.u_kmac_if.u_state_regs.state_raw = invalid_state;
-    //     @(posedge clk);
+        if ($urandom_range(0, 1)) begin
+          force tb.dut.u_ctrl.key_state_q = pre_internal_key;
+          @(posedge clk);
+        end
+        release tb.dut.u_ctrl.key_state_q;
+      end
+      default: `uvm_fatal(msg_id, "impossible value")
+    endcase
+  endtask
 
-    //     if ($urandom_range(0, 1)) begin
-    //       force tb.dut.u_kmac_if.u_state_regs.state_raw = prev_state;
-    //       @(posedge clk);
-    //     end
-    //     release tb.dut.u_kmac_if.u_state_regs.state_raw;
-    //     is_kmac_if_fsm_err = 1;
-    //   end
-    //   1: begin
-    //     `uvm_info(msg_id, "Force KMC_IF cnt", UVM_LOW)
-    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(kmac_if_invalid_cnt,
-    //         kmac_if_invalid_cnt inside {[1 : 16]};,
-    //         , msg_id)
-    //     // wait for cnt to match a the picked value
-    //     cnt_to_wait_for_internal_value = 0;
-    //     while (1) begin
-    //       @(negedge clk);
-    //       if (tb.dut.u_kmac_if.u_cnt.cnt_q[0] == kmac_if_invalid_cnt) begin
-    //         break;
-    //       end else if (cnt_to_wait_for_internal_value < MaxWaitCycle) begin
-    //         cnt_to_wait_for_internal_value++;
-    //       end else begin
-    //         return;
-    //       end
-    //     end
+  bit [2:0] prev_cmds;
+  task automatic inject_cmd_err(bit[2:0] force_cmds);
+    prev_cmds = op_enables;
+    `uvm_info(msg_id, $sformatf("Force cmd (gen_en/id_en/adv_en) from %3b to %3b",
+                                prev_cmds, force_cmds), UVM_LOW)
+    // these signals are wires, need force and then release at reset
+    if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = 1;
+    if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = 1;
+    if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = 1;
+    // if in current cycle, kmac_data_rsp is unknown, assign it with a random value to
+    // avoid X propagation, because forcing *en_o may cause design to read `kmac_data_i`.
+    #1ps;
+    if ($isunknown(kmac_data_rsp)) begin
+      string path = "tb.dut.kmac_data_i";
+      `DV_CHECK_STD_RANDOMIZE_FATAL(invalid_kmac_rsp, , msg_id)
+      // don't change these control signals, otherwise, handshaking may get stuck
+      invalid_kmac_rsp.ready = kmac_data_rsp.ready;
+      invalid_kmac_rsp.done = kmac_data_rsp.done;
+      // use deposit rather than force, so that the valid can be preserved until next update
+      `DV_CHECK_FATAL(uvm_hdl_deposit(path, invalid_kmac_rsp), , msg_id)
+    end
+    @(posedge clk);
 
-    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(kmac_if_invalid_cnt,
-    //         kmac_if_invalid_cnt != tb.dut.u_kmac_if.u_cnt.cnt_q[0];,
-    //         , msg_id)
-    //     $deposit(tb.dut.u_kmac_if.u_cnt.cnt_q[0], kmac_if_invalid_cnt);
-    //     @(posedge clk);
-    //     if ($urandom_range(0, 1)) begin
-    //       @(negedge clk);
-    //       $deposit(tb.dut.u_kmac_if.u_cnt.cnt_q[0], kmac_if_invalid_cnt + 1);
-    //       @(posedge clk);
-    //     end
-    //     is_kmac_if_cnt_err = 1;
-    //   end
-    //   1: begin
-    //     `uvm_info(msg_id, "Force ctrl FSM", UVM_LOW)
-    //     prev_state = tb.dut.u_ctrl.u_state_regs.state_raw;
-    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(invalid_state,
-    //         !(invalid_state inside {CtrlValidStates});,
-    //         , msg_id)
+    if ($urandom_range(0, 1)) begin
+      if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = prev_cmds[0];
+      if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = prev_cmds[1];
+      if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = prev_cmds[2];
+      @(posedge clk);
+    end
 
-    //     force tb.dut.u_ctrl.u_state_regs.state_raw = invalid_state;
-    //     @(posedge clk);
-
-    //     if ($urandom_range(0, 1)) begin
-    //       force tb.dut.u_ctrl.u_state_regs.state_raw = prev_state;
-    //       @(posedge clk);
-    //     end
-    //     release tb.dut.u_ctrl.u_state_regs.state_raw;
-    //     is_ctrl_fsm_err = 1;
-    //   end
-    //   1: begin
-    //     `uvm_info(msg_id, "Force ctrl cnt", UVM_LOW)
-    //     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cnt_copies,
-    //         cnt_copies[0] != cnt_copies[1];,
-    //         , msg_id)
-    //     $deposit(tb.dut.u_ctrl.u_cnt.cnt_q[0], cnt_copies);
-    //     @(posedge clk);
-    //     if ($urandom_range(0, 1)) begin
-    //       @(negedge clk);
-    //       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cnt_copies,
-    //           cnt_copies[0] == cnt_copies[1];,
-    //           , msg_id)
-    //       $deposit(tb.dut.u_ctrl.u_cnt.cnt_q[0], cnt_copies);
-    //       @(posedge clk);
-    //     end
-    //     is_ctrl_cnt_err = 1;
-    //   end
-    // endcase
+    if (force_cmds[0]) release tb.dut.u_ctrl.adv_en_o;
+    if (force_cmds[1]) release tb.dut.u_ctrl.id_en_o;
+    if (force_cmds[2]) release tb.dut.u_ctrl.gen_en_o;
   endtask
 
   // Disable h_data stability assertion when keymgr is in disabled/invalid state or LC turns off as
