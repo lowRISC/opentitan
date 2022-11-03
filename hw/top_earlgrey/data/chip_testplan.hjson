@@ -1281,10 +1281,12 @@
             is present. Setting some `intr_enable` CSR bit when the test starts and checking it
             after reset seems suitable. The `spi_host` IPs receive multiple resets so they will
             need special consideration.
-            TODO(maturana) Add specific tests once they are developed.
+
+            X-ref with chip_rv_dm_ndm_reset_req.
+
             '''
       stage: V2
-      tests: []
+      tests: ["chip_rv_dm_ndm_reset_req"]
     }
     {
       name: chip_sw_rstmgr_cpu_info
@@ -2558,9 +2560,11 @@
             - Reset the system to exit the terminal escalation state.
             - Re-initialize the SRAMs and verify that they can now respond correctly to
               any further memory requests.
+
+            X-ref with chip_sw_all_escalation_resets.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_all_escalation_resets"]
     }
 
     // OTP (pre-verified IP) integration tests:
@@ -2855,13 +2859,14 @@
 
             - Trigger an LC escalation signal by generating an alert.
             - Verify that all flash accesses are disabled when the escalation kicks in.
-            - The CPU cannot read the flash either once escalation kicks in. This is unfortunately
-              not possible because the CPU is also disabled when the escalation is triggered.
+            - Confirm flash accesses are disabled by erroing if the device executes the ISR.
             - Use assertion based connectivity check to prove that this signal is connected to the
               flash ctrl.
+
+            X-ref with chip_sw_all_escalation_resets.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_all_escalation_resets"]
     }
     {
       name: chip_sw_flash_prim_tl_access
@@ -3191,10 +3196,11 @@
       name: chip_sw_secure_boot
       desc: '''Verify the secure boot flow.
 
-             Details TBD.
+             X-ref rom_e2e_smoke.
+             In reality this can be any rom based test, which requires secure boot.
              '''
       stage: V2
-      tests: []
+      tests: ["rom_e2e_smoke"]
     }
     {
       name: chip_lc_scrap
@@ -3253,27 +3259,6 @@
               "chip_sw_lc_walkthrough_prodend",
               "chip_sw_lc_walkthrough_rma",
               "chip_sw_lc_walkthrough_testunlocks"]
-    }
-    {
-      name: chip_sw_device_ownership
-      desc: '''Walk through device ownership stages and flows.
-
-             Details TBD.
-             '''
-      stage: V2
-      tests: []
-    }
-    {
-      name: chip_sw_sram_nmi_wipe
-      desc: '''Verify SRAM behavior during an NMI escalation.
-
-            - Trigger an NMI through the alert handler path to cause a system shutdown.
-            - SW should trigger a memory "initialization", fully randomizing RAM contents
-              and initiating another key request.
-            - Verify that the RAMs are "wiped" once this operation completes.
-            '''
-      stage: V2
-      tests: []
     }
     {
       name: chip_sw_power_max_load
