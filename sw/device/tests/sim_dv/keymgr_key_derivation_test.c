@@ -33,9 +33,6 @@ bool test_main(void) {
   dif_kmac_t kmac;
   keymgr_testutils_startup(&keymgr, &kmac);
 
-  keymgr_testutils_generate_identity(&keymgr);
-  LOG_INFO("Keymgr generated identity at CreatorRootKey State");
-
   keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams);
   keymgr_testutils_check_state(&keymgr, kDifKeymgrStateOwnerIntermediateKey);
   LOG_INFO("Keymgr entered OwnerIntKey State");

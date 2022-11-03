@@ -44,6 +44,9 @@ static const size_t kCustomStringLen = 0;
 static const char kKmacMessage[] = "\x00\x01\x02\x03";
 static const size_t kKmacMessageLen = 4;
 
+// This is computed and filled by dv side
+static volatile const uint8_t sideload_digest_result[32] = {0};
+
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
@@ -73,18 +76,14 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
   sideload_params.dest = kDifKeymgrVersionedKeyDestKmac;
   keymgr_testutils_generate_versioned_key(keymgr, sideload_params);
-  LOG_INFO("Keymgr generated HW output for KMAC at OwnerIntKey State.");
+  LOG_INFO("Keymgr generated HW output for Kmac at OwnerIntKey State");
 
   kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey, kCustomString,
                       kCustomStringLen, kKmacMessage, kKmacMessageLen,
                       kKmacOutputLen, output);
   LOG_INFO("Computed KMAC output for sideloaded key.");
 
-  // Check that the output is different from the software key output
-  // (indicating the software key was not used).
-  //
-  // TODO(weicai): also check in SV sequence that the KMAC output is correct.
-  CHECK_ARRAYS_NE(output, kSoftwareKeyExpectedOutput, kKmacOutputLen);
+  CHECK_ARRAYS_EQ(output, (uint32_t *)sideload_digest_result, kKmacOutputLen);
 }
 
 bool test_main(void) {
@@ -92,9 +91,6 @@ bool test_main(void) {
   dif_keymgr_t keymgr;
   dif_kmac_t kmac;
   keymgr_testutils_startup(&keymgr, &kmac);
-
-  // Test KMAC sideloading.
-  test_kmac_with_sideloaded_key(&keymgr, &kmac);
 
   // Advance to OwnerIntKey state.
   keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams);

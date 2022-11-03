@@ -144,6 +144,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
   virtual task check_op_in_owner_int_state(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key);
     string path_otbn_key = "tb.dut.top_earlgrey.u_keymgr.otbn_key_o";
     bit [keymgr_pkg::KeyWidth-1:0]     exp_digest;
+    bit [keymgr_pkg::KeyWidth-1:0]     unused_key;
 
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Keymgr generated identity at OwnerIntKey State")
     check_gen_id(unmasked_key, top_earlgrey_rnd_cnst_pkg::RndCnstKeymgrOwnerIntIdentitySeed);
@@ -153,7 +154,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     check_gen_out(unmasked_key, GenSWOutData, exp_digest);
 
     // check 3 sideload interfaces
-    check_kmac_sideload(unmasked_key);
+    check_kmac_sideload(unmasked_key, unused_key);
 
     check_aes_sideload(unmasked_key);
 
@@ -180,7 +181,8 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     $assertoff(0, "tb.dut.top_earlgrey.u_kmac.u_kmac_core.KeyDataStable_M");
   endtask
 
-  virtual task check_kmac_sideload(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key);
+  virtual task check_kmac_sideload(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key,
+                                   output bit [keymgr_pkg::KeyWidth-1:0] sideload_kmac_key);
     keymgr_pkg::hw_key_req_t hw_key;
     string path_kmac_key = "tb.dut.top_earlgrey.u_keymgr.kmac_key_o";
     `DV_WAIT(cfg.sw_logger_vif.printed_log ==
@@ -188,7 +190,8 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_kmac_key))
     `DV_CHECK_FATAL(uvm_hdl_read(path_kmac_key, hw_key))
     `DV_CHECK_EQ(hw_key.valid, 1)
-    check_gen_out(unmasked_key, GenKmacOutData, get_unmasked_key(hw_key.key));
+    sideload_kmac_key = get_unmasked_key(hw_key.key);
+    check_gen_out(unmasked_key, GenKmacOutData, sideload_kmac_key);
   endtask
 
   virtual task check_aes_sideload(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key);
