@@ -34,6 +34,8 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
     // pinmux may inadvertently connect the chip IOs to peripherals, causing Xs to propagate, if
     // the chip MIOs are not initialized. Hence, we weakly pull down ALL MIOs for these tests.
     cfg.chip_vif.mios_if.pins_pd = '1;
+    cfg.chip_vif.dios_if.pins_pd[top_earlgrey_pkg::DioPadSpiDevD3:
+                                 top_earlgrey_pkg::DioPadSpiHostD0] = '1;
 
     super.pre_start();
     // Disable assertions failed due to CSR random write value.
@@ -50,6 +52,8 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
     $asserton(0,
         "tb.dut.top_earlgrey.u_adc_ctrl_aon.u_adc_ctrl_core.u_adc_ctrl_fsm.NpSampleCntCfg_M");
     cfg.chip_vif.mios_if.pins_pd = '0;
+    cfg.chip_vif.dios_if.pins_pd[top_earlgrey_pkg::DioPadSpiDevD3:
+                                 top_earlgrey_pkg::DioPadSpiHostD0] = '0;
   endtask
 
 endclass

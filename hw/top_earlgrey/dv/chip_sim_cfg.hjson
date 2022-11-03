@@ -316,9 +316,9 @@
     {
       // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
       name: "chip_csr_bit_bash"
-      // Don't test over 512 randomly picked CSRs at a time.
-      run_opts: ["+test_timeout_ns=120_000_000", "+num_test_csrs=400"]
-      run_timeout_mins: 120
+      // Don't test over 200 randomly picked CSRs at a time.
+      run_opts: ["+test_timeout_ns=120_000_000", "+num_test_csrs=200"]
+      run_timeout_mins: 180
     }
     {
       // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
