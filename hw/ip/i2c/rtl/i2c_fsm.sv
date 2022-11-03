@@ -738,6 +738,10 @@ module i2c_fsm (
       end
       // AcquireSrP: target acquires repeated Start or Stop
       AcquireSrP : begin
+        // Since this is either a re-start or a stop, indicate transaction
+        // complete.
+        event_trans_complete_o = 1'b1;
+
         if (start_det) acq_fifo_wdata_o = {1'b1, 1'b1, input_byte};
         else acq_fifo_wdata_o = {1'b1, 1'b0, input_byte};
         acq_fifo_wvalid_o = 1'b1;

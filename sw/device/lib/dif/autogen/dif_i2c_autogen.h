@@ -75,70 +75,79 @@ dif_result_t dif_i2c_alert_force(const dif_i2c_t *i2c, dif_i2c_alert_t alert);
  */
 typedef enum dif_i2c_irq {
   /**
-   * Raised when the FMT FIFO depth falls below the low watermark.
+   * Host mode interrupt: raised when the FMT FIFO depth falls below the low
+   * watermark.
    */
   kDifI2cIrqFmtWatermark = 0,
   /**
-   * Raised if the RX FIFO is past the high watermark.
+   * Host mode interrupt: raised if the RX FIFO is past the high watermark.
    */
   kDifI2cIrqRxWatermark = 1,
   /**
-   * Raised if the FMT FIFO has overflowed.
+   * Host mode interrupt: raised if the FMT FIFO has overflowed.
    */
   kDifI2cIrqFmtOverflow = 2,
   /**
-   * Raised if the RX FIFO has overflowed.
+   * Host mode interrupt: raised if the RX FIFO has overflowed.
    */
   kDifI2cIrqRxOverflow = 3,
   /**
-   * Raised if there is no ACK in response to an address or data write
+   * Host mode interrupt: raised if there is no ACK in response to an address or
+   * data write
    */
   kDifI2cIrqNak = 4,
   /**
-   * Raised if the SCL line drops early (not supported without clock
-   * synchronization).
+   * Host mode interrupt: raised if the SCL line drops early (not supported
+   * without clock synchronization).
    */
   kDifI2cIrqSclInterference = 5,
   /**
-   * Raised if the SDA line goes low when host is trying to assert high
+   * Host mode interrupt: raised if the SDA line goes low when host is trying to
+   * assert high
    */
   kDifI2cIrqSdaInterference = 6,
   /**
-   * Raised if target stretches the clock beyond the allowed timeout period
+   * Host mode interrupt: raised if target stretches the clock beyond the
+   * allowed timeout period
    */
   kDifI2cIrqStretchTimeout = 7,
   /**
-   * Raised if the target does not assert a constant value of SDA during
-   * transmission.
+   * Host mode interrupt: raised if the target does not assert a constant value
+   * of SDA during transmission.
    */
   kDifI2cIrqSdaUnstable = 8,
   /**
-   * Raised if the host terminates the transaction by issuing STOP or repeated
-   * START.
+   * Host and target mode interrupt. In host mode, raised if the host terminates
+   * the transaction by issuing STOP or repeated START. In target mode, raised
+   * if the external host issues a STOP or repeated START.
    */
   kDifI2cIrqTransComplete = 9,
   /**
-   * Raised if the target needs data to transmit and TX FIFO is empty.
+   * Target mode interrupt: raised if the target needs data to transmit and TX
+   * FIFO is empty.
    */
   kDifI2cIrqTxEmpty = 10,
   /**
-   * Raised if there are extra bytes left in TX FIFO at the end of a read.
+   * Target mode interrupt: raised if there are extra bytes left in TX FIFO at
+   * the end of a read.
    */
   kDifI2cIrqTxNonempty = 11,
   /**
-   * Raised if TX FIFO has overflowed.
+   * Target mode interrupt: raised if TX FIFO has overflowed.
    */
   kDifI2cIrqTxOverflow = 12,
   /**
-   * Raised if ACQ FIFO has overflowed.
+   * Target mode interrupt: raised if ACQ FIFO has overflowed.
    */
   kDifI2cIrqAcqOverflow = 13,
   /**
-   * Raised if STOP is received after ACK (host sends both signals).
+   * Target mode interrupt: raised if STOP is received after ACK instead of NACK
+   * from an external host read.
    */
   kDifI2cIrqAckStop = 14,
   /**
-   * Raised if the host stops sending the clock during an ongoing transaction.
+   * Target mode interrupt: raised if the host stops sending the clock during an
+   * ongoing transaction.
    */
   kDifI2cIrqHostTimeout = 15,
 } dif_i2c_irq_t;
