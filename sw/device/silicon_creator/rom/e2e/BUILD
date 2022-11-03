@@ -70,7 +70,7 @@ SLOTS = {
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
-        "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
     ],
 ) for slot in SLOTS]
 
@@ -421,9 +421,9 @@ LC_STATES_SHUTDOWN_OUTPUT = [k.lower() for k in structs.to_dict(CONST.LCV)]
 [
     bitstream_splice(
         name = "bitstream_shutdown_output_{}".format(lc_state),
-        src = "@//hw/bitstream:rom",
+        src = "//hw/bitstream:rom",
         data = ":otp_img_shutdown_output_{}".format(lc_state),
-        meminfo = "@//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream:otp_mmi",
         tags = ["vivado"],
         update_usr_access = True,
     )
@@ -489,7 +489,7 @@ SEC_VERS = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
-        "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
     ],
 ) for slot in SLOTS for sec_ver in SEC_VERS]
 
@@ -548,9 +548,9 @@ LC_STATES_BOOT_POLICY_NEWER = [k.lower() for k in structs.to_dict(CONST.LCV)]
 [
     bitstream_splice(
         name = "bitstream_boot_policy_newer_{}".format(lc_state),
-        src = "@//hw/bitstream:rom",
+        src = "//hw/bitstream:rom",
         data = ":otp_img_boot_policy_newer_{}".format(lc_state),
-        meminfo = "@//hw/bitstream:otp_mmi",
+        meminfo = "//hw/bitstream:otp_mmi",
         tags = ["vivado"],
         update_usr_access = True,
     )
@@ -669,10 +669,10 @@ opentitan_flash_binary(
     signed = True,
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
-        "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     ],
 )
 
@@ -901,7 +901,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
-        "@//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
     ],
 ) for t in BOOT_POLICY_BAD_MANIFEST_CASES for slot in SLOTS]
 
