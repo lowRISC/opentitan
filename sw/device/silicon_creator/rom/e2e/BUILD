@@ -16,12 +16,10 @@ load(
     "opentitan_flash_binary",
     "opentitan_multislot_flash_binary",
 )
-load(
-    "//rules:manifest.bzl",
-    "manifest",
-)
+load("//rules:manifest.bzl", "manifest")
 load("//rules:opentitan_gdb_test.bzl", "opentitan_gdb_fpga_cw310_test")
 load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
+load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
 load("//rules:splice.bzl", "bitstream_splice")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@bazel_skylib//lib:structs.bzl", "structs")
@@ -392,30 +390,27 @@ opentitan_functest(
     targets = ["cw310_rom"],
 )
 
-LC_STATES_SHUTDOWN_OUTPUT = [k.lower() for k in structs.to_dict(CONST.LCV)]
-
 [otp_image(
-    name = "otp_img_shutdown_output_{}".format(lc_state),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+    name = "otp_img_shutdown_output_{}".format(lc_state.lower()),
+    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
     overlays = [
         "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
     ],
-    tags = ["vivado"],
-) for lc_state in LC_STATES_SHUTDOWN_OUTPUT]
+) for lc_state in structs.to_dict(CONST.LCV)]
 
 # Splice OTP images into bitstreams
 [
     bitstream_splice(
-        name = "bitstream_shutdown_output_{}".format(lc_state),
+        name = "bitstream_shutdown_output_{}".format(lc_state.lower()),
         src = "//hw/bitstream:rom",
-        data = ":otp_img_shutdown_output_{}".format(lc_state),
+        data = ":otp_img_shutdown_output_{}".format(lc_state.lower()),
         meminfo = "//hw/bitstream:otp_mmi",
         tags = ["vivado"],
         update_usr_access = True,
     )
-    for lc_state in LC_STATES_SHUTDOWN_OUTPUT
+    for lc_state in structs.to_dict(CONST.LCV)
 ]
 
 manifest({
@@ -425,29 +420,26 @@ manifest({
 })
 
 [opentitan_functest(
-    name = "shutdown_output_{}".format(lc_state),
+    name = "shutdown_output_{}".format(lc_state.lower()),
     cw310 = cw310_params(
-        bitstream = ":bitstream_shutdown_output_{}".format(lc_state),
+        bitstream = ":bitstream_shutdown_output_{}".format(lc_state.lower()),
         exit_failure = MSG_PASS,
         exit_success = MSG_TEMPLATE_BFV_LCV.format(
             hex(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),
-            hex(getattr(
-                CONST.LCV,
-                lc_state.upper(),
-            )),
+            hex(lc_state_val),
         ),
-        tags = ["vivado"],
+        tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
     ),
     manifest = ":manifest_bad_identifier",
     ot_flash_binary = ":empty_test_slot_a",
     signed = False,
     targets = ["cw310_rom"],
-) for lc_state in LC_STATES_SHUTDOWN_OUTPUT]
+) for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()]
 
 test_suite(
     name = "shutdown_output",
     tags = ["manual"],
-    tests = ["shutdown_output_{}".format(lc_state) for lc_state in LC_STATES_SHUTDOWN_OUTPUT],
+    tests = ["shutdown_output_{}".format(lc_state.lower()) for lc_state in structs.to_dict(CONST.LCV)],
 )
 
 SEC_VERS = [
@@ -519,45 +511,39 @@ BOOT_POLICY_NEWER_CASES = [
     },
 ]
 
-LC_STATES_BOOT_POLICY_NEWER = [k.lower() for k in structs.to_dict(CONST.LCV)]
-
 [otp_image(
-    name = "otp_img_boot_policy_newer_{}".format(lc_state),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+    name = "otp_img_boot_policy_newer_{}".format(lc_state.lower()),
+    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
     overlays = [
         "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
     ],
-    tags = ["vivado"],
-) for lc_state in LC_STATES_BOOT_POLICY_NEWER]
+) for lc_state in structs.to_dict(CONST.LCV)]
 
 # Splice OTP images into bitstreams
 [
     bitstream_splice(
-        name = "bitstream_boot_policy_newer_{}".format(lc_state),
+        name = "bitstream_boot_policy_newer_{}".format(lc_state.lower()),
         src = "//hw/bitstream:rom",
-        data = ":otp_img_boot_policy_newer_{}".format(lc_state),
+        data = ":otp_img_boot_policy_newer_{}".format(lc_state.lower()),
         meminfo = "//hw/bitstream:otp_mmi",
         tags = ["vivado"],
         update_usr_access = True,
     )
-    for lc_state in LC_STATES_BOOT_POLICY_NEWER
+    for lc_state in structs.to_dict(CONST.LCV)
 ]
 
 [opentitan_functest(
     name = "boot_policy_newer_{}_a_{}_b_{}".format(
-        lc_state,
+        lc_state.lower(),
         t["a"],
         t["b"],
     ),
     cw310 = cw310_params(
-        bitstream = ":bitstream_boot_policy_newer_{}".format(lc_state),
-        exit_success = t["exit_success"].format(hex(getattr(
-            CONST.LCV,
-            lc_state.upper(),
-        ))),
-        tags = ["vivado"],
+        bitstream = ":bitstream_boot_policy_newer_{}".format(lc_state.lower()),
+        exit_success = t["exit_success"].format(hex(lc_state_val)),
+        tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
     ),
     key = "multislot",
     ot_flash_binary = ":sec_ver_{}_{}_image".format(
@@ -565,16 +551,16 @@ LC_STATES_BOOT_POLICY_NEWER = [k.lower() for k in structs.to_dict(CONST.LCV)]
         t["b"],
     ),
     targets = ["cw310_rom"],
-) for lc_state in LC_STATES_BOOT_POLICY_NEWER for t in BOOT_POLICY_NEWER_CASES]
+) for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items() for t in BOOT_POLICY_NEWER_CASES]
 
 test_suite(
     name = "boot_policy_newer",
     tags = ["manual"],
     tests = ["boot_policy_newer_{}_a_{}_b_{}".format(
-        lc_state,
+        lc_state.lower(),
         t["a"],
         t["b"],
-    ) for lc_state in LC_STATES_BOOT_POLICY_NEWER for t in BOOT_POLICY_NEWER_CASES],
+    ) for lc_state in structs.to_dict(CONST.LCV) for t in BOOT_POLICY_NEWER_CASES],
 )
 
 BOOT_POLICY_ROLLBACK_CASES = [
@@ -728,12 +714,12 @@ opentitan_flash_binary(
                 t["name"],
             ),
             exit_success = t["exit_success"][lc_state.lower()],
-            tags = ["vivado"],
+            tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         ot_flash_binary = ":empty_test_sigverify_mod_exp",
         targets = ["cw310_rom"],
     )
-    for lc_state in structs.to_dict(CONST.LCV)
+    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
     for t in SIGVERIFY_MOD_EXP_CASES
 ]
 
@@ -989,7 +975,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
                 t.get("sec_ver", 0),
             ),
             exit_success = t["exit_success"],
-            tags = ["vivado"],
+            tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         key = "multislot",
         ot_flash_binary = "boot_policy_bad_manifest_{}_{}_img".format(
@@ -1001,7 +987,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "verilator",
         ],
     )
-    for lc_state in structs.to_dict(CONST.LCV)
+    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
     for t in BOOT_POLICY_BAD_MANIFEST_CASES
     for slot in SLOTS
 ]
@@ -1113,7 +1099,7 @@ BOOT_POLICY_VALID_CASES = [
             bitstream = "bitstream_boot_policy_valid_{}".format(lc_state.lower()),
             exit_failure = MSG_PASS if a["desc"] == b["desc"] and a["desc"] == "bad" else DEFAULT_TEST_FAILURE_MSG,
             exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
-            tags = ["vivado"],
+            tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         key = "multislot",
         ot_flash_binary = ":boot_policy_valid_img_a_{}_b_{}".format(
@@ -1122,7 +1108,7 @@ BOOT_POLICY_VALID_CASES = [
         ),
         targets = ["cw310_rom"],
     )
-    for lc_state in structs.to_dict(CONST.LCV)
+    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
     for a in BOOT_POLICY_VALID_CASES
     for b in BOOT_POLICY_VALID_CASES
 ]
@@ -1384,7 +1370,6 @@ REDACT.update({"INVALID": 0x0})
             "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
             ":otp_json_{}_overlay".format(redact.lower()),
         ],
-        tags = ["vivado"],
         visibility = ["//visibility:private"],
     )
     for lc_state in structs.to_dict(CONST.LCV)
@@ -1429,9 +1414,7 @@ REDACT.update({"INVALID": 0x0})
                 lc_state_val,
                 redact_val,
             ))),
-            tags = [
-                "vivado",
-            ],
+            tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         signed = False,
         targets = ["cw310_rom"],
