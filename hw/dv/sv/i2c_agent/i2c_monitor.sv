@@ -34,13 +34,12 @@ class i2c_monitor extends dv_base_monitor #(
 
   virtual task run_phase(uvm_phase phase);
      wait(cfg.vif.rst_ni);
+     `JDBG(("MON: ifmode:%s", cfg.if_mode.name))
     forever begin
       fork
         begin: iso_fork
           fork
             begin
-	       wait(cfg.agent_init_done);     
-	       `JDBG(("MON: ifmode:%s", cfg.if_mode.name))
               if (cfg.if_mode == Device) collect_device_item(phase);
               else collect_host_item(phase);
             end

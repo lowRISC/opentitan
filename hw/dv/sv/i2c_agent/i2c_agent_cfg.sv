@@ -14,9 +14,6 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
 
   timing_cfg_t    timing_cfg;
 
-  // This has to be set after if_mode is set. 
-  bit agent_init_done = 0;
-   
   virtual i2c_if  vif;
   bit 	  host_scl_start;
   bit 	  host_scl_stop;

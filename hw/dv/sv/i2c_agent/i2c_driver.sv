@@ -28,7 +28,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
       reset_signals();
       get_and_drive();
       begin
-	 wait(cfg.agent_init_done);	 
 	 if (cfg.if_mode == Host) drive_scl();		
       end
     join

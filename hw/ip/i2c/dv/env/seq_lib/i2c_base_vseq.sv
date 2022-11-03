@@ -200,8 +200,9 @@ class i2c_base_vseq extends cip_base_vseq #(
     print_seq_cfg_vars("post-start");
   endtask : post_start
 
+  // TODO remove input arguments 
   virtual task initialization(if_mode_e mode = Host);
-    wait(cfg.m_i2c_agent_cfg.vif.rst_ni);
+    wait(cfg.m_i2c_agent_cfg.vif.rst_ni);         
     if (mode == Host) begin
       i2c_init(Host);
       agent_init(Device);
@@ -213,12 +214,11 @@ class i2c_base_vseq extends cip_base_vseq #(
         (mode == Host) ? "Host/Target" : "Target/Host"), UVM_LOW)
   endtask : initialization
 
+  // 'cfg.m_i2c_agent_cfg.if_mode' is set by plusarg.
+  // default value of if_mode in block level is 'Device'
   virtual task agent_init(if_mode_e mode = Device);
     i2c_base_seq m_base_seq;
 
-    cfg.m_i2c_agent_cfg.if_mode = mode;
-    cfg.m_i2c_agent_cfg.agent_init_done = 1;
-     
     `uvm_info(`gfn, $sformatf("\n  initialize agent in mode %s", mode.name()), UVM_DEBUG)
     if (mode == Host) begin
 //      // stop re-active seq when the agent switches to Host mode
