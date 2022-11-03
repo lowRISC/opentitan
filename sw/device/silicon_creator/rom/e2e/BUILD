@@ -918,14 +918,43 @@ BOOT_POLICY_VALID_CASES = [
 ]
 
 [
+    otp_image(
+        name = "otp_img_boot_policy_valid_{}".format(lc_state.lower()),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
+        overlays = [
+            "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+        ],
+    )
+    for lc_state in structs.to_dict(CONST.LCV)
+]
+
+# Splice OTP images into bitstreams
+[
+    bitstream_splice(
+        name = "bitstream_boot_policy_valid_{}".format(lc_state.lower()),
+        src = "//hw/bitstream:rom",
+        data = ":otp_img_boot_policy_valid_{}".format(lc_state.lower()),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = ["vivado"],
+        update_usr_access = True,
+    )
+    for lc_state in structs.to_dict(CONST.LCV)
+]
+
+[
     opentitan_functest(
-        name = "boot_policy_valid_a_{}_b_{}".format(
+        name = "boot_policy_valid_{}_a_{}_b_{}".format(
+            lc_state.lower(),
             a["desc"],
             b["desc"],
         ),
         cw310 = cw310_params(
+            bitstream = "bitstream_boot_policy_valid_{}".format(lc_state.lower()),
             exit_failure = MSG_PASS if a["desc"] == b["desc"] and a["desc"] == "bad" else DEFAULT_TEST_FAILURE_MSG,
             exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
+            tags = ["vivado"],
         ),
         key = "multislot",
         ot_flash_binary = ":boot_policy_valid_img_a_{}_b_{}".format(
@@ -934,18 +963,21 @@ BOOT_POLICY_VALID_CASES = [
         ),
         targets = ["cw310_rom"],
     )
+    for lc_state in structs.to_dict(CONST.LCV)
     for a in BOOT_POLICY_VALID_CASES
     for b in BOOT_POLICY_VALID_CASES
 ]
 
 test_suite(
-    name = "boot_policy_valid",
+    name = "rom_e2e_boot_policy_valid",
     tags = ["manual"],
     tests = [
-        "boot_policy_valid_a_{}_b_{}".format(
+        "boot_policy_valid_{}_a_{}_b_{}".format(
+            lc_state.lower(),
             a["desc"],
             b["desc"],
         )
+        for lc_state in structs.to_dict(CONST.LCV)
         for a in BOOT_POLICY_VALID_CASES
         for b in BOOT_POLICY_VALID_CASES
     ],
