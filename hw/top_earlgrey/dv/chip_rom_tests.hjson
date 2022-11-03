@@ -29,6 +29,14 @@
       en_run_modes: ["sw_test_mode_rom"]
       run_opts: ["+sw_test_timeout_ns=20000000"]
     }
+    {
+      name: rom_e2e_keymgr_init
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_keymgr_init:1:signed"]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: ["+sw_test_timeout_ns=20000000"]
+      run_timeout_mins: 120
+    }
 
     // Signed chip-level tests to be run with ROM, instead of test ROM.
     {
@@ -45,13 +53,6 @@
       name: rom_keymgr_functest
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/silicon_creator/lib/drivers:keymgr_functest:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=10000000"]
-    }
-    {
-      name: rom_keymgr_init
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/silicon_creator/rom/e2e:e2e_keymgr_init:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=10000000"]
     }

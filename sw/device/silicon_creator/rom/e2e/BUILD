@@ -5,7 +5,6 @@
 load(
     "//rules:opentitan_test.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
-    "DEFAULT_TEST_SUCCESS_MSG",
     "cw310_params",
     "dv_params",
     "opentitan_functest",
@@ -167,11 +166,15 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "e2e_keymgr_init",
+    name = "rom_e2e_keymgr_init",
     srcs = ["rom_e2e_keymgr_init_test.c"],
+    dv = dv_params(
+        rom = "//sw/device/silicon_creator/rom",
+    ),
     signed = True,
     targets = [
         "cw310_rom",
+        "dv",
         "verilator",
     ],
     verilator = verilator_params(
