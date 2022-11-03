@@ -19,8 +19,7 @@ error()
     exit 1
 }
 
-# TODO(#15846) Stop accepting --openocd-version once Private CI stops using it.
-long="verilator-version:,openocd-version:,verible-version:,rust-version:"
+long="verilator-version:,verible-version:,rust-version:"
 ARGS="$(getopt -o "" -l "$long" -- "$@")" || usage
 
 VERILATOR_VERSION=
@@ -31,7 +30,6 @@ while :
 do
     case "$1" in
         --verilator-version) VERILATOR_VERSION="$2"; shift 2 ;;
-        --openocd-version)   echo "Ignoring --openocd-version"; shift 2 ;;
         --verible-version)   VERIBLE_VERSION="$2";   shift 2 ;;
         --rust-version)      RUST_VERSION="$2";      shift 2 ;;
         --) shift; break ;;
