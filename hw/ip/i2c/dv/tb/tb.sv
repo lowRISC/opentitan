@@ -136,4 +136,11 @@ module tb;
     run_test();
   end
 
+//  initial begin
+//     #8.62us;
+//     force tb.dut.i2c_core.scl_o = 0;
+//     repeat(20) @(posedge clk);
+//     release tb.dut.i2c_core.scl_o;
+//     
+//  end
 endmodule : tb

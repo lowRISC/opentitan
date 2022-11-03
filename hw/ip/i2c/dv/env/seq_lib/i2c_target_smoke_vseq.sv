@@ -19,11 +19,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
     program_registers();
 
     `uvm_create_obj(i2c_target_base_seq, m_i2c_host_seq)
-//    m_i2c_host_seq.cfg = cfg.m_i2c_agent_cfg;
 
-//    `uvm_create_obj(i2c_item, item)
-//    `DV_CHECK_RANDOMIZE_FATAL(item)
-//    m_i2c_host_seq.req_q.push_back(item);
      create_write_txn(m_i2c_host_seq);
     m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
     `JDBG(("ASSA"))

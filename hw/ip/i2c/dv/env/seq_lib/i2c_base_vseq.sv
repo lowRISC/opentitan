@@ -57,6 +57,9 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand uint                   prob_sda_interference;
   rand uint                   prob_scl_interference;
 
+  // host timeout ctrl value
+   bit [31:0] 		      host_timeout_ctrl = 32'hffff;
+   
   // constraints
   constraint addr_c {
     addr inside {[cfg.seq_cfg.i2c_min_addr : cfg.seq_cfg.i2c_max_addr]};
@@ -214,7 +217,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     i2c_base_seq m_base_seq;
 
     cfg.m_i2c_agent_cfg.if_mode = mode;
-    cfg.m_i2c_agent_cfg.mon_start = 1;
+    cfg.m_i2c_agent_cfg.agent_init_done = 1;
      
     `uvm_info(`gfn, $sformatf("\n  initialize agent in mode %s", mode.name()), UVM_DEBUG)
     if (mode == Host) begin
@@ -254,6 +257,9 @@ class i2c_base_vseq extends cip_base_vseq #(
       ral.target_id.address1.set(target_addr1);
       ral.target_id.mask1.set(7'h3f);
       csr_update(ral.target_id);
+      // Host timeout control
+      ral.host_timeout_ctrl.set(this.host_timeout_ctrl);
+      csr_update(ral.host_timeout_ctrl);
     end
 
     // clear fifos

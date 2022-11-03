@@ -23,6 +23,17 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     end
   endtask : reset_signals
 
+   virtual task run_phase(uvm_phase phase);
+   fork
+      reset_signals();
+      get_and_drive();
+      begin
+	 wait(cfg.agent_init_done);	 
+	 if (cfg.if_mode == Host) drive_scl();		
+      end
+    join
+   endtask
+   
   virtual task get_and_drive();
     i2c_item req;
     @(posedge cfg.vif.rst_ni);
@@ -56,6 +67,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
      unique case (req.drv_type)
       HostStart: begin
         cfg.vif.host_start(cfg.timing_cfg);
+	cfg.host_scl_start = 1;	
       end
       HostRStart: begin
         cfg.vif.host_rstart(cfg.timing_cfg);
@@ -66,13 +78,17 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
           cfg.vif.host_data(cfg.timing_cfg, req.wdata[i]);
         end
 
-        // drive one more bit for ack
-        cfg.vif.host_data(cfg.timing_cfg, 1);
+         // drive one more bit for ack
+//         cfg.vif.host_data(cfg.timing_cfg, 1);
+	cfg.vif.wait_scl(.iter(1), .tc(cfg.timing_cfg));
+	 
+	 
       end
       HostNAck: begin
         cfg.vif.host_nack(cfg.timing_cfg);
       end
       HostStop: begin
+	cfg.host_scl_stop = 1;	 
         cfg.vif.host_stop(cfg.timing_cfg);
       end
       default: begin
@@ -139,4 +155,27 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     cfg.vif.sda_o = 1'b1;
   endtask : release_bus
 
+   task drive_scl();
+      int dbg;
+      real mytime;
+      
+      forever begin
+	 wait(cfg.host_scl_start);
+	 while(!cfg.host_scl_stop) begin
+//	    mytime = $time;	    
+	    cfg.vif.scl_o = 1'b0;
+	    cfg.vif.wait_for_dly(cfg.timing_cfg.tClockLow);
+	    cfg.vif.wait_for_dly(cfg.timing_cfg.tSetupBit);
+	    cfg.vif.scl_o = 1'b1;	    
+	    wait(cfg.vif.cb.scl_i === 1'b1);
+	    cfg.vif.wait_for_dly(cfg.timing_cfg.tClockPulse);
+	    if (!cfg.host_scl_stop) cfg.vif.scl_o = 1'b0;	    
+	    cfg.vif.wait_for_dly(cfg.timing_cfg.tHoldBit);
+//	    `JDBG(("res:period:%0d : %3.5f",dbg++, ($time - mytime)))
+	 end
+	 cfg.host_scl_start = 0;
+	 cfg.host_scl_stop = 0;	 
+      end
+   endtask
+ 
 endclass : i2c_driver
