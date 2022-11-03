@@ -94,6 +94,7 @@ package chip_env_pkg;
 
   // Two status for LC JTAG to identify if LC state transition is successful.
   typedef enum int {
+    LcInitialized,
     LcReady,
     LcTransitionSuccessful,
     LcTransitionCntError,

@@ -652,7 +652,7 @@ The TAP isolation and multiplexing is implemented in the pinmux IP as [described
 The register layout and offsets shown in the [register table]{{< relref "#register-table" >}} below are identical for both the CSR and JTAG TAP interfaces.
 Hence the following programming sequence applies to both SW running on the device and SW running on the test appliance that accesses life cycle through the TAP.
 
-1. In order to perform a life cycle transition, SW should first check whether the life cycle controller has successfully initialized by making sure that the {{< regref "STATUS.READY" >}} bit is set to 1, and that all other status and error bits in {{< regref "STATUS" >}} are set to 0.
+1. In order to perform a life cycle transition, SW should first check whether the life cycle controller has successfully initialized and is ready to accept a transition command by making sure that the {{< regref "STATUS.READY" >}} bit is set to 1, and that all other status and error bits in {{< regref "STATUS" >}} are set to 0.
 
 2. Read the {{< regref "LC_STATE" >}} and {{< regref "LC_TRANSITION_CNT" >}} registers to determine which life cycle state the device currently is in, and how many transition attempts are still available.
 

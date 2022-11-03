@@ -73,6 +73,9 @@ package lc_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
+    } initialized;
+    struct packed {
+      logic        d;
     } ready;
     struct packed {
       logic        d;
@@ -173,7 +176,7 @@ package lc_ctrl_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    lc_ctrl_hw2reg_status_reg_t status; // [852:843]
+    lc_ctrl_hw2reg_status_reg_t status; // [853:843]
     lc_ctrl_hw2reg_claim_transition_if_reg_t claim_transition_if; // [842:835]
     lc_ctrl_hw2reg_transition_regwen_reg_t transition_regwen; // [834:834]
     lc_ctrl_hw2reg_transition_ctrl_reg_t transition_ctrl; // [833:833]
@@ -229,7 +232,7 @@ package lc_ctrl_reg_pkg;
   parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_PROG_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_STATE_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] LC_CTRL_ALERT_TEST_FATAL_BUS_INTEG_ERROR_RESVAL = 1'h 0;
-  parameter logic [9:0] LC_CTRL_STATUS_RESVAL = 10'h 0;
+  parameter logic [10:0] LC_CTRL_STATUS_RESVAL = 11'h 0;
   parameter logic [7:0] LC_CTRL_CLAIM_TRANSITION_IF_RESVAL = 8'h 69;
   parameter logic [7:0] LC_CTRL_CLAIM_TRANSITION_IF_MUTEX_RESVAL = 8'h 69;
   parameter logic [0:0] LC_CTRL_TRANSITION_REGWEN_RESVAL = 1'h 0;

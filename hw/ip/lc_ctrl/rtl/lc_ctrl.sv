@@ -291,7 +291,7 @@ module lc_ctrl
   dec_lc_cnt_t       dec_lc_cnt;
   dec_lc_id_state_e  dec_lc_id_state;
 
-  logic lc_idle_d;
+  logic lc_idle_d, lc_done_d;
 
   // Assign hardware revision output
   assign hw_rev_o = '{chip_gen: ChipGen, chip_rev: ChipRev};
@@ -303,6 +303,7 @@ module lc_ctrl
 
   always_comb begin : p_csr_assign_outputs
     hw2reg = '0;
+    hw2reg.status.initialized            = lc_done_d;
     hw2reg.status.ready                  = lc_idle_d;
     hw2reg.status.transition_successful  = trans_success_q;
     hw2reg.status.transition_count_error = trans_cnt_oflw_error_q;
@@ -589,7 +590,7 @@ module lc_ctrl
     .q_o(lc_init)
   );
 
-  logic lc_done_d, lc_done_q;
+  logic lc_done_q;
   logic lc_idle_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_sync_regs
