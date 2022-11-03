@@ -142,6 +142,12 @@ void keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
     }
     keymgr_testutils_check_state(keymgr, kDifKeymgrStateCreatorRootKey);
     LOG_INFO("Keymgr entered CreatorRootKey State");
+
+    // Identity generation is not really necessary for all tests, but it is
+    // added to make sure each test using this function is also compatible with
+    // the DV_WAIT sequences from keymgr_key_derivation vseq
+    keymgr_testutils_generate_identity(keymgr);
+    LOG_INFO("Keymgr generated identity at CreatorRootKey State");
   }
 }
 
