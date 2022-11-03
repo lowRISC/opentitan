@@ -953,7 +953,8 @@ bool test_main(void) {
     LOG_INFO("The regular interrupt count is %d", interrupt_count);
 
     int nmi_interrupt_count = flash_ctrl_testutils_counter_get(kCounterNmi);
-    if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalStdErr) {
+    if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalStdErr ||
+        kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlMainFatalError) {
       // ISRs should not run if flash_ctrl gets a fault because it should
       // block flash accesses.
       CHECK(interrupt_count == 0,
