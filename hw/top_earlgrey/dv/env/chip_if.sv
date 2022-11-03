@@ -833,8 +833,9 @@ interface chip_if;
     return path;
   endfunction
 
-  // Disable SVAs for padctrl attributes test.
+  // Disable SVAs in certain hierarchies specific to tests.
   bit chip_padctrl_attributes_test_sva_disable;
+  bit chip_sw_sleep_pin_mio_dio_val_sva_disable;
 
   /*
    * Helper methods for forcing internal signals.

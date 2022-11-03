@@ -15,6 +15,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "pinmux_regs.h"  // Generated.
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -24,9 +25,6 @@ static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 static dif_pwrmgr_t pwrmgr;
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t plic;
-
-// Volatile for vseq to assign random constant to select one of 8 MIO DIO
-static volatile const uint8_t kWakeupSel = 0;
 
 static const uint32_t kNumDio = 16;  // top_earlgrey has 16 DIOs
 
@@ -78,8 +76,12 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
 
+  // Randomly pick one of the wakeup detectors.
+  dif_pinmux_index_t wakeup_detector_selected =
+      rand_testutils_gen32_range(0, PINMUX_PARAM_N_WKUP_DETECT - 1);
+
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
-    LOG_INFO("POR reset");
+    LOG_INFO("Test in POR phase");
 
     LOG_INFO("pinmux_init end");
 
@@ -120,13 +122,12 @@ bool test_main(void) {
           pad_sel++;
         }
       }
+      LOG_INFO("Pad Selection: %d / %d", mio0_dio1, pad_sel);
     } else {
       // MIO: 0, 1 are tie-0, tie-1
       pad_sel = rand_testutils_gen32_range(2, kTopEarlgreyPinmuxInselLast);
+      LOG_INFO("Pad Selection: %d / %d", mio0_dio1, pad_sel - 2);
     }
-
-    // Send selection to SV vseq.
-    LOG_INFO("Pad Selection: %d / %d", mio0_dio1, pad_sel);
 
     if (mio0_dio1 == 0) {
       // TODO: Check if the PAD is locked (kDifPinmuxLockTargetOutsel), then
@@ -141,8 +142,11 @@ bool test_main(void) {
     wakeup_cfg.pad_type = mio0_dio1;
     wakeup_cfg.pad_select = pad_sel;
 
+    // TODO: A better test would be to program ALL wakeup detectors with
+    // randomly chosen pin wakeup sources and prove the right wakeup source
+    // woke up the chip from sleep.
     CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(
-        &pinmux, (uint32_t)kWakeupSel, wakeup_cfg));
+        &pinmux, wakeup_detector_selected, wakeup_cfg));
 
     if (deep_powerdown_en == 0) {
       pwrmgr_domain_cfg = kDifPwrmgrDomainOptionMainPowerInLowPower |
@@ -156,24 +160,25 @@ bool test_main(void) {
     wait_for_interrupt();
   }
 
-  // SW passed WFI() or wakeup from Deep Powerdown.
   if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr,
                                         kDifPwrmgrWakeupRequestSourceThree)) {
-    // Pinmux wakeup
-    LOG_INFO("PINMUX PIN Wakeup");
-
-    // TODO: Check if selected wakeup detector was triggerred.
-
+    LOG_INFO("Test in post-sleep pin wakeup phase");
+    uint32_t wakeup_cause;
+    CHECK_DIF_OK(dif_pinmux_wakeup_cause_get(&pinmux, &wakeup_cause));
+    CHECK(wakeup_cause == 1 << wakeup_detector_selected);
+    CHECK_DIF_OK(
+        dif_pinmux_wakeup_detector_disable(&pinmux, wakeup_detector_selected));
     return true;
-  } else {
-    dif_pwrmgr_wakeup_reason_t wakeup_reason;
 
+  } else {
     // Other wakeup. This is a failure.
+    dif_pwrmgr_wakeup_reason_t wakeup_reason;
     CHECK_DIF_OK(dif_pwrmgr_wakeup_reason_get(&pwrmgr, &wakeup_reason));
     LOG_ERROR("Unexpected wakeup detected: type = %d, request_source = %d",
               wakeup_reason.types, wakeup_reason.request_sources);
     return false;
   }
+
   return false;
 }
 

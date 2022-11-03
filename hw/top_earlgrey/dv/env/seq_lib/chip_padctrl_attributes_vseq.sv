@@ -164,7 +164,11 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   }
 
   virtual task body();
+    // The chip_padctrl_attributes test verifies the input / output connections of the pads to
+    // peripherals and fully verifies all pad attributes. In doing so, Xs may end up propagating
+    // into the peripheral. We hence, disable SVAs in these blocks while the test is running.
     cfg.chip_vif.chip_padctrl_attributes_test_sva_disable = 1;
+
     // TODO: remove later, once default pulls on straps are refactored.
     cfg.chip_vif.tap_straps_if.disconnect();
     // TODO: remove later, once default pulls on JTAG IOs are refactored.

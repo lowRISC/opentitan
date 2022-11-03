@@ -178,6 +178,15 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     // Release any driver interfaces.
     cfg.chip_vif.disconnect_all_interfaces(.disconnect_default_pulls(0));
 
+    // The SW test randomizes between deep and light sleep. The SW test also randomizes the
+    // retention values of DIOs during sleep. If the SW ends up picking up the CLK or CSB ports of
+    // the SPI peripherals (that have dedicated pads) for example, then setting the values
+    // ends up triggering unexpected SVA errors. So we disable SVAs in those peripherals for this
+    // test. It may also be an artifact of having external weak pulls on DIOs. TODO: revisit this
+    // once we eliminate all weak pulls on all IOs (in chip_if.sv).
+    // TODO: deassert the below bit to reenable SVAs once we are back in active power.
+    cfg.chip_vif.chip_sw_sleep_pin_mio_dio_val_sva_disable = 1;
+
     @(cfg.chip_vif.pwrmgr_low_power_if.cb);
 
     `uvm_info(`gfn, "Chip Entered Deep Powerdown mode.", UVM_LOW)
@@ -186,6 +195,7 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
 
     // If `chech_pad_retention_type()` runs without uvm_error and reach this point, the test passed
     // full check
+    // TODO: Cleanly exit the test with idle CPU.
     override_test_status_and_finish(.passed(1'b 1));
 
   endtask : body

@@ -23,10 +23,6 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_sleep_pin_wake_vseq)
   `uvm_object_new
 
-  // The detector module to be used (total 8)
-  rand bit [7:0] detector_idx;
-  constraint pinmux_detector_c {detector_idx inside {[8'h0 : 8'h7]};}
-
   // Random delay (in ns)
   // - Fast FSM to enter Low power : 18.8 us
   // - Slow FSM to enter Low power : 278.7us
@@ -42,17 +38,11 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     };
   }
 
-  virtual task cpu_init();
-    bit [7:0] byte_arr [] = '{detector_idx};
-    super.cpu_init();
-    sw_symbol_backdoor_overwrite("kWakeupSel", byte_arr);
-  endtask : cpu_init
+  // SW-randomized values.
+  top_earlgrey_pkg::pad_type_e pad_type;
+  int unsigned pad_idx;
 
   virtual task body();
-    // SW-randomized values.
-    top_earlgrey_pkg::pad_type_e pad_type;
-    int unsigned pad_idx;
-
     string printed_log;
     super.body();
 
@@ -79,16 +69,40 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.disconnect_all_interfaces(.disconnect_default_pulls(0));
 
     drive_pad(pad_type, pad_idx, 0);
-    // TODO: replace with pwrmgr low_power signal probe.
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Entering low power mode.")
+    `DV_WAIT(cfg.chip_vif.pwrmgr_low_power);
     #(exit_delay * 1ns);
     drive_pad(pad_type, pad_idx, 1);
 
-    // After some time, the SW reboots and start over again. The ROM requires the SW strap pins to
-    // be driven to legal values. TODO: Find a better way to do this automatically.
-    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
-    cfg.chip_vif.sw_straps_if.drive(0);
+    // The SW test randomizes between normal and deep sleep. If deep sleep is chosen, the SW reboots
+    // after wake up and starts all over again, beginning from the ROM. The ROM requires the SW
+    // strap pins to be driven to legal values when it comes online, so we add this logic below.
+    // TODO: Find a better way to do this automatically.
+    fork
+      begin
+        `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
+        cfg.chip_vif.sw_straps_if.drive(0);
+      end
+      // On low power exit, the ROM restarts execution. The testbench at some point, drives the SW
+      // strap pins again to legal values so that the ROM does not bomb. It may be possible that the
+      // pin chosen for wakeup is one of the same pins used for the SW straps. If the sw_straps_if
+      // drives those pins at the same time as mios_if, then it will result in X-prop. If we
+      // disconnect the mios_if too soon, then it will result in X-prop from the pinmux's (which is
+      // in the AON domain) wakeup detection logic. So, we need to disconnect the pin from mios_if
+      // at the same time the sw_straps_if is driven.
+      if (pad_type == top_earlgrey_pkg::MioPad &&
+          pad_idx inside {[top_earlgrey_pkg::MioPadIoc2:top_earlgrey_pkg::MioPadIoc0]}) begin
+        @(cfg.chip_vif.sw_straps_if.pins_oe);
+        drive_pad(pad_type, pad_idx, 1'bz);
+      end
+    join_none
   endtask : body
+
+  virtual task post_start();
+    super.post_start();
+    // If we reached this point, the SW must have disabled the wakeup detection logic. It is now
+    // safe to undrive the pad.
+    drive_pad(pad_type, pad_idx, 1'bz);
+  endtask
 
   function void drive_pad(top_earlgrey_pkg::pad_type_e pad_type, int unsigned pad_idx, logic value);
     `uvm_info(`gfn, $sformatf("Driving %0s[%0d] to %0b", pad_type.name(), pad_idx, value), UVM_LOW)
@@ -97,14 +111,13 @@ class chip_sw_sleep_pin_wake_vseq extends chip_sw_base_vseq;
         `DV_CHECK(pad_idx inside {[0:top_earlgrey_pkg::DioCount-1]})
         // DIO from the pinmux peripheral side needs to be mapped to the pad side. This mapping is
         // provided by chip_common_pkg::DioToDioPadMap.
-        cfg.chip_vif.dios_if.drive_pin(DioToDioPadMap[pad_idx], value);
+        if (value === 1'bz) cfg.chip_vif.dios_if.drive_en_pin(DioToDioPadMap[pad_idx], 0);
+        else                cfg.chip_vif.dios_if.drive_pin(DioToDioPadMap[pad_idx], value);
       end
       top_earlgrey_pkg::MioPad: begin
-        // On the pinmux peripheral side, the MIO pad numbering starts at 2 (index 0 and 1 are
-        // reserved for tie-high and tie-low indications).
-        pad_idx = pad_idx - 2;
         `DV_CHECK(pad_idx inside {[0:MioPadCount-1]})
-        cfg.chip_vif.mios_if.drive_pin(pad_idx, value);
+        if (value === 1'bz) cfg.chip_vif.mios_if.drive_en_pin(pad_idx, 0);
+        else                cfg.chip_vif.mios_if.drive_pin(pad_idx, value);
       end
       default: `uvm_fatal(`gfn, $sformatf("Invalid pad type: %0d", pad_type))
     endcase
