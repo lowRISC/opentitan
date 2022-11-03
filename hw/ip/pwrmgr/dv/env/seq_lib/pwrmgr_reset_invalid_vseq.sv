@@ -122,7 +122,7 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
       DVWaitOtpInit: return pwrmgr_pkg::FastPwrStateOtpInit;
       DVWaitLcInit: return pwrmgr_pkg::FastPwrStateLcInit;
       DVWaitAckPwrUp: return pwrmgr_pkg::FastPwrStateAckPwrUp;
-      DVWaitRomCheck: return pwrmgr_pkg::FastPwrStateRomCheck;
+      DVWaitRomCheck: return pwrmgr_pkg::FastPwrStateRomCheckDone;
       DVWaitStrap: return pwrmgr_pkg::FastPwrStateStrap;
       DVWaitActive: return pwrmgr_pkg::FastPwrStateActive;
       DVWaitInvalid: return pwrmgr_pkg::FastPwrStateInvalid;

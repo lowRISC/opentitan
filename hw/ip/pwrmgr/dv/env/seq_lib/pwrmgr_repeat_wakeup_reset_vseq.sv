@@ -23,7 +23,7 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
     cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
     cfg.clk_rst_vif.wait_clks(5);
     add_rom_rsp_noise();
-    wait(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheck);
+    wait(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone);
     add_rom_rsp_noise();
     cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
     cfg.clk_rst_vif.wait_clks(5);

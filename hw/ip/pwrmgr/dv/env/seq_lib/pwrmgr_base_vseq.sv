@@ -687,7 +687,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     if (cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateActive ||
         cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp ||
         cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateStrap    ||
-        cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheck) begin
+        cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone) begin
       cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
       cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
     end else begin
@@ -695,7 +695,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
       @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp);
       cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
-      @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheck);
+      @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone);
       cfg.aon_clk_rst_vif.wait_clks(10);
       cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
       cfg.aon_clk_rst_vif.wait_clks(5);

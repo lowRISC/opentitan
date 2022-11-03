@@ -69,7 +69,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
 
   task wakeup_intr_coverage_collector();
     forever
-      @(posedge (cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheck)) begin
+      @(posedge (cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone)) begin
         if (cfg.en_cov) begin
           foreach (cov.wakeup_intr_cg_wrap[i]) begin
             cov.wakeup_intr_cg_wrap[i].sample(
