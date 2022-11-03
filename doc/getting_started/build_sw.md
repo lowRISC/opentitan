@@ -131,6 +131,10 @@ We maintain or use the following tags to support this:
 * `manual` is a Bazel builtin that prevents targets from matching wildcards.
   Test suites are typically tagged manual so their contents match, but test suites don't get built or run unless they're intentionally invoked.
   Intermediate build artifacts may also be tagged with manual to prevent them from being unintentionally built if they cause other problems.
+* `skip_in_ci` is used to tag ROM end-to-end tests that we currently skip in CI.
+  ROM end-to-end tests are typically written for five life cycle states: TEST\_UNLOCKED0, DEV, PROD, PROD\_END, and RMA.
+  This tag allows us to limit the tests run in CI to a single life cycle state, allowing CW310 tests to finish in a reasonable timeframe.
+  We run tests for the remaining lifecycle states outside the CI in a less frequent manner.
 
 `ci/scripts/check-bazel-tags.sh` performs some useful queries to ensure these tags are applied.
 These tags can then be used to filter tests using `--build_tests_only --test_tag_filters=-cw310,-verilator,-vivado`.
