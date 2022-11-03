@@ -23,6 +23,21 @@
       run_opts: ["+sw_test_timeout_ns=20000000"]
     }
     {
+      name: rom_e2e_shutdown_output
+      uvm_test_seq: chip_sw_rom_e2e_shutdown_output_vseq
+      # Note: this is an unsigned test, as we are verifying a boot failure.
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_shutdown_output_test_unlocked0:3",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=20000000",
+        "+use_otp_image=OtpTypeCustom",
+        "+bypass_alert_ready_to_end_check=1",
+      ]
+    }
+    {
       name: rom_e2e_static_critical
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_static_critical:1:signed"]
