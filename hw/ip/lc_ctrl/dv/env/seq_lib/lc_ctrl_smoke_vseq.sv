@@ -50,7 +50,11 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
 
     for (int i = 1; i <= num_trans; i++) begin
       cfg.set_test_phase(LcCtrlIterStart);
-      if (i != 1) dut_init();
+      if (i != 1) begin
+        dut_init();
+        // We expect initialized to be set to 1 after dut_init
+        csr_rd_check(.ptr(ral.status.initialized), .compare_value(1));
+      end
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, $sformatf(
                 "starting seq %0d/%0d, init LC_state is %0s, LC_cnt is %0s",
@@ -138,4 +142,3 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
   endfunction
 
 endclass : lc_ctrl_smoke_vseq
-

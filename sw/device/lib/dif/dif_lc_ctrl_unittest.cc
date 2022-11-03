@@ -96,11 +96,14 @@ TEST_F(StateTest, GetAttempts) {
 TEST_F(StateTest, GetStatus) {
   dif_lc_ctrl_status_t status;
 
-  EXPECT_READ32(LC_CTRL_STATUS_REG_OFFSET, {
-                                               {LC_CTRL_STATUS_READY_BIT, true},
-                                           });
+  EXPECT_READ32(LC_CTRL_STATUS_REG_OFFSET,
+                {
+                    {LC_CTRL_STATUS_INITIALIZED_BIT, true},
+                    {LC_CTRL_STATUS_READY_BIT, true},
+                });
   EXPECT_DIF_OK(dif_lc_ctrl_get_status(&lc_, &status));
-  EXPECT_EQ(status, bitfield_bit32_write(0, kDifLcCtrlStatusCodeReady, true));
+  EXPECT_TRUE(bitfield_bit32_read(status, kDifLcCtrlStatusCodeInitialized));
+  EXPECT_TRUE(bitfield_bit32_read(status, kDifLcCtrlStatusCodeReady));
 
   EXPECT_READ32(LC_CTRL_STATUS_REG_OFFSET,
                 {

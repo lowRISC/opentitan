@@ -126,6 +126,11 @@ dif_result_t dif_lc_ctrl_get_status(const dif_lc_ctrl_t *lc,
 
   dif_lc_ctrl_status_t status_word = 0;
 
+  if (bitfield_bit32_read(reg, LC_CTRL_STATUS_INITIALIZED_BIT)) {
+    status_word = bitfield_bit32_write(status_word,
+                                       kDifLcCtrlStatusCodeInitialized, true);
+  }
+
   if (bitfield_bit32_read(reg, LC_CTRL_STATUS_READY_BIT)) {
     status_word =
         bitfield_bit32_write(status_word, kDifLcCtrlStatusCodeReady, true);

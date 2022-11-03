@@ -33,6 +33,11 @@ typedef enum dif_lc_ctrl_status_code {
   /**
    * Indicates that the controller has been successfully initialized.
    */
+  kDifLcCtrlStatusCodeInitialized,
+  /**
+   * Indicates that the controller has been successfully initialized
+   * and is ready to accept a life cycle transition command.
+   */
   kDifLcCtrlStatusCodeReady,
   /**
    * Indicates that the last lifecycle transition succeeded.

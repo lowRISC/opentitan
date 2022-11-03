@@ -18,5 +18,3 @@
 `include "lc_ctrl_sec_token_mux_vseq.sv"
 `include "lc_ctrl_sec_token_digest_vseq.sv"
 `include "lc_ctrl_stress_all_vseq.sv"
-
-

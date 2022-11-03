@@ -598,6 +598,12 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
   endtask
 
+  virtual task wait_lc_initialized(bit allow_err = 1);
+    cfg.m_jtag_riscv_agent_cfg.allow_errors = allow_err;
+    wait_lc_status(LcInitialized);
+    cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
+  endtask
+
   virtual task wait_lc_ready(bit allow_err = 1);
     cfg.m_jtag_riscv_agent_cfg.allow_errors = allow_err;
     wait_lc_status(LcReady);

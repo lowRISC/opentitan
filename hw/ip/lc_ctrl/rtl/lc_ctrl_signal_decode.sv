@@ -195,9 +195,8 @@ module lc_ctrl_signal_decode
       end
       ///////////////////////////////////////////////////////////////////
       // Post-transition state. Behaves similarly to the virtual scrap
-      // states below, with the exception that escalate_en, since that
-      // could trigger unwanted alerts / escalations and system resets.
-      // is NOT asserted.
+      // states below, with the exception that escalate_en is NOT asserted,
+      // since that could trigger unwanted alerts / escalations and system resets.
       PostTransSt: ;
       ///////////////////////////////////////////////////////////////////
       // Virtual scrap states, make sure the escalation signal is
