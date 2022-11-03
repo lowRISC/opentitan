@@ -56,6 +56,14 @@ package keymgr_env_pkg;
     SideLoadClear
   } keymgr_sideload_status_e;
 
+  typedef enum int {
+    FaultOpNotOnehot,
+    FaultOpNotConsistent,
+    FaultKmacDoneError,
+    FaultSideloadNotConsistent,
+    FaultKeyIntgError
+  } keymgr_fault_inject_type_e;
+
   string msg_id = "keymgr_env_pkg";
   // functions
   // state is incremental, if it's not in defined enum, consider as StDisabled

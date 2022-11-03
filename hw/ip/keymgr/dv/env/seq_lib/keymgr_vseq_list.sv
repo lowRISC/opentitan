@@ -14,6 +14,6 @@
 `include "keymgr_sw_invalid_input_vseq.sv"
 `include "keymgr_hwsw_invalid_input_vseq.sv"
 `include "keymgr_kmac_rsp_err_vseq.sv"
-`include "keymgr_cmd_invalid_vseq.sv"
+`include "keymgr_custom_cm_vseq.sv"
 `include "keymgr_sync_async_fault_cross_vseq.sv"
 `include "keymgr_stress_all_vseq.sv"

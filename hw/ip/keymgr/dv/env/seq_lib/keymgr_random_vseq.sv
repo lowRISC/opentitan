@@ -7,6 +7,15 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
   `uvm_object_utils(keymgr_random_vseq)
   `uvm_object_new
 
+  protected keymgr_pkg::keymgr_working_state_e state;
+  rand uint num_adv;
+  // Advance from StReset to last state StDisabled and advance one extra time,
+  // then it should stay at StDisabled
+  // In each state check SW/HW output
+  constraint num_adv_c {
+    num_adv == state.num() + 1;
+  }
+
   rand uint num_invalid_hw_input;
 
   // don't test invalid HW input in this test
@@ -66,10 +75,8 @@ class keymgr_random_vseq extends keymgr_sideload_vseq;
   task body();
     keymgr_pkg::keymgr_working_state_e state;
     `uvm_info(`gfn, "Key manager seq start", UVM_HIGH)
-    // Advance from StReset to last state StDisabled and advance one extra time,
-    // then it should stay at StDisabled
-    // In each state check SW/HW output
-    repeat (state.num() + 1) begin
+
+    repeat (num_adv) begin
       keymgr_operations(.advance_state(1),
                         .num_gen_op($urandom_range(0, 5)),
                         .clr_output($urandom_range(0, 1)));

@@ -116,7 +116,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
         end
 
         if (current_state != keymgr_pkg::StReset || current_op_status == keymgr_pkg::OpWip) begin
-          wipe_hw_keys();
+          if (cfg.en_scb) wipe_hw_keys();
         end
 
         wait(cfg.keymgr_vif.keymgr_en_sync2 == lc_ctrl_pkg::On);
