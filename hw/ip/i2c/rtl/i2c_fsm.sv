@@ -789,7 +789,6 @@ module i2c_fsm (
   end
 
   // Conditional state transition
-  logic idle;
   always_comb begin : state_functions
     state_d = state_q;
     load_tcount = 1'b0;
@@ -809,12 +808,10 @@ module i2c_fsm (
     en_sda_interf_det = 1'b0;
     start_det_clr = 1'b0;
     stop_det_clr = 1'b0;
-    idle = 1'b0;
 
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
       Idle : begin
-        idle = 1'b1;
         if (!host_enable_i && !target_enable_i) state_d = Idle; // Idle unless host is enabled
         else if (host_enable_i) begin
           if (fmt_fifo_rvalid_i) state_d = Active;
@@ -1277,7 +1274,8 @@ module i2c_fsm (
     // instead of being dependent on a specific state, which may lead to
     // certain corner cases.
     if (target_enable_i &&
-       ((start_det && !idle) || stop_det)) begin
+       ((start_det && !start_det_clr) ||
+        (stop_det && !stop_det_clr))) begin
       state_d = AcquireSrP;
     end
   end
