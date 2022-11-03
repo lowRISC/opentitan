@@ -45,7 +45,7 @@ for tag in "${cw310_tags[@]}"; do
         xargs ci/bazelisk.sh test \
             --define DISABLE_VERILATOR_BUILD=true \
             --nokeep_going \
-            --test_tag_filters="${tag}",-broken,-manual \
+            --test_tag_filters="${tag}",-broken,-manual,-skip_in_ci \
             --test_timeout_filters=short,moderate \
             --test_output=all \
             --build_tests_only \
