@@ -28,18 +28,19 @@
 #include "alert_handler_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-typedef struct entropy_src_test_context {
-  otbn_t otbn;
-  dif_aes_t aes;
-  dif_entropy_src_t entropy_src;
-  dif_kmac_t kmac;
-  dif_keymgr_t kmgr;
-  dif_otp_ctrl_t otp;
-  dif_pwrmgr_t pwrmgr;
-  dif_rv_core_ibex_t ibex;
-  dif_alert_handler_t alert_handler;
-  dif_rv_core_ibex_fpga_info_t fpga_info;
-} entropy_src_test_context_t;
+static otbn_t otbn;
+static dif_aes_t aes;
+static dif_csrng_t csrng;
+static dif_edn_t edn0;
+static dif_edn_t edn1;
+static dif_entropy_src_t entropy_src;
+static dif_kmac_t kmac;
+static dif_keymgr_t kmgr;
+static dif_otp_ctrl_t otp;
+static dif_pwrmgr_t pwrmgr;
+static dif_rv_core_ibex_t ibex;
+static dif_alert_handler_t alert_handler;
+static dif_rv_core_ibex_fpga_info_t fpga_info;
 
 enum {
   kFpgaLoop = 5,
@@ -52,7 +53,7 @@ OTTF_DEFINE_TEST_CONFIG();
  *
  * @param aes Aes dif handle.
  */
-static void aes_test(entropy_src_test_context_t *ctx) {
+static void aes_test(const dif_aes_t *aes) {
   LOG_INFO("%s", __func__);
 
   dif_aes_transaction_t transaction = {
@@ -65,14 +66,14 @@ static void aes_test(entropy_src_test_context_t *ctx) {
       .reseed_on_key_change = false,
       .ctrl_aux_lock = false,
   };
-  CHECK_DIF_OK(dif_aes_start(&ctx->aes, &transaction, NULL, NULL));
-  CHECK_DIF_OK(dif_aes_trigger(&ctx->aes, kDifAesTriggerPrngReseed));
+  CHECK_DIF_OK(dif_aes_start(aes, &transaction, /*key=*/NULL, /*iv=*/NULL));
+  CHECK_DIF_OK(dif_aes_trigger(aes, kDifAesTriggerPrngReseed));
 }
 
 /**
  * Configure the kmac to use entropy from edn to request entropy.
  */
-static void kmac_test(entropy_src_test_context_t *ctx) {
+static void kmac_test(dif_kmac_t *kmac) {
   dif_kmac_operation_state_t kmac_operation_state;
 
   LOG_INFO("%s", __func__);
@@ -81,13 +82,13 @@ static void kmac_test(entropy_src_test_context_t *ctx) {
       .entropy_mode = kDifKmacEntropyModeEdn,
       .entropy_fast_process = kDifToggleDisabled,
   };
-  CHECK_DIF_OK(dif_kmac_configure(&ctx->kmac, config));
+  CHECK_DIF_OK(dif_kmac_configure(kmac, config));
 }
 
 /**
  * Configure the opt to request entropy from the edn.
  */
-static void otp_ctrl_test(entropy_src_test_context_t *ctx) {
+static void otp_ctrl_test(const dif_otp_ctrl_t *otp) {
   LOG_INFO("%s", __func__);
 
   // For security reasons, the LFSR is periodically reseeded with entropy coming
@@ -98,15 +99,15 @@ static void otp_ctrl_test(entropy_src_test_context_t *ctx) {
       .integrity_period_mask = 0x4,
       .consistency_period_mask = 0x3ffffff,
   };
-  CHECK_DIF_OK(dif_otp_ctrl_configure(&ctx->otp, config));
-  otp_ctrl_testutils_wait_for_dai(&ctx->otp);
+  CHECK_DIF_OK(dif_otp_ctrl_configure(otp, config));
+  otp_ctrl_testutils_wait_for_dai(otp);
 }
 
 /**
  * Configure the reseed interval to a short period and
  * advance to the `kDifKeymgrStateInitialized` to request entropy from the edn.
  */
-static void keymgr_test(entropy_src_test_context_t *ctx) {
+static void keymgr_test(const dif_keymgr_t *kmgr) {
   /**
    * Key manager can only be tested once per boot.
    */
@@ -114,8 +115,8 @@ static void keymgr_test(entropy_src_test_context_t *ctx) {
   if (!tested) {
     LOG_INFO("%s", __func__);
     dif_keymgr_config_t config = {.entropy_reseed_interval = 4};
-    CHECK_DIF_OK(dif_keymgr_configure(&ctx->kmgr, config));
-    CHECK_DIF_OK(dif_keymgr_advance_state(&ctx->kmgr, NULL));
+    CHECK_DIF_OK(dif_keymgr_configure(kmgr, config));
+    CHECK_DIF_OK(dif_keymgr_advance_state(kmgr, NULL));
     tested = true;
   }
 }
@@ -123,19 +124,18 @@ static void keymgr_test(entropy_src_test_context_t *ctx) {
 /**
  * Read 4 words of rnd data to request entropy from the edn.
  */
-static void ibex_test(entropy_src_test_context_t *ctx) {
+static void ibex_test(const dif_rv_core_ibex_t *ibex) {
   LOG_INFO("%s", __func__);
-
-  for (int i = 0; i < 4; i++) {
+  for (size_t i = 0; i < 4; i++) {
     uint32_t rnd;
-    CHECK_DIF_OK(dif_rv_core_ibex_read_rnd_data(&ctx->ibex, &rnd));
+    CHECK_DIF_OK(dif_rv_core_ibex_read_rnd_data(ibex, &rnd));
   }
 }
 
 /**
  * Configure the `alert_handler`to escalate up to phase 0.
  */
-static void alert_handler_configure(entropy_src_test_context_t *ctx) {
+static void alert_handler_configure(const dif_alert_handler_t *alert_handler) {
   LOG_INFO("%s", __func__);
 
   dif_alert_handler_local_alert_t loc_alerts[] = {
@@ -172,58 +172,47 @@ static void alert_handler_configure(entropy_src_test_context_t *ctx) {
       .classes_len = ARRAYSIZE(class_configs),
       .ping_timeout = 10,
   };
-  alert_handler_testutils_configure_all(&ctx->alert_handler, config,
+  alert_handler_testutils_configure_all(alert_handler, config,
                                         kDifToggleEnabled);
 }
 
 /**
  * Trigger fault in the pwrmgr in order to escalate the alert handler.
  */
-static void alert_handler_test(entropy_src_test_context_t *ctx) {
+static void alert_handler_test(const dif_pwrmgr_t *pwrmgr) {
   LOG_INFO("%s", __func__);
 
-  // Trigger the alert handler to escalate.
   dif_pwrmgr_alert_t alert = kDifPwrmgrAlertFatalFault;
-  CHECK_DIF_OK(dif_pwrmgr_alert_force(&ctx->pwrmgr, alert));
+  CHECK_DIF_OK(dif_pwrmgr_alert_force(pwrmgr, alert));
 }
 
-void test_initialize(entropy_src_test_context_t *ctx) {
-  LOG_INFO("%s", __func__);
+void test_initialize(void) {
+  CHECK_DIF_OK(dif_entropy_src_init(
+      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+  CHECK_DIF_OK(dif_csrng_init(
+      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
+  CHECK_DIF_OK(
+      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
+  CHECK_DIF_OK(
+      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
+  CHECK_DIF_OK(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR), &ibex));
+  CHECK_DIF_OK(dif_pwrmgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
+  CHECK_DIF_OK(dif_keymgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &kmgr));
+  CHECK_DIF_OK(dif_otp_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
+  CHECK_DIF_OK(
+      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  CHECK_DIF_OK(
+      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_alert_handler_init(
+      mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
+      &alert_handler));
 
-  mmio_region_t addr =
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
-  CHECK_DIF_OK(dif_entropy_src_init(addr, &ctx->entropy_src));
-
-  addr = mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_core_ibex_init(addr, &ctx->ibex));
-
-  addr = mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pwrmgr_init(addr, &ctx->pwrmgr));
-
-  addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
-  CHECK_DIF_OK(dif_keymgr_init(addr, &ctx->kmgr));
-
-  addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-  CHECK(otbn_init(&ctx->otbn, addr) == kOtbnOk);
-
-  addr = mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR);
-  CHECK_DIF_OK(dif_otp_ctrl_init(addr, &ctx->otp));
-
-  addr = mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR);
-  CHECK_DIF_OK(dif_aes_init(addr, &ctx->aes));
-
-  addr = mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR);
-  CHECK_DIF_OK(dif_kmac_init(addr, &ctx->kmac));
-
-  addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
-  CHECK_DIF_OK(dif_alert_handler_init(addr, &ctx->alert_handler));
-  alert_handler_configure(ctx);
-
-  entropy_testutils_auto_mode_init();
-
-  // ensure health tests are actually running
-  entropy_testutils_wait_for_state(&ctx->entropy_src,
-                                   kDifEntropySrcMainFsmStateContHTRunning);
+  CHECK(otbn_init(&otbn, mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR)) ==
+        kOtbnOk);
 }
 
 /**
@@ -231,28 +220,34 @@ void test_initialize(entropy_src_test_context_t *ctx) {
  * (https://github.com/lowRISC/opentitan/issues/13393)
  */
 bool test_main() {
-  static entropy_src_test_context_t ctx;
-  uint32_t loop = 1;
-  test_initialize(&ctx);
-  CHECK_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ctx.ibex, &ctx.fpga_info));
+  test_initialize();
 
-  // Run multiple times if in a FPGA.
-  loop = (ctx.fpga_info != 0) ? kFpgaLoop : loop;
+  alert_handler_configure(&alert_handler);
+  entropy_testutils_auto_mode_init();
 
-  for (int i = 0; i < loop; ++i) {
+  // ensure health tests are actually running
+  entropy_testutils_wait_for_state(&entropy_src,
+                                   kDifEntropySrcMainFsmStateContHTRunning);
+
+  CHECK_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ibex, &fpga_info));
+  uint32_t loop = (fpga_info != 0) ? kFpgaLoop : 1;
+
+  for (size_t i = 0; i < loop; ++i) {
     LOG_INFO("Entropy src test %d/%d", i, loop);
-    alert_handler_test(&ctx);
-    aes_test(&ctx);
-    otbn_randomness_test_start(&ctx.otbn);
-    keymgr_test(&ctx);
-    otp_ctrl_test(&ctx);
-    kmac_test(&ctx);
-    ibex_test(&ctx);
+    alert_handler_test(&pwrmgr);
+    aes_test(&aes);
+    otbn_randomness_test_start(&otbn);
+    keymgr_test(&kmgr);
+    otp_ctrl_test(&otp);
+    kmac_test(&kmac);
+    ibex_test(&ibex);
 
-    AES_TESTUTILS_WAIT_FOR_STATUS(&ctx.aes, kDifAesStatusIdle, true, 100000);
-    CHECK(otbn_randomness_test_end(&ctx.otbn, /*skip_otbn_done_check=*/false));
-    keymgr_testutils_wait_for_operation_done(&ctx.kmgr);
-    keymgr_testutils_check_state(&ctx.kmgr, kDifKeymgrStateInitialized);
+    AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, /*value=*/true,
+                                  /*timeout_usec=*/100000);
+    CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
+    keymgr_testutils_wait_for_operation_done(&kmgr);
+    keymgr_testutils_check_state(&kmgr, kDifKeymgrStateInitialized);
+    entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1);
   }
   return true;
 }
