@@ -43,12 +43,12 @@ enum {
   kCpuDumpSize = 8,
   kIllegalAddr0 = 0xF0000000,
   kIllegalAddr1 = 0xF0000004,
-  kIllegalAddr2 = 0xF0000008,
+  kIllegalAddr2 = 0x00000008,
 };
 
 // Declaring the labels used to calculate the expected current and next pc
 // after a double fault.
-extern const uint32_t _ottf_interrupt_vector, handler_exception;
+extern const uint32_t _ottf_interrupt_vector;
 
 // The labels to points in the code of which the memory address is needed.
 extern const char kSingleFaultAddrLower[];
@@ -79,7 +79,7 @@ volatile static bool double_fault;
 void ottf_exception_handler(void) {
   if (double_fault) {
     OT_ADDRESSABLE_LABEL(kDoubleFaultSecondAddrLower);
-    addr_val = mmio_region_read32(mmio_region_from_addr(kIllegalAddr2), 0);
+    mmio_region_write32(mmio_region_from_addr(kIllegalAddr2), 0, 0);
     OT_ADDRESSABLE_LABEL(kDoubleFaultSecondAddrUpper);
   } else {
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
@@ -272,23 +272,20 @@ bool test_main(void) {
       CHECK(dump.double_fault == kDifToggleEnabled,
             "CPU Info dump doesn't show a double fault has happened.");
 
-      // The current behaviour after a double fault is to capture, in the CPU
-      // info dump, the interrupt vector below the one which was taken to jump
-      // to the exception handler as the current PC and the start of the
-      // exception handler as the next PC. This feels wrong. However, with a
-      // lack of a clear definition of what these values should contain, the
-      // test enforces this behaviour so that regressions can be caught.
-      uint32_t curr_pc = (uint32_t)&_ottf_interrupt_vector + 4;
-      uint32_t next_pc = (uint32_t)&handler_exception;
-
+      // After #15219 was merged, the execution stops more predictably
+      // once fetch_en is dropped due to a double fault.
+      // The current pc should now always be the instruction after the
+      // instruction that issues the illegal load.
+      // The next pc is always the exception handler, because that's
+      // where execution would have gone if it had not halted
       check_state(dump.fault_state,
                   (rstmgr_cpu_info_test_exp_state_t){
                       .mtval = (uint32_t)kIllegalAddr2,
                       .mpec_l = (uint32_t)kDoubleFaultSecondAddrLower,
                       .mpec_u = (uint32_t)kDoubleFaultSecondAddrUpper,
                       .mdaa = (uint32_t)kIllegalAddr2,
-                      .mcpc = curr_pc,
-                      .mnpc = next_pc,
+                      .mcpc = (uint32_t)kDoubleFaultSecondAddrLower + 4,
+                      .mnpc = (uint32_t)&_ottf_interrupt_vector,
                   });
 
       check_prev_state(dump.previous_fault_state,
