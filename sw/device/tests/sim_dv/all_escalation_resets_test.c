@@ -953,7 +953,14 @@ bool test_main(void) {
     LOG_INFO("The regular interrupt count is %d", interrupt_count);
 
     int nmi_interrupt_count = flash_ctrl_testutils_counter_get(kCounterNmi);
-    if (kExpectedAlertNumber != kTopEarlgreyAlertIdFlashCtrlFatalStdErr) {
+    if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalStdErr) {
+      // ISRs should not run if flash_ctrl gets a fault because it should
+      // block flash accesses.
+      CHECK(interrupt_count == 0,
+            "Expected regular ISR should not run for flash_ctrl faults");
+      CHECK(nmi_interrupt_count == 0,
+            "Expected nmi should not run for flash_ctrl faults");
+    } else {
       CHECK(nmi_interrupt_count > 0, "Expected at least one nmi");
     }
 
