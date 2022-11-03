@@ -348,6 +348,11 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         end
       end
 
+      FastPwrStateStrap: begin
+        strap_o = ~strap_sampled;
+        state_d =  FastPwrStateRomCheck;
+      end
+
       FastPwrStateRomCheck: begin
         // zero outgoing low power indication
         low_power_d = '0;
@@ -356,11 +361,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         if (mubi4_test_true_strict(rom_intg_chk_ok)) begin
           state_d = FastPwrStateActive;
         end
-      end
-
-      FastPwrStateStrap: begin
-        strap_o = ~strap_sampled;
-        state_d =  FastPwrStateRomCheck;
       end
 
       FastPwrStateActive: begin
