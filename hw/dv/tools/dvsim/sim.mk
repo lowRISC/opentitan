@@ -79,10 +79,16 @@ ifneq (${sw_images},)
 			exit 1; \
 		fi; \
 		prebuilt_path=`echo $$sw_image | cut -d: -f 1`; \
-		bazel_label="`echo $$sw_image | cut -d: -f 1-2`_$${sw_build_device}"; \
 		bazel_target=`echo $$sw_image | cut -d: -f 2`; \
 		index=`echo $$sw_image | cut -d: -f 3`; \
 		flags=(`echo $$sw_image | cut -d: -f 4- --output-delimiter " "`); \
+		bazel_label="`echo $$sw_image | cut -d: -f 1-2`"; \
+		if [[ $${index} != 3 ]]; then \
+			bazel_label="$${bazel_label}_$${sw_build_device}"; \
+			bazel_cquery="labels(data, $${bazel_label}) union labels(srcs, $${bazel_label})"; \
+		else \
+			bazel_cquery="$${bazel_label}"; \
+		fi; \
 		cd ${proj_root}; \
 		if [[ $${flags[@]} =~ "prebuilt" ]]; then \
 			echo "SW image \"$$bazel_label\" is prebuilt - copying sources."; \
@@ -106,7 +112,7 @@ ifneq (${sw_images},)
 			echo "Building with command: $${bazel_cmd} build $${bazel_opts} $${bazel_label}"; \
 			$${bazel_cmd} build $${bazel_opts} $${bazel_label}; \
 			for dep in $$($${bazel_cmd} cquery \
-				"labels(data, $${bazel_label}) union labels(srcs, $${bazel_label})" \
+				$${bazel_cquery} \
 				--ui_event_filters=-info \
 				--noshow_progress \
 				--output=starlark); do \

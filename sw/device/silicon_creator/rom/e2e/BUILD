@@ -482,12 +482,20 @@ manifest({
             hex(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),
             hex(lc_state_val),
         ),
+        otp = ":otp_img_shutdown_output_{}".format(lc_state.lower()),
         tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+    ),
+    dv = dv_params(
+        otp = ":otp_img_shutdown_output_{}".format(lc_state.lower()),
+        rom = "//sw/device/silicon_creator/rom",
     ),
     manifest = ":manifest_bad_identifier",
     ot_flash_binary = ":empty_test_slot_a",
     signed = False,
-    targets = ["cw310_rom"],
+    targets = [
+        "cw310_rom",
+        "dv",
+    ],
 ) for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()]
 
 test_suite(
