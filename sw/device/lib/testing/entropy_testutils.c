@@ -200,3 +200,40 @@ void entropy_testutils_stop_all(void) {
   CHECK_DIF_OK(dif_csrng_stop(&csrng));
   CHECK_DIF_OK(dif_entropy_src_stop(&entropy_src));
 }
+
+void entropy_testutils_error_check(const dif_entropy_src_t *entropy_src,
+                                   const dif_csrng_t *csrng,
+                                   const dif_edn_t *edn0,
+                                   const dif_edn_t *edn1) {
+  uint32_t err_code;
+  bool found_error = false;
+  CHECK_DIF_OK(dif_entropy_src_get_errors(entropy_src, &err_code));
+  if (err_code) {
+    found_error = true;
+    LOG_ERROR("entropy_src status. err: 0x%x", err_code);
+  }
+
+  dif_csrng_cmd_status_t status;
+  CHECK_DIF_OK(dif_csrng_get_cmd_interface_status(csrng, &status));
+  if (status.errors) {
+    found_error = true;
+    LOG_ERROR("csrng error status. err: 0x%x, fifo_err: 0x%x, kind: 0x%x",
+              status.errors, status.unhealthy_fifos, status.kind);
+  }
+
+  uint32_t fifo_errors;
+  CHECK_DIF_OK(dif_edn_get_errors(edn0, &fifo_errors, &err_code));
+  if (err_code || fifo_errors) {
+    found_error = true;
+    LOG_ERROR("end0 error status. err: 0x%x, fifo_err: 0x%x", err_code,
+              fifo_errors);
+  }
+
+  CHECK_DIF_OK(dif_edn_get_errors(edn1, &fifo_errors, &err_code));
+  if (err_code || fifo_errors) {
+    found_error = true;
+    LOG_ERROR("end1 error status. err: 0x%x, fifo_err: 0x%x", err_code,
+              fifo_errors);
+  }
+  CHECK(!found_error, "entropy_testutils_error_check fail");
+}

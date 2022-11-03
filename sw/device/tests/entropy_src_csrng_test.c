@@ -205,22 +205,6 @@ static void edn_ready_wait(const dif_edn_t *edn) {
 }
 
 /**
- * Throws test assertion if there are any errors detected in the EDN blocks.
- */
-static void edn_errors_check(void) {
-  uint32_t fifo_errors;
-  uint32_t edn_errors;
-
-  CHECK_DIF_OK(dif_edn_get_errors(&edn0, &fifo_errors, &edn_errors));
-  CHECK(edn_errors == 0, "edn0 unexpected err: 0x%x", edn_errors);
-  CHECK(fifo_errors == 0, "edn0 unexpected fifo err: 0x%x", fifo_errors);
-
-  CHECK_DIF_OK(dif_edn_get_errors(&edn1, &fifo_errors, &edn_errors));
-  CHECK(edn_errors == 0, "edn1 unexpected err: 0x%x", edn_errors);
-  CHECK(fifo_errors == 0, "edn1 unexpected fifo err: 0x%x", fifo_errors);
-}
-
-/**
  * Configures the `edn` instance.
  *
  * Verifies that the entropy req interrupt is triggered on EDN instantiate and
@@ -281,7 +265,7 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   CHECK_DIF_OK(dif_edn_generate_start(&edn1, /*len=*/1));
   edn_ready_wait(&edn0);
   edn_ready_wait(&edn1);
-  edn_errors_check();
+  entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1);
 
   LOG_INFO("OTBN:START");
   otbn_randomness_test_start(&otbn);
@@ -322,7 +306,7 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   irq_block_wait(kTestIrqFlagIdEdn1CmdDone);
 
   csrng_testutils_recoverable_alerts_check(&csrng);
-  edn_errors_check();
+  entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1);
 }
 
 void ottf_external_isr(void) {

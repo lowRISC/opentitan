@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_ENTROPY_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_ENTROPY_TESTUTILS_H_
 
+#include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 
 /**
@@ -62,5 +64,23 @@ void entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
  * Stops EDN and CSRNG instances before stopping the entropy source.
  */
 void entropy_testutils_stop_all(void);
+
+/**
+ * Throws test assertion if there are any errors detected in any of the entropy
+ * blocks.
+ *
+ * Note that the encoding of the error codes printed in the log follow the
+ * respective DIF error enum mapping, which may be different to the bit mapping
+ * in the error registers.
+ *
+ * @param entropy_src Entropy source handle.
+ * @param csrng CSRNG handle.
+ * @param edn0 EDN0 handle.
+ * @param edn1 EDN1 handle.
+ */
+void entropy_testutils_error_check(const dif_entropy_src_t *entropy_src,
+                                   const dif_csrng_t *csrng,
+                                   const dif_edn_t *edn0,
+                                   const dif_edn_t *edn1);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_ENTROPY_TESTUTILS_H_
