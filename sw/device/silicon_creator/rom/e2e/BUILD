@@ -862,19 +862,18 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
     },
-    # TODO(#14473): Enable after splicing the OTP with default boot_data
-    # enabled in PROD and CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT set to 1.
-    # {
-    #     "name": "rollback",
-    #     "manifest": {
-    #         "identifier": CONST.ROM_EXT,
-    #         "code_start": CONST.MANIFEST_SIZE + 8,
-    #         "code_end": CONST.MANIFEST_SIZE + 12,
-    #         "entry_point": CONST.MANIFEST_SIZE + 8,
-    #         "security_version": 0,
-    #     },
-    #     "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.ROLLBACK)),
-    # },
+    {
+        "name": "rollback",
+        "manifest": {
+            "identifier": CONST.ROM_EXT,
+            "code_start": CONST.MANIFEST_SIZE + 8,
+            "code_end": CONST.MANIFEST_SIZE + 12,
+            "entry_point": CONST.MANIFEST_SIZE + 8,
+            "security_version": 0,
+        },
+        "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.ROLLBACK)),
+        "sec_ver": 1,
+    },
 ]
 
 [opentitan_flash_binary(
@@ -926,33 +925,112 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
     ],
 ) for t in BOOT_POLICY_BAD_MANIFEST_CASES for slot, offset in SLOTS.items()]
 
-[opentitan_functest(
-    name = "boot_policy_bad_manifest_{}_{}".format(
-        t["name"],
-        slot,
-    ),
-    cw310 = cw310_params(
-        exit_success = t["exit_success"],
-    ),
-    key = "multislot",
-    ot_flash_binary = "boot_policy_bad_manifest_{}_{}_img".format(
-        t["name"],
-        slot,
-    ),
-    targets = [
-        "cw310_rom",
-        "dv",
-        "verilator",
-    ],
-) for t in BOOT_POLICY_BAD_MANIFEST_CASES for slot in SLOTS]
+[
+    otp_json(
+        name = "otp_json_sec_ver_{}".format(sec_ver),
+        partitions = [
+            otp_partition(
+                name = "CREATOR_SW_CFG",
+                items = {
+                    "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": "{}".format(sec_ver),
+                },
+            ),
+        ],
+    )
+    for sec_ver in [
+        0,
+        1,
+    ]
+]
+
+[
+    otp_image(
+        name = "otp_img_boot_policy_bad_manifest_{}_sec_ver_{}".format(
+            lc_state.lower(),
+            sec_ver,
+        ),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
+        overlays = [
+            "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+            ":otp_json_sec_ver_{}".format(sec_ver),
+        ],
+        visibility = ["//visibility:private"],
+    )
+    for lc_state in structs.to_dict(CONST.LCV)
+    for sec_ver in [
+        0,
+        1,
+    ]
+]
+
+[
+    bitstream_splice(
+        name = "bitstream_boot_policy_bad_manifest_{}_sec_ver_{}".format(
+            lc_state.lower(),
+            sec_ver,
+        ),
+        src = "//hw/bitstream:rom",
+        data = ":otp_img_boot_policy_bad_manifest_{}_sec_ver_{}".format(
+            lc_state.lower(),
+            sec_ver,
+        ),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = ["vivado"],
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for lc_state in structs.to_dict(CONST.LCV)
+    for sec_ver in [
+        0,
+        1,
+    ]
+]
+
+[
+    opentitan_functest(
+        name = "boot_policy_bad_manifest_{}_{}_{}".format(
+            lc_state.lower(),
+            t["name"],
+            slot,
+        ),
+        cw310 = cw310_params(
+            bitstream = "bitstream_boot_policy_bad_manifest_{}_sec_ver_{}".format(
+                lc_state.lower(),
+                t.get("sec_ver", 0),
+            ),
+            exit_success = t["exit_success"],
+            tags = ["vivado"],
+        ),
+        key = "multislot",
+        ot_flash_binary = "boot_policy_bad_manifest_{}_{}_img".format(
+            t["name"],
+            slot,
+        ),
+        targets = [
+            "cw310_rom",
+            "verilator",
+        ],
+    )
+    for lc_state in structs.to_dict(CONST.LCV)
+    for t in BOOT_POLICY_BAD_MANIFEST_CASES
+    for slot in SLOTS
+]
 
 test_suite(
-    name = "boot_policy_bad_manifest",
+    name = "rom_e2e_boot_policy_bad_manifest",
     tags = ["manual"],
-    tests = ["boot_policy_bad_manifest_{}_{}".format(
-        t["name"],
-        slot,
-    ) for t in BOOT_POLICY_BAD_MANIFEST_CASES for slot in SLOTS],
+    tests = [
+        "boot_policy_bad_manifest_{}_{}_{}".format(
+            lc_state.lower(),
+            t["name"],
+            slot,
+        )
+        for lc_state in structs.to_dict(CONST.LCV)
+        for t in BOOT_POLICY_BAD_MANIFEST_CASES
+        for slot in SLOTS
+    ],
 )
 
 opentitan_functest(
