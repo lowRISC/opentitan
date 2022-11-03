@@ -285,6 +285,31 @@ For the `Olimex ARM-USB-TINY-H`, use the classic ARM JTAG header (J13) and make 
 Depending on the adapter's default state, OpenTitan may be held in reset when the adapter is initially connected.
 This reset will come under software control once OpenOCD initializes the driver.
 
+The JTAG adapter's device node in `/dev` must have read-write permissions.
+Otherwise, OpenOCD will fail because it's unable to open the USB device.
+The udev rule below matches the ARM-USB-TINY-H adapter, sets the octal mode mask to `0666`, and creates a symlink at `/dev/jtag_adapter_arm_usb_tiny_h`.
+
+```
+# [/etc/udev/rules.d/90-jtag-adapter.rules]
+
+SUBSYSTEM=="usb", ATTRS{idVendor}=="15ba", ATTRS{idProduct}=="002a", MODE="0666", SYMLINK+="jtag_adapter_arm_usb_tiny_h"
+```
+
+Now, reload the udev rules and reconnect the JTAG adapter.
+
+```bash
+# Reload the udev rules.
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+
+# Physically disconnect and reconnect the JTAG adapter, or fake it:
+sudo udevadm trigger --verbose --type=subsystems --action=remove --subsystem-match=usb --attr-match="idVendor=15ba"
+sudo udevadm trigger --verbose --type=subsystems --action=add --subsystem-match=usb --attr-match="idVendor=15ba"
+
+# Print the permissions of the USB device. This command should print "666".
+stat --dereference -c '%a' /dev/jtag_adapter_arm_usb_tiny_h
+```
+
 To connect the ChipWhisperer CW310 FPGA board with OpenOCD, run the following command:
 
 ```console
