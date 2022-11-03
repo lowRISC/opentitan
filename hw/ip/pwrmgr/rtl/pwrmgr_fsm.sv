@@ -193,7 +193,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       strap_sampled <= 1'b0;
-    end else if (&rst_lc_req_q || &rst_sys_req_q) begin
+    end else if (&rst_sys_req_q) begin
       strap_sampled <= 1'b0;
     end else if (strap_o) begin
       strap_sampled <= 1'b1;
