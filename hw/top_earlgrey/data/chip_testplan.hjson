@@ -224,7 +224,7 @@
             - The testbench should check if the written and read data match.
             '''
       stage: V2
-      tests: ["chip_sw_spi_device_tpm_test"]
+      tests: ["chip_sw_spi_device_tpm"]
     }
 
     // SPI_HOST (pre-verified IP) integration tests:
@@ -3092,18 +3092,25 @@
     // System level scenarios //
     ////////////////////////////
     {
-      name: chip_sw_example_test_from_rom_or_flash
-      desc: '''Run examples tests developed for each boot stage.
+      name: chip_sw_example_tests
+      desc: '''Provide example tests for different testing scenarios / needs.
 
-            Our test infrastructure defaults to running tests out flash, at the
-            ROM_EXT stage, but also supports running tests in the ROM stage. We
-            develop example tests to demonstrate these capabilities, and need to
-            run them in DV to ensure the integrity of our infrastructure.
+            These tests do not verify the hardware. They are meant to serve as a guide for
+            developing actual tests under different testing scenarios. These example tests
+            demonstrate the capabilities of the DV infrastructure which enables these scenarios:
+
+            1. Implement test in the ROM stage itself
+            2. Implement test in the flash stage, using test ROM
+            3. Implement test in the flash stage, using production ROM
+            4. Enable external maufacturer hooks in existing tests developed in the open source
+            5. Enable concurrent threads in tests
             '''
       stage: V1
-      tests: ["chip_sw_example_flash",
-              "chip_sw_example_rom",
+      tests: ["chip_sw_example_rom",
+              "chip_sw_example_flash",
+              "chip_sw_uart_smoketest_signed",
               "chip_sw_example_manufacturer",
+              "chip_sw_example_concurrency"
               ]
     }
     {
