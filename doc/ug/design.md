@@ -103,7 +103,7 @@ This tool exhibits fast run-times and a comprehensive set of rules that provide 
 
 The sign-off lint flow leverages a new lint rule policy named _"lowRISC Lint Rules"_ that has been tailored towards our [Verilog Style Guide](https://github.com/lowRISC/style-guides/blob/master/VerilogCodingStyle.md).
 The lint flow run scripts and waiver files are available in the GitHub repository of this project but, due to the proprietary nature of the lint rules and their configuration, the _"lowRISC Lint Rules"_ lint policy file can not be publicly provided.
-However, the _"lowRISC Lint Rules"_ are available as part of the default policies in AscentLint release 2019.A.p3 or newer (as `LRLR-v1.0.policy`).
+However, the _"lowRISC Lint Rules"_ are available as part of the default policies in AscentLint release 2019.A.P32 or newer (as `LRLR-v1.1.policy`).
 This allows designers with access to this tool to run the lint flow locally on their premises.
 
 If developers of design IP have access to AscentLint, we recommend to set up the AscentLint flow for their IP as described in the [Lint Flow README]({{< relref "hw/lint/doc" >}}), and use the flow locally to close the errors and warnings.
