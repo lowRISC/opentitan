@@ -437,6 +437,7 @@ interface chip_if;
   jtag_if flash_ctrl_jtag_if();
 
   // TODO: Revisit this logic.
+  wire lc_ready = `LC_CTRL_HIER.u_reg.u_status_ready.qs;
   wire lc_hw_debug_en = (`LC_CTRL_HIER.lc_hw_debug_en_o == lc_ctrl_pkg::On);
   assign flash_ctrl_jtag_enabled = enable_flash_ctrl_jtag && lc_hw_debug_en;
   assign mios[top_earlgrey_pkg::MioPadIob0] = flash_ctrl_jtag_enabled ?
