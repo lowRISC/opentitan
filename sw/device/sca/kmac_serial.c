@@ -20,12 +20,12 @@
  * operation using a 128-bit key.
  *
  * This program implements the following simple serial commands:
+ *   - Set key ('k')*,
  *   - Absorb ('p')*,
  *   - FvsR batch absorb ('b')*,
  *   - FvsR batch fixed key set ('t')*,
  *   - Version ('v')+,
  *   - Seed PRNG ('s')+,
- *   - Disable/Enable masks ('m')*
  * Commands marked with * are implemented in this file. Those marked with + are
  * implemented in the simple serial library. See
  * https://wiki.newae.com/SimpleSerial for details on the protocol.
@@ -84,18 +84,18 @@ static dif_kmac_operation_state_t kmac_operation_state;
 static dif_kmac_key_t kmac_key;
 
 /**
- * SHA3 fixed message.
+ * KMAC fixed key.
  *
  * Used for caching the fixed key in the 't' (set fixed key) command packet
  * until it is used when handling a 'b' (batch capture) command.
  */
-uint8_t message_fixed[kMessageLength];
+uint8_t key_fixed[kKeyLength];
 
 /**
- * Fixed-message indicator.
+ * Fixed-key indicator.
  *
  * Used in the 'b' (batch capture) command for indicating whether to use fixed
- * or random message.
+ * or random key.
  */
 static bool run_fixed = false;
 
@@ -160,41 +160,55 @@ static uint32_t calculate_rate_bits(uint32_t security_level) {
 }
 
 /**
- * Starts KMAC/SHA3 message without sending START command.
+ * Starts KMAC message without sending START command.
  *
- * Based on dif_kmac_mode_sha3_start().
+ * Based on dif_kmac_mode_kmac_start().
  *
- * Unlike dif_kmac_mode_sha3_start(), this function doesn't provide the START
- * command to the hardware.
+ * Unlike dif_kmac_mode_kmac_start(), this function doesn't provide the START
+ * command to the hardware, i.e., just the key is provided and the initial setup
+ * for starting a new message is performed.
  */
-static dif_result_t sha3_msg_start(dif_kmac_mode_sha3_t mode) {
-  // Set kstrength and calculate rate (r) and digest length (d) in 32-bit
-  // words.
+static dif_result_t kmac_msg_start(dif_kmac_mode_kmac_t mode, size_t l,
+                                   const dif_kmac_key_t *k,
+                                   const dif_kmac_customization_string_t *s) {
+  if (k == NULL || l > kDifKmacMaxOutputLenWords) {
+    return kDifBadArg;
+  }
+
+  // Set key strength and calculate rate (r).
   uint32_t kstrength;
   switch (mode) {
-    case kDifKmacModeSha3Len224:
-      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L224;
-      kmac_operation_state.offset = 0;
-      kmac_operation_state.r = calculate_rate_bits(224) / 32;
-      kmac_operation_state.d = 224 / 32;
+    case kDifKmacModeCshakeLen128:
+      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128;
+      kmac_operation_state.r = calculate_rate_bits(128) / 32;
       break;
-    case kDifKmacModeSha3Len256:
+    case kDifKmacModeCshakeLen256:
       kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256;
-      kmac_operation_state.offset = 0;
       kmac_operation_state.r = calculate_rate_bits(256) / 32;
-      kmac_operation_state.d = 256 / 32;
       break;
-    case kDifKmacModeSha3Len384:
-      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L384;
-      kmac_operation_state.offset = 0;
-      kmac_operation_state.r = calculate_rate_bits(384) / 32;
-      kmac_operation_state.d = 384 / 32;
+    default:
+      return kDifBadArg;
+  }
+  kmac_operation_state.offset = 0;
+  kmac_operation_state.d = l;
+  kmac_operation_state.append_d = true;
+
+  uint32_t key_len;
+  switch (k->length) {
+    case kDifKmacKeyLen128:
+      key_len = KMAC_KEY_LEN_LEN_VALUE_KEY128;
       break;
-    case kDifKmacModeSha3Len512:
-      kstrength = KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L512;
-      kmac_operation_state.offset = 0;
-      kmac_operation_state.r = calculate_rate_bits(512) / 32;
-      kmac_operation_state.d = 512 / 32;
+    case kDifKmacKeyLen192:
+      key_len = KMAC_KEY_LEN_LEN_VALUE_KEY192;
+      break;
+    case kDifKmacKeyLen256:
+      key_len = KMAC_KEY_LEN_LEN_VALUE_KEY256;
+      break;
+    case kDifKmacKeyLen384:
+      key_len = KMAC_KEY_LEN_LEN_VALUE_KEY384;
+      break;
+    case kDifKmacKeyLen512:
+      key_len = KMAC_KEY_LEN_LEN_VALUE_KEY512;
       break;
     default:
       return kDifBadArg;
@@ -205,18 +219,61 @@ static dif_result_t sha3_msg_start(dif_kmac_mode_sha3_t mode) {
     return kDifError;
   }
 
-  kmac_operation_state.squeezing = false;
-  kmac_operation_state.append_d = false;
+  // Set key length and shares.
+  // Uniform sharing is achieved by XORing a random number into both shares.
+  mmio_region_write32(kmac.base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
+  for (int i = 0; i < ARRAYSIZE(k->share0); ++i) {
+    const uint32_t a = next_lfsr();
+    mmio_region_write32(kmac.base_addr,
+                        KMAC_KEY_SHARE0_0_REG_OFFSET + i * sizeof(uint32_t),
+                        k->share0[i] ^ a);
+    mmio_region_write32(kmac.base_addr,
+                        KMAC_KEY_SHARE1_0_REG_OFFSET + i * sizeof(uint32_t),
+                        k->share1[i] ^ a);
+  }
 
-  // Configure SHA-3 mode with the given strength.
+  // Configure cSHAKE mode with the given strength and enable KMAC mode.
   uint32_t cfg_reg =
       mmio_region_read32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, true);
   cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
                                    kstrength);
   cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
-                                   KMAC_CFG_SHADOWED_MODE_VALUE_SHA3);
+                                   KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE);
   mmio_region_write32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
   mmio_region_write32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET, cfg_reg);
+
+  // Initialize prefix registers with function name ("KMAC") and empty
+  // customization string. The empty customization string will be overwritten if
+  // a non-empty string is provided.
+  uint32_t prefix_regs[11] = {
+      0x4D4B2001,  //  1  32  'K' 'M'
+      0x00014341,  // 'A' 'C'  1   0
+  };
+
+  // Encoded customization string (s) must be at least 3 bytes long if it is not
+  // the empty string.
+  if (s != NULL && s->length >= 3) {
+    // First two bytes overwrite the pre-encoded empty customization string.
+    prefix_regs[1] &= 0xFFFF;
+    prefix_regs[1] |= (uint32_t)((uint8_t)s->buffer[0]) << 16;
+    prefix_regs[1] |= (uint32_t)((uint8_t)s->buffer[1]) << 24;
+    memcpy(&prefix_regs[2], &s->buffer[2], s->length - 2);
+  }
+
+  // Write PREFIX register values.
+  const mmio_region_t base = kmac.base_addr;
+  mmio_region_write32(base, KMAC_PREFIX_0_REG_OFFSET, prefix_regs[0]);
+  mmio_region_write32(base, KMAC_PREFIX_1_REG_OFFSET, prefix_regs[1]);
+  mmio_region_write32(base, KMAC_PREFIX_2_REG_OFFSET, prefix_regs[2]);
+  mmio_region_write32(base, KMAC_PREFIX_3_REG_OFFSET, prefix_regs[3]);
+  mmio_region_write32(base, KMAC_PREFIX_4_REG_OFFSET, prefix_regs[4]);
+  mmio_region_write32(base, KMAC_PREFIX_5_REG_OFFSET, prefix_regs[5]);
+  mmio_region_write32(base, KMAC_PREFIX_6_REG_OFFSET, prefix_regs[6]);
+  mmio_region_write32(base, KMAC_PREFIX_7_REG_OFFSET, prefix_regs[7]);
+  mmio_region_write32(base, KMAC_PREFIX_8_REG_OFFSET, prefix_regs[8]);
+  mmio_region_write32(base, KMAC_PREFIX_9_REG_OFFSET, prefix_regs[9]);
+  mmio_region_write32(base, KMAC_PREFIX_10_REG_OFFSET, prefix_regs[10]);
 
   return kDifOk;
 }
@@ -231,7 +288,7 @@ static dif_result_t sha3_msg_start(dif_kmac_mode_sha3_t mode) {
  * FIFO, and 2) appends the output length afterwards (normally done as
  * part of dif_kmac_squeeze()).
  */
-static dif_result_t sha3_msg_write(const void *msg, size_t msg_len,
+static dif_result_t kmac_msg_write(const void *msg, size_t msg_len,
                                    size_t *processed) {
   // Set the number of bytes processed to 0.
   if (processed != NULL) {
@@ -259,6 +316,23 @@ static dif_result_t sha3_msg_write(const void *msg, size_t msg_len,
   if (processed != NULL) {
     *processed = msg_len;
   }
+
+  // The KMAC operation requires that the output length (d) in bits be right
+  // encoded and appended to the end of the message.
+  // Note: kDifKmacMaxOutputLenWords could be reduced to make this code
+  // simpler. For example, a maximum of `(UINT16_MAX - 32) / 32` (just under
+  // 8 KiB) would mean that d is guaranteed to be less than 0xFFFF.
+  uint32_t d = kmac_operation_state.d * 32;
+  int out_len = 1 + (d > 0xFF) + (d > 0xFFFF) + (d > 0xFFFFFF);
+  int shift = (out_len - 1) * 8;
+  while (shift >= 8) {
+    mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                       (uint8_t)(d >> shift));
+    shift -= 8;
+  }
+  mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET, (uint8_t)d);
+  mmio_region_write8(kmac.base_addr, KMAC_MSG_FIFO_REG_OFFSET,
+                     (uint8_t)out_len);
   kmac_operation_state.squeezing = true;
 
   return kDifOk;
@@ -304,7 +378,7 @@ static void kmac_msg_done(void) {
  * enters the 'squeeze' state, 2) doesn't append the output length, 3) doesn't
  * support the generation of more state.
  */
-static dif_result_t sha3_get_digest(uint32_t *out, size_t len) {
+static dif_result_t kmac_get_digest(uint32_t *out, size_t len) {
   if (out == NULL && len != 0) {
     return kDifBadArg;
   }
@@ -358,49 +432,43 @@ static void kmac_init(void) {
       .entropy_fast_process = false,
       .msg_mask = true,
   };
-
   SS_CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
 
   kmac_block_until_idle();
 }
 
 /**
- * Disables/Enables masking in the KMAC/SHA3 peripheral.
+ * Simple serial 'k' (set key) command handler.
  *
- * This function configures KMAC/SHA3 with the appropriate mask setting.
+ * This function simply caches the provided key in the static `kmac_key`
+ * variable so that it can be used in subsequent operations. This function does
+ * not use key shares to simplify side-channel analysis. The key must be
+ * `kKeyLength` bytes long.
+ *
+ * @param key Key. Must be `kKeyLength` bytes long.
+ * @param key_len Key length. Must be equal to `kKeyLength`.
+ * @return Result of the operation.
  */
-static void kmac_disable_masking(const uint8_t *masks_off, size_t off_len) {
-  SS_CHECK(off_len == 1);
-  SS_CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+static void sha3_serial_set_key(const uint8_t *key, size_t key_len) {
+  SS_CHECK(key_len == kKeyLength);
 
-  dif_kmac_config_t config;
-  if (masks_off[0]) {
-    config.entropy_fast_process = true;
-    config.msg_mask = false;
-    LOG_INFO("Initializing the KMAC peripheral with masking disabled.");
-  } else {
-    config.entropy_fast_process = false;
-    config.msg_mask = true;
-    LOG_INFO("Initializing the KMAC peripheral with masking enabled.");
-  }
-  SS_CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
-
-  kmac_block_until_idle();
-  // Acknowledge the command. This is crucial to be in sync with the host.
-  simple_serial_send_status(0);
+  kmac_key = (dif_kmac_key_t){
+      .length = kDifKmacKeyLen128,
+  };
+  memcpy(kmac_key.share0, key, kKeyLength);
 }
 
 /**
- * Absorbs a message without a customization string.
+ * Absorbs a message using KMAC128 without a customization string.
  *
  * @param msg Message.
  * @param msg_len Message length.
  */
 static void sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
   // Start a new message and write data to message FIFO.
-  SS_CHECK_DIF_OK(sha3_msg_start(kDifKmacModeSha3Len256));
-  SS_CHECK_DIF_OK(sha3_msg_write(msg, msg_len, NULL));
+  SS_CHECK_DIF_OK(
+      kmac_msg_start(kDifKmacModeKmacLen128, kDigestLength, &kmac_key, NULL));
+  SS_CHECK_DIF_OK(kmac_msg_write(msg, msg_len, NULL));
 
   // Start the SHA3 processing (this triggers the capture) and go to sleep.
   // Using the SecCmdDelay hardware parameter, the KMAC unit is
@@ -413,7 +481,7 @@ static void sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
 /**
  * Simple serial 'p' (absorb) command handler.
  *
- * Absorbs the given message without a customization string,
+ * Absorbs the given message using KMAC128 without a customization string,
  * and sends the digest over UART. This function also handles the trigger
  * signal.
  *
@@ -433,7 +501,7 @@ static void sha3_serial_single_absorb(const uint8_t *msg, size_t msg_len) {
 
   // Read the digest and send it to the host for verification.
   uint32_t out[kDigestLength];
-  SS_CHECK_DIF_OK(sha3_get_digest(out, kDigestLength));
+  SS_CHECK_DIF_OK(kmac_get_digest(out, kDigestLength));
   simple_serial_send_packet('r', (uint8_t *)out, kDigestLength * 4);
 
   // Reset before the next absorb since KMAC must be idle before starting
@@ -441,43 +509,42 @@ static void sha3_serial_single_absorb(const uint8_t *msg, size_t msg_len) {
   kmac_reset();
 }
 
-static void sha3_serial_fixed_message_set(const uint8_t *message,
-                                          size_t message_len) {
-  SS_CHECK(message_len == kMessageLength);
-  memcpy(message_fixed, message, message_len);
+static void sha3_serial_fixed_key_set(const uint8_t *key, size_t key_len) {
+  SS_CHECK(key_len == kKeyLength);
+  memcpy(key_fixed, key, key_len);
 }
 
 static void sha3_serial_batch(const uint8_t *data, size_t data_len) {
-  uint32_t num_hashes = 0;
+  uint32_t num_encryptions = 0;
   uint32_t out[kDigestLength];
   uint32_t batch_digest[kDigestLength];
-  uint8_t dummy_message[kMessageLength];
-  SS_CHECK(data_len == sizeof(num_hashes));
-  num_hashes = read_32(data);
+  SS_CHECK(data_len == sizeof(num_encryptions));
+  num_encryptions = read_32(data);
 
   for (uint32_t j = 0; j < kDigestLength; ++j) {
     batch_digest[j] = 0;
   }
 
-  for (uint32_t i = 0; i < num_hashes; ++i) {
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
     if (run_fixed) {
-      memcpy(batch_messages[i], message_fixed, kMessageLength);
+      memcpy(batch_keys[i], key_fixed, kKeyLength);
     } else {
-      prng_rand_bytes(batch_messages[i], kMessageLength);
+      prng_rand_bytes(batch_keys[i], kKeyLength);
     }
-    prng_rand_bytes(dummy_message, kMessageLength);
-    run_fixed = dummy_message[0] & 0x1;
+    prng_rand_bytes(batch_messages[i], kMessageLength);
+    run_fixed = batch_messages[i][0] & 0x1;
   }
 
-  for (uint32_t i = 0; i < num_hashes; ++i) {
+  for (uint32_t i = 0; i < num_encryptions; ++i) {
     kmac_reset();
+    memcpy(kmac_key.share0, batch_keys[i], kKeyLength);
 
     sca_set_trigger_high();
     sha3_serial_absorb(batch_messages[i], kMessageLength);
     sca_set_trigger_low();
 
     kmac_msg_done();
-    SS_CHECK_DIF_OK(sha3_get_digest(out, kDigestLength));
+    SS_CHECK_DIF_OK(kmac_get_digest(out, kDigestLength));
 
     // The correctness of each batch is verified by computing and sending
     // the batch digest. This digest is computed by XORing all outputs of
@@ -486,9 +553,6 @@ static void sha3_serial_batch(const uint8_t *data, size_t data_len) {
       batch_digest[j] ^= out[j];
     }
   }
-
-  // Acknowledge the batch command. This is crucial to be in sync with the host
-  simple_serial_send_status(0);
   // Send the batch digest to the host for verification.
   simple_serial_send_packet('r', (uint8_t *)batch_digest, kDigestLength * 4);
 }
@@ -514,17 +578,17 @@ static void sha3_serial_seed_lfsr(const uint8_t *seed, size_t seed_len) {
 bool test_main(void) {
   sca_init(kScaTriggerSourceKmac, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
 
-  LOG_INFO("Running sha3_serial");
+  LOG_INFO("Running kmac_serial");
 
   LOG_INFO("Initializing simple serial interface to capture board.");
   simple_serial_init(sca_get_uart());
+  simple_serial_register_handler('k', sha3_serial_set_key);
   simple_serial_register_handler('p', sha3_serial_single_absorb);
   simple_serial_register_handler('b', sha3_serial_batch);
-  simple_serial_register_handler('t', sha3_serial_fixed_message_set);
+  simple_serial_register_handler('t', sha3_serial_fixed_key_set);
   simple_serial_register_handler('l', sha3_serial_seed_lfsr);
-  simple_serial_register_handler('m', kmac_disable_masking);
 
-  LOG_INFO("Initializing the KMAC peripheral with masks enabled.");
+  LOG_INFO("Initializing the KMAC peripheral.");
   kmac_init();
 
   LOG_INFO("Starting simple serial packet handling.");
