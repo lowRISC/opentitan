@@ -23,6 +23,14 @@ class edn_scoreboard extends cip_base_scoreboard #(
   // local queues to hold incoming packets pending comparison
   bit[FIPS_ENDPOINT_BUS_WIDTH - 1:0]   endpoint_data_q[$];
 
+  bit[TL_DW-1:0] csrng_cmd_q[$];
+  // Max size is 13. Both used for the auto_req_mode.
+  bit[TL_DW-1:0] generate_cmd_q[$];
+  bit[TL_DW-1:0] generate_res_q[$];
+  int num_auto_reqs;
+
+  bit instantiated;
+
   // Sample interrupt pins at read data phase. This is used to compare with intr_state read value.
   bit [NumEdnIntr-1:0] intr_pins;
 
@@ -54,6 +62,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
     fork
       process_genbits_fifo();
       process_rsp_sts_fifo();
+      process_cs_cmd_fifo();
     join_none
 
     for (int i = 0; i < cfg.num_endpoints; i++) begin
@@ -125,8 +134,22 @@ class edn_scoreboard extends cip_base_scoreboard #(
         end
       end
       "ctrl": begin
+        if (addr_phase_write && `gmv(ral.regwen) == 1) begin
+          if (get_field_val(ral.ctrl.edn_enable, item.a_data) == MuBi4False) begin
+            instantiated = 0;
+          end else begin
+            if (get_field_val(ral.ctrl.boot_req_mode, item.a_data) == MuBi4True) begin
+              csrng_cmd_q.push_back(`gmv(ral.boot_ins_cmd));
+              csrng_cmd_q.push_back(`gmv(ral.boot_gen_cmd));
+            end
+            if (get_field_val(ral.ctrl.cmd_fifo_rst, item.a_data) == MuBi4True) begin
+              reset_fifos();
+            end
+          end
+        end
       end
       "sw_cmd_req": begin
+        if (addr_phase_write) csrng_cmd_q.push_back(item.a_data);
       end
       "sw_cmd_sts": begin
         do_read_check = 1'b0;
@@ -137,9 +160,28 @@ class edn_scoreboard extends cip_base_scoreboard #(
       end
       "sum_sts": begin
       end
+      // TODO: can we still push data if EDN is disabled?
       "generate_cmd": begin
+        if (addr_phase_write) begin
+          if (generate_cmd_q.size() == MAX_FIFO_SIZE) begin
+            generate_cmd_q.pop_front();
+            `uvm_info(`gfn, "Generate_cmd_q reaches it max size, pop one item out", UVM_LOW)
+            // TODO: add coverage
+          end
+          generate_cmd_q.push_back(item.a_data);
+          `uvm_info(`gfn, $sformatf("add generate cmd %0h", item.a_data), UVM_LOW);
+        end
       end
       "reseed_cmd": begin
+        if (addr_phase_write) begin
+          if (generate_res_q.size() == MAX_FIFO_SIZE) begin
+            generate_res_q.pop_front();
+            `uvm_info(`gfn, "Generate_cmd_q reaches it max size, pop one item out", UVM_LOW)
+            // TODO: add coverage
+          end
+          generate_res_q.push_back(item.a_data);
+          `uvm_info(`gfn, $sformatf("add reseed cmd %0h", item.a_data), UVM_LOW);
+        end
       end
       "max_num_reqs_between_reseeds": begin
       end
@@ -220,9 +262,57 @@ class edn_scoreboard extends cip_base_scoreboard #(
     end
   endtask
 
+  virtual task process_cs_cmd_fifo();
+    push_pull_item#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))  cs_cmd_item;
+    forever begin
+      cs_cmd_fifo.get(cs_cmd_item);
+
+      case (cs_cmd_item.h_data[3:0])
+        csrng_pkg::INS: instantiated = 1;
+        csrng_pkg::UNI: instantiated = 0;
+        default: begin end
+      endcase
+
+      // Auto_gen_mode: use the generate_cmd_q and generate_res_q fifos.
+      if (`gmv(ral.ctrl.auto_req_mode) == MuBi4True &&
+          instantiated &&
+          cs_cmd_item.h_data[3:0] != csrng_pkg::INS) begin
+
+        // Send reseed cmd
+        if (num_auto_reqs == `gmv(ral.max_num_reqs_between_reseeds)) begin
+          `uvm_info(`gfn, "reach max reqs, send reseed cmd", UVM_LOW)
+          `DV_CHECK_GT(generate_res_q.size(), 0)
+          `DV_CHECK_CASE_EQ(cs_cmd_item.h_data, generate_res_q.pop_front())
+          num_auto_reqs = 0;
+
+        // Send generate_cmd
+        end else begin
+          `uvm_info(`gfn, "compare with generate_cmd_q", UVM_LOW)
+          `DV_CHECK_GT(generate_cmd_q.size(), 0)
+          `DV_CHECK_CASE_EQ(cs_cmd_item.h_data, generate_cmd_q.pop_front())
+          num_auto_reqs++;
+       end
+
+      // SW mode or boot_req_mode
+      end else begin
+        `DV_CHECK_GT(csrng_cmd_q.size(), 0)
+        `DV_CHECK_CASE_EQ(cs_cmd_item.h_data, csrng_cmd_q.pop_front())
+      end
+    end
+  endtask
+
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
-    // reset local fifos queues and variables
+    reset_fifos();
+    instantiated = 0;
+  endfunction
+
+  virtual function void reset_fifos();
+    csrng_cmd_q.delete();
+    generate_cmd_q.delete();
+    generate_res_q.delete();
+    // TODO: check if this is required
+    num_auto_reqs = 0;
   endfunction
 
   function void check_phase(uvm_phase phase);

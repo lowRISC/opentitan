@@ -10,6 +10,7 @@ package edn_env_pkg;
   import push_pull_agent_pkg::*;
   import csrng_agent_pkg::*;
   import dv_lib_pkg::*;
+  import dv_base_reg_pkg::*;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
@@ -26,6 +27,7 @@ package edn_env_pkg;
   parameter uint     MAX_NUM_ENDPOINTS = 7;
   parameter string   LIST_OF_ALERTS[]  = {"recov_alert","fatal_alert"};
   parameter uint     NUM_ALERTS        = 2;
+  parameter uint     MAX_FIFO_SIZE     = 13;
 
   // types
   typedef enum int {
