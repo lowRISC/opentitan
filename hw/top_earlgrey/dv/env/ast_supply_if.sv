@@ -20,7 +20,7 @@ interface ast_supply_if (
   // The amount of time to hold the glitch. Should be enough to span more than one aon_clk cycles
   // so it is sampled.
   localparam time GlitchTimeSpan = 10us;
-  localparam int GlitchCycles = 3;
+  localparam int GlitchCycles = 6;
 
   // The number of cycles after stopping the glitch in vcmain before restarting
   // assertions in pwrmgr.
@@ -70,31 +70,16 @@ interface ast_supply_if (
   // Create glitch in vcmain_pok_h_o some cycles after core_sleeping trigger transitions high.
   // This is useful for non-deep sleep-related triggers.
   task automatic glitch_vcmain_pok_on_next_core_sleeping_trigger(int cycles);
-    `uvm_info("ast_supply_if", "normal sleep glitch 0", UVM_MEDIUM)
     @(posedge core_sleeping_trigger);
-    `uvm_info("ast_supply_if", "normal sleep glitch 1", UVM_MEDIUM)
     repeat (cycles) @(posedge clk);
-    `uvm_info("ast_supply_if", "normal sleep glitch 2", UVM_MEDIUM)
     `GLITCH_VCMAIN_POK;
-    `uvm_info("ast_supply_if", "normal sleep glitch 3", UVM_MEDIUM)
   endtask : glitch_vcmain_pok_on_next_core_sleeping_trigger
 
   // Create glitch in vcmain_pok_h_o once the fast fsm sets the reset cause to LowPwrEntry.
   task automatic glitch_vcmain_pok_on_next_low_power_trigger();
-    `uvm_info("ast_supply_if", "deep sleep glitch 0", UVM_MEDIUM)
     @(posedge low_power_trigger);
-    `uvm_info("ast_supply_if", "deep sleep glitch 1", UVM_MEDIUM)
     `GLITCH_VCMAIN_POK;
-    `uvm_info("ast_supply_if", "deep sleep glitch 2", UVM_MEDIUM)
   endtask : glitch_vcmain_pok_on_next_low_power_trigger
-
-  task automatic glitch_vcmain_pok_on(int cycles);
-    `uvm_info("ast_supply_if", "random sleep glitch 0", UVM_MEDIUM)
-    repeat (cycles) @(posedge clk);
-    `uvm_info("ast_supply_if", "random sleep glitch 1", UVM_MEDIUM)
-    `GLITCH_VCMAIN_POK;
-    `uvm_info("ast_supply_if", "random sleep glitch 2", UVM_MEDIUM)
-  endtask : glitch_vcmain_pok_on
 
 `undef GLITCH_VCMAIN_POK
 

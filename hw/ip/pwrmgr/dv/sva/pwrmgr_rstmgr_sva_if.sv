@@ -38,11 +38,8 @@ interface pwrmgr_rstmgr_sva_if
 
   // output reset cycle with a clk enable disable
   localparam int MIN_MAIN_RST_CYCLES = 0;
-  localparam int MAX_MAIN_RST_CYCLES = 258;
-  localparam int MIN_GLITCH_RST_CYCLES = 450;
-  localparam int MAX_GLITCH_RST_CYCLES = 458;
+  localparam int MAX_MAIN_RST_CYCLES = 400;
   `define MAIN_RST_CYCLES ##[MIN_MAIN_RST_CYCLES:MAX_MAIN_RST_CYCLES]
-  `define GLITCH_RST_CYCLES ##[MIN_GLITCH_RST_CYCLES:MAX_GLITCH_RST_CYCLES]
 
   // The timing of the escalation reset is determined by the slow clock, but will not propagate if
   // the non-slow clock is off. We use the regular clock and multiply the clock cycles times the
@@ -81,8 +78,8 @@ interface pwrmgr_rstmgr_sva_if
   for (genvar pd = 0; pd < PowerDomains; ++pd) begin : gen_assertions_per_power_domains
     `ASSERT(LcHandshakeOn_A, rst_lc_req[pd] |-> `LC_SYS_CYCLES !rst_lc_req[pd] || !rst_lc_src_n[pd],
             clk_i, reset_or_disable)
-    `ASSERT(LcHandshakeOff_A, !rst_lc_req[pd] |-> `LC_SYS_CYCLES rst_lc_req[pd] || rst_lc_src_n[pd],
-            clk_i, reset_or_disable)
+    `ASSERT(LcHandshakeOff_A, $fell(rst_lc_req[pd])
+            |-> `LC_SYS_CYCLES rst_lc_req[pd] || rst_lc_src_n[pd], clk_i, reset_or_disable)
     `ASSERT(SysHandshakeOn_A,
             rst_sys_req[pd] |-> `LC_SYS_CYCLES !rst_sys_req[pd] || !rst_sys_src_n[pd], clk_i,
             reset_or_disable)
@@ -125,7 +122,7 @@ interface pwrmgr_rstmgr_sva_if
   `ASSERT(MainPwrRstOff_A,
           $fell(
               main_rst_req_i
-          ) |-> `GLITCH_RST_CYCLES !rstreqs[ResetMainPwrIdx], clk_slow_i,
+          ) |-> `MAIN_RST_CYCLES !rstreqs[ResetMainPwrIdx], clk_slow_i,
           reset_or_disable || !check_rstreqs_en)
 
    // Signals in EscRstOn_A and EscRstOff_A are sampled with slow and fast clock.

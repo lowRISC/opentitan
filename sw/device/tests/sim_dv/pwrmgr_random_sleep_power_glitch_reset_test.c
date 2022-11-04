@@ -66,10 +66,6 @@ enum {
   kEscalationPhase2Micros = 50,                               // 50 us
 };
 
-uint32_t cycle_rescaling_factor() {
-  return kDeviceType == kDeviceSimDV ? 1 : 10;
-}
-
 static_assert(
     kWdogBarkMicros < kWdogBiteMicros &&
         kWdogBarkMicros > kEscalationPhase0Micros &&
@@ -178,28 +174,25 @@ static void alert_handler_config(void) {
       {.phase = kDifAlertHandlerClassStatePhase0,
        .signal = 0,
        .duration_cycles =
-           udiv64_slow(kEscalationPhase0Micros * kClockFreqPeripheralHz,
-                       1000000, NULL) *
-           cycle_rescaling_factor()},
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros) *
+           alert_handler_testutils_cycle_rescaling_factor()},
       {.phase = kDifAlertHandlerClassStatePhase1,
        .signal = 1,
        .duration_cycles =
-           udiv64_slow(kEscalationPhase1Micros * kClockFreqPeripheralHz,
-                       1000000, NULL) *
-           cycle_rescaling_factor()},
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase1Micros) *
+           alert_handler_testutils_cycle_rescaling_factor()},
       {.phase = kDifAlertHandlerClassStatePhase2,
        .signal = 3,
        .duration_cycles =
-           udiv64_slow(kEscalationPhase2Micros * kClockFreqPeripheralHz,
-                       1000000, NULL) *
-           cycle_rescaling_factor()}};
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase2Micros) *
+           alert_handler_testutils_cycle_rescaling_factor()}};
 
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
       .accumulator_threshold = 0,
       .irq_deadline_cycles =
-          udiv64_slow(10 * kClockFreqPeripheralHz, 1000000, NULL) *
-          cycle_rescaling_factor(),
+          alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros) *
+          alert_handler_testutils_cycle_rescaling_factor(),
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
@@ -229,14 +222,11 @@ static void alert_handler_config(void) {
 static void config_escalate(dif_aon_timer_t *aon_timer,
                             const dif_pwrmgr_t *pwrmgr) {
   uint64_t bark_cycles =
-      udiv64_slow(kWdogBarkMicros * kClockFreqAonHz, 1000000, NULL) *
-      cycle_rescaling_factor();
+      aon_timer_testutils_get_aon_cycles_from_us(kWdogBarkMicros) *
+      alert_handler_testutils_cycle_rescaling_factor();
   uint64_t bite_cycles =
-      udiv64_slow(kWdogBiteMicros * kClockFreqAonHz, 1000000, NULL) *
-      cycle_rescaling_factor();
-
-  CHECK(bite_cycles < UINT32_MAX,
-        "The value %u can't fit into the 32 bits timer counter.", bite_cycles);
+      aon_timer_testutils_get_aon_cycles_from_us(kWdogBiteMicros) *
+      alert_handler_testutils_cycle_rescaling_factor();
 
   LOG_INFO(
       "Wdog will bark after %u/%u us/cycles and bite after %u/%u us/cycles",
@@ -261,7 +251,7 @@ static void low_power_glitch_reset(const dif_pwrmgr_t *pwrmgr) {
 }
 
 static void normal_sleep_glitch_reset(const dif_pwrmgr_t *pwrmgr) {
-  // Place device into low power and immediately wake.
+  // Place device into normal (shallow) power
   dif_pwrmgr_domain_config_t config;
   config = kDifPwrmgrDomainOptionUsbClockInLowPower |
            kDifPwrmgrDomainOptionCoreClockInLowPower |
@@ -314,7 +304,8 @@ static void wdog_bite_test(const dif_aon_timer_t *aon_timer,
   // precaution.
   uint32_t wait_us =
       bark_time_us +
-      udiv64_slow(5 * 1000000 + kClockFreqAonHz - 1, kClockFreqAonHz, NULL);
+      alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros) *
+          alert_handler_testutils_cycle_rescaling_factor();
 
   // Wait bark time and check that the bark interrupt requested.
   busy_spin_micros(wait_us);
@@ -398,7 +389,7 @@ static void normal_sleep_por(const dif_pwrmgr_t *pwrmgr) {
            kDifPwrmgrDomainOptionIoClockInLowPower |
            kDifPwrmgrDomainOptionMainPowerInLowPower;
 
-  // Program the pwrmgr to go to deep sleep state (clocks off).
+  // Program the pwrmgr to go to swallow sleep state (clocks on).
   pwrmgr_testutils_enable_low_power(
       pwrmgr,
       (kDifPwrmgrWakeupRequestSourceOne | kDifPwrmgrWakeupRequestSourceTwo |
@@ -454,9 +445,14 @@ bool test_main(void) {
             rst_info == kDifRstmgrResetInfoLowPowerExit ||
             rst_info == (kDifRstmgrResetInfoSysRstCtrl |
                          kDifRstmgrResetInfoLowPowerExit) ||
-            rst_info == (kDifRstmgrResetInfoPowerUnstable | 
+            rst_info == (kDifRstmgrResetInfoPowerUnstable |
                          kDifRstmgrResetInfoLowPowerExit) ||
-            rst_info == kDifRstmgrResetInfoPowerUnstable || 
+            rst_info == (kDifRstmgrResetInfoPowerUnstable |
+                         kDifRstmgrResetInfoWatchdog |
+                         kDifRstmgrResetInfoLowPowerExit) ||
+            rst_info == (kDifRstmgrResetInfoPowerUnstable |
+                         kDifRstmgrResetInfoWatchdog) ||
+            rst_info == kDifRstmgrResetInfoPowerUnstable ||
             rst_info ==
                 (kDifRstmgrResetInfoPor | kDifRstmgrResetInfoLowPowerExit) ||
             rst_info == (kDifRstmgrResetInfoWatchdog |
