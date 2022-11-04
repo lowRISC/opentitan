@@ -113,8 +113,6 @@ module i2c_fsm (
   logic        restart;       // indicates repeated start state is entered into
 
   // Target specific variables
-  logic        start_det_clr; // clear the start det indication once handling is complete
-  logic        stop_det_clr;  // clear the stop det indication once handling is complete
   logic        start_det;     // indicates start or repeated start is detected on the bus
   logic        stop_det;      // indicates stop is detected on the bus
   logic        address0_match;// indicates target's address0 matches the one sent by host
@@ -269,31 +267,13 @@ module i2c_fsm (
   end
 
   // (Repeated) Start condition detection by target
-  always_ff @ (posedge clk_i or negedge rst_ni) begin : s_detect
-    if (!rst_ni) begin
-      start_det <= 1'b0;
-    end else if (scl_i_q && scl_i) begin
-      if (start_det && start_det_clr) start_det <= 1'b0;
-      else if (sda_i_q && !sda_i) start_det <= 1'b1;
-    end else begin
-      start_det <= 1'b0;
-    end
-  end
+  assign start_det = target_enable_i && (scl_i_q && scl_i) & (sda_i_q && !sda_i);
 
   // Stop condition detection by target
-  always_ff @ (posedge clk_i or negedge rst_ni) begin : p_detect
-    if (!rst_ni) begin
-      stop_det <= 1'b0;
-    end else if (scl_i_q && scl_i) begin
-      if (stop_det && stop_det_clr) stop_det <= 1'b0;
-      else if (!sda_i_q && sda_i) stop_det <= 1'b1;
-    end else begin
-      stop_det <= 1'b0;
-    end
-  end
+  assign stop_det = target_enable_i && (scl_i_q && scl_i) & (!sda_i_q && sda_i);
 
   // Bit counter on the target side
-  assign bit_ack = (bit_idx == 4'd9) && !start_det; // ack
+  assign bit_ack = (bit_idx == 4'd8); // ack
 
   // Increment counter on negative SCL edge
   always_ff @ (posedge clk_i or negedge rst_ni) begin : tgt_bit_counter
@@ -302,7 +282,9 @@ module i2c_fsm (
     end else if (start_det) begin
       bit_idx <= 4'd0;
     end else if (scl_i_q && !scl_i) begin
-      if (bit_ack) bit_idx <= 4'd1;
+      // input byte clear is always asserted on a "start"
+      // condition.
+      if (input_byte_clr || bit_ack) bit_idx <= 4'd0;
       else bit_idx <= bit_idx + 1'b1;
     end else begin
       bit_idx <= bit_idx;
@@ -394,8 +376,6 @@ module i2c_fsm (
     AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
     // Target function pops Tx fifo after successfully sending data to external host
     PopTxFifo,
-    // Target function sees a stop or repeated start condition from external host
-    AcquireSrP,
     // Target function clock stretch handling.
     StretchTxEmpty, StretchAcqFull, StretchAddrTransmit,
     StretchAddrAcquire
@@ -453,7 +433,6 @@ module i2c_fsm (
     end
   end
   assign event_ack_stop_o = rw_bit_q & (stop_det | start_det) & host_ack;
-
 
   // Outputs for each state
   always_comb begin : state_outputs
@@ -720,17 +699,6 @@ module i2c_fsm (
         target_idle_o = 1'b0;
         sda_temp = 1'b0;
       end
-      // AcquireSrP: target acquires repeated Start or Stop
-      AcquireSrP : begin
-        // Since this is either a re-start or a stop, indicate transaction
-        // complete.
-        event_trans_complete_o = 1'b1;
-
-        if (start_det) acq_fifo_wdata_o = {1'b1, 1'b1, input_byte};
-        else acq_fifo_wdata_o = {1'b1, 1'b0, input_byte};
-        acq_fifo_wvalid_o = 1'b1;
-        if (tx_fifo_depth_i != '0) event_tx_nonempty_o = 1'b1;
-      end
       // StretchAddrTransmit: target stretches the clock after matching an address for transmit
       StretchAddrTransmit : begin
         target_idle_o = 1'b0;
@@ -772,7 +740,18 @@ module i2c_fsm (
         event_tx_empty_o = 1'b0;
         event_tx_nonempty_o = 1'b0;
       end
-    endcase
+    endcase // unique case (state_q)
+
+    // start / stop override
+    if (start_det || stop_det) begin
+      // Only add an entry if this is a repeated start or stop.
+      acq_fifo_wvalid_o = !target_idle_o;
+      acq_fifo_wdata_o = {1'b1, start_det, input_byte};
+      event_trans_complete_o = !target_idle_o;
+
+      // Transaction completed with unused entries
+      if (!target_idle_o && tx_fifo_depth_i != '0) event_tx_nonempty_o = 1'b1;
+    end
   end
 
   // Conditional state transition
@@ -793,8 +772,6 @@ module i2c_fsm (
     addr_stop_tx = 1'b0;
     addr_stop_acq = 1'b0;
     en_sda_interf_det = 1'b0;
-    start_det_clr = 1'b0;
-    stop_det_clr = 1'b0;
 
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
@@ -802,9 +779,6 @@ module i2c_fsm (
         if (!host_enable_i && !target_enable_i) state_d = Idle; // Idle unless host is enabled
         else if (host_enable_i) begin
           if (fmt_fifo_rvalid_i) state_d = Active;
-        end else if (target_enable_i && start_det) begin
-          start_det_clr = 1'b1;
-          state_d = AcquireStart;
         end
       end
 
@@ -1199,15 +1173,6 @@ module i2c_fsm (
         end
       end
 
-      // AcquireSrP: target acquires repeated Start or Stop
-      AcquireSrP : begin
-        // clear stop here as we want to cycle to Idle and wait.
-        // Do not clear start, as a start seen in this state is a
-        // repeated start and needs to handle address decode again.
-        stop_det_clr = stop_det;
-        state_d = Idle;
-      end
-
       // StretchAddrTransmit: target stretches the clock after matching an address for transmit
       StretchAddrTransmit : begin
         if (!stretch_stop_tx_i) state_d = StretchAddrTransmit;
@@ -1257,13 +1222,13 @@ module i2c_fsm (
       end
     endcase // unique case (state_q)
 
-    // If a start or stop is detected in target mode, handle it directly
-    // instead of being dependent on a specific state, which may lead to
-    // certain corner cases.
-    if (target_enable_i &&
-       ((start_det && !start_det_clr) ||
-        (stop_det && !stop_det_clr))) begin
-      state_d = AcquireSrP;
+    // When a start is detected, always go to the acquire start state.
+    // Differences in repeated start / start handling are done in the
+    // other fsm.
+    if (start_det) begin
+      state_d = AcquireStart;
+    end else if (stop_det) begin
+      state_d = Idle;
     end
   end
 

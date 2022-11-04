@@ -117,9 +117,9 @@ typedef enum dif_i2c_irq {
    */
   kDifI2cIrqSdaUnstable = 8,
   /**
-   * Host and target mode interrupt. In host mode, raised if the host terminates
-   * the transaction by issuing STOP or repeated START. In target mode, raised
-   * if the external host issues a STOP or repeated START.
+   * Host and target mode interrupt. In host mode, raised if the host issues a
+   * repated START or terminates the transaction by issuing STOP. In target
+   * mode, raised if the external host issues a STOP or repeated START.
    */
   kDifI2cIrqTransComplete = 9,
   /**
