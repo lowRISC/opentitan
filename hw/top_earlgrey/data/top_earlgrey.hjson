@@ -958,6 +958,8 @@
       // Pinmux JTAG signals
       'pinmux_aon.lc_jtag' : ['lc_ctrl.jtag'],
       'pinmux_aon.rv_jtag' : ['rv_dm.jtag'],
+      // Latched HW debug life cycle signal that is forwarded to RV_DM
+      'pinmux_aon.pinmux_hw_debug_en' : ['rv_dm.pinmux_hw_debug_en'],
 
       // OTP LC interface
       'otp_ctrl.otp_lc_data'       : ['lc_ctrl.otp_lc_data'],
@@ -989,9 +991,11 @@
                                       'sram_ctrl_main.lc_escalate_en',
                                       'sram_ctrl_ret_aon.lc_escalate_en',
                                       'aon_timer_aon.lc_escalate_en',
-                                      'flash_ctrl.lc_escalate_en'],
+                                      'flash_ctrl.lc_escalate_en',
+                                      'pinmux_aon.lc_escalate_en'],
 
-      'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en'],
+      'lc_ctrl.lc_check_byp_en'    : ['otp_ctrl.lc_check_byp_en',
+                                      'pinmux_aon.lc_check_byp_en'],
       'lc_ctrl.lc_clk_byp_req'     : ['clkmgr_aon.lc_clk_byp_req'],
       'lc_ctrl.lc_clk_byp_ack'     : ['clkmgr_aon.lc_clk_byp_ack'],
 

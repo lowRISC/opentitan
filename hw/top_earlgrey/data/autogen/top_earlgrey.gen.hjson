@@ -3728,6 +3728,44 @@
           index: -1
         }
         {
+          name: lc_escalate_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: pinmux_aon
+          top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          name: lc_check_byp_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: pinmux_aon
+          top_signame: lc_ctrl_lc_check_byp_en
+          index: -1
+        }
+        {
+          name: pinmux_hw_debug_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: pinmux_aon
+          end_idx: -1
+          top_type: broadcast
+          top_signame: pinmux_aon_pinmux_hw_debug_en
+          index: -1
+        }
+        {
           name: lc_jtag
           struct: jtag
           package: jtag_pkg
@@ -5034,6 +5072,18 @@
           default: lc_ctrl_pkg::Off
           inst_name: rv_dm
           top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+        }
+        {
+          name: pinmux_hw_debug_en
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: rv_dm
+          top_signame: pinmux_aon_pinmux_hw_debug_en
           index: -1
         }
         {
@@ -7999,6 +8049,10 @@
       [
         rv_dm.jtag
       ]
+      pinmux_aon.pinmux_hw_debug_en:
+      [
+        rv_dm.pinmux_hw_debug_en
+      ]
       otp_ctrl.otp_lc_data:
       [
         lc_ctrl.otp_lc_data
@@ -8053,10 +8107,12 @@
         sram_ctrl_ret_aon.lc_escalate_en
         aon_timer_aon.lc_escalate_en
         flash_ctrl.lc_escalate_en
+        pinmux_aon.lc_escalate_en
       ]
       lc_ctrl.lc_check_byp_en:
       [
         otp_ctrl.lc_check_byp_en
+        pinmux_aon.lc_check_byp_en
       ]
       lc_ctrl.lc_clk_byp_req:
       [
@@ -16842,6 +16898,44 @@
         index: -1
       }
       {
+        name: lc_escalate_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: pinmux_aon
+        top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        name: lc_check_byp_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: pinmux_aon
+        top_signame: lc_ctrl_lc_check_byp_en
+        index: -1
+      }
+      {
+        name: pinmux_hw_debug_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: pinmux_aon
+        end_idx: -1
+        top_type: broadcast
+        top_signame: pinmux_aon_pinmux_hw_debug_en
+        index: -1
+      }
+      {
         name: lc_jtag
         struct: jtag
         package: jtag_pkg
@@ -17658,6 +17752,18 @@
         default: lc_ctrl_pkg::Off
         inst_name: rv_dm
         top_signame: lc_ctrl_lc_hw_debug_en
+        index: -1
+      }
+      {
+        name: pinmux_hw_debug_en
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: rv_dm
+        top_signame: pinmux_aon_pinmux_hw_debug_en
         index: -1
       }
       {
@@ -21041,6 +21147,17 @@
         act: req
         suffix: rsp
         default: jtag_pkg::JTAG_RSP_DEFAULT
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: pinmux_aon_pinmux_hw_debug_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
       }
       {
         package: otp_ctrl_pkg
