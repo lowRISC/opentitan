@@ -99,7 +99,8 @@ module tb;
   for (genvar i = 0; i < 4; i++) begin : gen_tri_state
     pullup (weak1) pd_in_i (si_pulldown[i]);
     pullup (weak1) pd_out_i (so_pulldown[i]);
-    assign spi_if.sio[i]  = (cio_sd_en_o[i]) ? cio_sd_o[i] : so_pulldown[i];
+    assign spi_if.sio[i]  = (cio_sd_en_o[i]) ? cio_sd_o[i] : 'z;
+    assign (highz0, pull1) spi_if.sio[i] = !cio_sd_en_o[i];
     assign si_pulldown[i] = spi_if.sio[i];
 
     assign spi_if.csb[i] = (i < NumCS && cio_csb_en_o[i]) ? cio_csb_o[i] : 1'b1;
