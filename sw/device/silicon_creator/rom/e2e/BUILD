@@ -264,7 +264,7 @@ opentitan_functest(
     # binary target.  We'll build an unsigned do-nothing binary.
     ot_flash_binary = ":empty_test_slot_a",
     signed = False,
-    targets = ["cw310_rom"],
+    targets = ["cw310_other"],
     test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
 )
 
@@ -493,7 +493,7 @@ manifest({
     ot_flash_binary = ":empty_test_slot_a",
     signed = False,
     targets = [
-        "cw310_rom",
+        "cw310_other",
         "dv",
     ],
 ) for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()]
@@ -613,7 +613,7 @@ BOOT_POLICY_NEWER_CASES = [
         t["a"],
         t["b"],
     ),
-    targets = ["cw310_rom"],
+    targets = ["cw310_other"],
 ) for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items() for t in BOOT_POLICY_NEWER_CASES]
 
 test_suite(
@@ -1803,7 +1803,7 @@ REDACT.update({"INVALID": 0x0})
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         signed = False,
-        targets = ["cw310_rom"],
+        targets = ["cw310_other"],
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",

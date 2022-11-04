@@ -6,7 +6,8 @@ load("@//rules:opentitan.bzl", "opentitan_flash_binary", "opentitan_rom_binary")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@bazel_skylib//lib:collections.bzl", "collections")
 
-VALID_TARGETS = ["dv", "verilator", "cw310_rom", "cw310_test_rom"]
+DEFAULT_TARGETS = ["dv", "verilator", "cw310_rom", "cw310_test_rom"]
+VALID_TARGETS = ["dv", "verilator", "cw310_rom", "cw310_test_rom", "cw310_other"]
 
 OTTF_SUCCESS_MSG = r"PASS.*\n"
 OTTF_FAILURE_MSG = r"(FAIL|FAULT).*\n"
@@ -240,7 +241,7 @@ def cw310_params(
 
 def opentitan_functest(
         name,
-        targets = VALID_TARGETS,
+        targets = DEFAULT_TARGETS,
         args = [],
         data = [],
         test_in_rom = False,
@@ -290,7 +291,8 @@ def opentitan_functest(
         opentitan_flash_binary named: {name}_prog (and all emitted rules).
         sh_test                named: {name}_sim_dv
         sh_test                named: {name}_sim_verilator
-        sh_test                named: {name}_fpga_cw310
+        sh_test                named: {name}_fpga_cw310_rom
+        sh_test                named: {name}_fpga_cw310_test_rom
         test_suite             named: {name}
     """
 
@@ -307,7 +309,7 @@ def opentitan_functest(
         elif target == "verilator":
             devices_to_build_for.append("sim_verilator")
             target_params["sim_verilator"] = verilator_params() if not verilator else verilator
-        elif target in ["cw310_rom", "cw310_test_rom"]:
+        elif target in ["cw310_rom", "cw310_test_rom", "cw310_other"]:
             devices_to_build_for.append("fpga_cw310")
 
             # Copy `cw310` for each `target`. This is not a deep copy, thus we
@@ -321,6 +323,7 @@ def opentitan_functest(
             DEFAULT_BITSTREAM = {
                 "cw310_test_rom": "@//hw/bitstream:test_rom",
                 "cw310_rom": "@//hw/bitstream:rom",
+                "cw310_other": "@//hw/bitstream:rom",
             }
             if (cw310 == None) or (cw310.get("bitstream") == None):
                 cw310_["bitstream"] = DEFAULT_BITSTREAM[target]
@@ -336,8 +339,12 @@ def opentitan_functest(
                 cw310_["rom_kind"] = "rom"
                 cw310_["tags"].append("cw310_rom")
                 target_params["fpga_cw310_rom"] = cw310_
+            elif target == "cw310_other":
+                cw310_["rom_kind"] = "rom"
+                cw310_["tags"].append("cw310_other")
+                target_params["fpga_cw310_other"] = cw310_
             else:
-                fail("Expected `cw310_test_rom` or `cw310_rom` as the target name")
+                fail("Expected `cw310_test_rom`, `cw310_rom`, and/or `cw310_other` as the target name")
         else:
             fail("Invalid target. Target must be in {}".format(VALID_TARGETS))
     devices_to_build_for = collections.uniq(devices_to_build_for)
@@ -424,7 +431,7 @@ def opentitan_functest(
         # Set flash image.
         if target in ["sim_dv", "sim_verilator"]:
             flash = "{}_{}_scr_vmem64".format(ot_flash_binary, target)
-        elif target in ["fpga_cw310_rom", "fpga_cw310_test_rom"]:
+        elif target in ["fpga_cw310_rom", "fpga_cw310_test_rom", "fpga_cw310_other"]:
             flash = "{}_fpga_cw310_bin".format(ot_flash_binary)
         else:
             fail("Unexpected target: {}".format(target))
@@ -445,7 +452,7 @@ def opentitan_functest(
             flash = rom
         else:
             target_data.append(flash)
-            if target in ["fpga_cw310_rom", "fpga_cw310_test_rom"]:
+            if target in ["fpga_cw310_rom", "fpga_cw310_test_rom", "fpga_cw310_other"]:
                 target_data.append("{}_fpga_cw310".format(ot_flash_binary))
             else:
                 target_data.append("{}_{}".format(ot_flash_binary, target))
@@ -471,7 +478,7 @@ def opentitan_functest(
         # Set success/failure strings for target platforms that print test
         # results over the UART (e.g., Verilator and FPGA).
         exit_strings_kwargs = {}
-        if target in ["fpga_cw310_rom", "fpga_cw310_test_rom", "sim_verilator"]:
+        if target in ["fpga_cw310_rom", "fpga_cw310_test_rom", "fpga_cw310_other", "sim_verilator"]:
             exit_strings_kwargs = {
                 "exit_success": shell.quote(params.pop("exit_success")),
                 "exit_failure": shell.quote(params.pop("exit_failure")),
@@ -505,7 +512,7 @@ def opentitan_functest(
         target_test_cmds = [s.format(**format_dict) for s in target_test_cmds]
         env["TEST_CMDS"] = " ".join(target_test_cmds)
 
-        if target in ["fpga_cw310_rom", "fpga_cw310_test_rom"]:
+        if target in ["fpga_cw310_rom", "fpga_cw310_test_rom", "fpga_cw310_other"]:
             # We attach the UART configuration to the front of the command line
             # so that they'll be parsed as global options rather than
             # command-specific options.
