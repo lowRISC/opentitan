@@ -89,8 +89,21 @@ package chip_env_pkg;
   typedef enum {
     SwTypeRom,  // Ibex SW - first stage boot ROM.
     SwTypeTest, // Ibex SW - actual test SW.
-    SwTypeOtbn  // Otbn SW.
+    SwTypeOtbn, // Otbn SW
+    SwTypeOtp   // Customized OTP image
   } sw_type_e;
+
+  // Our dvsim.py configuration always generates five base OTP images (in various lifecycle states)
+  // to allow tests configurations to choose from. Additionally, we support specifying a custom OTP
+  // image, via the `sw_images` plusarg, that is built by the SW build system.
+  typedef enum {
+    OtpTypeLcStRaw,           // Base OTP image in Raw lifecycle state.
+    OtpTypeLcStDev,           // Base OTP image in Dev lifecycle state.
+    OtpTypeLcStProd,          // Base OTP image in Prod lifecycle state.
+    OtpTypeLcStRma,           // Base OTP image in RMA lifecycle state.
+    OtpTypeLcStTestUnlocked0, // Base OTP image in TestUnlocked0 lifecycle state.
+    OtpTypeCustom             // Custom OTP image specified via `sw_images` plusarg.
+  } otp_type_e;
 
   // Two status for LC JTAG to identify if LC state transition is successful.
   typedef enum int {

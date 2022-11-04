@@ -88,7 +88,7 @@
   // - 0 for Boot ROM,
   // - 1 for SW test (loaded in flash),
   // - 2 for OTBN test,
-  // - 3 for OTP and so on
+  // - 3 for OTP.
   // This allows an arbitrary number of SW images to be supplied to the TB.
   //
   // For example, if the Bazel label for a test is:

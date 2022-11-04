@@ -25,6 +25,13 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
 
   lc_ctrl_state_pkg::lc_state_e cur_lc_state;
 
+  lc_ctrl_state_pkg::lc_state_e otp_type_2_lc_state[otp_type_e] = '{
+    OtpTypeLcStRaw: LcStRaw,
+    OtpTypeLcStDev: LcStDev,
+    OtpTypeLcStProd: LcStProd,
+    OtpTypeLcStRma: LcStRma,
+    OtpTypeLcStTestUnlocked0: LcStTestUnlocked0};
+
   local uvm_reg lc_csrs[$];
   chip_jtag_tap_e select_jtag;
 
@@ -50,7 +57,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     if (lc_at_prod) begin
       cur_lc_state = LcStProd;
     end else begin
-      cur_lc_state = cfg.use_otp_image;
+      cur_lc_state = otp_type_2_lc_state[cfg.use_otp_image];
     end
 
     super.pre_start();
