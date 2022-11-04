@@ -19,14 +19,13 @@ module pwrmgr_unit_bind;
     .sw_rst_req_i(prim_mubi_pkg::mubi4_test_true_strict(sw_rst_req_i)),
     .main_rst_req_i(!rst_main_ni),
     .esc_rst_req_i(esc_rst_req_q),
+    .ndm_req_i(ndmreset_req_i),
     // The outputs from pwrmgr.
     .rst_lc_req(pwr_rst_o.rst_lc_req),
     .rst_sys_req(pwr_rst_o.rst_sys_req),
     .rstreqs(pwr_rst_o.rstreqs),
     .main_pd_n(pwr_ast_o.main_pd_n),
     .reset_cause(pwr_rst_o.reset_cause),
-    // This goes directly to rstmgr and can trigger rst_sys_src_n.
-    .ndm_sys_req(1'b0),
     // The inputs from rstmgr.
     .rst_lc_src_n(pwr_rst_i.rst_lc_src_n),
     .rst_sys_src_n(pwr_rst_i.rst_sys_src_n)

@@ -53,7 +53,6 @@ interface rstmgr_if (
     reset_info = {
       `PATH_TO_DUT.u_reg.reset_info_hw_req_qs,
       `PATH_TO_DUT.u_reg.reset_info_sw_reset_qs,
-      `PATH_TO_DUT.u_reg.reset_info_ndm_reset_qs,
       `PATH_TO_DUT.u_reg.reset_info_low_power_exit_qs,
       `PATH_TO_DUT.u_reg.reset_info_por_qs
     };
