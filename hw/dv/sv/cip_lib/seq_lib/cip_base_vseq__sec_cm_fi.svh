@@ -57,7 +57,7 @@ virtual task test_sec_cm_fi();
     // when a fault occurs at the reg_we_check, it's treated as a TL intg error
     if (if_proxy.sec_cm_type == SecCmPrimOnehot &&
         !uvm_re_match("*u_prim_reg_we_check*", if_proxy.path)) begin
-        check_tl_intg_error_response();
+      check_tl_intg_error_response();
     end else begin
       check_sec_cm_fi_resp(if_proxy);
     end

@@ -22,7 +22,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   localparam int CyclesForErrUpdate = 16;
 
   // The min ands max offsets from the expected counts. Notice the count occasionally matches
-  // expected_counts - 1, so the offsets are set carefully to avoid spurious results.
+  // expected_counts +- 2 because of CDC synchronizers, so the offsets are set carefully to
+  // avoid spurious results.
   //
   // The exp_alert cip feature requires a single alert at a time, so we set at most one of the
   // clocks to fail measurement.
@@ -48,17 +49,17 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     solve clk_tested before mesr;
     solve mesr before min_offset, max_offset;
     if (mesr == MesrLow) {
-      min_offset inside {[-4 : -2]};
-      max_offset inside {[-4 : -2]};
+      min_offset inside {[-5 : -3]};
+      max_offset inside {[-5 : -3]};
       min_offset <= max_offset;
     } else
     if (mesr == MesrRight) {
-      min_offset == -1;
-      max_offset == 1;
+      min_offset == -2;
+      max_offset == 2;
     } else
     if (mesr == MesrHigh) {
-      min_offset inside {[2 : 4]};
-      max_offset inside {[2 : 4]};
+      min_offset inside {[3 : 5]};
+      max_offset inside {[3 : 5]};
       min_offset <= max_offset;
     }
   }
@@ -123,7 +124,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     // Set the thresholds to get no error.
     foreach (ExpectedCounts[clk]) begin
       clk_mesr_e clk_mesr = clk_mesr_e'(clk);
-      enable_frequency_measurement(clk_mesr, ExpectedCounts[clk] - 1, ExpectedCounts[clk] + 1);
+      enable_frequency_measurement(clk_mesr, ExpectedCounts[clk] - 2, ExpectedCounts[clk] + 2);
     end
     wait_before_read_recov_err_code('0);
     csr_rd_check(.ptr(ral.recov_err_code), .compare_value('0),
@@ -177,8 +178,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
             expected_recov_meas_err[clk] = 1;
           end
         end else begin
-          min_threshold = expected - 1;
-          max_threshold = expected + 1;
+          min_threshold = expected - 2;
+          max_threshold = expected + 2;
         end
         block_meas_en = calib_rdy == MuBi4False;
         enable_frequency_measurement(clk_mesr, min_threshold, max_threshold, block_meas_en);

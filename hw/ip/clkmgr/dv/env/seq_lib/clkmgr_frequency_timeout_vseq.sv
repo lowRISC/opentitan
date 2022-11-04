@@ -74,8 +74,8 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
         int min_threshold;
         int max_threshold;
         int expected = ExpectedCounts[clk];
-        min_threshold = expected - 1;
-        max_threshold = expected + 1;
+        min_threshold = expected - 2;
+        max_threshold = expected + 2;
         enable_frequency_measurement(clk_mesr, min_threshold, max_threshold);
       end
 
