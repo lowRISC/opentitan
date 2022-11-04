@@ -250,7 +250,7 @@ py_library(
 
 py_library(
     name = "gen_rtl",
-    srcs = ["gen_json.py"],
+    srcs = ["gen_rtl.py"],
     deps = [
         ":ip_block",
         ":lib",
