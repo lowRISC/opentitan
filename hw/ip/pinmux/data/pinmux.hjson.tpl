@@ -51,61 +51,94 @@
       name:    "lc_hw_debug_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
+      package: "lc_ctrl_pkg",
+      desc:    '''
+               Debug enable qualifier coming from life cycle controller, used for HW strap qualification.
+               '''
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_dft_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
+      package: "lc_ctrl_pkg",
+      desc:    '''
+               Test enable qualifier coming from life cycle controller, used for HW strap qualification.
+               '''
     }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_escalate_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
-    }
+      package: "lc_ctrl_pkg",
+      desc:    '''
+               Escalation enable signal coming from life cycle controller, used for invalidating
+               the latched lc_hw_debug_en state inside the strap sampling logic.
+               ''',}
+
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_check_byp_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
-    }
+      package: "lc_ctrl_pkg",
+      desc:    '''
+               Check bypass enable signal coming from life cycle controller, used for invalidating
+               the latched lc_hw_debug_en state inside the strap sampling logic. This signal is asserted
+               whenever the life cycle controller performs a life cycle transition. Its main use is
+               to skip any background checks inside the life cycle partition of the OTP controller while
+               a life cycle transition is in progress.
+               ''',}
+
     { struct:  "lc_tx"
       type:    "uni"
       name:    "pinmux_hw_debug_en"
       act:     "req"
       default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
-    }
+      package: "lc_ctrl_pkg",
+      desc:    '''
+               This is the latched version of lc_hw_debug_en_i. We use it exclusively to gate the JTAG
+               signals and TAP side of the RV_DM so that RV_DM can remain live during an NDM reset cycle.
+               ''',}
+
     // JTAG TAPs
     { struct:  "jtag"
       type:    "req_rsp"
       name:    "lc_jtag"
       act:     "req"
       package: "jtag_pkg"
-    }
+      desc:    '''
+               Qualified JTAG signals for life cycle controller TAP.
+               ''',}
+
     { struct:  "jtag"
       type:    "req_rsp"
       name:    "rv_jtag"
       act:     "req"
       package: "jtag_pkg"
-    }
+      desc:    '''
+               Qualified JTAG signals for RISC-V processor TAP.
+               ''',}
+
     { struct:  "jtag"
       type:    "req_rsp"
       name:    "dft_jtag"
       act:     "req"
       package: "jtag_pkg"
-    }
+      desc:    '''
+               Qualified JTAG signals for DFT TAP.
+               ''',}
+
     // Testmode signals to AST
     { struct:  "dft_strap_test_req",
       type:    "uni",
       name:    "dft_strap_test",
       act:     "req",
       package: "pinmux_pkg",
+      desc:    '''
+               Sampled DFT strap values, going to the DFT TAP.
+               ''',
       default: "'0"
     }
     // DFT indication to stop tap strap sampling
@@ -114,6 +147,9 @@
       name:    "dft_hold_tap_sel",
       act:     "rcv",
       package: "",
+      desc:    '''
+               TAP selection hold indication, asserted by the DFT TAP during boundary scan.
+               ''',
       default: "'0"
     }
     // Define pwr mgr <-> pinmux signals
@@ -122,6 +158,9 @@
       name:    "sleep_en",
       act:     "rcv",
       package: "",
+      desc:    '''
+               Level signal that is asserted when the power manager enters sleep.
+               ''',
       default: "1'b0"
     },
     { struct:  "logic",
@@ -129,6 +168,9 @@
       name:    "strap_en",
       act:     "rcv",
       package: "",
+      desc:    '''
+               This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+               ''',
       default: "1'b0"
     },
     { struct:  "logic",
@@ -136,12 +178,18 @@
       name:    "pin_wkup_req",
       act:     "req",
       package: "",
+      desc:    '''
+               Wakeup request from wakeup detectors, to the power manager, running on the AON clock.
+               ''',
       default: "1'b0"
     },
     { name:    "usbdev_dppullup_en",
       type:    "uni",
       act:     "rcv",
       package: "",
+      desc:    '''
+               Pullup enable signal coming from the USB IP.
+               ''',
       struct:  "logic",
       width:   "1"
     },
@@ -149,6 +197,9 @@
       type:    "uni",
       act:     "rcv",
       package: "",
+      desc:    '''
+               Pullup enable signal coming from the USB IP.
+               ''',
       struct:  "logic",
       width:   "1"
     },
@@ -156,6 +207,9 @@
       type:    "uni",
       act:     "req",
       package: "",
+      desc:    '''
+                Pullup enable signal going to USB PHY, needs to be maintained in low-power mode.
+               ''',
       struct:  "logic",
       width:   "1"
       default: "1'b0"
@@ -164,6 +218,9 @@
       type:    "uni",
       act:     "req",
       package: "",
+      desc:    '''
+               Pullup enable signal going to USB PHY, needs to be maintained in low-power mode.
+               ''',
       struct:  "logic",
       width:   "1"
       default: "1'b0"
@@ -173,12 +230,18 @@
       name:    "usb_wkup_req",
       act:     "req",
       package: "",
+      desc:    '''
+               Wakeup request from USB wakeup detector, going to the power manager, running on the AON clock.
+               ''',
       default: "1'b0"
     },
     { name:    "usbdev_suspend_req",
       type:    "uni",
       act:     "rcv",
       package: "",
+      desc:    '''
+               Indicates whether USB is in suspended state, coming from the USB device.
+               ''',
       struct:  "logic",
       width:   "1"
     },
@@ -186,6 +249,9 @@
       type:    "uni",
       act:     "rcv",
       package: "",
+      desc:    '''
+               Acknowledges the USB wakeup request, coming from the USB device.
+               ''',
       struct:  "logic",
       width:   "1"
     },
@@ -193,6 +259,9 @@
       type:    "uni",
       act:     "req",
       package: "",
+      desc:    '''
+               Event signal that indicates what happened while monitoring.
+               ''',
       struct:  "logic",
       width:   "1",
       default: "1'b0"
@@ -201,6 +270,9 @@
       type:    "uni",
       act:     "req",
       package: "",
+      desc:    '''
+               Event signal that indicates what happened while monitoring.
+               ''',
       struct:  "logic",
       width:   "1",
       default: "1'b0"
@@ -209,6 +281,9 @@
       type:    "uni",
       act:     "req",
       package: "",
+      desc:    '''
+               State debug information.
+               ''',
       struct:  "logic",
       width:   1,
       default: "1'b0"

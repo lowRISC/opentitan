@@ -103,31 +103,13 @@ Parameter      | Description
 `NMioPads`     | Number of muxed bidirectional pads.
 `NDioPads`     | Number of dedicated pads.
 
-### Signals
+### Primary IO Signals
 
-The table below lists the `pinmux` signals. The number of dedicated and muxed IOs is parametric, and hence the signals are stacked in packed arrays.
+The table below lists the primary `pinmux` IO signals to/from the pad ring.
+The number of dedicated and muxed IOs is parametric, and hence the signals are stacked in packed arrays.
 
 Signal                                 | Direction | Type                               | Description
 ---------------------------------------|-----------|------------------------------------|---------------
-`pin_wkup_req_o`                       | `output`  | `logic`                            | Wakeup request from wakeup detectors, to the power manager, running on the AON clock.
-`usb_wkup_req_o`                       | `output`  | `logic`                            | Wakeup request from USB wakeup detector, going to the power manager, running on the AON clock.
-`sleep_en_i`                           | `input`   | `logic`                            | Level signal that is asserted when the power manager enters sleep.
-`strap_en_i`                           | `input`   | `logic`                            | This signal is pulsed high by the power manager after reset in order to sample the HW straps.
-`lc_dft_en_i`                          | `input`   | `lc_ctrl_pkg::lc_tx_t`             | Test enable qualifier coming from life cycle controller, used for HW strap qualification.
-`lc_hw_debug_en_i`                     | `input`   | `lc_ctrl_pkg::lc_tx_t`             | Debug enable qualifier coming from life cycle controller, used for HW strap qualification.
-`dft_strap_test_o`                     | `output`  | `pinmux_pkg::dft_strap_test_req_t` | Sampled DFT strap values, going to the DFT TAP.
-`dft_hold_tap_sel_i`                   | `output`  | `logic`                            | TAP selection hold indication, asserted by the DFT TAP during boundary scan.
-`lc_jtag_o`                            | `output`  | `jtag_pkg::jtag_req_t`             | Qualified JTAG signals for life cycle controller TAP.
-`lc_jtag_i`                            | `input`   | `jtag_pkg::jtag_rsp_t`             | Qualified JTAG signals for life cycle controller TAP.
-`rv_jtag_o`                            | `output`  | `jtag_pkg::jtag_req_t`             | Qualified JTAG signals for RISC-V processor TAP.
-`rv_jtag_i`                            | `input`   | `jtag_pkg::jtag_rsp_t`             | Qualified JTAG signals for RISC-V processor TAP.
-`dft_jtag_o`                           | `output`  | `jtag_pkg::jtag_req_t`             | Qualified JTAG signals for DFT TAP.
-`dft_jtag_i`                           | `input`   | `jtag_pkg::jtag_rsp_t`             | Qualified JTAG signals for DFT TAP.
-`usb_out_of_rst_i`                     | `input`   | `logic`                            | Indicates whether the USB has come out of reset, coming from the USB device.
-`usb_aon_wake_en_i`                    | `input`   | `logic`                            | Enables the USB wakeup feature, coming from the USB device.
-`usb_aon_wake_ack_i`                   | `input`   | `logic`                            | Acknowledges the USB wakeup request, coming from the USB device.
-`usb_suspend_i`                        | `input`   | `logic`                            | Indicates whether USB is in suspended state, coming from the USB device.
-`usb_state_debug_o`                    | `output`  | `usbdev_pkg::awk_state_t`          | Debug information about the wake state, going to the USB device.
 `periph_to_mio_i[NPeriphOut-1:0]`      | `input`   | packed `logic`                     | Signals from `NPeriphOut` muxed peripheral outputs coming into the `pinmux`.
 `periph_to_mio_oe_i[NPeriphOut-1:0]`   | `input`   | packed `logic`                     | Signals from `NPeriphOut` muxed peripheral output enables coming into the `pinmux`.
 `mio_to_periph_o[NPeriphIn-1:0]`       | `output`  | packed `logic`                     | Signals to `NPeriphIn` muxed peripherals coming from the `pinmux`.
