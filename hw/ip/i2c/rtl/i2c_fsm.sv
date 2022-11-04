@@ -86,7 +86,9 @@ module i2c_fsm (
   logic [19:0] tcount_q;      // current counter for setting delays
   logic [19:0] tcount_d;      // next counter for setting delays
   logic        load_tcount;   // indicates counter must be loaded
-  logic [30:0] stretch;       // counter for clock being stretched by target
+  logic [31:0] stretch_idle_cnt; // counter for clock being stretched by target
+                                 // or clock idle by host.
+  logic        stretch_en;
 
   // Bit and byte counter variables
   logic [2:0]  bit_index;     // bit being transmitted to or read from the bus
@@ -120,7 +122,6 @@ module i2c_fsm (
   logic        address_match; // indicates one of target's addresses matches the one sent by host
   logic [7:0]  input_byte;    // register for reads from host
   logic        input_byte_clr;// clear input_byte contents
-  logic [31:0] scl_high_cnt;  // counter for continuously released scl_i
   logic        addr_stop_tx;  // indicates stretch_stop_tx and stretch_en_addr_tx are asserted
   logic        addr_stop_acq; // indicates stretch_stop_acq and stretch_en_addr_acq are asserted
   logic        stretch_stop_tx_clr;
@@ -165,7 +166,7 @@ module i2c_fsm (
         tNoDelay    : tcount_d = 20'h00001;
         default     : tcount_d = 20'h00001;
       endcase
-    end else if (stretch == '0) begin
+    end else if (stretch_idle_cnt == '0 || target_enable_i) begin
       tcount_d = tcount_q - 1'b1;
     end else begin
       tcount_d = tcount_q;  // pause timer if clock is stretched
@@ -182,18 +183,20 @@ module i2c_fsm (
     end
   end
 
-  // Clock stretching detection when i2c_ctrl is host
+  // Clock stretching/idle detection when i2c_ctrl.
+  // When in host mode, this is a stretch count for how long an external target
+  // has stretched the clock.
+  // When in target mode, this is an idle count for how long an external host
+  // has kept the clock idle after a START indication.
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_stretch
     if (!rst_ni) begin
-      stretch <= '0;
-    end else if (host_enable_i && scl_temp && !scl_i) begin
-      stretch <= stretch + 1'b1;
-    end else if (target_enable_i && !scl_temp) begin
-      // for target mode, there is no need to increment because
-      // we do not currently support a timeout. (this may change)
-      stretch <= 1'b1;
+      stretch_idle_cnt <= '0;
+    end else if (stretch_en && scl_temp && !scl_i) begin
+      stretch_idle_cnt <= stretch_idle_cnt + 1'b1;
+    end else if (!target_idle_o && scl_i) begin
+      stretch_idle_cnt <= stretch_idle_cnt + 1'b1;
     end else begin
-      stretch <= '0;
+      stretch_idle_cnt <= '0;
     end
   end
 
@@ -303,17 +306,6 @@ module i2c_fsm (
       else bit_idx <= bit_idx + 1'b1;
     end else begin
       bit_idx <= bit_idx;
-    end
-  end
-
-  // Counter for continuously released SCL state
-  always_ff @ (posedge clk_i or negedge rst_ni) begin : scl_high_counter
-    if (!rst_ni) begin
-      scl_high_cnt <= 32'd0;
-    end else if (scl_i) begin
-      scl_high_cnt <= scl_high_cnt + 1'b1;
-    end else begin
-      scl_high_cnt <= 32'd0;
     end
   end
 
@@ -478,11 +470,11 @@ module i2c_fsm (
     event_nak_o = 1'b0;
     event_scl_interference_o = 1'b0;
     event_sda_unstable_o = 1'b0;
-    event_stretch_timeout_o = 1'b0;
     event_trans_complete_o = 1'b0;
     event_tx_empty_o = 1'b0;
     event_tx_nonempty_o = 1'b0;
     rw_bit = rw_bit_q;
+    stretch_en = 1'b0;
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
       Idle : begin
@@ -519,9 +511,7 @@ module i2c_fsm (
         host_idle_o = 1'b0;
         sda_temp = fmt_byte_i[bit_index];
         scl_temp = 1'b1;
-        if ((stretch > stretch_timeout_i) && timeout_enable_i) begin
-          event_stretch_timeout_o = 1'b1;
-        end
+        stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
         if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
       end
@@ -543,9 +533,7 @@ module i2c_fsm (
         sda_temp = 1'b1;
         scl_temp = 1'b1;
         if (sda_i && !fmt_flag_nak_ok_i) event_nak_o = 1'b1;
-        if ((stretch > stretch_timeout_i) && timeout_enable_i) begin
-          event_stretch_timeout_o = 1'b1;
-        end
+        stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
         if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
       end
@@ -565,9 +553,7 @@ module i2c_fsm (
       ReadClockPulse : begin
         host_idle_o = 1'b0;
         scl_temp = 1'b1;
-        if ((stretch > stretch_timeout_i) && timeout_enable_i) begin
-          event_stretch_timeout_o = 1'b1;
-        end
+        stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
         if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
       end
@@ -598,9 +584,7 @@ module i2c_fsm (
         else if (byte_index == 9'd1) sda_temp = 1'b1;
         else sda_temp = 1'b0;
         scl_temp = 1'b1;
-        if ((stretch > stretch_timeout_i) && timeout_enable_i) begin
-          event_stretch_timeout_o = 1'b1;
-        end
+        stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
         if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
       end
@@ -784,7 +768,6 @@ module i2c_fsm (
         event_nak_o = 1'b0;
         event_scl_interference_o = 1'b0;
         event_sda_unstable_o = 1'b0;
-        event_stretch_timeout_o = 1'b0;
         event_trans_complete_o = 1'b0;
         event_tx_empty_o = 1'b0;
         event_tx_nonempty_o = 1'b0;
@@ -1305,6 +1288,9 @@ module i2c_fsm (
   end
 
   // Host ceased sending SCL pulses during ongoing transaction
-  assign event_host_timeout_o = (!target_idle_o & (scl_high_cnt > host_timeout_i)) ? 1'b1 : 1'b0;
+  assign event_host_timeout_o = !target_idle_o & (stretch_idle_cnt > host_timeout_i);
 
+  // Target stretched clock beyond timeout
+  assign event_stretch_timeout_o = stretch_en &&
+                                   (stretch_idle_cnt[30:0] > stretch_timeout_i) && timeout_enable_i;
 endmodule
