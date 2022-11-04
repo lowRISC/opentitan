@@ -121,7 +121,8 @@
             it.
 
             Stimulus:
-            Drive error from KMAC interface when VALID is high.
+            - Drive error from KMAC interface when VALID is high.
+            - Or drive all 0s or 1s as KMAC input digest data
 
             Checks:
             Same as above entry - "invalid_cmd".
@@ -130,7 +131,7 @@
       tests: ["keymgr_kmac_rsp_err"]
     }
     {
-      name: invalid_kmac_input
+      name: invalid_sw_input
       desc: '''
             Verify `keymgr` behavior with invalid key version.
 
@@ -147,12 +148,14 @@
       tests: ["keymgr_sw_invalid_input"]
     }
     {
-      name: invalid_kmac_data
+      name: invalid_hw_input
       desc: '''
             Verify `keymgr` behavior with invalid data patterns.
 
             Stimulus:
-            Use all 0s or 1s as KMAC input digest data
+            - Drive all 0s or 1s on any of these inputs - flash seeds, otp_key, diversification ID,
+            Rom digest etc.
+            - Make sure all cases are covered in `csr_debug_cg`.
 
             Checks:
             - Check interrupts `err` is triggered.
@@ -278,8 +281,14 @@
     {
       name: fault_status_cg
       desc: '''
-            - Cover fault_status` values except `REGFILE_INTG` and `SHADOW` as they are tested in
+            - Cover `fault_status` values except `REGFILE_INTG` and `SHADOW` as they are tested in
               a common direct test.
+            - This is sampled when `fault_status` is read.'''
+    }
+    {
+      name: csr_debug_cg
+      desc: '''
+            - Cover all field in `debug`, which indicates different kinds of invalid inputs.
             - This is sampled when `fault_status` is read.'''
     }
     {

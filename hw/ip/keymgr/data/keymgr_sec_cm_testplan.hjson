@@ -27,85 +27,102 @@
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["keymgr_tl_intg_err"]
     }
     {
       name: sec_cm_config_shadow
       desc: "Verify the countermeasure(s) CONFIG.SHADOW."
       stage: V2S
-      tests: []
+      tests: ["keymgr_shadow_reg_errors"]
     }
     {
       name: sec_cm_op_config_regwen
-      desc: "Verify the countermeasure(s) OP.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) OP.CONFIG.REGWEN."
+
+            X-ref'ed with `cfgen_during_op`.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_cfg_regwen"]
     }
     {
       name: sec_cm_reseed_config_regwen
-      desc: "Verify the countermeasure(s) RESEED.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) RESEED.CONFIG.REGWEN.
+
+            X-ref'ed with `random`.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_random", "keymgr_csr_rw"]
     }
     {
       name: sec_cm_sw_binding_config_regwen
-      desc: "Verify the countermeasure(s) SW_BINDING.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) SW_BINDING.CONFIG.REGWEN.
+
+            X-ref'ed with `random`.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_random", "keymgr_csr_rw"]
     }
     {
       name: sec_cm_max_key_ver_config_regwen
-      desc: "Verify the countermeasure(s) MAX_KEY_VER.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) MAX_KEY_VER.CONFIG.REGWEN.
+
+            X-ref'ed with `random`.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_random", "keymgr_csr_rw"]
     }
     {
       name: sec_cm_lc_ctrl_intersig_mubi
-      desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
+      desc: '''Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI.
+
+            X-ref'ed with `lc_disable`.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_lc_disable"]
     }
     {
       name: sec_cm_constants_consistency
-      desc: "Verify the countermeasure(s) CONSTANTS.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) CONSTANTS.CONSISTENCY.
+
+            X-ref'ed with `invalid_hw_input`.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_hwsw_invalid_input"]
     }
     {
       name: sec_cm_intersig_consistency
-      desc: "Verify the countermeasure(s) INTERSIG.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) INTERSIG.CONSISTENCY.
+
+            Test `otp diversification` input with all 0s or 1s.
+            X-ref'ed with `invalid_hw_input`.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_hwsw_invalid_input"]
     }
     {
       name: sec_cm_hw_key_sw_noaccess
       desc: "Verify the countermeasure(s) HW.KEY.SW_NOACCESS."
       stage: V2S
-      tests: []
+      tests: ["N/A"]
     }
     {
       name: sec_cm_output_keys_ctrl_redun
       desc: "Verify the countermeasure(s) OUTPUT_KEYS.CTRL.REDUN."
       stage: V2S
-      tests: []
+      tests: ["keymgr_sec_cm"]
     }
     {
       name: sec_cm_ctrl_fsm_sparse
       desc: "Verify the countermeasure(s) CTRL.FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["keymgr_sec_cm"]
     }
     {
       name: sec_cm_data_fsm_sparse
       desc: "Verify the countermeasure(s) DATA.FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["keymgr_sec_cm"]
     }
     {
       name: sec_cm_ctrl_fsm_local_esc
-      desc: "Verify the countermeasure(s) CTRL.FSM.LOCAL_ESC."
+      desc: '''Verify the countermeasure(s) CTRL.FSM.LOCAL_ESC.
+
+            X-ref'ed with `sec_cm_additional_check`.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_sec_cm"]
     }
     {
       name: sec_cm_ctrl_fsm_consistency
@@ -115,27 +132,29 @@
     }
     {
       name: sec_cm_ctrl_fsm_global_esc
-      desc: "Verify the countermeasure(s) CTRL.FSM.GLOBAL_ESC."
+      desc: '''Verify the countermeasure(s) CTRL.FSM.GLOBAL_ESC.
+
+            X-ref'ed with `lc_disable`.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_lc_disable"]
     }
     {
       name: sec_cm_ctrl_ctr_redun
       desc: "Verify the countermeasure(s) CTRL.CTR.REDUN."
       stage: V2S
-      tests: []
+      tests: ["keymgr_sec_cm"]
     }
     {
       name: sec_cm_kmac_if_fsm_sparse
       desc: "Verify the countermeasure(s) KMAC_IF.FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["keymgr_sec_cm"]
     }
     {
       name: sec_cm_kmac_if_ctr_redun
       desc: "Verify the countermeasure(s) KMAC_IF.CTR.REDUN."
       stage: V2S
-      tests: []
+      tests: ["keymgr_sec_cm"]
     }
     {
       name: sec_cm_kmac_if_cmd_ctrl_consistency
@@ -164,7 +183,7 @@
       name: sec_cm_reseed_ctr_redun
       desc: "Verify the countermeasure(s) RESEED.CTR.REDUN."
       stage: V2S
-      tests: []
+      tests: ["keymgr_sec_cm"]
     }
     {
       name: sec_cm_side_load_sel_ctrl_consistency
