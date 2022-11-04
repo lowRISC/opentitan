@@ -220,7 +220,7 @@ static void ecc_256_ecdsa(const uint8_t *ecc256_secret_k, size_t secret_k_len) {
  * UART.
  */
 static void simple_serial_main(void) {
-  entropy_testutils_boot_mode_init();
+  entropy_testutils_auto_mode_init();
 
   sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
                                       kScaPeripheralOtbn | kScaPeripheralCsrng |
