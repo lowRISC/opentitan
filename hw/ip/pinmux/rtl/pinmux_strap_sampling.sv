@@ -6,6 +6,7 @@ module pinmux_strap_sampling
   import pinmux_pkg::*;
   import pinmux_reg_pkg::*;
   import prim_pad_wrapper_pkg::*;
+  import lc_ctrl_pkg::*;
 #(
   // Taget-specific pinmux configuration passed down from the
   // target-specific top-level.
@@ -26,8 +27,11 @@ module pinmux_strap_sampling
   output logic      [NumIOs-1:0]   in_core_o,
   // Used for TAP qualification
   input  logic                     strap_en_i,
-  input  lc_ctrl_pkg::lc_tx_t      lc_dft_en_i,
-  input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_en_i,
+  input  lc_tx_t                   lc_dft_en_i,
+  input  lc_tx_t                   lc_hw_debug_en_i,
+  input  lc_tx_t                   lc_check_byp_en_i,
+  input  lc_tx_t                   lc_escalate_en_i,
+  output lc_tx_t                   pinmux_hw_debug_en_o,
   // Sampled values for DFT straps
   output dft_strap_test_req_t      dft_strap_test_o,
   // Hold tap strap select
@@ -46,8 +50,6 @@ module pinmux_strap_sampling
   // Life cycle signal synchronizers //
   /////////////////////////////////////
 
-  lc_ctrl_pkg::lc_tx_t [1:0] lc_hw_debug_en;
-  lc_ctrl_pkg::lc_tx_t [1:0] lc_dft_en;
   prim_mubi_pkg::mubi4_t [0:0] scanmode;
 
   prim_mubi4_sync #(
@@ -60,22 +62,157 @@ module pinmux_strap_sampling
     .mubi_o(scanmode)
   );
 
+  typedef enum logic [1:0] {
+    DftEnSample,
+    DftEnTapSel,
+    DftEnLast
+  } lc_dft_en_e;
+
+  lc_tx_t [DftEnLast-1:0] lc_dft_en;
   prim_lc_sync #(
-    .NumCopies(2)
-  ) u_prim_lc_sync_rv (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(lc_hw_debug_en_i),
-    .lc_en_o(lc_hw_debug_en)
-  );
-  prim_lc_sync #(
-    .NumCopies(2)
-  ) u_prim_lc_sync_dft (
+    .NumCopies(int'(DftEnLast))
+  ) u_prim_lc_sync_lc_dft_en (
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_dft_en_i),
     .lc_en_o(lc_dft_en)
   );
+  lc_tx_t [0:0] lc_hw_debug_en;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_lc_hw_debug_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_hw_debug_en_i),
+    .lc_en_o(lc_hw_debug_en)
+  );
+  lc_tx_t [0:0] lc_check_byp_en;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_lc_check_byp_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_check_byp_en_i),
+    .lc_en_o(lc_check_byp_en)
+  );
+  lc_tx_t [0:0] lc_escalate_en;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_lc_escalate_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_escalate_en_i),
+    .lc_en_o(lc_escalate_en)
+  );
+
+
+  /////////////////////////////
+  // LC_HW_DEBUG_EN Latching //
+  /////////////////////////////
+
+  // In order to keep a RV_DM JTAG debug session alive during NDM reset, we need to memorize the
+  // state of lc_hw_debug_en, since OTP/LC will be reset as part of NDM reset (the only parts not
+  // reset are in the pwr/rst/clkmgrs, RV_DM and this strap sampling module). We sample the life
+  // cycle signal state when the strap sampling pulse is asserted bu the PWRMGR. This pulse is
+  // asserted once during boot (and not after an NDM reset).
+  //
+  // Note that DFT TAP selection is not affected by this since we always consume the life value for
+  // lc_dft_en. We also make sure to invalidate the sampled lc_hw_debug_en whenever lc_check_byp_en
+  // or lc_escalate_en are not OFF. lc_escalate_en is asserted as part of an escalation, and
+  // lc_check_byp_en is asserted whenever a life cycle transition is initiated (it causes the OTP
+  // controller to skip background checks on the life cycle partition as it undergoes
+  // modification). This makes sure that the sampled value here does not survive a life cycle
+  // transition.
+  //
+  // Finally, note that there is secondary gating on the RV_DM and DFT TAPs that is always consuming
+  // live lc_hw_debug_en and lc_dft_en signals for added protection.
+
+  // Convert the strap enable pulse to a mubi signal and mask lc_hw_debug_en with it.
+  lc_tx_t lc_strap_en, lc_hw_debug_en_masked;
+  assign lc_strap_en = lc_tx_bool_to_lc_tx(strap_en_i);
+  assign lc_hw_debug_en_masked = lc_tx_and_hi(lc_strap_en, lc_hw_debug_en[0]);
+
+  // Output ON if
+  // - If the strap sampling pulse is asserted and lc_hw_debug_en is ON
+  // - If the pinmux_hw_debug_en_q is already set to ON (this is the latching feedback loop)
+  // Note: make sure we use a hardened, rectifying OR function since otherwise two non-strict
+  // values may produce a strict ON value.
+  lc_tx_t hw_debug_en_set, pinmux_hw_debug_en_q;
+  prim_lc_or_hardened #(
+    .ActVal(On)
+  ) u_prim_lc_or_hardened (
+    .clk_i,
+    .rst_ni,
+    .lc_en_a_i(lc_hw_debug_en_masked),
+    .lc_en_b_i(pinmux_hw_debug_en_q),
+    .lc_en_o  (hw_debug_en_set)
+  );
+
+  // Output ON if both lc_check_byp_en and lc_escalate_en are set to OFF.
+  lc_tx_t hw_debug_en_gating;
+  assign hw_debug_en_gating = lc_tx_inv(lc_tx_and_lo(lc_check_byp_en[0], lc_escalate_en[0]));
+
+  // Gate the hw_debug_en_set signal and feed it into the latching flop.
+  lc_tx_t pinmux_hw_debug_en_d;
+  assign pinmux_hw_debug_en_d = lc_tx_and_hi(hw_debug_en_set, hw_debug_en_gating);
+
+  prim_lc_sender u_prim_lc_sender_pinmux_hw_debug_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(pinmux_hw_debug_en_d),
+    .lc_en_o(pinmux_hw_debug_en_q)
+  );
+
+  typedef enum logic [1:0] {
+    HwDebugEnSample,
+    HwDebugEnTapSel,
+    HwDebugEnRvDmOut,
+    HwDebugEnLast
+  } pinmux_hw_debug_en_e;
+
+  lc_tx_t [HwDebugEnLast-1:0] pinmux_hw_debug_en;
+  prim_lc_sync #(
+    .NumCopies(int'(HwDebugEnLast)),
+    .AsyncOn(0) // no sync needed
+  ) u_prim_lc_sync_pinmux_hw_debug_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(pinmux_hw_debug_en_q),
+    .lc_en_o(pinmux_hw_debug_en)
+  );
+
+  // We send this latched version over to the RV_DM in order to gate the JTAG signals and TAP side.
+  // Note that the bus side will remain gated with the live lc_hw_debug_en value inside RV_DM.
+  assign pinmux_hw_debug_en_o = pinmux_hw_debug_en[HwDebugEnRvDmOut];
+
+  // Check that we can correctly latch upon strap_en_i
+  `ASSERT(LcHwDebugEnSet_A,
+      (lc_tx_test_true_strict(lc_hw_debug_en[0]) ||
+       lc_tx_test_true_strict(pinmux_hw_debug_en_q)) &&
+      lc_tx_test_false_strict(lc_check_byp_en[0]) &&
+      lc_tx_test_false_strict(lc_escalate_en[0]) &&
+      strap_en_i
+      |=>
+      lc_tx_test_true_strict(pinmux_hw_debug_en_q))
+  // Check that latching ON can only occur if lc_hw_debug_en_i is set.
+  `ASSERT(LcHwDebugEnSetRev0_A,
+      lc_tx_test_false_loose(pinmux_hw_debug_en_q) ##1
+      lc_tx_test_true_strict(pinmux_hw_debug_en_q)
+      |->
+      $past(lc_tx_test_true_strict(lc_hw_debug_en[0])))
+  // Check that latching ON can only occur if strap_en_i is set.
+  `ASSERT(LcHwDebugEnSetRev1_A,
+      lc_tx_test_false_loose(pinmux_hw_debug_en_q) ##1
+      lc_tx_test_true_strict(pinmux_hw_debug_en_q)
+      |->
+      $past(strap_en_i))
+  // Check that any non-OFF value on lc_check_byp_en_i and
+  // lc_escalate_en_i clears the latched value.
+  `ASSERT(LcHwDebugEnClear_A,
+      lc_tx_test_true_loose(lc_check_byp_en[0]) ||
+      lc_tx_test_true_loose(lc_escalate_en[0])
+      |=>
+      lc_tx_test_false_loose(pinmux_hw_debug_en_q))
 
   //////////////////////////
   // Strap Sampling Logic //
@@ -107,6 +244,9 @@ module pinmux_strap_sampling
   // told not to do so by external dft logic
   logic tap_sampling_en;
   logic dft_hold_tap_sel;
+  // Delay the strap sampling pulse by one cycle so that the pinmux_hw_debug_en above can
+  // propagate through the pinmux_hw_debug_en_q flop.
+  logic strap_en_q;
 
   prim_buf #(
     .Width(1)
@@ -114,7 +254,7 @@ module pinmux_strap_sampling
     .in_i(dft_hold_tap_sel_i),
     .out_o(dft_hold_tap_sel)
   );
-  assign tap_sampling_en = (lc_dft_en[0] == lc_ctrl_pkg::On) & ~dft_hold_tap_sel;
+  assign tap_sampling_en = lc_tx_test_true_strict(lc_dft_en[DftEnSample]) & ~dft_hold_tap_sel;
 
   always_comb begin : p_strap_sampling
     lc_strap_sample_en = 1'b0;
@@ -123,17 +263,15 @@ module pinmux_strap_sampling
     // Initial strap sampling pulse from pwrmgr,
     // qualified by life cycle signals.
     // The DFT-mode straps are always sampled only once.
-    if (strap_en_i) begin
-      if (lc_dft_en[0] == lc_ctrl_pkg::On) begin
-        dft_strap_sample_en = 1'b1;
-      end
+    if (strap_en_q && tap_sampling_en) begin
+      dft_strap_sample_en = 1'b1;
     end
     // In DFT-enabled life cycle states we continously
     // sample the TAP straps to be able to switch back and
     // forth between different TAPs.
-    if (strap_en_i || tap_sampling_en) begin
+    if (strap_en_q || tap_sampling_en) begin
       lc_strap_sample_en = 1'b1;
-      if (lc_hw_debug_en[0] == lc_ctrl_pkg::On) begin
+      if (lc_tx_test_true_strict(pinmux_hw_debug_en[HwDebugEnSample])) begin
         rv_strap_sample_en = 1'b1;
       end
     end
@@ -144,10 +282,12 @@ module pinmux_strap_sampling
       tap_strap_q         <= '0;
       dft_strap_q         <= '0;
       dft_strap_valid_q   <= 1'b0;
+      strap_en_q          <= 1'b0;
     end else begin
       tap_strap_q         <= tap_strap_d;
       dft_strap_q         <= dft_strap_d;
       dft_strap_valid_q   <= dft_strap_valid_d;
+      strap_en_q          <= strap_en_i;
     end
   end
 
@@ -183,14 +323,14 @@ module pinmux_strap_sampling
         jtag_en     = 1'b1;
       end
       RvTapSel: begin
-        if (lc_hw_debug_en[1] == lc_ctrl_pkg::On) begin
+        if (lc_tx_test_true_strict(pinmux_hw_debug_en[HwDebugEnTapSel])) begin
           rv_jtag_req = jtag_req;
           jtag_rsp    = rv_jtag_rsp;
           jtag_en     = 1'b1;
         end
       end
       DftTapSel: begin
-        if (lc_dft_en[1] == lc_ctrl_pkg::On) begin
+        if (lc_tx_test_true_strict(lc_dft_en[DftEnTapSel])) begin
           dft_jtag_req = jtag_req;
           jtag_rsp     = dft_jtag_rsp;
           jtag_en      = 1'b1;
@@ -294,12 +434,17 @@ module pinmux_strap_sampling
   `ASSERT_INIT(dft_strap1_idxRange_A, TargetCfg.dft_strap1_idx >= 0 &&
                                       TargetCfg.dft_strap1_idx < NumIOs)
 
-  // The strap sampling enable input shall be pulsed high exactly once after cold boot.
-  `ASSERT(PwrMgrStrapSampleOnce_A, strap_en_i |=> ##0 !strap_en_i [*])
+  // The strap sampling enable input shall be pulsed high for exactly one cycle after cold boot.
+  `ASSUME(PwrMgrStrapSampleOnce0_A, strap_en_i |=> !strap_en_i)
+  `ASSUME(PwrMgrStrapSampleOnce1_A, $fell(strap_en_i) |-> always !strap_en_i)
 
-  `ASSERT(RvTapOff0_A,  lc_hw_debug_en_i == lc_ctrl_pkg::Off |-> ##2 rv_jtag_o == '0)
-  `ASSERT(DftTapOff0_A, lc_dft_en_i == lc_ctrl_pkg::Off |-> ##2 dft_jtag_o == '0)
+  `ASSERT(RvTapOff0_A, lc_hw_debug_en_i == Off ##2 strap_en_i |=> rv_jtag_o == '0)
+  `ASSERT(RvTapOff1_A, pinmux_hw_debug_en[0] == Off |-> rv_jtag_o == '0)
+  `ASSERT(DftTapOff0_A, lc_dft_en_i == Off |-> ##2 dft_jtag_o == '0)
+
   // These assumptions are only used in FPV. They will cause failures in simulations.
-  `ASSUME_FPV(RvTapOff1_A,  lc_hw_debug_en_i == lc_ctrl_pkg::Off |-> ##2 rv_jtag_i == '0)
-  `ASSUME_FPV(DftTapOff1_A, lc_dft_en_i == lc_ctrl_pkg::Off |-> ##2 dft_jtag_i == '0)
+  `ASSUME_FPV(RvTapOff2_A, lc_hw_debug_en_i == Off ##2 strap_en_i |=> rv_jtag_i == '0)
+  `ASSUME_FPV(RvTapOff3_A, pinmux_hw_debug_en[0] == Off |-> rv_jtag_i == '0)
+  `ASSUME_FPV(DftTapOff1_A, lc_dft_en_i == Off |-> ##2 dft_jtag_i == '0)
+
 endmodule : pinmux_strap_sampling
