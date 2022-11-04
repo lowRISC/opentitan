@@ -19,21 +19,24 @@ set_reset_scenario { \
   { u_ast.vcaon_pok { constraint {@t0 1} }} \
   { top_earlgrey.u_pinmux_aon.dio_pad_attr_q[12].invert \
     { constraint { @t0 0 } } } \
-  { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 S } } } \
+  { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
 } -name ScnPOR
 
 # AST POK
 set_reset_scenario { \
   { u_ast.vcaon_pok { reset {@t0 0} { #2 1} } } \
+  { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
 } -name ScnPOK
 
 # AST Regulator Resets
 set_reset_scenario { \
   { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { reset { @t0 0 } { #10 1}}} \
+  { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
 } -name ScnMainPok
 
 set_reset_scenario { \
   { u_ast.u_rglts_pdm_3p3v.rglssm_vmppr_h_o { reset { @t0 0 } { #10 1}}} \
+  { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
 } -name ScnRglSsmVmppr
 
 set_reset_scenario { \
@@ -57,6 +60,7 @@ set_reset_scenario { \
   {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_7.q[0]} {reset  { @t0 0 } { #10 1}} } \
   { POR_N           { constraint { @t0 1 } } } \
   { u_ast.vcaon_pok { constraint { @t0 1 } } } \
+  { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
 } -name RstMgrSwRst -comment "RSTMGR SW Controlled Resets"
 
 # SPI_DEVICE FIFO Reset (Sync)
