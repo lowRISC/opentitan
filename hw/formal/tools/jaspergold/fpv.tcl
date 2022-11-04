@@ -76,7 +76,7 @@ if {$env(DUT_TOP) == "pinmux_tb"} {
   clock clk_i -both_edges
   clock clk_aon_i -factor 5
   clock -rate -default clk_i
-  reset -expr {!rst_ni !rst_aon_ni}
+  reset -expr {!rst_ni !rst_aon_ni !rst_sys_ni}
 
 } elseif {$env(DUT_TOP) == "prim_fifo_async_sram_adapter_tb"} {
   clock clk_wr_i -factor 2

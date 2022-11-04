@@ -15,6 +15,7 @@ module pinmux_tb
 ) (
   input  clk_i,
   input  rst_ni,
+  input  rst_sys_ni,
   input prim_mubi_pkg::mubi4_t scanmode_i,
   input  clk_aon_i,
   input  rst_aon_ni,
@@ -24,6 +25,9 @@ module pinmux_tb
   input  strap_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
+  input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+  output lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en_o,
   output dft_strap_test_req_t dft_strap_test_o,
   input  dft_hold_tap_sel_i,
   output jtag_pkg::jtag_req_t lc_jtag_o,
@@ -34,13 +38,13 @@ module pinmux_tb
   input jtag_pkg::jtag_rsp_t dft_jtag_i,
   input usbdev_dppullup_en_i,
   input usbdev_dnpullup_en_i,
-  output usb_dppullup_en_o,
-  output usb_dnpullup_en_o,
+  output logic usb_dppullup_en_o,
+  output logic usb_dnpullup_en_o,
   input usbdev_suspend_req_i,
   input usbdev_wake_ack_i,
-  output usbdev_bus_reset_o,
-  output usbdev_sense_lost_o,
-  output usbdev_wake_detect_active_o,
+  output logic usbdev_bus_reset_o,
+  output logic usbdev_sense_lost_o,
+  output logic usbdev_wake_detect_active_o,
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   input prim_alert_pkg::alert_rx_t[NumAlerts-1:0] alert_rx_i,
@@ -60,19 +64,22 @@ module pinmux_tb
   output logic[NDioPads-1:0] dio_oe_o,
   input [NDioPads-1:0] dio_in_i
 );
+
   import top_earlgrey_pkg::*;
 
-  parameter int Tap0PadIdx = 30;
-  parameter int Tap1PadIdx = 27;
-  parameter int Dft0PadIdx = 25;
-  parameter int Dft1PadIdx = 26;
-  parameter int TckPadIdx = 38;
-  parameter int TmsPadIdx = 35;
-  parameter int TrstNPadIdx = 39;
-  parameter int TdiPadIdx = 37;
-  parameter int TdoPadIdx = 36;
+  // Copied from chip_earlgrey_asic.sv
+  // TODO: find a better way to automatically generate this FPV testbench via topgen/ipgen.
+  localparam int Tap0PadIdx = 30;
+  localparam int Tap1PadIdx = 27;
+  localparam int Dft0PadIdx = 25;
+  localparam int Dft1PadIdx = 26;
+  localparam int TckPadIdx = 38;
+  localparam int TmsPadIdx = 35;
+  localparam int TrstNPadIdx = 39;
+  localparam int TdiPadIdx = 37;
+  localparam int TdoPadIdx = 36;
 
-  // Parameters for chip_earlgrey_asic.
+  // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
     tck_idx:           TckPadIdx,
     tms_idx:           TmsPadIdx,
@@ -83,27 +90,18 @@ module pinmux_tb
     tap_strap1_idx:    Tap1PadIdx,
     dft_strap0_idx:    Dft0PadIdx,
     dft_strap1_idx:    Dft1PadIdx,
+    // TODO: check whether there is a better way to pass these USB-specific params
     usb_dp_idx:        DioUsbdevUsbDp,
     usb_dn_idx:        DioUsbdevUsbDn,
     usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
-      BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
-      BidirTol, // DIO usbdev_rx_enable
-      BidirTol, // DIO usbdev_suspend
-      BidirTol, // DIO usbdev_tx_mode_se
-      BidirTol, // DIO usbdev_dn_pullup
-      BidirTol, // DIO usbdev_dp_pullup
-      BidirTol, // DIO usbdev_se0
       BidirStd, // DIO spi_host0_csb
       BidirStd, // DIO spi_host0_sck
-      BidirTol, // DIO usbdev_sense
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
+      BidirOd, // DIO sysrst_ctrl_aon_flash_wp_l
       BidirOd, // DIO sysrst_ctrl_aon_ec_rst_l
-      BidirTol, // DIO usbdev_dn
-      BidirTol, // DIO usbdev_dp
-      BidirTol, // DIO usbdev_d
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
@@ -111,7 +109,9 @@ module pinmux_tb
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
-      BidirStd  // DIO spi_host0_sd
+      BidirStd, // DIO spi_host0_sd
+      BidirStd, // DIO usbdev_usb_dn
+      BidirStd  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
       BidirOd, // MIO Pad 46
@@ -168,4 +168,5 @@ module pinmux_tb
     .TargetCfg(PinmuxTargetCfg),
     .AlertAsyncOn(AlertAsyncOn)
   ) dut_asic (.*);
+
 endmodule : pinmux_tb
