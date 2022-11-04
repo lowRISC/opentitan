@@ -324,6 +324,13 @@
       // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
       name: "chip_csr_aliasing"
       run_timeout_mins: 180
+      run_opts: ["+test_timeout_ns=120_000_000"]
+    }
+    {
+      // Reused from hw/dv/tools/dvsim/tests/csr_tests.hjson.
+      name: "chip_same_csr_outstanding"
+      run_timeout_mins: 120
+      run_opts: ["+test_timeout_ns=120_000_000"]
     }
     {
       name: chip_sw_example_flash
