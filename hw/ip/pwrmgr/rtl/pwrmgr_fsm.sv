@@ -92,9 +92,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   // resets are valid
   logic reset_valid;
 
-  // reset_valid is registered
-  logic reset_valid_reg;
-
   // reset hint to rstmgr
   reset_cause_e reset_cause_q, reset_cause_d;
 
@@ -126,8 +123,14 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   assign pd_n_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:OffDomainSelStart] == '0 &
                               pwr_rst_i.rst_sys_src_n[PowerDomains-1:OffDomainSelStart] == '0;
 
-  assign all_rsts_asserted = pwr_rst_i.rst_lc_src_n == '0 &
-                             pwr_rst_i.rst_sys_src_n == '0;
+  logic lc_rsts_valid;
+  assign lc_rsts_valid = ((rst_lc_req_q & ~pwr_rst_i.rst_lc_src_n) |
+                          (~rst_lc_req_q & pwr_rst_i.rst_lc_src_n)) == {PowerDomains{1'b1}};
+  logic sys_rsts_valid;
+  assign sys_rsts_valid = ((rst_sys_req_q & ~pwr_rst_i.rst_sys_src_n) |
+                           (~rst_sys_req_q & pwr_rst_i.rst_sys_src_n)) == {PowerDomains{1'b1}};
+
+  assign all_rsts_asserted = lc_rsts_valid & sys_rsts_valid;
 
   // Any reset request was asserted.
   assign reset_req = |reset_reqs_i;
@@ -149,21 +152,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   // when in reset path, all resets must be asserted
   // when the reset cause is something else, it is invalid
   assign reset_valid = reset_cause_q == LowPwrEntry ? main_pd_ni | pd_n_rsts_asserted :
-                       reset_cause_q == HwReq       ? (reset_valid_reg | all_rsts_asserted) : 1'b0;
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      reset_valid_reg <= 1'b0;
-    end
-    else begin
-      if ({reset_valid_reg, reset_valid} == 2'b01) begin
-        reset_valid_reg <= reset_valid;
-      end
-      else if (state_d == FastPwrStateReleaseLcRst) begin
-        reset_valid_reg <= reset_valid;
-      end
-    end
-  end
+                       reset_cause_q == HwReq       ? all_rsts_asserted : 1'b0;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -465,6 +454,11 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
                                        sw_rst_req) |
                                       (ndmreset_req & !lc_dft_en_i)}};
 
+
+        state_d = FastPwrStateResetWait;
+      end
+
+      FastPwrStateResetWait: begin
         clr_slow_req_o = 1'b1;
         // okay to be pending here, since reset is already asserted
         // if the handshake were attacked in any way, the device
@@ -473,6 +467,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
           state_d = FastPwrStateLowPower;
         end
       end
+
 
       // Terminal state, kill everything
       // SEC_CM: FSM.TERMINAL
