@@ -823,7 +823,7 @@ opentitan_flash_binary(
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         ot_flash_binary = ":empty_test_sigverify_mod_exp",
-        targets = ["cw310_rom"],
+        targets = ["cw310_other"],
     )
     for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
     for t in SIGVERIFY_MOD_EXP_CASES
@@ -1090,7 +1090,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             slot,
         ),
         targets = [
-            "cw310_rom",
+            "cw310_other",
             "verilator",
         ],
         verilator = verilator_params(
@@ -1333,7 +1333,7 @@ BOOT_POLICY_VALID_CASES = [
             a["desc"],
             b["desc"],
         ),
-        targets = ["cw310_rom"],
+        targets = ["cw310_other"],
     )
     for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
     for a in BOOT_POLICY_VALID_CASES
