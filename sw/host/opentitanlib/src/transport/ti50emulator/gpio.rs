@@ -134,6 +134,8 @@ impl From<GpioConfiguration> for Logic {
         match (state.pin_mode, state.pull_mode, state.value) {
             (Some(PinMode::PushPull), _, false) => Logic::StrongZero,
             (Some(PinMode::PushPull), _, true) => Logic::StrongOne,
+            (Some(PinMode::WeakPushPull), _, false) => Logic::WeakZero,
+            (Some(PinMode::WeakPushPull), _, true) => Logic::WeakOne,
             (Some(PinMode::OpenDrain), _, false) => Logic::StrongZero,
             (Some(PinMode::OpenDrain), PullMode::PullUp, true) => Logic::WeakOne,
             (Some(PinMode::OpenDrain), PullMode::PullDown, true) => Logic::WeakZero,

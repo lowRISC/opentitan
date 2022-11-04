@@ -91,6 +91,7 @@ impl GpioPin for UltradebugGpioPin {
         let direction = match mode {
             PinMode::Input => false,
             PinMode::PushPull => true,
+            PinMode::WeakPushPull => return Err(GpioError::UnsupportedPinMode(mode).into()),
             PinMode::OpenDrain => return Err(GpioError::UnsupportedPinMode(mode).into()),
         };
         self.device
