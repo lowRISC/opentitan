@@ -17,6 +17,10 @@
       { "name": "IOR11", "alias_of": "11" },
       { "name": "IOR12", "alias_of": "12" },
       { "name": "IOR13", "alias_of": "13" }
+
+      { "name": "IOC0", "alias_of": "22" }
+      { "name": "IOC1", "alias_of": "23" }
+      { "name": "IOC2", "alias_of": "24" }
   ],
   "uarts": [
     {

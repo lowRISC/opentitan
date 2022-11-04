@@ -67,10 +67,7 @@ impl Verilator {
             spi_file: spi,
             gpio_read_file: gpio_rd,
             gpio_write_file: gpio_wr,
-            inner: Rc::new(RefCell::new(Inner {
-                uart: None,
-                gpio: gpio,
-            })),
+            inner: Rc::new(RefCell::new(Inner { uart: None, gpio })),
         })
     }
 

@@ -5,7 +5,7 @@
 use anyhow::Result;
 use std::rc::Rc;
 
-use crate::io::gpio::{GpioPin, PinMode, PullMode};
+use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
 use crate::transport::hyperdebug::Inner;
 use crate::transport::TransportError;
 
@@ -53,6 +53,7 @@ impl GpioPin for HyperdebugGpioPin {
                     PinMode::Input => "input",
                     PinMode::OpenDrain => "opendrain",
                     PinMode::PushPull => "pushpull",
+                    PinMode::WeakPushPull => return Err(GpioError::UnsupportedPinMode(mode).into()),
                 }
             ),
             |_| {},

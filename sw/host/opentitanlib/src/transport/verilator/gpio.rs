@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Context, Result};
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::fs::{File, OpenOptions};
 use std::io::{self, ErrorKind, Read, Write};
@@ -17,11 +17,16 @@ use crate::util::file;
 pub struct VerilatorGpioPin {
     inner: Rc<RefCell<Inner>>,
     pinname: u8,
+    pinmode: Cell<PinMode>,
 }
 
 impl VerilatorGpioPin {
     pub(crate) fn new(inner: Rc<RefCell<Inner>>, pinname: u8) -> Rc<Self> {
-        Rc::new(VerilatorGpioPin { inner, pinname })
+        Rc::new(VerilatorGpioPin {
+            inner,
+            pinname,
+            pinmode: Cell::new(PinMode::PushPull),
+        })
     }
 }
 
@@ -33,11 +38,19 @@ impl GpioPin for VerilatorGpioPin {
 
     fn write(&self, value: bool) -> Result<()> {
         let mut inner = self.inner.borrow_mut();
-        inner.gpio.set(self.pinname, value)
+        inner.gpio.set(
+            self.pinname,
+            value,
+            self.pinmode.get() == PinMode::WeakPushPull,
+        )
     }
 
-    fn set_mode(&self, _mode: PinMode) -> Result<()> {
-        log::warn!("set_mode not implemented");
+    fn set_mode(&self, mode: PinMode) -> Result<()> {
+        ensure!(
+            mode != PinMode::OpenDrain,
+            GpioError::UnsupportedPinMode(mode)
+        );
+        self.pinmode.set(mode);
         Ok(())
     }
 
@@ -81,8 +94,8 @@ impl GpioInner {
                     );
                     for (i, val) in buf.iter().enumerate() {
                         self.rval = match val {
-                            b'0' => self.rval & !(1 << 31 - i),
-                            b'1' => self.rval | 1 << 31 - i,
+                            b'0' => self.rval & !(1 << (31 - i)),
+                            b'1' => self.rval | 1 << (31 - i),
                             b'\n' | b'X' => self.rval,
                             _ => {
                                 return Err(GpioError::Generic(format!(
@@ -112,11 +125,12 @@ impl GpioInner {
         Ok(self.rval & (1 << index) != 0)
     }
 
-    fn set(&mut self, index: u8, val: bool) -> Result<()> {
+    fn set(&mut self, index: u8, val: bool, weak: bool) -> Result<()> {
+        let weak = if weak { "w" } else { "" };
         let command = if val {
-            format!("h{}\n", index)
+            format!("{}h{}\n", weak, index)
         } else {
-            format!("l{}\n", index)
+            format!("{}l{}\n", weak, index)
         };
         self.write
             .write(command.as_bytes())
