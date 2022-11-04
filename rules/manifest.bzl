@@ -51,7 +51,7 @@ def _manifest_impl(ctx):
     if ctx.attr.binding_value:
         if len(ctx.attr.binding_value) != 8:
             fail("The binding_value must be exactly 8 words.")
-        mf["binding_value"] = _hex(ctx.attr.binding_value)
+        mf["binding_value"] = [_hex(v) for v in ctx.attr.binding_value]
 
     # The selector_bits are set based on the values of the usage_constraints.
     uc = {}
