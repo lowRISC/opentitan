@@ -78,11 +78,6 @@ interface pwrmgr_rstmgr_sva_if
     end
 `endif
 
-  logic [PowerDomains-1:0] actual_sys_req;
-  always_comb begin
-    actual_sys_req = rst_sys_req | {PowerDomains{ndm_sys_req && reset_cause == ResetNone}};
-  end
-
   // Lc and Sys handshake: pwrmgr rst_*_req causes rstmgr rst_*_src_n
   for (genvar pd = 0; pd < PowerDomains; ++pd) begin : gen_assertions_per_power_domains
     `ASSERT(LcHandshakeOn_A, rst_lc_req[pd] |-> `LC_SYS_CYCLES !rst_lc_req[pd] || !rst_lc_src_n[pd],
@@ -90,10 +85,10 @@ interface pwrmgr_rstmgr_sva_if
     `ASSERT(LcHandshakeOff_A, !rst_lc_req[pd] |-> `LC_SYS_CYCLES rst_lc_req[pd] || rst_lc_src_n[pd],
             clk_i, reset_or_disable)
     `ASSERT(SysHandshakeOn_A,
-            actual_sys_req[pd] |-> `LC_SYS_CYCLES !actual_sys_req[pd] || !rst_sys_src_n[pd], clk_i,
+            rst_sys_req[pd] |-> `LC_SYS_CYCLES !rst_sys_req[pd] || !rst_sys_src_n[pd], clk_i,
             reset_or_disable)
     `ASSERT(SysHandshakeOff_A,
-            !actual_sys_req[pd] |-> `LC_SYS_CYCLES actual_sys_req[pd] || rst_sys_src_n[pd], clk_i,
+            !rst_sys_req[pd] |-> `LC_SYS_CYCLES rst_sys_req[pd] || rst_sys_src_n[pd], clk_i,
             reset_or_disable)
   end : gen_assertions_per_power_domains
   `undef LC_SYS_CYCLES
