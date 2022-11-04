@@ -69,7 +69,7 @@ endfunction
 
 
 virtual function void rom_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1:0] addr,
-                                                logic [31:0]                       data,
+                                                logic [38:0]                       data,
                                                 logic [SRAM_KEY_WIDTH-1:0]         key,
                                                 logic [SRAM_BLOCK_WIDTH-1:0]       nonce,
                                                 bit                                scramble_data,
@@ -94,7 +94,7 @@ virtual function void rom_encrypt_write32_integ(logic [bus_params_pkg::BUS_AW-1:
   // Calculate the scrambled address
   scrambled_addr = sram_scrambler_pkg::encrypt_sram_addr(rom_addr, addr_width, nonce_arr);
 
-  if(scramble_data) begin
+  if (scramble_data) begin
     // Calculate the integrity constant
     integ_data = prim_secded_pkg::prim_secded_inv_39_32_enc(data);
 
