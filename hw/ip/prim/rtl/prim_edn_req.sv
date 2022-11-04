@@ -167,6 +167,10 @@ module prim_edn_req
   end
 
   `ASSERT(DataOutputValid_A, ack_o |-> (data_o != 0) && (data_o != '1))
+
+  `ASSERT(DataOutputStable_A, edn_i.edn_ack |=> $stable(edn_i.edn_bus) until edn_i.edn_ack[->1],
+          clk_i, !rst_ni || ack_o)
+
   `ASSERT(DataOutputDiffFromPrev_A, data_prev != 0 |-> data_prev != data_o)
 `endif
 
