@@ -29,7 +29,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Creator SW config region in OTP that holds the AST config data. Randomized for open source.
   //
   // These are written via backdoor to the OTP region that starts at
-  // otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset. SW based tests (via test ROM or the production mask
+  // otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset. SW based tests (via test ROM or the production
   // ROM) will read out from this OTP region and write blindly to AST at the start. Non-SW based
   // tests will do the same, prior to the test starting, see
   // chip_stub_cpu_base_vseq::dut_init().
@@ -65,8 +65,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   string sw_image_flags[sw_type_e][$];
 
   // Maintain a list of generated OTP images.
-  lc_ctrl_state_pkg::lc_state_e use_otp_image = lc_ctrl_state_pkg::LcStRma;
-  string otp_images[lc_ctrl_state_pkg::lc_state_e];
+  otp_type_e use_otp_image = OtpTypeLcStRma;
+  string otp_images[otp_type_e];
 
   uint               sw_test_timeout_ns = 12_000_000; // 12ms
   sw_logger_vif      sw_logger_vif;
@@ -180,11 +180,13 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     end
 
     // By default, assume these OTP image paths.
-    otp_images[lc_ctrl_state_pkg::LcStRaw] = "otp_ctrl_img_raw.vmem";
-    otp_images[lc_ctrl_state_pkg::LcStDev] = "otp_ctrl_img_dev.vmem";
-    otp_images[lc_ctrl_state_pkg::LcStProd] = "otp_ctrl_img_prod.vmem";
-    otp_images[lc_ctrl_state_pkg::LcStRma] = "otp_ctrl_img_rma.vmem";
-    otp_images[lc_ctrl_state_pkg::LcStTestUnlocked0] = "otp_ctrl_img_test_unlocked0.vmem";
+    // A customized OTP image may be specified loaded via the `sw_images` plusarg.
+    otp_images[OtpTypeLcStRaw] = "otp_ctrl_img_raw.vmem";
+    otp_images[OtpTypeLcStDev] = "otp_ctrl_img_dev.vmem";
+    otp_images[OtpTypeLcStProd] = "otp_ctrl_img_prod.vmem";
+    otp_images[OtpTypeLcStRma] = "otp_ctrl_img_rma.vmem";
+    otp_images[OtpTypeLcStTestUnlocked0] = "otp_ctrl_img_test_unlocked0.vmem";
+    otp_images[OtpTypeCustom] = "";
 
     `DV_CHECK_LE_FATAL(num_ram_main_tiles, 16)
     `DV_CHECK_LE_FATAL(num_ram_ret_tiles, 16)
@@ -391,6 +393,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
             // `rules/opentitan.bzl` for options.
             sw_images[i] = $sformatf("%0s.test_key_0.signed", sw_images[i]);
           end
+        end else if (i == SwTypeOtp) begin
+          otp_images[OtpTypeCustom] = $sformatf("%0s.24.vmem", sw_images[i]);
         end
       end
     end

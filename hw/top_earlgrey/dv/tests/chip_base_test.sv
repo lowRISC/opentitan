@@ -84,7 +84,7 @@ class chip_base_test extends cip_base_test #(
     end
 
     // Knob to select the OTP image based on LC state.
-    `DV_GET_ENUM_PLUSARG(lc_ctrl_state_pkg::lc_state_e, cfg.use_otp_image, use_otp_image)
+    `DV_GET_ENUM_PLUSARG(otp_type_e, cfg.use_otp_image, use_otp_image)
     `DV_CHECK_FATAL(cfg.otp_images.exists(cfg.use_otp_image),
                     $sformatf({"Unsupported plusarg value: +use_otp_image=%0s. An image associated",
                                "with this LC state needs to be created first."}, cfg.use_otp_image))
