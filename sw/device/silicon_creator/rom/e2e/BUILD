@@ -1007,18 +1007,129 @@ test_suite(
     ],
 )
 
-opentitan_functest(
-    name = "shutdown_watchdog",
-    srcs = ["hang_test.c"],
-    cw310 = cw310_params(
-        exit_success = "Returning after 5 seconds",
-    ),
-    local_defines = [
-        "HANG_SECS=5",
-    ],
-    targets = ["cw310_rom"],
-    deps = [
-        "//sw/device/lib/testing/test_framework:ottf_main",
+SHUTDOWN_WATCHDOG_BITE_THRESHOLDS = [
+    400000,  # 2 seconds at 200 kHz
+    0,  # Watchdog disabled
+]
+
+SHUTDOWN_WATCHDOG_CASES = [
+    {
+        "lc_state": lc_state,
+        "exit_success": "Returning after 1 seconds",
+        "bite_threshold": bite_threshold,
+    }
+    for lc_state in [
+        "test_unlocked0",
+        "rma",
+    ]
+    for bite_threshold in SHUTDOWN_WATCHDOG_BITE_THRESHOLDS
+] + [
+    {
+        "lc_state": lc_state,
+        "exit_success": "Returning after 1 seconds" if bite_threshold == 0 else "I00000[^\r\n]*\r\nROM:[0-9a-f]{8}\r\n",
+        "bite_threshold": bite_threshold,
+    }
+    for lc_state in [
+        "dev",
+        "prod",
+        "prod_end",
+    ]
+    for bite_threshold in SHUTDOWN_WATCHDOG_BITE_THRESHOLDS
+]
+
+[
+    otp_json(
+        name = "otp_json_shutdown_watchdog_{}_{}".format(
+            t["lc_state"],
+            t["bite_threshold"],
+        ),
+        partitions = [
+            otp_partition(
+                name = "OWNER_SW_CFG",
+                items = {"OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": "0x{}".format(hex(t["bite_threshold"]))},
+            ),
+        ],
+    )
+    for t in SHUTDOWN_WATCHDOG_CASES
+]
+
+[
+    otp_image(
+        name = "otp_img_shutdown_watchdog_{}_{}".format(
+            t["lc_state"],
+            t["bite_threshold"],
+        ),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(t["lc_state"]),
+        overlays = [
+            "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+            ":otp_json_shutdown_watchdog_{}_{}".format(
+                t["lc_state"],
+                t["bite_threshold"],
+            ),
+        ],
+    )
+    for t in SHUTDOWN_WATCHDOG_CASES
+]
+
+[
+    bitstream_splice(
+        name = "bitstream_shutdown_watchdog_{}_{}".format(
+            t["lc_state"],
+            t["bite_threshold"],
+        ),
+        src = "//hw/bitstream:rom",
+        data = ":otp_img_shutdown_watchdog_{}_{}".format(
+            t["lc_state"],
+            t["bite_threshold"],
+        ),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = ["vivado"],
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for t in SHUTDOWN_WATCHDOG_CASES
+]
+
+[
+    opentitan_functest(
+        name = "shutdown_watchdog_{}_{}".format(
+            t["lc_state"],
+            t["bite_threshold"],
+        ),
+        srcs = ["hang_test.c"],
+        cw310 = cw310_params(
+            bitstream = ":bitstream_shutdown_watchdog_{}_{}".format(
+                t["lc_state"],
+                t["bite_threshold"],
+            ),
+            exit_success = t["exit_success"],
+            tags = ["vivado"] + maybe_skip_in_ci(getattr(
+                CONST.LCV,
+                t["lc_state"].upper(),
+            )),
+        ),
+        local_defines = [
+            "HANG_SECS=1",
+        ],
+        targets = ["cw310_rom"],
+        deps = [
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for t in SHUTDOWN_WATCHDOG_CASES
+]
+
+test_suite(
+    name = "rom_e2e_shutdown_watchdog",
+    tags = ["manual"],
+    tests = [
+        "shutdown_watchdog_{}_{}".format(
+            t["lc_state"],
+            t["bite_threshold"],
+        )
+        for t in SHUTDOWN_WATCHDOG_CASES
     ],
 )
 
