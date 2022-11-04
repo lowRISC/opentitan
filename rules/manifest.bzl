@@ -10,6 +10,9 @@ _SEL_MANUF_STATE_OWNER = (1 << 9)
 _SEL_LIFE_CYCLE_STATE = (1 << 10)
 
 def _hex(v):
+    """Expects v to be an int or a hex-encoded string."""
+    if type(v) == "string":
+        v = int(v, base = 16)
     return "0x{}".format(hex(v))
 
 def _manifest_impl(ctx):
@@ -93,7 +96,7 @@ def _manifest_impl(ctx):
     if ctx.attr.selector_bits:
         # If they don't match, fail unless explicitly permitted to set a
         # bad value.
-        if ctx.attr.selector_bits != selector_bits and ctx.attr.selector_mismatch_is_failure:
+        if int(ctx.attr.selector_bits, base = 16) != selector_bits and ctx.attr.selector_mismatch_is_failure:
             fail("User provided selector_bits don't match computed selector_bits")
         uc["selector_bits"] = _hex(ctx.attr.selector_bits)
     else:
@@ -110,27 +113,28 @@ def _manifest_impl(ctx):
 
 _manifest = rule(
     implementation = _manifest_impl,
+    # Manifest attrs are supplied as strings due to Bazel limiting int types to 32-bit signed integers
     attrs = {
         "signature": attr.string(doc = "Image signature as a hex-encoded string"),
         "modulus": attr.string(doc = "Signing key modulus as a hex-encoded string"),
-        "selector_bits": attr.int(doc = "Usage constraint selector bits"),
+        "selector_bits": attr.string(doc = "Usage constraint selector bits as a hex-encoded string"),
         "selector_mismatch_is_failure": attr.bool(default = True, doc = "A mismatch in computed selector bits is a failure"),
-        "device_id": attr.int_list(doc = "Usage constraint device ID"),
-        "manuf_state_creator": attr.int(doc = "Usage constraint for silicon creator manufacturing status"),
-        "manuf_state_owner": attr.int(doc = "Usage constraint for silicon owner manufacturing status"),
-        "life_cycle_state": attr.int(doc = "Usage constraint for life cycle status"),
-        "address_translation": attr.int(doc = "Whether this image uses address translation"),
-        "identifier": attr.int(doc = "Manifest identifier"),
-        "length": attr.int(doc = "Length of this image"),
-        "version_major": attr.int(doc = "Image major version"),
-        "version_minor": attr.int(doc = "Image minor version"),
-        "security_version": attr.int(doc = "Security version for anti-rollback protection"),
-        "timestamp": attr.int(doc = "Unix timestamp of the image"),
-        "binding_value": attr.int_list(doc = "Binding value used by key manager to derive secrets"),
-        "max_key_version": attr.int(doc = "Maximum allowed version for keys generated at the next boot stage"),
-        "code_start": attr.int(doc = "Start offset of the executable region in the image"),
-        "code_end": attr.int(doc = "End offset of the executable region in the image"),
-        "entry_point": attr.int(doc = "Offset of the first instruction in the image"),
+        "device_id": attr.string_list(doc = "Usage constraint device ID as a hex-encoded string"),
+        "manuf_state_creator": attr.string(doc = "Usage constraint for silicon creator manufacturing status as a hex-encoded string"),
+        "manuf_state_owner": attr.string(doc = "Usage constraint for silicon owner manufacturing status as a hex-encoded string"),
+        "life_cycle_state": attr.string(doc = "Usage constraint for life cycle status as a hex-encoded string"),
+        "address_translation": attr.string(doc = "Whether this image uses address translation as a hex-encoded string"),
+        "identifier": attr.string(doc = "Manifest identifier as a hex-encoded string"),
+        "length": attr.string(doc = "Length of this image as a hex-encoded string"),
+        "version_major": attr.string(doc = "Image major version as a hex-encoded string"),
+        "version_minor": attr.string(doc = "Image minor version as a hex-encoded string"),
+        "security_version": attr.string(doc = "Security version for anti-rollback protection as a hex-encoded string"),
+        "timestamp": attr.string(doc = "Unix timestamp of the image as a hex-encoded string"),
+        "binding_value": attr.string_list(doc = "Binding value used by key manager to derive secrets as a hex-encoded string"),
+        "max_key_version": attr.string(doc = "Maximum allowed version for keys generated at the next boot stage as a hex-encoded string"),
+        "code_start": attr.string(doc = "Start offset of the executable region in the image as a hex-encoded string"),
+        "code_end": attr.string(doc = "End offset of the executable region in the image as a hex-encoded string"),
+        "entry_point": attr.string(doc = "Offset of the first instruction in the image as a hex-encoded string"),
     },
 )
 
