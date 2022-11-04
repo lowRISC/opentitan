@@ -36,8 +36,6 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-/* The start of global ECDSA variables to get data from simpleserial UART */
-
 /**
  * Private key d
  * This is the default value used by NewAE in their experiments
@@ -55,16 +53,13 @@ uint8_t ecc256_private_key_d[32] = {
     0x0b, 0xda, 0x7a, 0xbb, 0xe6, 0x8f, 0xb7, 0xa0, 0x45, 0x55};
 
 /**
- * Message to sign
- * The value of this variable can be overwritten via
- * the simpleserial command `n` (see ecc384_set_msg)
- *
+ * Message to sign.
+ * The value of this variable can be overwritten via the simpleserial command
+ * `n` (see ecc384_set_msg).
  */
 uint8_t ecc256_msg[32] = {"Hello OTBN."};
-/* The end of the global ecdsa variables coming from simpleserial UART */
 
-/* p256_ecdsa_sca has randomnization removed */
-
+// p256_ecdsa_sca has randomnization removed.
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
 
 OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa_sca, mode);
@@ -102,10 +97,8 @@ static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k1);
  * @param key_d Key.
  * @param key_d_len Key length.
  */
-static void ecc256_serial_set_private_key_d(const uint8_t *key_d,
-                                            size_t key_d_len) {
+static void ecc_256_set_private_key_d(const uint8_t *key_d, size_t key_d_len) {
   SS_CHECK(key_d_len == 32);
-
   memcpy(ecc256_private_key_d, key_d, key_d_len);
 }
 
@@ -118,9 +111,8 @@ static void ecc256_serial_set_private_key_d(const uint8_t *key_d,
  * @param msg Message to sign.
  * @param msg_len Message length.
  */
-static void ecc256_serial_set_msg(const uint8_t *msg, size_t msg_len) {
+static void ecc_256_set_msg(const uint8_t *msg, size_t msg_len) {
   SS_CHECK(msg_len <= 32);
-
   memcpy(ecc256_msg, msg, msg_len);
 }
 
@@ -145,7 +137,6 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
                             uint8_t *signature_s, const uint8_t *k) {
   SS_CHECK(otbn_ctx != NULL);
 
-  // Write input arguments.
   uint32_t mode = 1;  // mode 1 => sign
   LOG_INFO("Copy data");
   SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(mode), &mode,
@@ -157,20 +148,17 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
   SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, k, kOtbnVarK0) ==
            kOtbnOk);
 
-  // Write all-zero values for second shares of d and k.
   uint8_t zero[32] = {0};
   SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, zero,
                                   kOtbnVarD1) == kOtbnOk);
   SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, zero,
                                   kOtbnVarK1) == kOtbnOk);
 
-  // Call OTBN to perform operation, and wait for it to complete.
   LOG_INFO("Execute");
   SS_CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
   LOG_INFO("Wait for done");
   SS_CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
-  // Read back results.
   LOG_INFO("Get results");
   SS_CHECK(otbn_copy_data_from_otbn(otbn_ctx, /*len_bytes=*/32, kOtbnVarR,
                                     signature_r) == kOtbnOk);
@@ -194,10 +182,7 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
  * UART.
  * @param secret_k_len Length of the ephemeral key.
  */
-static void ecc256_simpleserial_ecdsa(const uint8_t *ecc256_secret_k,
-                                      size_t secret_k_len)
-// static void simpleserial_ecdsa()
-{
+static void ecc_256_ecdsa(const uint8_t *ecc256_secret_k, size_t secret_k_len) {
   otbn_t otbn_ctx;
 
   if (secret_k_len != 32) {
@@ -213,7 +198,6 @@ static void ecc256_simpleserial_ecdsa(const uint8_t *ecc256_secret_k,
            mmio_region_read32(
                mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), 0x18));
 
-  // Sign
   uint8_t ecc256_signature_r[32] = {0};
   uint8_t ecc256_signature_s[32] = {0};
 
@@ -223,11 +207,7 @@ static void ecc256_simpleserial_ecdsa(const uint8_t *ecc256_secret_k,
                   ecc256_signature_r, ecc256_signature_s, ecc256_secret_k);
   sca_set_trigger_low();
 
-  /**
-   * Send the signature_r and signature_s back to host
-   *
-   * TODO: Remove them if they are not necessary for the side-channel analysis.
-   */
+  // TODO: Remove them if they are not necessary for the side-channel analysis.
   simple_serial_send_packet('r', (uint8_t *)ecc256_signature_r, 32);
   simple_serial_send_packet('r', (uint8_t *)ecc256_signature_s, 32);
 
@@ -236,20 +216,10 @@ static void ecc256_simpleserial_ecdsa(const uint8_t *ecc256_secret_k,
 }
 
 /**
- * Main function.
- *
  * Initializes peripherals and processes simple serial packets received over
  * UART.
- *
- * TODO: Decide which function name to use after discussing with the team.
- * If we use `_ottf_main()`, the code compiles but I don't get
- * serial communication from UART. To use `test_main` we need to include
- * the header file `sw/device/lib/testing/test_framework/ottf_main.h`
- *
  */
-bool test_main(void) {
-  // void _ottf_main(void) {
-
+static void simple_serial_main(void) {
   entropy_testutils_boot_mode_init();
 
   sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
@@ -257,39 +227,23 @@ bool test_main(void) {
                                       kScaPeripheralEdn | kScaPeripheralHmac);
 
   LOG_INFO("Running ECC serial");
-
   LOG_INFO("Initializing simple serial interface to capture board.");
+
   simple_serial_init(sca_get_uart());
-
-  simple_serial_result_t err;
-
-  /* Register the simple serial command handlers */
-  if (err = simple_serial_register_handler('p', ecc256_simpleserial_ecdsa),
-      err != kSimpleSerialOk) {
-    LOG_INFO("Register handler failed with return %hu",
-             (short unsigned int)err);
-    while (1)
-      ;
-  }
-  if (err =
-          simple_serial_register_handler('d', ecc256_serial_set_private_key_d),
-      err != kSimpleSerialOk) {
-    LOG_INFO("Register handler failed with return %hu",
-             (short unsigned int)err);
-    while (1)
-      ;
-  }
-  if (err = simple_serial_register_handler('n', ecc256_serial_set_msg),
-      err != kSimpleSerialOk) {
-    LOG_INFO("Register handler failed with return %hu",
-             (short unsigned int)err);
-    while (1)
-      ;
-  }
+  SS_CHECK(simple_serial_register_handler('p', ecc_256_ecdsa) ==
+           kSimpleSerialOk);
+  SS_CHECK(simple_serial_register_handler('d', ecc_256_set_private_key_d) ==
+           kSimpleSerialOk);
+  SS_CHECK(simple_serial_register_handler('n', ecc_256_set_msg) ==
+           kSimpleSerialOk);
 
   LOG_INFO("Starting simple serial packet handling.");
   while (true) {
     simple_serial_process_packet();
   }
-  // return true;
+}
+
+bool test_main(void) {
+  simple_serial_main();
+  return true;
 }
