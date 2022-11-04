@@ -465,6 +465,7 @@ class RunTest(Deploy):
     def __init__(self, index, test, build_job, sim_cfg):
         self.test_obj = test
         self.index = index
+        self.build_seed = sim_cfg.build_seed
         self.seed = RunTest.get_seed()
         self.simulated_time = JobTime()
         super().__init__(sim_cfg)
@@ -492,6 +493,8 @@ class RunTest(Deploy):
             "run_cmd": False,
             "run_opts": False,
             "post_run_cmds": False,
+            "build_seed": True,  # Already set in the constructor.
+            "seed": True,  # Already set in the constructor.
         })
 
         self.mandatory_misc_attrs.update({

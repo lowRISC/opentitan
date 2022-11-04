@@ -90,6 +90,10 @@ ifneq (${sw_images},)
 		else \
 			echo "Building SW image \"$${bazel_label}\"."; \
 			bazel_opts="${sw_build_opts} --define DISABLE_VERILATOR_BUILD=true"; \
+			bazel_opts+=" --//hw/ip/otp_ctrl/data:img_seed=${seed}"; \
+			if [[ "${build_seed}" != "None" ]]; then \
+				bazel_opts+=" --//hw/ip/otp_ctrl/data:otp_seed=${build_seed}"; \
+			fi; \
 			if [[ -z $${BAZEL_PYTHON_WHEELS_REPO} ]]; then \
 				echo "Building \"$${bazel_label}\" on network connected machine."; \
 				bazel_cmd="./bazelisk.sh"; \
