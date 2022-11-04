@@ -61,6 +61,12 @@
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
       package: "lc_ctrl_pkg"
+      desc:    '''
+               Multibit life cycle hardware debug enable signal coming from pinmux.
+               This is a latched version of the lc_hw_debug_en signal and is only used to
+               gate the JTAG / TAP side of the RV_DM. It is used to keep a debug session live
+               while the rest of the system undergoes an NDM reset.
+               '''
     },
     // TBD: should we connect this to the clock manager?
     { struct:  "logic"
