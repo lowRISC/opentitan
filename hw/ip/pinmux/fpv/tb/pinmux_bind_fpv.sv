@@ -12,6 +12,7 @@ module pinmux_bind_fpv;
   ) i_pinmux_assert_fpv (
     .clk_i,
     .rst_ni,
+    .rst_sys_ni,
     .scanmode_i,
     .clk_aon_i,
     .rst_aon_ni,
@@ -21,6 +22,9 @@ module pinmux_bind_fpv;
     .strap_en_i,
     .lc_dft_en_i,
     .lc_hw_debug_en_i,
+    .lc_check_byp_en_i,
+    .lc_escalate_en_i,
+    .pinmux_hw_debug_en_o,
     .dft_strap_test_o,
     .dft_hold_tap_sel_i,
     .lc_jtag_o,
