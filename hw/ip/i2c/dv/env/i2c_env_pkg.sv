@@ -55,6 +55,20 @@ package i2c_env_pkg;
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
+  function automatic i2c_item acq2item(bit[9:0] data);
+    i2c_item item;
+    `uvm_create_obj(i2c_item, item);
+
+    item.wdata = data[7:0];
+    if (data[9:8] == 2'b11) begin
+      // TODO Re start support
+    end else begin
+      item.start = data[8];
+      item.stop = data[9];
+    end
+    return item;
+  endfunction // acq2item
+
   // package sources
   `include "i2c_seq_cfg.sv"
   `include "i2c_env_cfg.sv"
@@ -65,4 +79,3 @@ package i2c_env_pkg;
   `include "i2c_vseq_list.sv"
 
 endpackage : i2c_env_pkg
-
