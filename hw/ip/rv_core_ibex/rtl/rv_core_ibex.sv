@@ -892,6 +892,32 @@ module rv_core_ibex
     .tl_h_o(tl_win_d2h_err_rsp)
   );
 
+  // Assertions for CPU enable
+  `ASSERT(IbexFetchEnable0_A,
+      fatal_core_err
+      |=>
+      lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
+  `ASSERT(IbexFetchEnable1_A,
+      lc_ctrl_pkg::lc_tx_test_false_loose(lc_cpu_en_i)
+      |->
+      ##2 lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
+  `ASSERT(IbexFetchEnable2_A,
+      lc_ctrl_pkg::lc_tx_test_false_loose(pwrmgr_cpu_en_i)
+      |->
+      ##2 lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
+  `ASSERT(IbexFetchEnable3_A,
+      lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i) &&
+      lc_ctrl_pkg::lc_tx_test_true_strict(pwrmgr_cpu_en_i) ##1
+      !fatal_core_err
+      |=>
+      lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable))
+  `ASSERT(IbexFetchEnable3Rev_A,
+      ##2 lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable)
+      |->
+      $past(lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i), 2) &&
+      $past(lc_ctrl_pkg::lc_tx_test_true_strict(pwrmgr_cpu_en_i), 2) &&
+      $past(!fatal_core_err))
+
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_cfg, alert_tx_o[2])
   `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RvCoreRegWeOnehotCheck_A,
