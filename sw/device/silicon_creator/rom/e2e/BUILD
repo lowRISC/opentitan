@@ -469,8 +469,8 @@ opentitan_functest(
 
 manifest({
     "name": "manifest_bad_identifier",
-    "address_translation": CONST.FALSE,
-    "identifier": 0,
+    "address_translation": hex(CONST.FALSE),
+    "identifier": "0",
 })
 
 [opentitan_functest(
@@ -504,9 +504,9 @@ SEC_VERS = [
 
 [manifest({
     "name": "manifest_sec_ver_{}".format(sec_ver),
-    "address_translation": CONST.FALSE,
-    "identifier": CONST.ROM_EXT,
-    "security_version": sec_ver,
+    "address_translation": hex(CONST.FALSE),
+    "identifier": hex(CONST.ROM_EXT),
+    "security_version": hex(sec_ver),
 }) for sec_ver in SEC_VERS]
 
 [opentitan_flash_binary(
@@ -834,23 +834,23 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
     {
         "name": "bad_identifier",
         "manifest": {
-            "identifier": 0,
+            "identifier": "0",
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER)),
     },
     {
         "name": "too_small",
         "manifest": {
-            "identifier": CONST.ROM_EXT,
-            "length": CONST.ROM_EXT_SIZE_MIN - 1,
+            "identifier": hex(CONST.ROM_EXT),
+            "length": hex(CONST.ROM_EXT_SIZE_MIN - 1),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
     },
     {
         "name": "too_large",
         "manifest": {
-            "identifier": CONST.ROM_EXT,
-            "length": CONST.ROM_EXT_SIZE_MAX + 1,
+            "identifier": hex(CONST.ROM_EXT),
+            "length": hex(CONST.ROM_EXT_SIZE_MAX + 1),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.BAD_LENGTH)),
     },
@@ -858,90 +858,90 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         "name": "empty_code",
         "manifest": {
             # Note: `length` is filled automatically unless overriden here.
-            "identifier": CONST.ROM_EXT,
-            "code_start": CONST.MANIFEST_SIZE + 12,
-            "code_end": CONST.MANIFEST_SIZE + 12,
+            "identifier": hex(CONST.ROM_EXT),
+            "code_start": hex(CONST.MANIFEST_SIZE + 12),
+            "code_end": hex(CONST.MANIFEST_SIZE + 12),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_in_manifest",
         "manifest": {
-            "identifier": CONST.ROM_EXT,
-            "code_start": CONST.MANIFEST_SIZE - 4,
-            "code_end": CONST.MANIFEST_SIZE + 12,
-            "entry_point": CONST.MANIFEST_SIZE + 8,
+            "identifier": hex(CONST.ROM_EXT),
+            "code_start": hex(CONST.MANIFEST_SIZE - 4),
+            "code_end": hex(CONST.MANIFEST_SIZE + 12),
+            "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_outside_image",
         "manifest": {
-            "identifier": CONST.ROM_EXT,
-            "code_start": CONST.ROM_EXT_SIZE_MAX,
-            "code_end": CONST.MANIFEST_SIZE + 12,
-            "entry_point": CONST.MANIFEST_SIZE + 8,
+            "identifier": hex(CONST.ROM_EXT),
+            "code_start": hex(CONST.ROM_EXT_SIZE_MAX),
+            "code_end": hex(CONST.MANIFEST_SIZE + 12),
+            "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_start_unaligned",
         "manifest": {
-            "identifier": CONST.ROM_EXT,
-            "code_start": CONST.MANIFEST_SIZE + 6,
-            "code_end": CONST.MANIFEST_SIZE + 12,
-            "entry_point": CONST.MANIFEST_SIZE + 8,
+            "identifier": hex(CONST.ROM_EXT),
+            "code_start": hex(CONST.MANIFEST_SIZE + 6),
+            "code_end": hex(CONST.MANIFEST_SIZE + 12),
+            "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "code_end_unaligned",
         "manifest": {
-            "identifier": CONST.ROM_EXT,
-            "code_start": CONST.MANIFEST_SIZE + 8,
-            "code_end": CONST.MANIFEST_SIZE + 10,
-            "entry_point": CONST.MANIFEST_SIZE + 8,
+            "identifier": hex(CONST.ROM_EXT),
+            "code_start": hex(CONST.MANIFEST_SIZE + 8),
+            "code_end": hex(CONST.MANIFEST_SIZE + 10),
+            "entry_point": hex(CONST.MANIFEST_SIZE + 8),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_CODE_REGION)),
     },
     {
         "name": "entry_before_code_start",
         "manifest": {
-            "identifier": CONST.ROM_EXT,
-            "code_start": CONST.MANIFEST_SIZE + 8,
-            "code_end": CONST.MANIFEST_SIZE + 12,
-            "entry_point": CONST.MANIFEST_SIZE + 4,
+            "identifier": hex(CONST.ROM_EXT),
+            "code_start": hex(CONST.MANIFEST_SIZE + 8),
+            "code_end": hex(CONST.MANIFEST_SIZE + 12),
+            "entry_point": hex(CONST.MANIFEST_SIZE + 4),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
     },
     {
         "name": "entry_at_code_end",
         "manifest": {
-            "identifier": CONST.ROM_EXT,
-            "code_start": CONST.MANIFEST_SIZE + 8,
-            "code_end": CONST.MANIFEST_SIZE + 12,
-            "entry_point": CONST.MANIFEST_SIZE + 12,
+            "identifier": hex(CONST.ROM_EXT),
+            "code_start": hex(CONST.MANIFEST_SIZE + 8),
+            "code_end": hex(CONST.MANIFEST_SIZE + 12),
+            "entry_point": hex(CONST.MANIFEST_SIZE + 12),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
     },
     {
         "name": "entry_unaligned",
         "manifest": {
-            "identifier": CONST.ROM_EXT,
-            "code_start": CONST.MANIFEST_SIZE + 8,
-            "code_end": CONST.MANIFEST_SIZE + 12,
-            "entry_point": CONST.MANIFEST_SIZE + 10,
+            "identifier": hex(CONST.ROM_EXT),
+            "code_start": hex(CONST.MANIFEST_SIZE + 8),
+            "code_end": hex(CONST.MANIFEST_SIZE + 12),
+            "entry_point": hex(CONST.MANIFEST_SIZE + 10),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.MANIFEST.BAD_ENTRY_POINT)),
     },
     {
         "name": "rollback",
         "manifest": {
-            "identifier": CONST.ROM_EXT,
-            "code_start": CONST.MANIFEST_SIZE + 8,
-            "code_end": CONST.MANIFEST_SIZE + 12,
-            "entry_point": CONST.MANIFEST_SIZE + 8,
-            "security_version": 0,
+            "identifier": hex(CONST.ROM_EXT),
+            "code_start": hex(CONST.MANIFEST_SIZE + 8),
+            "code_end": hex(CONST.MANIFEST_SIZE + 12),
+            "entry_point": hex(CONST.MANIFEST_SIZE + 8),
+            "security_version": "0",
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.ROLLBACK)),
         "sec_ver": 1,

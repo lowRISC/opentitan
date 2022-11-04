@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:const.bzl", "CONST")
+load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
 load("//rules:opentitan.bzl", "opentitan_flash_binary")
 load("//rules:linker.bzl", "ld_library")
@@ -142,15 +142,15 @@ cc_library(
 
 manifest({
     "name": "manifest_standard",
-    "address_translation": CONST.FALSE,
-    "identifier": CONST.ROM_EXT,
+    "address_translation": hex(CONST.FALSE),
+    "identifier": hex(CONST.ROM_EXT),
     "visibility": ["//visibility:public"],
 })
 
 manifest({
     "name": "manifest_virtual",
-    "address_translation": CONST.TRUE,
-    "identifier": CONST.ROM_EXT,
+    "address_translation": hex(CONST.TRUE),
+    "identifier": hex(CONST.ROM_EXT),
 })
 
 opentitan_flash_binary(
@@ -194,8 +194,8 @@ opentitan_flash_binary(
 
 manifest({
     "name": "manifest_bad_address_translation",
-    "address_translation": 0,
-    "identifier": CONST.ROM_EXT,
+    "address_translation": "0",
+    "identifier": hex(CONST.ROM_EXT),
 })
 
 opentitan_flash_binary(
