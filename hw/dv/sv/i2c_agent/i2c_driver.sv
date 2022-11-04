@@ -60,7 +60,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     end
   endtask : get_and_drive
 
-  // TODO: drive_host_item is WiP
   virtual task drive_host_item(i2c_item req);
     `uvm_info(`gfn, $sformatf("drv: %s", req.drv_type.name), UVM_MEDIUM)
     unique case (req.drv_type)
@@ -76,12 +75,18 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         for (int i = $bits(req.wdata) -1; i >= 0; i--) begin
           cfg.vif.host_data(cfg.timing_cfg, req.wdata[i]);
         end
-
-        // wait one more cycle for ack
+        // Wait one more cycle for ack
         cfg.vif.wait_scl(.iter(1), .tc(cfg.timing_cfg));
       end
+      HostAck: begin
+        // Wait for read data and send ack
+        cfg.vif.wait_scl(.iter(8), .tc(cfg.timing_cfg));
+        cfg.vif.host_data(cfg.timing_cfg, 0);
+      end
       HostNAck: begin
-        cfg.vif.host_nack(cfg.timing_cfg);
+        // Wait for read data and send nack
+        cfg.vif.wait_scl(.iter(8), .tc(cfg.timing_cfg));
+        cfg.vif.host_data(cfg.timing_cfg, 1);
       end
       HostStop: begin
         cfg.host_scl_stop = 1;
@@ -152,14 +157,16 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   endtask : release_bus
 
   task drive_scl();
+    int scl_spinwait_timeout_ns = 1_000_000; // 1ms
     forever begin
+      @(cfg.vif.cb);
       wait(cfg.host_scl_start);
       while(!cfg.host_scl_stop) begin
-        cfg.vif.scl_o = 1'b0;
+        cfg.vif.scl_o <= 1'b0;
         cfg.vif.wait_for_dly(cfg.timing_cfg.tClockLow);
         cfg.vif.wait_for_dly(cfg.timing_cfg.tSetupBit);
-        cfg.vif.scl_o = 1'b1;
-        wait(cfg.vif.cb.scl_i === 1'b1);
+        cfg.vif.scl_o <= 1'b1;
+        `DV_WAIT(cfg.vif.scl_i === 1'b1,, scl_spinwait_timeout_ns, "i2c_drv_scl")
         cfg.vif.wait_for_dly(cfg.timing_cfg.tClockPulse);
         if (!cfg.host_scl_stop) cfg.vif.scl_o = 1'b0;
         cfg.vif.wait_for_dly(cfg.timing_cfg.tHoldBit);

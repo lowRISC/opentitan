@@ -17,7 +17,8 @@ package i2c_agent_pkg;
   // Bus/Transaction types for the agent driver
   typedef enum logic [3:0] {
     None, DevAck, RdData, WrData,
-    HostStart, HostRStart, HostData, HostNAck, HostStop
+    HostStart, HostRStart, HostData, HostAck,
+    HostNAck, HostStop
   } drv_type_e;
 
   // register values

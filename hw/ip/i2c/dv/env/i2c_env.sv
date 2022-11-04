@@ -32,6 +32,11 @@ class i2c_env extends cip_base_env #(
     if (cfg.m_i2c_agent_cfg.if_mode == Host) begin
       virtual_sequencer.target_mode_wr_exp_port.connect(
               scoreboard.target_mode_wr_exp_fifo.analysis_export);
+      virtual_sequencer.target_mode_wr_obs_port.connect(
+              scoreboard.target_mode_wr_obs_fifo.analysis_export);
+      m_i2c_agent.monitor.analysis_port.connect(scoreboard.target_mode_rd_obs_fifo.analysis_export);
+      virtual_sequencer.target_mode_rd_exp_port.connect(
+              scoreboard.target_mode_rd_exp_fifo.analysis_export);
     end
   endfunction
 

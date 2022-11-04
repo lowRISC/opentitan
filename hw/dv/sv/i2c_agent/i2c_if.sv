@@ -27,10 +27,22 @@ interface i2c_if(
 
   clocking cb @(posedge clk_i);
     input scl_i;
+    input sda_i;
+    output scl_o;
+    output sda_o;
   endclocking
   //---------------------------------
   // common tasks
   //---------------------------------
+
+  // This is literally same as '@(posedge scl_i)'
+  // In target mode, @(posedge scl_i) gives some glitch,
+  // so I have to use clocking block sampled signals.
+  task automatic p_edge_scl();
+    wait(cb.scl_i == 0);
+    wait(cb.scl_i == 1);
+  endtask
+
   task automatic wait_for_dly(int dly);
     repeat (dly) @(posedge clk_i);
   endtask : wait_for_dly
@@ -218,7 +230,7 @@ interface i2c_if(
       @(negedge scl_i);
       wait_for_dly(tc.tHoldBit - tc.tSdaInterference);
     end else begin // target transmits data (rd_data)
-      bit_o = sda_o;
+      bit_o = sda_i;
       wait_for_dly(tc.tClockPulse + tc.tHoldBit);
     end
   endtask: get_bit_data
@@ -231,52 +243,48 @@ interface i2c_if(
   endtask: host_start
 
   task automatic host_rstart(ref timing_cfg_t tc);
-      scl_o = 1'b0;
-      wait_for_dly(tc.tSetupStart);
-      sda_o = 1'b0;
-      scl_o = 1'b1;
-      wait_for_dly(tc.tHoldStart);
-      scl_o = 1'b0;
-      wait_for_dly(tc.tClockStart);
+    wait(scl_i === 1'b1);
+    wait_for_dly(tc.tSetupStart);
+    sda_o = 1'b0;
+    wait_for_dly(tc.tHoldStart);
+    wait_for_dly(tc.tHoldBit);
   endtask: host_rstart
 
   task automatic host_data(ref timing_cfg_t tc, input bit bit_i);
     sda_o = bit_i;
     wait_for_dly(tc.tClockLow);
     wait_for_dly(tc.tSetupBit);
-    wait(cb.scl_i === 1'b1);
+    wait(scl_i === 1'b1);
     wait_for_dly(tc.tClockPulse);
     wait_for_dly(tc.tHoldBit);
+    sda_o = 1;
   endtask: host_data
 
   task automatic host_stop(ref timing_cfg_t tc);
-      sda_o = 1'b0;
-      wait_for_dly(tc.tClockStop);
-      scl_o = 1'b1;
-      wait_for_dly(tc.tSetupStop);
-      sda_o = 1'b0;
-      wait_for_dly(tc.tHoldStop);
+    sda_o = 1'b0;
+    wait_for_dly(tc.tClockStop);
+    scl_o = 1'b1;
+    wait_for_dly(tc.tSetupStop);
+    sda_o = 1'b0;
+    wait_for_dly(tc.tHoldStop);
   endtask: host_stop
 
   task automatic host_nack(ref timing_cfg_t tc);
-      sda_o = 1'b0;
-      wait_for_dly(tc.tClockLow);
-      sda_o = 1'b1;
-      wait_for_dly(tc.tSetupBit);
-      scl_o = 1'b1;
-      wait_for_dly(tc.tClockPulse);
-      scl_o = 1'b0;
-      wait_for_dly(tc.tHoldBit);
+    sda_o = 1'b0;
+    wait_for_dly(tc.tClockLow);
+    sda_o = 1'b1;
+    wait_for_dly(tc.tSetupBit);
+    scl_o = 1'b1;
+    wait_for_dly(tc.tClockPulse);
+    scl_o = 1'b0;
+    wait_for_dly(tc.tHoldBit);
   endtask: host_nack
 
   task automatic wait_scl(int iter = 1, timing_cfg_t tc);
     repeat(iter) begin
-      wait_for_dly(tc.tClockLow);
-      wait_for_dly(tc.tSetupBit);
-      wait(cb.scl_i === 1'b1);
-      wait_for_dly(tc.tClockPulse);
-      wait_for_dly(tc.tHoldBit);
+      wait_for_dly(tc.tClockLow + tc.tSetupBit);
+      wait(scl_i === 1'b1);
+      wait_for_dly(tc.tClockPulse + tc.tHoldBit);
     end
   endtask // wait_scl
-
 endinterface : i2c_if

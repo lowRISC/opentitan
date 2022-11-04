@@ -13,6 +13,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
   local i2c_item  exp_rd_item;
   local i2c_item  exp_wr_item;
+  local i2c_item  obs_wr_item;
+  local i2c_item  obs_rd_item;
   local i2c_item  rd_pending_item;
   local uint      rd_wait;
   local bit       host_init = 1'b0;
@@ -33,9 +35,15 @@ class i2c_scoreboard extends cip_base_scoreboard #(
 
   // Target mode transactions
   uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_exp_fifo;
+  uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_obs_fifo;
+  uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_exp_fifo;
+  uvm_tlm_analysis_fifo #(i2c_item) target_mode_rd_obs_fifo;
 
   // interrupt bit vector
   local bit [NumI2cIntr-1:0] intr_exp;
+
+  int                        num_obs_rd;
+
 
   `uvm_component_new
 
@@ -46,20 +54,38 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     rd_pending_item = new("rd_pending_item" );
     exp_rd_item = new("exp_rd_item");
     exp_wr_item = new("exp_wr_item");
+    obs_wr_item = new("obs_wr_item");
     target_mode_wr_exp_fifo = new("target_mode_wr_exp_fifo", this);
+    target_mode_wr_obs_fifo = new("target_mode_wr_obs_fifo", this);
+    target_mode_rd_exp_fifo = new("target_mode_rd_exp_fifo", this);
+    target_mode_rd_obs_fifo = new("target_mode_rd_obs_fifo", this);
   endfunction : build_phase
 
   task run_phase(uvm_phase phase);
+    string str;
     super.run_phase(phase);
     if (cfg.m_i2c_agent_cfg.if_mode == Host) begin
-      fork begin
+      int obs_wr_id = 0;
+      fork
         forever begin
           target_mode_wr_exp_fifo.get(exp_wr_item);
-          `uvm_info(`gfn, $sformatf("exp_tn%0d\n %s",
+          str = (exp_wr_item.start) ? "addr" : (exp_wr_item.stop) ? "stop" : "wr";
+          `uvm_info(`gfn, $sformatf("exp_%s_txn%0d\n %s", str,
                                     exp_wr_item.tran_id, exp_wr_item.sprint()), UVM_MEDIUM)
-          process_target_write(exp_wr_item);
+          target_mode_wr_obs_fifo.get(obs_wr_item);
+          obs_wr_item.tran_id = obs_wr_id++;
+          target_txn_comp(obs_wr_item, exp_wr_item, str);
         end
-      end join_none
+        forever begin
+          target_mode_rd_exp_fifo.get(exp_rd_item);
+          exp_rd_item.pname = "exp_rd";
+          `uvm_info(`gfn, $sformatf("\n%s", exp_rd_item.convert2string()), UVM_MEDIUM)
+          target_mode_rd_obs_fifo.get(obs_rd_item);
+          obs_rd_item.pname = "obs_rd";
+          obs_rd_item.tran_id = num_obs_rd++;
+          target_rd_comp(obs_rd_item, exp_rd_item);
+        end
+      join_none
     end else begin
       forever begin
         `DV_SPINWAIT_EXIT(
@@ -409,31 +435,27 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     `DV_EOT_PRINT_TLM_FIFO_CONTENTS(i2c_item, wr_item_fifo)
   endfunction
 
-  task process_target_write(i2c_item exp);
-    uvm_reg_data_t read_data;
-    i2c_item obs;
-
-    // polling status.acqempty == 0
-    csr_spinwait(.ptr(ral.status.acqempty), .exp_data(1'b0),
-                 .timeout_ns(10_000));
-
-    // read one entry and compare
-    csr_rd(.ptr(ral.acqdata), .value(read_data));
-    `uvm_create_obj(i2c_item, obs);
-    obs = acq2item(read_data);
-    obs.tran_id = this.tran_id++;
-    target_txn_comp(obs, exp);
-
-  endtask // process_target_write
-
   // Compare start, stop and wdata only
-  function void target_txn_comp(i2c_item obs, i2c_item exp);
-    `uvm_info(`gfn, $sformatf("comp:target wr_txn %0d", obs.tran_id), UVM_MEDIUM)
+  function void target_txn_comp(i2c_item obs, i2c_item exp, string str);
+    `uvm_info(`gfn, $sformatf("comp:target obs_%s_txn %0d\n%s", str, obs.tran_id, obs.sprint()),
+              UVM_MEDIUM)
+
+    `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
     `DV_CHECK_EQ(obs.start, exp.start)
     `DV_CHECK_EQ(obs.stop, exp.stop)
-    if (obs.stop == 0) begin
+    if (obs.stop == 0 && obs.rstart == 0) begin
       `DV_CHECK_EQ(obs.wdata, exp.wdata)
     end
   endfunction // target_txn_comp
 
+  function void target_rd_comp(i2c_item obs, i2c_item exp);
+    `uvm_info(`gfn, $sformatf("comp:target obs_rd %0d\n%s", obs.tran_id, obs.convert2string()),
+              UVM_MEDIUM)
+    `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
+    `DV_CHECK_EQ(obs.num_data, exp.num_data)
+    `DV_CHECK_EQ(obs.data_q.size(), exp.data_q.size())
+    foreach (exp.data_q[i]) begin
+      `DV_CHECK_EQ(obs.data_q[i], exp.data_q[i])
+    end
+  endfunction // target_rd_comp
 endclass : i2c_scoreboard
