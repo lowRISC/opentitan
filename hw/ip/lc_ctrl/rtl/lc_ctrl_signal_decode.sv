@@ -65,7 +65,7 @@ module lc_ctrl_signal_decode
     lc_seed_hw_rd_en         = Off;
     lc_keymgr_en             = Off;
     // This ensures that once escalation has been triggered, it cannot go back to Off.
-    lc_escalate_en           = lc_tx_or_hi(Off, lc_escalate_en_o);
+    lc_escalate_en           = lc_escalate_en_o;
     // Set to invalid diversification value by default.
     lc_keymgr_div_d          = RndCnstLcKeymgrDivInvalid;
 
