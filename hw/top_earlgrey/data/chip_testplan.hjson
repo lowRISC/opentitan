@@ -2295,7 +2295,8 @@
             X'ref'ed with each IP test that requsts entropy from EDN.
             '''
       stage: V2
-      tests: ["chip_sw_edn_entropy_reqs"]
+      tests: ["chip_sw_edn_entropy_reqs",
+              "chip_sw_csrng_edn_concurrency"]
     }
 
     // KEYMGR (pre-verified IP) integration tests:
