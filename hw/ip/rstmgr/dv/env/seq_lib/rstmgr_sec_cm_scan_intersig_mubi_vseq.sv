@@ -11,7 +11,6 @@ class rstmgr_sec_cm_scan_intersig_mubi_vseq extends rstmgr_smoke_vseq;
   `uvm_object_new
 
   task body();
-    disable_assert();
     fork
       begin
         fork
@@ -23,22 +22,17 @@ class rstmgr_sec_cm_scan_intersig_mubi_vseq extends rstmgr_smoke_vseq;
     join
   endtask : body
 
-  function void disable_assert();
-    $assertoff(0, "prim_mubi4_sync");
-  endfunction : disable_assert
-
   task add_noise();
     int delay;
 
     forever begin
-      cfg.clk_rst_vif.wait_clks(1);
       // If scan_rst_ni is active we assume super is doing a scan reset, so keep scanmode_i True.
       if (cfg.rstmgr_vif.scan_rst_ni == 1'b1) begin
         cfg.rstmgr_vif.scanmode_i = get_rand_mubi4_val(0, 0, 1);
       end else begin
         cfg.rstmgr_vif.scanmode_i = prim_mubi_pkg::MuBi4True;
       end
-      cfg.io_div4_clk_rst_vif.wait_clks(scanmode_to_scan_rst_cycles);
+      cfg.io_div4_clk_rst_vif.wait_clks(scan_rst_to_scanmode_cycles);
       delay = $urandom_range(0, 30);
       fork
         // This waits for a certain number of cycles or for a change in scan_rst_ni,

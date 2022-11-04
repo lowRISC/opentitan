@@ -70,8 +70,8 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     release_lc_to_release_sys_cycles inside {[1 : 10]};
   }
 
-  rand int scanmode_to_scan_rst_cycles;
-  constraint scanmode_to_scan_rst_cycles_c {scanmode_to_scan_rst_cycles inside {[0 : 4]};}
+  rand int scan_rst_to_scanmode_cycles;
+  constraint scan_rst_to_scanmode_cycles_c {scan_rst_to_scanmode_cycles inside {[0 : 4]};}
 
   rand int ndm_reset_cycles;
   constraint ndm_reset_cycles_c {ndm_reset_cycles inside {[4 : 16]};}
@@ -403,11 +403,13 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     if (clear_it) release_reset(reset_cause);
   endtask
 
+  // Lead with scan_rst active to avoid some derived sequence changing scanmode_i in such
+  // a way it defeats this reset.
   virtual protected task send_scan_reset();
     `uvm_info(`gfn, "Sending scan reset.", UVM_MEDIUM)
-    update_scanmode(prim_mubi_pkg::MuBi4True);
-    cfg.io_div4_clk_rst_vif.wait_clks(scanmode_to_scan_rst_cycles);
     update_scan_rst_n(1'b0);
+    cfg.io_div4_clk_rst_vif.wait_clks(scan_rst_to_scanmode_cycles);
+    update_scanmode(prim_mubi_pkg::MuBi4True);
     set_pwrmgr_rst_reqs(.rst_lc_req('1), .rst_sys_req('1));
     set_reset_cause(pwrmgr_pkg::HwReq);
     // The clocks are turned off, so wait in time units.
