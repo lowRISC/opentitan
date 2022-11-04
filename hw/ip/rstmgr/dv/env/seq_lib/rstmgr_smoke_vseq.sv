@@ -14,6 +14,10 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
   constraint sw_rst_regwen_non_trivial_c {sw_rst_regwen != '0 && sw_rst_regwen != '1;}
   constraint sw_rst_some_reset_n {sw_rst_regwen & ~sw_rst_ctrl_n != '0;}
 
+  local task wait_between_resets();
+    cfg.io_div4_clk_rst_vif.wait_clks(10);
+  endtask
+
   task body();
     bit is_standalone = is_running_sequence("rstmgr_smoke_vseq");
     // Expect reset info to be POR when running the sequence standalone.
@@ -31,6 +35,8 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     check_reset_info(1, "expected reset_info to be POR for scan reset");
     // Alert and cpu info settings were reset. Check and re-enable them.
     check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b0));
+    wait_between_resets();
+
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     csr_wr(.ptr(ral.reset_info), .value('1));
@@ -39,9 +45,9 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     send_reset(pwrmgr_pkg::LowPwrEntry, '0);
     check_reset_info(2, "expected reset_info to indicate low power");
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
+    wait_between_resets();
 
     csr_wr(.ptr(ral.reset_info), .value('1));
-    cfg.io_div4_clk_rst_vif.wait_clks(10);
 
     // Send HwReq.
     // Enable alert_info and cpu_info capture.
@@ -52,6 +58,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     check_reset_info({rstreqs, 4'h0}, $sformatf("expected reset_info to match 0x%x", {rstreqs, 4'h0}
                      ));
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
+    wait_between_resets();
 
     csr_wr(.ptr(ral.reset_info), .value('1));
 
@@ -62,6 +69,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     send_ndm_reset();
     check_reset_info(4, "Expected reset_info to indicate ndm reset");
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
+    wait_between_resets();
 
     csr_wr(.ptr(ral.reset_info), .value('1));
 
@@ -72,6 +80,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     send_sw_reset(MuBi4True);
     check_reset_info(8, "Expected reset_info to indicate sw reset");
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 0);
+    wait_between_resets();
 
     csr_wr(.ptr(ral.reset_info), .value('1));
 

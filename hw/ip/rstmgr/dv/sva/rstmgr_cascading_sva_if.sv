@@ -64,7 +64,7 @@ interface rstmgr_cascading_sva_if (
   // a rise in rst_lc_src_n. There is an SVA for the rise in pwrmgr_rstmgr_sva_if.
 
   // The cycles are counted from Lc edges.
-  localparam edge_bounds_t SysCycles = '{fall: '{min: 0, max: 2}, rise: '{min: 1, max: 5}};
+  localparam edge_bounds_t SysCycles = '{fall: '{min: 0, max: 3}, rise: '{min: 1, max: 5}};
 
   // The different peripheral edges are synchronized to their respective clocks,
   // so these counts assume synchronization and are triggered on the correct clock.
