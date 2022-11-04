@@ -93,7 +93,6 @@ static dif_keymgr_t keymgr;
 enum {
   OTP_CTRL,
   PINMUX,
-  SRAM_CTRL_RET,
   ADC_CTRL,
   SYSRST_CTRL,
   KEYMGR,
@@ -107,7 +106,7 @@ static test_register_t kReg[] = {
             .base = TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR,
             .offset = OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_OFFSET,
             .write_val = 0x06092022,
-            .exp_read_val = 0x06092022,
+            .exp_read_val = OTP_CTRL_DIRECT_ACCESS_WDATA_0_REG_RESVAL,
         },
     [PINMUX] =
         {
@@ -115,17 +114,8 @@ static test_register_t kReg[] = {
             .base = TOP_EARLGREY_PINMUX_AON_BASE_ADDR,
             .offset = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_OFFSET,
             .write_val = 0x44,
-            .exp_read_val = 0x44,
+            .exp_read_val = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_RESVAL,
 
-        },
-    [SRAM_CTRL_RET] =
-        {
-            .name = "SRAM_CTRL_RET",
-            .base = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
-            .offset =
-                8 * sizeof(uint32_t), /* Random location of retention ram */
-            .write_val = 0xddAA55bb,
-            .exp_read_val = 0xddAA55bb,
         },
     [ADC_CTRL] =
         {
@@ -133,7 +123,7 @@ static test_register_t kReg[] = {
             .base = TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR,
             .offset = ADC_CTRL_ADC_SAMPLE_CTL_REG_OFFSET,
             .write_val = 0x37,
-            .exp_read_val = 0x9b,
+            .exp_read_val = ADC_CTRL_ADC_SAMPLE_CTL_REG_RESVAL,
 
         },
     [SYSRST_CTRL] =
@@ -142,7 +132,7 @@ static test_register_t kReg[] = {
             .base = TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR,
             .offset = SYSRST_CTRL_EC_RST_CTL_REG_OFFSET,
             .write_val = 0x567,
-            .exp_read_val = 0x7d0,
+            .exp_read_val = SYSRST_CTRL_EC_RST_CTL_REG_RESVAL,
 
         },
     [KEYMGR] =
@@ -151,7 +141,7 @@ static test_register_t kReg[] = {
             .base = TOP_EARLGREY_KEYMGR_BASE_ADDR,
             .offset = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_OFFSET,
             .write_val = 0x1600ABBA,
-            .exp_read_val = 0x0,
+            .exp_read_val = KEYMGR_MAX_OWNER_KEY_VER_SHADOWED_REG_RESVAL,
 
         },
     [FLASH_CTRL] =
@@ -160,7 +150,7 @@ static test_register_t kReg[] = {
             .base = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
             .offset = FLASH_CTRL_SCRATCH_REG_OFFSET,
             .write_val = 0x3927,
-            .exp_read_val = 0x0,
+            .exp_read_val = FLASH_CTRL_SCRATCH_REG_RESVAL,
         },
 };
 

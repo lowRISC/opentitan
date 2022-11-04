@@ -143,12 +143,6 @@
       package: "rstmgr_pkg", // Origin package (only needs for the req)
     },
 
-    { struct:  "logic",
-      type:    "uni",
-      name:    "ndmreset_req",
-      act:     "rcv",
-    },
-
     { struct:  "alert_crashdump",
       type:    "uni",
       name:    "alert_dump",
@@ -230,14 +224,6 @@
         },
 
         { bits: "2",
-          name: "NDM_RESET",
-          desc: '''
-            Indicates when a device has reset due to non-debug-module request.
-            '''
-          resval: "0"
-        },
-
-        { bits: "3",
           hwaccess: "hrw",
           name: "SW_RESET",
           desc: '''
@@ -247,7 +233,7 @@
         },
 
         // reset requests include escalation reset + peripheral requests
-        { bits: "${4 + total_hw_resets - 1}:4",
+        { bits: "${3 + total_hw_resets - 1}:3",
           hwaccess: "hrw",
           name: "HW_REQ",
           desc: '''
