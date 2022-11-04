@@ -126,9 +126,14 @@
     }
     {
       name: sec_cm_ctrl_fsm_consistency
-      desc: "Verify the countermeasure(s) CTRL.FSM.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) CTRL.FSM.CONSISTENCY.
+
+            - Set `ral.control_shadowed` to OpDisable, so that no Advance or Generate operation
+             is selected.
+            - Force internal `tb.dut.u_ctrl.adv_en_o` or `tb.dut.u_ctrl.gen_en_o` to 1.
+            - Check the fatal alert is triggered and `fault_status.ctrl_fsm_chk` is set.'''
       stage: V2S
-      tests: []
+      tests: ["keymgr_sec_cm"]
     }
     {
       name: sec_cm_ctrl_fsm_global_esc

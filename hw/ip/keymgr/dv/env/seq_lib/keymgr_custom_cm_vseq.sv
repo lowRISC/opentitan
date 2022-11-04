@@ -41,6 +41,11 @@ class keymgr_custom_cm_vseq extends keymgr_lc_disable_vseq;
       csr_wr(.ptr(ral.sideload_clear), .value('1));
       `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(key_dest, key_dest != keymgr_pkg::None;)
       keymgr_generate(.operation(keymgr_pkg::OpGenHwOut), .key_dest(key_dest), .wait_done(0));
+    end else if (fi_type == FaultOpNotExist) begin
+      `DV_WAIT(regular_vseq_done)
+      // SW sets no valid operation, then force operation happens internally to trigger an error.
+      ral.control_shadowed.operation.set(keymgr_pkg::OpDisable);
+      csr_update(ral.control_shadowed);
     end
     cfg.keymgr_vif.inject_fault(fi_type);
 
@@ -55,6 +60,9 @@ class keymgr_custom_cm_vseq extends keymgr_lc_disable_vseq;
       end
       FaultKmacDoneError: begin
         csr_rd_check(.ptr(ral.fault_status.kmac_done), .compare_value(1));
+      end
+      FaultOpNotExist: begin
+        csr_rd_check(.ptr(ral.fault_status.ctrl_fsm_chk), .compare_value(1));
       end
       FaultSideloadNotConsistent: begin
         csr_rd_check(.ptr(ral.fault_status.side_ctrl_sel), .compare_value(1));
