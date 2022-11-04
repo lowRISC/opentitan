@@ -19,6 +19,7 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
   endtask
 
   task body();
+    uvm_reg_data_t exp_reg;
     bit is_standalone = is_running_sequence("rstmgr_smoke_vseq");
     // Expect reset info to be POR when running the sequence standalone.
     if (is_standalone) begin
@@ -43,7 +44,10 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
 
     // Send low power entry reset.
     send_reset(pwrmgr_pkg::LowPwrEntry, '0);
-    check_reset_info(2, "expected reset_info to indicate low power");
+    exp_reg = csr_utils_pkg::get_csr_val_with_updated_field(
+              ral.reset_info.low_power_exit, '0, 1);
+    check_reset_info(exp_reg,
+                     "expected reset_info to indicate low power");
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
     wait_between_resets();
 
@@ -55,7 +59,10 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     send_reset(pwrmgr_pkg::HwReq, rstreqs);
-    check_reset_info({rstreqs, 4'h0}, $sformatf("expected reset_info to match 0x%x", {rstreqs, 4'h0}
+    exp_reg = csr_utils_pkg::get_csr_val_with_updated_field(
+              ral.reset_info.hw_req, '0, rstreqs);
+    check_reset_info(exp_reg,
+                     $sformatf("expected reset_info to match 0x%x", exp_reg
                      ));
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
     wait_between_resets();
@@ -65,20 +72,15 @@ class rstmgr_smoke_vseq extends rstmgr_base_vseq;
     `DV_CHECK_RANDOMIZE_FATAL(this)
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
-    // Send debug reset.
-    send_ndm_reset();
-    check_reset_info(4, "Expected reset_info to indicate ndm reset");
-    check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
-    wait_between_resets();
-
-    csr_wr(.ptr(ral.reset_info), .value('1));
-
     `DV_CHECK_RANDOMIZE_FATAL(this)
     set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
     // Send sw reset.
     send_sw_reset(MuBi4True);
-    check_reset_info(8, "Expected reset_info to indicate sw reset");
+    exp_reg = csr_utils_pkg::get_csr_val_with_updated_field(
+              ral.reset_info.sw_reset, '0, 1);
+    check_reset_info(exp_reg,
+                     "Expected reset_info to indicate sw reset");
     check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 0);
     wait_between_resets();
 

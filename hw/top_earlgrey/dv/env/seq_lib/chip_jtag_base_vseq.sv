@@ -33,26 +33,16 @@ class chip_jtag_base_vseq extends chip_sw_base_vseq;
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(1));
 
     // spin wait on reset completion
-    csr_spinwait(.ptr(ral.lc_ctrl.status.ready), .exp_data(0), .backdoor(1),
-                 .spinwait_delay_ns(1000));
-    `uvm_info(`gfn, $sformatf("saw lc ready"),
-              UVM_LOW)
+    `DV_WAIT(cfg.chip_vif.lc_ready == '0)
+    `uvm_info(`gfn, "LC controller reset", UVM_MEDIUM)
 
-    csr_spinwait(.ptr(ral.lc_ctrl.status.ready), .exp_data(1), .backdoor(1),
-                 .spinwait_delay_ns(1000), .timeout_ns(5000000));
-    `uvm_info(`gfn, $sformatf("saw lc ready again"),
-              UVM_LOW)
+    `DV_WAIT(cfg.chip_vif.lc_ready == 1'b1)
+    `uvm_info(`gfn, "LC controller initialized", UVM_MEDIUM)
+
+    #10us;
   endtask
 
    task ndm_reset_off();
-     // Temporary workaround until pinmux/rv_dm fixes are in
-    `uvm_info(`gfn, $sformatf("issue reset"),
-              UVM_LOW)
-     cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
-    `uvm_info(`gfn, $sformatf("reset done"),
-              UVM_LOW)
-     cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.in_reset = 1'b0;
-
      csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(0));
      cfg.clk_rst_vif.wait_clks(5);
    endtask
