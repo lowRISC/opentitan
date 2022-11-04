@@ -59,6 +59,7 @@ package keymgr_env_pkg;
   typedef enum int {
     FaultOpNotOnehot,
     FaultOpNotConsistent,
+    FaultOpNotExist,
     FaultKmacDoneError,
     FaultSideloadNotConsistent,
     FaultKeyIntgError

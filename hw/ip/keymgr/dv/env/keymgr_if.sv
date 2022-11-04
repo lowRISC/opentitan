@@ -342,6 +342,9 @@ interface keymgr_if(input clk, input rst_n);
     end
   end
 
+  localparam int AdvOpIdx = 0;
+  localparam int IdOpIdx  = 1;
+  localparam int GenOpIdx = 2;
   wire [2:0] op_enables = {tb.dut.u_ctrl.gen_en_o, tb.dut.u_ctrl.id_en_o,
                            tb.dut.u_ctrl.adv_en_o};
   kmac_pkg::app_rsp_t invalid_kmac_rsp;
@@ -364,6 +367,18 @@ interface keymgr_if(input clk, input rst_n);
 
         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_cmds,
                                            $countones(force_cmds) == 1;
+                                           force_cmds != op_enables;, , msg_id)
+        inject_cmd_err(force_cmds);
+      end
+      FaultOpNotExist: begin
+        bit [2:0] force_cmds;
+
+        // this fault occurs when there is no OP
+        `DV_CHECK_EQ_FATAL(op_enables, 0, , msg_id)
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_cmds,
+                                           $countones(force_cmds) == 1;
+                                           // this CM only applies to adv or gen.
+                                           force_cmds[IdOpIdx] == 0;
                                            force_cmds != op_enables;, , msg_id)
         inject_cmd_err(force_cmds);
       end
@@ -423,9 +438,9 @@ interface keymgr_if(input clk, input rst_n);
     `uvm_info(msg_id, $sformatf("Force cmd (gen_en/id_en/adv_en) from %3b to %3b",
                                 prev_cmds, force_cmds), UVM_LOW)
     // these signals are wires, need force and then release at reset
-    if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = 1;
-    if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = 1;
-    if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = 1;
+    if (force_cmds[AdvOpIdx]) force tb.dut.u_ctrl.adv_en_o = 1;
+    if (force_cmds[IdOpIdx])  force tb.dut.u_ctrl.id_en_o  = 1;
+    if (force_cmds[GenOpIdx]) force tb.dut.u_ctrl.gen_en_o = 1;
     // if in current cycle, kmac_data_rsp is unknown, assign it with a random value to
     // avoid X propagation, because forcing *en_o may cause design to read `kmac_data_i`.
     #1ps;
@@ -441,15 +456,15 @@ interface keymgr_if(input clk, input rst_n);
     @(posedge clk);
 
     if ($urandom_range(0, 1)) begin
-      if (force_cmds[0]) force tb.dut.u_ctrl.adv_en_o = prev_cmds[0];
-      if (force_cmds[1]) force tb.dut.u_ctrl.id_en_o  = prev_cmds[1];
-      if (force_cmds[2]) force tb.dut.u_ctrl.gen_en_o = prev_cmds[2];
+      if (force_cmds[AdvOpIdx]) force tb.dut.u_ctrl.adv_en_o = prev_cmds[0];
+      if (force_cmds[IdOpIdx])  force tb.dut.u_ctrl.id_en_o  = prev_cmds[1];
+      if (force_cmds[GenOpIdx]) force tb.dut.u_ctrl.gen_en_o = prev_cmds[2];
       @(posedge clk);
     end
 
-    if (force_cmds[0]) release tb.dut.u_ctrl.adv_en_o;
-    if (force_cmds[1]) release tb.dut.u_ctrl.id_en_o;
-    if (force_cmds[2]) release tb.dut.u_ctrl.gen_en_o;
+    if (force_cmds[AdvOpIdx]) release tb.dut.u_ctrl.adv_en_o;
+    if (force_cmds[IdOpIdx])  release tb.dut.u_ctrl.id_en_o;
+    if (force_cmds[GenOpIdx]) release tb.dut.u_ctrl.gen_en_o;
   endtask
 
   // Disable h_data stability assertion when keymgr is in disabled/invalid state or LC turns off as
