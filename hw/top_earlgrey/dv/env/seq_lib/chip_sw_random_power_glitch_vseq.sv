@@ -24,9 +24,8 @@ class chip_sw_random_power_glitch_vseq extends chip_sw_base_vseq;
   rand int cycles_after_trigger;
   rand int cycles_till_reset;
   rand int reset_delay;
-  int loop_num;
 
-  constraint cycles_after_trigger_c {cycles_after_trigger inside {[0 : 9]};}
+  constraint cycles_after_trigger_c {cycles_after_trigger inside {[300 : 320]};}
   constraint cycles_tll_reset_c {cycles_till_reset inside {[0 : 200]};}
   constraint reset_delay_c {reset_delay inside {[0 : 10]};}
 
@@ -37,21 +36,14 @@ class chip_sw_random_power_glitch_vseq extends chip_sw_base_vseq;
 
   virtual task cpu_init();
     bit[7:0] rst_idx[NumRound];
-    loop_num = 0;
     for (int i=0; i< NumRound; i = i+1) begin
       if (i == (NumRound-1)) begin
         rst_idx[i] = i;
       end
       else begin
-        //rst_idx[i] = assa[i]%2;
-        rst_idx[i] = 0;
-        if (rst_idx[i] inside {[0:3]}) begin
-          loop_num = loop_num + 1;
-        end
+        rst_idx[i] = assa[i];
       end
     end
-
-    `uvm_info(`gfn, $sformatf("HW rst loop # : %d", loop_num), UVM_MEDIUM)
 
     super.cpu_init();
     sw_symbol_backdoor_overwrite("RST_IDX", rst_idx);
@@ -62,13 +54,14 @@ class chip_sw_random_power_glitch_vseq extends chip_sw_base_vseq;
     // Wait until we reach the SW test state.
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
     `uvm_info(`gfn, "SW test ready", UVM_MEDIUM)
-
-    repeat (loop_num) begin
+    repeat (NumRound) begin
       `DV_WAIT(
-            cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by hw por" ||
+            cfg.sw_logger_vif.printed_log ==
+                "Booting and setting deep sleep followed by hw por" ||
             cfg.sw_logger_vif.printed_log ==
                 "Booting and setting normal sleep followed by hw por" ||
-            cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by glitch reset" ||
+            cfg.sw_logger_vif.printed_log ==
+                "Booting and setting deep sleep followed by glitch reset" ||
             cfg.sw_logger_vif.printed_log ==
                 "Booting and setting normal sleep followed by glitch reset" ||
             cfg.sw_logger_vif.printed_log == "Last Booting" ||
@@ -76,13 +69,15 @@ class chip_sw_random_power_glitch_vseq extends chip_sw_base_vseq;
             // 20ms
             20_000_000)
 
-       if (cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by glitch reset" ||
-           cfg.sw_logger_vif.printed_log == "Booting and setting normal sleep followed by glitch reset")
+       `uvm_info(`gfn, "HW Booting is called", UVM_MEDIUM)
+       if (cfg.sw_logger_vif.printed_log ==
+                "Booting and setting deep sleep followed by glitch reset" ||
+           cfg.sw_logger_vif.printed_log ==
+                "Booting and setting normal sleep followed by glitch reset")
            begin
          `uvm_info(`gfn, "SW message delivered to TB", UVM_MEDIUM)
-         //repeat (10) @cfg.chip_vif.pwrmgr_low_power_if.cb;  //
-         //repeat (cycles_till_reset) @cfg.chip_vif.pwrmgr_low_power_if.cb;
-         if (cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by glitch reset") begin
+         if (cfg.sw_logger_vif.printed_log ==
+                "Booting and setting deep sleep followed by glitch reset") begin
            `uvm_info(`gfn, "glitch for deep sleep", UVM_MEDIUM)
            cfg.ast_supply_vif.glitch_vcmain_pok_on_next_low_power_trigger();
          end
@@ -96,8 +91,7 @@ class chip_sw_random_power_glitch_vseq extends chip_sw_base_vseq;
                 cfg.sw_logger_vif.printed_log ==
                 "Booting and setting normal sleep followed by hw por") begin
          `uvm_info(`gfn, "SW message delivered to TB", UVM_MEDIUM)
-         repeat (10) @cfg.chip_vif.pwrmgr_low_power_if.cb;
-         repeat (cycles_till_reset) @cfg.chip_vif.pwrmgr_low_power_if.cb;
+         repeat (10 + cycles_till_reset) @cfg.chip_vif.pwrmgr_low_power_if.cb;
          `uvm_info(`gfn, $sformatf("POR reset req set after fixed delay : %d + variable delay : %d",
                                     10, cycles_till_reset), UVM_MEDIUM)
          execute_reset();
