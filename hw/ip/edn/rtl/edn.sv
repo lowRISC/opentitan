@@ -118,9 +118,13 @@ module edn
   for (genvar i = 0; i < NumEndPoints; i = i+1) begin : gen_edn_if_asserts
     `ASSERT_KNOWN(EdnEndPointOut_A, edn_o[i])
 
-    // This assertion checks that EDN data will be stable from edn_ack until the next edn request.
-    `ASSERT(EdnDataStable_A, edn_o[i].edn_ack |=>
-            $stable(edn_o[i].edn_bus) throughout edn_i[i].edn_req[->1])
+    // These assertions check that EDN data will be stable from edn_ack until the next EDN request
+    // or until next EDN enablement.
+    `ASSERT(EdnDataStable_A, $rose(edn_o[i].edn_ack) |=>
+            $stable(edn_o[i].edn_bus) throughout edn_i[i].edn_req[->1],
+            clk_i, !rst_ni || !u_edn_core.edn_enable_q)
+
+    `ASSERT(EdnDataStableDisable_A, u_edn_core.edn_enable_q == 0 |=> $stable(edn_o[i].edn_bus))
 
     `ASSERT(EdnFatalAlertNoRsp_A, alert[1] |-> edn_o[i].edn_ack == 0)
   end : gen_edn_if_asserts
