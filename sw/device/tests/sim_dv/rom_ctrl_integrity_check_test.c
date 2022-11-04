@@ -46,10 +46,8 @@ bool test_main(void) {
   dif_rom_ctrl_digest_t expected_digest;
   CHECK_DIF_OK(dif_rom_ctrl_get_digest(&rom_ctrl, &computed_digest));
   CHECK_DIF_OK(dif_rom_ctrl_get_expected_digest(&rom_ctrl, &expected_digest));
-  CHECK(expected_digest.digest[ROM_CTRL_DIGEST_MULTIREG_COUNT - 1] !=
-            computed_digest.digest[ROM_CTRL_DIGEST_MULTIREG_COUNT - 1],
-        "Expected and computed digests match. Digests = %08x",
-        expected_digest.digest[ROM_CTRL_DIGEST_MULTIREG_COUNT - 1]);
+  CHECK_ARRAYS_NE(expected_digest.digest, computed_digest.digest,
+                  ROM_CTRL_DIGEST_MULTIREG_COUNT);
 
   // set test_status to wfi and call wait_for_interrupt to make
   // the cpu idle, the testbench sequence will wait for this test
