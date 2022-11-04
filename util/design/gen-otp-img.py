@@ -13,6 +13,7 @@ import re
 from pathlib import Path
 
 import hjson
+
 from lib.common import wrapped_docstring
 from lib.OtpMemImg import OtpMemImg
 
@@ -30,6 +31,8 @@ MEMORY_MEM_FILE = 'otp-img.BITWIDTH.vmem'
 def _override_seed(args, name, config):
     '''Override the seed key in config with value specified in args'''
     arg_seed = getattr(args, name)
+    # An override seed of 0 will not trigger the override, which is intended, as
+    # the OTP-generation Bazel rule sets the default seed values to 0.
     if arg_seed:
         log.warning('Commandline override of {} with {}.'.format(
             name, arg_seed))
