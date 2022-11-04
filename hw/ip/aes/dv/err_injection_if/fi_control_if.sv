@@ -45,6 +45,18 @@ interface fi_control_if
     $sformatf("%s.%s", par_hier, "iv_sel_o")
   };
 
+  // check whether the given hier_name ends with signal_name
+  function automatic int check_target_name(string hier_name, string signal_name);
+    int hier_len = hier_name.len();
+    int signal_len = signal_name.len();
+    if (str_utils_pkg::str_rfind(hier_name, signal_name,
+                                 hier_len - signal_len - 1, -1) == -1) begin
+      return 0;
+    end else begin
+      return 1;
+    end
+  endfunction
+
   function automatic int get_if_size();
     return intf_array.size() + intf_mul_array.size();
   endfunction // get_if_size
@@ -64,18 +76,31 @@ interface fi_control_if
 
   function automatic void force_single_bit(int target);
     bit  read;
+    bit  value;
     $assertoff(0, "tb.dut");
     $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscDataOut");
     $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscIv");
     if (!uvm_hdl_check_path(intf_array[target])) begin
       `uvm_fatal("fi_control_if", $sformatf("PATH NOT EXISTING %m"))
     end
-    // read the value currently
-    uvm_hdl_read(intf_array[target], read);
+    if (check_target_name(intf_array[target], "cipher_in_ready_i")) begin
+      // The main controller is only ever reading cipher_in_ready_i when its FSM is ready to
+      // advance. Forcing the signal to 1 is thus not sufficient to alter the behavior of the
+      // main control FSM.
+      //
+      // Therefore, this test only attemps to stall the main control FSM by forcing this signal
+      // to 0. For reference, see https://github.com/lowRISC/opentitan/issues/13572 .
+      value = 0;
+    end else begin
+      // Read the current value.
+      uvm_hdl_read(intf_array[target], read);
+      value = !read;
+    end
     // always announce we are forcing something
     `uvm_info("if_control_if",
-       $sformatf(" I am forcing target %d %s, value %b",target, intf_array[target], !read),UVM_LOW);
-    if (!uvm_hdl_force(intf_array[target],!read)) begin
+       $sformatf(" I am forcing target %d %s, value %b",target, intf_array[target], value),
+       UVM_LOW);
+    if (!uvm_hdl_force(intf_array[target], value)) begin
       `uvm_error("fi_control_if", $sformatf("Was not able to force %s", intf_array[target]))
     end
   endfunction
