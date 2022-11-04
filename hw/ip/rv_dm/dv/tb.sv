@@ -35,7 +35,11 @@ module tb;
     .clk_i                (clk  ),
     .rst_ni               (rst_n),
 
+    // the differing behavior of lc_hw_debug_en_i and pinmux_hw_debug_en_i
+    // will be tested at the top-level. for the purposes of this TB we connect
+    // both signals to the same life cycle signal.
     .lc_hw_debug_en_i     (rv_dm_if.lc_hw_debug_en),
+    .pinmux_hw_debug_en_i (rv_dm_if.lc_hw_debug_en),
     .scanmode_i           (rv_dm_if.scanmode      ),
     .scan_rst_ni          (rv_dm_if.scan_rst_n    ),
     .ndmreset_req_o       (rv_dm_if.ndmreset_req  ),

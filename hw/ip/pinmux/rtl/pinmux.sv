@@ -35,6 +35,9 @@ module pinmux
   // LC signals for TAP qualification
   input  lc_ctrl_pkg::lc_tx_t      lc_dft_en_i,
   input  lc_ctrl_pkg::lc_tx_t      lc_hw_debug_en_i,
+  input  lc_ctrl_pkg::lc_tx_t      lc_check_byp_en_i,
+  input  lc_ctrl_pkg::lc_tx_t      lc_escalate_en_i,
+  output lc_ctrl_pkg::lc_tx_t      pinmux_hw_debug_en_o,
   // Sampled values for DFT straps
   output dft_strap_test_req_t      dft_strap_test_o,
   // DFT indication to stop tap strap sampling
@@ -270,6 +273,12 @@ module pinmux
     .TargetCfg (TargetCfg)
   ) u_pinmux_strap_sampling (
     .clk_i,
+    // Inside the pinmux, the strap sampling module is the only module using SYS_RST. The reason for
+    // that is that SYS_RST reset will not be asserted during a NDM reset from the RV_DM and hence
+    // it retains some of the TAP selection state during an active debug session where NDM reset
+    // is triggered. To that end, the strap sampling module latches the lc_hw_debug_en_i signal
+    // whenever strap_en_i is asserted. Note that this does not affect the DFT TAP selection, since
+    // we always consume the live lc_dft_en_i signal.
     .rst_ni (rst_sys_ni),
     .scanmode_i,
     // To padring side
@@ -286,6 +295,11 @@ module pinmux
     .strap_en_i,
     .lc_dft_en_i,
     .lc_hw_debug_en_i,
+    .lc_escalate_en_i,
+    .lc_check_byp_en_i,
+    // This is the latched version of lc_hw_debug_en_i. We use it exclusively to gate the JTAG
+    // signals and TAP side of the RV_DM so that RV_DM can remain live during an NDM reset cycle.
+    .pinmux_hw_debug_en_o,
     .dft_strap_test_o,
     .dft_hold_tap_sel_i,
     .lc_jtag_o,

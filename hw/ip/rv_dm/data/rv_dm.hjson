@@ -55,6 +55,13 @@
                asserted when the hardware debug mechanisms are enabled in the system.
                '''
     },
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "pinmux_hw_debug_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    },
     // TBD: should we connect this to the clock manager?
     { struct:  "logic"
       type:    "uni"

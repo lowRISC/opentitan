@@ -583,6 +583,7 @@ module top_earlgrey #(
   jtag_pkg::jtag_rsp_t       pinmux_aon_lc_jtag_rsp;
   jtag_pkg::jtag_req_t       pinmux_aon_rv_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_aon_rv_jtag_rsp;
+  lc_ctrl_pkg::lc_tx_t       pinmux_aon_pinmux_hw_debug_en;
   otp_ctrl_pkg::otp_lc_data_t       otp_ctrl_otp_lc_data;
   otp_ctrl_pkg::lc_otp_program_req_t       lc_ctrl_lc_otp_program_req;
   otp_ctrl_pkg::lc_otp_program_rsp_t       lc_ctrl_lc_otp_program_rsp;
@@ -1907,6 +1908,9 @@ module top_earlgrey #(
       // Inter-module signals
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
+      .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+      .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en),
+      .pinmux_hw_debug_en_o(pinmux_aon_pinmux_hw_debug_en),
       .lc_jtag_o(pinmux_aon_lc_jtag_req),
       .lc_jtag_i(pinmux_aon_lc_jtag_rsp),
       .rv_jtag_o(pinmux_aon_rv_jtag_req),
@@ -2134,6 +2138,7 @@ module top_earlgrey #(
       .jtag_i(pinmux_aon_rv_jtag_req),
       .jtag_o(pinmux_aon_rv_jtag_rsp),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
+      .pinmux_hw_debug_en_i(pinmux_aon_pinmux_hw_debug_en),
       .unavailable_i(1'b0),
       .ndmreset_req_o(rv_dm_ndmreset_req),
       .dmactive_o(),
