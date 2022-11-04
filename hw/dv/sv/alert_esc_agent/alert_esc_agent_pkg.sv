@@ -11,8 +11,8 @@ package alert_esc_agent_pkg;
   import prim_esc_pkg::*;
 
   // 2 clock cycles between two alert handshakes, 1 clock cycle to go back to `Idle` state,
-  // 1 clock cycle for monitor to detect alert.
-  parameter uint ALERT_B2B_DELAY = 4;
+  // 1 clock cycle for monitor to detect alert, and 1 for synchronizer skip.
+  parameter uint ALERT_B2B_DELAY = 5;
 
   typedef class alert_esc_seq_item;
   typedef class alert_esc_agent_cfg;

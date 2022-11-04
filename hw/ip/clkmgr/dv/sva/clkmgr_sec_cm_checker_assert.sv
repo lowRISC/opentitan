@@ -34,17 +34,21 @@ module clkmgr_sec_cm_checker_assert (
 
   // sec_cm_lc_ctrl_clk_handshake_intersig_mubi
   `ASSERT(IoClkBypReqTrue_A,
-          lc_clk_byp_req_i == lc_ctrl_pkg::On |=> ##2 io_clk_byp_req_o == prim_mubi_pkg::MuBi4True,
-          clk_i, reset_or_disable)
+          lc_clk_byp_req_i == lc_ctrl_pkg::On |=> ##[2:3]
+          io_clk_byp_req_o == prim_mubi_pkg::MuBi4True, clk_i, reset_or_disable)
   `ASSERT(IoClkBypReqFalse_A,
-          lc_clk_byp_req_i != lc_ctrl_pkg::On |=> ##2 io_clk_byp_req_o == prim_mubi_pkg::MuBi4False,
-          clk_i, reset_or_disable)
+          lc_clk_byp_req_i != lc_ctrl_pkg::On |=> ##[2:3]
+          io_clk_byp_req_o == prim_mubi_pkg::MuBi4False, clk_i, reset_or_disable)
 
   // sec_cm_clk_handshake_intersig_mubi, sec_cm_div_intersig_mubi
   `ASSERT(LcClkBypAckTrue_A,
           step_down_acks_sync == 2'b11 && io_clk_byp_ack == prim_mubi_pkg::MuBi4True |=> ($past(
               lc_clk_byp_req_i, 3
-          ) == lc_clk_byp_ack_o),
+          ) == lc_clk_byp_ack_o) || ($past(
+              lc_clk_byp_req_i, 4
+          ) != $past(
+              lc_clk_byp_req_i, 3
+          )),
           clk_i, reset_or_disable)
   `ASSERT(LcClkBypAckFalse_A,
           step_down_acks_sync != 2'b11 ||

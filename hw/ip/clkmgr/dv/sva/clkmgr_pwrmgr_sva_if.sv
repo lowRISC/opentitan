@@ -19,10 +19,10 @@ interface clkmgr_pwrmgr_sva_if (
   // Ideally they would use the io_div4 clock, but it gets turned off when io_ip_clk_en
   // goes inactive.
   localparam int FallCyclesMin = 0;
-  localparam int FallCyclesMax = 16;
+  localparam int FallCyclesMax = 20;
 
   localparam int RiseCyclesMin = 0;
-  localparam int RiseCyclesMax = 16;
+  localparam int RiseCyclesMax = 20;
 
   // Assuming io_div4 : 24MHz, AON : 200KHz
   localparam int AonCycleInClki = 120;

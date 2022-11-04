@@ -28,6 +28,11 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   rand int cycles_before_io_clk_byp_ack;
   rand int cycles_before_next_trans;
 
+  rand int flips_before_io_clk_byp_ack;
+  rand int flips_before_div_step_down_req;
+  rand int flips_before_all_clk_byp_ack;
+  rand int cycles_between_flips;
+
   constraint cycles_to_stim_c {
     cycles_before_extclk_ctrl_sel inside {[4 : 20]};
     cycles_before_lc_clk_byp_req inside {[4 : 20]};
@@ -36,6 +41,10 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
     cycles_before_div_step_down_req inside {[3 : 11]};
     cycles_before_io_clk_byp_ack inside {[3 : 11]};
     cycles_before_next_trans inside {[15 : 35]};
+    flips_before_io_clk_byp_ack inside {[0 : 3]};
+    flips_before_div_step_down_req inside {[0 : 3]};
+    flips_before_all_clk_byp_ack inside {[0 : 3]};
+    cycles_between_flips inside {[3 : 5]};
   }
 
   lc_tx_t lc_clk_byp_req;
@@ -48,7 +57,7 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
 
   function void post_randomize();
     if (mubi_mode == ClkmgrMubiLcHand) begin
-      // increase weight of illgal value only in ClkmgrMubiLcHand
+      // increase weight of illegal value only in ClkmgrMubiLcHand
       lc_clk_byp_req = get_rand_lc_tx_val(.t_weight(1), .f_weight(1), .other_weight(14));
     end else begin
       lc_clk_byp_req = get_rand_lc_tx_val(.t_weight(8), .f_weight(2), .other_weight(2));
@@ -75,46 +84,47 @@ class clkmgr_extclk_vseq extends clkmgr_base_vseq;
   endfunction
 
   // Notice only all_clk_byp_req and io_clk_byp_req Mubi4True and Mubi4False cause transitions.
-
   local task delayed_update_all_clk_byp_ack(mubi4_t value, int cycles);
     uvm_reg_data_t rd_data;
 
     if (mubi_mode == ClkmgrMubiHand && value == MuBi4True) begin
-      repeat ($urandom_range(1, 10)) begin
+      repeat (flips_before_all_clk_byp_ack) begin
         exp_all_clk_byp_ack = get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(1));
-        cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+        cfg.clk_rst_vif.wait_clks(cycles_between_flips);
         cfg.clkmgr_vif.update_all_clk_byp_ack(exp_all_clk_byp_ack);
         cfg.clk_rst_vif.wait_clks(4);
         csr_rd(.ptr(ral.extclk_status), .value(rd_data));
-        // csr_rd_check didn't work well for status regiser read check
+        // csr_rd_check didn't work well for status register read check
         `DV_CHECK_EQ(exp_all_clk_byp_ack, rd_data, "extclk_status mismatch")
       end
     end
-    cfg.clk_rst_vif.wait_clks(cycles);
+    cfg.clk_rst_vif.wait_clks(cycles_between_flips);
     cfg.clkmgr_vif.update_all_clk_byp_ack(value);
   endtask
 
   local task delayed_update_div_step_down_req(mubi4_t value, int cycles);
     if (mubi_mode == ClkmgrMubiDiv && value == MuBi4True) begin
-      repeat ($urandom_range(1, 10)) begin
-        cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+      repeat (flips_before_div_step_down_req) begin
+        cfg.clk_rst_vif.wait_clks(cycles_between_flips);
         cfg.clkmgr_vif.update_div_step_down_req(get_rand_mubi4_val(
                                                 .t_weight(0), .f_weight(1), .other_weight(1)));
       end
     end
-    cfg.clk_rst_vif.wait_clks(cycles);
+    cfg.clk_rst_vif.wait_clks(cycles_between_flips);
+    `uvm_info(`gfn, $sformatf("Settling div_step_down_req to 0x%x", value), UVM_MEDIUM)
     cfg.clkmgr_vif.update_div_step_down_req(value);
   endtask
 
   local task delayed_update_io_clk_byp_ack(mubi4_t value, int cycles);
     if (mubi_mode == ClkmgrMubiHand && value == MuBi4True) begin
-      repeat ($urandom_range(1, 10)) begin
-        cfg.clk_rst_vif.wait_clks($urandom_range(1, 10));
+      repeat (flips_before_io_clk_byp_ack) begin
+        cfg.clk_rst_vif.wait_clks(cycles_between_flips);
         cfg.clkmgr_vif.update_io_clk_byp_ack(get_rand_mubi4_val(
                                              .t_weight(0), .f_weight(1), .other_weight(1)));
       end
     end
-    cfg.clk_rst_vif.wait_clks(cycles);
+    cfg.clk_rst_vif.wait_clks(cycles_between_flips);
+    `uvm_info(`gfn, $sformatf("Settling io_clk_byp_ack to 0x%x", value), UVM_MEDIUM)
     cfg.clkmgr_vif.update_io_clk_byp_ack(value);
   endtask
 

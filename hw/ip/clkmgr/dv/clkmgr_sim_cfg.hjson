@@ -55,7 +55,9 @@
   uvm_test_seq: clkmgr_base_vseq
 
   // Disable clearing interrupts since clkmgr doesn't have any.
-  run_opts: ["+do_clear_all_interrupts=0"]
+  run_opts: ["+do_clear_all_interrupts=0",
+             // Enable cdc instrumentation.
+             "+cdc_instrumentation_enabled=1"]
 
   // List of test specifications.
   tests: [
