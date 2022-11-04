@@ -53,9 +53,6 @@ module rstmgr
   // software initiated reset request
   output mubi4_t sw_rst_req_o,
 
-  // cpu related inputs
-  input logic ndmreset_req_i,
-
   // Interface to alert handler
   input alert_pkg::alert_crashdump_t alert_dump_i,
 
@@ -240,25 +237,6 @@ module rstmgr
       .alert_tx_o    ( alert_tx_o[i] )
     );
   end
-
-  ////////////////////////////////////////////////////
-  // Input handling                                 //
-  ////////////////////////////////////////////////////
-
-  logic ndmreset_req_q;
-  logic ndm_req_valid;
-
-  prim_flop_2sync #(
-    .Width(1),
-    .ResetValue('0)
-  ) u_ndm_sync (
-    .clk_i,
-    .rst_ni,
-    .d_i(ndmreset_req_i),
-    .q_o(ndmreset_req_q)
-  );
-
-  assign ndm_req_valid = ndmreset_req_q & (pwr_i.reset_cause == pwrmgr_pkg::ResetNone);
 
   ////////////////////////////////////////////////////
   // Source resets in the system                    //
@@ -1219,7 +1197,6 @@ module rstmgr
 
   logic rst_hw_req;
   logic rst_low_power;
-  logic rst_ndm;
   logic pwrmgr_rst_req;
 
   // there is a valid reset request from pwrmgr
@@ -1230,7 +1207,6 @@ module rstmgr
   // must be updated to account for each individual core.
   assign rst_hw_req    = pwrmgr_rst_req &
                          (pwr_i.reset_cause == pwrmgr_pkg::HwReq);
-  assign rst_ndm       = ndm_req_valid;
   assign rst_low_power = pwrmgr_rst_req &
                          (pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry);
 
@@ -1245,9 +1221,6 @@ module rstmgr
   // Only sw is allowed to clear a reset reason, hw is only allowed to set it.
   assign hw2reg.reset_info.low_power_exit.d  = 1'b1;
   assign hw2reg.reset_info.low_power_exit.de = rst_low_power;
-
-  assign hw2reg.reset_info.ndm_reset.d  = 1'b1;
-  assign hw2reg.reset_info.ndm_reset.de = rst_ndm;
 
   // software issued request triggers the same response as hardware, although it is
   // accounted for differently.
@@ -1266,7 +1239,7 @@ module rstmgr
   ////////////////////////////////////////////////////
 
   logic dump_capture;
-  assign dump_capture =  rst_hw_req | rst_ndm | rst_low_power;
+  assign dump_capture =  rst_hw_req | rst_low_power;
 
   // halt dump capture once we hit particular conditions
   logic dump_capture_halt;

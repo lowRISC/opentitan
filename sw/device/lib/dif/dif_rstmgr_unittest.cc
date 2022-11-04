@@ -111,13 +111,12 @@ class ResetCausesGetTest : public RstmgrTest {
 
     // Number of reset reasons between test and the peripheral match at the
     // time of writing this test.
-    EXPECT_EQ(reset_info_reasons_.size(), 4);
+    EXPECT_EQ(reset_info_reasons_.size(), 3);
   }
 
   const std::vector<bitfield_field32_t> reset_info_reasons_{
       bitfield_bit32_to_field32(RSTMGR_RESET_INFO_POR_BIT),
       bitfield_bit32_to_field32(RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT),
-      bitfield_bit32_to_field32(RSTMGR_RESET_INFO_NDM_RESET_BIT),
       RSTMGR_RESET_INFO_HW_REQ_FIELD,
   };
 };

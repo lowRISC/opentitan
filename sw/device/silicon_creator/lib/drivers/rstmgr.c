@@ -46,7 +46,6 @@ uint32_t rstmgr_reason_get(void) {
   REASON_ASSERT(kRstmgrReasonPowerOn, RSTMGR_RESET_INFO_POR_BIT);
   REASON_ASSERT(kRstmgrReasonLowPowerExit,
                 RSTMGR_RESET_INFO_LOW_POWER_EXIT_BIT);
-  REASON_ASSERT(kRstmgrReasonNonDebugModule, RSTMGR_RESET_INFO_NDM_RESET_BIT);
   REASON_ASSERT(kRstmgrReasonSysrstCtrl,
                 RSTMGR_RESET_INFO_HW_REQ_OFFSET +
                     kTopEarlgreyPowerManagerResetRequestsSysrstCtrlAonRstReq);

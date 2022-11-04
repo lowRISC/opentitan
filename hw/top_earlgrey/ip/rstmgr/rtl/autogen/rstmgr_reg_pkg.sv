@@ -91,10 +91,6 @@ package rstmgr_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } ndm_reset;
-    struct packed {
-      logic        d;
-      logic        de;
     } sw_reset;
     struct packed {
       logic [4:0]  d;
@@ -160,8 +156,8 @@ package rstmgr_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    rstmgr_hw2reg_reset_req_reg_t reset_req; // [98:94]
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [93:82]
+    rstmgr_hw2reg_reset_req_reg_t reset_req; // [96:92]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [91:82]
     rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [81:80]
     rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [79:76]
     rstmgr_hw2reg_alert_info_reg_t alert_info; // [75:44]
@@ -250,7 +246,7 @@ package rstmgr_reg_pkg;
   parameter logic [3:0] RSTMGR_PERMIT [28] = '{
     4'b 0001, // index[ 0] RSTMGR_ALERT_TEST
     4'b 0001, // index[ 1] RSTMGR_RESET_REQ
-    4'b 0011, // index[ 2] RSTMGR_RESET_INFO
+    4'b 0001, // index[ 2] RSTMGR_RESET_INFO
     4'b 0001, // index[ 3] RSTMGR_ALERT_REGWEN
     4'b 0001, // index[ 4] RSTMGR_ALERT_INFO_CTRL
     4'b 0001, // index[ 5] RSTMGR_ALERT_INFO_ATTR
