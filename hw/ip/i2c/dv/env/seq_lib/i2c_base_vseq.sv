@@ -250,9 +250,9 @@ class i2c_base_vseq extends cip_base_vseq #(
       csr_update(ral.ctrl);
       // TODO: more initialization for the host running Target mode
       ral.target_id.address0.set(target_addr0);
-      ral.target_id.mask0.set(7'h3f);
+      ral.target_id.mask0.set(7'h7f);
       ral.target_id.address1.set(target_addr1);
-      ral.target_id.mask1.set(7'h3f);
+      ral.target_id.mask1.set(7'h7f);
       csr_update(ral.target_id);
       // Host timeout control
       ral.host_timeout_ctrl.set(this.host_timeout_ctrl);
@@ -518,4 +518,67 @@ class i2c_base_vseq extends cip_base_vseq #(
      csr_wr(.ptr(ral.stretch_ctrl.en_addr_acq), .value(en_addr_acq));
      csr_wr(.ptr(ral.stretch_ctrl.en_addr_tx), .value(en_addr_tx));
   endtask : program_stretch_ctrl
+
+  // Use for debug only
+  function void print_time_property();
+    `uvm_info(`gfn, $sformatf("timing_prop"), UVM_MEDIUM)
+    // high period of the SCL in clock units
+    `uvm_info(`gfn, $sformatf("thigh:%0d", thigh), UVM_MEDIUM);
+    // low period of the SCL in clock units
+    `uvm_info(`gfn, $sformatf("tlow:%0d", tlow), UVM_MEDIUM);
+    // rise time of both SDA and SCL in clock units
+    `uvm_info(`gfn, $sformatf("t_r:%0d", t_r), UVM_MEDIUM);
+    // fall time of both SDA and SCL in clock units
+    `uvm_info(`gfn, $sformatf("t_f:%0d", t_f), UVM_MEDIUM);
+    // hold time for (repeated) START in clock units
+    `uvm_info(`gfn, $sformatf("thd_sta:%0d", thd_sta), UVM_MEDIUM);
+    // setup time for repeated START in clock units
+    `uvm_info(`gfn, $sformatf("tsu_sta:%0d", tsu_sta), UVM_MEDIUM);
+    // setup time for STOP in clock units
+    `uvm_info(`gfn, $sformatf("tsu_sto:%0d", tsu_sto), UVM_MEDIUM);
+    // data setup time in clock units
+    `uvm_info(`gfn, $sformatf("tsu_dat:%0d", tsu_dat), UVM_MEDIUM);
+    // data hold time in clock units
+    `uvm_info(`gfn, $sformatf("thd_dat:%0d", thd_dat), UVM_MEDIUM);
+    // bus free time between STOP and START in clock units
+    `uvm_info(`gfn, $sformatf("t_buf:%0d", t_buf), UVM_MEDIUM);
+    // max time target may stretch the clock
+    `uvm_info(`gfn, $sformatf("t_timeout:%0d", t_timeout), UVM_MEDIUM);
+    // max time target may stretch the clock
+    `uvm_info(`gfn, $sformatf("e_timeout:%0d", e_timeout), UVM_MEDIUM);
+    // sda unstable time during the posedge_clock
+    `uvm_info(`gfn, $sformatf("t_sda_unstable:%0d", t_sda_unstable), UVM_MEDIUM);
+    // sda interference time during the posedge_clock
+    `uvm_info(`gfn, $sformatf("t_sda_interference:%0d", t_sda_interference), UVM_MEDIUM);
+    // scl interference time during the posedge_clock
+    `uvm_info(`gfn, $sformatf("t_scl_interference:%0d", t_scl_interference), UVM_MEDIUM);
+    `uvm_info(`gfn, $sformatf("error intrs probability"), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("prob_sda_unstable:%0d    ", prob_sda_unstable), UVM_MEDIUM);
+    `uvm_info(`gfn, $sformatf("prob_sda_interference:%0d", prob_sda_interference), UVM_MEDIUM);
+    `uvm_info(`gfn, $sformatf("prob_scl_interference:%0d", prob_scl_interference), UVM_MEDIUM);
+  endfunction
+
+  // Print i2c_item.data_q with RS command notation
+  function void print_wr_data(i2c_item myq[$]);
+    int idx = 1;
+    `uvm_info("seq", $sformatf("q size:%0d", myq.size()), UVM_MEDIUM)
+    foreach(myq[i]) begin
+      if (myq[i].rstart) begin
+        `uvm_info("seq", $sformatf("idx %0d RS rw:%0d", start_cnt++, myq[i].read), UVM_MEDIUM)
+        idx = 1;
+      end else begin
+        `uvm_info("seq", $sformatf("%2d: 0x%2x", idx++, myq[i].wdata), UVM_MEDIUM)
+      end
+    end
+  endfunction
+
+  // set rw bit based on cfg rd/wr pct
+  function bit get_read_write();
+    bit rw;
+    randcase
+      cfg.wr_pct: rw = 0;
+      cfg.rd_pct: rw = 1;
+    endcase
+    return rw;
+  endfunction // get_read_write
 endclass : i2c_base_vseq

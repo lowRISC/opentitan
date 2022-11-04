@@ -16,6 +16,20 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
   tran_type_e trans_type = ReadWrite;
 
+  int        sent_acq_cnt;
+  int        rcvd_acq_cnt;
+
+  // Ratio between write and read
+  int        wr_pct = 1;
+  int        rd_pct = 1;
+
+  // re-start injection rate between 1~10
+  int        rs_pct = 1;
+
+  // dut target mode parameters
+  int        min_data = 1;
+  int        max_data = 60;
+
   `uvm_object_utils_begin(i2c_env_cfg)
     `uvm_field_object(m_i2c_agent_cfg, UVM_DEFAULT)
   `uvm_object_utils_end

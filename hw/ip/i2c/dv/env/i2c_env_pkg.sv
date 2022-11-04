@@ -61,10 +61,13 @@ package i2c_env_pkg;
 
     item.wdata = data[7:0];
     if (data[9:8] == 2'b11) begin
-      // TODO Re start support
+      item.rstart = 1;
     end else begin
       item.start = data[8];
       item.stop = data[9];
+    end
+    if (item.start || item.rcont) begin
+      item.read = data[0];
     end
     return item;
   endfunction // acq2item
