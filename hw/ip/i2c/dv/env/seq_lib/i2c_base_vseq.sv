@@ -57,6 +57,9 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand uint                   prob_sda_interference;
   rand uint                   prob_scl_interference;
 
+  // host timeout ctrl value
+   bit [31:0]                 host_timeout_ctrl = 32'hffff;
+
   // constraints
   constraint addr_c {
     addr inside {[cfg.seq_cfg.i2c_min_addr : cfg.seq_cfg.i2c_max_addr]};
@@ -197,6 +200,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     print_seq_cfg_vars("post-start");
   endtask : post_start
 
+  // TODO remove input arguments
   virtual task initialization(if_mode_e mode = Host);
     wait(cfg.m_i2c_agent_cfg.vif.rst_ni);
     if (mode == Host) begin
@@ -210,15 +214,13 @@ class i2c_base_vseq extends cip_base_vseq #(
         (mode == Host) ? "Host/Target" : "Target/Host"), UVM_LOW)
   endtask : initialization
 
+  // 'cfg.m_i2c_agent_cfg.if_mode' is set by plusarg.
+  // default value of if_mode in block level is 'Device'
   virtual task agent_init(if_mode_e mode = Device);
     i2c_base_seq m_base_seq;
 
-    cfg.m_i2c_agent_cfg.if_mode = mode;
     `uvm_info(`gfn, $sformatf("\n  initialize agent in mode %s", mode.name()), UVM_DEBUG)
-    if (mode == Host) begin
-      // stop re-active seq when the agent switches to Host mode
-      p_sequencer.i2c_sequencer_h.stop_sequences();
-    end else begin
+    if (mode == Device) begin
       m_base_seq = i2c_base_seq::type_id::create("m_base_seq");
       `uvm_info(`gfn, $sformatf("\n  start i2c_sequence %s",
           cfg.m_i2c_agent_cfg.if_mode.name()), UVM_DEBUG)
@@ -252,6 +254,9 @@ class i2c_base_vseq extends cip_base_vseq #(
       ral.target_id.address1.set(target_addr1);
       ral.target_id.mask1.set(7'h3f);
       csr_update(ral.target_id);
+      // Host timeout control
+      ral.host_timeout_ctrl.set(this.host_timeout_ctrl);
+      csr_update(ral.host_timeout_ctrl);
     end
 
     // clear fifos
@@ -356,7 +361,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     // configure i2c_agent_cfg
     cfg.m_i2c_agent_cfg.timing_cfg = timing_cfg;
     `uvm_info(`gfn, $sformatf("\n  cfg.m_i2c_agent_cfg.timing_cfg\n%p",
-        cfg.m_i2c_agent_cfg.timing_cfg), UVM_DEBUG)
+        cfg.m_i2c_agent_cfg.timing_cfg), UVM_MEDIUM)
 
     //*** program ilvl
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fmtilvl)

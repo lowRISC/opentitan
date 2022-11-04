@@ -54,9 +54,9 @@ class i2c_item extends uvm_sequence_item;
     `uvm_field_int(ack,                     UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_int(nack,                    UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_int(read,                    UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
-    `uvm_field_int(rcont,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
+    `uvm_field_int(rcont,                   UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_field_int(nakok,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
-    `uvm_field_enum(drv_type_e,  drv_type,  UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
+    `uvm_field_enum(drv_type_e,  drv_type,  UVM_DEFAULT | UVM_NOCOMPARE)
   `uvm_object_utils_end
 
   `uvm_object_new

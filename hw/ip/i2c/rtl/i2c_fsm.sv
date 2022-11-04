@@ -182,12 +182,16 @@ module i2c_fsm (
     end
   end
 
-  // Clock stretching detection
+  // Clock stretching detection when i2c_ctrl is host
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_stretch
     if (!rst_ni) begin
       stretch <= '0;
-    end else if (scl_temp && !scl_i) begin
+    end else if (host_enable_i && scl_temp && !scl_i) begin
       stretch <= stretch + 1'b1;
+    end else if (target_enable_i && !scl_temp) begin
+      // for target mode, there is no need to increment because
+      // we do not currently support a timeout. (this may change)
+      stretch <= 1'b1;
     end else begin
       stretch <= '0;
     end
@@ -295,7 +299,7 @@ module i2c_fsm (
     end else if (start_det) begin
       bit_idx <= 4'd0;
     end else if (scl_i_q && !scl_i) begin
-      if (bit_ack) bit_idx <= 4'd0;
+      if (bit_ack) bit_idx <= 4'd1;
       else bit_idx <= bit_idx + 1'b1;
     end else begin
       bit_idx <= bit_idx;
@@ -734,6 +738,10 @@ module i2c_fsm (
       end
       // AcquireSrP: target acquires repeated Start or Stop
       AcquireSrP : begin
+        // Since this is either a re-start or a stop, indicate transaction
+        // complete.
+        event_trans_complete_o = 1'b1;
+
         if (start_det) acq_fifo_wdata_o = {1'b1, 1'b1, input_byte};
         else acq_fifo_wdata_o = {1'b1, 1'b0, input_byte};
         acq_fifo_wvalid_o = 1'b1;
@@ -811,8 +819,9 @@ module i2c_fsm (
         if (!host_enable_i && !target_enable_i) state_d = Idle; // Idle unless host is enabled
         else if (host_enable_i) begin
           if (fmt_fifo_rvalid_i) state_d = Active;
-        end else if (target_enable_i) begin
-          if (start_det) state_d = AcquireStart;
+        end else if (target_enable_i && start_det) begin
+          start_det_clr = 1'b1;
+          state_d = AcquireStart;
         end
       end
 
@@ -1054,7 +1063,6 @@ module i2c_fsm (
 
       // AcquireStart: hold start condition
       AcquireStart : begin
-        start_det_clr = 1'b1;
         if (scl_i_q && !scl_i) begin
           state_d = AddrRead;
           input_byte_clr = 1'b1;
@@ -1203,7 +1211,7 @@ module i2c_fsm (
       end
       // AcquireAckHold: target pulls SDA low while SCL is pulled low
       AcquireAckHold : begin
-        if (tcount_q == 20'd1 && bit_ack) begin
+        if (tcount_q == 20'd1) begin
           state_d = AcquireByte;
         end
       end
@@ -1269,7 +1277,9 @@ module i2c_fsm (
     // If a start or stop is detected in target mode, handle it directly
     // instead of being dependent on a specific state, which may lead to
     // certain corner cases.
-    if (target_enable_i && (start_det || stop_det)) begin
+    if (target_enable_i &&
+       ((start_det && !start_det_clr) ||
+        (stop_det && !stop_det_clr))) begin
       state_d = AcquireSrP;
     end
   end
