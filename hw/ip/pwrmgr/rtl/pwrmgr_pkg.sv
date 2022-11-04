@@ -73,7 +73,7 @@ package pwrmgr_pkg;
   typedef enum logic [1:0] {
     ResetNone = 0,     // there is no reset
     LowPwrEntry = 1,   // reset is caused by low power entry
-    HwReq = 2,         // reset is caused by peripheral reset requests (no ndm)
+    HwReq = 2,         // reset is caused by peripheral reset requests
     ResetUndefined = 3 // this should never happen outside of POR
   } reset_cause_e;
 

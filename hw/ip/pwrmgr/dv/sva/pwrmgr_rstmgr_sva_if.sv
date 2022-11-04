@@ -18,6 +18,7 @@ interface pwrmgr_rstmgr_sva_if
   input logic                            sw_rst_req_i,
   input logic                            main_rst_req_i,
   input logic                            esc_rst_req_i,
+  input logic                            ndm_req_i,
   // The inputs from pwrmgr.
   input logic         [PowerDomains-1:0] rst_lc_req,
   input logic         [PowerDomains-1:0] rst_sys_req,
