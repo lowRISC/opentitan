@@ -142,6 +142,10 @@ package lc_ctrl_pkg;
   // !act | act  | act
   // act  | act  | act
   //
+  // Note: due to the nature of the lc_tx_or() function, it is possible that two
+  // non-strictly "act" values may produce a strictly "act" value. If this is
+  // of concern, e.g. if the output is consumed with a strict check on "act",
+  // consider using the prim_lc_or_hardened primitive instead.
   function automatic lc_tx_t lc_tx_or(lc_tx_t a, lc_tx_t b, lc_tx_t act);
     logic [TxWidth-1:0] a_in, b_in, act_in, out;
     a_in = a;
@@ -168,6 +172,11 @@ package lc_ctrl_pkg;
   // !act | act  | !act
   // act  | act  | act
   //
+  // Noite: The lc_tx_and() function does not suffer from the strictness problem
+  // that the lc_tx_or function above does, since only one output value in the
+  // truth table is strictly "act". It can hence be used in most scenarios without issues.
+  // If however the lc_tx_and() function should be strictly rectifying (i.e., only
+  // output "act" or ~"act"), the prim_lc_and_hardened can be used.
   function automatic lc_tx_t lc_tx_and(lc_tx_t a, lc_tx_t b, lc_tx_t act);
     logic [TxWidth-1:0] a_in, b_in, act_in, out;
     a_in = a;
