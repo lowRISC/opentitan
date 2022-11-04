@@ -118,13 +118,3 @@ set_rule_status -rule {E_RST_METASTABILITY E_RDC_METASTABILITY} \
     internal content may not be reset. But, it can be solvable by setting \
     invert to the CSb pad. \
     }
-
-# SwRst influencing SPI_DEVICE
-set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
-  -expression {(ResetFlop=~"*u_spi_device.u_reg.u_control_mode.q*") && \
-    (MetaStableFlop=~"*u_pinmux_aon.dio_oe_retreg*")} \
-  -comment {When SwRst issued, chip is in active mode.}
-set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
-  -expression {(ResetFlop=~"*u_spi_device.u_reg.u_addr_swap_mask.q*") && \
-    (MetaStableFlop=~"*u_pinmux_aon.dio_out_ret*") } \
-  -comment {When SwRst issued, chip is in active mode.}
