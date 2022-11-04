@@ -27,6 +27,9 @@ class i2c_item extends uvm_sequence_item;
   logic [7:0]              wdata;
   logic [7:0]              rdata;
 
+  // Use for debug print
+  string                   pname = "";
+
   constraint fbyte_c     { fbyte      inside {[0 : 127] }; }
   constraint rcont_c     {
      solve read, stop before rcont;
@@ -46,15 +49,15 @@ class i2c_item extends uvm_sequence_item;
     `uvm_field_int(start,                   UVM_DEFAULT)
     `uvm_field_int(stop,                    UVM_DEFAULT)
     `uvm_field_int(wdata,                   UVM_DEFAULT | UVM_NOCOMPARE)
-    `uvm_field_queue_int(data_q,            UVM_DEFAULT)
+    `uvm_field_queue_int(data_q,            UVM_DEFAULT | UVM_NOPRINT)
     `uvm_field_queue_int(fmt_ovf_data_q,    UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_field_int(rdata,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
-    `uvm_field_int(rstart,                  UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
+    `uvm_field_int(rstart,                  UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_field_int(fbyte,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_int(ack,                     UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_int(nack,                    UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
-    `uvm_field_int(read,                    UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
-    `uvm_field_int(rcont,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
+    `uvm_field_int(read,                    UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(rcont,                   UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_field_int(nakok,                   UVM_DEFAULT | UVM_NOPRINT | UVM_NOCOMPARE)
     `uvm_field_enum(drv_type_e,  drv_type,  UVM_DEFAULT | UVM_NOCOMPARE)
   `uvm_object_utils_end
@@ -85,4 +88,19 @@ class i2c_item extends uvm_sequence_item;
     clear_flag();
   endfunction : clear_all
 
+  virtual function string convert2string();
+    string str = "";
+    str = {str, $sformatf("%s:tran_id  = %0d\n", pname, tran_id)};
+    str = {str, $sformatf("%s:bus_op   = %s\n",    pname, bus_op.name)};
+    str = {str, $sformatf("%s:addr     = 0x%2x\n", pname, addr)};
+    str = {str, $sformatf("%s:num_data = %0d\n", pname, num_data)};
+    str = {str, $sformatf("%s:start    = %1b\n", pname, start)};
+    str = {str, $sformatf("%s:stop     = %1b\n", pname, stop)};
+    str = {str, $sformatf("%s:read     = %1b\n", pname, read)};
+    str = {str, $sformatf("%s:rstart   = %1b\n", pname, rstart)};
+    foreach (data_q[i]) begin
+      str = {str, $sformatf("%s:data_q[%0d]=0x%2x\n", pname, i, data_q[i])};
+    end
+    return str;
+  endfunction
 endclass : i2c_item

@@ -53,10 +53,6 @@ class i2c_seq_cfg extends uvm_object;
   // set en_sda_interference to allow sda_interference irq is triggered
   bit en_sda_interference        = 1'b0;
 
-  // dut target mode parameters
-  int min_data = 1;
-  int max_data = 1;
-
   `uvm_object_new
 
 endclass : i2c_seq_cfg

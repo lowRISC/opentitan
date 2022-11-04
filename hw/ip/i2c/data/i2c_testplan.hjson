@@ -252,7 +252,7 @@
               - Read and write transfer matching
             '''
       stage: V1
-      tests: [""]
+      tests: ["i2c_target_smoke"]
     }
     {
       name: target_error_intr
