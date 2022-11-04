@@ -22,7 +22,10 @@ module rv_dm
   input  logic                rst_ni,      // asynchronous reset active low, connect PoR
                                            // here, not the system reset
   // SEC_CM: LC_HW_DEBUG_EN.INTERSIG.MUBI
-  input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i, // Debug module lifecycle enable/disable
+  // HW Debug lifecycle enable signal (live version from the life cycle controller)
+  input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
+  // HW Debug lifecycle enable signal (latched version from pinmux, only used for JTAG/TAP gating)
+  input  lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en_i,
   input  prim_mubi_pkg::mubi4_t scanmode_i,
   input                       scan_rst_ni,
   output logic                ndmreset_req_o,  // non-debug module reset
@@ -144,29 +147,44 @@ module rv_dm
 
   // debug enable gating
   typedef enum logic [3:0] {
-    EnFetch,
-    EnRom,
-    EnSba,
-    // EnDebugReq[NrHarts], <= this unfortunately does not work - SV-LRM mandates the use of
+    LcEnFetch,
+    LcEnRom,
+    LcEnSba,
+    // LcEnDebugReq[NrHarts], <= this unfortunately does not work - SV-LRM mandates the use of
     // integral numbers. Parameters are not allowed in this context.
-    EnDebugReq,
+    LcEnDebugReq,
     // The above literal accommodates NrHarts number of debug requests - so we number the next
     // literal accordingly.
-    EnResetReq = 4 + NrHarts - 1,
-    EnDmiReq,
-    EnJtagIn,
-    EnJtagOut,
-    EnLastPos
-  } rv_dm_en_e;
+    LcEnResetReq = 4 + NrHarts - 1,
+    LcEnLastPos
+  } rv_dm_lc_en_e;
 
-  lc_ctrl_pkg::lc_tx_t [EnLastPos-1:0] lc_hw_debug_en;
+  // debug enable gating
+  typedef enum logic [3:0] {
+    PmEnDmiReq,
+    PmEnJtagIn,
+    PmEnJtagOut,
+    PmEnLastPos
+  } rv_dm_pm_en_e;
+
+  lc_ctrl_pkg::lc_tx_t [LcEnLastPos-1:0] lc_hw_debug_en;
   prim_lc_sync #(
-    .NumCopies(int'(EnLastPos))
+    .NumCopies(int'(LcEnLastPos))
   ) u_lc_en_sync (
     .clk_i,
     .rst_ni,
     .lc_en_i(lc_hw_debug_en_i),
     .lc_en_o(lc_hw_debug_en)
+  );
+
+  lc_ctrl_pkg::lc_tx_t [PmEnLastPos-1:0] pinmux_hw_debug_en;
+  prim_lc_sync #(
+    .NumCopies(int'(PmEnLastPos))
+  ) u_pm_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(pinmux_hw_debug_en_i),
+    .lc_en_o(pinmux_hw_debug_en)
   );
 
   dm::dmi_req_t  dmi_req;
@@ -179,12 +197,12 @@ module rv_dm
   logic ndmreset_req;
   logic ndmreset_req_qual;
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en[EnResetReq]);
+  assign reset_req_en = lc_tx_test_true_strict(lc_hw_debug_en[LcEnResetReq]);
   assign ndmreset_req_o = ndmreset_req_qual & reset_req_en;
 
   logic dmi_en;
   // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign dmi_en = lc_tx_test_true_strict(lc_hw_debug_en[EnDmiReq]);
+  assign dmi_en = lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnDmiReq]);
 
   /////////////////////////////////////////
   // System Bus Access Port (TL-UL Host) //
@@ -213,7 +231,7 @@ module rv_dm
     .tl_d2h_o(sba_tl_h_i_int),
     .tl_h2d_o(sba_tl_h_o),
     .tl_d2h_i(sba_tl_h_i),
-    .lc_en_i (lc_hw_debug_en[EnSba]),
+    .lc_en_i (lc_hw_debug_en[LcEnSba]),
     .err_o   (sba_gate_intg_error),
     .flush_req_i('0),
     .flush_ack_o()
@@ -271,7 +289,7 @@ module rv_dm
   logic [NrHarts-1:0] debug_req;
   for (genvar i = 0; i < NrHarts; i++) begin : gen_debug_req_hart
     // SEC_CM: DM_EN.CTRL.LC_GATED
-    assign debug_req_en[i] = lc_tx_test_true_strict(lc_hw_debug_en[EnDebugReq + i]);
+    assign debug_req_en[i] = lc_tx_test_true_strict(lc_hw_debug_en[LcEnDebugReq + i]);
   end
   assign debug_req_o = debug_req & debug_req_en;
 
@@ -279,8 +297,8 @@ module rv_dm
   jtag_pkg::jtag_req_t jtag_in_int;
   jtag_pkg::jtag_rsp_t jtag_out_int;
 
-  assign jtag_in_int = (lc_tx_test_true_strict(lc_hw_debug_en[EnJtagIn]))  ? jtag_i       : '0;
-  assign jtag_o      = (lc_tx_test_true_strict(lc_hw_debug_en[EnJtagOut])) ? jtag_out_int : '0;
+  assign jtag_in_int = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagIn]))  ? jtag_i : '0;
+  assign jtag_o = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagOut])) ? jtag_out_int : '0;
 
   // Bound-in DPI module replaces the TAP
 `ifndef DMIDirectTAP
@@ -347,13 +365,13 @@ module rv_dm
     .tl_d2h_i(mem_tl_win_d2h_gated),
     .flush_req_i(ndmreset_req),
     .flush_ack_o(ndmreset_req_qual),
-    .lc_en_i (lc_hw_debug_en[EnRom]),
+    .lc_en_i (lc_hw_debug_en[LcEnRom]),
     .err_o   (rom_gate_intg_error)
   );
 
   prim_mubi_pkg::mubi4_t en_ifetch;
   // SEC_CM: DM_EN.CTRL.LC_GATED, EXEC.CTRL.MUBI
-  assign en_ifetch = mubi4_bool_to_mubi(lc_tx_test_true_strict(lc_hw_debug_en[EnFetch]));
+  assign en_ifetch = mubi4_bool_to_mubi(lc_tx_test_true_strict(lc_hw_debug_en[LcEnFetch]));
 
   tlul_adapter_reg #(
     .CmdIntgCheck     (1),
