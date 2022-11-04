@@ -389,9 +389,9 @@ TEST_F(StopTest, BadArgs) { EXPECT_DIF_BADARG(dif_edn_stop(nullptr)); }
 
 TEST_F(StopTest, Stop) {
   EXPECT_READ32(EDN_REGWEN_REG_OFFSET, 1);
-  EXPECT_WRITE32(EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
-  uint32_t ctrl_reg = bitfield_field32_write(
-      EDN_CTRL_REG_RESVAL, EDN_CTRL_CMD_FIFO_RST_FIELD, kMultiBitBool4True);
+  EXPECT_READ32(EDN_CTRL_REG_OFFSET, 0x3);
+  uint32_t ctrl_reg = bitfield_field32_write(0x3, EDN_CTRL_CMD_FIFO_RST_FIELD,
+                                             kMultiBitBool4True);
   EXPECT_WRITE32(EDN_CTRL_REG_OFFSET, ctrl_reg);
   EXPECT_WRITE32(EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
   EXPECT_DIF_OK(dif_edn_stop(&edn_));

@@ -348,12 +348,14 @@ dif_result_t dif_edn_stop(const dif_edn_t *edn) {
   }
   DIF_RETURN_IF_ERROR(check_locked(edn));
 
-  mmio_region_write32(edn->base_addr, EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
-
-  // clear command fifo, see #14506
-  uint32_t reg = bitfield_field32_write(
-      EDN_CTRL_REG_RESVAL, EDN_CTRL_CMD_FIFO_RST_FIELD, kMultiBitBool4True);
+  // Fifo clear is only honored if edn is enabled enabled.
+  uint32_t reg = mmio_region_read32(edn->base_addr, EDN_CTRL_REG_OFFSET);
+  reg = bitfield_field32_write(reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
+                               kMultiBitBool4True);
   mmio_region_write32(edn->base_addr, EDN_CTRL_REG_OFFSET, reg);
+
+  // Disable edn and restore Fifo clear at the same time so that no rogue
+  // command can get in after the clear above.
   mmio_region_write32(edn->base_addr, EDN_CTRL_REG_OFFSET, EDN_CTRL_REG_RESVAL);
 
   return kDifOk;
