@@ -3040,18 +3040,6 @@
           index: -1
         }
         {
-          name: ndmreset_req
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: rstmgr_aon
-          default: ""
-          package: ""
-          top_signame: rv_dm_ndmreset_req
-          index: -1
-        }
-        {
           name: alert_dump
           struct: alert_crashdump
           package: alert_pkg
@@ -8215,7 +8203,6 @@
       ]
       rv_dm.ndmreset_req:
       [
-        rstmgr_aon.ndmreset_req
         pwrmgr_aon.ndmreset_req
       ]
       rstmgr_aon.sw_rst_req:
@@ -16552,18 +16539,6 @@
         inst_name: rstmgr_aon
         default: ""
         top_signame: rstmgr_aon_rst_en
-        index: -1
-      }
-      {
-        name: ndmreset_req
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: rstmgr_aon
-        default: ""
-        package: ""
-        top_signame: rv_dm_ndmreset_req
         index: -1
       }
       {

@@ -23,8 +23,6 @@ module top_earlgrey_bind;
     .rstreqs(u_pwrmgr_aon.pwr_rst_o.rstreqs),
     .main_pd_n(u_pwrmgr_aon.pwr_ast_o.main_pd_n),
     .reset_cause(u_pwrmgr_aon.pwr_rst_o.reset_cause),
-    // This goes directly to rstmgr and can trigger rst_sys_src_n.
-    .ndm_sys_req(u_rstmgr_aon.ndmreset_req_i),
     // The inputs from rstmgr.
     .rst_lc_src_n(u_pwrmgr_aon.pwr_rst_i.rst_lc_src_n),
     .rst_sys_src_n(u_pwrmgr_aon.pwr_rst_i.rst_sys_src_n)

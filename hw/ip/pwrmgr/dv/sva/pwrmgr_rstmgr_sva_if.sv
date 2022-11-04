@@ -23,7 +23,6 @@ interface pwrmgr_rstmgr_sva_if
   input logic         [PowerDomains-1:0] rst_sys_req,
   input logic         [HwResetWidth-1:0] rstreqs,
   input logic                            main_pd_n,
-  input logic                            ndm_sys_req,
   input reset_cause_e                    reset_cause,
   // The inputs from rstmgr.
   input logic         [PowerDomains-1:0] rst_lc_src_n,
