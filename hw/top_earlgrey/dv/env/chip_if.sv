@@ -320,7 +320,7 @@ interface chip_if;
   //
   // The pinmux version of lc_dft_en is used below because it goes through synchronizers.
   wire pinmux_lc_dft_en = (`PINMUX_HIER.u_pinmux_strap_sampling.lc_dft_en[0] == lc_ctrl_pkg::On);
-  wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.strap_en_i;
+  wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.strap_en_q;
   initial begin
     fork
       forever @(pwrmgr_fast_pwr_state_strap_en or pinmux_lc_dft_en) begin
