@@ -16,6 +16,9 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
 
   virtual i2c_if  vif;
 
+  bit     host_scl_start;
+  bit     host_scl_stop;
+
   // this variables can be configured from test
   uint i2c_host_min_data_rw = 1;
   uint i2c_host_max_data_rw = 10;

@@ -25,6 +25,9 @@ interface i2c_if(
 
   string msg_id = "i2c_if";
 
+  clocking cb @(posedge clk_i);
+    input scl_i;
+  endclocking
   //---------------------------------
   // common tasks
   //---------------------------------
@@ -221,10 +224,10 @@ interface i2c_if(
   endtask: get_bit_data
 
   task automatic host_start(ref timing_cfg_t tc);
-      sda_o = 1'b0;
-      wait_for_dly(tc.tHoldStart);
-      scl_o = 1'b0;
-      wait_for_dly(tc.tClockStart);
+    sda_o = 1'b0;
+    wait_for_dly(tc.tHoldStart);
+    scl_o = 1'b0;
+    wait_for_dly(tc.tClockStart);
   endtask: host_start
 
   task automatic host_rstart(ref timing_cfg_t tc);
@@ -238,13 +241,12 @@ interface i2c_if(
   endtask: host_rstart
 
   task automatic host_data(ref timing_cfg_t tc, input bit bit_i);
-      sda_o = bit_i;
-      wait_for_dly(tc.tClockLow);
-      wait_for_dly(tc.tSetupBit);
-      scl_o = 1'b1;
-      wait_for_dly(tc.tClockPulse);
-      scl_o = 1'b0;
-      wait_for_dly(tc.tHoldBit);
+    sda_o = bit_i;
+    wait_for_dly(tc.tClockLow);
+    wait_for_dly(tc.tSetupBit);
+    wait(cb.scl_i === 1'b1);
+    wait_for_dly(tc.tClockPulse);
+    wait_for_dly(tc.tHoldBit);
   endtask: host_data
 
   task automatic host_stop(ref timing_cfg_t tc);
@@ -266,5 +268,15 @@ interface i2c_if(
       scl_o = 1'b0;
       wait_for_dly(tc.tHoldBit);
   endtask: host_nack
+
+  task automatic wait_scl(int iter = 1, timing_cfg_t tc);
+    repeat(iter) begin
+      wait_for_dly(tc.tClockLow);
+      wait_for_dly(tc.tSetupBit);
+      wait(cb.scl_i === 1'b1);
+      wait_for_dly(tc.tClockPulse);
+      wait_for_dly(tc.tHoldBit);
+    end
+  endtask // wait_scl
 
 endinterface : i2c_if

@@ -23,6 +23,16 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     end
   endtask : reset_signals
 
+  virtual task run_phase(uvm_phase phase);
+    fork
+      reset_signals();
+      get_and_drive();
+      begin
+        if (cfg.if_mode == Host) drive_scl();
+      end
+    join
+  endtask
+
   virtual task get_and_drive();
     i2c_item req;
     @(posedge cfg.vif.rst_ni);
@@ -52,22 +62,29 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   // TODO: drive_host_item is WiP
   virtual task drive_host_item(i2c_item req);
-     unique case (req.drv_type)
+    `uvm_info(`gfn, $sformatf("drv: %s", req.drv_type.name), UVM_MEDIUM)
+    unique case (req.drv_type)
       HostStart: begin
         cfg.vif.host_start(cfg.timing_cfg);
+        cfg.host_scl_start = 1;
       end
       HostRStart: begin
         cfg.vif.host_rstart(cfg.timing_cfg);
       end
       HostData: begin
-        for (int i = $bits(wr_data) -1; i >= 0; i--) begin
-          cfg.vif.host_data(cfg.timing_cfg, wr_data[i]);
+        `uvm_info(`gfn, $sformatf("Driving host item h%x", req.wdata), UVM_MEDIUM)
+        for (int i = $bits(req.wdata) -1; i >= 0; i--) begin
+          cfg.vif.host_data(cfg.timing_cfg, req.wdata[i]);
         end
+
+        // wait one more cycle for ack
+        cfg.vif.wait_scl(.iter(1), .tc(cfg.timing_cfg));
       end
       HostNAck: begin
         cfg.vif.host_nack(cfg.timing_cfg);
       end
       HostStop: begin
+        cfg.host_scl_stop = 1;
         cfg.vif.host_stop(cfg.timing_cfg);
       end
       default: begin
@@ -134,4 +151,21 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     cfg.vif.sda_o = 1'b1;
   endtask : release_bus
 
+  task drive_scl();
+    forever begin
+      wait(cfg.host_scl_start);
+      while(!cfg.host_scl_stop) begin
+        cfg.vif.scl_o = 1'b0;
+        cfg.vif.wait_for_dly(cfg.timing_cfg.tClockLow);
+        cfg.vif.wait_for_dly(cfg.timing_cfg.tSetupBit);
+        cfg.vif.scl_o = 1'b1;
+        wait(cfg.vif.cb.scl_i === 1'b1);
+        cfg.vif.wait_for_dly(cfg.timing_cfg.tClockPulse);
+        if (!cfg.host_scl_stop) cfg.vif.scl_o = 1'b0;
+        cfg.vif.wait_for_dly(cfg.timing_cfg.tHoldBit);
+      end
+      cfg.host_scl_start = 0;
+      cfg.host_scl_stop = 0;
+    end
+  endtask
 endclass : i2c_driver
