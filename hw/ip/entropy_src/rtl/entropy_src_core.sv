@@ -66,8 +66,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int ObserveFifoDepth = 64;
   localparam int PreCondWidth = 64;
   localparam int Clog2ObserveFifoDepth = $clog2(ObserveFifoDepth);
-  localparam int EsEnableCopies = 22;
-  localparam int EsEnPulseCopies = 5;
+  localparam int EsEnableCopies = 20;
+  localparam int EsEnPulseCopies = 1;
 
   //-----------------------
   // SHA3parameters
@@ -442,8 +442,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   logic                    stale_seed_processing;
   logic                    main_sm_enable;
-  logic                    data_in_flight;
-  logic                    cond_data_in_flight;
 
   logic                    unused_err_code_test_bit;
   logic                    unused_sha3_state;
@@ -465,6 +463,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
   mubi4_t [EsEnPulseCopies-1:0] mubi_module_en_pulse_fanout;
   logic   [EsEnPulseCopies-1:0] module_en_pulse_fo;
 
+  // A delayed copy of the enable signal, and enable pulse which are needed to cleanly handle any
+  // long-duration operations from the previous run.
+  logic                        es_delayed_enable;
+
   mubi4_t [1:0] mubi_rng_bit_en_fanout;
   mubi4_t mubi_rng_bit_en;
 
@@ -477,11 +479,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic        es_rdata_capt_vld_q, es_rdata_capt_vld_d;
   logic        sha3_msg_rdy_mask_q, sha3_msg_rdy_mask_d;
   mubi4_t      mubi_mod_en_dly_d, mubi_mod_en_dly_q;
-  mubi4_t      sha3_done_d, sha3_done_q;
 
 
   logic        sha3_start_mask_q, sha3_start_mask_d;
-  logic        main_sm_extd_en_n_d, main_sm_extd_en_n_q;
   logic        sha3_flush_q, sha3_flush_d;
   logic [1:0]  fw_ov_corrupted_q, fw_ov_corrupted_d;
 
@@ -498,8 +498,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
       mubi_mod_en_dly_q      <= prim_mubi_pkg::MuBi4False;
       sha3_flush_q           <= '0;
       sha3_start_mask_q      <= '0;
-      main_sm_extd_en_n_q    <= 1'b1;
-      sha3_done_q            <= prim_mubi_pkg::MuBi4False;
       fw_ov_corrupted_q      <= 2'b00;
     end else begin
       ht_failed_q            <= ht_failed_d;
@@ -512,14 +510,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_msg_rdy_mask_q    <= sha3_msg_rdy_mask_d;
       sha3_flush_q           <= sha3_flush_d;
       sha3_start_mask_q      <= sha3_start_mask_d;
-      main_sm_extd_en_n_q    <= main_sm_extd_en_n_d;
       mubi_mod_en_dly_q      <= mubi_mod_en_dly_d;
-      sha3_done_q            <= sha3_done_d;
       fw_ov_corrupted_q      <= fw_ov_corrupted_d;
     end
   end
 
-  assign sha3_done_d = sha3_done;
   assign fw_ov_sha3_disable_pulse = fw_ov_sha3_start_pfe_q & ~fw_ov_sha3_start_pfe;
 
   //--------------------------------------------
@@ -529,11 +524,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // Allow writes only if
   // 1. SW_REGUPD is true,
   // 2. The DUT is disabled
-  //    - This includes also a brief (less tban 4-cycle) post-disable period where the
-  //      window_cntr is enabled.  Hence the extra term of data_in_flight
+  //   Block writes if enabled or if internal activities are still in progress (as indicated by
+  //   es_delayed_enable).
   assign es_hw_regwen = reg2hw.sw_regupd.q &&
                         mubi4_test_false_loose(mubi_module_en_raw_fanout[0]) &&
-                        !data_in_flight;
+                        !es_delayed_enable;
   assign hw2reg.regwen.de = 1'b1;
   assign hw2reg.regwen.d = es_hw_regwen;
 
@@ -607,6 +602,19 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni,
     .mubi_i(mubi_module_en_pulse),
     .mubi_o(mubi_module_en_pulse_fanout)
+  );
+
+  entropy_src_enable_delay u_enable_delay (
+    .clk_i,
+    .rst_ni,
+    .enable_i(es_enable_fo[0]),
+    .esrng_fifo_not_empty_i(sfifo_esrng_not_empty),
+    .esbit_fifo_not_empty_i(pfifo_esbit_not_empty),
+    .postht_fifo_not_empty_i(pfifo_postht_not_empty),
+    .cs_aes_halt_req_i(cs_aes_halt_req),
+    .sha3_done_i(sha3_done),
+    .bypass_mode_i(es_bypass_mode),
+    .enable_o(es_delayed_enable)
   );
 
   mubi4_t mubi_fips_en;
@@ -729,8 +737,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //       It is assumed that the source is in a different time domain,
   //       and requires the AsyncOn parameter to be set.
 
-  assign entropy_src_rng_o.rng_enable = es_enable_fo[0] &&
-                                        main_sm_extd_en_n_q &&
+  assign entropy_src_rng_o.rng_enable = es_enable_fo[1] &&
+                                        es_delayed_enable &&
                                         sfifo_esrng_not_full;
 
   assign es_rng_src_valid = entropy_src_rng_i.rng_valid;
@@ -808,11 +816,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   // set the interrupt event when enabled
-  assign event_es_entropy_valid = pfifo_swread_not_empty && es_enable_fo[1];
+  assign event_es_entropy_valid = pfifo_swread_not_empty && es_enable_fo[2];
 
 
   // set the interrupt sources
-  assign event_es_fatal_err = (es_enable_fo[2] &&
+  assign event_es_fatal_err = (es_enable_fo[3] &&
                                  (sfifo_esrng_err_sum   ||
                                   sfifo_observe_err_sum ||
                                   sfifo_esfinal_err_sum ||
@@ -931,7 +939,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.debug_status.sha3_err.d = sha3_err_q;
 
   assign sha3_err_d =
-         es_enable_fo[3] ? 1'b0 :
+         es_enable_fo[4] ? 1'b0 :
          {|sha3_err} ? 1'b1 :
          sha3_err_q;
 
@@ -973,9 +981,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // fifo controls
-  assign sfifo_esrng_push = (es_enable_fo[4] && main_sm_extd_en_n_q && es_rng_src_valid);
+  assign sfifo_esrng_push = (es_enable_fo[5] && es_delayed_enable && es_rng_src_valid);
 
-  assign sfifo_esrng_clr   = module_en_pulse_fo[0];
+  assign sfifo_esrng_clr   = ~es_delayed_enable;
   assign sfifo_esrng_wdata = es_rng_bus;
   assign sfifo_esrng_pop   = sfifo_esrng_not_empty & (rng_bit_en ? pfifo_esbit_not_full :
                                                                    pfifo_postht_not_full );
@@ -1030,7 +1038,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   assign pfifo_esbit_push = rng_bit_en && sfifo_esrng_not_empty;
-  assign pfifo_esbit_clr = module_en_pulse_fo[1];
+  assign pfifo_esbit_clr = ~es_delayed_enable;
   assign pfifo_esbit_pop = rng_bit_en && pfifo_esbit_not_empty && pfifo_postht_not_full;
   assign pfifo_esbit_wdata =
          (rng_bit_sel == 2'h0) ? sfifo_esrng_rdata[0] :
@@ -1052,7 +1060,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign markov_active = 1'b1;
   assign extht_active = 1'b1;
 
-  assign health_test_clr = module_en_pulse_fo[2];
+  // Only reset health tests on re-enable
+  assign health_test_clr = module_en_pulse_fo[0];
 
   assign health_test_fips_window = reg2hw.health_test_windows.fips_window.q;
   assign health_test_bypass_window = reg2hw.health_test_windows.bypass_window.q;
@@ -1470,7 +1479,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   ) u_prim_count_window_cntr (
     .clk_i,
     .rst_ni,
-    .clr_i(!(es_enable_fo[5] || data_in_flight)),
+    .clr_i(!es_delayed_enable),
     .set_i(health_test_done_pulse),
     .set_cnt_i(HalfRegWidth'(0)),
     .incr_en_i(health_test_esbus_vld),
@@ -1480,10 +1489,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .cnt_next_o(),
     .err_o(window_cntr_err)
   );
-
-  // Keep the counter running so long as there is still data flowing up to the health checks
-  assign data_in_flight = (sfifo_esrng_pop  | pfifo_esbit_pop |
-                           pfifo_postht_pop | pfifo_precon_pop );
 
   // Window wrap condition
   assign health_test_done_pulse = (window_cntr >= health_test_window);
@@ -2290,7 +2295,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // is no benefit in this mode to clearing the SHA FIFOs at the same time we clear the HT
   // statistics.
 
-  assign pfifo_postht_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[7] : module_en_pulse_fo[3];
+  assign pfifo_postht_clr = fw_ov_mode_entropy_insert ? !es_enable_fo[7] : !es_delayed_enable;
   assign pfifo_postht_pop = fw_ov_mode_entropy_insert ? pfifo_postht_not_empty :
                             es_bypass_mode ? pfifo_bypass_push :
                             pfifo_precon_push & pfifo_precon_not_full;
@@ -2407,8 +2412,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // of knowing if a word will get stalled by SHA backpressure.  This is not a problem however
   // as the reset is only important for clearing 32-bit half-SHA-words.
   assign pfifo_precon_clr = fw_ov_mode_entropy_insert ?
-                            !es_enable_fo[10] & !pfifo_precon_not_empty :
-                            module_en_pulse_fo[4] & !pfifo_precon_not_empty;
+                            ~es_enable_fo[10] & ~pfifo_precon_not_empty :
+                            ~es_delayed_enable & ~pfifo_precon_not_empty;
 
   assign pfifo_precon_pop = (pfifo_cond_push && sha3_msgfifo_ready);
 
@@ -2622,17 +2627,10 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign main_stage_push = main_stage_push_raw & !sha3_flush_q & !fw_ov_corrupted;
 
-  // If the SHA3 processing endures all the way through a disable pulse, the SM may miss
-  // disable events entirely.  This extends any disable pulses until they can be seen
-  // by the state machine.
-  assign main_sm_extd_en_n_d = cs_aes_halt_req && !es_enable_fo[13] ? 1'b0 :
-                               mubi4_test_true_strict(sha3_done_q) ? 1'b1 :
-                               main_sm_extd_en_n_q;
-
-  // Also, we keep the main state machine enabled while there is SHA data in flight
-  assign cond_data_in_flight = ~es_bypass_mode & data_in_flight;
-
-  assign main_sm_enable = (es_enable_fo[14] | cond_data_in_flight) & main_sm_extd_en_n_q;
+  // Use the delayed enable signal to keep the Main SM enabled while Data is in flight, and
+  // to make sure it receives a delayed disable pulse after finishing any final SHA processing
+  // commands
+  assign main_sm_enable = es_delayed_enable;
 
   // The main SM can also generate redundant start pulses. After data can be pushed into SHA,
   // the SM can be disabled leaving entropy in the SHA sponge.  This is fine, but the SM will
@@ -2666,7 +2664,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .err_o          ()
   );
 
-  assign fips_compliance = !es_bypass_mode && es_enable_fo[15] && !rng_bit_en;
+  assign fips_compliance = !es_bypass_mode && es_enable_fo[13] && !rng_bit_en;
 
   // fifo controls
   assign sfifo_esfinal_push_enable =
@@ -2674,7 +2672,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          main_stage_push;
 
   assign sfifo_esfinal_push = sfifo_esfinal_not_full && sfifo_esfinal_push_enable;
-  assign sfifo_esfinal_clr  = !es_enable_fo[16];
+  assign sfifo_esfinal_clr  = !es_enable_fo[14];
   assign sfifo_esfinal_wdata = {fips_compliance,final_es_data};
   assign sfifo_esfinal_pop = es_route_to_sw ? pfifo_swread_push :
          es_hw_if_fifo_pop;
@@ -2698,7 +2696,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   entropy_src_ack_sm u_entropy_src_ack_sm (
     .clk_i            (clk_i),
     .rst_ni           (rst_ni),
-    .enable_i         (es_enable_fo[17]),
+    .enable_i         (es_enable_fo[15]),
     .req_i            (es_hw_if_req),
     .ack_o            (es_hw_if_ack),
     .fifo_not_empty_i (sfifo_esfinal_not_empty && !es_route_to_sw),
@@ -2722,7 +2720,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign es_rdata_capt_d = es_rdata_capt_vld ? sfifo_esfinal_rdata[63:0] : es_rdata_capt_q;
 
   assign es_rdata_capt_vld_d =
-         !es_enable_fo[18] ? 1'b0 :
+         !es_enable_fo[16] ? 1'b0 :
          es_rdata_capt_vld ? 1'b1 :
          es_rdata_capt_vld_q;
 
@@ -2755,11 +2753,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign pfifo_swread_push = es_route_to_sw && pfifo_swread_not_full && sfifo_esfinal_not_empty;
   assign pfifo_swread_wdata = esfinal_data;
 
-  assign pfifo_swread_clr = !(es_enable_fo[19] && es_data_reg_rd_en);
-  assign pfifo_swread_pop =  es_enable_fo[20] && sw_es_rd_pulse;
+  assign pfifo_swread_clr = !(es_enable_fo[17] && es_data_reg_rd_en);
+  assign pfifo_swread_pop =  es_enable_fo[18] && sw_es_rd_pulse;
 
   // set the es entropy to the read reg
-  assign es_data_reg_rd_en = es_enable_fo[21] && efuse_es_sw_reg_en && entropy_data_reg_en_pfe;
+  assign es_data_reg_rd_en = es_enable_fo[19] && efuse_es_sw_reg_en && entropy_data_reg_en_pfe;
   assign hw2reg.entropy_data.d = es_data_reg_rd_en ? pfifo_swread_rdata : '0;
   assign sw_es_rd_pulse = es_data_reg_rd_en && reg2hw.entropy_data.re;
 
