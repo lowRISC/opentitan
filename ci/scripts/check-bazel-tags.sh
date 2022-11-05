@@ -6,37 +6,53 @@
 
 set -e
 
-untagged=$(./bazelisk.sh query "rdeps(//..., //hw:verilator) except attr(tags, '[\\[ ](verilator|manual)[,\\]]', //...)" --output=label_kind)
-if [[ ${untagged} ]]; then # Check that all targets that depend on verilator are tagged
-  echo "Error:";
-  echo "${untagged}"|sed 's/^/    /';
-  echo "Target(s) above depend(s) on //hw:verilator, please tag it with verilator or manual.";
-  exit 1
-fi
+# The list of bazel tags is represented as a string and checked with a regex
+exact_regex () {
+  echo "[\\[ ]${1}[,\\]]"
+}
 
-untagged=$(./bazelisk.sh query "rdeps(//..., kind('bitstream_splice', //...)) except attr(tags, '[\\[ ](cw310_rom|cw310_test_rom|vivado|manual)[,\\]]', //...)" --output=label_kind)
-if [[ ${untagged} ]]; then # Check that all targets that depend on vivado are tagged
-  echo "Error:";
-  echo "${untagged}"|sed 's/^/    /';
-  echo "Target(s) above depend(s) on a bitstream_splice and isn't available in a cache."
-  echo "Please tag it with vivado or manual.";
+check_empty () {
+if [[ ${1} ]]; then
+  echo "Error:"
+  echo "${1}"|sed 's/^/    /';
+  echo "$2"
   exit 1
 fi
+}
 
-mistagged=$(./bazelisk.sh query "rdeps(attr(tags, '[\\[ ]cw310_test_rom[,\\]]',//...), kind('bitstream_splice', //...) except deps(//hw/bitstream:test_rom))" --output=label_kind)
-if [[ ${mistagged} ]]; then # Check that all cw310_test_rom tagged targets don't depend on other bistream_splices
-  echo "Error:";
-  echo "${mistagged}"|sed 's/^/    /';
-  echo "Target(s) above depend(s) on a bitstream_splice other than those used to generate the test_rom.";
-  echo "Please tag as cw310_other if you intended to use another bitstream_splice.";
-  exit 1
-fi
+# This check ensures OpenTitan software can be built with a wildcard without
+# waiting for Verilator using --build_tag_filters=-verilator, it also enables
+# verilator tests to be filtered out.
+untagged=$(./bazelisk.sh query \
+  "rdeps(//..., //hw:verilator) except attr(tags, '$(exact_regex "(verilator|manual)")', //...)" \
+  --output=label_kind)
+check_empty "${untagged}" \
+"Target(s) above depend(s) on //hw:verilator, please tag it with verilator or manual."
 
-mistagged=$(./bazelisk.sh query "rdeps(attr(tags, '[\\[ ]cw310_rom[,\\]]',//...), kind('bitstream_splice', //...) except deps(//hw/bitstream:rom))" --output=label_kind)
-if [[ ${mistagged} ]]; then # Check that all cw310_rom tagged targets don't depend on other bitstream_splices
-  echo "Error:";
-  echo "${mistagged}"|sed 's/^/    /';
-  echo "Above target(s) depend(s) on a bitstream_splice other than those used to generate the rom.";
-  echo "Please tag as cw310_other if you intend to use another bitstream_splice.";
-  exit 1
-fi
+# This check ensures Opentitan software can be built with wildcards in
+# environments that don't have vivado or vivado tools installed by using
+# --build_tag_filters=-vivado.
+untagged=$(./bazelisk.sh query \
+  "rdeps(//..., kind('bitstream_splice', //...)) except attr(tags, '$(exact_regex "(cw310_rom|cw310_test_rom|vivado|manual)")', //...)" \
+  --output=label_kind)
+check_empty "${untagged}" \
+"Target(s) above depend(s) on a bitstream_splice and isn't available in a cache.
+Please tag it with vivado or manual."
+
+# This check ensures cw310 users may group tests that depend on the cached
+# cw310_test_rom bitstreams.
+mistagged=$(./bazelisk.sh query \
+  "rdeps(attr(tags, '$(exact_regex cw310_test_rom)',//...), kind('bitstream_splice', //...) except deps(//hw/bitstream:test_rom))" \
+  --output=label_kind)
+check_empty "${mistagged}" \
+"Target(s) above depend(s) on a bitstream_splice other than those used to generate the test_rom.
+Please tag as cw310_other if you intended to use another bitstream."
+
+# This check ensures cw310 users may group tests that depend on the cached
+# cw310_rom bitstreams.
+mistagged=$(./bazelisk.sh query \
+  "rdeps(attr(tags, '$(exact_regex cw310_rom)',//...), kind('bitstream_splice', //...) except deps(//hw/bitstream:rom))" \
+  --output=label_kind)
+check_empty "${mistagged}" \
+"Above target(s) depend(s) on a bitstream_splice other than those used to generate the rom.
+Please tag as cw310_other if you intend to use another bitstream."
