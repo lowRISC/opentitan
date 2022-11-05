@@ -35,6 +35,7 @@ filesets:
       - rtl/entropy_src_adaptp_ht.sv
       - rtl/entropy_src_bucket_ht.sv
       - rtl/entropy_src_markov_ht.sv
+      - rtl/entropy_src_enable_delay.sv
       - rtl/entropy_src_core.sv
       - rtl/entropy_src.sv
     file_type: systemVerilogSource
