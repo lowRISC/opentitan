@@ -27,10 +27,10 @@ module pwrmgr_sec_cm_checker_assert (
   input prim_mubi_pkg::mubi4_t rom_ctrl_good_i
 );
 
-  bit   disable_sva;
-  bit   reset_or_disable;
-  bit   esc_reset_or_disable;
-  bit   slow_reset_or_disable;
+  bit disable_sva;
+  bit reset_or_disable;
+  bit esc_reset_or_disable;
+  bit slow_reset_or_disable;
 
   always_comb reset_or_disable = !rst_ni || disable_sva;
   always_comb esc_reset_or_disable = !rst_esc_ni || disable_sva;
@@ -42,16 +42,15 @@ module pwrmgr_sec_cm_checker_assert (
     do begin
       if (state == legal_st) return 1'b1;
       legal_st = legal_st.next();
-    end
-    while (legal_st != legal_st.first());
+    end while (legal_st != legal_st.first());
     return 1'b0;
   endfunction
 
-`define ASYNC_ASSERT(_name, _prop, _sigs, _rst) \
-  _name: assert property (@(_sigs) disable iff ((_rst) !== '0) (_prop)) \
-         else begin\
-           `ASSERT_ERROR(_name)\
-         end
+  `define ASYNC_ASSERT(_name, _prop, _sigs, _rst)                         \
+    _name: assert property (@(_sigs) disable iff ((_rst) !== '0) (_prop)) \
+           else begin                                                     \
+             `ASSERT_ERROR(_name)                                         \
+           end
 
   // Assuming lc_dft_en_i and lc_hw_debug_en_i are asynchronous
   // rom_intg_chk_dis only allows two states.
@@ -86,14 +85,15 @@ module pwrmgr_sec_cm_checker_assert (
                 (rom_intg_chk_ok | rom_intg_chk_dis | rom_ctrl_done_i | rom_ctrl_good_i),
                 reset_or_disable)
 
-`undef ASYNC_ASSERT
+  `undef ASYNC_ASSERT
 
   // pwr_rst_o.rstreqs checker
   // sec_cm_esc_rx_clk_bkgn_chk, sec_cm_esc_rx_clk_local_esc
   // if esc_timeout, rstreqs[ResetEscIdx] should be asserted
   `ASSERT(RstreqChkEsctimeout_A,
-          $rose(slow_esc_rst_req) ##1 slow_esc_rst_req |->
-          ##[0:2] pwr_rst_o.rstreqs[pwrmgr_pkg::ResetEscIdx],
+          $rose(
+              slow_esc_rst_req
+          ) ##1 slow_esc_rst_req |-> ##[0:2] pwr_rst_o.rstreqs[pwrmgr_pkg::ResetEscIdx],
           clk_i, reset_or_disable)
 
 // sec_cm_fsm_terminal
@@ -117,8 +117,7 @@ module pwrmgr_sec_cm_checker_assert (
 // sec_cm_main_pd_rst_local_esc
 // if power is up and rst_main_ni goes low, pwr_rst_o.rstreqs[ResetMainPwrIdx] should be asserted
   `ASSERT(RstreqChkMainpd_A,
-          slow_mp_rst_req |->
-          ##[0:5] pwr_rst_o.rstreqs[pwrmgr_pkg::ResetMainPwrIdx],
-          clk_i, reset_or_disable)
+          slow_mp_rst_req |-> ##[0:5] pwr_rst_o.rstreqs[pwrmgr_pkg::ResetMainPwrIdx], clk_i,
+          reset_or_disable)
 
 endmodule // pwrmgr_sec_cm_checker_assert

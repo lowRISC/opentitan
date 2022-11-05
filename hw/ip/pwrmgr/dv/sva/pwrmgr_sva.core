@@ -11,11 +11,11 @@ filesets:
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:ip:pwrmgr
       - lowrisc:dv:clkmgr_pwrmgr_sva_if
+      - lowrisc:dv:pwrmgr_ast_sva_if
       - lowrisc:dv:pwrmgr_rstmgr_sva_if
     files:
       - pwrmgr_bind.sv
       - pwrmgr_unit_bind.sv
-      - pwrmgr_ast_sva_if.sv
       - pwrmgr_clock_enables_sva_if.sv
       - pwrmgr_sec_cm_checker_assert.sv
     file_type: systemVerilogSource

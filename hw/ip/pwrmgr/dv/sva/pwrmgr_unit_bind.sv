@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This is split off from pwrmgr_bind so that we can instantiate that in chip top, but
-// specialize the bind of pwrmgr_rstmgr_sva_if for top_earlgrey, which is needed in order
-// to hook up ndm_sys_req because pwrmgr doesn't see it.
+// This is split off from pwrmgr_bind so that we can instantiate that in top-level, and
+// specialize the SVA interfaces here for top_earlgrey.
 module pwrmgr_unit_bind;
 
+  // This is different at top level because when bound to top_earlgrey it can use the real
+  // ndm_sys_req.
   bind pwrmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
     .clk_i,
     .rst_ni,
@@ -31,12 +32,16 @@ module pwrmgr_unit_bind;
     .rst_sys_src_n(pwr_rst_i.rst_sys_src_n)
   );
 
+  // This is different for top_level because when bound to top_earlgray it can connect
+  // por_n_i[1] to por_d0_ni, and can hook up the clocks.
   bind pwrmgr pwrmgr_ast_sva_if #(
     .CheckClocks(1'b0)
   ) pwrmgr_ast_sva_if (
     .clk_slow_i,
     .rst_slow_ni,
     // Leave clk_*_i inputs unconnected as they are not used by assertions in unit tests.
+    // At unit level we don't trigger power glitches: they involve ast, pwrmgr, and rstmgr.
+    .por_d0_ni('1),
     // The pwrmgr outputs.
     .pwr_ast_o,
     // The pwrmgr input.

@@ -9,9 +9,9 @@ module pwrmgr_bind;
   ) tlul_assert_device (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 
   // In top-level testbench, do not bind the csr_assert_fpv to reduce simulation time.
-  `ifndef TOP_LEVEL_DV
+`ifndef TOP_LEVEL_DV
   bind pwrmgr pwrmgr_csr_assert_fpv pwrmgr_csr_assert (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
-  `endif
+`endif
 
   // Clock control assertions.
   bind pwrmgr pwrmgr_clock_enables_sva_if pwrmgr_clock_enables_sva_if (
