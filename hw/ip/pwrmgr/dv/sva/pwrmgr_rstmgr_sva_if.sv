@@ -32,13 +32,8 @@ interface pwrmgr_rstmgr_sva_if
 
   // Number of cycles for the LC/SYS reset handshake.
   localparam int MIN_LC_SYS_CYCLES = 0;
-  localparam int MAX_LC_SYS_CYCLES = 30;
+  localparam int MAX_LC_SYS_CYCLES = 150;
   `define LC_SYS_CYCLES ##[MIN_LC_SYS_CYCLES:MAX_LC_SYS_CYCLES]
-
-  // Number of cycles for the output resets.
-  localparam int MIN_RST_CYCLES = 0;
-  localparam int MAX_RST_CYCLES = 4;
-  `define RST_CYCLES ##[MIN_RST_CYCLES:MAX_RST_CYCLES]
 
   // output reset cycle with a clk enable disable
   localparam int MIN_MAIN_RST_CYCLES = 0;
@@ -78,11 +73,6 @@ interface pwrmgr_rstmgr_sva_if
     end
 `endif
 
-  logic [PowerDomains-1:0] actual_sys_req;
-  always_comb begin
-    actual_sys_req = rst_sys_req | {PowerDomains{ndm_sys_req && reset_cause == ResetNone}};
-  end
-
   // Lc and Sys handshake: pwrmgr rst_*_req causes rstmgr rst_*_src_n
   for (genvar pd = 0; pd < PowerDomains; ++pd) begin : gen_assertions_per_power_domains
     `ASSERT(LcHandshakeOn_A, rst_lc_req[pd] |-> `LC_SYS_CYCLES !rst_lc_req[pd] || !rst_lc_src_n[pd],
@@ -90,10 +80,10 @@ interface pwrmgr_rstmgr_sva_if
     `ASSERT(LcHandshakeOff_A, !rst_lc_req[pd] |-> `LC_SYS_CYCLES rst_lc_req[pd] || rst_lc_src_n[pd],
             clk_i, reset_or_disable)
     `ASSERT(SysHandshakeOn_A,
-            actual_sys_req[pd] |-> `LC_SYS_CYCLES !actual_sys_req[pd] || !rst_sys_src_n[pd], clk_i,
+            rst_sys_req[pd] |-> `LC_SYS_CYCLES !rst_sys_req[pd] || !rst_sys_src_n[pd], clk_i,
             reset_or_disable)
     `ASSERT(SysHandshakeOff_A,
-            !actual_sys_req[pd] |-> `LC_SYS_CYCLES actual_sys_req[pd] || rst_sys_src_n[pd], clk_i,
+            !rst_sys_req[pd] |-> `LC_SYS_CYCLES rst_sys_req[pd] || rst_sys_src_n[pd], clk_i,
             reset_or_disable)
   end : gen_assertions_per_power_domains
   `undef LC_SYS_CYCLES
@@ -140,15 +130,13 @@ interface pwrmgr_rstmgr_sva_if
   `ASSERT(EscRstOn_A,
           $rose(
               esc_rst_req_i
-          ) |-> `ESC_RST_CYCLES rstreqs[ResetEscIdx], clk_i,
-          reset_or_disable || !check_rstreqs_en)
+          ) |-> `ESC_RST_CYCLES rstreqs[ResetEscIdx], clk_i, reset_or_disable || !check_rstreqs_en)
   `ASSERT(EscRstOff_A,
           $fell(
               esc_rst_req_i
-          ) |-> `ESC_RST_CYCLES !rstreqs[ResetEscIdx], clk_i,
-          reset_or_disable || !check_rstreqs_en)
+          ) |-> `ESC_RST_CYCLES !rstreqs[ResetEscIdx], clk_i, reset_or_disable || !check_rstreqs_en)
   // Software initiated resets are not sent to rstmgr since they originated there.
-  `undef RST_CYCLES
+  `undef LC_SYS_CYCLES
   `undef MAIN_RST_CYCLES
   `undef ESC_RST_CYCLES
 endinterface

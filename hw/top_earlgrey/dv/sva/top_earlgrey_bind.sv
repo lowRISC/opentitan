@@ -30,7 +30,7 @@ module top_earlgrey_bind;
     .rst_sys_src_n(u_pwrmgr_aon.pwr_rst_i.rst_sys_src_n)
   );
 
-  bind pwrmgr pwrmgr_ast_sva_if #(
+  bind top_earlgrey pwrmgr_ast_sva_if #(
     .CheckClocks(1'b1)
   ) pwrmgr_ast_sva_if (
     .clk_slow_i(u_pwrmgr_aon.clk_slow_i),
@@ -38,10 +38,11 @@ module top_earlgrey_bind;
     .clk_main_i(u_clkmgr_aon.clk_main_i),
     .clk_io_i(u_clkmgr_aon.clk_io_i),
     .clk_usb_i(u_clkmgr_aon.clk_usb_i),
+    .por_d0_ni(por_n_i[1]),
     // The pwrmgr outputs.
-    .pwr_ast_o,
+    .pwr_ast_o(u_pwrmgr_aon.pwr_ast_o),
     // The pwrmgr input.
-    .pwr_ast_i
+    .pwr_ast_i(u_pwrmgr_aon.pwr_ast_i)
   );
 
 endmodule
