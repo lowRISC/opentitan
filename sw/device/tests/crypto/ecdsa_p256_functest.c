@@ -95,7 +95,7 @@ bool sign_then_verify_test(void) {
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
-  entropy_testutils_boot_mode_init();
+  entropy_testutils_auto_mode_init();
 
   CHECK(compute_digest() == kHmacOk);
 
