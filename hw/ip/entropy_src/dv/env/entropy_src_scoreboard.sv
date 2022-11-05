@@ -34,6 +34,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   int observe_fifo_drops   = 0;
 
   bit dut_pipeline_enabled = 0;
+  bit regwen_pending = 0;
   bit ht_fips_mode = 0;
 
   // The FW_OV pipeline is controlled by two variables: SHA3_START and MODULE_ENABLE
@@ -914,7 +915,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                               (ral.conf.entropy_data_reg_enable.get_mirrored_value() == MuBi4True);
 
     module_enabled = (ral.module_enable.module_enable.get_mirrored_value() == MuBi4True);
-
     match_found = 0;
 
     if(!entropy_data_reg_enable || !module_enabled) begin
@@ -1016,6 +1016,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       repack_idx_fw_ov = 0;
       intr_test = '0;
       intr_test_active = 0;
+      regwen_pending = 0;
     end
 
     if (rst_type == Disable) begin
@@ -1217,9 +1218,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
     string msg;
 
-    sw_regupd = `gmv(ral.sw_regupd.sw_regupd);
-    module_enabled = `gmv(ral.module_enable.module_enable) == MuBi4True;
-    dut_reg_locked = !sw_regupd || module_enabled;
+    dut_reg_locked = ~`gmv(ral.regwen.regwen);
 
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
@@ -1235,7 +1234,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        // We do not predict the interrupt_state, as there are two many
+        // We do not predict the interrupt_state, as there are too many
         // asynchronous events.
         // We also specially control the clearing of these bits
         do_read_check = 1'b0;
@@ -1425,17 +1424,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                intr_test_active = 1;
             end
             "sw_regupd": begin
-              bit disabled, sw_regupd;
-              sw_regupd = ral.sw_regupd.sw_regupd.get_mirrored_value();
-              disabled  = (ral.module_enable.module_enable.get_mirrored_value() != MuBi4True);
-              `DV_CHECK_FATAL(ral.regwen.regwen.predict(.value(sw_regupd && disabled),
-                                                        .kind(UVM_PREDICT_READ)));
+              bit sw_regupd;
+              sw_regupd = `gmv(ral.sw_regupd.sw_regupd);
+              if (!sw_regupd) begin
+                `DV_CHECK_FATAL(ral.regwen.regwen.predict(.value(0), .kind(UVM_PREDICT_READ)));
+              end
             end
             "module_enable": begin
               string msg;
-              bit sw_regupd = ral.sw_regupd.sw_regupd.get_mirrored_value();
               bit do_disable, do_enable;
-
               uvm_reg_field enable_field = csr.get_field_by_name("module_enable");
               prim_mubi_pkg::mubi4_t enable_mubi =
                   prim_mubi_pkg::mubi4_t'(enable_field.get_mirrored_value());
@@ -1448,23 +1445,44 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
               msg = $sformatf("locked? %01d", dut_reg_locked);
               `uvm_info(`gfn, msg, UVM_FULL)
-              if (do_enable) begin
-                fork
-                  begin
-                    cfg.clk_rst_vif.wait_clks(2);
-                    fw_ov_pipe_enabled = 1;
-                  end
-                  if (!dut_pipeline_enabled) begin
-                    dut_pipeline_enabled = 1;
-                    handle_disable_reset(Enable);
-                    fifos_cleared = 0;
-                    collect_entropy();
-                    handle_disable_reset(Disable);
-                  end
-                join_none
-              end
-              `DV_CHECK_FATAL(ral.regwen.regwen.predict(.value(sw_regupd && !do_enable),
-                                                        .kind(UVM_PREDICT_READ)));
+              fork
+                if (do_enable) begin
+                  cfg.clk_rst_vif.wait_clks(2);
+                  fw_ov_pipe_enabled = 1;
+                end
+                if (do_enable && !dut_pipeline_enabled) begin
+                  dut_pipeline_enabled = 1;
+                  handle_disable_reset(Enable);
+                  fifos_cleared = 0;
+                  collect_entropy();
+                  handle_disable_reset(Disable);
+                end
+                begin
+                  bit regwen_obs, sw_regupd;
+                  int obs_delay = 0;
+                  `uvm_info(`gfn, "Waiting for regwen", UVM_FULL)
+                  regwen_pending = 1;
+                  // Don't update the regwen prediction immediately as the DUT will enforce
+                  // delays in REGWEN until it has safely cleared its internal state.  Silently
+                  // peek-poll (with watchdog) here until the change in regwen occurs and then
+                  // update the prediction.
+                  `DV_SPINWAIT(forever begin
+                    sw_regupd = `gmv(ral.sw_regupd.sw_regupd);
+                    if (!sw_regupd) break; // Device will be conlusively locked via sw_regupd
+                    csr_peek(.ptr(ral.regwen.regwen), .value(regwen_obs));
+                    if (regwen_obs == do_disable) break;
+                    cfg.clk_rst_vif.wait_clks(1);
+                    obs_delay++;
+                  end)
+                  msg = $sformatf("REGWEN update observed after %d clocks", obs_delay);
+                  `uvm_info(`gfn, msg, UVM_FULL)
+                  `DV_CHECK_FATAL(ral.regwen.regwen.predict(.value(do_disable & sw_regupd),
+                                                            .kind(UVM_PREDICT_READ)));
+                  regwen_pending = 0;
+                  `uvm_info(`gfn, "Waiting for regwen complete", UVM_FULL)
+                end
+              join_none
+
               if (do_disable && dut_pipeline_enabled) begin
                 // The DUT does not immediately turn off the RNG input. We wait a few cycles to
                 // let any last couple RNG samples come into the dut (so we know to delete them
