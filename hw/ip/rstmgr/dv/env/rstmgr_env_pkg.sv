@@ -44,19 +44,17 @@ package rstmgr_env_pkg;
     "u_d0_i2c1",
     "u_d0_i2c2",
     "u_d0_lc",
+    "u_d0_lc_io",
+    "u_d0_lc_io_div2",
     // There are 4 rstmgr_leaf_rst instances with security checks disabled.
     // TODO(#15093) Perhaps adjust it depending on this issue.
     // "u_d0_lc_io_div4",
     // "u_d0_lc_io_div4_shadowed",
+    "u_d0_lc_usb",
     "u_d0_spi_device",
     "u_d0_spi_host0",
     "u_d0_spi_host1",
     "u_d0_sys",
-    "u_d0_sys_io",
-    "u_d0_sys_io_div2",
-    "u_d0_sys_io_div4",
-    "u_d0_sys_shadowed",
-    "u_d0_sys_usb",
     "u_d0_usb",
     "u_d0_usb_aon",
     "u_daon_lc",
@@ -66,20 +64,20 @@ package rstmgr_env_pkg;
     // Same as comment above.
     // "u_daon_lc_io_div4",
     // "u_daon_lc_io_div4_shadowed",
+    "u_daon_lc_shadowed",
     "u_daon_lc_usb",
     "u_daon_por",
     "u_daon_por_io",
     "u_daon_por_io_div2",
     "u_daon_por_io_div4",
     "u_daon_por_usb",
-    "u_daon_sys_aon",
     "u_daon_sys_io_div4"
   };
 
   // Instances of rstmgr_leaf_rst modules which have a shadow pair.
   parameter string LIST_OF_SHADOW_LEAFS[] = {
     "u_d0_lc_io_div4",
-    "u_d0_sys",
+    "u_daon_lc",
     "u_daon_lc_io_div4"
   };
 
