@@ -17,12 +17,12 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
   localparam string RST_AON_NI_PATH = "tb.dut.top_earlgrey.u_sysrst_ctrl_aon.rst_aon_ni";
 
   typedef enum {
-    PhaseInitial       = 0,
-    PhaseComboReset    = 1,
-    PhaseOverrideSetup = 2,
-    PhaseOverrideZeros = 3,
-    PhaseOverrideOnes  = 4,
-    PhaseDone          = 5
+    PhaseSetup           = 0,
+    PhaseCheckComboReset = 1,
+    PhaseOverrideSetup   = 2,
+    PhaseOverrideZeros   = 3,
+    PhaseOverrideOnes    = 4,
+    PhaseDone            = 5
   } test_phases_e;
 
   logic [1:0] output_pad_read_values;
@@ -68,22 +68,6 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
   endtask
 
-  virtual task wait_for_ec_rst_high();
-    int timeout_count = 0;
-    forever begin
-      if (cfg.chip_vif.ec_rst_l_if.sample_pin(0) == 0) begin
-        timeout_count++;
-        if (timeout_count >= TIMEOUT_VALUE) begin
-          `uvm_error(`gfn, "Timed out waiting for ec_rst to go high.")
-        end
-      end else begin
-        break;
-      end
-      // Some amount of delay between samples of ec_rst.
-      cfg.clk_rst_vif.wait_clks(1);
-    end
-  endtask
-
   virtual task control_ec_rst_low(int min_exp_cycles);
     int timeout_count = 0;
     `DV_WAIT(cfg.chip_vif.ec_rst_l_if.pins[0] === 0)
@@ -127,12 +111,6 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  virtual task check_flash_wp_value(input bit level_to_check);
-    if (cfg.chip_vif.flash_wp_l_if.sample_pin(0) != level_to_check) begin
-      `uvm_error(`gfn, $sformatf("Flash write protect signal expected %0d.", level_to_check))
-    end
-  endtask
-
   virtual task body();
     super.body();
 
@@ -143,12 +121,25 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.pinmux_wkup_if.drive_en_pin(0, 0);
     set_combo0_pads_high();
 
-    write_test_phase(PhaseInitial);
-    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
-    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
+    // At this point WP_L and EC_RST_L have not been released yet after reset.
+    `DV_CHECK_EQ(cfg.chip_vif.flash_wp_l_if.pins, 0)
+    `DV_CHECK_EQ(cfg.chip_vif.ec_rst_l_if.pins, 0)
 
-    check_flash_wp_value(1);
-    wait_for_ec_rst_high();
+    write_test_phase(PhaseSetup);
+
+    // The sysrst_ctrl initialization in PhaseSetup releases
+    // both flash_wp and ec_rst. Wait for them to go high here.
+    fork
+      `DV_WAIT(cfg.chip_vif.flash_wp_l_if.pins,
+               "Timed out waiting for flash_wp to go high.",
+               TIMEOUT_VALUE /* ns */)
+      `DV_WAIT(cfg.chip_vif.ec_rst_l_if.pins,
+               "Timed out waiting for ec_rst to go high.",
+               TIMEOUT_VALUE /* ns */)
+    join
+
+    // Make sure software is waiting for a reset.
+    `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
     set_combo0_pads_low();
     ec_rst_timer_over = 0;
 
@@ -160,7 +151,7 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
         check_ec_rst_with_transition(PWRMGR_RSTREQ_PATH, 1'b0);
         check_ec_rst_with_transition(RST_AON_NI_PATH , 1'b0);
         sync_with_sw();
-        write_test_phase(PhaseComboReset);
+        write_test_phase(PhaseCheckComboReset);
         `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
         `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
         `DV_WAIT(ec_rst_timer_over)
