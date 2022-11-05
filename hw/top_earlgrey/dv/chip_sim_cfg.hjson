@@ -104,7 +104,10 @@
   // exclusion files
   vcs_cov_excl_files: ["{top_dv_path}/cov/conn_ast_mem_cfg.el",
                        "{top_dv_path}/cov/edn1_unr_tied_off_ports.el",
-                       "{top_dv_path}/cov/pinmux_pad_attr.el"]
+                       "{top_dv_path}/cov/entropy_src_tied_off_xht_port.el",
+                       "{top_dv_path}/cov/pinmux_pad_attr.el",
+                       "{top_dv_path}/cov/rom_ctrl_kmac_app_tied_off_data_strb_bits.el"
+                       ]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 3
