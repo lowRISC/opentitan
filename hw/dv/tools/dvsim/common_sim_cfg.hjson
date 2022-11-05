@@ -75,9 +75,7 @@
                "+define+DUT_HIER={dut_instance}"]
 
   run_opts: ["+UVM_NO_RELNOTES",
-             "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}",
-             // TODO: remove once smoke regr passes:
-             "+prim_cdc_rand_delay_mode=disable"]
+             "+UVM_VERBOSITY={expand_uvm_verbosity_{verbosity}}"]
 
   // Default list of things to export to shell
   exports: [
@@ -124,10 +122,7 @@
       tests: []
       reseed: 1
       run_opts: [// Knob used to configure an existing test / vseq to have a shorter runtime.
-                 "+smoke_test=1",
-                 // Enable CDC random delay once, at the start of the sim.
-                 // TODO: uncomment once smoke regr passes:
-                 // "+prim_cdc_rand_delay_mode=once"
+                 "+smoke_test=1"
                 ]
     }
     {
@@ -140,10 +135,6 @@
     {
       name: nightly
       en_sim_modes: ["cov"]
-      run_opts: [// Enable CDC random delay changes every 10 source data changes.
-                 // TODO: Uncomment once nightly regr passes:
-                 // "+prim_cdc_rand_delay_mode=interval", "+prim_cdc_rand_delay_interval=10"
-                ]
     }
   ]
 
