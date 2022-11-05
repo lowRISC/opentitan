@@ -101,6 +101,7 @@ module entropy_src_main_sm
             // smaller than the output seed then only the first part of the seed
             // is checked.
             state_d = BootPostHTChk;
+            rst_alert_cntr_o = 1'b1;
           end
         end
       end
@@ -110,7 +111,6 @@ module entropy_src_main_sm
         end else begin
           if (!bypass_stage_rdy_i) begin
           end else begin
-            rst_alert_cntr_o = 1'b1;
             bypass_stage_pop_o = 1'b1;
             main_stage_push_o = 1'b1;
             state_d = BootPhaseDone;
