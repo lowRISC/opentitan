@@ -106,7 +106,7 @@ static void pinmux_setup(void) {
   }
 }
 
-static void check_combo_reset(void) {
+static void configure_combo_reset(void) {
   CHECK_DIF_OK(dif_sysrst_ctrl_key_combo_detect_configure(
       &sysrst_ctrl, kDifSysrstCtrlKeyCombo0,
       (dif_sysrst_ctrl_key_combo_config_t){
@@ -121,6 +121,7 @@ static void check_combo_reset(void) {
                         .debounce_time_threshold = kDebounceTimeThreshold,
                         .input_changes = kDifSysrstCtrlInputKey0H2L |
                                          kDifSysrstCtrlInputKey1H2L}));
+  // Release the flash_wp signal
   CHECK_DIF_OK(dif_sysrst_ctrl_output_pin_override_configure(
       &sysrst_ctrl, kDifSysrstCtrlPinFlashWriteProtectInOut,
       (dif_sysrst_ctrl_pin_config_t){.allow_one = true,
@@ -197,6 +198,8 @@ bool test_main(void) {
 
   pinmux_setup();
   rstmgr_reset_info = rstmgr_testutils_reason_get();
+
+  // Disable EC rst override.
   CHECK_DIF_OK(dif_sysrst_ctrl_output_pin_override_set_enabled(
       &sysrst_ctrl, kDifSysrstCtrlPinEcResetInOut, kDifToggleDisabled));
 
@@ -204,8 +207,9 @@ bool test_main(void) {
     switch (kTestPhase) {
       case kTestPhaseSetup:
         CHECK(rstmgr_reset_info == kDifRstmgrResetInfoPor);
-        check_combo_reset();
-        return true;
+        configure_combo_reset();
+        LOG_ERROR("We should have reset before this line.");
+        break;
       case kTestPhaseCheckComboReset:
         CHECK(rstmgr_reset_info == kDifRstmgrResetInfoSysRstCtrl);
         break;
