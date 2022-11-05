@@ -163,7 +163,7 @@ static void test_sec_wipe(otbn_t *otbn_ctx) {
 }
 
 bool test_main(void) {
-  entropy_testutils_boot_mode_init();
+  entropy_testutils_auto_mode_init();
 
   otbn_t otbn_ctx;
   CHECK(otbn_init(&otbn_ctx, mmio_region_from_addr(

@@ -158,7 +158,7 @@ void ottf_external_isr(void) {
 }
 
 bool test_main(void) {
-  entropy_testutils_boot_mode_init();
+  entropy_testutils_auto_mode_init();
   plic_init_with_irqs();
 
   // Enable the external IRQ (so that we see the interrupt from the PLIC)
