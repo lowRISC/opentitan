@@ -261,6 +261,11 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     if (newcfg.preconfig_disable) begin
       disable_dut();
       `uvm_info(`gfn, "DUT Disabled", UVM_MEDIUM)
+      if (ral.sw_regupd.sw_regupd.get()) begin
+        `uvm_info(`gfn, "Waiting for REGWEN", UVM_HIGH)
+        csr_spinwait(.ptr(ral.regwen.regwen), .exp_data(1));
+        `uvm_info(`gfn, "REGWEN Detected", UVM_HIGH)
+      end
     end
 
     csr_rd(.ptr(ral.regwen.regwen), .value(regwen));
