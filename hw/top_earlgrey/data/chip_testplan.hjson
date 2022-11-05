@@ -1708,6 +1708,20 @@
         "chip_sw_otp_ctrl_lc_signals_rma",            // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
       ]
     }
+    {
+      name: chip_sw_lc_ctrl_kmac_error
+      desc: '''
+            Verify the effect of KMAC returning an error during the hash generation of LC tokens.
+
+            - Follow the steps in `chip_sw_lc_ctrl_kmac_req` test.
+            - While the KMAC is actively computing the digest, glitch the KMAC app sparse FSM to
+              trigger a fault.
+            - Verify that KMAC returns an error signal to the LC controller.
+            - TBD
+            '''
+      stage: V3
+      tests: []
+    }
 
 
     // SYSRST_CTRL (pre-verified IP) integration tests:
@@ -2333,7 +2347,7 @@
     }
     {
       name: chip_sw_keymgr_sideload_kmac
-      desc: '''Verify the keymgr sideload interface to KMAC, similar to `chip_kmac_app_keymgr`.
+      desc: '''Verify the keymgr sideload interface to KMAC.
 
             - Configure the keymgr and advance to `CreatorRootKey`.
             - Transmit a sideloaded key to the KMAC.
@@ -2364,6 +2378,20 @@
             '''
       stage: V2
       tests: ["chip_sw_keymgr_sideload_otbn"]
+    }
+    {
+      name: chip_sw_keymgr_sideload_kmac_error
+      desc: '''
+            Verify the effect of KMAC returning an error during keymgr sideload operation.
+
+            - Follow the steps in `chip_sw_keymgr_sideload_kmac` test.
+            - While the KMAC is actively computing the digest, glitch the KMAC app sparse FSM to
+              trigger a fault.
+            - Verify that KMAC returns an error signal to the keymgr.
+            - TBD
+            '''
+      stage: V3
+      tests: []
     }
 
     // OTBN (pre-verified IP) integration tests:
@@ -2470,6 +2498,22 @@
             '''
       stage: V2
       tests: ["chip_sw_rom_ctrl_integrity_check"]
+    }
+    {
+      name: chip_sw_rom_ctrl_kmac_error
+      desc: '''
+            Verify the effect of KMAC reporting an error during ROM digest computation.
+
+            - Backdoor load a valid test ROM image and bring the DUT out of reset.
+            - During the ROM checker pwrmgr FSM state, while the ROM controller is actively sending
+              data to KMAC for the digest computation, glitch the KMAC app sparse FSM to trigger a
+              fault.
+            - Verify that KMAC returns an error signal to the ROM controller.
+            - Verify that the ROM controller itself transitions to invalid state and the chip is
+              effectively dead.
+            '''
+      stage: V3
+      tests: []
     }
 
     // SRAM (pre-verified IP) integration tests:
