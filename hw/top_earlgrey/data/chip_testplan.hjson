@@ -149,11 +149,14 @@
       desc: '''Verify the pass through mode from an end-to-end perspective.
 
             - Configure the SPI device and host in pass through mode.
+            - Program the cmd_filter_* CSRs to filter out random commands.
             - Configure and enable both spi_host0 and spi_host1
             - Send a random flash commands over the SPI device interface (chip IOs) from the
               testbench.
             - Verify the flash commands which pass through spi_host0, are received on chip IOs.
-            - Verify spi_host1 doesn't send out any data from spi_device
+            - Verify that only the payloads that are not filtered show up on the SPI host interface
+              at chip IOs.
+	    - Verify spi_host1 doesn't send out any data from spi_device
             - Run with min (6MHz), typical (24Mhz) and max (30MHz) SPI clk frequencies.
             - Run with single, dual and quad SPI modes.
             - Testbench should test the following commands:
@@ -163,27 +166,12 @@
       stage: V2
       tests: ["chip_sw_spi_device_pass_through"]
     }
-    {
-      name: chip_sw_spi_device_pass_through_filter
-      desc: '''Verify the command filtering mechanism in passthrough mode.
-
-            - Extend the chip_spi_device_pass_through test.
-            - Program the cmd_filter_* CSRs to filter out certain commands. a one byte command (such
-              as Chip Erase) and a multi-bytes command (such as Program or Sector/Block Erase) must
-              be added to filter
-            - Verify that only the payloads that are not filtered show up on the SPI host interface
-              at chip IOs.
-            '''
-      stage: V2
-      tests: []
-    }
 
     {
       name: chip_sw_spi_device_pass_through_flash_model
       desc: '''Verify the command filtering mechanism in passthrough mode.
 
-            - Extend the chip_spi_device_pass_through and chip_spi_device_pass_through_filter
-              tests.
+            - Extend the chip_spi_device_pass_through test.
             - Connect with a real flash model on spi_host
             - Verify that the flash commands are received and interpreted correctly in the flash
               model
