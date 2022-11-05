@@ -36,15 +36,13 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-/* The start of global ECDSA variables to get data from simpleserial UART */
-
 /**
  * Private key d
  * I took this from here: https://www.rfc-editor.org/rfc/rfc6979#page-33
  * The endiannes may need to be fixed.
  *
- * The value of this variable can be overwritten via
- * the simpleserial command `d` (see ecc384_set_private_key_d)
+ * The value of this variable can be overwritten via the simpleserial command
+ * `d` (see ecc384_set_private_key_d)
  */
 uint8_t ecc384_private_key_d[48] = {
     0x6B, 0x9D, 0x3D, 0xAD, 0x2E, 0x1B, 0x8C, 0x1C, 0x05, 0xB1, 0x98, 0x75,
@@ -54,15 +52,12 @@ uint8_t ecc384_private_key_d[48] = {
 
 /**
  * Message to sign
- * The value of this variable can be overwritten via
- * the simpleserial command `n` (see ecc384_set_msg)
- *
+ * The value of this variable can be overwritten via the simpleserial command
+ * `n` (see ecc384_set_msg).
  */
 uint8_t ecc384_msg[48] = {"Hello OTBN."};
-/* The end of the global ecdsa variables coming from simpleserial UART */
 
-/* p384_ecdsa_sca has randomnization removed */
-
+// p384_ecdsa_sca has randomnization removed.
 OTBN_DECLARE_APP_SYMBOLS(p384_ecdsa_sca);
 
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_sca, dptr_msg);
@@ -157,10 +152,8 @@ static void setup_data_pointers(otbn_t *otbn_ctx) {
  * @param key_d Key.
  * @param key_d_len Key length.
  */
-static void ecc384_serial_set_private_key_d(const uint8_t *key_d,
-                                            size_t key_d_len) {
+static void ecc_384_set_private_key_d(const uint8_t *key_d, size_t key_d_len) {
   SS_CHECK(key_d_len == 48);
-
   memcpy(ecc384_private_key_d, key_d, key_d_len);
 }
 
@@ -173,9 +166,8 @@ static void ecc384_serial_set_private_key_d(const uint8_t *key_d,
  * @param msg Message to sign.
  * @param msg_len Message length.
  */
-static void ecc384_serial_set_msg(const uint8_t *msg, size_t msg_len) {
+static void ecc384_set_msg(const uint8_t *msg, size_t msg_len) {
   SS_CHECK(msg_len <= 48);
-
   memcpy(ecc384_msg, msg, msg_len);
 }
 
@@ -202,11 +194,9 @@ static void p384_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
                             uint8_t *signature_s, const uint8_t *k) {
   SS_CHECK(otbn_ctx != NULL);
 
-  // Set pointers to input arguments.
   LOG_INFO("Setup data pointers");
   setup_data_pointers(otbn_ctx);
 
-  // Write input arguments.
   uint32_t mode = 1;  // mode 1 => sign
   LOG_INFO("Copy data");
   SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(mode), &mode,
@@ -219,13 +209,11 @@ static void p384_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
   SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/48, k, kOtbnVarK) ==
            kOtbnOk);
 
-  // Call OTBN to perform operation, and wait for it to complete.
   LOG_INFO("Execute");
   SS_CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
   LOG_INFO("Wait for done");
   SS_CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
 
-  // Read back results.
   LOG_INFO("Get results");
   SS_CHECK(otbn_copy_data_from_otbn(otbn_ctx, /*len_bytes=*/48, kOtbnVarR,
                                     signature_r) == kOtbnOk);
@@ -238,8 +226,8 @@ static void p384_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
 /**
  * Simple serial 'p' (sign) command handler.
  *
- * Takes the scalar value from the simple serial UART
- * and triggers OTBN_P384_sign operation.
+ * Takes the scalar value from the simple serial UART and triggers
+ * OTBN_P384_sign operation.
  *
  * To overwrite the message, use the simpleserial command 'n'
  * To overwrite the private key value, use the simpleserial command 'd'
@@ -248,11 +236,9 @@ static void p384_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
  * UART.
  * @param secret_k_len Length of the ephemeral key.
  */
-static void ecc384_simpleserial_ecdsa(const uint8_t *ecc384_secret_k,
-                                      size_t secret_k_len) {
+static void ecc_384_ecdsa(const uint8_t *ecc384_secret_k, size_t secret_k_len) {
   otbn_t otbn_ctx;
 
-  /* ecc384_secret_k = ephemeral key k, coming from UART */
   if (secret_k_len != 48) {
     LOG_INFO("Invalid data length %hu", (uint8_t)secret_k_len);
     return;
@@ -267,7 +253,6 @@ static void ecc384_simpleserial_ecdsa(const uint8_t *ecc384_secret_k,
   uint8_t ecc384_signature_r[48] = {0};
   uint8_t ecc384_signature_s[48] = {0};
 
-  /* Sign */
   LOG_INFO("Signing");
   sca_set_trigger_high();
   p384_ecdsa_sign(&otbn_ctx, ecc384_msg, ecc384_private_key_d,
@@ -286,18 +271,10 @@ static void ecc384_simpleserial_ecdsa(const uint8_t *ecc384_secret_k,
 }
 
 /**
- * Main function.
- *
  * Initializes peripherals and processes simple serial packets received over
  * UART.
- *
- * TODO: Decide which function name to use after discussing with the team.
- * If we use `_ottf_main()`, the code compiles but I don't get
- * serial communication from UART. To use `test_main` we need to include
- * the header file `sw/device/lib/testing/test_framework/ottf_main.h`
- *
  */
-bool test_main(void) {
+static void simple_serial_main(void) {
   entropy_testutils_boot_mode_init();
 
   sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
@@ -305,39 +282,23 @@ bool test_main(void) {
                                       kScaPeripheralEdn | kScaPeripheralHmac);
 
   LOG_INFO("Running ECC serial");
-
   LOG_INFO("Initializing simple serial interface to capture board.");
   simple_serial_init(sca_get_uart());
 
-  simple_serial_result_t err;
-
-  /* Register the simple serial command handlers */
-  if (err = simple_serial_register_handler('p', ecc384_simpleserial_ecdsa),
-      err != kSimpleSerialOk) {
-    LOG_INFO("Register handler failed with return %hu",
-             (short unsigned int)err);
-    while (1)
-      ;
-  }
-  if (err =
-          simple_serial_register_handler('d', ecc384_serial_set_private_key_d),
-      err != kSimpleSerialOk) {
-    LOG_INFO("Register handler failed with return %hu",
-             (short unsigned int)err);
-    while (1)
-      ;
-  }
-  if (err = simple_serial_register_handler('n', ecc384_serial_set_msg),
-      err != kSimpleSerialOk) {
-    LOG_INFO("Register handler failed with return %hu",
-             (short unsigned int)err);
-    while (1)
-      ;
-  }
+  SS_CHECK(simple_serial_register_handler('p', ecc_384_ecdsa) !=
+           kSimpleSerialOk);
+  SS_CHECK(simple_serial_register_handler('d', ecc_384_set_private_key_d) !=
+           kSimpleSerialOk);
+  SS_CHECK(simple_serial_register_handler('n', ecc384_set_msg) !=
+           kSimpleSerialOk);
 
   LOG_INFO("Starting simple serial packet handling.");
   while (true) {
     simple_serial_process_packet();
   }
-  // return true;
+}
+
+bool test_main(void) {
+  simple_serial_main();
+  return true;
 }
