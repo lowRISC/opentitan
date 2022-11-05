@@ -264,7 +264,7 @@ opentitan_functest(
     # binary target.  We'll build an unsigned do-nothing binary.
     ot_flash_binary = ":empty_test_slot_a",
     signed = False,
-    targets = ["cw310_other"],
+    targets = ["cw310_rom_variant"],
     test_harness = "//sw/host/tests/rom/e2e_bootstrap_disabled",
 )
 
@@ -493,7 +493,7 @@ manifest({
     ot_flash_binary = ":empty_test_slot_a",
     signed = False,
     targets = [
-        "cw310_other",
+        "cw310_rom_variant",
         "dv",
     ],
 ) for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()]
@@ -613,7 +613,7 @@ BOOT_POLICY_NEWER_CASES = [
         t["a"],
         t["b"],
     ),
-    targets = ["cw310_other"],
+    targets = ["cw310_rom_variant"],
 ) for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items() for t in BOOT_POLICY_NEWER_CASES]
 
 test_suite(
@@ -823,7 +823,7 @@ opentitan_flash_binary(
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         ot_flash_binary = ":empty_test_sigverify_mod_exp",
-        targets = ["cw310_other"],
+        targets = ["cw310_rom_variant"],
     )
     for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
     for t in SIGVERIFY_MOD_EXP_CASES
@@ -1090,7 +1090,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             slot,
         ),
         targets = [
-            "cw310_other",
+            "cw310_rom_variant",
             "verilator",
         ],
         verilator = verilator_params(
@@ -1333,7 +1333,7 @@ BOOT_POLICY_VALID_CASES = [
             a["desc"],
             b["desc"],
         ),
-        targets = ["cw310_other"],
+        targets = ["cw310_rom_variant"],
     )
     for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
     for a in BOOT_POLICY_VALID_CASES
@@ -1803,7 +1803,7 @@ REDACT.update({"INVALID": 0x0})
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         signed = False,
-        targets = ["cw310_other"],
+        targets = ["cw310_rom_variant"],
         deps = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",

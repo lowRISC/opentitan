@@ -121,8 +121,8 @@ You may find it useful to use wildcards to build/test all targets in the OpenTit
 If a a target (a test or build artifact) relies on optional parts of the "Getting Started" guide they should be tagged so they can be filtered out and users can `bazelisk.sh test //...` once they filter out the appropriate tags.
 We maintain or use the following tags to support this:
 * `broken` is used to tag tests that are committed but should not be expected by CI or others to pass.
-* `cw310_test_rom`, `cw310_rom`, and `cw310_other` are used to tag tests that depend on a correctly setup cw310 "Bergen Board" to emulate OpenTitan.
-  The `cw310` prefix may be used in `--test_tag_filters` to enable concise filtering.
+* `cw310`, `cw310_test_rom`, `cw310_rom`, and `cw310_rom_variant` are used to tag tests that depend on a correctly setup cw310 "Bergen Board" to emulate OpenTitan.
+  `cw310` may be used in `--test_tag_filters` to enable concise filtering.
   Loading the bitstream is the slowest part of the test, so these tags can group tests with common bitstreams to accelerate the tests.
 * `verilator` is used to tag tests that depend on a verilated model of OpenTitan that can take a significant time to build.
   Verilated tests can still be built with `--define DISABLE_VERILATOR_BUILD`, but they will skip the invocation of Verilator and cannot be run.
