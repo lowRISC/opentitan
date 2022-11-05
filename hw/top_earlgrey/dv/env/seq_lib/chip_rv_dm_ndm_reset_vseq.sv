@@ -13,7 +13,6 @@ class chip_rv_dm_ndm_reset_vseq extends chip_jtag_base_vseq;
              "Timedout waiting for ndm reset.")
     cfg.clk_rst_vif.wait_clks(10);
     debug_mode_en();
-    cfg.clk_rst_vif.wait_clks(10);
     ndm_reset_off();
     cfg.clk_rst_vif.wait_clks(10);
   endtask // body

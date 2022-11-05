@@ -209,7 +209,9 @@ module dmi_jtag #(
 
         WaitWriteValid: begin
           // got a valid answer go back to idle
+          error_dmi_busy = 1'b1;
           if (dmi_resp_valid) begin
+            error_dmi_busy = 1'b0;
             unique case (dmi_resp.resp)
               dm::DTM_ERR: error_dmi_op_failed = 1'b1;
               dm::DTM_BUSY: error_dmi_busy = 1'b1;

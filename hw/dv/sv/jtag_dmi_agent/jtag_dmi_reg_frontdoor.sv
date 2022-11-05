@@ -27,7 +27,7 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
     jtag_dmi_op_rsp_e   op_rsp;
 
     jtag_dtm_ral_sem_h.get();
-    `uvm_info(`gfn, $sformatf("DMI CSR req started: %0s", rw_info.convert2string()), UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("DMI CSR req started: %0s", rw_info.convert2string()), UVM_LOW)
 
     `DV_CHECK_FATAL(rw_info.element_kind inside {UVM_REG, UVM_FIELD})
     `DV_CHECK_FATAL(rw_info.kind inside {UVM_READ, UVM_WRITE})
@@ -57,7 +57,7 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
       // soon, it may end up setting the in progress sticky bit, causing more time wasted.
       jtag_agent_cfg_h.vif.wait_tck(10);
     end else begin
-      `uvm_info(`gfn, "DMI CSR req skipped due to reset", UVM_HIGH)
+      `uvm_info(`gfn, "DMI CSR req skipped due to reset", UVM_LOW)
     end
 
     // Poll for completion. Reset DMI if the sticky bit 'InProgress' is set.
@@ -65,7 +65,7 @@ class jtag_dmi_reg_frontdoor extends uvm_reg_frontdoor;
       do begin
         csr_rd(.ptr(jtag_dtm_ral.dmi), .value(rdata), .blocking(1));
         op_rsp = jtag_dmi_op_rsp_e'(get_field_val(jtag_dtm_ral.dmi.op, rdata));
-        `uvm_info(`gfn, $sformatf("DMI CSR req status: %0s", op_rsp.name()), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("DMI CSR req status: %0s", op_rsp.name()), UVM_LOW)
         if (op_rsp == DmiOpInProgress) begin
           csr_wr(.ptr(jtag_dtm_ral.dtmcs.dmireset), .value(1), .blocking(1), .predict(1));
         end else begin
