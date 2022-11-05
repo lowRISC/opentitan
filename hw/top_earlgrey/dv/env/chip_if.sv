@@ -274,12 +274,12 @@ interface chip_if;
 
   // Functional (dedicated) interface (inout): EC reset.
   pins_if #(.Width(1), .PullStrength("Weak")) ec_rst_l_if(
-    .pins(mios[top_earlgrey_pkg::DioPadIor8])
+    .pins(dios[top_earlgrey_pkg::DioPadIor8])
   );
 
   // Functional (dedicated) interface (inout): flash write protect.
   pins_if #(.Width(1), .PullStrength("Weak")) flash_wp_l_if(
-    .pins(mios[top_earlgrey_pkg::DioPadIor9])
+    .pins(dios[top_earlgrey_pkg::DioPadIor9])
   );
 
   // Functional (dedicated) interface (inout): power button.
