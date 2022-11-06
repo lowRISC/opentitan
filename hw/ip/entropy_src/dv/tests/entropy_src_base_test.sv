@@ -30,6 +30,7 @@ class entropy_src_base_test extends cip_base_test #(
     // seed_cnt only used by smoke test
     // so there is no need to randomize it.
     cfg.seed_cnt                       = 1;
+    cfg.rng_ignores_backpressure       = 0;
     cfg.otp_en_es_fw_read_pct          = 100;
     cfg.otp_en_es_fw_over_pct          = 100;
     cfg.dut_cfg.en_intr_pct            = 75;
@@ -53,6 +54,7 @@ class entropy_src_base_test extends cip_base_test #(
     cfg.dut_cfg.bad_mubi_cfg_pct       = 0;
     cfg.induce_targeted_transition_pct = 0;
     cfg.dut_cfg.tight_thresholds_pct   = 0;
+
 
   endfunction
 

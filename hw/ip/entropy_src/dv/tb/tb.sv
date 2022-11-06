@@ -98,6 +98,10 @@ module tb;
     // Drive clk and rst_n from clk_if
     // Set interfaces in config_db
     clk_rst_if.set_active();
+    // The rng_if (which mimics the AST RNG) is expected to drop RNG inputs even if the
+    // DUT is not ready.
+    $assertoff(0, tb.rng_if.H_DataStableWhenValidAndNotReady_A);
+    $assertoff(0, tb.rng_if.ValidHighUntilReady_A);
     csrng_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "csrng_rst_vif", csrng_rst_if);

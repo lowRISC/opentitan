@@ -35,9 +35,13 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_rng_agent_cfg.en_cov     = cfg.en_cov;
 
     // To correctly model ast/rng behavior, back-to-back entropy is not allowed
+    // The actual AST/RNG ingores ready-signal backpressure, but this can be inconvenient for
+    // tests which use a fixed (non-random) RNG sequence.  So the backpressure support is done
+    // on a test by test basis.
     cfg.m_rng_agent_cfg.zero_delays = 0;
     cfg.m_rng_agent_cfg.host_delay_min = 6;
     cfg.m_rng_agent_cfg.host_delay_max = 12;
+    cfg.m_rng_agent_cfg.ignore_push_host_backpressure = cfg.rng_ignores_backpressure;
 
     m_csrng_agent = push_pull_agent#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))::
                     type_id::create("m_csrng_agent", this);
