@@ -65,6 +65,12 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   int      seed_cnt;
 
+  // The AST/RNG does not pay attention to the entropy_src `ready` backpressure signal on the RNG
+  // entropy_src interface.  We mimic this behavior in the RNG and FW_OV tests, which expect random
+  // RNG data.  For other tests (which rely on fixed RNG sequences) we leave handshaking enabled.
+  bit      rng_ignores_backpressure = 0;
+
+
   /////////////////////
   // Knobs & Weights //
   /////////////////////

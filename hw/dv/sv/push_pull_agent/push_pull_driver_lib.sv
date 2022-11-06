@@ -129,7 +129,7 @@ class push_host_driver #(
         repeat (req.host_delay) @(`CB);
         `CB.valid_int <= 1'b1;
         `CB.h_data_int <= req.h_data;
-        do @(`CB); while (!`CB.ready);
+        do @(`CB); while (!cfg.ignore_push_host_backpressure && !`CB.ready);
         `CB.valid_int <= 1'b0;
         if (!cfg.hold_h_data_until_next_req) `CB.h_data_int <= 'x;,
         wait (cfg.in_reset);)

@@ -45,6 +45,9 @@ class push_pull_agent_cfg #(parameter int HostDataWidth = 32,
   // Enable starting the device sequence by default if configured in Device mode.
   bit start_default_device_seq = 1;
 
+  // Ignore backpressure (ready signal) if configured as a Push Host
+  bit ignore_push_host_backpressure = 0;
+
   // These data queues allows users to specify data to be driven by the sequence at a higher level.
   //
   // To specify some Host data to be sent, `set_h_user_data()` should be called from a higher layer
