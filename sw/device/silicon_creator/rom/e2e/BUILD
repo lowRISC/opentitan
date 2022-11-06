@@ -1080,6 +1080,13 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             "cw310_rom",
             "verilator",
         ],
+        verilator = verilator_params(
+            tags = [
+                # FIXME:#16056 Verilator fails to set up test.
+                "vivado",
+                "broken",
+            ],
+        ),
     )
     for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
     for t in BOOT_POLICY_BAD_MANIFEST_CASES
