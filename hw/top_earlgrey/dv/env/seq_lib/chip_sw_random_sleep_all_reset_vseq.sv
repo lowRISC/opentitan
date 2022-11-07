@@ -59,6 +59,7 @@ class chip_sw_random_sleep_all_reset_vseq extends chip_sw_base_vseq;
 
     repeat (NumRound) begin
       `uvm_info(`gfn, $sformatf("loop: %0d / %0d", loop_idx++, NumRound), UVM_MEDIUM)
+      `DV_WAIT(cfg.sw_logger_vif.printed_log == "New reset event")
       `DV_WAIT(
             cfg.sw_logger_vif.printed_log == "Booting and setting deep sleep followed by hw por" ||
             cfg.sw_logger_vif.printed_log ==
@@ -67,6 +68,8 @@ class chip_sw_random_sleep_all_reset_vseq extends chip_sw_base_vseq;
             cfg.sw_logger_vif.printed_log ==
                 "Booting and setting normal sleep followed by sysrst" ||
             cfg.sw_logger_vif.printed_log == "Let SV wait timer reset" ||
+            cfg.sw_logger_vif.printed_log ==
+                "Booting and running normal sleep followed by escalation reset" ||
             cfg.sw_logger_vif.printed_log == "Last Booting" ||
             cfg.sw_logger_vif.printed_log == "Test finish")
 
