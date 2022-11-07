@@ -25,6 +25,14 @@ CONST = struct(
         PROD_END = 0x25294a52,
         RMA = 0x2739ce73,
     ),
+    # LC values used in software. Must match the definitions in lifecycle.h
+    LCV_SW = struct(
+        TEST = 0xb2865fbb,
+        DEV = 0x0b5a75e0,
+        PROD = 0x65f2520f,
+        PROD_END = 0x91b9b68a,
+        RMA = 0xcf8cfaab,
+    ),
     # Must match the definitions in error.h.
     BFV = struct(
         INTERRUPT = struct(
@@ -62,6 +70,13 @@ CONST = struct(
         ),
     ),
 )
+
+def lc_hw_to_sw(hw_lc_state):
+    """Converts any TEST_* LC states to TEST"""
+    if hw_lc_state.startswith("TEST_"):
+        return "TEST"
+    else:
+        return hw_lc_state
 
 _HEX_MAP = "0123456789abcdef"
 
