@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, ensure, Result};
 use regex::Regex;
 use std::io::ErrorKind;
 use std::process::{Child, Command, Stdio};
@@ -74,18 +74,23 @@ impl Subprocess {
     }
 
     /// Finds a string within the verilator output.
-    /// It is assumed that the [`Regex`] `re` has exactly one capture group.
-    pub fn find(&mut self, re: &Regex, deadline: Instant) -> Result<String> {
+    /// It is assumed that the [`Regex`] `re` has zero or one capture groups.
+    pub fn find(&self, re: &Regex, deadline: Instant) -> Result<String> {
         // Regex captures_len: Capture group 0 is the full match.  Subsequent
         // capture groups are the individual capture groups in the regex.
-        // We expect only one user-specified capture group in the regex,
-        // and thus expect a capture length of two.
-        assert_eq!(re.captures_len(), 2);
+        // We expect at most one user-specified capture group in the regex,
+        // and thus expect a capture length of at most two.
+        let len = re.captures_len();
+        ensure!(
+            len <= 2,
+            "Expected zero or one capture groups, found {}",
+            len
+        );
         while deadline > Instant::now() {
             {
                 let a = self.accumulated_output.lock().unwrap();
                 if let Some(captures) = re.captures(a.as_str()) {
-                    let val = captures.get(1).expect("expected a capture");
+                    let val = captures.get(len - 1).expect("expected a capture");
                     return Ok(val.as_str().to_owned());
                 }
             }
@@ -121,7 +126,7 @@ mod test {
 
     #[test]
     fn test_find_regex() -> Result<()> {
-        let mut subprocess = echo_subprocess()?;
+        let subprocess = echo_subprocess()?;
         let regex = Regex::new("abc (.*) def")?;
         let deadline = Instant::now() + Duration::from_secs(5);
         let found = subprocess.find(&regex, deadline)?;

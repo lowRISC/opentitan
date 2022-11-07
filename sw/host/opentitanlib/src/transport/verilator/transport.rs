@@ -5,9 +5,11 @@
 use anyhow::{ensure, Result};
 use lazy_static::lazy_static;
 use regex::Regex;
+use serde_annotate::Annotate;
+use std::any::Any;
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use crate::io::gpio::{GpioError, GpioPin};
 use crate::io::uart::Uart;
@@ -48,13 +50,13 @@ impl Verilator {
         }
 
         let deadline = Instant::now() + options.timeout;
-        let mut subprocess = Subprocess::from_options(options)?;
+        let subprocess = Subprocess::from_options(options)?;
         let gpio_rd = subprocess.find(&GPIO_RD, deadline)?;
         let gpio_wr = subprocess.find(&GPIO_WR, deadline)?;
         let uart = subprocess.find(&UART, deadline)?;
         let spi = subprocess.find(&SPI, deadline)?;
 
-        log::info!("Verilator started with the following interaces:");
+        log::info!("Verilator started with the following interfaces:");
         log::info!("gpio_read = {}", gpio_rd);
         log::info!("gpio_write = {}", gpio_wr);
         let gpio = GpioInner::new(&gpio_rd, &gpio_wr)?;
@@ -112,4 +114,33 @@ impl Transport for Verilator {
             VerilatorGpioPin::new(Rc::clone(&self.inner), pin)
         })))
     }
+
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+        if let Some(watch) = action.downcast_ref::<Watch>() {
+            let subprocess = self.subprocess.as_ref().unwrap();
+            let deadline = Instant::now() + watch.timeout.unwrap_or(Watch::FOREVER);
+            let result = subprocess.find(&watch.regex, deadline)?;
+            Ok(Some(Box::new(WatchResponse { result })))
+        } else {
+            Err(TransportError::UnsupportedOperation.into())
+        }
+    }
+}
+
+/// Watch verilator's stdout for a expression or timeout.
+pub struct Watch {
+    pub regex: Regex,
+    pub timeout: Option<Duration>,
+}
+
+impl Watch {
+    // Using Duration::MAX causes an overflow when calculating a deadline.
+    // We use 100 years -- although it isn't "forever", it is longer than
+    // any invocation of opentitantool.
+    pub const FOREVER: Duration = Duration::from_secs(100 * 365 * 86400);
+}
+
+#[derive(serde::Serialize, Debug)]
+pub struct WatchResponse {
+    pub result: String,
 }
