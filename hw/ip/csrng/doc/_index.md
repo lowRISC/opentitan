@@ -6,31 +6,33 @@ title: "CSRNG HWIP Technical Specification"
 
 This document specifies the Cryptographically Secure Random Number Generator (CSRNG) hardware IP functionality.
 Due to the importance of secure random number generation (RNG), it is a topic which is extensively covered in security standards.
-This IP targets compliance with both [BSI's AIS31 recommendations for Common Criteria](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Zertifizierung/Interpretationen/AIS_31_Functionality_classes_for_random_number_generators_e.pdf), as well as [NIST's SP 800-90A](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf) and [NIST's SP 800-90C (Second Draft)](https://csrc.nist.gov/CSRC/media/Publications/sp/800-90c/draft/documents/sp800_90c_second_draft.pdf), both of which are referenced in [FIPS 140-3](https://csrc.nist.gov/publications/detail/fips/140/3/final).
+This IP targets compliance with both [BSI's AIS31 recommendations for Common Criteria (CC)](https://www.bsi.bund.de/SharedDocs/Downloads/DE/BSI/Zertifizierung/Interpretationen/AIS_31_Functionality_classes_for_random_number_generators_e.pdf), as well as [NIST's SP 800-90A](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf) and [NIST's SP 800-90C (Second Draft)](https://csrc.nist.gov/CSRC/media/Publications/sp/800-90c/draft/documents/sp800_90c_second_draft.pdf), both of which are referenced in [FIPS 140-3](https://csrc.nist.gov/publications/detail/fips/140/3/final).
 Since these two standards use significantly different terminology, it is recommended that the reader refer to our RNG compliance strategy document for an overview of the various RNG classes and equivalencies between the two standards.
 The CSRNG IP supports both of these standards for both deterministic (DRNG) and true random number generation (TRNG).
-In NIST terms, it works with the [Entropy Source IP]({{< relref "hw/ip/entropy_src/doc" >}}) to satisfy the requirements as a DRBG (deterministic random-bit-generator) or NRBG (non-deterministic random bit generator).
+In NIST terms, it works with the [Entropy Source IP]({{< relref "hw/ip/entropy_src/doc" >}}) to satisfy the requirements as a deterministic random bit generator (DRBG) or non-deterministic random bit generator (NRBG).
 In AIS31 language, this same implementation can be used to satisfy either the DRG.3 requirements for deterministic generation, or the PTG.3 requirements for cryptographically processed physical generation.
 
 In this document the terms "DRNG" and "TRNG" are used most generally to refer to deterministic or true random number generation functionalities implemented to this specification.
 However, the terms "DRBG" or "NRBG" are specifically used when respectively referring to SP 800-90A or SP 800-90C requirements.
 Meanwhile, when addressing requirements which originate from AIS31 we refer to the specific DRG.3 or PTG.3 classes of RNGs.
 
-This IP block is attached to the chip interconnect bus as a peripheral module conforming to the [Comportable guideline for peripheral functionality]({{< relref "doc/rm/comportability_specification" >}}), but also has direct hardware links to other IPs for secure and software-inaccessible transmission of random numbers. The bus connections to peripheral modules is done using the CSRNG application interface. This interface allows peripherals to manage CSRNG instances, and request for obfuscated entropy to be returned from the CSRNG module.
+This IP block is attached to the chip interconnect bus as a peripheral module conforming to the [comportability definition and specification]({{< relref "doc/rm/comportability_specification" >}}), but also has direct hardware links to other IPs for secure and software-inaccessible transmission of random numbers.
+The bus connections to peripheral modules are done using the CSRNG application interface.
+This interface allows peripherals to manage CSRNG instances, and request the CSRNG module to return obfuscated entropy.
 
 ## Features
 - Provides support for both deterministic (DRNG) and true random number generation (TRNG), when combined with a secure entropy source (i.e. one constructed and implemented in compliance with SP 800-90A,B,C and AIS31).
 - Compliant with NIST and BSI recommendations for random number generation.
 - Hardware peripherals and software applications issue commands to dedicated RNG instances through a common application interface.
 - In deterministic mode, meets the requirements given in AIS31 for a DRG.3 class deterministic random number generator (DRNG) meaning it provides Forward Secrecy and Enhanced Backward Secrecy.
-- Utilizes the CTR_DRBG construction specified in NIST SP 800-90A, qualifying it as a NIST-approved DRBG (deterministic random bit generator).
+- Utilizes the CTR_DRBG construction specified in NIST SP 800-90A, qualifying it as a NIST-approved deterministic random bit generator (DRBG).
     - Operates at 256 bit security strength.
 - Support for multiple separate CSRNG instances per IP block.
     - Each instance has its own internal state, control, reseed counters and IO pins.
     - The number of CSRNG instances is set via a module parameter.
 - Software access to a dedicated CSRNG instance.
     - One instance, Instance N-1, is always accessible from the bus through device registers,
-    - All other instances route to other hardware peripherals (e.g. the key manager, obfuscation engines etc.) and in normal operation these other instances are inaccessible from software.
+    - All other instances route to other hardware peripherals (e.g. the key manager, obfuscation engines, etc.) and in normal operation these other instances are inaccessible from software.
     - The IP may be configured to support "debug mode" wherein all instances can be accessed by software.
       For security reasons this mode may be permanently disabled using one-time programmable (OTP) memory.
 - The IP interfaces with external entropy sources to obtain any required non-deterministic seed material (entropy) and nonces.
@@ -71,7 +73,7 @@ These include:
 
 ## Note on the term "Entropy"
 
-Every DRNG requires some initial seed material, and the requirements for the generation of that seed material varies greatly between standards, and potentially between CC security targets.
+Every DRNG requires some initial seed material, and the requirements for the generation of that seed material varies greatly between standards, and potentially between Common Criteria security targets.
 In all standards considered, DRNGs require some "entropy" from an external source to create the initial seed.
 However, the rules for obtaining said entropy differ.
 Furthermore the required delivery mechanisms differ.
@@ -90,7 +92,7 @@ In some use cases, the consuming application needs to explicitly load this entro
 This document aims to make the distinction between physical entropy and factory entropy wherever possible.
 However, if used unqualified, the term "entropy" should be understood to refer to physical entropy strings which are obtained in accordance with SP 800-90C.
 That is either physical entropy, or the output of a DRNG which itself has been seeded (and possibly reseeded) with physical entropy.
-In CC terms, "entropy strings" (when used in this document without a qualifier) should be understood to come from either a PTG.2 or PTG.3 class RNG.
+In AIS31 terms, "entropy strings" (when used in this document without a qualifier) should be understood to come from either a PTG.2 or PTG.3 class RNG.
 
 ### Security
 
@@ -105,7 +107,7 @@ The application interface hardware port will not have this check.
 It is expected that the requesting block (EDN) will do an additional hardware check on the genbits data bus.
 
 ## Compatibility
-None.
+This block is compatible with NIST's SP 800-90A and BSI's AIS31 recommendations for Common Criteria.
 
 # Theory of Operations
 
@@ -129,9 +131,9 @@ If needed, a request to the entropy source hardware interface will be made.
 This step can take milliseconds if seed entropy is not immediately available.
 Once all of the prerequisites have been collected, a CTR_DRBG command can be launched.
 This command will go into the `ctr_drbg_cmd` block.
-This `ctr_drbg_cmd` block uses two NIST-defined functions, the update and the block_encrypt functions.
+This `ctr_drbg_cmd` block uses two NIST-defined functions, the update and the `block_encrypt` functions.
 If the command is a generate, the `ctr_drbg_cmd` block will process the first half of the algorithm, and then pass it on to the `ctr_drbg_gen` block.
-Additionally, the `ctr_drbg_gen` block also uses the update block and the block_encrypt block.
+Additionally, the `ctr_drbg_gen` block also uses the `update` block and the `block_encrypt` block.
 To keep resources to a minimum, both of these blocks have arbiters to allow sharing between the `ctr_drbg_cmd` and `ctr_drbg_gen` blocks.
 The command field called `ccmd` (for current command) is sent along the pipeline to not only identify the command, but is also reused as a routing tag for the arbiters to use when returning the block response.
 
@@ -154,7 +156,7 @@ The table below lists other CSRNG signals.
 
 Signal                       | Direction        | Type                        | Description
 -----------------------------|------------------|-----------------------------|---------------
-`otp_en_csrng_sw_app_read_i` | `input `         | `otp_en_t `                 | An efuse that will enable firmware to access the NIST ctr_drbg internal state and genbits through registers.
+`otp_en_csrng_sw_app_read_i` | `input `         | `otp_en_t `                 | An efuse that will enable firmware to access the NIST CTR_DRBG internal state and genbits through registers.
 `lc_hw_debug_en_i`           | `input`          | `lc_tx_t `                  | A life-cycle that will select which diversification value is used for xoring with the seed from ENTROPY_SRC.
 `entropy_src_hw_if_o`        | `output`         | `entropy_src_hw_if_req_t`   | Seed request made to the ENTROPY_SRC module.
 `entropy_src_hw_if_i`        | `input`          | `entropy_src_hw_if_rsp_t`   | Seed response from the ENTROPY_SRC module.
@@ -191,19 +193,22 @@ It holds the following values:
   <tr>
     <td>31:0</td>
     <td>Reseed Counter</td>
-    <td> Value required by NIST to be held in the state instance.
+    <td> Value required and defined by NIST's SP 800-90A to be held in the state instance.
+    It keeps track of the number of pseudorandom bits requested since the last instantiation or reseeding.
     </td>
   </tr>
   <tr>
     <td>159:32</td>
     <td>V</td>
-    <td> Value required by NIST to be held in the state instance, and is of size <tt>BlockLen</tt>.
+    <td> Value required and defined by NIST's SP 800-90A to be held in the state instance, and is of size <tt>BlkLen</tt>.
+    This value changes every time a <tt>BlkLen</tt> bits of output are generated.
     </td>
   </tr>
   <tr>
     <td>415:160</td>
     <td>Key</td>
-    <td> Value required by NIST to be held in the state instance, and is of size <tt>KeyLen</tt>.
+    <td> Value required and defined by NIST's SP 800-90A to be held in the state instance, and is of size <tt>KeyLen</tt>.
+    The key is changed after a predetermined number of blocks of output have been produced.
     </td>
   </tr>
   <tr>
@@ -294,7 +299,7 @@ Below is a description of the fields of this header:
     <td>flag0</td>
     <td> Command Flag0: flag0 is associated with current command.
          Setting this field to kMultiBitBool4True will enable flag0 to be enabled.
-         Note that <tt>flag0</tt> is used for the <tt>instantiate</tt> and  <tt>reseed</tt> commands only.
+         Note that <tt>flag0</tt> is used for the <tt>instantiate</tt> and  <tt>reseed</tt> commands only, for all other commands its value is ignored.
     </td>
   </tr>
   <tr>
@@ -531,24 +536,10 @@ The `cs_entropy_req` interrupt will assert when CSRNG requests entropy from ENTR
 
 The `cs_hw_inst_exc` interrupt will assert when any of the hardware-controlled CSRNG instances encounters an exception while executing a command, either due to errors on the command sequencing, or an exception within the `ENTROPY_SRC` IP.
 
-The `cs_fifo_err` interrupt will assert when any of the CSRNG FIFOs has a malfunction.
+The `cs_fatal_err` interrupt will assert when any of the CSRNG FIFOs has a malfunction.
 The conditions that cause this to happen are either when there is a push to a full FIFO or a pull from an empty FIFO.
 
 # Programmers Guide
-
-## Initialization
-
-The following code snippet demonstrates initializing the CSRNG block.
-
-```cpp
-void csrng_init(unsigned int enable) {
-
-  // set the control register enable bit
-  *CTRL_REG = enable; // should be 0x1 by default
-
-  // the CSRNG interrupts can optionally be enabled
-}
-```
 
 ## Device Interface Functions (DIFs)
 
