@@ -2324,7 +2324,10 @@
             - For HardwareRevisionSecret, use the constant values in design.
             - Configure the keymgr and advance to `CreatorRootKey` and `OwnerIntermediateKey`.
             - Check keymgr internal keys after advance operations.
-            - Generate identity / SW output for both Attestation CDI and Sealing CDI.
+            - Generate identity / SW output for the Sealing CDI.
+               - No need to test the Attestation CDI in chip-level as the only difference is to
+                 use another set of CSR values, and the rest of inputs are the same as the Sealing
+                 CDI.
             - KMAC should finish hashing successfully (not visible to SW) and return digest to
               keymgr.
             - Read keymgr CSRs `SW_SHARE*` and verify the return values.
@@ -2349,11 +2352,10 @@
       name: chip_sw_keymgr_sideload_kmac
       desc: '''Verify the keymgr sideload interface to KMAC.
 
-            - Configure the keymgr and advance to `CreatorRootKey`.
+            - Configure the keymgr and advance to the `OwnerIntKey` state.
             - Transmit a sideloaded key to the KMAC.
             - Configure KMAC to use the sideload key to generate digest data.
             - Verify the digest for correctness.
-            - Advance to 2 other operational states and repeat the above sequences (optional).
 
             X-ref'ed with chip_kmac_app_keymgr test.
             '''
