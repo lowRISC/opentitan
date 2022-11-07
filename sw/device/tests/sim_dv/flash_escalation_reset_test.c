@@ -42,8 +42,7 @@ enum {
   kEscalationPhase0Micros = 100,  // 100 us
   kEscalationPhase1Micros = 100,  // 100 us
   kMaxInterrupts = 30,
-  kRegionBaseBank1Page0Index = TOP_EARLGREY_EFLASH_SIZE_BYTES / 2,
-  kPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+  kRegionBaseBank1Page0Addr = FLASH_CTRL_PARAM_BYTES_PER_BANK,
   kNumTestWords = 16,
   kNumTestBytes = kNumTestWords * sizeof(uint32_t),
   kExpectedAlertNumber = 0,
@@ -223,8 +222,9 @@ bool test_main(void) {
 
   if (rst_info == kDifRstmgrResetInfoPor) {
     alert_handler_config();
-    LOG_INFO("host read start");
-    read_host_if(kPageSize * kRegionBaseBank1Page0Index);
+    LOG_INFO("host read start from 0x%x",
+             TOP_EARLGREY_EFLASH_BASE_ADDR + kRegionBaseBank1Page0Addr);
+    read_host_if(kRegionBaseBank1Page0Addr);
     // Set the timer value longer than escalation timeout.
     // 'static_assert' is added to check it.
     set_aon_timers(&aon_timer);
