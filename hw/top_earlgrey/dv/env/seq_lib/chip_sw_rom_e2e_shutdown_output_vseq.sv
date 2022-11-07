@@ -46,15 +46,33 @@ class chip_sw_rom_e2e_shutdown_output_vseq extends chip_sw_base_vseq;
     end
   endtask
 
-  virtual task body();
-    check_hdl_paths();
-    super.body();
+  virtual task check_uart_output_msg(string exp_msg);
+    // Clean out the UART FIFO.
+    uart_tx_data_q.delete();
 
-    fork
-      wait_for_sram_init_done();
-      get_uart_tx_items(UART0_IDX);
-    join_none
+    `uvm_info(`gfn, $sformatf("Configuring and connecting UART agent to UART0 ..."), UVM_LOW)
+    cfg.m_uart_agent_cfgs[UART0_IDX].set_parity(1'b0, 1'b0);
+    cfg.m_uart_agent_cfgs[UART0_IDX].set_baud_rate(cfg.uart_baud_rate);
+    cfg.m_uart_agent_cfgs[UART0_IDX].en_tx_monitor = 1;
+    cfg.m_uart_agent_cfgs[UART0_IDX].en_rx_monitor = 1;
+    cfg.chip_vif.enable_uart(UART0_IDX, 1);
 
+    // Wait until we receive the expected boot fault message length of bytes over UART0.
+    `DV_WAIT(uart_tx_data_q.size() == exp_msg.len())
+    `uvm_info(`gfn, "Checking the UART TX data matches expected boot fault msg ...", UVM_LOW)
+    foreach (uart_tx_data_q[i]) begin
+      `DV_CHECK_EQ(uart_tx_data_q[i], exp_msg[i],
+        $sformatf("UART TX byte \"%s\" at index %d does not match \"%s\"",
+          i, uart_tx_data_q[i], exp_msg[i]))
+    end
+
+    // Disconnect the UART interface before POR_N to avoid multiple driver issue on UART pins.
+    cfg.chip_vif.enable_uart(UART0_IDX, 0);
+    cfg.m_uart_agent_cfgs[UART0_IDX].en_tx_monitor = 0;
+    cfg.m_uart_agent_cfgs[UART0_IDX].en_rx_monitor = 0;
+  endtask
+
+  virtual task check_rom_console_messages();
     foreach (exp_boot_fault_msgs[lc_state]) begin
       `uvm_info(`gfn, $sformatf("Backdoor overwriting the lifecycle state and applying POR ..."),
         UVM_LOW)
@@ -66,33 +84,22 @@ class chip_sw_rom_e2e_shutdown_output_vseq extends chip_sw_base_vseq;
       // sampling in TestUnlocked* and RMA lifecycel states).
       `DV_WAIT(sram_init_done_event.triggered)
 
-      // Clean out the UART FIFO.
-      `uvm_info(`gfn, $sformatf("UART TX queue (before):"), UVM_LOW)
-      uart_tx_data_q.delete();
-
-      `uvm_info(`gfn, $sformatf("Configuring and connecting UART agent to UART0 ..."), UVM_LOW)
-      cfg.m_uart_agent_cfgs[UART0_IDX].set_parity(1'b0, 1'b0);
-      cfg.m_uart_agent_cfgs[UART0_IDX].set_baud_rate(cfg.uart_baud_rate);
-      cfg.m_uart_agent_cfgs[UART0_IDX].en_tx_monitor = 1;
-      cfg.m_uart_agent_cfgs[UART0_IDX].en_rx_monitor = 1;
-      cfg.chip_vif.enable_uart(UART0_IDX, 1);
-
-      // Wait until we receive the expected boot fault message length of bytes over UART0.
-      `DV_WAIT(uart_tx_data_q.size() == exp_boot_fault_msgs[lc_state].len())
-      `uvm_info(`gfn, "Checking the UART TX data matches expected boot fault msg ...", UVM_LOW)
-      foreach (uart_tx_data_q[i]) begin
-        `DV_CHECK_EQ(uart_tx_data_q[i], exp_boot_fault_msgs[lc_state][i],
-          $sformatf("UART TX byte \"%s\" at index %d does not match \"%s\"",
-            i, uart_tx_data_q[i], exp_boot_fault_msgs[lc_state][i]))
-      end
-
-      // Disconnect the UART interface before POR_N to avoid multiple driver issue on UART pins.
-      cfg.chip_vif.enable_uart(UART0_IDX, 0);
-      cfg.m_uart_agent_cfgs[UART0_IDX].en_tx_monitor = 0;
-      cfg.m_uart_agent_cfgs[UART0_IDX].en_rx_monitor = 0;
+      check_uart_output_msg(exp_boot_fault_msgs[lc_state]);
     end
+  endtask
 
-    // Test passed.
+  virtual task body();
+    check_hdl_paths();
+    super.body();
+
+    fork
+      wait_for_sram_init_done();
+      get_uart_tx_items(UART0_IDX);
+    join_none
+
+    check_rom_console_messages();
+
+    // Test passed if all console messages are correct.
     override_test_status_and_finish(.passed(1'b1));
   endtask
 
