@@ -449,7 +449,6 @@ opentitan_functest(
     overlays = [
         "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
     ],
 ) for lc_state in structs.to_dict(CONST.LCV)]
@@ -571,7 +570,6 @@ BOOT_POLICY_NEWER_CASES = [
     overlays = [
         "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
     ],
 ) for lc_state in structs.to_dict(CONST.LCV)]
@@ -659,7 +657,6 @@ otp_json(
     overlays = [
         "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
         ":otp_json_boot_policy_rollback",
     ],
@@ -770,7 +767,6 @@ opentitan_flash_binary(
         overlays = [
             "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
             ":otp_json_sigverify_mod_exp_{}".format(t["name"]),
         ],
@@ -1025,7 +1021,6 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
         overlays = [
             "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
             ":otp_json_sec_ver_{}".format(sec_ver),
         ],
@@ -1169,7 +1164,6 @@ SHUTDOWN_WATCHDOG_CASES = [
         overlays = [
             "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
             ":otp_json_shutdown_watchdog_{}_{}".format(
                 t["lc_state"],
@@ -1287,7 +1281,6 @@ BOOT_POLICY_VALID_CASES = [
         overlays = [
             "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
         ],
     )
@@ -1363,7 +1356,6 @@ OTP_CFGS_EXEC_DISABLED = [
         overlays = [
             "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
         ],
@@ -1587,7 +1579,6 @@ REDACT.update({"INVALID": 0x0})
         overlays = [
             "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
             "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
             ":otp_json_{}_overlay".format(redact.lower()),
         ],
