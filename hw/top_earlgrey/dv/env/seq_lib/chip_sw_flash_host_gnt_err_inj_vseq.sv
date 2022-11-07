@@ -30,7 +30,7 @@ class chip_sw_flash_host_gnt_err_inj_vseq extends chip_sw_base_vseq;
   endtask // body
 
   task polling_host_gnt();
-    bit val;
+    bit val = 0;
     while (!val) begin
       `DV_CHECK(uvm_hdl_read(FLASH_BANK1_HOST_GNT_PATH, val));
       cfg.clk_rst_vif.wait_clks(1);
