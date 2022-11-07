@@ -15,12 +15,12 @@ exact_regex () {
 }
 
 check_empty () {
-if [[ ${1} ]]; then
-  echo "Error:"
-  echo "$1"|sed 's/^/    /';
-  echo "$2"
-  exit 1
-fi
+    if [[ ${1} ]]; then
+        echo "Error:"
+        echo "$1"|sed 's/^/    /';
+        echo "$2"
+        exit 1
+    fi
 }
 
 # This check ensures OpenTitan software can be built with a wildcard without
@@ -38,12 +38,12 @@ untagged=$(./bazelisk.sh query \
   )" \
   --output=label_kind)
 check_empty "${untagged}" \
-"Target(s) above depend(s) on //hw:verilator, please tag it with verilator or
+"Target(s) above depend(s) on //hw:verilator; please tag it with verilator or
 (to prevent matching any wildcards) manual.
-NOTE: test_suites that contain targets with different tags should almost
+NOTE: test_suites that contain bazel tests with different tags should almost
 universally use the manual tag."
 
-# This check ensures Opentitan software can be built with wildcards in
+# This check ensures OpenTitan software can be built with wildcards in
 # environments that don't have vivado or vivado tools installed by using
 # --build_tag_filters=-vivado.
 untagged=$(./bazelisk.sh query \
@@ -64,18 +64,19 @@ untagged=$(./bazelisk.sh query \
 check_empty "${untagged}" \
 "Target(s) above depend(s) on a bitstream_splice that isn't cached.
 Please tag it with vivado or (to prevent matching any wildcards) manual.
-NOTE: test_suites that contain targets with different tags should almost
+NOTE: test_suites that contain tests with different sets of tags should almost
 universally use the manual tag."
 
-# This check ensures cw310 users may group tests that depend on the cached
-# cw310_test_rom bitstream.
+# This check ensures cw310 users may filter tests with the "cw310_test_rom" tag
+# to run tests with a common bitstream available in GCP to avoid issues building
+# and loading new bitstreams.
 mistagged=$(./bazelisk.sh query \
     "tests(`# Only output tests`
         rdeps(
             attr(`# Anything tagged cw310_test_rom`
                 tags,
                 '$(exact_regex cw310_test_rom)',
-                tests(//...)
+                //...
             ),
             kind(`# That depends on a bitstream splice`
                 'bitstream_splice',
@@ -89,19 +90,19 @@ mistagged=$(./bazelisk.sh query \
     )" \
     --output=label_kind)
 check_empty "${mistagged}" \
-"Target(s) above depend(s) on a bitstream_splice rule other than those used to
-generate the cached bitstream with the test_ROM, but is tagged with cw310_test_rom.
+"Target(s) above depend(s) on a bitstream_splice bazel target other than those
+used to generate the cached bitstream with the test_ROM, but is tagged with
+cw310_test_rom.
 Please either:
 -Correct the dependencies to exclude other bitstream_splices,
--Correct the target by setting it to something other than cw310_test_rom,
+-Correct the functest target by setting it to something other than cw310_test_rom,
 -Remove the cw310_test_rom tag.
-NOTE: test_suites that contain targets with different tags should almost
+NOTE: test_suites that contain tests with different sets of tags should almost
 universally use the manual tag."
 
-
-
-# This check ensures cw310 users may group tests that depend on the cached
-# cw310_rom bitstream.
+# This check ensures cw310 users may filter tests with the "cw310_rom" tag to
+# run tests with a common bitstream available in GCP to avoid issues building
+# and loading new bitstreams.
 mistagged=$(./bazelisk.sh query \
     "tests(`# Only output tests`
         rdeps(
@@ -120,11 +121,11 @@ mistagged=$(./bazelisk.sh query \
     )" \
     --output=label_kind)
 check_empty "${mistagged}" \
-"Target(s) above depend(s) on a bitstream_splice rule other than those used to
+"Target(s) above depend(s) on a bitstream_splice bazel target other than those used to
 generate the cached bitstream with the ROM, but is tagged with cw310_rom.
 Please either:
 -Correct the dependencies to exclude other bitstream_splices,
--Correct the target by setting it to something like cw310_rom_variant,
+-Correct the functest target by setting it to something like cw310_rom_variant,
 -Correct the tag by setting it to cw310_rom_variant.
-NOTE: test_suites that contain targets with different tags should almost
+NOTE: test_suites that contain tests with different tags should almost
 universally use the manual tag."

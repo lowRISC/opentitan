@@ -1870,6 +1870,7 @@ SIGVERIFY_BAD_CASES = [
 
 test_suite(
     name = "sigverify_always",
+    tags = ["manual"],
     tests = [
         "sigverify_always_a_{}_b_{}".format(
             a["desc"],
@@ -1878,5 +1879,4 @@ test_suite(
         for a in SIGVERIFY_BAD_CASES
         for b in SIGVERIFY_BAD_CASES
     ],
-    tags = ["manual"],
 )
