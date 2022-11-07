@@ -221,13 +221,11 @@ opentitan_functest(
     name = "e2e_bootup_success_otp_dev",
     cw310 = cw310_params(
         bitstream = "//hw/bitstream:rom_otp_dev",
-        # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
-        # bitstream target can fetch pre-spliced bitstream from GCP.
-        tags = ["manual"],
+        tags = ["vivado"],
     ),
     key = "test_key_0",
     ot_flash_binary = ":empty_test_slot_a",
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_variant"],
 )
 
 opentitan_functest(
@@ -704,7 +702,7 @@ otp_json(
         t["a"],
         t["b"],
     ),
-    targets = ["cw310_rom"],
+    targets = ["cw310_rom_variant"],
 ) for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items() for t in BOOT_POLICY_ROLLBACK_CASES]
 
 test_suite(
@@ -1228,7 +1226,7 @@ SHUTDOWN_WATCHDOG_CASES = [
         local_defines = [
             "HANG_SECS=1",
         ],
-        targets = ["cw310_rom"],
+        targets = ["cw310_rom_variant"],
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],

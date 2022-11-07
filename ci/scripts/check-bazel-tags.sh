@@ -63,22 +63,24 @@ Please tag it with vivado or manual."
 # This check ensures cw310 users may group tests that depend on the cached
 # cw310_test_rom bitstream.
 mistagged=$(./bazelisk.sh query \
-  "rdeps(
-      attr(
-          tags,
-          '$(exact_regex cw310_test_rom)',
-          //...
-      ),
-      kind(
-          'bitstream_splice',
-          //...
-      )
-      except
-      deps(
-          //hw/bitstream:test_rom
-      )
-  )" \
-  --output=label_kind)
+    "tests(
+        rdeps(
+            attr(
+                tags,
+                '$(exact_regex cw310_test_rom)',
+                tests(//...)
+            ),
+            kind(
+                'bitstream_splice',
+                //...
+            )
+            except
+            deps(
+                //hw/bitstream:test_rom
+            )
+        )
+    )" \
+    --output=label_kind)
 check_empty "${mistagged}" \
 "Target(s) above depend(s) on a bitstream_splice other than those used to generate the test_rom.
 Please tag as cw310_*_variant if you intended to use another bitstream."
@@ -86,20 +88,22 @@ Please tag as cw310_*_variant if you intended to use another bitstream."
 # This check ensures cw310 users may group tests that depend on the cached
 # cw310_rom bitstream.
 mistagged=$(./bazelisk.sh query \
-    "rdeps(
-        attr(
-            tags,
-            '$(exact_regex cw310_rom)',
-            //...
-        ),
-        kind(
-            'bitstream_splice',
-            //...
+    "tests(
+        rdeps(
+            attr(
+                tags,
+                '$(exact_regex cw310_rom)',
+                //...
+            ),
+            kind(
+                'bitstream_splice',
+                //...
+            )
+            except
+            deps(//hw/bitstream:rom)
         )
-        except
-        deps(//hw/bitstream:rom)
-  )" \
-  --output=label_kind)
+    )" \
+    --output=label_kind)
 check_empty "${mistagged}" \
 "Above target(s) depend(s) on a bitstream_splice other than those used to generate the rom.
 Please tag as cw310_*_variant if you intend to use another bitstream."
