@@ -199,9 +199,13 @@ module keymgr_kmac_if import keymgr_pkg::*;(
           end else if (gen_en_i) begin
             rounds = LastGenRound;
           end
-
-          // we are sending only 1 entry
-          state_d = (rounds == 0) ? StTxLast : StTx;
+          // simplify the transition when rounds can never be zero, so that we don't have
+          // the unreachable transition StIdle -> StTxLast.
+          if (0 inside {LastAdvRound, LastIdRound, LastGenRound}) begin : gen_zero_rounds
+            state_d = (rounds == 0) ? StTxLast : StTx;
+          end else begin : gen_no_zero_rounds
+            state_d = StTx;
+          end
         end
       end
 

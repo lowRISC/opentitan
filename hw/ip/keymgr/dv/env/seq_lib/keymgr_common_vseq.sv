@@ -102,8 +102,8 @@ class keymgr_common_vseq extends keymgr_base_vseq;
           exp[keymgr_pkg::FaultKmacFsm] = 1;
           if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultKmacFsm);
         end else if (!uvm_re_match("*.u_sideload_ctrl*", if_proxy.path)) begin
-          exp[keymgr_pkg::FaultSideSel] = 1;
-          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultSideSel);
+          exp[keymgr_pkg::FaultSideFsm] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultSideFsm);
         end else begin
           exp[keymgr_pkg::FaultCtrlFsm] = 1;
           if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultCtrlFsm);
