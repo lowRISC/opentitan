@@ -323,3 +323,8 @@ py_library(
     name = "version",
     srcs = ["version.py"],
 )
+
+filegroup(
+    name = "tpl_files",
+    srcs = glob(["**/*.tpl"]),
+)
