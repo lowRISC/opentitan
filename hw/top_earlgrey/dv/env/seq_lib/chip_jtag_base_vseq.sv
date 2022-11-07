@@ -36,6 +36,12 @@ class chip_jtag_base_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.chip_vif.lc_ready == '0)
     `uvm_info(`gfn, "LC controller reset", UVM_MEDIUM)
 
+    // Another dummy write to prove that transactions can happen correctly
+    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(1));
+
+    `DV_WAIT(cfg.chip_vif.lc_ready == 1'b1)
+    `uvm_info(`gfn, "LC controller reset", UVM_MEDIUM)
+
   endtask
 
    task ndm_reset_off();
