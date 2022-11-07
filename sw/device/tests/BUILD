@@ -272,6 +272,11 @@ opentitan_functest(
 opentitan_functest(
     name = "aon_timer_irq_test",
     srcs = ["aon_timer_irq_test.c"],
+    targets = [
+        "dv",
+        "verilator",
+        "cw310_test_rom",
+    ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
