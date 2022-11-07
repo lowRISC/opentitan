@@ -20,7 +20,7 @@ class edn_env_cfg extends cip_base_env_cfg #(.RAL_T(edn_reg_block));
   // handle to edn assert interface
   virtual edn_assert_if edn_assert_vif;
   // handle to edn path interface
-  virtual edn_path_if edn_path_vif;
+  virtual edn_if edn_vif;
 
   // Variables
   uint   reseed_cnt, generate_cnt, generate_between_reseeds_cnt;

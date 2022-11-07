@@ -26,8 +26,8 @@ class edn_disable_vseq extends edn_base_vseq;
     fork
       begin
         // Wait until reset and clock are ready.
+        bit [TL_DW-1:0] ctrl_val;
         wait(cfg.clk_rst_vif.rst_n == 1);
-        cfg.clk_rst_vif.wait_clks(1);
 
         // Random delay, disable edn
         if ($urandom_range(0, 1)) begin
@@ -48,9 +48,16 @@ class edn_disable_vseq extends edn_base_vseq;
                 cfg.clk_rst_vif.wait_clks(1);
               end)
          end
-        csr_wr(.ptr(ral.ctrl.edn_enable), .value(MuBi4False));
+        wait_no_outstanding_access();
+        // TODO: if directly writing to ral.ctrl.edn_enable, sometimes it will override the
+        // boot_req_mode to Mubi4False, so I hardcode this ctrl_val for now.
+        ctrl_val = {MuBi4False, MuBi4False, MuBi4True, MuBi4False};
+        csr_wr(.ptr(ral.ctrl), .value(ctrl_val));
+        cfg.edn_vif.drive_edn_disable(1);
         cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
         // Enable edn
+        wait_no_outstanding_access();
+        cfg.edn_vif.drive_edn_disable(0);
         csr_wr(.ptr(ral.ctrl.edn_enable), .value(MuBi4True));
       end
     join_none

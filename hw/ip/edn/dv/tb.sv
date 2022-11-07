@@ -17,6 +17,9 @@ module tb;
   wire   devmode;
   wire   intr_edn_cmd_req_done, intr_edn_fatal_err;
   wire [NUM_MAX_INTERRUPTS-1:0]   interrupts;
+  // This is used to notify the csrng_agent that the EDN is disabled, and will drop the current
+  // CSRNG request.
+  wire   edn_disable_o;
   edn_pkg::edn_req_t [MAX_NUM_ENDPOINTS - 1:0] endpoint_req;
   edn_pkg::edn_rsp_t [MAX_NUM_ENDPOINTS - 1:0] endpoint_rsp;
 
@@ -25,13 +28,14 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  csrng_if csrng_if(.clk(clk), .rst_n(rst_n));
+  csrng_if csrng_if(.clk(clk), .rst_n(edn_disable_o === 1 ? ~edn_disable_o : rst_n));
   push_pull_if#(.HostDataWidth(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH))
        endpoint_if[MAX_NUM_ENDPOINTS](.clk(clk), .rst_n(rst_n));
-  edn_path_if edn_path_if (.edn_i(edn_i));
+  edn_if edn_if (.edn_i(edn_i));
   edn_assert_if edn_assert_if (.edn_i(edn_i));
 
   `DV_ALERT_IF_CONNECT
+  assign edn_disable_o = edn_if.edn_disable_o;
 
   // dut
   edn#(.NumEndPoints(MAX_NUM_ENDPOINTS)) dut (
@@ -78,7 +82,7 @@ module tb;
     uvm_config_db#(virtual csrng_if)::set(null, "*.env.m_csrng_agent*", "vif", csrng_if);
     uvm_config_db#(virtual edn_cov_if)::set(null, "*.env", "edn_cov_if", dut.u_edn_cov_if);
     uvm_config_db#(virtual edn_assert_if)::set(null, "*.env", "edn_assert_vif", edn_assert_if);
-    uvm_config_db#(virtual edn_path_if)::set(null, "*.env", "edn_path_vif", edn_path_if);
+    uvm_config_db#(virtual edn_if)::set(null, "*.env", "edn_vif", edn_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

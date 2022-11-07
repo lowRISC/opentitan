@@ -39,8 +39,8 @@ class edn_env extends cip_base_env #(
     end
 
     // config edn path virtual interface
-    if (!uvm_config_db#(virtual edn_path_if)::get(this, "", "edn_path_vif", cfg.edn_path_vif)) begin
-      `uvm_fatal(`gfn, "failed to get edn_path_vif from uvm_config_db")
+    if (!uvm_config_db#(virtual edn_if)::get(this, "", "edn_vif", cfg.edn_vif)) begin
+      `uvm_fatal(`gfn, "failed to get edn_vif from uvm_config_db")
     end
   endfunction
 

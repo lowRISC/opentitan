@@ -13,7 +13,7 @@ filesets:
       - lowrisc:dv:csrng_agent
     files:
       - edn_env_pkg.sv
-      - edn_path_if.sv
+      - edn_if.sv
       - edn_env_cfg.sv: {is_include_file: true}
       - edn_env_cov.sv: {is_include_file: true}
       - edn_virtual_sequencer.sv: {is_include_file: true}
