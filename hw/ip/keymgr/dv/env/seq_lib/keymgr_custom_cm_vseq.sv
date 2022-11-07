@@ -57,18 +57,23 @@ class keymgr_custom_cm_vseq extends keymgr_lc_disable_vseq;
     case (fi_type)
       FaultOpNotOnehot, FaultOpNotConsistent: begin
         csr_rd_check(.ptr(ral.fault_status.cmd), .compare_value(1));
+        if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultKmacCmd);
       end
       FaultKmacDoneError: begin
         csr_rd_check(.ptr(ral.fault_status.kmac_done), .compare_value(1));
+        if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultKmacDone);
       end
       FaultOpNotExist: begin
         csr_rd_check(.ptr(ral.fault_status.ctrl_fsm_chk), .compare_value(1));
+        if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultCtrlFsmChk);
       end
       FaultSideloadNotConsistent: begin
         csr_rd_check(.ptr(ral.fault_status.side_ctrl_sel), .compare_value(1));
+        if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultSideSel);
       end
       FaultKeyIntgError: begin
         csr_rd_check(.ptr(ral.fault_status.key_ecc), .compare_value(1));
+        if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultKeyEcc);
       end
       default: `uvm_fatal(`gfn, "impossible value")
     endcase

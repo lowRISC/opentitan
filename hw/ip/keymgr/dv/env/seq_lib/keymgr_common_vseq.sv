@@ -82,21 +82,32 @@ class keymgr_common_vseq extends keymgr_base_vseq;
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
     bit[TL_DW-1:0] exp;
 
-    // TODO, remove this after #8464 is solved
-    if (!uvm_re_match("*.u_kmac_if*", if_proxy.path)) return;
-
     super.check_sec_cm_fi_resp(if_proxy);
 
     case (if_proxy.sec_cm_type)
       SecCmPrimCount: begin
         if (!uvm_re_match("*.u_reseed_ctrl*", if_proxy.path)) begin
           exp[keymgr_pkg::FaultReseedCnt] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultReseedCnt);
+        end else if (!uvm_re_match("*.u_kmac_if*", if_proxy.path)) begin
+          exp[keymgr_pkg::FaultKmacFsm] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultKmacFsm);
         end else begin
           exp[keymgr_pkg::FaultCtrlCnt] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultCtrlCnt);
         end
       end
       SecCmPrimSparseFsmFlop: begin
-        exp[keymgr_pkg::FaultCtrlFsm] = 1;
+        if (!uvm_re_match("*.u_kmac_if*", if_proxy.path)) begin
+          exp[keymgr_pkg::FaultKmacFsm] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultKmacFsm);
+        end else if (!uvm_re_match("*.u_sideload_ctrl*", if_proxy.path)) begin
+          exp[keymgr_pkg::FaultSideSel] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultSideSel);
+        end else begin
+          exp[keymgr_pkg::FaultCtrlFsm] = 1;
+          if (cfg.en_cov) cov.fault_status_cg.sample(keymgr_pkg::FaultCtrlFsm);
+        end
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
     endcase
@@ -130,9 +141,13 @@ class keymgr_common_vseq extends keymgr_base_vseq;
         if (enable) begin
           $asserton(0, "tb.dut.u_ctrl.LoadKey_A");
           $asserton(0, "tb.dut.u_sideload_ctrl.KmacKeySource_a");
+          $asserton(0, "tb.dut.u_ctrl.DataEn_A");
+          $asserton(0, "tb.dut.u_ctrl.DataEnDis_A");
         end else begin
           $assertoff(0, "tb.dut.u_ctrl.LoadKey_A");
           $assertoff(0, "tb.dut.u_sideload_ctrl.KmacKeySource_a");
+          $assertoff(0, "tb.dut.u_ctrl.DataEn_A");
+          $assertoff(0, "tb.dut.u_ctrl.DataEnDis_A");
         end
       end
       SecCmPrimOnehot: begin
