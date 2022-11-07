@@ -37,6 +37,7 @@ format expected by the image generation tool.
 """
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("//rules:host.bzl", "host_tools_transition")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -116,7 +117,7 @@ def _otp_alert_digest_impl(ctx):
     ]
 
     args = ctx.actions.args()
-    args.add_all(("otp", "alert-digest", ctx.file.otp_img))
+    args.add_all(("--rcfile=", "otp", "alert-digest", ctx.file.otp_img))
     args.add("--output", file)
 
     ctx.actions.run(
@@ -138,6 +139,11 @@ otp_alert_digest = rule(
         "_opentitantool": attr.label(
             default = "//sw/host/opentitantool:opentitantool",
             allow_single_file = True,
+            executable = True,
+            cfg = host_tools_transition,
+        ),
+        "_allowlist_function_transition": attr.label(
+            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
         ),
     },
 )
