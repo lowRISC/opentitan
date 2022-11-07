@@ -40,15 +40,17 @@ export BITSTREAM="--offline --list ${SHA}"
 # in case we've crashed the UART handler on the CW310's SAM3U
 trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --interface=cw310 fpga reset' EXIT
 
+# Tags help control which tests run in CI and when.
+# The cw310_tags used here are described at https://docs.opentitan.org/doc/getting_started/build_sw/#tags-and-wildcards
 for tag in "${cw310_tags[@]}"; do
-    ./bazelisk.sh query 'rdeps(//..., @bitstreams//...)' |
-        xargs ci/bazelisk.sh test \
-            --define DISABLE_VERILATOR_BUILD=true \
-            --nokeep_going \
-            --test_tag_filters="${tag}",-broken,-manual,-skip_in_ci \
-            --test_timeout_filters=short,moderate \
-            --test_output=all \
-            --build_tests_only \
-            --define cw310=lowrisc \
-            --flaky_test_attempts=2
+    ci/bazelisk.sh test \
+        --define DISABLE_VERILATOR_BUILD=true \
+        --nokeep_going \
+        --test_tag_filters="${tag}",-broken,-skip_in_ci \
+        --test_timeout_filters=short,moderate \
+        --test_output=all \
+        --build_tests_only \
+        --define cw310=lowrisc \
+        --flaky_test_attempts=2 \
+        //...
 done
