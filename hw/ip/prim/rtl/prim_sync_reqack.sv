@@ -212,13 +212,50 @@ module prim_sync_reqack #(
       dst_req_o, clk_dst_i, !rst_src_ni || !rst_dst_ni)
 
   if (EnRstChks) begin : gen_assert_en_rst_chks
+  `ifdef INC_ASSERT
+
+    //VCS coverage off
+    // pragma coverage off
+    // This assertion is written very oddly because it is difficult to reliably catch
+    // when rst drops.
+    // The problem is that reset assertion in the design is often associated with clocks
+    // stopping, this means things like rise / fell don't work correctly since there are
+    // no clocks.
+    // As a result of this, we end up detecting way past the interest point (whenever
+    // clocks are restored) and falsely assert an error.
+    // The code below instead tries to use asynchronous flags to determine when and if
+    // the two domains are properly reset.
+    logic src_reset_flag;
+    always_ff @(posedge clk_src_i or negedge rst_src_ni) begin
+      if (!rst_src_ni) begin
+        src_reset_flag <= '0;
+      end else if(src_req_i) begin
+        src_reset_flag <= 1'b1;
+      end
+    end
+
+    logic dst_reset_flag;
+    always_ff @(posedge clk_dst_i or negedge rst_dst_ni) begin
+      if (!rst_dst_ni) begin
+        dst_reset_flag <= '0;
+      end else if (dst_req_o) begin
+        dst_reset_flag <= 1'b1;
+      end
+    end
+    //VCS coverage on
+    // pragma coverage on
+
     // Always reset both domains. Both resets need to be active at the same time.
     `ASSERT(SyncReqAckRstSrc, $fell(rst_src_ni) |->
-        (##[0:$] !rst_dst_ni within !rst_src_ni [*1:$]),
+        ((src_reset_flag | dst_reset_flag)  == '0),
         clk_src_i, 0)
     `ASSERT(SyncReqAckRstDst, $fell(rst_dst_ni) |->
-        (##[0:$] !rst_src_ni within !rst_dst_ni [*1:$]),
+        ((src_reset_flag | dst_reset_flag) == '0),
         clk_dst_i, 0)
+
+  `endif
+
+
   end
 
 endmodule
