@@ -34,8 +34,12 @@ interface fi_core_if
 
   // check which array we need to access and force or releae
   function automatic void force_signal(int target, bit rel, bit [31:0] value);
-    if (!rel) force_multi_bit((target), value);
-    else release_multi_bit(target);
+    if (!rel) begin
+      aes_core_cg_inst.sample(target);
+      force_multi_bit((target), value);
+    end else begin
+      release_multi_bit(target);
+    end
   endfunction // force_signal
 
   function automatic void force_multi_bit(int target, bit [31:0] value);
@@ -60,14 +64,8 @@ interface fi_core_if
   ///////////////////////////////////
 
   covergroup aes_core_cg (int num_bins) with function sample(int target);
-    // We want to see coverage per instance,
-    // but as the code are copies of eachother
-    // we don't need every instance to achieve 100% coverage
-    // a total of 100% is enough so we set the option
-    // to merge the coverage of the instances
-    option.per_instance         = 0;
-    option.name                 = "aes_core_interleave_cg";
-    type_option.merge_instances = 1;
+    option.per_instance = 1;
+    option.name         = "aes_core_interleave_cg";
 
     cp_target: coverpoint target
       {
