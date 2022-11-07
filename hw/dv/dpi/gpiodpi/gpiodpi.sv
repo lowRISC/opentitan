@@ -12,7 +12,9 @@ module gpiodpi
 
   output logic [N_GPIO-1:0] gpio_p2d,
   input  logic [N_GPIO-1:0] gpio_d2p,
-  input  logic [N_GPIO-1:0] gpio_en_d2p
+  input  logic [N_GPIO-1:0] gpio_en_d2p,
+  input  logic [N_GPIO-1:0] gpio_pull_en,
+  input  logic [N_GPIO-1:0] gpio_pull_sel,
 );
    import "DPI-C" function
      chandle gpiodpi_create(input string name, input int n_bits);
@@ -26,7 +28,9 @@ module gpiodpi
 
    import "DPI-C" function
      int gpiodpi_host_to_device_tick(input chandle ctx,
-                                     input [N_GPIO-1:0] gpio_en_d2p);
+                                     input [N_GPIO-1:0] gpio_en_d2p,
+                                     input [N_GPIO-1:0] gpio_pull_en,
+                                     input [N_GPIO-1:0] gpio_pull_sel);
 
    chandle ctx;
 
@@ -51,26 +55,8 @@ module gpiodpi
    always_ff @(posedge clk_i or negedge rst_ni) begin
      if (!rst_ni) begin
        gpio_p2d <= '0; // default value
-     end else if (gpio_write_pulse) begin
-       gpio_p2d <= gpiodpi_host_to_device_tick(ctx, gpio_en_d2p);
-     end
-   end
-
-   // gpiodpio_host_to_device_tick() will be called every MAX_COUNT
-   // clock posedges; this should be kept reasonably high, since each
-   // tick call will perform at least one syscall.
-   localparam MAX_COUNT = 2048;
-   logic [$clog2(MAX_COUNT)-1:0] counter;
-
-   assign gpio_write_pulse = counter == MAX_COUNT -1;
-
-   always_ff @(posedge clk_i or negedge rst_ni) begin
-     if (!rst_ni) begin
-       counter <= '0;
-     end else if (gpio_write_pulse) begin
-       counter <= '0;
      end else begin
-       counter <= counter + 1'b1;
+       gpio_p2d <= gpiodpi_host_to_device_tick(ctx, gpio_en_d2p, gpio_pull_en, gpio_pull_sel);
      end
    end
 

@@ -38,7 +38,9 @@ void gpiodpi_device_to_host(void *ctx_void, svBitVecVal *gpio_data,
  * Intended to be called from SystemVerilog.
  * @return the values to pull the GPIO pins to.
  */
-uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe);
+uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
+                                     svBitVecVal *gpio_pull_en,
+                                     svBitVecVal *gpio_pull_sel);
 
 /**
  * Relinquish resources held by a GPIO DPI interface.

@@ -21,6 +21,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+// The number of ticks of host_to_device_tick between making syscalls.
+#define TICKS_PER_SYSCALL 2048
+
 // This file does a lot of bit setting and getting; these macros are intended to
 // make that a little more readable.
 #define GET_BIT(word, bit_idx) (((word) >> (bit_idx)) & 1)
@@ -33,6 +36,11 @@ struct gpiodpi_ctx {
 
   // The last known value of the pins, in little-endian order.
   uint32_t driven_pin_values;
+  // Whether or not the pin is being driven weakly or strongly.
+  uint32_t weak_pins;
+  // A counter of calls into the host_to_device_tick function; used to
+  // avoid excessive `read` syscalls to the pipe fd.
+  uint32_t counter;
 
   // File descriptors and paths for the device-to-host and host-to-device
   // FIFOs.
@@ -90,6 +98,8 @@ static void print_usage(char *rfifo, char *wfifo, int n_bits) {
   printf("GPIO: To drive the pins, run a command like\n");
   printf("$ echo 'h09 l31' > %s  # Pull the pin 9 high, and pin 31 low.\n",
          wfifo);
+  printf("$ echo 'wh10' > %s  # Pull pin 10 high through a weak pull-up.\n",
+         wfifo);
 }
 
 void *gpiodpi_create(const char *name, int n_bits) {
@@ -103,6 +113,8 @@ void *gpiodpi_create(const char *name, int n_bits) {
   ctx->n_bits = n_bits;
 
   ctx->driven_pin_values = 0;
+  ctx->weak_pins = 0;
+  ctx->counter = 0;
 
   char cwd_buf[PATH_MAX];
   char *cwd = getcwd(cwd_buf, sizeof(cwd_buf));
@@ -186,53 +198,89 @@ static uint32_t parse_dec(char **text) {
   return value;
 }
 
-uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe) {
+static void set_bit_val(uint32_t *word, uint32_t idx, bool val) {
+  if (val) {
+    SET_BIT(*word, idx);
+  } else {
+    CLR_BIT(*word, idx);
+  }
+}
+
+uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
+                                     svBitVecVal *gpio_pull_en,
+                                     svBitVecVal *gpio_pull_sel) {
   struct gpiodpi_ctx *ctx = (struct gpiodpi_ctx *)ctx_void;
   assert(ctx);
 
-  char gpio_str[32 + 2];
-  ssize_t read_len = read(ctx->host_to_dev_fifo, gpio_str, 32 + 1);
-  if (read_len < 0) {
-    return ctx->driven_pin_values;
-  }
-  gpio_str[read_len] = '\0';
+  if (ctx->counter % TICKS_PER_SYSCALL == 0) {
+    char gpio_str[32 + 2];
+    ssize_t read_len = read(ctx->host_to_dev_fifo, gpio_str, 32 + 1);
+    if (read_len > 0) {
+      gpio_str[read_len] = '\0';
 
-  char *gpio_text = gpio_str;
-  for (; *gpio_text != '\0'; ++gpio_text) {
-    switch (*gpio_text) {
-      case '\n':
-      case '\r':
-      case '\0':
-        goto parse_loop_end;
-      case 'l':
-      case 'L': {
-        ++gpio_text;
-        int idx = parse_dec(&gpio_text);
-        if (!GET_BIT(gpio_oe[0], idx)) {
-          fprintf(stderr,
-                  "GPIO: Host tried to pull disabled pin low: pin %2d\n", idx);
+      bool weak = false;
+      char *gpio_text = gpio_str;
+      for (; *gpio_text != '\0'; ++gpio_text) {
+        switch (*gpio_text) {
+          case '\n':
+          case '\r':
+          case '\0':
+            goto parse_loop_end;
+          case 'w':
+          case 'W': {
+            weak = true;
+            break;
+          }
+          case 'l':
+          case 'L': {
+            ++gpio_text;
+            int idx = parse_dec(&gpio_text);
+            if (!GET_BIT(gpio_oe[0], idx)) {
+              fprintf(stderr,
+                      "GPIO: Host tried to pull disabled pin low: pin %2d\n",
+                      idx);
+            }
+            CLR_BIT(ctx->driven_pin_values, idx);
+            set_bit_val(&ctx->weak_pins, idx, weak);
+            weak = false;
+            break;
+          }
+          case 'h':
+          case 'H': {
+            ++gpio_text;
+            int idx = parse_dec(&gpio_text);
+            if (!GET_BIT(gpio_oe[0], idx)) {
+              fprintf(stderr,
+                      "GPIO: Host tried to pull disabled pin high: pin %2d\n",
+                      idx);
+            }
+            SET_BIT(ctx->driven_pin_values, idx);
+            set_bit_val(&ctx->weak_pins, idx, weak);
+            weak = false;
+            break;
+          }
+          default:
+            break;
         }
-        CLR_BIT(ctx->driven_pin_values, idx);
-        break;
       }
-      case 'h':
-      case 'H': {
-        ++gpio_text;
-        int idx = parse_dec(&gpio_text);
-        if (!GET_BIT(gpio_oe[0], idx)) {
-          fprintf(stderr,
-                  "GPIO: Host tried to pull disabled pin high: pin %2d\n", idx);
-        }
-        SET_BIT(ctx->driven_pin_values, idx);
-        break;
-      }
-      default:
-        break;
     }
   }
 
 parse_loop_end:
-  return ctx->driven_pin_values;
+  ctx->counter += 1;
+  // The verilated module simulates logic, but the weak/strong inputs result
+  // from the properties of the IO pads and the selection of external pull
+  // resistors. Since the verilated model doesn't model the analog properties
+  // of the IO pads, we fake it in the DPI interface.
+  //
+  // Candidates for reporting a value other than the driven value are those pins
+  // which are being weak and the pinmux has the pull up/down resistor enabled.
+  // On weak pins, the pinmux pull up/down wins over the driven value of the
+  // pin.  On strong pins, the driven value always wins.
+  uint32_t candidates = ctx->weak_pins & gpio_pull_en[0];
+  uint32_t pull = candidates & gpio_pull_sel[0];
+  uint32_t result = (ctx->driven_pin_values & ~candidates) | pull;
+  return result;
 }
 
 void gpiodpi_close(void *ctx_void) {
