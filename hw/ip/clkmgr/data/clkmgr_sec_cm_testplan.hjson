@@ -21,6 +21,9 @@
 //
 // Please ensure that this testplan is imported in:
 // .../clkmgr/data/clkmgr_testplan.hjson
+//
+// THIS FILE IS NOT USED: PLEASE REFER TO
+//   hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr_sec_cm_testplan.hjson
 {
   testpoints: [
     {
@@ -81,7 +84,7 @@
       name: sec_cm_idle_ctr_redun
       desc: "Verify the countermeasure(s) IDLE.CTR.REDUN."
       stage: V2S
-      tests: ["clkmgr_sec_cm"]
+      tests: []
     }
     {
       name: sec_cm_meas_config_regwen
