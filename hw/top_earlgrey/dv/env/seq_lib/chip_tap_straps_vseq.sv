@@ -25,13 +25,6 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
 
   lc_ctrl_state_pkg::lc_state_e cur_lc_state;
 
-  lc_ctrl_state_pkg::lc_state_e otp_type_2_lc_state[otp_type_e] = '{
-    OtpTypeLcStRaw: LcStRaw,
-    OtpTypeLcStDev: LcStDev,
-    OtpTypeLcStProd: LcStProd,
-    OtpTypeLcStRma: LcStRma,
-    OtpTypeLcStTestUnlocked0: LcStTestUnlocked0};
-
   local uvm_reg lc_csrs[$];
   chip_jtag_tap_e select_jtag;
 
@@ -40,8 +33,6 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   virtual task pre_start();
-    bit lc_at_prod;
-
     // path check
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_dft_strap_test_o))
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_dft_tap_req))
@@ -53,24 +44,27 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     // Disable checking as pinmux isn't enabled for uart
     foreach (cfg.m_uart_agent_cfgs[i]) cfg.m_uart_agent_cfgs[i].en_tx_monitor = 0;
 
-    void'($value$plusargs("lc_at_prod=%0d", lc_at_prod));
-    if (lc_at_prod) begin
-      cur_lc_state = LcStProd;
-    end else begin
-      cur_lc_state = otp_type_2_lc_state[cfg.use_otp_image];
-    end
-
     super.pre_start();
     enable_asserts_in_hw_reset_rand_wr = 0;
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
+    bit lc_at_prod;
+
     randomize_dft_straps();
     `DV_CHECK_STD_RANDOMIZE_FATAL(select_jtag)
     cfg.chip_vif.tap_straps_if.drive(select_jtag);
     cfg.chip_vif.set_tdo_pull(0);
 
     super.dut_init(reset_kind);
+
+    void'($value$plusargs("lc_at_prod=%0d", lc_at_prod));
+    if (lc_at_prod) begin
+      cur_lc_state = LcStProd;
+    end else begin
+      cur_lc_state = cfg.mem_bkdr_util_h[Otp].otp_read_lc_partition_state();
+    end
+
     // in LcStProd, we can only select LC tap at boot.
     // If it's not LC tap, effectively, no tap is selected.
     if (cur_lc_state == LcStProd) begin
