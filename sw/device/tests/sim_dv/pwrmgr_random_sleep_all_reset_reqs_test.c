@@ -503,6 +503,8 @@ bool test_main(void) {
             rst_info == kDifRstmgrResetInfoSw,
         "Wrong reset reason %02X", rst_info);
 
+  LOG_INFO("New reset event");
+
   switch (RST_IDX[event_idx] / 2) {
     case 0:
       if (RST_IDX[event_idx] % 2) {
