@@ -226,17 +226,13 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li   a1, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RMA_SPIN_EN_OFFSET(a1)
-  beq  t1, t6, .L_rma_spin_init
+  beq  t1, t6, .L_rma_spin_check_straps
   unimp
   unimp
   unimp
   unimp
 
-.L_rma_spin_init:
-  csrw mcycle, zero
-  li   a0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
-  sw   zero, AON_TIMER_WDOG_CTRL_REG_OFFSET(a0)
-
+.L_rma_spin_check_straps:
   // Configure strap pins.
   //
   // | GPIO Pin:        | 24             | 23             | 22               |
@@ -263,25 +259,34 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li   t0, SW_STRAP_2_INSEL
   sw   t0, (SW_STRAP_2_PERIPH * 4)(a0)
 
+  // Read the strap GPIOs and check their value.
   li   a0, TOP_EARLGREY_GPIO_BASE_ADDR
   lw   t0, GPIO_DATA_IN_REG_OFFSET(a0)
   li   t5, SW_STRAP_MASK
   and  t0, t0, t5
   li   t4, (HARDENED_BOOL_TRUE ^ SW_STRAP_RMA_ENTRY)
   xor  t0, t0, t4
-  bne  t0, t6, .L_exec_en
+  bne  t0, t6, .L_rma_spin_skip
 
+  // Double-check the GPIO strap value.
   li   t6, HARDENED_BOOL_TRUE
   li   a1, TOP_EARLGREY_GPIO_BASE_ADDR
   lw   t1, GPIO_DATA_IN_REG_OFFSET(a1)
   and  t1, t1, t5
   xor  t1, t1, t4
-  beq  t1, t6, .L_rma_spin_cycles_loop
+  beq  t1, t6, .L_rma_spin_init
   unimp
   unimp
   unimp
   unimp
 
+  // Spin for the OTP-specified number of cycles while we wait for
+  // the lifecycle transition request on JTAG.  Since this is a wait
+  // loop, disable the watchdog.
+.L_rma_spin_init:
+  csrw mcycle, zero
+  li   a0, TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR
+  sw   zero, AON_TIMER_WDOG_CTRL_REG_OFFSET(a0)
 .L_rma_spin_cycles_loop:
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
