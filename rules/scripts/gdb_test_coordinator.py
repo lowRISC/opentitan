@@ -152,7 +152,11 @@ def main(rom_kind: str = typer.Option(...),
     # to avoid a subtle race condition.
     background = BackgroundProcessGroup()
     openocd = background.run(openocd_command, "OPENOCD", COLOR_PURPLE)
-    background.block_until_line_contains(openocd, "starting gdb server")
+    # For some reason, we don't reliably see the "starting gdb server" line when
+    # OpenOCD's GDB server is ready. It could be a buffering issue internal to
+    # OpenOCD or perhaps this script.
+    background.block_until_line_contains(
+        openocd, "Examined RISC-V core; found 1 harts")
 
     background.run(gdb_command, "GDB", COLOR_GREEN)
     background.run(console_command, "CONSOLE", COLOR_RED)
