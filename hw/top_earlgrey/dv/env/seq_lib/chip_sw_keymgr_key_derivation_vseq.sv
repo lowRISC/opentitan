@@ -10,7 +10,7 @@
 //  - For HardwareRevisionSecret, use the constant values in design.
 //  - Configure the keymgr and advance to `CreatorRootKey` and `OwnerIntermediateKey`.
 //  - Check keymgr internal keys after advance operations.
-//  - Generate identity / SW output for both Attestation CDI and Sealing CDI.
+//  - Generate identity / SW output for the Sealing CDI.
 //  - KMAC should finish hashing successfully (not visible to SW) and return digest to
 //    keymgr.
 //  - Verify that the keymgr has received valid output from the KMAC.
