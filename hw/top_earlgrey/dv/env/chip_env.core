@@ -115,6 +115,7 @@ filesets:
       - seq_lib/chip_sw_flash_host_gnt_err_inj_vseq.sv: {is_include_file: true}
       - seq_lib/chip_padctrl_attributes_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rom_e2e_shutdown_output_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rom_e2e_shutdown_exception_c_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
       - alerts_if.sv
       - ast_ext_clk_if.sv
