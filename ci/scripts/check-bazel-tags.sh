@@ -7,6 +7,9 @@
 set -e
 
 # The list of bazel tags is represented as a string and checked with a regex
+# https://bazel.build/query/language#attr
+# This function takes a tag(or regex component) and wraps it so attr can query
+# for exact matches.
 exact_regex () {
   echo "[\\[ ]${1}[,\\]]"
 }
@@ -21,8 +24,7 @@ fi
 }
 
 # This check ensures OpenTitan software can be built with a wildcard without
-# waiting for Verilator using --build_tag_filters=-verilator, it also enables
-# verilator tests to be filtered out.
+# waiting for Verilator using --build_tag_filters=-verilator
 untagged=$(./bazelisk.sh query \
   "rdeps(
       //...,
@@ -36,7 +38,10 @@ untagged=$(./bazelisk.sh query \
   )" \
   --output=label_kind)
 check_empty "${untagged}" \
-"Target(s) above depend(s) on //hw:verilator, please tag it with verilator or manual."
+"Target(s) above depend(s) on //hw:verilator, please tag it with verilator or
+(to prevent matching any wildcards) manual.
+NOTE: test_suites that contain targets with different tags should almost
+universally use the manual tag."
 
 # This check ensures Opentitan software can be built with wildcards in
 # environments that don't have vivado or vivado tools installed by using
@@ -57,24 +62,26 @@ untagged=$(./bazelisk.sh query \
   )" \
   --output=label_kind)
 check_empty "${untagged}" \
-"Target(s) above depend(s) on a bitstream_splice and isn't available in a cache.
-Please tag it with vivado or manual."
+"Target(s) above depend(s) on a bitstream_splice that isn't cached.
+Please tag it with vivado or (to prevent matching any wildcards) manual.
+NOTE: test_suites that contain targets with different tags should almost
+universally use the manual tag."
 
 # This check ensures cw310 users may group tests that depend on the cached
 # cw310_test_rom bitstream.
 mistagged=$(./bazelisk.sh query \
-    "tests(
+    "tests(`# Only output tests`
         rdeps(
-            attr(
+            attr(`# Anything tagged cw310_test_rom`
                 tags,
                 '$(exact_regex cw310_test_rom)',
                 tests(//...)
             ),
-            kind(
+            kind(`# That depends on a bitstream splice`
                 'bitstream_splice',
                 //...
             )
-            except
+            except`# Other than those used to build the test_ROM bitstream`
             deps(
                 //hw/bitstream:test_rom
             )
@@ -82,28 +89,36 @@ mistagged=$(./bazelisk.sh query \
     )" \
     --output=label_kind)
 check_empty "${mistagged}" \
-"Target(s) above depend(s) on a bitstream_splice other than those used to generate the test_rom.
-Please tag as cw310_*_variant if you intended to use another bitstream."
+"Target(s) above depend(s) on a bitstream_splice rule other than those used to
+generate the cached bitstream with the test_ROM, but is tagged with cw310_test_rom.
+Please either:
+-Correct the dependencies to exclude other bitstream_splices,
+-Correct the target by setting it to something other than cw310_test_rom,
+-Remove the cw310_test_rom tag."
 
 # This check ensures cw310 users may group tests that depend on the cached
 # cw310_rom bitstream.
 mistagged=$(./bazelisk.sh query \
-    "tests(
+    "tests(`# Only output tests`
         rdeps(
-            attr(
+            attr(`# Anything tagged cw310_rom`
                 tags,
                 '$(exact_regex cw310_rom)',
                 //...
             ),
-            kind(
+            kind(`# That depends on a bitstream splice`
                 'bitstream_splice',
                 //...
             )
-            except
+            except`# Other than those used to build the ROM bitstream`
             deps(//hw/bitstream:rom)
         )
     )" \
     --output=label_kind)
 check_empty "${mistagged}" \
-"Above target(s) depend(s) on a bitstream_splice other than those used to generate the rom.
-Please tag as cw310_*_variant if you intend to use another bitstream."
+"Target(s) above depend(s) on a bitstream_splice rule other than those used to
+generate the cached bitstream with the ROM, but is tagged with cw310_rom.
+Please either:
+-Correct the dependencies to exclude other bitstream_splices,
+-Correct the target by setting it to something like cw310_rom_variant,
+-Correct the tag by setting it to cw310_rom_variant."
