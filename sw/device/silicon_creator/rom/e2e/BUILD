@@ -1878,4 +1878,5 @@ test_suite(
         for a in SIGVERIFY_BAD_CASES
         for b in SIGVERIFY_BAD_CASES
     ],
+    tags = ["manual"],
 )

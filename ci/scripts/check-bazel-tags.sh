@@ -94,7 +94,11 @@ generate the cached bitstream with the test_ROM, but is tagged with cw310_test_r
 Please either:
 -Correct the dependencies to exclude other bitstream_splices,
 -Correct the target by setting it to something other than cw310_test_rom,
--Remove the cw310_test_rom tag."
+-Remove the cw310_test_rom tag.
+NOTE: test_suites that contain targets with different tags should almost
+universally use the manual tag."
+
+
 
 # This check ensures cw310 users may group tests that depend on the cached
 # cw310_rom bitstream.
@@ -121,4 +125,6 @@ generate the cached bitstream with the ROM, but is tagged with cw310_rom.
 Please either:
 -Correct the dependencies to exclude other bitstream_splices,
 -Correct the target by setting it to something like cw310_rom_variant,
--Correct the tag by setting it to cw310_rom_variant."
+-Correct the tag by setting it to cw310_rom_variant.
+NOTE: test_suites that contain targets with different tags should almost
+universally use the manual tag."
