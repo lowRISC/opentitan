@@ -9,6 +9,7 @@ module chip_sim_tb (
 );
 
   logic [31:0]  cio_gpio_p2d, cio_gpio_d2p, cio_gpio_en_d2p;
+  logic [31:0]  cio_gpio_pull_en, cio_gpio_pull_select;
   logic cio_uart_rx_p2d, cio_uart_tx_d2p, cio_uart_tx_en_d2p;
 
   logic cio_spi_device_sck_p2d, cio_spi_device_csb_p2d;
@@ -33,6 +34,8 @@ module chip_sim_tb (
     .cio_gpio_p2d_i(cio_gpio_p2d),
     .cio_gpio_d2p_o(cio_gpio_d2p),
     .cio_gpio_en_d2p_o(cio_gpio_en_d2p),
+    .cio_gpio_pull_en_o(cio_gpio_pull_en),
+    .cio_gpio_pull_select_o(cio_gpio_pull_select),
 
     // communication with UART
     .cio_uart_rx_p2d_i(cio_uart_rx_p2d),
@@ -69,7 +72,9 @@ module chip_sim_tb (
     .rst_ni     (rst_ni),
     .gpio_p2d   (cio_gpio_p2d),
     .gpio_d2p   (cio_gpio_d2p),
-    .gpio_en_d2p(cio_gpio_en_d2p)
+    .gpio_en_d2p(cio_gpio_en_d2p),
+    .gpio_pull_en(cio_gpio_pull_en),
+    .gpio_pull_sel(cio_gpio_pull_select),
   );
 
   // UART DPI

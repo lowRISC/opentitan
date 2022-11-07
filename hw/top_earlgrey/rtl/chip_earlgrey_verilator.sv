@@ -11,6 +11,8 @@ module chip_earlgrey_verilator (
   input [31:0] cio_gpio_p2d_i,
   output logic [31:0] cio_gpio_d2p_o,
   output logic [31:0] cio_gpio_en_d2p_o,
+  output logic [31:0] cio_gpio_pull_en_o,
+  output logic [31:0] cio_gpio_pull_select_o,
 
   // communication with UART
   input cio_uart_rx_p2d_i,
@@ -90,6 +92,7 @@ module chip_earlgrey_verilator (
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_out;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_oe;
+  prim_pad_wrapper_pkg::pad_attr_t[pinmux_reg_pkg::NMioPads-1:0] mio_attr;
 
   always_comb begin : assign_mio_in
     mio_in = '0;
@@ -106,6 +109,7 @@ module chip_earlgrey_verilator (
     // USB VBUS sense
     mio_in[MioPadIoc7] = cio_usbdev_sense_p2d_i;
   end
+
 
   // 14 generic GPIOs
   assign cio_gpio_d2p_o[6:0]        = mio_out[MioPadIob12:MioPadIob6];
@@ -131,6 +135,70 @@ module chip_earlgrey_verilator (
 
   assign cio_uart_tx_d2p_o    = mio_out[MioPadIoc4];
   assign cio_uart_tx_en_d2p_o = mio_oe[MioPadIoc4];
+
+  // Note: we're collecting the `pull_en` and `pull_select` signals together
+  // so that the GPIO DPI functions can simulate weak and strong GPIO
+  // inputs.  The `cio_gpio_pull_en_o` and `cio_gpio_pull_select_o` bit
+  // vectors should have the same ordering as the `cio_gpio_d2p_o` vector.
+  // See gpiodpi.c to see how weak/strong inputs work.
+  //
+  // Pull enable for 14 generic GPIOs
+  assign cio_gpio_pull_en_o[0] = mio_attr[MioPadIob6].pull_en;
+  assign cio_gpio_pull_en_o[1] = mio_attr[MioPadIob7].pull_en;
+  assign cio_gpio_pull_en_o[2] = mio_attr[MioPadIob8].pull_en;
+  assign cio_gpio_pull_en_o[3] = mio_attr[MioPadIob9].pull_en;
+  assign cio_gpio_pull_en_o[4] = mio_attr[MioPadIob10].pull_en;
+  assign cio_gpio_pull_en_o[5] = mio_attr[MioPadIob11].pull_en;
+  assign cio_gpio_pull_en_o[6] = mio_attr[MioPadIob12].pull_en;
+  assign cio_gpio_pull_en_o[7] = mio_attr[MioPadIor5].pull_en;
+  assign cio_gpio_pull_en_o[8] = mio_attr[MioPadIor6].pull_en;
+  assign cio_gpio_pull_en_o[9] = mio_attr[MioPadIor7].pull_en;
+  assign cio_gpio_pull_en_o[10] = mio_attr[MioPadIor10].pull_en;
+  assign cio_gpio_pull_en_o[11] = mio_attr[MioPadIor11].pull_en;
+  assign cio_gpio_pull_en_o[12] = mio_attr[MioPadIor12].pull_en;
+  assign cio_gpio_pull_en_o[13] = mio_attr[MioPadIor13].pull_en;
+  assign cio_gpio_pull_en_o[23:14] = '0;
+
+  // Pull enable for SW STRAPs
+  assign cio_gpio_pull_en_o[22] = mio_attr[MioPadIoc0].pull_en;
+  assign cio_gpio_pull_en_o[23] = mio_attr[MioPadIoc1].pull_en;
+  assign cio_gpio_pull_en_o[24] = mio_attr[MioPadIoc2].pull_en;
+
+  // Pull enable for TAP STRAPs
+  assign cio_gpio_pull_en_o[26:25] = '0;
+  assign cio_gpio_pull_en_o[27] = mio_attr[MioPadIoc5].pull_en;
+  assign cio_gpio_pull_en_o[29:28] = '0;
+  assign cio_gpio_pull_en_o[30] = mio_attr[MioPadIoc8].pull_en;
+  assign cio_gpio_pull_en_o[31] = '0;
+
+  // Pull select for 14 generic GPIOs
+  assign cio_gpio_pull_select_o[0] = mio_attr[MioPadIob6].pull_select;
+  assign cio_gpio_pull_select_o[1] = mio_attr[MioPadIob7].pull_select;
+  assign cio_gpio_pull_select_o[2] = mio_attr[MioPadIob8].pull_select;
+  assign cio_gpio_pull_select_o[3] = mio_attr[MioPadIob9].pull_select;
+  assign cio_gpio_pull_select_o[4] = mio_attr[MioPadIob10].pull_select;
+  assign cio_gpio_pull_select_o[5] = mio_attr[MioPadIob11].pull_select;
+  assign cio_gpio_pull_select_o[6] = mio_attr[MioPadIob12].pull_select;
+  assign cio_gpio_pull_select_o[7] = mio_attr[MioPadIor5].pull_select;
+  assign cio_gpio_pull_select_o[8] = mio_attr[MioPadIor6].pull_select;
+  assign cio_gpio_pull_select_o[9] = mio_attr[MioPadIor7].pull_select;
+  assign cio_gpio_pull_select_o[10] = mio_attr[MioPadIor10].pull_select;
+  assign cio_gpio_pull_select_o[11] = mio_attr[MioPadIor11].pull_select;
+  assign cio_gpio_pull_select_o[12] = mio_attr[MioPadIor12].pull_select;
+  assign cio_gpio_pull_select_o[13] = mio_attr[MioPadIor13].pull_select;
+  assign cio_gpio_pull_select_o[23:14] = '0;
+
+  // Pull select for SW STRAPs
+  assign cio_gpio_pull_select_o[22] = mio_attr[MioPadIoc0].pull_select;
+  assign cio_gpio_pull_select_o[23] = mio_attr[MioPadIoc1].pull_select;
+  assign cio_gpio_pull_select_o[24] = mio_attr[MioPadIoc2].pull_select;
+
+  // Pull select for TAP STRAPs
+  assign cio_gpio_pull_select_o[26:25] = '0;
+  assign cio_gpio_pull_select_o[27] = mio_attr[MioPadIoc5].pull_select;
+  assign cio_gpio_pull_select_o[29:28] = '0;
+  assign cio_gpio_pull_select_o[30] = mio_attr[MioPadIoc8].pull_select;
+  assign cio_gpio_pull_select_o[31] = '0;
 
   ////////////////////////////////
   // AST - Custom for Verilator //
@@ -510,7 +578,7 @@ module chip_earlgrey_verilator (
     .dio_oe_o                     (dio_oe),
 
     // Pad attributes
-    .mio_attr_o                   ( ),
+    .mio_attr_o                   (mio_attr),
     .dio_attr_o                   ( ),
 
     // Memory attributes
