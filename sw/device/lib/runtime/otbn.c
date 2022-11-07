@@ -37,8 +37,8 @@ otbn_result_t otbn_busy_wait_for_done(otbn_t *ctx) {
     return kOtbnError;
   }
   if (err_bits != kDifOtbnErrBitsNoError) {
-    LOG_ERROR("otbn err_bits got: 0x%x, want: 0x%x", err_bits,
-              kDifOtbnErrBitsNoError);
+    LOG_INFO("otbn err_bits got: 0x%x, want: 0x%x", err_bits,
+             kDifOtbnErrBitsNoError);
     return kOtbnOperationFailed;
   }
   return kOtbnOk;
