@@ -17,10 +17,14 @@
     }
     {
       name: rom_e2e_shutdown_exception_c
-      uvm_test_seq: chip_sw_base_vseq
+      uvm_test_seq: chip_sw_rom_e2e_shutdown_exception_c_vseq
       sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_shutdown_exception_c:1:signed"]
       en_run_modes: ["sw_test_mode_rom"]
-      run_opts: ["+sw_test_timeout_ns=20000000"]
+      run_opts: [
+        "+sw_test_timeout_ns=20000000",
+        "+bypass_alert_ready_to_end_check=1",
+      ]
+      run_timeout_mins: 120
     }
     {
       name: rom_e2e_shutdown_output
