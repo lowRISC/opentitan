@@ -78,6 +78,13 @@ otp_json(
                 "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": "0x739",
                 # Enable AST initialization.
                 "CREATOR_SW_CFG_AST_INIT_EN": "0x6",
+                # TODO: This enables a busyloop in the ROM to give time to
+                # trigger an RMA lifecycle transition via JTAG.  The current
+                # value of 10 cycles is useful for test code which verifies
+                # the path through the ROM.  This value is not useful for a
+                # real chip.
+                "CREATOR_SW_CFG_RMA_SPIN_EN": "0x739",
+                "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "10",
             },
         ),
     ],
