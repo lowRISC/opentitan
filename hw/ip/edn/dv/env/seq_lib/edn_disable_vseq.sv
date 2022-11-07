@@ -11,33 +11,54 @@ class edn_disable_vseq extends edn_base_vseq;
 
   uint   num_requesters, num_ep_reqs, num_cs_reqs, wait_disable;
 
-  string   enable_path, boot_path, auto_path;
+  task pre_start();
+    // The edn_init is done in dut_init. So adding this disablement in pre_start in order to hit
+    // certain boot init states.
+    string main_sm_d_path = "tb.dut.u_edn_core.u_edn_main_sm.state_d";
+    // TODO: This disable sequence targets at the boot mode only.
+    state_e boot_sts[$] = {BootLoadIns, BootLoadGen, BootInsAckWait, BootCaptGenCnt,
+                           BootSendGenCmd, BootGenAckWait, BootPulse, BootDone};
 
-  task body();
-    super.body();
-
-    enable_path = "tb.dut.u_edn_core.mubi_edn_enable";
-    boot_path   = "tb.dut.u_edn_core.mubi_boot_req_mode";
-    auto_path   = "tb.dut.u_edn_core.mubi_auto_req_mode";
+    // CSRNG requests will drop if disablement is sent.
+    $assertoff(0, "tb.csrng_if.cmd_push_if.H_DataStableWhenValidAndNotReady_A");
+    $assertoff(0, "tb.csrng_if.cmd_push_if.ValidHighUntilReady_A");
 
     fork
       begin
+        // Wait until reset and clock are ready.
+        wait(cfg.clk_rst_vif.rst_n == 1);
+        cfg.clk_rst_vif.wait_clks(1);
+
         // Random delay, disable edn
-        // TODO: Modify min/max wait_disable values to hit all states
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait_disable,
-                                           wait_disable inside
-                                           { [80:100] };)
-        cfg.clk_rst_vif.wait_clks(wait_disable);
-        // Disable edn, boot_req_mode, auto_req_mode
-        `DV_CHECK(uvm_hdl_deposit(enable_path, MuBi4False));
-        `DV_CHECK(uvm_hdl_deposit(boot_path, MuBi4False));
-        `DV_CHECK(uvm_hdl_deposit(auto_path, MuBi4False));
-        cfg.clk_rst_vif.wait_clks(10);
+        if ($urandom_range(0, 1)) begin
+          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait_disable,
+                                             wait_disable inside
+                                             { [80:300] };)
+           cfg.clk_rst_vif.wait_clks(wait_disable);
+           `uvm_info(`gfn, $sformatf("Wait %0d clk cycles then issue edn disablement",
+                     wait_disable), UVM_HIGH)
+        end else begin
+          bit [8:0] state_val;
+          int rand_st_idx = $urandom_range(0, boot_sts.size()-1);
+          `uvm_info(`gfn, $sformatf("Wait until %0s state then issue edn disablement",
+                    boot_sts[rand_st_idx].name), UVM_HIGH)
+          `DV_SPINWAIT(
+              while (state_val != boot_sts[rand_st_idx]) begin
+                uvm_hdl_read(main_sm_d_path, state_val);
+                cfg.clk_rst_vif.wait_clks(1);
+              end)
+         end
+        csr_wr(.ptr(ral.ctrl.edn_enable), .value(MuBi4False));
+        cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
         // Enable edn
-        `DV_CHECK(uvm_hdl_deposit(enable_path, MuBi4True));
+        csr_wr(.ptr(ral.ctrl.edn_enable), .value(MuBi4True));
       end
     join_none
+    super.pre_start();
+  endtask
 
+  task body();
+    super.body();
     num_requesters = cfg.num_endpoints;
     num_cs_reqs    = cfg.num_endpoints;
     num_ep_reqs    = num_cs_reqs * csrng_pkg::GENBITS_BUS_WIDTH/ENDPOINT_BUS_WIDTH;

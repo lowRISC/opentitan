@@ -102,6 +102,8 @@
       name: edn_disable
       uvm_test: edn_disable_test
       uvm_test_seq: edn_disable_vseq
+      // For debug purpose, this test is very short.
+      run_opts: ["+test_timeout_ns=100_000"]
     }
 
     // TODO: add more tests here
