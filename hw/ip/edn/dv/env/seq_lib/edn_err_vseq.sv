@@ -77,19 +77,19 @@ class edn_err_vseq extends edn_base_vseq;
         fifo_base_path = fld_name.substr(0, last_index-1);
 
         foreach (path_exts[i]) begin
-          fifo_forced_paths[i] = cfg.edn_path_vif.fifo_err_path(fifo_base_path, path_exts[i]);
+          fifo_forced_paths[i] = cfg.edn_vif.fifo_err_path(fifo_base_path, path_exts[i]);
         end
         force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld,
                             1'b1, cfg.which_fifo_err);
       end
       edn_ack_sm_err, edn_main_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
-        path = cfg.edn_path_vif.sm_err_path(fld_name.substr(0, last_index-1));
+        path = cfg.edn_vif.sm_err_path(fld_name.substr(0, last_index-1));
         force_path_err(path, 6'b0, fld, 1'b1);
       end
       edn_cntr_err: begin
         fld = csr.get_field_by_name(fld_name);
-        path = cfg.edn_path_vif.cntr_err_path();
+        path = cfg.edn_vif.cntr_err_path();
         force_path_err(path, 6'b000001, fld, 1'b1);
         // Verify EDN.MAIN_SM.CTR.LOCAL_ESC
         csr_rd_check(.ptr(ral.err_code.edn_main_sm_err), .compare_value(1'b1));
@@ -99,8 +99,8 @@ class edn_err_vseq extends edn_base_vseq;
         fifo_name = cfg.which_fifo.name();
         path_key = fld_name.substr(first_index+1, last_index-1);
 
-        path1 = cfg.edn_path_vif.fifo_err_path(fifo_name, fifo_err_path[0][path_key]);
-        path2 = cfg.edn_path_vif.fifo_err_path(fifo_name, fifo_err_path[1][path_key]);
+        path1 = cfg.edn_vif.fifo_err_path(fifo_name, fifo_err_path[0][path_key]);
+        path2 = cfg.edn_vif.fifo_err_path(fifo_name, fifo_err_path[1][path_key]);
         value1 = fifo_err_value[0][path_key];
         value2 = fifo_err_value[1][path_key];
         force_fifo_err(path1, path2, value1, value2, fld, 1'b1);

@@ -60,17 +60,17 @@ class edn_intr_vseq extends edn_base_vseq;
       sfifo_rescmd_error, sfifo_gencmd_error: begin
         fifo_base_path = fld_name.substr(0, last_index-1);
         foreach (path_exts[i]) begin
-          fifo_forced_paths[i] = cfg.edn_path_vif.fifo_err_path(fifo_base_path, path_exts[i]);
+          fifo_forced_paths[i] = cfg.edn_vif.fifo_err_path(fifo_base_path, path_exts[i]);
         end
         force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts,
                             ral.intr_state.edn_fatal_err, 1'b1, cfg.which_fifo_err);
       end
       edn_ack_sm_error, edn_main_sm_error: begin
-        path = cfg.edn_path_vif.sm_err_path(fld_name.substr(0, last_index-1));
+        path = cfg.edn_vif.sm_err_path(fld_name.substr(0, last_index-1));
         force_path_err(path, 6'b0, ral.intr_state.edn_fatal_err, 1'b1);
       end
       edn_cntr_error: begin
-        path = cfg.edn_path_vif.cntr_err_path();
+        path = cfg.edn_vif.cntr_err_path();
         force_path_err(path, 6'b000001, ral.intr_state.edn_fatal_err, 1'b1);
       end
       default: begin
