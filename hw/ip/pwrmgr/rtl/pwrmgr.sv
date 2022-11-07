@@ -307,8 +307,14 @@ module pwrmgr
   assign hw2reg.fault_status.reg_intg_err.d     = 1'b1;
   assign hw2reg.fault_status.esc_timeout.de     = esc_timeout;
   assign hw2reg.fault_status.esc_timeout.d      = 1'b1;
-  assign hw2reg.fault_status.main_pd_glitch.de  = peri_reqs_masked.rstreqs[ResetMainPwrIdx];
-  assign hw2reg.fault_status.main_pd_glitch.d   = 1'b1;
+
+  // The main power domain glitch automatically causes a reset, so regsitering
+  // an alert is functionally pointless.  However, if an attacker somehow manages/
+  // to silence the reset, this gives us one potential back-up path through alert_handler.
+  logic en_main_pd_glitch_status;
+  assign en_main_pd_glitch_status = clr_hint;
+  assign hw2reg.fault_status.main_pd_glitch.de  = en_main_pd_glitch_status;
+  assign hw2reg.fault_status.main_pd_glitch.d   = peri_reqs_masked.rstreqs[ResetMainPwrIdx];
 
   // Check that the clock enables are deasserted in the next slow clock cycle if a power glitch is
   // detected.
@@ -342,8 +348,8 @@ module pwrmgr
       .AsyncOn(AlertAsyncOn[i]),
       .IsFatal(1'b1)
     ) u_prim_alert_sender (
-      .clk_i,
-      .rst_ni,
+      .clk_i         ( clk_lc        ),
+      .rst_ni        ( rst_lc_n      ),
       .alert_test_i  ( alert_test[i] ),
       .alert_req_i   ( alerts[i]     ),
       .alert_ack_o   (               ),
