@@ -162,6 +162,17 @@ bool test_main(void) {
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb,
       kTopEarlgreyPinmuxInselIoa7));
 
+  dif_pinmux_pad_attr_t out_attr;
+  dif_pinmux_pad_attr_t in_attr = {
+      .slew_rate = 0,
+      .drive_strength = 0,
+      .flags = kDifPinmuxPadAttrPullResistorEnable |
+               kDifPinmuxPadAttrPullResistorUp};
+
+  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsIoa7,
+                                          kDifPinmuxPadKindMio, in_attr,
+                                          &out_attr));
+
   CHECK_DIF_OK(
       dif_spi_device_tpm_configure(&spi_device, kDifToggleEnabled, tpm_config));
 
