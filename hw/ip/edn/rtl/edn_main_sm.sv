@@ -293,7 +293,10 @@ module edn_main_sm import edn_pkg::*; #(
       Error: begin
         main_sm_err_o = 1'b1;
       end
-      default: state_d = Error;
+      default: begin
+        state_d = Error;
+        main_sm_err_o = 1'b1;
+      end
     endcase
   end
 
