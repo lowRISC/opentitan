@@ -23,14 +23,14 @@ class pwrmgr_sw_reset_vseq extends pwrmgr_base_vseq;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       setup_interrupt(.enable(en_intr));
 
-      cfg.pwrmgr_vif.sw_rst_req_i = $urandom_range(0,15);
+      cfg.pwrmgr_vif.sw_rst_req_i = $urandom_range(0, 15);
       exp_rst = (cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True);
       cfg.slow_clk_rst_vif.wait_clks(4);
 
       // sw reset causes fast state machine transition to lowpower state
       if (exp_rst == 1) begin
         `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive);,
-                     "timeout waiting for non fast-active state",1000)
+                     "timeout waiting for non fast-active state", 1000)
       end
 
       // This read is not always possible since the CPU may be off.

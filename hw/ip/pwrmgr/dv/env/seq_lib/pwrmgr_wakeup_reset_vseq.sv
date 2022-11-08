@@ -107,10 +107,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
             cfg.pwrmgr_vif.glitch_power_reset();
             enabled_resets = 0;
           end
-          `uvm_info(`gfn, $sformatf(
-                    "Sending reset=%b, power_glitch=%b",
-                    resets,
-                    power_glitch_reset
+          `uvm_info(`gfn, $sformatf("Sending reset=%b, power_glitch=%b", resets, power_glitch_reset
                     ), UVM_MEDIUM)
         end
 
@@ -130,20 +127,11 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       fork
         begin
           // At lowpower state, wait for clock comes back before check any csr
-           @cfg.clk_rst_vif.cb;
+          @cfg.clk_rst_vif.cb;
           // Check wake_status prior to wakeup, or the unit requesting wakeup will have been reset.
           // This read will not work in the chip, since the processor will be asleep.
-          // After tighten reset status window, it is not possible to verify
-          // reset status by csr rd.
-          // Replace with a direct probe
-          fork
-            begin
-              fast_check_reset_status(enabled_resets);
-            end
-            begin
-              fast_check_wake_status(enabled_wakeups);
-            end
-          join
+          // Reset status cannot be reliably checked here since it is cleared when reset goes active.
+          fast_check_wake_status(enabled_wakeups);
           `uvm_info(`gfn, $sformatf("Got wake_status=0x%x", enabled_wakeups), UVM_MEDIUM)
         end
         twirl_rom_response();

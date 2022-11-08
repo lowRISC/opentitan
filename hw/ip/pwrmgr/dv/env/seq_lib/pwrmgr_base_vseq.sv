@@ -74,13 +74,13 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   constraint cycles_before_wakeup_c {cycles_before_wakeup inside {[2 : 6]};}
   constraint cycles_before_reset_c {cycles_before_reset inside {[2 : 6]};}
   constraint cycles_before_core_clk_en_c {
-    cycles_before_core_clk_en inside {[0 : MaxCyclesBeforeEnable]};
+    cycles_before_core_clk_en inside {[1 : MaxCyclesBeforeEnable]};
   }
   constraint cycles_before_io_clk_en_c {
-    cycles_before_io_clk_en inside {[0 : MaxCyclesBeforeEnable - 3]};
+    cycles_before_io_clk_en inside {[1 : MaxCyclesBeforeEnable - 3]};
   }
   constraint cycles_before_usb_clk_en_c {
-    cycles_before_usb_clk_en inside {[0 : MaxCyclesBeforeEnable]};
+    cycles_before_usb_clk_en inside {[1 : MaxCyclesBeforeEnable]};
   }
   constraint cycles_before_main_pok_c {cycles_before_main_pok inside {[2 : MaxCyclesBeforeEnable]};}
 
@@ -355,36 +355,40 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   `define FAST_RESPONSE_ACTION(rsp_name, rsp, req, cycles) \
           `uvm_info(`gfn, $sformatf( \
-                    "fast_responder: Will drive %0s to %b in %0d fast clock cycles", \
-                    rsp_name, req, cycles), UVM_HIGH) \
+                    "fast_responder %s: Will drive %0s to %b in %0d fast clock cycles", \
+                    rsp_name, rsp_name, req, cycles), UVM_HIGH) \
           cfg.clk_rst_vif.wait_clks(cycles); \
           rsp <= req; \
-          `uvm_info(`gfn, $sformatf("fast_responder: Driving %0s to %b", rsp_name, req), UVM_HIGH) \
+          `uvm_info(`gfn, $sformatf("fast_responder %s: Driving %0s to %b", rsp_name, rsp_name, req), UVM_HIGH) \
 
 
   task fast_responder();
     fork
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req begin
+          `uvm_info(`gfn, $sformatf(
+                    "fast responder got rst_lc_req change to 0x%x",
+                    cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req
+                    ), UVM_HIGH)
           raise_objection("rst_lc_src_n");
           `FAST_RESPONSE_ACTION("rst_lc_src_n", cfg.pwrmgr_vif.fast_cb.pwr_rst_rsp.rst_lc_src_n,
                                 ~cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req,
                                 cycles_before_rst_lc_src)
-          // And clear all reset requests when rst_lc_req[1] goes low, because when
-          // peripherals are reset they should drop their reset requests.
           if (cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req[1] == 1'b0) begin
             cfg.esc_clk_rst_vif.drive_rst_pin(1);
             cfg.lc_clk_rst_vif.drive_rst_pin(1);
-            repeat (2) cfg.esc_clk_rst_vif.wait_clks(2);
-            cfg.pwrmgr_vif.update_resets('0);
-            cfg.pwrmgr_vif.update_sw_rst_req(prim_mubi_pkg::MuBi4False);
-            `uvm_info(`gfn, "Clearing resets", UVM_MEDIUM)
           end else begin
+            // And clear all reset requests when rst_lc_req[1] goes high, because when
+            // peripherals are reset they should drop their reset requests.
             cfg.esc_clk_rst_vif.drive_rst_pin(0);
             cfg.lc_clk_rst_vif.drive_rst_pin(0);
             clear_escalation_reset();
+            cfg.pwrmgr_vif.update_resets('0);
+            cfg.pwrmgr_vif.update_sw_rst_req(prim_mubi_pkg::MuBi4False);
+            `uvm_info(`gfn, "Clearing resets", UVM_MEDIUM)
           end
           drop_objection("rst_lc_src_n");
+          `uvm_info(`gfn, "fast responder done with rst_lc_req change", UVM_HIGH)
         end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_sys_req begin
@@ -460,15 +464,16 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   local task wait_for_fall_through();
-    wait(!cfg.pwrmgr_vif.pwr_cpu.core_sleeping);
+    `DV_WAIT(!cfg.pwrmgr_vif.pwr_cpu.core_sleeping)
     exp_wakeup_fall_through = 1'b1;
     exp_intr = 1'b1;
     `uvm_info(`gfn, "wait_for_fall_through succeeds", UVM_MEDIUM)
   endtask
 
   local task wait_for_abort();
-    wait(!cfg.pwrmgr_vif.pwr_flash.flash_idle || !cfg.pwrmgr_vif.pwr_otp_rsp.otp_idle ||
-          !cfg.pwrmgr_vif.pwr_lc_rsp.lc_idle);
+    `DV_WAIT(
+        !cfg.pwrmgr_vif.pwr_flash.flash_idle || !cfg.pwrmgr_vif.pwr_otp_rsp.otp_idle ||
+          !cfg.pwrmgr_vif.pwr_lc_rsp.lc_idle)
     exp_wakeup_abort = 1'b1;
     exp_intr = 1'b1;
     `uvm_info(`gfn, "wait_for_abort succeeds", UVM_MEDIUM)
@@ -483,8 +488,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   task process_low_power_hint();
     // Timeout if the low power transition waits too long for WFI.
-    `DV_SPINWAIT(wait(cfg.pwrmgr_vif.pwr_cpu.core_sleeping);,
-                 "timeout waiting for core_sleeping",
+    `DV_SPINWAIT(wait(cfg.pwrmgr_vif.pwr_cpu.core_sleeping);, "timeout waiting for core_sleeping",
                  100_000)
     `uvm_info(`gfn, "In process_low_power_hint pre forks", UVM_MEDIUM)
     fork
@@ -501,7 +505,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     // If it went through, determine if the transition to active state is for a reset, and
     // cancel the expected interrupt.
     if (exp_wakeup_reasons) begin
-      wait(cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateMainPowerOn);
+      `DV_WAIT(cfg.pwrmgr_vif.slow_state == pwrmgr_pkg::SlowPwrStateMainPowerOn)
       if (cfg.pwrmgr_vif.pwrup_cause == pwrmgr_pkg::Reset) begin
         `uvm_info(`gfn, "Cancelling expected interrupt", UVM_MEDIUM)
         exp_intr = 1'b0;
@@ -555,7 +559,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   task wait_for_reset_cause(pwrmgr_pkg::reset_cause_e cause);
-    wait(cfg.pwrmgr_vif.pwr_rst_req.reset_cause == cause);
+    `DV_WAIT(cfg.pwrmgr_vif.pwr_rst_req.reset_cause == cause)
     `uvm_info(`gfn, $sformatf("Observed reset cause_match 0x%x", cause), UVM_MEDIUM)
   endtask
 
@@ -574,16 +578,25 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   task fast_check_reset_status(resets_t expected_resets);
     logic [pwrmgr_reg_pkg::NumRstReqs-1:0] init_reset_status;
-    `uvm_info(`gfn, "init reset status", UVM_HIGH);
-    init_reset_status = cfg.pwrmgr_vif.reset_status;
-
-    if (expected_resets != init_reset_status) begin
-      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.reset_status != init_reset_status);,
-                   $sformatf("reset_status wait timeout exp:%x  init:%x",
-                             expected_resets, init_reset_status),
-                   15_000)
+    `uvm_info(`gfn, "init reset status", UVM_MEDIUM);
+    // Wait to get out of low power state, since all reset status should have settled.
+    if (cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateLowPower) begin
+      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateLowPower);,
+                   "fast state out of low power for reset timeout", 15_000)
     end
-    `DV_CHECK_EQ(cfg.pwrmgr_vif.reset_status, expected_resets)
+
+    init_reset_status = cfg.pwrmgr_vif.reset_status;
+    if (expected_resets == init_reset_status) begin
+      // This is a success, so nothing more to do.
+      return;
+    end else begin
+      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.reset_status != init_reset_status);, $sformatf(
+                   "reset_status wait timeout exp:%x  init:%x", expected_resets, init_reset_status),
+                   15_000)
+      // The various bits of reset_status could have different sync delays, wait some more.
+      cfg.clk_rst_vif.wait_clks(2);
+      `DV_CHECK_EQ(cfg.pwrmgr_vif.reset_status, expected_resets)
+    end
   endtask
 
   // Checks the wake_status CSR matches expectations.
@@ -594,15 +607,26 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   task fast_check_wake_status(wakeups_t expected_wakeups);
     logic [pwrmgr_reg_pkg::NumWkups-1:0] init_wakeup_status;
-    `uvm_info(`gfn, "init wakeup", UVM_HIGH);
+    `uvm_info(`gfn, "init wakeup", UVM_MEDIUM);
     init_wakeup_status = cfg.pwrmgr_vif.wakeup_status;
 
-    if (expected_wakeups != init_wakeup_status) begin
-      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.wakeup_status != init_wakeup_status);,
-                   $sformatf("wakeup_status wait timeout exp:%x init:%x",
-                             expected_wakeups, init_wakeup_status), 15_000)
+    // Wait to get out of low power state, since all wake status should have settled
+    if (cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateLowPower) begin
+      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateLowPower);,
+                   "fast state out of low power for wakeup timeout", 15_000)
     end
-    `DV_CHECK_EQ(cfg.pwrmgr_vif.wakeup_status, expected_wakeups)
+
+    if (expected_wakeups == init_wakeup_status) begin
+      // This is a success, so nothing more to do.
+      return;
+    end else begin
+      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.wakeup_status != init_wakeup_status);, $sformatf(
+                   "wakeup_status wait timeout exp:%x init:%x", expected_wakeups, init_wakeup_status
+                   ), 15_000)
+      // The various bits of wakeup_status could have different sync delays, so wait some more.
+      cfg.clk_rst_vif.wait_clks(2);
+      `DV_CHECK_EQ(cfg.pwrmgr_vif.wakeup_status, expected_wakeups)
+    end
   endtask
 
   task fast_check_wake_info(wakeups_t reasons, wakeups_t prior_reasons = '0, bit fall_through,
@@ -620,9 +644,10 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       exp_value.abort = (abort | prior_abort);
     end
     if (exp_value != initial_value) begin
-      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.wake_info != initial_value);,
-                   $sformatf("wake info wait timeout  exp:%p  init:%p",
-                             exp_value, initial_value), 15_000)
+      // The various bits of wake_info could have different sync delays, so wait some more.
+      cfg.clk_rst_vif.wait_clks(1);
+      `DV_SPINWAIT(wait(cfg.pwrmgr_vif.wake_info != initial_value);, $sformatf(
+                   "wake info wait timeout  exp:%p  init:%p", exp_value, initial_value), 15_000)
     end
   endtask : fast_check_wake_info
 
@@ -677,6 +702,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                                          bad_bits[MUBI4W*2-1:MUBI4W] != prim_mubi_pkg::MuBi4False;
                                          bad_bits[MUBI4W-1:0] != prim_mubi_pkg::MuBi4False;
                                          bad_bits[MUBI4W-1:0] != prim_mubi_pkg::MuBi4True;)
+      `uvm_info(`gfn, $sformatf("add_rom_rsp_noise to 0x%x", bad_bits), UVM_HIGH)
       cfg.pwrmgr_vif.rom_ctrl = bad_bits;
       #(delay * 10ns);
     end
@@ -684,25 +710,19 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   // Drive rom_ctrl at post reset stage
   virtual task init_rom_response();
-    if (cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateActive ||
-        cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp ||
-        cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateStrap    ||
-        cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone) begin
-      cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
-      cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
-    end else begin
-      cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4False;
+    if (cfg.pwrmgr_vif.rom_ctrl.done != prim_mubi_pkg::MuBi4True) begin
       cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
-      @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp);
+      `DV_WAIT(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone)
       cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
-      @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone);
       cfg.aon_clk_rst_vif.wait_clks(10);
       cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
       cfg.aon_clk_rst_vif.wait_clks(5);
       cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
       cfg.aon_clk_rst_vif.wait_clks(5);
+      cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
       cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
     end
+    `uvm_info(`gfn, "Set rom response to MuBi4True", UVM_MEDIUM)
   endtask
 
 endclass : pwrmgr_base_vseq

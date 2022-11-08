@@ -11,20 +11,20 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
   // Create enum to map rtl local sparse state
   // to continuous dv state.
   typedef enum bit [3:0] {
-                DVWaitDisClks      = 0,
-                DVWaitNvmShutDown  = 1,
-                DVWaitResetPrep    = 2,
-                DVWaitLowPower     = 3,
-                DVWaitEnableClocks = 4,
-                DVWaitReleaseLcRst = 5,
-                DVWaitOtpInit      = 6,
-                DVWaitLcInit       = 7,
-                DVWaitAckPwrUp     = 8,
-                DVWaitRomCheck     = 9,
-                DVWaitStrap        = 10,
-                DVWaitActive       = 11,
-                DVWaitInvalid      = 12
-                } reset_index_e;
+    DVWaitDisClks      = 0,
+    DVWaitNvmShutDown  = 1,
+    DVWaitResetPrep    = 2,
+    DVWaitLowPower     = 3,
+    DVWaitEnableClocks = 4,
+    DVWaitReleaseLcRst = 5,
+    DVWaitOtpInit      = 6,
+    DVWaitLcInit       = 7,
+    DVWaitAckPwrUp     = 8,
+    DVWaitRomCheck     = 9,
+    DVWaitStrap        = 10,
+    DVWaitActive       = 11,
+    DVWaitInvalid      = 12
+  } reset_index_e;
 
   constraint wakeups_c {wakeups == 0;}
   constraint wakeups_en_c {wakeups_en == 0;}
@@ -53,9 +53,8 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
         create_any_reset_event();
         begin
           int wait_time_ns = 10000;
-          `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state == dv2rtl_st(reset_index));,
-                       $sformatf("Timed out waiting for state %s", reset_index.name),
-                       wait_time_ns)
+          `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state == dv2rtl_st(reset_index));, $sformatf(
+                       "Timed out waiting for state %s", reset_index.name), wait_time_ns)
 
           @cfg.clk_rst_vif.cbn;
           `uvm_info(`gfn, $sformatf("Will cause invalid state forcing %s = 1", path), UVM_MEDIUM)
@@ -67,7 +66,7 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
       `DV_CHECK(uvm_hdl_release(path))
       `DV_CHECK(cfg.pwrmgr_vif.fast_state, pwrmgr_pkg::FastPwrStateInvalid)
       `uvm_info(`gfn, "All good, resetting for next round", UVM_MEDIUM)
-      repeat(10) @cfg.clk_rst_vif.cb;
+      repeat (10) @cfg.clk_rst_vif.cb;
       apply_reset();
       reset_index++;
       wait_for_fast_fsm_active();
@@ -104,12 +103,11 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
 
     `uvm_info(`gfn, $sformatf("Sending resets=0x%x", resets), UVM_MEDIUM)
     cfg.pwrmgr_vif.update_resets(resets);
-    `uvm_info(`gfn, $sformatf("Sending sw reset from rstmgr=%b", sw_rst_from_rstmgr),
-              UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Sending sw reset from rstmgr=%b", sw_rst_from_rstmgr), UVM_MEDIUM)
     if (escalation_reset) send_escalation_reset();
     cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
 
-  endtask // create_any_reset_event
+  endtask : create_any_reset_event
 
   function pwrmgr_pkg::fast_pwr_state_e dv2rtl_st(reset_index_e idx);
     case (idx)
@@ -130,6 +128,6 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
         `uvm_error("dv2rma_st", $sformatf("unknown index:%0d", idx))
       end
     endcase
-  endfunction // dv2rtl_st
+  endfunction : dv2rtl_st
 
-endclass // pwrmgr_reset_invalid_vseq
+endclass : pwrmgr_reset_invalid_vseq

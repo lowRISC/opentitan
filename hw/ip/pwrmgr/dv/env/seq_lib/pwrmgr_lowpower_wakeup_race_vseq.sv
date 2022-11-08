@@ -115,8 +115,7 @@ class pwrmgr_lowpower_wakeup_race_vseq extends pwrmgr_base_vseq;
         begin
           fast_check_wake_info(.reasons(wakeups_en), .prior_reasons(prior_reasons),
                                .fall_through(1'b0), .abort(1'b0),
-                               .prior_fall_through(prior_fall_through),
-                               .prior_abort(prior_abort));
+                               .prior_fall_through(prior_fall_through), .prior_abort(prior_abort));
         end
       join
       // This is the expected side-effect of the low power entry reset, since the source of the

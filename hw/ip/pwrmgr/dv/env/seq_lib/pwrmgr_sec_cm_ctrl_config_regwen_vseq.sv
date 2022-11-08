@@ -21,7 +21,7 @@ class pwrmgr_sec_cm_ctrl_config_regwen_vseq extends pwrmgr_wakeup_vseq;
     cfg.clk_rst_vif.wait_clks(1);
     wait(cfg.pwrmgr_vif.lowpwr_cfg_wen == 0);
 
-    repeat($urandom_range(1, 5)) begin
+    repeat ($urandom_range(1, 5)) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(wdata)
       expdata = ral.control.get();
       `uvm_info(`gfn, $sformatf("csr start %x", ral.control.get()), UVM_HIGH)

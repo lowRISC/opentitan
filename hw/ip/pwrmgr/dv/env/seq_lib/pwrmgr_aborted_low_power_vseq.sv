@@ -72,8 +72,11 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
           // Prepare for an abort ahead of time.
           if (!cpu_interrupt) begin
             `uvm_info(`gfn, $sformatf(
-                                      "Expecting an abort (0x80): fi=%b, li=%b, oi=%b",
-                                      flash_idle, lc_idle, otp_idle), UVM_MEDIUM)
+                      "Expecting an abort (0x80): fi=%b, li=%b, oi=%b",
+                      flash_idle,
+                      lc_idle,
+                      otp_idle
+                      ), UVM_MEDIUM)
             set_nvms_idle(flash_idle, lc_idle, otp_idle);
           end
         end
@@ -104,9 +107,7 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
           fast_check_reset_status(0);
         end
         begin
-          fast_check_wake_info(.reasons('0),
-                               .fall_through(cpu_interrupt),
-                               .abort(~cpu_interrupt));
+          fast_check_wake_info(.reasons('0), .fall_through(cpu_interrupt), .abort(~cpu_interrupt));
         end
       join
 

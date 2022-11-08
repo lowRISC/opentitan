@@ -26,15 +26,15 @@ class pwrmgr_global_esc_vseq extends pwrmgr_base_vseq;
       wait_for_fast_fsm_active();
       cycle = $urandom_range(50, 300);
       send_escalation_reset();
-      repeat(cycle) @(cfg.clk_rst_vif.cb);
+      repeat (cycle) @(cfg.clk_rst_vif.cb);
       clear_escalation_reset();
     end
-  endtask // send_esc
+  endtask : send_esc
 
   task check_rst_req();
     bit dut_init_done = -1;
 
-    while(trans_cnt < num_trans) begin
+    while (trans_cnt < num_trans) begin
       @(cfg.clk_rst_vif.cb);
       wait(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive &&
            cfg.pwrmgr_vif.pwr_rst_req.rstreqs[3] == 1'b1);
@@ -58,6 +58,6 @@ class pwrmgr_global_esc_vseq extends pwrmgr_base_vseq;
       join_any
     end
     wait(dut_init_done == 1);
-  endtask // check_rst_req
+  endtask : check_rst_req
 
 endclass
