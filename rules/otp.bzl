@@ -214,3 +214,12 @@ otp_image = rule(
         ),
     },
 )
+
+# This is a set of overlays to generate a generic, standard OTP image.
+# Additional overlays can be applied on top to further customize the OTP.
+STD_OTP_OVERLAYS = [
+    "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
+    "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
+    "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
+    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+]
