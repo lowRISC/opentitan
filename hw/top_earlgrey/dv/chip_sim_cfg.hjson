@@ -1444,7 +1444,7 @@
       name: chip_tap_straps_prod
       uvm_test_seq: chip_tap_straps_vseq
       en_run_modes: ["strap_tests_mode"]
-      run_opts: ["+lc_at_prod=1"]
+      run_opts: ["+use_otp_image=OtpTypeLcStProd"]
       run_timeout_mins: 120
     }
     {

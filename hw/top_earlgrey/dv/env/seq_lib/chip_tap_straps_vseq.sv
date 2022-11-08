@@ -58,12 +58,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
 
     super.dut_init(reset_kind);
 
-    void'($value$plusargs("lc_at_prod=%0d", lc_at_prod));
-    if (lc_at_prod) begin
-      cur_lc_state = LcStProd;
-    end else begin
-      cur_lc_state = cfg.mem_bkdr_util_h[Otp].otp_read_lc_partition_state();
-    end
+    cur_lc_state = cfg.mem_bkdr_util_h[Otp].otp_read_lc_partition_state();
 
     // in LcStProd, we can only select LC tap at boot.
     // If it's not LC tap, effectively, no tap is selected.
