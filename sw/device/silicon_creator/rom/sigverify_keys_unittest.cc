@@ -407,7 +407,7 @@ struct RsaVerifyTestCase {
   sigverify_rsa_buffer_t sig;
 };
 
-constexpr RsaVerifyTestCase kRsaVerifyTestCases[1]{
+constexpr RsaVerifyTestCase kRsaVerifyTestCases[2]{
     // message: "test"
     {
         .key = &kSigVerifyRsaKeys[0].key,
@@ -433,6 +433,32 @@ constexpr RsaVerifyTestCase kRsaVerifyTestCases[1]{
                 0xbaaebfac, 0x653b64bd, 0x826a3baa, 0x98703747, 0x6ee930ec,
                 0xacbb94d8, 0xcede8d12, 0xa17b3cb0, 0xa520fe81, 0x84df2df5,
                 0x4f97181e,
+            },
+    },
+    {
+        .key = &kSigVerifyRsaKeys[1].key,
+        .sig =
+            {
+                0x3106a8c5, 0xb7b48a3a, 0xb06af030, 0x9dca44b1, 0x55eaa90a,
+                0xf92f47ff, 0x9580f0bf, 0x30b50b5d, 0xcc5fd284, 0x5f176cf5,
+                0xacc49b93, 0x138a4b2d, 0x9c38c803, 0x762b7b90, 0x1296e98d,
+                0xfe9eb1c7, 0x87e618b1, 0x683f2ba5, 0x55f16917, 0x5425b854,
+                0x67c76438, 0xdfa7e079, 0x8c186383, 0xc7c335e4, 0xf367c66b,
+                0x41a29e0c, 0x2d64635e, 0xa5f5731d, 0x9052717e, 0x71f935e5,
+                0xfe16d869, 0xd9c2f2b2, 0xb2a0b033, 0x632723d8, 0xaddf4ccf,
+                0x43584391, 0x90ebb95e, 0x370fe8c6, 0xef3efad0, 0x97724e0b,
+                0x9c612503, 0xb31ed101, 0x85f96571, 0x4672abd1, 0xf93a9e47,
+                0x4be4bacb, 0x107f67c0, 0xce195cf7, 0xf258601d, 0x06b4a612,
+                0x29f5e2ae, 0xa4eb3e71, 0xe0365a09, 0xae4e63d7, 0x4922eeab,
+                0x61334be2, 0x33c98022, 0x163f3805, 0x6b34c344, 0x70d2527a,
+                0x9b81af66, 0xdedddae9, 0x011f3160, 0x4cfeacdd, 0x595d6eac,
+                0x166e18d3, 0xb32711b2, 0x3ed0160b, 0xa17a9a77, 0x4555cd41,
+                0xc00a6e83, 0xfedad44a, 0xea2ea1d6, 0x43e84ac1, 0x5e68d2be,
+                0x33c86356, 0x45f52406, 0x6caab54a, 0x255c86d4, 0x7f2bd937,
+                0xa34a8852, 0xb4a32e9a, 0xacf85da8, 0x6dcb5697, 0xf02d5653,
+                0x6f4eb719, 0x1719e7ae, 0x3801b889, 0x6053f90e, 0x1cdcc375,
+                0x4ddc25ff, 0x7d4671f1, 0xe8305eed, 0x6da58e90, 0x9dfa58b8,
+                0x77247677,
             },
     },
 };

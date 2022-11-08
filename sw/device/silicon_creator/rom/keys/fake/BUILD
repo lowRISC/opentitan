@@ -7,6 +7,7 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "public_keys",
     hdrs = [
+        "dev_key_0_rsa_3072_exp_f4.h",
         "test_key_0_rsa_3072_exp_f4.h",
     ],
 )
@@ -14,4 +15,9 @@ cc_library(
 filegroup(
     name = "test_private_key_0",
     srcs = ["test_key_0_rsa_3072_exp_f4.der"],
+)
+
+filegroup(
+    name = "dev_private_key_0",
+    srcs = ["dev_key_0_rsa_3072_exp_f4.der"],
 )
