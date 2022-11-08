@@ -232,7 +232,8 @@
           resval: "0"
         },
 
-        // reset requests include escalation reset + peripheral requests
+        // reset requests include escalation reset, main power glitch,
+        // ndm reset request + other peripheral requests
         { bits: "${3 + total_hw_resets - 1}:3",
           hwaccess: "hrw",
           name: "HW_REQ",
