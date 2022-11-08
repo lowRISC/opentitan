@@ -18,7 +18,7 @@ enum {
   /**
    * Number of RSA public keys.
    */
-  kSigVerifyNumRsaKeys = 2,
+  kSigVerifyNumRsaKeys = 3,
   /**
    * Step size to use when checking RSA public keys.
    *

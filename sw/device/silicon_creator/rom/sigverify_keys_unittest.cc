@@ -407,7 +407,7 @@ struct RsaVerifyTestCase {
   sigverify_rsa_buffer_t sig;
 };
 
-constexpr RsaVerifyTestCase kRsaVerifyTestCases[2]{
+constexpr RsaVerifyTestCase kRsaVerifyTestCases[3]{
     // message: "test"
     {
         .key = &kSigVerifyRsaKeys[0].key,
@@ -459,6 +459,32 @@ constexpr RsaVerifyTestCase kRsaVerifyTestCases[2]{
                 0x6f4eb719, 0x1719e7ae, 0x3801b889, 0x6053f90e, 0x1cdcc375,
                 0x4ddc25ff, 0x7d4671f1, 0xe8305eed, 0x6da58e90, 0x9dfa58b8,
                 0x77247677,
+            },
+    },
+    {
+        .key = &kSigVerifyRsaKeys[2].key,
+        .sig =
+            {
+                0x39b92a38, 0xf584ed48, 0x25f5f323, 0x04dde936, 0x608871c1,
+                0xe234230a, 0x099f0ab6, 0xd31b9023, 0x65f0fd99, 0xa402880f,
+                0xa0158ea9, 0xe7d34d13, 0x74f1edbd, 0x7a226c4c, 0xc77e08c0,
+                0x1a863fda, 0xfd029480, 0x8470f80e, 0x2b03d2c5, 0x05ea5727,
+                0x0ddb0df1, 0xa4096752, 0x6bee74d8, 0xa066d78a, 0x7f4d7423,
+                0x2c8a6d1a, 0x0197361a, 0x1ac4e4f3, 0x3544b409, 0x993cac1a,
+                0xf7fc8746, 0xb0037059, 0xdcb2155a, 0x7055a59e, 0x12e0c0be,
+                0x5a9af17b, 0x4548dba0, 0x21822de6, 0x7a98b4d3, 0x4a0aeecf,
+                0x35dc0641, 0xba5ac581, 0x0d0ba217, 0x6a15953e, 0x6b7d25b1,
+                0x6e442c34, 0xdf522eb7, 0x0a0400d6, 0x66364428, 0x23e4938a,
+                0x9edece9e, 0xe2f7fee8, 0x1701ac39, 0xe028f9fa, 0xdec374b6,
+                0x89ca5e1e, 0x4bd8fa6b, 0x161850d7, 0x15601af9, 0xa41eeff5,
+                0xe966cedf, 0x4889c9e3, 0x945fb580, 0xe5c1b9c2, 0x8630cbe2,
+                0x62450f80, 0x46de9edd, 0xd0c1ac84, 0xa749097c, 0x8b3f0842,
+                0xb3cb0b40, 0xc190341d, 0x42cc872a, 0x54825b43, 0x671b4f8a,
+                0x7cc48f4e, 0x06e4f5ba, 0x0bde3406, 0xb6dee3b3, 0x0669fd54,
+                0xd8d4c742, 0x31e67cde, 0x03fed7ab, 0xe1956b87, 0x28b7cc05,
+                0x062f735e, 0xe3764364, 0x24f603a4, 0xb6399d4b, 0x14b9d609,
+                0x9f49ce19, 0x8f14096c, 0xd3e33dab, 0x70b18505, 0x3b9a0fcc,
+                0xc28540c8,
             },
     },
 };
