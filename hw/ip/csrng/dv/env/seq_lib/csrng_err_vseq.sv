@@ -12,7 +12,6 @@ class csrng_err_vseq extends csrng_base_vseq;
   csrng_item   cs_item;
 
   task body();
-    bit [2:0]     SP2V_LOGIC_HIGH = '{1'b0,1'b1,1'b1};
     bit [5:0]     err_code_test_bit;
     string        path, path1, path2;
     bit           value1, value2;
@@ -99,11 +98,11 @@ class csrng_err_vseq extends csrng_base_vseq;
       end
       aes_cipher_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
-        if (SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
-          path = cfg.csrng_path_vif.aes_cipher_sm_err_path(cfg.which_sp2v, "p");
+        if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
+          path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "p");
           force_path_err(path, 8'b0, fld, 1'b1);
         end else begin
-          path = cfg.csrng_path_vif.aes_cipher_sm_err_path(cfg.which_sp2v, "n");
+          path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "n");
           force_path_err(path, 8'b0, fld, 1'b1);
         end
       end
