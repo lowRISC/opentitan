@@ -16,6 +16,7 @@ interface entropy_src_cov_if
   import dv_utils_pkg::*;
   import entropy_src_reg_pkg::*;
   import entropy_src_env_pkg::*;
+  import entropy_src_pkg::*;
   `include "dv_fcov_macros.svh"
 
   bit en_full_cov = 1'b1;
@@ -47,8 +48,7 @@ interface entropy_src_cov_if
 
   endgroup : mubi_err_cg
 
-  covergroup sm_err_cg with function sample(bit ack_sm_err,
-                                                        bit main_sm_err);
+  covergroup sm_err_cg with function sample(bit ack_sm_err, bit main_sm_err);
     option.name         = "sm_err_cg";
     option.per_instance = 1;
 
@@ -135,12 +135,10 @@ interface entropy_src_cov_if
       bins        mubi_false = { MuBi4False };
     }
 
-    cp_rng_bit_enable: coverpoint rng_bit_enable iff(full_seed) {
-      bins        mubi_true  = { MuBi4True };
-      bins        mubi_false = { MuBi4False };
+    cp_rng_bit: coverpoint {rng_bit_enable == MuBi4True, rng_bit_sel} iff(full_seed) {
+      bins        enabled[] = { [3'b100 : 3'b111] };
+      bins        disabled =  { [3'b000 : 3'b011] };
     }
-
-    cp_rng_bit_sel: coverpoint rng_bit_sel iff(full_seed);
 
     // Signal an error if data is observed when es_route is false.
     // Sample this even if we don't have a full seed, to detect partial seed
@@ -185,9 +183,18 @@ interface entropy_src_cov_if
 
     // Cross coverage points
 
-    // Entropy data interface is tested with all valid configurations
-    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit_enable,
-        cp_rng_bit_sel, cp_es_type, cp_otp_en_es_fw_read;
+    // Large cross covering entropy data interface over all valid configurations
+    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit, cp_es_type;
+
+    // Finer crosses
+    cr_fips_scope: cross cp_fips_enable, cp_threshold_scope;
+    cr_fips_bit: cross cp_fips_enable, cp_rng_bit;
+    cr_fips_type: cross cp_fips_enable, cp_es_type;
+    cr_scope_bit: cross cp_threshold_scope, cp_rng_bit;
+    cr_fips_scope_bit: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit;
+    cr_fips_scope_type: cross cp_fips_enable, cp_threshold_scope, cp_es_type;
+    cr_fips_bit_type: cross cp_fips_enable, cp_rng_bit, cp_es_type;
+    cr_scope_bit_type: cross cp_threshold_scope, cp_rng_bit, cp_es_type;
 
     // Entropy data interface functions despite any changes to the fw_ov settings
     cr_fw_ov: cross cp_fw_ov_mode, cp_entropy_insert;
@@ -221,12 +228,10 @@ interface entropy_src_cov_if
       bins        mubi_false = { MuBi4False };
     }
 
-    cp_rng_bit_enable: coverpoint rng_bit_enable {
-      bins        mubi_true  = { MuBi4True };
-      bins        mubi_false = { MuBi4False };
+    cp_rng_bit: coverpoint {rng_bit_enable == MuBi4True, rng_bit_sel} {
+      bins        enabled[] = { [3'b100 : 3'b111] };
+      bins        disabled =  { [3'b000 : 3'b011] };
     }
-
-    cp_rng_bit_sel: coverpoint rng_bit_sel;
 
     // Signal an error if data is observed when es_route is true.
     cp_es_route: coverpoint es_route {
@@ -270,8 +275,24 @@ interface entropy_src_cov_if
     // Cross coverage points
 
     // CSRNG HW interface is tested with all valid configurations
-    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit_enable,
-        cp_rng_bit_sel, cp_es_type, cp_otp_en_es_fw_read;
+    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit, cp_es_type,
+                     cp_entropy_data_reg_enable, cp_otp_en_es_fw_read;
+
+    // Smaller crosses
+    cr_fips_scope_type: cross cp_fips_enable, cp_threshold_scope, cp_es_type;
+    cr_fips_scope_data_enable: cross cp_fips_enable, cp_threshold_scope, cp_entropy_data_reg_enable;
+    cr_fips_scope_otp: cross cp_fips_enable, cp_threshold_scope, cp_otp_en_es_fw_read;
+    cr_fips_scope_fw_ov: cross cp_fips_enable, cp_threshold_scope, cp_fw_ov_mode, cp_entropy_insert;
+
+    cr_fips_bit_type: cross cp_fips_enable, cp_rng_bit, cp_es_type;
+    cr_fips_bit_data_enable: cross cp_fips_enable, cp_rng_bit, cp_entropy_data_reg_enable;
+    cr_fips_bit_otp: cross cp_fips_enable, cp_rng_bit, cp_otp_en_es_fw_read;
+    cr_fips_bit_fw_ov: cross cp_fips_enable, cp_rng_bit, cp_fw_ov_mode, cp_entropy_insert;
+
+    cr_scope_bit_type:  cross cp_threshold_scope, cp_rng_bit, cp_es_type;
+    cr_scope_bit_data_enable:  cross cp_threshold_scope, cp_rng_bit, cp_entropy_data_reg_enable;
+    cr_scope_bit_otp:  cross cp_threshold_scope, cp_rng_bit, cp_otp_en_es_fw_read;
+    cr_scope_bit_fw_ov:  cross cp_threshold_scope, cp_rng_bit, cp_fw_ov_mode, cp_entropy_insert;
 
     // CSRNG HW interface functions despite any changes to the fw_ov settings
     cr_fw_ov: cross cp_fw_ov_mode, cp_entropy_insert;
@@ -310,12 +331,10 @@ interface entropy_src_cov_if
       bins        mubi_false = { MuBi4False };
     }
 
-    cp_rng_bit_enable: coverpoint rng_bit_enable {
-      bins        mubi_true  = { MuBi4True };
-      bins        mubi_false = { MuBi4False };
+    cp_rng_bit: coverpoint {rng_bit_enable == MuBi4True, rng_bit_sel} {
+      bins        enabled[] = { [3'b100 : 3'b111] };
+      bins        disabled =  { [3'b000 : 3'b011] };
     }
-
-    cp_rng_bit_sel: coverpoint rng_bit_sel;
 
     // This should have no effect on the Observe FIFO IF
     // but we should cover it anyway.
@@ -359,12 +378,16 @@ interface entropy_src_cov_if
     // Cross coverage points
 
     // Entropy data interface is tested with all valid configurations
+    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit, cp_es_route, cp_es_type,
+                     cp_entropy_data_reg_enable, cp_otp_en_es_fw_read;
 
-    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit_enable,
-        cp_rng_bit_sel, cp_es_type;
-
-    // Entropy data interface functions despite any changes to the fw_ov settings
-    cr_fw_ov: cross cp_fw_ov_mode, cp_entropy_insert;
+    // Smaller cross-points
+    cr_rng_insert_fips: cross cp_rng_bit, cp_entropy_insert, cp_fips_enable;
+    cr_rng_insert_scope: cross cp_rng_bit, cp_entropy_insert, cp_threshold_scope;
+    cr_rng_insert_route: cross cp_rng_bit, cp_entropy_insert, cp_es_route;
+    cr_rng_insert_type: cross cp_rng_bit, cp_entropy_insert, cp_es_type;
+    cr_rng_insert_reg_en: cross cp_rng_bit, cp_entropy_insert, cp_entropy_data_reg_enable;
+    cr_rng_insert_otp: cross cp_rng_bit, cp_entropy_insert, cp_otp_en_es_fw_read;
 
   endgroup : observe_fifo_event_cg
 
@@ -431,14 +454,25 @@ interface entropy_src_cov_if
 
   endgroup : win_ht_cg
 
-  // rng_select: Ranges from 0 to RNG_BUS_WIDTH, where
-  //             a value in the range of 0 through RNG_BUS_WIDTH - 1
-  //             corresponds to a particular line and a value of
-  //             RNG_BUS_WIDTH means all lines.
-  //             TODO: Update other CG's to use this convention.
+  // Most of the arguments to this CG correspond directly to DUT configuration parameters with two
+  // exceptions:
+  // test_type: Can be repcnt_ht, or repcnts_ht
+  // "Score": This is an abstraction of the number of repeated bits that allows us to
+  //          compare coverage of the REPCNTS & REPCNT health tests with the same CG.
+  //          REPCNTS test values are scaled up by a factor of RNG_BUS_WIDTH to
+  //          allow for meaningful comparison in the same set of bins.
+  //
+  //          Since each _symbol_ repetition is about as coincidentally likely as
+  //          RNG_BUS_WIDTH individual line repetitions, the range thresholds for the
+  //          symbols the _symbol_ test are lower by the same fraction.  This means
+  //          that counting pass/fail-cross-count events is hard to compare between
+  //          the two tests unless the repcnts test scores is scaled to use the same
+  //          buckets. The scaling is applied in the cg_cont_ht_sample wrapper function
+  //          below.
   covergroup cont_ht_cg with function sample(health_test_e test_type,
                                              bit fips_mode,
-                                             int rng_select,
+                                             bit rng_bit_enable,
+                                             bit [1:0]  rng_bit_sel,
                                              bit [15:0] score,
                                              bit fail);
     option.name         = "cont_ht_cg";
@@ -454,12 +488,14 @@ interface entropy_src_cov_if
 
     cp_fail : coverpoint fail;
 
-    cp_rng_select : coverpoint rng_select {
-      bins vals[] = { [ 0 : RNG_BUS_WIDTH ] };
+    cp_rng_bit: coverpoint {rng_bit_enable, rng_bit_sel} {
+      bins        enabled[] = { [3'b100 : 3'b111] };
+      bins        disabled =  { [3'b000 : 3'b011] };
     }
 
     // Don't test threshold, test what HT scores have been observed
-    // which is more slightly interesting than which thresholds have
+    // which is mo
+      // re slightly interesting than which thresholds have
     // been applied, as it indicates what range of input RNG values
     // have been seen.
     //
@@ -485,45 +521,45 @@ interface entropy_src_cov_if
 
     cr_type_fail : cross cp_type, cp_fail;
 
-    cr_type_rngsel : cross cp_type, cp_rng_select;
+    cr_type_rngsel : cross cp_type, cp_rng_bit;
 
     cr_type_score : cross cp_type, cp_score;
 
     cr_mode_fail : cross cp_fips_mode, cp_fail;
 
-    cr_mode_rngsel : cross cp_fips_mode, cp_rng_select;
+    cr_mode_rngsel : cross cp_fips_mode, cp_rng_bit;
 
     cr_mode_score : cross cp_fips_mode, cp_score;
 
-    cr_fail_rngsel : cross cp_fail, cp_rng_select;
+    cr_fail_rngsel : cross cp_fail, cp_rng_bit;
 
     cr_fail_score : cross cp_fail, cp_score;
 
-    cr_rngsel_score : cross cp_rng_select, cp_score;
+    cr_rngsel_score : cross cp_rng_bit, cp_score;
 
     // Three way crosses
     cr_type_mode_fail : cross cp_type, cp_fips_mode, cp_fail;
 
-    cr_type_mode_rngsel : cross cp_type, cp_fips_mode, cp_rng_select;
+    cr_type_mode_rngsel : cross cp_type, cp_fips_mode, cp_rng_bit;
 
     cr_type_mode_score : cross cp_type, cp_fips_mode, cp_score;
 
-    cr_type_fail_rngsel : cross cp_type, cp_fail, cp_rng_select;
+    cr_type_fail_rngsel : cross cp_type, cp_fail, cp_rng_bit;
 
     cr_type_fail_score : cross cp_type, cp_fail, cp_score;
 
-    cr_type_rngsel_score : cross cp_type, cp_rng_select, cp_score;
+    cr_type_rngsel_score : cross cp_type, cp_rng_bit, cp_score;
 
-    cr_mode_fail_rngsel : cross cp_fips_mode, cp_fail, cp_rng_select;
+    cr_mode_fail_rngsel : cross cp_fips_mode, cp_fail, cp_rng_bit;
 
     cr_mode_fail_score : cross cp_fips_mode, cp_fail, cp_score;
 
-    cr_mode_rngsel_score : cross cp_fips_mode, cp_rng_select, cp_score;
+    cr_mode_rngsel_score : cross cp_fips_mode, cp_rng_bit, cp_score;
 
-    cr_fail_rngsel_score : cross cp_fail, cp_rng_select, cp_score;
+    cr_fail_rngsel_score : cross cp_fail, cp_rng_bit, cp_score;
 
     // All bin cross
-    cr_all : cross cp_type, cp_fips_mode, cp_fail, cp_rng_select, cp_score;
+    cr_all : cross cp_type, cp_fips_mode, cp_fail, cp_rng_bit, cp_score;
 
   endgroup : cont_ht_cg
 
@@ -788,12 +824,22 @@ interface entropy_src_cov_if
 
   endfunction
 
+  // Please see the note near the definition of cont_ht_cg describing the scoring of the
+  // repcnts test, and applying bins for both the repcnt and
   function automatic void cg_cont_ht_sample(health_test_e test_type,
                                             bit fips_mode,
-                                            int rng_select,
-                                            bit [15:0] score,
+                                            bit rng_bit_enable,
+                                            bit [1:0] rng_bit_select,
+                                            bit [15:0] raw_score,
                                             bit fail);
-    cont_ht_cg_inst.sample(test_type, fips_mode, rng_select, score, fail);
+    bit [15:0] score;
+    bit [31:0] symbol_score;
+
+    symbol_score = (32'(raw_score) * RNG_BUS_WIDTH > 32'hffff) ?
+                   32'hffff : 32'(raw_score) * RNG_BUS_WIDTH;
+    score = (test_type == repcnts_ht) ? symbol_score[15:0] : raw_score;
+
+    cont_ht_cg_inst.sample(test_type, fips_mode, rng_bit_enable, rng_bit_select, score, fail);
 
   endfunction
 
