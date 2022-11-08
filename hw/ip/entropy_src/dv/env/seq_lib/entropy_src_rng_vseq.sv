@@ -75,32 +75,32 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   constraint dly_to_access_intr_c {
     dly_to_access_intr dist {
       0                   :/ 1,
-      [1      :100]       :/ 5,
-      [101    :10_000]    :/ 3
+      [1      :100]       :/ 8,
+      [101    :10_000]    :/ 1
     };
   }
 
   constraint dly_to_access_alert_sts_c {
     dly_to_access_alert_sts dist {
       0                   :/ 1,
-      [1      :100]       :/ 5,
+      [1      :100]       :/ 8,
       [101    :10_000]    :/ 1
     };
   }
 
   constraint dly_to_insert_entropy_c {
     dly_to_insert_entropy dist {
-      0                   :/ 1,
-      [1      :10]        :/ 3,
-      [11     :100]       :/ 2,
+      0                   :/ 5,
+      [1      :10]        :/ 15,
+      [11     :100]       :/ 5,
       [101    :1000]      :/ 1
     };
   }
 
   constraint dly_to_reenable_dut_c {
     dly_to_reenable_dut dist {
-      [1      :10]       :/ 3,
-      [101    :100]      :/ 2,
+      [1      :10]       :/ 10,
+      [101    :100]      :/ 3,
       [1001   :1000]     :/ 1
     };
   }
@@ -228,6 +228,15 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // Flag to force SW update to fire.
     // We'll only use this if we have gaps in coverage.
     bit check_sw_update_explicit = 1'b0;
+
+    wait_no_outstanding_access();
+    if (!do_background_procs) return;
+
+    if (!`gmv(ral.me_regwen.me_regwen) || !`gmv(ral.sw_regupd.sw_regupd)) begin
+      `uvm_info(`gfn, "DUT is permanently locked, reset required", UVM_MEDIUM);
+      do_background_procs = 0;
+      return;
+    end
 
     disable_dut();
 
@@ -438,6 +447,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     injection_mandatory = ((cfg.dut_cfg.fw_over_enable == MuBi4True) &&
                            (cfg.dut_cfg.fw_read_enable == MuBi4True));
     do_inject           = injection_mandatory || cfg.spurious_inject_entropy;
+
+
+    `uvm_info(`gfn, "Entropy injection thread waiting for DUT to be enabled", UVM_MEDIUM)
+    csr_spinwait(.ptr(ral.module_enable.module_enable),
+                 .exp_data(MuBi4True),
+                 .backdoor(1));
 
     `uvm_info(`gfn, "Starting entropy injection thread", UVM_LOW)
 
@@ -698,6 +713,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     bit regwen;
     bit sw_locked = (`gmv(ral.sw_regupd.sw_regupd) == 0);
 
+    int bad_mubi_cfg_pct_orig = cfg.dut_cfg.bad_mubi_cfg_pct;
+    int preconfig_disable_pct_orig = cfg.dut_cfg.preconfig_disable_pct;
     entropy_src_dut_cfg altcfg=new cfg.dut_cfg;
 
     // Force a reset if the device is currently locked via sw_regupd
@@ -753,6 +770,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
        `uvm_info(`gfn, "DUT Reconfigured", UVM_LOW)
        `uvm_info(`gfn, cfg.dut_cfg.convert2string(), UVM_LOW)
     end
+
+    // Write the new config to dut_cfg
+    cfg.dut_cfg = altcfg;
+
+    // Restore modified knobs
+    cfg.dut_cfg.bad_mubi_cfg_pct = bad_mubi_cfg_pct_orig;
+    cfg.dut_cfg.preconfig_disable_pct = preconfig_disable_pct_orig;
+
   endtask
 
   task body();
@@ -774,9 +799,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         // If the initial configuration (in dut_init) failed, start with a reconfig.
         if (!init_successful) random_reconfig(0);
 
-        // Explicitly enable the DUT
-        enable_dut();
-
         `uvm_info(`gfn, "Launching event threads", UVM_LOW)
 
         // In addition to the CSRNG and RNG sequences
@@ -794,6 +816,10 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
           // never actually induce any transitions.
           if (cfg.induce_targeted_transition_pct != 0) begin
             targeted_transition_thread();
+          end
+          begin
+            // Explicitly enable the DUT with no delay
+            enable_dut();
           end
         join
 
