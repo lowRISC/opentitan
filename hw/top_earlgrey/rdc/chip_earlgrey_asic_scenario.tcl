@@ -14,36 +14,87 @@
 # POR_N
 # When POR_N released, POK remains high (already released from reset)
 # dio_pad_attr_q[12] is SCK PAD. The invert signal remains 0 always
+#
+# TODO: Create two scns (either vcmain_pok 0 (turn off all clock), or
+#       vcmain_pok 1 (all clocks alive))
 set_reset_scenario { \
   { POR_N           { reset {#2 0} { #10 1} }} \
-  { u_ast.vcaon_pok { constraint {@t0 1} }} \
+  { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint {@t0 1} }} \
   { top_earlgrey.u_pinmux_aon.dio_pad_attr_q[12].invert \
     { constraint { @t0 0 } } } \
   { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
 } -name ScnPOR
 
-# AST POK
+# AST AON POK
+# When AON_POK drops, main_pok goes to 0 also
 set_reset_scenario { \
-  { u_ast.vcaon_pok { reset {@t0 0} { #2 1} } } \
+  { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { reset { @t0 1 } { #5 0 } { #10 1 } } } \
+  { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { reset { @t0 1 } { #5 0 } { #10 1 } } } \
+  { POR_N                               { constraint { @t0 1 } } } \
   { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
-} -name ScnPOK
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_powerup { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_powerup    { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_powerup      { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_usb_powerup     { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_powerup { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_aes        { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_hmac       { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_kmac       { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_otbn       { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_infra   { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_infra      { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_usb_infra       { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_infra        { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_infra   { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_secure  { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_secure     { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_timers  { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_peri    { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_peri    { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_peri         { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_usb_peri        { constraint { @t0 0 } } } \
+} -name ScnAonPOK
 
 # AST Regulator Resets
+# This scenario is entering low power mode (not brownout) in that case the
+# clocks other than clk_aon are gated prior to turn off main power.
 set_reset_scenario { \
   { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { reset { @t0 0 } { #10 1}}} \
+  { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint {@t0 1} } } \
   { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_powerup { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_powerup    { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_powerup      { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_usb_powerup     { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_powerup { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_aes        { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_hmac       { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_kmac       { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_otbn       { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_infra   { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_infra      { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_usb_infra       { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_infra        { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_infra   { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_secure  { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_main_secure     { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_timers  { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_peri    { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_peri    { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_io_peri         { constraint { @t0 0 } } } \
+  { top_earlgrey.clkmgr_aon_clocks.clk_usb_peri        { constraint { @t0 0 } } } \
 } -name ScnMainPok
 
-set_reset_scenario { \
-  { u_ast.u_rglts_pdm_3p3v.rglssm_vmppr_h_o { reset { @t0 0 } { #10 1}}} \
-  { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
-} -name ScnRglSsmVmppr
-
-set_reset_scenario { \
-  { u_ast.u_rglts_pdm_3p3v.deep_sleep_h_o \
-    { reset { @t0 1 } { #10 0} { #10 0 }} \
-  } \
-} -name ScnRglDeepSleep
+#set_reset_scenario { \
+#  { u_ast.u_rglts_pdm_3p3v.rglssm_vmppr_h_o { reset { @t0 0 } { #10 1}}} \
+#  { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
+#} -name ScnRglSsmVmppr
+#
+#set_reset_scenario { \
+#  { u_ast.u_rglts_pdm_3p3v.deep_sleep_h_o \
+#    { reset { @t0 1 } { #10 0} { #10 0 }} \
+#  } \
+#} -name ScnRglDeepSleep
 
 # PWRMGR Reset Cause
 
@@ -58,8 +109,9 @@ set_reset_scenario { \
   {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_5.q[0]} {reset  { @t0 0 } { #10 1}} } \
   {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_6.q[0]} {reset  { @t0 0 } { #10 1}} } \
   {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_7.q[0]} {reset  { @t0 0 } { #10 1}} } \
-  { POR_N           { constraint { @t0 1 } } } \
-  { u_ast.vcaon_pok { constraint { @t0 1 } } } \
+  { POR_N                               { constraint { @t0 1 } } } \
+  { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { constraint { @t0 1 } } } \
+  { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint { @t0 1 } } } \
   { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
 } -name RstMgrSwRst -comment "RSTMGR SW Controlled Resets"
 
@@ -86,16 +138,16 @@ set_reset_scenario { \
 
 # SPI_DEVICE CSb Reset. IP reset should be stable
 set_reset_scenario { \
- { {top_earlgrey.u_spi_device.rst_csb_buf} {reset { @t0 1 } { #10 0} } } \
- { u_ast.vcaon_pok { constraint { @t0 1 } } } \
- { top_earlgrey.u_spi_device.rst_ni { constraint { @t0 1 } } } \
+ { {top_earlgrey.u_spi_device.rst_csb_buf} { reset { @t0 1 } { #10 0} } } \
+ { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h      { constraint { @t0 1 } } } \
+ { top_earlgrey.u_spi_device.rst_ni        { constraint { @t0 1 } } } \
 } -name RstSpidCsb -comment "SPI_DEVICE CSb Assertion"
 
 # SPI_DEVICE TPM CSb Reset. SPID IP reset should be stable
 set_reset_scenario { \
   { {top_earlgrey.u_spi_device.rst_tpm_csb_buf} \
     {reset { @t0 1} {#10 0}} } \
-  { u_ast.vcaon_pok { constraint { @t0 1 } } } \
-  { POR_N           { constraint { @t0 1 } } } \
-  { top_earlgrey.u_spi_device.rst_ni { constraint { @t0 1 } } } \
+  { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h { constraint { @t0 1 } } } \
+  { POR_N                              { constraint { @t0 1 } } } \
+  { top_earlgrey.u_spi_device.rst_ni   { constraint { @t0 1 } } } \
 } -name RstSpidTpmCsb -comment "SPI_DEVICE TPM CSb Assertion"
