@@ -856,7 +856,7 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
     keymgr_invalid_hw_input_type_e invalid_hw_input_type;
 
     // if it's an invalid op, kmac key and data are random value, they shouldn't be all 0s/1s
-    if (get_invalid_op()) return 0;
+    if (get_invalid_op() || get_operation() == keymgr_pkg::OpDisable) return 0;
 
     if ((current_internal_key[current_cdi][0] inside {0, '1} ||
          current_internal_key[current_cdi][1] inside {0, '1}) &&

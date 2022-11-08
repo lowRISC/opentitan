@@ -26,6 +26,9 @@ class keymgr_common_vseq extends keymgr_base_vseq;
 
   virtual task pre_start();
     do_keymgr_init = 1'b0;
+    // randomly changing edn interval value makes EDN req unpredictable,
+    // disable the EDN SVA in the keymgr_if.
+    cfg.keymgr_vif.en_chk = 0;
     super.pre_start();
   endtask
 
