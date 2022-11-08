@@ -746,6 +746,7 @@ otp_json(
     overlays = [
         "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
+        "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
         "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
         ":otp_json_watchdog_enable",
     ],
