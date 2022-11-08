@@ -923,4 +923,44 @@ module rv_core_ibex
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_cfg, alert_tx_o[2])
   `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(RvCoreRegWeOnehotCheck_A,
       u_core.gen_regfile_ff.register_file_i.gen_wren_check.u_prim_onehot_check, alert_tx_o[2])
+
+`ifdef INC_ASSERT
+  if (ICache && ICacheScramble) begin : gen_icache_scramble_asserts
+
+    // Sample icache scramble key for use in assertions below.
+    // pragma coverage off
+    //VCS coverage off
+    logic [otp_ctrl_pkg::FlashKeyWidth-1:0] icache_otp_key_q;
+    always_ff @(posedge clk_i, negedge rst_ni) begin
+      if (!rst_ni) begin
+        icache_otp_key_q <= '0;
+      end else if (icache_otp_key_i.ack) begin
+        icache_otp_key_q <= icache_otp_key_i.key;
+      end
+    end
+    //VCS coverage on
+    // pragma coverage on
+
+    // Ensure that when a scramble key is received, it is correctly applied to the icache scrambled
+    // memory primitives.
+    for (genvar way = 0; way < ibex_pkg::IC_NUM_WAYS; way++) begin : gen_ways
+      `ASSERT(IbexIcacheScrambleKeyAppliedAtTagBank_A,
+          icache_otp_key_i.ack
+          |-> ##[0:10] // upper bound is not exact, but it should not take more than a few cycles
+          u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.tag_bank.key_valid_i
+          && (u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.tag_bank.key_i
+              == icache_otp_key_q)
+      )
+      `ASSERT(IbexIcacheScrambleKeyAppliedAtDataBank_A,
+          icache_otp_key_i.ack
+          |-> ##[0:10] // upper bound is not exact, but it should not take more than a few cycles
+          u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.data_bank.key_valid_i
+          && (u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.data_bank.key_i
+              == icache_otp_key_q)
+      )
+    end
+
+  end
+`endif // ifdef INC_ASSERT
+
 endmodule
