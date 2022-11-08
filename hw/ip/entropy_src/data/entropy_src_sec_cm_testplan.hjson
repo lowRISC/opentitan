@@ -51,13 +51,13 @@
       name: sec_cm_main_sm_fsm_sparse
       desc: "Verify the countermeasure(s) MAIN_SM.FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["entropy_src_sec_cm"]
     }
     {
       name: sec_cm_ack_sm_fsm_sparse
       desc: "Verify the countermeasure(s) ACK_SM.FSM.SPARSE."
       stage: V2S
-      tests: []
+      tests: ["entropy_src_sec_cm"]
     }
     {
       name: sec_cm_rng_bkgn_chk
@@ -69,7 +69,7 @@
       name: sec_cm_ctr_redun
       desc: "Verify the countermeasure(s) CTR.REDUN."
       stage: V2S
-      tests: []
+      tests: ["entropy_src_sec_cm"]
     }
     {
       name: sec_cm_ctr_local_esc
@@ -87,7 +87,7 @@
       name: sec_cm_tile_link_bus_integrity
       desc: "Verify the countermeasure(s) TILE_LINK.BUS.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["entropy_src_tl_intg_err"]
     }
   ]
 }
