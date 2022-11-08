@@ -278,6 +278,8 @@ module keymgr_kmac_if import keymgr_pkg::*;(
     // treated like fsm errors
     if (cnt_err) begin
       state_d = StError;
+      fsm_error_o = 1;
+      done_o = 1'b1;
     end
   end
 
