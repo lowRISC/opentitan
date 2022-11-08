@@ -908,6 +908,7 @@ module rv_core_ibex
   `ASSERT(IbexFetchEnable3_A,
       lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i) &&
       lc_ctrl_pkg::lc_tx_test_true_strict(pwrmgr_cpu_en_i) ##1
+      lc_ctrl_pkg::lc_tx_test_true_strict(local_fetch_enable_q) &&
       !fatal_core_err
       |=>
       lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable))
