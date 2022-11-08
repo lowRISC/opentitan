@@ -2419,7 +2419,7 @@
                Same as `chip_keymgr_sideload_kmac`, except, sideload to AES.
             '''
       stage: V2
-      tests: ["chip_sw_aes_sideload"]
+      tests: ["chip_sw_keymgr_aes_sideload"]
     }
     {
       name: chip_sw_keymgr_sideload_otbn

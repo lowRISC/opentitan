@@ -156,7 +156,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     // check 3 sideload interfaces
     check_kmac_sideload(unmasked_key, unused_key);
 
-    check_aes_sideload(unmasked_key);
+    check_aes_sideload(unmasked_key, unused_key);
 
     // otbn sideload key is 384 bit, so it's treated a bit differently
     begin
@@ -194,7 +194,8 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     check_gen_out(unmasked_key, GenKmacOutData, sideload_kmac_key);
   endtask
 
-  virtual task check_aes_sideload(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key);
+  virtual task check_aes_sideload(bit [keymgr_pkg::KeyWidth-1:0] unmasked_key,
+                                  output bit [keymgr_pkg::KeyWidth-1:0] sideload_aes_key);
     keymgr_pkg::hw_key_req_t hw_key;
     string path_aes_key = "tb.dut.top_earlgrey.u_keymgr.aes_key_o";
     `DV_WAIT(cfg.sw_logger_vif.printed_log ==
@@ -202,7 +203,9 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_aes_key))
     `DV_CHECK_FATAL(uvm_hdl_read(path_aes_key, hw_key))
     `DV_CHECK_EQ(hw_key.valid, 1)
+    sideload_aes_key = get_unmasked_key(hw_key.key);
     check_gen_out(unmasked_key, GenAesOutData, get_unmasked_key(hw_key.key));
+
   endtask
 
   virtual function bit [keymgr_pkg::KeyWidth-1:0] get_unmasked_key(key_shares_t two_share_key);

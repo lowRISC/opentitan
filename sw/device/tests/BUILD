@@ -62,26 +62,6 @@ opentitan_functest(
 )
 
 opentitan_functest(
-    name = "aes_sideload_test",
-    srcs = ["aes_sideload_test.c"],
-    verilator = verilator_params(
-        timeout = "long",
-    ),
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:aes",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:aes_testutils",
-        "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_functest(
     name = "aes_idle_test",
     srcs = ["aes_idle_test.c"],
     cw310 = cw310_params(
@@ -1143,6 +1123,30 @@ opentitan_functest(
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "keymgr_sideload_aes_test",
+    srcs = ["keymgr_sideload_aes_test.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/ip/aes/data:aes_regs",
+        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/ip/kmac/data:kmac_regs",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

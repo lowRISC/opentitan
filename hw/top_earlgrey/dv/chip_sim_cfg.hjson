@@ -39,6 +39,9 @@
   import_cfgs: [// Project wide common sim cfg file
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
+                // Enable C compilation of AES model for DPI-C
+                "{proj_root}/hw/ip/aes/model/aes_model_sim_opts.hjson",
+
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 // TODO #5484, comment these 2 lines out because spi host memory is dummy
                 // "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
@@ -186,11 +189,12 @@
     // }
   ]
 
-  // Add options needed to compile against otbn_memutil, otbn_tracer, and
-  // memutil_dpi_scrambled.
+  // Add options needed to compile against otbn_memutil, otbn_tracer,
+  // memutil_dpi_scrambled, and AES C model
   en_build_modes: ["{tool}_otbn_memutil_build_opts",
                    "{tool}_otbn_tracer_build_opts",
-                   "{tool}_memutil_dpi_scrambled_build_opts"]
+                   "{tool}_memutil_dpi_scrambled_build_opts",
+                   "{tool}_aes_model_build_opts"]
 
   // Setup for generating OTP images.
   gen_otp_images_cfg_dir: "{proj_root}/hw/ip/otp_ctrl/data"
@@ -1028,13 +1032,6 @@
       run_opts: ["+sw_test_timeout_ns=25_000_000"]
     }
     {
-      name: chip_sw_aes_sideload
-      uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:aes_sideload_test:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=35000000"]
-    }
-    {
       name: chip_sw_aes_masking_off
       uvm_test_seq: chip_sw_aes_masking_off_vseq
       sw_images: ["//sw/device/tests:aes_masking_off_test:1"]
@@ -1251,6 +1248,13 @@
       name: chip_sw_keymgr_sideload_kmac
       uvm_test_seq: chip_sw_keymgr_sideload_kmac_vseq
       sw_images: ["//sw/device/tests/sim_dv:keymgr_sideload_kmac_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=20_000_000"]
+    }
+    {
+      name: chip_sw_keymgr_sideload_aes
+      uvm_test_seq: chip_sw_keymgr_sideload_aes_vseq
+      sw_images: ["//sw/device/tests:keymgr_sideload_aes_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=20_000_000"]
     }
