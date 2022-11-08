@@ -14,7 +14,6 @@ cc_library(
     deps = [
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:otbn_util",
         "//sw/otbn/crypto:p256_ecdsa",
     ],
 )

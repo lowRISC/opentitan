@@ -17,7 +17,6 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:otbn_util",
         "//sw/otbn/crypto:run_rsa_verify_3072",
     ],
 )
