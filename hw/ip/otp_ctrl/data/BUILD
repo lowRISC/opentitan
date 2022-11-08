@@ -51,10 +51,10 @@ otp_json(
                 # verification. See the definition of `hardened_bool_t` in
                 # sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_USE_SW_RSA_VERIFY": "0x739",
-                # Mark the first two keys as valid and remaining as invalid
-                # since we have currently only two keys. See the definition of
+                # Mark the first three keys as valid and remaining as invalid
+                # since we currently have only three keys. See the definition of
                 # `hardened_byte_bool_t` in sw/device/lib/base/hardened.h.
-                "CREATOR_SW_CFG_KEY_IS_VALID": "0x4b4b4b4b4b4ba5a5",
+                "CREATOR_SW_CFG_KEY_IS_VALID": "0x4b4b4b4b4ba5a5a5",
                 # Enable use of entropy for countermeasures. See the definition
                 # of `hardened_bool_t` in sw/device/lib/base/hardened.h.
                 "CREATOR_SW_CFG_RNG_EN": "0x739",
