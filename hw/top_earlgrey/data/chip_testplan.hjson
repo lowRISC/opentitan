@@ -2597,10 +2597,11 @@
             - Re-initialize the SRAMs and verify that they can now respond correctly to
               any further memory requests.
 
-            X-ref with chip_sw_all_escalation_resets.
+            X-ref with chip_sw_all_escalation_resets and chip_sw_data_integrity.
             '''
       stage: V2
-      tests: ["chip_sw_all_escalation_resets"]
+      tests: ["chip_sw_all_escalation_resets"
+              "chip_sw_data_integrity"]
     }
 
     // OTP (pre-verified IP) integration tests:
