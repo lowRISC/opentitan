@@ -443,25 +443,6 @@ opentitan_functest(
     targets = ["cw310_rom"],
 )
 
-[otp_image(
-    name = "otp_img_shutdown_output_{}".format(lc_state.lower()),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
-    overlays = STD_OTP_OVERLAYS,
-) for lc_state in structs.to_dict(CONST.LCV)]
-
-# Splice OTP images into bitstreams
-[
-    bitstream_splice(
-        name = "bitstream_shutdown_output_{}".format(lc_state.lower()),
-        src = "//hw/bitstream:rom",
-        data = ":otp_img_shutdown_output_{}".format(lc_state.lower()),
-        meminfo = "//hw/bitstream:otp_mmi",
-        tags = ["vivado"],
-        update_usr_access = True,
-    )
-    for lc_state in structs.to_dict(CONST.LCV)
-]
-
 manifest({
     "name": "manifest_bad_identifier",
     "address_translation": hex(CONST.FALSE),
@@ -471,17 +452,17 @@ manifest({
 [opentitan_functest(
     name = "shutdown_output_{}".format(lc_state.lower()),
     cw310 = cw310_params(
-        bitstream = ":bitstream_shutdown_output_{}".format(lc_state.lower()),
+        bitstream = "//hw/bitstream:rom_otp_{}".format(lc_state.lower()),
         exit_failure = MSG_PASS,
         exit_success = MSG_TEMPLATE_BFV_LCV.format(
             hex(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),
             hex(lc_state_val),
         ),
-        otp = ":otp_img_shutdown_output_{}".format(lc_state.lower()),
+        otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state.lower()),
         tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
     ),
     dv = dv_params(
-        otp = ":otp_img_shutdown_output_{}".format(lc_state.lower()),
+        otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state.lower()),
         rom = "//sw/device/silicon_creator/rom",
     ),
     manifest = ":manifest_bad_identifier",
@@ -568,25 +549,6 @@ BOOT_POLICY_NEWER_CASES = [
     },
 ]
 
-[otp_image(
-    name = "otp_img_boot_policy_newer_{}".format(lc_state.lower()),
-    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
-    overlays = STD_OTP_OVERLAYS,
-) for lc_state in structs.to_dict(CONST.LCV)]
-
-# Splice OTP images into bitstreams
-[
-    bitstream_splice(
-        name = "bitstream_boot_policy_newer_{}".format(lc_state.lower()),
-        src = "//hw/bitstream:rom",
-        data = ":otp_img_boot_policy_newer_{}".format(lc_state.lower()),
-        meminfo = "//hw/bitstream:otp_mmi",
-        tags = ["vivado"],
-        update_usr_access = True,
-    )
-    for lc_state in structs.to_dict(CONST.LCV)
-]
-
 [opentitan_functest(
     name = "boot_policy_newer_{}_a_{}_b_{}".format(
         lc_state.lower(),
@@ -594,7 +556,7 @@ BOOT_POLICY_NEWER_CASES = [
         t["b"],
     ),
     cw310 = cw310_params(
-        bitstream = ":bitstream_boot_policy_newer_{}".format(lc_state.lower()),
+        bitstream = "//hw/bitstream:rom_otp_{}".format(lc_state.lower()),
         exit_success = t["exit_success"].format(hex(lc_state_val)),
         tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
     ),
@@ -1394,28 +1356,6 @@ BOOT_POLICY_VALID_CASES = [
 ]
 
 [
-    otp_image(
-        name = "otp_img_boot_policy_valid_{}".format(lc_state.lower()),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
-        overlays = STD_OTP_OVERLAYS,
-    )
-    for lc_state in structs.to_dict(CONST.LCV)
-]
-
-# Splice OTP images into bitstreams
-[
-    bitstream_splice(
-        name = "bitstream_boot_policy_valid_{}".format(lc_state.lower()),
-        src = "//hw/bitstream:rom",
-        data = ":otp_img_boot_policy_valid_{}".format(lc_state.lower()),
-        meminfo = "//hw/bitstream:otp_mmi",
-        tags = ["vivado"],
-        update_usr_access = True,
-    )
-    for lc_state in structs.to_dict(CONST.LCV)
-]
-
-[
     opentitan_functest(
         name = "boot_policy_valid_{}_a_{}_b_{}".format(
             lc_state.lower(),
@@ -1423,7 +1363,7 @@ BOOT_POLICY_VALID_CASES = [
             b["desc"],
         ),
         cw310 = cw310_params(
-            bitstream = "bitstream_boot_policy_valid_{}".format(lc_state.lower()),
+            bitstream = "//hw/bitstream:rom_otp_{}".format(lc_state.lower()),
             exit_failure = MSG_PASS if a["desc"] == b["desc"] and a["desc"] == "bad" else DEFAULT_TEST_FAILURE_MSG,
             exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG)) if a["desc"] == b["desc"] and a["desc"] == "bad" else MSG_PASS,
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
