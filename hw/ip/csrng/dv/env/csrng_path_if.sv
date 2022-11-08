@@ -45,12 +45,12 @@ interface csrng_path_if
     endcase // case (which_sm)
   endfunction // sm_err_path
 
-  function automatic string aes_cipher_sm_err_path(int which_sp2v, string which_path);
+  function automatic string aes_cipher_fsm_err_path(int which_sp2v, string which_path);
     return {core_path, ".u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control",
             $sformatf(".gen_fsm[%0d].gen_fsm_%s", which_sp2v, which_path),
             ".u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm",
             ".aes_cipher_ctrl_cs"};
-  endfunction // aes_cipher_sm_err_path
+  endfunction // aes_cipher_fsm_err_path
 
   function automatic string cmd_gen_cnt_err_path(int NHwApps);
     return {core_path, $sformatf(".gen_cmd_stage[%0d]", NHwApps),

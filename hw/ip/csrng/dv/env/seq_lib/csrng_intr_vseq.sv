@@ -12,8 +12,6 @@ class csrng_intr_vseq extends csrng_base_vseq;
 
   csrng_item   cs_item;
   string       path1, path2, path_push, path_full, path_pop, path_not_empty, path;
-  int          Sp2VWidth = 3;
-  bit [2:0]    SP2V_LOGIC_HIGH = '{1'b0,1'b1,1'b1};
 
   task test_cs_cmd_req_done();
     cs_item = csrng_item::type_id::create("cs_item");
@@ -138,11 +136,11 @@ class csrng_intr_vseq extends csrng_base_vseq;
         force_path_err(path, 8'b0, ral.intr_state.cs_fatal_err, 1'b1);
       end
       aes_cipher_sm_error: begin
-        if (SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
-          path = cfg.csrng_path_vif.aes_cipher_sm_err_path(cfg.which_sp2v, "p");
+        if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
+          path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "p");
           force_path_err(path, 8'b0, ral.intr_state.cs_fatal_err, 1'b1);
         end else begin
-          path = cfg.csrng_path_vif.aes_cipher_sm_err_path(cfg.which_sp2v, "n");
+          path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "n");
           force_path_err(path, 8'b0, ral.intr_state.cs_fatal_err, 1'b1);
         end
       end
