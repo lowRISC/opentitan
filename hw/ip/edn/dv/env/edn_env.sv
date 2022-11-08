@@ -56,7 +56,7 @@ class edn_env extends cip_base_env #(
       m_csrng_agent.m_cmd_push_agent.monitor.analysis_port.connect
           (scoreboard.cs_cmd_fifo.analysis_export);
 
-      for (int i = 0; i < cfg.num_endpoints; i++) begin
+      for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
         m_endpoint_agent[i].monitor.analysis_port.connect
             (scoreboard.endpoint_fifo[i].analysis_export);
       end
@@ -65,7 +65,7 @@ class edn_env extends cip_base_env #(
           (scoreboard.rsp_sts_fifo.analysis_export);
     end
 
-    for (int i = 0; i < cfg.num_endpoints; i++) begin
+    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
       if (cfg.m_endpoint_agent_cfg[i].is_active) begin
         virtual_sequencer.endpoint_sequencer_h[i] = m_endpoint_agent[i].sequencer;
       end

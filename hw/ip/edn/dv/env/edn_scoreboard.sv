@@ -35,7 +35,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
     cs_cmd_fifo  = new("cs_cmd_fifo", this);
     rsp_sts_fifo = new("cs_rsp_sts_fifo", this);
 
-    for (int i = 0; i < cfg.num_endpoints; i++) begin
+    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
       endpoint_fifo[i] = new($sformatf("endpoint_fifo[%0d]", i), this);
     end
 
@@ -56,7 +56,7 @@ class edn_scoreboard extends cip_base_scoreboard #(
       process_rsp_sts_fifo();
     join_none
 
-    for (int i = 0; i < cfg.num_endpoints; i++) begin
+    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
       automatic int j = i;
       fork
         begin
