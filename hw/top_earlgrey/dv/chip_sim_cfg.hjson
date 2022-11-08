@@ -153,11 +153,20 @@
       ]
       is_sim_mode: 1
     }
-    // Sim mode that enables faster simulation for test development.
+    // Build mode that disables rom integrity checks, so use it only for
+    // test development.
     // DO NOT USE FOR NIGHTLY
     {
-      name: fast_sim
+      name: fast_sim_build_dev
       build_opts: ["+define+DISABLE_ROM_INTEGRITY_CHECK"]
+      is_sim_mode: 1
+    }
+    {
+      name: fast_sim_dev
+      en_build_modes: ["fast_sim_build_dev"]
+      run_opts: ["+accelerate_cold_power_up_time=3",
+                 "+accelerate_regulators_power_up_time=2"]
+      is_sim_mode: 1
     }
     // TODO: VCS does not support MDAs in constfiles. Most RTL ports in OpenTitan are structs, so
     // this method currently does not work for our needs. Revisit later.
@@ -231,6 +240,12 @@
               {gen_otp_images_cmd_opts}
         ''',
       ]
+    }
+    // Sim mode that enables public faster simulation via AST plusargs.
+    {
+      name: fast_sim_run
+      run_opts: ["+accelerate_cold_power_up_time=3",
+                 "+accelerate_regulators_power_up_time=2"]
     }
     {
       name: sw_test_mode_common
