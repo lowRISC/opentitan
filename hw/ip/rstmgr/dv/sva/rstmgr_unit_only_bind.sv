@@ -21,6 +21,7 @@ module rstmgr_unit_only_bind;
     .sw_rst_req_i('0),
     .main_rst_req_i('0),
     .esc_rst_req_i('0),
+    .ndm_rst_req_i('0),
     .rstreqs('0),
     // These are actually used for checks.
     .rst_lc_req(pwr_i.rst_lc_req),
