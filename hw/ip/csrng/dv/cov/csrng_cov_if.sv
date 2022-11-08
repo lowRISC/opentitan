@@ -34,7 +34,7 @@ interface csrng_cov_if (
     cp_sw_app_enable:  coverpoint sw_app_enable;
     cp_read_int_state: coverpoint read_int_state;
 
-    cr_sw_app_read_sw_app_enable: cross cp_sw_app_read, cp_sw_app_enable;
+    sw_app_read_sw_app_enable_cross: cross cp_sw_app_read, cp_sw_app_enable;
   endgroup : csrng_cfg_cg
 
   covergroup csrng_cmds_cg with function sample(bit[NUM_HW_APPS-1:0]   app,
@@ -85,15 +85,47 @@ interface csrng_cov_if (
       ignore_bins zero = { 0 };
     }
 
-    cr_app_acmd:   cross cp_app, cp_acmd;
+    app_acmd_cross: cross cp_app, cp_acmd;
 
-    cr_acmd_clen:  cross cp_acmd, cp_clen {
+    acmd_clen_cross: cross cp_acmd, cp_clen {
       ignore_bins invalid = binsof(cp_acmd) intersect { UNI } &&
                             binsof(cp_clen) intersect { [1:$] };
     }
 
-    cr_acmd_flags: cross cp_acmd, cp_flags;
-    cr_acmd_glen:  cross cp_acmd, cp_glen;
+    acmd_flags_cross: cross cp_acmd, cp_flags;
+    acmd_glen_cross:  cross cp_acmd, cp_glen;
+    flags_clen_acmd_cross:  cross cp_acmd, cp_flags, cp_clen {
+      // Use only Entropy Source seed
+      bins ins_only_entropy_src_seed = binsof(cp_flags) intersect {MuBi4False} &&
+                                       binsof(cp_clen) intersect {0} &&
+                                       binsof(cp_acmd) intersect {INS};
+      bins res_only_entropy_src_seed = binsof(cp_flags) intersect {MuBi4False} &&
+                                       binsof(cp_clen) intersect {0} &&
+                                       binsof(cp_acmd) intersect {RES};
+      // Use Entropy Source Seed ^ Additional Data (clen)
+      bins ins_xored_entropy_src_seed = binsof(cp_flags) intersect {MuBi4False} &&
+                                        binsof(cp_clen) intersect {[1:$]} &&
+                                        binsof(cp_acmd) intersect {INS};
+      bins res_xored_entropy_src_seed = binsof(cp_flags) intersect {MuBi4False} &&
+                                        binsof(cp_clen) intersect {[1:$]} &&
+                                        binsof(cp_acmd) intersect {RES};
+      // Use zero as seed
+      bins ins_zero_seed = binsof(cp_flags) intersect {MuBi4True} &&
+                           binsof(cp_clen) intersect {0} &&
+                           binsof(cp_acmd) intersect {INS};
+      bins res_zero_seed = binsof(cp_flags) intersect {MuBi4True} &&
+                           binsof(cp_clen) intersect {0} &&
+                           binsof(cp_acmd) intersect {RES};
+      // Use Additional Data (clen) as seed
+      bins ins_add_data_seed = binsof(cp_flags) intersect {MuBi4True} &&
+                               binsof(cp_clen) intersect {[1:$]} &&
+                               binsof(cp_acmd) intersect {INS};
+      bins res_add_data_seed = binsof(cp_flags) intersect {MuBi4True} &&
+                               binsof(cp_clen) intersect {[1:$]} &&
+                               binsof(cp_acmd) intersect {RES};
+      // Since other modes are not related with flag0, ignore them in this cross.
+      ignore_bins ignore = binsof(cp_acmd) intersect {UPD, UNI, GEN};
+    }
   endgroup : csrng_cmds_cg
 
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
