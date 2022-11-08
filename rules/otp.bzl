@@ -137,6 +137,7 @@ otp_alert_digest = rule(
         "_opentitantool": attr.label(
             default = "//sw/host/opentitantool:opentitantool",
             allow_single_file = True,
+            cfg = "exec",
         ),
     },
 )
