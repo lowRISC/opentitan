@@ -18,7 +18,7 @@ load(
 )
 load("//rules:manifest.bzl", "manifest")
 load("//rules:opentitan_gdb_test.bzl", "opentitan_gdb_fpga_cw310_test")
-load("//rules:otp.bzl", "otp_image", "otp_json", "otp_partition")
+load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
 load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
 load("//rules:splice.bzl", "bitstream_splice")
 load("@bazel_skylib//lib:shell.bzl", "shell")
@@ -446,12 +446,7 @@ opentitan_functest(
 [otp_image(
     name = "otp_img_shutdown_output_{}".format(lc_state.lower()),
     src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
-    overlays = [
-        "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
-    ],
+    overlays = STD_OTP_OVERLAYS,
 ) for lc_state in structs.to_dict(CONST.LCV)]
 
 # Splice OTP images into bitstreams
@@ -576,12 +571,7 @@ BOOT_POLICY_NEWER_CASES = [
 [otp_image(
     name = "otp_img_boot_policy_newer_{}".format(lc_state.lower()),
     src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
-    overlays = [
-        "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
-    ],
+    overlays = STD_OTP_OVERLAYS,
 ) for lc_state in structs.to_dict(CONST.LCV)]
 
 # Splice OTP images into bitstreams
@@ -664,13 +654,7 @@ otp_json(
 [otp_image(
     name = "otp_img_boot_policy_rollback_{}".format(lc_state.lower()),
     src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
-    overlays = [
-        "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
-        ":otp_json_boot_policy_rollback",
-    ],
+    overlays = STD_OTP_OVERLAYS + [":otp_json_boot_policy_rollback"],
     visibility = ["//visibility:private"],
 ) for lc_state in structs.to_dict(CONST.LCV)]
 
@@ -743,12 +727,7 @@ otp_json(
 [otp_image(
     name = "otp_img_watchdog_enable_{}".format(lc_state.lower()),
     src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
-    overlays = [
-        "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-        "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
-        ":otp_json_watchdog_enable",
-    ],
+    overlays = STD_OTP_OVERLAYS + [":otp_json_watchdog_enable"],
 ) for lc_state in structs.to_dict(CONST.LCV)]
 
 # Bitstreams with the watchdog-enable OTP images spliced in.
@@ -917,13 +896,7 @@ opentitan_flash_binary(
             t["name"],
         ),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
-        overlays = [
-            "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
-            ":otp_json_sigverify_mod_exp_{}".format(t["name"]),
-        ],
+        overlays = STD_OTP_OVERLAYS + [":otp_json_sigverify_mod_exp_{}".format(t["name"])],
         visibility = ["//visibility:private"],
     )
     for lc_state in structs.to_dict(CONST.LCV)
@@ -1172,13 +1145,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             sec_ver,
         ),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
-        overlays = [
-            "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
-            ":otp_json_sec_ver_{}".format(sec_ver),
-        ],
+        overlays = STD_OTP_OVERLAYS + [":otp_json_sec_ver_{}".format(sec_ver)],
         visibility = ["//visibility:private"],
     )
     for lc_state in structs.to_dict(CONST.LCV)
@@ -1316,11 +1283,7 @@ SHUTDOWN_WATCHDOG_CASES = [
             t["bite_threshold"],
         ),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(t["lc_state"]),
-        overlays = [
-            "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
+        overlays = STD_OTP_OVERLAYS + [
             ":otp_json_shutdown_watchdog_{}_{}".format(
                 t["lc_state"],
                 t["bite_threshold"],
@@ -1434,12 +1397,7 @@ BOOT_POLICY_VALID_CASES = [
     otp_image(
         name = "otp_img_boot_policy_valid_{}".format(lc_state.lower()),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
-        overlays = [
-            "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
-        ],
+        overlays = STD_OTP_OVERLAYS,
     )
     for lc_state in structs.to_dict(CONST.LCV)
 ]
@@ -1510,13 +1468,7 @@ OTP_CFGS_EXEC_DISABLED = [
     otp_image(
         name = "img_{}_exec_disabled".format(otp_name),
         src = "//hw/ip/otp_ctrl/data:otp_json_" + otp_name,
-        overlays = [
-            "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
-        ],
+        overlays = STD_OTP_OVERLAYS + ["//hw/ip/otp_ctrl/data:otp_json_exec_disabled"],
         visibility = ["//visibility:private"],
     )
     for otp_name in OTP_CFGS_EXEC_DISABLED
@@ -1891,13 +1843,7 @@ REDACT.update({"INVALID": 0x0})
             redact.lower(),
         ),
         src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
-        overlays = [
-            "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
-            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg",
-            ":otp_json_{}_overlay".format(redact.lower()),
-        ],
+        overlays = STD_OTP_OVERLAYS + [":otp_json_{}_overlay".format(redact.lower())],
         visibility = ["//visibility:private"],
     )
     for lc_state in structs.to_dict(CONST.LCV)
