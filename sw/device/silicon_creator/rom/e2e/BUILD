@@ -2105,3 +2105,82 @@ test_suite(
         for key in SIGVERIFY_KEY_TYPE_KEYS
     ],
 )
+
+otp_json(
+    name = "otp_json_sigverify_key_validity",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_KEY_IS_VALID": "0x4b4b4b4b4bff004b",
+            },
+        ),
+    ],
+)
+
+[
+    otp_image(
+        name = "otp_img_sigverify_key_validity_{}".format(lc_state.lower()),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
+        overlays = STD_OTP_OVERLAYS + [":otp_json_sigverify_key_validity"],
+    )
+    for lc_state in structs.to_dict(CONST.LCV)
+]
+
+[
+    bitstream_splice(
+        name = "bitstream_sigverify_key_validity_{}".format(
+            lc_state.lower(),
+        ),
+        src = "//hw/bitstream:rom",
+        data = ":otp_img_sigverify_key_validity_{}".format(
+            lc_state.lower(),
+        ),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
+]
+
+[
+    opentitan_functest(
+        name = "sigverify_key_validity_{}_{}".format(
+            lc_state.lower(),
+            key,
+        ),
+        cw310 = cw310_params(
+            bitstream = ":bitstream_sigverify_key_validity_{}".format(lc_state.lower()),
+            exit_failure = MSG_PASS if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_TEMPLATE_BFV_LCV.format(
+                hex(CONST.BFV.SIGVERIFY.BAD_KEY),
+                hex(lc_state_val),
+            ),
+            exit_success = MSG_TEMPLATE_BFV_LCV.format(
+                hex(CONST.BFV.SIGVERIFY.BAD_KEY),
+                hex(lc_state_val),
+            ) if lc_state_val != CONST.LCV.TEST_UNLOCKED0 else MSG_PASS,
+            tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+        ),
+        key = key,
+        ot_flash_binary = "empty_test_slot_a",
+        targets = [
+            "cw310_rom",
+        ],
+    )
+    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
+    for key in LC_KEY_TYPES[lc_state_val]
+]
+
+test_suite(
+    name = "rom_e2e_sigverify_key_validity",
+    tags = ["manual"],
+    tests = [
+        "sigverify_key_validity_{}_{}".format(
+            lc_state.lower(),
+            key,
+        )
+        for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
+        for key in LC_KEY_TYPES[lc_state_val]
+    ],
+)
