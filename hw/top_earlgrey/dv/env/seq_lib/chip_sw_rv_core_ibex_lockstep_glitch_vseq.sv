@@ -485,6 +485,26 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       end else begin
         $assertoff(0, "tb.dut.top_earlgrey.u_rv_core_ibex.u_core.u_ibex_core");
       end
+    end else if (!glitch_lockstep_core) begin
+      // When glitching a TL-UL output signal of the main core, disable all assertions on the
+      // corresponding TL-UL interface of Ibex as the core might now violate the TL-UL bus
+      // specification due to the glitch.
+      case (port_name)
+        "instr_req_o",
+        "instr_addr_o": begin
+          $assertoff(0,
+              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__corei.gen_device");
+        end
+        "data_req_o",
+        "data_we_o",
+        "data_be_o",
+        "data_addr_o",
+        "data_wdata_o": begin
+          $assertoff(0,
+              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__cored.gen_device");
+        end
+        default: ;
+      endcase
     end
 
     // Force the glitched value onto the port for one cycle, then release it again.
