@@ -20,7 +20,7 @@ load(
     "scramble_flash_vmem",
 )
 load("//rules:manifest.bzl", "manifest")
-load("//rules:opentitan_gdb_test.bzl", "opentitan_gdb_fpga_cw310_test")
+load("//rules:opentitan_gdb_test.bzl", "IBEX_GPRS", "gdb_commands_copy_registers", "gdb_commands_restore_registers", "gdb_commands_set_registers", "get_gdb_readable_csr_names", "get_gdb_settable_csr_names", "opentitan_gdb_fpga_cw310_test")
 load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
 load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
 load("//rules:splice.bzl", "bitstream_splice")
@@ -2840,6 +2840,140 @@ test_suite(
     name = "rom_e2e_sigverify_usage_constraints",
     tags = ["manual"],
     tests = ["sigverify_usage_constraint_{}".format(t["name"]) for t in test_cases],
+)
+
+[
+    opentitan_gdb_fpga_cw310_test(
+        name = "rom_e2e_debug_test_otp_" + otp_name,
+        timeout = "short",
+        exit_success_pattern = "OK!GDB-OK\r\nBFV:0142500d",
+        gdb_expect_output_sequence = [
+            ":::: GDB script complete.",
+            "Hart 0 unexpectedly reset!",
+        ],
+        gdb_script = """
+            define assert_pc
+                printf ":::: PC=%p. Expected PC=%p.\\n", $pc, $arg0
+                if $pc != $arg0
+                    quit 1
+                end
+            end
+
+            target extended-remote :3333
+
+            echo :::: Send OpenOCD the 'reset halt' command.\\n
+            monitor reset halt
+
+            echo :::: Load ROM symbols into GDB.\\n
+            file rom.elf
+
+            # Immediately after reset, we should be sitting on the Ibex reset
+            # handler, the 33rd entry in the interrupt vector.
+            set $ibex_reset_handler = _rom_interrupt_vector_asm + 32 * 4
+            assert_pc $ibex_reset_handler
+
+            # Executing the `j _rom_start_boot` instruction should take us
+            # to _rom_start_boot.
+            stepi
+            assert_pc _rom_start_boot
+
+            echo :::: Run until we check whether ROM execution is enabled.\\n
+            break kRomStartBootMaybeHalt
+            continue
+            assert_pc kRomStartBootMaybeHalt
+
+            # Use three of four hardware breakpoints. Leave one unused so we can
+            # use `call` and `finish`. (See RvCoreIbexDbgHwBreakNum in
+            # hw/top_earlgrey/data/top_earlgrey.hjson.)
+            echo :::: Set all but one available breakpoints.\\n
+            # Set a breakpoint at the actual address of rom_main(), without
+            # trying to skip the function prologue.
+            break *rom_main
+            break *rom_init
+
+            echo :::: Pretend execution is enabled.\\n
+            set $pc = kRomStartBootExecEn
+
+            echo :::: Continue until rom_main.\\n
+            continue
+            assert_pc rom_main
+
+            echo :::: Continue until rom_init.\\n
+            continue
+            assert_pc rom_init
+
+            echo :::: Finish rom_init.\\n
+            finish
+
+            echo :::: Read and write GPRs.\\n
+            {gpr_copy_commands}
+            {gpr_set_commands}
+            {gpr_restore_commands}
+
+            echo :::: Read selected CSRs.\\n
+            {csr_copy_commands}
+            {csr_set_commands}
+            {csr_restore_commands}
+
+            echo :::: Read and write memory (both SRAM and device).\\n
+            # See hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h
+            set $sram_base = 0x10000000
+            set $sram_len = 0x00008000
+            x/16xb $sram_base
+            x/16xb $sram_base + ($sram_len / 2)
+            x/16xb $sram_base + $sram_len - 16
+
+            echo :::: Manually write bytes to UART0.\\n
+            set $uart0_base = 0x40000000
+            set $uart_wdata = 0x1c
+            print *(uint32_t*)($uart0_base + $uart_wdata) = 'O'
+            print *(uint32_t*)($uart0_base + $uart_wdata) = 'K'
+            print *(uint32_t*)($uart0_base + $uart_wdata) = '!'
+
+            echo :::: Execute code from GDB with `call` command.\\n
+            call uart_putchar('G')
+            call uart_putchar('D')
+            call uart_putchar('B')
+            call uart_putchar('-')
+            call uart_putchar('O')
+            call uart_putchar('K')
+            call uart_putchar('\\r')
+            call uart_putchar('\\n')
+
+            echo :::: GDB script complete.\\n
+            continue
+        """.format(
+            csr_copy_commands = gdb_commands_copy_registers(get_gdb_readable_csr_names()),
+            csr_restore_commands = gdb_commands_restore_registers(get_gdb_settable_csr_names()),
+            csr_set_commands = gdb_commands_set_registers(
+                "0x89abcdef",
+                get_gdb_settable_csr_names(),
+            ),
+            gpr_copy_commands = gdb_commands_copy_registers(IBEX_GPRS),
+            gpr_restore_commands = gdb_commands_restore_registers(IBEX_GPRS),
+            gpr_set_commands = gdb_commands_set_registers("0x89abcdef", IBEX_GPRS),
+        ),
+        gdb_script_symlinks = {
+            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+        },
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_kind = "Rom",
+        tags = [
+            "cw310_rom",
+            "exclusive",
+            "vivado",
+        ],
+    )
+    for otp_name in OTP_CFGS_EXEC_DISABLED
+]
+
+test_suite(
+    name = "rom_e2e_debug_test",
+    tags = ["manual"],
+    tests = [
+        "rom_e2e_debug_test_otp_" + otp_name
+        for otp_name in OTP_CFGS_EXEC_DISABLED
+    ],
 )
 
 opentitan_flash_binary(
