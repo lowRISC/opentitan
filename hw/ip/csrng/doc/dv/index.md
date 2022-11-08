@@ -52,10 +52,10 @@ which provides the ability to drive and independently monitor random traffic via
 TL host interface into CSRNG device.
 
 ###  Entropy_src_agent
-CSRNG testbench instantiates this push_pull_agent({{< relref "hw/dv/sv/push_pull_agent/doc" >}}) which models the ENTROPY_SRC module.
+CSRNG testbench instantiates this [push_pull_agent]({{< relref "hw/dv/sv/push_pull_agent/doc" >}}) which models the ENTROPY_SRC module.
 
 ###  Csrng_agent
-<!--CSRNG testbench instantiates this agent({{< relref "hw/dv/sv/csrng_agent/doc" >}}) which models the EDN module.-->
+CSRNG testbench instantiates this [agent]({{< relref "hw/dv/sv/csrng_agent/doc" >}}) which models the EDN module.
 
 ### UVM RAL Model
 The CSRNG RAL model is created with the [`ralgen`]({{< relref "hw/dv/tools/ralgen/doc" >}}) FuseSoC generator script automatically when the simulation is at the build stage.
