@@ -199,7 +199,7 @@
                 - SW clears busy bit to allow the upstream SPI host to proceed to the next command.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_spi_device_pass_through_collision"]
     }
     {
       name: chip_sw_spi_device_tpm

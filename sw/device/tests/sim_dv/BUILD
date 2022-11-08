@@ -873,6 +873,7 @@ opentitan_functest(
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/runtime:hart",

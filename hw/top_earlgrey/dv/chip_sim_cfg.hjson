@@ -566,6 +566,12 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
+      name: chip_sw_spi_device_pass_through_collision
+      uvm_test_seq: chip_sw_spi_passthrough_collision_vseq
+      sw_images: ["//sw/device/tests/sim_dv:spi_passthrough_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_gpio
       uvm_test_seq: chip_sw_gpio_vseq
       sw_images: ["//sw/device/tests/sim_dv:gpio_test:1"]

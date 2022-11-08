@@ -325,6 +325,30 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     info = spi_flash_cmd_info::type_id::create("info");
     info.addr_mode = SpiFlashAddrDisabled;
+    info.opcode = SpiFlashWriteSts1;
+    info.num_lanes = 1;
+    info.dummy_cycles = 0;
+    info.write_command = 1;
+    agent_cfg.add_cmd_info(info);
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    info.addr_mode = SpiFlashAddrDisabled;
+    info.opcode = SpiFlashWriteSts2;
+    info.num_lanes = 1;
+    info.dummy_cycles = 0;
+    info.write_command = 1;
+    agent_cfg.add_cmd_info(info);
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    info.addr_mode = SpiFlashAddrDisabled;
+    info.opcode = SpiFlashWriteSts3;
+    info.num_lanes = 1;
+    info.dummy_cycles = 0;
+    info.write_command = 1;
+    agent_cfg.add_cmd_info(info);
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    info.addr_mode = SpiFlashAddrDisabled;
     info.opcode = SpiFlashChipErase;
     info.num_lanes = 0;
     info.dummy_cycles = 0;
@@ -332,7 +356,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
     agent_cfg.add_cmd_info(info);
 
     info = spi_flash_cmd_info::type_id::create("info");
-    info.addr_mode = SpiFlashAddr3b;
+    info.addr_mode = SpiFlashAddrCfg;
+    info.opcode = SpiFlashSectorErase;
+    info.num_lanes = 0;
+    info.dummy_cycles = 0;
+    info.write_command = 0;
+    agent_cfg.add_cmd_info(info);
+
+    info = spi_flash_cmd_info::type_id::create("info");
+    info.addr_mode = SpiFlashAddrCfg;
     info.opcode = SpiFlashPageProgram;
     info.num_lanes = 1;
     info.dummy_cycles = 0;
