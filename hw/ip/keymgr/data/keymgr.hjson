@@ -331,6 +331,8 @@
     { name: "KMAC_IF_CMD.CTRL.CONSISTENCY",
       desc: '''
         One hot check for kmac interface commands.
+        Also, command enable (adv_en, id_en, gen_en) is checked for consistency
+        throughout the operation.
       '''
     }
     { name: "KMAC_IF_DONE.CTRL.CONSISTENCY",
@@ -349,6 +351,11 @@
         When a key slot is valid when it should not be, an error is triggered.
         The reverse case is not checked, since an invalid key cannot be used
         anyways.
+      '''
+    }
+    { name: "SIDELOAD_CTRL.FSM.SPARSE",
+      desc: '''
+        Sideload control fsm is sparsely encoded.
       '''
     }
     { name: "CTRL.KEY.INTEGRITY",

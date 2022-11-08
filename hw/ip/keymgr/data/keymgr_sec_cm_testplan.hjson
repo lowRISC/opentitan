@@ -202,6 +202,12 @@
       tests: ["keymgr_custom_cm"]
     }
     {
+      name: sec_cm_sideload_ctrl_fsm_sparse
+      desc: "Verify the countermeasure(s) SIDELOAD_CTRL.FSM.SPARSE."
+      stage: V2S
+      tests: ["keymgr_sec_cm"]
+    }
+    {
       name: sec_cm_ctrl_key_integrity
       desc: '''Verify the countermeasure(s) CTRL.KEY.INTEGRITY.
 
