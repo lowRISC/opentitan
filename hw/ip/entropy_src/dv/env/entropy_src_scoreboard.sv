@@ -598,8 +598,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     if (fail) predict_failure_logs("bucket");
 
     if (ht_is_active()) begin
-      cov_vif.cg_win_ht_sample(bucket_ht, high_test, window_size, fail);
-      cov_vif.cg_win_ht_deep_threshold_sample(bucket_ht, high_test, window_size, 1'b0, sigma, fail);
+      cov_vif.cg_win_ht_sample(bucket_ht, high_test, window_size*RNG_BUS_WIDTH, fail);
+      cov_vif.cg_win_ht_deep_threshold_sample(bucket_ht, high_test, window_size*RNG_BUS_WIDTH,
+                                              1'b0, sigma, fail);
     end
 
     return fail;
@@ -640,12 +641,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     if (fail_hi) predict_failure_logs("markov_hi");
 
     if (ht_is_active()) begin
-      cov_vif.cg_win_ht_sample(markov_ht, high_test, window_size, fail_hi);
-      cov_vif.cg_win_ht_sample(markov_ht, low_test, window_size, fail_lo);
-      cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, high_test, window_size, !total_scope,
-                                              sigma_hi, fail_hi);
-      cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, low_test, window_size, !total_scope,
-                                              sigma_hi, fail_lo);
+      cov_vif.cg_win_ht_sample(markov_ht, high_test, window_size*RNG_BUS_WIDTH, fail_hi);
+      cov_vif.cg_win_ht_sample(markov_ht, low_test, window_size*RNG_BUS_WIDTH, fail_lo);
+      cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, high_test, window_size*RNG_BUS_WIDTH,
+                                              !total_scope, sigma_hi, fail_hi);
+      cov_vif.cg_win_ht_deep_threshold_sample(markov_ht, low_test, window_size*RNG_BUS_WIDTH,
+                                              !total_scope, sigma_hi, fail_lo);
     end
 
     return (fail_hi || fail_lo);
@@ -686,10 +687,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // The repetition counts are always running
   function bit evaluate_repcnt_test(bit fips_mode, int value);
     bit fail;
-    int rng_select;
     bit rng_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
-
-    rng_select = rng_en ? int'(`gmv(ral.conf.rng_bit_sel)) : RNG_BUS_WIDTH;
 
     update_watermark("repcnt", fips_mode, value);
 
@@ -700,7 +698,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
 
     if (ht_is_active()) begin
-      cov_vif.cg_cont_ht_sample(repcnt_ht, fips_mode, rng_select, value, fail);
+      cov_vif.cg_cont_ht_sample(repcnt_ht, fips_mode, rng_en, `gmv(ral.conf.rng_bit_sel),
+                                value, fail);
     end
 
     return fail;
@@ -709,10 +708,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   function bit evaluate_repcnt_symbol_test(bit fips_mode, int value);
     bit fail;
-    int rng_select;
     bit rng_en = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
-
-    rng_select = rng_en ? int'(`gmv(ral.conf.rng_bit_sel)) : RNG_BUS_WIDTH;
 
     update_watermark("repcnts", fips_mode, value);
 
@@ -723,7 +719,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
 
     if (ht_is_active()) begin
-      cov_vif.cg_cont_ht_sample(repcnts_ht, fips_mode, rng_select, value, fail);
+      cov_vif.cg_cont_ht_sample(repcnts_ht, fips_mode, rng_en, `gmv(ral.conf.rng_bit_sel),
+                                value, fail);
     end
 
     return fail;
