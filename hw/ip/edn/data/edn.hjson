@@ -244,9 +244,11 @@
                 Writing this register will fill a FIFO with up to 13 command words (32b words).
                 This FIFO will be used to automatically send out a reseed command to the CSRNG
                 application interface when in !!AUTO_REQ_MODE. This command will be sent only after
-                the MAX_NUM_REQS_BETWEEN_RESEEDS counter value has reached zero. On overflow this
-                FIFO pops the oldest word from the previous command. Updated commands can be inserted
-                by pushing 13 command words into the FIFO, pushing the previous command out.
+                the MAX_NUM_REQS_BETWEEN_RESEEDS counter value has reached zero.
+
+                If more than 13 entires are written to the FIFO, the design will automatically generate
+                a fatal alert.
+
                 Note that CSRNG command format details can be found
                 in the CSRNG documentation.
                 '''
@@ -266,9 +268,11 @@
                 Writing this register will fill a FIFO with up to 13 command words (32b words).
                 This FIFO will be used to automatically send out a generate command to the CSRNG
                 appl interface when in !!AUTO_REQ_MODE. This command will be sent only after
-                receiving a command ack from the previous command. On overflow this
-                FIFO pops the oldest word from the previous command. Updated commands can be inserted
-                by pushing 13 command words into the FIFO, pushing the previous command out.
+                receiving a command ack from the previous command.
+
+                If more than 13 entires are written to the FIFO, the design will automatically generate
+                a fatal alert.
+
                 Note that CSRNG command format details can be found
                 in the CSRNG documentation.
                 '''
