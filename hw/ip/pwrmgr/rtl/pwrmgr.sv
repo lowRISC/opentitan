@@ -315,15 +315,6 @@ module pwrmgr
   assign hw2reg.fault_status.main_pd_glitch.de  = pwr_clk_o.main_ip_clk_en;
   assign hw2reg.fault_status.main_pd_glitch.d   = peri_reqs_masked.rstreqs[ResetMainPwrIdx];
 
-  // Check that the clock enables are deasserted in the next slow clock cycle if a power glitch is
-  // detected.
-  `ASSERT(PwrmgrMainPowerGlitchMainClkVld, $rose(hw2reg.fault_status.main_pd_glitch.de)
-                                           |=> !pwr_clk_o.main_ip_clk_en, clk_slow_i, !rst_slow_ni)
-  `ASSERT(PwrmgrMainPowerGlitchIOClkVld, $rose(hw2reg.fault_status.main_pd_glitch.de)
-                                         |=> !pwr_clk_o.io_ip_clk_en, clk_slow_i, !rst_slow_ni)
-  `ASSERT(PwrmgrMainPowerGlitchUSBClkVld, $rose(hw2reg.fault_status.main_pd_glitch.de)
-                                          |=> !pwr_clk_o.usb_ip_clk_en, clk_slow_i, !rst_slow_ni)
-
 
   ////////////////////////////
   ///  alerts
