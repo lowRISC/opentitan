@@ -45,7 +45,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Initialize the sw logger interface.
     foreach (cfg.sw_images[i]) begin
-      if (i != SwTypeOtp) begin
+      if (i inside {SwTypeRom, SwTypeTest}) begin
         cfg.sw_logger_vif.add_sw_log_db(cfg.sw_images[i]);
       end
     end
