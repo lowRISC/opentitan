@@ -34,6 +34,9 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
         args.append(("--gdb-expect-output-sequence", output))
 
     arg_lines = ["{}={}".format(flag, shell.quote(value)) for flag, value in args]
+    if ctx.attr.expect_debug_disallowed:
+        arg_lines.append("--expect-debug-disallowed")
+
     test_script += " \\\n".join(arg_lines)
 
     ctx.actions.write(output = gdb_script_file, content = ctx.attr.gdb_script)
@@ -84,6 +87,7 @@ opentitan_gdb_fpga_cw310_test = rv_rule(
         ),
         "rom_kind": attr.string(mandatory = True, values = ["Rom", "TestRom"]),
         "gdb_expect_output_sequence": attr.string_list(),
+        "expect_debug_disallowed": attr.bool(default = False),
         "_coordinator": attr.label(
             default = "//rules/scripts:gdb_test_coordinator",
             cfg = "exec",

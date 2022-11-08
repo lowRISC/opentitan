@@ -15,6 +15,7 @@ Note that it is tightly coupled to the `opentitan_gdb_fpga_cw310_test` rule.
 import selectors
 import subprocess
 import sys
+import time
 from typing import Callable, Dict, List, NewType, Optional, TextIO, Tuple
 
 import rich
@@ -91,12 +92,21 @@ class BackgroundProcessGroup:
     def maybe_print_output(self, timeout_seconds: int) -> None:
         self._block_for_output(timeout_seconds)
 
-    def block_until_line_contains(self, proc: subprocess.Popen,
-                                  output_fragment: str) -> None:
-        while True:
+    def block_until_line_contains(self,
+                                  proc: subprocess.Popen,
+                                  output_fragment: str,
+                                  num_seconds: int = 5) -> bool:
+        """Block until `proc.stdout` emits a line containing `output_fragment`.
+
+        Returns True iff a matching line was seen. Keeps trying for up to
+        `num_seconds` seconds.
+        """
+        start_time = time.monotonic()
+        while time.monotonic() <= start_time + num_seconds:
             for fileobj, line in self._block_for_output(1):
                 if fileobj == proc.stdout and output_fragment in line:
-                    return
+                    return True
+        return False
 
 
 app = typer.Typer(pretty_exceptions_enable=False)
@@ -107,6 +117,7 @@ def main(rom_kind: str = typer.Option(...),
          openocd_path: str = typer.Option(...),
          openocd_earlgrey_config: str = typer.Option(...),
          openocd_jtag_adapter_config: str = typer.Option(...),
+         expect_debug_disallowed: bool = typer.Option(None),
          gdb_path: str = typer.Option(...),
          gdb_expect_output_sequence: List[str] = typer.Option(None),
          gdb_script_path: str = typer.Option(...),
@@ -177,8 +188,14 @@ def main(rom_kind: str = typer.Option(...),
     # For some reason, we don't reliably see the "starting gdb server" line when
     # OpenOCD's GDB server is ready. It could be a buffering issue internal to
     # OpenOCD or perhaps this script.
-    background.block_until_line_contains(
-        openocd, "Examined RISC-V core; found 1 harts")
+    examined_riscv_core = background.block_until_line_contains(
+        openocd, "Examined RISC-V core; found 1 harts", num_seconds=5)
+    if not examined_riscv_core:
+        if expect_debug_disallowed:
+            sys.exit(0)
+        else:
+            print("Error: OpenOCD failed to examine the core.", flush=True)
+            sys.exit(1)
 
     gdb = background.run(gdb_command,
                          "GDB",
