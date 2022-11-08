@@ -534,11 +534,11 @@ SEC_VERS = [
     name = "sec_ver_{}_{}_image".format(sec_ver_a, sec_ver_b),
     srcs = {
         ":empty_test_slot_a_sec_ver_{}".format(sec_ver_a): {
-            "key": "test_key_0",
+            "key": "prod_key_0",
             "offset": SLOTS["a"],
         },
         ":empty_test_slot_b_sec_ver_{}".format(sec_ver_b): {
-            "key": "test_key_0",
+            "key": "prod_key_0",
             "offset": SLOTS["b"],
         },
     },
