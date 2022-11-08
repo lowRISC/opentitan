@@ -1455,6 +1455,14 @@ test_suite(
     ],
 )
 
+ALL_OTP_CFGS_EXEC_DISABLED = [
+    "test_unlocked0",
+    "dev",
+    "rma",
+    "prod",
+    "prod_end",
+]
+
 # Names of OTP configs shared by tests that require execution to be disabled.
 OTP_CFGS_EXEC_DISABLED = [
     "test_unlocked0",
@@ -1463,7 +1471,7 @@ OTP_CFGS_EXEC_DISABLED = [
 ]
 
 # Apply an overlay that disables ROM execution on top of the base OTP configs
-# derived from `OTP_CFGS_EXEC_DISABLED`.
+# derived from `ALL_OTP_CFGS_EXEC_DISABLED`.
 [
     otp_image(
         name = "img_{}_exec_disabled".format(otp_name),
@@ -1471,7 +1479,7 @@ OTP_CFGS_EXEC_DISABLED = [
         overlays = STD_OTP_OVERLAYS + ["//hw/ip/otp_ctrl/data:otp_json_exec_disabled"],
         visibility = ["//visibility:private"],
     )
-    for otp_name in OTP_CFGS_EXEC_DISABLED
+    for otp_name in ALL_OTP_CFGS_EXEC_DISABLED
 ]
 
 # Splice each execution-disabled OTP image into the ROM bitstream.
@@ -1488,7 +1496,7 @@ OTP_CFGS_EXEC_DISABLED = [
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
-    for otp_name in OTP_CFGS_EXEC_DISABLED
+    for otp_name in ALL_OTP_CFGS_EXEC_DISABLED
 ]
 
 SRAM_JTAG_INJECTION_GDB_SCRIPT = """
@@ -1607,6 +1615,44 @@ test_suite(
         "vivado",
     ],
     tests = ["sram_program_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
+)
+
+[
+    opentitan_gdb_fpga_cw310_test(
+        name = "debug_disallowed_in_prod_fpga_cw310_test_otp_" + otp_name,
+        timeout = "short",
+        expect_debug_disallowed = otp_name in ("prod", "prod_end"),
+        gdb_script = """
+            target extended-remote :3333
+
+            echo :::: Send OpenOCD the 'reset halt' command.\\n
+            monitor reset halt
+
+            echo :::: Load ROM symbols into GDB.\\n
+            file rom.elf
+
+            print $pc
+        """,
+        gdb_script_symlinks = {
+            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+        },
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_kind = "Rom",
+        tags = [
+            "cw310",
+            "vivado",
+        ],
+    )
+    for otp_name in ("prod", "prod_end", "rma")
+]
+
+test_suite(
+    name = "rom_e2e_debug_disallowed_in_prod_tests",
+    tags = ["manual"],
+    tests = [
+        "debug_disallowed_in_prod_fpga_cw310_test_otp_" + otp_name
+        for otp_name in ("prod", "prod_end", "rma")
+    ],
 )
 
 [
