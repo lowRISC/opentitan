@@ -160,8 +160,8 @@ Once the CSRNG instance has been instantiated, and the `generate` and `reseed` c
 Note that if BOOT_REQ_MODE is asserted the state machine will enter boot-time request mode, even if AUTO_REQ_MODE is asserted.
 
 To issue any new commands other than those stored in the generate or reseed FIFOs, it is important to disable auto request mode, by deasserting the `AUTO_REQ_MODE` field in the {{< regref "CTRL" >}} register.
-Firmware must then wait until the current command is completed by polling the `REQ_MODE_SM_STS` bit in the {{< regref "SUM_STS" >}} register
-Once `REQ_MODE_SM_STS` reads zero, the state machine is idle and new firmware-driven commands can be passed to the CSRNG via the {{< regref "SW_CMD_REQ" >}} register.
+Firmware must then wait until the current command is completed by polling the {{< regref "MAIN_SM_STATE" >}} register.
+Once the state machine returns to the `Idle` or `SWPortMode` states, new firmware-driven commands can be passed to the CSRNG via the {{< regref "SW_CMD_REQ" >}} register.
 
 It should be noted that when in auto request mode, no status will be updated that is used for the software port operation once the `instantiate` command has completed.
 If some hang condition were to occur when in this mode, the main state machine debug register should be read to determine if a hang condition is present.
