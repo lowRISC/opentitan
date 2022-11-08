@@ -24,64 +24,119 @@
 {
   testpoints: [
     {
+      // TODO: We need to carefully check what points are covered by which test and how.
+      // At a first glance 1), 2) and 3b) should be covered by the automated entropy_src_csr_rw test.
+      // However, the SW_REGUPD and MODULE_ENABLE registers have exclusions for all automated CSR tests.
+      // Meaning we might need a directed test for 1) and 2).
+      // 3 a) and b) are captured by the scoreboard.
       name: sec_cm_config_regwen
-      desc: "Verify the countermeasure(s) CONFIG.REGWEN."
+      desc: '''
+            Verify the countermeasure(s) CONFIG.REGWEN.
+            Verify that:
+            1) ME_REGWEN and SW_REGUPD cannot be set back to 1 after being set to 0 once.
+            2) If ME_REGWEN is not set, MODULE_ENABLE cannot be modified.
+            3) Only if MODULE_ENABLE is MuBi4False and SW_REGUPD is 1, a) REGWEN reads as 1 and b) associated control and threshold registers can be modified.
+            '''
       stage: V2S
-      tests: []
+      tests: ["entropy_src_rng"]
     }
     {
       name: sec_cm_config_mubi
-      desc: "Verify the countermeasure(s) CONFIG.MUBI."
+      desc: '''
+            Verify the countermeasure(s) CONFIG.MUBI.
+            Verify that upon writing invalid MUBI values to configuration registers:
+            1) the DUT signals a recoverable alert and sets the correct bit in the RECOV_ALERT_STS register, and
+            2) the DUT can be configured back to a safe configuration and the RECOV_ALERT_STS register can be cleared.
+            '''
       stage: V2S
-      tests: []
+      tests: ["entropy_src_rng"]
     }
     {
       name: sec_cm_config_redun
-      desc: "Verify the countermeasure(s) CONFIG.REDUN."
+      desc: '''
+            Verify the countermeasure(s) CONFIG.REDUN.
+            Verify that upon improperly configuring the ALERT_TRESHOLD register:
+            1) the DUT signals a recoverable alert and sets the correct bit in the RECOV_ALERT_STS register, and
+            2) the DUT can be configured back to a safe configuration and the RECOV_ALERT_STS register can be cleared.
+            '''
       stage: V2S
-      tests: []
+      tests: ["entropy_src_rng"]
     }
     {
+      // TODO: It seems we currently always drive either MuBi8True or MuBi8False values to these signals.
+      // Similar to CONFIG.MUBI and CONFIG.REDUN we should probably also with a certain probability drive invalid MuBi values to these signals.
+      // The DUT isn't expected to signal an alert though in case of invalid encodings for these two signals.
       name: sec_cm_intersig_mubi
-      desc: "Verify the countermeasure(s) INTERSIG.MUBI."
+      desc: '''
+            Verify the countermeasure(s) INTERSIG.MUBI.
+            Verify that unless the otp_en_entropy_src_fw_read or otp_en_entropy_src_fw_over input signals are equal to MuBi8True the DUT doesn't allow reading entropy from the ENTROPY_DATA register or from the FW_OV_RD_DATA register, respectively.
+            '''
       stage: V2S
-      tests: []
+      tests: ["entropy_src_rng"]
     }
     {
       name: sec_cm_main_sm_fsm_sparse
-      desc: "Verify the countermeasure(s) MAIN_SM.FSM.SPARSE."
+      desc: '''
+            Verify the countermeasure(s) MAIN_SM.FSM.SPARSE.
+            The entropy_src_functional_errors test verifies that if the FSM state is forced to an illegal state encoding this is reported in the ERR_CODE register.
+            It currently doesn't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
       stage: V2S
-      tests: ["entropy_src_sec_cm"]
+      tests: ["entropy_src_sec_cm", "entropy_src_functional_errors"]
     }
     {
       name: sec_cm_ack_sm_fsm_sparse
-      desc: "Verify the countermeasure(s) ACK_SM.FSM.SPARSE."
+      desc: '''
+            Verify the countermeasure(s) ACK_SM.FSM.SPARSE.
+            The entropy_src_functional_errors test verifies that if the FSM state is forced to an illegal state encoding this is reported in the ERR_CODE register.
+            It currently doesn't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
       stage: V2S
-      tests: ["entropy_src_sec_cm"]
+      tests: ["entropy_src_sec_cm", "entropy_src_functional_errors"]
     }
     {
       name: sec_cm_rng_bkgn_chk
-      desc: "Verify the countermeasure(s) RNG.BKGN_CHK."
+      desc: '''
+            Verify the countermeasure(s) RNG.BKGN_CHK.
+            Verify the different background health checks with different, randomized threshold values.
+            '''
       stage: V2S
-      tests: []
+      tests: ["entropy_src_rng"]
     }
     {
       name: sec_cm_ctr_redun
-      desc: "Verify the countermeasure(s) CTR.REDUN."
+      desc: '''
+            Verify the countermeasure(s) CTR.REDUN.
+            The entropy_src_functional_errors test verifies that if there is any mismatch in the redundant counters this is reported in the ERR_CODE register.
+            It currently doesn't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
       stage: V2S
-      tests: ["entropy_src_sec_cm"]
+      tests: ["entropy_src_sec_cm", "entropy_src_functional_errors"]
     }
     {
+      // TODO: It seems that this is currently not being verified.
+      // The entropy_src_functional_errors test verifies that if there is any mismatch in the redundant counters this is reported in the ERR_CODE register.
+      // But a check that the main FSM indeed enters a terminal error state seems to be missing.
+      // The scoreboard captures that setting ERR_CODE_TEST.ES_CNTR_ERR causes the DUT to signal a fatal alert and ERR_CODE.ES_CNTR_ERR as well as ERR_CODE.ES_MAIN_SM_ERR to get set.
       name: sec_cm_ctr_local_esc
-      desc: "Verify the countermeasure(s) CTR.LOCAL_ESC."
+      desc: '''
+            Verify the countermeasure(s) CTR.LOCAL_ESC.
+            Verify that upon a mismatch in any of the redundant counters the main FSM enters a terminal error state and that the DUT signals a fatal alert.
+            '''
       stage: V2S
-      tests: []
+      tests: ["entropy_src_functional_errors"]
     }
     {
       name: sec_cm_esfinal_rdata_bus_consistency
-      desc: "Verify the countermeasure(s) ESFINAL_RDATA.BUS.CONSISTENCY."
+      desc: '''
+            Verify the countermeasure(s) ESFINAL_RDATA.BUS.CONSISTENCY.
+            Verify that if two subsequents read requests to the esfinal FIFO obtain the same data, the DUT signals a recoverable alert and sets the correct bit in the RECOV_ALERT_STS register.
+            '''
       stage: V2S
-      tests: []
+      tests: ["entropy_src_functional_alerts"]
     }
     {
       name: sec_cm_tile_link_bus_integrity
