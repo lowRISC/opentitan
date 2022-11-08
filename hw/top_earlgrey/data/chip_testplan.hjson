@@ -2848,7 +2848,7 @@
               testplan.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_flash_rma_unlocked"]
     }
     {
       name: chip_sw_flash_scramble
