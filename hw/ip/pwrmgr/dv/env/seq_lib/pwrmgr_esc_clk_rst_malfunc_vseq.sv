@@ -34,7 +34,7 @@ class pwrmgr_esc_clk_rst_malfunc_vseq extends pwrmgr_base_vseq;
     randcase
       1: path = "tb.dut.rst_esc_ni";
       1: path = "tb.dut.clk_esc_i";
-    endcase // randcase
+    endcase
     `uvm_info(`gfn, $sformatf("Sending noise via %s", path), UVM_MEDIUM)
     `DV_CHECK(uvm_hdl_force(path, 0))
     #(delay * 1us);

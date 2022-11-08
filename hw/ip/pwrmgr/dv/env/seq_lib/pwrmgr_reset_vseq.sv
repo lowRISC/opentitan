@@ -32,7 +32,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
                 enabled_resets,
                 power_glitch_reset,
                 escalation_reset,
-                sw_rst_from_rstmgr
+                sw_rst_from_rstmgr == prim_mubi_pkg::MuBi4True
                 ), UVM_MEDIUM)
 
       csr_wr(.ptr(ral.reset_en[0]), .value(resets_en));
@@ -58,14 +58,9 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       if (escalation_reset) send_escalation_reset();
       cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
 
-      cfg.slow_clk_rst_vif.wait_clks(2);
-      //wait until fast clock comes back
-      repeat(4) @cfg.clk_rst_vif.cb;
-
-      // This read is not always possible since the CPU may be off.
-      check_reset_status(enabled_resets);
-
-      wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
+      // Expect to start reset.
+      `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
+      `uvm_info(`gfn, "Started to process reset", UVM_MEDIUM)
 
       wait_for_fast_fsm_active();
       `uvm_info(`gfn, "Back from reset", UVM_MEDIUM)

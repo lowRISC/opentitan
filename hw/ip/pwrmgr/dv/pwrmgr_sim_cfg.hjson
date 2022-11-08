@@ -59,6 +59,9 @@
   uvm_test: pwrmgr_base_test
   uvm_test_seq: pwrmgr_base_vseq
 
+  // Enable cdc instrumentation.
+  run_opts: ["+cdc_instrumentation_enabled=1"]
+
   // List of test specifications.
   tests: [
     {

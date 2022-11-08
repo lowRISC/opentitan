@@ -31,11 +31,11 @@ class pwrmgr_glitch_vseq extends pwrmgr_base_vseq;
       cfg.clk_rst_vif.wait_clks(cycles_before_reset);
 
       `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateResetPrep &&
-                        cfg.pwrmgr_vif.pwr_rst_req.rstreqs[2] == 1);,
-                   $sformatf("checker timeout : fast_state %s, pwr_rst_req 0x%x",
-                             cfg.pwrmgr_vif.fast_state.name,
-                             cfg.pwrmgr_vif.pwr_rst_req.rstreqs),
-                   10000)
+                        cfg.pwrmgr_vif.pwr_rst_req.rstreqs[2] == 1);, $sformatf(
+                   "checker timeout : fast_state %s, pwr_rst_req 0x%x",
+                   cfg.pwrmgr_vif.fast_state.name,
+                   cfg.pwrmgr_vif.pwr_rst_req.rstreqs
+                   ), 10000)
 
       dut_init();
     end
