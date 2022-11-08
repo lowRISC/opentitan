@@ -166,7 +166,7 @@ def main(rom_kind: str = typer.Option(...),
     console_command = opentitantool_prefix + [
         "console",
         "--timeout",
-        "20s",
+        "30s",
     ]
     if exit_success_pattern is not None:
         console_command.append("--exit-success=" + exit_success_pattern)

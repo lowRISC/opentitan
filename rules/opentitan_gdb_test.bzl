@@ -5,6 +5,113 @@
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 
+# https://github.com/riscv-non-isa/riscv-asm-manual/blob/master/riscv-asm.md#general-registers
+IBEX_GPRS = [
+    "zero",
+    "ra",
+    "sp",
+    "gp",
+    "tp",
+    "t0",
+    "t1",
+    "t2",
+    "s0",
+    "fp",  # Should be an alias for s0.
+    "s1",
+] + ["a" + str(i) for i in range(8)] + ["s" + str(i) for i in range(2, 12)] + ["t" + str(i) for i in range(3, 7)]
+
+# Register access values.
+_ACCESS_R = 0
+_ACCESS_RW = 1
+_ACCESS_WARL = 2
+_ACCESS_WLRL = 3
+
+# https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html
+_IBEX_CSRS = [
+                 ("mstatus", _ACCESS_WARL),
+                 ("misa", _ACCESS_WARL),
+                 ("mie", _ACCESS_WARL),
+                 ("mtvec", _ACCESS_WARL),
+                 ("mcountinhibit", _ACCESS_RW),
+             ] + [("mhpmevent" + str(i), _ACCESS_WARL) for i in range(3, 32)] + \
+             [
+                 ("mscratch", _ACCESS_RW),
+                 ("mepc", _ACCESS_WARL),
+                 ("mcause", "WLRL"),
+                 ("mtval", _ACCESS_WARL),
+                 ("mip", _ACCESS_R),
+                 ("pmpcfg0", _ACCESS_WARL),
+                 ("pmpcfg1", _ACCESS_WARL),
+                 ("pmpcfg2", _ACCESS_WARL),
+                 ("pmpcfg3", _ACCESS_WARL),
+             ] + [("pmpaddr" + str(i), _ACCESS_WARL) for i in range(16)] + [
+    ("scontext", _ACCESS_WARL),
+    ("mseccfg", _ACCESS_WARL),
+    ("mseccfgh", _ACCESS_WARL),
+    ("tselect", _ACCESS_WARL),
+    ("tdata1", _ACCESS_WARL),
+    ("tdata2", _ACCESS_WARL),
+    ("tdata3", _ACCESS_WARL),
+    ("mcontext", _ACCESS_WARL),
+    ("mscontext", _ACCESS_WARL),
+    ("dcsr", _ACCESS_WARL),
+    ("dpc", _ACCESS_RW),
+    ("dscratch0", _ACCESS_RW),
+    ("dscratch1", _ACCESS_RW),
+    ("cpuctrl", _ACCESS_WARL),
+    ("secureseed", _ACCESS_WARL),
+    ("mcycle", _ACCESS_RW),
+    ("minstret", _ACCESS_RW),
+] + [("mhpmcounter" + str(i), _ACCESS_WARL) for i in range(3, 32)] + [
+    ("mcycleh", _ACCESS_RW),
+    ("minstreth", _ACCESS_RW),
+] + [("mhpmcounter{}h".format(i), _ACCESS_WARL) for i in range(3, 32)] + [
+    ("mvendorid", _ACCESS_R),
+    ("marchid", _ACCESS_R),
+    ("mimpid", _ACCESS_R),
+    ("mhartid", _ACCESS_R),
+]
+
+def get_gdb_readable_csr_names():
+    return [reg for (reg, _access) in _IBEX_CSRS]
+
+def get_gdb_settable_csr_names():
+    exclude_csr_names = ["scontext", "mseccfg", "mseccfgh", "tselect", "dpc"]
+    out = []
+    for (reg, access) in _IBEX_CSRS:
+        if access == _ACCESS_R:
+            continue
+        if reg in exclude_csr_names:
+            continue
+        if reg.startswith("pmpcfg") or reg.startswith("pmpaddr"):
+            continue
+        out.append(reg)
+    return out
+
+def gdb_commands_copy_registers(registers):
+    lines = ["echo :::: Copy registers.\\n"]
+    lines += [
+        "set ${reg}_orig = ${reg}".format(reg = reg)
+        for reg in registers
+    ]
+    return "\n".join(lines)
+
+def gdb_commands_set_registers(val, registers):
+    lines = ["echo :::: Set registers.\\n"]
+    lines += [
+        "set ${reg} = {val}".format(reg = reg, val = val)
+        for reg in registers
+    ]
+    return "\n".join(lines)
+
+def gdb_commands_restore_registers(registers):
+    lines = ["echo :::: Restore registers.\\n"]
+    lines += [
+        "set ${reg} = ${reg}_orig".format(reg = reg)
+        for reg in registers
+    ]
+    return "\n".join(lines)
+
 def _opentitan_gdb_fpga_cw310_test_impl(ctx):
     # Write the GDB script to disk and load it with GDB's `--command` argument.
     # This enables us to separate lines with whitespace, whereas if we piped the
