@@ -133,6 +133,10 @@ class push_host_driver #(
         `CB.valid_int <= 1'b0;
         if (!cfg.hold_h_data_until_next_req) `CB.h_data_int <= 'x;,
         wait (cfg.in_reset);)
+    // In case there is race condition between the logic above and reset_signals task.
+    // We always set the valid_int again to 0 to make sure the data comes out of reset is not
+    // valid.
+    if (cfg.in_reset) `CB.valid_int <= '0;
   endtask
 
   `undef CB

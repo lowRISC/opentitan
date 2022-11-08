@@ -9,7 +9,7 @@ class edn_disable_vseq extends edn_base_vseq;
   push_pull_host_seq#(edn_pkg::FIPS_ENDPOINT_BUS_WIDTH)
       m_endpoint_pull_seq[MAX_NUM_ENDPOINTS];
 
-  uint   num_requesters, num_ep_reqs, num_cs_reqs, wait_disable;
+  uint   num_ep_reqs, num_cs_reqs, wait_disable;
 
   task pre_start();
     // The edn_init is done in dut_init. So adding this disablement in pre_start in order to hit
@@ -65,27 +65,27 @@ class edn_disable_vseq extends edn_base_vseq;
   endtask
 
   task body();
+    bit [MAX_NUM_ENDPOINTS-1:0] edn_reqs;
     super.body();
-    num_requesters = cfg.num_endpoints;
     num_cs_reqs    = cfg.num_endpoints;
     num_ep_reqs    = num_cs_reqs * csrng_pkg::GENBITS_BUS_WIDTH/ENDPOINT_BUS_WIDTH;
 
-    for (int i = 0; i < num_requesters; i++) begin
-      // Create/Configure/Start endpoint_pull_seq
-      m_endpoint_pull_seq[i] = push_pull_host_seq#(FIPS_ENDPOINT_BUS_WIDTH)::
-          type_id::create($sformatf("m_endpoint_pull_seq[%0d]", i));
-      m_endpoint_pull_seq[i].num_trans = num_ep_reqs;
-    end
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(edn_reqs, $countones(edn_reqs) == cfg.num_endpoints;)
 
-    // Start endpoint_pull sequences
-    for (int i = 0; i < num_requesters; i++) begin
+    for (int i = 0; i < MAX_NUM_ENDPOINTS; i++) begin
       automatic int j = i;
-      fork
-        begin
+      if (edn_reqs[j]) begin
+        fork begin
+          // Create/Configure/Start endpoint_pull_seq
+          m_endpoint_pull_seq[j] = push_pull_host_seq#(FIPS_ENDPOINT_BUS_WIDTH)::
+              type_id::create($sformatf("m_endpoint_pull_seq[%0d]", j));
+          m_endpoint_pull_seq[j].num_trans = num_ep_reqs;
+
+          // Start endpoint_pull sequences
           m_endpoint_pull_seq[j].start
               (p_sequencer.endpoint_sequencer_h[j]);
-        end
-      join_none;
+        end join_none;
+      end
     end
   endtask
 
