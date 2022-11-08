@@ -55,7 +55,7 @@ static const sigverify_rsa_buffer_t kSignatureExp3 = {
         0x55e2c441, 0xa6141c6f, 0x0b691a17, 0xbe151202, 0xb9f0e104, 0x5d411db9,
     }};
 
-// sw/device/silicon_creator/rom/keys/test_key_0_rsa_3072_exp_f4.public.der
+// sw/device/silicon_creator/rom/keys/fake/test_key_0_rsa_3072_exp_f4.public.der
 static const sigverify_rsa_key_t kKeyExp65537 = {
     .n = {{
         0x5801a2bd, 0xeff64a46, 0xc8cf2251, 0xa7cd62cb, 0x634a39c2, 0x55c936d3,
