@@ -115,16 +115,10 @@ class csrng_monitor extends dv_base_monitor #(
         else begin
           cs_item.flags = MuBi4False;
         end
-        if (cs_item.acmd == csrng_pkg::RES) begin
-          cfg.reseed_cnt += 1;
-        end
         if (cs_item.acmd == csrng_pkg::GEN) begin
-          cfg.generate_cnt += 1;
-          if (cfg.reseed_cnt == 1) begin
-            cfg.generate_between_reseeds_cnt += 1;
-          end
           cs_item.glen = cfg.vif.mon_cb.cmd_req.csrng_req_bus[30:12];
         end
+
         for (int i = 0; i < cs_item.clen; i++) begin
           do begin
             @(cfg.vif.cmd_push_if.mon_cb);
@@ -139,6 +133,16 @@ class csrng_monitor extends dv_base_monitor #(
         // detecting another request, as this is not a pipelined protocol.
         `DV_SPINWAIT_EXIT(while (!cfg.vif.mon_cb.cmd_rsp.csrng_rsp_ack) @(cfg.vif.mon_cb);,
                           wait(cfg.under_reset))
+
+        // Increment the counters only if ack is sent.
+        if (!cfg.under_reset) begin
+          if (cs_item.acmd == csrng_pkg::RES) cfg.reseed_cnt += 1;
+          if (cs_item.acmd == csrng_pkg::GEN) begin
+            cfg.generate_cnt += 1;
+            if (cfg.reseed_cnt == 1) cfg.generate_between_reseeds_cnt += 1;
+          end
+        end
+
         rsp_sts_ap.write(cfg.vif.cmd_rsp.csrng_rsp_sts);
        end
     end
