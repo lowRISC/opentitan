@@ -11,11 +11,15 @@
 
 /**
  * Returns the number of AON cycles corresponding to the given microseconds.
+ *
+ * This rounds up if there is a fractional part.
  */
 uint32_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds);
 
 /**
  * Returns the number of microseconds corresponding to the given AON cycles.
+ *
+ * This rounds up if there is a fractional part.
  */
 uint32_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles);
 

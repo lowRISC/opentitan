@@ -68,6 +68,8 @@ void alert_handler_testutils_configure_all(
 
 /**
  * Returns the number of cycles corresponding to the given microseconds.
+ *
+ * This rounds up if there is a fractional part.
  */
 uint32_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds);
 

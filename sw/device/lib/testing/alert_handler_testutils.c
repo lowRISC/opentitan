@@ -136,8 +136,9 @@ void alert_handler_testutils_configure_all(
 }
 
 uint32_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds) {
-  uint64_t cycles = udiv64_slow(microseconds * kClockFreqPeripheralHz, 1000000,
-                                /*rem_out=*/NULL);
+  uint64_t cycles =
+      udiv64_slow(microseconds * kClockFreqPeripheralHz + 1000000 - 1, 1000000,
+                  /*rem_out=*/NULL);
   CHECK(cycles < UINT32_MAX,
         "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
         (cycles >> 32), (uint32_t)cycles);

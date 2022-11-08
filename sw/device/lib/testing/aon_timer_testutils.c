@@ -16,8 +16,9 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 uint32_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds) {
-  uint64_t cycles = udiv64_slow(microseconds * kClockFreqAonHz, 1000000,
-                                /*rem_out=*/NULL);
+  uint64_t cycles =
+      udiv64_slow(microseconds * kClockFreqAonHz + 1000000 - 1, 1000000,
+                  /*rem_out=*/NULL);
   CHECK(cycles < UINT32_MAX,
         "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
         (cycles >> 32), (uint32_t)cycles);
@@ -25,8 +26,9 @@ uint32_t aon_timer_testutils_get_aon_cycles_from_us(uint64_t microseconds) {
 }
 
 uint32_t aon_timer_testutils_get_us_from_aon_cycles(uint64_t cycles) {
-  uint64_t uss = udiv64_slow(cycles * 1000000, kClockFreqAonHz,
-                             /*rem_out=*/NULL);
+  uint64_t uss =
+      udiv64_slow(cycles * 1000000 + kClockFreqAonHz - 1, kClockFreqAonHz,
+                  /*rem_out=*/NULL);
   CHECK(uss < UINT32_MAX,
         "The value 0x%08x%08x can't fit into the 32 bits timer counter.",
         (uss >> 32), (uint32_t)uss);
