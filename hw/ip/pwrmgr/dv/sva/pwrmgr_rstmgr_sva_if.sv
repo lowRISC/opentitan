@@ -8,26 +8,27 @@
 interface pwrmgr_rstmgr_sva_if
   import pwrmgr_pkg::*, pwrmgr_reg_pkg::NumRstReqs;
 (
-  input logic                            clk_i,
-  input logic                            rst_ni,
-  input logic                            clk_slow_i,
-  input logic                            rst_slow_ni,
+  input logic                    clk_i,
+  input logic                    rst_ni,
+  input logic                    clk_slow_i,
+  input logic                    rst_slow_ni,
   // Input resets.
-  input logic         [  NumRstReqs-1:0] rstreqs_i,
-  input logic         [  NumRstReqs-1:0] reset_en,
-  input logic                            sw_rst_req_i,
-  input logic                            main_rst_req_i,
-  input logic                            esc_rst_req_i,
-  input logic                            ndm_req_i,
+  input logic [ NumRstReqs-1:0]  rstreqs_i,
+  input logic [ NumRstReqs-1:0]  reset_en,
+  input logic                    sw_rst_req_i,
+  input logic                    main_rst_req_i,
+  input logic                    esc_rst_req_i,
+  // TODO: Add ndm_reset on/off testing
+  input logic                    ndm_rst_req_i,
   // The inputs from pwrmgr.
-  input logic         [PowerDomains-1:0] rst_lc_req,
-  input logic         [PowerDomains-1:0] rst_sys_req,
-  input logic         [HwResetWidth-1:0] rstreqs,
-  input logic                            main_pd_n,
-  input reset_cause_e                    reset_cause,
+  input logic [PowerDomains-1:0] rst_lc_req,
+  input logic [PowerDomains-1:0] rst_sys_req,
+  input logic [HwResetWidth-1:0] rstreqs,
+  input logic                    main_pd_n,
+  input                          reset_cause_e reset_cause,
   // The inputs from rstmgr.
-  input logic         [PowerDomains-1:0] rst_lc_src_n,
-  input logic         [PowerDomains-1:0] rst_sys_src_n
+  input logic [PowerDomains-1:0] rst_lc_src_n,
+  input logic [PowerDomains-1:0] rst_sys_src_n
 );
 
   // Number of cycles for the LC/SYS reset handshake.

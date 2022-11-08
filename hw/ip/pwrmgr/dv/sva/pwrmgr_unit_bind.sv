@@ -19,7 +19,7 @@ module pwrmgr_unit_bind;
     .sw_rst_req_i(prim_mubi_pkg::mubi4_test_true_strict(sw_rst_req_i)),
     .main_rst_req_i(!rst_main_ni),
     .esc_rst_req_i(esc_rst_req_q),
-    .ndm_req_i(ndmreset_req_i),
+    .ndm_rst_req_i(ndmreset_req_i),
     // The outputs from pwrmgr.
     .rst_lc_req(pwr_rst_o.rst_lc_req),
     .rst_sys_req(pwr_rst_o.rst_sys_req),
