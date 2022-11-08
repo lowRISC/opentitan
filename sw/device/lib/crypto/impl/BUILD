@@ -5,16 +5,6 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "otbn_util",
-    srcs = ["otbn_util.c"],
-    hdrs = ["otbn_util.h"],
-    deps = [
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/crypto/drivers:otbn",
-    ],
-)
-
-cc_library(
     name = "integrity_check",
     srcs = ["integrity_check.c"],
     hdrs = [

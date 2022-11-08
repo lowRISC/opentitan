@@ -10,7 +10,7 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
-#include "sw/device/lib/crypto/impl/otbn_util.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 
 #ifdef __cplusplus
 extern "C" {
