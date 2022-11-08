@@ -24,7 +24,7 @@ class entropy_src_rng_test extends entropy_src_base_test;
 
     // Apply standards ranging from strict to relaxed
     cfg.dut_cfg.adaptp_sigma_min_tight      = 0.5;
-    cfg.dut_cfg.bucket_sigma_max_tight      = 2.0;
+    cfg.dut_cfg.adaptp_sigma_max_tight      = 2.0;
     cfg.dut_cfg.adaptp_sigma_min_typ        = 3.0;
     cfg.dut_cfg.adaptp_sigma_max_typ        = 6.0;
 
