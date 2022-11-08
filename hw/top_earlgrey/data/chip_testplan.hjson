@@ -1635,18 +1635,6 @@
       tests: ["chip_sw_lc_ctrl_transition"]
     }
     {
-      name: chip_sw_lc_ctrl_kmac_reset
-      desc: '''Verify the effect of putting the KMAC logic in reset during LC state transition.
-
-            - For a lc state transition, force a reset to KMAC when KMAC is processing lc
-              transition tokens.
-            - Force another KMAC reset after KMAC is done processing lc trantition tokens.
-            - Verify that kmac reset won't affect LC state transition.
-            '''
-      stage: V2
-      tests: ["chip_sw_lc_ctrl_kmac_reset"]
-    }
-    {
       name: chip_sw_lc_ctrl_key_div
       desc: '''Verify the keymgr div output to keymgr.
 
