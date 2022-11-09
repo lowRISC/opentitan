@@ -7,12 +7,34 @@ description: "RV_CORE_IBEX assertion modules and bind file."
 filesets:
   files_dv:
     depend:
+      - lowrisc:fpv:csr_assert_gen
+      - lowrisc:ip:rv_core_ibex
       - lowrisc:tlul:headers
+      - lowrisc:prim:assert
     files:
       - rv_core_ibex_bind.sv
     file_type: systemVerilogSource
 
+  files_formal:
+    depend:
+      - lowrisc:ip:rv_core_ibex
+
+generate:
+  csr_assert_gen:
+    generator: csr_assert_gen
+    parameters:
+      spec: ../../data/rv_core_ibex.hjson
+
 targets:
-  default:
+  default: &default_target
     filesets:
       - files_dv
+    generate:
+      - csr_assert_gen
+
+  formal:
+    <<: *default_target
+    filesets:
+      - files_formal
+      - files_dv
+    toplevel: rv_core_ibex
