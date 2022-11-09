@@ -34,7 +34,7 @@ package i2c_env_pkg;
     TxEmpty        = 10,
     TxNonEmpty     = 11,
     TxOverflow     = 12,
-    AcqOverflow    = 13,
+    AcqFull        = 13,
     AckStop        = 14,
     HostTimeout    = 15,
     NumI2cIntr     = 16

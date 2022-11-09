@@ -28,7 +28,7 @@ module tb;
   wire intr_tx_empty;
   wire intr_tx_nonempty;
   wire intr_tx_overflow;
-  wire intr_acq_overflow;
+  wire intr_acq_full;
   wire intr_ack_stop;
   wire intr_host_timeout;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
@@ -101,7 +101,7 @@ module tb;
     .intr_tx_empty_o         (intr_tx_empty         ),
     .intr_tx_nonempty_o      (intr_tx_nonempty      ),
     .intr_tx_overflow_o      (intr_tx_overflow      ),
-    .intr_acq_overflow_o     (intr_acq_overflow     ),
+    .intr_acq_full_o         (intr_acq_full         ),
     .intr_ack_stop_o         (intr_ack_stop         ),
     .intr_host_timeout_o     (intr_host_timeout     )
   );
@@ -120,7 +120,7 @@ module tb;
   assign interrupts[TxEmpty]        = intr_tx_empty;
   assign interrupts[TxNonEmpty]     = intr_tx_nonempty;
   assign interrupts[TxOverflow]     = intr_tx_overflow;
-  assign interrupts[AcqOverflow]    = intr_acq_overflow;
+  assign interrupts[AcqFull]        = intr_acq_full;
   assign interrupts[AckStop]        = intr_ack_stop;
   assign interrupts[HostTimeout]    = intr_host_timeout;
 

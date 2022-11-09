@@ -33,7 +33,7 @@ See that document for integration overview within the broader top level system.
 - Direct SCL and SDA control in "Override mode" (for debugging)
 - SCL and SDA ports mapped to I/O via the pinmux.
 - Interrupts in the host mode for FMT and RX FIFO overflow, target NACK, SCL/SDA signal interference, timeout, unstable SDA signal levels, and transaction complete
-- Interrupts in the target mode for TX FIFO empty during a read, TX FIFO nonempty at the end of a read, TX and ACQ FIFO overflow, host sending STOP after ACK, and host ceasing to send SCL pulses during an ongoing transaction
+- Interrupts in the target mode for TX FIFO empty during a read, TX FIFO nonempty at the end of a read, TX overflow and ACQ FIFO full, host sending STOP after ACK, and host ceasing to send SCL pulses during an ongoing transaction
 - SW may reset I2C block using the Reset Manager.
 
 <sup>1</sup> lowRISC is avoiding the fraught terms master/slave and defaulting to host/target where applicable.
@@ -354,7 +354,8 @@ If a target receives a STOP or repeated START signal and there are extra bytes l
 When a host receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a repeated START.
 In a case when a target receives an ACK and then a STOP/START, the interrupt `ack_stop` is asserted.
 
-If either TX or ACQ FIFO receives an additional write request when its FIFO is full, the interrupt `tx_overflow` or `acq_overflow` is asserted and the format indicator is dropped.
+If TX FIFO receives an additional write request when its FIFO is full, the interrupt `tx_overflow` is asserted.
+If ACQ FIFO becomes full, the intererupt `acq_full` is asserted.
 
 If a host ceases to send SCL pulses at any point during an ongoing transaction, the target waits for a specified time period and then asserts the interrupt `host_timeout`.
 Host sending an address and R/W bit to all target devices, writing to the selected target, or reading from the target are examples of ongoing transactions.

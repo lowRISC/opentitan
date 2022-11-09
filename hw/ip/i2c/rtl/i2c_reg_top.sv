@@ -151,8 +151,7 @@ module i2c_reg_top (
   logic intr_state_tx_nonempty_wd;
   logic intr_state_tx_overflow_qs;
   logic intr_state_tx_overflow_wd;
-  logic intr_state_acq_overflow_qs;
-  logic intr_state_acq_overflow_wd;
+  logic intr_state_acq_full_qs;
   logic intr_state_ack_stop_qs;
   logic intr_state_ack_stop_wd;
   logic intr_state_host_timeout_qs;
@@ -184,8 +183,8 @@ module i2c_reg_top (
   logic intr_enable_tx_nonempty_wd;
   logic intr_enable_tx_overflow_qs;
   logic intr_enable_tx_overflow_wd;
-  logic intr_enable_acq_overflow_qs;
-  logic intr_enable_acq_overflow_wd;
+  logic intr_enable_acq_full_qs;
+  logic intr_enable_acq_full_wd;
   logic intr_enable_ack_stop_qs;
   logic intr_enable_ack_stop_wd;
   logic intr_enable_host_timeout_qs;
@@ -204,7 +203,7 @@ module i2c_reg_top (
   logic intr_test_tx_empty_wd;
   logic intr_test_tx_nonempty_wd;
   logic intr_test_tx_overflow_wd;
-  logic intr_test_acq_overflow_wd;
+  logic intr_test_acq_full_wd;
   logic intr_test_ack_stop_wd;
   logic intr_test_host_timeout_wd;
   logic alert_test_we;
@@ -657,30 +656,30 @@ module i2c_reg_top (
     .qs     (intr_state_tx_overflow_qs)
   );
 
-  //   F[acq_overflow]: 13:13
+  //   F[acq_full]: 13:13
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_intr_state_acq_overflow (
+  ) u_intr_state_acq_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_acq_overflow_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.acq_overflow.de),
-    .d      (hw2reg.intr_state.acq_overflow.d),
+    .de     (hw2reg.intr_state.acq_full.de),
+    .d      (hw2reg.intr_state.acq_full.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.acq_overflow.q),
+    .q      (reg2hw.intr_state.acq_full.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_state_acq_overflow_qs)
+    .qs     (intr_state_acq_full_qs)
   );
 
   //   F[ack_stop]: 14:14
@@ -1075,18 +1074,18 @@ module i2c_reg_top (
     .qs     (intr_enable_tx_overflow_qs)
   );
 
-  //   F[acq_overflow]: 13:13
+  //   F[acq_full]: 13:13
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_acq_overflow (
+  ) u_intr_enable_acq_full (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_acq_overflow_wd),
+    .wd     (intr_enable_acq_full_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1094,11 +1093,11 @@ module i2c_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.acq_overflow.q),
+    .q      (reg2hw.intr_enable.acq_full.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_enable_acq_overflow_qs)
+    .qs     (intr_enable_acq_full_qs)
   );
 
   //   F[ack_stop]: 14:14
@@ -1366,21 +1365,21 @@ module i2c_reg_top (
   );
   assign reg2hw.intr_test.tx_overflow.qe = intr_test_qe;
 
-  //   F[acq_overflow]: 13:13
+  //   F[acq_full]: 13:13
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_acq_overflow (
+  ) u_intr_test_acq_full (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_acq_overflow_wd),
+    .wd     (intr_test_acq_full_wd),
     .d      ('0),
     .qre    (),
     .qe     (intr_test_flds_we[13]),
-    .q      (reg2hw.intr_test.acq_overflow.q),
+    .q      (reg2hw.intr_test.acq_full.q),
     .ds     (),
     .qs     ()
   );
-  assign reg2hw.intr_test.acq_overflow.qe = intr_test_qe;
+  assign reg2hw.intr_test.acq_full.qe = intr_test_qe;
 
   //   F[ack_stop]: 14:14
   prim_subreg_ext #(
@@ -2929,8 +2928,6 @@ module i2c_reg_top (
 
   assign intr_state_tx_overflow_wd = reg_wdata[12];
 
-  assign intr_state_acq_overflow_wd = reg_wdata[13];
-
   assign intr_state_ack_stop_wd = reg_wdata[14];
 
   assign intr_state_host_timeout_wd = reg_wdata[15];
@@ -2962,7 +2959,7 @@ module i2c_reg_top (
 
   assign intr_enable_tx_overflow_wd = reg_wdata[12];
 
-  assign intr_enable_acq_overflow_wd = reg_wdata[13];
+  assign intr_enable_acq_full_wd = reg_wdata[13];
 
   assign intr_enable_ack_stop_wd = reg_wdata[14];
 
@@ -2995,7 +2992,7 @@ module i2c_reg_top (
 
   assign intr_test_tx_overflow_wd = reg_wdata[12];
 
-  assign intr_test_acq_overflow_wd = reg_wdata[13];
+  assign intr_test_acq_full_wd = reg_wdata[13];
 
   assign intr_test_ack_stop_wd = reg_wdata[14];
 
@@ -3149,7 +3146,7 @@ module i2c_reg_top (
         reg_rdata_next[10] = intr_state_tx_empty_qs;
         reg_rdata_next[11] = intr_state_tx_nonempty_qs;
         reg_rdata_next[12] = intr_state_tx_overflow_qs;
-        reg_rdata_next[13] = intr_state_acq_overflow_qs;
+        reg_rdata_next[13] = intr_state_acq_full_qs;
         reg_rdata_next[14] = intr_state_ack_stop_qs;
         reg_rdata_next[15] = intr_state_host_timeout_qs;
       end
@@ -3168,7 +3165,7 @@ module i2c_reg_top (
         reg_rdata_next[10] = intr_enable_tx_empty_qs;
         reg_rdata_next[11] = intr_enable_tx_nonempty_qs;
         reg_rdata_next[12] = intr_enable_tx_overflow_qs;
-        reg_rdata_next[13] = intr_enable_acq_overflow_qs;
+        reg_rdata_next[13] = intr_enable_acq_full_qs;
         reg_rdata_next[14] = intr_enable_ack_stop_qs;
         reg_rdata_next[15] = intr_enable_host_timeout_qs;
       end

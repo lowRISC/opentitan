@@ -31,7 +31,7 @@ module  i2c_core #(
   output logic                     intr_tx_empty_o,
   output logic                     intr_tx_nonempty_o,
   output logic                     intr_tx_overflow_o,
-  output logic                     intr_acq_overflow_o,
+  output logic                     intr_acq_full_o,
   output logic                     intr_ack_stop_o,
   output logic                     intr_host_timeout_o
 );
@@ -74,7 +74,6 @@ module  i2c_core #(
   logic event_tx_empty;
   logic event_tx_nonempty;
   logic event_tx_overflow;
-  logic event_acq_overflow;
   logic event_ack_stop;
   logic event_host_timeout;
 
@@ -342,9 +341,8 @@ module  i2c_core #(
     .err_o   ()
   );
 
-  // Target TX and ACQ FIFOs
+  // Target TX FIFOs
   assign event_tx_overflow = tx_fifo_wvalid & ~tx_fifo_wready;
-  assign event_acq_overflow = acq_fifo_wvalid & ~acq_fifo_wready;
 
   assign tx_fifo_wvalid = line_loopback ? 1'b1 : reg2hw.txdata.qe;
   assign tx_fifo_wdata  = line_loopback ? acq_fifo_rdata[7:0] : reg2hw.txdata.q;
@@ -658,17 +656,20 @@ module  i2c_core #(
     .intr_o                 (intr_tx_overflow_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_acq_overflow (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT ("Status")
+  ) intr_hw_acq_overflow (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_acq_overflow),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.acq_overflow.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.acq_overflow.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.acq_overflow.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.acq_overflow.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.acq_overflow.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.acq_overflow.d),
-    .intr_o                 (intr_acq_overflow_o)
+    .event_intr_i           (~acq_fifo_wready),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.acq_full.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.acq_full.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.acq_full.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.acq_full.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.acq_full.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.acq_full.d),
+    .intr_o                 (intr_acq_full_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_ack_stop (
