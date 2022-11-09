@@ -106,7 +106,13 @@
       run_opts: ["+test_timeout_ns=100_000"]
     }
 
-    // TODO: add more tests here
+    {
+      name: edn_disable_auto_req_mode
+      uvm_test: edn_disable_auto_req_mode_test
+      uvm_test_seq: edn_disable_auto_req_mode_vseq
+      // For debug purpose, this test is very short.
+      run_opts: ["+test_timeout_ns=500_000"]
+    }
   ]
 
   // List of regressions.

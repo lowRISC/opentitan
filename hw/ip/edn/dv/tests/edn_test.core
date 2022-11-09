@@ -17,6 +17,7 @@ filesets:
       - edn_intr_test.sv: {is_include_file: true}
       - edn_alert_test.sv: {is_include_file: true}
       - edn_disable_test.sv: {is_include_file: true}
+      - edn_disable_auto_req_mode_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

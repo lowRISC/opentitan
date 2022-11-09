@@ -12,3 +12,4 @@
 `include "edn_alert_vseq.sv"
 `include "edn_err_vseq.sv"
 `include "edn_disable_vseq.sv"
+`include "edn_disable_auto_req_mode_vseq.sv"

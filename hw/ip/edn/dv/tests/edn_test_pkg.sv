@@ -24,5 +24,6 @@ package edn_test_pkg;
   `include "edn_intr_test.sv"
   `include "edn_alert_test.sv"
   `include "edn_disable_test.sv"
+  `include "edn_disable_auto_req_mode_test.sv"
 
 endpackage
