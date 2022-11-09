@@ -28,11 +28,14 @@ main:
   /* w19 <= 19 */
   bn.addi w19, w31, 19
 
+  /* w30 <= 38 */
+  bn.addi w30, w31, 38
+
   /* Initialize failure counter to 0. */
   bn.mov  w0, w31
 
-  /* w30 <= (2*d) mod p. */
-  li      x2, 30
+  /* w29 <= (2*d) mod p. */
+  li      x2, 29
   la      x3, two_d
   bn.lid  x2, 0(x3)
 
@@ -48,9 +51,10 @@ main:
  * coordinates, the identity is (0, Z, Z, 0) for any non-zero Z (as described in
  * RFC 8032, section 5.1.4).
  *
- * @param[in]     w19: constant, w19 = 19
+ * @param[in]     w19: constant, 19
  * @param[in]     MOD: p, modulus = 2^255 - 19
- * @param[in]     w30: constant, w30 = (2*d) mod p, d = (-121665/121666) mod p
+ * @param[in]     w29: constant, (2*d) mod p, d = (-121665/121666) mod p
+ * @param[in]     w30: constant, 38
  * @param[in]     w31: all-zero
  * @param[in,out] w0:  test failure counter
  *
