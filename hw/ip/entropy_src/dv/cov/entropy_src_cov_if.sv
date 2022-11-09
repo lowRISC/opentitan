@@ -161,12 +161,13 @@ interface entropy_src_cov_if
       illegal_bins mubi_false = { MuBi4False };
     }
 
-    // Signal an error if data is observed when otp_en_es_fw_read is false.
+    // Signal an error if data is observed when otp_en_es_fw_read is not true.
     // Sample this even if we don't have a full seed, to detect partial seed
     // leakage.
     cp_otp_en_es_fw_read: coverpoint otp_en_es_fw_read {
       bins         mubi_true  = { MuBi8True };
       illegal_bins mubi_false = { MuBi8False };
+      illegal_bins mubi_inval = {[0:$]} with (!(item inside {MuBi8True, MuBi8False}));
     }
 
     // Sample the FW_OV parameters, just to be sure that they
