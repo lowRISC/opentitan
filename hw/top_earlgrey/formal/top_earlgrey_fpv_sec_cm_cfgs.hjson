@@ -188,6 +188,14 @@
                task: "FpvSecCm"
              }
              {
+               name: rv_core_ibex_sec_cm
+               dut: rv_core_ibex
+               fusesoc_core: lowrisc:dv:rv_core_ibex_sva
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/ip/otbn/{sub_flow}/{tool}"
+               task: "FpvSecCm"
+             }
+             {
                name: sram_ctrl_sec_cm
                dut: sram_ctrl
                fusesoc_core: lowrisc:dv:sram_ctrl_sva
