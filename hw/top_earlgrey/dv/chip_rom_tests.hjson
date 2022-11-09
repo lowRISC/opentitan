@@ -32,7 +32,7 @@
       # Note: this is an unsigned test, as we are verifying a boot failure.
       sw_images: [
         "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:ot_flash_binary",
-        "//sw/device/silicon_creator/rom/e2e:otp_img_shutdown_output_test_unlocked0:3",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_shutdown_output_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
       run_opts: [

@@ -45,7 +45,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Initialize the sw logger interface.
     foreach (cfg.sw_images[i]) begin
-      if (i inside {SwTypeRom, SwTypeTest}) begin
+      if (i inside {SwTypeRom, SwTypeTestSlotA, SwTypeTestSlotB}) begin
         cfg.sw_logger_vif.add_sw_log_db(cfg.sw_images[i]);
       end
     end
@@ -90,15 +90,19 @@ class chip_sw_base_vseq extends chip_base_vseq;
     cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
 `endif
 
-    // TODO: the location of the main execution image should be randomized to either bank in future.
-    if (cfg.sw_images.exists(SwTypeTest)) begin
+    if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
       if (cfg.use_spi_load_bootstrap) begin
         `uvm_info(`gfn, "Initializing SPI flash bootstrap", UVM_MEDIUM)
-        spi_device_load_bootstrap({cfg.sw_images[SwTypeTest], ".64.vmem"});
+        spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
       end else begin
         cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
-            {cfg.sw_images[SwTypeTest], ".64.scr.vmem"});
+            {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});
       end
+    end
+    if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
+      // TODO: support bootstrapping entire flash address space, not just slot A.
+      cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(
+          {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"});
     end
     cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
 
@@ -489,7 +493,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // TODO: Need to deal with scrambling.
   virtual function void sw_symbol_backdoor_overwrite(input string symbol,
                                                      inout bit [7:0] data[],
-                                                     input sw_type_e sw_type = SwTypeTest,
+                                                     input sw_type_e sw_type = SwTypeTestSlotA,
                                                      input bit does_not_exist_ok = 0);
 
     bit [bus_params_pkg::BUS_AW-1:0] addr, mem_addr;

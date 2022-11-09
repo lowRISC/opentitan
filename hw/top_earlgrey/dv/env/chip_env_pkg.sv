@@ -87,10 +87,11 @@ package chip_env_pkg;
   // On OpenTitan, we deal with 4 types of SW - ROM, the main test, the OTBN test and the OTP image.
   // This basically puts these SW types into 'slots' that the external regression tool can set.
   typedef enum {
-    SwTypeRom,  // Ibex SW - first stage boot ROM.
-    SwTypeTest, // Ibex SW - actual test SW.
-    SwTypeOtbn, // Otbn SW
-    SwTypeOtp   // Customized OTP image
+    SwTypeRom       = 0, // Ibex SW - first stage boot ROM.
+    SwTypeTestSlotA = 1, // Ibex SW - test SW in (flash) slot A.
+    SwTypeTestSlotB = 2, // Ibex SW - test SW in (flash) slot B.
+    SwTypeOtbn      = 3, // Otbn SW
+    SwTypeOtp       = 4  // Customized OTP image
   } sw_type_e;
 
   // Our dvsim.py configuration always generates five base OTP images (in various lifecycle states)
