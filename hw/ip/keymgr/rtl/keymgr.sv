@@ -496,13 +496,13 @@ module keymgr
 
   logic valid_op;
   assign valid_op = adv_en | id_en | gen_en;
-  assign hw2reg.debug.invalid_creator_seed.de = valid_op & ~creator_seed_vld;
-  assign hw2reg.debug.invalid_owner_seed.de = valid_op & ~owner_seed_vld;
-  assign hw2reg.debug.invalid_dev_id.de = valid_op & ~devid_vld;
-  assign hw2reg.debug.invalid_health_state.de = valid_op & ~health_state_vld;
-  assign hw2reg.debug.invalid_key_version.de = valid_op & ~key_version_vld;
+  assign hw2reg.debug.invalid_creator_seed.de = adv_en & (stage_sel == Creator) & ~creator_seed_vld;
+  assign hw2reg.debug.invalid_owner_seed.de = adv_en & (stage_sel == OwnerInt) & ~owner_seed_vld;
+  assign hw2reg.debug.invalid_dev_id.de = adv_en & (stage_sel == Creator) & ~devid_vld;
+  assign hw2reg.debug.invalid_health_state.de = adv_en & (stage_sel == Creator) & ~health_state_vld;
+  assign hw2reg.debug.invalid_key_version.de = gen_en & ~key_version_vld;
   assign hw2reg.debug.invalid_key.de = valid_op & ~key_vld;
-  assign hw2reg.debug.invalid_digest.de = valid_op & ~rom_digest_vld;
+  assign hw2reg.debug.invalid_digest.de = adv_en & (stage_sel == Creator) & ~rom_digest_vld;
 
   /////////////////////////////////////
   //  KMAC Control
