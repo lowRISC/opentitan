@@ -2032,6 +2032,25 @@ opentitan_multislot_flash_binary(
     devices = ["fpga_cw310"],
 )
 
+[otp_image(
+    name = "otp_img_sigverify_always_{}".format(lc_state.lower()),
+    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
+    overlays = STD_OTP_OVERLAYS,
+) for lc_state in structs.to_dict(CONST.LCV)]
+
+# Splice OTP images into bitstreams
+[
+    bitstream_splice(
+        name = "bitstream_sigverify_always_{}".format(lc_state.lower()),
+        src = "//hw/bitstream:rom",
+        data = ":otp_img_sigverify_always_{}".format(lc_state.lower()),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+        update_usr_access = True,
+    )
+    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
+]
+
 SIGVERIFY_BAD_CASES = [
     ("nothing", "bad"),
     ("bad", "nothing"),
@@ -2040,29 +2059,37 @@ SIGVERIFY_BAD_CASES = [
 
 [
     opentitan_functest(
-        name = "sigverify_always_a_{}_b_{}".format(
-            a,
-            b,
+        name = "sigverify_always_{}_a_{}_b_{}".format(
+            lc_state.lower(),
+            case["a"],
+            case["b"],
         ),
         cw310 = cw310_params(
+            bitstream = ":bitstream_sigverify_always_{}".format(lc_state.lower()),
             exit_failure = MSG_PASS,
             exit_success = DEFAULT_TEST_FAILURE_MSG,
+            otp = ":otp_img_sigverify_always_{}".format(lc_state.lower()),
+            tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         key = "multislot",
         ot_flash_binary = ":sigverify_always_img_a_{}_b_{}".format(a, b),
         targets = ["cw310_rom"],
     )
     for a, b in SIGVERIFY_BAD_CASES
+    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
 ]
 
 test_suite(
     name = "sigverify_always",
+    tags = ["manual"],
     tests = [
-        "sigverify_always_a_{}_b_{}".format(
-            a,
-            b,
+        "sigverify_always_{}_a_{}_b_{}".format(
+            lc_state.lower(),
+            case["a"],
+            case["b"],
         )
         for a, b in SIGVERIFY_BAD_CASES
+        for lc_state in structs.to_dict(CONST.LCV)
     ],
 )
 
