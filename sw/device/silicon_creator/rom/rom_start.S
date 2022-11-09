@@ -28,7 +28,7 @@
 // We will configure the watchdog timers to reset the chip in the event that the
 // ROM stalls. The watchdog's bite and bark thresholds are set to 1 and 1.1
 // seconds, respectively, assuming a clock frequency of 200 kHz.
-.equ WDOG_BITE_THOLD, 0x30d400
+.equ WDOG_BITE_THOLD, 0x30d40
 .equ WDOG_BARK_THOLD, WDOG_BITE_THOLD * 11 / 10
 
 /**
