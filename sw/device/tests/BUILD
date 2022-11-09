@@ -1772,6 +1772,15 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "rv_core_ibex_icache_invalidate_test",
+    srcs = ["rv_core_ibex_icache_invalidate_test.c"],
+    deps = [
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "ast_clk_outs_test",
     srcs = ["ast_clk_outs_test.c"],
     cw310 = cw310_params(

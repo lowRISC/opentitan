@@ -1487,6 +1487,12 @@
       run_opts: ["+disable_assert_final_checks"]
     }
     {
+      name: chip_sw_rv_core_ibex_icache_invalidate
+      uvm_test_seq: chip_sw_rv_core_ibex_icache_invalidate_vseq
+      sw_images: ["//sw/device/tests:rv_core_ibex_icache_invalidate_test:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_usb_ast_clk_calib
       uvm_test_seq: "chip_sw_usb_ast_clk_calib_vseq"
       sw_images: ["//sw/device/tests/sim_dv:ast_usb_clk_calib:1"]
