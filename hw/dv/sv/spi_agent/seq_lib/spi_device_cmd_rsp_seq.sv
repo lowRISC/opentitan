@@ -87,21 +87,22 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
               data = $urandom();
               addr_cnt += 4;
               case (cmd)
-                ReadStd:  `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 8;)
-                ReadDual: `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 16;)
-                default:  `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 32;)
+                ReadStd:  `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 256;)
+                ReadDual: `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 512;)
+                default:  `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 1024;)
               endcase  // case (cmd)
               `downcast(rsp_clone, rsp.clone());
+
+              case (cmd)
+                ReadStd : cfg.spi_mode = Standard;
+                ReadDual : cfg.spi_mode = Dual;
+                ReadQuad : cfg.spi_mode = Quad;
+                default : cfg.spi_mode = RsvdSpd;
+              endcase
+
               rsp_q.push_back(rsp_clone);
               rsp = new();
-              // offload input queue
-              get_nxt_req(item);
-              if (item.first_byte) begin
-                // decode command
-                cmd = cmd_check(item.data.pop_front);
-                spi_state = SpiCmd;
-                addr_cnt = 0;
-              end
+              spi_state = SpiIdle;
             end
 
             WriteStd, WriteDual, WriteQuad: begin

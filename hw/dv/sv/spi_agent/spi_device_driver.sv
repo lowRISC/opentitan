@@ -22,7 +22,7 @@ class spi_device_driver extends spi_driver;
   `uvm_component_utils(spi_device_driver)
   `uvm_component_new
 
-  bit [CSB_WIDTH-1:0] active_csb;
+  bit [CSB_WIDTH-1:0] active_csb = 0;
 
   virtual task reset_signals();
     forever begin
@@ -43,7 +43,6 @@ class spi_device_driver extends spi_driver;
       seq_item_port.get_next_item(req);
       `DV_CHECK_EQ(cfg.vif.disconnected, 0)
 
-      active_csb = req.csb_sel;
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
       // The response should read the payload actually consumed, not start with
