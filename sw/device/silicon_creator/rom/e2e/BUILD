@@ -889,6 +889,84 @@ test_suite(
     ],
 )
 
+# Alert Handler configuration test cases.
+#
+# These test cases verify the ROM correctly configures the alert_handler in each
+# life cycle state.
+
+# Alert handler configuration is not checked in the TEST LC state.
+ALERT_LC_STATES = {
+    k: structs.to_dict(CONST.LCV)[k]
+    for k in [
+        "PROD",
+        "PROD_END",
+        "DEV",
+        "RMA",
+    ]
+}
+
+[otp_image(
+    name = "otp_img_alert_{}".format(lc_state.lower()),
+    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
+    overlays = STD_OTP_OVERLAYS,
+) for lc_state in ALERT_LC_STATES]
+
+[bitstream_splice(
+    name = "bitstream_alert_{}".format(lc_state.lower()),
+    src = "//hw/bitstream:rom",
+    data = ":otp_img_alert_{}".format(lc_state.lower()),
+    meminfo = "//hw/bitstream:otp_mmi",
+    tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+    update_usr_access = True,
+) for lc_state, lc_state_val in ALERT_LC_STATES.items()]
+
+[opentitan_flash_binary(
+    name = "rom_e2e_alert_config_test_{}".format(lc_state.lower()),
+    srcs = ["rom_e2e_alert_config_test.c"],
+    devices = [
+        "fpga_cw310",
+    ],
+    local_defines = [
+        "OTP_ALERT_DIGEST=OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_{}_OFFSET".format(lc_state.upper()),
+    ],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:alert",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+    ],
+) for lc_state in ALERT_LC_STATES]
+
+[
+    opentitan_functest(
+        name = "alert_{}".format(
+            lc_state.lower(),
+        ),
+        cw310 = cw310_params(
+            bitstream = ":bitstream_alert_{}".format(lc_state.lower()),
+            tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+        ),
+        key = "prod_key_0",
+        ot_flash_binary = ":rom_e2e_alert_config_test_{}".format(lc_state.lower()),
+        signed = True,
+        targets = [
+            "cw310_rom",
+        ],
+    )
+    for lc_state, lc_state_val in ALERT_LC_STATES.items()
+]
+
+test_suite(
+    name = "rom_e2e_alert_config",
+    tags = ["manual"],
+    tests = [
+        "alert_{}".format(lc_state.lower())
+        for lc_state in ALERT_LC_STATES
+    ],
+)
+
 SIGVERIFY_MOD_EXP_CASES = [
     {
         "name": "sw",
