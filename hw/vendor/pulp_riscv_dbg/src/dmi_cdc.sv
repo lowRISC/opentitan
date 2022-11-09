@@ -62,14 +62,25 @@ module dmi_cdc (
     end
   end
 
+  logic async_rstn;
   logic combined_rstn_premux;
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_rstn_latch (
+    .clk_i,
+    .rst_ni(rst_ni & jtag_combined_rstn),
+    .d_i(1'b1),
+    .q_o(async_rstn)
+  );
+
   prim_flop_2sync #(
     .Width(1),
     .ResetValue(0)
   ) u_combined_rstn_sync (
     .clk_i,
-    .rst_ni(rst_ni & jtag_combined_rstn),
-    .d_i(1'b1),
+    .rst_ni,
+    .d_i(async_rstn),
     .q_o(combined_rstn_premux)
   );
 

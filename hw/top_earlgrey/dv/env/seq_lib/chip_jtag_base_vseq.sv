@@ -28,6 +28,9 @@ class chip_jtag_base_vseq extends chip_sw_base_vseq;
 
   task debug_mode_en();
     // "Activate" the DM to facilitate ease of testing.
+    cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n(2);
+    cfg.clk_rst_vif.wait_clks(100);
+
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
     cfg.clk_rst_vif.wait_clks(5);
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(1));
