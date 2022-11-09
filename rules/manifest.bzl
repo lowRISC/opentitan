@@ -97,7 +97,7 @@ def _manifest_impl(ctx):
         # If they don't match, fail unless explicitly permitted to set a
         # bad value.
         if int(ctx.attr.selector_bits, base = 16) != selector_bits and ctx.attr.selector_mismatch_is_failure:
-            fail("User provided selector_bits don't match computed selector_bits")
+            fail("User provided selector_bits ({}) don't match computed selector_bits ({})".format(ctx.attr.selector_bits, _hex(selector_bits)))
         uc["selector_bits"] = _hex(ctx.attr.selector_bits)
     else:
         uc["selector_bits"] = _hex(selector_bits)
