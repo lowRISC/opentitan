@@ -157,15 +157,6 @@ class keymgr_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_env_cfg));
     key_ver_x_state_x_op_cross: cross key_version_cmp_cp, state_cp, op_cp;
   endgroup
 
-  covergroup control_w_regwen_cg with function sample(bit [14:0] control, bit regwen);
-    // There are some reserved fields, to simply it, just create 4 auto-bin
-    control_cp: coverpoint control {
-      option.auto_bin_max = 4;
-    }
-    regwen_cp: coverpoint regwen;
-    control_x_regwen_cr: cross control_cp, regwen_cp;
-  endgroup
-
   function new(string name, uvm_component parent);
     super.new(name, parent);
 
@@ -178,7 +169,6 @@ class keymgr_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_env_cfg));
     sync_async_fault_cross_cg = new();
     reseed_interval_cg = new();
     key_version_compare_cg = new();
-    control_w_regwen_cg = new();
   endfunction : new
 
   virtual function void build_phase(uvm_phase phase);
