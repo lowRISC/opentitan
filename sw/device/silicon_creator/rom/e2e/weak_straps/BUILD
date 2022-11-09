@@ -4,6 +4,11 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load(
+    "//rules:opentitan_test.bzl",
+    "opentitan_functest",
+    "verilator_params",
+)
 load(":gpio.bzl", "strap_combinations_test")
 
 strap_combinations_test(
@@ -14,23 +19,25 @@ strap_combinations_test(
     ],
 )
 
-strap_combinations_test(
+opentitan_functest(
     name = "sw_strap_value",
-    rom = "//sw/device/lib/testing/test_rom",
-    # The test_rom does not support checking the strength of
-    # the GPIO input.  The following values are all equivalent
-    # to 63 when read out of the GPIO peripheral without
-    # performing the strength check by manipulating the pinmux.
-    skip_value = [
-        42,
-        43,
-        46,
-        47,
-        58,
-        59,
-        62,
-    ],
-    tags = [
+    srcs = ["sw_straps_test.c"],
+    targets = [
         "verilator",
+    ],
+    test_harness = "//sw/host/tests/rom/sw_strap_value",
+    verilator = verilator_params(
+        timeout = "long",
+        test_cmds = [],
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/json:command",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
     ],
 )
