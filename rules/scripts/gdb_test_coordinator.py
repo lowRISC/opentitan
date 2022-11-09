@@ -146,7 +146,12 @@ def main(rom_kind: str = typer.Option(...),
         "-f",
         openocd_jtag_adapter_config,
         "-c",
-        "adapter speed 0; transport select jtag; reset_config trst_and_srst",
+        "; ".join([
+            "adapter speed 200",
+            "transport select jtag",
+            "reset_config trst_and_srst",
+            "adapter srst delay 10",
+        ]),
         "-f",
         openocd_earlgrey_config,
     ]
