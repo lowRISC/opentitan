@@ -416,7 +416,7 @@ module top_earlgrey #(
   logic intr_i2c0_tx_empty;
   logic intr_i2c0_tx_nonempty;
   logic intr_i2c0_tx_overflow;
-  logic intr_i2c0_acq_overflow;
+  logic intr_i2c0_acq_full;
   logic intr_i2c0_ack_stop;
   logic intr_i2c0_host_timeout;
   logic intr_i2c1_fmt_watermark;
@@ -432,7 +432,7 @@ module top_earlgrey #(
   logic intr_i2c1_tx_empty;
   logic intr_i2c1_tx_nonempty;
   logic intr_i2c1_tx_overflow;
-  logic intr_i2c1_acq_overflow;
+  logic intr_i2c1_acq_full;
   logic intr_i2c1_ack_stop;
   logic intr_i2c1_host_timeout;
   logic intr_i2c2_fmt_watermark;
@@ -448,7 +448,7 @@ module top_earlgrey #(
   logic intr_i2c2_tx_empty;
   logic intr_i2c2_tx_nonempty;
   logic intr_i2c2_tx_overflow;
-  logic intr_i2c2_acq_overflow;
+  logic intr_i2c2_acq_full;
   logic intr_i2c2_ack_stop;
   logic intr_i2c2_host_timeout;
   logic intr_pattgen_done_ch0;
@@ -1228,7 +1228,7 @@ module top_earlgrey #(
       .intr_tx_empty_o         (intr_i2c0_tx_empty),
       .intr_tx_nonempty_o      (intr_i2c0_tx_nonempty),
       .intr_tx_overflow_o      (intr_i2c0_tx_overflow),
-      .intr_acq_overflow_o     (intr_i2c0_acq_overflow),
+      .intr_acq_full_o         (intr_i2c0_acq_full),
       .intr_ack_stop_o         (intr_i2c0_ack_stop),
       .intr_host_timeout_o     (intr_i2c0_host_timeout),
       // [6]: fatal_fault
@@ -1271,7 +1271,7 @@ module top_earlgrey #(
       .intr_tx_empty_o         (intr_i2c1_tx_empty),
       .intr_tx_nonempty_o      (intr_i2c1_tx_nonempty),
       .intr_tx_overflow_o      (intr_i2c1_tx_overflow),
-      .intr_acq_overflow_o     (intr_i2c1_acq_overflow),
+      .intr_acq_full_o         (intr_i2c1_acq_full),
       .intr_ack_stop_o         (intr_i2c1_ack_stop),
       .intr_host_timeout_o     (intr_i2c1_host_timeout),
       // [7]: fatal_fault
@@ -1314,7 +1314,7 @@ module top_earlgrey #(
       .intr_tx_empty_o         (intr_i2c2_tx_empty),
       .intr_tx_nonempty_o      (intr_i2c2_tx_nonempty),
       .intr_tx_overflow_o      (intr_i2c2_tx_overflow),
-      .intr_acq_overflow_o     (intr_i2c2_acq_overflow),
+      .intr_acq_full_o         (intr_i2c2_acq_full),
       .intr_ack_stop_o         (intr_i2c2_ack_stop),
       .intr_host_timeout_o     (intr_i2c2_host_timeout),
       // [8]: fatal_fault
@@ -2674,7 +2674,7 @@ module top_earlgrey #(
       intr_pattgen_done_ch0, // IDs [125 +: 1]
       intr_i2c2_host_timeout, // IDs [124 +: 1]
       intr_i2c2_ack_stop, // IDs [123 +: 1]
-      intr_i2c2_acq_overflow, // IDs [122 +: 1]
+      intr_i2c2_acq_full, // IDs [122 +: 1]
       intr_i2c2_tx_overflow, // IDs [121 +: 1]
       intr_i2c2_tx_nonempty, // IDs [120 +: 1]
       intr_i2c2_tx_empty, // IDs [119 +: 1]
@@ -2690,7 +2690,7 @@ module top_earlgrey #(
       intr_i2c2_fmt_watermark, // IDs [109 +: 1]
       intr_i2c1_host_timeout, // IDs [108 +: 1]
       intr_i2c1_ack_stop, // IDs [107 +: 1]
-      intr_i2c1_acq_overflow, // IDs [106 +: 1]
+      intr_i2c1_acq_full, // IDs [106 +: 1]
       intr_i2c1_tx_overflow, // IDs [105 +: 1]
       intr_i2c1_tx_nonempty, // IDs [104 +: 1]
       intr_i2c1_tx_empty, // IDs [103 +: 1]
@@ -2706,7 +2706,7 @@ module top_earlgrey #(
       intr_i2c1_fmt_watermark, // IDs [93 +: 1]
       intr_i2c0_host_timeout, // IDs [92 +: 1]
       intr_i2c0_ack_stop, // IDs [91 +: 1]
-      intr_i2c0_acq_overflow, // IDs [90 +: 1]
+      intr_i2c0_acq_full, // IDs [90 +: 1]
       intr_i2c0_tx_overflow, // IDs [89 +: 1]
       intr_i2c0_tx_nonempty, // IDs [88 +: 1]
       intr_i2c0_tx_empty, // IDs [87 +: 1]

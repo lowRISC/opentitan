@@ -59,7 +59,7 @@ package i2c_reg_pkg;
     } tx_overflow;
     struct packed {
       logic        q;
-    } acq_overflow;
+    } acq_full;
     struct packed {
       logic        q;
     } ack_stop;
@@ -110,7 +110,7 @@ package i2c_reg_pkg;
     } tx_overflow;
     struct packed {
       logic        q;
-    } acq_overflow;
+    } acq_full;
     struct packed {
       logic        q;
     } ack_stop;
@@ -175,7 +175,7 @@ package i2c_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } acq_overflow;
+    } acq_full;
     struct packed {
       logic        q;
       logic        qe;
@@ -434,7 +434,7 @@ package i2c_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } acq_overflow;
+    } acq_full;
     struct packed {
       logic        d;
       logic        de;
@@ -601,7 +601,7 @@ package i2c_reg_pkg;
   parameter logic [0:0] I2C_INTR_TEST_TX_EMPTY_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_TX_NONEMPTY_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_TX_OVERFLOW_RESVAL = 1'h 0;
-  parameter logic [0:0] I2C_INTR_TEST_ACQ_OVERFLOW_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_ACQ_FULL_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_ACK_STOP_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_HOST_TIMEOUT_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_ALERT_TEST_RESVAL = 1'h 0;
