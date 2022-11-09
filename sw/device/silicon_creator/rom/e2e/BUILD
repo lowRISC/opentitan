@@ -2007,6 +2007,21 @@ test_suite(
     for slot, offset in SLOTS.items()
 ]
 
+opentitan_multislot_flash_binary(
+    name = "sigverify_always_img_a_bad_b_bad",
+    srcs = {
+        ":empty_test_slot_a_corrupted": {
+            "key": "test_key_0",
+            "offset": SLOTS["a"],
+        },
+        ":empty_test_slot_b_corrupted": {
+            "key": "test_key_0",
+            "offset": SLOTS["b"],
+        },
+    },
+    devices = ["fpga_cw310"],
+)
+
 # Since we cannot feed the `assemble_flash_image` rule that is instantiated by
 # the `opentitan_multislot_flash_binary` macro an empty dictionary, we create
 # two images with "nothing" in them by created files of all ones, and stitching
@@ -2054,6 +2069,7 @@ opentitan_multislot_flash_binary(
 SIGVERIFY_BAD_CASES = [
     ("nothing", "bad"),
     ("bad", "nothing"),
+    ("bad", "bad"),
     ("nothing", "nothing"),
 ]
 
