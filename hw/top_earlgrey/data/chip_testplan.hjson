@@ -1677,23 +1677,24 @@
             '''
       stage: V2
       tests: [
-        "chip_prim_tl_access",                        // lc_dft_en_o: otp_ctrl
-        "chip_tap_straps_dev",                        // lc_dft_en_o, lc_hw_debug_en_o: pinmux
-        "chip_tap_straps_prod",                       // lc_dft_en_o, lc_hw_debug_en_o: pinmux
-        "chip_tap_straps_rma",                        // lc_dft_en_o, lc_hw_debug_en_o: pinmux
-        "chip_sw_rom_ctrl_integrity_check",           // lc_dft_en_o, lc_hw_debug_en_o: pwrmgr
-        "chip_sw_clkmgr_external_clk_src_for_sw",     // lc_hw_debug_en_o: clkmgr
-        "chip_sw_sram_ctrl_execution_main",           // lc_hw_debug_en_o: sram_ctrl main
-        "chip_rv_dm_lc_disabled"                      // lc_hw_debug_en_o: rv_dm
-        "chip_sw_keymgr_key_derivation",              // lc_keymgr_en_o: keymgr
-        "chip_sw_clkmgr_external_clk_src_for_lc",     // lc_clk_byp_req_o: clkmgr
-        "chip_sw_flash_rma_unlocked",                 // lc_flash_rma_req_o, lc_flash_rma_seed_o: flash_ctrl
-        "chip_sw_lc_ctrl_transition",                 // lc_check_byp_en_o: otp_ctrl
-        "chip_sw_flash_ctrl_lc_rw_en",                // lc_creator*, lc_seed*, lc_owner*, lc_iso*: flash_ctrl
-        "chip_sw_otp_ctrl_lc_signals_test_unlocked0", // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
-        "chip_sw_otp_ctrl_lc_signals_dev",            // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
-        "chip_sw_otp_ctrl_lc_signals_prod",           // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
-        "chip_sw_otp_ctrl_lc_signals_rma",            // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
+        "chip_prim_tl_access",                         // lc_dft_en_o: otp_ctrl
+        "chip_tap_straps_dev",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
+        "chip_tap_straps_prod",                        // lc_dft_en_o, lc_hw_debug_en_o: pinmux
+        "chip_tap_straps_rma",                         // lc_dft_en_o, lc_hw_debug_en_o: pinmux
+        "chip_sw_rom_ctrl_integrity_check",            // lc_dft_en_o, lc_hw_debug_en_o: pwrmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_fast", // lc_hw_debug_en_o: clkmgr
+        "chip_sw_clkmgr_external_clk_src_for_sw_slow", // lc_hw_debug_en_o: clkmgr
+        "chip_sw_sram_ctrl_execution_main",            // lc_hw_debug_en_o: sram_ctrl main
+        "chip_rv_dm_lc_disabled"                       // lc_hw_debug_en_o: rv_dm
+        "chip_sw_keymgr_key_derivation",               // lc_keymgr_en_o: keymgr
+        "chip_sw_clkmgr_external_clk_src_for_lc",      // lc_clk_byp_req_o: clkmgr
+        "chip_sw_flash_rma_unlocked",                  // lc_flash_rma_req_o, lc_flash_rma_seed_o: flash_ctrl
+        "chip_sw_lc_ctrl_transition",                  // lc_check_byp_en_o: otp_ctrl
+        "chip_sw_flash_ctrl_lc_rw_en",                 // lc_creator*, lc_seed*, lc_owner*, lc_iso*: flash_ctrl
+        "chip_sw_otp_ctrl_lc_signals_test_unlocked0",  // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
+        "chip_sw_otp_ctrl_lc_signals_dev",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
+        "chip_sw_otp_ctrl_lc_signals_prod",            // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
+        "chip_sw_otp_ctrl_lc_signals_rma",             // lc_seed_hw_rd_en_i, lc_creator_seed_sw_rw_en_i, lc_keymgr_en_i: otp_ctrl
       ]
     }
     {
