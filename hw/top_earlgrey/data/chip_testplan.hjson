@@ -2189,13 +2189,22 @@
     }
     {
       name: chip_sw_entropy_src_cs_aes_halt
-      desc: '''Verify the aes halt handshake with CSRNG.
+      desc: '''Verify the `entropy_src`'s aes halt handshake with CSRNG.
 
-            - Check that the AES block halts when the edn signals that sufficient entropy isn't
-              available to reseed via assertions.
-            - TODO: If the above assertion isn't covered... modify the above test to consume
-              entropy more quickly, by writing more quickly to the AES and KMAC and possibly
-              triggering reseeds by touching a block repeatedly.
+            - Through one of the application interfaces of CSRNG, issue a reseed command. This can
+              be done via a hardware peripheral requesting entropy via EDN.
+            - Through the SW application interface, issue a generate command.
+            - While the CSRNG is performing the generate operation, issue another reseed command
+              via the first application interface. Verify via backdoor probes, the SHA3 in the
+              entropy_src module is triggered at the same time the AES engine in CSRNG is
+              performing an operation.
+            - The second reseed command should trigger the entropy_src to request that the CSRNG
+              halts the AES engine until entropy is available. Verify via assertion checks, the halt
+              request successfully completed. Also verify that the AES engine is indeed paused
+              during this time.
+
+            Note: There may be existing tests that already create this scenario. It should be
+            sufficient to augment those tests with the backdoor / assertion checks.
             '''
       stage: V2
       tests: []
@@ -2227,7 +2236,7 @@
       tests: ["chip_sw_entropy_src_kat_test"]
     }
 
-    // CSRNG tests:
+    // CSRNG (pre-verified IP) integration tests:
     {
       name: chip_sw_csrng_edn_cmd
       desc: '''Verify incoming command interface from EDN.
