@@ -14,7 +14,8 @@ extern "C" {
     value(_, ChipStartup) \
     value(_, GpioSet) \
     value(_, GpioGet) \
-    value(_, PinmuxConfig)
+    value(_, PinmuxConfig) \
+    value(_, SwStrapRead)
 UJSON_SERDE_ENUM(TestCommand, test_command_t, ENUM_TEST_COMMAND);
 
 // clang-format on
