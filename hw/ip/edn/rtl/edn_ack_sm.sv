@@ -99,7 +99,7 @@ module edn_ack_sm (
     // clear out everything and return to default.
     if (local_escalate_i) begin
       state_d = Error;
-    end else if (!enable_i && !ack_sm_err_o) begin
+    end else if (!enable_i) begin
       state_d = Disabled;
       ack_o = 1'b0;
       fifo_pop_o = 1'b0;
