@@ -19,4 +19,59 @@ class chip_sw_alert_handler_shorten_ping_wait_cycle_vseq extends chip_sw_base_vs
     super.pre_start();
   endtask
 
+  string signal_forced;
+  virtual task body();
+
+    super.body();
+
+///*
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Trigger fatal alert AES")
+    signal_forced = "tb.dut.top_earlgrey.u_aes.gen_alert_tx[1].u_prim_alert_sender.alert_req_i";
+    `DV_CHECK(uvm_hdl_force(signal_forced, 1'b1))
+    #200ns;
+    `DV_CHECK(uvm_hdl_release(signal_forced))
+
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Trigger fatal alert HMAC")
+    signal_forced = "tb.dut.top_earlgrey.u_hmac.gen_alert_tx[0].u_prim_alert_sender.alert_req_i";
+    `DV_CHECK(uvm_hdl_force(signal_forced, 1'b1))
+    #200ns;
+    `DV_CHECK(uvm_hdl_release(signal_forced))
+
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Trigger fatal alert KMAC")
+    signal_forced = "tb.dut.top_earlgrey.u_kmac.gen_alert_tx[1].u_prim_alert_sender.alert_req_i";
+    `DV_CHECK(uvm_hdl_force(signal_forced, 1'b1))
+    #200ns;
+    `DV_CHECK(uvm_hdl_release(signal_forced))
+
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Trigger fatal alert OTBN")
+    signal_forced = "tb.dut.top_earlgrey.u_otbn.gen_alert_tx[0].u_prim_alert_sender.alert_req_i";
+    `DV_CHECK(uvm_hdl_force(signal_forced, 1'b1))
+    #200ns;
+    `DV_CHECK(uvm_hdl_release(signal_forced))
+
+   `DV_WAIT(cfg.sw_logger_vif.printed_log == "Trigger fatal alert SPI_HOST0")
+    signal_forced = "tb.dut.top_earlgrey.u_spi_host0.gen_alert_tx[0].u_prim_alert_sender.alert_req_i";
+    `DV_CHECK(uvm_hdl_force(signal_forced, 1'b1))
+    #200ns;
+    `DV_CHECK(uvm_hdl_release(signal_forced))
+
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Trigger fatal alert SPI_HOST1")
+    signal_forced = "tb.dut.top_earlgrey.u_spi_host1.gen_alert_tx[0].u_prim_alert_sender.alert_req_i";
+    `DV_CHECK(uvm_hdl_force(signal_forced, 1'b1))
+    #200ns;
+    `DV_CHECK(uvm_hdl_release(signal_forced))
+
+    `DV_WAIT(cfg.sw_logger_vif.printed_log == "Trigger fatal alert USB")
+    signal_forced = "tb.dut.top_earlgrey.u_usbdev.gen_alert_tx[0].u_prim_alert_sender.alert_req_i";
+    `DV_CHECK(uvm_hdl_force(signal_forced, 1'b1))
+    #200ns;
+    `DV_CHECK(uvm_hdl_release(signal_forced))
+
+  endtask
+
+  //task post_start();
+   // expect_fatal_alerts = 1;
+  //  super.post_start();
+ // endtask
+
 endclass
