@@ -79,7 +79,8 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   uint          spurious_inject_entropy_pct;
 
   // Constraint knobs for OTP-driven inputs
-  uint          otp_en_es_fw_read_pct, otp_en_es_fw_over_pct;
+  uint          otp_en_es_fw_read_pct, otp_en_es_fw_read_inval_pct,
+                otp_en_es_fw_over_pct, otp_en_es_fw_over_inval_pct;
 
   // Behavioral constrint knob: dictates how often each sequence
   // performs a survey of the health test diagnostics.
@@ -133,13 +134,17 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Constraints //
   /////////////////
 
-  constraint otp_en_es_fw_read_c {otp_en_es_fw_read dist {
-      prim_mubi_pkg::MuBi8True  :/ otp_en_es_fw_read_pct,
-      prim_mubi_pkg::MuBi8False :/ (100 - otp_en_es_fw_read_pct) };}
+  constraint otp_en_es_fw_read_c {
+    `DV_MUBI8_DIST(otp_en_es_fw_read, otp_en_es_fw_read_pct,
+                                      100 - otp_en_es_fw_read_pct - otp_en_es_fw_read_inval_pct,
+                                      otp_en_es_fw_read_inval_pct)
+  }
 
-  constraint otp_en_es_fw_over_c {otp_en_es_fw_over dist {
-      prim_mubi_pkg::MuBi8True  :/ otp_en_es_fw_over_pct,
-      prim_mubi_pkg::MuBi8False :/ (100 - otp_en_es_fw_over_pct) };}
+  constraint otp_en_es_fw_over_c {
+    `DV_MUBI8_DIST(otp_en_es_fw_over, otp_en_es_fw_over_pct,
+                                      100 - otp_en_es_fw_over_pct - otp_en_es_fw_over_inval_pct,
+                                      otp_en_es_fw_over_inval_pct)
+  }
 
   constraint spurious_inject_entropy_c {spurious_inject_entropy dist {
       1                         :/ spurious_inject_entropy_pct,
@@ -255,8 +260,12 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
         str,
         $sformatf("\n\t |***** otp_en_es_fw_read_pct       : %12d *****| \t",
                   otp_en_es_fw_read_pct),
+        $sformatf("\n\t |***** otp_en_es_fw_read_inval_pct : %12d *****| \t",
+                  otp_en_es_fw_read_inval_pct),
         $sformatf("\n\t |***** otp_en_es_fw_over_pct       : %12d *****| \t",
-                  otp_en_es_fw_over_pct)
+                  otp_en_es_fw_over_pct),
+        $sformatf("\n\t |***** otp_en_es_fw_over_inval_pct : %12d *****| \t",
+                  otp_en_es_fw_over_inval_pct)
     };
 
     str = {str, "\n\t |******************************************************| \t"};
@@ -278,6 +287,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   function void check_knob_vals();
     `DV_CHECK(spurious_inject_entropy_pct <= 100);
     `DV_CHECK(otp_en_es_fw_read_pct <= 100);
+    `DV_CHECK(otp_en_es_fw_read_inval_pct <= 100);
+    `DV_CHECK((otp_en_es_fw_read_pct + otp_en_es_fw_read_inval_pct) <= 100);
+    `DV_CHECK(otp_en_es_fw_over_inval_pct <= 100);
+    `DV_CHECK((otp_en_es_fw_over_pct + otp_en_es_fw_over_inval_pct) <= 100);
     `DV_CHECK(otp_en_es_fw_over_pct <= 100);
     `DV_CHECK(do_check_ht_diag_pct <= 100);
     `DV_CHECK(induce_targeted_transition_pct <= 100);
