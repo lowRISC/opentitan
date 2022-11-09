@@ -57,17 +57,17 @@
 `ifndef _DV_MUBI_DIST
 `define _DV_MUBI_DIST(VAR_, TRUE_, FALSE_, MAX_, T_WEIGHT_, F_WEIGHT_, OTHER_WEIGHT_) \
   if (TRUE_ > FALSE_) { \
-    VAR_ dist {TRUE_                         := T_WEIGHT_ * (MAX_ - 1), \
-               FALSE_                        := F_WEIGHT_ * (MAX_ - 1), \
-               [0 : FALSE_ - 1]              := OTHER_WEIGHT_,          \
-               [FALSE_ + 1 : TRUE_ - 1]      := OTHER_WEIGHT_,          \
-               [TRUE_ + 1 : MAX_]            := OTHER_WEIGHT_};         \
-  } else {                                                              \
-    VAR_ dist {TRUE_                         := T_WEIGHT_ * (MAX_ - 1), \
-               FALSE_                        := F_WEIGHT_ * (MAX_ - 1), \
-               [0 : TRUE_ - 1]               := OTHER_WEIGHT_,          \
-               [TRUE_ + 1 : FALSE_ - 1]      := OTHER_WEIGHT_,          \
-               [FALSE_+ 1 : MAX_]            := OTHER_WEIGHT_};         \
+    VAR_ dist {TRUE_                         := (T_WEIGHT_) * (MAX_ - 1), \
+               FALSE_                        := (F_WEIGHT_) * (MAX_ - 1), \
+               [0 : FALSE_ - 1]              := OTHER_WEIGHT_,            \
+               [FALSE_ + 1 : TRUE_ - 1]      := OTHER_WEIGHT_,            \
+               [TRUE_ + 1 : MAX_]            := OTHER_WEIGHT_};           \
+  } else {                                                                \
+    VAR_ dist {TRUE_                         := (T_WEIGHT_) * (MAX_ - 1), \
+               FALSE_                        := (F_WEIGHT_) * (MAX_ - 1), \
+               [0 : TRUE_ - 1]               := OTHER_WEIGHT_,            \
+               [TRUE_ + 1 : FALSE_ - 1]      := OTHER_WEIGHT_,            \
+               [FALSE_+ 1 : MAX_]            := OTHER_WEIGHT_};           \
   }
 `endif
 
