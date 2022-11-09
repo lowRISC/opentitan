@@ -121,9 +121,9 @@ You may find it useful to use wildcards to build/test all targets in the OpenTit
 If a a target (a test or build artifact) relies on optional parts of the "Getting Started" guide they should be tagged so they can be filtered out and users can `bazelisk.sh test //...` once they filter out the appropriate tags.
 We maintain or use the following tags to support this:
 * `broken` is used to tag tests that are committed but should not be expected by CI or others to pass.
-* `cw310_test_rom`, `cw310_rom`, and `cw310_other` are used to tag tests that depend on a correctly setup cw310 "Bergen Board" to emulate OpenTitan.
-  The `cw310` prefix may be used in `--test_tag_filters` to enable concise filtering.
-  Loading the bitstream is the slowest part of the test, so these tags can group tests with common bitstreams to accelerate the tests.
+* `cw310`, `cw310_test_rom`, and `cw310_rom` are used to tag tests that depend on a correctly setup cw310 "Bergen Board" to emulate OpenTitan.
+  The `cw310` tag may be used in `--test_tag_filters` to enable concise filtering to select tests that run on this board and include or exclude them.
+  Loading the bitstream is the slowest part of the test, so these tags can group tests with common bitstreams to accelerate the tests tagged `cw310_test_rom`.
 * `verilator` is used to tag tests that depend on a verilated model of OpenTitan that can take a significant time to build.
   Verilated tests can still be built with `--define DISABLE_VERILATOR_BUILD`, but they will skip the invocation of Verilator and cannot be run.
 * `vivado` is used to tag tests that critically depend on Vivado.
@@ -138,7 +138,7 @@ We maintain or use the following tags to support this:
 
 `ci/scripts/check-bazel-tags.sh` performs some useful queries to ensure these tags are applied.
 These tags can then be used to filter tests using `--build_tests_only --test_tag_filters=-cw310,-verilator,-vivado`.
-These tags can also be used to filter builds using `--build_tag_filters=-cw310,-verilator`.
+These tags can also be used to filter builds using `--build_tag_filters=-cw310,-verilator,-vivado`.
 
 `--build_tests_only` is important when matching wildcards if you aren't using
 `--build_tag_filters` to prevent `bazelisk.sh test //...` from building targets that are filtered out by `--test_tag_filters`.
