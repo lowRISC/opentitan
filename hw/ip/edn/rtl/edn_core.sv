@@ -538,12 +538,10 @@ module edn_core import edn_pkg::*;
   );
 
   // feedback cmd back into rescmd fifo
-  assign send_rescmd_d =
-         (!edn_enable_fo[SendReseedCmd]) ? '0 :
-         send_rescmd;
+  assign send_rescmd_d = send_rescmd;
 
   assign sfifo_rescmd_push =
-         send_rescmd_q ? 1'b1  :
+         (send_rescmd_q & edn_enable_fo[SendReseedCmd]) ? 1'b1  :
          reseed_cmd_load;
 
   assign sfifo_rescmd_wdata =
@@ -580,13 +578,11 @@ module edn_core import edn_pkg::*;
   );
 
   // feedback cmd back into gencmd fifo
-  assign send_gencmd_d =
-         (!edn_enable_fo[SendGenCmd]) ? '0 :
-         send_gencmd;
+  assign send_gencmd_d = send_gencmd;
 
   assign sfifo_gencmd_push =
-         boot_wr_cmd_genfifo ? 1'b1 :
-         send_gencmd_q ? 1'b1  :
+         (boot_wr_cmd_genfifo & edn_enable_fo[SendGenCmd]) ? 1'b1 :
+         (send_gencmd_q & edn_enable_fo[SendGenCmd]) ? 1'b1  :
          generate_cmd_load;
 
   assign sfifo_gencmd_wdata =
