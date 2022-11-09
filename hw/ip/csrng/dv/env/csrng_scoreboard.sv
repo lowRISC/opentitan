@@ -233,6 +233,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
+
+    cov_vif.cg_internal_sample(ral.genbits, ral.genbits_vld, ral.sw_cmd_sts, ral.regwen,
+                               ral.intr_state, ral.intr_enable);
   endtask
 
   virtual function void reset(string kind = "HARD");

@@ -128,8 +128,67 @@ interface csrng_cov_if (
     }
   endgroup : csrng_cmds_cg
 
+  covergroup csrng_internal_cg with function sample(bit[31:0] genbits,
+                                                    bit[1:0]  genbits_vld,
+                                                    bit[1:0]  sw_cmd_sts,
+                                                    bit       regwen,
+                                                    bit[3:0]  intr_state,
+                                                    bit[3:0]  intr_enable
+                                                   );
+    option.name         = "csrng_internal_cg";
+    option.per_instance = 1;
+
+    assign cs_cmd_req_done = {intr_state[0], intr_enable[0]};
+    assign cs_entropy_req  = {intr_state[1], intr_enable[1]};
+    assign cs_hw_inst_exc  = {intr_state[2], intr_enable[2]};
+    assign cs_fatal_err    = {intr_state[3], intr_enable[3]};
+
+    // TODO find more efficient way to do this
+    cp_genbits0:        coverpoint genbits[0];
+    cp_genbits1:        coverpoint genbits[1];
+    cp_genbits2:        coverpoint genbits[2];
+    cp_genbits3:        coverpoint genbits[3];
+    cp_genbits4:        coverpoint genbits[4];
+    cp_genbits5:        coverpoint genbits[5];
+    cp_genbits6:        coverpoint genbits[6];
+    cp_genbits7:        coverpoint genbits[7];
+    cp_genbits8:        coverpoint genbits[8];
+    cp_genbits9:        coverpoint genbits[9];
+    cp_genbits10:       coverpoint genbits[10];
+    cp_genbits11:       coverpoint genbits[11];
+    cp_genbits12:       coverpoint genbits[12];
+    cp_genbits13:       coverpoint genbits[13];
+    cp_genbits14:       coverpoint genbits[14];
+    cp_genbits15:       coverpoint genbits[15];
+    cp_genbits16:       coverpoint genbits[16];
+    cp_genbits17:       coverpoint genbits[17];
+    cp_genbits18:       coverpoint genbits[18];
+    cp_genbits19:       coverpoint genbits[19];
+    cp_genbits20:       coverpoint genbits[20];
+    cp_genbits21:       coverpoint genbits[21];
+    cp_genbits22:       coverpoint genbits[22];
+    cp_genbits23:       coverpoint genbits[23];
+    cp_genbits24:       coverpoint genbits[24];
+    cp_genbits25:       coverpoint genbits[25];
+    cp_genbits26:       coverpoint genbits[26];
+    cp_genbits27:       coverpoint genbits[27];
+    cp_genbits28:       coverpoint genbits[28];
+    cp_genbits29:       coverpoint genbits[29];
+    cp_genbits30:       coverpoint genbits[30];
+    cp_genbits31:       coverpoint genbits[31];
+
+    cp_genbits_vld:     coverpoint genbits_vld;
+    cp_sw_cmd_sts:      coverpoint sw_cmd_sts;
+    cp_regwen:          coverpoint rewen;
+    cp_cs_cmd_req_done: coverpoint cs_cmd_req_done;
+    cp_cs_entropy_req:  coverpoint cs_entropy_req;
+    cp_cs_hw_inst_exc:  coverpoint cs_hw_inst_exc;
+    cp_cs_fatal_err:    coverpoint cs_fatal_err;
+  endgroup : csrng_internal_cg
+
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cmds_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(csrng_internal_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(csrng_env_cfg cfg);
@@ -146,6 +205,17 @@ interface csrng_cov_if (
                               cs_item.flags,
                               cs_item.glen
                              );
+  endfunction
+
+  function automatic void cg_internal_sample(bit[31:0] genbits,
+                                             bit[1:0]  genbits_vld,
+                                             bit[1:0]  sw_cmd_sts,
+                                             bit       regwen,
+                                             bit[3:0]  intr_state,
+                                             bit[3:0]  intr_enable
+                                            );
+    csrng_internal_cg_inst.sample(genbits, genbits_vld, sw_cmd_sts, regwen, intr_state,
+                                  intr_enable);
   endfunction
 
 endinterface : csrng_cov_if
