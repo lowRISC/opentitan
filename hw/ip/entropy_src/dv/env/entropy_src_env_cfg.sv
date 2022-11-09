@@ -110,7 +110,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   ///////////////////////
 
   // OTP variables.
-  rand prim_mubi_pkg::mubi8_t   otp_en_es_fw_read, otp_en_es_fw_over;
+  rand logic [7:0]              otp_en_es_fw_read, otp_en_es_fw_over;
 
   rand bit                      spurious_inject_entropy;
 
@@ -239,10 +239,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
     str = {
         str,
-        $sformatf("\n\t |***** otp_en_es_fw_read           : %12s *****| \t",
-                  otp_en_es_fw_read.name()),
-        $sformatf("\n\t |***** otp_en_es_fw_over           : %12s *****| \t",
-                  otp_en_es_fw_over.name()),
+        $sformatf("\n\t |***** otp_en_es_fw_read           :         'h%02h *****| \t",
+                  otp_en_es_fw_read),
+        $sformatf("\n\t |***** otp_en_es_fw_over           :         'h%02h *****| \t",
+                  otp_en_es_fw_over),
         $sformatf("\n\t |***** seed_cnt                    : %12d *****| \t",
                   seed_cnt),
         $sformatf("\n\t |***** sim_duration                : %9.2f ms *****| \t",

@@ -116,7 +116,7 @@ interface entropy_src_cov_if
                                                      mubi4_t   es_route,
                                                      mubi4_t   es_type,
                                                      mubi4_t   entropy_data_reg_enable,
-                                                     mubi8_t   otp_en_es_fw_read,
+                                                     bit [7:0] otp_en_es_fw_read,
                                                      mubi4_t   fw_ov_mode,
                                                      mubi4_t   entropy_insert,
                                                      bit       full_seed);
@@ -308,7 +308,7 @@ interface entropy_src_cov_if
                                                         mubi4_t   es_route,
                                                         mubi4_t   es_type,
                                                         mubi4_t   entropy_data_reg_enable,
-                                                        mubi8_t   otp_en_es_fw_read,
+                                                        bit [7:0] otp_en_es_fw_read,
                                                         mubi4_t   fw_ov_mode,
                                                         mubi4_t   entropy_insert);
 
@@ -773,7 +773,7 @@ interface entropy_src_cov_if
                                                     mubi4_t   es_route,
                                                     mubi4_t   es_type,
                                                     mubi4_t   entropy_data_reg_enable,
-                                                    mubi8_t   otp_en_es_fw_read,
+                                                    bit [7:0] otp_en_es_fw_read,
                                                     mubi4_t   fw_ov_mode,
                                                     mubi4_t   entropy_insert,
                                                     bit       full_seed);
@@ -806,7 +806,7 @@ interface entropy_src_cov_if
                                                        mubi4_t   es_route,
                                                        mubi4_t   es_type,
                                                        mubi4_t   entropy_data_reg_enable,
-                                                       mubi8_t   otp_en_es_fw_read,
+                                                       bit [7:0] otp_en_es_fw_read,
                                                        mubi4_t   fw_ov_mode,
                                                        mubi4_t   entropy_insert);
     observe_fifo_event_cg_inst.sample(fips_enable, threshold_scope, rng_bit_enable,
