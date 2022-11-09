@@ -571,8 +571,8 @@ module keymgr
       .NumCopies(2),
       .AsyncOn(0)
     ) u_mubi_buf (
-      .clk_i('0),
-      .rst_ni('0),
+      .clk_i,
+      .rst_ni,
       .mubi_i(hw_key_sel),
       .mubi_o(hw_key_sel_buf)
     );
