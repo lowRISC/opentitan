@@ -59,8 +59,8 @@ set_reset_scenario { \
 # This scenario is entering low power mode (not brownout) in that case the
 # clocks other than clk_aon are gated prior to turn off main power.
 set_reset_scenario { \
-  { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { reset { @t0 0 } { #10 1}}} \
-  { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint {@t0 1} } } \
+  { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { reset { @t0 1 } { #2 0 } { #10 1 } } } \
+  { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint { @t0 1} } } \
   { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_powerup { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_powerup    { constraint { @t0 0 } } } \
