@@ -1990,61 +1990,79 @@ test_suite(
     ) for lc_state in structs.to_dict(CONST.LCV) for redact in REDACT],
 )
 
-[opentitan_multislot_flash_binary(
-    name = "boot_policy_valid_img_a_{}_b_{}".format(
-        "empty" if offset == "0x0" else "bad",
-        "empty" if offset != "0x0" else "bad",
-    ),
+[
+    opentitan_multislot_flash_binary(
+        name = "sigverify_always_img_a_{}_b_{}".format(
+            "nothing" if slot == "b" else "bad",
+            "nothing" if slot == "a" else "bad",
+        ),
+        srcs = {
+            ":empty_test_slot_{}_corrupted".format(slot): {
+                "key": "test_key_0",
+                "offset": offset,
+            },
+        },
+        devices = ["fpga_cw310"],
+    )
+    for slot, offset in SLOTS.items()
+]
+
+# Since we cannot feed the `assemble_flash_image` rule that is instantiated by
+# the `opentitan_multislot_flash_binary` macro an empty dictionary, we create
+# two images with "nothing" in them by created files of all ones, and stitching
+# them together.
+[genrule(
+    name = "sigverify_always_img_{}_nothing_{}_bin_signed_{}".format(slot, device, key),
+    outs = ["sigverify_always_img_all_ones_{}_bin_signed_{}".format(slot, device, key)],
+    cmd_bash = "touch $(OUTS)",
+) for slot in SLOTS for device in ["fpga_cw310"] for key in ["test_key_0"]]
+
+opentitan_multislot_flash_binary(
+    name = "sigverify_always_img_a_nothing_b_nothing",
     srcs = {
-        ":empty_test_slot_{}_corrupted".format(slot): {
+        ":sigverify_always_img_a_nothing": {
             "key": "test_key_0",
-            "offset": offset,
+            "offset": SLOTS["a"],
+        },
+        ":sigverify_always_img_b_nothing": {
+            "key": "test_key_0",
+            "offset": SLOTS["b"],
         },
     },
     devices = ["fpga_cw310"],
-) for slot, offset in SLOTS.items()]
+)
 
 SIGVERIFY_BAD_CASES = [
-    {
-        "desc": "bad",
-        "suffix": "_corrupted",
-    },
-    {
-        "desc": "empty",
-        "suffix": "_empty",
-    },
+    ("nothing", "bad"),
+    ("bad", "nothing"),
+    ("nothing", "nothing"),
 ]
 
 [
     opentitan_functest(
         name = "sigverify_always_a_{}_b_{}".format(
-            a["desc"],
-            b["desc"],
+            a,
+            b,
         ),
         cw310 = cw310_params(
             exit_failure = MSG_PASS,
             exit_success = DEFAULT_TEST_FAILURE_MSG,
         ),
         key = "multislot",
-        ot_flash_binary = ":boot_policy_valid_img_a_{}_b_{}".format(
-            a["desc"],
-            b["desc"] if a != b and b != "empty" else "bad",
-        ),
+        ot_flash_binary = ":sigverify_always_img_a_{}_b_{}".format(a, b),
         targets = ["cw310_rom"],
     )
-    for a in SIGVERIFY_BAD_CASES
-    for b in SIGVERIFY_BAD_CASES
+    for a, b in SIGVERIFY_BAD_CASES
 ]
 
 test_suite(
     name = "sigverify_always",
     tests = [
         "sigverify_always_a_{}_b_{}".format(
-            a["desc"],
-            b["desc"],
+            a,
+            b,
         )
-        for a in SIGVERIFY_BAD_CASES
-        for b in SIGVERIFY_BAD_CASES
+        for a, b in SIGVERIFY_BAD_CASES
     ],
 )
 
