@@ -259,6 +259,7 @@ interface entropy_src_cov_if
     cp_otp_en_es_fw_read: coverpoint otp_en_es_fw_read {
       bins         mubi_true  = { MuBi8True };
       bins         mubi_false = { MuBi8False };
+      bins         mubi_inval = {[0:$]} with (!(item inside {MuBi8True, MuBi8False}));
     }
 
     // Sample the FW_OV parameters, just to be sure that they
@@ -363,6 +364,7 @@ interface entropy_src_cov_if
     cp_otp_en_es_fw_read: coverpoint otp_en_es_fw_read {
       bins         mubi_true  = { MuBi8True };
       bins         mubi_false = { MuBi8False };
+      bins         mubi_inval = {[0:$]} with (!(item inside {MuBi8True, MuBi8False}));
     }
 
     // No data should emerge from the Observe FIFO when disabled
