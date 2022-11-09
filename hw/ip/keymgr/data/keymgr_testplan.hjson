@@ -247,13 +247,6 @@
             - Cross with the corresponding regwen.'''
     }
     {
-      name: control_w_regwen_cg
-      desc: '''
-            - Similar to keymgr_sw_input_cg, create a separate cg as there are some reserved fields
-              scattered in the CSR.
-            '''
-    }
-    {
       name: err_code_cg
       desc: '''
             - Cover `err_codes` values except `invalid_shadow_update` as that is tested in a common
@@ -283,12 +276,6 @@
       desc: '''
             - Cover `fault_status` values except `REGFILE_INTG` and `SHADOW` as they are tested in
               a common direct test.
-            - This is sampled when `fault_status` is read.'''
-    }
-    {
-      name: csr_debug_cg
-      desc: '''
-            - Cover all field in `debug`, which indicates different kinds of invalid inputs.
             - This is sampled when `fault_status` is read.'''
     }
     {

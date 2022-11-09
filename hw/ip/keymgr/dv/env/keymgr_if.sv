@@ -78,28 +78,6 @@ interface keymgr_if(input clk, input rst_n);
   bit edn_req_ack_sync;
   bit edn_req_ack_sync_done;
 
-  localparam int CtrlCntCopies  = 2;
-  localparam int CtrlCntWitdh   = 3;
-  localparam int KmacIfCntWitdh = 5;
-  localparam int StateWidth = 10;
-  localparam bit [StateWidth-1:0] KmacIfValidStates = {10'b1110100010,
-                                                       10'b0010011011,
-                                                       10'b0101000000,
-                                                       10'b1000101001,
-                                                       10'b1111111101,
-                                                       10'b0011101110};
-  localparam bit [StateWidth-1:0] CtrlValidStates = {10'b1101100001,
-                                                     10'b1110010010,
-                                                     10'b0011110100,
-                                                     10'b0110101111,
-                                                     10'b0100000100,
-                                                     10'b1000011101,
-                                                     10'b0001001010,
-                                                     10'b1101111110,
-                                                     10'b1010101000,
-                                                     10'b0000110011,
-                                                     10'b1011000111};
-
   // If we need to wait for internal signal to be certain value, we may not be able to get that
   // when the sim is close to end. Define a cnt and MaxWaitCycle to avoid sim hang
   int cnt_to_wait_for_internal_value;

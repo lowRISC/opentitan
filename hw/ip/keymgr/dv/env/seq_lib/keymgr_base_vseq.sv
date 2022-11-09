@@ -180,7 +180,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
                               current_state.name, cast_operation.name, is_good_op), UVM_MEDIUM)
 
     // wait for status to get out of OpWip and check
-    csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip), .timeout_ns(1000_000),
+    csr_spinwait(.ptr(ral.op_status.status), .exp_data(keymgr_pkg::OpWip),
                  .compare_op(CompareOpNe), .spinwait_delay_ns($urandom_range(0, 100)));
 
     exp_status = is_good_op ? keymgr_pkg::OpDoneSuccess : keymgr_pkg::OpDoneFail;
@@ -210,6 +210,12 @@ class keymgr_base_vseq extends cip_base_vseq #(
     csr_rd(.ptr(ral.intr_state), .value(rd_val));
     if (rd_val != 0) begin
       csr_wr(.ptr(ral.intr_state), .value(rd_val));
+    end
+    // read and clear debug CSRs, check is done in scb
+    csr_rd(.ptr(ral.debug), .value(rd_val));
+    if (rd_val != 0) begin
+      // this CSR is w0c
+      csr_wr(.ptr(ral.debug), .value(~rd_val));
     end
   endtask : wait_op_done
 
