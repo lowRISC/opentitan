@@ -55,6 +55,8 @@
       name: sec_cm_sw_binding_config_regwen
       desc: '''Verify the countermeasure(s) SW_BINDING.CONFIG.REGWEN.
 
+            Test that `sw_binding_regwen` gates the *_sw_binding and
+            `sw_binding_regwen` will  be cleared after a successful advance operation.
             X-ref'ed with `random`.'''
       stage: V2S
       tests: ["keymgr_random", "keymgr_csr_rw"]
@@ -94,15 +96,18 @@
     }
     {
       name: sec_cm_hw_key_sw_noaccess
-      desc: "Verify the countermeasure(s) HW.KEY.SW_NOACCESS."
+      desc: '''Verify the countermeasure(s) HW.KEY.SW_NOACCESS.
+
+            The CSRs `sw_share*_output` are checked with expected values, which
+            should never match to HW sideload keys.'''
       stage: V2S
-      tests: ["N/A"]
+      tests: ["keymgr_random"]
     }
     {
       name: sec_cm_output_keys_ctrl_redun
       desc: "Verify the countermeasure(s) OUTPUT_KEYS.CTRL.REDUN."
       stage: V2S
-      tests: ["keymgr_sec_cm"]
+      tests: ["keymgr_custom_cm"]
     }
     {
       name: sec_cm_ctrl_fsm_sparse
@@ -165,10 +170,14 @@
       name: sec_cm_kmac_if_cmd_ctrl_consistency
       desc: '''Verify the countermeasure(s) KMAC_IF_CMD.CTRL.CONSISTENCY.
 
-            - Inject one of these faults.
-              - Force `{u_ctrl.adv_en_o, u_ctrl.id_en_o, u_ctrl.gen_en_o}` to a non-onehot value.
-              - Change `{u_ctrl.adv_en_o, u_ctrl.id_en_o, u_ctrl.gen_en_o}` during a sideload
-                operation.
+            - Inject one of these faults:
+              - Verify violation of $onehot0 property of the ctrl bits leads to a fault:
+                - Force {u_ctrl.adv_en_o, u_ctrl.id_en_o, u_ctrl.gen_en_o} to a non-onehot and
+                non-zero value.
+              - Verify the modification of the ctrl bits during an active operation leads to a fault:
+                - Start a valid operation, then force {u_ctrl.adv_en_o, u_ctrl.id_en_o, u_ctrl.gen_en_o}
+                to a different onehot value during the operation. This simulates that an operation
+                is flipped to another operation before it finishes.
             - Check the fatal alert is triggered and `fault_status.cmd` is set.'''
       stage: V2S
       tests: ["keymgr_custom_cm"]
