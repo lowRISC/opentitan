@@ -5,7 +5,7 @@
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 
-def _opentitan_gdb_fpga_cw310_test(ctx):
+def _opentitan_gdb_fpga_cw310_test_impl(ctx):
     # Write the GDB script to disk and load it with GDB's `--command` argument.
     # This enables us to separate lines with whitespace, whereas if we piped the
     # string into GDB's stdin, each newline would cause it to repeat the
@@ -38,6 +38,9 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
         arg_lines.append("--expect-debug-disallowed")
 
     test_script += " \\\n".join(arg_lines)
+
+    if ctx.attr.opentitantool_cw310_uarts != "":
+        test_script += " " + ctx.attr.opentitantool_cw310_uarts
 
     ctx.actions.write(output = gdb_script_file, content = ctx.attr.gdb_script)
     ctx.actions.write(output = ctx.outputs.executable, content = test_script)
@@ -72,11 +75,8 @@ def _opentitan_gdb_fpga_cw310_test(ctx):
         runfiles = test_script_runfiles.merge(gdb_script_runfiles),
     )]
 
-# Orchestrate opentitantool, OpenOCD, and GDB to load the given program into
-# SRAM and execute it in-place. This rule assumes that a CW310 FPGA and an
-# ARM-USB-TINY-H JTAG debugger are attached to the host.
-opentitan_gdb_fpga_cw310_test = rv_rule(
-    implementation = _opentitan_gdb_fpga_cw310_test,
+_opentitan_gdb_fpga_cw310_test = rv_rule(
+    implementation = _opentitan_gdb_fpga_cw310_test_impl,
     attrs = {
         "exit_success_pattern": attr.string(),
         "gdb_script": attr.string(mandatory = True),
@@ -88,6 +88,7 @@ opentitan_gdb_fpga_cw310_test = rv_rule(
         "rom_kind": attr.string(mandatory = True, values = ["Rom", "TestRom"]),
         "gdb_expect_output_sequence": attr.string_list(),
         "expect_debug_disallowed": attr.bool(default = False),
+        "opentitantool_cw310_uarts": attr.string(),
         "_coordinator": attr.label(
             default = "//rules/scripts:gdb_test_coordinator",
             cfg = "exec",
@@ -119,3 +120,22 @@ opentitan_gdb_fpga_cw310_test = rv_rule(
     },
     test = True,
 )
+
+# Orchestrate opentitantool, OpenOCD, and GDB to load the given program into
+# SRAM and execute it in-place. This macro assumes that a CW310 FPGA and an
+# ARM-USB-TINY-H JTAG debugger are attached to the host.
+def opentitan_gdb_fpga_cw310_test(
+        tags = [],
+        **kwargs):
+    _opentitan_gdb_fpga_cw310_test(
+        tags = tags + [
+            "cw310",
+            "exclusive",  # Prevent FPGA tests from running concurrently.
+            "jtag",
+        ],
+        opentitantool_cw310_uarts = select({
+            "@//ci:lowrisc_fpga_cw310": "--cw310-uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0",
+            "//conditions:default": "",
+        }),
+        **kwargs
+    )

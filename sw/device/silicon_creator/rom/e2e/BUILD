@@ -1632,8 +1632,7 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
         rom_kind = "Rom",
         tags = [
-            "cw310",
-            "exclusive",
+            "cw310_rom",
             "vivado",
         ],
     )
@@ -1643,7 +1642,7 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
 test_suite(
     name = "rom_e2e_jtag_inject_tests",
     tags = [
-        "cw310",
+        "cw310_rom",
         "vivado",
     ],
     tests = ["sram_program_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
@@ -1671,7 +1670,8 @@ test_suite(
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
         rom_kind = "Rom",
         tags = [
-            "cw310",
+            "cw310_rom",
+            "skip_in_ci",
             "vivado",
         ],
     )
@@ -1722,8 +1722,8 @@ test_suite(
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
         rom_kind = "Rom",
         tags = [
-            "cw310",
-            "exclusive",
+            "cw310_rom",
+            "skip_in_ci",
             "vivado",
         ],
     )
@@ -1809,8 +1809,8 @@ REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
         rom_kind = "Rom",
         tags = [
-            "cw310",
-            "exclusive",
+            "cw310_rom",
+            "skip_in_ci",
             "vivado",
         ],
     )
@@ -1874,8 +1874,8 @@ REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
         rom_kind = "Rom",
         tags = [
-            "cw310",
-            "exclusive",
+            "cw310_rom",
+            "skip_in_ci",
             "vivado",
         ],
     )

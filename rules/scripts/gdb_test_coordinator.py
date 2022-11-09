@@ -123,7 +123,8 @@ def main(rom_kind: str = typer.Option(...),
          gdb_script_path: str = typer.Option(...),
          bitstream_path: str = typer.Option(...),
          opentitantool_path: str = typer.Option(...),
-         exit_success_pattern: Optional[str] = typer.Option(None)):
+         exit_success_pattern: Optional[str] = typer.Option(None),
+         cw310_uarts: Optional[str] = typer.Option(None)):
 
     opentitantool_prefix = [
         opentitantool_path,
@@ -131,6 +132,9 @@ def main(rom_kind: str = typer.Option(...),
         "--logging=info",
         "--interface=cw310",
     ]
+    if cw310_uarts is not None:
+        opentitantool_prefix.append('--cw310-uarts=' + cw310_uarts)
+
     load_bitstream_command = opentitantool_prefix + [
         "fpga",
         "load-bitstream",
@@ -157,7 +161,7 @@ def main(rom_kind: str = typer.Option(...),
     console_command = opentitantool_prefix + [
         "console",
         "--timeout",
-        "5s",
+        "20s",
     ]
     if exit_success_pattern is not None:
         console_command.append("--exit-success=" + exit_success_pattern)
