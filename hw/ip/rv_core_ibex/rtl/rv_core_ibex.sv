@@ -970,6 +970,27 @@ module rv_core_ibex
     )
 
   end
-`endif // ifdef INC_ASSERT
 
+  `define ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(__assert_name, __alert_name, _hier, __error_name)   \
+    if (1) begin : g_``__error_name``_assert_signals                                               \
+      logic __error_name;                                                                          \
+      assign __error_name = u_core._hier``.__error_name;                                           \
+                                                                                                   \
+      logic unused_assert_connected;                                                               \
+      `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1)                        \
+    end                                                                                            \
+    `ASSERT_ERROR_TRIGGER_ALERT(__assert_name, g_``__error_name``_assert_signals, __alert_name, 0, \
+        7, __error_name)
+
+  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexPcMismatchCheck_A, alert_tx_o[2],
+      u_ibex_core.if_stage_i, pc_mismatch_alert_o)
+  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexRfEccErrCheck_A, alert_tx_o[2], u_ibex_core,
+      rf_ecc_err_comb)
+  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexLoadRespIntgErrCheck_A, alert_tx_o[2], u_ibex_core,
+      lsu_load_resp_intg_err)
+  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexStoreRespIntgErrCheck_A, alert_tx_o[2], u_ibex_core,
+      lsu_store_resp_intg_err)
+  `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexInstrIntgErrCheck_A, alert_tx_o[2], u_ibex_core,
+      instr_intg_err)
+`endif // ifdef INC_ASSERT
 endmodule
