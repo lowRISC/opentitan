@@ -1859,6 +1859,59 @@ test_suite(
     tests = ["asm_interrupt_handler_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
 )
 
+[
+    opentitan_gdb_fpga_cw310_test(
+        name = "shutdown_exception_asm_otp_" + otp_name,
+        timeout = "short",
+        gdb_expect_output_sequence = [
+            ":::: About to reset.",
+            "unable to resume hart 0",
+        ],
+        gdb_script = """
+            target extended-remote :3333
+
+            echo :::: Send OpenOCD the 'reset halt' command.\\n
+            monitor reset halt
+
+            echo :::: Load ROM symbols into GDB.\\n
+            file rom.elf
+
+            echo :::: Set breakpoint on exception handler.\\n
+            break _asm_exception_handler
+
+            echo :::: Set PC to start of main SRAM.\\n
+            set $pc = 0x10000000
+            continue
+            printf ":::: PC=%p. Expected PC=%p.\\n", $pc, _asm_exception_handler
+            if $pc != _asm_exception_handler
+                quit 1
+            end
+
+            echo :::: About to reset.\\n
+            continue
+
+            # Not reached.
+            quit 123
+        """,
+        gdb_script_symlinks = {
+            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+        },
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_kind = "Rom",
+        tags = [
+            "cw310_rom",
+            "vivado",
+        ] + maybe_skip_in_ci(structs.to_dict(CONST.LCV)[otp_name.upper()]),
+    )
+    for otp_name in OTP_CFGS_EXEC_DISABLED
+]
+
+test_suite(
+    name = "rom_e2e_shutdown_exception_asm",
+    tags = ["manual"],
+    tests = ["shutdown_exception_asm_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
+)
+
 # Dict that also includes an invalid redaction value for test purposes.
 REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
 
