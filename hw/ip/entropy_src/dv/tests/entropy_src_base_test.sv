@@ -31,7 +31,9 @@ class entropy_src_base_test extends cip_base_test #(
     // so there is no need to randomize it.
     cfg.seed_cnt                       = 1;
     cfg.otp_en_es_fw_read_pct          = 100;
+    cfg.otp_en_es_fw_read_inval_pct    = 0;
     cfg.otp_en_es_fw_over_pct          = 100;
+    cfg.otp_en_es_fw_over_inval_pct    = 0;
     cfg.dut_cfg.en_intr_pct            = 75;
     cfg.dut_cfg.me_regwen_pct          = 100;
     cfg.dut_cfg.sw_regupd_pct          = 100;
