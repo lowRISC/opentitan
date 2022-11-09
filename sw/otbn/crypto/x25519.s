@@ -32,6 +32,7 @@ X25519:
   /* Prepare constant for field operations.
      w19 <= 19  */
   bn.addi  w19, w31, 19
+  bn.addi  w30, w31, 38
 
   /* Load modulus from DMEM.
        MOD <= dmem[modulus25519] = 2^255 - 19 = p */
@@ -100,7 +101,8 @@ X25519:
  *
  * @param[in]  w8: k, 255-bit scalar value
  * @param[in]  w9: u, Montgomery u-coordinate of point A (k < p)
- * @param[in]  w19: constant, w19 = 19
+ * @param[in]  w19: constant, 19
+ * @param[in]  w30: constant, 38
  * @param[in]  w31, all-zero
  * @param[in]  MOD: p, modulus = 2^255 - 19
  * @param[out] w22: result, Montgomery u-coordinate of point kA
@@ -258,8 +260,9 @@ scalar_mult:
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * @param[in] w9: x_1, Montgomery u-coordinate of point A (k < p)
- * @param[in] w19: constant, w19 = 19
+ * @param[in] w19: constant, 19
  * @param[in] w24: constant a24 = 121665
+ * @param[in] w30: constant, 38
  * @param[in] w31: all-zero
  * @param[in] MOD: p, modulus = 2^255 - 19
  * @param[in,out] w10:  x_2
