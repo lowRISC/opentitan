@@ -124,6 +124,13 @@ module keymgr_kmac_if import keymgr_pkg::*;(
   logic cmd_chk;
 
   data_state_e state_q, state_d;
+  data_state_e tx_state;
+  localparam bit RoundsNeverZero = |LastAdvRound & |LastIdRound & |LastGenRound;
+  if (RoundsNeverZero) begin : gen_never_zero_state
+    assign tx_state = StTx;
+  end else begin : gen_zero_possible_state
+    assign tx_state = (rounds == 0) ? StTxLast : StTx;
+  end
 
   // 0 pad to the appropriate width
   // this is basically for scenarios where *DataWidth % KmacDataIfWidth != 0
@@ -199,13 +206,9 @@ module keymgr_kmac_if import keymgr_pkg::*;(
           end else if (gen_en_i) begin
             rounds = LastGenRound;
           end
-          // simplify the transition when rounds can never be zero, so that we don't have
-          // the unreachable transition StIdle -> StTxLast.
-          if (0 inside {LastAdvRound, LastIdRound, LastGenRound}) begin : gen_zero_rounds
-            state_d = (rounds == 0) ? StTxLast : StTx;
-          end else begin : gen_no_zero_rounds
-            state_d = StTx;
-          end
+          // This is coded this way for coverage reasons.
+          // If round can never be 0, not allowing StTxLast removes unreachable transition.
+          state_d = tx_state;
         end
       end
 
