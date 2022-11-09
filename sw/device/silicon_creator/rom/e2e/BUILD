@@ -231,22 +231,53 @@ opentitan_functest(
     targets = ["cw310_rom"],
 )
 
-opentitan_functest(
-    name = "e2e_bootstrap_entry",
-    cw310 = cw310_params(
-        test_cmds = [
-            "--rom-kind=rom",
-            "--bitstream=\"$(location //hw/bitstream:rom)\"",
-            "--bootstrap=\"$(location {flash})\"",
-        ],
-    ),
-    ot_flash_binary = ":empty_test_slot_a",
-    # We don't want the `empty_test` to run, but we _also_ don't want some
-    # leftover flash image from a previous test to run.  So, bootstrap an
-    # unsigned image to force a boot failure.
-    signed = False,
-    targets = ["cw310_rom"],
-    test_harness = "//sw/host/tests/rom/e2e_bootstrap_entry",
+[otp_image(
+    name = "otp_img_e2e_bootstrap_entry_{}".format(lc_state.lower()),
+    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
+    overlays = STD_OTP_OVERLAYS,
+) for lc_state in structs.to_dict(CONST.LCV)]
+
+# Splice OTP images into bitstreams
+[
+    bitstream_splice(
+        name = "bitstream_e2e_bootstrap_entry_{}".format(lc_state.lower()),
+        src = "//hw/bitstream:rom",
+        data = ":otp_img_e2e_bootstrap_entry_{}".format(lc_state.lower()),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+        update_usr_access = True,
+    )
+    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
+]
+
+[
+    opentitan_functest(
+        name = "e2e_bootstrap_entry_{}".format(lc_state.lower()),
+        cw310 = cw310_params(
+            bitstream = ":bitstream_e2e_bootstrap_entry_{}".format(lc_state.lower()),
+            tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+            test_cmds = [
+                "--rom-kind=rom",
+                "--bitstream=\"$(location {bitstream})\"",
+                "--bootstrap=\"$(location {flash})\"",
+            ],
+        ),
+        ot_flash_binary = ":empty_test_slot_a",
+        # We don't want the `empty_test` to run, but we _also_ don't want some
+        # leftover flash image from a previous test to run.  So, bootstrap an
+        # unsigned image to force a boot failure.
+        signed = False,
+        targets = ["cw310_rom"],
+        test_harness = "//sw/host/tests/rom/e2e_bootstrap_entry",
+        deps = [":bitstream_e2e_bootstrap_entry_{}".format(lc_state.lower())],
+    )
+    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
+]
+
+test_suite(
+    name = "rom_e2e_bootstrap_entry",
+    tags = ["manual"],
+    tests = [":e2e_bootstrap_entry_{}".format(lc_state.lower()) for lc_state in structs.to_dict(CONST.LCV)],
 )
 
 opentitan_functest(
