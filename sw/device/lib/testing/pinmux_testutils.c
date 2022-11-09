@@ -129,3 +129,45 @@ uint32_t pinmux_testutils_get_testable_gpios_mask(void) {
     return 0xffffffff;
   }
 }
+
+uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
+                                         dif_gpio_pin_t io,
+                                         top_earlgrey_muxed_pads_t pad) {
+  // Turn off the pull enable on the pad and read the IO.
+  dif_pinmux_pad_attr_t attr = {.flags = 0};
+  dif_pinmux_pad_attr_t attr_out;
+  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, pad, kDifPinmuxPadKindMio,
+                                          attr, &attr_out));
+  bool state;
+  // The value read is unmodified by the internal pull resistors and represents
+  // the the upper bit of the 4 possible states [Strong0, Weak0, Weak1,
+  // Strong1].
+  CHECK_DIF_OK(dif_gpio_read(gpio, io, &state));
+  uint32_t result = state ? 2 : 0;
+
+  // Based on the previous read, enable the opposite pull resistor.  If the
+  // external signal is weak, the internal pull resistor will win; if the
+  // external signal is strong, the external value will win.
+  attr.flags = kDifPinmuxPadAttrPullResistorEnable |
+               (state ? 0 : kDifPinmuxPadAttrPullResistorUp);
+  CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, pad, kDifPinmuxPadKindMio,
+                                          attr, &attr_out));
+  // Combine the result of the contest between the external signal in internal
+  // pull resistors.  This represents the lower bit of the 4 possible states.
+  CHECK_DIF_OK(dif_gpio_read(gpio, io, &state));
+  result += state ? 1 : 0;
+  return result;
+}
+
+uint32_t pinmux_testutils_read_straps(dif_pinmux_t *pinmux, dif_gpio_t *gpio) {
+  uint32_t strap = 0;
+  strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 22,
+                                           kTopEarlgreyMuxedPadsIoc0);
+  strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 23,
+                                           kTopEarlgreyMuxedPadsIoc1)
+           << 2;
+  strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 24,
+                                           kTopEarlgreyMuxedPadsIoc2)
+           << 4;
+  return strap;
+}
