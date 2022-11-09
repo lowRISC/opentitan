@@ -56,6 +56,23 @@ SLOTS = {
     "b": "0x80000",
 }
 
+LC_KEY_TYPES = {
+    CONST.LCV.TEST_UNLOCKED0: [
+        "test_key_0",
+        "prod_key_0",
+    ],
+    CONST.LCV.DEV: [
+        "dev_key_0",
+        "prod_key_0",
+    ],
+    CONST.LCV.PROD: ["prod_key_0"],
+    CONST.LCV.PROD_END: ["prod_key_0"],
+    CONST.LCV.RMA: [
+        "test_key_0",
+        "prod_key_0",
+    ],
+}
+
 [opentitan_flash_binary(
     name = "empty_test_slot_{}".format(slot),
     srcs = ["empty_test.c"],
@@ -1701,6 +1718,58 @@ test_suite(
 )
 
 [
+    opentitan_functest(
+        name = "epmp_init_otp_" + lc_state.lower(),
+        srcs = ["epmp_init_test.c"],
+        cw310 = cw310_params(
+            bitstream = "//hw/bitstream:rom_otp_" + lc_state.lower(),
+            tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+        ),
+        key = LC_KEY_TYPES[lc_state_val][0],
+        local_defines = [
+            "EXPECT_DEBUG={}".format(1 if lc_state_val in [
+                CONST.LCV.TEST_UNLOCKED0,
+                CONST.LCV.DEV,
+                CONST.LCV.RMA,
+            ] else 0),
+        ],
+        targets = [
+            "cw310_rom",
+            "verilator",
+        ],
+        verilator = verilator_params(
+            timeout = "eternal",
+            otp = "//hw/ip/otp_ctrl/data:img_" + lc_state.lower(),
+            rom = "//sw/device/silicon_creator/rom:rom",
+        ),
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:csr",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/lib/testing/test_framework:status",
+            "//sw/device/silicon_creator/lib:epmp_defs",
+        ],
+    )
+    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
+]
+
+test_suite(
+    name = "rom_e2e_epmp_init",
+    tags = [
+        "cw310",
+        "vivado",
+    ],
+    tests = [
+        "epmp_init_otp_" + lc_state.lower()
+        for lc_state in structs.to_dict(CONST.LCV).keys()
+    ],
+)
+
+[
     opentitan_gdb_fpga_cw310_test(
         name = "debug_disallowed_in_prod_fpga_cw310_test_otp_" + otp_name,
         timeout = "short",
@@ -2251,23 +2320,6 @@ test_suite(
     )
     for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
 ]
-
-LC_KEY_TYPES = {
-    CONST.LCV.TEST_UNLOCKED0: [
-        "test_key_0",
-        "prod_key_0",
-    ],
-    CONST.LCV.DEV: [
-        "dev_key_0",
-        "prod_key_0",
-    ],
-    CONST.LCV.PROD: ["prod_key_0"],
-    CONST.LCV.PROD_END: ["prod_key_0"],
-    CONST.LCV.RMA: [
-        "test_key_0",
-        "prod_key_0",
-    ],
-}
 
 SIGVERIFY_KEY_TYPE_KEYS = [
     "test_key_0",
