@@ -740,6 +740,9 @@ module aes_cipher_core import aes_pkg::*;
 // in simulation and FPV. However, we wrap the entire assertion section with INC_ASSERT so that the
 // helper logic below is not synthesized either, since that could cause issues in DC.
 `ifdef INC_ASSERT
+  //VCS coverage off
+  // pragma coverage off
+
   // Create a lint error to reduce the risk of accidentally disabling the masking.
   `ASSERT_STATIC_LINT_ERROR(AesSecMaskingNonDefault, SecMasking == 1)
 
@@ -871,6 +874,8 @@ module aes_cipher_core import aes_pkg::*;
     assign unused_prd_masking[WidthPRDMasking-1 -: WidthPRDKey] = prd_key_expand;
     `ASSERT(AesMskgPrdExtraction, prd_masking == unused_prd_masking)
   end
+  //VCS coverage on
+  // pragma coverage on
 `endif
 
 endmodule
