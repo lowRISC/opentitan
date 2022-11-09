@@ -46,7 +46,7 @@ class WatchdogTest : public rom_test::RomTest {
                        0 << AON_TIMER_WDOG_CTRL_ENABLE_BIT);
     EXPECT_ABS_WRITE32(wdog_ + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
     EXPECT_ABS_WRITE32(wdog_ + AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET,
-                       std::numeric_limits<uint32_t>::max());
+                       kBiteThreshold * 9 / 8);
     EXPECT_SEC_WRITE32(wdog_ + AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET,
                        kBiteThreshold);
     EXPECT_SEC_WRITE32(wdog_ + AON_TIMER_WDOG_CTRL_REG_OFFSET,
