@@ -161,6 +161,10 @@
       build_opts: ["+define+DISABLE_ROM_INTEGRITY_CHECK"]
       is_sim_mode: 1
     }
+    // This fast sim mode adds AST runtime plusargs from the fast_sim run
+    // mode on top of disabling rom integrity checks. It is the fastest way
+    // to run a test.
+    // DO NOT USE FOR NIGHTLY
     {
       name: fast_sim_dev
       en_build_modes: ["fast_sim_build_dev"]
@@ -241,9 +245,11 @@
         ''',
       ]
     }
-    // Sim mode that enables public faster simulation via AST plusargs.
+    // fast_sim mode enables public faster simulation via AST plusargs.
+    // This may be okay to use for public regressions, with the possible
+    // exception of a handful of AST tests.
     {
-      name: fast_sim_run
+      name: fast_sim
       run_opts: ["+accelerate_cold_power_up_time=3",
                  "+accelerate_regulators_power_up_time=2"]
     }
