@@ -29,6 +29,12 @@ set RDC_WAIVER_DIR      [file dirname $RDC_WAIVER_FILE]
 set ENV_FILE            [get_env_var "ENV_FILE"]
 set RESET_SCENARIO_FILE [get_env_var "RESET_SCENARIO_FILE"]
 
+# WAVES is optional
+set WAVES ""
+if {[info exists ::env("WAVES")]} {
+  set WAVES "$::env(WAVES)"
+}
+
 # Used to disable some SDC constructs that are not needed by RDC.
 # Reusing IS_CDC_RUN
 set IS_CDC_RUN 1
@@ -62,6 +68,22 @@ set ri_print_module_nand2_counts true
 set ri_max_total_range_bits 100000
 set ri_rdc_stop_at_clock_path_in_obs_analysis true
 set ri_rdc_no_observability_on_clock_nodes true
+
+#Dump waveforms for all violations
+switch $WAVES {
+  "" {
+  }
+
+  "vcd" {
+    set ri_max_number_of_reset_scenario_vcds all
+    set ri_write_all_nodes_in_vcd_for_reset_scenario true
+  }
+
+  default {
+    puts "ERROR: Unknown wave format: ${WAVES}"
+    quit
+  }
+}
 
 #########################
 ## Analyze & Elaborate ##
