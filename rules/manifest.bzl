@@ -68,7 +68,7 @@ def _manifest_impl(ctx):
     if len(device_id) < 8:
         device_id.extend([CONST.DEFAULT_USAGE_CONSTRAINTS] * (8 - len(device_id)))
     for i, d in enumerate(device_id):
-        if d != CONST.DEFAULT_USAGE_CONSTRAINTS:
+        if _hex(d) != _hex(CONST.DEFAULT_USAGE_CONSTRAINTS):
             selector_bits |= _SEL_DEVICE_ID << i
         device_id[i] = _hex(d)
     uc["device_id"] = device_id
