@@ -736,6 +736,10 @@ module aes_cipher_core import aes_pkg::*;
   // Assertions //
   ////////////////
 
+// Typically assertions already contain this macro, which ensures that assertions are only compiled
+// in simulation and FPV. However, we wrap the entire assertion section with INC_ASSERT so that the
+// helper logic below is not synthesized either, since that could cause issues in DC.
+`ifdef INC_ASSERT
   // Create a lint error to reduce the risk of accidentally disabling the masking.
   `ASSERT_STATIC_LINT_ERROR(AesSecMaskingNonDefault, SecMasking == 1)
 
@@ -825,9 +829,6 @@ module aes_cipher_core import aes_pkg::*;
       end
   end
 
-// the code below is not meant to be synthesized,
-// but it is intended to be used in simulation and FPV
-`ifndef SYNTHESIS
   // Make sure the output of the masking PRNG is properly extracted without creating overlaps
   // in the data input masks, or between the PRD fed to the key expand module and SubBytes.
   if (WidthPRDSBox > 8) begin : gen_prd_extract_assert
