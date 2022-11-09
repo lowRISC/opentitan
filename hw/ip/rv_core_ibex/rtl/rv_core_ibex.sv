@@ -893,26 +893,26 @@ module rv_core_ibex
   );
 
   // Assertions for CPU enable
-  `ASSERT(IbexFetchEnable0_A,
+  `ASSERT(FpvSecCmIbexFetchEnable0_A,
       fatal_core_err
       |=>
       lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
-  `ASSERT(IbexFetchEnable1_A,
+  `ASSERT(FpvSecCmIbexFetchEnable1_A,
       lc_ctrl_pkg::lc_tx_test_false_loose(lc_cpu_en_i)
       |->
       ##2 lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
-  `ASSERT(IbexFetchEnable2_A,
+  `ASSERT(FpvSecCmIbexFetchEnable2_A,
       lc_ctrl_pkg::lc_tx_test_false_loose(pwrmgr_cpu_en_i)
       |->
       ##2 lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
-  `ASSERT(IbexFetchEnable3_A,
+  `ASSERT(FpvSecCmIbexFetchEnable3_A,
       lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i) &&
       lc_ctrl_pkg::lc_tx_test_true_strict(pwrmgr_cpu_en_i) ##1
       lc_ctrl_pkg::lc_tx_test_true_strict(local_fetch_enable_q) &&
       !fatal_core_err
       |=>
       lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable))
-  `ASSERT(IbexFetchEnable3Rev_A,
+  `ASSERT(FpvSecCmIbexFetchEnable3Rev_A,
       ##2 lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable)
       |->
       $past(lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i), 2) &&
