@@ -61,10 +61,15 @@ void watchdog_init(lifecycle_state_t lc_state) {
     enable = kHardenedBoolFalse;
   }
 
-  watchdog_configure(threshold, enable);
+  watchdog_configure((watchdog_config_t){
+      // 1.125 x bite_threshold
+      .bark_threshold = (9 * threshold) / 8,
+      .bite_threshold = threshold,
+      .enable = enable,
+  });
 }
 
-void watchdog_configure(uint32_t threshold, hardened_bool_t enable) {
+void watchdog_configure(watchdog_config_t config) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioConfigure, 4);
   // Tell pwrmgr we want watchdog reset events to reset the chip.
   sec_mmio_write32(
@@ -77,18 +82,20 @@ void watchdog_configure(uint32_t threshold, hardened_bool_t enable) {
   // Set the watchdog bite and bark thresholds.
   sec_mmio_write32(kBase + AON_TIMER_WDOG_CTRL_REG_OFFSET, kCtrlDisable);
   abs_mmio_write32(kBase + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
-  abs_mmio_write32(kBase + AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET, UINT32_MAX);
-  sec_mmio_write32(kBase + AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET, threshold);
+  abs_mmio_write32(kBase + AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET,
+                   config.bark_threshold);
+  sec_mmio_write32(kBase + AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET,
+                   config.bite_threshold);
 
   // Enable or disable the watchdog as requested.
   uint32_t ctrl = kCtrlEnable;
-  switch (launder32(enable)) {
+  switch (launder32(config.enable)) {
     case kHardenedBoolTrue:
-      HARDENED_CHECK_EQ(enable, kHardenedBoolTrue);
+      HARDENED_CHECK_EQ(config.enable, kHardenedBoolTrue);
       ctrl = kCtrlEnable;
       break;
     case kHardenedBoolFalse:
-      HARDENED_CHECK_EQ(enable, kHardenedBoolFalse);
+      HARDENED_CHECK_EQ(config.enable, kHardenedBoolFalse);
       ctrl = kCtrlDisable;
       break;
     default:

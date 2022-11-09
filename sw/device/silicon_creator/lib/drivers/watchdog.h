@@ -50,15 +50,31 @@ enum {
 void watchdog_init(lifecycle_state_t lc_state);
 
 /**
+ * Watchdog configuration.
+ */
+typedef struct watchdog_config {
+  /**
+   * Bark threshold value in cycles.
+   */
+  uint32_t bark_threshold;
+  /**
+   * Bite threshold value in cycles.
+   */
+  uint32_t bite_threshold;
+  /**
+   * Whether or not to enable the watchdog timer after it is configured.
+   */
+  hardened_bool_t enable;
+} watchdog_config_t;
+
+/**
  * Configure the watchdog timer with given bite threshold.
  *
  * This operation will set the counter value to 0.
  *
- * @param threshold Bite threshold value in cycles.
- * @param enable Whether or not to enable the watchdog timer after it is
- * configured.
+ * @param config Watchdog configuration.
  */
-void watchdog_configure(uint32_t threshold, hardened_bool_t enable);
+void watchdog_configure(watchdog_config_t config);
 
 /**
  * Disable the watchdog.
