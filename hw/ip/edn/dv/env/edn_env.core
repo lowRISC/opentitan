@@ -30,6 +30,7 @@ filesets:
       - seq_lib/edn_alert_vseq.sv: {is_include_file: true}
       - seq_lib/edn_err_vseq.sv: {is_include_file: true}
       - seq_lib/edn_disable_vseq.sv: {is_include_file: true}
+      - seq_lib/edn_disable_auto_req_mode_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
