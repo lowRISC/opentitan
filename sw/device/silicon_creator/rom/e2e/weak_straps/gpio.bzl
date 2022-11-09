@@ -53,6 +53,7 @@ def strap_combination_test(name, rom, value, evaluator = None, tags = [], extra_
         targets = [
             "verilator",
         ],
+        ot_flash_binary = "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a",
         verilator = verilator_params(
             rom = rom,
             test_cmds = extra_verilator_args + [
@@ -66,13 +67,6 @@ def strap_combination_test(name, rom, value, evaluator = None, tags = [], extra_
                 "no-op",
             ],
         ),
-        deps = [
-            "//sw/device/lib/base:status",
-            "//sw/device/lib/dif:gpio",
-            "//sw/device/lib/dif:pinmux",
-            "//sw/device/lib/testing:pinmux_testutils",
-            "//sw/device/lib/testing/test_framework:ottf_main",
-        ],
     )
 
 def strap_combinations_test(name, rom, tags = [], skip_value = []):
