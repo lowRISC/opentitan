@@ -193,6 +193,10 @@
                fusesoc_core: lowrisc:dv:rv_core_ibex_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/otbn/{sub_flow}/{tool}"
+               stopats: ["*if_stage_i.pc_mismatch_alert_o",
+                         "*icache_i.ecc_error_o",
+                         "*gen_regfile_ecc.rf_ecc_err_a",
+                         "*gen_regfile_ecc.rf_ecc_err_b"]
                task: "FpvSecCm"
              }
              {
