@@ -44,9 +44,10 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  w19: constant, w19 = 19
+ * @param[in]  w19: constant, 19
  * @param[in]  MOD: p, modulus = 2^255 - 19
- * @param[in]  w30: constant, w30 = (2*d) mod p, d = (-121665/121666) mod p
+ * @param[in]  w29: constant, (2*d) mod p, d = (-121665/121666) mod p
+ * @param[in]  w30: constant, 38
  * @param[in]  w31: all-zero
  * @param[in,out] w10: input X1 (X1 < p), output X3
  * @param[in,out] w11: input Y1 (Y1 < p), output Y3
@@ -88,8 +89,8 @@ ext_add:
 
   /* w22 <= w13 = T1 */
   bn.mov   w22, w13
-  /* w23 <= w30 <= 2*d */
-  bn.mov   w23, w30
+  /* w23 <= w29 <= 2*d */
+  bn.mov   w23, w29
   /* w22 <= w22 * w23 = T1*2*d */
   jal      x1, fe_mul
   /* w23 <= w17 = T2 */
