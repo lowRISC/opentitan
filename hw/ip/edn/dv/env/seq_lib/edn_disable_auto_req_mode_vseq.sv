@@ -15,7 +15,8 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
   virtual task rand_toggle_edn_enable();
     bit [TL_DW-1:0] ctrl_val;
     string main_sm_d_path = "tb.dut.u_edn_core.u_edn_main_sm.state_d";
-    state_e auto_req_sts[$] = {AutoLoadIns, AutoFirstAckWait, AutoAckWait, AutoDispatch,
+    // TODO: modify wr_cmd and add back AutoLoadIns.
+    state_e auto_req_sts[$] = {AutoFirstAckWait, AutoAckWait, AutoDispatch,
             AutoCaptGenCnt, AutoSendGenCmd, AutoCaptReseedCnt, AutoSendReseedCmd};
 
     // CSRNG requests will drop if disablement is sent.
@@ -42,20 +43,25 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
           end)
     end
 
+    `DV_WAIT(csrng_init_done);
     wait_no_outstanding_access();
     ctrl_val = {MuBi4False, MuBi4True, MuBi4False, MuBi4False};
     csr_wr(.ptr(ral.ctrl), .value(ctrl_val));
     cfg.edn_vif.drive_edn_disable(1);
     cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
 
+    // Reset EDN fifos
+    csr_wr(.ptr(ral.ctrl.cmd_fifo_rst), .value(MuBi4True));
+    csr_wr(.ptr(ral.ctrl.cmd_fifo_rst), .value(MuBi4False));
+
     // Enable edn
-    `DV_WAIT(csrng_init_done);
     wait_no_outstanding_access();
     cfg.edn_vif.drive_edn_disable(0);
-    csr_wr(.ptr(ral.ctrl.edn_enable), .value(MuBi4True));
+    edn_init();
 
     // Send instantiate cmd after EDN is re-abled for auto_req_mode.
     instantiate_csrng();
+    `uvm_info(`gfn, "EDN toggle enable field task done", UVM_HIGH);
   endtask
 
   task body();
@@ -80,12 +86,16 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
           m_endpoint_pull_seq[j].start
               (p_sequencer.endpoint_sequencer_h[j]);
           edn_done[j] = 1;
+          `uvm_info(`gfn, $sformatf("EDN requesters %0h, current status %0h", edn_reqs, edn_done),
+                    UVM_HIGH)
         end join_none;
       end
     end
 
     // Instantiated CSRNG to enable EDN auto_req_mode.
     fork begin
+      // Reseed as frequently as possible so we can hit more FSM coverage.
+      csr_wr(.ptr(ral.max_num_reqs_between_reseeds), .value(1));
       instantiate_csrng();
       csrng_init_done = 1;
     end join_none;

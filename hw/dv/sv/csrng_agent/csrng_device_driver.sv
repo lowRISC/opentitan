@@ -38,6 +38,10 @@ class csrng_device_driver extends csrng_driver;
           cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
           cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_sts <= 1'b0;,
           wait (cfg.under_reset == 1);)
+
+      // Write ack bit again in case the race condition with `reset_signals`.
+      if (cfg.under_reset) cfg.vif.device_cb.cmd_rsp_int.csrng_rsp_ack <= 1'b0;
+
       `uvm_info(`gfn, cfg.under_reset ? "item sent during reset" : "item sent", UVM_HIGH)
       seq_item_port.item_done(rsp);
     end
