@@ -2067,10 +2067,26 @@ opentitan_multislot_flash_binary(
 ]
 
 SIGVERIFY_BAD_CASES = [
-    ("nothing", "bad"),
-    ("bad", "nothing"),
-    ("bad", "bad"),
-    ("nothing", "nothing"),
+    {
+        "a": "nothing",
+        "b": "bad",
+        "expected_bfv": hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
+    },
+    {
+        "a": "bad",
+        "b": "nothing",
+        "expected_bfv": hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
+    },
+    {
+        "a": "bad",
+        "b": "bad",
+        "expected_bfv": hex(CONST.BFV.SIGVERIFY.BAD_ENCODED_MSG),
+    },
+    {
+        "a": "nothing",
+        "b": "nothing",
+        "expected_bfv": hex(CONST.BFV.BOOT_POLICY.BAD_IDENTIFIER),
+    },
 ]
 
 [
@@ -2083,15 +2099,21 @@ SIGVERIFY_BAD_CASES = [
         cw310 = cw310_params(
             bitstream = ":bitstream_sigverify_always_{}".format(lc_state.lower()),
             exit_failure = MSG_PASS,
-            exit_success = DEFAULT_TEST_FAILURE_MSG,
+            exit_success = MSG_TEMPLATE_BFV_LCV.format(
+                case["expected_bfv"],
+                hex(lc_state_val),
+            ),
             otp = ":otp_img_sigverify_always_{}".format(lc_state.lower()),
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
         key = "multislot",
-        ot_flash_binary = ":sigverify_always_img_a_{}_b_{}".format(a, b),
+        ot_flash_binary = ":sigverify_always_img_a_{}_b_{}".format(
+            case["a"],
+            case["b"],
+        ),
         targets = ["cw310_rom"],
     )
-    for a, b in SIGVERIFY_BAD_CASES
+    for case in SIGVERIFY_BAD_CASES
     for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
 ]
 
@@ -2104,7 +2126,7 @@ test_suite(
             case["a"],
             case["b"],
         )
-        for a, b in SIGVERIFY_BAD_CASES
+        for case in SIGVERIFY_BAD_CASES
         for lc_state in structs.to_dict(CONST.LCV)
     ],
 )
