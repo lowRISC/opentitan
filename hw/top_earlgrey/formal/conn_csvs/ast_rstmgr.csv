@@ -14,8 +14,8 @@
 # index 1: rstmgr_pkg::Domain0Sel
 CONNECTION, AST_RST_ADC_IN,     top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_aon_n[0],     u_ast, rst_ast_adc_ni
 CONNECTION, AST_RST_ALERT_IN,   top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1],  u_ast, rst_ast_alert_ni
-CONNECTION, AST_RST_ES_IN,      top_earlgrey.u_rstmgr_aon, resets_o.rst_sys_n[1],         u_ast, rst_ast_es_ni
-CONNECTION, AST_RST_RNG_IN,     top_earlgrey.u_rstmgr_aon, resets_o.rst_sys_n[1],         u_ast, rst_ast_rng_ni
-CONNECTION, AST_RST_TLUL_IN,    top_earlgrey.u_rstmgr_aon, resets_o.rst_sys_io_div4_n[1], u_ast, rst_ast_tlul_ni
+CONNECTION, AST_RST_ES_IN,      top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1],         u_ast, rst_ast_es_ni
+CONNECTION, AST_RST_RNG_IN,     top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_n[1],         u_ast, rst_ast_rng_ni
+CONNECTION, AST_RST_TLUL_IN,    top_earlgrey.u_rstmgr_aon, resets_o.rst_lc_io_div4_n[1], u_ast, rst_ast_tlul_ni
 CONNECTION, AST_RST_USB_IN,     top_earlgrey.u_rstmgr_aon, resets_o.rst_usb_n[1],         u_ast, rst_ast_usb_ni
 CONNECTION, AST_RST_SNS_IN,     top_earlgrey.u_rstmgr_aon, resets_o,                      u_ast, sns_rsts_i
