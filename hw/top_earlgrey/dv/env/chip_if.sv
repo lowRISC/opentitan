@@ -646,6 +646,18 @@ interface chip_if;
                                             == pwrmgr_pkg::FastPwrStateLowPower;
   assign pwrmgr_low_power_if.deep_powerdown = ~`PWRMGR_HIER.pwr_ast_i.main_pok;
 
+  // clkmgr related: SW controlled clock gating contol signals reflecting the actual status
+  // of these clocks.
+  wire aes_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_aes_val.d;
+  wire hmac_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_hmac_val.d;
+  wire kmac_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_kmac_val.d;
+  wire otbn_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_otbn_val.d;
+
+  wire usbdev_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_usb_peri_en.q;
+  wire io_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_peri_en.q;
+  wire io_div2_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div2_peri_en.q;
+  wire io_div4_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div4_peri_en.q;
+
   // Stub CPU envorinment.
   //
   // The initial value is sought from a plusarg. It can however, be set by the sequence on the fly
