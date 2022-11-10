@@ -25,6 +25,8 @@ interface i2c_if(
 
   string msg_id = "i2c_if";
 
+  int scl_spinwait_timeout_ns = 10_000_000; // 10ms
+
   clocking cb @(posedge clk_i);
     input scl_i;
     input sda_i;
@@ -42,6 +44,21 @@ interface i2c_if(
     wait(cb.scl_i == 0);
     wait(cb.scl_i == 1);
   endtask
+
+  task automatic sample_target_data(timing_cfg_t tc, output bit data);
+    bit sample[16];
+    int idx = 0;
+    int su_idx;
+
+    wait(cb.scl_i == 0);
+    while (cb.scl_i == 0) begin
+      @(posedge clk_i);
+      sample[idx] = cb.sda_i;
+      idx = (idx + 1) % 16;
+    end
+    su_idx = (idx + 16 - 1 - tc.tSetupBit) % 16;
+    data = sample[su_idx];
+  endtask // sample_target_data
 
   task automatic wait_for_dly(int dly);
     repeat (dly) @(posedge clk_i);
@@ -236,6 +253,7 @@ interface i2c_if(
   endtask: get_bit_data
 
   task automatic host_start(ref timing_cfg_t tc);
+    `DV_WAIT(scl_i === 1'b1,, scl_spinwait_timeout_ns, "host_start")
     sda_o = 1'b0;
     wait_for_dly(tc.tHoldStart);
     scl_o = 1'b0;
@@ -261,11 +279,12 @@ interface i2c_if(
   endtask: host_data
 
   task automatic host_stop(ref timing_cfg_t tc);
+    wait(scl_i === 1'b1);
     sda_o = 1'b0;
     wait_for_dly(tc.tClockStop);
     scl_o = 1'b1;
     wait_for_dly(tc.tSetupStop);
-    sda_o = 1'b0;
+    sda_o = 1'b1;
     wait_for_dly(tc.tHoldStop);
   endtask: host_stop
 

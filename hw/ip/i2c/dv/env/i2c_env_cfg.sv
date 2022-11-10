@@ -16,6 +16,7 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
   tran_type_e trans_type = ReadWrite;
 
+  int        spinwait_timeout_ns = 10_000_000; // 10ms
   int        sent_acq_cnt;
   int        rcvd_acq_cnt;
 

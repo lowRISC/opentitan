@@ -125,6 +125,21 @@
       uvm_test_seq: i2c_target_smoke_vseq
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=10_000_000"]
     }
+    {
+      name: i2c_target_stress_wr
+      uvm_test_seq: i2c_target_stress_wr_vseq
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=200_000_000"]
+    }
+    {
+      name: i2c_target_stress_rd
+      uvm_test_seq: i2c_target_stress_rd_vseq
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=10_000_000"]
+    }
+    {
+      name: i2c_target_stretch
+      uvm_test_seq: i2c_target_stretch_vseq
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=80_000_000"]
+    }
   ]
 
   // List of regressions.
@@ -132,6 +147,11 @@
     {
        name: smoke
        tests: ["i2c_host_smoke"]
+    }
+    {
+      name: target_sanity
+      tests: ["i2c_target_smoke", "i2c_target_stress_wr",
+              "i2c_target_stress_rd", "i2c_target_stretch"]
     }
   ]
 }

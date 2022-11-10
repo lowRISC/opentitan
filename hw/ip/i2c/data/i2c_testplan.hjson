@@ -351,11 +351,10 @@
 
             Checking:
               - During read transaction, ensure tx_empty interrupt is asserted when no data left
-                in tx_fifo
-                otherwise tx_empty interrupt must be asserted
+                in tx_fifo otherwise tx_empty interrupt must be de-asserted
             '''
       stage: V2
-      tests: []
+      tests: ["i2c_target_stress_rd"]
     }
     {
       name: target_fifo_reset
@@ -387,7 +386,7 @@
               - Check fifo full states by reading status register
             '''
       stage: V2
-      tests: [""]
+      tests: ["i2c_target_stress_wr"]
     }
     {
       name: target_timeout
@@ -405,6 +404,22 @@
             '''
       stage: V2
       tests: [""]
+    }
+    {
+      name: target_clock_stretch
+      desc: '''
+            Test clock stretch feature of DUT Target mode.
+            For the write and address transaction, when acq fifo is full, DUT starts to stretch clock.
+            For the read transaction, when dut receives read command, the tx fifo is empty,
+            DUT starts to stretch clock.
+            Using read / write mixed traffic, trigger stretch condition by slowing down acq / tx
+            fifo process.
+
+            Checking:
+            Ensure all read /write data received correct on the other side without dropping any data.
+            '''
+      stage: V2
+      tests: ["i2c_target_stretch"]
     }
   ]
 }
