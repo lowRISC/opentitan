@@ -147,3 +147,11 @@ uint32_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds) {
 uint32_t alert_handler_testutils_cycle_rescaling_factor() {
   return kDeviceType == kDeviceSimDV ? 1 : 10;
 }
+
+bool alert_handler_testutils_is_alert_active(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert) {
+  bool is_cause;
+  CHECK_DIF_OK(
+      dif_alert_handler_alert_is_cause(alert_handler, alert, &is_cause));
+  return is_cause;
+}
