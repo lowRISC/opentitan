@@ -674,16 +674,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     extht_fail_in_last_sample = fail_hi || fail_lo;
   endfunction
 
-  task process_xht_events();
-    entropy_src_xht_item item;
-    forever begin
-      xht_fifo.get(item);
-      if(!item.req.clear) begin
-        evaluate_external_ht(item.rsp, ht_fips_mode);
-      end
-    end
-  endtask
-
   // The repetition counts are always running
   function bit evaluate_repcnt_test(bit fips_mode, int value);
     bit fail;
@@ -1455,6 +1445,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   handle_disable_reset(Enable);
                   fifos_cleared = 0;
                   collect_entropy();
+                  // The DUT internals could take as long as three clocks to clear.
+                  cfg.clk_rst_vif.wait_clks(3);
                   handle_disable_reset(Disable);
                 end
                 begin
@@ -2174,18 +2166,18 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             // after a disable event.
             `DV_SPINWAIT_EXIT(xht_fifo.peek(xht_item);,
                               wait(!dut_pipeline_enabled);
-                              repeat(2) @(cfg.m_xht_agent_cfg.vif.mon_cb);)
+                              cfg.clk_rst_vif.wait_clks(2);)
             disable_detected = !xht_fifo.try_get(xht_item);
-            if(disable_detected) break; // No events. DUT has shutdown
-            if(!xht_item.req.clear) begin
+            if (disable_detected) break; // No events. DUT has shutdown
+            if (!xht_item.req.clear) begin
               evaluate_external_ht(xht_item.rsp, ht_fips_mode);
             end
-            if(xht_item.req.entropy_bit_valid || xht_item.req.window_wrap_pulse) break;
+            if (xht_item.req.entropy_bit_valid || xht_item.req.window_wrap_pulse) break;
           end : sample_loop
 
-          if(disable_detected) break; // No sample events. DUT has shutdown
+          if (disable_detected) break; // No sample events. DUT has shutdown
 
-          if(xht_item.req.window_wrap_pulse) begin
+          if (xht_item.req.window_wrap_pulse) begin
             `DV_CHECK(window.size() == window_rng_frames)
             break;
           end else begin
@@ -2211,7 +2203,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           update_repcnts(ht_fips_mode, rng_val);
         end
 
-        if(disable_detected) break; // No events. DUT has shutdown
+        if (disable_detected) break; // No events. DUT has shutdown
 
         // Process end of window events
         `DV_CHECK(xht_item.req.window_wrap_pulse)
