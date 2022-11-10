@@ -176,7 +176,6 @@ opentitan_functest(
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:rv_plic",
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/dif:usbdev",
@@ -186,6 +185,7 @@ opentitan_functest(
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:isr_testutils",
+        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -841,6 +841,7 @@ opentitan_functest(
     name = "example_test_from_flash",
     srcs = ["example_test_from_flash.c"],
     deps = [
+        "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

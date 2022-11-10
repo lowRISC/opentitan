@@ -17,14 +17,15 @@
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -46,7 +47,6 @@ OTTF_DEFINE_TEST_CONFIG();
 static dif_rv_plic_t plic;
 static dif_alert_handler_t alert_handler;
 static dif_clkmgr_t clkmgr;
-static dif_rv_core_ibex_t ibex;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 static dif_usbdev_t usbdev;
@@ -119,10 +119,6 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_ctrl,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-
-  mmio_region_t ibex_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_core_ibex_init(ibex_addr, &ibex));
 }
 
 // List of alerts
@@ -423,39 +419,6 @@ void ottf_external_isr(void) {
         "Interurpt from unexpected peripheral: %d", peripheral_serviced);
 }
 
-/**
- * Get `num` distinct random numbers in the range [0, `max`] from
- * RV_CORE_IBEX_RND_DATA.
- *
- * @param ibex The Ibex DIF object.
- * @param num The number of random numbers to get.
- * @param[out] rnd_buf Pointer to the buffer to write the random numbers to.
- * @param max The maximum random value returned.
- */
-static void get_rand_words(dif_rv_core_ibex_t *ibex, int num, uint32_t *rnd_buf,
-                           uint32_t max) {
-  uint32_t rnd_word;
-  for (int i = 0; i < num; ++i) {
-    bool found = false;
-    while (found == false) {
-      // Get a new random number.
-      CHECK_DIF_OK(dif_rv_core_ibex_read_rnd_data(ibex, &rnd_word));
-      rnd_word = rnd_word % max;
-      // Check if the number is unique.
-      found = true;
-      for (int j = 0; j < i; ++j) {
-        if (rnd_buf[j] == rnd_word) {
-          // Start over.
-          found = false;
-          break;
-        }
-      }
-    }
-    // Add the number to the buffer.
-    rnd_buf[i] = rnd_word;
-  }
-}
-
 enum {
   // Non-volatile counter for the test steps on FPGA.
   kCounterTestSteps = 0,
@@ -469,8 +432,6 @@ bool test_main(void) {
   int ii;
   // To keep the test results
   bool is_cause;
-  // To keep the random wait time
-  uint32_t rnd_wait_time;
 
   // The test consists of multiple test phases
   // Each test phase consists of ARRAYSIZE(kPeripherals) steps
@@ -524,9 +485,7 @@ bool test_main(void) {
       peri_idx = test_step_cnt - (test_phase)*ARRAYSIZE(kPeripherals);
 
       // Wait for a random time <= 1024us
-      get_rand_words(&ibex, /*number of words*/ 1, &rnd_wait_time,
-                     /*max*/ 1 << 10);
-      busy_spin_micros(rnd_wait_time);
+      busy_spin_micros(rand_testutils_gen32_range(1, 1024));
 
       // Disable the clock of the peripheral
       set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleDisabled);
@@ -589,9 +548,7 @@ bool test_main(void) {
     peri_idx = test_step_cnt - (test_phase)*ARRAYSIZE(kPeripherals);
 
     // Wait for a random time <= 1024us
-    get_rand_words(&ibex, /*number of words*/ 1, &rnd_wait_time,
-                   /*max*/ 1 << 10);
-    busy_spin_micros(rnd_wait_time);
+    busy_spin_micros(rand_testutils_gen32_range(1, 1024));
 
     // Disable the clock of the peripheral
     set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleDisabled);
@@ -619,91 +576,74 @@ bool test_main(void) {
       - All peripherals' alerts are enabled and locked.
       - None of the alerts should trigger ping_timeout_alert
 
+    The SystemVerilog test sequence associated with this test is located here:
+      - hw/top_earlgrey/dv/env/seq_lib/chip_sw_alert_handler_lpg_clkoff_vseq.sv
+
     TEST:
     for_each_peripheral
       1- Wait for random time
       2- Enable the peripheral's clock
       3- Trigger the peripheral's fatal alert
       4- Disable the peripheral's clock
-      5- Wait for 1ms
+      5- Wait for 500us
       6- Enable the peripheral's clock
       7- Confirm that fatal_alert is still there
   */
+  if (kDeviceType != kDeviceSimDV) {
+    return true;
+  }
 
-
+  // TODO: Test all peripherals in parallel instead of serial to further improve
+  // the runtime.
   while (test_step_cnt < 3 * ARRAYSIZE(kPeripherals)) {
-    // Run this test phase only in DV sim
-    if (kDeviceType == kDeviceSimDV) {
-      // Read the test_step_cnt and compute the test phase
-      // amd the peripheral ID to test
-      test_phase = test_step_cnt / ARRAYSIZE(kPeripherals);
-      peri_idx = test_step_cnt - (test_phase)*ARRAYSIZE(kPeripherals);
+    // Read the test_step_cnt and compute the test phase
+    // amd the peripheral ID to test
+    test_phase = test_step_cnt / ARRAYSIZE(kPeripherals);
+    peri_idx = test_step_cnt - (test_phase)*ARRAYSIZE(kPeripherals);
 
-      // Wait for a random time <= 1024 cycles
-      get_rand_words(&ibex, /*number of words*/ 1, &rnd_wait_time,
-                    /*max*/ 1 << 10);
-      busy_spin_micros(rnd_wait_time);
+    // Wait for a random time <= 1024 cycles
+    busy_spin_micros(rand_testutils_gen32_range(1, 1024));
 
-      // Enable the clock of the peripheral just in case
-      set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleEnabled);
-      // Wait for 100us
-      busy_spin_micros(100 * 1);
+    // Enable the clock of the peripheral just in case
+    set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleEnabled);
+    // Wait for 100us
+    busy_spin_micros(100);
 
-      // THIS PART SHOULD BE IMPLEMENTED BY SystemVerilog
-      // bilgiday: I KEEP THE FOLLOWING CODE 
-      // bilgiday: TO ILLUSTRATE WHAT I AM TRYING TO ACHIVE.
-      // SEE THIS DISCUSSION
-      // https://github.com/lowRISC/opentitan/pull/14858#discussion_r993874235
-      // Trigger the fatal alert via ALERT_TEST_REG of the peripheral
-      uint32_t alert_test_reg = bitfield_bit32_write(
-          0, kPeripherals[peri_idx].fatal_alert_bit, kDifToggleEnabled);
-      mmio_region_t base_addr =
-          mmio_region_from_addr(kPeripherals[peri_idx].base);
-      mmio_region_write32(base_addr, kPeripherals[peri_idx].offset,
-                          alert_test_reg);
-      
-      // Check if the alert is really triggered
-      CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-          &alert_handler, kPeripherals[peri_idx].alert_ids[0], &is_cause));
-      CHECK(is_cause, "is_cause for alert[%d] should be 1 but we got 0",
-            kPeripherals[peri_idx].alert_ids[0]);
-      
-      // Disable the clock of the peripheral
-      set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleDisabled);
+    // Anchor log monitored by the SV test sequence. Do not modify.
+    LOG_INFO("Peripheral %0d ready for fault injection", peri_idx);
 
-      // Clear the alert_handler.ALERT_CAUSE bit before re-enabling the clocks
-      CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-          &alert_handler, kPeripherals[peri_idx].alert_ids[0]));
-      // Verify that ALERT_CAUSE is actually cleared
-      CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-          &alert_handler, kPeripherals[peri_idx].alert_ids[0], &is_cause));
-      CHECK(!is_cause, "is_cause for alert[%d] should be 0 but we got 1",
-            kPeripherals[peri_idx].alert_ids[0]);
+    // The SV test sequence will at this point, inject a fatal alert into
+    // this peripheral. Wait for the alert to trigger.
+    IBEX_SPIN_FOR(alert_handler_testutils_is_alert_active(
+                      &alert_handler, kPeripherals[peri_idx].alert_ids[0]),
+                  100 /*us*/);
 
-      // Wait for 1000us
-      busy_spin_micros(100 * 10);
+    // Disable the clock of the peripheral
+    set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleDisabled);
 
-      // Enable the clock of the peripheral
-      set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleEnabled);
-      // Wait for 100us
-      busy_spin_micros(100 * 1);
+    // Clear the alert_handler.ALERT_CAUSE bit before re-enabling the clocks
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, kPeripherals[peri_idx].alert_ids[0]));
+    // Verify that ALERT_CAUSE is actually cleared
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, kPeripherals[peri_idx].alert_ids[0], &is_cause));
+    CHECK(!is_cause, "is_cause for alert[%d] should be 0 but we got 1",
+          kPeripherals[peri_idx].alert_ids[0]);
 
+    // Wait long enough time to leave the clock gating enabled. Arbitrarily
+    // set to 500us to keep the runtime reasonable.
+    busy_spin_micros(500);
 
-      // Check if the fatal alert is still there
-      CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-          &alert_handler, kPeripherals[peri_idx].alert_ids[0], &is_cause));
-      CHECK(is_cause, "is_cause should be 1 but we got %d", is_cause);
-      // Increment the test counter
-      test_step_cnt++;
-    } else {
-      // TODO: This is only for testing the counters on the FPGA. 
-      // TODO: Remove it in the final version.  
-      // Increment the test counter
-      test_phase = test_step_cnt / ARRAYSIZE(kPeripherals);
-      peri_idx = test_step_cnt - (test_phase)*ARRAYSIZE(kPeripherals);
-      test_step_cnt++;
-      LOG_INFO("step_cnt = %d, phase = %d, peri_idx = %d", test_step_cnt, test_phase, peri_idx);
-    }
+    // Enable the clock of the peripheral
+    set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleEnabled);
+    busy_spin_micros(100);
+
+    // Check if the fatal alert is still there
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, kPeripherals[peri_idx].alert_ids[0], &is_cause));
+    CHECK(is_cause, "is_cause should be 1 but we got %d", is_cause);
+    // Increment the test counter
+    test_step_cnt++;
   }
 
   return true;
