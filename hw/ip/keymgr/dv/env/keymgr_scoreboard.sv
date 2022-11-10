@@ -611,6 +611,11 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
             endcase
           end // start
         end // addr_phase_write
+        else if (addr_phase_read) begin
+          // start drops when op is done.
+          void'(csr.predict(.value(current_op_status == keymgr_pkg::OpWip),
+                            .kind(UVM_PREDICT_READ)));
+        end
       end
       "working_state": begin
         // Check in this block
