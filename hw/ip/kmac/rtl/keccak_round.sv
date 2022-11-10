@@ -440,6 +440,8 @@ module keccak_round
     .clk_i,
     .rst_ni,
 
+    .lc_escalate_en_i,
+
     .rnd_i           (round),
     .phase_sel_i     (phase_sel),
     .cycle_i         (cycle),
