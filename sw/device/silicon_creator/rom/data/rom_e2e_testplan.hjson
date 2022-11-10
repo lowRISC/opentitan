@@ -994,7 +994,7 @@
       name: rom_e2e_ret_ram_init
       desc: '''Verify that ROM initializes the retention SRAM when needed.
 
-            `CREATOR_SW_CFG_RET_RAM_RESET_MASK` should be `1 << 3` so that ROM initializes the
+            `CREATOR_SW_CFG_RET_RAM_RESET_MASK` should be `1 << 2` so that ROM initializes the
             retention SRAM after a SW reset request.
 
             - Verify that `reset_reasons` reports POR.
