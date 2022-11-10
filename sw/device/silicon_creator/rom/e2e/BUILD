@@ -2879,3 +2879,54 @@ opentitan_functest(
         "cw310_rom",
     ],
 )
+
+otp_json(
+    name = "otp_json_reset_ret_ram_overlay",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            # Set the mask to 1 << kRstmgrReasonSoftwareRequest to trigger a
+            # retention RAM reset after a SW-requested reset
+            items = {"CREATOR_SW_CFG_RET_RAM_RESET_MASK": "0x4"},
+        ),
+    ],
+)
+
+otp_image(
+    name = "otp_img_reset_ret_ram",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [":otp_json_reset_ret_ram_overlay"],
+    visibility = ["//visibility:private"],
+)
+
+bitstream_splice(
+    name = "bitstream_reset_ret_ram",
+    src = "//hw/bitstream:rom",
+    data = ":otp_img_reset_ret_ram",
+    meminfo = "//hw/bitstream:otp_mmi",
+    tags = ["vivado"] + maybe_skip_in_ci(CONST.LCV.RMA),
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+)
+
+opentitan_functest(
+    name = "rom_e2e_ret_ram_init",
+    srcs = ["rom_e2e_ret_ram_init_test.c"],
+    cw310 = cw310_params(
+        bitstream = ":bitstream_reset_ret_ram",
+        tags = ["vivado"] + maybe_skip_in_ci(CONST.LCV.RMA),
+    ),
+    signed = True,
+    targets = [
+        "cw310_rom",
+    ],
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
