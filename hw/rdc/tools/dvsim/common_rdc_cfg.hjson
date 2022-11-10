@@ -67,6 +67,7 @@
     { BUILD_DIR:    "{build_dir}" },
     { DUT:          "{dut}" },
     { PARAMS:       "{params}" },
+    { WAVES:        "{waves}"},
     { SV_FLIST:     "{sv_flist}" }
   ]
 }
