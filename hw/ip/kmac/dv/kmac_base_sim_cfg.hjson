@@ -188,7 +188,6 @@
     {
       name: "{variant}_lc_escalation"
       uvm_test_seq: kmac_lc_escalation_vseq
-      run_opts: ["+disable_lc_asserts=1"]
     }
     {
       name: kmac_stress_all

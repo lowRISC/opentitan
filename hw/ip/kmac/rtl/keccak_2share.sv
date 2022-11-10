@@ -25,6 +25,8 @@ module keccak_2share
   input clk_i,
   input rst_ni,
 
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i, // Used to disable SVAs when escalating.
+
   input         [RndW-1:0] rnd_i, // Current round index
   input mubi4_t            phase_sel_i, // Output mux contol. Used when EnMasking := 1
   input              [1:0] cycle_i, // Current cycle index. Used when EnMasking := 1
@@ -415,10 +417,12 @@ module keccak_2share
   `ASSERT_INIT(ValidRound_A, MaxRound <= 24) // Keccak-f only
 
   // phase_sel_i shall stay for two cycle after change to 1.
+  lc_ctrl_pkg::lc_tx_t unused_lc_sig;
+  assign unused_lc_sig = lc_escalate_en_i;
   if (EnMasking) begin : gen_selperiod_chk
     `ASSUME(SelStayTwoCycleIfTrue_A,
         ($past(phase_sel_i) == MuBi4False) && (phase_sel_i == MuBi4True)
-        |=> phase_sel_i == MuBi4True, clk_i, !rst_ni)
+        |=> phase_sel_i == MuBi4True, clk_i, !rst_ni || lc_escalate_en_i != lc_ctrl_pkg::Off)
   end
 
   ///////////////
