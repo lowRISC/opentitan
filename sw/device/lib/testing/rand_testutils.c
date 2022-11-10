@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
@@ -82,5 +83,24 @@ uint32_t rand_testutils_gen32_range(uint32_t min, uint32_t max) {
   if (range == 0) {
     return min;
   }
-  return min + (rand_testutils_gen32() % (range + 1));
+  uint32_t result = min + (rand_testutils_gen32() % (range + 1));
+  CHECK(result >= min && result <= max);
+  return result;
+}
+
+void rand_testutils_shuffle(void *array, size_t size, size_t length) {
+  if (length <= 1) {
+    return;
+  }
+  unsigned char temp[size];
+  unsigned char *array8 = array;
+  uint32_t reseed_frequency = rand_testutils_rng_ctx.reseed_frequency;
+  rand_testutils_rng_ctx.reseed_frequency = UINT32_MAX;
+  for (size_t i = length - 2; i > 0; i--) {
+    size_t j = rand_testutils_gen32_range(0, i + 1);
+    memcpy(temp, array8 + j * size, size);
+    memcpy(array8 + j * size, array8 + i * size, size);
+    memcpy(array8 + i * size, temp, size);
+  }
+  rand_testutils_rng_ctx.reseed_frequency = reseed_frequency;
 }
