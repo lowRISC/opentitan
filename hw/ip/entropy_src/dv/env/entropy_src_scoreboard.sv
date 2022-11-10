@@ -951,6 +951,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               prim_mubi_pkg::mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
               prim_mubi_pkg::mubi8_t'(cfg.otp_en_es_fw_read),
               prim_mubi_pkg::mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
+              prim_mubi_pkg::mubi8_t'(cfg.otp_en_es_fw_over),
               prim_mubi_pkg::mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value()),
               full_seed_found
           );
@@ -2358,6 +2359,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               prim_mubi_pkg::mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
               prim_mubi_pkg::mubi8_t'(cfg.otp_en_es_fw_read),
               prim_mubi_pkg::mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
+              prim_mubi_pkg::mubi8_t'(cfg.otp_en_es_fw_over),
               prim_mubi_pkg::mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value())
           );
           msg = $sformatf("Match found: %d\n", observe_fifo_words);
