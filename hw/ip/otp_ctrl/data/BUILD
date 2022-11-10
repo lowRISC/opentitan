@@ -90,6 +90,19 @@ otp_json(
                 # real chip.
                 "CREATOR_SW_CFG_RMA_SPIN_EN": "0x739",
                 "CREATOR_SW_CFG_RMA_SPIN_CYCLES": "10",
+                # Entropy source health check default values. This needs to be
+                # populated when `CREATOR_SW_CFG_RNG_EN` is set to true.
+                "CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS": "0xffffffff",
+                "CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS": "0xffffffff",
+                "CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS": "0xffffffff",
+                "CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS": "0x0",
+                "CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS": "0xffffffff",
+                "CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS": "0xffffffff",
+                "CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS": "0x0",
+                "CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS": "0xffffffff",
+                "CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS": "0x0",
+                "CREATOR_SW_CFG_RNG_ALERT_THRESHOLD": "0xfffd0002",
+                "CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST": "0x8264cf75",
             },
         ),
     ],

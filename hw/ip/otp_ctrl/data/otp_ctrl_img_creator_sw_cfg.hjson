@@ -79,6 +79,56 @@
                     // sw/device/lib/base/hardened.h.
                     value: "0x739",
                 },
+                {
+                    name: "CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS",
+                    value: "0xffffffff",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS",
+                    value: "0xffffffff",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS",
+                    value: "0xffffffff",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS",
+                    value: "0x0",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS",
+                    value: "0xffffffff",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS",
+                    value: "0xffffffff",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS",
+                    value: "0x0",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS",
+                    value: "0xffffffff",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS",
+                    value: "0x0",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_ALERT_THRESHOLD",
+                    value: "0xfffd0002",
+                }
+                {
+                    name: "CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST",
+                    value: "0x8264cf75",
+                }
+                {
+                    // Using the default register reset value. Two consecutive
+                    // failures trigger an alert.
+                    name: "CREATOR_SW_CFG_RNG_ALERT_THRESHOLD",
+                    value: "0xfffd0002",
+                }
             ],
         }
     ]
