@@ -13,6 +13,7 @@ interface csrng_cov_if (
   import csrng_pkg::*;
   import csrng_agent_pkg::*;
   import csrng_env_pkg::*;
+  import csrng_ral_pkg::*;
   import prim_mubi_pkg::*;
   `include "dv_fcov_macros.svh"
 
@@ -202,15 +203,15 @@ interface csrng_cov_if (
                              );
   endfunction
 
-  function automatic void cg_internal_sample(bit[31:0] genbits,
-                                             bit[1:0]  genbits_vld,
-                                             bit[1:0]  sw_cmd_sts,
-                                             bit       regwen,
-                                             bit[3:0]  intr_state,
-                                             bit[3:0]  intr_enable
+  function automatic void cg_internal_sample(csrng_reg_genbits     genbits,
+                                             csrng_reg_genbits_vld genbits_vld,
+                                             csrng_reg_sw_cmd_sts  sw_cmd_sts,
+                                             csrng_reg_regwen      regwen,
+                                             csrng_reg_intr_state  intr_state,
+                                             csrng_reg_intr_enable intr_enable
                                             );
-    csrng_internal_cg_inst.sample(genbits, genbits_vld, sw_cmd_sts, regwen, intr_state,
-                                  intr_enable);
+    csrng_internal_cg_inst.sample(genbits.d, {genbits_vld.genbits_vld, genbits_vld.genbits_fips}, {sw_cmd_sts.cmd_rdy, sw_cmd_sts.cmd_sts}, regwen, {intr_state.cs_cmd_req_done, intr_state.cs_entropy_req, intr_state.cs_hw_inst_exc, intr_state.cs_fatal_err},
+                                  {intr_enable.cs_cmd_req_done, intr_enable.cs_entropy_req, intr_enable.cs_hw_inst_exc, intr_enable.cs_fatal_err});
   endfunction
 
 endinterface : csrng_cov_if
