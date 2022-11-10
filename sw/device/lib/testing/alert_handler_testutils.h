@@ -89,4 +89,14 @@ uint32_t alert_handler_testutils_get_cycles_from_us(uint64_t microseconds);
  */
 uint32_t alert_handler_testutils_cycle_rescaling_factor();
 
+/**
+ * Returns whether an alert is active.
+ *
+ * @param alert_handler An alert handler handle.
+ * @param alert The given alert.
+ * @return The status of the given alert as boolean.
+ */
+bool alert_handler_testutils_is_alert_active(
+    const dif_alert_handler_t *alert_handler, dif_alert_handler_alert_t alert);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_ALERT_HANDLER_TESTUTILS_H_
