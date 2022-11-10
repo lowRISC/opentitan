@@ -74,6 +74,18 @@ package edn_env_pkg;
   } err_code_e;
 
   typedef enum int {
+    EdnSfifoRescmdErrTest = 0,
+    EdnSfifoGencmdErrTest = 1,
+    EdnErrTest            = 2, // TODO: issue #16218
+    EdnAckSmErrTest       = 20,
+    EdnMainSmErrTest      = 21,
+    EdnCntrErrTest        = 22,
+    EdnFifoWriteErrTest   = 28,
+    EdnFifoReadErrTest    = 29,
+    EdnFifoStateErrTest   = 30
+  } err_code_test_e;
+
+  typedef enum int {
     sfifo_rescmd = 0,
     sfifo_gencmd = 1
   } which_fifo_e;
