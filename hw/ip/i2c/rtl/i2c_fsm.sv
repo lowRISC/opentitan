@@ -369,7 +369,7 @@ module i2c_fsm (
     // Target function acknowledges the address and returns an ack to external host
     AddrAckWait, AddrAckSetup, AddrAckPulse, AddrAckHold,
     // Target function sends read data to external host-receiver
-    TransmitWait, TransmitSetup, TransmitPulse, TransmitHold,
+    TransmitSetup, TransmitPulse, TransmitHold,
     // Target function receives ack from external host
     TransmitAck, TransmitAckPulse, WaitForStop,
     // Target function receives write data from the external host
@@ -437,6 +437,14 @@ module i2c_fsm (
   // Reverse the bit order since data should be sent out MSB first
   logic [7:0] tx_fifo_rdata;
   assign tx_fifo_rdata = {<<1{tx_fifo_rdata_i}};
+
+  // The usage of target_idle_o directly confuses xcelium and leads the
+  // the simulator to a combinational loop. While it may be a tool recognized
+  // loop, it is not an actual physical loop, since target_idle affects only
+  // state_d, which is not used directly by any logic in this module.
+  // This is a work around for a known tool limitation.
+  logic target_idle;
+  assign target_idle = target_idle_o;
 
   // Outputs for each state
   always_comb begin : state_outputs
@@ -647,23 +655,19 @@ module i2c_fsm (
         target_idle_o = 1'b0;
         sda_d = 1'b0;
       end
-      // TransmitWait: pause before sending a bit
-      TransmitWait : begin
-        target_idle_o = 1'b0;
-      end
       // TransmitSetup: target shifts indexed bit onto SDA while SCL is low
       TransmitSetup : begin
         target_idle_o = 1'b0;
         sda_d = tx_fifo_rdata[3'(bit_idx)];
       end
-      // TransmitPulse: target shifts indexed bit onto SDA while SCL is released
+      // TransmitPulse: target holds indexed bit onto SDA while SCL is released
       TransmitPulse : begin
         target_idle_o = 1'b0;
 
         // Hold value
         sda_d = sda_q;
       end
-      // TransmitHold: target shifts indexed bit onto SDA while SCL is pulled low
+      // TransmitHold: target holds indexed bit onto SDA while SCL is pulled low, for the hold time
       TransmitHold : begin
         target_idle_o = 1'b0;
 
@@ -1137,12 +1141,15 @@ module i2c_fsm (
         end
       end
 
-      // TransmitAck: target waits for host to ACK transmission
-      // If a nak is received, that means a stop is incoming/
+      // TransmitAckPulse: target waits for host to ACK transmission
+      // If a nak is received, that means a stop is incoming.
       TransmitAckPulse : begin
         if (!scl_i) begin
           // If host acknowledged, that means we must continue
           if (host_ack) begin
+            // The TX fifo is popped during TransmitAckPulse state,
+            // so an entry of 1 implies next cycle it will be 0
+            // unless there is another write.
             if (tx_fifo_depth_i == 7'd1 && !tx_fifo_wvalid_i) begin
               state_d = StretchTxEmpty;
             end else begin
@@ -1157,7 +1164,7 @@ module i2c_fsm (
         end
       end
 
-      // An innert state just waiting for host to issue a stop
+      // An inert state just waiting for host to issue a stop
       // Cannot cycle back to idle directly as other events depend on the system being
       // non-idle.
       WaitForStop: begin
@@ -1250,7 +1257,15 @@ module i2c_fsm (
     // When a start is detected, always go to the acquire start state.
     // Differences in repeated start / start handling are done in the
     // other fsm.
-    if (!target_enable_i && !host_enable_i) begin
+    if (!target_idle && !target_enable_i) begin
+      // If the target function is currently not idle but target_enable is suddenly dropped,
+      // (maybe because the host locked up and we want to cycle back to an initial state),
+      // transition immediately.
+      // The same treatment is not given to the host mode because it already attempts to
+      // gracefully terminate.  If the host cannot gracefully terminate for whatever reason,
+      // (the other side is holding SCL low), we may need to forcefully reset the module.
+      // TODO: It may be worth having a force stop condition to force the host back to
+      // Idle in case graceful termination is not possible.
       state_d = Idle;
     end else if (start_det) begin
       state_d = AcquireStart;

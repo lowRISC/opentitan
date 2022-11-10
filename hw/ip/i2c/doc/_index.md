@@ -355,7 +355,7 @@ When a host receives enough data from a target, it usually signals the end of th
 In a case when a target receives an ACK and then a STOP/START, the interrupt `ack_stop` is asserted.
 
 If TX FIFO receives an additional write request when its FIFO is full, the interrupt `tx_overflow` is asserted.
-If ACQ FIFO becomes full, the intererupt `acq_full` is asserted.
+If ACQ FIFO becomes full, the interrupt `acq_full` is asserted.
 
 If a host ceases to send SCL pulses at any point during an ongoing transaction, the target waits for a specified time period and then asserts the interrupt `host_timeout`.
 Host sending an address and R/W bit to all target devices, writing to the selected target, or reading from the target are examples of ongoing transactions.
