@@ -359,7 +359,7 @@
                 This bit will be set to one when an error has been detected for the
                 reseed command FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
+                This error will signal a fatal alert. This bit will stay set until the next reset.
                 '''
         }
         { bits: "1",
@@ -368,7 +368,7 @@
                 This bit will be set to one when an error has been detected for the
                 generate command FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
-                This bit will stay set until the next reset.
+                This error will signal a fatal alert. This bit will stay set until the next reset.
                 '''
         }
         { bits: "20",
