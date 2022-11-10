@@ -114,7 +114,10 @@ package chip_env_pkg;
     LcTransitionError,
     LcTokenError,
     LcFlashRmaError,
-    LcOtpError
+    LcOtpError,
+    LcStateError,
+    LcBusIntegError,
+    LcOtpPartitionError
   } lc_ctrl_status_e;
 
   typedef enum bit[1:0] {
