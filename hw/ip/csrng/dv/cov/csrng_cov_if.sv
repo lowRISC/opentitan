@@ -174,7 +174,7 @@ interface csrng_cov_if (
 
     cp_genbits_vld:     coverpoint genbits_vld;
     cp_sw_cmd_sts:      coverpoint sw_cmd_sts;
-    cp_regwen:          coverpoint rewen;
+    cp_regwen:          coverpoint regwen;
     cp_cs_cmd_req_done: coverpoint {intr_state[0], intr_enable[0]};
     cp_cs_entropy_req:  coverpoint {intr_state[1], intr_enable[1]};
     cp_cs_hw_inst_exc:  coverpoint {intr_state[2], intr_enable[2]};
