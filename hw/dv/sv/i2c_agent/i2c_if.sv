@@ -43,6 +43,25 @@ interface i2c_if(
     wait(cb.scl_i == 1);
   endtask
 
+   task automatic sample_target_data(timing_cfg_t tc, output bit data);
+      bit sample[16];
+      int idx = 0;
+      int su_idx;
+      
+    wait(cb.scl_i == 0);
+//      `JDBG(("sam begin"))
+      while (cb.scl_i == 0) begin
+	 @(posedge clk_i);	 
+	 sample[idx] = cb.sda_i;
+	 idx = (idx + 1) % 16;	 
+      end
+      su_idx = (idx + 16 - 1 - tc.tSetupBit) % 16;
+//      `JDBG(("sam end idx:%0d tsetup:%0d su_idx:%0d  %p", idx, tc.tSetupBit, su_idx, sample))      
+      data = sample[su_idx];
+      
+   endtask // sample_target_data
+   
+   
   task automatic wait_for_dly(int dly);
     repeat (dly) @(posedge clk_i);
   endtask : wait_for_dly
@@ -236,6 +255,7 @@ interface i2c_if(
   endtask: get_bit_data
 
   task automatic host_start(ref timing_cfg_t tc);
+    wait(scl_i === 1'b1);
     sda_o = 1'b0;
     wait_for_dly(tc.tHoldStart);
     scl_o = 1'b0;
@@ -261,11 +281,12 @@ interface i2c_if(
   endtask: host_data
 
   task automatic host_stop(ref timing_cfg_t tc);
+    wait(scl_i === 1'b1);
     sda_o = 1'b0;
     wait_for_dly(tc.tClockStop);
     scl_o = 1'b1;
     wait_for_dly(tc.tSetupStop);
-    sda_o = 1'b0;
+    sda_o = 1'b1;
     wait_for_dly(tc.tHoldStop);
   endtask: host_stop
 
