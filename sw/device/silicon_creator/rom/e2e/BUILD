@@ -21,7 +21,7 @@ load(
 )
 load("//rules:manifest.bzl", "manifest")
 load("//rules:opentitan_gdb_test.bzl", "IBEX_GPRS", "gdb_commands_copy_registers", "gdb_commands_restore_registers", "gdb_commands_set_registers", "get_gdb_readable_csr_names", "get_gdb_settable_csr_names", "opentitan_gdb_fpga_cw310_test")
-load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image", "otp_json", "otp_partition")
+load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_alert_digest", "otp_image", "otp_json", "otp_partition")
 load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
 load("//rules:splice.bzl", "bitstream_splice")
 load("@bazel_skylib//lib:shell.bzl", "shell")
@@ -1059,6 +1059,115 @@ test_suite(
     tags = ["manual"],
     tests = [
         "alert_{}".format(lc_state.lower())
+        for lc_state in ALERT_LC_STATES
+    ],
+)
+
+otp_json(
+    name = "shutdown_alert_owner_sw_cfg",
+    partitions = [
+        otp_partition(
+            name = "OWNER_SW_CFG",
+            items = {
+                "OWNER_SW_CFG_DIGEST": "0x0",
+                # Enable bootstrap. See `hardened_bool_t` in
+                # sw/device/lib/base/hardened.h.
+                "OWNER_SW_CFG_ROM_BOOTSTRAP_EN": "0x739",
+                # Set to 0x739 to use the ROM_EXT hash measurement as the key
+                # manager attestation binding value.
+                "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": "0x0",
+                # Report errors without any redaction.
+                "OWNER_SW_CFG_ROM_ERROR_REPORTING": "0xe2290aa5",
+                # Enable class A alerts.
+                # See `alert_enable_t` in
+                # sw/device/silicon_creator/lib/drivers/alert.h
+                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN": "0x07a9a9a9",
+                # Configure class A to escalate until phase 3 and disable escalation
+                # for the remaining classes.
+                # See `alert_escalate_t` in
+                # sw/device/silicon_creator/lib/drivers/alert.h
+                "OWNER_SW_CFG_ROM_ALERT_ESCALATION": "0x76d1d1d1",
+                # Classify UART0 alerts (alert source 0) as class A and leave others as unconfigured.
+                # See `alert_class_t` in
+                # sw/device/silicon_creator/lib/drivers/alert.h
+                "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": ["0xee949494"] + ["0x94949494"] * 79,
+                # Leave local alert classification as unconfigured. See `alert_class_t` in
+                # sw/device/silicon_creator/lib/drivers/alert.h
+                "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": ["0x94949494"] * 16,
+                # Set the alert accumulation thresholds to 0 per class.
+                "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH": ["0x00000000"] * 4,
+                # Set the alert timeout cycles to 0 per class.
+                "OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES": ["0x00000000"] * 4,
+                # Set the alert phase cycles to 0 for class A and to 0xffffffff for other classes.
+                "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES": ["0x0"] * 4  + ["0xffffffff"] * 12,
+            },
+        ),
+    ],
+)
+
+otp_alert_digest(
+    name = "shutdown_alert_digest_cfg",
+    otp_img = ":shutdown_alert_owner_sw_cfg",
+)
+
+[otp_image(
+    name = "otp_img_shutdown_alert_{}".format(lc_state.lower()),
+    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state.lower()),
+    overlays = STD_OTP_OVERLAYS + [
+        ":shutdown_alert_owner_sw_cfg",
+        ":shutdown_alert_digest_cfg",
+    ],
+) for lc_state in ALERT_LC_STATES]
+
+[bitstream_splice(
+    name = "bitstream_shutdown_alert_{}".format(lc_state.lower()),
+    src = "//hw/bitstream:rom",
+    data = ":otp_img_shutdown_alert_{}".format(lc_state.lower()),
+    meminfo = "//hw/bitstream:otp_mmi",
+    tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+    update_usr_access = True,
+) for lc_state, lc_state_val in ALERT_LC_STATES.items()]
+
+[opentitan_flash_binary(
+    name = "rom_e2e_shutdown_alert_config_test_{}".format(lc_state.lower()),
+    srcs = ["rom_e2e_shutdown_alert_config_test.c"],
+    devices = [
+        "fpga_cw310",
+    ],
+    deps = [
+        "//hw/ip/uart/data:uart_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+) for lc_state in ALERT_LC_STATES]
+
+[
+    opentitan_functest(
+        name = "shutdown_alert_{}".format(
+            lc_state.lower(),
+        ),
+        cw310 = cw310_params(
+            bitstream = ":bitstream_shutdown_alert_{}".format(lc_state.lower()),
+            tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+        ),
+        key = "fake_prod_key_0",
+        ot_flash_binary = ":rom_e2e_shutdown_alert_config_test_{}".format(lc_state.lower()),
+        signed = True,
+        targets = [
+            "cw310_rom",
+        ],
+    )
+    for lc_state, lc_state_val in ALERT_LC_STATES.items()
+]
+
+test_suite(
+    name = "rom_e2e_shutdown_alert_config",
+    tags = ["manual"],
+    tests = [
+        "shutdown_alert_{}".format(lc_state.lower())
         for lc_state in ALERT_LC_STATES
     ],
 )
