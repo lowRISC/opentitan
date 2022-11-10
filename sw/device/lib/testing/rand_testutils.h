@@ -100,4 +100,14 @@ uint32_t rand_testutils_gen32(void);
  */
 uint32_t rand_testutils_gen32_range(uint32_t min, uint32_t max);
 
+/** Shuffles an arbitrary array of elements.
+ *
+ * The shuffling occurs in-place. The reseeding of the LFSR is temporarily
+ * turned off to allow faster runtime performance.
+ * @param array Pointer to the array being shuffled.
+ * @param size The size of each element in the array.
+ * @param length The number of elements in the array.
+ */
+void rand_testutils_shuffle(void *array, size_t size, size_t length);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_RAND_TESTUTILS_H_
