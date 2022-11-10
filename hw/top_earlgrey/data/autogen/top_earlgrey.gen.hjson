@@ -391,17 +391,6 @@
         clock: main
       }
       {
-        name: sys_io
-        gen: true
-        type: top
-        domains: []
-        shadowed: false
-        sw: false
-        path: rstmgr_aon_resets.rst_sys_io_n
-        parent: sys_src
-        clock: io
-      }
-      {
         name: sys_io_div4
         gen: true
         type: top

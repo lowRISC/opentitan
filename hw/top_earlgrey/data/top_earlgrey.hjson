@@ -151,9 +151,7 @@
       { name: "lc_io_div4",     gen: true,  type: "top", parent: "lc_src",  clk: "io_div4" }
       { name: "lc_usb",         gen: true,  type: "top", parent: "lc_src",  clk: "usb"     }
       { name: "sys",            gen: true,  type: "top", parent: "sys_src", clk: "main"    }
-      { name: "sys_io",         gen: true,  type: "top", parent: "sys_src", clk: "io"      }
       { name: "sys_io_div4",    gen: true,  type: "top", parent: "sys_src", clk: "io_div4" }
-      { name: "lc_usb",         gen: true,  type: "top", parent: "lc_src",  clk: "usb"     }
       { name: "spi_device",     gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true }
       { name: "spi_host0",      gen: true,  type: "top", parent: "lc_src", clk: "io",      sw: true }
       { name: "spi_host1",      gen: true,  type: "top", parent: "lc_src", clk: "io_div2", sw: true }
