@@ -37,7 +37,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     i2c_item req;
     @(posedge cfg.vif.rst_ni);
     forever begin
-      release_bus();
+      if (cfg.if_mode == Device) release_bus();
       // driver drives bus per mode
       seq_item_port.get_next_item(req);
       fork
