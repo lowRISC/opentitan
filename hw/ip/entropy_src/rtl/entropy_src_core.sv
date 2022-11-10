@@ -1050,7 +1050,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // select source for health testing
 
   assign health_test_esbus     = pfifo_postht_wdata;
-  assign health_test_esbus_vld = pfifo_postht_push & pfifo_postht_not_full;
+  assign health_test_esbus_vld = pfifo_postht_push & pfifo_postht_not_full & ~pfifo_postht_clr;
 
   // Health test any data that comes in on the RNG interface.
   assign repcnt_active = 1'b1;

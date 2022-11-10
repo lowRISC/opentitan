@@ -86,13 +86,15 @@ module entropy_src_enable_delay import prim_mubi_pkg::*; (
   // In flight data monitoring.
   // The `fifo_timer` is a small shift register to count out the maximum number of cycles to wait
   // for the FIFOs to drain. Since this timer is very small (3 cycles), it is implemented as a shift
-  // register to keep the logic simple, though it could easily be implemented as a counter as well.
+  // register.
   assign fifo_timer_d = enable_i ? {MaxFifoWait{1'b1}} : {fifo_timer_q[MaxFifoWait-2:0], 1'b0};
   assign fifos_not_empty = {esrng_fifo_not_empty_i, esbit_fifo_not_empty_i,
                             !bypass_mode_i & postht_fifo_not_empty_i};
   assign data_in_flight = |fifo_timer_q && |fifos_not_empty;
 
-  assign extend_enable = (data_in_flight & ~enable_i);
+  // Extend the enable by at least one clock to give the FSM time to receive any last
+  // Health checks.
+  assign extend_enable = ((fifo_timer_q[0] | data_in_flight) & ~enable_i);
 
   // Pulse to extend from the falling edge of the incoming enable pulse
   // until one cycle after the SHA is done.
