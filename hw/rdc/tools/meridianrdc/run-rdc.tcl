@@ -31,8 +31,9 @@ set RESET_SCENARIO_FILE [get_env_var "RESET_SCENARIO_FILE"]
 
 # WAVES is optional
 set WAVES ""
-if {[info exists ::env("WAVES")]} {
+if {[info exists ::env(WAVES)]} {
   set WAVES "$::env(WAVES)"
+  puts "::env(WAVES) = ${WAVES}"
 }
 
 # Used to disable some SDC constructs that are not needed by RDC.
