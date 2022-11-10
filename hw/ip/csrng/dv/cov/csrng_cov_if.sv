@@ -138,11 +138,6 @@ interface csrng_cov_if (
     option.name         = "csrng_internal_cg";
     option.per_instance = 1;
 
-    assign cs_cmd_req_done = {intr_state[0], intr_enable[0]};
-    assign cs_entropy_req  = {intr_state[1], intr_enable[1]};
-    assign cs_hw_inst_exc  = {intr_state[2], intr_enable[2]};
-    assign cs_fatal_err    = {intr_state[3], intr_enable[3]};
-
     // TODO find more efficient way to do this
     cp_genbits0:        coverpoint genbits[0];
     cp_genbits1:        coverpoint genbits[1];
@@ -180,10 +175,10 @@ interface csrng_cov_if (
     cp_genbits_vld:     coverpoint genbits_vld;
     cp_sw_cmd_sts:      coverpoint sw_cmd_sts;
     cp_regwen:          coverpoint rewen;
-    cp_cs_cmd_req_done: coverpoint cs_cmd_req_done;
-    cp_cs_entropy_req:  coverpoint cs_entropy_req;
-    cp_cs_hw_inst_exc:  coverpoint cs_hw_inst_exc;
-    cp_cs_fatal_err:    coverpoint cs_fatal_err;
+    cp_cs_cmd_req_done: coverpoint {intr_state[0], intr_enable[0]};
+    cp_cs_entropy_req:  coverpoint {intr_state[1], intr_enable[1]};
+    cp_cs_hw_inst_exc:  coverpoint {intr_state[2], intr_enable[2]};
+    cp_cs_fatal_err:    coverpoint {intr_state[3], intr_enable[3]};
   endgroup : csrng_internal_cg
 
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
