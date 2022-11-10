@@ -2658,3 +2658,41 @@ test_suite(
     tags = ["manual"],
     tests = ["sigverify_usage_constraint_{}".format(t["name"]) for t in test_cases],
 )
+
+opentitan_flash_binary(
+    name = "rom_ext_upgrade_test",
+    srcs = ["rom_ext_upgrade_test.c"],
+    devices = [
+        "fpga_cw310",
+    ],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
+opentitan_functest(
+    name = "rom_ext_upgrade",
+    cw310 = cw310_params(
+        # Fail if we see version 3, because the test has updated twice, FAIL, version 0 twice, or PASS
+        exit_failure = "(min_security_version_rom_ext:[^01])|(FAIL)|((min_security_version_rom_ext:0(?s:.*)){2,})|(PASS)",
+        exit_success = "min_security_version_rom_ext:0(?s:.*)min_security_version_rom_ext:1(?s:.*)" + MSG_TEMPLATE_BFV.format(hex(CONST.BFV.BOOT_POLICY.ROLLBACK)),
+        test_cmds = [
+            "--exec=\"fpga load-bitstream --rom-kind=rom $(rootpath {bitstream})\"",
+            "--exec=\"bootstrap --clear-uart=true $(rootpath {flash})\"",
+            "--exec=\"console --exit-success={exit_success} --exit-failure={exit_failure}\"",
+            "fpga",
+            "load-bitstream",
+            "$(rootpath {bitstream})",  # This test should clean up after itself
+        ],
+    ),
+    ot_flash_binary = "rom_ext_upgrade_test",
+    targets = [
+        "cw310_rom",
+    ],
+)
