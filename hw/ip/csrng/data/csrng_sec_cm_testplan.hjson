@@ -24,130 +24,247 @@
 {
   testpoints: [
     {
+      // TODO: Unlike the REGWEN register, the CTRL and ERR_CODE_TEST registers are excluded from some automated CSRs tests (CsrExclWrite).
+      // We need to ensure write-read checks are happening or alternatively test point 2) explicitly, e.g., with a directed test.
       name: sec_cm_config_regwen
-      desc: "Verify the countermeasure(s) CONFIG.REGWEN."
+      desc: '''
+            Verify the countermeasure(s) CONFIG.REGWEN.
+            Verify that:
+            1) REGWEN cannot be set back to 1 after being set to 0 once.
+            2) If REGWEN is not set, the CTRL and ERR_CODE_TEST registers cannot be modified.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_csr_rw"]
     }
     {
+      // TODO: Currently, we don't verify that the alert actually fires, just that alert shows in the RECOV_ALERT_STS register.
       name: sec_cm_config_mubi
-      desc: "Verify the countermeasure(s) CONFIG.MUBI."
+      desc: '''
+            Verify the countermeasure(s) CONFIG.MUBI.
+            Verify that upon writing invalid MUBI values to the CTRL register:
+            1) the DUT signals a recoverable alert and sets the correct bit in the RECOV_ALERT_STS register, and
+            2) the DUT can be configured back to a safe configuration and the RECOV_ALERT_STS register can be cleared.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_alert"]
     }
     {
+      // TODO: This is currently untested.
+      // The environment has support for randomly driving MuBi8False to otp_en_csrng_sw_app_read but always MuBi8True is driven.
+      // In addition, the environment needs to be extended to drive also non-valid encodings (see entropy_src).
       name: sec_cm_intersig_mubi
-      desc: "Verify the countermeasure(s) INTERSIG.MUBI."
+      desc: '''
+            Verify the countermeasure(s) INTERSIG.MUBI.
+            Verify that unless the otp_en_csrng_sw_app_read input signal is equal to MuBi8True and CTRL.SW_APP_ENABLE or CTRL.READ_INT_STATE is set to kMultiBitBool4True the DUT doesn't allow reading the genbits or the internal state from the GENBITS or INT_STATE_VAL register, respectively.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_main_sm_fsm_sparse
-      desc: "Verify the countermeasure(s) MAIN_SM.FSM.SPARSE."
+      desc: '''
+            Verify the countermeasure(s) MAIN_SM.FSM.SPARSE.
+            The csrng_intr and csrng_err tests verify that if the FSM state is forced to an illegal state encoding 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
       name: sec_cm_update_fsm_sparse
-      desc: "Verify the countermeasure(s) UPDATE.FSM.SPARSE."
+      desc: '''
+            Verify the countermeasure(s) UPDATE.FSM.SPARSE.
+            The csrng_intr and csrng_err tests verify that if the FSM state is forced to an illegal state encoding 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
       name: sec_cm_blk_enc_fsm_sparse
-      desc: "Verify the countermeasure(s) BLK_ENC.FSM.SPARSE."
+      desc: '''
+            Verify the countermeasure(s) BLK_ENC.FSM.SPARSE.
+            The csrng_intr and csrng_err tests verify that if the FSM state is forced to an illegal state encoding 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
       name: sec_cm_outblk_fsm_sparse
-      desc: "Verify the countermeasure(s) OUTBLK.FSM.SPARSE."
+      desc: '''
+            Verify the countermeasure(s) OUTBLK.FSM.SPARSE.
+            The csrng_intr and csrng_err tests verify that if the FSM state is forced to an illegal state encoding 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
       name: sec_cm_gen_cmd_ctr_redun
-      desc: "Verify the countermeasure(s) GEN_CMD.CTR.REDUN."
+      desc: '''
+            Verify the countermeasure(s) GEN_CMD.CTR.REDUN.
+            The csrng_intr and csrng_err tests verify that if there is a mismatch in the redundant counters of the Generate command counter 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
+      // TODO: Currently, only the alert connection and triggering are verified through FPV.
+      // There is no dedicated bit in the ERR_CODE register.
+      // All counter errors are collected in ERR_CODE.CMD_GEN_CNT_ERR.
       name: sec_cm_drbg_upd_ctr_redun
-      desc: "Verify the countermeasure(s) DRBG_UPD.CTR.REDUN."
+      desc: '''
+            Verify the countermeasure(s) DRBG_UPD.CTR.REDUN.
+            The csrng_intr and csrng_err tests verify that if there is a mismatch in the redundant counters of the CTR_DRBG update counter 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
+      // TODO: Currently, only the alert connection and triggering are verified through FPV.
+      // There is no dedicated bit in the ERR_CODE register.
+      // All counter errors are collected in ERR_CODE.CMD_GEN_CNT_ERR.
       name: sec_cm_drbg_gen_ctr_redun
-      desc: "Verify the countermeasure(s) DRBG_GEN.CTR.REDUN."
+      desc: '''
+            Verify the countermeasure(s) DRBG_GEN.CTR.REDUN.
+            The csrng_intr and csrng_err tests verify that if there is a mismatch in the redundant counters of the CTR_DRBG generate counter 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
+      // TODO: This is currently untested.
+      // Can probably be added to the csrng_alert test similar to CONFIG.MUBI.
       name: sec_cm_ctrl_mubi
-      desc: "Verify the countermeasure(s) CTRL.MUBI."
+      desc: '''
+            Verify the countermeasure(s) CTRL.MUBI.
+            Verify that upon writing an Application Interface Command Header for an Instantiate or Reseed command to the CMD_REQ register with an invalid MUBI value in the FLAG0 field, the DUT signals a recoverable alert and sets the correct bit in the RECOV_ALERT_STS register.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_alert"]
     }
     {
+      // TODO: This is currently untested.
+      // Also update the documentation to clarify that a mismatch in any of the hardened counters triggers local escalation (not just the Generate command counter).
+      // Also update the documentation to clarify that all counter errors (not just the Generate command counter) are collected in ERR_CODE.CMD_GEN_CNT_ERR.
       name: sec_cm_main_sm_ctr_local_esc
-      desc: "Verify the countermeasure(s) MAIN_SM.CTR.LOCAL_ESC."
+      desc: '''
+            Verify the countermeasure(s) MAIN_SM.CTR.LOCAL_ESC.
+            Verify that upon a mismatch in any of the redundant counters the main FSM enters a terminal error state and that the DUT signals a fatal alert.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_intr", "csrng_err"]
     }
     {
+      // TODO: The environment needs to be extended to drive also non-valid encodings (see INTERSIG.MUBI).
       name: sec_cm_constants_lc_gated
-      desc: "Verify the countermeasure(s) CONSTANTS.LC_GATED."
+      desc: '''
+            Verify the countermeasure(s) CONSTANTS.LC_GATED.
+            Verify that the RndCnstCsKeymgrDivNonProduction seed diversification constant can be used if and only if the lc_hw_debug_en input signal is driven to On and that RndCnstCsKeymgrDivProduction is used otherwise.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_stress_all"]
     }
     {
+      // TODO: Currently, we don't verify that the alert actually fires, just that alert shows in the RECOV_ALERT_STS register.
       name: sec_cm_sw_genbits_bus_consistency
-      desc: "Verify the countermeasure(s) SW_GENBITS.BUS.CONSISTENCY."
+      desc: '''
+            Verify the countermeasure(s) SW_GENBITS.BUS.CONSISTENCY.
+            Verify that if two subsequent read requests to the SW application interface obtain the same data, the DUT signals a recoverable alert and sets the correct bit in the RECOV_ALERT_STS register.
+            Verify that the RECOV_ALERT_STS register can be cleared.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_alert"]
     }
     {
       name: sec_cm_tile_link_bus_integrity
       desc: "Verify the countermeasure(s) TILE_LINK.BUS.INTEGRITY."
       stage: V2S
-      tests: []
+      tests: ["csrng_tl_intg_err"]
     }
     {
       name: sec_cm_aes_cipher_fsm_sparse
-      desc: "Verify the countermeasure(s) AES_CIPHER.FSM.SPARSE."
+      desc: '''
+            Verify the countermeasure(s) AES_CIPHER.FSM.SPARSE.
+            The csrng_intr and csrng_err tests verify that if the FSM state is forced to an illegal state encoding 1) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 2) the corresponding bit in the ERR_CODE register is set.
+            They currently don't check whether the DUT actually triggers a fatal alert.
+            Alert connection and triggering are verified through automated FPV.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
+      // TODO: This is currently untested.
+      // The csrng_intr and csrng_err tests need to be extended to force one of the redundant three FSM copies inside the AES cipher core into a different, valid state.
+      // The DUT must signal a fatal alert, report a cs_fatal_err interrupt, set the corresponding bit in the ERR_CODE register.
+      // For inspiration, refer to the aes_fi and aes_cipher_fi tests.
       name: sec_cm_aes_cipher_fsm_redun
-      desc: "Verify the countermeasure(s) AES_CIPHER.FSM.REDUN."
+      desc: '''
+            Verify the countermeasure(s) AES_CIPHER.FSM.REDUN.
+            It is ensured that upon randomly forcing the state, inputs or outputs of any of the independent, redundant logic rails of the AES cipher core FSM to both valid and invalid encodings, 1) this signals a fatal alert, 2) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 3) the corresponding bit in the ERR_CODE register is set.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_intr", "csrng_err"]
     }
     {
+      // TODO: This is currently untested.
+      // The csrng_intr and csrng_err tests need to be extended to force one of the redundant rails of important control signals inside the AES cipher core to a different value.
+      // The DUT must signal a fatal alert, report a cs_fatal_err interrupt, set the corresponding bit in the ERR_CODE register.
+      // For inspiration, refer to the aes_cipher_fi test.
       name: sec_cm_aes_cipher_ctrl_sparse
-      desc: "Verify the countermeasure(s) AES_CIPHER.CTRL.SPARSE."
+      desc: '''
+            Verify the countermeasure(s) AES_CIPHER.CTRL.SPARSE.
+            It is ensured that upon randomly forcing the value of any of important critical control signals inside the AES cipher core to an invalid encoding, 1) this signals a fatal alert, 2) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 3) the corresponding bit in the ERR_CODE register is set.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_intr", "csrng_err"]
     }
     {
+      // TODO: This is currently untested.
+      // A check needs to be added to verify that the AES cipher core FSM indeed enters the terminal error state.
       name: sec_cm_aes_cipher_fsm_local_esc
-      desc: "Verify the countermeasure(s) AES_CIPHER.FSM.LOCAL_ESC."
+      desc: '''
+            Verify the countermeasure(s) AES_CIPHER.FSM.LOCAL_ESC.
+            Upon detecting a local alert condition inside the AES cipher core FSM, the FSM stops processing data and locks up.
+            The DUT must 1) signal a fatal alert, 2) report this with a cs_fatal_err interrupt in the INTR_STATE register and 3) set corresponding bit in the ERR_CODE register.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_intr", "csrng_err"]
     }
     {
+      // TODO: This is currently untested.
+      // The csrng_intr and csrng_err tests need to be extended to force one of the redundant rails of the round counter inside the AES cipher core FSM to a different value.
+      // The DUT must signal a fatal alert, report a cs_fatal_err interrupt, set the corresponding bit in the ERR_CODE register.
+      // For inspiration, refer to the aes_cipher_fi test.
       name: sec_cm_aes_cipher_ctr_redun
-      desc: "Verify the countermeasure(s) AES_CIPHER.CTR.REDUN."
+      desc: '''
+            Verify the countermeasure(s) AES_CIPHER.CTR.REDUN.
+            It is ensured that upon randomly forcing the value of any of the independent, redundant logic rails of round counter inside the AES cipher core FSM, the FSM stops processing data and locks up.
+            The DUT must 1) signal a fatal alert, 2) report this with a cs_fatal_err interrupt in the INTR_STATE register and 3) set corresponding bit in the ERR_CODE register.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
+      // TODO: These SVAs need to be added.
       name: sec_cm_aes_cipher_data_reg_local_esc
-      desc: "Verify the countermeasure(s) AES_CIPHER.DATA_REG.LOCAL_ESC."
+      desc: '''
+            Verify the countermeasure(s) AES_CIPHER.DATA_REG.LOCAL_ESC.
+            SVAs inside csrng_core.sv are used to ensure that upon local escalation triggered through FI the AES cipher core doesn't release intermediate state into other CSRNG registers.
+            '''
       stage: V2S
-      tests: []
+      tests: ["csrng_intr", "csrng_err"]
     }
   ]
 }
