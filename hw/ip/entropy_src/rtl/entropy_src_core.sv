@@ -824,9 +824,9 @@ module entropy_src_core import entropy_src_pkg::*; #(
                                  (sfifo_esrng_err_sum   ||
                                   sfifo_observe_err_sum ||
                                   sfifo_esfinal_err_sum ||
-                                  sfifo_test_err_sum    ||
-                                  es_ack_sm_err_sum ) ) ||
-                              (main_sm_enable && es_main_sm_err_sum) ||
+                                  sfifo_test_err_sum) ) ||
+                              es_ack_sm_err_sum ||
+                              es_main_sm_err_sum ||
                               es_cntr_err_sum || // prim_count err is always active
                               sha3_rst_storage_err_sum ||
                               sha3_state_error_sum;
