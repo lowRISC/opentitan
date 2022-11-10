@@ -274,7 +274,10 @@ module entropy_src_main_sm
       Error: begin
         main_sm_err_o = 1'b1;
       end
-      default: state_d = Error;
+      default: begin
+        state_d = Error;
+        main_sm_err_o = 1'b1;
+      end
     endcase
     if (local_escalate_i) begin
       state_d = Error;

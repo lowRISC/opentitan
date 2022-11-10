@@ -77,7 +77,10 @@ module entropy_src_ack_sm (
       Error: begin
         ack_sm_err_o = 1'b1;
       end
-      default: state_d = Error;
+      default: begin
+        state_d = Error;
+        ack_sm_err_o = 1'b1;
+      end
     endcase
     if (local_escalate_i) begin
       state_d = Error;
