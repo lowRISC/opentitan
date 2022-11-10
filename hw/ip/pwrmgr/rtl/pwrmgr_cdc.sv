@@ -55,7 +55,6 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   output pwr_peri_t peri_reqs_o,
   output logic cdc_sync_done_o,
   input clr_slow_req_i,
-  output logic clr_slow_ack_o,
   output logic usb_ip_clk_en_o,
   input usb_ip_clk_status_i,
 
@@ -321,16 +320,15 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
   ////////////////////////////////
   // Handshake
   ////////////////////////////////
-  prim_sync_reqack u_clr_reqack(
-    .clk_src_i(clk_i),
-    .rst_src_ni(rst_ni),
-    .clk_dst_i(clk_slow_i),
-    .rst_dst_ni(rst_slow_ni),
-    .req_chk_i(1'b1),
-    .src_req_i(clr_slow_req_i),
-    .src_ack_o(clr_slow_ack_o),
-    .dst_req_o(slow_clr_req_o),
-    .dst_ack_i(slow_clr_req_o) //immediate ack
+  prim_flop_2sync #(
+    .Width(1),
+    .ResetValue('0)
+  ) u_clr_req_sync (
+    .clk_i(clk_slow_i),
+    .rst_ni(rst_slow_ni),
+    .d_i(clr_slow_req_i),
+    .q_o(slow_clr_req_o)
   );
+
 
 endmodule

@@ -215,7 +215,6 @@ module pwrmgr
   logic ack_pwrdn;
   logic fsm_invalid;
   logic clr_slow_req;
-  logic clr_slow_ack;
   logic usb_ip_clk_en;
   logic usb_ip_clk_status;
   pwrup_cause_e pwrup_cause;
@@ -399,7 +398,6 @@ module pwrmgr
     .pwrup_cause_o(pwrup_cause),
     .peri_reqs_o(peri_reqs_masked),
     .clr_slow_req_i(clr_slow_req),
-    .clr_slow_ack_o(clr_slow_ack),
     .usb_ip_clk_en_o(usb_ip_clk_en),
     .usb_ip_clk_status_i(usb_ip_clk_status),
 
@@ -533,7 +531,6 @@ module pwrmgr
     .reset_reqs_i        (peri_reqs_masked.rstreqs),
     .fsm_invalid_i       (fsm_invalid),
     .clr_slow_req_o      (clr_slow_req),
-    .clr_slow_ack_i      (clr_slow_ack),
     .usb_ip_clk_en_i     (usb_ip_clk_en),
     .usb_ip_clk_status_o (usb_ip_clk_status),
 

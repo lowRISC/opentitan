@@ -24,7 +24,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input [TotalResetWidth-1:0] reset_reqs_i,
   input fsm_invalid_i,
   output logic clr_slow_req_o,
-  input clr_slow_ack_i,
   input usb_ip_clk_en_i,
   output logic usb_ip_clk_status_o,
 
@@ -448,7 +447,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateResetPrep: begin
         reset_cause_d = HwReq;
-        rst_lc_req_d = {PowerDomains{reset_req}};
+        rst_lc_req_d = {PowerDomains{1'b1}};
         rst_sys_req_d = {PowerDomains{(hw_rst_req |
                                        direct_rst_req |
                                        sw_rst_req) |
@@ -459,11 +458,19 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       end
 
       FastPwrStateResetWait: begin
+        rst_lc_req_d = {PowerDomains{1'b1}};
         clr_slow_req_o = 1'b1;
-        // okay to be pending here, since reset is already asserted
-        // if the handshake were attacked in any way, the device
-        // would simply be dead.
-        if (reset_valid && (clr_slow_req_o && clr_slow_ack_i)) begin
+        // The main power reset request is checked here specifically because it is
+        // the only reset request in the system that operates on the POR domain.
+        // This has to be the case since it would otherwise not be able to monitor
+        // the non-always-on domains.
+        //
+        // As a result of this, the normal reset process does not automatically
+        // wipe out the reset request, so we specifically clear it and wait for it to be
+        // cleared before proceeding.  This also implies if the system is under a persistent
+        // glitch, or if someone just turned off the power before pwrmgr turns it off itself,
+        // we will stay stuck here and perpetually hold the system in reset.
+        if (reset_valid && !reset_reqs_i[ResetMainPwrIdx]) begin
           state_d = FastPwrStateLowPower;
         end
       end
