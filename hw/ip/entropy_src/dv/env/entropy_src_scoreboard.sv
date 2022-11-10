@@ -113,6 +113,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       csrng_fifo;
   uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(RNG_BUS_WIDTH)))
       rng_fifo;
+  uvm_tlm_analysis_fifo#(push_pull_item#(.HostDataWidth(0)))
+      cs_aes_halt_fifo;
   uvm_tlm_analysis_fifo#(entropy_src_xht_item) xht_fifo;
 
   // Interrupt Management Variables
@@ -145,6 +147,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // these data points once we notice one of these events.
   bit ignore_fw_ov_data_pulse = 0;
 
+  // Counters to ensure that every FIPS seed (dropped or not) is preceded by an cs_aes_halt
+  //  handshake
+  int aes_halt_handshake_cnt = 0;
+  int fips_seed_generate_cnt = 0;
+
   // Enabling, disabling and reset all have some effect in clearing the state of the DUT
   // Due to subleties in timing, the DUT resets the Observe FIFO with a unique delay
   typedef enum int {
@@ -160,9 +167,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    rng_fifo   = new("rng_fifo", this);
-    csrng_fifo = new("csrng_fifo", this);
-    xht_fifo   = new("xht_fifo", this);
+    rng_fifo         = new("rng_fifo", this);
+    csrng_fifo       = new("csrng_fifo", this);
+    xht_fifo         = new("xht_fifo", this);
+    cs_aes_halt_fifo = new("cs_aes_halt_fifo", this);
 
     if (!uvm_config_db#(virtual entropy_src_cov_if)::get
        (null, "*.env" , "entropy_src_cov_if", cov_vif)) begin
@@ -183,6 +191,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         process_fifo_exceptions();
         health_test_scoring_thread();
         process_xht_events();
+        process_cs_aes_halt_events();
       join_none
     end
   endtask
@@ -683,6 +692,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     end
   endtask
 
+  task process_cs_aes_halt_events();
+    push_pull_item#(.HostDataWidth(0)) item;
+    forever begin
+      cs_aes_halt_fifo.get(item);
+      aes_halt_handshake_cnt++;
+    end
+  endtask
+
   // The repetition counts are always running
   function bit evaluate_repcnt_test(bit fips_mode, int value);
     bit fail;
@@ -1001,6 +1018,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     // Internal CSRNG stores are cleared on Disable and HardReset events
     if( rst_type == Disable || rst_type == HardReset ) begin
       fips_csrng_q.delete();
+      fips_seed_generate_cnt = 0;
+      aes_halt_handshake_cnt = 0;
     end
 
     // The SHA3 engine is the one unit that is not always cleared on
@@ -2258,6 +2277,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         bit [FIPS_CSRNG_BUS_WIDTH - 1:0] prediction;
         // Unlike in the TL case, there is no need to leave seed predictions in the queue.
         prediction = fips_csrng_q.pop_front();
+        // Make sure that all seeds (dropped or not) have a handshake associated with them.
+        fips_seed_generate_cnt++;
+        `DV_CHECK_FATAL(fips_seed_generate_cnt <= aes_halt_handshake_cnt)
         if (prediction == item.d_data) begin
           csrng_seeds++;
           match_found = 1;

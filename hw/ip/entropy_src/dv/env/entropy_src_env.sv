@@ -103,6 +103,7 @@ class entropy_src_env extends cip_base_env #(
     m_rng_agent.monitor.analysis_port.connect(scoreboard.rng_fifo.analysis_export);
     m_csrng_agent.monitor.analysis_port.connect(scoreboard.csrng_fifo.analysis_export);
     m_xht_agent.monitor.analysis_port.connect(scoreboard.xht_fifo.analysis_export);
+    m_aes_halt_agent.monitor.analysis_port.connect(scoreboard.cs_aes_halt_fifo.analysis_export);
 
     scoreboard.interrupt_vif = cfg.interrupt_vif;
 
