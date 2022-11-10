@@ -182,6 +182,7 @@ module edn_reg_top (
   logic recov_alert_sts_edn_bus_cmp_alert_wd;
   logic err_code_sfifo_rescmd_err_qs;
   logic err_code_sfifo_gencmd_err_qs;
+  logic err_code_sfifo_output_err_qs;
   logic err_code_edn_ack_sm_err_qs;
   logic err_code_edn_main_sm_err_qs;
   logic err_code_edn_cntr_err_qs;
@@ -904,6 +905,32 @@ module edn_reg_top (
     .qs     (err_code_sfifo_gencmd_err_qs)
   );
 
+  //   F[sfifo_output_err]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_err_code_sfifo_output_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.err_code.sfifo_output_err.de),
+    .d      (hw2reg.err_code.sfifo_output_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (err_code_sfifo_output_err_qs)
+  );
+
   //   F[edn_ack_sm_err]: 20:20
   prim_subreg #(
     .DW      (1),
@@ -1337,6 +1364,7 @@ module edn_reg_top (
       addr_hit[14]: begin
         reg_rdata_next[0] = err_code_sfifo_rescmd_err_qs;
         reg_rdata_next[1] = err_code_sfifo_gencmd_err_qs;
+        reg_rdata_next[2] = err_code_sfifo_output_err_qs;
         reg_rdata_next[20] = err_code_edn_ack_sm_err_qs;
         reg_rdata_next[21] = err_code_edn_main_sm_err_qs;
         reg_rdata_next[22] = err_code_edn_cntr_err_qs;
