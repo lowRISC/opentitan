@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:rv_core_ibex_otp_sva_if:0.1"
+description: "Ibex to OTP Controller assertion interface."
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:ip:rv_core_ibex_pkg
+      - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:prim:assert
+    files:
+      - rv_core_ibex_otp_sva_if.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

@@ -10,6 +10,7 @@ filesets:
       - lowrisc:systems:top_earlgrey
       - lowrisc:dv:pwrmgr_ast_sva_if
       - lowrisc:dv:pwrmgr_rstmgr_sva_if
+      - lowrisc:dv:rv_core_ibex_otp_sva_if
     files:
       - top_earlgrey_bind.sv
     file_type: systemVerilogSource
