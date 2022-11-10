@@ -823,7 +823,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
   endtask : jtag_otp_program32
 
-
   // End the test with status.
   //
   // SW test code finishes the test sequence usually by returing true or false

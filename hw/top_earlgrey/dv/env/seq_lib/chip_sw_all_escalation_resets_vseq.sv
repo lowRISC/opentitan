@@ -70,28 +70,6 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
   rand int ip_index;
   constraint ip_index_c {ip_index inside {[0 : ip_alerts.size() - 1]};}
 
-  local function sec_cm_pkg::sec_cm_base_if_proxy find_proxy(string ip_inst_regex);
-    int value;
-    if ($value$plusargs("show_all_sec_cm_proxies=%d", value)) begin
-      foreach (sec_cm_pkg::sec_cm_if_proxy_q[i]) begin
-        sec_cm_pkg::sec_cm_base_if_proxy proxy = sec_cm_pkg::sec_cm_if_proxy_q[i];
-        `uvm_info(`gfn, $sformatf("Proxy type %0d, path %s", proxy.sec_cm_type, proxy.path),
-                  UVM_MEDIUM)
-      end
-    end
-    foreach (sec_cm_pkg::sec_cm_if_proxy_q[i]) begin
-      sec_cm_pkg::sec_cm_base_if_proxy proxy = sec_cm_pkg::sec_cm_if_proxy_q[i];
-      if (proxy.sec_cm_type == sec_cm_pkg::SecCmPrimOnehot &&
-          !uvm_re_match(ip_inst_regex, proxy.path)) begin
-        `uvm_info(`gfn, $sformatf("Detected match of %s to %s", ip_inst_regex, proxy.path),
-                  UVM_MEDIUM)
-        return proxy;
-      end
-    end
-    `uvm_fatal(`gfn, $sformatf("Proxy not found for IP regex %s", ip_inst_regex))
-    return null;
-  endfunction
-
   virtual task body();
     sec_cm_pkg::sec_cm_base_if_proxy if_proxy;
     ip_fatal_alert_t ip_alert;
@@ -125,7 +103,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     sw_symbol_backdoor_overwrite("kExpectedAlertNumber", sw_alert_num);
 
     ip_alert = ip_alerts[ip_index];
-    if_proxy = find_proxy(ip_alert.ip_inst_regex);
+    if_proxy = sec_cm_pkg::find_sec_cm_if_proxy(.path(ip_alert.ip_inst_regex), .is_regex(1));
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Ready for fault injection",
              "Timeout waiting for fault injection request.")
 
