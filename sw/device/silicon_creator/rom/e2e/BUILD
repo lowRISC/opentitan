@@ -14,8 +14,10 @@ load(
 load("//rules:const.bzl", "CONST", "error_redact", "hex", "lc_hw_to_sw")
 load(
     "//rules:opentitan.bzl",
+    "bin_to_vmem",
     "opentitan_flash_binary",
     "opentitan_multislot_flash_binary",
+    "scramble_flash_vmem",
 )
 load("//rules:manifest.bzl", "manifest")
 load("//rules:opentitan_gdb_test.bzl", "opentitan_gdb_fpga_cw310_test")
@@ -1395,7 +1397,7 @@ SIGVERIFY_LC_KEYS = [
     genrule(
         name = "empty_test_slot_{}_corrupted_{}_bin_signed_{}".format(slot, device, key),
         srcs = ["empty_test_slot_{}_{}_bin_signed_{}".format(slot, device, key)],
-        outs = ["empty_test_slot_{}_bad_signature_{}_bin_signed_{}".format(slot, device, key)],
+        outs = ["empty_test_slot_{}_corrupted_{}.{}.signed.bin".format(slot, device, key)],
         cmd_bash = "cat $(SRCS) > $(OUTS) && dd if=/dev/zero of=$(OUTS) bs=4 seek=7 count=1 conv=notrunc status=none".format(slot),
     )
     for slot in SLOTS
@@ -1404,6 +1406,43 @@ SIGVERIFY_LC_KEYS = [
         "fpga_cw310",
     ]
     for key in SIGVERIFY_LC_KEYS
+]
+
+# The below three rule sets (bin_to_vmem, scramble_flash_vmem, and filegroup)
+# are needed to run `sigverify_always` test in DV.
+[
+    bin_to_vmem(
+        name = "empty_test_slot_{}_corrupted_sim_dv_vmem64_signed_{}".format(slot, key),
+        bin = "empty_test_slot_{}_corrupted_sim_dv_bin_signed_{}".format(slot, key),
+        word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
+    )
+    for slot in SLOTS
+    for key in SIGVERIFY_LC_KEYS
+]
+
+[
+    scramble_flash_vmem(
+        name = "empty_test_slot_{}_corrupted_sim_dv_scr_vmem64_signed_{}".format(slot, key),
+        vmem = "empty_test_slot_{}_corrupted_sim_dv_vmem64_signed_{}".format(slot, key),
+    )
+    for slot in SLOTS
+    for key in SIGVERIFY_LC_KEYS
+]
+
+[
+    filegroup(
+        name = "empty_test_slot_{}_corrupted_sim_dv".format(slot),
+        srcs = [
+            "empty_test_slot_{}_corrupted_sim_dv_{}_signed_{}".format(slot, file_type, key)
+            for file_type in [
+                "bin",
+                "vmem64",
+                "scr_vmem64",
+            ]
+            for key in SIGVERIFY_LC_KEYS
+        ],
+    )
+    for slot in SLOTS
 ]
 
 BOOT_POLICY_VALID_CASES = [
