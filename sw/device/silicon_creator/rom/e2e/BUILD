@@ -1399,7 +1399,10 @@ SIGVERIFY_LC_KEYS = [
         cmd_bash = "cat $(SRCS) > $(OUTS) && dd if=/dev/zero of=$(OUTS) bs=4 seek=7 count=1 conv=notrunc status=none".format(slot),
     )
     for slot in SLOTS
-    for device in ["fpga_cw310"]
+    for device in [
+        "sim_dv",
+        "fpga_cw310",
+    ]
     for key in SIGVERIFY_LC_KEYS
 ]
 
@@ -2014,7 +2017,10 @@ test_suite(
                 "offset": offset,
             },
         },
-        devices = ["fpga_cw310"],
+        devices = [
+            "sim_dv",
+            "fpga_cw310",
+        ],
     )
     for slot, offset in SLOTS.items()
     for key in SIGVERIFY_LC_KEYS
@@ -2033,7 +2039,10 @@ test_suite(
                 "offset": SLOTS["b"],
             },
         },
-        devices = ["fpga_cw310"],
+        devices = [
+            "sim_dv",
+            "fpga_cw310",
+        ],
     )
     for key in SIGVERIFY_LC_KEYS
 ]
@@ -2049,7 +2058,10 @@ test_suite(
         cmd_bash = "touch $(OUTS)",
     )
     for slot in SLOTS
-    for device in ["fpga_cw310"]
+    for device in [
+        "sim_dv",
+        "fpga_cw310",
+    ]
     for key in SIGVERIFY_LC_KEYS
 ]
 
@@ -2066,7 +2078,10 @@ test_suite(
                 "offset": SLOTS["b"],
             },
         },
-        devices = ["fpga_cw310"],
+        devices = [
+            "sim_dv",
+            "fpga_cw310",
+        ],
     )
     for key in [
         "test_key_0",
@@ -2142,13 +2157,20 @@ SIGVERIFY_LCS_2_VALID_KEY = {
             otp = ":otp_img_sigverify_always_{}".format(lc_state.lower()),
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
+        dv = dv_params(
+            otp = ":otp_img_sigverify_always_{}".format(lc_state.lower()),
+            rom = "//sw/device/silicon_creator/rom",
+        ),
         key = "multislot",
         ot_flash_binary = ":sigverify_always_img_a_{}_b_{}_{}".format(
             case["a"],
             case["b"],
             SIGVERIFY_LCS_2_VALID_KEY[lc_state.lower()],
         ),
-        targets = ["cw310_rom"],
+        targets = [
+            "dv",
+            "cw310_rom",
+        ],
     )
     for case in SIGVERIFY_BAD_CASES
     for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
