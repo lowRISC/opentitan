@@ -713,17 +713,31 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "entropy_src_kat_test",
-    srcs = ["entropy_src_kat_test.c"],
+cc_library(
+    name = "entropy_src_kat_impl",
+    srcs = ["entropy_src_kat_impl.c"],
+    hdrs = ["entropy_src_kat_impl.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+opentitan_functest(
+    name = "entropy_src_kat_test",
+    srcs = ["entropy_src_kat_test.c"],
+    deps = [
+        ":entropy_src_kat_impl",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
