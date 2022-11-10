@@ -275,10 +275,10 @@ impl AlertRegs {
         match config.enabled {
             AlertEnable::None => {}
             AlertEnable::Enabled => {
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_LOCK_BIT as usize, true);
                 reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_BIT as usize, true);
             }
             AlertEnable::Locked => {
+                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_LOCK_BIT as usize, true);
                 reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_BIT as usize, true)
             }
         }
@@ -439,13 +439,37 @@ mod test {
         ],
     };
 
-    struct TestOtp {}
+    struct TestOtpAlertsDisabled {}
 
     // OTP values that corrispond to the above `TEST_REG` values.
-    impl OtpRead for TestOtp {
+    impl OtpRead for TestOtpAlertsDisabled {
         fn read32_offset(&self, name: &str, offset: usize) -> Result<u32> {
             Ok(match name {
                 "OWNER_SW_CFG_ROM_ALERT_CLASS_EN" => 0xa9a9a9a9,
+                "OWNER_SW_CFG_ROM_ALERT_ESCALATION" => 0xd1d1d1d1,
+                "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION"
+                | "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION" => 0x94949494,
+                "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES" => [
+                    0x00000000, 0x0000000a, 0x0000000a, 0xffffffff, // Class 0
+                    0x00000000, 0x0000000a, 0x0000000a, 0xffffffff, // Class 1
+                    0x00000000, 0x00000000, 0x00000000, 0x00000000, // Class 2
+                    0x00000000, 0x00000000, 0x00000000, 0x00000000, // Class 3
+                ][offset / 4],
+                "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH" | "OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES" => {
+                    0x00000000
+                }
+                _ => panic!("No such OTP value {}", name),
+            })
+        }
+    }
+
+    struct TestOtpAlertsEnabled {}
+
+    // OTP values with `*_CLASS_EN` vales set to `kAlertEnableEnabled`
+    impl OtpRead for TestOtpAlertsEnabled {
+        fn read32_offset(&self, name: &str, offset: usize) -> Result<u32> {
+            Ok(match name {
+                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN" => 0x07070707,
                 "OWNER_SW_CFG_ROM_ALERT_ESCALATION" => 0xd1d1d1d1,
                 "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION"
                 | "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION" => 0x94949494,
@@ -494,7 +518,27 @@ mod test {
     fn test_regs_from_otp() {
         assert_eq!(
             TEST_REGS,
-            AlertRegs::try_new(LcStateVal::Dev, &TestOtp {}).unwrap()
+            AlertRegs::try_new(LcStateVal::Dev, &TestOtpAlertsDisabled {}).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_crc_disabled() {
+        assert_eq!(
+            AlertRegs::try_new(LcStateVal::Dev, &TestOtpAlertsDisabled {})
+                .unwrap()
+                .crc32(),
+            0xf9616122
+        );
+    }
+
+    #[test]
+    fn test_crc_enabled() {
+        assert_eq!(
+            AlertRegs::try_new(LcStateVal::Dev, &TestOtpAlertsEnabled {})
+                .unwrap()
+                .crc32(),
+            0x561bcb14
         );
     }
 }
