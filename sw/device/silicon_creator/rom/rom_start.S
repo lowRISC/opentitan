@@ -305,9 +305,28 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   unimp
 
 .L_rma_spin_skip:
+  // Copy the entropy source health checks configuration thresholds from OTP.
+  li   a0, (TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR + \
+            ENTROPY_SRC_REPCNT_THRESHOLDS_REG_OFFSET)
+  li   a1, (TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR + \
+            ENTROPY_SRC_EXTHT_LO_THRESHOLDS_REG_OFFSET + 4)
+  li   a2, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
+            OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS_OFFSET)
+  call crt_section_copy
+
+
+  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+
+  // Configure the entropy source health alert threshold.
+  li a1, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ALERT_THRESHOLD_OFFSET(a1)
+  sw t1, ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET(a0)
+
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
-  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+
   // Note for BOOT_ROM initialization the FIPS_ENABLE bit is set to kMultiBitBool4False
   // to prevent the release of FIPS entropy until all the thresholds are set
   li t0, (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET) | \
