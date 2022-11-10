@@ -57,8 +57,9 @@
     { name: "tx_overflow"
       desc: "target mode interrupt: raised if TX FIFO has overflowed."
     }
-    { name: "acq_overflow"
-      desc: "target mode interrupt: raised if ACQ FIFO has overflowed."
+    { name: "acq_full"
+      desc: "target mode interrupt: raised if ACQ FIFO becomes full.  This is a level status interrupt."
+      type: "status"
     }
     { name: "ack_stop"
       desc: "target mode interrupt: raised if STOP is received after ACK instead of NACK from an external host read."

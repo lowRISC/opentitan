@@ -628,7 +628,11 @@ class i2c_base_vseq extends cip_base_vseq #(
     int read_size;
     int rd_txfifo_timeout_ns = 50_000;
 
-    forever begin
+    wait(cfg.m_i2c_agent_cfg.sent_byte > 0);
+ 
+     
+//    while (cfg.m_i2c_agent_cfg.sent_byte > cfg.m_i2c_agent_cfg.rcvd_byte) begin
+     forever begin
       @(cfg.m_i2c_agent_cfg.vif.cb);
       if (read_rcvd.size() > 0) begin
         read_size = read_rcvd.pop_front();
@@ -663,6 +667,8 @@ class i2c_base_vseq extends cip_base_vseq #(
                                        wdata_q.size() inside {
                            [cfg.min_data : cfg.max_data]};)
 
+    cfg.m_i2c_agent_cfg.sent_byte += wdata_q.size();
+ 
     for (int i = 0; i < wdata_q.size(); i++) begin
       if ($urandom_range(0,9) < cfg.rs_pct) rs_avl = 1;
       else rs_avl = 0;

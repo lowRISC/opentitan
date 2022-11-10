@@ -100,8 +100,10 @@ module i2c_fsm (
   logic        byte_clr;      // indicates byte_index must be reset to byte_num
 
   // Other internal variables
-  logic        scl_temp;      // scl internal
-  logic        sda_temp;      // data internal
+  logic        scl_q;         // scl internal flopped
+  logic        sda_q;         // data internal flopped
+  logic        scl_d;         // scl internal
+  logic        sda_d;         // data internal
   logic        scl_i_q;       // scl_i delayed by one clock
   logic        sda_i_q;       // sda_i delayed by one clock
   logic [7:0]  read_byte;     // register for reads from target
@@ -189,7 +191,7 @@ module i2c_fsm (
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_stretch
     if (!rst_ni) begin
       stretch_idle_cnt <= '0;
-    end else if (stretch_en && scl_temp && !scl_i) begin
+    end else if (stretch_en && scl_d && !scl_i) begin
       stretch_idle_cnt <= stretch_idle_cnt + 1'b1;
     end else if (!target_idle_o && scl_i) begin
       stretch_idle_cnt <= stretch_idle_cnt + 1'b1;
@@ -369,13 +371,11 @@ module i2c_fsm (
     // Target function sends read data to external host-receiver
     TransmitWait, TransmitSetup, TransmitPulse, TransmitHold,
     // Target function receives ack from external host
-    TransmitAck,
+    TransmitAck, TransmitAckPulse, WaitForStop,
     // Target function receives write data from the external host
     AcquireByte,
     // Target function sends ack to external host
     AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
-    // Target function pops Tx fifo after successfully sending data to external host
-    PopTxFifo,
     // Target function clock stretch handling.
     StretchTxEmpty, StretchAcqFull, StretchAddrTransmit,
     StretchAddrAcquire
@@ -434,12 +434,16 @@ module i2c_fsm (
   end
   assign event_ack_stop_o = rw_bit_q & (stop_det | start_det) & host_ack;
 
+  // Reverse the bit order since data should be sent out MSB first
+  logic [7:0] tx_fifo_rdata;
+  assign tx_fifo_rdata = {<<1{tx_fifo_rdata_i}};
+
   // Outputs for each state
   always_comb begin : state_outputs
     host_idle_o = 1'b1;
     target_idle_o = 1'b1;
-    sda_temp = 1'b1;
-    scl_temp = 1'b1;
+    sda_d = 1'b1;
+    scl_d = 1'b1;
     fmt_fifo_rready_o = 1'b0;
     rx_fifo_wvalid_o = 1'b0;
     rx_fifo_wdata_o = 8'h00;
@@ -458,38 +462,38 @@ module i2c_fsm (
       // Idle: initial state, SDA and SCL are released (high)
       Idle : begin
         host_idle_o = 1'b1;
-        sda_temp = 1'b1;
-        scl_temp = 1'b1;
+        sda_d = 1'b1;
+        scl_d = 1'b1;
       end
       // SetupStart: SDA and SCL are released
       SetupStart : begin
         host_idle_o = 1'b0;
-        sda_temp = 1'b1;
-        scl_temp = 1'b1;
+        sda_d = 1'b1;
+        scl_d = 1'b1;
         if (restart) event_trans_complete_o = 1'b1;
       end
       // HoldStart: SDA is pulled low, SCL is released
       HoldStart : begin
         host_idle_o = 1'b0;
-        sda_temp = 1'b0;
-        scl_temp = 1'b1;
+        sda_d = 1'b0;
+        scl_d = 1'b1;
       end
       // ClockStart: SCL is pulled low, SDA stays low
       ClockStart : begin
         host_idle_o = 1'b0;
-        sda_temp = 1'b0;
-        scl_temp = 1'b0;
+        sda_d = 1'b0;
+        scl_d = 1'b0;
       end
       ClockLow : begin
         host_idle_o = 1'b0;
-        sda_temp = fmt_byte_i[bit_index];
-        scl_temp = 1'b0;
+        sda_d = fmt_byte_i[bit_index];
+        scl_d = 1'b0;
       end
       // ClockPulse: SCL is released, SDA keeps the indexed bit value
       ClockPulse : begin
         host_idle_o = 1'b0;
-        sda_temp = fmt_byte_i[bit_index];
-        scl_temp = 1'b1;
+        sda_d = fmt_byte_i[bit_index];
+        scl_d = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
         if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
@@ -497,20 +501,20 @@ module i2c_fsm (
       // HoldBit: SCL is pulled low
       HoldBit : begin
         host_idle_o = 1'b0;
-        sda_temp = fmt_byte_i[bit_index];
-        scl_temp = 1'b0;
+        sda_d = fmt_byte_i[bit_index];
+        scl_d = 1'b0;
       end
       // ClockLowAck: SCL pulled low, SDA is released
       ClockLowAck : begin
         host_idle_o = 1'b0;
-        sda_temp = 1'b1;
-        scl_temp = 1'b0;
+        sda_d = 1'b1;
+        scl_d = 1'b0;
       end
       // ClockPulseAck: SCL is released
       ClockPulseAck : begin
         host_idle_o = 1'b0;
-        sda_temp = 1'b1;
-        scl_temp = 1'b1;
+        sda_d = 1'b1;
+        scl_d = 1'b1;
         if (sda_i && !fmt_flag_nak_ok_i) event_nak_o = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
@@ -519,19 +523,19 @@ module i2c_fsm (
       // HoldDevAck: SCL is pulled low
       HoldDevAck : begin
         host_idle_o = 1'b0;
-        sda_temp = 1'b1;
-        scl_temp = 1'b0;
+        sda_d = 1'b1;
+        scl_d = 1'b0;
       end
       // ReadClockLow: SCL is pulled low, SDA is released
       ReadClockLow : begin
         host_idle_o = 1'b0;
-        sda_temp = 1'b1;
-        scl_temp = 1'b0;
+        sda_d = 1'b1;
+        scl_d = 1'b0;
       end
       // ReadClockPulse: SCL is released, the indexed bit value is read off SDA
       ReadClockPulse : begin
         host_idle_o = 1'b0;
-        scl_temp = 1'b1;
+        scl_d = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
         if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
@@ -539,7 +543,7 @@ module i2c_fsm (
       // ReadHoldBit: SCL is pulled low
       ReadHoldBit : begin
         host_idle_o = 1'b0;
-        scl_temp = 1'b0;
+        scl_d = 1'b0;
         if (bit_index == '0 && tcount_q == 20'd1) begin
           rx_fifo_wdata_o = read_byte;  // transfer read data to rx_fifo
           rx_fifo_wvalid_o = 1'b1;      // assert that rx_fifo has valid data
@@ -548,21 +552,21 @@ module i2c_fsm (
       // HostClockLowAck: SCL pulled low, SDA is conditional
       HostClockLowAck : begin
         host_idle_o = 1'b0;
-        scl_temp = 1'b0;
+        scl_d = 1'b0;
 
         // If it is the last byte of a read, send a NAK before the stop.
         // Otherwise send the ack.
-        if (fmt_flag_read_continue_i) sda_temp = 1'b0;
-        else if (byte_index == 9'd1) sda_temp = 1'b1;
-        else sda_temp = 1'b0;
+        if (fmt_flag_read_continue_i) sda_d = 1'b0;
+        else if (byte_index == 9'd1) sda_d = 1'b1;
+        else sda_d = 1'b0;
       end
       // HostClockPulseAck: SCL is released
       HostClockPulseAck : begin
         host_idle_o = 1'b0;
-        if (fmt_flag_read_continue_i) sda_temp = 1'b0;
-        else if (byte_index == 9'd1) sda_temp = 1'b1;
-        else sda_temp = 1'b0;
-        scl_temp = 1'b1;
+        if (fmt_flag_read_continue_i) sda_d = 1'b0;
+        else if (byte_index == 9'd1) sda_d = 1'b1;
+        else sda_d = 1'b0;
+        scl_d = 1'b1;
         stretch_en = 1'b1;
         if (scl_i_q && !scl_i)  event_scl_interference_o = 1'b1;
         if (sda_i_q != sda_i)   event_sda_unstable_o = 1'b1;
@@ -570,28 +574,28 @@ module i2c_fsm (
       // HostHoldBitAck: SCL is pulled low
       HostHoldBitAck : begin
         host_idle_o = 1'b0;
-        if (fmt_flag_read_continue_i) sda_temp = 1'b0;
-        else if (byte_index == 9'd1) sda_temp = 1'b1;
-        else sda_temp = 1'b0;
-        scl_temp = 1'b0;
+        if (fmt_flag_read_continue_i) sda_d = 1'b0;
+        else if (byte_index == 9'd1) sda_d = 1'b1;
+        else sda_d = 1'b0;
+        scl_d = 1'b0;
       end
       // ClockStop: SCL is pulled low, SDA stays low
       ClockStop : begin
         host_idle_o = 1'b0;
-        sda_temp = 1'b0;
-        scl_temp = 1'b0;
+        sda_d = 1'b0;
+        scl_d = 1'b0;
       end
       // SetupStop: SDA is pulled low, SCL is released
       SetupStop : begin
         host_idle_o = 1'b0;
-        sda_temp = 1'b0;
-        scl_temp = 1'b1;
+        sda_d = 1'b0;
+        scl_d = 1'b1;
       end
       // HoldStop: SDA and SCL are released
       HoldStop : begin
         host_idle_o = 1'b0;
-        sda_temp = 1'b1;
-        scl_temp = 1'b1;
+        sda_d = 1'b1;
+        scl_d = 1'b1;
         event_trans_complete_o = 1'b1;
       end
       // Active: continue while keeping SCL low
@@ -601,13 +605,13 @@ module i2c_fsm (
         // If the start flag was asserted, do not drive scl low
         // since in the next state we will drive it high to initiate
         // the start bit.
-        scl_temp = fmt_flag_start_before_i;
+        scl_d = fmt_flag_start_before_i;
       end
       // PopFmtFifo: populate fmt_fifo
       PopFmtFifo : begin
         host_idle_o = 1'b0;
-        if (fmt_flag_stop_after_i) scl_temp = 1'b1;
-        else scl_temp = 1'b0;
+        if (fmt_flag_stop_after_i) scl_d = 1'b1;
+        else scl_d = 1'b0;
         fmt_fifo_rready_o = 1'b1;
       end
       // AcquireStart: hold start condition
@@ -631,47 +635,59 @@ module i2c_fsm (
       // AddrAckSetup: target pulls SDA low while SCL is low
       AddrAckSetup : begin
         target_idle_o = 1'b0;
-        sda_temp = 1'b0;
+        sda_d = 1'b0;
       end
       // AddrAckPulse: target pulls SDA low while SCL is released
       AddrAckPulse : begin
         target_idle_o = 1'b0;
-        sda_temp = 1'b0;
+        sda_d = 1'b0;
       end
       // AddrAckHold: target pulls SDA low while SCL is pulled low
       AddrAckHold : begin
         target_idle_o = 1'b0;
-        sda_temp = 1'b0;
-      end
-      // TransmitWait: pause before sending a bit
-      TransmitWait : begin
-        target_idle_o = 1'b0;
+        sda_d = 1'b0;
       end
       // TransmitSetup: target shifts indexed bit onto SDA while SCL is low
       TransmitSetup : begin
         target_idle_o = 1'b0;
-        sda_temp = tx_fifo_rdata_i[3'(bit_idx)];
+        sda_d = tx_fifo_rdata[3'(bit_idx)];
       end
-      // TransmitPulse: target shifts indexed bit onto SDA while SCL is released
+      // TransmitPulse: target holds indexed bit onto SDA while SCL is released
       TransmitPulse : begin
         target_idle_o = 1'b0;
-        sda_temp = tx_fifo_rdata_i[3'(bit_idx)];
+
+        // Hold value
+        sda_d = sda_q;
       end
-      // TransmitHold: target shifts indexed bit onto SDA while SCL is pulled low
+      // TransmitHold: target holds indexed bit onto SDA while SCL is pulled low, for the hold time
       TransmitHold : begin
         target_idle_o = 1'b0;
-        sda_temp = tx_fifo_rdata_i[3'(bit_idx)];
+
+        // Hold value
+        sda_d = sda_q;
       end
       // TransmitAck: target waits for host to ACK transmission
       TransmitAck : begin
         target_idle_o = 1'b0;
+      end
+
+      TransmitAckPulse : begin
+        if (!scl_i) begin
+          // Pop Fifo regardless of ack/nack
+          tx_fifo_rready_o = 1'b1;
+        end
+
+        // Just change this to a level status interrupt later, it does not seem
+        // necessary to have all these random triggers.
         if (tx_fifo_depth_i == 7'd1 && !tx_fifo_wvalid_i && host_ack) event_tx_empty_o = 1'b1;
       end
-      // PopTxFifo: populate tx_fifo
-      PopTxFifo : begin
+
+      // WaitForStop just waiting for host to trigger a stop after nack
+      WaitForStop : begin
         target_idle_o = 1'b0;
-        tx_fifo_rready_o = 1'b1;
+        sda_d = 1'b1;
       end
+
       // AcquireByte: target acquires a byte
       AcquireByte : begin
         target_idle_o = 1'b0;
@@ -687,46 +703,46 @@ module i2c_fsm (
       // AcquireAckSetup: target pulls SDA low while SCL is low
       AcquireAckSetup : begin
         target_idle_o = 1'b0;
-        sda_temp = 1'b0;
+        sda_d = 1'b0;
       end
       // AcquireAckPulse: target pulls SDA low while SCL is released
       AcquireAckPulse : begin
         target_idle_o = 1'b0;
-        sda_temp = 1'b0;
+        sda_d = 1'b0;
       end
       // AcquireAckHold: target pulls SDA low while SCL is pulled low
       AcquireAckHold : begin
         target_idle_o = 1'b0;
-        sda_temp = 1'b0;
+        sda_d = 1'b0;
       end
       // StretchAddrTransmit: target stretches the clock after matching an address for transmit
       StretchAddrTransmit : begin
         target_idle_o = 1'b0;
-        scl_temp = 1'b0;
+        scl_d = 1'b0;
       end
       // StretchAddrAcquire: target stretches the clock after matching an address for acquire
       StretchAddrAcquire : begin
         target_idle_o = 1'b0;
-        scl_temp = 1'b0;
+        scl_d = 1'b0;
       end
       // StretchTxEmpty: target stretches the clock when tx_fifo is empty
       StretchTxEmpty : begin
         target_idle_o = 1'b0;
         tx_fifo_rready_o = 1'b1;
-        scl_temp = 1'b0;
+        scl_d = 1'b0;
         if (tx_fifo_depth_i == '0) event_tx_empty_o = 1'b1;
       end
       // StretchAcqFull: target stretches the clock when acq_fifo is full
       StretchAcqFull : begin
         target_idle_o = 1'b0;
-        scl_temp = 1'b0;
+        scl_d = 1'b0;
       end
       // default
       default : begin
         host_idle_o = 1'b1;
         target_idle_o = 1'b1;
-        sda_temp = 1'b1;
-        scl_temp = 1'b1;
+        sda_d = 1'b1;
+        scl_d = 1'b1;
         fmt_fifo_rready_o = 1'b0;
         rx_fifo_wvalid_o = 1'b0;
         rx_fifo_wdata_o = 8'h00;
@@ -1074,9 +1090,9 @@ module i2c_fsm (
         if (tcount_q == 20'd1) begin
           if (rw_bit_q) begin
             if (tx_fifo_rvalid_i) begin
-              state_d = TransmitWait;
+              state_d = TransmitSetup;
               load_tcount = 1'b1;
-              tcount_sel = tClockLow;
+              tcount_sel = tClockStart;
             end else state_d = StretchTxEmpty;
           end else begin
             if (acq_fifo_wready_i) state_d = AcquireByte;
@@ -1085,12 +1101,6 @@ module i2c_fsm (
         end
       end
 
-      // TransmitWait: pause before sending a bit
-      TransmitWait : begin
-        if (tcount_q == 20'd1) begin
-          state_d = TransmitSetup;
-        end
-      end
       // TransmitSetup: target shifts indexed bit onto SDA while SCL is low
       TransmitSetup : begin
         if (scl_i) state_d = TransmitPulse;
@@ -1106,37 +1116,51 @@ module i2c_fsm (
       // TransmitHold: target shifts indexed bit onto SDA while SCL is pulled low
       TransmitHold : begin
         if (tcount_q == 20'd1) begin
-          load_tcount = 1'b1;
-          tcount_sel = tClockLow;
           if (bit_ack) begin
             state_d = TransmitAck;
           end else begin
-            state_d = TransmitWait;
-          end
-        end
-      end
-      // TransmitAck: target waits for host to ACK transmission
-      // If a nak is received, that means a stop is incoming, just
-      // wait for the stop transition to AcquireSrP.
-      TransmitAck : begin
-        if (scl_i) begin
-          if (host_ack) begin
-            state_d = PopTxFifo;
+            load_tcount = 1'b1;
+            tcount_sel = tClockStart;
+            state_d = TransmitSetup;
           end
         end
       end
 
-      // PopTxFifo: populate tx_fifo
-      PopTxFifo : begin
-        if (!target_enable_i) begin
-          state_d = Idle;
-        end else if (tx_fifo_depth_i == 7'd1 && !tx_fifo_wvalid_i) begin
-          state_d = StretchTxEmpty;
-        end else begin
-          state_d = TransmitWait;
-          load_tcount = 1'b1;
-          tcount_sel = tClockLow;
+      // Wait for clock to become positive.
+      TransmitAck : begin
+        if (scl_i) begin
+          state_d = TransmitAckPulse;
         end
+      end
+
+      // TransmitAckPulse: target waits for host to ACK transmission
+      // If a nak is received, that means a stop is incoming.
+      TransmitAckPulse : begin
+        if (!scl_i) begin
+          // If host acknowledged, that means we must continue
+          if (host_ack) begin
+            // The TX fifo is popped during TransmitAckPulse state,
+            // so an entry of 1 implies next cycle it will be 0
+            // unless there is another write.
+            if (tx_fifo_depth_i == 7'd1 && !tx_fifo_wvalid_i) begin
+              state_d = StretchTxEmpty;
+            end else begin
+              state_d = TransmitSetup;
+              load_tcount = 1'b1;
+              tcount_sel = tClockStart;
+            end
+          end else begin
+            // If host nak'd then the transaction is about to terminate, go to a wait state
+            state_d = WaitForStop;
+          end
+        end
+      end
+
+      // An inert state just waiting for host to issue a stop
+      // Cannot cycle back to idle directly as other events depend on the system being
+      // non-idle.
+      WaitForStop: begin
+        state_d = WaitForStop;
       end
 
       // AcquireByte: target acquires a byte
@@ -1190,7 +1214,7 @@ module i2c_fsm (
         if (tx_fifo_depth_i == '0) begin
           state_d = StretchTxEmpty;
         end else begin
-          state_d = TransmitWait;
+          state_d = TransmitSetup;
           load_tcount = 1'b1;
           tcount_sel = tClockLow;
         end
@@ -1225,7 +1249,17 @@ module i2c_fsm (
     // When a start is detected, always go to the acquire start state.
     // Differences in repeated start / start handling are done in the
     // other fsm.
-    if (start_det) begin
+    if (!target_idle_o && !target_enable_i) begin
+      // If the target function is currently not idle but target_enable is suddenly dropped,
+      // (maybe because the host locked up and we want to cycle back to an initial state),
+      // transition immediately.
+      // The same treatment is not given to the host mode because it already attempts to
+      // gracefully terminate.  If the host cannot gracefully terminate for whatever reason,
+      // (the other side is holding SCL low), we may need to forcefully reset the module.
+      // TODO: It may be worth having a force stop condition to force the host back to
+      // Idle in case graceful termination is not possible.
+      state_d = Idle;
+    end else if (start_det) begin
       state_d = AcquireStart;
     end else if (stop_det) begin
       state_d = Idle;
@@ -1244,13 +1278,16 @@ module i2c_fsm (
   // I2C bus outputs
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      scl_o <= 1'b1;
-      sda_o <= 1'b1;
+      scl_q <= 1'b1;
+      sda_q <= 1'b1;
     end else begin
-      scl_o <= scl_temp;
-      sda_o <= sda_temp;
+      scl_q <= scl_d;
+      sda_q <= sda_d;
     end
   end
+
+  assign scl_o = scl_q;
+  assign sda_o = sda_q;
 
   // Host ceased sending SCL pulses during ongoing transaction
   assign event_host_timeout_o = !target_idle_o & (stretch_idle_cnt > host_timeout_i);
@@ -1258,4 +1295,6 @@ module i2c_fsm (
   // Target stretched clock beyond timeout
   assign event_stretch_timeout_o = stretch_en &&
                                    (stretch_idle_cnt[30:0] > stretch_timeout_i) && timeout_enable_i;
+
+
 endmodule

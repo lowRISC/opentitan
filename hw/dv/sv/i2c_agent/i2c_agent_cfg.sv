@@ -19,6 +19,10 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   bit     host_scl_start;
   bit     host_scl_stop;
   event   got_stop;
+   bit 	  use_seq_term = 0;
+   
+   int 	  sent_byte = 0;
+   int 	  rcvd_byte = 0;
 
   // this variables can be configured from host test
   uint i2c_host_min_data_rw = 1;

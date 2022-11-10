@@ -13168,7 +13168,7 @@
       module_name: i2c0
     }
     {
-      name: i2c0_acq_overflow
+      name: i2c0_acq_full
       width: 1
       type: interrupt
       module_name: i2c0
@@ -13264,7 +13264,7 @@
       module_name: i2c1
     }
     {
-      name: i2c1_acq_overflow
+      name: i2c1_acq_full
       width: 1
       type: interrupt
       module_name: i2c1
@@ -13360,7 +13360,7 @@
       module_name: i2c2
     }
     {
-      name: i2c2_acq_overflow
+      name: i2c2_acq_full
       width: 1
       type: interrupt
       module_name: i2c2

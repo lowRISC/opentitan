@@ -65,8 +65,7 @@ class i2c_monitor extends dv_base_monitor #(
         r_bit = cfg.vif.cb.sda_i;
         `DV_CHECK_CASE_EQ(r_bit, 1'b0)
 
-        if (mon_dut_item.bus_op == BusOpRead)
-          target_read();
+        if (mon_dut_item.bus_op == BusOpRead) target_read();
         else target_write();
 
         // send rsp_item to scoreboard
@@ -240,12 +239,22 @@ class i2c_monitor extends dv_base_monitor #(
   // update of_to_end to prevent sim finished when there is any activity on the bus
   // ok_to_end = 0 (bus busy) / 1 (bus idle)
   virtual task monitor_ready_to_end();
+      if (cfg.if_mode == Host) begin
+	 int scl_cnt = 0;	 
+	 ok_to_end = 0;
+	 // scl idle for 100 cycles.
+	 wait(cfg.use_seq_term == 0);
+	 
+ 	 forever begin
+ 	    @(cfg.vif.cb);
+	    if (cfg.vif.scl_i) scl_cnt++;
+	    else scl_cnt = 0;
+	    if (scl_cnt > 100) ok_to_end = 1;	    
+ 	 end
+      end else begin
     forever begin
       @(cfg.vif.scl_i or cfg.vif.sda_i or cfg.vif.scl_o or cfg.vif.sda_o);
-      if (cfg.if_mode == Host) begin
-        // TODO: set end condition if necessary
-      end else begin
-        ok_to_end = (cfg.vif.scl_i == 1'b1) && (cfg.vif.sda_i == 1'b1);
+       ok_to_end = (cfg.vif.scl_i == 1'b1) && (cfg.vif.sda_i == 1'b1);
       end
     end
   endtask : monitor_ready_to_end
@@ -274,6 +283,9 @@ class i2c_monitor extends dv_base_monitor #(
       `DV_CHECK_NE_FATAL({mon_dut_item.ack, mon_dut_item.nack}, 2'b11)
       `uvm_info(`gfn, $sformatf("\nmonitor, target_read detect HOST %s",
                                 (mon_dut_item.ack) ? "ACK" : "NO_ACK"), UVM_MEDIUM)
+
+//      cfg.rcvd_byte++;
+       
       // if nack is issued, next bit must be stop or rstart
       if (mon_dut_item.nack) begin
         cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
@@ -302,6 +314,9 @@ class i2c_monitor extends dv_base_monitor #(
       `uvm_info(`gfn, $sformatf("\nmonitor, target_write detect HOST %s",
                                 (!r_bit) ? "ACK" : "NO_ACK"), UVM_MEDIUM)
       // if nack is issued, next bit must be stop or rstart
+
+//      cfg.rcvd_byte++;
+
       if (!r_bit) begin
         cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
                                              mon_dut_item.rstart,
