@@ -332,6 +332,8 @@ for rst in output_rsts:
 % endfor
 
 // tie-off unused connections
+//VCS coverage off
+// pragma coverage off
 <% k = 0 %>\
 % for clk, unused in known_clocks.items():
   % if unused:
@@ -346,6 +348,8 @@ for rst in output_rsts:
     assign unused_rst_en_${k} = ${rst};<% k += 1 %>
   % endif
 % endfor
+//VCS coverage on
+// pragma coverage on
 
   // Peripheral Instantiation
 

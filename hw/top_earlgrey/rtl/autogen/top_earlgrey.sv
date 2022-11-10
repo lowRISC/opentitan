@@ -897,6 +897,8 @@ module top_earlgrey #(
   assign lpg_rst_en[23] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
 
 // tie-off unused connections
+//VCS coverage off
+// pragma coverage off
     prim_mubi_pkg::mubi4_t unused_cg_en_0;
     assign unused_cg_en_0 = clkmgr_aon_cg_en.aon_powerup;
     prim_mubi_pkg::mubi4_t unused_cg_en_1;
@@ -970,31 +972,29 @@ module top_earlgrey #(
     prim_mubi_pkg::mubi4_t unused_rst_en_24;
     assign unused_rst_en_24 = rstmgr_aon_rst_en.sys[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_25;
-    assign unused_rst_en_25 = rstmgr_aon_rst_en.sys_io[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_25 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_26;
-    assign unused_rst_en_26 = rstmgr_aon_rst_en.sys_io[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_26 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_27;
-    assign unused_rst_en_27 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_27 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_28;
-    assign unused_rst_en_28 = rstmgr_aon_rst_en.sys_io_div4[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_28 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_29;
-    assign unused_rst_en_29 = rstmgr_aon_rst_en.spi_device[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_29 = rstmgr_aon_rst_en.spi_host1[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_30;
-    assign unused_rst_en_30 = rstmgr_aon_rst_en.spi_host0[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_30 = rstmgr_aon_rst_en.usb[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_31;
-    assign unused_rst_en_31 = rstmgr_aon_rst_en.spi_host1[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_31 = rstmgr_aon_rst_en.usb_aon[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_32;
-    assign unused_rst_en_32 = rstmgr_aon_rst_en.usb[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_32 = rstmgr_aon_rst_en.usb_aon[rstmgr_pkg::Domain0Sel];
     prim_mubi_pkg::mubi4_t unused_rst_en_33;
-    assign unused_rst_en_33 = rstmgr_aon_rst_en.usb_aon[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_33 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_34;
-    assign unused_rst_en_34 = rstmgr_aon_rst_en.usb_aon[rstmgr_pkg::Domain0Sel];
+    assign unused_rst_en_34 = rstmgr_aon_rst_en.i2c1[rstmgr_pkg::DomainAonSel];
     prim_mubi_pkg::mubi4_t unused_rst_en_35;
-    assign unused_rst_en_35 = rstmgr_aon_rst_en.i2c0[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_36;
-    assign unused_rst_en_36 = rstmgr_aon_rst_en.i2c1[rstmgr_pkg::DomainAonSel];
-    prim_mubi_pkg::mubi4_t unused_rst_en_37;
-    assign unused_rst_en_37 = rstmgr_aon_rst_en.i2c2[rstmgr_pkg::DomainAonSel];
+    assign unused_rst_en_35 = rstmgr_aon_rst_en.i2c2[rstmgr_pkg::DomainAonSel];
+//VCS coverage on
+// pragma coverage on
 
   // Peripheral Instantiation
 
