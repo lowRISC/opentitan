@@ -10,7 +10,7 @@ common --color=yes
 # These options ensure that Bazel prints *everything* it is doing as aggressively
 # as possible, but only updating once every second.
 build --show_timestamps
-build --show_progress_rate_limit=1
+build --show_progress_rate_limit=4
 
 # If something goes wrong, show the whole command line for it.
 build --verbose_failures
