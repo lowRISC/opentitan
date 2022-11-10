@@ -4,7 +4,7 @@
 
 class i2c_agent_cfg extends dv_base_agent_cfg;
 
-  bit en_monitor = 1'b1; // enable monitor
+  bit en_monitor = 1'b0; // enable monitor
 
   // this parameters can be set by test to slow down the agent's responses
   int host_latency_cycles = 0;

@@ -131,7 +131,7 @@
   regressions: [
     {
        name: smoke
-       tests: ["i2c_host_smoke"]
+       tests: ["i2c_host_smoke", "i2c_target_smoke"]
     }
   ]
 }
