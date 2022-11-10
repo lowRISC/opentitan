@@ -93,14 +93,28 @@ module prim_sync_reqack_data #(
   // Assertions //
   ////////////////
   if (DataSrc2Dst == 1'b1) begin : gen_assert_data_src2dst
+`ifdef INC_ASSERT
+    //VCS coverage off
+    // pragma coverage off
+    logic chk_flag;
+    always_ff @(posedge clk_src_i or negedge rst_src_ni or negedge rst_dst_ni) begin
+      if (!rst_src_ni || !rst_dst_ni) begin
+        chk_flag <= '0;
+      end else if (src_req_i && !chk_flag) begin
+        chk_flag <= 1'b1;
+      end
+    end
+    //VCS coverage on
+    // pragma coverage on
+
     // SRC domain cannot change data while waiting for ACK.
-    `ASSERT(SyncReqAckDataHoldSrc2Dst, !$stable(data_i) |->
+    `ASSERT(SyncReqAckDataHoldSrc2Dst, !$stable(data_i) && chk_flag |->
         (!src_req_i || (src_req_i && src_ack_o)),
-        clk_src_i, !rst_src_ni || !rst_dst_ni)
+        clk_src_i, !rst_src_ni || !rst_dst_ni || !chk_flag)
 
     // Register stage cannot be used.
     `ASSERT_INIT(SyncReqAckDataReg, DataSrc2Dst && !DataReg)
-
+`endif
   end else if (DataSrc2Dst == 1'b0 && DataReg == 1'b0) begin : gen_assert_data_dst2src
     // DST domain shall not change data while waiting for SRC domain to latch it (together with
     // receiving ACK). It takes 2 SRC cycles for ACK to cross over from DST to SRC, and 1 SRC cycle
@@ -123,12 +137,28 @@ module prim_sync_reqack_data #(
     // assertion into two pieces. The first (SyncReqAckDataHoldDst2SrcA) checks that data doesn't
     // change in a way that could cause data corruption. The second (SyncReqAckDataHoldDst2SrcB)
     // checks that the DST side doesn't do anything that it shouldn't know is safe.
+`ifdef INC_ASSERT
+    //VCS coverage off
+    // pragma coverage off
+    logic chk_flag;
+    always_ff @(posedge clk_src_i or negedge rst_src_ni or negedge rst_dst_ni) begin
+      if (!rst_src_ni || !rst_dst_ni) begin
+        chk_flag <= '0;
+      end else if (src_req_i && !chk_flag) begin
+        chk_flag <= 1'b1;
+      end
+    end
+    //VCS coverage on
+    // pragma coverage on
+
     `ASSERT(SyncReqAckDataHoldDst2SrcA,
-            src_req_i && src_ack_o |-> $past(data_o, 2) == data_o && $past(data_o) == data_o,
-            clk_src_i, !rst_src_ni || !rst_dst_ni)
+            chk_flag && src_req_i && src_ack_o |->
+            $past(data_o, 2) == data_o && $past(data_o) == data_o,
+            clk_src_i, !rst_src_ni || !rst_dst_ni || !chk_flag)
     `ASSERT(SyncReqAckDataHoldDst2SrcB,
-            $past(src_req_i && src_ack_o) |-> $past(data_o) == data_o,
-            clk_src_i, !rst_src_ni || !rst_dst_ni)
+            chk_flag && $past(src_req_i && src_ack_o) |-> $past(data_o) == data_o,
+            clk_src_i, !rst_src_ni || !rst_dst_ni || !chk_flag)
+`endif
   end
 
 endmodule
