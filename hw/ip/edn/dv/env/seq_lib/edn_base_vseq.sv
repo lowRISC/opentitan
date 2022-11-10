@@ -20,6 +20,7 @@ class edn_base_vseq extends cip_base_vseq #(
   bit [csrng_pkg::CSRNG_CMD_WIDTH - 1:0]        cmd_data;
 
   rand bit                                      set_regwen;
+  rand bit                                      write_reserved_err_code_test_reg;
   virtual edn_cov_if                            cov_vif;
 
   constraint regwen_c {
@@ -123,6 +124,15 @@ class edn_base_vseq extends cip_base_vseq #(
     if ($urandom_range(0, 19) == 19 || set_regwen) begin
       bit [TL_DW-1:0] val;
       csr_rd(.ptr(ral.ctrl), .value(val));
+    end
+
+    if (write_reserved_err_code_test_reg) begin
+      `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.err_code_test.err_code_test,
+          !(value inside
+          {EdnSfifoRescmdErrTest, EdnSfifoGencmdErrTest, EdnErrTest, EdnAckSmErrTest,
+           EdnMainSmErrTest, EdnCntrErrTest, EdnFifoWriteErrTest, EdnFifoReadErrTest,
+           EdnFifoStateErrTest});)
+      csr_update(ral.err_code_test);
     end
   endtask
 
