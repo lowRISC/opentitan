@@ -87,7 +87,7 @@
             Disable EDN in all states and verify proper operation when re-enabled.
             '''
       stage: V2
-      tests: ["edn_disable"]
+      tests: ["edn_disable", "edn_disable_auto_req_mode"]
     }
     {
       name: stress_all

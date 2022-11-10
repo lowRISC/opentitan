@@ -53,43 +53,45 @@ class csrng_monitor extends dv_base_monitor #(
   endtask
 
   virtual task collect_valid_trans();
-    push_pull_item#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))  item;
-    csrng_item   cs_item;
-
-    cs_item = csrng_item::type_id::create("cs_item");
-
     forever begin
-      for (int i = 0; i <= cs_item.clen; i++) begin
-        csrng_cmd_fifo.get(item);
-        `uvm_info(`gfn, $sformatf("Received cs_item: %s", item.convert2string()), UVM_HIGH)
-        if (i == 0) begin
-          cs_item.acmd  = acmd_e'(item.h_data[3:0]);
-          cs_item.clen  = item.h_data[7:4];
-          if (item.h_data[11:8] == MuBi4True) begin
-            cs_item.flags = MuBi4True;
-          end
-          else begin
-            cs_item.flags = MuBi4False;
-          end
-          cs_item.glen  = item.h_data[30:12];
-          cs_item.cmd_data_q.delete();
-        end
-        else begin
-          cs_item.cmd_data_q.push_back(item.h_data);
-        end
-      end
-      if (cs_item.acmd == csrng_pkg::GEN) begin
-        for (int i = 0; i < cs_item.glen; i++) begin
-          @(posedge cfg.vif.mon_cb.cmd_rsp.genbits_valid);
-          cs_item.genbits_q.push_back(cfg.vif.mon_cb.cmd_rsp.genbits_bus);
-        end
-      end
-      cfg.vif.wait_cmd_ack();
-      `uvm_info(`gfn, $sformatf("Writing analysis_port: %s", cs_item.convert2string()), UVM_HIGH)
-      analysis_port.write(cs_item);
+      wait (cfg.under_reset == 0);
 
-      if (cfg.en_cov) cov.sample_csrng_cmds(cs_item, cfg.vif.cmd_rsp.csrng_rsp_sts);
-    end
+      `DV_SPINWAIT_EXIT(
+          push_pull_item#(.HostDataWidth(csrng_pkg::CSRNG_CMD_WIDTH))  item;
+          csrng_item   cs_item = csrng_item::type_id::create("cs_item");
+          for (int i = 0; i <= cs_item.clen; i++) begin
+            csrng_cmd_fifo.get(item);
+            `uvm_info(`gfn, $sformatf("Received cs_item: %s", item.convert2string()), UVM_HIGH)
+            if (i == 0) begin
+              cs_item.acmd  = acmd_e'(item.h_data[3:0]);
+              cs_item.clen  = item.h_data[7:4];
+              if (item.h_data[11:8] == MuBi4True) begin
+                cs_item.flags = MuBi4True;
+              end else begin
+                cs_item.flags = MuBi4False;
+              end
+              cs_item.glen  = item.h_data[30:12];
+              cs_item.cmd_data_q.delete();
+            end else begin
+              cs_item.cmd_data_q.push_back(item.h_data);
+            end
+          end
+          if (cs_item.acmd == csrng_pkg::GEN) begin
+            for (int i = 0; i < cs_item.glen; i++) begin
+              @(posedge cfg.vif.mon_cb.cmd_rsp.genbits_valid);
+              cs_item.genbits_q.push_back(cfg.vif.mon_cb.cmd_rsp.genbits_bus);
+            end
+          end
+          cfg.vif.wait_cmd_ack();
+          `uvm_info(`gfn, $sformatf("Writing analysis_port: %s", cs_item.convert2string()),
+                    UVM_HIGH)
+          analysis_port.write(cs_item);
+
+          if (cfg.en_cov) cov.sample_csrng_cmds(cs_item, cfg.vif.cmd_rsp.csrng_rsp_sts);,
+
+          // Wait reset
+          wait (cfg.under_reset);)
+     end
   endtask
 
   // This task is only used for device agents responding
@@ -119,13 +121,16 @@ class csrng_monitor extends dv_base_monitor #(
           cs_item.glen = cfg.vif.mon_cb.cmd_req.csrng_req_bus[30:12];
         end
 
-        for (int i = 0; i < cs_item.clen; i++) begin
-          do begin
-            @(cfg.vif.cmd_push_if.mon_cb);
-          end
-          while (!(cfg.vif.cmd_push_if.mon_cb.valid) || !(cfg.vif.cmd_push_if.mon_cb.ready));
-          cs_item.cmd_data_q.push_back(cfg.vif.mon_cb.cmd_req.csrng_req_bus);
-        end
+        `DV_SPINWAIT_EXIT(
+            for (int i = 0; i < cs_item.clen; i++) begin
+              do begin
+                @(cfg.vif.cmd_push_if.mon_cb);
+              end
+              while (!(cfg.vif.cmd_push_if.mon_cb.valid) || !(cfg.vif.cmd_push_if.mon_cb.ready));
+              cs_item.cmd_data_q.push_back(cfg.vif.mon_cb.cmd_req.csrng_req_bus);
+            end,
+            wait(cfg.under_reset))
+
         `uvm_info(`gfn, $sformatf("Writing req_analysis_port: %s", cs_item.convert2string()),
              UVM_HIGH)
         req_analysis_port.write(cs_item);
