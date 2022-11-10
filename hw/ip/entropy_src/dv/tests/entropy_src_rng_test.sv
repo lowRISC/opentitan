@@ -57,9 +57,9 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.dut_cfg.fips_enable_pct             = 25;
     cfg.dut_cfg.type_bypass_pct             = 75;
 
-    // Sometimes read data from the Observe FIFO (but always take entropy from RNG)
+    // Sometimes read data from the Observe FIFO (but almost always take entropy from RNG)
     cfg.dut_cfg.fw_read_pct                 = 50;
-    cfg.dut_cfg.fw_over_pct                 = 0;
+    cfg.dut_cfg.fw_over_pct                 = 10;
     // Sometimes inject data, even if not configured
     cfg.spurious_inject_entropy_pct = 50;
 
