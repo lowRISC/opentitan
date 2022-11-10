@@ -4,7 +4,7 @@
 
 # These options disable the Bazel progress UI, resulting in output closer
 # to ninja and similar tools.
-common --curses=yes
+common --curses=no
 common --color=yes
 
 # These options ensure that Bazel prints *everything* it is doing as aggressively
