@@ -179,7 +179,7 @@
             '''
     }
     {
-      name: seed_output_hw_cg
+      name: csrng_hw_cg
       desc: '''
             Covers that data output is observed at the CSRNG HW interface for
             all possible modes of operation, including:
@@ -201,7 +201,7 @@
             '''
     }
     {
-      name: seed_output_entropy_data_cg
+      name: seed_output_csr_cg
       desc: '''
             Covers that data output is observed at the entropy_data CSR interfaces for
             all possible modes of operation, including:
@@ -223,7 +223,7 @@
             '''
     }
     {
-      name: fw_ov_output_cg
+      name: observe_fifo_event_cg
       desc: '''
             Covers that data output is observed at the fw_ov_rd_data CSE interface for
             all possible modes of operation, including:
@@ -315,7 +315,7 @@
             '''
     }
     {
-      name: observe_fifo_thresh_cg
+      name: observe_fifo_threshold_cg
       desc: '''
             Covers a range of values (1-63) for OBSERVE_FIFO_THRESH. Coverage bins
             include the lowest value (1), the highest value (63) and four bins in between.
@@ -327,7 +327,7 @@
             '''
     }
     {
-      name: one_way_ht_threshold_cg
+      name: one_way_ht_threshold_reg_cg
       desc: '''
             Checks that all of the health test registers have been exercised and that the one-way
             update feature (which prohibits thresholds being relaxed after reset) works for both
