@@ -247,7 +247,8 @@ module keymgr
   logic op_done;
   logic init;
   logic data_valid;
-  logic data_en;
+  logic data_hw_en;
+  logic data_sw_en;
   logic kmac_done;
   logic kmac_input_invalid;
   logic kmac_cmd_err;
@@ -294,7 +295,8 @@ module keymgr
     .status_o(hw2reg.op_status.d),
     .fault_o(fault_code),
     .error_o(err_code),
-    .data_en_o(data_en),
+    .data_hw_en_o(data_hw_en),
+    .data_sw_en_o(data_sw_en),
     .data_valid_o(data_valid),
     .working_state_o(hw2reg.working_state.d),
     .root_key_i(otp_key_i),
@@ -552,7 +554,7 @@ module keymgr
     .dest_sel_i(dest_sel),
     .hw_key_sel_i(hw_key_sel),
     // SEC_CM: OUTPUT_KEYS.CTRL.REDUN
-    .data_en_i(data_en),
+    .data_en_i(data_hw_en),
     .data_valid_i(data_valid),
     .key_i(kmac_key),
     .data_i(kmac_data),
@@ -581,14 +583,14 @@ module keymgr
     prim_sec_anchor_buf #(
      .Width(32)
     ) u_prim_buf_share0_d (
-      .in_i(~data_en | wipe_key ? data_rand[0] : kmac_data[0][i*32 +: 32]),
+      .in_i(~data_sw_en | wipe_key ? data_rand[0] : kmac_data[0][i*32 +: 32]),
       .out_o(hw2reg.sw_share0_output[i].d)
     );
 
     prim_sec_anchor_buf #(
      .Width(32)
     ) u_prim_buf_share1_d (
-      .in_i(~data_en | wipe_key ? data_rand[1] : kmac_data[1][i*32 +: 32]),
+      .in_i(~data_sw_en | wipe_key ? data_rand[1] : kmac_data[1][i*32 +: 32]),
       .out_o(hw2reg.sw_share1_output[i].d)
     );
 
