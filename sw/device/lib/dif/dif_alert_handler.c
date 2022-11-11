@@ -332,14 +332,23 @@ dif_result_t dif_alert_handler_configure_class(
     dif_alert_handler_escalation_signal_t signal =
         config.escalation_phases[i].signal;
 
-    if (!is_valid_escalation_phase(phase) ||
-        signal >= ALERT_HANDLER_PARAM_N_ESC_SEV) {
+    // Check the escalation phase is valid. The signal is checked in the case
+    // statement below, which will return kDifBadArg if it does not
+    // correspond to any of the specified cases.
+    if (!is_valid_escalation_phase(phase)) {
       return kDifBadArg;
     }
 
     bitfield_bit32_index_t signal_enable_bit;
     bitfield_field32_t signal_map_field;
     switch (signal) {
+      // TODO: this should be rewritten to allow combinations of all signals.
+      // The alert handler supports the full phase -> signal mapping matrix.
+      // I.e., it is possible to enable signal 0 and 3 in phase 1 for
+      // instance. For Top Earl Grey it is for instance also recommended to
+      // trigger signals 1 and 2 at the same time since both trigger the same
+      // action in the life cycle controller and serve as redundant
+      // channels.
       case 0:
         signal_enable_bit = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT;
         signal_map_field = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E0_FIELD;
@@ -356,14 +365,42 @@ dif_result_t dif_alert_handler_configure_class(
         signal_enable_bit = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E3_BIT;
         signal_map_field = ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E3_FIELD;
         break;
+      // Does not trigger any of the signals. Can be useful in cases where an
+      // escalation phase is just used to wait a specific amount of time.
+      case 0xFFFFFFFF:
+        break;
       default:
         return kDifBadArg;
     }
 
-    ctrl_reg = bitfield_bit32_write(ctrl_reg, signal_enable_bit, true);
-    ctrl_reg = bitfield_field32_write(
-        ctrl_reg, signal_map_field,
-        (uint32_t)(phase - kDifAlertHandlerClassStatePhase0));
+    // Clear all settings.
+    if (signal == 0xFFFFFFFF) {
+      ctrl_reg = bitfield_bit32_write(
+          ctrl_reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT, false);
+      ctrl_reg = bitfield_field32_write(
+          ctrl_reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E0_FIELD,
+          (uint32_t)(phase - kDifAlertHandlerClassStatePhase0));
+      ctrl_reg = bitfield_bit32_write(
+          ctrl_reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E1_BIT, false);
+      ctrl_reg = bitfield_field32_write(
+          ctrl_reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E1_FIELD,
+          (uint32_t)(phase - kDifAlertHandlerClassStatePhase0));
+      ctrl_reg = bitfield_bit32_write(
+          ctrl_reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E2_BIT, false);
+      ctrl_reg = bitfield_field32_write(
+          ctrl_reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E2_FIELD,
+          (uint32_t)(phase - kDifAlertHandlerClassStatePhase0));
+      ctrl_reg = bitfield_bit32_write(
+          ctrl_reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E3_BIT, false);
+      ctrl_reg = bitfield_field32_write(
+          ctrl_reg, ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E3_FIELD,
+          (uint32_t)(phase - kDifAlertHandlerClassStatePhase0));
+    } else {
+      ctrl_reg = bitfield_bit32_write(ctrl_reg, signal_enable_bit, true);
+      ctrl_reg = bitfield_field32_write(
+          ctrl_reg, signal_map_field,
+          (uint32_t)(phase - kDifAlertHandlerClassStatePhase0));
+    }
 
     switch (phase) {
       case kDifAlertHandlerClassStatePhase0:
