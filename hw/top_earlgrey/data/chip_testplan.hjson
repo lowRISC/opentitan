@@ -2593,8 +2593,6 @@
 
             Ensure that the data within the retention SRAM survives ALL low power entry-exit
             variations.
-
-            TODO: how to deal with the scramble keys on low power exit?
             '''
       stage: V2
       tests: ["chip_sw_sleep_sram_ret_contents"]
