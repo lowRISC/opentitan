@@ -368,7 +368,10 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
       ReqError: begin
         ctr_drbg_gen_sm_err_o = 1'b1;
       end
-      default: state_d = ReqError;
+      default: begin
+        state_d = ReqError;
+        ctr_drbg_gen_sm_err_o = 1'b1;
+      end
     endcase
   end
 

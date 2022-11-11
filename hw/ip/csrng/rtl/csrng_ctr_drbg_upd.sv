@@ -360,7 +360,10 @@ module csrng_ctr_drbg_upd #(
       BEError: begin
         ctr_drbg_updbe_sm_err_o = 1'b1;
       end
-      default: blk_enc_state_d = BEError;
+      default: begin
+        blk_enc_state_d = BEError;
+        ctr_drbg_updbe_sm_err_o = 1'b1;
+      end
     endcase // case (blk_enc_state_q)
   end
 
@@ -549,7 +552,10 @@ module csrng_ctr_drbg_upd #(
       OBError: begin
         ctr_drbg_updob_sm_err_o = 1'b1;
       end
-      default: outblk_state_d = OBError;
+      default: begin
+        outblk_state_d = OBError;
+        ctr_drbg_updob_sm_err_o = 1'b1;
+      end
     endcase
   end
 
