@@ -139,8 +139,6 @@
       tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
-      // TODO: This is currently untested.
-      // Can probably be added to the csrng_alert test similar to CONFIG.MUBI.
       name: sec_cm_ctrl_mubi
       desc: '''
             Verify the countermeasure(s) CTRL.MUBI.
