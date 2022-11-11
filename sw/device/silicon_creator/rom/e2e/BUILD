@@ -3072,3 +3072,30 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
     ],
 )
+
+opentitan_functest(
+    name = "rom_e2e_ret_ram_keep",
+    srcs = ["rom_e2e_ret_ram_keep_test.c"],
+    cw310 = cw310_params(
+        bitstream = "//hw/bitstream:rom",
+        tags = ["vivado"] + maybe_skip_in_ci(CONST.LCV.RMA),
+    ),
+    signed = True,
+    targets = [
+        "cw310_rom",
+    ],
+    deps = [
+        "//hw/top_earlgrey/ip/pwrmgr/data/autogen:pwrmgr_regs",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:pwrmgr",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:test_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
