@@ -113,6 +113,7 @@ class spi_device_driver extends spi_driver;
           logic [7:0] byte_data;
           cfg.read_byte(item.num_lanes, !item.write_command, byte_data);
           rsp.payload_q.push_back(byte_data);
+          if (!item.write_command) rsp.read_size++;
         end
       end : thread_collect_payload
 
