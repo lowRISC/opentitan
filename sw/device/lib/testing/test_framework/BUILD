@@ -272,11 +272,10 @@ opentitan_functest(
     name = "ottf_flow_control_functest",
     srcs = ["ottf_flow_control_functest.c"],
     cw310 = cw310_params(
-        tags = ["broken"],  # TODO(#15487): failing on CI
         test_cmds = [
             "--exec=\"fpga load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
             "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
-            "--exec \"console --quiet --exit-success=BUSY --exit-failure=PASS|FAIL\"",
+            "--exec=\"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
             "console",
             "--flow-control",
             "--send=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
@@ -290,7 +289,7 @@ opentitan_functest(
     ],
     verilator = verilator_params(
         test_cmds = [
-            "--exec \"console --quiet --exit-success=BUSY --exit-failure=PASS|FAIL\"",
+            "--exec \"console --quiet --exit-success=WAIT --exit-failure=PASS|FAIL --flow-control\"",
             "console",
             "--flow-control",
             "--send=\"{}\"".format(_FLOW_CONTROL_MESSAGE),
