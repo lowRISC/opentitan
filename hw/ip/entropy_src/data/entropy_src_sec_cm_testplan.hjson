@@ -24,10 +24,7 @@
 {
   testpoints: [
     {
-      // TODO: We need to carefully check what points are covered by which test and how.
-      // At a first glance 1), 2) and 3b) should be covered by the automated entropy_src_csr_rw test.
-      // However, the SW_REGUPD and MODULE_ENABLE registers have exclusions for all automated CSR tests.
-      // Meaning we might need a directed test for 1) and 2).
+      // Since the SW_REGUPD and MODULE_ENABLE registers have exclusions for all automated CSR tests, 1) and 2) below are verified with a directed test.
       // 3 a) and b) are captured by the scoreboard.
       name: sec_cm_config_regwen
       desc: '''
@@ -38,7 +35,7 @@
             3) Only if MODULE_ENABLE is MuBi4False and SW_REGUPD is 1, a) REGWEN reads as 1 and b) associated control and threshold registers can be modified.
             '''
       stage: V2S
-      tests: ["entropy_src_rng"]
+      tests: ["entropy_src_rng", "entropy_src_cfg_regwen"]
     }
     {
       name: sec_cm_config_mubi

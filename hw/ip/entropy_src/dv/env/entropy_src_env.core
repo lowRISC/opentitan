@@ -36,6 +36,7 @@ filesets:
       - seq_lib/entropy_src_intr_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_alert_vseq.sv: {is_include_file: true}
       - seq_lib/entropy_src_err_vseq.sv: {is_include_file: true}
+      - seq_lib/entropy_src_cfg_regwen_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

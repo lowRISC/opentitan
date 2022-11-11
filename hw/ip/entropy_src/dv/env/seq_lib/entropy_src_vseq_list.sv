@@ -11,3 +11,4 @@
 `include "entropy_src_intr_vseq.sv"
 `include "entropy_src_alert_vseq.sv"
 `include "entropy_src_err_vseq.sv"
+`include "entropy_src_cfg_regwen_vseq.sv"

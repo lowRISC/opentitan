@@ -17,6 +17,7 @@ filesets:
       - entropy_src_stress_all_test.sv: {is_include_file: true}
       - entropy_src_functional_errors_test.sv: {is_include_file: true}
       - entropy_src_alert_test.sv: {is_include_file: true}
+      - entropy_src_cfg_regwen_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
