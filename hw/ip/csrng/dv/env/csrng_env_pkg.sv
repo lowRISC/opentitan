@@ -161,6 +161,12 @@ package csrng_env_pkg;
     fifo_state = 2
   } which_fifo_err_e;
 
+  typedef enum int {
+    cmd_gen_cnt_sel  = 0,
+    drbg_upd_cnt_sel = 1,
+    drbg_gen_cnt_sel = 2
+  } which_cnt_e;
+
   // functions
 
   // package sources

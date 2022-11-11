@@ -107,9 +107,23 @@ class csrng_err_vseq extends csrng_base_vseq;
         end
       end
       cmd_gen_cnt_err: begin
-        fld = csr.get_field_by_name(fld_name);
-        path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.NHwApps);
-        force_path_err(path, 8'h01, fld, 1'b1);
+        case(cfg.which_cnt) inside
+          cmd_gen_cnt_sel: begin
+            fld = csr.get_field_by_name(fld_name);
+            path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.which_hw_inst_exc);
+            force_cnt_err(path, fld, 1'b1, 13);
+          end
+          drbg_upd_cnt_sel: begin
+            fld = csr.get_field_by_name(fld_name);
+            path = cfg.csrng_path_vif.drbg_upd_cnt_err_path();
+            force_cnt_err(path, fld, 1'b1, 32);
+          end
+          drbg_gen_cnt_sel: begin
+            fld = csr.get_field_by_name(fld_name);
+            path = cfg.csrng_path_vif.drbg_gen_cnt_err_path();
+            force_cnt_err(path, fld, 1'b1, 32);
+          end
+        endcase
       end
       fifo_write_err, fifo_read_err, fifo_state_err: begin
         fld = csr.get_field_by_name(fld_name);

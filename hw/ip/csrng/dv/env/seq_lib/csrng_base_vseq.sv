@@ -238,6 +238,35 @@ class csrng_base_vseq extends cip_base_vseq #(
     end
   endtask // force_path_err
 
+  task force_cnt_err(string path, uvm_reg_field reg_field, bit exp_data, int ctr_width);
+    bit[31:0] tmp_cnt, bit_flip_mask, tamper_cnt;
+    if (ctr_width > 32) begin
+      `uvm_fatal(`gfn, $sformatf("\n\t ----| ctr_width greater than 32: %d %s", ctr_width, path))
+    end
+    if (!uvm_hdl_check_path(path)) begin
+      `uvm_fatal(`gfn, $sformatf("\n\t ----| PATH NOT FOUND: %s", path))
+    end else begin
+      // Read the correct count value
+      `DV_CHECK(uvm_hdl_read(path, tmp_cnt));
+      // Randomize bit flip vector
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bit_flip_mask, $onehot(bit_flip_mask);)
+      // Make sure the random bit is within the ctr_width (this has a slight prefernce for lower
+      // bits in case 32 is not divisible by ctr_width)
+      while (bit_flip_mask > (32'h1 << (ctr_width-1))) begin
+        bit_flip_mask = bit_flip_mask >> ctr_width;
+      end
+      // Flip the bit
+      tamper_cnt = tmp_cnt ^ bit_flip_mask;
+      // Write back count with flipped bit
+      `DV_CHECK(uvm_hdl_force(path, tamper_cnt));
+      cfg.clk_rst_vif.wait_clks(50);
+      `DV_CHECK(uvm_hdl_release(path));
+      cfg.clk_rst_vif.wait_clks(50);
+      // Check register value
+      csr_rd_check(.ptr(reg_field), .compare_value(exp_data));
+    end
+  endtask // force_cnt_err
+
   // Find the first or last index in the original string that the target character appears
   function automatic int find_index (string target, string original_str, string which_index);
     int        index;
