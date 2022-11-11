@@ -395,6 +395,7 @@
       sw_images: ["//sw/device/tests/sim_dv:data_integrity_escalation_reset_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
+      reseed: 6
     }
     {
       name: chip_sw_sleep_pin_mio_dio_val
