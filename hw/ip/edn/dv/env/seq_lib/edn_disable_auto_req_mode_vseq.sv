@@ -39,7 +39,7 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
       `DV_SPINWAIT(
           while (state_val != auto_req_sts[rand_st_idx]) begin
             uvm_hdl_read(main_sm_d_path, state_val);
-            cfg.clk_rst_vif.wait_clks(1);
+            cfg.clk_rst_vif.wait_n_clks(1);
           end)
     end
 
@@ -110,7 +110,15 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
     // Otherwise the testbench will hanging at waiting for more EDN requests.
     `DV_WAIT(edn_enable_toggle_done == 1);
     `DV_WAIT(edn_done == edn_reqs);
+    `uvm_info(`gfn, "The body of the sequence ended", UVM_HIGH);
+  endtask
+
+  virtual task post_start();
+    super.post_start();
+    cfg.clk_rst_vif.wait_clks($urandom_range(0, 20));
+    // Add a EDN disablement to terminate all the pending transactions in auto_req_mode.
     cfg.edn_vif.drive_edn_disable(1);
+    csr_wr(.ptr(ral.ctrl.edn_enable), .value(MuBi4False));
   endtask
 
 endclass
