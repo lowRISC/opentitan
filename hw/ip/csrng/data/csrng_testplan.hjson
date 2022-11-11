@@ -109,18 +109,22 @@
             '''
     }
     {
-      name: err_test_cg
+      name: csrng_err_code_cg
       desc: '''
-            Covers that all fatal errors, all fifo errors, all state machine errors and
-            all error codes of csrng have been tested.
-            Individual config settings that will be covered include:
-            - which_hw_inst_exc (0 to NHwApps-1), NHwApps possible hw instance exceptions
-            - which_sp2v (0 to Sp2VWidth-1), SP2V_HIGH_LOGIC width
-            - which_fatal_err (0 to 25), 26 possible fatal errors
-            - which_fifo (0 to 15), 16 different fifos
-            - which_err_code (0 to 51), 26 possible fatal errors, plus 26 ERR_CODE_TEST bits test
-            - which_fifo_err (0 to 2), fifo write/read/state errors
-            - which_invalid_mubi (0 to 2), 3 possible invalid mubi4 fields
+            Covers all possible fatal errors, possible AES FSM errors inside CSRNG and all possible
+            hw_exc_sts responses from each HW instance.
+            '''
+    }
+    {
+      name: csrng_err_code_test_cg
+      desc: '''
+            Covers ERR_CODE_TEST register values for setting up fatal errors.
+            '''
+    }
+    {
+      name: csrng_recov_alert_sts_cg
+      desc: '''
+            Covers all possible recoverable alert cases.
             '''
     }
   ]
