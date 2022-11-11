@@ -518,14 +518,29 @@
     {
       name: chip_sw_data_integrity
       desc: '''
-            Verify the alert signaling mechanism due to memory data integrity violation.
+            Verify the alert signaling mechanism due to integrity violations of load ops.
 
-            An SW test which performs the following on ret_sram to verify the memory end to end
-            integrity scheme.
+            An SW test which performs the following on main and retention SRAMs to verify the memory
+            end-to-end integrity scheme:
             - Corrupt a random data / integrity bit in the memory using SV force.
             - SW reads that address and the corrupted data is sent to ibex.
             - Verify that ibex detects the integrity violation and triggers an alert.
-            - Verify the alert upto the NMI stage or full reset, and alert cause is from ibex.
+            - Check the alert up to the NMI phase and make sure that the alert cause is from Ibex.
+            '''
+      stage: V2
+      tests: ["chip_sw_data_integrity_escalation"]
+    }
+    {
+      name: chip_sw_instruction_integrity
+      desc: '''
+            Verify the alert signaling mechanism due to integrity violations of instruction fetches.
+
+            An SW test which performs the following on main SRAM to verify the memory end-to-end
+            integrity scheme:
+            - Corrupt a data / integrity bit in a test function in the main SRAM using SV force.
+            - SW jumps to that test function in the main SRAM.
+            - Verify that ibex detects the integrity violation and triggers an alert.
+            - Check the alert up to the NMI phase and make sure that the alert cause is from Ibex.
             '''
       stage: V2
       tests: ["chip_sw_data_integrity_escalation"]
