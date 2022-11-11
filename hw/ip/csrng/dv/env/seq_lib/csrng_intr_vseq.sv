@@ -61,6 +61,11 @@ class csrng_intr_vseq extends csrng_base_vseq;
   endtask // test_cs_entropy_req
 
   task test_cs_hw_inst_exc();
+    // TODO: Instead of forcing ack_sts, find a way to actually generate the csrng_rsp_sts
+    // response as described in the documentation
+    // 1. Failure of the entropy source
+    // 2. Attempts to use an instance which has not been properly instantiated, or
+    // 3. Attempts to generate data when an instance has exceeded its maximum seed life.
     path1 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack", cfg.which_hw_inst_exc);
     path2 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack_sts", cfg.which_hw_inst_exc);
 
@@ -71,6 +76,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     `DV_CHECK(uvm_hdl_release(path1));
     `DV_CHECK(uvm_hdl_release(path2));
 
+    cov_vif.cg_err_code_sample(.err_code(ral.err_code.get_mirrored_value()));
     // Expect/Clear interrupt bit
     check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
     cfg.clk_rst_vif.wait_clks(100);
@@ -173,9 +179,11 @@ class csrng_intr_vseq extends csrng_base_vseq;
         `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
       end
     endcase // case (cfg.which_fatal_err)
+    cov_vif.cg_err_code_sample(.err_code(ral.err_code.get_mirrored_value()));
   endtask // test_cs_fatal_err
 
   task body();
+    super.body();
     // Turn off fatal alert check
     expect_fatal_alerts = 1'b1;
 

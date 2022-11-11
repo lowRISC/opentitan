@@ -19,7 +19,9 @@ class csrng_alert_vseq extends csrng_base_vseq;
     uvm_reg       csr;
     uvm_reg_field fld;
 
-     `uvm_info(`gfn, $sformatf("Testing enable_field_alert"), UVM_MEDIUM)
+    super.body();
+
+    `uvm_info(`gfn, $sformatf("Testing enable_field_alert"), UVM_MEDIUM)
 
     // Initiate with invalid mubi data
     csrng_init();
@@ -39,6 +41,8 @@ class csrng_alert_vseq extends csrng_base_vseq;
     exp_recov_alert_sts = 32'b0;
     exp_recov_alert_sts[fld.get_lsb_pos()] = 1;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
+    // Since we already did a backdoor check, sampling with this value is sufficient.
+    cov_vif.cg_recov_alert_sample(.recov_alert(exp_recov_alert_sts));
 
     cfg.clk_rst_vif.wait_clks(100);
 
@@ -103,6 +107,8 @@ class csrng_alert_vseq extends csrng_base_vseq;
     exp_recov_alert_sts = 32'b0;
     exp_recov_alert_sts[ral.recov_alert_sts.cs_bus_cmp_alert.get_lsb_pos()] = 1;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
+    // Since we already did a backdoor check, sampling with this value is sufficient.
+    cov_vif.cg_recov_alert_sample(.recov_alert(ral.recov_alert_sts.get_mirrored_value()));
 
     // Clear recov_alert_sts register
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));

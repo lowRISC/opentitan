@@ -12,7 +12,7 @@ class csrng_err_vseq extends csrng_base_vseq;
   csrng_item   cs_item;
 
   task body();
-    bit [5:0]     err_code_test_bit;
+    bit [4:0]     err_code_test_bit;
     string        path, path1, path2;
     bit           value1, value2;
     string        fifo_name;
@@ -27,6 +27,9 @@ class csrng_err_vseq extends csrng_base_vseq;
     string        reg_name, fld_name;
     uvm_reg       csr;
     uvm_reg_field fld;
+    bit [31:0]    backdoor_err_code_val;
+
+    super.body();
 
     fifo_err_path[0] = '{"write": "push", "read": "pop", "state": "full"};
     fifo_err_path[1] = '{"write": "full", "read": "not_empty", "state": "not_empty"};
@@ -90,11 +93,13 @@ class csrng_err_vseq extends csrng_base_vseq;
           force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld,
                               1'b1, cfg.which_fifo_err);
         end
+        cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
       end
       cmd_stage_sm_err, main_sm_err, drbg_gen_sm_err, drbg_updbe_sm_err, drbg_updob_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
         path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1), cfg.NHwApps);
         force_path_err(path, 8'b0, fld, 1'b1);
+        cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
       end
       aes_cipher_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
@@ -105,6 +110,7 @@ class csrng_err_vseq extends csrng_base_vseq;
           path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "n");
           force_path_err(path, 8'b0, fld, 1'b1);
         end
+        cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
       end
       cmd_gen_cnt_err: begin
         case(cfg.which_cnt) inside
@@ -124,6 +130,7 @@ class csrng_err_vseq extends csrng_base_vseq;
             force_cnt_err(path, fld, 1'b1, 32);
           end
         endcase
+        cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
       end
       fifo_write_err, fifo_read_err, fifo_state_err: begin
         fld = csr.get_field_by_name(fld_name);
@@ -145,6 +152,7 @@ class csrng_err_vseq extends csrng_base_vseq;
         end else begin
           force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
         end
+        cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
       end
       sfifo_cmd_err_test, sfifo_genbits_err_test, sfifo_cmdreq_err_test, sfifo_rcstage_err_test,
       sfifo_keyvrc_err_test, sfifo_updreq_err_test, sfifo_bencreq_err_test, sfifo_bencack_err_test,
@@ -158,6 +166,8 @@ class csrng_err_vseq extends csrng_base_vseq;
         csr_wr(.ptr(ral.err_code_test.err_code_test), .value(err_code_test_bit));
         cfg.clk_rst_vif.wait_clks(50);
         csr_rd_check(.ptr(fld), .compare_value(1'b1));
+        // Since we already did a backdoor check, sampling with this value is sufficient.
+        cov_vif.cg_err_test_sample(.err_test_code(err_code_test_bit));
         // Clear interrupt_enable
         csr_wr(.ptr(ral.intr_enable), .value(32'd0));
         ral.ctrl.enable.set(prim_mubi_pkg::MuBi4False);

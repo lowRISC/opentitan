@@ -19,6 +19,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   bit [CSRNG_BUS_WIDTH-1:0]                               cs_data[NUM_HW_APPS + 1],
                                                           es_data[NUM_HW_APPS + 1];
   bit                                                     fips[NUM_HW_APPS + 1];
+  // Sample interrupt pins at read data phase. This is used to compare with intr_state read value.
+  bit [3:0] intr_pins;
 
   virtual csrng_cov_if                                    cov_vif;
 
@@ -94,20 +96,39 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "intr_state": begin
-        // FIXME
+        if (addr_phase_read) intr_pins = cfg.intr_vif.pins;
+        if (data_phase_read && cov_vif.en_full_cov) begin
+          bit [3:0] intr_en = `gmv(ral.intr_enable);
+          foreach (intr_pins[i]) begin
+            csrng_intr_e intr = csrng_intr_e'(i);
+            `DV_CHECK_CASE_EQ(intr_pins[i], (intr_en[i] & item.d_data[i]),
+                              $sformatf("Interrupt_pin: %0s", intr.name));
+            if (cfg.en_cov) begin
+              cov.intr_cg.sample(i, intr_en[i], item.d_data[i]);
+              cov.intr_pins_cg.sample(i, intr_pins[i]);
+            end
+          end
+        end
+        do_read_check = 1'b0;
         do_read_check = 1'b0;
       end
       "intr_enable": begin
         // FIXME
       end
       "intr_test": begin
-        // FIXME
+        if (addr_phase_write && cov_vif.en_full_cov) begin
+          bit [3:0] intr_en  = `gmv(ral.intr_enable);
+          bit [3:0] intr_exp = `gmv(ral.intr_state) | item.a_data;
+          foreach (intr_exp[i]) begin
+            cov.intr_test_cg.sample(i, item.a_data[i], intr_en[i], intr_exp[i]);
+          end
+        end
+      end
+      "alert_test": begin
       end
       "regwen": begin
       end
       "ctrl": begin
-      end
-      "sum_sts": begin
       end
       "cmd_req": begin
         if (addr_phase_write) begin
@@ -206,19 +227,30 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           cs_data[SW_APP] = 'h0;
         end
       end
-      "halt_main_sm": begin
-      end
-      "main_sm_sts": begin
-        do_read_check = 1'b0;
+      "int_state_num": begin
       end
       "int_state_val": begin
         do_read_check = 1'b0;
       end
-      "int_state_num": begin
-      end
       "hw_exc_sts": begin
       end
+      "recov_alert_sts": begin
+        if (data_phase_read && cov_vif.en_full_cov) begin
+          cov_vif.cg_recov_alert_sample(item.d_data);
+        end
+      end
       "err_code": begin
+        if (data_phase_read && cov_vif.en_full_cov) begin
+          cov_vif.cg_err_code_sample(item.d_data);
+        end
+      end
+      "err_code_test": begin
+        if (data_phase_read && cov_vif.en_full_cov) begin
+          cov_vif.cg_err_test_sample(item.d_data[4:0]);
+        end
+      end
+      "main_sm_state": begin
+        do_read_check = 1'b0;
       end
       default: begin
         `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
