@@ -54,6 +54,14 @@ interface csrng_path_if
 
   function automatic string cmd_gen_cnt_err_path(int NHwApps);
     return {core_path, $sformatf(".gen_cmd_stage[%0d]", NHwApps),
-            ".u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr.err_o"};
+            ".u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr.cnt_q[1]"};
   endfunction // cmd_gen_cnt_err_path
+
+  function automatic string drbg_upd_cnt_err_path();
+    return {core_path, ".u_csrng_ctr_drbg_upd.u_prim_count_ctr_drbg.cnt_q[1]"};
+  endfunction // drbg_upd_cnt_err_path
+
+  function automatic string drbg_gen_cnt_err_path();
+    return {core_path, ".u_csrng_ctr_drbg_gen.u_prim_count_ctr_drbg.cnt_q[1]"};
+  endfunction // drbg_gen_cnt_err_path
 endinterface // csrng_path_if
