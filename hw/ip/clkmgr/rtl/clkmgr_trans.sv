@@ -54,6 +54,20 @@ module clkmgr_trans
     .q_o(sw_hint_synced)
   );
 
+  // Idle sync: Idle signal comes from IP module. The reset of the Idle signal
+  // may differ from the reset here. Adding mubi sync to synchronize.
+  prim_mubi_pkg::mubi4_t [0:0] idle;
+  prim_mubi4_sync #(
+    .NumCopies      ( 1     ),
+    .AsyncOn        ( 1'b 1 ),
+    .StabilityCheck ( 1'b 1 )
+  ) u_idle_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i (idle_i),
+    .mubi_o (idle)
+  );
+
   // SEC_CM: IDLE.CTR.REDUN
   logic cnt_err;
   prim_count #(
@@ -62,10 +76,10 @@ module clkmgr_trans
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     // the default condition is to keep the clock enabled
-    .clr_i(mubi4_test_false_loose(idle_i)),
+    .clr_i(mubi4_test_false_loose(idle[0])),
     .set_i('0),
     .set_cnt_i('0),
-    .incr_en_i(mubi4_test_true_strict(idle_i) & ~idle_valid),
+    .incr_en_i(mubi4_test_true_strict(idle[0]) & ~idle_valid),
     .decr_en_i(1'b0),
     .step_i(IdleCntWidth'(1'b1)),
     .cnt_o(idle_cnt),
