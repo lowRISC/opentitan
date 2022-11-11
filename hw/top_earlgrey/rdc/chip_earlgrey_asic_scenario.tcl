@@ -101,14 +101,14 @@ set_reset_scenario { \
 # RSTMGR SW Resets
 #set_reset_scenario { {{top_earlgrey.u_rstmgr_aon.u_ndm_sync.u_sync_2.gen_generic.u_impl_generic.q_o[0]} {reset  { @t0 1 } { #10 0}} }} -name Scenario8 -comment "functional reset"
 set_reset_scenario { \
-  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_0.q[0]} {reset  { @t0 0 } { #10 1}} } \
-  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_1.q[0]} {reset  { @t0 0 } { #10 1}} } \
-  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_2.q[0]} {reset  { @t0 0 } { #10 1}} } \
-  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_3.q[0]} {reset  { @t0 0 } { #10 1}} } \
-  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_4.q[0]} {reset  { @t0 0 } { #10 1}} } \
-  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_5.q[0]} {reset  { @t0 0 } { #10 1}} } \
-  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_6.q[0]} {reset  { @t0 0 } { #10 1}} } \
-  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_7.q[0]} {reset  { @t0 0 } { #10 1}} } \
+  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_0.q[0]} {reset  { @t0 1 } { #2 0 } { #10 1}} } \
+  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_1.q[0]} {reset  { @t0 1 } { #2 0 } { #10 1}} } \
+  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_2.q[0]} {reset  { @t0 1 } { #2 0 } { #10 1}} } \
+  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_3.q[0]} {reset  { @t0 1 } { #2 0 } { #10 1}} } \
+  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_4.q[0]} {reset  { @t0 1 } { #2 0 } { #10 1}} } \
+  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_5.q[0]} {reset  { @t0 1 } { #2 0 } { #10 1}} } \
+  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_6.q[0]} {reset  { @t0 1 } { #2 0 } { #10 1}} } \
+  {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_7.q[0]} {reset  { @t0 1 } { #2 0 } { #10 1}} } \
   { POR_N                               { constraint { @t0 1 } } } \
   { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { constraint { @t0 1 } } } \
   { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint { @t0 1 } } } \
