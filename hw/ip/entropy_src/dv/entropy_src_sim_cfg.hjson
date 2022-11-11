@@ -95,6 +95,12 @@
     }
 
     {
+      name: entropy_src_cfg_regwen
+      uvm_test: entropy_src_cfg_regwen_test
+      uvm_test_seq: entropy_src_cfg_regwen_vseq
+    }
+
+    {
       name: entropy_src_functional_errors
       reseed: 1000
       uvm_test: entropy_src_functional_errors_test
