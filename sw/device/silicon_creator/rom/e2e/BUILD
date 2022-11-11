@@ -1695,8 +1695,7 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
 test_suite(
     name = "rom_e2e_jtag_inject_tests",
     tags = [
-        "cw310_rom",
-        "vivado",
+        "manual",
     ],
     tests = ["sram_program_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
 )
@@ -1786,8 +1785,7 @@ test_suite(
 test_suite(
     name = "rom_e2e_asm_interrupt_handler",
     tags = [
-        "cw310",
-        "vivado",
+        "manual",
     ],
     tests = ["asm_interrupt_handler_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
 )
@@ -1938,8 +1936,7 @@ REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
 test_suite(
     name = "rom_e2e_asm_watchdog",
     tags = [
-        "cw310",
-        "vivado",
+        "manual",
     ],
     tests = [
         "rom_e2e_asm_watchdog_" + type + "_fpga_cw310_test_otp_" + otp_name
