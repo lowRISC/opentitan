@@ -305,11 +305,14 @@ OT_SECTION(".non_volatile_counter_1")
 uint64_t nv_counter_1[kNonVolatileCounterFlashWords];
 OT_SECTION(".non_volatile_counter_2")
 uint64_t nv_counter_2[kNonVolatileCounterFlashWords];
+OT_SECTION(".non_volatile_counter_3")
+uint64_t nv_counter_3[kNonVolatileCounterFlashWords];
 
 static uint64_t *const kNvCounters[] = {
     nv_counter_0,
     nv_counter_1,
     nv_counter_2,
+    nv_counter_3,
 };
 
 uint32_t flash_ctrl_testutils_counter_get(size_t counter) {

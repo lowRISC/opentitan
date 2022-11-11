@@ -253,6 +253,9 @@ SECTIONS {
    _non_volatile_counter_2_end = _non_volatile_counter_1_start;
    _non_volatile_counter_2_start = _non_volatile_counter_2_end - _non_volatile_counter_size;
 
+   _non_volatile_counter_3_end = _non_volatile_counter_2_start;
+   _non_volatile_counter_3_start = _non_volatile_counter_3_end - _non_volatile_counter_size;
+
   /**
    * Non-volatile scratch area in flash.
    */
@@ -286,6 +289,12 @@ SECTIONS {
   .non_volatile_counter_2 _non_volatile_counter_2_start (NOLOAD) : ALIGN(2048) {
     KEEP(*(.non_volatile_counter_2))
     KEEP(*(.non_volatile_counter_2.*))
+    . = _non_volatile_counter_size;
+  } > ottf_flash
+
+  .non_volatile_counter_3 _non_volatile_counter_3_start (NOLOAD) : ALIGN(2048) {
+    KEEP(*(.non_volatile_counter_3))
+    KEEP(*(.non_volatile_counter_3.*))
     . = _non_volatile_counter_size;
   } > ottf_flash
 
