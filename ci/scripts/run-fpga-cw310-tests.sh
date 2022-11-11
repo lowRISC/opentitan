@@ -38,7 +38,11 @@ export BITSTREAM="--offline --list ${SHA}"
 
 # We will lose serial access when we reboot, but if tests fail we should reboot
 # in case we've crashed the UART handler on the CW310's SAM3U
-trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --interface=cw310 fpga reset' EXIT
+trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 fpga reset' EXIT
+
+# In case tests update OTP or otherwise leave state on the FPGA we should start
+# by loading a bitstream to clear state
+ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 fpga load-bitstream "${BIT_CACHE_DIR}/${BIT_NAME_PREFIX}.orig"
 
 for tag in "${cw310_tags[@]}"; do
     ci/bazelisk.sh test //...\
