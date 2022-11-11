@@ -195,8 +195,7 @@ jobs:
   timeoutInMinutes: 120
   dependsOn: lint
   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool:
-    vmImage: ubuntu-20.04
+  pool: ci-public
   variables:
     - name: bazelCacheGcpKeyPath
       value: ''
