@@ -118,7 +118,9 @@ impl UartConsole {
                 if len == 1 && buf[0] == UartConsole::CTRL_C {
                     return Ok(ExitStatus::CtrlC);
                 }
-                uart.write(&buf[..len])?;
+                if len > 0 {
+                    uart.write(&buf[..len])?;
+                }
             }
         }
         Ok(ExitStatus::None)

@@ -4,6 +4,7 @@
 
 use anyhow::{Context, Result};
 use std::cell::{Cell, RefCell};
+use std::collections::VecDeque;
 use std::fs::File;
 use std::fs::OpenOptions;
 use std::io;
@@ -20,6 +21,7 @@ pub struct VerilatorUart {
     baudrate: Cell<u32>,
     flow_control: Cell<FlowControl>,
     file: RefCell<File>,
+    rxbuf: RefCell<VecDeque<u8>>,
 }
 
 impl VerilatorUart {
@@ -38,7 +40,59 @@ impl VerilatorUart {
                     .open(path)
                     .map_err(|e| TransportError::OpenError(path.to_string(), e.to_string()))?,
             ),
+            rxbuf: RefCell::default(),
         })
+    }
+
+    fn read_worker(&self, timeout: Duration) -> Result<()> {
+        let mut buf = [0u8; 256];
+        let mut file = self.file.borrow_mut();
+
+        if timeout != Duration::MAX {
+            let ready = file::wait_read_timeout(&*file, timeout);
+            match ready {
+                Ok(_) => {}
+                Err(e) => {
+                    // A timeout from the simulated UART is not an error.  Let all other errors propagate.
+                    if let Some(ioerr) = e.downcast_ref::<io::Error>() {
+                        if ioerr.kind() == ErrorKind::TimedOut {
+                            return Ok(());
+                        }
+                    }
+                    return Err(e).context("UART read error");
+                }
+            }
+        }
+
+        let len = file.read(&mut buf)?;
+        for &ch in &buf[..len] {
+            if self.flow_control.get() != FlowControl::None {
+                if ch == FlowControl::Resume as u8 {
+                    log::debug!("Got RESUME");
+                    self.flow_control.set(FlowControl::Resume);
+                    continue;
+                } else if ch == FlowControl::Pause as u8 {
+                    log::debug!("Got PAUSE");
+                    self.flow_control.set(FlowControl::Pause);
+                    continue;
+                }
+            }
+            self.rxbuf.borrow_mut().push_back(ch);
+        }
+        Ok(())
+    }
+
+    fn read_buffer(&self, buf: &mut [u8]) -> Result<usize> {
+        let mut rxbuf = self.rxbuf.borrow_mut();
+        let mut i = 0;
+        for byte in buf.iter_mut() {
+            let Some(rx) = rxbuf.pop_front() else {
+                break;
+            };
+            *byte = rx;
+            i += 1;
+        }
+        Ok(i)
     }
 }
 
@@ -64,46 +118,14 @@ impl Uart for VerilatorUart {
     }
 
     fn read_timeout(&self, buf: &mut [u8], timeout: Duration) -> Result<usize> {
-        let ready = file::wait_read_timeout(&*self.file.borrow(), timeout);
-        match ready {
-            Ok(()) => self.read(buf),
-            Err(e) => {
-                // If we got a timeout from the uart, return 0 as per convention.
-                // Let all other errors propagate.
-                if let Some(ioerr) = e.downcast_ref::<io::Error>() {
-                    if ioerr.kind() == ErrorKind::TimedOut {
-                        return Ok(0);
-                    }
-                }
-                Err(e).context("UART read error")
-            }
+        if self.rxbuf.borrow().is_empty() {
+            self.read_worker(timeout)?;
         }
+        self.read_buffer(buf)
     }
 
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
-        let mut n = self
-            .file
-            .borrow_mut()
-            .read(buf)
-            .context("UART read error")?;
-        if self.flow_control.get() != FlowControl::None {
-            // Eliminate flow control characters from the buffer
-            let mut i = 0;
-            while i < n {
-                if buf[i] == FlowControl::Resume as u8 {
-                    self.flow_control.set(FlowControl::Resume);
-                    buf.copy_within((i + 1)..n, i);
-                    n -= 1;
-                } else if buf[i] == FlowControl::Pause as u8 {
-                    self.flow_control.set(FlowControl::Pause);
-                    buf.copy_within((i + 1)..n, i);
-                    n -= 1;
-                } else {
-                    i += 1;
-                }
-            }
-        }
-        Ok(n)
+        self.read_timeout(buf, Duration::MAX)
     }
 
     fn write(&self, buf: &[u8]) -> Result<()> {
@@ -111,11 +133,10 @@ impl Uart for VerilatorUart {
         let pacing = Duration::from_nanos(10 * 1_000_000_000u64 / (self.baudrate.get() as u64));
 
         for b in buf.iter() {
-            // If flow control is enabled, read and discard data from the input stream,
-            // which will process the flow control chars.
+            // If flow control is enabled, read data from the input stream and
+            // process the flow control chars.
             while self.flow_control.get() != FlowControl::None {
-                let mut byte = 0;
-                self.read_timeout(std::slice::from_mut(&mut byte), pacing)?;
+                self.read_worker(pacing)?;
                 // If we're ok to send, then break out of the flow-control loop and send the data.
                 if self.flow_control.get() == FlowControl::Resume {
                     break;
