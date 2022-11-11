@@ -486,15 +486,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
     $fclose(mem_fd);
   endfunction
 
-  // Backdoor-override a const symbol in SW to modify the behavior of the test.
+  // Backdoor-read or override a const symbol in SW to modify the behavior of the test.
   //
   // In the extended test vseq, override the cpu_init() to add this function call.
   // TODO: bootstrap mode not supported.
   // TODO: Need to deal with scrambling.
-  virtual function void sw_symbol_backdoor_overwrite(input string symbol,
-                                                     inout bit [7:0] data[],
-                                                     input sw_type_e sw_type = SwTypeTestSlotA,
-                                                     input bit does_not_exist_ok = 0);
+  virtual function void sw_symbol_backdoor_access(input string symbol,
+                                                  inout bit [7:0] data[],
+                                                  input sw_type_e sw_type = SwTypeTestSlotA,
+                                                  input bit does_not_exist_ok = 0,
+                                                  input bit is_write = 0);
 
     bit [bus_params_pkg::BUS_AW-1:0] addr, mem_addr;
     chip_mem_e mem;
@@ -526,17 +527,48 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     addr_mask = (2**$clog2(cfg.mem_bkdr_util_h[mem].get_size_bytes()))-1;
     mem_addr = addr & addr_mask;
-    `uvm_info(`gfn, $sformatf({"Overwriting symbol \"%s\" via backdoor in %0s: ",
+
+    if (is_write) begin
+      `uvm_info(`gfn, $sformatf({"Overwriting symbol \"%s\" via backdoor in %0s: ",
                                "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
                                "addr_mask = 0x%0h"},
                               symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
-    for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
+      for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
 
-    // TODO: Move this specialization to an extended class called rom_bkdr_util.
-    if (mem == Rom) begin
-      `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
-      cfg.mem_bkdr_util_h[mem].update_rom_digest(RndCnstRomCtrlScrKey, RndCnstRomCtrlScrNonce);
+      // TODO: Move this specialization to an extended class called rom_bkdr_util.
+      if (mem == Rom) begin
+        `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
+        cfg.mem_bkdr_util_h[mem].update_rom_digest(RndCnstRomCtrlScrKey, RndCnstRomCtrlScrNonce);
+      end
+    end else begin
+      `uvm_info(`gfn, $sformatf({"Reading symbol \"%s\" via backdoor in %0s: ",
+                             "abs addr = 0x%0h, mem addr = 0x%0h, size = %0d, ",
+                             "addr_mask = 0x%0h"},
+                            symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
+      for (int i = 0; i < size; i++) mem_bkdr_read8(mem, mem_addr + i, data[i]);
     end
+  endfunction
+
+  // Backdoor-read a const symbol in SW to make decisions based on SW constants.
+  //
+  // Wrapper function for reads via sw_symbol_backdoor_access.
+  virtual function void sw_symbol_backdoor_read(input string symbol,
+                                                inout bit [7:0] data[],
+                                                input sw_type_e sw_type = SwTypeTestSlotA,
+                                                input bit does_not_exist_ok = 0);
+
+    sw_symbol_backdoor_access(symbol, data, sw_type, does_not_exist_ok, 0);
+  endfunction
+
+  // Backdoor-override a const symbol in SW to modify the behavior of the test.
+  //
+  // Wrapper function for writes via sw_symbol_backdoor_access.
+  virtual function void sw_symbol_backdoor_overwrite(input string symbol,
+                                                     input bit [7:0] data[],
+                                                     input sw_type_e sw_type = SwTypeTestSlotA,
+                                                     input bit does_not_exist_ok = 0);
+
+    sw_symbol_backdoor_access(symbol, data, sw_type, does_not_exist_ok, 1);
   endfunction
 
   // General-use function to backdoor write a byte of data to any selected memory type
@@ -559,6 +591,25 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
     `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h --> 0x%0h", addr, prev_data, data), UVM_HIGH)
   endfunction
+
+  // General-use function to backdoor read a byte of data from any selected memory type
+  //
+  // TODO: Add support for tiled RAM memories.
+  virtual function void mem_bkdr_read8(input chip_mem_e mem,
+                                       input bit [bus_params_pkg::BUS_AW-1:0] addr,
+                                       output byte data);
+    // TODO: Move these specializations to extended classes so that no special handling is needed at
+    // the call site.
+    if (mem == Rom) begin
+      bit [127:0] key = RndCnstRomCtrlScrKey;
+      bit [63:0] nonce = RndCnstRomCtrlScrNonce;
+      data = cfg.mem_bkdr_util_h[mem].rom_encrypt_read8(addr, key, nonce);
+    end else begin // flash
+      data = cfg.mem_bkdr_util_h[mem].read8(addr);
+    end
+    `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h", addr, data), UVM_HIGH)
+  endfunction
+
 
   // LC state transition tasks
   // This function takes the token value from the four LC_CTRL token CSRs, then runs through
