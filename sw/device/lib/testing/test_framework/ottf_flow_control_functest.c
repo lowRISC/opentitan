@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_flow_control.h"
@@ -17,18 +18,20 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 status_t ottf_flow_control_test(ujson_t *uj) {
-  // Verilator is slow enough that 10 iterations through the busy loop
-  // are enough to allow a flow-control event to happen.  The FPGA is
-  // fast enough that we have to spend more time in the busy loop to
-  // provoke a flow-control event.
-  size_t limit = kDeviceType == kDeviceSimVerilator ? 10 : 100;
-  for (size_t i = 0; i < limit; ++i) {
+  // Adjust the delay in the wait loop so that the host test harness
+  // has enough time to starting sending data us on the UART.  Because
+  // we aren't reading in the wait loop, we should get flow-control
+  // event while in the wait loop.
+  uint32_t delay = kDeviceType == kDeviceSimVerilator ? 1 : 500000;
+  for (size_t i = 0; i < 10; ++i) {
     // Print a bunch of stuff so that ibex will be busy
     // driving the transmitter while the host sends data
     // to the UART.
-    base_printf("BUSY\n");
+    base_printf("WAIT\n");
+    busy_spin_micros(delay);
   }
 
+  base_printf("Reading\n");
   // Receive a line of text into a buffer.
   uint8_t buf[256] = {0};
   for (size_t i = 0; i < sizeof(buf) - 1; ++i) {

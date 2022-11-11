@@ -20,7 +20,8 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define FLOW_CONTROL_LOW_WATERMARK 4
-#define FLOW_CONTROL_HIGH_WATERMARK 16
+#define FLOW_CONTROL_HIGH_WATERMARK 8
+#define FLOW_CONRTOL_WATERMARK_CONFIG kDifUartWatermarkByte8
 const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
 // The flow_control_state and ottf_flow_control_intr varibles are shared between
@@ -33,7 +34,7 @@ void ottf_flow_control_enable(void) {
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &ottf_plic));
 
   dif_uart_t *uart = ottf_console();
-  CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, kDifUartWatermarkByte16));
+  CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, FLOW_CONRTOL_WATERMARK_CONFIG));
   CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
                                         kDifToggleEnabled));
 
