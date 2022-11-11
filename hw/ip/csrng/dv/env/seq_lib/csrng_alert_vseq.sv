@@ -19,11 +19,16 @@ class csrng_alert_vseq extends csrng_base_vseq;
     uvm_reg       csr;
     uvm_reg_field fld;
 
+     `uvm_info(`gfn, $sformatf("Testing enable_field_alert"), UVM_MEDIUM)
+
     // Initiate with invalid mubi data
     csrng_init();
-    cfg.clk_rst_vif.wait_clks(100);
 
-    // Check the recov_alert_sts register
+    // Wait for the recoverable alert.
+    `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
+    cfg.m_alert_agent_cfg["recov_alert"].vif.wait_ack_complete();
+
+    `uvm_info(`gfn, $sformatf("Checking RECOV_ALERT_STS register"), UVM_MEDIUM)
     reg_name = "recov_alert_sts";
     fld_name = cfg.which_invalid_mubi.name();
 
@@ -36,6 +41,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
 
     cfg.clk_rst_vif.wait_clks(100);
+
     // Write valid values
     ral.ctrl.enable.set(prim_mubi_pkg::MuBi4True);
     ral.ctrl.sw_app_enable.set(prim_mubi_pkg::MuBi4True);
@@ -45,13 +51,13 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Clear recov_alert_sts register
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));
 
-    // Check recov_alert_sts register
     cfg.clk_rst_vif.wait_clks(100);
+
+    // Check recov_alert_sts register
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
-    // Test cs_bus_cmp_alert
+     `uvm_info(`gfn, $sformatf("Testing cs_bus_cmp_alert"), UVM_MEDIUM)
 
-    ral.ctrl.read_int_state.set(4'hA);
     // Wait for CSRNG cmd_rdy
     csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
 
@@ -90,7 +96,10 @@ class csrng_alert_vseq extends csrng_base_vseq;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
 
-    // Check the recov_alert_sts register
+    `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
+    cfg.m_alert_agent_cfg["recov_alert"].vif.wait_ack_complete();
+
+    `uvm_info(`gfn, $sformatf("Checking RECOV_ALERT_STS register"), UVM_MEDIUM)
     exp_recov_alert_sts = 32'b0;
     exp_recov_alert_sts[ral.recov_alert_sts.cs_bus_cmp_alert.get_lsb_pos()] = 1;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
@@ -98,8 +107,9 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Clear recov_alert_sts register
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));
 
-    // Check recov_alert_sts register
     cfg.clk_rst_vif.wait_clks(100);
+
+    // Check recov_alert_sts register
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
     // Turn assertions back on

@@ -37,7 +37,6 @@
       tests: ["csrng_csr_rw"]
     }
     {
-      // TODO: Currently, we don't verify that the alert actually fires, just that alert shows in the RECOV_ALERT_STS register.
       name: sec_cm_config_mubi
       desc: '''
             Verify the countermeasure(s) CONFIG.MUBI.
@@ -177,7 +176,6 @@
       tests: ["csrng_stress_all"]
     }
     {
-      // TODO: Currently, we don't verify that the alert actually fires, just that alert shows in the RECOV_ALERT_STS register.
       name: sec_cm_sw_genbits_bus_consistency
       desc: '''
             Verify the countermeasure(s) SW_GENBITS.BUS.CONSISTENCY.
