@@ -104,6 +104,7 @@ class csrng_monitor extends dv_base_monitor #(
   virtual protected task collect_request();
     csrng_item   cs_item;
     forever begin
+      wait(cfg.under_reset == 0);
       @(cfg.vif.cmd_push_if.mon_cb);
       if ((cfg.vif.cmd_push_if.mon_cb.valid) && (cfg.vif.cmd_push_if.mon_cb.ready)) begin
         // TODO: sample any covergroups
