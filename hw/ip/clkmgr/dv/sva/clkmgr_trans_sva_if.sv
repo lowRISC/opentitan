@@ -18,7 +18,7 @@ interface clkmgr_trans_sva_if (
   localparam int MAX_START_CYCLES = 3;
 
   localparam int MIN_STOP_CYCLES = 2;
-  localparam int MAX_STOP_CYCLES = 12;
+  localparam int MAX_STOP_CYCLES = 15;
 
   `ASSERT(TransStart_A,
           $rose(
