@@ -57,6 +57,7 @@ module edn_core import edn_pkg::*;
     FatalErr,
     ReseedCmdErr,
     GenCmdErr,
+    OutputErr,
     FifoWrErr,
     FifoRdErr,
     FifoStErr,
@@ -341,6 +342,9 @@ module edn_core import edn_pkg::*;
 
   assign hw2reg.err_code.sfifo_gencmd_err.d = 1'b1;
   assign hw2reg.err_code.sfifo_gencmd_err.de = edn_enable_fo[GenCmdErr] && sfifo_gencmd_err_sum;
+
+  assign hw2reg.err_code.sfifo_output_err.d = 1'b1;
+  assign hw2reg.err_code.sfifo_output_err.de = edn_enable_fo[OutputErr] && sfifo_output_err_sum;
 
   assign hw2reg.err_code.edn_ack_sm_err.d = 1'b1;
   assign hw2reg.err_code.edn_ack_sm_err.de = edn_ack_sm_err_sum;
