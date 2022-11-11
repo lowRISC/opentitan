@@ -63,12 +63,12 @@
       desc: '''Verify the countermeasure(s) MAIN_SM.CTR.LOCAL_ESC.
 
             Verify that after the local escalation:
-            - The atal alert is firing continuously.
+            - The fatal alert fires continuously.
             - Register `main_sm_state` goes to error state.
             - No valid EDN responses.
             '''
       stage: V2S
-      tests: ["edn_sec_cm"]
+      tests: ["edn_sec_cm", "edn_alert"]
     }
     {
       name: sec_cm_cs_rdata_bus_consistency
@@ -78,7 +78,7 @@
             to create the consistency error.
             Check the corresponding recoverable alert is fired and check the recov_alert_sts
             register.
-             '''
+            '''
       stage: V2S
       tests: ["edn_alert"]
     }
