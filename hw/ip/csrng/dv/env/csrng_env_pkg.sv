@@ -137,6 +137,44 @@ package csrng_env_pkg;
   } err_code_e;
 
   typedef enum int {
+    SFIFO_CMD_ERR      = 0,
+    SFIFO_GENBITS_ERR  = 1,
+    SFIFO_CMDREQ_ERR   = 2,
+    SFIFO_RCSTAGE_ERR  = 3,
+    SFIFO_KEYVRC_ERR   = 4,
+    SFIFO_UPDREQ_ERR   = 5,
+    SFIFO_BENCREQ_ERR  = 6,
+    SFIFO_BENCACK_ERR  = 7,
+    SFIFO_PDATA_ERR    = 8,
+    SFIFO_FINAL_ERR    = 9,
+    SFIFO_GBENCACK_ERR = 10,
+    SFIFO_GRCSTAGE_ERR = 11,
+    SFIFO_GGENREQ_ERR  = 12,
+    SFIFO_GADSTAGE_ERR = 13,
+    SFIFO_GGENBITS_ERR = 14,
+    SFIFO_BLKENC_ERR   = 15,
+    CMD_STAGE_SM_ERR   = 20,
+    MAIN_SM_ERR        = 21,
+    DRBG_GEN_SM_ERR    = 22,
+    DRBG_UPDBE_SM_ERR  = 23,
+    DRBG_UPDOB_SM_ERR  = 24,
+    AES_CIPHER_SM_ERR  = 25,
+    CMD_GEN_CNT_ERR    = 26,
+    FIFO_WRITE_ERR     = 28,
+    FIFO_READ_ERR      = 29,
+    FIFO_STATE_ERR     = 30
+  } err_code_bit_e;
+
+  typedef enum int {
+    ENABLE_FIELD_ALERT         = 0,
+    SW_APP_ENABLE_FIELD_ALERT  = 1,
+    READ_INT_STATE_FIELD_ALERT = 2,
+    ACMD_FLAG0_FIELD_ALERT     = 3,
+    CS_BUS_CMP_ALERT           = 12,
+    CS_MAIN_SM_ALERT           = 13
+  } recov_alert_bit_e;
+
+  typedef enum int {
     sfifo_blkenc   = 0,
     sfifo_ggenbits = 1,
     sfifo_gadstage = 2,

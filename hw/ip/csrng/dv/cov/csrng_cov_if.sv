@@ -25,7 +25,8 @@ interface csrng_cov_if (
 
   covergroup csrng_cfg_cg with function sample(mubi8_t   otp_en_cs_sw_app_read,
                                                mubi4_t   sw_app_enable,
-                                               mubi4_t   read_int_state
+                                               mubi4_t   read_int_state,
+                                               bit       regwen
                                               );
     option.name         = "csrng_cfg_cg";
     option.per_instance = 1;
@@ -33,9 +34,38 @@ interface csrng_cov_if (
     cp_sw_app_read:    coverpoint otp_en_cs_sw_app_read;
     cp_sw_app_enable:  coverpoint sw_app_enable;
     cp_read_int_state: coverpoint read_int_state;
+    cp_regwen:         coverpoint regwen;
 
     sw_app_read_sw_app_enable_cross: cross cp_sw_app_read, cp_sw_app_enable;
   endgroup : csrng_cfg_cg
+
+  covergroup csrng_err_code_cg with function sample(err_code_bit_e err_code);
+    option.name         = "csrng_err_code_cg";
+    option.per_instance = 1;
+
+    cp_hw_inst_exc: coverpoint u_reg.hw_exc_sts_qs[NUM_HW_APPS-1:0];
+    cp_sw_cmd_sts_cmd_rdy: coverpoint u_reg.sw_cmd_sts_cmd_rdy_qs;
+    cp_sw_cmd_sts_cmd_sts: coverpoint u_reg.sw_cmd_sts_cmd_sts_qs;
+    cp_csrng_aes_fsm_err: coverpoint
+      u_csrng_core.u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control.mr_alert;
+    cp_err_codes: coverpoint err_code;
+
+  endgroup : csrng_err_code_cg
+
+  covergroup csrng_err_code_test_cg with function sample(err_code_bit_e err_test);
+    option.name         = "csrng_err_code_test_cg";
+    option.per_instance = 1;
+
+    err_code_test_cp: coverpoint err_test;
+
+  endgroup : csrng_err_code_test_cg
+
+  covergroup csrng_recov_alert_sts_cg with function sample(recov_alert_bit_e recov_alert);
+    option.name         = "csrng_recov_alert_sts_cg";
+    option.per_instance = 1;
+
+    recov_alert_sts_cp: coverpoint recov_alert;
+  endgroup : csrng_recov_alert_sts_cg
 
   covergroup csrng_cmds_cg with function sample(bit[NUM_HW_APPS-1:0]   app,
                                                 acmd_e                 acmd,
@@ -130,12 +160,16 @@ interface csrng_cov_if (
 
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cmds_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(csrng_err_code_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(csrng_err_code_test_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(csrng_recov_alert_sts_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(csrng_env_cfg cfg);
     csrng_cfg_cg_inst.sample(cfg.otp_en_cs_sw_app_read,
                               cfg.sw_app_enable,
-                              cfg.read_int_state
+                              cfg.read_int_state,
+                              cfg.regwen
                              );
   endfunction
 
@@ -146,6 +180,18 @@ interface csrng_cov_if (
                               cs_item.flags,
                               cs_item.glen
                              );
+  endfunction
+
+  function automatic void cg_err_code_sample(bit [31:0] err_code);
+    csrng_err_code_cg_inst.sample(err_code_bit_e'($clog2(err_code)));
+  endfunction
+
+  function automatic void cg_err_test_sample(bit [4:0] err_test_code);
+    csrng_err_code_test_cg_inst.sample(err_code_bit_e'(err_test_code));
+  endfunction
+
+  function automatic void cg_recov_alert_sample(bit [31:0] recov_alert);
+    csrng_recov_alert_sts_cg_inst.sample(recov_alert_bit_e'($clog2(recov_alert)));
   endfunction
 
 endinterface : csrng_cov_if
