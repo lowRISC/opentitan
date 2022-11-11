@@ -30,6 +30,12 @@
   // Main CDC waiver file
   cdc_waiver_file: "{proj_root}/hw/top_earlgrey/cdc/cdc_waivers.tcl"
 
+  // CDC customized env file for ast integration
+  cdc_user_env: "{proj_root}/hw/top_earlgrey/cdc/top_user.env"
+
+  // AST.lib
+  ast_lib: "{proj_root}/hw/top_earlgrey/ip/ast/lib/ast.lib"
+
   // Technology path for this module (empty for open-source runs)
   foundry_root: ""
 
