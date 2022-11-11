@@ -43,6 +43,7 @@ covergroup host_cmd_cg with function sample(csrng_item item, bit sts);
     bins res = {RES};
     bins gen = {GEN};
     bins upd = {UPD};
+    bins uni = {UNI};
     bins genb = {GENB};
     bins genu = {GENU};
     illegal_bins il = default;
