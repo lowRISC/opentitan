@@ -70,11 +70,16 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
   endtask
 
   function automatic bit core_rf_read_used(string rf_port, bit lockstep_core);
-    logic rf_ren, rf_rd_wb_match;
+    logic used, rf_ren, rf_rd_wb_match, rf_write_wb;
     rf_ren = hdl_read_core_signal($sformatf("rf_ren_%s", rf_port), lockstep_core, 1);
     rf_rd_wb_match = hdl_read_core_signal($sformatf("rf_rd_%s_wb_match", rf_port),
                                           lockstep_core, 1);
-    return (rf_ren && !rf_rd_wb_match);
+    rf_write_wb = hdl_read_core_signal("rf_write_wb", lockstep_core, 1);
+    if (rf_port == "a") used = rf_ren && !rf_rd_wb_match;
+    // If not forwarding from writeback, the LSU gets the write data from Port b of the RF.
+    // This is then output on the data interface.
+    else used = (rf_ren && !rf_rd_wb_match) || !(rf_rd_wb_match && rf_write_wb);
+    return used;
   endfunction
 
   function automatic bit core_ic_scr_key_used(bit lockstep_core);
@@ -502,6 +507,14 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
         "data_wdata_o": begin
           $assertoff(0,
               "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__cored.gen_device");
+        end
+        // The RF read data obtained on Port b may feed into data_wdata_o even if Ibex isn't doing
+        // a store.
+        "rf_rdata_b_ecc_i": begin
+          if (glitched_inp_used) begin
+            $assertoff(0,
+                "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__cored.gen_device");
+          end
         end
         default: ;
       endcase
