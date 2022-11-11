@@ -257,7 +257,7 @@ class spi_host_driver extends spi_driver;
   endtask
 
   task drive_sck_no_csb_item();
-    repeat (req.dummy_clk_cnt) begin
+    repeat (req.dummy_sck_cnt) begin
       #($urandom_range(1, 100) * 1ns);
       cfg.vif.sck <= ~cfg.vif.sck;
     end
@@ -266,7 +266,7 @@ class spi_host_driver extends spi_driver;
 
   task drive_csb_no_sck_item();
     cfg.vif.csb[active_csb] <= 1'b0;
-    #(req.dummy_sck_length_ns * 1ns);
+    #(req.dummy_csb_length_ns * 1ns);
   endtask
 
   function uint get_rand_extra_delay_ns_btw_sck();

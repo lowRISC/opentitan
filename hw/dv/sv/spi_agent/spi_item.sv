@@ -21,8 +21,8 @@ class spi_item extends uvm_sequence_item;
   rand int dummy_cycles;
 
   // for dummy transaction
-  rand uint dummy_clk_cnt;
-  rand uint dummy_sck_length_ns;
+  rand uint dummy_sck_cnt;
+  rand uint dummy_csb_length_ns;
 
   // indicate the active csb
   rand bit [CSB_WIDTH-1:0] csb_sel;
@@ -35,9 +35,19 @@ class spi_item extends uvm_sequence_item;
   // constrain size of data sent / received to be at most 64kB
   constraint data_size_c { data.size() inside {[0:65536]}; }
 
-  constraint dummy_clk_cnt_c { dummy_clk_cnt inside {[1:1000]}; }
+  constraint dummy_sck_cnt_c {
+    if (item_type == SpiTransSckNoCsb) {
+      dummy_sck_cnt inside {[1:1000]};
+    } else {
+      dummy_sck_cnt == 0;
+    }}
 
-  constraint dummy_sck_length_c { dummy_sck_length_ns inside {[1:1000]}; }
+  constraint dummy_csb_length_ns_c {
+    if (item_type == SpiTransCsbNoSck) {
+      dummy_csb_length_ns inside {[1:1000]};
+    } else {
+      dummy_csb_length_ns == 0;
+    }}
 
   constraint num_lanes_c {
     write_command -> num_lanes == 1;
@@ -48,8 +58,8 @@ class spi_item extends uvm_sequence_item;
     `uvm_field_enum(spi_trans_type_e, item_type, UVM_DEFAULT)
     `uvm_field_queue_int(data,                   UVM_DEFAULT)
     `uvm_field_int(first_byte,                   UVM_DEFAULT)
-    `uvm_field_int(dummy_clk_cnt,                UVM_DEFAULT)
-    `uvm_field_int(dummy_sck_length_ns,          UVM_DEFAULT)
+    `uvm_field_int(dummy_sck_cnt,                UVM_DEFAULT)
+    `uvm_field_int(dummy_csb_length_ns,          UVM_DEFAULT)
     `uvm_field_int(read_size,                    UVM_DEFAULT)
     `uvm_field_int(write_command,                UVM_DEFAULT)
     `uvm_field_int(opcode,                       UVM_DEFAULT)
@@ -71,8 +81,8 @@ class spi_item extends uvm_sequence_item;
 
     txt = "\n \t ----| SPI ITEM |----";
     txt = {txt, $sformatf("\n ----| Item Type: \t%s", item_type.name()) };
-    txt = {txt, $sformatf("\n ----| Dummy Clk Cnt: \t%0d",  dummy_clk_cnt) };
-    txt = {txt, $sformatf("\n ----| Dummy Sck Lengtht: \t%0d ns",  dummy_sck_length_ns) };
+    txt = {txt, $sformatf("\n ----| Dummy Clk Cnt: \t%0d",  dummy_sck_cnt) };
+    txt = {txt, $sformatf("\n ----| Dummy Sck Lengtht: \t%0d ns",  dummy_csb_length_ns) };
     txt = {txt, $sformatf("\n ----| First Byte: \t%b ",  first_byte) };
     txt = {txt, $sformatf("\n ----| Data:") };
 

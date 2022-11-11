@@ -117,11 +117,10 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
           `DV_CHECK_EQ(device_rsp_q.size(), 1);
           host_rsp = m_spi_host_seq.rsp;
           device_rsp = device_rsp_q.pop_front();
-          `DV_CHECK_EQ(host_rsp.opcode, device_rsp.opcode);
-          `DV_CHECK_Q_EQ(host_rsp.address_q, device_rsp.address_q);
-          `DV_CHECK_EQ(host_rsp.dummy_cycles, device_rsp.dummy_cycles);
-          `DV_CHECK_EQ(host_rsp.num_lanes, device_rsp.num_lanes);
-          `DV_CHECK_Q_EQ(host_rsp.payload_q, device_rsp.payload_q);
+          if (!host_rsp.compare(device_rsp)) begin
+            `uvm_error(`gfn, $sformatf("Compare mismatch\nhost_rsp:\n%sdevice_rsp:\n%s",
+                                       host_rsp.sprint(), device_rsp.sprint()))
+          end
         end else begin
           `DV_CHECK_EQ(device_rsp_q.size(), 0);
         end
