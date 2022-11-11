@@ -2775,13 +2775,13 @@
       desc: '''Verify the flash memory contents can be accessed after in RMA unlock.
 
             - Provision an RMA_UNLOCK token in OTP.
-            - Reset the chip.
-            - Ensure device id and manufacturing state can be read through the LC JTAG.
-            - Enable RMA mode, and verify that the SW can access the flash. Ensure that the previous
-              contents are inaccessible.
+            - Repeat the following a few times:
+              - Randomize the otp contents for device id, manufacturing state and RMA_UNLOCK token..
+              - Reset the chip.
+              - Ensure chip revision, device id and manufacturing state can be read through the LC JTAG.
+            - Enable RMA mode, and verify that the SW can access the flash after RMA completion.
 
-            - RMA entry can be through the C side or the JTAG interface, both vectors should be
-              tested.
+            - RMA entry should be done through the  JTAG interface.
 
             - X-ref'ed with manuf_ft_provision_rma_token_and_personalization from the manufacturing
               testplan.
