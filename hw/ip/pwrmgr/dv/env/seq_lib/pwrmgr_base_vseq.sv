@@ -39,7 +39,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   rand control_enables_t control_enables;
 
   // Random delays.
-  rand int               cycles_before_pwrok;
   rand int               cycles_before_clks_ok;
   rand int               cycles_between_clks_ok;
   rand int               cycles_before_io_status;
@@ -51,6 +50,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   rand int               cycles_before_lc_done;
   rand int               cycles_before_wakeup;
   rand int               cycles_before_reset;
+
+  // Slow responder delays.
   rand int               cycles_before_core_clk_en;
   rand int               cycles_before_io_clk_en;
   rand int               cycles_before_usb_clk_en;
@@ -59,9 +60,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   // This tracks the local objection count from these responders. We do not use UVM
   // objections because uvm_objection::wait_for(UVM_ALL_DROPPED, this) seems to wait
   // for all objections to be dropped, not just those raised by this.
-  local int              objection_count            = 0;
+  local int              fast_objection_count       = 0;
+  local int              slow_objection_count       = 0;
 
-  constraint cycles_before_pwrok_c {cycles_before_pwrok inside {[3 : 10]};}
   constraint cycles_before_clks_ok_c {cycles_before_clks_ok inside {[3 : 10]};}
   constraint cycles_between_clks_ok_c {cycles_between_clks_ok inside {[3 : 10]};}
   constraint cycles_before_io_status_c {cycles_before_io_status inside {[0 : 4]};}
@@ -77,7 +78,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cycles_before_core_clk_en inside {[1 : MaxCyclesBeforeEnable]};
   }
   constraint cycles_before_io_clk_en_c {
-    cycles_before_io_clk_en inside {[1 : MaxCyclesBeforeEnable - 3]};
+    cycles_before_io_clk_en inside {[1 : MaxCyclesBeforeEnable - 2]};
   }
   constraint cycles_before_usb_clk_en_c {
     cycles_before_usb_clk_en inside {[1 : MaxCyclesBeforeEnable]};
@@ -126,7 +127,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       // Toggle rst_main_n to make sure the slow fsm resets correctly, and wait some cycles
       // so testing doesn't start until the side-effects are cleared.
       begin
+        `uvm_info(`gfn, "Glitch power reset", UVM_MEDIUM)
         cfg.pwrmgr_vif.glitch_power_reset();
+        `uvm_info(`gfn, "Glitch power reset done", UVM_MEDIUM)
         cfg.slow_clk_rst_vif.wait_clks(7);
       end
       begin
@@ -165,7 +168,12 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     super.post_start();
     --sequence_depth;
     if (sequence_depth == 0) begin
-      wait(objection_count == 0);
+      `uvm_info(`gfn, $sformatf(
+                "Waiting for all objections done with fast=%0d, slow=%0d",
+                fast_objection_count,
+                slow_objection_count
+                ), UVM_MEDIUM)
+      `DV_WAIT(fast_objection_count == 0 && slow_objection_count == 0)
       `uvm_info(`gfn, "all local objections are done", UVM_LOW)
       control_assertions(0);
       `uvm_info(`gfn, "Stopping responders", UVM_MEDIUM)
@@ -175,7 +183,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
-    `uvm_info(`gfn, "pwrmgr dut_init", UVM_MEDIUM)
     super.dut_init();
   endtask
 
@@ -252,15 +259,28 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.intr_state.wakeup), .value(1'b1));
   endtask
 
-  local function void raise_objection(string label);
-    ++objection_count;
-    `uvm_info(`gfn, $sformatf("Raising objection to %0d for %0s", objection_count, label), UVM_HIGH)
+  local function void raise_fast_objection(string label);
+    ++fast_objection_count;
+    `uvm_info(`gfn, $sformatf("Raising fast objection to %0d for %0s", fast_objection_count, label),
+              UVM_HIGH)
   endfunction
 
-  local function void drop_objection(string label);
-    --objection_count;
-    `uvm_info(`gfn, $sformatf("Dropping objection to %0d for %0s", objection_count, label),
-              UVM_HIGH)
+  local function void drop_fast_objection(string label);
+    --fast_objection_count;
+    `uvm_info(`gfn, $sformatf("Dropping fast objection to %0d for %0s", fast_objection_count, label
+              ), UVM_HIGH)
+  endfunction
+
+  local function void raise_slow_objection(string label);
+    ++slow_objection_count;
+    `uvm_info(`gfn, $sformatf("Raising slow objection to %0d for %0s", slow_objection_count, label),
+              UVM_MEDIUM)
+  endfunction
+
+  local function void drop_slow_objection(string label);
+    --slow_objection_count;
+    `uvm_info(`gfn, $sformatf("Dropping slow objection to %0d for %0s", slow_objection_count, label
+              ), UVM_MEDIUM)
   endfunction
 
   virtual function void set_ndmreset_req(logic value);
@@ -277,7 +297,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   `define SLOW_DETECT(rsp_name_, req_) \
       forever \
         @req_ begin \
-          raise_objection(rsp_name_); \
+          raise_slow_objection(rsp_name_); \
           `uvm_info(`gfn, $sformatf( \
                     "slow_responder: Will drive %0s to %b", rsp_name_, req_), UVM_MEDIUM) \
         end
@@ -298,7 +318,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                     cycles_ \
                     ), UVM_MEDIUM) \
           rsp_ <= rsp_sr_[cycles_]; \
-          drop_objection(rsp_name_); \
+          drop_slow_objection(rsp_name_); \
         end
 
   task slow_responder();
@@ -314,6 +334,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
       `SLOW_DETECT("io_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en)
       `SLOW_SHIFT_SR(cfg.pwrmgr_vif.slow_cb.pwr_ast_req.io_clk_en, io_clk_val_sr)
+      // Notice this splits updates due to io_clk_en in two processes: with a single process
+      // and a wait inside a quick sequence of changes would cause skipping some update, per
+      // SV scheduling semantics.
       forever
         @(io_clk_val_sr[cycles_before_io_clk_en]) begin
           logic new_value = io_clk_val_sr[cycles_before_io_clk_en];
@@ -325,9 +348,12 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                     ), UVM_MEDIUM)
           if (new_value == 1) cfg.clk_rst_vif.start_clk();
           else cfg.clk_rst_vif.stop_clk();
-          repeat (2) @cfg.slow_clk_rst_vif.cb;
+        end
+      forever
+        @(io_clk_val_sr[cycles_before_io_clk_en + 2]) begin
+          logic new_value = io_clk_val_sr[cycles_before_io_clk_en + 2];
           cfg.pwrmgr_vif.slow_cb.pwr_ast_rsp.io_clk_val <= new_value;
-          drop_objection("io_clk_val");
+          drop_slow_objection("io_clk_val");
         end
 
       `SLOW_DETECT("usb_clk_val", cfg.pwrmgr_vif.slow_cb.pwr_ast_req.usb_clk_en)
@@ -370,7 +396,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                     "fast responder got rst_lc_req change to 0x%x",
                     cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req
                     ), UVM_HIGH)
-          raise_objection("rst_lc_src_n");
+          raise_fast_objection("rst_lc_src_n");
           `FAST_RESPONSE_ACTION("rst_lc_src_n", cfg.pwrmgr_vif.fast_cb.pwr_rst_rsp.rst_lc_src_n,
                                 ~cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req,
                                 cycles_before_rst_lc_src)
@@ -387,22 +413,22 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
             cfg.pwrmgr_vif.update_sw_rst_req(prim_mubi_pkg::MuBi4False);
             `uvm_info(`gfn, "Clearing resets", UVM_MEDIUM)
           end
-          drop_objection("rst_lc_src_n");
+          drop_fast_objection("rst_lc_src_n");
           `uvm_info(`gfn, "fast responder done with rst_lc_req change", UVM_HIGH)
         end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_sys_req begin
-          raise_objection("rst_sys_src_n");
+          raise_fast_objection("rst_sys_src_n");
           `FAST_RESPONSE_ACTION("rst_sys_src_n", cfg.pwrmgr_vif.fast_cb.pwr_rst_rsp.rst_sys_src_n,
                                 ~cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_sys_req,
                                 cycles_before_rst_sys_src)
-          drop_objection("rst_sys_src_n");
+          drop_fast_objection("rst_sys_src_n");
         end
 
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en begin
           logic new_value = cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en;
-          raise_objection("io_status");
+          raise_fast_objection("io_status");
           `uvm_info(`gfn, $sformatf(
                     "fast_responder: Will drive %0s to %b in %0d fast clock cycles",
                     "io_status",
@@ -419,38 +445,38 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                     "io_status",
                     cfg.pwrmgr_vif.fast_cb.pwr_clk_req.io_ip_clk_en
                     ), UVM_HIGH)
-          drop_objection("io_status");
+          drop_fast_objection("io_status");
         end
 
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en begin
-          raise_objection("main_status");
+          raise_fast_objection("main_status");
           `FAST_RESPONSE_ACTION("main_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.main_status,
                                 cfg.pwrmgr_vif.fast_cb.pwr_clk_req.main_ip_clk_en,
                                 cycles_before_main_status)
-          drop_objection("main_status");
+          drop_fast_objection("main_status");
         end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en begin
-          raise_objection("usb_status");
+          raise_fast_objection("usb_status");
           `FAST_RESPONSE_ACTION("usb_status", cfg.pwrmgr_vif.fast_cb.pwr_clk_rsp.usb_status,
                                 cfg.pwrmgr_vif.fast_cb.pwr_clk_req.usb_ip_clk_en,
                                 cycles_before_usb_status)
-          drop_objection("usb_status");
+          drop_fast_objection("usb_status");
         end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_lc_req.lc_init begin
-          raise_objection("lc_done");
+          raise_fast_objection("lc_done");
           `FAST_RESPONSE_ACTION("lc_done", cfg.pwrmgr_vif.fast_cb.pwr_lc_rsp.lc_done,
                                 cfg.pwrmgr_vif.fast_cb.pwr_lc_req.lc_init, cycles_before_lc_done)
-          drop_objection("lc_done");
+          drop_fast_objection("lc_done");
         end
       forever
         @cfg.pwrmgr_vif.fast_cb.pwr_otp_req.otp_init begin
-          raise_objection("otp_done");
+          raise_fast_objection("otp_done");
           `FAST_RESPONSE_ACTION("otp_done", cfg.pwrmgr_vif.fast_cb.pwr_otp_rsp.otp_done,
                                 cfg.pwrmgr_vif.fast_cb.pwr_otp_req.otp_init, cycles_before_otp_done)
-          drop_objection("otp_done");
+          drop_fast_objection("otp_done");
         end
     join_none
   endtask : fast_responder
@@ -487,9 +513,9 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   task process_low_power_hint();
+    `uvm_info(`gfn, "Entering process_low_power_hint", UVM_MEDIUM)
     // Timeout if the low power transition waits too long for WFI.
-    `DV_SPINWAIT(wait(cfg.pwrmgr_vif.pwr_cpu.core_sleeping);, "timeout waiting for core_sleeping",
-                 100_000)
+    `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
     `uvm_info(`gfn, "In process_low_power_hint pre forks", UVM_MEDIUM)
     fork
       begin : isolation_fork
