@@ -139,7 +139,7 @@ def verilator_params(
     """
     default_args = [
         "--rcfile=",
-        "--logging=info",
+        "--logging={logging}",
     ]
     required_test_cmds = [
         "--interface=verilator",
@@ -213,7 +213,7 @@ def cw310_params(
     """
     default_args = [
         "--rcfile=",
-        "--logging=info",
+        "--logging={logging}",
     ]
     required_test_cmds = [
         "--interface=cw310",
@@ -250,6 +250,7 @@ def opentitan_functest(
         slot = "silicon_creator_a",
         test_harness = "@//sw/host/opentitantool",
         key = "test_key_0",
+        logging = "info",
         dv = None,
         verilator = None,
         cw310 = None,
@@ -498,6 +499,7 @@ def opentitan_functest(
             "dvsim_config": dvsim_config,
             "bitstream": bitstream,
             "rom_kind": rom_kind,
+            "logging": params.pop("logging", logging),
         }
         format_dict.update(exit_strings_kwargs)
         target_args = [a.format(**format_dict) for a in target_args]
