@@ -64,7 +64,7 @@
                fusesoc_core: lowrisc:dv:csrng_sva
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/csrng/{sub_flow}/{tool}"
-               stopats: ["*u_state_regs.state_o"]
+               stopats: ["*u_*state_regs.state_o"]
                task: "FpvSecCm"
              }
              {
