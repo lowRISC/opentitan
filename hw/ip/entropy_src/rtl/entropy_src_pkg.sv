@@ -82,4 +82,32 @@ package entropy_src_pkg;
   parameter entropy_src_xht_rsp_t ENTROPY_SRC_XHT_RSP_DEFAULT =
       '{test_cnt_lo: 16'hffff, default: '0};
 
+  // Sparse FSM state encodings
+
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 3 -n 6 \
+  //      -s 1236774883 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (33.33%)
+  //  4: |||||||||||||||||||| (33.33%)
+  //  5: |||||||||||||||||||| (33.33%)
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 5
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 4
+  //
+  localparam int AckSmStateWidth = 6;
+  typedef enum logic [AckSmStateWidth-1:0] {
+    AckSmIdle  = 6'b011101, // idle
+    AckSmWait  = 6'b101100, // wait until the fifo has an entry
+    AckSmError = 6'b000010  // illegal state reached and hang
+  } ack_sm_state_e;
+
 endpackage : entropy_src_pkg
