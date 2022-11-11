@@ -236,6 +236,7 @@ interface i2c_if(
   endtask: get_bit_data
 
   task automatic host_start(ref timing_cfg_t tc);
+    wait(scl_i === 1'b1);
     sda_o = 1'b0;
     wait_for_dly(tc.tHoldStart);
     scl_o = 1'b0;
@@ -261,6 +262,7 @@ interface i2c_if(
   endtask: host_data
 
   task automatic host_stop(ref timing_cfg_t tc);
+    wait(scl_i === 1'b1);
     sda_o = 1'b0;
     wait_for_dly(tc.tClockStop);
     scl_o = 1'b1;
