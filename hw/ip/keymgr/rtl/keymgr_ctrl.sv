@@ -119,8 +119,10 @@ module keymgr_ctrl
     StCtrlWipe           = 10'b0000110011,
     StCtrlInvalid        = 10'b1011000111
   } state_e;
-
   state_e state_q, state_d;
+
+  // A variable that represents differentiates states before root key and after root key.
+  logic initialized;
 
   // There are two versions of the key state, one for sealing one for attestation
   // Among each version, there are multiple shares
@@ -446,6 +448,9 @@ module keymgr_ctrl
     // initialization complete
     init_o = 1'b0;
 
+    // Most states are initialized, mark the exceptions
+    initialized = 1'b1;
+
     // during certain states, the otp root key is continuosly loaded
     ld_root_key = 1'b0;
 
@@ -456,6 +461,7 @@ module keymgr_ctrl
     unique case (state_q)
       // Only advance can be called from reset state
       StCtrlReset: begin
+        initialized = 1'b0;
 
         // always use random data for advance, since out of reset state
         // the key state will be randomized.
@@ -475,6 +481,7 @@ module keymgr_ctrl
 
       // reseed entropy
       StCtrlEntropyReseed: begin
+        initialized = 1'b0;
         prng_reseed_req_o = 1'b1;
 
         if (prng_reseed_ack_i) begin
@@ -484,6 +491,7 @@ module keymgr_ctrl
 
       // This state does not accept any command.
       StCtrlRandom: begin
+        initialized = 1'b0;
         random_req = 1'b1;
 
         // when mask population is complete, xor the root_key into the zero share
@@ -498,7 +506,8 @@ module keymgr_ctrl
       // load the root key.
       StCtrlRootKey: begin
         init_o = 1'b1;
-        state_d = inv_state ? StCtrlWipe : StCtrlInit;
+        initialized = 1'b1;
+        state_d = en_i ? StCtrlInit : StCtrlWipe;
       end
 
       // Beginning from the Init state, operations are accepted.
@@ -683,6 +692,9 @@ module keymgr_ctrl
   always_comb begin
     status_o = OpIdle;
     if (op_done_o) begin
+      // It is possible for an operation to finish the same cycle en_i goes low.
+      // The main fsm handling is one cycle behind, but still report operation
+      // fail.
       status_o = |{error_o, fault_o} ? OpDoneFail : OpDoneSuccess;
     end else if (op_start_i) begin
       status_o = OpWip;
@@ -777,7 +789,7 @@ module keymgr_ctrl
     .clk_i,
     .rst_ni,
     .invalid_op_i(invalid_op),
-    .disabled_i(disabled),
+    .disabled_i(disabled | (initialized & ~en_i)),
     .invalid_i(invalid),
     .kmac_input_invalid_i,
     .shadowed_update_err_i,
