@@ -542,6 +542,8 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     end
     // When glitching an input port, the delay until the effect is observable varies.
     case (port_name)
+      "data_gnt_i":         delay_clks += 1;
+      "data_rdata_i":       delay_clks += 1;
       "instr_gnt_i":        delay_clks += 1;
       "ic_scr_key_valid_i": delay_clks += 2;
       "instr_rvalid_i":     delay_clks += 3;
