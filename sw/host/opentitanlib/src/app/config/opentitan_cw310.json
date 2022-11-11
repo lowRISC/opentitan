@@ -4,18 +4,20 @@
   "pins": [
     {
       "name": "RESET",
-      "alias_of": "USB_A14"
+      "mode": "PushPull",
+      "alias_of": "USB_A14",
+      "pull_mode": "None"
     },
     {
-      "name": "SW_STRAP0",
+      "name": "IOC0",
       "alias_of": "USB_A15"
     },
     {
-      "name": "SW_STRAP1",
+      "name": "IOC1",
       "alias_of": "USB_A16"
     },
     {
-      "name": "SW_STRAP2",
+      "name": "IOC2",
       "alias_of": "USB_A17"
     },
     {
