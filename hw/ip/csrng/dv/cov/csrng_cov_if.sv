@@ -20,6 +20,22 @@ interface csrng_cov_if (
   bit en_full_cov = 1'b1;
   bit en_intg_cov = 1'b1;
 
+  bit[31:0] _genbits;
+  bit[1:0]  _genbits_vld;
+  bit[1:0]  _sw_cmd_sts;
+  bit       _regwen;
+  bit[3:0]  _intr_state;
+  bit[3:0]  _intr_enable;
+
+  always @(posedge clk_i) begin
+    csr_rd(.ptr(ral.genbits),     .value(_genbits));
+    csr_rd(.ptr(ral.genbits_vld), .value(_genbits_vld));
+    csr_rd(.ptr(ral.sw_cmd_sts),  .value(_sw_cmd_sts));
+    csr_rd(.ptr(ral.regwen),      .value(_regwen));
+    csr_rd(.ptr(ral.intr_state),  .value(_intr_state));
+    csr_rd(.ptr(ral.intr_enable), .value(_intr_enable));
+  end
+
   // If en_full_cov is set, then en_intg_cov must also be set since it is a subset.
   bit en_intg_cov_loc;
   assign en_intg_cov_loc = en_full_cov | en_intg_cov;
@@ -129,57 +145,58 @@ interface csrng_cov_if (
     }
   endgroup : csrng_cmds_cg
 
-  covergroup csrng_internal_cg with function sample(bit[31:0] genbits,
-                                                    bit[1:0]  genbits_vld,
-                                                    bit[1:0]  sw_cmd_sts,
-                                                    bit       regwen,
-                                                    bit[3:0]  intr_state,
-                                                    bit[3:0]  intr_enable
-                                                   );
+  covergroup csrng_internal_cg @(posedge clk_i);
+    // with function sample(bit[31:0] genbits,
+    //                                                 bit[1:0]  genbits_vld,
+    //                                                 bit[1:0]  sw_cmd_sts,
+    //                                                 bit       regwen,
+    //                                                 bit[3:0]  intr_state,
+    //                                                 bit[3:0]  intr_enable
+    //                                                );
     option.name         = "csrng_internal_cg";
     option.per_instance = 1;
 
     // TODO find more efficient way to do this
-    cp_genbits0:        coverpoint genbits[0];
-    cp_genbits1:        coverpoint genbits[1];
-    cp_genbits2:        coverpoint genbits[2];
-    cp_genbits3:        coverpoint genbits[3];
-    cp_genbits4:        coverpoint genbits[4];
-    cp_genbits5:        coverpoint genbits[5];
-    cp_genbits6:        coverpoint genbits[6];
-    cp_genbits7:        coverpoint genbits[7];
-    cp_genbits8:        coverpoint genbits[8];
-    cp_genbits9:        coverpoint genbits[9];
-    cp_genbits10:       coverpoint genbits[10];
-    cp_genbits11:       coverpoint genbits[11];
-    cp_genbits12:       coverpoint genbits[12];
-    cp_genbits13:       coverpoint genbits[13];
-    cp_genbits14:       coverpoint genbits[14];
-    cp_genbits15:       coverpoint genbits[15];
-    cp_genbits16:       coverpoint genbits[16];
-    cp_genbits17:       coverpoint genbits[17];
-    cp_genbits18:       coverpoint genbits[18];
-    cp_genbits19:       coverpoint genbits[19];
-    cp_genbits20:       coverpoint genbits[20];
-    cp_genbits21:       coverpoint genbits[21];
-    cp_genbits22:       coverpoint genbits[22];
-    cp_genbits23:       coverpoint genbits[23];
-    cp_genbits24:       coverpoint genbits[24];
-    cp_genbits25:       coverpoint genbits[25];
-    cp_genbits26:       coverpoint genbits[26];
-    cp_genbits27:       coverpoint genbits[27];
-    cp_genbits28:       coverpoint genbits[28];
-    cp_genbits29:       coverpoint genbits[29];
-    cp_genbits30:       coverpoint genbits[30];
-    cp_genbits31:       coverpoint genbits[31];
+    cp_genbits0:        coverpoint _genbits[0];
+    cp_genbits1:        coverpoint _genbits[1];
+    cp_genbits2:        coverpoint _genbits[2];
+    cp_genbits3:        coverpoint _genbits[3];
+    cp_genbits4:        coverpoint _genbits[4];
+    cp_genbits5:        coverpoint _genbits[5];
+    cp_genbits6:        coverpoint _genbits[6];
+    cp_genbits7:        coverpoint _genbits[7];
+    cp_genbits8:        coverpoint _genbits[8];
+    cp_genbits9:        coverpoint _genbits[9];
+    cp_genbits10:       coverpoint _genbits[10];
+    cp_genbits11:       coverpoint _genbits[11];
+    cp_genbits12:       coverpoint _genbits[12];
+    cp_genbits13:       coverpoint _genbits[13];
+    cp_genbits14:       coverpoint _genbits[14];
+    cp_genbits15:       coverpoint _genbits[15];
+    cp_genbits16:       coverpoint _genbits[16];
+    cp_genbits17:       coverpoint _genbits[17];
+    cp_genbits18:       coverpoint _genbits[18];
+    cp_genbits19:       coverpoint _genbits[19];
+    cp_genbits20:       coverpoint _genbits[20];
+    cp_genbits21:       coverpoint _genbits[21];
+    cp_genbits22:       coverpoint _genbits[22];
+    cp_genbits23:       coverpoint _genbits[23];
+    cp_genbits24:       coverpoint _genbits[24];
+    cp_genbits25:       coverpoint _genbits[25];
+    cp_genbits26:       coverpoint _genbits[26];
+    cp_genbits27:       coverpoint _genbits[27];
+    cp_genbits28:       coverpoint _genbits[28];
+    cp_genbits29:       coverpoint _genbits[29];
+    cp_genbits30:       coverpoint _genbits[30];
+    cp_genbits31:       coverpoint _genbits[31];
 
-    cp_genbits_vld:     coverpoint genbits_vld;
-    cp_sw_cmd_sts:      coverpoint sw_cmd_sts;
-    cp_regwen:          coverpoint regwen;
-    cp_cs_cmd_req_done: coverpoint {intr_state[0], intr_enable[0]};
-    cp_cs_entropy_req:  coverpoint {intr_state[1], intr_enable[1]};
-    cp_cs_hw_inst_exc:  coverpoint {intr_state[2], intr_enable[2]};
-    cp_cs_fatal_err:    coverpoint {intr_state[3], intr_enable[3]};
+    cp_genbits_vld:     coverpoint _genbits_vld;
+    cp_sw_cmd_sts:      coverpoint _sw_cmd_sts;
+    cp_regwen:          coverpoint _regwen;
+    cp_cs_cmd_req_done: coverpoint {_intr_state[0], _intr_enable[0]};
+    cp_cs_entropy_req:  coverpoint {_intr_state[1], _intr_enable[1]};
+    cp_cs_hw_inst_exc:  coverpoint {_intr_state[2], _intr_enable[2]};
+    cp_cs_fatal_err:    coverpoint {_intr_state[3], _intr_enable[3]};
   endgroup : csrng_internal_cg
 
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
@@ -204,29 +221,15 @@ interface csrng_cov_if (
   endfunction
 
   //TODO remove or fix
-  function automatic void cg_internal_sample(csrng_reg_genbits     genbits_reg,
-                                             csrng_reg_genbits_vld genbits_vld_reg,
-                                             csrng_reg_sw_cmd_sts  sw_cmd_sts_reg,
-                                             csrng_reg_regwen      regwen_reg,
-                                             csrng_reg_intr_state  intr_state_reg,
-                                             csrng_reg_intr_enable intr_enable_reg
-                                            );
-    bit[31:0] genbits;
-    bit[1:0]  genbits_vld;
-    bit[1:0]  sw_cmd_sts;
-    bit       regwen;
-    bit[3:0]  intr_state;
-    bit[3:0]  intr_enable;
-
-    csr_rd(.ptr(genbits_reg), .value(genbits));
-    csr_rd(.ptr(genbits_vld_reg), .value(genbits_vld));
-    csr_rd(.ptr(sw_cmd_sts_reg), .value(sw_cmd_sts));
-    csr_rd(.ptr(regwen_reg), .value(regwen));
-    csr_rd(.ptr(intr_state_reg), .value(intr_state));
-    csr_rd(.ptr(intr_enable_reg), .value(intr_enable));
-
-    csrng_internal_cg_inst.sample(genbits, genbits_vld, sw_cmd_sts, regwen, intr_state,
-                                  intr_enable);
-  endfunction
+  // function automatic void cg_internal_sample(bit[31:0] genbits,
+  //                                            bit[1:0]  genbits_vld,
+  //                                            bit[1:0]  sw_cmd_sts,
+  //                                            bit       regwen,
+  //                                            bit[3:0]  intr_state,
+  //                                            bit[3:0]  intr_enable
+  //                                           );
+  //   csrng_internal_cg_inst.sample(genbits, genbits_vld, sw_cmd_sts, regwen, intr_state,
+  //                                 intr_enable);
+  // endfunction
 
 endinterface : csrng_cov_if

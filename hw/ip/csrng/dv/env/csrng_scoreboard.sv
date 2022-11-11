@@ -74,6 +74,14 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
 
+    // declarations for internal cover group sampling
+    // bit[31:0] _genbits;
+    // bit[1:0]  _genbits_vld;
+    // bit[1:0]  _sw_cmd_sts;
+    // bit       _regwen;
+    // bit[3:0]  _intr_state;
+    // bit[3:0]  _intr_enable;
+
     // if access was to a valid csr, get the csr handle
     if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
       csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
@@ -234,9 +242,15 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
     end
 
-    // TODO remove or fix
-    cov_vif.cg_internal_sample(ral.genbits, ral.genbits_vld, ral.sw_cmd_sts, ral.regwen,
-                               ral.intr_state, ral.intr_enable);
+    // csr_rd(.ptr(ral.genbits),     .value(_genbits));
+    // csr_rd(.ptr(ral.genbits_vld), .value(_genbits_vld));
+    // csr_rd(.ptr(ral.sw_cmd_sts),  .value(_sw_cmd_sts));
+    // csr_rd(.ptr(ral.regwen),      .value(_regwen));
+    // csr_rd(.ptr(ral.intr_state),  .value(_intr_state));
+    // csr_rd(.ptr(ral.intr_enable), .value(_intr_enable));
+
+    // cov_vif.cg_internal_sample(_genbits, _genbits_vld, _sw_cmd_sts, _regwen,
+    //                            _intr_state, _intr_enable);
   endtask
 
   virtual function void reset(string kind = "HARD");
