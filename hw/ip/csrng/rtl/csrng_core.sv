@@ -493,16 +493,17 @@ module csrng_core import csrng_pkg::*; #(
          ctr_drbg_gen_sfifo_gadstage_err_sum ||
          ctr_drbg_gen_sfifo_ggenbits_err_sum ||
          block_encrypt_sfifo_blkenc_err_sum ||
+         fifo_write_err_sum ||
+         fifo_read_err_sum ||
+         fifo_status_err_sum)) ||
+         // errs not gated by cs_enable
          cmd_stage_sm_err_sum ||
          main_sm_err_sum ||
          drbg_gen_sm_err_sum ||
          drbg_updbe_sm_err_sum ||
          drbg_updob_sm_err_sum ||
          aes_cipher_sm_err_sum ||
-         fifo_write_err_sum ||
-         fifo_read_err_sum ||
-         fifo_status_err_sum)) ||
-         cmd_gen_cnt_err_sum; // err not gated by cs_enable
+         cmd_gen_cnt_err_sum;
 
   // set fifo errors that are single instances of source
   assign ctr_drbg_cmd_sfifo_cmdreq_err_sum = (|ctr_drbg_cmd_sfifo_cmdreq_err) ||
