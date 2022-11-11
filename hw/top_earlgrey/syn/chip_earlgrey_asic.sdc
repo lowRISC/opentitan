@@ -30,7 +30,7 @@ if {!$IS_CDC_RUN} {
 #####################
 # main clock        #
 #####################
-set MAIN_CLK_PIN u_ast/u_sys_clk/u_sys_osc/u_buf/clk_o
+set MAIN_CLK_PIN u_ast/clk_src_sys_o
 set MAIN_RST_PIN IO_RST_N
 # target is 100MHz, overconstrain by factor
 set MAIN_TCK_TARGET_PERIOD  10
@@ -42,11 +42,11 @@ set MAIN_TCK_PERIOD [expr $MAIN_TCK_TARGET_PERIOD*$MAIN_TCK_FACTOR] ;# over cons
 
 create_clock -name MAIN_CLK -period ${MAIN_TCK_PERIOD} [get_pins ${MAIN_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks MAIN_CLK]
-
+#set_false_path -from [get_clocks ${MAIN_CLK_PIN_AST}] -to [get_clocks ${MAIN_CLK_PIN}]
 #####################
 # USB clock         #
 #####################
-set USB_CLK_PIN u_ast/u_usb_clk/u_usb_osc/u_buf/clk_o
+set USB_CLK_PIN u_ast/clk_src_usb_o
 # target is 48MHz, overconstrain by 5%
 set USB_TCK_TARGET_PERIOD 20.8
 set USB_TCK_PERIOD [expr $USB_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
@@ -82,7 +82,7 @@ set_max_delay 3 -from [get_pins ${USBDEV_OUTREG_PATH}/${USB_OE_PIN}] -to [get_po
 #####################
 # IO clk            #
 #####################
-set IO_CLK_PIN u_ast/u_io_clk/u_io_osc/u_buf/clk_o
+set IO_CLK_PIN u_ast/clk_src_io_o
 # target is 96MHz, overconstrain by factor
 set IO_TCK_TARGET_PERIOD 10.416
 set IO_TCK_PERIOD [expr $IO_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
@@ -150,7 +150,7 @@ set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey
 #####################
 # AON clk           #
 #####################
-set AON_CLK_PIN u_ast/u_aon_clk/u_aon_osc/u_buf/clk_o
+set AON_CLK_PIN u_ast/clk_src_aon_o
 # target is 200KHz, overconstrain by factor
 set AON_TCK_TARGET_PERIOD 5000.0
 set AON_TCK_PERIOD [expr $AON_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
@@ -171,9 +171,24 @@ set JTAG_TCK_PERIOD [expr $JTAG_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 create_clock -name JTAG_TCK -period $JTAG_TCK_PERIOD [get_ports $JTAG_CLK_PIN]
 #set_ideal_network [get_ports $JTAG_CLK_PIN]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks JTAG_TCK]
+#####################
+# AST clock        #
+#####################
 
+set AST_EXT_CLK_PIN IOC6
+# target is 48MHz, overconstrain by factor
+set AST_EXT_TCK_TARGET_PERIOD [expr $IO_TCK_TARGET_PERIOD*2]
+set AST_EXT_TCK_PERIOD [expr $AST_EXT_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
 
-#####################################
+create_clock -name AST_EXT_CLK -period ${AST_EXT_TCK_PERIOD} [get_ports ${AST_EXT_CLK_PIN}]
+set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks AST_EXT_CLK]
+
+# This is not needed by CDC runs because io_clk/usb_clk/main_clk/aon_clk are propagated from ast_ext_clk in ast.lib
+# we don't use this constraint to avoid unnecessary CDC issues
+if {!$IS_CDC_RUN} {
+    set_clock_groups -name group_ast -async -group [get_clocks AST_EXT_CLK]
+}
+####################################
 # SPI System Parameters             #
 #####################################
 

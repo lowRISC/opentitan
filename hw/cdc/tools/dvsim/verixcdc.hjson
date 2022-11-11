@@ -6,8 +6,10 @@
   exports: [
     { CONSTRAINT:         "{sdc_file}" },
     { FOUNDRY_CONSTRAINT: "{foundry_sdc_file}" },
-    { CDC_WAIVER_FILE:    "{cdc_waiver_file}" }
-    { ENV_FILE:           "{env_file}" }
+    { CDC_WAIVER_FILE:    "{cdc_waiver_file}" },
+    { ENV_FILE:           "{env_file}" },
+    { USER_ENV_FILE:      "{cdc_user_env}" },
+    { AST_LIB:            "{ast_lib}" },
   ]
 
   // Tool invocation
