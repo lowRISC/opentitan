@@ -53,11 +53,17 @@ untagged=$(./bazelisk.sh query \
           'bitstream_splice',
           //...
       )
+      except`# Other than those used to build cached bitstreams`
+      (
+          deps(//hw/bitstream:rom)
+          union
+          deps(//hw/bitstream:test_rom)
+      )
   )
   except
   attr(
       tags,
-      '$(exact_regex "(cw310_rom|cw310_test_rom|vivado|manual)")',
+      '$(exact_regex "(vivado|manual)")',
       //...
   )" \
   --output=label_kind)
