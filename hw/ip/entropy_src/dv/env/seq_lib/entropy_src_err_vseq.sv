@@ -91,6 +91,8 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
         cov_vif.cg_sm_err_sample(fld_name == "es_ack_sm_err", fld_name == "es_main_sm_err");
       end
       es_cntr_err: begin
+        logic [entropy_src_pkg::AckSmStateWidth-1:0] sm_state;
+        string sm_state_path = cfg.entropy_src_path_vif.sm_err_path("ack_sm");
         fld = csr.get_field_by_name(fld_name);
         case (cfg.which_cntr)
           window_cntr: begin // window counter
@@ -116,6 +118,10 @@ class entropy_src_err_vseq extends entropy_src_base_vseq;
           end
         endcase // case (cfg.which_cntr)
         cov_vif.cg_cntr_err_sample(cfg.which_cntr, cfg.which_cntr_replicate, cfg.which_bin);
+        // Check that the `entropy_src_ack_sm` FSM, which observes the errors of the faulted
+        // counter, has entered the error state.
+        `DV_CHECK(uvm_hdl_read(sm_state_path, sm_state))
+        `DV_CHECK_EQ(sm_state, entropy_src_pkg::AckSmError)
       end
       fifo_write_err, fifo_read_err, fifo_state_err: begin
         fifo_name = cfg.which_fifo.name();

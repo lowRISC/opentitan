@@ -114,10 +114,6 @@
       tests: ["entropy_src_sec_cm", "entropy_src_functional_errors"]
     }
     {
-      // TODO: It seems that this is currently not being verified.
-      // The entropy_src_functional_errors test verifies that if there is any mismatch in the redundant counters this is reported in the ERR_CODE register.
-      // But a check that the main FSM indeed enters a terminal error state seems to be missing.
-      // The scoreboard captures that setting ERR_CODE_TEST.ES_CNTR_ERR causes the DUT to signal a fatal alert and ERR_CODE.ES_CNTR_ERR as well as ERR_CODE.ES_MAIN_SM_ERR to get set.
       name: sec_cm_ctr_local_esc
       desc: '''
             Verify the countermeasure(s) CTR.LOCAL_ESC.
