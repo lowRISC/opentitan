@@ -281,8 +281,18 @@
     }
     { name: "OUTPUT_KEYS.CTRL.REDUN",
       desc: '''
-        Software and sideload keys are redundantly controlled. One valid controls the write enable,
-        the other controls the input data (muxed to random).
+        Software and sideload keys are redundantly controlled. Each generate operation
+        creates a valid and a data enable (software and sideload specific).
+
+        In order for a key to be populated into the software register, both the software valid
+        and the software data enable must be asserted.  The same is true for sideload.
+
+        This makes it more difficult for an attack to fault a sideload key into the software key slot.
+        An attacker would need to fault both the software valid and the software data enable.
+
+        During a sideload operation, if an attacker manages to fault the valid but not the data enable,
+        the software key is populated with random data.  If an atacker manages to fault the data enable but
+        not the valid, then the software key retains its previous value.
       '''
     }
     { name: "CTRL.FSM.SPARSE",

@@ -13,17 +13,27 @@ module keymgr_data_en_state
 (
   input clk_i,
   input rst_ni,
-
+  input prim_mubi_pkg::mubi4_t hw_sel_i,
   input adv_en_i,
   input id_en_i,
   input gen_en_i,
   input op_done_i,
   input op_start_i,
-  output logic data_en_o,
+  output logic data_hw_en_o,
+  output logic data_sw_en_o,
   output logic fsm_err_o
 );
 
-  // This is a separate data path from the FSM used to control the data_en_o output
+  import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_true_loose;
+  import prim_mubi_pkg::mubi4_test_false_strict;
+  import prim_mubi_pkg::mubi4_test_false_loose;
+
+  // This is a separate data path from the FSM used to control the data_en outputs
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 6 -n 10 \
+  //      -s 2015444891 --language=sv
+  //
   // Hamming distance histogram:
   //
   //  0: --
@@ -31,25 +41,26 @@ module keymgr_data_en_state
   //  2: --
   //  3: --
   //  4: --
-  //  5: |||||||||||||||||||| (50.00%)
-  //  6: |||||||||||||||| (40.00%)
-  //  7: |||| (10.00%)
+  //  5: |||||||||||||||| (33.33%)
+  //  6: |||||||||||||||||||| (40.00%)
+  //  7: ||||||||||||| (26.67%)
   //  8: --
   //  9: --
   // 10: --
   //
   // Minimum Hamming distance: 5
   // Maximum Hamming distance: 7
-  // Minimum Hamming weight: 5
+  // Minimum Hamming weight: 2
   // Maximum Hamming weight: 7
   //
   localparam int DataStateWidth = 10;
   typedef enum logic [DataStateWidth-1:0] {
-    StCtrlDataIdle    = 10'b1001110111,
-    StCtrlDataEn      = 10'b1110001011,
-    StCtrlDataDis     = 10'b0110100110,
-    StCtrlDataWait    = 10'b1010111000,
-    StCtrlDataInvalid = 10'b1111010100
+    StCtrlDataIdle    = 10'b1000010000,
+    StCtrlDataHwEn    = 10'b0001100100,
+    StCtrlDataSwEn    = 10'b1110101110,
+    StCtrlDataDis     = 10'b0010011111,
+    StCtrlDataWait    = 10'b0111110011,
+    StCtrlDataInvalid = 10'b1111001001
   } state_e;
 
   state_e state_d, state_q;
@@ -66,23 +77,37 @@ module keymgr_data_en_state
   // supposedly being an advance call will force the path to disable again.
   always_comb begin
     state_d = state_q;
-    data_en_o = 1'b0;
     fsm_err_o = 1'b0;
+    data_hw_en_o = 1'b0;
+    data_sw_en_o = 1'b0;
     unique case (state_q)
 
       StCtrlDataIdle: begin
         if (adv_en_i) begin
           state_d = StCtrlDataDis;
+        end else if ((id_en_i || gen_en_i) && mubi4_test_true_strict(hw_sel_i)) begin
+          state_d = StCtrlDataHwEn;
+        end else if ((id_en_i || gen_en_i) && mubi4_test_false_strict(hw_sel_i)) begin
+          state_d = StCtrlDataSwEn;
         end else if (id_en_i || gen_en_i) begin
-          state_d = StCtrlDataEn;
+          state_d = StCtrlDataDis;
         end
       end
 
-      StCtrlDataEn: begin
-        data_en_o = 1'b1;
+      StCtrlDataHwEn: begin
+        data_hw_en_o = 1'b1;
         if (op_done_i) begin
           state_d = StCtrlDataWait;
-        end else if (adv_en_i) begin
+        end else if (adv_en_i || mubi4_test_false_loose(hw_sel_i)) begin
+          state_d = StCtrlDataDis;
+        end
+      end
+
+      StCtrlDataSwEn: begin
+        data_sw_en_o = 1'b1;
+        if (op_done_i) begin
+          state_d = StCtrlDataWait;
+        end else if (adv_en_i || mubi4_test_true_loose(hw_sel_i)) begin
           state_d = StCtrlDataDis;
         end
       end

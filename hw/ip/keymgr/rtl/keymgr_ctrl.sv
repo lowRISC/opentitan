@@ -36,7 +36,8 @@ module keymgr_ctrl
   output keymgr_op_status_e status_o,
   output logic [ErrLastPos-1:0] error_o,
   output logic [FaultLastPos-1:0] fault_o,
-  output logic data_en_o,
+  output logic data_hw_en_o,
+  output logic data_sw_en_o,
   output logic data_valid_o,
   output logic wipe_key_o,
   output keymgr_working_state_e working_state_o,
@@ -736,12 +737,14 @@ module keymgr_ctrl
   keymgr_data_en_state u_data_en (
     .clk_i,
     .rst_ni,
+    .hw_sel_i(hw_sel_o),
     .adv_en_i(adv_en_o),
     .id_en_i(id_en_o),
     .gen_en_i(gen_en_o),
     .op_done_i(op_done_o),
     .op_start_i,
-    .data_en_o,
+    .data_hw_en_o,
+    .data_sw_en_o,
     .fsm_err_o(data_fsm_err)
   );
 
@@ -850,11 +853,11 @@ module keymgr_ctrl
   `ASSERT(CntZero_A, $rose(op_start_i) |-> cnt == '0)
 
   // Whenever a transaction completes, data_en must return to 0 on the next cycle
-  `ASSERT(DataEnDis_A, op_start_i & op_done_o |=> ~data_en_o)
+  `ASSERT(DataEnDis_A, op_start_i & op_done_o |=> ~data_hw_en_o && ~data_sw_en_o)
 
   // Whenever data enable asserts, it must be the case that there was a generate or
   // id operation
-  `ASSERT(DataEn_A, data_en_o |-> (id_en_o | gen_en_o) & ~adv_en_o)
+  `ASSERT(DataEn_A, data_hw_en_o | data_sw_en_o |-> (id_en_o | gen_en_o) & ~adv_en_o)
 
   // Check that the FSM is linear and does not contain any loops
   `ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, state_q, state_e)
