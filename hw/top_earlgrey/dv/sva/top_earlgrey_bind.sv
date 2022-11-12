@@ -44,4 +44,34 @@ module top_earlgrey_bind;
     .pwr_ast_i(u_pwrmgr_aon.pwr_ast_i)
   );
 
+  logic [ibex_pkg::IC_NUM_WAYS-1:0]                     ibex_icache_tag_bank_key_valid,
+                                                        ibex_icache_data_bank_key_valid;
+  otp_ctrl_pkg::sram_key_t [ibex_pkg::IC_NUM_WAYS-1:0]  ibex_icache_tag_bank_key,
+                                                        ibex_icache_data_bank_key;
+  bind top_earlgrey rv_core_ibex_otp_sva_if #(
+    .ICache(u_rv_core_ibex.ICache),
+    .ICacheScramble(u_rv_core_ibex.ICacheScramble)
+  ) rv_core_ibex_otp_sva_if (
+    .ibex_decoder_instr_valid(u_rv_core_ibex.u_core.u_ibex_core.id_stage_i.instr_valid_i),
+    .ibex_decoder_instr(u_rv_core_ibex.u_core.u_ibex_core.id_stage_i.decoder_i.instr),
+    .ibex_decoder_opcode(u_rv_core_ibex.u_core.u_ibex_core.id_stage_i.decoder_i.opcode),
+    .ibex_icache_tag_bank_key_valid(ibex_icache_tag_bank_key_valid),
+    .ibex_icache_tag_bank_key(ibex_icache_tag_bank_key),
+    .ibex_icache_data_bank_key_valid(ibex_icache_data_bank_key_valid),
+    .ibex_icache_data_bank_key(ibex_icache_data_bank_key),
+    .otp_sram_otp_key_i_req(u_otp_ctrl.sram_otp_key_i.req),
+    .otp_sram_otp_key_o_ack(u_otp_ctrl.sram_otp_key_o.ack),
+    .otp_sram_otp_key_o_key(u_otp_ctrl.sram_otp_key_o.key)
+  );
+  for (genvar way = 0; way < ibex_pkg::IC_NUM_WAYS; way++) begin : gen_icache_ways
+    assign ibex_icache_tag_bank_key_valid[way] =
+        u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.tag_bank.key_valid_i;
+    assign ibex_icache_data_bank_key_valid[way] =
+        u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.data_bank.key_valid_i;
+    assign ibex_icache_tag_bank_key[way] =
+        u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.tag_bank.key_i;
+    assign ibex_icache_data_bank_key[way] =
+        u_rv_core_ibex.u_core.gen_rams.gen_rams_inner[way].gen_scramble_rams.data_bank.key_i;
+  end
+
 endmodule
