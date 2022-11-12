@@ -4,7 +4,9 @@
 //
 // Description: I2C finite state machine
 
-module i2c_fsm (
+module i2c_fsm #(
+  parameter int FifoDepth = 64
+) (
   input        clk_i,  // clock
   input        rst_ni, // active low reset
 
@@ -39,6 +41,7 @@ module i2c_fsm (
   input  logic       acq_fifo_wready_i, // low if acq_fifo is full
   output logic       acq_fifo_wvalid_o, // high if there is valid data in acq_fifo
   output logic [9:0] acq_fifo_wdata_o,  // byte and signal in acq_fifo read from target
+  input [6:0]        acq_fifo_depth_i,
 
   output logic       host_idle_o,      // indicates the host is idle
   output logic       target_idle_o,    // indicates the target is idle
@@ -126,6 +129,7 @@ module i2c_fsm (
   logic        stretch_stop_acq_clr;
   logic        stretch_stop_tx;
   logic        stretch_stop_acq;
+  logic        acq_fifo_wready;
 
   // Target bit counter variables
   logic [3:0]  bit_idx;       // bit index including ack/nack
@@ -174,6 +178,9 @@ module i2c_fsm (
   end
   logic unused_tsu;
   assign unused_tsu = |tsu_dat_i;
+
+  logic unused_fifo_outputs;
+  assign unused_fifo_outputs = |{tx_fifo_depth_i, acq_fifo_wready_i};
 
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_counter
     if (!rst_ni) begin
@@ -321,6 +328,15 @@ module i2c_fsm (
   assign stretch_stop_tx_clr_o = stretch_stop_tx_clr;
   assign stretch_stop_acq_clr_o = stretch_stop_acq_clr;
 
+  // An artificial acq_fifo_wready is used here to ensure we always have
+  // space to asborb a stop / repeat start format byte.  Without guaranteeing
+  // space for this entry, the target module would need to stretch the
+  // repeat start / stop indication.  If a system does not support stretching,
+  // there's no good way for a stop to be NACK'd.
+  logic [6:0] acq_fifo_remainder;
+  assign acq_fifo_remainder = FifoDepth - acq_fifo_depth_i;
+  assign acq_fifo_wready = acq_fifo_remainder > 7'h1;
+
   // State definitions
   typedef enum logic [5:0] {
     Idle,
@@ -346,7 +362,7 @@ module i2c_fsm (
     /////////////////////////
 
     // Target function receives start and address from external host
-    AcquireStart, StartStretchNak, AddrRead,
+    AcquireStart, AddrRead,
     // Target function acknowledges the address and returns an ack to external host
     AddrAckWait, AddrAckSetup, AddrAckPulse, AddrAckHold,
     // Target function sends read data to external host-receiver
@@ -402,17 +418,17 @@ module i2c_fsm (
   assign event_sda_interference_o = (host_idle_o & host_enable_i & !sda_i) |
                                     ((sda_rise_cnt == sda_rise_latency) & (sda_o & !sda_i));
 
-
-  // The external host read the final byte and issued ack-stop instead of nak-stop.
-  // TODO: This feature likely will be removed, but for now maintain the previous function.
   logic rw_bit_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       rw_bit_q <= '0;
-    end else begin
+    end else if (bit_ack && address_match) begin
       rw_bit_q <= rw_bit;
     end
   end
+
+  // The external host read the final byte and issued ack-stop instead of nak-stop.
+  // TODO: This feature likely will be removed, but for now maintain the previous function.
   assign event_ack_stop_o = rw_bit_q & (stop_det | start_det) & host_ack;
 
   // Reverse the bit order since data should be sent out MSB first
@@ -607,20 +623,10 @@ module i2c_fsm (
       AcquireStart : begin
         target_idle_o = 1'b0;
       end
-      // Stretch clock because acq_fifo is full
-      StartStretchNak: begin
-        target_idle_o = 1'b0;
-        scl_d = 1'b0;
-      end
       // AddrRead: read and compare target address
       AddrRead : begin
         target_idle_o = 1'b0;
         rw_bit = input_byte[0];
-        if (bit_ack && address_match) begin
-          acq_fifo_wdata_o = {1'b0, 1'b1, input_byte}; // transfer data to acq_fifo
-          acq_fifo_wvalid_o = 1'b1;          // assert that acq_fifo has valid data
-          if (tx_fifo_depth_i == '0 && rw_bit_q) event_tx_empty_o = 1'b1;
-        end
       end
       // AddrAckWait: pause before acknowledging
       AddrAckWait : begin
@@ -630,6 +636,14 @@ module i2c_fsm (
       AddrAckSetup : begin
         target_idle_o = 1'b0;
         sda_d = 1'b0;
+
+        // Upon transition to next state, populate the acquisition fifo
+        if (scl_i) begin
+          acq_fifo_wdata_o = {1'b0, 1'b1, input_byte}; // transfer data to acq_fifo
+          acq_fifo_wvalid_o = 1'b1;          // assert that acq_fifo has valid data
+          if (tx_fifo_depth_i == '0 && rw_bit_q) event_tx_empty_o = 1'b1;
+        end
+
       end
       // AddrAckPulse: target pulls SDA low while SCL is released
       AddrAckPulse : begin
@@ -681,14 +695,9 @@ module i2c_fsm (
         target_idle_o = 1'b0;
         sda_d = 1'b1;
       end
-
       // AcquireByte: target acquires a byte
       AcquireByte : begin
         target_idle_o = 1'b0;
-        if (bit_ack) begin
-          acq_fifo_wdata_o = {1'b0, 1'b0, input_byte}; // transfer data to acq_fifo
-          acq_fifo_wvalid_o = 1'b1;          // assert that acq_fifo has valid data
-        end
       end
       // AcquireAckWait: pause before acknowledging
       AcquireAckWait : begin
@@ -698,6 +707,12 @@ module i2c_fsm (
       AcquireAckSetup : begin
         target_idle_o = 1'b0;
         sda_d = 1'b0;
+
+        if (scl_i) begin
+          acq_fifo_wdata_o = {1'b0, 1'b0, input_byte}; // transfer data to acq_fifo
+          acq_fifo_wvalid_o = 1'b1;          // assert that acq_fifo has valid data
+        end
+
       end
       // AcquireAckPulse: target pulls SDA low while SCL is released
       AcquireAckPulse : begin
@@ -732,6 +747,7 @@ module i2c_fsm (
       StretchAcqFull : begin
         target_idle_o = 1'b0;
         scl_d = 1'b0;
+        sda_d = 1'b0;
       end
       // default
       default : begin
@@ -782,7 +798,7 @@ module i2c_fsm (
   //    entries.
   assign stretch_target_addr_acq = ~rw_bit_q &
                                    ((stretch_en_addr_acq_i & !stretch_stop_acq_i) |
-                                   ~acq_fifo_wready_i);
+                                   ~acq_fifo_wready);
 
   // If unconditional address stretching is not enabled, it is functionally equivalent
   // to the stop stretching function being asserted all the time.
@@ -1057,32 +1073,23 @@ module i2c_fsm (
       AcquireStart : begin
         if (scl_i_q && !scl_i) begin
           // If we are not able to accept the start bit, stretch or nak
-          state_d = acq_fifo_wready_i ? AddrRead : StartStretchNak;
-          input_byte_clr = 1'b1;
-        end
-      end
-
-      // Start could be not be completed, strech clock or nack the host
-      StartStretchNak: begin
-        if (acq_fifo_wready_i) begin
           state_d = AddrRead;
+          input_byte_clr = 1'b1;
         end
       end
 
       // AddrRead: read and compare target address
       AddrRead : begin
-        if (bit_ack) begin
-          if (address_match) begin
-            state_d = AddrAckWait;
-            load_tcount = 1'b1;
-            tcount_sel = tClockStart;
-          end else state_d = Idle;
+        if (bit_ack && address_match) begin
+          state_d = AddrAckWait;
+          load_tcount = 1'b1;
+          tcount_sel = tClockStart;
         end
       end
 
       // AddrAckWait: pause before acknowledging
       AddrAckWait : begin
-        // If any stretch conditions are hit, go to the appropriate state.
+        // If any stretch conditions are met, go to the appropriate state.
         if (tcount_q == 20'd1 && !scl_i) begin
           if (stretch_target_addr_tx) begin
             state_d = StretchAddrTransmit;
@@ -1094,6 +1101,7 @@ module i2c_fsm (
         end
       end
       // AddrAckSetup: target pulls SDA low while SCL is low
+      // Also despoit start format byte into acq_fifo
       AddrAckSetup : begin
         if (scl_i) state_d = AddrAckPulse;
       end
@@ -1153,10 +1161,10 @@ module i2c_fsm (
         if (!scl_i) begin
           // If host acknowledged, that means we must continue
           if (host_ack) begin
-            // The TX fifo is popped during TransmitAckPulse state,
-            // so an entry of 1 implies next cycle it will be 0
-            // unless there is another write.
-            if (tx_fifo_depth_i == 7'd1 && !tx_fifo_wvalid_i) begin
+            // If acquisition fifo is full, it means we will not be able to
+            // absorb a repeat start / stop entry, it thus must be part of
+            // the stretching conditions
+            if (~tx_fifo_rvalid_i || ~acq_fifo_wready) begin
               state_d = StretchTxEmpty;
             end else begin
               state_d = TransmitSetup;
@@ -1189,10 +1197,11 @@ module i2c_fsm (
       // AcquireAckWait: pause before acknowledging
       AcquireAckWait : begin
         if (tcount_q == 20'd1) begin
-          if (!scl_i) state_d = AcquireAckSetup;
+          state_d = (!scl_i && acq_fifo_wready) ? AcquireAckSetup : StretchAcqFull;
         end
       end
       // AcquireAckSetup: target pulls SDA low while SCL is low
+      // Deposit format byte into fifo
       AcquireAckSetup : begin
         if (scl_i) state_d = AcquireAckPulse;
       end
@@ -1207,7 +1216,7 @@ module i2c_fsm (
       // AcquireAckHold: target pulls SDA low while SCL is pulled low
       AcquireAckHold : begin
         if (tcount_q == 20'd1) begin
-          state_d = acq_fifo_wready_i ? AcquireByte : StretchAcqFull;
+          state_d = AcquireByte;
         end
       end
 
@@ -1224,7 +1233,7 @@ module i2c_fsm (
       // StretchAddrAcquire: target stretches the clock after matching an address for acquire
       // If unconditional stretching enable
       StretchAddrAcquire : begin
-        if (stretch_stop_acq && acq_fifo_wready_i) begin
+        if (stretch_stop_acq && acq_fifo_wready) begin
           state_d = AddrAckSetup;
           stretch_stop_acq_clr = 1'b1;
         end
@@ -1243,7 +1252,7 @@ module i2c_fsm (
 
       // StretchAcqFull: target stretches the clock when acq_fifo is full
       StretchAcqFull : begin
-        if (acq_fifo_wready_i) state_d = AcquireByte;
+        if (acq_fifo_wready) state_d = AcquireAckSetup;
       end
 
       // default

@@ -408,7 +408,9 @@ module  i2c_core #(
     .q_o (sda_sync)
   );
 
-  i2c_fsm u_i2c_fsm (
+  i2c_fsm #(
+    .FifoDepth(FifoDepth)
+  ) u_i2c_fsm (
     .clk_i,
     .rst_ni,
 
@@ -444,6 +446,7 @@ module  i2c_core #(
     .acq_fifo_wready_i       (acq_fifo_wready),
     .acq_fifo_wvalid_o       (acq_fifo_wvalid),
     .acq_fifo_wdata_o        (acq_fifo_wdata),
+    .acq_fifo_depth_i        (acq_fifo_depth),
 
     .host_idle_o             (host_idle),
     .target_idle_o           (target_idle),
