@@ -445,6 +445,35 @@ interface keymgr_if(input clk, input rst_n);
     if (force_cmds[GenOpIdx]) release tb.dut.u_ctrl.gen_en_o;
   endtask
 
+  bit trigger_force_hw_key_sel;
+  for (genvar i = 0; i < 8; i++) begin : gen_force_hw_key_sel
+    always @(trigger_force_hw_key_sel) begin
+      if (trigger_force_hw_key_sel) begin
+        // force to false, in order to try to move HW key to SW output
+        force tb.dut.gen_sw_assigns[i].hw_key_sel_buf[0] = prim_mubi_pkg::MuBi4False;
+        force tb.dut.gen_sw_assigns[i].hw_key_sel_buf[1] = prim_mubi_pkg::MuBi4False;
+      end else begin
+        release tb.dut.gen_sw_assigns[i].hw_key_sel_buf;
+      end
+    end
+  end
+  task automatic inject_sideload_fault(bit force_hw_key_sel_or_data_en);
+    if (force_hw_key_sel_or_data_en) begin
+      `uvm_info(msg_id, "force tb.dut.gen_sw_assigns[*].hw_key_sel_buf[*] to MuBi4False", UVM_LOW)
+      trigger_force_hw_key_sel = 1;
+    end else begin
+      `uvm_info(msg_id, "force tb.dut.u_ctrl.u_data_en.data_sw_en_o to 1", UVM_LOW)
+      force tb.dut.u_ctrl.u_data_en.data_sw_en_o = 1;
+    end
+    // force until the transaction is done.
+    @(negedge kmac_data_rsp.done);
+    if (force_hw_key_sel_or_data_en) begin
+      trigger_force_hw_key_sel = 0;
+    end else begin
+      release tb.dut.u_ctrl.u_data_en.data_sw_en_o;
+    end
+  endtask
+
   // Disable h_data stability assertion when keymgr is in disabled/invalid state or LC turns off as
   // keymgr will sent constantly changed entropy data to KMAC for KDF operation.
   always_comb begin

@@ -79,6 +79,8 @@ package keymgr_env_pkg;
     end
   endfunction
 
+  // forward declaration
+  typedef class keymgr_scoreboard;
   // package sources
   `include "keymgr_env_cfg.sv"
   `include "keymgr_env_cov.sv"

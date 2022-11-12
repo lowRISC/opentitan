@@ -105,9 +105,16 @@
     }
     {
       name: sec_cm_output_keys_ctrl_redun
-      desc: "Verify the countermeasure(s) OUTPUT_KEYS.CTRL.REDUN."
+      desc: '''Verify the countermeasure(s) OUTPUT_KEYS.CTRL.REDUN.
+
+            1. Randomly advance to a functional state and start a sideload operation.
+            2. Flip either data_sw_en or data_valid.
+            3. Read sw_share* for check:
+              - if hw_key_sel is flipped but data_sw_en is not, it doesn't match either the
+                previously flopped value or the sideload value.
+              - if hw_key_sel is not flipped but data_en is, you should see the previous value.'''
       stage: V2S
-      tests: ["keymgr_custom_cm"]
+      tests: ["keymgr_sideload_protect"]
     }
     {
       name: sec_cm_ctrl_fsm_sparse
