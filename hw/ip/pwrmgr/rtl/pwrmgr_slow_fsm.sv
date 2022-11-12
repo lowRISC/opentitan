@@ -65,7 +65,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   // when to monitor pok for instability
   // These are monitored only in active and low power states
-  logic ast_main_pok;
   logic mon_main_pok;
   logic set_main_pok;
 
@@ -173,7 +172,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       SlowPwrStateMainPowerOn: begin
         pd_nd = 1'b1;
 
-        if (ast_main_pok) begin
+        if (ast_i.main_pok) begin
           set_main_pok = 1'b1;
           pwr_clamp_env_d = 1'b0;
           state_d = SlowPwrStatePwrClampOff;
@@ -243,7 +242,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
         pd_nd = main_pd_ni;
 
         // if power is never turned off, proceed directly to low power state
-        if (!ast_main_pok | main_pd_ni) begin
+        if (!ast_i.main_pok | main_pd_ni) begin
           state_d = SlowPwrStateLowPower;
         end
       end
@@ -260,14 +259,6 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       end
     endcase // unique case (state_q)
   end // always_comb
-
-  always_ff @(posedge clk_i or negedge rst_main_ni) begin
-    if (!rst_main_ni) begin
-      ast_main_pok <= '0;
-    end else begin
-      ast_main_pok <= ast_i.main_pok;
-    end
-  end
 
   // If the main_pok ever drops, capture that glitch
   // and hold onto it for reset escalation
