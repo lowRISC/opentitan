@@ -377,7 +377,7 @@ module  i2c_core #(
     .rst_ni,
     .clr_i   (i2c_fifo_acqrst),
     .wvalid_i(acq_fifo_wvalid),
-    .wready_o(acq_fifo_wready),
+    .wready_o(),
     .wdata_i (acq_fifo_wdata),
     .depth_o (acq_fifo_depth),
     .rvalid_o(acq_fifo_rvalid),
@@ -443,7 +443,7 @@ module  i2c_core #(
     .tx_fifo_rready_o        (tx_fifo_rready),
     .tx_fifo_rdata_i         (tx_fifo_rdata),
 
-    .acq_fifo_wready_i       (acq_fifo_wready),
+    .acq_fifo_wready_o       (acq_fifo_wready),
     .acq_fifo_wvalid_o       (acq_fifo_wvalid),
     .acq_fifo_wdata_o        (acq_fifo_wdata),
     .acq_fifo_depth_i        (acq_fifo_depth),
