@@ -795,7 +795,7 @@
       tests: ["chip_sw_aon_timer_sleep_wdog_sleep_pause"]
     }
 
-    // PLIC (pre-verified IP) integration tests:
+    // PLIC integration tests:
     {
       name: chip_sw_plic_all_irqs
       desc: '''Verify all interrupts from all peripherals aggregated at the PLIC.
@@ -820,6 +820,23 @@
             '''
       stage: V2
       tests: ["chip_sw_plic_sw_irq"]
+    }
+    {
+      name: chip_plic_fatal_alert
+      desc: '''Verify that the fatal alert is fired from PLIC due to bus integrity violation.
+
+            - PLIC is a non-preverified IP, so it is necessary to test the assertion of fatal alert
+              via fault injection.
+            - In stub CPU mode, read a register in PLIC.
+            - Intercept the access in the SystemVerilog testbench and using force, inject an
+              integrity error on the command channel.
+            - Verify that the fatal alert fired on the PLIC output.
+            - Reboot the chip and this time, inject a fatal alert through violation of the reg
+              write-enable one hot check using the standardized sec_cm_pkg framework.
+            - Verify that the fatal alert fired on the PLIC output.
+            '''
+      stage: V3
+      tests: []
     }
 
     // CLKMGR tests:
@@ -2745,6 +2762,20 @@
             '''
       stage: V2
       tests: ["chip_prim_tl_access"]
+    }
+    {
+      name: chip_sw_otp_ctrl_vendor_test_csr_access
+      desc: '''
+            Verify the vendor test control access in raw, test_*, dev, prod, and rma LC states.
+
+            - Boot the chip successively in raw, test_*, dev, prod and rma LC states.
+            - Verify that the SW is able to access the vendor test control and status registers in
+              raw, test_* and rma LC states.
+            - Verify that in dev / prod LC states, the vendor status always reads back 0s regardless
+              of what is programmed into the vendor test control register.
+            '''
+      stage: V3
+      tests: []
     }
 
     // FLASH (pre-verified IP) integration tests:
