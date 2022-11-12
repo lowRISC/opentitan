@@ -22,3 +22,4 @@
 `include "i2c_host_stress_all_vseq.sv"
 `include "i2c_target_smoke_vseq.sv"
 `include "i2c_target_stress_wr_vseq.sv"
+`include "i2c_target_stress_rd_vseq.sv"

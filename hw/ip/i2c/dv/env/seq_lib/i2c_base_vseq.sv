@@ -161,7 +161,7 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     solve t_r, tsu_dat, thd_dat before tlow;
     solve t_r                   before t_buf;
-    solve t_f, thigh            before t_sda_unstable, t_sda_interference;
+    solve t_f, thigh            before t_sda_unstable, t_sda_interference;			   
     if (program_incorrect_regs) {
       // force derived timing parameters to be negative (incorrect DUT config)
       tsu_sta == t_r + t_buf + 1;  // negative tHoldStop
@@ -175,6 +175,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       // force derived timing parameters to be positive (correct DUT config)
       // tlow must be at least 2 greater than the sum of t_r + tsu_dat + thd_dat
       // because the flopped clock (see #15003 below) reduces tClockLow by 1.
+      thigh == (thd_sta + tsu_sta + t_r);
       tlow    inside {[(t_r + tsu_dat + thd_dat + 2) :
                        (t_r + tsu_dat + thd_dat + 2) + cfg.seq_cfg.i2c_time_range]};
       t_buf   inside {[(tsu_sta - t_r + 1) :

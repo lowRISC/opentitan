@@ -61,8 +61,10 @@ class i2c_monitor extends dv_base_monitor #(
         mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
 
         // expect target ack
-        cfg.vif.p_edge_scl();
-        r_bit = cfg.vif.cb.sda_i;
+	 cfg.vif.sample_target_data(cfg.timing_cfg, r_bit);
+	 
+//        cfg.vif.p_edge_scl();
+//        r_bit = cfg.vif.cb.sda_i;
         `DV_CHECK_CASE_EQ(r_bit, 1'b0)
 
         if (mon_dut_item.bus_op == BusOpRead) target_read();
@@ -270,8 +272,9 @@ class i2c_monitor extends dv_base_monitor #(
       // ask driver response read data
       mon_dut_item.drv_type = RdData;
       for (int i = 7; i >= 0; i--) begin
-        cfg.vif.p_edge_scl();
-        mon_data[i] = cfg.vif.cb.sda_i;
+//        cfg.vif.p_edge_scl();
+//        mon_data[i] = cfg.vif.cb.sda_i;
+	cfg.vif.sample_target_data(cfg.timing_cfg, mon_data[i]); 
         `uvm_info(`gfn, $sformatf("\nmonitor, target_read, trans %0d, byte %0d, bit[%0d] %0b",
                   mon_dut_item.tran_id, mon_dut_item.num_data+1, i, mon_data[i]), UVM_HIGH)
       end
@@ -294,7 +297,7 @@ class i2c_monitor extends dv_base_monitor #(
         `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
         `uvm_info(`gfn, $sformatf("\nmonitor, target_read, detect HOST %s",
                                   (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_MEDIUM)
-        if (mon_dut_item.stop) ->cfg.got_stop;
+        if (mon_dut_item.stop) cfg.got_stop = 1;
       end
     end
   endtask
@@ -324,7 +327,7 @@ class i2c_monitor extends dv_base_monitor #(
         `DV_CHECK_NE_FATAL({mon_dut_item.rstart, mon_dut_item.stop}, 2'b11)
         `uvm_info(`gfn, $sformatf("\nmonitor, rd_data, detect HOST %s",
                                   (mon_dut_item.stop) ? "STOP" : "RSTART"), UVM_MEDIUM)
-        if (mon_dut_item.stop) ->cfg.got_stop;
+        if (mon_dut_item.stop) cfg.got_stop = 1;
       end
     end
   endtask // target_write

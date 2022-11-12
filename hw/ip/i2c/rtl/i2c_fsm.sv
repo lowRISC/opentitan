@@ -124,7 +124,8 @@ module i2c_fsm (
   logic        input_byte_clr;// clear input_byte contents
   logic        stretch_stop_tx_clr;
   logic        stretch_stop_acq_clr;
-
+   logic       stretch_stop_tx;
+  logic        stretch_stop_acq;
   // Target bit counter variables
   logic [3:0]  bit_idx;       // bit index including ack/nack
   logic        bit_ack;       // indicates ACK bit been sent or received
@@ -711,11 +712,13 @@ module i2c_fsm (
       StretchAddrTransmit : begin
         target_idle_o = 1'b0;
         scl_d = 1'b0;
+	 sda_d = 1'b0;
       end
       // StretchAddrAcquire: target stretches the clock after matching an address for acquire
       StretchAddrAcquire : begin
         target_idle_o = 1'b0;
         scl_d = 1'b0;
+	 sda_d = 1'b0;
       end
       // StretchTxEmpty: target stretches the clock when tx_fifo is empty
       StretchTxEmpty : begin
@@ -780,6 +783,11 @@ module i2c_fsm (
                                    ((stretch_en_addr_acq_i & !stretch_stop_acq_i) |
                                    ~acq_fifo_wready_i);
 
+   // If unconditional address stretching is not enabled, it is functionally equivalent
+  // to the stop stretching function being asserted all the time.
+  assign stretch_stop_tx = ~stretch_en_addr_tx_i | stretch_stop_tx_i;
+  assign stretch_stop_acq = ~stretch_en_addr_acq_i | stretch_stop_acq_i;
+   
   // Conditional state transition
   always_comb begin : state_functions
     state_d = state_q;
@@ -1206,7 +1214,7 @@ module i2c_fsm (
       StretchAddrTransmit : begin
         // Once release conditions are met, transition back to AddrAckWait state so
         // that stop bits
-        if (stretch_stop_tx_i && tx_fifo_rvalid_i) begin
+        if (stretch_stop_tx && tx_fifo_rvalid_i) begin
           state_d = AddrAckSetup;
           stretch_stop_tx_clr = 1'b1;
         end
@@ -1214,8 +1222,8 @@ module i2c_fsm (
 
       // StretchAddrAcquire: target stretches the clock after matching an address for acquire
       StretchAddrAcquire : begin
-        if (stretch_stop_acq_i && acq_fifo_wready_i) begin
-          state_d = AddrAckWait;
+        if (stretch_stop_acq && acq_fifo_wready_i) begin
+          state_d = AddrAckSetup;
           stretch_stop_acq_clr = 1'b1;
         end
       end
@@ -1227,7 +1235,7 @@ module i2c_fsm (
         end else begin
           state_d = TransmitSetup;
           load_tcount = 1'b1;
-          tcount_sel = tClockLow;
+          tcount_sel = tClockStart; // XXX tClockLow;
         end
       end
 

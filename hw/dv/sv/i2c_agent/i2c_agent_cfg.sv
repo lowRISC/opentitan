@@ -18,7 +18,7 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
 
   bit     host_scl_start;
   bit     host_scl_stop;
-  event   got_stop;
+  bit     got_stop = 0;
    bit 	  use_seq_term = 0;
    
    int 	  sent_byte = 0;
