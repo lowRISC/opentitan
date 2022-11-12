@@ -287,7 +287,7 @@ class i2c_monitor extends dv_base_monitor #(
       `uvm_info(`gfn, $sformatf("\nmonitor, target_read detect HOST %s",
                                 (mon_dut_item.ack) ? "ACK" : "NO_ACK"), UVM_MEDIUM)
 
-//      cfg.rcvd_byte++;
+      cfg.rcvd_byte++;
        
       // if nack is issued, next bit must be stop or rstart
       if (mon_dut_item.nack) begin

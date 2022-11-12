@@ -638,6 +638,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       if (read_rcvd.size() > 0) begin
         read_size = read_rcvd.pop_front();
       end
+
       while (read_size > 0) begin
         @(cfg.m_i2c_agent_cfg.vif.cb);
         if (read_txn_q.size() > 0) begin
@@ -668,7 +669,7 @@ class i2c_base_vseq extends cip_base_vseq #(
                                        wdata_q.size() inside {
                            [cfg.min_data : cfg.max_data]};)
 
-    cfg.m_i2c_agent_cfg.sent_byte += wdata_q.size();
+//    cfg.m_i2c_agent_cfg.sent_byte += wdata_q.size();
  
     for (int i = 0; i < wdata_q.size(); i++) begin
       if ($urandom_range(0,9) < cfg.rs_pct) rs_avl = 1;
@@ -736,6 +737,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     if (is_read) begin
       read_size = src_q.size();
       read_rcvd.push_back(read_size);
+      cfg.m_i2c_agent_cfg.sent_byte += read_size;
     end
     // Data
     while (src_q.size() > 0) begin

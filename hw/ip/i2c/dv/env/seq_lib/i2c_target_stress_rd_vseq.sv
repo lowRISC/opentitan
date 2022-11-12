@@ -3,12 +3,12 @@ class i2c_target_stress_rd_vseq extends i2c_target_smoke_vseq;
   `uvm_object_new
 
   virtual task body();
-    num_trans = 5;
+    num_trans = 1;
     cfg.min_data = 100;
     cfg.max_data = 200;
     cfg.wr_pct = 0;
     cfg.rs_pct = 0;
-//    cfg.m_i2c_agent_cfg.use_seq_term = 1;
+    cfg.m_i2c_agent_cfg.use_seq_term = 1;
 
     super.body();
   endtask // body
@@ -21,17 +21,21 @@ class i2c_target_stress_rd_vseq extends i2c_target_smoke_vseq;
 
     wait(cfg.m_i2c_agent_cfg.sent_byte > 0);
 
-     forever begin
+    while (cfg.m_i2c_agent_cfg.sent_byte != 
+	   cfg.m_i2c_agent_cfg.rcvd_byte) begin
 	@(cfg.m_i2c_agent_cfg.vif.cb);
 	if (read_rcvd.size() > 0) begin
            read_size = read_rcvd.pop_front();
 	end
-	delay = $urandom_range(50, 100);
+	delay = $urandom_range(5, 10);
 	#(delay * 1us);
 
       while (read_size > 0) begin
         @(cfg.m_i2c_agent_cfg.vif.cb);
-
+	if ($urandom_range(0, 1) < 1) begin
+	   // Assuming 1 byte processed in 22cycles.
+	   cfg.clk_rst_vif.wait_clks($urandom_range(100,500));
+	end
 	 if (read_txn_q.size() > 0) begin
           i2c_item item;
           //check tx fifo is full
