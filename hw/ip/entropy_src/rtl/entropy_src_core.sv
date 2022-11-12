@@ -2421,7 +2421,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          fw_ov_fifo_wr_pulse && fw_ov_wr_fifo_full;
 
   assign es_fw_ov_disable_alert = fw_ov_mode && fw_ov_mode_entropy_insert &&
-         fw_ov_sha3_disable_pulse && fw_ov_wr_fifo_full;
+         !es_bypass_mode && fw_ov_sha3_disable_pulse && fw_ov_wr_fifo_full;
 
   //--------------------------------------------
   // entropy conditioner
