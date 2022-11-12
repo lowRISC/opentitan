@@ -2,10 +2,13 @@ class i2c_target_stress_wr_vseq extends i2c_target_smoke_vseq;
   `uvm_object_utils(i2c_target_stress_wr_vseq)
   `uvm_object_new
 
+  constraint num_trans_c { num_trans inside {[1 : 5]}; }
+    
   virtual task body();
-    num_trans = 1;
+     num_trans = 1;
+     
     cfg.min_data = 80;
-    cfg.max_data = 80;
+    cfg.max_data = 200;
     cfg.rd_pct = 0;
     cfg.rs_pct = 1;
     cfg.m_i2c_agent_cfg.use_seq_term = 1;
