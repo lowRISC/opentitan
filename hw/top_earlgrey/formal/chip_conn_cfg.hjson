@@ -18,6 +18,7 @@
               "{conn_csvs_dir}/ast_scanmode.csv",
               "{conn_csvs_dir}/ast_clkmgr.csv",
               "{conn_csvs_dir}/ast_rstmgr.csv",
+              "{conn_csvs_dir}/ast_otp.csv",
               "{conn_csvs_dir}/ast_pwrmgr.csv",
               "{conn_csvs_dir}/ast_flash.csv",
               "{conn_csvs_dir}/clkmgr_cg_en.csv",
