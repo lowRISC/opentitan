@@ -62,8 +62,14 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
       `uvm_info(`gfn, "Started to process reset", UVM_MEDIUM)
 
+      // For the cip scoreboard.
+      reset_start_for_cip();
+
       wait_for_fast_fsm_active();
       `uvm_info(`gfn, "Back from reset", UVM_MEDIUM)
+
+      // For the cip scoreboard.
+      reset_end_for_cip();
 
       check_wake_info(.reasons('0), .fall_through(1'b0), .abort(1'b0));
 

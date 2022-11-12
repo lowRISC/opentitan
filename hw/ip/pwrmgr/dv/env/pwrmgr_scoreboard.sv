@@ -27,6 +27,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+    cfg.scoreboard = this;
   endfunction
 
   task run_phase(uvm_phase phase);

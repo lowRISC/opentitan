@@ -330,5 +330,4 @@ module pwrmgr_cdc import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
     .q_o(slow_clr_req_o)
   );
 
-
 endmodule
