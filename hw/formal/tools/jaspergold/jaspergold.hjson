@@ -7,6 +7,9 @@
                "-proj jgproject",
                "-allow_unsupported_OS"]
 
+  // If this line is not seen in the log, then fail the test.
+  build_pass_patterns: ["^INFO: Proof threads stopped\\.$"]
+
   exports: [
     {COMMON_MSG_TCL_PATH: "{formal_root}/tools/{tool}/jaspergold_common_message_process.tcl"}
   ]
