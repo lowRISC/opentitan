@@ -6,6 +6,7 @@ class keymgr_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_reg_block));
 
   rand kmac_app_agent_cfg m_keymgr_kmac_agent_cfg;
 
+  keymgr_scoreboard scb;
   // interface for input data from LC, OTP and flash
   keymgr_vif keymgr_vif;
 

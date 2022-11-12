@@ -124,6 +124,11 @@
     }
 
     {
+      name: keymgr_sideload_protect
+      uvm_test_seq: keymgr_sideload_protect_vseq
+    }
+
+    {
       name: keymgr_sync_async_fault_cross
       uvm_test_seq: keymgr_sync_async_fault_cross_vseq
     }

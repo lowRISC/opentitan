@@ -25,6 +25,7 @@ class keymgr_env extends cip_base_env #(
     if (!uvm_config_db#(keymgr_vif)::get(this, "", "keymgr_vif", cfg.keymgr_vif)) begin
       `uvm_fatal(`gfn, "failed to get keymgr_vif from uvm_config_db")
     end
+    cfg.scb = scoreboard;
   endfunction
 
   function void connect_phase(uvm_phase phase);

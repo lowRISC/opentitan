@@ -265,6 +265,18 @@ class keymgr_base_vseq extends cip_base_vseq #(
 
   virtual task keymgr_rd_clr();
     bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
+
+    read_sw_shares(sw_share_output);
+
+    // 20% read back to check if they're cleared
+    if ($urandom_range(0, 4) == 0) begin
+      read_sw_shares(sw_share_output);
+      `DV_CHECK_EQ(sw_share_output, '0)
+    end
+  endtask : keymgr_rd_clr
+
+  virtual task read_sw_shares(
+        output bit [keymgr_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output);
     `uvm_info(`gfn, "Read generated output", UVM_MEDIUM)
 
     // read each one out and print it out (nothing to compare it against right now)
@@ -276,19 +288,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
       csr_rd(.ptr(csr), .value(sw_share_output[i][j]));
       `uvm_info(`gfn, $sformatf("%0s: 0x%0h", csr_name, sw_share_output[i][j]), UVM_HIGH)
     end
-
-    // 20% read back to check if they're cleared
-    if ($urandom_range(0, 4) == 0) begin
-      foreach (sw_share_output[i, j]) begin
-        bit [TL_DW-1:0] rd_val;
-        string csr_name = $sformatf("sw_share%0d_output_%0d", i, j);
-        uvm_reg csr = ral.get_reg_by_name(csr_name);
-
-        csr_rd(.ptr(csr), .value(rd_val));
-        if (get_check_en()) `DV_CHECK_EQ(rd_val, '0)
-      end
-    end
-  endtask : keymgr_rd_clr
+  endtask : read_sw_shares
 
   // issue any invalid operation at reset state to trigger op error
   virtual task keymgr_invalid_op_at_reset_state();
