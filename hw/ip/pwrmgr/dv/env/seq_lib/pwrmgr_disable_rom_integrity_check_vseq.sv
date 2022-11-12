@@ -69,6 +69,9 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
       `uvm_info(`gfn, "Wait for Fast State NE FastPwrStateActive", UVM_MEDIUM)
       `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
 
+      // For the cip scoreboard.
+      reset_start_for_cip();
+
       // Check fast state is not FastPwrStateActive for a while
       repeat (20) begin
         @cfg.slow_clk_rst_vif.cb;
@@ -83,6 +86,9 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
 
       wait_for_fast_fsm_active();
       `uvm_info(`gfn, "Back from reset", UVM_MEDIUM)
+
+      // For the cip scoreboard.
+      reset_end_for_cip();
 
       check_wake_info(.reasons('0), .fall_through(1'b0), .abort(1'b0));
 

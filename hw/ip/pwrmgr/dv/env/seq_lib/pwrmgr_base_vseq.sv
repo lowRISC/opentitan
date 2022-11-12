@@ -218,6 +218,28 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.slow_clk_rst_vif.drive_rst_pin(1);
   endtask
 
+  // We need to reset the cip scoreboard, since the alert handler responds
+  // to lc domain0 resets, yet the pwrmgr's clk_rst_vif is aon. So when a
+  // reset happens the cip scoreboard needs to be informed, both when reset
+  // starts and when it ends.
+  virtual function void reset_start_for_cip();
+    // Could call cfg.reset_asserted(), but that has additional side-effects.
+    cfg.under_reset = 1;
+  endfunction
+
+  virtual function void reset_end_for_cip();
+    // This could just call the cip_base reset(), but that also resets all CSRs.
+    // Instead, this just clears a few of the side-effects of reset.
+    `uvm_info(`gfn, "pwrmgr in reset_end_for_cip", UVM_MEDIUM)
+    foreach (cfg.list_of_alerts[i]) begin
+      cfg.scoreboard.alert_fifos[cfg.list_of_alerts[i]].flush();
+      cfg.scoreboard.exp_alert[cfg.list_of_alerts[i]] = 0;
+      cfg.scoreboard.under_alert_handshake[cfg.list_of_alerts[i]] = 0;
+      cfg.scoreboard.is_fatal_alert[cfg.list_of_alerts[i]] = 0;
+      cfg.scoreboard.alert_chk_max_delay[cfg.list_of_alerts[i]] = 0;
+    end
+  endfunction
+
   // setup basic pwrmgr features
   virtual task pwrmgr_init();
     // The fast clock frequency is set by ral.
@@ -541,26 +563,27 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   // Updates control CSR.
   task update_control_csr();
-    ral.control.core_clk_en.set(control_enables.core_clk_en);
-    ral.control.io_clk_en.set(control_enables.io_clk_en);
-    ral.control.usb_clk_en_lp.set(control_enables.usb_clk_en_lp);
-    ral.control.usb_clk_en_active.set(control_enables.usb_clk_en_active);
-    ral.control.main_pd_n.set(control_enables.main_pd_n);
-    ral.control.low_power_hint.set(low_power_hint);
-    // Disable assertions when main power is down.
-    control_assertions(control_enables.main_pd_n);
-    `uvm_info(`gfn, $sformatf(
-              "Setting control CSR to 0x%x, enables=%p, low_power_hint=%b",
-              ral.control.get(),
-              control_enables,
-              low_power_hint
-              ), UVM_MEDIUM)
-    csr_update(.csr(ral.control));
-
-    // Predict the effect of the potential low power transition.
     fork
+      begin
+        ral.control.core_clk_en.set(control_enables.core_clk_en);
+        ral.control.io_clk_en.set(control_enables.io_clk_en);
+        ral.control.usb_clk_en_lp.set(control_enables.usb_clk_en_lp);
+        ral.control.usb_clk_en_active.set(control_enables.usb_clk_en_active);
+        ral.control.main_pd_n.set(control_enables.main_pd_n);
+        ral.control.low_power_hint.set(low_power_hint);
+        // Disable assertions when main power is down.
+        control_assertions(control_enables.main_pd_n);
+        `uvm_info(`gfn, $sformatf(
+                  "Setting control CSR to 0x%x, enables=%p, low_power_hint=%b",
+                  ral.control.get(),
+                  control_enables,
+                  low_power_hint
+                  ), UVM_MEDIUM)
+        csr_update(.csr(ral.control));
+      end
+      // Predict the effect of the potential low power transition.
       if (low_power_hint) process_low_power_hint();
-    join_none
+    join_any
   endtask : update_control_csr
 
   // This enables the fast fsm to transition to low power when all nvms are idle after the

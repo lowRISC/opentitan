@@ -4,7 +4,7 @@
 
 // The aborted low power test causes low power transitions to abort for CPU interrupts and nvms not
 // idle. It randomly enables wakeups, info capture, and interrupts, and sends wakeups at random
-// times, but causes a test failure if they are not aborted.
+// times, and causes a test failure if they are not aborted.
 class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
   `uvm_object_utils(pwrmgr_aborted_low_power_vseq)
 
@@ -64,13 +64,26 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
       csr_wr(.ptr(ral.wake_info_capture_dis), .value(disable_wakeup_capture));
       low_power_hint = 1'b1;
 
+      // Put CPU to sleep even before the control registers are fully written to avoid
+      // unexpected failures to abort due to delicate timing.
+      cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
+
       fork
         begin
           update_control_csr();
+         `uvm_info(`gfn, $sformatf("After update_control_csr exp_intr=%b", exp_intr), UVM_MEDIUM)
         end
         begin
           // Prepare for an abort ahead of time.
-          if (!cpu_interrupt) begin
+          `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
+          // Wait one more cycle for update_control_csr called above to predict the interrupt
+          // based on the value of cpu_sleeping right after the transition out of active state.
+          // There is enough time for this since it takes time to disable the clocks.
+          cfg.clk_rst_vif.wait_clks(1);
+          if (cpu_interrupt) begin
+            `uvm_info(`gfn, "Expecting a fall through (0x40)", UVM_MEDIUM)
+             cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
+          end else begin
             `uvm_info(`gfn, $sformatf(
                       "Expecting an abort (0x80): fi=%b, li=%b, oi=%b",
                       flash_idle,
@@ -81,24 +94,9 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
           end
         end
       join
-
-      cfg.pwrmgr_vif.update_cpu_sleeping(1'b1);
-
-      // Defeat the low power entry.
-      if (cpu_interrupt) begin
-        // The transition back to cpu active must be soon enough.
-        `uvm_info(`gfn, "Expecting a fall_through (0x40)", UVM_MEDIUM)
-        set_nvms_idle();
-        cfg.clk_rst_vif.wait_clks(2);
-        cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
-      end
-      // Wait enough time for the clocks to be turned off and then wait for them to go back on,
-      // indicating the fast fsm is active again.
-      cfg.clk_rst_vif.wait_clks(2);
-      wait(cfg.pwrmgr_vif.pwr_clk_req.main_ip_clk_en == 1'b1);
-
       wait_for_fast_fsm_active();
-      `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
+
+      `uvm_info(`gfn, "Back from sleep attempt", UVM_MEDIUM)
       @cfg.clk_rst_vif.cb;
 
       // No wakeups, but check abort and fall_through.

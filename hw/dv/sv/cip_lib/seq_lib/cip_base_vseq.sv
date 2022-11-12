@@ -97,7 +97,7 @@ class cip_base_vseq #(
     // Wait for alert init done, then start the sequence.
     foreach (cfg.list_of_alerts[i]) begin
       if (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].is_active) begin
-        wait(cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].alert_init_done == 1);
+        `DV_WAIT(cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].alert_init_done == 1)
       end
     end
 

@@ -2,9 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+typedef class pwrmgr_scoreboard;
+
 class pwrmgr_env_cfg extends cip_base_env_cfg #(
   .RAL_T(pwrmgr_reg_block)
 );
+
+  // Handle to scoreboard to access cip_base for expected alert handling.
+  pwrmgr_scoreboard scoreboard;
 
   // disable fault csr read check from scoreboard
   bit disable_csr_rd_chk = 0;
