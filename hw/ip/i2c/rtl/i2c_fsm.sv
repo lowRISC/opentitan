@@ -142,6 +142,7 @@ module i2c_fsm #(
   typedef enum logic [3:0] {
     tSetupStart,
     tHoldStart,
+    tSetupData,
     tClockStart,
     tClockLow,
     tClockPulse,
@@ -160,6 +161,7 @@ module i2c_fsm #(
       unique case (tcount_sel)
         tSetupStart : tcount_d = 20'(t_r_i) + 20'(tsu_sta_i);
         tHoldStart  : tcount_d = 20'(t_f_i) + 20'(thd_sta_i);
+        tSetupData  : tcount_d = 20'(t_r_i) + 20'(tsu_dat_i);
         tClockStart : tcount_d = 20'(thd_dat_i);
         tClockLow   : tcount_d = 20'(tlow_i) - 20'(thd_dat_i);
         tClockPulse : tcount_d = 20'(t_r_i) + 20'(thigh_i) + 20'(t_f_i);
@@ -176,11 +178,9 @@ module i2c_fsm #(
       tcount_d = tcount_q;  // pause timer if clock is stretched
     end
   end
-  logic unused_tsu;
-  assign unused_tsu = |tsu_dat_i;
 
   logic unused_fifo_outputs;
-  assign unused_fifo_outputs = |{tx_fifo_depth_i, acq_fifo_wready_i};
+  assign unused_fifo_outputs = |{tx_fifo_depth_i, acq_fifo_wready_i, tx_fifo_wvalid_i};
 
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_counter
     if (!rst_ni) begin
@@ -366,7 +366,7 @@ module i2c_fsm #(
     // Target function acknowledges the address and returns an ack to external host
     AddrAckWait, AddrAckSetup, AddrAckPulse, AddrAckHold,
     // Target function sends read data to external host-receiver
-    TransmitSetup, TransmitPulse, TransmitHold,
+    TransmitWait, TransmitSetup, TransmitPulse, TransmitHold,
     // Target function receives ack from external host
     TransmitAck, TransmitAckPulse, WaitForStop,
     // Target function receives write data from the external host
@@ -374,7 +374,8 @@ module i2c_fsm #(
     // Target function sends ack to external host
     AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
     // Target function clock stretch handling.
-    StretchTxEmpty, StretchAcqFull, StretchAddrTransmit,
+    StretchTxEmpty, StretchTxSetup,
+    StretchAcqFull, StretchAddrTransmit,
     StretchAddrAcquire
   } state_e;
 
@@ -459,7 +460,6 @@ module i2c_fsm #(
     event_scl_interference_o = 1'b0;
     event_sda_unstable_o = 1'b0;
     event_trans_complete_o = 1'b0;
-    event_tx_empty_o = 1'b0;
     event_tx_nonempty_o = 1'b0;
     rw_bit = rw_bit_q;
     stretch_en = 1'b0;
@@ -641,7 +641,6 @@ module i2c_fsm #(
         if (scl_i) begin
           acq_fifo_wdata_o = {1'b0, 1'b1, input_byte}; // transfer data to acq_fifo
           acq_fifo_wvalid_o = 1'b1;          // assert that acq_fifo has valid data
-          if (tx_fifo_depth_i == '0 && rw_bit_q) event_tx_empty_o = 1'b1;
         end
 
       end
@@ -654,6 +653,10 @@ module i2c_fsm #(
       AddrAckHold : begin
         target_idle_o = 1'b0;
         sda_d = 1'b0;
+      end
+      // TransmitWait: Check if data is available prior to transmit
+      TransmitWait: begin
+        target_idle_o = 1'b0;
       end
       // TransmitSetup: target shifts indexed bit onto SDA while SCL is low
       TransmitSetup : begin
@@ -678,18 +681,12 @@ module i2c_fsm #(
       TransmitAck : begin
         target_idle_o = 1'b0;
       end
-
       TransmitAckPulse : begin
         if (!scl_i) begin
           // Pop Fifo regardless of ack/nack
           tx_fifo_rready_o = 1'b1;
         end
-
-        // Just change this to a level status interrupt later, it does not seem
-        // necessary to have all these random triggers.
-        if (tx_fifo_depth_i == 7'd1 && !tx_fifo_wvalid_i && host_ack) event_tx_empty_o = 1'b1;
       end
-
       // WaitForStop just waiting for host to trigger a stop after nack
       WaitForStop : begin
         target_idle_o = 1'b0;
@@ -739,9 +736,13 @@ module i2c_fsm #(
       // StretchTxEmpty: target stretches the clock when tx_fifo is empty
       StretchTxEmpty : begin
         target_idle_o = 1'b0;
-        tx_fifo_rready_o = 1'b1;
         scl_d = 1'b0;
-        if (tx_fifo_depth_i == '0) event_tx_empty_o = 1'b1;
+      end
+      // StretchTxSetup: drive the return data
+      StretchTxSetup: begin
+        target_idle_o = 1'b0;
+        scl_d = 1'b0;
+        sda_d = tx_fifo_rdata[3'(bit_idx)];
       end
       // StretchAcqFull: target stretches the clock when acq_fifo is full
       StretchAcqFull : begin
@@ -765,7 +766,6 @@ module i2c_fsm #(
         event_scl_interference_o = 1'b0;
         event_sda_unstable_o = 1'b0;
         event_trans_complete_o = 1'b0;
-        event_tx_empty_o = 1'b0;
         event_tx_nonempty_o = 1'b0;
       end
     endcase // unique case (state_q)
@@ -778,7 +778,7 @@ module i2c_fsm #(
       event_trans_complete_o = !target_idle_o;
 
       // Transaction completed with unused entries
-      if (!target_idle_o && tx_fifo_depth_i != '0) event_tx_nonempty_o = 1'b1;
+      if (!target_idle_o && tx_fifo_rvalid_i) event_tx_nonempty_o = 1'b1;
     end
   end
 
@@ -823,6 +823,7 @@ module i2c_fsm #(
     en_sda_interf_det = 1'b0;
     stretch_stop_tx_clr = 1'b0;
     stretch_stop_acq_clr = 1'b0;
+    event_tx_empty_o = 1'b0;
 
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
@@ -1116,11 +1117,25 @@ module i2c_fsm #(
       // AddrAckHold: target pulls SDA low while SCL is pulled low
       AddrAckHold : begin
         if (tcount_q == 20'd1 && rw_bit_q) begin
+          state_d = TransmitWait;
+        end else if (tcount_q == 20'd1 && !rw_bit_q) begin
+          state_d = AcquireByte;
+        end
+      end
+      // TransmitWait: Evaluate whether there are entries to send first
+      TransmitWait: begin
+        // acq fifo wready is also part of the equation because we must be able
+        // to accept a stop or repeated start format byte even in transmit states
+        if (~tx_fifo_rvalid_i || ~acq_fifo_wready) begin
+          state_d = StretchTxEmpty;
+
+          // If we are stretching because there is no data available for transmit,
+          // trigger an interrupt to the system.
+          event_tx_empty_o = ~tx_fifo_rvalid_i;
+        end else begin
           state_d = TransmitSetup;
           load_tcount = 1'b1;
           tcount_sel = tClockStart;
-        end else if (tcount_q == 20'd1 && !rw_bit_q) begin
-          state_d = AcquireByte;
         end
       end
       // TransmitSetup: target shifts indexed bit onto SDA while SCL is low
@@ -1161,16 +1176,7 @@ module i2c_fsm #(
         if (!scl_i) begin
           // If host acknowledged, that means we must continue
           if (host_ack) begin
-            // If acquisition fifo is full, it means we will not be able to
-            // absorb a repeat start / stop entry, it thus must be part of
-            // the stretching conditions
-            if (~tx_fifo_rvalid_i || ~acq_fifo_wready) begin
-              state_d = StretchTxEmpty;
-            end else begin
-              state_d = TransmitSetup;
-              load_tcount = 1'b1;
-              tcount_sel = tClockStart;
-            end
+            state_d = TransmitWait;
           end else begin
             // If host nak'd then the transaction is about to terminate, go to a wait state
             state_d = WaitForStop;
@@ -1241,15 +1247,23 @@ module i2c_fsm #(
 
       // StretchTxEmpty: target stretches the clock when tx_fifo is empty
       StretchTxEmpty : begin
-        if (tx_fifo_depth_i == '0) begin
-          state_d = StretchTxEmpty;
-        end else begin
-          state_d = TransmitSetup;
+        if (tx_fifo_rvalid_i && acq_fifo_wready) begin
+          // When data becomes available, we must first drive it onto the line
+          // for at least the "setup" period.  If we do not, once the clock is released, the
+          // pull-up in the system will likely immediately trigger a rising clock
+          // edge (since the stretch likely pushed us way beyond the original intended
+          // rise).  If we do not artificially create the setup period here, it will
+          // likely create a timing violation.
+          state_d = StretchTxSetup;
           load_tcount = 1'b1;
-          tcount_sel = tClockStart;
+          tcount_sel = tSetupData;
         end
       end
-
+      StretchTxSetup : begin
+        if (tcount_q == 20'd1) begin
+          state_d = TransmitSetup;
+        end
+      end
       // StretchAcqFull: target stretches the clock when acq_fifo is full
       StretchAcqFull : begin
         if (acq_fifo_wready) state_d = AcquireAckSetup;
@@ -1272,6 +1286,7 @@ module i2c_fsm #(
         input_byte_clr = 1'b0;
         stretch_stop_tx_clr = 1'b0;
         stretch_stop_acq_clr = 1'b0;
+        event_tx_empty_o = 1'b0;
       end
     endcase // unique case (state_q)
 
