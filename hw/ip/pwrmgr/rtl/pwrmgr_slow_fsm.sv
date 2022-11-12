@@ -65,9 +65,10 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
 
   // when to monitor pok for instability
   // These are monitored only in active and low power states
-  logic ast_main_pok;
   logic mon_main_pok;
   logic set_main_pok;
+  logic async_main_pok_st;
+  logic main_pok_st;
 
   // all clocks sources are valid
   // if clocks (usb) not configured to be active, then just bypass check
@@ -173,7 +174,7 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       SlowPwrStateMainPowerOn: begin
         pd_nd = 1'b1;
 
-        if (ast_main_pok) begin
+        if (main_pok_st) begin
           set_main_pok = 1'b1;
           pwr_clamp_env_d = 1'b0;
           state_d = SlowPwrStatePwrClampOff;
@@ -242,8 +243,9 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       SlowPwrStateMainPowerOff: begin
         pd_nd = main_pd_ni;
 
-        // if power is never turned off, proceed directly to low power state
-        if (!ast_main_pok | main_pd_ni) begin
+        // Proceed if power is already off, or if there was no intent to
+        // turn off the power.
+        if (!main_pok_st | main_pd_ni) begin
           state_d = SlowPwrStateLowPower;
         end
       end
@@ -261,29 +263,28 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
     endcase // unique case (state_q)
   end // always_comb
 
-  always_ff @(posedge clk_i or negedge rst_main_ni) begin
-    if (!rst_main_ni) begin
-      ast_main_pok <= '0;
-    end else begin
-      ast_main_pok <= ast_i.main_pok;
-    end
-  end
-
   // If the main_pok ever drops, capture that glitch
   // and hold onto it for reset escalation
-  logic main_pok_st;
   always_ff @(posedge clk_i or negedge rst_main_ni) begin
     if (!rst_main_ni) begin
-      main_pok_st <= '0;
-    end else if (!main_pok_st && set_main_pok) begin
-      // as part of normal power up, reset the state
-      main_pok_st <= 1'b1;
-    end else if (!main_pok_st && clr_req_i) begin
-      // when requested by fast FSM as it is about to reset
-      main_pok_st <= 1'b1;
+      async_main_pok_st <= '0;
+    end else begin
+      async_main_pok_st <= ast_i.main_pok;
     end
   end
 
+  // We need to synchronize the above because the reset
+  // may cause the signal to change at any time.
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_main_pok_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(async_main_pok_st),
+    .q_o(main_pok_st)
+  );
+
+  // Determine when pok should be monitored
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       mon_main_pok <= '0;
