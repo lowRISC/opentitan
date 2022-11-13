@@ -6,8 +6,9 @@
 class i2c_target_smoke_vseq extends i2c_base_vseq;
   `uvm_object_utils(i2c_target_smoke_vseq)
   `uvm_object_new
-
-
+ 
+  int sent_txn_cnt = 0;
+   
   constraint timing_val_c {
     thigh   inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
     t_r     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
@@ -58,7 +59,6 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
     fork
       begin
         for (int i = 0; i < num_trans; i++) begin
-`JDBG(("assa %0d", i))	   
           get_timing_values();
           if (i > 0) begin
             // wait for previous stop before program a new timing param.
@@ -71,6 +71,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
           create_txn(txn_q);
           fetch_txn(txn_q, m_i2c_host_seq.req_q);
           m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
+	  sent_txn_cnt++;	   
         end
       end
       begin

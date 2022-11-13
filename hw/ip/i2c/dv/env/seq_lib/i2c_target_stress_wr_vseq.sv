@@ -3,10 +3,10 @@ class i2c_target_stress_wr_vseq extends i2c_target_smoke_vseq;
   `uvm_object_new
 
   constraint num_trans_c { num_trans inside {[1 : 5]}; }
-    
+
   virtual task body();
     `uvm_info(`gfn, $sformatf("num_trans:%0d", num_trans), UVM_MEDIUM)
-     
+
     cfg.min_data = 80;
     cfg.max_data = 200;
     cfg.rd_pct = 0;
@@ -24,7 +24,7 @@ class i2c_target_stress_wr_vseq extends i2c_target_smoke_vseq;
     bit acq_fifo_empty = 1;
     int delay;
 
-      wait(cfg.sent_acq_cnt > 0);
+     wait(cfg.sent_acq_cnt > 0);
 
 
     while (cfg.sent_acq_cnt != cfg.rcvd_acq_cnt ||
