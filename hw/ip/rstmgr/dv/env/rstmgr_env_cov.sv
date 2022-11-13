@@ -19,8 +19,8 @@ class rstmgr_sw_rst_cg_wrap;
     sw_rst_cross: cross enable, rst_n;
   endgroup
 
-  function new(int index);
-    sw_rst_cg = new(index);
+  function new(string name);
+    sw_rst_cg = new(name);
   endfunction
 
   function sample (bit enable, bit rst_n);

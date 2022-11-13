@@ -6,7 +6,7 @@
 // resets for each of the bits randomly. It also triggers lc or sys resets to verify the reset
 // transitions that cause rising upper resets but non-rising leafs.
 //
-// Then it clears specific `sw_rst_regen` bits and attempts to cause resets to determine
+// Then it clears each `sw_rst_regwen` bits and attempts to cause resets to determine
 // the bits with `sw_rst_regwen` cleared cannot cause a reset.
 class rstmgr_sw_rst_vseq extends rstmgr_base_vseq;
   `uvm_object_utils(rstmgr_sw_rst_vseq)
@@ -30,16 +30,18 @@ class rstmgr_sw_rst_vseq extends rstmgr_base_vseq;
       // In preparation for the per-bit enable test, set sw_rst_ctrl_n to all 1.
       rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_ctrl_n), .value({NumSwResets{1'b1}}));
       for (int i = 0; i < NumSwResets; ++i) begin
-        bit [NumSwResets-1:0] val_regwen;
-        bit [NumSwResets-1:0] exp_regwen;
-        val_regwen = ~(1 << i);
-        `uvm_info(`gfn, $sformatf("updating sw_rst_regwen with %b", val_regwen[i]), UVM_LOW)
+        // Clear the regwen.
+        bit [NumSwResets-1:0] val_regwen = ~(1 << i);
+        bit [NumSwResets-1:0] exp_regwen = (~0) << (i + 1);
+        `uvm_info(`gfn, $sformatf("clearing sw_rst_regwen[%0d]", i), UVM_LOW)
         csr_wr(.ptr(ral.sw_rst_regwen[i]), .value(val_regwen[i]));
-        exp_regwen = (~0) << (i + 1);
-        `uvm_info(`gfn, $sformatf("compare sw_rst_regwen against %b", exp_regwen[i]), UVM_LOW)
-        csr_rd_check(.ptr(ral.sw_rst_regwen[i]), .compare_value(exp_regwen[i]),
-                     .err_msg($sformatf("The expected value is %b", exp_regwen[i])));
+        check_sw_rst_regwen(exp_regwen);
         check_sw_rst_ctrl_n(.sw_rst_ctrl_n('0), .sw_rst_regwen(exp_regwen), .erase_ctrl_n(1'b1));
+        check_sw_rst_ctrl_n(.sw_rst_ctrl_n('1), .sw_rst_regwen(exp_regwen), .erase_ctrl_n(1'b1));
+        // Check we cannot set it back.
+        csr_wr(.ptr(ral.sw_rst_regwen[i]), .value(1));
+        csr_rd_check(.ptr(ral.sw_rst_regwen[i]), .compare_value(0),
+                     .err_msg($sformatf("sw_rst_regwen[%0d] cannot be set back to 1", i)));
       end
       check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(1'b1));
     end

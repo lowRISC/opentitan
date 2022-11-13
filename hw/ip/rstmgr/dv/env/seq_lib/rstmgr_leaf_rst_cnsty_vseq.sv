@@ -2,25 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Description:
-// Test creates a set of reset event - low power, hw req, ndm and sw -.
-// my_pos indicates the begining of each reset event.
+// This tests each leaf reset consistency checkers.
+//
+// For resets out of
 // 1 - low power entry reset
 // 2 - hw req reset
-// 3 - ndm reset
-// 4 - sw reset
-// LIST_OF_LEAFS has the name of all leaf reset modules.
-// At each round, error_pos is assigned to random value [1:4].
-// when error_pos = my_pos, reset consistency error is created to the current
-// leaf module and test waits for alert_fatal_cnsty_fault.
-// Upon detecting the alert, dut reset is applied then move to the next
-// leaf module.
+// 3 - sw reset
+// Create reset consistency errors in the current leaf, and check that a
+// fatal_cnsty_fault alert is generated.
 class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
   `uvm_object_utils(rstmgr_leaf_rst_cnsty_vseq)
 
   `uvm_object_new
 
-  string leaf_path;
   int    cycles_to_check = 7;
   int    error_pos;
   int    my_pos;
@@ -53,8 +47,8 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
 
   task body();
     for (int i = 0; i < LIST_OF_LEAFS.size(); ++i) begin
-      leaf_path = {"tb.dut.", LIST_OF_LEAFS[i], ".gen_rst_chk.u_rst_chk"};
-      error_pos = $urandom_range(1, 4);
+      string leaf_path = {"tb.dut.", LIST_OF_LEAFS[i], ".gen_rst_chk.u_rst_chk"};
+      error_pos = $urandom_range(1, 3);
       my_pos = 0;
       `uvm_info(`gfn, $sformatf("Round %0d %s pos:%0d", i, leaf_path, error_pos), UVM_MEDIUM)
       // Get a clean slate for reset_info.
@@ -63,11 +57,15 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
       fork
         unexpected_child_activity(leaf_path);
         begin
+          int expected;
           set_pos_and_wait();
           set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
           // Send low power entry reset.
           send_reset(pwrmgr_pkg::LowPwrEntry, '0);
-          check_reset_info(maybe_por_reset | 2, "expected reset_info to indicate low power");
+          expected = 1 << ral.reset_info.low_power_exit.get_lsb_pos();
+
+          check_reset_info(maybe_por_reset | expected,
+                           "expected reset_info to indicate low power");
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
           csr_wr(.ptr(ral.reset_info), .value('1));
@@ -78,21 +76,11 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
           set_pos_and_wait();
           `DV_CHECK_RANDOMIZE_FATAL(this)
           set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
+          expected = rstreqs << ral.reset_info.hw_req.get_lsb_pos();
           send_reset(pwrmgr_pkg::HwReq, rstreqs);
-          check_reset_info(maybe_por_reset | {rstreqs, 4'h0}, $sformatf(
-                           "expected reset_info to match 0x%x", {rstreqs, 4'h0}));
+          check_reset_info(maybe_por_reset | expected, $sformatf(
+                           "expected reset_info to match hw_req 0x%x", expected));
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
-
-          csr_wr(.ptr(ral.reset_info), .value('1));
-
-          set_pos_and_wait();
-          `DV_CHECK_RANDOMIZE_FATAL(this)
-          set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
-
-          // Send debug reset.
-          send_ndm_reset();
-          check_reset_info(maybe_por_reset | 4, "Expected reset_info to indicate ndm reset");
-          check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
           csr_wr(.ptr(ral.reset_info), .value('1));
 
@@ -102,7 +90,9 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
 
           // Send sw reset.
           send_sw_reset(MuBi4True);
-          check_reset_info(maybe_por_reset | 8, "Expected reset_info to indicate sw reset");
+          expected = 1 << ral.reset_info.sw_reset.get_lsb_pos();
+          check_reset_info(maybe_por_reset | expected,
+                           "Expected reset_info to indicate sw reset");
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 0);
           csr_wr(.ptr(ral.reset_info), .value('1));
         end

@@ -10,6 +10,7 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(rstmgr_scoreboard)
 
   // local variables
+  static const string sw_rst_ctrl_n_preffix = "sw_rst_ctrl_n_";
 
   // TLM agent fifos
 
@@ -82,6 +83,21 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         end
       end
   endtask
+
+  // This converts the trailing digits in a name to a number.
+  // It is fatal if there are no trailing digits.
+  local function int get_index_from_multibit_name(string name);
+    string suffix;
+    int last_char_index = name.len() - 1;
+    int i;
+    for (i = 0; i <= last_char_index; ++i) begin
+      byte character = name[last_char_index - i];
+      if (character < "0" || character > "9") break;
+    end
+    `DV_CHECK(i > 0)
+    suffix = name.substr(last_char_index - i, last_char_index);
+    return suffix.atoi();
+  endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
     uvm_reg        csr;
@@ -166,18 +182,18 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
         do_read_check = 1'b0;
       end
       default: begin
-        // add regex match here
-        if (!uvm_re_match("sw_rst_ctrl_n_*", csr.get_name())) begin
-          // TODO Check with bitwise enables from sw_rst_regwen.
+        if (!uvm_re_match({sw_rst_ctrl_n_preffix, "*"}, csr.get_name())) begin
+          `uvm_info(`gfn, $sformatf("write to %0s with 0x%x", csr.get_name(), item.a_data),
+                    UVM_MEDIUM)
           do_read_check = 1'b0;
           if (cfg.en_cov && addr_phase_write) begin
-            sw_rst_t enables;
-            foreach (cov.sw_rst_cg_wrap[i]) begin
-              enables[i] = ral.sw_rst_regwen[i].get();
-              cov.sw_rst_cg_wrap[i].sample(enables[i], item.a_data[i]);
-            end
+            logic enable;
+            int i = get_index_from_multibit_name(csr.get_name());
+            enable = ral.sw_rst_regwen[i].get();
+            cov.sw_rst_cg_wrap[i].sample(enable, item.a_data);
           end
         end else if (!uvm_re_match("sw_rst_regwen_*", csr.get_name())) begin
+          // Nothing yet.
         end else begin
           `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
         end
