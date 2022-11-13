@@ -103,10 +103,9 @@ class rstmgr_reset_vseq extends rstmgr_base_vseq;
         ResetPOR: por_reset();
         ResetScan: send_scan_reset();
         ResetLowPower: send_reset(pwrmgr_pkg::LowPwrEntry, 0);
-        ResetNdm: send_ndm_reset();
         ResetSw: `DV_CHECK_EQ(sw_reset_csr, MuBi4True)
         ResetHw: begin
-          expected_reset_info_code = {'0, rstreqs, 4'b0};
+          expected_reset_info_code = rstreqs << ral.reset_info.hw_req.get_lsb_pos();
           send_reset(pwrmgr_pkg::HwReq, rstreqs);
         end
         default: `uvm_fatal(`gfn, $sformatf("Unexpected reset type %0d", which_reset))

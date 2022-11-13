@@ -37,7 +37,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     ResetPOR,
     ResetScan,
     ResetLowPower,
-    ResetNdm,
     ResetSw,
     ResetHw
   } reset_e;
@@ -100,17 +99,13 @@ class rstmgr_base_vseq extends cip_base_vseq #(
       description: "low power reset",
       code: 2
     },
-    ResetNdm: '{
-      description: "ndm reset",
-      code: 4
-    },
     ResetSw: '{
       description: "software reset",
-      code: 8
+      code: 4
     },
     ResetHw: '{
       description: "hardware reset",
-      code: 16
+      code: 8
     }
   };
 
@@ -119,7 +114,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   endfunction
 
   function bit clear_capture_enable(reset_e reset);
-    return !(reset inside {ResetLowPower, ResetNdm});
+    return reset != ResetLowPower;
   endfunction
 
   function void post_randomize();
@@ -277,17 +272,20 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   virtual protected task clear_sw_rst_ctrl_n();
     const sw_rst_t sw_rst_all_ones = '1;
-    `uvm_info(`gfn, "Entered clear_sw_rst_ctrl_n", UVM_MEDIUM)
     rstmgr_csr_wr_unpack(.ptr(ral.sw_rst_ctrl_n), .value(sw_rst_all_ones));
     rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_ctrl_n), .compare_value(sw_rst_all_ones),
                                .err_msg("Expected sw_rst_ctrl_n to be set"));
-    `uvm_info(`gfn, "Exited clear_sw_rst_ctrl_n", UVM_MEDIUM)
   endtask
 
   virtual protected task clear_sw_rst_ctrl_n_per_entry(int entry);
     csr_wr(.ptr(ral.sw_rst_ctrl_n[entry]), .value(1'b1));
     csr_rd_check(.ptr(ral.sw_rst_ctrl_n[entry]), .compare_value(1'b1),
                  .err_msg($sformatf("Expected sw_rst_ctrl_n[%0d] to be set", entry)));
+  endtask
+
+  virtual protected task check_sw_rst_regwen(sw_rst_t expected_regwen);
+    rstmgr_csr_rd_check_unpack(.ptr(ral.sw_rst_regwen), .compare_value(expected_regwen),
+                               .err_msg("Mismatching sw_rst_regwen"));
   endtask
 
   // Stimulate and check sw_rst_ctrl_n with a given sw_rst_regwen setting.
@@ -304,13 +302,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
               ), UVM_MEDIUM)
     foreach (ral.sw_rst_ctrl_n[i]) begin
       if (under_reset) return;
-      `uvm_info(`gfn, $sformatf("Setting sw_rst_ctrl_n bit %0d", i), UVM_MEDIUM)
       csr_wr(.ptr(ral.sw_rst_ctrl_n[i]), .value(sw_rst_ctrl_n[i]));
-      `uvm_info(`gfn, $sformatf("Done setting sw_rst_ctrl_n bit %0d", i), UVM_MEDIUM)
       if (under_reset) return;
       csr_rd_check(.ptr(ral.sw_rst_ctrl_n[i]), .compare_value(exp_ctrl_n[i]),
                    .err_msg($sformatf("Mismatch for bit %0d", i)));
-      `uvm_info(`gfn, $sformatf("Done checking sw_rst_ctrl_n bit %0d", i), UVM_MEDIUM)
     end
     if (erase_ctrl_n && !under_reset) clear_sw_rst_ctrl_n();
   endtask
@@ -546,12 +541,14 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   virtual task rstmgr_csr_rd_check_unpack(
       input uvm_object ptr[], input uvm_reg_data_t compare_value = 0, input string err_msg = "");
     foreach (ptr[i]) begin
+      if (cfg.under_reset) return;
       csr_rd_check(.ptr(ptr[i]), .compare_value(compare_value[i]), .err_msg(err_msg));
     end
   endtask : rstmgr_csr_rd_check_unpack
 
   virtual task rstmgr_csr_wr_unpack(input uvm_object ptr[], input uvm_reg_data_t value);
     foreach (ptr[i]) begin
+      if (cfg.under_reset) return;
       csr_wr(.ptr(ptr[i]), .value(value[i]));
     end
   endtask
