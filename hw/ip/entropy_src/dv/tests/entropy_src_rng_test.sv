@@ -15,7 +15,7 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.rng_ignores_backpressure    = 1;
 
     cfg.dut_cfg.boot_mode_retry_limit       = 10;
-    cfg.sim_duration                = 20ms;
+    cfg.sim_duration                = 10ms;
     cfg.hard_mtbf                   = 3ms;
     cfg.mean_rand_reconfig_time     = 3ms;
     // The random alerts only need to happen frequently enough to
@@ -50,9 +50,10 @@ class entropy_src_rng_test extends entropy_src_base_test;
 
     cfg.dut_cfg.entropy_data_reg_enable_pct = 50;
     cfg.dut_cfg.route_software_pct          = 50;
-    cfg.otp_en_es_fw_read_pct               = 50;
-    cfg.otp_en_es_fw_over_pct               = 50;
-    cfg.otp_en_es_fw_over_inval_pct         = 25;
+    cfg.otp_en_es_fw_read_pct               = 33;
+    cfg.otp_en_es_fw_read_inval_pct         = 33;
+    cfg.otp_en_es_fw_over_pct               = 33;
+    cfg.otp_en_es_fw_over_inval_pct         = 33;
 
     cfg.dut_cfg.ht_threshold_scope_pct      = 50;
     cfg.dut_cfg.default_ht_thresholds_pct   = 0;

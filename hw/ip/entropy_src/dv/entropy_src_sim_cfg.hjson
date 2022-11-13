@@ -61,6 +61,7 @@
 
     {
       name: entropy_src_rng
+      reseed: 300
       uvm_test: entropy_src_rng_test
       uvm_test_seq: entropy_src_rng_vseq
     }
@@ -73,6 +74,7 @@
 
     {
       name: entropy_src_fw_ov
+      reseed: 300
       uvm_test: entropy_src_fw_ov_test
       uvm_test_seq: entropy_src_rng_vseq
     }
