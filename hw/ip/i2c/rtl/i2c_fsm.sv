@@ -5,7 +5,8 @@
 // Description: I2C finite state machine
 
 module i2c_fsm #(
-  parameter int FifoDepth = 64
+  parameter int FifoDepth = 64,
+  localparam int FifoDepthWidth = $clog2(FifoDepth+1)
 ) (
   input        clk_i,  // clock
   input        rst_ni, // active low reset
@@ -34,13 +35,13 @@ module i2c_fsm #(
 
   input        tx_fifo_rvalid_i, // indicates there is valid data in tx_fifo
   input        tx_fifo_wvalid_i, // indicates data is being put into tx_fifo
-  input [6:0]  tx_fifo_depth_i,  // tx_fifo_depth
+  input [FifoDepthWidth-1:0]  tx_fifo_depth_i,  // tx_fifo_depth
   output logic tx_fifo_rready_o, // populates tx_fifo
   input [7:0]  tx_fifo_rdata_i,  // byte in tx_fifo to be sent to host
 
   output logic       acq_fifo_wvalid_o, // high if there is valid data in acq_fifo
   output logic [9:0] acq_fifo_wdata_o,  // byte and signal in acq_fifo read from target
-  input [6:0]        acq_fifo_depth_i,
+  input [FifoDepthWidth-1:0] acq_fifo_depth_i,
   output logic       acq_fifo_wready_o, // local version of ready
 
   output logic       host_idle_o,      // indicates the host is idle
@@ -335,9 +336,9 @@ module i2c_fsm #(
   // space for this entry, the target module would need to stretch the
   // repeat start / stop indication.  If a system does not support stretching,
   // there's no good way for a stop to be NACK'd.
-  logic [6:0] acq_fifo_remainder;
+  logic [FifoDepthWidth-1:0] acq_fifo_remainder;
   assign acq_fifo_remainder = FifoDepth - acq_fifo_depth_i;
-  assign acq_fifo_wready = acq_fifo_remainder > 7'h1;
+  assign acq_fifo_wready = acq_fifo_remainder > FifoDepthWidth'(1'b1);
 
   // State definitions
   typedef enum logic [5:0] {
@@ -1200,7 +1201,6 @@ module i2c_fsm #(
         end
       end
       // AcquireAckSetup: target pulls SDA low while SCL is low
-      // Deposit format byte into fifo
       AcquireAckSetup : begin
         if (scl_i) state_d = AcquireAckPulse;
       end
@@ -1224,7 +1224,12 @@ module i2c_fsm #(
       // clock and wait.
       StretchAddr : begin
         if (!stretch_addr) begin
-          state_d = rw_bit_q ? TransmitWait : AcquireByte;
+          // When transmitting after an address stretch, we need to assume
+          // that is looks like a Tx stretch.  This is because if we try
+          // to follow the normal path, the logic will release the clock
+          // too early relative to driving the data.  This will cause a
+          // setup violation.  This is the same case to needing StretchTxSetup.
+          state_d = rw_bit_q ? StretchTxEmpty : AcquireByte;
 
           // Clear whichever stretch was requested.
           stretch_stop_tx_clr = stretch_en_addr_tx_i;
