@@ -1508,8 +1508,6 @@
 
             - Configure clkmgr to randomly turn off one of the IP's clock and check alert_handler
               won't trigger a ping timeout error on that block.
-            - Trigger fatal alerts in an IP then configure clkmgr to turn off the IP clock. Check
-              the IP's fatal alert resumes after clock is turned back on.
             '''
       stage: V2
       tests: ["chip_sw_alert_handler_lpg_clkoff"]
