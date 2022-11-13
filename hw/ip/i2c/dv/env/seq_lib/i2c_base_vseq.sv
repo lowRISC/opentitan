@@ -68,6 +68,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   int exp_wr_id = 0;
   i2c_item read_txn_q[$];
   int tran_id = 0;
+  int sent_txn_cnt = 0;
 
   // constraints
   constraint addr_c {
@@ -161,7 +162,7 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     solve t_r, tsu_dat, thd_dat before tlow;
     solve t_r                   before t_buf;
-    solve t_f, thigh            before t_sda_unstable, t_sda_interference;			   
+    solve t_f, thigh            before t_sda_unstable, t_sda_interference;
     if (program_incorrect_regs) {
       // force derived timing parameters to be negative (incorrect DUT config)
       tsu_sta == t_r + t_buf + 1;  // negative tHoldStop
@@ -582,7 +583,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endfunction
 
-  // set rw bit based on cfg rd/wr pct
+  // Set rw bit based on cfg rd/wr pct
   function bit get_read_write();
     bit rw;
     randcase
@@ -605,7 +606,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       // polling status.acqempty == 0
       csr_rd(.ptr(ral.status.acqempty), .value(read_data));
       if (read_data == 0) begin
-
         // read one entry and compare
         csr_rd(.ptr(ral.acqdata), .value(read_data));
         `uvm_info("process_acq", $sformatf("acq data %x", read_data), UVM_MEDIUM)
@@ -630,9 +630,7 @@ class i2c_base_vseq extends cip_base_vseq #(
     int rd_txfifo_timeout_ns = 50_000;
 
     wait(cfg.m_i2c_agent_cfg.sent_rd_byte > 0);
- 
-     
-     forever begin
+    forever begin
       @(cfg.m_i2c_agent_cfg.vif.cb);
       if (read_rcvd.size() > 0) begin
         read_size = read_rcvd.pop_front();
@@ -654,6 +652,90 @@ class i2c_base_vseq extends cip_base_vseq #(
       end
     end
   endtask
+
+  // Slow acq fifo read to create acq fifo full
+  task process_slow_acq();
+    uvm_reg_data_t read_data;
+    i2c_item obs;
+    bit is_read;
+    bit acq_fifo_empty = 1;
+    int delay;
+    string id = "process_slow_acq";
+
+    wait(cfg.sent_acq_cnt > 0);
+
+    while (cfg.sent_acq_cnt != cfg.rcvd_acq_cnt ||
+           acq_fifo_empty == 0) begin
+
+      delay = $urandom_range(50, 100);
+
+      // Assuming interval between each byte is 6.2us
+      #(delay * 1us);
+
+      // polling status.acqempty == 0
+      csr_rd(.ptr(ral.status.acqempty), .value(acq_fifo_empty));
+
+      if (!acq_fifo_empty) begin
+        // read one entry and compare
+        csr_rd(.ptr(ral.acqdata), .value(read_data));
+        `uvm_info(id, $sformatf("acq data %x", read_data), UVM_MEDIUM)
+        `uvm_create_obj(i2c_item, obs);
+        obs = acq2item(read_data);
+        obs.tran_id = cfg.rcvd_acq_cnt++;
+        p_sequencer.target_mode_wr_obs_port.write(obs);
+      end else begin // if (read_data == 0)
+        cfg.clk_rst_vif.wait_clks(1);
+        `uvm_info(id, $sformatf("acq_dbg: sent:%0d rcvd:%0d acq_is_empty",
+                                           cfg.sent_acq_cnt, cfg.rcvd_acq_cnt), UVM_HIGH)
+      end
+    end // while (cfg.sent_acq_cnt != cfg.rcvd_acq_cnt ||...
+    `uvm_info(id, "process_end", UVM_MEDIUM)
+  endtask // process_slow_acq
+
+  // Slow tx fifio write to create tx fifo empty
+  task process_slow_txq();
+    uvm_reg_data_t data;
+    int read_size;
+    int rd_txfifo_timeout_ns = 50_000;
+    // indefinite time
+    int tx_empty_timeout_ns = 500_000_000;
+    int delay;
+    string id = "process_slow_txq";
+
+    wait(cfg.m_i2c_agent_cfg.sent_rd_byte > 0);
+
+    while (cfg.m_i2c_agent_cfg.sent_rd_byte != cfg.m_i2c_agent_cfg.rcvd_rd_byte ||
+           sent_txn_cnt < num_trans) begin
+      @(cfg.m_i2c_agent_cfg.vif.cb);
+      if (read_rcvd.size() > 0) begin
+        read_size = read_rcvd.pop_front();
+        `uvm_info(id, $sformatf("proc_txq read_size :%0d", read_size), UVM_HIGH)
+      end
+
+      while (read_size > 0) begin
+        @(cfg.m_i2c_agent_cfg.vif.cb);
+        if ($urandom_range(0, 1) < 1) begin
+          // Wait for intr_state.tx_empty and clear.
+          csr_spinwait(.ptr(ral.intr_state.tx_empty), .exp_data(1'b1),
+                       .timeout_ns(tx_empty_timeout_ns));
+          csr_wr(.ptr(ral.intr_state.tx_empty), .value(1'b1));
+        end
+        if (read_txn_q.size() > 0) begin
+          i2c_item item;
+          //check tx fifo is full
+          csr_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0),
+                       .timeout_ns(rd_txfifo_timeout_ns));
+          `uvm_create_obj(i2c_item, item)
+          item = read_txn_q.pop_front();
+          `uvm_info(id, $sformatf("send rdata:%x", item.wdata), UVM_MEDIUM)
+          csr_wr(.ptr(ral.txdata), .value(item.wdata));
+          read_size--;
+        end
+      end // while (read_size > 0)
+    end // while (cfg.m_i2c_agent_cfg.sent_byte !=...
+    `uvm_info(id, "proc_txq end", UVM_MEDIUM)
+  endtask // process_slow_txq
+
 
   // Create byte transaction (payload) to read or write.
   // Restart can be stuffed in between bytes except first and the last bytes.
@@ -681,7 +763,7 @@ class i2c_base_vseq extends cip_base_vseq #(
         txn.stop = 0;
         txn.read = get_read_write();
         myq.push_back(txn);
-//	cfg.m_i2c_agent_cfg.sent_rd_rs_cnt++; 
+//      cfg.m_i2c_agent_cfg.sent_rd_rs_cnt++;
       end
       `uvm_create_obj(i2c_item, txn)
       txn.drv_type = HostData;
@@ -735,13 +817,13 @@ class i2c_base_vseq extends cip_base_vseq #(
 //    if (is_read) begin
 //      read_size = src_q.size();
 //      read_size -= get_rs_read_cnt(src_q);
-       read_size = get_read_data_size(src_q, is_read);
+       read_size = get_read_data_size(src_q, is_read, read_rcvd);
       cfg.m_i2c_agent_cfg.sent_rd_byte += read_size;
-       
+
  `JDBG(("read_dbg: push2tx read_size:%0d", read_size))
 //       print_wr_data(src_q);
 //     if(read_size > 0) begin
-// 	read_rcvd = fill_read_rcvd(src_q, is_read);	
+//      read_rcvd = fill_read_rcvd(src_q, is_read);
 //     end
 //    end
     // Data
@@ -807,8 +889,8 @@ class i2c_base_vseq extends cip_base_vseq #(
           end
           dst_q.push_back(txn);
           read_txn_q.push_back(read_txn);
-//	   cfg.m_i2c_agent_cfg.sent_rd_byte++;
- 
+//         cfg.m_i2c_agent_cfg.sent_rd_byte++;
+
         end else begin
           `downcast(exp_txn, txn.clone());
           // Add RS transaction to driver only
@@ -837,23 +919,28 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endfunction
 
-  function int get_read_data_size(i2c_item myq[$], bit is_read);
-     int cnt = 0;
-     int per_cmd_cnt = 0;
-     
-     for (int i = 0; i < myq.size(); i++) begin
-	if (myq[i].rstart) is_read = myq[i].read;
-	if (is_read & !myq[i].rstart) begin
-	   cnt++;
-	   per_cmd_cnt++;	   
-	end else begin
-	   if (per_cmd_cnt > 0) begin
-	      read_rcvd.push_back(per_cmd_cnt);
-	      per_cmd_cnt = 0;
-	   end
-	end
-     end // for (int i = 0; i < myq.size(); i++)
-     `JDBG(("assa read q %p", read_rcvd))
-     return cnt;
+  // Scan i2c_item q and count total byte of read data.
+  // Also store read data per commmand to rcvd q.
+  function int get_read_data_size(i2c_item myq[$], bit is_read, ref int rcvd[$]);
+    int cnt = 0;
+    int per_cmd_cnt = 0;
+
+    for (int i = 0; i < myq.size(); i++) begin
+      if (myq[i].rstart) is_read = myq[i].read;
+      if (is_read & !myq[i].rstart) begin
+        cnt++;
+        per_cmd_cnt++;
+      end else begin
+        if (per_cmd_cnt > 0) begin
+          rcvd.push_back(per_cmd_cnt);
+          per_cmd_cnt = 0;
+        end
+      end
+    end // for (int i = 0; i < myq.size(); i++)
+    if (per_cmd_cnt > 0) begin
+      rcvd.push_back(per_cmd_cnt);
+      per_cmd_cnt = 0;
+    end
+    return cnt;
   endfunction
 endclass : i2c_base_vseq

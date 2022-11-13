@@ -6,9 +6,7 @@
 class i2c_target_smoke_vseq extends i2c_base_vseq;
   `uvm_object_utils(i2c_target_smoke_vseq)
   `uvm_object_new
- 
-  int sent_txn_cnt = 0;
-   
+
   constraint timing_val_c {
     thigh   inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
     t_r     inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
@@ -20,7 +18,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
 
     solve t_r, tsu_dat, thd_dat before tlow;
     solve t_r                   before t_buf;
-    solve t_f, thigh            before t_sda_unstable, t_sda_interference;			   
+    solve t_f, thigh            before t_sda_unstable, t_sda_interference;
     if (program_incorrect_regs) {
       // force derived timing parameters to be negative (incorrect DUT config)
       tsu_sta == t_r + t_buf + 1;  // negative tHoldStop
@@ -45,7 +43,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
     }
   }
 
-    
+
   virtual task body();
     i2c_target_base_seq m_i2c_host_seq;
     i2c_item txn_q[$];
@@ -63,7 +61,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
           if (i > 0) begin
             // wait for previous stop before program a new timing param.
             wait(cfg.m_i2c_agent_cfg.got_stop);
-	     cfg.m_i2c_agent_cfg.got_stop = 0;	     
+             cfg.m_i2c_agent_cfg.got_stop = 0;
           end
           program_registers();
 
@@ -71,7 +69,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
           create_txn(txn_q);
           fetch_txn(txn_q, m_i2c_host_seq.req_q);
           m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
-	  sent_txn_cnt++;	   
+          sent_txn_cnt++;
         end
       end
       begin

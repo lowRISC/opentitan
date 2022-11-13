@@ -138,7 +138,7 @@
     {
       name: i2c_target_stretch
       uvm_test_seq: i2c_target_stretch_vseq
-      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=10_000_000"]
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=80_000_000"]
     }
   ]
 
@@ -147,6 +147,10 @@
     {
        name: smoke
        tests: ["i2c_host_smoke"]
+    }
+    {
+       name: babo
+       tests: ["i2c_target_smoke", "i2c_target_stress_wr", "i2c_target_stress_rd", "i2c_target_stretch"]
     }
   ]
 }
