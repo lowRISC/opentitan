@@ -15,7 +15,7 @@ class entropy_src_fw_ov_test extends entropy_src_base_test;
     cfg.rng_ignores_backpressure            = 1;
 
     cfg.dut_cfg.boot_mode_retry_limit       = 10;
-    cfg.sim_duration                        = 10ms;
+    cfg.sim_duration                        = 5ms;
     cfg.hard_mtbf                           = 100s;
     cfg.mean_rand_reconfig_time             = 1ms;
     cfg.mean_rand_csr_alert_time            = 2ms;
@@ -40,8 +40,8 @@ class entropy_src_fw_ov_test extends entropy_src_base_test;
 
     cfg.dut_cfg.entropy_data_reg_enable_pct = 50;
     cfg.dut_cfg.route_software_pct          = 50;
-    cfg.otp_en_es_fw_read_pct               = 50;
-    cfg.otp_en_es_fw_read_inval_pct         = 25;
+    cfg.otp_en_es_fw_read_pct               = 33;
+    cfg.otp_en_es_fw_read_inval_pct         = 33;
     // Always allow FW override for this test
     cfg.otp_en_es_fw_over_pct               = 100;
 
