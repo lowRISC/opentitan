@@ -346,15 +346,13 @@ In both cases, the `trans_complete` interrupt is asserted, in the beginning of a
 
 
 #### Target Mode
-If an I2C target receives a START signal followed by an address and R/W = 1 (read), accepts a read transaction and its TX FIFO is empty, the interrupt `tx_empty` is asserted to inform firmware.
-The interrupt `tx_empty` is asserted also when a target keeps transmitting data on the bus and needs more data, but TX FIFO is empty.
+The interrupt `tx_empty` is asserted whenever target intends to transmit data on the bus but the TX FIFO is empty.
 
 If a target receives a STOP or repeated START signal and there are extra bytes left in TX FIFO, the interrupt `tx_nonempty` is asserted and the FIFO is flushed.
 
 When a host receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a repeated START.
 In a case when a target receives an ACK and then a STOP/START, the interrupt `ack_stop` is asserted.
 
-If TX FIFO receives an additional write request when its FIFO is full, the interrupt `tx_overflow` is asserted.
 If ACQ FIFO becomes full, the interrupt `acq_full` is asserted.
 
 If a host ceases to send SCL pulses at any point during an ongoing transaction, the target waits for a specified time period and then asserts the interrupt `host_timeout`.
@@ -365,7 +363,7 @@ Firmware can configure the timeout value via the register {{< regref HOST_TIMEOU
 ### Implementation Details: Format Flag Parsing
 
 To illustrate the behavior induced by various flags added to the formatting queue, the following figure shows a simplified version of the I2C_Host state machine.
-In this simplified view, many sequential states have been collapsed into four sub-sequences of states (shown in square brackets):
+In this simplified view, many sequential states have been collapsed into four sub-sequences of states (shown in square brackets) or have their names abbreviated:
 - Issue start
 - Issue stop
 - Transmit Byte
