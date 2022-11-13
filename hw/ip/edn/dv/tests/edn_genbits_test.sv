@@ -15,7 +15,7 @@ class edn_genbits_test extends edn_base_test;
     cfg.min_num_boot_reqs = 1;
     cfg.max_num_boot_reqs = 4;
     cfg.min_num_ep_reqs   = 4;
-    cfg.max_num_ep_reqs   = 16;
+    cfg.max_num_ep_reqs   = 64;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_HIGH)
