@@ -15,6 +15,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
@@ -81,24 +82,6 @@ const keymgr_binding_value_t kBindingValueBl0 = {
 };
 
 /**
- * Key manager Creator Secret stored in info flash page.
- */
-const uint32_t kCreatorSecret[kSecretWordSize] = {
-    0x4e919d54, 0x322288d8, 0x4bd127c7, 0x9f89bc56, 0xb4fb0fdf, 0x1ca1567b,
-    0x13a0e876, 0xa6521d8f, 0xbebf6301, 0xd10879a1, 0x69797afb, 0x5f295405,
-    0x444a8511, 0xe7bb2fa5, 0xd570c0a3, 0xf15f82e5,
-};
-
-/**
- * Key manager Owner Secret stored in info flash page.
- */
-const uint32_t kOwnerSecret[kSecretWordSize] = {
-    0xf15f82e5, 0xd570c0a3, 0xe7bb2fa5, 0x444a8511, 0x5f295405, 0x69797afb,
-    0xd10879a1, 0xbebf6301, 0xa6521d8f, 0x13a0e876, 0x1ca1567b, 0xb4fb0fdf,
-    0x9f89bc56, 0x4bd127c7, 0x322288d8, 0x4e919d54,
-};
-
-/**
  * Kmac prefix "KMAC" with empty custom string
  */
 const uint32_t kKmacPrefix[kKmacPrefixSize] = {
@@ -115,22 +98,6 @@ OTTF_DEFINE_TEST_CONFIG();
 
 static dif_flash_ctrl_state_t flash;
 
-static void write_info_page(dif_flash_ctrl_state_t *flash, uint32_t page_id,
-                            const uint32_t *data) {
-  uint32_t address = flash_ctrl_testutils_info_region_setup(
-      flash, page_id, kFlashInfoBankId, kFlashInfoPartitionId);
-
-  CHECK(flash_ctrl_testutils_erase_and_write_page(
-      flash, address, kFlashInfoPartitionId, data,
-      kDifFlashCtrlPartitionTypeInfo, kSecretWordSize));
-
-  uint32_t readback_data[kSecretWordSize];
-  CHECK(flash_ctrl_testutils_read(flash, address, kFlashInfoPartitionId,
-                                  readback_data, kDifFlashCtrlPartitionTypeInfo,
-                                  kSecretWordSize, 0));
-  CHECK_ARRAYS_EQ(data, readback_data, kSecretWordSize);
-}
-
 static void init_flash(void) {
   dif_flash_ctrl_state_t flash;
 
@@ -138,8 +105,7 @@ static void init_flash(void) {
       &flash, mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
 
   // Initialize flash secrets.
-  write_info_page(&flash, kFlashInfoPageIdCreatorSecret, kCreatorSecret);
-  write_info_page(&flash, kFlashInfoPageIdOwnerSecret, kOwnerSecret);
+  keymgr_testutils_flash_init(&flash, &kCreatorSecret, &kOwnerSecret);
 }
 
 /** Place kmac into sideload mode for correct keymgr operation */
