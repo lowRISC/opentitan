@@ -662,6 +662,11 @@
         "rom_e2e_sigverify_always_a_bad_b_nothing_prod",
         "rom_e2e_sigverify_always_a_bad_b_nothing_prod_end",
         "rom_e2e_sigverify_always_a_bad_b_nothing_rma",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_test_unlocked0",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_dev",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_prod",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_prod_end",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_rma",
       ]
     }
 
