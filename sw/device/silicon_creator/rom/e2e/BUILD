@@ -1635,32 +1635,23 @@ test_suite(
     ],
 )
 
-ALL_OTP_CFGS_EXEC_DISABLED = [
-    "test_unlocked0",
-    "dev",
-    "rma",
-    "prod",
-    "prod_end",
-]
-
-# Apply an overlay that disables ROM execution on top of the base OTP configs
-# derived from `ALL_OTP_CFGS_EXEC_DISABLED`.
+# Apply an overlay that disables ROM execution on top of the base OTP configs.
 [
     otp_image(
-        name = "img_{}_exec_disabled".format(otp_name),
-        src = "//hw/ip/otp_ctrl/data:otp_json_" + otp_name,
+        name = "img_{}_exec_disabled".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data:otp_json_" + lc_state,
         overlays = STD_OTP_OVERLAYS + ["//hw/ip/otp_ctrl/data:otp_json_exec_disabled"],
         visibility = ["//visibility:private"],
     )
-    for otp_name in ALL_OTP_CFGS_EXEC_DISABLED
+    for lc_state, _ in get_lc_items()
 ]
 
 # Splice each execution-disabled OTP image into the ROM bitstream.
 [
     bitstream_splice(
-        name = "rom_otp_{}_exec_disabled".format(otp_name),
+        name = "rom_otp_{}_exec_disabled".format(lc_state),
         src = "//hw/bitstream:rom",
-        data = "img_{}_exec_disabled".format(otp_name),
+        data = "img_{}_exec_disabled".format(lc_state),
         meminfo = "//hw/bitstream:otp_mmi",
         tags = [
             "manual",
@@ -1669,7 +1660,7 @@ ALL_OTP_CFGS_EXEC_DISABLED = [
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )
-    for otp_name in ALL_OTP_CFGS_EXEC_DISABLED
+    for lc_state, _ in get_lc_items()
 ]
 
 SRAM_JTAG_INJECTION_GDB_SCRIPT = """
