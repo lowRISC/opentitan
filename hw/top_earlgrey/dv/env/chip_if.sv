@@ -226,7 +226,8 @@ interface chip_if;
 
   spi_if spi_device0_if(
     .rst_n(`SPI_HOST_HIER(0).rst_ni),
-    .sio  (dios[top_earlgrey_pkg::DioPadSpiHostD3:top_earlgrey_pkg::DioPadSpiHostD0])
+    .sio  (dios[top_earlgrey_pkg::DioPadSpiHostD3:
+                top_earlgrey_pkg::DioPadSpiHostD0])
   );
 
   assign spi_device0_if.sck = __enable_spi_device[0] ?
@@ -246,8 +247,10 @@ interface chip_if;
   // Functional (muxed) interface: SPI device 1 interface (receives traffic from the chip).
   spi_if spi_device1_if(
     .rst_n(`SPI_HOST_HIER(1).rst_ni),
-    .sio  ({mios[top_earlgrey_pkg::MioPadIob3], mios[top_earlgrey_pkg::MioPadIob3],
-            mios[top_earlgrey_pkg::MioPadIob3], mios[top_earlgrey_pkg::MioPadIob2]})
+    .sio  ({mios[top_earlgrey_pkg::MioPadIob6],  // sio[3]
+            mios[top_earlgrey_pkg::MioPadIob5],  // sio[2]
+            mios[top_earlgrey_pkg::MioPadIob4],  // sio[1]
+            mios[top_earlgrey_pkg::MioPadIob3]}) // sio[0]
   );
 
   assign spi_device1_if.sck = __enable_spi_device[1] ?
@@ -267,7 +270,7 @@ interface chip_if;
   // Enables tb spi_device, which connects to dut spi_host
   function automatic void enable_spi_device(int inst_num, bit enable);
     `DV_CHECK_FATAL(inst_num inside {[0:NUM_SPI_HOSTS-1]}, , MsgId)
-    `uvm_info(MsgId, $sformatf("enable spi device"), UVM_LOW)
+    `uvm_info(MsgId, $sformatf("enable spi device %0d", inst_num), UVM_LOW)
     __enable_spi_device[inst_num] = enable;
   endfunction : enable_spi_device
 

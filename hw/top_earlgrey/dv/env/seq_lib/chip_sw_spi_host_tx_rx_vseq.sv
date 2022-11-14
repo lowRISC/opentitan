@@ -10,10 +10,15 @@ class chip_sw_spi_host_tx_rx_vseq extends chip_sw_base_vseq;
   rand int spi_host_idx;
 
   constraint spi_host_idx_c {
-    spi_host_idx inside {[0 : 0]};
+    spi_host_idx inside {[0:NUM_SPI_HOSTS-1]};
   }
 
   task pre_start();
+    // Use plusarg '+spi_host_idx' to choose a spi_host instance explicitly
+    // if required, otherwise one will be chosen randomly.
+    void'($value$plusargs("spi_host_idx=%0d", spi_host_idx));
+    `DV_CHECK_FATAL(spi_host_idx inside {[0:NUM_SPI_HOSTS-1]})
+
     // Select the first Csb for communication.
     cfg.m_spi_device_agent_cfgs[spi_host_idx].csid = '0;
 
@@ -36,24 +41,29 @@ class chip_sw_spi_host_tx_rx_vseq extends chip_sw_base_vseq;
     super.pre_start();
   endtask
 
+  virtual task cpu_init();
+    // sw_symbol_backdoor_overwrite takes an array as the input
+    bit [7:0] spi_host_idx_data[] = {spi_host_idx};
+
+    super.cpu_init();
+    sw_symbol_backdoor_overwrite("kSPIHostIdx", spi_host_idx_data);
+  endtask
+
   virtual task body();
     spi_device_seq m_device_seq;
     super.body();
-    `uvm_info(`gfn, $sformatf("Testing with spi host %d", spi_host_idx), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("Testing with spi host %0d", spi_host_idx), UVM_LOW)
 
     // enable spi agent
-    cfg.chip_vif.enable_spi_device(spi_host_idx, 1);
+    cfg.chip_vif.enable_spi_device(.inst_num(spi_host_idx), .enable(1));
 
+    // Wait for the sw to finish configuring the spi_host DUT
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "spi host configuration complete",
              "Timedout waiting for spi host c configuration.")
 
     // create and start the spi_device sequence
     m_device_seq = spi_device_seq::type_id::create("m_device_seq");
-
-    fork begin
-       m_device_seq.start(p_sequencer.spi_device_sequencer_hs[spi_host_idx]);
-    end
-    join_none
+    fork m_device_seq.start(p_sequencer.spi_device_sequencer_hs[spi_host_idx]); join_none
   endtask
 
 
