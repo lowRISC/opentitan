@@ -459,6 +459,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           for (int i = 0; i < cs_item[app].glen; i++) begin
             `DV_CHECK_EQ_FATAL(cs_item[app].genbits_q[i], prd_genbits_q[app][i])
           end
+          // Deletes the predicted genbits before the next comparison.
+          prd_genbits_q[app].delete();
         end
         UNI: begin
           ctr_drbg_uninstantiate(app);
