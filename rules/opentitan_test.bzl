@@ -249,7 +249,7 @@ def opentitan_functest(
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         slot = "silicon_creator_a",
         test_harness = "@//sw/host/opentitantool",
-        key = "test_key_0",
+        key = "prod_key_0",
         logging = "info",
         dv = None,
         verilator = None,
