@@ -33,8 +33,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   rand bit       check_int_state, regwen, hw_app[NUM_HW_APPS],
                  sw_app, aes_halt;
   rand mubi4_t   enable, sw_app_enable, read_int_state;
-  rand lc_tx_t   lc_hw_debug_en;
-  rand mubi8_t   otp_en_cs_sw_app_read;
+  rand bit [3:0] lc_hw_debug_en;
+  rand bit [7:0] otp_en_cs_sw_app_read;
 
   rand fatal_err_e      which_fatal_err;
   rand err_code_e       which_err_code;
@@ -199,10 +199,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     string str = "";
     str = {str, "\n"};
     str = {str,  $sformatf("\n\t |**************** csrng_env_cfg *******************| \t")};
-    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read     : %10s *****| \t",
-           otp_en_cs_sw_app_read.name())};
-    str = {str,  $sformatf("\n\t |***** lc_hw_debug_en            : %10s *****| \t",
-           lc_hw_debug_en.name())};
+    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read     :       'h%02h *****| \t",
+           otp_en_cs_sw_app_read)};
+    str = {str,  $sformatf("\n\t |***** lc_hw_debug_en            :       'h%02h *****| \t",
+           lc_hw_debug_en)};
     str = {str,  $sformatf("\n\t |***** enable                    : %10s *****| \t",
            enable.name())};
     str = {str,  $sformatf("\n\t |***** sw_app_enable             : %10s *****| \t",
