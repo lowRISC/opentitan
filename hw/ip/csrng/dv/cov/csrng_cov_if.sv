@@ -31,7 +31,11 @@ interface csrng_cov_if (
     option.name         = "csrng_cfg_cg";
     option.per_instance = 1;
 
-    cp_sw_app_read:    coverpoint otp_en_cs_sw_app_read;
+    cp_sw_app_read:    coverpoint otp_en_cs_sw_app_read {
+      bins mubi_true  = { MuBi8True };
+      bins mubi_false = { MuBi8False };
+      bins mubi_inval = {[0:$]} with (!(item inside {MuBi8True, MuBi8False}));
+    }
     cp_sw_app_enable:  coverpoint sw_app_enable;
     cp_read_int_state: coverpoint read_int_state;
     cp_regwen:         coverpoint regwen;
