@@ -24,6 +24,7 @@ interface csrng_cov_if (
   assign en_intg_cov_loc = en_full_cov | en_intg_cov;
 
   covergroup csrng_cfg_cg with function sample(bit [7:0] otp_en_cs_sw_app_read,
+                                               bit [3:0] lc_hw_debug_en,
                                                mubi4_t   sw_app_enable,
                                                mubi4_t   read_int_state,
                                                bit       regwen
@@ -35,6 +36,11 @@ interface csrng_cov_if (
       bins mubi_true  = { MuBi8True };
       bins mubi_false = { MuBi8False };
       bins mubi_inval = {[0:$]} with (!(item inside {MuBi8True, MuBi8False}));
+    }
+    cp_lc_hw_debug_en: coverpoint lc_hw_debug_en {
+      bins lc_on    = { lc_ctrl_pkg::On };
+      bins lc_off   = { lc_ctrl_pkg::Off };
+      bins lc_inval = {[0:$]} with (!(item inside {lc_ctrl_pkg::On, lc_ctrl_pkg::Off}));
     }
     cp_sw_app_enable:  coverpoint sw_app_enable;
     cp_read_int_state: coverpoint read_int_state;
@@ -171,6 +177,7 @@ interface csrng_cov_if (
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(csrng_env_cfg cfg);
     csrng_cfg_cg_inst.sample(cfg.otp_en_cs_sw_app_read,
+                              cfg.lc_hw_debug_en,
                               cfg.sw_app_enable,
                               cfg.read_int_state,
                               cfg.regwen
