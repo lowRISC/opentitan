@@ -48,16 +48,13 @@
       tests: ["csrng_alert"]
     }
     {
-      // TODO: This is currently untested.
-      // The environment has support for randomly driving MuBi8False to otp_en_csrng_sw_app_read but always MuBi8True is driven.
-      // In addition, the environment needs to be extended to drive also non-valid encodings (see entropy_src).
       name: sec_cm_intersig_mubi
       desc: '''
             Verify the countermeasure(s) INTERSIG.MUBI.
             Verify that unless the otp_en_csrng_sw_app_read input signal is equal to MuBi8True and CTRL.SW_APP_ENABLE or CTRL.READ_INT_STATE is set to kMultiBitBool4True the DUT doesn't allow reading the genbits or the internal state from the GENBITS or INT_STATE_VAL register, respectively.
             '''
       stage: V2S
-      tests: []
+      tests: ["csrng_stress_all"]
     }
     {
       name: sec_cm_main_sm_fsm_sparse
@@ -166,7 +163,6 @@
       tests: ["csrng_intr", "csrng_err"]
     }
     {
-      // TODO: The environment needs to be extended to drive also non-valid encodings (see INTERSIG.MUBI).
       name: sec_cm_constants_lc_gated
       desc: '''
             Verify the countermeasure(s) CONSTANTS.LC_GATED.
