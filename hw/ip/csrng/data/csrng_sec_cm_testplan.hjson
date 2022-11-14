@@ -151,9 +151,6 @@
       tests: ["csrng_alert"]
     }
     {
-      // TODO: This is currently untested.
-      // Also update the documentation to clarify that a mismatch in any of the hardened counters triggers local escalation (not just the Generate command counter).
-      // Also update the documentation to clarify that all counter errors (not just the Generate command counter) are collected in ERR_CODE.CMD_GEN_CNT_ERR.
       name: sec_cm_main_sm_ctr_local_esc
       desc: '''
             Verify the countermeasure(s) MAIN_SM.CTR.LOCAL_ESC.

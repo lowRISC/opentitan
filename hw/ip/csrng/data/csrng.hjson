@@ -633,7 +633,7 @@
         { bits: "26",
           name: "CMD_GEN_CNT_ERR",
           desc: '''
-                This bit will be set to one when a Generate command counter fatal error
+                This bit will be set to one when a mismatch in any of the hardened counters
                 has been detected.
                 This error will signal a fatal alert, and also
                 an interrupt if enabled.
