@@ -207,6 +207,102 @@ opentitan_functest(
     ],
 )
 
+opentitan_flash_binary(
+    name = "rom_e2e_keymgr_init_test",
+    srcs = [":rom_e2e_keymgr_init_test.c"],
+    deps = [
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+rom_e2e_keymgr_init_configs = [
+    {
+        "name": "rom_ext_meas",
+        "value": CONST.TRUE,
+    },
+    {
+        "name": "rom_ext_no_meas",
+        "value": CONST.FALSE,
+    },
+    {
+        "name": "rom_ext_invalid_meas",
+        "value": 0,
+    },
+]
+
+[
+    otp_json(
+        name = "otp_json_keymgr_{}".format(config["name"]),
+        partitions = [
+            otp_partition(
+                name = "OWNER_SW_CFG",
+                items = {
+                    "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": hex(config["value"]),
+                },
+            ),
+        ],
+    )
+    for config in rom_e2e_keymgr_init_configs
+]
+
+[
+    otp_image(
+        name = "otp_img_keymgr_{}".format(config["name"]),
+        src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+        overlays = STD_OTP_OVERLAYS + [":otp_json_keymgr_{}".format(config["name"])],
+        visibility = ["//visibility:private"],
+    )
+    for config in rom_e2e_keymgr_init_configs
+]
+
+[
+    bitstream_splice(
+        name = "bitstream_keymgr_{}".format(config["name"]),
+        src = "//hw/bitstream:rom",
+        data = ":otp_img_keymgr_{}".format(config["name"]),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = ["vivado"],
+        visibility = ["//visibility:private"],
+    )
+    for config in rom_e2e_keymgr_init_configs
+]
+
+[
+    opentitan_functest(
+        name = "rom_e2e_keymgr_init_{}".format(config["name"]),
+        cw310 = cw310_params(
+            bitstream = ":bitstream_keymgr_{}".format(config["name"]),
+            tags = ["vivado"],
+        ),
+        dv = dv_params(
+            otp = ":otp_img_keymgr_{}".format(config["name"]),
+            rom = "//sw/device/silicon_creator/rom",
+        ),
+        ot_flash_binary = ":rom_e2e_keymgr_init_test",
+        targets = [
+            "cw310_rom",
+            "dv",
+            "verilator",
+        ],
+        verilator = verilator_params(
+            timeout = "eternal",
+            otp = ":otp_img_keymgr_{}".format(config["name"]),
+            rom = "//sw/device/silicon_creator/rom",
+        ),
+    )
+    for config in rom_e2e_keymgr_init_configs
+]
+
+test_suite(
+    name = "keymgr_init",
+    tags = ["manual"],
+    tests = ["rom_e2e_keymgr_init"] + ["rom_e2e_keymgr_init_{}".format(config["name"]) for config in rom_e2e_keymgr_init_configs],
+)
+
 opentitan_functest(
     name = "rom_e2e_c_init",
     srcs = ["rom_e2e_c_init_test.c"],
