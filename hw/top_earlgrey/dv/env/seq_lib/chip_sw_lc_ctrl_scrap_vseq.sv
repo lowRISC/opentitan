@@ -1,13 +1,12 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_base_vseq;
-  `uvm_object_utils(chip_sw_lc_ctrl_scrap_vseq)
+class chip_sw_lc_ctrl_raw_to_scrap_vseq extends chip_sw_base_vseq;
+  `uvm_object_utils(chip_sw_lc_ctrl_raw_to_scrap_vseq)
 
   `uvm_object_new
 
-  rand bit [7:0] lc_exit_token[TokenWidthByte];
-  rand bit [7:0] lc_unlock_token[TokenWidthByte];
+  protected bit _end_of_test = 1'b0;
 
   virtual task pre_start();
     cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
@@ -16,16 +15,18 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_base_vseq;
 
   virtual function void backdoor_override_otp();
     // Override the LC partition to TestLocked1 state.
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStTestLocked1);
-
-
-    // Override the test exit token to match SW test's input token.
-    cfg.mem_bkdr_util_h[Otp].otp_write_secret0_partition(
-        .unlock_token(dec_otp_token_from_lc_csrs(lc_unlock_token)),
-        .exit_token(dec_otp_token_from_lc_csrs(lc_exit_token)));
+    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStRaw);
   endfunction
 
   virtual task dut_init(string reset_kind = "HARD");
+    // setting 'expect_fatal_alert' = 1 will trigger a dut_init at the end of the test
+    // which will change the SW logger from pass/fail to reset, which will result in a uvm error
+    // when entering the cleanup phases of the sequence
+    // so if we're at the end of the sequence, don't perform dut_init
+    if (_end_of_test) begin
+      return;
+    end
+
     super.dut_init(reset_kind);
     backdoor_override_otp();
   endtask
@@ -47,14 +48,9 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_base_vseq;
         backdoor_override_otp();
       end
 
-      // In this test, LC_CTRL will enter the TestLocked state which only allows TAP selection once
-      // per boot. Because testbench does not know the exact time when TAP selection happens, we
-      // continuously issue LC JTAG read until it returns valid value.
-      // In the meantime, TAP selection could happen in between a transaction and might return an
-      // error. This error is permitted and can be ignored.
       wait_lc_ready(.allow_err(1));
 
-      jtag_lc_state_transition(DecLcStTestLocked1, DecLcStScrap);
+      jtag_lc_state_transition(DecLcStRaw, DecLcStScrap);
 
       // LC state transition requires a chip reset.
       `uvm_info(`gfn, $sformatf("Applying reset after lc transition for trans %d", trans_i),
@@ -69,7 +65,7 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_base_vseq;
                                           p_sequencer.jtag_sequencer_h,
                                           state);
 
-      `DV_CHECK_EQ(state, DecLcStScrap)
+      `DV_CHECK_EQ(state, {6{DecLcStScrap}})
     end
   endtask : body
 
@@ -77,8 +73,22 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_base_vseq;
   	// once in SCRAP mode, the CPU can't execute any SW code, so
   	// we don't expect the SW to be done
   	// so we shutdown the device, and then override the test exit from here
-  	override_test_status_and_finish(.passed(1));
+    override_test_status_and_finish(.passed(1));
 
-  	super.post_start();
+    // changing into SCRAP mode fires an alert from OTP controller
+    // but as we expect this, don't check for fatal alerts
+    expect_fatal_alerts = 1'b1;
+
+    // cip_base_vseq::post_start calls `dut_init` when expect_fatal_alerts == 1
+    //
+    // this will change the SW logger status from pass/failed to reset, and will
+    // cause false `uvm_error when checking on the logger status
+    // when the vseq is in its closing stage
+    //
+    // _end_of_test == 1 will prevent this.dut_init from actually performing a reset
+    // and thus will bypass the problem
+    _end_of_test = 1'b1;
+
+    super.post_start();
   endtask : post_start
-endclass : chip_sw_lc_ctrl_scrap_vseq
+endclass : chip_sw_lc_ctrl_raw_to_scrap_vseq
