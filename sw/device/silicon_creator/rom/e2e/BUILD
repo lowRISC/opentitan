@@ -1838,8 +1838,7 @@ test_suite(
 test_suite(
     name = "rom_e2e_epmp_init",
     tags = [
-        "cw310",
-        "vivado",
+        "manual",
     ],
     tests = [
         "epmp_init_otp_" + lc_state.lower()
