@@ -1643,13 +1643,6 @@ ALL_OTP_CFGS_EXEC_DISABLED = [
     "prod_end",
 ]
 
-# Names of OTP configs shared by tests that require execution to be disabled.
-OTP_CFGS_EXEC_DISABLED = [
-    "test_unlocked0",
-    "dev",
-    "rma",
-]
-
 # Apply an overlay that disables ROM execution on top of the base OTP configs
 # derived from `ALL_OTP_CFGS_EXEC_DISABLED`.
 [
@@ -1770,21 +1763,25 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
 
 [
     opentitan_gdb_fpga_cw310_test(
-        name = "sram_program_fpga_cw310_test_otp_" + otp_name,
+        name = "sram_program_fpga_cw310_test_otp_" + lc_state,
         timeout = "short",
         exit_success_pattern = "sram_program\\.c:\\d+\\] PC: 0x100020e0, SRAM: \\[0x10000000, 0x10020000\\)",
         gdb_script = SRAM_JTAG_INJECTION_GDB_SCRIPT,
         gdb_script_symlinks = {
             "//sw/device/examples/sram_program:sram_program_fpga_cw310.elf": "sram_program.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
             "cw310_rom",
             "vivado",
         ],
     )
-    for otp_name in OTP_CFGS_EXEC_DISABLED
+    for lc_state, _ in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+    )
 ]
 
 test_suite(
@@ -1792,7 +1789,14 @@ test_suite(
     tags = [
         "manual",
     ],
-    tests = ["sram_program_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
+    tests = [
+        "sram_program_fpga_cw310_test_otp_" + lc_state
+        for lc_state, _ in get_lc_items(
+            CONST.LCV.TEST_UNLOCKED0,
+            CONST.LCV.DEV,
+            CONST.LCV.RMA,
+        )
+    ],
 )
 
 [
@@ -1956,7 +1960,7 @@ test_suite(
 
 [
     opentitan_gdb_fpga_cw310_test(
-        name = "shutdown_exception_asm_otp_" + otp_name,
+        name = "shutdown_exception_asm_otp_" + lc_state,
         timeout = "short",
         gdb_expect_output_sequence = [
             ":::: About to reset.",
@@ -1991,20 +1995,31 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
             "cw310_rom",
             "vivado",
-        ] + maybe_skip_in_ci(structs.to_dict(CONST.LCV)[otp_name.upper()]),
+        ] + maybe_skip_in_ci(lc_state_val),
     )
-    for otp_name in OTP_CFGS_EXEC_DISABLED
+    for lc_state, lc_state_val in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+    )
 ]
 
 test_suite(
     name = "rom_e2e_shutdown_exception_asm",
     tags = ["manual"],
-    tests = ["shutdown_exception_asm_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
+    tests = [
+        "shutdown_exception_asm_otp_" + lc_state
+        for lc_state, _ in get_lc_items(
+            CONST.LCV.TEST_UNLOCKED0,
+            CONST.LCV.DEV,
+            CONST.LCV.RMA,
+        )
+    ],
 )
 
 # Ensure that the watchdog restarts the ROM even when the bite threshold has
@@ -2871,7 +2886,7 @@ test_suite(
 
 [
     opentitan_gdb_fpga_cw310_test(
-        name = "rom_e2e_debug_test_otp_" + otp_name,
+        name = "rom_e2e_debug_test_otp_" + lc_state,
         timeout = "short",
         exit_success_pattern = "OK!GDB-OK(?s:.*)BFV:0142500d",
         gdb_expect_output_sequence = [
@@ -2992,23 +3007,31 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
             "cw310_rom",
             "exclusive",
             "vivado",
-        ] + maybe_skip_in_ci(structs.to_dict(CONST.LCV)[otp_name.upper()]),
+        ] + maybe_skip_in_ci(lc_state_val),
     )
-    for otp_name in OTP_CFGS_EXEC_DISABLED
+    for lc_state, lc_state_val in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+    )
 ]
 
 test_suite(
     name = "rom_e2e_debug_test",
     tags = ["manual"],
     tests = [
-        "rom_e2e_debug_test_otp_" + otp_name
-        for otp_name in OTP_CFGS_EXEC_DISABLED
+        "rom_e2e_debug_test_otp_" + lc_state
+        for lc_state, _ in get_lc_items(
+            CONST.LCV.TEST_UNLOCKED0,
+            CONST.LCV.DEV,
+            CONST.LCV.RMA,
+        )
     ],
 )
 
