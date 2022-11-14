@@ -2971,7 +2971,7 @@ test_suite(
             "cw310_rom",
             "exclusive",
             "vivado",
-        ],
+        ] + maybe_skip_in_ci(structs.to_dict(CONST.LCV)[otp_name.upper()]),
     )
     for otp_name in OTP_CFGS_EXEC_DISABLED
 ]
