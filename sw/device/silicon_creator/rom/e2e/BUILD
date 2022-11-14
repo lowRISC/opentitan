@@ -1989,9 +1989,6 @@ test_suite(
     tests = ["shutdown_exception_asm_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
 )
 
-# Dict that also includes an invalid redaction value for test purposes.
-REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
-
 # Ensure that the watchdog restarts the ROM even when the bite threshold has
 # been artificially inflated.
 [
@@ -2145,6 +2142,9 @@ test_suite(
 )
 
 # Shutdown Redact Test
+
+# Dict that also includes an invalid redaction value for test purposes.
+REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
 
 REDACT.update({"INVALID": 0x0})
 
