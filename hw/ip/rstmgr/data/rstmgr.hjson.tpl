@@ -6,7 +6,14 @@
   crash_dump_srcs = ['alert', 'cpu']
   # long term change this to a method where the generating function
   # can query the pwrmgr for how many internal resets it has
-  total_hw_resets = num_rstreqs+3
+  peri_hw_resets = len(reqs["peripheral"])
+  pwrmgr_hw_resets = len(reqs["int"])
+  debug_hw_resets = len(reqs["debug"])
+  total_hw_resets = peri_hw_resets + \
+                    pwrmgr_hw_resets + \
+                    debug_hw_resets
+  # por / low power exit / sw reset / hw resets
+  total_resets = total_hw_resets + 3
 %>
 
 # RSTMGR register template
@@ -79,7 +86,7 @@
     },
 
     { name: "NumHwResets",
-      desc: "Number of hardware reset requests, inclusive of pwrmgr's 2 internal resets",
+      desc: "Number of hardware reset requests, inclusive of debug resets and pwrmgr's internal resets ",
       type: "int",
       default: "${total_hw_resets}",
       local: "true"
@@ -89,6 +96,13 @@
       desc: "Number of software resets",
       type: "int",
       default: "${len(sw_rsts)}",
+      local: "true"
+    },
+
+    { name: "NumTotalResets",
+      desc: "Number of total reset requests, inclusive of hw/sw, por and low power exit",
+      type: "int",
+      default: "${total_resets}",
       local: "true"
     },
 
@@ -238,8 +252,11 @@
           hwaccess: "hrw",
           name: "HW_REQ",
           desc: '''
-            Indicates when a device has reset due to a peripheral request.
-            This can be an alert escalation, watchdog or anything else.
+            Indicates when a device has reset due to a hardware requested reset.
+            The bit mapping is as follows:
+            % for req in (reqs["peripheral"] + reqs["int"] + reqs["debug"]):
+            b${3 + loop.index}: ${f"{req['module']}: {req['desc']}"}
+            % endfor
             '''
           resval: "0"
         },

@@ -16,21 +16,13 @@ package pwrmgr_pkg;
   // variables referenced only by pwrmgr
   localparam int TotalWakeWidth = pwrmgr_reg_pkg::NumWkups + 2; // Abort and fall through are added
 
-  typedef enum logic [1:0] {
-    IntReqMainPwr,
-    IntReqEsc,
-    IntReqNdm,
-    IntReqLastIdx
-  } pwr_int_rst_req_e;
-
   parameter int NumSwRstReq = 1;
 
   // position of escalation request
-  parameter int HwResetWidth = pwrmgr_reg_pkg::NumRstReqs + int'(IntReqLastIdx);
+  parameter int HwResetWidth = pwrmgr_reg_pkg::NumRstReqs +
+                               pwrmgr_reg_pkg::NumIntRstReqs +
+                               pwrmgr_reg_pkg::NumDebugRstReqs;
   parameter int TotalResetWidth = HwResetWidth + NumSwRstReq;
-  parameter int ResetMainPwrIdx = pwrmgr_reg_pkg::NumRstReqs + int'(IntReqMainPwr);
-  parameter int ResetEscIdx = pwrmgr_reg_pkg::NumRstReqs + int'(IntReqEsc);
-  parameter int ResetNdmIdx = pwrmgr_reg_pkg::NumRstReqs + int'(IntReqNdm);
   parameter int ResetSwReqIdx = TotalResetWidth - 1;
 
   // pwrmgr to ast

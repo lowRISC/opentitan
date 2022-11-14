@@ -100,4 +100,25 @@ package rstmgr_pkg;
     ndmreset_req: '0
   };
 
+  // Enumeration for pwrmgr hw reset inputs
+  localparam int ResetWidths = $clog2(rstmgr_reg_pkg::NumTotalResets);
+  typedef enum logic [ResetWidths-1:0] {
+    ReqPeriResetIdx[0:1],
+    ReqMainPwrResetIdx,
+    ReqEscResetIdx,
+    ReqNdmResetIdx
+  } reset_req_idx_e;
+
+  // Enumeration for reset info bit idx
+  typedef enum logic [ResetWidths-1:0] {
+    InfoPorIdx,
+    InfoLowPowerExitIdx,
+    InfoSwResetIdx,
+    InfoPeriResetIdx[0:1],
+    InfoMainPwrResetIdx,
+    InfoEscResetIdx,
+    InfoNdmResetIdx
+  } reset_info_idx_e;
+
+
 endpackage // rstmgr_pkg
