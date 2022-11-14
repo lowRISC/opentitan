@@ -431,9 +431,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
       .backdoor(1),
       .spinwait_delay_ns(5000));
 
-    // Enable monitor to check the SPI interface.
-    cfg.m_spi_host_agent_cfg.en_monitor = 1;
-
     read_sw_frames(sw_image, sw_byte_q);
 
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_host_sequencer_h)

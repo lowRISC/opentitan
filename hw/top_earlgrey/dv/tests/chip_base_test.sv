@@ -33,15 +33,6 @@ class chip_base_test extends cip_base_test #(
       cfg.clk_freq_mhz = cfg.chip_clock_source;
     end
 
-    // the spi device agents will trigger on any change in csb
-    // and begin looking for transactions.  While this is okay at
-    // block level, it creates problems for top level because
-    // the transition does not necessarily mean anything from
-    // the DUT is driving Csb
-    for (int i = 0; i < chip_common_pkg::NUM_SPI_HOSTS; i++) begin
-      cfg.m_spi_device_agent_cfgs[i].en_monitor = 1'b0;
-    end
-
     // Knob to set the UART baud rate (set to 2M by default).
     void'($value$plusargs("uart_baud_rate=%0d", cfg.uart_baud_rate));
 

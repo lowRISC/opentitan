@@ -145,8 +145,6 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
 
     super.body();
 
-    // Enable the monitor for the agent connected to spi_host0.
-    cfg.m_spi_device_agent_cfgs[0].en_monitor = 1'b1;
     cfg.m_spi_device_agent_cfgs[0].byte_order = '0;
 
     // Set CSB inactive times to reasonable values. sys_clk is at 24 MHz, and
