@@ -113,6 +113,8 @@ class csrng_err_vseq extends csrng_base_vseq;
         cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
       end
       cmd_gen_cnt_err: begin
+        logic [csrng_pkg::StateWidth-1:0] sm_state;
+        string sm_state_path = cfg.csrng_path_vif.sm_err_path("main_sm", cfg.NHwApps);
         case(cfg.which_cnt) inside
           cmd_gen_cnt_sel: begin
             fld = csr.get_field_by_name(fld_name);
@@ -131,6 +133,10 @@ class csrng_err_vseq extends csrng_base_vseq;
           end
         endcase
         cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
+        // Check that the `csrng_main_sm` FSM, which observes the errors of the faulted counter, has
+        // entered the error state.
+        `DV_CHECK(uvm_hdl_read(sm_state_path, sm_state))
+        `DV_CHECK_EQ(sm_state, csrng_pkg::Error)
       end
       fifo_write_err, fifo_read_err, fifo_state_err: begin
         fld = csr.get_field_by_name(fld_name);
