@@ -212,6 +212,91 @@
       run_timeout_mins: 120
     }
     {
+      name: rom_e2e_sigverify_always_a_nothing_b_bad_test_unlocked0
+      // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
+      uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_test_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_test_unlocked0:4",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=50_000_000",
+        "+use_otp_image=OtpTypeCustom",
+        "+bypass_alert_ready_to_end_check=1",
+      ]
+      reseed: 1
+      run_timeout_mins: 120
+    }
+    {
+      name: rom_e2e_sigverify_always_a_nothing_b_bad_dev
+      // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
+      uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_dev_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_dev:4",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=50_000_000",
+        "+use_otp_image=OtpTypeCustom",
+        "+bypass_alert_ready_to_end_check=1",
+      ]
+      reseed: 1
+      run_timeout_mins: 120
+    }
+    {
+      name: rom_e2e_sigverify_always_a_nothing_b_bad_prod
+      // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
+      uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod:4",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=50_000_000",
+        "+use_otp_image=OtpTypeCustom",
+        "+bypass_alert_ready_to_end_check=1",
+      ]
+      reseed: 1
+      run_timeout_mins: 120
+    }
+    {
+      name: rom_e2e_sigverify_always_a_nothing_b_bad_prod_end
+      // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
+      uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod_end:4",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=50_000_000",
+        "+use_otp_image=OtpTypeCustom",
+        "+bypass_alert_ready_to_end_check=1",
+      ]
+      reseed: 1
+      run_timeout_mins: 120
+    }
+    {
+      name: rom_e2e_sigverify_always_a_nothing_b_bad_rma
+      // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
+      uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_rma:4",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=50_000_000",
+        "+use_otp_image=OtpTypeCustom",
+        "+bypass_alert_ready_to_end_check=1",
+      ]
+      reseed: 1
+      run_timeout_mins: 120
+    }
+    {
       name: rom_e2e_static_critical
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_static_critical:1:signed"]
@@ -269,6 +354,11 @@
         "rom_e2e_sigverify_always_a_bad_b_nothing_prod",
         "rom_e2e_sigverify_always_a_bad_b_nothing_prod_end",
         "rom_e2e_sigverify_always_a_bad_b_nothing_rma",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_test_unlocked0",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_dev",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_prod",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_prod_end",
+        "rom_e2e_sigverify_always_a_nothing_b_bad_rma",
       ]
     }
   ]
