@@ -58,18 +58,18 @@ SLOTS = {
 
 LC_KEY_TYPES = {
     CONST.LCV.TEST_UNLOCKED0: [
-        "test_key_0",
-        "prod_key_0",
+        "fake_test_key_0",
+        "fake_prod_key_0",
     ],
     CONST.LCV.DEV: [
-        "dev_key_0",
-        "prod_key_0",
+        "fake_dev_key_0",
+        "fake_prod_key_0",
     ],
-    CONST.LCV.PROD: ["prod_key_0"],
-    CONST.LCV.PROD_END: ["prod_key_0"],
+    CONST.LCV.PROD: ["fake_prod_key_0"],
+    CONST.LCV.PROD_END: ["fake_prod_key_0"],
     CONST.LCV.RMA: [
-        "test_key_0",
-        "prod_key_0",
+        "fake_test_key_0",
+        "fake_prod_key_0",
     ],
 }
 
@@ -146,7 +146,7 @@ opentitan_functest(
     dv = dv_params(
         rom = "//sw/device/silicon_creator/rom",
     ),
-    key = "test_key_0",
+    key = "fake_test_key_0",
     ot_flash_binary = ":empty_test_slot_a",
     targets = [
         "cw310_rom",
@@ -245,7 +245,7 @@ opentitan_functest(
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
     ),
-    key = "test_key_0",
+    key = "fake_test_key_0",
     ot_flash_binary = ":empty_test_slot_a",
     targets = ["cw310_rom"],
 )
@@ -369,7 +369,7 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_b_flash_b_image",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
-            "key": "test_key_0",
+            "key": "fake_test_key_0",
             "offset": SLOTS["b"],
         },
     },
@@ -390,7 +390,7 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_a_flash_b_image",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": {
-            "key": "test_key_0",
+            "key": "fake_test_key_0",
             "offset": SLOTS["b"],
         },
     },
@@ -411,7 +411,7 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_b_flash_a_image",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": {
-            "key": "test_key_0",
+            "key": "fake_test_key_0",
             "offset": SLOTS["a"],
         },
     },
@@ -442,7 +442,7 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_v_flash_b_image",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
-            "key": "test_key_0",
+            "key": "fake_test_key_0",
             "offset": SLOTS["b"],
         },
     },
@@ -585,11 +585,11 @@ SEC_VERS = [
     name = "sec_ver_{}_{}_image".format(sec_ver_a, sec_ver_b),
     srcs = {
         ":empty_test_slot_a_sec_ver_{}".format(sec_ver_a): {
-            "key": "prod_key_0",
+            "key": "fake_prod_key_0",
             "offset": SLOTS["a"],
         },
         ":empty_test_slot_b_sec_ver_{}".format(sec_ver_b): {
-            "key": "prod_key_0",
+            "key": "fake_prod_key_0",
             "offset": SLOTS["b"],
         },
     },
@@ -948,7 +948,7 @@ ALERT_LC_STATES = {
             bitstream = ":bitstream_alert_{}".format(lc_state.lower()),
             tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
         ),
-        key = "prod_key_0",
+        key = "fake_prod_key_0",
         ot_flash_binary = ":rom_e2e_alert_config_test_{}".format(lc_state.lower()),
         signed = True,
         targets = [
@@ -1238,7 +1238,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             t["name"],
             slot,
         ): {
-            "key": "test_key_0",
+            "key": "fake_test_key_0",
             "offset": offset,
         },
     },
@@ -1483,9 +1483,9 @@ test_suite(
 )
 
 SIGVERIFY_LC_KEYS = [
-    "test_key_0",
-    "dev_key_0",
-    "prod_key_0",
+    "fake_test_key_0",
+    "fake_dev_key_0",
+    "fake_prod_key_0",
 ]
 
 [
@@ -1559,11 +1559,11 @@ BOOT_POLICY_VALID_CASES = [
         ),
         srcs = {
             ":empty_test_slot_a{}".format(a["suffix"]): {
-                "key": "prod_key_0",
+                "key": "fake_prod_key_0",
                 "offset": SLOTS["a"],
             },
             ":empty_test_slot_b{}".format(b["suffix"]): {
-                "key": "prod_key_0",
+                "key": "fake_prod_key_0",
                 "offset": SLOTS["b"],
             },
         },
@@ -2319,9 +2319,9 @@ test_suite(
         ],
     )
     for key in [
-        "test_key_0",
-        "dev_key_0",
-        "prod_key_0",
+        "fake_test_key_0",
+        "fake_dev_key_0",
+        "fake_prod_key_0",
     ]
 ]
 
@@ -2368,11 +2368,11 @@ SIGVERIFY_BAD_CASES = [
 ]
 
 SIGVERIFY_LCS_2_VALID_KEY = {
-    "test_unlocked0": "test_key_0",
-    "dev": "dev_key_0",
-    "prod": "prod_key_0",
-    "prod_end": "prod_key_0",
-    "rma": "prod_key_0",
+    "test_unlocked0": "fake_test_key_0",
+    "dev": "fake_dev_key_0",
+    "prod": "fake_prod_key_0",
+    "prod_end": "fake_prod_key_0",
+    "rma": "fake_prod_key_0",
 }
 
 [
@@ -2452,9 +2452,9 @@ test_suite(
 ]
 
 SIGVERIFY_KEY_TYPE_KEYS = [
-    "test_key_0",
-    "dev_key_0",
-    "prod_key_0",
+    "fake_test_key_0",
+    "fake_dev_key_0",
+    "fake_prod_key_0",
 ]
 
 [
