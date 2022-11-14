@@ -82,9 +82,7 @@ module edn_main_sm import edn_pkg::*; #(
     main_sm_err_o = 1'b0;
     unique case (state_q)
       Idle: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (boot_req_mode_i && edn_enable_i) begin
+        if (boot_req_mode_i && edn_enable_i) begin
           state_d = BootLoadIns;
         end else if (auto_req_mode_i && edn_enable_i) begin
           state_d = AutoLoadIns;
@@ -94,201 +92,98 @@ module edn_main_sm import edn_pkg::*; #(
         end
       end
       BootLoadIns: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end
-        else begin
-          boot_wr_cmd_reg_o = 1'b1;
-          state_d = BootLoadGen;
-        end
+        boot_wr_cmd_reg_o = 1'b1;
+        state_d = BootLoadGen;
       end
       BootLoadGen: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end
-        else begin
-          boot_wr_cmd_genfifo_o = 1'b1;
-          state_d = BootInsAckWait;
-        end
+        boot_wr_cmd_genfifo_o = 1'b1;
+        state_d = BootInsAckWait;
       end
       BootInsAckWait: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end else begin
-          if (csrng_cmd_ack_i) begin
-            state_d = BootCaptGenCnt;
-          end
+        if (csrng_cmd_ack_i) begin
+          state_d = BootCaptGenCnt;
         end
       end
       BootCaptGenCnt: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end
-        else begin
-          capt_gencmd_fifo_cnt_o = 1'b1;
-          state_d = BootSendGenCmd;
-        end
+        capt_gencmd_fifo_cnt_o = 1'b1;
+        state_d = BootSendGenCmd;
       end
       BootSendGenCmd: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end else begin
-          boot_send_gencmd_o = 1'b1;
-          if (cmd_sent_i) begin
-            state_d = BootGenAckWait;
-          end
+        boot_send_gencmd_o = 1'b1;
+        if (cmd_sent_i) begin
+          state_d = BootGenAckWait;
         end
       end
       BootGenAckWait: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end else begin
-          if (csrng_cmd_ack_i) begin
-            state_d = BootPulse;
-          end
+        if (csrng_cmd_ack_i) begin
+          state_d = BootPulse;
         end
       end
       BootPulse: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end else begin
-          main_sm_done_pulse_o = 1'b1;
-          state_d = BootDone;
-        end
+        main_sm_done_pulse_o = 1'b1;
+        state_d = BootDone;
       end
       BootDone: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end
       end
       //-----------------------------------
       AutoLoadIns: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end else begin
-          auto_set_intr_gate_o = 1'b1;
-          auto_first_ack_wait_o = 1'b1;
-          if (sw_cmd_req_load_i) begin
-            state_d = AutoFirstAckWait;
-          end
+        auto_set_intr_gate_o = 1'b1;
+        auto_first_ack_wait_o = 1'b1;
+        if (sw_cmd_req_load_i) begin
+          state_d = AutoFirstAckWait;
         end
       end
       AutoFirstAckWait: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end else begin
-          auto_first_ack_wait_o = 1'b1;
-          if (csrng_cmd_ack_i) begin
-            auto_clr_intr_gate_o = 1'b1;
-            state_d = AutoDispatch;
-          end
+        auto_first_ack_wait_o = 1'b1;
+        if (csrng_cmd_ack_i) begin
+          auto_clr_intr_gate_o = 1'b1;
+          state_d = AutoDispatch;
         end
       end
       AutoAckWait: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end else begin
-          auto_req_mode_busy_o = 1'b1;
-          if (csrng_cmd_ack_i) begin
-            state_d = AutoDispatch;
-          end
+        auto_req_mode_busy_o = 1'b1;
+        if (csrng_cmd_ack_i) begin
+          state_d = AutoDispatch;
         end
       end
       AutoDispatch: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
+        auto_req_mode_busy_o = 1'b1;
+        if (!auto_req_mode_i) begin
+          main_sm_done_pulse_o = 1'b1;
           state_d = Idle;
         end else begin
-          auto_req_mode_busy_o = 1'b1;
-          if (!auto_req_mode_i) begin
-            main_sm_done_pulse_o = 1'b1;
-            state_d = Idle;
+          if (max_reqs_cnt_zero_i) begin
+            state_d = AutoCaptReseedCnt;
           end else begin
-            if (max_reqs_cnt_zero_i) begin
-              state_d = AutoCaptReseedCnt;
-            end else begin
-              state_d = AutoCaptGenCnt;
-            end
+            state_d = AutoCaptGenCnt;
           end
         end
       end
       AutoCaptGenCnt: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end else begin
-          auto_req_mode_busy_o = 1'b1;
-          capt_gencmd_fifo_cnt_o = 1'b1;
-          state_d = AutoSendGenCmd;
-        end
+        auto_req_mode_busy_o = 1'b1;
+        capt_gencmd_fifo_cnt_o = 1'b1;
+        state_d = AutoSendGenCmd;
       end
       AutoSendGenCmd: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end else begin
-          auto_req_mode_busy_o = 1'b1;
-          send_gencmd_o = 1'b1;
-          if (cmd_sent_i) begin
-            state_d = AutoAckWait;
-          end
+        auto_req_mode_busy_o = 1'b1;
+        send_gencmd_o = 1'b1;
+        if (cmd_sent_i) begin
+          state_d = AutoAckWait;
         end
       end
       AutoCaptReseedCnt: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end else begin
-          auto_req_mode_busy_o = 1'b1;
-          capt_rescmd_fifo_cnt_o = 1'b1;
-          state_d = AutoSendReseedCmd;
-        end
+        auto_req_mode_busy_o = 1'b1;
+        capt_rescmd_fifo_cnt_o = 1'b1;
+        state_d = AutoSendReseedCmd;
       end
       AutoSendReseedCmd: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end else begin
-          auto_req_mode_busy_o = 1'b1;
-          send_rescmd_o = 1'b1;
-          if (cmd_sent_i) begin
-            state_d = AutoAckWait;
-          end
+        auto_req_mode_busy_o = 1'b1;
+        send_rescmd_o = 1'b1;
+        if (cmd_sent_i) begin
+          state_d = AutoAckWait;
         end
       end
       SWPortMode: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!edn_enable_i) begin
-          state_d = Idle;
-        end
       end
       Error: begin
         main_sm_err_o = 1'b1;
@@ -298,6 +193,15 @@ module edn_main_sm import edn_pkg::*; #(
         main_sm_err_o = 1'b1;
       end
     endcase
+    if (local_escalate_i) begin
+      state_d = Error;
+    end else if (!edn_enable_i) begin
+      state_d = Idle;
+    end
   end
 
+  // The `local_escalate_i` includes `main_sm_err_o`.
+  // The following assertion ensures the Error state is stable until reset.
+  // With `FpvSecCm` prefix, this assertion will added to weekly FPV sec_cm regression.
+  `ASSERT(FpvSecCmErrorStStable_A, state_q == Error |-> local_escalate_i)
 endmodule
