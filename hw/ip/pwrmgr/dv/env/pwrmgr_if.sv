@@ -44,6 +44,7 @@ interface pwrmgr_if (
   logic                       [  pwrmgr_reg_pkg::NumWkups-1:0] wakeups_i;
 
   logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs_i;
+
   // cpu related inputs
   pwrmgr_pkg::pwrmgr_cpu_t                                     cpu_i;
 

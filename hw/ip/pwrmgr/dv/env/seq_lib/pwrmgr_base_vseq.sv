@@ -25,12 +25,13 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   rand resets_t  resets_en;
   rand bit       power_glitch_reset;
   rand bit       escalation_reset;
+  rand bit       ndm_reset;
 
   rand bit       en_intr;
 
   constraint resets_en_c {
-    solve resets, power_glitch_reset, escalation_reset before resets_en;
-    |{resets_en & resets, power_glitch_reset, escalation_reset} == 1'b1;
+    solve resets, power_glitch_reset, escalation_reset, ndm_reset before resets_en;
+    |{resets_en & resets, power_glitch_reset, escalation_reset, ndm_reset} == 1'b1;
   }
 
   rand bit               disable_wakeup_capture;
@@ -192,6 +193,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
+    `uvm_info(`gfn, {"In apply reset ", kind}, UVM_MEDIUM)
     fork
       super.apply_reset(kind);
       if (kind == "HARD") begin
@@ -202,8 +204,10 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       cfg.lc_clk_rst_vif.apply_reset();
       // Escalation resets are cleared when reset goes active.
       clear_escalation_reset();
+      clear_ndm_reset();
       cfg.aon_clk_rst_vif.apply_reset();
     join
+    `uvm_info(`gfn, {"Out of apply reset ", kind}, UVM_MEDIUM)
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
@@ -368,8 +372,15 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                     new_value,
                     cycles_before_io_clk_en
                     ), UVM_MEDIUM)
-          if (new_value == 1) cfg.clk_rst_vif.start_clk();
-          else cfg.clk_rst_vif.stop_clk();
+          if (new_value == 1) begin
+	    cfg.clk_rst_vif.start_clk();
+	    cfg.lc_clk_rst_vif.start_clk();
+	    cfg.esc_clk_rst_vif.start_clk();
+          end else begin
+	    cfg.clk_rst_vif.stop_clk();
+	    cfg.lc_clk_rst_vif.stop_clk();
+	    cfg.esc_clk_rst_vif.stop_clk();
+	  end
         end
       forever
         @(io_clk_val_sr[cycles_before_io_clk_en + 2]) begin
@@ -417,7 +428,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           `uvm_info(`gfn, $sformatf(
                     "fast responder got rst_lc_req change to 0x%x",
                     cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req
-                    ), UVM_HIGH)
+                    ), UVM_MEDIUM)
           raise_fast_objection("rst_lc_src_n");
           `FAST_RESPONSE_ACTION("rst_lc_src_n", cfg.pwrmgr_vif.fast_cb.pwr_rst_rsp.rst_lc_src_n,
                                 ~cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req,
@@ -431,6 +442,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
             cfg.esc_clk_rst_vif.drive_rst_pin(0);
             cfg.lc_clk_rst_vif.drive_rst_pin(0);
             clear_escalation_reset();
+            clear_ndm_reset();
             cfg.pwrmgr_vif.update_resets('0);
             cfg.pwrmgr_vif.update_sw_rst_req(prim_mubi_pkg::MuBi4False);
             `uvm_info(`gfn, "Clearing resets", UVM_MEDIUM)
@@ -737,6 +749,16 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   function void clear_escalation_reset();
     `uvm_info(`gfn, "Clearing escalation reset", UVM_MEDIUM)
     cfg.m_esc_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
+  endfunction
+
+  function void send_ndm_reset();
+    `uvm_info(`gfn, "Sending ndm reset", UVM_MEDIUM)
+    cfg.pwrmgr_vif.cpu_i.ndmreset_req = 1'b1;
+  endfunction
+
+  function void clear_ndm_reset();
+    `uvm_info(`gfn, "Clearing ndm reset", UVM_MEDIUM)
+    cfg.pwrmgr_vif.cpu_i.ndmreset_req = 1'b0;
   endfunction
 
   // bad_bits = {done, good}
