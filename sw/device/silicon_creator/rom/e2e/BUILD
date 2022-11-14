@@ -1848,9 +1848,12 @@ test_suite(
 
 [
     opentitan_gdb_fpga_cw310_test(
-        name = "debug_disallowed_in_prod_fpga_cw310_test_otp_" + otp_name,
+        name = "debug_disallowed_in_prod_fpga_cw310_test_otp_" + lc_state,
         timeout = "short",
-        expect_debug_disallowed = otp_name in ("prod", "prod_end"),
+        expect_debug_disallowed = lc_state_val in [
+            CONST.LCV.PROD,
+            CONST.LCV.PROD_END,
+        ],
         gdb_script = """
             target extended-remote :3333
 
@@ -1865,23 +1868,30 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
             "cw310_rom",
-            "skip_in_ci",
             "vivado",
-        ],
+        ] + maybe_skip_in_ci(lc_state_val),
     )
-    for otp_name in ("prod", "prod_end", "rma")
+    for lc_state, lc_state_val in get_lc_items(
+        CONST.LCV.PROD,
+        CONST.LCV.PROD_END,
+        CONST.LCV.RMA,
+    )
 ]
 
 test_suite(
     name = "rom_e2e_debug_disallowed_in_prod_tests",
     tags = ["manual"],
     tests = [
-        "debug_disallowed_in_prod_fpga_cw310_test_otp_" + otp_name
-        for otp_name in ("prod", "prod_end", "rma")
+        "debug_disallowed_in_prod_fpga_cw310_test_otp_" + lc_state
+        for lc_state, _ in get_lc_items(
+            CONST.LCV.PROD,
+            CONST.LCV.PROD_END,
+            CONST.LCV.RMA,
+        )
     ],
 )
 
