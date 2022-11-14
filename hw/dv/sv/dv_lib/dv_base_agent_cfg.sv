@@ -23,6 +23,8 @@ class dv_base_agent_cfg extends uvm_object;
   // Indicates that the interface is under reset. The derived monitor detects and maintains it.
   bit in_reset;
 
+  bit en_monitor = 1'b1;
+
   `uvm_object_utils_begin(dv_base_agent_cfg)
     `uvm_field_int (is_active,            UVM_DEFAULT)
     `uvm_field_int (en_cov,               UVM_DEFAULT)
