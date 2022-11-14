@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright lowRISC contributors.
+    Licensed under the Apache License, Version 2.0, see LICENSE for details.
+    SPDX-License-Identifier: Apache-2.0
+-->
+<refinement-file-root>
+  <information comment-version="1" creation-time="Mon 14 Nov 2022 14:28:34 GMT" creator="ctopal" csCheck="false" save-ref-method="seq" tool-version="Cadence vManager21.09" rules-signature-c="2c5828d6c83283c1705c1c9ea543761">
+    <ucm-files>
+    </ucm-files>
+    <ccf-files>
+    </ccf-files>
+  </information>
+  <rules>
+    <rule ccType="inst" comment="AES Cipher is verified in its own block level verification framework. Hence, it's excluded from CSRNG block level verification coverage." domain="icc" entityName="csrng/u_csrng_core/u_csrng_block_encrypt/u_aes_cipher_core" entityType="inst" excTime="1668436105" name="exclude" recursiveMetrics="overall" reviewer="ctopal" user="0" vscope="default"></rule>
+  </rules>
+  <cache-map>
+  </cache-map>
+</refinement-file-root>

@@ -43,6 +43,8 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/csrng/dv/cov/excl_aes.vRefine"]
+
   // Update all builds to add options specific to AES C model compilation.
   en_build_modes: ["{tool}_aes_model_build_opts"]
 
