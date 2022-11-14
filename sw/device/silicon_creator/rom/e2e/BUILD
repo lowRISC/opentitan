@@ -11,7 +11,7 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
-load("//rules:const.bzl", "CONST", "error_redact", "hex", "lc_hw_to_sw")
+load("//rules:const.bzl", "CONST", "error_redact", "get_lc_items", "hex", "lc_hw_to_sw")
 load(
     "//rules:opentitan.bzl",
     "bin_to_vmem",
@@ -1887,7 +1887,7 @@ test_suite(
 
 [
     opentitan_gdb_fpga_cw310_test(
-        name = "asm_interrupt_handler_fpga_cw310_test_otp_" + otp_name,
+        name = "asm_interrupt_handler_fpga_cw310_test_otp_" + lc_state,
         timeout = "short",
         gdb_script = """
             target extended-remote :3333
@@ -1917,23 +1917,31 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
             "cw310_rom",
-            "skip_in_ci",
             "vivado",
-        ],
+        ] + maybe_skip_in_ci(lc_state_val),
     )
-    for otp_name in OTP_CFGS_EXEC_DISABLED
+    for lc_state, lc_state_val in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+    )
 ]
 
 test_suite(
     name = "rom_e2e_asm_interrupt_handler",
-    tags = [
-        "manual",
+    tags = ["manual"],
+    tests = [
+        "asm_interrupt_handler_fpga_cw310_test_otp_" + lc_state
+        for lc_state, _ in get_lc_items(
+            CONST.LCV.TEST_UNLOCKED0,
+            CONST.LCV.DEV,
+            CONST.LCV.RMA,
+        )
     ],
-    tests = ["asm_interrupt_handler_fpga_cw310_test_otp_" + otp_name for otp_name in OTP_CFGS_EXEC_DISABLED],
 )
 
 [
