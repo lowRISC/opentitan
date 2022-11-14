@@ -38,6 +38,7 @@ class i2c_monitor extends dv_base_monitor #(
       bit r_bit = 1'b0;
       i2c_item full_item;
       forever begin
+        wait(cfg.en_monitor);
         if (mon_dut_item.stop ||
             (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
           cfg.vif.wait_for_host_start(cfg.timing_cfg);
@@ -242,10 +243,14 @@ class i2c_monitor extends dv_base_monitor #(
   virtual task monitor_ready_to_end();
     forever begin
       @(cfg.vif.scl_i or cfg.vif.sda_i or cfg.vif.scl_o or cfg.vif.sda_o);
-      if (cfg.if_mode == Host) begin
-        // TODO: set end condition if necessary
+      if (cfg.en_monitor) begin
+        if (cfg.if_mode == Host) begin
+          // TODO: set end condition if necessary
+        end else begin
+          ok_to_end = (cfg.vif.scl_i == 1'b1) && (cfg.vif.sda_i == 1'b1);
+        end
       end else begin
-        ok_to_end = (cfg.vif.scl_i == 1'b1) && (cfg.vif.sda_i == 1'b1);
+        ok_to_end = 1;
       end
     end
   endtask : monitor_ready_to_end
