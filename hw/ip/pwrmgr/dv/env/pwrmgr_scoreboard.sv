@@ -95,9 +95,9 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     cov.hw_reset_0_cg.sample(cfg.pwrmgr_vif.rstreqs_i[0], cfg.pwrmgr_vif.reset_en[0], sleep);
     cov.hw_reset_1_cg.sample(cfg.pwrmgr_vif.rstreqs_i[1], cfg.pwrmgr_vif.reset_en[1], sleep);
     cov.rstmgr_sw_reset_cg.sample(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True);
-    cov.main_power_reset_cg.sample(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx],
-                                   sleep);
-    cov.esc_reset_cg.sample(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx], sleep);
+    cov.main_power_reset_cg.sample(
+        cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_reg_pkg::ResetMainPwrIdx],sleep);
+    cov.esc_reset_cg.sample(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_reg_pkg::ResetEscIdx], sleep);
     `uvm_info(`gfn, $sformatf(
               {
                 "reset_cg sample with hw_resets=%b, hw_resets_en=%b, ",
@@ -105,8 +105,8 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
               },
               cfg.pwrmgr_vif.rstreqs_i,
               cfg.pwrmgr_vif.reset_en,
-              cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetEscIdx],
-              cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_pkg::ResetMainPwrIdx],
+              cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_reg_pkg::ResetEscIdx],
+              cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_reg_pkg::ResetMainPwrIdx],
               cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True,
               sleep
               ), UVM_MEDIUM)

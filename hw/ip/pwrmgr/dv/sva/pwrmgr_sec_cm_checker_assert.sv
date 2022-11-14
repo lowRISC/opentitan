@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // add description here TBD
-module pwrmgr_sec_cm_checker_assert (
+module pwrmgr_sec_cm_checker_assert
+  import pwrmgr_reg_pkg::*;
+(
   input clk_i,
   input rst_ni,
   input clk_lc_i,
@@ -93,7 +95,7 @@ module pwrmgr_sec_cm_checker_assert (
   `ASSERT(RstreqChkEsctimeout_A,
           $rose(
               slow_esc_rst_req
-          ) ##1 slow_esc_rst_req |-> ##[0:2] pwr_rst_o.rstreqs[pwrmgr_pkg::ResetEscIdx],
+          ) ##1 slow_esc_rst_req |-> ##[0:2] pwr_rst_o.rstreqs[ResetEscIdx],
           clk_i, reset_or_disable)
 
 // sec_cm_fsm_terminal
@@ -111,13 +113,13 @@ module pwrmgr_sec_cm_checker_assert (
 // if esc_rst_req is set, pwr_rst_o.rstreqs[ResetEscIdx] should be asserted.
   `ASSERT(RstreqChkGlbesc_A,
           $rose(slow_esc_rst_req) ##1 slow_esc_rst_req |->
-          ##[0:2] (pwr_rst_o.rstreqs[pwrmgr_pkg::ResetEscIdx] | !rst_esc_ni),
+          ##[0:2] (pwr_rst_o.rstreqs[ResetEscIdx] | !rst_esc_ni),
           clk_i, reset_or_disable)
 
 // sec_cm_main_pd_rst_local_esc
 // if power is up and rst_main_ni goes low, pwr_rst_o.rstreqs[ResetMainPwrIdx] should be asserted
   `ASSERT(RstreqChkMainpd_A,
-          slow_mp_rst_req |-> ##[0:5] pwr_rst_o.rstreqs[pwrmgr_pkg::ResetMainPwrIdx], clk_i,
+          slow_mp_rst_req |-> ##[0:5] pwr_rst_o.rstreqs[ResetMainPwrIdx], clk_i,
           reset_or_disable)
 
 endmodule // pwrmgr_sec_cm_checker_assert
