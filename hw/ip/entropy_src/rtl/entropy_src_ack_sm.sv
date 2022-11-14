@@ -18,11 +18,11 @@ module entropy_src_ack_sm (
   output logic               ack_sm_err_o
 );
 
-  import entropy_src_pkg::*;
+  import entropy_src_ack_sm_pkg::*;
 
-  ack_sm_state_e state_d, state_q;
+  state_e state_d, state_q;
 
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, ack_sm_state_e, AckSmIdle)
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Idle)
 
   always_comb begin
     state_d = state_q;
@@ -30,34 +30,34 @@ module entropy_src_ack_sm (
     fifo_pop_o = 1'b0;
     ack_sm_err_o = 1'b0;
     unique case (state_q)
-      AckSmIdle: begin
+      Idle: begin
         if (enable_i) begin
           if (req_i) begin
-            state_d = AckSmWait;
+            state_d = Wait;
           end
         end
       end
-      AckSmWait: begin
+      Wait: begin
         if (!enable_i) begin
-          state_d = AckSmIdle;
+          state_d = Idle;
         end else begin
           if (fifo_not_empty_i) begin
             ack_o = 1'b1;
             fifo_pop_o = 1'b1;
-            state_d = AckSmIdle;
+            state_d = Idle;
           end
         end
       end
-      AckSmError: begin
+      Error: begin
         ack_sm_err_o = 1'b1;
       end
       default: begin
-        state_d = AckSmError;
+        state_d = Error;
         ack_sm_err_o = 1'b1;
       end
     endcase
     if (local_escalate_i) begin
-      state_d = AckSmError;
+      state_d = Error;
     end
   end
 

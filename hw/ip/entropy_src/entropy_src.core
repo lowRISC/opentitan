@@ -21,6 +21,7 @@ filesets:
       - lowrisc:ip:sha3
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip:entropy_src_pkg
+      - lowrisc:ip:entropy_src_ack_sm_pkg
       - lowrisc:ip:entropy_src_main_sm_pkg
     files:
       - rtl/entropy_src_reg_pkg.sv
