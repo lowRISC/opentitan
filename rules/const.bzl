@@ -71,6 +71,18 @@ CONST = struct(
     ),
 )
 
+def get_lc_items(*want_lc_values):
+    """Return a list of key-value pairs from CONST.LCV with lowercased keys.
+
+    If `want_lc_values` is empty, returns an unfiltered dict. Otherwise, only
+    key-value pairs where the value is in `want_lc_values` are returned.
+    """
+    lcv_dict = structs.to_dict(CONST.LCV)
+    out = [(k.lower(), v) for k, v in lcv_dict.items() if not want_lc_values or v in want_lc_values]
+    if want_lc_values and len(out) != len(want_lc_values):
+        fail("get_lc_items would produce list with incorrect length")
+    return out
+
 def lc_hw_to_sw(hw_lc_state):
     """Converts any TEST_* LC states to TEST"""
     if hw_lc_state.startswith("TEST_"):
