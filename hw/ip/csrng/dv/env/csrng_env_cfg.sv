@@ -23,7 +23,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   virtual csrng_path_if csrng_path_vif; // handle to csrng path interface
 
   // Knobs & Weights
-  uint   otp_en_cs_sw_app_read_pct, lc_hw_debug_en_pct, regwen_pct,
+  uint   otp_en_cs_sw_app_read_pct, otp_en_cs_sw_app_read_inval_pct, lc_hw_debug_en_pct, regwen_pct,
          enable_pct, sw_app_enable_pct, read_int_state_pct, force_state_pct,
          check_int_state_pct, num_cmds_min, num_cmds_max, aes_halt_pct,
          min_aes_halt_clks, max_aes_halt_clks;
@@ -58,9 +58,12 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   rand uint  which_sp2v;
   constraint which_sp2v_c { which_sp2v inside {[0:Sp2VWidth-1]};}
 
-  constraint otp_en_cs_sw_app_read_c { otp_en_cs_sw_app_read dist {
-                                       MuBi8True  :/ otp_en_cs_sw_app_read_pct,
-                                       MuBi8False :/ (100 - otp_en_cs_sw_app_read_pct) };}
+  constraint otp_en_cs_sw_app_read_c {
+    `DV_MUBI8_DIST(otp_en_cs_sw_app_read,
+                   otp_en_cs_sw_app_read_pct,
+                   100 - otp_en_cs_sw_app_read_pct - otp_en_cs_sw_app_read_inval_pct,
+                   otp_en_cs_sw_app_read_inval_pct)
+  }
 
   constraint lc_hw_debug_en_c { `DV_LC_TX_DIST(lc_hw_debug_en, lc_hw_debug_en_pct,
                                 (100 - lc_hw_debug_en_pct) / 2,  (100 - lc_hw_debug_en_pct) / 2)}
@@ -198,45 +201,47 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   virtual function string convert2string();
     string str = "";
     str = {str, "\n"};
-    str = {str,  $sformatf("\n\t |**************** csrng_env_cfg *******************| \t")};
-    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read     :       'h%02h *****| \t",
+    str = {str,  $sformatf("\n\t |**************** csrng_env_cfg *************************| \t")};
+    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read           :       'h%02h *****| \t",
            otp_en_cs_sw_app_read)};
-    str = {str,  $sformatf("\n\t |***** lc_hw_debug_en            :       'h%02h *****| \t",
+    str = {str,  $sformatf("\n\t |***** lc_hw_debug_en                  :       'h%02h *****| \t",
            lc_hw_debug_en)};
-    str = {str,  $sformatf("\n\t |***** enable                    : %10s *****| \t",
+    str = {str,  $sformatf("\n\t |***** enable                          : %10s *****| \t",
            enable.name())};
-    str = {str,  $sformatf("\n\t |***** sw_app_enable             : %10s *****| \t",
+    str = {str,  $sformatf("\n\t |***** sw_app_enable                   : %10s *****| \t",
            sw_app_enable.name())};
-    str = {str,  $sformatf("\n\t |***** read_int_state            : %10s *****| \t",
+    str = {str,  $sformatf("\n\t |***** read_int_state                  : %10s *****| \t",
            read_int_state.name())};
-    str = {str,  $sformatf("\n\t |***** regwen                    : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** regwen                          : %10d *****| \t",
            regwen)};
-    str = {str,  $sformatf("\n\t |***** check_int_state           : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** check_int_state                 : %10d *****| \t",
            check_int_state)};
-    str = {str,  $sformatf("\n\t |---------------- knobs ---------------------------| \t")};
-    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_pct : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |---------------- knobs ---------------------------------| \t")};
+    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_pct       : %10d *****| \t",
            otp_en_cs_sw_app_read_pct) };
-    str = {str,  $sformatf("\n\t |***** lc_hw_debug_en_pct        : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_inval_pct : %10d *****| \t",
+           otp_en_cs_sw_app_read_pct) };
+    str = {str,  $sformatf("\n\t |***** lc_hw_debug_en_pct              : %10d *****| \t",
            lc_hw_debug_en_pct) };
-    str = {str,  $sformatf("\n\t |***** enable_pct                : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** enable_pct                      : %10d *****| \t",
            enable_pct)};
-    str = {str,  $sformatf("\n\t |***** sw_app_enable_pct         : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** sw_app_enable_pct               : %10d *****| \t",
            sw_app_enable_pct)};
-    str = {str,  $sformatf("\n\t |***** read_int_state_pct        : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** read_int_state_pct              : %10d *****| \t",
            read_int_state_pct)};
-    str = {str,  $sformatf("\n\t |***** regwen_pct                : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** regwen_pct                      : %10d *****| \t",
            regwen_pct)};
-    str = {str,  $sformatf("\n\t |***** check_int_state_pct       : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** check_int_state_pct             : %10d *****| \t",
            check_int_state_pct)};
-    str = {str,  $sformatf("\n\t |***** num_cmds_min              : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** num_cmds_min                    : %10d *****| \t",
            num_cmds_min)};
-    str = {str,  $sformatf("\n\t |***** num_cmds_max              : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** num_cmds_max                    : %10d *****| \t",
            num_cmds_max)};
-    str = {str,  $sformatf("\n\t |***** min_aes_halt_clks         : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** min_aes_halt_clks               : %10d *****| \t",
            min_aes_halt_clks)};
-    str = {str,  $sformatf("\n\t |***** max_aes_halt_clks         : %10d *****| \t",
+    str = {str,  $sformatf("\n\t |***** max_aes_halt_clks               : %10d *****| \t",
            max_aes_halt_clks)};
-    str = {str,  $sformatf("\n\t |**************************************************| \t")};
+    str = {str,  $sformatf("\n\t |********************************************************| \t")};
     str = {str, "\n"};
     return str;
   endfunction
