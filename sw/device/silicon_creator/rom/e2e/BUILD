@@ -2011,7 +2011,7 @@ test_suite(
 # been artificially inflated.
 [
     opentitan_gdb_fpga_cw310_test(
-        name = "rom_e2e_asm_watchdog_bark_fpga_cw310_test_otp_" + otp_name,
+        name = "rom_e2e_asm_watchdog_bark_fpga_cw310_test_otp_" + lc_state,
         timeout = "short",
         gdb_script = """
             target extended-remote :3333
@@ -2071,21 +2071,24 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
             "cw310_rom",
-            "skip_in_ci",
             "vivado",
-        ],
+        ] + maybe_skip_in_ci(lc_state_val),
     )
-    for otp_name in OTP_CFGS_EXEC_DISABLED
+    for lc_state, lc_state_val in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+    )
 ]
 
 # Ensure that the watchdog's bite restarts the ROM.
 [
     opentitan_gdb_fpga_cw310_test(
-        name = "rom_e2e_asm_watchdog_bite_fpga_cw310_test_otp_" + otp_name,
+        name = "rom_e2e_asm_watchdog_bite_fpga_cw310_test_otp_" + lc_state,
         timeout = "short",
         gdb_expect_output_sequence = [
             ":::: Wait for interrupt.",
@@ -2136,15 +2139,18 @@ test_suite(
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
         },
-        rom_bitstream = ":rom_otp_{}_exec_disabled".format(otp_name),
+        rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
         tags = [
             "cw310_rom",
-            "skip_in_ci",
             "vivado",
-        ],
+        ] + maybe_skip_in_ci(lc_state_val),
     )
-    for otp_name in OTP_CFGS_EXEC_DISABLED
+    for lc_state, lc_state_val in get_lc_items(
+        CONST.LCV.TEST_UNLOCKED0,
+        CONST.LCV.DEV,
+        CONST.LCV.RMA,
+    )
 ]
 
 test_suite(
@@ -2153,8 +2159,12 @@ test_suite(
         "manual",
     ],
     tests = [
-        "rom_e2e_asm_watchdog_" + type + "_fpga_cw310_test_otp_" + otp_name
-        for otp_name in OTP_CFGS_EXEC_DISABLED
+        "rom_e2e_asm_watchdog_" + type + "_fpga_cw310_test_otp_" + lc_state
+        for lc_state, lc_state_val in get_lc_items(
+            CONST.LCV.TEST_UNLOCKED0,
+            CONST.LCV.DEV,
+            CONST.LCV.RMA,
+        )
         for type in ("bite", "bark")
     ],
 )
