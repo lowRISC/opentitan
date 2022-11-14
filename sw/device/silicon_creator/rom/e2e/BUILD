@@ -2846,7 +2846,7 @@ test_suite(
     opentitan_gdb_fpga_cw310_test(
         name = "rom_e2e_debug_test_otp_" + otp_name,
         timeout = "short",
-        exit_success_pattern = "OK!GDB-OK\r\nBFV:0142500d",
+        exit_success_pattern = "OK!GDB-OK(?s:.*)BFV:0142500d",
         gdb_expect_output_sequence = [
             ":::: GDB script complete.",
             "Hart 0 unexpectedly reset!",
@@ -2889,7 +2889,7 @@ test_suite(
             # Set a breakpoint at the actual address of rom_main(), without
             # trying to skip the function prologue.
             break *rom_main
-            break *rom_init
+            break *uart_init
 
             echo :::: Pretend execution is enabled.\\n
             set $pc = kRomStartBootExecEn
@@ -2906,11 +2906,11 @@ test_suite(
             continue
             assert_pc rom_main
 
-            echo :::: Continue until rom_init.\\n
+            echo :::: Continue until uart_init.\\n
             continue
-            assert_pc rom_init
+            assert_pc uart_init
 
-            echo :::: Finish rom_init.\\n
+            echo :::: Finish uart_init.\\n
             finish
 
             echo :::: Read and write GPRs.\\n

@@ -118,7 +118,7 @@ static void rom_bootstrap_message(void) {
 /**
  * Performs once-per-boot initialization of ROM modules and peripherals.
  */
-OT_NOINLINE static rom_error_t rom_init(void) {
+static rom_error_t rom_init(void) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomInit, 1);
   sec_mmio_init();
   // Initialize pinmux configuration so we can use the UART.
