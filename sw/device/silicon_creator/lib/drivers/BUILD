@@ -282,6 +282,7 @@ opentitan_functest(
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:flash_ctrl_testutils",
+        "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:pwrmgr_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
