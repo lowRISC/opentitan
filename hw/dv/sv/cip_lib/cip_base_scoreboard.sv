@@ -223,7 +223,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     end
 
     `uvm_info(`gfn, $sformatf("alert %0s detected, alert_status is %s", alert_name,
-                              item.alert_handshake_sta), UVM_DEBUG)
+                              item.alert_handshake_sta), UVM_MEDIUM)
     if (item.alert_handshake_sta == AlertReceived) begin
       under_alert_handshake[alert_name] = 1;
       on_alert(alert_name, item);

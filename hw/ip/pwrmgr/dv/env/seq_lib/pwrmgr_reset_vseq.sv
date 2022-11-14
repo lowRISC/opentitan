@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// The reset test randomly introduces external resets, power glitches, and escalation resets.
+// The reset test randomly introduces external resets, ndm resets, power glitches, and escalation
+// resets.
 class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
 
   `uvm_object_utils(pwrmgr_reset_vseq)
@@ -11,6 +12,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
   constraint wakeups_c {wakeups == 0;}
   constraint wakeups_en_c {wakeups_en == 0;}
 
+   constraint ndm_reset_c {ndm_reset == 1;}
   function void post_randomize();
     sw_rst_from_rstmgr = get_rand_mubi4_val(8, 4, 4);
     super.post_randomize();
@@ -28,11 +30,12 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       setup_interrupt(.enable(en_intr));
       enabled_resets = resets_en & resets;
       `uvm_info(`gfn, $sformatf(
-                "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b",
+                "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b, ndm_reset=%b",
                 enabled_resets,
                 power_glitch_reset,
                 escalation_reset,
-                sw_rst_from_rstmgr == prim_mubi_pkg::MuBi4True
+                sw_rst_from_rstmgr == prim_mubi_pkg::MuBi4True,
+                ndm_reset
                 ), UVM_MEDIUM)
 
       csr_wr(.ptr(ral.reset_en[0]), .value(resets_en));
@@ -50,13 +53,18 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       end
       cfg.clk_rst_vif.wait_clks(cycles_before_reset);
 
-      if (cycles_before_reset == 0) enabled_resets = 0;
+//      if (cycles_before_reset == 0) enabled_resets = 0;
 
       `uvm_info(`gfn, $sformatf("Sending resets=0x%x", resets), UVM_MEDIUM)
       cfg.pwrmgr_vif.update_resets(resets);
       `uvm_info(`gfn, $sformatf("Sending sw reset from rstmgr=%b", sw_rst_from_rstmgr), UVM_MEDIUM)
-      if (escalation_reset) send_escalation_reset();
+      if (escalation_reset) begin
+	send_escalation_reset();
+	// Wait for the alert to propagate to fault_status?
+      end
       cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
+
+      if (ndm_reset) send_ndm_reset();
 
       // Expect to start reset.
       `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
