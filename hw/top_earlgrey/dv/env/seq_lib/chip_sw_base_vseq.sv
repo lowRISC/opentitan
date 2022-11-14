@@ -686,9 +686,12 @@ class chip_sw_base_vseq extends chip_base_vseq;
       DecLcStRaw: begin
         if (dest_state inside {DecLcStTestUnlocked0, DecLcStTestUnlocked1, DecLcStTestUnlocked2,
                                DecLcStTestUnlocked3, DecLcStTestUnlocked4, DecLcStTestUnlocked5,
-                               DecLcStTestUnlocked6, DecLcStTestUnlocked7, DecLcStScrap}) begin
+                               DecLcStTestUnlocked6, DecLcStTestUnlocked7}) begin
           valid_transition = 1;
           test_unlock_token = RndCnstRawUnlockToken;
+        end else if (dest_state == DecLcStScrap) begin
+          // This transition is unconditional and can use test_unlock_token = 0.
+          valid_transition = 1;
         end
       end
       DecLcStTestLocked0: begin
