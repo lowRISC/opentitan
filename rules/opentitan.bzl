@@ -44,9 +44,9 @@ PER_DEVICE_DEPS = {
 
 # Default keys used to sign ROM_EXT and BL0 images for testing.
 DEFAULT_SIGNING_KEYS = {
-    "test_key_0": "@//sw/device/silicon_creator/rom/keys/fake:test_private_key_0",
-    "dev_key_0": "@//sw/device/silicon_creator/rom/keys/fake:dev_private_key_0",
-    "prod_key_0": "@//sw/device/silicon_creator/rom/keys/fake:prod_private_key_0",
+    "fake_test_key_0": "@//sw/device/silicon_creator/rom/keys/fake:test_private_key_0",
+    "fake_dev_key_0": "@//sw/device/silicon_creator/rom/keys/fake:dev_private_key_0",
+    "fake_prod_key_0": "@//sw/device/silicon_creator/rom/keys/fake:prod_private_key_0",
     "unauthorized_0": "@//sw/device/silicon_creator/rom/keys:unauthorized_private_key_0",
 }
 

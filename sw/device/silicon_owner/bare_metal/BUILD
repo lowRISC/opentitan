@@ -121,11 +121,11 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_virtual_bare_metal_virtual",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
-            "key": "test_key_0",
+            "key": "fake_test_key_0",
             "offset": "0x0",
         },
         ":bare_metal_slot_virtual": {
-            "key": "test_key_0",
+            "key": "fake_test_key_0",
             "offset": "0x10000",
         },
     },
@@ -162,11 +162,11 @@ opentitan_multislot_flash_binary(
     name = "rom_ext_virtual_ottf_bl0_virtual",
     srcs = {
         "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": {
-            "key": "test_key_0",
+            "key": "fake_test_key_0",
             "offset": "0x0",
         },
         ":ottf_test_bl0_slot_virtual": {
-            "key": "test_key_0",
+            "key": "fake_test_key_0",
             "offset": "0x10000",
         },
     },
