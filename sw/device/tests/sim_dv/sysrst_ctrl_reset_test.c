@@ -176,10 +176,11 @@ bool test_main(void) {
     case kTestPhaseFinalCheck:
       CHECK(rstmgr_reset_info ==
             (kDifRstmgrResetInfoSysRstCtrl | kDifRstmgrResetInfoLowPowerExit));
+      return true;
       break;
     default:
       LOG_ERROR("Unexpected test phase : %d", kTestPhase);
       break;
   }
-  return true;
+  return false;
 }

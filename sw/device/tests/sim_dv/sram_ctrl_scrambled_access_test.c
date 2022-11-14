@@ -385,7 +385,8 @@ bool test_main(void) {
 
     execute_retention_sram_test();
     CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
+    return true;
   }
 
-  return true;
+  return false;
 }
