@@ -247,12 +247,12 @@ bool test_main(void) {
     execute_test(&aon_timer);
   } else if (rst_info == kDifRstmgrResetInfoEscalation) {
     LOG_INFO("Booting for the second time due to escalation reset");
+
+    // Turn off the AON timer hardware completely before exiting.
+    aon_timer_testutils_shutdown(&aon_timer);
+    return true;
   } else {
     LOG_ERROR("Unexpected rst_info=0x%x", rst_info);
-    return false;
   }
-
-  // Turn off the AON timer hardware completely before exiting.
-  aon_timer_testutils_shutdown(&aon_timer);
-  return true;
+  return false;
 }

@@ -213,6 +213,7 @@ bool test_main(void) {
     // Register value check after reset.
     LOG_INFO("Check registers");
     check_test_reg();
+    return true;
   }
-  return true;
+  return false;
 }

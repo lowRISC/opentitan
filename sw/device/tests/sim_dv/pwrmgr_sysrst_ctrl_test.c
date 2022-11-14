@@ -194,10 +194,12 @@ bool test_main(void) {
   } else if (rst_info == kDifRstmgrResetInfoWatchdog) {
     LOG_INFO("Booting for the third time due to wdog bite reset");
     LOG_INFO("Last Booting");
+    // Turn off the AON timer hardware completely before exiting.
+    aon_timer_testutils_shutdown(&aon_timer);
+    LOG_INFO("Test finish");
+    return true;
   }
 
-  // Turn off the AON timer hardware completely before exiting.
-  aon_timer_testutils_shutdown(&aon_timer);
-  LOG_INFO("Test finish");
-  return true;
+  // Reset reason is also checked above, so this is not strictly necessary.
+  return false;
 }

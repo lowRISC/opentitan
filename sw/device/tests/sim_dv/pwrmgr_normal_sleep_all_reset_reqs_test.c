@@ -522,12 +522,13 @@ bool test_main(void) {
       break;
     case 6:
       LOG_INFO("Last Booting");
+      // Turn off the AON timer hardware completely before exiting.
+      aon_timer_testutils_shutdown(&aon_timer);
+      return true;
       break;
     default:
       LOG_INFO("Booting for undefined case");
   }
 
-  // Turn off the AON timer hardware completely before exiting.
-  aon_timer_testutils_shutdown(&aon_timer);
-  return true;
+  return false;
 }

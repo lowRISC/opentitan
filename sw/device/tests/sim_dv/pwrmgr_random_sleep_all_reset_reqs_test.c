@@ -601,6 +601,10 @@ bool test_main(void) {
     case 5:
       if (RST_IDX[event_idx] % 2) {
         LOG_INFO("Last Booting");
+
+        // Turn off the AON timer hardware completely before exiting.
+        aon_timer_testutils_shutdown(&aon_timer);
+        return true;
       } else {
         LOG_INFO(
             "Booting and running normal sleep followed by escalation reset");
@@ -611,8 +615,5 @@ bool test_main(void) {
     default:
       LOG_INFO("Booting for undefined case");
   }
-
-  // Turn off the AON timer hardware completely before exiting.
-  aon_timer_testutils_shutdown(&aon_timer);
-  return true;
+  return false;
 }
