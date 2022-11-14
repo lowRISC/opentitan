@@ -271,7 +271,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
     // 20% read back to check if they're cleared
     if ($urandom_range(0, 4) == 0) begin
       read_sw_shares(sw_share_output);
-      `DV_CHECK_EQ(sw_share_output, '0)
+      if (get_check_en()) `DV_CHECK_EQ(sw_share_output, '0)
     end
   endtask : keymgr_rd_clr
 
