@@ -23,7 +23,7 @@ interface csrng_cov_if (
   bit en_intg_cov_loc;
   assign en_intg_cov_loc = en_full_cov | en_intg_cov;
 
-  covergroup csrng_cfg_cg with function sample(mubi8_t   otp_en_cs_sw_app_read,
+  covergroup csrng_cfg_cg with function sample(bit [7:0] otp_en_cs_sw_app_read,
                                                mubi4_t   sw_app_enable,
                                                mubi4_t   read_int_state,
                                                bit       regwen
