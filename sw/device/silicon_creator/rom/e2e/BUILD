@@ -2894,6 +2894,14 @@ test_suite(
             echo :::: Pretend execution is enabled.\\n
             set $pc = kRomStartBootExecEn
 
+            echo :::: Continue until watchdog config.\\n
+            break kRomStartWatchdogEnabled
+            continue
+
+            echo :::: Disable watchdog config.\\n
+            set {{int}}{watchdog_ctrl_reg_addr} = 0
+            delete 4
+
             echo :::: Continue until rom_main.\\n
             continue
             assert_pc rom_main
@@ -2952,6 +2960,7 @@ test_suite(
             gpr_copy_commands = gdb_commands_copy_registers(IBEX_GPRS),
             gpr_restore_commands = gdb_commands_restore_registers(IBEX_GPRS),
             gpr_set_commands = gdb_commands_set_registers("0x89abcdef", IBEX_GPRS),
+            watchdog_ctrl_reg_addr = "0x40470014",
         ),
         gdb_script_symlinks = {
             "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
