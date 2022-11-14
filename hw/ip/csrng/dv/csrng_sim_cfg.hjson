@@ -88,6 +88,12 @@
       uvm_test_seq: csrng_err_vseq
     }
 
+    {
+      name: csrng_regwen
+      uvm_test: csrng_regwen_test
+      uvm_test_seq: csrng_regwen_vseq
+    }
+
     // TODO: add more tests here
   ]
 
