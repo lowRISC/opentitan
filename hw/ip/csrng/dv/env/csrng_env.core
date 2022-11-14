@@ -33,6 +33,7 @@ filesets:
       - seq_lib/csrng_intr_vseq.sv: {is_include_file: true}
       - seq_lib/csrng_alert_vseq.sv: {is_include_file: true}
       - seq_lib/csrng_err_vseq.sv: {is_include_file: true}
+      - seq_lib/csrng_regwen_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

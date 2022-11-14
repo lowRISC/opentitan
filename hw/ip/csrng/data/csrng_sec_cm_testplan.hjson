@@ -24,8 +24,7 @@
 {
   testpoints: [
     {
-      // TODO: Unlike the REGWEN register, the CTRL and ERR_CODE_TEST registers are excluded from some automated CSRs tests (CsrExclWrite).
-      // We need to ensure write-read checks are happening or alternatively test point 2) explicitly, e.g., with a directed test.
+      // Since CTRL and ERR_CODE_TEST registers are excluded from some automated CSRs tests (CsrExclWrite), test points 1) and 2) are verified using a directed test.
       name: sec_cm_config_regwen
       desc: '''
             Verify the countermeasure(s) CONFIG.REGWEN.
@@ -34,7 +33,7 @@
             2) If REGWEN is not set, the CTRL and ERR_CODE_TEST registers cannot be modified.
             '''
       stage: V2S
-      tests: ["csrng_csr_rw"]
+      tests: ["csrng_csr_rw", "csrng_regwen"]
     }
     {
       name: sec_cm_config_mubi

@@ -10,3 +10,4 @@
 `include "csrng_intr_vseq.sv"
 `include "csrng_alert_vseq.sv"
 `include "csrng_err_vseq.sv"
+`include "csrng_regwen_vseq.sv"
