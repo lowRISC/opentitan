@@ -22,6 +22,7 @@ This interface allows peripherals to manage CSRNG instances, and request the CSR
 
 ## Features
 - Provides support for both deterministic (DRNG) and true random number generation (TRNG), when combined with a secure entropy source (i.e. one constructed and implemented in compliance with SP 800-90A,B,C and AIS31).
+  The TRNG mode is provided directly by the entropy source.
 - Compliant with NIST and BSI recommendations for random number generation.
 - Hardware peripherals and software applications issue commands to dedicated RNG instances through a common application interface.
 - In deterministic mode, meets the requirements given in AIS31 for a DRG.3 class deterministic random number generator (DRNG) meaning it provides Forward Secrecy and Enhanced Backward Secrecy.
@@ -38,8 +39,7 @@ This interface allows peripherals to manage CSRNG instances, and request the CSR
 - The IP interfaces with external entropy sources to obtain any required non-deterministic seed material (entropy) and nonces.
     - Requires an external entropy source which is compliant with NIST SP 800-90B, and which also satisfies the requirements for a PTG.2 class physical non-deterministic random number generator as defined in AIS31.
     - Dedicated hardware interface with external entropy source satisfies requirements for `get_entropy_input()` interface as defined in SP 800-90A.
-    - When needed, utilizes the `Block_Cipher_df` derivation function (as defined in SP 800-90A) for assembling seed material.
-      This allows the use of entropy sources which are not full-entropy (less than one bit of entropy per bit generated).
+    - This block does not use a derivation function and requires full entropy from the entropy source.
 - Also supports the optional use of personalization strings or other application inputs (e.g. OTP memory values) during instantiation.
 - Assuming a continuously-live entropy source, each instance can also optionally be used as a non-deterministic TRNG (true random number generator, also called a non-deterministic random bit generator or NRBG in SP 800-90C).
     - In this mode, an instance also meets the requirements laid out for a PTG.3 class RNG, the strongest class laid out in AIS31.
