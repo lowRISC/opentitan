@@ -1,6 +1,11 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+ # Additional reset
+ int_reset_reqs = rst_reqs["int"]
+ debug_reset_reqs = rst_reqs["debug"]
+%>\
 { name: "PWRMGR",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
@@ -178,11 +183,35 @@
     % endfor
 
     { name: "NumRstReqs",
-      desc: "Number of reset requets",
+      desc: "Number of peripheral reset requets",
       type: "int",
       default: "${NumRstReqs}",
       local: "true"
     },
+
+    { name: "NumIntRstReqs",
+      desc: "Number of pwrmgr internal reset requets",
+      type: "int",
+      default: "${len(int_reset_reqs)}",
+      local: "true"
+    },
+
+    { name: "NumDebugRstReqs",
+      desc: "Number of debug reset requets",
+      type: "int",
+      default: "${len(debug_reset_reqs)}",
+      local: "true"
+    },
+
+    % for req in int_reset_reqs + debug_reset_reqs:
+    { name: "${f"Reset{req['name']}Idx"}",
+      desc: "Reset req idx for ${req['name']}",
+      type: "int",
+      default: "${loop.index + NumRstReqs}",
+      local: "true"
+    },
+    % endfor
+
   ],
   countermeasures: [
     { name: "BUS.INTEGRITY",

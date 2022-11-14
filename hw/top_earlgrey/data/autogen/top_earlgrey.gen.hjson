@@ -12761,18 +12761,44 @@
     }
   ]
   reset_requests:
-  [
-    {
-      name: rst_req
-      width: "1"
-      module: sysrst_ctrl_aon
-    }
-    {
-      name: aon_timer_rst_req
-      width: "1"
-      module: aon_timer_aon
-    }
-  ]
+  {
+    peripheral:
+    [
+      {
+        name: rst_req
+        width: "1"
+        module: sysrst_ctrl_aon
+        desc: OpenTitan reset request to `rstmgr` (running on AON clock).
+      }
+      {
+        name: aon_timer_rst_req
+        width: "1"
+        module: aon_timer_aon
+        desc: watchdog reset requestt
+      }
+    ]
+    int:
+    [
+      {
+        name: MainPwr
+        desc: main power glitch reset request
+        module: pwrmgr_aon
+      }
+      {
+        name: Esc
+        desc: escalation reset request
+        module: alert_handler
+      }
+    ]
+    debug:
+    [
+      {
+        name: Ndm
+        desc: non-debug-module reset request
+        module: rv_dm
+      }
+    ]
+  }
   interrupt_module:
   [
     uart0

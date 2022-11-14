@@ -397,10 +397,10 @@ class TopGenC:
         slew rate and other flags.
         """
         direct_enum = CEnum(self._top_name +
-                               Name(["direct", "pads"]))
+                            Name(["direct", "pads"]))
 
         muxed_enum = CEnum(self._top_name +
-                               Name(["muxed", "pads"]))
+                           Name(["muxed", "pads"]))
 
         pads_info = self.top['pinout']['pads']
         muxed = [pad['name'] for pad in pads_info if pad['connection'] == 'muxed']
@@ -427,7 +427,6 @@ class TopGenC:
 
         self.direct_pads = direct_enum
         self.muxed_pads = muxed_enum
-
 
     def _init_pwrmgr_wakeups(self):
         enum = CEnum(self._top_name +
@@ -460,7 +459,7 @@ class TopGenC:
         enum = CEnum(self._top_name +
                      Name(["power", "manager", "reset", "requests"]))
 
-        for signal in self.top["reset_requests"]:
+        for signal in self.top["reset_requests"]["peripheral"]:
             enum.add_constant(
                 Name.from_snake_case(signal["module"]) +
                 Name.from_snake_case(signal["name"]))

@@ -217,11 +217,45 @@
 
 
     { name: "NumRstReqs",
-      desc: "Number of reset requets",
+      desc: "Number of peripheral reset requets",
       type: "int",
       default: "2",
       local: "true"
     },
+
+    { name: "NumIntRstReqs",
+      desc: "Number of pwrmgr internal reset requets",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+
+    { name: "NumDebugRstReqs",
+      desc: "Number of debug reset requets",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+
+    { name: "ResetMainPwrIdx",
+      desc: "Reset req idx for MainPwr",
+      type: "int",
+      default: "2",
+      local: "true"
+    },
+    { name: "ResetEscIdx",
+      desc: "Reset req idx for Esc",
+      type: "int",
+      default: "3",
+      local: "true"
+    },
+    { name: "ResetNdmIdx",
+      desc: "Reset req idx for Ndm",
+      type: "int",
+      default: "4",
+      local: "true"
+    },
+
   ],
   countermeasures: [
     { name: "BUS.INTEGRITY",

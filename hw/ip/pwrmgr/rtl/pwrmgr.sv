@@ -457,7 +457,8 @@ module pwrmgr
   // the lsbs are the software enabled peripheral requests.
   assign slow_peri_reqs_masked.rstreqs = slow_peri_reqs.rstreqs &
                                          {{NumSwRstReq{1'b1}},
-                                          {IntReqLastIdx{1'b1}},
+                                          {NumDebugRstReqs{1'b1}},
+                                          {NumIntRstReqs{1'b1}},
                                           slow_reset_en};
 
   for (genvar i = 0; i < NumWkups; i++) begin : gen_wakeup_status

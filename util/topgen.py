@@ -422,7 +422,7 @@ def generate_pwrmgr(top, out_path):
     log.info("Found {} wakeup signals".format(n_wkups))
 
     # Count number of reset requests
-    n_rstreqs = len(top["reset_requests"])
+    n_rstreqs = len(top["reset_requests"]["peripheral"])
     log.info("Found {} reset request signals".format(n_rstreqs))
 
     if n_wkups < 1:
@@ -453,6 +453,7 @@ def generate_pwrmgr(top, out_path):
         try:
             out = hjson_tpl.render(NumWkups=n_wkups,
                                    Wkups=top["wakeups"],
+                                   rst_reqs=top["reset_requests"],
                                    NumRstReqs=n_rstreqs)
 
         except:  # noqa: E722
@@ -522,7 +523,7 @@ def generate_rstmgr(topcfg, out_path):
     leaf_rsts = reset_obj.get_generated_resets()
 
     # Number of reset requests
-    n_rstreqs = len(topcfg["reset_requests"])
+    n_rstreqs = len(topcfg["reset_requests"]["peripheral"])
 
     # Generate templated files
     for idx, t in enumerate(tpls):
@@ -531,6 +532,7 @@ def generate_rstmgr(topcfg, out_path):
             tpl = Template(fin.read())
             try:
                 out = tpl.render(clks=clks,
+                                 reqs=topcfg["reset_requests"],
                                  power_domains=topcfg["power"]["domains"],
                                  num_rstreqs=n_rstreqs,
                                  sw_rsts=sw_rsts,

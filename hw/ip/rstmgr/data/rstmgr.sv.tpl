@@ -399,7 +399,7 @@ module rstmgr
 
   // HW reset requests most likely will be multi-bit, so OR in whatever reasons
   // that are already set.
-  assign hw2reg.reset_info.hw_req.d  = pwr_i.rstreqs[pwrmgr_pkg::HwResetWidth-1:0] |
+  assign hw2reg.reset_info.hw_req.d  = pwr_i.rstreqs |
                                        reg2hw.reset_info.hw_req.q;
   assign hw2reg.reset_info.hw_req.de = rst_hw_req;
 

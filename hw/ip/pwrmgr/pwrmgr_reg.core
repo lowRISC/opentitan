@@ -10,11 +10,9 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:prim:subreg
-      - "fileset_top    ? (lowrisc:systems:pwrmgr_reg)"
+      - lowrisc:systems:pwrmgr_reg
       - "fileset_topgen ? (lowrisc:systems:topgen-reg-only)"
     files:
-      - "fileset_ip ? (rtl/pwrmgr_reg_pkg.sv)"
-      - "fileset_ip ? (rtl/pwrmgr_reg_top.sv)"
     file_type: systemVerilogSource
 
 targets:

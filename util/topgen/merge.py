@@ -977,7 +977,31 @@ def amend_reset_request(topcfg: OrderedDict,
     pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
 
     if "reset_requests" not in topcfg or topcfg["reset_requests"] == "":
-        topcfg["reset_requests"] = []
+        topcfg["reset_requests"] = {}
+        topcfg["reset_requests"]["peripheral"] = []
+
+        # TODO: The reset_request_list of each module needs to be enhanced
+        # to support multiple types in the long run, then we can avoid
+        # hardwiring like this.
+        topcfg["reset_requests"]["int"] = [
+            {
+                "name": "MainPwr",
+                "desc": "main power glitch reset request",
+                "module": "pwrmgr_aon"
+            },
+            {
+                "name": "Esc",
+                "desc": "escalation reset request",
+                "module": "alert_handler"
+            }
+        ]
+        topcfg["reset_requests"]["debug"] = [
+            {
+                "name": "Ndm",
+                "desc": "non-debug-module reset request",
+                "module": "rv_dm"
+            }
+        ]
 
     # create list of reset signals
     for m in topcfg["module"]:
@@ -985,16 +1009,17 @@ def amend_reset_request(topcfg: OrderedDict,
         block = name_to_block[m['type']]
         for signal in block.reset_requests:
             log.info("Adding signal %s" % signal.name)
-            topcfg["reset_requests"].append({
+            topcfg["reset_requests"]["peripheral"].append({
                 'name': signal.name,
                 'width': str(signal.bits.width()),
-                'module': m["name"]
+                'module': m["name"],
+                'desc': signal.desc
             })
 
     # add reset requests to pwrmgr connections
     signal_names = [
         "{}.{}".format(s["module"].lower(), s["name"].lower())
-        for s in topcfg["reset_requests"]
+        for s in topcfg["reset_requests"]["peripheral"]
     ]
 
     topcfg["inter_module"]["connect"]["{}.rstreqs".format(pwrmgr_name)] = signal_names
@@ -1032,7 +1057,7 @@ def get_index_and_incr(ctrs: Dict, connection: str, io_dir: str) -> Dict:
             result = ctrs[connection]['outputs'] + ctrs[connection]['inouts']
             ctrs[connection]['outputs'] += 1
         else:
-            assert(0)  # should not happen
+            assert (0)  # should not happen
     else:
         # For DIOs, the input/output arrays are identical in terms of index layout.
         # Unused inputs are left unconnected and unused outputs are tied off.
@@ -1045,7 +1070,7 @@ def get_index_and_incr(ctrs: Dict, connection: str, io_dir: str) -> Dict:
                       ctrs[connection]['inputs'])
             ctrs[connection]['outputs'] += 1
         else:
-            assert(0)  # should not happen
+            assert (0)  # should not happen
 
     return result
 
@@ -1187,7 +1212,7 @@ def amend_pinmux_io(top: Dict, name_to_block: Dict[str, IpBlock]):
                        pinmux['io_counts']['muxed']['pads'])
                 entry['idx'] = idx
             else:
-                assert(0)  # Entry should be guaranteed to exist at this point
+                assert (0)  # Entry should be guaranteed to exist at this point
 
 
 def merge_top(topcfg: OrderedDict,

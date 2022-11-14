@@ -11,6 +11,7 @@ package rstmgr_reg_pkg;
   parameter int IdxWidth = 4;
   parameter int NumHwResets = 5;
   parameter int NumSwResets = 8;
+  parameter int NumTotalResets = 8;
   parameter int NumAlerts = 2;
 
   // Address widths within the block
