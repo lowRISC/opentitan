@@ -1559,11 +1559,11 @@ BOOT_POLICY_VALID_CASES = [
         ),
         srcs = {
             ":empty_test_slot_a{}".format(a["suffix"]): {
-                "key": "test_key_0",
+                "key": "prod_key_0",
                 "offset": SLOTS["a"],
             },
             ":empty_test_slot_b{}".format(b["suffix"]): {
-                "key": "test_key_0",
+                "key": "prod_key_0",
                 "offset": SLOTS["b"],
             },
         },
