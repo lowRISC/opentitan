@@ -362,7 +362,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
                                   bit [18:0] glen,
                                   bit [CSRNG_BUS_WIDTH-1:0] additional_input = 'h0);
 
-    uint                          requested_bits;
     bit [GENBITS_BUS_WIDTH-1:0]   genbits, hw_genbits;
     bit [CTR_LEN-1:0]             inc;
     bit [BLOCK_LEN-1:0]           output_block;
@@ -371,7 +370,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     if (additional_input) begin
       ctr_drbg_update(app, additional_input);
     end
-    requested_bits = glen * GENBITS_BUS_WIDTH;
     for (int i = 0; i < glen; i++) begin
       if (CTR_LEN < BLOCK_LEN) begin
         inc = (cfg.v[app][CTR_LEN-1:0] + 1);
