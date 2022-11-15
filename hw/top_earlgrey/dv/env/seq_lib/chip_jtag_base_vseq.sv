@@ -13,12 +13,6 @@ class chip_jtag_base_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_jtag_base_vseq)
 
   `uvm_object_new
-  jtag_dmi_reg_block jtag_dmi_ral;
-
-  virtual function void set_handles();
-    super.set_handles();
-    jtag_dmi_ral = cfg.jtag_dmi_ral;
-  endfunction // set_handles
 
   virtual task pre_start();
     cfg.chip_vif.tap_straps_if.drive(JtagTapRvDm);
