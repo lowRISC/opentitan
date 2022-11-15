@@ -119,6 +119,19 @@ class spi_host_base_vseq extends cip_base_vseq #(
     join
   endtask // start_reactive_seq
 
+  // Call this function to cleanup the above started reactive-sequences, such as if we
+  // exit early, or are running sequences back-to-back.
+  virtual task cleanup_reactive_seq();
+    p_sequencer.spi_sequencer_h.stop_sequences();
+    if (cfg.m_spi_agent_cfg.has_req_fifo) p_sequencer.spi_sequencer_h.req_analysis_fifo.flush();
+    if (cfg.m_spi_agent_cfg.has_rsp_fifo) p_sequencer.spi_sequencer_h.rsp_analysis_fifo.flush();
+  endtask // cleanup_reactive_seq
+
+  task post_start();
+    super.post_start();
+    cleanup_reactive_seq();
+  endtask
+
   function void transaction_init();
     transaction = new();
 

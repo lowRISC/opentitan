@@ -117,6 +117,7 @@
     {
       name: spi_host_stress_all
       uvm_test_seq: spi_host_stress_all_vseq
+      run_opts: ["+test_timeout_ns=1_000_000_000"]
     }
     // TODO: add more tests here
   ]
