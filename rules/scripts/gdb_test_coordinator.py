@@ -178,7 +178,7 @@ def main(rom_kind: str = typer.Option(...),
         "; ".join([
             "init",
             "adapter deassert srst",
-            "reset init",
+            "reset halt",
         ])
     ]
     gdb_command = [
