@@ -45,8 +45,8 @@
       name: rom_e2e_sigverify_always_a_bad_b_bad_test_unlocked0
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_test_key_0:no_sw_log_db",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_test_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_test_key_0",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_test_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -62,8 +62,8 @@
       name: rom_e2e_sigverify_always_a_bad_b_bad_dev
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_dev_key_0:no_sw_log_db",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_dev_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_dev_key_0",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_dev_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_dev:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -79,8 +79,8 @@
       name: rom_e2e_sigverify_always_a_bad_b_bad_prod
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -96,8 +96,8 @@
       name: rom_e2e_sigverify_always_a_bad_b_bad_prod_end
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod_end:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -113,8 +113,8 @@
       name: rom_e2e_sigverify_always_a_bad_b_bad_rma
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:2:ot_flash_binary:signed:fake_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_rma:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -131,7 +131,7 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_test_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_test_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -148,7 +148,7 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_dev_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_dev_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_dev:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -165,7 +165,7 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -182,7 +182,7 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod_end:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -199,7 +199,7 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_corrupted:1:ot_flash_binary:signed:fake_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_rma:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -216,7 +216,7 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_test_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_test_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_test_unlocked0:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -233,7 +233,7 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_dev_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_dev_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_dev:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -250,7 +250,7 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -267,7 +267,7 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_prod_end:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]
@@ -284,7 +284,7 @@
       // We can use the same vseq as the `*_a_bad_b_bad_*` tests above, as we expect the same ROM boot fault value.
       uvm_test_seq: chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq
       sw_images: [
-        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_prod_key_0:no_sw_log_db",
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_corrupted:1:ot_flash_binary:signed:fake_prod_key_0",
         "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_always_rma:4",
       ]
       en_run_modes: ["sw_test_mode_rom"]

@@ -46,12 +46,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     // Initialize the sw logger interface.
     foreach (cfg.sw_images[i]) begin
       if (i inside {SwTypeRom, SwTypeTestSlotA, SwTypeTestSlotB}) begin
-        if ("no_sw_log_db" inside {cfg.sw_image_flags[i]}) begin
-          `uvm_info(`gfn, $sformatf("Skipping loading SW logging DB for: %0s", cfg.sw_images[i]),
-            UVM_MEDIUM);
-        end else begin
-          cfg.sw_logger_vif.add_sw_log_db(cfg.sw_images[i]);
-        end
+        cfg.sw_logger_vif.add_sw_log_db(cfg.sw_images[i]);
       end
     end
     cfg.sw_logger_vif.sw_log_addr = SW_DV_LOG_ADDR;
