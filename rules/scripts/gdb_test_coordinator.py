@@ -47,11 +47,31 @@ class BackgroundProcessGroup:
         self.procs_queue.append(proc)
         self.names[proc] = label
 
+        # Do not allow subprocesses to spam stdout with repeated lines.
+        last_line = None
+        last_line_count = 0
+        line_repeat_threshold = 10
+
         # Register the new process with our selector. The `echo` closure may be
         # called multiple times by `maybe_print_output`.
         def echo(line):
-            self.console.print(f"[{label}] ", style=style, end='')
-            print(line, flush=True)
+            nonlocal last_line
+            nonlocal last_line_count
+            nonlocal line_repeat_threshold
+
+            if last_line is None or line != last_line:
+                self.console.print(f"[{label}] ", style=style, end='')
+                print(line, flush=True)
+                last_line_count = 0
+                line_repeat_threshold = 10
+            else:
+                last_line_count += 1
+                if last_line_count % line_repeat_threshold == 0:
+                    self.console.print(f"[{label}] ", style=style, end='')
+                    print("[last line repeated {} times]".format(line_repeat_threshold), flush=True)
+                    line_repeat_threshold *= 10
+
+            last_line = line
 
             if callback is not None:
                 callback(line)
