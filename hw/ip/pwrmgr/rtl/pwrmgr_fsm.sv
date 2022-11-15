@@ -459,7 +459,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
       FastPwrStateResetWait: begin
         rst_lc_req_d = {PowerDomains{1'b1}};
-        clr_slow_req_o = 1'b1;
+        clr_slow_req_o = reset_reqs_i[ResetMainPwrIdx];
         // The main power reset request is checked here specifically because it is
         // the only reset request in the system that operates on the POR domain.
         // This has to be the case since it would otherwise not be able to monitor
