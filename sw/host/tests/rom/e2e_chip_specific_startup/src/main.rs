@@ -263,9 +263,9 @@ fn check_epmp(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
             assert!(matches!(
                 epmp.entry[13],
                 EpmpEntry {
-                    cfg: _,
-                    kind: EpmpRegionKind::Off,
-                    range: _
+                    cfg: EPMP_CFG_LOCKED_NONE,
+                    kind: EpmpRegionKind::Napot,
+                    range: EpmpAddressRange(0x10000, 0x11000)
                 }
             ));
         }
@@ -289,8 +289,28 @@ fn check_interrupts(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
 }
 
 fn check_sram(_opts: &Opts, cs: &ChipStartup) -> Result<()> {
+    let lc_state = DifLcCtrlState(cs.lc_state);
+    log::info!("lc_state = {:#x}", lc_state);
     assert!(cs.sram.scr_key_valid);
-    assert!(cs.sram.scr_key_seed_valid);
+    match lc_state {
+        DifLcCtrlState::Dev
+        | DifLcCtrlState::Prod
+        | DifLcCtrlState::ProdEnd
+        | DifLcCtrlState::Rma => {
+            log::info!(
+                "Checking that the SRAM scrambling key seed is valid in LC state {:#x}",
+                lc_state
+            );
+            assert!(cs.sram.scr_key_seed_valid);
+        }
+        _ => {
+            log::info!(
+                "Checking that the SRAM scrambling key seed is not valid in LC state {:#x}",
+                lc_state
+            );
+            assert!(!cs.sram.scr_key_seed_valid);
+        }
+    }
     assert!(cs.sram.init_done);
     Ok(())
 }
