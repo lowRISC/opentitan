@@ -99,15 +99,19 @@ class aon_timer_base_vseq extends cip_base_vseq #(
 
     // Bring up the clocks in either order. We can't just race them by running them in parallel,
     // because the AON clock is much slower so will always come up second.
+    // This gives aon_rst a value first before following the normal routine.
+    // We cannot completely serialize the resets as that would break device assumptions
+    // on CDC paths were both sides are always reset together.
     if (kind == "HARD" && reset_aon_first) begin
-      cfg.aon_clk_rst_vif.apply_reset();
-      super.apply_reset(kind);
-    end else begin
-      fork
-        if (kind == "HARD") cfg.aon_clk_rst_vif.apply_reset();
-        super.apply_reset(kind);
-      join
+      cfg.aon_clk_rst_vif.drive_rst_pin(.val('0));
+      #1ps;
     end
+
+    fork
+      if (kind == "HARD") cfg.aon_clk_rst_vif.apply_reset();
+      super.apply_reset(kind);
+    join
+
   endtask // apply_reset
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
