@@ -51,6 +51,9 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   int NApps = NHwApps + 1;
   int Sp2VWidth = 3;
 
+  rand uint  which_app_err_alert;
+  constraint which_app_err_alert_c { which_app_err_alert inside {[0:NApps-1]};}
+
   rand uint  which_hw_inst_exc;
   constraint which_hw_inst_exc_c { which_hw_inst_exc inside {[0:NHwApps-1]};}
 

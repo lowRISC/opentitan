@@ -36,6 +36,12 @@ class csrng_err_vseq extends csrng_base_vseq;
     fifo_err_value[0] = '{"write": 1'b1, "read": 1'b1, "state": 1'b1};
     fifo_err_value[1] = '{"write": 1'b1, "read": 1'b0, "state": 1'b0};
 
+    // Create edn host sequences
+    for (int i = 0; i < NUM_HW_APPS; i++) begin
+      m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::create
+                                              ($sformatf("m_edn_push_seq[%0d]", i));
+    end
+
     // Turn off fatal alert check
     expect_fatal_alerts = 1'b1;
 
@@ -55,7 +61,7 @@ class csrng_err_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.which_app_err_alert, cs_item);
 
     // Write CSRNG Cmd_Req Register - Generate Command
     cs_item.acmd  = csrng_pkg::GEN;
@@ -63,7 +69,7 @@ class csrng_err_vseq extends csrng_base_vseq;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(SW_APP, cs_item);
+    send_cmd_req(cfg.which_app_err_alert, cs_item);
 
     reg_name = "err_code";
     csr = ral.get_reg_by_name(reg_name);
@@ -81,8 +87,8 @@ class csrng_err_vseq extends csrng_base_vseq;
         fifo_base_path = fld_name.substr(0, last_index-1);
 
         foreach (path_exts[i]) begin
-          fifo_forced_paths[i] = cfg.csrng_path_vif.fifo_err_path(cfg.NHwApps, fifo_base_path,
-                                                                  path_exts[i]);
+          fifo_forced_paths[i] = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert,
+                                                                  fifo_base_path, path_exts[i]);
         end
 
         if (cfg.which_err_code == sfifo_updreq_err || cfg.which_err_code == sfifo_bencack_err ||
@@ -97,7 +103,8 @@ class csrng_err_vseq extends csrng_base_vseq;
       end
       cmd_stage_sm_err, main_sm_err, drbg_gen_sm_err, drbg_updbe_sm_err, drbg_updob_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
-        path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1), cfg.NHwApps);
+        path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1),
+                                              cfg.which_app_err_alert);
         force_path_err(path, 8'b0, fld, 1'b1);
         cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
       end
@@ -114,11 +121,11 @@ class csrng_err_vseq extends csrng_base_vseq;
       end
       cmd_gen_cnt_err: begin
         logic [csrng_pkg::StateWidth-1:0] sm_state;
-        string sm_state_path = cfg.csrng_path_vif.sm_err_path("main_sm", cfg.NHwApps);
+        string sm_state_path = cfg.csrng_path_vif.sm_err_path("main_sm", cfg.which_app_err_alert);
         case(cfg.which_cnt) inside
           cmd_gen_cnt_sel: begin
             fld = csr.get_field_by_name(fld_name);
-            path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.which_hw_inst_exc);
+            path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.which_app_err_alert);
             force_cnt_err(path, fld, 1'b1, 13);
           end
           drbg_upd_cnt_sel: begin
@@ -143,9 +150,9 @@ class csrng_err_vseq extends csrng_base_vseq;
         fifo_name = cfg.which_fifo.name();
         path_key = fld_name.substr(first_index+1, last_index-1);
 
-        path1 = cfg.csrng_path_vif.fifo_err_path(cfg.NHwApps, fifo_name,
+        path1 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
                                                  fifo_err_path[0][path_key]);
-        path2 = cfg.csrng_path_vif.fifo_err_path(cfg.NHwApps, fifo_name,
+        path2 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
                                                  fifo_err_path[1][path_key]);
         value1 = fifo_err_value[0][path_key];
         value2 = fifo_err_value[1][path_key];
