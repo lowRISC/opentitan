@@ -48,3 +48,13 @@ set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
     (ClockDomains=="USB_CLK::USB_CLK")} \
   -comment {SW Reset is sync assert and sync de-assert. \
     So, when signal crossing the domain, it has no metastability issue.}
+
+# USBDEV, CSR to PAD
+set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
+  -expression {(ResetFlop=~"*.u_usbdev.u_reg.u_phy_pins_drive_d*_o.q*") && \
+    (MetaStableFlop=~"USB_*")} \
+  -comment {For AonPok, MainPok drop cases, the module floats the PAD \
+  intentionally. If the PADs should drive values, the values are \
+  pre-configured before entering to the low power modes. \
+  For SW_RST_REQ cases, SW should correctly configure the pull-ups, \
+  pull-downs prior to resetting the USBDEV IP.}
