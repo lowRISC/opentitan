@@ -31,4 +31,5 @@ ci/bazelisk.sh test \
     //sw/device/silicon_creator/lib/drivers:alert_functest_sim_verilator \
     //sw/device/silicon_creator/lib/drivers:watchdog_functest_sim_verilator \
     //sw/device/silicon_creator/lib:irq_asm_functest_sim_verilator \
-    //sw/device/silicon_creator/rom:rom_epmp_test_sim_verilator
+    //sw/device/silicon_creator/rom:rom_epmp_test_sim_verilator \
+    //sw/device/silicon_creator/rom/e2e/weak_straps/...
