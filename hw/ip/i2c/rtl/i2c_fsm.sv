@@ -1230,6 +1230,11 @@ module i2c_fsm #(
           // too early relative to driving the data.  This will cause a
           // setup violation.  This is the same case to needing StretchTxSetup.
           state_d = rw_bit_q ? StretchTxEmpty : AcquireByte;
+          // Since we are transitioning to StretchTxEmpty above, also assert the
+          // empty interrupt if the fifo will be valid.
+          // TODO: convert this to level status interrupt eventually, this is a
+          // workaround.
+          event_tx_empty_o = rw_bit_q & ~tx_fifo_rvalid_i;
 
           // Clear whichever stretch was requested.
           stretch_stop_tx_clr = stretch_en_addr_tx_i;
