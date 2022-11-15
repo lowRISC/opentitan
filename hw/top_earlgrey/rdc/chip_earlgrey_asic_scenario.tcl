@@ -53,6 +53,7 @@ set_reset_scenario { \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_peri    { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_peri         { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_usb_peri        { constraint { @t0 0 } } } \
+  { top_earlgrey.pwrmgr_aon_low_power                  { constraint { @t0 1 } } } \
 } -name ScnAonPOK
 
 # AST Regulator Resets
@@ -83,6 +84,7 @@ set_reset_scenario { \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_peri    { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_peri         { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_usb_peri        { constraint { @t0 0 } } } \
+  { top_earlgrey.pwrmgr_aon_low_power                  { constraint { @t0 1 } } } \
 } -name ScnMainPok
 
 #set_reset_scenario { \
