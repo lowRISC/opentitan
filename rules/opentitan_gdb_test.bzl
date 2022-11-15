@@ -149,7 +149,8 @@ def _opentitan_gdb_fpga_cw310_test_impl(ctx):
     if ctx.attr.opentitantool_cw310_uarts != "":
         test_script += " " + ctx.attr.opentitantool_cw310_uarts
 
-    ctx.actions.write(output = gdb_script_file, content = ctx.attr.gdb_script)
+    gdb_script_content = "target extended-remote :3333\n" + ctx.attr.gdb_script
+    ctx.actions.write(output = gdb_script_file, content = gdb_script_content)
     ctx.actions.write(output = ctx.outputs.executable, content = test_script)
 
     # Construct a dict that we can pass to `ctx.runfiles()`, mapping symlink

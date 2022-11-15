@@ -1680,12 +1680,6 @@ OTP_CFGS_EXEC_DISABLED = [
 ]
 
 SRAM_JTAG_INJECTION_GDB_SCRIPT = """
-        target extended-remote :3333
-
-        echo :::: Send OpenOCD the 'reset halt' command.\\n
-        monitor reset halt
-
-
         # Mitigate flakiness from the watchdog timer. Prior to connecting
         # OpenOCD and GDB, the device is executing normally. The ROM has
         # probably already started up and configured the watchdog timer. This is
@@ -1852,11 +1846,6 @@ test_suite(
         timeout = "short",
         expect_debug_disallowed = otp_name in ("prod", "prod_end"),
         gdb_script = """
-            target extended-remote :3333
-
-            echo :::: Send OpenOCD the 'reset halt' command.\\n
-            monitor reset halt
-
             echo :::: Load ROM symbols into GDB.\\n
             file rom.elf
 
@@ -1890,11 +1879,6 @@ test_suite(
         name = "asm_interrupt_handler_fpga_cw310_test_otp_" + otp_name,
         timeout = "short",
         gdb_script = """
-            target extended-remote :3333
-
-            echo :::: Send OpenOCD the 'reset halt' command.\\n
-            monitor reset halt
-
             echo :::: Load ROM symbols into GDB.\\n
             file rom.elf
 
@@ -1945,11 +1929,6 @@ test_suite(
             "unable to resume hart 0",
         ],
         gdb_script = """
-            target extended-remote :3333
-
-            echo :::: Send OpenOCD the 'reset halt' command.\\n
-            monitor reset halt
-
             echo :::: Load ROM symbols into GDB.\\n
             file rom.elf
 
@@ -1999,11 +1978,6 @@ REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
         name = "rom_e2e_asm_watchdog_bark_fpga_cw310_test_otp_" + otp_name,
         timeout = "short",
         gdb_script = """
-            target extended-remote :3333
-
-            echo :::: Send OpenOCD the 'reset halt' command.\\n
-            monitor reset halt
-
             echo :::: Load ROM symbols into GDB.\\n
             file rom.elf
 
@@ -2077,11 +2051,6 @@ REDACT = structs.to_dict(CONST.SHUTDOWN.REDACT)
             "Hart 0 unexpectedly reset!",
         ],
         gdb_script = """
-            target extended-remote :3333
-
-            echo :::: Send OpenOCD the 'reset halt' command.\\n
-            monitor reset halt
-
             echo :::: Load ROM symbols into GDB.\\n
             file rom.elf
 
@@ -2857,11 +2826,6 @@ test_suite(
                     quit 1
                 end
             end
-
-            target extended-remote :3333
-
-            echo :::: Send OpenOCD the 'reset halt' command.\\n
-            monitor reset halt
 
             echo :::: Load ROM symbols into GDB.\\n
             file rom.elf

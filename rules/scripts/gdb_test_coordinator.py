@@ -174,6 +174,11 @@ def main(rom_kind: str = typer.Option(...),
         ]),
         "-f",
         openocd_earlgrey_config,
+        "-c",
+        "; ".join([
+            "init",
+            "reset halt",
+        ])
     ]
     gdb_command = [
         # For debugging, it may be useful to use `--init-command`, which causes
