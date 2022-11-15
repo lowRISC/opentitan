@@ -11,7 +11,6 @@ class csrng_alert_vseq extends csrng_base_vseq;
 
   bit [31:0]      exp_recov_alert_sts;
   csrng_item      cs_item;
-  rand uint       app_if;
   rand bit        flag0_flip_ins_cmd;
 
   task body();
@@ -22,8 +21,6 @@ class csrng_alert_vseq extends csrng_base_vseq;
     uvm_reg_field fld;
 
     super.body();
-
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(app_if, app_if inside {SW_APP, HW_APP0, HW_APP1};)
 
     // Create edn host sequences
     for (int i = 0; i < NUM_HW_APPS; i++) begin
@@ -72,7 +69,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
     `uvm_info(`gfn, $sformatf("Testing acmd_flag0_field_alert on app interface %d for %s command",
-        app_if, flag0_flip_ins_cmd ? "INS" : "RES"), UVM_MEDIUM)
+        cfg.which_app_err_alert, flag0_flip_ins_cmd ? "INS" : "RES"), UVM_MEDIUM)
 
     cs_item = csrng_item::type_id::create("cs_item");
 
@@ -85,7 +82,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
         get_rand_mubi4_val(.t_weight(0), .f_weight(0), .other_weight(1)) : MuBi4True;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(app_if, cs_item);
+    send_cmd_req(cfg.which_app_err_alert, cs_item);
 
     // Reseed Command
     cs_item.acmd  = csrng_pkg::RES;
@@ -94,7 +91,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
         get_rand_mubi4_val(.t_weight(0), .f_weight(0), .other_weight(1)) : MuBi4True;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(app_if, cs_item);
+    send_cmd_req(cfg.which_app_err_alert, cs_item);
 
     if (!flag0_flip_ins_cmd) begin
       // The previous command interpreting flag0 detected an invalid MuBi encoding. We need
@@ -106,7 +103,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
       cs_item.flags = MuBi4True;
       cs_item.glen  = 'h1;
       `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-      send_cmd_req(app_if, cs_item);
+      send_cmd_req(cfg.which_app_err_alert, cs_item);
     end
 
     `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
