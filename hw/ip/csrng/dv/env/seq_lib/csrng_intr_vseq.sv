@@ -217,7 +217,21 @@ class csrng_intr_vseq extends csrng_base_vseq;
     // Clear intr_state
     csr_wr(.ptr(ral.intr_state), .value(32'd15));
     cfg.clk_rst_vif.wait_clks(100);
-    csr_rd_check(.ptr(ral.intr_state), .compare_value(4'b0));
+
+    if (cfg.which_fatal_err inside {cmd_stage_sm_err, main_sm_err,
+                                    drbg_gen_sm_err, drbg_updbe_sm_err, drbg_updob_sm_err,
+                                    aes_cipher_sm_err,
+                                    cmd_gen_cnt_err, cmd_gen_cnt_err_test}) begin
+      // These errors are either not gated with the module enable or they cause the main FSM to
+      // escalate of which the alert output itself isn't gated with the module enable. After
+      // clearing the interrupt state register, the cs_fatal_err interrupt bit again gets asserted.
+      // The interrupt enable just affetcs the signaling of the actual interrupt.
+      csr_rd_check(.ptr(ral.intr_state), .compare_value(4'b1000));
+    end else begin
+      // These errors are gated with the module enable. As the module has been switched off now,
+      // these are not expected to re-propagate into the interrupt state register after clearing.
+      csr_rd_check(.ptr(ral.intr_state), .compare_value(4'b0));
+    end
 
     // Turn assertions back on
     $asserton(0, "tb.entropy_src_if.ReqHighUntilAck_A");
