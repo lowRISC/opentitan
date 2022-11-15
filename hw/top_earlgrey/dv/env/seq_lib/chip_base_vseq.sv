@@ -12,6 +12,8 @@ class chip_base_vseq #(
 );
   `uvm_object_utils(chip_base_vseq)
 
+  jtag_dmi_reg_block jtag_dmi_ral;
+
   // knobs to enable pre_start routines
 
   // knobs to enable post_start routines
@@ -22,6 +24,11 @@ class chip_base_vseq #(
   byte uart_tx_data_q[$];
 
   `uvm_object_new
+
+  virtual function void set_handles();
+    super.set_handles();
+    jtag_dmi_ral = cfg.jtag_dmi_ral;
+  endfunction // set_handles
 
   virtual function void set_sva_check_rstreqs(bit enable);
     `uvm_info(`gfn, $sformatf("Remote setting check_rstreqs_en=%b", enable), UVM_MEDIUM)
