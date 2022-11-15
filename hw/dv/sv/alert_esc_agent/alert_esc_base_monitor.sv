@@ -36,10 +36,14 @@ class alert_esc_base_monitor extends dv_base_monitor #(
     forever begin
       @(negedge cfg.vif.rst_n);
       under_reset = 1;
+      // TODO: this is a temp fix to support pwrmgr with multi-resets. Further improvement in
+      // #16374.
+      cfg.under_reset = 1;
       @(posedge cfg.vif.rst_n);
       // reset signals at posedge rst_n to avoid race condition at negedge rst_n
       reset_signals();
       under_reset = 0;
+      cfg.under_reset = 0;
     end
   endtask : reset_thread
 

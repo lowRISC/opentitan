@@ -980,7 +980,8 @@ class cip_base_vseq #(
                 ack_seq.start(p_sequencer.alert_esc_sequencer_h[alert_name]);
               end
               begin
-                wait(!en_auto_alerts_response || cfg.under_reset);
+                // TODO: issue #16374.
+                wait(!en_auto_alerts_response || cfg.m_alert_agent_cfg[alert_name].under_reset);
                 cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();
               end
             join_any

@@ -47,6 +47,8 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
   int unsigned handshake_timeout_cycle = 100_000;
   int unsigned ping_timeout_cycle = 32;
 
+  bit under_reset;
+
   `uvm_object_utils_begin(alert_esc_agent_cfg)
     `uvm_field_int(alert_delay_min, UVM_DEFAULT)
     `uvm_field_int(alert_delay_max, UVM_DEFAULT)
