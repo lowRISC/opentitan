@@ -29,6 +29,10 @@ class edn_smoke_vseq extends edn_base_vseq;
 
     // Send generate cmd
     wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::GEN), .clen(0), .flags(MuBi4False), .glen(1));
+
+    // Send uninstantiate cmd
+    `DV_CHECK_STD_RANDOMIZE_FATAL(flags)
+    wr_cmd(.cmd_type("sw"), .acmd(csrng_pkg::UNI), .clen(0), .flags(flags), .glen(0));
   endtask
 
 endclass
