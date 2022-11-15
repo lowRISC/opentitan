@@ -23,10 +23,9 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   virtual csrng_path_if csrng_path_vif; // handle to csrng path interface
 
   // Knobs & Weights
-  uint   otp_en_cs_sw_app_read_pct, otp_en_cs_sw_app_read_inval_pct, lc_hw_debug_en_pct, regwen_pct,
-         enable_pct, sw_app_enable_pct, read_int_state_pct, force_state_pct,
-         check_int_state_pct, num_cmds_min, num_cmds_max, aes_halt_pct,
-         min_aes_halt_clks, max_aes_halt_clks;
+  uint otp_en_cs_sw_app_read_pct, otp_en_cs_sw_app_read_inval_pct, lc_hw_debug_en_pct, regwen_pct,
+       enable_pct, sw_app_enable_pct, read_int_state_pct, force_state_pct, check_int_state_pct,
+       num_cmds_min, num_cmds_max, aes_halt_pct, min_aes_halt_clks, max_aes_halt_clks;
 
   bit    use_invalid_mubi;
 
@@ -145,11 +144,11 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   // Check internal state w/ optional compare
   task check_internal_state(uint app = SW_APP, bit compare = 0);
-    bit [TL_DW-1:0]                        rdata;
-    bit                                    hw_compliance, hw_status;
-    bit [csrng_env_pkg::KEY_LEN-1:0]       hw_key;
-    bit [csrng_env_pkg::BLOCK_LEN-1:0]     hw_v;
-    bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   hw_reseed_counter;
+    bit [TL_DW-1:0]                      rdata;
+    bit                                  hw_compliance, hw_status;
+    bit [csrng_env_pkg::KEY_LEN-1:0]     hw_key;
+    bit [csrng_env_pkg::BLOCK_LEN-1:0]   hw_v;
+    bit [csrng_env_pkg::RSD_CTR_LEN-1:0] hw_reseed_counter;
 
     csr_wr(.ptr(ral.int_state_num), .value(app));
     // To give the hardware time to update
