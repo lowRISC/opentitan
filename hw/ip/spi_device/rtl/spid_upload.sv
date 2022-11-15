@@ -322,6 +322,43 @@ module spid_upload
 
   assign sys_cmdfifo_set_o = sys_cmdfifo_set;
 
+  // Make CSR-visible occupancy increases available only after an entire
+  // transaction has completed.
+  logic sys_cmdfifo_pop;
+  logic [CmdPtrW-1:0] sys_cmdfifo_depth_raw;
+  logic [CmdPtrW-1:0] sys_cmdfifo_depth_d;
+  logic [CmdPtrW-1:0] sys_cmdfifo_depth_q;
+  logic sys_addrfifo_pop;
+  logic [AddrPtrW-1:0] sys_addrfifo_depth_raw;
+  logic [AddrPtrW-1:0] sys_addrfifo_depth_d;
+  logic [AddrPtrW-1:0] sys_addrfifo_depth_q;
+
+  assign sys_cmdfifo_pop = sys_cmdfifo_rvalid_o & sys_cmdfifo_rready_i;
+  assign sys_addrfifo_pop = sys_addrfifo_rvalid_o & sys_addrfifo_rready_i;
+
+  always_comb begin
+    if (sys_csb_deasserted_pulse_i) begin
+      sys_cmdfifo_depth_d = sys_cmdfifo_depth_raw - CmdPtrW'(sys_cmdfifo_pop);
+      sys_addrfifo_depth_d = sys_addrfifo_depth_raw - AddrPtrW'(sys_addrfifo_pop);
+    end else begin
+      sys_cmdfifo_depth_d = sys_cmdfifo_depth_q - CmdPtrW'(sys_cmdfifo_pop);
+      sys_addrfifo_depth_d = sys_addrfifo_depth_q - AddrPtrW'(sys_addrfifo_pop);
+    end
+  end
+
+  always_ff @(posedge sys_clk_i or negedge sys_rst_ni) begin
+    if (!sys_rst_ni) begin
+      sys_cmdfifo_depth_q <= '0;
+      sys_addrfifo_depth_q <= '0;
+    end else begin
+      sys_cmdfifo_depth_q <= sys_cmdfifo_depth_d;
+      sys_addrfifo_depth_q <= sys_addrfifo_depth_d;
+    end
+  end
+
+  assign sys_cmdfifo_depth_o = sys_cmdfifo_depth_q;
+  assign sys_addrfifo_depth_o = sys_addrfifo_depth_q;
+
   // payloadptr manage: spid_fifo2sram_adapter's fifoptr (wdepth) is reset by
   // CSb everytime. the written payload size should be visible to SW even CSb
   // is de-asserted.
@@ -536,7 +573,7 @@ module spid_upload
     .rvalid_o  (sys_cmdfifo_rvalid_o),
     .rready_i  (sys_cmdfifo_rready_i),
     .rdata_o   (sys_cmdfifo_rdata_o),
-    .rdepth_o  (sys_cmdfifo_depth_o),
+    .rdepth_o  (sys_cmdfifo_depth_raw),
 
     .r_full_o     (sys_cmdfifo_full_o),
     // Not directly use `notempty` as an interrupt. Rather generated from the
@@ -600,7 +637,7 @@ module spid_upload
     .rvalid_o  (sys_addrfifo_rvalid_o),
     .rready_i  (sys_addrfifo_rready_i),
     .rdata_o   (sys_addrfifo_rdata_o),
-    .rdepth_o  (sys_addrfifo_depth_o),
+    .rdepth_o  (sys_addrfifo_depth_raw),
 
     .r_full_o     (sys_addrfifo_full_o),
     .r_notempty_o (sys_addrfifo_notempty_o),
