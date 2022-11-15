@@ -185,7 +185,7 @@ package csr_utils_pkg;
                             input bit            en_shadow_wr = 1);
     fork
       begin : isolation_fork
-        string        msg_id = {csr_utils_pkg::msg_id, "::csr_wr"};
+        string msg_id = {csr_utils_pkg::msg_id, "::csr_wr"};
 
         fork
           begin
@@ -326,9 +326,9 @@ package csr_utils_pkg;
                             input  uint           timeout_ns = default_timeout_ns,
                             input  uvm_reg_map    map = null);
     if (backdoor) begin
-        csr_peek(ptr, value, check);
-        status = UVM_IS_OK;
-        return;
+      csr_peek(ptr, value, check);
+      status = UVM_IS_OK;
+      return;
     end
     fork
       begin : isolation_fork
@@ -416,6 +416,7 @@ package csr_utils_pkg;
             uvm_status_e    status;
             uvm_reg_data_t  obs;
             uvm_reg_data_t  exp;
+            uvm_reg_data_t  reset_val;
             string          msg_id = {csr_utils_pkg::msg_id, "::csr_rd_check"};
 
             csr_or_fld = decode_csr_or_field(ptr);
@@ -426,14 +427,17 @@ package csr_utils_pkg;
             // get mirrored value after read to make sure the read reg access is updated
             if (csr_or_fld.field != null) begin
               exp = csr_or_fld.field.get_mirrored_value();
+              reset_val = csr_or_fld.field.get_reset();
             end else begin
               exp = csr_or_fld.csr.get_mirrored_value();
+              reset_val = csr_or_fld.csr.get_reset();
             end
             if (compare && status == UVM_IS_OK && !under_reset) begin
               obs = obs & compare_mask;
               exp = (compare_vs_ral ? exp : compare_value) & compare_mask;
-              `DV_CHECK_EQ(obs, exp, {"Regname: ", ptr.get_full_name(), " ", err_msg},
-                    error, msg_id)
+              `DV_CHECK_EQ(obs, exp, $sformatf("Regname: %0s reset value: 0x%0h %0s",
+                                               ptr.get_full_name(), reset_val, err_msg),
+                           error, msg_id)
             end
           end
         join_none
