@@ -572,6 +572,7 @@ def opentitan_binary(
         name,
         platform = OPENTITAN_PLATFORM,
         extract_sw_logs_db = False,
+        testonly = True,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts.
 
@@ -616,6 +617,7 @@ def opentitan_binary(
         target_compatible_with = _targets_compatible_with[platform],
         copts = copts,
         linkopts = linkopts,
+        testonly = testonly,
         **kwargs
     )
 
@@ -624,6 +626,7 @@ def opentitan_binary(
     rv_preprocess(
         name = preproc_name,
         target = native_binary_name,
+        testonly = testonly,
     )
 
     asm_name = "{}_{}".format(name, "asm")
@@ -631,6 +634,7 @@ def opentitan_binary(
     rv_asm(
         name = asm_name,
         target = native_binary_name,
+        testonly = testonly,
     )
 
     ll_name = "{}_{}".format(name, "ll")
@@ -638,6 +642,7 @@ def opentitan_binary(
     rv_llvm_ir(
         name = ll_name,
         target = native_binary_name,
+        testonly = testonly,
     )
 
     map_name = "{}_{}".format(name, "map")
@@ -645,6 +650,7 @@ def opentitan_binary(
     rv_relink_with_linkmap(
         name = map_name,
         target = native_binary_name,
+        testonly = testonly,
     )
 
     bin_name = "{}_{}".format(name, "bin")
@@ -653,6 +659,7 @@ def opentitan_binary(
         name = bin_name,
         srcs = [native_binary_name],
         platform = platform,
+        testonly = testonly,
     )
 
     dis_name = "{}_{}".format(name, "dis")
@@ -661,6 +668,7 @@ def opentitan_binary(
         name = dis_name,
         srcs = [native_binary_name],
         platform = platform,
+        testonly = testonly,
     )
 
     # Generate log message database for DV sim testbench
@@ -671,12 +679,14 @@ def opentitan_binary(
             name = logs_db_name,
             srcs = [native_binary_name],
             platform = platform,
+            testonly = testonly,
         )
 
     # Create a filegroup with just the sides targets.
     native.filegroup(
         name = name + "_side_targets",
         srcs = side_targets,
+        testonly = testonly,
     )
 
     return targets
@@ -685,6 +695,7 @@ def opentitan_rom_binary(
         name,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
+        testonly = True,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for ROM.
 
@@ -721,6 +732,7 @@ def opentitan_rom_binary(
             name = devname,
             deps = deps + dev_deps,
             extract_sw_logs_db = device == "sim_dv",
+            testonly = testonly,
             **kwargs
         ))
 
@@ -736,6 +748,7 @@ def opentitan_rom_binary(
             name = vmem_name,
             bin = bin_name,
             platform = platform,
+            testonly = testonly,
             word_size = 32,
         )
 
@@ -746,12 +759,14 @@ def opentitan_rom_binary(
             name = scr_vmem_name,
             srcs = [elf_name],
             platform = platform,
+            testonly = testonly,
         )
 
         # Create a filegroup with just the current device's targets.
         native.filegroup(
             name = devname,
             srcs = dev_targets,
+            testonly = testonly,
         )
         all_targets.extend(dev_targets)
 
@@ -759,6 +774,7 @@ def opentitan_rom_binary(
     native.filegroup(
         name = name,
         srcs = all_targets,
+        testonly = testonly,
     )
 
 def _pick_correct_archive_for_device(ctx):
@@ -788,7 +804,8 @@ def opentitan_multislot_flash_binary(
         srcs,
         image_size = 0,
         devices = PER_DEVICE_DEPS.keys(),
-        platform = OPENTITAN_PLATFORM):
+        platform = OPENTITAN_PLATFORM,
+        testonly = True):
     """A helper macro for generating multislot OpenTitan binary flash images.
 
     This macro is mostly a wrapper around the `assemble_flash_image` rule, that
@@ -832,6 +849,7 @@ def opentitan_multislot_flash_binary(
                 src,
                 device,
                 configs["key"],
+                testonly = testonly,
             )
             signed_dev_binaries[signed_dev_binary] = configs["offset"]
 
@@ -843,6 +861,7 @@ def opentitan_multislot_flash_binary(
             output = "{}.signed.bin".format(devname),
             image_size = image_size,
             binaries = signed_dev_binaries,
+            testonly = testonly,
         )
 
         # We only need to generate VMEM files for sim devices.
@@ -854,6 +873,7 @@ def opentitan_multislot_flash_binary(
                 name = signed_vmem_name,
                 bin = signed_bin_name,
                 platform = platform,
+                testonly = testonly,
                 word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
             )
 
@@ -864,12 +884,14 @@ def opentitan_multislot_flash_binary(
                 name = scr_signed_vmem_name,
                 vmem = signed_vmem_name,
                 platform = platform,
+                testonly = testonly,
             )
 
         # Create a filegroup with just the current device's targets.
         native.filegroup(
             name = devname,
             srcs = dev_targets,
+            testonly = testonly,
         )
         dev_targets.extend(dev_targets)
 
@@ -877,6 +899,7 @@ def opentitan_multislot_flash_binary(
     native.filegroup(
         name = name,
         srcs = all_targets,
+        testonly = testonly,
     )
 
 def opentitan_flash_binary(
@@ -885,6 +908,7 @@ def opentitan_flash_binary(
         platform = OPENTITAN_PLATFORM,
         signing_keys = DEFAULT_SIGNING_KEYS,
         signed = True,
+        testonly = True,
         manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for flash.
@@ -930,6 +954,7 @@ def opentitan_flash_binary(
             name = depname,
             deps = deps + dev_deps,
             device = device,
+            testonly = testonly,
         )
 
         # Generate ELF, Binary, Disassembly, and (maybe) sim_dv logs database
@@ -937,6 +962,7 @@ def opentitan_flash_binary(
             name = devname,
             deps = [depname],
             extract_sw_logs_db = device == "sim_dv",
+            testonly = testonly,
             **kwargs
         ))
         bin_name = "{}_{}".format(devname, "bin")
@@ -955,6 +981,7 @@ def opentitan_flash_binary(
                     key = key,
                     key_name = key_name,
                     manifest = manifest,
+                    testonly = testonly,
                 )
 
                 # We only need to generate VMEM files for sim devices.
@@ -969,6 +996,7 @@ def opentitan_flash_binary(
                         name = signed_vmem_name,
                         bin = signed_bin_name,
                         platform = platform,
+                        testonly = testonly,
                         word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
                     )
 
@@ -982,6 +1010,7 @@ def opentitan_flash_binary(
                         name = scr_signed_vmem_name,
                         vmem = signed_vmem_name,
                         platform = platform,
+                        testonly = testonly,
                     )
 
         # We only need to generate VMEM files for sim devices.
@@ -993,6 +1022,7 @@ def opentitan_flash_binary(
                 name = vmem_name,
                 bin = bin_name,
                 platform = platform,
+                testonly = testonly,
                 word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
             )
 
@@ -1003,12 +1033,14 @@ def opentitan_flash_binary(
                 name = scr_vmem_name,
                 vmem = vmem_name,
                 platform = platform,
+                testonly = testonly,
             )
 
         # Create a filegroup with just the current device's targets.
         native.filegroup(
             name = devname,
             srcs = dev_targets,
+            testonly = testonly,
         )
         all_targets.extend(dev_targets)
 
@@ -1016,6 +1048,7 @@ def opentitan_flash_binary(
     native.filegroup(
         name = name,
         srcs = all_targets,
+        testonly = testonly,
     )
 
 def opentitan_ram_binary(
@@ -1023,6 +1056,7 @@ def opentitan_ram_binary(
         archive_symbol_prefix,
         devices = PER_DEVICE_DEPS.keys(),
         platform = OPENTITAN_PLATFORM,
+        testonly = True,
         **kwargs):
     """A helper macro for generating OpenTitan binary artifacts for RAM.
 
@@ -1056,6 +1090,7 @@ def opentitan_ram_binary(
             name = devname,
             deps = deps + dev_deps,
             extract_sw_logs_db = device == "sim_dv",
+            testonly = testonly,
             **kwargs
         ))
         bin_name = "{}_{}".format(devname, "bin")
@@ -1068,6 +1103,7 @@ def opentitan_ram_binary(
             name = vmem_name,
             bin = bin_name,
             platform = platform,
+            testonly = testonly,
             word_size = 32,
         )
 
@@ -1075,6 +1111,7 @@ def opentitan_ram_binary(
         native.filegroup(
             name = devname,
             srcs = dev_targets,
+            testonly = testonly,
         )
 
     # Generate the archive file.
@@ -1084,4 +1121,5 @@ def opentitan_ram_binary(
         binaries = binaries,
         devices = PER_DEVICE_DEPS.keys(),
         archive_symbol_prefix = archive_symbol_prefix,
+        testonly = testonly,
     )

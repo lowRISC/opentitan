@@ -104,6 +104,7 @@ cc_library(
 
 opentitan_rom_binary(
     name = "rom",
+    testonly = True,
     srcs = [
         "rom.c",
         "rom.h",
@@ -295,6 +296,7 @@ cc_test(
 
 exclude_files(
     name = "pre_package",
+    testonly = True,
     srcs = [":rom"],
     exclude_suffix = [
         ".ll",
@@ -305,6 +307,7 @@ exclude_files(
 
 pkg_files(
     name = "package",
+    testonly = True,
     srcs = [":pre_package"],
     prefix = "earlgrey/rom",
 )

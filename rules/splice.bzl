@@ -97,7 +97,7 @@ def _bitstream_splice_impl(ctx):
         ),
     ]
 
-bitstream_splice = rule(
+bitstream_splice_ = rule(
     implementation = _bitstream_splice_impl,
     attrs = {
         "meminfo": attr.label(allow_single_file = True, doc = "Memory layout info file (an .mmi file)"),
@@ -118,3 +118,6 @@ bitstream_splice = rule(
         ),
     },
 )
+
+def bitstream_splice(testonly = True, **kwargs):
+    bitstream_splice_(testonly = testonly, **kwargs)
