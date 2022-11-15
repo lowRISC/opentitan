@@ -177,6 +177,7 @@ def main(rom_kind: str = typer.Option(...),
         "-c",
         "; ".join([
             "init",
+            "adapter deassert srst",
             "reset init",
         ])
     ]
