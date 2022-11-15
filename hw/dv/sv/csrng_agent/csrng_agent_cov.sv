@@ -13,12 +13,12 @@ covergroup device_cmd_cg with function sample(csrng_item item, bit sts);
     bins ins = {INS};
     bins res = {RES};
     bins gen = {GEN};
-    bins upd = {UPD};
+    bins uni = {UNI};
     illegal_bins il = default;
   }
   csrng_clen_cp: coverpoint item.clen {
     bins zero = {0};
-    bins other_bins[2] = {[1:15]};
+    bins non_zero_bins[2] = {[1:15]};
   }
   // TODO: do not use enum to sample non-true/false data
   csrng_flag_cp: coverpoint item.flags {
@@ -30,7 +30,10 @@ covergroup device_cmd_cg with function sample(csrng_item item, bit sts);
     bins fail = {1};
   }
 
-  csrng_cmd_cross: cross csrng_cmd_cp, csrng_clen_cp, csrng_sts, csrng_flag_cp;
+  csrng_cmd_cross: cross csrng_cmd_cp, csrng_clen_cp, csrng_sts, csrng_flag_cp {
+    // Only a value of zero should be used for clen when UNI command is used.
+    ignore_bins uni_clen = binsof(csrng_cmd_cp.uni) && binsof(csrng_clen_cp.non_zero_bins);
+  }
 endgroup
 
 covergroup host_cmd_cg with function sample(csrng_item item, bit sts);
@@ -70,8 +73,8 @@ covergroup genbits_cg with function sample(csrng_item item, bit sts);
   option.per_instance = 1;
 
   csrng_glen: coverpoint item.glen {
-    // TODO: current max length is limited.
-    bins glens[5] = {[1:80]};
+    // TODO: EDN testbench currently sends a max of 64 endpoints, which is 64/4 genbits.
+    bins glens[4] = {[1:16]};
   }
   csrng_sts: coverpoint sts {
     bins pass = {0};
