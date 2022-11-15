@@ -7,9 +7,13 @@ class spi_host_stress_all_vseq extends spi_host_tx_rx_vseq;
   `uvm_object_utils(spi_host_stress_all_vseq)
   `uvm_object_new
 
-  constraint num_trans_c {
-    num_trans inside {[3:6]};
-  }
+  task pre_randomize();
+    super.pre_randomize();
+    cfg.seq_cfg.host_spi_min_trans = 2;
+    cfg.seq_cfg.host_spi_max_trans = 3;
+    cfg.seq_cfg.host_spi_min_runs = 2;
+    cfg.seq_cfg.host_spi_max_runs = 5;
+  endtask
 
 
   virtual task body();
