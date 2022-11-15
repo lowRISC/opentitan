@@ -177,7 +177,7 @@ def main(rom_kind: str = typer.Option(...),
         "-c",
         "; ".join([
             "init",
-            "reset halt",
+            "reset init",
         ])
     ]
     gdb_command = [
