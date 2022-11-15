@@ -140,6 +140,7 @@ jobs:
 
 - job: airgapped_bazel_build
   displayName: Test an airgapped Bazel build
+  timeoutInMinutes: 90
   dependsOn: checkout
   condition: eq(variables['Build.Reason'], 'PullRequest')
   pool:
