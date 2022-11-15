@@ -611,15 +611,22 @@
       stage: V2
       tests: ["chip_rv_dm_ndm_reset_req"]
     }
-    // TODO, this could be a block-level test. Put it here since we don't have block-level testplan.
     {
-      name: chip_rv_dm_ndm_reset_req_when_ibex_halted
-      desc: '''Verify non-debug reset request initiated from RV_DM when ibex is in halted state.
+      name: chip_sw_rv_dm_ndm_reset_req_when_cpu_halted
+      desc: '''Verify non-debug reset request initiated from RV_DM when the CPU  is in halted state.
 
-            - Configure ibex in halted state (dmstatus.anyhalted/dmstatus.allhalted is asserted).
-            - Configure RV_DM to send NDM reset request.
-            - Check that halted state is clear (dmstatus.anyhalted/dmstatus.allhalted should be
-              de-asserted).
+            - Initialize the DUT in a HW-debug enabled life cycle state.
+            - Activate the RISCV debug module.
+            - Run some SW test on the CPU.
+            - Initiate a CPU halt request via JTAG.
+            - Wait for the CPU to be in halted state via JTAG by polling dmstatus.anyhalted.
+            - Deassert the CPU haltreq and verify that we are still in halted state.
+            - (Optional) Using the abstract command, read the dcsr register to verify the cause
+              reflects the debug halt request.
+            - Issue an NDM reset request. All non-debug parts of the chip should reset. Read the
+              dmstatus.anyhalted / dvstatus.allhalted and verify that they are cleared.
+            - De-assert the NDM reset request and wait for the CPU to reboot and finish the post-NDM
+              reset phase of the test.
             '''
       stage: V2
       tests: []
@@ -635,6 +642,16 @@
             '''
       stage: V2
       tests: ["chip_sw_rv_dm_access_after_wakeup"]
+    }
+    {
+      name: chip_sw_rv_dm_access_after_hw_reset
+      desc: '''Verify RV_DM works after a watchdog or escalated reset.
+
+            - Access some RV_DM CSRs both before and after resets.
+            - An activation would be required, and the tap strap would also be sampled again.
+            '''
+      stage: V3
+      tests: []
     }
     {
       name: chip_sw_rv_dm_jtag_tap_sel
@@ -664,16 +681,6 @@
             '''
       stage: V2
       tests: ["chip_rv_dm_lc_disabled"]
-    }
-    {
-      name: chip_rv_dm_access_after_hw_reset
-      desc: '''Verify RV_DM works after a watchdog or escalated reset.
-
-            - Access some RV_DM CSRs both before and after resets.
-            - An activation would be required, and the tap strap would also be sampled again.
-            '''
-      stage: V3
-      tests: []
     }
 
     // RV_TIMER (pre-verified IP) integration tests:
