@@ -581,7 +581,23 @@
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2
-      tests: []
+      tests: [
+        "rom_e2e_boot_policy_valid_a_good_b_good_test_unlocked0",
+        "rom_e2e_boot_policy_valid_a_good_b_good_dev",
+        "rom_e2e_boot_policy_valid_a_good_b_good_prod",
+        "rom_e2e_boot_policy_valid_a_good_b_good_prod_end",
+        "rom_e2e_boot_policy_valid_a_good_b_good_rma",
+        "rom_e2e_boot_policy_valid_a_good_b_bad_test_unlocked0",
+        "rom_e2e_boot_policy_valid_a_good_b_bad_dev",
+        "rom_e2e_boot_policy_valid_a_good_b_bad_prod",
+        "rom_e2e_boot_policy_valid_a_good_b_bad_prod_end",
+        "rom_e2e_boot_policy_valid_a_good_b_bad_rma",
+        "rom_e2e_boot_policy_valid_a_bad_b_good_test_unlocked0",
+        "rom_e2e_boot_policy_valid_a_bad_b_good_dev",
+        "rom_e2e_boot_policy_valid_a_bad_b_good_prod",
+        "rom_e2e_boot_policy_valid_a_bad_b_good_prod_end",
+        "rom_e2e_boot_policy_valid_a_bad_b_good_rma",
+      ]
     }
 
     {
