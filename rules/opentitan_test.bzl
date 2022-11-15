@@ -354,6 +354,7 @@ def opentitan_functest(
             name = ot_flash_binary,
             deps = deps,
             devices = devices_to_build_for,
+            testonly = True,
             **kwargs
         )
 
@@ -370,6 +371,7 @@ def opentitan_functest(
             deps = deps,
             devices = devices_to_build_for,
             manifest = manifest,
+            testonly = True,
             **kwargs
         )
 

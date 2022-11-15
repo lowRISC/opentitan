@@ -66,6 +66,7 @@ filegroup(
 
 filegroup(
     name = "rom",
+    testonly = True,
     srcs = select({
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom"],
@@ -98,6 +99,7 @@ filegroup(
 [
     filegroup(
         name = "rom_otp_" + otp_name,
+        testonly = True,
         srcs = select({
             "bitstream_skip": ["skip.bit"],
             "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_rom_otp_" + otp_name],
@@ -117,6 +119,7 @@ filegroup(
 # Build the Test ROM and splice it into a cached bitstream.
 bitstream_splice(
     name = "gcp_spliced_test_rom",
+    testonly = True,
     src = "@bitstreams//:bitstream_test_rom",
     data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
@@ -128,6 +131,7 @@ bitstream_splice(
 # Build the ROM and splice it into a cached bitstream.
 bitstream_splice(
     name = "gcp_spliced_rom",
+    testonly = True,
     src = "@bitstreams//:bitstream_test_rom",
     data = "//sw/device/silicon_creator/rom:rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
@@ -140,6 +144,7 @@ bitstream_splice(
 [
     bitstream_splice(
         name = "gcp_spliced_rom_otp_" + otp_name,
+        testonly = True,
         src = ":gcp_spliced_rom",
         data = img_target,
         meminfo = ":otp_mmi",

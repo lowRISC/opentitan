@@ -50,6 +50,7 @@ cc_library(
 
 exclude_files(
     name = "pre_package",
+    testonly = True,
     srcs = [":hello_world"],
     exclude_suffix = [
         ".ll",
@@ -60,6 +61,7 @@ exclude_files(
 
 pkg_files(
     name = "package",
+    testonly = True,
     srcs = [":pre_package"],
     prefix = "earlgrey/examples",
 )

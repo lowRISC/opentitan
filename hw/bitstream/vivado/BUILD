@@ -31,6 +31,7 @@ _FPGA_CW310_OTP_RMA_PATH = "{}/$(location {})".format(_PREFIX, _FPGA_CW310_OTP_R
 # a functest.
 fusesoc_build(
     name = "fpga_cw310",
+    testonly = True,
     srcs = [
         "//hw:all_files",
         _FPGA_CW310_TESTROM,
@@ -54,6 +55,7 @@ fusesoc_build(
 
 filegroup(
     name = "fpga_cw310_test_rom",
+    testonly = True,
     srcs = [":fpga_cw310"],
     output_group = "bitstream",
     tags = ["manual"],
@@ -61,6 +63,7 @@ filegroup(
 
 filegroup(
     name = "rom_mmi",
+    testonly = True,
     srcs = [":fpga_cw310"],
     output_group = "rom_mmi",
     tags = ["manual"],
@@ -68,6 +71,7 @@ filegroup(
 
 filegroup(
     name = "otp_mmi",
+    testonly = True,
     srcs = [":fpga_cw310"],
     output_group = "otp_mmi",
     tags = ["manual"],
@@ -75,6 +79,7 @@ filegroup(
 
 bitstream_splice(
     name = "fpga_cw310_rom",
+    testonly = True,
     src = ":fpga_cw310_test_rom",
     data = "//sw/device/silicon_creator/rom:rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
@@ -85,6 +90,7 @@ bitstream_splice(
 [
     bitstream_splice(
         name = "fpga_cw310_rom_otp_" + otp_name,
+        testonly = True,
         src = ":fpga_cw310_rom",
         data = img_target,
         meminfo = ":otp_mmi",
@@ -96,6 +102,7 @@ bitstream_splice(
 # Standalone CW310 image for use with hyperdebug.
 fusesoc_build(
     name = "fpga_cw310_hyperdebug",
+    testonly = True,
     srcs = [
         "//hw:all_files",
         _FPGA_CW310_TESTROM,
@@ -119,6 +126,7 @@ fusesoc_build(
 
 filegroup(
     name = "fpga_cw310_test_rom_hyp",
+    testonly = True,
     srcs = [":fpga_cw310_hyperdebug"],
     output_group = "bitstream",
     tags = ["manual"],
@@ -126,6 +134,7 @@ filegroup(
 
 filegroup(
     name = "rom_mmi_hyp",
+    testonly = True,
     srcs = [":fpga_cw310_hyperdebug"],
     output_group = "rom_mmi",
     tags = ["manual"],
@@ -133,6 +142,7 @@ filegroup(
 
 filegroup(
     name = "otp_mmi_hyp",
+    testonly = True,
     srcs = [":fpga_cw310_hyperdebug"],
     output_group = "otp_mmi",
     tags = ["manual"],
@@ -141,6 +151,7 @@ filegroup(
 # Packaging rules for bitstreams
 pkg_files(
     name = "standard",
+    testonly = True,
     srcs = [
         ":fpga_cw310_rom",
         ":fpga_cw310_test_rom",
@@ -156,6 +167,7 @@ pkg_files(
 
 pkg_files(
     name = "hyperdebug",
+    testonly = True,
     srcs = [
         ":fpga_cw310_test_rom_hyp",
         ":otp_mmi_hyp",
@@ -167,6 +179,7 @@ pkg_files(
 
 pkg_filegroup(
     name = "package",
+    testonly = True,
     srcs = [
         ":hyperdebug",
         ":standard",

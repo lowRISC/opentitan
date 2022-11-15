@@ -1746,6 +1746,7 @@ SIGVERIFY_LC_KEYS = [
 [
     genrule(
         name = "empty_test_slot_{}_corrupted_{}_bin_signed_{}".format(slot, device, key),
+        testonly = True,
         srcs = ["empty_test_slot_{}_{}_bin_signed_{}".format(slot, device, key)],
         outs = ["empty_test_slot_{}_corrupted_{}.{}.signed.bin".format(slot, device, key)],
         cmd_bash = "cat $(SRCS) > $(OUTS) && dd if=/dev/zero of=$(OUTS) bs=4 seek=7 count=1 conv=notrunc status=none".format(slot),
@@ -1763,6 +1764,7 @@ SIGVERIFY_LC_KEYS = [
 [
     bin_to_vmem(
         name = "empty_test_slot_{}_corrupted_sim_dv_vmem64_signed_{}".format(slot, key),
+        testonly = True,
         bin = "empty_test_slot_{}_corrupted_sim_dv_bin_signed_{}".format(slot, key),
         word_size = 64,  # Backdoor-load VMEM image uses 64-bit words
     )
@@ -1773,6 +1775,7 @@ SIGVERIFY_LC_KEYS = [
 [
     scramble_flash_vmem(
         name = "empty_test_slot_{}_corrupted_sim_dv_scr_vmem64_signed_{}".format(slot, key),
+        testonly = True,
         vmem = "empty_test_slot_{}_corrupted_sim_dv_vmem64_signed_{}".format(slot, key),
     )
     for slot in SLOTS
@@ -1782,6 +1785,7 @@ SIGVERIFY_LC_KEYS = [
 [
     filegroup(
         name = "empty_test_slot_{}_corrupted_sim_dv".format(slot),
+        testonly = True,
         srcs = [
             "empty_test_slot_{}_corrupted_sim_dv_{}_signed_{}".format(slot, file_type, key)
             for file_type in [
