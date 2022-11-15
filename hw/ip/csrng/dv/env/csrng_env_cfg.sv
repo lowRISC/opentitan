@@ -48,9 +48,9 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   bit [csrng_env_pkg::BLOCK_LEN-1:0]     v[NUM_HW_APPS + 1];
   bit [csrng_env_pkg::RSD_CTR_LEN-1:0]   reseed_counter[NUM_HW_APPS + 1];
 
-  int                                    NHwApps = 2;
-  int                                    NApps = NHwApps + 1;
-  int                                    Sp2VWidth = 3;
+  int NHwApps = NUM_HW_APPS;
+  int NApps = NHwApps + 1;
+  int Sp2VWidth = 3;
 
   rand uint  which_hw_inst_exc;
   constraint which_hw_inst_exc_c { which_hw_inst_exc inside {[0:NHwApps-1]};}
