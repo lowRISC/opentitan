@@ -24,13 +24,15 @@ class ibex_mem_intf_response_driver extends uvm_driver #(ibex_mem_intf_seq_item)
     reset_signals();
     wait (cfg.vif.response_driver_cb.reset === 1'b0);
     forever begin
-      fork : drive_stimulus
-        send_grant();
-        get_and_drive();
-        wait (cfg.vif.response_driver_cb.reset === 1'b1);
-      join_any
-      // Will only be reached after mid-test reset
-      disable fork;
+      fork begin : isolation_fork
+        fork : drive_stimulus
+          send_grant();
+          get_and_drive();
+          wait (cfg.vif.response_driver_cb.reset === 1'b1);
+        join_any
+        // Will only be reached after mid-test reset
+        disable fork;
+      end join
       handle_reset();
     end
   endtask : run_phase
@@ -127,11 +129,10 @@ class ibex_mem_intf_response_driver extends uvm_driver #(ibex_mem_intf_seq_item)
         end else begin
           // rdata and intg fields aren't relevant to write responses
           if (cfg.fixed_data_write_response) begin
-            // when fixed_data_write_response is set, set rdata to fixed value with correct matching
-            // rintg field.
-            cfg.vif.response_driver_cb.rdata <= 32'hffffffff;
-            cfg.vif.response_driver_cb.rintg <=
-              prim_secded_pkg::prim_secded_inv_39_32_enc(32'hffffffff)[38:32];
+            // when fixed_data_write_response is set, sequence item is responsible for producing
+            // fixed values so just copy them across here.
+            cfg.vif.response_driver_cb.rdata <= tr.data;
+            cfg.vif.response_driver_cb.rintg <= tr.intg;
           end else begin
             // when fixed_data_write_response is not set, drive the irrelevant fields to x.
             cfg.vif.response_driver_cb.rdata <= 'x;

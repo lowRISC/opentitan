@@ -30,15 +30,28 @@ def compare_test_run(trr: TestRunResult) -> TestRunResult:
     Use any log-processing scripts available to check for errors.
     """
 
-    # If the test timed-out, return early to avoid overwriting the failure_mode.
+    # If the test is already marked as TIMEOUT before we check the logs, it must
+    # have been killed at a process-level in the run_rtl stage.
     # Don't check the logs at all in this case.
     if (trr.failure_mode == Failure_Modes.TIMEOUT):
         trr.passed = False
         return trr
 
-    # Have a look at the UVM log. Report a failure if an issue is seen.
+    # Process the Ibex trace to create a .csv
+    # The format is suitable for ingestion by riscv-dv coverage collection
     try:
-        logger.debug(f"About to do Log processing: {trr.rtl_log}")
+        logger.debug(f"About to do Log processing: {trr.rtl_trace}")
+        process_ibex_sim_log(trr.rtl_trace, trr.dir_test/'rtl_trace.csv')
+    except (OSError, RuntimeError) as e:
+        trr.passed = False
+        trr.failure_mode = Failure_Modes.FILE_ERROR
+        trr.failure_message = f"[FAILED]: Processing the ibex trace failed: {e}\n"
+        return trr
+
+    # Process the test's UVM log.
+    # Report a failure if an issue is seen.
+    try:
+        logger.debug(f"About to do simulation log processing: {trr.rtl_log}")
         uvm_pass, uvm_log_lines, uvm_failure_mode = check_ibex_uvm_log(trr.rtl_log)
     except IOError as e:
         trr.passed = False
@@ -46,11 +59,15 @@ def compare_test_run(trr: TestRunResult) -> TestRunResult:
         trr.failure_message = f"[FAILED] Could not open simulation log: {e}\n"
         return trr
     if not uvm_pass:
+        # Something was found in the logfile that means we mark this test as failed.
         trr.failure_mode = uvm_failure_mode
         if uvm_failure_mode == Failure_Modes.TIMEOUT:
+            # If timeout is detected in the log, it means we ended via the wall-clock
+            # timeout within the simulator. This is a graceful timeout, keep coverage etc.
             trr.failure_message = "[FAILURE] Simulation ended gracefully due to timeout " \
                                  f"[{trr.timeout_s}s].\n"
         else:
+            # Some other error was detected, UVM_FAILED/fatal etc.
             trr.failure_message = f"\n[FAILED]: error seen in '{trr.rtl_log.name}'\n"
         if uvm_log_lines:
             trr.failure_message += \
@@ -59,31 +76,6 @@ def compare_test_run(trr: TestRunResult) -> TestRunResult:
                 "--------------------------------------------\n"
         return trr
 
-    # Both the cosim and non-cosim flows produce a trace from the ibex_tracer,
-    # so process that file for errors.
-    try:
-        # Convert the RTL log file to a trace CSV.
-        logger.debug(f"About to do Log processing: {trr.rtl_trace}")
-        process_ibex_sim_log(trr.rtl_trace, trr.dir_test/'rtl_trace.csv')
-    except (OSError, RuntimeError) as e:
-        trr.passed = False
-        trr.failure_mode = Failure_Modes.FILE_ERROR
-        trr.failure_message = f"[FAILED]: Log processing failed: {e}"
-        return trr
-
-    # Process the cosim logfile to check for errors
-    try:
-        if trr.iss_cosim == "spike":
-            process_spike_sim_log(trr.iss_cosim_trace, trr.dir_test/'cosim_trace.csv')
-        else:
-            raise RuntimeError('Unsupported simulator for cosim')
-    except (OSError, RuntimeError) as e:
-        trr.passed = False
-        trr.failure_mode = Failure_Modes.FILE_ERROR
-        trr.failure_message = f"[FAILED]: Log processing failed: {e}"
-        return trr
-
-    # The traces are compared at runtime, and trigger a uvm_fatal() if mismatched.
     # If we got this far then the test has passed.
     trr.passed = True
     return trr

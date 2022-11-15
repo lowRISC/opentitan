@@ -15,8 +15,9 @@
 `include "dv_fcov_macros.svh"
 
 module ibex_wb_stage #(
-  parameter bit ResetAll       = 1'b0,
-  parameter bit WritebackStage = 1'b0
+  parameter bit ResetAll          = 1'b0,
+  parameter bit WritebackStage    = 1'b0,
+  parameter bit DummyInstructions = 1'b0
 ) (
   input  logic                     clk_i,
   input  logic                     rst_ni,
@@ -41,6 +42,8 @@ module ibex_wb_stage #(
   input  logic [31:0]              rf_wdata_id_i,
   input  logic                     rf_we_id_i,
 
+  input  logic                     dummy_instr_id_i,
+
   input  logic [31:0]              rf_wdata_lsu_i,
   input  logic                     rf_we_lsu_i,
 
@@ -49,6 +52,8 @@ module ibex_wb_stage #(
   output logic [4:0]               rf_waddr_wb_o,
   output logic [31:0]              rf_wdata_wb_o,
   output logic                     rf_we_wb_o,
+
+  output logic                     dummy_instr_wb_o,
 
   input logic                      lsu_resp_valid_i,
   input logic                      lsu_resp_err_i,
@@ -160,11 +165,40 @@ module ibex_wb_stage #(
     // rf_wdata_wb_q is used rather than rf_wdata_wb_o as the latter includes read data from memory
     // that returns too late to be used on the forwarding path.
     assign rf_wdata_fwd_wb_o = rf_wdata_wb_q;
+
+    if (DummyInstructions) begin : g_dummy_instr_wb
+      logic dummy_instr_wb_q;
+
+      if (ResetAll) begin : g_dummy_instr_wb_regs_ra
+        always_ff @(posedge clk_i or negedge rst_ni) begin
+          if (!rst_ni) begin
+            dummy_instr_wb_q <= 1'b0;
+          end else if (en_wb_i) begin
+            dummy_instr_wb_q <= dummy_instr_id_i;
+          end
+        end
+      end else begin : g_dummy_instr_wb_regs_nr
+        always_ff @(posedge clk_i) begin
+          if (en_wb_i) begin
+            dummy_instr_wb_q <= dummy_instr_id_i;
+          end
+        end
+      end
+
+      assign dummy_instr_wb_o = dummy_instr_wb_q;
+    end else begin : g_no_dummy_instr_wb
+      logic  unused_dummy_instr_id;
+      assign unused_dummy_instr_id = dummy_instr_id_i;
+
+      assign dummy_instr_wb_o = 1'b0;
+    end
   end else begin : g_bypass_wb
     // without writeback stage just pass through register write signals
     assign rf_waddr_wb_o         = rf_waddr_id_i;
     assign rf_wdata_wb_mux[0]    = rf_wdata_id_i;
     assign rf_wdata_wb_mux_we[0] = rf_we_id_i;
+
+    assign dummy_instr_wb_o = dummy_instr_id_i;
 
     // Increment instruction retire counters for valid instructions which are not lsu errors.
     // The speculative signals are always 0 when no writeback stage is present as the raw counter
@@ -185,11 +219,13 @@ module ibex_wb_stage #(
     logic           unused_rst;
     wb_instr_type_e unused_instr_type_wb;
     logic [31:0]    unused_pc_id;
+    logic           unused_dummy_instr_id;
 
     assign unused_clk            = clk_i;
     assign unused_rst            = rst_ni;
     assign unused_instr_type_wb  = instr_type_wb_i;
     assign unused_pc_id          = pc_id_i;
+    assign unused_dummy_instr_id = dummy_instr_id_i;
 
     assign outstanding_load_wb_o  = 1'b0;
     assign outstanding_store_wb_o = 1'b0;

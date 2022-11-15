@@ -38,7 +38,9 @@ class ibex_rvfi_monitor extends uvm_monitor;
       trans_collected.order            = vif.monitor_cb.order;
       trans_collected.mip              = vif.monitor_cb.ext_mip;
       trans_collected.nmi              = vif.monitor_cb.ext_nmi;
+      trans_collected.nmi_int          = vif.monitor_cb.ext_nmi_int;
       trans_collected.debug_req        = vif.monitor_cb.ext_debug_req;
+      trans_collected.rf_wr_suppress   = vif.monitor_cb.ext_rf_wr_suppress;
       trans_collected.mcycle           = vif.monitor_cb.ext_mcycle;
       trans_collected.ic_scr_key_valid = vif.monitor_cb.ext_ic_scr_key_valid;
 

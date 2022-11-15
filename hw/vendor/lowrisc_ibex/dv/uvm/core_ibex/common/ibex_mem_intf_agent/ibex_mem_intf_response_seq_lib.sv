@@ -11,17 +11,26 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
   ibex_mem_intf_seq_item item;
   mem_model              m_mem;
   ibex_cosim_agent       cosim_agent;
+  bit                    enable_intg_error = 1'b0;
   bit                    enable_error = 1'b0;
   // Used to ensure that whenever inject_error() is called, the very next transaction will inject an
   // error, and that enable_error will not be flipped back to 0 immediately
   bit                    error_synch = 1'b1;
   bit                    is_dmem_seq = 1'b0;
+  bit                    suppress_error_on_exc = 1'b0;
 
   `uvm_object_utils(ibex_mem_intf_response_seq)
   `uvm_declare_p_sequencer(ibex_mem_intf_response_sequencer)
   `uvm_object_new
 
   virtual task body();
+    virtual core_ibex_dut_probe_if ibex_dut_vif;
+
+    if (!uvm_config_db#(virtual core_ibex_dut_probe_if)::get(null, "", "dut_if",
+                                                             ibex_dut_vif)) begin
+      `uvm_fatal(`gfn, "failed to get ibex dut_if from uvm_config_db")
+    end
+
     if (m_mem == null) `uvm_fatal(get_full_name(), "Cannot get memory model")
     `uvm_info(`gfn, $sformatf("is_dmem_seq: 0x%0x", is_dmem_seq), UVM_LOW)
     forever
@@ -37,6 +46,13 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
 
       req = ibex_mem_intf_seq_item::type_id::create("req");
       error_synch = 1'b0;
+
+      if (suppress_error_on_exc &&
+            (ibex_dut_vif.dut_cb.sync_exc_seen || ibex_dut_vif.dut_cb.irq_exc_seen)) begin
+        enable_error = 1'b0;
+        enable_intg_error = 1'b0;
+      end
+
       if (!req.randomize() with {
         addr       == item.addr;
         read_write == item.read_write;
@@ -61,7 +77,13 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
       end
       error_synch = 1'b1;
       enable_error = 1'b0; // Disable after single inserted error.
-
+      aligned_addr = {req.addr[DATA_WIDTH-1:2], 2'b0};
+      // Do not inject any error to the handshake test_control_addr
+      // TODO: Parametrize this. Until then, this needs to be changed manually.
+      if (aligned_addr inside {32'h8ffffff8, 32'h8ffffffc}) begin
+        req.error = 1'b0;
+        enable_intg_error = 1'b0;
+      end
       if (req.error) begin
         `DV_CHECK_STD_RANDOMIZE_FATAL(rand_data)
         req.data = rand_data;
@@ -71,15 +93,20 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
       end else if(item.read_write == WRITE) begin
         // Update memory_model
         write(aligned_addr, item.data);
+        if (p_sequencer.cfg.fixed_data_write_response) begin
+          // When fixed_data_write_response is set drive data in store response to fixed
+          // 32'hffffffff value. Integrity is calculated below.
+          req.data = 32'hffffffff;
+        end
       end
       // Add integrity bits
       {req.intg, req.data} = prim_secded_pkg::prim_secded_inv_39_32_enc(req.data);
 
       // If data_was_uninitialized is true then we want to force bad integrity bits: invert the
       // correct ones, which we know will break things for the codes we use.
-      if (p_sequencer.cfg.enable_bad_intg_on_uninit_access &&
-          data_was_uninitialized) begin
+      if ((p_sequencer.cfg.enable_bad_intg_on_uninit_access && data_was_uninitialized) || enable_intg_error) begin
         req.intg = ~req.intg;
+        enable_intg_error = 1'b0;
       end
 
       `uvm_info(get_full_name(), $sformatf("Response transfer:\n%0s", req.sprint()), UVM_HIGH)
@@ -91,6 +118,10 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
 
   virtual function void inject_error();
     this.enable_error = 1'b1;
+  endfunction
+
+  virtual function void inject_intg_error();
+    this.enable_intg_error = 1'b1;
   endfunction
 
   virtual function bit get_error_synch();
@@ -108,20 +139,19 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
     bit       byte_is_uninit = 1'b0;
     for (int i = (DATA_WIDTH / 8) - 1; i >= 0 ; i--) begin
       data = data << 8;
-      data[7:0] = read_byte(addr + i, byte_is_uninit);
+      byte_data = read_byte(addr + i, byte_is_uninit);
       if (byte_is_uninit) begin
         did_access_uninit_mem = 1'b1;
         // If any byte of the access comes back as uninit, bork the whole access.
         if (is_dmem_seq) begin
           // DMEM
-          `DV_CHECK_STD_RANDOMIZE_FATAL(data)
+          `DV_CHECK_STD_RANDOMIZE_FATAL(byte_data)
           // Update mem_model(s) with the randomized data.
           `uvm_info(`gfn,
                     $sformatf("Addr is uninit! DMEM seq, returning random data 0x%0h", data),
                     UVM_MEDIUM)
-          write(addr, data);                       // Update UVM mem_model
-          cosim_agent.write_mem_word(addr, data);  // Update cosim mem_model
-          return data;
+          m_mem.write_byte(addr + i, byte_data);           // Update UVM mem_model
+          cosim_agent.write_mem_byte(addr + i, byte_data); // Update cosim mem_model
         end else begin
           // IMEM
           `uvm_info(`gfn,
@@ -130,6 +160,7 @@ class ibex_mem_intf_response_seq extends uvm_sequence #(ibex_mem_intf_seq_item);
           return {2{16'h0000}}; // 2x C.unimp instructions
         end
       end
+      data[7:0] = byte_data;
     end
     return data;
   endfunction

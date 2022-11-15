@@ -68,6 +68,7 @@ class core_ibex_env extends uvm_env;
   function void reset();
     data_if_response_agent.reset();
     instr_if_response_agent.reset();
+    cosim_agent.reset();
   endfunction
 
 endclass

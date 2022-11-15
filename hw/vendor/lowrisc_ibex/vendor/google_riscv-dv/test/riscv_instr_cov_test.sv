@@ -5,6 +5,7 @@ class riscv_instr_cov_test extends uvm_test;
 
   riscv_instr_gen_config    cfg;
   riscv_instr_cover_group   instr_cg;
+  string                    trace_csv_file;
   string                    trace_csv[$];
   string                    trace[string];
   bit                       report_illegal_instr;
@@ -21,19 +22,23 @@ class riscv_instr_cov_test extends uvm_test;
     string args;
     string csv;
     string line;
+    string line_tmp[$];
     string header[$];
     string entry[$];
-    int fd;
+    int csvlist_fd, fd;
     void'($value$plusargs("report_illegal_instr=%0d", report_illegal_instr));
-    while(1) begin
-      args = {$sformatf("trace_csv_%0d", i), "=%s"};
-      if ($value$plusargs(args, csv)) begin
-        trace_csv.push_back(csv);
-      end else begin
-        break;
+    void'($value$plusargs("trace_csv_file=%0s", trace_csv_file));
+    csvlist_fd = $fopen(trace_csv_file, "r");
+    if (csvlist_fd) begin
+      while(!$feof(csvlist_fd)) begin
+        $fgets(csv, csvlist_fd);
+        if (!(csv == "")) begin
+          split_string(csv, "\n", line_tmp); // Remove trailing newline
+          trace_csv.push_back(line_tmp[0]);
+        end
       end
-      i++;
     end
+    $fclose(csvlist_fd);
     cfg = riscv_instr_gen_config::type_id::create("cfg");
     // disable_compressed_instr is not relevant to coverage test
     cfg.disable_compressed_instr = 0;
@@ -132,7 +137,9 @@ class riscv_instr_cov_test extends uvm_test;
         riscv_instr instr;
         instr = riscv_instr::get_instr(instr_name);
         if ((instr.group inside {RV32I, RV32M, RV32C, RV64I, RV64M, RV64C,
-                                 RV32F, RV64F, RV32D, RV64D, RV32B, RV64B}) &&
+                                 RV32F, RV64F, RV32D, RV64D, RV32B, RV64B,
+                                 RV32ZBA, RV32ZBB, RV32ZBC, RV32ZBS,
+                                 RV64ZBA, RV64ZBB, RV64ZBC, RV64ZBS}) &&
             (instr.group inside {supported_isa})) begin
           assign_trace_info_to_instr(instr);
           instr.pre_sample();

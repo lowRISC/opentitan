@@ -24,12 +24,14 @@ class irq_monitor extends uvm_monitor;
   virtual task run_phase(uvm_phase phase);
     forever begin
       wait (vif.monitor_cb.reset === 1'b0);
-      fork : monitor_irq
-        collect_irq();
-        wait (vif.monitor_cb.reset === 1'b1);
-      join_any
-      // Will only reach here on mid-test reset
-      disable fork;
+      fork begin : isolation_fork
+        fork : monitor_irq
+          collect_irq();
+          wait (vif.monitor_cb.reset === 1'b1);
+        join_any
+        // Will only reach here on mid-test reset
+        disable fork;
+      end join
     end
   endtask : run_phase
 
