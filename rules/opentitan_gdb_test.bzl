@@ -149,7 +149,16 @@ def _opentitan_gdb_fpga_cw310_test_impl(ctx):
     if ctx.attr.opentitantool_cw310_uarts != "":
         test_script += " " + ctx.attr.opentitantool_cw310_uarts
 
-    gdb_script_content = "target extended-remote :3333\n" + ctx.attr.gdb_script
+    gdb_script_prefix = """
+        target extended-remote :3333
+
+        echo :::: Flip dmcontrol.ndmreset off, on, and off again.\\n
+        monitor riscv dmi_write 0x10 0x80000001
+        monitor riscv dmi_write 0x10 0x80000003
+        monitor riscv dmi_write 0x10 0x80000001
+    """
+
+    gdb_script_content = gdb_script_prefix + ctx.attr.gdb_script
     ctx.actions.write(output = gdb_script_file, content = gdb_script_content)
     ctx.actions.write(output = ctx.outputs.executable, content = test_script)
 
