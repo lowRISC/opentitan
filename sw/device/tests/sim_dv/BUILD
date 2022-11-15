@@ -911,6 +911,21 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "rv_dm_ndm_reset_req_when_cpu_halted",
+    srcs = ["rv_dm_ndm_reset_req_when_cpu_halted.c"],
+    targets = ["dv"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "sram_ctrl_execution_main_test",
     srcs = ["sram_ctrl_execution_main_test.c"],
     targets = ["dv"],

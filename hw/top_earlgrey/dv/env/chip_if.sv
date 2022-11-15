@@ -437,7 +437,6 @@ interface chip_if;
   jtag_if flash_ctrl_jtag_if();
 
   // TODO: Revisit this logic.
-  wire lc_ready = `LC_CTRL_HIER.u_reg.u_status_ready.qs;
   wire lc_hw_debug_en = (`LC_CTRL_HIER.lc_hw_debug_en_o == lc_ctrl_pkg::On);
   assign flash_ctrl_jtag_enabled = enable_flash_ctrl_jtag && lc_hw_debug_en;
   assign mios[top_earlgrey_pkg::MioPadIob0] = flash_ctrl_jtag_enabled ?
@@ -619,6 +618,8 @@ interface chip_if;
   wire io_div4_clk = `CLKMGR_HIER.clocks_o.clk_io_div4_powerup;
   wire io_div4_rst_n = `RSTMGR_HIER.resets_o.rst_por_io_div4_n[0];
   clk_rst_if io_div4_clk_rst_if(.clk(io_div4_clk), .rst_n(io_div4_rst_n));
+
+  wire lc_ready = `LC_CTRL_HIER.u_reg.u_status_ready.qs;
 
   wire pwrmgr_low_power = `PWRMGR_HIER.low_power_o;
 

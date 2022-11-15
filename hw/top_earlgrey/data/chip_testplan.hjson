@@ -629,7 +629,7 @@
               reset phase of the test.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_rv_dm_ndm_reset_req_when_cpu_halted"]
     }
     {
       name: chip_rv_dm_access_after_wakeup
