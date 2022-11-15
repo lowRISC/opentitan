@@ -312,8 +312,11 @@ module pwrmgr
   // to silence the reset, this gives us one potential back-up path through alert_handler.
   // Allow capture of main_pd fault status whenever the system is live.
   assign hw2reg.fault_status.main_pd_glitch.de  = pwr_clk_o.main_ip_clk_en;
-  assign hw2reg.fault_status.main_pd_glitch.d   = peri_reqs_masked.rstreqs[ResetMainPwrIdx];
+  assign hw2reg.fault_status.main_pd_glitch.d   = peri_reqs_masked.rstreqs[ResetMainPwrIdx] |
+                                                  reg2hw.fault_status.main_pd_glitch.q;
 
+  `ASSERT(GlitchStatusPersist_A, $rose(reg2hw.fault_status.main_pd_glitch.q) |->
+          reg2hw.fault_status.main_pd_glitch.q until !rst_lc_ni)
 
   ////////////////////////////
   ///  alerts
