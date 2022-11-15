@@ -44,7 +44,7 @@ set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
 set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
   -expression {(FromScenario=="RstMgrSwRst") && \
     (ResetFlop=~"*.u_usbdev.gen_no_stubbed_*") && \
-    (MetaStableFlop=~"*.u_xbar_main.u_ast_41.*.fifo_*ptr*") && \
+    (MetaStableFlop=~"*.u_xbar_main.u_asf_41.*.fifo_*ptr*") && \
     (ClockDomains=="USB_CLK::USB_CLK")} \
-  -comment {SW Reset is sync assert and sync de-asser. \
+  -comment {SW Reset is sync assert and sync de-assert. \
     So, when signal crossing the domain, it has no metastability issue.}
