@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+    Copyright lowRISC contributors.
+    Licensed under the Apache License, Version 2.0, see LICENSE for details.
+    SPDX-License-Identifier: Apache-2.0
+-->
+<!--
+    Excludes toggle coverage for the `err_o` outputs on various `prim_count`
+    instances not forced by the `entropy_src_functional_errors` test.
+    These counters do not control alerts, and serve as mere statistical
+    counters, and thus presenting a lower security risk.
+    They are placed in this separate file to allow for easy removal of
+    these exclusions if verfication ever expands to force these errors.
+-->
+<refinement-file-root>
+  <information comment-version="1" creation-time="Tue 15 Nov 2022 11:50:19 PST" creator="martin.lueker-boden" csCheck="false" save-ref-method="seq" tool-version="Cadence vManager21.03" rules-signature-c="cf549917e07b7b5024b93912c59a54a7">
+    <ucm-files>
+    </ucm-files>
+    <ccf-files>
+    </ccf-files>
+  </information>
+  <rules>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_extht_lo_alert_fails/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668538496" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_extht_hi_alert_fails/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668538550" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_markov_lo_alert_fails/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668538590" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_markov_hi_alert_fails/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668538640" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_bucket_alert_fails/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668538665" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_adaptp_lo_alert_fails/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668538699" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_adaptp_hi_alert_fails/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668538715" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_repcnts_alert_fails/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668538736" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_repcnt_alert_fails/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668538766" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_any_alert_fails/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668538833" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_extht_lo/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668540488" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_extht_hi/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668540560" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_markov_lo/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668540588" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_markov_hi/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668540608" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_bucket/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668540657" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_adaptp_hi/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668540712" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_repcnts/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668540753" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_repcnt/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668541009" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_adaptp_lo/u_prim_count_cntr_reg/err_o" entityType="toggle" excTime="1668541345" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+  </rules>
+  <cache-map>
+  </cache-map>
+</refinement-file-root>

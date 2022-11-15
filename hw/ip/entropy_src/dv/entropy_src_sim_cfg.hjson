@@ -42,10 +42,17 @@
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
-  xcelium_cov_refine_files: ["{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_UNR.vRefine",
-    // TODO(V3): Finalize coverage on ExtHT ports,
-    //           & Remove the following exclusion file
-    "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_extht_exclusions.vRefine"]
+  xcelium_cov_refine_files: [
+  // TODO(V3): Finalize coverage on ExtHT ports & remove the following exclusion file
+  "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_extht_exclusions.vRefine"
+  // Leave the following as a separate refinement, to support potential DV enhancements.
+  // (See the comments within the file for more detail)
+  "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_cnt_err_excl.vRefine",
+  // Waive toggle coverage for the prim_count outputs.  (MoreSB's not exercised)
+  "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_cnt_out_excl.vRefine",
+  // Output of --cov-unr, with `prim_count` error exclusions removed.
+  "{proj_root}/hw/ip/entropy_src/dv/cov/entropy_src_UNR.vRefine",
+  ]
 
   // Default UVM test and seq class name.
   uvm_test: entropy_src_base_test
