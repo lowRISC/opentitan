@@ -32,6 +32,10 @@
     <rule ccType="inst" domain="icc" entityName="uvm_pkg/&quot;lockable_field_cov_of_entropy_src_reg_block.extht_hi_thresholds.bypass_thresh&quot;" entityType="covergroup" excTime="1667143544" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
     <rule ccType="inst" domain="icc" entityName="uvm_pkg/&quot;lockable_field_cov_of_entropy_src_reg_block.extht_lo_thresholds.fips_thresh&quot;" entityType="covergroup" excTime="1667143544" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
     <rule ccType="inst" domain="icc" entityName="uvm_pkg/&quot;lockable_field_cov_of_entropy_src_reg_block.extht_lo_thresholds.bypass_thresh&quot;" entityType="covergroup" excTime="1667143544" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_extht_lo/u_prim_count_cntr_reg/incr_en_i" entityType="toggle" excTime="1668540493" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_extht_hi/u_prim_count_cntr_reg/incr_en_i" entityType="toggle" excTime="1668540560" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_extht_hi_alert_fails/u_prim_count_cntr_reg/incr_en_i" entityType="toggle" excTime="1668541554" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
+    <rule ccType="inst" domain="icc" entityName="entropy_src/u_entropy_src_core/u_entropy_src_cntr_reg_extht_lo_alert_fails/u_prim_count_cntr_reg/incr_en_i" entityType="toggle" excTime="1668541571" name="exclude" reviewer="unknown" user="0" vscope="default"></rule>
   </rules>
   <cache-map>
   </cache-map>
