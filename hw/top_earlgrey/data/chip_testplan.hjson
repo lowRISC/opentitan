@@ -3425,21 +3425,17 @@
 
       The test should cover the following scenarios:
 
-        - Processor is in WFI state
+        - Processor polls for nmi interrupt
         - Background checks enabled wherever possible
           - rstmgr background checks
           - alert_handler ping checks
           - OTP background checks
         - Timers (regular and AON) are active
-        - TBD: check whether transactional clocks should be enabled or disabled.
-        - TBD: check whether PWM should be active.
-
-      This test should leverage the OTTF test framework for supporting
-      concurrency in a FreeRTOS environment. See also the design docs linked
-      in #14095 for more details on how to approach the implementation.
+        - Check whether transactional clocks should be enabled or disabled
+        - Check whether PWM should be active
       '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_power_idle_load"]
     }
     {
       name: chip_sw_power_sleep_load
