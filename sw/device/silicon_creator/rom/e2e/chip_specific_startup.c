@@ -29,6 +29,13 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+enum {
+  kAstInitEnOffset = OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET -
+                     OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+  kJitterEnOffset = OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET -
+                    OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
+};
+
 void epmp_read(rom_epmp_config_t *epmp) {
   // Sadly, CSR reads must use constants for the register name.
   CSR_READ(CSR_REG_MSECCFG, &epmp->mseccfg);
@@ -82,7 +89,7 @@ status_t test_chip_specific_startup(ujson_t *uj) {
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR),
                        &lc));
-  TRY(dif_clkmgr_init(mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR),
+  TRY(dif_clkmgr_init(mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
                       &clkmgr));
 
   LOG_INFO("Querying hardware");
@@ -110,12 +117,11 @@ status_t test_chip_specific_startup(ujson_t *uj) {
 
   // We need to know the OTP configs for AST init and jitter in order to
   // correctly determine the pass/fail conditions.
-  TRY(dif_otp_ctrl_read_blocking(
-      &otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET,
-      &cs.otp.creator_sw_cfg_ast_init_en, 1));
   TRY(dif_otp_ctrl_read_blocking(&otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-                                 OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET,
+                                 kAstInitEnOffset,
+                                 &cs.otp.creator_sw_cfg_ast_init_en, 1));
+  TRY(dif_otp_ctrl_read_blocking(&otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
+                                 kJitterEnOffset,
                                  &cs.otp.creator_sw_cfg_jitter_en, 1));
 
   // Read the entropy config directly from the peripherals.  The DIFs don't
