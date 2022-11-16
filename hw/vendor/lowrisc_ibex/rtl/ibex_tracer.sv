@@ -945,10 +945,10 @@ module ibex_tracer (
         INSN_SEXTB:      decode_r1_insn("sext.b");
         INSN_SEXTH:      decode_r1_insn("sext.h");
         // RV32B - ZBS
-        INSN_BCLRI:     decode_i_insn("bclri");
-        INSN_BSETI:     decode_i_insn("bseti");
-        INSN_BINVI:     decode_i_insn("binvi");
-        INSN_BEXTI:     decode_i_insn("bexti");
+        INSN_BCLRI:     decode_i_shift_insn("bclri");
+        INSN_BSETI:     decode_i_shift_insn("bseti");
+        INSN_BINVI:     decode_i_shift_insn("binvi");
+        INSN_BEXTI:     decode_i_shift_insn("bexti");
         INSN_BCLR:      decode_r_insn("bclr");
         INSN_BSET:      decode_r_insn("bset");
         INSN_BINV:      decode_r_insn("binv");

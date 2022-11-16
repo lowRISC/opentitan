@@ -12,6 +12,8 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
   `uvm_object_new
 
   virtual function void gen_program();
+    bit disable_pmp_exception_handler = 0;
+
     default_include_csr_write = {
       MSCRATCH,
       MVENDORID,
@@ -52,7 +54,29 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
 
     riscv_csr_instr::create_csr_filter(cfg);
 
+    if ($value$plusargs("disable_pmp_exception_handler", disable_pmp_exception_handler) &&
+        disable_pmp_exception_handler) begin
+      cfg.pmp_cfg.enable_pmp_exception_handler = 0;
+    end
+
     super.gen_program();
+  endfunction
+
+  // ECALL trap handler
+  // For riscv-dv in Ibex, ECALL is no-longer used to end the test.
+  // Hence, redefine a simple version here that just increments
+  // MEPC+4 then calls 'mret'. (ECALL is always 4-bytes in RV32)
+  virtual function void gen_ecall_handler(int hart);
+    string instr[$];
+    dump_perf_stats(instr);
+    gen_register_dump(instr);
+    instr = {instr,
+             $sformatf("csrr  x%0d, 0x%0x", cfg.gpr[0], MEPC),
+             $sformatf("addi  x%0d, x%0d, 4", cfg.gpr[0], cfg.gpr[0]),
+             $sformatf("csrw  0x%0x, x%0d", MEPC, cfg.gpr[0])
+             };
+    instr.push_back("mret");
+    gen_section(get_label("ecall_handler", hart), instr);
   endfunction
 
   virtual function void gen_program_header();
@@ -87,31 +111,30 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
     instr.push_back("csrwi 0x7c0, 1");
   endfunction
 
-  // Generate "test_done" section.
+  // Re-define gen_test_done() to override the base-class with an empty implementation.
+  // Then, our own overrided gen_program() can append new test_done code.
+  virtual function void gen_test_done();
+    // empty
+  endfunction
+
   // The test is ended from the UVM testbench, which awaits the following write to
   // the special test-control signature address (signature_addr - 0x4).
-  // The ECALL trap handler will handle the clean up procedure while awaiting the
-  // simulation to be ended.
-  virtual function void gen_test_done();
+  // #FIXME# The existing ECALL trap handler will handle the clean up procedure
+  // while awaiting the simulation to be ended.
+  virtual function void gen_test_end(input test_result_t result,
+                                     ref string instr[$]);
     bit [XLEN-1:0] test_control_addr;
     string str;
     string i = indent; // lint-hack
     test_control_addr = cfg.signature_addr - 4'h4;
 
-    str = {str,
-      {format_string("test_done:", LABEL_STR_LEN), "\n"},
-      {i, "li gp, 1", "\n"}
-    };
-
     if (cfg.bare_program_mode) begin
-      str = {str,
-        {i, "j write_tohost", "\n"}
-      };
+      str = {i, "j write_tohost", "\n"};
     end else begin
       // The testbench will await a write of TEST_PASS, and use that to end the test.
-      str = {str,
+      str = {
         {i, $sformatf(  "li x%0d, 0x%0h",       cfg.gpr[1],             test_control_addr), "\n"},
-        {i, $sformatf(  "li x%0d, 0x%0h",       cfg.gpr[0],             TEST_PASS), "\n"},
+        {i, $sformatf(  "li x%0d, 0x%0h",       cfg.gpr[0],             result), "\n"},
         {i, $sformatf("slli x%0d, x%0d, 8",     cfg.gpr[0], cfg.gpr[0]), "\n"},
         {i, $sformatf("addi x%0d, x%0d, 0x%0h", cfg.gpr[0], cfg.gpr[0], TEST_RESULT), "\n"},
         {i, $sformatf(  "sw x%0d, 0(x%0d)",     cfg.gpr[0], cfg.gpr[1]), "\n"},
@@ -120,7 +143,25 @@ class ibex_asm_program_gen extends riscv_asm_program_gen;
       };
     end
 
-    instr_stream.push_back(str);
+    instr.push_back(str);
+  endfunction
+
+  virtual function void gen_init_section(int hart);
+    // This is a good location to put the test done and fail because PMP tests expect these
+    // sequences to be before the main function.
+    string instr[$];
+
+    super.gen_init_section(hart);
+
+    gen_test_end(.result(TEST_PASS), .instr(instr));
+    instr_stream = {instr_stream,
+                    {format_string("test_done:", LABEL_STR_LEN)},
+                    instr};
+    instr.delete();
+    gen_test_end(.result(TEST_FAIL), .instr(instr));
+    instr_stream = {instr_stream,
+                    {format_string("test_fail:", LABEL_STR_LEN)},
+                    instr};
   endfunction
 
 endclass

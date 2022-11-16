@@ -37,7 +37,7 @@ class ibex_mem_intf_response_agent_cfg extends uvm_object;
   int unsigned zero_delay_pct = 50;
 
   // CONTROL_KNOB : enable/disable to generation of bad integrity upon uninit accesses
-  bit enable_bad_intg_on_uninit_access = 1;
+  bit enable_bad_intg_on_uninit_access = 0;
 
   constraint zero_delays_c {
     zero_delays dist {1 :/ zero_delay_pct,
@@ -56,7 +56,6 @@ class ibex_mem_intf_response_agent_cfg extends uvm_object;
 
   function new(string name = "");
     super.new(name);
-    void'($value$plusargs("enable_bad_intg_on_uninit_access=%0d", enable_bad_intg_on_uninit_access));
   endfunction
 
 endclass

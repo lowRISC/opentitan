@@ -24,6 +24,7 @@ module ibex_register_file_fpga #(
 
   input  logic                 test_en_i,
   input  logic                 dummy_instr_id_i,
+  input  logic                 dummy_instr_wb_i,
 
   //Read port R1
   input  logic [          4:0] raddr_a_i,
@@ -88,7 +89,7 @@ module ibex_register_file_fpga #(
 
   // Dummy instruction changes not relevant for FPGA implementation
   logic unused_dummy_instr;
-  assign unused_dummy_instr = dummy_instr_id_i;
+  assign unused_dummy_instr = dummy_instr_id_i ^ dummy_instr_wb_i;
   // Test enable signal not used in FPGA implementation
   logic unused_test_en;
   assign unused_test_en = test_en_i;

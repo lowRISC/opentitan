@@ -30,13 +30,15 @@ class ibex_mem_intf_monitor extends uvm_monitor;
   virtual task run_phase(uvm_phase phase);
     wait (vif.monitor_cb.reset === 1'b0);
     forever begin
-      fork : check_mem_intf
-        collect_address_phase();
-        collect_response_phase();
-        wait (vif.monitor_cb.reset === 1'b1);
-      join_any
-      // Will only reach this point when mid-test reset is asserted
-      disable fork;
+      fork begin : isolation_fork
+        fork : check_mem_intf
+          collect_address_phase();
+          collect_response_phase();
+          wait (vif.monitor_cb.reset === 1'b1);
+        join_any
+        // Will only reach this point when mid-test reset is asserted
+        disable fork;
+      end join
       handle_reset();
     end
   endtask : run_phase

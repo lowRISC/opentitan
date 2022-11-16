@@ -131,7 +131,7 @@ parameters:
     datatype: int
     default: 0
     paramtype: vlogparam
-    description: "Granularity of NAPOT range, 0 = 4 byte, 1 = byte, 2 = 16 byte, 3 = 32 byte etc"
+    description: "Granularity of NAPOT range, 0 = 4 byte, 1 = 8 byte, 2 = 16 byte, 3 = 32 byte etc"
 
   PMPNumRegions:
     datatype: int

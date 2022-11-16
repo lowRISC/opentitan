@@ -72,7 +72,7 @@ class Cosim {
   //
   // Returns false if there are any errors; use `get_errors` to obtain details
   virtual bool step(uint32_t write_reg, uint32_t write_reg_data, uint32_t pc,
-                    bool sync_trap) = 0;
+                    bool sync_trap, bool suppress_reg_write) = 0;
 
   // When more than one of `set_mip`, `set_nmi` or `set_debug_req` is called
   // before `step` which one takes effect is chosen by the co-simulator. Which
@@ -94,6 +94,12 @@ class Cosim {
   //
   // When an NMI is due to be taken that will occur at the next call of `step`.
   virtual void set_nmi(bool nmi) = 0;
+
+  // Set the state of the internal NMI (non-maskable interrupt) line.
+  // Behaviour wise this is almost as same as external NMI case explained at
+  // set_nmi method. Difference is that this one is a response from Ibex rather
+  // than an input.
+  virtual void set_nmi_int(bool nmi_int) = 0;
 
   // Set the debug request.
   //

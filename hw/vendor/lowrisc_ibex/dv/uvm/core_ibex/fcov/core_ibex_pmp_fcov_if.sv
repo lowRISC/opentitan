@@ -263,7 +263,8 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
                binsof(pmp_iside_req_err) intersect {1});
             illegal_bins illegal_machine_deny_exec =
               // Ensuring MML is high and we are in a X allowed configuration in Machine Mode
-              (binsof(cp_region_priv_bits) intersect {MML_XM_XU, MML_XRM_XU, MML_XRM, MML_XM} &&
+              (binsof(cp_region_priv_bits) intersect {NONE, MML_XM_XU, MML_XRM_XU, MML_XRM,
+                                                      MML_XM} &&
                binsof(cp_priv_lvl_iside) intersect {PRIV_LVL_M} &&
                binsof(cp_req_type_iside) intersect {PMP_ACC_EXEC} &&
                binsof(pmp_iside_req_err) intersect {1});
@@ -314,7 +315,7 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
              binsof(pmp_iside2_req_err) intersect {1});
           illegal_bins illegal_machine_deny_exec =
             // Ensuring MML is high and we are in a X allowed configuration in Machine Mode
-            (binsof(cp_region_priv_bits) intersect {MML_XM_XU, MML_XRM_XU, MML_XRM, MML_XM} &&
+            (binsof(cp_region_priv_bits) intersect {NONE, MML_XM_XU, MML_XRM_XU, MML_XRM, MML_XM} &&
              binsof(cp_priv_lvl_iside2) intersect {PRIV_LVL_M} &&
              binsof(cp_req_type_iside2) intersect {PMP_ACC_EXEC} &&
              binsof(pmp_iside2_req_err) intersect {1});
@@ -364,7 +365,7 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
           illegal_bins illegal_machine_deny_read =
             // Ensuring MML is high and we are in a R allowed configuration in Machine Mode
             (binsof(cp_region_priv_bits) intersect {MML_WRM_RU, MML_WRM_WRU, MML_RM_RU, MML_RM,
-                                                    MML_WRM, MML_XRM, MML_XRM_XU} &&
+                                                    MML_WRM, MML_XRM, MML_XRM_XU, NONE} &&
              binsof(cp_priv_lvl_dside) intersect {PRIV_LVL_M} &&
              binsof(cp_req_type_dside) intersect {PMP_ACC_READ} &&
              binsof(pmp_dside_req_err) intersect {1});
@@ -408,7 +409,7 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
              binsof(pmp_dside_req_err) intersect {1});
           illegal_bins illegal_machine_deny_write =
             // Ensuring MML is high and we are in a W allowed configuration in Machine Mode
-            (binsof(cp_region_priv_bits) intersect {MML_WRM_WRU, MML_WRM_RU, MML_WRM} &&
+            (binsof(cp_region_priv_bits) intersect {MML_WRM_WRU, MML_WRM_RU, MML_WRM, NONE} &&
              binsof(cp_priv_lvl_dside) intersect {PRIV_LVL_M} &&
              binsof(cp_req_type_dside) intersect {PMP_ACC_WRITE} &&
              binsof(pmp_dside_req_err) intersect {1});
@@ -617,14 +618,24 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
 
       cp_mprv: coverpoint cs_registers_i.mstatus_q.mprv;
 
-      mprv_effect_cross: cross cp_mprv, cs_registers_i.mstatus_q.mpp,
+      mprv_effect_cross: cross cs_registers_i.mstatus_q.mpp,
                                cs_registers_i.priv_mode_id_o, pmp_current_priv_req_err,
                                pmp_dside_req_err iff
                                  (id_stage_i.instr_rdata_i[6:0] inside
-                                    {ibex_pkg::OPCODE_LOAD, ibex_pkg::OPCODE_STORE}){
-        // If MPRV is set to 0, system priv lvl and lsu priv lvl has to be same.
-        illegal_bins illegal_mprv =
-          binsof(cp_mprv) intersect {1'b0} with (pmp_current_priv_req_err != pmp_dside_req_err);
+                                    {ibex_pkg::OPCODE_LOAD, ibex_pkg::OPCODE_STORE} &&
+                                  cs_registers_i.mstatus_q.mprv){
+        ignore_bins SamePriv =
+          (binsof(cs_registers_i.mstatus_q.mpp) intersect {PRIV_LVL_M} &&
+           binsof(cs_registers_i.priv_mode_id_o) intersect {PRIV_LVL_M}) ||
+          (binsof(cs_registers_i.mstatus_q.mpp) intersect {PRIV_LVL_U} &&
+           binsof(cs_registers_i.priv_mode_id_o) intersect {PRIV_LVL_U});
+
+        ignore_bins SameErr =
+          (binsof(pmp_current_priv_req_err) intersect {0} &&
+           binsof(pmp_dside_req_err) intersect {0}) ||
+          (binsof(pmp_current_priv_req_err) intersect {1} &&
+           binsof(pmp_dside_req_err) intersect {1});
+
         // Ibex does not support H or S mode.
         ignore_bins unsupported_priv_lvl =
           binsof(cs_registers_i.mstatus_q.mpp) intersect {PRIV_LVL_H, PRIV_LVL_S} ||

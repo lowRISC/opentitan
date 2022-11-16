@@ -89,23 +89,25 @@ class core_ibex_scoreboard extends uvm_scoreboard;
 
   // Helper method which returns if either of the counter thresholds are reached.
   virtual task dfd_wait_for_pass_events();
-    fork
-      begin
-        fault_threshold_total_reached.wait_trigger();
-        `uvm_info(`gfn,
-                  $sformatf({"double_fault detector : reached threshold [%0d] ",
-                             "for total double faults seen."}, cfg.double_fault_threshold_total),
-                  UVM_LOW)
-      end
-      begin
-        fault_threshold_consecutive_reached.wait_trigger();
-        `uvm_info(`gfn,
-                  $sformatf({"double_fault detector : reached threshold [%0d] ",
-                             "for consecutive double faults seen."}, cfg.double_fault_threshold_consecutive),
-                  UVM_LOW)
-      end
-    join_any
-    disable fork;
+    fork begin : isolation_fork
+      fork
+        begin
+          fault_threshold_total_reached.wait_trigger();
+          `uvm_info(`gfn,
+                    $sformatf({"double_fault detector : reached threshold [%0d] ",
+                               "for total double faults seen."}, cfg.double_fault_threshold_total),
+                    UVM_LOW)
+        end
+        begin
+          fault_threshold_consecutive_reached.wait_trigger();
+          `uvm_info(`gfn,
+                    $sformatf({"double_fault detector : reached threshold [%0d] ",
+                               "for consecutive double faults seen."}, cfg.double_fault_threshold_consecutive),
+                    UVM_LOW)
+        end
+      join_any
+      disable fork;
+    end join
   endtask
 
 endclass

@@ -9,12 +9,15 @@ class core_ibex_base_test extends uvm_test;
   core_ibex_env                                   env;
   core_ibex_env_cfg                               cfg;
   core_ibex_cosim_cfg                             cosim_cfg;
+  ibex_mem_intf_response_agent_cfg                imem_cfg;
+  ibex_mem_intf_response_agent_cfg                dmem_cfg;
   virtual clk_rst_if                              clk_vif;
   virtual core_ibex_dut_probe_if                  dut_vif;
   virtual core_ibex_instr_monitor_if              instr_vif;
   virtual core_ibex_csr_if                        csr_vif;
   mem_model_pkg::mem_model                        mem;
   core_ibex_vseq                                  vseq;
+  string                                          binary;
   bit                                             enable_irq_seq;
   longint                                         timeout_seconds = 1800; // wall-clock seconds
   int unsigned                                    timeout_in_cycles = 100000000;
@@ -146,6 +149,20 @@ class core_ibex_base_test extends uvm_test;
 
     uvm_config_db#(core_ibex_cosim_cfg)::set(null, "*cosim_agent*", "cosim_cfg", cosim_cfg);
 
+    imem_cfg = ibex_mem_intf_response_agent_cfg::type_id::create("imem_cfg", this);
+    dmem_cfg = ibex_mem_intf_response_agent_cfg::type_id::create("dmem_cfg", this);
+    // Never create bad integrity bits in response to accessing uninit memory
+    // on the Iside, as the Ibex can fetch speculatively.
+    imem_cfg.enable_bad_intg_on_uninit_access = 0;
+    // By default, enable bad_intg on the Dside (read plusarg to overwrite this behaviour)
+    dmem_cfg.enable_bad_intg_on_uninit_access = 1;
+    void'($value$plusargs("enable_bad_intg_on_uninit_access=%0d",
+                          dmem_cfg.enable_bad_intg_on_uninit_access));
+    uvm_config_db#(ibex_mem_intf_response_agent_cfg)::
+      set(this, "*instr_if_response_agent*", "cfg", imem_cfg);
+    uvm_config_db#(ibex_mem_intf_response_agent_cfg)::
+      set(this, "*data_if_response_agent*", "cfg", dmem_cfg);
+
     uvm_config_db#(core_ibex_env_cfg)::set(this, "*", "cfg", cfg);
     mem = mem_model_pkg::mem_model#()::type_id::create("mem");
     // Create virtual sequence and assign memory handle
@@ -173,9 +190,18 @@ class core_ibex_base_test extends uvm_test;
     cur_run_phase = phase;
     dut_vif.dut_cb.fetch_enable <= ibex_pkg::IbexMuBiOff;
     clk_vif.wait_clks(100);
-    load_binary_to_mem();
+
+    void'($value$plusargs("bin=%0s", binary));
+    if (binary == "")
+      `uvm_fatal(get_full_name(), "Please specify test binary by +bin=binary_name")
+    load_binary_to_mems();
+    `uvm_info(get_full_name(), $sformatf("Running test binary : %0s", binary), UVM_LOW)
+
     dut_vif.dut_cb.fetch_enable <= ibex_pkg::IbexMuBiOn;
-    send_stimulus();
+    fork
+      send_stimulus();
+      handle_reset();
+    join_none
     wait_for_test_done();
     cur_run_phase = null;
     phase.drop_objection(this);
@@ -198,25 +224,47 @@ class core_ibex_base_test extends uvm_test;
   virtual task check_perf_stats();
   endtask
 
-  function void load_binary_to_mem();
-    string      bin;
-    bit [7:0]   r8;
+  // Backdoor-load the test binary file into the memory models of both the DUT and the cosimulated ISS
+  function void load_binary_to_mems();
     bit [31:0]  addr = 32'h`BOOT_ADDR;
-    int         f_bin;
-    void'($value$plusargs("bin=%0s", bin));
-    if (bin == "")
-      `uvm_fatal(get_full_name(), "Please specify test binary by +bin=binary_name")
-    `uvm_info(get_full_name(), $sformatf("Running test : %0s", bin), UVM_LOW)
-    f_bin = $fopen(bin,"rb");
-    if (!f_bin)
+    load_binary_to_dut_mem(addr, binary);             // Populate RTL memory model
+    env.cosim_agent.load_binary_to_mem(addr, binary); // Populate ISS memory model
+  endfunction
+
+  // Backdoor-load the test binary file into the DUT memory model
+  function void load_binary_to_dut_mem(bit[31:0] base_addr, string bin);
+     bit [7:0]  r8;
+     bit [31:0] addr = base_addr;
+     int        bin_fd;
+    bin_fd = $fopen(bin,"rb");
+    if (!bin_fd)
       `uvm_fatal(get_full_name(), $sformatf("Cannot open file %0s", bin))
-    while ($fread(r8,f_bin)) begin
+    while ($fread(r8, bin_fd)) begin
       `uvm_info(`gfn, $sformatf("Init mem [0x%h] = 0x%0h", addr, r8), UVM_FULL)
-      mem.write(addr, r8);                      // Populate RTL memory model
-      env.cosim_agent.write_mem_byte(addr, r8); // Populate ISS memory model
+      mem.write(addr, r8);
       addr++;
     end
   endfunction
+
+  // Monitor the reset line, and sequence the resetting of the testbench environment
+  virtual task handle_reset();
+    forever begin
+      @(posedge dut_vif.reset);
+      `uvm_info(`gfn, "Reset now active", UVM_LOW)
+      // Tear-down testbench components
+      // Flush FIFOs
+      item_collected_port.flush();
+      irq_collected_port.flush();
+
+      @(negedge dut_vif.reset);
+      `uvm_info(`gfn, "Reset now inactive", UVM_LOW)
+      // Build-up testbench components
+
+      // Cosim must be re-initialized before loading the memory
+      env.reset();
+      load_binary_to_mems(); // Backdoor-load, 0-time
+    end
+  endtask : handle_reset
 
   // Watch for all of the different critera for test pass/failure here
   virtual task wait_for_test_done();
@@ -274,6 +322,9 @@ class core_ibex_base_test extends uvm_test;
         end
         `uvm_fatal(`gfn,
                    $sformatf("Test failed due to wall-clock timeout. [%0ds]", timeout_seconds))
+      end
+      begin
+        wait_for_custom_test_done();
       end
     join_any
 
@@ -352,21 +403,23 @@ class core_ibex_base_test extends uvm_test;
   virtual task check_next_core_status(core_status_t core_status, string error_msg = "",
                                       int timeout = 9999999);
     cur_run_phase.raise_objection(this);
-    fork
-      begin
-        wait_for_mem_txn(cfg.signature_addr, CORE_STATUS);
-        signature_data = signature_data_q.pop_front();
-        `DV_CHECK_EQ_FATAL(signature_data, core_status, error_msg);
-      end
-      begin : wait_timeout
-        clk_vif.wait_clks(timeout);
-        `uvm_fatal(`gfn,
-                   $sformatf("Did not receive core_status %0s within %0d cycle timeout period",
-                   core_status.name(), timeout))
-      end
-    join_any
-    // Will only get here if we successfully beat the timeout period
-    disable fork;
+    fork begin : isolation_fork
+      fork
+        begin
+          wait_for_mem_txn(cfg.signature_addr, CORE_STATUS);
+          signature_data = signature_data_q.pop_front();
+          `DV_CHECK_EQ_FATAL(signature_data, core_status, error_msg);
+        end
+        begin : wait_timeout
+          clk_vif.wait_clks(timeout);
+          `uvm_fatal(`gfn,
+                     $sformatf("Did not receive core_status %0s within %0d cycle timeout period",
+                     core_status.name(), timeout))
+        end
+      join_any
+      // Will only get here if we successfully beat the timeout period
+      disable fork;
+    end join
     cur_run_phase.drop_objection(this);
   endtask
 
@@ -374,23 +427,25 @@ class core_ibex_base_test extends uvm_test;
   virtual task wait_for_csr_write(csr_num_e csr, int timeout = 9999999);
     bit [11:0] csr_addr;
     cur_run_phase.raise_objection(this);
-    fork
-      begin
-        do begin
-          wait_for_mem_txn(cfg.signature_addr, WRITE_CSR);
-          csr_addr = signature_data_q.pop_front();
-          signature_data = signature_data_q.pop_front();
-        end while (csr_addr != csr);
-      end
-      begin : wait_timeout
-        clk_vif.wait_clks(timeout);
-        `uvm_fatal(`gfn,
-                   $sformatf("Did not receive write to csr 0x%0x within %0d cycle timeout period",
-                   csr, timeout))
-      end
-    join_any
-    // Will only get here if we successfully beat the timeout period
-    disable fork;
+    fork begin : isolation_fork
+      fork
+        begin
+          do begin
+            wait_for_mem_txn(cfg.signature_addr, WRITE_CSR);
+            csr_addr = signature_data_q.pop_front();
+            signature_data = signature_data_q.pop_front();
+          end while (csr_addr != csr);
+        end
+        begin : wait_timeout
+          clk_vif.wait_clks(timeout);
+          `uvm_fatal(`gfn,
+                     $sformatf("Did not receive write to csr 0x%0x within %0d cycle timeout period",
+                     csr, timeout))
+        end
+      join_any
+      // Will only get here if we successfully beat the timeout period
+      disable fork;
+    end join
     cur_run_phase.drop_objection(this);
   endtask
 
@@ -400,6 +455,16 @@ class core_ibex_base_test extends uvm_test;
       wait_for_mem_txn(cfg.signature_addr, CORE_STATUS);
       signature_data = signature_data_q.pop_front();
     end while (signature_data != core_status);
+  endtask
+
+  virtual task wait_for_core_exception(ibex_pkg::exc_cause_t exc_cause);
+    wait(dut_vif.ctrl_fsm_cs == ibex_pkg::FLUSH && dut_vif.exc_cause == exc_cause &&
+      dut_vif.csr_save_cause);
+    wait(dut_vif.ctrl_fsm_cs != ibex_pkg::FLUSH);
+  endtask
+
+  virtual task wait_for_custom_test_done();
+    wait (test_done == 1'b1);
   endtask
 
 endclass

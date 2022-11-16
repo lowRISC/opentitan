@@ -314,7 +314,7 @@ class riscv_compressed_instr extends riscv_instr;
       C_EBREAK:
         binary = $sformatf("%4h", {get_func3(), 1'b1, 10'b0, get_c_opcode()});
       C_JALR:
-        binary = $sformatf("%4h", {get_func3(), 1'b1, 10'b0, get_c_opcode()});
+        binary = $sformatf("%4h", {get_func3(), 1'b1, rs1, 5'b0, get_c_opcode()});
       C_ADD:
         binary = $sformatf("%4h", {get_func3(), 1'b1, rd, rs2, get_c_opcode()});
       C_SDSP:
