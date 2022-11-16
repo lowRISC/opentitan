@@ -66,6 +66,8 @@ class csrng_intr_vseq extends csrng_base_vseq;
     // 1. Failure of the entropy source
     // 2. Attempts to use an instance which has not been properly instantiated, or
     // 3. Attempts to generate data when an instance has exceeded its maximum seed life.
+    bit [31:0] backdoor_err_code_val;
+
     path1 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack", cfg.which_hw_inst_exc);
     path2 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack_sts", cfg.which_hw_inst_exc);
 
@@ -76,7 +78,9 @@ class csrng_intr_vseq extends csrng_base_vseq;
     `DV_CHECK(uvm_hdl_release(path1));
     `DV_CHECK(uvm_hdl_release(path2));
 
-    cov_vif.cg_err_code_sample(.err_code(ral.err_code.get_mirrored_value()));
+    csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+    cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
+
     // Expect/Clear interrupt bit
     check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
     cfg.clk_rst_vif.wait_clks(100);
@@ -96,6 +100,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     string        fifo_err_path [2][string];
     bit           fifo_err_value [2][string];
     string        path_key;
+    bit [31:0]    backdoor_err_code_val;
 
     fifo_err_path[0] = '{"write": "push", "read": "pop", "state": "full"};
     fifo_err_path[1] = '{"write": "full", "read": "not_empty", "state": "not_empty"};
@@ -179,7 +184,8 @@ class csrng_intr_vseq extends csrng_base_vseq;
         `uvm_fatal(`gfn, "Invalid case! (bug in environment)")
       end
     endcase // case (cfg.which_fatal_err)
-    cov_vif.cg_err_code_sample(.err_code(ral.err_code.get_mirrored_value()));
+    csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+    cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
   endtask // test_cs_fatal_err
 
   task body();
