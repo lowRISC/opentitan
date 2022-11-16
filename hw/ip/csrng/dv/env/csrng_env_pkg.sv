@@ -82,6 +82,7 @@ package csrng_env_pkg;
   } fatal_err_e;
 
   typedef enum int {
+    // ERR_CODE
     sfifo_cmd_err           = 0,
     sfifo_genbits_err       = 1,
     sfifo_cmdreq_err        = 2,
@@ -108,6 +109,7 @@ package csrng_env_pkg;
     fifo_write_err          = 23,
     fifo_read_err           = 24,
     fifo_state_err          = 25,
+    // ERR_CODE_TEST
     sfifo_cmd_err_test      = 26,
     sfifo_genbits_err_test  = 27,
     sfifo_cmdreq_err_test   = 28,
