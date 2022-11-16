@@ -48,7 +48,6 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
       @(cfg.clk_rst_vif.cb);
       `DV_WAIT(cfg.exp_alert_q.size() > 0)
       // timeout occur about 5us
-      `uvm_info(`gfn, "Transferred alert to cip", UVM_MEDIUM)
       set_exp_alert("fatal_fault", 1, 500);
       exp_alert = cfg.exp_alert_q.pop_front();
       `DV_CHECK_EQ(cfg.exp_alert_q.size(), 0)

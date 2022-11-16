@@ -35,6 +35,7 @@ interface pwrmgr_if (
 
   pwrmgr_pkg::pwr_flash_t                                      pwr_flash;
 
+  pwrmgr_pkg::pwrmgr_cpu_t                                     cpu_i;
   pwrmgr_pkg::pwr_cpu_t                                        pwr_cpu;
 
   lc_ctrl_pkg::lc_tx_t                                         fetch_en;
@@ -42,11 +43,7 @@ interface pwrmgr_if (
   lc_ctrl_pkg::lc_tx_t                                         lc_dft_en;
 
   logic                       [  pwrmgr_reg_pkg::NumWkups-1:0] wakeups_i;
-
   logic                       [pwrmgr_reg_pkg::NumRstReqs-1:0] rstreqs_i;
-
-  // cpu related inputs
-  pwrmgr_pkg::pwrmgr_cpu_t                                     cpu_i;
 
   logic                                                        strap;
   logic                                                        low_power;

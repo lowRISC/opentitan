@@ -12,7 +12,6 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
   constraint wakeups_c {wakeups == 0;}
   constraint wakeups_en_c {wakeups_en == 0;}
 
-   constraint ndm_reset_c {ndm_reset == 1;}
   function void post_randomize();
     sw_rst_from_rstmgr = get_rand_mubi4_val(8, 4, 4);
     super.post_randomize();
@@ -53,17 +52,14 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       end
       cfg.clk_rst_vif.wait_clks(cycles_before_reset);
 
-//      if (cycles_before_reset == 0) enabled_resets = 0;
-
       `uvm_info(`gfn, $sformatf("Sending resets=0x%x", resets), UVM_MEDIUM)
       cfg.pwrmgr_vif.update_resets(resets);
       `uvm_info(`gfn, $sformatf("Sending sw reset from rstmgr=%b", sw_rst_from_rstmgr), UVM_MEDIUM)
       if (escalation_reset) begin
-	send_escalation_reset();
-	// Wait for the alert to propagate to fault_status?
+        send_escalation_reset();
+        // Wait for the alert to propagate to fault_status?
       end
       cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
-
       if (ndm_reset) send_ndm_reset();
 
       // Expect to start reset.

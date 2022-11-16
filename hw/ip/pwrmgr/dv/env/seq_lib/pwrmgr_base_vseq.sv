@@ -193,7 +193,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
-    `uvm_info(`gfn, {"In apply reset ", kind}, UVM_MEDIUM)
     fork
       super.apply_reset(kind);
       if (kind == "HARD") begin
@@ -207,7 +206,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       clear_ndm_reset();
       cfg.aon_clk_rst_vif.apply_reset();
     join
-    `uvm_info(`gfn, {"Out of apply reset ", kind}, UVM_MEDIUM)
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
@@ -373,14 +371,14 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                     cycles_before_io_clk_en
                     ), UVM_MEDIUM)
           if (new_value == 1) begin
-	    cfg.clk_rst_vif.start_clk();
-	    cfg.lc_clk_rst_vif.start_clk();
-	    cfg.esc_clk_rst_vif.start_clk();
+            cfg.clk_rst_vif.start_clk();
+            cfg.lc_clk_rst_vif.start_clk();
+            cfg.esc_clk_rst_vif.start_clk();
           end else begin
-	    cfg.clk_rst_vif.stop_clk();
-	    cfg.lc_clk_rst_vif.stop_clk();
-	    cfg.esc_clk_rst_vif.stop_clk();
-	  end
+            cfg.clk_rst_vif.stop_clk();
+            cfg.lc_clk_rst_vif.stop_clk();
+            cfg.esc_clk_rst_vif.stop_clk();
+          end
         end
       forever
         @(io_clk_val_sr[cycles_before_io_clk_en + 2]) begin
@@ -428,7 +426,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
           `uvm_info(`gfn, $sformatf(
                     "fast responder got rst_lc_req change to 0x%x",
                     cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req
-                    ), UVM_MEDIUM)
+                    ), UVM_HIGH)
           raise_fast_objection("rst_lc_src_n");
           `FAST_RESPONSE_ACTION("rst_lc_src_n", cfg.pwrmgr_vif.fast_cb.pwr_rst_rsp.rst_lc_src_n,
                                 ~cfg.pwrmgr_vif.fast_cb.pwr_rst_req.rst_lc_req,
