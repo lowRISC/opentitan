@@ -410,6 +410,16 @@ impl Backend {
 
     /// Write a byte to the CDCE906 PLL chip.
     fn pll_write(&self, addr: u8, data: u8) -> Result<()> {
+        // We don't want the EEPROM to wear out prematurely. Write only if `data` is different than
+        // what is already stored.
+        if self.pll_read(addr)? == data {
+            log::debug!(
+                "Skipping PLL write since address {} is already {}",
+                addr,
+                data
+            );
+            return Ok(());
+        }
         self.send_ctrl(Backend::CMD_PLL, 0, &[Backend::REQ_PLL_WRITE, addr, data])?;
         let mut resp = [0u8; 2];
         self.read_ctrl(Backend::CMD_PLL, 0, &mut resp)?;
