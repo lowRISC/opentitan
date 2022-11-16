@@ -3254,7 +3254,7 @@
     {
       name: chip_sw_coremark
       desc: '''Run the coremark benchmark on the full chip.'''
-      stage: V2
+      stage: V3
       tests: ["chip_sw_coremark"]
     }
     {
