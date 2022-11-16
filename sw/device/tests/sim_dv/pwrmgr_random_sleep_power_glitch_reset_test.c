@@ -466,20 +466,24 @@ bool test_main(void) {
     case 0:
       if (RST_IDX[event_idx] % 2) {
         LOG_INFO("Booting and setting normal sleep followed by glitch reset");
+        LOG_INFO("Let SV wait timer reset");
         normal_sleep_glitch_reset(&pwrmgr);
         timer_on(kWdogBiteMicros);
       } else {
         LOG_INFO("Booting and setting deep sleep followed by glitch reset");
+        LOG_INFO("Let SV wait timer reset");
         low_power_glitch_reset(&pwrmgr);
       }
       break;
     case 1:
       if (RST_IDX[event_idx] % 2) {
         LOG_INFO("Booting and setting normal sleep followed by hw por");
+        LOG_INFO("Let SV wait timer reset");
         normal_sleep_por(&pwrmgr);
         timer_on(kWdogBiteMicros);
       } else {
         LOG_INFO("Booting and setting deep sleep followed by hw por");
+        LOG_INFO("Let SV wait timer reset");
         low_power_por(&pwrmgr);
       }
       break;
