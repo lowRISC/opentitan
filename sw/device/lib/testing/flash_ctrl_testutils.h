@@ -303,4 +303,22 @@ void flash_ctrl_testutils_backdoor_init(dif_flash_ctrl_state_t *flash_state);
 void flash_ctrl_testutils_backdoor_wait_update(
     dif_flash_ctrl_state_t *flash_state, uintptr_t addr, size_t timeout);
 
+/**
+ * This is a backdoor API to be used with dvsim testbench.
+ * This function is very similar to `flash_ctrl_testutils_backdoor_wait_update`.
+ * But this function keeps reading the address until it equals to the expected
+ * input data.
+ * Before using this function `flash_ctrl_testutils_backdoor_init` should be
+ * called.
+ *
+ * @param flash_state A flash_ctrl handle.
+ * @param addr The address to a `const uint32_t` variable where the testbench
+ * will write to.
+ * @param exp_data The expected read data for the addr.
+ * @param timeout Timeout.
+ */
+void flash_ctrl_testutils_backdoor_wait_eq(dif_flash_ctrl_state_t *flash_state,
+                                           uintptr_t addr, uint32_t exp_data,
+                                           size_t timeout);
+
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_FLASH_CTRL_TESTUTILS_H_

@@ -59,6 +59,8 @@ static dif_flash_ctrl_state_t flash_ctrl;
 
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
+static volatile const uint32_t kTestIp = 0;
+
 static plic_isr_ctx_t plic_ctx = {
     .rv_plic = &plic,
     .hart_id = kPlicTarget,
@@ -375,13 +377,16 @@ void set_peripheral_clock(const test_t *peripheral,
           "intended_clk_state = %d, received_clk_state = %d", new_clk_state,
           clk_state);
   }
+  if (new_clk_state == kDifToggleDisabled) {
+    LOG_INFO("Turn off %0s clock", peripheral->name);
+  }
 };
 
 /**
  * A utility function to wait enough until the alert handler pings a peripheral
  * alert
  */
-void wait_enough_for_alert_ping() {
+void wait_enough_for_alert_ping(uint32_t peri_idx) {
   // wait enough
   if (kDeviceType == kDeviceFpgaCw310) {
     // NUM_ALERTS*2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
@@ -390,7 +395,8 @@ void wait_enough_for_alert_ping() {
   } else if (kDeviceType == kDeviceSimDV) {
     // NUM_ALERTS*2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
     // (2**6)*2*4*(2**3)*(40ns) = 160us
-    busy_spin_micros(160);
+    flash_ctrl_testutils_backdoor_wait_eq(&flash_ctrl, (uintptr_t)&kTestIp,
+                                          peri_idx + 1, 160);
   } else {
     // Verilator
     // NUM_ALERTS*2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
@@ -439,6 +445,8 @@ bool test_main(void) {
   size_t test_phase;
   size_t test_step_cnt;
   size_t peri_idx;
+
+  flash_ctrl_testutils_backdoor_init(&flash_ctrl);
 
   // Need a NVM counter to keep the test-step info
   // between resets on the FPGA.
@@ -495,7 +503,7 @@ bool test_main(void) {
           /*ping_timeout*/ 2);
 
       // wait enough until the alert handler pings the peripheral
-      wait_enough_for_alert_ping();
+      wait_enough_for_alert_ping(peri_idx);
 
       // Check the ping_timeout alert status
       CHECK_DIF_OK(dif_alert_handler_local_alert_is_cause(
@@ -554,7 +562,7 @@ bool test_main(void) {
     set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleDisabled);
 
     // wait enough until the alert handler pings the peripheral
-    wait_enough_for_alert_ping();
+    wait_enough_for_alert_ping(peri_idx);
 
     // Check the alert status
     CHECK_DIF_OK(dif_alert_handler_local_alert_is_cause(
