@@ -161,3 +161,25 @@ set_reset_scenario { \
   { POR_N                              { constraint { @t0 1 } } } \
   { top_earlgrey.u_spi_device.rst_ni   { constraint { @t0 1 } } } \
 } -name RstSpidTpmCsb -comment "SPI_DEVICE TPM CSb Assertion"
+
+# JTAG Scenarios
+## RV_DM
+set_reset_scenario { \
+  { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.jtag_req.trst_n \
+    { reset { @t0 1 } { #10 0 } { #10 1 } } } \
+  { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[1] { constraint { @t0 1 } } } \
+  { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[0] { constraint { @t0 0 } } } \
+  { POR_N                               { constraint { @t0 1 } } } \
+  { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint { @t0 1 } } } \
+  { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { constraint { @t0 1 } } } \
+} -name JtagRvDm -comment "RV_DM JTAG Reset Scenario"
+## LC_CTRL
+set_reset_scenario { \
+  { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.jtag_req.trst_n \
+    { reset { @t0 1 } { #10 0 } { #10 1 } } } \
+  { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[1] { constraint { @t0 0 } } } \
+  { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[0] { constraint { @t0 1 } } } \
+  { POR_N                               { constraint { @t0 1 } } } \
+  { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint { @t0 1 } } } \
+  { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { constraint { @t0 1 } } } \
+} -name JtagLifeCycle -comment "LC_CTRL JTAG Reset Scenario"
