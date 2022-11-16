@@ -255,7 +255,6 @@ static void enter_low_power(bool deep_sleep) {
   pwrmgr_testutils_enable_low_power(
       &pwrmgr, /*wake_up_request_source*/ kDifPwrmgrWakeupRequestSourceFive,
       cfg);
-  alert_handler_clear_cause_regs();
   wait_for_interrupt();
 }
 
@@ -433,17 +432,14 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
       CHECK(alert_handler_num_fired_loc_alerts() == 0,
             "Phase #1: Expected_num_fired_loc_alerts is 0");
     } else if (test_phase == 2) {
-      // Clear local_alert_cause regs for a cleean start to test the ping-fail
-      // mechanism
-      CHECK_DIF_OK(dif_alert_handler_local_alert_acknowledge(
-          &alert_handler, kDifAlertHandlerLocalAlertAlertPingFail));
-      CHECK_DIF_OK(dif_alert_handler_local_alert_acknowledge(
-          &alert_handler, kDifAlertHandlerLocalAlertEscalationPingFail));
+      // Clear local_alert_cause and alert_cause regs for a clean start
+      // to test the ping-fail mechanism.
+      alert_handler_clear_cause_regs();
 
       // Wait for new pings
       wait_enough_for_alert_ping();
 
-      CHECK(alert_handler_num_fired_alerts() > num_fired_alerts,
+      CHECK(alert_handler_num_fired_alerts() > 0,
             "Phase #2: No new alerts has been fired after wakeup!");
       CHECK(alert_handler_num_fired_loc_alerts() == 2,
             "Phase #2: Only 2 loc_alerts (esc-ping-fail, alert-ping-fail) "
@@ -474,10 +470,9 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
      * Enter the normal sleep or deep sleep mode
      * Deep sleep mode is time consuming in DV, and normal sleep mode is more
      * important for the test. Therefore, the test goes to the deep sleep mode
-     * at every 4 test steps and at the end of phase 1.
+     * only once while transitioning from phase #1 to phase #2.
      */
-    sleep_mode =
-        ((test_step_cnt % 4) == 0) | (test_step_cnt == rnd_num_iterations);
+    sleep_mode = (test_step_cnt == rnd_num_iterations);
     enter_low_power(/*deep_sleep=*/sleep_mode);
   }
 }
@@ -513,12 +508,12 @@ bool test_main(void) {
     execute_test_phases(/*test_phase=*/1, /*ping_timeout_cyc=*/256);
   }
 
-  // TEST PHASE #2: ping_timeout = 2
+  // TEST PHASE #2: ping_timeout = 1
   // To ensure that ping mechanism will continue to send out pings after wakeup
   // At least one of the alerts should cause a ping_timeout_fail event after
   // wakeup.
   while (test_step_cnt <= 2 * rnd_num_iterations) {
-    execute_test_phases(/*test_phase=*/2, /*ping_timeout_cyc=*/2);
+    execute_test_phases(/*test_phase=*/2, /*ping_timeout_cyc=*/1);
   }
 
   // Do the cleanup
