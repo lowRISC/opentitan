@@ -8,15 +8,10 @@ class chip_sw_i2c_host_tx_rx_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   rand int i2c_idx;
-
-  // TODO: Randomize this variable later when C side is ready.
-  // When this is randomized, the sequence will arbitrarily pick one of the i2c interfaces
-  // to test.
   constraint i2c_idx_c {
-    i2c_idx inside {[0:0]};
+    i2c_idx inside {[0:NUM_I2CS-1]};
   }
 
-  // need to figure out is there a way to get this from the tb
   int clock_period_nanos = 41;
   int i2c_clock_period_nanos = 1000;
   int rise_fall_nanos = 10;
@@ -26,15 +21,21 @@ class chip_sw_i2c_host_tx_rx_vseq extends chip_sw_base_vseq;
   int half_period_cycles = ((i2c_clock_period_nanos/2 - 1) / clock_period_nanos) + 1;
 
   virtual task cpu_init();
-    bit[7:0] clock_period_nanos_data[1] = {clock_period_nanos};
-    bit[7:0] rise_fall_nanos_data[1] = {rise_fall_nanos};
-    bit[7:0] i2c_clock_period_nanos_data[4] = {<<byte{i2c_clock_period_nanos}};
+    bit[7:0] clock_period_nanos_arr[1] = {clock_period_nanos};
+    bit[7:0] rise_fall_nanos_arr[1] = {rise_fall_nanos};
+    bit[7:0] i2c_clock_period_nanos_arr[4] = {<<byte{i2c_clock_period_nanos}};
+    bit[7:0] i2c_idx_arr[1];
 
+    void'($value$plusargs("i2c_idx=%0d", i2c_idx));
+    `DV_CHECK(i2c_idx inside {[0:NUM_I2CS-1]})
+
+    i2c_idx_arr = {i2c_idx};
     super.cpu_init();
     // need to figure out a better way to calculate this based on tb clock frequency
-    sw_symbol_backdoor_overwrite("kClockPeriodNanos", clock_period_nanos_data);
-    sw_symbol_backdoor_overwrite("kI2cRiseFallNanos", rise_fall_nanos_data);
-    sw_symbol_backdoor_overwrite("kI2cClockPeriodNanos", i2c_clock_period_nanos_data);
+    sw_symbol_backdoor_overwrite("kClockPeriodNanos", clock_period_nanos_arr);
+    sw_symbol_backdoor_overwrite("kI2cRiseFallNanos", rise_fall_nanos_arr);
+    sw_symbol_backdoor_overwrite("kI2cClockPeriodNanos", i2c_clock_period_nanos_arr);
+    sw_symbol_backdoor_overwrite("kI2cIdx", i2c_idx_arr);
   endtask
 
   virtual task body();
@@ -63,10 +64,9 @@ class chip_sw_i2c_host_tx_rx_vseq extends chip_sw_base_vseq;
     i2c_device_autoresponder();
   endtask
 
-  virtual task i2c_device_autoresponder(i2c_device_response_seq seq = null);
-    if (seq == null) seq = i2c_device_response_seq::type_id::create("seq");
+  virtual task i2c_device_autoresponder();
+    i2c_device_response_seq seq = i2c_device_response_seq::type_id::create("seq");
     fork seq.start(p_sequencer.i2c_sequencer_hs[i2c_idx]); join_none
-    #0;  // Ensure seq actually starts before subsequent code executes.
   endtask
 
 
