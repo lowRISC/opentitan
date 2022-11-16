@@ -65,9 +65,8 @@ class chip_sw_random_power_glitch_vseq extends chip_sw_base_vseq;
             cfg.sw_logger_vif.printed_log ==
                 "Booting and setting normal sleep followed by glitch reset" ||
             cfg.sw_logger_vif.printed_log == "Last Booting" ||
-            cfg.sw_logger_vif.printed_log == "Test finish",
-            // 20ms
-            20_000_000)
+            cfg.sw_logger_vif.printed_log == "Test finish", , 30_000_000
+            )
 
        `uvm_info(`gfn, "HW Booting is called", UVM_MEDIUM)
        if (cfg.sw_logger_vif.printed_log ==
