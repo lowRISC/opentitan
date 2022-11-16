@@ -172,8 +172,9 @@ module tb;
 
   // Bind the SW test status interface directly to the sim SRAM interface.
   bind `SIM_SRAM_IF sw_test_status_if u_sw_test_status_if (
-    .addr (tl_h2d.a_address),
-    .data (tl_h2d.a_data[15:0]),
+    .addr     (tl_h2d.a_address),
+    .data     (tl_h2d.a_data[15:0]),
+    .fetch_en (dut.chip_if.pwrmgr_cpu_fetch_en),
     .*
   );
 
