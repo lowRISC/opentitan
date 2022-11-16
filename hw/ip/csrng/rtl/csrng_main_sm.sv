@@ -51,27 +51,33 @@ module csrng_main_sm import csrng_pkg::*; #(
     clr_adata_packer_o = 1'b0;
     main_sm_alert_o = 1'b0;
     main_sm_err_o = 1'b0;
-    unique case (state_q)
-      Idle: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else
-        if (enable_i) begin
+
+    if (state_q == Error) begin
+      // In case we are in the Error state we must ignore the local escalate and enable signals.
+      main_sm_err_o = 1'b1;
+    end else if (local_escalate_i) begin
+      // In case local escalate is high we must transition to the error state.
+      state_d = Error;
+    end else if (!enable_i && state_q inside {Idle, ParseCmd, InstantPrep, InstantReq, ReseedPrep,
+                                              ReseedReq, GeneratePrep, GenerateReq, UpdatePrep,
+                                              UpdateReq, UninstantPrep, UninstantReq, ClrAData,
+                                              CmdCompWait}) begin
+      // In case the module is disabled and we are in a legal state we must go into idle state.
+      state_d = Idle;
+    end else begin
+      // Otherwise do the state machine as normal.
+      unique case (state_q)
+        Idle: begin
+          // Because of the if statement above we won't leave idle if enable is low.
           if (ctr_drbg_cmd_req_rdy_i) begin
-            // signal the arbiter to grant this request
+            // Signal the arbiter to grant this request.
             if (acmd_avail_i) begin
               acmd_accept_o = 1'b1;
               state_d = ParseCmd;
             end
           end
         end
-      end
-      ParseCmd: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        ParseCmd: begin
           if (ctr_drbg_cmd_req_rdy_i) begin
             if (acmd_i == INS) begin
               if (acmd_eop_i) begin
@@ -99,13 +105,7 @@ module csrng_main_sm import csrng_pkg::*; #(
             end
           end
         end
-      end
-      InstantPrep: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        InstantPrep: begin
           if (flag0_i) begin
             // assumes all adata is present now
             state_d = InstantReq;
@@ -117,23 +117,11 @@ module csrng_main_sm import csrng_pkg::*; #(
             end
           end
         end
-      end
-      InstantReq: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        InstantReq: begin
           instant_req_o = 1'b1;
           state_d = ClrAData;
         end
-      end
-      ReseedPrep: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        ReseedPrep: begin
           if (flag0_i) begin
             // assumes all adata is present now
             state_d = ReseedReq;
@@ -145,106 +133,50 @@ module csrng_main_sm import csrng_pkg::*; #(
             end
           end
         end
-      end
-      ReseedReq: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        ReseedReq: begin
           reseed_req_o = 1'b1;
           state_d = ClrAData;
         end
-      end
-      GeneratePrep: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        GeneratePrep: begin
           // assumes all adata is present now
           state_d = GenerateReq;
         end
-      end
-      GenerateReq: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        GenerateReq: begin
           generate_req_o = 1'b1;
           state_d = ClrAData;
         end
-      end
-      UpdatePrep: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        UpdatePrep: begin
           // assumes all adata is present now
           state_d = UpdateReq;
         end
-      end
-      UpdateReq: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        UpdateReq: begin
           update_req_o = 1'b1;
           state_d = ClrAData;
         end
-      end
-      UninstantPrep: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        UninstantPrep: begin
           // assumes all adata is present now
           state_d = UninstantReq;
         end
-      end
-      UninstantReq: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        UninstantReq: begin
           uninstant_req_o = 1'b1;
           state_d = ClrAData;
         end
-      end
-      ClrAData: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        ClrAData: begin
           clr_adata_packer_o = 1'b1;
           state_d = CmdCompWait;
         end
-      end
-      CmdCompWait: begin
-        if (local_escalate_i) begin
-          state_d = Error;
-        end else if (!enable_i) begin
-          state_d = Idle;
-        end else begin
+        CmdCompWait: begin
           if (cmd_complete_i) begin
             state_d = Idle;
           end
         end
-      end
-      Error: begin
-        main_sm_err_o = 1'b1;
-      end
-      default: begin
-        state_d = Error;
-        main_sm_err_o = 1'b1;
-      end
-    endcase
+        // Error: The error state is now covered by the if statement above.
+        default: begin
+          state_d = Error;
+          main_sm_err_o = 1'b1;
+        end
+      endcase
+    end
   end
 
 endmodule
