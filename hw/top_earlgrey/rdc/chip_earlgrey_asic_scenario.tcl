@@ -56,6 +56,7 @@ set_reset_scenario { \
   { top_earlgrey.pwrmgr_aon_low_power                  { constraint { @t0 1 } } } \
   { top_earlgrey.spi_device_passthrough_req.passthrough_en { constraint { @t0 0 } } } \
   { top_earlgrey.u_spi_host0.reg2hw.control.output_en.q    { constraint { @t0 0 } } } \
+  { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q { constraint { @t0 0 } } } \
 } -name ScnAonPOK
 
 # AST Regulator Resets
@@ -89,6 +90,7 @@ set_reset_scenario { \
   { top_earlgrey.pwrmgr_aon_low_power                  { constraint { @t0 1 } } } \
   { top_earlgrey.spi_device_passthrough_req.passthrough_en { constraint { @t0 0 } } } \
   { top_earlgrey.u_spi_host0.reg2hw.control.output_en.q    { constraint { @t0 0 } } } \
+  { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q { constraint { @t0 0 } } } \
 } -name ScnMainPok
 
 #set_reset_scenario { \
