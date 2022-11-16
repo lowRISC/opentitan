@@ -42,6 +42,7 @@ trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 
 
 # In case tests update OTP or otherwise leave state on the FPGA we should start
 # by loading a bitstream to clear state
+ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 fpga set-pll
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 fpga load-bitstream "${BIT_CACHE_DIR}/${BIT_NAME_PREFIX}.orig"
 
 for tag in "${cw310_tags[@]}"; do
