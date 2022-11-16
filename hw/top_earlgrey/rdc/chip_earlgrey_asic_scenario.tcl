@@ -54,6 +54,8 @@ set_reset_scenario { \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_peri         { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_usb_peri        { constraint { @t0 0 } } } \
   { top_earlgrey.pwrmgr_aon_low_power                  { constraint { @t0 1 } } } \
+  { top_earlgrey.spi_device_passthrough_req.passthrough_en { constraint { @t0 0 } } } \
+  { top_earlgrey.u_spi_host0.reg2hw.control.output_en.q    { constraint { @t0 0 } } } \
 } -name ScnAonPOK
 
 # AST Regulator Resets
@@ -85,6 +87,8 @@ set_reset_scenario { \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_peri         { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_usb_peri        { constraint { @t0 0 } } } \
   { top_earlgrey.pwrmgr_aon_low_power                  { constraint { @t0 1 } } } \
+  { top_earlgrey.spi_device_passthrough_req.passthrough_en { constraint { @t0 0 } } } \
+  { top_earlgrey.u_spi_host0.reg2hw.control.output_en.q    { constraint { @t0 0 } } } \
 } -name ScnMainPok
 
 #set_reset_scenario { \
@@ -115,6 +119,8 @@ set_reset_scenario { \
   { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { constraint { @t0 1 } } } \
   { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint { @t0 1 } } } \
   { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
+  { top_earlgrey.spi_device_passthrough_req.passthrough_en { constraint { @t0 0 } } } \
+  { top_earlgrey.u_spi_host0.reg2hw.control.output_en.q    { constraint { @t0 0 } } } \
 } -name RstMgrSwRst -comment "RSTMGR SW Controlled Resets"
 
 # SPI_DEVICE FIFO Reset (Sync)
