@@ -1647,6 +1647,13 @@
                  "+rng_srate_value_max=20", "+cal_sys_clk_70mhz=1", "+en_jitter=1"]
       run_timeout_mins: 240
     }
+    {
+      name: chip_sw_power_idle_load
+      uvm_test_seq: chip_sw_power_idle_load_vseq
+      sw_images: ["//sw/device/tests:chip_power_idle_load:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+en_scb_ping_chk=0"] // this is to disable ping-timeout check in cip_base_scoreboard, see OT issue #16055.
+    }
   ]
 
   // List of regressions.
