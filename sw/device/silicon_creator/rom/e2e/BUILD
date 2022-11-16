@@ -202,8 +202,8 @@ opentitan_functest(
     deps = [
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
 
@@ -213,9 +213,9 @@ opentitan_flash_binary(
     deps = [
         "//sw/device/lib/dif:keymgr",
         "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:otp",
     ],
 )
 
