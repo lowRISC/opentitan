@@ -401,12 +401,6 @@ module csrng_cmd_stage import csrng_pkg::*; #(
         cmd_stage_sm_err_o = 1'b1;
       end
     endcase // unique case (state_q)
-
-    // if disable, cycle back to Idle
-    if (!cs_enable_i && state_q != Idle) begin
-      state_d = Idle;
-    end
-
   end
 
   //---------------------------------------------------------
