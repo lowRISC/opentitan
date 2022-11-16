@@ -256,34 +256,33 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     cmd_arb_mop_o = 1'b0;
     cmd_arb_eop_o = 1'b0;
     cmd_stage_sm_err_o = 1'b0;
-    unique case (state_q)
-      Idle: begin
-        if (local_escalate) begin
-          state_d = Error;
-        end else if (cs_enable_i) begin
+
+    if (state_q == Error) begin
+      // In case we are in the Error state we must ignore the local escalate and enable signals.
+      cmd_stage_sm_err_o = 1'b1;
+    end else if (local_escalate) begin
+      // In case local escalate is high we must transition to the error state.
+      state_d = Error;
+    end else if (!cs_enable_i && state_q inside {Idle, ArbGnt, SendSOP, SendMOP, GenCmdChk, CmdAck,
+                                                 GenReq, GenArbGnt, GenSOP}) begin
+      // In case the module is disabled and we are in a legal state we must go into idle state.
+      state_d = Idle;
+    end else begin
+      // Otherwise do the state machine as normal.
+      unique case (state_q)
+        Idle: begin
+          // Because of the if statement above we won't leave idle if enable is low.
           if (!cmd_fifo_zero) begin
             state_d = ArbGnt;
           end
         end
-      end
-      ArbGnt: begin
-        if (local_escalate) begin
-          state_d = Error;
-        end else if (!cs_enable_i) begin
-          state_d = Idle;
-        end else begin
+        ArbGnt: begin
           cmd_arb_req_o = 1'b1;
           if (cmd_arb_gnt_i) begin
             state_d = SendSOP;
           end
         end
-      end
-      SendSOP: begin
-        if (local_escalate) begin
-          state_d = Error;
-        end else if (!cs_enable_i) begin
-          state_d = Idle;
-        end else begin
+        SendSOP: begin
           cmd_gen_1st_req = 1'b1;
           cmd_arb_sop_o = 1'b1;
           cmd_fifo_pop = 1'b1;
@@ -297,13 +296,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
             state_d = SendMOP;
           end
         end
-      end
-      SendMOP: begin
-        if (local_escalate) begin
-          state_d = Error;
-        end else if (!cs_enable_i) begin
-          state_d = Idle;
-        end else begin
+        SendMOP: begin
           if (!cmd_fifo_zero) begin
             cmd_fifo_pop = 1'b1;
             cmd_len_dec = 1'b1;
@@ -316,36 +309,18 @@ module csrng_cmd_stage import csrng_pkg::*; #(
             end
           end
         end
-      end
-      GenCmdChk: begin
-        if (local_escalate) begin
-          state_d = Error;
-        end else if (!cs_enable_i) begin
-          state_d = Idle;
-        end else begin
+        GenCmdChk: begin
           if (cmd_gen_flag_q) begin
             cmd_gen_cnt_dec= 1'b1;
           end
           state_d = CmdAck;
         end
-      end
-      CmdAck: begin
-        if (local_escalate) begin
-          state_d = Error;
-        end else if (!cs_enable_i) begin
-          state_d = Idle;
-        end else begin
+        CmdAck: begin
           if (cmd_ack_i) begin
             state_d = GenReq;
           end
         end
-      end
-      GenReq: begin
-        if (local_escalate) begin
-          state_d = Error;
-        end else if (!cs_enable_i) begin
-          state_d = Idle;
-        end else begin
+        GenReq: begin
           // flag set if a gen request
           if (cmd_gen_flag_q) begin
             // must stall if genbits fifo is not clear
@@ -364,25 +339,13 @@ module csrng_cmd_stage import csrng_pkg::*; #(
             state_d = Idle;
           end
         end
-      end
-      GenArbGnt: begin
-        if (local_escalate) begin
-          state_d = Error;
-        end else if (!cs_enable_i) begin
-          state_d = Idle;
-        end else begin
+        GenArbGnt: begin
           cmd_arb_req_o = 1'b1;
           if (cmd_arb_gnt_i) begin
             state_d = GenSOP;
           end
         end
-      end
-      GenSOP: begin
-        if (local_escalate) begin
-          state_d = Error;
-        end else if (!cs_enable_i) begin
-          state_d = Idle;
-        end else begin
+        GenSOP: begin
           cmd_arb_sop_o = 1'b1;
           cmd_arb_eop_o = 1'b1;
           cmd_gen_inc_req = 1'b1;
@@ -392,15 +355,13 @@ module csrng_cmd_stage import csrng_pkg::*; #(
             cmd_gen_cnt_last = 1'b1;
           end
         end
-      end
-      Error: begin
-        cmd_stage_sm_err_o = 1'b1;
-      end
-      default: begin
-        state_d = Error;
-        cmd_stage_sm_err_o = 1'b1;
-      end
-    endcase // unique case (state_q)
+        // Error: The error state is now covered by the if statement above
+        default: begin
+          state_d = Error;
+          cmd_stage_sm_err_o = 1'b1;
+        end
+      endcase // unique case (state_q)
+    end
   end
 
   //---------------------------------------------------------
