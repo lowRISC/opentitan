@@ -99,12 +99,19 @@ def get_lc_items(*want_lc_values):
         fail("get_lc_items would produce list with incorrect length")
     return out
 
-def lc_hw_to_sw(hw_lc_state):
-    """Converts any TEST_* LC states to TEST"""
-    if hw_lc_state.startswith("TEST_"):
-        return "TEST"
-    else:
-        return hw_lc_state
+def lcv_hw_to_sw(hw_lc_state_val):
+    """Return the software LCV corresponding to the given hardware LCV."""
+    lcv_map = {
+        CONST.LCV.DEV: CONST.LCV_SW.DEV,
+        CONST.LCV.PROD: CONST.LCV_SW.PROD,
+        CONST.LCV.PROD_END: CONST.LCV_SW.PROD_END,
+        CONST.LCV.RMA: CONST.LCV_SW.RMA,
+        CONST.LCV.TEST_UNLOCKED0: CONST.LCV_SW.TEST,
+    }
+    sw_lcv = lcv_map.get(hw_lc_state_val)
+    if sw_lcv == None:
+        fail("Could not find software LCV for hardware LCV: 0x{}".format(hex(hw_lc_state_val)))
+    return sw_lcv
 
 _HEX_MAP = "0123456789abcdef"
 

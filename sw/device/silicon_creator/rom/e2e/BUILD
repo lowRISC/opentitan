@@ -11,7 +11,7 @@ load(
     "opentitan_functest",
     "verilator_params",
 )
-load("//rules:const.bzl", "CONST", "error_redact", "get_lc_items", "hex", "lc_hw_to_sw")
+load("//rules:const.bzl", "CONST", "error_redact", "get_lc_items", "hex", "lcv_hw_to_sw")
 load(
     "//rules:opentitan.bzl",
     "bin_to_vmem",
@@ -2998,17 +2998,14 @@ lc_state_test_cases = [
         # performing the lookup.
         "manifest": {
             "selector_bits": "0x400",
-            "life_cycle_state": hex(getattr(
-                CONST.LCV_SW,
-                lc_hw_to_sw(lc_state),
-            )) if match_case else "0",
+            "life_cycle_state": hex(lcv_hw_to_sw(lc_state_val)) if match_case else "0",
         },
-        "bitstream": ":bitstream_sigverify_usage_constraints_{}".format(lc_state.lower()),
+        "bitstream": ":bitstream_sigverify_usage_constraints_{}".format(lc_state),
         "exit_success": DEFAULT_TEST_SUCCESS_MSG if match_case else _SIGVERIFY_FAIL_MSG,
         "exit_failure": _SIGVERIFY_FAIL_MSG if match_case else DEFAULT_TEST_SUCCESS_MSG,
         "lc_state_val": lc_state_val,
     }
-    for lc_state, lc_state_val in structs.to_dict(CONST.LCV).items()
+    for lc_state, lc_state_val in get_lc_items()
     for match_case in (True, False)
 ]
 
@@ -3047,13 +3044,13 @@ all_constr_test_cases = [
             "manuf_state_creator": _test_manuf_states["creator"],
             "manuf_state_owner": _test_manuf_states["owner"],
         },
-        "bitstream": ":bitstream_sigverify_usage_constraints_{}".format(bs_lc_state.lower()),
-        "exit_success": DEFAULT_TEST_SUCCESS_MSG if mf_lc_state == lc_hw_to_sw(bs_lc_state) else _SIGVERIFY_FAIL_MSG,
-        "exit_failure": _SIGVERIFY_FAIL_MSG if mf_lc_state == lc_hw_to_sw(bs_lc_state) else DEFAULT_TEST_SUCCESS_MSG,
+        "bitstream": ":bitstream_sigverify_usage_constraints_{}".format(bs_lc_state),
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG if mf_lc_val == lcv_hw_to_sw(bs_lc_val) else _SIGVERIFY_FAIL_MSG,
+        "exit_failure": _SIGVERIFY_FAIL_MSG if mf_lc_val == lcv_hw_to_sw(bs_lc_val) else DEFAULT_TEST_SUCCESS_MSG,
         "lc_state_val": bs_lc_val,
     }
     for mf_lc_state, mf_lc_val in structs.to_dict(CONST.LCV_SW).items()
-    for bs_lc_state, bs_lc_val in structs.to_dict(CONST.LCV).items()
+    for bs_lc_state, bs_lc_val in get_lc_items()
 ]
 
 # Usage constraints that are not selected by the selector_bits must be set to
