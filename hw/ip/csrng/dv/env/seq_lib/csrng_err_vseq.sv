@@ -99,14 +99,16 @@ class csrng_err_vseq extends csrng_base_vseq;
           force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld,
                               1'b1, cfg.which_fifo_err);
         end
-        cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
+        csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+        cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
       cmd_stage_sm_err, main_sm_err, drbg_gen_sm_err, drbg_updbe_sm_err, drbg_updob_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
         path = cfg.csrng_path_vif.sm_err_path(fld_name.substr(0, last_index-1),
                                               cfg.which_app_err_alert);
         force_path_err(path, 8'b0, fld, 1'b1);
-        cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
+        csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+        cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
       aes_cipher_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
@@ -117,7 +119,8 @@ class csrng_err_vseq extends csrng_base_vseq;
           path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "n");
           force_path_err(path, 8'b0, fld, 1'b1);
         end
-        cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
+        csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+        cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
       cmd_gen_cnt_err: begin
         logic [csrng_pkg::StateWidth-1:0] sm_state;
@@ -139,7 +142,8 @@ class csrng_err_vseq extends csrng_base_vseq;
             force_cnt_err(path, fld, 1'b1, 32);
           end
         endcase
-        cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
+        csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+        cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
         // Check that the `csrng_main_sm` FSM, which observes the errors of the faulted counter, has
         // entered the error state.
         `DV_CHECK(uvm_hdl_read(sm_state_path, sm_state))
@@ -165,7 +169,8 @@ class csrng_err_vseq extends csrng_base_vseq;
         end else begin
           force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
         end
-        cov_vif.cg_err_code_sample(.err_code(csr.get_mirrored_value()));
+        csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
+        cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
       sfifo_cmd_err_test, sfifo_genbits_err_test, sfifo_cmdreq_err_test, sfifo_rcstage_err_test,
       sfifo_keyvrc_err_test, sfifo_updreq_err_test, sfifo_bencreq_err_test, sfifo_bencack_err_test,

@@ -194,7 +194,13 @@ interface csrng_cov_if (
   endfunction
 
   function automatic void cg_err_code_sample(bit [31:0] err_code);
-    csrng_err_code_cg_inst.sample(err_code_bit_e'($clog2(err_code)));
+    // A single error might cause multiple bits in ERR_CODE to get set. For example, some
+    // countermeasures always cause the main FSM to escalate and report an error itself.
+    for (int unsigned i = 0; i < 32; i++) begin
+      if (err_code[i]) begin
+        csrng_err_code_cg_inst.sample(err_code_bit_e'(i));
+      end
+    end
   endfunction
 
   function automatic void cg_err_test_sample(bit [4:0] err_test_code);
