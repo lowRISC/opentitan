@@ -953,21 +953,29 @@
 
             This testpoint can be covered by extending the DV environment to support the extended
             range clock option via a flag, and running several existing chip-level tests with that
-            option, e.g.
+            option.
 
-              chip_sw_clkmgr_jitter_reduced_freq
-              chip_sw_flash_ctrl_ops_jitter_en_reduced_freq
-              chip_sw_flash_ctrl_access_jitter_en_reduced_freq
-              chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq
-              chip_sw_aes_enc_jitter_en_reduced_freq
-              chip_sw_hmac_enc_jitter_en_reduced_freq
-              chip_sw_keymgr_key_derivation_jitter_en_reduced_freq
-              chip_sw_kmac_mode_kmac_jitter_en_reduced_freq
-              chip_sw_sram_ctrl_main_scrambled_access_jitter_en_reduced_freq
-              chip_sw_flash_init_reduced_freq
+            Test the following functionalities with reduced clock:
+
+            - flash_ctrl initialization
+            - flash_ctrl program, read and erase operations
+            - AES, HMAC, KMAC and OTBN operations
+            - Keymgr key derivation
+            - Scramble-enabled access from the main SRAM
+            - Csrng edn concurrency
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_clkmgr_jitter_reduced_freq",
+              "chip_sw_flash_ctrl_ops_jitter_en_reduced_freq",
+              "chip_sw_flash_ctrl_access_jitter_en_reduced_freq",
+              "chip_sw_otbn_ecdsa_op_irq_jitter_en_reduced_freq",
+              "chip_sw_aes_enc_jitter_en_reduced_freq",
+              "chip_sw_hmac_enc_jitter_en_reduced_freq",
+              "chip_sw_keymgr_key_derivation_jitter_en_reduced_freq",
+              "chip_sw_kmac_mode_kmac_jitter_en_reduced_freq",
+              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en_reduced_freq",
+              "chip_sw_flash_init_reduced_freq",
+              "chip_sw_csrng_edn_concurrency_reduced_freq"]
     }
     {
       name: chip_sw_clkmgr_deep_sleep_frequency
