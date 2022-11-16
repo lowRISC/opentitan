@@ -56,10 +56,16 @@ interface csrng_cov_if (
     cp_hw_inst_exc: coverpoint u_reg.hw_exc_sts_qs[NUM_HW_APPS-1:0];
     cp_sw_cmd_sts_cmd_rdy: coverpoint u_reg.sw_cmd_sts_cmd_rdy_qs;
     cp_sw_cmd_sts_cmd_sts: coverpoint u_reg.sw_cmd_sts_cmd_sts_qs;
-    cp_csrng_aes_fsm_err: coverpoint
-      u_csrng_core.u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control.mr_alert;
     cp_err_codes: coverpoint err_code;
 
+    cp_csrng_aes_fsm_err: coverpoint
+      u_csrng_core.u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control.mr_alert {
+      bins        no_err = { 0 };
+      bins        rail_0 = { 1 };
+      bins        rail_1 = { 2 };
+      bins        rail_2 = { 4 };
+      ignore_bins other  = { 3, [5:7]};
+    }
   endgroup : csrng_err_code_cg
 
   covergroup csrng_err_code_test_cg with function sample(err_code_bit_e err_test);
