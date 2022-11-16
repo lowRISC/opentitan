@@ -69,6 +69,22 @@ CONST = struct(
             ALL = 0x48eb4bd9,
         ),
     ),
+    # Must match the definitions in alert.h.
+    ALERT = struct(
+        NONE = 0xa9,
+        ENABLE = 0x07,
+        ENABLE_LOCKED = 0xd2,
+        CLASS_X = 0x94,
+        CLASS_A = 0xee,
+        CLASS_B = 0x64,
+        CLASS_C = 0xa7,
+        CLASS_D = 0x32,
+        ESC_NONE = 0xd1,
+        ESC_PHASE_0 = 0xb9,
+        ESC_PHASE_1 = 0xcb,
+        ESC_PHASE_2 = 0x25,
+        ESC_PHASE_3 = 0x76,
+    ),
 )
 
 def get_lc_items(*want_lc_values):

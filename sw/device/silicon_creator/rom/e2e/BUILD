@@ -241,7 +241,7 @@ rom_e2e_keymgr_init_configs = [
             otp_partition(
                 name = "OWNER_SW_CFG",
                 items = {
-                    "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": hex(config["value"]),
+                    "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": "0x{}".format(hex(config["value"])),
                 },
             ),
         ],
@@ -1069,37 +1069,53 @@ otp_json(
         otp_partition(
             name = "OWNER_SW_CFG",
             items = {
-                "OWNER_SW_CFG_DIGEST": "0x0",
-                # Enable bootstrap. See `hardened_bool_t` in
-                # sw/device/lib/base/hardened.h.
-                "OWNER_SW_CFG_ROM_BOOTSTRAP_EN": "0x739",
-                # Set to 0x739 to use the ROM_EXT hash measurement as the key
-                # manager attestation binding value.
-                "OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN": "0x0",
+                # Enable bootstrap.
+                "OWNER_SW_CFG_ROM_BOOTSTRAP_EN": "0x{}".format(hex(CONST.TRUE)),
                 # Report errors without any redaction.
-                "OWNER_SW_CFG_ROM_ERROR_REPORTING": "0xe2290aa5",
+                "OWNER_SW_CFG_ROM_ERROR_REPORTING": "0x{}".format(hex(CONST.SHUTDOWN.REDACT.NONE)),
                 # Enable class A alerts.
-                # See `alert_enable_t` in
-                # sw/device/silicon_creator/lib/drivers/alert.h
-                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN": "0x07a9a9a9",
-                # Configure class A to escalate until phase 3 and disable escalation
-                # for the remaining classes.
-                # See `alert_escalate_t` in
-                # sw/device/silicon_creator/lib/drivers/alert.h
-                "OWNER_SW_CFG_ROM_ALERT_ESCALATION": "0x76d1d1d1",
+                "OWNER_SW_CFG_ROM_ALERT_CLASS_EN": "0x{}".format(hex(
+                    CONST.ALERT.NONE << 24 |
+                    CONST.ALERT.NONE << 16 |
+                    CONST.ALERT.NONE << 8 |
+                    CONST.ALERT.ENABLE,
+                )),
+                # Configure class A to escalate until phase 3 and disable other classes.
+                "OWNER_SW_CFG_ROM_ALERT_ESCALATION": "0x{}".format(hex(
+                    CONST.ALERT.ESC_NONE << 24 |
+                    CONST.ALERT.ESC_NONE << 16 |
+                    CONST.ALERT.ESC_NONE << 8 |
+                    CONST.ALERT.ESC_PHASE_3,
+                )),
                 # Classify UART0 alerts (alert source 0) as class A and leave others as unconfigured.
-                # See `alert_class_t` in
-                # sw/device/silicon_creator/lib/drivers/alert.h
-                "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": ["0xee949494"] + ["0x94949494"] * 79,
-                # Leave local alert classification as unconfigured. See `alert_class_t` in
-                # sw/device/silicon_creator/lib/drivers/alert.h
-                "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": ["0x94949494"] * 16,
-                # Set the alert accumulation thresholds to 0 per class.
+                "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION": [
+                    "0x{}".format(hex(
+                        CONST.ALERT.CLASS_A << 24 |
+                        CONST.ALERT.CLASS_A << 16 |
+                        CONST.ALERT.CLASS_A << 8 |
+                        CONST.ALERT.CLASS_A,
+                    )),
+                ] + [
+                    "0x{}".format(hex(
+                        CONST.ALERT.CLASS_X << 24 |
+                        CONST.ALERT.CLASS_X << 16 |
+                        CONST.ALERT.CLASS_X << 8 |
+                        CONST.ALERT.CLASS_X,
+                    )),
+                ] * 79,
+                # Leave local alert classification as unconfigured.
+                "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION": ["0x{}".format(hex(
+                    CONST.ALERT.CLASS_X << 24 |
+                    CONST.ALERT.CLASS_X << 16 |
+                    CONST.ALERT.CLASS_X << 8 |
+                    CONST.ALERT.CLASS_X,
+                ))] * 16,
+                # Set the alert accumulation thresholds to 0.
                 "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH": ["0x00000000"] * 4,
-                # Set the alert timeout cycles to 0 per class.
+                # Set the alert timeout cycles to 0.
                 "OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES": ["0x00000000"] * 4,
-                # Set the alert phase cycles to 0 for class A and to 0xffffffff for other classes.
-                "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES": ["0x0"] * 4  + ["0xffffffff"] * 12,
+                # Set the alert phase cycles to 0.
+                "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES": ["0x00000000"] * 16,
             },
         ),
     ],
