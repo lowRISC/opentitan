@@ -19,9 +19,101 @@ interface csrng_cov_if (
   bit en_full_cov = 1'b1;
   bit en_intg_cov = 1'b1;
 
+  logic [1:0] hw0_cmd_depth;
+  logic [1:0] hw1_cmd_depth;
+  logic [1:0] sw_cmd_depth;
+
+  logic hw0_cmd_rdy, hw0_cmd_vld;
+  logic hw1_cmd_rdy, hw1_cmd_vld;
+  logic sw_cmd_rdy, sw_cmd_vld;
+
+  logic hw0_genbits_rdy, hw0_genbits_vld, hw0_genbits_depth;
+  logic hw1_genbits_rdy, hw1_genbits_vld, hw1_genbits_depth;
+  logic sw_genbits_rdy, sw_genbits_vld, sw_genbits_depth;
+
+  assign hw0_cmd_depth = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.sfifo_cmd_depth;
+  assign hw1_cmd_depth = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.sfifo_cmd_depth;
+  assign sw_cmd_depth = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.sfifo_cmd_depth;
+
+  assign hw0_genbits_depth =
+    u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.u_prim_fifo_genbits.depth_o;
+  assign hw1_genbits_depth =
+    u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.u_prim_fifo_genbits.depth_o;
+  assign sw_genbits_depth =
+    u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.u_prim_fifo_genbits.depth_o;
+
+  assign hw0_cmd_vld = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.cmd_stage_vld_i;
+  assign hw0_cmd_rdy = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.cmd_stage_rdy_o;
+  assign hw1_cmd_vld = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.cmd_stage_vld_i;
+  assign hw1_cmd_rdy = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.cmd_stage_rdy_o;
+  assign sw_cmd_vld = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.cmd_stage_vld_i;
+  assign sw_cmd_rdy = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.cmd_stage_rdy_o;
+
+  assign hw0_genbits_vld = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.genbits_vld_o;
+  assign hw0_genbits_rdy = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.genbits_rdy_i;
+  assign hw1_genbits_vld = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.genbits_vld_o;
+  assign hw1_genbits_rdy = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.genbits_rdy_i;
+  assign sw_genbits_vld = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.genbits_vld_o;
+  assign sw_genbits_rdy = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.genbits_rdy_i;
+
   // If en_full_cov is set, then en_intg_cov must also be set since it is a subset.
   bit en_intg_cov_loc;
   assign en_intg_cov_loc = en_full_cov | en_intg_cov;
+
+  covergroup csrng_sfifo_cg @(posedge clk_i);
+    option.name         = "csrng_sfifo_cg";
+    option.per_instance = 1;
+
+    // HW0 App
+    cp_hw0_cmd_depth: coverpoint hw0_cmd_depth{
+      illegal_bins more_than_depth = {3};
+    }
+    cp_hw0_genbits_depth: coverpoint hw0_genbits_depth;
+    hw0_cmd_cross: cross cp_hw0_cmd_depth, hw0_cmd_vld, hw0_cmd_rdy{
+      illegal_bins not_full_and_not_ready = !binsof(cp_hw0_cmd_depth) intersect {2}
+                                              with (!hw0_cmd_rdy);
+      illegal_bins full_and_ready = binsof(cp_hw0_cmd_depth) intersect {2} with (hw0_cmd_rdy);
+    }
+    hw0_genbits_cross: cross cp_hw0_genbits_depth, hw0_genbits_vld, hw0_genbits_rdy{
+      illegal_bins empty_and_valid =
+        binsof(cp_hw0_genbits_depth) intersect {0} with (hw0_genbits_vld);
+    }
+
+    // HW1 App
+    cp_hw1_cmd_depth: coverpoint hw1_cmd_depth{
+      illegal_bins more_than_depth = {3};
+    }
+    cp_hw1_genbits_depth: coverpoint hw1_genbits_depth;
+    hw1_cmd_cross: cross cp_hw1_cmd_depth, hw1_cmd_vld, hw1_cmd_rdy{
+      illegal_bins not_full_and_not_ready = !binsof(cp_hw1_cmd_depth) intersect {2}
+                                              with (!hw1_cmd_rdy);
+      illegal_bins full_and_ready = binsof(cp_hw1_cmd_depth) intersect {2} with (hw1_cmd_rdy);
+    }
+    hw1_genbits_cross: cross cp_hw1_genbits_depth, hw1_genbits_vld, hw1_genbits_rdy{
+      illegal_bins empty_and_valid =
+        binsof(cp_hw1_genbits_depth) intersect {0} with (hw1_genbits_vld);
+    }
+
+    // SW App
+    cp_sw_cmd_depth: coverpoint sw_cmd_depth{
+      illegal_bins more_than_depth = {3};
+    }
+    cp_sw_genbits_depth: coverpoint sw_genbits_depth;
+    sw_cmd_cross: cross cp_sw_cmd_depth, sw_cmd_vld, sw_cmd_rdy{
+      illegal_bins not_full_and_not_ready = !binsof(cp_sw_cmd_depth) intersect {2}
+                                              with (!sw_cmd_rdy);
+      illegal_bins full_and_ready = binsof(cp_sw_cmd_depth) intersect {2} with (sw_cmd_rdy);
+    }
+    sw_genbits_cross: cross cp_sw_genbits_depth, sw_genbits_vld, sw_genbits_rdy{
+      illegal_bins empty_and_valid =
+        binsof(cp_sw_genbits_depth) intersect {0} with (sw_genbits_vld);
+    }
+
+    // Crosses between Apps
+    cmd_depth_cross: cross cp_hw0_cmd_depth, cp_hw1_cmd_depth, cp_sw_cmd_depth;
+    genbits_depth_cross: cross cp_hw0_genbits_depth, cp_hw1_genbits_depth, cp_sw_genbits_depth;
+  endgroup : csrng_sfifo_cg
+
 
   covergroup csrng_cfg_cg with function sample(bit [7:0] otp_en_cs_sw_app_read,
                                                bit [3:0] lc_hw_debug_en,
@@ -215,6 +307,7 @@ interface csrng_cov_if (
     }
   endgroup : csrng_cmds_cg
 
+  `DV_FCOV_INSTANTIATE_CG(csrng_sfifo_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cmds_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_err_code_cg, en_full_cov)
