@@ -822,8 +822,8 @@
                 - Executing code from GDB (using the call command)
               - Verify that ROM fails to boot with `BFV:0142500d`.
             '''
-      tags: ["rom", "no_dv", "fpga", "silicon"]
-      stage: V2
+      tags: ["rom", "dv", "verilator", "fpga", "silicon"]
+      stage: V3
       tests: []
     }
 
@@ -858,7 +858,7 @@
             for detils.
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
-      stage: V2
+      stage: V3
       tests: []
     }
 
