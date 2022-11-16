@@ -247,8 +247,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     // We leave the DM 'activated' for CSR tests to reduce noise. We exclude this from further
     // writes to avoid side-effects.
-    csr_excl.add_excl(jtag_dmi_ral.dmcontrol.dmactive.get_full_name(),
-        CsrExclWrite, CsrNonInitTests);
+    csr_excl.add_excl(jtag_dmi_ral.dmcontrol.get_full_name(), CsrExclWrite, CsrNonInitTests);
 
     // This field is tied off to 0 due to no hart array mask being implemented.
     // TODO: Change these to access policy.
@@ -307,7 +306,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
         CsrExclWriteCheck, CsrNonInitTests);
 
     // Abstractcs cmderr bits are updated by RTL.
-    csr_excl.add_excl(jtag_dmi_ral.abstractcs.cmderr.get_full_name(),
+    csr_excl.add_excl(jtag_dmi_ral.abstractcs.get_full_name(),
         CsrExclWriteCheck, CsrNonInitTests);
 
     // Not all bits of abstractauto are set - and its also impacted by writes to other CSRs.

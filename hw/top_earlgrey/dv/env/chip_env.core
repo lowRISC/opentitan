@@ -105,6 +105,7 @@ filesets:
       - seq_lib/chip_sw_rstmgr_alert_info_vseq.sv: {is_include_file: true}
       - seq_lib/chip_rv_dm_ndm_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rv_dm_access_after_escalation_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_rv_dm_lc_disabled_vseq.sv: {is_include_file: true}
       - seq_lib/chip_callback_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_entropy_src_fuse_vseq.sv: {is_include_file: true}

@@ -150,14 +150,16 @@ bool test_main(void) {
 
     // Stop execution here and just wait for something to happen
     wait_for_interrupt();
-    CHECK(false, "Should have reset before this line");
+    LOG_ERROR("Should have reset before this line");
+    return false;
 
   } else if (rst_info & kDifRstmgrResetInfoEscalation) {
+    // DO NOT REMOVE, DV sync message
     LOG_INFO("Reset due to alert escalation");
     return true;
 
   } else {
-    LOG_FATAL("unexpected reset info %d", rst_info);
+    LOG_ERROR("Unexpected reset info %d", rst_info);
   }
 
   return false;

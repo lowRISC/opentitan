@@ -651,7 +651,7 @@
             - An activation would be required, and the tap strap would also be sampled again.
             '''
       stage: V3
-      tests: []
+      tests: ["chip_sw_rv_dm_access_after_escalation_reset"]
     }
     {
       name: chip_sw_rv_dm_jtag_tap_sel

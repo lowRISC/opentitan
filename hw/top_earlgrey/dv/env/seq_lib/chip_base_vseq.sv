@@ -59,6 +59,7 @@ class chip_base_vseq #(
     // the CPU starts executing right away which can cause breakages.
     cfg.m_jtag_riscv_agent_cfg.m_jtag_agent_cfg.vif.do_trst_n();
     super.apply_reset(kind);
+    if (jtag_dmi_ral != null) jtag_dmi_ral.reset(kind);
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);

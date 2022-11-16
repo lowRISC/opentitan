@@ -60,6 +60,7 @@
 `include "chip_sw_rstmgr_alert_info_vseq.sv"
 `include "chip_rv_dm_ndm_reset_vseq.sv"
 `include "chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq.sv"
+`include "chip_sw_rv_dm_access_after_escalation_reset_vseq.sv"
 `include "chip_rv_dm_lc_disabled_vseq.sv"
 `include "chip_sw_alert_handler_shorten_ping_wait_cycle_vseq.sv"
 `include "chip_sw_alert_handler_lpg_clkoff_vseq.sv"

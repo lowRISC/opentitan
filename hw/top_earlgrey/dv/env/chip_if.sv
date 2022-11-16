@@ -320,6 +320,9 @@ interface chip_if;
   //
   // The pinmux version of lc_dft_en is used below because it goes through synchronizers.
   wire pinmux_lc_dft_en = (`PINMUX_HIER.u_pinmux_strap_sampling.lc_dft_en[0] == lc_ctrl_pkg::On);
+  wire pinmux_lc_hw_debug_en = `PINMUX_HIER.u_pinmux_strap_sampling.pinmux_hw_debug_en_o ==
+                               lc_ctrl_pkg::On;
+
   wire pwrmgr_fast_pwr_state_strap_en = `PINMUX_HIER.u_pinmux_strap_sampling.strap_en_q;
   initial begin
     fork
@@ -622,6 +625,7 @@ interface chip_if;
   wire lc_ready = `LC_CTRL_HIER.u_reg.u_status_ready.qs;
 
   wire pwrmgr_low_power = `PWRMGR_HIER.low_power_o;
+  wire pwrmgr_cpu_fetch_en = `PWRMGR_HIER.fetch_en_o == lc_ctrl_pkg::On;
 
   wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_i.done == prim_mubi_pkg::MuBi4True;
   wire rom_ctrl_good = `PWRMGR_HIER.rom_ctrl_i.good == prim_mubi_pkg::MuBi4True;
