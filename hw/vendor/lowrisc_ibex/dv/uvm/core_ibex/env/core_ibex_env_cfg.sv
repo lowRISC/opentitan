@@ -7,6 +7,7 @@ class core_ibex_env_cfg extends uvm_object;
   virtual clk_rst_if              ibex_clk_vif;
   virtual core_ibex_dut_probe_if  ibex_dut_vif;
 
+  bit                           enable_mem_intg_err;
   bit                           enable_irq_single_seq;
   bit                           enable_irq_multiple_seq;
   bit                           enable_irq_nmi_seq;
@@ -31,6 +32,7 @@ class core_ibex_env_cfg extends uvm_object;
   `uvm_object_utils_begin(core_ibex_env_cfg)
     `uvm_field_int(enable_double_fault_detector, UVM_DEFAULT)
     `uvm_field_int(is_double_fault_detected_fatal, UVM_DEFAULT)
+    `uvm_field_int(enable_mem_intg_err,   UVM_DEFAULT)
     `uvm_field_int(enable_irq_single_seq,   UVM_DEFAULT)
     `uvm_field_int(enable_irq_multiple_seq,   UVM_DEFAULT)
     `uvm_field_int(enable_irq_nmi_seq,   UVM_DEFAULT)
@@ -48,6 +50,7 @@ class core_ibex_env_cfg extends uvm_object;
     super.new(name);
     void'($value$plusargs("enable_double_fault_detector=%0d", enable_double_fault_detector));
     void'($value$plusargs("is_double_fault_detected_fatal=%0d", is_double_fault_detected_fatal));
+    void'($value$plusargs("enable_mem_intg_err=%0d", enable_mem_intg_err));
     void'($value$plusargs("enable_irq_single_seq=%0d", enable_irq_single_seq));
     void'($value$plusargs("enable_irq_multiple_seq=%0d", enable_irq_multiple_seq));
     void'($value$plusargs("enable_irq_nmi_seq=%0d", enable_irq_nmi_seq));

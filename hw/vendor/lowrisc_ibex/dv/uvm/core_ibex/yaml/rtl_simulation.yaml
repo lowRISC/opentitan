@@ -241,10 +241,13 @@
         -elaborate
         -l <tb_build_log>
         -xmlibdirpath <tb_dir>
+        -access rw
         <cmp_opts> <cov_opts> <wave_opts> <cosim_opts>
     cov_opts: >
       -coverage all
       -nowarn COVDEF
+      -covfile <xlm_cov_cfg_file>
+      -covdut ibex_top
     wave_opts: >
       -access rwc -linedebug
     cosim_opts: >

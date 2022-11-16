@@ -83,6 +83,13 @@ When Ibex is configured with the SecureIbex parameter, ECC checking is added to 
 This can be useful to detect fault injection attacks since the register file covers a reasonably large area.
 No attempt is made to correct detected errors, but an internal major alert is signaled for the system to take action.
 
+Register file write enable glitch detection
+-------------------------------------------
+
+When Ibex is configured with the SecureIbex parameter, the write enable signal into the register file is checked to be one-hot.
+This can be useful to detect fault injection attacks.
+No attempt is made to correct detected errors, but an internal major alert is signaled for the system to take action.
+
 ICache ECC
 ----------
 

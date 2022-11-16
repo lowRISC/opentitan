@@ -43,6 +43,7 @@ module ibex_simple_system_cosim_checker #(
   always @(posedge clk_i) begin
     if (u_top.rvfi_valid) begin
       riscv_cosim_set_nmi(cosim_handle, u_top.rvfi_ext_nmi);
+      riscv_cosim_set_nmi_int(cosim_handle, u_top.rvfi_ext_nmi_int);
       riscv_cosim_set_mip(cosim_handle, u_top.rvfi_ext_mip);
       riscv_cosim_set_debug_req(cosim_handle, u_top.rvfi_ext_debug_req);
       riscv_cosim_set_mcycle(cosim_handle, u_top.rvfi_ext_mcycle);
@@ -55,7 +56,8 @@ module ibex_simple_system_cosim_checker #(
       riscv_cosim_set_ic_scr_key_valid(cosim_handle, u_top.rvfi_ext_ic_scr_key_valid);
 
       if (riscv_cosim_step(cosim_handle, u_top.rvfi_rd_addr, u_top.rvfi_rd_wdata,
-                           u_top.rvfi_pc_rdata, u_top.rvfi_trap) == 0)
+                           u_top.rvfi_pc_rdata, u_top.rvfi_trap,
+                           u_top.rvfi_ext_rf_wr_suppress) == 0)
       begin
         $display("FAILURE: Co-simulation mismatch at time %t", $time());
         for (int i = 0;i < riscv_cosim_get_num_errors(cosim_handle); ++i) begin

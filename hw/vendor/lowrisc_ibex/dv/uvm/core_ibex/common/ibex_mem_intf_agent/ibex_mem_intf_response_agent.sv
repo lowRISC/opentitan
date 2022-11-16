@@ -21,7 +21,10 @@ class ibex_mem_intf_response_agent extends uvm_agent;
 
     super.build_phase(phase);
     monitor = ibex_mem_intf_monitor::type_id::create("monitor", this);
-    cfg = ibex_mem_intf_response_agent_cfg::type_id::create("cfg", this);
+    if (cfg == null)
+      if(!uvm_config_db #(ibex_mem_intf_response_agent_cfg)::get(this, "", "cfg", cfg))
+        `uvm_fatal(`gfn, "Could not locate mem_intf cfg object in uvm_config_db!")
+
     if(get_is_active() == UVM_ACTIVE) begin
       driver = ibex_mem_intf_response_driver::type_id::create("driver", this);
       sequencer = ibex_mem_intf_response_sequencer::type_id::create("sequencer", this);

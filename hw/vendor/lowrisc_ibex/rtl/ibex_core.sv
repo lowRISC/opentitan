@@ -72,6 +72,7 @@ module ibex_core import ibex_pkg::*; #(
 
   // Register file interface
   output logic                         dummy_instr_id_o,
+  output logic                         dummy_instr_wb_o,
   output logic [4:0]                   rf_raddr_a_o,
   output logic [4:0]                   rf_raddr_b_o,
   output logic [4:0]                   rf_waddr_wb_o,
@@ -138,7 +139,10 @@ module ibex_core import ibex_pkg::*; #(
   output logic [31:0]                  rvfi_mem_wdata,
   output logic [31:0]                  rvfi_ext_mip,
   output logic                         rvfi_ext_nmi,
+  output logic                         rvfi_ext_nmi_int,
   output logic                         rvfi_ext_debug_req,
+  output logic                         rvfi_ext_debug_mode,
+  output logic                         rvfi_ext_rf_wr_suppress,
   output logic [63:0]                  rvfi_ext_mcycle,
   output logic [31:0]                  rvfi_ext_mhpmcounters [10],
   output logic [31:0]                  rvfi_ext_mhpmcountersh [10],
@@ -303,6 +307,7 @@ module ibex_core import ibex_pkg::*; #(
   logic           rf_write_wb;
   logic           outstanding_load_wb;
   logic           outstanding_store_wb;
+  logic           dummy_instr_wb;
 
   // Interrupts
   logic        nmi_mode;
@@ -789,8 +794,9 @@ module ibex_core import ibex_pkg::*; #(
   );
 
   ibex_wb_stage #(
-    .ResetAll       ( ResetAll       ),
-    .WritebackStage(WritebackStage)
+    .ResetAll         (ResetAll),
+    .WritebackStage   (WritebackStage),
+    .DummyInstructions(DummyInstructions)
   ) wb_stage_i (
     .clk_i                   (clk_i),
     .rst_ni                  (rst_ni),
@@ -814,6 +820,8 @@ module ibex_core import ibex_pkg::*; #(
     .rf_wdata_id_i(rf_wdata_id),
     .rf_we_id_i   (rf_we_id),
 
+    .dummy_instr_id_i(dummy_instr_id),
+
     .rf_wdata_lsu_i(rf_wdata_lsu),
     .rf_we_lsu_i   (rf_we_lsu),
 
@@ -822,6 +830,8 @@ module ibex_core import ibex_pkg::*; #(
     .rf_waddr_wb_o(rf_waddr_wb),
     .rf_wdata_wb_o(rf_wdata_wb),
     .rf_we_wb_o   (rf_we_wb),
+
+    .dummy_instr_wb_o(dummy_instr_wb),
 
     .lsu_resp_valid_i(lsu_resp_valid),
     .lsu_resp_err_i  (lsu_resp_err),
@@ -834,6 +844,7 @@ module ibex_core import ibex_pkg::*; #(
   /////////////////////////////
 
   assign dummy_instr_id_o = dummy_instr_id;
+  assign dummy_instr_wb_o = dummy_instr_wb;
   assign rf_raddr_a_o     = rf_raddr_a;
   assign rf_waddr_wb_o    = rf_waddr_wb;
   assign rf_we_wb_o       = rf_we_wb;
@@ -1227,9 +1238,11 @@ module ibex_core import ibex_pkg::*; #(
 
   logic            new_debug_req;
   logic            new_nmi;
+  logic            new_nmi_int;
   logic            new_irq;
   ibex_pkg::irqs_t captured_mip;
   logic            captured_nmi;
+  logic            captured_nmi_int;
   logic            captured_debug_req;
   logic            captured_valid;
 
@@ -1237,7 +1250,9 @@ module ibex_core import ibex_pkg::*; #(
   // debug_req and MIP captured at IF -> ID transition so one extra stage
   ibex_pkg::irqs_t rvfi_ext_stage_mip              [RVFI_STAGES+1];
   logic            rvfi_ext_stage_nmi              [RVFI_STAGES+1];
+  logic            rvfi_ext_stage_nmi_int          [RVFI_STAGES+1];
   logic            rvfi_ext_stage_debug_req        [RVFI_STAGES+1];
+  logic            rvfi_ext_stage_debug_mode       [RVFI_STAGES];
   logic [63:0]     rvfi_ext_stage_mcycle           [RVFI_STAGES];
   logic [31:0]     rvfi_ext_stage_mhpmcounters     [RVFI_STAGES][10];
   logic [31:0]     rvfi_ext_stage_mhpmcountersh    [RVFI_STAGES][10];
@@ -1285,7 +1300,9 @@ module ibex_core import ibex_pkg::*; #(
   end
 
   assign rvfi_ext_nmi              = rvfi_ext_stage_nmi              [RVFI_STAGES];
+  assign rvfi_ext_nmi_int          = rvfi_ext_stage_nmi_int          [RVFI_STAGES];
   assign rvfi_ext_debug_req        = rvfi_ext_stage_debug_req        [RVFI_STAGES];
+  assign rvfi_ext_debug_mode       = rvfi_ext_stage_debug_mode       [RVFI_STAGES-1];
   assign rvfi_ext_mcycle           = rvfi_ext_stage_mcycle           [RVFI_STAGES-1];
   assign rvfi_ext_mhpmcounters     = rvfi_ext_stage_mhpmcounters     [RVFI_STAGES-1];
   assign rvfi_ext_mhpmcountersh    = rvfi_ext_stage_mhpmcountersh    [RVFI_STAGES-1];
@@ -1331,7 +1348,9 @@ module ibex_core import ibex_pkg::*; #(
       end
     end
 
-    assign rvfi_trap_id = id_stage_i.controller_i.id_exception_o;
+    assign rvfi_trap_id = id_stage_i.controller_i.id_exception_o &
+      ~(id_stage_i.ebrk_insn & id_stage_i.controller_i.ebreak_into_debug);
+
     assign rvfi_trap_wb = id_stage_i.controller_i.exc_req_lsu;
     // WB is instantly done in the tracking pipeline when a trap is progress through the pipeline
     assign rvfi_wb_done = rvfi_stage_valid[0] & (instr_done_wb | rvfi_stage_trap[0]);
@@ -1342,7 +1361,9 @@ module ibex_core import ibex_pkg::*; #(
     // Without writeback stage signal new instr_new_wb when instruction enters ID/EX to correctly
     // setup register write signals
     assign rvfi_instr_new_wb = instr_new_id;
-    assign rvfi_trap_id = id_stage_i.controller_i.exc_req_d | id_stage_i.controller_i.exc_req_lsu;
+    assign rvfi_trap_id =
+      (id_stage_i.controller_i.exc_req_d | id_stage_i.controller_i.exc_req_lsu) &
+      ~(id_stage_i.ebrk_insn & id_stage_i.controller_i.ebreak_into_debug);
     assign rvfi_trap_wb = 1'b0;
     assign rvfi_wb_done = instr_done_wb;
   end
@@ -1372,6 +1393,7 @@ module ibex_core import ibex_pkg::*; #(
   // appropriately.
   assign new_debug_req = (debug_req_i & ~debug_mode);
   assign new_nmi = irq_nm_i & ~nmi_mode & ~debug_mode;
+  assign new_nmi_int = id_stage_i.controller_i.irq_nm_int & ~nmi_mode & ~debug_mode;
   assign new_irq = irq_pending_o & csr_mstatus_mie & ~nmi_mode & ~debug_mode;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -1379,13 +1401,16 @@ module ibex_core import ibex_pkg::*; #(
       captured_valid     <= 1'b0;
       captured_mip       <= '0;
       captured_nmi       <= 1'b0;
+      captured_nmi_int   <= 1'b0;
       captured_debug_req <= 1'b0;
     end else  begin
       // Capture when ID stage has emptied out and something occurs that will cause a trap and we
       // haven't yet captured
-      if (~instr_valid_id & (new_debug_req | new_irq | new_nmi) & ~captured_valid) begin
+      if (~instr_valid_id & (new_debug_req | new_irq | new_nmi | new_nmi_int) &
+          ~captured_valid) begin
         captured_valid     <= 1'b1;
         captured_nmi       <= irq_nm_i;
+        captured_nmi_int   <= id_stage_i.controller_i.irq_nm_int;
         captured_mip       <= cs_registers_i.mip;
         captured_debug_req <= debug_req_i;
       end
@@ -1407,12 +1432,16 @@ module ibex_core import ibex_pkg::*; #(
     if (!rst_ni) begin
       rvfi_ext_stage_mip[0]       <= '0;
       rvfi_ext_stage_nmi[0]       <= '0;
+      rvfi_ext_stage_nmi_int[0]   <= '0;
       rvfi_ext_stage_debug_req[0] <= '0;
     end else if (if_stage_i.instr_valid_id_d & if_stage_i.instr_new_id_d) begin
       rvfi_ext_stage_mip[0]       <= instr_valid_id | ~captured_valid ? cs_registers_i.mip :
                                                                         captured_mip;
       rvfi_ext_stage_nmi[0]       <= instr_valid_id | ~captured_valid ? irq_nm_i :
                                                                         captured_nmi;
+      rvfi_ext_stage_nmi_int[0]   <=
+        instr_valid_id | ~captured_valid ? id_stage_i.controller_i.irq_nm_int :
+                                           captured_nmi_int;
       rvfi_ext_stage_debug_req[0] <= instr_valid_id | ~captured_valid ? debug_req_i        :
                                                                         captured_debug_req;
     end
@@ -1446,7 +1475,9 @@ module ibex_core import ibex_pkg::*; #(
         rvfi_stage_mem_addr[i]             <= '0;
         rvfi_ext_stage_mip[i+1]            <= '0;
         rvfi_ext_stage_nmi[i+1]            <= '0;
+        rvfi_ext_stage_nmi_int[i+1]        <= '0;
         rvfi_ext_stage_debug_req[i+1]      <= '0;
+        rvfi_ext_stage_debug_mode[i]       <= '0;
         rvfi_ext_stage_mcycle[i]           <= '0;
         rvfi_ext_stage_mhpmcounters[i]     <= '{10{'0}};
         rvfi_ext_stage_mhpmcountersh[i]    <= '{10{'0}};
@@ -1481,7 +1512,9 @@ module ibex_core import ibex_pkg::*; #(
             rvfi_stage_mem_addr[i]             <= rvfi_mem_addr_d;
             rvfi_ext_stage_mip[i+1]            <= rvfi_ext_stage_mip[i];
             rvfi_ext_stage_nmi[i+1]            <= rvfi_ext_stage_nmi[i];
+            rvfi_ext_stage_nmi_int[i+1]        <= rvfi_ext_stage_nmi_int[i];
             rvfi_ext_stage_debug_req[i+1]      <= rvfi_ext_stage_debug_req[i];
+            rvfi_ext_stage_debug_mode[i]       <= debug_mode;
             rvfi_ext_stage_mcycle[i]           <= cs_registers_i.mcycle_counter_i.counter_val_o;
             rvfi_ext_stage_ic_scr_key_valid[i] <= cs_registers_i.cpuctrlsts_ic_scr_key_valid_q;
             // This is done this way because SystemVerilog does not support looping through
@@ -1523,7 +1556,9 @@ module ibex_core import ibex_pkg::*; #(
 
             rvfi_ext_stage_mip[i+1]            <= rvfi_ext_stage_mip[i];
             rvfi_ext_stage_nmi[i+1]            <= rvfi_ext_stage_nmi[i];
+            rvfi_ext_stage_nmi_int[i+1]        <= rvfi_ext_stage_nmi_int[i];
             rvfi_ext_stage_debug_req[i+1]      <= rvfi_ext_stage_debug_req[i];
+            rvfi_ext_stage_debug_mode[i]       <= rvfi_ext_stage_debug_mode[i-1];
             rvfi_ext_stage_mcycle[i]           <= rvfi_ext_stage_mcycle[i-1];
             rvfi_ext_stage_ic_scr_key_valid[i] <= rvfi_ext_stage_ic_scr_key_valid[i-1];
             rvfi_ext_stage_mhpmcounters[i]     <= rvfi_ext_stage_mhpmcounters[i-1];
@@ -1652,6 +1687,27 @@ module ibex_core import ibex_pkg::*; #(
     end
   end
 
+  if (WritebackStage) begin : g_rvfi_rf_wr_suppress_wb
+    logic rvfi_stage_rf_wr_suppress_wb;
+    logic rvfi_rf_wr_suppress_wb;
+
+    // Set when RF write from load data is suppressed due to an integrity error
+    assign rvfi_rf_wr_suppress_wb =
+      instr_done_wb & ~rf_we_wb_o & outstanding_load_wb & lsu_load_resp_intg_err;
+
+    always@(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        rvfi_stage_rf_wr_suppress_wb <= 1'b0;
+      end else if (rvfi_wb_done) begin
+        rvfi_stage_rf_wr_suppress_wb <= rvfi_rf_wr_suppress_wb;
+      end
+    end
+
+    assign rvfi_ext_rf_wr_suppress = rvfi_stage_rf_wr_suppress_wb;
+  end else begin : g_rvfi_no_rf_wr_suppress_wb
+    assign rvfi_ext_rf_wr_suppress = 1'b0;
+  end
+
   // rvfi_intr must be set for first instruction that is part of a trap handler.
   // On the first cycle of a new instruction see if a trap PC was set by the previous instruction,
   // otherwise maintain value.
@@ -1695,6 +1751,10 @@ module ibex_core import ibex_pkg::*; #(
   //////////
 
 `ifndef SYNTHESIS
+  // fcov signals for V2S
+  `DV_FCOV_SIGNAL_GEN_IF(logic, rf_ecc_err_a_id, gen_regfile_ecc.rf_ecc_err_a_id, RegFileECC)
+  `DV_FCOV_SIGNAL_GEN_IF(logic, rf_ecc_err_b_id, gen_regfile_ecc.rf_ecc_err_b_id, RegFileECC)
+
   // fcov signals for CSR access. These are complicated by illegal accesses. Where an access is
   // legal `csr_op_en` signals the operation occurring, but this is deasserted where an access is
   // illegal. Instead `illegal_insn_id` confirms the instruction is taking an illegal instruction

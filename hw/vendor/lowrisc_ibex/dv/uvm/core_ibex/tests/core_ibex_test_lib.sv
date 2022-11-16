@@ -10,6 +10,464 @@ class core_ibex_csr_test extends core_ibex_base_test;
 
 endclass
 
+// Test that corrupts the PC and checks that an appropriate alert occurs.
+class core_ibex_pc_intg_test extends core_ibex_base_test;
+
+  `uvm_component_utils(core_ibex_pc_intg_test)
+  `uvm_component_new
+
+  uvm_report_server rs;
+
+  virtual task send_stimulus();
+    string core_path, if_stage_path, glitch_path, core_busy_path, instr_seq_path,
+           alert_major_internal_path;
+    int unsigned bit_idx;
+    logic [31:0] orig_pc, glitch_mask, glitched_pc;
+    logic core_busy, exp_alert, alert_major_internal;
+
+    vseq.start(env.vseqr);
+    clk_vif.wait_n_clks($urandom_range(2000));
+
+    // Set path to the core and the PC to be glitched.
+    core_path = "core_ibex_tb_top.dut.u_ibex_top.u_ibex_core";
+    if_stage_path = $sformatf("%s.if_stage_i", core_path);
+    glitch_path = $sformatf("%s.pc_if_o", if_stage_path);
+
+    // Ensure we are still running (sample busy signal).  If not, skip the test without injecting an
+    // error.
+    core_busy_path = $sformatf("%s.core_busy_o", core_path);
+    `DV_CHECK_FATAL(uvm_hdl_read(core_busy_path, core_busy))
+    `DV_CHECK_FATAL(!$isunknown(core_busy))
+    if (core_busy != 1'b1) begin
+      `uvm_info(`gfn, "Skipping test because core is not busy when PC should be glitched", UVM_LOW)
+      return;
+    end
+
+    // Sample PC value prior to glitching.
+    `DV_CHECK_FATAL(uvm_hdl_read(glitch_path, orig_pc))
+
+    // Pick one bit in the PC and glitch it.
+    bit_idx = $urandom_range(31);
+    glitch_mask = 1 << bit_idx;
+    glitched_pc = orig_pc ^ glitch_mask;
+
+    // Disable TB assertion for alerts.
+    `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b0)
+
+    // Force the glitched value onto the PC.
+    `DV_CHECK_FATAL(uvm_hdl_force(glitch_path, glitched_pc));
+    `uvm_info(`gfn, $sformatf("Forcing %s to value 'h%0x", glitch_path, glitched_pc), UVM_LOW)
+
+    // The check will only fire if the current instruction is a sequential one.  Depending on that
+    // we expect an alert or we don't.
+    instr_seq_path = $sformatf("%s.g_secure_pc.prev_instr_seq_d", if_stage_path);
+    `DV_CHECK_FATAL(uvm_hdl_read(instr_seq_path, exp_alert))
+    `DV_CHECK_FATAL(!$isunknown(exp_alert))
+
+    // Leave glitch applied for one clock cycle.
+    clk_vif.wait_n_clks(1);
+
+    // Check that the alert matches our expectation.
+    alert_major_internal_path = $sformatf("%s.alert_major_internal_o", core_path);
+    `DV_CHECK_FATAL(uvm_hdl_read(alert_major_internal_path, alert_major_internal))
+    `DV_CHECK_EQ_FATAL(alert_major_internal, exp_alert, "Major alert did not match expectation!")
+
+    // Release glitch.
+    `DV_CHECK_FATAL(uvm_hdl_release(glitch_path))
+    `uvm_info(`gfn, $sformatf("Releasing force of %s", glitch_path), UVM_LOW)
+
+    // Re-enable TB assertion for alerts.
+    `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b1)
+
+    // Complete the test at this point because cosimulation does not know about the glitched PC and
+    // will mismatch.
+    rs = uvm_report_server::get_server();
+    rs.report_summarize();
+    $finish();
+  endtask
+
+endclass
+
+// Test that corrupts data read from the register file and checks that an appropriate alert occurs.
+class core_ibex_rf_intg_test extends core_ibex_base_test;
+
+  `uvm_component_utils(core_ibex_rf_intg_test)
+  `uvm_component_new
+
+  uvm_report_server rs;
+
+  int unsigned reg_file_data_width;
+
+  string ibex_top_path = "core_ibex_tb_top.dut.u_ibex_top";
+
+  function automatic uvm_hdl_data_t read_data(string subpath);
+    uvm_hdl_data_t result;
+    string path = $sformatf("%s.%s", ibex_top_path, subpath);
+    `DV_CHECK_FATAL(uvm_hdl_read(path, result))
+    return result;
+  endfunction
+
+  function automatic int unsigned read_uint(string subpath);
+    return read_data(subpath);
+  endfunction
+
+  function automatic void force_data(string subpath, uvm_hdl_data_t value);
+    string path = $sformatf("%s.%s", ibex_top_path, subpath);
+    `DV_CHECK_FATAL(uvm_hdl_force(path, value))
+  endfunction
+
+  function automatic void release_force(string subpath);
+    string path = $sformatf("%s.%s", ibex_top_path, subpath);
+    `DV_CHECK_FATAL(uvm_hdl_release(path))
+  endfunction
+
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+
+    // Obtain value of parameter defining data width of register file.
+    reg_file_data_width = read_uint("RegFileDataWidth");
+  endfunction
+
+  virtual task send_stimulus();
+    bit port_idx;
+    string port_name;
+
+    vseq.start(env.vseqr);
+
+    // Pick port to corrupt.
+    port_idx = $urandom_range(1);
+    port_name = port_idx ? "rf_rdata_b_ecc" : "rf_rdata_a_ecc";
+
+    forever begin
+      logic rf_ren, rf_rd_wb_match;
+      int unsigned bit_idx;
+      uvm_hdl_data_t data, mask;
+      logic exp_alert, alert_major_internal;
+
+      clk_vif.wait_n_clks(1);
+
+      // Check if port is being read.
+      if (port_idx) begin
+        rf_ren = dut_vif.signal_probe_rf_ren_b(dv_utils_pkg::SignalProbeSample);
+        rf_rd_wb_match = dut_vif.signal_probe_rf_rd_b_wb_match(dv_utils_pkg::SignalProbeSample);
+      end else begin
+        rf_ren = dut_vif.signal_probe_rf_ren_a(dv_utils_pkg::SignalProbeSample);
+        rf_rd_wb_match = dut_vif.signal_probe_rf_rd_a_wb_match(dv_utils_pkg::SignalProbeSample);
+      end
+
+      // Only corrupt port if it is read.
+      if (!(rf_ren == 1'b1 && rf_rd_wb_match == 1'b0)) continue;
+
+      data = read_data(port_name);
+      `uvm_info(`gfn, $sformatf("Corrupting %s; original value: 'h%0x", port_name, data), UVM_LOW)
+
+      // Corrupt one bit of the data.
+      bit_idx = $urandom_range(reg_file_data_width - 1);
+      mask = 1 << bit_idx;
+      data ^= mask;
+
+      // Disable TB assertion for alerts.
+      `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b0)
+
+      // Force the corrupt value.
+      `uvm_info(`gfn, $sformatf("Forcing corrupt value: 'h%0x", data), UVM_LOW)
+      force_data(port_name, data);
+
+      // Determine whether an alert is expected: if the instruction is valid.
+      exp_alert = read_data("u_ibex_core.instr_valid_id");
+
+      // Schedule a simulation step so the DUT can react.
+      #1step;
+
+      // Check if the major alert matches our expectation.
+      alert_major_internal = read_data("alert_major_internal_o");
+      `DV_CHECK_EQ_FATAL(alert_major_internal, exp_alert)
+
+      // Release force after one clock cycle.
+      clk_vif.wait_n_clks(1);
+      release_force(port_name);
+
+      // Complete test if alert has been correctly triggered.
+      if (exp_alert) break;
+    end
+
+    // Stop test at this point because cosim will mismatch.
+    rs = uvm_report_server::get_server();
+    rs.report_summarize();
+    $finish();
+  endtask
+
+endclass
+
+// Test that corrupts the instruction cache and checks that an appropriate alert occurs.
+class core_ibex_icache_intg_test extends core_ibex_base_test;
+
+  `uvm_component_utils(core_ibex_icache_intg_test)
+  `uvm_component_new
+
+  string ibex_top_path = "core_ibex_tb_top.dut.u_ibex_top";
+
+  int unsigned num_ways, num_entries, tag_size, line_size;
+
+  bit data_valid[][];
+  bit tag_valid[][];
+
+  function automatic int unsigned read_uint(string subpath);
+    int unsigned result;
+    string path = $sformatf("%s.%s", ibex_top_path, subpath);
+    `DV_CHECK_FATAL(uvm_hdl_read(path, result))
+    return result;
+  endfunction
+
+  function automatic uvm_hdl_data_t read_data(string subpath);
+    uvm_hdl_data_t result;
+    string path = $sformatf("%s.%s", ibex_top_path, subpath);
+    `DV_CHECK_FATAL(uvm_hdl_read(path, result))
+    return result;
+  endfunction
+
+  function automatic void force_data(string subpath, uvm_hdl_data_t value);
+    string path = $sformatf("%s.%s", ibex_top_path, subpath);
+    `DV_CHECK_FATAL(uvm_hdl_force(path, value))
+  endfunction
+
+  function automatic void release_force(string subpath);
+    string path = $sformatf("%s.%s", ibex_top_path, subpath);
+    `DV_CHECK_FATAL(uvm_hdl_release(path))
+  endfunction
+
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+
+    // Obtain value of parameters defining shape of cache.
+    num_ways = ibex_pkg::IC_NUM_WAYS;
+    num_entries = 1 << ibex_pkg::IC_INDEX_W;
+    tag_size = read_uint("TagSizeECC");
+    line_size = read_uint("LineSizeECC");
+
+    // Initialize memory entry status arrays.
+    data_valid = new[num_ways];
+    foreach (data_valid[i]) data_valid[i] = new[num_entries];
+    tag_valid = new[num_ways];
+    foreach (tag_valid[i]) tag_valid[i] = new[num_entries];
+  endfunction
+
+  function automatic void reset_icache_status();
+    foreach (data_valid[i]) begin
+      foreach (data_valid[i][j]) data_valid[i][j] = 1'b0;
+    end
+    foreach (tag_valid[i]) begin
+      foreach (tag_valid[i][j]) tag_valid[i][j] = 1'b0;
+    end
+  endfunction
+
+  // Track the status of the instruction cache (optimistically).  Whenever a write to a data or tag
+  // entry is observed on the icache ports, that data or tag is set to valid in the test.  The test
+  // then uses this information to corrupt only data or tags that are considered valid.  The tracked
+  // status is a necessary but not sufficient condition for the actual validity of a data or tag.
+  task automatic track_icache_status();
+    reset_icache_status();
+    forever begin
+      uvm_hdl_data_t data_req, data_write, data_addr, tag_req, tag_write, tag_addr;
+      clk_vif.wait_clks(1);
+      if (!clk_vif.rst_n) begin
+        reset_icache_status();
+        continue;
+      end
+      // Set data entries to valid based on data writes.
+      data_req = dut_vif.signal_probe_ic_data_req(dv_utils_pkg::SignalProbeSample);
+      data_write = dut_vif.signal_probe_ic_data_write(dv_utils_pkg::SignalProbeSample);
+      if (data_req != '0 && data_write == 1'b1) begin
+        data_addr = dut_vif.signal_probe_ic_data_addr(dv_utils_pkg::SignalProbeSample);
+        for (int unsigned i = 0; i < num_ways; i++) begin
+          if (data_req[i]) data_valid[i][data_addr] = 1'b1;
+        end
+      end
+      // Set tag entries to valid based on tag writes.
+      tag_req = dut_vif.signal_probe_ic_tag_req(dv_utils_pkg::SignalProbeSample);
+      tag_write = dut_vif.signal_probe_ic_tag_write(dv_utils_pkg::SignalProbeSample);
+      if (tag_req != '0 && tag_write == 1'b1) begin
+        tag_addr = dut_vif.signal_probe_ic_tag_addr(dv_utils_pkg::SignalProbeSample);
+        for (int unsigned i = 0; i < num_ways; i++) begin
+          if (tag_req[i]) tag_valid[i][tag_addr] = 1'b1;
+        end
+      end
+    end
+  endtask
+
+  task automatic corrupt_used_icache_data();
+    clk_vif.wait_n_clks(1);
+    forever begin
+      uvm_hdl_data_t data_req, data_write, data_addr;
+      data_req = dut_vif.signal_probe_ic_data_req(dv_utils_pkg::SignalProbeSample);
+      data_write = dut_vif.signal_probe_ic_data_write(dv_utils_pkg::SignalProbeSample);
+
+      // Check if at least one data way is being read.
+      if (data_req != '0 && data_write == 1'b0) begin
+        int unsigned valid_and_used_ways[$];
+
+        // Probe the data address.
+        data_addr = dut_vif.signal_probe_ic_data_addr(dv_utils_pkg::SignalProbeSample);
+
+        // Find out which data ways are valid and used in this clock cycle.
+        for (int unsigned i = 0; i < num_ways; i++) begin
+          if (data_req[i] && data_valid[i][data_addr]) valid_and_used_ways.push_back(i);
+        end
+
+        // The response comes in the next clock cycle, so wait one cycle.
+        clk_vif.wait_n_clks(1);
+
+        // Check if at least one data way is valid and used.
+        if (valid_and_used_ways.size() > 0) begin
+          int unsigned way_idx, bit_idx;
+          uvm_hdl_data_t data_rdata, mask, lookup_valid, tag_hit, alert_minor;
+          logic exp_alert_minor;
+
+          `uvm_info(`gfn,
+              $sformatf("The following I$ data ways are valid and used in this clock cycle: %p",
+                        valid_and_used_ways), UVM_LOW)
+
+          // Pick a way to corrupt.
+          way_idx = $urandom_range(valid_and_used_ways.size() - 1);
+          `uvm_info(`gfn, $sformatf("Corrupting data way %0d", way_idx), UVM_LOW)
+
+          // Probe response data.
+          data_rdata = read_data($sformatf("ic_data_rdata[%0d]", way_idx));
+          `uvm_info(`gfn, $sformatf("Original data_rdata of way %0d: 'h%0x", way_idx, data_rdata),
+                    UVM_LOW)
+
+          // Pick a bit to corrupt.
+          bit_idx = $urandom_range(line_size - 1);
+          mask = 1 << bit_idx;
+          data_rdata ^= mask;
+          `uvm_info(`gfn, $sformatf("Corrupting data_rdata: 'h%0x", data_rdata), UVM_LOW)
+
+          // Disable TB assertion for alerts.
+          `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b0)
+
+          // Force the corrupt value.
+          force_data($sformatf("ic_data_rdata[%0d]", way_idx), data_rdata);
+
+          // Give the DUT one clock cycle to react.
+          clk_vif.wait_n_clks(1);
+
+          // Decide if an error is expected: if the lookup is valid and the tag hit.
+          lookup_valid = read_data($sformatf(
+              "u_ibex_core.if_stage_i.gen_icache.icache_i.lookup_valid_ic1"));
+          tag_hit = read_data($sformatf(
+              "u_ibex_core.if_stage_i.gen_icache.icache_i.tag_hit_ic1"));
+          exp_alert_minor = lookup_valid & tag_hit;
+          `DV_CHECK_FATAL(!$isunknown(exp_alert_minor))
+
+          // Check that the minor alert matches the expectation.
+          alert_minor = dut_vif.signal_probe_alert_minor(dv_utils_pkg::SignalProbeSample);
+          `DV_CHECK_EQ_FATAL(alert_minor, exp_alert_minor)
+
+          // Release force and complete task.
+          release_force($sformatf("ic_data_rdata[%0d]", way_idx));
+          return;
+        end
+      end else begin
+        clk_vif.wait_n_clks(1);
+      end
+    end
+  endtask
+
+  task automatic corrupt_used_icache_tag();
+    clk_vif.wait_n_clks(1);
+    forever begin
+      uvm_hdl_data_t tag_req, tag_write, tag_addr;
+      tag_req = dut_vif.signal_probe_ic_tag_req(dv_utils_pkg::SignalProbeSample);
+      tag_write = dut_vif.signal_probe_ic_tag_write(dv_utils_pkg::SignalProbeSample);
+
+      // Check if at least one tag way is being read.
+      if (tag_req != '0 && tag_write == 1'b0) begin
+        int unsigned valid_and_used_ways[$];
+
+        // Probe the tag address.
+        tag_addr = dut_vif.signal_probe_ic_tag_addr(dv_utils_pkg::SignalProbeSample);
+
+        // Find out which tag ways are valid and used in this clock cycle.
+        for (int unsigned i = 0; i < num_ways; i++) begin
+          if (tag_req[i] && tag_valid[i][tag_addr]) valid_and_used_ways.push_back(i);
+        end
+
+        // The response comes in the next clock cycle, so wait one cycle.
+        clk_vif.wait_n_clks(1);
+
+        // Check if at least one tag way is valid and used.
+        if (valid_and_used_ways.size() > 0) begin
+          int unsigned way_idx, bit_idx;
+          uvm_hdl_data_t tag_rdata, mask, alert_minor;
+          logic lookup_valid;
+
+          `uvm_info(`gfn,
+              $sformatf("The following I$ tag ways are valid and used in this clock cycle: %p",
+                        valid_and_used_ways), UVM_LOW)
+
+          // Pick a way to corrupt.
+          way_idx = $urandom_range(valid_and_used_ways.size() - 1);
+          `uvm_info(`gfn, $sformatf("Corrupting tag way %0d", way_idx), UVM_LOW)
+
+          // Probe response data.
+          tag_rdata = read_data($sformatf("ic_tag_rdata[%0d]", way_idx));
+          `uvm_info(`gfn, $sformatf("Original tag_rdata of way %0d: 'h%0x", way_idx, tag_rdata),
+                    UVM_LOW)
+
+          // Pick a bit to corrupt.
+          bit_idx = $urandom_range(tag_size - 1);
+          mask = 1 << bit_idx;
+          tag_rdata ^= mask;
+          `uvm_info(`gfn, $sformatf("Corrupting tag_rdata: 'h%0x", tag_rdata), UVM_LOW)
+
+          // Disable TB assertion for alerts.
+          `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b0)
+
+          // Force the corrupt value.
+          force_data($sformatf("ic_tag_rdata[%0d]", way_idx), tag_rdata);
+
+          // Give the DUT one clock cycle to react.
+          clk_vif.wait_n_clks(1);
+
+          // Decide if an error is expected: if the lookup is valid.
+          lookup_valid = read_data($sformatf(
+              "u_ibex_core.if_stage_i.gen_icache.icache_i.lookup_valid_ic1"));
+          `DV_CHECK_FATAL(!$isunknown(lookup_valid))
+
+          // Check that the minor alert matches the expectation.
+          alert_minor = dut_vif.signal_probe_alert_minor(dv_utils_pkg::SignalProbeSample);
+          `DV_CHECK_EQ_FATAL(alert_minor, lookup_valid)
+
+          // Release force and complete task.
+          release_force($sformatf("ic_tag_rdata[%0d]", way_idx));
+          return;
+        end
+      end else begin
+        clk_vif.wait_n_clks(1);
+      end
+    end
+  endtask
+
+  task automatic corrupt_used_icache_entries();
+    fork
+      corrupt_used_icache_data();
+      corrupt_used_icache_tag();
+    join_any
+
+    // Re-enable TB assertion for alerts.
+    `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b1)
+  endtask
+
+  virtual task send_stimulus();
+    vseq.start(env.vseqr);
+    fork
+      track_icache_status();
+      corrupt_used_icache_entries();
+    join_any
+  endtask
+
+endclass
+
 // Reset test
 class core_ibex_reset_test extends core_ibex_base_test;
 
@@ -24,22 +482,9 @@ class core_ibex_reset_test extends core_ibex_base_test;
     for (int i = 0; i < num_reset; i = i + 1) begin
       // Mid-test reset is possible in a wide range of times
       clk_vif.wait_clks($urandom_range(0, 50000));
-      fork
-        begin
-          dut_vif.dut_cb.fetch_enable <= ibex_pkg::IbexMuBiOff;
-          clk_vif.apply_reset(.reset_width_clks (100));
-        end
-        begin
-          clk_vif.wait_clks(1);
-          // Flush FIFOs
-          item_collected_port.flush();
-          irq_collected_port.flush();
-          // Reset testbench state
-          env.reset();
-          load_binary_to_mem();
-        end
-      join
-      // Assert fetch_enable to have the core start executing from boot address
+
+      dut_vif.dut_cb.fetch_enable <= ibex_pkg::IbexMuBiOff;
+      clk_vif.apply_reset(.reset_width_clks (100));
       dut_vif.dut_cb.fetch_enable <= ibex_pkg::IbexMuBiOn;
     end
   endtask
@@ -233,7 +678,10 @@ class core_ibex_debug_intr_basic_test extends core_ibex_base_test;
     wait_for_csr_write(CSR_MSTATUS, 5000);
     mstatus = signature_data;
     `DV_CHECK_EQ_FATAL(mstatus[12:11], select_mode(), "Incorrect mstatus.mpp")
-    `DV_CHECK_EQ_FATAL(mstatus[7], 1'b1, "mstatus.mpie was not set to 1'b1 after entering handler")
+    // mstatus.MPIE must be 1 when trap from M mode otherwise not necessarily be 1
+    // as lower priv modes could trap when mstatus.MPIE is 0, or even nmi interrupt
+    `DV_CHECK_EQ_FATAL(mstatus[7] | ~&mstatus[12:11] | (irq_id == ExcCauseIrqNm.lower_cause), 1'b1,
+        "mstatus.mpie was not set to 1'b1 after entering handler")
     `DV_CHECK_EQ_FATAL(mstatus[3], 1'b0, "mstatus.mie was not set to 1'b0 after entering handler")
     // check mcause against the interrupt id
     check_mcause(1'b1, irq_id);
@@ -259,7 +707,7 @@ class core_ibex_debug_intr_basic_test extends core_ibex_base_test;
   virtual task send_irq_stimulus_end();
     // As Ibex interrupts are level sensitive, core must write to memory mapped address to
     // indicate that irq stimulus be dropped
-    check_next_core_status(FINISHED_IRQ, "Core did not signal end of interrupt properly", 3000);
+    check_next_core_status(FINISHED_IRQ, "Core did not signal end of interrupt properly", 6000);
     // Will receive irq_seq_item indicating that lines have been dropped
     vseq.start_irq_drop_seq();
     // Want to skip this .get() call on the second MRET of nested interrupt scenarios
@@ -373,18 +821,20 @@ class core_ibex_debug_intr_basic_test extends core_ibex_base_test;
   // Task that waits for xRET to be asserted within a certain number of cycles
   virtual task wait_ret(string ret, int timeout);
     cur_run_phase.raise_objection(this);
-    fork
-      begin
-        wait_ret_raw(ret);
-      end
-      begin : ret_timeout
-        clk_vif.wait_clks(timeout);
-        `uvm_fatal(`gfn, $sformatf({"No %0s detected, or incorrect privilege mode switch in ",
-                                   "timeout period of %0d cycles"}, ret, timeout))
-      end
-    join_any
-    // Will only get here if dret successfully detected within timeout period
-    disable fork;
+    fork begin : isolation_fork
+      fork
+        begin
+          wait_ret_raw(ret);
+        end
+        begin : ret_timeout
+          clk_vif.wait_clks(timeout);
+          `uvm_fatal(`gfn, $sformatf({"No %0s detected, or incorrect privilege mode switch in ",
+                                     "timeout period of %0d cycles"}, ret, timeout))
+        end
+      join_any
+      // Will only get here if dret successfully detected within timeout period
+      disable fork;
+    end join
     cur_run_phase.drop_objection(this);
   endtask
 
@@ -901,6 +1351,7 @@ class core_ibex_nested_irq_test extends core_ibex_directed_test;
     bit valid_irq;
     bit valid_nested_irq;
     int unsigned initial_irq_delay;
+    vseq.irq_raise_seq_h.max_delay = 5000;
     forever begin
       send_irq_stimulus_start(1'b1, 1'b0, valid_irq);
       if (valid_irq) begin
@@ -1161,99 +1612,73 @@ class core_ibex_debug_single_step_test extends core_ibex_directed_test;
 
 endclass
 
+
+class core_ibex_single_debug_pulse_test extends core_ibex_directed_test;
+
+  `uvm_component_utils(core_ibex_single_debug_pulse_test)
+  `uvm_component_new
+
+    virtual task check_stimulus();
+      vseq.debug_seq_single_h.max_interval = 0;
+      // Start as soon as device is initialized.
+      vseq.start_debug_single_seq();
+      wait (test_done === 1'b1);
+    endtask
+
+endclass
+
 // Memory interface error test class
 class core_ibex_mem_error_test extends core_ibex_directed_test;
 
   `uvm_component_utils(core_ibex_mem_error_test)
   `uvm_component_new
 
-  int err_delay;
+  int illegal_instruction_threshold = 20;
+  int illegal_instruction_exceptions_seen = 0;
 
-  // check memory error inputs and verify that core jumps to correct exception handler
   virtual task check_stimulus();
+    memory_error_seq memory_error_seq_h;
+    memory_error_seq_h = memory_error_seq::type_id::create("memory_error_seq_h", this);
+
+    `uvm_info(`gfn, "Running core_ibex_mem_error_test", UVM_LOW)
+    memory_error_seq_h.vseq = vseq;
+    memory_error_seq_h.iteration_modes = InfiniteRuns;
+    memory_error_seq_h.stimulus_delay_cycles_min = 800; // Interval between injected errors
+    memory_error_seq_h.stimulus_delay_cycles_max = 5000;
+    memory_error_seq_h.intg_err_pct = cfg.enable_mem_intg_err ? 75 : 0;
+    memory_error_seq_h.skip_on_exc = 1'b1;
+    fork
+      run_illegal_instr_watcher();
+      memory_error_seq_h.start(env.vseqr);
+    join_none
+  endtask
+
+  task run_illegal_instr_watcher();
+    // When integrity errors are present loads that see them won't write to the register file.
+    // Generated code from RISC-DV may be using the loads to produce known constants in register
+    // that are then used elsewhere, in particular for jump targets. As the register write doesn't
+    // occur this results in jumping to places that weren't intended which in turn can result in
+    // illegal instruction exceptions.
+    //
+    // As a simple fix for this we observe illegal instruction exceptions and terminate the test
+    // with a pass after hitting a certain threshold when the test is generating integrity errors.
+    //
+    // We don't terminate immediately as sometimes the test hits an illegal instruction exception
+    // but finds its way back to generated code and terminates as usual. Sometimes it doesn't. The
+    // treshold allows for normal test termination in cases where that's possible.
+    if (!cfg.enable_mem_intg_err) begin
+      return;
+    end
+
     forever begin
-      while (!vseq.data_intf_seq.get_error_synch()) begin
-        clk_vif.wait_clks(1);
-      end
-      vseq.data_intf_seq.inject_error();
-      `uvm_info(`gfn, "Injected dmem error", UVM_LOW)
-      // Dmem interface error could be either a load or store operation
-      check_dmem_fault();
-      // Random delay before injecting instruction fetch fault
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_delay, err_delay inside { [50:200] };)
-      clk_vif.wait_clks(err_delay);
-      inject_imem_error();
-      check_imem_fault();
-      // Random delay before injecting this series of errors again
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(err_delay, err_delay inside { [250:750] };)
-      clk_vif.wait_clks(err_delay);
+      wait_for_core_exception(ibex_pkg::ExcCauseIllegalInsn);
+      ++illegal_instruction_exceptions_seen;
     end
   endtask
 
-  virtual task inject_imem_error();
-    while (!vseq.instr_intf_seq.get_error_synch()) begin
-      clk_vif.wait_clks(1);
-    end
-    `uvm_info(`gfn, "Injecting imem fault", UVM_LOW)
-    vseq.instr_intf_seq.inject_error();
-  endtask
-
-  virtual task check_dmem_fault();
-    bit[ibex_mem_intf_agent_pkg::DATA_WIDTH-1:0] mcause;
-    core_status_t mem_status;
-    ibex_pkg::exc_cause_t exc_type;
-    // Don't impose a timeout period for dmem check, since dmem errors injected by the sequence are
-    // not guaranteed to be reflected in RTL state until the next memory instruction is executed,
-    // and the frequency of which is not controllable by the testbench
-    check_next_core_status(HANDLING_EXCEPTION, "Core did not jump to exception handler");
-    check_priv_mode(PRIV_LVL_M);
-    // Next write of CORE_STATUS will be the load/store fault type
-    wait_for_mem_txn(cfg.signature_addr, CORE_STATUS);
-    mem_status = core_status_t'(signature_data_q.pop_front());
-    if (mem_status == LOAD_FAULT_EXCEPTION) begin
-      exc_type = ExcCauseLoadAccessFault;
-    end else if (mem_status == STORE_FAULT_EXCEPTION) begin
-      exc_type = ExcCauseStoreAccessFault;
-    end
-    check_mcause(1'b0, exc_type.lower_cause);
-    wait (dut_vif.dut_cb.mret === 1'b1);
-    `uvm_info(`gfn, "exiting mem fault checker", UVM_LOW)
-  endtask
-
-  virtual task check_imem_fault();
-    bit latched_imem_err = 1'b0;
-    core_status_t mem_status;
-    ibex_pkg::exc_cause_t exc_type;
-    // Need to account for case where imem_error is asserted during an instruction fetch that gets
-    // killed - due to jumps and control flow changes
-    do begin
-      fork
-        begin
-          fork : imem_fork
-            begin
-              check_next_core_status(HANDLING_EXCEPTION, "Core did not jump to exception handler");
-              check_priv_mode(PRIV_LVL_M);
-              latched_imem_err = 1'b1;
-              `uvm_info(`gfn, $sformatf("latched_imem_err: 0x%0x", latched_imem_err), UVM_LOW)
-            end
-            begin
-              clk_vif.wait_clks(5000);
-            end
-          join_any
-          disable fork;
-        end
-      join
-      if (latched_imem_err === 1'b0) begin
-        cur_run_phase.drop_objection(this);
-        inject_imem_error();
-      end
-    end while (latched_imem_err === 1'b0);
-    check_next_core_status(INSTR_FAULT_EXCEPTION,
-                           "Core did not register correct memory fault type", 5000);
-    exc_type = ExcCauseInstrAccessFault;
-    check_mcause(1'b0, exc_type.lower_cause);
-    wait (dut_vif.dut_cb.mret === 1'b1);
-    `uvm_info(`gfn, "exiting mem fault checker", UVM_LOW)
+  virtual task wait_for_custom_test_done();
+    wait(illegal_instruction_exceptions_seen == illegal_instruction_threshold);
+    `uvm_info(`gfn, "Terminating test early due to illegal instruction threshold reached", UVM_LOW)
   endtask
 
 endclass

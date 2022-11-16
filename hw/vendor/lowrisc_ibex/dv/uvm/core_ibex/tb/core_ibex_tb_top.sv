@@ -160,6 +160,13 @@ module core_ibex_tb_top;
   // We should never see any alerts triggered in normal testing
   `ASSERT(NoAlertsTriggered,
     !dut_if.alert_minor && !dut_if.alert_major_internal && !dut_if.alert_major_bus, clk, !rst_n)
+  `DV_ASSERT_CTRL("tb_no_alerts_triggered", core_ibex_tb_top.NoAlertsTriggered)
+
+  assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.rf_we_glitch_err =
+    dut.u_ibex_top.rf_alert_major_internal;
+
+  assign dut.u_ibex_top.u_ibex_core.u_fcov_bind.lockstep_glitch_err =
+    dut.u_ibex_top.lockstep_alert_major_internal;
 
   // Data load/store vif connection
   assign data_mem_vif.reset = ~rst_n;
@@ -184,14 +191,16 @@ module core_ibex_tb_top;
   assign rvfi_if.rd_addr              = dut.rvfi_rd_addr;
   assign rvfi_if.rd_wdata             = dut.rvfi_rd_wdata;
   assign rvfi_if.pc_rdata             = dut.rvfi_pc_rdata;
-  assign rvfi_if_pc_wdata             = dut.rvfi_pc_wdata;
+  assign rvfi_if.pc_wdata             = dut.rvfi_pc_wdata;
   assign rvfi_if.mem_addr             = dut.rvfi_mem_addr;
   assign rvfi_if.mem_rmask            = dut.rvfi_mem_rmask;
   assign rvfi_if.mem_rdata            = dut.rvfi_mem_rdata;
   assign rvfi_if.mem_wdata            = dut.rvfi_mem_wdata;
   assign rvfi_if.ext_mip              = dut.rvfi_ext_mip;
   assign rvfi_if.ext_nmi              = dut.rvfi_ext_nmi;
+  assign rvfi_if.ext_nmi_int          = dut.rvfi_ext_nmi_int;
   assign rvfi_if.ext_debug_req        = dut.rvfi_ext_debug_req;
+  assign rvfi_if.ext_rf_wr_suppress   = dut.rvfi_ext_rf_wr_suppress;
   assign rvfi_if.ext_mcycle           = dut.rvfi_ext_mcycle;
   assign rvfi_if.ext_mhpmcounters     = dut.rvfi_ext_mhpmcounters;
   assign rvfi_if.ext_mhpmcountersh    = dut.rvfi_ext_mhpmcountersh;
@@ -199,16 +208,31 @@ module core_ibex_tb_top;
   // Irq interface connections
   assign irq_vif.reset = ~rst_n;
   // Dut_if interface connections
-  assign dut_if.ecall         = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.ecall_insn;
-  assign dut_if.wfi           = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.wfi_insn;
-  assign dut_if.ebreak        = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.ebrk_insn;
-  assign dut_if.illegal_instr = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.illegal_insn_d;
-  assign dut_if.dret          = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.dret_insn;
-  assign dut_if.mret          = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.mret_insn;
-  assign dut_if.reset         = ~rst_n;
-  assign dut_if.priv_mode     = dut.u_ibex_top.u_ibex_core.priv_mode_id;
-  assign dut_if.ctrl_fsm_cs   = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.ctrl_fsm_cs;
-  assign dut_if.debug_mode    = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.debug_mode_q;
+  assign dut_if.ecall            = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.ecall_insn;
+  assign dut_if.wfi              = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.wfi_insn;
+  assign dut_if.ebreak           = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.ebrk_insn;
+  assign dut_if.illegal_instr
+      = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.illegal_insn_d;
+  assign dut_if.dret             = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.dret_insn;
+  assign dut_if.mret             = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.mret_insn;
+  assign dut_if.reset            = ~rst_n;
+  assign dut_if.ic_tag_req       = dut.u_ibex_top.ic_tag_req;
+  assign dut_if.ic_tag_write     = dut.u_ibex_top.ic_tag_write;
+  assign dut_if.ic_tag_addr      = dut.u_ibex_top.ic_tag_addr;
+  assign dut_if.ic_data_req      = dut.u_ibex_top.ic_data_req;
+  assign dut_if.ic_data_write    = dut.u_ibex_top.ic_data_write;
+  assign dut_if.ic_data_addr     = dut.u_ibex_top.ic_data_addr;
+  assign dut_if.priv_mode        = dut.u_ibex_top.u_ibex_core.priv_mode_id;
+  assign dut_if.ctrl_fsm_cs      = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.ctrl_fsm_cs;
+  assign dut_if.debug_mode       = dut.u_ibex_top.u_ibex_core.id_stage_i.controller_i.debug_mode_q;
+  assign dut_if.rf_ren_a         = dut.u_ibex_top.u_ibex_core.rf_ren_a;
+  assign dut_if.rf_ren_b         = dut.u_ibex_top.u_ibex_core.rf_ren_b;
+  assign dut_if.rf_rd_a_wb_match = dut.u_ibex_top.u_ibex_core.rf_rd_a_wb_match;
+  assign dut_if.rf_rd_b_wb_match = dut.u_ibex_top.u_ibex_core.rf_rd_b_wb_match;
+  assign dut_if.sync_exc_seen    = dut.u_ibex_top.u_ibex_core.cs_registers_i.cpuctrlsts_part_q.sync_exc_seen;
+  assign dut_if.csr_save_cause   = dut.u_ibex_top.u_ibex_core.csr_save_cause;
+  assign dut_if.exc_cause        = dut.u_ibex_top.u_ibex_core.exc_cause;
+  assign dut_if.wb_exception     = dut.u_ibex_top.u_ibex_core.id_stage_i.wb_exception;
   // Instruction monitor connections
   assign instr_monitor_if.reset        = ~rst_n;
   assign instr_monitor_if.valid_id     = dut.u_ibex_top.u_ibex_core.id_stage_i.instr_valid_i;

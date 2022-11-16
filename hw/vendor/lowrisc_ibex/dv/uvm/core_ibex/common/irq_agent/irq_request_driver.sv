@@ -20,15 +20,17 @@ class irq_request_driver extends uvm_driver #(irq_seq_item);
     reset_signals();
     wait (vif.driver_cb.reset === 1'b0);
     forever begin
-      fork : drive_irq
-        // Setup a single get_REQ -> drive -> send_RSP long-running task.
-        // This seq_item contains all signals on the interface at once.
-        get_and_drive();
-        wait (vif.driver_cb.reset === 1'b1);
-      join_any
-      // Will only reach here on mid-test reset
-      disable fork;
-      handle_reset();
+      fork begin : isolation_fork
+        fork : drive_irq
+          // Setup a single get_REQ -> drive -> send_RSP long-running task.
+          // This seq_item contains all signals on the interface at once.
+          get_and_drive();
+          wait (vif.driver_cb.reset === 1'b1);
+        join_any
+        // Will only reach here on mid-test reset
+        disable fork;
+        handle_reset();
+      end join
     end
   endtask : run_phase
 

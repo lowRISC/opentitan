@@ -64,6 +64,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   input  logic                         data_err_i,
 
   input  logic                         dummy_instr_id_i,
+  input  logic                         dummy_instr_wb_i,
   input  logic [4:0]                   rf_raddr_a_i,
   input  logic [4:0]                   rf_raddr_b_i,
   input  logic [4:0]                   rf_waddr_wb_i,
@@ -246,6 +247,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     logic [31:0]                 data_addr;
     logic [MemDataWidth-1:0]     data_wdata;
     logic                        dummy_instr_id;
+    logic                        dummy_instr_wb;
     logic [4:0]                  rf_raddr_a;
     logic [4:0]                  rf_raddr_b;
     logic [4:0]                  rf_waddr_wb;
@@ -279,6 +281,7 @@ module ibex_lockstep import ibex_pkg::*; #(
   assign core_outputs_in.data_addr           = data_addr_i;
   assign core_outputs_in.data_wdata          = data_wdata_i;
   assign core_outputs_in.dummy_instr_id      = dummy_instr_id_i;
+  assign core_outputs_in.dummy_instr_wb      = dummy_instr_wb_i;
   assign core_outputs_in.rf_raddr_a          = rf_raddr_a_i;
   assign core_outputs_in.rf_raddr_b          = rf_raddr_b_i;
   assign core_outputs_in.rf_waddr_wb         = rf_waddr_wb_i;
@@ -367,6 +370,7 @@ module ibex_lockstep import ibex_pkg::*; #(
     .data_err_i          (shadow_inputs_q[0].data_err),
 
     .dummy_instr_id_o    (shadow_outputs_d.dummy_instr_id),
+    .dummy_instr_wb_o    (shadow_outputs_d.dummy_instr_wb),
     .rf_raddr_a_o        (shadow_outputs_d.rf_raddr_a),
     .rf_raddr_b_o        (shadow_outputs_d.rf_raddr_b),
     .rf_waddr_wb_o       (shadow_outputs_d.rf_waddr_wb),
@@ -425,7 +429,10 @@ module ibex_lockstep import ibex_pkg::*; #(
     .rvfi_mem_wdata            (),
     .rvfi_ext_mip              (),
     .rvfi_ext_nmi              (),
+    .rvfi_ext_nmi_int          (),
     .rvfi_ext_debug_req        (),
+    .rvfi_ext_debug_mode       (),
+    .rvfi_ext_rf_wr_suppress   (),
     .rvfi_ext_mcycle           (),
     .rvfi_ext_mhpmcounters     (),
     .rvfi_ext_mhpmcountersh    (),

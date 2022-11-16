@@ -217,7 +217,7 @@ module ibex_controller #(
   // LSU exception requests
   assign exc_req_lsu = store_err_i | load_err_i;
 
-  assign id_exception_o = exc_req_d;
+  assign id_exception_o = exc_req_d & ~wb_exception_o;
 
   // special requests: special instructions, pipeline flushes, exceptions...
   // All terms in these expressions are qualified by instr_valid_i except exc_req_lsu which can come
@@ -809,9 +809,6 @@ module ibex_controller #(
             csr_restore_dret_id_o = 1'b1;
           end else if (wfi_insn) begin
             ctrl_fsm_ns           = WAIT_SLEEP;
-          end else if (csr_pipe_flush && handle_irq) begin
-            // start handling IRQs when doing CSR-related pipeline flushes
-            ctrl_fsm_ns           = IRQ_TAKEN;
           end
         end // exc_req_q
 
@@ -898,10 +895,14 @@ module ibex_controller #(
     end
   end
 
+  `ASSERT(PipeEmptyOnIrq, ctrl_fsm_cs != IRQ_TAKEN & ctrl_fsm_ns == IRQ_TAKEN |->
+    ~instr_valid_i & ready_wb_i)
+
   //////////
   // FCOV //
   //////////
 
+  `DV_FCOV_SIGNAL(logic, all_debug_req, debug_req_i || debug_mode_q || debug_single_step_i)
   `DV_FCOV_SIGNAL(logic, debug_wakeup, (ctrl_fsm_cs == SLEEP) & (ctrl_fsm_ns == FIRST_FETCH) &
                                         (debug_req_i || debug_mode_q || debug_single_step_i))
   `DV_FCOV_SIGNAL(logic, interrupt_taken, (ctrl_fsm_cs != IRQ_TAKEN) & (ctrl_fsm_ns == IRQ_TAKEN))

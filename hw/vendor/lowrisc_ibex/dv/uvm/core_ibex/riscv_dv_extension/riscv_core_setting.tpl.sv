@@ -131,6 +131,8 @@ const privileged_reg_t implemented_csr[] = {
     MTVAL,            // Machine bad address or instruction
     MIE,              // Machine interrupt enable
     MIP,              // Machine interrupt pending
+    12'h7c0,          // CPU Control and Status (Ibex Specific)
+    12'h7c1,          // Secure Seed (Ibex Specific)
     MCYCLE,           // Machine cycle counter (lower 32 bits)
     MCYCLEH,          // Machine cycle counter (upper 32 bits)
     //MINSTRET,         // Machine instructions retired counter (lower 32 bits)

@@ -36,7 +36,7 @@
     +instr_cnt=10000
     +num_of_sub_program=5
     +gen_all_csrs_by_default=1
-    +add_csr_write=MSTATUS,MEPC,MCAUSE,MTVAL,0x7c0
+    +add_csr_write=MSTATUS,MEPC,MCAUSE,MTVAL,0x7c0,0x7c1
     +no_csr_instr=0
   rtl_test: core_ibex_base_test
 
@@ -146,6 +146,38 @@
   compare_opts:
     compare_final_value_only: 1
     verbose: 1
+
+- test: riscv_debug_triggers_test
+  description: >
+    Test stimulus includes directed routine which set the breakpoint addr forwards a few instructions.
+    This test has no pass/fail criteria, but instead is used to gather appropriate coverage.
+    // rtl_test:core_ibex_single_debug_pulse_test
+    // In combination with the test-program, this HALTREQ triggers code that then
+    // enables the DCSR.ebreakm/u functionality. From then on, EBREAK instructions trigger the
+    // DUT to run some debug-mode code to setup the next breakpoint address.
+  iterations: 5
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +no_ebreak=1
+    +no_branch_jump=1
+    +instr_cnt=10000
+    +no_csr_instr=1
+    +illegal_instr_ratio=20
+    +no_fence=1
+    +num_of_sub_program=0
+    +randomize_csr=0
+    +directed_instr_0=ibex_breakpoint_stream,20
+    +uvm_set_type_override=ibex_asm_program_gen,ibex_hardware_triggers_asm_program_gen
+    +uvm_set_type_override=riscv_debug_rom_gen,ibex_hardware_triggers_debug_rom_gen
+    +uvm_set_type_override=riscv_illegal_instr,ibex_hardware_triggers_illegal_instr
+  rtl_test: core_ibex_single_debug_pulse_test
+  sim_opts: >
+    +require_signature_addr=1
+    +enable_debug_seq=1
+    +enable_bad_intg_on_uninit_access=0
+  timeout_s: 300
 
 - test: riscv_debug_stress_test
   description: >
@@ -551,11 +583,37 @@
     +require_signature_addr=1
     +instr_cnt=10000
     +randomize_csr=1
+    +gen_all_csrs_by_default=1
+    +add_csr_write=MSTATUS,MEPC,MCAUSE,MTVAL,0x7c0,0x7c1
+    +enable_unaligned_load_store=1
+    +suppress_pmp_setup=1
+    +disable_pmp_exception_handler=1
+  rtl_test: core_ibex_mem_error_test
+  sim_opts: >
+    +enable_mem_intg_err=0
+    +enable_double_fault_detector=0
+    +require_signature_addr=1
+    +enable_bad_intg_on_uninit_access=0
+  compare_opts:
+    compare_final_value_only: 1
+
+- test: riscv_mem_intg_error_test
+  description: >
+    Normal random instruction test, but randomly insert memory load/store integrity errors
+  iterations: 15
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +require_signature_addr=1
+    +instr_cnt=10000
+    +randomize_csr=1
     +enable_unaligned_load_store=1
     +suppress_pmp_setup=1
   rtl_test: core_ibex_mem_error_test
   sim_opts: >
+    +enable_mem_intg_err=1
+    +enable_double_fault_detector=0
     +require_signature_addr=1
+    +enable_bad_intg_on_uninit_access=0
   compare_opts:
     compare_final_value_only: 1
 
@@ -577,8 +635,8 @@
     +instr_cnt=10000
     +no_csr_instr=0
     +randomize_csr=1
-    +enable_illegal_csr_instruction=1
-    +enable_access_invalid_csr_level=1
+    +gen_all_csrs_by_default=1
+    +add_csr_write=MSTATUS,MEPC,MCAUSE,MTVAL,0x7c0,0x7c1
     +no_fence=0
     +no_wfi=0
     +num_of_sub_program=1
@@ -605,6 +663,27 @@
   compare_opts:
     compare_final_value_only: 1
     verbose: 1
+
+- test: riscv_pc_intg_test
+  description: >
+    Randomly corrupt the PC of the core once in the middle of program execution
+  iterations: 15
+  gen_test: riscv_rand_instr_test
+  rtl_test: core_ibex_pc_intg_test
+
+- test: riscv_rf_intg_test
+  description: >
+    Randomly corrupt the register file read port once in the middle of program execution
+  iterations: 15
+  gen_test: riscv_rand_instr_test
+  rtl_test: core_ibex_rf_intg_test
+
+- test: riscv_icache_intg_test
+  description: >
+    Randomly corrupt the instruction cache once in the middle of program execution
+  iterations: 15
+  gen_test: riscv_rand_instr_test
+  rtl_test: core_ibex_icache_intg_test
 
 - test: riscv_rv32im_instr_test
   description: >
@@ -676,7 +755,7 @@
     Basic PMP test - all PMP regions will be configured to default setting,
     enabling all forms of accesses, expect that no exception will be thrown.
     Randomize mstatus.mprv.
-  iterations: 10
+  iterations: 50
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
@@ -687,6 +766,7 @@
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
+  timeout_s: 300
 
 - test: riscv_pmp_disable_all_regions_test
   desc: >
@@ -694,7 +774,7 @@
     and randomize mstatus.mprv.
     Expect that all appropriate faults are taken, and that the core
     finishes executing successfully.
-  iterations: 20
+  iterations: 50
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
@@ -720,13 +800,14 @@
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
+  timeout_s: 300
 
 - test: riscv_pmp_out_of_bounds_test
   desc: >
     Default PMP settings - enable all regions with full permissions.
     Randomize mstatus.mprv and the boot mode.
     Insert streams of memory instructions that access addresses out of PMP boundaries.
-  iterations: 25
+  iterations: 50
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
@@ -736,13 +817,12 @@
     +directed_instr_0=riscv_load_store_rand_addr_instr_stream,50
     +mseccfg=MML:0,MMWP:0,RLB:0
   rtl_test: core_ibex_base_test
-  sim_opts: >
-    +enable_bad_intg_on_uninit_access=0
   rtl_params:
     PMPEnable: 1
   sim_opts: >
     +is_double_fault_detected_fatal=0
     +enable_bad_intg_on_uninit_access=0
+  timeout_s: 300
 
 - test: riscv_pmp_full_random_test
   desc: >
@@ -750,10 +830,11 @@
     and allow PMP regions to overlap.
     A large number of iterations will be required since this introduces a huge
     state space of configurations.
-  iterations: 20
+  iterations: 600
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
+    +set_mstatus_mprv=1
     +pmp_randomize=1
     +pmp_max_offset=00040000
     +pmp_allow_illegal_tor=1
@@ -761,6 +842,8 @@
     +directed_instr_1=riscv_load_store_hazard_instr_stream,40
     +directed_instr_2=riscv_multi_page_load_store_instr_stream,40
     +directed_instr_3=riscv_load_store_rand_addr_instr_stream,40
+    +directed_instr_4=ibex_rand_mseccfg_stream,1
+    +directed_instr_6=ibex_valid_na4_stream,20
   sim_opts: >
     +is_double_fault_detected_fatal=0
     +enable_bad_intg_on_uninit_access=0
@@ -775,7 +858,7 @@
     regions are set to execute only in both M and U modes. All other regions
     are set to read/write only. Exceptions when reading/writing code or
     executing data. Randomize mstatus.mprv.
-  iterations: 3
+  iterations: 20
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
@@ -802,13 +885,14 @@
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
+  timeout_s: 300
 
 - test: riscv_epmp_mml_execute_only_test
   desc: >
     An enhanced PMP machine mode lockdown test - all PMP regions are set to
     execute only. Exception is expected on any store or load. Randomize
     mstatus.mprv.
-  iterations: 3
+  iterations: 20
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
@@ -837,13 +921,14 @@
     PMPEnable: 1
   sim_opts: >
     +is_double_fault_detected_fatal=0
+  timeout_s: 300
 
 - test: riscv_epmp_mml_read_only_test
   desc: >
     An enhanced PMP machine mode lockdown test - all PMP regions are set to
     shared read only. Exception is expected right after enabling MML. Randomize
     mstatus.mprv.
-  iterations: 3
+  iterations: 20
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
@@ -872,6 +957,7 @@
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
+  timeout_s: 300
 
 - test: riscv_epmp_mmwp_test
   desc: >
@@ -879,7 +965,7 @@
     configured to default setting, enabling all forms of accesses, expect that
     an exception when machine mode access memory not in PMP. Randomize
     mstatus.mprv.
-  iterations: 3
+  iterations: 20
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
@@ -892,13 +978,14 @@
     PMPEnable: 1
   sim_opts: >
     +is_double_fault_detected_fatal=0
+  timeout_s: 300
 
 - test: riscv_epmp_rlb_test
   desc: >
     An enhanced PMP rule lock bypass - all PMP regions are locked and enable
     all forms of accesses, expect that no exception will be thrown even when
     trying to change locked entries. Randomize mstatus.mprv.
-  iterations: 3
+  iterations: 20
   gen_test: riscv_rand_instr_test
   gen_opts: >
     +instr_cnt=6000
@@ -925,6 +1012,7 @@
   rtl_test: core_ibex_base_test
   rtl_params:
     PMPEnable: 1
+  timeout_s: 300
 
 # Both an updated compiler and ISS are required to verify the bitmanip v.1.00
 # and draft v.0.93 extensions. For now, disable the bitmanip tests.

@@ -59,6 +59,8 @@ def _main() -> int:
             'cmp_opts': get_compile_opts(md.ibex_config,
                                          md.simulator),
             'dir_shared_cov': (md.dir_shared_cov if md.cov else ''),
+            'xlm_cov_cfg_file': f"{md.ot_xcelium_cov_scripts}/common.ccf",
+            'dut_cov_rtl_path': md.dut_cov_rtl_path
         }
 
         # Locate the spike .pc files to allow us to link against it when building
