@@ -127,6 +127,21 @@ class csrng_base_vseq extends cip_base_vseq #(
     end
   endtask // force_path
 
+  task force_fifo_write_err(string path1, string path2, string path3, bit value1, bit value2,
+                            bit[3:0] value3, uvm_reg_field reg_field, bit exp_data);
+    if (!uvm_hdl_check_path(path3)) begin
+      `uvm_fatal(`gfn, "\n\t ----| PATH NOT FOUND")
+    end else begin
+      `DV_CHECK(uvm_hdl_force(path3, value3));
+    end
+    force_path(path1, path2, value1, value2);
+    // Check register value
+    csr_spinwait(.ptr(reg_field), .exp_data(exp_data));
+    `DV_CHECK(uvm_hdl_release(path1));
+    `DV_CHECK(uvm_hdl_release(path2));
+    `DV_CHECK(uvm_hdl_release(path3));
+  endtask // force_fifo_err
+
   task force_fifo_err(string path1, string path2, bit value1, bit value2,
                       uvm_reg_field reg_field, bit exp_data);
     force_path(path1, path2, value1, value2);
@@ -145,20 +160,24 @@ class csrng_base_vseq extends cip_base_vseq #(
     `DV_CHECK(uvm_hdl_release(path2));
   endtask // force_fifo_err_exception
 
-  task force_all_fifo_errs(string paths [4], bit values [4], string path_exts [4],
+  task force_all_fifo_errs(string paths [5], bit values [5], string path_exts [5],
                            uvm_reg_field reg_field, bit exp_data, int case_state);
-    int    index1 [$], index2 [$];
-    string path_push, path_full, path_pop, path_not_empty;
-    bit    val_push, val_full, val_pop, val_not_empty;
+    int    index1 [$], index2 [$], index3 [$];
+    string path_push, path_full, path_data, path_pop, path_not_empty;
+    bit    val_push, val_full, val_data, val_pop, val_not_empty;
     case (case_state)
       fifo_write: begin // fifo write err
         index1     = path_exts.find_index(x) with (x == "push");
         index2     = path_exts.find_index(x) with (x == "full");
+        index3     = path_exts.find_index(x) with (x == "wdata");
         path_push  = paths[index1[0]];
         path_full  = paths[index2[0]];
+        path_data  = paths[index3[0]];
         val_push   = values[index1[0]];
         val_full   = values[index2[0]];
-        force_fifo_err(path_push, path_full, 1'b1, 1'b1, reg_field, exp_data);
+        val_data   = values[index3[0]];
+        force_fifo_write_err(path_push, path_full, path_data, 1'b1, 1'b1, 8'b0, reg_field,
+                             exp_data);
       end
       fifo_read: begin // fifo read err
         index1         = path_exts.find_index(x) with (x == "pop");
@@ -184,7 +203,7 @@ class csrng_base_vseq extends cip_base_vseq #(
     endcase // case (case_state)
   endtask // force_all_fifo_errs
 
-  task force_all_fifo_errs_exception(string paths [4], bit values [4],string path_exts [4],
+  task force_all_fifo_errs_exception(string paths [5], bit values [5],string path_exts [5],
                                      uvm_reg_field reg_field, bit exp_data, int case_state);
     int    index1 [$], index2 [$];
     string path_push, path_full, path_pop, path_not_empty;
