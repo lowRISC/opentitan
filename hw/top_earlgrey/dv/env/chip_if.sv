@@ -870,6 +870,10 @@ interface chip_if;
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_alert_handler_ping_timer_wait_cyc_mask_i,
       `ALERT_HANDLER_HIER.u_ping_timer.wait_cyc_mask_i)
 
+  // Signal probe function for alert_ping_req in alert_handler.
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_alert_handler_ping_reqs,
+      `ALERT_HANDLER_HIER.alert_ping_req)
+
   // Signal probe function for keymgr key state.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_keymgr_key_state,
       `KEYMGR_HIER.u_ctrl.key_state_q)

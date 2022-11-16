@@ -400,3 +400,22 @@ void flash_ctrl_testutils_backdoor_wait_update(
       &data, kDifFlashCtrlPartitionTypeData, 1));
   IBEX_SPIN_FOR(UINT32_MAX != *(uint32_t *)addr, timeout);
 }
+
+void flash_ctrl_testutils_backdoor_wait_eq(dif_flash_ctrl_state_t *flash_state,
+                                           uintptr_t addr, uint32_t exp_data,
+                                           size_t timeout) {
+  const ibex_timeout_t timeout_ = ibex_timeout_init(timeout);
+
+  while (exp_data != *(uint32_t *)addr) {
+    // Invalidate the cache and force the flash to update read values.
+    static uint32_t data = UINT32_MAX;
+    CHECK(flash_ctrl_testutils_write(
+        flash_state, (uint32_t)addr - TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR, 0,
+        &data, kDifFlashCtrlPartitionTypeData, 1));
+
+    // Check timeout.
+    CHECK(!ibex_timeout_check(&timeout_),
+          "Timed out after %d usec (%d CPU cycles) waiting for exp_data = %d",
+          timeout, (uint32_t)timeout_.cycles, exp_data);
+  }
+}
