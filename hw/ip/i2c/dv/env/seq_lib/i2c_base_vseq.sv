@@ -70,6 +70,9 @@ class i2c_base_vseq extends cip_base_vseq #(
   int tran_id = 0;
   int sent_txn_cnt = 0;
 
+  i2c_intr_e intr_q[$];
+  bit expected_intr[i2c_intr_e];
+
   // constraints
   constraint addr_c {
     addr inside {[cfg.seq_cfg.i2c_min_addr : cfg.seq_cfg.i2c_max_addr]};
@@ -593,148 +596,33 @@ class i2c_base_vseq extends cip_base_vseq #(
     return rw;
   endfunction // get_read_write
 
-  // Read acqdata and pass to scoreboard until
-  // send and rcv cnt become the same.
+  // Call read_acq_fifo until send and rcv counter become the same.
   virtual task process_acq();
-    uvm_reg_data_t read_data;
-    i2c_item obs;
-    bit is_read;
-
+    int delay;
+    bit acq_fifo_empty;
+    bit read_one = 0;
     `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns, "process_acq")
 
     while (cfg.sent_acq_cnt != cfg.rcvd_acq_cnt) begin
-      // polling status.acqempty == 0
-      csr_rd(.ptr(ral.status.acqempty), .value(read_data));
-      if (read_data == 0) begin
-        // read one entry and compare
-        csr_rd(.ptr(ral.acqdata), .value(read_data));
-        `uvm_info("process_acq", $sformatf("acq data %x", read_data), UVM_MEDIUM)
-        `uvm_create_obj(i2c_item, obs);
-        obs = acq2item(read_data);
-        is_read = obs.read;
-
-        obs.tran_id = cfg.rcvd_acq_cnt++;
-        p_sequencer.target_mode_wr_obs_port.write(obs);
-      end else begin // if (read_data == 0)
-        cfg.clk_rst_vif.wait_clks(1);
-        `uvm_info("process_acq", $sformatf("acq_dbg: sent:%0d rcvd:%0d acq_is_empty",
-                                           cfg.sent_acq_cnt, cfg.rcvd_acq_cnt), UVM_HIGH)
+      if (cfg.slow_acq) begin
+        delay = $urandom_range(50, 100);
+        #(delay * 1us);
+        read_one = 1;
       end
+      read_acq_fifo(read_one, acq_fifo_empty);
     end
   endtask
 
   // Polling read_rcvd q and fetch read data to txdata fifo
   virtual task process_txq();
-    uvm_reg_data_t data;
-    int read_size;
-    int rd_txfifo_timeout_ns = 50_000;
-
     `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte > 0,, cfg.spinwait_timeout_ns, "process_txq")
-    forever begin
-      @(cfg.m_i2c_agent_cfg.vif.cb);
-      if (read_rcvd.size() > 0) begin
-        read_size = read_rcvd.pop_front();
-      end
-
-      while (read_size > 0) begin
-        @(cfg.m_i2c_agent_cfg.vif.cb);
-        if (read_txn_q.size() > 0) begin
-          i2c_item item;
-          //check tx fifo is full
-          csr_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0),
-                       .timeout_ns(rd_txfifo_timeout_ns));
-          `uvm_create_obj(i2c_item, item)
-          item = read_txn_q.pop_front();
-          `uvm_info("process_txq", $sformatf("send rdata:%x", item.wdata), UVM_MEDIUM)
-          csr_wr(.ptr(ral.txdata), .value(item.wdata));
-          read_size--;
-        end
-      end
-    end
-  endtask
-
-  // Slow acq fifo read to create acq fifo full
-  task process_slow_acq();
-    uvm_reg_data_t read_data;
-    i2c_item obs;
-    bit is_read;
-    bit acq_fifo_empty = 1;
-    int delay;
-    string id = "process_slow_acq";
-
-    wait(cfg.sent_acq_cnt > 0);
-
-    while (cfg.sent_acq_cnt != cfg.rcvd_acq_cnt ||
-           acq_fifo_empty == 0) begin
-
-      delay = $urandom_range(50, 100);
-
-      // Assuming interval between each byte is 6.2us
-      #(delay * 1us);
-
-      // polling status.acqempty == 0
-      csr_rd(.ptr(ral.status.acqempty), .value(acq_fifo_empty));
-
-      if (!acq_fifo_empty) begin
-        // read one entry and compare
-        csr_rd(.ptr(ral.acqdata), .value(read_data));
-        `uvm_info(id, $sformatf("acq data %x", read_data), UVM_MEDIUM)
-        `uvm_create_obj(i2c_item, obs);
-        obs = acq2item(read_data);
-        obs.tran_id = cfg.rcvd_acq_cnt++;
-        p_sequencer.target_mode_wr_obs_port.write(obs);
-      end else begin // if (read_data == 0)
-        cfg.clk_rst_vif.wait_clks(1);
-        `uvm_info(id, $sformatf("acq_dbg: sent:%0d rcvd:%0d acq_is_empty",
-                                           cfg.sent_acq_cnt, cfg.rcvd_acq_cnt), UVM_MEDIUM)
-      end
-    end // while (cfg.sent_acq_cnt != cfg.rcvd_acq_cnt ||...
-    `uvm_info(id, "process_end", UVM_MEDIUM)
-  endtask // process_slow_acq
-
-  // Slow tx fifio write to create tx fifo empty
-  task process_slow_txq();
-    uvm_reg_data_t data;
-    int read_size;
-    int rd_txfifo_timeout_ns = 50_000;
-    // indefinite time
-    int tx_empty_timeout_ns = 500_000_000;
-    int delay;
-    string id = "process_slow_txq";
-
-    wait(cfg.m_i2c_agent_cfg.sent_rd_byte > 0);
 
     while (cfg.m_i2c_agent_cfg.sent_rd_byte != cfg.m_i2c_agent_cfg.rcvd_rd_byte ||
            sent_txn_cnt < num_trans) begin
       cfg.clk_rst_vif.wait_clks(1);
-      if (read_rcvd.size() > 0) begin
-        read_size = read_rcvd.pop_front();
-        `uvm_info(id, $sformatf("proc_txq read_size :%0d", read_size), UVM_HIGH)
-      end
-
-      while (read_size > 0) begin
-        cfg.clk_rst_vif.wait_clks(1);
-        if ($urandom_range(0, 1) < 1) begin
-          // Wait for intr_state.tx_empty and clear.
-          csr_spinwait(.ptr(ral.intr_state.tx_empty), .exp_data(1'b1),
-                       .timeout_ns(tx_empty_timeout_ns));
-          csr_wr(.ptr(ral.intr_state.tx_empty), .value(1'b1));
-        end
-        if (read_txn_q.size() > 0) begin
-          i2c_item item;
-          //check tx fifo is full
-          csr_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0),
-                       .timeout_ns(rd_txfifo_timeout_ns));
-          item = read_txn_q.pop_front();
-          `uvm_info(id, $sformatf("send rdata:%x", item.wdata), UVM_MEDIUM)
-          csr_wr(.ptr(ral.txdata), .value(item.wdata));
-          read_size--;
-        end
-      end // while (read_size > 0)
-    end // while (cfg.m_i2c_agent_cfg.sent_byte !=...
-    `uvm_info(id, "proc_txq end", UVM_MEDIUM)
-  endtask // process_slow_txq
-
+      write_tx_fifo(.add_delay(cfg.slow_txq));
+    end
+  endtask
 
   // Create byte transaction (payload) to read or write.
   // Restart can be stuffed in between bytes except first and the last bytes.
@@ -930,4 +818,126 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
     return cnt;
   endfunction
+
+  // This task needs to set do_clear_all_interrupts = 0
+  virtual task process_target_interrupts();
+    int delay;
+    bit acq_fifo_empty;
+    bit read_one = 0;
+    while (!cfg.stop_intr_handler) begin
+      @(posedge cfg.clk_rst_vif.clk);
+      if (cfg.intr_vif.pins[AcqFull]) begin
+        if (cfg.slow_acq) begin
+          acq_fifo_empty = 0;
+          while (!acq_fifo_empty) begin
+            delay = $urandom_range(50, 100);
+            #(delay * 1us);
+            read_acq_fifo(1, acq_fifo_empty);
+          end
+        end else begin
+          read_acq_fifo(0, acq_fifo_empty);
+        end
+        csr_wr(.ptr(ral.intr_state.acq_full), .value(1'b1));
+      end else if (cfg.intr_vif.pins[TxEmpty]) begin
+        write_tx_fifo();
+        csr_wr(.ptr(ral.intr_state.tx_empty), .value(1'b1));
+      end else if (cfg.intr_vif.pins[TransComplete]) begin
+        if (cfg.slow_acq) begin
+          if($urandom()%2) begin
+            acq_fifo_empty = 0;
+            while (!acq_fifo_empty) begin
+              delay = $urandom_range(1, 50);
+              #(delay * 1us);
+              read_acq_fifo(1, acq_fifo_empty);
+            end
+          end
+        end else begin
+          // read one entry at a time to create acq fifo back pressure
+          read_acq_fifo(1, acq_fifo_empty);
+        end
+        csr_wr(.ptr(ral.intr_state.trans_complete), .value(1'b1));
+      end else if (cfg.read_all_acq_entries) begin
+        read_acq_fifo(0, acq_fifo_empty);
+      end else begin
+        for (int i = 0; i < NumI2cIntr; i++) begin
+          i2c_intr_e my_intr = i;
+          if (!expected_intr.exists(my_intr)) begin
+            if (cfg.intr_vif.pins[i] !== 0) begin
+              `uvm_error("process_target_interrupts",
+                         $sformatf("Unexpected unterrupt is set %s", my_intr.name))
+            end
+          end
+        end
+      end // else: !if(cfg.intr_vif.pins[TransComplete])
+    end
+  endtask
+
+  // Fill tx fifo for a single read transaction.
+  task write_tx_fifo(bit add_delay = 0);
+    uvm_reg_data_t data;
+    int read_size;
+    int rd_txfifo_timeout_ns = 50_000;
+    // indefinite time
+    int tx_empty_timeout_ns = 500_000_000;
+    string id = "write_tx_fifo";
+
+     if (add_delay) id = {id, "_delay"};
+
+      if (read_rcvd.size() > 0) begin
+        read_size = read_rcvd.pop_front();
+        `uvm_info(id, $sformatf("read_size :%0d", read_size), UVM_HIGH)
+      end
+
+      while (read_size > 0) begin
+        cfg.clk_rst_vif.wait_clks(1);
+        if (add_delay) begin
+           if ($urandom_range(0, 1) < 1) begin
+              // Wait for intr_state.tx_empty and clear.
+              csr_spinwait(.ptr(ral.intr_state.tx_empty), .exp_data(1'b1),
+                           .timeout_ns(tx_empty_timeout_ns));
+              csr_wr(.ptr(ral.intr_state.tx_empty), .value(1'b1));
+           end
+        end
+        if (read_txn_q.size() > 0) begin
+          i2c_item item;
+          //check tx fifo is full
+          csr_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0),
+                       .timeout_ns(rd_txfifo_timeout_ns));
+          `uvm_create_obj(i2c_item, item)
+          item = read_txn_q.pop_front();
+          `uvm_info(id, $sformatf("send rdata:%x", item.wdata), UVM_MEDIUM)
+          csr_wr(.ptr(ral.txdata), .value(item.wdata));
+          read_size--;
+        end
+      end
+  endtask
+
+  // when read_one = 1. check acqempty and read a single entry
+  // and return acq_fifo_empty.
+  // When read_one = 0, read acq fifo up to acqlvl and convert read data
+  // to i2c_item and send to wr_obs_port
+  task read_acq_fifo(bit read_one, ref bit acq_fifo_empty);
+    uvm_reg_data_t read_data;
+    i2c_item obs;
+
+    acq_fifo_empty = 0;
+    if (read_one) begin
+      csr_rd(.ptr(ral.status.acqempty), .value(acq_fifo_empty));
+      read_data = (acq_fifo_empty)? 0 : 1;
+    end else csr_rd(.ptr(ral.fifo_status.acqlvl), .value(read_data));
+
+    // polling status.acqempty == 0
+    repeat(read_data) begin
+      // read one entry and compare
+      csr_rd(.ptr(ral.acqdata), .value(read_data));
+      `uvm_info("process_acq", $sformatf("acq data %x", read_data), UVM_MEDIUM)
+      // Capture the same read data from 'process_tl_access' sb
+    end
+    if (read_data == 0) begin
+      cfg.clk_rst_vif.wait_clks(1);
+      `uvm_info("process_acq", $sformatf("acq_dbg: sent:%0d rcvd:%0d acq_is_empty",
+                                         cfg.sent_acq_cnt, cfg.rcvd_acq_cnt), UVM_HIGH)
+    end
+  endtask // read_acq_fifo
+
 endclass : i2c_base_vseq

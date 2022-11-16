@@ -33,6 +33,8 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   uvm_tlm_analysis_fifo #(i2c_item) rd_item_fifo;
   uvm_tlm_analysis_fifo #(i2c_item) wr_item_fifo;
 
+  uvm_analysis_port #(i2c_item) target_mode_wr_obs_port;
+
   // Target mode transactions
   uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_exp_fifo;
   uvm_tlm_analysis_fifo #(i2c_item) target_mode_wr_obs_fifo;
@@ -43,7 +45,6 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   local bit [NumI2cIntr-1:0] intr_exp;
 
   int                        num_obs_rd;
-
 
   `uvm_component_new
 
@@ -59,7 +60,13 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     target_mode_wr_obs_fifo = new("target_mode_wr_obs_fifo", this);
     target_mode_rd_exp_fifo = new("target_mode_rd_exp_fifo", this);
     target_mode_rd_obs_fifo = new("target_mode_rd_obs_fifo", this);
+    target_mode_wr_obs_port = new("target_mode_wr_obs_port", this);
   endfunction : build_phase
+
+  function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    target_mode_wr_obs_port.connect(target_mode_wr_obs_fifo.analysis_export);
+  endfunction
 
   task run_phase(uvm_phase phase);
     string str;
@@ -332,6 +339,14 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         end
         "fifo_status": begin
           // check in test
+          do_read_check = 1'b0;
+        end
+        "acqdata": begin
+          i2c_item obs;
+          `uvm_create_obj(i2c_item, obs);
+          obs = acq2item(item.d_data);
+          obs.tran_id = cfg.rcvd_acq_cnt++;
+          target_mode_wr_obs_port.write(obs);
           do_read_check = 1'b0;
         end
         default: begin

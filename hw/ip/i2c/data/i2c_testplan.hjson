@@ -354,7 +354,7 @@
                 in tx_fifo otherwise tx_empty interrupt must be de-asserted
             '''
       stage: V2
-      tests: ["i2c_target_stress_rd"]
+      tests: ["i2c_target_stress_rd", "i2c_target_intr_smoke"]
     }
     {
       name: target_fifo_reset
@@ -380,13 +380,13 @@
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
               - Send enough read and write requests to acq_fifo
-              - Hold reading data from tx_fifo until tx fifo is full
+              - Slow down acq fifo read process to trigger acq_full interrupt
 
             Checking:
               - Check fifo full states by reading status register
             '''
       stage: V2
-      tests: ["i2c_target_stress_wr"]
+      tests: ["i2c_target_stress_wr", "i2c_target_intr_stress_wr"]
     }
     {
       name: target_timeout
