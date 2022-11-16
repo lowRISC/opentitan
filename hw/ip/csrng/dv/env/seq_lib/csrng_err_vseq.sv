@@ -51,6 +51,9 @@ class csrng_err_vseq extends csrng_base_vseq;
     $assertoff(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.LockArbDecision_A");
     $assertoff(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_benblk_arb.ReqStaysHighUntilGranted0_M");
     $assertoff(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.ReqStaysHighUntilGranted0_M");
+    $assertoff(0, "tb.dut.u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.u_state_regs_A");
+    $assertoff(0, "tb.dut.u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.u_state_regs_A");
+    $assertoff(0, "tb.dut.u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.u_state_regs_A");
     cfg.csrng_assert_vif.assert_off();
 
     cs_item = csrng_item::type_id::create("cs_item");
@@ -229,6 +232,9 @@ class csrng_err_vseq extends csrng_base_vseq;
     $asserton(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.LockArbDecision_A");
     $asserton(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_benblk_arb.ReqStaysHighUntilGranted0_M");
     $asserton(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.ReqStaysHighUntilGranted0_M");
+    $asserton(0, "tb.dut.u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.u_state_regs_A");
+    $asserton(0, "tb.dut.u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.u_state_regs_A");
+    $asserton(0, "tb.dut.u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.u_state_regs_A");
     cfg.csrng_assert_vif.assert_on();
 
   endtask : body
