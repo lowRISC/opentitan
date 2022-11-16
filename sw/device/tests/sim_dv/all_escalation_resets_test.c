@@ -15,6 +15,10 @@
 // For extra checking, the rstmgr is  configured to capture the alert info
 // on reset, which is also used to check the alert cause is as expected.
 //
+// If the fault is injected in the retention SRAM, we perform an additional
+// access check to make sure that local escalation blocks any SRAM accesses
+// correctly.
+//
 // As a backup the aon timer is programmed to bark and bite, but these are
 // expected not to happen since the escalation takes precedence.
 
@@ -41,11 +45,13 @@
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_sram_ctrl.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
@@ -59,6 +65,12 @@ OTTF_DEFINE_TEST_CONFIG();
 
 // This location will be update from SV to contain the expected alert.
 static volatile const uint8_t kExpectedAlertNumber = 0;
+
+// Used for checking whether a load access exception has occurred.
+static volatile bool load_access_exception_seen = false;
+
+// Used for checking whether a regular alert interrupt has been seen.
+static volatile bool alert_irq_seen = false;
 
 // The function to check the fault status.
 typedef void (*FaultCheckerFunction)(bool, const char *inst, const char *type);
@@ -76,7 +88,10 @@ OT_SECTION(".non_volatile_scratch") uint64_t nv_fault_checker[3];
 // to preserve it across resets.
 fault_checker_t fault_checker;
 
-uint32_t reset_count;
+// Alert class to use for the test. Will be chosen randomly by the test SW.
+static volatile dif_alert_handler_class_t alert_class_to_use;
+
+static volatile uint32_t reset_count;
 
 enum {
   // Counter for resets.
@@ -94,18 +109,42 @@ enum {
  * - bite after escalation reset, so we should not get timer reset.
  */
 enum {
-  kWdogBarkMicros = 400,          // 400 us
-  kWdogBiteMicros = 900,          // 900 us
-  kEscalationStartMicros = 300,   // 300 us
-  kEscalationPhase0Micros = 200,  // 200 us
-  kEscalationPhase1Micros = 100,  // 100 us
+  // Note that the escalation phase times below define the length of each phase,
+  // not when they start.
+  // The starting time is given by the aggregate of previous phase lengths, and
+  // is noted with @ below.
+  // @0 us -> in this phase we will not do anything so that the exception
+  // handlers have time to execute.
+  kEscalationPhase0Micros = 200,
+  // @200 us -> in this phase we will raise an NMI
+  kEscalationPhase1Micros = 200,
+  // @400 us -> in this phase we will assert lc_escalate_en
+  kEscalationPhase2Micros = 200,
+  // @600 us -> in this phase we will reset the chip
+  kEscalationPhase3Micros = 200,
+  // These are set so that both events happen in Phase2 of the escalation
+  // protocol, which asserts lc_escalate_en. That should prevent the Wdog
+  // from running and sending out an NMI on its own (we check in the NMI
+  // handler below that this does not happen).
+  kWdogBarkMicros = 450,
+  kWdogBiteMicros = 500,
+  kTestTimeout = 1000,  // 1000 us
   kMaxResets = 2,
   kMaxInterrupts = 30,
 };
 
-static_assert(kWdogBarkMicros < kWdogBiteMicros &&
-                  kWdogBarkMicros > kEscalationPhase0Micros,
-              "The wdog bite shall happen only if escalation reset fails.");
+static_assert(
+    kWdogBarkMicros < kWdogBiteMicros &&
+        kWdogBarkMicros > (kEscalationPhase0Micros + kEscalationPhase1Micros),
+    "The wdog bite shall after the NMI phase when lc_escalate_en is asserted");
+
+/**
+ * SRAM addresses used in the test below.
+ */
+enum {
+  kSramMainStart = TOP_EARLGREY_SRAM_CTRL_MAIN_RAM_BASE_ADDR,
+  kSramRetStart = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+};
 
 /**
  * Objects to access the peripherals used in this test via dif API.
@@ -373,6 +412,27 @@ static void rv_core_ibex_fault_checker(bool enable, const char *ip_inst,
         ip_inst, codes, expected_codes);
 }
 
+/**
+ * Load access error exception handler.
+ *
+ * Handles load access error exceptions on Ibex.
+ * This is needed for the SRAM fault check that tries to access
+ * the retention SRAM after escalation to make sure the access
+ * is correctly blocked.
+ *
+ */
+void ottf_load_store_fault_handler(void) {
+  LOG_INFO("At load access error handler");
+
+  uint32_t mtval = ibex_mtval_read();
+  CHECK(mtval == kSramRetStart, "Unexpected mtval: expected 0x%x, got 0x%x",
+        kSramRetStart, mtval);
+
+  load_access_exception_seen = true;
+
+  LOG_INFO("Load access error handler exiting");
+}
+
 static void generic_sram_ctrl_fault_checker(const dif_sram_ctrl_t *sram_ctrl,
                                             bool enable, const char *ip_inst,
                                             const char *type) {
@@ -441,19 +501,30 @@ void ottf_external_isr(void) {
                            fault_checker.type);
   }
 
-  // Stop the alert handler from sending regular interrupts.
-  LOG_INFO("Disable IRQ classa");
-  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
-      &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleDisabled));
+  // Disable these interrupts from alert_handler so they don't keep happening
+  // until NMI.
+  uint32_t irq =
+      (irq_id - (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAlertHandlerClassa);
+  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(&alert_handler, irq,
+                                                 kDifToggleDisabled));
+
+  // Disable this interrupt to prevent it from continuously firing. This
+  // should not prevent escalation from continuing.
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, irq_id, kPlicTarget,
+                                           kDifToggleDisabled));
 
   uint16_t accum_count;
   CHECK_DIF_OK(dif_alert_handler_get_accumulator(
-      &alert_handler, kDifAlertHandlerClassA, &accum_count));
+      &alert_handler, alert_class_to_use, &accum_count));
   LOG_INFO("Accumulator count %d", accum_count);
 
   // Complete the IRQ by writing the IRQ source to the Ibex specific CC
   // register.
   CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
+
+  // Notify test function that the alert IRQ has been seen
+  alert_irq_seen = true;
+
   LOG_INFO("Regular external ISR exiting");
 }
 
@@ -463,22 +534,36 @@ void ottf_external_isr(void) {
  * Handles NMI interrupts on Ibex for either escalation or watchdog.
  */
 void ottf_external_nmi_handler(void) {
+  dif_rv_core_ibex_nmi_state_t nmi_state = (dif_rv_core_ibex_nmi_state_t){0};
   LOG_INFO("At NMI handler");
 
   // Increment the nmi interrupt count.
-  uint32_t nmi_interrupt_count = flash_ctrl_testutils_counter_get(kCounterNmi);
-  if (nmi_interrupt_count > kMaxInterrupts) {
-    LOG_INFO("Saturating nmi interrupts at %d", nmi_interrupt_count);
+  uint32_t nmi_count = flash_ctrl_testutils_counter_get(kCounterNmi);
+  if (nmi_count > kMaxInterrupts) {
+    LOG_INFO("Saturating nmi interrupts at %d", nmi_count);
   } else {
     flash_ctrl_testutils_counter_set_at_least(&flash_ctrl_state, kCounterNmi,
-                                              nmi_interrupt_count + 1);
+                                              nmi_count + 1);
   }
+
+  // Check that this NMI was due to an alert handler escalation, and not due
+  // to a watchdog bark, since escalation suppresses the watchdog.
+  CHECK_DIF_OK(dif_rv_core_ibex_get_nmi_state(
+      &rv_core_ibex, (dif_rv_core_ibex_nmi_state_t *)&nmi_state));
+  CHECK(nmi_state.alert_enabled && nmi_state.alert_raised,
+        "Alert handler NMI state not expected:\n\t"
+        "alert_enable:%x\n\talert_raised:%x\n",
+        nmi_state.alert_enabled, nmi_state.alert_raised);
+  CHECK(nmi_state.wdog_enabled && !nmi_state.wdog_barked,
+        "Watchdog NMI state not expected:\n\t"
+        "wdog_enabled:%x\n\twdog_barked:%x\n",
+        nmi_state.wdog_enabled, nmi_state.wdog_barked);
 
   // Check the class.
   dif_alert_handler_class_state_t state;
-  CHECK_DIF_OK(dif_alert_handler_get_class_state(
-      &alert_handler, kDifAlertHandlerClassA, &state));
-  CHECK(state == kDifAlertHandlerClassStatePhase0, "Wrong phase %d", state);
+  CHECK_DIF_OK(dif_alert_handler_get_class_state(&alert_handler,
+                                                 alert_class_to_use, &state));
+  CHECK(state == kDifAlertHandlerClassStatePhase1, "Wrong phase %d", state);
 
   // Check this gets the expected alert.
   bool is_cause = false;
@@ -489,6 +574,7 @@ void ottf_external_nmi_handler(void) {
   // Acknowledge the cause, which doesn't affect escalation.
   CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(&alert_handler,
                                                    kExpectedAlertNumber));
+  LOG_INFO("NMI handler exiting");
 }
 
 /**
@@ -552,36 +638,46 @@ static void init_peripherals(void) {
  * interrupt.
  */
 static void alert_handler_config(void) {
+  alert_class_to_use = (dif_alert_handler_class_t)rand_testutils_gen32_range(
+      kDifAlertHandlerClassA, kDifAlertHandlerClassD);
   dif_alert_handler_alert_t alerts[] = {kExpectedAlertNumber};
-  dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
+  dif_alert_handler_class_t alert_classes[] = {alert_class_to_use};
 
   dif_alert_handler_escalation_phase_t esc_phases[] = {
       {.phase = kDifAlertHandlerClassStatePhase0,
-       .signal = 0,
+       .signal = 0xFFFFFFFF,  // do not trigger any signal, just wait.
        .duration_cycles =
-           alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros) *
-           alert_handler_testutils_cycle_rescaling_factor()},
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase0Micros)},
       {.phase = kDifAlertHandlerClassStatePhase1,
-       .signal = 3,
+       .signal = 0,  // NMI
        .duration_cycles =
-           alert_handler_testutils_get_cycles_from_us(kEscalationPhase1Micros) *
-           alert_handler_testutils_cycle_rescaling_factor()}};
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase1Micros)},
+      {.phase = kDifAlertHandlerClassStatePhase2,
+       .signal = 1,  // lc_escalate_en
+       .duration_cycles =
+           alert_handler_testutils_get_cycles_from_us(kEscalationPhase2Micros)},
+      {.phase = kDifAlertHandlerClassStatePhase3,
+       .signal = 3,  // reset
+       .duration_cycles = alert_handler_testutils_get_cycles_from_us(
+           kEscalationPhase3Micros)}};
 
-  uint32_t deadline_cycles =
-      alert_handler_testutils_get_cycles_from_us(kEscalationStartMicros) *
-      alert_handler_testutils_cycle_rescaling_factor();
-  LOG_INFO("Configuring class A with %d cycles and %d occurrences",
-           deadline_cycles, 0);
+  // This test does not leverage the IRQ timeout feature of the alert
+  // handler, hence deadline_cycles is set to zero. Rather, it triggers
+  // escalation right away if an alert event is seen, hence threshold = 0;
+  uint32_t deadline_cycles = 0;
+  uint32_t threshold = 0;
+  LOG_INFO("Configuring class %d with %d cycles and %d occurrences",
+           alert_class_to_use, deadline_cycles, threshold);
   dif_alert_handler_class_config_t class_config[] = {{
       .auto_lock_accumulation_counter = kDifToggleDisabled,
-      .accumulator_threshold = 0,
+      .accumulator_threshold = threshold,
       .irq_deadline_cycles = deadline_cycles,
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
   }};
 
-  dif_alert_handler_class_t classes[] = {kDifAlertHandlerClassA};
+  dif_alert_handler_class_t classes[] = {alert_class_to_use};
   dif_alert_handler_config_t config = {
       .alerts = alerts,
       .alert_classes = alert_classes,
@@ -594,9 +690,17 @@ static void alert_handler_config(void) {
 
   alert_handler_testutils_configure_all(&alert_handler, config,
                                         kDifToggleEnabled);
-  // Enables alert handler irq.
+
+  // Enables all alert handler irqs. This allows us to implicitly check that
+  // we do not get spurious IRQs from the classes that are unused.
   CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
       &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+      &alert_handler, kDifAlertHandlerIrqClassb, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+      &alert_handler, kDifAlertHandlerIrqClassc, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+      &alert_handler, kDifAlertHandlerIrqClassd, kDifToggleEnabled));
 }
 
 static void set_aon_timers(const dif_aon_timer_t *aon_timer) {
@@ -847,9 +951,11 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   // Save the fault_checker to flash.
   save_fault_checker(&fault_checker);
 
-  // Enable NMI
+  // Make sure we can receive both the watchdog and alert NMIs.
   CHECK_DIF_OK(
       dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceAlert));
+  CHECK_DIF_OK(
+      dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceWdog));
 
   set_aon_timers(aon_timer);
 
@@ -860,7 +966,20 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
   // DO NOT CHANGE THIS: it is used to notify the SV side.
   LOG_INFO("Ready for fault injection");
 
+  IBEX_SPIN_FOR(alert_irq_seen, kTestTimeout);
+  LOG_INFO("Alert IRQ seen");
+
+  if (kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlRetAonFatalError) {
+    LOG_INFO("Check that the retention SRAM blocks accesses");
+    uint32_t data = *((uint32_t *)kSramRetStart);
+    LOG_INFO("Read from address 0x%0x with expected error gets 0x%x",
+             kSramRetStart, data);
+    CHECK(load_access_exception_seen,
+          "We expect this access to trigger a load access exception");
+  }
+
   wait_for_interrupt();
+  CHECK(false, "This should not be reached");
 }
 
 void check_alert_dump() {
@@ -948,21 +1067,24 @@ bool test_main(void) {
     LOG_INFO("Booting for the second time due to escalation reset");
 
     int interrupt_count = flash_ctrl_testutils_counter_get(kCounterInterrupt);
-    // It seems possible the NMI ends up beating the regular interrupt, so
-    // the regular interrupt may not be run.
-    LOG_INFO("The regular interrupt count is %d", interrupt_count);
+    int nmi_count = flash_ctrl_testutils_counter_get(kCounterNmi);
 
-    int nmi_interrupt_count = flash_ctrl_testutils_counter_get(kCounterNmi);
+    LOG_INFO("Interrupt count %d", interrupt_count);
+    LOG_INFO("NMI count %d", nmi_count);
+
+    // ISRs should not run if flash_ctrl pr sram_ctrl_main get a fault because
+    // flash or sram accesses are blocked in those cases.
     if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalStdErr ||
         kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlMainFatalError) {
-      // ISRs should not run if flash_ctrl gets a fault because it should
-      // block flash accesses.
       CHECK(interrupt_count == 0,
-            "Expected regular ISR should not run for flash_ctrl faults");
-      CHECK(nmi_interrupt_count == 0,
-            "Expected nmi should not run for flash_ctrl faults");
+            "Expected regular ISR should not run for flash_ctrl and "
+            "sram_ctrl_main faults");
+      CHECK(nmi_count == 0,
+            "Expected nmi should not run for flash_ctrl and sram_ctrl_main "
+            "faults");
     } else {
-      CHECK(nmi_interrupt_count > 0, "Expected at least one nmi");
+      CHECK(nmi_count > 0, "Expected at least one nmi");
+      CHECK(interrupt_count == 1, "Expected exactly one regular interrupt");
     }
 
     // Check the alert handler cause is cleared.
