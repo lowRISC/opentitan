@@ -53,9 +53,6 @@ interface csrng_cov_if (
     option.name         = "csrng_err_code_cg";
     option.per_instance = 1;
 
-    cp_hw_inst_exc: coverpoint u_reg.hw_exc_sts_qs[NUM_HW_APPS-1:0];
-    cp_sw_cmd_sts_cmd_rdy: coverpoint u_reg.sw_cmd_sts_cmd_rdy_qs;
-    cp_sw_cmd_sts_cmd_sts: coverpoint u_reg.sw_cmd_sts_cmd_sts_qs;
     cp_err_codes: coverpoint err_code;
 
     cp_csrng_aes_fsm_err: coverpoint
@@ -66,6 +63,24 @@ interface csrng_cov_if (
       bins        rail_2 = { 4 };
       ignore_bins other  = { 3, [5:7]};
     }
+
+    cp_hw_inst_exc: coverpoint u_reg.hw_exc_sts_qs[NUM_HW_APPS-1:0] {
+      bins no_exc  = { 0 };
+      bins hw0_exc = { 1 };
+      bins hw1_exc = { 2 };
+      bins sim_exc = { 3 }; // simultaneous exception on both HW app interfaces
+    }
+
+    cp_sw_cmd_sts_cmd_rdy: coverpoint u_reg.sw_cmd_sts_cmd_rdy_qs {
+      bins not_ready = { 1'b0 };
+      bins ready     = { 1'b1 };
+    }
+
+    cp_sw_cmd_sts_cmd_sts: coverpoint u_reg.sw_cmd_sts_cmd_sts_qs {
+      bins success = { 1'b0 };
+      bins error   = { 1'b1 };
+    }
+
   endgroup : csrng_err_code_cg
 
   covergroup csrng_err_code_test_cg with function sample(err_code_bit_e err_test);
