@@ -58,6 +58,8 @@ package spi_agent_pkg;
     SpiModeTpm
   } spi_func_mode_e;
 
+  // Command-Set implemented by the agent in device_mode.
+  // The first byte in a transaction should be one of these commands.
   typedef enum bit [7:0] {
     ReadStd      = 8'b11001100,
     WriteStd     = 8'b11111100,
@@ -77,6 +79,12 @@ package spi_agent_pkg;
     // Fixed 4b addr
     SpiFlashAddr4b
   } spi_flash_addr_mode_e;
+
+  typedef enum bit [1:0] {
+    SpiIdle,
+    SpiCmd,
+    SpiData
+  } spi_fsm_e;
 
   // forward declare classes to allow typedefs below
   typedef class spi_item;

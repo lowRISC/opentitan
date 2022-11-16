@@ -17,11 +17,6 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
 
   // read queue
   spi_item rsp_q[$];
-  typedef enum {
-    SpiIdle,
-    SpiCmd,
-    SpiData
-  } spi_fsm_e;
   spi_fsm_e spi_state = SpiIdle;
 
   virtual task body();
@@ -92,6 +87,8 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
                 default:  `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 1024;)
               endcase  // case (cmd)
               `downcast(rsp_clone, rsp.clone());
+              rsp_q.push_back(rsp_clone);
+              rsp = new();
 
               case (cmd)
                 ReadStd : cfg.spi_mode = Standard;
@@ -100,10 +97,15 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
                 default : cfg.spi_mode = RsvdSpd;
               endcase
 
-              rsp_q.push_back(rsp_clone);
-              rsp = new();
-              spi_state = SpiIdle;
-            end
+              // offload input queue
+              get_nxt_req(item);
+              if (item.first_byte) begin
+                // decode command
+                cmd = cmd_check(item.data.pop_front);
+                spi_state = SpiCmd;
+                addr_cnt = 0;
+              end
+            end // case: ReadStd, ReadDual, ReadQuad
 
             WriteStd, WriteDual, WriteQuad: begin
               get_nxt_req(item);

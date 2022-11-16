@@ -16,3 +16,4 @@
 `include "spi_host_stress_all_vseq.sv"
 `include "spi_host_passthrough_mode_vseq.sv"
 `include "spi_host_common_vseq.sv"
+`include "spi_host_spien_vseq.sv"

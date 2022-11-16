@@ -135,16 +135,18 @@ class spi_host_base_vseq extends cip_base_vseq #(
   function void transaction_init();
     transaction = new();
 
-    transaction.read_weight    = cfg.seq_cfg.read_pct;
-    transaction.write_weight   = cfg.seq_cfg.write_pct;
-    transaction.std_en         = cfg.seq_cfg.std_en;
-    transaction.dual_en        = cfg.seq_cfg.dual_en;
-    transaction.quad_en        = cfg.seq_cfg.quad_en;
-    transaction.rx_only_weight = cfg.seq_cfg.rx_only_weight;
-    transaction.tx_only_weight = cfg.seq_cfg.tx_only_weight;
-    transaction.spi_len_min    = cfg.seq_cfg.host_spi_min_len;
-    transaction.spi_len_max    = cfg.seq_cfg.host_spi_max_len;
-    transaction.num_cmd_bytes  = cfg.num_cmd_bytes;
+    transaction.read_weight     = cfg.seq_cfg.read_pct;
+    transaction.write_weight    = cfg.seq_cfg.write_pct;
+    transaction.std_en          = cfg.seq_cfg.std_en;
+    transaction.dual_en         = cfg.seq_cfg.dual_en;
+    transaction.quad_en         = cfg.seq_cfg.quad_en;
+    transaction.rx_only_weight  = cfg.seq_cfg.rx_only_weight;
+    transaction.tx_only_weight  = cfg.seq_cfg.tx_only_weight;
+    transaction.spi_len_min     = cfg.seq_cfg.host_spi_min_len;
+    transaction.spi_len_max     = cfg.seq_cfg.host_spi_max_len;
+    transaction.spi_num_seg_min = cfg.seq_cfg.host_spi_min_num_seg;
+    transaction.spi_num_seg_max = cfg.seq_cfg.host_spi_max_num_seg;
+    transaction.num_cmd_bytes   = cfg.num_cmd_bytes;
   endfunction
 
 

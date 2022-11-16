@@ -26,6 +26,8 @@ class spi_host_seq_cfg extends uvm_object;
   uint host_spi_max_dly               = 5;
   uint host_spi_max_rxwm              = SPI_HOST_RX_DEPTH;
   uint host_spi_max_txwm              = SPI_HOST_TX_DEPTH;
+  uint host_spi_min_num_seg           = 1;
+  uint host_spi_max_num_seg           = 4;
 
   uint host_spi_min_num_wr_bytes      = 1;
   uint host_spi_max_num_wr_bytes      = SPI_HOST_TX_DEPTH;
