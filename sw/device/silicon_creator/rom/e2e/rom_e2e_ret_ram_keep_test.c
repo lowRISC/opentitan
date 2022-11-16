@@ -30,20 +30,20 @@ enum {
  */
 bool check_ram_unchanged(retention_sram_t *ret) {
   LOG_INFO("Checking that retention SRAM values are unchanged");
-  static uint32_t raw[sizeof(retention_sram_t) / sizeof(uint32_t)];
+
   uint32_t pattern32;
   memset(&pattern32, kPattern, sizeof(pattern32));
 
   // Ensure that all written sections were saved
-  memcpy(raw, ret, sizeof(retention_sram_t));
-
   bool unchanged = true;
-  // Skip checking index 0 since that is used to store the
+  // Skip checking word 0 since that is used to store the
   // reset reason and will be changed.
-  for (size_t i = 1; i < ARRAYSIZE(raw); ++i) {
-    if (raw[i] != pattern32) {
+  for (size_t i = sizeof(uint32_t); i < sizeof(retention_sram_t);
+       i += sizeof(uint32_t)) {
+    uint32_t val = read_32((char *)ret + i);
+    if (val != pattern32) {
       LOG_ERROR("Retention SRAM changed at word %u (%x --> %x).", i, pattern32,
-                raw[i]);
+                val);
       unchanged = false;
     }
   }
