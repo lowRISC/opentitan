@@ -43,11 +43,21 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
     }
   }
 
+  virtual task pre_start();
+    super.pre_start();
+    if (cfg.use_intr_handler) begin
+      expected_intr[AcqFull] = 1;
+      expected_intr[TxEmpty] = 1;
+      expected_intr[TransComplete] = 1;
+      for (int i = 0; i < NumI2cIntr; i++) intr_q.push_back(i);
+    end
+  endtask
 
   virtual task body();
     i2c_target_base_seq m_i2c_host_seq;
     i2c_item txn_q[$];
 
+    `uvm_info(`gfn, $sformatf("num_trans:%0d", num_trans), UVM_MEDIUM)
     // Intialize dut in device mode and agent in host mode
     initialization(Device);
     `uvm_info("cfg_summary", $sformatf("target_addr0:0x%x target_addr1:0x%x num_trans:%0d",
@@ -73,12 +83,32 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
         end
       end
       begin
-        process_acq();
+        if (!cfg.use_intr_handler) process_acq();
       end
       begin
-        if (cfg.rd_pct != 0) process_txq();
+        if (cfg.use_intr_handler == 1'b0 && cfg.rd_pct != 0) process_txq();
       end
-    join_none
+      begin
+        if (cfg.use_intr_handler) process_target_interrupts();
+      end
+      begin
+        if (cfg.use_intr_handler) begin
+          string id = "stop_interrupt_handler";
+
+          `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns, id)
+          `DV_WAIT(sent_txn_cnt == num_trans,, cfg.long_spinwait_timeout_ns, id)
+          cfg.read_all_acq_entries = 1;
+          if (cfg.rd_pct != 0) begin
+            `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte > 0,, cfg.spinwait_timeout_ns, id)
+            `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte == cfg.m_i2c_agent_cfg.rcvd_rd_byte,,
+                     cfg.long_spinwait_timeout_ns, id)
+          end
+          `DV_WAIT(cfg.sent_acq_cnt == cfg.rcvd_acq_cnt,, cfg.spinwait_timeout_ns, id)
+          csr_spinwait(.ptr(ral.status.acqempty), .exp_data(1'b1));
+          cfg.stop_intr_handler = 1;
+        end
+      end
+    join
   endtask : body
 
 endclass : i2c_target_smoke_vseq

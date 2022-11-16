@@ -17,6 +17,7 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   tran_type_e trans_type = ReadWrite;
 
   int        spinwait_timeout_ns = 10_000_000; // 10ms
+  int        long_spinwait_timeout_ns = 200_000_000;
   int        sent_acq_cnt;
   int        rcvd_acq_cnt;
 
@@ -30,6 +31,17 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // dut target mode parameters
   int        min_data = 1;
   int        max_data = 60;
+
+  // Use i2c interrupt handler
+  bit        use_intr_handler = 1'b0;
+  bit        stop_intr_handler = 1'b0;
+  bit        read_all_acq_entries = 1'b0;
+
+  // Slow acq process
+  bit        slow_acq = 1'b0;
+
+  // Slow tx process
+  bit        slow_txq = 1'b0;
 
   `uvm_object_utils_begin(i2c_env_cfg)
     `uvm_field_object(m_i2c_agent_cfg, UVM_DEFAULT)

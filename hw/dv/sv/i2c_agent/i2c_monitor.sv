@@ -245,7 +245,6 @@ class i2c_monitor extends dv_base_monitor #(
       if (cfg.en_monitor) begin
         ok_to_end = 0;
       end
-      wait(cfg.use_seq_term == 0);
       forever begin
         @(cfg.vif.cb);
         if (cfg.vif.scl_i) scl_cnt++;

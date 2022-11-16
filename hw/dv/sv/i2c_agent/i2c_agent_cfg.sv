@@ -23,14 +23,6 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   // and allow tb to program a new timing parameter.
   bit     got_stop = 0;
 
-  // In target mode i2c test, sequence finishes when all host transactions are fetched.
-  // However, test has to wait until all read data transferred from DUT to test bench.
-  // If test create a scinario to trigger clock stretch, TB has to wait indefinte time
-  // (because clock stretch froze transmit clock).
-  // This varialbe to indicate all read / write data fetch and trasmitted.
-  // Used only for stretched mode test.
-  bit     use_seq_term = 0;
-
   int     sent_rd_byte = 0;
   int     rcvd_rd_byte = 0;
 
