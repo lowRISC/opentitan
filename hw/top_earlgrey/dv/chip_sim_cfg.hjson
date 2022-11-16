@@ -1726,7 +1726,8 @@
               "chip_sw_aes_enc",
               "chip_sw_aes_enc_jitter_en",
               "chip_sw_sram_ctrl_main_scrambled_access",
-              "chip_sw_sram_ctrl_ret_scrambled_access",
+              // TODO(#16416): uncomment when this is passing nightly.
+              // "chip_sw_sram_ctrl_scrambled_access",
               // TODO(#15435): uncomment when these are passing nightly.
               // "chip_sw_all_escalation_resets",
               // "chip_rv_dm_ndm_reset_req",

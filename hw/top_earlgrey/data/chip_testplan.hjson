@@ -176,7 +176,7 @@
             - Verify that the flash commands are received and interpreted correctly in the flash
               model
             '''
-      stage: V2
+      stage: V3
       tests: []
     }
 
@@ -593,7 +593,7 @@
             - After writing, verify that the test program cannot read back the written value.
 
             '''
-      stage: V2
+      stage: V3
       tests: []
     }
     {
@@ -2252,7 +2252,7 @@
             Note: There may be existing tests that already create this scenario. It should be
             sufficient to augment those tests with the backdoor / assertion checks.
             '''
-      stage: V2
+      stage: V3
       tests: []
     }
     {
@@ -2646,8 +2646,8 @@
             X-ref with chip_sw_all_escalation_resets and chip_sw_data_integrity.
             '''
       stage: V2
-      tests: ["chip_sw_all_escalation_resets"
-              "chip_sw_data_integrity"]
+      tests: ["chip_sw_all_escalation_resets",
+              "chip_sw_data_integrity_escalation"]
     }
 
     // OTP (pre-verified IP) integration tests:
@@ -2678,7 +2678,7 @@
             - chip_sw_otbn_mem_scramble
             '''
       stage: V2
-      tests: ["chip_sw_sram_ctrl_ret_scrambled_access", "chip_sw_flash_init",
+      tests: ["chip_sw_sram_ctrl_scrambled_access", "chip_sw_flash_init",
               "chip_sw_keymgr_key_derivation", "chip_sw_otbn_mem_scramble"]
     }
     {
@@ -2689,7 +2689,7 @@
             to receive some entropy bits before the keys for SRAM ctrl and OTBN are computed.
             '''
       stage: V2
-      tests: ["chip_sw_sram_ctrl_ret_scrambled_access", "chip_sw_flash_init",
+      tests: ["chip_sw_sram_ctrl_scrambled_access", "chip_sw_flash_init",
               "chip_sw_keymgr_key_derivation", "chip_sw_otbn_mem_scramble"]
     }
     {
@@ -3406,7 +3406,7 @@
       concurrency in a FreeRTOS environment. See also the design docs linked
       in #14095 for more details on how to approach the implementation.
       '''
-      stage: V2
+      stage: V3
       tests: []
     }
     {
