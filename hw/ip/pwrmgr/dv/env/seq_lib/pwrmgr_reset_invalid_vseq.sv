@@ -76,11 +76,12 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
   task create_any_reset_event();
     resets_t enabled_resets = resets_en & resets;
     `uvm_info(`gfn, $sformatf(
-              "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b",
+              "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b, ndm_reset=%b",
               enabled_resets,
               power_glitch_reset,
               escalation_reset,
-              sw_rst_from_rstmgr
+              sw_rst_from_rstmgr == prim_mubi_pkg::MuBi4True,
+              ndm_reset
               ), UVM_MEDIUM)
 
     `uvm_info(`gfn, "Trying to write to reset_en CSR", UVM_MEDIUM)
@@ -105,6 +106,7 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
     cfg.pwrmgr_vif.update_resets(resets);
     `uvm_info(`gfn, $sformatf("Sending sw reset from rstmgr=%b", sw_rst_from_rstmgr), UVM_MEDIUM)
     if (escalation_reset) send_escalation_reset();
+    if (ndm_reset) send_ndm_reset();
     cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
 
   endtask : create_any_reset_event

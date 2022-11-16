@@ -36,11 +36,12 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
       `uvm_info(`gfn, "Set done True, good False", UVM_MEDIUM)
       enabled_resets = resets_en & resets;
       `uvm_info(`gfn, $sformatf(
-                "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b",
+                "Enabled resets=0x%x, power_reset=%b, escalation=%b, sw_reset=%b, ndm_reset=%b",
                 enabled_resets,
                 power_glitch_reset,
                 escalation_reset,
-                sw_rst_from_rstmgr
+                sw_rst_from_rstmgr == prim_mubi_pkg::MuBi4True,
+                ndm_reset
                 ), UVM_MEDIUM)
 
       csr_wr(.ptr(ral.reset_en[0]), .value(resets_en));
@@ -58,13 +59,12 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
       end
       cfg.clk_rst_vif.wait_clks(cycles_before_reset);
 
-      if (cycles_before_reset == 0) enabled_resets = 0;
-
       `uvm_info(`gfn, $sformatf("Sending resets=0x%x", resets), UVM_MEDIUM)
       cfg.pwrmgr_vif.update_resets(resets);
       `uvm_info(`gfn, $sformatf("Sending sw reset from rstmgr=%b", sw_rst_from_rstmgr), UVM_MEDIUM)
       if (escalation_reset) send_escalation_reset();
       cfg.pwrmgr_vif.update_sw_rst_req(sw_rst_from_rstmgr);
+      if (ndm_reset) send_ndm_reset();
 
       `uvm_info(`gfn, "Wait for Fast State NE FastPwrStateActive", UVM_MEDIUM)
       `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
