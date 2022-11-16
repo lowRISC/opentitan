@@ -6,6 +6,8 @@ interface sw_test_status_if #(
   parameter int AddrWidth = 32
 ) (
   input logic clk_i,
+  input logic rst_ni,               // Under reset.
+  input logic fetch_en,             // Fetch enabled.
   input logic wr_valid,             // Qualified write access.
   input logic [AddrWidth-1:0] addr, // Incoming addr.
   input logic [15:0] data           // Incoming data.
@@ -42,7 +44,15 @@ interface sw_test_status_if #(
   endfunction
 
   always @(posedge clk_i) begin
-    if (data_valid) begin
+    if (!rst_ni) begin
+      sw_test_status_prev = sw_test_status;
+      sw_test_status = SwTestStatusUnderReset;
+    end
+    else if (sw_test_status == SwTestStatusUnderReset && fetch_en) begin
+      sw_test_status_prev = sw_test_status;
+      sw_test_status = SwTestStatusBooted;
+    end
+    else if (data_valid) begin
       sw_test_status_prev = sw_test_status;
       sw_test_status = sw_test_status_e'(data);
 

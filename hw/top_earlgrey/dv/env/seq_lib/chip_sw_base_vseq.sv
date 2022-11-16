@@ -104,7 +104,6 @@ class chip_sw_base_vseq extends chip_base_vseq;
       cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(
           {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"});
     end
-    cfg.sw_test_status_vif.sw_test_status = SwTestStatusBooted;
 
     config_jitter();
 
