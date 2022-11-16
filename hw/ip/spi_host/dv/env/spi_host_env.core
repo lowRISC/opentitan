@@ -37,6 +37,7 @@ filesets:
       - seq_lib/spi_host_idlecsbactive_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/spi_host_passthrough_mode_vseq.sv: {is_include_file: true}
+      - seq_lib/spi_host_spien_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

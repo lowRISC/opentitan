@@ -259,7 +259,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           if (cfg.en_cov) begin
             cov.control_cg.sample(spi_ctrl_reg,spien,output_en,sw_rst);
           end
-          if (sw_rst || spien) begin
+          if (sw_rst) begin
             write_segment_q.delete();
             rx_data_q.delete();
             in_tx_seg_cnt = 0;
