@@ -37,7 +37,7 @@ module prim_cdc_rand_delay #(
       if (DataWidth <= 32) begin
         data = $urandom();
       end else begin
-        `DV_CHECK_STD_RANDOMIZE_FATAL(data, "Randomization of data failed", $sformatf("%m"))
+        if (!std::randomize(data)) $fatal("%t: [%m] Failed to randomize data", $time);
       end
       return data;
     endfunction
