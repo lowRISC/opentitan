@@ -9,11 +9,11 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
-#include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
@@ -22,28 +22,10 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-enum {
-  kRomExtMeasEnOffset =
-      OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN_OFFSET,
-};
-
-static void Initialize_peripherals(dif_keymgr_t *keymgr, dif_otp_ctrl_t *otp) {
-  CHECK_DIF_OK(dif_keymgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), keymgr));
-
-  CHECK_DIF_OK(dif_otp_ctrl_init(
-      mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), otp));
-}
-
-static uint32_t otp_read32(dif_otp_ctrl_t *otp, uint32_t offset) {
-  return mmio_region_read32(otp->base_addr,
-                            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + offset);
-}
-
 bool test_main(void) {
   dif_keymgr_t keymgr;
-  dif_otp_ctrl_t otp;
-  Initialize_peripherals(&keymgr, &otp);
+  CHECK_DIF_OK(dif_keymgr_init(
+      mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &keymgr));
 
   keymgr_testutils_check_state(&keymgr, kDifKeymgrStateReset);
 
@@ -52,9 +34,10 @@ bool test_main(void) {
 
   const manifest_t *manifest = manifest_def_get();
 
-  if (otp_read32(&otp, kRomExtMeasEnOffset) == kHardenedBoolTrue) {
+  if (otp_read32(
+          OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN_OFFSET) ==
+      kHardenedBoolTrue) {
     // Check that the attestation is equal to the digest.
-    CHECK(otp_read32(&otp, kRomExtMeasEnOffset) == kHardenedBoolTrue);
     CHECK_ARRAYS_EQ(bindings.attestation, boot_measurements.rom_ext.data,
                     ARRAYSIZE(bindings.attestation));
   } else {
