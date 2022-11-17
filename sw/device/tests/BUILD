@@ -489,6 +489,30 @@ opentitan_functest(
     ],
 )
 
+opentitan_functest(
+    name = "chip_power_sleep_load",
+    srcs = ["chip_power_sleep_load.c"],
+    cw310 = cw310_params(
+        # FIXME #16506 test stuck in wfi. Works in DV environment.
+        tags = ["broken"],
+    ),
+    deps = [
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:gpio",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:pwm",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing:pwrmgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
 cc_library(
     name = "clkmgr_external_clk_src_for_sw_impl",
     srcs = ["clkmgr_external_clk_src_for_sw_impl.c"],
