@@ -487,7 +487,9 @@ module aes_control
       add_state_out_sel_o = add_so_sel_e'({add_state_out_sel_o} | {mr_add_state_out_sel[i]});
       key_init_sel_o      = key_init_sel_e'({key_init_sel_o}    | {mr_key_init_sel[i]});
       iv_sel_o            = iv_sel_e'({iv_sel_o}                | {mr_iv_sel[i]});
+    end
 
+    for (int i = 0; i < Sp2VWidth; i++) begin
       if (data_in_prev_sel_o  != mr_data_in_prev_sel[i]  ||
           state_in_sel_o      != mr_state_in_sel[i]      ||
           add_state_in_sel_o  != mr_add_state_in_sel[i]  ||

@@ -159,7 +159,9 @@ module aes_ctr import aes_pkg::*;
     for (int i = 0; i < Sp2VWidth; i++) begin
       ctr_slice_idx |= mr_ctr_slice_idx[i];
       ctr_o_slice   |= mr_ctr_o_slice[i];
+    end
 
+    for (int i = 0; i < Sp2VWidth; i++) begin
       if (ctr_slice_idx != mr_ctr_slice_idx[i] ||
           ctr_o_slice   != mr_ctr_o_slice[i]) begin
         mr_err = 1'b1;
