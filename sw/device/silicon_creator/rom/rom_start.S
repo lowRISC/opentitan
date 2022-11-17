@@ -315,10 +315,8 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
             OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS_OFFSET)
   call crt_section_copy
 
-
-  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
-
   // Configure the entropy source health alert threshold.
+  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
   li a1, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw t1, OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ALERT_THRESHOLD_OFFSET(a1)
