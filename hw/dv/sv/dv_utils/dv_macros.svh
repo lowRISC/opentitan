@@ -466,6 +466,27 @@
   end
 `endif
 
+// Retrieves a queue of plusarg value from a string.
+//
+// The plusarg is parsed as a string, which needs to be converted into a queue of string which given delimiter.
+// This functionality is provided by the UVM helper function below.
+//
+// QUEUE_: The queue of string to which the plusarg value will be set (must be declared already).
+// PLUSARG_: the name of the plusarg (as raw text). This is typically the same as the enum variable.
+// DELIMITER_: the delimiter that separate each item in the plusarg string value.
+// CHECK_EXISTS_: Throws a fatal error if the plusarg is not set.
+`ifndef DV_GET_QUEUE_PLUSARG
+`define DV_GET_QUEUE_PLUSARG(QUEUE_, PLUSARG_, DELIMITER_ = ",", CHECK_EXISTS_ = 0, ID_ = `gfn) \
+  begin \
+    string str; \
+    if ($value$plusargs("``PLUSARG_``=%0s", str)) begin \
+      str_split(str, QUEUE_, DELIMITER_); \
+    end else if (CHECK_EXISTS_) begin \
+      `uvm_fatal(ID_, "Please pass the plusarg +``PLUSARG_``=<``ENUM_``-literal>") \
+    end \
+  end
+`endif
+
 // Enable / disable assertions at a module hierarchy identified by LABEL_.
 //
 // This goes in conjunction with `DV_ASSERT_CTRL() macro above, but is invoked in the entity that is
