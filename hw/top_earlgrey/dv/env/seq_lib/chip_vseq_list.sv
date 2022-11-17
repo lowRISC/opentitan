@@ -87,3 +87,4 @@
 `include "chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq.sv"
 `include "chip_sw_rom_e2e_asm_init_vseq.sv"
 `include "chip_sw_power_idle_load_vseq.sv"
+`include "chip_sw_power_sleep_load_vseq.sv"
