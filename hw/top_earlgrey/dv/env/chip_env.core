@@ -17,6 +17,7 @@ filesets:
       - lowrisc:ip:jtag_pkg
       - lowrisc:dv:jtag_riscv_agent
       - lowrisc:dv:jtag_dmi_agent
+      - lowrisc:dv:lc_ctrl_dv_utils
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:ralgen
       - lowrisc:dv:spi_agent
