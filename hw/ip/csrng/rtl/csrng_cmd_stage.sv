@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Description: csrng command staging module
+// Description: CSRNG command staging module.
 //
 
 module csrng_cmd_stage import csrng_pkg::*; #(
@@ -12,47 +12,47 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 ) (
   input logic                        clk_i,
   input logic                        rst_ni,
-  // command in
+  // Command input.
   input logic                        cs_enable_i,
   input logic                        cmd_stage_vld_i,
   input logic [StateId-1:0]          cmd_stage_shid_i,
   input logic [CmdFifoWidth-1:0]     cmd_stage_bus_i,
   output logic                       cmd_stage_rdy_o,
-  // command to arbiter
+  // Command to arbiter.
   output logic                       cmd_arb_req_o,
   output logic                       cmd_arb_sop_o,
   output logic                       cmd_arb_mop_o,
   output logic                       cmd_arb_eop_o,
   input logic                        cmd_arb_gnt_i,
   output logic [CmdFifoWidth-1:0]    cmd_arb_bus_o,
-  // ack from core
+  // Ack from core.
   input logic                        cmd_ack_i,
   input logic                        cmd_ack_sts_i,
-  // ack to app i/f
+  // Ack to app i/f.
   output logic                       cmd_stage_ack_o,
   output logic                       cmd_stage_ack_sts_o,
-  // genbits from core
+  // Genbits from core.
   input logic                        genbits_vld_i,
   input logic [127:0]                genbits_bus_i,
   input logic                        genbits_fips_i,
-  // genbits to app i/f
+  // Genbits to app i/f.
   output logic                       genbits_vld_o,
   input logic                        genbits_rdy_i,
   output logic [127:0]               genbits_bus_o,
   output logic                       genbits_fips_o,
-  // error indication
+  // Error indication.
   output logic [2:0]                 cmd_stage_sfifo_cmd_err_o,
   output logic [2:0]                 cmd_stage_sfifo_genbits_err_o,
   output logic                       cmd_gen_cnt_err_o,
   output logic                       cmd_stage_sm_err_o
 );
 
+  // Genbits parameters.
   localparam int GenBitsFifoWidth = 1+128;
   localparam int GenBitsFifoDepth = 1;
   localparam int GenBitsCntrWidth = 13;
 
-  // signals
-  // command fifo
+  // Command FIFO.
   logic [CmdFifoWidth-1:0] sfifo_cmd_rdata;
   logic [$clog2(CmdFifoDepth):0] sfifo_cmd_depth;
   logic                    sfifo_cmd_push;
@@ -62,7 +62,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic                    sfifo_cmd_full;
   logic                    sfifo_cmd_not_empty;
 
-  // genbits fifo
+  // Genbits FIFO.
   logic [GenBitsFifoWidth-1:0] sfifo_genbits_rdata;
   logic                        sfifo_genbits_push;
   logic [GenBitsFifoWidth-1:0] sfifo_genbits_wdata;
@@ -71,6 +71,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic                        sfifo_genbits_full;
   logic                        sfifo_genbits_not_empty;
 
+  // Command signals.
   logic [3:0]              cmd_len;
   logic                    cmd_fifo_zero;
   logic                    cmd_fifo_pop;
@@ -83,7 +84,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   logic [GenBitsCntrWidth-1:0] cmd_gen_cnt; // max_number_of_bits_per_request = 2^13
   logic                        genbits_fips;
 
-  // flops
+  // Flops.
   logic                    cmd_ack_q, cmd_ack_d;
   logic                    cmd_ack_sts_q, cmd_ack_sts_d;
   logic [3:0]              cmd_len_q, cmd_len_d;
@@ -112,7 +113,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   assign  cmd_stage_sfifo_genbits_err_o = sfifo_genbits_err;
 
   //---------------------------------------------------------
-  // capture the transfer length of data behind the command
+  // Capture the transfer length of data behind the command.
   //---------------------------------------------------------
 
   prim_fifo_sync #(
@@ -156,18 +157,18 @@ module csrng_cmd_stage import csrng_pkg::*; #(
           (sfifo_cmd_full && !sfifo_cmd_not_empty)};
 
 
-  // state machine controls
+  // State machine controls.
   assign cmd_fifo_zero = (sfifo_cmd_depth == '0);
   assign cmd_len = sfifo_cmd_rdata[7:4];
 
-  // capture the length of csrng command
+  // Capture the length of csrng command.
   assign cmd_len_d =
          (!cs_enable_i) ? '0 :
          cmd_arb_sop_o ? cmd_len :
          cmd_len_dec ? (cmd_len_q-1) :
          cmd_len_q;
 
-  // for gen commands, capture information from the orignal command for use later
+  // For gen commands, capture information from the orignal command for use later.
   assign cmd_gen_flag_d =
          (!cs_enable_i) ? '0 :
          cmd_gen_1st_req ? (sfifo_cmd_rdata[2:0] == GEN) :
@@ -189,42 +190,40 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     .set_i(cmd_gen_1st_req),
     .set_cnt_i(sfifo_cmd_rdata[24:12]),
     .incr_en_i(1'b0),
-    .decr_en_i(cmd_gen_cnt_dec), // count down
+    .decr_en_i(cmd_gen_cnt_dec), // Count down.
     .step_i(GenBitsCntrWidth'(1)),
     .cnt_o(cmd_gen_cnt),
     .cnt_next_o(),
     .err_o(cmd_gen_cnt_err_o)
   );
 
-  // For naming consistency
+  // For naming consistency.
   assign local_escalate = cmd_gen_cnt_err_o;
 
   //---------------------------------------------------------
   // state machine to process command
   //---------------------------------------------------------
-// Encoding generated with:
-// $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 8 \
-//      -s 170131814 --language=sv
-//
-// Hamming distance histogram:
-//
-//  0: --
-//  1: --
-//  2: --
-//  3: |||||||||||||||| (28.89%)
-//  4: |||||||||||||||||||| (35.56%)
-//  5: |||||||||||| (22.22%)
-//  6: ||||| (8.89%)
-//  7: | (2.22%)
-//  8: | (2.22%)
-//
-// Minimum Hamming distance: 3
-// Maximum Hamming distance: 8
-// Minimum Hamming weight: 1
-// Maximum Hamming weight: 7
-//
-
-// Encoding generated with:
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 10 -n 8 \
+  //      -s 170131814 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||| (28.89%)
+  //  4: |||||||||||||||||||| (35.56%)
+  //  5: |||||||||||| (22.22%)
+  //  6: ||||| (8.89%)
+  //  7: | (2.22%)
+  //  8: | (2.22%)
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 8
+  // Minimum Hamming weight: 1
+  // Maximum Hamming weight: 7
+  //
   localparam int StateWidth = 8;
   typedef    enum logic [StateWidth-1:0] {
     Idle      = 8'b00011011, // idle
@@ -321,20 +320,20 @@ module csrng_cmd_stage import csrng_pkg::*; #(
           end
         end
         GenReq: begin
-          // flag set if a gen request
+          // Flag set if a gen request.
           if (cmd_gen_flag_q) begin
-            // must stall if genbits fifo is not clear
+            // Must stall if genbits fifo is not clear.
             if (!sfifo_genbits_full) begin
               if (cmd_gen_cnt == '0) begin
                 cmd_final_ack = 1'b1;
                 state_d = Idle;
               end else begin
-                // issue a subsequent gen request
+                // Issue a subsequent gen request.
                 state_d = GenArbGnt;
               end
             end
           end else begin
-            // ack for the non-gen request case
+            // Ack for the non-gen request case.
             cmd_final_ack = 1'b1;
             state_d = Idle;
           end
@@ -350,12 +349,12 @@ module csrng_cmd_stage import csrng_pkg::*; #(
           cmd_arb_eop_o = 1'b1;
           cmd_gen_inc_req = 1'b1;
           state_d = GenCmdChk;
-          // check for final genbits beat
+          // Check for final genbits beat.
           if (cmd_gen_cnt == GenBitsCntrWidth'(1)) begin
             cmd_gen_cnt_last = 1'b1;
           end
         end
-        // Error: The error state is now covered by the if statement above
+        // Error: The error state is now covered by the if statement above.
         default: begin
           state_d = Error;
           cmd_stage_sm_err_o = 1'b1;
@@ -365,14 +364,14 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   end
 
   //---------------------------------------------------------
-  // genbits fifo
+  // Genbits FIFO.
   //---------------------------------------------------------
 
   prim_fifo_sync #(
     .Width(GenBitsFifoWidth),
     .Pass(0),
     .Depth(GenBitsFifoDepth),
-    .OutputZeroIfEmpty(0) // Set to 0, and let last data drive out
+    .OutputZeroIfEmpty(0) // Set to 0, and let last data drive out.
   ) u_prim_fifo_genbits (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
@@ -405,7 +404,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
           (sfifo_genbits_full && !sfifo_genbits_not_empty)};
 
   //---------------------------------------------------------
-  // ack logic
+  // Ack logic.
   //---------------------------------------------------------
 
   assign cmd_ack_d =

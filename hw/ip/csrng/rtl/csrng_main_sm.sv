@@ -100,17 +100,17 @@ module csrng_main_sm import csrng_pkg::*; #(
                 state_d = UninstantPrep;
               end
             end else begin
-              // command was not supported
+              // Command was not supported.
               main_sm_alert_o = 1'b1;
             end
           end
         end
         InstantPrep: begin
           if (flag0_i) begin
-            // assumes all adata is present now
+            // Assumes all adata is present now.
             state_d = InstantReq;
           end else begin
-          // delay one clock to fix timing issue
+            // Delay one clock to fix timing issue.
             cmd_entropy_req_o = 1'b1;
             if (cmd_entropy_avail_i) begin
               state_d = InstantReq;
@@ -123,10 +123,10 @@ module csrng_main_sm import csrng_pkg::*; #(
         end
         ReseedPrep: begin
           if (flag0_i) begin
-            // assumes all adata is present now
+            // Assumes all adata is present now.
             state_d = ReseedReq;
           end else begin
-            // delay one clock to fix timing issue
+            // Delay one clock to fix timing issue.
             cmd_entropy_req_o = 1'b1;
             if (cmd_entropy_avail_i) begin
               state_d = ReseedReq;
@@ -138,7 +138,7 @@ module csrng_main_sm import csrng_pkg::*; #(
           state_d = ClrAData;
         end
         GeneratePrep: begin
-          // assumes all adata is present now
+          // Assumes all adata is present now.
           state_d = GenerateReq;
         end
         GenerateReq: begin
@@ -146,7 +146,7 @@ module csrng_main_sm import csrng_pkg::*; #(
           state_d = ClrAData;
         end
         UpdatePrep: begin
-          // assumes all adata is present now
+          // Assumes all adata is present now.
           state_d = UpdateReq;
         end
         UpdateReq: begin
@@ -154,7 +154,7 @@ module csrng_main_sm import csrng_pkg::*; #(
           state_d = ClrAData;
         end
         UninstantPrep: begin
-          // assumes all adata is present now
+          // Assumes all adata is present now.
           state_d = UninstantReq;
         end
         UninstantReq: begin
