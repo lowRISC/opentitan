@@ -207,7 +207,9 @@
           name: "MODULE_ENABLE",
           desc: '''
                 Setting this field to kMultiBitBool4True will enable the ENTROPY_SRC module. Setting
-                this field to kMultiBitBool4False will effectively reset the module.
+                this field to kMultiBitBool4False will effectively reset the module. The modules of
+                the entropy complex may only be enabled and disabled in a specific order, see
+                Programmers Guide for details.
                 '''
           resval: false,
         },

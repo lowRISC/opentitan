@@ -541,6 +541,12 @@ The conditions that cause this to happen are either when there is a push to a fu
 
 # Programmers Guide
 
+## Module enable and disable
+
+CSRNG may only be enabled if `ENTROPY_SRC` is enabled.
+CSRNG may only be disabled if all EDNs are disabled.
+Once disabled, CSRNG may only be re-enabled after `ENTROPY_SRC` has been disabled and re-enabled.
+
 ## Device Interface Functions (DIFs)
 
 {{< dif_listing "sw/device/lib/dif/dif_csrng.h" >}}

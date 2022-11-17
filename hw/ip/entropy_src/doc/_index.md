@@ -427,6 +427,8 @@ Since there exists another feature to avoid power spikes between ENTROPY_SRC and
 Bit 16 in the {{< regref "DEBUG_STATUS" >}} should be polled after the ENTROPY_SRC enable bits are cleared in the {{< regref "CONF" >}} register.
 After the handshakes with CSRNG are finished, the above bit should be set and the ENTROPY_SRC block can be safely enabled again.
 
+ENTROPY_SRC may only be disabled if CSRNG is disabled.
+
 
 ## Error conditions
 
