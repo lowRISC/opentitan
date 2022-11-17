@@ -210,7 +210,7 @@ CSRNG application commands will be sent immediately.
 Once these commands have completed, a status bit will be set.
 At this point, firmware can later come and reconfigure the EDN block for a different mode of operation.
 
-The recommended write sequence for the entire entropy system is one configuration write to ENTROPY_SRC, then CSRNG, and finally to EDN.
+The recommended write sequence for the entire entropy system is one configuration write to ENTROPY_SRC, then CSRNG, and finally to EDN (also see [Module enable and disable]({{<relref "#enable-disable">}})).
 
 ### Interrupts
 
@@ -257,6 +257,11 @@ void edn_init(unsigned int enable) {
   // the EDN interrupts can optionally be enabled
 }
 ```
+
+## Module enable and disable {#enable-disable}
+
+EDN may only be enabled if CSRNG is enabled.
+Once disabled, EDN may only be re-enabled after CSRNG has been disabled and re-enabled.
 
 ## Error conditions
 
