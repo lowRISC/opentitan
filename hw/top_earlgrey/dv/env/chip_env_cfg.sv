@@ -97,6 +97,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // Design uses 5 bits for IR.
   parameter uint JTAG_IR_LEN = 5;
 
+  // The JTAG RV debugger model.
+  jtag_rv_debugger debugger;
+
   // NOTE: The clk_freq_mhz variable created in the base class was meant to be used by clk_rst_vif
   // interface that is passed by default by the testbench (retrieved by dv_base_env class). It was
   // meant for a CIP-compliant testbench to drive the clock and reset to the DUT. The chip level
@@ -114,6 +117,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     `uvm_field_object(m_jtag_riscv_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(m_spi_host_agent_cfg,   UVM_DEFAULT)
     `uvm_field_object(jtag_dmi_ral,           UVM_DEFAULT)
+    `uvm_field_object(debugger,               UVM_DEFAULT)
   `uvm_object_utils_end
 
 
@@ -210,6 +214,12 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
       jtag_dmi_ral.sbcs.sbasize.set_reset(32);
       apply_jtag_dmi_ral_csr_excl();
     end
+
+    // Create the JTAG RV debugger instance.
+    debugger = jtag_rv_debugger::type_id::create("debugger");
+    debugger.set_cfg(m_jtag_agent_cfg);
+    debugger.set_ral(jtag_dmi_ral);
+    debugger.num_harts = rv_dm_reg_pkg::NrHarts;
 
     // This TL agent is used in stub_cpu mode and connected with ibex data port.
     // It can have up to 3 outstanding items, because req/rsp fifo can each hold 1 and

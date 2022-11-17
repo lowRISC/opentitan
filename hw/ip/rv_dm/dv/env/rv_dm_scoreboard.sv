@@ -267,9 +267,9 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
     // d_chan intg error is reported as "other" error and takes precedence over transaction error.
     if (!sba_tl_item.is_d_chan_intg_ok(.throw_error(0))) begin
-      `DV_CHECK_EQ(sba_item.is_err, sba_access_utils_pkg::SbaErrOther)
+      `DV_CHECK_EQ(sba_item.is_err, jtag_rv_debugger_pkg::SbaErrOther)
     end else if (sba_tl_item.d_error) begin
-      `DV_CHECK_EQ(sba_item.is_err, sba_access_utils_pkg::SbaErrBadAddr)
+      `DV_CHECK_EQ(sba_item.is_err, jtag_rv_debugger_pkg::SbaErrBadAddr)
     end
     `DV_CHECK_EQ(sba_tl_item.a_source, 0, msg)
   endfunction

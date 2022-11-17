@@ -10,6 +10,7 @@ package rv_dm_env_pkg;
   import bus_params_pkg::*;
   import jtag_agent_pkg::*;
   import jtag_dmi_agent_pkg::*;
+  import jtag_rv_debugger_pkg::*;
   import dv_lib_pkg::*;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
@@ -19,7 +20,6 @@ package rv_dm_env_pkg;
   import rv_dm_mem_ral_pkg::*;
   import rv_dm_reg_pkg::NrHarts;
   import rv_dm_reg_pkg::NumAlerts;
-  import sba_access_utils_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

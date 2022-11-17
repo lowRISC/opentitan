@@ -31,6 +31,7 @@ filesets:
       - lowrisc:ip:pwrmgr_pkg
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
       - "fileset_partner ? (partner:systems:ast_pkg)"
+      - pulp-platform:riscv-dbg:0.1
     files:
       - chip_common_pkg.sv
       - chip_if.sv

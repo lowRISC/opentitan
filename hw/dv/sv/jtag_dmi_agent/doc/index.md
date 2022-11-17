@@ -87,7 +87,7 @@ convenience function `jtag_dmi_agent_pkg::create_jtag_dmi_reg_block()`.
 ## sba_access_item
 
 This class represents the driven or predicted SBA transaction. It is used by
-the routines provided in `sba_access_utils_pkg`, as well as by the
+the routines provided in `jtag_rv_debugger_pkg`, as well as by the
 `sba_access_monitor`. It contains request and response related fields. It also
 has special control knobs to modify the behavior of the design when initiating
 accesses. These knobs - `readonaddr`, `readondata`, and `autoincrement` are
@@ -101,7 +101,7 @@ register space, using the handle to the `jtag_dmi_reg_block` instance, which is
 set externally. It examines the stream of reads and writes to the SBA registers
 to predict outgoing SBA transactions. For this prediction to work correctly,
 the stimulus needs to be sent correctly as well, which is facilitated by the
-routines provided by the `sba_access_utils_pkg`.
+routines provided by the `jtag_rv_debugger_pkg`.
 
 Any JTAG DMI transactions that were not made to the SBA registers are passed
 through the `non_sba_jtag_dmi_analysis_port`.
@@ -109,15 +109,18 @@ through the `non_sba_jtag_dmi_analysis_port`.
 This monitor is required to be instantiated alongside the `jtag_agent` in the
 testbench environment that seeks to consume the predicted SBA transactions.
 
-## sba_access_utils_pkg
+## jtag_rv_debugger
 
 The JTAG DMI register space has registers to initiate and manage accesses into
 the system through an external system bus (whatever that may be). Please see the
 RISCV debug specification for more details. These registers are already
 a part of the `jtag_dmi_reg_block` model.
 
-This package provides some convenience tasks to initiate and manage accesses
-into the system bus access interface (SBA) using these SBA registers, including
-starting an access, waiting for completion and clearing the error bits. These
-tasks take the handle to the `jtag_dmi_reg_block` model as one of the
-arguments.
+This class models an external debugger by providing methods to perform debug
+activies such as issuing CPU halt request, non-debug domain reset request,
+run abstract commands to access CPU registers and the system memory, inserting
+breakpoints, single-stepping, injecting programs into SRAM and having the
+CPU starting fetching instructions from arbitrary memory locations. It also
+provides methods to initiate and manage accesses into the system bus access
+interface (SBA) using these SBA registers, including starting an access,
+waiting for completion and clearing the error bits.

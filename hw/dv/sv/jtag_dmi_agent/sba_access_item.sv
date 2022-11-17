@@ -16,8 +16,8 @@ class sba_access_item extends uvm_sequence_item;
   // Have the design autoincrement the address.
   //
   // If set to 0, the autoincrement feature is disabled and a single access is made. If set to N (N
-  // > 0), N + 1 accesses are made by the sba_access_utils_pkg::sba_acess() task. This is only used
-  // during the generation of stimulus. It is not used by the sba_access_monitor.
+  // > 0), N + 1 accesses are made by jtag_rv_debugger::sba_acess() task. This is only used during
+  // the generation of stimulus. It is not used by the sba_access_monitor.
   uint autoincrement;
 
   // Response side signals.
