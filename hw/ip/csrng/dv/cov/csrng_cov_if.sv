@@ -49,11 +49,37 @@ interface csrng_cov_if (
     sw_app_read_sw_app_enable_cross: cross cp_sw_app_read, cp_sw_app_enable;
   endgroup : csrng_cfg_cg
 
-  covergroup csrng_err_code_cg with function sample(err_code_bit_e err_code);
+  covergroup csrng_err_code_cg with function sample(err_code_bit_e err_code_bit,
+                                                    bit [2:0] fifo_err_type);
     option.name         = "csrng_err_code_cg";
     option.per_instance = 1;
 
-    cp_err_codes: coverpoint err_code;
+    cp_err_codes: coverpoint err_code_bit{
+      // This is covered separately as it's about reporting the type of SFIFO failure
+      ignore_bins fifo_type = {FIFO_WRITE_ERR, FIFO_READ_ERR, FIFO_STATE_ERR};
+    }
+
+    cp_fifo_err_type: coverpoint fifo_err_type{
+      wildcard bins no_err    = { 3'b000 };
+      wildcard bins write_err = { 3'b??1 };
+      wildcard bins read_err  = { 3'b?1? };
+      wildcard bins state_err = { 3'b1?? };
+    }
+
+    fifo_err_type_cross: cross cp_err_codes, cp_fifo_err_type{
+      // If ERR_CODE register has SFIFO related field set, it also needs to set at least one
+      // FIFO_*_ERR field.
+      illegal_bins illegal = !binsof(cp_err_codes) intersect {CMD_STAGE_SM_ERR, MAIN_SM_ERR,
+                                                              DRBG_GEN_SM_ERR, DRBG_UPDBE_SM_ERR,
+                                                              DRBG_UPDOB_SM_ERR, AES_CIPHER_SM_ERR,
+                                                              CMD_GEN_CNT_ERR} &&
+                             binsof(cp_fifo_err_type) intersect {0};
+
+      ignore_bins ignore = binsof(cp_err_codes) intersect {CMD_STAGE_SM_ERR, MAIN_SM_ERR,
+                                                           DRBG_GEN_SM_ERR, DRBG_UPDBE_SM_ERR,
+                                                           DRBG_UPDOB_SM_ERR, AES_CIPHER_SM_ERR,
+                                                           CMD_GEN_CNT_ERR};
+    }
 
     cp_csrng_aes_fsm_err: coverpoint
       u_csrng_core.u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control.mr_alert {
@@ -217,9 +243,9 @@ interface csrng_cov_if (
   function automatic void cg_err_code_sample(bit [31:0] err_code);
     // A single error might cause multiple bits in ERR_CODE to get set. For example, some
     // countermeasures always cause the main FSM to escalate and report an error itself.
-    for (int unsigned i = 0; i < 32; i++) begin
+    for (int unsigned i = 0; i < 27; i++) begin
       if (err_code[i]) begin
-        csrng_err_code_cg_inst.sample(err_code_bit_e'(i));
+        csrng_err_code_cg_inst.sample(err_code_bit_e'(i), err_code[30:28]);
       end
     end
   endfunction
