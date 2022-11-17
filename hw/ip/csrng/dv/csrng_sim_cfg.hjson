@@ -85,7 +85,7 @@
 
     {
       name: csrng_err
-      reseed: 200
+      reseed: 300
       uvm_test: csrng_intr_test
       uvm_test_seq: csrng_err_vseq
     }
