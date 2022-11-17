@@ -228,6 +228,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
     $assertoff(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_benblk_arb.ReqStaysHighUntilGranted0_M");
     $assertoff(0, "tb.dut.u_csrng_core.u_prim_arbiter_ppc_updblk_arb.ReqStaysHighUntilGranted0_M");
     cfg.csrng_assert_vif.assert_off();
+    `DV_ASSERT_CTRL_REQ("CmdStageFifoAsserts", 0)
 
     // Test cs_cmd_req_done interrupt
     // cs_cmd_req_done interrupt is checked in the send_cmd_req()
