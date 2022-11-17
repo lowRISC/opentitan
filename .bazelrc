@@ -50,6 +50,9 @@ test:local_test_jobs_per_cpus --local_test_jobs=HOST_CPUS*0.22
 # Empirically 72 cores can support 16 simultaneous tests, but not 17. Setting
 # this will ignore tags like "cpu:5"
 
+# Allow bazel to allocate tests to 1 cw310 board.
+test --local_extra_resources=cw310=1
+
 # We have verilator tests that take more than an hour to complete
 test --test_timeout=60,300,1500,7200
 

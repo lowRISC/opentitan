@@ -221,7 +221,7 @@ def cw310_params(
     ]
     required_tags = [
         "cw310",
-        "exclusive",
+        "resources:cw310:1",
     ]
     kwargs.update(
         args = default_args + args,

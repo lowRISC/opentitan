@@ -237,7 +237,7 @@ def opentitan_gdb_fpga_cw310_test(
     _opentitan_gdb_fpga_cw310_test(
         tags = tags + [
             "cw310",
-            "exclusive",  # Prevent FPGA tests from running concurrently.
+            "resources:cw310:1",  # Prevent FPGA tests from running concurrently.
             "jtag",
         ],
         opentitantool_cw310_uarts = select({

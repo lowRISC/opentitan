@@ -3455,7 +3455,6 @@ test_suite(
         rom_kind = "Rom",
         tags = [
             "cw310_rom",
-            "exclusive",
             "vivado",
         ] + maybe_skip_in_ci(lc_state_val),
     )
