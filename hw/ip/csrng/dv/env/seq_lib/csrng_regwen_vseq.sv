@@ -44,6 +44,8 @@ class csrng_regwen_vseq extends csrng_base_vseq;
       `uvm_fatal(`gfn, $sformatf(" Was able to overwrite ERR_CODE_TEST with REGWEN being set to 0"))
     end
 
+    super.body();
+
   endtask : body
 
 endclass : csrng_regwen_vseq
