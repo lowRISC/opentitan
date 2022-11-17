@@ -675,6 +675,7 @@ interface chip_if;
   ibex_pkg::pmp_mseccfg_t pmp_mseccfg;
   ibex_pkg::pmp_cfg_t pmp_cfg[16];
   wire [31:0] pmp_addr[16];
+  // TODO: merge with probed_cpu_csrs_t below.
   assign pmp_mseccfg = `IBEX_CSRS_HIER.g_pmp_registers.pmp_mseccfg_q;
   for(genvar i = 0; i < 16; i++) begin : gen_ibex_pmp_cfg_conn
     assign pmp_cfg[i] = `IBEX_CSRS_HIER.g_pmp_registers.pmp_cfg[i];
@@ -682,6 +683,38 @@ interface chip_if;
   end : gen_ibex_pmp_cfg_conn
 
   wire mstatus_mie = `IBEX_CSRS_HIER.mstatus_q.mie;
+
+  // Probed Ibex CSRs.
+  typedef struct packed {
+    logic [31:0][31:0] gprs;
+    // Debug CSRs.
+    dm::dcsr_t   dcsr;
+    logic [31:0] dpc;
+    logic [31:0] dscratch0;
+    logic [31:0] dscratch1;
+    // Machine mode CSRs.
+    logic [31:0] mstatus;
+    logic [31:0] mepc;
+    logic [31:0] mcause;
+  } probed_cpu_csrs_t;
+  wire probed_cpu_csrs_t probed_cpu_csrs;
+  for (genvar i = 0; i < 32; i++) begin : gen_probed_cpu_csrs_conn
+    assign probed_cpu_csrs.gprs[i] = `CPU_CORE_HIER.gen_regfile_ff.register_file_i.rf_reg[i][31:0];
+  end
+  assign probed_cpu_csrs.dcsr =
+      dm::dcsr_t'(`CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_dcsr_csr.rd_data_o);
+  assign probed_cpu_csrs.dpc =
+      `CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_depc_csr.rd_data_o;
+  assign probed_cpu_csrs.dscratch0 =
+      `CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_dscratch0_csr.rd_data_o;
+  assign probed_cpu_csrs.dscratch1 =
+      `CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_dscratch1_csr.rd_data_o;
+  assign probed_cpu_csrs.mstatus =
+      `CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_mstatus_csr.rd_data_o;
+  assign probed_cpu_csrs.mepc =
+      `CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_mepc_csr.rd_data_o;
+  assign probed_cpu_csrs.mcause =
+      `CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_mcause_csr.rd_data_o;
 
   // Stub CPU envorinment.
   //

@@ -14,7 +14,11 @@ class chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq extends chip_sw_base_vseq;
 
   virtual task body();
     bit rebooted;
+    bit ready;
     uvm_reg_data_t rw_data;
+    abstract_cmd_err_e status;
+    logic [31:0] cmd_data[$];
+
     super.body();
 
     `DV_WAIT(string'(cfg.sw_logger_vif.printed_log) == "Ready for CPU halt request",
@@ -50,7 +54,44 @@ class chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq extends chip_sw_base_vseq;
     csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(rw_data), .blocking(1));
     `DV_CHECK_EQ(dv_base_reg_pkg::get_field_val(jtag_dmi_ral.dmstatus.allhalted, rw_data), 1)
 
-    // TODO: Execute abstract command to read DCSR and verify the cause field.
+    // Ensure the dm is ready for abstract commands.
+    cfg.debugger.abstract_cmd_dm_ready(ready);
+    `DV_CHECK(ready)
+
+    // Read all general purpose registers.
+    cfg.debugger.abstract_cmd_reg_read(.regno('h1000), .value_q(cmd_data), .status(status),
+                                       .size(16));
+    `DV_CHECK_EQ(status, jtag_rv_debugger_pkg::AbstractCmdErrNone)
+    foreach (cmd_data[i]) begin
+      `uvm_info(`gfn, $sformatf("Read by the debugger: GPR[%0d] = 0x%0h", i, cmd_data[i]), UVM_LOW)
+      // TODO: most GPR values match with the probed value. But some are actively used by the CPU.
+      // Commenting out this check for now - figure out if the in-use GPRs are fixed. If they are,
+      // we can just skip those.
+      // `DV_CHECK_EQ(cmd_data[i], cfg.chip_vif.probed_cpu_csrs.gprs[i])
+    end
+
+    // Read DCSR and verify the cause field.
+    cmd_data = '{};
+    cfg.debugger.abstract_cmd_reg_read(.regno(dm::CSR_DCSR), .value_q(cmd_data), .status(status));
+    `DV_CHECK_EQ(status, jtag_rv_debugger_pkg::AbstractCmdErrNone)
+    `uvm_info(`gfn, $sformatf("Read by the debugger: DCSR = 0x%0h", cmd_data[0]), UVM_LOW)
+    `DV_CHECK_EQ(cmd_data[0], cfg.chip_vif.probed_cpu_csrs.dcsr)
+    `DV_CHECK_EQ(cfg.chip_vif.probed_cpu_csrs.dcsr.cause, dm::CauseRequest)
+
+    // Read some chip CSRs over SBA. Arbitrarily chose LC ctrl device ID which can be checked for
+    // correctness via backdoor.
+    begin
+      otp_ctrl_pkg::otp_device_id_t device_id_act;
+      otp_ctrl_pkg::otp_device_id_t device_id_exp;
+
+      for (int i = 0; i < otp_ctrl_pkg::DeviceIdWidth / 32; i++) begin
+        csr_rd(.ptr(ral.lc_ctrl.device_id[i]), .value(device_id_act[i*32+:32]), .blocking(1),
+               .user_ftdr(cfg.debugger.m_sba_access_reg_frontdoor));
+        device_id_exp[i*32+:32] = cfg.mem_bkdr_util_h[Otp].read32(
+            otp_ctrl_reg_pkg::DeviceIdOffset + i * 4);
+      end
+      `DV_CHECK_EQ(device_id_act, device_id_exp)
+    end
 
     `uvm_info(`gfn, "Issuing an NDM reset request", UVM_MEDIUM)
     csr_wr(.ptr(jtag_dmi_ral.dmcontrol.ndmreset), .value(1), .blocking(1), .predict(1));

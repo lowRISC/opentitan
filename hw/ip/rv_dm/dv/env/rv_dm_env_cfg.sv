@@ -12,6 +12,9 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
   // The JTAG DMI register model.
   rand jtag_dmi_reg_block jtag_dmi_ral;
 
+  // The JTAG RV debugger model.
+  jtag_rv_debugger debugger;
+
   // A constant that can be referenced from anywhere.
   string mem_ral_name = "rv_dm_mem_reg_block";
 
@@ -19,6 +22,7 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     `uvm_field_object(m_jtag_agent_cfg,   UVM_DEFAULT)
     `uvm_field_object(m_tl_sba_agent_cfg, UVM_DEFAULT)
     `uvm_field_object(jtag_dmi_ral,       UVM_DEFAULT)
+    `uvm_field_object(debugger,           UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
@@ -69,6 +73,12 @@ class rv_dm_env_cfg extends cip_base_env_cfg #(.RAL_T(rv_dm_regs_reg_block));
     jtag_dmi_ral.sbcs.sbaccess8.set_reset(1);
     jtag_dmi_ral.sbcs.sbasize.set_reset(32);
     apply_jtag_dmi_ral_csr_excl();
+
+    // Create the JTAG RV debugger instance.
+    debugger = jtag_rv_debugger::type_id::create("debugger");
+    debugger.set_cfg(m_jtag_agent_cfg);
+    debugger.set_ral(jtag_dmi_ral);
+    debugger.num_harts = NUM_HARTS;
   endfunction
 
   protected virtual function void post_build_ral_settings(dv_base_reg_block ral);

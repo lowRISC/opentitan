@@ -1454,13 +1454,6 @@
       run_opts: ["+en_scb=0", "+bypass_alert_ready_to_end_check=1"]
     }
     {
-      name: chip_sw_rv_dm_access_after_wakeup
-      uvm_test_seq: chip_sw_rv_dm_access_after_wakeup_vseq
-      sw_images: ["//sw/device/tests/sim_dv:rv_dm_access_after_wakeup:1"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+use_jtag_dmi=1"]
-    }
-    {
       name: chip_sw_pwrmgr_normal_sleep_all_wake_ups
       uvm_test_seq: "chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq"
       sw_images: ["//sw/device/tests/sim_dv:pwrmgr_normal_sleep_all_wake_ups:1"]
@@ -1491,6 +1484,13 @@
       name: chip_sw_rv_dm_ndm_reset_req_when_cpu_halted
       uvm_test_seq: "chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq"
       sw_images: ["//sw/device/tests/sim_dv:rv_dm_ndm_reset_req_when_cpu_halted:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+use_jtag_dmi=1"]
+    }
+    {
+      name: chip_sw_rv_dm_access_after_wakeup
+      uvm_test_seq: chip_sw_rv_dm_access_after_wakeup_vseq
+      sw_images: ["//sw/device/tests/sim_dv:rv_dm_access_after_wakeup:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+use_jtag_dmi=1"]
     }

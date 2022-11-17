@@ -186,7 +186,7 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_base_monito
         // indicated errors SbaErrTimeout, SbaErrBadAddr and SbaErrOther, when the stimulus reads
         // the sbcs register during a pending SBA read transaction.
         //
-        // The stimulus (in sba_access_utils_pkg::sba_access()) terminates the SBA access after
+        // The stimulus (in jtag_rv_debugger:sba_access()) terminates the SBA access after
         // reading sbdata0 on read transactions.
         if (sba_req_q.size()) begin
           if (sba_req_q[0].bus_op == BusOpRead && !sbbusy) begin

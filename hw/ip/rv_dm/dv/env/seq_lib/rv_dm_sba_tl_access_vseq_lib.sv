@@ -116,7 +116,7 @@ class rv_dm_sba_tl_access_vseq extends rv_dm_base_vseq;
         `uvm_info(`gfn, $sformatf("Starting %s transaction %0d/%0d: %0s",
                                   bad_req ? "bad" : "good",
                                   j, num_trans, req.sprint(uvm_default_line_printer)), UVM_MEDIUM)
-        sba_access(.jtag_dmi_ral(jtag_dmi_ral), .cfg(cfg.m_jtag_agent_cfg), .req(req));
+        cfg.debugger.sba_access(req);
         `DV_CHECK(!req.timed_out)
         `DV_CHECK(!req.is_busy_err)
         if (req.bus_op == BusOpRead && !req.readonaddr && !req.readondata) begin

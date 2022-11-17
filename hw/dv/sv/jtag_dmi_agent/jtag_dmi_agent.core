@@ -19,9 +19,11 @@ filesets:
       - jtag_dmi_reg_frontdoor.sv: {is_include_file: true}
       - jtag_dmi_item.sv: {is_include_file: true}
       - jtag_dmi_monitor.sv: {is_include_file: true}
-      - sba_access_utils_pkg.sv
+      - jtag_rv_debugger_pkg.sv
       - sba_access_item.sv: {is_include_file: true}
       - sba_access_monitor.sv: {is_include_file: true}
+      - jtag_rv_debugger.sv: {is_include_file: true}
+      - sba_access_reg_frontdoor.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
