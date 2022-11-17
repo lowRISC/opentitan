@@ -224,14 +224,11 @@
       tests: ["csrng_intr", "csrng_err"]
     }
     {
-      // TODO: This is currently untested.
-      // The csrng_intr and csrng_err tests need to be extended to force one of the redundant rails of the round counter inside the AES cipher core FSM to a different value.
-      // The DUT must signal a fatal alert, report a cs_fatal_err interrupt, set the corresponding bit in the ERR_CODE register.
-      // For inspiration, refer to the aes_cipher_fi test.
+      // This is already fully verified as part of AES V2S.
       name: sec_cm_aes_cipher_ctr_redun
       desc: '''
             Verify the countermeasure(s) AES_CIPHER.CTR.REDUN.
-            It is ensured that upon randomly forcing the value of any of the independent, redundant logic rails of round counter inside the AES cipher core FSM, the FSM stops processing data and locks up.
+            It is ensured that upon forcing the value of any of the independent, redundant logic rails of round counter inside the AES cipher core FSM, the FSM stops processing data and locks up.
             The DUT must 1) signal a fatal alert, 2) report this with a cs_fatal_err interrupt in the INTR_STATE register and 3) set corresponding bit in the ERR_CODE register.
             '''
       stage: V2S
