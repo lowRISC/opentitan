@@ -415,7 +415,7 @@ void flash_ctrl_testutils_backdoor_wait_eq(dif_flash_ctrl_state_t *flash_state,
 
     // Check timeout.
     CHECK(!ibex_timeout_check(&timeout_),
-          "Timed out after %d usec (%d CPU cycles) waiting for " #expr,
-          timeout, (uint32_t)timeout_.cycles);
+          "Timed out after %d usec (%d CPU cycles) waiting for exp_data = %d",
+          timeout, (uint32_t)timeout_.cycles, exp_data);
   }
 }

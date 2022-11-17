@@ -60,6 +60,7 @@ static dif_flash_ctrl_state_t flash_ctrl;
 static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
 static volatile const uint32_t kTestIp = 0;
+static volatile const uint32_t kTestIp2 = 0;
 
 static plic_isr_ctx_t plic_ctx = {
     .rv_plic = &plic,
@@ -378,7 +379,7 @@ void set_peripheral_clock(const test_t *peripheral,
           clk_state);
   }
   if (new_clk_state == kDifToggleDisabled) {
-    LOG_INFO("Turn off %0s clock", peripheral->name);
+    LOG_INFO("Turn off %s clock", peripheral->name);
   }
 };
 
@@ -395,8 +396,18 @@ void wait_enough_for_alert_ping(uint32_t peri_idx) {
   } else if (kDeviceType == kDeviceSimDV) {
     // NUM_ALERTS*2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
     // (2**6)*2*4*(2**3)*(40ns) = 160us
-    flash_ctrl_testutils_backdoor_wait_eq(&flash_ctrl, (uintptr_t)&kTestIp,
-                                          peri_idx + 1, 160);
+    //flash_ctrl_testutils_backdoor_wait_eq(&flash_ctrl, (uintptr_t)&kTestIp,
+    //                                      peri_idx + 1, 640);
+    const ibex_timeout_t timeout_ = ibex_timeout_init(640);
+    while((kTestIp != peri_idx+1) | (kTestIp2 != peri_idx+1)) {
+    //TODO: Remove after debugging.	
+    LOG_INFO("ktestip=%d, ktestip2=%d", kTestIp, kTestIp2);
+        // Check timeout.
+    CHECK(!ibex_timeout_check(&timeout_),
+          "Timed out after %d usec (%d CPU cycles) waiting for exp_data = %d",
+          640, (uint32_t)timeout_.cycles, peri_idx+1);
+    }
+    LOG_INFO("Out of the SV polling loop");
   } else {
     // Verilator
     // NUM_ALERTS*2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
@@ -451,14 +462,6 @@ bool test_main(void) {
   // Need a NVM counter to keep the test-step info
   // between resets on the FPGA.
   if (kDeviceType == kDeviceFpgaCw310) {
-    // Enable flash access
-    flash_ctrl_testutils_default_region_access(&flash_ctrl,
-                                               /*rd_en*/ true,
-                                               /*prog_en*/ true,
-                                               /*erase_en*/ true,
-                                               /*scramble_en*/ false,
-                                               /*ecc_en*/ false,
-                                               /*he_en*/ false);
 
     test_step_cnt = flash_ctrl_testutils_counter_get(kCounterTestSteps);
     if (test_step_cnt == 256) {
@@ -492,8 +495,8 @@ bool test_main(void) {
       test_phase = test_step_cnt / ARRAYSIZE(kPeripherals);
       peri_idx = test_step_cnt - (test_phase)*ARRAYSIZE(kPeripherals);
 
-      // Wait for a random time <= 1024us
-      busy_spin_micros(rand_testutils_gen32_range(1, 1024));
+      // Wait for a random time <= 10us
+      busy_spin_micros(rand_testutils_gen32_range(1, 10));
 
       // Disable the clock of the peripheral
       set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleDisabled);
@@ -555,8 +558,8 @@ bool test_main(void) {
     test_phase = test_step_cnt / ARRAYSIZE(kPeripherals);
     peri_idx = test_step_cnt - (test_phase)*ARRAYSIZE(kPeripherals);
 
-    // Wait for a random time <= 1024us
-    busy_spin_micros(rand_testutils_gen32_range(1, 1024));
+    // Wait for a random time <= 10us
+    busy_spin_micros(rand_testutils_gen32_range(1, 10));
 
     // Disable the clock of the peripheral
     set_peripheral_clock(&kPeripherals[peri_idx], kDifToggleDisabled);

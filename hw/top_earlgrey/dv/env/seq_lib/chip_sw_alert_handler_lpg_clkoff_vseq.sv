@@ -50,6 +50,7 @@ class chip_sw_alert_handler_lpg_clkoff_vseq extends
 
   virtual function void write_test_done_to_sw(int idx);
     sw_symbol_backdoor_overwrite("kTestIp", {<<8{idx}});
+    sw_symbol_backdoor_overwrite("kTestIp2", {<<8{idx}});
   endfunction
 
   virtual task body();
