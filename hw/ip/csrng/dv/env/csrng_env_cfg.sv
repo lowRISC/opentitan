@@ -41,6 +41,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   rand which_fifo_err_e which_fifo_err;
   rand invalid_mubi_e   which_invalid_mubi;
   rand which_cnt_e      which_cnt;
+  rand which_aes_cm_e   which_aes_cm;
+  // TODO extrend this constraint as we add additional tests and remove it once all AES CMs are
+  // tested.
+  constraint which_aes_cm_c { which_aes_cm inside {fsm_sparse, fsm_redun};}
 
   bit                                    compliance[NUM_HW_APPS + 1], status[NUM_HW_APPS + 1];
   bit [csrng_env_pkg::KEY_LEN-1:0]       key[NUM_HW_APPS + 1];

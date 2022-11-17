@@ -193,14 +193,11 @@
       tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
-      // TODO: This is currently untested.
-      // The csrng_intr and csrng_err tests need to be extended to force one of the redundant three FSM copies inside the AES cipher core into a different, valid state.
-      // The DUT must signal a fatal alert, report a cs_fatal_err interrupt, set the corresponding bit in the ERR_CODE register.
-      // For inspiration, refer to the aes_fi and aes_cipher_fi tests.
+      // This is already fully verified as part of AES V2S.
       name: sec_cm_aes_cipher_fsm_redun
       desc: '''
             Verify the countermeasure(s) AES_CIPHER.FSM.REDUN.
-            It is ensured that upon randomly forcing the state, inputs or outputs of any of the independent, redundant logic rails of the AES cipher core FSM to both valid and invalid encodings, 1) this signals a fatal alert, 2) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 3) the corresponding bit in the ERR_CODE register is set.
+            It is ensured that upon forcing the state of any of the independent, redundant logic rails of the AES cipher core FSM to a different valid encoding, 1) this signals a fatal alert, 2) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 3) the corresponding bit in the ERR_CODE register is set.
             '''
       stage: V2S
       tests: ["csrng_intr", "csrng_err"]
