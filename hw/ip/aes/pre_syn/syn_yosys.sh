@@ -151,7 +151,7 @@ for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
     # Remove the StateEnumT parameter from prim_sparse_fsm_flop instances. Yosys doesn't seem to
     # support this.
     sed -i '/\.StateEnumT(logic \[.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i '/\.StateEnumT_StateWidth(.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i '/\.StateEnumT_aes_pkg.*(.*/d' $LR_SYNTH_OUT_DIR/generated/${module}.v
 done
 
 #-------------------------------------------------------------------------
