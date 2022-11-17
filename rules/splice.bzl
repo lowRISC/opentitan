@@ -104,7 +104,7 @@ bitstream_splice = rule(
         "src": attr.label(allow_single_file = True, doc = "The bitstream to splice"),
         "data": attr.label(allow_single_file = True, doc = "The memory image to splice into the bitstream"),
         "swap_nybbles": attr.bool(default = True, doc = "Swap nybbles while preparing the memory image"),
-        "debug": attr.bool(default = True, doc = "Emit debug info while updating"),
+        "debug": attr.bool(default = False, doc = "Emit debug info while updating"),
         "update_usr_access": attr.bool(default = False, doc = "Update the USR_ACCESS value of the bitstream, breaks hermeticity"),
         "_gen_mem_img": attr.label(
             default = "//hw/ip/rom_ctrl/util:gen_vivado_mem_image",
