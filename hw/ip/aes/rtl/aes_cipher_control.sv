@@ -323,7 +323,9 @@ module aes_cipher_control import aes_pkg::*;
       key_dec_sel_o   = key_dec_sel_e'({key_dec_sel_o}     | {mr_key_dec_sel[i]});
       key_words_sel_o = key_words_sel_e'({key_words_sel_o} | {mr_key_words_sel[i]});
       round_key_sel_o = round_key_sel_e'({round_key_sel_o} | {mr_round_key_sel[i]});
+    end
 
+    for (int i = 0; i < Sp2VWidth; i++) begin
       if (state_sel_o     != mr_state_sel[i]     ||
           add_rk_sel_o    != mr_add_rk_sel[i]    ||
           key_full_sel_o  != mr_key_full_sel[i]  ||
@@ -345,7 +347,9 @@ module aes_cipher_control import aes_pkg::*;
     rnd_ctr_err = 1'b0;
     for (int i = 0; i < Sp2VWidth; i++) begin
       rnd_ctr |= mr_rnd_ctr[i];
+    end
 
+    for (int i = 0; i < Sp2VWidth; i++) begin
       if (rnd_ctr != mr_rnd_ctr[i]) begin
         rnd_ctr_err = 1'b1;
       end
