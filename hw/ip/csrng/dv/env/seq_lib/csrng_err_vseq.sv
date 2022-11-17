@@ -16,6 +16,7 @@ class csrng_err_vseq extends csrng_base_vseq;
     string        path, path1, path2;
     bit           value1, value2;
     bit [7:0]     value3;
+    bit [3:0]     value4;
     string        fifo_name;
     int           first_index, last_index;
     string        fifo_base_path;
@@ -139,7 +140,14 @@ class csrng_err_vseq extends csrng_base_vseq;
             // TODO glitch an important control signal.
           end
           ctr_redun: begin
-            // TODO glitch the round counter.
+            value4 = 4'hf;
+            if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
+              path = cfg.csrng_path_vif.aes_cipher_rnd_ctr_err_path(cfg.which_sp2v, "p");
+              force_path_err(path, value4, fld, 1'b1);
+            end else begin
+              path = cfg.csrng_path_vif.aes_cipher_rnd_ctr_err_path(cfg.which_sp2v, "n");
+              force_path_err(path, value4, fld, 1'b1);
+            end
           end
         endcase
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
