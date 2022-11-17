@@ -980,7 +980,8 @@ module rv_core_ibex
       `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1)                        \
     end                                                                                            \
     `ASSERT_ERROR_TRIGGER_ALERT(__assert_name, g_``__error_name``_assert_signals, __alert_name, 0, \
-        7, __error_name)
+        30, // MAX_CYCLES_, use a large value as ibex clock is 4x faster than clk in alert_handler \
+        __error_name)
 
   `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexPcMismatchCheck_A, alert_tx_o[2],
       u_ibex_core.if_stage_i, pc_mismatch_alert_o)
