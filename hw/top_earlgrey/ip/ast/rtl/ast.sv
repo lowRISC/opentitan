@@ -306,14 +306,10 @@ assign ast_pwst_o.io_pok[1] = vcaon_pok && viob_pok;
 // Regulators & PDM Logic (VCC)
 ///////////////////////////////////////
 logic deep_sleep;
+logic main_pd, por_sync;
 
-// For UPF level shifter generation
-logic [2-1:0] otp_power_seq;
-
-prim_buf u_otp_power_seq[1:0] (
-  .in_i ( otp_power_seq_i[1:0] ),
-  .out_o ( otp_power_seq[1:0] )
-);
+assign main_pd = !main_pd_ni;
+assign por_sync = !por_sync_n;
 
 rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .vcc_pok_h_i ( vcc_pok_h ),
@@ -321,10 +317,10 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .vcmain_pok_por_h_i ( vcmain_pok_por_src ),
   .vio_pok_h_i ( ast_pwst_o.io_pok[1:0] ),
   .clk_src_aon_h_i ( clk_aon ),
-  .main_pd_h_ni ( main_pd_ni ),
-  .por_sync_h_ni ( por_sync_n ),
-  .otp_power_seq_h_i ( otp_power_seq[1:0] ),
+  .main_pd_h_i ( main_pd ),
+  .por_sync_h_i ( por_sync ),
   .scan_mode_h_i ( scan_mode ),
+  .otp_power_seq_h_i ( otp_power_seq_i[2-1:0] ),
   .vcaon_supp_i ( vcaon_supp_i ),
   .vcmain_supp_i ( vcmain_supp_i ),
   .rglssm_vmppr_h_o ( rglssm_vmppr ),
