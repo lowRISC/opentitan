@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:rstmgr_cnsty_chk
+      - lowrisc:dv:sec_cm
     file_type: systemVerilogSource
 
   files_dv:
@@ -29,4 +30,3 @@ targets:
 
   lint:
     <<: *sim_target
-
