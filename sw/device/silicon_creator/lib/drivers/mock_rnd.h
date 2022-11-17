@@ -17,6 +17,7 @@ namespace internal {
  */
 class MockRnd : public global_mock::GlobalMock<MockRnd> {
  public:
+  MOCK_METHOD(rom_error_t, HealthConfigCheck, (lifecycle_state_t));
   MOCK_METHOD(uint32_t, Uint32, ());
 };
 
