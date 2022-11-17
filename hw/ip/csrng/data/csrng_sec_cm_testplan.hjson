@@ -111,8 +111,6 @@
       tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
-      // TODO: Currently, only the alert connection and triggering are verified through FPV.
-      // There is no dedicated bit in the ERR_CODE register.
       // All counter errors are collected in ERR_CODE.CMD_GEN_CNT_ERR.
       name: sec_cm_drbg_upd_ctr_redun
       desc: '''
@@ -125,8 +123,6 @@
       tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
-      // TODO: Currently, only the alert connection and triggering are verified through FPV.
-      // There is no dedicated bit in the ERR_CODE register.
       // All counter errors are collected in ERR_CODE.CMD_GEN_CNT_ERR.
       name: sec_cm_drbg_gen_ctr_redun
       desc: '''
