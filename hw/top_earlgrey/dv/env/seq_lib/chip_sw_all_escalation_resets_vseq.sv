@@ -70,20 +70,31 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
   rand int ip_index;
   constraint ip_index_c {ip_index inside {[0 : ip_alerts.size() - 1]};}
 
+  function int get_ip_index_from_name(string ip_name);
+    string regex = {"*", ip_name, "*prim_reg_we_check*"};
+    foreach (ip_alerts[i]) begin
+      if (ip_alerts[i].ip_inst_regex == regex) return i;
+    end
+    `uvm_error(`gfn, $sformatf("%0s does not have a matched ip_index", ip_name))
+  endfunction
+
   virtual task body();
     sec_cm_pkg::sec_cm_base_if_proxy if_proxy;
     ip_fatal_alert_t ip_alert;
     bit [7:0] sw_alert_num[];
     string actual_ip;
     if ($value$plusargs("inject_fatal_error_for_ip=%s", actual_ip)) begin
-      string regex = {"*", actual_ip, "*prim_reg_we_check*"};
-      foreach (ip_alerts[i]) begin
-        if (ip_alerts[i].ip_inst_regex == regex) begin
-          ip_index = i;
-          break;
-        end
+      ip_index = get_ip_index_from_name(actual_ip);
+    end else begin
+      string excluded_ips[$];
+      int excluded_ip_idxs[$];
+      `DV_GET_QUEUE_PLUSARG(excluded_ips, avoid_inject_fatal_error_for_ips)
+      foreach (excluded_ips[i]) begin
+        excluded_ip_idxs.push_back(get_ip_index_from_name(excluded_ips[i]));
       end
+      `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(ip_index, !(ip_index inside {excluded_ip_idxs});)
     end
+
     ip_alert = ip_alerts[ip_index];
 
     // This sequence will trigger a fatal sec_cm failure.
