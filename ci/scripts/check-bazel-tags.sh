@@ -23,28 +23,6 @@ check_empty () {
     fi
 }
 
-# Check for test_suites without the manual tag and announce them
-untagged=$(./bazelisk.sh query \
-  "kind(test_suite, //...)
-  except
-  attr(
-      tags,
-      '$(exact_regex "manual")',
-      //...
-  )")
-check_empty "Note:" "${untagged}" \
-"Test_suites above aren't tagged with manual, and probably should be.
-
-Otherwise they will match wildcards like //... and depend on tests so that
-build_tag_filters are unable to filter out test_suites unless they are tagged
-with the same set of tags as their contents, but if their contents have
-different sets of tags, doing so will filter out their contents because of
-how most tags act in test_suites.
-
-There aren't many scenarios in which you need a test_suite to match wildcards
-(because it's tests are also in the workspace) so you should probably tag it
-with manual." || true
-
 # This check ensures OpenTitan software can be built with a wildcard without
 # waiting for Verilator using --build_tag_filters=-verilator
 untagged=$(./bazelisk.sh query \
