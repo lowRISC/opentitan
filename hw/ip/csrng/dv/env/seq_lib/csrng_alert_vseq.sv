@@ -114,7 +114,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     exp_recov_alert_sts[ral.recov_alert_sts.acmd_flag0_field_alert.get_lsb_pos()] = 1;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
     // Since we already did a backdoor check, sampling with this value is sufficient.
-    cov_vif.cg_recov_alert_sample(.recov_alert(ral.recov_alert_sts.get_mirrored_value()));
+    cov_vif.cg_recov_alert_sample(.recov_alert(exp_recov_alert_sts));
 
     // Clear recov_alert_sts register
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));
@@ -167,7 +167,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     exp_recov_alert_sts[ral.recov_alert_sts.cs_bus_cmp_alert.get_lsb_pos()] = 1;
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(exp_recov_alert_sts));
     // Since we already did a backdoor check, sampling with this value is sufficient.
-    cov_vif.cg_recov_alert_sample(.recov_alert(ral.recov_alert_sts.get_mirrored_value()));
+    cov_vif.cg_recov_alert_sample(.recov_alert(exp_recov_alert_sts));
 
     // Clear recov_alert_sts register
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));
