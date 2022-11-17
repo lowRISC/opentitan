@@ -207,6 +207,13 @@ package csrng_env_pkg;
     drbg_gen_cnt_sel = 2
   } which_cnt_e;
 
+  typedef enum int {
+    fsm_sparse  = 0,
+    fsm_redun   = 1,
+    ctrl_sparse = 2,
+    ctr_redun   = 3
+  } which_aes_cm_e;
+
   // functions
 
   // package sources

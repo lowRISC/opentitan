@@ -15,6 +15,7 @@ class csrng_err_vseq extends csrng_base_vseq;
     bit [4:0]     err_code_test_bit;
     string        path, path1, path2;
     bit           value1, value2;
+    bit [7:0]     value3;
     string        fifo_name;
     int           first_index, last_index;
     string        fifo_base_path;
@@ -115,13 +116,32 @@ class csrng_err_vseq extends csrng_base_vseq;
       end
       aes_cipher_sm_err: begin
         fld = csr.get_field_by_name(fld_name);
-        if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
-          path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "p");
-          force_path_err(path, 8'b0, fld, 1'b1);
-        end else begin
-          path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "n");
-          force_path_err(path, 8'b0, fld, 1'b1);
-        end
+        case (cfg.which_aes_cm) inside
+          fsm_sparse, fsm_redun: begin
+            if (cfg.which_aes_cm == fsm_sparse) begin
+              // Force an invalid state encoding.
+              value3 = 8'b0;
+            end else begin
+              // Force a valid state encoding. We take a state in which the FSM is just for one
+              // clock cycle to ensure it's detected no matter what the DUT is actually doing,
+              // i.e., whether it is idle or stalled.
+              value3 = {2'b00, {aes_pkg::CIPHER_CTRL_CLEAR_S}};
+            end
+            if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
+              path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "p");
+              force_path_err(path, value3, fld, 1'b1);
+            end else begin
+              path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "n");
+              force_path_err(path, value3, fld, 1'b1);
+            end
+          end
+          ctrl_sparse: begin
+            // TODO glitch an important control signal.
+          end
+          ctr_redun: begin
+            // TODO glitch the round counter.
+          end
+        endcase
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
