@@ -9,10 +9,13 @@
 // This struct allows us to neatly pack NIST CAVP vectors
 typedef struct kmac_test_vector {
   kmac_operation_t operation;
-  char func_name[36];
-  char custom_str[36];
+  kmac_security_str_t security_str;
+  uint8_t *func_name;
+  size_t func_name_len;
+  uint8_t *custom_str;
+  size_t custom_str_len;
   uint8_t *key;
-  size_t key_len;
+  kmac_key_len_t key_len;
   uint8_t *input_str;
   size_t input_str_len;
   uint8_t *digest;
@@ -20,6 +23,8 @@ typedef struct kmac_test_vector {
 } kmac_test_vector_t;
 
 extern size_t nist_kmac_nr_of_vectors;
+extern size_t nist_kmac_cshake_nr_of_vectors;
 extern kmac_test_vector_t *nist_kmac_vectors[];
+extern kmac_test_vector_t *nist_kmac_cshake_vectors[];
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_KMAC_TEST_VECTORS_H_

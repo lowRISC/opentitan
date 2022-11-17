@@ -14,6 +14,19 @@ extern "C" {
 #endif
 
 /**
+ * Security strength values.
+ *
+ * These values corresponds to the half of the capacity of Keccak permutation.
+ */
+typedef enum kmac_security_str {
+  kKmacSecurityStrength128 = 0,
+  kKmacSecurityStrength224 = 1,
+  kKmacSecurityStrength256 = 2,
+  kKmacSecurityStrength384 = 3,
+  kKmacSecurityStrength512 = 4,
+} kmac_security_str_t;
+
+/**
  * List of supported KMAC modes.
  *
  * We might need to reconsider whether we want to better organize this enum,
@@ -21,15 +34,22 @@ extern "C" {
  * e.g. kmac_init_sha3(kSha3Length384) or kmac_init_sha3_384().
  */
 typedef enum kmac_operation {
-  kSHA3_224,
-  kSHA3_256,
-  kSHA3_384,
-  kSHA3_512,
-  kSHAKE128,
-  kSHAKE256,
-  kcSHAKE128,
-  kcSHAKE256
+  kKmacOperationSHA3,
+  kKmacOperationSHAKE,
+  kKmacOperationCSHAKE,
+  kKmacOperationKMAC,
 } kmac_operation_t;
+
+/**
+ * List of supported KMAC key sizes.
+ */
+typedef enum kmac_key_length {
+  kKmacKeyLength128 = 0,
+  kKmacKeyLength192 = 1,
+  kKmacKeyLength256 = 2,
+  kKmacKeyLength384 = 3,
+  kKmacKeyLength512 = 4,
+} kmac_key_len_t;
 
 /**
  * Error return types for KMAC.
@@ -39,10 +59,45 @@ typedef enum kmac_operation {
  */
 typedef enum kmac_error {
   kKmacOk = 0,
-  kKmacInternalError = 1,
-  kKmacArgsError = 2,
-  kKmacNotImplemented = 3,
+  kKmacInternalError,
+  kKmacNotIdle,
+  kKmacCfgWriteDisabled,
+  kKmacIntrErrPending,
+  kKmacCfgDisabledError,
+  kKmacFatalFaultError,
+  kKmacRecovFaultError,
+  kKmacArgsError,
+  kKmacDigestLenTooLongError,
+  kKmacUnsupportedKeySizeError,
+  kKmacNotImplemented,
+  kKmacCustomPaddingError,
+  kKmacUnsupportedPaddingLength,
 } kmac_error_t;
+
+/**
+ * Set the "global" config of HWIP
+ *
+ * For the moment, we have a number of configuation options needs to be
+ * configured at session level. This functions serves as a temporary
+ * solution by setting default values to this configuration.
+ * TODO: Define config struct and pass it as argument.
+ * TODO: see #14832
+ *
+ * Warning: This function sets `entropy_ready`, which triggers kmac_entropy's
+ * FSM to jump to next step. Therefore, the caller of this function should make
+ * sure that entropy is configured properly beforehand.
+ *
+ * It enforces the following as the default configuration:
+ * It touches the following fields of CSRs:
+ *   CFG register:
+ *     endianness, entropy_mode, fast_process, msg_mask, ent_ready,
+ * err_processed, en_unsup_mode EDN refresh settings: hash threshold refresh
+ * counter entropy seed -> ignore? INTR_ENABLE: all disabled
+ *
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_hwip_default_configure(void);
 
 /**
  * Initializes the KMAC configuration.
@@ -57,10 +112,42 @@ typedef enum kmac_error {
  * @return Error of type kmac_error_t.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_init(kmac_operation_t operation_type);
+kmac_error_t kmac_init(kmac_operation_t operation,
+                       kmac_security_str_t security_str,
+                       const uint8_t *func_name, uint8_t func_name_len,
+                       const uint8_t *cust_str, size_t cust_str_len);
 
 /**
- * Feeds the given input string to KMAC core, and produces the digest.
+ * Configure the prefix registers with customization string.
+ *
+ * For KMAC, this function ignores `func_name` and uses "KMAC" instead.
+ *
+ * @param operation The KMAC or cSHAKE operation.
+ * @param func_name The function name, used for cSHAKE.
+ * @param func_name_len The byte size of `func_name`.
+ * @param cust_str The customization string.
+ * @param cust_str_len The byte size of `cust_str`.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_write_prefix_block(kmac_operation_t operation,
+                                     const uint8_t *func_name,
+                                     const size_t func_name_len,
+                                     const uint8_t *cust_str,
+                                     const size_t cust_str_len);
+
+/**
+ * Update the key registers with given key.
+ *
+ * @param key The input key array.
+ * @param key_len The size of key from enum type kmac_key_len_t.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_write_key_block(const uint8_t *key, kmac_key_len_t key_len);
+
+/**
+ * Common routine for feeding message blocks during SHA/SHAKE/cSHAKE/KMAC.
  *
  * Before running this, the operation type must be configured with kmac_init.
  * Then, we can use this function to feed various bytes of data to the KMAC
@@ -85,10 +172,12 @@ kmac_error_t kmac_init(kmac_operation_t operation_type);
  * @param digest The buffer to which the result will be written.
  * @param digest_len The length of the digest, i.e. the number of bytes read
  * from the final Keccak state.
+ * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
-kmac_error_t kmac_update(const uint8_t *data, size_t data_len, uint8_t *digest,
-                         size_t digest_len);
+kmac_error_t kmac_process_msg_blocks(kmac_operation_t operation,
+                                     const uint8_t *data, size_t data_len,
+                                     uint8_t *digest, size_t digest_len);
 
 #ifdef __cplusplus
 }
