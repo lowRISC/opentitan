@@ -46,6 +46,8 @@
   // Update all builds to add options specific to AES C model compilation.
   en_build_modes: ["{tool}_aes_model_build_opts"]
 
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/csrng/dv/cov/csrng_v2s_exclusions.vRefine"]
+
   // Default UVM test and seq class name.
   uvm_test: csrng_base_test
   uvm_test_seq: csrng_base_vseq
