@@ -3341,7 +3341,10 @@
             - X-ref'd with chip_tap_strap_sampling
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_lc_ctrl_rand_to_scrap",
+              "chip_sw_lc_ctrl_raw_to_scrap",
+              "chip_sw_lc_ctrl_rma_to_scrap",
+              "chip_sw_lc_ctrl_test_locked0_to_scrap"]
     }
     {
       name: chip_lc_test_locked

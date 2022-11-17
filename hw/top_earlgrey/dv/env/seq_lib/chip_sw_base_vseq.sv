@@ -762,20 +762,28 @@ class chip_sw_base_vseq extends chip_base_vseq;
           valid_transition = 1;
         end
       end
-       DecLcStTestLocked6: begin
+      DecLcStTestLocked6: begin
         if (dest_state inside {DecLcStTestUnlocked7, DecLcStScrap}) valid_transition = 1;
-       end
-       DecLcStTestUnlocked0,
-       DecLcStTestUnlocked1,
-       DecLcStTestUnlocked2,
-       DecLcStTestUnlocked3,
-       DecLcStTestUnlocked4,
-       DecLcStTestUnlocked5,
-       DecLcStTestUnlocked6,
-       DecLcStTestUnlocked7: begin
+      end
+      DecLcStTestUnlocked0,
+      DecLcStTestUnlocked1,
+      DecLcStTestUnlocked2,
+      DecLcStTestUnlocked3,
+      DecLcStTestUnlocked4,
+      DecLcStTestUnlocked5,
+      DecLcStTestUnlocked6,
+      DecLcStTestUnlocked7: begin
         if (dest_state inside {DecLcStProd, DecLcStScrap}) valid_transition = 1;
       end
-     default: `uvm_fatal(`gfn, $sformatf("%0s src state not supported", src_state.name))
+
+      DecLcStDev, DecLcStProd: begin
+        if (dest_state inside {DecLcStRma, DecLcStScrap}) valid_transition = 1;
+      end
+
+      DecLcStProdEnd, DecLcStRma: begin
+        if (dest_state inside {DecLcStScrap}) valid_transition = 1;
+      end
+      default: `uvm_fatal(`gfn, $sformatf("%0s src state not supported", src_state.name))
     endcase
 
     if (!valid_transition) begin
