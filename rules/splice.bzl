@@ -12,14 +12,16 @@ def _bitstream_splice_impl(ctx):
     spliced = ctx.actions.declare_file("{}.spliced.bit".format(ctx.label.name))
     output = ctx.actions.declare_file("{}.bit".format(ctx.label.name))
 
+    gen_mem_img_args = ctx.actions.args()
+    gen_mem_img_args.add_all([ctx.file.data, update])
+    if ctx.attr.swap_nybbles:
+        gen_mem_img_args.add("--swap-nibbles")
+
     ctx.actions.run(
         mnemonic = "GenVivadoImage",
         outputs = [update],
         inputs = [ctx.executable._gen_mem_img, ctx.file.data],
-        arguments = [
-            ctx.file.data.path,
-            update.path,
-        ] + (["--swap-nibbles"] if ctx.attr.swap_nybbles else []),
+        arguments = [gen_mem_img_args],
         executable = ctx.executable._gen_mem_img,
         use_default_shell_env = True,
         execution_requirements = {
@@ -36,23 +38,21 @@ def _bitstream_splice_impl(ctx):
     tmpsrc = ctx.actions.declare_file("{}.tmpsrc.bit".format(ctx.label.name))
     ctx.actions.symlink(output = tmpsrc, target_file = ctx.file.src)
 
+    updatemem_args = ctx.actions.args()
+    updatemem_args.add("--force")
+    updatemem_args.add("--meminfo", ctx.file.meminfo)
+    updatemem_args.add("--data", update)
+    updatemem_args.add("--bit", tmpsrc)
+    updatemem_args.add("--proc", "dummy")
+    updatemem_args.add("--out", spliced)
+    if ctx.attr.debug:
+        updatemem_args.add("--debug")
+
     ctx.actions.run(
         mnemonic = "SpliceBitstream",
         outputs = [spliced],
         inputs = [tmpsrc, ctx.file.meminfo, update],
-        arguments = [
-            "-force",
-            "--meminfo",
-            ctx.file.meminfo.path,
-            "--data",
-            update.path,
-            "--bit",
-            tmpsrc.path,
-            "--proc",
-            "dummy",
-            "--out",
-            spliced.path,
-        ] + ["--debug"] if ctx.attr.debug else [],
+        arguments = [updatemem_args],
         executable = "updatemem",
         use_default_shell_env = False,
         execution_requirements = {
@@ -62,11 +62,9 @@ def _bitstream_splice_impl(ctx):
     )
 
     if ctx.attr.update_usr_access:
-        ctx.actions.run(
-            mnemonic = "UpdateUsrAccessValue",
-            outputs = [output],
-            inputs = [spliced],
-            arguments = [
+        ott_args = ctx.actions.args()
+        ott_args.add_all(
+            [
                 "--rcfile=",
                 "--logging=info",
                 "fpga",
@@ -74,6 +72,12 @@ def _bitstream_splice_impl(ctx):
                 spliced.path,
                 output.path,
             ],
+        )
+        ctx.actions.run(
+            mnemonic = "UpdateUsrAccessValue",
+            outputs = [output],
+            inputs = [spliced],
+            arguments = [ott_args],
             executable = ctx.executable._opentitantool,
         )
     else:
