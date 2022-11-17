@@ -18,10 +18,10 @@ module rglts_pdm_3p3v (
   input vcmain_pok_por_h_i,                // VCMAIN_POK_POR @1.1v
   input [2-1:0] vio_pok_h_i,               // vioa/b_pok signals @1.1v
   input clk_src_aon_h_i,                   // AON Clock @1.1v
-  input main_pd_h_ni,                      // MAIN Regulator Power Down @1.1v
-  input por_sync_h_ni,                     // POR (Sync to AON clock) @1.1v
-  input [2-1:0] otp_power_seq_h_i,         // MMR0,24 in @1.1v
+  input main_pd_h_i,                       // MAIN Regulator Power Down @1.1v
+  input por_sync_h_i,                      // POR (Sync to AON clock) @1.1v
   input scan_mode_h_i,                     // Scan Mode @1.1v
+  input [2-1:0] otp_power_seq_h_i,         // MMR0,24 in @1.1v
   input vcaon_supp_i,                      //
   input vcmain_supp_i,                     //
   output logic rglssm_vmppr_h_o,           // Regulators SM at VMPPR (vcmaim_pok_por_reset) @3.3v
@@ -211,7 +211,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
           rglssm_brout_h_o <= 1'b1;        // (rgls_sm == RGLS_BROUT)
           fla_pdm_h        <= 1'b0;        //
           rgls_sm          <= RGLS_BROUT;  // Brownout
-        end else if ( !main_pd_h_ni && por_sync_h_ni ) begin
+        end else if ( main_pd_h_i && !por_sync_h_i ) begin
           main_pd_str_h    <= 1'b1;        // Power Down Stratch on
           rglssm_vcmon_h_o <= 1'b0;        //
           rglssm_vmppr_h_o <= 1'b0;        // (rgls_sm == RRGLS_[CLDPU | VCAON | VCA2M])
@@ -234,7 +234,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
         //
         dly_cnt            <= dly_cnt - 1'b1;
         //
-        if ( !por_sync_h_ni ) begin
+        if ( por_sync_h_i ) begin
           vcmain_pok_h     <= 1'b1;        // VCMAIN Rail Enable
           vcaon_pok_h      <= 1'b1;        // VCAON Rail Enabled
           rglssm_vcmon_h_o <= 1'b1;        // (rgls_sm == RGLS_VCMON)
@@ -261,7 +261,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
         //
         dly_cnt            <= lc2hc_val;   // VCMAIN Regulator power-up time
         //
-        if ( main_pd_h_ni || !por_sync_h_ni ) begin
+        if ( !main_pd_h_i || por_sync_h_i ) begin
           rglssm_vmppr_h_o <= 1'b1;        // (rgls_sm == RRGLS_[CLDPU | VCAON | VCA2M])
           rgls_sm          <= RGLS_VCA2M;  // VCAON->VCMAIN Transition
         end else begin
@@ -385,7 +385,7 @@ always_ff @( posedge clk_src_aon_h_i, negedge rgls_rst_h_n ) begin
   if ( !rgls_rst_h_n ) begin
     deep_sleep_h_o <= 1'b0;
   end else begin
-    deep_sleep_h_o <= !(main_pd_h_ni && !main_pd_str_h);
+    deep_sleep_h_o <= main_pd_h_i || main_pd_str_h;
   end
 end
 
