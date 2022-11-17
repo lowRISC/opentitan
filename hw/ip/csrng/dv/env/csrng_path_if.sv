@@ -59,6 +59,13 @@ interface csrng_path_if
             ".rnd_ctr_q"};
   endfunction // aes_cipher_rnd_ctr_err_path
 
+  function automatic string aes_cipher_ctrl_err_path(int which_sp2v, string which_path);
+    return {core_path, ".u_csrng_block_encrypt.u_aes_cipher_core.u_aes_cipher_control",
+            $sformatf(".gen_fsm[%0d].gen_fsm_%s", which_sp2v, which_path),
+            ".u_aes_cipher_control_fsm_i.u_aes_cipher_control_fsm",
+            ".add_rk_sel_o"};
+  endfunction // aes_cipher_ctrl_err_path
+
   function automatic string cmd_gen_cnt_err_path(int app);
     return {core_path, $sformatf(".gen_cmd_stage[%0d]", app),
             ".u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr.cnt_q[1]"};

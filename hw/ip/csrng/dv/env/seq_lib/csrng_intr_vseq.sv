@@ -169,7 +169,15 @@ class csrng_intr_vseq extends csrng_base_vseq;
             end
           end
           ctrl_sparse: begin
-            // TODO glitch an important control signal.
+            // We force one rail of one of the mux control signals to another valid encoding.
+            value3 = {3'b000, {aes_pkg::ADD_RK_INIT}};
+            if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
+              path = cfg.csrng_path_vif.aes_cipher_ctrl_err_path(cfg.which_sp2v, "p");
+              force_path_err(path, value3, ral.intr_state.cs_fatal_err, 1'b1);
+            end else begin
+              path = cfg.csrng_path_vif.aes_cipher_ctrl_err_path(cfg.which_sp2v, "n");
+              force_path_err(path, value3, ral.intr_state.cs_fatal_err, 1'b1);
+            end
           end
           ctr_redun: begin
             value4 = 4'hf;

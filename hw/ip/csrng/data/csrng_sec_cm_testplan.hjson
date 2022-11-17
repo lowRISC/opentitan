@@ -199,14 +199,11 @@
       tests: ["csrng_intr", "csrng_err"]
     }
     {
-      // TODO: This is currently untested.
-      // The csrng_intr and csrng_err tests need to be extended to force one of the redundant rails of important control signals inside the AES cipher core to a different value.
-      // The DUT must signal a fatal alert, report a cs_fatal_err interrupt, set the corresponding bit in the ERR_CODE register.
-      // For inspiration, refer to the aes_cipher_fi test.
+      // This is already fully verified as part of AES V2S.
       name: sec_cm_aes_cipher_ctrl_sparse
       desc: '''
             Verify the countermeasure(s) AES_CIPHER.CTRL.SPARSE.
-            It is ensured that upon randomly forcing the value of any of important critical control signals inside the AES cipher core to an invalid encoding, 1) this signals a fatal alert, 2) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 3) the corresponding bit in the ERR_CODE register is set.
+            It is ensured that upon forcing the value of an important critical control signal inside the AES cipher core to an invalid encoding, 1) this signals a fatal alert, 2) this is reported with a cs_fatal_err interrupt in the INTR_STATE register and 3) the corresponding bit in the ERR_CODE register is set.
             '''
       stage: V2S
       tests: ["csrng_intr", "csrng_err"]
