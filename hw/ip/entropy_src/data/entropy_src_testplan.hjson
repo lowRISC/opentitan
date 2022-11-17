@@ -308,6 +308,34 @@
             '''
     }
     {
+      name: cont_ht_cg
+      desc: '''
+            Covers a range of thresholds and configurations for the continuous health tests: REPCNT
+            (the repetition count test), and REPCNTS (the symbol based repetition count test).
+            The primary cover points are the test_type (REPCNT vs. REPCNTS), the pass or fail value
+            of the test, and the "score". The score is a generalization of the numerical value of
+            the test output, which accounts for the fact it is far more likely to see high values
+            from the REPCNT test than the REPCNTS test, and is computed by multiplying the numerical
+            values of the REPCNTS test by RNG_BUS_WIDTH.  Much like the windowed health tests which
+            generalize the test thresholds in terms of "sigma" values, the "score" places the REPCNT
+            and REPCNTS values on equal footing when generating cross bins. For an ideal noise
+            distribution on each RNG bus line, the probablity of a given "score" should be the same
+            for the two tests, under the observation that a coincidental repetition of all bus lines
+            is as likely as RNG_BUS_WIDTH repetitions of a single line.
+
+            The `cp_score` coverpoint covers a range of values for the test output score (1-5, 6-10,
+            11-20, 21-40, and above 41).  For an idealized noise source the coincidental probability
+            of a given score, n, is roughly 2<sup>-n</sup>, and thus it is envisioned that typically
+            thresholds will be set to detect failures somewhere in the score range of 20-40, to fall
+            in line with the guidance in SP 800-90B that the false positive rate for these tests
+            should lie in the range of 2<sup>-40</sup> to 2<sup>-20</sup>.
+
+            In addition to the score, pass-fail status and the test type, this covergroup also has
+            coverpoints for other configurations such as the RNG bit select mode and the fips-mode
+            selection status (True or False), as well as a large number of crosspoints.
+            '''
+    }
+    {
       name: alert_cnt_cg
       desc: '''
             Covers a range of values (1, 2, 3-6, 6-10, plus &gt; 10) for ALERT_THRESHOLD.
@@ -332,6 +360,16 @@
             Checks that all of the health test registers have been exercised and that the one-way
             update feature (which prohibits thresholds being relaxed after reset) works for both
             the FIPS and Bypass thresholds.
+            '''
+    }
+    {
+      name: recov_alert_cg
+      desc: '''
+            This covergroup has a single coverpoint that ensures that every active bit in the
+            "recov_alert_sts" register has been triggered. This coverpoint is thus complementary to
+            the mubi_err_cg, fifo_err_cg, and sm_err_cg covergroups though it also covers a number
+            of other recoverable errors, such as violations of the FW_OV usage model, or errors
+            internal to the SHA conditioning unit.
             '''
     }
   ]
