@@ -53,6 +53,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     fork
       collect_seeds();
+      handle_disable();
     join_none;
 
     for (int i = 0; i < NUM_HW_APPS; i++) begin
@@ -63,6 +64,44 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         end
       join_none;
     end
+  endtask
+
+  virtual protected task handle_disable();
+    forever begin
+      `DV_WAIT(cfg.under_reset == 0)
+      csr_spinwait(.ptr(ral.ctrl.enable), .exp_data(MuBi4False), .backdoor(1));
+      `uvm_info(`gfn, "CSRNG disabled, clearing scoreboard state.", UVM_MEDIUM)
+      entropy_src_fifo.flush();
+      hw_genbits = '0;
+      more_cmd_data = 0;
+      for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
+        if (i != SW_APP) csrng_cmd_fifo[i].flush();
+        es_item_q[i].delete();
+        hw_genbits_reg_q.delete();
+        prd_genbits_q[i].delete();
+        ctr_drbg_uninstantiate(i);
+        cs_data[i] = '0;
+        es_data[i] = '0;
+        fips[i] = '0;
+      end
+      csr_spinwait(.ptr(ral.ctrl.enable), .exp_data(MuBi4True), .backdoor(1));
+    end
+  endtask
+
+  // Wait for an item in the entropy source queue or for CSRNG getting disabled, whichever happens
+  // first.  Return whether CSRNG was disabled in the `disabled` output.
+  task automatic wait_es_item_or_disable(input uint app, output bit disabled);
+    disabled = 0;
+    `DV_SPINWAIT(
+      fork
+        wait(es_item_q[app].size() > 0);
+        begin
+          csr_spinwait(.ptr(ral.ctrl.enable), .exp_data(MuBi4False), .backdoor(1));
+          disabled = 1;
+        end
+      join_any
+      disable fork;
+    )
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -160,7 +199,13 @@ class csrng_scoreboard extends cip_base_scoreboard #(
               INS: begin
                 if (cs_item[SW_APP].flags != MuBi4True) begin
                   // Get seed
-                  wait (es_item_q[SW_APP].size());
+                  bit disabled;
+                  wait_es_item_or_disable(SW_APP, disabled);
+                  if (disabled) begin
+                    `uvm_info(`gfn, "Stopping to wait for entropy on INS command due to disable",
+                              UVM_HIGH)
+                    return;
+                  end
                   es_item[SW_APP] = es_item_q[SW_APP].pop_front;
                   es_data[SW_APP] = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH-1:0];
                   fips[SW_APP]    = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH];
@@ -170,7 +215,13 @@ class csrng_scoreboard extends cip_base_scoreboard #(
               RES: begin
                 if (cs_item[SW_APP].flags != MuBi4True) begin
                   // Get seed
-                  wait (es_item_q[SW_APP].size());
+                  bit disabled;
+                  wait_es_item_or_disable(SW_APP, disabled);
+                  if (disabled) begin
+                    `uvm_info(`gfn, "Stopping to wait for entropy on RES command due to disable",
+                              UVM_HIGH)
+                    return;
+                  end
                   es_item[SW_APP] = es_item_q[SW_APP].pop_front;
                   es_data[SW_APP] = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH-1:0];
                   fips[SW_APP]    = es_item[SW_APP].d_data[CSRNG_BUS_WIDTH];
@@ -445,7 +496,13 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         INS: begin
           if (cs_item[app].flags != MuBi4True) begin
             // Get seed
-            wait (es_item_q[app].size());
+            bit disabled;
+            wait_es_item_or_disable(app, disabled);
+            if (disabled) begin
+              `uvm_info(`gfn, "Stopping to wait for entropy on INS command due to disable",
+                        UVM_HIGH)
+              return;
+            end
             es_item[app] = es_item_q[app].pop_front();
             es_data[app] = es_item[app].d_data[CSRNG_BUS_WIDTH-1:0];
             fips[app]    = es_item[app].d_data[CSRNG_BUS_WIDTH];
@@ -466,7 +523,13 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         RES: begin
           if (cs_item[app].flags != MuBi4True) begin
             // Get seed
-            wait (es_item_q[app].size());
+            bit disabled;
+            wait_es_item_or_disable(app, disabled);
+            if (disabled) begin
+              `uvm_info(`gfn, "Stopping to wait for entropy on RES command due to disable",
+                        UVM_HIGH)
+              return;
+            end
             es_item[app] = es_item_q[app].pop_front();
             es_data[app] = es_item[app].d_data[CSRNG_BUS_WIDTH-1:0];
             fips[app]    = es_item[app].d_data[CSRNG_BUS_WIDTH];
