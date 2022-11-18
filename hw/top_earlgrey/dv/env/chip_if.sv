@@ -51,6 +51,8 @@ interface chip_if;
 `define GPIO_HIER           `TOP_HIER.u_gpio
 `define HMAC_HIER           `TOP_HIER.u_hmac
 `define I2C_HIER(i)         `TOP_HIER.u_i2c``i
+`define IBEX_HIER           `CPU_CORE_HIER.u_ibex_core
+`define IBEX_CSRS_HIER      `IBEX_HIER.cs_registers_i
 `define KMAC_HIER           `TOP_HIER.u_kmac
 `define KEYMGR_HIER         `TOP_HIER.u_keymgr
 `define LC_CTRL_HIER        `TOP_HIER.u_lc_ctrl
@@ -70,13 +72,13 @@ interface chip_if;
 `define SPI_DEVICE_HIER     `TOP_HIER.u_spi_device
 `define SPI_HOST_HIER(i)    `TOP_HIER.u_spi_host``i
 `define SRAM_CTRL_MAIN_HIER `TOP_HIER.u_sram_ctrl_main
-`define SRAM_CTRL_RET_HIER  `TOP_HIER,u_sram_ctrl_ret_aon
+`define SRAM_CTRL_RET_HIER  `TOP_HIER.u_sram_ctrl_ret_aon
 `define SYSRST_CTRL_HIER    `TOP_HIER.u_sysrst_ctrl_aon
 `define UART_HIER(i)        `TOP_HIER.u_uart``i
 `define USBDEV_HIER         `TOP_HIER.u_usbdev
 
   // Identifier for logs.
-   string MsgId = $sformatf("%m");
+  string MsgId = $sformatf("%m");
 
   // Identifier for the envorinment to which this interface is passed on via uvm_config_db.
   string env_name = "env";
@@ -636,6 +638,9 @@ interface chip_if;
   wire rv_core_ibex_icache_otp_key_req = `RV_CORE_IBEX_HIER.icache_otp_key_o.req;
   wire rv_core_ibex_icache_otp_key_ack = `RV_CORE_IBEX_HIER.icache_otp_key_i.ack;
 
+  wire sram_main_init_done = `SRAM_CTRL_MAIN_HIER.u_reg_regs.status_init_done_qs;
+  wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.status_init_done_qs;
+
   // alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
   //                                   .rst_n(`ALERT_HANDLER_HIER.rst_ni));
   // for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_alert_rx_conn
@@ -665,6 +670,18 @@ interface chip_if;
   wire io_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_peri_en.q;
   wire io_div2_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div2_peri_en.q;
   wire io_div4_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div4_peri_en.q;
+
+  // Ibex monitors.
+  ibex_pkg::pmp_mseccfg_t pmp_mseccfg;
+  ibex_pkg::pmp_cfg_t pmp_cfg[16];
+  wire [31:0] pmp_addr[16];
+  assign pmp_mseccfg = `IBEX_CSRS_HIER.g_pmp_registers.pmp_mseccfg_q;
+  for(genvar i = 0; i < 16; i++) begin : gen_ibex_pmp_cfg_conn
+    assign pmp_cfg[i] = `IBEX_CSRS_HIER.g_pmp_registers.pmp_cfg[i];
+    assign pmp_addr[i] = `IBEX_CSRS_HIER.g_pmp_registers.pmp_addr[i];
+  end : gen_ibex_pmp_cfg_conn
+
+  wire mstatus_mie = `IBEX_CSRS_HIER.mstatus_q.mie;
 
   // Stub CPU envorinment.
   //
