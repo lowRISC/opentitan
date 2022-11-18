@@ -230,11 +230,10 @@
       tests: ["csrng_sec_cm", "csrng_intr", "csrng_err"]
     }
     {
-      // TODO: These SVAs need to be added.
       name: sec_cm_aes_cipher_data_reg_local_esc
       desc: '''
             Verify the countermeasure(s) AES_CIPHER.DATA_REG.LOCAL_ESC.
-            SVAs inside csrng_core.sv are used to ensure that upon local escalation triggered through FI the AES cipher core doesn't release intermediate state into other CSRNG registers.
+            SVAs inside the testbench are used to ensure that upon local escalation triggered through FI the AES cipher core doesn't release intermediate state into other CSRNG registers.
             '''
       stage: V2S
       tests: ["csrng_intr", "csrng_err"]
