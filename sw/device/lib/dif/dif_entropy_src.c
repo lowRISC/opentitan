@@ -115,7 +115,10 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
   // Configure health test window.
   // Conditioning bypass is hardcoded to disabled (see above). If we want to
   // expose the ES_TYPE field in the future, we need to also configure the
-  // health test window size for bypass mode.
+  // health test window size for bypass mode. Note however that the only
+  // supported bypass window size is the default value of 0x60 at the moment,
+  // hence even if the ES_TYPE field is exposed in the future, we should not
+  // change the bypass window size as this may break.
   uint32_t health_test_window_sizes =
       bitfield_field32_write(ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL,
                              ENTROPY_SRC_HEALTH_TEST_WINDOWS_FIPS_WINDOW_FIELD,

@@ -339,6 +339,10 @@
                    is active after reset for the first and only test run, or when this mode is
                    programmed by firmware.
                    The default value is (384 bits * 1 clock/4 bits);
+
+                   Note that currently only a window size of 384 is supported and tested (this
+                   corresponds to the register default value 0x60). Do not use any other values,
+                   unless you know what you are doing.
                 '''
           resval: "0x0060"
         }
