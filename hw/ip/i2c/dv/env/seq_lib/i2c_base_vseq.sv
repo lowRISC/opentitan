@@ -1003,7 +1003,7 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     acq_fifo_empty = 0;
     if (read_one) begin
-    // polling if status.acqempty is zero and skip read fifo
+    // Polling if status.acqempty is zero and skip read fifo
     // if fifo is empty.
       csr_rd(.ptr(ral.status.acqempty), .value(acq_fifo_empty));
       read_data = (acq_fifo_empty)? 0 : 1;

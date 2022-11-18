@@ -9,6 +9,8 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   rand bit [7:0] rd_data[256]; // max length of read transaction
   byte wr_data;
+  int scl_spinwait_timeout_ns = 1_000_000; // 1ms
+  bit scl_pause = 0;
 
   // get an array with unique read data
   constraint rd_data_c { unique { rd_data }; }
@@ -30,8 +32,12 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
       begin
         if (cfg.if_mode == Host) drive_scl();
       end
+      begin
+        if (cfg.if_mode == Host) host_scl_pause_ctrl();
+      end
     join
   endtask
+
 
   virtual task get_and_drive();
     i2c_item req;
@@ -61,6 +67,8 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   endtask : get_and_drive
 
   virtual task drive_host_item(i2c_item req);
+    // During pause period, let drive_scl control scl
+    `DV_WAIT(scl_pause == 1'b0,, scl_spinwait_timeout_ns, "drive_host_item")
     `uvm_info(`gfn, $sformatf("drv: %s", req.drv_type.name), UVM_MEDIUM)
     unique case (req.drv_type)
       HostStart: begin
@@ -71,7 +79,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         cfg.vif.host_rstart(cfg.timing_cfg);
       end
       HostData: begin
-        `uvm_info(`gfn, $sformatf("Driving host item h%x", req.wdata), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("Driving host item 0x%x", req.wdata), UVM_MEDIUM)
         for (int i = $bits(req.wdata) -1; i >= 0; i--) begin
           cfg.vif.host_data(cfg.timing_cfg, req.wdata[i]);
         end
@@ -158,7 +166,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   endtask : release_bus
 
   task drive_scl();
-    int scl_spinwait_timeout_ns = 1_000_000; // 1ms
     forever begin
       @(cfg.vif.cb);
       wait(cfg.host_scl_start);
@@ -169,11 +176,32 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         cfg.vif.scl_o <= 1'b1;
         `DV_WAIT(cfg.vif.scl_i === 1'b1,, scl_spinwait_timeout_ns, "i2c_drv_scl")
         cfg.vif.wait_for_dly(cfg.timing_cfg.tClockPulse);
+
+        // There is a corner case s.t.
+        // pause req -> drv got stop back to back.
+        // if that happens, skip to the next txn cycle to pause to avoid unsuccessful host timeout
+        if (cfg.host_scl_pause_ack & !cfg.host_scl_stop) begin
+           scl_pause = 1;
+           cfg.vif.wait_for_dly(cfg.host_scl_pause_cyc);
+           scl_pause = 0;
+           cfg.host_scl_pause_ack = 0;
+        end
         if (!cfg.host_scl_stop) cfg.vif.scl_o = 1'b0;
         cfg.vif.wait_for_dly(cfg.timing_cfg.tHoldBit);
       end
       cfg.host_scl_start = 0;
       cfg.host_scl_stop = 0;
     end
+  endtask
+  task host_scl_pause_ctrl();
+     forever begin
+        @(cfg.vif.cb);
+        if (cfg.host_scl_pause_req & cfg.host_scl_start & !cfg.host_scl_stop) begin
+          cfg.host_scl_pause_ack = 1;
+          `DV_WAIT(cfg.host_scl_pause_ack == 0,,
+                   scl_spinwait_timeout_ns, "host_scl_pause_ctrl")
+          cfg.host_scl_pause_req = 0;
+        end
+     end
   endtask
 endclass : i2c_driver
