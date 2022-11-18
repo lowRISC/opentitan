@@ -40,7 +40,7 @@ OTBN Software must only be written in Assembly.
 # Host Software
 
 This software is for host-side use, either in preparing images or interacting with a running OpenTitan platform chip.
-You can find all the device software in the `sw/host` directory of the repository.
+You can find all the host software in the `sw/host` directory of the repository.
 
 Host software must be written in C++ or Rust.
 

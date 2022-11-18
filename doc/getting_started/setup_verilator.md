@@ -30,7 +30,7 @@ git checkout v$VERILATOR_VERSION
 autoconf
 CC=gcc-11 CXX=g++-11 ./configure --prefix=/tools/verilator/$VERILATOR_VERSION
 CC=gcc-11 CXX=g++-11 make
-CC=gcc-11 CXX=g++-11 make install
+sudo CC=gcc-11 CXX=g++-11 make install
 ```
 The `make` step can take several minutes.
 

@@ -66,22 +66,23 @@ There is support for Cadence Xcelium as well, which is being slowly ramped up.
 The `uvmdvgen` tool provides an empty shell sequence at `dv/env/seq_lib/<dut>_sanity_vseq.sv` for developing the sanity test.
 The sanity test can be run as-is by invoking `dvsim.py`, as a "hello world" step to bring the DUT out of reset.
 ```console
-$ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson -i <dut>_sanity [--waves] [--tool xcelium]
+$ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson -i <dut>_sanity [--waves <format>] [--tool xcelium]
 ```
 
 The generated initial testbench is not expected to compile and elaborate successfully right away.
-There may be additional fixes required, which can be hopefully be identified easily.
+There may be additional fixes required, which can hopefully be identified easily.
 Once the testbench compiles and elaborates without any errors or warnings, the sanity sequence can be developed further to access a major datapath and test the basic functionality of the DUT.
 
 VCS is used as the default simulator.
 It can be switched to Xcelium by setting `--tool xcelium` on the command line.
-To dump waves from the simulation, pass the `--waves` argument to `dvsim.py`.
+To dump waves from the simulation, pass the `--waves <format>` argument to `dvsim.py`. With Xcelium you should probably use '--waves shm' and with VCS specify '--waves vpd' but both can generate the more portable, but much larger, VCD format by specifying the '--waves vcd' parameter.
+
 Please refer to the [DV simulation flow]({{< relref "hw/dv/tools/doc" >}}) for additional details.
 
 The `uvmdvgen` script also enables the user to run the full suite of CSR tests, if the DUT does have CSRs in it.
 The most basic CSR power-on-reset check test can be run by invoking:
 ```console
-$ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson -i <dut>_csr_hw_reset [--waves] [--tool xcelium]
+$ util/dvsim/dvsim.py path/to/<dut>_sim_cfg.hjson -i <dut>_csr_hw_reset [--waves <format>] [--tool xcelium]
 ```
 Please refer to [CSR utilities]({{< relref "hw/dv/sv/csr_utils/doc" >}}) for more information on how to add exclusions for the CSR tests.
 
@@ -93,7 +94,7 @@ Please refer to the [checklist]({{< relref "doc/project/checklist" >}}) to under
 The [UART DV](https://github.com/lowRISC/opentitan/tree/master/hw/ip/uart/dv) area can be used as a canonical example for making progress.
 If it is not clear on how to proceed, feel free to file an issue requesting assistance.
 
-## Reproduce a DV failure in CI
+## Reproduce a DV failure that CI reported
 
 Follow these steps to reproduce the failure
 
@@ -114,5 +115,5 @@ $ util/dvsim/dvsim.py hw/top_earlgrey/dv/top_earlgrey_sim_cfgs.hjson -i smoke --
 We can only run the failed test with `--fixed-seed=1` to reproduce the failure.
 Assume there is a failure in the `uart_smoke` test. Here is the run command to reproduce it.
 ```console
-$ util/dvsim/dvsim.py hw/ip/uart/dv/uart_sim_cfg.hjson -i uart_smoke --fixed-seed=1 [--waves]
+$ util/dvsim/dvsim.py hw/ip/uart/dv/uart_sim_cfg.hjson -i uart_smoke --fixed-seed=1 [--waves vcd]
 ```

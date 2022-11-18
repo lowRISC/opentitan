@@ -128,7 +128,7 @@ DV simulations for `top_earlgrey` are run with the [`dvsim`]() tool.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 The basic UART transmit and receive test can be run with the following command:
 ```console
-$ ./util/dvsim/dvsim.py hw/top_earlgrey/dv/chip_sim_cfg.hjson -i chip_uart_tx_rx
+$ ./util/dvsim/dvsim.py hw/top_earlgrey/dv/chip_sim_cfg.hjson -i chip_sw_uart_tx_rx
 ```
 For a list of available tests  to run, please see the 'Tests' column in the [testplan]({{< relref "#testplan" >}}) below.
 

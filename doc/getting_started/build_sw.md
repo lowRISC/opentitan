@@ -36,7 +36,7 @@ There are two ways to install the correct version of Bazel:
 ### Automatic Installation
 
 To simplify the installation of Bazel, and provide a means to seamlessly update the Bazel version we use in the future, we provide a shell script that acts as a wrapper for invocations of "`bazel ...`".
-To use it, you two options:
+To use it, you have two options:
 1. use "`./bazelisk.sh ...`" instead of "`bazel ...`" to invoke of Bazel subcommands, or
 1. set the following alias (e.g., in your `.bashrc` file) to accomplish the same:
 ```console

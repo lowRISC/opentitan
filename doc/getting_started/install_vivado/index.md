@@ -11,6 +11,9 @@ XC7K410T used on the CW310 board.
 
 _**Vivado Version:** The recommendation is to use Vivado {{< tool_version "vivado" >}}._
 
+Following the arrival of Vivado ML Edition, you will need to follow the links for that, eg. Products -> Hardware Development -> Vivado ML.
+Then click on 'Vivado Archive' in the Version list and locate version {{< tool_version "vivado" >}} of Vivado Design Suite.
+
 See [Download and
 Installation](https://docs.xilinx.com/r/{{< tool_version "vivado" >}}-English/ug973-vivado-release-notes-install-license/Download-and-Installation)
 for installation instructions.
