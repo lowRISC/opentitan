@@ -206,6 +206,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/sram_ctrl/{sub_flow}/{tool}"
                task: "FpvSecCm"
+               stopats: ["*u_state_regs.state_o"]
              }
 
 
