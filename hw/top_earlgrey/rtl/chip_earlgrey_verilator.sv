@@ -116,8 +116,8 @@ module chip_earlgrey_verilator (
   assign cio_gpio_en_d2p_o[6:0]     = mio_oe[MioPadIob12:MioPadIob6];
   assign cio_gpio_d2p_o[13:7]       = mio_out[MioPadIor13:MioPadIor5];
   assign cio_gpio_en_d2p_o[13:7]    = mio_oe[MioPadIor13:MioPadIor5];
-  assign cio_gpio_d2p_o[23:14]      = '0;
-  assign cio_gpio_en_d2p_o[23:14]   = '0;
+  assign cio_gpio_d2p_o[21:14]      = '0;
+  assign cio_gpio_en_d2p_o[21:14]   = '0;
   // SW straps
   assign cio_gpio_d2p_o[24:22]      = mio_out[MioPadIoc2:MioPadIoc0];
   assign cio_gpio_en_d2p_o[24:22]   = mio_oe[MioPadIoc2:MioPadIoc0];
@@ -157,7 +157,7 @@ module chip_earlgrey_verilator (
   assign cio_gpio_pull_en_o[11] = mio_attr[MioPadIor11].pull_en;
   assign cio_gpio_pull_en_o[12] = mio_attr[MioPadIor12].pull_en;
   assign cio_gpio_pull_en_o[13] = mio_attr[MioPadIor13].pull_en;
-  assign cio_gpio_pull_en_o[23:14] = '0;
+  assign cio_gpio_pull_en_o[21:14] = '0;
 
   // Pull enable for SW STRAPs
   assign cio_gpio_pull_en_o[22] = mio_attr[MioPadIoc0].pull_en;
@@ -186,7 +186,7 @@ module chip_earlgrey_verilator (
   assign cio_gpio_pull_select_o[11] = mio_attr[MioPadIor11].pull_select;
   assign cio_gpio_pull_select_o[12] = mio_attr[MioPadIor12].pull_select;
   assign cio_gpio_pull_select_o[13] = mio_attr[MioPadIor13].pull_select;
-  assign cio_gpio_pull_select_o[23:14] = '0;
+  assign cio_gpio_pull_select_o[21:14] = '0;
 
   // Pull select for SW STRAPs
   assign cio_gpio_pull_select_o[22] = mio_attr[MioPadIoc0].pull_select;
