@@ -122,6 +122,7 @@ filesets:
       - seq_lib/chip_sw_rom_e2e_shutdown_output_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rom_e2e_shutdown_exception_c_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_rom_e2e_asm_init_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_power_idle_load_vseq.sv: {is_include_file: true}
       - autogen/chip_env_pkg__params.sv: {is_include_file: true}
       - alerts_if.sv

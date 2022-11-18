@@ -537,6 +537,21 @@
       run_timeout_mins: 120
     }
     {
+      name: rom_e2e_asm_init_rma
+      uvm_test_seq: chip_sw_rom_e2e_asm_init_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a:1:signed:ot_flash_binary:fake_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_e2e_bootstrap_entry_rma:4",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+use_otp_image=OtpTypeCustom",
+        "+sw_test_timeout_ns=20000000",
+      ]
+      run_timeout_mins: 180
+      reseed: 1
+    }
+    {
       name: rom_e2e_static_critical
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_static_critical:1:signed"]
@@ -619,6 +634,12 @@
         "rom_e2e_sigverify_always_a_nothing_b_bad_prod",
         "rom_e2e_sigverify_always_a_nothing_b_bad_prod_end",
         "rom_e2e_sigverify_always_a_nothing_b_bad_rma",
+      ]
+    }
+    {
+      name: rom_e2e_asm_init
+      tests: [
+        "rom_e2e_asm_init_rma",
       ]
     }
   ]
