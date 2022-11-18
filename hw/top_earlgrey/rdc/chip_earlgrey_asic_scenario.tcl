@@ -172,7 +172,16 @@ set_reset_scenario { \
   { POR_N                               { constraint { @t0 1 } } } \
   { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint { @t0 1 } } } \
   { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { constraint { @t0 1 } } } \
-} -name JtagRvDm -comment "RV_DM JTAG Reset Scenario"
+  { top_earlgrey.u_rv_dm.dmi_req_valid  { constraint { @t0 0 } } } \
+  { top_earlgrey.u_rv_dm.dmi_rsp_valid  { constraint { @t0 0 } } } \
+} -name JtagRvDm \
+  -comment { \
+    RV_DM JTAG Reset Scenario \
+    \
+    Assumption: \
+      - POR_N is not asserting if JTAG is enabled \
+      - No pending transaction if JTAG TRST_N is asserted \
+  }
 ## LC_CTRL
 set_reset_scenario { \
   { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.jtag_req.trst_n \
@@ -182,4 +191,6 @@ set_reset_scenario { \
   { POR_N                               { constraint { @t0 1 } } } \
   { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint { @t0 1 } } } \
   { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { constraint { @t0 1 } } } \
+  { top_earlgrey.u_lc_ctrl.dmi_req_valid  { constraint { @t0 0 } } } \
+  { top_earlgrey.u_lc_ctrl.dmi_resp_valid { constraint { @t0 0 } } } \
 } -name JtagLifeCycle -comment "LC_CTRL JTAG Reset Scenario"
