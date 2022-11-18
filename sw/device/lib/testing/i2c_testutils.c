@@ -36,7 +36,7 @@ void i2c_testutils_wr(dif_i2c_t *i2c, uint8_t addr, uint8_t byte_count,
 
   // TODO: The current function does not support write payloads
   // larger than the fifo depth.
-  CHECK(byte_count < I2C_PARAM_FIFO_DEPTH);
+  CHECK(byte_count <= I2C_PARAM_FIFO_DEPTH);
 
   // TODO: #15377 The I2C DIF says: "Callers should prefer
   // `dif_i2c_write_byte()` instead, since that function provides clearer

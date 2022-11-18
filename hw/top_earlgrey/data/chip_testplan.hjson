@@ -249,7 +249,7 @@
             Verify all instances of I2C in the chip.
             '''
       stage: V2
-      tests: ["chip_sw_i2c_host_tx_rx"]
+      tests: ["chip_sw_i2c_host_tx_rx", "chip_sw_i2c_host_tx_rx_idx1", "chip_sw_i2c_host_tx_rx_idx2"]
     }
     {
       name: chip_sw_i2c_device_tx_rx
