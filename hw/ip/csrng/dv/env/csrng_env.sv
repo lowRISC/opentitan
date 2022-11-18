@@ -62,6 +62,12 @@ class csrng_env extends cip_base_env #(
         get(this, "", "csrng_path_vif", cfg.csrng_path_vif)) begin
       `uvm_fatal(`gfn, "failed to get csrng_path_vif from uvm_config_db")
     end
+
+    if (!uvm_config_db#(virtual csrng_agents_if)::
+        get(this, "", "csrng_agents_vif", cfg.csrng_agents_vif)) begin
+      `uvm_fatal(`gfn, "failed to get csrng_agents_vif from uvm_config_db")
+    end
+
   endfunction
 
   function void connect_phase(uvm_phase phase);

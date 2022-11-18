@@ -22,6 +22,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   virtual csrng_path_if csrng_path_vif; // handle to csrng path interface
 
+  virtual csrng_agents_if csrng_agents_vif;
+
   // Knobs & Weights
   uint otp_en_cs_sw_app_read_pct, otp_en_cs_sw_app_read_inval_pct, lc_hw_debug_en_pct, regwen_pct,
        enable_pct, sw_app_enable_pct, read_int_state_pct, force_state_pct, check_int_state_pct,
