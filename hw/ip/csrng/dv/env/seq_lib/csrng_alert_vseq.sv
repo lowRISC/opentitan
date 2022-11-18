@@ -88,7 +88,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
         get_rand_mubi4_val(.t_weight(0), .f_weight(0), .other_weight(1)) : MuBi4True;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(cfg.which_app_err_alert, cs_item);
+    send_cmd_req(cfg.which_app_err_alert, cs_item, .edn_rst_as_ack(0));
 
     // Reseed Command.
     cs_item.acmd  = csrng_pkg::RES;
@@ -97,7 +97,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
         get_rand_mubi4_val(.t_weight(0), .f_weight(0), .other_weight(1)) : MuBi4True;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-    send_cmd_req(cfg.which_app_err_alert, cs_item);
+    send_cmd_req(cfg.which_app_err_alert, cs_item, .edn_rst_as_ack(0));
 
     if (!flag0_flip_ins_cmd) begin
       // The previous command interpreting flag0 detected an invalid MuBi encoding. We need
@@ -109,7 +109,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
       cs_item.flags = MuBi4True;
       cs_item.glen  = 'h1;
       `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
-      send_cmd_req(cfg.which_app_err_alert, cs_item);
+      send_cmd_req(cfg.which_app_err_alert, cs_item, .edn_rst_as_ack(0));
     end
 
     `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
