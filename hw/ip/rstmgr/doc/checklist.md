@@ -221,11 +221,11 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Not Started |
-Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
-Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
-Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
+Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        |
+Tests         | [FPV_SEC_CM_VERIFIED][]                 | Done        |
+Tests         | [SIM_SEC_CM_VERIFIED][]                 | Done        |
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        |
+Review        | [SEC_CM_DV_REVIEWED][]                  | Done        |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          {{<relref "/doc/project/checklist.md#sec_cm_testplan_completed" >}}
 [FPV_SEC_CM_VERIFIED]:                {{<relref "/doc/project/checklist.md#fpv_sec_cm_verified" >}}
