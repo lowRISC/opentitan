@@ -30,6 +30,7 @@ static dif_lc_ctrl_t lc;
 
 // This is updated by the sv component of the test
 static volatile const uint8_t kTestPhase = 0;
+static volatile const uint8_t kSrcLcState = 0;
 
 enum {
   kFlashInfoPageIdCreatorSecret = 1,
@@ -78,12 +79,6 @@ static const uint32_t kRandomData[7][kDataSize] = {
     {0x0eb23677, 0x58c97854, 0x284e1a8f, 0x9b460e99, 0x339b0fe6, 0x80778f39,
      0x9dbc2981, 0xb4bdc15f, 0x3abbdeb2, 0xab39dd53, 0x96bb2c4a, 0x9b2d1795,
      0x733bf534, 0xc4914b4b, 0x64487458, 0x9d0fa332}};
-
-// RMA unlock token value for LC state transition.
-static volatile const uint8_t kLcRmaUnlockToken[LC_TOKEN_SIZE] = {
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
-};
 
 static void write_info_page_scrambled(uint32_t page_index,
                                       const uint32_t *data) {
@@ -144,7 +139,7 @@ static void read_and_check_data_page_scrambled(bool is_equal,
 static void write_data_test_phase(void) {
   dif_lc_ctrl_state_t curr_state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
-  CHECK(curr_state == kDifLcCtrlStateDev);
+  CHECK(curr_state == kSrcLcState);
 
   write_info_page_scrambled(kFlashInfoPageIdCreatorSecret, kRandomData[0]);
   write_info_page_scrambled(kFlashInfoPageIdOwnerSecret, kRandomData[1]);
@@ -158,6 +153,7 @@ static void write_data_test_phase(void) {
   write_data_page_scrambled(kRegionBaseBank1Page255Index,
                             kFlashBank1Page255DataRegion, kRandomData[6]);
 
+  LOG_INFO("Write data test complete - waiting for TB");
   // Going into WFI which will be detected by the testbench
   // and an OTP write and reset can be triggered.
   test_status_set(kTestStatusInWfi);
@@ -166,15 +162,16 @@ static void write_data_test_phase(void) {
 
 // Function for the second boot, the LC_STATE is still Dev but the OTP secret 2
 // partition has now been provisioned by the testbench. Reading back
-// from the flash pages that are still accessible as a sanity check.
+// from the flash pages that are still accessible as a smoke check.
 // Creator Secret is not accessible because of OTP secret 2 provisioning.
 // Isolation Partition cannot be read in LC_STATE of Dev.
 // All others are accessible.
-// Once readback is complete setup and entering RMA LC_STATE.
+// Once readback is complete we wait for the testbench to issue a
+// transition into RMA.
 static void enter_rma_test_phase(void) {
   dif_lc_ctrl_state_t curr_state;
   CHECK_DIF_OK(dif_lc_ctrl_get_state(&lc, &curr_state));
-  CHECK(curr_state == kDifLcCtrlStateDev);
+  CHECK(curr_state == kSrcLcState);
 
   read_and_check_info_page_scrambled(true, kFlashInfoPageIdOwnerSecret,
                                      kRandomData[1]);
@@ -191,16 +188,7 @@ static void enter_rma_test_phase(void) {
                                      kFlashBank1Page255DataRegion,
                                      kRandomData[6]);
 
-  // Setting up lc_ctrl for an RMA transition.
-  dif_lc_ctrl_token_t token;
-  for (int i = 0; i < LC_TOKEN_SIZE; ++i) {
-    token.data[i] = kLcRmaUnlockToken[i];
-  }
-  CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc));
-  CHECK_DIF_OK(dif_lc_ctrl_configure(&lc, kDifLcCtrlStateRma,
-                                     /*use_ext_clock=*/false, &token));
-  CHECK_DIF_OK(dif_lc_ctrl_transition(&lc));
-
+  LOG_INFO("Enter RMA test complete - waiting for TB");
   // Enter WFI for detection in the testbench.
   test_status_set(kTestStatusInWfi);
   wait_for_interrupt();
@@ -232,6 +220,7 @@ static void check_wipe_test_phase(void) {
   read_and_check_data_page_scrambled(false, kRegionBaseBank1Page255Index,
                                      kFlashBank1Page255DataRegion,
                                      kRandomData[6]);
+  LOG_INFO("Wipe test complete - done");
 }
 
 bool rom_test_main(void) {
@@ -275,6 +264,7 @@ bool rom_test_main(void) {
   };
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, otp_config));
 
+  LOG_INFO("Test phase %d", kTestPhase);
   switch (kTestPhase) {
     case kTestPhaseWriteData:
       write_data_test_phase();
@@ -284,11 +274,11 @@ bool rom_test_main(void) {
       break;
     case kTestPhaseCheckWipe:
       check_wipe_test_phase();
-      break;
+      return true;
     default:
       LOG_FATAL("Unexpected Test Phase");
       break;
   }
 
-  return true;
+  return false;
 }
