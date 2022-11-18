@@ -659,9 +659,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
 
   // LC_CTRL JTAG tasks
-  virtual task wait_lc_status(lc_ctrl_status_e expect_status, int max_attemp = 5000);
+  virtual task wait_lc_status(lc_ctrl_status_e expect_status, int max_attempt = 5000);
     int i;
-    for (i = 0; i < max_attemp; i++) begin
+    for (i = 0; i < max_attempt; i++) begin
       bit [TL_DW-1:0] status_val;
       lc_ctrl_status_e dummy;
       cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
@@ -678,20 +678,26 @@ class chip_sw_base_vseq extends chip_base_vseq;
       end
     end
 
-    if (i >= max_attemp) begin
+    if (i >= max_attempt) begin
       `uvm_fatal(`gfn, $sformatf("max attempt reached to get lc status %0s!", expect_status.name))
     end
   endtask
 
-  virtual task wait_lc_initialized(bit allow_err = 1);
+  virtual task wait_lc_initialized(bit allow_err = 1, int max_attempt = 5000);
     cfg.m_jtag_riscv_agent_cfg.allow_errors = allow_err;
-    wait_lc_status(LcInitialized);
+    wait_lc_status(LcInitialized, max_attempt);
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
   endtask
 
-  virtual task wait_lc_ready(bit allow_err = 1);
+  virtual task wait_lc_ready(bit allow_err = 1, int max_attempt = 5000);
     cfg.m_jtag_riscv_agent_cfg.allow_errors = allow_err;
-    wait_lc_status(LcReady);
+    wait_lc_status(LcReady, max_attempt);
+    cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
+  endtask
+
+  virtual task wait_lc_transition_successful(bit allow_err = 1, int max_attempt = 5000);
+    cfg.m_jtag_riscv_agent_cfg.allow_errors = allow_err;
+    wait_lc_status(LcTransitionSuccessful, max_attempt);
     cfg.m_jtag_riscv_agent_cfg.allow_errors = 0;
   endtask
 
@@ -706,6 +712,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                         bit [TokenWidthBit-1:0] test_unlock_token = 0);
     bit [TL_DW-1:0] actual_src_state;
     bit valid_transition;
+    int max_attempt;
+
+    // Check that the LC controller is ready to accept a transition.
+    wait_lc_ready();
 
     jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl.lc_state.get_offset(),
                                         p_sequencer.jtag_sequencer_h,
@@ -775,15 +785,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
       DecLcStTestUnlocked7: begin
         if (dest_state inside {DecLcStProd, DecLcStScrap}) valid_transition = 1;
       end
-
-      DecLcStDev, DecLcStProd: begin
-        if (dest_state inside {DecLcStRma, DecLcStScrap}) valid_transition = 1;
+      DecLcStDev,
+      DecLcStProd: begin
+        if(dest_state inside {DecLcStRma, DecLcStScrap}) valid_transition = 1;
       end
-
-      DecLcStProdEnd, DecLcStRma: begin
-        if (dest_state inside {DecLcStScrap}) valid_transition = 1;
+      DecLcStProdEnd,
+      DecLcStRma: begin
+        if(dest_state inside {DecLcStScrap}) valid_transition = 1;
       end
-      default: `uvm_fatal(`gfn, $sformatf("%0s src state not supported", src_state.name))
+     default: `uvm_fatal(`gfn, $sformatf("%0s src state not supported", src_state.name))
     endcase
 
     if (!valid_transition) begin
@@ -815,8 +825,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                          1);
     `uvm_info(`gfn, "Sent LC transition request", UVM_LOW)
 
-    wait_lc_status(LcTransitionSuccessful);
-    `uvm_info(`gfn, "LC transition request succeed!", UVM_LOW)
+    // Transitions into RMA take much longer, hence we increase this number.
+    if (dest_state == DecLcStRma) begin
+      max_attempt = 50_000;
+    end else begin
+      max_attempt = 5_000;
+    end
+    wait_lc_transition_successful(.max_attempt(max_attempt));
+    `uvm_info(`gfn, "LC transition request succeeded successfully!", UVM_LOW)
   endtask
 
   // Use JTAG interface to program OTP fields.
