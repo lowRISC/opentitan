@@ -28,7 +28,7 @@ interface pwrmgr_ast_sva_if #(
   // not more than 2 cycles.
   localparam int MIN_CLK_WAIT_CYCLES = 0;
   localparam int MIN_PDN_WAIT_CYCLES = 0;
-  localparam int MAX_CLK_WAIT_CYCLES = 20;
+  localparam int MAX_CLK_WAIT_CYCLES = 60;
   localparam int MAX_PDN_WAIT_CYCLES = 110;
 
   bit disable_sva;
@@ -41,42 +41,46 @@ interface pwrmgr_ast_sva_if #(
 
   // Clock enable-valid.
 
-
-  // Changes triggered by por_d0_ni: it affects both clk_en and clk_val at different times.
-  `ASSERT(CoreClkGlitchToValOff_A, !por_d0_ni |-> ##[0:1] !pwr_ast_i.core_clk_val, clk_slow_i,
+  // Changes triggered by por_d0_ni only affect clk_val.
+  `ASSERT(CoreClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:1] !pwr_ast_i.core_clk_val, clk_slow_i,
           reset_or_disable)
-  `ASSERT(CoreClkGlitchToEnOff_A, !por_d0_ni |-> `CLK_WAIT_BOUNDS !pwr_ast_o.core_clk_en,
-          clk_slow_i, reset_or_disable)
-  `ASSERT(IoClkGlitchToValOff_A, !por_d0_ni |-> ##[0:1] !pwr_ast_i.io_clk_val, clk_slow_i,
+  `ASSERT(CoreClkGlitchToValOn_A,
+          $rose(por_d0_ni) && pwr_ast_o.core_clk_en |-> ##[0:2] pwr_ast_i.core_clk_val, clk_slow_i,
           reset_or_disable)
-  `ASSERT(IoClkGlitchToEnOff_A, !por_d0_ni |-> `CLK_WAIT_BOUNDS !pwr_ast_o.io_clk_en, clk_slow_i,
+  `ASSERT(IoClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:1] !pwr_ast_i.io_clk_val, clk_slow_i,
           reset_or_disable)
-  `ASSERT(UsbClkGlitchToValOff_A, !por_d0_ni |-> ##[0:5] !pwr_ast_i.usb_clk_val, clk_slow_i,
+  `ASSERT(IoClkGlitchToValOn_A,
+          $rose(por_d0_ni) && pwr_ast_o.io_clk_en |-> ##[0:2] pwr_ast_i.io_clk_val, clk_slow_i,
           reset_or_disable)
-  `ASSERT(UsbClkGlitchToEnOff_A, !por_d0_ni |-> `CLK_WAIT_BOUNDS !pwr_ast_o.usb_clk_en, clk_slow_i,
+  `ASSERT(UsbClkGlitchToValOff_A, $fell(por_d0_ni) |-> ##[0:5] !pwr_ast_i.usb_clk_val, clk_slow_i,
+          reset_or_disable)
+  `ASSERT(UsbClkGlitchToValOn_A,
+          $rose(por_d0_ni) && pwr_ast_o.usb_clk_en |-> ##[0:5] pwr_ast_i.usb_clk_val, clk_slow_i,
           reset_or_disable)
 
   // Changes not triggered by por_d0_ni
   `ASSERT(CoreClkHandshakeOn_A,
-          pwr_ast_o.core_clk_en && por_d0_ni |-> `CLK_WAIT_BOUNDS
+          $rose(pwr_ast_o.core_clk_en) && por_d0_ni |-> `CLK_WAIT_BOUNDS
           pwr_ast_i.core_clk_val || !por_d0_ni, clk_slow_i, reset_or_disable)
   `ASSERT(CoreClkHandshakeOff_A,
-          !pwr_ast_o.core_clk_en |-> `CLK_WAIT_BOUNDS !pwr_ast_i.core_clk_val, clk_slow_i,
+          $fell(pwr_ast_o.core_clk_en) |-> `CLK_WAIT_BOUNDS !pwr_ast_i.core_clk_val, clk_slow_i,
           reset_or_disable)
 
   `ASSERT(IoClkHandshakeOn_A,
-          pwr_ast_o.io_clk_en && por_d0_ni |-> `CLK_WAIT_BOUNDS
+          $rose(pwr_ast_o.io_clk_en) && por_d0_ni |-> `CLK_WAIT_BOUNDS
           pwr_ast_i.io_clk_val || !por_d0_ni, clk_slow_i, reset_or_disable)
-  `ASSERT(IoClkHandshakeOff_A, !pwr_ast_o.io_clk_en |-> `CLK_WAIT_BOUNDS !pwr_ast_i.io_clk_val,
-          clk_slow_i, reset_or_disable)
+  `ASSERT(IoClkHandshakeOff_A,
+          $fell(pwr_ast_o.io_clk_en) |-> `CLK_WAIT_BOUNDS !pwr_ast_i.io_clk_val, clk_slow_i,
+          reset_or_disable)
 
   // Usb is a bit different: apparently usb_clk_val can stay low after a power glitch, so it may
   // already be low when usb_clk_en drops.
   `ASSERT(UsbClkHandshakeOn_A,
-          pwr_ast_o.usb_clk_en && por_d0_ni && $past(por_d0_ni, 1) |-> `CLK_WAIT_BOUNDS
+          $rose(pwr_ast_o.usb_clk_en) && por_d0_ni && $past(por_d0_ni, 1) |-> `CLK_WAIT_BOUNDS
           pwr_ast_i.usb_clk_val || !por_d0_ni, clk_slow_i, reset_or_disable)
-  `ASSERT(UsbClkHandshakeOff_A, !pwr_ast_o.usb_clk_en |-> `CLK_WAIT_BOUNDS !pwr_ast_i.usb_clk_val,
-          clk_slow_i, reset_or_disable)
+  `ASSERT(UsbClkHandshakeOff_A,
+          $fell(pwr_ast_o.usb_clk_en) |-> `CLK_WAIT_BOUNDS !pwr_ast_i.usb_clk_val, clk_slow_i,
+          reset_or_disable)
 
   if (CheckClocks) begin : gen_check_clock
     int main_clk_cycles, io_clk_cycles, usb_clk_cycles;
@@ -135,4 +139,7 @@ interface pwrmgr_ast_sva_if #(
           clk_slow_i, reset_or_disable)
   `ASSERT(MainPdHandshakeOff_A, !pwr_ast_o.main_pd_n |-> `PDN_WAIT_BOUNDS !pwr_ast_i.main_pok,
           clk_slow_i, reset_or_disable)
+
+  `undef CLK_WAIT_BOUNDS
+  `undef PDN_WAIT_BOUNDS
 endinterface
