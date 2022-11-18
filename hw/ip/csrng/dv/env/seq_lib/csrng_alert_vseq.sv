@@ -9,9 +9,10 @@ class csrng_alert_vseq extends csrng_base_vseq;
 
   `uvm_object_new
 
-  bit [31:0]      exp_recov_alert_sts;
-  csrng_item      cs_item;
-  rand bit        flag0_flip_ins_cmd;
+  bit [31:0]  exp_recov_alert_sts;
+  csrng_item  cs_item;
+  rand bit    flag0_flip_ins_cmd;
+  rand acmd_e illegal_command;
 
   task body();
     int           first_index;
@@ -19,6 +20,11 @@ class csrng_alert_vseq extends csrng_base_vseq;
     string        fld_name;
     uvm_reg       csr;
     uvm_reg_field fld;
+
+    // Values for the cs_main_sm_alert test.
+    bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0] tmp_cmd;
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(illegal_command, illegal_command inside {INV, GENB,
+                                                                                   GENU};)
 
     super.body();
 
@@ -175,6 +181,53 @@ class csrng_alert_vseq extends csrng_base_vseq;
     cfg.clk_rst_vif.wait_clks(100);
 
     // Check recov_alert_sts register
+    csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
+
+    `uvm_info(`gfn, $sformatf("Testing cs_main_sm_alert"), UVM_MEDIUM)
+
+    // Here we send an illegal command to CSRNG to check that cs_main_sm_alert is triggered.
+    // The code to send an illegal command is partially copied from csrng_base_vseq::send_cmd_req.
+    cs_item.acmd  = illegal_command;
+    cs_item.clen  = 'h0;
+    cs_item.flags = MuBi4True;
+    cs_item.glen  = 'h0;
+    tmp_cmd = {cs_item.glen, cs_item.flags, cs_item.clen, 1'b0, cs_item.acmd};
+    if (cfg.which_app_err_alert == SW_APP) begin
+      // Wait for CSRNG cmd_rdy.
+      csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
+      csr_wr(.ptr(ral.cmd_req), .value(tmp_cmd));
+    end else begin
+      cfg.m_edn_agent_cfg[cfg.which_app_err_alert].m_cmd_push_agent_cfg.add_h_user_data(tmp_cmd);
+      m_edn_push_seq[cfg.which_app_err_alert].num_trans = 1;
+      fork
+        // Drive cmd_req.
+        m_edn_push_seq[cfg.which_app_err_alert].start(p_sequencer.
+          edn_sequencer_h[cfg.which_app_err_alert].m_cmd_push_sequencer);
+      join
+    end
+
+    `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
+    cfg.m_alert_agent_cfg["recov_alert"].vif.wait_ack_complete();
+
+    `uvm_info(`gfn, $sformatf("Checking RECOV_ALERT_STS register"), UVM_MEDIUM)
+    exp_recov_alert_sts = 32'b0;
+    exp_recov_alert_sts[ral.recov_alert_sts.cs_main_sm_alert.get_lsb_pos()] = 1;
+    csr_spinwait(.ptr(ral.recov_alert_sts), .exp_data(exp_recov_alert_sts));
+    // Since we already did a backdoor check, sampling with this value is sufficient.
+    cov_vif.cg_recov_alert_sample(.recov_alert(exp_recov_alert_sts));
+
+    `uvm_info(`gfn, $sformatf("Checking RECOV_ALERT_STS reset"), UVM_MEDIUM)
+    // Toggle enable to put main FSM back into legal state.
+    ral.ctrl.enable.set(prim_mubi_pkg::MuBi4False);
+    csr_update(.csr(ral.ctrl));
+    cfg.clk_rst_vif.wait_clks(100);
+    ral.ctrl.enable.set(prim_mubi_pkg::MuBi4True);
+    csr_update(.csr(ral.ctrl));
+
+    // Clear recov_alert_sts register.
+    csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));
+    cfg.clk_rst_vif.wait_clks(100);
+    // Check recov_alert_sts register has cleared.
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
     // Turn assertions back on
