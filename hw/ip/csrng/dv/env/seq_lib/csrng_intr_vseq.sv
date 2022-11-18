@@ -149,6 +149,15 @@ class csrng_intr_vseq extends csrng_base_vseq;
         force_path_err(path, 8'b0, ral.intr_state.cs_fatal_err, 1'b1);
       end
       aes_cipher_sm_error: begin
+        // Get the path to the AES cipher core FSM. We need it in any case to test that AES enters
+        // the terminal error state.
+        string aes_fsm_path;
+        logic [aes_pkg::CipherCtrlStateWidth-1:0] aes_fsm_state;
+        if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
+          aes_fsm_path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "p");
+        end else begin
+          aes_fsm_path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "n");
+        end
         case (cfg.which_aes_cm) inside
           fsm_sparse, fsm_redun: begin
             if (cfg.which_aes_cm == fsm_sparse) begin
@@ -160,13 +169,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
               // i.e., whether it is idle or stalled.
               value3 = {2'b00, {aes_pkg::CIPHER_CTRL_CLEAR_S}};
             end
-            if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
-              path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "p");
-              force_path_err(path, value3, ral.intr_state.cs_fatal_err, 1'b1);
-            end else begin
-              path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "n");
-              force_path_err(path, value3, ral.intr_state.cs_fatal_err, 1'b1);
-            end
+            force_path_err(aes_fsm_path, value3, ral.intr_state.cs_fatal_err, 1'b1);
           end
           ctrl_sparse: begin
             // We force one rail of one of the mux control signals to another valid encoding.
@@ -190,6 +193,9 @@ class csrng_intr_vseq extends csrng_base_vseq;
             end
           end
         endcase
+        // Check that the AES cipher core FSM has entered the terminal error state.
+        `DV_CHECK(uvm_hdl_read(aes_fsm_path, aes_fsm_state))
+        `DV_CHECK_EQ(aes_fsm_state, aes_pkg::CIPHER_CTRL_ERROR)
       end
       cmd_gen_cnt_error: begin
         path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.NHwApps);
