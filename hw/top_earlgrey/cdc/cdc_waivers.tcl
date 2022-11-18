@@ -31,6 +31,8 @@ source $CDC_WAIVER_DIR/cdc_waivers.w_g_clk_glitch.tcl
 source $CDC_WAIVER_DIR/cdc_waivers.w_async_rst_flops.tcl
 source $CDC_WAIVER_DIR/cdc_waivers.w_recon.tcl
 source $CDC_WAIVER_DIR/cdc_waivers.w_data.tcl
+source $CDC_WAIVER_DIR/cdc_waivers.w_interface.tcl
+source $CDC_WAIVER_DIR/cdc_waivers.w_fanout.tcl
 source $CDC_WAIVER_DIR/cdc_waivers.misc.tcl
 
 # Common Waivers
