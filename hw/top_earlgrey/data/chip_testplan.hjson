@@ -249,7 +249,9 @@
             Verify all instances of I2C in the chip.
             '''
       stage: V2
-      tests: ["chip_sw_i2c_host_tx_rx", "chip_sw_i2c_host_tx_rx_idx1", "chip_sw_i2c_host_tx_rx_idx2"]
+      tests: ["chip_sw_i2c_host_tx_rx",
+              "chip_sw_i2c_host_tx_rx_idx1",
+              "chip_sw_i2c_host_tx_rx_idx2"]
     }
     {
       name: chip_sw_i2c_device_tx_rx
@@ -1495,7 +1497,7 @@
             - Repeat the previous steps for random number of iterations.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_alert_handler_lpg_sleep_mode_alerts"]
     }
     {
       name: chip_sw_alert_handler_lpg_sleep_mode_pings
@@ -2669,7 +2671,9 @@
       desc: '''Verify the proliferation of keys to security peripherals.
 
             - Verify the correctness of keys provided to SRAM ctrl (main & ret), flash ctrl, keymgr,
-              (note that keymgr does not have handshake), and OTBN.
+              (note that keymgr does not have handshake), OTBN and the CPU instruction cache.
+            - Ensure that the test requests a new key and verifies the previously written
+              data to an address now returns a garbage value.
 
             X-ref'ed with the following IP tests that consume these signals:
             - chip_sw_sram_scrambled_access
@@ -2678,8 +2682,12 @@
             - chip_sw_otbn_mem_scramble
             '''
       stage: V2
-      tests: ["chip_sw_sram_ctrl_scrambled_access", "chip_sw_flash_init",
-              "chip_sw_keymgr_key_derivation", "chip_sw_otbn_mem_scramble"]
+      tests: [// Verifies both, main and retention SRAM scrambling.
+              "chip_sw_sram_ctrl_scrambled_access",
+              "chip_sw_flash_init",
+              "chip_sw_keymgr_key_derivation",
+              "chip_sw_otbn_mem_scramble",
+              "chip_sw_rv_core_ibex_icache_invalidate"]
     }
     {
       name: chip_sw_otp_ctrl_entropy
@@ -2689,8 +2697,11 @@
             to receive some entropy bits before the keys for SRAM ctrl and OTBN are computed.
             '''
       stage: V2
-      tests: ["chip_sw_sram_ctrl_scrambled_access", "chip_sw_flash_init",
-              "chip_sw_keymgr_key_derivation", "chip_sw_otbn_mem_scramble"]
+      tests: ["chip_sw_sram_ctrl_scrambled_access",
+              "chip_sw_flash_init",
+              "chip_sw_keymgr_key_derivation",
+              "chip_sw_otbn_mem_scramble",
+              "chip_sw_rv_core_ibex_icache_invalidate"]
     }
     {
       name: chip_sw_otp_ctrl_program
@@ -3150,6 +3161,19 @@
             '''
       stage: V2
       tests: ["chip_sw_rv_core_ibex_address_translation"]
+   }
+   {
+     name: chip_sw_rv_core_ibex_icache_scrambled_access
+     desc: '''Verify scrambled memory accesses to CPU icache.
+
+           - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
+             done by the test_rom startup code).
+           - Execute the `fence` instruction to invalidate the icache.
+           - Verify using probes, that this resulted in a new scrambling key fetched from the OTP
+             ctrl.
+           '''
+     stage: V2
+     tests: ["chip_sw_rv_core_ibex_icache_invalidate"]
    }
 
    {
