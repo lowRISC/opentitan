@@ -19,6 +19,10 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
   spi_item rsp_q[$];
   spi_fsm_e spi_state = SpiIdle;
 
+  // state-variables
+  spi_cmd_e  cmd;
+  int        byte_cnt = 0;
+
   virtual task body();
 
     // wait for reset release
@@ -37,102 +41,84 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
 
   virtual task decode_cmd();
     spi_item         item;
-    spi_item         rsp = spi_item::type_id::create("rsp");
-    spi_item         rsp_clone;
-    spi_cmd_e        cmd;
-    bit       [31:0] addr;
-    bit       [31:0] data;
-    bit       [31:0] addr_cnt = 0;
-    int              byte_cnt = 0;
 
     forever begin
+
+      // Block here until the monitor sends a new seq_item, or we end the transaction.
+      fork begin: iso_fork
+        fork
+          get_nxt_req(item);
+          begin
+            // If CSB goes inactive, cleanup then go back to waiting for the next txn
+            @(posedge cfg.vif.csb[0]);
+            spi_state = SpiIdle;
+            rsp_q.delete();
+          end
+        join_any
+        disable fork;
+      end: iso_fork join
+      if (cfg.vif.csb[0] == 1'b1) continue;
+
+      // Check for start of transaction.
+      if (item.first_byte) begin
+        // decode command, check for errors
+        cmd = cmd_check(item.data.pop_front);
+        spi_state = SpiCmd;
+      end
+
       case (spi_state)
-        SpiIdle: begin
-          get_nxt_req(item);
-          // find start of transaction
-          if (item.first_byte) begin
-            // decode command
-            cmd = cmd_check(item.data.pop_front);
-            spi_state = SpiCmd;
-          end
-        end
-
+        SpiIdle:;
         SpiCmd: begin
-          get_nxt_req(item);
-          // make sure that we did not start a new transaction
-          if (item.first_byte) begin
-            // decode command
-            cmd = cmd_check(item.data.pop_front);
-            spi_state = SpiCmd;
-            addr_cnt = 0;
-          end else begin
-            addr[31-8*byte_cnt-:8] = item.data.pop_front();
-            byte_cnt += 1;
-            if (byte_cnt + 1 == cfg.spi_cmd_width) begin  // +1 to accound for the cmd byte
-              byte_cnt  = 0;
-              spi_state = SpiData;
-            end
+          byte_cnt += 1;
+          if (byte_cnt == cfg.spi_cmd_width) begin
+            byte_cnt  = 0;
+            spi_state = SpiData;
+            // If the command is a READ, we need to begin sending data now.
+            if (cmd inside {ReadStd, ReadDual, ReadQuad}) handle_reads();
           end
         end
-
         SpiData: begin
           case (cmd)
-            ReadStd, ReadDual, ReadQuad: begin
-              // read_until CSB low
-              data = $urandom();
-              addr_cnt += 4;
-              case (cmd)
-                ReadStd:  `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 256;)
-                ReadDual: `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 512;)
-                default:  `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp, rsp.data.size() == 1024;)
-              endcase  // case (cmd)
-              `downcast(rsp_clone, rsp.clone());
-              rsp_q.push_back(rsp_clone);
-              rsp = new();
-
-              case (cmd)
-                ReadStd : cfg.spi_mode = Standard;
-                ReadDual : cfg.spi_mode = Dual;
-                ReadQuad : cfg.spi_mode = Quad;
-                default : cfg.spi_mode = RsvdSpd;
-              endcase
-
-              // offload input queue
-              get_nxt_req(item);
-              if (item.first_byte) begin
-                // decode command
-                cmd = cmd_check(item.data.pop_front);
-                spi_state = SpiCmd;
-                addr_cnt = 0;
-              end
-            end // case: ReadStd, ReadDual, ReadQuad
-
-            WriteStd, WriteDual, WriteQuad: begin
-              get_nxt_req(item);
-              if (item.first_byte) begin
-                // decode command
-                cmd = cmd_check(item.data.pop_front);
-                spi_state = SpiCmd;
-                addr_cnt = 0;
-              end else begin
-                data[31-8*addr_cnt[1:0]-:8] = item.data.pop_front();
-                addr_cnt += 1;
-              end
-              // potential TODO add associative array for read back of write data
-            end
-
-            default: begin
-              `uvm_fatal(`gfn, $sformatf("UNSUPPORTED COMMAND"))
-            end
+            ReadStd,  ReadDual,  ReadQuad: handle_reads();
+            WriteStd, WriteDual, WriteQuad: handle_writes(item);
+            default: `uvm_fatal(`gfn, $sformatf("UNSUPPORTED COMMAND"))
           endcase
         end
-        default: begin
-          `uvm_fatal(`gfn, $sformatf("BAD STATE"))
-        end
-      endcase
-    end
+        default: `uvm_fatal(`gfn, $sformatf("BAD STATE"))
+      endcase // (spi_state)
+
+    end // forever
+
   endtask
 
+  function void handle_reads();
+    spi_item rsp = spi_item::type_id::create("rsp");
+    spi_item rsp_clone;
+
+    case (cmd)
+      ReadStd :  cfg.spi_mode = Standard;
+      ReadDual:  cfg.spi_mode = Dual;
+      ReadQuad:  cfg.spi_mode = Quad;
+      default :  cfg.spi_mode = RsvdSpd;
+    endcase
+
+    // Create rsp
+    // Currently, the rsp is just random data
+    rsp = new();
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(rsp,
+      (cmd == ReadStd)  -> data.size() ==  256;
+      (cmd == ReadDual) -> data.size() ==  512;
+      (cmd == ReadQuad) -> data.size() == 1024;
+      num_lanes == cfg.get_sio_size();)
+    `downcast(rsp_clone, rsp.clone());
+    rsp_q.push_back(rsp_clone);
+
+  endfunction // handle_read
+
+  function void handle_writes(spi_item item);
+    item.data.pop_front();
+    // potential TODO add associative array for read back of write data
+  endfunction // handle_writes
 
   function spi_cmd_e cmd_check(bit [7:0] data);
     spi_cmd_e cmd;
