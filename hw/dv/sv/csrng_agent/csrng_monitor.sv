@@ -46,6 +46,7 @@ class csrng_monitor extends dv_base_monitor #(
     forever begin
       @(negedge cfg.vif.rst_n);
       cfg.under_reset = 1;
+      csrng_cmd_fifo.flush();
       // TODO: sample any reset-related covergroups
       @(posedge cfg.vif.rst_n);
       cfg.under_reset = 0;
@@ -82,7 +83,7 @@ class csrng_monitor extends dv_base_monitor #(
               cs_item.genbits_q.push_back(cfg.vif.mon_cb.cmd_rsp.genbits_bus);
             end
           end
-          cfg.vif.wait_cmd_ack();
+          cfg.vif.wait_cmd_ack_or_rst_n();
           `uvm_info(`gfn, $sformatf("Writing analysis_port: %s", cs_item.convert2string()),
                     UVM_HIGH)
           analysis_port.write(cs_item);

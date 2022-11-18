@@ -66,7 +66,7 @@ class csrng_base_vseq extends cip_base_vseq #(
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
   endtask
 
-  task send_cmd_req(uint app, csrng_item cs_item, bit await_response=1'b1);
+  task send_cmd_req(uint app, csrng_item cs_item, bit await_response=1'b1, bit edn_rst_as_ack=1'b1);
     bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]   cmd;
     // Gen cmd_req
     if ((cs_item.acmd != INS) && (cs_item.acmd != RES)) begin
@@ -88,7 +88,8 @@ class csrng_base_vseq extends cip_base_vseq #(
       join_none
       if (await_response) begin
         // Wait for ack
-        cfg.m_edn_agent_cfg[app].vif.wait_cmd_ack();
+        if (edn_rst_as_ack) cfg.m_edn_agent_cfg[app].vif.wait_cmd_ack_or_rst_n();
+        else cfg.m_edn_agent_cfg[app].vif.wait_cmd_ack();
       end
     end
     else begin

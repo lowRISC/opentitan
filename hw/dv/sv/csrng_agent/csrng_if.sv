@@ -69,4 +69,15 @@ interface csrng_if (input clk, input rst_n);
     while (!mon_cb.cmd_rsp.csrng_rsp_ack);
   endtask
 
+  task automatic wait_cmd_ack_or_rst_n();
+    // Immediately return if reset is currently not inactive.
+    if (rst_n !== 1'b1) return;
+    // Otherwise wait for cmd_ack or negedge of reset, whichever comes first.
+    fork
+      wait_cmd_ack();
+      do @(clk); while (rst_n === 1'b1); // @(negedge rst_n) does not trigger for some reason
+    join_any
+    disable fork;
+  endtask
+
 endinterface
