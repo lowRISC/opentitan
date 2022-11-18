@@ -152,7 +152,13 @@
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=300_000_000",
                  "+use_intr_handler=1", "+slow_acq=1"]
     }
-  ]
+    {
+      name: i2c_target_tx_ovf
+      uvm_test_seq: i2c_target_tx_ovf_vseq
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=50_000_000",
+                 "+use_intr_handler=1"]
+    }
+   ]
 
   // List of regressions.
   regressions: [
@@ -164,7 +170,8 @@
       name: target_sanity
       tests: ["i2c_target_smoke", "i2c_target_stress_wr",
               "i2c_target_stress_rd", "i2c_target_stretch",
-              "i2c_target_intr_smoke", "i2c_target_intr_stress_wr"]
+              "i2c_target_intr_smoke", "i2c_target_intr_stress_wr",
+              "i2c_target_tx_ovf"]
     }
   ]
 }

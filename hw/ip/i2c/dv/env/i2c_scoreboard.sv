@@ -77,7 +77,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         forever begin
           target_mode_wr_exp_fifo.get(exp_wr_item);
           str = (exp_wr_item.start) ? "addr" : (exp_wr_item.stop) ? "stop" : "wr";
-          `uvm_info(`gfn, $sformatf("exp_%s_txn%0d\n %s", str,
+          `uvm_info(`gfn, $sformatf("exp_%s_txn %0d\n %s", str,
                                     exp_wr_item.tran_id, exp_wr_item.sprint()), UVM_MEDIUM)
           target_mode_wr_obs_fifo.get(obs_wr_item);
           obs_wr_item.tran_id = obs_wr_id++;
