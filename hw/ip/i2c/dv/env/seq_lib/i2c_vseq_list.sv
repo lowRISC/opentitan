@@ -24,3 +24,4 @@
 `include "i2c_target_stress_wr_vseq.sv"
 `include "i2c_target_stress_rd_vseq.sv"
 `include "i2c_target_stretch_vseq.sv"
+`include "i2c_target_tx_ovf_vseq.sv"

@@ -326,19 +326,17 @@
     {
       name: target_fifo_overflow
       desc: '''
-            Test the overflow interrupt for tx_fifo and acq_fifo overflow.
+            Test the overflow interrupt for tx_fifo overflow.
 
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
-              - Agent keeps sending a number of format byte higher than the size of tx_fifo and
-                acq_fifo
-
+              - Agent keeps sending a number of format byte higher than the size of tx_fifo
             Checking:
               - Ensure excess format bytes are dropped
-              - Ensure tx_overflow and acq_overflow interrupt are asserted
+              - Ensure tx_overflow interrupt are asserted
             '''
       stage: V2
-      tests: [""]
+      tests: ["i2c_target_tx_ovf"]
     }
     {
       name: target_fifo_empty
@@ -354,7 +352,7 @@
                 in tx_fifo otherwise tx_empty interrupt must be de-asserted
             '''
       stage: V2
-      tests: ["i2c_target_stress_rd", "i2c_target_intr_smoke"]
+      tests: ["i2c_target_stress_rd", "i2c_target_intr_smoke", "i2c_target_tx_ovf"]
     }
     {
       name: target_fifo_reset

@@ -66,12 +66,27 @@ class i2c_base_vseq extends cip_base_vseq #(
   int full_txn_num = 0;
   int exp_rd_id = 0;
   int exp_wr_id = 0;
+
+  // read_txn_q is used differently in drooling tx mode.
+  // Normal mode entry :
+  // a single byte of read data and only wdata is valid.
+  // Drooling tx mode entry :
+  // exp read txn all 'target_rd_comp' methods are valid.
   i2c_item read_txn_q[$];
   int tran_id = 0;
   int sent_txn_cnt = 0;
 
   i2c_intr_e intr_q[$];
   bit expected_intr[i2c_intr_e];
+
+  // Used for drooling tx mode
+  bit read_on_going = 0;
+  int drooling_read_size = 0;
+  int drooling_rx_cnt = 0;
+  i2c_item drooling_exp_rd_item;
+  bit [7:0] spill_over_data_q[$];
+  bit       expected_tx_nonempty = 0;
+  bit       read_cmd_q[$];
 
   // constraints
   constraint addr_c {
@@ -721,6 +736,7 @@ class i2c_base_vseq extends cip_base_vseq #(
         exp_txn.drv_type = HostRStart;
         exp_txn.rstart = 1;
         exp_txn.tran_id = this.tran_id++;
+
         p_sequencer.target_mode_wr_exp_port.write(exp_txn);
         cfg.sent_acq_cnt++;
         `uvm_create_obj(i2c_item, rs_txn)
@@ -739,12 +755,15 @@ class i2c_base_vseq extends cip_base_vseq #(
         `uvm_create_obj(i2c_item, exp_txn)
         `downcast(exp_txn, rs_txn.clone());
         exp_txn.tran_id = this.tran_id++;
+
         p_sequencer.target_mode_wr_exp_port.write(exp_txn);
         cfg.sent_acq_cnt++;
         // fetch previous full_txn and creat a new one
         if (prv_read) begin
           full_txn.stop = 1;
-          p_sequencer.target_mode_rd_exp_port.write(full_txn);
+          // read data will be created on the fly if cfg.use_drooling tx is set
+          if (!cfg.use_drooling_tx) p_sequencer.target_mode_rd_exp_port.write(full_txn);
+          else read_txn_q.push_back(full_txn);
         end
         `uvm_create_obj(i2c_item, full_txn)
         `downcast(full_txn, rs_txn);
@@ -765,7 +784,7 @@ class i2c_base_vseq extends cip_base_vseq #(
             else txn.drv_type = HostAck;
           end
           dst_q.push_back(txn);
-          read_txn_q.push_back(read_txn);
+          if (!cfg.use_drooling_tx) read_txn_q.push_back(read_txn);
         end else begin
           `downcast(exp_txn, txn.clone());
           // Add RS transaction to driver only
@@ -787,10 +806,13 @@ class i2c_base_vseq extends cip_base_vseq #(
     `downcast(exp_txn, txn.clone());
     dst_q.push_back(txn);
     full_txn.stop = 1;
+
     p_sequencer.target_mode_wr_exp_port.write(exp_txn);
     cfg.sent_acq_cnt++;
     if (is_read) begin
-      p_sequencer.target_mode_rd_exp_port.write(full_txn);
+      // read data will be created on the fly if use_drooling_tx is set
+      if (!cfg.use_drooling_tx) p_sequencer.target_mode_rd_exp_port.write(full_txn);
+      else read_txn_q.push_back(full_txn);
     end
   endfunction
 
@@ -837,10 +859,14 @@ class i2c_base_vseq extends cip_base_vseq #(
         end else begin
           read_acq_fifo(0, acq_fifo_empty);
         end
-        csr_wr(.ptr(ral.intr_state.acq_full), .value(1'b1));
+        clear_interrupt(AcqFull);
       end else if (cfg.intr_vif.pins[TxEmpty]) begin
-        write_tx_fifo();
-        csr_wr(.ptr(ral.intr_state.tx_empty), .value(1'b1));
+        if (!cfg.use_drooling_tx) begin
+          write_tx_fifo();
+        end else begin
+          read_acq_fifo(0, acq_fifo_empty);
+        end
+        clear_interrupt(TxEmpty);
       end else if (cfg.intr_vif.pins[TransComplete]) begin
         if (cfg.slow_acq) begin
           if($urandom()%2) begin
@@ -855,7 +881,7 @@ class i2c_base_vseq extends cip_base_vseq #(
           // read one entry at a time to create acq fifo back pressure
           read_acq_fifo(1, acq_fifo_empty);
         end
-        csr_wr(.ptr(ral.intr_state.trans_complete), .value(1'b1));
+        clear_interrupt(TransComplete);
       end else if (cfg.read_all_acq_entries) begin
         read_acq_fifo(0, acq_fifo_empty);
       end else begin
@@ -869,6 +895,10 @@ class i2c_base_vseq extends cip_base_vseq #(
           end
         end
       end // else: !if(cfg.intr_vif.pins[TransComplete])
+      if (cfg.use_drooling_tx & read_cmd_q.size > 0) begin
+        bit dum = read_cmd_q.pop_front();
+        drooling_write_tx_fifo();
+      end
     end
   endtask
 
@@ -912,6 +942,69 @@ class i2c_base_vseq extends cip_base_vseq #(
       end
   endtask
 
+  // Write tx fifo in drooling tx mode (cfg.use_drooling_tx = 1)
+  // When dut received read command, fill up tx fifo with random
+  // number of entries.
+  // This can create 'tx_fifo_full or tx_fifo_empty' depends on
+  // number of filled entries. Also it can be triggerred tx_fifo_nonempty
+  // after the transaction is complete.
+  task drooling_write_tx_fifo();
+    string id = "drooling_write_tx_fifo";
+    bit [7:0] wdata;
+    int       lvl;
+    uvm_reg_data_t data;
+
+    if (read_rcvd.size == 0 && read_on_going == 0) begin
+      `uvm_error(id, "read_rcvd size is zero and read_on_going is zero")
+    end
+
+    if (expected_tx_nonempty) begin
+      csr_rd(.ptr(ral.intr_state.tx_nonempty), .value(data));
+      `DV_CHECK_EQ(data, 1)
+      clear_interrupt(TxNonEmpty);
+      expected_tx_nonempty = 0;
+    end
+
+    if (read_on_going == 0) begin
+      `uvm_create_obj(i2c_item, drooling_exp_rd_item)
+      drooling_read_size = read_rcvd.pop_front();
+      `uvm_info(id, $sformatf("read_size :%0d", drooling_read_size), UVM_MEDIUM)
+      `DV_WAIT(read_txn_q.size > 0,, cfg.spinwait_timeout_ns, id)
+      drooling_exp_rd_item = read_txn_q.pop_front();
+      drooling_exp_rd_item.tran_id = drooling_rx_cnt++;
+      drooling_exp_rd_item.data_q.delete();
+      read_on_going = 1;
+    end
+
+    lvl = $urandom_range(1, 200);
+    `uvm_info(id, $sformatf("spill %0d entries", lvl), UVM_MEDIUM)
+
+    // Fill up tx fifo with lvl entries.
+    repeat (lvl) begin
+      cfg.clk_rst_vif.wait_clks(1);
+      wdata = $urandom();
+      csr_wr(.ptr(ral.txdata), .value(wdata));
+      // check if tx_fifo is ovf.
+      csr_rd(.ptr(ral.intr_state.tx_overflow), .value(data));
+      if (data == 0) begin
+        spill_over_data_q.push_back(wdata);
+        if (drooling_read_size > 0) begin
+          drooling_exp_rd_item.data_q.push_back(spill_over_data_q.pop_front());
+          drooling_read_size--;
+          if (drooling_read_size == 0) begin
+            p_sequencer.target_mode_rd_exp_port.write(drooling_exp_rd_item);
+            read_on_going = 0;
+            if (spill_over_data_q.size > 0) begin
+              expected_tx_nonempty = 1;
+            end
+          end
+        end
+      end else begin // if (data == 0)
+        csr_wr(.ptr(ral.intr_state.tx_overflow), .value(1'b1));
+      end // else: !if(data == 0)
+    end // repeat (lvl)
+  endtask
+
   // when read_one = 1. check acqempty and read a single entry
   // and return acq_fifo_empty.
   // When read_one = 0, read acq fifo up to acqlvl and convert read data
@@ -922,16 +1015,24 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     acq_fifo_empty = 0;
     if (read_one) begin
+    // polling if status.acqempty is zero and skip read fifo
+    // if fifo is empty.
       csr_rd(.ptr(ral.status.acqempty), .value(acq_fifo_empty));
       read_data = (acq_fifo_empty)? 0 : 1;
     end else csr_rd(.ptr(ral.fifo_status.acqlvl), .value(read_data));
 
-    // polling status.acqempty == 0
+
     repeat(read_data) begin
       // read one entry and compare
       csr_rd(.ptr(ral.acqdata), .value(read_data));
       `uvm_info("process_acq", $sformatf("acq data %x", read_data), UVM_MEDIUM)
       // Capture the same read data from 'process_tl_access' sb
+      obs = acq2item(read_data);
+
+      // Push read command to read_cmd_q to trigger drooling_wr_fifo
+      if (obs.read & cfg.use_drooling_tx) begin
+        read_cmd_q.push_back(1);
+      end
     end
     if (read_data == 0) begin
       cfg.clk_rst_vif.wait_clks(1);
