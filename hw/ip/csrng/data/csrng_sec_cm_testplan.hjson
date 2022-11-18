@@ -209,8 +209,6 @@
       tests: ["csrng_intr", "csrng_err"]
     }
     {
-      // TODO: This is currently untested.
-      // A check needs to be added to verify that the AES cipher core FSM indeed enters the terminal error state.
       name: sec_cm_aes_cipher_fsm_local_esc
       desc: '''
             Verify the countermeasure(s) AES_CIPHER.FSM.LOCAL_ESC.

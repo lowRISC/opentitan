@@ -117,6 +117,15 @@ class csrng_err_vseq extends csrng_base_vseq;
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
       aes_cipher_sm_err: begin
+        // Get the path to the AES cipher core FSM. We need it in any case to test that AES enters
+        // the terminal error state.
+        string aes_fsm_path;
+        logic [aes_pkg::CipherCtrlStateWidth-1:0] aes_fsm_state;
+        if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
+          aes_fsm_path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "p");
+        end else begin
+          aes_fsm_path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "n");
+        end
         fld = csr.get_field_by_name(fld_name);
         case (cfg.which_aes_cm) inside
           fsm_sparse, fsm_redun: begin
@@ -129,13 +138,7 @@ class csrng_err_vseq extends csrng_base_vseq;
               // i.e., whether it is idle or stalled.
               value3 = {2'b00, {aes_pkg::CIPHER_CTRL_CLEAR_S}};
             end
-            if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
-              path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "p");
-              force_path_err(path, value3, fld, 1'b1);
-            end else begin
-              path = cfg.csrng_path_vif.aes_cipher_fsm_err_path(cfg.which_sp2v, "n");
-              force_path_err(path, value3, fld, 1'b1);
-            end
+            force_path_err(aes_fsm_path, value3, fld, 1'b1);
           end
           ctrl_sparse: begin
             // We force one rail of one of the mux control signals to another valid encoding.
@@ -161,6 +164,9 @@ class csrng_err_vseq extends csrng_base_vseq;
         endcase
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
+        // Check that the AES cipher core FSM has entered the terminal error state.
+        `DV_CHECK(uvm_hdl_read(aes_fsm_path, aes_fsm_state))
+        `DV_CHECK_EQ(aes_fsm_state, aes_pkg::CIPHER_CTRL_ERROR)
       end
       cmd_gen_cnt_err: begin
         logic [csrng_pkg::StateWidth-1:0] sm_state;
