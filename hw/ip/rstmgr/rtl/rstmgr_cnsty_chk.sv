@@ -22,6 +22,7 @@ module rstmgr_cnsty_chk
   input rst_ni,
   input child_clk_i,
   input child_rst_ni,
+  input child_chk_rst_ni, // rst_ni synchronized to child_clk_i domain.
   input parent_rst_ni,
   input sw_rst_req_i,
   output logic sw_rst_req_clr_o,
@@ -227,19 +228,17 @@ module rstmgr_cnsty_chk
         // child clock edge is seen.  This usage is conservative, because by the time
         // sync_child_ack is seen, there may have been more than one child clock, yet the
         // count is only incremented by 1.
-        if (sync_child_ack) begin
-          cnt_inc = 1'b1;
-          if (sync_child_rst && src_valid) begin
-            // This condition covers the case if for whatever reason the parent reset re-asserts
-            // in a valid way.
-            state_d = WaitForSrcRelease;
-            cnt_clr = 1'b1;
-          end else if (sync_child_rst && timeout) begin
-            state_d = Error;
-          end else if (!sync_child_rst) begin
-            state_d = Idle;
-            cnt_clr = 1'b1;
-          end
+        cnt_inc = sync_child_ack;
+        if (sync_child_rst && src_valid) begin
+          // This condition covers the case if for whatever reason the parent reset re-asserts
+          // in a valid way.
+          state_d = WaitForSrcRelease;
+          cnt_clr = 1'b1;
+        end else if (sync_child_rst && timeout) begin
+          state_d = Error;
+        end else if (!sync_child_rst) begin
+          state_d = Idle;
+          cnt_clr = 1'b1;
         end
       end
 
@@ -263,13 +262,12 @@ module rstmgr_cnsty_chk
     .clk_src_i(clk_i),
     .rst_src_ni(rst_ni),
     .clk_dst_i(child_clk_i),
-    .rst_dst_ni(child_rst_ni),
+    .rst_dst_ni(child_chk_rst_ni),
     .req_chk_i('0),
     .src_req_i(1'b1),
     .src_ack_o(sync_child_ack),
     .dst_req_o(child_ack),
     .dst_ack_i(child_ack)
   );
-
 
 endmodule // rstmgr_cnsty_chk

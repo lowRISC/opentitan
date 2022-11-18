@@ -18,6 +18,9 @@ waive -rules RESET_MUX -location {rstmgr.sv rstmgr_por.sv rstmgr_ctrl.sv} -regex
 waive -rules RESET_MUX -location {rstmgr_leaf_rst.sv} -regexp {Asynchronous reset 'leaf_rst_o' is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
+waive -rules RESET_MUX -location {rstmgr_leaf_rst.sv} -regexp {Asynchronous reset 'gen_rst_chk.leaf_chk_rst_n' is driven by a multiplexer here, used as a reset 'rst_dst_ni' at} \
+      -comment "This is dedicated reset infrastructure, and hence permissible"
+
 waive -rules RESET_USE -location {rstmgr.sv} -regexp {'rst_(por_aon_)?n\[1\]' is connected to 'rstmgr_ctrl' port 'rst_.*ni*} \
       -comment "Parent Non always on resets are combined with the always on reset first before being used as resets"
 
