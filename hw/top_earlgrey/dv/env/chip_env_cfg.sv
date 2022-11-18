@@ -402,6 +402,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
           end
         end else if (i == SwTypeOtp) begin
           otp_images[OtpTypeCustom] = $sformatf("%0s.24.vmem", sw_images[i]);
+        end else if (i == SwTypeDebug) begin
+          sw_images[i] = $sformatf("%0s.32.vmem", sw_images[i]);
         end
       end
     end

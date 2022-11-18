@@ -91,7 +91,8 @@ package chip_env_pkg;
     SwTypeTestSlotA = 1, // Ibex SW - test SW in (flash) slot A.
     SwTypeTestSlotB = 2, // Ibex SW - test SW in (flash) slot B.
     SwTypeOtbn      = 3, // Otbn SW
-    SwTypeOtp       = 4  // Customized OTP image
+    SwTypeOtp       = 4, // Customized OTP image
+    SwTypeDebug     = 5  // Debug SW - injected into SRAM.
   } sw_type_e;
 
   // Our dvsim.py configuration always generates five base OTP images (in various lifecycle states)
