@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// Note that since rma process takes more than 100ms in dvsim,
+// the test runs 1.6h (110ms in simtime).
+
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -25,12 +28,8 @@ static dif_uart_t uart0;
 static dif_flash_ctrl_state_t flash_state;
 static dif_lc_ctrl_t lc;
 
-// TODO(lowRISC/opentitan:#11795): when the sw_symbol_backdoor_overwrite
-// is fixed for ROM, this can be overriden by the testbench as a SW variable.
-// Since rma process takes more than 100ms in dvsim,
-// the test runs 1.6h (110ms in simtime).
-
-static mmio_region_t sram_region_ret_base_addr;
+// This is updated by the sv component of the test
+static volatile const uint8_t kTestPhase = 0;
 
 enum {
   kFlashInfoPageIdCreatorSecret = 1,
@@ -159,10 +158,8 @@ static void write_data_test_phase(void) {
   write_data_page_scrambled(kRegionBaseBank1Page255Index,
                             kFlashBank1Page255DataRegion, kRandomData[6]);
 
-  // Advancing the test_phase so on the next boot the next branch can
-  // be taken. Going into WFI which will be detected by the testbench
+  // Going into WFI which will be detected by the testbench
   // and an OTP write and reset can be triggered.
-  mmio_region_write32(sram_region_ret_base_addr, 0, kTestPhaseEnterRMA);
   test_status_set(kTestStatusInWfi);
   wait_for_interrupt();
 }
@@ -193,9 +190,6 @@ static void enter_rma_test_phase(void) {
   read_and_check_data_page_scrambled(true, kRegionBaseBank1Page255Index,
                                      kFlashBank1Page255DataRegion,
                                      kRandomData[6]);
-
-  // Advance the test_phase.
-  mmio_region_write32(sram_region_ret_base_addr, 0, kTestPhaseCheckWipe);
 
   // Setting up lc_ctrl for an RMA transition.
   dif_lc_ctrl_token_t token;
@@ -281,15 +275,7 @@ bool rom_test_main(void) {
   };
   CHECK_DIF_OK(dif_otp_ctrl_configure(&otp, otp_config));
 
-  // TODO(lowRISC/opentitan:#11795): when the sw_symbol_backdoor_overwrite
-  // is fixed for ROM, this can be overriden by the testbench as a SW variable.
-  // Currently using retention SRAM to record the test_phase.
-  sram_region_ret_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR);
-
-  uint32_t test_phase = mmio_region_read32(sram_region_ret_base_addr, 0);
-
-  switch (test_phase) {
+  switch (kTestPhase) {
     case kTestPhaseWriteData:
       write_data_test_phase();
       break;
