@@ -339,15 +339,21 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
     unique case (state_q)
       // ReqIdle: increment v this cycle, push in next
       ReqIdle: begin
+        // Prioritize halt requests from entropy_src over disable, as CSRNG would otherwise starve
+        // those requests while it is idle.
         if (ctr_drbg_gen_es_req_i) begin
           state_d = ESHalt;
+        end else if (!ctr_drbg_gen_enable_i) begin
+          state_d = ReqIdle;
         end else if (sfifo_genreq_not_empty && !sfifo_adstage_full) begin
           v_ctr_load = 1'b1;
           state_d = ReqSend;
         end
       end
       ReqSend: begin
-        if (!interate_ctr_done) begin
+        if (!ctr_drbg_gen_enable_i) begin
+          state_d = ReqIdle;
+        end else if (!interate_ctr_done) begin
           block_encrypt_req_o = 1'b1;
           sfifo_adstage_push = 1'b1;
           if (block_encrypt_rdy_i) begin
@@ -414,12 +420,14 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   for (genvar i = 0; i < NApps; i = i+1) begin : gen_adata
     assign capt_adata[i] = (sfifo_adstage_push && (genreq_id == i));
 
-    assign update_adata_vld_d[i] = capt_adata[i] && !update_adata_vld_q[i] ? 1'b1 :
+    assign update_adata_vld_d[i] = ~ctr_drbg_gen_enable_i ? 1'b0 :
+           capt_adata[i] && !update_adata_vld_q[i] ? 1'b1 :
            (gen_upd_req_o && upd_gen_rdy_i && (sfifo_bencack_inst_id == i)) ? 1'b0 :
            update_adata_vld_q[i];
 
-    assign update_adata_d[i] = (capt_adata[i] && !update_adata_vld_q[i]) ? genreq_adata :
-           update_adata_q[i];
+    assign update_adata_d[i] = ~ctr_drbg_gen_enable_i ? '0 :
+                               (capt_adata[i] && !update_adata_vld_q[i]) ? genreq_adata :
+                               update_adata_q[i];
     assign update_adata[i] = update_adata_q[i] & {SeedLen{update_adata_vld_q[i] &&
                                                           (genreq_id == i)}};
   end

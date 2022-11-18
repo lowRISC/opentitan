@@ -331,8 +331,12 @@ module csrng_ctr_drbg_upd #(
     unique case (blk_enc_state_q)
       // ReqIdle: increment v this cycle, push in next
       ReqIdle: begin
+        // Prioritize halt requests from entropy_src over disable, as CSRNG would otherwise starve
+        // those requests while it is idle.
         if (ctr_drbg_upd_es_req_i) begin
           blk_enc_state_d = ESHalt;
+        end else if (!ctr_drbg_upd_enable_i) begin
+          blk_enc_state_d = ReqIdle;
         end else if (sfifo_updreq_not_empty && !sfifo_bencreq_full && !sfifo_pdata_full) begin
           v_ctr_load = 1'b1;
           sfifo_pdata_push = 1'b1;
@@ -340,7 +344,9 @@ module csrng_ctr_drbg_upd #(
         end
       end
       ReqSend: begin
-        if (!interate_ctr_done) begin
+        if (!ctr_drbg_upd_enable_i) begin
+          blk_enc_state_d = ReqIdle;
+        end else if (!interate_ctr_done) begin
           if (!sfifo_bencreq_full) begin
             v_ctr_inc  = 1'b1;
             interate_ctr_inc  = 1'b1;
@@ -528,19 +534,25 @@ module csrng_ctr_drbg_upd #(
     unique case (outblk_state_q)
       // AckIdle: increment v this cycle, push in next
       AckIdle: begin
-        if (sfifo_bencack_not_empty && sfifo_pdata_not_empty && !sfifo_final_full) begin
+        if (!ctr_drbg_upd_enable_i) begin
+          outblk_state_d = AckIdle;
+        end else if (sfifo_bencack_not_empty && sfifo_pdata_not_empty && !sfifo_final_full) begin
           outblk_state_d = Load;
         end
       end
       Load: begin
-        if (sfifo_bencack_not_empty) begin
+        if (!ctr_drbg_upd_enable_i) begin
+          outblk_state_d = AckIdle;
+        end else if (sfifo_bencack_not_empty) begin
           concat_ctr_inc  = 1'b1;
           sfifo_bencack_pop = 1'b1;
           outblk_state_d = Shift;
         end
       end
       Shift: begin
-        if (concat_ctr_done) begin
+        if (!ctr_drbg_upd_enable_i) begin
+          outblk_state_d = AckIdle;
+        end else if (concat_ctr_done) begin
           sfifo_pdata_pop = 1'b1;
           sfifo_final_push = 1'b1;
           outblk_state_d = AckIdle;

@@ -219,7 +219,7 @@ module csrng_ctr_drbg_cmd import csrng_pkg::*; #(
 
   assign prep_gen_adata_null = (cmdreq_ccmd == GEN) && (cmdreq_adata == '0);
 
-  assign gen_adata_null_d = prep_gen_adata_null;
+  assign gen_adata_null_d = ~ctr_drbg_cmd_enable_i ? '0 : prep_gen_adata_null;
 
   // send to the update block
   assign cmd_upd_req_o = sfifo_cmdreq_not_empty && !prep_gen_adata_null;
