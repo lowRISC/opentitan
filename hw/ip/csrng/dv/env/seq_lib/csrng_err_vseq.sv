@@ -85,6 +85,9 @@ class csrng_err_vseq extends csrng_base_vseq;
     first_index = find_index("_", fld_name, "first");
     last_index = find_index("_", fld_name, "last");
 
+    `uvm_info(`gfn, $sformatf("While app %d handles a generate command, we will insert error %s",
+                              cfg.which_app_err_alert, fld_name), UVM_MEDIUM)
+
     case (cfg.which_err_code) inside
       sfifo_cmd_err, sfifo_genbits_err, sfifo_cmdreq_err, sfifo_rcstage_err, sfifo_keyvrc_err,
       sfifo_bencreq_err, sfifo_final_err, sfifo_gbencack_err, sfifo_grcstage_err,
@@ -97,6 +100,9 @@ class csrng_err_vseq extends csrng_base_vseq;
           fifo_forced_paths[i] = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert,
                                                                   fifo_base_path, path_exts[i]);
         end
+
+        `uvm_info(`gfn, $sformatf("Forcing this FIFO error type %s", cfg.which_fifo_err.name()),
+                  UVM_MEDIUM)
 
         if (cfg.which_err_code == sfifo_updreq_err || cfg.which_err_code == sfifo_bencack_err ||
             cfg.which_err_code == sfifo_pdata_err || cfg.which_err_code == sfifo_ggenreq_err) begin
@@ -199,6 +205,7 @@ class csrng_err_vseq extends csrng_base_vseq;
       fifo_write_err, fifo_read_err, fifo_state_err: begin
         fld = csr.get_field_by_name(fld_name);
         fifo_name = cfg.which_fifo.name();
+        `uvm_info(`gfn, $sformatf("Injecting fault in %s", fifo_name), UVM_MEDIUM)
         path_key = fld_name.substr(first_index+1, last_index-1);
 
         path1 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
