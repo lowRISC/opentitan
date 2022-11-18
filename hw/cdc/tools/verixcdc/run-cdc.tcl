@@ -64,7 +64,7 @@ set ri_prefer_liberty true
 ############################
 ## Apply Liberty File ##
 
-read_liberty $AST_LIB -db_dir ./RI_compiled_libs/verix_2019_a_p27_2_2022_03_20
+read_liberty $AST_LIB -db_dir ./RI_compiled_libs/verix_libs
 ############################
 
 #########################
