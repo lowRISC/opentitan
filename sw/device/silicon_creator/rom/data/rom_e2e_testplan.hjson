@@ -1019,7 +1019,9 @@
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V2
-      tests: []
+      tests: [
+        "rom_e2e_asm_init_rma",
+      ]
     }
 
     {
