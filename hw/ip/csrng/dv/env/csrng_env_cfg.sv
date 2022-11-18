@@ -95,6 +95,18 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
                           1 :/ aes_halt_pct,
                           0 :/ (100 - aes_halt_pct) };}
 
+  // Behind the aes_cipher_sm_err error code, there are which_aes_cm.num() countermeasures each of
+  // which can be stimulated by forcing the Sp2VWidth independent logic rails. We bias the
+  // distribution towards aes_cipher_sm_err to get away with a reasonable number of seeds.
+  int num_bins_aes_cipher_sm_err = which_aes_cm.num() * Sp2VWidth;
+  constraint which_err_code_c { which_err_code dist {
+      [sfifo_cmd_err : sfifo_blkenc_err]     := 3, // 3 error types per sfifo
+      [cmd_stage_sm_err : drbg_updob_sm_err] := 1, // 1 error type per FSM
+      aes_cipher_sm_err                      := num_bins_aes_cipher_sm_err,
+      cmd_gen_cnt_err                        := 3, // 3 counters feed into this bit
+      [fifo_write_err : fifo_state_err_test] := 1
+  };}
+
   // Functions
   function void post_randomize();
     if (use_invalid_mubi) begin
