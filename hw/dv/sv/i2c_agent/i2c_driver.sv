@@ -9,7 +9,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
 
   rand bit [7:0] rd_data[256]; // max length of read transaction
   byte wr_data;
-
+  int scl_spinwait_timeout_ns = 1_000_000; // 1ms
   // get an array with unique read data
   constraint rd_data_c { unique { rd_data }; }
 
@@ -30,9 +30,13 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
       begin
         if (cfg.if_mode == Host) drive_scl();
       end
+      begin
+        if (cfg.if_mode == Host) host_scl_pause_ctrl();  
+      end 
     join
   endtask
 
+   
   virtual task get_and_drive();
     i2c_item req;
     @(posedge cfg.vif.rst_ni);
@@ -157,7 +161,6 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   endtask : release_bus
 
   task drive_scl();
-    int scl_spinwait_timeout_ns = 1_000_000; // 1ms
     forever begin
       @(cfg.vif.cb);
       wait(cfg.host_scl_start);
@@ -168,6 +171,10 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
         cfg.vif.scl_o <= 1'b1;
         `DV_WAIT(cfg.vif.scl_i === 1'b1,, scl_spinwait_timeout_ns, "i2c_drv_scl")
         cfg.vif.wait_for_dly(cfg.timing_cfg.tClockPulse);
+	if (cfg.host_scl_pause_ack) begin
+	   cfg.vif.wait_for_dly(cfg.host_scl_pause_cyc);
+	   cfg.host_scl_pause_ack = 0;	   
+	end 
         if (!cfg.host_scl_stop) cfg.vif.scl_o = 1'b0;
         cfg.vif.wait_for_dly(cfg.timing_cfg.tHoldBit);
       end
@@ -175,4 +182,15 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
       cfg.host_scl_stop = 0;
     end
   endtask
+  task host_scl_pause_ctrl();
+     forever begin
+	@(cfg.vif.cb);	
+	if (cfg.host_scl_pause_req & cfg.host_scl_start) begin
+	  cfg.host_scl_pause_ack = 1;
+	  `DV_WAIT(cfg.host_scl_pause_ack == 0,,
+		   scl_spinwait_timeout_ns, "host_scl_pause_ctrl")
+	  cfg.host_scl_pause_req = 0;	   
+	end
+     end
+  endtask    
 endclass : i2c_driver

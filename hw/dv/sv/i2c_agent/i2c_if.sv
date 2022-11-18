@@ -269,11 +269,13 @@ interface i2c_if(
   endtask: host_rstart
 
   task automatic host_data(ref timing_cfg_t tc, input bit bit_i);
+    wait(scl_i === 1'b0); // chk
     sda_o = bit_i;
     wait_for_dly(tc.tClockLow);
     wait_for_dly(tc.tSetupBit);
     wait(scl_i === 1'b1);
     wait_for_dly(tc.tClockPulse);
+    wait(scl_i === 1'b0); // chk
     wait_for_dly(tc.tHoldBit);
     sda_o = 1;
   endtask: host_data
