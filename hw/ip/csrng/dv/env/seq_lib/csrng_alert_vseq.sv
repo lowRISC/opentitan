@@ -28,7 +28,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
 
     super.body();
 
-    // Create edn host sequences
+    // Create EDN host sequences.
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       m_edn_push_seq[i] = push_pull_host_seq#(csrng_pkg::CSRNG_CMD_WIDTH)::type_id::create
                                               ($sformatf("m_edn_push_seq[%0d]", i));
@@ -37,7 +37,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     `uvm_info(`gfn, $sformatf("Testing [enable/sw_app_enable/read_int_state]_field_alert"),
         UVM_MEDIUM)
 
-    // Initiate with invalid mubi data
+    // Initiate with invalid mubi data.
     csrng_init();
 
     // Wait for the recoverable alert.
@@ -66,12 +66,12 @@ class csrng_alert_vseq extends csrng_base_vseq;
     ral.ctrl.read_int_state.set(prim_mubi_pkg::MuBi4True);
     csr_update(.csr(ral.ctrl));
 
-    // Clear recov_alert_sts register
+    // Clear recov_alert_sts register.
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));
 
     cfg.clk_rst_vif.wait_clks(100);
 
-    // Check recov_alert_sts register
+    // Check recov_alert_sts register has cleared.
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
     `uvm_info(`gfn, $sformatf("Testing acmd_flag0_field_alert on app interface %d for %s command",
@@ -81,7 +81,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
 
     // We run some CSRNG commands and either provide an invalid encoding for the FLAG0 field of an
     // Instantiate or a Reseed command.
-    // Instantiate Command
+    // Instantiate Command.
     cs_item.acmd  = csrng_pkg::INS;
     cs_item.clen  = 'h0;
     cs_item.flags = flag0_flip_ins_cmd ?
@@ -90,7 +90,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(cfg.which_app_err_alert, cs_item);
 
-    // Reseed Command
+    // Reseed Command.
     cs_item.acmd  = csrng_pkg::RES;
     cs_item.clen  = 'h0;
     cs_item.flags = !flag0_flip_ins_cmd ?
@@ -122,18 +122,18 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Since we already did a backdoor check, sampling with this value is sufficient.
     cov_vif.cg_recov_alert_sample(.recov_alert(exp_recov_alert_sts));
 
-    // Clear recov_alert_sts register
+    // Clear recov_alert_sts register.
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));
 
     cfg.clk_rst_vif.wait_clks(100);
 
-    // Check recov_alert_sts register
+    // Check recov_alert_sts register has cleared.
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
     `uvm_info(`gfn, $sformatf("Testing cs_bus_cmp_alert"), UVM_MEDIUM)
 
-    // Here we force CSRNG to generate two identical outputs to trigger a cs_bus_cmp_alert
-    // Write CSRNG Cmd_Req - Instantiate Command
+    // Here we force CSRNG to generate two identical outputs to trigger a cs_bus_cmp_alert.
+    // Write CSRNG Cmd_Req - Instantiate Command.
     cs_item.acmd  = csrng_pkg::INS;
     cs_item.clen  = 'h0;
     cs_item.flags = MuBi4True;
@@ -141,7 +141,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
 
-    // Write CSRNG Cmd_Req Register - Generate Command
+    // Write CSRNG Cmd_Req Register - Generate Command.
     cs_item.acmd  = csrng_pkg::GEN;
     cs_item.clen  = 'h0;
     cs_item.flags = MuBi4True;
@@ -149,7 +149,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
 
-    // Write CSRNG Cmd_Req - Instantiate Command
+    // Write CSRNG Cmd_Req - Instantiate Command.
     cs_item.acmd  = csrng_pkg::INS;
     cs_item.clen  = 'h0;
     cs_item.flags = MuBi4True;
@@ -157,7 +157,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(SW_APP, cs_item);
 
-    // Write CSRNG Cmd_Req Register - Generate Command
+    // Write CSRNG Cmd_Req Register - Generate Command.
     cs_item.acmd  = csrng_pkg::GEN;
     cs_item.clen  = 'h0;
     cs_item.flags = MuBi4True;
@@ -175,12 +175,12 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Since we already did a backdoor check, sampling with this value is sufficient.
     cov_vif.cg_recov_alert_sample(.recov_alert(exp_recov_alert_sts));
 
-    // Clear recov_alert_sts register
+    // Clear recov_alert_sts register.
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));
 
     cfg.clk_rst_vif.wait_clks(100);
 
-    // Check recov_alert_sts register
+    // Check recov_alert_sts register has cleared.
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
     `uvm_info(`gfn, $sformatf("Testing cs_main_sm_alert"), UVM_MEDIUM)
@@ -230,7 +230,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Check recov_alert_sts register has cleared.
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
-    // Turn assertions back on
+    // Turn assertions back on.
     cfg.csrng_assert_vif.assert_on_alert();
   endtask : body
 
