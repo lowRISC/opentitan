@@ -66,7 +66,7 @@ class csrng_base_vseq extends cip_base_vseq #(
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
   endtask
 
-  task send_cmd_req(uint app, csrng_item cs_item);
+  task send_cmd_req(uint app, csrng_item cs_item, bit await_response=1'b1);
     bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0]   cmd;
     // Gen cmd_req
     if ((cs_item.acmd != INS) && (cs_item.acmd != RES)) begin
@@ -86,8 +86,10 @@ class csrng_base_vseq extends cip_base_vseq #(
         // Drive cmd_req
         m_edn_push_seq[app].start(p_sequencer.edn_sequencer_h[app].m_cmd_push_sequencer);
       join_none
-      // Wait for ack
-      cfg.m_edn_agent_cfg[app].vif.wait_cmd_ack();
+      if (await_response) begin
+        // Wait for ack
+        cfg.m_edn_agent_cfg[app].vif.wait_cmd_ack();
+      end
     end
     else begin
       // Wait for CSRNG cmd_rdy
@@ -99,17 +101,19 @@ class csrng_base_vseq extends cip_base_vseq #(
         csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
         csr_wr(.ptr(ral.cmd_req), .value(cmd));
       end
-      if (cs_item.acmd != csrng_pkg::GEN) begin
-        wait_cmd_req_done();
-      end
-      else begin
-        for (int i = 0; i < cs_item.glen; i++) begin
-          csr_spinwait(.ptr(ral.genbits_vld.genbits_vld), .exp_data(1'b1));
-          for (int i = 0; i < csrng_pkg::GENBITS_BUS_WIDTH/TL_DW; i++) begin
-            csr_rd(.ptr(ral.genbits.genbits), .value(rdata));
-          end
+      if (await_response) begin
+        if (cs_item.acmd != csrng_pkg::GEN) begin
+          wait_cmd_req_done();
         end
-        wait_cmd_req_done();
+        else begin
+          for (int i = 0; i < cs_item.glen; i++) begin
+            csr_spinwait(.ptr(ral.genbits_vld.genbits_vld), .exp_data(1'b1));
+            for (int i = 0; i < csrng_pkg::GENBITS_BUS_WIDTH/TL_DW; i++) begin
+              csr_rd(.ptr(ral.genbits.genbits), .value(rdata));
+            end
+          end
+          wait_cmd_req_done();
+        end
       end
     end
   endtask // send_cmd_req

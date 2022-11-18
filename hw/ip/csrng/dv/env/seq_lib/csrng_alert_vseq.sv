@@ -186,25 +186,12 @@ class csrng_alert_vseq extends csrng_base_vseq;
     `uvm_info(`gfn, $sformatf("Testing cs_main_sm_alert"), UVM_MEDIUM)
 
     // Here we send an illegal command to CSRNG to check that cs_main_sm_alert is triggered.
-    // The code to send an illegal command is partially copied from csrng_base_vseq::send_cmd_req.
+    // Sending an illegal command does not get a response from CSRNG.
     cs_item.acmd  = illegal_command;
     cs_item.clen  = 'h0;
     cs_item.flags = MuBi4True;
     cs_item.glen  = 'h0;
-    tmp_cmd = {cs_item.glen, cs_item.flags, cs_item.clen, 1'b0, cs_item.acmd};
-    if (cfg.which_app_err_alert == SW_APP) begin
-      // Wait for CSRNG cmd_rdy.
-      csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
-      csr_wr(.ptr(ral.cmd_req), .value(tmp_cmd));
-    end else begin
-      cfg.m_edn_agent_cfg[cfg.which_app_err_alert].m_cmd_push_agent_cfg.add_h_user_data(tmp_cmd);
-      m_edn_push_seq[cfg.which_app_err_alert].num_trans = 1;
-      fork
-        // Drive cmd_req.
-        m_edn_push_seq[cfg.which_app_err_alert].start(p_sequencer.
-          edn_sequencer_h[cfg.which_app_err_alert].m_cmd_push_sequencer);
-      join
-    end
+    send_cmd_req(cfg.which_app_err_alert, cs_item, .await_response(1'b0));
 
     `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
     cfg.m_alert_agent_cfg["recov_alert"].vif.wait_ack_complete();
