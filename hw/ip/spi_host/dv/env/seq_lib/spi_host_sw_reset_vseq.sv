@@ -12,13 +12,13 @@ class spi_host_sw_reset_vseq extends spi_host_tx_rx_vseq;
   bit rxempty;
   bit txempty;
 
-  task pre_randomize();
+  function void pre_randomize();
     super.pre_randomize();
     cfg.seq_cfg.host_spi_min_trans = 1;
     cfg.seq_cfg.host_spi_max_trans = 2;
     cfg.seq_cfg.host_spi_min_runs = 2;
     cfg.seq_cfg.host_spi_max_runs = 5;
-  endtask
+  endfunction
 
   virtual task body();
     for (int i = 0; i < num_runs; i++) begin
