@@ -80,6 +80,19 @@ module rstmgr_leaf_rst
   end
 
   if (SecCheck) begin : gen_rst_chk
+
+    // We have to create a separately synced reset for the child handshakes below, since keeping the
+    // child side of the prim_sync_reqack synchronizer under reset would defeat the reset checker's
+    // purpose, as it would never count any clock ticks in the WaitForChildRelease state above.
+    logic leaf_chk_rst_n;
+    prim_rst_sync u_prim_rst_sync (
+      .clk_i      (leaf_clk_i),
+      .d_i        (rst_ni),
+      .q_o        (leaf_chk_rst_n),
+      .scan_rst_ni,
+      .scanmode_i
+    );
+
     // SEC_CM: LEAF.RST.BKGN_CHK
     rstmgr_cnsty_chk #(
       .SecMaxSyncDelay(SecMaxSyncDelay),
@@ -89,6 +102,7 @@ module rstmgr_leaf_rst
       .rst_ni,
       .child_clk_i(leaf_clk_i),
       .child_rst_ni(leaf_rst_o),
+      .child_chk_rst_ni(leaf_chk_rst_n),
       .parent_rst_ni,
       .sw_rst_req_i(sw_rst_req_q | ~sw_rst_req_ni),
       .sw_rst_req_clr_o(clr_sw_rst_req),
