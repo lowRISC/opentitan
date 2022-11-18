@@ -31,6 +31,13 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   uint i2c_host_min_data_rw = 1;
   uint i2c_host_max_data_rw = 10;
 
+  // If 'host_scl_pause' is enabled, 'host_scl_pause_cyc' should be set to non zero value.
+  bit     host_scl_pause_en = 0;
+  bit     host_scl_pause_req = 0;
+  bit     host_scl_pause_ack = 0;
+  bit     host_scl_pause = 0;
+  int     host_scl_pause_cyc = 0;
+
   `uvm_object_utils_begin(i2c_agent_cfg)
     `uvm_field_int(en_monitor,                                UVM_DEFAULT)
     `uvm_field_enum(i2c_target_addr_mode_e, target_addr_mode, UVM_DEFAULT)

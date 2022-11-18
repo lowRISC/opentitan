@@ -261,7 +261,7 @@ interface i2c_if(
   endtask: host_start
 
   task automatic host_rstart(ref timing_cfg_t tc);
-    wait(scl_i === 1'b1);
+    @(posedge scl_i && sda_i);
     wait_for_dly(tc.tSetupStart);
     sda_o = 1'b0;
     wait_for_dly(tc.tHoldStart);
@@ -269,11 +269,13 @@ interface i2c_if(
   endtask: host_rstart
 
   task automatic host_data(ref timing_cfg_t tc, input bit bit_i);
+    wait(scl_i === 1'b0);
     sda_o = bit_i;
     wait_for_dly(tc.tClockLow);
     wait_for_dly(tc.tSetupBit);
     wait(scl_i === 1'b1);
     wait_for_dly(tc.tClockPulse);
+    wait(scl_i === 1'b0);
     wait_for_dly(tc.tHoldBit);
     sda_o = 1;
   endtask: host_data
@@ -301,8 +303,7 @@ interface i2c_if(
 
   task automatic wait_scl(int iter = 1, timing_cfg_t tc);
     repeat(iter) begin
-      wait_for_dly(tc.tClockLow + tc.tSetupBit);
-      wait(scl_i === 1'b1);
+      @(posedge scl_i);
       wait_for_dly(tc.tClockPulse + tc.tHoldBit);
     end
   endtask // wait_scl
