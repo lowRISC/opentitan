@@ -13,7 +13,7 @@ class csrng_err_vseq extends csrng_base_vseq;
 
   task body();
     bit [4:0]     err_code_test_bit;
-    string        path, path1, path2;
+    string        path, path1, path2, path3;
     bit           value1, value2;
     bit [7:0]     value3;
     bit [3:0]     value4;
@@ -212,6 +212,8 @@ class csrng_err_vseq extends csrng_base_vseq;
                                                  fifo_err_path[0][path_key]);
         path2 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
                                                  fifo_err_path[1][path_key]);
+        path3 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
+                                                 path_exts[2]);
         value1 = fifo_err_value[0][path_key];
         value2 = fifo_err_value[1][path_key];
 
@@ -220,6 +222,8 @@ class csrng_err_vseq extends csrng_base_vseq;
             (cfg.which_fifo == sfifo_bencack) || (cfg.which_fifo == sfifo_updreq)))
         begin
           force_fifo_err_exception(path1, path2, 1'b1, 1'b0, 1'b0, fld, 1'b1);
+        end else if (cfg.which_err_code == fifo_write_error) begin
+          force_fifo_write_err(path1, path2, path3, value1, value2, 8'b0, fld, 1'b1);
         end else begin
           force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
         end
