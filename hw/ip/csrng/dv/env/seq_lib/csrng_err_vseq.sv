@@ -20,9 +20,9 @@ class csrng_err_vseq extends csrng_base_vseq;
     string        fifo_name;
     int           first_index, last_index;
     string        fifo_base_path;
-    string        path_exts [5] = {"push", "full", "wdata", "pop", "not_empty"};
-    string        fifo_forced_paths [5];
-    bit           fifo_forced_values [5] = {1'b1, 1'b1, 1'b0, 1'b1, 1'b0};
+    string        path_exts [6] = {"push", "full", "wdata", "pop", "not_empty", "rdata"};
+    string        fifo_forced_paths [6];
+    bit           fifo_forced_values [6] = {1'b1, 1'b1, 1'b0, 1'b1, 1'b0, 1'b0};
     string        fifo_err_path [2][string];
     bit           fifo_err_value [2][string];
     string        path_key;
@@ -212,8 +212,14 @@ class csrng_err_vseq extends csrng_base_vseq;
                                                  fifo_err_path[0][path_key]);
         path2 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
                                                  fifo_err_path[1][path_key]);
-        path3 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
-                                                 path_exts[2]);
+        if (cfg.which_err_code == fifo_write_err) begin
+          path3 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
+                                                   "wdata");
+        end else if (cfg.which_err_code == fifo_read_err) begin
+          path3 = cfg.csrng_path_vif.fifo_err_path(cfg.which_app_err_alert, fifo_name,
+                                                   "rdata");
+        end
+
         value1 = fifo_err_value[0][path_key];
         value2 = fifo_err_value[1][path_key];
 
@@ -222,8 +228,9 @@ class csrng_err_vseq extends csrng_base_vseq;
             (cfg.which_fifo == sfifo_bencack) || (cfg.which_fifo == sfifo_updreq)))
         begin
           force_fifo_err_exception(path1, path2, 1'b1, 1'b0, 1'b0, fld, 1'b1);
-        end else if (cfg.which_err_code == fifo_write_error) begin
-          force_fifo_write_err(path1, path2, path3, value1, value2, 8'b0, fld, 1'b1);
+        end else if (cfg.which_err_code == fifo_write_error ||
+                     cfg.which_err_code == fifo_read_err) begin
+          force_fifo_readwrite_err(path1, path2, path3, value1, value2, 8'b0, fld, 1'b1);
         end else begin
           force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
         end
