@@ -15,6 +15,7 @@ module tb;
   `include "dv_macros.svh"
 
   wire   clk, rst_n, devmode;
+  wire   edn_disable, entropy_src_disable;
   wire   intr_cmd_req_done;
   wire   intr_entropy_req;
   wire   intr_hw_inst_exc;
@@ -32,12 +33,17 @@ module tb;
   pins_if#(MuBi8Width) otp_en_cs_sw_app_read_if(otp_en_cs_sw_app_read);
   pins_if#(MuBi4Width) lc_hw_debug_en_if(lc_hw_debug_en);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  csrng_if  csrng_if[NUM_HW_APPS](.clk(clk), .rst_n(rst_n));
+  csrng_if  csrng_if[NUM_HW_APPS](.clk(clk), .rst_n(edn_disable === 1'b1 ? 1'b0 : rst_n));
+  csrng_agents_if csrng_agents_if();
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
-      entropy_src_if(.clk(clk), .rst_n(rst_n));
+      entropy_src_if(.clk(clk), .rst_n(entropy_src_disable === 1'b1 ? 1'b0 : rst_n));
   push_pull_if#(.HostDataWidth(1))   aes_halt_if(.clk(clk), .rst_n(rst_n));
   csrng_path_if csrng_path_if (.csrng_cmd_i(csrng_cmd_i));
   csrng_assert_if csrng_assert_if (.csrng_cmd_i(csrng_cmd_i));
+
+  // All CSRNG-EDN interfaces (and therefore EDN agents) can currently only be disabled together.
+  assign edn_disable = csrng_agents_if.edn_disable;
+  assign entropy_src_disable = csrng_agents_if.entropy_src_disable;
 
   `DV_ALERT_IF_CONNECT
 
@@ -111,6 +117,8 @@ module tb;
     uvm_config_db#(virtual csrng_assert_if)::set(null, "*.env", "csrng_assert_vif",
                                                  csrng_assert_if);
     uvm_config_db#(virtual csrng_path_if)::set(null, "*.env", "csrng_path_vif", csrng_path_if);
+    uvm_config_db#(virtual csrng_agents_if)::set(null, "*.env", "csrng_agents_vif",
+                                                 csrng_agents_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

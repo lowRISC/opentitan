@@ -18,6 +18,7 @@ filesets:
       - lowrisc:dv:aes_model_dpi
     files:
       - csrng_env_pkg.sv
+      - csrng_agents_if.sv
       - csrng_path_if.sv
       - csrng_env_cfg.sv: {is_include_file: true}
       - csrng_env_cov.sv: {is_include_file: true}
