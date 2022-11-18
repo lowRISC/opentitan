@@ -730,13 +730,13 @@ module lc_ctrl
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcStateCheck_A,
       u_lc_ctrl_fsm.u_state_regs, alert_tx_o[1],
       !$past(otp_lc_data_i.valid) ||
-      u_lc_ctrl_fsm.fsm_state_q inside {ResetSt, EscalateSt, PostTransSt, InvalidSt} ||
+      u_lc_ctrl_fsm.fsm_state_q inside {ResetSt, EscalateSt, PostTransSt, InvalidSt, ScrapSt} ||
       u_lc_ctrl_fsm.esc_scrap_state0_i ||
       u_lc_ctrl_fsm.esc_scrap_state1_i)
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlLcCntCheck_A,
       u_lc_ctrl_fsm.u_cnt_regs, alert_tx_o[1],
        !$past(otp_lc_data_i.valid) ||
-      u_lc_ctrl_fsm.fsm_state_q inside {ResetSt, EscalateSt, PostTransSt, InvalidSt} ||
+      u_lc_ctrl_fsm.fsm_state_q inside {ResetSt, EscalateSt, PostTransSt, InvalidSt, ScrapSt} ||
       u_lc_ctrl_fsm.esc_scrap_state0_i ||
       u_lc_ctrl_fsm.esc_scrap_state1_i)
  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(CtrlKmacIfFsmCheck_A,
