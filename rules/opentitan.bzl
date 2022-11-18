@@ -1049,16 +1049,33 @@ def opentitan_ram_binary(
             fail("invalid device; device must be in {}".format(PER_DEVICE_DEPS.keys()))
         dev_deps = PER_DEVICE_DEPS[device]
         devname = "{}_{}".format(name, device)
+        dev_targets = []
 
         # Generate the binary.
-        opentitan_binary(
+        dev_targets.extend(opentitan_binary(
             name = devname,
             deps = deps + dev_deps,
-            extract_sw_logs_db = False,
+            extract_sw_logs_db = device == "sim_dv",
             **kwargs
-        )
+        ))
         bin_name = "{}_{}".format(devname, "bin")
         binaries.append(":" + bin_name)
+
+        # Generate Un-scrambled RAM VMEM (for testing SRAM injection in DV)
+        vmem_name = "{}_vmem".format(devname)
+        dev_targets.append(":" + vmem_name)
+        bin_to_vmem(
+            name = vmem_name,
+            bin = bin_name,
+            platform = platform,
+            word_size = 32,
+        )
+
+        # Create a filegroup with just the current device's targets.
+        native.filegroup(
+            name = devname,
+            srcs = dev_targets,
+        )
 
     # Generate the archive file.
     bin_to_archive(
