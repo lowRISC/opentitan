@@ -13,18 +13,14 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
   localparam uint KeyWidthBit = otp_ctrl_reg_pkg::CreatorRootKeyShare0Size * 8;
   localparam uint KeyWidthByte = KeyWidthBit / 8;
 
+  typedef enum bit [7:0] {
+    TestPhaseWriteData = 0,
+    TestPhaseEnterRMA = 1,
+    TestPhaseCheckWipe = 2
+  } test_phases_e;
+
   localparam string LC_CTRL_TRANS_SUCCESS_PATH =
     "tb.dut.top_earlgrey.u_lc_ctrl.u_lc_ctrl_fsm.trans_success_o";
-
-  // TODO(lowRISC/opentitan:#11795): replace with SW symbol backdoor write
-  // when this is fixed for ROM.
-  // Currently using retention SRAM to pass test_phase to program.
-  localparam string SRAM_CTRL_RET_HDL_PATH = "tb.dut.top_earlgrey.u_sram_ctrl_ret_aon";
-  localparam string SRAM_CTRL_RET_NONCE_PATH = {SRAM_CTRL_RET_HDL_PATH, ".nonce_q"};
-  localparam string SRAM_CTRL_RET_KEY_PATH = {SRAM_CTRL_RET_HDL_PATH, ".key_q"};
-
-  bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] sram_ret_nonce;
-  bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0] sram_ret_key;
 
   rand bit [7:0] rma_unlock_token[TokenWidthByte];
 
@@ -61,17 +57,11 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
                 rma_timeout_ns)
   endtask
 
-  // TODO(lowRISC/opentitan:#11795): replace with SW symbol backdoor write
-  // when this is fixed for ROM.
-  // Currently using retention SRAM to pass test_phase to program.
-  // Initial write to retention SRAM with a value of zero for
-  // test phase.
-  virtual task ret_backdoor_write();
-    int retval;
-    retval = uvm_hdl_read(SRAM_CTRL_RET_NONCE_PATH, sram_ret_nonce);
-    retval = uvm_hdl_read(SRAM_CTRL_RET_KEY_PATH, sram_ret_key);
-    ret_sram_bkdr_write32(0, 0, sram_ret_key, sram_ret_nonce);
-  endtask
+  virtual function void write_test_phase(test_phases_e phase);
+    bit [7:0] test_phase[1];
+    test_phase[0] = phase;
+    sw_symbol_backdoor_overwrite("kTestPhase", test_phase);
+  endfunction
 
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
@@ -87,16 +77,11 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
   virtual task body();
     // First Boot.
     super.body();
-
-    // TODO(lowRISC/opentitan:#11795): replace with SW symbol backdoor write
-    // when this is fixed for ROM.
-    // Disable SRAM data integrity checks and do SRAM write.
-    cfg.disable_d_user_data_intg_check_for_passthru_mem = 1;
-    cfg.en_scb_mem_chk = 0;
-    ret_backdoor_write();
+    write_test_phase(TestPhaseWriteData);
 
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
+    write_test_phase(TestPhaseEnterRMA);
     apply_reset();
 
     // Second Boot.
@@ -110,6 +95,7 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
     wait_for_transition();
+    write_test_phase(TestPhaseCheckWipe);
 
     cfg.clk_rst_vif.wait_clks(1000);
     apply_reset();
