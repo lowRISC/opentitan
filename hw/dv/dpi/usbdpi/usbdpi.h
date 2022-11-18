@@ -9,6 +9,7 @@
 #define TOOL_INCISIVE 0
 
 #include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <svdpi.h>
 
@@ -93,7 +94,6 @@
 #define HS_NEXTFRAME 14
 
 #define SEND_MAX 32
-#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

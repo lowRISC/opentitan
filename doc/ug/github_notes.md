@@ -8,7 +8,7 @@ These notes are for people who intend to contribute back to OpenTitan (based on
 notes taken by a relatively inexperienced git user). If you don't intend to do
 this you can simply clone the main repository, instructions are in [install
 instructions]({{< relref "doc/getting_started" >}}) and this document can be
-ignored.There is much more to using git, a possible next step is to reference
+ignored. There is much more to using git; a possible next step is to refer to
 [Resources to learn Git](https://try.github.io/).
 
 ## Getting a working repository
