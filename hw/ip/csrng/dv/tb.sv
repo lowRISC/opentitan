@@ -131,4 +131,27 @@ module tb;
     `DV_ASSERT_CTRL("CmdStageFifoAsserts", CmdStageFifoFullNotReady)
   end
 
+  // Ensure that upon local escalation of the AES cipher core inside Block Encrypt, no intermediate
+  // v is released into the ctr_drbg_gen/update blocks.
+  `define BLOCK_ENCRYPT_PATH tb.dut.u_csrng_core.u_csrng_block_encrypt
+  `define CTR_DRBG_GEN tb.dut.u_csrng_core.u_csrng_ctr_drbg_gen
+  `define CTR_DRBG_GEN_FIFO `CTR_DRBG_GEN.u_prim_fifo_sync_bencack.gen_normal_fifo
+  `ASSERT_INIT(CsrngCtrDrbgGenFifoDepth1, `CTR_DRBG_GEN.BlkEncAckFifoDepth == 1)
+  `ASSERT(CsrngSecCmAesCipherDataRegLocalEscGen,
+      $past(`CTR_DRBG_GEN_FIFO.fifo_incr_wptr) &&
+      `BLOCK_ENCRYPT_PATH.block_encrypt_aes_cipher_sm_err_o |=>
+      $past(`CTR_DRBG_GEN_FIFO.storage[0]
+          [`CTR_DRBG_GEN.BlkEncAckFifoWidth-1 -: `CTR_DRBG_GEN.BlkLen]) !=
+      $past(`BLOCK_ENCRYPT_PATH.cipher_data_out, 2), clk, !rst_n)
+
+  `define CTR_DRBG_UPD tb.dut.u_csrng_core.u_csrng_ctr_drbg_upd
+  `define CTR_DRBG_UPD_FIFO `CTR_DRBG_UPD.u_prim_fifo_sync_bencack.gen_normal_fifo
+  `ASSERT_INIT(CsrngCtrDrbgUpdFifoDepth1, `CTR_DRBG_UPD.BlkEncAckFifoDepth == 1)
+  `ASSERT(CsrngSecCmAesCipherDataRegLocalEscUpd,
+      $past(`CTR_DRBG_UPD_FIFO.fifo_incr_wptr) &&
+      `BLOCK_ENCRYPT_PATH.block_encrypt_aes_cipher_sm_err_o |=>
+      $past(`CTR_DRBG_UPD_FIFO.storage[0]
+          [`CTR_DRBG_UPD.BlkEncAckFifoWidth-1 -: `CTR_DRBG_UPD.BlkLen]) !=
+      $past(`BLOCK_ENCRYPT_PATH.cipher_data_out, 2), clk, !rst_n)
+
 endmodule
