@@ -6,7 +6,7 @@
 # for OpenTitan.
 
 # Global configuration options.
-ARG VERILATOR_VERSION=4.210
+ARG VERILATOR_VERSION=4.228
 ARG VERIBLE_VERSION=v0.0-2135-gb534c1fe
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
