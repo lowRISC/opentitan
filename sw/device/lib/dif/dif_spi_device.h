@@ -879,7 +879,7 @@ dif_result_t dif_spi_device_set_all_passthrough_command_filters(
     dif_spi_device_handle_t *spi, dif_toggle_t enable);
 
 /**
- * Clear the busy bit for flash / passthrough modes.
+ * Clear the busy bit and write-enable bit for flash / passthrough modes.
  *
  * @param spi A handle to a spi device.
  * @return `kDifBadArg` if `spi` is NULL. `kDifOk` otherwise.
