@@ -61,11 +61,10 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
           set_pos_and_wait();
           set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
           // Send low power entry reset.
-          send_reset(pwrmgr_pkg::LowPwrEntry, '0);
+          send_lowpower_reset();
           expected = 1 << ral.reset_info.low_power_exit.get_lsb_pos();
 
-          check_reset_info(maybe_por_reset | expected,
-                           "expected reset_info to indicate low power");
+          check_reset_info(maybe_por_reset | expected, "expected reset_info to indicate low power");
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b1);
 
           csr_wr(.ptr(ral.reset_info), .value('1));
@@ -77,7 +76,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
           `DV_CHECK_RANDOMIZE_FATAL(this)
           set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
           expected = rstreqs << ral.reset_info.hw_req.get_lsb_pos();
-          send_reset(pwrmgr_pkg::HwReq, rstreqs);
+          send_hw_reset(rstreqs);
           check_reset_info(maybe_por_reset | expected, $sformatf(
                            "expected reset_info to match hw_req 0x%x", expected));
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 1'b0);
@@ -89,10 +88,10 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
           set_alert_and_cpu_info_for_capture(alert_dump, cpu_dump);
 
           // Send sw reset.
-          send_sw_reset(MuBi4True);
+          csr_wr(.ptr(ral.reset_req), .value(MuBi4True));
+          send_sw_reset();
           expected = 1 << ral.reset_info.sw_reset.get_lsb_pos();
-          check_reset_info(maybe_por_reset | expected,
-                           "Expected reset_info to indicate sw reset");
+          check_reset_info(maybe_por_reset | expected, "Expected reset_info to indicate sw reset");
           check_alert_and_cpu_info_after_reset(alert_dump, cpu_dump, 0);
           csr_wr(.ptr(ral.reset_info), .value('1));
         end

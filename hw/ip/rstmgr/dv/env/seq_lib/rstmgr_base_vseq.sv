@@ -38,29 +38,28 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     ResetScan,
     ResetLowPower,
     ResetSw,
-    ResetHw
+    ResetHw,
+    ResetLast
   } reset_e;
 
-  typedef struct {
-    string description;
-    int code;
-  } reset_test_info_t;
+  // The reset_info adds POR and low power to TotalResetWidth.
+  typedef logic [pwrmgr_pkg::TotalResetWidth+2-1:0] reset_info_t;
+  typedef logic [pwrmgr_pkg::HwResetWidth-1:0] rstreqs_t;
 
-  rand reset_e                              which_reset;
+  rand sw_rst_t          sw_rst_regwen;
+  rand sw_rst_t          sw_rst_ctrl_n;
 
-  rand sw_rst_t                             sw_rst_regwen;
-  rand sw_rst_t                             sw_rst_ctrl_n;
+  bit                    reset_once;
 
-  bit                                       reset_once;
+  rand cpu_crash_dump_t  cpu_dump;
+  rand alert_crashdump_t alert_dump;
 
-  rand cpu_crash_dump_t                     cpu_dump;
-  rand alert_crashdump_t                    alert_dump;
+  rand rstreqs_t         rstreqs;
 
-  rand logic [pwrmgr_pkg::HwResetWidth-1:0] rstreqs;
-
-  rand logic                                scan_rst_ni;
+  rand logic             scan_rst_ni;
   constraint scan_rst_ni_c {scan_rst_ni == 1;}
 
+  // Various cycles for delaying stimulus.
   rand int rst_to_req_cycles;
   constraint rst_to_req_cycles_c {rst_to_req_cycles inside {[1 : 6]};}
 
@@ -69,14 +68,23 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     release_lc_to_release_sys_cycles inside {[1 : 10]};
   }
 
-  rand int scan_rst_to_scanmode_cycles;
-  constraint scan_rst_to_scanmode_cycles_c {scan_rst_to_scanmode_cycles inside {[0 : 4]};}
+  rand int scan_rst_cycles;
+  constraint scan_rst_cycles_c {scan_rst_cycles inside {[0 : 4]};}
 
-  rand int ndm_reset_cycles;
-  constraint ndm_reset_cycles_c {ndm_reset_cycles inside {[4 : 16]};}
+  rand int scanmode_cycles;
+  constraint scanmode_cycles_c {scanmode_cycles inside {[0 : 4]};}
 
-  rand int non_ndm_reset_us;
-  constraint non_ndm_reset_us_c {non_ndm_reset_us inside {[1 : 4]};}
+  rand int lowpower_rst_cycles;
+  constraint lowpower_rst_cycles_c {lowpower_rst_cycles inside {[0 : 20]};}
+
+  rand int sw_rst_cycles;
+  constraint sw_rst_cycles_c {sw_rst_cycles inside {[0 : 20]};}
+
+  rand int hw_rst_cycles;
+  constraint hw_rst_cycles_c {hw_rst_cycles inside {[0 : 20]};}
+
+  rand int reset_us;
+  constraint reset_us_c {reset_us inside {[1 : 4]};}
 
   // various knobs to enable certain routines
   bit do_rstmgr_init = 1'b1;
@@ -86,35 +94,22 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   int scanmode_on_weight = 8;
 
   // What to expect when testing resets.
-  reset_test_info_t reset_test_infos[reset_e] = '{
-    ResetPOR: '{
-      description: "POR reset",
-      code: 1
-    },
-    ResetScan: '{
-      description: "scan reset",
-      code: 1
-    },
-    ResetLowPower: '{
-      description: "low power reset",
-      code: 2
-    },
-    ResetSw: '{
-      description: "software reset",
-      code: 4
-    },
-    ResetHw: '{
-      description: "hardware reset",
-      code: 8
-    }
+  string reset_name[reset_e] = '{
+    ResetPOR: "POR",
+    ResetScan: "scan",
+    ResetLowPower: "low power",
+    ResetSw: "software",
+    ResetHw: "hardware"
   };
 
-  function bit aon_reset(reset_e reset);
-    return reset inside {ResetPOR, ResetScan};
-  endfunction
-
-  function bit clear_capture_enable(reset_e reset);
-    return reset != ResetLowPower;
+  function int get_reset_code(reset_e reset, rstreqs_t rstreqs);
+    case (reset)
+      ResetPOR, ResetScan: return 1 << ral.reset_info.por.get_lsb_pos();
+      ResetLowPower: return 1 << ral.reset_info.low_power_exit.get_lsb_pos();
+      ResetSw: return 1 << ral.reset_info.sw_reset.get_lsb_pos();
+      ResetHw: return rstreqs << ral.reset_info.hw_req.get_lsb_pos();
+      default: `uvm_error(`gfn, $sformatf("Unexpected reset code %0d", reset))
+    endcase
   endfunction
 
   function void post_randomize();
@@ -136,16 +131,17 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.rstmgr_vif.pwr_i.rst_sys_req = {rstmgr_pkg::PowerDomains{rst_sys_req}};
   endfunction
 
-  local function void set_rstreqs(logic [pwrmgr_pkg::HwResetWidth:0] rstreqs);
+  local function void set_rstreqs(rstreqs_t rstreqs);
     cfg.rstmgr_vif.pwr_i.rstreqs = rstreqs;
+  endfunction
+
+  local function void add_rstreqs(rstreqs_t rstreqs);
+    cfg.rstmgr_vif.pwr_i.rstreqs |= rstreqs;
+    `uvm_info(`gfn, $sformatf("Updating rstreqs to 0x%x", cfg.rstmgr_vif.pwr_i.rstreqs), UVM_MEDIUM)
   endfunction
 
   local function void set_reset_cause(pwrmgr_pkg::reset_cause_e reset_cause);
     cfg.rstmgr_vif.pwr_i.reset_cause = reset_cause;
-  endfunction
-
-  virtual function void set_ndmreset_req(logic value);
-    cfg.rstmgr_vif.cpu_i.ndmreset_req = value;
   endfunction
 
   static function logic is_running_sequence(string seq_name);
@@ -265,7 +261,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
 
   virtual protected task clear_alert_and_cpu_info();
     set_alert_and_cpu_info_for_capture('0, '0);
-    send_sw_reset(MuBi4True);
+    send_sw_reset();
     cfg.io_div4_clk_rst_vif.wait_clks(20);  // # of lc reset cycles measured from waveform
     check_alert_and_cpu_info_after_reset(.alert_dump('0), .cpu_dump('0), .enable(0));
   endtask
@@ -354,7 +350,10 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.io_div4_clk_rst_vif.wait_clks(rst_to_req_cycles);
     set_pwrmgr_rst_reqs(.rst_lc_req('1), .rst_sys_req('1));
     cfg.clk_rst_vif.stop_clk();
-    if (reset_cause == pwrmgr_pkg::LowPwrEntry) control_all_clocks(.enable(0));
+    if (reset_cause == pwrmgr_pkg::LowPwrEntry) begin
+      // TODO: randomize the clocks off setting.
+      control_all_clocks(.enable(0));
+    end
   endtask
 
   protected task wait_till_active();
@@ -364,80 +363,82 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.io_div4_clk_rst_vif.wait_clks(8);
   endtask
 
-  local task reset_done();
-    `uvm_info(`gfn, "Releasing pwrmgr inputs for reset request", UVM_MEDIUM)
+  protected task reset_done();
+    `uvm_info(`gfn, "Releasing reset", UVM_LOW)
+    update_scanmode(prim_mubi_pkg::MuBi4False);
+    update_scan_rst_n(1'b1);
     if (cfg.rstmgr_vif.pwr_i.reset_cause == pwrmgr_pkg::LowPwrEntry) begin
       control_all_clocks(.enable(1));
     end
+    cfg.clk_rst_vif.start_clk();
     cfg.io_div4_clk_rst_vif.wait_clks(10);
     set_reset_cause(pwrmgr_pkg::ResetNone);
     set_pwrmgr_rst_reqs(.rst_lc_req('0), .rst_sys_req('1));
-    cfg.clk_rst_vif.start_clk();
     cfg.io_div4_clk_rst_vif.wait_clks(release_lc_to_release_sys_cycles);
     set_pwrmgr_rst_reqs(.rst_lc_req('0), .rst_sys_req('0));
-    wait_till_active();
-    `uvm_info(`gfn, "exiting reset_done", UVM_MEDIUM)
-  endtask
-
-  virtual protected task release_reset(pwrmgr_pkg::reset_cause_e reset_cause);
-    #(non_ndm_reset_us * 1us);
-    // Cause the reset to drop.
-    `uvm_info(`gfn, $sformatf("Releasing %0s reset", reset_cause.name()), UVM_LOW)
     set_rstreqs(0);
-    reset_done();
+    wait_till_active();
+    `uvm_info(`gfn, "Reset done", UVM_MEDIUM)
   endtask
 
-  // Sends either a low power exit or an external hardware reset request, and drops it once it
-  // should have caused the hardware to handle it.
-  virtual protected task send_reset(pwrmgr_pkg::reset_cause_e reset_cause,
-                                    logic [pwrmgr_pkg::TotalResetWidth-1:0] rstreqs,
-                                    logic clear_it = 1);
-    `uvm_info(`gfn, $sformatf("Sending %0s reset", reset_cause.name()), UVM_LOW)
-    set_rstreqs(rstreqs);
-    reset_start(reset_cause);
-    if (clear_it) release_reset(reset_cause);
+  // Sends either an external hardware reset request, setting the possibly different
+  // rstreqs bits at different times. It optionally completes the reset.
+  virtual protected task send_hw_reset(rstreqs_t rstreqs, logic complete_it = 1);
+    `uvm_info(`gfn, $sformatf("Sending hw reset with 0b%0b", rstreqs), UVM_LOW)
+    reset_start(pwrmgr_pkg::HwReq);
+    fork
+      begin : isolation_fork
+        foreach (rstreqs[i]) begin : loop
+          if (rstreqs[i]) begin
+            fork
+              automatic int index = i;
+              automatic bit [2:0] cycles;
+              `DV_CHECK_STD_RANDOMIZE_FATAL(cycles)
+              cfg.io_div4_clk_rst_vif.wait_clks(cycles);
+              add_rstreqs(rstreqs & (1 << index));
+            join_none
+          end
+        end : loop
+        wait fork;
+      end : isolation_fork
+    join
+    if (complete_it) reset_done();
   endtask
+
+  virtual protected task send_lowpower_reset(bit complete_it = 1);
+    `uvm_info(`gfn, "Sending low power reset", UVM_LOW)
+    reset_start(pwrmgr_pkg::LowPwrEntry);
+    if (complete_it) reset_done();
+  endtask
+
 
   // Lead with scan_rst active to avoid some derived sequence changing scanmode_i in such
   // a way it defeats this reset.
-  virtual protected task send_scan_reset();
-    `uvm_info(`gfn, "Sending scan reset.", UVM_MEDIUM)
-    update_scan_rst_n(1'b0);
-    cfg.io_div4_clk_rst_vif.wait_clks(scan_rst_to_scanmode_cycles);
-    update_scanmode(prim_mubi_pkg::MuBi4True);
-    set_pwrmgr_rst_reqs(.rst_lc_req('1), .rst_sys_req('1));
-    set_reset_cause(pwrmgr_pkg::HwReq);
+  virtual protected task send_scan_reset(bit complete_it = 1);
+    `uvm_info(`gfn, "Sending scan reset", UVM_MEDIUM)
+    fork
+      begin
+        cfg.io_div4_clk_rst_vif.wait_clks(scan_rst_cycles);
+        update_scan_rst_n(1'b0);
+      end
+      begin
+        cfg.io_div4_clk_rst_vif.wait_clks(scanmode_cycles);
+        update_scanmode(prim_mubi_pkg::MuBi4True);
+      end
+    join
+    reset_start(pwrmgr_pkg::HwReq);
+
     // The clocks are turned off, so wait in time units.
-    #1us;
-    update_scanmode(prim_mubi_pkg::MuBi4False);
-    update_scan_rst_n(1'b1);
-    cfg.aon_clk_rst_vif.wait_clks(2);
-    reset_done();
-
-    // This makes sure the clock has restarted before this returns.
-    cfg.io_div4_clk_rst_vif.wait_clks(1);
-    `uvm_info(`gfn, "Done sending scan reset.", UVM_MEDIUM)
-  endtask
-
-  // Sends an ndm reset, and drops it once it should have
-  // caused the hardware to handle it.
-  virtual protected task send_ndm_reset();
-    set_ndmreset_req(1'b1);
-    `uvm_info(`gfn, "Sending ndm reset", UVM_LOW)
-    cfg.io_div4_clk_rst_vif.wait_clks(ndm_reset_cycles);
-    set_ndmreset_req(1'b0);
-    `uvm_info(`gfn, "Released ndm reset", UVM_LOW)
+    #(reset_us * 1us);
+    if (complete_it) reset_done();
   endtask
 
   // Requests a sw reset. It is cleared by hardware once the reset is taken.
-  virtual protected task send_sw_reset(mubi4_t value);
-    csr_wr(.ptr(ral.reset_req), .value(value));
-    if (value == prim_mubi_pkg::MuBi4True) begin
-      `uvm_info(`gfn, "Sending sw reset", UVM_LOW)
-      reset_start(pwrmgr_pkg::HwReq);
-      #(non_ndm_reset_us * 1us);
-      reset_done();
-    end
+  virtual protected task send_sw_reset(bit complete_it = 1);
+    `uvm_info(`gfn, "Sending sw reset", UVM_LOW)
+    reset_start(pwrmgr_pkg::HwReq);
+    #(reset_us * 1us);
+    if (complete_it) reset_done();
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
@@ -468,21 +469,21 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     join
   endtask
 
-  protected task por_reset_done();
+  protected task por_reset_done(bit complete_it);
     cfg.rstmgr_vif.por_n = '1;
     reset_start(pwrmgr_pkg::ResetUndefined);
-    #(non_ndm_reset_us * 1us);
-    reset_done();
+    #(reset_us * 1us);
+    if (complete_it) reset_done();
   endtask
 
-  virtual protected task por_reset();
+  virtual protected task por_reset(bit complete_it = 1);
     `uvm_info(`gfn, "Starting POR", UVM_MEDIUM)
     cfg.rstmgr_vif.por_n = '0;
     control_all_clocks(.enable(0));
     #(100 * 1ns);
     start_clocks();
     cfg.aon_clk_rst_vif.wait_clks(POR_CLK_CYCLES);
-    por_reset_done();
+    por_reset_done(complete_it);
   endtask
 
   virtual task apply_reset(string kind = "HARD");
@@ -534,7 +535,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     set_pwrmgr_rst_reqs(1'b0, 1'b0);
     set_rstreqs('0);
     set_reset_cause(pwrmgr_pkg::ResetNone);
-    set_ndmreset_req('0);
   endtask
 
   // csr method wrapper for unpacked array registers

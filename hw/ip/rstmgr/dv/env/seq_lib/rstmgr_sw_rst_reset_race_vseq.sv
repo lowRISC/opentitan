@@ -45,12 +45,12 @@ class rstmgr_sw_rst_reset_race_vseq extends rstmgr_base_vseq;
         end
         begin
           cfg.clk_rst_vif.wait_clks(cycles_before_reset);
-          send_reset(.reset_cause(pwrmgr_pkg::HwReq), .rstreqs(rstreqs), .clear_it(0));
+          send_hw_reset(rstreqs, .complete_it(0));
           `uvm_info(`gfn, "Done with send_reset", UVM_MEDIUM)
         end
       join
-      cfg.io_div4_clk_rst_vif.wait_clks(20);
-      release_reset(pwrmgr_pkg::HwReq);
+      #(reset_us * 1us);
+      reset_done();
       clear_sw_rst_ctrl_n();
       expected = rstreqs << ral.reset_info.hw_req.get_lsb_pos();
       check_reset_info(expected, $sformatf("expected reset_info to match 0x%x", expected));
