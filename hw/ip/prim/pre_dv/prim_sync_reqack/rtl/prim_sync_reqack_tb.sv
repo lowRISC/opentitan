@@ -4,8 +4,7 @@
 //
 // Scratch verification testbench for REQ/ACK synchronizer primitive
 
-module prim_sync_reqack_tb #(
-) (
+module prim_sync_reqack_tb (
   input  logic clk_i,
   input  logic rst_ni,
 
@@ -19,6 +18,7 @@ module prim_sync_reqack_tb #(
   localparam int unsigned Ratio = 4; // must be even and greater equal 2
   localparam bit          DataSrc2Dst = 1'b1; // Select 1'b0 for Dst2Src
   localparam bit          DataReg = 1'b0; // Select 1'b1 if data flows from Dst2Src
+  localparam bit          EnRzHs = 1'b0; // RZ vs. NRZ protocol
 
   // Derivation of parameters
   localparam int unsigned Ticks = Ratio/2;
@@ -60,9 +60,10 @@ module prim_sync_reqack_tb #(
   logic [WidthTrans-1:0] in_data, out_data, unused_out_data;
   assign in_data = DataSrc2Dst ? src_count_q : dst_count_q;
   prim_sync_reqack_data #(
-    .Width       ( WidthTrans  ),
-    .DataSrc2Dst ( DataSrc2Dst ),
-    .DataReg     ( DataReg     )
+    .Width       ( WidthTrans   ),
+    .DataSrc2Dst ( DataSrc2Dst  ),
+    .DataReg     ( DataReg      ),
+    .EnRzHs      ( EnRzHs       )
   ) u_prim_sync_reqack_data (
     .clk_src_i  (clk_src),
     .rst_src_ni (rst_slow_n),
