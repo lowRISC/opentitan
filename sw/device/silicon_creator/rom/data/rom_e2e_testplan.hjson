@@ -849,7 +849,8 @@
             `CREATOR_SW_CFG_ROM_EXEC_EN` should be set to `0`.
 
             - Verify that ROM can be debugged in TEST, DEV, and RMA life cycle states.
-              - Test debugging with commands to GDB connected via OpenOCD and JTAG
+              - Test debugging with commands to GDB connected via OpenOCD and JTAG (or the
+                SystemVerilog based JTAG debugger model in case of DV simulations).
               - Read back GDB responses to check they match expected behaviour
               - Connect a debugger and verify that ROM halts very early in `rom_start.S`.
               - Trial the following activities within GDB, ensuring the correct

@@ -631,6 +631,8 @@ interface chip_if;
 
   wire pwrmgr_low_power = `PWRMGR_HIER.low_power_o;
   wire pwrmgr_cpu_fetch_en = `PWRMGR_HIER.fetch_en_o == lc_ctrl_pkg::On;
+  wire permgr_fast_pwr_state_active = `PWRMGR_HIER.u_fsm.state_q
+      == pwrmgr_pkg::FastPwrStateActive;
 
   wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_i.done == prim_mubi_pkg::MuBi4True;
   wire rom_ctrl_good = `PWRMGR_HIER.rom_ctrl_i.good == prim_mubi_pkg::MuBi4True;

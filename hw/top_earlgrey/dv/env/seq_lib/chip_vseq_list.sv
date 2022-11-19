@@ -89,6 +89,8 @@
 `include "chip_sw_rom_e2e_shutdown_output_vseq.sv"
 `include "chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq.sv"
 `include "chip_sw_rom_e2e_asm_init_vseq.sv"
+`include "chip_sw_rom_e2e_jtag_debug_vseq.sv"
+`include "chip_sw_rom_e2e_jtag_inject_vseq.sv"
 `include "chip_sw_power_idle_load_vseq.sv"
 `include "chip_sw_power_sleep_load_vseq.sv"
 `include "chip_sw_ast_clk_rst_inputs_vseq.sv"
