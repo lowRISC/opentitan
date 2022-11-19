@@ -58,7 +58,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand uint                   prob_scl_interference;
 
   // host timeout ctrl value
-  bit [31:0]                  host_timeout_ctrl = 32'hffff;
+  bit [31:0]                  host_timeout_ctrl = 32'h1000_ffff;
   // Start counter including restart. Starting from 1 to match rtl value
   // and easy to trace.
   int start_cnt = 1;
@@ -777,10 +777,10 @@ class i2c_base_vseq extends cip_base_vseq #(
           `downcast(read_txn, txn.clone())
           full_txn.num_data++;
           if (src_q.size() == 0) begin
-            txn.drv_type = HostNAck;
+            txn.drv_type = get_eos();
           end else begin
             // if your next item is restart Do nack
-            if (src_q[0].drv_type == HostRStart) txn.drv_type = HostNAck;
+            if (src_q[0].drv_type == HostRStart) txn.drv_type = get_eos();
             else txn.drv_type = HostAck;
           end
           dst_q.push_back(txn);
@@ -859,7 +859,7 @@ class i2c_base_vseq extends cip_base_vseq #(
         end else begin
           read_acq_fifo(0, acq_fifo_empty);
         end
-        clear_interrupt(AcqFull);
+        // acq_full is read only
       end else if (cfg.intr_vif.pins[TxEmpty]) begin
         if (!cfg.use_drooling_tx) begin
           write_tx_fifo();
@@ -1041,4 +1041,14 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endtask // read_acq_fifo
 
+  function drv_type_e get_eos();
+    drv_type_e rsp = HostNAck;
+    if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
+      randcase
+        1: rsp = HostAck;
+//        1: rsp = HostNAck;
+      endcase
+    end
+    return rsp;
+  endfunction // get_eos
 endclass : i2c_base_vseq

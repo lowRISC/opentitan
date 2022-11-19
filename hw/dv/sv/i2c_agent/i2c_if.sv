@@ -169,6 +169,22 @@ interface i2c_if(
     join
   endtask: wait_for_host_ack_or_nack
 
+  task automatic wait_for_host_any(timing_cfg_t tc,
+				   output bit rstart,
+				   output bit stop,
+				   output bit ack,
+				   output bit nack);
+     fork
+	begin : iso_fork
+	   fork
+	      wait_for_host_stop_or_rstart(tc, rstart, stop);
+	      wait_for_host_ack_or_nack(tc, ack, nack);
+	   join_any
+	   disable fork;
+	end : iso_fork
+     join
+  endtask
+     
   task automatic wait_for_device_ack(ref timing_cfg_t tc);
     @(negedge sda_o && scl_o);
     wait_for_dly(tc.tSetupBit);
