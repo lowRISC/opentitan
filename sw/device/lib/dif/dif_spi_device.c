@@ -14,6 +14,7 @@
 
 const uint16_t kDifSpiDeviceBufferLen = SPI_DEVICE_BUFFER_SIZE_BYTES;
 
+enum { kDifSpiDeviceFlashStatusWelBit = 1 };
 enum { kDifSpiDeviceEFlashLen = 2048 };
 enum { kDifSpiDeviceMailboxLen = 1024 };
 enum { kDifSpiDeviceSfdpLen = 256 };
@@ -1264,6 +1265,8 @@ dif_result_t dif_spi_device_clear_flash_busy_bit(dif_spi_device_handle_t *spi) {
   }
   uint32_t reg_val = mmio_region_read32(spi->dev.base_addr,
                                         SPI_DEVICE_FLASH_STATUS_REG_OFFSET);
+  reg_val =
+      bitfield_bit32_write(reg_val, kDifSpiDeviceFlashStatusWelBit, false);
   reg_val =
       bitfield_bit32_write(reg_val, SPI_DEVICE_FLASH_STATUS_BUSY_BIT, false);
   mmio_region_write32(spi->dev.base_addr, SPI_DEVICE_FLASH_STATUS_REG_OFFSET,
