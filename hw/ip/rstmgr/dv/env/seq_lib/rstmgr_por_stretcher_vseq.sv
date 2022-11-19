@@ -36,7 +36,7 @@ class rstmgr_por_stretcher_vseq extends rstmgr_base_vseq;
       cfg.aon_clk_rst_vif.wait_clks(glitch_duration_cycles);
       `DV_CHECK_EQ(cfg.rstmgr_vif.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel], 1'b0)
     end
-    por_reset_done();
+    por_reset_done(.complete_it(1));
     csr_rd_check(.ptr(ral.reset_info.por), .compare_value(1'b1),
                  .err_msg("Unexpected reset_info.por low"));
   endtask

@@ -11,9 +11,21 @@ class rstmgr_reset_vseq extends rstmgr_base_vseq;
 
   `uvm_object_new
 
-  constraint num_trans_c {num_trans inside {[40 : 60]};}
+  typedef bit [ResetLast-1:0] which_resets_t;
 
-  constraint which_reset_c {which_reset != 0;}
+  rand bit por_rst;
+  rand bit scan_rst;
+  rand bit low_power_rst;
+  rand bit sw_rst;
+  rand bit hw_rst;
+
+  constraint which_resets_c {
+    $onehot(
+        {por_rst, scan_rst, low_power_rst, sw_rst || hw_rst}
+    );
+  }
+
+  constraint num_trans_c {num_trans inside {[40 : 60]};}
 
   // VCS seems to have non-uniform distributions for this variable.
   rand logic   alert_enable;
@@ -23,16 +35,55 @@ class rstmgr_reset_vseq extends rstmgr_base_vseq;
   rand reset_e start_reset;
   constraint start_reset_c {start_reset inside {ResetPOR, ResetScan};}
 
+  which_resets_t which_resets;
   mubi4_t sw_reset_csr;
 
+  function which_resets_t create_which_resets();
+    which_resets_t which_resets;
+    if (por_rst) which_resets[ResetPOR] = 1;
+    if (scan_rst) which_resets[ResetScan] = 1;
+    if (low_power_rst) which_resets[ResetLowPower] = 1;
+    if (sw_rst) which_resets[ResetSw] = 1;
+    if (hw_rst) which_resets[ResetHw] = 1;
+    return which_resets;
+  endfunction
+
+  function bit has_aon_reset(which_resets_t which_resets);
+    return which_resets[ResetPOR] || which_resets[ResetScan];
+  endfunction
+
+  function bit clear_capture_enable(which_resets_t which_resets);
+    return (which_resets & ~(1 << ResetLowPower)) ? 1 : 0;
+  endfunction
+
   function void post_randomize();
-    if (which_reset == ResetSw) sw_reset_csr = MuBi4True;
-    else sw_reset_csr = get_rand_mubi4_val(0, 2, 4);
+    sw_reset_csr = get_rand_mubi4_val(0, 2, 4);
+  endfunction
+
+  function string resets_description(which_resets_t which_resets, rstreqs_t rstreqs);
+    string msg = "Resets to be sent:";
+    bit some;
+    for (reset_e r = r.first(); r != r.last(); r = r.next()) begin
+      if (which_resets[r]) begin
+        if (some) msg = {msg, ", "};
+        msg = {msg, " ", reset_name[r]};
+        if (r == ResetHw) msg = {msg, $sformatf(" with 0x%x", rstreqs)};
+        some = 1;
+      end
+    end
+    return msg;
+  endfunction
+
+  function reset_info_t get_expected_reset_info(which_resets_t which_resets, rstreqs_t rstreqs);
+    reset_info_t reset_info;
+    for (reset_e r = r.first(); r != r.last(); r = r.next()) begin
+      if (which_resets[r]) reset_info |= get_reset_code(r, rstreqs);
+    end
+    return reset_info;
   endfunction
 
   task body();
-    reset_test_info_t reset_test_info;
-    int expected_reset_info_code;
+    reset_info_t expected_reset_info_code;
     logic expected_alert_enable;
     logic expected_cpu_enable;
     alert_crashdump_t expected_alert_dump = '0;
@@ -63,67 +114,76 @@ class rstmgr_reset_vseq extends rstmgr_base_vseq;
     expected_alert_enable = 0;
     expected_cpu_enable = 0;
 
-    reset_test_info = reset_test_infos[start_reset];
     cfg.clk_rst_vif.wait_clks(8);
     // Wait till rst_lc_n is inactive for non-aon.
-    wait(cfg.rstmgr_vif.resets_o.rst_lc_n[1]);
+    `DV_WAIT(cfg.rstmgr_vif.resets_o.rst_lc_n[1])
 
-    check_reset_info(reset_test_info.code, reset_test_info.description);
+    check_reset_info(get_reset_code(start_reset, 0), {reset_name[start_reset], " reset"});
     check_alert_info_after_reset(expected_alert_dump, expected_alert_enable);
     check_cpu_info_after_reset(expected_cpu_dump, expected_cpu_enable);
     prev_alert_dump = expected_alert_dump;
     prev_cpu_dump   = expected_cpu_dump;
 
-    for (int i = 0; i < num_trans; ++i) begin
+    for (int i = 0; i < num_trans; ++i) begin : trans_loop
       logic clear_enables;
-      logic is_aon_reset;
+      logic has_aon;
 
       `uvm_info(`gfn, $sformatf("Starting new round %0d", i), UVM_MEDIUM)
       `DV_CHECK_RANDOMIZE_FATAL(this)
+      which_resets = create_which_resets();
       set_alert_info_for_capture(alert_dump, alert_enable);
       set_cpu_info_for_capture(cpu_dump, cpu_enable);
       csr_wr(.ptr(ral.reset_info), .value('1));
+      if (which_resets[ResetSw]) begin
+        sw_reset_csr = MuBi4True;
+        csr_wr(.ptr(ral.reset_req), .value(sw_reset_csr));
+      end
+      has_aon = has_aon_reset(which_resets);
+      clear_enables = clear_capture_enable(which_resets);
 
-      is_aon_reset = aon_reset(which_reset);
-      reset_test_info = reset_test_infos[which_reset];
-      clear_enables = clear_capture_enable(which_reset);
-
-      expected_reset_info_code = reset_test_info.code;
+      `uvm_info(`gfn, $sformatf("Expected to %0s capture enables", clear_enables ? "clear" : "hold"
+                ), UVM_MEDIUM)
+      expected_reset_info_code = get_expected_reset_info(which_resets, rstreqs);
       expected_alert_enable = alert_enable && !clear_enables;
       expected_cpu_enable = cpu_enable && !clear_enables;
-      expected_alert_dump = is_aon_reset ? '0 : (alert_enable ? alert_dump : prev_alert_dump);
-      expected_cpu_dump = is_aon_reset ? '0 : (cpu_enable ? cpu_dump : prev_cpu_dump);
-
-      `uvm_info(`gfn, $sformatf(
-                "%0s with alert_en %b, cpu_en %b", which_reset.name(), alert_enable, cpu_enable),
+      expected_alert_dump = has_aon ? '0 : (alert_enable ? alert_dump : prev_alert_dump);
+      expected_cpu_dump = has_aon ? '0 : (cpu_enable ? cpu_dump : prev_cpu_dump);
+      `uvm_info(`gfn, resets_description(which_resets, rstreqs), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf("resets with alert_en %b, cpu_en %b", alert_enable, cpu_enable),
                 UVM_MEDIUM)
 
-      send_sw_reset(sw_reset_csr);
-      case (which_reset)
-        ResetPOR: por_reset();
-        ResetScan: send_scan_reset();
-        ResetLowPower: send_reset(pwrmgr_pkg::LowPwrEntry, 0);
-        ResetSw: `DV_CHECK_EQ(sw_reset_csr, MuBi4True)
-        ResetHw: begin
-          expected_reset_info_code = rstreqs << ral.reset_info.hw_req.get_lsb_pos();
-          send_reset(pwrmgr_pkg::HwReq, rstreqs);
+      fork
+        if (which_resets[ResetPOR]) por_reset(.complete_it(0));
+        if (which_resets[ResetScan]) send_scan_reset(.complete_it(0));
+        if (which_resets[ResetLowPower]) begin
+          cfg.io_div4_clk_rst_vif.wait_clks(lowpower_rst_cycles);
+          send_lowpower_reset(.complete_it(0));
         end
-        default: `uvm_fatal(`gfn, $sformatf("Unexpected reset type %0d", which_reset))
-      endcase
+        if (which_resets[ResetSw]) begin
+          cfg.io_div4_clk_rst_vif.wait_clks(sw_rst_cycles);
+          send_sw_reset(.complete_it(0));
+        end
+        if (which_resets[ResetHw]) begin
+          cfg.io_div4_clk_rst_vif.wait_clks(hw_rst_cycles);
+          send_hw_reset(rstreqs, .complete_it(0));
+        end
+      join
+      #(reset_us * 1us);
+      reset_done();
 
       cfg.io_div4_clk_rst_vif.wait_clks(8);
       wait(cfg.rstmgr_vif.resets_o.rst_lc_n[1]);
-      check_reset_info(expected_reset_info_code, reset_test_info.description);
+      check_reset_info(expected_reset_info_code);
       check_alert_info_after_reset(.alert_dump(expected_alert_dump),
                                    .enable(expected_alert_enable));
       check_cpu_info_after_reset(.cpu_dump(expected_cpu_dump), .enable(expected_cpu_enable));
-      if (which_reset == ResetPOR) read_and_check_all_csrs_after_reset();
+      if (has_aon) read_and_check_all_csrs_after_reset();
       prev_alert_dump = expected_alert_dump;
       prev_cpu_dump   = expected_cpu_dump;
-    end
+    end : trans_loop
     csr_wr(.ptr(ral.reset_info), .value('1));
     // This clears the info registers to cancel side-effects into other sequences with stress tests.
     clear_alert_and_cpu_info();
-  endtask
+  endtask : body
 
 endclass : rstmgr_reset_vseq
