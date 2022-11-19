@@ -23,14 +23,14 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-typedef void (*isr_handler)(void);
-static volatile isr_handler expected_isr_handler = NULL;
-
 enum {
   /**
    * Retention SRAM start address (inclusive).
    */
   kRetSramBaseAddr = TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_BASE_ADDR,
+
+  // See `sw/device/silicon_creator/lib/drivers/retention_sram.h`.
+  kRetSramOwnerAddr = kRetSramBaseAddr + 4 + 2048,
   kRetRamLastAddr =
       kRetSramBaseAddr + TOP_EARLGREY_SRAM_CTRL_RET_AON_RAM_SIZE_BYTES - 1,
 
@@ -313,8 +313,8 @@ static void sync_testbench(void) {
 /**
  * Executes the MAIN SRAM and RET SRAM scrambling test.
  *   This test:
- * - Pick a random address in the retention SRAM range.
- * - Pick a random address in the main SRAM between the heap and stack.
+ * - Set the retention SRAM address to the Owner space range.
+ * - Set a random address to the main SRAM in between the heap and stack.
  * - Set the reference memory as the retention SRAM and the scrambling as the
  * main SRAM.
  * - Inform the address to the testbench using `INFO_LOG`.
@@ -336,6 +336,7 @@ static void sync_testbench(void) {
  * - Check the ECC error counter.
  * - Check that the backdoor written data in the `reference_frame`, matches with
  * the data supplied by the testbench.
+ * - Pick a random address in the retention SRAM range.
  * - Set the reference memory as the main SRAM and the scrambling as the ret
  * SRAM and repeat the test except that it is neither necessary to copy the
  * `scrambling_frame` to the `reference_frame` nor reset the chip before the
@@ -358,8 +359,10 @@ bool test_main(void) {
   main_sram_addr = OT_ALIGN_MEM(rand_testutils_gen32_range(
       (uintptr_t)_freertos_heap_start,
       (uintptr_t)_stack_start - sizeof(scramble_test_frame)));
-  ret_sram_addr = OT_ALIGN_MEM(rand_testutils_gen32_range(
-      kRetSramBaseAddr, kRetRamLastAddr - sizeof(scramble_test_frame)));
+
+  // Note: Any other address range in the ret SRAM may be written during the
+  // boot, which will invalidate the test.
+  ret_sram_addr = OT_ALIGN_MEM(kRetSramOwnerAddr);
 
   scrambling_frame = (scramble_test_frame *)main_sram_addr;
   reference_frame = (scramble_test_frame *)ret_sram_addr;
@@ -377,8 +380,12 @@ bool test_main(void) {
     LOG_INFO("Second boot, checking main sram");
     check_sram_data(reference_frame);
 
-    sync_testbench();
     LOG_INFO("Testing Retention sram");
+    ret_sram_addr = OT_ALIGN_MEM(rand_testutils_gen32_range(
+        kRetSramBaseAddr, kRetRamLastAddr - sizeof(scramble_test_frame)));
+    LOG_INFO("RET_SRAM addr: %x MAIN_SRAM addr: %x", ret_sram_addr,
+             main_sram_addr);
+    sync_testbench();
 
     scrambling_frame = (scramble_test_frame *)ret_sram_addr;
     reference_frame = (scramble_test_frame *)main_sram_addr;
