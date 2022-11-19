@@ -229,6 +229,8 @@ class chip_sw_sram_ctrl_scrambled_access_vseq extends chip_sw_base_vseq;
     join_none
 
     sync_with_sw();
+    ret_sram_offset = int'(cfg.sw_logger_vif.printed_arg[0]);
+    main_sram_offset = int'(cfg.sw_logger_vif.printed_arg[1]);
 
     `uvm_info(`gfn, $sformatf("Testing ret sram addr: %x", ret_sram_offset), UVM_LOW);
     fork
