@@ -588,6 +588,93 @@
       run_timeout_mins: 180
     }
     {
+      name: rom_e2e_jtag_debug_test_unlocked0
+      uvm_test_seq: chip_sw_rom_e2e_jtag_debug_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:img_test_unlocked0_exec_disabled:4",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+en_uart_logger=1",
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      reseed: 1
+      run_timeout_mins: 120
+    }
+    {
+      name: rom_e2e_jtag_debug_dev
+      uvm_test_seq: chip_sw_rom_e2e_jtag_debug_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:img_dev_exec_disabled:4",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+en_uart_logger=1",
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      reseed: 1
+      run_timeout_mins: 120
+    }
+    {
+      name: rom_e2e_jtag_debug_rma
+      uvm_test_seq: chip_sw_rom_e2e_jtag_debug_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:img_rma_exec_disabled:4",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+en_uart_logger=1",
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      reseed: 1
+      run_timeout_mins: 120
+    }
+    {
+      name: rom_e2e_jtag_inject_test_unlocked0
+      uvm_test_seq: chip_sw_rom_e2e_jtag_inject_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:img_test_unlocked0_exec_disabled:4",
+        "//sw/device/examples/sram_program:sram_program:5",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+en_uart_logger=1",
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      reseed: 1
+      run_timeout_mins: 120
+    }
+    {
+      name: rom_e2e_jtag_inject_dev
+      uvm_test_seq: chip_sw_rom_e2e_jtag_inject_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:img_dev_exec_disabled:4",
+        "//sw/device/examples/sram_program:sram_program:5",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+en_uart_logger=1",
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      reseed: 1
+      run_timeout_mins: 120
+    }
+    {
+      name: rom_e2e_jtag_inject_rma
+      uvm_test_seq: chip_sw_rom_e2e_jtag_inject_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:img_rma_exec_disabled:4",
+        "//sw/device/examples/sram_program:sram_program:5",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+en_uart_logger=1",
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      reseed: 1
+      run_timeout_mins: 120
+    }
+    {
       name: rom_e2e_static_critical
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_static_critical:1:signed"]
@@ -877,6 +964,22 @@
         "rom_e2e_sigverify_mod_exp_prod_end_sw",
         "rom_e2e_sigverify_mod_exp_rma_otbn",
         "rom_e2e_sigverify_mod_exp_rma_sw",
+      ]
+    }
+    {
+      name: rom_e2e_jtag_debug
+      tests: [
+        "rom_e2e_jtag_debug_test_unlocked0",
+        "rom_e2e_jtag_debug_dev",
+        "rom_e2e_jtag_debug_rma",
+      ]
+    }
+    {
+      name: rom_e2e_jtag_inject
+      tests: [
+        "rom_e2e_jtag_inject_test_unlocked0",
+        "rom_e2e_jtag_inject_dev",
+        "rom_e2e_jtag_inject_rma",
       ]
     }
   ]
