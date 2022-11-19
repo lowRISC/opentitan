@@ -23,6 +23,11 @@
   // Import additional common sim cfg files.
   import_cfgs: ["{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson"]
 
+
+  // Specific exclusion files.
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/rstmgr/dv/rstmgr_cnsty_chk/cov_manual_excl.el",
+                       "{proj_root}/hw/ip/rstmgr/dv/rstmgr_cnsty_chk/cov_unr_excl.el"]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 10
 
