@@ -86,23 +86,19 @@ typedef struct sigverify_rom_key {
  */
 extern const sigverify_rom_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt];
 
-#ifdef OT_PLATFORM_RV32
-
 /**
  * Returns a pointer to the RSA public keys stored in the ROM.
  *
  * @return Pointer to the RSA public keys.
  */
-inline const sigverify_rom_key_t *sigverify_rsa_keys_get(void) {
-  return kSigverifyRsaKeys;
-}
+const sigverify_rom_key_t *sigverify_rsa_keys_get(void);
 
 /**
  * Returns the number of RSA public keys stored in the ROM.
  *
  * @return Number of RSA public keys.
  */
-inline size_t sigverify_rsa_keys_cnt_get(void) { return kSigverifyRsaKeysCnt; }
+size_t sigverify_rsa_keys_cnt_get(void);
 
 /**
  * Returns the step size to use when checking RSA public keys.
@@ -110,20 +106,7 @@ inline size_t sigverify_rsa_keys_cnt_get(void) { return kSigverifyRsaKeysCnt; }
  * @return Step size that is coprime with and less than the return value of
  * `sigverify_rsa_keys_cnt_get()`.
  */
-inline size_t sigverify_rsa_keys_step_get(void) {
-  return kSigverifyRsaKeysStep;
-}
-
-#else
-
-/**
- * Declarations for the functions above that should be defined in tests.
- */
-const sigverify_rom_key_t *sigverify_rsa_keys_get(void);
-size_t sigverify_rsa_keys_cnt_get(void);
 size_t sigverify_rsa_keys_step_get(void);
-
-#endif
 
 #ifdef __cplusplus
 }  // extern "C"

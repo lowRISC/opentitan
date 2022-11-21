@@ -12,41 +12,9 @@
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
-#include "sw/device/silicon_creator/rom/keys/fake/dev_key_0_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/rom/keys/fake/prod_key_0_rsa_3072_exp_f4.h"
-#include "sw/device/silicon_creator/rom/keys/fake/test_key_0_rsa_3072_exp_f4.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys_ptrs.h"
 
 #include "otp_ctrl_regs.h"
-
-/**
- * Public keys for signature verification.
- *
- * Please see sw/device/silicon_creator/rom/keys/README.md for more
- * details.
- */
-const sigverify_rom_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt] = {
-    [0] =
-        {
-            .key = TEST_KEY_0_RSA_3072_EXP_F4,
-            .key_type = kSigverifyKeyTypeTest,
-        },
-    [1] =
-        {
-            .key = DEV_KEY_0_RSA_3072_EXP_F4,
-            .key_type = kSigverifyKeyTypeDev,
-        },
-    [2] =
-        {
-            .key = PROD_KEY_0_RSA_3072_EXP_F4,
-            .key_type = kSigverifyKeyTypeProd,
-        },
-};
-
-static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE >=
-                  kSigverifyRsaKeysCnt,
-              "CREATOR_SW_CFG_KEY_IS_VALID OTP item must be at least "
-              "`kSigverifyRsaKeysCnt` bytes.");
 
 /**
  * Checks the validity of a key in OTP.
