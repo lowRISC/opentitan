@@ -302,7 +302,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:sigverify_without_mod_exp_ibex_mock",
-        "//sw/device/silicon_creator/rom/keys/fake:public_keys",
+        "//sw/device/silicon_creator/rom/keys/fake",
     ],
 )
 
@@ -312,7 +312,7 @@ cc_test(
     deps = [
         ":sigverify_keys",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/rom/keys/fake:public_keys",
+        "//sw/device/silicon_creator/rom/keys/fake",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],

@@ -109,10 +109,10 @@ class SigverifyKeys : public rom_test::RomTest {
    * @param keys An array of keys.
    */
   template <size_t N>
-  void ExpectKeysPtrGet(const sigverify_rom_key_t (&keys)[N]) {
+  void ExpectKeysGet(const sigverify_rom_key_t (&keys)[N]) {
     ASSERT_LE(N, OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE);
-    EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysPtrGet()).WillOnce(Return(keys));
-    EXPECT_CALL(sigverify_keys_ptrs_, NumRsaKeysGet()).WillOnce(Return(N));
+    EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysGet()).WillOnce(Return(keys));
+    EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysCntGet()).WillOnce(Return(N));
     // Returning 1 since it is coprime with every integer.
     EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysStepGet()).WillOnce(Return(1));
     EXPECT_CALL(rnd_, Uint32())
@@ -157,7 +157,7 @@ class BadKeyIdTypeTest : public SigverifyKeys,
 };
 
 TEST_P(BadKeyIdTypeTest, BadKeyId) {
-  ExpectKeysPtrGet(kSigVerifyRsaKeys);
+  ExpectKeysGet(kMockKeys);
 
   const sigverify_rsa_key_t *key;
   EXPECT_EQ(sigverify_rsa_key_get(0, GetParam(), &key), kErrorSigverifyBadKey);
@@ -182,7 +182,7 @@ TEST_P(BadKeyIdTypeDeathTest, BadKeyType) {
 
   EXPECT_DEATH(
       {
-        ExpectKeysPtrGet(keys);
+        ExpectKeysGet(keys);
         sigverify_rsa_key_get(key_id, GetParam(), &key);
       },
       "");
@@ -208,7 +208,7 @@ TEST_P(NonOperationalStateDeathTest, BadKey) {
 
   EXPECT_DEATH(
       {
-        ExpectKeysPtrGet(kMockKeys);
+        ExpectKeysGet(kMockKeys);
         sigverify_rsa_key_get(
             sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
             &key);
@@ -228,7 +228,7 @@ TEST_P(ValidBasedOnOtp, ValidInOtp) {
   lifecycle_state_t lc_state;
   std::tie(key_index, lc_state) = GetParam();
 
-  ExpectKeysPtrGet(kMockKeys);
+  ExpectKeysGet(kMockKeys);
   ExpectOtpRead(key_index, kHardenedByteBoolTrue);
   ExpectOtpRead(key_index, kHardenedByteBoolTrue);
 
@@ -245,7 +245,7 @@ TEST_P(ValidBasedOnOtp, InvalidInOtp) {
   lifecycle_state_t lc_state;
   std::tie(key_index, lc_state) = GetParam();
 
-  ExpectKeysPtrGet(kMockKeys);
+  ExpectKeysGet(kMockKeys);
   ExpectOtpRead(key_index, kHardenedByteBoolFalse);
 
   const sigverify_rsa_key_t *key;
@@ -280,7 +280,7 @@ TEST_P(ValidInState, Get) {
   lifecycle_state_t lc_state;
   std::tie(key_index, lc_state) = GetParam();
 
-  ExpectKeysPtrGet(kMockKeys);
+  ExpectKeysGet(kMockKeys);
 
   const sigverify_rsa_key_t *key;
   EXPECT_EQ(sigverify_rsa_key_get(
@@ -309,7 +309,7 @@ TEST_P(InvalidInState, Get) {
   lifecycle_state_t lc_state;
   std::tie(key_index, lc_state) = GetParam();
 
-  ExpectKeysPtrGet(kMockKeys);
+  ExpectKeysGet(kMockKeys);
 
   const sigverify_rsa_key_t *key;
   EXPECT_EQ(sigverify_rsa_key_get(
@@ -338,11 +338,11 @@ INSTANTIATE_TEST_SUITE_P(
 
 TEST(Keys, UniqueIds) {
   std::unordered_set<uint32_t> ids;
-  for (auto const &entry : kSigVerifyRsaKeys) {
+  for (auto const &entry : kSigverifyRsaKeys) {
     ids.insert(sigverify_rsa_key_id_get(&entry.key.n));
   }
 
-  EXPECT_EQ(ids.size(), kSigVerifyNumRsaKeys);
+  EXPECT_EQ(ids.size(), kSigverifyRsaKeysCnt);
 }
 
 /**
@@ -357,9 +357,9 @@ uint32_t Gcd(uint32_t a, uint32_t b) {
 }
 
 TEST(KeysStep, IsCorrect) {
-  if (kSigVerifyNumRsaKeys > 1) {
-    EXPECT_LT(kSigverifyRsaKeysStep, kSigVerifyNumRsaKeys);
-    EXPECT_EQ(Gcd(kSigverifyRsaKeysStep, kSigVerifyNumRsaKeys), 1);
+  if (kSigverifyRsaKeysCnt > 1) {
+    EXPECT_LT(kSigverifyRsaKeysStep, kSigverifyRsaKeysCnt);
+    EXPECT_EQ(Gcd(kSigverifyRsaKeysStep, kSigverifyRsaKeysCnt), 1);
   }
 }
 
@@ -410,7 +410,7 @@ struct RsaVerifyTestCase {
 constexpr RsaVerifyTestCase kRsaVerifyTestCases[3]{
     // message: "test"
     {
-        .key = &kSigVerifyRsaKeys[0].key,
+        .key = &kSigverifyRsaKeys[0].key,
         .sig =
             {
                 0xeb28a6d3, 0x936b42bb, 0x76d3973d, 0x6322d536, 0x253c7547,
@@ -436,7 +436,7 @@ constexpr RsaVerifyTestCase kRsaVerifyTestCases[3]{
             },
     },
     {
-        .key = &kSigVerifyRsaKeys[1].key,
+        .key = &kSigverifyRsaKeys[1].key,
         .sig =
             {
                 0x3106a8c5, 0xb7b48a3a, 0xb06af030, 0x9dca44b1, 0x55eaa90a,
@@ -462,7 +462,7 @@ constexpr RsaVerifyTestCase kRsaVerifyTestCases[3]{
             },
     },
     {
-        .key = &kSigVerifyRsaKeys[2].key,
+        .key = &kSigverifyRsaKeys[2].key,
         .sig =
             {
                 0x39b92a38, 0xf584ed48, 0x25f5f323, 0x04dde936, 0x608871c1,
@@ -495,7 +495,7 @@ TEST(RsaVerifyTestCases, AllKeys) {
     ids.insert(sigverify_rsa_key_id_get(&test_case.key->n));
   }
 
-  EXPECT_EQ(ids.size(), kSigVerifyNumRsaKeys);
+  EXPECT_EQ(ids.size(), kSigverifyRsaKeysCnt);
 }
 
 class SigverifyRsaVerify

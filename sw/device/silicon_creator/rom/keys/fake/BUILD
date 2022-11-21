@@ -5,7 +5,7 @@
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "public_keys",
+    name = "fake",
     hdrs = [
         "dev_key_0_rsa_3072_exp_f4.h",
         "prod_key_0_rsa_3072_exp_f4.h",
