@@ -71,6 +71,9 @@ interface csrng_cov_if (
     cp_hw0_genbits_depth: coverpoint hw0_genbits_depth;
     hw0_cmd_cross: cross cp_hw0_cmd_depth, hw0_cmd_vld, hw0_cmd_rdy;
     hw0_genbits_cross: cross cp_hw0_genbits_depth, hw0_genbits_vld, hw0_genbits_rdy{
+      // Note: cs_enable factors into vld_o. If the module is disabled, vld_o may still be low
+      // despite the FIFO being full. This is thus not an illegal bin, the disable/re-enable
+      // testing will help us to hit those cross points.
       illegal_bins empty_and_valid =
         binsof(cp_hw0_genbits_depth) intersect {0} with (hw0_genbits_vld);
     }
@@ -82,6 +85,9 @@ interface csrng_cov_if (
     cp_hw1_genbits_depth: coverpoint hw1_genbits_depth;
     hw1_cmd_cross: cross cp_hw1_cmd_depth, hw1_cmd_vld, hw1_cmd_rdy;
     hw1_genbits_cross: cross cp_hw1_genbits_depth, hw1_genbits_vld, hw1_genbits_rdy{
+      // Note: cs_enable factors into vld_o. If the module is disabled, vld_o may still be low
+      // despite the FIFO being full. This is thus not an illegal bin, the disable/re-enable
+      // testing will help us to hit those cross points.
       illegal_bins empty_and_valid =
         binsof(cp_hw1_genbits_depth) intersect {0} with (hw1_genbits_vld);
     }
@@ -93,6 +99,9 @@ interface csrng_cov_if (
     cp_sw_genbits_depth: coverpoint sw_genbits_depth;
     sw_cmd_cross: cross cp_sw_cmd_depth, sw_cmd_vld, sw_cmd_rdy;
     sw_genbits_cross: cross cp_sw_genbits_depth, sw_genbits_vld, sw_genbits_rdy{
+      // Note: cs_enable factors into vld_o. If the module is disabled, vld_o may still be low
+      // despite the FIFO being full. This is thus not an illegal bin, the disable/re-enable
+      // testing will help us to hit those cross points.
       illegal_bins empty_and_valid =
         binsof(cp_sw_genbits_depth) intersect {0} with (sw_genbits_vld);
     }
