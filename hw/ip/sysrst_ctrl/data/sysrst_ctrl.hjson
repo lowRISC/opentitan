@@ -825,6 +825,9 @@
       hwaccess: "hwo",
       resval: "0",
       async: "clk_aon_i",
+      tags: [ // the value of these regs is determined by the value on the pins
+              // or other CSRs, hence it cannot be predicted.
+              "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits:   "0",
           name:   "pwrb_H2L",
