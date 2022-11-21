@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 #include "sw/device/silicon_creator/rom/keys/fake/dev_key_0_rsa_3072_exp_f4.h"
 #include "sw/device/silicon_creator/rom/keys/fake/prod_key_0_rsa_3072_exp_f4.h"
 #include "sw/device/silicon_creator/rom/keys/fake/test_key_0_rsa_3072_exp_f4.h"

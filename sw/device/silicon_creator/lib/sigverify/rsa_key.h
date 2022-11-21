@@ -54,6 +54,20 @@ typedef struct sigverify_rsa_key {
   uint32_t n0_inv[8];
 } sigverify_rsa_key_t;
 
+/**
+ * Gets the ID of an RSA public key from its modulus.
+ *
+ * ID of a key is the least significant word of its modulus.
+ * Callers must make sure that `modulus` is valid before calling this function.
+ *
+ * @param key An RSA public key.
+ * @return ID of the key.
+ */
+inline uint32_t sigverify_rsa_key_id_get(
+    const sigverify_rsa_buffer_t *modulus) {
+  return modulus->data[0];
+}
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

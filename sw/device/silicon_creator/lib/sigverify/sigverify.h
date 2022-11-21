@@ -29,20 +29,6 @@ enum {
 };
 
 /**
- * Gets the ID of an RSA public key from its modulus.
- *
- * ID of a key is the least significant word of its modulus.
- * Callers must make sure that `modulus` is valid before calling this function.
- *
- * @param key An RSA public key.
- * @return ID of the key.
- */
-inline uint32_t sigverify_rsa_key_id_get(
-    const sigverify_rsa_buffer_t *modulus) {
-  return modulus->data[0];
-}
-
-/**
  * Verifies an RSASSA-PKCS1-v1_5 signature.
  *
  * The actual implementation that is used (software or OTBN) is determined by
