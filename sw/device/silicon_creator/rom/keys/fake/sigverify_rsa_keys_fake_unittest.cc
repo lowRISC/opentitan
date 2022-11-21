@@ -28,8 +28,8 @@ using ::testing::Return;
 
 TEST(Keys, UniqueIds) {
   std::unordered_set<uint32_t> ids;
-  for (auto const &entry : kSigverifyRsaKeys) {
-    ids.insert(sigverify_rsa_key_id_get(&entry.key.n));
+  for (size_t i = 0; i < kSigverifyRsaKeysCnt; ++i) {
+    ids.insert(sigverify_rsa_key_id_get(&kSigverifyRsaKeys[i].key.n));
   }
 
   EXPECT_EQ(ids.size(), kSigverifyRsaKeysCnt);

@@ -27,14 +27,6 @@
 // Define the symbols that the sigverify library expects for the mock keys
 // defined below.
 extern "C" {
-// Using 1 as the step size since it is coprime with every integer.
-constexpr size_t kSigverifyRsaKeysStep = 1;
-}
-
-namespace sigverify_keys_unittest {
-namespace {
-using ::testing::Return;
-
 /**
  * Mock keys used in tests.
  *
@@ -69,7 +61,17 @@ constexpr sigverify_rom_key_t kMockKeys[]{
         .key_type = kSigverifyKeyTypeDev,
     },
 };
-constexpr size_t kNumMockKeys = std::extent<decltype(kMockKeys)>::value;
+
+constexpr size_t kSigverifyRsaKeysCnt = std::extent<decltype(kMockKeys)>::value;
+static_assert(kSigverifyRsaKeysCnt <=
+              OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE);
+// Using 1 as the step size since it is coprime with every integer.
+constexpr size_t kSigverifyRsaKeysStep = 1;
+}
+
+namespace sigverify_keys_unittest {
+namespace {
+using ::testing::Return;
 
 /**
  * Returns the indices of mock keys of the given type.
@@ -79,7 +81,7 @@ constexpr size_t kNumMockKeys = std::extent<decltype(kMockKeys)>::value;
  */
 std::vector<size_t> MockKeyIndicesOfType(sigverify_key_type_t key_type) {
   std::vector<size_t> indices;
-  for (size_t i = 0; i < kNumMockKeys; ++i) {
+  for (size_t i = 0; i < kSigverifyRsaKeysCnt; ++i) {
     if (kMockKeys[i].key_type == key_type) {
       indices.push_back(i);
     }
@@ -118,8 +120,8 @@ class SigverifyKeys : public rom_test::RomTest {
   template <size_t N>
   void ExpectKeysGet(const sigverify_rom_key_t (&keys)[N]) {
     ASSERT_LE(N, OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE);
+    ASSERT_EQ(N, kSigverifyRsaKeysCnt);
     EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysGet()).WillOnce(Return(keys));
-    EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysCntGet()).WillOnce(Return(N));
     EXPECT_CALL(rnd_, Uint32())
         .WillOnce(Return(std::numeric_limits<uint32_t>::max()));
   }
@@ -223,7 +225,7 @@ TEST_P(NonOperationalStateDeathTest, BadKey) {
 
 INSTANTIATE_TEST_SUITE_P(
     AllKeysAndNonOperationalStates, NonOperationalStateDeathTest,
-    testing::Combine(testing::Range<size_t>(0, kNumMockKeys),
+    testing::Combine(testing::Range<size_t>(0, kSigverifyRsaKeysCnt),
                      testing::Values(static_cast<lifecycle_state_t>(0))));
 
 class ValidBasedOnOtp : public KeyValidityTest {};

@@ -12,6 +12,14 @@
 #include "otp_ctrl_regs.h"
 
 /**
+ * Number of RSA public keys.
+ */
+enum {
+  kSigverifyRsaKeysCnt_ = 3,
+};
+const size_t kSigverifyRsaKeysCnt = kSigverifyRsaKeysCnt_;
+
+/**
  * Step size to use when checking RSA public keys.
  *
  * This must be coprime with and less than `kSigverifyNumRsaKeys`.
@@ -25,7 +33,7 @@ const size_t kSigverifyRsaKeysStep = 1;
  * Please see sw/device/silicon_creator/rom/keys/README.md for more
  * details.
  */
-const sigverify_rom_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt] = {
+const sigverify_rom_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt_] = {
     {
         .key = TEST_KEY_0_RSA_3072_EXP_F4,
         .key_type = kSigverifyKeyTypeTest,
@@ -41,12 +49,10 @@ const sigverify_rom_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt] = {
 };
 
 static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE >=
-                  kSigverifyRsaKeysCnt,
+                  kSigverifyRsaKeysCnt_,
               "CREATOR_SW_CFG_KEY_IS_VALID OTP item must be at least "
               "`kSigVerifyNumKeysFake` bytes.");
 
 const sigverify_rom_key_t *sigverify_rsa_keys_get(void) {
   return kSigverifyRsaKeys;
 }
-
-size_t sigverify_rsa_keys_cnt_get(void) { return kSigverifyRsaKeysCnt; }
