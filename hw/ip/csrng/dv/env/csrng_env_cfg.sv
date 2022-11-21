@@ -27,7 +27,14 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   // Knobs & Weights
   uint otp_en_cs_sw_app_read_pct, otp_en_cs_sw_app_read_inval_pct, lc_hw_debug_en_pct, regwen_pct,
        enable_pct, sw_app_enable_pct, read_int_state_pct, force_state_pct, check_int_state_pct,
-       num_cmds_min, num_cmds_max, aes_halt_pct, min_aes_halt_clks, max_aes_halt_clks;
+       num_cmds_min, num_cmds_max, aes_halt_pct, min_aes_halt_clks, max_aes_halt_clks,
+       min_num_disable_enable, max_num_disable_enable,
+       min_enable_clks, max_enable_clks,
+       min_disable_edn_before_csrng_clks, max_disable_edn_before_csrng_clks,
+       min_disable_csrng_before_entropy_src_clks, max_disable_csrng_before_entropy_src_clks,
+       min_disable_clks, max_disable_clks,
+       min_enable_entropy_src_before_csrng_clks, max_enable_entropy_src_before_csrng_clks,
+       min_enable_csrng_before_edn_clks, max_enable_csrng_before_edn_clks;
 
   bit    use_invalid_mubi;
 
@@ -115,6 +122,69 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
       cmd_gen_cnt_err                        := 3, // 3 counters feed into this bit
       [fifo_write_err : fifo_state_err_test] := 1
   };}
+
+  // Number of times CSRNG gets disabled and re-enabled
+  rand uint num_disable_enable;
+  constraint num_disable_enable_c {
+    num_disable_enable >= min_num_disable_enable;
+    num_disable_enable <= max_num_disable_enable;
+  }
+
+  // In tests that disable CSRNG, how many cycles to keep all agents and CSRNG enabled
+  rand uint enable_clks;
+  constraint edn_enable_clks_c {
+    enable_clks >= min_enable_clks;
+    enable_clks <= max_enable_clks;
+  }
+
+  // In tests that disable CSRNG, how many cycles to wait to disable CSRNG after EDN agents have
+  // been disabled
+  rand uint disable_edn_before_csrng_clks;
+  constraint disable_edn_before_csrng_clks_c {
+    disable_edn_before_csrng_clks >= min_disable_edn_before_csrng_clks;
+    disable_edn_before_csrng_clks <= max_disable_edn_before_csrng_clks;
+  }
+
+  // In tests that disable CSRNG, how many cycles to wait to disable entropy_src after CSRNG has
+  // been disabled
+  rand uint disable_csrng_before_entropy_src_clks;
+  constraint disable_csrng_before_entropy_src_clks_c {
+    disable_csrng_before_entropy_src_clks >= min_disable_csrng_before_entropy_src_clks;
+    disable_csrng_before_entropy_src_clks <= max_disable_csrng_before_entropy_src_clks;
+  }
+
+  // In tests that disable CSRNG, how many cycles to keep all agents and CSRNG disabled
+  rand uint disable_clks;
+  constraint disable_clks_c {
+    disable_clks >= min_disable_clks;
+    disable_clks <= max_disable_clks;
+  }
+
+  // In tests that disable CSRNG, how many cycles to enable the entropy_src agent in advance of
+  // CSRNG
+  rand uint enable_entropy_src_before_csrng_clks;
+  constraint enable_entropy_src_before_csrng_clks_c {
+    enable_entropy_src_before_csrng_clks >= min_enable_entropy_src_before_csrng_clks;
+    enable_entropy_src_before_csrng_clks <= max_enable_entropy_src_before_csrng_clks;
+  }
+
+  // In tests that disable CSRNG, how many cycles to enable CSRNG in advance of enabling EDN agents
+  rand uint enable_csrng_before_edn_clks;
+  constraint enable_csrng_before_edn_clks_c {
+    enable_csrng_before_edn_clks >= min_enable_csrng_before_edn_clks;
+    enable_csrng_before_edn_clks <= max_enable_csrng_before_edn_clks;
+  }
+
+  // Re-randomize enable and disable delays.  This is intended to be called between iterations in
+  // tests that disable and re-enable CSRNG (and the agents).
+  function automatic void randomize_disable_enable_clks();
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(enable_clks)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(disable_edn_before_csrng_clks)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(disable_csrng_before_entropy_src_clks)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(disable_clks)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(enable_entropy_src_before_csrng_clks)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(enable_csrng_before_edn_clks)
+  endfunction
 
   // Functions
   function void post_randomize();

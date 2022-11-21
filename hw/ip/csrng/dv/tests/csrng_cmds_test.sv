@@ -16,6 +16,20 @@ class csrng_cmds_test extends csrng_base_test;
     cfg.min_aes_halt_clks = 400;
     cfg.max_aes_halt_clks = 600;
     cfg.force_state_pct   = 100;
+    cfg.min_num_disable_enable = 0;
+    cfg.max_num_disable_enable = 10;
+    cfg.min_enable_clks = 1;
+    cfg.max_enable_clks = 10000;
+    cfg.min_disable_edn_before_csrng_clks = 10;
+    cfg.max_disable_edn_before_csrng_clks = 200;
+    cfg.min_disable_csrng_before_entropy_src_clks = 10;
+    cfg.max_disable_csrng_before_entropy_src_clks = 200;
+    cfg.min_disable_clks = 20;
+    cfg.max_disable_clks = 200;
+    cfg.min_enable_entropy_src_before_csrng_clks = 10;
+    cfg.max_enable_entropy_src_before_csrng_clks = 200;
+    cfg.min_enable_csrng_before_edn_clks = 10;
+    cfg.max_enable_csrng_before_edn_clks = 200;
 
     for (int i = 0; i < NUM_HW_APPS; i++) begin
       // CSRNG has a single AES primitive shared among the three application interfaces. To hit the

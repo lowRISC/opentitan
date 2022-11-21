@@ -162,4 +162,9 @@ module tb;
           [`CTR_DRBG_UPD.BlkEncAckFifoWidth-1 -: `CTR_DRBG_UPD.BlkLen]) !=
       $past(`BLOCK_ENCRYPT_PATH.cipher_data_out, 2), clk, !rst_n)
 
+  // Assertion controls
+  `DV_ASSERT_CTRL("EntropySrcIf_ReqHighUntilAck_A_CTRL", entropy_src_if.ReqHighUntilAck_A)
+  `DV_ASSERT_CTRL("EntropySrcIf_AckAssertedOnlyWhenReqAsserted_A_CTRL",
+                  entropy_src_if.AckAssertedOnlyWhenReqAsserted_A)
+
 endmodule
