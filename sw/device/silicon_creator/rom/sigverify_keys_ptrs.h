@@ -19,13 +19,6 @@ enum {
    * Number of RSA public keys.
    */
   kSigverifyRsaKeysCnt = 3,
-  /**
-   * Step size to use when checking RSA public keys.
-   *
-   * This must be coprime with and less than `kSigverifyNumRsaKeys`.
-   * Note: Step size is not applicable when `kSigverifyNumRsaKeys` is 1.
-   */
-  kSigverifyRsaKeysStep = 1,
 };
 
 /**
@@ -101,12 +94,12 @@ const sigverify_rom_key_t *sigverify_rsa_keys_get(void);
 size_t sigverify_rsa_keys_cnt_get(void);
 
 /**
- * Returns the step size to use when checking RSA public keys.
+ * Step size to use when checking RSA public keys.
  *
- * @return Step size that is coprime with and less than the return value of
- * `sigverify_rsa_keys_cnt_get()`.
+ * This must be coprime with and less than `kSigverifyNumRsaKeys`.
+ * Note: Step size is not applicable when `kSigverifyNumRsaKeys` is 1.
  */
-size_t sigverify_rsa_keys_step_get(void);
+extern const size_t kSigverifyRsaKeysStep;
 
 #ifdef __cplusplus
 }  // extern "C"

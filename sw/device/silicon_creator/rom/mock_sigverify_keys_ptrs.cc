@@ -14,8 +14,5 @@ size_t sigverify_rsa_keys_cnt_get() {
   return MockSigverifyKeysPtrs::Instance().RsaKeysCntGet();
 }
 
-size_t sigverify_rsa_keys_step_get() {
-  return MockSigverifyKeysPtrs::Instance().RsaKeysStepGet();
-}
 }  // extern "C"
 }  // namespace rom_test
