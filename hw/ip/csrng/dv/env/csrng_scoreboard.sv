@@ -350,6 +350,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit [BLOCK_LEN-1:0]         output_block;
     bit [63:0]                  mod_val;
 
+    `uvm_info(`gfn, $sformatf("Update of app %0d", app), UVM_MEDIUM)
     for (int i = 0; i < (CSRNG_BUS_WIDTH/BLOCK_LEN); i++) begin
       if (CTR_LEN < BLOCK_LEN) begin
         inc = (cfg.v[app][CTR_LEN-1:0] + 1);
@@ -379,6 +380,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     bit [CSRNG_BUS_WIDTH-1:0]   seed_material;
 
+    `uvm_info(`gfn, $sformatf("Instantiate of app %0d", app), UVM_MEDIUM)
     seed_material  = entropy_input ^ additional_input;
     cfg.key[app] = 'h0;
     cfg.v[app]   = 'h0;
@@ -395,6 +397,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     bit [CSRNG_BUS_WIDTH-1:0]   seed_material;
 
+    `uvm_info(`gfn, $sformatf("Reseed of app %0d", app), UVM_MEDIUM)
     seed_material = entropy_input ^ additional_input;
     ctr_drbg_update(app, seed_material);
     cfg.reseed_counter[app] = 1'b1;
@@ -402,6 +405,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   function void ctr_drbg_uninstantiate(uint app);
+    `uvm_info(`gfn, $sformatf("Uninstantiate of app %0d", app), UVM_MEDIUM)
     cfg.key[app] = 'h0;
     cfg.v[app]   = 'h0;
     cfg.reseed_counter[app] = 1'b0;
@@ -418,6 +422,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     bit [BLOCK_LEN-1:0]           output_block;
     bit [63:0]                    mod_val;
 
+    `uvm_info(`gfn, $sformatf("Generate of app %0d", app), UVM_MEDIUM)
     if (additional_input) begin
       ctr_drbg_update(app, additional_input);
     end
