@@ -438,6 +438,7 @@
       end else begin \
         `uvm_info(ID_, $sformatf("Disabling assertions: %0s", `DV_STRINGIFY(HIER_)), UVM_LOW) \
         $assertoff(LEVELS_, HIER_); \
+        $assertkill(LEVELS_, HIER_); \
       end \
     end \
   end
