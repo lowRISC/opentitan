@@ -68,11 +68,9 @@ static void init_peripherals(void) {
  * fires and check the local alert cause register.
  */
 static void alert_handler_config(void) {
+  // Enable all incoming alerts and configure them to class A.
   dif_alert_handler_alert_t alerts[ALERT_HANDLER_PARAM_N_ALERTS];
   dif_alert_handler_class_t alert_classes[ALERT_HANDLER_PARAM_N_ALERTS];
-
-  // Enable all incoming alerts and configure them to classa.
-  // This alert should never fire because we do not expect any incoming alerts.
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
     alerts[i] = i;
     alert_classes[i] = kDifAlertHandlerClassA;
@@ -85,13 +83,14 @@ static void alert_handler_config(void) {
 
   dif_alert_handler_escalation_phase_t esc_phases[] = {
       {.phase = kDifAlertHandlerClassStatePhase0,
-       .signal = 0,
+       .signal = UINT32_MAX,  // Take no action.
        .duration_cycles = 2000}};
 
   dif_alert_handler_class_config_t class_config = {
       .auto_lock_accumulation_counter = kDifToggleDisabled,
-      .accumulator_threshold = 0,
-      .irq_deadline_cycles = 10000,
+      .accumulator_threshold =
+          1000,                  // Set to large number to defer escalation.
+      .irq_deadline_cycles = 0,  // Disable IRQ timeouts.
       .escalation_phases = esc_phases,
       .escalation_phases_len = ARRAYSIZE(esc_phases),
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase1,
@@ -102,6 +101,7 @@ static void alert_handler_config(void) {
 
   dif_alert_handler_class_t classes[] = {kDifAlertHandlerClassA,
                                          kDifAlertHandlerClassB};
+
   dif_alert_handler_config_t config = {
       .alerts = alerts,
       .alert_classes = alert_classes,
@@ -119,9 +119,6 @@ static void alert_handler_config(void) {
                                         kDifToggleEnabled);
   // Enables alert handler irq.
   CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
-      &alert_handler, kDifAlertHandlerIrqClassa, kDifToggleEnabled));
-
-  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
       &alert_handler, kDifAlertHandlerIrqClassb, kDifToggleEnabled));
 }
 
@@ -138,19 +135,31 @@ void ottf_external_isr(void) {
   isr_testutils_alert_handler_isr(plic_ctx, alert_handler_ctx,
                                   &peripheral_serviced, &irq_serviced);
   CHECK(peripheral_serviced == kTopEarlgreyPlicPeripheralAlertHandler,
-        "Interurpt from unexpected peripheral: %d", peripheral_serviced);
+        "Interrupt from unexpected peripheral: %d", peripheral_serviced);
+
+  // Only interrupts from class B alerts are expected for this test. Report the
+  // unexpected class.
+  CHECK(irq_serviced == kDifAlertHandlerIrqClassb,
+        "Interrupt from unexpected class: Class %c", 'A' + irq_serviced);
+  // Disable the interrupt after seeing a single ping timeout.
+  CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(
+      &alert_handler, kDifAlertHandlerIrqClassb, kDifToggleDisabled));
 }
 
 bool test_main(void) {
   init_peripherals();
 
-  alert_handler_config();
-
-  // Enable the external IRQ at Ibex.
-  irq_global_ctrl(true);
+  // Stop Ibex from servicing interrupts just before WFI, which would lead to a
+  // long sleep if the test changes to only handle a single ping timeout.
+  irq_global_ctrl(false);
   irq_external_ctrl(true);
 
+  alert_handler_config();
+
   wait_for_interrupt();
+
+  // Enable the external IRQ at Ibex to jump to servicing it.
+  irq_global_ctrl(true);
 
   // Check local alert cause.
   bool is_cause;
@@ -160,5 +169,14 @@ bool test_main(void) {
       &alert_handler, exp_local_alert, &is_cause));
   CHECK(is_cause, "Expect local alert cause: alert_ping_fail!");
 
+  // Print out information about which alerts have been received.
+  for (size_t id = 0; id < ALERT_HANDLER_PARAM_N_ALERTS; ++id) {
+    bool is_cause;
+    CHECK_DIF_OK(
+        dif_alert_handler_alert_is_cause(&alert_handler, id, &is_cause));
+    if (is_cause) {
+      LOG_INFO("Received alert ID %u.", id);
+    }
+  }
   return true;
 }
