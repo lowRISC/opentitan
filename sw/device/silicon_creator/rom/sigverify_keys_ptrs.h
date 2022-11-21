@@ -18,7 +18,7 @@ enum {
   /**
    * Number of RSA public keys.
    */
-  kSigVerifyNumRsaKeys = 3,
+  kSigverifyRsaKeysCnt = 3,
   /**
    * Step size to use when checking RSA public keys.
    *
@@ -84,7 +84,7 @@ typedef struct sigverify_rom_key {
  *
  * Note: Declared here to be able to use in tests.
  */
-extern const sigverify_rom_key_t kSigVerifyRsaKeys[kSigVerifyNumRsaKeys];
+extern const sigverify_rom_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt];
 
 #ifdef OT_PLATFORM_RV32
 
@@ -93,8 +93,8 @@ extern const sigverify_rom_key_t kSigVerifyRsaKeys[kSigVerifyNumRsaKeys];
  *
  * @return Pointer to the RSA public keys.
  */
-inline const sigverify_rom_key_t *sigverify_rsa_keys_ptr_get(void) {
-  return kSigVerifyRsaKeys;
+inline const sigverify_rom_key_t *sigverify_rsa_keys_get(void) {
+  return kSigverifyRsaKeys;
 }
 
 /**
@@ -102,13 +102,13 @@ inline const sigverify_rom_key_t *sigverify_rsa_keys_ptr_get(void) {
  *
  * @return Number of RSA public keys.
  */
-inline size_t sigverify_num_rsa_keys_get(void) { return kSigVerifyNumRsaKeys; }
+inline size_t sigverify_rsa_keys_cnt_get(void) { return kSigverifyRsaKeysCnt; }
 
 /**
  * Returns the step size to use when checking RSA public keys.
  *
  * @return Step size that is coprime with and less than the return value of
- * `sigverify_num_rsa_keys_get()`.
+ * `sigverify_rsa_keys_cnt_get()`.
  */
 inline size_t sigverify_rsa_keys_step_get(void) {
   return kSigverifyRsaKeysStep;
@@ -119,8 +119,8 @@ inline size_t sigverify_rsa_keys_step_get(void) {
 /**
  * Declarations for the functions above that should be defined in tests.
  */
-const sigverify_rom_key_t *sigverify_rsa_keys_ptr_get(void);
-size_t sigverify_num_rsa_keys_get(void);
+const sigverify_rom_key_t *sigverify_rsa_keys_get(void);
+size_t sigverify_rsa_keys_cnt_get(void);
 size_t sigverify_rsa_keys_step_get(void);
 
 #endif

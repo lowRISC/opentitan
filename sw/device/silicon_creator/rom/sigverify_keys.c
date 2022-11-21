@@ -25,7 +25,7 @@
  * Please see sw/device/silicon_creator/rom/keys/README.md for more
  * details.
  */
-const sigverify_rom_key_t kSigVerifyRsaKeys[kSigVerifyNumRsaKeys] = {
+const sigverify_rom_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt] = {
     [0] =
         {
             .key = TEST_KEY_0_RSA_3072_EXP_F4,
@@ -44,9 +44,9 @@ const sigverify_rom_key_t kSigVerifyRsaKeys[kSigVerifyNumRsaKeys] = {
 };
 
 static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE >=
-                  kSigVerifyNumRsaKeys,
+                  kSigverifyRsaKeysCnt,
               "CREATOR_SW_CFG_KEY_IS_VALID OTP item must be at least "
-              "`kSigVerifyNumRsaKeys` bytes.");
+              "`kSigverifyRsaKeysCnt` bytes.");
 
 /**
  * Checks the validity of a key in OTP.
@@ -214,8 +214,8 @@ static rom_error_t key_is_valid(sigverify_key_type_t key_type,
 
 rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
                                   const sigverify_rsa_key_t **key) {
-  const sigverify_rom_key_t *keys = sigverify_rsa_keys_ptr_get();
-  size_t num_keys = sigverify_num_rsa_keys_get();
+  const sigverify_rom_key_t *keys = sigverify_rsa_keys_get();
+  size_t num_keys = sigverify_rsa_keys_cnt_get();
   size_t step = sigverify_rsa_keys_step_get();
   size_t cand_key_index = UINT32_MAX;
   // Random start index that is less than `num_keys`.
