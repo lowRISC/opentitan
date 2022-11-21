@@ -22,6 +22,18 @@ cc_library(
     ],
 )
 
+cc_test(
+    name = "fake_unittest",
+    srcs = ["sigverify_rsa_keys_fake_unittest.cc"],
+    deps = [
+        ":fake",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/silicon_creator/rom:sigverify_keys",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)
+
 filegroup(
     name = "test_private_key_0",
     srcs = ["test_key_0_rsa_3072_exp_f4.der"],
