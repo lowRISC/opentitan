@@ -460,8 +460,16 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
         glitched_inp_used &= (hdl_read_core_signal("if_stage_i.gen_icache.icache_i.fill_data_rvd",
                                                    glitch_lockstep_core, 4) != '0);
       end
-      "ic_tag_rdata_i", "ic_data_rdata_i": begin
+      "ic_tag_rdata_i": begin
         glitched_inp_used =
+            (hdl_read_core_signal("if_stage_i.gen_icache.icache_i.lookup_valid_ic1",
+                                  glitch_lockstep_core, 1) == 1'b1);
+      end
+      "ic_data_rdata_i": begin
+        glitched_inp_used =
+            (hdl_read_core_signal("if_stage_i.gen_icache.icache_i.lookup_valid_ic1",
+                                  glitch_lockstep_core, 1) == 1'b1)
+            &&
             (hdl_read_core_signal($sformatf("if_stage_i.gen_icache.icache_i.tag_match_ic1[%0d]",
                                             unpacked_idx), glitch_lockstep_core, 1) == 1'b1);
       end
