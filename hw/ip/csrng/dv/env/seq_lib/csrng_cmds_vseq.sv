@@ -64,6 +64,24 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     cmds_gen += cs_item_q[app].size();
   endfunction
 
+  function void create_cmds_all_apps();
+    cmds_gen = 0;
+    cmds_sent = 0;
+    // Generate queues of csrng commands
+    for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
+      create_cmds(i);
+    end
+  endfunction
+
+  function void print_cmds_all_apps();
+    for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
+      foreach (cs_item_q[i][j]) begin
+        `uvm_info(`gfn, $sformatf("cs_item_q[%0d][%0d]: %s", i, j,
+            cs_item_q[i][j].convert2string()), UVM_DEBUG)
+      end
+    end
+  endfunction
+
   task body();
     super.body();
 
@@ -78,18 +96,8 @@ class csrng_cmds_vseq extends csrng_base_vseq;
                                               ($sformatf("m_edn_push_seq[%0d]", i));
     end
 
-    // Generate queues of csrng commands
-    for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
-      create_cmds(i);
-    end
-
-    // Print cs_items
-    for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
-      foreach (cs_item_q[i][j]) begin
-        `uvm_info(`gfn, $sformatf("cs_item_q[%0d][%0d]: %s", i, j,
-            cs_item_q[i][j].convert2string()), UVM_DEBUG)
-      end
-    end
+    create_cmds_all_apps();
+    print_cmds_all_apps();
 
     // Start entropy_src agent
     fork
