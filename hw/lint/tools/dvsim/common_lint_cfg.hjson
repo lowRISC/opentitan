@@ -43,6 +43,7 @@
 
   // TODO(#9079): Need to align with new parser mechanism.
   build_fail_patterns: []
+  build_pass_patterns: []
 
   // These are not needed currently.
   sv_flist_gen_cmd:   ""

@@ -58,9 +58,10 @@
   // error will be generated and the flow will fail).
   termination_stage: "reports"
 
-  // Common fail patterns.
+  // Common pass or fail patterns.
   build_fail_patterns: [// FuseSoC build error
                         "^ERROR:.*$"]
+  build_pass_patterns: []
 
   exports: [
     { SYN_ROOT:          "{syn_root}" },
