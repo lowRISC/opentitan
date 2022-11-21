@@ -86,6 +86,27 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
   if (kDeviceType == kDeviceSimDV) {
     CHECK_ARRAYS_EQ(output, (uint32_t *)sideload_digest_result, kKmacOutputLen);
   }
+
+  LOG_INFO("Clearing the sideloaded key.");
+
+  // Enable "clear the key" toggle, so that previous sideload key port is
+  // cleared.
+  CHECK_DIF_OK(
+      dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleEnabled));
+
+  // Disable "clear the key" toggle, so that the sideload key port is stable.
+  // Otherwise, the sideload port is continuously overwritten by fresh
+  // randomness every clock cycle.
+  CHECK_DIF_OK(
+      dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleDisabled));
+
+  kmac_testutils_kmac(kmac, kKmacMode, &kSoftwareKey, kCustomString,
+                      kCustomStringLen, kKmacMessage, kKmacMessageLen,
+                      kKmacOutputLen, output);
+  LOG_INFO("Computed KMAC output for software key (for inequality check.)");
+
+  // Verify that KMAC output is not equal to the one the from the sideload.
+  CHECK_ARRAYS_NE(output, (uint32_t *)sideload_digest_result, kKmacOutputLen);
 }
 
 bool test_main(void) {
