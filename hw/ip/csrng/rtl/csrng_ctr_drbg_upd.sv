@@ -603,5 +603,10 @@ module csrng_ctr_drbg_upd #(
           (sfifo_final_pop && !sfifo_final_not_empty),
           (sfifo_final_full && !sfifo_final_not_empty)};
 
-
+  // Make sure that the two state machines have a stable error state. This means that after the
+  // error state is entered it will not exit it unless a reset signal is received.
+  `ASSERT(CsrngDrbgUpdBlkEncErrorStStable_A,
+          blk_enc_state_q == BEError |=> $stable(blk_enc_state_q))
+  `ASSERT(CsrngDrbgUpdOutBlkErrorStStable_A,
+          outblk_state_q == OBError  |=> $stable(outblk_state_q))
 endmodule

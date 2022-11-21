@@ -179,4 +179,7 @@ module csrng_main_sm import csrng_pkg::*; #(
     end
   end
 
+  // Make sure that the state machine has a stable error state. This means that after the error
+  // state is entered it will not exit it unless a reset signal is received.
+  `ASSERT(CsrngMainErrorStStable_A, state_q == Error |=> $stable(state_q))
 endmodule
