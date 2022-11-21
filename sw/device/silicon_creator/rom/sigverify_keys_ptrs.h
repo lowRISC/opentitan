@@ -14,13 +14,6 @@
 extern "C" {
 #endif  // __cplusplus
 
-enum {
-  /**
-   * Number of RSA public keys.
-   */
-  kSigverifyRsaKeysCnt = 3,
-};
-
 /**
  * Key types.
  *
@@ -77,7 +70,7 @@ typedef struct sigverify_rom_key {
  *
  * Note: Declared here to be able to use in tests.
  */
-extern const sigverify_rom_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt];
+extern const sigverify_rom_key_t kSigverifyRsaKeys[];
 
 /**
  * Returns a pointer to the RSA public keys stored in the ROM.
@@ -87,11 +80,9 @@ extern const sigverify_rom_key_t kSigverifyRsaKeys[kSigverifyRsaKeysCnt];
 const sigverify_rom_key_t *sigverify_rsa_keys_get(void);
 
 /**
- * Returns the number of RSA public keys stored in the ROM.
- *
- * @return Number of RSA public keys.
+ * Number of RSA public keys.
  */
-size_t sigverify_rsa_keys_cnt_get(void);
+extern const size_t kSigverifyRsaKeysCnt;
 
 /**
  * Step size to use when checking RSA public keys.
