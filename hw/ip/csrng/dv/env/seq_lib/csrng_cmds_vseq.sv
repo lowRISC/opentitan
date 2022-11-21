@@ -82,6 +82,20 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     end
   endfunction
 
+  virtual task csrng_set_enable(bit enable);
+    mubi4_t mubi_en = prim_mubi_pkg::mubi4_bool_to_mubi(enable);
+
+    // Disabling CSRNG may drop an ongoing req to entropy_src.  This is generally not allowed in
+    // push_pull_if, but in this case it is allowed because entropy_src is to be disabled and
+    // re-enabled shortly after.
+    `DV_ASSERT_CTRL_REQ("EntropySrcIf_ReqHighUntilAck_A_CTRL", enable)
+
+    // While CSRNG is disabled, entropy_src may ack a previous req that is no longer high.
+    `DV_ASSERT_CTRL_REQ("EntropySrcIf_AckAssertedOnlyWhenReqAsserted_A_CTRL", enable)
+
+    csr_wr(.ptr(ral.ctrl.enable), .value(mubi_en), .blocking(1));
+  endtask
+
   task body();
     super.body();
 
@@ -106,33 +120,88 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
     // Send commands
     fork
-      for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
-        automatic int j = i;
-        fork
-          begin
-            foreach (cs_item_q[j][k]) begin
-              send_cmd_req(.app(j), .cs_item(cs_item_q[j][k]));
+      fork
+        for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
+          automatic int j = i;
+          fork
+            forever begin
+              automatic csrng_item item;
+              if (cs_item_q[j].size() == 0) begin
+                cfg.clk_rst_vif.wait_clks(1);
+                continue;
+              end
+              item = cs_item_q[j].pop_front();
+              send_cmd_req(.app(j), .cs_item(item));
               cmds_sent += 1;
             end
-          end
-        join_none;
-      end
+          join_none;
+        end
 
-      do begin
-        `uvm_info(`gfn, $sformatf("aes_halt_clks = %0d, cmds_sent = %0d, cmds_gen = %0d",
-                  aes_halt_clks, cmds_sent, cmds_gen), UVM_DEBUG)
-        if (cfg.aes_halt) begin
-          `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(aes_halt_clks, aes_halt_clks inside
-              { [cfg.min_aes_halt_clks:cfg.max_aes_halt_clks] };)
-          cfg.clk_rst_vif.wait_clks(aes_halt_clks);
-          m_aes_halt_pull_seq.start(p_sequencer.aes_halt_sequencer_h);
+        forever begin
+          `uvm_info(`gfn, $sformatf("aes_halt_clks = %0d, cmds_sent = %0d, cmds_gen = %0d",
+                    aes_halt_clks, cmds_sent, cmds_gen), UVM_DEBUG)
+          if (cfg.aes_halt) begin
+            `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(aes_halt_clks, aes_halt_clks inside
+                { [cfg.min_aes_halt_clks:cfg.max_aes_halt_clks] };)
+            cfg.clk_rst_vif.wait_clks(aes_halt_clks);
+            m_aes_halt_pull_seq.start(p_sequencer.aes_halt_sequencer_h);
+          end
+          else begin
+            cfg.clk_rst_vif.wait_clks(500);
+          end
         end
-        else begin
-          cfg.clk_rst_vif.wait_clks(500);
+      join
+
+      begin
+        // Disable and re-enable CSRNG (as well as EDN and entropy_src agents) at random instants.
+        while (cfg.num_disable_enable > 0) begin
+          cfg.clk_rst_vif.wait_clks(cfg.enable_clks);
+
+          `uvm_info(`gfn, "Disabling EDN.", UVM_LOW)
+          cfg.csrng_agents_vif.drive_edn_disable(1);
+
+          // Clear any items that may remain in the command queues.
+          for (int i = 0; i < NUM_HW_APPS + 1; i++) begin
+            cs_item_q[i].delete();
+          end
+
+          cfg.clk_rst_vif.wait_clks(cfg.disable_edn_before_csrng_clks);
+
+          `uvm_info(`gfn, "Disabling CSRNG.", UVM_LOW)
+          csrng_set_enable(0);
+
+          cfg.clk_rst_vif.wait_clks(cfg.disable_csrng_before_entropy_src_clks);
+
+          `uvm_info(`gfn, "Disabling entropy_src.", UVM_LOW)
+          cfg.csrng_agents_vif.drive_entropy_src_disable(1);
+
+          cfg.clk_rst_vif.wait_clks(cfg.disable_clks);
+
+          `uvm_info(`gfn, "Re-enabling entropy_src.", UVM_LOW)
+          cfg.csrng_agents_vif.drive_entropy_src_disable(0);
+
+          cfg.clk_rst_vif.wait_clks(cfg.enable_entropy_src_before_csrng_clks);
+
+          `uvm_info(`gfn, "Re-enabling CSRNG.", UVM_LOW)
+          csrng_set_enable(1);
+
+          cfg.clk_rst_vif.wait_clks(cfg.enable_csrng_before_edn_clks);
+
+          // Refill command queues.
+          create_cmds_all_apps();
+          print_cmds_all_apps();
+
+          `uvm_info(`gfn, "Re-enabling EDN.", UVM_LOW)
+          cfg.csrng_agents_vif.drive_edn_disable(0);
+
+          cfg.randomize_disable_enable_clks();
+          cfg.num_disable_enable -= 1;
         end
+        `DV_WAIT(cmds_sent == cmds_gen)
+        `uvm_info(`gfn, "All commands sent, completing test.", UVM_LOW)
       end
-      while (cmds_sent < cmds_gen);
-    join
+    join_any
+    disable fork;
 
     // Check internal state, then uninstantiate if not already
     if (cfg.check_int_state) begin
