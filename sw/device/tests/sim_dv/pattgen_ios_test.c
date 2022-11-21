@@ -92,7 +92,9 @@ void ottf_external_isr(void) {
 bool test_main(void) {
   dif_pinmux_t pinmux;
 
-  irq_global_ctrl(true);
+  // Disable irq_global_ctrl to avoid the race condition between
+  // `wait_for_interrupt` and OTTF interrupt handling.
+  irq_global_ctrl(/*en=*/false);
   irq_external_ctrl(true);
 
   CHECK_DIF_OK(dif_pattgen_init(
@@ -160,6 +162,9 @@ bool test_main(void) {
 
   LOG_INFO("Wait for interrupt");
   wait_for_interrupt();
+
+  // Enable irq_global_ctrl to let OTTF handle interrupt.
+  irq_global_ctrl(/*en=*/true);
 
   // Make sure both interrupts are triggered when both channels are enabled.
   // Because interrupt from each channel can be triggered at different time,
