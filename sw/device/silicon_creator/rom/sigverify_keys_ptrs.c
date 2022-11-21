@@ -6,4 +6,3 @@
 
 extern const sigverify_rom_key_t *sigverify_rsa_keys_get(void);
 extern size_t sigverify_rsa_keys_cnt_get(void);
-extern size_t sigverify_rsa_keys_step_get(void);

@@ -24,6 +24,13 @@
 
 #include "otp_ctrl_regs.h"
 
+// Define the symbols that the sigverify library expects for the mock keys
+// defined below.
+extern "C" {
+// Using 1 as the step size since it is coprime with every integer.
+constexpr size_t kSigverifyRsaKeysStep = 1;
+}
+
 namespace sigverify_keys_unittest {
 namespace {
 using ::testing::Return;
@@ -113,8 +120,6 @@ class SigverifyKeys : public rom_test::RomTest {
     ASSERT_LE(N, OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE);
     EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysGet()).WillOnce(Return(keys));
     EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysCntGet()).WillOnce(Return(N));
-    // Returning 1 since it is coprime with every integer.
-    EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysStepGet()).WillOnce(Return(1));
     EXPECT_CALL(rnd_, Uint32())
         .WillOnce(Return(std::numeric_limits<uint32_t>::max()));
   }

@@ -12,6 +12,14 @@
 #include "otp_ctrl_regs.h"
 
 /**
+ * Step size to use when checking RSA public keys.
+ *
+ * This must be coprime with and less than `kSigverifyNumRsaKeys`.
+ * Note: Step size is not applicable when `kSigverifyNumRsaKeys` is 1.
+ */
+const size_t kSigverifyRsaKeysStep = 1;
+
+/**
  * Fake public keys for signature verification in tests.
  *
  * Please see sw/device/silicon_creator/rom/keys/README.md for more
@@ -42,5 +50,3 @@ const sigverify_rom_key_t *sigverify_rsa_keys_get(void) {
 }
 
 size_t sigverify_rsa_keys_cnt_get(void) { return kSigverifyRsaKeysCnt; }
-
-size_t sigverify_rsa_keys_step_get(void) { return kSigverifyRsaKeysStep; }

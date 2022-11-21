@@ -184,7 +184,6 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
                                   const sigverify_rsa_key_t **key) {
   const sigverify_rom_key_t *keys = sigverify_rsa_keys_get();
   size_t num_keys = sigverify_rsa_keys_cnt_get();
-  size_t step = sigverify_rsa_keys_step_get();
   size_t cand_key_index = UINT32_MAX;
   // Random start index that is less than `num_keys`.
   size_t i = ((uint64_t)rnd_uint32() * (uint64_t)num_keys) >> 32;
@@ -200,7 +199,7 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
         cand_key_index = i;
       }
     }
-    i += step;
+    i += kSigverifyRsaKeysStep;
     if (launder32(i) >= num_keys) {
       i -= num_keys;
     }

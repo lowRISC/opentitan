@@ -20,7 +20,6 @@ class MockSigverifyKeysPtrs
  public:
   MOCK_METHOD(const sigverify_rom_key_t *, RsaKeysGet, ());
   MOCK_METHOD(size_t, RsaKeysCntGet, ());
-  MOCK_METHOD(size_t, RsaKeysStepGet, ());
 };
 
 }  // namespace internal
