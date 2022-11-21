@@ -12,20 +12,11 @@ interface pwrmgr_rstmgr_sva_if
   input logic                    rst_ni,
   input logic                    clk_slow_i,
   input logic                    rst_slow_ni,
-  // Input resets.
-  input logic [ NumRstReqs-1:0]  rstreqs_i,
-  input logic [ NumRstReqs-1:0]  reset_en,
-  input logic                    sw_rst_req_i,
-  input logic                    main_rst_req_i,
-  input logic                    esc_rst_req_i,
-  // TODO: Add ndm_reset on/off testing
-  input logic                    ndm_rst_req_i,
+
   // The inputs from pwrmgr.
   input logic [PowerDomains-1:0] rst_lc_req,
   input logic [PowerDomains-1:0] rst_sys_req,
-  input logic [HwResetWidth-1:0] rstreqs,
-  input logic                    main_pd_n,
-  input                          reset_cause_e reset_cause,
+
   // The inputs from rstmgr.
   input logic [PowerDomains-1:0] rst_lc_src_n,
   input logic [PowerDomains-1:0] rst_sys_src_n
@@ -36,43 +27,10 @@ interface pwrmgr_rstmgr_sva_if
   localparam int MAX_LC_SYS_CYCLES = 150;
   `define LC_SYS_CYCLES ##[MIN_LC_SYS_CYCLES:MAX_LC_SYS_CYCLES]
 
-  // output reset cycle with a clk enable disable
-  localparam int MIN_MAIN_RST_CYCLES = 0;
-  localparam int MAX_MAIN_RST_CYCLES = 400;
-  `define MAIN_RST_CYCLES ##[MIN_MAIN_RST_CYCLES:MAX_MAIN_RST_CYCLES]
-
-  // The timing of the escalation reset is determined by the slow clock, but will not propagate if
-  // the non-slow clock is off. We use the regular clock and multiply the clock cycles times the
-  // clock ratio.
-  localparam int FAST_TO_SLOW_FREQ_RATIO = 120;
-
-  localparam int MIN_ESC_RST_CYCLES = 0;
-  localparam int MAX_ESC_RST_CYCLES = 4 * FAST_TO_SLOW_FREQ_RATIO;
-  `define ESC_RST_CYCLES ##[MIN_ESC_RST_CYCLES:MAX_ESC_RST_CYCLES]
-
   bit disable_sva;
   bit reset_or_disable;
 
   always_comb reset_or_disable = !rst_ni || !rst_slow_ni || disable_sva;
-
-  bit check_rstreqs_en = 1;
-
-`ifdef UVM
-  import uvm_pkg::*;
-
-  initial
-    forever begin
-      uvm_config_db#(bit)::wait_modified(null, "pwrmgr_rstmgr_sva_if", "check_rstreqs_en");
-      if (!uvm_config_db#(bit)::get(
-              null, "pwrmgr_rstmgr_sva_if", "check_rstreqs_en", check_rstreqs_en
-          )) begin
-        `uvm_info("pwrmgr_rstmgr_sva_if", "Can't find check_rstreqs_en", UVM_LOW)
-      end else begin
-        `uvm_info("pwrmgr_rstmgr_sva_if", $sformatf(
-                  "Local set check_rstreqs_en=%b", check_rstreqs_en), UVM_LOW)
-      end
-    end
-`endif
 
   // Lc and Sys handshake: pwrmgr rst_*_req causes rstmgr rst_*_src_n
   for (genvar pd = 0; pd < PowerDomains; ++pd) begin : gen_assertions_per_power_domains
@@ -88,56 +46,4 @@ interface pwrmgr_rstmgr_sva_if
             reset_or_disable)
   end : gen_assertions_per_power_domains
   `undef LC_SYS_CYCLES
-
-  // Reset ins to outs.
-  for (genvar rst = 0; rst < NumRstReqs; ++rst) begin : gen_hw_resets
-    `ASSERT(HwResetOn_A,
-            $rose(
-                rstreqs_i[rst] && reset_en[rst]
-            ) |-> `MAIN_RST_CYCLES rstreqs[rst], clk_slow_i, reset_or_disable || !check_rstreqs_en)
-    `ASSERT(HwResetOff_A,
-            $fell(
-                rstreqs_i[rst] && reset_en[rst]
-            ) |-> `MAIN_RST_CYCLES !rstreqs[rst], clk_slow_i, reset_or_disable || !check_rstreqs_en)
-  end
-
-  // This is used to ignore main_rst_req_i (wired to rst_main_n) if it happens during low power,
-  // since as part of deep sleep rst_main_n will trigger and not because of a power glitch.
-  logic rst_main_n_ignored_for_main_pwr_rst;
-  always_ff @(posedge clk_slow_i or negedge rst_slow_ni) begin
-    if (!rst_slow_ni) begin
-      rst_main_n_ignored_for_main_pwr_rst <= 0;
-    end else if (!main_pd_n && reset_cause == LowPwrEntry) begin
-      rst_main_n_ignored_for_main_pwr_rst <= 1;
-    end else if (reset_cause != LowPwrEntry) begin
-      rst_main_n_ignored_for_main_pwr_rst <= 0;
-    end
-  end
-
-  `ASSERT(MainPwrRstOn_A,
-          $rose(
-              main_rst_req_i && !rst_main_n_ignored_for_main_pwr_rst
-          ) |-> `MAIN_RST_CYCLES rstreqs[ResetMainPwrIdx], clk_slow_i,
-          reset_or_disable || !check_rstreqs_en)
-  `ASSERT(MainPwrRstOff_A,
-          $fell(
-              main_rst_req_i
-          ) |-> `MAIN_RST_CYCLES !rstreqs[ResetMainPwrIdx], clk_slow_i,
-          reset_or_disable || !check_rstreqs_en)
-
-   // Signals in EscRstOn_A and EscRstOff_A are sampled with slow and fast clock.
-   // Since fast clock can be gated, use fast clock to evaluate cycle delay
-   // to avoid spurious failure.
-  `ASSERT(EscRstOn_A,
-          $rose(
-              esc_rst_req_i
-          ) |-> `ESC_RST_CYCLES rstreqs[ResetEscIdx], clk_i, reset_or_disable || !check_rstreqs_en)
-  `ASSERT(EscRstOff_A,
-          $fell(
-              esc_rst_req_i
-          ) |-> `ESC_RST_CYCLES !rstreqs[ResetEscIdx], clk_i, reset_or_disable || !check_rstreqs_en)
-  // Software initiated resets are not sent to rstmgr since they originated there.
-  `undef LC_SYS_CYCLES
-  `undef MAIN_RST_CYCLES
-  `undef ESC_RST_CYCLES
 endinterface

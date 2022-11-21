@@ -152,9 +152,6 @@ module tb;
     uvm_config_db#(virtual alert_esc_if)::set(null, "*.env.m_esc_agent*", "vif", esc_if);
     uvm_config_db#(virtual pwrmgr_if)::set(null, "*.env", "pwrmgr_vif", pwrmgr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    // Bound assertions interfaces.
-    uvm_config_db#(virtual pwrmgr_ast_sva_if)::set(null, "*.env", "pwrmgr_ast_sva_vif",
-                                                   dut.pwrmgr_ast_sva_if);
     uvm_config_db#(virtual pwrmgr_clock_enables_sva_if)::set(
         null, "*.env", "pwrmgr_clock_enables_sva_vif", dut.pwrmgr_clock_enables_sva_if);
     uvm_config_db#(virtual pwrmgr_rstmgr_sva_if)::set(null, "*.env", "pwrmgr_rstmgr_sva_vif",

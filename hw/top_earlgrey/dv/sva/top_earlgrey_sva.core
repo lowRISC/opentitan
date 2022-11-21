@@ -7,10 +7,11 @@ description: "TOP_EARLGREY assertion modules and bind file."
 filesets:
   files_dv:
     depend:
+      - lowrisc:ip:pwrmgr_pkg
+      - lowrisc:prim:assert
       - lowrisc:systems:top_earlgrey
-      - lowrisc:dv:pwrmgr_ast_sva_if
-      - lowrisc:dv:pwrmgr_rstmgr_sva_if
     files:
+      - clk_ctrl_and_main_pd_sva_if.sv
       - top_earlgrey_bind.sv
     file_type: systemVerilogSource
 

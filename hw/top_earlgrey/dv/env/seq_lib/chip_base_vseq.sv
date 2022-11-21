@@ -30,11 +30,6 @@ class chip_base_vseq #(
     jtag_dmi_ral = cfg.jtag_dmi_ral;
   endfunction // set_handles
 
-  virtual function void set_sva_check_rstreqs(bit enable);
-    `uvm_info(`gfn, $sformatf("Remote setting check_rstreqs_en=%b", enable), UVM_MEDIUM)
-    uvm_config_db#(bit)::set(null, "pwrmgr_rstmgr_sva_if", "check_rstreqs_en", enable);
-  endfunction
-
   task post_start();
     do_clear_all_interrupts = 0;
     super.post_start();
