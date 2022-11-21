@@ -179,8 +179,9 @@
             - cp_hw0_genbits_depth, cp_hw1_genbits_depth, cp_sw_genbits_depth : Covers current number of genbit responses in FIFO
             - cmd_depth_cross : Cross for checking each command FIFO status in different apps
             - genbits_depth_cross : Cross for checking genbits FIFO status in different apps
-            - hw0_cmd_cross, hw1_cmd_cross, sw_cmd_cross : command FIFO status x command valid input x command ready output
-            - hw0_genbits_cross, hw1_genbits_cross, sw_genbits_cross : genbits FIFO status x genbits valid output x genbits ready input
+            - hw0_cmd_push_cross, hw1_cmd_push_cross, sw_cmd_push_cross : command FIFO fill status x command FIFO write valid x command FIFO write ready
+            - hw0_cmd_pop_cross, hw1_cmd_pop_cross, sw_cmd_pop_cross : command FIFO fill status x command FIFO read ready
+            - hw0_genbits_pop_cross, hw1_genbits_pop_cross, sw_genbits_pop_cross : genbits FIFO fill status x genbits FIFO read valid x genbits FIFO read ready
             '''
     }
   ]

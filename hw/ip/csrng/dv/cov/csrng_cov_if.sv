@@ -23,9 +23,9 @@ interface csrng_cov_if (
   logic [1:0] hw1_cmd_depth;
   logic [1:0] sw_cmd_depth;
 
-  logic hw0_cmd_rdy, hw0_cmd_vld;
-  logic hw1_cmd_rdy, hw1_cmd_vld;
-  logic sw_cmd_rdy, sw_cmd_vld;
+  logic hw0_cmd_rdy, hw0_cmd_vld, hw0_cmd_pop;
+  logic hw1_cmd_rdy, hw1_cmd_vld, hw1_cmd_pop;
+  logic sw_cmd_rdy, sw_cmd_vld, sw_cmd_pop;
 
   logic hw0_genbits_rdy, hw0_genbits_vld, hw0_genbits_depth;
   logic hw1_genbits_rdy, hw1_genbits_vld, hw1_genbits_depth;
@@ -44,10 +44,13 @@ interface csrng_cov_if (
 
   assign hw0_cmd_vld = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.cmd_stage_vld_i;
   assign hw0_cmd_rdy = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.cmd_stage_rdy_o;
+  assign hw0_cmd_pop = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.cmd_fifo_pop;
   assign hw1_cmd_vld = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.cmd_stage_vld_i;
   assign hw1_cmd_rdy = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.cmd_stage_rdy_o;
+  assign hw1_cmd_pop = u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage.cmd_fifo_pop;
   assign sw_cmd_vld = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.cmd_stage_vld_i;
   assign sw_cmd_rdy = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.cmd_stage_rdy_o;
+  assign sw_cmd_pop = u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage.cmd_fifo_pop;
 
   assign hw0_genbits_vld = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.genbits_vld_o;
   assign hw0_genbits_rdy = u_csrng_core.gen_cmd_stage[0].u_csrng_cmd_stage.genbits_rdy_i;
@@ -69,7 +72,7 @@ interface csrng_cov_if (
       illegal_bins more_than_depth = {3};
     }
     cp_hw0_genbits_depth: coverpoint hw0_genbits_depth;
-    hw0_cmd_cross: cross cp_hw0_cmd_depth, hw0_cmd_vld, hw0_cmd_rdy{
+    hw0_cmd_push_cross: cross cp_hw0_cmd_depth, hw0_cmd_vld, hw0_cmd_rdy{
       // Note: The csrng_err and csrng_intr tests inject different types of errors into various
       // FIFOs which may cause the command FIFOs to be not full and not ready / full and ready.
       // We thus use assertions to detect such illegal states that can be disabled if needed.
@@ -77,7 +80,16 @@ interface csrng_cov_if (
                                            with (!hw0_cmd_rdy);
       ignore_bins full_and_ready = binsof(cp_hw0_cmd_depth) intersect {2} with (hw0_cmd_rdy);
     }
-    hw0_genbits_cross: cross cp_hw0_genbits_depth, hw0_genbits_vld, hw0_genbits_rdy{
+    hw0_cmd_pop_cross: cross cp_hw0_cmd_depth, hw0_cmd_pop{
+      // Note: The csrng_err and csrng_intr tests inject different types of errors into various
+      // FIFOs which may cause the command FIFOs to get read while being empty. If that happens,
+      // a fatal alert must be signaled. However, multiple FIFO error conditions are collected
+      // in the same alert, we don't need to test every possible alert condition for every
+      // possible FIFO and thus ignore this particular cross point.
+      ignore_bins empty_and_pop = binsof(cp_hw0_cmd_depth) intersect {0}
+                                  with (hw0_cmd_pop);
+    }
+    hw0_genbits_pop_cross: cross cp_hw0_genbits_depth, hw0_genbits_vld, hw0_genbits_rdy{
       // Note: cs_enable factors into vld_o. If the module is disabled, vld_o may still be low
       // despite the FIFO being full. This is thus not an illegal bin, the disable/re-enable
       // testing will help us to hit those cross points.
@@ -90,7 +102,7 @@ interface csrng_cov_if (
       illegal_bins more_than_depth = {3};
     }
     cp_hw1_genbits_depth: coverpoint hw1_genbits_depth;
-    hw1_cmd_cross: cross cp_hw1_cmd_depth, hw1_cmd_vld, hw1_cmd_rdy{
+    hw1_cmd_push_cross: cross cp_hw1_cmd_depth, hw1_cmd_vld, hw1_cmd_rdy{
       // Note: The csrng_err and csrng_intr tests inject different types of errors into various
       // FIFOs which may cause the command FIFOs to be not full and not ready / full and ready.
       // We thus use assertions to detect such illegal states that can be disabled if needed.
@@ -98,7 +110,16 @@ interface csrng_cov_if (
                                            with (!hw1_cmd_rdy);
       ignore_bins full_and_ready = binsof(cp_hw1_cmd_depth) intersect {2} with (hw1_cmd_rdy);
     }
-    hw1_genbits_cross: cross cp_hw1_genbits_depth, hw1_genbits_vld, hw1_genbits_rdy{
+    hw1_cmd_pop_cross: cross cp_hw1_cmd_depth, hw1_cmd_pop{
+      // Note: The csrng_err and csrng_intr tests inject different types of errors into various
+      // FIFOs which may cause the command FIFOs to get read while being empty. If that happens,
+      // a fatal alert must be signaled. However, multiple FIFO error conditions are collected
+      // in the same alert, we don't need to test every possible alert condition for every
+      // possible FIFO and thus ignore this particular cross point.
+      ignore_bins empty_and_pop = binsof(cp_hw1_cmd_depth) intersect {0}
+                                  with (hw1_cmd_pop);
+    }
+    hw1_genbits_pop_cross: cross cp_hw1_genbits_depth, hw1_genbits_vld, hw1_genbits_rdy{
       // Note: cs_enable factors into vld_o. If the module is disabled, vld_o may still be low
       // despite the FIFO being full. This is thus not an illegal bin, the disable/re-enable
       // testing will help us to hit those cross points.
@@ -111,7 +132,7 @@ interface csrng_cov_if (
       illegal_bins more_than_depth = {3};
     }
     cp_sw_genbits_depth: coverpoint sw_genbits_depth;
-    sw_cmd_cross: cross cp_sw_cmd_depth, sw_cmd_vld, sw_cmd_rdy{
+    sw_cmd_push_cross: cross cp_sw_cmd_depth, sw_cmd_vld, sw_cmd_rdy{
       // Note: The csrng_err and csrng_intr tests inject different types of errors into various
       // FIFOs which may cause the command FIFOs to be not full and not ready / full and ready.
       // We thus use assertions to detect such illegal states that can be disabled if needed.
@@ -119,7 +140,16 @@ interface csrng_cov_if (
                                            with (!sw_cmd_rdy);
       ignore_bins full_and_ready = binsof(cp_sw_cmd_depth) intersect {2} with (sw_cmd_rdy);
     }
-    sw_genbits_cross: cross cp_sw_genbits_depth, sw_genbits_vld, sw_genbits_rdy{
+    sw_cmd_pop_cross: cross cp_sw_cmd_depth, sw_cmd_pop{
+      // Note: The csrng_err and csrng_intr tests inject different types of errors into various
+      // FIFOs which may cause the command FIFOs to get read while being empty. If that happens,
+      // a fatal alert must be signaled. However, multiple FIFO error conditions are collected
+      // in the same alert, we don't need to test every possible alert condition for every
+      // possible FIFO and thus ignore this particular cross point.
+      ignore_bins empty_and_pop = binsof(cp_sw_cmd_depth) intersect {0}
+                                  with (sw_cmd_pop);
+    }
+    sw_genbits_pop_cross: cross cp_sw_genbits_depth, sw_genbits_vld, sw_genbits_rdy{
       // Note: cs_enable factors into vld_o. If the module is disabled, vld_o may still be low
       // despite the FIFO being full. This is thus not an illegal bin, the disable/re-enable
       // testing will help us to hit those cross points.
