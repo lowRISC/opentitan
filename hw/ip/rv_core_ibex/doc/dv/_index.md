@@ -18,8 +18,8 @@ For more information please see the [Ibex RISC-V Core Wrapper Technical Specific
 
 ## Current Status
 
-* [Design & verification stage]({{< relref "hw" >}})
-  * [HW development stages]({{< relref "doc/project/development_stages.md" >}})
+* Ibex Verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html)
+  * Verification follows the OpenTitan [HW development stages]({{< relref "doc/project/development_stages.md" >}})
 * [Nightly regression results](https://dev.azure.com/lowrisc/lowrisc-private/_build?definitionId=11)
   * These are from the Ibex private-ci which is restricted to OpenTitan project members
 
