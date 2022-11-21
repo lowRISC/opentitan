@@ -61,9 +61,28 @@ class csrng_base_vseq extends cip_base_vseq #(
   endtask
 
   task wait_cmd_req_done();
-    csr_spinwait(.ptr(ral.intr_state.cs_cmd_req_done), .exp_data(1'b1));
+    csr_spinwait_or_edn_rst_n(.ptr(ral.intr_state.cs_cmd_req_done), .exp_data(1'b1));
+    if (edn_under_reset()) return;
     csr_rd_check(.ptr(ral.sw_cmd_sts.cmd_sts), .compare_value(1'b0));
     check_interrupts(.interrupts((1 << CmdReqDone)), .check_set(1'b1));
+  endtask
+
+  function automatic bit edn_under_reset();
+    return cfg.m_edn_agent_cfg[0].vif.rst_n === 1'b0;
+  endfunction
+
+  // Wait for a CSR to contain an expected value or EDN to be reset, whichever happens first.  This
+  // is useful for the SW app interface, which behaves like an EDN agent in the sense that it can
+  // stop requests at any time.  (For simplicity, we currently disable all EDN agents together.)
+  task automatic csr_spinwait_or_edn_rst_n(input uvm_object ptr, input uvm_reg_data_t exp_data);
+    `DV_SPINWAIT(
+      forever begin
+        uvm_reg_data_t act_data;
+        if (edn_under_reset()) break;
+        csr_rd(.ptr(ptr), .value(act_data));
+        if (act_data == exp_data) break;
+      end
+    )
   endtask
 
   task send_cmd_req(uint app, csrng_item cs_item, bit await_response=1'b1, bit edn_rst_as_ack=1'b1);
@@ -94,13 +113,32 @@ class csrng_base_vseq extends cip_base_vseq #(
     end
     else begin
       // Wait for CSRNG cmd_rdy
-      csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
+      csr_spinwait_or_edn_rst_n(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
+      if (edn_under_reset()) begin
+        `uvm_info(`gfn, "SW app stopped due to EDN reset", UVM_HIGH)
+        return;
+      end
+
       csr_wr(.ptr(ral.cmd_req), .value(cmd));
+      if (edn_under_reset()) begin
+        `uvm_info(`gfn, "SW app stopped due to EDN reset", UVM_HIGH)
+        return;
+      end
+
       for (int i = 0; i < cs_item.clen; i++) begin
         cmd = cs_item.cmd_data_q.pop_front();
         // Wait for CSRNG cmd_rdy
-        csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
+        csr_spinwait_or_edn_rst_n(.ptr(ral.sw_cmd_sts.cmd_rdy), .exp_data(1'b1));
+        if (edn_under_reset()) begin
+          `uvm_info(`gfn, "SW app stopped due to EDN reset", UVM_HIGH)
+          return;
+        end
+
         csr_wr(.ptr(ral.cmd_req), .value(cmd));
+        if (edn_under_reset()) begin
+          `uvm_info(`gfn, "SW app stopped due to EDN reset", UVM_HIGH)
+          return;
+        end
       end
       if (await_response) begin
         if (cs_item.acmd != csrng_pkg::GEN) begin
@@ -108,9 +146,17 @@ class csrng_base_vseq extends cip_base_vseq #(
         end
         else begin
           for (int i = 0; i < cs_item.glen; i++) begin
-            csr_spinwait(.ptr(ral.genbits_vld.genbits_vld), .exp_data(1'b1));
+            csr_spinwait_or_edn_rst_n(.ptr(ral.genbits_vld.genbits_vld), .exp_data(1'b1));
+            if (edn_under_reset()) begin
+              `uvm_info(`gfn, "SW app stopped due to EDN reset", UVM_HIGH)
+              return;
+            end
             for (int i = 0; i < csrng_pkg::GENBITS_BUS_WIDTH/TL_DW; i++) begin
               csr_rd(.ptr(ral.genbits.genbits), .value(rdata));
+              if (edn_under_reset()) begin
+                `uvm_info(`gfn, "SW app stopped due to EDN reset", UVM_HIGH)
+                return;
+              end
             end
           end
           wait_cmd_req_done();
