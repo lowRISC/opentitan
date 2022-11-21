@@ -150,6 +150,7 @@ opentitan_rom_binary(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
         "//sw/device/silicon_creator/lib/sigverify",
+        "//sw/device/silicon_creator/rom/keys/fake",
     ],
 )
 
@@ -302,7 +303,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/sigverify:rsa_key",
         "//sw/device/silicon_creator/lib/sigverify:sigverify_without_mod_exp_ibex_mock",
-        "//sw/device/silicon_creator/rom/keys/fake",
     ],
 )
 
@@ -312,7 +312,6 @@ cc_test(
     deps = [
         ":sigverify_keys",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/rom/keys/fake",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],

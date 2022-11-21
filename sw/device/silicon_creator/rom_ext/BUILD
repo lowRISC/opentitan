@@ -141,6 +141,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/sigverify",
         "//sw/device/silicon_creator/rom:sigverify_keys",
+        "//sw/device/silicon_creator/rom/keys/fake",
     ],
 )
 

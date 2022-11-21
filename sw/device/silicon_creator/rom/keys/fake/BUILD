@@ -6,10 +6,19 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "fake",
+    srcs = [
+        "sigverify_rsa_keys_fake.c",
+        "//sw/device/silicon_creator/lib/sigverify:rsa_key.h",
+        "//sw/device/silicon_creator/rom:sigverify_keys_ptrs.h",
+    ],
     hdrs = [
         "dev_key_0_rsa_3072_exp_f4.h",
         "prod_key_0_rsa_3072_exp_f4.h",
         "test_key_0_rsa_3072_exp_f4.h",
+    ],
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
+        "//sw/device/lib/base:macros",
     ],
 )
 
