@@ -38,11 +38,6 @@ class pwrmgr_env extends cip_base_env #(
     if (!uvm_config_db#(virtual pwrmgr_if)::get(this, "", "pwrmgr_vif", cfg.pwrmgr_vif)) begin
       `uvm_fatal(`gfn, "failed to get pwrmgr_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(virtual pwrmgr_ast_sva_if)::get(
-            this, "", "pwrmgr_ast_sva_vif", cfg.pwrmgr_ast_sva_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get pwrmgr_ast_sva_vif from uvm_config_db")
-    end
     if (!uvm_config_db#(virtual pwrmgr_clock_enables_sva_if)::get(
             this, "", "pwrmgr_clock_enables_sva_vif", cfg.pwrmgr_clock_enables_sva_vif
         )) begin

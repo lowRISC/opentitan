@@ -516,7 +516,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   function void control_assertions(bit enable);
     `uvm_info(`gfn, $sformatf("%0sabling assertions", enable ? "En" : "Dis"), UVM_MEDIUM)
-    cfg.pwrmgr_ast_sva_vif.disable_sva = !enable;
     cfg.pwrmgr_clock_enables_sva_vif.disable_sva = !enable;
     cfg.pwrmgr_rstmgr_sva_vif.disable_sva = !enable;
   endfunction

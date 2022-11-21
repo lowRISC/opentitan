@@ -86,9 +86,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   rand int reset_us;
   constraint reset_us_c {reset_us inside {[1 : 4]};}
 
-  // various knobs to enable certain routines
   bit do_rstmgr_init = 1'b1;
-  bit check_rstreqs_en = 0;
 
   mubi4_t scanmode;
   int scanmode_on_weight = 8;
@@ -514,7 +512,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     if (do_rstmgr_init) rstmgr_init();
     disable_unnecessary_exclusions();
     super.pre_start();
-    cfg.pwrmgr_rstmgr_sva_vif.check_rstreqs_en = 0;
   endtask
 
   // setup basic rstmgr features
