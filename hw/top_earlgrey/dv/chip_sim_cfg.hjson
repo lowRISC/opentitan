@@ -1714,6 +1714,9 @@
       name: chip_sw_power_sleep_load
       uvm_test_seq: chip_sw_power_sleep_load_vseq
       sw_images: ["//sw/device/tests:chip_power_sleep_load:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      // This is to disable the ping-timeout check in cip_base_scoreboard, see OT issue #16055.
+      run_opts: ["+en_scb_ping_chk=0"]
     }
   ]
 
