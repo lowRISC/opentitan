@@ -4,7 +4,7 @@
 
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
-load("//rules:opentitan.bzl", "opentitan_flash_binary")
+load("//rules:opentitan.bzl", "OPENTITAN_CPU", "opentitan_flash_binary")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:opentitan_test.bzl", "cw310_params", "opentitan_functest")
@@ -109,8 +109,12 @@ ld_library(
 
 cc_library(
     name = "rom_ext",
-    srcs = ["rom_ext.c"],
+    srcs = [
+        "rom_ext.c",
+        "rom_ext_start.S",
+    ],
     hdrs = ["rom_ext.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rom_ext_boot_policy",
         ":rom_ext_epmp",
@@ -155,7 +159,6 @@ manifest({
 
 opentitan_flash_binary(
     name = "rom_ext_slot_a",
-    srcs = ["rom_ext_start.S"],
     manifest = ":manifest_standard",
     signed = True,
     deps = [
@@ -168,7 +171,6 @@ opentitan_flash_binary(
 
 opentitan_flash_binary(
     name = "rom_ext_slot_b",
-    srcs = ["rom_ext_start.S"],
     manifest = ":manifest_standard",
     signed = True,
     deps = [
@@ -181,7 +183,6 @@ opentitan_flash_binary(
 
 opentitan_flash_binary(
     name = "rom_ext_slot_virtual",
-    srcs = ["rom_ext_start.S"],
     manifest = ":manifest_virtual",
     signed = True,
     deps = [
@@ -200,7 +201,6 @@ manifest({
 
 opentitan_flash_binary(
     name = "rom_ext_slot_a_bad_address_translation",
-    srcs = ["rom_ext_start.S"],
     manifest = ":manifest_bad_address_translation",
     signed = True,
     deps = [
