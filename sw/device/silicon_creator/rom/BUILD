@@ -80,6 +80,7 @@ cc_library(
     ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":rom_common",
         ":rom_epmp",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//hw/ip/csrng/data:csrng_regs",
@@ -100,11 +101,11 @@ cc_library(
         "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
+    alwayslink = True,
 )
 
-opentitan_rom_binary(
-    name = "rom",
-    testonly = True,
+cc_library(
+    name = "rom_common",
     srcs = [
         "rom.c",
         "rom.h",
@@ -112,9 +113,7 @@ opentitan_rom_binary(
     deps = [
         ":boot_policy",
         ":bootstrap",
-        ":linker_script",
         ":rom_epmp",
-        ":rom_start",
         ":sigverify_keys",
         "//hw/ip/aon_timer/data:aon_timer_regs",
         "//sw/device/lib/arch:device",
@@ -151,6 +150,16 @@ opentitan_rom_binary(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
         "//sw/device/silicon_creator/lib/sigverify",
+    ],
+)
+
+opentitan_rom_binary(
+    name = "rom_with_fake_keys",
+    testonly = True,
+    deps = [
+        ":linker_script",
+        ":rom_common",
+        ":rom_start",
         "//sw/device/silicon_creator/rom/keys/fake",
     ],
 )
@@ -297,7 +306,7 @@ cc_test(
 exclude_files(
     name = "pre_package",
     testonly = True,
-    srcs = [":rom"],
+    srcs = [":rom_with_fake_keys"],
     exclude_suffix = [
         ".ll",
         ".i",

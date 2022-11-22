@@ -13,7 +13,7 @@ load(":gpio.bzl", "strap_combinations_test")
 
 strap_combinations_test(
     name = "e2e_weak_straps",
-    rom = "//sw/device/silicon_creator/rom",
+    rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     tags = [
         "verilator",
     ],

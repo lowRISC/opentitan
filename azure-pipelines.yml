@@ -233,11 +233,11 @@ jobs:
       # copy the rom to a specific location
       ROM_TARGET=${BIN_DIR}/sw/device/silicon_creator/rom
       mkdir -p ${ROM_TARGET}
-      ROM=$(ci/scripts/target-location.sh //sw/device/silicon_creator/rom:rom_fpga_cw310_scr_vmem)
-      cp $ROM $ROM_TARGET/rom_fpga_cw310.scr.39.vmem
+      ROM=$(ci/scripts/target-location.sh //sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_scr_vmem)
+      cp $ROM $ROM_TARGET/rom_with_fake_keys_fpga_cw310.scr.39.vmem
       ROM_DIR=$(dirname $ROM)
-      cp $ROM_DIR/rom_fpga_cw310.elf $ROM_TARGET/rom_fpga_cw310.elf
-      cp $ROM_DIR/rom_fpga_cw310.bin $ROM_TARGET/rom_fpga_cw310.bin
+      cp $ROM_DIR/rom_with_fake_keys_fpga_cw310.elf $ROM_TARGET/rom_with_fake_keys_fpga_cw310.elf
+      cp $ROM_DIR/rom_with_fake_keys_fpga_cw310.bin $ROM_TARGET/rom_with_fake_keys_fpga_cw310.bin
   - template: ci/upload-artifacts-template.yml
     parameters:
       includePatterns:
