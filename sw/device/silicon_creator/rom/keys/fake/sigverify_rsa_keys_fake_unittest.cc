@@ -17,7 +17,6 @@
 #include "sw/device/silicon_creator/lib/sigverify/mod_exp_otbn_mock.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
 #include "sw/device/silicon_creator/rom/sigverify_keys.h"
-#include "sw/device/silicon_creator/rom/sigverify_keys_ptrs.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "otp_ctrl_regs.h"

@@ -264,35 +264,11 @@ cc_test(
     ],
 )
 
-dual_cc_library(
-    name = "sigverify_keys_ptrs",
-    srcs = dual_inputs(
-        host = ["mock_sigverify_keys_ptrs.cc"],
-        shared = ["sigverify_keys_ptrs.c"],
-    ),
-    hdrs = dual_inputs(
-        host = ["mock_sigverify_keys_ptrs.h"],
-        shared = ["sigverify_keys_ptrs.h"],
-    ),
-    deps = dual_inputs(
-        host = [
-            "//sw/device/lib/base:global_mock",
-            "//sw/device/silicon_creator/testing:rom_test",
-            "@googletest//:gtest",
-        ],
-        shared = [
-            "//sw/device/lib/base:macros",
-            "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-        ],
-    ),
-)
-
 cc_library(
     name = "sigverify_keys",
     srcs = ["sigverify_keys.c"],
     hdrs = ["sigverify_keys.h"],
     deps = [
-        ":sigverify_keys_ptrs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
