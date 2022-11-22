@@ -106,4 +106,8 @@ def strap_combinations_test(name, rom, tags = [], skip_value = []):
     native.test_suite(
         name = name,
         tests = all_tests,
+        tags = tags,  # Add tags so the test_suite may be filtered appropriately.
+        # If tests aren't to share a common set of tags, they should be removed
+        # here and replaced with a manual tag, so the test_suite can contain
+        # the appropriate tests, but will not match filters innapropriately.
     )
