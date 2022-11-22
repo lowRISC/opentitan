@@ -60,6 +60,24 @@ class csrng_intr_vseq extends csrng_base_vseq;
     csr_rd_check(.ptr(ral.intr_state.cs_entropy_req), .compare_value(1'b0));
   endtask // test_cs_entropy_req
 
+  task test_cs_sw_cmd_sts();
+    // TODO: Instead of forcing ack_sts, find a way to actually generate the csrng_rsp_sts
+    // response as described in the documentation
+    // 1. Failure of the entropy source
+    // 2. Attempts to use an instance which has not been properly instantiated, or
+    // 3. Attempts to generate data when an instance has exceeded its maximum seed life.
+    path1 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack", 2);
+    path2 = cfg.csrng_path_vif.cs_hw_inst_exc_path("ack_sts", 2);
+
+    // Force error on SW instance
+    force_path(path1, path2, 1'b1, 1'b1);
+    // Wait for SW_CMD_STS getting set
+    csr_spinwait(.ptr(ral.sw_cmd_sts.cmd_sts), .exp_data(1'b1));
+    cov_vif.cg_err_code_sample(.err_code(32'b0));
+    `DV_CHECK(uvm_hdl_release(path1));
+    `DV_CHECK(uvm_hdl_release(path2));
+  endtask
+
   task test_cs_hw_inst_exc();
     // TODO: Instead of forcing ack_sts, find a way to actually generate the csrng_rsp_sts
     // response as described in the documentation
@@ -267,6 +285,9 @@ class csrng_intr_vseq extends csrng_base_vseq;
 
     // Test cs_hw_inst_exc interrupt
     test_cs_hw_inst_exc();
+
+    // Test faulty SW APP response by forcing sts output
+    test_cs_sw_cmd_sts();
 
     // Test cs_fatal_err interrupt
     test_cs_fatal_err();

@@ -61,6 +61,8 @@ class csrng_base_vseq extends cip_base_vseq #(
   endtask
 
   task wait_cmd_req_done();
+    // Sample while SW app is not ready
+    cov_vif.cg_err_code_sample(.err_code(32'b0));
     csr_spinwait_or_edn_rst_n(.ptr(ral.intr_state.cs_cmd_req_done), .exp_data(1'b1));
     if (edn_under_reset()) return;
     csr_rd_check(.ptr(ral.sw_cmd_sts.cmd_sts), .compare_value(1'b0));
