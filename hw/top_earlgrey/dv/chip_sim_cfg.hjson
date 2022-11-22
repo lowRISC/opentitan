@@ -105,15 +105,16 @@
   ]
 
   // exclusion files
-  vcs_cov_excl_files: ["{top_dv_path}/cov/conn_ast_mem_cfg.el",
-                       "{top_dv_path}/cov/edn1_unr_tied_off_ports.el",
-                       "{top_dv_path}/cov/entropy_src_tied_off_xht_port.el",
-                       "{top_dv_path}/cov/pinmux_pad_attr.el",
-                       "{top_dv_path}/cov/rom_ctrl_kmac_app_tied_off_data_strb_bits.el",
-                       "{top_dv_path}/cov/chip_top_unr_tied_off.el",
+  vcs_cov_excl_files: ["{top_dv_path}/cov/chip_top_unr_tied_off.el",
+                       "{top_dv_path}/cov/conn_ast_mem_cfg.el",
                        "{top_dv_path}/cov/conn_flash_ctrl_ast_obs_test_volt.el",
                        "{top_dv_path}/cov/conn_otp_ctrl_ast_obs_ext_volt.el",
+                       "{top_dv_path}/cov/edn1_unr_tied_off_ports.el",
+                       "{top_dv_path}/cov/entropy_src_tied_off_xht_port.el",
+                       "{top_dv_path}/cov/lc_ctrl_hw_rev_tied_off.el",
+                       "{top_dv_path}/cov/pinmux_pad_attr.el",
                        "{top_dv_path}/cov/plic_le_i_tied_off.el",
+                       "{top_dv_path}/cov/rom_ctrl_kmac_app_tied_off_data_strb_bits.el",
                        "{top_dv_path}/cov/spi_host_device_unr_tied_off.el"
                        ]
 
