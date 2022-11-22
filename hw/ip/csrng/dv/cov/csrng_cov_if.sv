@@ -189,6 +189,29 @@ interface csrng_cov_if (
     sw_app_read_sw_app_enable_cross: cross cp_sw_app_read, cp_sw_app_enable;
   endgroup : csrng_cfg_cg
 
+  covergroup csrng_sts_cg with function sample();
+    option.name         = "csrng_sts_cg";
+    option.per_instance = 1;
+
+    cp_hw_inst_exc: coverpoint u_reg.hw_exc_sts_qs[NUM_HW_APPS-1:0] {
+      bins no_exc  = { 0 };
+      bins hw0_exc = { 1 };
+      bins hw1_exc = { 2 };
+      bins sim_exc = { 3 }; // simultaneous exception on both HW app interfaces
+    }
+
+    cp_sw_cmd_sts_cmd_rdy: coverpoint u_reg.sw_cmd_sts_cmd_rdy_qs {
+      bins not_ready = { 1'b0 };
+      bins ready     = { 1'b1 };
+    }
+
+    cp_sw_cmd_sts_cmd_sts: coverpoint u_reg.sw_cmd_sts_cmd_sts_qs {
+      bins success = { 1'b0 };
+      bins error   = { 1'b1 };
+    }
+
+  endgroup : csrng_sts_cg
+
   covergroup csrng_err_code_cg with function sample(err_code_bit_e err_code_bit,
                                                     bit [2:0] fifo_err_type);
     option.name         = "csrng_err_code_cg";
@@ -228,23 +251,6 @@ interface csrng_cov_if (
       bins        rail_1 = { 2 };
       bins        rail_2 = { 4 };
       ignore_bins other  = { 3, [5:7]};
-    }
-
-    cp_hw_inst_exc: coverpoint u_reg.hw_exc_sts_qs[NUM_HW_APPS-1:0] {
-      bins no_exc  = { 0 };
-      bins hw0_exc = { 1 };
-      bins hw1_exc = { 2 };
-      bins sim_exc = { 3 }; // simultaneous exception on both HW app interfaces
-    }
-
-    cp_sw_cmd_sts_cmd_rdy: coverpoint u_reg.sw_cmd_sts_cmd_rdy_qs {
-      bins not_ready = { 1'b0 };
-      bins ready     = { 1'b1 };
-    }
-
-    cp_sw_cmd_sts_cmd_sts: coverpoint u_reg.sw_cmd_sts_cmd_sts_qs {
-      bins success = { 1'b0 };
-      bins error   = { 1'b1 };
     }
 
   endgroup : csrng_err_code_cg
@@ -358,6 +364,7 @@ interface csrng_cov_if (
   `DV_FCOV_INSTANTIATE_CG(csrng_sfifo_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cmds_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(csrng_sts_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_err_code_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_err_code_test_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_recov_alert_sts_cg, en_full_cov)
@@ -379,6 +386,7 @@ interface csrng_cov_if (
                               cs_item.flags,
                               cs_item.glen
                              );
+    csrng_sts_cg_inst.sample();
   endfunction
 
   function automatic void cg_err_code_sample(bit [31:0] err_code);
@@ -389,6 +397,7 @@ interface csrng_cov_if (
         csrng_err_code_cg_inst.sample(err_code_bit_e'(i), err_code[30:28]);
       end
     end
+    csrng_sts_cg_inst.sample();
   endfunction
 
   function automatic void cg_err_test_sample(bit [4:0] err_test_code);
