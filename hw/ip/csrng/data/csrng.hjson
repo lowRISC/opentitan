@@ -421,9 +421,8 @@
         { bits: "13",
           name: "CS_MAIN_SM_ALERT",
           desc: '''
-                This bit is set when an unsupported CSRNG command is being processed.
+                This bit is set when an unsupported/illegal CSRNG command is being processed.
                 The main FSM will hang unless the module enable field is set to the disabled state.
-                Writing a zero resets this status bit.
                 '''
         }
       ]
