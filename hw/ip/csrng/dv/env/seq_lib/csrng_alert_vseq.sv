@@ -13,6 +13,8 @@ class csrng_alert_vseq extends csrng_base_vseq;
   csrng_item  cs_item;
   rand bit    flag0_flip_ins_cmd;
   rand acmd_e illegal_command;
+  rand [3:0]  clen;
+  rand [12:0] glen;
 
   task body();
     int           first_index;
@@ -22,9 +24,13 @@ class csrng_alert_vseq extends csrng_base_vseq;
     uvm_reg_field fld;
 
     // Values for the cs_main_sm_alert test.
-    bit [csrng_pkg::CSRNG_CMD_WIDTH-1:0] tmp_cmd;
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(illegal_command, illegal_command inside {INV, GENB,
                                                                                    GENU};)
+    // For clen we just care about 0, 1 and the max value (coverage).
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(clen, clen inside {0, 1, 11};)
+
+    // For glen we just care about 0, 1, 5, 9 and 13 at the moment.
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(glen, glen inside {0, 1, 5, 9, 13};)
 
     super.body();
 
@@ -183,14 +189,14 @@ class csrng_alert_vseq extends csrng_base_vseq;
     // Check recov_alert_sts register has cleared.
     csr_rd_check(.ptr(ral.recov_alert_sts), .compare_value(0));
 
-    `uvm_info(`gfn, $sformatf("Testing cs_main_sm_alert"), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("Testing cs_main_sm_alert for app %d", cfg.which_app_err_alert), UVM_MEDIUM)
 
     // Here we send an illegal command to CSRNG to check that cs_main_sm_alert is triggered.
     // Sending an illegal command does not get a response from CSRNG.
     cs_item.acmd  = illegal_command;
-    cs_item.clen  = 'h0;
-    cs_item.flags = MuBi4True;
-    cs_item.glen  = 'h0;
+    cs_item.clen  = clen;
+    cs_item.flags = get_rand_mubi4_val(.t_weight(4), .f_weight(4), .other_weight(0));
+    cs_item.glen  = glen;
     send_cmd_req(cfg.which_app_err_alert, cs_item, .await_response(1'b0));
 
     `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
