@@ -1,4 +1,4 @@
-From a58f5ccddb1ab0ca78da970ccb88feb1433c8a37 Mon Sep 17 00:00:00 2001
+From 62e0a09b7e90728c5c5380509c291cd0768f91e2 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 18:28:07 -0700
 Subject: [PATCH 1/4] Fix lint errors
@@ -6,7 +6,7 @@ Subject: [PATCH 1/4] Fix lint errors
 Signed-off-by: Michael Schaffner <msf@google.com>
 
 diff --git a/src/dm_mem.sv b/src/dm_mem.sv
-index c1cc0e8..7d90ea5 100755
+index 55ac8c6..09fc919 100755
 --- a/src/dm_mem.sv
 +++ b/src/dm_mem.sv
 @@ -265,12 +265,13 @@ module dm_mem #(
