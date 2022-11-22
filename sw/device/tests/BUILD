@@ -1742,7 +1742,7 @@ opentitan_functest(
         exit_failure = ROM_BOOT_FAILURE_MSG,
     ),
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
     signed = True,
@@ -1754,7 +1754,7 @@ opentitan_functest(
     verilator = verilator_params(
         timeout = "eternal",
         exit_failure = ROM_BOOT_FAILURE_MSG,
-        rom = "//sw/device/silicon_creator/rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",

@@ -115,7 +115,7 @@ opentitan_functest(
         exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
     ),
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     signed = True,
     targets = [
@@ -127,7 +127,7 @@ opentitan_functest(
         timeout = "eternal",
         exit_failure = "NO_FAILURE_MESSAGE",
         exit_success = MSG_TEMPLATE_BFV.format(hex(CONST.BFV.INTERRUPT.INSTRUCTION_ACCESS)),
-        rom = "//sw/device/silicon_creator/rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -144,7 +144,7 @@ opentitan_functest(
         bitstream = "//hw/bitstream:rom",
     ),
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     key = "fake_test_key_0",
     ot_flash_binary = ":empty_test_slot_a",
@@ -155,7 +155,7 @@ opentitan_functest(
     ],
     verilator = verilator_params(
         timeout = "eternal",
-        rom = "//sw/device/silicon_creator/rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
 )
 
@@ -163,7 +163,7 @@ opentitan_functest(
     name = "rom_e2e_static_critical",
     srcs = ["rom_e2e_static_critical_test.c"],
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     signed = True,
     targets = [
@@ -173,7 +173,7 @@ opentitan_functest(
     ],
     verilator = verilator_params(
         timeout = "eternal",
-        rom = "//sw/device/silicon_creator/rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
         "//sw/device/lib/dif:hmac",
@@ -187,7 +187,7 @@ opentitan_functest(
     name = "rom_e2e_keymgr_init",
     srcs = ["rom_e2e_keymgr_init_test.c"],
     dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     signed = True,
     targets = [
@@ -197,7 +197,7 @@ opentitan_functest(
     ],
     verilator = verilator_params(
         timeout = "eternal",
-        rom = "//sw/device/silicon_creator/rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     deps = [
         "//sw/device/lib/dif:keymgr",
@@ -280,7 +280,7 @@ rom_e2e_keymgr_init_configs = [
         ),
         dv = dv_params(
             otp = ":otp_img_keymgr_{}".format(config["name"]),
-            rom = "//sw/device/silicon_creator/rom",
+            rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
         ),
         ot_flash_binary = ":rom_e2e_keymgr_init_test",
         targets = [
@@ -291,7 +291,7 @@ rom_e2e_keymgr_init_configs = [
         verilator = verilator_params(
             timeout = "eternal",
             otp = ":otp_img_keymgr_{}".format(config["name"]),
-            rom = "//sw/device/silicon_creator/rom",
+            rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
         ),
     )
     for config in rom_e2e_keymgr_init_configs
@@ -656,7 +656,7 @@ manifest({
     ),
     dv = dv_params(
         otp = ":otp_img_shutdown_output_{}".format(lc_state),
-        rom = "//sw/device/silicon_creator/rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
     ),
     manifest = ":manifest_bad_identifier",
     ot_flash_binary = ":empty_test_slot_a",
@@ -994,7 +994,7 @@ WATCHDOG_OTP = {
     verilator = verilator_params(
         timeout = "eternal",
         otp = WATCHDOG_OTP[otp_config].format(lc_state.lower()),
-        rom = "//sw/device/silicon_creator/rom:rom",
+        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
         # Test cases that enable the watchdog time out in verilator, cause
         # unknown.
         tags = ["broken"] if WATCHDOG_TEST_CASES[otp_config][lc_state] == "enabled" else [],
@@ -2070,7 +2070,7 @@ test_suite(
         verilator = verilator_params(
             timeout = "eternal",
             otp = "//hw/ip/otp_ctrl/data:img_" + lc_state,
-            rom = "//sw/device/silicon_creator/rom:rom",
+            rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
         ),
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -2113,7 +2113,7 @@ test_suite(
             print $pc
         """,
         gdb_script_symlinks = {
-            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+            "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
@@ -2172,7 +2172,7 @@ test_suite(
             end
         """,
         gdb_script_symlinks = {
-            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+            "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
@@ -2236,7 +2236,7 @@ test_suite(
             quit 123
         """,
         gdb_script_symlinks = {
-            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+            "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
@@ -2327,7 +2327,7 @@ test_suite(
             end
         """,
         gdb_script_symlinks = {
-            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+            "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
@@ -2395,7 +2395,7 @@ test_suite(
             quit 123
         """,
         gdb_script_symlinks = {
-            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+            "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",
@@ -2682,7 +2682,7 @@ SIGVERIFY_LCS_2_VALID_KEY = {
         ),
         dv = dv_params(
             otp = ":otp_img_sigverify_always_{}".format(lc_state),
-            rom = "//sw/device/silicon_creator/rom",
+            rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
         ),
         key = "multislot",
         ot_flash_binary = ":sigverify_always_img_a_{}_b_{}_{}".format(
@@ -3247,7 +3247,7 @@ test_suite(
             watchdog_ctrl_reg_addr = "0x40470014",
         ),
         gdb_script_symlinks = {
-            "//sw/device/silicon_creator/rom:rom_fpga_cw310.elf": "rom.elf",
+            "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310.elf": "rom.elf",
         },
         rom_bitstream = ":rom_otp_{}_exec_disabled".format(lc_state),
         rom_kind = "Rom",

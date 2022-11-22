@@ -81,7 +81,7 @@ bitstream_splice(
     name = "fpga_cw310_rom",
     testonly = True,
     src = ":fpga_cw310_test_rom",
-    data = "//sw/device/silicon_creator/rom:rom_fpga_cw310_scr_vmem",
+    data = "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
 )
