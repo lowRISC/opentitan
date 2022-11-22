@@ -74,9 +74,7 @@ There may be additional fixes required, which can hopefully be identified easily
 Once the testbench compiles and elaborates without any errors or warnings, the sanity sequence can be developed further to access a major datapath and test the basic functionality of the DUT.
 
 VCS is used as the default simulator. It can be switched to Xcelium by setting `--tool xcelium` on the command line.
-
-To dump waves from the simulation, pass the `--waves <format>` argument to `dvsim.py`.
-If you are using Verdi for waveform viewing, then '--waves fsdb' is probably the best option. For use with other viewers, '--waves shm' is probably the best choice for Xcelium, and '--waves vpd' with vcs.
+To dump waves from the simulation, pass the `--waves <format>` argument to `dvsim.py`. The supported file formats with VCS are 'fsdb' and 'vpd'. Xcelium may generate 'shm', 'fsdb' or 'vcd'.
 
 Please refer to the [DV simulation flow]({{< relref "hw/dv/tools/doc" >}}) for additional details.
 
@@ -117,7 +115,6 @@ Since the CI runs tests with pseudo-random behaviour driven from 'seed' numbers,
 
 Assume there is a failure in the `uart_smoke` test. To reproduce this with the DV simulation environment we use the following command, remembering to replace '<seed>' with the seed number, and to choose an appropriate waveform '<format>':
 
-
 ```console
 $ util/dvsim/dvsim.py hw/ip/uart/dv/uart_sim_cfg.hjson -i uart_smoke --fixed-seed=<seed> [--waves <format>]
 ```
@@ -125,4 +122,3 @@ $ util/dvsim/dvsim.py hw/ip/uart/dv/uart_sim_cfg.hjson -i uart_smoke --fixed-see
 It is recommended to use '--waves fsdb' if you are using Verdi, or '--waves vpd' if you are using vcs but a different waveform viewer. With Xcelium ('--tool xcelium') but not Verdi, then '--waves shm' is the preferred format.
 
 For maximal portability, the standard 'vcd' format is supported by all simulators and waveform viewers, but please be forewarned that vcd files can become extremely large and are generally best avoided.
-
