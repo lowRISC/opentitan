@@ -217,6 +217,13 @@ class csrng_alert_vseq extends csrng_base_vseq;
     ral.ctrl.enable.set(prim_mubi_pkg::MuBi4True);
     csr_update(.csr(ral.ctrl));
 
+    // The uninstantiate is not really needed. At the moment, it's mainly useful for coverage.
+    cs_item.acmd  = csrng_pkg::UNI;
+    cs_item.clen  = clen;
+    cs_item.flags = get_rand_mubi4_val(.t_weight(4), .f_weight(4), .other_weight(0));
+    cs_item.glen  = glen;
+    send_cmd_req(cfg.which_app_err_alert, cs_item, .await_response(1'b1));
+
     // Clear recov_alert_sts register.
     csr_wr(.ptr(ral.recov_alert_sts), .value(32'b0));
     cfg.clk_rst_vif.wait_clks(100);
