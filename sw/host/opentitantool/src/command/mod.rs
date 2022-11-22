@@ -25,6 +25,7 @@ pub mod version;
 use anyhow::Result;
 use serde_annotate::Annotate;
 use std::any::Any;
+use std::time::Duration;
 use structopt::StructOpt;
 
 use opentitanlib::app::command::CommandDispatch;
@@ -32,7 +33,15 @@ use opentitanlib::app::TransportWrapper;
 
 #[derive(Debug, StructOpt)]
 /// No Operation.
-pub struct NoOp {}
+pub struct NoOp {
+    #[structopt(
+        short = "d",
+        long,
+        help = "Delay execution",
+        parse(try_from_str = humantime::parse_duration)
+    )]
+    delay: Option<Duration>,
+}
 
 impl CommandDispatch for NoOp {
     fn run(
@@ -40,6 +49,9 @@ impl CommandDispatch for NoOp {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
+        if let Some(d) = self.delay {
+            std::thread::sleep(d);
+        }
         Ok(None)
     }
 }
