@@ -126,7 +126,8 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
 
   EXPECT_WRITE32(ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET,
                  {{ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_INV_OFFSET,
-                   ~test_param.alert_threshold},
+                   static_cast<decltype(test_param.alert_threshold)>(
+                       ~test_param.alert_threshold)},
                   {ENTROPY_SRC_ALERT_THRESHOLD_ALERT_THRESHOLD_OFFSET,
                    test_param.alert_threshold}});
 
