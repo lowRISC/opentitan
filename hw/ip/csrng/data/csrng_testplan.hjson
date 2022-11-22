@@ -119,6 +119,10 @@
             - sw_app_enable
             - read_int_state
             - enable
+            - regwen has been true and false
+            - intr_state has had each bit set and unset at least once (handled in comportable ip coverage)
+            Cross:
+            - intr_enable and intr_state (handled in comportable ip coverage)
             '''
     }
     {
@@ -142,21 +146,16 @@
             '''
     }
     {
-      name: csrng_internal_cg
+      name: csrng_sts_cg
       desc: '''
-            Covers that all csrng internal states have been hit:
-            - sw_cmd_sts has seen all 4 possibilities
-            - regwen has been true and false
-            - intr_state has had each bit set and unset at least once (handled in comportable ip coverage)
-            Cross:
-            - intr_enable and intr_state (handled in comportable ip coverage)
+            Covers all possible hw_exc_sts responses from each HW instance and the sub-fields of
+            sw_cmd_sts, which are cmd_rdy and cmd_sts.
             '''
     }
     {
       name: csrng_err_code_cg
       desc: '''
-            Covers all possible fatal errors, possible AES FSM errors inside CSRNG and all possible
-            hw_exc_sts responses from each HW instance.
+            Covers all possible fatal errors and possible AES FSM errors inside CSRNG.
             '''
     }
     {
