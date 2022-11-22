@@ -24,6 +24,10 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
   virtual task body();
     string csr_test_type;
     void'($value$plusargs("+csr_%0s", csr_test_type));
+    // sio are driven X when csb is inactive, but these pins can be configured as wakeup cause,
+    // assign a known value to avoid X propagation in case that `PINMUX.WKUP_CAUSE` is programmed.
+    cfg.chip_vif.spi_host_if.sio_out = $urandom;
+
     // These types of CSR tests are quite long; run them only once.
     if (csr_test_type inside {"bit_bash", "aliasing"}) num_trans = 1;
     run_common_vseq_wrapper(num_trans);
