@@ -65,7 +65,17 @@ covergroup host_cmd_cg with function sample(csrng_item item, bit sts);
     bins fail = {1};
   }
 
-  csrng_cmd_cross: cross csrng_cmd_cp, csrng_clen_cp, csrng_sts, csrng_flag_cp;
+  csrng_cmd_clen_flag_cross: cross csrng_cmd_cp, csrng_clen_cp, csrng_flag_cp;
+
+  csrng_cmd_clen_flag_sts_cross: cross csrng_cmd_cp, csrng_clen_cp, csrng_flag_cp, csrng_sts {
+    // Illegal commands (INV, GENB, GENU) don't get a response, thus don't have a status.
+    ignore_bins illegal_cmds = binsof(csrng_cmd_cp) intersect {INV, GENB, GENU};
+    // All legal commands get a response, and the status must be OK.  Legal commands with an error
+    // status are thus illegal.
+    illegal_bins legal_cmds_with_error_sts = !binsof(csrng_cmd_cp) intersect {INV, GENB, GENU}
+                                             with (csrng_sts);
+  }
+
 endgroup
 
 covergroup genbits_cg with function sample(csrng_item item, bit sts);
@@ -81,7 +91,10 @@ covergroup genbits_cg with function sample(csrng_item item, bit sts);
     bins fail = {1};
   }
 
-  csrng_genbits_cross: cross csrng_glen, csrng_sts;
+  csrng_genbits_cross: cross csrng_glen, csrng_sts {
+    // Generate may not return fail as status.
+    illegal_bins sts_fail = binsof(csrng_sts) intersect {1};
+  }
 endgroup
 
 class csrng_agent_cov extends dv_base_agent_cov#(csrng_agent_cfg);
