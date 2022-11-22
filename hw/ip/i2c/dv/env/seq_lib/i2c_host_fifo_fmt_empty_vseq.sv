@@ -27,8 +27,7 @@ class i2c_host_fifo_fmt_empty_vseq extends i2c_rx_tx_vseq;
       begin
         for (uint i = 1; i <= num_trans; i++) begin
           do_interrupt = 1'b1;
-          cfg.trans_type = WriteOnly;
-          host_send_trans(.read(0), .stopbyte(1));
+          host_send_trans(.max_trans(1), .trans_type(WriteOnly), .read(0), .stopbyte(1));
           do_interrupt = 1'b0; // gracefully stop process_interrupts
           csr_rd_check(.ptr(ral.status.fmtempty), .compare_value(1));
           `DV_CHECK_EQ(cfg.lastbyte, 8'hee)

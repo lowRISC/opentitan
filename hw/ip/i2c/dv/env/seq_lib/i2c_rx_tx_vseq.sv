@@ -18,14 +18,14 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         while (!cfg.under_reset && do_interrupt) process_interrupts();
       end
       begin
-        host_send_trans(num_trans);
+        host_send_trans(.max_trans(num_trans));
         do_interrupt = 1'b0; // gracefully stop process_interrupts
       end
     join
     `uvm_info(`gfn, "\n--> end of sequence", UVM_DEBUG)
   endtask : body
 
-  virtual task host_send_trans(int max_trans = 1,
+  virtual task host_send_trans(int max_trans = num_trans, tran_type_e trans_type = ReadWrite,
                                bit read = 1'b1, bit stopbyte = 1'b0);
     bit last_tran, chained_read;
 
@@ -45,9 +45,19 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
           // or when the previous transaction is completed
           if (fmt_item.stop || cur_tran == 1) begin
             `DV_CHECK_RANDOMIZE_FATAL(this)
+            // if trans_type is provided, then rw_bit is overridden
+            // otherwise, rw_bit is randomized
+            rw_bit = (trans_type  == WriteOnly) ? 1'b0 :
+                     ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
             get_timing_values();
             program_registers();
           end
+
+          // if trans_type is provided, then rw_bit is overridden
+          // otherwise, rw_bit is randomized
+          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(rw_bit)
+          rw_bit = (trans_type  == WriteOnly) ? 1'b0 :
+                   ((trans_type == ReadOnly)  ? 1'b1 : rw_bit);
 
           // program address for folowing transaction types
           chained_read = fmt_item.read && fmt_item.rcont;

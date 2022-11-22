@@ -47,8 +47,7 @@ class i2c_host_fifo_watermark_vseq extends i2c_rx_tx_vseq;
           // -> check write complete -> stop pooling fmt_watermark interrupt
           // -> verify the number of received fmt_watermark interrupt
           if (check_fmt_watermark) begin
-            cfg.trans_type = WriteOnly;
-            host_send_trans();
+            host_send_trans(.max_trans(1), .trans_type(WriteOnly));
             check_fmt_watermark = 1'b0;  // gracefully stop process_fmt_watermark_intr
             // depending the programmed fmtivl and the DUT configuration
             // (timing regsisters), cnt_fmt_watermark could be
@@ -69,8 +68,7 @@ class i2c_host_fifo_watermark_vseq extends i2c_rx_tx_vseq;
             // first en_rx_watermark is unset to quickly fill up rx_fifo and
             // watermark interrupt is assuredly triggered
             // until rx_fifo becomes full, en_rx_watermark is set to start reading rx_fifo
-            cfg.trans_type = ReadOnly;
-            host_send_trans();
+            host_send_trans(.max_trans(1), .trans_type(ReadOnly));
             check_rx_watermark = 1'b0; // gracefully stop process_rx_watermark_intr
             // for fmtilvl > 4, rx_watermark is disabled (cnt_rx_watermark = 0)
             // otherwise, cnt_rx_watermark must be 1
