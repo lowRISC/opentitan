@@ -5,6 +5,14 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+## [0.7.0] - 2022-11-02
+### Fixed
+- 64-bit unaligned accesses (#145) [@creinwar](https://github.com/creinwar)
+- Various minor testbench fixes (#146)
+
+### Changed
+- Halted, Resume and Exception addresses are now aligned to 8 bytes
+
 ## [0.6.0] - 2022-10-11
 ### Fixed
 - Testbench build (#141, #142)

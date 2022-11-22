@@ -80,9 +80,9 @@ module dm_mem #(
   localparam logic [DbgAddressBits-1:0] FlagsEndAddr  = 'h7FF;
 
   localparam logic [DbgAddressBits-1:0] HaltedAddr    = 'h100;
-  localparam logic [DbgAddressBits-1:0] GoingAddr     = 'h104;
-  localparam logic [DbgAddressBits-1:0] ResumingAddr  = 'h108;
-  localparam logic [DbgAddressBits-1:0] ExceptionAddr = 'h10C;
+  localparam logic [DbgAddressBits-1:0] GoingAddr     = 'h108;
+  localparam logic [DbgAddressBits-1:0] ResumingAddr  = 'h110;
+  localparam logic [DbgAddressBits-1:0] ExceptionAddr = 'h118;
 
   localparam logic [DbgAddressBits-1:0] RomBaseAddr   = dm::HaltAddress;
   // The size is arbitrarily set to 0x800, so as to make the dm_space exactly 0x900 long. This is

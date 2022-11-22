@@ -6,9 +6,9 @@
 // # define SND_SCRATCH 1
 // These are implementation-specific addresses in the Debug Module
 #define HALTED    0x100
-#define GOING     0x104
-#define RESUMING  0x108
-#define EXCEPTION 0x10C
+#define GOING     0x108
+#define RESUMING  0x110
+#define EXCEPTION 0x118
 
 // Region of memory where each hart has 1
 // byte to read.
@@ -26,10 +26,13 @@
 
 entry:
        jal zero, _entry
+       nop
 resume:
        jal zero, _resume
+       nop
 exception:
        jal zero, _exception
+       nop
 
 
 

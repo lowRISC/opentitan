@@ -1,4 +1,4 @@
-From 0a9bcf19b39f74c4d67606e9fae66ccecc861c39 Mon Sep 17 00:00:00 2001
+From 6fc79ea206486e5d9a3ac460afe5d5cfa29251c0 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@google.com>
 Date: Tue, 25 Oct 2022 19:38:16 -0700
 Subject: [PATCH 2/4] Update debug ROM generator script to work with Python3
@@ -19,10 +19,10 @@ index b23370a..931e253 100644
  all: $(debug_rom)
  
 diff --git a/debug_rom/debug_rom.sv b/debug_rom/debug_rom.sv
-index 0299db6..78ce0d6 100644
+index 407157e..a045f4c 100644
 --- a/debug_rom/debug_rom.sv
 +++ b/debug_rom/debug_rom.sv
-@@ -59,7 +59,7 @@ module debug_rom (
+@@ -60,7 +60,7 @@ module debug_rom (
    always_comb begin : p_outmux
      rdata_o = '0;
      if (addr_q < $clog2(RomSize)'(RomSize)) begin
@@ -32,10 +32,10 @@ index 0299db6..78ce0d6 100644
    end
  
 diff --git a/debug_rom/debug_rom_one_scratch.sv b/debug_rom/debug_rom_one_scratch.sv
-index af7e67c..5f23377 100644
+index 1fe3850..98efb7c 100644
 --- a/debug_rom/debug_rom_one_scratch.sv
 +++ b/debug_rom/debug_rom_one_scratch.sv
-@@ -53,7 +53,7 @@ module debug_rom_one_scratch (
+@@ -54,7 +54,7 @@ module debug_rom_one_scratch (
    always_comb begin : p_outmux
      rdata_o = '0;
      if (addr_q < $clog2(RomSize)'(RomSize)) begin
