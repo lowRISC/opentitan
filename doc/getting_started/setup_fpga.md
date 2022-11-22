@@ -136,6 +136,25 @@ When properly connected, `dmesg` should identify the board, not show any errors,
 They should be named `'/dev/ttyACM*'`, e.g. `/dev/ttyACM1`.
 To ensure that you have sufficient access permissions, set up the udev rules as explained in the [Vivado installation instructions]({{< relref "install_vivado" >}}).
 
+You will then need to run this command to configure the board. You only need to run it once.
+```console
+bazel run //sw/host/opentitantool -- --interface=cw310 fpga set-pll
+```
+
+Check that it's working by [running the demo]({{< relref "#hello-world-demo" >}}) or a test, such as the `uart_smoketest` below.
+```console
+cd $REPO_TOP
+bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310_test_rom
+```
+
+### Troubleshooting
+
+If the tests/demo aren't working on the FPGA (especially if you get an error like `SFDP header contains incorrect signature`) then try adding `--rcfile=` to the `set-pll` command:
+```console
+bazel run //sw/host/opentitantool -- --rcfile= --interface=cw310 fpga set-pll
+```
+It's also worth pressing the `USB_RST` and `USR_RESET` buttons on the FPGA if you face continued errors.
+
 ## Flash the bitstream onto the FPGA and bootstrap software into flash
 
 There are two ways to load a bitstream on to the FPGA and bootstrap software into the OpenTitan embedded flash:
@@ -159,7 +178,7 @@ bazel test --test_tag_filters=cw310 --test_output=streamed //sw/device/tests:uar
 or
 ```console
 cd $REPO_TOP
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310_test_rom
 ```
 
 Under the hood, Bazel conveniently dispatches `opentitantool` to both:
@@ -173,14 +192,14 @@ To get a better understanding of the `opentitantool` functions Bazel invokes aut
 By default, the above invocations of `bazel test ...` use the pre-built (Internet downloaded) FPGA bitstream.
 To instruct bazel to load the bitstream built earlier, or to have bazel build an FPGA bitstream on the fly, and load that bitstream onto the FPGA, add the `--define bitstream=vivado` flag to either of the above Bazel commands, for example, run:
 ```
-bazel test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+bazel test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310_test_rom
 ```
 
 #### Configuring Bazel to skip loading a bitstream
 
 Alternatively, if you would like to instruct Bazel to skip loading any bitstream at all, and simply use the bitstream that is already loaded, add the `--define bitstream=skip` flag, for example, run:
 ```
-bazel test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+bazel test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310_test_rom
 ```
 
 ### Manually loading FPGA bitstreams and bootstrapping OpenTitan software with `opentitantool`
@@ -219,7 +238,7 @@ I00001 test_rom.c:87] TestROM:6b2ca9a1
 I00002 test_rom.c:118] Test ROM complete, jumping to flash!
 ```
 
-#### Bootstrapping the demo software
+#### Bootstrapping the demo software {#hello-world-demo}
 
 The `hello_world` demo software shows off some capabilities of the OpenTitan hardware.
 To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the steps shown below.
@@ -233,7 +252,7 @@ To load `hello_world` into the FPGA on the ChipWhisperer CW310 board follow the 
 1. Run `opentitantool`.
    ```console
    cd ${REPO_TOP}
-   bazel run //sw/host/opentitantool fpga set-pll # This needs to be done only once.
+   bazel run //sw/host/opentitantool -- --interface=cw310 fpga set-pll # This needs to be done only once.
    bazel build //sw/device/examples/hello_world:hello_world_fpga_cw310_bin
    bazel run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw310_bin)
    ```
@@ -373,14 +392,14 @@ First, make sure the device software has been built with debug symbols (by defau
 For example, to build and test the UART smoke test with debug symbols, you can add `--copt=-g` flag to the `bazel test ...` command:
 ```console
 cd $REPO_TOP
-bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310
+bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw310_test_rom
 ```
 
 Then a connection between OpenOCD and GDB may be established with:
 ```console
 cd $REPO_TOP
 riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
-  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf)"
+  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310_test_rom.elf)"
 ```
 
 The above will print out the contents of the registers upon successs.
