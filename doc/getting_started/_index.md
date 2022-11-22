@@ -200,7 +200,7 @@ Go to [this page](https://github.com/google/verible/releases) and download the c
 The example below is for Ubuntu 20.04:
 
 ```
-export VERIBLE_VERSION=v0.0-2479-g92928558
+export VERIBLE_VERSION={{< tool_version "verible" >}}
 wget https://github.com/google/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz
 tar -xf verible-${VERIBLE_VERSION}-Ubuntu-20.04-focal-x86_64.tar.gz
 ```

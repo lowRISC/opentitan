@@ -24,7 +24,7 @@ While most of these tests are top-level agnostic, some are not.
 *   System-level tests: **{use case}\_systemtest.c**
 
 ## Subfoldering Rules
-*   Smoke tests will be placed in (one per IP): 
+*   Smoke tests will be placed in (one per IP):
     *   (generic) **sw/device/tests/**
     *   (earlgrey-specific) **sw/device/tests/earlgrey/**
     *   ({toplevel}-specific) **sw/device/tests/{toplevel}/**

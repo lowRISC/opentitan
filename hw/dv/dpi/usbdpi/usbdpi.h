@@ -94,6 +94,7 @@
 #define HS_NEXTFRAME 14
 
 #define SEND_MAX 32
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -124,10 +124,10 @@ bool test_main(void) {
   base_printf("\r\n");
   for (int i = 0; i < kExpectedUsbCharsRecved; i++) {
     CHECK(buffer[i] == kExpectedUsbRecved[i],
-          "Received char #%d mismatched: exp = %x, actual = %x", i,
+          "Recieved char #%d mismatched: exp = %x, actual = %x", i,
           kExpectedUsbRecved[i], buffer[i]);
   }
-  LOG_INFO("USB received %d characters: %s", usb_chars_recved_total, buffer);
+  LOG_INFO("USB recieved %d characters: %s", usb_chars_recved_total, buffer);
 
   return true;
 }
