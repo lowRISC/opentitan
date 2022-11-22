@@ -52,7 +52,3 @@ static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE >=
                   kSigverifyRsaKeysCnt_,
               "CREATOR_SW_CFG_KEY_IS_VALID OTP item must be at least "
               "`kSigVerifyNumKeysFake` bytes.");
-
-const sigverify_rom_key_t *sigverify_rsa_keys_get(void) {
-  return kSigverifyRsaKeys;
-}

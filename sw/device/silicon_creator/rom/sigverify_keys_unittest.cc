@@ -35,34 +35,40 @@ extern "C" {
  * a key. The remaining fields are initialized only because non-trivial
  * designated initializers are not supported.
  */
-constexpr sigverify_rom_key_t kMockKeys[]{
+constexpr sigverify_rom_key_t kSigverifyRsaKeys[]{
     {
-        .key = {.n = {{0xA0}}, .n0_inv = {0}},
+        .key = {.n = {{0xa0}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeTest,
     },
     {
-        .key = {.n = {{0xB0}}, .n0_inv = {0}},
+        .key = {.n = {{0xb0}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeProd,
     },
     {
-        .key = {.n = {{0xC0}}, .n0_inv = {0}},
+        .key = {.n = {{0xc0}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeDev,
     },
     {
-        .key = {.n = {{0xA1}}, .n0_inv = {0}},
+        .key = {.n = {{0xa1}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeTest,
     },
     {
-        .key = {.n = {{0xB1}}, .n0_inv = {0}},
+        .key = {.n = {{0xb1}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeProd,
     },
     {
-        .key = {.n = {{0xC1}}, .n0_inv = {0}},
+        .key = {.n = {{0xc1}}, .n0_inv = {0}},
         .key_type = kSigverifyKeyTypeDev,
+    },
+    {
+        .key = {.n = {{0xff}}, .n0_inv = {0}},
+        .key_type = static_cast<sigverify_key_type_t>(
+            std::numeric_limits<uint32_t>::max()),
     },
 };
 
-constexpr size_t kSigverifyRsaKeysCnt = std::extent<decltype(kMockKeys)>::value;
+constexpr size_t kSigverifyRsaKeysCnt =
+    std::extent<decltype(kSigverifyRsaKeys)>::value;
 static_assert(kSigverifyRsaKeysCnt <=
               OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE);
 // Using 1 as the step size since it is coprime with every integer.
@@ -82,7 +88,7 @@ using ::testing::Return;
 std::vector<size_t> MockKeyIndicesOfType(sigverify_key_type_t key_type) {
   std::vector<size_t> indices;
   for (size_t i = 0; i < kSigverifyRsaKeysCnt; ++i) {
-    if (kMockKeys[i].key_type == key_type) {
+    if (kSigverifyRsaKeys[i].key_type == key_type) {
       indices.push_back(i);
     }
   }
@@ -114,14 +120,8 @@ class SigverifyKeys : public rom_test::RomTest {
  protected:
   /**
    * Sets expectations for getting the keys stored in the ROM.
-   *
-   * @param keys An array of keys.
    */
-  template <size_t N>
-  void ExpectKeysGet(const sigverify_rom_key_t (&keys)[N]) {
-    ASSERT_LE(N, OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE);
-    ASSERT_EQ(N, kSigverifyRsaKeysCnt);
-    EXPECT_CALL(sigverify_keys_ptrs_, RsaKeysGet()).WillOnce(Return(keys));
+  void ExpectKeysGet() {
     EXPECT_CALL(rnd_, Uint32())
         .WillOnce(Return(std::numeric_limits<uint32_t>::max()));
   }
@@ -164,7 +164,7 @@ class BadKeyIdTypeTest : public SigverifyKeys,
 };
 
 TEST_P(BadKeyIdTypeTest, BadKeyId) {
-  ExpectKeysGet(kMockKeys);
+  ExpectKeysGet();
 
   const sigverify_rsa_key_t *key;
   EXPECT_EQ(sigverify_rsa_key_get(0, GetParam(), &key), kErrorSigverifyBadKey);
@@ -176,21 +176,12 @@ INSTANTIATE_TEST_SUITE_P(AllLcStates, BadKeyIdTypeTest,
 class BadKeyIdTypeDeathTest : public BadKeyIdTypeTest {};
 
 TEST_P(BadKeyIdTypeDeathTest, BadKeyType) {
-  uint32_t key_id = 0xFF;
-  sigverify_key_type_t bad_key_type =
-      static_cast<sigverify_key_type_t>(kSigverifyKeyTypeDev + 1);
-  sigverify_rom_key_t keys[]{
-      {
-          .key = {.n = {{key_id}}, .n0_inv = {0}},
-          .key_type = bad_key_type,
-      },
-  };
   const sigverify_rsa_key_t *key;
 
   EXPECT_DEATH(
       {
-        ExpectKeysGet(keys);
-        sigverify_rsa_key_get(key_id, GetParam(), &key);
+        ExpectKeysGet();
+        sigverify_rsa_key_get(0xff, GetParam(), &key);
       },
       "");
 }
@@ -215,17 +206,17 @@ TEST_P(NonOperationalStateDeathTest, BadKey) {
 
   EXPECT_DEATH(
       {
-        ExpectKeysGet(kMockKeys);
+        ExpectKeysGet();
         sigverify_rsa_key_get(
-            sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
-            &key);
+            sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].key.n),
+            lc_state, &key);
       },
       "");
 }
 
 INSTANTIATE_TEST_SUITE_P(
     AllKeysAndNonOperationalStates, NonOperationalStateDeathTest,
-    testing::Combine(testing::Range<size_t>(0, kSigverifyRsaKeysCnt),
+    testing::Combine(testing::Range<size_t>(0, kSigverifyRsaKeysCnt - 1),
                      testing::Values(static_cast<lifecycle_state_t>(0))));
 
 class ValidBasedOnOtp : public KeyValidityTest {};
@@ -235,16 +226,16 @@ TEST_P(ValidBasedOnOtp, ValidInOtp) {
   lifecycle_state_t lc_state;
   std::tie(key_index, lc_state) = GetParam();
 
-  ExpectKeysGet(kMockKeys);
+  ExpectKeysGet();
   ExpectOtpRead(key_index, kHardenedByteBoolTrue);
   ExpectOtpRead(key_index, kHardenedByteBoolTrue);
 
   const sigverify_rsa_key_t *key;
   EXPECT_EQ(sigverify_rsa_key_get(
-                sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
-                &key),
+                sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].key.n),
+                lc_state, &key),
             kErrorOk);
-  EXPECT_EQ(key, &kMockKeys[key_index].key);
+  EXPECT_EQ(key, &kSigverifyRsaKeys[key_index].key);
 }
 
 TEST_P(ValidBasedOnOtp, InvalidInOtp) {
@@ -252,13 +243,13 @@ TEST_P(ValidBasedOnOtp, InvalidInOtp) {
   lifecycle_state_t lc_state;
   std::tie(key_index, lc_state) = GetParam();
 
-  ExpectKeysGet(kMockKeys);
+  ExpectKeysGet();
   ExpectOtpRead(key_index, kHardenedByteBoolFalse);
 
   const sigverify_rsa_key_t *key;
   EXPECT_EQ(sigverify_rsa_key_get(
-                sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
-                &key),
+                sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].key.n),
+                lc_state, &key),
             kErrorSigverifyBadKey);
 }
 
@@ -287,14 +278,14 @@ TEST_P(ValidInState, Get) {
   lifecycle_state_t lc_state;
   std::tie(key_index, lc_state) = GetParam();
 
-  ExpectKeysGet(kMockKeys);
+  ExpectKeysGet();
 
   const sigverify_rsa_key_t *key;
   EXPECT_EQ(sigverify_rsa_key_get(
-                sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
-                &key),
+                sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].key.n),
+                lc_state, &key),
             kErrorOk);
-  EXPECT_EQ(key, &kMockKeys[key_index].key);
+  EXPECT_EQ(key, &kSigverifyRsaKeys[key_index].key);
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -316,12 +307,12 @@ TEST_P(InvalidInState, Get) {
   lifecycle_state_t lc_state;
   std::tie(key_index, lc_state) = GetParam();
 
-  ExpectKeysGet(kMockKeys);
+  ExpectKeysGet();
 
   const sigverify_rsa_key_t *key;
   EXPECT_EQ(sigverify_rsa_key_get(
-                sigverify_rsa_key_id_get(&kMockKeys[key_index].key.n), lc_state,
-                &key),
+                sigverify_rsa_key_id_get(&kSigverifyRsaKeys[key_index].key.n),
+                lc_state, &key),
             kErrorSigverifyBadKey);
 }
 
