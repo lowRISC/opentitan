@@ -62,7 +62,6 @@ static status_t csrng_send_app_cmd(uint32_t reg_address,
                                    entropy_csrng_cmd_t cmd) {
   uint32_t reg;
   bool cmd_ready;
-  bool cmd_error;
   do {
     reg = abs_mmio_read32(kBaseCsrng + CSRNG_SW_CMD_STS_REG_OFFSET);
     cmd_ready = bitfield_bit32_read(reg, CSRNG_SW_CMD_STS_CMD_RDY_BIT);
