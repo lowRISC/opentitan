@@ -18,7 +18,6 @@ namespace internal {
 class MockSigverifyKeysPtrs
     : public global_mock::GlobalMock<MockSigverifyKeysPtrs> {
  public:
-  MOCK_METHOD(const sigverify_rom_key_t *, RsaKeysGet, ());
 };
 
 }  // namespace internal

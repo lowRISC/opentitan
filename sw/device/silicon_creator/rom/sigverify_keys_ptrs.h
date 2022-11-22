@@ -66,20 +66,6 @@ typedef struct sigverify_rom_key {
 } sigverify_rom_key_t;
 
 /**
- * Public keys for signature verification.
- *
- * Note: Declared here to be able to use in tests.
- */
-extern const sigverify_rom_key_t kSigverifyRsaKeys[];
-
-/**
- * Returns a pointer to the RSA public keys stored in the ROM.
- *
- * @return Pointer to the RSA public keys.
- */
-const sigverify_rom_key_t *sigverify_rsa_keys_get(void);
-
-/**
  * Number of RSA public keys.
  */
 extern const size_t kSigverifyRsaKeysCnt;
@@ -91,6 +77,11 @@ extern const size_t kSigverifyRsaKeysCnt;
  * Note: Step size is not applicable when `kSigverifyNumRsaKeys` is 1.
  */
 extern const size_t kSigverifyRsaKeysStep;
+
+/**
+ * Public keys for signature verification.
+ */
+extern const sigverify_rom_key_t kSigverifyRsaKeys[];
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -182,13 +182,12 @@ static rom_error_t key_is_valid(sigverify_key_type_t key_type,
 
 rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
                                   const sigverify_rsa_key_t **key) {
-  const sigverify_rom_key_t *keys = sigverify_rsa_keys_get();
   size_t cand_key_index = UINT32_MAX;
   // Random start index that is less than `kSigverifyRsaKeysCnt`.
   size_t i = ((uint64_t)rnd_uint32() * (uint64_t)kSigverifyRsaKeysCnt) >> 32;
   size_t iter_cnt = 0;
   for (; launder32(iter_cnt) < kSigverifyRsaKeysCnt; ++iter_cnt) {
-    const sigverify_rom_key_t *k = &keys[i];
+    const sigverify_rom_key_t *k = &kSigverifyRsaKeys[i];
     size_t k_id = sigverify_rsa_key_id_get(&k->key.n);
     if (launder32(k_id) == key_id) {
       HARDENED_CHECK_EQ(k_id, key_id);
@@ -208,10 +207,10 @@ rom_error_t sigverify_rsa_key_get(uint32_t key_id, lifecycle_state_t lc_state,
 
   if (launder32(cand_key_index) < kSigverifyRsaKeysCnt) {
     HARDENED_CHECK_LT(cand_key_index, kSigverifyRsaKeysCnt);
-    rom_error_t error =
-        key_is_valid(keys[cand_key_index].key_type, lc_state, cand_key_index);
+    rom_error_t error = key_is_valid(kSigverifyRsaKeys[cand_key_index].key_type,
+                                     lc_state, cand_key_index);
     HARDENED_CHECK_EQ(error, kErrorOk);
-    *key = &keys[cand_key_index].key;
+    *key = &kSigverifyRsaKeys[cand_key_index].key;
     return error;
   }
 
