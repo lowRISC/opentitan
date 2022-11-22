@@ -85,7 +85,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
         end
 
         if (cfg.escalate_injected) begin
-          exp_lc_o = EXP_LC_OUTPUTS[int'(EscalateSt)];
+          exp_lc_o = EXP_LC_OUTPUTS[int'(DecLcStEscalate)];
         end
 
         fork
