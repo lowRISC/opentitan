@@ -171,10 +171,12 @@ Signal                       | Direction        | Type                        | 
 #### Non-blocking Commands
 Regarding command processing, all commands process immediately except for the generate command.
 The command generate length count (`glen`) is kept in the `cmd_stage` block.
-When the state_db block issues an ack to the `cmd_stage` block, the `cmd_stage` block increments an internal counter.
+When the `state_db` block issues an ack to the `cmd_stage` block, the `cmd_stage` block increments an internal counter.
 This process repeats until the `glen` field value has been matched.
 Because each request is pipelined, requests from other `cmd_stage` blocks can be processed before the original generate command is completely done.
 This provides some interleaving of commands since a generate command can be programmed to take a very long time.
+
+When sending an unsupported or illegal command, `CS_MAIN_SM_ALERT` will be triggered, but there will be no status response or indication of which app the error occurred in.
 
 #### Working State Values
 The CSRNG working state data base (`state_db`) contains the current working state for a given DRBG instance.
