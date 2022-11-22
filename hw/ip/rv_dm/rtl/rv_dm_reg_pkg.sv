@@ -116,9 +116,9 @@ package rv_dm_reg_pkg;
 
   // Register offsets for mem interface
   parameter logic [MemAw-1:0] RV_DM_HALTED_OFFSET = 12'h 100;
-  parameter logic [MemAw-1:0] RV_DM_GOING_OFFSET = 12'h 104;
-  parameter logic [MemAw-1:0] RV_DM_RESUMING_OFFSET = 12'h 108;
-  parameter logic [MemAw-1:0] RV_DM_EXCEPTION_OFFSET = 12'h 10c;
+  parameter logic [MemAw-1:0] RV_DM_GOING_OFFSET = 12'h 108;
+  parameter logic [MemAw-1:0] RV_DM_RESUMING_OFFSET = 12'h 110;
+  parameter logic [MemAw-1:0] RV_DM_EXCEPTION_OFFSET = 12'h 118;
   parameter logic [MemAw-1:0] RV_DM_WHERETO_OFFSET = 12'h 300;
   parameter logic [MemAw-1:0] RV_DM_ABSTRACTCMD_0_OFFSET = 12'h 338;
   parameter logic [MemAw-1:0] RV_DM_ABSTRACTCMD_1_OFFSET = 12'h 33c;

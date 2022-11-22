@@ -152,6 +152,7 @@
           },
         ]
       },
+      { skipto: "0x108" }
       { name: "GOING",
         desc: "Write to this address to acknowledge that the core is executing.",
         swaccess: "wo",
@@ -162,6 +163,7 @@
           },
         ]
       },
+      { skipto: "0x110" }
      {  name:  "RESUMING"
         desc: "Write to this address to acknowledge that the core is resuming non-debug operation.",
         swaccess: "wo",
@@ -172,6 +174,7 @@
           },
         ]
       },
+      { skipto: "0x118" }
       { name: "EXCEPTION",
         desc: "An exception was triggered while the core was in debug mode.",
         swaccess: "wo",
@@ -260,7 +263,7 @@
       { window: {
           name: "ROM"
           // ROM size (given as `items` below) must be a power of two.
-          // The 512 x 4 = 2 KiB are enough to hold the 19 x 8 = 0x98 bytes
+          // The 512 x 4 = 2 KiB are enough to hold the 20 x 8 = 0x98 bytes
           // currently allocated in the debug ROM.
           items: "512"
           swaccess: "ro",
