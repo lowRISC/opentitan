@@ -16,6 +16,7 @@
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/aon_timer_testutils.h"
@@ -40,6 +41,7 @@ static volatile bool irq_is_pending = false;
 
 static dif_aon_timer_t aon_timer;
 static dif_rv_core_ibex_t rv_core_ibex;
+static dif_rv_plic_t rv_plic;
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_timer_t rv_timer;
 static dif_alert_handler_t alert_handler;
@@ -53,6 +55,8 @@ static volatile const bool kIoClkOff = false;
 static volatile const bool kUsbSlpOff = false;
 static volatile const bool kUsbActOff = false;
 static volatile const bool kDeepSleep = false;
+
+static const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -87,6 +91,13 @@ static void wdog_irq_handler(void) {
 
   CHECK_DIF_OK(
       dif_aon_timer_irq_acknowledge(&aon_timer, kDifAonTimerIrqWdogTimerBark));
+
+  // Signal a software interrupt
+  dif_rv_plic_t rv_plic_isr;
+  mmio_region_t plic_base_addr =
+      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &rv_plic_isr));
+  CHECK_DIF_OK(dif_rv_plic_software_irq_force(&rv_plic_isr, kPlicTarget));
 }
 
 // Functions
@@ -352,6 +363,10 @@ bool test_main(void) {
     // activate in Wakeup mode (no need for IRQ)
     aon_timer_testutils_wakeup_config(&aon_timer, kTimeTillBark);
   } else {
+    // Unmask the software interrupt so it can be used to bring the CPU out of
+    // sleep without having an NMI race WFI.
+    irq_software_ctrl(/*en=*/true);
+
     // activate in Watchdog mode & IRQ
     aon_timer_testutils_watchdog_config(&aon_timer, count_cycles, UINT32_MAX,
                                         false);
@@ -382,7 +397,17 @@ bool test_main(void) {
   test_status_set(0xff20);
   wait_for_interrupt();
 
-  // Check NMI
+  // Check for software interrupt and clear. Re-initialize the struct in case
+  // the software interrupt did not happen.
+  mmio_region_t plic_base_addr =
+      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
+  CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &rv_plic));
+  bool software_irq_pending;
+  CHECK_DIF_OK(dif_rv_plic_software_irq_is_pending(&rv_plic, kPlicTarget,
+                                                   &software_irq_pending));
+  CHECK(software_irq_pending,
+        "Software IRQ unexpectedly not pending after WFI");
+  CHECK_DIF_OK(dif_rv_plic_software_irq_acknowledge(&rv_plic, kPlicTarget));
 
   // We expect the watchdog bark interrupt to be pending on the peripheral side.
   CHECK(irq_is_pending, "Expected watchdog bark interrupt to be pending");
