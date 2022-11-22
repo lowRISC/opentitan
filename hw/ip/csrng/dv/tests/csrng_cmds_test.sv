@@ -18,8 +18,14 @@ class csrng_cmds_test extends csrng_base_test;
     cfg.force_state_pct   = 100;
 
     for (int i = 0; i < NUM_HW_APPS; i++) begin
+      // CSRNG has a single AES primitive shared among the three application interfaces. To hit the
+      // different genbits_depth_cross coverpoints, the maximum delay for asserting genbits_ready
+      // and reading the previously requested bits from the genbits FIFO must be chosen
+      // sufficiently large. Four times the latency of the AES primitive (16 cycles) seems
+      // sufficient. The smallest generate command takes 4 AES encryptions (3x for CTR_DRBG update,
+      // 1x for actual generate).
       cfg.m_edn_agent_cfg[i].min_genbits_rdy_dly = 0;
-      cfg.m_edn_agent_cfg[i].max_genbits_rdy_dly = 20;
+      cfg.m_edn_agent_cfg[i].max_genbits_rdy_dly = 70;
     end
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
