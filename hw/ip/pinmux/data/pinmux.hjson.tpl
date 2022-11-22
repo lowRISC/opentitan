@@ -913,8 +913,8 @@
                       // wakeup gets enabled and signaled due to a pin being low for a programmed
                       // time, which results in wkup_cause register to mismatch, OR, result in
                       // assertion error due to a pin programmed for wakeup detection is undriven
-                      // (Xs on d_data). Hence, we just turn off the wake up detection logic.
-                      tags: ["excl:CsrNonInitTests:CsrExclWrite"]
+                      // Also exclude write for csr_hw_reset, otherwise, X may be detected and propagating.
+                      tags: ["excl:CsrAllTests:CsrExclWrite"]
                     }
                   ]
                 }
