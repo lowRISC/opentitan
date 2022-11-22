@@ -43,7 +43,7 @@ class i2c_host_fifo_reset_rx_vseq extends i2c_rx_tx_vseq;
         while (!cfg.under_reset && check_fifo_full) process_fifo_full_status();
       end
       begin
-        host_send_trans(.read(read));
+        host_send_trans(.max_trans(1), .trans_type(ReadWrite), .read(read));
         check_fifo_full = 1'b0; // gracefully stop process_fifo_full_status
       end
     join

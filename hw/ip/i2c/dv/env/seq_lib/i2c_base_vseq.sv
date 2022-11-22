@@ -205,10 +205,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     }
   }
 
-  constraint rw_bit_c {
-    (cfg.trans_type == ReadOnly) -> rw_bit == 1;
-    (cfg.trans_type == WriteOnly) -> rw_bit == 0;
-  }
   `uvm_object_new
 
   virtual task pre_start();
