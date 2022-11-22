@@ -72,7 +72,7 @@ module csrng_core import csrng_pkg::*; #(
   localparam int MaxClen = 12;
   localparam int ADataDepthWidth = SeedLen/AppCmdWidth;
   localparam unsigned ADataDepthClog = $clog2(ADataDepthWidth)+1;
-  localparam int CsEnableCopies = 51;
+  localparam int CsEnableCopies = 53;
   localparam int LcHwDebugCopies = 1;
   localparam int Flag0Copies = 3;
 
@@ -1244,11 +1244,13 @@ module csrng_core import csrng_pkg::*; #(
 
   // Capture entropy from entropy_src
   assign entropy_src_seed_d =
+         ~cs_enable_fo[51] ? '0 :
          cmd_req_dly_q ? '0 :                  // reset after every cmd
          (cmd_entropy_avail && flag0_fo[1]) ? '0 : // special case where zero is used
          cmd_entropy_avail ? (entropy_src_hw_if_i.es_bits ^ seed_diversification) :
          entropy_src_seed_q;
   assign entropy_src_fips_d =
+         ~cs_enable_fo[52] ? '0 :
          cmd_req_dly_q ? '0 :                  // reset after every cmd
          (cmd_entropy_avail && flag0_fo[2]) ? '0 : // special case where zero is used
          cmd_entropy_avail ? entropy_src_hw_if_i.es_fips :
