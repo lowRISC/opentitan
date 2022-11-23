@@ -166,6 +166,16 @@
        name: smoke
        tests: ["i2c_host_smoke"]
     }
+// Comment out fail test from sanity
+// "i2c_host_rx_oversample",  "i2c_host_stretch_timeout",
+    {
+      name : host_sanity
+      tests: ["i2c_host_smoke", "i2c_host_override", "i2c_host_perf",
+              "i2c_host_fifo_watermark", "i2c_host_fifo_overflow", "i2c_host_fifo_reset_fmt",
+              "i2c_host_fifo_fmt_empty", "i2c_host_fifo_reset_rx", "i2c_host_timeout",
+              "i2c_host_fifo_full",
+              "i2c_host_error_intr"]
+    }
     {
       name: target_sanity
       tests: ["i2c_target_smoke", "i2c_target_stress_wr",

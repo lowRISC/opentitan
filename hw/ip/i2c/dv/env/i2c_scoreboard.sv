@@ -391,7 +391,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
         end
       end else begin
         `uvm_info(`gfn, $sformatf("\ndirection %s item match!\n--> EXP:\n%0s\--> DUT:\n%0s",
-            (dir == BusOpWrite) ? "WRITE" : "READ", exp_trn.sprint(), dut_trn.sprint()), UVM_DEBUG)
+            (dir == BusOpWrite) ? "WRITE" : "READ", exp_trn.sprint(), dut_trn.sprint()), UVM_MEDIUM)
       end
     end
   endtask : compare_trans

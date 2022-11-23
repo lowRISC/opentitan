@@ -18,7 +18,9 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
         while (!cfg.under_reset && do_interrupt) process_interrupts();
       end
       begin
-        host_send_trans(.max_trans(num_trans));
+        host_send_trans(.max_trans(1),
+                        .trans_type(ReadOnly),
+                        .read(1));
         do_interrupt = 1'b0; // gracefully stop process_interrupts
       end
     join
@@ -113,7 +115,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     end
     `uvm_info(`gfn, $sformatf("\nprogram, %s address %x",
         fmt_item.fbyte[0] ? "read" : "write", fmt_item.fbyte[7:1]), UVM_DEBUG)
-    program_format_flag(fmt_item, "  program_address_to_target", 0);
+    program_format_flag(fmt_item, "  program_address_to_target", 1);
   endtask : program_address_to_target
 
   virtual task program_control_read_to_target(bit last_tran);
@@ -184,8 +186,9 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
   endtask : read_data_from_target
 
   virtual task program_write_data_to_target(bit last_tran, bit stopbyte);
+    bit [7:0] wr_data[$];
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_wr_bytes)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wr_data)
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wr_data, wr_data.size == num_wr_bytes;)
     if (num_wr_bytes == 256) begin
       `uvm_info(`gfn, "\n  write transaction length is 256 byte", UVM_DEBUG)
     end
@@ -213,7 +216,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
             "with STOP, next transaction should begin with START" :
             "without STOP, next transaction should begin with RSTART"), UVM_DEBUG)
       end
-      program_format_flag(fmt_item, "program_write_data_to_target", 0);
+      program_format_flag(fmt_item, "program_write_data_to_target", 1);
     end
   endtask : program_write_data_to_target
 
