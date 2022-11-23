@@ -1,3 +1,4 @@
+
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
@@ -38,13 +39,31 @@ static const char *hs_states[] = {
     "HS_SENDACK 8",    "HS_WAIT_PKT 9",  "HS_ACKIFDATA 10",    "HS_SENDHI 11",
     "HS_EMPTYDATA 12", "HS_WAITACK2 13", "HS_NEXTFRAME 14"};
 
+//
+static void add_crc16(uint8_t *dp, int start, int pos);
+// Request IN transfer. Get back NAK or DATA0/DATA1.
+static void pollRx(struct usbdpi_ctx *ctx, int sendHi, int nakData);
+// Get Baud
+static void readBaud(struct usbdpi_ctx *ctx);
+// Get Descriptor
+static void readDescriptor(struct usbdpi_ctx *ctx);
+// Set Baud
+static void setBaud(struct usbdpi_ctx *ctx);
+// Set device address (with null data stage)
+static void setDeviceAddress(struct usbdpi_ctx *ctx);
+// Test the ischronous transfers (without ACKs)
+static void testIso(struct usbdpi_ctx *ctx);
+// Construct a token packet for the given device/endpoint
+static void token_packet(uint8_t *dp, uint8_t pid, uint8_t device, uint8_t endpoint);
+
+
 void *usbdpi_create(const char *name, int loglevel) {
   struct usbdpi_ctx *ctx =
       (struct usbdpi_ctx *)calloc(1, sizeof(struct usbdpi_ctx));
   assert(ctx);
 
-  ctx->state = kUsbIdle;
   ctx->tick = 0;
+  ctx->tick_bits = 0;
   ctx->frame = 0;
   ctx->framepend = 0;
   ctx->lastframe = 0;
@@ -197,6 +216,15 @@ void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p) {
   }
 }
 
+// Construct a token packet
+void token_packet(uint8_t *dp, uint8_t pid, uint8_t device, uint8_t endpoint) {
+  assert(device   < 0x80U);
+  assert(endpoint < 0x10U);
+  dp[0] = pid;
+  dp[1] = device | (endpoint << 7);
+  dp[2] = (endpoint >> 1) | (CRC5((endpoint << 7) | device, 11) << 3);
+}
+
 // Note: start points to the PID which is not in the CRC
 void add_crc16(uint8_t *dp, int start, int pos) {
   uint32_t crc = CRC16(dp + start + 1, pos - start - 1);
@@ -205,7 +233,7 @@ void add_crc16(uint8_t *dp, int start, int pos) {
 }
 
 // Set device address (with null data stage)
-void setDeviceAddress(struct usbdpi_ctx *ctx) {
+void setDeviceAddress(struct usbdpi_ctx *ctx, uint8_t dev_addr) {
   switch (ctx->hostSt) {
     case HS_STARTFRAME:
       ctx->bus_state = kUsbControlSetup;
@@ -214,17 +242,19 @@ void setDeviceAddress(struct usbdpi_ctx *ctx) {
       ctx->datastart = 3;
       ctx->byte = 0;
       ctx->bit = 1;
-      // Setup PID and data to set device 2
-      ctx->data[0] = USB_PID_SETUP;
-      ctx->data[1] = 0;
-      ctx->data[2] = 0 | CRC5(0, 11) << 3;
+      // SETUP PID and DATA0 to set the device address
+      token_packet(ctx->data, USB_PID_SETUP, 0, 0);
+//      ctx->data[0] = USB_PID_SETUP;
+//      ctx->data[1] = 0;
+//      ctx->data[2] = 0 | (CRC5(0, 11) << 3);
+
       ctx->data[3] = USB_PID_DATA0;
       if (INSERT_ERR_PID) {
         ctx->data[3] = 0xc4;
       }
       ctx->data[4] = 0;  // h2d, std, device
       ctx->data[5] = 5;  // set address
-      ctx->data[6] = 2;  // device address
+      ctx->data[6] = dev_addr;  // device address
       ctx->data[7] = 0;
       // Trigger bitstuffing, technically the device
       // behaviour is unspecified with wIndex != 0
@@ -256,7 +286,7 @@ void setDeviceAddress(struct usbdpi_ctx *ctx) {
         ctx->bit = 1;
         ctx->data[0] = USB_PID_IN;
         ctx->data[1] = 0;
-        ctx->data[2] = 0 | CRC5(0, 11) << 3;
+        ctx->data[2] = 0 | (CRC5(0, 11) << 3);
         ctx->hostSt = HS_DS_RXDATA;
       }
       break;
@@ -293,9 +323,10 @@ void readDescriptor(struct usbdpi_ctx *ctx) {
       ctx->datastart = 3;
       ctx->byte = 0;
       ctx->bit = 1;
-      ctx->data[0] = USB_PID_SETUP;
-      ctx->data[1] = 2;
-      ctx->data[2] = 0 | CRC5(2, 11) << 3;
+      token_packet(ctx->data, USB_PID_SETUP, ctx->dev_address, 0);
+//      ctx->data[0] = USB_PID_SETUP;
+//      ctx->data[1] = 2;
+//      ctx->data[2] = 0 | (CRC5(2, 11) << 3);
       ctx->data[3] = USB_PID_DATA0;
       ctx->data[4] = 0x80;  // d2h, std, device
       ctx->data[5] = 6;     // get descr
@@ -391,6 +422,7 @@ void readBaud(struct usbdpi_ctx *ctx) {
       ctx->datastart = 3;
       ctx->byte = 0;
       ctx->bit = 1;
+//      token_packet(ctx->data, ctx->dev_address, 2);
       ctx->data[0] = USB_PID_SETUP;
       ctx->data[1] = 0x82;
       ctx->data[2] = 0 | CRC5(0x82, 11) << 3;
@@ -610,7 +642,7 @@ void pollRX(struct usbdpi_ctx *ctx, int sendHi, int nakData) {
       if (ctx->tick_bits >= ctx->wait) {
         printf("[usbdpi] Timed out waiting for IN response\n");
         ctx->hostSt = HS_SENDHI;
-      } else if (ctx->bus_state = kUsbBulkInData) {
+      } else if (ctx->bus_state == kUsbBulkInData) {
         if (ctx->lastrxpid != USB_PID_NAK) {
           // device sent data so ACK it
           // TODO check DATA0 vs DATA1
@@ -648,6 +680,12 @@ void pollRX(struct usbdpi_ctx *ctx, int sendHi, int nakData) {
     default:
       break;
   }
+}
+
+// Test that other deveice traffic is ignored as intended
+void testDeviceIgnore() {
+{
+
 }
 
 // Test unimplemented endpoints
@@ -765,11 +803,14 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
 #endif
   }
   ctx->tick++;
+
+  // The 48MHz clock runs at 4 times the bus clock for a full speed (12Mbps) device
   ctx->tick_bits = ctx->tick >> 2;
   if (ctx->tick & 3) {
     return ctx->driving;
   }
 
+  // Monitor, analyse and record USB bus activity
   monitor_usb(ctx->mon, ctx->mon_file, ctx->loglevel, ctx->tick,
               (ctx->state != ST_IDLE) && (ctx->state != ST_GET), ctx->driving,
               d2p, &(ctx->lastrxpid));
@@ -788,6 +829,7 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     return ctx->driving;
   }
 
+  // Time to commence a new bus frame?
   if ((ctx->tick_bits - ctx->lastframe) >= FRAME_INTERVAL) {
     if (ctx->state != ST_IDLE) {
       if (ctx->framepend == 0) {
@@ -830,7 +872,7 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     case ST_IDLE:
       switch (ctx->frame) {
         case 1:
-          setDeviceAddress(ctx);
+          setDeviceAddress(ctx, USBDEV_ADDRESS);
           break;
         case 2:
           readDescriptor(ctx);
@@ -959,6 +1001,17 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     assert(written == n);
   }
   return ctx->driving;
+}
+
+// Export some internal diagnostic state for visibility in waveforms
+void usbdpi_diags(void *ctx_void, svBitVecVal *diags) {
+  struct usbdpi_ctx *ctx = (struct usbdpi_ctx *)ctx_void; 
+
+  diags[1] = (ctx->tick_bits >> 12);
+  diags[0] = (ctx->tick_bits << 20)
+           | ((ctx->frame & 0x7ffU) << 9)
+           | ((ctx->hostSt << 0x1fU) << 4)
+           | (ctx->state & 0xfU);
 }
 
 void usbdpi_close(void *ctx_void) {

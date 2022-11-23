@@ -13,6 +13,8 @@ class usb20_agent extends dv_base_agent #(
 );
   `uvm_component_utils(usb20_agent)
 
+  usb20_logger m_logger;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -20,6 +22,18 @@ class usb20_agent extends dv_base_agent #(
     // get usb20_if handle
     if (!uvm_config_db#(virtual usb20_if)::get(this, "", "vif", cfg.vif)) begin
       `uvm_fatal(`gfn, "failed to get usb20_if handle from uvm_config_db")
+    end
+  endfunction
+
+  function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    // Connect the logger TLM port to the monitor.
+    if (cfg.en_logger) begin
+      if (cfg.use_rx_for_logger) begin
+        monitor.rx_analysis_port.connect(m_logger.log_item_fifo.analysis_export);
+      end else begin
+        monitor.tx_analysis_port.connect(m_logger.log_item_fifo.analysis_export);
+      end
     end
   endfunction
 

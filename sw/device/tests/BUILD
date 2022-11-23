@@ -1782,7 +1782,72 @@ opentitan_functest(
 opentitan_functest(
     name = "usbdev_test",
     srcs = ["usbdev_test.c"],
-    targets = ["verilator"],
+    targets = [
+        "cw310_rom",
+        "verilator",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing:usb_testutils_simpleserial",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_stream_test_signed",
+    srcs = ["usbdev_stream_test.c"],
+    cw310 = cw310_params(
+        exit_failure = ROM_BOOT_FAILURE_MSG,
+    ),
+    dv = dv_params(
+        rom = "//sw/device/silicon_creator/rom",
+    ),
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest_standard",
+    signed = True,
+    targets = [
+        "cw310_rom",
+        "verilator",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "eternal",
+        exit_failure = ROM_BOOT_FAILURE_MSG,
+        rom = "//sw/device/silicon_creator/rom",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:usbdev",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing:usb_testutils",
+        "//sw/device/lib/testing:usb_testutils_simpleserial",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "usbdev_stream_test",
+    srcs = ["usbdev_stream_test.c"],
+    targets = [
+        "cw310_rom",
+        "verilator",
+        "dv",
+    ],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",

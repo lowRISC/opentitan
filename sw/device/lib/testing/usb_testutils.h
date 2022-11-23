@@ -76,6 +76,18 @@ void usb_testutils_endpoint_setup(usb_testutils_ctx_t *ctx, int ep,
                                   void (*flush)(void *), void (*reset)(void *));
 
 /**
+ * Returns an indication of whether an endpoint is currently halted because
+ * of the occurrence of an error.
+ *
+ * @param ctx usbdev context pointer
+ * @param ep endpoint number
+ * @return true iff the endpoint is halted as a result of an error condition
+ */
+
+inline bool usb_testutils_endpoint_halted(usb_testutils_ctx_t *ctx,
+                                          dif_usbdev_endpoint_id_t endpoint);
+
+/**
  * Initialize the usbdev interface
  *
  * Does not connect the device, since the default endpoint is not yet enabled.

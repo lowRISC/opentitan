@@ -222,6 +222,8 @@ void _ottf_main(void) {
   usb_testutils_simpleserial_init(&simple_serial1, &usbdev, 2,
                                   usb_receipt_callback_1);
 
+  // When the expected number of characters have been received via the Serial-over-USB
+  //   OUT channel from the host, we send a sign-on message as IN data in response...
   bool say_hello = true;
   bool pass_signaled = false;
   while (true) {
@@ -241,18 +243,22 @@ void _ottf_main(void) {
       CHECK_DIF_OK(dif_uart_bytes_receive(&uart, 1, &rcv_char, NULL));
       CHECK_DIF_OK(dif_uart_byte_send_polled(&uart, rcv_char));
 
-      CHECK_DIF_OK(dif_gpio_write_all(&gpio, rcv_char << 8));
+      // Echo least significant nybble of UART input on 4 LEDs via GPIO
+      CHECK_DIF_OK(dif_gpio_write_all(&gpio, rcv_char));
 
       if (rcv_char == '/') {
+        // Report USB Interrupt state
         uint32_t usb_irq_state =
             REG32(USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET);
         uint32_t usb_stat = REG32(USBDEV_BASE_ADDR + USBDEV_USBSTAT_REG_OFFSET);
-        LOG_INFO("I%04x-%08x", usb_irq_state, usb_stat);
+        LOG_INFO("I%05x-%08x", usb_irq_state, usb_stat);
       } else {
+        // Echo UART input to both serial endpoints as OUT traffic to the host
         usb_testutils_simpleserial_send_byte(&simple_serial0, rcv_char);
         usb_testutils_simpleserial_send_byte(&simple_serial1, rcv_char + 1);
       }
     }
+    // Sign-on message....
     if (say_hello && usb_chars_recved_total > 2) {
       usb_send_str("Hello USB World!!!!", &simple_serial0);
       say_hello = false;
@@ -264,5 +270,5 @@ void _ottf_main(void) {
     }
   }
 
-  LOG_INFO("USB recieved %d characters.", usb_chars_recved_total);
+  LOG_INFO("USB received %d characters.", usb_chars_recved_total);
 }

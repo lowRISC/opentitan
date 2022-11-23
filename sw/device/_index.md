@@ -9,7 +9,7 @@ Different images are used for different boot stages.
 
 The Reference Firmware Images are, in boot order:
 
-1.  The [ROM]({{< relref "sw/device/silicon_creator/rom/docs" >}}) (in `sw/device/rom`), executed at chip reset;
+1.  The [ROM]({{< relref "sw/device/silicon_creator/rom/docs" >}}) (in `sw/device/silicon_creator/rom`), executed at chip reset;
 2.  The ROM_EXT (in `sw/device/silicon_creator/rom_ext`), the second stage Silicon Creator code, executed from flash; and
 
 ### Testing-only Images

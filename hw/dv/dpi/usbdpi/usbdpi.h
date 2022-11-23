@@ -9,11 +9,16 @@
 #define TOOL_INCISIVE 0
 
 #include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <svdpi.h>
 
-// How many bits in our frame (1ms on real hardware)
-#define FRAME_INTERVAL 256 * 8
+// How many bits in our frame
+//
+//   (frames on a Full Speed USB link are 1ms, with 12Mbps signalling, but the
+//    USB device supports only data transfers of up to 64 bytes, so a 1ms
+//    frame interval makes the simulation needlessly long)
+#define FRAME_INTERVAL 256 * 8  // 0.17ms, more than enough for our transfers
 
 // How many bits after start to assert VBUS
 #define SENSE_AT 20 * 8
@@ -92,8 +97,15 @@
 #define HS_WAITACK2 13
 #define HS_NEXTFRAME 14
 
-#define SEND_MAX 32
-#include <stdint.h>
+// USBDEV IP block supports up to 64-bytes/packet
+#define USBDEV_MAX_PACKET_SIZE 0x40U
+
+// Maximal length of a byte sequence to be transmitted/receive without interruption or pause
+//   (Start Of Frame, OUT|IN packet and End Of Frame all back-to-back?)
+#define USBDPI_MAX_DATA (USBDEV_MAX_PACKET_SIZE + )
+
+// Device address to be used for the USBDEV IP block
+#define USBDEV_ADDRESS 2
 
 #ifdef __cplusplus
 extern "C" {
@@ -148,14 +160,19 @@ struct usbdpi_ctx {
   int bytes;
   int datastart;
   int hostSt;
-  uint8_t data[SEND_MAX];
+
   int baudrate_set_successfully;
+  uint8_t dev_address;
+
+  uint8_t data[USBDPI_MAX_DATA];
 };
 
 void *usbdpi_create(const char *name, int loglevel);
 void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p);
 char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p);
+void usbdpi_diags(void *ctx_void, svBitVecVal *diags);
 void usbdpi_close(void *ctx_void);
+
 uint32_t CRC5(uint32_t dwInput, int iBitcnt);
 uint32_t CRC16(uint8_t *data, int bytes);
 

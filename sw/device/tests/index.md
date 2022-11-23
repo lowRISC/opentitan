@@ -37,7 +37,7 @@ While most of these tests are top-level agnostic, some are not.
 Ideally all smoke, IP integration, and system-level tests should be target agnostic.
 However, some tests require emulation of host capabilities, such as an external SPI or I2C host, an external host to encrypt/decrypt data, or an external host that toggles GPIO pins.
 Eventually, host-side test initiation tools and the [on-device test framework]({{< relref "sw/device/lib/testing/test_framework/index.md" >}}) will make host emulation opaque to each chip-level test.
-However, util then, host emulation depends on the target (e.g., DV vs. Verilator simulation).
+However, until then, host emulation depends on the target (e.g., DV vs. Verilator simulation).
 Therefore, chip-level tests that require external stimulation from the host, will be subfoldered by target, under the appropriate toplevel folder above.
 One example of such a test is the [`sw/device/tests/sim_dv/gpio_test.c`](https://github.com/lowRISC/opentitan/blob/master/sw/device/tests/sim_dv/gpio_test.c), which is subfoldered under `../sim_dv/` to indicate it is a target-specific test.
 

@@ -48,34 +48,34 @@ module tb;
 
   // dut
   usbdev dut (
-    .clk_i                (usb_clk    ),
-    .rst_ni               (usb_rst_n  ),
-    .clk_aon_i            (clk        ),
-    .rst_aon_ni           (rst_n      ),
+    .clk_i                  (usb_clk  ),
+    .rst_ni                 (usb_rst_n),
+    .clk_aon_i              (clk      ),
+    .rst_aon_ni             (rst_n    ),
 
-    .tl_i                 (tl_if.h2d  ),
-    .tl_o                 (tl_if.d2h  ),
+    .tl_i                   (tl_if.h2d),
+    .tl_o                   (tl_if.d2h),
 
-    .alert_rx_i           (alert_rx   ),
-    .alert_tx_o           (alert_tx   ),
+    .alert_rx_i             (alert_rx ),
+    .alert_tx_o             (alert_tx ),
 
     // USB Interface
-    // TOOD: need to hook up an interface
-    .cio_usb_dp_i           (1'b1),
-    .cio_usb_dn_i           (1'b0),
-    .usb_rx_d_i             (1'b0),
-    .cio_usb_dp_o           (),
+    .cio_usb_dp_i           (usb20_if.usb_htod_dp),
+    .cio_usb_dn_i           (usb20_if.usb_htod_dn),
+    .usb_rx_d_i             (usb20_if.usb_htod_d),
+    .cio_usb_dp_o           (usb20_if.usb_dtoh_dp),
     .cio_usb_dp_en_o        (),
-    .cio_usb_dn_o           (),
+    .cio_usb_dn_o           (usb20_if.usb_dtoh_dn),
     .cio_usb_dn_en_o        (),
-    .usb_tx_d_o             (),
-    .usb_tx_se0_o           (),
+    .usb_tx_se0_o           (usb20_if.usb_dtoh_se0),
+    .usb_tx_d_o             (usb20_if.usb_dtoh_d),
 
-    .cio_sense_i            (1'b0),
-    .usb_dp_pullup_o        (),
-    .usb_dn_pullup_o        (),
-    .usb_rx_enable_o        (),
-    .usb_tx_use_d_se0_o     (),
+    // Non-data I/O
+    .cio_sense_i            (usb20_if.sense),
+    .usb_dp_pullup_o        (usb20_if.dp_pullup),
+    .usb_dn_pullup_o        (usb20_if.dn_pullup),
+    .usb_rx_enable_o        (usb20_if.rx_enable),
+    .usb_tx_use_d_se0_o     (usb20_if.tx_use_d_se0),
 
     // Direct pinmux aon detect connections
     .usb_aon_suspend_req_o  (),
@@ -96,7 +96,7 @@ module tb;
     // Interrupts
     .intr_pkt_received_o    (intr_pkt_received    ),
     .intr_pkt_sent_o        (intr_pkt_sent        ),
-    .intr_powered_o         (intr_powered       ),
+    .intr_powered_o         (intr_powered         ),
     .intr_disconnected_o    (intr_disconnected    ),
     .intr_host_lost_o       (intr_host_lost       ),
     .intr_link_reset_o      (intr_link_reset      ),

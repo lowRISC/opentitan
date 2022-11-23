@@ -50,8 +50,11 @@ Our continuous integration setup runs on Ubuntu 20.04 LTS, which gives us the mo
 We do our best to support other distributions, but cannot guarantee they can be used "out of the box" and might require updates of packages.
 Please file a [GitHub issue](https://github.com/lowRISC/opentitan/issues) if you need help or would like to propose a change to increase compatibility with other distributions.
 
-You will need at least 7GB of available RAM in order to build the Verilator simulation.
+You will need at least **7GiB of available RAM** in order to build the Verilator simulation.
 If you have an FPGA and download the bitstream from our cloud bucket rather than building it locally (the default setup) then this constraint does not apply.
+
+If you are specifying a new machine to run top-level simulations of the whole of OpenTitan using Verilator, it is recommended that you
+have a minimum of **32GiB of physical RAM** and at least **512GiB of SSD/HDD storage** for the build tools, repository and Ubuntu installation.
 
 ## Step 2: Install Package Manager Dependencies
 
@@ -142,7 +145,7 @@ You can alternatively download the tarball starting with `lowrisc-toolchain-rv32
 Assuming one of the above worked and you have installed to a non-standard location, you will need to set the `TOOLCHAIN_PATH` environment variable to match whatever path you used.
 For example, if I wanted to install to `~/ot_tools/riscv`, then I would use:
 ```console
-./util/get-toolchain.py --install-dir=~/ot_tools/riscv
+./util/get-toolchain.py --install-dir ~/ot_tools/riscv
 export TOOLCHAIN_PATH=~/ot_tools/riscv
 ```
 Add the `export` command to your `~/.bashrc` or equivalent to ensure that the `TOOLCHAIN_PATH` variable is set for future sessions.

@@ -115,7 +115,7 @@ This is part of the *Secure Boot Process* that will be detailed in a security se
 
 Earl Grey contains 1024kB of embedded-flash (e-flash) memory for code storage.
 This is intended to house the boot loader mentioned above, as well as the operating system and application that layers on top.
-At this time there is no operating system provided; applications are simple proof of concept code to show that the chip can do with a bare-metal framework.
+At this time there is no operating system provided; applications are simple proof of concept code to show what the chip can do with a bare-metal framework.
 
 Embedded-flash is the intended technology for a silicon design implementing the full OpenTitan device.
 It has interesting and challenging parameters that are unique to the technology that the silicon is implemented in.
@@ -124,7 +124,7 @@ This includes the read-speeds, the page-sized erase and program interfaces, the 
 Since by definition these details can't be finalized until a silicon technology node is chosen, these can only be emulated in the FPGA environment.
 We will choose parameters that are considered roughly equivalent of the state of the art embedded-flash macros on the market today.
 
-Details on how e-flash memory is used by software will be detailed in future Secure Boot Process and Software sections over time.
+Details on how e-flash memory is used by software will be included in future Secure Boot Process and Software sections over time.
 
 The intent is for the contents of the embedded flash code to survive FPGA reset as it would as a NVM in silicon.
 Loading of the FPGA with initial content, or updating with new content, is described in other software specifications.
