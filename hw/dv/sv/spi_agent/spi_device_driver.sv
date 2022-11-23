@@ -43,6 +43,9 @@ class spi_device_driver extends spi_driver;
       seq_item_port.get_next_item(req);
       `DV_CHECK_EQ(cfg.vif.disconnected, 0)
 
+      if (cfg.csb_sel_in_cfg) active_csb = cfg.csid;
+      else                    active_csb = req.csb_sel;
+
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
       // The response should read the payload actually consumed, not start with

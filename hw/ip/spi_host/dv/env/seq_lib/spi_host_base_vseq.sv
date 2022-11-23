@@ -314,8 +314,6 @@ class spi_host_base_vseq extends cip_base_vseq #(
     cfg.m_spi_agent_cfg.csid              = spi_host_ctrl_reg.csid;
     cfg.m_spi_agent_cfg.spi_mode          = spi_host_command_reg.mode;
     cfg.m_spi_agent_cfg.decode_commands   = 1'b1;
-    cfg.m_spi_agent_cfg.vif.sck_polarity  = spi_config_regs.cpol[0];
-    cfg.m_spi_agent_cfg.vif.sck_phase     = spi_config_regs.cpha[0];
     print_spi_host_regs();
   endfunction : update_spi_agent_regs
 

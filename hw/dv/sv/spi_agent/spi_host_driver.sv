@@ -57,8 +57,6 @@ class spi_host_driver extends spi_driver;
   endtask : gen_sck
 
   task switch_polarity_and_phase();
-    cfg.vif.sck_polarity = cfg.sck_polarity[active_csb];
-    cfg.vif.sck_phase = cfg.sck_phase[active_csb];
     if (cfg.vif.sck != cfg.sck_polarity[active_csb]) begin
       cfg.vif.sck <= cfg.sck_polarity[active_csb];
       #TIME_SCK_STABLE_TO_CSB_NS;
@@ -261,7 +259,6 @@ class spi_host_driver extends spi_driver;
       #($urandom_range(1, 100) * 1ns);
       cfg.vif.sck <= ~cfg.vif.sck;
     end
-    cfg.vif.sck <= cfg.sck_polarity[0];
   endtask
 
   task drive_csb_no_sck_item();
