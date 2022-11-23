@@ -27,17 +27,37 @@ def extract_messages(str_buffer, patterns):
     return results
 
 
-def extract_messages_count(str_buffer, patterns):
+def extract_messages_count(str_buffer, patterns, exp_unproven_properties):
     '''Extract messages matching patterns from full_file as a dictionary.
 
     The patterns argument is a list of pairs, (key, pattern). Each pattern is a regex
     and the total count of all matches in str_buffer are stored in a dictionary under
     the paired key.
+    If input argument `exp_unproven_properties` is not None, the total count will not
+    include the expected properties. However, if the expected are not found in its
+    category, will add the properties to the category.
     '''
     results = OrderedDict()
     for key, pattern in patterns:
         results.setdefault(key, 0)
-        results[key] += len(re.findall(pattern, str_buffer, flags=re.MULTILINE))
+
+        if exp_unproven_properties and key in exp_unproven_properties:
+            matched_pattern = re.findall(pattern, str_buffer, flags=re.MULTILINE)
+            for unproven_property in exp_unproven_properties[key]:
+                unproven_property_found = 0
+                for item in matched_pattern:
+                    # If the expected unproven property is found, remove the item from the
+                    # list of matched_pattern.
+                    if unproven_property in item:
+                        matched_pattern.remove(item)
+                        unproven_property_found = 1
+                # If expected unproven property is not found, add the property to the
+                # list of matched pattern.
+                if not unproven_property_found:
+                    matched_pattern.append("Fail to find this property: " + unproven_property)
+            results[key] += len(matched_pattern)
+        else:
+            results[key] += len(re.findall(pattern, str_buffer, flags=re.MULTILINE))
 
     return results
 
@@ -62,7 +82,21 @@ def parse_message(str_buffer):
     return extract_messages(str_buffer, err_warn_patterns)
 
 
-def get_summary(str_buffer):
+def get_expected_failures(exp_failure_path):
+    '''Get expected fail properties from a hjson file otherwise return None.'''
+    if exp_failure_path is None:
+        return {}
+    else:
+        try:
+            with open(exp_failure_path, 'r') as f:
+                exp_failures = hjson.load(f, use_decimal=True, object_pairs_hook=OrderedDict)
+                return exp_failures
+        except ValueError:
+            log.error("{} not found".format(exp_failure_path))
+            return {}
+
+
+def get_summary(str_buffer, exp_failures):
     '''Count errors, warnings, and property status from the log file'''
     message_patterns = [("errors", r"^ERROR: .*"),
                         ("errors", r"^\[ERROR.*"),
@@ -73,7 +107,7 @@ def get_summary(str_buffer):
                         ("covered", r"^\[\d+\].*covered.*"),
                         ("undetermined", r"^\[\d+\].*undetermined.*"),
                         ("unreachable", r"^\[\d+\].*unreachable.*")]
-    summary = extract_messages_count(str_buffer, message_patterns)
+    summary = extract_messages_count(str_buffer, message_patterns, exp_failures)
 
     # Undetermined properties are categorized as pass because we could not find
     # any counter-cases within the limited time of running.
@@ -84,16 +118,17 @@ def get_summary(str_buffer):
     return summary
 
 
-def get_results(logpath):
+def get_results(logpath, exp_failure_path):
     '''Parse log file and extract info to a dictionary'''
     try:
         with Path(logpath).open() as f:
             results = OrderedDict()
             full_file = f.read()
             results["messages"] = parse_message(full_file)
-            summary = get_summary(full_file)
-            if summary:
-                results["summary"] = summary
+
+            results["exp_failures"] = get_expected_failures(exp_failure_path)
+
+            results["summary"] = get_summary(full_file, results["exp_failures"])
             return results
 
     except IOError as err:
@@ -123,7 +158,7 @@ def get_cov_results(logpath, dut_name):
                     cov_results[key] = "N/A"
                     # Report ERROR but continue the parsing script.
                     log.info("ERROR: parse %s coverage error. Expect one matching value, get %s",
-                              key, item)
+                             key, item)
             return cov_results
 
     except IOError as err:
@@ -186,9 +221,17 @@ def main():
                         default=None,
                         help=('Tesbench name. '
                               'By default is empty, used for coverage parsing.'))
+
+    parser.add_argument('--exp-fail-path',
+                        type=str,
+                        default=None,
+                        help=('The path of a hjson file that contains expected failing properties.'
+                              '''By default is empty, used only if there are properties that are
+                               expected to fail.'''))
+
     args = parser.parse_args()
 
-    results = get_results(args.logpath)
+    results = get_results(args.logpath, args.exp_fail_path)
 
     if args.cov:
         results["coverage"] = get_cov_results(args.logpath, args.dut)

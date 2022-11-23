@@ -36,7 +36,8 @@
   report_opts: ["--logpath={build_log}",
                 "--reppath={build_dir}/results.hjson",
                 "--cov={cov}",
-                "--dut={dut}"]
+                "--dut={dut}",
+                "--exp-fail-path={exp_fail_hjson}"]
 
   // Common pass or fail patterns.
   build_fail_patterns: [// FuseSoC build error
@@ -44,14 +45,16 @@
 
   defines: ""
   bbox_cmd: ""
+  exp_fail_hjson: ""
 
   // Vars that need to exported to the env
   exports: [
-    { DUT_TOP:     "{dut}" },
-    { COV:         "{cov}" },
-    { sub_flow:    "{sub_flow}"},
-    { FPV_DEFINES: "{defines}"},
-    { BBOX_CMD:    "'{bbox_cmd}'"},
+    { DUT_TOP:        "{dut}" },
+    { COV:            "{cov}" },
+    { EXP_FAIL_HJSON: "{exp_fail_hjson}" },
+    { sub_flow:       "{sub_flow}" },
+    { FPV_DEFINES:    "{defines}" },
+    { BBOX_CMD:       "'{bbox_cmd}'" },
   ]
 
   overrides: [
