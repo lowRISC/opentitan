@@ -210,6 +210,37 @@
              }
 
 
+             // These IPs do not have a block level DV testbench, so use FPV to verify common
+             // one-hot security countermeasure.
+             {
+               name: pinmux_sec_cm
+               dut: pinmux
+               fusesoc_core: lowrisc:ip:pinmux
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/top_earlgrey/ip/pinmux/{sub_flow}/{tool}/sec_cm"
+               task: "FpvSecCm"
+               overrides: [
+                 {
+                    name:  design_level
+                    value: "top"
+                 }
+               ]
+              }
+              {
+               name: rv_plic_sec_cm
+               dut: rv_plic
+               fusesoc_core: lowrisc:opentitan:top_earlgrey_rv_plic_fpv
+               import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
+               rel_path: "hw/top_earlgrey/ip/rv_plic/{sub_flow}/{tool}/sec_cm"
+               task: "FpvSecCm"
+               overrides: [
+                  {
+                    name:  design_level
+                    value: "top"
+                  }
+               ]
+              }
+
              // Other non-standard countermeasure checks.
              //
              // This testbench verifies once LC_CTRL goes to terminal state, there is no way to

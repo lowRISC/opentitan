@@ -682,6 +682,7 @@ module pinmux_assert_fpv
   // ------ Check USB connectivity ------
   // TODO: the ones that added ##1 delays have cex, which might related to USB module being
   // black-boxed. Working on solving these cexs.
+  // Note the following assertions only work if the testbench blackboxed u_usbdev_aon_wake module.
   `ASSERT(UsbdevDppullupEnI_A, usbdev_dppullup_en_i <->
           u_usbdev_aon_wake.usb_dppullup_en_i, clk_aon_i, !rst_aon_ni)
 
