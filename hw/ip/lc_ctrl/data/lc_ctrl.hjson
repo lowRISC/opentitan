@@ -649,7 +649,10 @@
       hwext:    "true",
       regwen:   "TRANSITION_REGWEN",
       tags: [ // Write to TRANSITION_CMD randomly might cause invalid transition errors
-              "excl:CsrNonInitTests:CsrExclWrite"],
+              // Exclude write in csr_hw_test, otherwise, it transitions to another state and may lock up
+              // other blocks in chip-level, such as rv_dm, which is gated by hw_debug_en and returns d_error
+              // when hw_debug_en is off.
+              "excl:CsrAllTests:CsrExclWrite"],
       fields: [
         { bits: "0",
           name: "START",
@@ -672,7 +675,9 @@
       regwen:   "TRANSITION_REGWEN",
         tags: [ // To update this register, SW needs to claim the associated hardware mutex via
                 // CLAIM_TRANSITION_IF, so can not auto predict its value.
-                "excl:CsrNonInitTests:CsrExclCheck"],
+                // Can't write this CSR in chip-level. If mutex is claimed and this is witten to 1,
+                // chip-level switches to use ext clk, but TB doesn't provide an ext clk to CSR tests.
+                "excl:CsrAllTests:CsrExclAll"],
       fields: [
         { bits: "0",
           name: "EXT_CLOCK_EN",
