@@ -27,7 +27,6 @@ class i2c_base_vseq extends cip_base_vseq #(
   rand uint                   num_rd_bytes;
   rand uint                   num_data_ovf;
   rand bit                    rw_bit; // 0 write, 1 read
-  rand bit   [7:0]            wr_data[$];
   rand bit   [9:0]            addr;  // support both 7-bit and 10-bit target address
   rand bit   [6:0]            target_addr0;  // Target Address 0
   rand bit   [6:0]            target_addr1;  // Target Address 1
@@ -100,13 +99,6 @@ class i2c_base_vseq extends cip_base_vseq #(
   }
   constraint num_runs_c {
     num_runs inside {[cfg.seq_cfg.i2c_min_num_runs : cfg.seq_cfg.i2c_max_num_runs]};
-  }
-
-  // get an array with unique write data
-  constraint wr_data_c {
-    solve num_wr_bytes before wr_data;
-    wr_data.size == num_wr_bytes;
-    unique { wr_data };
   }
 
   // number of extra data write written to fmt to trigger interrupts
