@@ -53,6 +53,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/rv_plic/{sub_flow}/{tool}"
                cov: true
+               exp_fail_hjson: "{proj_root}/hw/top_earlgrey/ip_autogen/rv_plic/fpv/rv_plic_expected_failure.hjson"
                overrides: [
                  {
                    name:  design_level
