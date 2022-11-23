@@ -11,15 +11,8 @@ package(default_visibility = ["//visibility:public"])
 opentitan_functest(
     name = "aes_gcm_functest",
     srcs = ["aes_gcm_functest.c"],
-    cw310 = cw310_params(
-        timeout = "long",
-        tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
-        # [test-triage] test not constant time with icache enabled
-    ),
     verilator = verilator_params(
         timeout = "long",
-        tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
-        # [test-triage] test not constant time with icache enabled
     ),
     deps = [
         ":aes_gcm_testutils",
@@ -53,9 +46,13 @@ opentitan_functest(
     srcs = ["aes_gcm_timing_test.c"],
     cw310 = cw310_params(
         timeout = "long",
+        tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
+        # [test-triage] test not constant time with icache enabled
     ),
     verilator = verilator_params(
         timeout = "long",
+        tags = ["broken"],  # https://github.com/lowRISC/opentitan/issues/15788
+        # [test-triage] test not constant time with icache enabled
     ),
     deps = [
         ":aes_gcm_testutils",
