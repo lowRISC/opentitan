@@ -44,10 +44,6 @@ opentitan_functest(
 opentitan_functest(
     name = "aes_entropy_test",
     srcs = ["aes_entropy_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -64,10 +60,11 @@ opentitan_functest(
 opentitan_functest(
     name = "aes_idle_test",
     srcs = ["aes_idle_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
+    targets = [
+        "dv",
+        "verilator",
+        "cw310_test_rom",
+    ],
     deps = [
         "//hw/ip/aes:model",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -632,10 +629,6 @@ opentitan_functest(
 opentitan_functest(
     name = "clkmgr_reset_frequency_test",
     srcs = ["clkmgr_reset_frequency_test.c"],
-    cw310 = cw310_params(
-        # FIXME #13611
-        tags = ["broken"],
-    ),
     verilator = verilator_params(
         # FIXME #13611
         tags = ["broken"],
@@ -658,10 +651,6 @@ opentitan_functest(
 opentitan_functest(
     name = "clkmgr_sleep_frequency_test",
     srcs = ["clkmgr_sleep_frequency_test.c"],
-    cw310 = cw310_params(
-        # FIXME #13611
-        tags = ["broken"],
-    ),
     verilator = verilator_params(
         # FIXME #13611
         tags = ["broken"],
@@ -1551,10 +1540,11 @@ opentitan_functest(
 opentitan_functest(
     name = "rstmgr_cpu_info_test",
     srcs = ["rstmgr_cpu_info_test.c"],
-    cw310 = cw310_params(
-        # FIXME #12486 [bazel] targets in sw/device/tests failing on cw310 and verilator when built by bazel
-        tags = ["broken"],
-    ),
+    targets = [
+        "cw310_test_rom",
+        "dv",
+        "verilator",
+    ],
     verilator = verilator_params(
         timeout = "long",
         tags = ["broken"],
