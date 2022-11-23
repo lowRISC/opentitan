@@ -55,6 +55,7 @@ config_setting(
 
 filegroup(
     name = "test_rom",
+    testonly = True,
     srcs = select({
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw310_test_rom"],
