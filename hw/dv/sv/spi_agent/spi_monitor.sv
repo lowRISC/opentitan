@@ -44,6 +44,9 @@ class spi_monitor extends dv_base_monitor#(
     wait (&cfg.vif.csb === 0);
     active_csb = cfg.vif.get_active_csb();
 
+    cfg.vif.sck_polarity = cfg.sck_polarity[active_csb];
+    cfg.vif.sck_phase = cfg.sck_phase[active_csb];
+
     host_item   = spi_item::type_id::create("host_item", this);
     device_item = spi_item::type_id::create("device_item", this);
     fork
