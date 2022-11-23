@@ -489,6 +489,11 @@ This is especially important in the case of a polyglot header, since function-lo
 Functions marked `static` must not be marked `inline`.
 The compiler is capable of inlining static functions without the `inline` annotation.
 
+### `volatile` Type Qualifier
+
+Do not use `volatile` in production, i.e. non-test, silicon creator code unless you are implementing a library explicitly for this purpose like `sec_mmio`, `abs_mmio`, or `hardened`.
+When in doubt, please do not hesitate to reach out by creating a GitHub issue (preferably with the "Type:Question" label).
+
 ### Nonstandard Attributes
 
 The following nonstandard attributes may be used:
