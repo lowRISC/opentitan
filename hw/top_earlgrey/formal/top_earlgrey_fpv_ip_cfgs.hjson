@@ -18,8 +18,6 @@
 
   rel_path: "hw/top_earlgrey/formal/ip/summary"
 
-  cov: true
-
   use_cfgs: [
              {
                name: pinmux_fpv
@@ -28,6 +26,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/pinmux/{sub_flow}/{tool}"
                defines: "FPV_ALERT_NO_SIGINT_ERR"
+  i            cov: true
              }
 
              // Use chip_eargrey_asic parameters to verify pinmux.
@@ -38,6 +37,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip/pinmux/{sub_flow}/{tool}"
                defines: "FPV_ALERT_NO_SIGINT_ERR"
+  i            cov: true
                overrides: [
                  {
                    name:  design_level
@@ -52,6 +52,7 @@
                fusesoc_core: lowrisc:opentitan:top_earlgrey_rv_plic_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/rv_plic/{sub_flow}/{tool}"
+  i            cov: true
                overrides: [
                  {
                    name:  design_level
