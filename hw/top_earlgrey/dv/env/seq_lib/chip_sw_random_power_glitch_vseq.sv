@@ -27,7 +27,7 @@ class chip_sw_random_power_glitch_vseq extends chip_sw_base_vseq;
 
   constraint cycles_after_trigger_c {cycles_after_trigger inside {[300 : 320]};}
   constraint cycles_tll_reset_c {cycles_till_reset inside {[0 : 200]};}
-  constraint reset_delay_c {reset_delay inside {[0 : 10]};}
+  constraint reset_delay_c {reset_delay inside {[0 : 4]};}
 
   rand bit[7:0] assa[NumRound-1];
   constraint assa_c {
