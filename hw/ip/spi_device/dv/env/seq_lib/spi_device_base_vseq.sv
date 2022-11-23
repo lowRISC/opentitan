@@ -78,18 +78,8 @@ class spi_device_base_vseq extends cip_base_vseq #(
     core_spi_freq_ratio inside {[1:8]};
     spi_freq_faster -> core_spi_freq_ratio <= 4;
   }
-  // re-active sequence
-  spi_device_seq m_spi_device_seq;
 
   `uvm_object_new
-
-  virtual task start_reactive_seq();
-    // start device seq's
-    fork
-        m_spi_device_seq = spi_device_seq::type_id::create("m_spi_device_seq");
-        m_spi_device_seq.start(p_sequencer.spi_sequencer_d);
-    join
-  endtask // start_reactive_seq
 
   virtual task apply_reset(string kind = "HARD");
     super.apply_reset(kind);
