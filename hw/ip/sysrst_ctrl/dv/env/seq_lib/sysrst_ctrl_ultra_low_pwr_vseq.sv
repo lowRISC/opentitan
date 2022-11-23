@@ -37,14 +37,17 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
    }
 
    constraint pwrb_cycles_c { pwrb_cycles dist {
-     [1 : set_pwrb_timer - 2] :/20,
-     [set_pwrb_timer + 1 : set_pwrb_timer * 2] :/80 };}
+     [1 : set_pwrb_timer] :/20,
+     (set_pwrb_timer + 1) :/20,
+     [set_pwrb_timer + 2 : set_pwrb_timer * 2] :/60 };}
    constraint lid_cycles_c { lid_cycles dist {
-     [1 : set_lid_timer - 2] :/20,
-     [set_lid_timer + 1 : set_lid_timer * 2] :/80 };}
+     [1 : set_lid_timer] :/20,
+     (set_lid_timer + 1) :/20,
+     [set_lid_timer + 2 : set_lid_timer * 2] :/60 };}
    constraint ac_cycles_c { ac_cycles dist {
-     [1 : set_ac_timer - 2]  :/20,
-     [set_ac_timer + 1 : set_ac_timer * 2] :/80 };}
+     [1 : set_ac_timer]  :/20,
+     (set_ac_timer + 1) :/20,
+     [set_ac_timer + 2 : set_ac_timer * 2] :/60 };}
 
    constraint num_trans_c {num_trans inside {[1 : 3]};}
 
@@ -122,8 +125,11 @@ class sysrst_ctrl_ultra_low_pwr_vseq extends sysrst_ctrl_base_vseq;
      csr_rd(ral.ulp_lid_debounce_ctl, get_lid_timer);
      csr_rd(ral.ulp_ctl, rdata);
      enable_ulp = get_field_val(ral.ulp_ctl.ulp_enable, rdata);
-     if (enable_ulp == 1 && (pwrb_cycles >= get_pwrb_timer || ac_cycles >= get_ac_timer ||
-            lid_cycles >= get_lid_timer)) begin
+     // (cycles == timer) => sysrst_ctrl_detect.state : DebounceSt -> IdleSt
+     // (cycles == timer + 1) => sysrst_ctrl_detect.state : DetectSt -> IdleSt
+     // Therefore we only need to check when cycles > timer + 1
+     if (enable_ulp == 1 && (pwrb_cycles > (get_pwrb_timer + 1) || ac_cycles > (get_ac_timer + 1) ||
+            lid_cycles > (get_lid_timer + 1))) begin
        cfg.clk_aon_rst_vif.wait_clks(1);
        `DV_CHECK_EQ(cfg.vif.z3_wakeup, 1);
        csr_rd(ral.wkup_status, wkup_sts_rdata);
