@@ -492,6 +492,7 @@ The compiler is capable of inlining static functions without the `inline` annota
 ### `volatile` Type Qualifier
 
 Do not use `volatile` in production, i.e. non-test, silicon creator code unless you are implementing a library explicitly for this purpose like `sec_mmio`, `abs_mmio`, or `hardened`.
+See [guidance for volatile]({{< relref "guidance_for_volatile" >}}) for more details.
 When in doubt, please do not hesitate to reach out by creating a GitHub issue (preferably with the "Type:Question" label).
 
 ### Nonstandard Attributes
