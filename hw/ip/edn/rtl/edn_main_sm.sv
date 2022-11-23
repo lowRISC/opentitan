@@ -238,5 +238,6 @@ module edn_main_sm import edn_pkg::*; #(
   // The `local_escalate_i` includes `main_sm_err_o`.
   // The following assertion ensures the Error state is stable until reset.
   // With `FpvSecCm` prefix, this assertion will added to weekly FPV sec_cm regression.
-  `ASSERT(FpvSecCmErrorStStable_A, state_q == Error |-> local_escalate_i)
+  `ASSERT(FpvSecCmErrorStEscalate_A, state_q == Error |-> local_escalate_i)
+  `ASSERT(FpvSecCmErrorStStable_A,   state_q == Error |=> $stable(state_q))
 endmodule
