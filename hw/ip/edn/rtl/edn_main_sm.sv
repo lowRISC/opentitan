@@ -66,20 +66,20 @@ module edn_main_sm import edn_pkg::*; #(
          (state_q != BootDone) && (state_q != SWPortMode);
 
   always_comb begin
-    state_d = state_q;
-    boot_wr_cmd_reg_o = 1'b0;
-    boot_wr_cmd_genfifo_o = 1'b0;
-    boot_send_gencmd_o = 1'b0;
-    auto_set_intr_gate_o = 1'b0;
-    auto_clr_intr_gate_o = 1'b0;
-    auto_first_ack_wait_o = 1'b0;
-    auto_req_mode_busy_o = 1'b0;
+    state_d                = state_q;
+    boot_wr_cmd_reg_o      = 1'b0;
+    boot_wr_cmd_genfifo_o  = 1'b0;
+    boot_send_gencmd_o     = 1'b0;
+    auto_set_intr_gate_o   = 1'b0;
+    auto_clr_intr_gate_o   = 1'b0;
+    auto_first_ack_wait_o  = 1'b0;
+    auto_req_mode_busy_o   = 1'b0;
     capt_gencmd_fifo_cnt_o = 1'b0;
-    send_gencmd_o = 1'b0;
+    send_gencmd_o          = 1'b0;
     capt_rescmd_fifo_cnt_o = 1'b0;
-    send_rescmd_o = 1'b0;
-    main_sm_done_pulse_o = 1'b0;
-    main_sm_err_o = 1'b0;
+    send_rescmd_o          = 1'b0;
+    main_sm_done_pulse_o   = 1'b0;
+    main_sm_err_o          = 1'b0;
     unique case (state_q)
       Idle: begin
         if (boot_req_mode_i && edn_enable_i) begin
@@ -193,10 +193,45 @@ module edn_main_sm import edn_pkg::*; #(
         main_sm_err_o = 1'b1;
       end
     endcase
+
     if (local_escalate_i) begin
       state_d = Error;
-    end else if (!edn_enable_i) begin
+      // Tie off outputs, except for main_sm_err_o.
+      boot_wr_cmd_reg_o      = 1'b0;
+      boot_wr_cmd_genfifo_o  = 1'b0;
+      boot_send_gencmd_o     = 1'b0;
+      auto_set_intr_gate_o   = 1'b0;
+      auto_clr_intr_gate_o   = 1'b0;
+      auto_first_ack_wait_o  = 1'b0;
+      auto_req_mode_busy_o   = 1'b0;
+      capt_gencmd_fifo_cnt_o = 1'b0;
+      send_gencmd_o          = 1'b0;
+      capt_rescmd_fifo_cnt_o = 1'b0;
+      send_rescmd_o          = 1'b0;
+      main_sm_done_pulse_o   = 1'b0;
+    end else if (!edn_enable_i && state_q inside {BootLoadIns, BootLoadGen, BootInsAckWait,
+                                                  BootCaptGenCnt, BootSendGenCmd, BootGenAckWait,
+                                                  BootPulse, BootDone, AutoLoadIns,
+                                                  AutoFirstAckWait, AutoAckWait, AutoDispatch,
+                                                  AutoCaptGenCnt, AutoSendGenCmd,
+                                                  AutoCaptReseedCnt, AutoSendReseedCmd, SWPortMode
+                                                 }) begin
+      // Only go to idle if the state is legal and not Idle or Error.
+      // Even when disabled, illegal states must result in a transition to Error.
       state_d = Idle;
+      // Tie off outputs, except for main_sm_err_o.
+      boot_wr_cmd_reg_o      = 1'b0;
+      boot_wr_cmd_genfifo_o  = 1'b0;
+      boot_send_gencmd_o     = 1'b0;
+      auto_set_intr_gate_o   = 1'b0;
+      auto_clr_intr_gate_o   = 1'b0;
+      auto_first_ack_wait_o  = 1'b0;
+      auto_req_mode_busy_o   = 1'b0;
+      capt_gencmd_fifo_cnt_o = 1'b0;
+      send_gencmd_o          = 1'b0;
+      capt_rescmd_fifo_cnt_o = 1'b0;
+      send_rescmd_o          = 1'b0;
+      main_sm_done_pulse_o   = 1'b0;
     end
   end
 
