@@ -286,7 +286,7 @@
     }
     {
       name: sw_test_mode_rom
-      sw_images: ["//sw/device/silicon_creator/rom:rom:0"]
+      sw_images: ["//sw/device/silicon_creator/rom:rom_with_fake_keys:0"]
       en_run_modes: ["sw_test_mode_common"]
     }
     {
