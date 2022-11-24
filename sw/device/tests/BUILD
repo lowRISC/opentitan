@@ -1126,9 +1126,27 @@ opentitan_functest(
 )
 
 opentitan_functest(
+    name = "keymgr_key_derivation_test",
+    srcs = ["keymgr_key_derivation_test.c"],
+    deps = [
+        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/ip/kmac/data:kmac_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
-    targets = ["dv"],
     deps = [
         "//hw/ip/aes/data:aes_regs",
         "//hw/ip/keymgr/data:keymgr_regs",
@@ -1146,6 +1164,44 @@ opentitan_functest(
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:kmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "keymgr_sideload_kmac_test",
+    srcs = ["keymgr_sideload_kmac_test.c"],
+    deps = [
+        "//hw/ip/keymgr/data:keymgr_regs",
+        "//hw/ip/kmac/data:kmac_regs",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:kmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_functest(
+    name = "keymgr_sideload_otbn_test",
+    srcs = ["keymgr_sideload_otbn_test.c"],
+    deps = [
+        "//hw/ip/otbn/data:otbn_regs",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:keymgr",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:otbn",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/otbn/crypto:x25519_sideload",
     ],
 )
 
