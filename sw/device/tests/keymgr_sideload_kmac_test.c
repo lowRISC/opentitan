@@ -83,7 +83,9 @@ static void test_kmac_with_sideloaded_key(dif_keymgr_t *keymgr,
                       kKmacOutputLen, output);
   LOG_INFO("Computed KMAC output for sideloaded key.");
 
-  CHECK_ARRAYS_EQ(output, (uint32_t *)sideload_digest_result, kKmacOutputLen);
+  if (kDeviceType == kDeviceSimDV) {
+    CHECK_ARRAYS_EQ(output, (uint32_t *)sideload_digest_result, kKmacOutputLen);
+  }
 }
 
 bool test_main(void) {
