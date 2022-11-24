@@ -770,7 +770,6 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     return ctx->driving;
   }
 
-  // Monitor, analyse and record USB bus activity
   monitor_usb(ctx->mon, ctx->mon_file, ctx->loglevel, ctx->tick,
               (ctx->state != ST_IDLE) && (ctx->state != ST_GET), ctx->driving,
               d2p, &(ctx->lastrxpid));

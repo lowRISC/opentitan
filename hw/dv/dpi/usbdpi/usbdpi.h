@@ -9,7 +9,6 @@
 #define TOOL_INCISIVE 0
 
 #include <limits.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <svdpi.h>
 
