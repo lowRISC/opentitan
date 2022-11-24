@@ -742,7 +742,7 @@ module kmac_app
   end else begin : g_unmasked_key
     always_comb begin
       keymgr_key[0] = '0;
-      for (int i = 0; i < Share; i++) begin
+      for (int i = 0; i < keymgr_pkg::Shares; i++) begin
         keymgr_key[0][KeyMgrKeyW-1:0] ^= keymgr_key_i.key[i];
       end
     end
