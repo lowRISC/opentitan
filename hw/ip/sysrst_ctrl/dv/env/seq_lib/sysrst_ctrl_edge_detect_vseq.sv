@@ -23,7 +23,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
    }
 
    constraint num_trans_c {
-     num_trans == 2;
+     num_trans inside {[1:3]};
    }
 
    edge_detect_h2l_t edge_detect_h2l[NumInputs], edge_detect_h2l_array[NumInputs];
@@ -156,14 +156,12 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
          cfg.vif.randomize_input();
 
          // make sure the previous transition lasts long enough, so that everything is settled and we can check them
-         cfg.clk_aon_rst_vif.wait_clks(get_timer_val+5);
-
-         cfg.clk_aon_rst_vif.wait_clks(5);
+         cfg.clk_aon_rst_vif.wait_clks(get_timer_val+10);
 
          // Enable the bus clock to read the status register
          if (is_core_clk_stop) cfg.clk_rst_vif.start_clk();
 
-         cfg.clk_rst_vif.wait_clks(10);
+         cfg.clk_aon_rst_vif.wait_clks(5);
 
          csr_rd(ral.key_intr_status, rdata);
          foreach (edge_detect_h2l_array[i]) begin
