@@ -218,7 +218,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       '{"dummy_instr_id_o",        1, "", ""},
       '{"rf_raddr_a_o",            5, "", ""},
       '{"rf_raddr_b_o",            5, "", ""},
-      '{"rf_raddr_wb_o",           5, "", ""},
+      '{"rf_waddr_wb_o",           5, "", ""},
       '{"rf_we_wb_o",              1, "", ""},
       '{"rf_wdata_wb_ecc_o",       0, "RegFileDataWidth", ""},
       '{"rf_rdata_a_ecc_i",        0, "RegFileDataWidth", ""},
