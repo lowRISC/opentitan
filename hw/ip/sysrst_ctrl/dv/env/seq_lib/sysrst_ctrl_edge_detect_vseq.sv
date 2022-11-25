@@ -12,10 +12,12 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
 
    rand uvm_reg_data_t set_input;
    rand uint16_t set_timer;
+   rand uint16_t wait_cycles;
    uvm_reg_data_t rdata;
    rand bit is_core_clk_stop;
 
    constraint set_timer_c {
+    solve set_timer before wait_cycles;
     set_timer dist {
       [10:100] :/ 95,
       [101:$]   :/ 5
@@ -24,6 +26,17 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
 
    constraint num_trans_c {
      num_trans inside {[1:3]};
+   }
+
+   constraint wait_cycles_c {
+     wait_cycles dist {
+       // sysrst_ctrl_detect.state : DebounceSt -> IdleSt
+       [1 : set_timer] :/20,
+       // sysrst_ctrl_detect.state : DetectSt -> IdleSt
+       (set_timer + 1) :/20,
+       // sysrst_ctrl_detect.state : DetectSt -> StableSt
+       [set_timer + 2 : set_timer * 2] :/60
+     };
    }
 
    edge_detect_h2l_t edge_detect_h2l[NumInputs], edge_detect_h2l_array[NumInputs];
@@ -59,7 +72,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
          wait (h2l_detected && !edge_detect_h2l.h2l_triggered);
          fork
            begin
-             cfg.clk_aon_rst_vif.wait_clks(set_timer);
+             cfg.clk_aon_rst_vif.wait_clks(set_timer+2);
              `uvm_info(`gfn, "H2L timer reached", UVM_NONE)
              h2l_timer_reached = 1;
            end
@@ -79,7 +92,7 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
          wait (l2h_detected && !edge_detect_l2h.l2h_triggered);
          fork
            begin
-             cfg.clk_aon_rst_vif.wait_clks(set_timer);
+             cfg.clk_aon_rst_vif.wait_clks(set_timer+2);
              l2h_timer_reached = 1;
            end
            begin
@@ -112,7 +125,6 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
 
    task body();
      bit exp_intr_state;
-     uint16_t get_timer_val;
      uvm_reg_data_t get_input;
 
      `uvm_info(`gfn, "Starting the body from edge_detect_vseq", UVM_LOW)
@@ -140,23 +152,17 @@ class sysrst_ctrl_edge_detect_vseq extends sysrst_ctrl_base_vseq;
          join_none
        end
 
-       csr_rd(ral.key_intr_debounce_ctl, get_timer_val);
-
        for (int j = 0; j < num_trans; j++) begin
-         int wait_cycles;
          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(is_core_clk_stop)
          if (is_core_clk_stop) cfg.clk_rst_vif.stop_clk();
          cfg.clk_aon_rst_vif.wait_clks(1);
          cfg.vif.randomize_input();
-         cfg.clk_aon_rst_vif.wait_clks(1);
-         `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wait_cycles,
-                                          wait_cycles inside {[1:get_timer_val-2],
-                                          [get_timer_val+5:get_timer_val*2]};)
+         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(wait_cycles)
          cfg.clk_aon_rst_vif.wait_clks(wait_cycles);
          cfg.vif.randomize_input();
 
          // make sure the previous transition lasts long enough, so that everything is settled and we can check them
-         cfg.clk_aon_rst_vif.wait_clks(get_timer_val+10);
+         cfg.clk_aon_rst_vif.wait_clks(set_timer+10);
 
          // Enable the bus clock to read the status register
          if (is_core_clk_stop) cfg.clk_rst_vif.start_clk();
