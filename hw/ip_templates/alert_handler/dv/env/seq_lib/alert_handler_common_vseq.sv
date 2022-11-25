@@ -73,7 +73,7 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
     end
   endtask
 
-  virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy);
+  virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy, output bit success);
     if (!uvm_re_match("tb.dut.u_ping_timer.*", if_proxy.path)) begin
       // Enable ping timer to get ping counter error
       csr_wr(ral.ping_timer_en_shadowed, 1);
@@ -81,7 +81,7 @@ class alert_handler_common_vseq extends alert_handler_base_vseq;
       // Enable loc_alerts
       foreach (ral.loc_alert_en_shadowed[i]) csr_wr(ral.loc_alert_en_shadowed[i], 1);
     end
-    super.sec_cm_inject_fault(if_proxy);
+    super.sec_cm_inject_fault(if_proxy, success);
   endtask : sec_cm_inject_fault
 
   virtual task pre_run_sec_cm_fi_vseq();

@@ -122,6 +122,13 @@
     {
       name: alert_handler_stress_all_with_rand_reset
     }
+
+    {
+      name: "alert_handler_fsm_sec_test"
+      uvm_test_seq: "alert_handler_esc_fsm_sec_cm_vseq"
+      run_opts: ["+run_sec_cm_fi", "+en_scb=0"]
+      reseed: 5
+    }
   ]
 
   // List of regressions.
