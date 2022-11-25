@@ -14,4 +14,9 @@ class alert_handler_esc_intr_timeout_vseq extends alert_handler_smoke_vseq;
     do_esc_intr_timeout == 1;
   }
 
+  function void pre_randomize();
+    this.enable_one_alert_c.constraint_mode(0);
+    this.enable_classa_only_c.constraint_mode(0);
+  endfunction
+
 endclass : alert_handler_esc_intr_timeout_vseq
