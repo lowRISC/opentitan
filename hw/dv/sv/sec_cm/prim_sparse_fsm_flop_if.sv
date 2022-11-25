@@ -6,6 +6,8 @@
 //
 // This contains a proxy class and store the object in sec_cm_pkg, which can be used in vseq to
 // control inject_fault and restore_fault
+//
+
 interface prim_sparse_fsm_flop_if #(
   parameter int Width = 2,
   parameter string CustomForceName = ""
@@ -34,11 +36,50 @@ interface prim_sparse_fsm_flop_if #(
 
     logic[Width-1:0] orig_value;
 
-    virtual task automatic inject_fault();
+    virtual task automatic inject_fault(output bit success);
       logic[Width-1:0] force_value;
+      uvm_queue#(bit[Width-1:0]) state_values;
 
-      @(negedge clk_i);
-      `DV_CHECK(uvm_hdl_read(signal_forced, orig_value))
+      if (uvm_config_db#(uvm_queue#(bit[Width-1:0]))::get(null, path, "state_values", state_values)
+          &&
+          state_values.size()) begin
+        int value_to_wait_for_index;
+        int value_to_wait_for;
+        int cycles_wait;
+        bit found_value;
+        int state_wait_timeout = 3000;
+
+        uvm_config_db#(int)::get(null, path, "state_wait_timeout", state_wait_timeout);
+
+        found_value = 1'b0;
+        cycles_wait = 0;
+
+        value_to_wait_for_index = $urandom_range(0, state_values.size() - 1);
+        value_to_wait_for = state_values.get(value_to_wait_for_index);
+
+        while (!found_value) begin
+          @(negedge clk_i);
+          `DV_CHECK(uvm_hdl_read(signal_forced, orig_value))
+
+          if (orig_value == value_to_wait_for) begin
+            found_value = 1;
+          end else begin
+            cycles_wait++;
+
+            if (cycles_wait == state_wait_timeout) begin
+              `uvm_info(msg_id, $sformatf("Timed out waiting for FSM state %x", value_to_wait_for),
+                        UVM_LOW);
+
+              success = 0;
+              return;
+            end
+          end
+        end
+      end else begin
+        @(negedge clk_i);
+        `DV_CHECK(uvm_hdl_read(signal_forced, orig_value))
+      end
+
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(force_value,
           $countones(force_value ^ orig_value) inside {[1: MaxFlipBits]};)
 
@@ -52,6 +93,8 @@ interface prim_sparse_fsm_flop_if #(
       end
       @(negedge clk_i);
       `DV_CHECK(uvm_hdl_release(signal_forced))
+
+      success = 1;
     endtask
 
     virtual task automatic restore_fault();
@@ -88,4 +131,6 @@ interface prim_sparse_fsm_flop_if #(
 
     `uvm_info(msg_id, $sformatf("Interface proxy class is added for %s", path), UVM_MEDIUM)
   end
+
 endinterface
+

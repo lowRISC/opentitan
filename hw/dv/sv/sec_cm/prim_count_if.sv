@@ -26,7 +26,7 @@ interface prim_count_if #(
 
     logic[Width-1:0] orig_value;
 
-    virtual task automatic inject_fault();
+    virtual task automatic inject_fault(output bit success);
       logic[Width-1:0] force_value;
 
       @(negedge clk_i);
@@ -38,6 +38,8 @@ interface prim_count_if #(
 
       @(negedge clk_i);
       `DV_CHECK(uvm_hdl_release(signal_forced))
+
+      success = 1;
     endtask
 
     virtual task automatic restore_fault();

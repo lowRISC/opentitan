@@ -48,4 +48,18 @@ package sec_cm_pkg;
     return null;
   endfunction
 
+  function enable_sec_cm_if_proxy(string path, bit enable, bit is_regex = 0);
+    sec_cm_base_if_proxy proxies[$];
+
+    if (is_regex) begin
+      proxies = sec_cm_pkg::sec_cm_if_proxy_q.find() with (!uvm_re_match(path, item.path));
+    end else begin
+      proxies = sec_cm_pkg::sec_cm_if_proxy_q.find() with (item.path == path);
+    end
+
+    foreach (proxies[p]) begin
+      proxies[p].enabled = enable;
+    end
+  endfunction
+
 endpackage
