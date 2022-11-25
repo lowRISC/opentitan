@@ -26,4 +26,9 @@ class alert_handler_esc_alert_accum_vseq extends alert_handler_smoke_vseq;
     foreach (accum_thresh[i]) {accum_thresh[i] inside {[0:100]};}
   }
 
+  function void pre_randomize();
+    this.enable_one_alert_c.constraint_mode(0);
+    this.enable_classa_only_c.constraint_mode(0);
+  endfunction
+
 endclass : alert_handler_esc_alert_accum_vseq
