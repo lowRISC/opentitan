@@ -60,7 +60,7 @@ enum {
    *
    * ``` Python
    * from math import comb
-   * w = 16
+   * w = 32
    * t = 0
    * for i in range(4):
    *    p = ((127**(w-i))/(128**w)) * comb(w,i)
@@ -68,16 +68,20 @@ enum {
    *    print(f'Pr({i}): { round(p, 4)},\tsum{{Pr(0-{i})}}: {round(t, 6)}')
    * ```
    * ```
-   * Pr(0): 0.8821,   sum{Pr(0-0)}: 0.882064
-   * Pr(1): 0.1111,   sum{Pr(0-1)}: 0.99319
-   * Pr(2): 0.0066,   sum{Pr(0-2)}: 0.999753
-   * Pr(3): 0.0002,   sum{Pr(0-3)}: 0.999994
+   * Pr(0): 0.778,   sum{Pr(0-0)}: 0.778037
+   * Pr(1): 0.196,   sum{Pr(0-1)}: 0.974077
+   * Pr(2): 0.0239,  sum{Pr(0-2)}: 0.998004
+   * Pr(3): 0.0019,  sum{Pr(0-3)}: 0.999888
    * ```
-   * So by choosing 1 as the floor limit we will a have probability of `1 -
-   * 0.99319 = 0.68%` that this test would fail randomly due to ECC errors not
-   * being generated.
+   * So by choosing 3 as the floor limit we will a have probability of `1 -
+   * 0.998004 = 0.1996%` that this test would fail randomly due to ECC errors
+   * not being generated.
+   *
+   * Note: Although `kTestBufferSizeWords` is 16 we use 32 to compute the
+   * probability since we perform two tests here RET SRAM and main SRAM.
    */
-  kEccErrorsFalsePositiveFloorLimit = 1,
+
+  kEccErrorsFalsePositiveFloorLimit = 3,
 };
 
 static_assert(kTestBufferSizeWords == 16,
@@ -256,8 +260,10 @@ static void check_sram_data(scramble_test_frame *mem_frame) {
   // Statistically there is always a chance that after changing the scrambling
   // key the ECC bits are correct and no IRQ is triggered. So we tolerate a
   // minimum of false positives.
-  int32_t false_positives =
-      kTestBufferSizeWords - reference_frame->ecc_error_counter;
+  // Note: `false_positives` should be incremented across the tests, so we make
+  // it `static`.
+  static int32_t false_positives = 0;
+  false_positives += kTestBufferSizeWords - reference_frame->ecc_error_counter;
 
   if (false_positives > 0) {
     CHECK(false_positives <= kEccErrorsFalsePositiveFloorLimit,
