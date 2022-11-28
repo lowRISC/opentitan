@@ -31,7 +31,6 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Add additional tops for simulation.
@@ -89,11 +88,6 @@
       name: i2c_host_fifo_reset_rx
       uvm_test_seq: i2c_host_fifo_reset_rx_vseq
       run_opts: ["+test_timeout_ns=10_000_000"]
-    }
-
-    {
-      name: i2c_host_timeout
-      uvm_test_seq: i2c_host_timeout_vseq
     }
 
     {
