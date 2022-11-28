@@ -181,7 +181,7 @@ module sysrst_ctrl_reg_top (
   logic pin_in_value_ec_rst_l_qs;
   logic pin_in_value_flash_wp_l_qs;
   logic key_intr_ctl_we;
-  logic [14:0] key_intr_ctl_qs;
+  logic [13:0] key_intr_ctl_qs;
   logic key_intr_ctl_busy;
   logic key_intr_debounce_ctl_we;
   logic [15:0] key_intr_debounce_ctl_qs;
@@ -765,14 +765,14 @@ module sysrst_ctrl_reg_top (
   logic  aon_key_intr_ctl_ac_present_l2h_qs_int;
   logic  aon_key_intr_ctl_ec_rst_l_l2h_qs_int;
   logic  aon_key_intr_ctl_flash_wp_l_l2h_qs_int;
-  logic [14:0] aon_key_intr_ctl_qs;
-  logic [14:0] aon_key_intr_ctl_wdata;
+  logic [13:0] aon_key_intr_ctl_qs;
+  logic [13:0] aon_key_intr_ctl_wdata;
   logic aon_key_intr_ctl_we;
   logic unused_aon_key_intr_ctl_wdata;
   logic aon_key_intr_ctl_regwen;
 
   always_comb begin
-    aon_key_intr_ctl_qs = 15'h0;
+    aon_key_intr_ctl_qs = 14'h0;
     aon_key_intr_ctl_qs[0] = aon_key_intr_ctl_pwrb_in_h2l_qs_int;
     aon_key_intr_ctl_qs[1] = aon_key_intr_ctl_key0_in_h2l_qs_int;
     aon_key_intr_ctl_qs[2] = aon_key_intr_ctl_key1_in_h2l_qs_int;
@@ -780,19 +780,19 @@ module sysrst_ctrl_reg_top (
     aon_key_intr_ctl_qs[4] = aon_key_intr_ctl_ac_present_h2l_qs_int;
     aon_key_intr_ctl_qs[5] = aon_key_intr_ctl_ec_rst_l_h2l_qs_int;
     aon_key_intr_ctl_qs[6] = aon_key_intr_ctl_flash_wp_l_h2l_qs_int;
-    aon_key_intr_ctl_qs[8] = aon_key_intr_ctl_pwrb_in_l2h_qs_int;
-    aon_key_intr_ctl_qs[9] = aon_key_intr_ctl_key0_in_l2h_qs_int;
-    aon_key_intr_ctl_qs[10] = aon_key_intr_ctl_key1_in_l2h_qs_int;
-    aon_key_intr_ctl_qs[11] = aon_key_intr_ctl_key2_in_l2h_qs_int;
-    aon_key_intr_ctl_qs[12] = aon_key_intr_ctl_ac_present_l2h_qs_int;
-    aon_key_intr_ctl_qs[13] = aon_key_intr_ctl_ec_rst_l_l2h_qs_int;
-    aon_key_intr_ctl_qs[14] = aon_key_intr_ctl_flash_wp_l_l2h_qs_int;
+    aon_key_intr_ctl_qs[7] = aon_key_intr_ctl_pwrb_in_l2h_qs_int;
+    aon_key_intr_ctl_qs[8] = aon_key_intr_ctl_key0_in_l2h_qs_int;
+    aon_key_intr_ctl_qs[9] = aon_key_intr_ctl_key1_in_l2h_qs_int;
+    aon_key_intr_ctl_qs[10] = aon_key_intr_ctl_key2_in_l2h_qs_int;
+    aon_key_intr_ctl_qs[11] = aon_key_intr_ctl_ac_present_l2h_qs_int;
+    aon_key_intr_ctl_qs[12] = aon_key_intr_ctl_ec_rst_l_l2h_qs_int;
+    aon_key_intr_ctl_qs[13] = aon_key_intr_ctl_flash_wp_l_l2h_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(15),
-    .ResetVal(15'h0),
-    .BitMask(15'h7f7f),
+    .DataWidth(14),
+    .ResetVal(14'h0),
+    .BitMask(14'h3fff),
     .DstWrReq(0)
   ) u_key_intr_ctl_cdc (
     .clk_src_i    (clk_i),
@@ -802,7 +802,7 @@ module sysrst_ctrl_reg_top (
     .src_regwen_i (regwen_qs),
     .src_we_i     (key_intr_ctl_we),
     .src_re_i     ('0),
-    .src_wd_i     (reg_wdata[14:0]),
+    .src_wd_i     (reg_wdata[13:0]),
     .src_busy_o   (key_intr_ctl_busy),
     .src_qs_o     (key_intr_ctl_qs), // for software read back
     .dst_update_i ('0),
@@ -3503,7 +3503,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_flash_wp_l_h2l_qs_int)
   );
 
-  //   F[pwrb_in_l2h]: 8:8
+  //   F[pwrb_in_l2h]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3514,7 +3514,7 @@ module sysrst_ctrl_reg_top (
 
     // from register interface
     .we     (aon_key_intr_ctl_gated_we),
-    .wd     (aon_key_intr_ctl_wdata[8]),
+    .wd     (aon_key_intr_ctl_wdata[7]),
 
     // from internal hardware
     .de     (1'b0),
@@ -3529,7 +3529,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_pwrb_in_l2h_qs_int)
   );
 
-  //   F[key0_in_l2h]: 9:9
+  //   F[key0_in_l2h]: 8:8
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3540,7 +3540,7 @@ module sysrst_ctrl_reg_top (
 
     // from register interface
     .we     (aon_key_intr_ctl_gated_we),
-    .wd     (aon_key_intr_ctl_wdata[9]),
+    .wd     (aon_key_intr_ctl_wdata[8]),
 
     // from internal hardware
     .de     (1'b0),
@@ -3555,7 +3555,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_key0_in_l2h_qs_int)
   );
 
-  //   F[key1_in_l2h]: 10:10
+  //   F[key1_in_l2h]: 9:9
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3566,7 +3566,7 @@ module sysrst_ctrl_reg_top (
 
     // from register interface
     .we     (aon_key_intr_ctl_gated_we),
-    .wd     (aon_key_intr_ctl_wdata[10]),
+    .wd     (aon_key_intr_ctl_wdata[9]),
 
     // from internal hardware
     .de     (1'b0),
@@ -3581,7 +3581,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_key1_in_l2h_qs_int)
   );
 
-  //   F[key2_in_l2h]: 11:11
+  //   F[key2_in_l2h]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3592,7 +3592,7 @@ module sysrst_ctrl_reg_top (
 
     // from register interface
     .we     (aon_key_intr_ctl_gated_we),
-    .wd     (aon_key_intr_ctl_wdata[11]),
+    .wd     (aon_key_intr_ctl_wdata[10]),
 
     // from internal hardware
     .de     (1'b0),
@@ -3607,7 +3607,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_key2_in_l2h_qs_int)
   );
 
-  //   F[ac_present_l2h]: 12:12
+  //   F[ac_present_l2h]: 11:11
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3618,7 +3618,7 @@ module sysrst_ctrl_reg_top (
 
     // from register interface
     .we     (aon_key_intr_ctl_gated_we),
-    .wd     (aon_key_intr_ctl_wdata[12]),
+    .wd     (aon_key_intr_ctl_wdata[11]),
 
     // from internal hardware
     .de     (1'b0),
@@ -3633,7 +3633,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_ac_present_l2h_qs_int)
   );
 
-  //   F[ec_rst_l_l2h]: 13:13
+  //   F[ec_rst_l_l2h]: 12:12
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3644,7 +3644,7 @@ module sysrst_ctrl_reg_top (
 
     // from register interface
     .we     (aon_key_intr_ctl_gated_we),
-    .wd     (aon_key_intr_ctl_wdata[13]),
+    .wd     (aon_key_intr_ctl_wdata[12]),
 
     // from internal hardware
     .de     (1'b0),
@@ -3659,7 +3659,7 @@ module sysrst_ctrl_reg_top (
     .qs     (aon_key_intr_ctl_ec_rst_l_l2h_qs_int)
   );
 
-  //   F[flash_wp_l_l2h]: 14:14
+  //   F[flash_wp_l_l2h]: 13:13
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -3670,7 +3670,7 @@ module sysrst_ctrl_reg_top (
 
     // from register interface
     .we     (aon_key_intr_ctl_gated_we),
-    .wd     (aon_key_intr_ctl_wdata[14]),
+    .wd     (aon_key_intr_ctl_wdata[13]),
 
     // from internal hardware
     .de     (1'b0),
