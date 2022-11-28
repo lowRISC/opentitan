@@ -185,12 +185,17 @@ bool test_main(void) {
     expected_data[i] = rand_testutils_gen32_range(0, 0xff);
   };
 
-  while (tx_empty_irq_seen == false) {
+  uint8_t tx_fifo_lvl;
+  CHECK_DIF_OK(dif_i2c_get_fifo_levels(&i2c, NULL, NULL, &tx_fifo_lvl, NULL));
+  // Write expected data to tx fifo.
+  while (tx_fifo_lvl > 0 && tx_empty_irq_seen == false) {
   }
   i2c_testutils_target_rd(&i2c, kI2cByteCount, expected_data);
   tx_empty_irq_seen = false;
 
-  uint8_t tx_fifo_lvl, acq_fifo_lvl;
+  LOG_INFO("Data written to fifo");
+
+  uint8_t acq_fifo_lvl;
   do {
     CHECK_DIF_OK(
         dif_i2c_get_fifo_levels(&i2c, NULL, NULL, &tx_fifo_lvl, &acq_fifo_lvl));
