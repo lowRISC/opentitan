@@ -141,13 +141,13 @@ bool test_main(void) {
   // Temporary hack that connects i2c to a couple of open drain pins.
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
                                        kTopEarlgreyPinmuxPeripheralInI2c0Scl,
-                                       kTopEarlgreyPinmuxInselIob11));
+                                       kTopEarlgreyPinmuxInselIoa7));
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
                                        kTopEarlgreyPinmuxPeripheralInI2c0Sda,
-                                       kTopEarlgreyPinmuxInselIob12));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob11,
+                                       kTopEarlgreyPinmuxInselIoa8));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa7,
                                         kTopEarlgreyPinmuxOutselI2c0Scl));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa8,
                                         kTopEarlgreyPinmuxOutselI2c0Sda));
 
   // I2C speed parameters.
