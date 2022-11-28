@@ -2039,7 +2039,7 @@
             - Verify that output is not equal to the plain text.
             '''
       stage: V2
-      tests: ["chip_sw_aes_sideload"]
+      tests: ["chip_sw_keymgr_sideload_aes"]
     }
     {
       name: chip_sw_aes_masking_off
@@ -2419,7 +2419,7 @@
                Same as `chip_keymgr_sideload_kmac`, except, sideload to AES.
             '''
       stage: V2
-      tests: ["chip_sw_keymgr_aes_sideload"]
+      tests: ["chip_sw_keymgr_sideload_aes"]
     }
     {
       name: chip_sw_keymgr_sideload_otbn
@@ -3487,11 +3487,9 @@
       This test should leverage the OTTF test framework for supporting
       concurrency in a FreeRTOS environment. See also the design docs linked
       in #14095 for more details on how to approach the implementation.
-
-      X'ref'ed with power manager sleep / wakeup test.
       '''
       stage: V2
-      tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
+      tests: ["chip_sw_power_sleep_load"]
     }
 
     {
