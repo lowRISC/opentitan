@@ -948,7 +948,7 @@
               "chip_sw_hmac_enc_jitter_en",
               "chip_sw_keymgr_key_derivation_jitter_en",
               "chip_sw_kmac_mode_kmac_jitter_en",
-              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en",
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en",
               "chip_sw_edn_entropy_reqs_jitter"]
     }
     {
@@ -982,7 +982,7 @@
               "chip_sw_hmac_enc_jitter_en_reduced_freq",
               "chip_sw_keymgr_key_derivation_jitter_en_reduced_freq",
               "chip_sw_kmac_mode_kmac_jitter_en_reduced_freq",
-              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en_reduced_freq",
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en_reduced_freq",
               "chip_sw_flash_init_reduced_freq",
               "chip_sw_csrng_edn_concurrency_reduced_freq"]
     }
@@ -2585,7 +2585,7 @@
             '''
       stage: V2
       tests: ["chip_sw_sram_ctrl_scrambled_access",
-              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en"]
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en"]
     }
     {
       name: chip_sw_sleep_sram_ret_contents
@@ -3040,7 +3040,7 @@
               "chip_sw_hmac_enc_jitter_en",
               "chip_sw_keymgr_key_derivation_jitter_en",
               "chip_sw_kmac_mode_kmac_jitter_en",
-              "chip_sw_sram_ctrl_main_scrambled_access_jitter_en",
+              "chip_sw_sram_ctrl_scrambled_access_jitter_en",
               "chip_sw_edn_entropy_reqs_jitter"]
     }
     {
