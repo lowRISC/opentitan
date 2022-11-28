@@ -114,6 +114,7 @@
                        "{top_dv_path}/cov/lc_ctrl_hw_rev_tied_off.el",
                        "{top_dv_path}/cov/pinmux_pad_attr.el",
                        "{top_dv_path}/cov/plic_le_i_tied_off.el",
+                       "{top_dv_path}/cov/plic_ip_wr_en_tied_off.el",
                        "{top_dv_path}/cov/rom_ctrl_kmac_app_tied_off_data_strb_bits.el",
                        "{top_dv_path}/cov/spi_host_device_unr_tied_off.el"
                        ]
