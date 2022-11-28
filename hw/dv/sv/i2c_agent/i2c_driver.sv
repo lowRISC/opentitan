@@ -141,7 +141,8 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     // intr_stretch_timeout_o interrupt would be generated uniformly
     // To test this feature more regressive, there might need a dedicated vseq (V2)
     // in which TIMEOUT_CTRL.EN is always set.
-    return $urandom_range(tc.tClockPulse, tc.tClockPulse + 2*tc.tTimeOut);
+    if (cfg.host_stretch_test_mode) return tc.tClockPulse;
+    else return $urandom_range(tc.tClockPulse, tc.tClockPulse + 2*tc.tTimeOut);
   endfunction : gen_num_stretch_host_clks
 
   virtual task process_reset();
