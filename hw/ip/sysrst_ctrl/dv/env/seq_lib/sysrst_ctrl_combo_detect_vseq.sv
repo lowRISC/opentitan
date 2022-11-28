@@ -14,7 +14,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
   rand uint16_t set_pulse_width, set_key_timer;
   rand uint16_t cycles;
 
-  constraint num_trans_c {num_trans == 2;}
+  constraint num_trans_c {num_trans == 20;}
 
   constraint set_duration_c {
     foreach (set_duration[i]) {
@@ -129,7 +129,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
     repeat (num_trans) begin
       bit bat_act_triggered, ec_act_triggered, rst_act_triggered;
-      bit [3:0] intr_actions;
+      bit [3:0] intr_actions, intr_actions_pre_reset;
       int ec_act_occur_cyc = 0;
       repeat ($urandom_range(1, 2)) begin
         // Trigger the input pins
@@ -142,6 +142,9 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
 
       // Latch the trigger value before resetting the input pins
       foreach (triggered[i]) triggered[i] = get_combo_trigger(i);
+
+      foreach(intr_actions_pre_reset[i])
+        intr_actions_pre_reset[i] = get_field_val(ral.com_out_ctl[i].interrupt, get_action[i]);
 
       // Sample the combo_intr_status covergroup to capture the trigger combo inputs
       // before resetting the combo inputs.
@@ -156,7 +159,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
             cfg.vif.key2_in,
             cfg.vif.pwrb_in,
             cfg.vif.ac_present,
-            intr_actions
+            intr_actions_pre_reset
         );
       end
 
