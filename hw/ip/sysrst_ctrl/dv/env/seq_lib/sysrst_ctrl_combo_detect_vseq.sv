@@ -14,7 +14,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
   rand uint16_t set_pulse_width, set_key_timer;
   rand uint16_t cycles;
 
-  constraint num_trans_c {num_trans == 2;}
+  constraint num_trans_c {num_trans == 30;}
 
   constraint set_duration_c {
     foreach (set_duration[i]) {
@@ -54,7 +54,7 @@ class sysrst_ctrl_combo_detect_vseq extends sysrst_ctrl_base_vseq;
         [1 : (set_duration[i] + set_key_timer) - 2] :/ 20,
         [(set_duration[i] + set_key_timer) + 5 : (set_duration[i] + set_key_timer) * 2]   :/ 80
       };
-      // don't fall into this uncerntain period
+      // don't fall into this uncertain period
       !(cycles inside {[(set_duration[i] + set_key_timer) - 1 :
                         (set_duration[i] + set_key_timer) + 5]});
     }
