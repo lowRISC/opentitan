@@ -27,7 +27,7 @@ static void send_buffer(uint8_t *buf, size_t len) {
   }
 }
 
-void test_coverage_send_buffer(void) {
+void coverage_send_buffer(void) {
   // It looks like we don't have a way to read the profile buffer incrementally.
   // Thus, we define the following buffer.
   uint8_t buf[8192] = {0};

@@ -6,4 +6,4 @@
 
 // This NOP function gets linked in when coverage is disabled. See
 // `test_coverage_llvm.c` for its actual definition when coverage is enabled.
-void test_coverage_send_buffer(void) {}
+void coverage_send_buffer(void) {}

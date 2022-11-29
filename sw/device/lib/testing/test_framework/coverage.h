@@ -12,6 +12,6 @@
  * data is raw and must be indexed before it can be used to generate coverage
  * reports.
  */
-void test_coverage_send_buffer(void);
+void coverage_send_buffer(void);
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_COVERAGE_H_
