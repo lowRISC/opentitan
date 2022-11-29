@@ -99,7 +99,7 @@ bool i2c_testutils_target_check_start(dif_i2c_t *i2c, uint8_t *addr) {
 bool i2c_testutils_target_check_end(dif_i2c_t *i2c, uint8_t *cont_byte) {
   uint8_t acq_fifo_lvl;
   CHECK_DIF_OK(dif_i2c_get_fifo_levels(i2c, NULL, NULL, NULL, &acq_fifo_lvl));
-  CHECK(acq_fifo_lvl > 1);
+  CHECK(acq_fifo_lvl >= 1);
 
   dif_i2c_signal_t signal;
   uint8_t byte;
