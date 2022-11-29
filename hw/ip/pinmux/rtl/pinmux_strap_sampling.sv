@@ -54,10 +54,10 @@ module pinmux_strap_sampling
 
   prim_mubi4_sync #(
     .NumCopies(1),
-    .AsyncOn(0)
+    .AsyncOn(0) // clock/reset below is only used for SVAs.
   ) u_por_scanmode_sync (
-    .clk_i(1'b0),  // unused clock
-    .rst_ni(1'b1), // unused reset
+    .clk_i,
+    .rst_ni,
     .mubi_i(scanmode_i),
     .mubi_o(scanmode)
   );
