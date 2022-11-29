@@ -20,6 +20,13 @@ config_setting(
     values = {"copt": "-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_"},
 )
 
+config_setting(
+    name = "measure_coverage_on_target",
+    define_values = {
+        "measure_coverage_on_target": "true",
+    },
+)
+
 cc_library(
     name = "nothing",
 )
