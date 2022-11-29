@@ -85,8 +85,8 @@ SECTIONS {
    */
   .init_array : ALIGN(4) {
       _init_array_start = .;
-      *(.init_array)
-      *(.init_array.*)
+      KEEP(*(.init_array))
+      KEEP(*(.init_array.*))
       . = ALIGN(4);
       _init_array_end = .;
   } > ottf_flash
