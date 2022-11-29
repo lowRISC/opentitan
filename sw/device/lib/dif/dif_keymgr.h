@@ -48,12 +48,14 @@ extern "C" {
  * Enumeration for side load slot clearing.
  */
 typedef enum dif_keymgr_sideload_clr {
-  kDifKeyMgrSideLoadClearNone,
-  kDifKeyMgrSideLoadClearAes,
-  kDifKeyMgrSideLoadClearHmac,
-  kDifKeyMgrSideLoadClearKmac,
-  kDifKeyMgrSideLoadClearOtbn,
-  kDifKeyMgrSideLoadClearAll,
+  kDifKeyMgrSideLoadClearNone = 0,
+  kDifKeyMgrSideLoadClearAes = 1,
+  kDifKeyMgrSideLoadClearKmac = 2,
+  kDifKeyMgrSideLoadClearOtbn = 3,
+  // Using different value than those enumerated above should clear all slots,
+  // so we can use the mask value of this field to denote ALL case. This was
+  // we can statically assert this value on the .c side of this DIF.
+  kDifKeyMgrSideLoadClearAll = 7,
 } dif_keymgr_sideload_clr_t;
 
 /**

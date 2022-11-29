@@ -12,6 +12,21 @@
 #include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
 
 /**
+ * Make sure dif_keymgr_sideload_clr_t enum is in sync with autogenarated
+ * values.
+ */
+OT_ASSERT_ENUM_VALUE(kDifKeyMgrSideLoadClearNone,
+                     KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_NONE);
+OT_ASSERT_ENUM_VALUE(kDifKeyMgrSideLoadClearAes,
+                     KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_AES);
+OT_ASSERT_ENUM_VALUE(kDifKeyMgrSideLoadClearKmac,
+                     KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_KMAC);
+OT_ASSERT_ENUM_VALUE(kDifKeyMgrSideLoadClearOtbn,
+                     KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_OTBN);
+OT_ASSERT_ENUM_VALUE(kDifKeyMgrSideLoadClearAll,
+                     KEYMGR_SIDELOAD_CLEAR_VAL_MASK);
+
+/**
  * Address spaces of SEALING_SW_BINDING_N, SALT_N, SW_SHARE0_OUTPUT_N, and
  * SW_SHARE1_OUTPUT_N registers must be contiguous to be able to use
  * `mmio_region_memcpy_to/from_mmio32()`.

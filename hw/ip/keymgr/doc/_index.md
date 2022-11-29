@@ -192,7 +192,7 @@ The generate output command is composed of 2 options
 *  Generate output key for software, referred to as `generate-output-sw`
 *  Generate output key for hardware, referred to as `generate-output-hw`
 
-The hardware option is meant specifically for symmetric side load use cases.
+The hardware option is meant specifically for symmetric sideload use cases.
 When this option is issued, the output of the KMAC invocation is not stored in software visible registers, but instead in hardware registers that directly output to symmetric primitives such as AES, KMAC and OTBN.
 
 ## KMAC Operations
@@ -419,7 +419,7 @@ See diagram below for an example transfer:
 }
 {{< /wavejson >}}
 
-### Side Load Keys
+### Sideload Keys
 
 There are three sideload keys.
 One for AES, one for KMAC and one for OTBN.
@@ -435,6 +435,9 @@ Note, there may not be a valid key in the sideload register if it has been clear
 The sideload key can be overwritten with another generate command, or cleared with entropy through {{< regref SIDELOAD_CLEAR >}}.
 
 The clearing can be done one slot at a time, or all at once.
+Once a clearing bit is enabled for a particular key slot, its value is continuously re-randomized every clock cycle.
+Therefore, SW is responsible for toggling this bit back to disabled state, which makes the last random value remain stable on the sideload slot.
+Otherwise, the sideload key slot is continuously randomized which prevents sideloading an actual key to the target HWIP.
 
 The following diagram illustrates an example when there is no valid key in the KMAC sideload registers and an operation is called.
 During the duration of the operation, the key is valid and shows the internal key state.
