@@ -156,7 +156,7 @@ bool i2c_testutils_target_check_wr(dif_i2c_t *i2c, uint8_t byte_count,
 
   for (uint8_t i = 0; i < byte_count; ++i) {
     dif_i2c_signal_t signal;
-    CHECK_DIF_OK(dif_i2c_acquire_byte(i2c, bytes, &signal));
+    CHECK_DIF_OK(dif_i2c_acquire_byte(i2c, bytes + i, &signal));
     CHECK(signal == kDifI2cSignalNone);
   }
 
