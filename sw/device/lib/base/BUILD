@@ -30,7 +30,7 @@ cc_library(
 )
 
 cc_library(
-    name = "math_builtins",
+    name = "math_polyfills",
     srcs = ["math_builtins.c"],
 
     # This library defines polyfills, so we need to ensure LLVM doesn't make
@@ -45,9 +45,18 @@ cc_test(
     srcs = ["math_builtins_unittest.cc"],
     deps = [
         ":bitfield",
-        ":math_builtins",
+        ":math_polyfills",
         "@googletest//:gtest_main",
     ],
+)
+
+alias(
+    name = "math_builtins",
+    actual = select({
+        "//sw/device:measure_coverage_on_target": "//sw/device:nothing",
+        "//conditions:default": ":math_polyfills",
+    }),
+    visibility = ["//visibility:private"],
 )
 
 cc_library(

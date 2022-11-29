@@ -15,7 +15,7 @@ load("//rules:linker.bzl", "ld_library")
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "coverage",
+    name = "coverage_none",
     srcs = ["coverage_none.c"],
     hdrs = ["coverage.h"],
 )
@@ -27,12 +27,22 @@ cc_library(
         "//sw/vendor:llvm_clang_rt_profile",
     ],
     hdrs = ["coverage.h"],
+    linkopts = ["-lgcc"],
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/silicon_creator/lib:crc32",
     ],
+)
+
+alias(
+    name = "coverage",
+    actual = select({
+        "//sw/device:measure_coverage_on_target": ":coverage_llvm",
+        "//conditions:default": ":coverage_none",
+    }),
+    visibility = ["//visibility:private"],
 )
 
 cc_library(
