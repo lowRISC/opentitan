@@ -1724,6 +1724,13 @@
       sw_images: ["//sw/device/tests:chip_power_sleep_load:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
+    {
+      name: chip_sw_ast_clk_rst_inputs
+      uvm_test_seq: chip_sw_ast_clk_rst_inputs_vseq
+      sw_images: ["//sw/device/tests/sim_dv:ast_clk_rst_inputs:1"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=200_000_000"]
+    }
   ]
 
   // List of regressions.

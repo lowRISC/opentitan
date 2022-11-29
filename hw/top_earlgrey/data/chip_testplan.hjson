@@ -3024,10 +3024,18 @@
       name: chip_sw_ast_clk_rst_inputs
       desc: '''Verify the clk and rst inputs to AST (from `clkmgr`).
 
-            Details TBD.
+            Create different scenarios that affect the clocks and resets and see that the AST features
+            (RNG, entropy, alert, ADC) that use those clocks/resets behave correctly.
+            sequence:
+            1. Check that AST RNG generates data and fills the entropy source fifo
+            2. Create AST alerts
+            3. Activate ADC conversion
+            4. EDN entropy supply to AST
+            Enter sleep/deep sleep/ stop IO/USB clocks
+            Repeat 1-4 to check it is ok.
             '''
       stage: V2
-      tests: []
+      tests: ["chip_sw_ast_clk_rst_inputs"]
     }
     {
       name: chip_sw_ast_sys_clk_jitter
