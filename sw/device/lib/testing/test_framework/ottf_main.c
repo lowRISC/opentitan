@@ -98,9 +98,9 @@ static void report_test_status(bool result) {
       init_uart();
     }
     LOG_INFO("Finished %s", kOttfTestConfig.file);
-    coverage_send_buffer();
   }
 
+  coverage_send_buffer();
   test_status_set(result ? kTestStatusPassed : kTestStatusFailed);
 }
 
