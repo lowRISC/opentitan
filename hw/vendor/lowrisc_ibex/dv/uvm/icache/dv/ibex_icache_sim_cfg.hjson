@@ -27,6 +27,8 @@
       "{proj_root}/vendor/lowrisc_ip/dv/verilator/memutil_dpi_scrambled_opts.hjson"
   ]
 
+  sim_tops: ["ibex_icache_fcov_bind"]
+
   build_modes: [
     {
       name: default
@@ -45,7 +47,7 @@
   uvm_test: ibex_icache_base_test
   uvm_test_seq: ibex_icache_base_vseq
 
-  run_opts: ["+test_timeout_ns=1000000000"]
+  run_opts: ["+test_timeout_ns=1000000000", "+enable_icache_fcov=1"]
 
   // List of test specifications.
   tests: [

@@ -95,7 +95,7 @@ export LOWRISC_IP_DIR := $(realpath ${PRJ_DIR}/vendor/lowrisc_ip)
 
 # Needed for tcl files that are used with Cadence tools.
 export dv_root := $(realpath ../../../vendor/lowrisc_ip/dv)
-export DUT_TOP := dut
+export DUT_TOP := ibex_top
 
 # Setup the necessary paths for all python scripts to find all other relevant modules.
 PYTHONPATH := $(shell python3 -c 'from scripts.setup_imports import get_pythonpath; get_pythonpath()')

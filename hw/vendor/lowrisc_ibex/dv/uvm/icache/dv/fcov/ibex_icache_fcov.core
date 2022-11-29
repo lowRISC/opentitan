@@ -1,0 +1,24 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:ibex_icache_fcov"
+description: "Ibex ICache functional coverage and bind files"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ibex:ibex_icache
+
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+    files:
+      - ibex_icache_fcov_if.sv
+      - ibex_icache_fcov_bind.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
+      - files_dv

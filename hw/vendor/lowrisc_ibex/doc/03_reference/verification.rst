@@ -17,6 +17,10 @@ At a high level, this testbench uses the open source `RISCV-DV random instructio
 simple memory model, stimulates the Ibex core to run this program in memory, and then compares the
 core trace log against a golden model ISS trace log to check for correctness of execution.
 
+Verification maturity is tracked via :ref:`verification_stages` that are `defined by the OpenTitan project <https://docs.opentitan.org/doc/project/development_stages/#hardware-verification-stages-v>`_.
+
+Ibex has achieved **V2S** for the ``opentitan`` configuration, broadly this means verification almost complete (over 90% code and functional coverage hit with over 90% regression pass rate with test plan and coverage plan fully implemented) but not yet closed.
+
 Testbench Architecture
 ^^^^^^^^^^^^^^^^^^^^^^
 

@@ -18,7 +18,9 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
   input fcov_csr_write,
 
   input fcov_rf_ecc_err_a_id,
-  input fcov_rf_ecc_err_b_id
+  input fcov_rf_ecc_err_b_id,
+
+  input ibex_mubi_t fetch_enable_i
 );
   `include "dv_fcov_macros.svh"
   import uvm_pkg::*;
@@ -452,13 +454,23 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
     cp_dummy_instr_id_stage: coverpoint if_stage_i.dummy_instr_id_o;
     cp_dummy_instr_wb_stage: coverpoint wb_stage_i.dummy_instr_wb_o;
 
-    cp_rf_a_ecc_err: coverpoint fcov_rf_ecc_err_a_id;
-    cp_rf_b_ecc_err: coverpoint fcov_rf_ecc_err_b_id;
+    `DV_FCOV_EXPR_SEEN(rf_a_ecc_err, fcov_rf_ecc_err_a_id)
+    `DV_FCOV_EXPR_SEEN(rf_b_ecc_err, fcov_rf_ecc_err_b_id)
 
-    cp_icache_ecc_err : coverpoint if_stage_i.icache_ecc_error_o;
+    `DV_FCOV_EXPR_SEEN(icache_ecc_err, if_stage_i.icache_ecc_error_o)
 
-    cp_lockstep_err : coverpoint lockstep_glitch_err;
-    cp_rf_we_glitch_err : coverpoint rf_we_glitch_err;
+    `DV_FCOV_EXPR_SEEN(mem_load_ecc_err, load_store_unit_i.load_resp_intg_err_o)
+    `DV_FCOV_EXPR_SEEN(mem_store_ecc_err, load_store_unit_i.store_resp_intg_err_o)
+
+    `DV_FCOV_EXPR_SEEN(lockstep_err, lockstep_glitch_err)
+    `DV_FCOV_EXPR_SEEN(rf_we_glitch_err, rf_we_glitch_err)
+    `DV_FCOV_EXPR_SEEN(pc_mismatch_err, if_stage_i.pc_mismatch_alert_o)
+
+    cp_fetch_enable: coverpoint fetch_enable_i {
+      bins fetch_on    = {IbexMuBiOn};
+      bins fetch_off   = {IbexMuBiOff};
+      bins fetch_inval = default;
+    }
 
     // TODO: MRET/WFI in debug mode?
     // Specific cover points for these as `id_instr_category` will be InstrCategoryPrivIllegal when
@@ -635,11 +647,9 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
     }
 
     priv_mode_exception_cross: cross cp_priv_mode_id, cp_ls_pmp_exception, cp_ls_error_exception {
-      illegal_bins pmp_and_error_exeption_both_or_none =
+      illegal_bins pmp_and_error_exeption_both =
         (binsof(cp_ls_pmp_exception) intersect {1'b1} &&
-         binsof(cp_ls_error_exception) intersect {1'b1}) ||
-        (binsof(cp_ls_pmp_exception) intersect {1'b0} &&
-         binsof(cp_ls_error_exception) intersect {1'b0});
+         binsof(cp_ls_error_exception) intersect {1'b1});
     }
 
     stall_cross: cross cp_id_instr_category, cp_stall_type_id {
@@ -731,7 +741,7 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
     dummy_instr_config_cross: cross cp_dummy_instr_type, cp_dummy_instr_mask
                                 iff (cs_registers_i.dummy_instr_en_o);
 
-    rf_ecc_err_cross: cross cp_rf_a_ecc_err, cp_rf_b_ecc_err
+    rf_ecc_err_cross: cross fcov_rf_ecc_err_a_id, fcov_rf_ecc_err_b_id
                                 iff (id_stage_i.instr_valid_i);
 
     // Each stage sees a debug request while executing a dummy instruction.

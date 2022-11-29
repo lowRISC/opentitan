@@ -596,7 +596,7 @@ module ibex_load_store_unit #(
   `DV_FCOV_SIGNAL(logic, ls_pmp_exception, (load_err_o | store_err_o) & pmp_err_q)
   `DV_FCOV_SIGNAL(logic, ls_first_req, lsu_req_i & (ls_fsm_cs == IDLE))
   `DV_FCOV_SIGNAL(logic, ls_second_req,
-    (ls_fsm_cs inside {WAIT_GNT, WAIT_RVALID_MIS}) & data_req_o & addr_incr_req_o)
+    (ls_fsm_cs inside {WAIT_RVALID_MIS}) & data_req_o & addr_incr_req_o)
   `DV_FCOV_SIGNAL(logic, ls_mis_pmp_err_1,
     (ls_fsm_cs inside {WAIT_RVALID_MIS, WAIT_GNT_MIS}) && pmp_err_q)
   `DV_FCOV_SIGNAL(logic, ls_mis_pmp_err_2,
