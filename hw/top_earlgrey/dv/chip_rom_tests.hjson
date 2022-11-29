@@ -20,10 +20,7 @@
       uvm_test_seq: chip_sw_rom_e2e_shutdown_exception_c_vseq
       sw_images: ["//sw/device/silicon_creator/rom/e2e:rom_e2e_shutdown_exception_c:1:signed"]
       en_run_modes: ["sw_test_mode_rom"]
-      run_opts: [
-        "+sw_test_timeout_ns=20000000",
-        "+bypass_alert_ready_to_end_check=1",
-      ]
+      run_opts: ["+sw_test_timeout_ns=20000000"]
       run_timeout_mins: 120
     }
     {
@@ -38,7 +35,6 @@
       run_opts: [
         "+sw_test_timeout_ns=20000000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
     }
     {
@@ -293,7 +289,6 @@
       run_opts: [
         "+sw_test_timeout_ns=410_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 480
@@ -310,7 +305,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
@@ -327,7 +321,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
@@ -344,7 +337,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
@@ -361,7 +353,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
@@ -378,7 +369,6 @@
       run_opts: [
         "+sw_test_timeout_ns=410_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 480
@@ -395,7 +385,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
@@ -412,7 +401,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
@@ -429,7 +417,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
@@ -446,7 +433,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
@@ -463,7 +449,6 @@
       run_opts: [
         "+sw_test_timeout_ns=410_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 480
@@ -480,7 +465,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
@@ -497,7 +481,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
@@ -514,7 +497,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
@@ -531,7 +513,6 @@
       run_opts: [
         "+sw_test_timeout_ns=50_000_000",
         "+use_otp_image=OtpTypeCustom",
-        "+bypass_alert_ready_to_end_check=1",
       ]
       reseed: 1
       run_timeout_mins: 120
