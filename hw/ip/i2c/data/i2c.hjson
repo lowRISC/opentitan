@@ -301,6 +301,15 @@
           name: "TXRST"
           desc: "TX FIFO reset. Write 1 to the register resets it. Read returns 0"
         }
+        { bits: "9"
+          swaccess: "rw"
+          name: "TX_AUTO_CLEAR"
+          desc: '''
+            Automatically clear TX FIFO on re-start or stop.
+            This ensures that if the previous segment or transaction finishes with leftover data,
+            it is not sent out during a subsequent segment (potentially to a different address) by accident.
+          '''
+        }
       ]
     }
     { name: "FIFO_STATUS"

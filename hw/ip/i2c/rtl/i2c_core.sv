@@ -228,7 +228,14 @@ module  i2c_core #(
   assign i2c_fifo_rxilvl  = reg2hw.fifo_ctrl.rxilvl.q;
   assign i2c_fifo_fmtilvl = reg2hw.fifo_ctrl.fmtilvl.q;
 
-  assign i2c_fifo_txrst   = reg2hw.fifo_ctrl.txrst.q & reg2hw.fifo_ctrl.txrst.qe;
+  // Tx fifo reset is either manually triggered, or whenever a transaction completes.
+  // The latter prevents the hardware from potentially sending out stale data without
+  // software intervention.
+  assign i2c_fifo_txrst   = (reg2hw.fifo_ctrl.txrst.q & reg2hw.fifo_ctrl.txrst.qe) |
+                            (reg2hw.fifo_ctrl.tx_auto_clear.q & event_trans_complete);
+  logic unused_qe;
+  assign unused_qe = reg2hw.fifo_ctrl.tx_auto_clear.qe;
+
   assign i2c_fifo_acqrst  = reg2hw.fifo_ctrl.acqrst.q & reg2hw.fifo_ctrl.acqrst.qe;
 
   always_ff @ (posedge clk_i or negedge rst_ni) begin : watermark_transition

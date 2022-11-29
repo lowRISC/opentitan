@@ -244,6 +244,8 @@ module i2c_reg_top (
   logic [1:0] fifo_ctrl_fmtilvl_wd;
   logic fifo_ctrl_acqrst_wd;
   logic fifo_ctrl_txrst_wd;
+  logic fifo_ctrl_tx_auto_clear_qs;
+  logic fifo_ctrl_tx_auto_clear_wd;
   logic fifo_status_re;
   logic [6:0] fifo_status_fmtlvl_qs;
   logic [6:0] fifo_status_txlvl_qs;
@@ -1859,7 +1861,7 @@ module i2c_reg_top (
 
   // R[fifo_ctrl]: V(False)
   logic fifo_ctrl_qe;
-  logic [5:0] fifo_ctrl_flds_we;
+  logic [6:0] fifo_ctrl_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -2030,6 +2032,33 @@ module i2c_reg_top (
     .qs     ()
   );
   assign reg2hw.fifo_ctrl.txrst.qe = fifo_ctrl_qe;
+
+  //   F[tx_auto_clear]: 9:9
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0)
+  ) u_fifo_ctrl_tx_auto_clear (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (fifo_ctrl_we),
+    .wd     (fifo_ctrl_tx_auto_clear_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (fifo_ctrl_flds_we[6]),
+    .q      (reg2hw.fifo_ctrl.tx_auto_clear.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (fifo_ctrl_tx_auto_clear_qs)
+  );
+  assign reg2hw.fifo_ctrl.tx_auto_clear.qe = fifo_ctrl_qe;
 
 
   // R[fifo_status]: V(True)
@@ -3035,6 +3064,8 @@ module i2c_reg_top (
   assign fifo_ctrl_acqrst_wd = reg_wdata[7];
 
   assign fifo_ctrl_txrst_wd = reg_wdata[8];
+
+  assign fifo_ctrl_tx_auto_clear_wd = reg_wdata[9];
   assign fifo_status_re = addr_hit[9] & reg_re & !reg_error;
   assign ovrd_we = addr_hit[10] & reg_we & !reg_error;
 
@@ -3232,6 +3263,7 @@ module i2c_reg_top (
         reg_rdata_next[6:5] = fifo_ctrl_fmtilvl_qs;
         reg_rdata_next[7] = '0;
         reg_rdata_next[8] = '0;
+        reg_rdata_next[9] = fifo_ctrl_tx_auto_clear_qs;
       end
 
       addr_hit[9]: begin
