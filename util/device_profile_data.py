@@ -19,46 +19,47 @@ import re
 import sys
 
 
-def extract_profile_data(device_output_file):
+def extract_profile_data(device_output):
     """Parse device output to extract LLVM profile data.
 
     This function returns the LLVM profile data as a byte array after
     verifying its length and checksum.
 
     Args:
-        device_output_file: File that contains the device output.
+        device_output: Device output.
     Returns:
         LLVM profile data.
     Raises:
         ValueError: If LLVM profile data cannot be detected in the device
             output or its length or checksum is incorrect.
     """
-    lines = device_output_file.read().decode('utf-8', 'ignore').splitlines()
-    for i, line in zip(reversed(range(len(lines))), reversed(lines)):
-        match = re.match(
-            r"""
-                LLVM\ profile\ data
-                \ \(length:\ (?P<length>\d*),
-                \ CRC32:\ (?P<checksum>[0-9A-F]*)\):
-            """, line, re.VERBOSE)
-        if match:
-            exp_length = int(match.group('length'))
-            exp_checksum = match.group('checksum')
-            byte_array = bytes.fromhex(lines[i + 1])
-            break
-    # Check if output has LLVM profile data
+    device_output = re.sub(r'^.*] (.*)$',
+                           r'\1',
+                           device_output,
+                           flags=re.MULTILINE)
+    device_output = device_output.translate(
+        device_output.maketrans('', '', '\r\n'))
+    match = re.search(
+        r"""
+            LLVM\ profile\ data\ \(length:\ (?P<len>\d+)\ bytes,\ CRC32:\ (?P<crc>0x[0-9a-f]*)\):
+            (?P<data> 0x [0-9a-f]+)
+            \x04
+        """, device_output, re.VERBOSE)
     if not match:
         raise ValueError(
-            'Could not detect the LLVM profile data in device output.')
+            'Could not detect LLVM profile data in device output.')
+    exp_length = int(match.group('len'))
+    exp_checksum = int(match.group('crc'), 0)
+    byte_array = int(match.group('data'), 0).to_bytes(len(match.group('data')) // 2 - 1,
+                                                      byteorder='little',
+                                                      signed=False)
     # Check length
     act_length = len(byte_array)
     if act_length != exp_length:
         raise ValueError(('Length check failed! ',
                           f'Expected: {exp_length}, actual: {act_length}.'))
     # Check checksum
-    act_checksum = zlib.crc32(byte_array).to_bytes(4,
-                                                   byteorder='little',
-                                                   signed=False).hex().upper()
+    act_checksum = zlib.crc32(byte_array)
     if act_checksum != exp_checksum:
         raise ValueError(
             ('Checksum check failed! ',
@@ -81,7 +82,8 @@ def main():
                            help='device output')
     args = argparser.parse_args()
 
-    args.output_file.write(extract_profile_data(args.input_file))
+    args.output_file.write(
+        extract_profile_data(args.input_file.read().decode('ascii', 'ignore')))
 
 
 if __name__ == '__main__':
