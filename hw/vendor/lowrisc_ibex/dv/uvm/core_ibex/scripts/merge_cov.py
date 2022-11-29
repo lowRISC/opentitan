@@ -72,6 +72,7 @@ def merge_cov_xlm(md: RegressionMetadata, cov_dbs: Set[pathlib.Path]) -> int:
         md.cov_report_log = md.dir_cov / 'report.log'
         md.cov_report_stdout = md.dir_cov / 'report.log.stdout'
         md.cov_report_cmds = [(imc_cmd + ["-load", str(md.dir_cov_merged),
+                                          "-init", str(md.ibex_dv_root/"waivers"/"coverage_waivers_xlm.tcl"),
                                           "-exec", str(xcelium_scripts/"cov_report.tcl"),
                                           "-logfile", str(md.dir_cov/'report.log')])]
 

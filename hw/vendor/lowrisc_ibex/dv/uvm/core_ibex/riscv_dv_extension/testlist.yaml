@@ -138,6 +138,9 @@
     +no_fence=1
     +num_of_sub_program=0
     +randomize_csr=1
+    +directed_instr_0=ibex_rand_cpuctrlsts_stream,4
+    +toggle_dit=1
+    +toggle_dummy_instr=1
   rtl_test: core_ibex_debug_intr_basic_test
   sim_opts: >
     +require_signature_addr=1
@@ -177,7 +180,7 @@
     +require_signature_addr=1
     +enable_debug_seq=1
     +enable_bad_intg_on_uninit_access=0
-  timeout_s: 300
+  timeout_s: 600
 
 - test: riscv_debug_stress_test
   description: >
@@ -435,6 +438,9 @@
     +enable_interrupt=1
     +enable_timer_irq=1
     +randomize_csr=1
+    +directed_instr_0=ibex_rand_cpuctrlsts_stream,4
+    +toggle_dit=1
+    +toggle_dummy_instr=1
   rtl_test: core_ibex_debug_intr_basic_test
   sim_opts: >
     +require_signature_addr=1
@@ -827,9 +833,11 @@
 - test: riscv_pmp_full_random_test
   desc: >
     Completely randomize the boot mode, mstatus.mprv, and all PMP configuration,
-    and allow PMP regions to overlap.
-    A large number of iterations will be required since this introduces a huge
-    state space of configurations.
+    and allow PMP regions to overlap.  A large number of iterations will be
+    required since this introduces a huge state space of configurations.  Some
+    configurations result in very slow execution as every instruction ends up
+    generating a fault. As this is still a useful test a short timeout with
+    pass on timeout is enabled.
   iterations: 600
   gen_test: riscv_rand_instr_test
   gen_opts: >
@@ -844,8 +852,37 @@
     +directed_instr_3=riscv_load_store_rand_addr_instr_stream,40
     +directed_instr_4=ibex_rand_mseccfg_stream,1
     +directed_instr_6=ibex_valid_na4_stream,20
+    +directed_instr_7=ibex_cross_pmp_region_mem_access_stream,10
+    +enable_unaligned_load_store=1
   sim_opts: >
     +is_double_fault_detected_fatal=0
+    +is_timeout_s_fatal=0
+    +enable_bad_intg_on_uninit_access=0
+  rtl_test: core_ibex_base_test
+  rtl_params:
+    PMPEnable: 1
+  timeout_s: 180
+
+- test: riscv_pmp_region_exec_test
+  desc: >
+    A more specialised pmp_full_random_test that attempts to make regions
+    executable whilst MML is set.
+  iterations: 20
+  gen_test: riscv_rand_instr_test
+  gen_opts: >
+    +instr_cnt=6000
+    +set_mstatus_mprv=1
+    +pmp_randomize=1
+    +pmp_max_offset=00040000
+    +pmp_allow_illegal_tor=1
+    +directed_instr_0=riscv_load_store_rand_instr_stream,40
+    +directed_instr_1=ibex_make_pmp_region_exec_stream,5
+    +enable_unaligned_load_store=1
+    +boot_mode=m
+    +mseccfg=MML:1,MMWP:0,RLB:0
+  sim_opts: >
+    +is_double_fault_detected_fatal=0
+    +is_timeout_s_fatal=0
     +enable_bad_intg_on_uninit_access=0
   rtl_test: core_ibex_base_test
   rtl_params:

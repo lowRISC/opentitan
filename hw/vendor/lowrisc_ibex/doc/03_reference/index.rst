@@ -22,6 +22,7 @@ It describes the design in detail, discusses the verification approach and the r
    debug
    tracer
    verification
+   verification_stages
    cosim
    testplan
    coverage_plan

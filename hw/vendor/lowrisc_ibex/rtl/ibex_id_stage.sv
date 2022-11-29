@@ -522,6 +522,7 @@ module ibex_id_stage #(
     if (csr_op_en_o == 1'b1 && (csr_op_o == CSR_OP_WRITE || csr_op_o == CSR_OP_SET)) begin
       if (csr_num_e'(instr_rdata_i[31:20]) == CSR_MSTATUS ||
           csr_num_e'(instr_rdata_i[31:20]) == CSR_MIE     ||
+          csr_num_e'(instr_rdata_i[31:20]) == CSR_MSECCFG ||
           // To catch all PMPCFG/PMPADDR registers, get the shared top most 7 bits.
           instr_rdata_i[31:25] == 7'h1D) begin
         csr_pipe_flush = 1'b1;
