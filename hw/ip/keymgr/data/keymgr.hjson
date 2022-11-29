@@ -551,9 +551,10 @@
           name: "VAL",
           resval: "0"
           desc: '''
-            Depending on the value programmed, a different side load key slot is cleared.
-            If the value programmed is not one of the enumerated values below, ALL side
-            load key slots are continuously cleared.
+            Depending on the value programmed, a different sideload key slot is cleared.
+            If the value programmed is not one of the enumerated values below, ALL sideload
+            key slots are continuously cleared. In order to stop continuous clearing, SW should
+            toggle the clear bit again (i.e. disable continuous clearing).
           ''',
           enum: [
             { value: "0",
