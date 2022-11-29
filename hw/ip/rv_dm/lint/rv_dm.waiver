@@ -31,6 +31,9 @@ waive -rules RESET_MUX -location {rv_dm.sv} \
 waive -rules RESET_MUX -location {rv_dm.sv} \
       -msg {Asynchronous reset 'dmi_rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at} \
       -comment "This is needed such that the reset can be properly controlled during scanmode.."
+waive -rules RESET_USE -location {rv_dm.sv} \
+      -msg {'rst_ni' is connected to 'dmi_jtag' port 'rst_ni', and used as an asynchronous reset or set at rv_dm_regs_reg_top} \
+      -comment "This message arises since due to reset synchronization inside the dmi_jtag module."
 
 # dmi_jtag_tap
 waive -rules CLOCK_MUX -location {dmi_jtag_tap.sv} -regexp {Clock '.*tck_n' is driven by a multiplexer here, used as a clock at dmi_jtag_tap.sv} \
