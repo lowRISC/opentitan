@@ -108,6 +108,7 @@ class chip_base_vseq #(
     //
     // TODO: This is a functional interface which should ideally be connected only in the extended
     // test sequences. Revisit this later.
+    callback_vseq.pre_dut_init();
     if (cfg.chip_clock_source != ChipClockSourceInternal) begin
       `uvm_info(`gfn, {"Connecting and driving external clock source with frequency ",
                        $sformatf("%0dMhz", cfg.chip_clock_source)}, UVM_LOW)
@@ -144,7 +145,6 @@ class chip_base_vseq #(
 
     initialize_otp_sig_verify();
     initialize_otp_creator_sw_cfg_ast_cfg();
-    callback_vseq.pre_dut_init();
     // Initialize selected memories to all 0. This is required for some chip-level tests such as
     // otbn_mem_scramble that may intentionally read memories before writing them. Reading these
     // memories still triggeres ECC integrity errors that need to be handled by the test.
