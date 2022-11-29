@@ -90,15 +90,10 @@ module prim_mubi8_sync
         );
 
         // if any xor indicates signal is unstable, output the reset
-        // value.
-        prim_clock_mux2 #(
-          .NoFpgaBufG(1'b1)
-        ) u_mux (
-          .clk0_i(mubi_q[k]),
-          .clk1_i(reset_value[k]),
-          .sel_i(|sig_unstable_buf),
-          .clk_o(mubi[k])
-        );
+        // value. note that the input and output signals of this mux
+        // are driven/read by constrained primitive cells (regs, buffers),
+        // hence this mux can be implemented behaviorally.
+        assign mubi[k] = (|sig_unstable_buf) ? reset_value[k] : mubi_q[k];
       end
 
 // Note regarding SVAs below:
