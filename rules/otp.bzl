@@ -157,6 +157,8 @@ def _otp_image(ctx):
     args.add("--mmap-def", ctx.file.mmap_def)
     if ctx.attr.img_seed:
         args.add("--img-seed", ctx.attr.img_seed[BuildSettingInfo].value)
+    if ctx.attr.lc_seed:
+        args.add("--lc-seed", ctx.attr.lc_seed[BuildSettingInfo].value)
     if ctx.attr.otp_seed:
         args.add("--otp-seed", ctx.attr.otp_seed[BuildSettingInfo].value)
     args.add("--img-cfg", ctx.file.src)
@@ -198,6 +200,10 @@ otp_image = rule(
         "img_seed": attr.label(
             default = "//hw/ip/otp_ctrl/data:img_seed",
             doc = "Configuration override seed used to randomize field values in an OTP image.",
+        ),
+        "lc_seed": attr.label(
+            default = "//hw/ip/otp_ctrl/data:lc_seed",
+            doc = "Configuration override seed used to randomize LC netlist constants.",
         ),
         "otp_seed": attr.label(
             default = "//hw/ip/otp_ctrl/data:otp_seed",
