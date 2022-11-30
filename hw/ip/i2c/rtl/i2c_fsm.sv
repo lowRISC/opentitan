@@ -201,8 +201,15 @@ module i2c_fsm #(
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_stretch
     if (!rst_ni) begin
       stretch_idle_cnt <= '0;
+    end else if (stretch_en && event_stretch_timeout_o) begin
+      // If target has stretched  our clock for too long, reset the
+      // count and try again.
+      stretch_idle_cnt <= '0;
     end else if (stretch_en && scl_d && !scl_i) begin
       stretch_idle_cnt <= stretch_idle_cnt + 1'b1;
+    end else if (!target_idle_o && event_host_timeout_o) begin
+      // If the host has timed out, reset the counter and try again
+      stretch_idle_cnt <= '0;
     end else if (!target_idle_o && scl_i) begin
       stretch_idle_cnt <= stretch_idle_cnt + 1'b1;
     end else begin
@@ -685,6 +692,7 @@ module i2c_fsm #(
         target_idle_o = 1'b0;
       end
       TransmitAckPulse : begin
+        target_idle_o = 1'b0;
         if (!scl_i) begin
           // Pop Fifo regardless of ack/nack
           tx_fifo_rready_o = 1'b1;
