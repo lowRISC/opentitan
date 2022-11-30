@@ -98,6 +98,7 @@ ifneq (${sw_images},)
 			bazel_opts="${sw_build_opts} --define DISABLE_VERILATOR_BUILD=true"; \
 			bazel_opts+=" --//hw/ip/otp_ctrl/data:img_seed=${seed}"; \
 			if [[ "${build_seed}" != "None" ]]; then \
+				bazel_opts+=" --//hw/ip/otp_ctrl/data:lc_seed=${build_seed}"; \
 				bazel_opts+=" --//hw/ip/otp_ctrl/data:otp_seed=${build_seed}"; \
 			fi; \
 			if [[ -z $${BAZEL_PYTHON_WHEELS_REPO} ]]; then \

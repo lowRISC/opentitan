@@ -153,6 +153,9 @@
         // '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
         //        -o hw/top_earlgrey --rnd_cnst_seed {seed}
         // ''',
+        // Generate LC encoding
+        "cd {proj_root} && ./util/design/gen-lc-state-enc.py --seed {seed}",
+        // Generate OTP memory map and scrambling constants keys.
         "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}",
         // Use eval_cmd to save build_seed in a file and reuse that file during run phase.
         // Create the build directory first because eval_cmd runs before actual build phase command
@@ -209,7 +212,7 @@
                             '''{eval_cmd} file=`echo {build_seed_file_path}`; \
                                if [ -f $file ]; then \
                                  while read line; do \
-                                   echo "--otp-seed $line"; \
+                                   echo "--otp-seed $line --lc-seed $line"; \
                                  done < $file; \
                                fi ''']
   // Add run modes.

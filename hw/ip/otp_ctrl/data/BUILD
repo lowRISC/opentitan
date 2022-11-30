@@ -20,6 +20,11 @@ int_flag(
 )
 
 int_flag(
+    name = "lc_seed",
+    build_setting_default = 0,
+)
+
+int_flag(
     name = "otp_seed",
     build_setting_default = 0,
 )
