@@ -352,7 +352,7 @@
                 in tx_fifo otherwise tx_empty interrupt must be de-asserted
             '''
       stage: V2
-      tests: ["i2c_target_stress_rd", "i2c_target_intr_smoke", "i2c_target_tx_ovf"]
+      tests: ["i2c_target_stress_rd", "i2c_target_intr_smoke"]
     }
     {
       name: target_fifo_reset

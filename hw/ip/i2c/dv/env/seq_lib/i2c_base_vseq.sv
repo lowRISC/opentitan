@@ -872,8 +872,9 @@ class i2c_base_vseq extends cip_base_vseq #(
           end
         end
       end // else: !if(cfg.intr_vif.pins[TransComplete])
-      if (cfg.use_drooling_tx & read_cmd_q.size > 0) begin
-        bit dum = read_cmd_q.pop_front();
+      if (cfg.use_drooling_tx & (read_cmd_q.size > 0 || read_on_going == 1)) begin
+        bit dum;
+        if (read_cmd_q.size > 0) dum = read_cmd_q.pop_front();
         drooling_write_tx_fifo();
       end
     end
@@ -969,7 +970,7 @@ class i2c_base_vseq extends cip_base_vseq #(
           end
         end
       end else begin // if (data == 0)
-        csr_wr(.ptr(ral.intr_state.tx_overflow), .value(1'b1));
+        clear_interrupt(TxOverflow);
       end // else: !if(data == 0)
     end // repeat (lvl)
   endtask
