@@ -31,17 +31,15 @@ class chip_sw_rom_e2e_base_vseq extends chip_sw_base_vseq;
 
   // Note: this task deletes the contents of the UART TX buffer.
   virtual task check_uart_output_msg(string exp_msg, uint uart_idx = ROM_CONSOLE_UART);
+    string actual_msg;
     uart_tx_data_q.delete();
 
     // Wait until we receive the expected boot fault message length of bytes over UART0.
     `DV_WAIT(uart_tx_data_q.size() == exp_msg.len(),
       "Timeout waiting for UART FIFO to fill.", 200_000_000)
     `uvm_info(`gfn, "Checking the UART TX data matches expected boot fault msg ...", UVM_LOW)
-    foreach (uart_tx_data_q[i]) begin
-      `DV_CHECK_EQ(uart_tx_data_q[i], exp_msg[i],
-        $sformatf("UART TX byte \"%s\" at index %d does not match \"%s\"",
-          i, uart_tx_data_q[i], exp_msg[i]))
-    end
+    actual_msg = {>>{uart_tx_data_q}};
+    `DV_CHECK_STREQ(actual_msg, exp_msg)
   endtask
 
   virtual task rom_e2e_test_boot_fault_success(uint uart_idx = ROM_CONSOLE_UART);
