@@ -28,6 +28,8 @@
 
 #define kAlertSet true
 #define kAlertClear false
+#define kAlertVal7 7
+#define kAlertVal8 8
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -245,14 +247,13 @@ void adc_setup(bool first_adc_setup) {
       (kChannel1MinHighByte << 8) | kChannel1MinLowByte;
 
   if (first_adc_setup) {
-    en_plic_irqs(&plic);
-
     // Setup ADC configuration.
     configure_adc_ctrl(&adc_ctrl);
   } else {
     CHECK_DIF_OK(dif_adc_ctrl_reset(&adc_ctrl));
   }
 
+  en_plic_irqs(&plic);
   // Setup ADC filters. There is one filter for each channel.
   CHECK_DIF_OK(dif_adc_ctrl_configure_filter(
       &adc_ctrl, kDifAdcCtrlChannel0,
@@ -362,9 +363,9 @@ void ast_enter_sleep_states_and_check_functionality(
         LOG_ERROR("read_fifo_depth after reset=%0d should be 0",
                   read_fifo_depth(&entropy_src));
 
+      first_adc_setup = false;
       // Configure ADC after deep sleep
       adc_setup(first_adc_setup);
-      first_adc_setup = false;
     }
 
     CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
@@ -552,23 +553,23 @@ bool test_main() {
 
   LOG_INFO("1 test alert/rng after Deep sleep 1");
   pwrmgr_config = kDifPwrmgrDomainOptionUsbClockInActivePower;
-  ast_enter_sleep_states_and_check_functionality(pwrmgr_config,
-                                                 entropy_src_config, 7);
+  ast_enter_sleep_states_and_check_functionality(
+      pwrmgr_config, entropy_src_config, kAlertVal7);
 
   LOG_INFO("2 test alert/rng after regular sleep (usb clk enabled)");
   LOG_INFO("force new adc conv set");
   pwrmgr_config = kDifPwrmgrDomainOptionUsbClockInActivePower |
                   kDifPwrmgrDomainOptionUsbClockInLowPower |
                   kDifPwrmgrDomainOptionMainPowerInLowPower;
-  ast_enter_sleep_states_and_check_functionality(pwrmgr_config,
-                                                 entropy_src_config, 8);
+  ast_enter_sleep_states_and_check_functionality(
+      pwrmgr_config, entropy_src_config, kAlertVal8);
 
   LOG_INFO("3 test alert/rng after regular sleep (all clk disabled in lp)");
   LOG_INFO("force new adc conv set");
   pwrmgr_config = kDifPwrmgrDomainOptionMainPowerInLowPower |
                   kDifPwrmgrDomainOptionUsbClockInActivePower;
-  ast_enter_sleep_states_and_check_functionality(pwrmgr_config,
-                                                 entropy_src_config, 7);
+  ast_enter_sleep_states_and_check_functionality(
+      pwrmgr_config, entropy_src_config, kAlertVal7);
 
   LOG_INFO("c code is finished");
 
