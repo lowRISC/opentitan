@@ -526,6 +526,7 @@ jobs:
 
 - job: execute_test_rom_fpga_tests_cw310
   displayName: CW310 Test ROM Tests
+  # Touch the file with a comment
   pool: FPGA
   timeoutInMinutes: 45
   dependsOn:
