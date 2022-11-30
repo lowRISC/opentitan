@@ -39,6 +39,13 @@ package chip_common_pkg;
   parameter string ROM_LCV_PROD_END       = "25294a52";
   parameter string ROM_LCV_RMA            = "2739ce73";
 
+  string lc_state_2_rom_lcv[lc_ctrl_state_pkg::lc_state_e] = '{
+      lc_ctrl_state_pkg::LcStTestUnlocked0: ROM_LCV_TEST_UNLOCKED0,
+      lc_ctrl_state_pkg::LcStDev: ROM_LCV_DEV,
+      lc_ctrl_state_pkg::LcStProd: ROM_LCV_PROD,
+      lc_ctrl_state_pkg::LcStProdEnd: ROM_LCV_PROD_END,
+      lc_ctrl_state_pkg::LcStRma: ROM_LCV_RMA};
+
   // Auto-generated parameters. TODO: rename to chip_common_pkg__params.svh.
   `include "autogen/chip_env_pkg__params.sv"
 

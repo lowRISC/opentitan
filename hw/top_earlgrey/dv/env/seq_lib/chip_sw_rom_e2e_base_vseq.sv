@@ -6,13 +6,6 @@ class chip_sw_rom_e2e_base_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_rom_e2e_base_vseq)
   `uvm_object_new
 
-  string lc_state_2_rom_lcv[lc_ctrl_state_pkg::lc_state_e] = '{
-      lc_ctrl_state_pkg::LcStTestUnlocked0: ROM_LCV_TEST_UNLOCKED0,
-      lc_ctrl_state_pkg::LcStDev: ROM_LCV_DEV,
-      lc_ctrl_state_pkg::LcStProd: ROM_LCV_PROD,
-      lc_ctrl_state_pkg::LcStProdEnd: ROM_LCV_PROD_END,
-      lc_ctrl_state_pkg::LcStRma: ROM_LCV_RMA};
-
   virtual task connect_rom_uart_agent(uint uart_idx = ROM_CONSOLE_UART);
       `uvm_info(`gfn, $sformatf("Configuring and connecting UART agent to UART %0d ...", uart_idx),
         UVM_LOW)
