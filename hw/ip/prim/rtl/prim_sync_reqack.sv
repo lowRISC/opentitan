@@ -247,10 +247,10 @@ module prim_sync_reqack #(
 
     // Always reset both domains. Both resets need to be active at the same time.
     `ASSERT(SyncReqAckRstSrc, $fell(rst_src_ni) |->
-        ((src_reset_flag | dst_reset_flag)  == '0),
+        (!src_reset_flag throughout !dst_reset_flag[->1]),
         clk_src_i, 0)
     `ASSERT(SyncReqAckRstDst, $fell(rst_dst_ni) |->
-        ((src_reset_flag | dst_reset_flag) == '0),
+        (!dst_reset_flag throughout !src_reset_flag[->1]),
         clk_dst_i, 0)
 
   `endif
