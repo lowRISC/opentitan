@@ -19,6 +19,22 @@
     }
 
     {
+      name: rom_e2e_default_otp_bootup
+      desc: '''Verify that ROM can boot a ROM_EXT with default OTP values (all zeroes).
+
+            - Create an OTP with all zeros except:
+                - OWNER_SW_CFG_ROM_BOOTSTRAP_EN set to 0x739 (true)
+                - CREATOR_SW_CFG_ROM_EXEC_EN set to 0xffffffff (enabled)
+                - LC_STATE in the TEST_UNLOCKED0 state
+                - LIFE_CYCLE count value set to 1
+            - Ensure that the ROM can boot.
+            '''
+      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      stage: V2
+      tests: ["rom_e2e_default_otp_smoke"]
+    }
+
+    {
       name: rom_e2e_shutdown_output
       desc: '''Verify that ROM can properly report errors over UART.
 

@@ -73,6 +73,63 @@ LC_KEY_TYPES = {
     ],
 }
 
+# Default OTP in TEST_UNLOCKED state
+otp_json(
+    name = "otp_json_default",
+    partitions = [
+        otp_partition(
+            name = "OWNER_SW_CFG",
+            items = {
+                "OWNER_SW_CFG_ROM_BOOTSTRAP_EN": "0x739",
+            },
+        ),
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_ROM_EXEC_EN": "0xffffffff",
+            },
+        ),
+        otp_partition(
+            name = "LIFE_CYCLE",
+            count = 1,
+            state = "TEST_UNLOCKED0",
+        ),
+    ],
+)
+
+otp_image(
+    name = "otp_img_default",
+    src = ":otp_json_default",
+    visibility = ["//visibility:private"],
+)
+
+bitstream_splice(
+    name = "bitstream_default_otp",
+    src = "//hw/bitstream:rom",
+    data = ":otp_img_default",
+    meminfo = "//hw/bitstream:otp_mmi",
+    tags = ["vivado"] + maybe_skip_in_ci(CONST.LCV.RMA),
+    update_usr_access = True,
+    visibility = ["//visibility:private"],
+)
+
+opentitan_functest(
+    name = "rom_e2e_default_otp_bootup",
+    srcs = ["empty_test.c"],
+    cw310 = cw310_params(
+        bitstream = ":bitstream_default_otp",
+        tags = ["vivado"] + maybe_skip_in_ci(CONST.LCV.RMA),
+    ),
+    signed = True,
+    targets = [
+        "cw310_rom",
+    ],
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+    ],
+)
+
 [opentitan_flash_binary(
     name = "empty_test_slot_{}".format(slot),
     srcs = ["empty_test.c"],
