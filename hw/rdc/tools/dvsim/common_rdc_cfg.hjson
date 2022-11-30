@@ -58,9 +58,6 @@
   // Restrict the maximum message count in each bucket
   max_msg_count: 1000
 
-  // TODO(#9079): Need to align with new parser mechanism.
-  build_fail_patterns: []
-
   exports: [
     { RDC_ROOT:     "{rdc_root}" },
     { FOUNDRY_ROOT: "{foundry_root}" },

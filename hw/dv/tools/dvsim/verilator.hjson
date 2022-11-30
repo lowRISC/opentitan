@@ -81,7 +81,6 @@
   ]
 
   // pass and fail patterns
-  build_pass_patterns: []
   build_fail_patterns: [// Verilator compile error.
                         "^%Error.*?:",
                         // FuseSoC build error.
