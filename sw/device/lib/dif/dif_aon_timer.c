@@ -68,8 +68,10 @@ dif_result_t dif_aon_timer_wakeup_start(const dif_aon_timer_t *aon,
   aon_timer_wakeup_toggle(aon, false);
   aon_timer_wakeup_clear_counter(aon);
 
+  // As AON_TIMER spends one more cycle to create the interrupt, subtract
+  // cycles by 1 here.
   mmio_region_write32(aon->base_addr, AON_TIMER_WKUP_THOLD_REG_OFFSET,
-                      threshold);
+                      threshold - 1);
 
   uint32_t reg =
       bitfield_field32_write(0, AON_TIMER_WKUP_CTRL_PRESCALER_FIELD, prescaler);
@@ -149,10 +151,12 @@ dif_result_t dif_aon_timer_watchdog_start(const dif_aon_timer_t *aon,
   aon_timer_watchdog_toggle(aon, false);
   aon_timer_watchdog_clear_counter(aon);
 
+  // As AON_TIMER spends one more cycle to create the interrupt, subtract
+  // cycles by 1 here.
   mmio_region_write32(aon->base_addr, AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET,
-                      bark_threshold);
+                      bark_threshold - 1);
   mmio_region_write32(aon->base_addr, AON_TIMER_WDOG_BITE_THOLD_REG_OFFSET,
-                      bite_threshold);
+                      bite_threshold - 1);
 
   uint32_t reg = bitfield_bit32_write(0, AON_TIMER_WDOG_CTRL_ENABLE_BIT, true);
   if (pause_in_sleep) {
