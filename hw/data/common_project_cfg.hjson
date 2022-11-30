@@ -11,6 +11,12 @@
   scratch_base_path:  "{scratch_root}/{branch}"
   scratch_path:       "{scratch_base_path}/{dut}-{flow}-{tool}"
 
+  // Common data structure
+  build_pass_patterns: []
+  // TODO: Add back FuseSoC fail pattern after
+  // https://github.com/lowRISC/opentitan/issues/7348 is resolved.
+  build_fail_patterns: []
+
   exports: [
     { SCRATCH_PATH: "{scratch_path}" },
     { proj_root: "{proj_root}" }
