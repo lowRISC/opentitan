@@ -20,10 +20,19 @@ py_binary(
     ],
 )
 
+py_library(
+    name = "bitstreams_workspace",
+    srcs = [
+        "bitstreams_workspace.py",
+    ],
+)
+
 py_test(
     name = "bitstreams_workspace_test",
     srcs = [
-        "bitstreams_workspace.py",
         "bitstreams_workspace_test.py",
+    ],
+    deps = [
+        ":bitstreams_workspace",
     ],
 )

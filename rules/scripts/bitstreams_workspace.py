@@ -63,6 +63,7 @@ parser.add_argument(
 
 
 class BitstreamCache(object):
+
     def __init__(self, bucket_url, cachedir, latest_update, offline=False):
         """Initialize the Bitstream Cache Manager."""
         if bucket_url[-1] != '/':
@@ -75,6 +76,14 @@ class BitstreamCache(object):
         self.latest_update = latest_update
         self.offline = offline
         self.available = {}
+
+    @staticmethod
+    def MakeWithDefaults() -> 'BitstreamCache':
+        """Create a BitstreamCache with default parameters."""
+        args = parser.parse_args([])
+        cache = BitstreamCache(args.bucket_url, args.cache, args.latest_update,
+                               args.offline)
+        return cache
 
     def InitRepository(self):
         """Create the cache directory and symlink it into the bazel repository dir."""

@@ -11,6 +11,11 @@ from bitstreams_workspace import BitstreamCache
 
 class TestBitstreamCache(unittest.TestCase):
 
+    def test_make_with_default(self):
+        # Changes to command-line argument defaults could break this method, so
+        # it's important to at least have code coverage.
+        BitstreamCache.MakeWithDefaults()
+
     def test_get_from_cache(self):
         BITSTREAM_ORIG = 'lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig'
         BITSTREAM_SPLICE = 'lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice'
