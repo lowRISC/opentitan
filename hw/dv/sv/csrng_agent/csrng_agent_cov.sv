@@ -2,6 +2,18 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`define CSRNG_GLEN_COVBIN \
+    csrng_glen: coverpoint item.glen { \
+      // TODO: EDN testbench currently sends a max of 64 endpoints, which is 64/4 genbits. \
+      bins glens[4] = {[1:16]}; \
+    }
+
+`define CSRNG_STS_COVBIN \
+    csrng_sts: coverpoint sts { \
+      bins pass = {0}; \
+      bins fail = {1}; \
+    }
+
 // covergroups
 // Depends on whether the agent is device or host mode, the "csrng_cmd_cp" are slightly different:
 // In device mode: acmd INV, GENB, GENU are in the illegal bin.
@@ -78,18 +90,26 @@ covergroup host_cmd_cg with function sample(csrng_item item, bit sts);
 
 endgroup
 
-covergroup genbits_cg with function sample(csrng_item item, bit sts);
-  option.name         = "csrng_genbits_cg";
+// Depends on whether the agent is device or host mode, the "csrng_genbits_cross" are slightly
+// different:
+// In device mode: csrng agent can drive `sts` to pass or fail randomly.
+// In host mode: DUT will also return pass for genbits data.
+covergroup device_genbits_cg with function sample(csrng_item item, bit sts);
+  option.name         = "csrng_device_genbits_cg";
   option.per_instance = 1;
 
-  csrng_glen: coverpoint item.glen {
-    // TODO: EDN testbench currently sends a max of 64 endpoints, which is 64/4 genbits.
-    bins glens[4] = {[1:16]};
-  }
-  csrng_sts: coverpoint sts {
-    bins pass = {0};
-    bins fail = {1};
-  }
+  `CSRNG_GLEN_COVBIN
+  `CSRNG_STS_COVBIN
+
+  csrng_genbits_cross: cross csrng_glen, csrng_sts;
+endgroup
+
+covergroup host_genbits_cg with function sample(csrng_item item, bit sts);
+  option.name         = "csrng_host_genbits_cg";
+  option.per_instance = 1;
+
+  `CSRNG_GLEN_COVBIN
+  `CSRNG_STS_COVBIN
 
   csrng_genbits_cross: cross csrng_glen, csrng_sts {
     // Generate may not return fail as status.
@@ -98,9 +118,10 @@ covergroup genbits_cg with function sample(csrng_item item, bit sts);
 endgroup
 
 class csrng_agent_cov extends dv_base_agent_cov#(csrng_agent_cfg);
-  host_cmd_cg   m_host_cmd_cg;
-  device_cmd_cg m_device_cmd_cg;
-  genbits_cg    m_genbits_cg;
+  host_cmd_cg       m_host_cmd_cg;
+  device_cmd_cg     m_device_cmd_cg;
+  host_genbits_cg   m_host_genbits_cg;
+  device_genbits_cg m_device_genbits_cg;
 
   `uvm_component_utils(csrng_agent_cov)
   `uvm_component_new
@@ -108,19 +129,27 @@ class csrng_agent_cov extends dv_base_agent_cov#(csrng_agent_cfg);
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    m_genbits_cg = new();
-    if (cfg.if_mode == dv_utils_pkg::Device) m_device_cmd_cg = new();
-    else                                     m_host_cmd_cg = new();
+    if (cfg.if_mode == dv_utils_pkg::Device) begin
+      m_device_cmd_cg = new();
+      m_device_genbits_cg = new();
+    end else begin
+      m_host_cmd_cg = new();
+      m_host_genbits_cg = new();
+    end
   endfunction
 
   function void sample_csrng_cmds(csrng_item item, bit sts);
     if (cfg.if_mode == dv_utils_pkg::Device) begin
       m_device_cmd_cg.sample(item, cfg.vif.cmd_rsp.csrng_rsp_sts);
+      if (item.acmd == csrng_pkg::GEN) begin
+        m_device_genbits_cg.sample(item, cfg.vif.cmd_rsp.csrng_rsp_sts);
+      end
     end else begin
       m_host_cmd_cg.sample(item, cfg.vif.cmd_rsp.csrng_rsp_sts);
+      if (item.acmd == csrng_pkg::GEN) begin
+        m_host_genbits_cg.sample(item, cfg.vif.cmd_rsp.csrng_rsp_sts);
+      end
     end
-
-    if (item.acmd == csrng_pkg::GEN) m_genbits_cg.sample(item, cfg.vif.cmd_rsp.csrng_rsp_sts);
   endfunction
 
 endclass
