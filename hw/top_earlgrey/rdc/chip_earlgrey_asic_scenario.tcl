@@ -169,6 +169,14 @@ set_reset_scenario { \
     { reset { @t0 1 } { #10 0 } { #10 1 } } } \
   { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[1] { constraint { @t0 1 } } } \
   { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[0] { constraint { @t0 0 } } } \
+  { top_earlgrey.u_rv_dm.dap.i_dmi_cdc.i_cdc_req.u_prim_sync_reqack.gen_rz_hs_protocol.dst_fsm_q \
+    { constraint { @t0 0 } } } \
+  { top_earlgrey.u_rv_dm.dap.i_dmi_cdc.i_cdc_req.wvalid_i \
+    { constraint { @t0 0 } } } \
+  { top_earlgrey.u_rv_dm.dap.i_dmi_cdc.i_cdc_req.pending_q \
+    { constraint { @t0 0 } } } \
+  { top_earlgrey.u_rv_dm.dap.i_dmi_cdc.i_cdc_req.u_prim_sync_reqack.gen_rz_hs_protocol.src_fsm_q \
+    { constraint { @t0 0 } } } \
   { POR_N                               { constraint { @t0 1 } } } \
   { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint { @t0 1 } } } \
   { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { constraint { @t0 1 } } } \
@@ -179,6 +187,14 @@ set_reset_scenario { \
     { reset { @t0 1 } { #10 0 } { #10 1 } } } \
   { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[1] { constraint { @t0 0 } } } \
   { top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q[0] { constraint { @t0 1 } } } \
+  { top_earlgrey.u_lc_ctrl.u_dmi_jtag.i_dmi_cdc.i_cdc_req.u_prim_sync_reqack.gen_rz_hs_protocol.dst_fsm_q \
+    { constraint { @t0 0 } } } \
+  { top_earlgrey.u_lc_ctrl.u_dmi_jtag.i_dmi_cdc.i_cdc_req.u_prim_sync_reqack.gen_rz_hs_protocol.src_fsm_q \
+    { constraint { @t0 0 } } } \
+  { top_earlgrey.u_lc_ctrl.u_dmi_jtag.i_dmi_cdc.i_cdc_req.wvalid_i \
+    { constraint { @t0 0 } } } \
+  { top_earlgrey.u_lc_ctrl.u_dmi_jtag.i_dmi_cdc.i_cdc_req.pending_q \
+    { constraint { @t0 0 } } } \
   { POR_N                               { constraint { @t0 1 } } } \
   { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint { @t0 1 } } } \
   { u_ast.u_rglts_pdm_3p3v.vcmain_pok_h { constraint { @t0 1 } } } \
