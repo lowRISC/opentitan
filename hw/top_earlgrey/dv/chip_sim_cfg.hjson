@@ -156,10 +156,8 @@
         "cd {proj_root} && ./util/design/gen-lc-state-enc.py --seed {seed}",
         // Generate OTP memory map and scrambling constants keys.
         "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}",
-        // Use eval_cmd to save build_seed in a file and reuse that file during run phase.
-        // Create the build directory first because eval_cmd runs before actual build phase command
-        // execution.
-        '''{eval_cmd} mkdir -p {build_dir}; echo {seed} > {build_seed_file_path}; \
+        // Save build_seed in a file and reuse that file during run phase.
+        '''echo {seed} > {build_seed_file_path}; \
            echo "echo create file {build_seed_file_path}"
         '''
       ]
