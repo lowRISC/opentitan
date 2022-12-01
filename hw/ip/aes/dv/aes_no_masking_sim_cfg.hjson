@@ -14,7 +14,7 @@
   en_build_modes: ["aes_no_masking"]
 
   // common exclusions
-  // TODO uncomment for V2s
-  // xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/unr_aes_no_masking.vRefine"]
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/aes_UNR.vRefine",
+                             "{proj_root}/hw/ip/aes/dv/cov/refines/unr_aes_no_masking.vRefine"]
 
 }
