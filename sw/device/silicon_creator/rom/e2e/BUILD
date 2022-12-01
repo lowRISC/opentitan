@@ -1299,7 +1299,10 @@ SIGVERIFY_MOD_EXP_CASES = [
 opentitan_flash_binary(
     name = "empty_test_sigverify_mod_exp",
     srcs = ["empty_test.c"],
-    devices = ["fpga_cw310"],
+    devices = [
+        "fpga_cw310",
+        "sim_dv",
+    ],
     local_defines = [
         shell.quote("EMPTY_TEST_MSG=\"use_sw_rsa_verify=0x%08x\", otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_USE_SW_RSA_VERIFY_OFFSET)"),
     ],

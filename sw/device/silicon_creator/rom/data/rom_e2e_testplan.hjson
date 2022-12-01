@@ -775,9 +775,11 @@
             | `kHardenedBoolFalse`               | Success |
             | `0`                                | Failure |
             '''
-      tags: ["rom", "no_dv", "fpga", "silicon"]
+      tags: ["rom", "dv", "fpga", "silicon"]
       stage: V2
-      tests: []
+      tests: [
+        "rom_e2e_sigverify_mod_exp_rma_sw",
+      ]
     }
 
     {
