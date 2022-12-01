@@ -69,7 +69,7 @@
     // IPs. See `hw/dv/tools/dvsim/common_sim_cfg.hjson` for the default value.
     {
       name: default_vcs_cov_cfg_file
-      value: "-cm_hier {top_dv_path}/cov/chip_cover.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg+{top_dv_path}/autogen/rstmgr_tgl_excl.cfg -cm_fsmcfg {top_dv_path}/cov/chip_fsm.cfg"
+      value: "-cm_hier {top_dv_path}/cov/chip_cover.cfg+{top_dv_path}/autogen/xbar_tgl_excl.cfg+{top_dv_path}/autogen/rstmgr_tgl_excl.cfg+{top_dv_path}/cov/clkmgr_tgl_excl.cfg+{top_dv_path}/cov/pwrmgr_tgl_excl.cfg -cm_fsmcfg {top_dv_path}/cov/chip_fsm.cfg"
     }
     // Used by 'cover_reg_top' only builds - we only cover the *_reg_top of
     // the non-pre-verified modules at the chip level. See
