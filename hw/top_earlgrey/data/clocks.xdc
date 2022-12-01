@@ -33,9 +33,42 @@ set_clock_sense -positive \
     ] \
   ]
 
-## JTAG clocks
-create_clock -add -name lc_jtag_tck -period 100.00 -waveform {0 5} [get_pin top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
-create_clock -add -name rv_jtag_tck -period 100.00 -waveform {0 5} [get_pin top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
+## JTAG clocks and I/O delays
+# Create clocks for the various TAPs.
+create_clock -add -name jtag_tck -period 100.00 -waveform {0 50} [get_ports IOR3]
+create_generated_clock -name lc_jtag_tck -source [get_ports IOR3] -divide_by 1 [get_pin top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
+create_generated_clock -name rv_jtag_tck -source [get_ports IOR3] -divide_by 1 [get_pin top_*/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/O]
+
+set lc_jtag_tck_inv_pin  \
+  [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
+    [get_nets -segments -of_objects \
+      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I]]]
+set rv_jtag_tck_inv_pin  \
+  [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
+    [get_nets -segments -of_objects \
+      [get_pins top_earlgrey/u_pinmux_aon/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufg.bufg_i/I]]]
+
+set_clock_sense -negative ${lc_jtag_tck_pin}
+set_clock_sense -negative ${rv_jtag_tck_pin}
+
+# Assign input and output delays.
+# Note that incidental combinatorial paths through the pinmux do not get removed
+# from timing below, but the half cycle timing for JTAG leaves a fairly generous
+# requirement. If the JTAG constraints need to be tightened and overly constrain
+# the combinational port-to-port paths,
+#   set_max_delay -datapath_only
+# may be used to apply timing exceptions for those paths.
+# However, remember that the input and output delays contribute to the path
+# delay for such a case, so the constraint value for set_max_delay must
+# accommodate them. In other words, for the constraint
+#   set_max_delay -datapath_only -from [get_ports] -through ${combo_path_pin} \
+#                 -to [get_ports] ${max_delay_value}
+# ${max_delay_value} =
+#     ${max_input_delay} + ${max_output_delay} + ${max_port_to_port_delay}
+set_output_delay -add_delay -clock_fall -clock jtag_tck -max 10.0 [get_ports IOR1]
+set_output_delay -add_delay -clock_fall -clock jtag_tck -min -5.0 [get_ports IOR1]
+set_input_delay  -add_delay -clock_fall -clock jtag_tck -min  0.0 [get_ports {IOR0 IOR2}]
+set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 15.0 [get_ports {IOR0 IOR2}]
 
 ## SPI clocks
 create_clock -add -name clk_spi  -period 100.00 -waveform {0 50} [get_ports SPI_DEV_CLK]
@@ -70,7 +103,7 @@ create_generated_clock -name clk_spi_in  -divide_by 1 -source [get_ports SPI_DEV
 create_generated_clock -name clk_spi_out -divide_by 1 -source [get_ports SPI_DEV_CLK] [get_pins top_*/u_spi_device/u_clk_spi_out_buf/gen_xilinx.u_impl_xilinx/gen_fpga_buf.gen_bufr.bufr_i/O] -invert
 
 ## Set asynchronous clock groups
-set_clock_groups -group ${clks_10_unbuf} -group ${clks_48_unbuf} -group ${clks_aon_unbuf} -group clk_io_div2 -group clk_io_div4 -group lc_jtag_tck -group rv_jtag_tck -group {clk_spi clk_spi_in clk_spi_out} -group sys_clk_pin -asynchronous
+set_clock_groups -group ${clks_10_unbuf} -group ${clks_48_unbuf} -group ${clks_aon_unbuf} -group clk_io_div2 -group clk_io_div4 -group [get_clocks -include_generated_clocks jtag_tck] -group {clk_spi clk_spi_in clk_spi_out} -group sys_clk_pin -asynchronous
 
 ## The usb calibration handling inside ast is assumed to be async to the outside world
 ## even though its interface is also a usb clock.
