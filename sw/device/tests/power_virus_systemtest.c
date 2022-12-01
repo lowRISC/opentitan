@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
+#include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/device/lib/dif/dif_edn.h"
+#include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/log.h"
@@ -22,6 +25,10 @@ OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
 static dif_pinmux_t pinmux;
 static dif_gpio_t gpio;
 static dif_adc_ctrl_t adc_ctrl;
+static dif_entropy_src_t entropy_src;
+static dif_csrng_t csrng;
+static dif_edn_t edn_0;
+static dif_edn_t edn_1;
 
 /**
  * Test configuration parameters.
@@ -39,6 +46,14 @@ enum {
 static void init_peripheral_handles() {
   CHECK_DIF_OK(dif_adc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
+  CHECK_DIF_OK(dif_csrng_init(
+      mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
+  CHECK_DIF_OK(
+      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn_0));
+  CHECK_DIF_OK(
+      dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn_1));
+  CHECK_DIF_OK(dif_entropy_src_init(
+      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   CHECK_DIF_OK(dif_pinmux_init(
