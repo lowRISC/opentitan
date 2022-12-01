@@ -66,6 +66,7 @@ cc_library(
         ":status",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:status",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",

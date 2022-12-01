@@ -9,6 +9,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
@@ -207,6 +208,22 @@
          or not this is a test.*/                                    \
       test_status_set(kTestStatusFailed);                            \
     }                                                                \
+  } while (false)
+
+/**
+ * Checks that the `status_t` represents a non-error value.
+ *
+ * Prints a human-readable error message if the status represents an error.
+ *
+ * @param expr An expression which evaluates to a `status_t`.
+ */
+#define CHECK_STATUS_OK(expr, ...)                 \
+  do {                                             \
+    status_t status_ = expr;                       \
+    if (!status_ok(status_)) {                     \
+      LOG_ERROR("CHECK-STATUS-fail: %r", status_); \
+      test_status_set(kTestStatusFailed);          \
+    }                                              \
   } while (false)
 
 #endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_TEST_FRAMEWORK_CHECK_H_
