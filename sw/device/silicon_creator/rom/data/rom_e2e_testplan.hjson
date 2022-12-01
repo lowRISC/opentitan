@@ -778,6 +778,7 @@
       tags: ["rom", "dv", "fpga", "silicon"]
       stage: V2
       tests: [
+        "rom_e2e_sigverify_mod_exp_rma_otbn",
         "rom_e2e_sigverify_mod_exp_rma_sw",
       ]
     }

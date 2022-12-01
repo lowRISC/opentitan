@@ -603,6 +603,20 @@
       run_timeout_mins: 120
     }
     {
+      name: rom_e2e_sigverify_mod_exp_rma_otbn
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: [
+        "//sw/device/silicon_creator/rom/e2e:empty_test_sigverify_mod_exp:1:ot_flash_binary:signed:fake_prod_key_0",
+        "//sw/device/silicon_creator/rom/e2e:otp_img_sigverify_mod_exp_rma_otbn:4",
+      ]
+      en_run_modes: ["sw_test_mode_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=20_000_000"
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      run_timeout_mins: 120
+    }
+    {
       name: rom_e2e_sigverify_mod_exp_rma_sw
       uvm_test_seq: chip_sw_base_vseq
       sw_images: [
@@ -699,6 +713,7 @@
     {
       name: rom_e2e_sigverify_mod_exp
       tests: [
+        "rom_e2e_sigverify_mod_exp_rma_otbn",
         "rom_e2e_sigverify_mod_exp_rma_sw",
       ]
     }
