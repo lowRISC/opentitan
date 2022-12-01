@@ -27,13 +27,6 @@ class pwrmgr_stress_all_vseq extends pwrmgr_base_vseq;
       seq = create_seq_by_name(seq_names[seq_idx]);
       `downcast(pwrmgr_vseq, seq)
 
-      if (seq_names[seq_idx] inside {"pwrmgr_reset_vseq", "pwrmgr_wakeup_reset_vseq"}) begin
-        expect_fatal_alerts = 1;
-        cfg.exp_alert_q.push_back(1);
-      end
-      // if upper seq disables do_apply_reset for this seq, then can't issue reset
-      // as upper seq may drive reset
-
       pwrmgr_vseq.do_apply_reset = 1;
       pwrmgr_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(pwrmgr_vseq)

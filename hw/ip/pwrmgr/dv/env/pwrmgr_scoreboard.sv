@@ -38,20 +38,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
       wakeup_intr_coverage_collector();
       low_power_coverage_collector();
       reset_coverage_collector();
-      proc_exp_alert_q();
     join_none
-  endtask
-
-  task proc_exp_alert_q();
-    bit exp_alert;
-    forever begin
-      @(cfg.clk_rst_vif.cb);
-      `DV_WAIT(cfg.exp_alert_q.size() > 0)
-      // timeout occur about 5us
-      set_exp_alert("fatal_fault", 1, 500);
-      exp_alert = cfg.exp_alert_q.pop_front();
-      `DV_CHECK_EQ(cfg.exp_alert_q.size(), 0)
-    end
   endtask
 
   task wakeup_ctrl_coverage_collector();
@@ -168,8 +155,6 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
           exp_intr &= ~item.a_data;
         end else if (data_phase_read) begin
           bit [TL_DW-1:0] intr_en = ral.intr_enable.get_mirrored_value();
-          `uvm_info(`gfn, $sformatf("Reading intr_state: expected %b, got %b", exp_intr, item.a_data
-                    ), UVM_MEDIUM)
           foreach (exp_intr[i]) begin
             if (cfg.en_cov) begin
               cov.intr_cg.sample(i, intr_en[i], exp_intr[i]);

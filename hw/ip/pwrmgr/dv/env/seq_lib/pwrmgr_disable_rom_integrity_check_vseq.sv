@@ -54,7 +54,7 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
         `uvm_info(`gfn, "Sending power glitch", UVM_MEDIUM)
         // expected alerts
         expect_fatal_alerts = 1;
-        cfg.exp_alert_q.push_back(1);
+        enqueue_exp_alert();
         cfg.pwrmgr_vif.glitch_power_reset();
       end
       cfg.clk_rst_vif.wait_clks(cycles_before_reset);

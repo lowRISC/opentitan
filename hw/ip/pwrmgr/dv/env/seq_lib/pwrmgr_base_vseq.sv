@@ -125,12 +125,12 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.slow_clk_rst_vif.wait_for_reset(.wait_negedge(0));
     stop_randomizing_cycles();
     fork
-      // Toggle rst_main_n to make sure the slow fsm resets correctly, and wait some cycles
-      // so testing doesn't start until the side-effects are cleared.
+      // Deactivate rst_main_n to make sure the slow fsm won't be confused into thinking
+      // a power glitch occurred, and wait some cycles so testing doesn't start until any
+      // side-effects are cleared. This confusion can arise if a sequence with random resets
+      // gets reset while sending a power glitch.
       begin
-        `uvm_info(`gfn, "Glitch power reset", UVM_MEDIUM)
-        cfg.pwrmgr_vif.glitch_power_reset();
-        `uvm_info(`gfn, "Glitch power reset done", UVM_MEDIUM)
+        cfg.pwrmgr_vif.rst_main_n = 1'b1;
         cfg.slow_clk_rst_vif.wait_clks(7);
       end
       begin
@@ -163,6 +163,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       wait_for_fast_fsm_active();
       init_rom_response();
     join
+    // And drive the cpu not sleeping.
+    cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
   endtask
 
   task post_start();
@@ -193,6 +195,7 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task apply_reset(string kind = "HARD");
+    `uvm_info(`gfn, $sformatf("At apply_reset kind='%0s'", kind), UVM_MEDIUM)
     fork
       super.apply_reset(kind);
       if (kind == "HARD") begin
@@ -206,6 +209,11 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
       clear_ndm_reset();
       cfg.aon_clk_rst_vif.apply_reset();
     join
+    // And wait until the responders settle with all okay from the AST.
+    `DV_WAIT(cfg.pwrmgr_vif.pwr_ast_rsp.main_pok &&
+             cfg.pwrmgr_vif.pwr_ast_rsp.core_clk_val &&
+             cfg.pwrmgr_vif.pwr_ast_rsp.io_clk_val)
+    `uvm_info(`gfn, $sformatf("Out of apply_reset kind='%0s'", kind), UVM_MEDIUM)
   endtask
 
   virtual task apply_resets_concurrently(int reset_duration_ps = 0);
@@ -522,7 +530,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
 
   local task wait_for_fall_through();
     `DV_WAIT(!cfg.pwrmgr_vif.pwr_cpu.core_sleeping)
-    exp_wakeup_fall_through = 1'b1;
     exp_intr = 1'b1;
     `uvm_info(`gfn, "wait_for_fall_through succeeds", UVM_MEDIUM)
   endtask
@@ -531,7 +538,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     `DV_WAIT(
         !cfg.pwrmgr_vif.pwr_flash.flash_idle || !cfg.pwrmgr_vif.pwr_otp_rsp.otp_idle ||
           !cfg.pwrmgr_vif.pwr_lc_rsp.lc_idle)
-    exp_wakeup_abort = 1'b1;
     exp_intr = 1'b1;
     `uvm_info(`gfn, "wait_for_abort succeeds", UVM_MEDIUM)
   endtask
@@ -548,6 +554,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     // Timeout if the low power transition waits too long for WFI.
     `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
     `uvm_info(`gfn, "In process_low_power_hint pre forks", UVM_MEDIUM)
+    // Clear expectations.
+    exp_wakeup_reasons = 1'b0;
     fork
       begin : isolation_fork
         fork
@@ -792,5 +800,10 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     end
     `uvm_info(`gfn, "Set rom response to MuBi4True", UVM_MEDIUM)
   endtask
+
+  protected function void enqueue_exp_alert();
+    `uvm_info(`gfn, "enqueuing expected alert", UVM_MEDIUM)
+    cfg.scoreboard.set_exp_alert("fatal_fault", 1, 500);
+  endfunction
 
 endclass : pwrmgr_base_vseq

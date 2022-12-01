@@ -20,9 +20,6 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
   // ext component cfgs
   alert_esc_agent_cfg        m_esc_agent_cfg;
 
-  // set expected alert
-  // since pwrmgr has one alert, use single bit q
-  bit exp_alert_q[$];
   `uvm_object_utils_begin(pwrmgr_env_cfg)
   `uvm_object_utils_end
 

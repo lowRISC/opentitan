@@ -79,7 +79,7 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
 
           `DV_SPINWAIT(wait(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateInvalid &&
                             cfg.pwrmgr_vif.pwr_ast_req.pwr_clamp == 1 &&
-                            cfg.pwrmgr_vif.pwr_ast_req.main_pd_n == 0);, msg, STATE_TRANSITION_NS)
+                            cfg.pwrmgr_vif.pwr_ast_rsp.main_pok == 0);, msg, STATE_TRANSITION_NS)
         end
         if (!uvm_re_match("*.u_fsm.*", if_proxy.path)) begin
           `uvm_info(`gfn, "detect unknown fast state", UVM_MEDIUM)
@@ -107,19 +107,7 @@ class pwrmgr_common_vseq extends pwrmgr_base_vseq;
       end
       default: `uvm_fatal(`gfn, $sformatf("unexpected sec_cm_type %s", if_proxy.sec_cm_type.name))
     endcase  // case (if_proxy.sec_cm_type)
+    // This makes sure errors are not injected too close together to avoid confusion.
+    cfg.aon_clk_rst_vif.wait_clks(10);
   endtask : check_sec_cm_fi_resp
-
-  // this function is called in a loop. So 'asserton' should be called
-  // to clear 'assertoff' in the previous loop
-  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
-    if (enable) begin
-      $asserton(0, "tb.dut.FpvSecCmSlowFsmCheck_A");
-      $asserton(0, "tb.dut.FpvSecCmFsmCheck_A");
-      return;
-    end
-    if (if_proxy.sec_cm_type == SecCmPrimSparseFsmFlop) begin
-      $assertoff(0, "tb.dut.FpvSecCmSlowFsmCheck_A");
-      $assertoff(0, "tb.dut.FpvSecCmFsmCheck_A");
-    end
-  endfunction
 endclass

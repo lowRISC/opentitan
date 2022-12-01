@@ -19,7 +19,7 @@ class pwrmgr_esc_clk_rst_malfunc_vseq extends pwrmgr_base_vseq;
 
     // send a expected alert to the scoreboard
     expect_fatal_alerts = 1;
-    cfg.exp_alert_q.push_back(1);
+    enqueue_exp_alert();
 
     // esc [clk|rst] malfunction
     add_noise();
