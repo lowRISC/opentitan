@@ -146,7 +146,6 @@ module i2c_reg_top (
   logic intr_state_trans_complete_qs;
   logic intr_state_trans_complete_wd;
   logic intr_state_tx_empty_qs;
-  logic intr_state_tx_empty_wd;
   logic intr_state_tx_nonempty_qs;
   logic intr_state_tx_nonempty_wd;
   logic intr_state_tx_overflow_qs;
@@ -581,15 +580,15 @@ module i2c_reg_top (
   //   F[tx_empty]: 10:10
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_intr_state_tx_empty (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (intr_state_we),
-    .wd     (intr_state_tx_empty_wd),
+    .we     (1'b0),
+    .wd     ('0),
 
     // from internal hardware
     .de     (hw2reg.intr_state.tx_empty.de),
@@ -2921,8 +2920,6 @@ module i2c_reg_top (
   assign intr_state_sda_unstable_wd = reg_wdata[8];
 
   assign intr_state_trans_complete_wd = reg_wdata[9];
-
-  assign intr_state_tx_empty_wd = reg_wdata[10];
 
   assign intr_state_tx_nonempty_wd = reg_wdata[11];
 

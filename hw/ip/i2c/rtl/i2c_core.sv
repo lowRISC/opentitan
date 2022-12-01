@@ -620,7 +620,10 @@ module  i2c_core #(
     .intr_o                 (intr_trans_complete_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_tx_empty (
+  prim_intr_hw #(
+    .Width(1),
+    .IntrT ("Status")
+  ) intr_hw_tx_empty (
     .clk_i,
     .rst_ni,
     .event_intr_i           (event_tx_empty),

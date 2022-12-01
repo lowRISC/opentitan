@@ -894,7 +894,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   task write_tx_fifo(bit add_delay = 0);
     uvm_reg_data_t data;
     int read_size;
-    int rd_txfifo_timeout_ns = 50_000;
+    int rd_txfifo_timeout_ns = 100_000;
     // indefinite time
     int tx_empty_timeout_ns = 500_000_000;
     string id = "write_tx_fifo";
@@ -910,10 +910,10 @@ class i2c_base_vseq extends cip_base_vseq #(
         cfg.clk_rst_vif.wait_clks(1);
         if (add_delay) begin
            if ($urandom_range(0, 1) < 1) begin
-              // Wait for intr_state.tx_empty and clear.
-              csr_spinwait(.ptr(ral.intr_state.tx_empty), .exp_data(1'b1),
-                           .timeout_ns(tx_empty_timeout_ns));
-              csr_wr(.ptr(ral.intr_state.tx_empty), .value(1'b1));
+             // Wait for txfifo to be empty before adding data,
+             // this creates more stretching conditions.
+             csr_spinwait(.ptr(ral.status.txempty), .exp_data(1'b1),
+                          .timeout_ns(tx_empty_timeout_ns));
            end
         end
         if (read_txn_q.size() > 0) begin
