@@ -84,9 +84,6 @@ static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
     case kDifI2cIrqTxEmpty:
       *index_out = I2C_INTR_COMMON_TX_EMPTY_BIT;
       break;
-    case kDifI2cIrqTxNonempty:
-      *index_out = I2C_INTR_COMMON_TX_NONEMPTY_BIT;
-      break;
     case kDifI2cIrqTxOverflow:
       *index_out = I2C_INTR_COMMON_TX_OVERFLOW_BIT;
       break;
@@ -107,10 +104,10 @@ static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
 }
 
 static dif_irq_type_t irq_types[] = {
-    kDifIrqTypeEvent, kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent, kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent, kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeEvent,
-    kDifIrqTypeEvent, kDifIrqTypeStatus, kDifIrqTypeEvent, kDifIrqTypeEvent,
+    kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeEvent,  kDifIrqTypeEvent,
+    kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeEvent,  kDifIrqTypeEvent,
+    kDifIrqTypeEvent,  kDifIrqTypeEvent, kDifIrqTypeStatus, kDifIrqTypeEvent,
+    kDifIrqTypeStatus, kDifIrqTypeEvent, kDifIrqTypeEvent,
 };
 
 OT_WARN_UNUSED_RESULT

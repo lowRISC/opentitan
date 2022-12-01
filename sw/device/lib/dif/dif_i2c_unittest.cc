@@ -742,53 +742,6 @@ TEST_F(StretchTest, ConfigTimeoutsBadArgs) {
   EXPECT_DIF_BADARG(dif_i2c_set_host_timeout(nullptr, 0x81234567));
 }
 
-TEST_F(StretchTest, DeviceSchedulesStretches) {
-  EXPECT_READ32(I2C_STRETCH_CTRL_REG_OFFSET, 0x00);
-  EXPECT_WRITE32(I2C_STRETCH_CTRL_REG_OFFSET,
-                 {
-                     {I2C_STRETCH_CTRL_EN_ADDR_TX_BIT, 0x1},
-                     {I2C_STRETCH_CTRL_EN_ADDR_ACQ_BIT, 0x0},
-                 });
-  EXPECT_DIF_OK(
-      dif_i2c_config_stretch(&i2c_, kDifToggleEnabled, kDifToggleDisabled));
-
-  EXPECT_READ32(I2C_STRETCH_CTRL_REG_OFFSET, 0x01);
-  EXPECT_WRITE32(I2C_STRETCH_CTRL_REG_OFFSET,
-                 {
-                     {I2C_STRETCH_CTRL_EN_ADDR_TX_BIT, 0x0},
-                     {I2C_STRETCH_CTRL_EN_ADDR_ACQ_BIT, 0x1},
-                 });
-  EXPECT_DIF_OK(
-      dif_i2c_config_stretch(&i2c_, kDifToggleDisabled, kDifToggleEnabled));
-
-  EXPECT_READ32(I2C_STRETCH_CTRL_REG_OFFSET, 0x02);
-  EXPECT_WRITE32(I2C_STRETCH_CTRL_REG_OFFSET,
-                 {
-                     {I2C_STRETCH_CTRL_STOP_TX_BIT, 0x1},
-                     {I2C_STRETCH_CTRL_STOP_ACQ_BIT, 0x0},
-                     {I2C_STRETCH_CTRL_EN_ADDR_ACQ_BIT, 0x1},
-                 });
-  EXPECT_DIF_OK(
-      dif_i2c_stop_stretch(&i2c_, kDifToggleEnabled, kDifToggleDisabled));
-
-  EXPECT_READ32(I2C_STRETCH_CTRL_REG_OFFSET, 0x06);
-  EXPECT_WRITE32(I2C_STRETCH_CTRL_REG_OFFSET,
-                 {
-                     {I2C_STRETCH_CTRL_STOP_TX_BIT, 0x1},
-                     {I2C_STRETCH_CTRL_STOP_ACQ_BIT, 0x1},
-                     {I2C_STRETCH_CTRL_EN_ADDR_ACQ_BIT, 0x1},
-                 });
-  EXPECT_DIF_OK(
-      dif_i2c_stop_stretch(&i2c_, kDifToggleDisabled, kDifToggleEnabled));
-}
-
-TEST_F(StretchTest, DeviceStretchBadArgs) {
-  EXPECT_DIF_BADARG(
-      dif_i2c_config_stretch(nullptr, kDifToggleEnabled, kDifToggleEnabled));
-  EXPECT_DIF_BADARG(
-      dif_i2c_stop_stretch(nullptr, kDifToggleEnabled, kDifToggleEnabled));
-}
-
 // Assemble 2 Ids to the byte to form the expections checked in the address test
 uint32_t assemble_address(dif_i2c_id_t *id0, dif_i2c_id_t *id1) {
   uint32_t config = 0x00000000;

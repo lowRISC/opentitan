@@ -26,7 +26,6 @@ module tb;
   wire intr_sda_unstable;
   wire intr_trans_complete;
   wire intr_tx_empty;
-  wire intr_tx_nonempty;
   wire intr_tx_overflow;
   wire intr_acq_full;
   wire intr_ack_stop;
@@ -99,7 +98,6 @@ module tb;
     .intr_sda_unstable_o     (intr_sda_unstable     ),
     .intr_trans_complete_o   (intr_trans_complete   ),
     .intr_tx_empty_o         (intr_tx_empty         ),
-    .intr_tx_nonempty_o      (intr_tx_nonempty      ),
     .intr_tx_overflow_o      (intr_tx_overflow      ),
     .intr_acq_full_o         (intr_acq_full         ),
     .intr_ack_stop_o         (intr_ack_stop         ),
@@ -118,7 +116,6 @@ module tb;
   assign interrupts[SdaUnstable]    = intr_sda_unstable;
   assign interrupts[TransComplete]  = intr_trans_complete;
   assign interrupts[TxEmpty]        = intr_tx_empty;
-  assign interrupts[TxNonEmpty]     = intr_tx_nonempty;
   assign interrupts[TxOverflow]     = intr_tx_overflow;
   assign interrupts[AcqFull]        = intr_acq_full;
   assign interrupts[AckStop]        = intr_ack_stop;

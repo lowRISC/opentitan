@@ -573,63 +573,6 @@ dif_result_t dif_i2c_enable_clock_stretching_timeout(const dif_i2c_t *i2c,
   return kDifOk;
 }
 
-dif_result_t dif_i2c_config_stretch(const dif_i2c_t *i2c,
-                                    dif_toggle_t stretch_reads,
-                                    dif_toggle_t stretch_writes) {
-  if (i2c == NULL) {
-    return kDifBadArg;
-  }
-
-  if (!dif_is_valid_toggle(stretch_reads)) {
-    return kDifBadArg;
-  }
-  bool stretch_reads_flag = dif_toggle_to_bool(stretch_reads);
-
-  if (!dif_is_valid_toggle(stretch_writes)) {
-    return kDifBadArg;
-  }
-  bool stretch_writes_flag = dif_toggle_to_bool(stretch_writes);
-
-  uint32_t control =
-      mmio_region_read32(i2c->base_addr, I2C_STRETCH_CTRL_REG_OFFSET);
-  control = bitfield_bit32_write(control, I2C_STRETCH_CTRL_EN_ADDR_TX_BIT,
-                                 stretch_reads_flag);
-  control = bitfield_bit32_write(control, I2C_STRETCH_CTRL_EN_ADDR_ACQ_BIT,
-                                 stretch_writes_flag);
-  mmio_region_write32(i2c->base_addr, I2C_STRETCH_CTRL_REG_OFFSET, control);
-  return kDifOk;
-}
-
-dif_result_t dif_i2c_stop_stretch(const dif_i2c_t *i2c,
-                                  dif_toggle_t stop_read_stretch,
-                                  dif_toggle_t stop_write_stretch) {
-  if (i2c == NULL) {
-    return kDifBadArg;
-  }
-
-  if (!dif_is_valid_toggle(stop_read_stretch)) {
-    return kDifBadArg;
-  }
-  bool read_flag = dif_toggle_to_bool(stop_read_stretch);
-
-  if (!dif_is_valid_toggle(stop_write_stretch)) {
-    return kDifBadArg;
-  }
-  bool write_flag = dif_toggle_to_bool(stop_write_stretch);
-
-  uint32_t control =
-      mmio_region_read32(i2c->base_addr, I2C_STRETCH_CTRL_REG_OFFSET);
-  if (read_flag) {
-    control = bitfield_bit32_write(control, I2C_STRETCH_CTRL_STOP_TX_BIT, true);
-  }
-  if (write_flag) {
-    control =
-        bitfield_bit32_write(control, I2C_STRETCH_CTRL_STOP_ACQ_BIT, true);
-  }
-  mmio_region_write32(i2c->base_addr, I2C_STRETCH_CTRL_REG_OFFSET, control);
-  return kDifOk;
-}
-
 dif_result_t dif_i2c_set_device_id(const dif_i2c_t *i2c, dif_i2c_id_t *id0,
                                    dif_i2c_id_t *id1) {
   if (i2c == NULL) {

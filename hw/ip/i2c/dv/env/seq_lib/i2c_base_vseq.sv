@@ -84,7 +84,6 @@ class i2c_base_vseq extends cip_base_vseq #(
   int drooling_rx_cnt = 0;
   i2c_item drooling_exp_rd_item;
   bit [7:0] spill_over_data_q[$];
-  bit       expected_tx_nonempty = 0;
   bit       read_cmd_q[$];
 
   // constraints
@@ -438,9 +437,6 @@ class i2c_base_vseq extends cip_base_vseq #(
     if (bit'(get_field_val(ral.intr_state.tx_empty, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing tx_empty", UVM_DEBUG)
     end
-    if (bit'(get_field_val(ral.intr_state.tx_nonempty, intr_clear))) begin
-      `uvm_info(`gfn, "\n  clearing tx_nonempty", UVM_DEBUG)
-    end
     if (bit'(get_field_val(ral.intr_state.tx_overflow, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing tx_overflow", UVM_DEBUG)
     end
@@ -528,13 +524,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       csr_rd(.ptr(ral.acqdata), .value({signal,abyte}));
     end
   endtask : read_acqdata
-
-  task program_stretch_ctrl(bit stop_acq, bit stop_tx, bit en_addr_acq, bit en_addr_tx);
-     csr_wr(.ptr(ral.stretch_ctrl.stop_acq), .value(stop_acq));
-     csr_wr(.ptr(ral.stretch_ctrl.stop_tx), .value(stop_tx));
-     csr_wr(.ptr(ral.stretch_ctrl.en_addr_acq), .value(en_addr_acq));
-     csr_wr(.ptr(ral.stretch_ctrl.en_addr_tx), .value(en_addr_tx));
-  endtask : program_stretch_ctrl
 
   // Use for debug only
   function void print_time_property();
@@ -934,8 +923,7 @@ class i2c_base_vseq extends cip_base_vseq #(
   // When dut received read command, fill up tx fifo with random
   // number of entries.
   // This can create 'tx_fifo_full or tx_fifo_empty' depends on
-  // number of filled entries. Also it can be triggerred tx_fifo_nonempty
-  // after the transaction is complete.
+  // number of filled entries.
   task drooling_write_tx_fifo();
     string id = "drooling_write_tx_fifo";
     bit [7:0] wdata;
@@ -944,13 +932,6 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     if (read_rcvd.size == 0 && read_on_going == 0) begin
       `uvm_error(id, "read_rcvd size is zero and read_on_going is zero")
-    end
-
-    if (expected_tx_nonempty) begin
-      csr_rd(.ptr(ral.intr_state.tx_nonempty), .value(data));
-      `DV_CHECK_EQ(data, 1)
-      clear_interrupt(TxNonEmpty);
-      expected_tx_nonempty = 0;
     end
 
     if (read_on_going == 0) begin
@@ -983,7 +964,7 @@ class i2c_base_vseq extends cip_base_vseq #(
             p_sequencer.target_mode_rd_exp_port.write(drooling_exp_rd_item);
             read_on_going = 0;
             if (spill_over_data_q.size > 0) begin
-              expected_tx_nonempty = 1;
+              // TODO: Create testcase to handle partial reads here later
             end
           end
         end

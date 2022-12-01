@@ -11,7 +11,7 @@
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[188] = {
+    top_earlgrey_plic_interrupt_for_peripheral[185] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdUart0TxWatermark] = kTopEarlgreyPlicPeripheralUart0,
   [kTopEarlgreyPlicIrqIdUart0RxWatermark] = kTopEarlgreyPlicPeripheralUart0,
@@ -100,7 +100,6 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdI2c0SdaUnstable] = kTopEarlgreyPlicPeripheralI2c0,
   [kTopEarlgreyPlicIrqIdI2c0TransComplete] = kTopEarlgreyPlicPeripheralI2c0,
   [kTopEarlgreyPlicIrqIdI2c0TxEmpty] = kTopEarlgreyPlicPeripheralI2c0,
-  [kTopEarlgreyPlicIrqIdI2c0TxNonempty] = kTopEarlgreyPlicPeripheralI2c0,
   [kTopEarlgreyPlicIrqIdI2c0TxOverflow] = kTopEarlgreyPlicPeripheralI2c0,
   [kTopEarlgreyPlicIrqIdI2c0AcqFull] = kTopEarlgreyPlicPeripheralI2c0,
   [kTopEarlgreyPlicIrqIdI2c0AckStop] = kTopEarlgreyPlicPeripheralI2c0,
@@ -116,7 +115,6 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdI2c1SdaUnstable] = kTopEarlgreyPlicPeripheralI2c1,
   [kTopEarlgreyPlicIrqIdI2c1TransComplete] = kTopEarlgreyPlicPeripheralI2c1,
   [kTopEarlgreyPlicIrqIdI2c1TxEmpty] = kTopEarlgreyPlicPeripheralI2c1,
-  [kTopEarlgreyPlicIrqIdI2c1TxNonempty] = kTopEarlgreyPlicPeripheralI2c1,
   [kTopEarlgreyPlicIrqIdI2c1TxOverflow] = kTopEarlgreyPlicPeripheralI2c1,
   [kTopEarlgreyPlicIrqIdI2c1AcqFull] = kTopEarlgreyPlicPeripheralI2c1,
   [kTopEarlgreyPlicIrqIdI2c1AckStop] = kTopEarlgreyPlicPeripheralI2c1,
@@ -132,7 +130,6 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdI2c2SdaUnstable] = kTopEarlgreyPlicPeripheralI2c2,
   [kTopEarlgreyPlicIrqIdI2c2TransComplete] = kTopEarlgreyPlicPeripheralI2c2,
   [kTopEarlgreyPlicIrqIdI2c2TxEmpty] = kTopEarlgreyPlicPeripheralI2c2,
-  [kTopEarlgreyPlicIrqIdI2c2TxNonempty] = kTopEarlgreyPlicPeripheralI2c2,
   [kTopEarlgreyPlicIrqIdI2c2TxOverflow] = kTopEarlgreyPlicPeripheralI2c2,
   [kTopEarlgreyPlicIrqIdI2c2AcqFull] = kTopEarlgreyPlicPeripheralI2c2,
   [kTopEarlgreyPlicIrqIdI2c2AckStop] = kTopEarlgreyPlicPeripheralI2c2,

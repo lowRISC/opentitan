@@ -13171,12 +13171,6 @@
       module_name: i2c0
     }
     {
-      name: i2c0_tx_nonempty
-      width: 1
-      type: interrupt
-      module_name: i2c0
-    }
-    {
       name: i2c0_tx_overflow
       width: 1
       type: interrupt
@@ -13267,12 +13261,6 @@
       module_name: i2c1
     }
     {
-      name: i2c1_tx_nonempty
-      width: 1
-      type: interrupt
-      module_name: i2c1
-    }
-    {
       name: i2c1_tx_overflow
       width: 1
       type: interrupt
@@ -13358,12 +13346,6 @@
     }
     {
       name: i2c2_tx_empty
-      width: 1
-      type: interrupt
-      module_name: i2c2
-    }
-    {
-      name: i2c2_tx_nonempty
       width: 1
       type: interrupt
       module_name: i2c2
