@@ -74,8 +74,6 @@ package pwrmgr_env_pkg;
 
   // variables
   bit [NUM_INTERRUPTS-1:0] exp_intr;
-  bit exp_wakeup_fall_through;
-  bit exp_wakeup_abort;
   wakeups_t exp_wakeup_reasons;
   control_enables_t control_enables;
   logic low_power_hint;

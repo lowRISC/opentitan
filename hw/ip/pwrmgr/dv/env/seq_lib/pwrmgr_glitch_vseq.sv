@@ -17,7 +17,7 @@ class pwrmgr_glitch_vseq extends pwrmgr_base_vseq;
     for (int i = 0; i < num_trans; ++i) begin
       wait_for_fast_fsm_active();
 
-      cfg.exp_alert_q.push_back(1);
+      enqueue_exp_alert();
 
       fork
         cfg.pwrmgr_vif.glitch_power_reset();

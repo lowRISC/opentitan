@@ -48,9 +48,15 @@ class pwrmgr_wakeup_intr_cg_wrap;
     interrupt_cp: coverpoint interrupt;
 
     interrupt_cross: cross enable_cp, status_cp, wakeup_cp, interrupt_cp{
-      ignore_bins no_wakeup = interrupt_cross with (wakeup_cp == 0 && interrupt_cp == 1);
-      ignore_bins disable_pin = interrupt_cross with (enable_cp == 0 && interrupt_cp == 1);
-      ignore_bins no_status_pin = interrupt_cross with (status_cp == 0 && interrupt_cp == 1);
+      // An interrupt cannot happen unless wake_status is on.
+      ignore_bins no_wakeup = interrupt_cross with (!wakeup_cp && interrupt_cp);
+      // An interrupt cannot happen unless it is enabled.
+      ignore_bins disable_pin = interrupt_cross with (!enable_cp && interrupt_cp);
+      // An interrupt cannot happen if intr_status is off.
+      ignore_bins no_status_pin = interrupt_cross with (!status_cp && interrupt_cp);
+      // If all preconditions are satisfied there must be an interrupt.
+      ignore_bins missing_int = interrupt_cross with (enable_cp && status_cp && wakeup_cp &&
+                                                      !interrupt_cp);
     }
   endgroup
 
@@ -91,14 +97,20 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
     reset_cp: coverpoint reset;
     enable_cp: coverpoint enable;
     sleep_cp: coverpoint sleep;
-    reset_cross: cross reset, enable, sleep;
+    reset_cross: cross reset_cp, enable_cp, sleep_cp {
+      // Reset and sleep are mutually exclusive.
+      illegal_bins illegal = reset_cross with (reset_cp && sleep_cp);
+    }
   endgroup
 
   covergroup hw_reset_1_cg with function sample (logic reset, logic enable, bit sleep);
     reset_cp: coverpoint reset;
     enable_cp: coverpoint enable;
     sleep_cp: coverpoint sleep;
-    reset_cross: cross reset_cp, enable_cp, sleep_cp;
+    reset_cross: cross reset_cp, enable_cp, sleep_cp {
+      // Reset and sleep are mutually exclusive.
+      illegal_bins illegal = reset_cross with (reset_cp && sleep_cp);
+    }
   endgroup
 
   // This reset cannot be generated in low power state since it is triggered by software.
@@ -109,13 +121,19 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
   covergroup main_power_reset_cg with function sample (logic main_power_reset, bit sleep);
     main_power_reset_cp: coverpoint main_power_reset;
     sleep_cp: coverpoint sleep;
-    reset_cross: cross main_power_reset_cp, sleep_cp;
+    reset_cross: cross main_power_reset_cp, sleep_cp {
+      // Any reset and sleep are mutually exclusive.
+      illegal_bins illegal = reset_cross with (main_power_reset_cp && sleep_cp);
+    }
   endgroup
 
   covergroup esc_reset_cg with function sample (logic esc_reset, bit sleep);
     esc_reset_cp: coverpoint esc_reset;
     sleep_cp: coverpoint sleep;
-    reset_cross: cross esc_reset_cp, sleep_cp;
+    reset_cross: cross esc_reset_cp, sleep_cp {
+      // Any reset and sleep are mutually exclusive.
+      illegal_bins illegal = reset_cross with (esc_reset_cp && sleep_cp);
+    }
   endgroup
 
   // This measures the number of cycles between the reset and wakeup.

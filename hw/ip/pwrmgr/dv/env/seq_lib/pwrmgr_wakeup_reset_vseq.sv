@@ -101,7 +101,7 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
             // when main power is up.
             if (control_enables.main_pd_n) begin
               expect_fatal_alerts = 1;
-              cfg.exp_alert_q.push_back(1);
+              enqueue_exp_alert();
             end else expect_fatal_alerts = 0;
             `uvm_info(`gfn, $sformatf(
                       "Sending power glitch, %0sexpecting an alert",

@@ -43,7 +43,8 @@
   ]
 
   // Exclusion files
-  vcs_cov_excl_files: ["{proj_root}/hw/ip/pwrmgr/dv/cov/pwrmgr_cov_excl.el"]
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/pwrmgr/dv/cov/pwrmgr_cov_manual_excl.el"]
+
   // Add additional tops for simulation.
   sim_tops: ["pwrmgr_bind",
              "pwrmgr_cov_bind",

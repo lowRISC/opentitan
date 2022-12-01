@@ -71,7 +71,7 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
       fork
         begin
           update_control_csr();
-         `uvm_info(`gfn, $sformatf("After update_control_csr exp_intr=%b", exp_intr), UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf("After update_control_csr exp_intr=%b", exp_intr), UVM_MEDIUM)
         end
         begin
           // Prepare for an abort ahead of time.
@@ -82,7 +82,7 @@ class pwrmgr_aborted_low_power_vseq extends pwrmgr_base_vseq;
           cfg.clk_rst_vif.wait_clks(1);
           if (cpu_interrupt) begin
             `uvm_info(`gfn, "Expecting a fall through (0x40)", UVM_MEDIUM)
-             cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
+            cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
           end else begin
             `uvm_info(`gfn, $sformatf(
                       "Expecting an abort (0x80): fi=%b, li=%b, oi=%b",
