@@ -9,10 +9,10 @@ cc_library(
     srcs = ["integrity_check.c"],
     hdrs = [
         "integrity_check.h",
-        "//sw/device/lib/crypto/include:datatypes.h",
     ],
     deps = [
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/crypto/include:datatypes",
     ],
 )
 
@@ -21,11 +21,32 @@ cc_library(
     srcs = ["hash.c"],
     hdrs = [
         "//sw/device/lib/crypto/drivers:kmac.h",
-        "//sw/device/lib/crypto/include:datatypes.h",
         "//sw/device/lib/crypto/include:hash.h",
     ],
     deps = [
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
+    name = "status",
+    srcs = ["status.c"],
+    hdrs = [
+        "status.h",
+    ],
+    deps = [
+        "//sw/device/lib/base:hardened_status",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_test(
+    name = "status_unittest",
+    srcs = ["status_unittest.cc"],
+    deps = [
+        ":status",
+        "@googletest//:gtest_main",
     ],
 )

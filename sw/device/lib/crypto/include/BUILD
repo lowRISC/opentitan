@@ -9,3 +9,9 @@ load("//rules:opentitan_test.bzl", "opentitan_functest", "verilator_params")
 
 # Export all headers.
 exports_files(glob(["*.h"]))
+
+cc_library(
+    name = "datatypes",
+    hdrs = ["datatypes.h"],
+    deps = ["//sw/device/lib/base:hardened"],
+)
