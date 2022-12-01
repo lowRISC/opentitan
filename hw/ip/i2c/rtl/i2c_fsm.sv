@@ -1130,10 +1130,6 @@ module i2c_fsm #(
         // to accept a stop or repeated start format byte even in transmit states
         if (~tx_fifo_rvalid_i || ~acq_fifo_wready) begin
           state_d = StretchTxEmpty;
-
-          // If we are stretching because there is no data available for transmit,
-          // trigger an interrupt to the system.
-          event_tx_empty_o = ~tx_fifo_rvalid_i;
         end else begin
           state_d = TransmitSetup;
           load_tcount = 1'b1;
@@ -1238,11 +1234,6 @@ module i2c_fsm #(
           // too early relative to driving the data.  This will cause a
           // setup violation.  This is the same case to needing StretchTxSetup.
           state_d = rw_bit_q ? StretchTxEmpty : AcquireByte;
-          // Since we are transitioning to StretchTxEmpty above, also assert the
-          // empty interrupt if the fifo will be valid.
-          // TODO: convert this to level status interrupt eventually, this is a
-          // workaround.
-          event_tx_empty_o = rw_bit_q & ~tx_fifo_rvalid_i;
 
           // Clear whichever stretch was requested.
           stretch_stop_tx_clr = stretch_en_addr_tx_i;
@@ -1251,6 +1242,8 @@ module i2c_fsm #(
       end
       // StretchTxEmpty: target stretches the clock when tx_fifo is empty
       StretchTxEmpty : begin
+        // When in stretch state, always notify software that help is required.
+        event_tx_empty_o = 1'b1;
         if (tx_fifo_rvalid_i && acq_fifo_wready) begin
           // When data becomes available, we must first drive it onto the line
           // for at least the "setup" period.  If we do not, once the clock is released, the
@@ -1261,6 +1254,9 @@ module i2c_fsm #(
           state_d = StretchTxSetup;
           load_tcount = 1'b1;
           tcount_sel = tSetupData;
+
+          // When leaving stretch state, de-assert software notification
+          event_tx_empty_o = 1'b0;
         end
       end
       StretchTxSetup : begin

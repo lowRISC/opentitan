@@ -49,7 +49,8 @@
       '''
     }
     { name: "tx_empty"
-      desc: "target mode interrupt: raised if the target needs data to transmit and TX FIFO is empty."
+      desc: "target mode interrupt: raised if the target is stretching clocks for a read command.  This is a level status interrupt."
+      type: "status"
     }
     { name: "tx_nonempty"
       desc: "target mode interrupt: raised if there are extra bytes left in TX FIFO at the end of a read."
