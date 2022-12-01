@@ -778,6 +778,8 @@
       tags: ["rom", "dv", "fpga", "silicon"]
       stage: V2
       tests: [
+        "rom_e2e_sigverify_mod_exp_test_unlocked0_otbn",
+        "rom_e2e_sigverify_mod_exp_test_unlocked0_sw",
         "rom_e2e_sigverify_mod_exp_dev_otbn",
         "rom_e2e_sigverify_mod_exp_dev_sw",
         "rom_e2e_sigverify_mod_exp_prod_otbn",
