@@ -23,14 +23,22 @@
 #define COMPILER_RT_FTRUNCATE(f,l) _chsize(_fileno(f),l)
 #define COMPILER_RT_ALWAYS_INLINE __forceinline
 #define COMPILER_RT_CLEANUP(x)
+#define COMPILER_RT_USED
 #elif __GNUC__
-#define COMPILER_RT_ALIGNAS(x) __attribute__((aligned(x)))
+#ifdef _WIN32
+#define COMPILER_RT_FTRUNCATE(f, l) _chsize(fileno(f), l)
+#define COMPILER_RT_VISIBILITY
+#define COMPILER_RT_WEAK __attribute__((selectany))
+#else
+#define COMPILER_RT_FTRUNCATE(f, l) ftruncate(fileno(f), l)
 #define COMPILER_RT_VISIBILITY __attribute__((visibility("hidden")))
 #define COMPILER_RT_WEAK __attribute__((weak))
+#endif
+#define COMPILER_RT_ALIGNAS(x) __attribute__((aligned(x)))
 #define COMPILER_RT_ALLOCA __builtin_alloca
-#define COMPILER_RT_FTRUNCATE(f,l) ftruncate(fileno(f),l)
 #define COMPILER_RT_ALWAYS_INLINE inline __attribute((always_inline))
 #define COMPILER_RT_CLEANUP(x) __attribute__((cleanup(x)))
+#define COMPILER_RT_USED __attribute__((used))
 #endif
 
 #if defined(__APPLE__)
@@ -110,14 +118,9 @@ static inline size_t getpagesize() {
 #else /* defined(_WIN32) */
 #endif /* defined(_WIN32) */
 
-#define PROF_ERR(Format, ...)                                                  \
-  fprintf(stderr, "LLVM Profile Error: " Format, __VA_ARGS__);
-
-#define PROF_WARN(Format, ...)                                                 \
-  fprintf(stderr, "LLVM Profile Warning: " Format, __VA_ARGS__);
-
-#define PROF_NOTE(Format, ...)                                                 \
-  fprintf(stderr, "LLVM Profile Note: " Format, __VA_ARGS__);
+#define PROF_ERR(Format, ...)
+#define PROF_WARN(Format, ...)
+#define PROF_NOTE(Format, ...)
 
 #ifndef MAP_FILE
 #define MAP_FILE 0
@@ -134,6 +137,7 @@ static inline size_t getpagesize() {
 
 #else /* defined(__FreeBSD__) */
 
+#include <stddef.h>
 #include <stdint.h>
 
 #endif /* defined(__FreeBSD__) && defined(__i386__) */
