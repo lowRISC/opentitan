@@ -61,18 +61,10 @@ module i2c_fsm #(
   input        timeout_enable_i,   // assert if target stretches clock past max
   input [31:0] host_timeout_i,     // max time target waits for host to pull clock down
 
-  input        stretch_en_addr_tx_i,  // target stretches clock after address matching for transmit
-  input        stretch_en_addr_acq_i, // target stretches clock after address matching for acquire
-  input        stretch_stop_tx_i,     // stop stretching clock for transmit, resume normal operation
-  input        stretch_stop_acq_i,    // stop stretching clock for acquire, resume normal operation
-
   input logic [6:0] target_address0_i,
   input logic [6:0] target_mask0_i,
   input logic [6:0] target_address1_i,
   input logic [6:0] target_mask1_i,
-
-  output logic stretch_stop_tx_clr_o,    // hardware to deassert stretch_stop_tx bit
-  output logic stretch_stop_acq_clr_o,   // hardware to deassert stretch_stop_acq bit
 
   output logic event_nak_o,              // target didn't Ack when expected
   output logic event_scl_interference_o, // other device forcing SCL low
@@ -81,7 +73,6 @@ module i2c_fsm #(
   output logic event_sda_unstable_o,     // SDA is not constant during SCL pulse
   output logic event_trans_complete_o,   // Transaction is complete
   output logic event_tx_empty_o,         // tx_fifo is empty but data is needed
-  output logic event_tx_nonempty_o,      // tx_fifo is nonempty after stop
   output logic event_ack_stop_o,         // target received stop after ack
   output logic event_host_timeout_o      // host ceased sending SCL pulses during ongoing transactn
 );
@@ -126,11 +117,7 @@ module i2c_fsm #(
   logic        address_match; // indicates one of target's addresses matches the one sent by host
   logic [7:0]  input_byte;    // register for reads from host
   logic        input_byte_clr;// clear input_byte contents
-  logic        stretch_stop_tx_clr;
-  logic        stretch_stop_acq_clr;
   logic        acq_fifo_wready;
-  logic        stretch_target_addr_tx;
-  logic        stretch_target_addr_acq;
   logic        stretch_addr;
 
 
@@ -335,9 +322,6 @@ module i2c_fsm #(
     end
   end
 
-  assign stretch_stop_tx_clr_o = stretch_stop_tx_clr;
-  assign stretch_stop_acq_clr_o = stretch_stop_acq_clr;
-
   // An artificial acq_fifo_wready is used here to ensure we always have
   // space to asborb a stop / repeat start format byte.  Without guaranteeing
   // space for this entry, the target module would need to stretch the
@@ -385,7 +369,7 @@ module i2c_fsm #(
     AcquireAckWait, AcquireAckSetup, AcquireAckPulse, AcquireAckHold,
     // Target function clock stretch handling.
     StretchAddr,
-    StretchTxEmpty, StretchTxSetup,
+    StretchTx, StretchTxSetup,
     StretchAcqFull
   } state_e;
 
@@ -470,7 +454,6 @@ module i2c_fsm #(
     event_scl_interference_o = 1'b0;
     event_sda_unstable_o = 1'b0;
     event_trans_complete_o = 1'b0;
-    event_tx_nonempty_o = 1'b0;
     rw_bit = rw_bit_q;
     stretch_en = 1'b0;
     unique case (state_q)
@@ -740,8 +723,8 @@ module i2c_fsm #(
         acq_fifo_wvalid_o = ~stretch_addr;
         acq_fifo_wdata_o = {1'b0, 1'b1, input_byte};
       end
-      // StretchTxEmpty: target stretches the clock when tx_fifo is empty
-      StretchTxEmpty : begin
+      // StretchTx: target stretches the clock when tx_fifo is empty
+      StretchTx : begin
         target_idle_o = 1'b0;
         scl_d = 1'b0;
       end
@@ -776,7 +759,6 @@ module i2c_fsm #(
         event_scl_interference_o = 1'b0;
         event_sda_unstable_o = 1'b0;
         event_trans_complete_o = 1'b0;
-        event_tx_nonempty_o = 1'b0;
       end
     endcase // unique case (state_q)
 
@@ -786,25 +768,10 @@ module i2c_fsm #(
       acq_fifo_wvalid_o = !target_idle_o;
       acq_fifo_wdata_o = {1'b1, start_det, input_byte};
       event_trans_complete_o = !target_idle_o;
-
-      // Transaction completed with unused entries
-      if (!target_idle_o && tx_fifo_rvalid_i) event_tx_nonempty_o = 1'b1;
     end
   end
 
-  // The address ack for tx is stretched when:
-  // software requests unconditional stretching when address phase completes
-  assign stretch_target_addr_tx = rw_bit_q &
-                                  (stretch_en_addr_tx_i & !stretch_stop_tx_i);
-
-  // The address ack for acq is stretched when:
-  // software requests unconditional stretching when address phase completes
-  assign stretch_target_addr_acq = ~rw_bit_q &
-                                   (stretch_en_addr_acq_i & !stretch_stop_acq_i);
-
-  assign stretch_addr = stretch_target_addr_tx |
-                        stretch_target_addr_acq |
-                        !acq_fifo_wready;
+  assign stretch_addr = !acq_fifo_wready;
 
   // Conditional state transition
   always_comb begin : state_functions
@@ -822,8 +789,6 @@ module i2c_fsm #(
     restart = 1'b0;
     input_byte_clr = 1'b0;
     en_sda_interf_det = 1'b0;
-    stretch_stop_tx_clr = 1'b0;
-    stretch_stop_acq_clr = 1'b0;
     event_tx_empty_o = 1'b0;
 
     unique case (state_q)
@@ -1129,7 +1094,7 @@ module i2c_fsm #(
         // acq fifo wready is also part of the equation because we must be able
         // to accept a stop or repeated start format byte even in transmit states
         if (~tx_fifo_rvalid_i || ~acq_fifo_wready) begin
-          state_d = StretchTxEmpty;
+          state_d = StretchTx;
         end else begin
           state_d = TransmitSetup;
           load_tcount = 1'b1;
@@ -1216,7 +1181,7 @@ module i2c_fsm #(
           tcount_sel = tClockStart;
         end
       end
-      // AcquireAckHold: target pulls SDA low while SCL is pulled low
+      // AcquireAckHold: target pulls SDA low whilREe SCL is pulled low
       AcquireAckHold : begin
         if (tcount_q == 20'd1) begin
           // If there is no space for the current entry, stretch clocks and
@@ -1233,15 +1198,11 @@ module i2c_fsm #(
           // to follow the normal path, the logic will release the clock
           // too early relative to driving the data.  This will cause a
           // setup violation.  This is the same case to needing StretchTxSetup.
-          state_d = rw_bit_q ? StretchTxEmpty : AcquireByte;
-
-          // Clear whichever stretch was requested.
-          stretch_stop_tx_clr = stretch_en_addr_tx_i;
-          stretch_stop_acq_clr = stretch_en_addr_acq_i;
+          state_d = rw_bit_q ? StretchTx : AcquireByte;
         end
       end
-      // StretchTxEmpty: target stretches the clock when tx_fifo is empty
-      StretchTxEmpty : begin
+      // StretchTx: target stretches the clock when tx conditions are not satisfied.
+      StretchTx : begin
         // When in stretch state, always notify software that help is required.
         event_tx_empty_o = 1'b1;
         if (tx_fifo_rvalid_i && acq_fifo_wready) begin
@@ -1286,8 +1247,6 @@ module i2c_fsm #(
         log_stop = 1'b0;
         restart = 1'b0;
         input_byte_clr = 1'b0;
-        stretch_stop_tx_clr = 1'b0;
-        stretch_stop_acq_clr = 1'b0;
         event_tx_empty_o = 1'b0;
       end
     endcase // unique case (state_q)

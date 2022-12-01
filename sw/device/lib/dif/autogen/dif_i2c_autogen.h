@@ -123,34 +123,29 @@ typedef enum dif_i2c_irq {
    */
   kDifI2cIrqTransComplete = 9,
   /**
-   * Target mode interrupt: raised if the target needs data to transmit and TX
-   * FIFO is empty.
+   * Target mode interrupt: raised if the target is stretching clocks for a read
+   * command.  This is a level status interrupt.
    */
   kDifI2cIrqTxEmpty = 10,
   /**
-   * Target mode interrupt: raised if there are extra bytes left in TX FIFO at
-   * the end of a read.
-   */
-  kDifI2cIrqTxNonempty = 11,
-  /**
    * Target mode interrupt: raised if TX FIFO has overflowed.
    */
-  kDifI2cIrqTxOverflow = 12,
+  kDifI2cIrqTxOverflow = 11,
   /**
    * Target mode interrupt: raised if ACQ FIFO becomes full.  This is a level
    * status interrupt.
    */
-  kDifI2cIrqAcqFull = 13,
+  kDifI2cIrqAcqFull = 12,
   /**
    * Target mode interrupt: raised if STOP is received after ACK instead of NACK
    * from an external host read.
    */
-  kDifI2cIrqAckStop = 14,
+  kDifI2cIrqAckStop = 13,
   /**
    * Target mode interrupt: raised if the host stops sending the clock during an
    * ongoing transaction.
    */
-  kDifI2cIrqHostTimeout = 15,
+  kDifI2cIrqHostTimeout = 14,
 } dif_i2c_irq_t;
 
 /**

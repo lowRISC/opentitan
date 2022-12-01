@@ -29,7 +29,6 @@ module  i2c_core #(
   output logic                     intr_sda_unstable_o,
   output logic                     intr_trans_complete_o,
   output logic                     intr_tx_empty_o,
-  output logic                     intr_tx_nonempty_o,
   output logic                     intr_tx_overflow_o,
   output logic                     intr_acq_full_o,
   output logic                     intr_ack_stop_o,
@@ -48,12 +47,6 @@ module  i2c_core #(
   logic [15:0] t_buf;
   logic [30:0] stretch_timeout;
   logic        timeout_enable;
-  logic        stretch_en_addr_tx;
-  logic        stretch_en_addr_acq;
-  logic        stretch_stop_tx;
-  logic        stretch_stop_acq;
-  logic        stretch_stop_tx_clr;
-  logic        stretch_stop_acq_clr;
   logic [31:0] host_timeout;
 
   logic scl_sync;
@@ -72,7 +65,6 @@ module  i2c_core #(
   logic event_sda_unstable;
   logic event_trans_complete;
   logic event_tx_empty;
-  logic event_tx_nonempty;
   logic event_tx_overflow;
   logic event_ack_stop;
   logic event_host_timeout;
@@ -174,10 +166,6 @@ module  i2c_core #(
   assign hw2reg.fifo_status.acqlvl.d = acq_fifo_depth;
   assign hw2reg.acqdata.abyte.d = line_loopback ? 8'hff : acq_fifo_rdata[7:0];
   assign hw2reg.acqdata.signal.d = line_loopback ? 2'b11 : acq_fifo_rdata[9:8];
-  assign hw2reg.stretch_ctrl.stop_tx.d = 1'b0;
-  assign hw2reg.stretch_ctrl.stop_tx.de = stretch_stop_tx_clr;
-  assign hw2reg.stretch_ctrl.stop_acq.d = 1'b0;
-  assign hw2reg.stretch_ctrl.stop_acq.de = stretch_stop_acq_clr;
 
   assign override = reg2hw.ovrd.txovrden;
 
@@ -217,11 +205,6 @@ module  i2c_core #(
   assign stretch_timeout = reg2hw.timeout_ctrl.val.q;
   assign timeout_enable  = reg2hw.timeout_ctrl.en.q;
   assign host_timeout    = reg2hw.host_timeout_ctrl.q;
-
-  assign stretch_en_addr_tx  = reg2hw.stretch_ctrl.en_addr_tx.q;
-  assign stretch_en_addr_acq = reg2hw.stretch_ctrl.en_addr_acq.q;
-  assign stretch_stop_tx     = reg2hw.stretch_ctrl.stop_tx.q;
-  assign stretch_stop_acq    = reg2hw.stretch_ctrl.stop_acq.q;
 
   assign i2c_fifo_rxrst   = reg2hw.fifo_ctrl.rxrst.q & reg2hw.fifo_ctrl.rxrst.qe;
   assign i2c_fifo_fmtrst  = reg2hw.fifo_ctrl.fmtrst.q & reg2hw.fifo_ctrl.fmtrst.qe;
@@ -464,20 +447,10 @@ module  i2c_core #(
     .stretch_timeout_i       (stretch_timeout),
     .timeout_enable_i        (timeout_enable),
     .host_timeout_i          (host_timeout),
-
-    .stretch_en_addr_tx_i    (stretch_en_addr_tx),
-    .stretch_en_addr_acq_i   (stretch_en_addr_acq),
-    .stretch_stop_tx_i       (stretch_stop_tx),
-    .stretch_stop_acq_i      (stretch_stop_acq),
-
     .target_address0_i       (target_address0),
     .target_mask0_i          (target_mask0),
     .target_address1_i       (target_address1),
     .target_mask1_i          (target_mask1),
-
-    .stretch_stop_tx_clr_o   (stretch_stop_tx_clr),
-    .stretch_stop_acq_clr_o  (stretch_stop_acq_clr),
-
     .event_nak_o             (event_nak),
     .event_scl_interference_o(event_scl_interference),
     .event_sda_interference_o(event_sda_interference),
@@ -485,7 +458,6 @@ module  i2c_core #(
     .event_sda_unstable_o    (event_sda_unstable),
     .event_trans_complete_o  (event_trans_complete),
     .event_tx_empty_o        (event_tx_empty),
-    .event_tx_nonempty_o     (event_tx_nonempty),
     .event_ack_stop_o        (event_ack_stop),
     .event_host_timeout_o    (event_host_timeout)
   );
@@ -634,19 +606,6 @@ module  i2c_core #(
     .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_empty.de),
     .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_empty.d),
     .intr_o                 (intr_tx_empty_o)
-  );
-
-  prim_intr_hw #(.Width(1)) intr_hw_tx_nonempty (
-    .clk_i,
-    .rst_ni,
-    .event_intr_i           (event_tx_nonempty),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_nonempty.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_nonempty.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tx_nonempty.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tx_nonempty.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_nonempty.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_nonempty.d),
-    .intr_o                 (intr_tx_nonempty_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_tx_overflow (

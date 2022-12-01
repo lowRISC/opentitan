@@ -52,9 +52,6 @@
       desc: "target mode interrupt: raised if the target is stretching clocks for a read command.  This is a level status interrupt."
       type: "status"
     }
-    { name: "tx_nonempty"
-      desc: "target mode interrupt: raised if there are extra bytes left in TX FIFO at the end of a read."
-    }
     { name: "tx_overflow"
       desc: "target mode interrupt: raised if TX FIFO has overflowed."
     }
@@ -530,32 +527,6 @@
       hwqe: "true"
       fields: [
         { bits: "7:0" }
-      ]
-    }
-    { name: "STRETCH_CTRL"
-      desc: "I2C target clock stretching control"
-      swaccess: "rw"
-      fields: [
-        { bits: "0"
-          hwaccess: "hro"
-          name: "EN_ADDR_TX"
-          desc: "Enable clock stretching after address matching completes for transmit (read)"
-        }
-        { bits: "1"
-          hwaccess: "hro"
-          name: "EN_ADDR_ACQ"
-          desc: "Enable clock stretching after address matching completes for acquire (write)"
-        }
-        { bits: "2"
-          hwaccess: "hrw"
-          name: "STOP_TX"
-          desc: "Stop clock stretching for transmit (read) and resume normal operation"
-        }
-        { bits: "3"
-          hwaccess: "hrw"
-          name: "STOP_ACQ"
-          desc: "Stop clock stretching for acquire (write) and resume normal operation"
-        }
       ]
     }
     { name: "HOST_TIMEOUT_CTRL"

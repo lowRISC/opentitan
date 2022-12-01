@@ -14,7 +14,6 @@ class i2c_target_tx_ovf_vseq extends i2c_target_smoke_vseq;
     cfg.min_data = 100;
     cfg.max_data = 200;
     expected_intr[TxOverflow] = 1;
-    expected_intr[TxNonEmpty] = 1;
     cfg.use_drooling_tx = 1;
     num_trans = 5;
   endtask

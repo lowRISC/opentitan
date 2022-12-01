@@ -663,39 +663,6 @@ dif_result_t dif_i2c_set_device_id(const dif_i2c_t *i2c, dif_i2c_id_t *id0,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_set_host_timeout(const dif_i2c_t *i2c, uint32_t duration);
 
-/**
- * Configures clock stretching after address match for reads and writes when OT
- * is operating as the target device.
- *
- * Clock stretching should be terminated by software with
- * `dif_i2c_stop_stretch()`
- *
- * @param i2c An I2C handle.
- * @param stretch_reads Enable or disable clock stretching after device recieves
- * I2C Reads
- * @param stretch_writes Enable or disable clock stretching after device
- * recieves I2C writes
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_config_stretch(const dif_i2c_t *i2c,
-                                    dif_toggle_t stretch_reads,
-                                    dif_toggle_t stretch_writes);
-
-/**
- * Stops I2C stretching after address match for either a read, write or both
- * when OT is operating as the target device.
- *
- * @param i2c An I2C handle.
- * @param stop_read_stretch
- * @param stop_write_stretch
- * @return The result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-dif_result_t dif_i2c_stop_stretch(const dif_i2c_t *i2c,
-                                  dif_toggle_t stop_read_stretch,
-                                  dif_toggle_t stop_write_stretch);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
