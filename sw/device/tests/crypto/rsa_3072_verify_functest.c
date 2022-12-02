@@ -18,12 +18,8 @@
 bool rsa_3072_verify_test(const rsa_3072_verify_test_vector_t *testvec) {
   // Encode message
   rsa_3072_int_t encodedMessage;
-  hmac_error_t encode_err =
-      rsa_3072_encode_sha256(testvec->msg, testvec->msgLen, &encodedMessage);
-  if (encode_err != kHmacOk) {
-    LOG_ERROR("Error from HMAC during message encoding: 0x%08x.", encode_err);
-    return false;
-  }
+  CHECK_STATUS_OK(
+      rsa_3072_encode_sha256(testvec->msg, testvec->msgLen, &encodedMessage));
 
   // Precompute Montgomery constants
   rsa_3072_constants_t constants;

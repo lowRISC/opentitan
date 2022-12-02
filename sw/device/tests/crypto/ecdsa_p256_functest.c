@@ -34,23 +34,15 @@ static const ecdsa_p256_private_key_t kPrivateKey = {
     .d1 = {0},
 };
 
-hmac_error_t compute_digest(void) {
+static void compute_digest(void) {
   // Compute the SHA-256 digest using the HMAC device.
   hmac_sha256_init();
-  hmac_error_t err = hmac_sha256_update(&kMessage, sizeof(kMessage) - 1);
-  if (err != kHmacOk) {
-    return err;
-  }
+  CHECK_STATUS_OK(hmac_sha256_update(&kMessage, sizeof(kMessage) - 1));
   hmac_digest_t hmac_digest;
-  err = hmac_sha256_final(&hmac_digest);
-  if (err != kHmacOk) {
-    return err;
-  }
+  CHECK_STATUS_OK(hmac_sha256_final(&hmac_digest));
 
   // Copy digest into the destination array.
   memcpy(digest.h, hmac_digest.digest, sizeof(hmac_digest.digest));
-
-  return kHmacOk;
 }
 
 bool sign_then_verify_test(void) {
@@ -96,7 +88,7 @@ OTTF_DEFINE_TEST_CONFIG();
 bool test_main(void) {
   entropy_testutils_auto_mode_init();
 
-  CHECK(compute_digest() == kHmacOk);
+  compute_digest();
 
   return sign_then_verify_test();
 }

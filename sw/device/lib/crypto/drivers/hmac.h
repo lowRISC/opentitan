@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/status.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,19 +22,6 @@ enum {
   /* Number of words in an HMAC or SHA-256 digest. */
   kHmacDigestNumWords = kHmacDigestNumBytes / sizeof(uint32_t),
 };
-
-/**
- * Error types for the HMAC driver.
- */
-typedef enum hmac_error {
-  kHmacOk = 0,
-  /* Invalid argument.*/
-  kHmacErrorBadArg = 1,
-  /* HMAC device is still processing. */
-  kHmacErrorBusy = 2,
-  /* Attempt to push when FIFO is full. */
-  kHmacErrorFifoFull = 3,
-} hmac_error_t;
 
 /**
  * A typed representation of the HMAC digest.
@@ -63,7 +51,7 @@ void hmac_sha256_init(void);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-hmac_error_t hmac_sha256_update(const void *data, size_t len);
+status_t hmac_sha256_update(const void *data, size_t len);
 
 /**
  * Finalizes SHA256 operation and writes `digest` buffer.
@@ -74,7 +62,7 @@ hmac_error_t hmac_sha256_update(const void *data, size_t len);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-hmac_error_t hmac_sha256_final(hmac_digest_t *digest);
+status_t hmac_sha256_final(hmac_digest_t *digest);
 
 #ifdef __cplusplus
 }

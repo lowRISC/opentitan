@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -43,9 +44,8 @@ static const uint32_t kOtbnRsaModeNumWords = 1;
 static const uint32_t kOtbnRsaModeConstants = 1;
 static const uint32_t kOtbnRsaModeModexp = 2;
 
-// TODO: Change the error type here to a crypto_error_t once that type exists.
-hmac_error_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
-                                    rsa_3072_int_t *result) {
+status_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
+                                rsa_3072_int_t *result) {
   enum { kSha256DigestNumWords = 8 };
 
   // Message encoding as described in RFC 8017, Section 9.2. The encoded
@@ -73,18 +73,11 @@ hmac_error_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
 
   // Compute the SHA-256 message digest.
   hmac_sha256_init();
-  hmac_error_t err;
   if (msg != NULL) {
-    err = hmac_sha256_update(msg, msgLen);
-    if (err != kHmacOk) {
-      return err;
-    }
+    HARDENED_TRY(hmac_sha256_update(msg, msgLen));
   }
   hmac_digest_t digest;
-  err = hmac_sha256_final(&digest);
-  if (err != kHmacOk) {
-    return err;
-  }
+  HARDENED_TRY(hmac_sha256_final(&digest));
 
   // Copy the message digest into the least significant end of the result.
   memcpy(result->data, digest.digest, sizeof(digest.digest));
@@ -96,7 +89,7 @@ hmac_error_t rsa_3072_encode_sha256(const uint8_t *msg, size_t msgLen,
   result->data[kSha256DigestNumWords + 3] = 0x0d060960;
   result->data[kSha256DigestNumWords + 4] = 0x00303130;
 
-  return kHmacOk;
+  return OTCRYPTO_OK;
 }
 
 /**

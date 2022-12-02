@@ -15,33 +15,22 @@
 // the version of this file matching the Bazel rule under test.
 #include "ecdsa_p256_verify_testvectors.h"
 
-hmac_error_t compute_digest(size_t msg_len, const uint8_t *msg,
-                            ecdsa_p256_message_digest_t *digest) {
+static void compute_digest(size_t msg_len, const uint8_t *msg,
+                           ecdsa_p256_message_digest_t *digest) {
   // Compute the SHA-256 digest using the HMAC device.
   hmac_sha256_init();
-  hmac_error_t err = hmac_sha256_update(msg, msg_len);
-  if (err != kHmacOk) {
-    return err;
-  }
+  CHECK_STATUS_OK(hmac_sha256_update(msg, msg_len));
   hmac_digest_t hmac_digest;
-  err = hmac_sha256_final(&hmac_digest);
-  if (err != kHmacOk) {
-    return err;
-  }
+  CHECK_STATUS_OK(hmac_sha256_final(&hmac_digest));
 
   // Copy digest into the destination array.
   memcpy(digest->h, hmac_digest.digest, sizeof(hmac_digest.digest));
-
-  return kHmacOk;
 }
 
 bool ecdsa_p256_verify_test(const ecdsa_p256_verify_test_vector_t *testvec) {
   // Hash message.
   ecdsa_p256_message_digest_t digest;
-  hmac_error_t hash_err =
-      compute_digest(testvec->msg_len, testvec->msg, &digest);
-  CHECK(hash_err == kHmacOk, "Error from HMAC during hashing: 0x%08x.",
-        hash_err);
+  compute_digest(testvec->msg_len, testvec->msg, &digest);
 
   // Attempt to verify signature.
   hardened_bool_t result;
