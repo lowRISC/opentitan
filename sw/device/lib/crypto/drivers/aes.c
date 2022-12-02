@@ -7,8 +7,10 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_status.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 #include "aes_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -35,15 +37,15 @@ enum {
 /**
  * Spins until the AES hardware reports a specific status bit.
  */
-static aes_error_t spin_until(uint32_t bit) {
+static status_t spin_until(uint32_t bit) {
   while (true) {
     uint32_t reg = abs_mmio_read32(kBase + AES_STATUS_REG_OFFSET);
     if (bitfield_bit32_read(reg, AES_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_BIT) ||
         bitfield_bit32_read(reg, AES_STATUS_ALERT_FATAL_FAULT_BIT)) {
-      return kAesInternalError;
+      return OTCRYPTO_RECOV_ERR;
     }
     if (bitfield_bit32_read(reg, bit)) {
-      return kAesOk;
+      return OTCRYPTO_OK;
     }
   }
 }
@@ -56,10 +58,10 @@ static aes_error_t spin_until(uint32_t bit) {
  * @param key AES key.
  * @return result, OK or error.
  */
-static aes_error_t aes_write_key(aes_key_t key) {
+static status_t aes_write_key(aes_key_t key) {
   if (key.sideload != kHardenedBoolFalse) {
     // Nothing to be done; key must be separately loaded from keymgr.
-    return kAesOk;
+    return OTCRYPTO_OK;
   }
 
   size_t key_words;
@@ -74,7 +76,7 @@ static aes_error_t aes_write_key(aes_key_t key) {
       key_words = kAesKeyWordLen256;
       break;
     default:
-      return kAesInternalError;
+      return OTCRYPTO_BAD_ARGS;
   }
 
   uint32_t share0 = kBase + AES_KEY_SHARE0_0_REG_OFFSET;
@@ -101,12 +103,9 @@ static aes_error_t aes_write_key(aes_key_t key) {
  * @param encrypt True for encryption, false for decryption.
  * @return result, OK or error.
  */
-static aes_error_t aes_begin(aes_key_t key, const aes_block_t *iv,
-                             hardened_bool_t encrypt) {
-  aes_error_t err = spin_until(AES_STATUS_IDLE_BIT);
-  if (err != kAesOk) {
-    return err;
-  }
+static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
+                          hardened_bool_t encrypt) {
+  HARDENED_TRY(spin_until(AES_STATUS_IDLE_BIT));
 
   uint32_t ctrl_reg = AES_CTRL_SHADOWED_REG_RESVAL;
 
@@ -127,7 +126,7 @@ static aes_error_t aes_begin(aes_key_t key, const aes_block_t *iv,
       break;
     default:
       // Invalid value.
-      return kAesInternalError;
+      return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(operation_written, kHardenedBoolTrue);
 
@@ -146,7 +145,7 @@ static aes_error_t aes_begin(aes_key_t key, const aes_block_t *iv,
       break;
     default:
       // Invalid value.
-      return kAesInternalError;
+      return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(sideload_written, kHardenedBoolTrue);
 
@@ -166,20 +165,14 @@ static aes_error_t aes_begin(aes_key_t key, const aes_block_t *iv,
                              AES_CTRL_SHADOWED_PRNG_RESEED_RATE_VALUE_PER_64);
 
   abs_mmio_write32_shadowed(kBase + AES_CTRL_SHADOWED_REG_OFFSET, ctrl_reg);
-  err = spin_until(AES_STATUS_IDLE_BIT);
-  if (err != kAesOk) {
-    return err;
-  }
+  HARDENED_TRY(spin_until(AES_STATUS_IDLE_BIT));
 
   // Write the key (if it is not sideloaded).
-  err = aes_write_key(key);
-  if (err != kAesOk) {
-    return err;
-  }
+  HARDENED_TRY(aes_write_key(key));
 
   // ECB does not need to set an IV, so we're done early.
   if (key.mode == kAesCipherModeEcb) {
-    return kAesOk;
+    return OTCRYPTO_OK;
   }
 
   uint32_t iv_offset = kBase + AES_IV_0_REG_OFFSET;
@@ -187,18 +180,18 @@ static aes_error_t aes_begin(aes_key_t key, const aes_block_t *iv,
     abs_mmio_write32(iv_offset + i * sizeof(uint32_t), iv->data[i]);
   }
 
-  return kAesOk;
+  return OTCRYPTO_OK;
 }
 
-aes_error_t aes_encrypt_begin(const aes_key_t key, const aes_block_t *iv) {
+status_t aes_encrypt_begin(const aes_key_t key, const aes_block_t *iv) {
   return aes_begin(key, iv, kHardenedBoolTrue);
 }
 
-aes_error_t aes_decrypt_begin(const aes_key_t key, const aes_block_t *iv) {
+status_t aes_decrypt_begin(const aes_key_t key, const aes_block_t *iv) {
   return aes_begin(key, iv, kHardenedBoolFalse);
 }
 
-aes_error_t aes_update(aes_block_t *dest, const aes_block_t *src) {
+status_t aes_update(aes_block_t *dest, const aes_block_t *src) {
   if (dest != NULL) {
     // Check that either the output is valid or AES is busy, to avoid spinning
     // forever if the user passes a non-null `dest` when there is no output
@@ -206,13 +199,10 @@ aes_error_t aes_update(aes_block_t *dest, const aes_block_t *src) {
     uint32_t reg = abs_mmio_read32(kBase + AES_STATUS_REG_OFFSET);
     if (bitfield_bit32_read(reg, AES_STATUS_IDLE_BIT) &&
         !bitfield_bit32_read(reg, AES_STATUS_OUTPUT_VALID_BIT)) {
-      return kAesInternalError;
+      return OTCRYPTO_RECOV_ERR;
     }
 
-    aes_error_t err = spin_until(AES_STATUS_OUTPUT_VALID_BIT);
-    if (err != kAesOk) {
-      return err;
-    }
+    HARDENED_TRY(spin_until(AES_STATUS_OUTPUT_VALID_BIT));
 
     uint32_t offset = kBase + AES_DATA_OUT_0_REG_OFFSET;
     for (size_t i = 0; i < ARRAYSIZE(dest->data); ++i) {
@@ -221,10 +211,7 @@ aes_error_t aes_update(aes_block_t *dest, const aes_block_t *src) {
   }
 
   if (src != NULL) {
-    aes_error_t err = spin_until(AES_STATUS_INPUT_READY_BIT);
-    if (err != kAesOk) {
-      return err;
-    }
+    HARDENED_TRY(spin_until(AES_STATUS_INPUT_READY_BIT));
 
     uint32_t offset = kBase + AES_DATA_IN_0_REG_OFFSET;
     for (size_t i = 0; i < ARRAYSIZE(src->data); ++i) {
@@ -232,10 +219,10 @@ aes_error_t aes_update(aes_block_t *dest, const aes_block_t *src) {
     }
   }
 
-  return kAesOk;
+  return OTCRYPTO_OK;
 }
 
-aes_error_t aes_end(void) {
+status_t aes_end(void) {
   uint32_t ctrl_reg = AES_CTRL_SHADOWED_REG_RESVAL;
   ctrl_reg = bitfield_bit32_write(ctrl_reg,
                                   AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
