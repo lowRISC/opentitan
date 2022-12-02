@@ -2595,10 +2595,17 @@
     }
     {
       name: chip_sw_sleep_sram_ret_contents
-      desc: '''Verify that the data within the retention SRAM survives low power entry-exit.
+      desc: '''Verify that the data within the retention SRAM survives low power entry-exit and reset.
 
-            Ensure that the data within the retention SRAM survives ALL low power entry-exit
-            variations.
+            Ensure that the data within the retention SRAM survives as described in this table.
+              |             Mode             | Scrambled | Data Preserved |
+              |:----------------------------:|:---------:|:--------------:|
+              |          Normal sleep        |    No     |       Yes      |
+              |           Deep sleep         |    No     |       Yes      |
+              | Reset due to a reset request |    No     |       Yes      |
+              |          Normal sleep        |    Yes    |       Yes      |
+              |           Deep sleep         |    Yes    |       Yes      |
+              | Reset due to a reset request |    Yes    |       No       |
             '''
       stage: V2
       tests: ["chip_sw_sleep_sram_ret_contents"]
