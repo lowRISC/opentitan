@@ -26,3 +26,4 @@
 `include "i2c_target_stretch_vseq.sv"
 `include "i2c_target_tx_ovf_vseq.sv"
 `include "i2c_target_timeout_vseq.sv"
+`include "i2c_target_ack_stop_vseq.sv"

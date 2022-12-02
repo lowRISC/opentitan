@@ -37,6 +37,7 @@ class i2c_monitor extends dv_base_monitor #(
     if (cfg.if_mode == Host) begin
       bit r_bit = 1'b0;
       i2c_item full_item;
+      fork
       forever begin
         wait(cfg.en_monitor);
         if (mon_dut_item.stop ||
@@ -78,6 +79,8 @@ class i2c_monitor extends dv_base_monitor #(
         end
         mon_dut_item.clear_data();
       end
+        ack_stop_mon();
+      join_none
     end else begin
       forever begin
         fork
@@ -326,4 +329,32 @@ class i2c_monitor extends dv_base_monitor #(
     end
   endtask // target_write
 
+  task ack_stop_mon();
+    bit stop, ack, nack, rstart, ack_l;
+    forever begin
+      @(cfg.vif.cb);
+      if (mon_dut_item.bus_op == BusOpRead) begin
+        cfg.vif.wait_for_host_any(cfg.timing_cfg,
+                                  rstart, stop, ack_l, nack);
+        ack |= ack_l;
+
+        `DV_CHECK_NE_FATAL({rstart, stop}, 2'b11)
+        if ((rstart | stop) & !nack) begin
+          if (cfg.allow_ack_stop) begin
+            `uvm_info("ack_stop_mon", "detect ack_stop", UVM_MEDIUM)
+            cfg.ack_stop_det = 1;
+          end else begin
+            `uvm_error(`gfn, "ack_stop detected")
+          end
+          mon_dut_item.rstart = rstart;
+          mon_dut_item.stop = stop;
+          if (stop) cfg.got_stop = 1;
+          rstart = 0;
+          stop = 0;
+          ack = 0;
+          nack = 0;
+        end
+      end
+    end
+  endtask
 endclass : i2c_monitor

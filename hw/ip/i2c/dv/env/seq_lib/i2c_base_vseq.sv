@@ -754,10 +754,10 @@ class i2c_base_vseq extends cip_base_vseq #(
           `downcast(read_txn, txn.clone())
           full_txn.num_data++;
           if (src_q.size() == 0) begin
-            txn.drv_type = HostNAck;
+            txn.drv_type = get_eos();
           end else begin
             // if your next item is restart Do nack
-            if (src_q[0].drv_type == HostRStart) txn.drv_type = HostNAck;
+            if (src_q[0].drv_type == HostRStart) txn.drv_type = get_eos();
             else txn.drv_type = HostAck;
           end
           dst_q.push_back(txn);
@@ -836,13 +836,14 @@ class i2c_base_vseq extends cip_base_vseq #(
         end else begin
           read_acq_fifo(0, acq_fifo_empty);
         end
-        clear_interrupt(AcqFull);
       end else if (cfg.intr_vif.pins[TxStretch]) begin
         if (!cfg.use_drooling_tx) begin
+	  // Check  
           write_tx_fifo();
-        end else begin
+	end
+//        end else begin
           read_acq_fifo(0, acq_fifo_empty);
-        end
+//        end
         clear_interrupt(TxStretch);
       end else if (cfg.intr_vif.pins[CmdComplete]) begin
         if (cfg.slow_acq) begin
@@ -1004,6 +1005,7 @@ class i2c_base_vseq extends cip_base_vseq #(
         read_cmd_q.push_back(1);
       end
     end
+     
     if (read_data == 0) begin
       cfg.clk_rst_vif.wait_clks(1);
       `uvm_info("process_acq", $sformatf("acq_dbg: sent:%0d rcvd:%0d acq_is_empty",
@@ -1011,4 +1013,15 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endtask // read_acq_fifo
 
+  // TODO remove comment
+  function drv_type_e get_eos();
+    drv_type_e rsp = HostNAck;
+    if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
+      randcase
+        1: rsp = HostAck;
+//        1: rsp = HostNAck;
+      endcase
+    end
+    return rsp;
+  endfunction // get_eos
 endclass : i2c_base_vseq

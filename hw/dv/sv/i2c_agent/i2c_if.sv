@@ -182,6 +182,22 @@ interface i2c_if(
     wait_for_dly(tc.tHoldBit);
   endtask: wait_for_device_ack
 
+  task automatic wait_for_host_any(timing_cfg_t tc,
+                                   output bit rstart,
+                                   output bit stop,
+                                   output bit ack,
+                                   output bit nack);
+    fork
+      begin : iso_fork
+        fork
+          wait_for_host_stop_or_rstart(tc, rstart, stop);
+          wait_for_host_ack_or_nack(tc, ack, nack);
+        join_any
+        disable fork;
+      end : iso_fork
+    join
+  endtask
+
   // the `sda_unstable` interrupt is asserted if, when receiving data or ,
   // ack pulse (device_send_ack) the value of the target sda signal does not
   // remain constant over the duration of the scl pulse.
