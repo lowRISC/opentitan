@@ -1,0 +1,12 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# Verify the vendor_test connectivities.
+CONNECTION, LC_OTP_VENDOR_TEST_CTRL,   top_earlgrey.u_lc_ctrl,  lc_otp_vendor_test_o, top_earlgrey.u_otp_ctrl, lc_otp_vendor_test_i
+CONNECTION, LC_OTP_VENDOR_TEST_STATUS, top_earlgrey.u_otp_ctrl, lc_otp_vendor_test_o, top_earlgrey.u_lc_ctrl,  lc_otp_vendor_test_i
