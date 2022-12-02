@@ -124,10 +124,10 @@ ifneq (${sw_images},)
 						--output=starlark \
 						--starlark:expr="\"\\n\".join([f.path for f in target.files.to_list()])"); do \
 						cp -f $${artifact} $${run_dir}/$$(basename $${artifact}); \
-						if [[ $$artifact == *.scr.vmem && \
+						if [[ $$artifact == *.bin && \
 							-f "$$(echo $${artifact} | cut -d. -f 1).elf" ]]; then \
 							cp -f "$$(echo $${artifact} | cut -d. -f 1).elf" \
-								$${run_dir}/$$(basename "$${artifact%.*.scr.vmem}.elf"); \
+								$${run_dir}/$$(basename "$${artifact%.bin}.elf"); \
 						fi; \
 					done; \
 				fi; \
