@@ -1,14 +1,15 @@
-diff -u a/compiler-rt/lib/profile/InstrProfiling.c b/compiler-rt/lib/profile/InstrProfiling.c
---- a/compiler-rt/lib/profile/InstrProfiling.c	2020-08-01 01:11:24.939629121 -0400
-+++ b/compiler-rt/lib/profile/InstrProfiling.c	2020-08-06 00:22:17.754626763 -0400
-@@ -10,15 +10,12 @@
+diff --git a/compiler-rt/lib/profile/InstrProfiling.c b/compiler-rt/lib/profile/InstrProfiling.c
+index 6df65f66d..5d20a762f 100644
+--- a/compiler-rt/lib/profile/InstrProfiling.c
++++ b/compiler-rt/lib/profile/InstrProfiling.c
+@@ -10,15 +10,13 @@
  // with freestanding compilation. See `darwin_add_builtin_libraries`.
  
  #include <limits.h>
 -#include <stdio.h>
 -#include <stdlib.h>
 -#include <string.h>
--
+ 
  #include "InstrProfiling.h"
  #include "InstrProfilingInternal.h"
 +#include "sw/device/lib/base/memory.h"
@@ -19,9 +20,10 @@ diff -u a/compiler-rt/lib/profile/InstrProfiling.c b/compiler-rt/lib/profile/Ins
  
  COMPILER_RT_VISIBILITY uint64_t __llvm_profile_get_magic(void) {
    return sizeof(void *) == sizeof(uint64_t) ? (INSTR_PROF_RAW_MAGIC_64)
-diff -u a/compiler-rt/lib/profile/InstrProfiling.h b/compiler-rt/lib/profile/InstrProfiling.h
---- a/compiler-rt/lib/profile/InstrProfiling.h	2020-08-01 01:11:24.939629121 -0400
-+++ b/compiler-rt/lib/profile/InstrProfiling.h	2020-08-06 00:19:28.636061120 -0400
+diff --git a/compiler-rt/lib/profile/InstrProfiling.h b/compiler-rt/lib/profile/InstrProfiling.h
+index 237acb33f..9e37253b3 100644
+--- a/compiler-rt/lib/profile/InstrProfiling.h
++++ b/compiler-rt/lib/profile/InstrProfiling.h
 @@ -10,32 +10,31 @@
  #define PROFILE_INSTRPROFILING_H_
  
@@ -60,7 +62,7 @@ diff -u a/compiler-rt/lib/profile/InstrProfiling.h b/compiler-rt/lib/profile/Ins
  } ValueProfNode;
  
  /*!
-@@ -129,7 +128,7 @@
+@@ -129,7 +128,7 @@ int __llvm_profile_check_compatibility(const char *Profile,
   */
  void INSTR_PROF_VALUE_PROF_FUNC(
  #define VALUE_PROF_FUNC_PARAM(ArgType, ArgName, ArgLLVMType) ArgType ArgName
@@ -69,7 +71,7 @@ diff -u a/compiler-rt/lib/profile/InstrProfiling.h b/compiler-rt/lib/profile/Ins
      );
  
  void __llvm_profile_instrument_target_value(uint64_t TargetValue, void *Data,
-@@ -219,7 +218,7 @@
+@@ -219,7 +218,7 @@ void __llvm_profile_set_filename(const char *Name);
   * program initialization time. Support for transferring the mmap'd profile
   * counts to a new file has not been implemented.
   */
@@ -78,9 +80,10 @@ diff -u a/compiler-rt/lib/profile/InstrProfiling.h b/compiler-rt/lib/profile/Ins
  
  /*! \brief Register to write instrumentation data to file at exit. */
  int __llvm_profile_register_write_file_atexit(void);
-diff -u a/compiler-rt/lib/profile/InstrProfilingMerge.c b/compiler-rt/lib/profile/InstrProfilingMerge.c
---- a/compiler-rt/lib/profile/InstrProfilingMerge.c	2020-08-01 01:11:24.939629121 -0400
-+++ b/compiler-rt/lib/profile/InstrProfilingMerge.c	2020-08-06 00:21:59.282783616 -0400
+diff --git a/compiler-rt/lib/profile/InstrProfilingMerge.c b/compiler-rt/lib/profile/InstrProfilingMerge.c
+index 16ebc2f8b..9ef47a06d 100644
+--- a/compiler-rt/lib/profile/InstrProfilingMerge.c
++++ b/compiler-rt/lib/profile/InstrProfilingMerge.c
 @@ -11,10 +11,9 @@
  
  #include "InstrProfiling.h"
@@ -93,9 +96,10 @@ diff -u a/compiler-rt/lib/profile/InstrProfilingMerge.c b/compiler-rt/lib/profil
  
  COMPILER_RT_VISIBILITY
  void (*VPMergeHook)(ValueProfData *, __llvm_profile_data *);
-diff -u a/compiler-rt/lib/profile/InstrProfilingPlatformOther.c b/compiler-rt/lib/profile/InstrProfilingPlatformOther.c
---- a/compiler-rt/lib/profile/InstrProfilingPlatformOther.c	2020-08-01 01:11:24.939629121 -0400
-+++ b/compiler-rt/lib/profile/InstrProfilingPlatformOther.c	2020-08-05 23:34:11.419098000 -0400
+diff --git a/compiler-rt/lib/profile/InstrProfilingPlatformOther.c b/compiler-rt/lib/profile/InstrProfilingPlatformOther.c
+index 0e59148e2..4fd2a5170 100644
+--- a/compiler-rt/lib/profile/InstrProfilingPlatformOther.c
++++ b/compiler-rt/lib/profile/InstrProfilingPlatformOther.c
 @@ -10,8 +10,7 @@
      !(defined(__sun__) && defined(__svr4__)) && !defined(__NetBSD__) &&        \
      !defined(_WIN32)
@@ -105,11 +109,12 @@ diff -u a/compiler-rt/lib/profile/InstrProfilingPlatformOther.c b/compiler-rt/li
 +#include <stddef.h>
  
  #include "InstrProfiling.h"
- 
-diff -u a/compiler-rt/lib/profile/InstrProfilingPort.h b/compiler-rt/lib/profile/InstrProfilingPort.h
---- a/compiler-rt/lib/profile/InstrProfilingPort.h	2020-08-01 01:11:24.939629121 -0400
-+++ b/compiler-rt/lib/profile/InstrProfilingPort.h	2020-08-05 23:34:11.419098000 -0400
-@@ -80,7 +80,6 @@
+ #include "InstrProfilingInternal.h"
+diff --git a/compiler-rt/lib/profile/InstrProfilingPort.h b/compiler-rt/lib/profile/InstrProfilingPort.h
+index ed0905cc5..ddc1f408f 100644
+--- a/compiler-rt/lib/profile/InstrProfilingPort.h
++++ b/compiler-rt/lib/profile/InstrProfilingPort.h
+@@ -88,7 +88,6 @@
    (DomType *)__sync_fetch_and_add((long *)&PtrVar, sizeof(DomType) * PtrIncr)
  #endif
  #else /* COMPILER_RT_HAS_ATOMICS != 1 */
@@ -117,25 +122,40 @@ diff -u a/compiler-rt/lib/profile/InstrProfilingPort.h b/compiler-rt/lib/profile
  #define COMPILER_RT_BOOL_CMPXCHG(Ptr, OldV, NewV)                              \
    lprofBoolCmpXchg((void **)Ptr, OldV, NewV)
  #define COMPILER_RT_PTR_FETCH_ADD(DomType, PtrVar, PtrIncr)                    \
-@@ -109,7 +108,6 @@
+@@ -117,17 +116,11 @@ static inline size_t getpagesize() {
    return S.dwPageSize;
  }
  #else /* defined(_WIN32) */
 -#include <unistd.h>
  #endif /* defined(_WIN32) */
  
- #define PROF_ERR(Format, ...)                                                  \
-@@ -136,7 +134,6 @@
+-#define PROF_ERR(Format, ...)                                                  \
+-  fprintf(stderr, "LLVM Profile Error: " Format, __VA_ARGS__);
+-
+-#define PROF_WARN(Format, ...)                                                 \
+-  fprintf(stderr, "LLVM Profile Warning: " Format, __VA_ARGS__);
+-
+-#define PROF_NOTE(Format, ...)                                                 \
+-  fprintf(stderr, "LLVM Profile Note: " Format, __VA_ARGS__);
++#define PROF_ERR(Format, ...)
++#define PROF_WARN(Format, ...)
++#define PROF_NOTE(Format, ...)
+ 
+ #ifndef MAP_FILE
+ #define MAP_FILE 0
+@@ -144,7 +137,7 @@ static inline size_t getpagesize() {
  
  #else /* defined(__FreeBSD__) */
  
 -#include <inttypes.h>
++#include <stddef.h>
  #include <stdint.h>
  
  #endif /* defined(__FreeBSD__) && defined(__i386__) */
-diff -u a/compiler-rt/lib/profile/InstrProfilingWriter.c b/compiler-rt/lib/profile/InstrProfilingWriter.c
---- a/compiler-rt/lib/profile/InstrProfilingWriter.c	2020-08-01 01:11:24.939629121 -0400
-+++ b/compiler-rt/lib/profile/InstrProfilingWriter.c	2020-08-06 00:21:38.318961386 -0400
+diff --git a/compiler-rt/lib/profile/InstrProfilingWriter.c b/compiler-rt/lib/profile/InstrProfilingWriter.c
+index 25f630293..730262250 100644
+--- a/compiler-rt/lib/profile/InstrProfilingWriter.c
++++ b/compiler-rt/lib/profile/InstrProfilingWriter.c
 @@ -13,14 +13,14 @@
  /* For _alloca */
  #include <malloc.h>
@@ -153,12 +173,12 @@ diff -u a/compiler-rt/lib/profile/InstrProfilingWriter.c b/compiler-rt/lib/profi
  
  COMPILER_RT_VISIBILITY void (*FreeHook)(void *) = NULL;
  static ProfBufferIO TheBufferIO;
-@@ -281,7 +281,7 @@
+@@ -281,7 +281,7 @@ lprofWriteDataImpl(ProfDataWriter *Writer, const __llvm_profile_data *DataBegin,
  
  /* Initialize header structure.  */
  #define INSTR_PROF_RAW_HEADER(Type, Name, Init) Header.Name = Init;
 -#include "profile/InstrProfData.inc"
 +#include "sw/vendor/llvm_clang_rt_profile/compiler-rt/include/profile/InstrProfData.inc"
  
-   /* Write the data. */
-   ProfDataIOVec IOVec[] = {
+   /* Write the profile header. */
+   ProfDataIOVec IOVec[] = {{&Header, sizeof(__llvm_profile_header), 1, 0}};
