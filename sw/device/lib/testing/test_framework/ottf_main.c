@@ -22,6 +22,7 @@
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/coverage.h"
+#include "sw/device/lib/testing/test_framework/ottf_flow_control.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
 
@@ -123,6 +124,9 @@ void _ottf_main(void) {
   // Initialize the UART to enable logging for non-DV simulation platforms.
   if (kDeviceType != kDeviceSimDV) {
     init_uart();
+    if (kOttfTestConfig.enable_uart_flow_control) {
+      ottf_flow_control_enable();
+    }
     LOG_INFO("Running %s", kOttfTestConfig.file);
   }
 

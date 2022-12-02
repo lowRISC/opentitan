@@ -33,6 +33,14 @@ typedef struct ottf_test_config {
   bool enable_concurrency;
 
   /**
+   * Indicates that this test will utilize the UART to receive commands from
+   * a test harness and that the UART should enable software flow control.
+   * Note that requesting flow control will unmask the external interrupt and
+   * enable interrupt handling before `test_main` begins.
+   */
+  bool enable_uart_flow_control;
+
+  /**
    * Indicates that `test_main()` does something non-trivial to the UART
    * device. Setting this to true will make `test_main()` guard against this
    * by resetting the UART device before printing debug information.
