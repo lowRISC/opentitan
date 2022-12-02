@@ -49,7 +49,7 @@ macro_rules! with_unknown {
     (
         $(
             $(#[$outer:meta])*
-            $vis:vis enum $Enum:ident: $type:ty {
+            $vis:vis enum $Enum:ident: $type:ty $([default = $dfl:expr])? {
                 $(
                     $(#[$inner:meta])*
                     $enumerator:ident = $value:expr,
@@ -87,6 +87,8 @@ macro_rules! with_unknown {
                 v.0
             }
         }
+
+        $crate::__impl_default!($Enum, $($dfl)*);
 
         $crate::__impl_try_from!(i8, $Enum);
         $crate::__impl_try_from!(i16, $Enum);
@@ -229,6 +231,21 @@ macro_rules! __impl_fmt_unknown {
     }
 }
 
+#[macro_export]
+macro_rules! __impl_default {
+    ($Enum:ident, $dfl:expr) => {
+        impl Default for $Enum {
+            fn default() -> Self {
+                $dfl
+            }
+        }
+    };
+
+    ($Enum:ident, /*nothing*/ ) => {
+        // No default defined, so no implementation.
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
@@ -240,8 +257,8 @@ mod tests {
             False = 0x14d,
         }
 
-        // Check the top-level repeat in the macro.
-        enum Misc: u8 {
+        // Check creating a `Default` implementation.
+        enum Misc: u8 [default = Self::Z] {
             X = 0,
             Y = 1,
             Z = 2,
@@ -283,6 +300,13 @@ mod tests {
         let x = HardenedBool(12345);
         assert_eq!(u32::from(t), 0x739);
         assert_eq!(u32::from(x), 12345);
+        Ok(())
+    }
+
+    #[test]
+    fn test_default() -> Result<()> {
+        let z = Misc::default();
+        assert_eq!(z, Misc::Z);
         Ok(())
     }
 
