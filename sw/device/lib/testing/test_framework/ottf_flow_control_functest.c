@@ -15,7 +15,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 status_t ottf_flow_control_test(ujson_t *uj) {
   // Adjust the delay in the wait loop so that the host test harness
@@ -52,8 +52,6 @@ status_t ottf_flow_control_test(ujson_t *uj) {
 }
 
 bool test_main(void) {
-  // Enable UART flow control.
-  ottf_flow_control_enable();
   ujson_t uj = ujson_ottf_console();
   status_t status = ottf_flow_control_test(&uj);
   return status_ok(status);

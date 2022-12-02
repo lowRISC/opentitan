@@ -215,6 +215,7 @@ cc_library(
         ":check",
         ":coverage",
         ":freertos_port",
+        ":ottf_flow_control",
         ":ottf_start",
         ":ottf_test_config",
         ":status",
@@ -258,7 +259,6 @@ dual_cc_library(
         device = [
             ":check",
             ":ottf_start",
-            ":ottf_main",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:rv_plic",
             "//sw/device/lib/runtime:ibex",

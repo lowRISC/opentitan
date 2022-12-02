@@ -15,9 +15,12 @@
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
-#include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+// We declare this `extern` here to avoid a circular dependency with
+// `ottf_main.h`.
+extern dif_uart_t *ottf_console(void);
 
 #define FLOW_CONTROL_LOW_WATERMARK 4
 #define FLOW_CONTROL_HIGH_WATERMARK 8
