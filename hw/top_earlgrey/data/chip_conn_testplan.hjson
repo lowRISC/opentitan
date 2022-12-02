@@ -216,6 +216,18 @@
       tags: ["conn"]
     }
 
+    //////////////////////////////
+    // otp_lc_vendor_test.csv   //
+    //////////////////////////////
+    {
+      name: vendor_test_connections
+      desc: '''Verify the connectivity of vendor_test IOs between otp_ctrl and lc_ctrl.'''
+      stage: V2
+      tests: ["lc_otp_vendor_test_ctrl", "lc_otp_vendor_test_status"]
+      tags: ["conn"]
+    }
+
+
     //////////////////////////
     // clkmgr_cg_en.csv     //
     //////////////////////////
