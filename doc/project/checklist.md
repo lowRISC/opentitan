@@ -534,6 +534,7 @@ Make sure to import the applicable common sec_cm [tests](https://github.com/lowR
 
 All security countermeasure assertions are proven in FPV.
 The required assertions for countermeasure are defined in [Security Countermeasure Verification Framework]({{< relref "doc/ug/sec_cm_dv_framework" >}}).
+Follow this [document]({{< relref "hw/formal/doc#running-fpv-on-security-blocks-for-common-countermeasure-primitives" >}}) to setup the FPV sec_cm testbench.
 
 ### SIM_SEC_CM_VERIFIED
 
