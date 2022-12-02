@@ -609,13 +609,16 @@ module spi_host
   `ASSERT_KNOWN(CioCsbKnownO_A, cio_csb_o)
   `ASSERT_KNOWN(CioCsbEnKnownO_A, cio_csb_en_o)
   `ASSERT_KNOWN_IF(CioSdKnownO_A, cio_sd_o, !passthrough_i.passthrough_en |
-    (passthrough_i.passthrough_en && passthrough_i.csb_en && !passthrough_i.csb))
+    (passthrough_i.passthrough_en && passthrough_i.csb_en && !passthrough_i.csb),
+    passthrough_i.sck_en & passthrough_i.sck)
   `ASSERT_KNOWN(CioSdEnKnownO_A, cio_sd_en_o)
   `ASSERT_KNOWN(IntrSpiEventKnownO_A, intr_spi_event_o)
   `ASSERT_KNOWN(IntrErrorKnownO_A, intr_error_o)
 
-  `ASSERT_KNOWN_IF(PassthroughKnownO_A, passthrough_o,
-    passthrough_i.passthrough_en && passthrough_i.csb_en && !passthrough_i.csb)
+  // passthrough_o.s is passed through to spi_device, it may contain unknown data,
+  // but the unknown data won't be used based on the SPI protocol.
+  // Hence, instead of checking known data, here does a connectivity check.
+  `ASSERT(PassthroughConn_A, passthrough_o.s === cio_sd_i)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
