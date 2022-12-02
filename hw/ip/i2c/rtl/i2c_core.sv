@@ -429,6 +429,7 @@ module  i2c_core #(
     .acq_fifo_wready_o       (acq_fifo_wready),
     .acq_fifo_wvalid_o       (acq_fifo_wvalid),
     .acq_fifo_wdata_o        (acq_fifo_wdata),
+    .acq_fifo_rdata_i        (acq_fifo_rdata),
     .acq_fifo_depth_i        (acq_fifo_depth),
 
     .host_idle_o             (host_idle),
