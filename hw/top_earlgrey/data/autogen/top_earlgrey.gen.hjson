@@ -13159,13 +13159,13 @@
       module_name: i2c0
     }
     {
-      name: i2c0_trans_complete
+      name: i2c0_cmd_complete
       width: 1
       type: interrupt
       module_name: i2c0
     }
     {
-      name: i2c0_tx_empty
+      name: i2c0_tx_stretch
       width: 1
       type: interrupt
       module_name: i2c0
@@ -13249,13 +13249,13 @@
       module_name: i2c1
     }
     {
-      name: i2c1_trans_complete
+      name: i2c1_cmd_complete
       width: 1
       type: interrupt
       module_name: i2c1
     }
     {
-      name: i2c1_tx_empty
+      name: i2c1_tx_stretch
       width: 1
       type: interrupt
       module_name: i2c1
@@ -13339,13 +13339,13 @@
       module_name: i2c2
     }
     {
-      name: i2c2_trans_complete
+      name: i2c2_cmd_complete
       width: 1
       type: interrupt
       module_name: i2c2
     }
     {
-      name: i2c2_tx_empty
+      name: i2c2_tx_stretch
       width: 1
       type: interrupt
       module_name: i2c2

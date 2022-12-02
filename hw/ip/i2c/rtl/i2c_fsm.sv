@@ -72,8 +72,8 @@ module i2c_fsm #(
   output logic event_sda_interference_o, // other device forcing SDA low
   output logic event_stretch_timeout_o,  // target stretches clock past max time
   output logic event_sda_unstable_o,     // SDA is not constant during SCL pulse
-  output logic event_trans_complete_o,   // Transaction is complete
-  output logic event_tx_empty_o,         // tx_fifo is empty but data is needed
+  output logic event_cmd_complete_o,     // Command is complete
+  output logic event_tx_stretch_o,       // tx transaction is being stretched
   output logic event_ack_stop_o,         // target received stop after ack
   output logic event_host_timeout_o      // host ceased sending SCL pulses during ongoing transactn
 );
@@ -454,7 +454,7 @@ module i2c_fsm #(
     event_nak_o = 1'b0;
     event_scl_interference_o = 1'b0;
     event_sda_unstable_o = 1'b0;
-    event_trans_complete_o = 1'b0;
+    event_cmd_complete_o = 1'b0;
     rw_bit = rw_bit_q;
     stretch_en = 1'b0;
     unique case (state_q)
@@ -469,7 +469,7 @@ module i2c_fsm #(
         host_idle_o = 1'b0;
         sda_d = 1'b1;
         scl_d = 1'b1;
-        if (restart) event_trans_complete_o = 1'b1;
+        if (restart) event_cmd_complete_o = 1'b1;
       end
       // HoldStart: SDA is pulled low, SCL is released
       HoldStart : begin
@@ -595,7 +595,7 @@ module i2c_fsm #(
         host_idle_o = 1'b0;
         sda_d = 1'b1;
         scl_d = 1'b1;
-        event_trans_complete_o = 1'b1;
+        event_cmd_complete_o = 1'b1;
       end
       // Active: continue while keeping SCL low
       Active : begin
@@ -759,7 +759,7 @@ module i2c_fsm #(
         event_nak_o = 1'b0;
         event_scl_interference_o = 1'b0;
         event_sda_unstable_o = 1'b0;
-        event_trans_complete_o = 1'b0;
+        event_cmd_complete_o = 1'b0;
       end
     endcase // unique case (state_q)
 
@@ -768,7 +768,7 @@ module i2c_fsm #(
       // Only add an entry if this is a repeated start or stop.
       acq_fifo_wvalid_o = !target_idle_o;
       acq_fifo_wdata_o = {1'b1, start_det, input_byte};
-      event_trans_complete_o = !target_idle_o;
+      event_cmd_complete_o = !target_idle_o;
     end
   end
 
@@ -804,7 +804,7 @@ module i2c_fsm #(
     restart = 1'b0;
     input_byte_clr = 1'b0;
     en_sda_interf_det = 1'b0;
-    event_tx_empty_o = 1'b0;
+    event_tx_stretch_o = 1'b0;
 
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
@@ -1223,7 +1223,7 @@ module i2c_fsm #(
       // StretchTx: target stretches the clock when tx conditions are not satisfied.
       StretchTx : begin
         // When in stretch state, always notify software that help is required.
-        event_tx_empty_o = 1'b1;
+        event_tx_stretch_o = 1'b1;
         if (!stretch_tx) begin
           // When data becomes available, we must first drive it onto the line
           // for at least the "setup" period.  If we do not, once the clock is released, the
@@ -1236,7 +1236,7 @@ module i2c_fsm #(
           tcount_sel = tSetupData;
 
           // When leaving stretch state, de-assert software notification
-          event_tx_empty_o = 1'b0;
+          event_tx_stretch_o = 1'b0;
         end
       end
       StretchTxSetup : begin
@@ -1266,7 +1266,7 @@ module i2c_fsm #(
         log_stop = 1'b0;
         restart = 1'b0;
         input_byte_clr = 1'b0;
-        event_tx_empty_o = 1'b0;
+        event_tx_stretch_o = 1'b0;
       end
     endcase // unique case (state_q)
 

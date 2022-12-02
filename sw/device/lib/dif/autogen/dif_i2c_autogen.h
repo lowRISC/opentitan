@@ -121,12 +121,12 @@ typedef enum dif_i2c_irq {
    * repated START or terminates the transaction by issuing STOP. In target
    * mode, raised if the external host issues a STOP or repeated START.
    */
-  kDifI2cIrqTransComplete = 9,
+  kDifI2cIrqCmdComplete = 9,
   /**
    * Target mode interrupt: raised if the target is stretching clocks for a read
    * command.  This is a level status interrupt.
    */
-  kDifI2cIrqTxEmpty = 10,
+  kDifI2cIrqTxStretch = 10,
   /**
    * Target mode interrupt: raised if TX FIFO has overflowed.
    */

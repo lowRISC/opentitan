@@ -47,8 +47,8 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
     super.pre_start();
     if (cfg.use_intr_handler) begin
       expected_intr[AcqFull] = 1;
-      expected_intr[TxEmpty] = 1;
-      expected_intr[TransComplete] = 1;
+      expected_intr[TxStretch] = 1;
+      expected_intr[CmdComplete] = 1;
       for (int i = 0; i < NumI2cIntr; i++) intr_q.push_back(i);
     end
   endtask

@@ -78,11 +78,11 @@ static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
     case kDifI2cIrqSdaUnstable:
       *index_out = I2C_INTR_COMMON_SDA_UNSTABLE_BIT;
       break;
-    case kDifI2cIrqTransComplete:
-      *index_out = I2C_INTR_COMMON_TRANS_COMPLETE_BIT;
+    case kDifI2cIrqCmdComplete:
+      *index_out = I2C_INTR_COMMON_CMD_COMPLETE_BIT;
       break;
-    case kDifI2cIrqTxEmpty:
-      *index_out = I2C_INTR_COMMON_TX_EMPTY_BIT;
+    case kDifI2cIrqTxStretch:
+      *index_out = I2C_INTR_COMMON_TX_STRETCH_BIT;
       break;
     case kDifI2cIrqTxOverflow:
       *index_out = I2C_INTR_COMMON_TX_OVERFLOW_BIT;

@@ -434,8 +434,8 @@ class i2c_base_vseq extends cip_base_vseq #(
     if (bit'(get_field_val(ral.intr_state.stretch_timeout, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing stretch_timeout", UVM_DEBUG)
     end
-    if (bit'(get_field_val(ral.intr_state.tx_empty, intr_clear))) begin
-      `uvm_info(`gfn, "\n  clearing tx_empty", UVM_DEBUG)
+    if (bit'(get_field_val(ral.intr_state.tx_stretch, intr_clear))) begin
+      `uvm_info(`gfn, "\n  clearing tx_stretch", UVM_DEBUG)
     end
     if (bit'(get_field_val(ral.intr_state.tx_overflow, intr_clear))) begin
       `uvm_info(`gfn, "\n  clearing tx_overflow", UVM_DEBUG)
@@ -837,14 +837,14 @@ class i2c_base_vseq extends cip_base_vseq #(
           read_acq_fifo(0, acq_fifo_empty);
         end
         clear_interrupt(AcqFull);
-      end else if (cfg.intr_vif.pins[TxEmpty]) begin
+      end else if (cfg.intr_vif.pins[TxStretch]) begin
         if (!cfg.use_drooling_tx) begin
           write_tx_fifo();
         end else begin
           read_acq_fifo(0, acq_fifo_empty);
         end
-        clear_interrupt(TxEmpty);
-      end else if (cfg.intr_vif.pins[TransComplete]) begin
+        clear_interrupt(TxStretch);
+      end else if (cfg.intr_vif.pins[CmdComplete]) begin
         if (cfg.slow_acq) begin
           if($urandom()%2) begin
             acq_fifo_empty = 0;
@@ -858,7 +858,7 @@ class i2c_base_vseq extends cip_base_vseq #(
           // read one entry at a time to create acq fifo back pressure
           read_acq_fifo(1, acq_fifo_empty);
         end
-        clear_interrupt(TransComplete);
+        clear_interrupt(CmdComplete);
       end else if (cfg.read_all_acq_entries) begin
         read_acq_fifo(0, acq_fifo_empty);
       end else begin
@@ -871,7 +871,7 @@ class i2c_base_vseq extends cip_base_vseq #(
             end
           end
         end
-      end // else: !if(cfg.intr_vif.pins[TransComplete])
+      end // else: !if(cfg.intr_vif.pins[CmdComplete])
       if (cfg.use_drooling_tx & (read_cmd_q.size > 0 || read_on_going == 1)) begin
         bit dum;
         if (read_cmd_q.size > 0) dum = read_cmd_q.pop_front();

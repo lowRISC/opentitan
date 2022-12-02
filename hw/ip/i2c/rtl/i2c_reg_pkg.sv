@@ -47,10 +47,10 @@ package i2c_reg_pkg;
     } sda_unstable;
     struct packed {
       logic        q;
-    } trans_complete;
+    } cmd_complete;
     struct packed {
       logic        q;
-    } tx_empty;
+    } tx_stretch;
     struct packed {
       logic        q;
     } tx_overflow;
@@ -95,10 +95,10 @@ package i2c_reg_pkg;
     } sda_unstable;
     struct packed {
       logic        q;
-    } trans_complete;
+    } cmd_complete;
     struct packed {
       logic        q;
-    } tx_empty;
+    } tx_stretch;
     struct packed {
       logic        q;
     } tx_overflow;
@@ -153,11 +153,11 @@ package i2c_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } trans_complete;
+    } cmd_complete;
     struct packed {
       logic        q;
       logic        qe;
-    } tx_empty;
+    } tx_stretch;
     struct packed {
       logic        q;
       logic        qe;
@@ -393,11 +393,11 @@ package i2c_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } trans_complete;
+    } cmd_complete;
     struct packed {
       logic        d;
       logic        de;
-    } tx_empty;
+    } tx_stretch;
     struct packed {
       logic        d;
       logic        de;
@@ -554,8 +554,8 @@ package i2c_reg_pkg;
   parameter logic [0:0] I2C_INTR_TEST_SDA_INTERFERENCE_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_STRETCH_TIMEOUT_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_SDA_UNSTABLE_RESVAL = 1'h 0;
-  parameter logic [0:0] I2C_INTR_TEST_TRANS_COMPLETE_RESVAL = 1'h 0;
-  parameter logic [0:0] I2C_INTR_TEST_TX_EMPTY_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_CMD_COMPLETE_RESVAL = 1'h 0;
+  parameter logic [0:0] I2C_INTR_TEST_TX_STRETCH_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_TX_OVERFLOW_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_ACQ_FULL_RESVAL = 1'h 0;
   parameter logic [0:0] I2C_INTR_TEST_ACK_STOP_RESVAL = 1'h 0;
