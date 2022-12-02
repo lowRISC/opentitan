@@ -43,6 +43,7 @@ module i2c_fsm #(
   output logic [9:0] acq_fifo_wdata_o,  // byte and signal in acq_fifo read from target
   input [FifoDepthWidth-1:0] acq_fifo_depth_i,
   output logic       acq_fifo_wready_o, // local version of ready
+  input [9:0]        acq_fifo_rdata_i,  // only used for assertion
 
   output logic       host_idle_o,      // indicates the host is idle
   output logic       target_idle_o,    // indicates the target is idle
@@ -119,7 +120,7 @@ module i2c_fsm #(
   logic        input_byte_clr;// clear input_byte contents
   logic        acq_fifo_wready;
   logic        stretch_addr;
-
+  logic        stretch_tx;
 
   // Target bit counter variables
   logic [3:0]  bit_idx;       // bit index including ack/nack
@@ -773,6 +774,20 @@ module i2c_fsm #(
 
   assign stretch_addr = !acq_fifo_wready;
 
+  // Stretch Tx phase when:
+  // 1. When there is no data to return to host
+  // 2. When the acq_fifo contains any entry other than a singular start condition
+  //    read command.
+  //
+  // Only the fifo depth is checked here, because stretch_tx is only evaluated by the
+  // fsm on the read path. This means a read start byte has already been deposited.
+  assign stretch_tx = ~tx_fifo_rvalid_i |
+                      (acq_fifo_depth_i > FifoDepthWidth'(1'b1));
+
+  // Only used for assertion
+  logic unused_acq_rdata;
+  assign unused_acq_rdata = |acq_fifo_rdata_i;
+
   // Conditional state transition
   always_comb begin : state_functions
     state_d = state_q;
@@ -1091,9 +1106,7 @@ module i2c_fsm #(
       end
       // TransmitWait: Evaluate whether there are entries to send first
       TransmitWait: begin
-        // acq fifo wready is also part of the equation because we must be able
-        // to accept a stop or repeated start format byte even in transmit states
-        if (~tx_fifo_rvalid_i || ~acq_fifo_wready) begin
+        if (stretch_tx) begin
           state_d = StretchTx;
         end else begin
           state_d = TransmitSetup;
@@ -1104,6 +1117,12 @@ module i2c_fsm #(
       // TransmitSetup: target shifts indexed bit onto SDA while SCL is low
       TransmitSetup : begin
         if (scl_i) state_d = TransmitPulse;
+
+        // If we are actively transmitting, that must mean that there are no
+        // unhandled write commands and if there is a command present it must be
+        // a read.
+        `ASSERT(AcqDepthRdCheck_A, (acq_fifo_depth_i > '0) |->
+                (acq_fifo_depth_i == 1) && acq_fifo_rdata_i[0])
       end
       // TransmitPulse: target shifts indexed bit onto SDA while SCL is released
       TransmitPulse : begin
@@ -1205,7 +1224,7 @@ module i2c_fsm #(
       StretchTx : begin
         // When in stretch state, always notify software that help is required.
         event_tx_empty_o = 1'b1;
-        if (tx_fifo_rvalid_i && acq_fifo_wready) begin
+        if (!stretch_tx) begin
           // When data becomes available, we must first drive it onto the line
           // for at least the "setup" period.  If we do not, once the clock is released, the
           // pull-up in the system will likely immediately trigger a rising clock

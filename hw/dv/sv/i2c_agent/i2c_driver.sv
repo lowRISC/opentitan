@@ -166,6 +166,9 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
   endtask : release_bus
 
   task drive_scl();
+    // This timeout is extremely long since read trasnactions will stretch
+    // whenever there are unhanded write commands or format bytes.
+    int scl_spinwait_timeout_ns = 100_000_000; // 100ms
     forever begin
       @(cfg.vif.cb);
       wait(cfg.host_scl_start);
