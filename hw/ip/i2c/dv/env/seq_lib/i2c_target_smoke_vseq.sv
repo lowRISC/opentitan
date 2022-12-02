@@ -105,7 +105,12 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
           end
           `DV_WAIT(cfg.sent_acq_cnt == cfg.rcvd_acq_cnt,, cfg.spinwait_timeout_ns, id)
           csr_spinwait(.ptr(ral.status.acqempty), .exp_data(1'b1));
+
+          if (cfg.m_i2c_agent_cfg.allow_ack_stop) send_ack_stop();
+          // add drain time before stop interrupt handler
+          cfg.clk_rst_vif.wait_clks(1000);
           cfg.stop_intr_handler = 1;
+          `uvm_info("stop_intr_handler", "called stop_intr_handler", UVM_MEDIUM)
         end
       end
     join

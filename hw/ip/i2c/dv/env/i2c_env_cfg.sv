@@ -45,6 +45,10 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   // If this bit is set, tx fifo is fed by 'drooling_write_tx_fifo()' in i2c_base_vseq.sv
   bit        use_drooling_tx = 1'b0;
 
+  //  ack stop test
+  int        sent_ack_stop = 0;
+  int        rcvd_ack_stop = 0;
+
   `uvm_object_utils_begin(i2c_env_cfg)
     `uvm_field_object(m_i2c_agent_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
