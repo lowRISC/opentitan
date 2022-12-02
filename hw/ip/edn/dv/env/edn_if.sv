@@ -6,10 +6,7 @@
 // It deals with the force paths in EDN interrupt and error tests,
 // and helps pass the disable signal to the csrng agent.
 
-interface edn_if
-(
-  input edn_i
-);
+interface edn_if(input clk, input rst_n);
 
   import uvm_pkg::*;
 

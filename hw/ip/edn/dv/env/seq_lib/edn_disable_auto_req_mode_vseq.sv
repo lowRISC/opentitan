@@ -38,7 +38,7 @@ class edn_disable_auto_req_mode_vseq extends edn_base_vseq;
                 auto_req_sts[rand_st_idx].name), UVM_HIGH)
       `DV_SPINWAIT(
           while (state_val != auto_req_sts[rand_st_idx]) begin
-            uvm_hdl_read(main_sm_d_path, state_val);
+            `DV_CHECK(uvm_hdl_read(main_sm_d_path, state_val))
             cfg.clk_rst_vif.wait_n_clks(1);
           end)
     end
