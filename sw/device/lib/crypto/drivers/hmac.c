@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/impl/status.h"
 
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -35,9 +36,9 @@ void hmac_sha256_init(void) {
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, reg);
 }
 
-hmac_error_t hmac_sha256_update(const void *data, size_t len) {
+status_t hmac_sha256_update(const void *data, size_t len) {
   if (data == NULL) {
-    return kHmacErrorBadArg;
+    return OTCRYPTO_BAD_ARGS;
   }
   const uint8_t *data_sent = (const uint8_t *)data;
 
@@ -59,12 +60,12 @@ hmac_error_t hmac_sha256_update(const void *data, size_t len) {
     abs_mmio_write8(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_MSG_FIFO_REG_OFFSET,
                     *data_sent++);
   }
-  return kHmacOk;
+  return OTCRYPTO_OK;
 }
 
-hmac_error_t hmac_sha256_final(hmac_digest_t *digest) {
+status_t hmac_sha256_final(hmac_digest_t *digest) {
   if (digest == NULL) {
-    return kHmacErrorBadArg;
+    return OTCRYPTO_BAD_ARGS;
   }
 
   uint32_t reg = 0;
@@ -85,5 +86,5 @@ hmac_error_t hmac_sha256_final(hmac_digest_t *digest) {
         abs_mmio_read32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_DIGEST_7_REG_OFFSET -
                         (i * sizeof(uint32_t)));
   }
-  return kHmacOk;
+  return OTCRYPTO_OK;
 }
