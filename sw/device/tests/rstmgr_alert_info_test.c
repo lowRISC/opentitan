@@ -792,9 +792,6 @@ bool test_main(void) {
   } else if (rst_info == kDifRstmgrResetInfoWatchdog) {
     collect_alert_dump_and_compare(kRound2);
 
-    // Do not remove this log statement, as it is used to synchronize with the
-    // DV environment
-    LOG_INFO("Disable ping timer alert check");
     global_test_round = kRound3;
     prgm_alert_handler_round3();
     CHECK_DIF_OK(dif_alert_handler_irq_set_enabled(

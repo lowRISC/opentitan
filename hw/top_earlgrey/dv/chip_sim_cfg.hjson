@@ -804,11 +804,10 @@
     }
     {
       name: chip_sw_rstmgr_alert_info
-      uvm_test_seq: chip_sw_rstmgr_alert_info_vseq
+      uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:rstmgr_alert_info_test:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=30_000_000", "+en_scb_tl_err_chk=0",
-                 "+en_scb_ping_chk=0"]
+      run_opts: ["+sw_test_timeout_ns=30_000_000", "+en_scb_tl_err_chk=0"]
       run_timeout_mins: 120
     }
     {
@@ -1718,16 +1717,12 @@
       uvm_test_seq: chip_sw_power_idle_load_vseq
       sw_images: ["//sw/device/tests:chip_power_idle_load:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      // This is to disable the ping-timeout check in cip_base_scoreboard, see OT issue #16055.
-      run_opts: ["+en_scb_ping_chk=0"]
     }
     {
       name: chip_sw_power_sleep_load
       uvm_test_seq: chip_sw_power_sleep_load_vseq
       sw_images: ["//sw/device/tests:chip_power_sleep_load:1"]
       en_run_modes: ["sw_test_mode_test_rom"]
-      // This is to disable the ping-timeout check in cip_base_scoreboard, see OT issue #16055.
-      run_opts: ["+en_scb_ping_chk=0"]
     }
   ]
 

@@ -128,6 +128,10 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // No need to cover all kinds of interity errors as they are tested in block-level.
     en_tl_intg_err_cov = 0;
 
+    // Alert_esc_agent does not support ping timeout check in chip-level.
+    // User can read `loc_alert_cause` to check ping timeout.
+    en_scb_ping_chk = 0;
+
     super.initialize(csr_base_addr);
     `uvm_info(`gfn, $sformatf("ral_model_names: %0p", ral_model_names), UVM_LOW)
 

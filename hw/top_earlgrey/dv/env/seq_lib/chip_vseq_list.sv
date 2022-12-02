@@ -60,7 +60,6 @@
 `include "chip_sw_adc_ctrl_sleep_debug_cable_wakeup_vseq.sv"
 `include "chip_tap_straps_vseq.sv"
 `include "chip_sw_repeat_reset_wkup_vseq.sv"
-`include "chip_sw_rstmgr_alert_info_vseq.sv"
 `include "chip_rv_dm_ndm_reset_vseq.sv"
 `include "chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq.sv"
 `include "chip_sw_rv_dm_access_after_escalation_reset_vseq.sv"
