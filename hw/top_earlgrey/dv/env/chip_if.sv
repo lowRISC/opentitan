@@ -641,6 +641,8 @@ interface chip_if;
   wire sram_main_init_done = `SRAM_CTRL_MAIN_HIER.u_reg_regs.status_init_done_qs;
   wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.status_init_done_qs;
 
+  wire flash_core1_host_req = `FLASH_CTRL_HIER.u_eflash.gen_flash_cores[1].u_core.host_req_i;
+
   // alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
   //                                   .rst_n(`ALERT_HANDLER_HIER.rst_ni));
   // for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_alert_rx_conn
