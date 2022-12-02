@@ -20,10 +20,7 @@
 `define PATH7 \
     tb.dut.u_edn_core.gen_ep_blk[0].u_edn_ack_sm_ep
 
-interface edn_assert_if
-(
-  input edn_i
-);
+interface edn_assert_if(input clk, input rst_n);
 
   task automatic assert_off ();
     $assertoff(0, `PATH1.CntErrBackward_A);

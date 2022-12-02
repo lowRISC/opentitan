@@ -44,7 +44,7 @@ class edn_disable_vseq extends edn_base_vseq;
                     boot_sts[rand_st_idx].name), UVM_HIGH)
           `DV_SPINWAIT(
               while (state_val != boot_sts[rand_st_idx]) begin
-                uvm_hdl_read(main_sm_d_path, state_val);
+                `DV_CHECK(uvm_hdl_read(main_sm_d_path, state_val))
                 cfg.clk_rst_vif.wait_clks(1);
               end)
          end
