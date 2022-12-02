@@ -5,6 +5,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_DRIVERS_AES_H_
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_status.h"
 #include "sw/device/lib/base/macros.h"
 
 #ifdef __cplusplus
@@ -19,20 +20,6 @@ enum {
   /** Number of words in an AES cipher block. */
   kAesBlockNumWords = kAesBlockNumBytes / sizeof(uint32_t),
 };
-
-/**
- * Error types for the AES driver.
- */
-typedef enum aes_error {
-  kAesOk = 0,
-  /**
-   * An internal error in the hardware which is not recoverable.
-   *
-   * If any function produces this value, all blocks produced in that
-   * session must be discarded and the operation must be begun anew.
-   */
-  kAesInternalError = 1,
-} aes_error_t;
 
 /**
  * An AES block, which may represent plaintext or ciphertext.
@@ -112,7 +99,7 @@ typedef struct aes_key {
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-aes_error_t aes_encrypt_begin(const aes_key_t key, const aes_block_t *iv);
+status_t aes_encrypt_begin(const aes_key_t key, const aes_block_t *iv);
 
 /**
  * Prepares the AES hardware to perform a decryption operation.
@@ -129,7 +116,7 @@ aes_error_t aes_encrypt_begin(const aes_key_t key, const aes_block_t *iv);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-aes_error_t aes_decrypt_begin(const aes_key_t key, const aes_block_t *iv);
+status_t aes_decrypt_begin(const aes_key_t key, const aes_block_t *iv);
 
 /**
  * Advances the AES state by a single block.
@@ -160,7 +147,7 @@ aes_error_t aes_decrypt_begin(const aes_key_t key, const aes_block_t *iv);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-aes_error_t aes_update(aes_block_t *dest, const aes_block_t *src);
+status_t aes_update(aes_block_t *dest, const aes_block_t *src);
 
 /**
  * Completes an AES session by clearing control settings and key material.
@@ -168,7 +155,7 @@ aes_error_t aes_update(aes_block_t *dest, const aes_block_t *src);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-aes_error_t aes_end(void);
+status_t aes_end(void);
 
 #ifdef __cplusplus
 }
