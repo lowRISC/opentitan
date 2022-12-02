@@ -1136,6 +1136,9 @@ opentitan_functest(
 opentitan_functest(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/ip/aes/data:aes_regs",
         "//hw/ip/keymgr/data:keymgr_regs",
@@ -1178,6 +1181,9 @@ opentitan_functest(
 opentitan_functest(
     name = "keymgr_sideload_otbn_test",
     srcs = ["keymgr_sideload_otbn_test.c"],
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
     deps = [
         "//hw/ip/otbn/data:otbn_regs",
         "//sw/device/lib/arch:device",
