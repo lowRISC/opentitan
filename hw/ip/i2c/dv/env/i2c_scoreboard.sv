@@ -469,6 +469,7 @@ class i2c_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK_EQ(obs.tran_id, exp.tran_id)
     `DV_CHECK_EQ(obs.num_data, exp.num_data)
     `DV_CHECK_EQ(obs.data_q.size(), exp.data_q.size())
+
     foreach (exp.data_q[i]) begin
       `DV_CHECK_EQ(obs.data_q[i], exp.data_q[i])
     end

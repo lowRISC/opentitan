@@ -86,6 +86,11 @@ class i2c_base_vseq extends cip_base_vseq #(
   bit [7:0] spill_over_data_q[$];
   bit       read_cmd_q[$];
 
+  // Used for ack stop test
+  bit [7:0] pre_feed_rd_data_q[$];
+  int       pre_feed_cnt = 0;
+  bit       read_ack_nack_q[$];
+
   // constraints
   constraint addr_c {
     addr inside {[cfg.seq_cfg.i2c_min_addr : cfg.seq_cfg.i2c_max_addr]};
@@ -565,18 +570,56 @@ class i2c_base_vseq extends cip_base_vseq #(
   endfunction
 
   // Print i2c_item.data_q with RS command notation
-  function void print_wr_data(i2c_item myq[$]);
+  function void print_wr_data(bit is_read, i2c_item myq[$]);
     int idx = 1;
-    `uvm_info("seq", $sformatf("q size:%0d", myq.size()), UVM_MEDIUM)
+    int rd_idx = 0;
+    bit read = is_read;
+
     foreach (myq[i]) begin
       if (myq[i].rstart) begin
+        if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
+          if (read) begin
+            `uvm_info("seq", $sformatf("xeos: %s", (read_ack_nack_q[rd_idx++]) ?
+                                       "NACK" : "ACK"), UVM_MEDIUM)
+          end
+        end
+        read = myq[i].read;
         `uvm_info("seq", $sformatf("idx %0d RS rw:%0d", start_cnt++, myq[i].read), UVM_MEDIUM)
         idx = 1;
       end else begin
         `uvm_info("seq", $sformatf("%2d: 0x%2x", idx++, myq[i].wdata), UVM_MEDIUM)
       end
     end
+    if (read) begin
+      `uvm_info("seq", $sformatf("eos: %s", (read_ack_nack_q[rd_idx]) ?
+                                 "NACK" : "ACK"), UVM_MEDIUM)
+    end
   endfunction
+
+  // Update read data to send based on
+  // pre written tx data and pre defined ack / nack status
+  // Used only for ack stop test
+  function void update_wr_data(bit is_read, ref i2c_item myq[$],
+                               input bit force_ack);
+    bit read = is_read;
+    foreach (myq[i]) begin
+      if (myq[i].rstart) begin
+        // if previous segment is read, store ack/nack
+        if (read) read_ack_nack_q.push_back($urandom_range(0 ,1));
+        read = myq[i].read;
+      end else begin
+        if (read) begin
+          if (pre_feed_rd_data_q.size > 0) begin
+            myq[i].wdata = pre_feed_rd_data_q.pop_front();
+          end
+        end
+      end
+    end
+    if (read) begin
+      bit ack_nack = force_ack ? 0 : $urandom_range(0, 1);
+      read_ack_nack_q.push_back(ack_nack);
+    end
+  endfunction // update_wr_data
 
   // Set rw bit based on cfg rd/wr pct
   function bit get_read_write();
@@ -635,7 +678,7 @@ class i2c_base_vseq extends cip_base_vseq #(
       // restart entry
       if (rs_avl == 1 && wdata_q.size() > 1 &&
           i inside {[1:wdata_q.size() -1]}) begin
-        `uvm_info("seq", $sformatf("RS inserted before data %0d", i), UVM_MEDIUM)
+        `uvm_info("seq", $sformatf("RS inserted before data %0d", i), UVM_HIGH)
         `uvm_create_obj(i2c_item, txn)
         txn.drv_type = HostRStart;
         txn.rstart = 1;
@@ -657,7 +700,8 @@ class i2c_base_vseq extends cip_base_vseq #(
   // For read transaction, all read bytes for one transaction is accumulated to 'full_txn'
   // and compared with received transaction at the scoreboard.
   // TODO : target address will be randomly picked between target_addr0 nad target_addr1.
-  virtual function void fetch_txn(ref i2c_item src_q[$], i2c_item dst_q[$]);
+  virtual function void fetch_txn(ref i2c_item src_q[$], i2c_item dst_q[$],
+                                  input bit force_ack = 0);
     i2c_item txn;
     i2c_item rs_txn;
     i2c_item exp_txn;
@@ -667,7 +711,12 @@ class i2c_base_vseq extends cip_base_vseq #(
 
     `uvm_info("seq", $sformatf("idx %0d:is_read:%0b size:%0d fetch_txn:%0d", start_cnt++, is_read,
                                src_q.size(), full_txn_num++), UVM_MEDIUM)
-    print_wr_data(src_q);
+    // Update read data with pre filled one and ack/nack for ack stop test
+    if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
+      update_wr_data(is_read, src_q, force_ack);
+    end
+
+    print_wr_data(is_read, src_q);
     `uvm_create_obj(i2c_item, full_txn)
 
     // Add 'START' to the front
@@ -754,10 +803,10 @@ class i2c_base_vseq extends cip_base_vseq #(
           `downcast(read_txn, txn.clone())
           full_txn.num_data++;
           if (src_q.size() == 0) begin
-            txn.drv_type = HostNAck;
+            txn.drv_type = get_eos(.is_stop(1));
           end else begin
             // if your next item is restart Do nack
-            if (src_q[0].drv_type == HostRStart) txn.drv_type = HostNAck;
+            if (src_q[0].drv_type == HostRStart) txn.drv_type = get_eos();
             else txn.drv_type = HostAck;
           end
           dst_q.push_back(txn);
@@ -836,14 +885,16 @@ class i2c_base_vseq extends cip_base_vseq #(
         end else begin
           read_acq_fifo(0, acq_fifo_empty);
         end
-        clear_interrupt(AcqFull);
       end else if (cfg.intr_vif.pins[TxStretch]) begin
         if (!cfg.use_drooling_tx) begin
           write_tx_fifo();
-        end else begin
-          read_acq_fifo(0, acq_fifo_empty);
         end
-        clear_interrupt(TxStretch);
+        read_acq_fifo(0, acq_fifo_empty);
+
+        // interrupt can't be clear until
+        // txfifo get data or acq fifo get entry. So verify_clear can
+        // causes deadlock. Set verify_clear to 0 to avoid deadlock
+        clear_interrupt(TxStretch, 0);
       end else if (cfg.intr_vif.pins[CmdComplete]) begin
         if (cfg.slow_acq) begin
           if($urandom()%2) begin
@@ -888,36 +939,49 @@ class i2c_base_vseq extends cip_base_vseq #(
     // indefinite time
     int tx_empty_timeout_ns = 500_000_000;
     string id = "write_tx_fifo";
+    if (add_delay) id = {id, "_delay"};
 
-     if (add_delay) id = {id, "_delay"};
-
-      if (read_rcvd.size() > 0) begin
-        read_size = read_rcvd.pop_front();
-        `uvm_info(id, $sformatf("read_size :%0d", read_size), UVM_HIGH)
+    if (read_rcvd.size() > 0) begin
+      read_size = read_rcvd.pop_front();
+      `uvm_info(id, $sformatf("read_size :%0d", read_size), UVM_HIGH)
+    end else begin
+      // if ack stop test mode,
+      // test need to feed 1 extraa tx fifo data at the end
+      // to avoid dead lock
+      if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
+        `uvm_info(id, "feed extra ack/stop data", UVM_MEDIUM)
+        csr_wr(.ptr(ral.txdata), .value('hff));
+        pre_feed_rd_data_q.push_back(8'hff);
+        pre_feed_cnt++;
       end
+    end
 
-      while (read_size > 0) begin
-        cfg.clk_rst_vif.wait_clks(1);
-        if (add_delay) begin
-           if ($urandom_range(0, 1) < 1) begin
-             // Wait for txfifo to be empty before adding data,
-             // this creates more stretching conditions.
-             csr_spinwait(.ptr(ral.status.txempty), .exp_data(1'b1),
-                          .timeout_ns(tx_empty_timeout_ns));
-           end
-        end
-        if (read_txn_q.size() > 0) begin
-          i2c_item item;
-          //check tx fifo is full
-          csr_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0),
-                       .timeout_ns(rd_txfifo_timeout_ns));
-          `uvm_create_obj(i2c_item, item)
-          item = read_txn_q.pop_front();
-          `uvm_info(id, $sformatf("send rdata:%x", item.wdata), UVM_MEDIUM)
-          csr_wr(.ptr(ral.txdata), .value(item.wdata));
-          read_size--;
+    while (read_size > 0) begin
+      cfg.clk_rst_vif.wait_clks(1);
+      if (add_delay) begin
+        if ($urandom_range(0, 1)) begin
+          // Wait for txfifo to be empty before adding data,
+          // this creates more stretching conditions.
+          csr_spinwait(.ptr(ral.status.txempty), .exp_data(1'b1),
+                       .timeout_ns(tx_empty_timeout_ns));
         end
       end
+      if (read_txn_q.size() > 0) begin
+        i2c_item item;
+        // check tx fifo is full
+        csr_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0),
+                     .timeout_ns(rd_txfifo_timeout_ns));
+        `uvm_create_obj(i2c_item, item)
+        item = read_txn_q.pop_front();
+        `uvm_info(id, $sformatf("send rdata:%x", item.wdata), UVM_MEDIUM)
+
+        // Send only there is no pre feed data
+        if (pre_feed_cnt == 0) csr_wr(.ptr(ral.txdata), .value(item.wdata));
+        else pre_feed_cnt--;
+
+        read_size--;
+      end
+    end
   endtask
 
   // Write tx fifo in drooling tx mode (cfg.use_drooling_tx = 1)
@@ -982,7 +1046,6 @@ class i2c_base_vseq extends cip_base_vseq #(
   task read_acq_fifo(bit read_one, ref bit acq_fifo_empty);
     uvm_reg_data_t read_data;
     i2c_item obs;
-
     acq_fifo_empty = 0;
     if (read_one) begin
     // Polling if status.acqempty is zero and skip read fifo
@@ -1004,6 +1067,7 @@ class i2c_base_vseq extends cip_base_vseq #(
         read_cmd_q.push_back(1);
       end
     end
+
     if (read_data == 0) begin
       cfg.clk_rst_vif.wait_clks(1);
       `uvm_info("process_acq", $sformatf("acq_dbg: sent:%0d rcvd:%0d acq_is_empty",
@@ -1011,4 +1075,31 @@ class i2c_base_vseq extends cip_base_vseq #(
     end
   endtask // read_acq_fifo
 
+  function drv_type_e get_eos(bit is_stop = 0);
+    drv_type_e rsp = HostNAck;
+    if (cfg.m_i2c_agent_cfg.allow_ack_stop) begin
+      if (read_ack_nack_q.pop_front()) begin
+        rsp = HostNAck;
+      end else begin
+        rsp = HostAck;
+        if (is_stop) begin
+          cfg.sent_ack_stop++;
+        end
+      end
+    end
+    return rsp;
+  endfunction // get_eos
+
+   task send_ack_stop();
+      i2c_target_base_seq m_i2c_host_seq;
+      i2c_item txn_q[$];
+      cfg.rs_pct = 0;
+      cfg.wr_pct = 0;
+
+      `uvm_create_obj(i2c_target_base_seq, m_i2c_host_seq)
+      create_txn(txn_q);
+      fetch_txn(txn_q, m_i2c_host_seq.req_q, 1);
+      m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
+      sent_txn_cnt++;
+   endtask
 endclass : i2c_base_vseq
