@@ -2440,13 +2440,16 @@
     {
       name: chip_sw_keymgr_sideload_kmac_error
       desc: '''
-            Verify the effect of KMAC returning an error during keymgr sideload operation.
+            Verify the effect of KMAC returning an error during a keymgr operation.
 
-            - Follow the steps in `chip_sw_keymgr_sideload_kmac` test.
+            - Configure keymgr to enter any of the 3 working states.
+            - Issue a keymgr operation.
             - While the KMAC is actively computing the digest, glitch the KMAC app sparse FSM to
               trigger a fault.
-            - Verify that KMAC returns an error signal to the keymgr.
-            - TBD
+            - Verify that KMAC returns an error signal to the keymgr via checking keymgr CSRs, when
+              the operation is done:
+              - Check `op_status` is set to `DONE_ERROR`.
+              - Check `fault_status.kmac_done` is set to 1.
             '''
       stage: V3
       tests: []
