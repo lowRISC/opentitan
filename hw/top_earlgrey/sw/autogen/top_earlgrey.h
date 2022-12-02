@@ -1101,8 +1101,8 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c0SdaInterference = 83, /**< i2c0_sda_interference */
   kTopEarlgreyPlicIrqIdI2c0StretchTimeout = 84, /**< i2c0_stretch_timeout */
   kTopEarlgreyPlicIrqIdI2c0SdaUnstable = 85, /**< i2c0_sda_unstable */
-  kTopEarlgreyPlicIrqIdI2c0TransComplete = 86, /**< i2c0_trans_complete */
-  kTopEarlgreyPlicIrqIdI2c0TxEmpty = 87, /**< i2c0_tx_empty */
+  kTopEarlgreyPlicIrqIdI2c0CmdComplete = 86, /**< i2c0_cmd_complete */
+  kTopEarlgreyPlicIrqIdI2c0TxStretch = 87, /**< i2c0_tx_stretch */
   kTopEarlgreyPlicIrqIdI2c0TxOverflow = 88, /**< i2c0_tx_overflow */
   kTopEarlgreyPlicIrqIdI2c0AcqFull = 89, /**< i2c0_acq_full */
   kTopEarlgreyPlicIrqIdI2c0AckStop = 90, /**< i2c0_ack_stop */
@@ -1116,8 +1116,8 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c1SdaInterference = 98, /**< i2c1_sda_interference */
   kTopEarlgreyPlicIrqIdI2c1StretchTimeout = 99, /**< i2c1_stretch_timeout */
   kTopEarlgreyPlicIrqIdI2c1SdaUnstable = 100, /**< i2c1_sda_unstable */
-  kTopEarlgreyPlicIrqIdI2c1TransComplete = 101, /**< i2c1_trans_complete */
-  kTopEarlgreyPlicIrqIdI2c1TxEmpty = 102, /**< i2c1_tx_empty */
+  kTopEarlgreyPlicIrqIdI2c1CmdComplete = 101, /**< i2c1_cmd_complete */
+  kTopEarlgreyPlicIrqIdI2c1TxStretch = 102, /**< i2c1_tx_stretch */
   kTopEarlgreyPlicIrqIdI2c1TxOverflow = 103, /**< i2c1_tx_overflow */
   kTopEarlgreyPlicIrqIdI2c1AcqFull = 104, /**< i2c1_acq_full */
   kTopEarlgreyPlicIrqIdI2c1AckStop = 105, /**< i2c1_ack_stop */
@@ -1131,8 +1131,8 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c2SdaInterference = 113, /**< i2c2_sda_interference */
   kTopEarlgreyPlicIrqIdI2c2StretchTimeout = 114, /**< i2c2_stretch_timeout */
   kTopEarlgreyPlicIrqIdI2c2SdaUnstable = 115, /**< i2c2_sda_unstable */
-  kTopEarlgreyPlicIrqIdI2c2TransComplete = 116, /**< i2c2_trans_complete */
-  kTopEarlgreyPlicIrqIdI2c2TxEmpty = 117, /**< i2c2_tx_empty */
+  kTopEarlgreyPlicIrqIdI2c2CmdComplete = 116, /**< i2c2_cmd_complete */
+  kTopEarlgreyPlicIrqIdI2c2TxStretch = 117, /**< i2c2_tx_stretch */
   kTopEarlgreyPlicIrqIdI2c2TxOverflow = 118, /**< i2c2_tx_overflow */
   kTopEarlgreyPlicIrqIdI2c2AcqFull = 119, /**< i2c2_acq_full */
   kTopEarlgreyPlicIrqIdI2c2AckStop = 120, /**< i2c2_ack_stop */

@@ -88,9 +88,9 @@ void ottf_external_isr(void) {
       rx_irq_seen = true;
       i2c_irq = kDifI2cIrqRxWatermark;
       break;
-    case kDifI2cIrqTransComplete:
+    case kDifI2cIrqCmdComplete:
       done_irq_seen = true;
-      i2c_irq = kDifI2cIrqTransComplete;
+      i2c_irq = kDifI2cIrqCmdComplete;
       break;
     default:
       LOG_ERROR("Unexpected interrupt (at I2C): %d", i2c_irq);
@@ -122,7 +122,7 @@ static void en_i2c_irqs(dif_i2c_t *i2c) {
       kDifI2cIrqSdaInterference, kDifI2cIrqStretchTimeout,
       // Removed for now, see plic_irqs above for explanation
       // kDifI2cIrqSdaUnstable,
-      kDifI2cIrqTransComplete};
+      kDifI2cIrqCmdComplete};
 
   for (uint32_t i = 0; i <= ARRAYSIZE(i2c_irqs); ++i) {
     CHECK_DIF_OK(dif_i2c_irq_set_enabled(i2c, i2c_irqs[i], kDifToggleEnabled));
@@ -149,7 +149,7 @@ void config_i2c_with_index(void) {
       // instability during the high cycle is intentionally being introduced
       // right now.
       // plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0SdaUnstable;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0TransComplete;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c0CmdComplete;
 
       CHECK_DIF_OK(dif_pinmux_input_select(
           &pinmux, kTopEarlgreyPinmuxPeripheralInI2c0Scl,
@@ -180,7 +180,7 @@ void config_i2c_with_index(void) {
       // instability during the high cycle is intentionally being introduced
       // right now.
       // plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1SdaUnstable;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1TransComplete;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c1CmdComplete;
 
       CHECK_DIF_OK(dif_pinmux_input_select(
           &pinmux, kTopEarlgreyPinmuxPeripheralInI2c1Scl,
@@ -211,7 +211,7 @@ void config_i2c_with_index(void) {
       // instability during the high cycle is intentionally being introduced
       // right now.
       // plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2SdaUnstable;
-      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2TransComplete;
+      plic_irqs[i++] = kTopEarlgreyPlicIrqIdI2c2CmdComplete;
 
       CHECK_DIF_OK(dif_pinmux_input_select(
           &pinmux, kTopEarlgreyPinmuxPeripheralInI2c2Scl,

@@ -24,8 +24,8 @@ module tb;
   wire intr_sda_interference;
   wire intr_stretch_timeout;
   wire intr_sda_unstable;
-  wire intr_trans_complete;
-  wire intr_tx_empty;
+  wire intr_cmd_complete;
+  wire intr_tx_stretch;
   wire intr_tx_overflow;
   wire intr_acq_full;
   wire intr_ack_stop;
@@ -96,8 +96,8 @@ module tb;
     .intr_sda_interference_o (intr_sda_interference ),
     .intr_stretch_timeout_o  (intr_stretch_timeout  ),
     .intr_sda_unstable_o     (intr_sda_unstable     ),
-    .intr_trans_complete_o   (intr_trans_complete   ),
-    .intr_tx_empty_o         (intr_tx_empty         ),
+    .intr_cmd_complete_o     (intr_cmd_complete   ),
+    .intr_tx_stretch_o       (intr_tx_stretch         ),
     .intr_tx_overflow_o      (intr_tx_overflow      ),
     .intr_acq_full_o         (intr_acq_full         ),
     .intr_ack_stop_o         (intr_ack_stop         ),
@@ -114,8 +114,8 @@ module tb;
   assign interrupts[SdaInference]   = intr_sda_interference;
   assign interrupts[StretchTimeout] = intr_stretch_timeout;
   assign interrupts[SdaUnstable]    = intr_sda_unstable;
-  assign interrupts[TransComplete]  = intr_trans_complete;
-  assign interrupts[TxEmpty]        = intr_tx_empty;
+  assign interrupts[CmdComplete]    = intr_cmd_complete;
+  assign interrupts[TxStretch]      = intr_tx_stretch;
   assign interrupts[TxOverflow]     = intr_tx_overflow;
   assign interrupts[AcqFull]        = intr_acq_full;
   assign interrupts[AckStop]        = intr_ack_stop;

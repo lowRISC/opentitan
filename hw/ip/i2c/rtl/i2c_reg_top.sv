@@ -143,9 +143,9 @@ module i2c_reg_top (
   logic intr_state_stretch_timeout_wd;
   logic intr_state_sda_unstable_qs;
   logic intr_state_sda_unstable_wd;
-  logic intr_state_trans_complete_qs;
-  logic intr_state_trans_complete_wd;
-  logic intr_state_tx_empty_qs;
+  logic intr_state_cmd_complete_qs;
+  logic intr_state_cmd_complete_wd;
+  logic intr_state_tx_stretch_qs;
   logic intr_state_tx_overflow_qs;
   logic intr_state_tx_overflow_wd;
   logic intr_state_acq_full_qs;
@@ -172,10 +172,10 @@ module i2c_reg_top (
   logic intr_enable_stretch_timeout_wd;
   logic intr_enable_sda_unstable_qs;
   logic intr_enable_sda_unstable_wd;
-  logic intr_enable_trans_complete_qs;
-  logic intr_enable_trans_complete_wd;
-  logic intr_enable_tx_empty_qs;
-  logic intr_enable_tx_empty_wd;
+  logic intr_enable_cmd_complete_qs;
+  logic intr_enable_cmd_complete_wd;
+  logic intr_enable_tx_stretch_qs;
+  logic intr_enable_tx_stretch_wd;
   logic intr_enable_tx_overflow_qs;
   logic intr_enable_tx_overflow_wd;
   logic intr_enable_acq_full_qs;
@@ -194,8 +194,8 @@ module i2c_reg_top (
   logic intr_test_sda_interference_wd;
   logic intr_test_stretch_timeout_wd;
   logic intr_test_sda_unstable_wd;
-  logic intr_test_trans_complete_wd;
-  logic intr_test_tx_empty_wd;
+  logic intr_test_cmd_complete_wd;
+  logic intr_test_tx_stretch_wd;
   logic intr_test_tx_overflow_wd;
   logic intr_test_acq_full_wd;
   logic intr_test_ack_stop_wd;
@@ -537,38 +537,38 @@ module i2c_reg_top (
     .qs     (intr_state_sda_unstable_qs)
   );
 
-  //   F[trans_complete]: 9:9
+  //   F[cmd_complete]: 9:9
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
-  ) u_intr_state_trans_complete (
+  ) u_intr_state_cmd_complete (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_state_we),
-    .wd     (intr_state_trans_complete_wd),
+    .wd     (intr_state_cmd_complete_wd),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.trans_complete.de),
-    .d      (hw2reg.intr_state.trans_complete.d),
+    .de     (hw2reg.intr_state.cmd_complete.de),
+    .d      (hw2reg.intr_state.cmd_complete.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.trans_complete.q),
+    .q      (reg2hw.intr_state.cmd_complete.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_state_trans_complete_qs)
+    .qs     (intr_state_cmd_complete_qs)
   );
 
-  //   F[tx_empty]: 10:10
+  //   F[tx_stretch]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
-  ) u_intr_state_tx_empty (
+  ) u_intr_state_tx_stretch (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
@@ -577,16 +577,16 @@ module i2c_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.intr_state.tx_empty.de),
-    .d      (hw2reg.intr_state.tx_empty.d),
+    .de     (hw2reg.intr_state.tx_stretch.de),
+    .d      (hw2reg.intr_state.tx_stretch.d),
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_state.tx_empty.q),
+    .q      (reg2hw.intr_state.tx_stretch.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_state_tx_empty_qs)
+    .qs     (intr_state_tx_stretch_qs)
   );
 
   //   F[tx_overflow]: 11:11
@@ -929,18 +929,18 @@ module i2c_reg_top (
     .qs     (intr_enable_sda_unstable_qs)
   );
 
-  //   F[trans_complete]: 9:9
+  //   F[cmd_complete]: 9:9
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_trans_complete (
+  ) u_intr_enable_cmd_complete (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_trans_complete_wd),
+    .wd     (intr_enable_cmd_complete_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -948,25 +948,25 @@ module i2c_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.trans_complete.q),
+    .q      (reg2hw.intr_enable.cmd_complete.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_enable_trans_complete_qs)
+    .qs     (intr_enable_cmd_complete_qs)
   );
 
-  //   F[tx_empty]: 10:10
+  //   F[tx_stretch]: 10:10
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
-  ) u_intr_enable_tx_empty (
+  ) u_intr_enable_tx_stretch (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (intr_enable_we),
-    .wd     (intr_enable_tx_empty_wd),
+    .wd     (intr_enable_tx_stretch_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -974,11 +974,11 @@ module i2c_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.intr_enable.tx_empty.q),
+    .q      (reg2hw.intr_enable.tx_stretch.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (intr_enable_tx_empty_qs)
+    .qs     (intr_enable_tx_stretch_qs)
   );
 
   //   F[tx_overflow]: 11:11
@@ -1234,37 +1234,37 @@ module i2c_reg_top (
   );
   assign reg2hw.intr_test.sda_unstable.qe = intr_test_qe;
 
-  //   F[trans_complete]: 9:9
+  //   F[cmd_complete]: 9:9
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_trans_complete (
+  ) u_intr_test_cmd_complete (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_trans_complete_wd),
+    .wd     (intr_test_cmd_complete_wd),
     .d      ('0),
     .qre    (),
     .qe     (intr_test_flds_we[9]),
-    .q      (reg2hw.intr_test.trans_complete.q),
+    .q      (reg2hw.intr_test.cmd_complete.q),
     .ds     (),
     .qs     ()
   );
-  assign reg2hw.intr_test.trans_complete.qe = intr_test_qe;
+  assign reg2hw.intr_test.cmd_complete.qe = intr_test_qe;
 
-  //   F[tx_empty]: 10:10
+  //   F[tx_stretch]: 10:10
   prim_subreg_ext #(
     .DW    (1)
-  ) u_intr_test_tx_empty (
+  ) u_intr_test_tx_stretch (
     .re     (1'b0),
     .we     (intr_test_we),
-    .wd     (intr_test_tx_empty_wd),
+    .wd     (intr_test_tx_stretch_wd),
     .d      ('0),
     .qre    (),
     .qe     (intr_test_flds_we[10]),
-    .q      (reg2hw.intr_test.tx_empty.q),
+    .q      (reg2hw.intr_test.tx_stretch.q),
     .ds     (),
     .qs     ()
   );
-  assign reg2hw.intr_test.tx_empty.qe = intr_test_qe;
+  assign reg2hw.intr_test.tx_stretch.qe = intr_test_qe;
 
   //   F[tx_overflow]: 11:11
   prim_subreg_ext #(
@@ -2729,7 +2729,7 @@ module i2c_reg_top (
 
   assign intr_state_sda_unstable_wd = reg_wdata[8];
 
-  assign intr_state_trans_complete_wd = reg_wdata[9];
+  assign intr_state_cmd_complete_wd = reg_wdata[9];
 
   assign intr_state_tx_overflow_wd = reg_wdata[11];
 
@@ -2756,9 +2756,9 @@ module i2c_reg_top (
 
   assign intr_enable_sda_unstable_wd = reg_wdata[8];
 
-  assign intr_enable_trans_complete_wd = reg_wdata[9];
+  assign intr_enable_cmd_complete_wd = reg_wdata[9];
 
-  assign intr_enable_tx_empty_wd = reg_wdata[10];
+  assign intr_enable_tx_stretch_wd = reg_wdata[10];
 
   assign intr_enable_tx_overflow_wd = reg_wdata[11];
 
@@ -2787,9 +2787,9 @@ module i2c_reg_top (
 
   assign intr_test_sda_unstable_wd = reg_wdata[8];
 
-  assign intr_test_trans_complete_wd = reg_wdata[9];
+  assign intr_test_cmd_complete_wd = reg_wdata[9];
 
-  assign intr_test_tx_empty_wd = reg_wdata[10];
+  assign intr_test_tx_stretch_wd = reg_wdata[10];
 
   assign intr_test_tx_overflow_wd = reg_wdata[11];
 
@@ -2933,8 +2933,8 @@ module i2c_reg_top (
         reg_rdata_next[6] = intr_state_sda_interference_qs;
         reg_rdata_next[7] = intr_state_stretch_timeout_qs;
         reg_rdata_next[8] = intr_state_sda_unstable_qs;
-        reg_rdata_next[9] = intr_state_trans_complete_qs;
-        reg_rdata_next[10] = intr_state_tx_empty_qs;
+        reg_rdata_next[9] = intr_state_cmd_complete_qs;
+        reg_rdata_next[10] = intr_state_tx_stretch_qs;
         reg_rdata_next[11] = intr_state_tx_overflow_qs;
         reg_rdata_next[12] = intr_state_acq_full_qs;
         reg_rdata_next[13] = intr_state_ack_stop_qs;
@@ -2951,8 +2951,8 @@ module i2c_reg_top (
         reg_rdata_next[6] = intr_enable_sda_interference_qs;
         reg_rdata_next[7] = intr_enable_stretch_timeout_qs;
         reg_rdata_next[8] = intr_enable_sda_unstable_qs;
-        reg_rdata_next[9] = intr_enable_trans_complete_qs;
-        reg_rdata_next[10] = intr_enable_tx_empty_qs;
+        reg_rdata_next[9] = intr_enable_cmd_complete_qs;
+        reg_rdata_next[10] = intr_enable_tx_stretch_qs;
         reg_rdata_next[11] = intr_enable_tx_overflow_qs;
         reg_rdata_next[12] = intr_enable_acq_full_qs;
         reg_rdata_next[13] = intr_enable_ack_stop_qs;

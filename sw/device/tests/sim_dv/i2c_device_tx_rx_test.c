@@ -69,7 +69,7 @@ static volatile const uint8_t kI2cDeviceMask1 = 0x00;
 static volatile const uint8_t kI2cByteCount = 0;
 
 static volatile bool tx_empty_irq_seen = false;
-static volatile bool trans_complete_irq_seen = false;
+static volatile bool cmd_complete_irq_seen = false;
 
 /**
  * Provides external irq handling for this test.
@@ -91,13 +91,13 @@ void ottf_external_isr(void) {
   isr_testutils_i2c_isr(plic_ctx, i2c_ctx, &peripheral, &i2c_irq);
 
   switch (i2c_irq) {
-    case kDifI2cIrqTxEmpty:
+    case kDifI2cIrqTxStretch:
       tx_empty_irq_seen = true;
-      i2c_irq = kDifI2cIrqTxEmpty;
+      i2c_irq = kDifI2cIrqTxStretch;
       break;
-    case kDifI2cIrqTransComplete:
-      trans_complete_irq_seen = true;
-      i2c_irq = kDifI2cIrqTransComplete;
+    case kDifI2cIrqCmdComplete:
+      cmd_complete_irq_seen = true;
+      i2c_irq = kDifI2cIrqCmdComplete;
       break;
     default:
       LOG_ERROR("Unexpected interrupt (at I2C): %d", i2c_irq);
@@ -125,15 +125,15 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
 
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, kTopEarlgreyPlicIrqIdI2c0TxEmpty, kTopEarlgreyPlicTargetIbex0,
+      &plic, kTopEarlgreyPlicIrqIdI2c0TxStretch, kTopEarlgreyPlicTargetIbex0,
       kDifToggleEnabled));
   CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, kTopEarlgreyPlicIrqIdI2c0TransComplete,
-      kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+      &plic, kTopEarlgreyPlicIrqIdI2c0CmdComplete, kTopEarlgreyPlicTargetIbex0,
+      kDifToggleEnabled));
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &plic, kTopEarlgreyPlicIrqIdI2c0TxEmpty, kDifRvPlicMaxPriority));
+      &plic, kTopEarlgreyPlicIrqIdI2c0TxStretch, kDifRvPlicMaxPriority));
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(
-      &plic, kTopEarlgreyPlicIrqIdI2c0TransComplete, kDifRvPlicMaxPriority));
+      &plic, kTopEarlgreyPlicIrqIdI2c0CmdComplete, kDifRvPlicMaxPriority));
 
   // Enable the external IRQ at Ibex.
   irq_global_ctrl(true);
@@ -168,12 +168,12 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_i2c_device_set_enabled(&i2c, kDifToggleEnabled));
 
   // TODO #15081, transaction complete may not be set by i2c device.
-  CHECK(!trans_complete_irq_seen);
+  CHECK(!cmd_complete_irq_seen);
 
   CHECK_DIF_OK(
-      dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqTxEmpty, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqTransComplete,
-                                       kDifToggleEnabled));
+      dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqTxStretch, kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_i2c_irq_set_enabled(&i2c, kDifI2cIrqCmdComplete, kDifToggleEnabled));
 
   // Randomize variables.
   uint8_t expected_data[kI2cByteCount];
@@ -223,7 +223,7 @@ bool test_main(void) {
     CHECK(expected_data[i] == received_data[i]);
   }
 
-  CHECK(trans_complete_irq_seen);
+  CHECK(cmd_complete_irq_seen);
 
   return true;
 }

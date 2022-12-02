@@ -412,8 +412,8 @@ module top_earlgrey #(
   logic intr_i2c0_sda_interference;
   logic intr_i2c0_stretch_timeout;
   logic intr_i2c0_sda_unstable;
-  logic intr_i2c0_trans_complete;
-  logic intr_i2c0_tx_empty;
+  logic intr_i2c0_cmd_complete;
+  logic intr_i2c0_tx_stretch;
   logic intr_i2c0_tx_overflow;
   logic intr_i2c0_acq_full;
   logic intr_i2c0_ack_stop;
@@ -427,8 +427,8 @@ module top_earlgrey #(
   logic intr_i2c1_sda_interference;
   logic intr_i2c1_stretch_timeout;
   logic intr_i2c1_sda_unstable;
-  logic intr_i2c1_trans_complete;
-  logic intr_i2c1_tx_empty;
+  logic intr_i2c1_cmd_complete;
+  logic intr_i2c1_tx_stretch;
   logic intr_i2c1_tx_overflow;
   logic intr_i2c1_acq_full;
   logic intr_i2c1_ack_stop;
@@ -442,8 +442,8 @@ module top_earlgrey #(
   logic intr_i2c2_sda_interference;
   logic intr_i2c2_stretch_timeout;
   logic intr_i2c2_sda_unstable;
-  logic intr_i2c2_trans_complete;
-  logic intr_i2c2_tx_empty;
+  logic intr_i2c2_cmd_complete;
+  logic intr_i2c2_tx_stretch;
   logic intr_i2c2_tx_overflow;
   logic intr_i2c2_acq_full;
   logic intr_i2c2_ack_stop;
@@ -1221,8 +1221,8 @@ module top_earlgrey #(
       .intr_sda_interference_o (intr_i2c0_sda_interference),
       .intr_stretch_timeout_o  (intr_i2c0_stretch_timeout),
       .intr_sda_unstable_o     (intr_i2c0_sda_unstable),
-      .intr_trans_complete_o   (intr_i2c0_trans_complete),
-      .intr_tx_empty_o         (intr_i2c0_tx_empty),
+      .intr_cmd_complete_o     (intr_i2c0_cmd_complete),
+      .intr_tx_stretch_o       (intr_i2c0_tx_stretch),
       .intr_tx_overflow_o      (intr_i2c0_tx_overflow),
       .intr_acq_full_o         (intr_i2c0_acq_full),
       .intr_ack_stop_o         (intr_i2c0_ack_stop),
@@ -1263,8 +1263,8 @@ module top_earlgrey #(
       .intr_sda_interference_o (intr_i2c1_sda_interference),
       .intr_stretch_timeout_o  (intr_i2c1_stretch_timeout),
       .intr_sda_unstable_o     (intr_i2c1_sda_unstable),
-      .intr_trans_complete_o   (intr_i2c1_trans_complete),
-      .intr_tx_empty_o         (intr_i2c1_tx_empty),
+      .intr_cmd_complete_o     (intr_i2c1_cmd_complete),
+      .intr_tx_stretch_o       (intr_i2c1_tx_stretch),
       .intr_tx_overflow_o      (intr_i2c1_tx_overflow),
       .intr_acq_full_o         (intr_i2c1_acq_full),
       .intr_ack_stop_o         (intr_i2c1_ack_stop),
@@ -1305,8 +1305,8 @@ module top_earlgrey #(
       .intr_sda_interference_o (intr_i2c2_sda_interference),
       .intr_stretch_timeout_o  (intr_i2c2_stretch_timeout),
       .intr_sda_unstable_o     (intr_i2c2_sda_unstable),
-      .intr_trans_complete_o   (intr_i2c2_trans_complete),
-      .intr_tx_empty_o         (intr_i2c2_tx_empty),
+      .intr_cmd_complete_o     (intr_i2c2_cmd_complete),
+      .intr_tx_stretch_o       (intr_i2c2_tx_stretch),
       .intr_tx_overflow_o      (intr_i2c2_tx_overflow),
       .intr_acq_full_o         (intr_i2c2_acq_full),
       .intr_ack_stop_o         (intr_i2c2_ack_stop),
@@ -2670,8 +2670,8 @@ module top_earlgrey #(
       intr_i2c2_ack_stop, // IDs [120 +: 1]
       intr_i2c2_acq_full, // IDs [119 +: 1]
       intr_i2c2_tx_overflow, // IDs [118 +: 1]
-      intr_i2c2_tx_empty, // IDs [117 +: 1]
-      intr_i2c2_trans_complete, // IDs [116 +: 1]
+      intr_i2c2_tx_stretch, // IDs [117 +: 1]
+      intr_i2c2_cmd_complete, // IDs [116 +: 1]
       intr_i2c2_sda_unstable, // IDs [115 +: 1]
       intr_i2c2_stretch_timeout, // IDs [114 +: 1]
       intr_i2c2_sda_interference, // IDs [113 +: 1]
@@ -2685,8 +2685,8 @@ module top_earlgrey #(
       intr_i2c1_ack_stop, // IDs [105 +: 1]
       intr_i2c1_acq_full, // IDs [104 +: 1]
       intr_i2c1_tx_overflow, // IDs [103 +: 1]
-      intr_i2c1_tx_empty, // IDs [102 +: 1]
-      intr_i2c1_trans_complete, // IDs [101 +: 1]
+      intr_i2c1_tx_stretch, // IDs [102 +: 1]
+      intr_i2c1_cmd_complete, // IDs [101 +: 1]
       intr_i2c1_sda_unstable, // IDs [100 +: 1]
       intr_i2c1_stretch_timeout, // IDs [99 +: 1]
       intr_i2c1_sda_interference, // IDs [98 +: 1]
@@ -2700,8 +2700,8 @@ module top_earlgrey #(
       intr_i2c0_ack_stop, // IDs [90 +: 1]
       intr_i2c0_acq_full, // IDs [89 +: 1]
       intr_i2c0_tx_overflow, // IDs [88 +: 1]
-      intr_i2c0_tx_empty, // IDs [87 +: 1]
-      intr_i2c0_trans_complete, // IDs [86 +: 1]
+      intr_i2c0_tx_stretch, // IDs [87 +: 1]
+      intr_i2c0_cmd_complete, // IDs [86 +: 1]
       intr_i2c0_sda_unstable, // IDs [85 +: 1]
       intr_i2c0_stretch_timeout, // IDs [84 +: 1]
       intr_i2c0_sda_interference, // IDs [83 +: 1]

@@ -40,8 +40,8 @@ module i2c
   output logic              intr_sda_interference_o,
   output logic              intr_stretch_timeout_o,
   output logic              intr_sda_unstable_o,
-  output logic              intr_trans_complete_o,
-  output logic              intr_tx_empty_o,
+  output logic              intr_cmd_complete_o,
+  output logic              intr_tx_stretch_o,
   output logic              intr_tx_overflow_o,
   output logic              intr_acq_full_o,
   output logic              intr_ack_stop_o,
@@ -109,8 +109,8 @@ module i2c
     .intr_sda_interference_o,
     .intr_stretch_timeout_o,
     .intr_sda_unstable_o,
-    .intr_trans_complete_o,
-    .intr_tx_empty_o,
+    .intr_cmd_complete_o,
+    .intr_tx_stretch_o,
     .intr_tx_overflow_o,
     .intr_acq_full_o,
     .intr_ack_stop_o,
@@ -143,8 +143,8 @@ module i2c
   `ASSERT_KNOWN(IntrSdaInterfKnownO_A, intr_sda_interference_o)
   `ASSERT_KNOWN(IntrStretchTimeoutKnownO_A, intr_stretch_timeout_o)
   `ASSERT_KNOWN(IntrSdaUnstableKnownO_A, intr_sda_unstable_o)
-  `ASSERT_KNOWN(IntrTransCompleteKnownO_A, intr_trans_complete_o)
-  `ASSERT_KNOWN(IntrTxEmptyKnownO_A, intr_tx_empty_o)
+  `ASSERT_KNOWN(IntrCommandCompleteKnownO_A, intr_cmd_complete_o)
+  `ASSERT_KNOWN(IntrTxStretchKnownO_A, intr_tx_stretch_o)
   `ASSERT_KNOWN(IntrTxOflwKnownO_A, intr_tx_overflow_o)
   `ASSERT_KNOWN(IntrAcqFulllwKnownO_A, intr_acq_full_o)
   `ASSERT_KNOWN(IntrAckStopKnownO_A, intr_ack_stop_o)

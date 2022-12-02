@@ -27,8 +27,8 @@ module  i2c_core #(
   output logic                     intr_sda_interference_o,
   output logic                     intr_stretch_timeout_o,
   output logic                     intr_sda_unstable_o,
-  output logic                     intr_trans_complete_o,
-  output logic                     intr_tx_empty_o,
+  output logic                     intr_cmd_complete_o,
+  output logic                     intr_tx_stretch_o,
   output logic                     intr_tx_overflow_o,
   output logic                     intr_acq_full_o,
   output logic                     intr_ack_stop_o,
@@ -63,8 +63,8 @@ module  i2c_core #(
   logic event_sda_interference;
   logic event_stretch_timeout;
   logic event_sda_unstable;
-  logic event_trans_complete;
-  logic event_tx_empty;
+  logic event_cmd_complete;
+  logic event_tx_stretch;
   logic event_tx_overflow;
   logic event_ack_stop;
   logic event_host_timeout;
@@ -457,8 +457,8 @@ module  i2c_core #(
     .event_sda_interference_o(event_sda_interference),
     .event_stretch_timeout_o (event_stretch_timeout),
     .event_sda_unstable_o    (event_sda_unstable),
-    .event_trans_complete_o  (event_trans_complete),
-    .event_tx_empty_o        (event_tx_empty),
+    .event_cmd_complete_o    (event_cmd_complete),
+    .event_tx_stretch_o      (event_tx_stretch),
     .event_ack_stop_o        (event_ack_stop),
     .event_host_timeout_o    (event_host_timeout)
   );
@@ -580,33 +580,33 @@ module  i2c_core #(
     .intr_o                 (intr_sda_unstable_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_trans_complete (
+  prim_intr_hw #(.Width(1)) intr_hw_cmd_complete (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_trans_complete),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.trans_complete.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.trans_complete.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.trans_complete.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.trans_complete.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.trans_complete.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.trans_complete.d),
-    .intr_o                 (intr_trans_complete_o)
+    .event_intr_i           (event_cmd_complete),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.cmd_complete.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.cmd_complete.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.cmd_complete.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.cmd_complete.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.cmd_complete.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.cmd_complete.d),
+    .intr_o                 (intr_cmd_complete_o)
   );
 
   prim_intr_hw #(
     .Width(1),
     .IntrT ("Status")
-  ) intr_hw_tx_empty (
+  ) intr_hw_tx_stretch (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_tx_empty),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_empty.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_empty.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tx_empty.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tx_empty.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_empty.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_empty.d),
-    .intr_o                 (intr_tx_empty_o)
+    .event_intr_i           (event_tx_stretch),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.tx_stretch.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.tx_stretch.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.tx_stretch.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.tx_stretch.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.tx_stretch.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.tx_stretch.d),
+    .intr_o                 (intr_tx_stretch_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_tx_overflow (
