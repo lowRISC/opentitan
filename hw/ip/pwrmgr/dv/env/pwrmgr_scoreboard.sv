@@ -38,6 +38,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
       wakeup_intr_coverage_collector();
       low_power_coverage_collector();
       reset_coverage_collector();
+      rom_coverage_collector();
     join_none
   endtask
 
@@ -84,7 +85,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     cov.hw_reset_1_cg.sample(cfg.pwrmgr_vif.rstreqs_i[1], cfg.pwrmgr_vif.reset_en[1], sleep);
     cov.rstmgr_sw_reset_cg.sample(cfg.pwrmgr_vif.sw_rst_req_i == prim_mubi_pkg::MuBi4True);
     cov.main_power_reset_cg.sample(
-        cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_reg_pkg::ResetMainPwrIdx],sleep);
+        cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_reg_pkg::ResetMainPwrIdx], sleep);
     cov.esc_reset_cg.sample(cfg.pwrmgr_vif.pwr_rst_req.rstreqs[pwrmgr_reg_pkg::ResetEscIdx], sleep);
     `uvm_info(`gfn, $sformatf(
               {
@@ -115,6 +116,17 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
           end
         end
     join_none
+  endtask
+
+  task rom_coverage_collector();
+    forever
+      @(cfg.pwrmgr_vif.rom_ctrl or cfg.pwrmgr_vif.lc_hw_debug_en or cfg.pwrmgr_vif.lc_dft_en) begin
+        if (cfg.en_cov) begin
+          cov.rom_active_blockers_cg.sample(cfg.pwrmgr_vif.rom_ctrl.done,
+                                            cfg.pwrmgr_vif.rom_ctrl.good, cfg.pwrmgr_vif.lc_dft_en,
+                                            cfg.pwrmgr_vif.lc_hw_debug_en);
+        end
+      end
   endtask
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
