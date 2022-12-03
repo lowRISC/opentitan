@@ -30,16 +30,6 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
     cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
   endtask
 
-  function bit [lc_ctrl_pkg::TxWidth-1:0] get_lc_ctrl();
-    randcase
-      1: get_lc_ctrl = lc_ctrl_pkg::On;
-      1: get_lc_ctrl = lc_ctrl_pkg::Off;
-      2: `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(get_lc_ctrl,
-                                            get_lc_ctrl != lc_ctrl_pkg::On &&
-                                            get_lc_ctrl != lc_ctrl_pkg::Off;)
-    endcase
-  endfunction : get_lc_ctrl
-
   task body();
     num_trans_c.constraint_mode(0);
     num_trans = 50;
@@ -74,11 +64,13 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
       cfg.clk_rst_vif.wait_clks(cycles_from_reset);
       if (super_sequence_done) break;
       `uvm_info(`gfn, "Injection to lc_hw_debug_en", UVM_MEDIUM)
-      cfg.pwrmgr_vif.lc_hw_debug_en = get_lc_ctrl();
+      cfg.pwrmgr_vif.lc_hw_debug_en = get_rand_lc_tx_val(
+          .t_weight(1), .f_weight(1), .other_weight(2)
+      );
       #(micros_to_release * 1us);
       `uvm_info(`gfn, "Injection to lc_dft_en", UVM_MEDIUM)
       if (super_sequence_done) break;
-      cfg.pwrmgr_vif.lc_dft_en = get_lc_ctrl();
+      cfg.pwrmgr_vif.lc_dft_en = get_rand_lc_tx_val(.t_weight(1), .f_weight(1), .other_weight(2));
       #(micros_to_release * 1us);
     end  // repeat (50)
     `uvm_info(`gfn, "ended drv_lc_ctrl", UVM_MEDIUM)

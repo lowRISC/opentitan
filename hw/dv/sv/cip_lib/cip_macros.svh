@@ -106,4 +106,21 @@
   `_DV_MUBI_DIST(VAR_, MuBi16True, MuBi16False, T_WEIGHT_, (1 << 16) - 1, F_WEIGHT_, OTHER_WEIGHT_)
 `endif
 
+
+// A macro to simplify the creation of coverpoints for lc_tx_t variables.
+`ifndef DV_LC_TX_T_CP_BINS
+`define DV_LC_TX_T_CP_BINS         \
+    bins on = {lc_ctrl_pkg::On};   \
+    bins off = {lc_ctrl_pkg::Off}; \
+    bins others = default;
+`endif
+
+// A macro to simplify the creation of coverpoints for mubi4_t variables.
+`ifndef DV_MUBI4_CP_BINS
+`define DV_MUBI4_CP_BINS                      \
+    bins true = {prim_mubi_pkg::MuBi4True};   \
+    bins false = {prim_mubi_pkg::MuBi4False}; \
+    bins others = default;
+`endif
+
 `endif  // __CIP_MACROS_SVH__

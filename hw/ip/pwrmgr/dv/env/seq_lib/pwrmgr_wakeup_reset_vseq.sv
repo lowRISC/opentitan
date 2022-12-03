@@ -104,8 +104,8 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
               enqueue_exp_alert();
             end else expect_fatal_alerts = 0;
             `uvm_info(`gfn, $sformatf(
-                      "Sending power glitch, %0sexpecting an alert",
-                      expect_fatal_alerts ? "" : "not "), UVM_MEDIUM)
+                      "Sending power glitch, expecting %0s alert", expect_fatal_alerts ? "an" : "no"
+                      ), UVM_MEDIUM)
             cfg.pwrmgr_vif.glitch_power_reset();
             enabled_resets = 0;
           end

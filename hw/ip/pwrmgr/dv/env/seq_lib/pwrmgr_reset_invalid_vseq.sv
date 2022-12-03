@@ -30,7 +30,7 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
   constraint wakeups_en_c {wakeups_en == 0;}
 
   function void post_randomize();
-    sw_rst_from_rstmgr = get_rand_mubi4_val(8, 4, 4);
+    sw_rst_from_rstmgr = get_rand_mubi4_val(.t_weight(8), .f_weight(4), .other_weight(4));
     super.post_randomize();
   endfunction
 
