@@ -2403,9 +2403,15 @@
       desc: '''Verify the keymgr sideload interface to KMAC.
 
             - Configure the keymgr and advance to the `OwnerIntKey` state.
-            - Transmit a sideloaded key to the KMAC.
-            - Configure KMAC to use the sideload key to generate digest data.
-            - Verify the digest for correctness.
+            - Request keymgr to generate hw key for KMAC sideload key slot.
+            - Request KMAC operation with sideload key configuration.
+            - Verify the digest for correctness (should match the DV-side result).
+            - Clear keymer's KMAC sideload key slot.
+            - Request KMAC operation with sideload key configuration.
+            - Verify the digest value has changed.
+            - Request keymgr to derive the same key for the KMAC sideload key slot.
+            - Request KMAC operation with sideload key configuration.
+            - Verify the digest for correctness (should match the DV-side result again).
 
             X-ref'ed with chip_kmac_app_keymgr test.
             '''
