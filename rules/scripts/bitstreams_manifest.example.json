@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "buildId": "abcdefg",
+  "outputFiles": {
+    "lowrisc_systems_chip_earlgrey_cw310_0.1.bit": {
+      "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+      "outputInfo": {
+        "@type": "bitstreamInfo",
+        "design": "chip_earlgrey_cw310"
+      }
+    },
+    "otp.mmi": {
+      "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+      "outputInfo": {
+        "@type": "memoryMapInfo",
+        "design": "chip_earlgrey_cw310",
+        "memoryId": "otp"
+      }
+    },
+    "rom.mmi": {
+      "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+      "outputInfo": {
+        "@type": "memoryMapInfo",
+        "design": "chip_earlgrey_cw310",
+        "memoryId": "rom"
+      }
+    },
+    "chip_earlgrey_cw310_hyperdebug/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit": {
+      "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+      "outputInfo": {
+        "@type": "bitstreamInfo",
+        "design": "chip_earlgrey_cw310_hyperdebug"
+      }
+    },
+    "chip_earlgrey_cw310_hyperdebug/otp.mmi": {
+      "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+      "outputInfo": {
+        "@type": "memoryMapInfo",
+        "design": "chip_earlgrey_cw310_hyperdebug",
+        "memoryId": "otp"
+      }
+    },
+    "chip_earlgrey_cw310_hyperdebug/rom.mmi": {
+      "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+      "outputInfo": {
+        "@type": "memoryMapInfo",
+        "design": "chip_earlgrey_cw310_hyperdebug",
+        "memoryId": "rom"
+      }
+    }
+  }
+}
