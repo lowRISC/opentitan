@@ -132,6 +132,7 @@ top-hjson = $(PRJ_DIR)/hw/$*/data/$*.hjson
 top: $(tops_gen) $(tops_reg)
 $(tops_gen): %_gen:
 	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -o ${PRJ_DIR}/hw/$*/ ${toolflags}
+	${PRJ_DIR}/util/analogsim_asic.py
 
 $(tops_reg): %_reg:
 	mkdir -p ${REG_OUTPUT_DV_DIR}/$*

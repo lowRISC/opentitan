@@ -142,4 +142,21 @@ package top_${top["name"]}_pkg;
   // TODO: Enumeration for PLIC Interrupt source peripheral.
   // TODO: Enumeration for PLIC Interrupt Ids.
 
+  // MACROs for AST analog simulation support
+  `ifdef ANALOGSIM
+    `define INOUT_AI input ast_pkg::awire_t
+    `define INOUT_AO output ast_pkg::awire_t
+    `define CC1_A '0
+    `define CC2_A '0
+    `define IOA2_A '0
+    `define IOA3_A '0
+  `else
+    `define INOUT_AI inout
+    `define INOUT_AO inout
+    `define CC1_A CC1
+    `define CC2_A CC2
+    `define IOA2_A IOA2
+    `define IOA3_A IOA3
+  `endif
+
 endpackage
