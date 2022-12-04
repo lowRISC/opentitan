@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, ensure, Context, Result};
+use lazy_static::lazy_static;
+use regex::Regex;
+use std::cell::Cell;
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
@@ -33,7 +36,6 @@ pub mod spi;
 /// Implementation of the Transport trait for HyperDebug based on the
 /// Nucleo-L552ZE-Q.
 pub struct Hyperdebug<T: Flavor> {
-    spi_names: HashMap<String, u8>,
     spi_interface: BulkInterface,
     i2c_names: HashMap<String, u8>,
     i2c_interface: BulkInterface,
@@ -160,16 +162,12 @@ impl<T: Flavor> Hyperdebug<T> {
                 }
             }
         }
-        // Eventually, the SPI device names below should come from the HyperDebug firmware,
-        // declaring what it supports (as is the case with UARTs.)
-        let spi_names: HashMap<String, u8> = collection! {
-            "SPI2".to_string() => 0,
-        };
+        // Eventually, the I2C bus names below should come from the HyperDebug firmware, declaring
+        // what it supports (as is the case with UARTs and SPI busses.)
         let i2c_names: HashMap<String, u8> = collection! {
             "0".to_string() => 0,
         };
         let result = Hyperdebug::<T> {
-            spi_names,
             spi_interface: spi_interface.ok_or_else(|| {
                 TransportError::CommunicationError("Missing SPI interface".to_string())
             })?,
@@ -185,6 +183,7 @@ impl<T: Flavor> Hyperdebug<T> {
                 usb_device: RefCell::new(device),
                 gpio: Default::default(),
                 spis: Default::default(),
+                selected_spi: Cell::new(0),
                 i2cs: Default::default(),
                 uarts: Default::default(),
             }),
@@ -263,6 +262,7 @@ pub struct Inner {
     usb_device: RefCell<UsbBackend>,
     gpio: RefCell<HashMap<String, Rc<dyn GpioPin>>>,
     spis: RefCell<HashMap<u8, Rc<dyn Target>>>,
+    selected_spi: Cell<u8>,
     i2cs: RefCell<HashMap<u8, Rc<dyn Bus>>>,
     uarts: RefCell<HashMap<PathBuf, Rc<dyn Uart>>>,
 }
@@ -380,9 +380,23 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
 
     // Crate SPI Target instance, or return one from a cache of previously created instances.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
-        let &idx = self.spi_names.get(instance).ok_or_else(|| {
-            TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())
-        })?;
+        // Execute a "spiget" command to look up the numeric index corresponding to the given
+        // textual SPI instance name.
+        let mut result: Result<u8> = Err(TransportError::InvalidInstance(
+            TransportInterfaceType::Spi,
+            instance.to_string(),
+        )
+        .into());
+        self.inner
+            .execute_command(&format!("spiget {}", instance), |line| {
+                if let Some(captures) = SPI_REGEX.captures(line) {
+                    if let Ok(index) = captures.get(1).unwrap().as_str().parse() {
+                        result = Ok(index)
+                    }
+                }
+            })?;
+        let idx = result?;
+
         if let Some(instance) = self.inner.spis.borrow().get(&idx) {
             return Ok(Rc::clone(instance));
         }
@@ -468,4 +482,8 @@ impl Flavor for StandardFlavor {
     fn get_default_usb_pid() -> u16 {
         PID_HYPERDEBUG
     }
+}
+
+lazy_static! {
+    static ref SPI_REGEX: Regex = Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+)").unwrap();
 }

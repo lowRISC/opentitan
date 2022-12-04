@@ -18,7 +18,7 @@ use crate::transport::TransportError;
 pub struct HyperdebugSpiTarget {
     inner: Rc<Inner>,
     interface: BulkInterface,
-    _target_idx: u8,
+    target_idx: u8,
     max_chunk_size: usize,
     cs_asserted_count: Cell<u32>,
 }
@@ -152,11 +152,12 @@ impl HyperdebugSpiTarget {
     pub fn open(inner: &Rc<Inner>, spi_interface: &BulkInterface, idx: u8) -> Result<Self> {
         let mut usb_handle = inner.usb_device.borrow_mut();
 
-        // Tell HyperDebug to enable SPI bridge.
+        // Tell HyperDebug to enable SPI bridge, and to address particular SPI device.
+        inner.selected_spi.set(idx);
         usb_handle.write_control(
             rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
             USB_SPI_REQ_ENABLE,
-            0, /* wValue */
+            idx as u16,
             spi_interface.interface as u16,
             &[],
         )?;
@@ -197,10 +198,25 @@ impl HyperdebugSpiTarget {
         Ok(Self {
             inner: Rc::clone(inner),
             interface: *spi_interface,
-            _target_idx: idx,
+            target_idx: idx,
             max_chunk_size: chunk as usize,
             cs_asserted_count: Cell::new(0),
         })
+    }
+
+    /// Instruct HyperDebug device which SPI bus subsequent transactions should be forwarded to.
+    fn select_my_spi_bus(&self) -> Result<()> {
+        if self.inner.selected_spi.get() != self.target_idx {
+            self.inner.selected_spi.set(self.target_idx);
+            self.inner.usb_device.borrow().write_control(
+                rusb::request_type(Direction::Out, RequestType::Vendor, Recipient::Interface),
+                USB_SPI_REQ_ENABLE,
+                self.target_idx as u16,
+                self.interface.interface as u16,
+                &[],
+            )?;
+        }
+        Ok(())
     }
 
     /// Transmit data for a single SPI operation, using one or more USB packets.
@@ -370,6 +386,7 @@ impl Target for HyperdebugSpiTarget {
 
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {
         let mut idx: usize = 0;
+        self.select_my_spi_bus()?;
         self.do_assert_cs(true)?;
         while idx < transaction.len() {
             match &mut transaction[idx..] {
