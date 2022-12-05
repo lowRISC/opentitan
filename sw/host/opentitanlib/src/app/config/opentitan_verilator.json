@@ -22,6 +22,12 @@
       { "name": "IOC1", "alias_of": "23" }
       { "name": "IOC2", "alias_of": "24" }
   ],
+  "spi": [
+    {
+      "name": "BOOTSTRAP",
+      "alias_of": "0"
+    }
+  ],
   "uarts": [
     {
       "name": "console",

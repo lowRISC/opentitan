@@ -94,5 +94,7 @@ pub struct ConfigurationFile {
     pub strappings: Vec<StrappingConfiguration>,
     /// List of UART configurations.
     #[serde(default)]
+    pub spi: Vec<SpiConfiguration>,
+    #[serde(default)]
     pub uarts: Vec<UartConfiguration>,
 }

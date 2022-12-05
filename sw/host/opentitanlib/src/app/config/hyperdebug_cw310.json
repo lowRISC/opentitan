@@ -213,6 +213,16 @@
       "alias_of": "CN7_10"
     }
   ],
+  "spi": [
+    {
+      "name": "BOOTSTRAP",
+      "alias_of": "QSPI"
+    },
+    {
+      "name": "TPM",
+      "alias_of": "SPI2"
+    }
+  ],
   "uarts": [
     {
       "name": "console",

@@ -239,6 +239,14 @@ impl TransportWrapper {
             self.strapping_conf_map
                 .insert(strapping_conf.name.to_uppercase(), strapping_pin_map);
         }
+        for spi_conf in file.spi {
+            if let Some(alias_of) = &spi_conf.alias_of {
+                self.spi_map
+                    .insert(spi_conf.name.to_uppercase(), alias_of.clone());
+            }
+            // TODO(#8769): Record bitrate / mode configration for later
+            // use when opening spi port.
+        }
         for uart_conf in file.uarts {
             if let Some(alias_of) = &uart_conf.alias_of {
                 self.uart_map

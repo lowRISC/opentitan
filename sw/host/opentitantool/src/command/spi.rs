@@ -66,7 +66,7 @@ impl CommandDispatch for SpiSfdp {
     ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = context.params.create(transport)?;
+        let spi = context.params.create(transport, "BOOTSTRAP")?;
 
         if let Some(length) = self.raw {
             let mut buffer = vec![0u8; length];
@@ -109,7 +109,7 @@ impl CommandDispatch for SpiReadId {
     ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = context.params.create(transport)?;
+        let spi = context.params.create(transport, "BOOTSTRAP")?;
         let jedec_id = SpiFlash::read_jedec_id(&*spi, self.length)?;
         Ok(Some(Box::new(SpiReadIdResponse { jedec_id })))
     }
@@ -158,7 +158,7 @@ impl CommandDispatch for SpiRead {
     ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = context.params.create(transport)?;
+        let spi = context.params.create(transport, "BOOTSTRAP")?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
 
@@ -208,7 +208,7 @@ impl CommandDispatch for SpiErase {
     ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = context.params.create(transport)?;
+        let spi = context.params.create(transport, "BOOTSTRAP")?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
 
@@ -250,7 +250,7 @@ impl CommandDispatch for SpiProgram {
     ) -> Result<Option<Box<dyn Annotate>>> {
         transport.capabilities()?.request(Capability::SPI).ok()?;
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let spi = context.params.create(transport)?;
+        let spi = context.params.create(transport, "BOOTSTRAP")?;
         let mut flash = SpiFlash::from_spi(&*spi)?;
         flash.set_address_mode_auto(&*spi)?;
 

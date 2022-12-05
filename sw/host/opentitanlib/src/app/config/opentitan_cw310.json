@@ -29,6 +29,12 @@
       "alias_of": "USB_A19"
     }
   ],
+  "spi": [
+    {
+      "name": "BOOTSTRAP",
+      "alias_of": "0"
+    }
+  ],
   "uarts": [
     {
       "name": "console",

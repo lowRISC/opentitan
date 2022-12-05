@@ -229,7 +229,7 @@ impl UpdateProtocol for Legacy {
         payload: &[u8],
         progress: &dyn Fn(u32, u32),
     ) -> Result<()> {
-        let spi = container.spi_params.create(transport)?;
+        let spi = container.spi_params.create(transport, "BOOTSTRAP")?;
 
         let frames = Frame::from_payload(payload);
 
