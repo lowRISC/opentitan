@@ -154,6 +154,9 @@ module prim_edn_req
 
   // Check EDN data is valid: Not all zeros, all ones, or not the same as previous data.
 `ifdef INC_ASSERT
+  //VCS coverage off
+  // pragma coverage off
+
   logic [OutWidth-1:0] data_prev, data_curr;
 
   always_ff @(posedge ack_o or negedge rst_ni) begin
@@ -165,6 +168,8 @@ module prim_edn_req
       data_prev <= data_curr;
     end
   end
+  //VCS coverage on
+  // pragma coverage on
 
   `ASSERT(DataOutputValid_A, ack_o |-> (data_o != 0) && (data_o != '1))
   `ASSERT(DataOutputDiffFromPrev_A, data_prev != 0 |-> data_prev != data_o)
@@ -173,6 +178,8 @@ module prim_edn_req
   // EDN Max Latency Checker
 `ifndef SYNTHESIS
   if (MaxLatency != 0) begin: g_maxlatency_assertion
+    //VCS coverage off
+    // pragma coverage off
     localparam int unsigned LatencyW = $clog2(MaxLatency+1);
     logic [LatencyW-1:0] latency_counter;
     logic reset_counter;
@@ -186,6 +193,8 @@ module prim_edn_req
 
     assign reset_counter  = ack_o;
     assign enable_counter = req_i;
+    //VCS coverage on
+    // pragma coverage on
 
     `ASSERT(MaxLatency_A, latency_counter <= MaxLatency)
 

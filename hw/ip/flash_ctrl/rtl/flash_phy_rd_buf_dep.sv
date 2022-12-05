@@ -109,6 +109,8 @@ module flash_phy_rd_buf_dep import flash_phy_pkg::*;(
 
   // The total number of dependent buffers cannot never exceed the size of response queue
   `ifdef INC_ASSERT
+  //VCS coverage off
+  // pragma coverage off
   logic [31:0] assert_cnt;
   always_comb begin
     assert_cnt = '0;
@@ -116,6 +118,8 @@ module flash_phy_rd_buf_dep import flash_phy_pkg::*;(
       assert_cnt = assert_cnt + dependency_o[i];
     end
   end
+  //VCS coverage on
+  // pragma coverage on
 
   `ASSERT(DepBufferRspOrder_A, fifo_wr_i |=> assert_cnt <= RspOrderDepth)
   `endif
