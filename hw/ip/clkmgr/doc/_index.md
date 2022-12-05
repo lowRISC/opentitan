@@ -250,7 +250,7 @@ The table below summarises the valid modes and the settings required.
 
 | Mode                                            | `lc_clk_byp_req_i`     | `extclk_ctrl.sel` | `extclk_ctrl.hi_speed_sel`  | life cycle state        |
 | -------------                                   | ---------------------  | ----------------- | ----------------------------| ----------------------- |
-| Life cycle transition from RAW and TEST* states | `lc_ctrl_pkg::On`      | `kMultiBit4False` | Don't care                  | Controlled by `lc_ctrl` |
+| Life cycle in RAW, TEST* and RMA states         | `lc_ctrl_pkg::On`      | `kMultiBit4False` | Don't care                  | Controlled by `lc_ctrl` |
 | Internal Clocks                                 | `lc_ctrl_pkg::Off`     | `kMultiBit4False` | Don't care                  | All                     |
 | Software external high speed                    | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4True`            | TEST_UNLOCKED, RMA      |
 | Software external low speed                     | `lc_ctrl_pkg::Off`     | `kMultiBit4True`  | `kMultiBit4False`           | TEST_UNLOCKED, RMA      |
