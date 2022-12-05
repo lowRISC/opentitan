@@ -161,16 +161,6 @@ otbn_library(
     ],
 )
 
-otbn_binary(
-    name = "sha512_test",
-    srcs = [
-        "sha512_test.s",
-    ],
-    deps = [
-        ":sha512",
-    ],
-)
-
 otbn_library(
     name = "x25519",
     srcs = [
