@@ -538,7 +538,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Find the symbol in the sw elf file.
     image = $sformatf("%0s.elf", cfg.sw_images[sw_type]);
-    ret = sw_symbol_get_addr_size(image, symbol, does_not_exist_ok, addr, size);
+    ret = dv_utils_pkg::sw_symbol_get_addr_size(image, symbol, does_not_exist_ok, addr, size);
     if (!ret) begin
       string msg = $sformatf("Failed to find symbol %0s in %0s", symbol, image);
       if (does_not_exist_ok) begin
