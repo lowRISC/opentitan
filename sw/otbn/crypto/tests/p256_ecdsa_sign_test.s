@@ -43,7 +43,7 @@ k0:
   .word 0x21d0a016
   .word 0xb0b2c781
   .word 0x9590ef5d
-  .zero 16
+  .zero 24
 
 /* second share of nonce k (128 0s, then last 128 bits of k) */
 .globl k1
@@ -54,6 +54,7 @@ k1:
   .word 0x1b76ebe8
   .word 0x74210263
   .word 0x1420fc41
+  .zero 8
 
 /* message digest */
 .globl msg
