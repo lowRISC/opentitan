@@ -139,7 +139,7 @@ The list below describes how the counters interpret the filter results:
     This will cause the block to raise an interrupt if it was not already doing so.
   * If a filter is a hit and is also enabled in {{< regref "adc_wakeup_ctl" >}} the corresponding filter generates a wakeup.
   * Note that the debounce counter will remain at its threshold until the set of filters are changed by software to debounce a different event or if the current match changes.
-    *  This implies that a stable matching event continuously matches until some condition in the system (changed filter settings or changed ADC output) alters the result.
+    *  This implies that a stable matching event continuously matches until some condition in the system (changed filter settings, changed ADC output, software issued fsm reset in {{< regref "adc_fsm_rst" >}}) alters the result.
 
 
 Because scanning continues the {{< regref "adc_intr_status" >}} register will reflect any debounced events that are detected between the controller raising an interrupt and the status bits being cleared (by having 1 written to them).
