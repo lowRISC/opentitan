@@ -132,12 +132,20 @@
       name:    "por_n",
       act:     "rcv",
       width:   "2"
+      desc:    '''
+        Root power on reset signals from ast.
+        There is one root reset signal for each core power domain.
+      '''
     },
 
     { struct:  "pwr_rst",    // pwr_rst_req_t, pwr_rst_rsp_t
       type:    "req_rsp",
       name:    "pwr",        // resets_o (req), resets_i (rsp)
       act:     "rsp",
+      desc:    '''
+         Reset request signals from power manager.
+         Power manager can request for specific domains of the lc/sys reset tree to assert.
+      '''
     },
 
     { struct:  "rstmgr_out",
@@ -145,6 +153,9 @@
       name:    "resets",
       act:     "req",
       package: "rstmgr_pkg", // Origin package (only needs for the req)
+      desc:    '''
+        Leaf resets fed to the system.
+      '''
     },
 
     { struct:  "rstmgr_rst_en",
@@ -152,6 +163,9 @@
       name:    "rst_en",
       act:     "req",
       package: "rstmgr_pkg", // Origin package (only needs for the req)
+      desc:    '''
+        Low-power-group outputs used by alert handler.
+      '''
     },
 
     { struct:  "alert_crashdump",
@@ -159,6 +173,9 @@
       name:    "alert_dump",
       act:     "rcv",
       package: "alert_pkg",
+      desc:    '''
+        Alert handler crash dump information.
+      '''
     },
 
     { struct:  "cpu_crash_dump",
@@ -166,6 +183,9 @@
       name:    "cpu_dump",
       act:     "rcv",
       package: "rv_core_ibex_pkg",
+      desc:    '''
+        Main processing element crash dump information.
+      '''
     },
 
     { struct:  "mubi4",
@@ -173,6 +193,9 @@
       name:    "sw_rst_req",
       act:     "req",
       package: "prim_mubi_pkg",
+      desc:    '''
+        Software requested system reset to pwrmgr.
+      '''
     },
 
     // Exported resets

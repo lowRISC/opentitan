@@ -2980,6 +2980,11 @@
       [
         {
           name: por_n
+          desc:
+            '''
+            Root power on reset signals from ast.
+            There is one root reset signal for each core power domain.
+            '''
           struct: logic
           type: uni
           act: rcv
@@ -2994,6 +2999,11 @@
         }
         {
           name: pwr
+          desc:
+            '''
+            Reset request signals from power manager.
+            Power manager can request for specific domains of the lc/sys reset tree to assert.
+            '''
           struct: pwr_rst
           type: req_rsp
           act: rsp
@@ -3006,6 +3016,7 @@
         }
         {
           name: resets
+          desc: Leaf resets fed to the system.
           struct: rstmgr_out
           package: rstmgr_pkg
           type: uni
@@ -3018,6 +3029,7 @@
         }
         {
           name: rst_en
+          desc: Low-power-group outputs used by alert handler.
           struct: rstmgr_rst_en
           package: rstmgr_pkg
           type: uni
@@ -3030,6 +3042,7 @@
         }
         {
           name: alert_dump
+          desc: Alert handler crash dump information.
           struct: alert_crashdump
           package: alert_pkg
           type: uni
@@ -3042,6 +3055,7 @@
         }
         {
           name: cpu_dump
+          desc: Main processing element crash dump information.
           struct: cpu_crash_dump
           package: rv_core_ibex_pkg
           type: uni
@@ -3054,6 +3068,7 @@
         }
         {
           name: sw_rst_req
+          desc: Software requested system reset to pwrmgr.
           struct: mubi4
           package: prim_mubi_pkg
           type: uni
@@ -16490,6 +16505,11 @@
       }
       {
         name: por_n
+        desc:
+          '''
+          Root power on reset signals from ast.
+          There is one root reset signal for each core power domain.
+          '''
         struct: logic
         type: uni
         act: rcv
@@ -16504,6 +16524,11 @@
       }
       {
         name: pwr
+        desc:
+          '''
+          Reset request signals from power manager.
+          Power manager can request for specific domains of the lc/sys reset tree to assert.
+          '''
         struct: pwr_rst
         type: req_rsp
         act: rsp
@@ -16516,6 +16541,7 @@
       }
       {
         name: resets
+        desc: Leaf resets fed to the system.
         struct: rstmgr_out
         package: rstmgr_pkg
         type: uni
@@ -16528,6 +16554,7 @@
       }
       {
         name: rst_en
+        desc: Low-power-group outputs used by alert handler.
         struct: rstmgr_rst_en
         package: rstmgr_pkg
         type: uni
@@ -16540,6 +16567,7 @@
       }
       {
         name: alert_dump
+        desc: Alert handler crash dump information.
         struct: alert_crashdump
         package: alert_pkg
         type: uni
@@ -16552,6 +16580,7 @@
       }
       {
         name: cpu_dump
+        desc: Main processing element crash dump information.
         struct: cpu_crash_dump
         package: rv_core_ibex_pkg
         type: uni
@@ -16564,6 +16593,7 @@
       }
       {
         name: sw_rst_req
+        desc: Software requested system reset to pwrmgr.
         struct: mubi4
         package: prim_mubi_pkg
         type: uni
