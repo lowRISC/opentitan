@@ -17,4 +17,15 @@ class i2c_common_vseq extends i2c_base_vseq;
     `uvm_info(`gfn, "\n--> end of i2c_common_vseq", UVM_DEBUG)
   endtask : body
 
+  virtual task post_start();
+    // if csr test, clean up i2c.OVRD to avoid spurious interrupt caused by
+    // un-intended scl/sda output
+    // default: csr_rw
+    if (common_seq_type == "") begin
+      // clear i2c.OVRDEN
+      ral.ovrd.txovrden.set(1'b0);
+      csr_update(ral.ovrd);
+    end
+    super.post_start();
+  endtask
 endclass : i2c_common_vseq
