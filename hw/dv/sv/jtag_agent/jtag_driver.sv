@@ -54,6 +54,10 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   // drive trans received from sequencer
   virtual task get_and_drive_host_mode();
     forever begin
+      if (!cfg.vif.trst_n) begin
+        `DV_WAIT(cfg.vif.trst_n)
+        cfg.vif.wait_tck(1);
+      end
       seq_item_port.get_next_item(req);
       $cast(rsp, req.clone());
       rsp.set_id_info(req);
