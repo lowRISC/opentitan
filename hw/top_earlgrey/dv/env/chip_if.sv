@@ -631,7 +631,7 @@ interface chip_if;
 
   wire pwrmgr_low_power = `PWRMGR_HIER.low_power_o;
   wire pwrmgr_cpu_fetch_en = `PWRMGR_HIER.fetch_en_o == lc_ctrl_pkg::On;
-  wire permgr_fast_pwr_state_active = `PWRMGR_HIER.u_fsm.state_q
+  wire pwrmgr_fast_pwr_state_active = `PWRMGR_HIER.u_fsm.state_q
       == pwrmgr_pkg::FastPwrStateActive;
 
   wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_i.done == prim_mubi_pkg::MuBi4True;
@@ -692,7 +692,7 @@ interface chip_if;
   typedef struct packed {
     logic [31:0][31:0] gprs;
     // Debug CSRs.
-    dm::dcsr_t   dcsr;
+    jtag_rv_debugger_pkg::rv_core_csr_dcsr_t dcsr;
     logic [31:0] dpc;
     logic [31:0] dscratch0;
     logic [31:0] dscratch1;
@@ -705,8 +705,8 @@ interface chip_if;
   for (genvar i = 0; i < 32; i++) begin : gen_probed_cpu_csrs_conn
     assign probed_cpu_csrs.gprs[i] = `CPU_CORE_HIER.gen_regfile_ff.register_file_i.rf_reg[i][31:0];
   end
-  assign probed_cpu_csrs.dcsr =
-      dm::dcsr_t'(`CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_dcsr_csr.rd_data_o);
+  assign probed_cpu_csrs.dcsr = jtag_rv_debugger_pkg::rv_core_csr_dcsr_t'(
+      `CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_dcsr_csr.rd_data_o);
   assign probed_cpu_csrs.dpc =
       `CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_depc_csr.rd_data_o;
   assign probed_cpu_csrs.dscratch0 =

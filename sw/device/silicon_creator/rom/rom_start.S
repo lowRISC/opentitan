@@ -151,6 +151,7 @@ LABEL_FOR_TEST(kRomStartBootMaybeHalt)
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_ROM_EXEC_EN_OFFSET(a0)
   bnez t0, .L_exec_en
+LABEL_FOR_TEST(kRomStartBootHalted)
 .L_halt_loop:
   wfi
   j .L_halt_loop
