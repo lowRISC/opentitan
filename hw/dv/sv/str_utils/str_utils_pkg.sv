@@ -18,6 +18,16 @@ package str_utils_pkg;
     return 0;
   endfunction : str_has_substr
 
+  // Returns 1 when string 's' starts with substring 'sub'.
+  function automatic bit str_starts_with(string s, string sub);
+    return s.substr(0, sub.len() - 1) == sub;
+  endfunction
+
+  // Returns 1 when string 's' ends with substring 'sub'.
+  function automatic bit str_ends_with(string s, string sub);
+    return s.substr(s.len() - sub.len(), s.len() - 1) == sub;
+  endfunction
+
   // Returns the index of first occurrence of string 'sub' within string 's''s given index range.
   // Returns -1 otherwise.
   function automatic int str_find(string s, string sub, int range_lo = 0, int range_hi = -1);
@@ -128,6 +138,31 @@ package str_utils_pkg;
     end
     return str;
   endfunction : str_join
+
+  // Cuts sections (such as comments) from string s starting and ending with provided substrings.
+  //
+  // start_delim: substring representing the start of section to be removed (e.g. "//", "/*").
+  // end_delim: substring representing the end of the section to be removed (e.g. "\n", "*/").
+  // remove_start_delim: include the start_delim substring in the removal.
+  // remove_end_delim: include the end_delim substring in the removal.
+  function automatic string str_remove_sections(string s,
+                                                string start_delim,
+                                                string end_delim,
+                                                bit remove_start_delim = 1,
+                                                bit remove_end_delim = 1);
+      int start_idx, end_idx;
+      start_idx = str_utils_pkg::str_find(s, start_delim);
+      while (start_idx != -1) begin
+        int rm_start_idx, rm_end_idx;
+        rm_start_idx = remove_start_delim ? start_idx : start_idx + start_delim.len() - 1;
+        end_idx = str_utils_pkg::str_find(s, end_delim, .range_lo(start_idx + start_delim.len()));
+        if (end_idx == -1) break;
+        rm_end_idx = remove_end_delim ? end_idx + end_delim.len() - 1 : end_idx - 1;
+        s = str_utils_pkg::str_replace(s, s.substr(rm_start_idx, rm_end_idx), "");
+        start_idx = str_utils_pkg::str_find(s, start_delim, .range_lo(end_idx + end_delim.len()));
+      end
+      return s;
+  endfunction
 
   // Converts a string to an array of bytes.
   function automatic void str_to_bytes(string s, output byte bytes[]);
