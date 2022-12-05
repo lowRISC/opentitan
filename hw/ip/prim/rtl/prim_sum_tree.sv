@@ -96,6 +96,9 @@ module prim_sum_tree #(
   ////////////////
 
 `ifdef INC_ASSERT
+  //VCS coverage off
+  // pragma coverage off
+
   // Helper functions for assertions below.
   function automatic logic [Width-1:0] sum_value (input logic [NumSrc-1:0][Width-1:0] values_i,
                                                   input logic [NumSrc-1:0]            valid_i);
@@ -110,6 +113,8 @@ module prim_sum_tree #(
 
   logic [Width-1:0] sum_value_exp;
   assign sum_value_exp = sum_value(values_i, valid_i);
+  //VCS coverage on
+  // pragma coverage on
 
   `ASSERT(ValidInImpliesValidOut_A, |valid_i === sum_valid_o)
   `ASSERT(SumComputation_A, sum_valid_o |-> sum_value_o == sum_value_exp)

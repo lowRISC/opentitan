@@ -154,6 +154,8 @@ module tlul_adapter_host
                                 tl_i.d_user};
 
 `ifdef INC_ASSERT
+  //VCS coverage off
+  // pragma coverage off
   localparam int OutstandingReqCntW =
     (MAX_REQS == 2 ** $clog2(MAX_REQS)) ? $clog2(MAX_REQS) + 1 : $clog2(MAX_REQS);
 
@@ -177,6 +179,8 @@ module tlul_adapter_host
       outstanding_reqs_q <= outstanding_reqs_d;
     end
   end
+  //VCS coverage on
+  // pragma coverage on
 
   `ASSERT(DontExceeedMaxReqs, req_i |-> outstanding_reqs_d <= MAX_REQS)
 `endif

@@ -128,6 +128,8 @@ module prim_count #(
   // Assertions //
   ////////////////
 `ifdef INC_ASSERT
+  //VCS coverage off
+  // pragma coverage off
 
   // We need to disable most assertions in that case using a helper signal.
   // We can't rely on err_o since some error patterns cannot be detected (e.g. all error
@@ -145,6 +147,8 @@ module prim_count #(
                                                   logic signed [Width+1:0] b);
     return (a < b) ? a : b;
   endfunction
+  //VCS coverage on
+  // pragma coverage on
 
   // Cnt next
   `ASSERT(CntNext_A,

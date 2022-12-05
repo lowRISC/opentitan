@@ -914,6 +914,8 @@ module flash_ctrl_lcmgr
   // assertion
 
 `ifdef INC_ASSERT
+  //VCS coverage off
+  // pragma coverage off
   localparam int MaxRmaDataWidth = MaxRmaProgBurst * BusWidth;
   localparam int ShiftWidth = (MaxRmaProgBurst - 1) * BusWidth;
   logic [MaxRmaDataWidth-1:0] rma_data_q, rma_data;
@@ -922,6 +924,8 @@ module flash_ctrl_lcmgr
       rma_data_q <= rma_data;
     end
   end
+  //VCS coverage on
+  // pragma coverage on
 
   assign rma_data = {rdata_i, rma_data_q[MaxRmaDataWidth-1 -: ShiftWidth]};
 

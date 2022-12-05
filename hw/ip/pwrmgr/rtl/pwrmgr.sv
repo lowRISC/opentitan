@@ -648,6 +648,8 @@ module pwrmgr
   // EscTimeOutCnt also sets the required clock ratios between escalator and local clock
   // Ie, clk_lc cannot be so slow that the timeout count is reached
   `ifdef INC_ASSERT
+  //VCS coverage off
+  // pragma coverage off
   logic [31:0] cnt;
   always_ff @(posedge clk_i or negedge clk_lc_i or negedge rst_ni) begin
     if (!rst_ni || !clk_lc_i) begin
@@ -656,6 +658,8 @@ module pwrmgr
       cnt <= cnt + 1'b1;
     end
   end
+  //VCS coverage on
+  // pragma coverage on
 
   `ASSERT(ClkRatio_A, cnt < EscTimeOutCnt)
 
