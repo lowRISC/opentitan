@@ -160,11 +160,10 @@ impl<T: Flavor> Hyperdebug<T> {
                 }
             }
         }
-        // Eventually, the SPI aliases below should either go into configuration file, or come
-        // from the HyperDebug firmware, declaring what it supports (as is the case with UARTs.)
+        // Eventually, the SPI device names below should come from the HyperDebug firmware,
+        // declaring what it supports (as is the case with UARTs.)
         let spi_names: HashMap<String, u8> = collection! {
             "SPI2".to_string() => 0,
-            "0".to_string() => 0,
         };
         let i2c_names: HashMap<String, u8> = collection! {
             "0".to_string() => 0,

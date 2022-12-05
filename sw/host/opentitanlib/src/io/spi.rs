@@ -15,8 +15,8 @@ use crate::util::voltage::Voltage;
 
 #[derive(Clone, Debug, StructOpt, Serialize, Deserialize)]
 pub struct SpiParams {
-    #[structopt(long, help = "SPI instance", default_value = "0")]
-    pub bus: String,
+    #[structopt(long, help = "SPI instance")]
+    pub bus: Option<String>,
 
     #[structopt(long, help = "SPI bus speed")]
     pub speed: Option<u32>,
@@ -29,8 +29,12 @@ pub struct SpiParams {
 }
 
 impl SpiParams {
-    pub fn create(&self, transport: &TransportWrapper) -> Result<Rc<dyn Target>> {
-        let spi = transport.spi(&self.bus)?;
+    pub fn create(
+        &self,
+        transport: &TransportWrapper,
+        default_instance: &str,
+    ) -> Result<Rc<dyn Target>> {
+        let spi = transport.spi(self.bus.as_deref().unwrap_or(default_instance))?;
         if let Some(speed) = self.speed {
             spi.set_max_speed(speed)?;
         }

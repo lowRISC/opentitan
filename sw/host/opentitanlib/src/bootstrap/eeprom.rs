@@ -44,7 +44,7 @@ impl UpdateProtocol for Eeprom {
         payload: &[u8],
         progress: &dyn Fn(u32, u32),
     ) -> Result<()> {
-        let spi = container.spi_params.create(transport)?;
+        let spi = container.spi_params.create(transport, "BOOTSTRAP")?;
         let flash = SpiFlash::from_spi(&*spi)?;
         flash.chip_erase(&*spi)?;
         flash.program_with_progress(&*spi, 0, payload, progress)?;

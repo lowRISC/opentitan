@@ -16,6 +16,12 @@
       "pullup": false
     }
   ],
+  "spi": [
+    {
+      "name": "BOOTSTRAP",
+      "alias_of": "0"
+    }
+  ],
   "uarts": [
     {
       "name": "console",
