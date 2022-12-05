@@ -213,8 +213,9 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
   assert(ctx);
 
   if (ctx->counter % TICKS_PER_SYSCALL == 0) {
-    char gpio_str[32 + 2];
-    ssize_t read_len = read(ctx->host_to_dev_fifo, gpio_str, 32 + 1);
+    char gpio_str[256];
+    ssize_t read_len =
+        read(ctx->host_to_dev_fifo, gpio_str, sizeof(gpio_str) - 1);
     if (read_len > 0) {
       gpio_str[read_len] = '\0';
 
@@ -222,8 +223,6 @@ uint32_t gpiodpi_host_to_device_tick(void *ctx_void, svBitVecVal *gpio_oe,
       char *gpio_text = gpio_str;
       for (; *gpio_text != '\0'; ++gpio_text) {
         switch (*gpio_text) {
-          case '\n':
-          case '\r':
           case '\0':
             goto parse_loop_end;
           case 'w':
