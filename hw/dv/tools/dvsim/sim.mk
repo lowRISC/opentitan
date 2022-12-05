@@ -127,7 +127,7 @@ ifneq (${sw_images},)
 						if [[ $$artifact == *.bin && \
 							-f "$$(echo $${artifact} | cut -d. -f 1).elf" ]]; then \
 							cp -f "$$(echo $${artifact} | cut -d. -f 1).elf" \
-								$${run_dir}/$$(basename "$${artifact%.bin}.elf"); \
+								$${run_dir}/$$(basename -s .bin $${artifact}).elf; \
 						fi; \
 					done; \
 				fi; \
