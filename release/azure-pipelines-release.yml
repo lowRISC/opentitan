@@ -1,0 +1,52 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Azure Release Pipeline configuration
+# Documentation at https://aka.ms/yaml
+
+schedules:
+# For testing purposes, run this pipeline every day at 08:37 UTC
+# Use a random minute value to avoid congestion on the hour
+- cron: "37 8 * * *"
+  displayName: "OpenTitan Release build (test)"
+  branches:
+    include:
+    - "master"
+  always: True
+
+variables:
+- name: pkg_path
+  value: ""
+
+jobs:
+- job: checkout
+  displayName: "Checkout repository"
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+  - checkout: self
+    path: opentitan-repo
+  - bash: |
+      tar -C $(Pipeline.Workspace)/opentitan-repo -czf $(Pipeline.Workspace)/opentitan-repo.tar.gz .
+    displayName: "Pack up repository"
+  - publish: $(Pipeline.Workspace)/opentitan-repo.tar.gz
+    artifact: opentitan-repo
+    displayName: "Upload repository"
+
+- job: package
+  displayName: "Create the release package"
+  timeoutInMinutes: 180
+  dependsOn: checkout
+  pool: ci-public
+  steps:
+  - template: ci/checkout-template.yml
+  - bash: |
+      ci/bazelisk.sh build release
+      PKG_PATH=$(./bazelisk.sh outquery //release:opentitan)
+      echo $PKG_PATH
+      echo "##vso[task.setvariable variable=pkg_path]$(PKG_PATH)"
+    displayName: "Build Bazel release package"
+  - publish: $(pkg_path)
+    artifact: opentitan-artifacts
+    displayName: "Upload artifacts"
