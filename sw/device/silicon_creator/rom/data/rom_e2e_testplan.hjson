@@ -1176,7 +1176,11 @@
             '''
       tags: ["rom", "dv", "verilator", "fpga", "silicon"]
       stage: V2
-      tests: ["rom_e2e_keymgr_init"]
+      tests: [
+        "rom_e2e_keymgr_init_rom_ext_meas",
+        "rom_e2e_keymgr_init_rom_ext_no_meas",
+        "rom_e2e_keymgr_init_rom_ext_invalid_meas",
+      ]
     }
 
     {
