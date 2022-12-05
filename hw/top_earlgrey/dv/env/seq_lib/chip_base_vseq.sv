@@ -72,7 +72,7 @@ class chip_base_vseq #(
   // This task populates the ROM with random but correctly scrambled and ECC encoded data with a
   // valid KMAC digest at the end. It is used to ensure the ROM check can pass successfully, without
   // having to rely on a ROM software build prior to running the simulation.
-  virtual function random_rom_init_with_digest();
+  virtual function void random_rom_init_with_digest();
     bit [TL_DW-1:0] rnd_data;
     `uvm_info(`gfn, "Random ROM init with digest", UVM_MEDIUM)
 
@@ -205,6 +205,40 @@ class chip_base_vseq #(
     // Now safe to do DUT init.
     if (do_dut_init) dut_init();
   endtask
+
+  // Configures and connects the UART agent for driving data over RX and receiving data on TX.
+  //
+  // Note that to fetch packets over the TX port, the get_uart_tx_items() task needs to be called
+  // separately as a forked thread in the test sequence.
+  //
+  // uart_idx: The UART instance.
+  // enable: 1: enable (configures and connects), 0: disable (disables sampling and disconnects)
+  // enable_tx_monitor: Enable sampling data on the TX port (default on).
+  // enable_rx_monitor: Enable sampling data on the RX port (default off).
+  // en_parity: Enable parity when driving RX traffic.
+  // odd_parity: Compute odd parity when driving RX traffic.
+  // baud_rate: The baud rate.
+  virtual function void configure_uart_agent(int uart_idx,
+                                             bit enable,
+                                             bit enable_tx_monitor = 1'b1,
+                                             bit enable_rx_monitor = 1'b0,
+                                             bit en_parity = 1'b0,
+                                             bit odd_parity = 1'b0,
+                                             baud_rate_e baud_rate = cfg.uart_baud_rate);
+    if (enable) begin
+      `uvm_info(`gfn, $sformatf("Configuring and connecting UART%0d", uart_idx), UVM_LOW)
+      cfg.m_uart_agent_cfgs[uart_idx].set_parity(en_parity, odd_parity);
+      cfg.m_uart_agent_cfgs[uart_idx].set_baud_rate(cfg.uart_baud_rate);
+      cfg.m_uart_agent_cfgs[uart_idx].en_tx_monitor = enable_tx_monitor;
+      cfg.m_uart_agent_cfgs[uart_idx].en_rx_monitor = enable_rx_monitor;
+      cfg.chip_vif.enable_uart(uart_idx, 1);
+    end else begin
+      `uvm_info(`gfn, $sformatf("Disconnecting UART%0d", uart_idx), UVM_LOW)
+      cfg.m_uart_agent_cfgs[uart_idx].en_tx_monitor = 0;
+      cfg.m_uart_agent_cfgs[uart_idx].en_rx_monitor = 0;
+      cfg.chip_vif.enable_uart(uart_idx, 0);
+    end
+  endfunction
 
   // Grab packets sent by the DUT over the UART TX port.
   virtual task get_uart_tx_items(int uart_idx = 0);
