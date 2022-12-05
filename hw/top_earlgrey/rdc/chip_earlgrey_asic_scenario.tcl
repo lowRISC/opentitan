@@ -17,12 +17,16 @@
 #
 # TODO: Create two scns (either vcmain_pok 0 (turn off all clock), or
 #       vcmain_pok 1 (all clocks alive))
+# regulator FSM stays in VCMON when POR_N is asserted.
 set_reset_scenario { \
-  { POR_N           { reset {#2 0} { #10 1} }} \
+  { POR_N           { reset { @t0 1 } {#2 0} { #10 1} }} \
   { u_ast.u_rglts_pdm_3p3v.vcaon_pok_h  { constraint {@t0 1} }} \
   { top_earlgrey.u_pinmux_aon.dio_pad_attr_q[12].invert \
     { constraint { @t0 0 } } } \
   { top_earlgrey.u_spi_device.cio_sck_i { constraint { @t0 0 } } } \
+  { u_ast.u_rglts_pdm_3p3v.rgls_sm[0] { constraint { @t0 1 } } } \
+  { u_ast.u_rglts_pdm_3p3v.rgls_sm[1] { constraint { @t0 0 } } } \
+  { u_ast.u_rglts_pdm_3p3v.rgls_sm[2] { constraint { @t0 0 } } } \
 } -name ScnPOR
 
 # AST AON POK
