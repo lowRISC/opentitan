@@ -18,6 +18,22 @@
 .section .text.start
 
 ecdsa_sign_test:
+  /* Load first share of k (256 bits at start).
+       w4 <= k0 */
+  la        x16, k0
+  li        x2, 4
+  bn.lid    x2, 0(x16)
+
+  /* Randomize k0.
+       [w4,w5] <= randomize(w4) = randomize(k0) */
+  jal      x1, randomize_share
+
+  /* Store randomized k0 (320 bits).
+       dmem[k0] <= [w4,w5] = randomize(k0) */
+  li        x2, 4
+  bn.sid    x2, 0(x16++)
+  li        x2, 5
+  bn.sid    x2, 0(x16)
 
   /* call ECDSA signing subroutine in P-256 lib */
   jal      x1, p256_sign
@@ -32,10 +48,50 @@ ecdsa_sign_test:
 
   ecall
 
+/**
+ * Produce a 320-bit share representing a 256-bit value modulo n.
+ *
+ * Returns y = (x + r * n),
+ *   where r is a 63-bit pseudorandom number and n is the P-256 curve order.
+ *
+ * @param[in]        w4: x, input (256 bits)
+ * @param[out]  [w4,w5]: y, output (320 bits)
+ *
+ * clobbered registers: w0 to w5
+ * clobbered flag groups: FG0
+ */
+randomize_share:
+  /* Initialize all-zero register. */
+  bn.xor  w31, w31, w31
+
+  /* Get a 63-bit pseudorandom number.
+       w0 <= URND()[255:193] = r */
+  bn.wsrr  w0, 0x2 /* URND*/
+  bn.rshi  w0, w31, w0 >> 193
+
+  /* Load the curve order n.
+     w1 <= dmem[p256_n] = n */
+  li        x2, 1
+  la        x3, p256_n
+  bn.lid    x2, 0(x3)
+
+  /* w2,w3 <= w0 * w1 = r * n */
+  bn.mulqacc.z         w0.0, w1.0, 0
+  bn.mulqacc.so  w2.L, w0.0, w1.1, 64
+  bn.mulqacc           w0.0, w1.2, 0
+  bn.mulqacc.so  w2.U, w0.0, w1.3, 64
+  bn.mulqacc.wo    w3, w31.0, w31.0, 0
+
+  /* Add to input.
+       w4, w5 <= w4 + [w2,w3] = x + r * n */
+  bn.add  w4, w4, w2
+  bn.addc w5, w31, w3
+
+  ret
 
 .data
 
-/* first share of nonce k (first 128 bits of k, then 128 0s) */
+/* first share of nonce k (first 128 bits of k, then 128 0s, then 64 0s for redundant bits) */
 .globl k0
 .balign 32
 k0:
@@ -45,7 +101,7 @@ k0:
   .word 0x9590ef5d
   .zero 24
 
-/* second share of nonce k (128 0s, then last 128 bits of k) */
+/* second share of nonce k (128 0s, then last 128 bits of k, then 64 0s for redundant bits) */
 .globl k1
 .balign 32
 k1:
