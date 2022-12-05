@@ -473,19 +473,15 @@ module chip_earlgrey_verilator (
   // to be split into a Verilator TB and a Verilator chiplevel.
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
-    tck_idx:        pinmux_reg_pkg::NMioPads +
-                    top_earlgrey_pkg::DioSpiDeviceSck,
-    tms_idx:        pinmux_reg_pkg::NMioPads +
-                    top_earlgrey_pkg::DioSpiDeviceCsb,
-    trst_idx:       18, // MIO 18
-    tdi_idx:        pinmux_reg_pkg::NMioPads +
-                    top_earlgrey_pkg::DioSpiDeviceSd0,
-    tdo_idx:        pinmux_reg_pkg::NMioPads +
-                    top_earlgrey_pkg::DioSpiDeviceSd1,
-    tap_strap0_idx: 26, // MIO 26
-    tap_strap1_idx: 16, // MIO 16 (this is different in the ASIC top)
-    dft_strap0_idx: 21, // MIO 21
-    dft_strap1_idx: 22, // MIO 22
+    tck_idx:        MioPadIor3,
+    tms_idx:        MioPadIor0,
+    trst_idx:       MioPadIor4,
+    tdi_idx:        MioPadIor2,
+    tdo_idx:        MioPadIor1,
+    tap_strap0_idx: MioPadIoc8,
+    tap_strap1_idx: MioPadIoc5,
+    dft_strap0_idx: MioPadIoc3,
+    dft_strap1_idx: MioPadIoc4,
     // TODO: check whether there is a better way to pass these USB-specific params
     usb_dp_idx:        DioUsbdevUsbDp,
     usb_dn_idx:        DioUsbdevUsbDn,
