@@ -64,28 +64,16 @@ The Core domain consists of all remaining logic and contains 4 sub reset trees, 
 <p>
 <code>This reset is derived from rst_por_n and resets all logic in the design except:</code><ul>
 
-<li><code>Power manager</code>
-<li><code>Clock manager </code>
-<li><code>Reset manager</code></li></ul>
-
+<li><code>rv_dm</code>
+<li><code>A small portion of pinmux</code></li></ul>
    </td>
   </tr>
   <tr>
    <td><code>rst_sys_n</code>
    </td>
-   <td><code>System reset tree.</code>
+   <td><code>Debug reset tree.</code>
 <p>
-<code>This reset is derived from rst_lc_n and resets all logic in the design except:</code><ul>
-
-<li><code>Power manager</code>
-<li><code>Clock manager</code>
-<li><code>Reset manager</code>
-<li><code>OTP controller</code>
-<li><code>Flash controller</code>
-<li><code>Life cycle controller</code>
-<li><code>Alert manager</code>
-<li><code>Always-on timers</code></li></ul>
-
+<code>This reset is derived from rst_por_n and resets debug domain logic excluded in the life cycle reset tree</code><ul>
    </td>
   </tr>
   <tr>
@@ -93,24 +81,21 @@ The Core domain consists of all remaining logic and contains 4 sub reset trees, 
    </td>
    <td><code>Module specific reset.</code>
 <p>
-<code>This reset is derived from rst_sys_n and sets only the targeted module and nothing else.</code>
+<code>This reset is derived from rst_lc_n and sets only the targeted module and nothing else.</code>
 <p>
-<code>For OpenTitan, the only current targets are spi_device and usb_device.</code>
+<code>For OpenTitan, the only current targets are spi_device, all instances of spi_host, all instances of i2c and usbdev</code>
    </td>
   </tr>
 </table>
 
 The reset trees are cascaded upon one another in this order:
-`rst_por_n` -> `rst_lc_n` -> `rst_sys_n` -> `rst_module_n`
+- `rst_por_n` -> `rst_lc_n` -> `rst_module_n`
+- `rst_por_n` -> `rst_sys_n` -> `rst_module_n`
 This means when a particular reset asserts, all downstream resets also assert.
 
-The primary difference between `rst_lc_n` and `rst_sys_n` is that the former controls the reset state of all non-volatile and life cycle related logic in the system, while the latter can be used to issue system resets for debug.
-This separation is required because the non-volatile controllers (`otp_ctrl` / `lc_ctrl`) are used to qualify DFT and debug functions of the design.
-If these modules are reset along with the rest of the system, the TAP and related debug functions would also be reset.
-By keeping these reset trees separate, we allow the state of the test domain functions to persist while functionally resetting the rest of the core domain.
-
-Additionally, modules such as [alert handler](({{< relref "hw/top_earlgrey/ip_autogen/alert_handler/doc" >}})) and [aon timer]({{< relref "hw/ip/aon_timer/doc" >}}) (which contains the watchdog function) are also kept on the `rst_lc_n` tree.
-This ensures that an erroneously requested system reset through `rst_sys_n` cannot silence the alert mechanism or prevent the system from triggering a watchdog mechanism.
+The primary difference between `rst_lc_n` and `rst_sys_n` is that the former controls the reset state of most logic in the system, while the latter controls the reset state only of the debug domain.
+This separation is required because the debug domain may request the system to reset while retaining debug info and control.
+This is particularly useful if one wanted to debug something early during the boot flow, and thus needed to set a break point after requesting a debug reset.
 
 The reset topology also contains additional properties:
 *   Selective processor HART resets, such as `hartreset` in `dmcontrol`, are not implemented, as it causes a security policy inconsistency with the remaining system.
@@ -136,6 +121,7 @@ These requests primarily come from the following sources:
 *  Peripherals capable of reset requests: such as [sysrst_ctrl]({{< relref "hw/ip/sysrst_ctrl/doc/_index.md" >}}) and [always on timers ]({{< relref "hw/ip/aon_timer/doc/_index.md" >}}).
 *  Debug modules such as `rv_dm`.
 *  Power manager request for low power entry and exit.
+*  Escalation reset requests such as those from `alert_handler` or `pwrmgr` itself.
 *  Direct software request for reset.
 
 ### Shadow Resets
@@ -170,24 +156,20 @@ The reset manager then checks as follows:
 
 ## Hardware Interfaces
 
-{{< incGenFromIpDesc "/hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson" "hwcfg" >}}
+### Parameters
+
+The following table lists the instantiation parameters of `rstmgr`.
+
+
+Parameter                   | Default       | Description
+----------------------------|---------------|---------------
+`SecCheck`                  | 1             | Enables reset consistency checks on the leaf reset.  Each check contains a small FSM.
+`SecMaxSyncDelay`           | 2             | The default synchronization delay assumptions used in reset consistency checks.  If a design uses a sync cell with more stages of delay, that value should be supplied.
+
 
 ### Signals
 
-Signal                  | Direction | Description
-------------------------|-----------|---------------
-`ast_i.aon_pok`         | `input`   | Input from `ast`.  This signal is the root reset of the design and is used to generate `rst_por_n`.
-`cpu_i.rst_cpu_n`       | `input`   | CPU reset indication.  This informs the reset manager that the processor has reset.
-`cpu_i.ndmreset_req`    | `input`   | Non-debug-module reset request from `rv_dm`.
-`cpu_dump_i`            | `input`   | CPU crash dump state from `rv_core_ibex`.
-`pwr_i.rst_lc_req`      | `input`   | Power manager request to assert the `rst_lc_n` tree.
-`pwr_i.rst_sys_req`     | `input`   | Power manager request to assert the `rst_sys_n` tree.
-`pwr_i.reset_cause`     | `input`   | Power manager indication for why it requested reset, the cause can be low power entry or peripheral issued request.
-`pwr_i.rstreqs`         | `input`   | Peripheral reset requests.
-`pwr_o.rst_lc_src_n`    | `output`  | Current state of `rst_lc_n` tree.
-`pwr_o.rst_sys_src_n`   | `output`  | Current state of `rst_sys_n` tree.
-`resets_ast_o`          | `output`  | Resets used by `ast`.
-`resets_o`              | `output`  | Resets used by the rest of the core domain.
+{{< incGenFromIpDesc "/hw/top_earlgrey/ip/rstmgr/data/autogen/rstmgr.hjson" "hwcfg" >}}
 
 ## Design Details
 
@@ -195,7 +177,6 @@ The reset manager generates the resets required by the system by synchronizing r
 As a result, a particular reset tree (for example `rst_lc_n`) may have multiple outputs depending on the clock domains of its consumers.
 
 Each reset tree is discussed in detail below.
-
 
 ## POR Reset Tree
 
@@ -217,16 +198,22 @@ The stretch parameters are design time configurations.
 
 Life cycle reset, `rst_lc_n` asserts under the following conditions:
 *  Whenever `rst_por_n` asserts.
-*  Whenever a peripheral reset request (always on timer watchdog, rbox reset request, alert handler escalation) is received.
+*  Whenever a peripheral reset request (always on timer watchdog, rbox reset request, alert handler escalation, direct software request) is received.
 
 The `rst_lc_n` tree contains both always-on and non-always-on versions.
 How many non-always-on versions is dependent on how many power domains are supported by the system.
 
 ## System Reset Tree
 
-System reset, `rst_sys_n` asserts under the following conditions:
-*  Whenever `rst_lc_n` asserts.
-*  Whenever `ndmreset_req` asserts.
+System reset, `rst_sys_n` , assertion depends on life cycle state.
+
+When in PROD and PROD_END states, `rst_sys_n` is identical to `rst_lc_n`.
+
+When in TEST, RMA and DEV states, `rst_sys_n` is identical to `rst_lc_n` unless the reset request is `ndmreset_req`.
+`ndmreset_req` is issued by the debug module of the system, it requests for all logic, except those needed to maintain debug state to reset.
+
+Since `ndmreset_req` is valid only during TEST, RMA and DEV states, it is the only place where the reset is differentiated.
+During these states, when `ndmreset_req` is issued, all logic except the debug module and associated glue logic are reset.
 
 The `rst_sys_n` tree contains both always-on and non-always-on versions.
 How many non-always-on versions is dependent on how many power domains are supported by the system.
@@ -253,7 +240,7 @@ However, the corresponding resets for `Domain A` are left untouched because it h
 
 Certain leaf resets can be directly controlled by software.
 Due to security considerations, most leaf resets cannot be controlled, only a few blocks are given exceptions.
-The only blocks currently allowed to software reset are `usbdev` and `spidev`.  Future potential candidates are `i2cdev`, `i2chost` and `spihost`.
+The only blocks currently allowed to software reset are `spi_device`, `usbdev`, `spi_host` and `i2c`.
 
 The criteria for selecting which block is software reset controllable is meant to be overly restrictive.
 Unless there is a clear need, the default option is to not provide reset control.
@@ -265,6 +252,21 @@ In general, the following rules apply:
 *   If a module can alter the software's perception of time or general control flow (timer or interrupt aggregator), it cannot be software resettable.
 *   If a module contains sensor functions for security, it cannot be software resettable.
 *   If a module controls life cycle or related function, it cannot be software resettable.
+
+## Summary
+
+The following table summarizes the different reset requests and which part of each reset tree, along with what power domain is affected.
+
+Reset Request Type                | Example                                                       | POR Reset Tree | LC Reset Tree   | SYS Reset Tree  | Module Specific Reset
+----------------------------------| --------------------------------------------------------------| ---------------| -------------   | --------------- | ----------------------
+POR                               | VCC toggle, POR_N pad toggle                                  | all domains    | all domains     | all domains     | all domains
+HW reset Request                  | `aon_timer` reset request, `alert_handler` escalation request |                | all domains     | all domains     | all domains
+Directed SW system reset request  | `rstmgr` SW_RESET                                             |                | all domains     | all domains     | all domains
+Ndm reset request (PROD/PROD_END) | `rv_dm` non-debug-module reset request in PROD                |                | all domains     | all domains     | all domains
+Ndm reset request (Other states)  | `rv_dm` non-debug-module reset request in DEV                 |                | all domains     |                 | all domains
+SW low power entry                | wait-for-interrupt deep sleep entry                           |                | non-aon domains | non-aon domains | non-aon domains
+SW controlled reset request       | `rstmgr` SW_RST_CTRL_N                                        |                |                 |                 | all domains
+
 
 ## Reset Information
 
