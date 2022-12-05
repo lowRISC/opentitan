@@ -117,6 +117,7 @@ opentitan_functest(
     srcs = ["entropy_test.c"],
     verilator = verilator_params(
         timeout = "long",
+        tags = ["broken"],  # TODO #16672 test broken by icache
     ),
     deps = [
         ":entropy",
