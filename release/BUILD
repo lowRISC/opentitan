@@ -9,6 +9,7 @@ package(default_visibility = ["//visibility:public"])
 
 pkg_tar(
     name = "opentitan",
+    testonly = True,
     srcs = [
         "//hw:package",
         "//hw/bitstream/vivado:package",
@@ -24,6 +25,7 @@ pkg_tar(
 
 release(
     name = "release",
+    testonly = True,
     artifacts = {
         ":opentitan": "Opentitan software and FPGA artifacts",
     },
