@@ -177,12 +177,32 @@ See the [pinmux specification]({{< relref "hw/ip/pinmux/doc" >}}) for how to con
 
 ##### SPI device
 
-**TODO: this section has pending updates**
 
-The SPI device implements Firmware Mode, a feature that provides the ability for external drivers to send firmware upgrade code into a bank of embedded flash memory for in-field firmware updates.
-Firmware mode has no addressing, and at the moment no other addressing modes are provided.
+The SPI device implements multiple modes:
+- Firmware mode
+- TPM mode
+- Flash mode
+- Passthrough mode
 
-See the [SPI device specification]({{< relref "hw/ip/spi_device/doc" >}}) for more details on the Firmware Mode implementation.
+Firmware Mode is a generic data transfer mode.
+It can be used by software to construct a simple firmware upgrade mechanism for in-field devices.
+
+TPM mode supports SPI transfers in compliance with the TPM PC Client Platform.
+The interface is single data lane and supports built-in data back pressuring.
+
+Flash mode supports serial flash emulation.
+Typical commands such as read status, address mode, read data and program data are either natively supported or can be emulated.
+
+Passthrough mode supports serial flash passthrough from an upstream SPI host to a downstream serial flash device.
+
+See the [SPI device specification]({{< relref "hw/ip/spi_device/doc" >}}) for more details.
+
+##### USB device
+
+The chip contains a single module that supports USB device mode at full speed.
+In addition to normal functionality, USB suspend / resume is supported alongside the chip's low power modes.
+
+See the [USB device specification]({{< relref "hw/ip/usbdev/doc" >}}) for more details.
 
 ##### I2C host
 

@@ -85,6 +85,7 @@ The OpenTitan Earl Grey chip provides the following features:
             <li>3x I2C with host and device modes (using multiplexable IO)</li>
             <li>SPI device (using fixed IO) with TPM, generic, flash and passthrough modes</li>
             <li>2x SPI host (using both fixed and multiplexable IO)</li>
+            <li>USB device at full speed</li>
           </ul>
         </li>
         <br></br>
