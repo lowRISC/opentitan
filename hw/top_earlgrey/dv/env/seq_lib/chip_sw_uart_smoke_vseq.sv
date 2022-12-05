@@ -22,13 +22,7 @@ class chip_sw_uart_smoke_vseq extends chip_sw_base_vseq;
   virtual task body();
     super.body();
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest);
-
-    `uvm_info(`gfn, $sformatf("Configuring and connecting UART%0d", uart_idx), UVM_LOW)
-    cfg.m_uart_agent_cfgs[uart_idx].set_parity(1'b0, 1'b0);
-    cfg.m_uart_agent_cfgs[uart_idx].set_baud_rate(cfg.uart_baud_rate);
-    cfg.m_uart_agent_cfgs[uart_idx].en_tx_monitor = 1;
-    cfg.m_uart_agent_cfgs[uart_idx].en_rx_monitor = 1;
-    cfg.chip_vif.enable_uart(uart_idx, 1);
+    configure_uart_agent(.uart_idx(uart_idx), .enable(1), .enable_rx_monitor(1));
   endtask
 
   virtual task post_start();
@@ -38,6 +32,7 @@ class chip_sw_uart_smoke_vseq extends chip_sw_base_vseq;
     cfg.m_uart_agent_cfgs[uart_idx].en_rx_monitor = 0;
     // TODO: The SW test needs to release the pinmux to UART connection before we can disconnect the
     // UART interface from the chip IOs. Not doing so will result in X-prop.
+    // configure_uart_agent(.uart_idx(uart_idx), .enable(0));
     // cfg.chip_vif.enable_uart(uart_idx, 0);
   endtask
 
