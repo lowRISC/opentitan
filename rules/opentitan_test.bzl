@@ -110,7 +110,7 @@ def verilator_params(
         local = _BASE_PARAMS["local"],
         otp = _BASE_PARAMS["otp"],
         rom = _BASE_PARAMS["rom"],
-        tags = _BASE_PARAMS["tags"] + ["cpu:4"],
+        tags = _BASE_PARAMS["tags"],
         timeout = _BASE_PARAMS["timeout"],
         test_runner = _BASE_PARAMS["test_runner"],
         test_cmds = _BASE_PARAMS["test_cmds"] + [
@@ -152,7 +152,7 @@ def verilator_params(
         "@//hw:verilator",
         "@//hw:fusesoc_ignore",
     ]
-    required_tags = ["verilator"]
+    required_tags = ["verilator", "cpu:4"]
     kwargs.update(
         args = default_args + args,
         data = required_data + data,

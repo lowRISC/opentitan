@@ -28,7 +28,7 @@ opentitan_functest(
         "-DMAIN_HAS_NOARGC=1",
     ],
     verilator = verilator_params(
-        timeout = "long",
+        timeout = "eternal",
     ),
     deps = [
         ":core_portme",

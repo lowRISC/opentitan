@@ -107,6 +107,12 @@ opentitan_functest(
 opentitan_functest(
     name = "alert_handler_ping_timeout_test",
     srcs = ["alert_handler_ping_timeout_test.c"],
+    cw310 = cw310_params(
+        timeout = "moderate",
+    ),
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -171,13 +177,22 @@ opentitan_functest(
 opentitan_functest(
     name = "alert_handler_reverse_ping_in_deep_sleep_test",
     srcs = ["alert_handler_reverse_ping_in_deep_sleep_test.c"],
+    cw310 = cw310_params(
+        timeout = "moderate",
+        tags = ["broken"],  # FIXME #16822 Test hangs on isolated runs
+    ),
     targets = [
         # The test requires to run for > 0.2s, thus not recommended for
         # Verilator as this will slow down CI too much. It should still
         # be run as part of the DV nightly regression.
+        "verilator",
         "cw310_test_rom",
         "dv",
     ],
+    verilator = verilator_params(
+        timeout = "eternal",
+        tags = ["broken"],  # FIXME #16822 Test hangs on isolated runs
+    ),
     deps = [
         "//hw/top_earlgrey:alert_handler_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -449,6 +464,9 @@ opentitan_functest(
 opentitan_functest(
     name = "chip_power_idle_load",
     srcs = ["chip_power_idle_load.c"],
+    verilator = verilator_params(
+        tags = ["broken"],  # FIXME #16374 test doesn't make progress after enabling PWM
+    ),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:alert_handler",
@@ -562,6 +580,9 @@ opentitan_functest(
 opentitan_functest(
     name = "clkmgr_off_peri_test",
     srcs = ["clkmgr_off_peri_test.c"],
+    verilator = verilator_params(
+        timeout = "eternal",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -634,8 +655,7 @@ opentitan_functest(
     name = "clkmgr_reset_frequency_test",
     srcs = ["clkmgr_reset_frequency_test.c"],
     verilator = verilator_params(
-        # FIXME #13611
-        tags = ["broken"],
+        timeout = "long",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -888,6 +908,9 @@ opentitan_functest(
 opentitan_functest(
     name = "entropy_src_edn_reqs_test",
     srcs = ["entropy_src_edn_reqs_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1142,6 +1165,9 @@ opentitan_functest(
 opentitan_functest(
     name = "keymgr_key_derivation_test",
     srcs = ["keymgr_key_derivation_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/ip/kmac/data:kmac_regs",
@@ -1187,6 +1213,9 @@ opentitan_functest(
 opentitan_functest(
     name = "keymgr_sideload_kmac_test",
     srcs = ["keymgr_sideload_kmac_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/ip/keymgr/data:keymgr_regs",
         "//hw/ip/kmac/data:kmac_regs",
@@ -1350,6 +1379,9 @@ opentitan_functest(
 opentitan_functest(
     name = "otbn_irq_test",
     srcs = ["otbn_irq_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:otbn",
@@ -1372,7 +1404,7 @@ opentitan_functest(
         tags = ["broken"],
     ),
     verilator = verilator_params(
-        tags = ["broken"],
+        timeout = "long",
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1403,6 +1435,9 @@ cc_library(
 opentitan_functest(
     name = "otbn_randomness_test",
     srcs = ["otbn_randomness_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1878,6 +1913,9 @@ opentitan_functest(
 opentitan_functest(
     name = "rstmgr_alert_info_test",
     srcs = ["rstmgr_alert_info_test.c"],
+    cw310 = cw310_params(
+        tags = ["broken"],  # FIXME #16576 fails in non-CI environments
+    ),
     targets = [
         "cw310_test_rom",
         "verilator",
