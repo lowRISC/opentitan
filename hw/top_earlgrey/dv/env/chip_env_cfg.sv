@@ -224,6 +224,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     debugger.set_cfg(m_jtag_agent_cfg);
     debugger.set_ral(jtag_dmi_ral);
     debugger.num_harts = rv_dm_reg_pkg::NrHarts;
+    debugger.num_triggers = 4;  // TODO: wire this from `top_earlgrey_pkg`.
 
     // This TL agent is used in stub_cpu mode and connected with ibex data port.
     // It can have up to 3 outstanding items, because req/rsp fifo can each hold 1 and
@@ -417,7 +418,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
         end else if (i == SwTypeOtp) begin
           otp_images[OtpTypeCustom] = $sformatf("%0s.24.vmem", sw_images[i]);
         end else if (i == SwTypeDebug) begin
-          sw_images[i] = $sformatf("%0s.32.vmem", sw_images[i]);
+          sw_images[i] = $sformatf("%0s_%0s", sw_images[i], sw_build_device);
         end
       end
     end

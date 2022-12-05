@@ -25,31 +25,24 @@ class chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq extends chip_sw_base_vseq;
              "Timed out waiting for the CPU to be ready for a halt request.")
     cfg.chip_vif.cpu_clk_rst_if.wait_clks($urandom_range(200, 1000));
 
-    `uvm_info(`gfn, "Activating the debug module", UVM_MEDIUM)
-    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.dmactive), .value(1), .blocking(1), .predict(1));
+    cfg.debugger.set_dmactive(1);
     cfg.chip_vif.cpu_clk_rst_if.wait_clks($urandom_range(200, 1000));
 
+    // Verify the CPU is running (and the JTAG interface is alive) before asserting haltreq.
     csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(rw_data), .blocking(1));
     `DV_CHECK_EQ(dv_base_reg_pkg::get_field_val(jtag_dmi_ral.dmstatus.anyrunning, rw_data), 1)
     `DV_CHECK_EQ(dv_base_reg_pkg::get_field_val(jtag_dmi_ral.dmstatus.allrunning, rw_data), 1)
+    cfg.debugger.set_haltreq(1);
+    cfg.debugger.wait_cpu_halted();
 
-    `uvm_info(`gfn, "Asserting CPU haltreq", UVM_MEDIUM)
-    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(1), .blocking(1), .predict(1));
-
-    `uvm_info(`gfn, "Waiting for CPU halted", UVM_MEDIUM)
-    `DV_SPINWAIT(
-      do begin
-        csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(rw_data), .blocking(1));
-      end while (dv_base_reg_pkg::get_field_val(jtag_dmi_ral.dmstatus.anyhalted, rw_data) == 0);
-    )
+    csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(rw_data), .blocking(1));
     `DV_CHECK_EQ(dv_base_reg_pkg::get_field_val(jtag_dmi_ral.dmstatus.anyhalted, rw_data), 1)
     `DV_CHECK_EQ(dv_base_reg_pkg::get_field_val(jtag_dmi_ral.dmstatus.allhalted, rw_data), 1)
     `DV_CHECK_EQ(dv_base_reg_pkg::get_field_val(jtag_dmi_ral.dmstatus.anyrunning, rw_data), 0)
     `DV_CHECK_EQ(dv_base_reg_pkg::get_field_val(jtag_dmi_ral.dmstatus.allrunning, rw_data), 0)
     cfg.chip_vif.cpu_clk_rst_if.wait_clks($urandom_range(200, 1000));
 
-    `uvm_info(`gfn, "De-asserting CPU haltreq since CPU is halted", UVM_MEDIUM)
-    csr_wr(.ptr(jtag_dmi_ral.dmcontrol.haltreq), .value(0), .blocking(1), .predict(1));
+    cfg.debugger.set_haltreq(0);
     cfg.chip_vif.cpu_clk_rst_if.wait_clks($urandom_range(1000, 10000));
     csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(rw_data), .blocking(1));
     `DV_CHECK_EQ(dv_base_reg_pkg::get_field_val(jtag_dmi_ral.dmstatus.allhalted, rw_data), 1)
@@ -72,11 +65,12 @@ class chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq extends chip_sw_base_vseq;
 
     // Read DCSR and verify the cause field.
     cmd_data = '{};
-    cfg.debugger.abstract_cmd_reg_read(.regno(dm::CSR_DCSR), .value_q(cmd_data), .status(status));
+    cfg.debugger.abstract_cmd_reg_read(.regno(jtag_rv_debugger_pkg::RvCoreCsrDcsr),
+                                       .value_q(cmd_data), .status(status));
     `DV_CHECK_EQ(status, jtag_rv_debugger_pkg::AbstractCmdErrNone)
     `uvm_info(`gfn, $sformatf("Read by the debugger: DCSR = 0x%0h", cmd_data[0]), UVM_LOW)
     `DV_CHECK_EQ(cmd_data[0], cfg.chip_vif.probed_cpu_csrs.dcsr)
-    `DV_CHECK_EQ(cfg.chip_vif.probed_cpu_csrs.dcsr.cause, dm::CauseRequest)
+    `DV_CHECK_EQ(cfg.chip_vif.probed_cpu_csrs.dcsr.cause, jtag_rv_debugger_pkg::RvDebugCauseHaltReq)
 
     // Read some chip CSRs over SBA. Arbitrarily chose LC ctrl device ID which can be checked for
     // correctness via backdoor.

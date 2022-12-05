@@ -227,17 +227,19 @@ package dv_utils_pkg;
 
     string msg_id = "sw_symbol_get_addr_size";
     string escaped_symbol = "";
+    string symbol_for_filename = "";
 
     `DV_CHECK_STRNE_FATAL(elf_file, "", "Input arg \"elf_file\" cannot be an empty string", msg_id)
     `DV_CHECK_STRNE_FATAL(symbol,   "", "Input arg \"symbol\" cannot be an empty string", msg_id)
 
-    // If the symbol has special characters, such as '$', escape it for the cmd below, but don't
-    // escape it when creating the file.
+    // If the symbol has special characters, such as '$', escape it for the cmd below, but when
+    // creating the file, omit the special characters entirely.
     foreach (symbol[i]) begin
       if (symbol[i] == "$") begin
         escaped_symbol = {escaped_symbol, "\\", symbol[i]};
       end else begin
         escaped_symbol = {escaped_symbol, symbol[i]};
+        symbol_for_filename = {symbol_for_filename, symbol[i]};
       end
     end
 
@@ -245,7 +247,7 @@ package dv_utils_pkg;
       int ret;
       string line;
       int out_file_d = 0;
-      string out_file = $sformatf("%0s.dat", symbol);
+      string out_file = $sformatf("%0s.dat", symbol_for_filename);
       string cmd = $sformatf(
           // use `--wide` to avoid truncating the output, in case of long symbol name
           // `\s%0s$` ensures we are looking for an exact match, with no pre- or postfixes.
