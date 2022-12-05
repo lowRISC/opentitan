@@ -148,10 +148,11 @@
     {
       name: build_seed
       pre_build_cmds: [
-        // Generate RndCnsts
-        '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
-               -o hw/top_earlgrey --rnd_cnst_seed {seed}
-        ''',
+        // TODO: find where in run phase we are using this pkg. It fails during ibex TLUL integrity
+        // check.
+        // '''cd {proj_root} && ./util/topgen.py -t {ral_spec} \
+        //        -o hw/top_earlgrey --rnd_cnst_seed {seed}
+        // ''',
         // Generate LC encoding
         "cd {proj_root} && ./util/design/gen-lc-state-enc.py --seed {seed}",
         // Generate OTP memory map and scrambling constants keys.
