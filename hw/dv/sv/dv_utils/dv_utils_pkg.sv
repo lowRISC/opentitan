@@ -284,6 +284,77 @@ package dv_utils_pkg;
     end
   endfunction
 
+  // Reads VMEM file contents into a queue of data.
+  //
+  // TODO: Add support for non-contiguous memory.
+  // TODO: Add support for ECC bits.
+  // TODO: Add support for non-BUS_DW sized VMEM data.
+  // vmem_file: Path to VMEM image, compatible with $readmemh mathod.
+  // vmem_data: A queue of BUS_DW sized data returned to the caller.
+  function automatic void read_vmem(input string vmem_file,
+                                    output logic [bus_params_pkg::BUS_DW-1:0] vmem_data[$]);
+    int fd;
+    uvm_reg_addr_t last_addr;
+    string text, msg = "\n", lines[$];
+
+    fd = $fopen(vmem_file, "r");
+    `DV_CHECK_FATAL(fd, $sformatf("Failed to open \"%0s\"", vmem_file), msg_id)
+    while (!$feof(fd)) begin
+      string line;
+      void'($fgets(line, fd));
+      line = str_utils_pkg::str_strip(line);
+      if (line == "") continue;
+      text = {text, line, "\n"};
+    end
+    $fclose(fd);
+    `DV_CHECK_STRNE_FATAL(text, "", , msg_id)
+
+    // Remove all block and single comments.
+    text = str_utils_pkg::str_remove_sections(.s(text), .start_delim("/*"), .end_delim("*/"));
+    text = str_utils_pkg::str_remove_sections(.s(text), .start_delim("//"), .end_delim("\n"),
+                                              .remove_end_delim(0));
+
+    vmem_data.delete();
+    str_utils_pkg::str_split(text, lines, "\n");
+    foreach (lines[i]) begin
+      string tokens[$];
+      uvm_reg_addr_t addr;
+
+      // Split the line by space. The first item must be the address that starts with '@'.
+      str_utils_pkg::str_split(lines[i], tokens, " ");
+      `DV_CHECK_FATAL(tokens.size() >= 2,
+                      $sformatf("Line \"%s\" in VMEM file %s appears to be malformed",
+                                lines[i], vmem_file), msg_id)
+      if (!str_utils_pkg::str_starts_with(tokens[0], "@")) begin
+        `uvm_fatal(msg_id, $sformatf({"The first word \"%s\" on line \"%s\" in the VMEM file %s ",
+                                      " does not appear to be a valid address"},
+                                    tokens[0], lines[i], vmem_file))
+      end
+      tokens[0] = tokens[0].substr(1, tokens[0].len() - 1);
+      `DV_CHECK_FATAL(tokens[0].len() <= bus_params_pkg::BUS_AW / 8 * 2,
+                      $sformatf("Address width > %0d bytes is not supported: 0x%0s",
+                                bus_params_pkg::BUS_AW / 8, tokens[0]), msg_id)
+      addr = tokens[0].atohex();
+      tokens = tokens[1:$];
+      if (i > 0) begin
+        `DV_CHECK_FATAL(addr == last_addr,
+                        $sformatf("Non-contiguous data unsupported - last_addr: 0x%0h, addr: 0x%0h",
+                                  last_addr, addr), msg_id)
+      end
+      foreach (tokens[i]) begin
+        logic [bus_params_pkg::BUS_DW-1:0] data;
+        `DV_CHECK_FATAL(tokens[i].len() <= bus_params_pkg::BUS_DW / 8 * 2,
+                        $sformatf("Data width > %0d bytes is not supported: 0x%0s",
+                                  bus_params_pkg::BUS_DW / 8, tokens[i]), msg_id)
+        data = tokens[i].atohex();
+        msg = {msg, $sformatf("[0x%0h] = 0x%0h\n", addr + i, data)};
+        vmem_data.push_back(data);
+      end
+      last_addr = addr + tokens.size();
+    end
+    `uvm_info(msg_id, $sformatf("Contents of VMEM file %s:%s", vmem_file, msg), UVM_HIGH)
+  endfunction
+
   // sources
 `ifdef UVM
   `include "dv_report_catcher.sv"
