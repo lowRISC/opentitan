@@ -29,9 +29,9 @@
                 - LIFE_CYCLE count value set to 1
             - Ensure that the ROM can boot.
             '''
-      tags: ["rom", "verilator", "dv", "fpga", "silicon"]
+      tags: ["rom", "no_dv", "fpga", "silicon"]
       stage: V2
-      tests: ["rom_e2e_default_otp_smoke"]
+      tests: []
     }
 
     {
