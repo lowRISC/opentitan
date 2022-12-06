@@ -90,6 +90,9 @@ class lc_ctrl_smoke_vseq extends lc_ctrl_base_vseq;
         sw_transition_req(next_lc_state, token_val);
         cfg.set_test_phase(LcCtrlTransitionComplete);
       end else begin
+        // Test items that do not need a LC transition
+        csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
+        csr_wr(ral.transition_ctrl, $urandom_range(0, 1));
         cfg.set_test_phase(LcCtrlBadNextState);
         // wait at least two clks for scb to finish checking lc outputs
         cfg.clk_rst_vif.wait_clks($urandom_range(2, 10));

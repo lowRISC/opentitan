@@ -143,6 +143,7 @@ class lc_ctrl_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] status_val;
     uvm_reg_data_t val;
     csr_wr(ral.claim_transition_if, CLAIM_TRANS_VAL);
+    if ($urandom_range(0, 1)) csr_wr(ral.transition_ctrl, $urandom_range(0, 1));
     csr_wr(ral.transition_target, {DecLcStateNumRep{next_lc_state[DecLcStateWidth-1:0]}});
     foreach (ral.transition_token[i]) begin
       csr_wr(ral.transition_token[i], token_val[TL_DW-1:0]);
