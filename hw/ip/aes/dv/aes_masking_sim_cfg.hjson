@@ -11,7 +11,7 @@
   import_cfgs: ["{proj_root}/hw/ip/aes/dv/aes_base_sim_cfg.hjson"]
 
   // Coverage exclusion
-  xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/aes_UNR.vRefine"]
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/aes_UNR.vRefine"]
 
   // Enable the appropriate build mode for all tests
   en_build_modes: ["aes_masking"]
