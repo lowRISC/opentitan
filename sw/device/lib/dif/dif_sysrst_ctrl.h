@@ -170,35 +170,35 @@ typedef enum dif_sysrst_ctrl_input_change {
   /**
    * Power button input signal low-to-high.
    */
-  kDifSysrstCtrlInputPowerButtonL2H = 1U << 8,
+  kDifSysrstCtrlInputPowerButtonL2H = 1U << 7,
   /**
    * Key 0 input signal low-to-high.
    */
-  kDifSysrstCtrlInputKey0L2H = 1U << 9,
+  kDifSysrstCtrlInputKey0L2H = 1U << 8,
   /**
    * Key 1 input signal low-to-high.
    */
-  kDifSysrstCtrlInputKey1L2H = 1U << 10,
+  kDifSysrstCtrlInputKey1L2H = 1U << 9,
   /**
    * Key 2 input signal low-to-high.
    */
-  kDifSysrstCtrlInputKey2L2H = 1U << 11,
+  kDifSysrstCtrlInputKey2L2H = 1U << 10,
   /**
    * AC power present input signal low-to-high.
    */
-  kDifSysrstCtrlInputAcPowerPresetL2H = 1U << 12,
+  kDifSysrstCtrlInputAcPowerPresetL2H = 1U << 11,
   /**
    * Embedded controller reset input signal low-to-high.
    */
-  kDifSysrstCtrlInputEcResetL2H = 1U << 13,
+  kDifSysrstCtrlInputEcResetL2H = 1U << 12,
   /**
    * Flash write protect input signal low-to-high.
    */
-  kDifSysrstCtrlInputFlashWriteProtectL2H = 1U << 14,
+  kDifSysrstCtrlInputFlashWriteProtectL2H = 1U << 13,
   /**
    * All input signal transitions.
    */
-  kDifSysrstCtrlInputAll = ((1U << 15) - 1) & ~(1U << 7),
+  kDifSysrstCtrlInputAll = ((1U << 14) - 1),
 } dif_sysrst_ctrl_input_change_t;
 
 /**
