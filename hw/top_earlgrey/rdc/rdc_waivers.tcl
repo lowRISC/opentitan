@@ -105,3 +105,24 @@ set_rule_status -rule E_RST_METASTABILITY -status Waived \
   -expression {(ResetFlop=~"*clk_main_otbn_trans*") && \
     (MetaStableFlop=~"*u_clk_main_otbn_trans.u_cg.*en_latch")} \
   -comment {POR_N resets OTBN module too.}
+
+# SW_EN to CG
+create_view_criteria -name PorNSwEnCg -rule E_RST_METASTABILITY \
+  -criteria {(SourceReset=="POR_N") && \
+    (ResetFlop=~"*.u_clkmgr_aon.*_sw_en_sync*")}
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(SourceReset=="POR_N") && \
+    (ResetFlop=~"*.u_clkmgr_aon.*io_div2_peri_sw_en_sync*") && \
+    (MetaStableFlop=~"*.u_clk_io_div2_peri_cg.*")}
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(SourceReset=="POR_N") && \
+    (ResetFlop=~"*.u_clkmgr_aon.*io_peri_sw_en_sync*") && \
+    (MetaStableFlop=~"*.u_clk_io_peri_cg.*")}
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(SourceReset=="POR_N") && \
+    (ResetFlop=~"*.u_clkmgr_aon.*io_div4_peri_sw_en_sync*") && \
+    (MetaStableFlop=~"*.u_clk_io_div4_peri_cg.*")}
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(SourceReset=="POR_N") && \
+    (ResetFlop=~"*.u_clkmgr_aon.*usb_peri_sw_en_sync*") && \
+    (MetaStableFlop=~"*.u_clk_usb_peri_cg.*")}
