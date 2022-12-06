@@ -23,9 +23,7 @@ See that document for integration overview within the broader top level system.
     - 7-bit target address
 - Support for the following optional capabilities:
     - Clock stretching in the host mode
-    - Automatic clock stretching in the target mode when TX FIFO is empty during a read<sup>2</sup>
-    - Automatic clock stretching in the target mode when ACQ FIFO is full during a write
-    - Clock stretching in the target mode after a complete address acquire, byte read, or byte write transactions
+    - Automatic clock stretching in the target mode<sup>2</sup>
 - *No support at this time* for any of the features related to multi-host control:
     - No support for host-host clock synchronization
     - No support for host bus arbitration.
@@ -39,10 +37,12 @@ See that document for integration overview within the broader top level system.
 <sup>1</sup> lowRISC is avoiding the fraught terms master/slave and defaulting to host/target where applicable.
 
 <sup>2</sup> The target is only compatible with hosts that support clock stretching.
+For hosts that do not support clock stretching, it is expected that there must be an additional protocol to guarantee there is always sufficient space and data.
+These protocols are not in scope of this document.
 
 ## Description
 
-This IP block  implements the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf), though with some variation in nomenclature.
+This IP block implements the [I2C specification](https://www.nxp.com/docs/en/user-guide/UM10204.pdf), though with some variation in nomenclature.
 For the purposes of this document, a "I2C Host" meets the specifications put forth for a "Master" device.
 Furthermore, a device which meets the specifications put forward for an I2C "Slave" device is here referred to as an "I2C Target" or "I2C Target Device".
 
@@ -187,7 +187,8 @@ The following diagram shows consecutive entries inserted into ACQ FIFO during a 
 ![](I2C_acq_fifo_write.svg)
 
 If the transaction is a read operation (R/W bit = 1), the target pulls bytes out of TX FIFO and transmits them to the bus until the host signals the end of the transfer by sending a NACK signal.
-If TX FIFO holds no data, the target will hold SCL low to stretch the clock and give software time to write data bytes into TX FIFO.
+If TX FIFO holds no data, or if the ACQ FIFO contains more than 1 entry, the target will hold SCL low to stretch the clock and give software time to write data bytes into TX FIFO or handle the available command.
+See ({{< relref "#stretching-during-read" >}}) for more details.
 TX FIFO input corresponds to {{< regref TXDATA >}}.
 Typically, a NACK signal is followed by a STOP or repeated START signal and the IP will raise an exception if the host sends a STOP signal after an ACK.
 An ACK/NACK signal is inserted into the ACQ FIFO as the first bit (bit 0), in the same entry with a STOP or repeated START signal.
@@ -255,31 +256,26 @@ Other features may also be required for complete SMBus functionality.)
 
 ### Clock Stretching
 As described in the I2C specification, a target device can pause a transaction by holding SCL low.
-A target device stretches the clock automatically when a host device reads from the target and the target's TX FIFO is empty.
-Also, a target device stretches the clock automatically when a host device writes to the target and the target's ACQ FIFO is full.
-The present implementation also supports few additional modes in which a target device can stretch the clock after completing a transaction if it needs more time, e.g., to store the acquired data byte in flash memory, etc.
-If {{< regref STRETCH_CTRL.EN_ADDR_TX >}} or {{< regref STRETCH_CTRL.EN_ADDR_ACQ >}} is asserted, a target stretches the clock after acquiring an address and making certain that the transmit (read by a host) or acquire (write by a host) transaction, respectively, is intended for it and not for another device on the bus.
-To stop stretching the clock and resume normal operation, set {{< regref STRETCH_CTRL.STOP_TX >}} or {{< regref STRETCH_CTRL.STOP_ACQ >}} bit, respectively.
-In the case when {{< regref STRETCH_CTRL.EN_ADDR_TX >}} and {{< regref STRETCH_CTRL.STOP_TX >}} are both asserted for a transmit transaction or {{< regref STRETCH_CTRL.EN_ADDR_ACQ >}} and {{< regref STRETCH_CTRL.STOP_ACQ >}} are both asserted for an acquire transaction, a target device acknowledges the address and thereby accepts the transaction intended for it without stretching the clock.
-After this, {{< regref STRETCH_CTRL.STOP_TX >}} or {{< regref STRETCH_CTRL.STOP_ACQ >}}, respectively, is reset so the target device will stretch the clock after acquiring the address of the next transaction intended for it.
+There are 3 cases in which this design stretches the clock.
+In all cases described below, a target begins to stretch the clock after the ACK bit.
+In the first two scenarios, it is after the ACK bit sent by the target, in the last scenario, it is after the host's ACK bit.
 
-{{<wavejson>}}
-{signal: [
-  {name: 'clock', wave: 'p...................'},
-  {name: 'stretch_en_addr', wave: '1...................'},
-  {name: 'stretch_stop', wave: '0.............1.....'},
-  {name: 'bit_ack', wave: '0........1..........'},
-  {name: 'address_match', wave: '0........1..........'},
-  {name: 'SCL host driver', wave: '0z.0..z.0..z.....0..'},
-  {name: 'SCL target driver', wave: 'z.........0....z....'},
-  {name: 'SCL bus', wave: '0u.0..u.0......u.0..'},
-],
- head: {text: 'Clock stretching after matching an address (cycle 10), normal operation is resumed and address is acknowledged (cycle 15)', tick: 1}
-}
-{{</wavejson>}}
-In this diagram, "stretch_en_addr" stands for {{< regref STRETCH_CTRL.EN_ADDR_TX >}} or {{< regref STRETCH_CTRL.EN_ADDR_ACQ >}} whereas "stretch_stop" stands for, respectively, {{< regref STRETCH_CTRL.STOP_TX >}} or {{< regref STRETCH_CTRL.STOP_ACQ >}}.
+#### Stretching after address read
+    - When a target device receives a start, the address and R/W bit are written into the ACQ FIFO.
+    - If there is no space in the ACQ FIFO to receive such a write, the target stretches the clock after the ACK bit and waits for software to make space.
+    - The `acq_full` interrupt is generated to alert software to such a situation.
 
-In all cases described above, a target begins to stretch the clock when SCL is held low by a host.
+#### Stretching during write
+    - Similar to the scenario above, if the host tries to write a data byte into the ACQ FIFO when there is no available space, the clock is also stretched after the ACK bit.
+    - The `acq_full` interrupt is generated to alert software to such a situation.
+
+#### Stretching during read
+    - When a target device receives a start and read command, it may stretch the clock for either of the following two reasons.
+      - If there is no data available to be sent back (TX FIFO empty case), the target stretches the clock until data is made available by software.
+      - If there is more than 1 entry in the ACQ FIFO.
+        - Having more than 1 entry in the ACQ FIFO suggests there is potentially an unhandled condition (STOP / RESTART) or an unhandled command (START) that requires software intervention before the read can proceed.
+    - The `tx_stretch` interrupt is generated to alert software to such a situation.
+
 
 ### Interrupts
 The I2C module has a few interrupts including general data flow interrupts and unexpected event interrupts.
@@ -342,13 +338,15 @@ The `sda_unstable` interrupt is asserted if, when receiving data or acknowledgem
 
 Transactions are terminated by a STOP signal.
 The host may send a repeated START signal instead of a STOP, which also terminates the preceding transaction.
-In both cases, the `trans_complete` interrupt is asserted, in the beginning of a repeated START or at the end of a STOP.
+In both cases, the `cmd_complete` interrupt is asserted, in the beginning of a repeated START or at the end of a STOP.
 
 
 #### Target Mode
-The interrupt `tx_empty` is asserted whenever target intends to transmit data on the bus but the TX FIFO is empty.
 
-If a target receives a STOP or repeated START signal and there are extra bytes left in TX FIFO, the interrupt `tx_nonempty` is asserted and the FIFO is flushed.
+The interrupt `cmd_complete` is asserted whenever a RESTART or a STOP bit is observed by the target.
+
+The interrupt `tx_stretch` is asserted whenever target intends to transmit data but cannot.
+See
 
 When a host receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a repeated START.
 In a case when a target receives an ACK and then a STOP/START, the interrupt `ack_stop` is asserted.
