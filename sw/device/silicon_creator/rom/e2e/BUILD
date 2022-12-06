@@ -240,30 +240,6 @@ opentitan_functest(
     ],
 )
 
-opentitan_functest(
-    name = "rom_e2e_keymgr_init",
-    srcs = ["rom_e2e_keymgr_init_test.c"],
-    dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
-    ),
-    signed = True,
-    targets = [
-        "cw310_rom",
-        "dv",
-        "verilator",
-    ],
-    verilator = verilator_params(
-        timeout = "eternal",
-        rom = "//sw/device/silicon_creator/rom:rom_with_fake_keys",
-    ),
-    deps = [
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/testing:keymgr_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-    ],
-)
-
 opentitan_flash_binary(
     name = "rom_e2e_keymgr_init_test",
     srcs = [":rom_e2e_keymgr_init_test.c"],
@@ -357,7 +333,9 @@ rom_e2e_keymgr_init_configs = [
 test_suite(
     name = "keymgr_init",
     tags = ["manual"],
-    tests = ["rom_e2e_keymgr_init"] + ["rom_e2e_keymgr_init_{}".format(config["name"]) for config in rom_e2e_keymgr_init_configs],
+    tests = ["rom_e2e_keymgr_init_{}".format(
+        config["name"],
+    ) for config in rom_e2e_keymgr_init_configs],
 )
 
 opentitan_functest(
