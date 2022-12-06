@@ -402,16 +402,24 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
             end
           end
           "classa_clr_shadowed": begin
-            if (ral.classa_clr_regwen.get_mirrored_value()) clr_reset_esc_class(0);
+            if (!dv_base_csr.is_staged() && ral.classa_clr_regwen.get_mirrored_value()) begin
+              clr_reset_esc_class(0);
+            end
           end
           "classb_clr_shadowed": begin
-            if (ral.classb_clr_regwen.get_mirrored_value()) clr_reset_esc_class(1);
+            if (!dv_base_csr.is_staged() && ral.classb_clr_regwen.get_mirrored_value()) begin
+              clr_reset_esc_class(1);
+            end
           end
           "classc_clr_shadowed": begin
-            if (ral.classc_clr_regwen.get_mirrored_value()) clr_reset_esc_class(2);
+            if (!dv_base_csr.is_staged() && ral.classc_clr_regwen.get_mirrored_value()) begin
+              clr_reset_esc_class(2);
+            end
           end
           "classd_clr_shadowed": begin
-            if (ral.classd_clr_regwen.get_mirrored_value()) clr_reset_esc_class(3);
+            if (!dv_base_csr.is_staged() && ral.classd_clr_regwen.get_mirrored_value()) begin
+              clr_reset_esc_class(3);
+            end
           end
           "ping_timer_en_shadowed": begin
             if (shadowed_reg_wr_completed(dv_base_csr) &&
@@ -584,6 +592,7 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                 if (class_ctrl[AlertClassCtrlEn] &&
                     class_ctrl[AlertClassCtrlEnE3:AlertClassCtrlEnE0] > 0) begin
                   intr_cnter_per_class[class_i] = 1;
+                  `uvm_info(`gfn, $sformatf("Class %0d start counter", class_i), UVM_HIGH)
                   timeout_cyc = get_class_timeout_cyc(class_i);
                   if (timeout_cyc > 0) begin
                     state_per_class[class_i] = EscStateTimeout;
@@ -594,6 +603,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
                         if (cfg.en_cov) cov.intr_timeout_cnt_cg.sample(class_i, timeout_cyc);
                       end
                       intr_cnter_per_class[class_i] += 1;
+                      `uvm_info(`gfn, $sformatf("counter_%0d value: %0d", class_i,
+                                intr_cnter_per_class[class_i]), UVM_HIGH)
                     end
                   end
                   intr_cnter_per_class[class_i] = 0;
