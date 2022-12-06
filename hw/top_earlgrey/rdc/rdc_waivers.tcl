@@ -94,3 +94,9 @@ set_rule_status -rule E_RST_METASTABILITY -status Waived \
   -expression {(ResetFlop=~"*clk_main_kmac_trans*") && \
     (MetaStableFlop=~"*u_clk_main_kmac_trans.u_cg.*en_latch")} \
   -comment {POR_N resets KMAC module too.}
+
+# OTBN Clock Gating
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(ResetFlop=~"*clk_main_otbn_trans*") && \
+    (MetaStableFlop=~"*u_clk_main_otbn_trans.u_cg.*en_latch")} \
+  -comment {POR_N resets OTBN module too.}
