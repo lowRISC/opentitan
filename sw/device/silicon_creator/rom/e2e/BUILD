@@ -1652,6 +1652,170 @@ test_suite(
     ],
 )
 
+BOOT_DATA_RECOVERY_CASES = [
+    {
+        "lc_state": "test_unlocked0",
+        "min_sec_ver": 0,
+        "default_boot_data": "nodefault",
+        "expected_bfv": None,
+    },
+    {
+        "lc_state": "dev",
+        "min_sec_ver": 1,
+        "default_boot_data": "nodefault",
+        "expected_bfv": None,
+    },
+    {
+        "lc_state": "prod",
+        "min_sec_ver": 1,
+        "default_boot_data": "default",
+        "expected_bfv": None,
+    },
+    {
+        "lc_state": "prod",
+        "min_sec_ver": 0,
+        "default_boot_data": "nodefault",
+        "expected_bfv": CONST.BFV.BOOT_DATA.NOT_FOUND,
+    },
+    {
+        "lc_state": "prod_end",
+        "min_sec_ver": 0,
+        "default_boot_data": "default",
+        "expected_bfv": None,
+    },
+    {
+        "lc_state": "prod_end",
+        "min_sec_ver": 1,
+        "default_boot_data": "nodefault",
+        "expected_bfv": CONST.BFV.BOOT_DATA.NOT_FOUND,
+    },
+    {
+        "lc_state": "rma",
+        "min_sec_ver": 0,
+        "default_boot_data": "nodefault",
+        "expected_bfv": None,
+    },
+]
+
+[otp_json(
+    name = "boot_data_recovery_creator_sw_cfg_{}_{}".format(
+        case["lc_state"],
+        case["default_boot_data"],
+    ),
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                # Set the min_sec version.
+                "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT": "0x{}".format(hex(case["min_sec_ver"])),
+                # Set allowing use of default boot data in PROD LC state.
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": "0x{}".format(hex(
+                    CONST.TRUE if case["default_boot_data"] == "default" else CONST.FALSE,
+                )),
+            },
+        ),
+    ],
+) for case in BOOT_DATA_RECOVERY_CASES]
+
+[otp_image(
+    name = "otp_img_boot_data_recovery_{}_{}".format(
+        case["lc_state"],
+        case["default_boot_data"],
+    ),
+    src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(case["lc_state"]),
+    overlays = STD_OTP_OVERLAYS + [":boot_data_recovery_creator_sw_cfg_{}_{}".format(
+        case["lc_state"],
+        case["default_boot_data"],
+    )],
+) for case in BOOT_DATA_RECOVERY_CASES]
+
+[bitstream_splice(
+    name = "bitstream_boot_data_recovery_{}_{}".format(
+        case["lc_state"],
+        case["default_boot_data"],
+    ),
+    src = "//hw/bitstream:rom",
+    data = ":otp_img_boot_data_recovery_{}_{}".format(
+        case["lc_state"],
+        case["default_boot_data"],
+    ),
+    meminfo = "//hw/bitstream:otp_mmi",
+    tags = ["vivado"] + maybe_skip_in_ci(getattr(
+        CONST.LCV,
+        case["lc_state"].upper(),
+    )),
+    update_usr_access = True,
+) for case in BOOT_DATA_RECOVERY_CASES]
+
+[opentitan_flash_binary(
+    name = "rom_e2e_boot_data_recovery_{}_{}".format(
+        case["lc_state"],
+        case["default_boot_data"],
+    ),
+    srcs = ["empty_test.c"],
+    devices = [
+        "fpga_cw310",
+    ],
+    manifest = manifest(
+        dict(
+            name = "boot_data_recovery_manifest_{}_{}".format(
+                case["lc_state"],
+                case["default_boot_data"],
+            ),
+            address_translation = hex(CONST.FALSE),
+            identifier = hex(CONST.ROM_EXT),
+            security_version = hex(2),
+        ),
+    ),
+    deps = [
+        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:otp",
+    ],
+) for case in BOOT_DATA_RECOVERY_CASES]
+
+[
+    opentitan_functest(
+        name = "boot_data_recovery_{}_{}".format(
+            case["lc_state"],
+            case["default_boot_data"],
+        ),
+        cw310 = cw310_params(
+            bitstream = ":bitstream_boot_data_recovery_{}_{}".format(
+                case["lc_state"],
+                case["default_boot_data"],
+            ),
+            exit_success = MSG_TEMPLATE_BFV.format(hex(case["expected_bfv"])) if case["expected_bfv"] != None else MSG_PASS,
+            tags = ["vivado"] + maybe_skip_in_ci(getattr(
+                CONST.LCV,
+                case["lc_state"].upper(),
+            )),
+        ),
+        key = "fake_prod_key_0",
+        ot_flash_binary = ":rom_e2e_boot_data_recovery_{}_{}".format(
+            case["lc_state"],
+            case["default_boot_data"],
+        ),
+        signed = True,
+        targets = [
+            "cw310_rom",
+        ],
+    )
+    for case in BOOT_DATA_RECOVERY_CASES
+]
+
+test_suite(
+    name = "rom_e2e_boot_data_recovery",
+    tags = ["manual"],
+    tests = [
+        "boot_data_recovery_{}_{}".format(
+            case["lc_state"],
+            case["default_boot_data"],
+        )
+        for case in BOOT_DATA_RECOVERY_CASES
+    ],
+)
+
 SHUTDOWN_WATCHDOG_BITE_THRESHOLDS = [
     400000,  # 2 seconds at 200 kHz
     0,  # Watchdog disabled
