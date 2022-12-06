@@ -12,7 +12,9 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
   `uvm_component_utils(lc_ctrl_scoreboard)
 
   // local variables
-  bit is_personalized = 0;
+  bit is_personalized;
+
+  lc_ctrl_pkg::lc_tx_t exp_clk_byp_req = lc_ctrl_pkg::Off;
 
   // Data to program OTP
   protected otp_ctrl_pkg::lc_otp_program_req_t m_otp_prog_data;
@@ -241,6 +243,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_iso_part_sw_wr_en_o, exp_o.lc_iso_part_sw_wr_en_o, msg)
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_seed_hw_rd_en_o, exp_o.lc_seed_hw_rd_en_o, msg)
     `DV_CHECK_EQ(cfg.lc_ctrl_vif.lc_creator_seed_sw_rw_en_o, exp_o.lc_creator_seed_sw_rw_en_o, msg)
+    `DV_CHECK_EQ(cfg.lc_ctrl_vif.clk_byp_req_o, exp_clk_byp_req, msg)
   endfunction
 
   virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -265,6 +268,21 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
 
     // if incoming access is a write to a valid csr, then make updates right away
     if (addr_phase_write && cfg.en_scb_ral_update_write) begin
+      case (csr.get_name())
+        "transition_ctrl": begin
+          if (`gmv(ral.claim_transition_if) == prim_mubi_pkg::MuBi8True) begin
+            dec_lc_state_e lc_state = dec_lc_state(lc_state_e'(cfg.lc_ctrl_vif.otp_i.state));
+            if (!(lc_state inside {DecLcStDev, DecLcStProd, DecLcStProdEnd, DecLcStScrap,
+                                   DecLcStPostTrans, DecLcStEscalate, DecLcStInvalid})) begin
+              if (item.a_data[0]) exp_clk_byp_req = lc_ctrl_pkg::On;
+              else                exp_clk_byp_req = lc_ctrl_pkg::Off;
+            end
+          end
+        end
+        default: begin
+         // Do nothing.
+        end
+      endcase
       `uvm_info(`gfn, {
                 "process_tl_access: write predict ",
                 csr.get_name(),
@@ -589,6 +607,7 @@ class lc_ctrl_scoreboard extends cip_base_scoreboard #(
     // reset local fifos queues and variables
     // Clear OTP program count
     m_otp_prog_cnt = 0;
+    exp_clk_byp_req = lc_ctrl_pkg::Off;
   endfunction
 
   function void check_phase(uvm_phase phase);
