@@ -78,6 +78,11 @@ set_rule_status -rule E_RST_METASTABILITY -status Waived \
   -expression {(ResetFlop=~"*.u_pinmux_aon.dio_oe_retreg_q*") && \
     (MetaStableFlop=~"SPI_HOST_CLK")} \
   -comment {SPI_HOST_CLK is in idle when POR_N is asserted.}
+# PINMUX Retention to USB
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(ResetFlop=~"*.u_pinmux_aon.dio_oe_retreg_q*") && \
+    (MetaStableFlop=~"USB_*")} \
+  -comment {USB is in idle when POR_N is asserted.}
 
 # AES Clock Gating
 set_rule_status -rule E_RST_METASTABILITY -status Waived \
