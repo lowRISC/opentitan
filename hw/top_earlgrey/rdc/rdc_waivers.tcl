@@ -72,3 +72,9 @@ set_rule_status -rule E_RST_METASTABILITY -status Waived \
   -expression {(ResetFlop=~"*.u_pinmux_aon.dio*.pull_en") && \
     (MetaStableFlop=~"SPI_DEV_*")} \
   -comment {POR_N resets SPI_DEV. The SPI_CLK portion is in idle state.}
+
+# PINMUX Retention to SPI_HOST
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(ResetFlop=~"*.u_pinmux_aon.dio_oe_retreg_q*") && \
+    (MetaStableFlop=~"SPI_HOST_CLK")} \
+  -comment {SPI_HOST_CLK is in idle when POR_N is asserted.}
