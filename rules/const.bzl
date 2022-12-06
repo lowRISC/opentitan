@@ -53,6 +53,11 @@ CONST = struct(
             BAD_ENTRY_POINT = 0x014d410d,
             BAD_CODE_REGION = 0x024d410d,
         ),
+        BOOT_DATA = struct(
+            NOT_FOUND = 0x0142440d,
+            WRITE_CHECK = 0x0242440d,
+            DATA_INVALID = 0x0342440d,
+        ),
         UNKNOWN = 0xffffffff,
         OK = 0x739,
     ),
