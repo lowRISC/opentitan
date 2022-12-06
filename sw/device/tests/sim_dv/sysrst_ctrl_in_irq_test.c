@@ -75,14 +75,8 @@ void sysrst_ctrl_input_change_detect(
   IBEX_SPIN_FOR(phase++ == kCurrentTestPhase, kCurrentTestPhaseTimeoutUsec);
 
   // Configure for input change.
-  dif_sysrst_ctrl_input_change_t input_change;
-  if (expected_key_intr_src >= kDifSysrstCtrlKeyIntrStatusInputPowerButtonL2H) {
-    input_change = (dif_sysrst_ctrl_input_change_t)expected_key_intr_src << 1;
-  } else {
-    input_change = (dif_sysrst_ctrl_input_change_t)expected_key_intr_src;
-  }
   dif_sysrst_ctrl_input_change_config_t config = {
-      .input_changes = input_change,
+      .input_changes = (dif_sysrst_ctrl_input_change_t)expected_key_intr_src,
       .debounce_time_threshold = 1,  // 5us
   };
   CHECK_DIF_OK(

@@ -80,8 +80,7 @@ dif_result_t dif_sysrst_ctrl_key_combo_detect_configure(
 dif_result_t dif_sysrst_ctrl_input_change_detect_configure(
     const dif_sysrst_ctrl_t *sysrst_ctrl,
     dif_sysrst_ctrl_input_change_config_t config) {
-  if (sysrst_ctrl == NULL || config.input_changes & (1U << 7) ||
-      config.input_changes > kDifSysrstCtrlInputAll) {
+  if (sysrst_ctrl == NULL || config.input_changes > kDifSysrstCtrlInputAll) {
     return kDifBadArg;
   }
 

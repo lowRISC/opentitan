@@ -104,10 +104,7 @@ TEST_F(InputChangeDetectConfigTest, NullArgs) {
 
 TEST_F(InputChangeDetectConfigTest, BadArgs) {
   // Bad input signal changes.
-  config_.input_changes = static_cast<dif_sysrst_ctrl_input_change_t>(1U << 7);
-  EXPECT_DIF_BADARG(
-      dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl_, config_));
-  config_.input_changes = static_cast<dif_sysrst_ctrl_input_change_t>(1U << 15);
+  config_.input_changes = static_cast<dif_sysrst_ctrl_input_change_t>(1U << 14);
   EXPECT_DIF_BADARG(
       dif_sysrst_ctrl_input_change_detect_configure(&sysrst_ctrl_, config_));
 }
