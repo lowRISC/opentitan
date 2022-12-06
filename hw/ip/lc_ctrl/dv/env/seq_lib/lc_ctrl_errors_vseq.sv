@@ -806,7 +806,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
     `uvm_info(`gfn, $sformatf("send_escalate: index=%0d assert_clocks=%0d", index, assert_clocks),
               UVM_LOW)
     cfg.escalate_injected = 1;
-    unique case (index)
+    case (index)
       0: begin
         cfg.m_esc_scrap_state0_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b10;
         if (assert_clocks > 0) begin
@@ -830,7 +830,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   // Clear escalate assertion
   protected virtual task clear_escalate(int index);
     // TODO - replace with calls to escalate agent when driver implemented
-    unique case (index)
+    case (index)
       0: begin
         cfg.m_esc_scrap_state0_agent_cfg.vif.sender_cb.esc_tx_int <= 2'b01;
       end
@@ -1023,7 +1023,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   endtask
 
   // Set assertion controls for MUBI error injection
-  virtual function mubi_assertion_controls();
+  virtual function void mubi_assertion_controls();
     // Values other than On/Off trigger assertions in the primitives
     if (err_inj.clk_byp_rsp_mubi_err) `DV_ASSERT_CTRL_REQ("FsmClkBypAckSync", 0)
     else `DV_ASSERT_CTRL_REQ("FsmClkBypAckSync", 1)
