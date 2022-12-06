@@ -66,3 +66,9 @@ set_rule_status -rule E_RST_METASTABILITY -status Waived \
     (MetaStableFlop=~"*.u_rv_core_ibex.u_core.core_clock_gate_i.gen_generic.u_impl_generic.en_latch")} \
   -comment {If clockgating enble is reset, it affects the gating cell when \
     CLK is 0 value.}
+
+# PINMUX CSR to SPI_DEV PADs
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(ResetFlop=~"*.u_pinmux_aon.dio*.pull_en") && \
+    (MetaStableFlop=~"SPI_DEV_*")} \
+  -comment {POR_N resets SPI_DEV. The SPI_CLK portion is in idle state.}
