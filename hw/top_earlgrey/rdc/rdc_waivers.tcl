@@ -79,8 +79,18 @@ set_rule_status -rule E_RST_METASTABILITY -status Waived \
     (MetaStableFlop=~"SPI_HOST_CLK")} \
   -comment {SPI_HOST_CLK is in idle when POR_N is asserted.}
 
-# HMAC Clock Gating
+# AES Clock Gating
 set_rule_status -rule E_RST_METASTABILITY -status Waived \
   -expression {(ResetFlop=~"*clk_main_aes_trans*") && \
     (MetaStableFlop=~"*u_clk_main_aes_trans.u_cg.*en_latch")} \
   -comment {POR_N resets AES module too.}
+# HMAC Clock Gating
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(ResetFlop=~"*clk_main_hmac_trans*") && \
+    (MetaStableFlop=~"*u_clk_main_hmac_trans.u_cg.*en_latch")} \
+  -comment {POR_N resets HMAC module too.}
+# KMAC Clock Gating
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(ResetFlop=~"*clk_main_kmac_trans*") && \
+    (MetaStableFlop=~"*u_clk_main_kmac_trans.u_cg.*en_latch")} \
+  -comment {POR_N resets KMAC module too.}
