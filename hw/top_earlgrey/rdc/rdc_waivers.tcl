@@ -58,3 +58,11 @@ set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
   pre-configured before entering to the low power modes. \
   For SW_RST_REQ cases, SW should correctly configure the pull-ups, \
   pull-downs prior to resetting the USBDEV IP.}
+
+# Ibex Clock Gating
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression { \
+    (ResetFlop=~"*.u_rv_core_ibex.u_core.g_clock_en_secure.u_prim_core_busy_flop.gen_generic.u_impl_generic.q_o[0]") && \
+    (MetaStableFlop=~"*.u_rv_core_ibex.u_core.core_clock_gate_i.gen_generic.u_impl_generic.en_latch")} \
+  -comment {If clockgating enble is reset, it affects the gating cell when \
+    CLK is 0 value.}
