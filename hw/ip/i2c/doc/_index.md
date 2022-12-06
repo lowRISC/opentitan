@@ -349,7 +349,9 @@ The interrupt `tx_stretch` is asserted whenever target intends to transmit data 
 See
 
 When a host receives enough data from a target, it usually signals the end of the transaction by sending a NACK followed by a STOP or a repeated START.
-In a case when a target receives an ACK and then a STOP/START, the interrupt `ack_stop` is asserted.
+In a case when a target receives a STOP without the prerequisite NACK, the interrupt `unexp_stop` is asserted.
+This interrupt just means that a STOP was unexpectedly observed during a host read.
+It is not necessarily harmful, but software can be made aware just in case.
 
 If ACQ FIFO becomes full, the interrupt `acq_full` is asserted.
 

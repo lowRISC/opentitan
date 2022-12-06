@@ -137,10 +137,10 @@ typedef enum dif_i2c_irq {
    */
   kDifI2cIrqAcqFull = 12,
   /**
-   * Target mode interrupt: raised if STOP is received after ACK instead of NACK
-   * from an external host read.
+   * Target mode interrupt: raised if STOP is received without a preceding NACK
+   * during an external host read.
    */
-  kDifI2cIrqAckStop = 13,
+  kDifI2cIrqUnexpStop = 13,
   /**
    * Target mode interrupt: raised if the host stops sending the clock during an
    * ongoing transaction.

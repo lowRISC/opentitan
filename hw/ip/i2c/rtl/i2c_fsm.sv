@@ -36,7 +36,7 @@ module i2c_fsm #(
   input        tx_fifo_rvalid_i, // indicates there is valid data in tx_fifo
   input        tx_fifo_wvalid_i, // indicates data is being put into tx_fifo
   input [FifoDepthWidth-1:0]  tx_fifo_depth_i,  // tx_fifo_depth
-  output logic tx_fifo_rready_o, // populates tx_fifo
+  output logic tx_fifo_rready_o, // pop entry from tx_fifo
   input [7:0]  tx_fifo_rdata_i,  // byte in tx_fifo to be sent to host
 
   output logic       acq_fifo_wvalid_o, // high if there is valid data in acq_fifo
@@ -74,7 +74,7 @@ module i2c_fsm #(
   output logic event_sda_unstable_o,     // SDA is not constant during SCL pulse
   output logic event_cmd_complete_o,     // Command is complete
   output logic event_tx_stretch_o,       // tx transaction is being stretched
-  output logic event_ack_stop_o,         // target received stop after ack
+  output logic event_unexp_stop_o,       // target received an unexpected stop
   output logic event_host_timeout_o      // host ceased sending SCL pulses during ongoing transactn
 );
 
@@ -121,6 +121,7 @@ module i2c_fsm #(
   logic        acq_fifo_wready;
   logic        stretch_addr;
   logic        stretch_tx;
+  logic        expect_stop;
 
   // Target bit counter variables
   logic [3:0]  bit_idx;       // bit index including ack/nack
@@ -423,10 +424,6 @@ module i2c_fsm #(
     end
   end
 
-  // The external host read the final byte and issued ack-stop instead of nak-stop.
-  // TODO: This feature likely will be removed, but for now maintain the previous function.
-  assign event_ack_stop_o = rw_bit_q & (stop_det | start_det) & host_ack;
-
   // Reverse the bit order since data should be sent out MSB first
   logic [7:0] tx_fifo_rdata;
   assign tx_fifo_rdata = {<<1{tx_fifo_rdata_i}};
@@ -438,6 +435,10 @@ module i2c_fsm #(
   // This is a work around for a known tool limitation.
   logic target_idle;
   assign target_idle = target_idle_o;
+
+  // During a host issued read, a stop was received without first seeing a nack.
+  // This may be harmless but is technically illegal behavior, notify software.
+  assign event_unexp_stop_o = !target_idle & rw_bit_q & stop_det & !expect_stop;
 
   // Outputs for each state
   always_comb begin : state_outputs
@@ -457,6 +458,7 @@ module i2c_fsm #(
     event_cmd_complete_o = 1'b0;
     rw_bit = rw_bit_q;
     stretch_en = 1'b0;
+    expect_stop = 1'b0;
     unique case (state_q)
       // Idle: initial state, SDA and SCL are released (high)
       Idle : begin
@@ -685,6 +687,7 @@ module i2c_fsm #(
       // WaitForStop just waiting for host to trigger a stop after nack
       WaitForStop : begin
         target_idle_o = 1'b0;
+        expect_stop = 1'b1;
         sda_d = 1'b1;
       end
       // AcquireByte: target acquires a byte

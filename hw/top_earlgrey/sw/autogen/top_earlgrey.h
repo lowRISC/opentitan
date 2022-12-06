@@ -1105,7 +1105,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c0TxStretch = 87, /**< i2c0_tx_stretch */
   kTopEarlgreyPlicIrqIdI2c0TxOverflow = 88, /**< i2c0_tx_overflow */
   kTopEarlgreyPlicIrqIdI2c0AcqFull = 89, /**< i2c0_acq_full */
-  kTopEarlgreyPlicIrqIdI2c0AckStop = 90, /**< i2c0_ack_stop */
+  kTopEarlgreyPlicIrqIdI2c0UnexpStop = 90, /**< i2c0_unexp_stop */
   kTopEarlgreyPlicIrqIdI2c0HostTimeout = 91, /**< i2c0_host_timeout */
   kTopEarlgreyPlicIrqIdI2c1FmtWatermark = 92, /**< i2c1_fmt_watermark */
   kTopEarlgreyPlicIrqIdI2c1RxWatermark = 93, /**< i2c1_rx_watermark */
@@ -1120,7 +1120,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c1TxStretch = 102, /**< i2c1_tx_stretch */
   kTopEarlgreyPlicIrqIdI2c1TxOverflow = 103, /**< i2c1_tx_overflow */
   kTopEarlgreyPlicIrqIdI2c1AcqFull = 104, /**< i2c1_acq_full */
-  kTopEarlgreyPlicIrqIdI2c1AckStop = 105, /**< i2c1_ack_stop */
+  kTopEarlgreyPlicIrqIdI2c1UnexpStop = 105, /**< i2c1_unexp_stop */
   kTopEarlgreyPlicIrqIdI2c1HostTimeout = 106, /**< i2c1_host_timeout */
   kTopEarlgreyPlicIrqIdI2c2FmtWatermark = 107, /**< i2c2_fmt_watermark */
   kTopEarlgreyPlicIrqIdI2c2RxWatermark = 108, /**< i2c2_rx_watermark */
@@ -1135,7 +1135,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdI2c2TxStretch = 117, /**< i2c2_tx_stretch */
   kTopEarlgreyPlicIrqIdI2c2TxOverflow = 118, /**< i2c2_tx_overflow */
   kTopEarlgreyPlicIrqIdI2c2AcqFull = 119, /**< i2c2_acq_full */
-  kTopEarlgreyPlicIrqIdI2c2AckStop = 120, /**< i2c2_ack_stop */
+  kTopEarlgreyPlicIrqIdI2c2UnexpStop = 120, /**< i2c2_unexp_stop */
   kTopEarlgreyPlicIrqIdI2c2HostTimeout = 121, /**< i2c2_host_timeout */
   kTopEarlgreyPlicIrqIdPattgenDoneCh0 = 122, /**< pattgen_done_ch0 */
   kTopEarlgreyPlicIrqIdPattgenDoneCh1 = 123, /**< pattgen_done_ch1 */
