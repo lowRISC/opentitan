@@ -28,7 +28,7 @@ module tb;
   wire intr_tx_stretch;
   wire intr_tx_overflow;
   wire intr_acq_full;
-  wire intr_ack_stop;
+  wire intr_unexp_stop;
   wire intr_host_timeout;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
@@ -96,11 +96,11 @@ module tb;
     .intr_sda_interference_o (intr_sda_interference ),
     .intr_stretch_timeout_o  (intr_stretch_timeout  ),
     .intr_sda_unstable_o     (intr_sda_unstable     ),
-    .intr_cmd_complete_o     (intr_cmd_complete   ),
-    .intr_tx_stretch_o       (intr_tx_stretch         ),
+    .intr_cmd_complete_o     (intr_cmd_complete     ),
+    .intr_tx_stretch_o       (intr_tx_stretch       ),
     .intr_tx_overflow_o      (intr_tx_overflow      ),
     .intr_acq_full_o         (intr_acq_full         ),
-    .intr_ack_stop_o         (intr_ack_stop         ),
+    .intr_unexp_stop_o       (intr_unexp_stop       ),
     .intr_host_timeout_o     (intr_host_timeout     )
   );
 
@@ -118,7 +118,7 @@ module tb;
   assign interrupts[TxStretch]      = intr_tx_stretch;
   assign interrupts[TxOverflow]     = intr_tx_overflow;
   assign interrupts[AcqFull]        = intr_acq_full;
-  assign interrupts[AckStop]        = intr_ack_stop;
+  assign interrupts[UnexpStop]      = intr_unexp_stop;
   assign interrupts[HostTimeout]    = intr_host_timeout;
 
   initial begin

@@ -44,7 +44,7 @@ module i2c
   output logic              intr_tx_stretch_o,
   output logic              intr_tx_overflow_o,
   output logic              intr_acq_full_o,
-  output logic              intr_ack_stop_o,
+  output logic              intr_unexp_stop_o,
   output logic              intr_host_timeout_o
 );
 
@@ -113,7 +113,7 @@ module i2c
     .intr_tx_stretch_o,
     .intr_tx_overflow_o,
     .intr_acq_full_o,
-    .intr_ack_stop_o,
+    .intr_unexp_stop_o,
     .intr_host_timeout_o
   );
 
@@ -147,7 +147,7 @@ module i2c
   `ASSERT_KNOWN(IntrTxStretchKnownO_A, intr_tx_stretch_o)
   `ASSERT_KNOWN(IntrTxOflwKnownO_A, intr_tx_overflow_o)
   `ASSERT_KNOWN(IntrAcqFulllwKnownO_A, intr_acq_full_o)
-  `ASSERT_KNOWN(IntrAckStopKnownO_A, intr_ack_stop_o)
+  `ASSERT_KNOWN(IntrUnexpStopKnownO_A, intr_unexp_stop_o)
   `ASSERT_KNOWN(IntrHostTimeoutKnownO_A, intr_host_timeout_o)
 
   // Alert assertions for reg_we onehot check

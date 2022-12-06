@@ -59,8 +59,8 @@
       desc: "target mode interrupt: raised if ACQ FIFO becomes full.  This is a level status interrupt."
       type: "status"
     }
-    { name: "ack_stop"
-      desc: "target mode interrupt: raised if STOP is received after ACK instead of NACK from an external host read."
+    { name: "unexp_stop"
+      desc: "target mode interrupt: raised if STOP is received without a preceding NACK during an external host read."
     }
     { name: "host_timeout"
       desc: "target mode interrupt: raised if the host stops sending the clock during an ongoing transaction."

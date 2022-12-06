@@ -13198,7 +13198,7 @@
       module_name: i2c0
     }
     {
-      name: i2c0_ack_stop
+      name: i2c0_unexp_stop
       width: 1
       type: interrupt
       module_name: i2c0
@@ -13288,7 +13288,7 @@
       module_name: i2c1
     }
     {
-      name: i2c1_ack_stop
+      name: i2c1_unexp_stop
       width: 1
       type: interrupt
       module_name: i2c1
@@ -13378,7 +13378,7 @@
       module_name: i2c2
     }
     {
-      name: i2c2_ack_stop
+      name: i2c2_unexp_stop
       width: 1
       type: interrupt
       module_name: i2c2

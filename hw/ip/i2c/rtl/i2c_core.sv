@@ -31,7 +31,7 @@ module  i2c_core #(
   output logic                     intr_tx_stretch_o,
   output logic                     intr_tx_overflow_o,
   output logic                     intr_acq_full_o,
-  output logic                     intr_ack_stop_o,
+  output logic                     intr_unexp_stop_o,
   output logic                     intr_host_timeout_o
 );
 
@@ -66,7 +66,7 @@ module  i2c_core #(
   logic event_cmd_complete;
   logic event_tx_stretch;
   logic event_tx_overflow;
-  logic event_ack_stop;
+  logic event_unexp_stop;
   logic event_host_timeout;
 
   logic [15:0] scl_rx_val;
@@ -459,7 +459,7 @@ module  i2c_core #(
     .event_sda_unstable_o    (event_sda_unstable),
     .event_cmd_complete_o    (event_cmd_complete),
     .event_tx_stretch_o      (event_tx_stretch),
-    .event_ack_stop_o        (event_ack_stop),
+    .event_unexp_stop_o      (event_unexp_stop),
     .event_host_timeout_o    (event_host_timeout)
   );
 
@@ -638,17 +638,17 @@ module  i2c_core #(
     .intr_o                 (intr_acq_full_o)
   );
 
-  prim_intr_hw #(.Width(1)) intr_hw_ack_stop (
+  prim_intr_hw #(.Width(1)) intr_hw_unexp_stop (
     .clk_i,
     .rst_ni,
-    .event_intr_i           (event_ack_stop),
-    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.ack_stop.q),
-    .reg2hw_intr_test_q_i   (reg2hw.intr_test.ack_stop.q),
-    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.ack_stop.qe),
-    .reg2hw_intr_state_q_i  (reg2hw.intr_state.ack_stop.q),
-    .hw2reg_intr_state_de_o (hw2reg.intr_state.ack_stop.de),
-    .hw2reg_intr_state_d_o  (hw2reg.intr_state.ack_stop.d),
-    .intr_o                 (intr_ack_stop_o)
+    .event_intr_i           (event_unexp_stop),
+    .reg2hw_intr_enable_q_i (reg2hw.intr_enable.unexp_stop.q),
+    .reg2hw_intr_test_q_i   (reg2hw.intr_test.unexp_stop.q),
+    .reg2hw_intr_test_qe_i  (reg2hw.intr_test.unexp_stop.qe),
+    .reg2hw_intr_state_q_i  (reg2hw.intr_state.unexp_stop.q),
+    .hw2reg_intr_state_de_o (hw2reg.intr_state.unexp_stop.de),
+    .hw2reg_intr_state_d_o  (hw2reg.intr_state.unexp_stop.d),
+    .intr_o                 (intr_unexp_stop_o)
   );
 
   prim_intr_hw #(.Width(1)) intr_hw_host_timeout (

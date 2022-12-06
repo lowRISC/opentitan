@@ -90,8 +90,8 @@ static bool i2c_get_irq_bit_index(dif_i2c_irq_t irq,
     case kDifI2cIrqAcqFull:
       *index_out = I2C_INTR_COMMON_ACQ_FULL_BIT;
       break;
-    case kDifI2cIrqAckStop:
-      *index_out = I2C_INTR_COMMON_ACK_STOP_BIT;
+    case kDifI2cIrqUnexpStop:
+      *index_out = I2C_INTR_COMMON_UNEXP_STOP_BIT;
       break;
     case kDifI2cIrqHostTimeout:
       *index_out = I2C_INTR_COMMON_HOST_TIMEOUT_BIT;
