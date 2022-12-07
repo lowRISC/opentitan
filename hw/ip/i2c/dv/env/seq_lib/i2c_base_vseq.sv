@@ -1054,7 +1054,7 @@ class i2c_base_vseq extends cip_base_vseq #(
           rsp = HostAck;
           cfg.sent_ack_stop++;
         end
-        //        1: rsp = HostNAck;
+       1: rsp = HostNAck;
       endcase
     end
     return rsp;
