@@ -133,53 +133,53 @@ module tb;
     run_test();
   end
 
-// temporary debug begin
-   
-   bit start, stop;    // this can be skipped.
-   
-   bit [31:0] start_cnt;
-   bit [31:0] rstart_cnt;
-   bit [31:0] byte_cnt;
-   
-   logic [5:0] dbg_st, dbg_st_p;
-   bit 	       det_st;
-   logic [3:0] bit_idx, bit_idx_p;
+  // temporary debug begin
 
-//tb.dut.i2c_core.u_i2c_fsm.restart   
-   assign dbg_st =    tb.dut.i2c_core.u_i2c_fsm.state_q;
+  bit start, stop;    // this can be skipped.
 
-   assign start = (dbg_st == 6'b10101);
-   assign stop = (dbg_st == 6'b100001);
-   assign det_st = (start & (dbg_st_p != 6'b10101));
-   assign bit_idx  = tb.dut.i2c_core.u_i2c_fsm.bit_idx[3:0];
-   
-   always @(posedge clk or negedge rst_n) begin
-      if (!rst_n) begin
-	 dbg_st_p <= 'h0;
-	 start_cnt <= 'h0;
-	 byte_cnt <= 0;
-	 bit_idx_p <= 0;	 
-      end else begin
-	 dbg_st_p <= dbg_st;
-	 bit_idx_p <= bit_idx;
-	 
-	 start_cnt <= (det_st)? (start_cnt + 1): start_cnt;
-	 byte_cnt <= (start)? 0 : (bit_idx == 4'h1 &&
-				   bit_idx_p != 4'h1)? (byte_cnt+1) : byte_cnt;	 
-      end   
-   end 
+  bit [31:0] start_cnt;
+  bit [31:0] rstart_cnt;
+  bit [31:0] byte_cnt;
 
-// rtl io
-   assign rtl_scli = tb.dut.i2c_core.u_i2c_fsm.scl_i;   
-   assign rtl_sdai = tb.dut.i2c_core.u_i2c_fsm.sda_i;
-   assign rtl_sclo = tb.dut.i2c_core.u_i2c_fsm.scl_o;
-   assign rtl_sdao = tb.dut.i2c_core.u_i2c_fsm.sda_o;   
-// tb io    
-   assign tb_scli = tb.i2c_if.scl_i;
-   assign tb_sdai = tb.i2c_if.sda_i;
-   assign tb_sclo = tb.i2c_if.scl_o;
-   assign tb_sdao = tb.i2c_if.sda_o;
+  logic [5:0] dbg_st, dbg_st_p;
+  bit         det_st;
+  logic [3:0] bit_idx, bit_idx_p;
 
-// tb debug end
-   
+  //tb.dut.i2c_core.u_i2c_fsm.restart
+  assign dbg_st =    tb.dut.i2c_core.u_i2c_fsm.state_q;
+
+  assign start = (dbg_st == 6'b10101);
+  assign stop = (dbg_st == 6'b100001);
+  assign det_st = (start & (dbg_st_p != 6'b10101));
+  assign bit_idx  = tb.dut.i2c_core.u_i2c_fsm.bit_idx[3:0];
+
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      dbg_st_p <= 'h0;
+      start_cnt <= 'h0;
+      byte_cnt <= 0;
+      bit_idx_p <= 0;
+    end else begin
+      dbg_st_p <= dbg_st;
+      bit_idx_p <= bit_idx;
+
+      start_cnt <= (det_st)? (start_cnt + 1): start_cnt;
+      byte_cnt <= (start)? 0 : (bit_idx == 4'h1 &&
+                                bit_idx_p != 4'h1)? (byte_cnt+1) : byte_cnt;
+    end
+  end
+
+  // rtl io
+  assign rtl_scli = tb.dut.i2c_core.u_i2c_fsm.scl_i;
+  assign rtl_sdai = tb.dut.i2c_core.u_i2c_fsm.sda_i;
+  assign rtl_sclo = tb.dut.i2c_core.u_i2c_fsm.scl_o;
+  assign rtl_sdao = tb.dut.i2c_core.u_i2c_fsm.sda_o;
+  // tb io
+  assign tb_scli = tb.i2c_if.scl_i;
+  assign tb_sdai = tb.i2c_if.sda_i;
+  assign tb_sclo = tb.i2c_if.scl_o;
+  assign tb_sdao = tb.i2c_if.sda_o;
+
+  // tb debug end
+
 endmodule : tb

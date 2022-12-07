@@ -47,7 +47,7 @@ class i2c_monitor extends dv_base_monitor #(
         end else begin
           mon_dut_item.rstart = 1'b1;
         end
-        num_dut_tran++;
+        mon_dut_item.tran_id = num_dut_tran++;
         mon_dut_item.start = 1'b1;
         // collecting address
         for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
@@ -268,7 +268,9 @@ class i2c_monitor extends dv_base_monitor #(
     mon_dut_item.rstart = 1'b0;
     mon_dut_item.ack    = 1'b0;
     mon_dut_item.nack   = 1'b0;
-
+`JDBG(("assa target_read begin"))
+    fork begin
+       fork
     while (!mon_dut_item.stop && !mon_dut_item.rstart) begin
       // ask driver response read data
       mon_dut_item.drv_type = RdData;
@@ -299,6 +301,13 @@ class i2c_monitor extends dv_base_monitor #(
         if (mon_dut_item.stop) cfg.got_stop = 1;
       end
     end
+       begin
+	  wait(cfg.allow_ack_stop & cfg.ack_stop_det);
+       end
+       join_any
+       disable fork;
+    end join
+`JDBG(("assa target_read end stop:%0d rs:%0d", mon_dut_item.stop, mon_dut_item.rstart))
   endtask
 
   task target_write();
@@ -334,14 +343,16 @@ class i2c_monitor extends dv_base_monitor #(
     forever begin
       @(cfg.vif.cb);
       if (mon_dut_item.bus_op == BusOpRead) begin
-        cfg.vif.wait_for_host_any(cfg.timing_cfg,
-                                  rstart, stop, ack_l, nack);
-        ack |= ack_l;
+        cfg.vif.wait_for_host_stop_or_rstart(cfg.timing_cfg,
+					     rstart, stop);
+	 
+//                                  rstart, stop, ack_l, nack);
+	`JDBG(("dbg_ack_stop_mon: after wait, %4b (rs,p,a,n)",{rstart, stop, mon_dut_item.ack, mon_dut_item.nack}))
 
         `DV_CHECK_NE_FATAL({rstart, stop}, 2'b11)
-        if ((rstart | stop) & !nack) begin
+        if ((rstart | stop) & mon_dut_item.ack) begin
           if (cfg.allow_ack_stop) begin
-            `uvm_info("ack_stop_mon", "detect ack_stop", UVM_MEDIUM)
+            `uvm_info("ack_stop_mon", $sformatf("detect ack_stop %2b (rs,p)", {rstart, stop}), UVM_MEDIUM)
             cfg.ack_stop_det = 1;
           end else begin
             `uvm_error(`gfn, "ack_stop detected")
@@ -351,8 +362,8 @@ class i2c_monitor extends dv_base_monitor #(
           if (stop) cfg.got_stop = 1;
           rstart = 0;
           stop = 0;
-          ack = 0;
-          nack = 0;
+//          ack = 0;
+//          nack = 0;
         end
       end
     end
