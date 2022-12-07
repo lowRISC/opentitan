@@ -43,10 +43,12 @@ module prim_sparse_fsm_flop #(
   assign unused_err_o = is_undefined_state(state_o);
 
   function automatic logic is_undefined_state(StateEnumT sig);
+    // This is written with a vector in order to make it amenable to x-prop analysis.
+    logic is_defined = 1'b0;
     for (int i = 0, StateEnumT t = t.first(); i < t.num(); i += 1, t = t.next()) begin
-      if (sig === t) return 0;
+      is_defined |= (sig === t);
     end
-    return 1;
+    return ~is_defined;
   endfunction
 
   `else
