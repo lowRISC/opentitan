@@ -12,7 +12,7 @@ class i2c_target_ack_stop_vseq extends i2c_target_smoke_vseq;
     cfg.max_data = 20;
     num_trans = 2;
     cfg.wr_pct = 0;
-    expected_intr[AckStop] = 1;
+    expected_intr[UnexpStop] = 1;
     cfg.m_i2c_agent_cfg.allow_ack_stop = 1;
   endtask
 
@@ -30,7 +30,7 @@ class i2c_target_ack_stop_vseq extends i2c_target_smoke_vseq;
           wait(cfg.m_i2c_agent_cfg.ack_stop_det);
           `uvm_info("ack_stop_seq", $sformatf("ack_stop rcvd %0d", ++dbg_cnt),
                     UVM_MEDIUM)
-          clear_interrupt(AckStop);
+          clear_interrupt(UnexpStop);
           cfg.m_i2c_agent_cfg.ack_stop_det = 0;
           cfg.rcvd_ack_stop++;
          end
