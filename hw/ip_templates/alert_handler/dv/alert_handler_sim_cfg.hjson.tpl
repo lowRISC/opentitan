@@ -120,7 +120,9 @@
     }
 
     {
-      name: alert_handler_stress_all_with_rand_reset
+      name: alert_handler_shadow_reg_errors_with_csr_rw
+      run_opts: ["+test_timeout_ns=500_000_000"]
+      run_timeout_mins: 120
     }
   ]
 
