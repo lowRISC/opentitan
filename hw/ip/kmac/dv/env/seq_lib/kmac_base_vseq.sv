@@ -263,12 +263,13 @@ class kmac_base_vseq extends cip_base_vseq #(
   constraint entropy_period_c {
     if (entropy_mode == EntropyModeEdn && cfg.enable_masking) {
       if (entropy_timer_en) {
-        prescaler_val * entropy_wait_timer >
+        (prescaler_val + 1) * entropy_wait_timer >
           // If zero delay case, the max delay is 0.
-          (cfg.m_edn_pull_agent_cfg[0].device_delay_max + 10) *
+          // Kmac requests 4 EDN entropies, and add 10 cycles as extra buffer for domain crossing.
+          (cfg.m_edn_pull_agent_cfg[0].device_delay_max * 4 + 10) *
           (cfg.edn_clk_freq_mhz / cfg.clk_freq_mhz + 1);
       } else {
-        prescaler_val == 0;
+        entropy_wait_timer == 0;
       }
     }
     solve entropy_mode before prescaler_val, entropy_wait_timer;
