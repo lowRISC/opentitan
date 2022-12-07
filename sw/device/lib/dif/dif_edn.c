@@ -348,7 +348,7 @@ dif_result_t dif_edn_stop(const dif_edn_t *edn) {
   }
   DIF_RETURN_IF_ERROR(check_locked(edn));
 
-  // Fifo clear is only honored if edn is enabled enabled.
+  // Fifo clear is only honored if edn is enabled.
   uint32_t reg = mmio_region_read32(edn->base_addr, EDN_CTRL_REG_OFFSET);
   reg = bitfield_field32_write(reg, EDN_CTRL_CMD_FIFO_RST_FIELD,
                                kMultiBitBool4True);
