@@ -159,7 +159,7 @@
         "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}",
         // Save build_seed in a file and reuse that file during run phase.
         '''echo {seed} > {build_seed_file_path}; \
-           echo 'echo create file {build_seed_file_path}'
+           echo "echo create file {build_seed_file_path}"
         '''
       ]
       is_sim_mode: 1
