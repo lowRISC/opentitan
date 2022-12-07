@@ -25,21 +25,82 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
     if (common_seq_type == "stress_all_with_rand_reset") do_alert_check = 0;
   endfunction
 
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
-    cfg.scoreboard = this;
-  endfunction
-
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
     cfg.run_phase = phase;
     fork
+      monitor_power_glitch();
+      monitor_escalation_timeout();
+      reset_cip_helper();
       wakeup_ctrl_coverage_collector();
       wakeup_intr_coverage_collector();
       low_power_coverage_collector();
       reset_coverage_collector();
       rom_coverage_collector();
     join_none
+  endtask
+
+  task monitor_power_glitch();
+    fork
+      forever
+        @cfg.pwrmgr_vif.rst_main_n begin
+          if (cfg.pwrmgr_vif.rst_main_n == 1'b0 && `gmv(ral.control.main_pd_n)) begin
+            set_exp_alert("fatal_fault", 1, 500);
+          end
+        end
+    join
+  endtask
+
+  // An escalation timeout is triggered in test sequences by stopping clk_esc_i or by driving
+  // rst_esc_ni active when the dut state is not expecting it.
+  task monitor_escalation_timeout();
+    fork
+      forever
+        @(posedge cfg.esc_clk_rst_vif.clk_gate) begin
+          if (cfg.pwrmgr_vif.pwr_ast_req.io_clk_en && cfg.pwrmgr_vif.pwr_clk_req.io_ip_clk_en) begin
+            `uvm_info(`gfn, "Detected unexpected clk_esc_i stop", UVM_MEDIUM)
+            set_exp_alert("fatal_fault", 1, 500);
+          end
+        end
+      forever
+        @(negedge cfg.esc_clk_rst_vif.o_rst_n) begin
+          if (cfg.pwrmgr_vif.fetch_en == lc_ctrl_pkg::On) begin
+            `uvm_info(`gfn, "Detected unexpected rst_esc_ni active", UVM_MEDIUM)
+            set_exp_alert("fatal_fault", 1, 500);
+          end
+        end
+    join
+  endtask
+
+  // We need to reset the cip scoreboard, since the alert handler responds
+  // to lc domain0 resets, yet the pwrmgr's clk_rst_vif is aon. So when a
+  // reset happens the cip scoreboard needs to be informed, both when reset
+  // starts and when it ends.
+  task reset_cip_helper();
+    fork
+      forever
+        @cfg.pwrmgr_vif.pwr_rst_req.rst_lc_req begin
+          if (|cfg.pwrmgr_vif.pwr_rst_req.rst_lc_req) begin
+            // Start of d0 reset request.
+            `uvm_info(`gfn, "pwrmgr start reset in reset_cip_helper", UVM_MEDIUM)
+            cfg.under_reset = 1;
+          end
+        end
+      forever
+        @cfg.pwrmgr_vif.fetch_en begin
+          if (cfg.pwrmgr_vif.fetch_en == lc_ctrl_pkg::On) begin
+            // End of d0 reset request.
+            `uvm_info(`gfn, "pwrmgr end reset in reset_cip_helper", UVM_MEDIUM)
+            foreach (cfg.list_of_alerts[i]) begin
+              alert_fifos[cfg.list_of_alerts[i]].flush();
+              exp_alert[cfg.list_of_alerts[i]] = 0;
+              under_alert_handshake[cfg.list_of_alerts[i]] = 0;
+              is_fatal_alert[cfg.list_of_alerts[i]] = 0;
+              alert_chk_max_delay[cfg.list_of_alerts[i]] = 0;
+            end
+          end
+        end
+    join
   endtask
 
   task wakeup_ctrl_coverage_collector();

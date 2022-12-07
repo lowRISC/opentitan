@@ -97,22 +97,11 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
           cfg.pwrmgr_vif.update_resets(resets);
 
           if (power_glitch_reset) begin
-            // Create glitch by 'glitch_power_reset'. An outgoing alert is only possible
-            // when main power is up.
-            if (control_enables.main_pd_n) begin
-              expect_fatal_alerts = 1;
-              enqueue_exp_alert();
-            end else expect_fatal_alerts = 0;
-            `uvm_info(`gfn, $sformatf(
-                      "Sending power glitch, expecting %0s alert", expect_fatal_alerts ? "an" : "no"
-                      ), UVM_MEDIUM)
-            cfg.pwrmgr_vif.glitch_power_reset();
+            send_power_glitch();
             enabled_resets = 0;
           end
           `uvm_info(`gfn, $sformatf("Sending reset=%b, power_glitch=%b", resets, power_glitch_reset
                     ), UVM_MEDIUM)
-          // For the cip scoreboard.
-          reset_start_for_cip();
         end
 
         begin
@@ -142,9 +131,6 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
       join
 
       wait_for_fast_fsm_active();
-
-      // For the cip scoreboard.
-      reset_end_for_cip();
 
       check_reset_status('0);
 

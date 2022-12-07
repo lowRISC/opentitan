@@ -16,51 +16,27 @@ class pwrmgr_esc_clk_rst_malfunc_vseq extends pwrmgr_base_vseq;
 
   virtual task body();
     wait_for_fast_fsm_active();
-
-    // send a expected alert to the scoreboard
+    // Wait some time so the stimulus is sent after the fast fsm becoming active.
+    cfg.clk_rst_vif.wait_clks(4);
     expect_fatal_alerts = 1;
-    enqueue_exp_alert();
-
-    // esc [clk|rst] malfunction
-    add_noise();
-
-    // Expect to start reset.
-    `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
-    `uvm_info(`gfn, "Started to process reset", UVM_MEDIUM)
-
-    // For the cip scoreboard.
-    reset_start_for_cip();
-
-    // clear to end test gracfully
-    clear_noise();
-
+    trigger_escalation_timeout();
     wait_for_fast_fsm_active();
-    `uvm_info(`gfn, "Back from reset", UVM_MEDIUM)
-    // For the cip scoreboard.
-    reset_end_for_cip();
-
   endtask : body
 
-  task add_noise();
-    int delay = $urandom_range(10, 30);
-    string path;
-    randcase
-      1: path = "tb.dut.rst_esc_ni";
-      1: path = "tb.dut.clk_esc_i";
-    endcase
-    `uvm_info(`gfn, $sformatf("Sending noise via %s", path), UVM_MEDIUM)
-    `DV_CHECK(uvm_hdl_force(path, 0))
-    #(delay * 1us);
-  endtask : add_noise
+  // Trigers an escalation timeout fault, either stopping clk_esc_i or driving rst_esc_ni.
+  //
+  // Randomly set a bit to 0 or 1: if 0 stop clk_esc_i, if 1 make rst_esc_ni active.
+  task trigger_escalation_timeout();
+    int which = $urandom_range(0, 1);
+    `uvm_info(`gfn, $sformatf("Triggering escalation via %0s", which ? "rst" : "clk"), UVM_MEDIUM)
+    if (which == 0) cfg.esc_clk_rst_vif.stop_clk();
+    else cfg.esc_clk_rst_vif.drive_rst_pin(1'b0);
 
-  task clear_noise();
-    int delay = $urandom_range(1, 5);
-    string path;
-    `uvm_info(`gfn, "Releasing noise", UVM_MEDIUM)
-    path = "tb.dut.rst_esc_ni";
-    `DV_CHECK(uvm_hdl_release(path))
-    path = "tb.dut.clk_esc_i";
-    `DV_CHECK(uvm_hdl_release(path))
-    #(delay * 100ns);
-  endtask : clear_noise
+    // Wait for cpu fetch to be disabled, as an indication a reset is triggered.
+    `DV_SPINWAIT(wait (cfg.pwrmgr_vif.fetch_en != lc_ctrl_pkg::On);,
+                 "timeout waiting for the CPU to be inactive", FetchEnTimeoutNs)
+    `uvm_info(`gfn, "Releasing trigger", UVM_MEDIUM)
+    if (which == 0) cfg.esc_clk_rst_vif.start_clk();
+    else cfg.esc_clk_rst_vif.drive_rst_pin(1'b1);
+  endtask : trigger_escalation_timeout
 endclass

@@ -43,13 +43,7 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
 
       // Trigger resets. The glitch is sent prior to the externals since if it is delayed
       // it will cause a separate reset after the externals, which complicates the checks.
-      if (power_glitch_reset) begin
-        `uvm_info(`gfn, "Sending power glitch", UVM_MEDIUM)
-        // expected alerts
-        expect_fatal_alerts = 1;
-        enqueue_exp_alert();
-        cfg.pwrmgr_vif.glitch_power_reset();
-      end
+      if (power_glitch_reset) send_power_glitch();
       cfg.clk_rst_vif.wait_clks(cycles_before_reset);
 
       `uvm_info(`gfn, $sformatf("Sending resets=0x%x", resets), UVM_MEDIUM)
@@ -66,14 +60,8 @@ class pwrmgr_reset_vseq extends pwrmgr_base_vseq;
       `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
       `uvm_info(`gfn, "Started to process reset", UVM_MEDIUM)
 
-      // For the cip scoreboard.
-      reset_start_for_cip();
-
       wait_for_fast_fsm_active();
       `uvm_info(`gfn, "Back from reset", UVM_MEDIUM)
-
-      // For the cip scoreboard.
-      reset_end_for_cip();
 
       check_wake_info(.reasons('0), .fall_through(1'b0), .abort(1'b0));
 
