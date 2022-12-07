@@ -478,7 +478,6 @@ typedef enum dif_entropy_src_error {
 /**
  * Stops the current mode of operation and disables the entropy_src module
  *
- *
  * @param entropy_src An entropy source handle.
  * @return The result of the operation.
  */
