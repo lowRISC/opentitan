@@ -33,9 +33,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
-                // TODO(#12807): test hangs, re-enable after fixing the issue.
-                // "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
-                "{proj_root}/hw/dv/tools/dvsim/tests/stress_all_test.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"]
 
   // Add additional tops for simulation.
   sim_tops: ["lc_ctrl_bind", "lc_ctrl_cov_bind",
@@ -252,11 +250,10 @@
       run_opts: ["+create_jtag_riscv_map=1"]
     }
 
-    // TODO(#12807): test hangs, re-enable after fixing the issue.
-    // {
-    //   name: "lc_ctrl_stress_all_with_rand_reset"
-    //   run_opts: ["+create_jtag_riscv_map=1"]
-    // }
+    {
+      name: "lc_ctrl_stress_all_with_rand_reset"
+      run_opts: ["+create_jtag_riscv_map=1"]
+    }
   ]
 
   // List of regressions.
