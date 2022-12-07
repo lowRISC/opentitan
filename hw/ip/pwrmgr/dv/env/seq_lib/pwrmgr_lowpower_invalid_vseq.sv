@@ -97,9 +97,6 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
 
     `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
 
-    // For the cip scoreboard.
-    reset_start_for_cip();
-
     if (ral.control.main_pd_n.get_mirrored_value() == 1'b0) begin
       wait_for_reset_cause(pwrmgr_pkg::LowPwrEntry);
     end
@@ -115,9 +112,6 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
 
     wait_for_fast_fsm_active();
     `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
-
-    // For the cip scoreboard.
-    reset_end_for_cip();
   endtask : start_lowpower_transition
 
   function pwrmgr_pkg::fast_pwr_state_e dv2rtl_st(reset_index_e idx);

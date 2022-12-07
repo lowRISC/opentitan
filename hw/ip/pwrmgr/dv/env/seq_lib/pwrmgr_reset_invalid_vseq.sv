@@ -91,13 +91,7 @@ class pwrmgr_reset_invalid_vseq extends pwrmgr_base_vseq;
 
     // Trigger resets. The glitch is sent prior to the externals since if it is delayed
     // it will cause a separate reset after the externals, which complicates the checks.
-    if (power_glitch_reset) begin
-      `uvm_info(`gfn, "Sending power glitch", UVM_MEDIUM)
-      // expected alerts
-      expect_fatal_alerts = 1;
-      enqueue_exp_alert();
-      cfg.pwrmgr_vif.glitch_power_reset();
-    end
+    if (power_glitch_reset) send_power_glitch();
     cfg.clk_rst_vif.wait_clks(cycles_before_reset);
 
     if (cycles_before_reset == 0) enabled_resets = 0;

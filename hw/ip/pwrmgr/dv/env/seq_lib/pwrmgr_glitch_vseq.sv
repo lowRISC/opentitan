@@ -16,11 +16,10 @@ class pwrmgr_glitch_vseq extends pwrmgr_base_vseq;
     expect_fatal_alerts = 1;
     for (int i = 0; i < num_trans; ++i) begin
       wait_for_fast_fsm_active();
-
-      enqueue_exp_alert();
+      cfg.clk_rst_vif.wait_clks(4);
 
       fork
-        cfg.pwrmgr_vif.glitch_power_reset();
+        send_power_glitch();
         begin
           cfg.pwrmgr_vif.update_ast_main_pok(0);
           cfg.slow_clk_rst_vif.wait_clks(2);

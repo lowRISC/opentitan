@@ -229,28 +229,6 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.slow_clk_rst_vif.drive_rst_pin(1);
   endtask
 
-  // We need to reset the cip scoreboard, since the alert handler responds
-  // to lc domain0 resets, yet the pwrmgr's clk_rst_vif is aon. So when a
-  // reset happens the cip scoreboard needs to be informed, both when reset
-  // starts and when it ends.
-  virtual function void reset_start_for_cip();
-    // Could call cfg.reset_asserted(), but that has additional side-effects.
-    cfg.under_reset = 1;
-  endfunction
-
-  virtual function void reset_end_for_cip();
-    // This could just call the cip_base reset(), but that also resets all CSRs.
-    // Instead, this just clears a few of the side-effects of reset.
-    `uvm_info(`gfn, "pwrmgr in reset_end_for_cip", UVM_MEDIUM)
-    foreach (cfg.list_of_alerts[i]) begin
-      cfg.scoreboard.alert_fifos[cfg.list_of_alerts[i]].flush();
-      cfg.scoreboard.exp_alert[cfg.list_of_alerts[i]] = 0;
-      cfg.scoreboard.under_alert_handshake[cfg.list_of_alerts[i]] = 0;
-      cfg.scoreboard.is_fatal_alert[cfg.list_of_alerts[i]] = 0;
-      cfg.scoreboard.alert_chk_max_delay[cfg.list_of_alerts[i]] = 0;
-    end
-  endfunction
-
   // setup basic pwrmgr features
   virtual task pwrmgr_init();
     // The fast clock frequency is set by ral.
@@ -767,6 +745,17 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.pwrmgr_vif.cpu_i.ndmreset_req = 1'b0;
   endfunction
 
+  task send_power_glitch();
+    // Create glitch by 'glitch_power_reset'. An outgoing alert is only possible
+    // when main power is up.
+    if (control_enables.main_pd_n) expect_fatal_alerts = 1;
+    else expect_fatal_alerts = 0;
+    `uvm_info(`gfn, $sformatf(
+              "Sending power glitch, expecting %0s alert", expect_fatal_alerts ? "an" : "no"),
+              UVM_MEDIUM)
+    cfg.pwrmgr_vif.glitch_power_reset();
+  endtask
+
   // bad_bits = {done, good}
   task add_rom_rsp_noise();
     bit [MUBI4W*2-1:0] bad_bits;
@@ -821,10 +810,5 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     end
     `uvm_info(`gfn, "Set rom response to MuBi4True", UVM_MEDIUM)
   endtask
-
-  protected function void enqueue_exp_alert();
-    `uvm_info(`gfn, "enqueuing expected alert", UVM_MEDIUM)
-    cfg.scoreboard.set_exp_alert("fatal_fault", 1, 500);
-  endfunction
 
 endclass : pwrmgr_base_vseq
