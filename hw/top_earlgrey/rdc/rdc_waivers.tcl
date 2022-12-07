@@ -176,3 +176,11 @@ set_rule_status -rule E_RST_METASTABILITY -status Waived \
   -expression {(SourceReset=="POR_N") && \
     (ResetFlop=~"*.u_clkmgr_aon.u_usb_root_ctrl.u_cg*") && \
     (MetaStableFlop=~"*.u_clkmgr_aon.u_usb_root_ctrl.u_cg*")}
+
+# Waiver: PowerDown to AST Regulator
+# No need of verifying AST behavioral model
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(SourceReset=="POR_N") && \
+    (ResetFlop=~"*.u_pwrmgr_aon.u_slow_fsm.pd_nq") && \
+    (MetaStableFlop=~"u_ast.u_rglts_pdm_3p3v.*")} \
+  -comment {AST is a behavioral model. No need to verify}
