@@ -4,16 +4,19 @@
 
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_csrng.h"
+#include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "adc_ctrl_regs.h"  // Generated.
+#include "adc_ctrl_regs.h"     // Generated.
+#include "entropy_src_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG(.enable_concurrency = true,
@@ -38,6 +41,11 @@ enum {
    * ADC controller parameters.
    */
   kAdcCtrlPowerUpTimeAonCycles = 15,  // maximum power-up time
+  /**
+   * EDN parameters.
+   */
+  kEdn0ReseedInterval = 32,
+  kEdn1ReseedInterval = 4,
 };
 
 /**
@@ -106,9 +114,104 @@ static void configure_adc_ctrl_to_continuously_sample() {
   }
 }
 
+static void configure_entropy_complex() {
+  // The (test) ROM enables the entropy complex, and to reconfigure it requires
+  // temporarily disabling it.
+  entropy_testutils_stop_all();
+
+  CHECK_DIF_OK(dif_entropy_src_configure(
+      &entropy_src,
+      (dif_entropy_src_config_t){
+          .fips_enable = true,
+          .route_to_firmware = true,
+          .bypass_conditioner = false,
+          .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
+          .health_test_threshold_scope = false,
+          .health_test_window_size = 0x200,
+          .alert_threshold = UINT16_MAX},
+      kDifToggleDisabled));
+  CHECK_DIF_OK(dif_entropy_src_health_test_configure(
+      &entropy_src, (dif_entropy_src_health_test_config_t){
+                        .test_type = kDifEntropySrcTestRepetitionCount,
+                        .high_threshold = UINT16_MAX,
+                        .low_threshold = 0}));
+  CHECK_DIF_OK(dif_entropy_src_health_test_configure(
+      &entropy_src, (dif_entropy_src_health_test_config_t){
+                        .test_type = kDifEntropySrcTestRepetitionCountSymbol,
+                        .high_threshold = UINT16_MAX,
+                        .low_threshold = 0}));
+  CHECK_DIF_OK(dif_entropy_src_health_test_configure(
+      &entropy_src, (dif_entropy_src_health_test_config_t){
+                        .test_type = kDifEntropySrcTestAdaptiveProportion,
+                        .high_threshold = UINT16_MAX,
+                        .low_threshold = 0}));
+  CHECK_DIF_OK(dif_entropy_src_health_test_configure(
+      &entropy_src, (dif_entropy_src_health_test_config_t){
+                        .test_type = kDifEntropySrcTestBucket,
+                        .high_threshold = UINT16_MAX,
+                        .low_threshold = 0}));
+  CHECK_DIF_OK(dif_entropy_src_health_test_configure(
+      &entropy_src, (dif_entropy_src_health_test_config_t){
+                        .test_type = kDifEntropySrcTestMarkov,
+                        .high_threshold = UINT16_MAX,
+                        .low_threshold = 0}));
+  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
+      &entropy_src,
+      (dif_entropy_src_fw_override_config_t){
+          .entropy_insert_enable = false,
+          .buffer_threshold = ENTROPY_SRC_OBSERVE_FIFO_THRESH_REG_RESVAL,
+      },
+      kDifToggleDisabled));
+
+  CHECK_DIF_OK(dif_csrng_configure(&csrng));
+
+  dif_edn_seed_material_t edn_empty_seed = {
+      .len = 0,
+  };
+  dif_edn_seed_material_t edn_384_bit_seed = {
+      .len = 12,
+      .data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12},
+  };
+  dif_edn_auto_params_t edn_auto_params = {
+      // EDN0 provides lower-quality entropy. Let one generate command return
+      // eight 128-bit blocks, and reseed every 32 generates.
+      .instantiate_cmd =
+          {
+              .cmd = csrng_cmd_header_build(kCsrngAppCmdInstantiate,
+                                            kDifCsrngEntropySrcToggleEnable,
+                                            /*cmd_len=*/12,
+                                            /*generate_len=*/0),
+              .seed_material = edn_384_bit_seed,
+          },
+      .reseed_cmd =
+          {
+              .cmd = csrng_cmd_header_build(kCsrngAppCmdReseed,
+                                            kDifCsrngEntropySrcToggleEnable,
+                                            /*cmd_len=*/12, /*generate_len=*/0),
+              .seed_material = edn_384_bit_seed,
+          },
+      .generate_cmd =
+          {
+              .cmd = csrng_cmd_header_build(kCsrngAppCmdGenerate,
+                                            kDifCsrngEntropySrcToggleEnable,
+                                            /*cmd_len=*/0,
+                                            /*generate_len=*/8),
+              .seed_material = edn_empty_seed,
+          },
+      .reseed_interval = 0,
+  };
+  edn_auto_params.reseed_interval = kEdn0ReseedInterval;
+  CHECK_DIF_OK(dif_edn_set_auto_mode(&edn_0, edn_auto_params));
+  edn_auto_params.reseed_interval = kEdn1ReseedInterval;
+  CHECK_DIF_OK(dif_edn_set_auto_mode(&edn_1, edn_auto_params));
+  CHECK_DIF_OK(dif_edn_configure(&edn_0));
+  CHECK_DIF_OK(dif_edn_configure(&edn_1));
+}
+
 bool test_main(void) {
   init_peripheral_handles();
   configure_gpio_indicator_pin();
   configure_adc_ctrl_to_continuously_sample();
+  configure_entropy_complex();
   return true;
 }
