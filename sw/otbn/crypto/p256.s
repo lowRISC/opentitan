@@ -1178,13 +1178,23 @@ scalar_mult_int:
  * Each share is 320 bits, which gives us 64 bits of extra redundancy modulo n
  * (256 bits). This is a protection measure against side-channel attacks.
  *
+ * For s = k^-1 * (r * d + msg), we compute a random nonzero masking scalar
+ * alpha, and compute s as:
+ *   s = ((k * alpha)^-1 * (r * (d * alpha) + alpha * msg)) mod n
+ *
+ * We choose alpha to be at most 128 bits, so the product with a 320b share
+ * produces fits in the same 512-bit modular reduction routine that we use for
+ * 256x256-bit multiplications. It should be safe to compute e.g. k * alpha =
+ * (k0 * alpha + k1 * alpha) mod n, because alpha has enough randomness to mask
+ * the true value of k.
+ *
  * @param[in]  dmem[k0]:  first share of secret scalar (320 bits)
  * @param[in]  dmem[k1]:  second share of secret scalar (320 bits)
  * @param[in]  dmem[msg]: message to be signed (256 bits)
  * @param[in]  dmem[r]:   dmem buffer for r component of signature (256 bits)
  * @param[in]  dmem[s]:   dmem buffer for s component of signature (256 bits)
- * @param[in]  dmem[d0]:  first share of private key d
- * @param[in]  dmem[d1]:  second share of private key d
+ * @param[in]  dmem[d0]:  first share of private key d (320 bits)
+ * @param[in]  dmem[d1]:  second share of private key d (320 bits)
  *
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
@@ -1277,88 +1287,100 @@ p256_sign:
   bn.rshi  w4, w31, w4 >> 129
 
   /* Add 1 to get a 128-bit nonzero scalar for masking.
-       w4 <= w4 + 1 = gamma */
+       w4 <= w4 + 1 = alpha */
   bn.addi  w4, w4, 1
 
-  /* Multiply k0 by the masking factor and reduce modulo n.
-       w0 <= ([w0,w1] * w4) mod n = (k0 * gamma) mod n */
+  /* w0 <= ([w0,w1] * w4) mod n = (k0 * alpha) mod n */
   bn.mov    w24, w0
   bn.mov    w25, w1
   bn.mov    w26, w4
   jal       x1, mod_mul_320x128
   bn.mov    w0, w19
 
-  /* Multiply k1 by the masking factor and reduce modulo n.
-       w2 <= ([w2,w3] * w26) mod n = (k1 * gamma) mod n */
+  /* w19 <= ([w2,w3] * w26) mod n = (k1 * alpha) mod n */
   bn.mov    w24, w2
   bn.mov    w25, w3
   jal       x1, mod_mul_320x128
-  bn.mov    w2, w19
 
-  /* Add shares to get (k * gamma) mod n. This should be safe because of the
-     randomness from gamma.
-       w0 <= (w0 + w2) mod n = (k * gamma) mod n */
-  bn.addm  w0, w0, w2
+  /* w0 <= (w0+w19) mod n = (k * alpha) mod n */
+  bn.addm   w0, w0, w19
 
-  /* Compute the inverse of (k * gamma) mod n.
-     w1 <= w0^-1 mod n = (k * gamma)^-1 mod n */
+  /* w1 <= w0^-1 mod n = (k * alpha)^-1 mod n */
   jal       x1, mod_inv
 
-  /* Compute (gamma * (k * gamma)^-1) mod n = k^-1 mod n
-       w1 <= (w4*w1) mod n = k^-1 mod n */
-  bn.mov    w24, w4
-  bn.mov    w25, w1
-  jal       x1, mod_mul_256x256
-  bn.mov    w1, w19
+  /* Load first share of secret key d from dmem.
+       w2,w3 = dmem[d0] */
+  la        x16, d0
+  li        x2, 2
+  bn.lid    x2, 0(x16++)
+  li        x2, 3
+  bn.lid    x2, 0(x16)
 
-  /* w24 = d0 = dmem[d0] */
-  la        x23, d0
-  li        x2, 24
-  bn.lid    x2, 0(x23)
+  /* Load second share of secret key d from dmem.
+       w5,w6 = dmem[d1] */
+  la        x16, d1
+  li        x2, 5
+  bn.lid    x2, 0(x16++)
+  li        x2, 6
+  bn.lid    x2, 0(x16)
 
-  /* w2 = k^-1*d0 mod n */
-  bn.mov    w25, w1
-  jal       x1, mod_mul_256x256
-  bn.mov    w2, w19
+  /* w0 <= ([w2,w3] * w4) mod n = (d0 * alpha) mod n */
+  bn.mov    w24, w2
+  bn.mov    w25, w3
+  bn.mov    w26, w4
+  jal       x1, mod_mul_320x128
+  bn.mov    w0, w19
 
-  /* w24 = d1 = dmem[d1] */
-  la        x23, d1
-  li        x2, 24
-  bn.lid    x2, 0(x23)
+  /* w19 <= ([w5,w6] * w4) mod n = (d1 * alpha) mod n */
+  bn.mov    w24, w5
+  bn.mov    w25, w6
+  bn.mov    w26, w4
+  jal       x1, mod_mul_320x128
 
-  /* w19 = k^-1*d1 mod n */
-  jal       x1, mod_mul_256x256
-
-  /* w19 <= w2*w19 mod n = (k^-1*d0 + k^-1*d1) mod n
-                         = (k^-1*d) mod n */
-  bn.addm   w19, w2, w19
+  /* w0 <= (w0+w19) mod n = (d * alpha) mod n */
+  bn.addm   w0, w0, w19
 
   /* w24 = r <= w11  mod n */
   bn.addm   w24, w11, w31
 
-  /* store r of signature in dmem: dmem[r] <= r = w24 */
+  /* Store r of signature in dmem.
+       dmem[r] <= r = w24 */
   la        x19, r
   li        x2, 24
   bn.sid    x2, 0(x19)
 
-  /* w0 = w19 <= w24*w25 = w24*w19 = r*k^-1*d  mod n */
+  /* w19 <= (w24 * w0) mod n = (r * d * alpha) mod n */
+  bn.mov    w25, w0
+  jal       x1, mod_mul_256x256
+
+  /* w0 <= (w1 * w19) mod n = ((k * alpha)^-1 * (r * d * alpha)) mod n
+                            = (k^-1 * r * d) mod n */
+  bn.mov    w24, w1
   bn.mov    w25, w19
   jal       x1, mod_mul_256x256
   bn.mov    w0, w19
 
-  /* load message from dmem: w24 = msg <= dmem[msg] */
+  /* Load message from dmem:
+       w24 = msg <= dmem[msg] */
   la        x18, msg
   li        x2, 24
   bn.lid    x2, 0(x18)
 
-  /* w19 = k^-1*msg <= w25*w24 = w1*w24  mod n */
-  bn.mov    w25, w1
+  /* w19 = (w24 * w4) mod n = <= (msg * alpha)  mod n */
+  bn.mov    w25, w4
   jal       x1, mod_mul_256x256
 
-  /* w0 = s <= w19 + w0 = k^-1*msg + r*k^-1*d  mod n */
-  bn.addm   w0, w19, w0
+  /* w19 = (w1 * w19) mod n = ((k * alpha)^-1 * (msg * alpha)) mod n
+                            = (k^-1 * msg) mod n */
+  bn.mov    w24, w1
+  bn.mov    w25, w19
+  jal       x1, mod_mul_256x256
 
-  /* store s of signature in dmem: dmem[s] <= s = w0 */
+  /* w0 = (w0 + w19) mod n = (k^-1*r*d + k^-1*msg) mod n = s */
+  bn.addm   w0, w0, w19
+
+  /* Store s of signature in dmem.
+       dmem[s] <= s = w0 */
   la        x20, s
   li        x2, 0
   bn.sid    x2, 0(x20)
@@ -1381,10 +1403,12 @@ p256_sign:
  * where:
  *   d = (d0 + d1) mod n
  *
+ * The shares d0 and d1 are up to 320 bits each to provide extra redundancy.
+ *
  * This routine runs in constant time.
  *
- * @param[in]     dmem[d0]:  first share of scalar d (256 bits)
- * @param[in]     dmem[d1]:  second share of scalar d (256 bits)
+ * @param[in]     dmem[d0]:  first share of scalar d (320 bits)
+ * @param[in]     dmem[d1]:  second share of scalar d (320 bits)
  * @param[in,out] dmem[x]:   affine x-coordinate (256 bits)
  * @param[in,out] dmem[y]:   affine y-coordinate (256 bits)
  *
@@ -1398,15 +1422,41 @@ p256_base_mult:
   /* init all-zero register */
   bn.xor    w31, w31, w31
 
-  /* load first share of scalar d from dmem: w0 = dmem[d0] */
+  /* Load first share of secret key d from dmem.
+       w0,w1 = dmem[d0] */
   la        x16, d0
   li        x2, 0
-  bn.lid    x2, 0(x16)
-
-  /* load second share of scalar d from dmem: w1 = dmem[d0] */
-  la        x16, d1
+  bn.lid    x2, 0(x16++)
   li        x2, 1
   bn.lid    x2, 0(x16)
+
+  /* Load second share of secret key d from dmem.
+       w2,w3 = dmem[d1] */
+  la        x16, d1
+  li        x2, 2
+  bn.lid    x2, 0(x16++)
+  li        x2, 3
+  bn.lid    x2, 0(x16)
+
+  /* Reduce d0 modulo n.
+     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
+
+     w0 <= [w0,w1] mod n = d0 mod n */
+  bn.mov   w19, w0
+  bn.mov   w20, w1
+  bn.mov   w22, w31
+  jal      x1, p256_reduce
+  bn.mov   w0, w19
+
+  /* Reduce d1 modulo n.
+     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
+
+     w1 <= [w2,w3] mod n = d1 mod n */
+  bn.mov   w19, w2
+  bn.mov   w20, w3
+  bn.mov   w22, w31
+  jal      x1, p256_reduce
+  bn.mov   w1, w19
 
   /* call internal scalar multiplication routine
      R = (x_a, y_a) = (w11, w12) <= d*P = (w0 + w1)*P */
@@ -2122,15 +2172,15 @@ x:
 y:
   .zero 32
 
-/* private key d (in two shares) */
+/* private key d (in two 320b shares) */
 .balign 32
 .weak d0
 d_share0:
-  .zero 32
+  .zero 40
 .balign 32
 .weak d1
 d_share1:
-  .zero 32
+  .zero 40
 
 /* verification result x_r (aka x_1) */
 .balign 32
