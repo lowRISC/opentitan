@@ -645,6 +645,8 @@ interface chip_if;
 
   wire flash_core1_host_req = `FLASH_CTRL_HIER.u_eflash.gen_flash_cores[1].u_core.host_req_i;
 
+  wire adc_data_valid = `AST_HIER.u_adc.adc_d_val_o;
+
   // alert_esc_if alert_if[NUM_ALERTS](.clk  (`ALERT_HANDLER_HIER.clk_i),
   //                                   .rst_n(`ALERT_HANDLER_HIER.rst_ni));
   // for (genvar i = 0; i < NUM_ALERTS; i++) begin : gen_alert_rx_conn

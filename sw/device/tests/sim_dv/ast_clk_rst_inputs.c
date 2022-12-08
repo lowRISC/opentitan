@@ -30,12 +30,13 @@
 #define kAlertClear false
 #define kAlertVal7 7
 #define kAlertVal8 8
+#define kDifNoWakeup 0
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static volatile const uint8_t kNumLowPowerSamples;
 static volatile const uint8_t kNumNormalPowerSamples;
-static volatile const uint8_t kWakeUpTimeAonCycles;
+static volatile const uint8_t kWakeUpTimeInUs;
 
 static volatile const uint8_t kChannel0MaxLowByte;
 static volatile const uint8_t kChannel0MaxHighByte;
@@ -83,7 +84,7 @@ enum {
 };
 
 enum {
-  kPowerUpTimeAonCycles = 6,
+  kPowerUpTimeInUs = 30,
 };
 
 static uint32_t read_fifo_depth(dif_entropy_src_t *entropy) {
@@ -204,6 +205,13 @@ void init_units() {
  *  configure adc module
  */
 static void configure_adc_ctrl(const dif_adc_ctrl_t *adc_ctrl) {
+  int WakeUpTimeAonCycles;
+  int PowerUpTimeAonCycles;
+
+  PowerUpTimeAonCycles =
+      aon_timer_testutils_get_aon_cycles_from_us(kPowerUpTimeInUs);
+  WakeUpTimeAonCycles =
+      aon_timer_testutils_get_aon_cycles_from_us(kWakeUpTimeInUs);
   CHECK_DIF_OK(dif_adc_ctrl_set_enabled(adc_ctrl, kDifToggleDisabled));
   CHECK_DIF_OK(dif_adc_ctrl_reset(adc_ctrl));
   CHECK_DIF_OK(dif_adc_ctrl_configure(
@@ -211,8 +219,8 @@ static void configure_adc_ctrl(const dif_adc_ctrl_t *adc_ctrl) {
                     .mode = kDifAdcCtrlLowPowerScanMode,
                     .num_low_power_samples = kNumLowPowerSamples,
                     .num_normal_power_samples = kNumNormalPowerSamples,
-                    .power_up_time_aon_cycles = kPowerUpTimeAonCycles,
-                    .wake_up_time_aon_cycles = kWakeUpTimeAonCycles}));
+                    .power_up_time_aon_cycles = PowerUpTimeAonCycles,
+                    .wake_up_time_aon_cycles = WakeUpTimeAonCycles}));
 }
 
 static void en_plic_irqs(dif_rv_plic_t *plic) {
@@ -285,6 +293,21 @@ void adc_setup(bool first_adc_setup) {
   }
 }
 
+void entropy_config(dif_entropy_src_config_t entropy_src_config) {
+  CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
+
+  const dif_entropy_src_fw_override_config_t fw_override_config = {
+      .entropy_insert_enable = true,
+      .buffer_threshold = kEntropyFifoBufferSize,
+  };
+
+  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
+      &entropy_src, fw_override_config, kDifToggleEnabled));
+
+  CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, entropy_src_config,
+                                         kDifToggleEnabled));
+}
+
 void ast_enter_sleep_states_and_check_functionality(
     dif_pwrmgr_domain_config_t pwrmgr_config,
     dif_entropy_src_config_t entropy_src_config, uint32_t alert_idx) {
@@ -304,19 +327,8 @@ void ast_enter_sleep_states_and_check_functionality(
     deepsleep = false;
   }
 
-  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, 0)) {
-    CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
-
-    const dif_entropy_src_fw_override_config_t fw_override_config = {
-        .entropy_insert_enable = true,
-        .buffer_threshold = kEntropyFifoBufferSize,
-    };
-
-    CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
-        &entropy_src, fw_override_config, kDifToggleEnabled));
-
-    CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, entropy_src_config,
-                                           kDifToggleEnabled));
+  if (pwrmgr_testutils_is_wakeup_reason(&pwrmgr, kDifNoWakeup)) {
+    entropy_config(entropy_src_config);
 
     // Verify that the FIFO depth is non-zero via SW - indicating the reception
     // of data over the AST RNG interface.
@@ -332,8 +344,6 @@ void ast_enter_sleep_states_and_check_functionality(
         kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone);
     CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
 
-    // Enter low power mode.
-    LOG_INFO("Issued WFI to enter sleep.");
     // Setup low power.
     rstmgr_testutils_pre_reset(&rstmgr);
 
@@ -348,6 +358,9 @@ void ast_enter_sleep_states_and_check_functionality(
     // set sleep mode
     pwrmgr_testutils_enable_low_power(&pwrmgr, kDifPwrmgrWakeupRequestSourceTwo,
                                       pwrmgr_config);
+
+    // Enter low power mode.
+    LOG_INFO("Issued WFI to enter sleep.");
 
     wait_for_interrupt();
 
@@ -368,18 +381,7 @@ void ast_enter_sleep_states_and_check_functionality(
       adc_setup(first_adc_setup);
     }
 
-    CHECK_DIF_OK(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
-
-    const dif_entropy_src_fw_override_config_t fw_override_config = {
-        .entropy_insert_enable = true,
-        .buffer_threshold = kEntropyFifoBufferSize,
-    };
-
-    CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
-        &entropy_src, fw_override_config, kDifToggleEnabled));
-
-    CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, entropy_src_config,
-                                           kDifToggleEnabled));
+    entropy_config(entropy_src_config);
 
     IBEX_SPIN_FOR(read_fifo_depth(&entropy_src) > 0, 1000);
   }
