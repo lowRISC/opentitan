@@ -222,8 +222,8 @@ impl Transport for CW310 {
                 fpga_program.progress.as_ref().map(Box::as_ref),
             )?;
             Ok(None)
-        } else if action.downcast_ref::<FpgaReset>().is_some() {
-            self.device.borrow().reset_sam3u()?;
+        } else if action.downcast_ref::<ResetSam3x>().is_some() {
+            self.device.borrow().reset_sam3x()?;
             Ok(None)
         } else if action.downcast_ref::<SetPll>().is_some() {
             const TARGET_FREQ: u32 = 100_000_000;
@@ -260,5 +260,5 @@ pub struct FpgaProgram<'a> {
 /// Command for Transport::dispatch().
 pub struct SetPll {}
 
-/// Command for Transport::dispatch(). Resets the CW310's SAM3U chip.
-pub struct FpgaReset {}
+/// Command for Transport::dispatch(). Resets the CW310's SAM3X chip.
+pub struct ResetSam3x {}

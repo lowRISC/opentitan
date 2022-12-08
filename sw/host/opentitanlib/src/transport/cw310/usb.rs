@@ -47,9 +47,9 @@ impl Backend {
     pub const CMD_SMC_READ_SPEED: u8 = 0x27;
     pub const CMD_FW_BUILD_DATE: u8 = 0x40;
 
-    // Commands for controlling the SAM3U chip.
-    pub const CMD_SAM3U_CFG: u8 = 0x22;
-    pub const SAM3U_RESET: u16 = 0x10;
+    // Commands for controlling the SAM3X chip.
+    pub const CMD_SAM3X_CFG: u8 = 0x22;
+    pub const SAM3X_RESET: u16 = 0x10;
 
     pub const CMD_PLL: u8 = 0x30;
     pub const REQ_PLL_WRITE: u8 = 0x01;
@@ -189,8 +189,8 @@ impl Backend {
 
     /// Sends a reset signal to the SAM3U chip. Does not wait for the SAM3U to
     /// finish resetting.
-    pub fn reset_sam3u(&self) -> Result<()> {
-        self.send_ctrl(Backend::CMD_SAM3U_CFG, Backend::SAM3U_RESET, &[])?;
+    pub fn reset_sam3x(&self) -> Result<()> {
+        self.send_ctrl(Backend::CMD_SAM3X_CFG, Backend::SAM3X_RESET, &[])?;
         Ok(())
     }
 
