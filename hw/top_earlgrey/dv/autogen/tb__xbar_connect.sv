@@ -20,9 +20,9 @@
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_EXT_DEVICE_IF(tl_name, port_name) \
-     force ``tl_name``_tl_if.h2d = dut.top_earlgrey.``port_name``_req_o; \
-     force dut.top_earlgrey.``port_name``_rsp_i = ``tl_name``_tl_if.d2h; \
+`define DRIVE_CHIP_TL_EXT_DEVICE_IF(tl_name, inst_name, port_name) \
+     force ``tl_name``_tl_if.h2d = dut.u_``inst_name``.``port_name``_i; \
+     force dut.u_``inst_name``.``port_name``_o = ``tl_name``_tl_if.d2h; \
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", \
                                         ``tl_name``_tl_if);
 
@@ -179,7 +179,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(aon_timer_aon, aon_timer_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(sysrst_ctrl_aon, sysrst_ctrl_aon, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(adc_ctrl_aon, adc_ctrl_aon, tl)
-    `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast_tl)
+    `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
   end
 end
 

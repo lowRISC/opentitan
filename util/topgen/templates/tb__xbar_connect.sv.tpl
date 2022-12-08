@@ -51,9 +51,9 @@ def escape_if_name(qual_if_name):
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
 
-`define DRIVE_CHIP_TL_EXT_DEVICE_IF(tl_name, port_name) ${"\\"}
-     force ``tl_name``_tl_if.h2d = dut.top_${top["name"]}.``port_name``_req_o; ${"\\"}
-     force dut.top_${top["name"]}.``port_name``_rsp_i = ``tl_name``_tl_if.d2h; ${"\\"}
+`define DRIVE_CHIP_TL_EXT_DEVICE_IF(tl_name, inst_name, port_name) ${"\\"}
+     force ``tl_name``_tl_if.h2d = dut.u_``inst_name``.``port_name``_i; ${"\\"}
+     force dut.u_``inst_name``.``port_name``_o = ``tl_name``_tl_if.d2h; ${"\\"}
      uvm_config_db#(virtual tl_if)::set(null, $sformatf("*env.%0s_agent", `"tl_name`"), "vif", ${"\\"}
                                         ``tl_name``_tl_if);
 
@@ -110,7 +110,7 @@ sig_name = inst_sig_list[0][2]
     % if node["type"] == "host" and not node["xbar"]:
     `DRIVE_CHIP_TL_HOST_IF(${esc_name}, ${inst_name}, ${sig_name})
     % elif node["type"] == "device" and not node["xbar"] and node["stub"]:
-    `DRIVE_CHIP_TL_EXT_DEVICE_IF(${esc_name}, ${inst_name}_${sig_name})
+    `DRIVE_CHIP_TL_EXT_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name})
     % elif node["type"] == "device" and not node["xbar"]:
     `DRIVE_CHIP_TL_DEVICE_IF(${esc_name}, ${inst_name}, ${sig_name})
     % endif
