@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -49,6 +50,7 @@ static dif_pwm_t pwm;
 static dif_pinmux_t pinmux;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_gpio_t gpio;
+static dif_adc_ctrl_t adc_ctrl;
 
 static volatile const bool kCoreClkOff = false;
 static volatile const bool kIoClkOff = false;
@@ -143,6 +145,8 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_adc_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
 
   LOG_INFO("Running CHIP Power Sleep Load test");
 
@@ -372,6 +376,30 @@ bool test_main(void) {
                                         false);
   }
   LOG_INFO("AON Timer active");
+
+  // ADC Controller
+  const uint8_t kNumLowPowerSamples = 2;
+  const uint8_t kNumNormalPowerSamples = 1;
+  const uint64_t kPowerUpTime = 30;
+  const uint64_t kWakeUpTime = 500;
+  uint32_t power_up_time_aon_cycles =
+      aon_timer_testutils_get_aon_cycles_from_us(kPowerUpTime);
+  uint32_t wake_up_time_aon_cycles =
+      aon_timer_testutils_get_aon_cycles_from_us(kWakeUpTime);
+
+  // ADC configuration
+  CHECK_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl, kDifToggleDisabled));
+  CHECK_DIF_OK(dif_adc_ctrl_reset(&adc_ctrl));
+  CHECK_DIF_OK(dif_adc_ctrl_configure(
+      &adc_ctrl, (dif_adc_ctrl_config_t){
+                     .mode = kDifAdcCtrlLowPowerScanMode,
+                     .num_low_power_samples = kNumLowPowerSamples,
+                     .num_normal_power_samples = kNumNormalPowerSamples,
+                     .power_up_time_aon_cycles = power_up_time_aon_cycles,
+                     .wake_up_time_aon_cycles = wake_up_time_aon_cycles}));
+  CHECK_DIF_OK(dif_adc_ctrl_set_enabled(&adc_ctrl, kDifToggleEnabled));
+
+  LOG_INFO("ADC Controller active");
 
   // Power Manager
   dif_pwrmgr_domain_config_t pwrmgr_cfg;
