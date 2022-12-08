@@ -61,7 +61,7 @@ module tb;
   logic pd_prev;
   bit   cfg_lp_mode;
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // interfaces
   clk_rst_if clk_rst_if (

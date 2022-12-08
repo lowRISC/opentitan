@@ -34,7 +34,7 @@ module tb;
   edn_if edn_if(.clk(clk), .rst_n(rst_n));
   edn_assert_if edn_assert_if(.clk(clk), .rst_n(rst_n));
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
   assign edn_disable_o = edn_if.edn_disable_o;
 
   // dut

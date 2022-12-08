@@ -94,7 +94,7 @@ module tb;
   assign flash_ctrl_if.fatal_err = tb.dut.fatal_err;
   `undef  FLASH_DEVICE_HIER
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // SIMPLE OTP KEY INTERFACE (Access via VIF)
 

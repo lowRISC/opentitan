@@ -44,7 +44,7 @@ module tb;
   tl_if tl_if(.clk(usb_clk), .rst_n(usb_rst_n));
   usb20_if usb20_if();
 
- `DV_ALERT_IF_CONNECT
+ `DV_ALERT_IF_CONNECT()
 
   // dut
   usbdev dut (

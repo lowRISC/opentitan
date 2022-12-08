@@ -45,7 +45,7 @@ module tb;
   assign edn_disable = csrng_agents_if.edn_disable;
   assign entropy_src_disable = csrng_agents_if.entropy_src_disable;
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // dut
   csrng#(.NHwApps(NUM_HW_APPS),

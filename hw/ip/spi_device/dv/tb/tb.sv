@@ -50,7 +50,7 @@ module tb;
   spi_if  spi_if(.rst_n(rst_n));
   spi_if  spi_if_pass(.rst_n(rst_n));
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // dut
   spi_device dut (

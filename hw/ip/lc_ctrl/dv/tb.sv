@@ -88,7 +88,7 @@ module tb;
     .rst_n(rst_n)
   );
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // dut
   lc_ctrl #(

@@ -64,7 +64,7 @@ module tb;
 
   otp_ctrl_if otp_ctrl_if(.clk_i(clk), .rst_ni(rst_n));
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // edn_clk, edn_rst_n and edn_if are defined and driven in below macro
   `DV_EDN_IF_CONNECT
