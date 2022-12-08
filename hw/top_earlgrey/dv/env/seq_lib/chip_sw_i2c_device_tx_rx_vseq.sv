@@ -23,6 +23,10 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
 
   rand bit [6:0] i2c_device_address_0;
   rand bit [6:0] i2c_device_address_1;
+  rand bit [6:0] i2c_device_mask_0;
+  rand bit [6:0] i2c_device_mask_1;
+  rand bit choose_address;
+  rand bit [6:0] r;
 
   virtual task cpu_init();
     bit[7:0] clock_period_nanos_arr[1] = {clock_period_nanos};
@@ -30,7 +34,9 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     bit[7:0] i2c_clock_period_nanos_arr[4] = {<<byte{i2c_clock_period_nanos}};
     bit[7:0] i2c_idx_arr[1];
     bit[7:0] i2c_device_address_0_arr[1];
+    bit[7:0] i2c_device_mask_0_arr[1];
     bit[7:0] i2c_device_address_1_arr[1];
+    bit[7:0] i2c_device_mask_1_arr[1];
     bit[7:0] byte_count_arr[1];
 
     void'($value$plusargs("i2c_idx=%0d", i2c_idx));
@@ -39,6 +45,9 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     i2c_idx_arr = {i2c_idx};
     i2c_device_address_0_arr = {i2c_device_address_0};
     i2c_device_address_1_arr = {i2c_device_address_1};
+    // if an address bit is 1, the corresponding mask bit must also be 1
+    i2c_device_mask_0_arr = {i2c_device_address_0 | i2c_device_mask_0};
+    i2c_device_mask_1_arr = {i2c_device_address_1 | i2c_device_mask_1};
     byte_count_arr = {byte_count};
     super.cpu_init();
     // need to figure out a better way to calculate this based on tb clock frequency
@@ -47,9 +56,9 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     sw_symbol_backdoor_overwrite("kI2cClockPeriodNanos", i2c_clock_period_nanos_arr);
     // sw_symbol_backdoor_overwrite("kI2cIdx", i2c_idx_arr);
     sw_symbol_backdoor_overwrite("kI2cDeviceAddress0", i2c_device_address_0_arr);
-    // sw_symbol_backdoor_overwrite("kI2cDeviceMask0", i2c_device_mask_0);
+    sw_symbol_backdoor_overwrite("kI2cDeviceMask0", i2c_device_mask_0_arr);
     sw_symbol_backdoor_overwrite("kI2cDeviceAddress1", i2c_device_address_1_arr);
-    // sw_symbol_backdoor_overwrite("kI2cDeviceMask1", i2c_device_mask_1);
+    sw_symbol_backdoor_overwrite("kI2cDeviceMask1", i2c_device_mask_1_arr);
     sw_symbol_backdoor_overwrite("kI2cByteCount", byte_count_arr);
     // sw_symbol_backdoor_overwrite("expected_data", i2c_device_tx_data);
   endtask
@@ -151,6 +160,8 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     i2c_item exp_txn;
     i2c_item full_txn;
     int read_size;
+    bit [6:0] address_0;
+    bit [6:0] address_1;
 
     `uvm_create_obj(i2c_item, full_txn)
 
@@ -163,9 +174,12 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
     // Address
     `uvm_create_obj(i2c_item, txn)
     `uvm_create_obj(i2c_item, exp_txn)
+    // randomly select any matching address
+    address_0 = i2c_device_address_0 | (r & ~i2c_device_mask_0);
+    address_1 = i2c_device_address_1 | (r & ~i2c_device_mask_1);
     txn.drv_type = HostData;
     txn.start = 1;
-    txn.wdata[7:1] = i2c_device_address_0;
+    txn.wdata[7:1] = choose_address ? address_0 : address_1;
     txn.wdata[0] = is_read;
     txn.tran_id = this.tran_id++;
     `downcast(exp_txn, txn.clone());
@@ -202,7 +216,7 @@ class chip_sw_i2c_device_tx_rx_vseq extends chip_sw_i2c_tx_rx_vseq;
         rs_txn.drv_type = HostData;
         rs_txn.start = 1;
         rs_txn.rstart = 0;
-        rs_txn.wdata[7:1] = i2c_device_address_0;
+        rs_txn.wdata[7:1] = choose_address ? address_0 : address_1;
         prv_read = is_read;
         is_read = rs_txn.read;
         rs_txn.wdata[0] = is_read;
