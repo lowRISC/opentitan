@@ -47,7 +47,7 @@
         pass
 %>\
       % for bit_range in excl_bits:
--node tb.dut*.u_${dev_name} ${if_name}tl_i.a_address[${bit_range[1]}:${bit_range[0]}]
+-node tb.dut*.u_${dev_name} ${if_name}tl_*i.a_address[${bit_range[1]}:${bit_range[0]}]
       % endfor
     % endif
   % endfor
