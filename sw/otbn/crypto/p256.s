@@ -53,12 +53,12 @@
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * @param[in]  [w19,w20]: a, input (512 bits) such that a < 2^256 * m 
+ * @param[in]  [w19,w20]: a, input (512 bits) such that a < 2^256 * m
  * @param[in]  w22: correction factor, msb(a) * u
- * @param[in]  w29: m, modulus, curve order n or finite field modulus p 
- * @param[in]  w28: u, lower 256 bit of Barrett constant for m 
+ * @param[in]  w29: m, modulus, curve order n or finite field modulus p
+ * @param[in]  w28: u, lower 256 bit of Barrett constant for m
  * @param[in]  w31: all-zero
- * @param[in]  MOD: m, modulus 
+ * @param[in]  MOD: m, modulus
  * @param[out]  w19: c, result
  *
  * clobbered registers: w19, w20, w21, w22, w23, w24, w25
@@ -159,7 +159,7 @@ p256_reduce:
 /**
  * 256-bit modular multiplication for P-256 coordinate and scalar fields.
  *
- * Returns c = a * b mod p
+ * Returns c = a * b mod m
  *
  * Expects two 256 bit operands, 256 bit modulus and pre-computed parameter u
  * for Barrett reduction (usually greek mu in literature). See the note above
@@ -169,7 +169,7 @@ p256_reduce:
  *
  * @param[in]  w24: a, first 256 bit operand (a * b < 2^256 * p)
  * @param[in]  w25: b, second 256 bit operand (a * b < 2^256 * p)
- * @param[in]  w29: m, modulus, curve order n or finite field modulus p 
+ * @param[in]  w29: m, modulus, curve order n or finite field modulus p
  * @param[in]  w28: u, lower 256 bit of Barrett constant for curve P-256
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus of P-256 underlying finite field
@@ -214,6 +214,59 @@ mod_mul_256x256:
 
   ret
 
+/**
+ * 320- by 128-bit modular multiplication for P-256 coordinate and scalar fields.
+ *
+ * Returns c = a * b mod m
+ *
+ * Expects two operands, 256 bit modulus and pre-computed parameter u
+ * for Barrett reduction (usually greek mu in literature). See the note above
+ * `p256_reduce` for details.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w24: a0, low part of 320-bit operand a (256 bits)
+ * @param[in]  w25: a1, high part of 320-bit operand a (64 bits)
+ * @param[in]  w26: b, second operand (128 bits)
+ * @param[in]  w29: m, modulus, curve order n or finite field modulus p
+ * @param[in]  w28: u, lower 256 bit of Barrett constant for curve P-256
+ * @param[in]  w31: all-zero
+ * @param[in]  MOD: p, modulus of P-256 underlying finite field
+ * @param[out]  w19: c, result
+ *
+ * clobbered registers: w19, w20, w21, w22, w23, w24, w25
+ * clobbered flag groups: FG0
+ */
+mod_mul_320x128:
+  /* Compute the integer product of the operands x = a * b
+     x = [w20, w19] = a * b = w24 * w25
+     => max. length of x: 448 bit */
+  bn.mulqacc.z          w24.0, w26.0, 0
+  bn.mulqacc            w24.0, w26.1, 64
+  bn.mulqacc.so  w19.L, w24.1, w26.0, 64
+  bn.mulqacc            w24.1, w26.1, 0
+  bn.mulqacc            w24.2, w26.0, 0
+  bn.mulqacc            w24.2, w26.1, 64
+  bn.mulqacc.so  w19.U, w24.3, w26.0, 64
+  bn.mulqacc            w24.3, w26.1, 0
+  bn.mulqacc            w25.0, w26.0, 0
+  bn.mulqacc.wo    w20, w25.0, w26.1, 64
+  /* TODO: try removing this from both, I think M flag is set by .wo */
+  bn.add    w20, w20, w31
+
+  /* Store correction factor to compensate for later neglected MSb of x.
+     x is 512 bit wide and therefore the 255 bit right shifted version q1
+     (below) contains 257 bit. Bit 256 of q1 is neglected to allow using a
+     256x256 multiplier. For the MSb of x being set we temporary store u
+     (or zero) here to be used in a later constant time correction of a
+     multiplication with u. Note that this requires the MSb flag being carried
+     over from the multiplication routine. */
+  bn.sel    w22, w28, w31, M
+
+  /* Reduce product modulo m. */
+  jal       x1, p256_reduce
+
+  ret
 
 /**
  * Checks if a point is a valid curve point on curve P-256 (secp256r1)
@@ -1218,34 +1271,45 @@ p256_sign:
   li        x2, 3
   bn.lid    x2, 0(x16)
 
-  /* Reduce k0 modulo n.
-     TODO(#15507): this is temporary until mod_inv supports extra bits; remove later.
+  /* Generate a random 127-bit number.
+       w4 <= URND()[255:129] */
+  bn.wsrr  w4, 0x2 /* URND */
+  bn.rshi  w4, w31, w4 >> 129
 
-     w0 <= [w0,w1] mod n = k0 mod n */
-  bn.mov   w19, w0
-  bn.mov   w20, w1
-  bn.mov   w22, w31
-  jal      x1, p256_reduce
-  bn.mov   w0, w19
+  /* Add 1 to get a 128-bit nonzero scalar for masking.
+       w4 <= w4 + 1 = gamma */
+  bn.addi  w4, w4, 1
 
-  /* Reduce k1 modulo n.
-     TODO(#15507): this is temporary until mod_inv supports extra bits; remove later.
+  /* Multiply k0 by the masking factor and reduce modulo n.
+       w0 <= ([w0,w1] * w4) mod n = (k0 * gamma) mod n */
+  bn.mov    w24, w0
+  bn.mov    w25, w1
+  bn.mov    w26, w4
+  jal       x1, mod_mul_320x128
+  bn.mov    w0, w19
 
-     w1 <= [w2,w3] mod n = k1 mod n */
-  bn.mov   w19, w2
-  bn.mov   w20, w3
-  bn.mov   w22, w31
-  jal      x1, p256_reduce
-  bn.mov   w1, w19
+  /* Multiply k1 by the masking factor and reduce modulo n.
+       w2 <= ([w2,w3] * w26) mod n = (k1 * gamma) mod n */
+  bn.mov    w24, w2
+  bn.mov    w25, w3
+  jal       x1, mod_mul_320x128
+  bn.mov    w2, w19
 
-  /* Combine the shares of k for inversion.
-     TODO(#15507): modify inversion to handle k in shares.
-       w0 <= (w0 + w1) mod n = k */
-  bn.addm   w0, w0, w1
+  /* Add shares to get (k * gamma) mod n. This should be safe because of the
+     randomness from gamma.
+       w0 <= (w0 + w2) mod n = (k * gamma) mod n */
+  bn.addm  w0, w0, w2
 
-  /* modular multiplicative inverse of k
-     w1 <= k^-1 mod n */
+  /* Compute the inverse of (k * gamma) mod n.
+     w1 <= w0^-1 mod n = (k * gamma)^-1 mod n */
   jal       x1, mod_inv
+
+  /* Compute (gamma * (k * gamma)^-1) mod n = k^-1 mod n
+       w1 <= (w4*w1) mod n = k^-1 mod n */
+  bn.mov    w24, w4
+  bn.mov    w25, w1
+  jal       x1, mod_mul_256x256
+  bn.mov    w1, w19
 
   /* w24 = d0 = dmem[d0] */
   la        x23, d0
