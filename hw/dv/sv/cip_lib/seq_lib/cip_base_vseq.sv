@@ -298,24 +298,11 @@ class cip_base_vseq #(
   // are descriptions of some of the args:
 
   // interrupts: bit vector indicating which interrupts to process
-  // suffix: if there are more than BUS_DW interrupts, then add suffix 'hi' or 'lo' to the interrupt
-  // TODO add support for suffix
-  // csr to configure the right one (ex: intr_enable_hi, intr_enable_lo, etc)
-  // indices[$]: registers could be indexed (example, rv_timer) in which case, push as many desired
-  // index values as required by the design to the queue
   // scope: for top level, specify which ip / sub module's interrupt to clear
 
   // common task
   local function dv_base_reg get_interrupt_csr(string csr_name,
-                                               string suffix = "",
-                                               int indices[$] = {},
                                                dv_base_reg_block scope = null);
-    if (indices.size() != 0) begin
-      foreach (indices[i]) begin
-        suffix = {suffix, (i == 0) ? "" : "_", $sformatf("%0d", i)};
-      end
-      csr_name = {csr_name, suffix};
-    end
     // check within scope first, if supplied
     if (scope != null) begin
       get_interrupt_csr = scope.get_dv_base_reg_by_name(csr_name);
@@ -343,14 +330,12 @@ class cip_base_vseq #(
   // see description above for other args
   virtual task cfg_interrupts(bit [BUS_DW-1:0] interrupts,
                               bit enable = 1'b1,
-                              string suffix = "",
-                              int indices[$] = {},
                               dv_base_reg_block scope = null);
 
     uvm_reg          csr;
     bit [BUS_DW-1:0] data;
 
-    csr = get_interrupt_csr("intr_enable", "", indices, scope);
+    csr = get_interrupt_csr("intr_enable", scope);
     data = csr.get_mirrored_value();
     if (enable) data |= interrupts;
     else        data &= ~interrupts;
@@ -364,8 +349,6 @@ class cip_base_vseq #(
   // see description above for other args
   virtual task check_interrupts(bit [BUS_DW-1:0] interrupts,
                                 bit check_set,
-                                string suffix = "",
-                                int indices[$] = {},
                                 dv_base_reg_block scope = null,
                                 bit [BUS_DW-1:0] clear = '1);
     uvm_reg          csr_intr_state, csr_intr_enable;
@@ -377,7 +360,7 @@ class cip_base_vseq #(
 
     act_pins = cfg.intr_vif.sample() & interrupts;
     if (check_set) begin
-      csr_intr_enable = get_interrupt_csr("intr_enable", "", indices, scope);
+      csr_intr_enable = get_interrupt_csr("intr_enable", scope);
       exp_pins = interrupts & csr_intr_enable.get_mirrored_value();
       exp_intr_state = interrupts;
     end else begin
@@ -385,7 +368,7 @@ class cip_base_vseq #(
       exp_intr_state = ~interrupts;
     end
     `DV_CHECK_EQ(act_pins, exp_pins)
-    csr_intr_state = get_interrupt_csr("intr_state", "", indices, scope);
+    csr_intr_state = get_interrupt_csr("intr_state", scope);
     csr_rd_check(.ptr(csr_intr_state), .compare_value(exp_intr_state), .compare_mask(interrupts));
 
     if (check_set && |(interrupts & clear)) begin
