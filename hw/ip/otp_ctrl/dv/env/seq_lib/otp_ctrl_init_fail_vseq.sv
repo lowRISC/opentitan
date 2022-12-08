@@ -171,7 +171,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
     cfg.otp_ctrl_vif.drive_pwr_otp_init(1);
 
     // Wait until OTP_INIT process the error
-    `DV_SPINWAIT_EXIT(wait(cfg.m_alert_agent_cfg[alert_name].vif.alert_tx_final.alert_p);,
+    `DV_SPINWAIT_EXIT(wait(cfg.m_alert_agent_cfgs[alert_name].vif.alert_tx_final.alert_p);,
                       cfg.clk_rst_vif.wait_clks(5000);,
                       $sformatf("Timeout waiting for alert %0s", alert_name))
     check_fatal_alert_nonblocking(alert_name);

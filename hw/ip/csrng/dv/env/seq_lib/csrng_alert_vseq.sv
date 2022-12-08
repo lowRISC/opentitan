@@ -48,7 +48,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
 
     // Wait for the recoverable alert.
     `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
-    cfg.m_alert_agent_cfg["recov_alert"].vif.wait_ack_complete();
+    cfg.m_alert_agent_cfgs["recov_alert"].vif.wait_ack_complete();
 
     `uvm_info(`gfn, $sformatf("Checking RECOV_ALERT_STS register"), UVM_MEDIUM)
     reg_name = "recov_alert_sts";
@@ -119,7 +119,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     end
 
     `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
-    cfg.m_alert_agent_cfg["recov_alert"].vif.wait_ack_complete();
+    cfg.m_alert_agent_cfgs["recov_alert"].vif.wait_ack_complete();
 
     `uvm_info(`gfn, $sformatf("Checking RECOV_ALERT_STS register"), UVM_MEDIUM)
     exp_recov_alert_sts = 32'b0;
@@ -172,7 +172,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     send_cmd_req(SW_APP, cs_item);
 
     `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
-    cfg.m_alert_agent_cfg["recov_alert"].vif.wait_ack_complete();
+    cfg.m_alert_agent_cfgs["recov_alert"].vif.wait_ack_complete();
 
     `uvm_info(`gfn, $sformatf("Checking RECOV_ALERT_STS register"), UVM_MEDIUM)
     exp_recov_alert_sts = 32'b0;
@@ -200,7 +200,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     send_cmd_req(cfg.which_app_err_alert, cs_item, .await_response(1'b0));
 
     `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
-    cfg.m_alert_agent_cfg["recov_alert"].vif.wait_ack_complete();
+    cfg.m_alert_agent_cfgs["recov_alert"].vif.wait_ack_complete();
 
     `uvm_info(`gfn, $sformatf("Checking RECOV_ALERT_STS register"), UVM_MEDIUM)
     exp_recov_alert_sts = 32'b0;

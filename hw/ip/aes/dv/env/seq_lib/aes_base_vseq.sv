@@ -612,7 +612,7 @@ class aes_base_vseq extends cip_base_vseq #(
           end else begin
             // check fatal on the alert if
             `DV_SPINWAIT_EXIT(
-                 wait(cfg.m_alert_agent_cfg["fatal_fault"].vif.alert_tx_final.alert_p);,
+                 wait(cfg.m_alert_agent_cfgs["fatal_fault"].vif.alert_tx_final.alert_p);,
                  cfg.clk_rst_vif.wait_clks(check_wait_cycles);,
                  $sformatf("Timeout waiting for alert %0s", "fatal_check_error"))
             check_fatal_alert_nonblocking("fatal_fault");

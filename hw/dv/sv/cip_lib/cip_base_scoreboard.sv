@@ -55,7 +55,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       alert_fifos[alert_name] = new($sformatf("alert_fifo[%s]", alert_name), this);
     end
     edn_fifos = new[cfg.num_edn];
-    foreach (cfg.m_edn_pull_agent_cfg[i]) edn_fifos[i] = new($sformatf("edn_fifos[%0d]", i), this);
+    foreach (cfg.m_edn_pull_agent_cfgs[i]) begin
+      edn_fifos[i] = new($sformatf("edn_fifos[%0d]", i), this);
+    end
     foreach (cfg.m_tl_agent_cfgs[i]) begin
       exp_mem[i] = mem_model#()::type_id::create({"exp_mem_", i}, this);
     end
@@ -69,7 +71,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
       bit has_ro_mem;
 
       if (has_mem) begin
-        get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access_err, has_wo_mem, has_ro_mem);
+        get_all_mem_attrs(cfg.ral_models[ral_name], has_mem_byte_access_err, has_wo_mem,
+                          has_ro_mem);
       end
       if (cfg.en_tl_err_cov) begin
         tl_errors_cgs_wrap[ral_name] = new($sformatf("tl_errors_cgs_wrap[%0s]", ral_name));

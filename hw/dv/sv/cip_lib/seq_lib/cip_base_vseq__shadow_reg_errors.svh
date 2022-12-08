@@ -140,8 +140,8 @@ virtual task check_csr_read_clear_staged_val(dv_base_reg shadowed_csr);
   wdata = get_shadow_reg_diff_val(shadowed_csr, wdata);
   shadow_reg_wr(.csr(shadowed_csr), .wdata(wdata), .en_shadow_wr(1));
 
-  if (cfg.m_alert_agent_cfg.exists(alert_name)) begin
-    `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 0,
+  if (cfg.m_alert_agent_cfgs.exists(alert_name)) begin
+    `DV_CHECK_EQ(cfg.m_alert_agent_cfgs[alert_name].vif.get_alert(), 0,
                  $sformatf("Unexpected alert: %s fired", alert_name))
   end
 
@@ -153,7 +153,7 @@ endtask
 // This non-blocking task checks if the alert is continuously firing until reset is issued.
 virtual task shadow_reg_errors_check_fatal_alert_nonblocking(dv_base_reg shadowed_csr,
                                                              string alert_name);
-  if (cfg.m_alert_agent_cfg.exists(alert_name)) begin
+  if (cfg.m_alert_agent_cfgs.exists(alert_name)) begin
     // add clock cycle delay in case of alert coming out 1 cycle later.
     cfg.clk_rst_vif.wait_clks(2);
     check_fatal_alert_nonblocking(alert_name);
@@ -241,15 +241,15 @@ virtual task glitch_shadowed_reset(ref dv_base_reg shadowed_csr[$],
   // external alert, it triggers it as a local alert instead.
   // - Wait for the first alert to trigger then check if the alert is firing continuously, because
   // `dut_init` is a blocking task and alert is firing once alert_init is done.
-  if (cfg.m_alert_agent_cfg.exists(alert_name) && alert_name != "") begin
-    `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
+  if (cfg.m_alert_agent_cfgs.exists(alert_name) && alert_name != "") begin
+    `DV_SPINWAIT(while (!cfg.m_alert_agent_cfgs[alert_name].vif.get_alert())
                  cfg.clk_rst_vif.wait_clks(1);,
                  $sformatf("expect fatal alert:%0s to fire after rst_ni glitched", alert_name))
 
     // `dut_init` task is used to toggle IP reset pin. If the IP has more than one reset pin, alert
     // might already fire when the main reset is deasserted. So the below line we wait for a full
     // alert handshake before check fatal alert.
-    cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();
+    cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();
     check_fatal_alert_nonblocking(alert_name);
   end
 
@@ -308,13 +308,13 @@ virtual task shadow_reg_wr(dv_base_reg    csr,
     begin
       string alert_name = csr.get_update_err_alert_name();
       // This logic gates alert_handler testbench because it does not have outgoing alert.
-      if (cfg.m_alert_agent_cfg.exists(alert_name)) begin
+      if (cfg.m_alert_agent_cfgs.exists(alert_name)) begin
         fork
           begin
-            `DV_SPINWAIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert()) begin
+            `DV_SPINWAIT(while (!cfg.m_alert_agent_cfgs[alert_name].vif.get_alert()) begin
                            cfg.clk_rst_vif.wait_clks(1);
                          end
-                         cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
+                         cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();,
                          $sformatf("%0s update_err alert timeout", csr.get_name()))
           end
           begin

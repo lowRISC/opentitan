@@ -85,7 +85,7 @@ class aes_core_fi_vseq extends aes_base_vseq;
           // The fault is expected to trigger a fatal alert. Ensure this actually happens and
           // release the signal after reset.
           `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
-          cfg.m_alert_agent_cfg["fatal_fault"].vif.wait_ack_complete();
+          cfg.m_alert_agent_cfgs["fatal_fault"].vif.wait_ack_complete();
           `DV_WAIT(!cfg.clk_rst_vif.rst_n)
           cfg.aes_core_fi_vif.force_signal(target, RELEASE, force_value);
         end else if (wait_for_idle) begin

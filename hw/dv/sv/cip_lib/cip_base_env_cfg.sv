@@ -34,8 +34,8 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   uvm_reg_data_t      shadow_update_err_status_fields[dv_base_reg_field];
   uvm_reg_data_t      shadow_storage_err_status_fields[dv_base_reg_field];
 
-  alert_esc_agent_cfg m_alert_agent_cfg[string];
-  push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent_cfg[];
+  alert_esc_agent_cfg m_alert_agent_cfgs[string];
+  push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)) m_edn_pull_agent_cfgs[];
 
   // EDN clk freq setting, if EDN is present.
   rand uint edn_clk_freq_mhz;
@@ -48,7 +48,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   virtual clk_rst_if  edn_clk_rst_vif;
 
   // en_devmode default sets to 1 because all IPs' devmode_i is tied off internally to 1
-  // TODO: enable random drive devmode once design supports
+  // TODO(#16739): enable random drive devmode once design supports
   bit  has_devmode = 1;
   bit  en_devmode = 1;
   bit  has_shadowed_regs = 0;
@@ -91,7 +91,7 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   }
   `uvm_object_param_utils_begin(cip_base_env_cfg #(RAL_T))
     `uvm_field_aa_object_string(m_tl_agent_cfgs,   UVM_DEFAULT)
-    `uvm_field_aa_object_string(m_alert_agent_cfg, UVM_DEFAULT)
+    `uvm_field_aa_object_string(m_alert_agent_cfgs, UVM_DEFAULT)
     `uvm_field_int             (num_interrupts,    UVM_DEFAULT)
   `uvm_object_utils_end
 
@@ -126,24 +126,24 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
       check_alert_configs();
       foreach(list_of_alerts[i]) begin
         string alert_name = list_of_alerts[i];
-        // TODO: fix obj name
-        m_alert_agent_cfg[alert_name] = alert_esc_agent_cfg::type_id::create("m_alert_agent_cfg");
-        `DV_CHECK_RANDOMIZE_FATAL(m_alert_agent_cfg[alert_name])
-        m_alert_agent_cfg[alert_name].if_mode = dv_utils_pkg::Device;
-        m_alert_agent_cfg[alert_name].is_async = 1; // default async_on, can override this
-        m_alert_agent_cfg[alert_name].en_ping_cov = 0;
-        m_alert_agent_cfg[alert_name].en_lpg_cov = 0;
+        m_alert_agent_cfgs[alert_name] = alert_esc_agent_cfg::type_id::create(
+            $sformatf("m_alert_agent_cfgs[%s]", alert_name));
+        `DV_CHECK_RANDOMIZE_FATAL(m_alert_agent_cfgs[alert_name])
+        m_alert_agent_cfgs[alert_name].if_mode = dv_utils_pkg::Device;
+        m_alert_agent_cfgs[alert_name].is_async = 1; // default async_on, can override this
+        m_alert_agent_cfgs[alert_name].en_ping_cov = 0;
+        m_alert_agent_cfgs[alert_name].en_lpg_cov = 0;
       end
     end
 
-    m_edn_pull_agent_cfg = new[num_edn];
-    foreach (m_edn_pull_agent_cfg[i]) begin
-      m_edn_pull_agent_cfg[i] = push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH))::type_id::
-                                 create("m_edn_pull_agent_cfg");
-      `DV_CHECK_RANDOMIZE_FATAL(m_edn_pull_agent_cfg[i])
-      m_edn_pull_agent_cfg[i].agent_type = PullAgent;
-      m_edn_pull_agent_cfg[i].if_mode    = Device;
-      m_edn_pull_agent_cfg[i].hold_d_data_until_next_req = 1;
+    m_edn_pull_agent_cfgs = new[num_edn];
+    foreach (m_edn_pull_agent_cfgs[i]) begin
+      m_edn_pull_agent_cfgs[i] = push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH))::type_id::
+                                 create("m_edn_pull_agent_cfgs");
+      `DV_CHECK_RANDOMIZE_FATAL(m_edn_pull_agent_cfgs[i])
+      m_edn_pull_agent_cfgs[i].agent_type = PullAgent;
+      m_edn_pull_agent_cfgs[i].if_mode    = Device;
+      m_edn_pull_agent_cfgs[i].hold_d_data_until_next_req = 1;
     end
 
     if (jtag_riscv_map != null) ral.set_base_addr(ral.default_map.get_base_addr(), jtag_riscv_map);

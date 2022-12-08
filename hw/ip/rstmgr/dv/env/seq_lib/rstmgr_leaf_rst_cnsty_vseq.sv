@@ -149,7 +149,7 @@ class rstmgr_leaf_rst_cnsty_vseq extends rstmgr_base_vseq;
     endcase
 
     cfg.clk_rst_vif.wait_clks(cycles_to_check);
-    `DV_SPINWAIT(wait(cfg.m_alert_agent_cfg["fatal_cnsty_fault"].vif.alert_tx_final.alert_p);,
+    `DV_SPINWAIT(wait(cfg.m_alert_agent_cfgs["fatal_cnsty_fault"].vif.alert_tx_final.alert_p);,
                  "Timeout waiting for alert fatal_cnsty_fault", 10_000)
 
     lpath = {path, ".child_rst_ni"};

@@ -275,7 +275,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     `DV_SPINWAIT_EXIT(
       try_apply_base_configuration(newcfg, pause, completed);,
-      while (!cfg.m_alert_agent_cfg["recov_alert"].vif.is_alert_handshaking()) begin
+      while (!cfg.m_alert_agent_cfgs["recov_alert"].vif.is_alert_handshaking()) begin
          cfg.clk_rst_vif.wait_clks(1);
       end
       wait_no_outstanding_access();

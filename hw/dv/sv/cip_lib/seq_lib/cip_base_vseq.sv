@@ -96,8 +96,8 @@ class cip_base_vseq #(
 
     // Wait for alert init done, then start the sequence.
     foreach (cfg.list_of_alerts[i]) begin
-      if (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].is_active) begin
-        `DV_WAIT(cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].alert_init_done == 1)
+      if (cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].is_active) begin
+        `DV_WAIT(cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].alert_init_done == 1)
       end
     end
 
@@ -169,8 +169,8 @@ class cip_base_vseq #(
 
   // tl_access task: does a single BUS_DW-bit write or read transaction to the specified address
   // note that this task does not update ral model; optionally also checks for error response
-  // TODO: randomize size, addr here based on given addr range, data, and mask, eventually can be
-  // reused for mem_read, partial read, and hmac msg fifo write
+  // The `size` and `addr[1:0]` are randomized based on the given `mask`, and this is also applied
+  // to mem access. If it doesn't support partial access, use mask = '1.
   virtual task tl_access(input bit [BUS_AW-1:0]  addr,
                          input bit               write,
                          inout bit [BUS_DW-1:0]  data,
@@ -534,8 +534,8 @@ class cip_base_vseq #(
 
       repeat(check_cycles) begin
         cfg.clk_rst_vif.wait_clks(1);
-        foreach (cfg.m_alert_agent_cfg[alert_name]) begin
-          `DV_CHECK_EQ(0, cfg.m_alert_agent_cfg[alert_name].vif.get_alert(),
+        foreach (cfg.m_alert_agent_cfgs[alert_name]) begin
+          `DV_CHECK_EQ(0, cfg.m_alert_agent_cfgs[alert_name].vif.get_alert(),
                        $sformatf("Alert %0s fired unexpectedly!", alert_name))
         end
       end
@@ -579,7 +579,7 @@ class cip_base_vseq #(
          // Randomly decide to write this field and check if the alert fires.
          end else begin
            cfg.clk_rst_vif.wait_clks($urandom_range(0, 3));
-           `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 0,
+           `DV_CHECK_EQ(cfg.m_alert_agent_cfgs[alert_name].vif.get_alert(), 0,
                         $sformatf("alert_test did not set alert:%0s", alert_name))
 
             // write alert_test field when there is ongoing alert handshake
@@ -588,7 +588,7 @@ class cip_base_vseq #(
                         $sformatf("Write alert_test with val %0h during alert_handshake",
                         1'b1 << i), UVM_HIGH)
               csr_wr(.ptr(alert_test_csr), .value(1'b1 << i));
-              `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.get_alert())
+              `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfgs[alert_name].vif.get_alert())
                                 cfg.clk_rst_vif.wait_clks(1);,
                                 cfg.clk_rst_vif.wait_clks(2);,
                                 $sformatf("expect alert_%0d:%0s to fire",
@@ -600,7 +600,7 @@ class cip_base_vseq #(
 
         // check no alert triggers continuously
         foreach (cfg.list_of_alerts[i]) begin
-          `DV_CHECK_EQ(cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].vif.get_alert(), 0,
+          `DV_CHECK_EQ(cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].vif.get_alert(), 0,
                        $sformatf("expect alert:%0s to stay low", cfg.list_of_alerts[i]))
         end
       end // end repeat
@@ -611,13 +611,13 @@ class cip_base_vseq #(
   // clock domain crossing, 2 for pauses, 1 for idle state.
   // So use 7 cycle for default max_wait_cycle.
   virtual task wait_alert_trigger(string alert_name, int max_wait_cycle = 7, bit wait_complete = 0);
-    `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfg[alert_name].vif.is_alert_handshaking())
+    `DV_SPINWAIT_EXIT(while (!cfg.m_alert_agent_cfgs[alert_name].vif.is_alert_handshaking())
                       cfg.clk_rst_vif.wait_clks(1);,
                       // another thread to wait for given cycles. If timeout, report an error.
                       cfg.clk_rst_vif.wait_clks(max_wait_cycle);
                       `uvm_error(`gfn, $sformatf("expect alert:%0s to fire", alert_name)))
     if (wait_complete) begin
-      `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
+      `DV_SPINWAIT(cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();,
                    $sformatf("timeout wait for alert handshake:%0s", alert_name))
     end
   endtask
@@ -628,10 +628,10 @@ class cip_base_vseq #(
     `DV_CHECK_RANDOMIZE_FATAL(ack_seq);
     ack_seq.start(p_sequencer.alert_esc_sequencer_h[alert_name]);
 
-    `DV_SPINWAIT(cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();,
+    `DV_SPINWAIT(cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();,
                  $sformatf("timeout wait for alert_%0d handshake:%0s", alert_index, alert_name))
 
-    if (cfg.m_alert_agent_cfg[alert_name].is_async) cfg.clk_rst_vif.wait_clks(2);
+    if (cfg.m_alert_agent_cfgs[alert_name].is_async) cfg.clk_rst_vif.wait_clks(2);
   endtask
 
   // override csr_vseq to control adapter to abort transaction
@@ -834,11 +834,11 @@ class cip_base_vseq #(
             // 1 extra cycle to make sure no race condition
             repeat (alert_esc_agent_pkg::ALERT_B2B_DELAY + 1) begin
               cfg.clk_rst_vif.wait_n_clks(1);
-              if (cfg.m_alert_agent_cfg[alert_name].vif.get_alert() == 1) break;
+              if (cfg.m_alert_agent_cfgs[alert_name].vif.get_alert() == 1) break;
             end
-            `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 1,
+            `DV_CHECK_EQ(cfg.m_alert_agent_cfgs[alert_name].vif.get_alert(), 1,
                          $sformatf("fatal error %0s does not trigger!", alert_name))
-            cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();
+            cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();
           end,
           wait(cfg.under_reset);)
     join_none
@@ -968,7 +968,7 @@ class cip_base_vseq #(
 
   virtual task run_alert_rsp_seq_nonblocking();
     foreach (cfg.list_of_alerts[i]) begin
-      if (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].is_active) begin
+      if (cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].is_active) begin
         automatic string alert_name = cfg.list_of_alerts[i];
         fork
           begin
@@ -981,8 +981,8 @@ class cip_base_vseq #(
               end
               begin
                 // TODO: issue #16374.
-                wait(!en_auto_alerts_response || cfg.m_alert_agent_cfg[alert_name].under_reset);
-                cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();
+                wait(!en_auto_alerts_response || cfg.m_alert_agent_cfgs[alert_name].under_reset);
+                cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();
               end
             join_any
             disable fork;

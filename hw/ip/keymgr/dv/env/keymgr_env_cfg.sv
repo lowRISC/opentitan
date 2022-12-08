@@ -31,7 +31,7 @@ class keymgr_env_cfg extends cip_base_env_cfg #(.RAL_T(keymgr_reg_block));
 
     // keymgr requests entropy periodically, if seq is done, don't need to add any delay due to
     // activity from EDN interface
-    m_edn_pull_agent_cfg[0].ok_to_end_delay_ns = 0;
+    m_edn_pull_agent_cfgs[0].ok_to_end_delay_ns = 0;
 
     // set num_interrupts & num_alerts
     begin

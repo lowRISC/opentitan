@@ -52,11 +52,11 @@ class clkmgr_common_vseq extends clkmgr_base_vseq;
               // 1 extra cycle to make sure no race condition
               repeat (alert_esc_agent_pkg::ALERT_B2B_DELAY + 20) begin
                 cfg.clk_rst_vif.wait_n_clks(1);
-                  if (cfg.m_alert_agent_cfg[alert_name].vif.get_alert() == 1) break;
+                  if (cfg.m_alert_agent_cfgs[alert_name].vif.get_alert() == 1) break;
               end
-              `DV_CHECK_EQ(cfg.m_alert_agent_cfg[alert_name].vif.get_alert(), 1,
+              `DV_CHECK_EQ(cfg.m_alert_agent_cfgs[alert_name].vif.get_alert(), 1,
                            $sformatf("fatal error %0s does not trigger!", alert_name))
-              cfg.m_alert_agent_cfg[alert_name].vif.wait_ack_complete();
+              cfg.m_alert_agent_cfgs[alert_name].vif.wait_ack_complete();
            end,
            wait(cfg.under_reset);)
     join_none

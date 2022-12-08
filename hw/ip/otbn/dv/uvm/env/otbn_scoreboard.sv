@@ -505,7 +505,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       // before clearing it. This extra cycle is to allow the wait_for_alert() task which should be
       // running at the same time to see the flag set.
       `DV_CHECK_FATAL(recov_alert_seen)
-      @(cfg.m_alert_agent_cfg[alert_name].vif.receiver_cb);
+      @(cfg.m_alert_agent_cfgs[alert_name].vif.receiver_cb);
       recov_alert_seen = 1'b0;
     end
   endtask
@@ -522,7 +522,7 @@ class otbn_scoreboard extends cip_base_scoreboard #(
       if (seen || cfg.under_reset) begin
         break;
       end
-      @(cfg.m_alert_agent_cfg[alert_name].vif.receiver_cb);
+      @(cfg.m_alert_agent_cfgs[alert_name].vif.receiver_cb);
     end
     num_alert_wait_counters--;
 
@@ -607,8 +607,8 @@ class otbn_scoreboard extends cip_base_scoreboard #(
     //    2 cycles of main clock
     //
     // We model the 3rd and 4th term as 10 slow clock cycles in total, giving:
-    max_delay = (cfg.m_alert_agent_cfg[alert_name].ack_delay_max +
-                 cfg.m_alert_agent_cfg[alert_name].ack_stable_max +
+    max_delay = (cfg.m_alert_agent_cfgs[alert_name].ack_delay_max +
+                 cfg.m_alert_agent_cfgs[alert_name].ack_stable_max +
                  10);
     fork
       wait_for_alert(alert_name, max_delay);

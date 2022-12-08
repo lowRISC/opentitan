@@ -303,7 +303,7 @@ class keymgr_base_vseq extends cip_base_vseq #(
   task wait_and_check_fatal_alert(bit check_invalid_state_enterred = 1);
     // could not accurately predict when first fatal alert happen, so wait for the first fatal
     // alert to trigger
-    wait(cfg.m_alert_agent_cfg["fatal_fault_err"].vif.alert_tx_final.alert_p);
+    wait(cfg.m_alert_agent_cfgs["fatal_fault_err"].vif.alert_tx_final.alert_p);
     check_fatal_alert_nonblocking("fatal_fault_err");
     cfg.clk_rst_vif.wait_clks($urandom_range(1, 500));
 

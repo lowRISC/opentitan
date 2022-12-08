@@ -56,10 +56,9 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
       string agent_name = {"m_alert_agent_", alert_name};
       m_alert_agent[alert_name] = alert_esc_agent::type_id::create(agent_name, this);
       uvm_config_db#(alert_esc_agent_cfg)::set(this, agent_name, "cfg",
-          cfg.m_alert_agent_cfg[alert_name]);
-      cfg.m_alert_agent_cfg[alert_name].en_cov = cfg.en_cov;
-      // TODO, should be async clk?
-      cfg.m_alert_agent_cfg[alert_name].clk_freq_mhz = int'(cfg.clk_freq_mhz);
+          cfg.m_alert_agent_cfgs[alert_name]);
+      cfg.m_alert_agent_cfgs[alert_name].en_cov = cfg.en_cov;
+      cfg.m_alert_agent_cfgs[alert_name].clk_freq_mhz = int'(cfg.clk_freq_mhz);
     end
 
     // Create and configure the EDN agent if available.
@@ -70,14 +69,13 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
         m_edn_pull_agent[i] = push_pull_agent#(.DeviceDataWidth(EDN_DATA_WIDTH))::
                               type_id::create(agent_name, this);
         uvm_config_db#(push_pull_agent_cfg#(.DeviceDataWidth(EDN_DATA_WIDTH)))::
-                      set(this, agent_name, "cfg", cfg.m_edn_pull_agent_cfg[i]);
-        cfg.m_edn_pull_agent_cfg[i].en_cov = cfg.en_cov;
+                      set(this, agent_name, "cfg", cfg.m_edn_pull_agent_cfgs[i]);
+        cfg.m_edn_pull_agent_cfgs[i].en_cov = cfg.en_cov;
       end
       if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "edn_clk_rst_vif",
           cfg.edn_clk_rst_vif)) begin
         `uvm_fatal(get_full_name(), "failed to get edn_clk_rst_vif from uvm_config_db")
       end
-      // TODO: is this correct?
       cfg.edn_clk_rst_vif.set_freq_mhz(cfg.edn_clk_freq_mhz);
     end
 
@@ -93,12 +91,12 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
         cfg.m_tl_agent_cfgs[i].d_ready_delay_min = 0;
         cfg.m_tl_agent_cfgs[i].d_ready_delay_max = 0;
       end
-      foreach (cfg.m_alert_agent_cfg[i]) begin
-        cfg.m_alert_agent_cfg[i].alert_delay_min = 0;
-        cfg.m_alert_agent_cfg[i].alert_delay_max = 0;
+      foreach (cfg.m_alert_agent_cfgs[i]) begin
+        cfg.m_alert_agent_cfgs[i].alert_delay_min = 0;
+        cfg.m_alert_agent_cfgs[i].alert_delay_max = 0;
       end
-      foreach (cfg.m_edn_pull_agent_cfg[i]) begin
-        cfg.m_edn_pull_agent_cfg[i].zero_delays = 1;
+      foreach (cfg.m_edn_pull_agent_cfgs[i]) begin
+        cfg.m_edn_pull_agent_cfgs[i].zero_delays = 1;
       end
     end
 
@@ -136,7 +134,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
       end
     end
     foreach(cfg.list_of_alerts[i]) begin
-      if (cfg.m_alert_agent_cfg[cfg.list_of_alerts[i]].is_active) begin
+      if (cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].is_active) begin
         virtual_sequencer.alert_esc_sequencer_h[cfg.list_of_alerts[i]] =
             m_alert_agent[cfg.list_of_alerts[i]].sequencer;
       end
