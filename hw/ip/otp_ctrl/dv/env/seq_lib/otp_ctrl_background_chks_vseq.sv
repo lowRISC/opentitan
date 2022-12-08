@@ -54,7 +54,7 @@ class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_lock_vseq;
 
       // Wait for fatal alert
       `DV_SPINWAIT_EXIT(
-         wait(cfg.m_alert_agent_cfg["fatal_check_error"].vif.alert_tx_final.alert_p);,
+         wait(cfg.m_alert_agent_cfgs["fatal_check_error"].vif.alert_tx_final.alert_p);,
          cfg.clk_rst_vif.wait_clks(check_wait_cycles);,
          $sformatf("Timeout waiting for alert %0s", "fatal_check_error"))
       check_fatal_alert_nonblocking("fatal_check_error");

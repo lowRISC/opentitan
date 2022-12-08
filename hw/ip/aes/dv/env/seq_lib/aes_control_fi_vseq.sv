@@ -85,7 +85,7 @@ class aes_control_fi_vseq extends aes_base_vseq;
         // wait to confirm alert
         wait(wait_for_alert_clear);
         `uvm_info(`gfn, $sformatf("Waiting alert ack complete"), UVM_MEDIUM)
-        cfg.m_alert_agent_cfg["fatal_fault"].vif.wait_ack_complete();
+        cfg.m_alert_agent_cfgs["fatal_fault"].vif.wait_ack_complete();
         wait(!cfg.clk_rst_vif.rst_n);
         cfg.aes_control_fi_vif[if_num].force_signal(target, RELEASE, force_value);
        `uvm_info(`gfn, $sformatf("Finish"), UVM_MEDIUM)

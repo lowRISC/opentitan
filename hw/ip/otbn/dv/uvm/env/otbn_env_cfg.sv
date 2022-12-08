@@ -115,8 +115,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     // Configure the URND EDN connection to be quick. Unlike RND, there's nothing much that can be
     // going on while we're waiting for a URND seed, so there's no real benefit to modelling the
     // possibility that it takes ages.
-    m_edn_pull_agent_cfg[UrndEdnIdx].device_delay_min = 0;
-    m_edn_pull_agent_cfg[UrndEdnIdx].device_delay_max = 2;
+    m_edn_pull_agent_cfgs[UrndEdnIdx].device_delay_min = 0;
+    m_edn_pull_agent_cfgs[UrndEdnIdx].device_delay_max = 2;
   endfunction
 
   // Constrain the randomness of FIPS for RND. This is needed because otherwise FIPS would have
@@ -131,7 +131,7 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     `DV_CHECK_STD_RANDOMIZE_FATAL(entropy)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(fips, fips dist {1'b1 := rnd_fips_pct,
                                                         1'b0 := 100-rnd_fips_pct};)
-    m_edn_pull_agent_cfg[RndEdnIdx].add_d_user_data({fips, entropy});
+    m_edn_pull_agent_cfgs[RndEdnIdx].add_d_user_data({fips, entropy});
   endfunction
 
   function logic poll_rnd_edn_req();

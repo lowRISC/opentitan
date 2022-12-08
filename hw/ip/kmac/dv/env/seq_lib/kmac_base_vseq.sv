@@ -266,7 +266,7 @@ class kmac_base_vseq extends cip_base_vseq #(
         (prescaler_val + 1) * entropy_wait_timer >
           // If zero delay case, the max delay is 0.
           // Kmac requests 4 EDN entropies, and add 10 cycles as extra buffer for domain crossing.
-          (cfg.m_edn_pull_agent_cfg[0].device_delay_max * 4 + 10) *
+          (cfg.m_edn_pull_agent_cfgs[0].device_delay_max * 4 + 10) *
           (cfg.edn_clk_freq_mhz / cfg.clk_freq_mhz + 1);
       } else {
         entropy_wait_timer == 0;
@@ -792,7 +792,7 @@ class kmac_base_vseq extends cip_base_vseq #(
       if (cfg.enable_masking) begin
         // If masked, wait for some time past the max latency of the EDN agent in case
         // an EDN request is sent right as CmdProcess is seen by the KMAC.
-        cfg.edn_clk_rst_vif.wait_clks(2 * cfg.m_edn_pull_agent_cfg[0].device_delay_max);
+        cfg.edn_clk_rst_vif.wait_clks(2 * cfg.m_edn_pull_agent_cfgs[0].device_delay_max);
         cfg.clk_rst_vif.wait_clks(1000);
       end else begin
         cfg.clk_rst_vif.wait_clks(150);

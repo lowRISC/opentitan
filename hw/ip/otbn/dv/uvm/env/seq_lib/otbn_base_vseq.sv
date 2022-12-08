@@ -425,7 +425,7 @@ class otbn_base_vseq extends cip_base_vseq #(
       @(posedge cfg.clk_rst_vif.clk or negedge cfg.clk_rst_vif.rst_n);
       if (!cfg.clk_rst_vif.rst_n) break;
     end
-    cfg.m_alert_agent_cfg["recov"].vif.wait_ack_complete();
+    cfg.m_alert_agent_cfgs["recov"].vif.wait_ack_complete();
 
     if (cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked) begin
       bit cmd_wr;

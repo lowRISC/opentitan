@@ -52,7 +52,7 @@ class aes_fi_vseq extends aes_base_vseq;
             `uvm_info(`gfn, $sformatf("FORCING %h on if[%d]", force_state, if_num), UVM_MEDIUM)
             force_signal(fi_target, FORCE, if_num);
             wait_for_alert_clear = 1;
-            cfg.m_alert_agent_cfg["fatal_fault"].vif.wait_ack_complete();
+            cfg.m_alert_agent_cfgs["fatal_fault"].vif.wait_ack_complete();
             wait(!cfg.clk_rst_vif.rst_n);
             force_signal(fi_target, RELEASE, if_num);
             wait_for_alert_clear = 0;

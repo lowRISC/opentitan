@@ -38,19 +38,19 @@ class otbn_rnd_sec_cm_vseq extends otbn_multi_vseq;
         // If we have already loaded the agent with custom data, that means the previous
         // num_repeated_edn was nine and we overfilled our agent by one to test if EDN word
         // repetition would occur across 256b boundary.
-        if (cfg.m_edn_pull_agent_cfg[RndEdnIdx].has_d_user_data())
+        if (cfg.m_edn_pull_agent_cfgs[RndEdnIdx].has_d_user_data())
         // In this case, we want to fill the remaining 7 EDN words with "FIPS qualified"
         // randomness each time. Because creating a FIPS error is not important in this
         // case.
           repeat (otbn_pkg::EdnDataWidth/cip_base_pkg::EDN_BUS_WIDTH - 1)
-            cfg.m_edn_pull_agent_cfg[RndEdnIdx].add_d_user_data({1'b1, $urandom});
+            cfg.m_edn_pull_agent_cfgs[RndEdnIdx].add_d_user_data({1'b1, $urandom});
         else
           repeat (num_repeated_edn)
           // Note that if there are still some EDN packages remaining to be sent
           // (num_repeated_edn < 8) after filling up the edn_pull_agent with custom data,
           // responses from EDN will get randomized. That means FIPS field has half a
           // chance of being low reach time we send a new word for RND.
-            cfg.m_edn_pull_agent_cfg[RndEdnIdx].add_d_user_data({1'b1, entropy});
+            cfg.m_edn_pull_agent_cfgs[RndEdnIdx].add_d_user_data({1'b1, entropy});
         // Wait until all EDN packages are collected for the next request polling.
         wait(cfg.rnd_vif.edn_rnd_ack_i);
       end
