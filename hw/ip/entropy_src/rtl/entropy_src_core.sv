@@ -101,6 +101,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       rng_bit_enable_pfe;
   logic       rng_bit_enable_pfa;
   logic [1:0] rng_bit_sel;
+  logic       rng_enable_q, rng_enable_d;
   logic       entropy_data_reg_en_pfe;
   logic       entropy_data_reg_en_pfa;
   logic       es_data_reg_rd_en;
@@ -499,6 +500,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_flush_q           <= '0;
       sha3_start_mask_q      <= '0;
       fw_ov_corrupted_q      <= 2'b00;
+      rng_enable_q           <= 1'b 0;
     end else begin
       ht_failed_q            <= ht_failed_d;
       ht_done_pulse_q        <= ht_done_pulse_d;
@@ -512,6 +514,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
       sha3_start_mask_q      <= sha3_start_mask_d;
       mubi_mod_en_dly_q      <= mubi_mod_en_dly_d;
       fw_ov_corrupted_q      <= fw_ov_corrupted_d;
+      rng_enable_q           <= rng_enable_d;
     end
   end
 
@@ -737,9 +740,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
   //       It is assumed that the source is in a different time domain,
   //       and requires the AsyncOn parameter to be set.
 
-  assign entropy_src_rng_o.rng_enable = es_enable_fo[1] &&
-                                        es_delayed_enable &&
-                                        sfifo_esrng_not_full;
+  // rng_enable is being used in other clock domains. Need to latch the
+  // signal.
+  assign rng_enable_d = es_enable_fo[1] &&
+                        es_delayed_enable &&
+                        sfifo_esrng_not_full;
+
+  assign entropy_src_rng_o.rng_enable = rng_enable_q;
 
   assign es_rng_src_valid = entropy_src_rng_i.rng_valid;
   assign es_rng_bus = entropy_src_rng_i.rng_b;
