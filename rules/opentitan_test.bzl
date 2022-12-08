@@ -181,13 +181,13 @@ def cw310_params(
         test_cmds = [
             "--exec=\"fpga load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
             "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
-            "console",
-            "--exit-success={exit_success}",
-            "--exit-failure={exit_failure}",
+            "--exec=\"console --exit-success={exit_success} --exit-failure={exit_failure}\"",
+            "{clear_bitstream}",
         ],
         # CW310-specific Parameters
         bitstream = None,  # A bitstream value of None will cause the default bitstream values to be used
         rom_kind = None,
+        clear_bitstream = False,
         # None
         timeout = "short",
         **kwargs):
@@ -210,6 +210,7 @@ def cw310_params(
                           baked into the bitstream).
         @param rom_kind: The ROM type ('testrom' or 'rom') that is baked into the
                          bitstream that is loaded into the FPGA.
+        @param clear_bitstream: Clear FPGA bitstream at the end of the test.
     """
     default_args = [
         "--rcfile=",
@@ -235,6 +236,7 @@ def cw310_params(
         timeout = timeout,
         bitstream = bitstream,
         rom_kind = rom_kind,
+        clear_bitstream = clear_bitstream,
     )
     return kwargs
 
@@ -470,6 +472,9 @@ def opentitan_functest(
                 rom_kind = "rom"
             else:
                 fail("Unknown bitstream type. Expected the bitstream label to contain the string 'test_rom' or 'rom'.")
+        clear_bitstream = "no-op"
+        if params.pop("clear_bitstream", False):
+            clear_bitstream = "fpga clear-bitstream"
 
         # Set success/failure strings for target platforms that print test
         # results over the UART (e.g., Verilator and FPGA).
@@ -499,6 +504,7 @@ def opentitan_functest(
             "rom": rom,
             "otp": otp,
             "dvsim_config": dvsim_config,
+            "clear_bitstream": clear_bitstream,
             "bitstream": bitstream,
             "rom_kind": rom_kind,
             "logging": params.pop("logging", logging),
