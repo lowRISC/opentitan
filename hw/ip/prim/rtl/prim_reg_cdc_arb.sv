@@ -245,10 +245,13 @@ module prim_reg_cdc_arb #(
     assign src_update_o = src_req & (id_q == SelHwReq);
 
     // once hardware makes an update request, we must eventually see an update pulse
-    `ASSERT(ReqTimeout_A, $rose(id_q == SelHwReq) |-> s_eventually(src_update_o),
-            clk_src_i, !rst_src_ni)
+    `ifdef FPV_ON
+      `ASSERT(ReqTimeout_A, $rose(id_q == SelHwReq) |-> s_eventually(src_update_o),
+              clk_src_i, !rst_src_ni)
+      // TODO: #14913 check if we can add additional sim assertions.
+    `endif
 
-    `ifdef INC_ASSERT
+    `ifdef FPV_ON
       //VCS coverage off
       // pragma coverage off
 
@@ -267,6 +270,7 @@ module prim_reg_cdc_arb #(
       // pragma coverage on
 
       // once hardware makes an update request, we must eventually see an update pulse
+      // TODO: #14913 check if we can add additional sim assertions.
       `ASSERT(UpdateTimeout_A, $rose(async_flag) |-> s_eventually(src_update_o),
               clk_src_i, !rst_src_ni)
     `endif

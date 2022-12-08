@@ -190,6 +190,8 @@ module prim_reg_cdc #(
   `ASSERT_KNOWN(DstReqKnown_A, dst_req, clk_dst_i, !rst_dst_ni)
 
   // If busy goes high, we must eventually see an ack
-  `ASSERT(HungHandShake_A, $rose(src_req) |-> strong(##[0:$] src_ack), clk_src_i, !rst_src_ni)
-
+  `ifdef FPV_ON
+    `ASSERT(HungHandShake_A, $rose(src_req) |-> strong(##[0:$] src_ack), clk_src_i, !rst_src_ni)
+    // TODO: #14913 check if we can add additional sim assertions.
+  `endif
 endmodule // prim_subreg_cdc
