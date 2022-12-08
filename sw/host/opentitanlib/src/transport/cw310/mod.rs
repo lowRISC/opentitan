@@ -236,6 +236,11 @@ impl Transport for CW310 {
             usb.pll_out_enable(2, false)?;
             usb.pll_write_defaults()?;
             Ok(None)
+        } else if action.downcast_ref::<ClearBitstream>().is_some() {
+            let usb = self.device.borrow();
+            usb.spi1_enable(false)?;
+            usb.clear_bitstream()?;
+            Ok(None)
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
@@ -262,3 +267,6 @@ pub struct SetPll {}
 
 /// Command for Transport::dispatch(). Resets the CW310's SAM3X chip.
 pub struct ResetSam3x {}
+
+/// Command for Transport::dispatch().
+pub struct ClearBitstream {}

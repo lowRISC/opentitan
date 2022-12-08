@@ -81,6 +81,9 @@ impl Backend {
     pub const REQ_CS_HIGH: u16 = 0xA3;
     pub const REQ_SEND_DATA: u16 = 0xA4;
 
+    /// FPGA programming speed in Hz.
+    pub const FPGA_PROG_SPEED: u32 = 20_000_000;
+
     /// Commands for programming the bitstream into the FPGA.
     pub const CMD_FPGA_STATUS: u8 = 0x15;
     pub const CMD_FPGA_PROGRAM: u8 = 0x16;
@@ -360,8 +363,7 @@ impl Backend {
         bitstream: &[u8],
         progress: Option<&dyn Fn(u32, u32)>,
     ) -> Result<()> {
-        const PROG_SPEED: u32 = 20_000_000;
-        self.fpga_prepare(PROG_SPEED)?;
+        self.fpga_prepare(Backend::FPGA_PROG_SPEED)?;
         let result = self.fpga_download(bitstream, progress);
 
         let mut status = false;
@@ -380,6 +382,16 @@ impl Backend {
             Err(TransportError::FpgaProgramFailed(e.to_string()).into())
         } else if !status {
             Err(TransportError::FpgaProgramFailed("unknown error".to_string()).into())
+        } else {
+            Ok(())
+        }
+    }
+
+    pub fn clear_bitstream(&self) -> Result<()> {
+        self.fpga_prepare(Backend::FPGA_PROG_SPEED)?;
+        self.send_ctrl(Backend::CMD_FPGA_PROGRAM, Backend::PROGRAM_EXIT, &[])?;
+        if self.fpga_is_programmed()? {
+            Err(TransportError::ClearBitstreamFailed().into())
         } else {
             Ok(())
         }
