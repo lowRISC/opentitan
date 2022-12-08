@@ -18,14 +18,18 @@
 .section .text.start
 
 ecdsa_sign_test:
-  /* Randomize k0.
-       dmem[k0] <= randomize(dmem[k0]) */
+  /* Randomize all shares.
+       dmem[k0] <= randomize(dmem[k0])
+       dmem[k1] <= randomize(dmem[k1])
+       dmem[d0] <= randomize(dmem[d0])
+       dmem[d1] <= randomize(dmem[d1]) */
   la       x16, k0
   jal      x1, randomize_share
-
-  /* Randomize d0.
-       dmem[d0] <= randomize(dmem[d0]) */
+  la       x16, k1
+  jal      x1, randomize_share
   la       x16, d0
+  jal      x1, randomize_share
+  la       x16, d1
   jal      x1, randomize_share
 
   /* call ECDSA signing subroutine in P-256 lib */
