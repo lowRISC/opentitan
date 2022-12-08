@@ -145,3 +145,7 @@ set_rule_status -rule W_ASYNC_RST_FLOPS -status Waived \
     However, whenever the tap sample is changed, TRST_N holds the \
     reset state. So, all TAPs remain in the reset state. \
     Async reset glitch won't affect the design.  }
+set_rule_status -rule W_ASYNC_RST_FLOPS -status Waived \
+  -expression {(DrivingSignal=~"*.u_rv_dm.u_pm_en_sync.*")} \
+  -comment {LifeCycle HW Debug Enable signal is static and determined \
+    at boot time.}
