@@ -137,12 +137,13 @@ d0:
   .word 0xe5f2cbee
   .word 0x9144233d
   .word 0xc0fbe256
+  .zero 8
 
 /* second share of d (all-zero) */
 .globl d1
 .balign 32
 d1:
-  .zero 32
+  .zero 40
 
 /* signature R */
 .globl r
