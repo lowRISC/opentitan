@@ -471,6 +471,7 @@ opentitan_functest(
     srcs = ["chip_power_sleep_load.c"],
     deps = [
         "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:adc_ctrl",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:gpio",
