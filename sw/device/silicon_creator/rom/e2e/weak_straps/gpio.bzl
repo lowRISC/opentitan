@@ -27,15 +27,19 @@ def strap_combination(strap):
         val = (strap >> (2 * i)) & 3
         if val == 0:
             settings["b{}_mode".format(i)] = "PushPull"
+            settings["b{}_pull".format(i)] = "None"
             settings["b{}_value".format(i)] = "false"
         elif val == 1:
-            settings["b{}_mode".format(i)] = "WeakPushPull"
-            settings["b{}_value".format(i)] = "false"
+            settings["b{}_mode".format(i)] = "Input"
+            settings["b{}_pull".format(i)] = "PullDown"
+            settings["b{}_value".format(i)] = "false"  # Don't care
         elif val == 2:
-            settings["b{}_mode".format(i)] = "WeakPushPull"
-            settings["b{}_value".format(i)] = "true"
+            settings["b{}_mode".format(i)] = "Input"
+            settings["b{}_pull".format(i)] = "PullUp"
+            settings["b{}_value".format(i)] = "true"  # Don't care
         elif val == 3:
             settings["b{}_mode".format(i)] = "PushPull"
+            settings["b{}_pull".format(i)] = "None"
             settings["b{}_value".format(i)] = "true"
     return settings
 
@@ -57,12 +61,12 @@ def strap_combination_test(name, rom, value, evaluator = None, tags = [], extra_
         verilator = verilator_params(
             rom = rom,
             test_cmds = extra_verilator_args + [
-                "--exec=\"gpio set-mode IOC0 {b0_mode}\"".format(**settings),
-                "--exec=\"gpio set-mode IOC1 {b1_mode}\"".format(**settings),
-                "--exec=\"gpio set-mode IOC2 {b2_mode}\"".format(**settings),
-                "--exec=\"gpio write IOC0 {b0_value}\"".format(**settings),
-                "--exec=\"gpio write IOC1 {b1_value}\"".format(**settings),
-                "--exec=\"gpio write IOC2 {b2_value}\"".format(**settings),
+                "--exec=\"gpio set IOC0 --mode={b0_mode} --value={b0_value} --pull={b0_pull}\""
+                    .format(**settings),
+                "--exec=\"gpio set IOC1 --mode={b1_mode} --value={b1_value} --pull={b1_pull}\""
+                    .format(**settings),
+                "--exec=\"gpio set IOC2 --mode={b2_mode} --value={b2_value} --pull={b2_pull}\""
+                    .format(**settings),
                 "--exec=\"{}\"".format(evaluator),
                 "no-op",
             ],

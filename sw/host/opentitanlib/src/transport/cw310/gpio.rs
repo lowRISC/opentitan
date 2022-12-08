@@ -42,7 +42,6 @@ impl GpioPin for CW310GpioPin {
             PinMode::Input => usb.pin_set_output(&self.pinname, false)?,
             PinMode::PushPull => usb.pin_set_output(&self.pinname, true)?,
             PinMode::OpenDrain => return Err(GpioError::UnsupportedPinMode(mode).into()),
-            PinMode::WeakPushPull => return Err(GpioError::UnsupportedPinMode(mode).into()),
         }
         Ok(())
     }

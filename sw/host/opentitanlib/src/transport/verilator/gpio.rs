@@ -17,7 +17,9 @@ use crate::util::file;
 pub struct VerilatorGpioPin {
     inner: Rc<RefCell<Inner>>,
     pinname: u8,
+    out_value: Cell<bool>,
     pinmode: Cell<PinMode>,
+    pullmode: Cell<PullMode>,
 }
 
 impl VerilatorGpioPin {
@@ -25,8 +27,20 @@ impl VerilatorGpioPin {
         Rc::new(VerilatorGpioPin {
             inner,
             pinname,
+            out_value: Cell::new(false),
             pinmode: Cell::new(PinMode::PushPull),
+            pullmode: Cell::new(PullMode::None),
         })
+    }
+
+    fn set(&self) -> Result<()> {
+        let mut inner = self.inner.borrow_mut();
+        inner.gpio.set(
+            self.pinname,
+            self.out_value.get(),
+            self.pinmode.get(),
+            self.pullmode.get(),
+        )
     }
 }
 
@@ -37,26 +51,37 @@ impl GpioPin for VerilatorGpioPin {
     }
 
     fn write(&self, value: bool) -> Result<()> {
-        let mut inner = self.inner.borrow_mut();
-        inner.gpio.set(
-            self.pinname,
-            value,
-            self.pinmode.get() == PinMode::WeakPushPull,
-        )
+        self.out_value.set(value);
+        self.set()
     }
 
     fn set_mode(&self, mode: PinMode) -> Result<()> {
-        ensure!(
-            mode != PinMode::OpenDrain,
-            GpioError::UnsupportedPinMode(mode)
-        );
         self.pinmode.set(mode);
-        Ok(())
+        self.set()
     }
 
-    fn set_pull_mode(&self, _mode: PullMode) -> Result<()> {
-        log::warn!("set_pull_mode not implemented");
-        Ok(())
+    fn set_pull_mode(&self, mode: PullMode) -> Result<()> {
+        self.pullmode.set(mode);
+        self.set()
+    }
+
+    /// Atomically sets mode, value, and weak pull.
+    fn set(
+        &self,
+        mode: Option<PinMode>,
+        value: Option<bool>,
+        pull: Option<PullMode>,
+    ) -> Result<()> {
+        if let Some(mode) = mode {
+            self.pinmode.set(mode);
+        }
+        if let Some(pull) = pull {
+            self.pullmode.set(pull);
+        }
+        if let Some(value) = value {
+            self.out_value.set(value);
+        }
+        self.set()
     }
 }
 
@@ -125,13 +150,17 @@ impl GpioInner {
         Ok(self.rval & (1 << index) != 0)
     }
 
-    fn set(&mut self, index: u8, val: bool, weak: bool) -> Result<()> {
-        let weak = if weak { "w" } else { "" };
-        let command = if val {
-            format!("{}h{}\n", weak, index)
-        } else {
-            format!("{}l{}\n", weak, index)
+    fn set(&mut self, index: u8, val: bool, mode: PinMode, weak_pull: PullMode) -> Result<()> {
+        let code = match (mode, val, weak_pull) {
+            (PinMode::PushPull, true, _) => "h",
+            (PinMode::PushPull, false, _) => "l",
+            (PinMode::OpenDrain, false, _) => "l",
+            // If none of the above match, then there is no strong drive, inspect weak pull mode.
+            (_, _, PullMode::PullUp) => "wh",
+            (_, _, PullMode::PullDown) => "wl",
+            (_, _, PullMode::None) => "wl", // High-Z not implemented in gpiodpi
         };
+        let command = format!("{}{}\n", code, index);
         self.write
             .write(command.as_bytes())
             .context("GPIO write error")?;

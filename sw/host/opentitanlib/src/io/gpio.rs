@@ -43,7 +43,6 @@ arg_enum! {
     pub enum PinMode {
         Input,
         PushPull,
-        WeakPushPull,
         OpenDrain,
     }
 }
