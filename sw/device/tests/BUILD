@@ -1102,8 +1102,16 @@ opentitan_functest(
 opentitan_functest(
     name = "gpio_pinmux_test",
     srcs = ["gpio_pinmux_test.c"],
+    cw310 = cw310_params(
+        interface = "hyperdebug",
+        tags = ["manual"],
+        test_cmds = [
+            "--bootstrap=\"$(location {flash})\"",
+        ],
+    ),
     targets = [
         "verilator",
+        "cw310_test_rom",
     ],
     test_harness = "//sw/host/tests/chip/gpio",
     verilator = verilator_params(
