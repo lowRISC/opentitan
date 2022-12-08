@@ -71,6 +71,26 @@ package i2c_env_pkg;
     return item;
   endfunction // acq2item
 
+  // Print write data with 16 byte aligned.
+  function automatic void print_host_wr_data(bit [7:0] data[$]);
+    int idx = 1;
+    string str;
+    foreach (data[i]) begin
+      if (i % 16 == 0) begin
+        str = $sformatf("wrdata: %4d:", i  / 16);
+      end
+      str = {str, $sformatf(" %2x", data[i])};
+      if ((i+1) % 16 == 0) begin
+        `uvm_info("print_host_wr_data", str, UVM_MEDIUM)
+        str = "";
+      end
+    end
+    if (str != "") begin
+      `uvm_info("print_host_wr_data", str, UVM_MEDIUM)
+    end
+    `uvm_info("print_host_wr_data", $sformatf("wrdata: size: %0d", data.size()), UVM_MEDIUM)
+  endfunction
+
   // package sources
   `include "i2c_seq_cfg.sv"
   `include "i2c_env_cfg.sv"

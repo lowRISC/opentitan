@@ -192,6 +192,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
     if (num_wr_bytes == 256) begin
       `uvm_info(`gfn, "\n  write transaction length is 256 byte", UVM_DEBUG)
     end
+    print_host_wr_data(wr_data);
 
     for (int i = 1; i <= num_wr_bytes; i++) begin
       // randomize until at least one of format bits is non-zero to ensure
@@ -214,7 +215,7 @@ class i2c_rx_tx_vseq extends i2c_base_vseq;
       if (i == num_wr_bytes) begin
         `uvm_info(`gfn, $sformatf("\n  transaction WRITE ended %0s", (fmt_item.stop) ?
             "with STOP, next transaction should begin with START" :
-            "without STOP, next transaction should begin with RSTART"), UVM_DEBUG)
+            "without STOP, next transaction should begin with RSTART"), UVM_MEDIUM)
       end
       program_format_flag(fmt_item, "program_write_data_to_target", 1);
     end

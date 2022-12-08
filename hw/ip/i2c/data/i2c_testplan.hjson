@@ -91,7 +91,7 @@
               - Ensure transactions are transmitted/received correctly
               - Ensure reset is handled correctly
             '''
-      stage: V2
+      stage: V3
       tests: ["i2c_host_stress_all_with_rand_reset"]
     }
     {
@@ -401,7 +401,7 @@
 
             '''
       stage: V2
-      tests: [""]
+      tests: ["i2c_target_timeout"]
     }
     {
       name: target_clock_stretch

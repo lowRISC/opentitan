@@ -202,6 +202,9 @@ class i2c_monitor extends dv_base_monitor #(
 
     mon_dut_item.stop   = 1'b0;
     mon_dut_item.rstart = 1'b0;
+    `uvm_info(`gfn, $sformatf("host_write_thread begin: tran_id:%0d num_data%0d",
+                              mon_dut_item.tran_id, mon_dut_item.num_data), UVM_HIGH)
+
     while (!mon_dut_item.stop && !mon_dut_item.rstart) begin
       fork
         begin : iso_fork_write
@@ -218,7 +221,8 @@ class i2c_monitor extends dv_base_monitor #(
               `uvm_info(`gfn, $sformatf("Monitor collected data %0x", mon_data), UVM_HIGH)
               mon_dut_item.num_data++;
               mon_dut_item.data_q.push_back(mon_data);
-
+              `uvm_info(`gfn, $sformatf("host_write_thread data %2x num_data:%0d",
+                                        mon_data, mon_dut_item.num_data), UVM_HIGH)
               // send device ack to host write
               mon_dut_item.wdata = mon_data;
               mon_dut_item.drv_type = DevAck;
@@ -240,6 +244,8 @@ class i2c_monitor extends dv_base_monitor #(
         end : iso_fork_write
       join
     end
+    `uvm_info(`gfn, $sformatf("host_write_thread end: tran_id:%0d num_data:%0d",
+                              mon_dut_item.tran_id, mon_dut_item.num_data), UVM_HIGH)
   endtask : write_thread
 
   // update of_to_end to prevent sim finished when there is any activity on the bus
