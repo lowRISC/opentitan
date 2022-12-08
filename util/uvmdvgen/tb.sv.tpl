@@ -35,7 +35,7 @@ module tb;
 % endfor
 
 % if has_alerts:
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 % endif
 % if num_edn:
   // edn_clk, edn_rst_n and edn_if are defined and driven in below macro

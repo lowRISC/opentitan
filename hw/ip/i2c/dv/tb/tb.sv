@@ -67,7 +67,7 @@ module tb;
   assign (weak0, weak1) sda = 1'b1;
 
   // clk and rst_n is used for alert_if in `DV_ALERT_IF_CONNECT
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // dut
   i2c dut (

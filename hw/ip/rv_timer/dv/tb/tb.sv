@@ -25,7 +25,7 @@ module tb;
   pins_if #(1) devmode_if(devmode);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
- `DV_ALERT_IF_CONNECT
+ `DV_ALERT_IF_CONNECT()
 
   // dut
   rv_timer dut (

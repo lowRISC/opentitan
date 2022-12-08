@@ -374,7 +374,7 @@ from this CIP library class, please follow the steps below:
   Then connect alert_rx/tx to the DUT ports.
   For example in otp_ctrl's `tb.sv`:
   ```systemverilog
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
   otp_ctrl dut (
     .clk_i                      (clk        ),
     .rst_ni                     (rst_n      ),

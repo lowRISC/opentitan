@@ -30,7 +30,7 @@ module tb;
   pattgen_if #(NUM_PATTGEN_CHANNELS) pattgen_if();
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // dut
   pattgen dut (

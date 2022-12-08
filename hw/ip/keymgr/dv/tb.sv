@@ -30,7 +30,7 @@ module tb;
   assign keymgr_if.kmac_data_req = keymgr_kmac_intf.kmac_data_req;
   assign keymgr_if.kmac_data_rsp = keymgr_kmac_intf.kmac_data_rsp;
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // edn_clk, edn_rst_n and edn_if are defined and driven in below macro
   `DV_EDN_IF_CONNECT

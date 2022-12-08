@@ -40,7 +40,7 @@ module tb;
     .rst_ni(rst_aon_n)
   );
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // dut
   sysrst_ctrl dut (

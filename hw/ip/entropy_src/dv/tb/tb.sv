@@ -44,7 +44,7 @@ module tb;
   entropy_src_path_if entropy_src_path_if (.entropy_src_hw_if_i(entropy_src_hw_if_i));
   entropy_src_assert_if entropy_src_assert_if (.entropy_src_hw_if_i(entropy_src_hw_if_i));
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // dut
   entropy_src dut (

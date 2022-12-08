@@ -91,7 +91,7 @@ module tb;
     root_usb_clk_rst_if.set_active();
   end
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // dut
   clkmgr dut (

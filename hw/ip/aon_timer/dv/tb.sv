@@ -44,7 +44,7 @@ module tb;
   // An input to the DUT that shows whether we are in sleep mode
   pins_if #(1) sleep_if (sleep);
 
- `DV_ALERT_IF_CONNECT
+ `DV_ALERT_IF_CONNECT()
 
   aon_timer dut (
     .clk_i                     (clk),

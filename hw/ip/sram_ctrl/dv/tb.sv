@@ -52,7 +52,7 @@ module tb;
   // Interface for SRAM execution
   sram_ctrl_exec_if exec_if();
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // DUT
 

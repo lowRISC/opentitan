@@ -34,7 +34,7 @@ module tb;
   tl_if tl_if(.clk, .rst_n);
   uart_if uart_if();
 
- `DV_ALERT_IF_CONNECT
+ `DV_ALERT_IF_CONNECT()
 
   // dut
   uart dut (

@@ -32,7 +32,7 @@ module tb;
   kmac_app_intf kmac_app_if(.clk(clk), .rst_n(rst_n));
   rom_ctrl_if rom_ctrl_if();
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   assign kmac_app_if.kmac_data_req = kmac_data_out;
   assign kmac_data_in              = kmac_app_if.kmac_data_rsp;

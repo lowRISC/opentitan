@@ -47,7 +47,7 @@ module tb;
   spi_if       spi_if(.rst_n(rst_n));
   spi_passthrough_if       spi_passthrough_if(.rst_n(rst_n));
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // dut
   spi_host dut (

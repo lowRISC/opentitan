@@ -25,7 +25,7 @@ module tb;
   wire [NUM_GPIOS-1:0] gpio_intr;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
-  `DV_ALERT_IF_CONNECT
+  `DV_ALERT_IF_CONNECT()
 
   // interfaces
   clk_rst_if clk_rst_if (

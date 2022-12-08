@@ -8,13 +8,9 @@
 // Declare array of alert interface, using parameter NUM_ALERTS and LIST_OF_ALERTS, and connect to
 // arrays of wires (alert_tx and alert_rx). User need to manually connect these wires to DUT
 // Also set each alert_if to uvm_config_db to use in env.
-//
-// TODO: add _CLK and _RST_N arguments defaulting to clk and rst_n to support units like pwrmgr
-// that use non-default connections. That will require all uses of the macro to add a typically
-// parenthesis pair, and changes in the cip doc and uvmdvgen.
 `ifndef DV_ALERT_IF_CONNECT
-`define DV_ALERT_IF_CONNECT \
-  alert_esc_if alert_if[NUM_ALERTS](.clk(clk), .rst_n(rst_n)); \
+`define DV_ALERT_IF_CONNECT(CLK_ = clk, RST_N_ = rst_n) \
+  alert_esc_if alert_if[NUM_ALERTS](.clk(CLK_), .rst_n(RST_N_)); \
   prim_alert_pkg::alert_rx_t [NUM_ALERTS-1:0] alert_rx; \
   prim_alert_pkg::alert_tx_t [NUM_ALERTS-1:0] alert_tx; \
   for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins \
@@ -30,7 +26,6 @@
 // Declare edn clock, reset and push_pull_if. Connect them and set edn_clk_rst_if and edn_if for
 // using them in env
 // Use this macro in tb.sv if the IP connects to a EDN interface
-// TODO, tie core reset with EDN reset for now
 `ifndef DV_EDN_IF_CONNECT
 `define DV_EDN_IF_CONNECT \
   wire edn_rst_n; \
