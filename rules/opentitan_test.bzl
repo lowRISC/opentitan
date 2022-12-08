@@ -190,6 +190,7 @@ def cw310_params(
         clear_bitstream = False,
         # None
         timeout = "short",
+        interface = "cw310",
         **kwargs):
     """A macro to create CW310 parameters for OpenTitan functional tests.
 
@@ -217,7 +218,7 @@ def cw310_params(
         "--logging={logging}",
     ]
     required_test_cmds = [
-        "--interface=cw310",
+        "--interface={}".format(interface),
     ]
     required_tags = [
         "cw310",
