@@ -18,22 +18,15 @@
 .section .text.start
 
 ecdsa_sign_test:
-  /* Load first share of k (256 bits at start).
-       w4 <= k0 */
-  la        x16, k0
-  li        x2, 4
-  bn.lid    x2, 0(x16)
-
   /* Randomize k0.
-       [w4,w5] <= randomize(w4) = randomize(k0) */
+       dmem[k0] <= randomize(dmem[k0]) */
+  la       x16, k0
   jal      x1, randomize_share
 
-  /* Store randomized k0 (320 bits).
-       dmem[k0] <= [w4,w5] = randomize(k0) */
-  li        x2, 4
-  bn.sid    x2, 0(x16++)
-  li        x2, 5
-  bn.sid    x2, 0(x16)
+  /* Randomize d0.
+       dmem[d0] <= randomize(dmem[d0]) */
+  la       x16, d0
+  jal      x1, randomize_share
 
   /* call ECDSA signing subroutine in P-256 lib */
   jal      x1, p256_sign
@@ -54,8 +47,11 @@ ecdsa_sign_test:
  * Returns y = (x + r * n),
  *   where r is a 63-bit pseudorandom number and n is the P-256 curve order.
  *
- * @param[in]        w4: x, input (256 bits)
- * @param[out]  [w4,w5]: y, output (320 bits)
+ * Reads input from DMEM and stores back to the same location.
+ *
+ * @param[in]        x16: x_ptr, DMEM location of input
+ * @param[in]  dmem[x16]: x, input (256 bits)
+ * @param[out] dmem[x16]: y, output (320 bits)
  *
  * clobbered registers: w0 to w5
  * clobbered flag groups: FG0
@@ -63,6 +59,11 @@ ecdsa_sign_test:
 randomize_share:
   /* Initialize all-zero register. */
   bn.xor  w31, w31, w31
+
+  /* Load input.
+       w4 <= dmem[x16] = x */
+  li        x2, 4
+  bn.lid    x2, 0(x16)
 
   /* Get a 63-bit pseudorandom number.
        w0 <= URND()[255:193] = r */
@@ -86,6 +87,13 @@ randomize_share:
        w4, w5 <= w4 + [w2,w3] = x + r * n */
   bn.add  w4, w4, w2
   bn.addc w5, w31, w3
+
+  /* Store randomized share (320 bits).
+       dmem[x16] <= [w4,w5] = x + r * n */
+  li        x2, 4
+  bn.sid    x2, 0(x16++)
+  li        x2, 5
+  bn.sid    x2, 0(x16)
 
   ret
 
@@ -125,7 +133,7 @@ msg:
   .word 0x6ce90fef
   .word 0x06d71207
 
-/* private key d */
+/* first share of private key d (first 128 bits of d, then 192 0s) */
 .globl d0
 .balign 32
 d0:
@@ -133,17 +141,18 @@ d0:
   .word 0xfbd94efe
   .word 0xaa847f52
   .word 0x2d869bf4
+  .zero 24
+
+/* second share of private key d (128 0s, then last 128 bits of d, then 64 0s) */
+.globl d1
+.balign 32
+d1:
+  .zero 16
   .word 0x543b963b
   .word 0xe5f2cbee
   .word 0x9144233d
   .word 0xc0fbe256
   .zero 8
-
-/* second share of d (all-zero) */
-.globl d1
-.balign 32
-d1:
-  .zero 40
 
 /* signature R */
 .globl r
