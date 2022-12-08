@@ -77,7 +77,6 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     if (run_test_seq) begin
       run_seq(test_seq_s, phase);
     end
-    // TODO: add hook for end of test checking.
   endtask : run_phase
 
   // Add message demotes here - hook to use by extended tests
@@ -99,7 +98,4 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     phase.drop_objection(this, $sformatf("%s objection dropped", `gn));
     `uvm_info(`gfn, {"Finished test sequence ", test_seq_s}, UVM_MEDIUM)
   endtask
-
-  // TODO: Add default report_phase implementation.
-
 endclass : dv_base_test
