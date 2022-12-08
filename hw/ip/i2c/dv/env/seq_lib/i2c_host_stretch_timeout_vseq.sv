@@ -2,7 +2,14 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// basic stretch_timeout test vseq
+// This sequence use 'host_stretch_test_mode' in i2c_driver.
+// Under host_stretch_test_mode, i2c_driver stretch scl at 'target ack' cycle.
+// stretch cycle is determined to be greater than 't_timeout' vlaue.
+// At the end of stretch event, 'process_stretch_timeout_intr' check
+// StretchTimeout interrupt.
+// In each transaction, for write cycle, host will get # of write byte + 1 (command) ack.
+// For read cycle host will get 1 ack.
+// cnt_wr/rd_stretch will evaluate following the above.
 class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
   `uvm_object_utils(i2c_host_stretch_timeout_vseq)
   `uvm_object_new
@@ -50,7 +57,6 @@ class i2c_host_stretch_timeout_vseq extends i2c_rx_tx_vseq;
             // adding 1 is for the target's ACK to the response address byte sent by host
             `DV_CHECK_EQ(cnt_wr_stretch, (num_wr_bytes + 1))
           end
-
           check_rd_stretch = 1'b1;
           host_send_trans(.max_trans(1), .trans_type(ReadOnly));
           check_rd_stretch = 1'b0;

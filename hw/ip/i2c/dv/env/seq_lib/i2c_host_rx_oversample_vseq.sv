@@ -33,8 +33,10 @@ class i2c_host_rx_oversample_vseq extends i2c_rx_tx_vseq;
     } else {
       tsu_sta inside {[cfg.seq_cfg.i2c_min_timing : cfg.seq_cfg.i2c_max_timing]};
       // force derived timing parameters to be positive (correct DUT config)
-      tlow    inside {[(t_r + tsu_dat + thd_dat + 1) :
-                       (t_r + tsu_dat + thd_dat + 1) + cfg.seq_cfg.i2c_time_range]};
+      // This should be tied to 'get_timing_values' in i2c_base_vseq.sv
+      // To avoid tClockLow 'min tlow should be greater than 5
+      tlow    inside {[(t_r + tsu_dat + thd_dat + 2) :
+                       (t_r + tsu_dat + thd_dat + 2) + cfg.seq_cfg.i2c_time_range]};
       t_buf   inside {[(tsu_sta - t_r + 1) :
                        (tsu_sta - t_r + 1) + cfg.seq_cfg.i2c_time_range]};
       t_sda_unstable     inside {[0 : t_r + thigh + t_f - 1]};
@@ -45,6 +47,7 @@ class i2c_host_rx_oversample_vseq extends i2c_rx_tx_vseq;
 
   virtual task body();
     initialization(.mode(Host));
+    print_time_property();
     for(int i = 0; i < num_runs; i++) begin
       bit do_interrupt = 1'b1;
       `uvm_info(`gfn, "\n--> start of sequence", UVM_DEBUG)
