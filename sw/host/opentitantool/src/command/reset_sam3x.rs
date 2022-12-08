@@ -11,17 +11,17 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::transport::cw310;
 
-/// Resets the SAM3U chip on the CW310 FPGA board.
+/// Resets the SAM3X chip on the CW310 FPGA board.
 #[derive(Debug, StructOpt)]
-pub struct FpgaReset {}
+pub struct ResetSam3x {}
 
-impl CommandDispatch for FpgaReset {
+impl CommandDispatch for ResetSam3x {
     fn run(
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        log::info!("Resetting the SAM3U chip");
-        transport.dispatch(&cw310::FpgaReset {})
+        log::info!("Resetting the SAM3X chip");
+        transport.dispatch(&cw310::ResetSam3x {})
     }
 }
