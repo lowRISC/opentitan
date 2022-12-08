@@ -190,14 +190,6 @@ virtual task tl_instr_type_err(string ral_name);
 endtask
 
 virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
-  // TODO(#6628): Target specific tlul_assert devices rather than
-  //              globally enabling/disabling all of them.
-  //
-  //  With this approach, ALL tlul assertions are being disabled and then enabled.
-  //  A better solution (as per the linked issue) is to move the assertion enable
-  //  function calls back to encapsulate the `for` loop inside `run_tl_errors_vseq_sub()`
-  //  and pass in an appropriate "path" argument to the function to enable/disable
-  //  ONLY the corresponding tlul_assert monitor.
   set_tl_assert_en(.enable(0));
   for (int trans = 1; trans <= num_times; trans++) begin
     `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", trans, num_times), UVM_LOW)
@@ -280,7 +272,6 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
 endtask : run_tl_errors_vseq_sub
 
 virtual task run_tl_intg_err_vseq(int num_times = 1);
-  // TODO(#6628) as above TODO
   set_tl_assert_en(.enable(0));
 
   // If there are multiple TLUL interfaces, race condition may occurs as one TLUL is updating intg
