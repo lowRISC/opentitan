@@ -6,7 +6,7 @@
 use anyhow::Result;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
-use opentitanlib::io::gpio::PinMode;
+use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::test_utils::e2e_command::TestCommand;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{UartRecv, UartSend};
@@ -29,11 +29,12 @@ struct Opts {
 }
 
 fn sw_strap_set(transport: &TransportWrapper, value: u8) -> Result<()> {
+    let dont_care = false;
     let settings = [
-        (PinMode::PushPull, false),
-        (PinMode::WeakPushPull, false),
-        (PinMode::WeakPushPull, true),
-        (PinMode::PushPull, true),
+        (PinMode::PushPull, false, PullMode::None),
+        (PinMode::Input, dont_care, PullMode::PullDown),
+        (PinMode::Input, dont_care, PullMode::PullUp),
+        (PinMode::PushPull, true, PullMode::None),
     ];
     let pins = [
         transport.gpio_pin("IOC0")?,
@@ -42,8 +43,11 @@ fn sw_strap_set(transport: &TransportWrapper, value: u8) -> Result<()> {
     ];
     for (i, pin) in pins.iter().enumerate() {
         let pinval = ((value >> (2 * i)) & 3) as usize;
-        pin.set_mode(settings[pinval].0)?;
-        pin.write(settings[pinval].1)?;
+        pin.set(
+            Some(settings[pinval].0),
+            Some(settings[pinval].1),
+            Some(settings[pinval].2),
+        )?;
     }
     Ok(())
 }
