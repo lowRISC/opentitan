@@ -92,6 +92,7 @@ impl GpioPin for UltradebugGpioPin {
             PinMode::Input => false,
             PinMode::PushPull => true,
             PinMode::OpenDrain => return Err(GpioError::UnsupportedPinMode(mode).into()),
+            PinMode::Alternate => return Err(GpioError::UnsupportedPinMode(mode).into()),
         };
         self.device
             .borrow_mut()

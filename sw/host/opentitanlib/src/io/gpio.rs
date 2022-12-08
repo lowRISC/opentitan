@@ -44,6 +44,7 @@ arg_enum! {
         Input,
         PushPull,
         OpenDrain,
+        Alternate, // Pin used for UART/SPI/I2C or something else
     }
 }
 

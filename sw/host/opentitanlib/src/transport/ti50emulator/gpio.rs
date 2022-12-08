@@ -13,11 +13,19 @@ use std::os::unix::net::UnixStream;
 use std::path::PathBuf;
 
 use crate::io::emu::EmuState;
-use crate::io::gpio::{GpioError, GpioPin, PinMode, PullMode};
+use crate::io::gpio::{self, GpioError, GpioPin, PullMode};
 use crate::transport::ti50emulator::Inner;
 use crate::transport::ti50emulator::Ti50Emulator;
 
 const GPIO_BUF_SIZE: usize = 16;
+
+/// Drive mode of I/O pins (that is, the subset supported by this emulator).
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub enum PinMode {
+    Input,
+    PushPull,
+    OpenDrain,
+}
 
 /// Enumeration representing the GPIO control commands
 /// sent through the socket.
@@ -359,9 +367,14 @@ impl GpioPin for Ti50GpioPin {
     }
 
     /// Sets the mode of the GPIO pin as input, output, or open drain I/O.
-    fn set_mode(&self, mode: PinMode) -> Result<()> {
+    fn set_mode(&self, mode: gpio::PinMode) -> Result<()> {
         let mut state = self.host_state.get();
-        state.pin_mode = Some(mode);
+        match mode {
+            gpio::PinMode::Input => state.pin_mode = Some(PinMode::Input),
+            gpio::PinMode::OpenDrain => state.pin_mode = Some(PinMode::OpenDrain),
+            gpio::PinMode::PushPull => state.pin_mode = Some(PinMode::PushPull),
+            gpio::PinMode::Alternate => return Err(GpioError::UnsupportedPinMode(mode).into()),
+        }
         self.host_state.set(state);
         Ok(())
     }

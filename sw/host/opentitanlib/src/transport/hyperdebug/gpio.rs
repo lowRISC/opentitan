@@ -53,6 +53,7 @@ impl GpioPin for HyperdebugGpioPin {
                     PinMode::Input => "input",
                     PinMode::OpenDrain => "opendrain",
                     PinMode::PushPull => "pushpull",
+                    PinMode::Alternate => "alternate",
                 }
             ),
             |_| {},
