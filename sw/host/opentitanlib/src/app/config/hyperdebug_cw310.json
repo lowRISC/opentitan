@@ -5,7 +5,7 @@
     {
       "name": "RESET",
       "mode": "OpenDrain",
-      "pull_mode": "PullUp"
+      "pull_mode": "PullUp",
       "alias_of": "CN10_29"
     },
     {
