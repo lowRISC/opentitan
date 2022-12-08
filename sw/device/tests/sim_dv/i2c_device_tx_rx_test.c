@@ -57,7 +57,7 @@ static volatile const uint8_t kI2cDeviceAddress0 = 0x55;
 static volatile const uint8_t kI2cDeviceMask0 = 0x7f;
 static volatile const uint8_t kI2cDeviceAddress1 = 0x7f;  // disable match on
                                                           // second address
-static volatile const uint8_t kI2cDeviceMask1 = 0x00;
+static volatile const uint8_t kI2cDeviceMask1 = 0x7f;
 
 /**
  * This symbol is meant to be backdoor loaded by the testbench.
