@@ -15,7 +15,7 @@ class chip_sw_ast_clk_rst_inputs_vseq extends chip_sw_base_vseq;
 
   localparam uint NUM_LOW_POWER_SAMPLES = 3;
   localparam uint NUM_NORMAL_POWER_SAMPLES = 3;
-  localparam uint WAKE_UP_TIME_AON_CYCLES = 16;
+  localparam uint WAKE_UP_TIME_IN_US = 80;
   localparam uint CHANNEL0_MIN = 128;
   localparam uint CHANNEL0_MAX = CHANNEL0_MIN + 127;
   localparam uint CHANNEL1_MIN = 512;
@@ -59,7 +59,7 @@ class chip_sw_ast_clk_rst_inputs_vseq extends chip_sw_base_vseq;
 
     symbol_byte_write("kNumLowPowerSamples", NUM_LOW_POWER_SAMPLES);
     symbol_byte_write("kNumNormalPowerSamples", NUM_NORMAL_POWER_SAMPLES);
-    symbol_byte_write("kWakeUpTimeAonCycles", WAKE_UP_TIME_AON_CYCLES);
+    symbol_byte_write("kWakeUpTimeInUs", WAKE_UP_TIME_IN_US);
     symbol_byte_write("kChannel0MaxLowByte", CHANNEL0_MAX[7:0]);
     symbol_byte_write("kChannel0MaxHighByte", CHANNEL0_MAX[15:8]);
     symbol_byte_write("kChannel0MinLowByte", CHANNEL0_MIN[7:0]);
@@ -77,8 +77,7 @@ class chip_sw_ast_clk_rst_inputs_vseq extends chip_sw_base_vseq;
     bit adc_data_valid_last_value;
     forever begin
       adc_data_valid_last_value = adc_data_valid;
-      retval = uvm_hdl_read(ADC_DATA_VALID, adc_data_valid);
-      `DV_CHECK_EQ(retval, 1, $sformatf("uvm_hdl_read failed for %0s", ADC_DATA_VALID))
+      adc_data_valid=cfg.chip_vif.adc_data_valid;
       if (adc_data_valid_last_value == 1 && adc_data_valid == 0) begin
         ->adc_valid_falling_edge_event;
       end
