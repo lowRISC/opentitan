@@ -137,3 +137,11 @@ set_rule_status -rule {E_RST_METASTABILITY} -status {Waived} \
     (MetaStableFlop=~"SPI_HOST_CLK")} \
   -comment {If SPI_HOST receives a reset, CS_L will be de-asserted. \
     Any transactions will be cancelled.}
+
+# W_ASYNC_RST_FLOPS
+set_rule_status -rule W_ASYNC_RST_FLOPS -status Waived \
+  -expression {(DrivingSignal=~"*strap_sampling.tap_strap_q*")} \
+  -comment {STRAP can be changed. \
+    However, whenever the tap sample is changed, TRST_N holds the \
+    reset state. So, all TAPs remain in the reset state. \
+    Async reset glitch won't affect the design.  }
