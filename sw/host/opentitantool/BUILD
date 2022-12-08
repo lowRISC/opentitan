@@ -11,6 +11,7 @@ rust_binary(
     name = "opentitantool",
     srcs = [
         "src/command/bootstrap.rs",
+        "src/command/clear_bitstream.rs",
         "src/command/console.rs",
         "src/command/emulator.rs",
         "src/command/fpga.rs",
