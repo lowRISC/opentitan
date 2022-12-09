@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_RUNTIME_OTBN_H_
-#define OPENTITAN_SW_DEVICE_LIB_RUNTIME_OTBN_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_
+#define OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_
 
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -50,55 +50,6 @@ typedef struct otbn_app {
  * initialize this type.
  */
 typedef uint32_t otbn_addr_t;
-
-/**
- * The result of an OTBN operation.
- */
-typedef enum otbn_result {
-  /**
-   * The operation succeeded.
-   */
-  kOtbnOk = 0,
-  /**
-   * An unspecified failure occurred.
-   */
-  kOtbnError = 1,
-  /**
-   * A precondition check for an argument passed into the function failed.
-   */
-  kOtbnBadArg = 2,
-  /**
-   * The operation performed on OTBN failed.
-   *
-   * More specific error information can be obtained with
-   * `dif_otbn_get_err_code()`.
-   */
-  kOtbnOperationFailed = 3,
-} otbn_result_t;
-
-/**
- * OTBN context structure.
- *
- * Use `otbn_init()` to initialize.
- */
-typedef struct otbn {
-  /**
-   * The OTBN DIF to access the hardware.
-   */
-  dif_otbn_t dif;
-
-  /**
-   * The application loaded or to be loaded into OTBN.
-   *
-   * Only valid if @p app_is_loaded is true.
-   */
-  otbn_app_t app;
-
-  /**
-   * Is the application loaded into OTBN?
-   */
-  bool app_is_loaded;
-} otbn_t;
 
 /**
  * Generate the prefix to add to an OTBN symbol name used on the Ibex side
@@ -193,98 +144,66 @@ typedef struct otbn {
   ((uint32_t)OTBN_SYMBOL_ADDR(app_name, symbol_name))
 
 /**
- * Initializes the OTBN context structure.
- *
- * @param ctx The context object.
- * @param base_addr The OTBN hardware base address.
- * @return The result of the operation.
- */
-otbn_result_t otbn_init(otbn_t *ctx, mmio_region_t base_addr);
-
-/**
  * (Re-)loads the application into OTBN.
  *
  * Load the application image with both instruction and data segments into OTBN.
  *
- * @param ctx The context object.
+ * @param otbn The context object.
  * @param app The application to load into OTBN.
- * @return The result of the operation.
  */
-otbn_result_t otbn_load_app(otbn_t *ctx, const otbn_app_t app);
+void otbn_testutils_load_app(const dif_otbn_t *otbn, const otbn_app_t app);
 
 /**
  * Starts the OTBN execute operation.
  *
- * Use `otbn_busy_wait_for_done()` to wait for execution to complete.
+ * Use `otbn_testutils_wait_for_done()` to wait for execution to complete.
  *
- * @param ctx The context object.
- * @return The result of the operation.
+ * @param otbn The context object.
  */
-otbn_result_t otbn_execute(otbn_t *ctx);
+void otbn_testutils_execute(const dif_otbn_t *otbn);
 
 /**
- * Checks if OTBN is in busy status.
+ * Waits for OTBN to be done with the current operation.
  *
- * @param ctx The context object
- * @param[out] is_busy Set to true if OTBN is not in idle or in an error state.
- * @return otbn_result_t The result of the operation.
+ * Polls the status register until OTBN is idle. Produces a CHECK-fail if OTBN
+ * is or becomes locked. Checks that the final error bits match expectations.
+ *
+ * @param otbn The context object.
+ * @param expected_err_bits Expected error bits.
  */
-otbn_result_t otbn_busy_check(otbn_t *ctx, bool *is_busy);
-
-/**
- * Busy waits for OTBN to be done with the current operation.
- *
- * After an operation, triggered by a command, OTBN is back in idle state.
- *
- * @param ctx The context object.
- * @return The result of the operation.
- */
-otbn_result_t otbn_busy_wait_for_done(otbn_t *ctx);
+void otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
+                                       dif_otbn_err_bits_t expected_err_bits);
 
 /**
  * Copies data from the CPU memory to OTBN data memory.
  *
- * @param ctx The context object.
+ * @param otbn The context object.
  * @param len_bytes Number of bytes to copy.
  * @param dest Address of the destination in OTBN's data memory.
  * @param src Source of the data to copy.
- * @return The result of the operation.
  */
-otbn_result_t otbn_copy_data_to_otbn(otbn_t *ctx, size_t len_bytes,
-                                     const void *src, otbn_addr_t dest);
+void otbn_testutils_write_data(const dif_otbn_t *otbn, size_t len_bytes,
+                               const void *src, otbn_addr_t dest);
 
 /**
  * Copies data from OTBN's data memory to CPU memory.
  *
- * @param ctx The context object.
+ * @param otbn The context object.
  * @param len_bytes The number of bytes to copy.
  * @param src The address in OTBN data memory to copy from.
  * @param[out] dest The destination of the copied data in main memory
  *                  (preallocated).
- * @return The result of the operation.
  */
-otbn_result_t otbn_copy_data_from_otbn(otbn_t *ctx, size_t len_bytes,
-                                       otbn_addr_t src, void *dest);
-
-/**
- * Overwrites all of OTBN's data memory with zeros.
- *
- * This function tries to perform the operation for all data words, even if
- * a single write fails.
- *
- * @param ctx The context object.
- * @return The result of the operation.
- */
-otbn_result_t otbn_zero_data_memory(otbn_t *ctx);
+void otbn_testutils_read_data(const dif_otbn_t *otbn, size_t len_bytes,
+                              otbn_addr_t src, void *dest);
 
 /**
  * Writes a LOG_INFO message with the contents of each 256b DMEM word.
  *
- * @param ctx The context object.
+ * @param otbn The context object.
  * @param max_addr The highest address to dump. Set to 0 to output the whole
  *                 DMEM. Must be a multiple of WLEN.
- * @return The result of the operation.
  */
-otbn_result_t otbn_dump_dmem(const otbn_t *ctx, uint32_t max_addr);
+void otbn_testutils_dump_dmem(const dif_otbn_t *otbn, uint32_t max_addr);
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_RUNTIME_OTBN_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_TESTING_OTBN_TESTUTILS_H_
