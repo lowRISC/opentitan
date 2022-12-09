@@ -45,6 +45,15 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   local bit [NumI2cIntr-1:0] intr_exp;
 
   int                        num_obs_rd;
+  int                        obs_wr_id = 0;
+  // used only for fifo_reset test
+  bit                        skip_acq_comp = 0;
+  // Target mode read data is created by fetch_txn.
+  // In random tx fifo flush event, this make difficult to chekc read path integrity.
+  // With setting this bit, expected read data collected right at the input of tx fifo
+  // and at the tx fifo reset event, expected read data also get flushed.
+  bit                        read_rnd_data = 0;
+  bit [7:0]                  mirrored_txdata[$];
 
   `uvm_component_new
 
@@ -66,30 +75,52 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     target_mode_wr_obs_port.connect(target_mode_wr_obs_fifo.analysis_export);
+    cfg.scb_h = this;
   endfunction
 
   task run_phase(uvm_phase phase);
     string str;
     super.run_phase(phase);
     if (cfg.m_i2c_agent_cfg.if_mode == Host) begin
-      int obs_wr_id = 0;
       fork
         forever begin
-          target_mode_wr_exp_fifo.get(exp_wr_item);
-          str = (exp_wr_item.start) ? "addr" : (exp_wr_item.stop) ? "stop" : "wr";
-          `uvm_info(`gfn, $sformatf("exp_%s_txn %0d\n %s", str,
-                                    exp_wr_item.tran_id, exp_wr_item.sprint()), UVM_MEDIUM)
-          target_mode_wr_obs_fifo.get(obs_wr_item);
-          obs_wr_item.tran_id = obs_wr_id++;
-          target_txn_comp(obs_wr_item, exp_wr_item, str);
+          fork begin
+            fork
+              begin
+                target_mode_wr_obs_fifo.get(obs_wr_item);
+                obs_wr_item.tran_id = obs_wr_id++;
+                target_mode_wr_exp_fifo.get(exp_wr_item);
+                str = (exp_wr_item.start) ? "addr" : (exp_wr_item.stop) ? "stop" : "wr";
+                `uvm_info(`gfn, $sformatf("exp_%s_txn %0d\n %s", str,
+                                          exp_wr_item.tran_id, exp_wr_item.sprint()), UVM_MEDIUM)
+                target_txn_comp(obs_wr_item, exp_wr_item, str);
+              end
+              begin
+                wait(skip_acq_comp);
+                cfg.clk_rst_vif.wait_clks(1);
+              end
+            join_any
+            disable fork;
+          end join
         end
         forever begin
-          target_mode_rd_exp_fifo.get(exp_rd_item);
-          exp_rd_item.pname = "exp_rd";
-          `uvm_info(`gfn, $sformatf("\n%s", exp_rd_item.convert2string()), UVM_MEDIUM)
           target_mode_rd_obs_fifo.get(obs_rd_item);
           obs_rd_item.pname = "obs_rd";
           obs_rd_item.tran_id = num_obs_rd++;
+          if (read_rnd_data) begin
+            // With read_rnd_data mode, only read data can be compared.
+            // Other variables cannot be predictable.
+            `uvm_create_obj(i2c_item, exp_rd_item);
+            exp_rd_item.tran_id = obs_rd_item.tran_id;
+            exp_rd_item.num_data = obs_rd_item.num_data;
+            repeat (exp_rd_item.num_data) begin
+              exp_rd_item.data_q.push_back(mirrored_txdata.pop_front);
+            end
+          end else begin
+            target_mode_rd_exp_fifo.get(exp_rd_item);
+          end
+          exp_rd_item.pname = "exp_rd";
+          `uvm_info(`gfn, $sformatf("\n%s", exp_rd_item.convert2string()), UVM_MEDIUM)
           target_rd_comp(obs_rd_item, exp_rd_item);
         end
       join_none
@@ -267,6 +298,11 @@ class i2c_scoreboard extends cip_base_scoreboard #(
               intr = i2c_intr_e'(i); // cast to enum to get interrupt name
               cov.intr_test_cg.sample(intr, item.a_data[i], intr_en[i], intr_exp[i]);
             end
+          end
+        end
+        "txdata": begin
+          if (read_rnd_data) begin
+            mirrored_txdata.push_back(item.a_data[7:0]);
           end
         end
       endcase

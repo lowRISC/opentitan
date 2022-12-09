@@ -257,7 +257,7 @@
     {
       name: target_error_intr
       desc: '''
-            Test ack_stop interrupt is asserted by the Target DUT,
+            Test unexp_stop interrupt is asserted by the Target DUT,
 
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
@@ -268,7 +268,7 @@
               - Ensure IP operation get back normal after on-the-fly reset finished
             '''
       stage: V2
-      tests: [""]
+      tests: ["i2c_target_unexp_stop"]
     }
     {
       name: target_stress_all
@@ -361,14 +361,15 @@
 
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
-              - Fill up the acq_fifo with data to be sent out
-              - Reset the fifo randomly after a random number of bytes shows up on acq_fifo
+              - Run read write mixed traffic.
+              - For acq fifo, assert reset any period between stop
+                and the next start.
 
             Checking:
-              - Ensure the remaining entries are not show up after fmt_fifo is reset,
+              - Ensure the remaining entries are not show up after each fifio is reset,
             '''
       stage: V2
-      tests: []
+      tests: ["i2c_target_fifo_reset_acq"]
     }
     {
       name: target_fifo_full

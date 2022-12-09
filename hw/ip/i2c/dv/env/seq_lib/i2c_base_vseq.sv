@@ -886,29 +886,9 @@ class i2c_base_vseq extends cip_base_vseq #(
           read_acq_fifo(0, acq_fifo_empty);
         end
       end else if (cfg.intr_vif.pins[TxStretch]) begin
-        if (!cfg.use_drooling_tx) begin
-          write_tx_fifo();
-        end
-        read_acq_fifo(0, acq_fifo_empty);
-        // interrupt can't be clear until
-        // txfifo get data or acq fifo get entry. So verify_clear can
-        // causes deadlock. Set verify_clear to 0 to avoid deadlock
-        clear_interrupt(TxStretch, 0);
+        proc_intr_txstretch();
       end else if (cfg.intr_vif.pins[CmdComplete]) begin
-        if (cfg.slow_acq) begin
-          if($urandom()%2) begin
-            acq_fifo_empty = 0;
-            while (!acq_fifo_empty) begin
-              delay = $urandom_range(1, 50);
-              #(delay * 1us);
-              read_acq_fifo(1, acq_fifo_empty);
-            end
-          end
-        end else begin
-          // read one entry at a time to create acq fifo back pressure
-          read_acq_fifo(1, acq_fifo_empty);
-        end
-        clear_interrupt(CmdComplete, 0);
+        proc_intr_cmdcomplete();
       end else if (cfg.read_all_acq_entries) begin
         read_acq_fifo(0, acq_fifo_empty);
       end else begin
@@ -1072,7 +1052,6 @@ class i2c_base_vseq extends cip_base_vseq #(
       read_data = (acq_fifo_empty)? 0 : 1;
     end else csr_rd(.ptr(ral.fifo_status.acqlvl), .value(read_data));
 
-
     repeat(read_data) begin
       // read one entry and compare
       csr_rd(.ptr(ral.acqdata), .value(read_data));
@@ -1108,16 +1087,71 @@ class i2c_base_vseq extends cip_base_vseq #(
     return rsp;
   endfunction // get_eos
 
-   task send_ack_stop();
-      i2c_target_base_seq m_i2c_host_seq;
-      i2c_item txn_q[$];
-      cfg.rs_pct = 0;
-      cfg.wr_pct = 0;
+  // Calling this task will trigger unexp_stop interrupt.
+  task send_ack_stop();
+    i2c_target_base_seq m_i2c_host_seq;
+    i2c_item txn_q[$];
+    cfg.rs_pct = 0;
+    cfg.wr_pct = 0;
 
-      `uvm_create_obj(i2c_target_base_seq, m_i2c_host_seq)
-      create_txn(txn_q);
-      fetch_txn(txn_q, m_i2c_host_seq.req_q, 1);
-      m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
-      sent_txn_cnt++;
-   endtask
+    `uvm_create_obj(i2c_target_base_seq, m_i2c_host_seq)
+    create_txn(txn_q);
+    fetch_txn(txn_q, m_i2c_host_seq.req_q, 1);
+    m_i2c_host_seq.start(p_sequencer.i2c_sequencer_h);
+    sent_txn_cnt++;
+  endtask
+
+  virtual task stop_target_interrupt_handler();
+    string id = "stop_interrupt_handler";
+
+    `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns, id)
+    `DV_WAIT(sent_txn_cnt == num_trans,, cfg.long_spinwait_timeout_ns, id)
+    cfg.read_all_acq_entries = 1;
+    if (cfg.rd_pct != 0) begin
+      `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte > 0,, cfg.spinwait_timeout_ns, id)
+      `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte == cfg.m_i2c_agent_cfg.rcvd_rd_byte,,
+               cfg.long_spinwait_timeout_ns, id)
+    end
+    `DV_WAIT(cfg.sent_acq_cnt == cfg.rcvd_acq_cnt,, cfg.spinwait_timeout_ns, id)
+    csr_spinwait(.ptr(ral.status.acqempty), .exp_data(1'b1));
+
+    if (cfg.m_i2c_agent_cfg.allow_ack_stop) send_ack_stop();
+    // add drain time before stop interrupt handler
+    cfg.clk_rst_vif.wait_clks(1000);
+    cfg.stop_intr_handler = 1;
+    `uvm_info(id, "called stop_intr_handler", UVM_MEDIUM)
+  endtask // stop_target_interrupt_handler
+
+  // This task is called when tb interrupt handler receives
+  // cmdcomplete interrupt.
+  virtual task proc_intr_cmdcomplete();
+    bit acq_fifo_empty;
+    int delay;
+    if (cfg.slow_acq) begin
+      if($urandom()%2) begin
+        acq_fifo_empty = 0;
+        while (!acq_fifo_empty) begin
+          delay = $urandom_range(1, 50);
+          #(delay * 1us);
+          read_acq_fifo(1, acq_fifo_empty);
+        end
+      end
+    end else begin
+      // read one entry at a time to create acq fifo back pressure
+      read_acq_fifo(1, acq_fifo_empty);
+    end
+    clear_interrupt(CmdComplete, 0);
+  endtask // proc_intr_cmdcomplete
+
+  virtual task proc_intr_txstretch();
+    bit acq_fifo_empty;
+    if (!cfg.use_drooling_tx) begin
+      write_tx_fifo();
+    end
+    read_acq_fifo(0, acq_fifo_empty);
+    // interrupt can't be clear until
+    // txfifo get data or acq fifo get entry. So verify_clear can
+    // causes deadlock. Set verify_clear to 0 to avoid deadlock
+    clear_interrupt(TxStretch, 0);
+  endtask // proc_intr_txstretch
 endclass : i2c_base_vseq
