@@ -268,8 +268,77 @@ pub struct Inner {
 }
 
 impl Inner {
+    /// Send a command to HyperDebug firmware, expecting to receive no output.  Any output will be
+    /// reported through an `Err()` return.
+    pub fn cmd_no_output(&self, cmd: &str) -> Result<()> {
+        let mut unexpected_output: bool = false;
+        self.execute_command(cmd, |line| {
+            log::error!("Unexpected HyperDebug output: {}\n", line);
+            unexpected_output = true;
+        })?;
+        if unexpected_output {
+            bail!(TransportError::CommunicationError(
+                "Unexpected output".to_string()
+            ));
+        }
+        Ok(())
+    }
+
+    /// Send a command to HyperDebug firmware, expecting to receive a single line of output.  Any
+    /// more or less output will be reported through an `Err()` return.
+    pub fn cmd_one_line_output(&self, cmd: &str) -> Result<String> {
+        let mut result: Option<String> = None;
+        let mut unexpected_output: bool = false;
+        self.execute_command(cmd, |line| {
+            if unexpected_output {
+                // Third or subsequent line, report it.
+                log::error!("Unexpected HyperDebug output: {}\n", line);
+            } else if result.is_none() {
+                // First line, remember it.
+                result = Some(line.to_string());
+            } else {
+                // Second line, report the first as well as this one.
+                log::error!(
+                    "Unexpected HyperDebug output: {}\n",
+                    result.as_ref().unwrap()
+                );
+                log::error!("Unexpected HyperDebug output: {}\n", line);
+                unexpected_output = true;
+            }
+        })?;
+        if unexpected_output {
+            bail!(TransportError::CommunicationError(
+                "Unexpected output".to_string()
+            ));
+        }
+        match result {
+            None => bail!(TransportError::CommunicationError(
+                "Unexpected output".to_string()
+            )),
+            Some(str) => Ok(str),
+        }
+    }
+
+    /// Send a command to HyperDebug firmware, expecting to receive a single line of output.  Any
+    /// more or less output will be reported through an `Err()` return.
+    pub fn cmd_one_line_output_match<'a>(
+        &self,
+        cmd: &str,
+        regex: &Regex,
+        buf: &'a mut String,
+    ) -> Result<regex::Captures<'a>> {
+        *buf = self.cmd_one_line_output(cmd)?;
+        let Some(captures) = regex.captures(buf) else {
+            log::error!("Unexpected HyperDebug output: {}\n", buf);
+            bail!(TransportError::CommunicationError(
+                "Unexpected output".to_string()
+            ));
+        };
+        Ok(captures)
+    }
+
     /// Send a command to HyperDebug firmware, with a callback to receive any output.
-    pub fn execute_command(&self, cmd: &str, mut callback: impl FnMut(&str)) -> Result<()> {
+    fn execute_command(&self, cmd: &str, mut callback: impl FnMut(&str)) -> Result<()> {
         let mut port = serialport::new(
             self.console_tty
                 .to_str()
@@ -381,21 +450,15 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     // Crate SPI Target instance, or return one from a cache of previously created instances.
     fn spi(&self, instance: &str) -> Result<Rc<dyn Target>> {
         // Execute a "spiget" command to look up the numeric index corresponding to the given
-        // textual SPI instance name.
-        let mut result: Result<u8> = Err(TransportError::InvalidInstance(
-            TransportInterfaceType::Spi,
-            instance.to_string(),
-        )
-        .into());
-        self.inner
-            .execute_command(&format!("spiget {}", instance), |line| {
-                if let Some(captures) = SPI_REGEX.captures(line) {
-                    if let Ok(index) = captures.get(1).unwrap().as_str().parse() {
-                        result = Ok(index)
-                    }
-                }
+        // alphanumeric SPI instance name.
+        let mut buf = String::new();
+        let captures = self
+            .inner
+            .cmd_one_line_output_match(&format!("spiget {}", instance), &SPI_REGEX, &mut buf)
+            .map_err(|_| {
+                TransportError::InvalidInstance(TransportInterfaceType::Spi, instance.to_string())
             })?;
-        let idx = result?;
+        let idx = captures.get(1).unwrap().as_str().parse().unwrap();
 
         if let Some(instance) = self.inner.spis.borrow().get(&idx) {
             return Ok(Rc::clone(instance));
@@ -485,5 +548,5 @@ impl Flavor for StandardFlavor {
 }
 
 lazy_static! {
-    static ref SPI_REGEX: Regex = Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+)").unwrap();
+    pub static ref SPI_REGEX: Regex = Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+)").unwrap();
 }
