@@ -347,27 +347,23 @@ module ${mod_name} (
 
   // Create steering logic
   always_comb begin
-    unique case (${f'{tl_h2d_expr}.a_address[AW-1:0]'}) inside
+    reg_steer =
   % for i,w in enumerate(rb.windows):
 <%
+      steer_width = steer_msb + 1
       base_addr = w.offset
       limit_addr = w.offset + w.size_in_bytes
       assert (limit_addr-1 >= base_addr)
       addr_test = f"[{base_addr}:{limit_addr-1}]"
 %>\
-      ${addr_test}: begin
-        reg_steer = ${i};
-      end
+        ${f'{tl_h2d_expr}.a_address[AW-1:0]'} inside {${addr_test}} ? ${steer_width}'d${i} :
   % endfor
-      default: begin
         // Default set to register
-        reg_steer = ${num_dsp-1};
-      end
-    endcase
+        ${steer_width}'d${num_dsp-1};
 
     // Override this in case of an integrity error
     if (intg_err) begin
-      reg_steer = ${num_dsp-1};
+      reg_steer = ${steer_width}'d${num_dsp-1};
     end
   end
 % endif

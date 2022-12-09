@@ -130,19 +130,14 @@ module hmac_reg_top (
 
   // Create steering logic
   always_comb begin
-    unique case (tl_i.a_address[AW-1:0]) inside
-      [2048:4095]: begin
-        reg_steer = 0;
-      end
-      default: begin
+    reg_steer =
+        tl_i.a_address[AW-1:0] inside {[2048:4095]} ? 1'd0 :
         // Default set to register
-        reg_steer = 1;
-      end
-    endcase
+        1'd1;
 
     // Override this in case of an integrity error
     if (intg_err) begin
-      reg_steer = 1;
+      reg_steer = 1'd1;
     end
   end
 

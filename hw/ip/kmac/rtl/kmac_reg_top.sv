@@ -136,22 +136,15 @@ module kmac_reg_top (
 
   // Create steering logic
   always_comb begin
-    unique case (tl_i.a_address[AW-1:0]) inside
-      [1024:1535]: begin
-        reg_steer = 0;
-      end
-      [2048:4095]: begin
-        reg_steer = 1;
-      end
-      default: begin
+    reg_steer =
+        tl_i.a_address[AW-1:0] inside {[1024:1535]} ? 2'd0 :
+        tl_i.a_address[AW-1:0] inside {[2048:4095]} ? 2'd1 :
         // Default set to register
-        reg_steer = 2;
-      end
-    endcase
+        2'd2;
 
     // Override this in case of an integrity error
     if (intg_err) begin
-      reg_steer = 2;
+      reg_steer = 2'd2;
     end
   end
 
