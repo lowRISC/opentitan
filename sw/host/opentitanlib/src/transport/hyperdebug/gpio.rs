@@ -27,21 +27,19 @@ impl HyperdebugGpioPin {
 impl GpioPin for HyperdebugGpioPin {
     /// Reads the value of the the GPIO pin `id`.
     fn read(&self) -> Result<bool> {
-        let mut result: Result<bool> =
-            Err(TransportError::CommunicationError("No output from gpioget".to_string()).into());
-        self.inner
-            .execute_command(&format!("gpioget {}", &self.pinname), |line| {
-                result = Ok(line.trim_start().starts_with('1'))
+        let line = self
+            .inner
+            .cmd_one_line_output(&format!("gpioget {}", &self.pinname))
+            .map_err(|_| {
+                TransportError::CommunicationError("No output from gpioget".to_string())
             })?;
-        result
+        Ok(line.trim_start().starts_with('1'))
     }
 
     /// Sets the value of the GPIO pin `id` to `value`.
     fn write(&self, value: bool) -> Result<()> {
-        self.inner.execute_command(
-            &format!("gpioset {} {}", &self.pinname, u32::from(value)),
-            |_| {},
-        )
+        self.inner
+            .cmd_no_output(&format!("gpioset {} {}", &self.pinname, u32::from(value)))
     }
 
     fn set_mode(&self, mode: PinMode) -> Result<()> {
@@ -61,17 +59,14 @@ impl GpioPin for HyperdebugGpioPin {
     }
 
     fn set_pull_mode(&self, mode: PullMode) -> Result<()> {
-        self.inner.execute_command(
-            &format!(
-                "gpiopullmode {} {}",
-                &self.pinname,
-                match mode {
-                    PullMode::None => "none",
-                    PullMode::PullUp => "up",
-                    PullMode::PullDown => "down",
-                }
-            ),
-            |_| {},
-        )
+        self.inner.cmd_no_output(&format!(
+            "gpiopullmode {} {}",
+            &self.pinname,
+            match mode {
+                PullMode::None => "none",
+                PullMode::PullUp => "up",
+                PullMode::PullDown => "down",
+            }
+        ))
     }
 }

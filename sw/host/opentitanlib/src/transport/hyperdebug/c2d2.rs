@@ -52,19 +52,19 @@ impl C2d2ResetPin {
 impl GpioPin for C2d2ResetPin {
     /// Reads the value of the the reset pin.
     fn read(&self) -> Result<bool> {
-        let mut result: Result<bool> =
-            Err(TransportError::CommunicationError("No output from gpioget".to_string()).into());
-        self.inner
-            .execute_command("gpioget SPIVREF_RSVD_H1VREF_H1_RST_ODL", |line| {
-                result = Ok(line.trim_start().starts_with('1'))
+        let line = self
+            .inner
+            .cmd_one_line_output("gpioget SPIVREF_RSVD_H1VREF_H1_RST_ODL")
+            .map_err(|_| {
+                TransportError::CommunicationError("No output from gpioget".to_string())
             })?;
-        result
+        Ok(line.trim_start().starts_with('1'))
     }
 
     /// Sets the value of the GPIO reset pin by means of the special h1_reset command.
     fn write(&self, value: bool) -> Result<()> {
         self.inner
-            .execute_command(&format!("h1_reset {}", if value { 0 } else { 1 }), |_| {})?;
+            .cmd_no_output(&format!("h1_reset {}", if value { 0 } else { 1 }))?;
         Ok(())
     }
 
