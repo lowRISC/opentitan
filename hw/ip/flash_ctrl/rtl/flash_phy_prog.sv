@@ -358,23 +358,23 @@ module flash_phy_prog import flash_phy_pkg::*; (
   // Assertions
   /////////////////////////////////
 
-`ifndef SYNTHESIS
+`ifdef INC_ASSERT
   logic txn_done;
-  logic [15:0] done_cnt;
+  logic [15:0] done_cnt_d, done_cnt_q;
 
   assign txn_done = req_i && ack_o && last_i;
+  assign done_cnt_d = txn_done ? '0 : (done ? done_cnt_q + 16'h1 : done_cnt_q);
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (rst_ni) begin
-      done_cnt <= '0;
-    end else if (txn_done) begin
-      done_cnt <= '0;
-    end else if (done) begin
-      done_cnt <= done_cnt + 1'b1;
+    if (!rst_ni) begin
+      done_cnt_q <= '0;
+    end else begin
+      done_cnt_q <= done_cnt_d;
     end
   end
 
   // We can only observe one done per transaction.
-  `ASSERT(OneDonePerTxn_A,  txn_done |-> done_cnt == '0)
+  `ASSERT(OneDonePerTxn_A,  txn_done |-> done_cnt_d == '0)
 
 `endif
 
