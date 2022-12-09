@@ -10,9 +10,9 @@
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
+#include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -26,9 +26,8 @@ static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
+static dif_otbn_t otbn;
 static dif_rv_plic_t plic;
-
-static otbn_t otbn;
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -73,11 +72,10 @@ static void init_peripherals(void) {
       dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
   CHECK_DIF_OK(dif_entropy_src_init(
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+  CHECK_DIF_OK(
+      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
-
-  CHECK(otbn_init(&otbn, mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR)) ==
-        kOtbnOk);
 }
 
 /**
@@ -284,7 +282,7 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
     }
     // Check if OTBN is still running.
     dif_otbn_status_t status;
-    CHECK_DIF_OK(dif_otbn_get_status(&otbn.dif, &status));
+    CHECK_DIF_OK(dif_otbn_get_status(&otbn, &status));
     busy = status != kDifOtbnStatusIdle && status != kDifOtbnStatusLocked;
   }
 

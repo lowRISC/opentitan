@@ -8,9 +8,9 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/clkmgr_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
+#include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -25,7 +25,7 @@ static const dif_clkmgr_hintable_clock_t kOtbnClock =
     kTopEarlgreyHintableClocksMainOtbn;
 
 static dif_rv_plic_t plic;
-static otbn_t otbn_ctx;
+static dif_otbn_t otbn;
 /**
  * These variables are used for ISR communication hence they are volatile.
  */
@@ -65,14 +65,14 @@ void ottf_external_isr(void) {
       dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0, irq_id));
 }
 
-static void otbn_wait_for_done_irq(otbn_t *otbn_ctx) {
+static void otbn_wait_for_done_irq(dif_otbn_t *otbn) {
   // Clear the otbn irq variable: we'll set it in the interrupt handler when
   // we see the Done interrupt fire.
   irq = UINT32_MAX;
   irq_id = UINT32_MAX;
   plic_peripheral = UINT32_MAX;
-  CHECK_DIF_OK(dif_otbn_irq_set_enabled(&otbn_ctx->dif, kDifOtbnIrqDone,
-                                        kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_otbn_irq_set_enabled(otbn, kDifOtbnIrqDone, kDifToggleEnabled));
 
   // OTBN should be running. Wait for an interrupt that says
   // it's done.
@@ -137,7 +137,7 @@ bool test_main(void) {
   initialize_clkmgr();
 
   mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-  CHECK(otbn_init(&otbn_ctx, addr) == kOtbnOk);
+  CHECK_DIF_OK(dif_otbn_init(addr, &otbn));
 
   otbn_init_irq();
 
@@ -155,14 +155,14 @@ bool test_main(void) {
   // Start an OTBN operation, write the OTBN clk hint to 0 within clkmgr and
   // verify that the OTBN clk hint status within clkmgr reads 1 (OTBN is not
   // idle).
-  otbn_randomness_test_start(&otbn_ctx);
+  otbn_randomness_test_start(&otbn);
 
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kOtbnClock, kDifToggleDisabled, kDifToggleEnabled);
 
   // After the OTBN operation is complete, verify that the OTBN clk hint status
   // within clkmgr now reads 0 again (OTBN is idle).
-  otbn_wait_for_done_irq(&otbn_ctx);
+  otbn_wait_for_done_irq(&otbn);
   CLKMGR_TESTUTILS_CHECK_CLOCK_HINT(clkmgr, kOtbnClock, kDifToggleDisabled);
 
   // Write the OTBN clk hint to 1, read and check the OTBN output for
@@ -170,8 +170,8 @@ bool test_main(void) {
   CLKMGR_TESTUTILS_SET_AND_CHECK_CLOCK_HINT(
       clkmgr, kOtbnClock, kDifToggleEnabled, kDifToggleEnabled);
 
-  otbn_randomness_test_log_results(&otbn_ctx);
+  otbn_randomness_test_log_results(&otbn);
 
   // Check for successful test execution (self-reported).
-  return otbn_randomness_test_end(&otbn_ctx, /*skip_otbn_done_check=*/true);
+  return otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/true);
 }

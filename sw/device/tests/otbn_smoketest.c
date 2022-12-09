@@ -33,18 +33,6 @@ static const otbn_app_t kAppErrTest = OTBN_APP_T_INIT(err_test);
 OTTF_DEFINE_TEST_CONFIG();
 
 /**
- * Get OTBN error bits, check this succeeds and code matches `expected_err_bits`
- */
-static void check_otbn_err_bits(dif_otbn_t *otbn,
-                                dif_otbn_err_bits_t expected_err_bits) {
-  dif_otbn_err_bits_t otbn_err_bits;
-  CHECK_DIF_OK(dif_otbn_get_err_bits(otbn, &otbn_err_bits));
-  CHECK(otbn_err_bits == expected_err_bits,
-        "dif_otbn_get_err_bits() produced unexpected error bits: %x",
-        otbn_err_bits);
-}
-
-/**
  * Gets the OTBN instruction count, checks that it matches expectations.
  */
 static void check_otbn_insn_cnt(dif_otbn_t *otbn, uint32_t expected_insn_cnt) {
@@ -107,8 +95,7 @@ static void test_barrett384(dif_otbn_t *otbn) {
 
   CHECK_DIF_OK(dif_otbn_set_ctrl_software_errs_fatal(otbn, true));
   otbn_testutils_execute(otbn);
-  CHECK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false) ==
-        kDifUnavailable);
+  CHECK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false) == kDifUnavailable);
   otbn_testutils_wait_for_done(otbn, kDifOtbnErrBitsNoError);
 
   // Reading back result (c).

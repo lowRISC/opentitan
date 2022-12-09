@@ -172,7 +172,7 @@ void otbn_testutils_execute(const dif_otbn_t *otbn);
  * @param expected_err_bits Expected error bits.
  */
 void otbn_testutils_wait_for_done(const dif_otbn_t *otbn,
-                                       dif_otbn_err_bits_t expected_err_bits);
+                                  dif_otbn_err_bits_t expected_err_bits);
 
 /**
  * Copies data from the CPU memory to OTBN data memory.
