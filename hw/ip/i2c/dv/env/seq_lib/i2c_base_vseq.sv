@@ -890,7 +890,6 @@ class i2c_base_vseq extends cip_base_vseq #(
           write_tx_fifo();
         end
         read_acq_fifo(0, acq_fifo_empty);
-
         // interrupt can't be clear until
         // txfifo get data or acq fifo get entry. So verify_clear can
         // causes deadlock. Set verify_clear to 0 to avoid deadlock
@@ -909,7 +908,7 @@ class i2c_base_vseq extends cip_base_vseq #(
           // read one entry at a time to create acq fifo back pressure
           read_acq_fifo(1, acq_fifo_empty);
         end
-        clear_interrupt(CmdComplete);
+        clear_interrupt(CmdComplete, 0);
       end else if (cfg.read_all_acq_entries) begin
         read_acq_fifo(0, acq_fifo_empty);
       end else begin
@@ -969,8 +968,27 @@ class i2c_base_vseq extends cip_base_vseq #(
       if (read_txn_q.size() > 0) begin
         i2c_item item;
         // check tx fifo is full
-        csr_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0),
-                     .timeout_ns(rd_txfifo_timeout_ns));
+        if (cfg.use_intr_handler) begin
+          data = 1;
+          // If tx_stretch interrupt is set,
+          // interrupt handler in tb routine is to fill up tx fifo and empty acq fifo.
+          // if tx fifo is alreay full, this routine can block 'read_acq_fifo'
+          // and causes deadlock by waiting txempty forever.
+          // So if interrupt handler is used, make each task not block the other
+          while (data) begin
+            bit is_empty;
+            csr_rd(.ptr(ral.status.txfull), .value(data));
+            // if tx fifo is full, real acq fifo to remove
+            // tx_stretch condition
+            if (data) begin
+              read_acq_fifo(0, is_empty);
+            end
+          end
+
+        end else begin
+          csr_spinwait(.ptr(ral.status.txfull), .exp_data(1'b0),
+                       .timeout_ns(rd_txfifo_timeout_ns));
+        end
         `uvm_create_obj(i2c_item, item)
         item = read_txn_q.pop_front();
         `uvm_info(id, $sformatf("send rdata:%x", item.wdata), UVM_MEDIUM)
