@@ -41,12 +41,12 @@ export BITSTREAM="--offline --list ${SHA}"
 trap 'ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 fpga reset-sam3x' EXIT
 
 # In case tests update OTP or otherwise leave state on the FPGA we should start
-# by loading a bitstream to clear state
+# by clearing the bitstream.
 # FIXME: #16543 The following step sometimes has trouble reading the I2C we'll
 # log it better and continue even if it fails (the pll is mostly correctly set
 # anyway
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 --logging debug fpga set-pll || true
-ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 fpga load-bitstream "${BIT_CACHE_DIR}/${BIT_NAME_PREFIX}.orig"
+ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=cw310 fpga clear-bitstream
 
 for tag in "${cw310_tags[@]}"; do
     ci/bazelisk.sh test //...\
