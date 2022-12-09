@@ -340,6 +340,12 @@
     { name: "FIFO.CTR.REDUN",
       desc: "The FIFO pointers of several FIFOs are implemented with duplicate counters."
     }
+    { name: "MEM_TL_LC_GATE.FSM.SPARSE",
+      desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
+    }
+    { name: "PROG_TL_LC_GATE.FSM.SPARSE",
+      desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
+    }
   ]
 
   scan: "true",       // Enable `scanmode_i` port

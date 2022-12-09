@@ -264,6 +264,12 @@
       tests: ["otp_ctrl_smoke"]
     }
     {
+      name: sec_cm_test_tl_lc_gate_fsm_sparse
+      desc: "Verify the countermeasure(s) TEST_TL_LC_GATE.FSM.SPARSE."
+      stage: V2S
+      tests: ["otp_ctrl_sec_cm"]
+    }
+    {
       name: sec_cm_direct_access_config_regwen
       desc: "Verify the countermeasure(s) DIRECT_ACCESS.CONFIG.REGWEN."
       stage: V2S

@@ -119,6 +119,12 @@
       tests: ["{name}_executable"]
     }
     {
+      name: sec_cm_ram_tl_lc_gate_fsm_sparse
+      desc: "Verify the countermeasure(s) RAM_TL_LC_GATE.FSM.SPARSE."
+      stage: V2S
+      tests: ["{name}_sec_cm"]
+    }
+    {
       name: sec_cm_key_global_esc
       desc: "Verify the countermeasure(s) KEY.GLOBAL_ESC."
       stage: V2S

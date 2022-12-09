@@ -150,6 +150,9 @@
     { name: "INSTR.BUS.LC_GATED",
       desc: "Prevent code execution from SRAM in non-test lifecycle states."
     }
+    { name: "RAM_TL_LC_GATE.FSM.SPARSE",
+      desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
+    }
     { name: "KEY.GLOBAL_ESC",
       desc: "Scrambling key and nonce are reset to a fixed value upon escalation, and bus transactions going to the memory will be blocked."
     }

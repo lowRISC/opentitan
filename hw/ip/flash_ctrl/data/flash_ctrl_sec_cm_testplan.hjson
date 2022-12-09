@@ -185,5 +185,17 @@
       stage: V2S
       tests: []
     }
+    {
+      name: sec_cm_mem_tl_lc_gate_fsm_sparse
+      desc: "Verify the countermeasure(s) MEM_TL_LC_GATE.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_prog_tl_lc_gate_fsm_sparse
+      desc: "Verify the countermeasure(s) PROG_TL_LC_GATE.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
   ]
 }

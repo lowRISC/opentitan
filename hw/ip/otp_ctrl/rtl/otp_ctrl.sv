@@ -739,6 +739,7 @@ module otp_ctrl
 
   // Life cycle qualification of TL-UL test interface.
   // SEC_CM: TEST.BUS.LC_GATED
+  // SEC_CM: TEST_TL_LC_GATE.FSM.SPARSE
   tlul_lc_gate #(
     .NumGatesPerDirection(2)
   ) u_tlul_lc_gate (
