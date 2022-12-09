@@ -507,6 +507,7 @@ module flash_ctrl
   // the program path also needs an lc gate to error back when flash is disabled.
   // This is because tlul_adapter_sram does not actually have a way of signaling
   // write errors, only read errors.
+  // SEC_CM: PROG_TL_LC_GATE.FSM.SPARSE
   tlul_lc_gate u_prog_tl_gate (
     .clk_i,
     .rst_ni,
@@ -1289,6 +1290,7 @@ module flash_ctrl
   tlul_pkg::tl_h2d_t gate_tl_h2d;
   tlul_pkg::tl_d2h_t gate_tl_d2h;
 
+  // SEC_CM: MEM_TL_LC_GATE.FSM.SPARSE
   tlul_lc_gate u_tl_gate (
     .clk_i,
     .rst_ni,

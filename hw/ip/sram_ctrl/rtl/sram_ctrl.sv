@@ -391,6 +391,7 @@ module sram_ctrl
   tlul_pkg::tl_h2d_t ram_tl_in_gated;
   tlul_pkg::tl_d2h_t ram_tl_out_gated;
 
+  // SEC_CM: RAM_TL_LC_GATE.FSM.SPARSE
   tlul_lc_gate #(
     .NumGatesPerDirection(2)
   ) u_tlul_lc_gate (

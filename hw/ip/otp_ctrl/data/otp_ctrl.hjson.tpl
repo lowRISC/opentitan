@@ -504,6 +504,9 @@
     { name: "TEST.BUS.LC_GATED",
       desc: "Prevent access to test signals and the OTP backdoor interface in non-test lifecycle states."
     }
+    { name: "TEST_TL_LC_GATE.FSM.SPARSE",
+      desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
+    }
     { name: "DIRECT_ACCESS.CONFIG.REGWEN",
       desc: "The direct access CSRs are REGWEN protected."
     }

@@ -119,6 +119,12 @@
             being fed into the TL-UL adapter for the debug ROM.
             '''
     }
+    { name: "SBA_TL_LC_GATE.FSM.SPARSE",
+      desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
+    }
+    { name: "MEM_TL_LC_GATE.FSM.SPARSE",
+      desc: "The control FSM inside the TL-UL gating primitive is sparsely encoded."
+    }
     { name: "EXEC.CTRL.MUBI",
       desc: '''
             The instruction fetch enable signal that is modulated with LC_HW_DEBUG_EN

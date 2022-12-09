@@ -220,6 +220,7 @@ module rv_dm
   logic                   host_r_other_err;
 
   // SEC_CM: DM_EN.CTRL.LC_GATED
+  // SEC_CM: SBA_TL_LC_GATE.FSM.SPARSE
   tlul_pkg::tl_h2d_t  sba_tl_h_o_int;
   tlul_pkg::tl_d2h_t  sba_tl_h_i_int;
   tlul_lc_gate #(
@@ -352,6 +353,7 @@ module rv_dm
 `endif
 
   // SEC_CM: DM_EN.CTRL.LC_GATED
+  // SEC_CM: MEM_TL_LC_GATE.FSM.SPARSE
   tlul_pkg::tl_h2d_t mem_tl_win_h2d_gated;
   tlul_pkg::tl_d2h_t mem_tl_win_d2h_gated;
   tlul_lc_gate #(
