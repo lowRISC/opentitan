@@ -21,8 +21,8 @@ class flash_ctrl_lcmgr_intg_vseq extends flash_ctrl_err_base_vseq;
 
       `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.hw_rvalid == 1);,
                    , wait_timeout_ns)
-      cfg.scb_h.exp_alert["fatal_std_err"] = 1;
-      cfg.scb_h.alert_chk_max_delay["fatal_std_err"] = 2000;
+      cfg.scb_h.expected_alert["fatal_std_err"].expected = 1;
+      cfg.scb_h.expected_alert["fatal_std_err"].max_delay = 2000;
       cfg.scb_h.exp_alert_contd["fatal_std_err"] = 10000;
 
       $assertoff(0, "tb.dut.u_flash_mp.NoReqWhenErr_A");

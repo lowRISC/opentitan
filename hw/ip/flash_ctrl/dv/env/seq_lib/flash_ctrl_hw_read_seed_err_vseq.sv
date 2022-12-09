@@ -25,8 +25,8 @@ class flash_ctrl_hw_read_seed_err_vseq extends flash_ctrl_err_base_vseq;
     `uvm_info(`gfn, $sformatf("event_idx :%0d", event_idx), UVM_MEDIUM)
     `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.hw_rvalid == 1);,
                  , wait_timeout_ns)
-    cfg.scb_h.exp_alert["fatal_err"] = 1;
-    cfg.scb_h.alert_chk_max_delay["fatal_err"] = 2000;
+    cfg.scb_h.expected_alert["fatal_err"].expected = 1;
+    cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
     cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
 
     add_glitch(event_idx);

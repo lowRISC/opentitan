@@ -91,13 +91,7 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
           if (cfg.pwrmgr_vif.fetch_en == lc_ctrl_pkg::On) begin
             // End of d0 reset request.
             `uvm_info(`gfn, "pwrmgr end reset in reset_cip_helper", UVM_MEDIUM)
-            foreach (cfg.list_of_alerts[i]) begin
-              alert_fifos[cfg.list_of_alerts[i]].flush();
-              exp_alert[cfg.list_of_alerts[i]] = 0;
-              under_alert_handshake[cfg.list_of_alerts[i]] = 0;
-              is_fatal_alert[cfg.list_of_alerts[i]] = 0;
-              alert_chk_max_delay[cfg.list_of_alerts[i]] = 0;
-            end
+            reset_alert_state();
           end
         end
     join

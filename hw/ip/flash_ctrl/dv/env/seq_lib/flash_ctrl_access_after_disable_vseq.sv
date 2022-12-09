@@ -41,8 +41,8 @@ class flash_ctrl_access_after_disable_vseq extends flash_ctrl_otf_base_vseq;
     tl_addr[OTFBankId] = $urandom_range(0, 1);
 
     cfg.scb_h.exp_tl_rsp_intg_err = 1;
-    cfg.scb_h.exp_alert["fatal_std_err"] = 1;
-    cfg.scb_h.alert_chk_max_delay["fatal_std_err"] = 2000;
+    cfg.scb_h.expected_alert["fatal_std_err"].expected = 1;
+    cfg.scb_h.expected_alert["fatal_std_err"].max_delay = 2000;
     cfg.scb_h.exp_alert_contd["fatal_std_err"] = 10000;
 
     // fatal_err.phy_storage_err

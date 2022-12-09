@@ -617,12 +617,12 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
                                           {flash_op.addr[31:3], 3'h0}), UVM_MEDIUM)
         global_derr_is_set = 1;
         if (cfg.scb_h.do_alert_check == 1) begin
-          cfg.scb_h.exp_alert["fatal_err"] = 1;
-          cfg.scb_h.alert_chk_max_delay["fatal_err"] = 2000;
+          cfg.scb_h.expected_alert["fatal_err"].expected = 1;
+          cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
           cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
 
-          cfg.scb_h.exp_alert["recov_err"] = 1;
-          cfg.scb_h.alert_chk_max_delay["recov_err"] = 2000;
+          cfg.scb_h.expected_alert["recov_err"].expected = 1;
+          cfg.scb_h.expected_alert["recov_err"].max_delay = 2000;
           cfg.scb_h.exp_alert_contd["recov_err"] = 10000;
         end
       end
@@ -797,8 +797,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
 
       if (cfg.ecc_mode > FlashSerrTestMode) begin
         if (derr & cfg.scb_h.do_alert_check) begin
-          cfg.scb_h.exp_alert["fatal_err"] = 1;
-          cfg.scb_h.alert_chk_max_delay["fatal_err"] = 2000;
+          cfg.scb_h.expected_alert["fatal_err"].expected = 1;
+          cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
           cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
         end
       end
@@ -988,12 +988,12 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         exp_item.derr = 1;
 
         if (cfg.scb_h.do_alert_check == 1) begin
-          cfg.scb_h.exp_alert["fatal_err"] = 1;
-          cfg.scb_h.alert_chk_max_delay["fatal_err"] = 2000;
+          cfg.scb_h.expected_alert["fatal_err"].expected = 1;
+          cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
           cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
 
-          cfg.scb_h.exp_alert["recov_err"] = 1;
-          cfg.scb_h.alert_chk_max_delay["recov_err"] = 2000;
+          cfg.scb_h.expected_alert["recov_err"].expected = 1;
+          cfg.scb_h.expected_alert["recov_err"].max_delay = 2000;
           cfg.scb_h.exp_alert_contd["recov_err"] = 10000;
         end
       end
@@ -1115,8 +1115,8 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
         derr = 1;
          cfg.scb_h.ecc_error_addr[{tl_addr[31:3],3'h0}] = 1;
         if (derr & cfg.scb_h.do_alert_check) begin
-          cfg.scb_h.exp_alert["fatal_err"] = 1;
-          cfg.scb_h.alert_chk_max_delay["fatal_err"] = 2000;
+          cfg.scb_h.expected_alert["fatal_err"].expected = 1;
+          cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
           cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
         end
       end

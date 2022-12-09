@@ -42,8 +42,8 @@ class flash_ctrl_wr_path_intg_vseq extends flash_ctrl_rw_vseq;
             end
             randcase
               cfg.otf_wr_pct: begin
-                cfg.scb_h.exp_alert["fatal_std_err"] = 1;
-                cfg.scb_h.alert_chk_max_delay["fatal_std_err"] = 2000;
+                cfg.scb_h.expected_alert["fatal_std_err"].expected = 1;
+                cfg.scb_h.expected_alert["fatal_std_err"].max_delay = 2000;
                 cfg.scb_h.exp_alert_contd["fatal_std_err"] = 10000;
 
                 // prog_err and mp_err
