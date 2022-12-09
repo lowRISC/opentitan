@@ -39,25 +39,27 @@ module prim_pulse_sync (
   //VCS coverage off
   // pragma coverage off
 
-  logic src_active_flag;
-
   // source active flag tracks whether there is an ongoing "toggle" event.
   // Until this toggle event is accepted by the destination domain (negative edge of
   // of the pulse output), the source side cannot toggle again.
-  always_ff @(posedge clk_src_i or negedge dst_pulse_o or negedge rst_src_ni) begin
-    if (!rst_src_ni) begin
-      src_active_flag <= '0;
-    end else if (!dst_pulse_o && src_active_flag) begin
-      src_active_flag <= '0;
-    end else if (src_pulse_i) begin
-      src_active_flag <= 1'b1;
+  logic effective_rst_n;
+  assign effective_rst_n = rst_src_ni && dst_pulse_o;
+
+  logic src_active_flag_d, src_active_flag_q;
+  assign src_active_flag_d = src_pulse_i || src_active_flag_q;
+
+  always_ff @(posedge clk_src_i or negedge effective_rst_n) begin
+    if (!effective_rst_n) begin
+      src_active_flag_q <= '0;
+    end else begin
+      src_active_flag_q <= src_active_flag_d;
     end
   end
 
   //VCS coverage on
   // pragma coverage on
 
- `ASSERT(SrcPulseCheck_M, src_pulse_i |-> !src_active_flag, clk_src_i, !rst_src_ni)
+  `ASSERT(SrcPulseCheck_M, src_pulse_i |-> !src_active_flag_q, clk_src_i, !rst_src_ni)
 `endif
 
   //////////////////////////////////////////////////////////

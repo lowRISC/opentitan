@@ -17,7 +17,7 @@ module pwrmgr_sec_cm_checker_assert
   input rst_slow_ni,
   input pwrmgr_pkg::pwr_rst_req_t pwr_rst_o,
   input slow_fsm_invalid,
-  input pwrmgr_pkg::fast_pwr_state_e fast_state,
+  input fast_fsm_invalid,
   input prim_mubi_pkg::mubi4_t rom_intg_chk_dis,
   input prim_mubi_pkg::mubi4_t rom_intg_chk_ok,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
@@ -37,16 +37,6 @@ module pwrmgr_sec_cm_checker_assert
   always_comb reset_or_disable = !rst_ni || disable_sva;
   always_comb esc_reset_or_disable = !rst_esc_ni || disable_sva;
   always_comb slow_reset_or_disable = !rst_slow_ni || disable_sva;
-
-  function automatic bit fsm_state_is_valid(pwrmgr_pkg::fast_pwr_state_e state);
-    pwrmgr_pkg::fast_pwr_state_e legal_st = legal_st.first();
-
-    do begin
-      if (state == legal_st) return 1'b1;
-      legal_st = legal_st.next();
-    end while (legal_st != legal_st.first());
-    return 1'b0;
-  endfunction
 
   `define ASYNC_ASSERT(_name, _prop, _sigs, _rst)                         \
     _name: assert property (@(_sigs) disable iff ((_rst) !== '0) (_prop)) \
@@ -101,11 +91,9 @@ module pwrmgr_sec_cm_checker_assert
 // sec_cm_fsm_terminal
 // if slow_fsm or fast_fsm is invalid,
 // both pwr_rst_o.rst_lc_req and pwr_rst_o.rst_sys_req should be set
-  bit fsm_is_valid;
-  always_comb fsm_is_valid = fsm_state_is_valid(fast_state);
 
   `ASSERT(RstreqChkFsmterm_A,
-          $rose(slow_fsm_invalid) || !fsm_is_valid
+          $rose(slow_fsm_invalid) || $rose(fast_fsm_invalid)
           |=> ##[1:10] $rose(pwr_rst_o.rst_lc_req & pwr_rst_o.rst_sys_req),
           clk_i, reset_or_disable)
 

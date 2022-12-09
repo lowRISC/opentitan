@@ -330,9 +330,13 @@ module prim_sync_reqack #(
   `ifdef INC_ASSERT
     //VCS coverage off
     // pragma coverage off
+
+    logic effective_rst_n;
+    assign effective_rst_n = rst_src_ni && rst_dst_ni;
+
     logic chk_flag;
-    always_ff @(posedge clk_src_i or negedge rst_src_ni or negedge rst_dst_ni) begin
-      if (!rst_src_ni || !rst_dst_ni) begin
+    always_ff @(posedge clk_src_i or negedge effective_rst_n) begin
+      if (!effective_rst_n) begin
         chk_flag <= '0;
       end else if (src_req_i && !chk_flag) begin
         chk_flag <= 1'b1;

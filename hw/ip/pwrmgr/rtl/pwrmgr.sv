@@ -650,9 +650,12 @@ module pwrmgr
   `ifdef INC_ASSERT
   //VCS coverage off
   // pragma coverage off
+  logic effective_rst_n;
+  assign effective_rst_n = clk_lc_i && rst_ni;
+
   logic [31:0] cnt;
-  always_ff @(posedge clk_i or negedge clk_lc_i or negedge rst_ni) begin
-    if (!rst_ni || !clk_lc_i) begin
+  always_ff @(posedge clk_i or negedge effective_rst_n) begin
+    if (!effective_rst_n) begin
       cnt <= '0;
     end else begin
       cnt <= cnt + 1'b1;

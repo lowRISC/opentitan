@@ -6,31 +6,21 @@
   export "DPI-C" function simutil_get_scramble_key;
 
   function int simutil_get_scramble_key(output bit [127:0] val);
-    if (!key_valid_i) begin
-      return 0;
-    end
-
-    if (DataKeyWidth != 128) begin
-      return 0;
-    end
-
-    val = key_i;
-    return 1;
+    int valid;
+    valid = key_valid_i && DataKeyWidth == 128 ? 1 : 0;
+    if (valid == 1) val = key_i;
+    return valid;
   endfunction
 
   export "DPI-C" function simutil_get_scramble_nonce;
 
   function int simutil_get_scramble_nonce(output bit [319:0] nonce);
-    if (!key_valid_i) begin
-      return 0;
+    int valid;
+    valid = key_valid_i && NonceWidth <= 320 ? 1 : 0;
+    if (valid == 1) begin
+       nonce = '0;
+       nonce[NonceWidth-1:0] = nonce_i;
     end
-
-    if (NonceWidth > 320) begin
-      return 0;
-    end
-
-    nonce = '0;
-    nonce[NonceWidth-1:0] = nonce_i;
-    return 1;
+    return valid;
   endfunction
 `endif
