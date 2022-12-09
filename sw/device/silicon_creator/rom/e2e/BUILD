@@ -3430,3 +3430,81 @@ opentitan_functest(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
     ],
 )
+
+manifest({
+    "name": "manifest_rom_ext_upgrade_interrupt",
+    "address_translation": hex(CONST.FALSE),
+    "identifier": hex(CONST.ROM_EXT),
+    "security_version": "0x{}".format(hex(10)),
+})
+
+otp_json(
+    name = "otp_json_rom_ext_upgrade_interrupt",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN": "0x{}".format(hex(CONST.TRUE)),
+            },
+        ),
+    ],
+)
+
+[
+    otp_image(
+        name = "otp_img_rom_ext_upgrade_interrupt_{}".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        overlays = STD_OTP_OVERLAYS + [":otp_json_rom_ext_upgrade_interrupt"],
+        visibility = ["//visibility:private"],
+    )
+    for lc_state, _ in get_lc_items()
+]
+
+[
+    bitstream_splice(
+        name = "bitstream_rom_ext_upgrade_interrupt_{}".format(
+            lc_state,
+        ),
+        src = "//hw/bitstream:rom",
+        data = ":otp_img_rom_ext_upgrade_interrupt_{}".format(
+            lc_state,
+        ),
+        meminfo = "//hw/bitstream:otp_mmi",
+        tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+        update_usr_access = True,
+        visibility = ["//visibility:private"],
+    )
+    for lc_state, lc_state_val in get_lc_items()
+]
+
+[
+    opentitan_functest(
+        name = "rom_ext_upgrade_interrupt_{}".format(lc_state),
+        srcs = ["rom_ext_upgrade_interrupt.c"],
+        cw310 = cw310_params(
+            bitstream = ":bitstream_rom_ext_upgrade_interrupt_{}".format(lc_state),
+            clear_bitstream = True,
+            tags = ["vivado"] + maybe_skip_in_ci(lc_state_val),
+        ),
+        manifest = ":manifest_rom_ext_upgrade_interrupt",
+        targets = [
+            "cw310_rom",
+        ],
+        deps = [
+            "//sw/device/lib/testing:flash_ctrl_testutils",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib:boot_data",
+            "//sw/device/silicon_creator/lib:test_main",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        ],
+    )
+    for lc_state, lc_state_val in get_lc_items()
+]
+
+test_suite(
+    name = "rom_e2e_rom_ext_upgrade_interrupt",
+    tags = ["manual"],
+    tests = ["rom_ext_upgrade_interrupt_{}".format(lc_state) for lc_state, _ in get_lc_items()],
+)
