@@ -92,26 +92,7 @@ class i2c_target_smoke_vseq extends i2c_base_vseq;
         if (cfg.use_intr_handler) process_target_interrupts();
       end
       begin
-        if (cfg.use_intr_handler) begin
-          string id = "stop_interrupt_handler";
-
-          `DV_WAIT(cfg.sent_acq_cnt > 0,, cfg.spinwait_timeout_ns, id)
-          `DV_WAIT(sent_txn_cnt == num_trans,, cfg.long_spinwait_timeout_ns, id)
-          cfg.read_all_acq_entries = 1;
-          if (cfg.rd_pct != 0) begin
-            `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte > 0,, cfg.spinwait_timeout_ns, id)
-            `DV_WAIT(cfg.m_i2c_agent_cfg.sent_rd_byte == cfg.m_i2c_agent_cfg.rcvd_rd_byte,,
-                     cfg.long_spinwait_timeout_ns, id)
-          end
-          `DV_WAIT(cfg.sent_acq_cnt == cfg.rcvd_acq_cnt,, cfg.spinwait_timeout_ns, id)
-          csr_spinwait(.ptr(ral.status.acqempty), .exp_data(1'b1));
-
-          if (cfg.m_i2c_agent_cfg.allow_ack_stop) send_ack_stop();
-          // add drain time before stop interrupt handler
-          cfg.clk_rst_vif.wait_clks(1000);
-          cfg.stop_intr_handler = 1;
-          `uvm_info("stop_intr_handler", "called stop_intr_handler", UVM_MEDIUM)
-        end
+        if (cfg.use_intr_handler) stop_target_interrupt_handler();
       end
     join
   endtask : body

@@ -49,14 +49,14 @@ class i2c_monitor extends dv_base_monitor #(
           end else begin
             mon_dut_item.rstart = 1'b1;
           end
-          mon_dut_item.tran_id = num_dut_tran++;
+          mon_dut_item.tran_id = num_dut_tran;
           mon_dut_item.start = 1'b1;
           // collecting address
           for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
             cfg.vif.p_edge_scl();
             mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
             `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]),
-                      UVM_HIGH)
+                            UVM_HIGH)
           end
           `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
           cfg.vif.p_edge_scl();
@@ -79,8 +79,9 @@ class i2c_monitor extends dv_base_monitor #(
             full_item.read = 1;
             analysis_port.write(full_item);
           end
+          num_dut_tran++;
           mon_dut_item.clear_data();
-        end
+        end // forever begin
         ack_stop_mon();
       end join_none
     end else begin
