@@ -469,6 +469,9 @@ opentitan_functest(
 opentitan_functest(
     name = "chip_power_sleep_load",
     srcs = ["chip_power_sleep_load.c"],
+    verilator = verilator_params(
+        tags = ["broken"],  # FIXME #16374 test doesn't make progress after enabling PWM
+    ),
     deps = [
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:adc_ctrl",
