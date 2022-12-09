@@ -10,9 +10,9 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
+#include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -27,7 +27,7 @@ static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
-static otbn_t otbn;
+static dif_otbn_t otbn;
 static dif_rv_plic_t plic;
 static dif_rv_core_ibex_t rv_core_ibex;
 
@@ -122,8 +122,8 @@ static void init_peripherals(void) {
   CHECK_DIF_OK(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
-  CHECK(otbn_init(&otbn, mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR)) ==
-        kOtbnOk);
+  CHECK_DIF_OK(
+      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
 }
 
 /**
@@ -209,14 +209,11 @@ static void otbn_task(void *task_parameters) {
     LOG_INFO("OTBN:START");
     for (size_t i = 0; i < task_iter_count_max[kTestTaskIdOtbn]; ++i) {
       otbn_randomness_test_start(&otbn);
-      bool is_busy = true;
-      while (is_busy) {
-        CHECK(otbn_busy_check(&otbn, &is_busy) == kOtbnOk);
-        if (!is_busy) {
-          break;
-        }
+      dif_otbn_status_t status;
+      do {
+        CHECK_DIF_OK(dif_otbn_get_status(&otbn, &status));
         ottf_task_yield();
-      }
+      } while (status != kDifOtbnStatusIdle && status != kDifOtbnStatusLocked);
       CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
     }
     LOG_INFO("OTBN:DONE");
