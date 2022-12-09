@@ -127,12 +127,12 @@ class spi_host_driver extends spi_driver;
         which_bit = cfg.host_bit_dir ? j : 7 - j;
         cfg.vif.sio_out[0] <= host_byte[which_bit];
         // wait for sampling edge to sample sio (half cycle)
-        cfg.wait_sck_edge(SamplingEdge);
+        cfg.wait_sck_edge(SamplingEdge, active_csb);
         which_bit = cfg.device_bit_dir ? j : 7 - j;
         device_byte[which_bit] = cfg.vif.sio[1];
         // wait for driving edge to complete 1 cycle
         if (!last_data || i != transfer_data.size() - 1 || j != (num_bits - 1)) begin
-          cfg.wait_sck_edge(DrivingEdge);
+          cfg.wait_sck_edge(DrivingEdge, active_csb);
         end
       end
       returned_data[i] = device_byte;
@@ -150,7 +150,7 @@ class spi_host_driver extends spi_driver;
     end
 
     // for mode 1 and 3, get the leading edges out of the way
-    cfg.wait_sck_edge(LeadingEdge);
+    cfg.wait_sck_edge(LeadingEdge, active_csb);
 
     // drive data
     issue_data(req.data, rsp.data, , num_bits);
@@ -178,21 +178,21 @@ class spi_host_driver extends spi_driver;
     end
 
     // for mode 1 and 3, get the leading edges out of the way
-    cfg.wait_sck_edge(LeadingEdge);
+    cfg.wait_sck_edge(LeadingEdge, active_csb);
 
     // driver cmd and address
     issue_data(cmd_addr_bytes, dummy_return_q);
 
     // align to DrivingEdge, if the item has more to send
     if (req.dummy_cycles || req.payload_q.size || req.read_size) begin
-      cfg.wait_sck_edge(DrivingEdge);
+      cfg.wait_sck_edge(DrivingEdge, active_csb);
       cfg.vif.sio_out <= 'dz;
 
       if (req.dummy_cycles > 0) begin
         repeat (req.dummy_cycles) begin
-          cfg.wait_sck_edge(SamplingEdge);
+          cfg.wait_sck_edge(SamplingEdge, active_csb);
         end
-        if (req.payload_q.size || req.read_size) cfg.wait_sck_edge(DrivingEdge);
+        if (req.payload_q.size || req.read_size) cfg.wait_sck_edge(DrivingEdge, active_csb);
       end
       // drive data
       if (req.write_command) begin
@@ -200,7 +200,8 @@ class spi_host_driver extends spi_driver;
       end else begin
         repeat (req.read_size) begin
           logic [7:0] data;
-          cfg.read_byte(.num_lanes(req.num_lanes), .is_device_rsp(1), .data(data));
+          cfg.read_byte(.num_lanes(req.num_lanes), .is_device_rsp(1),
+                        .csb_id(active_csb), .data(data));
           rsp.payload_q.push_back(data);
         end
         `uvm_info(`gfn, $sformatf("collect read data for flash: 0x%p", rsp.payload_q), UVM_MEDIUM)

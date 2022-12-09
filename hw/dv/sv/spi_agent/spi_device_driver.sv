@@ -89,7 +89,7 @@ class spi_device_driver extends spi_driver;
                               bits_q.size()), UVM_DEBUG)
     // pop enough bits do drive all needed sio
     while (bits_q.size() > 0) begin
-       if (bits_q.size() > 0) cfg.wait_sck_edge(DrivingEdge);
+       if (bits_q.size() > 0) cfg.wait_sck_edge(DrivingEdge, active_csb);
       for (int i = 0; i < 4; i++) begin
         sio_bits[i] = (i < max_tx_bits) ? bits_q.pop_front() : 1'bz;
       end
@@ -113,7 +113,7 @@ class spi_device_driver extends spi_driver;
       begin : thread_collect_payload
         forever begin
           logic [7:0] byte_data;
-          cfg.read_byte(item.num_lanes, !item.write_command, byte_data);
+          cfg.read_byte(item.num_lanes, !item.write_command, active_csb, byte_data);
           rsp.payload_q.push_back(byte_data);
           if (!item.write_command) rsp.read_size++;
         end
@@ -129,7 +129,7 @@ class spi_device_driver extends spi_driver;
           else spi_mode = Quad;
 
           forever begin
-            cfg.wait_sck_edge(DrivingEdge);
+            cfg.wait_sck_edge(DrivingEdge, active_csb);
             // The first bit in bits_q is the MSB, which is driven on the sio
             // lane with the highest active index.
             for (int i = $high(sio_bits); i >= $low(sio_bits); i--) begin

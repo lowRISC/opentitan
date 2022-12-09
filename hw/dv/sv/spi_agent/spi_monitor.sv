@@ -95,7 +95,7 @@ class spi_monitor extends dv_base_monitor#(
 
   virtual protected task collect_curr_trans();
     // for mode 1 and 3, get the leading edges out of the way
-    cfg.wait_sck_edge(LeadingEdge);
+    cfg.wait_sck_edge(LeadingEdge, active_csb);
     forever begin : loop_forever
       logic [7:0] host_byte;    // from sio
       logic [7:0] device_byte;  // from sio
@@ -130,7 +130,7 @@ class spi_monitor extends dv_base_monitor#(
 
       for (int i = 0; i < num_samples; i = i + data_shift) begin : loop_num_samples
         // wait for the sampling edge
-        cfg.wait_sck_edge(SamplingEdge);
+        cfg.wait_sck_edge(SamplingEdge, active_csb);
         // check sio not x
         if (cfg.en_monitor_checks) begin
           foreach (cfg.vif.sio[i]) `DV_CHECK_CASE_NE(cfg.vif.sio[i], 1'bx)
@@ -227,7 +227,7 @@ class spi_monitor extends dv_base_monitor#(
     int num_addr_bytes;
     flash_opcode_received = 0;
     // for mode 1 and 3, get the leading edges out of the way
-    cfg.wait_sck_edge(LeadingEdge);
+    cfg.wait_sck_edge(LeadingEdge, active_csb);
 
     // first byte is opcode. opcode or address is always sent on single mode
     sample_and_check_byte(.num_lanes(1), .is_device_rsp(0),
@@ -241,7 +241,7 @@ class spi_monitor extends dv_base_monitor#(
     sample_address(num_addr_bytes, item.address_q);
 
     repeat (item.dummy_cycles) begin
-      cfg.wait_sck_edge(SamplingEdge);
+      cfg.wait_sck_edge(SamplingEdge, active_csb);
     end
     req_analysis_port.write(item);
 
@@ -256,7 +256,7 @@ class spi_monitor extends dv_base_monitor#(
     uint size;
     bit[7:0] cmd, tpm_rsp;
 
-    cfg.wait_sck_edge(LeadingEdge);
+    cfg.wait_sck_edge(LeadingEdge, active_csb);
     // read the 1st byte to get TPM direction and size
     sample_and_check_byte(.num_lanes(1), .is_device_rsp(0), .data(cmd), .check_data_not_z(1));
     decode_tpm_cmd(cmd, item.write_command, size);
@@ -284,7 +284,7 @@ class spi_monitor extends dv_base_monitor#(
     // poll TPM_START
     `DV_SPINWAIT(
       do begin
-        cfg.read_byte(.num_lanes(1), .is_device_rsp(1), .data(tpm_rsp));
+        cfg.read_byte(.num_lanes(1), .is_device_rsp(1), .csb_id(active_csb), .data(tpm_rsp));
         // current TPM design could only return these values
         `DV_CHECK_FATAL(tpm_rsp inside {TPM_START, TPM_WAIT, '1})
       end while (tpm_rsp[0] == TPM_WAIT);
@@ -315,7 +315,7 @@ class spi_monitor extends dv_base_monitor#(
                              input bit is_device_rsp,
                              output logic [7:0] data,
                              input bit check_data_not_z = 0);
-    cfg.read_byte(num_lanes, is_device_rsp, data);
+    cfg.read_byte(num_lanes, is_device_rsp, active_csb, data);
 
     if (cfg.en_monitor_checks) begin
       foreach (data[i]) begin
