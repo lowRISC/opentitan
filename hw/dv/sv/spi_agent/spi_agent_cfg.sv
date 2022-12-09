@@ -102,9 +102,9 @@ class spi_agent_cfg extends dv_base_agent_cfg;
 
   `uvm_object_new
 
-  virtual task wait_sck_edge(sck_edge_type_e sck_edge_type);
+  virtual task wait_sck_edge(sck_edge_type_e sck_edge_type, bit [CSB_WIDTH-1:0] csb_id);
     bit       wait_posedge;
-    bit [1:0] sck_mode = {vif.sck_polarity, vif.sck_phase};
+    bit [1:0] sck_mode = {sck_polarity[csb_id], sck_phase[csb_id]};
 
     // sck pola   sck_pha   mode
     //        0         0      0: sample at leading  posedge_sck (drive @ prev negedge_sck)
@@ -179,10 +179,11 @@ class spi_agent_cfg extends dv_base_agent_cfg;
   // this task collects one byte data based on num_lanes, which is used in both monitor and driver
   task read_byte(input int num_lanes,
                  input bit is_device_rsp,
+                 input  bit [CSB_WIDTH-1:0] csb_id,
                  output logic [7:0] data);
     int which_bit = 8;
     while (which_bit != 0) begin
-      wait_sck_edge(SamplingEdge);
+      wait_sck_edge(SamplingEdge, csb_id);
       case (num_lanes)
         1: data[--which_bit] = is_device_rsp ? vif.sio[1] : vif.sio[0];
         2: begin
