@@ -215,6 +215,19 @@ cc_library(
 )
 
 cc_library(
+    name = "otbn_testutils",
+    srcs = ["otbn_testutils.c"],
+    hdrs = ["otbn_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "otp_ctrl_testutils",
     srcs = ["otp_ctrl_testutils.c"],
     hdrs = ["otp_ctrl_testutils.h"],

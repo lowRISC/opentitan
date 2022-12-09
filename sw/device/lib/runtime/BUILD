@@ -71,16 +71,6 @@ cc_library(
 )
 
 cc_library(
-    name = "otbn",
-    srcs = ["otbn.c"],
-    hdrs = ["otbn.h"],
-    deps = [
-        ":log",
-        "//sw/device/lib/dif:otbn",
-    ],
-)
-
-cc_library(
     name = "pmp",
     srcs = ["pmp.c"],
     hdrs = ["pmp.h"],
