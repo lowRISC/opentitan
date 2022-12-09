@@ -33,8 +33,8 @@ class flash_ctrl_rd_path_intg_vseq extends flash_ctrl_legacy_base_vseq;
       `uvm_info(`gfn, $sformatf("Assert read path err idx1:%0d idx2:%0d", idx1, idx2), UVM_LOW)
       `DV_CHECK(uvm_hdl_force(path1, 1'b0))
       `DV_CHECK(uvm_hdl_force(path2, 1'b0))
-      cfg.scb_h.exp_alert["fatal_err"] = 1;
-      cfg.scb_h.alert_chk_max_delay["fatal_err"] = 2000;
+      cfg.scb_h.expected_alert["fatal_err"].expected = 1;
+      cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
       cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
 
       cfg.scb_h.exp_tl_rsp_intg_err = 1;

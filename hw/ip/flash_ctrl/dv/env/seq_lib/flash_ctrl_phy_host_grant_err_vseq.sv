@@ -12,8 +12,8 @@ class flash_ctrl_phy_host_grant_err_vseq extends flash_ctrl_err_base_vseq;
     int delay;
     string path = "tb.dut.u_eflash.gen_flash_cores[0].u_core.muxed_part";
 
-    cfg.scb_h.exp_alert["fatal_err"] = 1;
-    cfg.scb_h.alert_chk_max_delay["fatal_err"] = 2000;
+    cfg.scb_h.expected_alert["fatal_err"].expected = 1;
+    cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
     cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
 
      // unit 100 ns;

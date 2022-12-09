@@ -179,10 +179,10 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
       end
       illegal_trans = 0;
 
-      // This 'wait' will be terminated by alert_chk_max_delay from scoreboard
+      // This 'wait' will be terminated by expected_alert's max_delay from scoreboard
       `uvm_info("seq", $sformatf("wait for recov_err alert  exp:%0d   obs:%0d max_delay:%0d",
                                  exp_alert_cnt, cfg.scb_h.alert_count["recov_err"],
-                                 cfg.scb_h.alert_chk_max_delay["recov_err"]), UVM_MEDIUM)
+                                 cfg.scb_h.expected_alert["recov_err"].max_delay), UVM_MEDIUM)
 
       `DV_SPINWAIT(wait(cfg.scb_h.alert_count["recov_err"] == exp_alert_cnt);,
                    $sformatf({"wait timeout for alert_count == exp_alertcnt after do_mp_reg() ",
@@ -190,7 +190,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
                              cfg.scb_h.alert_count["recov_err"], exp_alert_cnt),
                    cfg.alert_max_delay_in_ns)
 
-      cfg.scb_h.exp_alert["recov_err"] = 0;
+      cfg.scb_h.expected_alert["recov_err"].expected = 0;
     end
 
     // Send info region access and bank erase
@@ -227,7 +227,7 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
                    "wait timeout for hs_state == AlertAckComplete",
                    cfg.alert_max_delay_in_ns)
 
-      cfg.scb_h.exp_alert["recov_err"] = 0;
+      cfg.scb_h.expected_alert["recov_err"].expected = 0;
      end
   endtask : body
 
@@ -342,21 +342,22 @@ class flash_ctrl_mp_regions_vseq extends flash_ctrl_base_vseq;
 
     if(illegal_trans) begin
       if (flash_op.op != FlashOpErase) begin
-        cfg.scb_h.exp_alert["recov_err"] = 1;
+        cfg.scb_h.expected_alert["recov_err"].expected = 1;
         cfg.scb_h.exp_alert_contd["recov_err"] = 31;
         exp_alert_cnt += 32;
       end else begin
-        cfg.scb_h.exp_alert["recov_err"] = 1;
+        cfg.scb_h.expected_alert["recov_err"].expected = 1;
         exp_alert_cnt +=1;
       end
-      cfg.scb_h.alert_chk_max_delay["recov_err"] = 2000; // cycles
+      cfg.scb_h.expected_alert["recov_err"].max_delay = 2000; // cycles
     end
     `uvm_info("do_info_bank", $sformatf("flash_op: %p", flash_op), UVM_MEDIUM)
     `uvm_info("do_info_bank", $sformatf("INFO_TBL[%0d][%0d][%0d] = %p", flash_op.addr[19],
                                          info_sel, info_page_addr, my_info), UVM_MEDIUM)
     `uvm_info("do_info_bank", $sformatf("trans:%0d  illegal_trans:%0d exp_alert:%0d op:%s",
                                         ++trans_cnt, illegal_trans,
-                                        cfg.scb_h.exp_alert["recov_err"], flash_op.op.name),
+                                        cfg.scb_h.expected_alert["recov_err"].expected,
+                                        flash_op.op.name),
                                         UVM_MEDIUM)
 
     if (flash_op.op == FlashOpProgram) begin

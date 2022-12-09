@@ -24,8 +24,8 @@ class flash_ctrl_hw_prog_rma_wipe_err_vseq extends flash_ctrl_err_base_vseq;
     `uvm_info(`gfn, $sformatf("event_idx :%0d", event_idx), UVM_MEDIUM)
      `DV_SPINWAIT(wait(cfg.flash_ctrl_vif.rma_state == StRmaWordSel);,
                   , state_wait_timeout_ns)
-    cfg.scb_h.exp_alert["fatal_err"] = 1;
-    cfg.scb_h.alert_chk_max_delay["fatal_err"] = 2000;
+    cfg.scb_h.expected_alert["fatal_err"].expected = 1;
+    cfg.scb_h.expected_alert["fatal_err"].max_delay = 2000;
     cfg.scb_h.exp_alert_contd["fatal_err"] = 10000;
 
     add_glitch(event_idx);
@@ -41,8 +41,8 @@ class flash_ctrl_hw_prog_rma_wipe_err_vseq extends flash_ctrl_err_base_vseq;
       0, 1: begin
         // This will trigger std_fault_status.prog_intg_err
         // but it will be captured in the other test.
-        cfg.scb_h.exp_alert["fatal_std_err"] = 1;
-        cfg.scb_h.alert_chk_max_delay["fatal_std_err"] = 2000;
+        cfg.scb_h.expected_alert["fatal_std_err"].expected = 1;
+        cfg.scb_h.expected_alert["fatal_std_err"].max_delay = 2000;
         cfg.scb_h.exp_alert_contd["fatal_std_err"] = 10000;
         $assertoff(0, "tb.dut.u_flash_mp.NoReqWhenErr_A");
         flip_2bits(path);

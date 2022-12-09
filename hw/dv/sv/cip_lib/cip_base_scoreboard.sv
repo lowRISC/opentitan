@@ -21,13 +21,18 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   mem_model#() exp_mem[string];
 
+  // Holds the information related to expected alerts.
+  typedef struct packed {
+    bit expected;
+    bit is_fatal;
+    int max_delay;
+  } expected_alert_t;
+
   // alert checking related parameters
   bit do_alert_check = 1;
   bit check_alert_sig_int_err = 1;
   bit under_alert_handshake[string];
-  bit exp_alert[string];
-  bit is_fatal_alert[string];
-  int alert_chk_max_delay[string];
+  expected_alert_t expected_alert[string];
   int alert_count[string];
 
   // intg check
@@ -210,10 +215,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   // Called at the start of each alert handshake. The default implementation depends on the
   // do_alert_check flag. If that is set, it checks that an alert is expected (by checking
-  // exp_alert[alert_name]).
+  // expected_alert[alert_name].expected).
   virtual function void on_alert(string alert_name, alert_esc_seq_item item);
     if (do_alert_check) begin
-      `DV_CHECK_EQ(exp_alert[alert_name], 1,
+      `DV_CHECK_EQ(expected_alert[alert_name].expected, 1,
                    $sformatf("alert %0s triggered unexpectedly", alert_name))
     end
   endfunction
@@ -243,23 +248,23 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return alert_count[alert_name];
   endfunction
 
-  // this task is implemented to check if expected alert is triggered within certain clock cycles
-  // if alert is fatal alert, it will expect alert handshakes until reset
-  // if alert is not fatal alert, it will set exp_alert back to 0 once finish alert_checking
+  // This task checks if expected alert is triggered within certain clock cycles.
+  // If alert is fatal it will expect alert handshakes until reset, otherwise it will clear
+  // expected_alert's expected flag when check is finished.
   virtual task check_alerts();
     foreach (cfg.list_of_alerts[i]) begin
       automatic string alert_name = cfg.list_of_alerts[i];
       fork
         forever begin
-          wait(exp_alert[alert_name] == 1 && cfg.under_reset == 0);
-          if (is_fatal_alert[alert_name]) begin
+          wait(expected_alert[alert_name].expected == 1 && cfg.under_reset == 0);
+          if (expected_alert[alert_name].is_fatal) begin
             while (cfg.under_reset == 0) begin
               check_alert_triggered(alert_name);
               wait(under_alert_handshake[alert_name] == 0 || cfg.under_reset == 1);
             end
           end else begin
             check_alert_triggered(alert_name);
-            exp_alert[alert_name] = 0;
+            expected_alert[alert_name].expected = 0;
           end
         end
       join_none
@@ -268,13 +273,13 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
   virtual task check_alert_triggered(string alert_name);
     // Add 1 extra negedge edge clock to make sure no race condition.
-    repeat(alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + alert_chk_max_delay[alert_name]) begin
+    repeat(alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + expected_alert[alert_name].max_delay) begin
       cfg.clk_rst_vif.wait_n_clks(1);
       if (under_alert_handshake[alert_name] || cfg.under_reset) return;
     end
     if (!cfg.en_scb) return;
     `uvm_error(`gfn, $sformatf("alert %0s did not trigger max_delay:%0d",
-                               alert_name, alert_chk_max_delay[alert_name]))
+                               alert_name, expected_alert[alert_name].max_delay))
   endtask
 
   // This function is used for individual IPs to set when they expect certain alert to trigger
@@ -294,18 +299,16 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
         // delay a negedge clk to avoid race condition between this function and
         // `under_alert_handshake` variable
         cfg.clk_rst_vif.wait_n_clks(1);
-        if (under_alert_handshake[alert_name] || exp_alert[alert_name]) begin
+        if (under_alert_handshake[alert_name] || expected_alert[alert_name].expected) begin
           `uvm_info(`gfn, $sformatf(
                     "Current %0s status: under_alert_handshake=%0b, exp_alert=%0b, request ignored",
                     alert_name,
                     under_alert_handshake[alert_name],
-                    exp_alert[alert_name]
+                    expected_alert[alert_name].expected
                     ), UVM_MEDIUM)
         end else begin
           `uvm_info(`gfn, $sformatf("alert %0s is expected to trigger", alert_name), UVM_HIGH)
-          is_fatal_alert[alert_name] = is_fatal;
-          exp_alert[alert_name] = 1;
-          alert_chk_max_delay[alert_name] = max_delay;
+          expected_alert[alert_name] = '{1, is_fatal, max_delay};
         end
       end
     join_none
@@ -584,18 +587,20 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return 1;
   endfunction
 
+  protected virtual function void reset_alert_state();
+    foreach (cfg.list_of_alerts[i]) begin
+      alert_fifos[cfg.list_of_alerts[i]].flush();
+      expected_alert[cfg.list_of_alerts[i]] = '0;
+      under_alert_handshake[cfg.list_of_alerts[i]] = 0;
+    end
+  endfunction
+
   virtual function void reset(string kind = "HARD");
     super.reset(kind);
     foreach (tl_a_chan_fifos[i]) tl_a_chan_fifos[i].flush();
     foreach (tl_d_chan_fifos[i]) tl_d_chan_fifos[i].flush();
     foreach (edn_fifos[i]) edn_fifos[i].flush();
-    foreach(cfg.list_of_alerts[i]) begin
-      alert_fifos[cfg.list_of_alerts[i]].flush();
-      exp_alert[cfg.list_of_alerts[i]]             = 0;
-      under_alert_handshake[cfg.list_of_alerts[i]] = 0;
-      is_fatal_alert[cfg.list_of_alerts[i]]        = 0;
-      alert_chk_max_delay[cfg.list_of_alerts[i]]   = 0;
-    end
+    reset_alert_state();
     cfg.tl_mem_access_gated = 0;
   endfunction
 

@@ -1333,7 +1333,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
 
   function void set_otf_exp_alert(string str);
     cfg.scb_h.exp_alert_ff[str].push_back(1);
-    cfg.scb_h.alert_chk_max_delay[str] = 2000;
+    cfg.scb_h.expected_alert[str].max_delay = 2000;
     `uvm_info("set_otf_exp_alert",
               $sformatf("exp_alert_ff[%s] size: %0d",
                         str, cfg.scb_h.exp_alert_ff[str].size()), UVM_MEDIUM)
