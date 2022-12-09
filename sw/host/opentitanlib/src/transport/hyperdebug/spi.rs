@@ -367,11 +367,17 @@ impl Target for HyperdebugSpiTarget {
     }
 
     fn get_max_speed(&self) -> Result<u32> {
-        todo!();
+        let mut buf = String::new();
+        let captures = self.inner.cmd_one_line_output_match(
+            &format!("spiget {}", &self.target_idx),
+            &super::SPI_REGEX,
+            &mut buf,
+        )?;
+        Ok(captures.get(3).unwrap().as_str().parse().unwrap())
     }
-    fn set_max_speed(&self, _frequency: u32) -> Result<()> {
-        log::info!("Setting of SPI speed not implemented for HyperDebug, ignoring\n",);
-        Ok(())
+    fn set_max_speed(&self, frequency: u32) -> Result<()> {
+        self.inner
+            .cmd_no_output(&format!("spisetspeed {} {}", &self.target_idx, frequency))
     }
 
     fn get_max_transfer_count(&self) -> Result<usize> {
