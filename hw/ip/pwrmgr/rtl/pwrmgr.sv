@@ -144,10 +144,23 @@ module pwrmgr
     .esc_tx_i(esc_rst_tx_i)
   );
 
-  // This assertion uses formal to approve that once esc_rst_req is latched, we always expect to
+  // These assertions use formal to approve that once esc_rst_req is latched, we always expect to
   // see the pwr_rst_o to latch.
-  // Use `s_eventually` because this signal crosses clock domains.
-  `ASSERT(PwrmgrSecCmEscO, esc_rst_req_d |-> s_eventually(pwr_rst_o), clk_slow_i, !rst_slow_ni)
+`ifdef SIMULATION
+  // In simulation mode, the prim_cdc_rand_delay module inserts a random one cycle delay to the
+  // two flop synchronizers.
+  // This assertion also adds a two-cycle buffer to handle the scenario where the escalation request
+  // yields to a pending low power reset request.
+  `ASSERT(PwrmgrSecCmEscToFsmResetReq_A, esc_rst_req_d |-> ##[1:5] (u_fsm.reset_reqs_i > 0),
+          clk_slow_i, !rst_slow_ni)
+`else
+  `ASSERT(PwrmgrSecCmEscToFsmResetReq_A, esc_rst_req_d |-> ##3 u_fsm.reset_reqs_i[ResetEscIdx],
+          clk_slow_i, !rst_slow_ni)
+`endif
+
+  `ASSERT(PwrmgrSecCmEscToLCReset_A, u_fsm.reset_reqs_i[ResetEscIdx] &&
+          u_fsm.state_q == FastPwrStateActive |-> ##[0:2] pwr_rst_o.rst_lc_req == 2'b11,
+          clk_slow_i, !rst_slow_ni)
 
   always_ff @(posedge clk_lc or negedge rst_lc_n) begin
     if (!rst_lc_n) begin
