@@ -2217,7 +2217,7 @@ SRAM_JTAG_INJECTION_GDB_SCRIPT = """
     opentitan_gdb_fpga_cw310_test(
         name = "sram_program_fpga_cw310_test_otp_" + lc_state,
         timeout = "short",
-        exit_success_pattern = "sram_program\\.c:\\d+\\] PC: 0x100020e0, SRAM: \\[0x10000000, 0x10020000\\)",
+        exit_success_pattern = "sram_program\\.c:\\d+\\] PC: 0x1000[0-2][0-9a-f]{3}, SRAM: \\[0x10000000, 0x10020000\\)",
         gdb_script = SRAM_JTAG_INJECTION_GDB_SCRIPT,
         gdb_script_symlinks = {
             "//sw/device/examples/sram_program:sram_program_fpga_cw310.elf": "sram_program.elf",

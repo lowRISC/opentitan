@@ -49,7 +49,9 @@ void sram_main() {
   asm("auipc %[pc], 0;" : [pc] "=r"(pc));
   LOG_INFO("PC: %p, SRAM: [%p, %p)", pc, kSramStart, kSramEnd);
   CHECK(pc >= kSramStart && pc < kSramEnd, "PC is outside the main SRAM");
-  test_status_set(kTestStatusPassed);
+  if (kDeviceType == kDeviceSimDV) {
+    test_status_set(kTestStatusPassed);
+  }
 }
 
 // Reference functions that the debugger may wish to call. This prevents the
