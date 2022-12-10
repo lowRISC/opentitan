@@ -105,10 +105,11 @@ module i2c_fsm #(
   logic [7:0]  read_byte;     // register for reads from target
   logic        read_byte_clr; // clear read_byte contents
   logic        shift_data_en; // indicates data must be shifted in from the bus
-  logic        no_stop;       // indicates no stop has been issued before start
+  logic        trans_started; // indicates a transaction has started
+  logic        pend_restart;  // there is a pending restart waiting to be processed
+  logic        req_restart;   // request restart
   logic        log_start;     // indicates start is been issued
   logic        log_stop;      // indicates stop is been issued
-  logic        restart;       // indicates repeated start state is entered into
 
   // Target specific variables
   logic        start_det;     // indicates start or repeated start is detected on the bus
@@ -190,10 +191,6 @@ module i2c_fsm #(
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_stretch
     if (!rst_ni) begin
       stretch_idle_cnt <= '0;
-    end else if (stretch_en && event_stretch_timeout_o) begin
-      // If target has stretched  our clock for too long, reset the
-      // count and try again.
-      stretch_idle_cnt <= '0;
     end else if (stretch_en && scl_d && !scl_i) begin
       stretch_idle_cnt <= stretch_idle_cnt + 1'b1;
     end else if (!target_idle_o && event_host_timeout_o) begin
@@ -261,16 +258,31 @@ module i2c_fsm #(
     end
   end
 
-  // Stop issued before
-  always_ff @ (posedge clk_i or negedge rst_ni) begin : stop_state
+  // Registers whether a transaction start has been observed.
+  // A transaction start does not include a "restart", but rather
+  // the first start after enabling i2c, or a start observed after a
+  // stop.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      no_stop <= 1'b0;
-    end else if (log_stop) begin
-      no_stop <= 1'b0;
+      trans_started <= '0;
+    end else if (trans_started && !host_enable_i) begin
+      trans_started <= '0;
     end else if (log_start) begin
-      no_stop <= 1'b1;
-    end else begin
-      no_stop <= no_stop;
+      trans_started <= 1'b1;
+    end else if (log_stop) begin
+      trans_started <= 1'b0;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      pend_restart <= '0;
+    end else if (pend_restart && !host_enable_i) begin
+      pend_restart <= '0;
+    end else if (req_restart) begin
+      pend_restart <= 1'b1;
+    end else if (log_start) begin
+      pend_restart <= '0;
     end
   end
 
@@ -471,7 +483,7 @@ module i2c_fsm #(
         host_idle_o = 1'b0;
         sda_d = 1'b1;
         scl_d = 1'b1;
-        if (restart) event_cmd_complete_o = 1'b1;
+        if (log_start) event_cmd_complete_o = pend_restart;
       end
       // HoldStart: SDA is pulled low, SCL is released
       HoldStart : begin
@@ -603,10 +615,11 @@ module i2c_fsm #(
       Active : begin
         host_idle_o = 1'b0;
 
-        // If the start flag was asserted, do not drive scl low
+        // If this is a transaction start, do not drive scl low
         // since in the next state we will drive it high to initiate
         // the start bit.
-        scl_d = fmt_flag_start_before_i;
+        // If this is a restart, continue driving the clock low.
+        scl_d = fmt_flag_start_before_i && !trans_started;
       end
       // PopFmtFifo: populate fmt_fifo
       PopFmtFifo : begin
@@ -804,7 +817,7 @@ module i2c_fsm #(
     shift_data_en = 1'b0;
     log_start = 1'b0;
     log_stop = 1'b0;
-    restart = 1'b0;
+    req_restart = 1'b0;
     input_byte_clr = 1'b0;
     en_sda_interf_det = 1'b0;
     event_tx_stretch_o = 1'b0;
@@ -820,7 +833,6 @@ module i2c_fsm #(
 
       // SetupStart: SDA and SCL are released
       SetupStart : begin
-        if (no_stop) restart = 1'b1;
         if (tcount_q == 20'd1) begin
           state_d = HoldStart;
           load_tcount = 1'b1;
@@ -848,9 +860,14 @@ module i2c_fsm #(
       ClockLow : begin
         en_sda_interf_det = 1'b1;
         if (tcount_q == 20'd1) begin
-          state_d = ClockPulse;
           load_tcount = 1'b1;
-          tcount_sel = tClockPulse;
+          if (pend_restart) begin
+            state_d = SetupStart;
+            tcount_sel = tSetupStart;
+          end else begin
+            state_d = ClockPulse;
+            tcount_sel = tClockPulse;
+          end
         end
       end
 
@@ -1026,13 +1043,14 @@ module i2c_fsm #(
           state_d = ReadClockLow;
           load_tcount = 1'b1;
           tcount_sel = tClockLow;
-        end else if (fmt_flag_start_before_i) begin
+        end else if (fmt_flag_start_before_i && !trans_started) begin
           state_d = SetupStart;
           load_tcount = 1'b1;
           tcount_sel = tSetupStart;
         end else begin
           state_d = ClockLow;
           load_tcount = 1'b1;
+          req_restart = fmt_flag_start_before_i;
           tcount_sel = tClockLow;
         end
       end
@@ -1267,7 +1285,6 @@ module i2c_fsm #(
         shift_data_en = 1'b0;
         log_start = 1'b0;
         log_stop = 1'b0;
-        restart = 1'b0;
         input_byte_clr = 1'b0;
         event_tx_stretch_o = 1'b0;
       end
@@ -1325,5 +1342,11 @@ module i2c_fsm #(
 
   // Fed out for interrupt purposes
   assign acq_fifo_wready_o = acq_fifo_wready;
+
+  // Check to make sure scl_i is never a single cycle glitch
+  `ASSERT(SclInputGlitch_A, $rose(scl_i) |-> ##1 scl_i)
+
+  // Make sure we never attempt to send a single cycle glitch
+  `ASSERT(SclOutputGlitch_A, $rose(scl_o) |-> ##1 scl_o)
 
 endmodule
