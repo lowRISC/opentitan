@@ -173,7 +173,7 @@ module i2c_fsm #(
   end
 
   logic unused_fifo_outputs;
-  assign unused_fifo_outputs = |{tx_fifo_depth_i, tx_fifo_wvalid_i};
+  assign unused_fifo_outputs = |{tx_fifo_depth_i, tx_fifo_wvalid_i, fmt_fifo_wvalid_i};
 
   always_ff @ (posedge clk_i or negedge rst_ni) begin : clk_counter
     if (!rst_ni) begin
@@ -1061,7 +1061,7 @@ module i2c_fsm #(
           state_d = ClockStop;
           load_tcount = 1'b1;
           tcount_sel = tClockStop;
-        end else if (fmt_fifo_depth_i == 7'd1 && !fmt_fifo_wvalid_i) begin
+        end else if (fmt_fifo_depth_i == 7'h1) begin
           state_d = Idle;
           load_tcount = 1'b1;
           tcount_sel = tNoDelay;

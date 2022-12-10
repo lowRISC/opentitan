@@ -286,7 +286,7 @@ module  i2c_core #(
 
   prim_fifo_sync #(
     .Width   (13),
-    .Pass    (1'b1),
+    .Pass    (1'b0),
     .Depth   (FifoDepth)
   ) u_i2c_fmtfifo (
     .clk_i,
@@ -332,7 +332,7 @@ module  i2c_core #(
 
   prim_fifo_sync #(
     .Width(8),
-    .Pass(1'b1),
+    .Pass(1'b0),
     .Depth(FifoDepth)
   ) u_i2c_txfifo (
     .clk_i,
