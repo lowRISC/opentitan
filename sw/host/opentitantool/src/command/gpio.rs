@@ -123,6 +123,33 @@ impl CommandDispatch for GpioSetPullMode {
 }
 
 #[derive(Debug, StructOpt)]
+/// Simultaneously set mode, pull and output value of a GPIO pin.
+pub struct GpioSet {
+    #[structopt(name = "PIN", help = "The GPIO pin to modify")]
+    pub pin: String,
+    #[structopt(long, case_insensitive = true, help = "The I/O mode of the pin")]
+    pub mode: Option<PinMode>,
+    #[structopt(long, parse(try_from_str), help = "The value to write to the pin")]
+    pub value: Option<bool>,
+    #[structopt(long, case_insensitive = true, help = "The weak pull mode of the pin")]
+    pub pull: Option<PullMode>,
+}
+
+impl CommandDispatch for GpioSet {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::GPIO).ok()?;
+        let gpio_pin = transport.gpio_pin(&self.pin)?;
+
+        gpio_pin.set(self.mode, self.value, self.pull)?;
+        Ok(None)
+    }
+}
+
+#[derive(Debug, StructOpt)]
 /// Apply a configuration-named pin strapping
 pub struct GpioApplyStrapping {
     #[structopt(name = "NAME", help = "The pin strapping to apply")]
@@ -169,4 +196,5 @@ pub enum GpioCommand {
     Write(GpioWrite),
     SetMode(GpioSetMode),
     SetPullMode(GpioSetPullMode),
+    Set(GpioSet),
 }

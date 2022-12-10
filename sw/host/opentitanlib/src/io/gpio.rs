@@ -71,4 +71,25 @@ pub trait GpioPin {
 
     /// Sets the weak pull resistors of the GPIO pin.
     fn set_pull_mode(&self, mode: PullMode) -> Result<()>;
+
+    /// Simultaneously sets mode, value, and weak pull, some transports may guarantee atomicity.
+    fn set(
+        &self,
+        mode: Option<PinMode>,
+        value: Option<bool>,
+        pull: Option<PullMode>,
+    ) -> Result<()> {
+        // Transports must override this function for truly atomic behavior.  Default
+        // implementation below applies each setting separately.
+        if let Some(mode) = mode {
+            self.set_mode(mode)?;
+        }
+        if let Some(pull) = pull {
+            self.set_pull_mode(pull)?;
+        }
+        if let Some(value) = value {
+            self.write(value)?;
+        }
+        Ok(())
+    }
 }

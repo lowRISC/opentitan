@@ -138,16 +138,7 @@ impl TransportWrapper {
     /// Apply given configuration to a single pins.
     fn apply_pin_configuration(&self, name: &str, conf: &PinConfiguration) -> Result<()> {
         let pin = self.gpio_pin(name)?;
-        if let Some(pin_mode) = conf.mode {
-            pin.set_mode(pin_mode)?;
-        }
-        if let Some(pull_mode) = conf.pull_mode {
-            pin.set_pull_mode(pull_mode)?;
-        }
-        if let Some(level) = conf.level {
-            pin.write(level)?;
-        }
-        Ok(())
+        pin.set(conf.mode, conf.level, conf.pull_mode)
     }
 
     /// Apply given configuration to a all the given pins.
