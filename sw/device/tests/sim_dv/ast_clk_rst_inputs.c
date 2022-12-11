@@ -205,12 +205,12 @@ void init_units() {
  *  configure adc module
  */
 static void configure_adc_ctrl(const dif_adc_ctrl_t *adc_ctrl) {
-  int WakeUpTimeAonCycles;
-  int PowerUpTimeAonCycles;
+  int wake_up_time_aon_cycles;
+  int power_up_time_aon_cycles;
 
-  PowerUpTimeAonCycles =
+  power_up_time_aon_cycles =
       aon_timer_testutils_get_aon_cycles_from_us(kPowerUpTimeInUs);
-  WakeUpTimeAonCycles =
+  wake_up_time_aon_cycles =
       aon_timer_testutils_get_aon_cycles_from_us(kWakeUpTimeInUs);
   CHECK_DIF_OK(dif_adc_ctrl_set_enabled(adc_ctrl, kDifToggleDisabled));
   CHECK_DIF_OK(dif_adc_ctrl_reset(adc_ctrl));
@@ -219,8 +219,8 @@ static void configure_adc_ctrl(const dif_adc_ctrl_t *adc_ctrl) {
                     .mode = kDifAdcCtrlLowPowerScanMode,
                     .num_low_power_samples = kNumLowPowerSamples,
                     .num_normal_power_samples = kNumNormalPowerSamples,
-                    .power_up_time_aon_cycles = PowerUpTimeAonCycles,
-                    .wake_up_time_aon_cycles = WakeUpTimeAonCycles}));
+                    .power_up_time_aon_cycles = power_up_time_aon_cycles,
+                    .wake_up_time_aon_cycles = wake_up_time_aon_cycles}));
 }
 
 static void en_plic_irqs(dif_rv_plic_t *plic) {
