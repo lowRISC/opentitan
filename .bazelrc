@@ -37,6 +37,9 @@ coverage --combined_report=lcov --instrument_test_targets --experimental_cc_cove
 # otherwise see on machines with fewer than 40 cores.
 test --local_test_jobs=HOST_CPUS*0.25
 
+# We have verilator tests that take more than an hour to complete
+test --test_timeout=60,300,1500,7200
+
 # AddressSanitizer (ASan) catches runtime out-of-bounds accesses to globals, the
 # stack, and (less importantly for OpenTitan) the heap. ASan instruments
 # programs at compile time and also requires a runtime library.
