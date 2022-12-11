@@ -137,7 +137,7 @@ In addition to these parameters, additional configuration is provided through to
 
 Signal Name | Data Type  | Width   | Description
 ----------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-hartinfo    | hartinfo_t | NrHarts | Value of the hartinfo DM register, see the RISC-V Debug Specification v0.13, Section 3.14.2 for details. **nscratch**: Number of debug scratch registers. Must be set to 2. **dataaccess**: Must be set to 1. (The data register are shadowed in the hart's memory.) **datasize**: Must be set to `dm::DataCount`. **dataaddr**: Must be set to `dm::DataAddr` (0x380).
+hartinfo    | hartinfo_t | NrHarts | Value of the hartinfo DM register, see the RISC-V Debug Specification v0.13, Section 3.14.2 for details. **nscratch**: Number of debug scratch registers. Must be set to 2. **dataaccess**: Must be set to 1. (The data register are shadowed in the hart's memory.) **datasize**: Must be set to `dm_ot::DataCount`. **dataaddr**: Must be set to `dm_ot::DataAddr` (0x380).
 
 **SystemVerilog definition of the hartinfo_t structure**
 

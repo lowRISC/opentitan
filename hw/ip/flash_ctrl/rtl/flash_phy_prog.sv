@@ -21,6 +21,8 @@
 //   are enabled, the phy controller needs to ensure there is enough data to satisfy that
 //   request.
 
+`include "prim_assert.sv"
+
 module flash_phy_prog import flash_phy_pkg::*; (
   input clk_i,
   input rst_ni,

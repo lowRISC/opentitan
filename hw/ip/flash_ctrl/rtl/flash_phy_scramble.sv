@@ -7,7 +7,10 @@
 // This module implements the flash scramble / de-scramble operation
 // This operation is actually XEX.  However the components are broken
 // in two and separately manipulated by the program and read pipelines.
+
 //
+
+`include "prim_assert.sv"
 
 module flash_phy_scramble import flash_phy_pkg::*; #(
   parameter bit SecScrambleEn = 1'b1

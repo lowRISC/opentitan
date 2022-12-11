@@ -16,7 +16,7 @@
 *
 */
 
-module dmi_jtag #(
+module dmi_ot_jtag #(
   parameter logic [31:0] IdcodeValue = 32'h00000001
 ) (
   input  logic         clk_i,      // DMI Clock
@@ -27,11 +27,11 @@ module dmi_jtag #(
   // active-low glitch free reset signal. Is asserted
   // (clk_i) whenever the dmi_jtag is reset.
   output logic         dmi_rst_no,
-  output dm::dmi_req_t dmi_req_o,
+  output dm_ot::dmi_req_t dmi_req_o,
   output logic         dmi_req_valid_o,
   input  logic         dmi_req_ready_i,
 
-  input dm::dmi_resp_t dmi_resp_i,
+  input dm_ot::dmi_resp_t dmi_resp_i,
   output logic         dmi_resp_ready_o,
   input  logic         dmi_resp_valid_i,
 
@@ -59,7 +59,7 @@ module dmi_jtag #(
   logic tdi;
 
   logic dtmcs_select;
-  dm::dtmcs_t dtmcs_d, dtmcs_q;
+  dm_ot::dtmcs_t dtmcs_d, dtmcs_q;
 
   assign dmi_clear = jtag_dmi_clear || (dtmcs_select && update && dtmcs_q.dmihardreset);
 
@@ -104,11 +104,11 @@ module dmi_jtag #(
   logic        dmi_select;
   logic        dmi_tdo;
 
-  dm::dmi_req_t  dmi_req;
+  dm_ot::dmi_req_t  dmi_req;
   logic          dmi_req_ready;
   logic          dmi_req_valid;
 
-  dm::dmi_resp_t dmi_resp;
+  dm_ot::dmi_resp_t dmi_resp;
   logic          dmi_resp_valid;
   logic          dmi_resp_ready;
 
@@ -129,7 +129,7 @@ module dmi_jtag #(
   assign dmi          = dmi_t'(dr_q);
   assign dmi_req.addr = address_q;
   assign dmi_req.data = data_q;
-  assign dmi_req.op   = (state_q == Write) ? dm::DTM_WRITE : dm::DTM_READ;
+  assign dmi_req.op   = (state_q == Write) ? dm_ot::DTM_WRITE : dm_ot::DTM_READ;
   // We will always be ready to accept the data we requested.
   assign dmi_resp_ready = 1'b1;
 
@@ -160,9 +160,9 @@ module dmi_jtag #(
             // save address and value
             address_d = dmi.address;
             data_d = dmi.data;
-            if (dm::dtm_op_e'(dmi.op) == dm::DTM_READ) begin
+            if (dm_ot::dtm_op_e'(dmi.op) == dm_ot::DTM_READ) begin
               state_d = Read;
-            end else if (dm::dtm_op_e'(dmi.op) == dm::DTM_WRITE) begin
+            end else if (dm_ot::dtm_op_e'(dmi.op) == dm_ot::DTM_WRITE) begin
               state_d = Write;
             end
             // else this is a nop and we can stay here
@@ -180,14 +180,14 @@ module dmi_jtag #(
           // load data into register and shift out
           if (dmi_resp_valid) begin
             unique case (dmi_resp.resp)
-              dm::DTM_SUCCESS: begin
+              dm_ot::DTM_SUCCESS: begin
                 data_d = dmi_resp.data;
               end
-              dm::DTM_ERR: begin
+              dm_ot::DTM_ERR: begin
                 data_d = 32'hDEAD_BEEF;
                 error_dmi_op_failed = 1'b1;
               end
-              dm::DTM_BUSY: begin
+              dm_ot::DTM_BUSY: begin
                 data_d = 32'hB051_B051;
                 error_dmi_busy = 1'b1;
               end
@@ -211,8 +211,8 @@ module dmi_jtag #(
           // got a valid answer go back to idle
           if (dmi_resp_valid) begin
             unique case (dmi_resp.resp)
-              dm::DTM_ERR: error_dmi_op_failed = 1'b1;
-              dm::DTM_BUSY: error_dmi_busy = 1'b1;
+              dm_ot::DTM_ERR: error_dmi_op_failed = 1'b1;
+              dm_ot::DTM_BUSY: error_dmi_busy = 1'b1;
               default: ;
             endcase
             state_d = Idle;
@@ -301,7 +301,7 @@ module dmi_jtag #(
   // ---------
   // TAP
   // ---------
-  dmi_jtag_tap #(
+  dmi_ot_jtag_tap #(
     .IrLength (5),
     .IdcodeValue(IdcodeValue)
   ) i_dmi_jtag_tap (
@@ -327,7 +327,7 @@ module dmi_jtag #(
   // ---------
   // CDC
   // ---------
-  dmi_cdc i_dmi_cdc (
+  dmi_ot_cdc i_dmi_cdc (
     // Test controls
     .testmode_i,
     .test_rst_ni,
@@ -353,4 +353,4 @@ module dmi_jtag #(
     .core_dmi_valid_i     ( dmi_resp_valid_i )
   );
 
-endmodule : dmi_jtag
+endmodule 

@@ -19,32 +19,23 @@ module chip_earlgrey_cw310 #(
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
-  inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
-  inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
-  inout SPI_HOST_D2, // Dedicated Pad for spi_host0_sd
-  inout SPI_HOST_D3, // Dedicated Pad for spi_host0_sd
-  inout SPI_HOST_CLK, // Dedicated Pad for spi_host0_sck
-  inout SPI_HOST_CS_L, // Dedicated Pad for spi_host0_csb
   inout SPI_DEV_D0, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_D1, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_D2, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
   inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
   inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
+  inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_D2, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_D3, // Dedicated Pad for spi_host0_sd
+  inout SPI_HOST_CLK, // Dedicated Pad for spi_host0_sck
+  inout SPI_HOST_CS_L, // Dedicated Pad for spi_host0_csb
   inout IOR8, // Dedicated Pad for sysrst_ctrl_aon_ec_rst_l
   inout IOR9, // Dedicated Pad for sysrst_ctrl_aon_flash_wp_l
   inout IO_CLK, // Manual Pad
   inout POR_BUTTON_N, // Manual Pad
   inout JTAG_SRST_N, // Manual Pad
-  inout IO_USB_CONNECT, // Manual Pad
-  inout IO_USB_DP_TX, // Manual Pad
-  inout IO_USB_DN_TX, // Manual Pad
-  inout IO_USB_D_RX, // Manual Pad
-  inout IO_USB_DP_RX, // Manual Pad
-  inout IO_USB_DN_RX, // Manual Pad
-  inout IO_USB_OE_N, // Manual Pad
-  inout IO_USB_SPEED, // Manual Pad
-  inout IO_USB_SUSPEND, // Manual Pad
   inout IO_CLKOUT, // Manual Pad
   inout IO_TRIGGER, // Manual Pad
 
@@ -145,9 +136,7 @@ module chip_earlgrey_cw310 #(
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
       BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO usbdev_usb_dn
-      BidirStd  // DIO usbdev_usb_dp
+      BidirStd  // DIO spi_host0_sd
     },
     mio_pad_type: {
       BidirOd, // MIO Pad 46
@@ -223,15 +212,6 @@ module chip_earlgrey_cw310 #(
   logic manual_in_io_clk, manual_out_io_clk, manual_oe_io_clk;
   logic manual_in_por_button_n, manual_out_por_button_n, manual_oe_por_button_n;
   logic manual_in_jtag_srst_n, manual_out_jtag_srst_n, manual_oe_jtag_srst_n;
-  logic manual_in_io_usb_connect, manual_out_io_usb_connect, manual_oe_io_usb_connect;
-  logic manual_in_io_usb_dp_tx, manual_out_io_usb_dp_tx, manual_oe_io_usb_dp_tx;
-  logic manual_in_io_usb_dn_tx, manual_out_io_usb_dn_tx, manual_oe_io_usb_dn_tx;
-  logic manual_in_io_usb_d_rx, manual_out_io_usb_d_rx, manual_oe_io_usb_d_rx;
-  logic manual_in_io_usb_dp_rx, manual_out_io_usb_dp_rx, manual_oe_io_usb_dp_rx;
-  logic manual_in_io_usb_dn_rx, manual_out_io_usb_dn_rx, manual_oe_io_usb_dn_rx;
-  logic manual_in_io_usb_oe_n, manual_out_io_usb_oe_n, manual_oe_io_usb_oe_n;
-  logic manual_in_io_usb_speed, manual_out_io_usb_speed, manual_oe_io_usb_speed;
-  logic manual_in_io_usb_suspend, manual_out_io_usb_suspend, manual_oe_io_usb_suspend;
   logic manual_in_io_clkout, manual_out_io_clkout, manual_oe_io_clkout;
   logic manual_in_io_trigger, manual_out_io_trigger, manual_oe_io_trigger;
 
@@ -239,15 +219,6 @@ module chip_earlgrey_cw310 #(
   pad_attr_t manual_attr_io_clk;
   pad_attr_t manual_attr_por_button_n;
   pad_attr_t manual_attr_jtag_srst_n;
-  pad_attr_t manual_attr_io_usb_connect;
-  pad_attr_t manual_attr_io_usb_dp_tx;
-  pad_attr_t manual_attr_io_usb_dn_tx;
-  pad_attr_t manual_attr_io_usb_d_rx;
-  pad_attr_t manual_attr_io_usb_dp_rx;
-  pad_attr_t manual_attr_io_usb_dn_rx;
-  pad_attr_t manual_attr_io_usb_oe_n;
-  pad_attr_t manual_attr_io_usb_speed;
-  pad_attr_t manual_attr_io_usb_suspend;
   pad_attr_t manual_attr_io_clkout;
   pad_attr_t manual_attr_io_trigger;
 
@@ -256,7 +227,7 @@ module chip_earlgrey_cw310 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [69:0] unused_sig;
+  logic [67:0] unused_sig;
 
   //////////////////////
   // Padring Instance //
@@ -268,37 +239,28 @@ module chip_earlgrey_cw310 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(29),
+    .NDioPads(20),
     .NMioPads(47),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
       BidirStd, // IO_CLKOUT
-      BidirStd, // IO_USB_SUSPEND
-      BidirStd, // IO_USB_SPEED
-      BidirStd, // IO_USB_OE_N
-      BidirStd, // IO_USB_DN_RX
-      BidirStd, // IO_USB_DP_RX
-      BidirStd, // IO_USB_D_RX
-      BidirStd, // IO_USB_DN_TX
-      BidirStd, // IO_USB_DP_TX
-      BidirStd, // IO_USB_CONNECT
       InputStd, // JTAG_SRST_N
       InputStd, // POR_BUTTON_N
       InputStd, // IO_CLK
       BidirOd, // IOR9
       BidirOd, // IOR8
-      InputStd, // SPI_DEV_CS_L
-      InputStd, // SPI_DEV_CLK
-      BidirStd, // SPI_DEV_D3
-      BidirStd, // SPI_DEV_D2
-      BidirStd, // SPI_DEV_D1
-      BidirStd, // SPI_DEV_D0
       BidirStd, // SPI_HOST_CS_L
       BidirStd, // SPI_HOST_CLK
       BidirStd, // SPI_HOST_D3
       BidirStd, // SPI_HOST_D2
       BidirStd, // SPI_HOST_D1
       BidirStd, // SPI_HOST_D0
+      InputStd, // SPI_DEV_CS_L
+      InputStd, // SPI_DEV_CLK
+      BidirStd, // SPI_DEV_D3
+      BidirStd, // SPI_DEV_D2
+      BidirStd, // SPI_DEV_D1
+      BidirStd, // SPI_DEV_D0
       InputStd  // POR_N
     }),
     .MioPadType ({
@@ -359,32 +321,23 @@ module chip_earlgrey_cw310 #(
     .dio_pad_io ({
       IO_TRIGGER,
       IO_CLKOUT,
-      IO_USB_SUSPEND,
-      IO_USB_SPEED,
-      IO_USB_OE_N,
-      IO_USB_DN_RX,
-      IO_USB_DP_RX,
-      IO_USB_D_RX,
-      IO_USB_DN_TX,
-      IO_USB_DP_TX,
-      IO_USB_CONNECT,
       JTAG_SRST_N,
       POR_BUTTON_N,
       IO_CLK,
       IOR9,
       IOR8,
-      SPI_DEV_CS_L,
-      SPI_DEV_CLK,
-      SPI_DEV_D3,
-      SPI_DEV_D2,
-      SPI_DEV_D1,
-      SPI_DEV_D0,
       SPI_HOST_CS_L,
       SPI_HOST_CLK,
       SPI_HOST_D3,
       SPI_HOST_D2,
       SPI_HOST_D1,
       SPI_HOST_D0,
+      SPI_DEV_CS_L,
+      SPI_DEV_CLK,
+      SPI_DEV_D3,
+      SPI_DEV_D2,
+      SPI_DEV_D1,
+      SPI_DEV_D0,
       POR_N
     }),
 
@@ -442,125 +395,89 @@ module chip_earlgrey_cw310 #(
     .dio_in_o ({
         manual_in_io_trigger,
         manual_in_io_clkout,
-        manual_in_io_usb_suspend,
-        manual_in_io_usb_speed,
-        manual_in_io_usb_oe_n,
-        manual_in_io_usb_dn_rx,
-        manual_in_io_usb_dp_rx,
-        manual_in_io_usb_d_rx,
-        manual_in_io_usb_dn_tx,
-        manual_in_io_usb_dp_tx,
-        manual_in_io_usb_connect,
         manual_in_jtag_srst_n,
         manual_in_por_button_n,
         manual_in_io_clk,
         dio_in[DioSysrstCtrlAonFlashWpL],
         dio_in[DioSysrstCtrlAonEcRstL],
-        dio_in[DioSpiDeviceCsb],
-        dio_in[DioSpiDeviceSck],
-        dio_in[DioSpiDeviceSd3],
-        dio_in[DioSpiDeviceSd2],
-        dio_in[DioSpiDeviceSd1],
-        dio_in[DioSpiDeviceSd0],
         dio_in[DioSpiHost0Csb],
         dio_in[DioSpiHost0Sck],
         dio_in[DioSpiHost0Sd3],
         dio_in[DioSpiHost0Sd2],
         dio_in[DioSpiHost0Sd1],
         dio_in[DioSpiHost0Sd0],
+        dio_in[DioSpiDeviceCsb],
+        dio_in[DioSpiDeviceSck],
+        dio_in[DioSpiDeviceSd3],
+        dio_in[DioSpiDeviceSd2],
+        dio_in[DioSpiDeviceSd1],
+        dio_in[DioSpiDeviceSd0],
         manual_in_por_n
       }),
     .dio_out_i ({
         manual_out_io_trigger,
         manual_out_io_clkout,
-        manual_out_io_usb_suspend,
-        manual_out_io_usb_speed,
-        manual_out_io_usb_oe_n,
-        manual_out_io_usb_dn_rx,
-        manual_out_io_usb_dp_rx,
-        manual_out_io_usb_d_rx,
-        manual_out_io_usb_dn_tx,
-        manual_out_io_usb_dp_tx,
-        manual_out_io_usb_connect,
         manual_out_jtag_srst_n,
         manual_out_por_button_n,
         manual_out_io_clk,
         dio_out[DioSysrstCtrlAonFlashWpL],
         dio_out[DioSysrstCtrlAonEcRstL],
-        dio_out[DioSpiDeviceCsb],
-        dio_out[DioSpiDeviceSck],
-        dio_out[DioSpiDeviceSd3],
-        dio_out[DioSpiDeviceSd2],
-        dio_out[DioSpiDeviceSd1],
-        dio_out[DioSpiDeviceSd0],
         dio_out[DioSpiHost0Csb],
         dio_out[DioSpiHost0Sck],
         dio_out[DioSpiHost0Sd3],
         dio_out[DioSpiHost0Sd2],
         dio_out[DioSpiHost0Sd1],
         dio_out[DioSpiHost0Sd0],
+        dio_out[DioSpiDeviceCsb],
+        dio_out[DioSpiDeviceSck],
+        dio_out[DioSpiDeviceSd3],
+        dio_out[DioSpiDeviceSd2],
+        dio_out[DioSpiDeviceSd1],
+        dio_out[DioSpiDeviceSd0],
         manual_out_por_n
       }),
     .dio_oe_i ({
         manual_oe_io_trigger,
         manual_oe_io_clkout,
-        manual_oe_io_usb_suspend,
-        manual_oe_io_usb_speed,
-        manual_oe_io_usb_oe_n,
-        manual_oe_io_usb_dn_rx,
-        manual_oe_io_usb_dp_rx,
-        manual_oe_io_usb_d_rx,
-        manual_oe_io_usb_dn_tx,
-        manual_oe_io_usb_dp_tx,
-        manual_oe_io_usb_connect,
         manual_oe_jtag_srst_n,
         manual_oe_por_button_n,
         manual_oe_io_clk,
         dio_oe[DioSysrstCtrlAonFlashWpL],
         dio_oe[DioSysrstCtrlAonEcRstL],
-        dio_oe[DioSpiDeviceCsb],
-        dio_oe[DioSpiDeviceSck],
-        dio_oe[DioSpiDeviceSd3],
-        dio_oe[DioSpiDeviceSd2],
-        dio_oe[DioSpiDeviceSd1],
-        dio_oe[DioSpiDeviceSd0],
         dio_oe[DioSpiHost0Csb],
         dio_oe[DioSpiHost0Sck],
         dio_oe[DioSpiHost0Sd3],
         dio_oe[DioSpiHost0Sd2],
         dio_oe[DioSpiHost0Sd1],
         dio_oe[DioSpiHost0Sd0],
+        dio_oe[DioSpiDeviceCsb],
+        dio_oe[DioSpiDeviceSck],
+        dio_oe[DioSpiDeviceSd3],
+        dio_oe[DioSpiDeviceSd2],
+        dio_oe[DioSpiDeviceSd1],
+        dio_oe[DioSpiDeviceSd0],
         manual_oe_por_n
       }),
     .dio_attr_i ({
         manual_attr_io_trigger,
         manual_attr_io_clkout,
-        manual_attr_io_usb_suspend,
-        manual_attr_io_usb_speed,
-        manual_attr_io_usb_oe_n,
-        manual_attr_io_usb_dn_rx,
-        manual_attr_io_usb_dp_rx,
-        manual_attr_io_usb_d_rx,
-        manual_attr_io_usb_dn_tx,
-        manual_attr_io_usb_dp_tx,
-        manual_attr_io_usb_connect,
         manual_attr_jtag_srst_n,
         manual_attr_por_button_n,
         manual_attr_io_clk,
         dio_attr[DioSysrstCtrlAonFlashWpL],
         dio_attr[DioSysrstCtrlAonEcRstL],
-        dio_attr[DioSpiDeviceCsb],
-        dio_attr[DioSpiDeviceSck],
-        dio_attr[DioSpiDeviceSd3],
-        dio_attr[DioSpiDeviceSd2],
-        dio_attr[DioSpiDeviceSd1],
-        dio_attr[DioSpiDeviceSd0],
         dio_attr[DioSpiHost0Csb],
         dio_attr[DioSpiHost0Sck],
         dio_attr[DioSpiHost0Sd3],
         dio_attr[DioSpiHost0Sd2],
         dio_attr[DioSpiHost0Sd1],
         dio_attr[DioSpiHost0Sd0],
+        dio_attr[DioSpiDeviceCsb],
+        dio_attr[DioSpiDeviceSck],
+        dio_attr[DioSpiDeviceSd3],
+        dio_attr[DioSpiDeviceSd2],
+        dio_attr[DioSpiDeviceSd1],
+        dio_attr[DioSpiDeviceSd0],
         manual_attr_por_n
       }),
 

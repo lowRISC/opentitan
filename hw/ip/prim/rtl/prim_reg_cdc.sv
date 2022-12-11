@@ -90,7 +90,7 @@ module prim_reg_cdc #(
   // window from which hardware writes are ignored.  Once the busy window completes,
   // the cdc portion then begins sampling once more.
   //
-  // This is consistent with prim_subreg_arb where during software / hardware conflicts,
+  // This is consistent with prim_ot_subreg_arb where during software / hardware conflicts,
   // software is always prioritized.  The main difference is the conflict resolution window
   // is now larger instead of just one destination clock cycle.
 
@@ -192,4 +192,4 @@ module prim_reg_cdc #(
   // If busy goes high, we must eventually see an ack
   `ASSERT(HungHandShake_A, $rose(src_req) |-> strong(##[0:$] src_ack), clk_src_i, !rst_src_ni)
 
-endmodule // prim_subreg_cdc
+endmodule // prim_ot_subreg_cdc

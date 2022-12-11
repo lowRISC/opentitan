@@ -56,8 +56,8 @@ module tb_jtag_dmi;
   logic dut_tck, dut_tms, dut_trstn, dut_tdi, dut_tdo;
   logic start_rand;
 
-  dm::dmi_req_t dmi_req;
-  dm::dmi_resp_t dmi_resp;
+  dm_ot::dmi_req_t dmi_req;
+  dm_ot::dmi_resp_t dmi_resp;
 
   assign slave_dv.q_addr = dmi_req.addr;
   assign slave_dv.q_op = dmi_req.op;
@@ -190,7 +190,7 @@ module tb_jtag_dmi;
 
   initial begin
     logic [31:0] idcode;
-    dm::dtmcs_t dtmcs;
+    dm_ot::dtmcs_t dtmcs;
     logic [4:0] opocode;
     start_rand = 0;
 
@@ -230,16 +230,16 @@ module tb_jtag_dmi;
     for (int i = 0; i < NrRandomTransactions; i++) begin
       automatic dmi_test::req_t transaction = new;
       assert(transaction.randomize() with {
-        op inside {dm::DTM_WRITE, dm::DTM_READ};
+        op inside {dm_ot::DTM_WRITE, dm_ot::DTM_READ};
       });
-      if (transaction.op == dm::DTM_WRITE) begin
+      if (transaction.op == dm_ot::DTM_WRITE) begin
         req_mbx.put(transaction);
-        riscv_dbg.write_dmi(dm::dm_csr_e'(transaction.addr), transaction.data);
+        riscv_dbg.write_dmi(dm_ot::dm_csr_e'(transaction.addr), transaction.data);
         rsp_mbx.put('h0);
-      end else if (transaction.op == dm::DTM_READ) begin
+      end else if (transaction.op == dm_ot::DTM_READ) begin
         automatic logic [31:0] rdata;
         req_mbx.put(transaction);
-        riscv_dbg.read_dmi(dm::dm_csr_e'(transaction.addr), rdata);
+        riscv_dbg.read_dmi(dm_ot::dm_csr_e'(transaction.addr), rdata);
         rsp_mbx.put(rdata);
       end
       // Randomly reset the dmi using either hard jtag trst_ni, JTAG
@@ -258,7 +258,7 @@ module tb_jtag_dmi;
           end
 
           2: begin
-            dm::dtmcs_t dtmcs_value;
+            dm_ot::dtmcs_t dtmcs_value;
             dtmcs_value = '0;
             dtmcs_value.dmihardreset = 1;
             $info("Resetting JTAG DMI using DMI dtmcs registers' dmihardreset control bit.");
@@ -289,7 +289,7 @@ module tb_jtag_dmi;
         $error("Invalid dmi request. Got address %0x instead of %0x.", req_mon.addr, req.addr);
       assert(req.op == req_mon.op) else
         $error("Invalid dmi request. Got op %0x instead of %0x.", req_mon.op, req.op);;
-      if (req.op == dm::DTM_READ) begin
+      if (req.op == dm_ot::DTM_READ) begin
         assert(rsp_mon.data == rsp);
       end else begin
         assert(req.data == req_mon.data);

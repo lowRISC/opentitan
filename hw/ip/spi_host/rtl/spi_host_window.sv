@@ -5,6 +5,9 @@
 // Module to manage TX FIFO window for Serial Peripheral Interface (SPI) host IP.
 //
 
+
+`include "prim_assert.sv"
+
 module spi_host_window (
   input  clk_i,
   input  rst_ni,

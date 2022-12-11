@@ -12,7 +12,7 @@
   param_list: [
     { name:    "BootRomInitFile",
       type:    "",
-      default: '""',
+      default: '"../hw/top_earlgrey/sw/tests/hello_test/bootrom.vmem"',
       desc:    "Contents of ROM"
       local:   "false",
       expose:  "true"

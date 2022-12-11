@@ -65,16 +65,16 @@ module rv_dm
   `ASSERT_INIT(paramCheckNrHarts, NrHarts > 0)
 
   // static debug hartinfo
-  localparam dm::hartinfo_t DebugHartInfo = '{
+  localparam dm_ot::hartinfo_t DebugHartInfo = '{
     zero1:      '0,
     nscratch:   2, // Debug module needs at least two scratch regs
     zero0:      0,
     dataaccess: 1'b1, // data registers are memory mapped in the debugger
-    datasize:   dm::DataCount,
-    dataaddr:   dm::DataAddr
+    datasize:   dm_ot::DataCount,
+    dataaddr:   dm_ot::DataAddr
   };
 
-  dm::hartinfo_t [NrHarts-1:0]      hartinfo;
+  dm_ot::hartinfo_t [NrHarts-1:0]      hartinfo;
   for (genvar i = 0; i < NrHarts; i++) begin : gen_dm_hart_ctrl
     assign hartinfo[i] = DebugHartInfo;
   end
@@ -187,8 +187,8 @@ module rv_dm
     .lc_en_o(pinmux_hw_debug_en)
   );
 
-  dm::dmi_req_t  dmi_req;
-  dm::dmi_resp_t dmi_rsp;
+  dm_ot::dmi_req_t  dmi_req;
+  dm_ot::dmi_resp_t dmi_rsp;
   logic dmi_req_valid, dmi_req_ready;
   logic dmi_rsp_valid, dmi_rsp_ready;
   logic dmi_rst_n;
@@ -324,7 +324,7 @@ module rv_dm
   );
 
   // JTAG TAP
-  dmi_jtag #(
+  dmi_ot_jtag #(
     .IdcodeValue    (IdcodeValue)
   ) dap (
     .clk_i            (clk_i),
@@ -405,7 +405,7 @@ module rv_dm
   // Debug Module Instance //
   ///////////////////////////
 
-  dm_top #(
+  dm_ot_top #(
     .NrHarts        (NrHarts),
     .BusWidth       (BusWidth),
     .SelectableHarts(SelectableHarts),

@@ -38,7 +38,7 @@ module dm_top_sva
 )(
   input logic           clk_i,
   input logic           rst_ni,
-  input dm::hartinfo_t [NrHarts-1:0] hartinfo_i
+  input dm_ot::hartinfo_t [NrHarts-1:0] hartinfo_i
 );
 
   ///////////////////////////////////////////////////////

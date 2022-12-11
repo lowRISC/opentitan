@@ -10,6 +10,8 @@
 // The top level flash_phy is only responsible for dispatching transactions and
 // correctly collecting the responses in order.
 
+`include "prim_assert.sv"
+
 module flash_phy
   import flash_ctrl_pkg::*;
   import prim_mubi_pkg::mubi4_t;

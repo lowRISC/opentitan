@@ -162,9 +162,9 @@ module rstmgr
   logic [NumSwResets-1:0] sw_rst_ctrl_n;
 
   for (genvar i=0; i < NumSwResets; i++) begin : gen_sw_rst_ext_regs
-    prim_subreg #(
+    prim_ot_subreg #(
       .DW(1),
-      .SwAccess(prim_subreg_pkg::SwAccessRW),
+      .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
       .RESVAL(1)
     ) u_rst_sw_ctrl_reg (
       .clk_i,

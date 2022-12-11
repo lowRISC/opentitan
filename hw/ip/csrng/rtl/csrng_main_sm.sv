@@ -6,6 +6,10 @@
 //
 //  - handles all app cmd requests from all requesting interfaces
 
+
+`include "prim_flop_macros.sv"
+`include "prim_assert.sv"
+ 
 module csrng_main_sm import csrng_pkg::*; #(
   parameter int StateWidth = 8
 ) (

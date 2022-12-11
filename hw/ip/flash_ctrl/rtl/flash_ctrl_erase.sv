@@ -4,6 +4,7 @@
 //
 // Faux Flash Erase Control
 //
+`include "prim_assert.sv"
 
 module flash_ctrl_erase import flash_ctrl_pkg::*; (
   // Software Interface

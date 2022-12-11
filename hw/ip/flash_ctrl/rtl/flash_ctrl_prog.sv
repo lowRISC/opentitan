@@ -5,6 +5,8 @@
 // Faux Flash Prog Control
 //
 
+`include "prim_assert.sv"
+
 module flash_ctrl_prog import flash_ctrl_pkg::*; (
   input clk_i,
   input rst_ni,

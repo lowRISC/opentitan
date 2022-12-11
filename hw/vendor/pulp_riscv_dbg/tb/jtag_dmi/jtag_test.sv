@@ -6,7 +6,7 @@
 // Author: Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 // Author: Fabian Schuiki <fschuiki@iis.ee.ethz.ch>
 
-package jtag_test;
+package jtag_ot_test;
 
   class jtag_driver #(
     parameter int IrLength = 0,
@@ -133,10 +133,10 @@ package jtag_test;
     parameter time TT = 0ns  // stimuli test time
   );
 
-    typedef jtag_test::jtag_driver#(.IrLength(IrLength), .IDCODE(IDCODE), .TA(TA), .TT(TT)) jtag_driver_t;
+    typedef jtag_ot_test::jtag_driver#(.IrLength(IrLength), .IDCODE(IDCODE), .TA(TA), .TT(TT)) jtag_driver_t;
     jtag_driver_t jtag;
 
-    localparam DMIWidth = $bits(dm::dmi_req_t);
+    localparam DMIWidth = $bits(dm_ot::dmi_req_t);
 
     function new (jtag_driver_t jtag);
       this.jtag = jtag;
@@ -171,7 +171,7 @@ package jtag_test;
       jtag.update_dr(1'b0);
     endtask
 
-    task read_dtmcs(output dm::dtmcs_t data, input int wait_cycles = 10);
+    task read_dtmcs(output dm_ot::dtmcs_t data, input int wait_cycles = 10);
       logic read_data [32], write_data [32];
       jtag.set_ir(DTMCSR);
       jtag.shift_dr();
@@ -179,7 +179,7 @@ package jtag_test;
       {<<{write_data}} = 32'b0;
       jtag.readwrite_bits(read_data, write_data, 1'b1);
       jtag.update_dr(1'b0);
-      data = dm::dtmcs_t'({<<{read_data}});
+      data = dm_ot::dtmcs_t'({<<{read_data}});
     endtask
 
     task reset_dmi();
@@ -187,9 +187,9 @@ package jtag_test;
       write_dtmcs(dmireset);
     endtask
 
-    task write_dmi(input dm::dm_csr_e address, input logic [31:0] data);
+    task write_dmi(input dm_ot::dm_csr_e address, input logic [31:0] data);
       logic write_data [DMIWidth];
-      logic [DMIWidth-1:0] write_data_packed = {address, data, dm::DTM_WRITE};
+      logic [DMIWidth-1:0] write_data_packed = {address, data, dm_ot::DTM_WRITE};
       {<<{write_data}} = write_data_packed;
       jtag.set_ir(DMIACCESS);
       jtag.shift_dr();
@@ -197,11 +197,11 @@ package jtag_test;
       jtag.update_dr(1'b0);
     endtask
 
-    task read_dmi(input dm::dm_csr_e address, output logic [31:0] data, input int wait_cycles = 10,
-                  output dm::dtm_op_status_e op);
+    task read_dmi(input dm_ot::dm_csr_e address, output logic [31:0] data, input int wait_cycles = 10,
+                  output dm_ot::dtm_op_status_e op);
       logic read_data [DMIWidth], write_data [DMIWidth];
       logic [DMIWidth-1:0] data_out = 0;
-      automatic logic [DMIWidth-1:0] write_data_packed = {address, 32'b0, dm::DTM_READ};
+      automatic logic [DMIWidth-1:0] write_data_packed = {address, 32'b0, dm_ot::DTM_READ};
       {<<{write_data}} = write_data_packed;
       jtag.set_ir(DMIACCESS);
       // send read command
@@ -211,12 +211,12 @@ package jtag_test;
       jtag.wait_idle(wait_cycles);
       // shift out read data
       jtag.shift_dr();
-      write_data_packed = {address, 32'b0, dm::DTM_NOP};
+      write_data_packed = {address, 32'b0, dm_ot::DTM_NOP};
       {<<{write_data}} = write_data_packed;
       jtag.readwrite_bits(read_data, write_data, 1'b1);
       jtag.update_dr(1'b0);
       data_out = {<<{read_data}};
-      op = dm::dtm_op_status_e'(data_out[1:0]);
+      op = dm_ot::dtm_op_status_e'(data_out[1:0]);
       data = data_out[33:2];
     endtask
 
@@ -226,11 +226,11 @@ package jtag_test;
     // an exponential backoff scheme.
     // Note: read operations which have side-effects (e.g.
     // reading SBData0) should not use this function
-    task read_dmi_exp_backoff(input dm::dm_csr_e address, output logic [31:0] data);
+    task read_dmi_exp_backoff(input dm_ot::dm_csr_e address, output logic [31:0] data);
       logic read_data [DMIWidth], write_data [DMIWidth];
       logic [DMIWidth-1:0] write_data_packed;
       logic [DMIWidth-1:0] data_out = 0;
-      dm::dtm_op_status_e op = dm::DTM_SUCCESS;
+      dm_ot::dtm_op_status_e op = dm_ot::DTM_SUCCESS;
       int trial_idx = 0;
       int wait_cycles = 8;
 
@@ -243,7 +243,7 @@ package jtag_test;
         read_dmi(address, data, wait_cycles, op);
         wait_cycles *= 2;
         trial_idx++;
-      end while (op == dm::DTM_BUSY);
+      end while (op == dm_ot::DTM_BUSY);
     endtask
 
   task sba_read_double(input logic [31:0] address, output logic [63:0] data);
@@ -261,27 +261,27 @@ package jtag_test;
     // Case 2) is intercepted at the end of the sequence by reading the
     // SBCS register, and checking sbbusyerror. In this case the delay to be
     // adjusted is that before the SBData read operations.
-    dm::dtm_op_status_e op;
+    dm_ot::dtm_op_status_e op;
     automatic int dmi_wait_cycles = 2;
     automatic int sba_wait_cycles = 2;
-    automatic dm::sbcs_t sbcs = '{sbreadonaddr: 1, sbaccess: 3, default: '0};
-    dm::sbcs_t read_sbcs;
+    automatic dm_ot::sbcs_t sbcs = '{sbreadonaddr: 1, sbaccess: 3, default: '0};
+    dm_ot::sbcs_t read_sbcs;
     // Check address is 64b aligned
     assert (address[2:0] == '0) else $error("[JTAG] 64b-unaligned accesses not supported");
     // Start SBA sequence attempts
     while (1) begin
       automatic bit failed = 0;
-      write_dmi(dm::SBCS, sbcs);
-      write_dmi(dm::SBAddress0, address);
+      write_dmi(dm_ot::SBCS, sbcs);
+      write_dmi(dm_ot::SBAddress0, address);
       wait_idle(sba_wait_cycles);
-      read_dmi(dm::SBData1, data[63:32], dmi_wait_cycles, op);
+      read_dmi(dm_ot::SBData1, data[63:32], dmi_wait_cycles, op);
       // Skip second read if we already have a DTM busy error
       // else we can override op
-      if (op != dm::DTM_BUSY) begin
-        read_dmi(dm::SBData0, data[31:0], dmi_wait_cycles, op);
+      if (op != dm_ot::DTM_BUSY) begin
+        read_dmi(dm_ot::SBData0, data[31:0], dmi_wait_cycles, op);
       end
       // If we had a DTM_BUSY error, increase dmi_wait_cycles and clear error
-      if (op == dm::DTM_BUSY) begin
+      if (op == dm_ot::DTM_BUSY) begin
         dmi_wait_cycles *= 2;
         failed = 1'b1;
         reset_dmi();
@@ -290,7 +290,7 @@ package jtag_test;
       // Error is cleared in next iteration when writing SBCS
       do begin
         sbcs.sbbusyerror = 1'b0;
-        read_dmi_exp_backoff(dm::SBCS, read_sbcs);
+        read_dmi_exp_backoff(dm_ot::SBCS, read_sbcs);
         if (read_sbcs.sbbusyerror) begin
           sbcs.sbbusyerror = 1'b1; // set 1 to clear
           sba_wait_cycles *= 2;

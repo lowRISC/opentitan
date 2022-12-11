@@ -384,9 +384,9 @@ module entropy_src_reg_top (
   // Register instances
   // R[intr_state]: V(False)
   //   F[es_entropy_valid]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_es_entropy_valid (
     .clk_i   (clk_i),
@@ -410,9 +410,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_health_test_failed]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_es_health_test_failed (
     .clk_i   (clk_i),
@@ -436,9 +436,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_observe_fifo_ready]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_es_observe_fifo_ready (
     .clk_i   (clk_i),
@@ -462,9 +462,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_fatal_err]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_es_fatal_err (
     .clk_i   (clk_i),
@@ -490,9 +490,9 @@ module entropy_src_reg_top (
 
   // R[intr_enable]: V(False)
   //   F[es_entropy_valid]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_entropy_valid (
     .clk_i   (clk_i),
@@ -516,9 +516,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_health_test_failed]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_health_test_failed (
     .clk_i   (clk_i),
@@ -542,9 +542,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_observe_fifo_ready]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_observe_fifo_ready (
     .clk_i   (clk_i),
@@ -568,9 +568,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_fatal_err]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_es_fatal_err (
     .clk_i   (clk_i),
@@ -599,7 +599,7 @@ module entropy_src_reg_top (
   logic [3:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
   //   F[es_entropy_valid]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_intr_test_es_entropy_valid (
     .re     (1'b0),
@@ -615,7 +615,7 @@ module entropy_src_reg_top (
   assign reg2hw.intr_test.es_entropy_valid.qe = intr_test_qe;
 
   //   F[es_health_test_failed]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_intr_test_es_health_test_failed (
     .re     (1'b0),
@@ -631,7 +631,7 @@ module entropy_src_reg_top (
   assign reg2hw.intr_test.es_health_test_failed.qe = intr_test_qe;
 
   //   F[es_observe_fifo_ready]: 2:2
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_intr_test_es_observe_fifo_ready (
     .re     (1'b0),
@@ -647,7 +647,7 @@ module entropy_src_reg_top (
   assign reg2hw.intr_test.es_observe_fifo_ready.qe = intr_test_qe;
 
   //   F[es_fatal_err]: 3:3
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_intr_test_es_fatal_err (
     .re     (1'b0),
@@ -668,7 +668,7 @@ module entropy_src_reg_top (
   logic [1:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
   //   F[recov_alert]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_alert (
     .re     (1'b0),
@@ -684,7 +684,7 @@ module entropy_src_reg_top (
   assign reg2hw.alert_test.recov_alert.qe = alert_test_qe;
 
   //   F[fatal_alert]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal_alert (
     .re     (1'b0),
@@ -701,9 +701,9 @@ module entropy_src_reg_top (
 
 
   // R[me_regwen]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_me_regwen (
     .clk_i   (clk_i),
@@ -728,9 +728,9 @@ module entropy_src_reg_top (
 
 
   // R[sw_regupd]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_regupd (
     .clk_i   (clk_i),
@@ -755,9 +755,9 @@ module entropy_src_reg_top (
 
 
   // R[regwen]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h1)
   ) u_regwen (
     .clk_i   (clk_i),
@@ -799,9 +799,9 @@ module entropy_src_reg_top (
   // Create REGWEN-gated WE signal
   logic module_enable_gated_we;
   assign module_enable_gated_we = module_enable_we & me_regwen_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_module_enable (
     .clk_i   (clk_i),
@@ -830,9 +830,9 @@ module entropy_src_reg_top (
   logic conf_gated_we;
   assign conf_gated_we = conf_we & regwen_qs;
   //   F[fips_enable]: 3:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_conf_fips_enable (
     .clk_i   (clk_i),
@@ -856,9 +856,9 @@ module entropy_src_reg_top (
   );
 
   //   F[entropy_data_reg_enable]: 7:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_conf_entropy_data_reg_enable (
     .clk_i   (clk_i),
@@ -882,9 +882,9 @@ module entropy_src_reg_top (
   );
 
   //   F[threshold_scope]: 15:12
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_conf_threshold_scope (
     .clk_i   (clk_i),
@@ -908,9 +908,9 @@ module entropy_src_reg_top (
   );
 
   //   F[rng_bit_enable]: 23:20
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_conf_rng_bit_enable (
     .clk_i   (clk_i),
@@ -934,9 +934,9 @@ module entropy_src_reg_top (
   );
 
   //   F[rng_bit_sel]: 25:24
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_conf_rng_bit_sel (
     .clk_i   (clk_i),
@@ -965,9 +965,9 @@ module entropy_src_reg_top (
   logic entropy_control_gated_we;
   assign entropy_control_gated_we = entropy_control_we & regwen_qs;
   //   F[es_route]: 3:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_entropy_control_es_route (
     .clk_i   (clk_i),
@@ -991,9 +991,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_type]: 7:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_entropy_control_es_type (
     .clk_i   (clk_i),
@@ -1018,7 +1018,7 @@ module entropy_src_reg_top (
 
 
   // R[entropy_data]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_entropy_data (
     .re     (entropy_data_re),
@@ -1038,9 +1038,9 @@ module entropy_src_reg_top (
   logic health_test_windows_gated_we;
   assign health_test_windows_gated_we = health_test_windows_we & regwen_qs;
   //   F[fips_window]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h200)
   ) u_health_test_windows_fips_window (
     .clk_i   (clk_i),
@@ -1064,9 +1064,9 @@ module entropy_src_reg_top (
   );
 
   //   F[bypass_window]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h60)
   ) u_health_test_windows_bypass_window (
     .clk_i   (clk_i),
@@ -1098,7 +1098,7 @@ module entropy_src_reg_top (
   logic repcnt_thresholds_gated_we;
   assign repcnt_thresholds_gated_we = repcnt_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_repcnt_thresholds_fips_thresh (
     .re     (repcnt_thresholds_re),
@@ -1114,7 +1114,7 @@ module entropy_src_reg_top (
   assign reg2hw.repcnt_thresholds.fips_thresh.qe = repcnt_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_repcnt_thresholds_bypass_thresh (
     .re     (repcnt_thresholds_re),
@@ -1138,7 +1138,7 @@ module entropy_src_reg_top (
   logic repcnts_thresholds_gated_we;
   assign repcnts_thresholds_gated_we = repcnts_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_repcnts_thresholds_fips_thresh (
     .re     (repcnts_thresholds_re),
@@ -1154,7 +1154,7 @@ module entropy_src_reg_top (
   assign reg2hw.repcnts_thresholds.fips_thresh.qe = repcnts_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_repcnts_thresholds_bypass_thresh (
     .re     (repcnts_thresholds_re),
@@ -1178,7 +1178,7 @@ module entropy_src_reg_top (
   logic adaptp_hi_thresholds_gated_we;
   assign adaptp_hi_thresholds_gated_we = adaptp_hi_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_adaptp_hi_thresholds_fips_thresh (
     .re     (adaptp_hi_thresholds_re),
@@ -1194,7 +1194,7 @@ module entropy_src_reg_top (
   assign reg2hw.adaptp_hi_thresholds.fips_thresh.qe = adaptp_hi_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_adaptp_hi_thresholds_bypass_thresh (
     .re     (adaptp_hi_thresholds_re),
@@ -1218,7 +1218,7 @@ module entropy_src_reg_top (
   logic adaptp_lo_thresholds_gated_we;
   assign adaptp_lo_thresholds_gated_we = adaptp_lo_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_adaptp_lo_thresholds_fips_thresh (
     .re     (adaptp_lo_thresholds_re),
@@ -1234,7 +1234,7 @@ module entropy_src_reg_top (
   assign reg2hw.adaptp_lo_thresholds.fips_thresh.qe = adaptp_lo_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_adaptp_lo_thresholds_bypass_thresh (
     .re     (adaptp_lo_thresholds_re),
@@ -1258,7 +1258,7 @@ module entropy_src_reg_top (
   logic bucket_thresholds_gated_we;
   assign bucket_thresholds_gated_we = bucket_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_bucket_thresholds_fips_thresh (
     .re     (bucket_thresholds_re),
@@ -1274,7 +1274,7 @@ module entropy_src_reg_top (
   assign reg2hw.bucket_thresholds.fips_thresh.qe = bucket_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_bucket_thresholds_bypass_thresh (
     .re     (bucket_thresholds_re),
@@ -1298,7 +1298,7 @@ module entropy_src_reg_top (
   logic markov_hi_thresholds_gated_we;
   assign markov_hi_thresholds_gated_we = markov_hi_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_markov_hi_thresholds_fips_thresh (
     .re     (markov_hi_thresholds_re),
@@ -1314,7 +1314,7 @@ module entropy_src_reg_top (
   assign reg2hw.markov_hi_thresholds.fips_thresh.qe = markov_hi_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_markov_hi_thresholds_bypass_thresh (
     .re     (markov_hi_thresholds_re),
@@ -1338,7 +1338,7 @@ module entropy_src_reg_top (
   logic markov_lo_thresholds_gated_we;
   assign markov_lo_thresholds_gated_we = markov_lo_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_markov_lo_thresholds_fips_thresh (
     .re     (markov_lo_thresholds_re),
@@ -1354,7 +1354,7 @@ module entropy_src_reg_top (
   assign reg2hw.markov_lo_thresholds.fips_thresh.qe = markov_lo_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_markov_lo_thresholds_bypass_thresh (
     .re     (markov_lo_thresholds_re),
@@ -1378,7 +1378,7 @@ module entropy_src_reg_top (
   logic extht_hi_thresholds_gated_we;
   assign extht_hi_thresholds_gated_we = extht_hi_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_extht_hi_thresholds_fips_thresh (
     .re     (extht_hi_thresholds_re),
@@ -1394,7 +1394,7 @@ module entropy_src_reg_top (
   assign reg2hw.extht_hi_thresholds.fips_thresh.qe = extht_hi_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_extht_hi_thresholds_bypass_thresh (
     .re     (extht_hi_thresholds_re),
@@ -1418,7 +1418,7 @@ module entropy_src_reg_top (
   logic extht_lo_thresholds_gated_we;
   assign extht_lo_thresholds_gated_we = extht_lo_thresholds_we & regwen_qs;
   //   F[fips_thresh]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_extht_lo_thresholds_fips_thresh (
     .re     (extht_lo_thresholds_re),
@@ -1434,7 +1434,7 @@ module entropy_src_reg_top (
   assign reg2hw.extht_lo_thresholds.fips_thresh.qe = extht_lo_thresholds_qe;
 
   //   F[bypass_thresh]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_extht_lo_thresholds_bypass_thresh (
     .re     (extht_lo_thresholds_re),
@@ -1452,7 +1452,7 @@ module entropy_src_reg_top (
 
   // R[repcnt_hi_watermarks]: V(True)
   //   F[fips_watermark]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_repcnt_hi_watermarks_fips_watermark (
     .re     (repcnt_hi_watermarks_re),
@@ -1467,7 +1467,7 @@ module entropy_src_reg_top (
   );
 
   //   F[bypass_watermark]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_repcnt_hi_watermarks_bypass_watermark (
     .re     (repcnt_hi_watermarks_re),
@@ -1484,7 +1484,7 @@ module entropy_src_reg_top (
 
   // R[repcnts_hi_watermarks]: V(True)
   //   F[fips_watermark]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_repcnts_hi_watermarks_fips_watermark (
     .re     (repcnts_hi_watermarks_re),
@@ -1499,7 +1499,7 @@ module entropy_src_reg_top (
   );
 
   //   F[bypass_watermark]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_repcnts_hi_watermarks_bypass_watermark (
     .re     (repcnts_hi_watermarks_re),
@@ -1516,7 +1516,7 @@ module entropy_src_reg_top (
 
   // R[adaptp_hi_watermarks]: V(True)
   //   F[fips_watermark]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_adaptp_hi_watermarks_fips_watermark (
     .re     (adaptp_hi_watermarks_re),
@@ -1531,7 +1531,7 @@ module entropy_src_reg_top (
   );
 
   //   F[bypass_watermark]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_adaptp_hi_watermarks_bypass_watermark (
     .re     (adaptp_hi_watermarks_re),
@@ -1548,7 +1548,7 @@ module entropy_src_reg_top (
 
   // R[adaptp_lo_watermarks]: V(True)
   //   F[fips_watermark]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_adaptp_lo_watermarks_fips_watermark (
     .re     (adaptp_lo_watermarks_re),
@@ -1563,7 +1563,7 @@ module entropy_src_reg_top (
   );
 
   //   F[bypass_watermark]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_adaptp_lo_watermarks_bypass_watermark (
     .re     (adaptp_lo_watermarks_re),
@@ -1580,7 +1580,7 @@ module entropy_src_reg_top (
 
   // R[extht_hi_watermarks]: V(True)
   //   F[fips_watermark]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_extht_hi_watermarks_fips_watermark (
     .re     (extht_hi_watermarks_re),
@@ -1595,7 +1595,7 @@ module entropy_src_reg_top (
   );
 
   //   F[bypass_watermark]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_extht_hi_watermarks_bypass_watermark (
     .re     (extht_hi_watermarks_re),
@@ -1612,7 +1612,7 @@ module entropy_src_reg_top (
 
   // R[extht_lo_watermarks]: V(True)
   //   F[fips_watermark]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_extht_lo_watermarks_fips_watermark (
     .re     (extht_lo_watermarks_re),
@@ -1627,7 +1627,7 @@ module entropy_src_reg_top (
   );
 
   //   F[bypass_watermark]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_extht_lo_watermarks_bypass_watermark (
     .re     (extht_lo_watermarks_re),
@@ -1644,7 +1644,7 @@ module entropy_src_reg_top (
 
   // R[bucket_hi_watermarks]: V(True)
   //   F[fips_watermark]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_bucket_hi_watermarks_fips_watermark (
     .re     (bucket_hi_watermarks_re),
@@ -1659,7 +1659,7 @@ module entropy_src_reg_top (
   );
 
   //   F[bypass_watermark]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_bucket_hi_watermarks_bypass_watermark (
     .re     (bucket_hi_watermarks_re),
@@ -1676,7 +1676,7 @@ module entropy_src_reg_top (
 
   // R[markov_hi_watermarks]: V(True)
   //   F[fips_watermark]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_markov_hi_watermarks_fips_watermark (
     .re     (markov_hi_watermarks_re),
@@ -1691,7 +1691,7 @@ module entropy_src_reg_top (
   );
 
   //   F[bypass_watermark]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_markov_hi_watermarks_bypass_watermark (
     .re     (markov_hi_watermarks_re),
@@ -1708,7 +1708,7 @@ module entropy_src_reg_top (
 
   // R[markov_lo_watermarks]: V(True)
   //   F[fips_watermark]: 15:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_markov_lo_watermarks_fips_watermark (
     .re     (markov_lo_watermarks_re),
@@ -1723,7 +1723,7 @@ module entropy_src_reg_top (
   );
 
   //   F[bypass_watermark]: 31:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_markov_lo_watermarks_bypass_watermark (
     .re     (markov_lo_watermarks_re),
@@ -1739,7 +1739,7 @@ module entropy_src_reg_top (
 
 
   // R[repcnt_total_fails]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_repcnt_total_fails (
     .re     (repcnt_total_fails_re),
@@ -1755,7 +1755,7 @@ module entropy_src_reg_top (
 
 
   // R[repcnts_total_fails]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_repcnts_total_fails (
     .re     (repcnts_total_fails_re),
@@ -1771,7 +1771,7 @@ module entropy_src_reg_top (
 
 
   // R[adaptp_hi_total_fails]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_adaptp_hi_total_fails (
     .re     (adaptp_hi_total_fails_re),
@@ -1787,7 +1787,7 @@ module entropy_src_reg_top (
 
 
   // R[adaptp_lo_total_fails]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_adaptp_lo_total_fails (
     .re     (adaptp_lo_total_fails_re),
@@ -1803,7 +1803,7 @@ module entropy_src_reg_top (
 
 
   // R[bucket_total_fails]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_bucket_total_fails (
     .re     (bucket_total_fails_re),
@@ -1819,7 +1819,7 @@ module entropy_src_reg_top (
 
 
   // R[markov_hi_total_fails]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_markov_hi_total_fails (
     .re     (markov_hi_total_fails_re),
@@ -1835,7 +1835,7 @@ module entropy_src_reg_top (
 
 
   // R[markov_lo_total_fails]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_markov_lo_total_fails (
     .re     (markov_lo_total_fails_re),
@@ -1851,7 +1851,7 @@ module entropy_src_reg_top (
 
 
   // R[extht_hi_total_fails]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_extht_hi_total_fails (
     .re     (extht_hi_total_fails_re),
@@ -1867,7 +1867,7 @@ module entropy_src_reg_top (
 
 
   // R[extht_lo_total_fails]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_extht_lo_total_fails (
     .re     (extht_lo_total_fails_re),
@@ -1887,9 +1887,9 @@ module entropy_src_reg_top (
   logic alert_threshold_gated_we;
   assign alert_threshold_gated_we = alert_threshold_we & regwen_qs;
   //   F[alert_threshold]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h2)
   ) u_alert_threshold_alert_threshold (
     .clk_i   (clk_i),
@@ -1913,9 +1913,9 @@ module entropy_src_reg_top (
   );
 
   //   F[alert_threshold_inv]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'hfffd)
   ) u_alert_threshold_alert_threshold_inv (
     .clk_i   (clk_i),
@@ -1940,7 +1940,7 @@ module entropy_src_reg_top (
 
 
   // R[alert_summary_fail_counts]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (16)
   ) u_alert_summary_fail_counts (
     .re     (alert_summary_fail_counts_re),
@@ -1957,7 +1957,7 @@ module entropy_src_reg_top (
 
   // R[alert_fail_counts]: V(True)
   //   F[repcnt_fail_count]: 7:4
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_alert_fail_counts_repcnt_fail_count (
     .re     (alert_fail_counts_re),
@@ -1972,7 +1972,7 @@ module entropy_src_reg_top (
   );
 
   //   F[adaptp_hi_fail_count]: 11:8
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_alert_fail_counts_adaptp_hi_fail_count (
     .re     (alert_fail_counts_re),
@@ -1987,7 +1987,7 @@ module entropy_src_reg_top (
   );
 
   //   F[adaptp_lo_fail_count]: 15:12
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_alert_fail_counts_adaptp_lo_fail_count (
     .re     (alert_fail_counts_re),
@@ -2002,7 +2002,7 @@ module entropy_src_reg_top (
   );
 
   //   F[bucket_fail_count]: 19:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_alert_fail_counts_bucket_fail_count (
     .re     (alert_fail_counts_re),
@@ -2017,7 +2017,7 @@ module entropy_src_reg_top (
   );
 
   //   F[markov_hi_fail_count]: 23:20
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_alert_fail_counts_markov_hi_fail_count (
     .re     (alert_fail_counts_re),
@@ -2032,7 +2032,7 @@ module entropy_src_reg_top (
   );
 
   //   F[markov_lo_fail_count]: 27:24
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_alert_fail_counts_markov_lo_fail_count (
     .re     (alert_fail_counts_re),
@@ -2047,7 +2047,7 @@ module entropy_src_reg_top (
   );
 
   //   F[repcnts_fail_count]: 31:28
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_alert_fail_counts_repcnts_fail_count (
     .re     (alert_fail_counts_re),
@@ -2064,7 +2064,7 @@ module entropy_src_reg_top (
 
   // R[extht_fail_counts]: V(True)
   //   F[extht_hi_fail_count]: 3:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_extht_fail_counts_extht_hi_fail_count (
     .re     (extht_fail_counts_re),
@@ -2079,7 +2079,7 @@ module entropy_src_reg_top (
   );
 
   //   F[extht_lo_fail_count]: 7:4
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_extht_fail_counts_extht_lo_fail_count (
     .re     (extht_fail_counts_re),
@@ -2099,9 +2099,9 @@ module entropy_src_reg_top (
   logic fw_ov_control_gated_we;
   assign fw_ov_control_gated_we = fw_ov_control_we & regwen_qs;
   //   F[fw_ov_mode]: 3:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_fw_ov_control_fw_ov_mode (
     .clk_i   (clk_i),
@@ -2125,9 +2125,9 @@ module entropy_src_reg_top (
   );
 
   //   F[fw_ov_entropy_insert]: 7:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_fw_ov_control_fw_ov_entropy_insert (
     .clk_i   (clk_i),
@@ -2152,9 +2152,9 @@ module entropy_src_reg_top (
 
 
   // R[fw_ov_sha3_start]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_fw_ov_sha3_start (
     .clk_i   (clk_i),
@@ -2179,7 +2179,7 @@ module entropy_src_reg_top (
 
 
   // R[fw_ov_wr_fifo_full]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_fw_ov_wr_fifo_full (
     .re     (fw_ov_wr_fifo_full_re),
@@ -2195,9 +2195,9 @@ module entropy_src_reg_top (
 
 
   // R[fw_ov_rd_fifo_overflow]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_fw_ov_rd_fifo_overflow (
     .clk_i   (clk_i),
@@ -2222,7 +2222,7 @@ module entropy_src_reg_top (
 
 
   // R[fw_ov_rd_data]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_fw_ov_rd_data (
     .re     (fw_ov_rd_data_re),
@@ -2241,7 +2241,7 @@ module entropy_src_reg_top (
   logic fw_ov_wr_data_qe;
   logic [0:0] fw_ov_wr_data_flds_we;
   assign fw_ov_wr_data_qe = &fw_ov_wr_data_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_fw_ov_wr_data (
     .re     (1'b0),
@@ -2261,9 +2261,9 @@ module entropy_src_reg_top (
   // Create REGWEN-gated WE signal
   logic observe_fifo_thresh_gated_we;
   assign observe_fifo_thresh_gated_we = observe_fifo_thresh_we & regwen_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (7),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h20)
   ) u_observe_fifo_thresh (
     .clk_i   (clk_i),
@@ -2288,7 +2288,7 @@ module entropy_src_reg_top (
 
 
   // R[observe_fifo_depth]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (7)
   ) u_observe_fifo_depth (
     .re     (observe_fifo_depth_re),
@@ -2305,7 +2305,7 @@ module entropy_src_reg_top (
 
   // R[debug_status]: V(True)
   //   F[entropy_fifo_depth]: 2:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (3)
   ) u_debug_status_entropy_fifo_depth (
     .re     (debug_status_re),
@@ -2320,7 +2320,7 @@ module entropy_src_reg_top (
   );
 
   //   F[sha3_fsm]: 5:3
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (3)
   ) u_debug_status_sha3_fsm (
     .re     (debug_status_re),
@@ -2335,7 +2335,7 @@ module entropy_src_reg_top (
   );
 
   //   F[sha3_block_pr]: 6:6
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_debug_status_sha3_block_pr (
     .re     (debug_status_re),
@@ -2350,7 +2350,7 @@ module entropy_src_reg_top (
   );
 
   //   F[sha3_squeezing]: 7:7
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_debug_status_sha3_squeezing (
     .re     (debug_status_re),
@@ -2365,7 +2365,7 @@ module entropy_src_reg_top (
   );
 
   //   F[sha3_absorbed]: 8:8
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_debug_status_sha3_absorbed (
     .re     (debug_status_re),
@@ -2380,7 +2380,7 @@ module entropy_src_reg_top (
   );
 
   //   F[sha3_err]: 9:9
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_debug_status_sha3_err (
     .re     (debug_status_re),
@@ -2395,7 +2395,7 @@ module entropy_src_reg_top (
   );
 
   //   F[main_sm_idle]: 16:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_debug_status_main_sm_idle (
     .re     (debug_status_re),
@@ -2410,7 +2410,7 @@ module entropy_src_reg_top (
   );
 
   //   F[main_sm_boot_done]: 17:17
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_debug_status_main_sm_boot_done (
     .re     (debug_status_re),
@@ -2427,9 +2427,9 @@ module entropy_src_reg_top (
 
   // R[recov_alert_sts]: V(False)
   //   F[fips_enable_field_alert]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_fips_enable_field_alert (
     .clk_i   (clk_i),
@@ -2453,9 +2453,9 @@ module entropy_src_reg_top (
   );
 
   //   F[entropy_data_reg_en_field_alert]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_entropy_data_reg_en_field_alert (
     .clk_i   (clk_i),
@@ -2479,9 +2479,9 @@ module entropy_src_reg_top (
   );
 
   //   F[module_enable_field_alert]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_module_enable_field_alert (
     .clk_i   (clk_i),
@@ -2505,9 +2505,9 @@ module entropy_src_reg_top (
   );
 
   //   F[threshold_scope_field_alert]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_threshold_scope_field_alert (
     .clk_i   (clk_i),
@@ -2531,9 +2531,9 @@ module entropy_src_reg_top (
   );
 
   //   F[rng_bit_enable_field_alert]: 5:5
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_rng_bit_enable_field_alert (
     .clk_i   (clk_i),
@@ -2557,9 +2557,9 @@ module entropy_src_reg_top (
   );
 
   //   F[fw_ov_sha3_start_field_alert]: 7:7
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_fw_ov_sha3_start_field_alert (
     .clk_i   (clk_i),
@@ -2583,9 +2583,9 @@ module entropy_src_reg_top (
   );
 
   //   F[fw_ov_mode_field_alert]: 8:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_fw_ov_mode_field_alert (
     .clk_i   (clk_i),
@@ -2609,9 +2609,9 @@ module entropy_src_reg_top (
   );
 
   //   F[fw_ov_entropy_insert_field_alert]: 9:9
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_fw_ov_entropy_insert_field_alert (
     .clk_i   (clk_i),
@@ -2635,9 +2635,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_route_field_alert]: 10:10
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_es_route_field_alert (
     .clk_i   (clk_i),
@@ -2661,9 +2661,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_type_field_alert]: 11:11
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_es_type_field_alert (
     .clk_i   (clk_i),
@@ -2687,9 +2687,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_main_sm_alert]: 12:12
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_es_main_sm_alert (
     .clk_i   (clk_i),
@@ -2713,9 +2713,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_bus_cmp_alert]: 13:13
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_es_bus_cmp_alert (
     .clk_i   (clk_i),
@@ -2739,9 +2739,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_thresh_cfg_alert]: 14:14
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_es_thresh_cfg_alert (
     .clk_i   (clk_i),
@@ -2765,9 +2765,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_fw_ov_wr_alert]: 15:15
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_es_fw_ov_wr_alert (
     .clk_i   (clk_i),
@@ -2791,9 +2791,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_fw_ov_disable_alert]: 16:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_es_fw_ov_disable_alert (
     .clk_i   (clk_i),
@@ -2819,9 +2819,9 @@ module entropy_src_reg_top (
 
   // R[err_code]: V(False)
   //   F[sfifo_esrng_err]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_esrng_err (
     .clk_i   (clk_i),
@@ -2845,9 +2845,9 @@ module entropy_src_reg_top (
   );
 
   //   F[sfifo_observe_err]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_observe_err (
     .clk_i   (clk_i),
@@ -2871,9 +2871,9 @@ module entropy_src_reg_top (
   );
 
   //   F[sfifo_esfinal_err]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_esfinal_err (
     .clk_i   (clk_i),
@@ -2897,9 +2897,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_ack_sm_err]: 20:20
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_es_ack_sm_err (
     .clk_i   (clk_i),
@@ -2923,9 +2923,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_main_sm_err]: 21:21
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_es_main_sm_err (
     .clk_i   (clk_i),
@@ -2949,9 +2949,9 @@ module entropy_src_reg_top (
   );
 
   //   F[es_cntr_err]: 22:22
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_es_cntr_err (
     .clk_i   (clk_i),
@@ -2975,9 +2975,9 @@ module entropy_src_reg_top (
   );
 
   //   F[sha3_state_err]: 23:23
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sha3_state_err (
     .clk_i   (clk_i),
@@ -3001,9 +3001,9 @@ module entropy_src_reg_top (
   );
 
   //   F[sha3_rst_storage_err]: 24:24
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sha3_rst_storage_err (
     .clk_i   (clk_i),
@@ -3027,9 +3027,9 @@ module entropy_src_reg_top (
   );
 
   //   F[fifo_write_err]: 28:28
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_write_err (
     .clk_i   (clk_i),
@@ -3053,9 +3053,9 @@ module entropy_src_reg_top (
   );
 
   //   F[fifo_read_err]: 29:29
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_read_err (
     .clk_i   (clk_i),
@@ -3079,9 +3079,9 @@ module entropy_src_reg_top (
   );
 
   //   F[fifo_state_err]: 30:30
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_state_err (
     .clk_i   (clk_i),
@@ -3117,9 +3117,9 @@ module entropy_src_reg_top (
     .d_i(&err_code_test_flds_we),
     .q_o(err_code_test_qe)
   );
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (5),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0)
   ) u_err_code_test (
     .clk_i   (clk_i),
@@ -3145,9 +3145,9 @@ module entropy_src_reg_top (
 
 
   // R[main_sm_state]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (9),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (9'hf5)
   ) u_main_sm_state (
     .clk_i   (clk_i),

@@ -197,9 +197,9 @@ module edn_reg_top (
   // Register instances
   // R[intr_state]: V(False)
   //   F[edn_cmd_req_done]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_edn_cmd_req_done (
     .clk_i   (clk_i),
@@ -223,9 +223,9 @@ module edn_reg_top (
   );
 
   //   F[edn_fatal_err]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_edn_fatal_err (
     .clk_i   (clk_i),
@@ -251,9 +251,9 @@ module edn_reg_top (
 
   // R[intr_enable]: V(False)
   //   F[edn_cmd_req_done]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_edn_cmd_req_done (
     .clk_i   (clk_i),
@@ -277,9 +277,9 @@ module edn_reg_top (
   );
 
   //   F[edn_fatal_err]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_edn_fatal_err (
     .clk_i   (clk_i),
@@ -308,7 +308,7 @@ module edn_reg_top (
   logic [1:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
   //   F[edn_cmd_req_done]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_intr_test_edn_cmd_req_done (
     .re     (1'b0),
@@ -324,7 +324,7 @@ module edn_reg_top (
   assign reg2hw.intr_test.edn_cmd_req_done.qe = intr_test_qe;
 
   //   F[edn_fatal_err]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_intr_test_edn_fatal_err (
     .re     (1'b0),
@@ -345,7 +345,7 @@ module edn_reg_top (
   logic [1:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
   //   F[recov_alert]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_alert (
     .re     (1'b0),
@@ -361,7 +361,7 @@ module edn_reg_top (
   assign reg2hw.alert_test.recov_alert.qe = alert_test_qe;
 
   //   F[fatal_alert]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal_alert (
     .re     (1'b0),
@@ -378,9 +378,9 @@ module edn_reg_top (
 
 
   // R[regwen]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_regwen (
     .clk_i   (clk_i),
@@ -409,9 +409,9 @@ module edn_reg_top (
   logic ctrl_gated_we;
   assign ctrl_gated_we = ctrl_we & regwen_qs;
   //   F[edn_enable]: 3:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_ctrl_edn_enable (
     .clk_i   (clk_i),
@@ -435,9 +435,9 @@ module edn_reg_top (
   );
 
   //   F[boot_req_mode]: 7:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_ctrl_boot_req_mode (
     .clk_i   (clk_i),
@@ -461,9 +461,9 @@ module edn_reg_top (
   );
 
   //   F[auto_req_mode]: 11:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_ctrl_auto_req_mode (
     .clk_i   (clk_i),
@@ -487,9 +487,9 @@ module edn_reg_top (
   );
 
   //   F[cmd_fifo_rst]: 15:12
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_ctrl_cmd_fifo_rst (
     .clk_i   (clk_i),
@@ -514,9 +514,9 @@ module edn_reg_top (
 
 
   // R[boot_ins_cmd]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h901)
   ) u_boot_ins_cmd (
     .clk_i   (clk_i),
@@ -541,9 +541,9 @@ module edn_reg_top (
 
 
   // R[boot_gen_cmd]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'hfff003)
   ) u_boot_gen_cmd (
     .clk_i   (clk_i),
@@ -571,7 +571,7 @@ module edn_reg_top (
   logic sw_cmd_req_qe;
   logic [0:0] sw_cmd_req_flds_we;
   assign sw_cmd_req_qe = &sw_cmd_req_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_sw_cmd_req (
     .re     (1'b0),
@@ -589,9 +589,9 @@ module edn_reg_top (
 
   // R[sw_cmd_sts]: V(False)
   //   F[cmd_rdy]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_sw_cmd_sts_cmd_rdy (
     .clk_i   (clk_i),
@@ -615,9 +615,9 @@ module edn_reg_top (
   );
 
   //   F[cmd_sts]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_sw_cmd_sts_cmd_sts (
     .clk_i   (clk_i),
@@ -645,7 +645,7 @@ module edn_reg_top (
   logic reseed_cmd_qe;
   logic [0:0] reseed_cmd_flds_we;
   assign reseed_cmd_qe = &reseed_cmd_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_reseed_cmd (
     .re     (1'b0),
@@ -665,7 +665,7 @@ module edn_reg_top (
   logic generate_cmd_qe;
   logic [0:0] generate_cmd_flds_we;
   assign generate_cmd_qe = &generate_cmd_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_generate_cmd (
     .re     (1'b0),
@@ -693,9 +693,9 @@ module edn_reg_top (
     .d_i(&max_num_reqs_between_reseeds_flds_we),
     .q_o(max_num_reqs_between_reseeds_qe)
   );
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_max_num_reqs_between_reseeds (
     .clk_i   (clk_i),
@@ -722,9 +722,9 @@ module edn_reg_top (
 
   // R[recov_alert_sts]: V(False)
   //   F[edn_enable_field_alert]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_edn_enable_field_alert (
     .clk_i   (clk_i),
@@ -748,9 +748,9 @@ module edn_reg_top (
   );
 
   //   F[boot_req_mode_field_alert]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_boot_req_mode_field_alert (
     .clk_i   (clk_i),
@@ -774,9 +774,9 @@ module edn_reg_top (
   );
 
   //   F[auto_req_mode_field_alert]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_auto_req_mode_field_alert (
     .clk_i   (clk_i),
@@ -800,9 +800,9 @@ module edn_reg_top (
   );
 
   //   F[cmd_fifo_rst_field_alert]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_cmd_fifo_rst_field_alert (
     .clk_i   (clk_i),
@@ -826,9 +826,9 @@ module edn_reg_top (
   );
 
   //   F[edn_bus_cmp_alert]: 12:12
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0)
   ) u_recov_alert_sts_edn_bus_cmp_alert (
     .clk_i   (clk_i),
@@ -854,9 +854,9 @@ module edn_reg_top (
 
   // R[err_code]: V(False)
   //   F[sfifo_rescmd_err]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_rescmd_err (
     .clk_i   (clk_i),
@@ -880,9 +880,9 @@ module edn_reg_top (
   );
 
   //   F[sfifo_gencmd_err]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_gencmd_err (
     .clk_i   (clk_i),
@@ -906,9 +906,9 @@ module edn_reg_top (
   );
 
   //   F[sfifo_output_err]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_sfifo_output_err (
     .clk_i   (clk_i),
@@ -932,9 +932,9 @@ module edn_reg_top (
   );
 
   //   F[edn_ack_sm_err]: 20:20
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_edn_ack_sm_err (
     .clk_i   (clk_i),
@@ -958,9 +958,9 @@ module edn_reg_top (
   );
 
   //   F[edn_main_sm_err]: 21:21
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_edn_main_sm_err (
     .clk_i   (clk_i),
@@ -984,9 +984,9 @@ module edn_reg_top (
   );
 
   //   F[edn_cntr_err]: 22:22
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_edn_cntr_err (
     .clk_i   (clk_i),
@@ -1010,9 +1010,9 @@ module edn_reg_top (
   );
 
   //   F[fifo_write_err]: 28:28
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_write_err (
     .clk_i   (clk_i),
@@ -1036,9 +1036,9 @@ module edn_reg_top (
   );
 
   //   F[fifo_read_err]: 29:29
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_read_err (
     .clk_i   (clk_i),
@@ -1062,9 +1062,9 @@ module edn_reg_top (
   );
 
   //   F[fifo_state_err]: 30:30
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fifo_state_err (
     .clk_i   (clk_i),
@@ -1100,9 +1100,9 @@ module edn_reg_top (
     .d_i(&err_code_test_flds_we),
     .q_o(err_code_test_qe)
   );
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (5),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0)
   ) u_err_code_test (
     .clk_i   (clk_i),
@@ -1128,9 +1128,9 @@ module edn_reg_top (
 
 
   // R[main_sm_state]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (9),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (9'h185)
   ) u_main_sm_state (
     .clk_i   (clk_i),

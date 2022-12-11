@@ -270,7 +270,7 @@ module rv_core_ibex_cfg_reg_top (
   logic [3:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
   //   F[fatal_sw_err]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal_sw_err (
     .re     (1'b0),
@@ -286,7 +286,7 @@ module rv_core_ibex_cfg_reg_top (
   assign reg2hw.alert_test.fatal_sw_err.qe = alert_test_qe;
 
   //   F[recov_sw_err]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_sw_err (
     .re     (1'b0),
@@ -302,7 +302,7 @@ module rv_core_ibex_cfg_reg_top (
   assign reg2hw.alert_test.recov_sw_err.qe = alert_test_qe;
 
   //   F[fatal_hw_err]: 2:2
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal_hw_err (
     .re     (1'b0),
@@ -318,7 +318,7 @@ module rv_core_ibex_cfg_reg_top (
   assign reg2hw.alert_test.fatal_hw_err.qe = alert_test_qe;
 
   //   F[recov_hw_err]: 3:3
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_hw_err (
     .re     (1'b0),
@@ -335,9 +335,9 @@ module rv_core_ibex_cfg_reg_top (
 
 
   // R[sw_recov_err]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_sw_recov_err (
     .clk_i   (clk_i),
@@ -362,9 +362,9 @@ module rv_core_ibex_cfg_reg_top (
 
 
   // R[sw_fatal_err]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (4'h9)
   ) u_sw_fatal_err (
     .clk_i   (clk_i),
@@ -390,9 +390,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 0 of Multireg ibus_regwen
   // R[ibus_regwen_0]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_ibus_regwen_0 (
     .clk_i   (clk_i),
@@ -418,9 +418,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 1 of Multireg ibus_regwen
   // R[ibus_regwen_1]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_ibus_regwen_1 (
     .clk_i   (clk_i),
@@ -449,9 +449,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic ibus_addr_en_0_gated_we;
   assign ibus_addr_en_0_gated_we = ibus_addr_en_0_we & ibus_regwen_0_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ibus_addr_en_0 (
     .clk_i   (clk_i),
@@ -480,9 +480,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic ibus_addr_en_1_gated_we;
   assign ibus_addr_en_1_gated_we = ibus_addr_en_1_we & ibus_regwen_1_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ibus_addr_en_1 (
     .clk_i   (clk_i),
@@ -511,9 +511,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic ibus_addr_matching_0_gated_we;
   assign ibus_addr_matching_0_gated_we = ibus_addr_matching_0_we & ibus_regwen_0_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_ibus_addr_matching_0 (
     .clk_i   (clk_i),
@@ -542,9 +542,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic ibus_addr_matching_1_gated_we;
   assign ibus_addr_matching_1_gated_we = ibus_addr_matching_1_we & ibus_regwen_1_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_ibus_addr_matching_1 (
     .clk_i   (clk_i),
@@ -573,9 +573,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic ibus_remap_addr_0_gated_we;
   assign ibus_remap_addr_0_gated_we = ibus_remap_addr_0_we & ibus_regwen_0_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_ibus_remap_addr_0 (
     .clk_i   (clk_i),
@@ -604,9 +604,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic ibus_remap_addr_1_gated_we;
   assign ibus_remap_addr_1_gated_we = ibus_remap_addr_1_we & ibus_regwen_1_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_ibus_remap_addr_1 (
     .clk_i   (clk_i),
@@ -632,9 +632,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 0 of Multireg dbus_regwen
   // R[dbus_regwen_0]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_dbus_regwen_0 (
     .clk_i   (clk_i),
@@ -660,9 +660,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // Subregister 1 of Multireg dbus_regwen
   // R[dbus_regwen_1]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_dbus_regwen_1 (
     .clk_i   (clk_i),
@@ -691,9 +691,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic dbus_addr_en_0_gated_we;
   assign dbus_addr_en_0_gated_we = dbus_addr_en_0_we & dbus_regwen_0_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_dbus_addr_en_0 (
     .clk_i   (clk_i),
@@ -722,9 +722,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic dbus_addr_en_1_gated_we;
   assign dbus_addr_en_1_gated_we = dbus_addr_en_1_we & dbus_regwen_1_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_dbus_addr_en_1 (
     .clk_i   (clk_i),
@@ -753,9 +753,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic dbus_addr_matching_0_gated_we;
   assign dbus_addr_matching_0_gated_we = dbus_addr_matching_0_we & dbus_regwen_0_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_dbus_addr_matching_0 (
     .clk_i   (clk_i),
@@ -784,9 +784,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic dbus_addr_matching_1_gated_we;
   assign dbus_addr_matching_1_gated_we = dbus_addr_matching_1_we & dbus_regwen_1_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_dbus_addr_matching_1 (
     .clk_i   (clk_i),
@@ -815,9 +815,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic dbus_remap_addr_0_gated_we;
   assign dbus_remap_addr_0_gated_we = dbus_remap_addr_0_we & dbus_regwen_0_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_dbus_remap_addr_0 (
     .clk_i   (clk_i),
@@ -846,9 +846,9 @@ module rv_core_ibex_cfg_reg_top (
   // Create REGWEN-gated WE signal
   logic dbus_remap_addr_1_gated_we;
   assign dbus_remap_addr_1_gated_we = dbus_remap_addr_1_we & dbus_regwen_1_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_dbus_remap_addr_1 (
     .clk_i   (clk_i),
@@ -874,9 +874,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // R[nmi_enable]: V(False)
   //   F[alert_en]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1S),
     .RESVAL  (1'h0)
   ) u_nmi_enable_alert_en (
     .clk_i   (clk_i),
@@ -900,9 +900,9 @@ module rv_core_ibex_cfg_reg_top (
   );
 
   //   F[wdog_en]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1S),
     .RESVAL  (1'h0)
   ) u_nmi_enable_wdog_en (
     .clk_i   (clk_i),
@@ -928,9 +928,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // R[nmi_state]: V(False)
   //   F[alert]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_nmi_state_alert (
     .clk_i   (clk_i),
@@ -954,9 +954,9 @@ module rv_core_ibex_cfg_reg_top (
   );
 
   //   F[wdog]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_nmi_state_wdog (
     .clk_i   (clk_i),
@@ -982,9 +982,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // R[err_status]: V(False)
   //   F[reg_intg_err]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_err_status_reg_intg_err (
     .clk_i   (clk_i),
@@ -1008,9 +1008,9 @@ module rv_core_ibex_cfg_reg_top (
   );
 
   //   F[fatal_intg_err]: 8:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_err_status_fatal_intg_err (
     .clk_i   (clk_i),
@@ -1034,9 +1034,9 @@ module rv_core_ibex_cfg_reg_top (
   );
 
   //   F[fatal_core_err]: 9:9
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_err_status_fatal_core_err (
     .clk_i   (clk_i),
@@ -1060,9 +1060,9 @@ module rv_core_ibex_cfg_reg_top (
   );
 
   //   F[recov_core_err]: 10:10
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_err_status_recov_core_err (
     .clk_i   (clk_i),
@@ -1087,7 +1087,7 @@ module rv_core_ibex_cfg_reg_top (
 
 
   // R[rnd_data]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_rnd_data (
     .re     (rnd_data_re),
@@ -1104,7 +1104,7 @@ module rv_core_ibex_cfg_reg_top (
 
   // R[rnd_status]: V(True)
   //   F[rnd_data_valid]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_rnd_status_rnd_data_valid (
     .re     (rnd_status_re),
@@ -1119,7 +1119,7 @@ module rv_core_ibex_cfg_reg_top (
   );
 
   //   F[rnd_data_fips]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_rnd_status_rnd_data_fips (
     .re     (rnd_status_re),
@@ -1135,7 +1135,7 @@ module rv_core_ibex_cfg_reg_top (
 
 
   // R[fpga_info]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_fpga_info (
     .re     (fpga_info_re),

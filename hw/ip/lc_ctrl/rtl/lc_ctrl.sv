@@ -171,10 +171,10 @@ module lc_ctrl
   // https://github.com/riscv/riscv-debug-spec/blob/release/riscv-debug-release.pdf
   // The register addresses correspond to the byte offsets of the lc_ctrl CSRs, divided by 4.
   // Note that the DMI reset does not affect the LC controller in any way.
-  dm::dmi_req_t dmi_req;
+  dm_ot::dmi_req_t dmi_req;
   logic dmi_req_valid;
   logic dmi_req_ready;
-  dm::dmi_resp_t dmi_resp;
+  dm_ot::dmi_resp_t dmi_resp;
   logic dmi_resp_ready;
   logic dmi_resp_valid;
 
@@ -206,7 +206,7 @@ module lc_ctrl
 
   logic req_ready;
   assign req_ready = dmi_req_ready & dmi_resp_ready;
-  dmi_jtag #(
+  dmi_ot_jtag #(
     .IdcodeValue(IdcodeValue)
   ) u_dmi_jtag (
     .clk_i,
@@ -239,7 +239,7 @@ module lc_ctrl
     .req_i        ( dmi_req_valid & dmi_resp_ready         ),
     .gnt_o        ( dmi_req_ready                          ),
     .addr_i       ( top_pkg::TL_AW'({dmi_req.addr, 2'b00}) ),
-    .we_i         ( dmi_req.op == dm::DTM_WRITE            ),
+    .we_i         ( dmi_req.op == dm_ot::DTM_WRITE            ),
     .wdata_i      ( dmi_req.data                           ),
     .wdata_intg_i ('0                                      ),
     .be_i         ( {top_pkg::TL_DBW{1'b1}}                ),

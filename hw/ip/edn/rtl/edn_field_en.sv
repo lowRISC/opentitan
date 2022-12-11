@@ -10,6 +10,10 @@
 // setting. The can only toggle between the
 // the on value and the off value.
 
+`include "prim_assert.sv"
+
+`include "prim_flop_macros.sv"
+
 
 module edn_field_en #(
   parameter int FieldW  = 4,

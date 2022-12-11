@@ -16,7 +16,7 @@
  *
  */
 
-package dm;
+package dm_ot;
   localparam logic [3:0] DbgVersion013 = 4'h2;
   // size of program buffer in junks of 32-bit words
   localparam logic [4:0] ProgBufSize   = 5'h8;
@@ -448,4 +448,4 @@ package dm;
     return 32'h00000000;
   endfunction
 
-endpackage : dm
+endpackage

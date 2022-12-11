@@ -33,6 +33,12 @@
     // device
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_tlul2axi"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_rv_dm__regs"
       act:    "req"
       package: "tlul_pkg"
@@ -70,12 +76,6 @@
     { struct: "tl"
       type:   "req_rsp"
       name:   "tl_spi_host1"
-      act:    "req"
-      package: "tlul_pkg"
-    }
-    { struct: "tl"
-      type:   "req_rsp"
-      name:   "tl_usbdev"
       act:    "req"
       package: "tlul_pkg"
     }

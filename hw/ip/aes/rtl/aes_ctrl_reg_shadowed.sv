@@ -121,9 +121,9 @@ module aes_ctrl_reg_shadowed
   // SEC_CM: MAIN.CONFIG.SHADOW
   // Instantiate one shadowed register primitive per field. An update error in a field should
   // only prevent the update of the affected field.
-  prim_subreg_shadow #(
+  prim_ot_subreg_shadow #(
     .DW      ($bits(aes_op_e)),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (AES_CTRL_SHADOWED_OPERATION_RESVAL)
   ) u_ctrl_reg_shadowed_operation (
     .clk_i,
@@ -143,9 +143,9 @@ module aes_ctrl_reg_shadowed
     .err_storage(err_storage_operation)
   );
 
-  prim_subreg_shadow #(
+  prim_ot_subreg_shadow #(
     .DW      ($bits(aes_mode_e)),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (AES_CTRL_SHADOWED_MODE_RESVAL)
   ) u_ctrl_reg_shadowed_mode (
     .clk_i,
@@ -165,9 +165,9 @@ module aes_ctrl_reg_shadowed
     .err_storage(err_storage_mode)
   );
 
-  prim_subreg_shadow #(
+  prim_ot_subreg_shadow #(
     .DW      ($bits(key_len_e)),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (AES_CTRL_SHADOWED_KEY_LEN_RESVAL)
   ) u_ctrl_reg_shadowed_key_len (
     .clk_i,
@@ -187,9 +187,9 @@ module aes_ctrl_reg_shadowed
     .err_storage(err_storage_key_len)
   );
 
-  prim_subreg_shadow #(
+  prim_ot_subreg_shadow #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (AES_CTRL_SHADOWED_SIDELOAD_RESVAL)
   ) u_ctrl_reg_shadowed_sideload (
     .clk_i,
@@ -209,9 +209,9 @@ module aes_ctrl_reg_shadowed
     .err_storage(err_storage_sideload)
   );
 
-  prim_subreg_shadow #(
+  prim_ot_subreg_shadow #(
     .DW      ($bits(prs_rate_e)),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (AES_CTRL_SHADOWED_PRNG_RESEED_RATE_RESVAL)
   ) u_ctrl_reg_shadowed_prng_reseed_rate (
     .clk_i,
@@ -231,9 +231,9 @@ module aes_ctrl_reg_shadowed
     .err_storage(err_storage_prng_reseed_rate)
   );
 
-  prim_subreg_shadow #(
+  prim_ot_subreg_shadow #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (AES_CTRL_SHADOWED_MANUAL_OPERATION_RESVAL)
   ) u_ctrl_reg_shadowed_manual_operation (
     .clk_i,

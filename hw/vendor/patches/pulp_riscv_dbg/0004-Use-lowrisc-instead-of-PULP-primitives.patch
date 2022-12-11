@@ -18,19 +18,19 @@ index 581c3f7..ee13a50 100644
    localparam int unsigned HartSelLen = (NrHarts == 1) ? 1 : $clog2(NrHarts);
    localparam int unsigned NrHartsAligned = 2**HartSelLen;
 @@ -86,10 +87,6 @@ module dm_csrs #(
-   dm::dtm_op_e dtm_op;
-   assign dtm_op = dm::dtm_op_e'(dmi_req_i.op);
+   dm_ot::dtm_op_e dtm_op;
+   assign dtm_op = dm_ot::dtm_op_e'(dmi_req_i.op);
  
 -  logic        resp_queue_full;
 -  logic        resp_queue_empty;
 -  logic        resp_queue_push;
 -  logic        resp_queue_pop;
  
-   localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'h0, dm::DataCount} - 8'h1);
-   localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'(dm::ProgBuf0 + {4'h0, dm::ProgBufSize} - 8'h1);
+   localparam dm_ot::dm_csr_e DataEnd = dm_ot::dm_csr_e'(dm_ot::Data0 + {4'h0, dm_ot::DataCount} - 8'h1);
+   localparam dm_ot::dm_csr_e ProgBufEnd = dm_ot::dm_csr_e'(dm_ot::ProgBuf0 + {4'h0, dm_ot::ProgBufSize} - 8'h1);
 @@ -180,9 +177,6 @@ module dm_csrs #(
  
-   dm::dmi_resp_t resp_queue_inp;
+   dm_ot::dmi_resp_t resp_queue_inp;
  
 -  assign dmi_resp_valid_o     = ~resp_queue_empty;
 -  assign dmi_req_ready_o      = ~resp_queue_full;
@@ -107,7 +107,7 @@ index f9d66fd..ec7a755 100644
  
 -  logic                    core_clear_pending;
  
--  cdc_2phase_clearable #(.T(dm::dmi_req_t)) i_cdc_req (
+-  cdc_2phase_clearable #(.T(dm_ot::dmi_req_t)) i_cdc_req (
 -    .src_rst_ni  ( trst_ni              ),
 -    .src_clear_i ( jtag_dmi_cdc_clear_i ),
 -    .src_clk_i   ( tck_i                ),
@@ -149,7 +149,7 @@ index f9d66fd..ec7a755 100644
 +    .q_o(combined_rstn_premux)
    );
  
--  cdc_2phase_clearable #(.T(dm::dmi_resp_t)) i_cdc_resp (
+-  cdc_2phase_clearable #(.T(dm_ot::dmi_resp_t)) i_cdc_resp (
 -    .src_rst_ni  ( rst_ni               ),
 -    .src_clear_i ( 1'b0                 ), // No functional reset from core side
 -                                           // used (only async ).
@@ -187,7 +187,7 @@ index f9d66fd..ec7a755 100644
 -
 -  assign clear_pending_rise_edge_detect = !core_clear_pending_q && core_clear_pending;
 +  prim_fifo_async_simple #(
-+    .Width($bits(dm::dmi_req_t)),
++    .Width($bits(dm_ot::dmi_req_t)),
 +    // Use the RZ protocol so that the two sides can be reset independently without getting
 +    // out of sync due to EVEN/ODD states.
 +    .EnRzHs(1)
@@ -214,7 +214,7 @@ index f9d66fd..ec7a755 100644
 -    end
 -  end
 +  prim_fifo_async_simple #(
-+    .Width($bits(dm::dmi_resp_t)),
++    .Width($bits(dm_ot::dmi_resp_t)),
 +    // Use the RZ protocol so that the two sides can be reset independently without getting
 +    // out of sync due to EVEN/ODD states.
 +    .EnRzHs(1)
@@ -250,7 +250,7 @@ index 6be89a6..a7e5bff 100644
 +  // active-low glitch free reset signal. Is asserted
 +  // (clk_i) whenever the dmi_jtag is reset.
    output logic         dmi_rst_no,
-   output dm::dmi_req_t dmi_req_o,
+   output dm_ot::dmi_req_t dmi_req_o,
    output logic         dmi_req_valid_o,
 @@ -327,6 +328,9 @@ module dmi_jtag #(
    // CDC

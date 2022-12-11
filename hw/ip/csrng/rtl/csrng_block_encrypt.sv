@@ -3,7 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Description: csrng block encrypt module
-//
+
+
+`include "prim_flop_macros.sv"
 
 module csrng_block_encrypt import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,

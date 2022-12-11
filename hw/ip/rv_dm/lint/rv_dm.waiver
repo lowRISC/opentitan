@@ -66,12 +66,12 @@ waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'sbcs_q.sbaccess
       -comment "Parts of this struct are constantly set to zero."
       waive -rules CONST_FF -location {dm_csrs.sv} -regexp {Flip-flop 'sbcs_q.sbversion\[31:30\]' is driven by constant zero.} \
       -comment "Parts of this struct are constantly set to zero."
-waive -rules CASE_SEL_EXPR -location {dm_csrs.sv} -regexp {Expression 'dm::dm_csr_e.*as case selector} \
+waive -rules CASE_SEL_EXPR -location {dm_csrs.sv} -regexp {Expression 'dm_ot::dm_csr_e.*as case selector} \
       -comment "acceptable use"
 waive -rules NOT_READ -location {dm_csrs.sv} -regexp {Signal 'a_abstractcs.(busy|datacount|progbufsize|zero[0-3])' is not read from} \
       -comment "These signals are not needed by dm_csrs module"
 waive -rules ARITH_CONTEXT -location {dm_csrs.sv} \
-      -regexp {Bitlength of arithmetic operation '{dm_csr_addr} - {dm::Data0}' is self-determined in this context} \
+      -regexp {Bitlength of arithmetic operation '{dm_csr_addr} - {dm_ot::Data0}' is self-determined in this context} \
       -comment "Values from the same enum can safely be subtracted."
 
 
@@ -85,7 +85,7 @@ waive -rules ONE_BRANCH    -location {dm_mem.sv} -regexp {unique case statement 
 waive -rules NOT_READ -location {dm_mem.sv} -regexp {Signal 'ac_ar.(regno.13.|zero1)' is not read from in module 'dm_mem'} \
       -comment "These bits and fields are not used, but all other bits and fields are used"
 waive -rules LOOP_VAR_OP -location {dm_mem.sv} \
-      -msg {Loop variable 'dc' is in arithmetic expression 'dc < (dm::DataCount - 1)' with non-constant terms} \
+      -msg {Loop variable 'dc' is in arithmetic expression 'dc < (dm_ot::DataCount - 1)' with non-constant terms} \
       -comment "This is incorrect because all terms except the loop variable are constant in the arithmetic expression."
 
 # dm_sba

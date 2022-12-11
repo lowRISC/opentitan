@@ -6,6 +6,8 @@
 // Translates the controller's req/ack interface to the interface expected by the flash wrapper
 // Longer term the controller protocol can be changed to match.
 
+`include "prim_assert.sv"
+
 module flash_phy_erase import flash_phy_pkg::*; (
   input clk_i,
   input rst_ni,

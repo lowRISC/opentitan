@@ -225,7 +225,7 @@ module rstmgr_reg_top (
   logic [1:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
   //   F[fatal_fault]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal_fault (
     .re     (1'b0),
@@ -241,7 +241,7 @@ module rstmgr_reg_top (
   assign reg2hw.alert_test.fatal_fault.qe = alert_test_qe;
 
   //   F[fatal_cnsty_fault]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal_cnsty_fault (
     .re     (1'b0),
@@ -258,9 +258,9 @@ module rstmgr_reg_top (
 
 
   // R[reset_req]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h9)
   ) u_reset_req (
     .clk_i   (clk_i),
@@ -286,9 +286,9 @@ module rstmgr_reg_top (
 
   // R[reset_info]: V(False)
   //   F[por]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h1)
   ) u_reset_info_por (
     // sync clock and reset required for this register
@@ -313,9 +313,9 @@ module rstmgr_reg_top (
   );
 
   //   F[low_power_exit]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_low_power_exit (
     // sync clock and reset required for this register
@@ -340,9 +340,9 @@ module rstmgr_reg_top (
   );
 
   //   F[sw_reset]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_sw_reset (
     // sync clock and reset required for this register
@@ -367,9 +367,9 @@ module rstmgr_reg_top (
   );
 
   //   F[hw_req]: 7:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (5),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (5'h0)
   ) u_reset_info_hw_req (
     // sync clock and reset required for this register
@@ -395,9 +395,9 @@ module rstmgr_reg_top (
 
 
   // R[alert_regwen]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_alert_regwen (
     .clk_i   (clk_i),
@@ -426,9 +426,9 @@ module rstmgr_reg_top (
   logic alert_info_ctrl_gated_we;
   assign alert_info_ctrl_gated_we = alert_info_ctrl_we & alert_regwen_qs;
   //   F[en]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_alert_info_ctrl_en (
     // sync clock and reset required for this register
@@ -453,9 +453,9 @@ module rstmgr_reg_top (
   );
 
   //   F[index]: 7:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_alert_info_ctrl_index (
     // sync clock and reset required for this register
@@ -481,7 +481,7 @@ module rstmgr_reg_top (
 
 
   // R[alert_info_attr]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_alert_info_attr (
     .re     (alert_info_attr_re),
@@ -497,7 +497,7 @@ module rstmgr_reg_top (
 
 
   // R[alert_info]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_alert_info (
     .re     (alert_info_re),
@@ -513,9 +513,9 @@ module rstmgr_reg_top (
 
 
   // R[cpu_regwen]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_cpu_regwen (
     .clk_i   (clk_i),
@@ -544,9 +544,9 @@ module rstmgr_reg_top (
   logic cpu_info_ctrl_gated_we;
   assign cpu_info_ctrl_gated_we = cpu_info_ctrl_we & cpu_regwen_qs;
   //   F[en]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_cpu_info_ctrl_en (
     // sync clock and reset required for this register
@@ -571,9 +571,9 @@ module rstmgr_reg_top (
   );
 
   //   F[index]: 7:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_cpu_info_ctrl_index (
     // sync clock and reset required for this register
@@ -599,7 +599,7 @@ module rstmgr_reg_top (
 
 
   // R[cpu_info_attr]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_cpu_info_attr (
     .re     (cpu_info_attr_re),
@@ -615,7 +615,7 @@ module rstmgr_reg_top (
 
 
   // R[cpu_info]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_cpu_info (
     .re     (cpu_info_re),
@@ -632,9 +632,9 @@ module rstmgr_reg_top (
 
   // Subregister 0 of Multireg sw_rst_regwen
   // R[sw_rst_regwen_0]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regwen_0 (
     .clk_i   (clk_i),
@@ -660,9 +660,9 @@ module rstmgr_reg_top (
 
   // Subregister 1 of Multireg sw_rst_regwen
   // R[sw_rst_regwen_1]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regwen_1 (
     .clk_i   (clk_i),
@@ -688,9 +688,9 @@ module rstmgr_reg_top (
 
   // Subregister 2 of Multireg sw_rst_regwen
   // R[sw_rst_regwen_2]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regwen_2 (
     .clk_i   (clk_i),
@@ -716,9 +716,9 @@ module rstmgr_reg_top (
 
   // Subregister 3 of Multireg sw_rst_regwen
   // R[sw_rst_regwen_3]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regwen_3 (
     .clk_i   (clk_i),
@@ -744,9 +744,9 @@ module rstmgr_reg_top (
 
   // Subregister 4 of Multireg sw_rst_regwen
   // R[sw_rst_regwen_4]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regwen_4 (
     .clk_i   (clk_i),
@@ -772,9 +772,9 @@ module rstmgr_reg_top (
 
   // Subregister 5 of Multireg sw_rst_regwen
   // R[sw_rst_regwen_5]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regwen_5 (
     .clk_i   (clk_i),
@@ -800,9 +800,9 @@ module rstmgr_reg_top (
 
   // Subregister 6 of Multireg sw_rst_regwen
   // R[sw_rst_regwen_6]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regwen_6 (
     .clk_i   (clk_i),
@@ -828,9 +828,9 @@ module rstmgr_reg_top (
 
   // Subregister 7 of Multireg sw_rst_regwen
   // R[sw_rst_regwen_7]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regwen_7 (
     .clk_i   (clk_i),
@@ -859,9 +859,9 @@ module rstmgr_reg_top (
   // Create REGWEN-gated WE signal
   logic sw_rst_ctrl_n_0_gated_we;
   assign sw_rst_ctrl_n_0_gated_we = sw_rst_ctrl_n_0_we & sw_rst_regwen_0_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_0 (
     .clk_i   (clk_i),
@@ -890,9 +890,9 @@ module rstmgr_reg_top (
   // Create REGWEN-gated WE signal
   logic sw_rst_ctrl_n_1_gated_we;
   assign sw_rst_ctrl_n_1_gated_we = sw_rst_ctrl_n_1_we & sw_rst_regwen_1_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_1 (
     .clk_i   (clk_i),
@@ -921,9 +921,9 @@ module rstmgr_reg_top (
   // Create REGWEN-gated WE signal
   logic sw_rst_ctrl_n_2_gated_we;
   assign sw_rst_ctrl_n_2_gated_we = sw_rst_ctrl_n_2_we & sw_rst_regwen_2_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_2 (
     .clk_i   (clk_i),
@@ -952,9 +952,9 @@ module rstmgr_reg_top (
   // Create REGWEN-gated WE signal
   logic sw_rst_ctrl_n_3_gated_we;
   assign sw_rst_ctrl_n_3_gated_we = sw_rst_ctrl_n_3_we & sw_rst_regwen_3_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_3 (
     .clk_i   (clk_i),
@@ -983,9 +983,9 @@ module rstmgr_reg_top (
   // Create REGWEN-gated WE signal
   logic sw_rst_ctrl_n_4_gated_we;
   assign sw_rst_ctrl_n_4_gated_we = sw_rst_ctrl_n_4_we & sw_rst_regwen_4_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_4 (
     .clk_i   (clk_i),
@@ -1014,9 +1014,9 @@ module rstmgr_reg_top (
   // Create REGWEN-gated WE signal
   logic sw_rst_ctrl_n_5_gated_we;
   assign sw_rst_ctrl_n_5_gated_we = sw_rst_ctrl_n_5_we & sw_rst_regwen_5_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_5 (
     .clk_i   (clk_i),
@@ -1045,9 +1045,9 @@ module rstmgr_reg_top (
   // Create REGWEN-gated WE signal
   logic sw_rst_ctrl_n_6_gated_we;
   assign sw_rst_ctrl_n_6_gated_we = sw_rst_ctrl_n_6_we & sw_rst_regwen_6_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_6 (
     .clk_i   (clk_i),
@@ -1076,9 +1076,9 @@ module rstmgr_reg_top (
   // Create REGWEN-gated WE signal
   logic sw_rst_ctrl_n_7_gated_we;
   assign sw_rst_ctrl_n_7_gated_we = sw_rst_ctrl_n_7_we & sw_rst_regwen_7_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_sw_rst_ctrl_n_7 (
     .clk_i   (clk_i),
@@ -1104,9 +1104,9 @@ module rstmgr_reg_top (
 
   // R[err_code]: V(False)
   //   F[reg_intg_err]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_reg_intg_err (
     .clk_i   (clk_i),
@@ -1130,9 +1130,9 @@ module rstmgr_reg_top (
   );
 
   //   F[reset_consistency_err]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_reset_consistency_err (
     .clk_i   (clk_i),
@@ -1156,9 +1156,9 @@ module rstmgr_reg_top (
   );
 
   //   F[fsm_err]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_err_code_fsm_err (
     .clk_i   (clk_i),

@@ -287,9 +287,9 @@ module spi_host_reg_top (
   // Register instances
   // R[intr_state]: V(False)
   //   F[error]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_error (
     .clk_i   (clk_i),
@@ -313,9 +313,9 @@ module spi_host_reg_top (
   );
 
   //   F[spi_event]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state_spi_event (
     .clk_i   (clk_i),
@@ -341,9 +341,9 @@ module spi_host_reg_top (
 
   // R[intr_enable]: V(False)
   //   F[error]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_error (
     .clk_i   (clk_i),
@@ -367,9 +367,9 @@ module spi_host_reg_top (
   );
 
   //   F[spi_event]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable_spi_event (
     .clk_i   (clk_i),
@@ -398,7 +398,7 @@ module spi_host_reg_top (
   logic [1:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
   //   F[error]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_intr_test_error (
     .re     (1'b0),
@@ -414,7 +414,7 @@ module spi_host_reg_top (
   assign reg2hw.intr_test.error.qe = intr_test_qe;
 
   //   F[spi_event]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_intr_test_spi_event (
     .re     (1'b0),
@@ -434,7 +434,7 @@ module spi_host_reg_top (
   logic alert_test_qe;
   logic [0:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
     .re     (1'b0),
@@ -452,9 +452,9 @@ module spi_host_reg_top (
 
   // R[control]: V(False)
   //   F[rx_watermark]: 7:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h7f)
   ) u_control_rx_watermark (
     .clk_i   (clk_i),
@@ -478,9 +478,9 @@ module spi_host_reg_top (
   );
 
   //   F[tx_watermark]: 15:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_control_tx_watermark (
     .clk_i   (clk_i),
@@ -504,9 +504,9 @@ module spi_host_reg_top (
   );
 
   //   F[output_en]: 29:29
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_control_output_en (
     .clk_i   (clk_i),
@@ -530,9 +530,9 @@ module spi_host_reg_top (
   );
 
   //   F[sw_rst]: 30:30
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_control_sw_rst (
     .clk_i   (clk_i),
@@ -556,9 +556,9 @@ module spi_host_reg_top (
   );
 
   //   F[spien]: 31:31
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_control_spien (
     .clk_i   (clk_i),
@@ -584,9 +584,9 @@ module spi_host_reg_top (
 
   // R[status]: V(False)
   //   F[txqd]: 7:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (8'h0)
   ) u_status_txqd (
     .clk_i   (clk_i),
@@ -610,9 +610,9 @@ module spi_host_reg_top (
   );
 
   //   F[rxqd]: 15:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (8'h0)
   ) u_status_rxqd (
     .clk_i   (clk_i),
@@ -636,9 +636,9 @@ module spi_host_reg_top (
   );
 
   //   F[cmdqd]: 19:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (4'h0)
   ) u_status_cmdqd (
     .clk_i   (clk_i),
@@ -662,9 +662,9 @@ module spi_host_reg_top (
   );
 
   //   F[rxwm]: 20:20
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_rxwm (
     .clk_i   (clk_i),
@@ -688,9 +688,9 @@ module spi_host_reg_top (
   );
 
   //   F[byteorder]: 22:22
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_byteorder (
     .clk_i   (clk_i),
@@ -714,9 +714,9 @@ module spi_host_reg_top (
   );
 
   //   F[rxstall]: 23:23
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_rxstall (
     .clk_i   (clk_i),
@@ -740,9 +740,9 @@ module spi_host_reg_top (
   );
 
   //   F[rxempty]: 24:24
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_rxempty (
     .clk_i   (clk_i),
@@ -766,9 +766,9 @@ module spi_host_reg_top (
   );
 
   //   F[rxfull]: 25:25
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_rxfull (
     .clk_i   (clk_i),
@@ -792,9 +792,9 @@ module spi_host_reg_top (
   );
 
   //   F[txwm]: 26:26
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_txwm (
     .clk_i   (clk_i),
@@ -818,9 +818,9 @@ module spi_host_reg_top (
   );
 
   //   F[txstall]: 27:27
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_txstall (
     .clk_i   (clk_i),
@@ -844,9 +844,9 @@ module spi_host_reg_top (
   );
 
   //   F[txempty]: 28:28
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_txempty (
     .clk_i   (clk_i),
@@ -870,9 +870,9 @@ module spi_host_reg_top (
   );
 
   //   F[txfull]: 29:29
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_txfull (
     .clk_i   (clk_i),
@@ -896,9 +896,9 @@ module spi_host_reg_top (
   );
 
   //   F[active]: 30:30
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_active (
     .clk_i   (clk_i),
@@ -922,9 +922,9 @@ module spi_host_reg_top (
   );
 
   //   F[ready]: 31:31
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_ready (
     .clk_i   (clk_i),
@@ -951,9 +951,9 @@ module spi_host_reg_top (
   // Subregister 0 of Multireg configopts
   // R[configopts]: V(False)
   //   F[clkdiv_0]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_configopts_clkdiv_0 (
     .clk_i   (clk_i),
@@ -977,9 +977,9 @@ module spi_host_reg_top (
   );
 
   //   F[csnidle_0]: 19:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_configopts_csnidle_0 (
     .clk_i   (clk_i),
@@ -1003,9 +1003,9 @@ module spi_host_reg_top (
   );
 
   //   F[csntrail_0]: 23:20
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_configopts_csntrail_0 (
     .clk_i   (clk_i),
@@ -1029,9 +1029,9 @@ module spi_host_reg_top (
   );
 
   //   F[csnlead_0]: 27:24
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_configopts_csnlead_0 (
     .clk_i   (clk_i),
@@ -1055,9 +1055,9 @@ module spi_host_reg_top (
   );
 
   //   F[fullcyc_0]: 29:29
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_configopts_fullcyc_0 (
     .clk_i   (clk_i),
@@ -1081,9 +1081,9 @@ module spi_host_reg_top (
   );
 
   //   F[cpha_0]: 30:30
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_configopts_cpha_0 (
     .clk_i   (clk_i),
@@ -1107,9 +1107,9 @@ module spi_host_reg_top (
   );
 
   //   F[cpol_0]: 31:31
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_configopts_cpol_0 (
     .clk_i   (clk_i),
@@ -1134,9 +1134,9 @@ module spi_host_reg_top (
 
 
   // R[csid]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_csid (
     .clk_i   (clk_i),
@@ -1165,7 +1165,7 @@ module spi_host_reg_top (
   logic [3:0] command_flds_we;
   assign command_qe = &command_flds_we;
   //   F[len]: 8:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (9)
   ) u_command_len (
     .re     (1'b0),
@@ -1181,7 +1181,7 @@ module spi_host_reg_top (
   assign reg2hw.command.len.qe = command_qe;
 
   //   F[csaat]: 9:9
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_command_csaat (
     .re     (1'b0),
@@ -1197,7 +1197,7 @@ module spi_host_reg_top (
   assign reg2hw.command.csaat.qe = command_qe;
 
   //   F[speed]: 11:10
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (2)
   ) u_command_speed (
     .re     (1'b0),
@@ -1213,7 +1213,7 @@ module spi_host_reg_top (
   assign reg2hw.command.speed.qe = command_qe;
 
   //   F[direction]: 13:12
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (2)
   ) u_command_direction (
     .re     (1'b0),
@@ -1231,9 +1231,9 @@ module spi_host_reg_top (
 
   // R[error_enable]: V(False)
   //   F[cmdbusy]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_error_enable_cmdbusy (
     .clk_i   (clk_i),
@@ -1257,9 +1257,9 @@ module spi_host_reg_top (
   );
 
   //   F[overflow]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_error_enable_overflow (
     .clk_i   (clk_i),
@@ -1283,9 +1283,9 @@ module spi_host_reg_top (
   );
 
   //   F[underflow]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_error_enable_underflow (
     .clk_i   (clk_i),
@@ -1309,9 +1309,9 @@ module spi_host_reg_top (
   );
 
   //   F[cmdinval]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_error_enable_cmdinval (
     .clk_i   (clk_i),
@@ -1335,9 +1335,9 @@ module spi_host_reg_top (
   );
 
   //   F[csidinval]: 4:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_error_enable_csidinval (
     .clk_i   (clk_i),
@@ -1363,9 +1363,9 @@ module spi_host_reg_top (
 
   // R[error_status]: V(False)
   //   F[cmdbusy]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_error_status_cmdbusy (
     .clk_i   (clk_i),
@@ -1389,9 +1389,9 @@ module spi_host_reg_top (
   );
 
   //   F[overflow]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_error_status_overflow (
     .clk_i   (clk_i),
@@ -1415,9 +1415,9 @@ module spi_host_reg_top (
   );
 
   //   F[underflow]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_error_status_underflow (
     .clk_i   (clk_i),
@@ -1441,9 +1441,9 @@ module spi_host_reg_top (
   );
 
   //   F[cmdinval]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_error_status_cmdinval (
     .clk_i   (clk_i),
@@ -1467,9 +1467,9 @@ module spi_host_reg_top (
   );
 
   //   F[csidinval]: 4:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_error_status_csidinval (
     .clk_i   (clk_i),
@@ -1493,9 +1493,9 @@ module spi_host_reg_top (
   );
 
   //   F[accessinval]: 5:5
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_error_status_accessinval (
     .clk_i   (clk_i),
@@ -1521,9 +1521,9 @@ module spi_host_reg_top (
 
   // R[event_enable]: V(False)
   //   F[rxfull]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_event_enable_rxfull (
     .clk_i   (clk_i),
@@ -1547,9 +1547,9 @@ module spi_host_reg_top (
   );
 
   //   F[txempty]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_event_enable_txempty (
     .clk_i   (clk_i),
@@ -1573,9 +1573,9 @@ module spi_host_reg_top (
   );
 
   //   F[rxwm]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_event_enable_rxwm (
     .clk_i   (clk_i),
@@ -1599,9 +1599,9 @@ module spi_host_reg_top (
   );
 
   //   F[txwm]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_event_enable_txwm (
     .clk_i   (clk_i),
@@ -1625,9 +1625,9 @@ module spi_host_reg_top (
   );
 
   //   F[ready]: 4:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_event_enable_ready (
     .clk_i   (clk_i),
@@ -1651,9 +1651,9 @@ module spi_host_reg_top (
   );
 
   //   F[idle]: 5:5
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_event_enable_idle (
     .clk_i   (clk_i),

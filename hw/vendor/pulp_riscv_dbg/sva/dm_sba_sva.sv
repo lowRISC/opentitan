@@ -35,7 +35,7 @@ module dm_sba_sva #(
   input logic           clk_i,
   input logic           dmactive_i,
   input logic [2:0]     sbaccess_i,
-  input dm::sba_state_e state_d
+  input dm_ot::sba_state_e state_d
 );
 
   ///////////////////////////////////////////////////////
@@ -44,7 +44,7 @@ module dm_sba_sva #(
 
   // maybe bump severity to $error if not handled at runtime
   dm_sba_access_size: assert property(@(posedge clk_i) disable iff (dmactive_i !== 1'b0)
-      (state_d != dm::Idle) |-> (sbaccess_i < 4))
+      (state_d != dm_ot::Idle) |-> (sbaccess_i < 4))
           else $warning ("accesses > 8 byte not supported at the moment");
 
 endmodule: dm_sba_sva

@@ -5,7 +5,7 @@
 // Emulate a single generic flash bank
 //
 
-module prim_generic_flash_bank #(
+module prim_flash_bank #(
   parameter int InfosPerBank   = 1,   // info pages per bank
   parameter int InfoTypes      = 1,   // different info types
   parameter int InfoTypesWidth = 1,   // different info types
@@ -452,4 +452,4 @@ module prim_generic_flash_bank #(
   logic unused_he;
   assign unused_he = he_i;
 
-endmodule // prim_generic_flash
+endmodule // prim_flash

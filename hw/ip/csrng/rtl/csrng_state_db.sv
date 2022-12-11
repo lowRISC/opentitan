@@ -9,6 +9,8 @@
 
 `include "prim_assert.sv"
 
+`include "prim_flop_macros.sv"
+
 module csrng_state_db import csrng_pkg::*; #(
   parameter int NApps = 4,
   parameter int StateId = 4,

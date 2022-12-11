@@ -13,7 +13,7 @@ interface DMI_BUS_DV #(
   input logic clk_i
 );
 
-  import dm::*;
+  import dm_ot::*;
 
   typedef logic [ADDR_WIDTH-1:0] addr_t;
   typedef logic [31:0] data_t;

@@ -269,9 +269,9 @@ module flash_ctrl_prim_reg_top (
 
   // Register instances
   // R[csr0_regwen]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_csr0_regwen (
     .clk_i   (clk_i),
@@ -300,9 +300,9 @@ module flash_ctrl_prim_reg_top (
   logic csr1_gated_we;
   assign csr1_gated_we = csr1_we & csr0_regwen_qs;
   //   F[field0]: 7:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_csr1_field0 (
     .clk_i   (clk_i),
@@ -326,9 +326,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 12:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (5),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0)
   ) u_csr1_field1 (
     .clk_i   (clk_i),
@@ -354,9 +354,9 @@ module flash_ctrl_prim_reg_top (
 
   // R[csr2]: V(False)
   //   F[field0]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_csr2_field0 (
     .clk_i   (clk_i),
@@ -380,9 +380,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_csr2_field1 (
     .clk_i   (clk_i),
@@ -406,9 +406,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_csr2_field2 (
     .clk_i   (clk_i),
@@ -432,9 +432,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr2_field3 (
     .clk_i   (clk_i),
@@ -458,9 +458,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field4]: 4:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_csr2_field4 (
     .clk_i   (clk_i),
@@ -484,9 +484,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field5]: 5:5
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_csr2_field5 (
     .clk_i   (clk_i),
@@ -510,9 +510,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field6]: 6:6
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_csr2_field6 (
     .clk_i   (clk_i),
@@ -536,9 +536,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field7]: 7:7
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr2_field7 (
     .clk_i   (clk_i),
@@ -567,9 +567,9 @@ module flash_ctrl_prim_reg_top (
   logic csr3_gated_we;
   assign csr3_gated_we = csr3_we & csr0_regwen_qs;
   //   F[field0]: 3:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_csr3_field0 (
     .clk_i   (clk_i),
@@ -593,9 +593,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 7:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_csr3_field1 (
     .clk_i   (clk_i),
@@ -619,9 +619,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 10:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr3_field2 (
     .clk_i   (clk_i),
@@ -645,9 +645,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 13:11
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr3_field3 (
     .clk_i   (clk_i),
@@ -671,9 +671,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field4]: 16:14
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr3_field4 (
     .clk_i   (clk_i),
@@ -697,9 +697,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field5]: 19:17
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr3_field5 (
     .clk_i   (clk_i),
@@ -723,9 +723,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field6]: 20:20
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr3_field6 (
     .clk_i   (clk_i),
@@ -749,9 +749,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field7]: 23:21
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr3_field7 (
     .clk_i   (clk_i),
@@ -775,9 +775,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field8]: 25:24
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_csr3_field8 (
     .clk_i   (clk_i),
@@ -801,9 +801,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field9]: 27:26
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_csr3_field9 (
     .clk_i   (clk_i),
@@ -832,9 +832,9 @@ module flash_ctrl_prim_reg_top (
   logic csr4_gated_we;
   assign csr4_gated_we = csr4_we & csr0_regwen_qs;
   //   F[field0]: 2:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr4_field0 (
     .clk_i   (clk_i),
@@ -858,9 +858,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 5:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr4_field1 (
     .clk_i   (clk_i),
@@ -884,9 +884,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 8:6
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr4_field2 (
     .clk_i   (clk_i),
@@ -910,9 +910,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 11:9
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr4_field3 (
     .clk_i   (clk_i),
@@ -941,9 +941,9 @@ module flash_ctrl_prim_reg_top (
   logic csr5_gated_we;
   assign csr5_gated_we = csr5_we & csr0_regwen_qs;
   //   F[field0]: 2:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr5_field0 (
     .clk_i   (clk_i),
@@ -967,9 +967,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 4:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_csr5_field1 (
     .clk_i   (clk_i),
@@ -993,9 +993,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 13:5
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (9),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (9'h0)
   ) u_csr5_field2 (
     .clk_i   (clk_i),
@@ -1019,9 +1019,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 18:14
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (5),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (5'h0)
   ) u_csr5_field3 (
     .clk_i   (clk_i),
@@ -1045,9 +1045,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field4]: 22:19
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_csr5_field4 (
     .clk_i   (clk_i),
@@ -1076,9 +1076,9 @@ module flash_ctrl_prim_reg_top (
   logic csr6_gated_we;
   assign csr6_gated_we = csr6_we & csr0_regwen_qs;
   //   F[field0]: 2:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr6_field0 (
     .clk_i   (clk_i),
@@ -1102,9 +1102,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 5:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr6_field1 (
     .clk_i   (clk_i),
@@ -1128,9 +1128,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 13:6
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_csr6_field2 (
     .clk_i   (clk_i),
@@ -1154,9 +1154,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 16:14
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_csr6_field3 (
     .clk_i   (clk_i),
@@ -1180,9 +1180,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field4]: 18:17
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_csr6_field4 (
     .clk_i   (clk_i),
@@ -1206,9 +1206,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field5]: 20:19
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_csr6_field5 (
     .clk_i   (clk_i),
@@ -1232,9 +1232,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field6]: 22:21
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_csr6_field6 (
     .clk_i   (clk_i),
@@ -1258,9 +1258,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field7]: 23:23
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr6_field7 (
     .clk_i   (clk_i),
@@ -1284,9 +1284,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field8]: 24:24
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr6_field8 (
     .clk_i   (clk_i),
@@ -1315,9 +1315,9 @@ module flash_ctrl_prim_reg_top (
   logic csr7_gated_we;
   assign csr7_gated_we = csr7_we & csr0_regwen_qs;
   //   F[field0]: 7:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_csr7_field0 (
     .clk_i   (clk_i),
@@ -1341,9 +1341,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 16:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (9),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (9'h0)
   ) u_csr7_field1 (
     .clk_i   (clk_i),
@@ -1371,9 +1371,9 @@ module flash_ctrl_prim_reg_top (
   // Create REGWEN-gated WE signal
   logic csr8_gated_we;
   assign csr8_gated_we = csr8_we & csr0_regwen_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_csr8 (
     .clk_i   (clk_i),
@@ -1401,9 +1401,9 @@ module flash_ctrl_prim_reg_top (
   // Create REGWEN-gated WE signal
   logic csr9_gated_we;
   assign csr9_gated_we = csr9_we & csr0_regwen_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_csr9 (
     .clk_i   (clk_i),
@@ -1431,9 +1431,9 @@ module flash_ctrl_prim_reg_top (
   // Create REGWEN-gated WE signal
   logic csr10_gated_we;
   assign csr10_gated_we = csr10_we & csr0_regwen_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_csr10 (
     .clk_i   (clk_i),
@@ -1461,9 +1461,9 @@ module flash_ctrl_prim_reg_top (
   // Create REGWEN-gated WE signal
   logic csr11_gated_we;
   assign csr11_gated_we = csr11_we & csr0_regwen_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_csr11 (
     .clk_i   (clk_i),
@@ -1491,9 +1491,9 @@ module flash_ctrl_prim_reg_top (
   // Create REGWEN-gated WE signal
   logic csr12_gated_we;
   assign csr12_gated_we = csr12_we & csr0_regwen_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (10),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
   ) u_csr12 (
     .clk_i   (clk_i),
@@ -1522,9 +1522,9 @@ module flash_ctrl_prim_reg_top (
   logic csr13_gated_we;
   assign csr13_gated_we = csr13_we & csr0_regwen_qs;
   //   F[field0]: 19:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (20),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (20'h0)
   ) u_csr13_field0 (
     .clk_i   (clk_i),
@@ -1548,9 +1548,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 20:20
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr13_field1 (
     .clk_i   (clk_i),
@@ -1579,9 +1579,9 @@ module flash_ctrl_prim_reg_top (
   logic csr14_gated_we;
   assign csr14_gated_we = csr14_we & csr0_regwen_qs;
   //   F[field0]: 7:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_csr14_field0 (
     .clk_i   (clk_i),
@@ -1605,9 +1605,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 8:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr14_field1 (
     .clk_i   (clk_i),
@@ -1636,9 +1636,9 @@ module flash_ctrl_prim_reg_top (
   logic csr15_gated_we;
   assign csr15_gated_we = csr15_we & csr0_regwen_qs;
   //   F[field0]: 7:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_csr15_field0 (
     .clk_i   (clk_i),
@@ -1662,9 +1662,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 8:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr15_field1 (
     .clk_i   (clk_i),
@@ -1693,9 +1693,9 @@ module flash_ctrl_prim_reg_top (
   logic csr16_gated_we;
   assign csr16_gated_we = csr16_we & csr0_regwen_qs;
   //   F[field0]: 7:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_csr16_field0 (
     .clk_i   (clk_i),
@@ -1719,9 +1719,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 8:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr16_field1 (
     .clk_i   (clk_i),
@@ -1750,9 +1750,9 @@ module flash_ctrl_prim_reg_top (
   logic csr17_gated_we;
   assign csr17_gated_we = csr17_we & csr0_regwen_qs;
   //   F[field0]: 7:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h0)
   ) u_csr17_field0 (
     .clk_i   (clk_i),
@@ -1776,9 +1776,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 8:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr17_field1 (
     .clk_i   (clk_i),
@@ -1806,9 +1806,9 @@ module flash_ctrl_prim_reg_top (
   // Create REGWEN-gated WE signal
   logic csr18_gated_we;
   assign csr18_gated_we = csr18_we & csr0_regwen_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr18 (
     .clk_i   (clk_i),
@@ -1836,9 +1836,9 @@ module flash_ctrl_prim_reg_top (
   // Create REGWEN-gated WE signal
   logic csr19_gated_we;
   assign csr19_gated_we = csr19_we & csr0_regwen_qs;
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr19 (
     .clk_i   (clk_i),
@@ -1864,9 +1864,9 @@ module flash_ctrl_prim_reg_top (
 
   // R[csr20]: V(False)
   //   F[field0]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_csr20_field0 (
     .clk_i   (clk_i),
@@ -1890,9 +1890,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_csr20_field1 (
     .clk_i   (clk_i),
@@ -1916,9 +1916,9 @@ module flash_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr20_field2 (
     .clk_i   (clk_i),

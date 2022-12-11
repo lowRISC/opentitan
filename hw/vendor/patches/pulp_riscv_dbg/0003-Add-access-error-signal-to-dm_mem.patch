@@ -35,12 +35,12 @@ index 09fc919..889193d 100755
    localparam logic [DbgAddressBits-1:0] ResumingAddr  = 'h110;
    localparam logic [DbgAddressBits-1:0] ExceptionAddr = 'h118;
  
-+  localparam logic [DbgAddressBits-1:0] RomBaseAddr   = dm::HaltAddress;
++  localparam logic [DbgAddressBits-1:0] RomBaseAddr   = dm_ot::HaltAddress;
 +  // The size is arbitrarily set to 0x800, so as to make the dm_space exactly 0x900 long. This is
 +  // more than eough to cover the 19 x 64bit = 0x98 bytes currenty allocated in the debug ROM.
-+  localparam logic [DbgAddressBits-1:0] RomEndAddr    = dm::HaltAddress + 'h7FF;
++  localparam logic [DbgAddressBits-1:0] RomEndAddr    = dm_ot::HaltAddress + 'h7FF;
 +
-   logic [dm::ProgBufSize/2-1:0][63:0]   progbuf;
+   logic [dm_ot::ProgBufSize/2-1:0][63:0]   progbuf;
    logic [7:0][63:0]   abstract_cmd;
    logic [NrHarts-1:0] halted_d, halted_q;
 @@ -231,6 +238,7 @@ module dm_mem #(
@@ -133,7 +133,7 @@ index 09fc919..889193d 100755
  
 -  // ROM starts at the HaltAddress of the core e.g.: it immediately jumps to
 -  // the ROM base address
--  assign fwd_rom_d = logic'(addr_i[DbgAddressBits-1:0] >= dm::HaltAddress[DbgAddressBits-1:0]);
+-  assign fwd_rom_d = logic'(addr_i[DbgAddressBits-1:0] >= dm_ot::HaltAddress[DbgAddressBits-1:0]);
 -
    always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
      if (!rst_ni) begin

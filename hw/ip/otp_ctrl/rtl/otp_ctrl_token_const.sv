@@ -5,6 +5,7 @@
 // This module contains the hash post-image constants for the all-zero and raw unlock tokens.
 // This implementation relies on constant propagation to precompute these constants from the
 // random netlist constants at compile time, and hence does not contain any "real" logic.
+`include "prim_assert.sv"
 
 module otp_ctrl_token_const import otp_ctrl_pkg::*; #(
   // Compile time random constants, to be overriden by topgen.

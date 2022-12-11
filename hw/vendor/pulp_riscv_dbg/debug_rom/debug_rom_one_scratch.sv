@@ -14,7 +14,7 @@
  */
 
 // Auto-generated code
-module debug_rom_one_scratch (
+module debug_ot_rom_one_scratch (
   input  logic         clk_i,
   input  logic         req_i,
   input  logic [63:0]  addr_i,

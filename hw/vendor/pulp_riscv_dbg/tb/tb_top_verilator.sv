@@ -34,7 +34,7 @@ module tb_top_verilator #(
     localparam CORE_MHARTID       = {21'b0, CLUSTER_ID, 1'b0, CORE_ID};
     localparam NrHarts                               = 1;
     localparam logic [NrHarts-1:0] SELECTABLE_HARTS  = 1 << CORE_MHARTID;
-    localparam HARTINFO           = {8'h0, 4'h2, 3'b0, 1'b1, dm::DataCount, dm::DataAddr};
+    localparam HARTINFO           = {8'h0, 4'h2, 3'b0, 1'b1, dm_ot::DataCount, dm_ot::DataAddr};
 
     // signals connecting core to memory
     logic                        instr_req;
@@ -63,9 +63,9 @@ module tb_top_verilator #(
 
     // signals for debug unit
     logic                        debug_req_ready;
-    dm::dmi_resp_t               debug_resp;
+    dm_ot::dmi_resp_t               debug_resp;
     logic                        jtag_req_valid;
-    dm::dmi_req_t                jtag_dmi_req;
+    dm_ot::dmi_req_t                jtag_dmi_req;
     logic                        jtag_resp_ready;
     logic                        jtag_resp_valid;
     logic [NrHarts-1:0]          dm_debug_req;

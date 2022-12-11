@@ -4,7 +4,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_clock_buf #(
+module prim_clock_buf #(
   parameter bit NoFpgaBuf = 1'b0, // serves no function in generic
   parameter bit RegionSel = 1'b0  // serves no function in generic
 ) (
@@ -16,4 +16,4 @@ module prim_generic_clock_buf #(
   assign inv = ~clk_i;
   assign clk_o = ~inv;
 
-endmodule // prim_generic_clock_buf
+endmodule // prim_clock_buf

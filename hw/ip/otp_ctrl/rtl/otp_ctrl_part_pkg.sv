@@ -8,6 +8,7 @@
 // It has been generated with
 // $ ./util/design/gen-otp-mmap.py --seed 10556718629619452145
 //
+`include "prim_assert.sv"
 
 package otp_ctrl_part_pkg;
 

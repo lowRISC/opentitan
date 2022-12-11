@@ -106,7 +106,7 @@ class SWAccess:
 
         This is almost the same as allows_write(), but doesn't return true for
         RC registers, which should use a read-enable signal (connected to their
-        prim_subreg's we port).
+        prim_ot_subreg's we port).
 
         '''
         return self.value[1] != SwAccess.RC and self.allows_write()

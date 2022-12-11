@@ -67,7 +67,7 @@
     { name:      "MemInitFile",
       desc:      "VMEM file to initialize the OTP macro.",
       type:      "",
-      default:   '""',
+      default:   '"../hw/top_earlgrey/sw/tests/hello_test/otp-img.mem"',
       expose:    "true",
       local:     "false"
     }

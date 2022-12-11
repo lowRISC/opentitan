@@ -199,9 +199,9 @@ module otp_ctrl_prim_reg_top (
   // Register instances
   // R[csr0]: V(False)
   //   F[field0]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr0_field0 (
     .clk_i   (clk_i),
@@ -225,9 +225,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr0_field1 (
     .clk_i   (clk_i),
@@ -251,9 +251,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr0_field2 (
     .clk_i   (clk_i),
@@ -277,9 +277,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 13:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (10),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
   ) u_csr0_field3 (
     .clk_i   (clk_i),
@@ -303,9 +303,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field4]: 26:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (11),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (11'h0)
   ) u_csr0_field4 (
     .clk_i   (clk_i),
@@ -331,9 +331,9 @@ module otp_ctrl_prim_reg_top (
 
   // R[csr1]: V(False)
   //   F[field0]: 6:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (7),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0)
   ) u_csr1_field0 (
     .clk_i   (clk_i),
@@ -357,9 +357,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 7:7
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr1_field1 (
     .clk_i   (clk_i),
@@ -383,9 +383,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 14:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (7),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0)
   ) u_csr1_field2 (
     .clk_i   (clk_i),
@@ -409,9 +409,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 15:15
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr1_field3 (
     .clk_i   (clk_i),
@@ -435,9 +435,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field4]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_csr1_field4 (
     .clk_i   (clk_i),
@@ -462,9 +462,9 @@ module otp_ctrl_prim_reg_top (
 
 
   // R[csr2]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr2 (
     .clk_i   (clk_i),
@@ -490,9 +490,9 @@ module otp_ctrl_prim_reg_top (
 
   // R[csr3]: V(False)
   //   F[field0]: 2:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (3'h0)
   ) u_csr3_field0 (
     .clk_i   (clk_i),
@@ -516,9 +516,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 13:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (10),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (10'h0)
   ) u_csr3_field1 (
     .clk_i   (clk_i),
@@ -542,9 +542,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 16:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_csr3_field2 (
     .clk_i   (clk_i),
@@ -568,9 +568,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 17:17
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field3 (
     .clk_i   (clk_i),
@@ -594,9 +594,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field4]: 18:18
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field4 (
     .clk_i   (clk_i),
@@ -620,9 +620,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field5]: 19:19
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field5 (
     .clk_i   (clk_i),
@@ -646,9 +646,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field6]: 20:20
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field6 (
     .clk_i   (clk_i),
@@ -672,9 +672,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field7]: 21:21
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field7 (
     .clk_i   (clk_i),
@@ -698,9 +698,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field8]: 22:22
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr3_field8 (
     .clk_i   (clk_i),
@@ -726,9 +726,9 @@ module otp_ctrl_prim_reg_top (
 
   // R[csr4]: V(False)
   //   F[field0]: 9:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (10),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
   ) u_csr4_field0 (
     .clk_i   (clk_i),
@@ -752,9 +752,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 12:12
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr4_field1 (
     .clk_i   (clk_i),
@@ -778,9 +778,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 13:13
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr4_field2 (
     .clk_i   (clk_i),
@@ -804,9 +804,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 14:14
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr4_field3 (
     .clk_i   (clk_i),
@@ -832,9 +832,9 @@ module otp_ctrl_prim_reg_top (
 
   // R[csr5]: V(False)
   //   F[field0]: 5:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (6),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (6'h0)
   ) u_csr5_field0 (
     .clk_i   (clk_i),
@@ -858,9 +858,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 7:6
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (2),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (2'h0)
   ) u_csr5_field1 (
     .clk_i   (clk_i),
@@ -884,9 +884,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 8:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr5_field2 (
     .clk_i   (clk_i),
@@ -910,9 +910,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 11:9
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (3'h0)
   ) u_csr5_field3 (
     .clk_i   (clk_i),
@@ -936,9 +936,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field4]: 12:12
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr5_field4 (
     .clk_i   (clk_i),
@@ -962,9 +962,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field5]: 13:13
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr5_field5 (
     .clk_i   (clk_i),
@@ -988,9 +988,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field6]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_csr5_field6 (
     .clk_i   (clk_i),
@@ -1016,9 +1016,9 @@ module otp_ctrl_prim_reg_top (
 
   // R[csr6]: V(False)
   //   F[field0]: 9:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (10),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (10'h0)
   ) u_csr6_field0 (
     .clk_i   (clk_i),
@@ -1042,9 +1042,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 11:11
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr6_field1 (
     .clk_i   (clk_i),
@@ -1068,9 +1068,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 12:12
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_csr6_field2 (
     .clk_i   (clk_i),
@@ -1094,9 +1094,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_csr6_field3 (
     .clk_i   (clk_i),
@@ -1122,9 +1122,9 @@ module otp_ctrl_prim_reg_top (
 
   // R[csr7]: V(False)
   //   F[field0]: 5:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (6),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (6'h0)
   ) u_csr7_field0 (
     .clk_i   (clk_i),
@@ -1148,9 +1148,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field1]: 10:8
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (3'h0)
   ) u_csr7_field1 (
     .clk_i   (clk_i),
@@ -1174,9 +1174,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field2]: 14:14
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr7_field2 (
     .clk_i   (clk_i),
@@ -1200,9 +1200,9 @@ module otp_ctrl_prim_reg_top (
   );
 
   //   F[field3]: 15:15
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_csr7_field3 (
     .clk_i   (clk_i),

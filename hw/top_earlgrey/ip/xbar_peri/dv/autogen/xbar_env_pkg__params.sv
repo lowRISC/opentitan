@@ -7,101 +7,57 @@
 
 // List of Xbar device memory map
 tl_device_t xbar_devices[$] = '{
-    '{"uart0", '{
-        '{32'h40000000, 32'h4000003f}
-    }},
-    '{"uart1", '{
-        '{32'h40010000, 32'h4001003f}
-    }},
-    '{"uart2", '{
-        '{32'h40020000, 32'h4002003f}
-    }},
-    '{"uart3", '{
-        '{32'h40030000, 32'h4003003f}
-    }},
-    '{"i2c0", '{
-        '{32'h40080000, 32'h4008007f}
-    }},
-    '{"i2c1", '{
-        '{32'h40090000, 32'h4009007f}
-    }},
-    '{"i2c2", '{
-        '{32'h400a0000, 32'h400a007f}
-    }},
     '{"pattgen", '{
-        '{32'h400e0000, 32'h400e003f}
-    }},
-    '{"pwm_aon", '{
-        '{32'h40450000, 32'h4045007f}
+        '{32'hc00e0000, 32'hc00e003f}
     }},
     '{"gpio", '{
-        '{32'h40040000, 32'h4004003f}
-    }},
-    '{"spi_device", '{
-        '{32'h40050000, 32'h40051fff}
+        '{32'hc0040000, 32'hc004003f}
     }},
     '{"rv_timer", '{
-        '{32'h40100000, 32'h401001ff}
+        '{32'hc0100000, 32'hc01001ff}
     }},
     '{"pwrmgr_aon", '{
-        '{32'h40400000, 32'h4040007f}
+        '{32'hc0400000, 32'hc040007f}
     }},
     '{"rstmgr_aon", '{
-        '{32'h40410000, 32'h4041007f}
+        '{32'hc0410000, 32'hc041007f}
     }},
     '{"clkmgr_aon", '{
-        '{32'h40420000, 32'h4042007f}
+        '{32'hc0420000, 32'hc042007f}
     }},
     '{"pinmux_aon", '{
-        '{32'h40460000, 32'h40460fff}
+        '{32'hc0460000, 32'hc0460fff}
     }},
     '{"otp_ctrl__core", '{
-        '{32'h40130000, 32'h40131fff}
+        '{32'hc0130000, 32'hc0131fff}
     }},
     '{"otp_ctrl__prim", '{
-        '{32'h40132000, 32'h4013201f}
+        '{32'hc0132000, 32'hc013201f}
     }},
     '{"lc_ctrl", '{
-        '{32'h40140000, 32'h401400ff}
-    }},
-    '{"sensor_ctrl", '{
-        '{32'h40490000, 32'h4049003f}
+        '{32'hc0140000, 32'hc01400ff}
     }},
     '{"alert_handler", '{
-        '{32'h40150000, 32'h401507ff}
+        '{32'hc0150000, 32'hc01507ff}
     }},
     '{"sram_ctrl_ret_aon__regs", '{
-        '{32'h40500000, 32'h4050001f}
+        '{32'hc0500000, 32'hc050001f}
     }},
     '{"sram_ctrl_ret_aon__ram", '{
-        '{32'h40600000, 32'h40600fff}
+        '{32'hc0600000, 32'hc0600fff}
     }},
     '{"aon_timer_aon", '{
-        '{32'h40470000, 32'h4047003f}
+        '{32'hc0470000, 32'hc047003f}
     }},
     '{"sysrst_ctrl_aon", '{
-        '{32'h40430000, 32'h404300ff}
-    }},
-    '{"adc_ctrl_aon", '{
-        '{32'h40440000, 32'h4044007f}
-    }},
-    '{"ast", '{
-        '{32'h40480000, 32'h404803ff}
+        '{32'hc0430000, 32'hc04300ff}
 }}};
 
   // List of Xbar hosts
 tl_host_t xbar_hosts[$] = '{
     '{"main", 0, '{
-        "uart0",
-        "uart1",
-        "uart2",
-        "uart3",
-        "i2c0",
-        "i2c1",
-        "i2c2",
         "pattgen",
         "gpio",
-        "spi_device",
         "rv_timer",
         "pwrmgr_aon",
         "rstmgr_aon",
@@ -110,13 +66,9 @@ tl_host_t xbar_hosts[$] = '{
         "otp_ctrl__core",
         "otp_ctrl__prim",
         "lc_ctrl",
-        "sensor_ctrl",
         "alert_handler",
-        "ast",
         "sram_ctrl_ret_aon__ram",
         "sram_ctrl_ret_aon__regs",
         "aon_timer_aon",
-        "adc_ctrl_aon",
-        "sysrst_ctrl_aon",
-        "pwm_aon"}}
+        "sysrst_ctrl_aon"}}
 };

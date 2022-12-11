@@ -1,0 +1,837 @@
+package:
+
+  name: opentitan
+  
+dependencies:
+
+# tech_cells_generic:  { git: "git@github.com:pulp-platform/tech_cells_generic.git",     rev: "411bd43eadc46ae97e45d890fc3f916771c5491a"}
+# ot_common_cells:     { git: "https://github.com/pulp-platform/common_cells.git",       version: 1.21.0                                }
+ axi:                  { git: "https://github.com/pulp-platform/axi.git",                version: 0.29.1                                } 
+ axi_scmi_mailbox:     { git: "git@github.com:AlSaqr-platform/axi_scmi_mailbox.git",     rev: "master"                                  }
+ register_interface:  { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.1  }
+ 
+# prim          : { path: "hw/ip/prim"          }
+# tlul          : { path: "hw/ip/tlul"          }
+# pulp_dbg      : { path: "hw/vendor/pulp_riscv_dbg/src" }
+# rv_ibex_core  : { path: "hw/ip/rv_core_ibex" }
+# rom_ctrl      : { path: "hw/ip/rom_ctrl"      }
+# kmac          : { path: "hw/ip/kmac"          }
+# keymgr        : { path: "hw/ip/keymgr"        }
+# otp_ctrl      : { path: "hw/ip/otp_ctrl"      }
+# hmac          : { path: "hw/ip/hmac"          }
+# lc_ctrl       : { path: "hw/ip/lc_ctrl"       }
+# sram_ctrl     : { path: "hw/ip/sram_ctrl"     }
+# flash_ctrl    : { path: "hw/ip/flash_ctrl"    }
+# uart          : { path: "hw/ip/uart"          }
+# clkmgr        : { path: "hw/ip/clkmgr"        }
+# sysrst_ctrl   : { path: "hw/ip/sysrst_ctrl"   }
+# rstmgr        : { path: "hw/ip/rstmgr"        }
+# pwrmgr        : { path: "hw/ip/pwrmgr"        }
+# alert_handler : { path: "hw/ip/alert_handler" }
+# rv_dm         : { path: "hw/ip/rv_dm"         }
+# ot_rv_plic    : { path: "hw/ip/rv_plic"       }
+# edn           : { path: "hw/ip/edn"           }
+# otbn          : { path: "hw/ip/otbn"          }
+# aes           : { path: "hw/ip/aes"           }
+# csrng         : { path: "hw/ip/csrng"         }
+# entropy_src   : { path: "hw/ip/entropy_src"   }
+# gpio          : { path: "hw/ip/gpio"          }
+# spi_device    : { path: "hw/ip/spi_device"    }
+# spi_host      : { path: "hw/ip/spi_host"      }
+# prim_generic  : { path: "../ip/prim_generic"  }
+
+
+
+export_include_dirs:
+#      - hw/top_titangrey/tb
+#       - hw/top_titangrey/autogen/rtl/autogen
+       - hw/ip/prim/rtl
+       - hw/ip/tlul/rtl
+       - hw/ip/rv_core_ibex/rtl
+       - hw/dv/sv/dv_utils
+       - hw/ip/tlul2axi/test
+
+
+#      - hw/ip/tlul/rtl/
+#      - hw/top_earlgrey/rtl/
+
+sources:
+
+      defines:
+        RVFI: true
+      files:
+      
+###### dbg_rv
+
+      - hw/vendor/pulp_riscv_dbg/debug_rom/debug_rom.sv
+      - hw/vendor/pulp_riscv_dbg/debug_rom/debug_rom_one_scratch.sv
+      #- hw/tb/jtag_test.sv
+      - hw/vendor/pulp_riscv_dbg/src/dm_pkg.sv
+      - hw/vendor/pulp_riscv_dbg/src/dm_sba.sv
+      - hw/vendor/pulp_riscv_dbg/src/dmi_cdc.sv
+      #- hw/vendor/pulp_riscv_dbg/tb/jtag_dmi/jtag_test.sv
+      - hw/vendor/pulp_riscv_dbg/src/dmi_jtag.sv
+      - hw/vendor/pulp_riscv_dbg/src/dmi_jtag_tap.sv
+      - hw/vendor/pulp_riscv_dbg/src/dm_mem.sv
+      - hw/vendor/pulp_riscv_dbg/src/dm_csrs.sv
+      - hw/vendor/pulp_riscv_dbg/src/dm_top.sv
+
+###### prim
+
+      - hw/vendor/lowrisc_ibex/dv/uvm/core_ibex/common/prim/prim_pkg.sv
+      - hw/ip/prim/rtl/prim_assert_yosys_macros.svh
+      - hw/ip/prim/rtl/prim_flop_macros.svh
+      - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_handler_reg_pkg.sv
+      - hw/ip/prim/rtl/prim_mubi_pkg.sv
+      - hw/ip/prim/rtl/prim_util_pkg.sv
+      - hw/ip/prim/rtl/prim_secded_pkg.sv
+      - hw/ip/entropy_src/rtl/entropy_src_pkg.sv
+      - hw/ip/edn/rtl/edn_pkg.sv
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_state_pkg.sv
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_reg_pkg.sv
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_pkg.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_reg_pkg.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_pkg.sv
+      - hw/ip/rv_dm/rtl/jtag_pkg.sv
+      - hw/ip/prim/rtl/prim_assert.sv
+      - hw/top_earlgrey/ip/ast/rtl/ast_pkg.sv
+      - hw/top_earlgrey/rtl/top_pkg.sv
+      - hw/ip/tlul/rtl/tlul_pkg.sv
+      - hw/ip/flash_ctrl/rtl/flash_ctrl_reg_pkg.sv
+      - hw/ip/flash_ctrl/rtl/flash_ctrl_pkg.sv
+      - hw/ip/flash_ctrl/rtl/flash_phy_pkg.sv
+      - hw/ip/prim/rtl/prim_subreg_pkg.sv      
+     # - hw/ip/prim/rtl/prim_clock_mux2.sv
+     # - hw/ip/prim/rtl/prim_clock_inv.sv
+     # - hw/ip/prim/rtl/prim_clock_buf.sv
+      #- hw/ip/prim/rtl/prim_count_pkg.sv
+      #- hw/ip/prim/rtl/prim_buf.sv
+      #- hw/ip/prim/rtl/prim_flop.sv
+      #- hw/ip/prim/rtl/prim_flop_en.sv
+      - hw/ip/entropy_src/rtl/entropy_src_pkg.sv
+      - hw/ip/prim/rtl/prim_util_pkg.sv
+      - hw/ip/prim/rtl/prim_alert_pkg.sv
+      - hw/ip/prim/rtl/prim_alert_receiver.sv
+      - hw/ip/prim/rtl/prim_alert_sender.sv
+      - hw/ip/prim/rtl/prim_arbiter_fixed.sv
+      - hw/ip/prim/rtl/prim_arbiter_ppc.sv
+      - hw/ip/prim/rtl/prim_arbiter_tree_dup.sv
+      - hw/ip/prim/rtl/prim_arbiter_tree.sv
+      - hw/ip/prim/rtl/prim_assert_dummy_macros.svh
+      - hw/ip/prim/rtl/prim_assert_sec_cm.svh
+      - hw/ip/prim/rtl/prim_assert_standard_macros.svh
+      - hw/ip/prim/rtl/prim_assert.sv
+      - hw/ip/prim/rtl/prim_assert_yosys_macros.svh
+      - hw/ip/prim/rtl/prim_blanker.sv
+      - hw/ip/prim/rtl/prim_cdc_rand_delay.sv
+      - hw/ip/prim/rtl/prim_clock_meas.sv
+      - hw/ip/prim/rtl/prim_cipher_pkg.sv
+      - hw/ip/prim/rtl/prim_clock_div.sv
+      - hw/ip/prim/rtl/prim_clock_gating_sync.sv
+      - hw/ip/prim/rtl/prim_clock_gp_mux2.sv
+      - hw/ip/prim/rtl/prim_clock_timeout.sv
+      - hw/ip/prim/rtl/prim_count.sv
+      - hw/ip/prim/rtl/prim_crc32.sv
+      - hw/ip/prim/rtl/prim_diff_decode.sv
+      - hw/ip/prim/rtl/prim_dom_and_2share.sv
+      - hw/ip/prim/rtl/prim_double_lfsr.sv
+      - hw/ip/prim/rtl/prim_edge_detector.sv
+      - hw/ip/prim/rtl/prim_edn_req.sv
+      - hw/ip/prim/rtl/prim_esc_pkg.sv
+      - hw/ip/prim/rtl/prim_esc_receiver.sv
+      - hw/ip/prim/rtl/prim_esc_sender.sv
+      - hw/ip/prim/rtl/prim_fifo_async_sram_adapter.sv
+      - hw/ip/prim/rtl/prim_fifo_async.sv
+      - hw/ip/prim/rtl/prim_fifo_sync_cnt.sv
+      - hw/ip/prim/rtl/prim_fifo_sync.sv
+      - hw/ip/prim/rtl/prim_filter_ctr.sv
+      - hw/ip/prim/rtl/prim_fifo_async_simple.sv
+      - hw/ip/prim/rtl/prim_filter.sv
+      - hw/ip/prim/rtl/prim_flop_2sync.sv
+      - hw/ip/prim/rtl/prim_flop_macros.sv
+      - hw/ip/prim/rtl/prim_gate_gen.sv
+      - hw/ip/prim/rtl/prim_gf_mult.sv
+      - hw/ip/prim/rtl/prim_intr_hw.sv
+      - hw/ip/prim/rtl/prim_keccak.sv
+      - hw/ip/prim/rtl/prim_lc_and_hardened.sv
+      - hw/ip/prim/rtl/prim_lc_combine.sv
+      - hw/ip/prim/rtl/prim_lc_dec.sv
+      - hw/ip/prim/rtl/prim_lc_or_hardened.sv
+      - hw/ip/prim/rtl/prim_lc_sender.sv
+      - hw/ip/prim/rtl/prim_lc_sync.sv
+      - hw/ip/prim/rtl/prim_lfsr.sv
+      - hw/ip/prim/rtl/prim_macros.svh
+      - hw/ip/prim/rtl/prim_secded_pkg.sv
+      - hw/ip/prim/rtl/prim_max_tree.sv
+      - hw/ip/prim/rtl/prim_msb_extend.sv
+      - hw/ip/prim/rtl/prim_mubi12_dec.sv
+      - hw/ip/prim/rtl/prim_mubi12_sender.sv
+      - hw/ip/prim/rtl/prim_mubi12_sync.sv
+      - hw/ip/prim/rtl/prim_mubi16_dec.sv
+      - hw/ip/prim/rtl/prim_mubi16_sender.sv
+      - hw/ip/prim/rtl/prim_mubi16_sync.sv
+      - hw/ip/prim/rtl/prim_mubi4_dec.sv
+      - hw/ip/prim/rtl/prim_mubi4_sender.sv
+      - hw/ip/prim/rtl/prim_mubi4_sync.sv
+      - hw/ip/prim/rtl/prim_mubi8_dec.sv
+      - hw/ip/prim/rtl/prim_mubi8_sender.sv
+      - hw/ip/prim/rtl/prim_mubi8_sync.sv
+      - hw/ip/prim/rtl/prim_multibit_sync.sv
+      - hw/ip/prim/rtl/prim_onehot_check.sv
+      - hw/ip/prim/rtl/prim_onehot_enc.sv
+      - hw/ip/prim/rtl/prim_onehot_mux.sv
+      - hw/ip/prim/rtl/prim_otp_pkg.sv
+      - hw/ip/prim/rtl/prim_packer_fifo.sv
+      - hw/ip/prim/rtl/prim_packer.sv
+      - hw/ip/prim/rtl/prim_pad_wrapper_pkg.sv
+      - hw/ip/prim/rtl/prim_present.sv
+      - hw/ip/prim/rtl/prim_prince.sv
+      - hw/ip/prim/rtl/prim_pulse_sync.sv
+      - hw/ip/prim/rtl/prim_ram_2p_pkg.sv
+      - hw/ip/prim/rtl/prim_ram_1p_pkg.sv
+      - hw/ip/prim/rtl/prim_ram_2p.sv
+      - hw/ip/prim/rtl/prim_ram_1p.sv
+      - hw/ip/prim/rtl/prim_ram_1p_adv.sv
+      - hw/ip/prim/rtl/prim_ram_1p_scr.sv
+      - hw/ip/prim/rtl/prim_ram_2p_adv.sv
+      - hw/ip/prim/rtl/prim_ram_2p_async_adv.sv
+      - hw/ip/prim/rtl/prim_otp.sv
+      - hw/ip/prim/rtl/prim_reg_cdc_arb.sv
+      - hw/ip/prim/rtl/prim_reg_cdc.sv
+      - hw/ip/prim/rtl/prim_reg_we_check.sv
+      - hw/ip/prim/rtl/prim_rom_pkg.sv
+      - hw/ip/prim/rtl/prim_rom_adv.sv
+      - hw/ip/prim/rtl/prim_rst_sync.sv
+      - hw/ip/prim/rtl/prim_sec_anchor_buf.sv
+      - hw/ip/prim/rtl/prim_sec_anchor_flop.sv
+      - hw/ip/prim/rtl/prim_secded_22_16_dec.sv
+      - hw/ip/prim/rtl/prim_secded_22_16_enc.sv
+      - hw/ip/prim/rtl/prim_secded_28_22_dec.sv
+      - hw/ip/prim/rtl/prim_secded_28_22_enc.sv
+      - hw/ip/prim/rtl/prim_secded_39_32_dec.sv
+      - hw/ip/prim/rtl/prim_secded_39_32_enc.sv
+      - hw/ip/prim/rtl/prim_secded_64_57_dec.sv
+      - hw/ip/prim/rtl/prim_secded_64_57_enc.sv
+      - hw/ip/prim/rtl/prim_secded_72_64_dec.sv
+      - hw/ip/prim/rtl/prim_secded_72_64_enc.sv
+      - hw/ip/prim/rtl/prim_secded_hamming_22_16_dec.sv
+      - hw/ip/prim/rtl/prim_secded_hamming_22_16_enc.sv
+      - hw/ip/prim/rtl/prim_secded_hamming_39_32_dec.sv
+      - hw/ip/prim/rtl/prim_secded_hamming_39_32_enc.sv
+      - hw/ip/prim/rtl/prim_secded_hamming_72_64_dec.sv
+      - hw/ip/prim/rtl/prim_secded_hamming_72_64_enc.sv
+      - hw/ip/prim/rtl/prim_secded_hamming_76_68_dec.sv
+      - hw/ip/prim/rtl/prim_secded_hamming_76_68_enc.sv
+      - hw/ip/prim/rtl/prim_secded_inv_22_16_dec.sv
+      - hw/ip/prim/rtl/prim_secded_inv_22_16_enc.sv
+      - hw/ip/prim/rtl/prim_secded_inv_28_22_dec.sv
+      - hw/ip/prim/rtl/prim_secded_inv_28_22_enc.sv
+      - hw/ip/prim/rtl/prim_secded_inv_39_32_dec.sv
+      - hw/ip/prim/rtl/prim_secded_inv_39_32_enc.sv
+      - hw/ip/prim/rtl/prim_secded_inv_64_57_dec.sv
+      - hw/ip/prim/rtl/prim_secded_inv_64_57_enc.sv
+      - hw/ip/prim/rtl/prim_secded_inv_72_64_dec.sv
+      - hw/ip/prim/rtl/prim_secded_inv_72_64_enc.sv
+      - hw/ip/prim/rtl/prim_secded_inv_hamming_22_16_dec.sv
+      - hw/ip/prim/rtl/prim_secded_inv_hamming_22_16_enc.sv
+      - hw/ip/prim/rtl/prim_secded_inv_hamming_39_32_dec.sv
+      - hw/ip/prim/rtl/prim_secded_inv_hamming_39_32_enc.sv
+      - hw/ip/prim/rtl/prim_secded_inv_hamming_72_64_dec.sv
+      - hw/ip/prim/rtl/prim_secded_inv_hamming_72_64_enc.sv
+      - hw/ip/prim/rtl/prim_secded_inv_hamming_76_68_dec.sv
+      - hw/ip/prim/rtl/prim_secded_inv_hamming_76_68_enc.sv
+      - hw/ip/prim/rtl/prim_slicer.sv
+      - hw/ip/prim/rtl/prim_sparse_fsm_flop.sv
+      - hw/ip/prim/rtl/prim_sram_arbiter.sv
+      - hw/ip/prim/rtl/prim_subreg_pkg.sv
+      - hw/ip/prim/rtl/prim_subreg_arb.sv
+      - hw/ip/prim/rtl/prim_subreg_ext.sv
+      - hw/ip/prim/rtl/prim_subreg_shadow.sv
+      - hw/ip/prim/rtl/prim_subreg.sv
+      - hw/ip/prim/rtl/prim_subst_perm.sv
+      - hw/ip/prim/rtl/prim_sum_tree.sv
+      - hw/ip/prim/rtl/prim_sync_reqack_data.sv
+      - hw/ip/prim/rtl/prim_sync_reqack.sv
+      - hw/ip/prim/rtl/prim_sync_slow_fast.sv
+      - hw/ip/prim/rtl/prim_util_get_scramble_params.svh
+      - hw/ip/prim/rtl/prim_util_memload.svh
+      - hw/ip/prim/rtl/prim_util_pkg.sv
+      - hw/ip/prim/rtl/prim_xoshiro256pp.sv
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_reg_pkg.sv
+      
+      
+     # - hw/ip/prim/rtl/prim_count.sv 
+
+      #- hw/ip/prim/rtl/prim_clock_gating.sv
+      
+##### tlul
+
+      - hw/top_earlgrey/rtl/top_pkg.sv
+      - hw/ip/tlul/rtl/tlul_pkg.sv  
+      - hw/ip/tlul/rtl/tlul_cmd_intg_chk.sv
+      - hw/ip/tlul/rtl/tlul_data_integ_enc.sv
+      - hw/ip/tlul/rtl/tlul_rsp_intg_chk.sv
+      - hw/ip/tlul/rtl/tlul_cmd_intg_gen.sv
+      - hw/ip/tlul/rtl/tlul_rsp_intg_gen.sv
+      - hw/ip/tlul/rtl/tlul_data_integ_dec.sv
+      - hw/ip/tlul/rtl/tlul_adapter_host.sv
+      - hw/ip/tlul/rtl/tlul_adapter_reg.sv
+      - hw/ip/tlul/rtl/tlul_assert.sv
+      - hw/ip/tlul/rtl/tlul_assert_multiple.sv
+      - hw/ip/tlul/rtl/tlul_err.sv
+      - hw/ip/tlul/rtl/tlul_err_resp.sv
+      - hw/ip/tlul/rtl/tlul_lc_gate.sv
+      - hw/ip/tlul/rtl/tlul_sram_byte.sv
+      - hw/ip/tlul/rtl/sram2tlul.sv
+      - hw/ip/tlul/rtl/tlul_socket_1n.sv
+      - hw/ip/tlul/rtl/tlul_socket_m1.sv
+      - hw/ip/tlul/rtl/tlul_fifo_sync.sv
+      - hw/ip/tlul/rtl/tlul_fifo_async.sv
+      - hw/ip/tlul/rtl/tlul_adapter_sram.sv
+      
+###### prim_generic
+
+      - hw/top_earlgrey/rtl/top_pkg.sv
+      - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_reg_pkg.sv
+      - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_pkg.sv
+      - hw/ip/prim/rtl/prim_rom_pkg.sv
+      - hw/ip/prim_generic/rtl/prim_generic_and2.sv
+      - hw/ip/prim_generic/rtl/prim_generic_buf.sv
+      - hw/ip/prim_generic/rtl/prim_generic_clock_buf.sv
+      - hw/ip/prim_generic/rtl/prim_generic_clock_gating.sv
+      - hw/ip/prim_generic/rtl/prim_generic_clock_inv.sv
+      - hw/ip/prim_generic/rtl/prim_generic_clock_mux2.sv
+      - hw/ip/prim_generic/rtl/prim_generic_flash_bank.sv
+      - hw/ip/prim_generic/rtl/prim_generic_flash.sv
+      - hw/ip/prim_generic/rtl/prim_generic_flop_en.sv
+      - hw/ip/prim_generic/rtl/prim_generic_flop.sv
+      - hw/ip/prim_generic/rtl/prim_generic_otp.sv
+      - hw/ip/prim_generic/rtl/prim_generic_pad_attr.sv
+      - hw/ip/prim_generic/rtl/prim_generic_pad_wrapper.sv
+      - hw/ip/prim_generic/rtl/prim_generic_ram_1p.sv
+      - hw/ip/prim_generic/rtl/prim_generic_ram_2p.sv
+      - hw/ip/prim_generic/rtl/prim_generic_rom.sv
+      - hw/ip/prim_generic/rtl/prim_generic_usb_diff_rx.sv
+      - hw/ip/prim_generic/rtl/prim_generic_xnor2.sv
+      - hw/ip/prim_generic/rtl/prim_generic_xor2.sv
+      
+#### ibex core
+
+      - hw/vendor/lowrisc_ibex/rtl/ibex_pkg.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_register_file_ff.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_alu.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_compressed_decoder.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_controller.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_counter.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_csr.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_decoder.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_icache.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_fetch_fifo.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_load_store_unit.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_multdiv_fast.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_multdiv_slow.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_pmp.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_tracer_pkg.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_wb_stage.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_dummy_instr.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_lockstep.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_cs_registers.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_ex_block.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_id_stage.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_prefetch_buffer.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_if_stage.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_core.sv
+      - hw/vendor/lowrisc_ibex/rtl/ibex_top.sv
+
+      
+#### core wrapper
+
+      - hw/top_earlgrey/ip/pwrmgr/rtl/autogen/pwrmgr_reg_pkg.sv
+      - hw/top_earlgrey/ip/pwrmgr/rtl/autogen/pwrmgr_reg_top.sv
+      - hw/ip/pwrmgr/rtl/pwrmgr_pkg.sv
+      - hw/ip/rv_core_ibex/rtl/rv_core_ibex_pkg.sv
+      - hw/ip/rv_core_ibex/rtl/rv_core_ibex_reg_pkg.sv
+      - hw/ip/rv_core_ibex/rtl/rv_core_ibex_cfg_reg_top.sv
+      - target: rtl
+        files:
+          - hw/vendor/lowrisc_ibex/rtl/ibex_tracer.sv
+          - hw/vendor/lowrisc_ibex/rtl/ibex_top_tracing.sv
+      - hw/ip/rv_core_ibex/rtl/rv_core_addr_trans.sv
+#     - hw/ip/rv_core_ibex/rtl/rv_core_ibex_peri.sv  
+      - hw/ip/rv_core_ibex/rtl/rv_core_ibex.sv
+
+##### rv_dm
+
+      - hw/ip/rv_dm/rtl/jtag_pkg.sv
+      - hw/ip/rv_dm/rtl/rv_dm_reg_pkg.sv
+      - hw/ip/rv_dm/rtl/rv_dm_regs_reg_top.sv
+      - hw/ip/rv_dm/rtl/rv_dm_mem_reg_top.sv
+      - hw/ip/rv_dm/rtl/rv_dm.sv
+
+##### kmac
+
+      - hw/ip/kmac/rtl/sha3_pkg.sv
+      - hw/ip/kmac/rtl/kmac_reg_pkg.sv
+      - hw/ip/kmac/rtl/kmac_pkg.sv
+      - hw/ip/keymgr/rtl/keymgr_reg_pkg.sv
+      - hw/ip/keymgr/rtl/keymgr_pkg.sv
+      - hw/ip/kmac/rtl/keccak_2share.sv
+      - hw/ip/kmac/rtl/keccak_round.sv
+      - hw/ip/kmac/rtl/kmac.sv
+      - hw/ip/kmac/rtl/kmac_app.sv
+      - hw/ip/kmac/rtl/kmac_core.sv
+      - hw/ip/kmac/rtl/kmac_entropy.sv
+      - hw/ip/kmac/rtl/kmac_errchk.sv
+      - hw/ip/kmac/rtl/kmac_msgfifo.sv
+      - hw/ip/kmac/rtl/kmac_reg_top.sv
+      - hw/ip/kmac/rtl/kmac_staterd.sv
+      - hw/ip/kmac/rtl/sha3.sv
+      - hw/ip/kmac/rtl/sha3pad.sv
+      
+##### rom_ctrl
+
+      - hw/ip/rom_ctrl/rtl/rom_ctrl_pkg.sv
+      - hw/ip/rom_ctrl/rtl/rom_ctrl_reg_pkg.sv     
+      - hw/ip/rom_ctrl/rtl/rom_ctrl_compare.sv
+      - hw/ip/rom_ctrl/rtl/rom_ctrl_counter.sv
+      - hw/ip/rom_ctrl/rtl/rom_ctrl_mux.sv
+      - hw/ip/rom_ctrl/rtl/rom_ctrl_regs_reg_top.sv
+      - hw/ip/rom_ctrl/rtl/rom_ctrl_rom_reg_top.sv
+      - hw/ip/rom_ctrl/rtl/rom_ctrl_fsm.sv
+      - hw/ip/rom_ctrl/rtl/rom_ctrl_scrambled_rom.sv
+      - hw/ip/rom_ctrl/rtl/rom_ctrl.sv
+
+##### rv_plic
+        
+      - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_reg_pkg.sv
+      - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_reg_top.sv
+      - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_gateway.sv
+      - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic_target.sv
+      - hw/top_earlgrey/ip_autogen/rv_plic/rtl/rv_plic.sv
+
+
+##### alert_handler
+     
+      - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_handler_reg_top.sv
+      - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_pkg.sv
+      - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_handler_lpg_ctrl.sv
+      - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_handler_accu.sv
+      - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_handler_class.sv
+      - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_handler_esc_timer.sv
+      - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_handler_ping_timer.sv
+      - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_handler_reg_wrap.sv
+      - hw/top_earlgrey/ip_autogen/alert_handler/rtl/alert_handler.sv
+
+##### pwrmgr
+
+      - hw/ip/pwrmgr/rtl/pwrmgr_cdc.sv
+      - hw/ip/pwrmgr/rtl/pwrmgr_cdc_pulse.sv
+      - hw/ip/pwrmgr/rtl/pwrmgr_fsm.sv
+      - hw/ip/pwrmgr/rtl/pwrmgr_slow_fsm.sv
+      - hw/ip/pwrmgr/rtl/pwrmgr_wake_info.sv
+      - hw/ip/pwrmgr/rtl/pwrmgr.sv
+  
+##### keymgr
+
+      - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_reg_pkg.sv
+      - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_pkg.sv
+      - hw/ip/keymgr/rtl/keymgr_reg_top.sv
+      #- hw/ip/keymgr/rtl/keymgr_cnt.sv
+      - hw/ip/keymgr/rtl/keymgr_cfg_en.sv
+      - hw/ip/keymgr/rtl/keymgr_ctrl.sv
+      - hw/ip/keymgr/rtl/keymgr_op_state_ctrl.sv
+      - hw/ip/keymgr/rtl/keymgr_data_en_state.sv
+      - hw/ip/keymgr/rtl/keymgr_err.sv
+      - hw/ip/keymgr/rtl/keymgr_input_checks.sv
+      - hw/ip/keymgr/rtl/keymgr_kmac_if.sv
+      - hw/ip/keymgr/rtl/keymgr_reseed_ctrl.sv
+      - hw/ip/keymgr/rtl/keymgr_sideload_key.sv
+      - hw/ip/keymgr/rtl/keymgr_sideload_key_ctrl.sv
+      - hw/ip/keymgr/rtl/keymgr.sv
+      
+##### vendor otp
+      
+      #- vendor/eFuse/FB_22FDX_128X32.v
+      #- vendor/eFuse/otp_ctrl_driver.sv
+      #- vendor/eFuse/otp_ctrl_wrapper.sv
+      #- vendor/eFuse/otp_ctrl_wrapper_tb.sv
+     
+
+##### otp_ctrl
+
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_part_pkg.sv.tpl
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_part_pkg.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_prim_reg_top.sv
+      - hw/ip/prim_generic/rtl/prim_generic_otp.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_core_reg_top.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_dai.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_ecc_reg.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_kdi.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_lci.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_lfsr_timer.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_part_buf.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_part_unbuf.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl_scrmbl.sv
+      - hw/ip/otp_ctrl/rtl/otp_ctrl.sv
+
+##### hmac
+
+      - hw/ip/hmac/rtl/hmac_reg_pkg.sv
+      - hw/ip/hmac/rtl/hmac_pkg.sv
+      - hw/ip/hmac/rtl/hmac.sv
+      - hw/ip/hmac/rtl/hmac_core.sv
+      - hw/ip/hmac/rtl/hmac_reg_top.sv
+      - hw/ip/hmac/rtl/sha2.sv
+      - hw/ip/hmac/rtl/sha2_pad.sv
+
+##### lc_ctrl
+
+      - hw/ip/prim_generic/rtl/prim_generic_clock_inv.sv
+      - hw/ip/prim_generic/rtl/prim_generic_clock_mux2.sv
+      
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_reg_top.sv
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_fsm.sv
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_kmac_if.sv
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_signal_decode.sv
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_state_decode.sv
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_state_pkg.sv
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_state_pkg.sv.tpl
+      - hw/ip/lc_ctrl/rtl/lc_ctrl_state_transition.sv
+      - hw/ip/lc_ctrl/rtl/lc_ctrl.sv
+
+##### sram_ctrl
+
+      - hw/ip/sram_ctrl/rtl/sram_ctrl_reg_pkg.sv
+      - hw/ip/sram_ctrl/rtl/sram_ctrl_pkg.sv
+      - hw/ip/sram_ctrl/rtl/sram_ctrl_regs_reg_top.sv
+      - hw/ip/sram_ctrl/rtl/sram_ctrl.sv
+
+#### flash_ctrl
+
+      - hw/ip/flash_ctrl/rtl/flash_phy_pkg.sv
+      - hw/ip/flash_ctrl/rtl/flash_ctrl_arb.sv
+      - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_core_reg_top.sv
+      - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_region_cfg.sv
+      - hw/ip/prim_generic/rtl/prim_generic_flash_bank.sv
+      - hw/ip/flash_ctrl/rtl/flash_ctrl_erase.sv
+      - hw/ip/flash_ctrl/rtl/flash_ctrl_info_cfg.sv
+      - hw/ip/flash_ctrl/rtl/flash_ctrl_lcmgr.sv
+      - hw/ip/flash_ctrl/rtl/flash_phy_rd_buf_dep.sv
+      - hw/ip/flash_ctrl/rtl/flash_ctrl_prog.sv
+      - hw/ip/flash_ctrl/rtl/flash_ctrl_rd.sv
+#      - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_mem_reg_top.sv
+      - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_prim_reg_top.sv
+      - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl_reg_pkg.sv
+      - hw/ip/flash_ctrl/rtl/flash_mp.sv
+      - hw/ip/flash_ctrl/rtl/flash_mp_data_region_sel.sv
+      - hw/ip/flash_ctrl/rtl/flash_phy_rd_buffers.sv
+      - hw/ip/flash_ctrl/rtl/flash_phy_core.sv
+      - hw/ip/flash_ctrl/rtl/flash_phy_erase.sv
+      - hw/ip/flash_ctrl/rtl/flash_phy_prog.sv
+      - hw/ip/flash_ctrl/rtl/flash_phy_scramble.sv
+      - hw/ip/prim_generic/rtl/prim_generic_flash_bank.sv
+      - hw/ip/flash_ctrl/rtl/flash_phy_rd.sv
+      - hw/ip/prim_generic/rtl/prim_generic_flash.sv
+      - hw/ip/flash_ctrl/rtl/flash_phy.sv
+      - hw/top_earlgrey/ip/flash_ctrl/rtl/autogen/flash_ctrl.sv
+
+
+###### uart
+#
+#      - hw/ip/uart/rtl/uart_reg_pkg.sv
+#      - hw/ip/uart/rtl/uart_reg_top.sv
+#      - hw/ip/uart/rtl/uart_core.sv
+#      - hw/ip/uart/rtl/uart_rx.sv
+#      - hw/ip/uart/rtl/uart_tx.sv
+#      - hw/ip/uart/rtl/uart.sv
+#
+
+##### pattgen
+
+      - hw/ip/pattgen/rtl/pattgen_ctrl_pkg.sv
+      - hw/ip/pattgen/rtl/pattgen_reg_pkg.sv
+      - hw/ip/pattgen/rtl/pattgen_reg_top.sv
+      - hw/ip/pattgen/rtl/pattgen_chan.sv
+      - hw/ip/pattgen/rtl/pattgen_core.sv
+      - hw/ip/pattgen/rtl/pattgen.sv
+       
+##### clkmgr
+
+      - hw/top_earlgrey/ip/clkmgr/rtl/autogen/clkmgr_reg_pkg.sv
+      - hw/top_earlgrey/ip/clkmgr/rtl/autogen/clkmgr_pkg.sv
+      - hw/top_earlgrey/ip/clkmgr/rtl/autogen/clkmgr_reg_top.sv
+      - hw/ip/clkmgr/rtl/clkmgr_clk_status.sv
+      - hw/ip/clkmgr/rtl/clkmgr_root_ctrl.sv
+      - hw/ip/clkmgr/rtl/clkmgr_meas_chk.sv
+      - hw/ip/clkmgr/rtl/clkmgr_trans.sv
+      - hw/ip/clkmgr/rtl/clkmgr_byp.sv
+      - hw/top_earlgrey/ip/clkmgr/rtl/autogen/clkmgr.sv
+
+##### sysrst_ctrl
+
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl_pkg.sv
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl_reg_pkg.sv
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl_reg_top.sv
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl_detect.vs
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl_autoblock.sv
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl_detect.sv
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl_combo.sv
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl_ulp.sv
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl_comboact.sv
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl_keyintr.sv
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl_pin.sv
+      - hw/ip/sysrst_ctrl/rtl/sysrst_ctrl.sv
+
+##### rstmgr
+
+      - hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr_reg_pkg.sv
+      - hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr_pkg.sv
+      - hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr_reg_top.sv
+      - hw/ip/rstmgr/rtl/rstmgr_crash_info.sv
+      - hw/ip/rstmgr/rtl/rstmgr_cnsty_chk.sv
+      - hw/ip/rstmgr/rtl/rstmgr_leaf_rst.sv
+      - hw/ip/rstmgr/rtl/rstmgr_ctrl.sv
+      - hw/ip/rstmgr/rtl/rstmgr_por.sv
+      - hw/top_earlgrey/ip/rstmgr/rtl/autogen/rstmgr.sv
+
+##### aes
+
+      - hw/ip/aes/rtl/aes_reg_pkg.sv
+      - hw/ip/aes/rtl/aes_pkg.sv
+      - hw/ip/aes/rtl/aes_sbox_canright_pkg.sv
+      - hw/ip/aes/rtl/aes_reg_status.sv
+      - hw/ip/aes/rtl/aes_reg_top.sv
+      - hw/ip/aes/rtl/aes_cipher_control.sv
+      - hw/ip/aes/rtl/aes_cipher_core.sv
+      - hw/ip/aes/rtl/aes_control.sv
+      - hw/ip/aes/rtl/aes_ctr.sv
+      - hw/ip/aes/rtl/aes_ctrl_reg_shadowed.sv
+      - hw/ip/aes/rtl/aes_key_expand.sv
+      - hw/ip/aes/rtl/aes_mix_columns.sv
+      - hw/ip/aes/rtl/aes_mix_single_column.sv
+      - hw/ip/aes/rtl/aes_ctr_fsm.sv
+      - hw/ip/aes/rtl/aes_cipher_control_fsm.sv
+      - hw/ip/aes/rtl/aes_control_fsm.sv
+      - hw/ip/aes/rtl/aes_ctr_fsm_p.sv
+      - hw/ip/aes/rtl/aes_cipher_control_fsm_p.sv
+      - hw/ip/aes/rtl/aes_control_fsm_p.sv
+      - hw/ip/aes/rtl/aes_ctr_fsm_n.sv
+      - hw/ip/aes/rtl/aes_cipher_control_fsm_n.sv
+      - hw/ip/aes/rtl/aes_control_fsm_n.sv
+      - hw/ip/aes/rtl/aes_prng_clearing.sv
+      - hw/ip/aes/rtl/aes_prng_masking.sv
+      - hw/ip/aes/rtl/aes_sbox.sv
+      - hw/ip/aes/rtl/aes_sbox_canright.sv
+      - hw/ip/aes/rtl/aes_sbox_canright_masked.sv
+      - hw/ip/aes/rtl/aes_sbox_canright_masked_noreuse.sv
+      - hw/ip/aes/rtl/aes_sbox_dom.sv
+      - hw/ip/aes/rtl/aes_sbox_lut.sv
+      - hw/ip/aes/rtl/aes_sel_buf_chk.sv
+      - hw/ip/aes/rtl/aes_shift_rows.sv
+      - hw/ip/aes/rtl/aes_sub_bytes.sv
+      - hw/ip/aes/rtl/aes_core.sv
+      - hw/ip/aes/rtl/aes.sv
+      
+##### csrng
+
+      - hw/ip/csrng/rtl/csrng_reg_pkg.sv
+      - hw/ip/csrng/rtl/csrng_pkg.sv
+      - hw/ip/csrng/rtl/csrng_reg_top.sv
+      - hw/ip/csrng/rtl/csrng_block_encrypt.sv
+      - hw/ip/csrng/rtl/csrng_cmd_stage.sv
+      - hw/ip/csrng/rtl/csrng_ctr_drbg_cmd.sv
+      - hw/ip/csrng/rtl/csrng_ctr_drbg_gen.sv
+      - hw/ip/csrng/rtl/csrng_ctr_drbg_upd.sv
+      - hw/ip/csrng/rtl/csrng_main_sm.sv
+      - hw/ip/csrng/rtl/csrng_state_db.sv
+      - hw/ip/csrng/rtl/csrng_core.sv
+      - hw/ip/csrng/rtl/csrng.sv
+
+##### edn
+
+      - hw/ip/edn/rtl/edn_reg_pkg.sv
+      - hw/ip/edn/rtl/edn_reg_top.sv
+      - hw/ip/edn/rtl/edn_ack_sm.sv
+      - hw/ip/edn/rtl/edn_core.sv
+      - hw/ip/edn/rtl/edn_field_en.sv
+      - hw/ip/edn/rtl/edn_main_sm.sv
+      - hw/ip/edn/rtl/edn.sv
+
+##### otbn
+
+      - hw/ip/otbn/rtl/otbn_pkg.sv
+      - hw/ip/otbn/rtl/otbn_reg_pkg.sv
+      - hw/ip/otbn/rtl/otbn_reg_top.sv
+      - hw/ip/otbn/rtl/otbn_alu_base.sv
+      - hw/ip/otbn/rtl/otbn_alu_bignum.sv
+      - hw/ip/otbn/rtl/otbn_controller.sv
+      - hw/ip/otbn/rtl/otbn_decoder.sv
+      - hw/ip/otbn/rtl/otbn_instruction_fetch.sv
+      - hw/ip/otbn/rtl/otbn_loop_controller.sv
+      - hw/ip/otbn/rtl/otbn_predecode.sv
+      - hw/ip/otbn/rtl/otbn_lsu.sv
+      - hw/ip/otbn/rtl/otbn_mac_bignum.sv
+      - hw/ip/otbn/rtl/otbn_rf_base.sv
+      - hw/ip/otbn/rtl/otbn_rf_base_ff.sv
+      - hw/ip/otbn/rtl/otbn_rf_base_fpga.sv
+      - hw/ip/otbn/rtl/otbn_rf_bignum.sv
+      - hw/ip/otbn/rtl/otbn_rf_bignum_ff.sv
+      - hw/ip/otbn/rtl/otbn_rf_bignum_fpga.sv
+      - hw/ip/otbn/rtl/otbn_rnd.sv
+      - hw/ip/otbn/rtl/otbn_scramble_ctrl.sv
+      - hw/ip/otbn/rtl/otbn_stack.sv
+      - hw/ip/otbn/rtl/otbn_start_stop_control.sv
+      - hw/ip/otbn/rtl/otbn_core.sv
+      - hw/ip/otbn/rtl/otbn.sv
+
+##### entropy_src
+
+      - hw/ip/entropy_src/rtl/entropy_src_reg_pkg.sv
+      - hw/ip/entropy_src/rtl/entropy_src_ack_sm_pkg.sv
+      - hw/ip/entropy_src/rtl/entropy_src_main_sm_pkg.sv
+      - hw/ip/entropy_src/rtl/entropy_src_reg_top.sv
+      - hw/ip/entropy_src/rtl/entropy_src_ack_sm.sv
+      - hw/ip/entropy_src/rtl/entropy_src_adaptp_ht.sv
+      - hw/ip/entropy_src/rtl/entropy_src_enable_delay.sv
+      - hw/ip/entropy_src/rtl/entropy_src_bucket_ht.sv
+      - hw/ip/entropy_src/rtl/entropy_src_cntr_reg.sv
+      - hw/ip/entropy_src/rtl/entropy_src_core.sv
+      - hw/ip/entropy_src/rtl/entropy_src_main_sm.sv
+      - hw/ip/entropy_src/rtl/entropy_src_markov_ht.sv
+      - hw/ip/entropy_src/rtl/entropy_src_repcnt_ht.sv
+      - hw/ip/entropy_src/rtl/entropy_src_repcnts_ht.sv
+      - hw/ip/entropy_src/rtl/entropy_src_watermark_reg.sv
+      - hw/ip/entropy_src/rtl/entropy_src.sv
+
+##### gpio
+
+      - hw/ip/gpio/rtl/gpio_reg_pkg.sv
+      - hw/ip/gpio/rtl/gpio_reg_top.sv
+      - hw/ip/gpio/rtl/gpio.sv
+
+###### spi_device
+#
+      - hw/ip/spi_device/rtl/spi_device_reg_pkg.sv
+      - hw/ip/spi_device/rtl/spi_device_pkg.sv
+      - hw/ip/spi_device/rtl/spi_device_reg_top.sv
+      - hw/ip/spi_device/rtl/spi_cmdparse.sv
+      - hw/ip/spi_device/rtl/spi_fwm_rxf_ctrl.sv
+      - hw/ip/spi_device/rtl/spi_fwm_txf_ctrl.sv
+      - hw/ip/spi_device/rtl/spi_fwmode.sv
+      - hw/ip/spi_device/rtl/spi_p2s.sv
+      - hw/ip/spi_device/rtl/spi_passthrough.sv
+      - hw/ip/spi_device/rtl/spi_readcmd.sv
+      - hw/ip/spi_device/rtl/spi_s2p.sv
+      - hw/ip/spi_device/rtl/spid_fifo2sram_adapter.sv
+      - hw/ip/spi_device/rtl/spid_jedec.sv
+      - hw/ip/spi_device/rtl/spid_readbuffer.sv
+      - hw/ip/spi_device/rtl/spid_readsram.sv
+      - hw/ip/spi_device/rtl/spid_status.sv
+      - hw/ip/spi_device/rtl/spi_tpm.sv
+      - hw/ip/spi_device/rtl/spid_addr_4b.sv
+      - hw/ip/spi_device/rtl/spid_upload.sv
+      - hw/ip/spi_device/rtl/spi_device.sv
+#
+###### spi_host
+#
+      - hw/ip/spi_host/rtl/spi_host_reg_pkg.sv
+      - hw/ip/spi_host/rtl/spi_host_reg_top.sv
+      - hw/ip/spi_host/rtl/spi_host_cmd_pkg.sv
+      - hw/ip/spi_host/rtl/spi_host_byte_merge.sv
+      - hw/ip/spi_host/rtl/spi_host_byte_select.sv
+      - hw/ip/spi_host/rtl/spi_host_command_queue.sv
+      - hw/ip/spi_host/rtl/spi_host_data_fifos.sv
+      - hw/ip/spi_host/rtl/spi_host_fsm.sv
+      - hw/ip/spi_host/rtl/spi_host_shift_register.sv
+      - hw/ip/spi_host/rtl/spi_host_window.sv
+      - hw/ip/spi_host/rtl/spi_host_core.sv
+      - hw/ip/spi_host/rtl/spi_host.sv
+#
+##### aon_timer
+
+      - hw/ip/aon_timer/rtl/aon_timer_reg_pkg.sv  
+      - hw/ip/aon_timer/rtl/aon_timer_reg_top.sv
+      - hw/ip/aon_timer/rtl/aon_timer_core.sv
+      - hw/ip/aon_timer/rtl/aon_timer.sv
+
+##### rv_timer
+
+      - hw/ip/rv_timer/rtl/rv_timer_reg_pkg.sv
+      - hw/ip/rv_timer/rtl/rv_timer_reg_top.sv
+      - hw/ip/rv_timer/rtl/timer_core.sv
+      - hw/ip/rv_timer/rtl/rv_timer.sv
+
+##### pinmux
+
+      - hw/ip/usbdev/rtl/usbdev_pkg.sv    
+      - hw/ip/usbdev/rtl/usbdev_aon_wake.sv
+      - hw/top_earlgrey/ip/pinmux/rtl/autogen/pinmux_reg_pkg.sv
+      - hw/top_earlgrey/ip/pinmux/rtl/autogen/pinmux_reg_top.sv
+      - hw/ip/pinmux/rtl/pinmux_pkg.sv
+      - hw/ip/pinmux/rtl/pinmux_jtag_breakout.sv 
+      - hw/ip/pinmux/rtl/pinmux_jtag_buf.sv
+      - hw/ip/pinmux/rtl/pinmux_strap_sampling.sv
+      - hw/ip/pinmux/rtl/pinmux_wkup.sv
+      - hw/ip/pinmux/rtl/pinmux.sv
+
+##### tlul crossbar
+     
+      #- hw/top_titangrey/crossbar/xbar_main/rtl/autogen/tl_main_pkg.sv
+      #- hw/top_titangrey/crossbar/xbar_main/rtl/autogen/xbar_main.sv
+      #- hw/top_titangrey/crossbar/xbar_peri/rtl/autogen/tl_peri_pkg.sv
+      #- hw/top_titangrey/crossbar/xbar_peri/rtl/autogen/xbar_peri.sv
+
+#      - hw/top_earlgrey/ip/xbar_main/rtl/autogen/tl_main_pkg.sv
+#      - hw/top_earlgrey/ip/xbar_main/rtl/autogen/xbar_main.sv      
+
+
+      - hw/top_earlgrey/ip/crossbar/xbar_peri/rtl/autogen/tl_peri_pkg.sv
+      - hw/top_earlgrey/ip/crossbar/xbar_peri/rtl/autogen/xbar_peri.sv
+      - hw/top_earlgrey/ip/crossbar/xbar_main/rtl/autogen/tl_main_pkg.sv
+      - hw/top_earlgrey/ip/crossbar/xbar_main/rtl/autogen/xbar_main.sv
+ #      - hw/top_earlgrey/ip/xbar_peri/rtl/autogen/tl_peri_pkg.sv
+ #      - hw/top_earlgrey/ip/xbar_peri/rtl/autogen/xbar_peri.sv
+ #
+
+##### tlul2axi
+
+      - hw/ip/tlul2axi/rtl/tlul2axi_pkg.sv
+      - hw/ip/tlul2axi/rtl/tlul2axi.sv
+      - hw/ip/tlul2axi/test/axi_assign.svh
+      - hw/ip/tlul2axi/test/axi_typedef.svh
+      - hw/ip/tlul2axi/test/tlul_intf.sv
+      - hw/ip/tlul2axi/test/tlul_assign.svh
+      - hw/ip/tlul2axi/test/tlul_functions.sv
+      - hw/ip/tlul2axi/test/tlul2axi_testbench.sv
+      
+##### axi_mbox
+
+     # - hw/ip/axi_scmi_mailbox/rtl/scmi_reg_pkg.sv
+     # - hw/ip/axi_scmi_mailbox/rtl/scmi_reg_top.sv
+     # - hw/ip/axi_scmi_mailbox/rtl/axi_scmi_mailbox.sv
+     # - hw/ip/axi_scmi_mailbox/tb/mbox_tb.sv
+
+##### pwm
+
+      - hw/ip/pwm/rtl/pwm_reg_pkg.sv
+      - hw/ip/pwm/rtl/pwm_reg_top.sv
+      - hw/ip/pwm/rtl/pwm_chan.sv
+      - hw/ip/pwm/rtl/pwm_core.sv
+      - hw/ip/pwm/rtl/pwm.sv
+
+##### top module
+
+      - hw/top_earlgrey/rtl/autogen/top_earlgrey_pkg.sv
+      - hw/top_earlgrey/rtl/autogen/top_earlgrey_rnd_cnst_pkg.sv    
+      - hw/top_earlgrey/rtl/jtag_id_pkg.sv
+      - hw/tb/top_earlgrey.sv
+      #- hw/top_earlgrey/rtl/autogen/top_earlgrey.sv
+      #- hw/tb/opentitan_synth_wrap.sv
+
+##### testbench
+
+      #- hw/top_titangrey/tb/adapter_testbench.sv
+      - hw/tb/jtag_intf.sv
+      - hw/vendor/pulp_riscv_dbg/tb/jtag_dmi/jtag_test.sv #- hw/tb/jtag_test.sv      #
+      - hw/tb/testbench.sv
+          

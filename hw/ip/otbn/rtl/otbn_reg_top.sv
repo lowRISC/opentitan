@@ -254,9 +254,9 @@ module otbn_reg_top (
 
   // Register instances
   // R[intr_state]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state (
     .clk_i   (clk_i),
@@ -281,9 +281,9 @@ module otbn_reg_top (
 
 
   // R[intr_enable]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable (
     .clk_i   (clk_i),
@@ -311,7 +311,7 @@ module otbn_reg_top (
   logic intr_test_qe;
   logic [0:0] intr_test_flds_we;
   assign intr_test_qe = &intr_test_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_intr_test (
     .re     (1'b0),
@@ -332,7 +332,7 @@ module otbn_reg_top (
   logic [1:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
   //   F[fatal]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal (
     .re     (1'b0),
@@ -348,7 +348,7 @@ module otbn_reg_top (
   assign reg2hw.alert_test.fatal.qe = alert_test_qe;
 
   //   F[recov]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov (
     .re     (1'b0),
@@ -368,7 +368,7 @@ module otbn_reg_top (
   logic cmd_qe;
   logic [0:0] cmd_flds_we;
   assign cmd_qe = &cmd_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (8)
   ) u_cmd (
     .re     (1'b0),
@@ -388,7 +388,7 @@ module otbn_reg_top (
   logic ctrl_qe;
   logic [0:0] ctrl_flds_we;
   assign ctrl_qe = &ctrl_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_ctrl (
     .re     (ctrl_re),
@@ -405,9 +405,9 @@ module otbn_reg_top (
 
 
   // R[status]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (8'h4)
   ) u_status (
     .clk_i   (clk_i),
@@ -436,7 +436,7 @@ module otbn_reg_top (
   logic [15:0] err_bits_flds_we;
   assign err_bits_qe = &err_bits_flds_we;
   //   F[bad_data_addr]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_bad_data_addr (
     .re     (err_bits_re),
@@ -452,7 +452,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.bad_data_addr.qe = err_bits_qe;
 
   //   F[bad_insn_addr]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_bad_insn_addr (
     .re     (err_bits_re),
@@ -468,7 +468,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.bad_insn_addr.qe = err_bits_qe;
 
   //   F[call_stack]: 2:2
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_call_stack (
     .re     (err_bits_re),
@@ -484,7 +484,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.call_stack.qe = err_bits_qe;
 
   //   F[illegal_insn]: 3:3
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_illegal_insn (
     .re     (err_bits_re),
@@ -500,7 +500,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.illegal_insn.qe = err_bits_qe;
 
   //   F[loop]: 4:4
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_loop (
     .re     (err_bits_re),
@@ -516,7 +516,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.loop.qe = err_bits_qe;
 
   //   F[key_invalid]: 5:5
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_key_invalid (
     .re     (err_bits_re),
@@ -532,7 +532,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.key_invalid.qe = err_bits_qe;
 
   //   F[rnd_rep_chk_fail]: 6:6
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_rnd_rep_chk_fail (
     .re     (err_bits_re),
@@ -548,7 +548,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.rnd_rep_chk_fail.qe = err_bits_qe;
 
   //   F[rnd_fips_chk_fail]: 7:7
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_rnd_fips_chk_fail (
     .re     (err_bits_re),
@@ -564,7 +564,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.rnd_fips_chk_fail.qe = err_bits_qe;
 
   //   F[imem_intg_violation]: 16:16
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_imem_intg_violation (
     .re     (err_bits_re),
@@ -580,7 +580,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.imem_intg_violation.qe = err_bits_qe;
 
   //   F[dmem_intg_violation]: 17:17
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_dmem_intg_violation (
     .re     (err_bits_re),
@@ -596,7 +596,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.dmem_intg_violation.qe = err_bits_qe;
 
   //   F[reg_intg_violation]: 18:18
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_reg_intg_violation (
     .re     (err_bits_re),
@@ -612,7 +612,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.reg_intg_violation.qe = err_bits_qe;
 
   //   F[bus_intg_violation]: 19:19
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_bus_intg_violation (
     .re     (err_bits_re),
@@ -628,7 +628,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.bus_intg_violation.qe = err_bits_qe;
 
   //   F[bad_internal_state]: 20:20
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_bad_internal_state (
     .re     (err_bits_re),
@@ -644,7 +644,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.bad_internal_state.qe = err_bits_qe;
 
   //   F[illegal_bus_access]: 21:21
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_illegal_bus_access (
     .re     (err_bits_re),
@@ -660,7 +660,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.illegal_bus_access.qe = err_bits_qe;
 
   //   F[lifecycle_escalation]: 22:22
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_lifecycle_escalation (
     .re     (err_bits_re),
@@ -676,7 +676,7 @@ module otbn_reg_top (
   assign reg2hw.err_bits.lifecycle_escalation.qe = err_bits_qe;
 
   //   F[fatal_software]: 23:23
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_err_bits_fatal_software (
     .re     (err_bits_re),
@@ -694,9 +694,9 @@ module otbn_reg_top (
 
   // R[fatal_alert_cause]: V(False)
   //   F[imem_intg_violation]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_imem_intg_violation (
     .clk_i   (clk_i),
@@ -720,9 +720,9 @@ module otbn_reg_top (
   );
 
   //   F[dmem_intg_violation]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_dmem_intg_violation (
     .clk_i   (clk_i),
@@ -746,9 +746,9 @@ module otbn_reg_top (
   );
 
   //   F[reg_intg_violation]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_reg_intg_violation (
     .clk_i   (clk_i),
@@ -772,9 +772,9 @@ module otbn_reg_top (
   );
 
   //   F[bus_intg_violation]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_bus_intg_violation (
     .clk_i   (clk_i),
@@ -798,9 +798,9 @@ module otbn_reg_top (
   );
 
   //   F[bad_internal_state]: 4:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_bad_internal_state (
     .clk_i   (clk_i),
@@ -824,9 +824,9 @@ module otbn_reg_top (
   );
 
   //   F[illegal_bus_access]: 5:5
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_illegal_bus_access (
     .clk_i   (clk_i),
@@ -850,9 +850,9 @@ module otbn_reg_top (
   );
 
   //   F[lifecycle_escalation]: 6:6
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_lifecycle_escalation (
     .clk_i   (clk_i),
@@ -876,9 +876,9 @@ module otbn_reg_top (
   );
 
   //   F[fatal_software]: 7:7
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_fatal_alert_cause_fatal_software (
     .clk_i   (clk_i),
@@ -906,7 +906,7 @@ module otbn_reg_top (
   logic insn_cnt_qe;
   logic [0:0] insn_cnt_flds_we;
   assign insn_cnt_qe = &insn_cnt_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_insn_cnt (
     .re     (insn_cnt_re),
@@ -926,7 +926,7 @@ module otbn_reg_top (
   logic load_checksum_qe;
   logic [0:0] load_checksum_flds_we;
   assign load_checksum_qe = &load_checksum_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_load_checksum (
     .re     (load_checksum_re),

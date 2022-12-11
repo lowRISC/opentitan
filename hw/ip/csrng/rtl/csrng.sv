@@ -6,6 +6,8 @@
 
 `include "prim_assert.sv"
 
+
+`include "prim_flop_macros.sv"
 module csrng
  import csrng_pkg::*;
  import csrng_reg_pkg::*;

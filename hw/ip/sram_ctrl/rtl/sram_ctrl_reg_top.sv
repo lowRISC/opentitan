@@ -138,7 +138,7 @@ module sram_ctrl_reg_top (
   // R[alert_test]: V(True)
 
   //   F[fatal_intg_error]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal_intg_error (
     .re     (1'b0),
@@ -153,7 +153,7 @@ module sram_ctrl_reg_top (
 
 
   //   F[fatal_parity_error]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal_parity_error (
     .re     (1'b0),
@@ -170,7 +170,7 @@ module sram_ctrl_reg_top (
   // R[status]: V(True)
 
   //   F[error]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_status_error (
     .re     (status_re),
@@ -185,7 +185,7 @@ module sram_ctrl_reg_top (
 
 
   //   F[escalated]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_status_escalated (
     .re     (status_re),
@@ -200,7 +200,7 @@ module sram_ctrl_reg_top (
 
 
   //   F[scr_key_valid]: 2:2
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_status_scr_key_valid (
     .re     (status_re),
@@ -215,7 +215,7 @@ module sram_ctrl_reg_top (
 
 
   //   F[scr_key_seed_valid]: 3:3
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_status_scr_key_seed_valid (
     .re     (status_re),
@@ -231,9 +231,9 @@ module sram_ctrl_reg_top (
 
   // R[exec_regwen]: V(False)
 
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_exec_regwen (
     .clk_i   (clk_i),
@@ -258,9 +258,9 @@ module sram_ctrl_reg_top (
 
   // R[exec]: V(False)
 
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (3),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (3'h0)
   ) u_exec (
     .clk_i   (clk_i),
@@ -285,9 +285,9 @@ module sram_ctrl_reg_top (
 
   // R[ctrl_regwen]: V(False)
 
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_ctrl_regwen (
     .clk_i   (clk_i),
@@ -313,7 +313,7 @@ module sram_ctrl_reg_top (
   // R[ctrl]: V(True)
 
   //   F[renew_scr_key]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_ctrl_renew_scr_key (
     .re     (ctrl_re),
@@ -328,7 +328,7 @@ module sram_ctrl_reg_top (
 
 
   //   F[init]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_ctrl_init (
     .re     (ctrl_re),
@@ -344,9 +344,9 @@ module sram_ctrl_reg_top (
 
   // R[error_address]: V(False)
 
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (32'h0)
   ) u_error_address (
     .clk_i   (clk_i),

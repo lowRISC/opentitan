@@ -8,6 +8,10 @@
 //    end points.
 //
 
+`include "prim_assert.sv"
+
+`include "prim_flop_macros.sv"
+
 module edn_core import edn_pkg::*;
 #(
   parameter int NumEndPoints = 4

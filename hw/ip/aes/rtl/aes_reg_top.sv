@@ -241,7 +241,7 @@ module aes_reg_top (
   logic [1:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
   //   F[recov_ctrl_update_err]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_recov_ctrl_update_err (
     .re     (1'b0),
@@ -257,7 +257,7 @@ module aes_reg_top (
   assign reg2hw.alert_test.recov_ctrl_update_err.qe = alert_test_qe;
 
   //   F[fatal_fault]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test_fatal_fault (
     .re     (1'b0),
@@ -278,7 +278,7 @@ module aes_reg_top (
   logic key_share0_0_qe;
   logic [0:0] key_share0_0_flds_we;
   assign key_share0_0_qe = &key_share0_0_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share0_0 (
     .re     (1'b0),
@@ -299,7 +299,7 @@ module aes_reg_top (
   logic key_share0_1_qe;
   logic [0:0] key_share0_1_flds_we;
   assign key_share0_1_qe = &key_share0_1_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share0_1 (
     .re     (1'b0),
@@ -320,7 +320,7 @@ module aes_reg_top (
   logic key_share0_2_qe;
   logic [0:0] key_share0_2_flds_we;
   assign key_share0_2_qe = &key_share0_2_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share0_2 (
     .re     (1'b0),
@@ -341,7 +341,7 @@ module aes_reg_top (
   logic key_share0_3_qe;
   logic [0:0] key_share0_3_flds_we;
   assign key_share0_3_qe = &key_share0_3_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share0_3 (
     .re     (1'b0),
@@ -362,7 +362,7 @@ module aes_reg_top (
   logic key_share0_4_qe;
   logic [0:0] key_share0_4_flds_we;
   assign key_share0_4_qe = &key_share0_4_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share0_4 (
     .re     (1'b0),
@@ -383,7 +383,7 @@ module aes_reg_top (
   logic key_share0_5_qe;
   logic [0:0] key_share0_5_flds_we;
   assign key_share0_5_qe = &key_share0_5_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share0_5 (
     .re     (1'b0),
@@ -404,7 +404,7 @@ module aes_reg_top (
   logic key_share0_6_qe;
   logic [0:0] key_share0_6_flds_we;
   assign key_share0_6_qe = &key_share0_6_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share0_6 (
     .re     (1'b0),
@@ -425,7 +425,7 @@ module aes_reg_top (
   logic key_share0_7_qe;
   logic [0:0] key_share0_7_flds_we;
   assign key_share0_7_qe = &key_share0_7_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share0_7 (
     .re     (1'b0),
@@ -446,7 +446,7 @@ module aes_reg_top (
   logic key_share1_0_qe;
   logic [0:0] key_share1_0_flds_we;
   assign key_share1_0_qe = &key_share1_0_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share1_0 (
     .re     (1'b0),
@@ -467,7 +467,7 @@ module aes_reg_top (
   logic key_share1_1_qe;
   logic [0:0] key_share1_1_flds_we;
   assign key_share1_1_qe = &key_share1_1_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share1_1 (
     .re     (1'b0),
@@ -488,7 +488,7 @@ module aes_reg_top (
   logic key_share1_2_qe;
   logic [0:0] key_share1_2_flds_we;
   assign key_share1_2_qe = &key_share1_2_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share1_2 (
     .re     (1'b0),
@@ -509,7 +509,7 @@ module aes_reg_top (
   logic key_share1_3_qe;
   logic [0:0] key_share1_3_flds_we;
   assign key_share1_3_qe = &key_share1_3_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share1_3 (
     .re     (1'b0),
@@ -530,7 +530,7 @@ module aes_reg_top (
   logic key_share1_4_qe;
   logic [0:0] key_share1_4_flds_we;
   assign key_share1_4_qe = &key_share1_4_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share1_4 (
     .re     (1'b0),
@@ -551,7 +551,7 @@ module aes_reg_top (
   logic key_share1_5_qe;
   logic [0:0] key_share1_5_flds_we;
   assign key_share1_5_qe = &key_share1_5_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share1_5 (
     .re     (1'b0),
@@ -572,7 +572,7 @@ module aes_reg_top (
   logic key_share1_6_qe;
   logic [0:0] key_share1_6_flds_we;
   assign key_share1_6_qe = &key_share1_6_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share1_6 (
     .re     (1'b0),
@@ -593,7 +593,7 @@ module aes_reg_top (
   logic key_share1_7_qe;
   logic [0:0] key_share1_7_flds_we;
   assign key_share1_7_qe = &key_share1_7_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_key_share1_7 (
     .re     (1'b0),
@@ -614,7 +614,7 @@ module aes_reg_top (
   logic iv_0_qe;
   logic [0:0] iv_0_flds_we;
   assign iv_0_qe = &iv_0_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_iv_0 (
     .re     (iv_0_re),
@@ -635,7 +635,7 @@ module aes_reg_top (
   logic iv_1_qe;
   logic [0:0] iv_1_flds_we;
   assign iv_1_qe = &iv_1_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_iv_1 (
     .re     (iv_1_re),
@@ -656,7 +656,7 @@ module aes_reg_top (
   logic iv_2_qe;
   logic [0:0] iv_2_flds_we;
   assign iv_2_qe = &iv_2_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_iv_2 (
     .re     (iv_2_re),
@@ -677,7 +677,7 @@ module aes_reg_top (
   logic iv_3_qe;
   logic [0:0] iv_3_flds_we;
   assign iv_3_qe = &iv_3_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_iv_3 (
     .re     (iv_3_re),
@@ -706,9 +706,9 @@ module aes_reg_top (
     .d_i(&data_in_0_flds_we),
     .q_o(data_in_0_qe)
   );
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (32'h0)
   ) u_data_in_0 (
     .clk_i   (clk_i),
@@ -746,9 +746,9 @@ module aes_reg_top (
     .d_i(&data_in_1_flds_we),
     .q_o(data_in_1_qe)
   );
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (32'h0)
   ) u_data_in_1 (
     .clk_i   (clk_i),
@@ -786,9 +786,9 @@ module aes_reg_top (
     .d_i(&data_in_2_flds_we),
     .q_o(data_in_2_qe)
   );
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (32'h0)
   ) u_data_in_2 (
     .clk_i   (clk_i),
@@ -826,9 +826,9 @@ module aes_reg_top (
     .d_i(&data_in_3_flds_we),
     .q_o(data_in_3_qe)
   );
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (32'h0)
   ) u_data_in_3 (
     .clk_i   (clk_i),
@@ -855,7 +855,7 @@ module aes_reg_top (
 
   // Subregister 0 of Multireg data_out
   // R[data_out_0]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_data_out_0 (
     .re     (data_out_0_re),
@@ -872,7 +872,7 @@ module aes_reg_top (
 
   // Subregister 1 of Multireg data_out
   // R[data_out_1]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_data_out_1 (
     .re     (data_out_1_re),
@@ -889,7 +889,7 @@ module aes_reg_top (
 
   // Subregister 2 of Multireg data_out
   // R[data_out_2]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_data_out_2 (
     .re     (data_out_2_re),
@@ -906,7 +906,7 @@ module aes_reg_top (
 
   // Subregister 3 of Multireg data_out
   // R[data_out_3]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_data_out_3 (
     .re     (data_out_3_re),
@@ -926,7 +926,7 @@ module aes_reg_top (
   logic [5:0] ctrl_shadowed_flds_we;
   assign ctrl_shadowed_qe = &ctrl_shadowed_flds_we;
   //   F[operation]: 1:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (2)
   ) u_ctrl_shadowed_operation (
     .re     (ctrl_shadowed_re),
@@ -942,7 +942,7 @@ module aes_reg_top (
   assign reg2hw.ctrl_shadowed.operation.qe = ctrl_shadowed_qe;
 
   //   F[mode]: 7:2
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (6)
   ) u_ctrl_shadowed_mode (
     .re     (ctrl_shadowed_re),
@@ -958,7 +958,7 @@ module aes_reg_top (
   assign reg2hw.ctrl_shadowed.mode.qe = ctrl_shadowed_qe;
 
   //   F[key_len]: 10:8
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (3)
   ) u_ctrl_shadowed_key_len (
     .re     (ctrl_shadowed_re),
@@ -974,7 +974,7 @@ module aes_reg_top (
   assign reg2hw.ctrl_shadowed.key_len.qe = ctrl_shadowed_qe;
 
   //   F[sideload]: 11:11
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_sideload (
     .re     (ctrl_shadowed_re),
@@ -990,7 +990,7 @@ module aes_reg_top (
   assign reg2hw.ctrl_shadowed.sideload.qe = ctrl_shadowed_qe;
 
   //   F[prng_reseed_rate]: 14:12
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (3)
   ) u_ctrl_shadowed_prng_reseed_rate (
     .re     (ctrl_shadowed_re),
@@ -1006,7 +1006,7 @@ module aes_reg_top (
   assign reg2hw.ctrl_shadowed.prng_reseed_rate.qe = ctrl_shadowed_qe;
 
   //   F[manual_operation]: 15:15
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_ctrl_shadowed_manual_operation (
     .re     (ctrl_shadowed_re),
@@ -1027,9 +1027,9 @@ module aes_reg_top (
   logic ctrl_aux_shadowed_gated_we;
   assign ctrl_aux_shadowed_gated_we = ctrl_aux_shadowed_we & ctrl_aux_regwen_qs;
   //   F[key_touch_forces_reseed]: 0:0
-  prim_subreg_shadow #(
+  prim_ot_subreg_shadow #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h1)
   ) u_ctrl_aux_shadowed_key_touch_forces_reseed (
     .clk_i   (clk_i),
@@ -1062,9 +1062,9 @@ module aes_reg_top (
   );
 
   //   F[force_masks]: 1:1
-  prim_subreg_shadow #(
+  prim_ot_subreg_shadow #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl_aux_shadowed_force_masks (
     .clk_i   (clk_i),
@@ -1098,9 +1098,9 @@ module aes_reg_top (
 
 
   // R[ctrl_aux_regwen]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_ctrl_aux_regwen (
     .clk_i   (clk_i),
@@ -1126,9 +1126,9 @@ module aes_reg_top (
 
   // R[trigger]: V(False)
   //   F[start]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0)
   ) u_trigger_start (
     .clk_i   (clk_i),
@@ -1152,9 +1152,9 @@ module aes_reg_top (
   );
 
   //   F[key_iv_data_in_clear]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h1)
   ) u_trigger_key_iv_data_in_clear (
     .clk_i   (clk_i),
@@ -1178,9 +1178,9 @@ module aes_reg_top (
   );
 
   //   F[data_out_clear]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h1)
   ) u_trigger_data_out_clear (
     .clk_i   (clk_i),
@@ -1204,9 +1204,9 @@ module aes_reg_top (
   );
 
   //   F[prng_reseed]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h1)
   ) u_trigger_prng_reseed (
     .clk_i   (clk_i),
@@ -1232,9 +1232,9 @@ module aes_reg_top (
 
   // R[status]: V(False)
   //   F[idle]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_idle (
     .clk_i   (clk_i),
@@ -1258,9 +1258,9 @@ module aes_reg_top (
   );
 
   //   F[stall]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_stall (
     .clk_i   (clk_i),
@@ -1284,9 +1284,9 @@ module aes_reg_top (
   );
 
   //   F[output_lost]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_output_lost (
     .clk_i   (clk_i),
@@ -1310,9 +1310,9 @@ module aes_reg_top (
   );
 
   //   F[output_valid]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_output_valid (
     .clk_i   (clk_i),
@@ -1336,9 +1336,9 @@ module aes_reg_top (
   );
 
   //   F[input_ready]: 4:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_input_ready (
     .clk_i   (clk_i),
@@ -1362,9 +1362,9 @@ module aes_reg_top (
   );
 
   //   F[alert_recov_ctrl_update_err]: 5:5
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_alert_recov_ctrl_update_err (
     .clk_i   (clk_i),
@@ -1388,9 +1388,9 @@ module aes_reg_top (
   );
 
   //   F[alert_fatal_fault]: 6:6
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0)
   ) u_status_alert_fatal_fault (
     .clk_i   (clk_i),

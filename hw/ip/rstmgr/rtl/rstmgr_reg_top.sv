@@ -161,9 +161,9 @@ module rstmgr_reg_top (
   // Register instances
   // R[reset_info]: V(False)
   //   F[por]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h1)
   ) u_reset_info_por (
     // sync clock and reset required for this register
@@ -188,9 +188,9 @@ module rstmgr_reg_top (
   );
 
   //   F[low_power_exit]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_low_power_exit (
     // sync clock and reset required for this register
@@ -215,9 +215,9 @@ module rstmgr_reg_top (
   );
 
   //   F[ndm_reset]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_ndm_reset (
     // sync clock and reset required for this register
@@ -242,9 +242,9 @@ module rstmgr_reg_top (
   );
 
   //   F[hw_req]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_reset_info_hw_req (
     // sync clock and reset required for this register
@@ -271,9 +271,9 @@ module rstmgr_reg_top (
 
   // R[alert_info_ctrl]: V(False)
   //   F[en]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_alert_info_ctrl_en (
     // sync clock and reset required for this register
@@ -298,9 +298,9 @@ module rstmgr_reg_top (
   );
 
   //   F[index]: 7:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0)
   ) u_alert_info_ctrl_index (
     // sync clock and reset required for this register
@@ -326,7 +326,7 @@ module rstmgr_reg_top (
 
 
   // R[alert_info_attr]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (4)
   ) u_alert_info_attr (
     .re     (alert_info_attr_re),
@@ -342,7 +342,7 @@ module rstmgr_reg_top (
 
 
   // R[alert_info]: V(True)
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (32)
   ) u_alert_info (
     .re     (alert_info_re),
@@ -360,9 +360,9 @@ module rstmgr_reg_top (
   // Subregister 0 of Multireg sw_rst_regwen
   // R[sw_rst_regwen]: V(False)
   //   F[en_0]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regwen_en_0 (
     .clk_i   (clk_i),
@@ -386,9 +386,9 @@ module rstmgr_reg_top (
   );
 
   //   F[en_1]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_sw_rst_regwen_en_1 (
     .clk_i   (clk_i),
@@ -418,7 +418,7 @@ module rstmgr_reg_top (
   logic [1:0] sw_rst_ctrl_n_flds_we;
   assign sw_rst_ctrl_n_qe = &sw_rst_ctrl_n_flds_we;
   //   F[val_0]: 0:0
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_0 (
     .re     (sw_rst_ctrl_n_re),
@@ -434,7 +434,7 @@ module rstmgr_reg_top (
   assign reg2hw.sw_rst_ctrl_n[0].qe = sw_rst_ctrl_n_qe;
 
   //   F[val_1]: 1:1
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_sw_rst_ctrl_n_val_1 (
     .re     (sw_rst_ctrl_n_re),

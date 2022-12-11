@@ -6,6 +6,9 @@
 //
 
 
+`include "prim_flop_macros.sv"
+`include "prim_assert.sv"
+ 
 module csrng_core import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
   parameter int NHwApps = 2,

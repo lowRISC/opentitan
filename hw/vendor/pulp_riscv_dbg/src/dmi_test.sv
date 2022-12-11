@@ -5,9 +5,9 @@
 // Florian Zaruba <zarubaf@iis.ee.ethz.ch>
 
 /// A set of testbench utilities for the DMI interfaces.
-package dmi_test;
+package dmi_ot_test;
 
-  import dm::*;
+  import dm_ot::*;
 
   class req_t #(
     parameter int AW = 7

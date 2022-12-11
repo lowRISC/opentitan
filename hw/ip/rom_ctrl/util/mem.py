@@ -9,7 +9,7 @@ import tempfile
 from typing import Any, BinaryIO, Dict, IO, List, Optional, TextIO, Tuple
 
 from elftools.elf.elffile import ELFFile  # type: ignore
-from util.design.secded_gen import ecc_encode_some, load_secded_config  # type: ignore
+from secded_gen import ecc_encode_some, load_secded_config  # type: ignore
 
 
 class MemChunk:

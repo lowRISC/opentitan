@@ -14,7 +14,7 @@
  */
 
 // Auto-generated code
-module debug_rom (
+module debug_ot_rom (
   input  logic         clk_i,
   input  logic         req_i,
   input  logic [63:0]  addr_i,

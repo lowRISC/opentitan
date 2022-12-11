@@ -5,6 +5,10 @@
 // Description: CSRNG command staging module.
 //
 
+`include "dv_fcov_macros.svh"
+`include "prim_flop_macros.sv"
+`include "prim_assert.sv"
+
 module csrng_cmd_stage import csrng_pkg::*; #(
   parameter int CmdFifoWidth = 32,
   parameter int CmdFifoDepth = 16,

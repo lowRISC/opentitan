@@ -1092,7 +1092,7 @@ module pwm_reg_top (
   logic alert_test_qe;
   logic [0:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
     .re     (1'b0),
@@ -1109,9 +1109,9 @@ module pwm_reg_top (
 
 
   // R[regwen]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h1)
   ) u_regwen (
     .clk_i   (clk_i),
@@ -1151,9 +1151,9 @@ module pwm_reg_top (
   logic core_cfg_gated_we;
   assign core_cfg_gated_we = core_cfg_we & core_cfg_regwen;
   //   F[clk_div]: 26:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (27),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (27'h8000)
   ) u_cfg_clk_div (
     .clk_i   (clk_core_i),
@@ -1178,9 +1178,9 @@ module pwm_reg_top (
   assign reg2hw.cfg.clk_div.qe = cfg_qe;
 
   //   F[dc_resn]: 30:27
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h7)
   ) u_cfg_dc_resn (
     .clk_i   (clk_core_i),
@@ -1205,9 +1205,9 @@ module pwm_reg_top (
   assign reg2hw.cfg.dc_resn.qe = cfg_qe;
 
   //   F[cntr_en]: 31:31
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_cfg_cntr_en (
     .clk_i   (clk_core_i),
@@ -1249,9 +1249,9 @@ module pwm_reg_top (
   logic core_pwm_en_gated_we;
   assign core_pwm_en_gated_we = core_pwm_en_we & core_pwm_en_regwen;
   //   F[en_0]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_0 (
     .clk_i   (clk_core_i),
@@ -1276,9 +1276,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_en[0].qe = pwm_en_qe;
 
   //   F[en_1]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_1 (
     .clk_i   (clk_core_i),
@@ -1303,9 +1303,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_en[1].qe = pwm_en_qe;
 
   //   F[en_2]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_2 (
     .clk_i   (clk_core_i),
@@ -1330,9 +1330,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_en[2].qe = pwm_en_qe;
 
   //   F[en_3]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_3 (
     .clk_i   (clk_core_i),
@@ -1357,9 +1357,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_en[3].qe = pwm_en_qe;
 
   //   F[en_4]: 4:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_4 (
     .clk_i   (clk_core_i),
@@ -1384,9 +1384,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_en[4].qe = pwm_en_qe;
 
   //   F[en_5]: 5:5
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_en_en_5 (
     .clk_i   (clk_core_i),
@@ -1428,9 +1428,9 @@ module pwm_reg_top (
   logic core_invert_gated_we;
   assign core_invert_gated_we = core_invert_we & core_invert_regwen;
   //   F[invert_0]: 0:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_invert_invert_0 (
     .clk_i   (clk_core_i),
@@ -1455,9 +1455,9 @@ module pwm_reg_top (
   assign reg2hw.invert[0].qe = invert_qe;
 
   //   F[invert_1]: 1:1
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_invert_invert_1 (
     .clk_i   (clk_core_i),
@@ -1482,9 +1482,9 @@ module pwm_reg_top (
   assign reg2hw.invert[1].qe = invert_qe;
 
   //   F[invert_2]: 2:2
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_invert_invert_2 (
     .clk_i   (clk_core_i),
@@ -1509,9 +1509,9 @@ module pwm_reg_top (
   assign reg2hw.invert[2].qe = invert_qe;
 
   //   F[invert_3]: 3:3
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_invert_invert_3 (
     .clk_i   (clk_core_i),
@@ -1536,9 +1536,9 @@ module pwm_reg_top (
   assign reg2hw.invert[3].qe = invert_qe;
 
   //   F[invert_4]: 4:4
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_invert_invert_4 (
     .clk_i   (clk_core_i),
@@ -1563,9 +1563,9 @@ module pwm_reg_top (
   assign reg2hw.invert[4].qe = invert_qe;
 
   //   F[invert_5]: 5:5
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_invert_invert_5 (
     .clk_i   (clk_core_i),
@@ -1607,9 +1607,9 @@ module pwm_reg_top (
   logic core_pwm_param_0_gated_we;
   assign core_pwm_param_0_gated_we = core_pwm_param_0_we & core_pwm_param_0_regwen;
   //   F[phase_delay_0]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_pwm_param_0_phase_delay_0 (
     .clk_i   (clk_core_i),
@@ -1634,9 +1634,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[0].phase_delay.qe = pwm_param_0_qe;
 
   //   F[htbt_en_0]: 30:30
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_0_htbt_en_0 (
     .clk_i   (clk_core_i),
@@ -1661,9 +1661,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[0].htbt_en.qe = pwm_param_0_qe;
 
   //   F[blink_en_0]: 31:31
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_0_blink_en_0 (
     .clk_i   (clk_core_i),
@@ -1705,9 +1705,9 @@ module pwm_reg_top (
   logic core_pwm_param_1_gated_we;
   assign core_pwm_param_1_gated_we = core_pwm_param_1_we & core_pwm_param_1_regwen;
   //   F[phase_delay_1]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_pwm_param_1_phase_delay_1 (
     .clk_i   (clk_core_i),
@@ -1732,9 +1732,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[1].phase_delay.qe = pwm_param_1_qe;
 
   //   F[htbt_en_1]: 30:30
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_1_htbt_en_1 (
     .clk_i   (clk_core_i),
@@ -1759,9 +1759,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[1].htbt_en.qe = pwm_param_1_qe;
 
   //   F[blink_en_1]: 31:31
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_1_blink_en_1 (
     .clk_i   (clk_core_i),
@@ -1803,9 +1803,9 @@ module pwm_reg_top (
   logic core_pwm_param_2_gated_we;
   assign core_pwm_param_2_gated_we = core_pwm_param_2_we & core_pwm_param_2_regwen;
   //   F[phase_delay_2]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_pwm_param_2_phase_delay_2 (
     .clk_i   (clk_core_i),
@@ -1830,9 +1830,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[2].phase_delay.qe = pwm_param_2_qe;
 
   //   F[htbt_en_2]: 30:30
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_2_htbt_en_2 (
     .clk_i   (clk_core_i),
@@ -1857,9 +1857,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[2].htbt_en.qe = pwm_param_2_qe;
 
   //   F[blink_en_2]: 31:31
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_2_blink_en_2 (
     .clk_i   (clk_core_i),
@@ -1901,9 +1901,9 @@ module pwm_reg_top (
   logic core_pwm_param_3_gated_we;
   assign core_pwm_param_3_gated_we = core_pwm_param_3_we & core_pwm_param_3_regwen;
   //   F[phase_delay_3]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_pwm_param_3_phase_delay_3 (
     .clk_i   (clk_core_i),
@@ -1928,9 +1928,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[3].phase_delay.qe = pwm_param_3_qe;
 
   //   F[htbt_en_3]: 30:30
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_3_htbt_en_3 (
     .clk_i   (clk_core_i),
@@ -1955,9 +1955,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[3].htbt_en.qe = pwm_param_3_qe;
 
   //   F[blink_en_3]: 31:31
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_3_blink_en_3 (
     .clk_i   (clk_core_i),
@@ -1999,9 +1999,9 @@ module pwm_reg_top (
   logic core_pwm_param_4_gated_we;
   assign core_pwm_param_4_gated_we = core_pwm_param_4_we & core_pwm_param_4_regwen;
   //   F[phase_delay_4]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_pwm_param_4_phase_delay_4 (
     .clk_i   (clk_core_i),
@@ -2026,9 +2026,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[4].phase_delay.qe = pwm_param_4_qe;
 
   //   F[htbt_en_4]: 30:30
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_4_htbt_en_4 (
     .clk_i   (clk_core_i),
@@ -2053,9 +2053,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[4].htbt_en.qe = pwm_param_4_qe;
 
   //   F[blink_en_4]: 31:31
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_4_blink_en_4 (
     .clk_i   (clk_core_i),
@@ -2097,9 +2097,9 @@ module pwm_reg_top (
   logic core_pwm_param_5_gated_we;
   assign core_pwm_param_5_gated_we = core_pwm_param_5_we & core_pwm_param_5_regwen;
   //   F[phase_delay_5]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_pwm_param_5_phase_delay_5 (
     .clk_i   (clk_core_i),
@@ -2124,9 +2124,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[5].phase_delay.qe = pwm_param_5_qe;
 
   //   F[htbt_en_5]: 30:30
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_5_htbt_en_5 (
     .clk_i   (clk_core_i),
@@ -2151,9 +2151,9 @@ module pwm_reg_top (
   assign reg2hw.pwm_param[5].htbt_en.qe = pwm_param_5_qe;
 
   //   F[blink_en_5]: 31:31
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_pwm_param_5_blink_en_5 (
     .clk_i   (clk_core_i),
@@ -2195,9 +2195,9 @@ module pwm_reg_top (
   logic core_duty_cycle_0_gated_we;
   assign core_duty_cycle_0_gated_we = core_duty_cycle_0_we & core_duty_cycle_0_regwen;
   //   F[a_0]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_0_a_0 (
     .clk_i   (clk_core_i),
@@ -2222,9 +2222,9 @@ module pwm_reg_top (
   assign reg2hw.duty_cycle[0].a.qe = duty_cycle_0_qe;
 
   //   F[b_0]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_0_b_0 (
     .clk_i   (clk_core_i),
@@ -2266,9 +2266,9 @@ module pwm_reg_top (
   logic core_duty_cycle_1_gated_we;
   assign core_duty_cycle_1_gated_we = core_duty_cycle_1_we & core_duty_cycle_1_regwen;
   //   F[a_1]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_1_a_1 (
     .clk_i   (clk_core_i),
@@ -2293,9 +2293,9 @@ module pwm_reg_top (
   assign reg2hw.duty_cycle[1].a.qe = duty_cycle_1_qe;
 
   //   F[b_1]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_1_b_1 (
     .clk_i   (clk_core_i),
@@ -2337,9 +2337,9 @@ module pwm_reg_top (
   logic core_duty_cycle_2_gated_we;
   assign core_duty_cycle_2_gated_we = core_duty_cycle_2_we & core_duty_cycle_2_regwen;
   //   F[a_2]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_2_a_2 (
     .clk_i   (clk_core_i),
@@ -2364,9 +2364,9 @@ module pwm_reg_top (
   assign reg2hw.duty_cycle[2].a.qe = duty_cycle_2_qe;
 
   //   F[b_2]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_2_b_2 (
     .clk_i   (clk_core_i),
@@ -2408,9 +2408,9 @@ module pwm_reg_top (
   logic core_duty_cycle_3_gated_we;
   assign core_duty_cycle_3_gated_we = core_duty_cycle_3_we & core_duty_cycle_3_regwen;
   //   F[a_3]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_3_a_3 (
     .clk_i   (clk_core_i),
@@ -2435,9 +2435,9 @@ module pwm_reg_top (
   assign reg2hw.duty_cycle[3].a.qe = duty_cycle_3_qe;
 
   //   F[b_3]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_3_b_3 (
     .clk_i   (clk_core_i),
@@ -2479,9 +2479,9 @@ module pwm_reg_top (
   logic core_duty_cycle_4_gated_we;
   assign core_duty_cycle_4_gated_we = core_duty_cycle_4_we & core_duty_cycle_4_regwen;
   //   F[a_4]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_4_a_4 (
     .clk_i   (clk_core_i),
@@ -2506,9 +2506,9 @@ module pwm_reg_top (
   assign reg2hw.duty_cycle[4].a.qe = duty_cycle_4_qe;
 
   //   F[b_4]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_4_b_4 (
     .clk_i   (clk_core_i),
@@ -2550,9 +2550,9 @@ module pwm_reg_top (
   logic core_duty_cycle_5_gated_we;
   assign core_duty_cycle_5_gated_we = core_duty_cycle_5_we & core_duty_cycle_5_regwen;
   //   F[a_5]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_5_a_5 (
     .clk_i   (clk_core_i),
@@ -2577,9 +2577,9 @@ module pwm_reg_top (
   assign reg2hw.duty_cycle[5].a.qe = duty_cycle_5_qe;
 
   //   F[b_5]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h7fff)
   ) u_duty_cycle_5_b_5 (
     .clk_i   (clk_core_i),
@@ -2621,9 +2621,9 @@ module pwm_reg_top (
   logic core_blink_param_0_gated_we;
   assign core_blink_param_0_gated_we = core_blink_param_0_we & core_blink_param_0_regwen;
   //   F[x_0]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_0_x_0 (
     .clk_i   (clk_core_i),
@@ -2648,9 +2648,9 @@ module pwm_reg_top (
   assign reg2hw.blink_param[0].x.qe = blink_param_0_qe;
 
   //   F[y_0]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_0_y_0 (
     .clk_i   (clk_core_i),
@@ -2692,9 +2692,9 @@ module pwm_reg_top (
   logic core_blink_param_1_gated_we;
   assign core_blink_param_1_gated_we = core_blink_param_1_we & core_blink_param_1_regwen;
   //   F[x_1]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_1_x_1 (
     .clk_i   (clk_core_i),
@@ -2719,9 +2719,9 @@ module pwm_reg_top (
   assign reg2hw.blink_param[1].x.qe = blink_param_1_qe;
 
   //   F[y_1]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_1_y_1 (
     .clk_i   (clk_core_i),
@@ -2763,9 +2763,9 @@ module pwm_reg_top (
   logic core_blink_param_2_gated_we;
   assign core_blink_param_2_gated_we = core_blink_param_2_we & core_blink_param_2_regwen;
   //   F[x_2]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_2_x_2 (
     .clk_i   (clk_core_i),
@@ -2790,9 +2790,9 @@ module pwm_reg_top (
   assign reg2hw.blink_param[2].x.qe = blink_param_2_qe;
 
   //   F[y_2]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_2_y_2 (
     .clk_i   (clk_core_i),
@@ -2834,9 +2834,9 @@ module pwm_reg_top (
   logic core_blink_param_3_gated_we;
   assign core_blink_param_3_gated_we = core_blink_param_3_we & core_blink_param_3_regwen;
   //   F[x_3]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_3_x_3 (
     .clk_i   (clk_core_i),
@@ -2861,9 +2861,9 @@ module pwm_reg_top (
   assign reg2hw.blink_param[3].x.qe = blink_param_3_qe;
 
   //   F[y_3]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_3_y_3 (
     .clk_i   (clk_core_i),
@@ -2905,9 +2905,9 @@ module pwm_reg_top (
   logic core_blink_param_4_gated_we;
   assign core_blink_param_4_gated_we = core_blink_param_4_we & core_blink_param_4_regwen;
   //   F[x_4]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_4_x_4 (
     .clk_i   (clk_core_i),
@@ -2932,9 +2932,9 @@ module pwm_reg_top (
   assign reg2hw.blink_param[4].x.qe = blink_param_4_qe;
 
   //   F[y_4]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_4_y_4 (
     .clk_i   (clk_core_i),
@@ -2976,9 +2976,9 @@ module pwm_reg_top (
   logic core_blink_param_5_gated_we;
   assign core_blink_param_5_gated_we = core_blink_param_5_we & core_blink_param_5_regwen;
   //   F[x_5]: 15:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_5_x_5 (
     .clk_i   (clk_core_i),
@@ -3003,9 +3003,9 @@ module pwm_reg_top (
   assign reg2hw.blink_param[5].x.qe = blink_param_5_qe;
 
   //   F[y_5]: 31:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (16),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0)
   ) u_blink_param_5_y_5 (
     .clk_i   (clk_core_i),

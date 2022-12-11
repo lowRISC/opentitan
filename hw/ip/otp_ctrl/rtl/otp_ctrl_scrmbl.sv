@@ -69,6 +69,7 @@
 //
 
 `include "prim_flop_macros.sv"
+`include "prim_assert.sv"
 
 module otp_ctrl_scrmbl
   import otp_ctrl_pkg::*;

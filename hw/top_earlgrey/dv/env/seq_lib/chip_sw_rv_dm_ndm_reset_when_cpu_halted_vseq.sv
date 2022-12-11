@@ -72,11 +72,11 @@ class chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq extends chip_sw_base_vseq;
 
     // Read DCSR and verify the cause field.
     cmd_data = '{};
-    cfg.debugger.abstract_cmd_reg_read(.regno(dm::CSR_DCSR), .value_q(cmd_data), .status(status));
+    cfg.debugger.abstract_cmd_reg_read(.regno(dm_ot::CSR_DCSR), .value_q(cmd_data), .status(status));
     `DV_CHECK_EQ(status, jtag_rv_debugger_pkg::AbstractCmdErrNone)
     `uvm_info(`gfn, $sformatf("Read by the debugger: DCSR = 0x%0h", cmd_data[0]), UVM_LOW)
     `DV_CHECK_EQ(cmd_data[0], cfg.chip_vif.probed_cpu_csrs.dcsr)
-    `DV_CHECK_EQ(cfg.chip_vif.probed_cpu_csrs.dcsr.cause, dm::CauseRequest)
+    `DV_CHECK_EQ(cfg.chip_vif.probed_cpu_csrs.dcsr.cause, dm_ot::CauseRequest)
 
     // Read some chip CSRs over SBA. Arbitrarily chose LC ctrl device ID which can be checked for
     // correctness via backdoor.

@@ -11,7 +11,6 @@
 
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_adc_ctrl.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_csrng.h"
@@ -20,7 +19,6 @@
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
-#include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/dif/dif_otbn.h"
@@ -29,12 +27,9 @@
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
-#include "sw/device/lib/dif/dif_sensor_ctrl.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
-#include "sw/device/lib/dif/dif_uart.h"
-#include "sw/device/lib/dif/dif_usbdev.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -43,7 +38,6 @@
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static dif_adc_ctrl_t adc_ctrl_aon;
 static dif_alert_handler_t alert_handler;
 static dif_aon_timer_t aon_timer_aon;
 static dif_csrng_t csrng;
@@ -53,9 +47,6 @@ static dif_entropy_src_t entropy_src;
 static dif_flash_ctrl_t flash_ctrl;
 static dif_gpio_t gpio;
 static dif_hmac_t hmac;
-static dif_i2c_t i2c0;
-static dif_i2c_t i2c1;
-static dif_i2c_t i2c2;
 static dif_keymgr_t keymgr;
 static dif_kmac_t kmac;
 static dif_otbn_t otbn;
@@ -63,16 +54,10 @@ static dif_otp_ctrl_t otp_ctrl;
 static dif_pattgen_t pattgen;
 static dif_pwrmgr_t pwrmgr_aon;
 static dif_rv_timer_t rv_timer;
-static dif_sensor_ctrl_t sensor_ctrl;
 static dif_spi_device_t spi_device;
 static dif_spi_host_t spi_host0;
 static dif_spi_host_t spi_host1;
 static dif_sysrst_ctrl_t sysrst_ctrl_aon;
-static dif_uart_t uart0;
-static dif_uart_t uart1;
-static dif_uart_t uart2;
-static dif_uart_t uart3;
-static dif_usbdev_t usbdev;
 static dif_rv_plic_t plic;
 static const top_earlgrey_plic_target_t kHart = kTopEarlgreyPlicTargetIbex0;
 
@@ -91,8 +76,6 @@ static volatile top_earlgrey_plic_peripheral_t peripheral_expected;
  * Declared volatile because it is referenced in the main program flow as well
  * as the ISR.
  */
-static volatile dif_adc_ctrl_irq_t adc_ctrl_irq_expected;
-static volatile dif_adc_ctrl_irq_t adc_ctrl_irq_serviced;
 static volatile dif_alert_handler_irq_t alert_handler_irq_expected;
 static volatile dif_alert_handler_irq_t alert_handler_irq_serviced;
 static volatile dif_aon_timer_irq_t aon_timer_irq_expected;
@@ -109,8 +92,6 @@ static volatile dif_gpio_irq_t gpio_irq_expected;
 static volatile dif_gpio_irq_t gpio_irq_serviced;
 static volatile dif_hmac_irq_t hmac_irq_expected;
 static volatile dif_hmac_irq_t hmac_irq_serviced;
-static volatile dif_i2c_irq_t i2c_irq_expected;
-static volatile dif_i2c_irq_t i2c_irq_serviced;
 static volatile dif_keymgr_irq_t keymgr_irq_expected;
 static volatile dif_keymgr_irq_t keymgr_irq_serviced;
 static volatile dif_kmac_irq_t kmac_irq_expected;
@@ -125,18 +106,12 @@ static volatile dif_pwrmgr_irq_t pwrmgr_irq_expected;
 static volatile dif_pwrmgr_irq_t pwrmgr_irq_serviced;
 static volatile dif_rv_timer_irq_t rv_timer_irq_expected;
 static volatile dif_rv_timer_irq_t rv_timer_irq_serviced;
-static volatile dif_sensor_ctrl_irq_t sensor_ctrl_irq_expected;
-static volatile dif_sensor_ctrl_irq_t sensor_ctrl_irq_serviced;
 static volatile dif_spi_device_irq_t spi_device_irq_expected;
 static volatile dif_spi_device_irq_t spi_device_irq_serviced;
 static volatile dif_spi_host_irq_t spi_host_irq_expected;
 static volatile dif_spi_host_irq_t spi_host_irq_serviced;
 static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_expected;
 static volatile dif_sysrst_ctrl_irq_t sysrst_ctrl_irq_serviced;
-static volatile dif_uart_irq_t uart_irq_expected;
-static volatile dif_uart_irq_t uart_irq_serviced;
-static volatile dif_usbdev_irq_t usbdev_irq_expected;
-static volatile dif_usbdev_irq_t usbdev_irq_serviced;
 
 /**
  * Provides external IRQ handling for this test.
@@ -162,28 +137,6 @@ void ottf_external_isr(void) {
         peripheral_expected, peripheral);
 
   switch (peripheral) {
-    case kTopEarlgreyPlicPeripheralAdcCtrlAon: {
-      dif_adc_ctrl_irq_t irq = (dif_adc_ctrl_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdAdcCtrlAonMatchDone);
-      CHECK(irq == adc_ctrl_irq_expected,
-            "Incorrect adc_ctrl_aon IRQ triggered: exp = %d, obs = %d",
-            adc_ctrl_irq_expected, irq);
-      adc_ctrl_irq_serviced = irq;
-
-      dif_adc_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_adc_ctrl_irq_get_state(&adc_ctrl_aon, &snapshot));
-      CHECK(snapshot == (dif_adc_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only adc_ctrl_aon IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, false));
-      CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge(&adc_ctrl_aon, irq));
-      break;
-    }
-
     case kTopEarlgreyPlicPeripheralAlertHandler: {
       dif_alert_handler_irq_t irq = (dif_alert_handler_irq_t)(
           plic_irq_id -
@@ -382,72 +335,6 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralI2c0: {
-      dif_i2c_irq_t irq = (dif_i2c_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c0FmtWatermark);
-      CHECK(irq == i2c_irq_expected,
-            "Incorrect i2c0 IRQ triggered: exp = %d, obs = %d",
-            i2c_irq_expected, irq);
-      i2c_irq_serviced = irq;
-
-      dif_i2c_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c0, &snapshot));
-      CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
-            "Only i2c0 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, false));
-      CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c0, irq));
-      break;
-    }
-
-    case kTopEarlgreyPlicPeripheralI2c1: {
-      dif_i2c_irq_t irq = (dif_i2c_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c1FmtWatermark);
-      CHECK(irq == i2c_irq_expected,
-            "Incorrect i2c1 IRQ triggered: exp = %d, obs = %d",
-            i2c_irq_expected, irq);
-      i2c_irq_serviced = irq;
-
-      dif_i2c_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c1, &snapshot));
-      CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
-            "Only i2c1 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, false));
-      CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c1, irq));
-      break;
-    }
-
-    case kTopEarlgreyPlicPeripheralI2c2: {
-      dif_i2c_irq_t irq = (dif_i2c_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdI2c2FmtWatermark);
-      CHECK(irq == i2c_irq_expected,
-            "Incorrect i2c2 IRQ triggered: exp = %d, obs = %d",
-            i2c_irq_expected, irq);
-      i2c_irq_serviced = irq;
-
-      dif_i2c_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_i2c_irq_get_state(&i2c2, &snapshot));
-      CHECK(snapshot == (dif_i2c_irq_state_snapshot_t)(1 << irq),
-            "Only i2c2 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, false));
-      CHECK_DIF_OK(dif_i2c_irq_acknowledge(&i2c2, irq));
-      break;
-    }
-
     case kTopEarlgreyPlicPeripheralKeymgr: {
       dif_keymgr_irq_t irq = (dif_keymgr_irq_t)(
           plic_irq_id -
@@ -602,28 +489,6 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralSensorCtrl: {
-      dif_sensor_ctrl_irq_t irq = (dif_sensor_ctrl_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdSensorCtrlIoStatusChange);
-      CHECK(irq == sensor_ctrl_irq_expected,
-            "Incorrect sensor_ctrl IRQ triggered: exp = %d, obs = %d",
-            sensor_ctrl_irq_expected, irq);
-      sensor_ctrl_irq_serviced = irq;
-
-      dif_sensor_ctrl_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_sensor_ctrl_irq_get_state(&sensor_ctrl, &snapshot));
-      CHECK(snapshot == (dif_sensor_ctrl_irq_state_snapshot_t)(1 << irq),
-            "Only sensor_ctrl IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl, irq, false));
-      CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge(&sensor_ctrl, irq));
-      break;
-    }
-
     case kTopEarlgreyPlicPeripheralSpiDevice: {
       dif_spi_device_irq_t irq = (dif_spi_device_irq_t)(
           plic_irq_id -
@@ -712,116 +577,6 @@ void ottf_external_isr(void) {
       break;
     }
 
-    case kTopEarlgreyPlicPeripheralUart0: {
-      dif_uart_irq_t irq = (dif_uart_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart0TxWatermark);
-      CHECK(irq == uart_irq_expected,
-            "Incorrect uart0 IRQ triggered: exp = %d, obs = %d",
-            uart_irq_expected, irq);
-      uart_irq_serviced = irq;
-
-      dif_uart_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_uart_irq_get_state(&uart0, &snapshot));
-      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
-            "Only uart0 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq, false));
-      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart0, irq));
-      break;
-    }
-
-    case kTopEarlgreyPlicPeripheralUart1: {
-      dif_uart_irq_t irq = (dif_uart_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart1TxWatermark);
-      CHECK(irq == uart_irq_expected,
-            "Incorrect uart1 IRQ triggered: exp = %d, obs = %d",
-            uart_irq_expected, irq);
-      uart_irq_serviced = irq;
-
-      dif_uart_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_uart_irq_get_state(&uart1, &snapshot));
-      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
-            "Only uart1 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, false));
-      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart1, irq));
-      break;
-    }
-
-    case kTopEarlgreyPlicPeripheralUart2: {
-      dif_uart_irq_t irq = (dif_uart_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart2TxWatermark);
-      CHECK(irq == uart_irq_expected,
-            "Incorrect uart2 IRQ triggered: exp = %d, obs = %d",
-            uart_irq_expected, irq);
-      uart_irq_serviced = irq;
-
-      dif_uart_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_uart_irq_get_state(&uart2, &snapshot));
-      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
-            "Only uart2 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, false));
-      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart2, irq));
-      break;
-    }
-
-    case kTopEarlgreyPlicPeripheralUart3: {
-      dif_uart_irq_t irq = (dif_uart_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUart3TxWatermark);
-      CHECK(irq == uart_irq_expected,
-            "Incorrect uart3 IRQ triggered: exp = %d, obs = %d",
-            uart_irq_expected, irq);
-      uart_irq_serviced = irq;
-
-      dif_uart_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_uart_irq_get_state(&uart3, &snapshot));
-      CHECK(snapshot == (dif_uart_irq_state_snapshot_t)(1 << irq),
-            "Only uart3 IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, false));
-      CHECK_DIF_OK(dif_uart_irq_acknowledge(&uart3, irq));
-      break;
-    }
-
-    case kTopEarlgreyPlicPeripheralUsbdev: {
-      dif_usbdev_irq_t irq = (dif_usbdev_irq_t)(
-          plic_irq_id -
-          (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdUsbdevPktReceived);
-      CHECK(irq == usbdev_irq_expected,
-            "Incorrect usbdev IRQ triggered: exp = %d, obs = %d",
-            usbdev_irq_expected, irq);
-      usbdev_irq_serviced = irq;
-
-      dif_usbdev_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_usbdev_irq_get_state(&usbdev, &snapshot));
-      CHECK(snapshot == (dif_usbdev_irq_state_snapshot_t)(1 << irq),
-            "Only usbdev IRQ %d expected to fire. Actual interrupt "
-            "status = %x",
-            irq, snapshot);
-
-      // TODO: Check Interrupt type then clear INTR_TEST if needed.
-      CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, false));
-      CHECK_DIF_OK(dif_usbdev_irq_acknowledge(&usbdev, irq));
-      break;
-    }
-
     default:
       LOG_FATAL("ISR is not implemented!");
       test_status_set(kTestStatusFailed);
@@ -836,9 +591,6 @@ void ottf_external_isr(void) {
  */
 static void peripherals_init(void) {
   mmio_region_t base_addr;
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_adc_ctrl_init(base_addr, &adc_ctrl_aon));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
@@ -867,15 +619,6 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR);
-  CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c0));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C1_BASE_ADDR);
-  CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c1));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
-  CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c2));
-
   base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR);
   CHECK_DIF_OK(dif_keymgr_init(base_addr, &keymgr));
 
@@ -897,9 +640,6 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_timer_init(base_addr, &rv_timer));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_SENSOR_CTRL_BASE_ADDR);
-  CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl));
-
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init(base_addr, &spi_device));
 
@@ -912,21 +652,6 @@ static void peripherals_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SYSRST_CTRL_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_sysrst_ctrl_init(base_addr, &sysrst_ctrl_aon));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR);
-  CHECK_DIF_OK(dif_uart_init(base_addr, &uart0));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART1_BASE_ADDR);
-  CHECK_DIF_OK(dif_uart_init(base_addr, &uart1));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART2_BASE_ADDR);
-  CHECK_DIF_OK(dif_uart_init(base_addr, &uart2));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_UART3_BASE_ADDR);
-  CHECK_DIF_OK(dif_uart_init(base_addr, &uart3));
-
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR);
-  CHECK_DIF_OK(dif_usbdev_init(base_addr, &usbdev));
-
   base_addr = mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_plic_init(base_addr, &plic));
 }
@@ -935,7 +660,6 @@ static void peripherals_init(void) {
  * Clears pending IRQs in all peripherals.
  */
 static void peripheral_irqs_clear(void) {
-  CHECK_DIF_OK(dif_adc_ctrl_irq_acknowledge_all(&adc_ctrl_aon));
   CHECK_DIF_OK(dif_alert_handler_irq_acknowledge_all(&alert_handler));
   CHECK_DIF_OK(dif_aon_timer_irq_acknowledge_all(&aon_timer_aon));
   CHECK_DIF_OK(dif_csrng_irq_acknowledge_all(&csrng));
@@ -945,9 +669,6 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_flash_ctrl_irq_acknowledge_all(&flash_ctrl));
   CHECK_DIF_OK(dif_gpio_irq_acknowledge_all(&gpio));
   CHECK_DIF_OK(dif_hmac_irq_acknowledge_all(&hmac));
-  CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c0));
-  CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c1));
-  CHECK_DIF_OK(dif_i2c_irq_acknowledge_all(&i2c2));
   CHECK_DIF_OK(dif_keymgr_irq_acknowledge_all(&keymgr));
   CHECK_DIF_OK(dif_kmac_irq_acknowledge_all(&kmac));
   CHECK_DIF_OK(dif_otbn_irq_acknowledge_all(&otbn));
@@ -955,24 +676,16 @@ static void peripheral_irqs_clear(void) {
   CHECK_DIF_OK(dif_pattgen_irq_acknowledge_all(&pattgen));
   CHECK_DIF_OK(dif_pwrmgr_irq_acknowledge_all(&pwrmgr_aon));
   CHECK_DIF_OK(dif_rv_timer_irq_acknowledge_all(&rv_timer, kHart));
-  CHECK_DIF_OK(dif_sensor_ctrl_irq_acknowledge_all(&sensor_ctrl));
   CHECK_DIF_OK(dif_spi_device_irq_acknowledge_all(&spi_device));
   CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host0));
   CHECK_DIF_OK(dif_spi_host_irq_acknowledge_all(&spi_host1));
   CHECK_DIF_OK(dif_sysrst_ctrl_irq_acknowledge_all(&sysrst_ctrl_aon));
-  CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart0));
-  CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart1));
-  CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart2));
-  CHECK_DIF_OK(dif_uart_irq_acknowledge_all(&uart3));
-  CHECK_DIF_OK(dif_usbdev_irq_acknowledge_all(&usbdev));
 }
 
 /**
  * Enables all IRQs in all peripherals.
  */
 static void peripheral_irqs_enable(void) {
-  dif_adc_ctrl_irq_state_snapshot_t adc_ctrl_irqs =
-      (dif_adc_ctrl_irq_state_snapshot_t)UINT_MAX;
   dif_alert_handler_irq_state_snapshot_t alert_handler_irqs =
       (dif_alert_handler_irq_state_snapshot_t)UINT_MAX;
   dif_csrng_irq_state_snapshot_t csrng_irqs =
@@ -987,8 +700,6 @@ static void peripheral_irqs_enable(void) {
       (dif_gpio_irq_state_snapshot_t)UINT_MAX;
   dif_hmac_irq_state_snapshot_t hmac_irqs =
       (dif_hmac_irq_state_snapshot_t)UINT_MAX;
-  dif_i2c_irq_state_snapshot_t i2c_irqs =
-      (dif_i2c_irq_state_snapshot_t)UINT_MAX;
   dif_keymgr_irq_state_snapshot_t keymgr_irqs =
       (dif_keymgr_irq_state_snapshot_t)UINT_MAX;
   dif_kmac_irq_state_snapshot_t kmac_irqs =
@@ -1003,21 +714,13 @@ static void peripheral_irqs_enable(void) {
       (dif_pwrmgr_irq_state_snapshot_t)UINT_MAX;
   dif_rv_timer_irq_state_snapshot_t rv_timer_irqs =
       (dif_rv_timer_irq_state_snapshot_t)UINT_MAX;
-  dif_sensor_ctrl_irq_state_snapshot_t sensor_ctrl_irqs =
-      (dif_sensor_ctrl_irq_state_snapshot_t)UINT_MAX;
   dif_spi_device_irq_state_snapshot_t spi_device_irqs =
       (dif_spi_device_irq_state_snapshot_t)UINT_MAX;
   dif_spi_host_irq_state_snapshot_t spi_host_irqs =
       (dif_spi_host_irq_state_snapshot_t)UINT_MAX;
   dif_sysrst_ctrl_irq_state_snapshot_t sysrst_ctrl_irqs =
       (dif_sysrst_ctrl_irq_state_snapshot_t)UINT_MAX;
-  dif_uart_irq_state_snapshot_t uart_irqs =
-      (dif_uart_irq_state_snapshot_t)UINT_MAX;
-  dif_usbdev_irq_state_snapshot_t usbdev_irqs =
-      (dif_usbdev_irq_state_snapshot_t)UINT_MAX;
 
-  CHECK_DIF_OK(
-      dif_adc_ctrl_irq_restore_all(&adc_ctrl_aon, &adc_ctrl_irqs));
   CHECK_DIF_OK(
       dif_alert_handler_irq_restore_all(&alert_handler, &alert_handler_irqs));
   CHECK_DIF_OK(
@@ -1035,12 +738,6 @@ static void peripheral_irqs_enable(void) {
   CHECK_DIF_OK(
       dif_hmac_irq_restore_all(&hmac, &hmac_irqs));
   CHECK_DIF_OK(
-      dif_i2c_irq_restore_all(&i2c0, &i2c_irqs));
-  CHECK_DIF_OK(
-      dif_i2c_irq_restore_all(&i2c1, &i2c_irqs));
-  CHECK_DIF_OK(
-      dif_i2c_irq_restore_all(&i2c2, &i2c_irqs));
-  CHECK_DIF_OK(
       dif_keymgr_irq_restore_all(&keymgr, &keymgr_irqs));
   CHECK_DIF_OK(
       dif_kmac_irq_restore_all(&kmac, &kmac_irqs));
@@ -1055,8 +752,6 @@ static void peripheral_irqs_enable(void) {
   CHECK_DIF_OK(
       dif_rv_timer_irq_restore_all(&rv_timer, kHart, &rv_timer_irqs));
   CHECK_DIF_OK(
-      dif_sensor_ctrl_irq_restore_all(&sensor_ctrl, &sensor_ctrl_irqs));
-  CHECK_DIF_OK(
       dif_spi_device_irq_restore_all(&spi_device, &spi_device_irqs));
   CHECK_DIF_OK(
       dif_spi_host_irq_restore_all(&spi_host0, &spi_host_irqs));
@@ -1064,20 +759,6 @@ static void peripheral_irqs_enable(void) {
       dif_spi_host_irq_restore_all(&spi_host1, &spi_host_irqs));
   CHECK_DIF_OK(
       dif_sysrst_ctrl_irq_restore_all(&sysrst_ctrl_aon, &sysrst_ctrl_irqs));
-  // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
-  // from the logging facility.
-  if (kDeviceType == kDeviceSimDV) {
-    CHECK_DIF_OK(
-        dif_uart_irq_restore_all(&uart0, &uart_irqs));
-  }
-  CHECK_DIF_OK(
-      dif_uart_irq_restore_all(&uart1, &uart_irqs));
-  CHECK_DIF_OK(
-      dif_uart_irq_restore_all(&uart2, &uart_irqs));
-  CHECK_DIF_OK(
-      dif_uart_irq_restore_all(&uart3, &uart_irqs));
-  CHECK_DIF_OK(
-      dif_usbdev_irq_restore_all(&usbdev, &usbdev_irqs));
 }
 
 /**
@@ -1090,20 +771,6 @@ static void peripheral_irqs_enable(void) {
  * expected IRQ from the expected peripheral triggered.
  */
 static void peripheral_irqs_trigger(void) {
-  peripheral_expected = kTopEarlgreyPlicPeripheralAdcCtrlAon;
-  for (dif_adc_ctrl_irq_t irq = kDifAdcCtrlIrqMatchDone;
-       irq <= kDifAdcCtrlIrqMatchDone; ++irq) {
-    adc_ctrl_irq_expected = irq;
-    LOG_INFO("Triggering adc_ctrl_aon IRQ %d.", irq);
-    CHECK_DIF_OK(dif_adc_ctrl_irq_force(&adc_ctrl_aon, irq, true));
-
-    // TODO: Make race-condition free
-    CHECK(adc_ctrl_irq_serviced == irq,
-          "Incorrect adc_ctrl_aon IRQ serviced: exp = %d, obs = %d", irq,
-          adc_ctrl_irq_serviced);
-    LOG_INFO("IRQ %d from adc_ctrl_aon is serviced.", irq);
-  }
-
   peripheral_expected = kTopEarlgreyPlicPeripheralAlertHandler;
   for (dif_alert_handler_irq_t irq = kDifAlertHandlerIrqClassa;
        irq <= kDifAlertHandlerIrqClassd; ++irq) {
@@ -1230,48 +897,6 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from hmac is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralI2c0;
-  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark;
-       irq <= kDifI2cIrqHostTimeout; ++irq) {
-    i2c_irq_expected = irq;
-    LOG_INFO("Triggering i2c0 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_i2c_irq_force(&i2c0, irq, true));
-
-    // TODO: Make race-condition free
-    CHECK(i2c_irq_serviced == irq,
-          "Incorrect i2c0 IRQ serviced: exp = %d, obs = %d", irq,
-          i2c_irq_serviced);
-    LOG_INFO("IRQ %d from i2c0 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopEarlgreyPlicPeripheralI2c1;
-  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark;
-       irq <= kDifI2cIrqHostTimeout; ++irq) {
-    i2c_irq_expected = irq;
-    LOG_INFO("Triggering i2c1 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_i2c_irq_force(&i2c1, irq, true));
-
-    // TODO: Make race-condition free
-    CHECK(i2c_irq_serviced == irq,
-          "Incorrect i2c1 IRQ serviced: exp = %d, obs = %d", irq,
-          i2c_irq_serviced);
-    LOG_INFO("IRQ %d from i2c1 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopEarlgreyPlicPeripheralI2c2;
-  for (dif_i2c_irq_t irq = kDifI2cIrqFmtWatermark;
-       irq <= kDifI2cIrqHostTimeout; ++irq) {
-    i2c_irq_expected = irq;
-    LOG_INFO("Triggering i2c2 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_i2c_irq_force(&i2c2, irq, true));
-
-    // TODO: Make race-condition free
-    CHECK(i2c_irq_serviced == irq,
-          "Incorrect i2c2 IRQ serviced: exp = %d, obs = %d", irq,
-          i2c_irq_serviced);
-    LOG_INFO("IRQ %d from i2c2 is serviced.", irq);
-  }
-
   peripheral_expected = kTopEarlgreyPlicPeripheralKeymgr;
   for (dif_keymgr_irq_t irq = kDifKeymgrIrqOpDone;
        irq <= kDifKeymgrIrqOpDone; ++irq) {
@@ -1370,20 +995,6 @@ static void peripheral_irqs_trigger(void) {
     LOG_INFO("IRQ %d from rv_timer is serviced.", irq);
   }
 
-  peripheral_expected = kTopEarlgreyPlicPeripheralSensorCtrl;
-  for (dif_sensor_ctrl_irq_t irq = kDifSensorCtrlIrqIoStatusChange;
-       irq <= kDifSensorCtrlIrqInitStatusChange; ++irq) {
-    sensor_ctrl_irq_expected = irq;
-    LOG_INFO("Triggering sensor_ctrl IRQ %d.", irq);
-    CHECK_DIF_OK(dif_sensor_ctrl_irq_force(&sensor_ctrl, irq, true));
-
-    // TODO: Make race-condition free
-    CHECK(sensor_ctrl_irq_serviced == irq,
-          "Incorrect sensor_ctrl IRQ serviced: exp = %d, obs = %d", irq,
-          sensor_ctrl_irq_serviced);
-    LOG_INFO("IRQ %d from sensor_ctrl is serviced.", irq);
-  }
-
   peripheral_expected = kTopEarlgreyPlicPeripheralSpiDevice;
   for (dif_spi_device_irq_t irq = kDifSpiDeviceIrqGenericRxFull;
        irq <= kDifSpiDeviceIrqTpmHeaderNotEmpty; ++irq) {
@@ -1438,80 +1049,6 @@ static void peripheral_irqs_trigger(void) {
           "Incorrect sysrst_ctrl_aon IRQ serviced: exp = %d, obs = %d", irq,
           sysrst_ctrl_irq_serviced);
     LOG_INFO("IRQ %d from sysrst_ctrl_aon is serviced.", irq);
-  }
-
-  // lowrisc/opentitan#8656: Skip UART0 in non-DV setups due to interference
-  // from the logging facility.
-  if (kDeviceType == kDeviceSimDV) {
-    peripheral_expected = kTopEarlgreyPlicPeripheralUart0;
-    for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
-         irq <= kDifUartIrqRxParityErr; ++irq) {
-      uart_irq_expected = irq;
-      LOG_INFO("Triggering uart0 IRQ %d.", irq);
-      CHECK_DIF_OK(dif_uart_irq_force(&uart0, irq, true));
-
-      // TODO: Make race-condition free
-      CHECK(uart_irq_serviced == irq,
-            "Incorrect uart0 IRQ serviced: exp = %d, obs = %d", irq,
-            uart_irq_serviced);
-      LOG_INFO("IRQ %d from uart0 is serviced.", irq);
-    }
-  }
-
-  peripheral_expected = kTopEarlgreyPlicPeripheralUart1;
-  for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
-       irq <= kDifUartIrqRxParityErr; ++irq) {
-    uart_irq_expected = irq;
-    LOG_INFO("Triggering uart1 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_uart_irq_force(&uart1, irq, true));
-
-    // TODO: Make race-condition free
-    CHECK(uart_irq_serviced == irq,
-          "Incorrect uart1 IRQ serviced: exp = %d, obs = %d", irq,
-          uart_irq_serviced);
-    LOG_INFO("IRQ %d from uart1 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopEarlgreyPlicPeripheralUart2;
-  for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
-       irq <= kDifUartIrqRxParityErr; ++irq) {
-    uart_irq_expected = irq;
-    LOG_INFO("Triggering uart2 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_uart_irq_force(&uart2, irq, true));
-
-    // TODO: Make race-condition free
-    CHECK(uart_irq_serviced == irq,
-          "Incorrect uart2 IRQ serviced: exp = %d, obs = %d", irq,
-          uart_irq_serviced);
-    LOG_INFO("IRQ %d from uart2 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopEarlgreyPlicPeripheralUart3;
-  for (dif_uart_irq_t irq = kDifUartIrqTxWatermark;
-       irq <= kDifUartIrqRxParityErr; ++irq) {
-    uart_irq_expected = irq;
-    LOG_INFO("Triggering uart3 IRQ %d.", irq);
-    CHECK_DIF_OK(dif_uart_irq_force(&uart3, irq, true));
-
-    // TODO: Make race-condition free
-    CHECK(uart_irq_serviced == irq,
-          "Incorrect uart3 IRQ serviced: exp = %d, obs = %d", irq,
-          uart_irq_serviced);
-    LOG_INFO("IRQ %d from uart3 is serviced.", irq);
-  }
-
-  peripheral_expected = kTopEarlgreyPlicPeripheralUsbdev;
-  for (dif_usbdev_irq_t irq = kDifUsbdevIrqPktReceived;
-       irq <= kDifUsbdevIrqLinkOutErr; ++irq) {
-    usbdev_irq_expected = irq;
-    LOG_INFO("Triggering usbdev IRQ %d.", irq);
-    CHECK_DIF_OK(dif_usbdev_irq_force(&usbdev, irq, true));
-
-    // TODO: Make race-condition free
-    CHECK(usbdev_irq_serviced == irq,
-          "Incorrect usbdev IRQ serviced: exp = %d, obs = %d", irq,
-          usbdev_irq_serviced);
-    LOG_INFO("IRQ %d from usbdev is serviced.", irq);
   }
 }
 

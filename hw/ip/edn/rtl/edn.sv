@@ -6,6 +6,8 @@
 
 `include "prim_assert.sv"
 
+`include "prim_flop_macros.sv"
+
 module edn
   import edn_pkg::*;
   import edn_reg_pkg::*;

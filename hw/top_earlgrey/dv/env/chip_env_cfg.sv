@@ -205,12 +205,12 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
       jtag_dmi_ral = create_jtag_dmi_reg_block(m_jtag_riscv_agent_cfg.m_jtag_agent_cfg);
       // Fix the reset values of these fields based on our design.
       `uvm_info(`gfn, "Fixing reset values in jtag_dmi_ral", UVM_LOW)
-      jtag_dmi_ral.hartinfo.dataaddr.set_reset(dm::DataAddr);
-      jtag_dmi_ral.hartinfo.datasize.set_reset(dm::DataCount);
+      jtag_dmi_ral.hartinfo.dataaddr.set_reset(dm_ot::DataAddr);
+      jtag_dmi_ral.hartinfo.datasize.set_reset(dm_ot::DataCount);
       jtag_dmi_ral.hartinfo.dataaccess.set_reset(1);  // TODO: verify this!
       jtag_dmi_ral.hartinfo.nscratch.set_reset(2);  // TODO: verify this!
-      jtag_dmi_ral.abstractcs.datacount.set_reset(dm::DataCount);
-      jtag_dmi_ral.abstractcs.progbufsize.set_reset(dm::ProgBufSize);
+      jtag_dmi_ral.abstractcs.datacount.set_reset(dm_ot::DataCount);
+      jtag_dmi_ral.abstractcs.progbufsize.set_reset(dm_ot::ProgBufSize);
       jtag_dmi_ral.dmstatus.authenticated.set_reset(1);  // No authentication performed.
       jtag_dmi_ral.sbcs.sbaccess32.set_reset(1);
       jtag_dmi_ral.sbcs.sbaccess16.set_reset(1);
@@ -279,17 +279,17 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     // Writes to other CSRs may affect dmstatus, even the HW reset test.
     csr_excl.add_excl(jtag_dmi_ral.dmstatus.get_full_name(), CsrExclCheck, CsrAllTests);
 
-    // We have only upto dm::DataCount number of these registers available.
+    // We have only upto dm_ot::DataCount number of these registers available.
     foreach (jtag_dmi_ral.abstractdata[i]) begin
-      if (i >= dm::DataCount) begin
+      if (i >= dm_ot::DataCount) begin
         csr_excl.add_excl(jtag_dmi_ral.abstractdata[i].get_full_name(),
             CsrExclWriteCheck, CsrNonInitTests);
       end
     end
 
-    // We have only upto dm::ProgBufSize number of these registers available.
+    // We have only upto dm_ot::ProgBufSize number of these registers available.
     foreach (jtag_dmi_ral.progbuf[i]) begin
-      if (i >= dm::ProgBufSize) begin
+      if (i >= dm_ot::ProgBufSize) begin
         csr_excl.add_excl(jtag_dmi_ral.progbuf[i].get_full_name(),
             CsrExclWriteCheck, CsrNonInitTests);
       end

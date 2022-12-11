@@ -37,8 +37,8 @@ module dm_csrs_sva #(
   input logic           rst_ni,
   input logic           dmi_req_valid_i,
   input logic           dmi_req_ready_o,
-  input dm::dmi_req_t   dmi_req_i,
-  input dm::dtm_op_e    dtm_op
+  input dm_ot::dmi_req_t   dmi_req_i,
+  input dm_ot::dtm_op_e    dtm_op
 );
 
   ///////////////////////////////////////////////////////
@@ -47,9 +47,9 @@ module dm_csrs_sva #(
 
   haltsum: assert property (
       @(posedge clk_i) disable iff (!rst_ni)
-          (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm::DTM_READ) |->
+          (dmi_req_ready_o && dmi_req_valid_i && dtm_op == dm_ot::DTM_READ) |->
               !({1'b0, dmi_req_i.addr} inside
-                  {dm::HaltSum0, dm::HaltSum1, dm::HaltSum2, dm::HaltSum3}))
+                  {dm_ot::HaltSum0, dm_ot::HaltSum1, dm_ot::HaltSum2, dm_ot::HaltSum3}))
       else $warning("Haltsums have not been properly tested yet.");
 
 endmodule: dm_csrs_sva

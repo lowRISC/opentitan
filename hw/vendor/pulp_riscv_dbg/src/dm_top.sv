@@ -17,7 +17,7 @@
 *              SW infrastructure re-use. As of version 0.13
 */
 
-module dm_top #(
+module dm_ot_top #(
   parameter int unsigned        NrHarts          = 1,
   parameter int unsigned        BusWidth         = 32,
   parameter int unsigned        DmBaseAddress    = 'h1000, // default to non-zero page
@@ -36,7 +36,7 @@ module dm_top #(
   output logic [NrHarts-1:0]    debug_req_o, // async debug request
   // communicate whether the hart is unavailable (e.g.: power down)
   input  logic [NrHarts-1:0]    unavailable_i,
-  input  dm::hartinfo_t [NrHarts-1:0] hartinfo_i,
+  input  dm_ot::hartinfo_t [NrHarts-1:0] hartinfo_i,
 
   input  logic                  slave_req_i,
   input  logic                  slave_we_i,
@@ -63,11 +63,11 @@ module dm_top #(
                                             // FIFO.
   input  logic                  dmi_req_valid_i,
   output logic                  dmi_req_ready_o,
-  input  dm::dmi_req_t          dmi_req_i,
+  input  dm_ot::dmi_req_t          dmi_req_i,
 
   output logic                  dmi_resp_valid_o,
   input  logic                  dmi_resp_ready_i,
-  output dm::dmi_resp_t         dmi_resp_o
+  output dm_ot::dmi_resp_t         dmi_resp_o
 );
 
   // Debug CSRs
@@ -78,14 +78,14 @@ module dm_top #(
   logic [NrHarts-1:0]               resumereq;
   logic                             clear_resumeack;
   logic                             cmd_valid;
-  dm::command_t                     cmd;
+  dm_ot::command_t                     cmd;
 
   logic                             cmderror_valid;
-  dm::cmderr_e                      cmderror;
+  dm_ot::cmderr_e                      cmderror;
   logic                             cmdbusy;
-  logic [dm::ProgBufSize-1:0][31:0] progbuf;
-  logic [dm::DataCount-1:0][31:0]   data_csrs_mem;
-  logic [dm::DataCount-1:0][31:0]   data_mem_csrs;
+  logic [dm_ot::ProgBufSize-1:0][31:0] progbuf;
+  logic [dm_ot::DataCount-1:0][31:0]   data_csrs_mem;
+  logic [dm_ot::DataCount-1:0][31:0]   data_mem_csrs;
   logic                             data_valid;
   logic                             ndmreset;
   logic [19:0]                      hartsel;
@@ -108,7 +108,7 @@ module dm_top #(
 
   assign ndmreset_o = ndmreset;
 
-  dm_csrs #(
+  dm_ot_csrs #(
     .NrHarts(NrHarts),
     .BusWidth(BusWidth),
     .SelectableHarts(SelectableHarts)
@@ -159,7 +159,7 @@ module dm_top #(
     .sberror_i               ( sberror               )
   );
 
-  dm_sba #(
+  dm_ot_sba #(
     .BusWidth(BusWidth),
     .ReadByteEnable(ReadByteEnable)
   ) i_dm_sba (
@@ -195,7 +195,7 @@ module dm_top #(
     .sberror_o               ( sberror               )
   );
 
-  dm_mem #(
+  dm_ot_mem #(
     .NrHarts(NrHarts),
     .BusWidth(BusWidth),
     .SelectableHarts(SelectableHarts),
@@ -229,4 +229,4 @@ module dm_top #(
     .err_o                   ( slave_err_o           )
   );
 
-endmodule : dm_top
+endmodule 

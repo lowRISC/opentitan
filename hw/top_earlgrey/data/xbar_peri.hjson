@@ -15,49 +15,6 @@
       reset: "rst_peri_ni",
       xbar:  "true",
       pipeline: false
-
-    },
-    { name:      "uart0",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false
-    },
-    { name:      "uart1",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false
-    },
-    { name:      "uart2",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false
-    },
-    { name:      "uart3",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false
-    },
-    { name:      "i2c0",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false
-    },
-    { name:      "i2c1",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false
-    },
-    { name:      "i2c2",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false
     },
     { name:      "pattgen",
       type:      "device",
@@ -65,19 +22,13 @@
       reset:     "rst_peri_ni",
       pipeline:  false
     },
-    { name:      "pwm_aon",
+    /*{ name:      "pwm_aon",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
       pipeline:  false
-    },
+    },*/
     { name:      "gpio",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false
-    },
-    { name:      "spi_device",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
@@ -131,12 +82,6 @@
       reset:     "rst_peri_ni",
       pipeline:  false
     },
-    { name:      "sensor_ctrl",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false,
-    },
     { name:      "alert_handler",
       type:      "device",
       clock:     "clk_peri_i",
@@ -167,27 +112,15 @@
       reset:     "rst_peri_ni",
       pipeline:  false,
     }
-    { name:      "adc_ctrl_aon",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false,
-    }
-    { name:      "ast",
-      type:      "device",
-      clock:     "clk_peri_i",
-      reset:     "rst_peri_ni",
-      pipeline:  false,
-    },
   ],
   connections: {
     main:  [
-      "uart0", "uart1", "uart2", "uart3", "i2c0", "i2c1", "i2c2", "pattgen",
-      "gpio", "spi_device", "rv_timer",
+      "pattgen",
+      "gpio", "rv_timer",
       "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
-      "otp_ctrl.core", "otp_ctrl.prim", "lc_ctrl", "sensor_ctrl",
-      "alert_handler", "ast", "sram_ctrl_ret_aon.ram", "sram_ctrl_ret_aon.regs",
-      "aon_timer_aon", "adc_ctrl_aon", "sysrst_ctrl_aon", "pwm_aon"
+      "otp_ctrl.core", "otp_ctrl.prim", "lc_ctrl",
+      "alert_handler", "sram_ctrl_ret_aon.ram", "sram_ctrl_ret_aon.regs",
+      "aon_timer_aon", "sysrst_ctrl_aon",// "pwm_aon"
     ],
   },
 }

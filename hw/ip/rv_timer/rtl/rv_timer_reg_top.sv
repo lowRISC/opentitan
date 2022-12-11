@@ -160,7 +160,7 @@ module rv_timer_reg_top (
   logic alert_test_qe;
   logic [0:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_alert_test (
     .re     (1'b0),
@@ -178,9 +178,9 @@ module rv_timer_reg_top (
 
   // Subregister 0 of Multireg ctrl
   // R[ctrl]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_ctrl (
     .clk_i   (clk_i),
@@ -206,9 +206,9 @@ module rv_timer_reg_top (
 
   // Subregister 0 of Multireg intr_enable0
   // R[intr_enable0]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0)
   ) u_intr_enable0 (
     .clk_i   (clk_i),
@@ -234,9 +234,9 @@ module rv_timer_reg_top (
 
   // Subregister 0 of Multireg intr_state0
   // R[intr_state0]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0)
   ) u_intr_state0 (
     .clk_i   (clk_i),
@@ -265,7 +265,7 @@ module rv_timer_reg_top (
   logic intr_test0_qe;
   logic [0:0] intr_test0_flds_we;
   assign intr_test0_qe = &intr_test0_flds_we;
-  prim_subreg_ext #(
+  prim_ot_subreg_ext #(
     .DW    (1)
   ) u_intr_test0 (
     .re     (1'b0),
@@ -283,9 +283,9 @@ module rv_timer_reg_top (
 
   // R[cfg0]: V(False)
   //   F[prescale]: 11:0
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (12),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (12'h0)
   ) u_cfg0_prescale (
     .clk_i   (clk_i),
@@ -309,9 +309,9 @@ module rv_timer_reg_top (
   );
 
   //   F[step]: 23:16
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (8),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (8'h1)
   ) u_cfg0_step (
     .clk_i   (clk_i),
@@ -336,9 +336,9 @@ module rv_timer_reg_top (
 
 
   // R[timer_v_lower0]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_timer_v_lower0 (
     .clk_i   (clk_i),
@@ -363,9 +363,9 @@ module rv_timer_reg_top (
 
 
   // R[timer_v_upper0]: V(False)
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'h0)
   ) u_timer_v_upper0 (
     .clk_i   (clk_i),
@@ -401,9 +401,9 @@ module rv_timer_reg_top (
     .d_i(&compare_lower0_0_flds_we),
     .q_o(compare_lower0_0_qe)
   );
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'hffffffff)
   ) u_compare_lower0_0 (
     .clk_i   (clk_i),
@@ -440,9 +440,9 @@ module rv_timer_reg_top (
     .d_i(&compare_upper0_0_flds_we),
     .q_o(compare_upper0_0_qe)
   );
-  prim_subreg #(
+  prim_ot_subreg #(
     .DW      (32),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .SwAccess(prim_ot_subreg_pkg::SwAccessRW),
     .RESVAL  (32'hffffffff)
   ) u_compare_upper0_0 (
     .clk_i   (clk_i),

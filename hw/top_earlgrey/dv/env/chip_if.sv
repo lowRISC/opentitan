@@ -690,7 +690,7 @@ interface chip_if;
   typedef struct packed {
     logic [31:0][31:0] gprs;
     // Debug CSRs.
-    dm::dcsr_t   dcsr;
+    dm_ot::dcsr_t   dcsr;
     logic [31:0] dpc;
     logic [31:0] dscratch0;
     logic [31:0] dscratch1;
@@ -704,7 +704,7 @@ interface chip_if;
     assign probed_cpu_csrs.gprs[i] = `CPU_CORE_HIER.gen_regfile_ff.register_file_i.rf_reg[i][31:0];
   end
   assign probed_cpu_csrs.dcsr =
-      dm::dcsr_t'(`CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_dcsr_csr.rd_data_o);
+      dm_ot::dcsr_t'(`CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_dcsr_csr.rd_data_o);
   assign probed_cpu_csrs.dpc =
       `CPU_CORE_HIER.u_ibex_core.cs_registers_i.u_depc_csr.rd_data_o;
   assign probed_cpu_csrs.dscratch0 =

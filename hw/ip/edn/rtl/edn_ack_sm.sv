@@ -5,6 +5,10 @@
 // Description: interface between a req/ack interface and a fifo
 //
 
+`include "prim_assert.sv"
+
+`include "prim_flop_macros.sv"
+
 module edn_ack_sm (
   input logic                clk_i,
   input logic                rst_ni,

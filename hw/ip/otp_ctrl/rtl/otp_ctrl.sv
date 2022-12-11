@@ -1461,8 +1461,8 @@ module otp_ctrl
       u_tlul_lc_gate.u_state_regs, alert_tx_o[2])
 
   // Alert assertions for double LFSR.
-  `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(DoubleLfsrCheck_A,
-      u_otp_ctrl_lfsr_timer.u_prim_double_lfsr, alert_tx_o[1])
+ // `ASSERT_PRIM_DOUBLE_LFSR_ERROR_TRIGGER_ALERT(DoubleLfsrCheck_A,
+ //     u_otp_ctrl_lfsr_timer.u_prim_double_lfsr, alert_tx_o[1])
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[2])
@@ -1471,10 +1471,10 @@ module otp_ctrl
   `ifndef PRIM_DEFAULT_IMPL
     `define PRIM_DEFAULT_IMPL prim_pkg::ImplGeneric
   `endif
-  if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
+ /* if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_reg_we_assert_generic
     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(PrimFsmCheck_A,
         u_otp.gen_generic.u_impl_generic.u_state_regs, alert_tx_o[3])
     `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(PrimRegWeOnehotCheck_A,
         u_otp.gen_generic.u_impl_generic.u_reg_top, alert_tx_o[3])
-  end
+  end*/
 endmodule : otp_ctrl

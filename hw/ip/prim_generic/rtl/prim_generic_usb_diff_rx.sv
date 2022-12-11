@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_usb_diff_rx #(
+module prim_usb_diff_rx #(
   parameter int CalibW = 32
 ) (
   input wire         input_pi,      // differential input
@@ -37,4 +37,4 @@ module prim_generic_usb_diff_rx #(
     .out_o (usb_diff_rx_obs_o)
   );
 
-endmodule : prim_generic_usb_diff_rx
+endmodule : prim_usb_diff_rx

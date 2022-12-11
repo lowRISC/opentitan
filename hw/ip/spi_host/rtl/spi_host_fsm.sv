@@ -5,6 +5,10 @@
 // Core Implemenation module for Serial Peripheral Interface (SPI) Host IP.
 //
 
+
+
+`include "prim_assert.sv"
+
 module spi_host_fsm
   import spi_host_cmd_pkg::*;
 #(

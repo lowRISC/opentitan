@@ -6,6 +6,8 @@
 //
 
 `include "prim_flop_macros.sv"
+`include "prim_assert.sv"
+
 
 module otp_ctrl_dai
   import otp_ctrl_pkg::*;

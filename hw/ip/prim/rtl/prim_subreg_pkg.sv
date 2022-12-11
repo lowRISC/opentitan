@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-package prim_subreg_pkg;
+package prim_ot_subreg_pkg;
 
   // Register access specifier
   typedef enum logic [2:0] {

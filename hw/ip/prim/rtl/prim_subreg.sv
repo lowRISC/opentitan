@@ -4,8 +4,8 @@
 //
 // Register slice conforming to Comportibility guide.
 
-module prim_subreg
-  import prim_subreg_pkg::*;
+module prim_ot_subreg
+  import prim_ot_subreg_pkg::*;
 #(
   parameter int            DW       = 32,
   parameter sw_access_e    SwAccess = SwAccessRW,
@@ -37,7 +37,7 @@ module prim_subreg
   logic          wr_en;
   logic [DW-1:0] wr_data;
 
-  prim_subreg_arb #(
+  prim_ot_subreg_arb #(
     .DW       ( DW       ),
     .SwAccess ( SwAccess )
   ) wr_en_data_arb (

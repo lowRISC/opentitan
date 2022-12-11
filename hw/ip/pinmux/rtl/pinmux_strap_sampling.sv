@@ -1,6 +1,10 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: Apache-2.
+
+`include "prim_assert.sv"
+
+`include "prim_flop_macros.sv"
 
 module pinmux_strap_sampling
   import pinmux_pkg::*;

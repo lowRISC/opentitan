@@ -13,7 +13,7 @@ import hjson  # type: ignore
 from Crypto.Hash import cSHAKE256
 
 from mem import MemChunk, MemFile
-from util.design.secded_gen import ecc_encode_some, load_secded_config  # type: ignore
+from secded_gen import ecc_encode_some, load_secded_config  # type: ignore
 
 ROM_BASE_WORD = 0x8000 // 4
 ROM_SIZE_WORDS = 8192

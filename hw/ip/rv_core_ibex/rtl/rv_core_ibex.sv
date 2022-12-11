@@ -8,6 +8,9 @@
  * 32 bit RISC-V core supporting the RV32I + optionally EMC instruction sets.
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
+
+`include "prim_assert.sv"
+
 module rv_core_ibex
   import rv_core_ibex_pkg::*;
   import rv_core_ibex_reg_pkg::*;

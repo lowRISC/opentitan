@@ -4,6 +4,6 @@
 
 `verilator_config
 
-// prim_subreg
+// prim_ot_subreg
 // for RO wd is not used
-lint_off -rule UNUSED -file "*/rtl/prim_subreg.sv" -match "Signal is not used: 'wd'"
+lint_off -rule UNUSED -file "*/rtl/prim_ot_subreg.sv" -match "Signal is not used: 'wd'"
