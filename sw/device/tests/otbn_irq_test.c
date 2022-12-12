@@ -26,10 +26,10 @@ static volatile bool otbn_finished;
 /**
  * Get OTBN error bits; check they match expected_err_bits.
  */
-static void check_otbn_err_bits(otbn_t *otbn_ctx,
+static void check_otbn_err_bits(dif_otbn_t *otbn,
                                 dif_otbn_err_bits_t expected_err_bits) {
   dif_otbn_err_bits_t otbn_err_bits;
-  CHECK_DIF_OK(dif_otbn_get_err_bits(&otbn_ctx->dif, &otbn_err_bits));
+  CHECK_DIF_OK(dif_otbn_get_err_bits(otbn, &otbn_err_bits));
   CHECK(otbn_err_bits == expected_err_bits,
         "dif_otbn_get_err_bits() produced unexpected error bits: %x",
         otbn_err_bits);
@@ -38,9 +38,9 @@ static void check_otbn_err_bits(otbn_t *otbn_ctx,
 /**
  * Get the OTBN instruction count; check that it matches expected_insn_cnt.
  */
-static void check_otbn_insn_cnt(otbn_t *otbn_ctx, uint32_t expected_insn_cnt) {
+static void check_otbn_insn_cnt(dif_otbn_t *otbn, uint32_t expected_insn_cnt) {
   uint32_t insn_cnt;
-  CHECK_DIF_OK(dif_otbn_get_insn_cnt(&otbn_ctx->dif, &insn_cnt));
+  CHECK_DIF_OK(dif_otbn_get_insn_cnt(otbn, &insn_cnt));
   CHECK(insn_cnt == expected_insn_cnt,
         "Expected to execute %d instructions, but got %d.", expected_insn_cnt,
         insn_cnt);
@@ -49,10 +49,10 @@ static void check_otbn_insn_cnt(otbn_t *otbn_ctx, uint32_t expected_insn_cnt) {
 /**
  * Get OTBN's status; check that it matches expected_status.
  */
-static void check_otbn_status(otbn_t *otbn_ctx,
+static void check_otbn_status(dif_otbn_t *otbn,
                               dif_otbn_status_t expected_status) {
   dif_otbn_status_t status;
-  CHECK_DIF_OK(dif_otbn_get_status(&otbn_ctx->dif, &status));
+  CHECK_DIF_OK(dif_otbn_get_status(otbn, &status));
   CHECK(status == expected_status, "Unexpected status: expected %d but got %d.",
         expected_status, status);
 }
@@ -63,7 +63,7 @@ static void check_otbn_status(otbn_t *otbn_ctx,
  * Once the binary has finished, check for expected status, error bits and
  * instruction count.
  */
-static void run_test_with_irqs(otbn_t *otbn_ctx, otbn_app_t app,
+static void run_test_with_irqs(dif_otbn_t *otbn, otbn_app_t app,
                                dif_otbn_status_t expected_status,
                                dif_otbn_err_bits_t expected_err_bits,
                                uint32_t expected_insn_cnt) {
@@ -71,19 +71,19 @@ static void run_test_with_irqs(otbn_t *otbn_ctx, otbn_app_t app,
   // we see the Done interrupt fire.
   otbn_finished = false;
 
-  CHECK(otbn_load_app(otbn_ctx, app) == kOtbnOk);
+  otbn_testutils_load_app(otbn, app);
 
   // If the the CTRL.SOFTWARE_ERRS_FATAL flag is set, a software error will be
   // promoted to a fatal error (which, among other things, bricks OTBN until
   // next reset). Make sure that's not turned on.
-  CHECK(dif_otbn_set_ctrl_software_errs_fatal(&otbn_ctx->dif, false) == kDifOk);
+  CHECK(dif_otbn_set_ctrl_software_errs_fatal(otbn, false) == kDifOk);
 
   // Enable Done interrupt
-  CHECK_DIF_OK(dif_otbn_irq_set_enabled(&otbn_ctx->dif, kDifOtbnIrqDone,
-                                        kDifToggleEnabled));
+  CHECK_DIF_OK(
+      dif_otbn_irq_set_enabled(otbn, kDifOtbnIrqDone, kDifToggleEnabled));
 
   // Start OTBN
-  CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
+  otbn_testutils_execute(otbn);
 
   // At this point, OTBN should be running. Wait for an interrupt that says
   // it's done.
@@ -101,9 +101,9 @@ static void run_test_with_irqs(otbn_t *otbn_ctx, otbn_app_t app,
   }
   irq_global_ctrl(true);
 
-  check_otbn_status(otbn_ctx, expected_status);
-  check_otbn_err_bits(otbn_ctx, expected_insn_cnt);
-  check_otbn_insn_cnt(otbn_ctx, expected_err_bits);
+  check_otbn_status(otbn, expected_status);
+  check_otbn_err_bits(otbn, expected_insn_cnt);
+  check_otbn_insn_cnt(otbn, expected_err_bits);
 }
 
 /**
@@ -167,10 +167,10 @@ bool test_main(void) {
 
   mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
 
-  otbn_t otbn_ctx;
-  CHECK(otbn_init(&otbn_ctx, base_addr) == kOtbnOk);
+  dif_otbn_t otbn;
+  CHECK_DIF_OK(dif_otbn_init(base_addr, &otbn));
 
-  run_test_with_irqs(&otbn_ctx, kAppErrTest, kDifOtbnStatusIdle,
+  run_test_with_irqs(&otbn, kAppErrTest, kDifOtbnStatusIdle,
                      kDifOtbnErrBitsBadDataAddr, 1);
 
   return true;
