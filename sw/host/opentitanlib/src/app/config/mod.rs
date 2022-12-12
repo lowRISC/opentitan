@@ -10,7 +10,7 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-use crate::app::TransportWrapper;
+use crate::app::TransportWrapperBuilder;
 use crate::collection;
 
 mod structs;
@@ -32,7 +32,7 @@ fn read_into_string<'a>(path: &Path, s: &'a mut String) -> Result<&'a str> {
     Ok(s.as_str())
 }
 
-pub fn process_config_file(env: &mut TransportWrapper, conf_file: &Path) -> Result<()> {
+pub fn process_config_file(env: &mut TransportWrapperBuilder, conf_file: &Path) -> Result<()> {
     log::debug!("Reading config file {:?}", conf_file);
     let mut string = String::new();
     let conf_data = if conf_file.starts_with("/__builtin__/") {
