@@ -55,6 +55,12 @@ class chip_sw_random_power_glitch_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
     `uvm_info(`gfn, "SW test ready", UVM_MEDIUM)
     repeat (NumRound) begin
+      // The timeout for this test needs to be larger than 30_000_000, otherwise certain seeds
+      // like:
+      // ./util/dvsim/dvsim.py hw/top_earlgrey/dv/chip_sim_cfg.hjson -i \
+      //   chip_sw_pwrmgr_random_sleep_power_glitch_reset --build-seed 4232114340 \
+      //   --fixed-seed 2369106033 --verbosity m
+      // will fail.
       `DV_WAIT(
             cfg.sw_logger_vif.printed_log ==
                 "Booting and setting deep sleep followed by hw por" ||
@@ -65,7 +71,7 @@ class chip_sw_random_power_glitch_vseq extends chip_sw_base_vseq;
             cfg.sw_logger_vif.printed_log ==
                 "Booting and setting normal sleep followed by glitch reset" ||
             cfg.sw_logger_vif.printed_log == "Last Booting" ||
-            cfg.sw_logger_vif.printed_log == "Test finish", , 30_000_000
+            cfg.sw_logger_vif.printed_log == "Test finish", , 40_000_000
             )
 
        `uvm_info(`gfn, "HW Booting is called", UVM_MEDIUM)
