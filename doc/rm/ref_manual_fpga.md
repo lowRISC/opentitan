@@ -86,7 +86,48 @@ I00005 hello_world.c:76] The LEDs show the ASCII code of the last character.
 
 For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/testing/test_rom).
 
-## Bitstreams: Caching and Splicing
+### Accelerating `git bisect` with the bitstream cache
+
+To set the stage, let's say you've discovered a test regression.
+The test used to pass on `GOOD_COMMIT`, but now it fails at `BAD_COMMIT`.
+Your goal is to find the *first bad commit*.
+
+In general, a linear search from `GOOD_COMMIT` to `BAD_COMMIT` is one of the slowest ways to find the first bad commit.
+We can save time by testing fewer commits with `git bisect`, which effectively applies binary search to the range of commits.
+We can save even more time by leveraging the bitstream cache with **[`//util/fpga:bitstream_bisect`](https://github.com/lowRISC/opentitan/tree/master/util/fpga/bitstream_bisect.py)**.
+
+The `:bitstream_bisect` tool is faster than regular `git bisect` because it restricts itself to cached bitstreams until it can make no more progress.
+Building a bitstream is many times slower than running a test (hours compared to minutes), and `git bisect` has no idea that some commits will be faster to classify than others due to the bitstream cache.
+
+For example, suppose that `//sw/device/tests:uart_smoketest` has regressed sometime in the last 30 commits.
+The following command could easily save hours compared to a naive `git bisect`:
+
+```sh
+# This will use the fast command to classify commits with cached bitstreams. If
+# the results are ambiguous, it will narrow them down with the slow command.
+./bazelisk.sh run //util/fpga:bitstream_bisect -- \
+    --good HEAD~30 \
+    --bad HEAD \
+    --fast-command "./bazelisk.sh test //sw/device/tests:uart_smoketest_fpga_cw310_rom" \
+    --slow-command "./bazelisk.sh test --define bitstream=vivado //sw/device/tests:uart_smoketest_fpga_cw310_rom"
+```
+
+One caveat is that neither `git bisect` nor `:bitstream_bisect` will help if the FPGA somehow retains state between tests.
+That is, if the test command bricks the FPGA causing future tests to fail, bisection will return entirely bogus results.
+We plan to add a "canary" feature to `:bitstream_bisect` that will abort the bisect when FPGA flakiness is detected (issue [#16788](https://github.com/lowRISC/opentitan/issues/16788)).
+For now, if you suspect this kind of FPGA flakiness, the best strategy may be a linear progression from `GOOD_COMMIT` to `BAD_COMMIT`.
+
+Note that the slow command doesn't necessarily have to build a bitstream.
+If you don't have a Vivado license and the test regression is reproducible in Verilator, it could make sense to fall back to the Verilated test.
+Building on the example above, you could replace the slow command with `"./bazelisk.sh test //sw/device/tests:uart_smoketest_sim_verilator"` and the `:bitstream_bisect` tool would never build any bitstreams.
+
+For more information, consult the `:bitstream_bisect` tool directly!
+
+```sh
+./bazelisk.sh run //util/fpga:bitstream_bisect -- --help
+```
+
+## Implementation of Bitstream Caching and Splicing
 
 This section gives an overview of where bitstreams are generated, how they are uploaded to the GCP cache, and how Bazel reaches into the cache.
 
@@ -121,6 +162,3 @@ By default, these targets use cached artifacts by pulling in their corresponding
 
 * TODO Define the new naming scheme.
   https://github.com/lowRISC/opentitan/issues/13807
-
-* TODO Splice a variety of ROM and OTP pairs.
-  https://github.com/lowRISC/opentitan/issues/13603
