@@ -143,7 +143,5 @@ bool test_main(void) {
   CHECK(clkmgr_testutils_check_measurement_counts(&clkmgr));
   CHECK(clkmgr_testutils_check_measurement_enables(&clkmgr, kDifToggleEnabled));
 
-  // Turn off the AON timer hardware completely before exiting.
-  aon_timer_testutils_shutdown(&aon_timer);
   return true;
 }

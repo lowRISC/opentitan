@@ -295,8 +295,6 @@ bool test_main(void) {
                            .mpec_u = (uint32_t)kDoubleFaultFirstAddrUpper,
                        });
 
-      // Turn off the AON timer hardware completely before exiting.
-      aon_timer_testutils_shutdown(&aon_timer);
       return true;
 
     default:

@@ -87,7 +87,5 @@ bool test_main(void) {
     execute_test(wakeup_count + 1, /*deep_sleep=*/true);
   }
 
-  // Turn off the AON timer hardware completely before exiting.
-  aon_timer_testutils_shutdown(&aon_timer);
   return false;
 }
