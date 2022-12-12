@@ -8,7 +8,7 @@ use structopt::StructOpt;
 use thiserror::Error;
 
 use crate::app::config::process_config_file;
-use crate::app::TransportWrapper;
+use crate::app::{TransportWrapper, TransportWrapperBuilder};
 use crate::transport::hyperdebug::c2d2::C2d2Flavor;
 use crate::transport::hyperdebug::StandardFlavor;
 use crate::transport::{EmptyTransport, Transport};
@@ -89,7 +89,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         ),
         _ => return Err(Error::UnknownInterface(interface.to_string()).into()),
     };
-    let mut env = TransportWrapper::new(backend);
+    let mut env = TransportWrapperBuilder::new(backend);
 
     if args.conf.is_empty() {
         if let Some(conf_file) = default_conf {
@@ -99,7 +99,7 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
     for conf_file in &args.conf {
         process_config_file(&mut env, conf_file.as_ref())?
     }
-    Ok(env)
+    env.build()
 }
 
 pub fn create_empty_transport() -> Result<Box<dyn Transport>> {

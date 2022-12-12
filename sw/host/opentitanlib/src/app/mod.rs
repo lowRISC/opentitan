@@ -18,9 +18,10 @@ use std::time::Duration;
 use indicatif::{ProgressBar, ProgressStyle};
 use serde_annotate::Annotate;
 use std::any::Any;
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::rc::Rc;
+use std::vec::Vec;
 
 /// Helper function to create a progress bar in the same form for each of
 /// the commands which will use it.
@@ -33,7 +34,7 @@ pub fn progress_bar(total: u64) -> ProgressBar {
     progress
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct PinConfiguration {
     /// The input/output mode of the GPIO pin.
     pub mode: Option<PinMode>,
@@ -41,6 +42,41 @@ pub struct PinConfiguration {
     pub level: Option<bool>,
     /// Whether the pin has pullup/down resistor enabled.
     pub pull_mode: Option<PullMode>,
+}
+
+fn merge_field<T>(f1: &mut Option<T>, f2: Option<T>) -> Result<(), ()>
+where
+    T: PartialEq<T> + Copy,
+{
+    match (&*f1, f2) {
+        (Some(v1), Some(v2)) if *v1 != v2 => return Err(()),
+        (None, _) => *f1 = f2,
+        _ => (),
+    }
+    Ok(())
+}
+
+impl PinConfiguration {
+    /// Sometimes one configuration file specifies OpenDrain while leaving out the level, and
+    /// another file specifies high level, while leaving out the mode.  This method will merge
+    /// declarations from multiple files, as long as they are not conflicting (e.g. both PushPull
+    /// and OpenDrain, or both high and low level.)
+    fn merge(&mut self, other: &PinConfiguration) -> Result<(), ()> {
+        merge_field(&mut self.mode, other.mode)?;
+        merge_field(&mut self.level, other.level)?;
+        merge_field(&mut self.pull_mode, other.pull_mode)?;
+        Ok(())
+    }
+}
+
+pub struct TransportWrapperBuilder {
+    transport: RefCell<Box<dyn Transport>>,
+    pin_alias_map: HashMap<String, String>,
+    uart_map: HashMap<String, String>,
+    spi_map: HashMap<String, String>,
+    i2c_map: HashMap<String, String>,
+    pin_conf_list: Vec<(String, PinConfiguration)>,
+    strapping_conf_map: HashMap<String, Vec<(String, PinConfiguration)>>,
 }
 
 // This is the structure to be passed to each Command implementation,
@@ -56,19 +92,116 @@ pub struct TransportWrapper {
     strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
 }
 
-impl TransportWrapper {
+impl TransportWrapperBuilder {
     pub fn new(transport: Box<dyn crate::transport::Transport>) -> Self {
         Self {
             transport: RefCell::new(transport),
-            pin_map: HashMap::new(),
+            pin_alias_map: HashMap::new(),
             uart_map: HashMap::new(),
             spi_map: HashMap::new(),
             i2c_map: HashMap::new(),
-            pin_conf_map: HashMap::new(),
+            pin_conf_list: Vec::new(),
             strapping_conf_map: HashMap::new(),
         }
     }
 
+    fn record_pin_conf(
+        pin_conf_list: &mut Vec<(String, PinConfiguration)>,
+        pin_conf: &config::PinConfiguration,
+    ) {
+        if (None, None, None) == (pin_conf.mode, pin_conf.pull_mode, pin_conf.level) {
+            return;
+        }
+        let mut conf_entry: PinConfiguration = PinConfiguration::default();
+        if let Some(pin_mode) = pin_conf.mode {
+            conf_entry.mode = Some(pin_mode);
+        }
+        if let Some(pull_mode) = pin_conf.pull_mode {
+            conf_entry.pull_mode = Some(pull_mode);
+        }
+        if let Some(level) = pin_conf.level {
+            conf_entry.level = Some(level);
+        }
+        pin_conf_list.push((pin_conf.name.to_string(), conf_entry))
+    }
+
+    pub fn add_configuration_file(&mut self, file: config::ConfigurationFile) -> Result<()> {
+        // Merge content of configuration file into pin_map and other members.
+        for pin_conf in file.pins {
+            if let Some(alias_of) = &pin_conf.alias_of {
+                self.pin_alias_map
+                    .insert(pin_conf.name.to_uppercase(), alias_of.clone());
+            }
+            // Record default input / open drain / push pull configuration to the pin.
+            Self::record_pin_conf(&mut self.pin_conf_list, &pin_conf);
+        }
+        for strapping_conf in file.strappings {
+            let strapping_pin_map = self
+                .strapping_conf_map
+                .entry(strapping_conf.name.to_uppercase())
+                .or_default();
+            for pin_conf in strapping_conf.pins {
+                Self::record_pin_conf(strapping_pin_map, &pin_conf);
+            }
+        }
+        for spi_conf in file.spi {
+            if let Some(alias_of) = &spi_conf.alias_of {
+                self.spi_map
+                    .insert(spi_conf.name.to_uppercase(), alias_of.clone());
+            }
+            // TODO(#8769): Record bitrate / mode configration for later
+            // use when opening spi port.
+        }
+        for uart_conf in file.uarts {
+            if let Some(alias_of) = &uart_conf.alias_of {
+                self.uart_map
+                    .insert(uart_conf.name.to_uppercase(), alias_of.clone());
+            }
+            // TODO(#8769): Record baud / parity configration for later
+            // use when opening uart.
+        }
+        Ok(())
+    }
+
+    fn consolidate_pin_conf_map(
+        pin_alias_map: &HashMap<String, String>,
+        pin_conf_list: &Vec<(String, PinConfiguration)>,
+    ) -> Result<HashMap<String, PinConfiguration>> {
+        let mut result_pin_conf_map: HashMap<String, PinConfiguration> = HashMap::new();
+        for (name, conf) in pin_conf_list {
+            result_pin_conf_map
+                .entry(map_name(pin_alias_map, name))
+                .or_default()
+                .merge(conf)
+                .map_err(|_| TransportError::InconsistentPinConf(name.to_string()))?;
+        }
+        Ok(result_pin_conf_map)
+    }
+
+    pub fn build(self) -> Result<TransportWrapper> {
+        let pin_conf_map =
+            Self::consolidate_pin_conf_map(&self.pin_alias_map, &self.pin_conf_list)?;
+        let mut strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>> =
+            HashMap::new();
+        for (strapping_name, pin_conf_map) in self.strapping_conf_map {
+            strapping_conf_map.insert(
+                strapping_name,
+                Self::consolidate_pin_conf_map(&self.pin_alias_map, &pin_conf_map)?,
+            );
+        }
+        Ok(TransportWrapper {
+            transport: self.transport,
+            pin_map: self.pin_alias_map,
+            uart_map: self.uart_map,
+            spi_map: self.spi_map,
+            i2c_map: self.i2c_map,
+            pin_conf_map,
+            strapping_conf_map,
+        })
+    }
+}
+
+impl TransportWrapper {
     /// Returns a `Capabilities` object to check the capabilities of this
     /// transport object.
     pub fn capabilities(&self) -> Result<crate::transport::Capabilities> {
@@ -79,28 +212,30 @@ impl TransportWrapper {
     pub fn spi(&self, name: &str) -> Result<Rc<dyn Target>> {
         self.transport
             .borrow()
-            .spi(Self::map_name(&self.spi_map, name).as_str())
+            .spi(map_name(&self.spi_map, name).as_str())
     }
 
     /// Returns a I2C [`Bus`] implementation.
     pub fn i2c(&self, name: &str) -> Result<Rc<dyn Bus>> {
         self.transport
             .borrow()
-            .i2c(Self::map_name(&self.i2c_map, name).as_str())
+            .i2c(map_name(&self.i2c_map, name).as_str())
     }
 
     /// Returns a [`Uart`] implementation.
     pub fn uart(&self, name: &str) -> Result<Rc<dyn Uart>> {
         self.transport
             .borrow()
-            .uart(Self::map_name(&self.uart_map, name).as_str())
+            .uart(map_name(&self.uart_map, name).as_str())
     }
 
     /// Returns a [`GpioPin`] implementation.
     pub fn gpio_pin(&self, name: &str) -> Result<Rc<dyn GpioPin>> {
-        self.transport
-            .borrow()
-            .gpio_pin(Self::map_name(&self.pin_map, name).as_str())
+        let resolved_pin_name = map_name(&self.pin_map, name);
+        if resolved_pin_name == "NULL" {
+            return Ok(Rc::new(NullPin::new(name)));
+        }
+        self.transport.borrow().gpio_pin(resolved_pin_name.as_str())
     }
 
     /// Returns a [`Emulator`] implementation.
@@ -116,23 +251,6 @@ impl TransportWrapper {
     /// Invoke non-standard functionality of some Transport implementations.
     pub fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
         self.transport.borrow().dispatch(action)
-    }
-
-    /// Given an pin/uart/spi/i2c port name, if the name is a known
-    /// alias, return the underlying name/number, otherwise return the
-    /// string as is.
-    fn map_name(map: &HashMap<String, String>, name: &str) -> String {
-        let name = name.to_uppercase();
-        match map.get(&name) {
-            Some(v) => {
-                if v.eq(&name) {
-                    name
-                } else {
-                    Self::map_name(map, v)
-                }
-            }
-            None => name,
-        }
     }
 
     /// Apply given configuration to a single pins.
@@ -180,75 +298,6 @@ impl TransportWrapper {
         }
     }
 
-    /// Records the default configuration of a pin, possibly partially overriding previous
-    /// configuration.  (E.g. base level configuration files declares a pin as push/pull with a
-    /// low level.  A higher level configuration file (which referred to the former in an
-    /// include directive) then declares a high level without mentioning input/output/open-drain
-    /// mode.  The latter will be processed last, and override just the "level" field, while
-    /// leaving the "pin_mode" field unchanged.
-    fn record_pin_conf(
-        pin_map: &HashMap<String, String>,
-        pin_conf_map: &mut HashMap<String, PinConfiguration>,
-        pin_conf: &config::PinConfiguration,
-    ) {
-        if let Some(pin_mode) = pin_conf.mode {
-            pin_conf_map
-                .entry(Self::map_name(pin_map, &pin_conf.name))
-                .or_default()
-                .mode = Some(pin_mode);
-        }
-        if let Some(pull_mode) = pin_conf.pull_mode {
-            pin_conf_map
-                .entry(Self::map_name(pin_map, &pin_conf.name))
-                .or_default()
-                .pull_mode = Some(pull_mode);
-        }
-        if let Some(level) = pin_conf.level {
-            pin_conf_map
-                .entry(Self::map_name(pin_map, &pin_conf.name))
-                .or_default()
-                .level = Some(level);
-        }
-    }
-
-    pub fn add_configuration_file(&mut self, file: config::ConfigurationFile) -> Result<()> {
-        // Merge content of configuration file into pin_map and other
-        // members.
-        for pin_conf in file.pins {
-            if let Some(alias_of) = &pin_conf.alias_of {
-                self.pin_map
-                    .insert(pin_conf.name.to_uppercase(), alias_of.clone());
-            }
-            // Record default input / open drain / push pull configuration to the pin.
-            Self::record_pin_conf(&self.pin_map, &mut self.pin_conf_map, &pin_conf);
-        }
-        for strapping_conf in file.strappings {
-            let mut strapping_pin_map = HashMap::new();
-            for pin_conf in strapping_conf.pins {
-                Self::record_pin_conf(&self.pin_map, &mut strapping_pin_map, &pin_conf);
-            }
-            self.strapping_conf_map
-                .insert(strapping_conf.name.to_uppercase(), strapping_pin_map);
-        }
-        for spi_conf in file.spi {
-            if let Some(alias_of) = &spi_conf.alias_of {
-                self.spi_map
-                    .insert(spi_conf.name.to_uppercase(), alias_of.clone());
-            }
-            // TODO(#8769): Record bitrate / mode configration for later
-            // use when opening spi port.
-        }
-        for uart_conf in file.uarts {
-            if let Some(alias_of) = &uart_conf.alias_of {
-                self.uart_map
-                    .insert(uart_conf.name.to_uppercase(), alias_of.clone());
-            }
-            // TODO(#8769): Record baud / parity configration for later
-            // use when opening uart.
-        }
-        Ok(())
-    }
-
     pub fn reset_target(&self, reset_delay: Duration, clear_uart_rx: bool) -> Result<()> {
         log::info!("Asserting the reset signal");
         self.apply_pin_strapping("RESET")?;
@@ -260,6 +309,70 @@ impl TransportWrapper {
         log::info!("Deasserting the reset signal");
         self.remove_pin_strapping("RESET")?;
         std::thread::sleep(reset_delay);
+        Ok(())
+    }
+}
+
+/// Given an pin/uart/spi/i2c port name, if the name is a known alias, return the underlying
+/// name/number, otherwise return the string as is.
+fn map_name(map: &HashMap<String, String>, name: &str) -> String {
+    let name = name.to_uppercase();
+    match map.get(&name) {
+        Some(v) => {
+            if v.eq(&name) {
+                name
+            } else {
+                map_name(map, v)
+            }
+        }
+        None => name,
+    }
+}
+
+/// Certain transports may want to declare that they do not support a particular pin and that it
+/// should be ignored, even though its name is mentioned in e.g. generic strapping configurations.
+/// (Absent any such declaration, it would result in an error to mention strappings of a pin that
+/// is not in fact supported.)
+struct NullPin {
+    name: String,
+    has_warned: Cell<bool>,
+}
+
+impl NullPin {
+    fn new(name: &str) -> Self {
+        Self {
+            name: name.to_string(),
+            has_warned: Cell::new(false),
+        }
+    }
+
+    /// Emit a warning the first this pin is accessed.
+    fn warn(&self) {
+        if !self.has_warned.get() {
+            log::warn!("Accessed NULL pin {}", self.name);
+            self.has_warned.set(true);
+        }
+    }
+}
+
+impl GpioPin for NullPin {
+    fn read(&self) -> Result<bool> {
+        self.warn();
+        Ok(false)
+    }
+
+    fn write(&self, _value: bool) -> Result<()> {
+        self.warn();
+        Ok(())
+    }
+
+    fn set_mode(&self, _mode: PinMode) -> Result<()> {
+        self.warn();
+        Ok(())
+    }
+
+    fn set_pull_mode(&self, _mode: PullMode) -> Result<()> {
+        self.warn();
         Ok(())
     }
 }
