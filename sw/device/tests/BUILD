@@ -888,6 +888,9 @@ opentitan_functest(
 opentitan_functest(
     name = "entropy_src_edn_reqs_test",
     srcs = ["entropy_src_edn_reqs_test.c"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         ":otbn_randomness_impl",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -904,7 +907,6 @@ opentitan_functest(
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
-        "//sw/device/lib/runtime:otbn",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing:entropy_testutils",
