@@ -1,0 +1,99 @@
+// Copyright lowRISC contributors.
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#include "sw/device/lib/crypto/include/hash.h"
+
+#include <stdbool.h>
+
+#include "sw/device/lib/crypto/drivers/kmac.h"
+
+/**
+ * Return the digest size (in bytes) for given hashing mode.
+ *
+ * @param hash_mode Hashing mode (e.g. kHashModeSha256).
+ * @param digest_len Result digest size in bytes.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+static crypto_status_t get_digest_size(hash_mode_t hash_mode,
+                                       size_t *digest_len) {
+  if (digest_len == NULL) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Below `digest_len` is in bytes, therefore magic values are obtained
+  // after division by 8.
+  switch (hash_mode) {
+    case kHashModeSha3_224:
+      *digest_len = 224 / 8;
+      break;
+    case kHashModeSha256:
+      OT_FALLTHROUGH_INTENDED;
+    case kHashModeSha3_256:
+      *digest_len = 256 / 8;
+      break;
+    case kHashModeSha384:
+      OT_FALLTHROUGH_INTENDED;
+    case kHashModeSha3_384:
+      *digest_len = 384 / 8;
+      break;
+    case kHashModeSha512:
+      OT_FALLTHROUGH_INTENDED;
+    case kHashModeSha3_512:
+      *digest_len = 512 / 8;
+      break;
+    default:
+      return kCryptoStatusBadArgs;
+  }
+  return kCryptoStatusOK;
+}
+
+OT_WARN_UNUSED_RESULT
+crypto_status_t otcrypto_hash(crypto_const_uint8_buf_t input_message,
+                              hash_mode_t hash_mode,
+                              crypto_uint8_buf_t *digest) {
+  if (input_message.data == NULL && input_message.len != 0) {
+    return kCryptoStatusBadArgs;
+  } else if (digest->data == NULL) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // Check `digest->len` is consistent with `hash_mode`
+  size_t expected_digest_len;
+  crypto_status_t err_status = get_digest_size(hash_mode, &expected_digest_len);
+  if (err_status != kCryptoStatusOK) {
+    return err_status;
+  } else if (expected_digest_len != digest->len) {
+    return kCryptoStatusBadArgs;
+  }
+
+  kmac_error_t err = kKmacOk;
+  switch (hash_mode) {
+    case kHashModeSha3_224:
+      err = kmac_sha3_224(input_message, digest);
+      break;
+    case kHashModeSha3_256:
+      err = kmac_sha3_256(input_message, digest);
+      break;
+    case kHashModeSha3_384:
+      err = kmac_sha3_384(input_message, digest);
+      break;
+    case kHashModeSha3_512:
+      err = kmac_sha3_512(input_message, digest);
+      break;
+    default:
+      // TODO: (#16410) Connect SHA-2 implementations
+      return kCryptoStatusBadArgs;
+  }
+
+  // TODO: (#14549, #16410) Revisit KMAC error flow
+  // Need to map KMAC driver error enum to cryptolib error enum
+  if (err != kKmacOk) {
+    return kCryptoStatusBadArgs;
+  }
+
+  // TODO: (#16410) SHA-2 error check to be added here
+
+  return kCryptoStatusOK;
+}

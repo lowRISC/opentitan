@@ -15,3 +15,17 @@ cc_library(
         "//sw/device/lib/base:hardened",
     ],
 )
+
+cc_library(
+    name = "hash",
+    srcs = ["hash.c"],
+    hdrs = [
+        "//sw/device/lib/crypto/drivers:kmac.h",
+        "//sw/device/lib/crypto/include:datatypes.h",
+        "//sw/device/lib/crypto/include:hash.h",
+    ],
+    deps = [
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/crypto/drivers:kmac",
+    ],
+)

@@ -5,6 +5,8 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_HASH_H_
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_HASH_H_
 
+#include "sw/device/lib/crypto/include/datatypes.h"
+
 /**
  * @file
  * @brief Hash functions for the OpenTitan cryptography library.

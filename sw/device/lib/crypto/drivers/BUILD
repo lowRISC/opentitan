@@ -39,12 +39,16 @@ opentitan_functest(
 cc_library(
     name = "kmac",
     srcs = ["kmac.c"],
-    hdrs = ["kmac.h"],
+    hdrs = [
+        "kmac.h",
+        "//sw/device/lib/crypto/include:datatypes.h",
+    ],
     deps = [
         "//hw/ip/kmac/data:kmac_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
     ],
 )
@@ -69,6 +73,7 @@ opentitan_functest(
         ":kmac_test_vectors",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
