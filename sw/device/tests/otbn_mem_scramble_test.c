@@ -6,7 +6,7 @@
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/otbn.h"
+#include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -99,7 +99,7 @@ static void get_rand_words(dif_rv_core_ibex_t *ibex, int num, uint32_t *rnd_buf,
     bool found = false;
     while (found == false) {
       // Get a new random number.
-      CHECK(dif_rv_core_ibex_read_rnd_data(ibex, &rnd_word) == kOtbnOk);
+      CHECK_DIF_OK(dif_rv_core_ibex_read_rnd_data(ibex, &rnd_word));
       rnd_word = rnd_word % max;
       // Check if the number is unique.
       found = true;
@@ -125,12 +125,12 @@ static void get_rand_words(dif_rv_core_ibex_t *ibex, int num, uint32_t *rnd_buf,
  * @param otbn_write Pointer to the function to write the memory. It can be
  *                   either `dif_otbn_imem_write` or `dif_otbn_dmem_write`.
  */
-static void otbn_write_mem_words(const otbn_t *ctx, const int num,
+static void otbn_write_mem_words(const dif_otbn_t *otbn, const int num,
                                  const uint32_t *word_addrs,
                                  otbn_write_t otbn_write) {
   for (int i = 0; i < num; ++i) {
-    otbn_write(&ctx->dif, word_addrs[i] * sizeof(uint32_t),
-               (void *)&word_addrs[i], sizeof(uint32_t));
+    otbn_write(otbn, word_addrs[i] * sizeof(uint32_t), (void *)&word_addrs[i],
+               sizeof(uint32_t));
   }
 }
 
@@ -147,7 +147,7 @@ static void otbn_write_mem_words(const otbn_t *ctx, const int num,
  * @param[out] num_intg_errors Pointer to the number of observed integrity
  *             errors.
  */
-static void otbn_check_mem_words(const otbn_t *ctx, const int num,
+static void otbn_check_mem_words(const dif_otbn_t *otbn, const int num,
                                  const uint32_t *word_addrs,
                                  otbn_read_t otbn_read, int *num_matches,
                                  int *num_intg_errors) {
@@ -160,7 +160,7 @@ static void otbn_check_mem_words(const otbn_t *ctx, const int num,
     // If the memory has been scrambled we expect to receive an IRQ due to the
     // integrity error.
     has_irq_fired = false;
-    otbn_read(&ctx->dif, word_addrs[i] * sizeof(uint32_t), (void *)&word,
+    otbn_read(otbn, word_addrs[i] * sizeof(uint32_t), (void *)&word,
               sizeof(uint32_t));
     match = (word_addrs[i] == word);
     if (match) {
@@ -182,15 +182,15 @@ static void otbn_check_mem_words(const otbn_t *ctx, const int num,
 
 bool test_main(void) {
   // Init OTBN DIF.
-  otbn_t otbn_ctx;
+  dif_otbn_t otbn;
   mmio_region_t otbn_addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-  CHECK(otbn_init(&otbn_ctx, otbn_addr) == kOtbnOk);
+  CHECK_DIF_OK(dif_otbn_init(otbn_addr, &otbn));
 
   // Init Ibex DIF.
   dif_rv_core_ibex_t ibex;
   mmio_region_t ibex_addr =
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
-  CHECK(dif_rv_core_ibex_init(ibex_addr, &ibex) == kOtbnOk);
+  CHECK_DIF_OK(dif_rv_core_ibex_init(ibex_addr, &ibex));
 
   uint32_t imem_offsets[kNumAddrs];
   uint32_t dmem_offsets[kNumAddrs];
@@ -199,32 +199,28 @@ bool test_main(void) {
   int num_matches_dmem, num_intg_errors_dmem;
 
   // Get random address offsets to check.
-  max =
-      (uint32_t)dif_otbn_get_imem_size_bytes(&otbn_ctx.dif) / sizeof(uint32_t) -
-      1;
+  max = (uint32_t)dif_otbn_get_imem_size_bytes(&otbn) / sizeof(uint32_t) - 1;
   get_rand_words(&ibex, kNumAddrs, imem_offsets, max);
-  max =
-      (uint32_t)dif_otbn_get_dmem_size_bytes(&otbn_ctx.dif) / sizeof(uint32_t) -
-      1;
+  max = (uint32_t)dif_otbn_get_dmem_size_bytes(&otbn) / sizeof(uint32_t) - 1;
   get_rand_words(&ibex, kNumAddrs, dmem_offsets, max);
 
   // Wait for OTBN to be idle.
-  CHECK(otbn_busy_wait_for_done(&otbn_ctx) == kOtbnOk);
+  otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError);
 
   // Write random address offsets.
-  otbn_write_mem_words(&otbn_ctx, kNumAddrs, imem_offsets, dif_otbn_imem_write);
-  otbn_write_mem_words(&otbn_ctx, kNumAddrs, dmem_offsets, dif_otbn_dmem_write);
+  otbn_write_mem_words(&otbn, kNumAddrs, imem_offsets, dif_otbn_imem_write);
+  otbn_write_mem_words(&otbn, kNumAddrs, dmem_offsets, dif_otbn_dmem_write);
 
   // Read back and check random address offsets. All values must match, we must
   // not see any integrity errors.
-  otbn_check_mem_words(&otbn_ctx, kNumAddrs, imem_offsets, dif_otbn_imem_read,
+  otbn_check_mem_words(&otbn, kNumAddrs, imem_offsets, dif_otbn_imem_read,
                        &num_matches_imem, &num_intg_errors_imem);
   CHECK(num_matches_imem == kNumAddrs, "%i unexpected IMEM mismatches",
         kNumAddrs - num_matches_imem);
   CHECK(!num_intg_errors_imem, "%i unexpected IMEM integrity errors",
         num_intg_errors_imem);
 
-  otbn_check_mem_words(&otbn_ctx, kNumAddrs, dmem_offsets, dif_otbn_dmem_read,
+  otbn_check_mem_words(&otbn, kNumAddrs, dmem_offsets, dif_otbn_dmem_read,
                        &num_matches_dmem, &num_intg_errors_dmem);
   CHECK(num_matches_dmem == kNumAddrs, "%i unexpected DMEM mismatches",
         kNumAddrs - num_matches_dmem);
@@ -232,19 +228,19 @@ bool test_main(void) {
         num_intg_errors_dmem);
 
   // Re-scramble IMEM and DMEM by fetching new scrambling keys from OTP.
-  CHECK_DIF_OK(dif_otbn_write_cmd(&otbn_ctx.dif, kDifOtbnCmdSecWipeImem));
-  CHECK(otbn_busy_wait_for_done(&otbn_ctx) == kOtbnOk);
-  CHECK_DIF_OK(dif_otbn_write_cmd(&otbn_ctx.dif, kDifOtbnCmdSecWipeDmem));
-  CHECK(otbn_busy_wait_for_done(&otbn_ctx) == kOtbnOk);
+  CHECK_DIF_OK(dif_otbn_write_cmd(&otbn, kDifOtbnCmdSecWipeImem));
+  otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError);
+  CHECK_DIF_OK(dif_otbn_write_cmd(&otbn, kDifOtbnCmdSecWipeDmem));
+  otbn_testutils_wait_for_done(&otbn, kDifOtbnErrBitsNoError);
 
   // Read back and check random address offsets. We don't care about the values.
   // "Most" reads should trigger integrity errors.
-  otbn_check_mem_words(&otbn_ctx, kNumAddrs, imem_offsets, dif_otbn_imem_read,
+  otbn_check_mem_words(&otbn, kNumAddrs, imem_offsets, dif_otbn_imem_read,
                        &num_matches_imem, &num_intg_errors_imem);
   CHECK(num_intg_errors_imem >= kNumIntgErrorsThreshold,
         "Expecting at least %i IMEM integrity errors, got %i",
         kNumIntgErrorsThreshold, num_matches_imem);
-  otbn_check_mem_words(&otbn_ctx, kNumAddrs, dmem_offsets, dif_otbn_dmem_read,
+  otbn_check_mem_words(&otbn, kNumAddrs, dmem_offsets, dif_otbn_dmem_read,
                        &num_matches_dmem, &num_intg_errors_dmem);
   CHECK(num_intg_errors_dmem >= kNumIntgErrorsThreshold,
         "Expecting at least %i DMEM integrity errors, got %i",
