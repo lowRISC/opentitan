@@ -165,6 +165,12 @@
       run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=50_000_000",
                  "+use_intr_handler=1"]
     }
+    {
+      name: i2c_target_fifo_reset_acq
+      uvm_test_seq: i2c_target_fifo_reset_acq_vseq
+      run_opts: ["+i2c_agent_mode=Host", "+test_timeout_ns=20_000_000",
+                 "+use_intr_handler=1"]
+    }
   ]
 
   // List of regressions.

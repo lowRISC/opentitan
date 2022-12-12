@@ -38,12 +38,14 @@ filesets:
       - seq_lib/i2c_host_error_intr_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_host_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_smoke_vseq.sv: {is_include_file: true}
+      - seq_lib/i2c_target_runtime_base_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_stress_wr_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_stress_rd_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_stretch_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_tx_ovf_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_timeout_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_ack_stop_vseq.sv: {is_include_file: true}
+      - seq_lib/i2c_target_fifo_reset_acq_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

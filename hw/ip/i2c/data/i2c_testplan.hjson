@@ -368,7 +368,7 @@
               - Ensure the remaining entries are not show up after each fifio is reset,
             '''
       stage: V2
-      tests: ["i2c_target_fifo_reset"]
+      tests: ["i2c_target_fifo_reset_acq"]
     }
     {
       name: target_fifo_full

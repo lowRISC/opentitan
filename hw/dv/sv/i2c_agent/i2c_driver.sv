@@ -35,7 +35,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
       begin
         if (cfg.if_mode == Host) host_scl_pause_ctrl();
       end
-    join
+    join_none
   endtask
 
 
@@ -45,13 +45,26 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     forever begin
       if (cfg.if_mode == Device) release_bus();
       // driver drives bus per mode
+      wait(!cfg.agent_reset);
       seq_item_port.get_next_item(req);
       fork
         begin: iso_fork
           fork
             begin
               if (cfg.if_mode == Device) drive_device_item(req);
-              else                       drive_host_item(req);
+              else begin
+		 fork begin
+		    fork
+                       drive_host_item(req);
+		       begin
+			  wait(cfg.agent_reset);
+			  cfg.host_scl_stop = 1;	   
+			  @(cfg.vif.cb);
+		       end
+		    join_any
+		    disable fork;		    
+		 end join
+	      end
             end
             // handle on-the-fly reset
             begin

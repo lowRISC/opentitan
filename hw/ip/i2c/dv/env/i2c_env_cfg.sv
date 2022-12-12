@@ -1,7 +1,8 @@
 // Copyright lowRISC contributors.
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
+typedef class i2c_scoreboard;
+   
 class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
 
   // i2c address mode (only support 7-bit address for targets)
@@ -49,6 +50,8 @@ class i2c_env_cfg extends cip_base_env_cfg #(.RAL_T(i2c_reg_block));
   int        sent_ack_stop = 0;
   int        rcvd_ack_stop = 0;
 
+  i2c_scoreboard scb_h;
+    
   `uvm_object_utils_begin(i2c_env_cfg)
     `uvm_field_object(m_i2c_agent_cfg, UVM_DEFAULT)
   `uvm_object_utils_end

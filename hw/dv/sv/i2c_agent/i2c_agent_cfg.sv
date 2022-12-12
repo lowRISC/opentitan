@@ -16,7 +16,9 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
 
   bit     host_scl_start;
   bit     host_scl_stop;
-
+  // reset agent not a dut
+  bit     agent_reset = 0;
+  bit     taget_fifo_reset_test_mode = 0;
   // In i2c test, between every transaction, assuming a new timing
   // parameter is programmed. This means during a transaction,
   // test should not update timing parameter.

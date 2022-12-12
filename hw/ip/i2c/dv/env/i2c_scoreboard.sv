@@ -45,7 +45,9 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   local bit [NumI2cIntr-1:0] intr_exp;
 
   int                        num_obs_rd;
-
+  int                        obs_wr_id = 0;
+  // used only for fifo_reset test
+  bit                        skip_rs = 0;
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -66,30 +68,37 @@ class i2c_scoreboard extends cip_base_scoreboard #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     target_mode_wr_obs_port.connect(target_mode_wr_obs_fifo.analysis_export);
+    cfg.scb_h = this;
   endfunction
 
   task run_phase(uvm_phase phase);
     string str;
     super.run_phase(phase);
     if (cfg.m_i2c_agent_cfg.if_mode == Host) begin
-      int obs_wr_id = 0;
       fork
         forever begin
+          target_mode_wr_obs_fifo.get(obs_wr_item);
+          if (cfg.m_i2c_agent_cfg.taget_fifo_reset_test_mode & skip_rs) begin
+            if (obs_wr_item.rstart) begin
+              skip_rs = 0;
+`JDBG(("assa scb skip one rs"))
+              continue;
+            end
+          end
+          obs_wr_item.tran_id = obs_wr_id++;
           target_mode_wr_exp_fifo.get(exp_wr_item);
           str = (exp_wr_item.start) ? "addr" : (exp_wr_item.stop) ? "stop" : "wr";
           `uvm_info(`gfn, $sformatf("exp_%s_txn %0d\n %s", str,
                                     exp_wr_item.tran_id, exp_wr_item.sprint()), UVM_MEDIUM)
-          target_mode_wr_obs_fifo.get(obs_wr_item);
-          obs_wr_item.tran_id = obs_wr_id++;
           target_txn_comp(obs_wr_item, exp_wr_item, str);
         end
         forever begin
-          target_mode_rd_exp_fifo.get(exp_rd_item);
-          exp_rd_item.pname = "exp_rd";
-          `uvm_info(`gfn, $sformatf("\n%s", exp_rd_item.convert2string()), UVM_MEDIUM)
           target_mode_rd_obs_fifo.get(obs_rd_item);
           obs_rd_item.pname = "obs_rd";
           obs_rd_item.tran_id = num_obs_rd++;
+          target_mode_rd_exp_fifo.get(exp_rd_item);
+          exp_rd_item.pname = "exp_rd";
+          `uvm_info(`gfn, $sformatf("\n%s", exp_rd_item.convert2string()), UVM_MEDIUM)
           target_rd_comp(obs_rd_item, exp_rd_item);
         end
       join_none

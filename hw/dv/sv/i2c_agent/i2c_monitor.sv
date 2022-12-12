@@ -42,45 +42,59 @@ class i2c_monitor extends dv_base_monitor #(
       fork begin
         forever begin
           wait(cfg.en_monitor);
-          if (mon_dut_item.stop ||
-              (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
-            cfg.vif.wait_for_host_start(cfg.timing_cfg);
-            `uvm_info(`gfn, "\nmonitor, detect HOST START", UVM_MEDIUM)
-          end else begin
-            mon_dut_item.rstart = 1'b1;
-          end
-          mon_dut_item.tran_id = num_dut_tran++;
-          mon_dut_item.start = 1'b1;
-          // collecting address
-          for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
-            cfg.vif.p_edge_scl();
-            mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
-            `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]),
-                      UVM_HIGH)
-          end
-          `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
-          cfg.vif.p_edge_scl();
-          r_bit = cfg.vif.cb.sda_i;
-          `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", r_bit), UVM_MEDIUM)
-          mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
+          wait(!cfg.agent_reset);
+          fork begin
+            fork
+              begin
+                if (mon_dut_item.stop || cfg.agent_reset ||
+                    (!mon_dut_item.stop && !mon_dut_item.start && !mon_dut_item.rstart)) begin
+                  cfg.vif.wait_for_host_start(cfg.timing_cfg);
+                  `uvm_info(`gfn, "\nmonitor, detect HOST START", UVM_MEDIUM)
+                end else begin
+                  mon_dut_item.rstart = 1'b1;
+                end
+                mon_dut_item.tran_id = num_dut_tran;
+                mon_dut_item.start = 1'b1;
+                // collecting address
+                for (int i = cfg.target_addr_mode - 1; i >= 0; i--) begin
+                  cfg.vif.p_edge_scl();
+                  mon_dut_item.addr[i] = cfg.vif.cb.sda_i;
+                  `uvm_info(`gfn, $sformatf("\nmonitor, address[%0d] %b", i, mon_dut_item.addr[i]),
+                            UVM_HIGH)
+                end
+                `uvm_info(`gfn, $sformatf("\nmonitor, address %0x", mon_dut_item.addr), UVM_MEDIUM)
+                cfg.vif.p_edge_scl();
+                r_bit = cfg.vif.cb.sda_i;
+                `uvm_info(`gfn, $sformatf("\nmonitor, rw %d", r_bit), UVM_MEDIUM)
+                mon_dut_item.bus_op = (r_bit) ? BusOpRead : BusOpWrite;
 
-          // expect target ack
-          cfg.vif.sample_target_data(cfg.timing_cfg, r_bit);
+                // expect target ack
+                cfg.vif.sample_target_data(cfg.timing_cfg, r_bit);
 
-          `DV_CHECK_CASE_EQ(r_bit, 1'b0)
+                `DV_CHECK_CASE_EQ(r_bit, 1'b0)
 
-          if (mon_dut_item.bus_op == BusOpRead) target_read();
-          else target_write();
+                if (mon_dut_item.bus_op == BusOpRead) target_read();
+                else target_write();
 
-          // send rsp_item to scoreboard
-          `downcast(full_item, mon_dut_item.clone());
-          full_item.stop = 1'b1;
-          if (mon_dut_item.bus_op == BusOpRead) begin
-            full_item.read = 1;
-            analysis_port.write(full_item);
-          end
+                // send rsp_item to scoreboard
+                `downcast(full_item, mon_dut_item.clone());
+                full_item.stop = 1'b1;
+                if (mon_dut_item.bus_op == BusOpRead) begin
+                  full_item.read = 1;
+                  analysis_port.write(full_item);
+                end
+                num_dut_tran++;
+              end
+              begin
+                wait(cfg.agent_reset);
+                @(cfg.vif.cb);
+                num_dut_tran = 0;
+              end
+            join_any
+            disable fork;
+          end join
           mon_dut_item.clear_data();
-        end
+        end // forever begin
         ack_stop_mon();
       end join_none
     end else begin
