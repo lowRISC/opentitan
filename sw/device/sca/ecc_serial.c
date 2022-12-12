@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_otbn.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
@@ -15,6 +14,7 @@
 #include "sw/device/sca/lib/simple_serial.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otbn_regs.h"
 
 /**
  * OpenTitan program for OTBN ECDSA-P384 side-channel analysis.
@@ -36,6 +36,19 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+enum {
+  /**
+   * Number of bytes for ECDSA P-256 private keys, message digests, and point
+   * coordinates.
+   */
+  kEcc256NumBytes = 256 / 8,
+  /**
+   * Number of 32b words for ECDSA P-256 private keys, message digests, and
+   * point coordinates.
+   */
+  kEcc256NumWords = kEcc256NumBytes / sizeof(uint32_t),
+};
+
 /**
  * Private key d
  * This is the default value used by NewAE in their experiments
@@ -47,17 +60,22 @@ OTTF_DEFINE_TEST_CONFIG();
  * The value of this variable can be overwritten via
  * the simpleserial command `d` (see ecc256_set_private_key_d)
  */
-uint8_t ecc256_private_key_d[32] = {
-    0xcd, 0xb4, 0x57, 0xaf, 0x1c, 0x9f, 0x4c, 0x74, 0x02, 0x0c, 0x7e,
-    0x8b, 0xe9, 0x93, 0x3e, 0x28, 0x0c, 0xf0, 0x18, 0x0d, 0xf4, 0x6c,
-    0x0b, 0xda, 0x7a, 0xbb, 0xe6, 0x8f, 0xb7, 0xa0, 0x45, 0x55};
+uint32_t ecc256_private_key_d[8] = {
+    0xaf57b4cd, 0x744c9f1c, 0x8b7e0c02, 0x283e93e9,
+    0x0d18f00c, 0xda0b6cf4, 0x8fe6bb7a, 0x5545a0b7,
+};
 
 /**
  * Message to sign.
+ *
  * The value of this variable can be overwritten via the simpleserial command
- * `n` (see ecc384_set_msg).
+ * `n` (see ecc256_set_msg).
  */
-uint8_t ecc256_msg[32] = {"Hello OTBN."};
+uint32_t ecc256_msg[8] = {
+    0x48656c6c,  // 'Hell'
+    0x6f204f54,  // 'o OT'
+    0x424e0000,  // 'BN'
+};
 
 // p256_ecdsa_sca has randomnization removed.
 OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa_sca);
@@ -92,27 +110,30 @@ static const otbn_addr_t kOtbnVarK1 = OTBN_ADDR_T_INIT(p256_ecdsa_sca, k1);
  * Simple serial 'd' (set private key) command handler.
  *
  * This function does not use key shares to simplify side-channel analysis.
- * The key must be `kAesKeyLength` bytes long.
+ * The key must be `kEcc256NumBytes` bytes long.
  *
  * @param key_d Key.
  * @param key_d_len Key length.
  */
-static void ecc_256_set_private_key_d(const uint8_t *key_d, size_t key_d_len) {
-  SS_CHECK(key_d_len == 32);
+static void ecc256_set_private_key_d(const uint8_t *key_d, size_t key_d_len) {
+  SS_CHECK(key_d_len == kEcc256NumBytes);
   memcpy(ecc256_private_key_d, key_d, key_d_len);
 }
 
 /**
  * Simple serial 'n' (set message) command handler.
  *
- * This function does not use key shares to simplify side-channel analysis.
- * The key must be `kAesKeyLength` bytes long.
+ * This implementation skips hashing the message to simplify side-channel
+ * analysis, so the message must not be longer than `kEcc256NumBytes` bytes
+ * long.
  *
  * @param msg Message to sign.
  * @param msg_len Message length.
  */
-static void ecc_256_set_msg(const uint8_t *msg, size_t msg_len) {
-  SS_CHECK(msg_len <= 32);
+static void ecc256_set_msg(const uint8_t *msg, size_t msg_len) {
+  SS_CHECK(msg_len <= kEcc256NumBytes);
+  // Reset to zero before copying.
+  memset(ecc256_msg, 0, kEcc256NumBytes);
   memcpy(ecc256_msg, msg, msg_len);
 }
 
@@ -132,40 +153,37 @@ static void ecc_256_set_msg(const uint8_t *msg, size_t msg_len) {
  * @param[out] signature_s    Signature component s (the proof).
  *                            Provide a pre-allocated 32B buffer.
  */
-static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
-                            const uint8_t *private_key_d, uint8_t *signature_r,
-                            uint8_t *signature_s, const uint8_t *k) {
-  SS_CHECK(otbn_ctx != NULL);
-
+static void p256_ecdsa_sign(const uint32_t *msg, const uint32_t *private_key_d,
+                            uint32_t *signature_r, uint32_t *signature_s,
+                            const uint32_t *k) {
   uint32_t mode = 1;  // mode 1 => sign
   LOG_INFO("Copy data");
-  SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(mode), &mode,
-                                  kOtbnVarMode) == kOtbnOk);
-  SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, msg,
-                                  kOtbnVarMsg) == kOtbnOk);
-  SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, private_key_d,
-                                  kOtbnVarD0) == kOtbnOk);
-  SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, k, kOtbnVarK0) ==
-           kOtbnOk);
+  SS_CHECK(otbn_dmem_write(/*num_words=*/1, &mode, kOtbnVarMode) ==
+           kOtbnErrorOk);
+  SS_CHECK(otbn_dmem_write(kEcc256NumWords, msg, kOtbnVarMsg) == kOtbnErrorOk);
+  SS_CHECK(otbn_dmem_write(kEcc256NumWords, private_key_d, kOtbnVarD0) ==
+           kOtbnErrorOk);
+  SS_CHECK(otbn_dmem_write(kEcc256NumWords, k, kOtbnVarK0) == kOtbnErrorOk);
 
-  uint8_t zero[32] = {0};
-  SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, zero,
-                                  kOtbnVarD1) == kOtbnOk);
-  SS_CHECK(otbn_copy_data_to_otbn(otbn_ctx, /*len_bytes=*/32, zero,
-                                  kOtbnVarK1) == kOtbnOk);
+  // Copy zeroes for second shares of d and k to simplify side-channel
+  // analysis.
+  uint32_t zero[kEcc256NumWords];
+  memset(zero, 0, kEcc256NumBytes);
+  SS_CHECK(otbn_dmem_write(kEcc256NumWords, zero, kOtbnVarD1) == kOtbnErrorOk);
+  SS_CHECK(otbn_dmem_write(kEcc256NumWords, zero, kOtbnVarK1) == kOtbnErrorOk);
 
   LOG_INFO("Execute");
-  SS_CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
+  SS_CHECK(otbn_execute() == kOtbnErrorOk);
   LOG_INFO("Wait for done");
-  SS_CHECK(otbn_busy_wait_for_done(otbn_ctx) == kOtbnOk);
+  SS_CHECK(otbn_busy_wait_for_done() == kOtbnErrorOk);
 
   LOG_INFO("Get results");
-  SS_CHECK(otbn_copy_data_from_otbn(otbn_ctx, /*len_bytes=*/32, kOtbnVarR,
-                                    signature_r) == kOtbnOk);
-  SS_CHECK(otbn_copy_data_from_otbn(otbn_ctx, /*len_bytes=*/32, kOtbnVarS,
-                                    signature_s) == kOtbnOk);
-  LOG_INFO("r[0]: 0x%02x", signature_r[0]);
-  LOG_INFO("s[0]: 0x%02x", signature_s[0]);
+  SS_CHECK(otbn_dmem_read(kEcc256NumWords, kOtbnVarR, signature_r) ==
+           kOtbnErrorOk);
+  SS_CHECK(otbn_dmem_read(kEcc256NumWords, kOtbnVarS, signature_s) ==
+           kOtbnErrorOk);
+  LOG_INFO("r[0]: 0x%08x", signature_r[0]);
+  LOG_INFO("s[0]: 0x%08x", signature_s[0]);
 }
 
 /**
@@ -182,37 +200,46 @@ static void p256_ecdsa_sign(otbn_t *otbn_ctx, const uint8_t *msg,
  * UART.
  * @param secret_k_len Length of the ephemeral key.
  */
-static void ecc_256_ecdsa(const uint8_t *ecc256_secret_k, size_t secret_k_len) {
-  otbn_t otbn_ctx;
-
-  if (secret_k_len != 32) {
+static void ecc256_ecdsa(const uint8_t *ecc256_secret_k_bytes,
+                         size_t secret_k_len) {
+  if (secret_k_len != kEcc256NumBytes) {
     LOG_INFO("Invalid data length %hu", (uint8_t)secret_k_len);
     return;
   }
-  LOG_INFO("SSECDSA starting...");
-  SS_CHECK(otbn_init(&otbn_ctx, mmio_region_from_addr(
-                                    TOP_EARLGREY_OTBN_BASE_ADDR)) == kOtbnOk);
-  SS_CHECK(otbn_zero_data_memory(&otbn_ctx) == kOtbnOk);
-  SS_CHECK(otbn_load_app(&otbn_ctx, kOtbnAppP256Ecdsa) == kOtbnOk);
-  LOG_INFO("otbn_status: 0x%08x",
-           mmio_region_read32(
-               mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), 0x18));
 
-  uint8_t ecc256_signature_r[32] = {0};
-  uint8_t ecc256_signature_s[32] = {0};
+  // Copy k to an aligned buffer.
+  uint32_t ecc256_secret_k[kEcc256NumWords];
+  memcpy(ecc256_secret_k, ecc256_secret_k_bytes, kEcc256NumBytes);
+
+  LOG_INFO("SSECDSA starting...");
+  SS_CHECK(otbn_load_app(kOtbnAppP256Ecdsa) == kOtbnErrorOk);
+  LOG_INFO("otbn_status: 0x%08x", abs_mmio_read32(TOP_EARLGREY_OTBN_BASE_ADDR +
+                                                  OTBN_STATUS_REG_OFFSET));
+
+  uint32_t ecc256_signature_r[kEcc256NumWords];
+  uint32_t ecc256_signature_s[kEcc256NumWords];
 
   LOG_INFO("Signing");
   sca_set_trigger_high();
-  p256_ecdsa_sign(&otbn_ctx, ecc256_msg, ecc256_private_key_d,
-                  ecc256_signature_r, ecc256_signature_s, ecc256_secret_k);
+  p256_ecdsa_sign(ecc256_msg, ecc256_private_key_d, ecc256_signature_r,
+                  ecc256_signature_s, ecc256_secret_k);
   sca_set_trigger_low();
 
+  // Copy r and s into byte buffers to avoid strict-aliasing violations.
+  uint8_t ecc256_signature_r_bytes[kEcc256NumBytes];
+  memcpy(ecc256_signature_r_bytes, ecc256_signature_r,
+         sizeof(ecc256_signature_r));
+  uint8_t ecc256_signature_s_bytes[kEcc256NumBytes];
+  memcpy(ecc256_signature_s_bytes, ecc256_signature_s,
+         sizeof(ecc256_signature_s));
+
   // TODO: Remove them if they are not necessary for the side-channel analysis.
-  simple_serial_send_packet('r', (uint8_t *)ecc256_signature_r, 32);
-  simple_serial_send_packet('r', (uint8_t *)ecc256_signature_s, 32);
+  simple_serial_send_packet('r', ecc256_signature_r_bytes, kEcc256NumBytes);
+  simple_serial_send_packet('r', ecc256_signature_s_bytes, kEcc256NumBytes);
 
   LOG_INFO("Clearing OTBN memory");
-  SS_CHECK(otbn_zero_data_memory(&otbn_ctx) == kOtbnOk);
+  SS_CHECK(otbn_dmem_sec_wipe() == kOtbnErrorOk);
+  SS_CHECK(otbn_imem_sec_wipe() == kOtbnErrorOk);
 }
 
 /**
@@ -230,11 +257,11 @@ static void simple_serial_main(void) {
   LOG_INFO("Initializing simple serial interface to capture board.");
 
   simple_serial_init(sca_get_uart());
-  SS_CHECK(simple_serial_register_handler('p', ecc_256_ecdsa) ==
+  SS_CHECK(simple_serial_register_handler('p', ecc256_ecdsa) ==
            kSimpleSerialOk);
-  SS_CHECK(simple_serial_register_handler('d', ecc_256_set_private_key_d) ==
+  SS_CHECK(simple_serial_register_handler('d', ecc256_set_private_key_d) ==
            kSimpleSerialOk);
-  SS_CHECK(simple_serial_register_handler('n', ecc_256_set_msg) ==
+  SS_CHECK(simple_serial_register_handler('n', ecc256_set_msg) ==
            kSimpleSerialOk);
 
   LOG_INFO("Starting simple serial packet handling.");
