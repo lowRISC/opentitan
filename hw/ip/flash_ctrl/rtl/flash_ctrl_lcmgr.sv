@@ -87,6 +87,7 @@ module flash_ctrl_lcmgr
 
   // init ongoing
   output logic init_busy_o,
+  output logic initialized_o,
 
   // debug state output
   output logic [10:0] debug_state_o
@@ -894,6 +895,9 @@ module flash_ctrl_lcmgr
   assign addr_o = seed_phase ? {addr, {BusByteWidth{1'b0}}} :
                                {rma_addr, {BusByteWidth{1'b0}}};
   assign init_busy_o = seed_phase;
+
+  // Initialization is considered done when read buffer is enabled.
+  assign initialized_o = rd_buf_en_o;
   assign req_o = seed_phase | rma_phase;
   assign rready_o = 1'b1;
   assign seeds_o = seeds_q;

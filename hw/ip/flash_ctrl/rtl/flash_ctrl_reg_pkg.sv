@@ -556,6 +556,10 @@ package flash_ctrl_reg_pkg;
       logic        d;
       logic        de;
     } init_wip;
+    struct packed {
+      logic        d;
+      logic        de;
+    } initialized;
   } flash_ctrl_hw2reg_status_reg_t;
 
   typedef struct packed {
@@ -760,12 +764,12 @@ package flash_ctrl_reg_pkg;
 
   // HW -> register type for core interface
   typedef struct packed {
-    flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [196:185]
-    flash_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [184:184]
-    flash_ctrl_hw2reg_control_reg_t control; // [183:182]
-    flash_ctrl_hw2reg_erase_suspend_reg_t erase_suspend; // [181:180]
-    flash_ctrl_hw2reg_op_status_reg_t op_status; // [179:176]
-    flash_ctrl_hw2reg_status_reg_t status; // [175:166]
+    flash_ctrl_hw2reg_intr_state_reg_t intr_state; // [198:187]
+    flash_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [186:186]
+    flash_ctrl_hw2reg_control_reg_t control; // [185:184]
+    flash_ctrl_hw2reg_erase_suspend_reg_t erase_suspend; // [183:182]
+    flash_ctrl_hw2reg_op_status_reg_t op_status; // [181:178]
+    flash_ctrl_hw2reg_status_reg_t status; // [177:166]
     flash_ctrl_hw2reg_debug_state_reg_t debug_state; // [165:155]
     flash_ctrl_hw2reg_err_code_reg_t err_code; // [154:139]
     flash_ctrl_hw2reg_std_fault_status_reg_t std_fault_status; // [138:121]
