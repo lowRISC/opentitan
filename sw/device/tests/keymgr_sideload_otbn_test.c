@@ -11,9 +11,9 @@
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
+#include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -50,51 +50,26 @@ static const dif_otbn_err_bits_t kErrBitsOk = 0x0;
  * Runs the OTBN X25519 application.
  *
  * The X25519 app and sideloaded key should already be loaded into OTBN before
- * this routine is called.
+ * this routine is called. Causes CHECK-fail if the OTBN error code is not as
+ * expected.
  *
- * @param otbn_ctx OTBN context object
+ * @param otbn OTBN context object
  * @param[out] result Resulting Montgomery u-coordinate.
  * @param expect_err_bits Error code expected from OTBN ERR register.
- * @return true if the execution is successful (either successful completion
- *         or early exit through an EXPECTED error), otherwise false in case of
  * an unexpected error.
  */
-static bool run_x25519_app(otbn_t *otbn_ctx, uint32_t *result,
+static void run_x25519_app(dif_otbn_t *otbn, uint32_t *result,
                            dif_otbn_err_bits_t expect_err_bits) {
   // Copy the input argument (Montgomery u-coordinate).
-  CHECK(otbn_copy_data_to_otbn(otbn_ctx, sizeof(kEncodedU), &kEncodedU,
-                               kOtbnVarEncU) == kOtbnOk);
+  otbn_testutils_write_data(otbn, sizeof(kEncodedU), &kEncodedU, kOtbnVarEncU);
 
   // Run the OTBN program and wait for it to complete.
   LOG_INFO("Starting OTBN program...");
-  CHECK(otbn_execute(otbn_ctx) == kOtbnOk);
-  if (otbn_busy_wait_for_done(otbn_ctx) != kOtbnOk) {
-    // Error during execution; retrieve error bits and instruction count to
-    // help with debugging and then exit early.
-    dif_otbn_err_bits_t err_bits;
-    CHECK(dif_otbn_get_err_bits(&otbn_ctx->dif, &err_bits) == kDifOk);
-    uint32_t insn_count;
-    CHECK(dif_otbn_get_insn_cnt(&otbn_ctx->dif, &insn_count) == kDifOk);
-    LOG_INFO(
-        "OTBN encountered an error.\n  Error bits: 0x%08x\n  Instruction "
-        "count: 0x%08x",
-        err_bits, insn_count);
-    CHECK(err_bits == expect_err_bits);
-    return true;  // Exit early (return true as CHECK above passes).
-  }
-
-  // Check that an error was not expected from OTBN.
-  if (expect_err_bits == kOtbnInvalidKeyErr) {
-    LOG_ERROR("An error 0x%08x was expected with OTBN and was not encountered.",
-              expect_err_bits);
-    return false;
-  }
+  otbn_testutils_execute(otbn);
+  otbn_testutils_wait_for_done(otbn, expect_err_bits);
 
   // Copy the result (also a 256-bit Montgomery u-coordinate).
-  CHECK(otbn_copy_data_from_otbn(otbn_ctx, 32, kOtbnVarEncResult, result) ==
-        kOtbnOk);
-
-  return true;
+  otbn_testutils_read_data(otbn, 32, kOtbnVarEncResult, result);
 }
 
 /**
@@ -103,7 +78,7 @@ static bool run_x25519_app(otbn_t *otbn_ctx, uint32_t *result,
  * key from keymgr to OTBN and then runs the X25519 program.
  */
 static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
-                                          otbn_t *otbn_ctx) {
+                                          dif_otbn_t *otbn) {
   // Generate the sideloaded key.
   // TODO(weicai): also check in SV sequence that the key is correct.
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
@@ -112,10 +87,10 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   LOG_INFO("Keymgr generated HW output for OTBN.");
 
   // Load the X25519 application.
-  CHECK(otbn_load_app(otbn_ctx, kOtbnAppX25519) == kOtbnOk);
+  otbn_testutils_load_app(otbn, kOtbnAppX25519);
   // Run the OTBN app and retrieve the result.
   uint32_t result[8];
-  CHECK(run_x25519_app(otbn_ctx, result, kErrBitsOk));
+  run_x25519_app(otbn, result, kErrBitsOk);
 
   // Clear the sideload key and check that OTBN errors with the correct error
   // code (`KEY_INVALID` bit 5 = 1).
@@ -123,7 +98,7 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
       dif_keymgr_sideload_clear_set_enabled(keymgr, kDifToggleEnabled));
   LOG_INFO("Clearing the Keymgr generated sideload keys.");
   uint32_t at_clear_salt_result[8];
-  CHECK(run_x25519_app(otbn_ctx, at_clear_salt_result, kOtbnInvalidKeyErr));
+  run_x25519_app(otbn, at_clear_salt_result, kOtbnInvalidKeyErr);
 
   // Disable sideload key clearing.
   CHECK_DIF_OK(
@@ -131,7 +106,7 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   LOG_INFO("Disable clearing the Keymgr generated sideload keys.");
 
   // Clear the ERR bits register
-  mmio_region_write32(otbn_ctx->dif.base_addr, OTBN_ERR_BITS_REG_OFFSET, 0x0);
+  mmio_region_write32(otbn->base_addr, OTBN_ERR_BITS_REG_OFFSET, 0x0);
 
   keymgr_testutils_generate_versioned_key(
       keymgr, sideload_params);  // Regenerate the sideload key.
@@ -140,7 +115,7 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   // TODO (issue #16653) - fix the function call below
   // and send in kErrBitsOk (error is actually not expected) and uncomment the
   // equality check on outputs afterwards.
-  CHECK(run_x25519_app(otbn_ctx, post_clear_salt_result, kOtbnInvalidKeyErr));
+  run_x25519_app(otbn, post_clear_salt_result, kOtbnInvalidKeyErr);
   // TODO (issue #16653) - uncomment the equality check on output below.
   // CHECK_ARRAYS_EQ(result, post_clear_salt_result, ARRAYSIZE(result));
 
@@ -150,7 +125,7 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   LOG_INFO("Keymgr generated HW output for OTBN.");
 
   uint32_t modified_salt_result[8];
-  CHECK(run_x25519_app(otbn_ctx, modified_salt_result, kErrBitsOk));
+  run_x25519_app(otbn, modified_salt_result, kErrBitsOk);
 
   // Check that the result with the new key is different from the first
   // result.
@@ -162,7 +137,7 @@ static void test_otbn_with_sideloaded_key(dif_keymgr_t *keymgr,
   LOG_INFO("Keymgr generated HW output for OTBN.");
 
   uint32_t same_key_result[8];
-  CHECK(run_x25519_app(otbn_ctx, same_key_result, kErrBitsOk));
+  run_x25519_app(otbn, same_key_result, kErrBitsOk);
 
   // Check that the result generated using the same key matches the first
   // result.
@@ -180,11 +155,11 @@ bool test_main(void) {
   LOG_INFO("Keymgr entered OwnerIntKey State");
 
   // Initialize OTBN.
-  otbn_t otbn_ctx;
-  CHECK(otbn_init(&otbn_ctx, mmio_region_from_addr(
-                                 TOP_EARLGREY_OTBN_BASE_ADDR)) == kOtbnOk);
+  dif_otbn_t otbn;
+  CHECK_DIF_OK(
+      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
   // Test OTBN sideloading.
-  test_otbn_with_sideloaded_key(&keymgr, &otbn_ctx);
+  test_otbn_with_sideloaded_key(&keymgr, &otbn);
 
   return true;
 }
