@@ -26,6 +26,7 @@
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/ip/pinmux/{sub_flow}/{tool}"
                defines: "FPV_ALERT_NO_SIGINT_ERR"
+               exp_fail_hjson: "{proj_root}/hw/ip/pinmux/fpv/pinmux_expected_failure.hjson"
                cov: true
              }
 
@@ -38,6 +39,7 @@
                rel_path: "hw/top_earlgrey/ip/pinmux/{sub_flow}/{tool}"
                defines: "FPV_ALERT_NO_SIGINT_ERR"
                cov: true
+               exp_fail_hjson: "{proj_root}/hw/top_earlgrey/ip/pinmux/fpv/pinmux_expected_failure.hjson"
                overrides: [
                  {
                    name:  design_level
