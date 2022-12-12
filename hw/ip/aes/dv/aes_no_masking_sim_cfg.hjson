@@ -10,11 +10,10 @@
   // Import the base sram_ctrl sim_cfg file
   import_cfgs: ["{proj_root}/hw/ip/aes/dv/aes_base_sim_cfg.hjson"]
 
+  // Coverage exclusions
+  xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/aes_UNR.vRefine",
+                             "{proj_root}/hw/ip/aes/dv/cov/refines/aes_no_masking_UNR.vRefine"]
+
   // Enable the appropriate build mode for all tests
   en_build_modes: ["aes_no_masking"]
-
-  // common exclusions
-  xcelium_cov_refine_files: ["{proj_root}/hw/ip/aes/dv/cov/refines/aes_UNR.vRefine",
-                             "{proj_root}/hw/ip/aes/dv/cov/refines/unr_aes_no_masking.vRefine"]
-
 }
