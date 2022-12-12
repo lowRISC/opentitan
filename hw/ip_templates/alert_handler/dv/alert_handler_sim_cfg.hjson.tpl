@@ -124,6 +124,13 @@
       run_opts: ["+test_timeout_ns=500_000_000"]
       run_timeout_mins: 120
     }
+
+    {
+      name: "alert_handler_fsm_sec_test"
+      uvm_test_seq: "alert_handler_esc_fsm_sec_cm_vseq"
+      run_opts: ["+run_sec_cm_fi", "+en_scb=0"]
+      reseed: 5
+    }
   ]
 
   // List of regressions.

@@ -44,12 +44,11 @@ interface prim_onehot_check_if #(
     logic[AddrWidth-1:0]   addr_orig_value;
     logic                  en_orig_value;
 
-    virtual task inject_fault();
+    virtual task automatic inject_fault(output bit success);
       onehot_fault_type_e  onehot_fault_type;
       bit[OneHotWidth-1:0] oh_force_value;
       bit[AddrWidth-1:0]   addr_force_value;
       bit                  en_force_value;
-      bit                  success;
 
       @(negedge clk_i);
       `DV_CHECK(uvm_hdl_read(oh_signal_forced, oh_orig_value))

@@ -43,10 +43,21 @@ virtual task test_sec_cm_fi();
 
   if_proxy_q.shuffle();
   while (if_proxy_q.size) begin
+    bit fi_success = 1'b0;
     sec_cm_base_if_proxy if_proxy = if_proxy_q.pop_front();
 
+    if (!if_proxy.enabled) begin
+      continue;
+    end
+
     sec_cm_fi_ctrl_svas(if_proxy, .enable(0));
-    sec_cm_inject_fault(if_proxy);
+    sec_cm_inject_fault(if_proxy, fi_success);
+
+    if (!fi_success) begin
+      // No fault injected, renable SVAs and skip to next proxy
+      sec_cm_fi_ctrl_svas(if_proxy, .enable(1));
+      continue;
+    end
 
     // Randomly force the cnt to normal value (error will be cleared) to make sure design latches
     // the error
@@ -68,8 +79,8 @@ virtual task test_sec_cm_fi();
   end
 endtask : test_sec_cm_fi
 
-virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy);
-  if_proxy.inject_fault();
+virtual task sec_cm_inject_fault(sec_cm_base_if_proxy if_proxy, output bit success);
+  if_proxy.inject_fault(success);
 endtask : sec_cm_inject_fault
 
 virtual task sec_cm_restore_fault(sec_cm_base_if_proxy if_proxy);
