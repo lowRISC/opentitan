@@ -14,7 +14,6 @@
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/runtime/otbn.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
@@ -28,7 +27,6 @@
 #include "alert_handler_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static otbn_t otbn;
 static dif_aes_t aes;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
@@ -36,6 +34,7 @@ static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
 static dif_kmac_t kmac;
 static dif_keymgr_t kmgr;
+static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp;
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_core_ibex_t ibex;
@@ -201,6 +200,8 @@ void test_initialize(void) {
       mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
   CHECK_DIF_OK(dif_keymgr_init(
       mmio_region_from_addr(TOP_EARLGREY_KEYMGR_BASE_ADDR), &kmgr));
+  CHECK_DIF_OK(
+      dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
   CHECK_DIF_OK(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp));
   CHECK_DIF_OK(
@@ -210,9 +211,6 @@ void test_initialize(void) {
   CHECK_DIF_OK(dif_alert_handler_init(
       mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR),
       &alert_handler));
-
-  CHECK(otbn_init(&otbn, mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR)) ==
-        kOtbnOk);
 }
 
 /**
