@@ -160,6 +160,10 @@ waive -rules RESET_DRIVER -location {ast.sv} \
       -msg {'vcmain_pok_por_sys' is driven by instance 'u_rst_sys_dasrt' of module} \
       -comment {This is reset generation logic, hence it needs to drive this reset signal.}
 
+waive -rules RESET_DRIVER -location {ast.sv} \
+      -msg {'rst_aon_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at} \
+      -comment {This is reset generation logic, hence it needs to drive this reset signal.}
+
 waive -rules RESET_DRIVER -location {rglts_pdm_3p3v.sv} \
       -regexp {'(vcc_pok_rst_h_n|vcc_pok_set_h|vcc_pok_str_.*|)' is driven here, and used as an asynchronous reset} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}

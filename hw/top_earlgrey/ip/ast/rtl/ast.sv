@@ -125,7 +125,7 @@ module ast #(
   input [8-1:0] fla_obs_i,                    // FLASH Observe Bus
   input [8-1:0] otp_obs_i,                    // OTP Observe Bus
   input [8-1:0] otm_obs_i,                    // OT Modules Observe Bus
-  input usb_obs_i,                            // USB DIFF RX Observe  //JL TODO
+  input usb_obs_i,                            // USB DIFF RX Observe
   output ast_pkg::ast_obs_ctrl_t obs_ctrl_o,  // Observe Control
 
   // pad mux/pad related
@@ -210,7 +210,7 @@ logic vcc_pok_int;
 
 vcc_pgd u_vcc_pok (
   .vcc_pok_o ( vcc_pok_int )
-);  // of u_vcc_pok
+);
 
 assign vcc_pok = vcc_pok_int && vcc_supp_i;
 assign vcc_pok_h = vcc_pok;     // "Level Shifter"
@@ -224,7 +224,6 @@ logic vcaon_pok_por_src, vcaon_pok_por_lat, poks_por_ack, rglssm_vcmon, rglssm_b
 
 assign rst_poks_n = vcc_pok_str && vcaon_pok;
 assign rst_poks_por_n = vcc_pok_str && vcaon_pok && por_ni;
-
 assign poks_por_ack = vcaon_pok_por_src || rglssm_vcmon;
 
 // Reset De-Assert Sync
@@ -282,7 +281,7 @@ logic vioa_pok_int;
 
 vio_pgd u_vioa_pok (
   .vio_pok_o ( vioa_pok_int )
-);  // of u_vioa_pok
+);
 
 assign vioa_pok = vioa_pok_int && vioa_supp_i;
 assign ast_pwst_o.io_pok[0] = vcaon_pok && vioa_pok;
@@ -296,7 +295,7 @@ logic viob_pok_int;
 
 vio_pgd u_viob_pok (
   .vio_pok_o ( viob_pok_int )
-);  // of u_viob_pok
+);
 
 assign viob_pok = viob_pok_int && viob_supp_i;
 assign ast_pwst_o.io_pok[1] = vcaon_pok && viob_pok;
@@ -338,7 +337,7 @@ rglts_pdm_3p3v u_rglts_pdm_3p3v (
   .flash_power_down_h_o ( flash_power_down_h_o ),
   .flash_power_ready_h_o ( flash_power_ready_h_o ),
   .otp_power_seq_h_o ( otp_power_seq_h_o[2-1:0] )
-);  // of u_rglts_pdm_3p3v
+);
 
 assign ast_pwst_o.vcc_pok = vcc_pok_str;
 
@@ -382,7 +381,7 @@ sys_clk u_sys_clk (
 `endif
   .clk_src_sys_o ( clk_osc_sys ),
   .clk_src_sys_val_o ( clk_osc_sys_val )
-);  // of u_sys_clk
+);
 
 
 ///////////////////////////////////////
@@ -422,7 +421,7 @@ usb_clk u_usb_clk (
 `endif
   .clk_src_usb_o ( clk_osc_usb ),
   .clk_src_usb_val_o ( clk_osc_usb_val )
-);  // of u_usb_clk
+);
 
 
 ///////////////////////////////////////
@@ -437,7 +436,7 @@ logic clk_aon_ext;
 assign clk_aon_ext = clk_osc_byp_i.aon;
 `endif
 
-assign rst_aon_clk_n = vcc_pok_str;
+assign rst_aon_clk_n = vcc_pok_str && vcaon_pok;
 assign clk_src_aon_en = 1'b1;  // Always Enabled
 
 aon_clk  u_aon_clk (
@@ -452,9 +451,9 @@ aon_clk  u_aon_clk (
 `endif
   .clk_src_aon_o ( clk_osc_aon ),
   .clk_src_aon_val_o ( clk_osc_aon_val )
-);  // of u_aon_clk
+);
 
-logic vcmpp_aon_sync_n;
+logic vcmpp_aon_sync_n, rst_vcmpp_aon_n;
 
 // Reset De-Assert Sync
 prim_flop_2sync #(
@@ -467,7 +466,6 @@ prim_flop_2sync #(
   .q_o ( vcmpp_aon_sync_n )
 );
 
-logic rst_vcmpp_aon_n;
 assign rst_vcmpp_aon_n = scan_mode ? scan_reset_n : vcmpp_aon_sync_n;
 
 
@@ -499,7 +497,7 @@ io_clk u_io_clk (
 `endif
   .clk_src_io_o ( clk_osc_io ),
   .clk_src_io_val_o ( clk_osc_io_val )
-);  // of u_io_clk
+);
 
 
 ///////////////////////////////////////
@@ -591,7 +589,7 @@ adc #(
   .rst_adc_ni ( rst_ast_adc_ni ),
   .adc_d_o ( adc_d_o[AdcDataWidth-1:0] ),
   .adc_d_val_o ( adc_d_val_o )
-);  // of u_adc
+);
 
 
 ///////////////////////////////////////
@@ -653,7 +651,7 @@ ast_entropy #(
   .clk_src_sys_val_i ( clk_src_sys_val_o ),
   .clk_src_sys_jen_i ( prim_mubi_pkg::mubi4_test_true_loose(clk_src_sys_jen) ),
   .entropy_req_o ( entropy_req_o )
-);  // of u_entropy
+);
 
 
 ///////////////////////////////////////
@@ -673,7 +671,7 @@ rng #(
   .scan_mode_i ( scan_mode ),
   .rng_b_o ( rng_b_o[EntropyStreams-1:0] ),
   .rng_val_o ( rng_val_o )
-);  // of u_rng
+);
 
 
 ///////////////////////////////////////
@@ -700,7 +698,7 @@ ast_alert u_alert_as (
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::AsSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::AsSel] ),
   .alert_req_o ( alert_req_o.alerts[ast_pkg::AsSel] )
-);  // u_alert_as
+);
 
 // Clock Glitch (CG)
 ///////////////////////////////////////
@@ -711,7 +709,7 @@ ast_alert u_alert_cg (
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::CgSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::CgSel] ),
   .alert_req_o ( alert_req_o.alerts[ast_pkg::CgSel] )
-);  // of u_alert_cg
+);
 
 // Glitch Detector (GD)
 ///////////////////////////////////////
@@ -722,7 +720,7 @@ ast_alert u_alert_gd (
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::GdSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::GdSel] ),
   .alert_req_o ( alert_req_o.alerts[ast_pkg::GdSel] )
-);  // of u_alert_gd
+);
 
 // Temprature Sensor High (TS Hi)
 ///////////////////////////////////////
@@ -733,7 +731,7 @@ ast_alert u_alert_ts_hi (
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::TsHiSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::TsHiSel] ),
   .alert_req_o ( alert_req_o.alerts[ast_pkg::TsHiSel] )
-);  // of u_alert_ts_hi
+);
 
 // Temprature Sensor Low (TS Lo)
 ///////////////////////////////////////
@@ -744,7 +742,7 @@ ast_alert u_alert_ts_lo (
   .alert_trig_i ( alert_rsp_i.alerts_trig[ast_pkg::TsLoSel] ),
   .alert_ack_i ( alert_rsp_i.alerts_ack[ast_pkg::TsLoSel] ),
   .alert_req_o ( alert_req_o.alerts[ast_pkg::TsLoSel] )
-);  // of u_alert_ts_lo
+);
 
 // Other-0 Alert (OT0)
 ///////////////////////////////////////
@@ -842,7 +840,7 @@ ast_reg_top u_reg (
   .hw2reg ( hw2reg ),
   .intg_err_o ( intg_err ),
   .devmode_i ( 1'b1 )
-);  // u_reg
+);
 
 
 ///////////////////////////////////////
@@ -931,14 +929,14 @@ assign ast2pad_t1_ao = 1'bz;
 ////////////////
 
 // Clocks
-`ASSERT_KNOWN(ClkSrcAonKnownO_A, clk_src_aon_o, 1, ast_pwst_o.aon_pok)                   // TODO
+`ASSERT_KNOWN(ClkSrcAonKnownO_A, clk_src_aon_o, 1, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(ClkSrcAonValKnownO_A, clk_src_aon_val_o, clk_src_aon_o, rst_aon_clk_n)
-`ASSERT_KNOWN(ClkSrcIoKnownO_A, clk_src_io_o, 1, ast_pwst_o.main_pok)                    // TODO
+`ASSERT_KNOWN(ClkSrcIoKnownO_A, clk_src_io_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(ClkSrcIoValKnownO_A, clk_src_io_val_o, clk_src_io_o, rst_io_clk_n)
 `ASSERT_KNOWN(ClkSrcIo48mKnownO_A, clk_src_io_48m_o, clk_src_io_o, rst_io_clk_n)
-`ASSERT_KNOWN(ClkSrcSysKnownO_A, clk_src_sys_o, 1, ast_pwst_o.main_pok)                  // TODO
+`ASSERT_KNOWN(ClkSrcSysKnownO_A, clk_src_sys_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(ClkSrcSysValKnownO_A, clk_src_sys_val_o, clk_src_sys_o, rst_sys_clk_n)
-`ASSERT_KNOWN(ClkSrcUsbKnownO_A, clk_src_usb_o, 1, ast_pwst_o.main_pok)                  // TODO
+`ASSERT_KNOWN(ClkSrcUsbKnownO_A, clk_src_usb_o, 1, ast_pwst_o.main_pok)
 `ASSERT_KNOWN(ClkSrcUsbValKnownO_A, clk_src_usb_val_o, clk_src_usb_o, rst_usb_clk_n)
 //
 `ASSERT_KNOWN(UsbIoPuCalKnownO_A, usb_io_pu_cal_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
@@ -956,21 +954,21 @@ assign ast2pad_t1_ao = 1'bz;
 //
 `ASSERT_KNOWN(InitDoneKnownO_A, ast_init_done_o, clk_ast_tlul_i, rst_ast_tlul_ni)
 // POs
-`ASSERT_KNOWN(VcaonPokKnownO_A, ast_pwst_o.aon_pok, clk_src_aon_o, por_ni)               // TODO
-`ASSERT_KNOWN(VcmainPokKnownO_A, ast_pwst_o.main_pok, clk_src_aon_o, por_ni)             // TODO
-`ASSERT_KNOWN(VioaPokKnownO_A, ast_pwst_o.io_pok[0], clk_src_aon_o, por_ni)              // TODO
-`ASSERT_KNOWN(ViobPokKnownO_A, ast_pwst_o.io_pok[1], clk_src_aon_o, por_ni)              // TODO
-`ASSERT_KNOWN(VcaonPokHKnownO_A, ast_pwst_h_o.aon_pok, clk_src_aon_o, por_ni)            // TODO
-`ASSERT_KNOWN(VcmainPokHKnownO_A, ast_pwst_h_o.main_pok, clk_src_aon_o, por_ni)          // TODO
-`ASSERT_KNOWN(VioaPokHKnownO_A, ast_pwst_h_o.io_pok[0], clk_src_aon_o, por_ni)           // TODO
-`ASSERT_KNOWN(ViobPokHKnownO_A, ast_pwst_h_o.io_pok[1], clk_src_aon_o, por_ni)           // TODO
+`ASSERT_KNOWN(VcaonPokKnownO_A, ast_pwst_o.aon_pok, clk_src_aon_o, por_ni)
+`ASSERT_KNOWN(VcmainPokKnownO_A, ast_pwst_o.main_pok, clk_src_aon_o, por_ni)
+`ASSERT_KNOWN(VioaPokKnownO_A, ast_pwst_o.io_pok[0], clk_src_aon_o, por_ni)
+`ASSERT_KNOWN(ViobPokKnownO_A, ast_pwst_o.io_pok[1], clk_src_aon_o, por_ni)
+`ASSERT_KNOWN(VcaonPokHKnownO_A, ast_pwst_h_o.aon_pok, clk_src_aon_o, por_ni)
+`ASSERT_KNOWN(VcmainPokHKnownO_A, ast_pwst_h_o.main_pok, clk_src_aon_o, por_ni)
+`ASSERT_KNOWN(VioaPokHKnownO_A, ast_pwst_h_o.io_pok[0], clk_src_aon_o, por_ni)
+`ASSERT_KNOWN(ViobPokHKnownO_A, ast_pwst_h_o.io_pok[1], clk_src_aon_o, por_ni)
 // FLASH/OTP
-`ASSERT_KNOWN(FlashPowerDownKnownO_A, flash_power_down_h_o, 1, ast_pwst_o.main_pok)      // TODO
-`ASSERT_KNOWN(FlashPowerReadyKnownO_A, flash_power_ready_h_o, 1, ast_pwst_o.main_pok)    // TODO
-`ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst_o.main_pok)            // TODO
+`ASSERT_KNOWN(FlashPowerDownKnownO_A, flash_power_down_h_o, 1, ast_pwst_o.main_pok)
+`ASSERT_KNOWN(FlashPowerReadyKnownO_A, flash_power_ready_h_o, 1, ast_pwst_o.main_pok)
+`ASSERT_KNOWN(OtpPowerSeqKnownO_A, otp_power_seq_h_o, 1, ast_pwst_o.main_pok)
 //
 // ES
-`ASSERT_KNOWN(EntropyReeqKnownO_A, entropy_req_o, clk_ast_es_i,rst_ast_es_ni)            // TODO
+`ASSERT_KNOWN(EntropyReeqKnownO_A, entropy_req_o, clk_ast_es_i,rst_ast_es_ni)
 // Alerts
 `ASSERT_KNOWN(AlertReqKnownO_A, alert_req_o, clk_ast_alert_i, rst_ast_alert_ni)
 // DPRAM/SPRAM
@@ -980,12 +978,12 @@ assign ast2pad_t1_ao = 1'bz;
 `ASSERT_KNOWN(SprgfRmKnownO_A, sprgf_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 `ASSERT_KNOWN(SpromRmKnownO_A, sprom_rm_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 // DFT
-`ASSERT_KNOWN(Ast2PadmuxKnownO_A, ast2padmux_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)      // TODO
+`ASSERT_KNOWN(Ast2PadmuxKnownO_A, ast2padmux_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 // SCAN
-`ASSERT_KNOWN(DftScanMdKnownO_A, dft_scan_md_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)      // TODO
-`ASSERT_KNOWN(ScanShiftEnKnownO_A, scan_shift_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)  // TODO
-`ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, ast_pwst_o.aon_pok)      // TODO
-`ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)  // TODO
+`ASSERT_KNOWN(DftScanMdKnownO_A, dft_scan_md_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
+`ASSERT_KNOWN(ScanShiftEnKnownO_A, scan_shift_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
+`ASSERT_KNOWN(ScanResetKnownO_A, scan_reset_no, clk_ast_tlul_i, ast_pwst_o.aon_pok)
+`ASSERT_KNOWN(FlashBistEnKnownO_A, flash_bist_en_o, clk_ast_tlul_i, ast_pwst_o.aon_pok)
 
 // Alert assertions for reg_we onehot check
 `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehot_A,
