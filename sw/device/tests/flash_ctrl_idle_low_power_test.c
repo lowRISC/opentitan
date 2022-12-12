@@ -11,7 +11,6 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
-#include "sw/device/lib/testing/aon_timer_testutils.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
@@ -166,7 +165,5 @@ bool test_main(void) {
     return false;
   }
 
-  // Turn off the AON timer hardware completely before exiting.
-  aon_timer_testutils_shutdown(&aon);
   return true;
 }

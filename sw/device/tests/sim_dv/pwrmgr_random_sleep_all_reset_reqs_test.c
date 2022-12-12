@@ -602,8 +602,6 @@ bool test_main(void) {
       if (RST_IDX[event_idx] % 2) {
         LOG_INFO("Last Booting");
 
-        // Turn off the AON timer hardware completely before exiting.
-        aon_timer_testutils_shutdown(&aon_timer);
         return true;
       } else {
         LOG_INFO(

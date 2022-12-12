@@ -67,7 +67,5 @@ bool test_main(void) {
   aon_timer_test_wakeup_timer(&aon);
   aon_timer_test_watchdog_timer(&aon);
 
-  // Turn off the AON timer hardware completely before exiting.
-  aon_timer_testutils_shutdown(&aon);
   return true;
 }

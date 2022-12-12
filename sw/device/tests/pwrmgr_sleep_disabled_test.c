@@ -144,8 +144,6 @@ bool test_main(void) {
     // And to be extra safe, check there is no pwrmgr interrupt pending.
     CHECK(!is_pwrmgr_irq_pending());
 
-    // Turn off the AON timer hardware completely before exiting.
-    aon_timer_testutils_shutdown(&aon_timer);
     return true;
 
   } else if (pwrmgr_testutils_is_wakeup_reason(

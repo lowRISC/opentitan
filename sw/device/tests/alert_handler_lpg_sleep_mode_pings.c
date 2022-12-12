@@ -518,8 +518,6 @@ bool test_main(void) {
 
   // Do the cleanup
   cleanup_wakeup_src();
-  // Turn off the AON timer hardware completely before exiting.
-  aon_timer_testutils_shutdown(&aon_timer);
 
   return true;
 }
