@@ -243,7 +243,8 @@ def generate_regfile_from_path(hjson_path: Path,
     rtl_names = CounterMeasure.search_rtl_files(sv_files)
     obj.check_cm_annotations(rtl_names, str(hjson_path))
     gen_rtl.gen_rtl(obj, str(generated_rtl_path))
-    gen_sec_cm_testplan.gen_sec_cm_testplan(obj, hjson_path.parent)
+    if gen_sec_cm_testplan.gen_sec_cm_testplan(obj, hjson_path.parent):
+        sys.exit(1)
 
 
 def generate_pinmux(top, out_path):
