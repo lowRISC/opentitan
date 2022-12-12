@@ -8,10 +8,19 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ * The exposed costants to caller functions.
+ */
+enum {
+  // The total size of prefix registers (in bytes), after removing len encodings
+  kKmacPrefixMaxSize = 40,
+};
 
 /**
  * Security strength values.
@@ -29,15 +38,16 @@ typedef enum kmac_security_str {
 /**
  * List of supported KMAC modes.
  *
- * We might need to reconsider whether we want to better organize this enum,
- * and if we want to split the large init/update API to individual functions,
- * e.g. kmac_init_sha3(kSha3Length384) or kmac_init_sha3_384().
+ * Each `kmac_operation_t` enumeration constant is a bitfield with the
+ * following layout:
+ * - Bit 0: kmac_en (Whether to enable KMAC datapath).
+ * - Bit 1-2: Keccak hashing mode (e.g. SHA, SHAKE, or cSHAKE).
  */
 typedef enum kmac_operation {
-  kKmacOperationSHA3,
-  kKmacOperationSHAKE,
-  kKmacOperationCSHAKE,
-  kKmacOperationKMAC,
+  kKmacOperationSHA3 = (0 << 1) | 0,
+  kKmacOperationSHAKE = (2 << 1) | 0,
+  kKmacOperationCSHAKE = (3 << 1) | 0,
+  kKmacOperationKMAC = (3 << 1) | 1,
 } kmac_operation_t;
 
 /**
@@ -108,36 +118,40 @@ kmac_error_t kmac_hwip_default_configure(void);
  * capacity). For instance, if we want to run SHA-3 with 224-bit digest size,
  * then `operation_type` = kSHA3_224.
  *
- * @param operation_type The chosen operation, see kmac_operation_t struct.
- * @return Error of type kmac_error_t.
+ *
+ * @param operation The chosen operation, see kmac_operation_t struct.
+ * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
 kmac_error_t kmac_init(kmac_operation_t operation,
-                       kmac_security_str_t security_str,
-                       const uint8_t *func_name, uint8_t func_name_len,
-                       const uint8_t *cust_str, size_t cust_str_len);
+                       kmac_security_str_t security_str);
 
 /**
  * Configure the prefix registers with customization string.
  *
  * For KMAC, this function ignores `func_name` and uses "KMAC" instead.
  *
+ * The caller must ensure that `func_name` and `cust_str` have properly
+ * allocated `data` fields whose length matches their `len` fields.
+ *
+ * In total `func_name` and `cust_str` can be at most `kKmacPrefixMaxSize`
+ * bytes.
+ *
  * @param operation The KMAC or cSHAKE operation.
  * @param func_name The function name, used for cSHAKE.
- * @param func_name_len The byte size of `func_name`.
- * @param cust_str The customization string.
- * @param cust_str_len The byte size of `cust_str`.
+ * @param cust_str The customization string (both for cSHAKE and KMAC).
  * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
 kmac_error_t kmac_write_prefix_block(kmac_operation_t operation,
-                                     const uint8_t *func_name,
-                                     const size_t func_name_len,
-                                     const uint8_t *cust_str,
-                                     const size_t cust_str_len);
+                                     crypto_const_uint8_buf_t func_name,
+                                     crypto_const_uint8_buf_t cust_str);
 
 /**
  * Update the key registers with given key.
+ *
+ * The caller must ensure that `key` is not a NULL pointer. This is not checked
+ * within this function.
  *
  * @param key The input key array.
  * @param key_len The size of key from enum type kmac_key_len_t.
@@ -157,27 +171,93 @@ kmac_error_t kmac_write_key_block(const uint8_t *key, kmac_key_len_t key_len);
  *
  * Current implementation has few limitiations:
  *
- * 1. `data` pointer is assumed to be word-aligned. The case where `data` is not
- * divisible by 4 is not yet implemented.
+ * 1. `message.data` pointer is assumed to be word-aligned. The case where
+ * `data` field is not divisible by 4 is not yet implemented. This is about
+ * extra protection against SCA.
+ *
  * 2. Currently, there is no error check on consisteny of the input parameters.
  * For instance, one can invoke SHA-3_224 with digest_len=32, which will produce
  * 256 bits of digest.
  *
- * Requirements:
- * 1. The caller must ensure that `digest` is large enough to accommodate
- * `digest_len` bytes.
+ * The caller must ensure that `message` and `digest` have properly
+ * allocated `data` fields whose length matches their `len` fields.
  *
- * @param data Byte pointer to the input string.
- * @param data_len The number of bytes pointed by `data`.
- * @param digest The buffer to which the result will be written.
- * @param digest_len The length of the digest, i.e. the number of bytes read
- * from the final Keccak state.
+ * @param operation The operation type.
+ * @param message Input message string.
+ * @param digest The struct to which the result will be written.
  * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
 kmac_error_t kmac_process_msg_blocks(kmac_operation_t operation,
-                                     const uint8_t *data, size_t data_len,
-                                     uint8_t *digest, size_t digest_len);
+                                     crypto_const_uint8_buf_t message,
+                                     crypto_uint8_buf_t *digest);
+
+/**
+ * Compute SHA-3-224 in one-shot.
+ *
+ * Warning: The caller must ensure that `digest` buffer is large
+ * enough to store the resulting digest (at least 224 / 8 = 28 bytes).
+ *
+ * The caller must ensure that `message` and `digest` have properly
+ * allocated `data` fields whose length matches their `len` fields.
+ *
+ * @param message The input message.
+ * @param digest The digest buffer to return the result.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_sha3_224(crypto_const_uint8_buf_t message,
+                           crypto_uint8_buf_t *digest);
+
+/**
+ * Compute SHA-3-256 in one-shot.
+ *
+ * Warning: The caller must ensure that `digest` buffer is large
+ * enough to store the resulting digest (at least 256 / 8 = 32 bytes).
+ *
+ * The caller must ensure that `message` and `digest` have properly
+ * allocated `data` fields whose length matches their `len` fields.
+ *
+ * @param message The input message.
+ * @param digest The digest buffer to return the result.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_sha3_256(crypto_const_uint8_buf_t message,
+                           crypto_uint8_buf_t *digest);
+/**
+ * Compute SHA-3-384 in one-shot.
+ *
+ * Warning: The caller must ensure that `digest` buffer is large
+ * enough to store the resulting digest (at least 384 / 8 = 48 bytes).
+ *
+ * The caller must ensure that `message` and `digest` have properly
+ * allocated `data` fields whose length matches their `len` fields.
+ *
+ * @param message The input message.
+ * @param digest The digest buffer to return the result.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_sha3_384(crypto_const_uint8_buf_t message,
+                           crypto_uint8_buf_t *digest);
+
+/**
+ * Compute SHA-3-512 in one-shot.
+ *
+ * Warning: The caller must ensure that `digest` buffer is large
+ * enough to store the resulting digest (at least 512 / 8 = 64 bytes).
+ *
+ * The caller must ensure that `message` and `digest` have properly
+ * allocated `data` fields whose length matches their `len` fields.
+ *
+ * @param message The input message.
+ * @param digest The digest buffer to return the result.
+ * @return Error status.
+ */
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_sha3_512(crypto_const_uint8_buf_t message,
+                           crypto_uint8_buf_t *digest);
 
 #ifdef __cplusplus
 }

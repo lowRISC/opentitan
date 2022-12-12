@@ -22,6 +22,26 @@ OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength384,
 OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength512,
                      KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L512);
 
+// Assert that `kmac_en` bit of `kmac_operation_t` is mapped correctly
+static_assert((kKmacOperationSHA3 & 1) == 0,
+              "Incorrect kmac_en field of enum value kKmacOperationSHA3");
+static_assert((kKmacOperationSHAKE & 1) == 0,
+              "Incorrect kmac_en field of enum value kKmacOperationSHAKE");
+static_assert((kKmacOperationCSHAKE & 1) == 0,
+              "Incorrect kmac_en field of enum value kKmacOperationCSHAKE");
+static_assert((kKmacOperationKMAC & 1) == 1,
+              "Incorrect kmac_en field of enum value kKmacOperationKMAC");
+
+// Assert that `mode` field of `kmac_operation_t` is mapped correctly
+static_assert(kKmacOperationSHA3 >> 1 == KMAC_CFG_SHADOWED_MODE_VALUE_SHA3,
+              "Incorrect mode field of enum value kKmacOperationSHA3");
+static_assert(kKmacOperationSHAKE >> 1 == KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE,
+              "Incorrect mode field of enum value kKmacOperationSHAKE");
+static_assert(kKmacOperationCSHAKE >> 1 == KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE,
+              "Incorrect mode field of enum value kKmacOperationCSHAKE");
+static_assert(kKmacOperationKMAC >> 1 == KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE,
+              "Incorrect mode field of enum value kKmacOperationKMAC");
+
 OT_ASSERT_ENUM_VALUE(kKmacKeyLength128, KMAC_KEY_LEN_LEN_VALUE_KEY128);
 OT_ASSERT_ENUM_VALUE(kKmacKeyLength192, KMAC_KEY_LEN_LEN_VALUE_KEY192);
 OT_ASSERT_ENUM_VALUE(kKmacKeyLength256, KMAC_KEY_LEN_LEN_VALUE_KEY256);
@@ -30,14 +50,19 @@ OT_ASSERT_ENUM_VALUE(kKmacKeyLength512, KMAC_KEY_LEN_LEN_VALUE_KEY512);
 
 enum {
   kKmacPrefixRegCount = 4 * KMAC_PREFIX_MULTIREG_COUNT,
-  // The total size of prefix registers (in bytes), after removing len encodings
-  kKmacPrefixMaxSize = 4 * KMAC_PREFIX_MULTIREG_COUNT - 4,
   kKmacBaseAddr = TOP_EARLGREY_KMAC_BASE_ADDR,
   kKmacCfgAddr = kKmacBaseAddr + KMAC_CFG_SHADOWED_REG_OFFSET,
   kKmacKeyShare0Addr = kKmacBaseAddr + KMAC_KEY_SHARE0_0_REG_OFFSET,
   kKmacKeyShare1Addr = kKmacBaseAddr + KMAC_KEY_SHARE1_0_REG_OFFSET,
 };
 
+// "KMAC" string in little endian
+static const crypto_const_uint8_buf_t kKmacFuncNameKMAC = {
+    .data = (uint8_t *)"\x4b\x4d\x41\x43",
+    .len = 4,
+};
+
+OT_ASSERT_ENUM_VALUE(kKmacPrefixMaxSize, 4 * KMAC_PREFIX_MULTIREG_COUNT - 4);
 OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength128,
                      KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L128);
 OT_ASSERT_ENUM_VALUE(kKmacSecurityStrength224,
@@ -122,40 +147,41 @@ OT_ASSERT_ENUM_VALUE(KMAC_KEY_SHARE1_15_REG_OFFSET,
                      KMAC_KEY_SHARE1_14_REG_OFFSET + 4);
 
 OT_ASSERT_ENUM_VALUE(ARRAYSIZE(prefix_offsets), KMAC_PREFIX_MULTIREG_COUNT);
+
+// Ensure each PREFIX register is 4 bytes
 OT_ASSERT_ENUM_VALUE(32, KMAC_PREFIX_PREFIX_FIELD_WIDTH);
 
 /**
  * Return the rate (in bytes) for given security strength.
  *
- * @param sec_str Security strength.
+ * The caller must ensure that `keccak_rate` is not a NULL pointer. This is not
+ * checked within this function.
+ *
+ * @param security_str Security strength.
  * @param keccak_rate The keccak rate in bytes.
  * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
-static kmac_error_t kmac_get_keccak_rate_bytes(uint32_t security_str,
+static kmac_error_t kmac_get_keccak_rate_bytes(kmac_security_str_t security_str,
                                                size_t *keccak_rate) {
-  if (keccak_rate == NULL) {
-    return kKmacArgsError;
-  }
-
   // Since Keccak state is 1600 bits, rate is calculated with
   // rate = (1600 - 2*x) where x is the security strength (i.e. half the
-  // capacity).
+  // capacity). Here, `keccak_rate` is in bytes.
   switch (security_str) {
     case kKmacSecurityStrength128:
-      *keccak_rate = 168;
+      *keccak_rate = (1600 - 2 * 128) / 8;
       break;
     case kKmacSecurityStrength224:
-      *keccak_rate = 144;
+      *keccak_rate = (1600 - 2 * 224) / 8;
       break;
     case kKmacSecurityStrength256:
-      *keccak_rate = 136;
+      *keccak_rate = (1600 - 2 * 256) / 8;
       break;
     case kKmacSecurityStrength384:
-      *keccak_rate = 104;
+      *keccak_rate = (1600 - 2 * 384) / 8;
       break;
     case kKmacSecurityStrength512:
-      *keccak_rate = 72;
+      *keccak_rate = (1600 - 2 * 512) / 8;
       break;
     default:
       return kKmacArgsError;
@@ -166,6 +192,9 @@ static kmac_error_t kmac_get_keccak_rate_bytes(uint32_t security_str,
 /**
  * Return the key length (in bytes) for kmac_key_len_t enum value.
  *
+ * The caller must ensure that `key_len_bytes` is not a NULL pointer. This is
+ * not checked within this function.
+ *
  * @param key_len kmac_key_len_t enum value as input.
  * @param key_len_bytes The length of the key in bytes.
  * @return Error code.
@@ -173,25 +202,22 @@ static kmac_error_t kmac_get_keccak_rate_bytes(uint32_t security_str,
 OT_WARN_UNUSED_RESULT
 static kmac_error_t kmac_get_key_len_bytes(kmac_key_len_t key_len,
                                            size_t *key_len_bytes) {
-  if (key_len_bytes == NULL) {
-    return kKmacArgsError;
-  }
-
+  // Convert key lengths to byte unit
   switch (key_len) {
     case kKmacKeyLength128:
-      *key_len_bytes = 16;
+      *key_len_bytes = 128 / 8;
       break;
     case kKmacKeyLength192:
-      *key_len_bytes = 24;
+      *key_len_bytes = 192 / 8;
       break;
     case kKmacKeyLength256:
-      *key_len_bytes = 32;
+      *key_len_bytes = 256 / 8;
       break;
     case kKmacKeyLength384:
-      *key_len_bytes = 48;
+      *key_len_bytes = 384 / 8;
       break;
     case kKmacKeyLength512:
-      *key_len_bytes = 64;
+      *key_len_bytes = 512 / 8;
       break;
     default:
       return kKmacArgsError;
@@ -300,6 +326,7 @@ kmac_error_t kmac_hwip_default_configure(void) {
  * `bit_value`.
  * @param bit_position The bit position in the status register.
  * @param bit_value Whether it should wait for 0 or 1.
+ * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
 static kmac_error_t wait_status_bit(uint32_t bit_position, bool bit_value) {
@@ -331,6 +358,9 @@ static kmac_error_t wait_status_bit(uint32_t bit_position, bool bit_value) {
  * left_encode(`value`) = `encoding_header` || `encoding_buf`
  * right_encode(`value`) = `encoding_buf` || `encoding_header`
  *
+ * The caller must ensure that `encoding_buf` and `encoding_header` are not
+ * NULL pointers. This is not checked within this function.
+ *
  * @param value Integer to be encoded.
  * @param encoding_buf The output byte array representing `value`.
  * @param encoding_header The number of bytes written to `encoded_value`.
@@ -339,10 +369,6 @@ static kmac_error_t wait_status_bit(uint32_t bit_position, bool bit_value) {
 OT_WARN_UNUSED_RESULT
 static kmac_error_t little_endian_encode(size_t value, uint8_t *encoding_buf,
                                          uint8_t *encoding_header) {
-  if (encoding_buf == NULL || encoding_header == NULL) {
-    return kKmacArgsError;
-  }
-
   uint8_t len = 0;
   do {
     encoding_buf[len] = value & UINT8_MAX;
@@ -360,31 +386,22 @@ static kmac_error_t little_endian_encode(size_t value, uint8_t *encoding_buf,
  * This function directly writes to PREFIX registers of KMAC HWIP.
  *
  * @param func_name Function name input in cSHAKE.
- * @param func_name_len The number of valid bytes in `func_name` buffer.
  * @param cust_str Customization string input in cSHAKE.
- * @param cust_str_len The number of valid bytes in `cust_str` buffer.
  * @return Error code.
  */
 OT_WARN_UNUSED_RESULT
-static kmac_error_t kmac_set_prefix_regs(const uint8_t *func_name,
-                                         const size_t func_name_len,
-                                         const uint8_t *cust_str,
-                                         const size_t cust_str_len) {
-  // static_assert(kKmacPrefixMaxSize < 8192, ");
-
+static kmac_error_t kmac_set_prefix_regs(crypto_const_uint8_buf_t func_name,
+                                         crypto_const_uint8_buf_t cust_str) {
   // Initialize with 0 so that the last untouched bytes are set as 0x0
   uint32_t prefix_buffer[kKmacPrefixRegCount] = {0x0};
   uint8_t *prefix_buf_ptr = (uint8_t *)prefix_buffer;
 
-  if ((cust_str_len && cust_str == NULL) ||
-      (func_name_len && func_name == NULL)) {
-    return kKmacArgsError;
-  } else if (func_name_len + cust_str_len > kKmacPrefixMaxSize) {
+  if (func_name.len + cust_str.len > kKmacPrefixMaxSize) {
     return kKmacArgsError;
   }
 
-  size_t func_name_len_bits = 8 * func_name_len;
-  size_t cust_str_len_bits = 8 * cust_str_len;
+  size_t func_name_len_bits = 8 * func_name.len;
+  size_t cust_str_len_bits = 8 * cust_str.len;
   size_t i = 0;
   size_t write_cnt = 0;
   uint8_t j = 0;
@@ -398,10 +415,10 @@ static kmac_error_t kmac_set_prefix_regs(const uint8_t *func_name,
   prefix_buf_ptr[0] = j;
   write_cnt += j + 1;
 
-  // copy func_name
-  memcpy(prefix_buf_ptr + write_cnt, func_name, func_name_len);
+  // copy `func_name`
+  memcpy(prefix_buf_ptr + write_cnt, func_name.data, func_name.len);
 
-  write_cnt += func_name_len;
+  write_cnt += func_name.len;
 
   // left_encode(`cust_str_len_bits`) below
   err = little_endian_encode(cust_str_len_bits, prefix_buf_ptr + write_cnt + 1,
@@ -410,10 +427,10 @@ static kmac_error_t kmac_set_prefix_regs(const uint8_t *func_name,
     return err;
   }
 
-  // copy cust_str
+  // copy `cust_str`
   prefix_buf_ptr[write_cnt] = j;
   write_cnt += j + 1;
-  memcpy(prefix_buf_ptr + write_cnt, cust_str, cust_str_len);
+  memcpy(prefix_buf_ptr + write_cnt, cust_str.data, cust_str.len);
 
   // Copy from `prefix_buffer` to PREFIX_REGS
   for (i = 0; i < KMAC_PREFIX_MULTIREG_COUNT; i++) {
@@ -424,19 +441,7 @@ static kmac_error_t kmac_set_prefix_regs(const uint8_t *func_name,
 }
 
 kmac_error_t kmac_init(kmac_operation_t operation,
-                       kmac_security_str_t security_str,
-                       const uint8_t *func_name, uint8_t func_name_len,
-                       const uint8_t *cust_str, size_t cust_str_len) {
-  if (cust_str_len && cust_str == NULL) {
-    return kKmacArgsError;
-  } else if (func_name_len && func_name == NULL) {
-    return kKmacArgsError;
-  }
-
-  if (cust_str_len + func_name_len > kKmacPrefixMaxSize) {
-    return kKmacArgsError;
-  }
-
+                       kmac_security_str_t security_str) {
   kmac_error_t err = wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1);
   if (err != kKmacOk) {
     return err;
@@ -454,29 +459,11 @@ kmac_error_t kmac_init(kmac_operation_t operation,
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, 0);
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 0);
 
-  switch (operation) {
-    case kKmacOperationSHA3:
-      cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
-                                       KMAC_CFG_SHADOWED_MODE_VALUE_SHA3);
-      break;
-    case kKmacOperationSHAKE:
-      cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
-                                       KMAC_CFG_SHADOWED_MODE_VALUE_SHAKE);
-      break;
-    case kKmacOperationKMAC:
-      // For KMAC HWIP, KMAC is not defined as a mode at the hardware level so
-      // we need to use mode=cSHAKE and enable KMAC_EN_BIT to run KMAC
-      cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, 1);
-      cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
-                                       KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE);
-      break;
-    case kKmacOperationCSHAKE:
-      cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
-                                       KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE);
-      break;
-    default:
-      return kKmacArgsError;
-  }
+  // operation bit fields: Bit 0: `kmac_en`, Bit 1-2: `mode`
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT,
+                                 operation & 1);
+  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
+                                   operation >> 1);
 
   cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
                                    security_str);
@@ -487,32 +474,17 @@ kmac_error_t kmac_init(kmac_operation_t operation,
 }
 
 kmac_error_t kmac_write_prefix_block(kmac_operation_t operation,
-                                     const uint8_t *func_name,
-                                     const size_t func_name_len,
-                                     const uint8_t *cust_str,
-                                     const size_t cust_str_len) {
-  kmac_error_t err = kKmacOk;
-  // Write to prefix registers
+                                     crypto_const_uint8_buf_t func_name,
+                                     crypto_const_uint8_buf_t cust_str) {
   if (operation == kKmacOperationCSHAKE) {
-    err =
-        kmac_set_prefix_regs(func_name, func_name_len, cust_str, cust_str_len);
+    return kmac_set_prefix_regs(func_name, cust_str);
   } else if (operation == kKmacOperationKMAC) {
-    uint8_t kmac_func_name[4] = {0x4b, 0x4d, 0x41,
-                                 0x43};  // "KMAC" in little endian
-    err = kmac_set_prefix_regs(kmac_func_name, /*func_name_len=*/4, cust_str,
-                               cust_str_len);
+    return kmac_set_prefix_regs(/*func_name=*/kKmacFuncNameKMAC, cust_str);
   }
-  if (err != kKmacOk) {
-    return err;
-  }
-  return err;
+  return kKmacArgsError;
 }
 
 kmac_error_t kmac_write_key_block(const uint8_t *key, kmac_key_len_t key_len) {
-  if (key == NULL) {
-    return kKmacArgsError;
-  }
-
   uint32_t key_len_reg = KMAC_KEY_LEN_REG_RESVAL;
   key_len_reg =
       bitfield_field32_write(key_len_reg, KMAC_KEY_LEN_LEN_FIELD, key_len);
@@ -534,13 +506,14 @@ kmac_error_t kmac_write_key_block(const uint8_t *key, kmac_key_len_t key_len) {
 }
 
 kmac_error_t kmac_process_msg_blocks(kmac_operation_t operation,
-                                     const uint8_t *data, size_t data_len,
-                                     uint8_t *digest, size_t digest_len) {
+                                     crypto_const_uint8_buf_t message,
+                                     crypto_uint8_buf_t *digest) {
   uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
   kmac_error_t err;
 
-  // Assumption(1): `data_len` > 0 and `digest_len` > 0
-  // Assumption(2): data % 4 = 0, i.e. the data ptr is 32-bit aligned
+  // Assumption(1): `message.len` > 0 and `digest->len` > 0
+  // Assumption(2): message.data % 4 = 0, i.e. the message.data is 32-bit
+  // aligned
 
   err = wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1);
   // Issue the start command, so that messages written to MSG_FIFO are forwarded
@@ -554,9 +527,9 @@ kmac_error_t kmac_process_msg_blocks(kmac_operation_t operation,
   }
 
   // Begin by writing a word at a time
-  uint32_t *word_ptr = (uint32_t *)data;
+  uint32_t *word_ptr = (uint32_t *)message.data;
   size_t i = 0;
-  for (; i < data_len / 4; i++) {
+  for (; i < message.len / 4; i++) {
     err = wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0);
     if (err != kKmacOk) {
       return err;
@@ -565,20 +538,20 @@ kmac_error_t kmac_process_msg_blocks(kmac_operation_t operation,
   }
 
   // For the last few bytes, we need to write byte at a time
-  // i = 4*(data_len/4)
-  for (i = 4 * i; i < data_len; i++) {
+  // i = 4*(message.len/4)
+  for (i = 4 * i; i < message.len; i++) {
     err = wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0);
     if (err != kKmacOk) {
       return err;
     }
     abs_mmio_write8(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET + (i % 4),
-                    data[i]);
+                    message.data[i]);
   }
 
-  // If operation=KMAC, then we need to write `right_encode(digest_len)`
+  // If operation=KMAC, then we need to write `right_encode(digest->len)`
   if (operation == kKmacOperationKMAC) {
-    uint32_t digest_len_bits = 8 * digest_len;
-    if (digest_len_bits / 8 != digest_len) {
+    uint32_t digest_len_bits = 8 * digest->len;
+    if (digest_len_bits / 8 != digest->len) {
       return kKmacDigestLenTooLongError;
     }
 
@@ -598,13 +571,13 @@ kmac_error_t kmac_process_msg_blocks(kmac_operation_t operation,
     // order
     for (size_t i = 0; i < encoding_header; i++) {
       abs_mmio_write8(
-          kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET + ((data_len + i) % 4),
+          kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET + ((message.len + i) % 4),
           buf[encoding_header - i - 1]);
     }
 
     // Finally write `encoding_header` as the last byte
     abs_mmio_write8(
-        kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET + ((data_len + i) % 4),
+        kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET + ((message.len + i) % 4),
         buf[encoding_header]);
   }
 
@@ -632,7 +605,7 @@ kmac_error_t kmac_process_msg_blocks(kmac_operation_t operation,
 
   // Finally, we can read the two shares of digest and XOR them
   // Here the counter i denotes the number of bytes read from Keccak state
-  for (i = 0; i < digest_len; i++) {
+  for (i = 0; i < digest->len; i++) {
     // Do we require additional Keccak rounds?
     if ((i % keccak_rate) == 0 && i > 0) {
       // if we consumed all Keccak state and aren't done yet, run one more
@@ -648,10 +621,11 @@ kmac_error_t kmac_process_msg_blocks(kmac_operation_t operation,
         return err;
       }
     }
-    digest[i] = abs_mmio_read8(kKmacBaseAddr + KMAC_STATE_REG_OFFSET +
-                               (i % keccak_rate));
-    digest[i] ^= abs_mmio_read8(kKmacBaseAddr + KMAC_STATE_REG_OFFSET +
-                                KMAC_STATE_SIZE_BYTES / 2 + (i % keccak_rate));
+    digest->data[i] = abs_mmio_read8(kKmacBaseAddr + KMAC_STATE_REG_OFFSET +
+                                     (i % keccak_rate));
+    digest->data[i] ^=
+        abs_mmio_read8(kKmacBaseAddr + KMAC_STATE_REG_OFFSET +
+                       KMAC_STATE_SIZE_BYTES / 2 + (i % keccak_rate));
   }
 
   // Release the KMAC core, so that it goes back to idle mode
@@ -659,9 +633,51 @@ kmac_error_t kmac_process_msg_blocks(kmac_operation_t operation,
   cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
                                    KMAC_CMD_CMD_VALUE_DONE);
   abs_mmio_write32(kKmacBaseAddr + KMAC_CMD_REG_OFFSET, cmd_reg);
+
+  return kKmacOk;
+}
+
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_sha3_224(crypto_const_uint8_buf_t message,
+                           crypto_uint8_buf_t *digest) {
+  kmac_error_t err = kmac_init(kKmacOperationSHA3, kKmacSecurityStrength224);
   if (err != kKmacOk) {
     return err;
   }
 
-  return kKmacOk;
+  return kmac_process_msg_blocks(kKmacOperationSHA3, message, digest);
+}
+
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_sha3_256(crypto_const_uint8_buf_t message,
+                           crypto_uint8_buf_t *digest) {
+  kmac_error_t err = kmac_init(kKmacOperationSHA3, kKmacSecurityStrength256);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  return kmac_process_msg_blocks(kKmacOperationSHA3, message, digest);
+}
+
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_sha3_384(crypto_const_uint8_buf_t message,
+                           crypto_uint8_buf_t *digest) {
+  kmac_error_t err = kmac_init(kKmacOperationSHA3, kKmacSecurityStrength384);
+
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  return kmac_process_msg_blocks(kKmacOperationSHA3, message, digest);
+}
+
+OT_WARN_UNUSED_RESULT
+kmac_error_t kmac_sha3_512(crypto_const_uint8_buf_t message,
+                           crypto_uint8_buf_t *digest) {
+  kmac_error_t err = kmac_init(kKmacOperationSHA3, kKmacSecurityStrength512);
+  if (err != kKmacOk) {
+    return err;
+  }
+
+  return kmac_process_msg_blocks(kKmacOperationSHA3, message, digest);
 }
