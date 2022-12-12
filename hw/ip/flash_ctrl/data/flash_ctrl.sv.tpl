@@ -261,6 +261,7 @@ module flash_ctrl
   flash_prog_e op_prog_type;
 
   logic ctrl_init_busy;
+  logic ctrl_initialized;
   logic fifo_clr;
 
   // sw read fifo interface
@@ -488,6 +489,7 @@ module flash_ctrl
 
     // init ongoing
     .init_busy_o(ctrl_init_busy),
+    .initialized_o(ctrl_initialized),
 
     .debug_state_o(hw2reg.debug_state.d)
   );
@@ -848,6 +850,8 @@ module flash_ctrl
   assign hw2reg.status.prog_empty.de = sw_sel;
   assign hw2reg.status.init_wip.d    = flash_phy_busy | ctrl_init_busy;
   assign hw2reg.status.init_wip.de   = 1'b1;
+  assign hw2reg.status.initialized.d  = ctrl_initialized & ~flash_phy_busy;
+  assign hw2reg.status.initialized.de = 1'b1;
   assign hw2reg.control.start.d      = 1'b0;
   assign hw2reg.control.start.de     = sw_ctrl_done;
   // if software operation selected, based on transaction start

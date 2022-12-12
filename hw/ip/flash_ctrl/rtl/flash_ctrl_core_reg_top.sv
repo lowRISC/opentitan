@@ -951,6 +951,7 @@ module flash_ctrl_core_reg_top (
   logic status_prog_full_qs;
   logic status_prog_empty_qs;
   logic status_init_wip_qs;
+  logic status_initialized_qs;
   logic debug_state_re;
   logic [10:0] debug_state_qs;
   logic err_code_we;
@@ -10177,6 +10178,32 @@ module flash_ctrl_core_reg_top (
     .qs     (status_init_wip_qs)
   );
 
+  //   F[initialized]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0)
+  ) u_status_initialized (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.status.initialized.de),
+    .d      (hw2reg.status.initialized.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (status_initialized_qs)
+  );
+
 
   // R[debug_state]: V(True)
   prim_subreg_ext #(
@@ -13135,6 +13162,7 @@ module flash_ctrl_core_reg_top (
         reg_rdata_next[2] = status_prog_full_qs;
         reg_rdata_next[3] = status_prog_empty_qs;
         reg_rdata_next[4] = status_init_wip_qs;
+        reg_rdata_next[5] = status_initialized_qs;
       end
 
       addr_hit[93]: begin

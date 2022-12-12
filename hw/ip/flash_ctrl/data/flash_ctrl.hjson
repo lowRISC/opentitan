@@ -1722,6 +1722,10 @@
           { bits: "4",    name: "init_wip",   desc: "Flash controller undergoing init, inclusive of phy init"
             tags: [ // Bit changes immediately after start from reset value to 1b1 due to initialization
             "excl:CsrAllTests:CsrExclAll"]
+          }
+          { bits: "5",    name: "initialized",desc: "Flash controller initialized"
+            tags: [ // Bit changes immediately after start from reset value to 1b1 due to initialization
+            "excl:CsrAllTests:CsrExclAll"]
           },
         ]
       },
