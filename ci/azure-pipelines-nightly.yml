@@ -1,0 +1,71 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Azure Release Pipeline configuration
+# Documentation at https://aka.ms/yaml
+
+schedules:
+# For testing purposes, run this pipeline every day at 07:21 UTC
+# Use a random minute value to avoid congestion on the hour
+- cron: "21 7 * * *"
+  displayName: "OpenTitan Nightly Tests"
+  branches:
+    include:
+    - "master"
+  always: True
+
+trigger: none
+pr: none
+
+# TODO: the following trigger is used for testing.
+# pr:
+#   branches:
+#     include:
+#       - "*"
+
+variables:
+  # If updating VERILATOR_VERSION, TOOLCHAIN_VERSION or RUST_VERSION, update
+  # the definitions in util/container/Dockerfile as well.
+  VERILATOR_VERSION: 4.210
+  TOOLCHAIN_PATH: /opt/buildcache/riscv
+  VERIBLE_VERSION: v0.0-2135-gb534c1fe
+  RUST_VERSION: 1.60.0
+    # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
+  TOOLCHAIN_VERSION: 20220210-1
+    # This controls where builds happen, and gets picked up by build_consts.sh.
+  BUILD_ROOT: $(Build.ArtifactStagingDirectory)
+  VIVADO_VERSION: "2020.2"
+
+jobs:
+# TODO: refactor this into a template
+- job: checkout
+  displayName: "Checkout repository"
+  pool:
+    vmImage: ubuntu-20.04
+  steps:
+  - checkout: self
+    path: opentitan-repo
+  - bash: |
+      tar -C $(Pipeline.Workspace)/opentitan-repo -czf $(Pipeline.Workspace)/opentitan-repo.tar.gz .
+    displayName: "Pack up repository"
+  - publish: $(Pipeline.Workspace)/opentitan-repo.tar.gz
+    artifact: opentitan-repo
+    displayName: "Upload repository"
+
+- job: rom_e2e
+  displayName: "ROM E2E Tests"
+  timeoutInMinutes: 360 # TODO: adjust this timeout
+  dependsOn: checkout
+  pool: ci-public
+  steps:
+  - template: ../ci/checkout-template.yml
+  - template: ../ci/install-package-dependencies.yml
+  - bash: |
+      ci/bazelisk.sh test \\
+        --define DISABLE_VERILATOR_BUILD=true \\
+        --define bitstream=gcp_splice \\
+        --test_tag_filters=-verilator,-dv,-broken \\
+        --build_tests_only \\
+        //sw/device/silicon_creator/rom/e2e/...
+    displayName: "Run all ROM E2E tests"
