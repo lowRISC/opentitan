@@ -524,6 +524,20 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
                 "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_host_rv_core_ibex__cored.gen_device");
           end
         end
+        // The RF read addresses impact the read data thereby changing a potential branching
+        // decision and thus instr_req_o. Changing instr_req_o on the falling clock edge can
+        // lead to failing assertions in target TL-UL device ports of the main X-bar.
+        "rf_raddr_a_o",
+        "rf_raddr_b_o": begin
+          $assertoff(0,
+              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_device_rom_ctrl__rom.gen_host");
+          $assertoff(0,
+              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_device_rv_dm__mem.gen_host");
+          $assertoff(0,
+              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_device_sram_ctrl_main__ram.gen_host");
+          $assertoff(0,
+              "tb.dut.top_earlgrey.u_xbar_main.tlul_assert_device_flash_ctrl__mem.gen_host");
+        end
         default: ;
       endcase
     end
