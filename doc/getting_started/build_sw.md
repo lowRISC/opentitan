@@ -221,9 +221,9 @@ Bazel produces various artifacts depending on the category of software that is b
 
 Device software is built and run on OpenTitan hardware.
 There are three OpenTitan "devices" for simulating/emulating OpenTitan hardware:
-1. DV simulation (i.e., RTL simulation with commercial simulators),
-1. Verilator simulation (i.e., RTL simulation with the open source Verilator simulator),
-1. FPGA.
+1. "sim\_dv": DV simulation (i.e., RTL simulation with commercial simulators),
+1. "sim\_verilator": Verilator simulation (i.e., RTL simulation with the open source Verilator simulator),
+1. "fpga\_cw310": FPGA.
 
 Additionally, for each device, there are two types of software images that can be built, depending on the memory type the software is destined for, i.e.:
 1. ROM,

@@ -398,8 +398,9 @@ bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpg
 Then a connection between OpenOCD and GDB may be established with:
 ```console
 cd $REPO_TOP
+./bazelisk.sh build --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf
 riscv32-unknown-elf-gdb -ex "target extended-remote :3333" -ex "info reg" \
-  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310_test_rom.elf)"
+  "$(./bazelisk.sh outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_fpga_cw310.elf)"
 ```
 
 The above will print out the contents of the registers upon successs.
