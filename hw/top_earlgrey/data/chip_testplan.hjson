@@ -596,7 +596,8 @@
 
             '''
       stage: V3
-      tests: []
+      tests: ["rom_e2e_jtag_debug_test_unlocked0", "rom_e2e_jtag_debug_dev",
+              "rom_e2e_jtag_debug_rma"]
     }
     {
       name: chip_rv_dm_ndm_reset_req
