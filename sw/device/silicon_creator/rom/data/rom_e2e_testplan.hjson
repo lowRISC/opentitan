@@ -868,7 +868,11 @@
             '''
       tags: ["rom", "dv", "verilator", "fpga", "silicon"]
       stage: V3
-      tests: []
+      tests: [
+        "rom_e2e_jtag_debug_test_unlocked0",
+        "rom_e2e_jtag_debug_dev",
+        "rom_e2e_jtag_debug_rma",
+      ]
     }
 
     {
@@ -903,7 +907,11 @@
             '''
       tags: ["rom", "verilator", "dv", "fpga", "silicon"]
       stage: V3
-      tests: []
+      tests: [
+        "rom_e2e_jtag_inject_test_unlocked0",
+        "rom_e2e_jtag_inject_dev",
+        "rom_e2e_jtag_inject_rma",
+      ]
     }
 
 
