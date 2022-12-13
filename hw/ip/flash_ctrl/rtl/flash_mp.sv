@@ -7,11 +7,14 @@
 
 `include "prim_assert.sv"
 
-module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
+module flash_mp
+import prim_mubi_pkg::mubi4_t;
+import flash_ctrl_pkg::*;
+import flash_ctrl_reg_pkg::*; (
   input clk_i,
   input rst_ni,
 
-  input prim_mubi_pkg::mubi4_t flash_disable_i,
+  input mubi4_t flash_disable_i,
 
   // interface selection
   input flash_sel_e if_sel_i,
@@ -38,6 +41,10 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   output logic prog_done_o,
   output logic erase_done_o,
   output logic error_o,
+
+  // hardware interface override
+  input mubi4_t hw_info_scramble_dis_i,
+  input mubi4_t hw_info_ecc_dis_i,
 
   // interface signals to/from flash_phy
   output logic req_o,
@@ -215,7 +222,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
   ////////////////////////////////////////
 
   // hardware interface permission check
-  info_page_cfg_t hw_page_cfg;
+  info_page_cfg_t hw_page_cfg_pre, hw_page_cfg;
 
   // rule match used for assertions only
   logic [HwInfoRules-1:0] unused_rule_match;
@@ -228,7 +235,7 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
 
   // select appropriate hw page configuration based on phase and page matching
   always_comb begin
-    hw_page_cfg = '0;
+    hw_page_cfg_pre = '0;
     unused_rule_match = '0;
     if (hw_sel && req_i) begin
       for (int unsigned i = 0; i < HwInfoRules; i++) begin: hw_info_region_comps
@@ -237,10 +244,16 @@ module flash_mp import flash_ctrl_pkg::*; import flash_ctrl_reg_pkg::*; (
             info_sel_i == HwInfoPageAttr[i].page.sel &&
             phase_i == HwInfoPageAttr[i].phase) begin
           unused_rule_match[i] = 1'b1;
-          hw_page_cfg = HwInfoPageAttr[i].cfg;
+          hw_page_cfg_pre = HwInfoPageAttr[i].cfg;
         end
       end
     end
+
+    hw_page_cfg = hw_page_cfg_pre;
+    hw_page_cfg.scramble_en = prim_mubi_pkg::mubi4_and_hi(hw_page_cfg_pre.scramble_en,
+                                                          mubi4_t'(~hw_info_scramble_dis_i));
+    hw_page_cfg.ecc_en = prim_mubi_pkg::mubi4_and_hi(hw_page_cfg_pre.scramble_en,
+                                                     mubi4_t'(~hw_info_ecc_dis_i));
   end
 
   // select appropriate page configuration

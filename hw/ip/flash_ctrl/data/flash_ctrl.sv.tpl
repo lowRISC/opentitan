@@ -789,6 +789,10 @@ module flash_ctrl
     // disable flash through memory protection
     .flash_disable_i(flash_disable[MpDisableIdx]),
 
+    // hw info configuration overrides
+    .hw_info_scramble_dis_i(mubi4_t'(reg2hw.hw_info_cfg_override.scramble_dis.q)),
+    .hw_info_ecc_dis_i(mubi4_t'(reg2hw.hw_info_cfg_override.ecc_dis.q)),
+
     // arbiter interface selection
     .if_sel_i(if_sel),
 

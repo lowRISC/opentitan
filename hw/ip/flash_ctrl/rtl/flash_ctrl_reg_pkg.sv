@@ -379,6 +379,15 @@ package flash_ctrl_reg_pkg;
   } flash_ctrl_reg2hw_bank1_info2_page_cfg_mreg_t;
 
   typedef struct packed {
+    struct packed {
+      logic [3:0]  q;
+    } scramble_dis;
+    struct packed {
+      logic [3:0]  q;
+    } ecc_dis;
+  } flash_ctrl_reg2hw_hw_info_cfg_override_reg_t;
+
+  typedef struct packed {
     logic        q;
   } flash_ctrl_reg2hw_mp_bank_cfg_shadowed_mreg_t;
 
@@ -732,26 +741,27 @@ package flash_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [1325:1320]
-    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [1319:1314]
-    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [1313:1302]
-    flash_ctrl_reg2hw_alert_test_reg_t alert_test; // [1301:1292]
-    flash_ctrl_reg2hw_dis_reg_t dis; // [1291:1288]
-    flash_ctrl_reg2hw_exec_reg_t exec; // [1287:1256]
-    flash_ctrl_reg2hw_init_reg_t init; // [1255:1255]
-    flash_ctrl_reg2hw_control_reg_t control; // [1254:1235]
-    flash_ctrl_reg2hw_addr_reg_t addr; // [1234:1215]
-    flash_ctrl_reg2hw_prog_type_en_reg_t prog_type_en; // [1214:1213]
-    flash_ctrl_reg2hw_erase_suspend_reg_t erase_suspend; // [1212:1212]
-    flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [1211:988]
-    flash_ctrl_reg2hw_mp_region_mreg_t [7:0] mp_region; // [987:836]
-    flash_ctrl_reg2hw_default_region_reg_t default_region; // [835:812]
-    flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t [9:0] bank0_info0_page_cfg; // [811:532]
-    flash_ctrl_reg2hw_bank0_info1_page_cfg_mreg_t [0:0] bank0_info1_page_cfg; // [531:504]
-    flash_ctrl_reg2hw_bank0_info2_page_cfg_mreg_t [1:0] bank0_info2_page_cfg; // [503:448]
-    flash_ctrl_reg2hw_bank1_info0_page_cfg_mreg_t [9:0] bank1_info0_page_cfg; // [447:168]
-    flash_ctrl_reg2hw_bank1_info1_page_cfg_mreg_t [0:0] bank1_info1_page_cfg; // [167:140]
-    flash_ctrl_reg2hw_bank1_info2_page_cfg_mreg_t [1:0] bank1_info2_page_cfg; // [139:84]
+    flash_ctrl_reg2hw_intr_state_reg_t intr_state; // [1333:1328]
+    flash_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [1327:1322]
+    flash_ctrl_reg2hw_intr_test_reg_t intr_test; // [1321:1310]
+    flash_ctrl_reg2hw_alert_test_reg_t alert_test; // [1309:1300]
+    flash_ctrl_reg2hw_dis_reg_t dis; // [1299:1296]
+    flash_ctrl_reg2hw_exec_reg_t exec; // [1295:1264]
+    flash_ctrl_reg2hw_init_reg_t init; // [1263:1263]
+    flash_ctrl_reg2hw_control_reg_t control; // [1262:1243]
+    flash_ctrl_reg2hw_addr_reg_t addr; // [1242:1223]
+    flash_ctrl_reg2hw_prog_type_en_reg_t prog_type_en; // [1222:1221]
+    flash_ctrl_reg2hw_erase_suspend_reg_t erase_suspend; // [1220:1220]
+    flash_ctrl_reg2hw_mp_region_cfg_mreg_t [7:0] mp_region_cfg; // [1219:996]
+    flash_ctrl_reg2hw_mp_region_mreg_t [7:0] mp_region; // [995:844]
+    flash_ctrl_reg2hw_default_region_reg_t default_region; // [843:820]
+    flash_ctrl_reg2hw_bank0_info0_page_cfg_mreg_t [9:0] bank0_info0_page_cfg; // [819:540]
+    flash_ctrl_reg2hw_bank0_info1_page_cfg_mreg_t [0:0] bank0_info1_page_cfg; // [539:512]
+    flash_ctrl_reg2hw_bank0_info2_page_cfg_mreg_t [1:0] bank0_info2_page_cfg; // [511:456]
+    flash_ctrl_reg2hw_bank1_info0_page_cfg_mreg_t [9:0] bank1_info0_page_cfg; // [455:176]
+    flash_ctrl_reg2hw_bank1_info1_page_cfg_mreg_t [0:0] bank1_info1_page_cfg; // [175:148]
+    flash_ctrl_reg2hw_bank1_info2_page_cfg_mreg_t [1:0] bank1_info2_page_cfg; // [147:92]
+    flash_ctrl_reg2hw_hw_info_cfg_override_reg_t hw_info_cfg_override; // [91:84]
     flash_ctrl_reg2hw_mp_bank_cfg_shadowed_mreg_t [1:0] mp_bank_cfg_shadowed; // [83:82]
     flash_ctrl_reg2hw_std_fault_status_reg_t std_fault_status; // [81:73]
     flash_ctrl_reg2hw_fault_status_reg_t fault_status; // [72:61]
@@ -871,24 +881,25 @@ package flash_ctrl_reg_pkg;
   parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO2_REGWEN_1_OFFSET = 9'h 158;
   parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_0_OFFSET = 9'h 15c;
   parameter logic [CoreAw-1:0] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_1_OFFSET = 9'h 160;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK_CFG_REGWEN_OFFSET = 9'h 164;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_BANK_CFG_SHADOWED_OFFSET = 9'h 168;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_OP_STATUS_OFFSET = 9'h 16c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_STATUS_OFFSET = 9'h 170;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_DEBUG_STATE_OFFSET = 9'h 174;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_ERR_CODE_OFFSET = 9'h 178;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_STD_FAULT_STATUS_OFFSET = 9'h 17c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_FAULT_STATUS_OFFSET = 9'h 180;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_ERR_ADDR_OFFSET = 9'h 184;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_CNT_OFFSET = 9'h 188;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0_OFFSET = 9'h 18c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_OFFSET = 9'h 190;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_PHY_ALERT_CFG_OFFSET = 9'h 194;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_PHY_STATUS_OFFSET = 9'h 198;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_SCRATCH_OFFSET = 9'h 19c;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_FIFO_LVL_OFFSET = 9'h 1a0;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_FIFO_RST_OFFSET = 9'h 1a4;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_CURR_FIFO_LVL_OFFSET = 9'h 1a8;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET = 9'h 164;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_BANK_CFG_REGWEN_OFFSET = 9'h 168;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_MP_BANK_CFG_SHADOWED_OFFSET = 9'h 16c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_OP_STATUS_OFFSET = 9'h 170;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_STATUS_OFFSET = 9'h 174;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_DEBUG_STATE_OFFSET = 9'h 178;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_ERR_CODE_OFFSET = 9'h 17c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_STD_FAULT_STATUS_OFFSET = 9'h 180;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_FAULT_STATUS_OFFSET = 9'h 184;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_ERR_ADDR_OFFSET = 9'h 188;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_CNT_OFFSET = 9'h 18c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0_OFFSET = 9'h 190;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1_OFFSET = 9'h 194;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_PHY_ALERT_CFG_OFFSET = 9'h 198;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_PHY_STATUS_OFFSET = 9'h 19c;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_SCRATCH_OFFSET = 9'h 1a0;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_FIFO_LVL_OFFSET = 9'h 1a4;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_FIFO_RST_OFFSET = 9'h 1a8;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_CURR_FIFO_LVL_OFFSET = 9'h 1ac;
 
   // Reset values for hwext registers and their fields for core interface
   parameter logic [5:0] FLASH_CTRL_INTR_TEST_RESVAL = 6'h 0;
@@ -912,9 +923,9 @@ package flash_ctrl_reg_pkg;
   parameter logic [4:0] FLASH_CTRL_CURR_FIFO_LVL_RD_RESVAL = 5'h 0;
 
   // Window parameters for core interface
-  parameter logic [CoreAw-1:0] FLASH_CTRL_PROG_FIFO_OFFSET = 9'h 1ac;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_PROG_FIFO_OFFSET = 9'h 1b0;
   parameter int unsigned       FLASH_CTRL_PROG_FIFO_SIZE   = 'h 4;
-  parameter logic [CoreAw-1:0] FLASH_CTRL_RD_FIFO_OFFSET = 9'h 1b0;
+  parameter logic [CoreAw-1:0] FLASH_CTRL_RD_FIFO_OFFSET = 9'h 1b4;
   parameter int unsigned       FLASH_CTRL_RD_FIFO_SIZE   = 'h 4;
 
   // Register index for core interface
@@ -1008,6 +1019,7 @@ package flash_ctrl_reg_pkg;
     FLASH_CTRL_BANK1_INFO2_REGWEN_1,
     FLASH_CTRL_BANK1_INFO2_PAGE_CFG_0,
     FLASH_CTRL_BANK1_INFO2_PAGE_CFG_1,
+    FLASH_CTRL_HW_INFO_CFG_OVERRIDE,
     FLASH_CTRL_BANK_CFG_REGWEN,
     FLASH_CTRL_MP_BANK_CFG_SHADOWED,
     FLASH_CTRL_OP_STATUS,
@@ -1029,7 +1041,7 @@ package flash_ctrl_reg_pkg;
   } flash_ctrl_core_id_e;
 
   // Register width information to check illegal writes for core interface
-  parameter logic [3:0] FLASH_CTRL_CORE_PERMIT [107] = '{
+  parameter logic [3:0] FLASH_CTRL_CORE_PERMIT [108] = '{
     4'b 0001, // index[  0] FLASH_CTRL_INTR_STATE
     4'b 0001, // index[  1] FLASH_CTRL_INTR_ENABLE
     4'b 0001, // index[  2] FLASH_CTRL_INTR_TEST
@@ -1119,24 +1131,25 @@ package flash_ctrl_reg_pkg;
     4'b 0001, // index[ 86] FLASH_CTRL_BANK1_INFO2_REGWEN_1
     4'b 1111, // index[ 87] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_0
     4'b 1111, // index[ 88] FLASH_CTRL_BANK1_INFO2_PAGE_CFG_1
-    4'b 0001, // index[ 89] FLASH_CTRL_BANK_CFG_REGWEN
-    4'b 0001, // index[ 90] FLASH_CTRL_MP_BANK_CFG_SHADOWED
-    4'b 0001, // index[ 91] FLASH_CTRL_OP_STATUS
-    4'b 0001, // index[ 92] FLASH_CTRL_STATUS
-    4'b 0011, // index[ 93] FLASH_CTRL_DEBUG_STATE
-    4'b 0001, // index[ 94] FLASH_CTRL_ERR_CODE
-    4'b 0011, // index[ 95] FLASH_CTRL_STD_FAULT_STATUS
-    4'b 0011, // index[ 96] FLASH_CTRL_FAULT_STATUS
-    4'b 0111, // index[ 97] FLASH_CTRL_ERR_ADDR
-    4'b 0011, // index[ 98] FLASH_CTRL_ECC_SINGLE_ERR_CNT
-    4'b 0111, // index[ 99] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0
-    4'b 0111, // index[100] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1
-    4'b 0001, // index[101] FLASH_CTRL_PHY_ALERT_CFG
-    4'b 0001, // index[102] FLASH_CTRL_PHY_STATUS
-    4'b 1111, // index[103] FLASH_CTRL_SCRATCH
-    4'b 0011, // index[104] FLASH_CTRL_FIFO_LVL
-    4'b 0001, // index[105] FLASH_CTRL_FIFO_RST
-    4'b 0011  // index[106] FLASH_CTRL_CURR_FIFO_LVL
+    4'b 0001, // index[ 89] FLASH_CTRL_HW_INFO_CFG_OVERRIDE
+    4'b 0001, // index[ 90] FLASH_CTRL_BANK_CFG_REGWEN
+    4'b 0001, // index[ 91] FLASH_CTRL_MP_BANK_CFG_SHADOWED
+    4'b 0001, // index[ 92] FLASH_CTRL_OP_STATUS
+    4'b 0001, // index[ 93] FLASH_CTRL_STATUS
+    4'b 0011, // index[ 94] FLASH_CTRL_DEBUG_STATE
+    4'b 0001, // index[ 95] FLASH_CTRL_ERR_CODE
+    4'b 0011, // index[ 96] FLASH_CTRL_STD_FAULT_STATUS
+    4'b 0011, // index[ 97] FLASH_CTRL_FAULT_STATUS
+    4'b 0111, // index[ 98] FLASH_CTRL_ERR_ADDR
+    4'b 0011, // index[ 99] FLASH_CTRL_ECC_SINGLE_ERR_CNT
+    4'b 0111, // index[100] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_0
+    4'b 0111, // index[101] FLASH_CTRL_ECC_SINGLE_ERR_ADDR_1
+    4'b 0001, // index[102] FLASH_CTRL_PHY_ALERT_CFG
+    4'b 0001, // index[103] FLASH_CTRL_PHY_STATUS
+    4'b 1111, // index[104] FLASH_CTRL_SCRATCH
+    4'b 0011, // index[105] FLASH_CTRL_FIFO_LVL
+    4'b 0001, // index[106] FLASH_CTRL_FIFO_RST
+    4'b 0011  // index[107] FLASH_CTRL_CURR_FIFO_LVL
   };
 
   ///////////////////////////////////////////////
