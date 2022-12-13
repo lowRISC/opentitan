@@ -1648,6 +1648,40 @@
         },
       },
 
+      { name: "HW_INFO_CFG_OVERRIDE",
+        desc: "HW interface info configuration rule overrides",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "3:0",
+            name: "SCRAMBLE_DIS",
+            mubi: true,
+            resval: true,
+            desc: '''
+              The hardwired hardware info configuration rules for scramble enable are logically AND'd with
+              this field.
+              If the hardware rules hardwires scramble to enable, we can disable via software if needed.
+
+              By default this field if false.
+            ''',
+            resval: false
+          }
+          { bits: "7:4",
+            name: "ECC_DIS",
+            mubi: true,
+            resval: true,
+            desc: '''
+              The hardwired hardware info configuration rules for ECC enable are logically AND'd with
+              this field.
+              If the hardware rules hardwires ECC to enable, we can disable via software if needed.
+
+              By default this field if false.
+            ''',
+            resval: false
+          }
+        ]
+      },
+
       { name: "BANK_CFG_REGWEN"
         desc: "Bank configuration registers configuration enable.",
         swaccess: "rw0c",
