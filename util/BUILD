@@ -78,3 +78,11 @@ py_binary(
         requirement("pluralizer"),
     ],
 )
+
+py_test(
+    name = "device_profile_data_test",
+    srcs = [
+        "device_profile_data.py",
+        "device_profile_data_test.py",
+    ],
+)
