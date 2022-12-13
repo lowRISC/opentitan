@@ -1781,6 +1781,8 @@ module spi_device
     .clk_out_i (clk_spi_out_buf),
 
     // Configurations
+    .cfg_cpol_i (cpol),
+
     .cfg_cmd_filter_i (cmd_filter),
 
     .cfg_addr_mask_i  (addr_swap_mask),
@@ -1800,6 +1802,7 @@ module spi_device
 
     // Host SPI
     .host_sck_i  (cio_sck_i),
+    .host_isck_i (sck_n    ), // inverted cio_sck_i
     .host_csb_i  (cio_csb_i),
     .host_s_i    (cio_sd_i),
     .host_s_o    (passthrough_sd),
