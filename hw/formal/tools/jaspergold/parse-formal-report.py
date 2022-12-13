@@ -84,7 +84,7 @@ def parse_message(str_buffer):
 
 def get_expected_failures(exp_failure_path):
     '''Get expected fail properties from a hjson file otherwise return None.'''
-    if exp_failure_path is None:
+    if exp_failure_path is None or exp_failure_path == "":
         return {}
     else:
         try:
@@ -227,7 +227,8 @@ def main():
                         default=None,
                         help=('The path of a hjson file that contains expected failing properties.'
                               '''By default is empty, used only if there are properties that are
-                               expected to fail.'''))
+                               expected to fail. If input is an empty string, will treat it as not
+                               passing a file.'''))
 
     args = parser.parse_args()
 
