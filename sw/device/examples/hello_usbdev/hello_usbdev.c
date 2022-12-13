@@ -222,8 +222,9 @@ void _ottf_main(void) {
   usb_testutils_simpleserial_init(&simple_serial1, &usbdev, 2,
                                   usb_receipt_callback_1);
 
-  // When the expected number of characters have been received via the Serial-over-USB
-  //   OUT channel from the host, we send a sign-on message as IN data in response...
+  // When the expected number of characters have been received via the
+  //   Serial-over-USB OUT channel from the host, we send a sign-on
+  //   message as IN data in response...
   bool say_hello = true;
   bool pass_signaled = false;
   while (true) {

@@ -84,7 +84,7 @@ mon:    65864 --    66996: (D) SOP, PID DATA1, EOP
 mon:     d->h: 73, 6f, 6c, 65, 20, 77, 69, 6e, 64, 6f, 77, 2e, 0d, 0a, 54, 68
 mon:           65, 20, 4c, 45, 44, 73, 20, 73, 68, 6f, 77, 20, 74, 68, 65, 20
 mon:           cf, a8 CRCOK
-mon:          sole window.__The LEDs show the 
+mon:          sole window.__The LEDs show the
 mon:    67168 --    67216: (H) SOP, PID ACK EOP
 mon:    73760 --    73872: (H) SOP, PID SOF 009 (CRC5 13 OK), EOP
 mon:    73912 --    74024: (H) SOP, PID IN 2.1 (CRC5 03 OK), EOP
