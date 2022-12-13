@@ -21,6 +21,8 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
   // For IP level test, please set `exp_fatal_alert` in post_start() instead.
   bit bypass_alert_ready_to_end_check = 0;
 
+  bit bypass_esc_ready_to_end_check = 0;
+
   // dut clk frequency, used to generate alert async_clk frequency
   int clk_freq_mhz;
 
