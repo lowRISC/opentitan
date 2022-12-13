@@ -51,7 +51,7 @@
   exports: [
     { DUT_TOP:        "{dut}" },
     { COV:            "{cov}" },
-    { EXP_FAIL_HJSON: "{exp_fail_hjson}" },
+    { EXP_FAIL_HJSON: "'{exp_fail_hjson}'" },
     { sub_flow:       "{sub_flow}" },
     { FPV_DEFINES:    "{defines}" },
     { BBOX_CMD:       "'{bbox_cmd}'" },
