@@ -442,8 +442,17 @@ kmac_error_t kmac_init(kmac_operation_t operation,
     return err;
   }
 
+  // We need to preserve some bits of CFG register, such as:
+  // entropy_mode, entropy_ready etc. On the other hand, some bits
+  // need to be reset for each invocation.
   uint32_t cfg_reg =
       abs_mmio_read32(kKmacBaseAddr + KMAC_CFG_SHADOWED_REG_OFFSET);
+
+  // Make sure kmac_en and sideload bits of CFG are reset at each invocation
+  // These bits should be set to 1 only if needed by the rest of the code
+  // in this function.
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, 0);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 0);
 
   switch (operation) {
     case kKmacOperationSHA3:
