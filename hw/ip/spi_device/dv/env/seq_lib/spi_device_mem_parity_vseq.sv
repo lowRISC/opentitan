@@ -11,7 +11,7 @@ class spi_device_mem_parity_vseq extends spi_device_common_vseq;
   localparam int BytePerWord = 4;
   localparam int BitPerByte = 9;
 
-  rand bit[BytePerWord-1][BitPerByte-1] flip_bits;
+  rand bit[BytePerWord-1:0][BitPerByte-1:0] flip_bits;
 
   // at least flip one bit and at most flip one bit per byte
   constraint flip_bits_c {
