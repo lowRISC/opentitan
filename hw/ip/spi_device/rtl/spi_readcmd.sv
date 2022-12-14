@@ -417,7 +417,7 @@ module spi_readcmd
     .q_negedge_pulse_o (              )
   );
 
-  assign cmdinfo_addr_mode = get_addr_mode(cmd_info_i, addr_4b_en_i);
+  assign cmdinfo_addr_mode = get_addr_mode(cmd_info_i.addr_mode, addr_4b_en_i);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

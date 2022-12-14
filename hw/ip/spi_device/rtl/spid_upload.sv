@@ -234,7 +234,7 @@ module spid_upload
   //////////////
 
   // Command info process
-  assign cmdinfo_addr_mode = get_addr_mode(cmd_info_i, cfg_addr_4b_en_i);
+  assign cmdinfo_addr_mode = get_addr_mode(cmd_info_i.addr_mode, cfg_addr_4b_en_i);
   assign cmdinfo_addr_en   = cmdinfo_addr_mode != AddrDisabled;
 
   assign cmdinfo_addr_4b_en = cmdinfo_addr_mode == Addr4B;
