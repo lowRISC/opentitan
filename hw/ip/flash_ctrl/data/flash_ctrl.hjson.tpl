@@ -1131,7 +1131,6 @@
           { bits: "3:0",
             name: "SCRAMBLE_DIS",
             mubi: true,
-            resval: true,
             desc: '''
               The hardwired hardware info configuration rules for scramble enable are logically AND'd with
               this field.
@@ -1144,7 +1143,6 @@
           { bits: "7:4",
             name: "ECC_DIS",
             mubi: true,
-            resval: true,
             desc: '''
               The hardwired hardware info configuration rules for ECC enable are logically AND'd with
               this field.
