@@ -15,7 +15,7 @@ class keymgr_custom_cm_vseq extends keymgr_lc_disable_vseq;
   }
   rand keymgr_fault_inject_type_e fi_type;
 
-  virtual task trigger_error(ref bit regular_vseq_done);
+  virtual task trigger_error();
     keymgr_pkg::keymgr_op_status_e op_status;
     cfg.en_scb = 0;
     cfg.keymgr_vif.en_chk = 0;

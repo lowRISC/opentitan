@@ -7,6 +7,8 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
   `uvm_object_utils(keymgr_lc_disable_vseq)
   `uvm_object_new
 
+  protected bit regular_vseq_done;
+
   virtual task op_before_enable_keymgr();
     if (cfg.keymgr_vif.keymgr_en == lc_ctrl_pkg::On) return;
 
@@ -16,12 +18,11 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
   endtask
 
   virtual task body();
-    bit regular_vseq_done;
 
     fork
       begin
-        add_random_delay(regular_vseq_done);
-        trigger_error(regular_vseq_done);
+        add_random_delay();
+        trigger_error();
       end
       begin
         super.body();
@@ -32,7 +33,7 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
   endtask : body
 
   // disable keymgr after 3 kinds of random delay
-  virtual task add_random_delay(ref bit regular_vseq_done);
+  virtual task add_random_delay();
     uint delay_cycles;
 
     randcase
@@ -86,7 +87,7 @@ class keymgr_lc_disable_vseq extends keymgr_random_vseq;
     endcase
   endtask : add_random_delay
 
-  virtual task trigger_error(ref bit regular_vseq_done);
+  virtual task trigger_error();
     lc_ctrl_pkg::lc_tx_t lc_en;
     // keymgr_en is async
     #($urandom_range(0, cfg.clk_rst_vif.clk_period_ps) * 1ps);
