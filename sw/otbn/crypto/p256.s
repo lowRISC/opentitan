@@ -198,7 +198,6 @@ mod_mul_256x256:
   bn.mulqacc            w24.3, w25.2, 64
   bn.mulqacc.so  w20.L, w24.2, w25.3, 64
   bn.mulqacc.so  w20.U, w24.3, w25.3,  0
-  bn.add    w20, w20, w31
 
   /* Store correction factor to compensate for later neglected MSb of x.
      x is 512 bit wide and therefore the 255 bit right shifted version q1
@@ -251,8 +250,6 @@ mod_mul_320x128:
   bn.mulqacc            w24.3, w26.1, 0
   bn.mulqacc            w25.0, w26.0, 0
   bn.mulqacc.wo    w20, w25.0, w26.1, 64
-  /* TODO: try removing this from both, I think M flag is set by .wo */
-  bn.add    w20, w20, w31
 
   /* Store correction factor to compensate for later neglected MSb of x.
      x is 512 bit wide and therefore the 255 bit right shifted version q1
