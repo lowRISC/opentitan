@@ -34,7 +34,7 @@ set TERMINATION_STAGE  [get_env_var "TERMINATION_STAGE"]
 set IS_CDC_RUN 0
 
 # if in interactive mode, do not exit at the end of the script
-if { [info exists ::env(INTERACTIVE)] } {
+if { [info exists ::env(RUN_INTERACTIVE)] } {
   set RUN_INTERACTIVE 1
 } else {
   set RUN_INTERACTIVE 0
@@ -88,7 +88,7 @@ set_app_var hdlin_enable_hier_map true
 ###########################
 
 set fp [open "${BUILD_DIR}/env_variables.tcl" w+]
-puts $fp "set ::env(INTERACTIVE) 1"
+puts $fp "set ::env(RUN_INTERACTIVE) 1"
 puts $fp "set ::env(SYN_ROOT) $SYN_ROOT"
 puts $fp "set ::env(FOUNDRY_ROOT) $FOUNDRY_ROOT"
 puts $fp "set ::env(PARAMS) $PARAMS"
