@@ -397,19 +397,23 @@ jobs:
     displayName: Prepare cached bitstream
   - bash: |
       set -ex
+      trap 'get_logs' EXIT
+      get_logs() {
+        SUB_PATH="hw/top_earlgrey"
+        mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
+        cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
+          $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310)
+        cp -rLvt "$BIN_DIR/$SUB_PATH/" \
+          $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:standard)
+        # Rename bitstreams to be compatible with subsequent steps
+        # TODO(#13807): replace this after choosing a naming scheme
+        mv "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
+        mv "$BIN_DIR/$SUB_PATH/fpga_cw310_rom.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
+      }
+
       . util/build_consts.sh
       module load "xilinx/vivado/$(VIVADO_VERSION)"
-      SUB_PATH=hw/top_earlgrey
-      mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
       ci/bazelisk.sh build //hw/bitstream/vivado:standard
-      cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
-        $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310)
-      cp -rLvt "$BIN_DIR/$SUB_PATH/" \
-        $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:standard)
-      # Rename bitstreams to be compatible with subsequent steps
-      # TODO(#13807): replace this after choosing a naming scheme
-      mv "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
-      mv "$BIN_DIR/$SUB_PATH/fpga_cw310_rom.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
     condition: ne(variables.bitstreamStrategy, 'cached')
     displayName: Build and splice bitstream with Vivado
   - bash: |
@@ -442,16 +446,20 @@ jobs:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - bash: |
-      set -e
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
+      set -ex
+      trap 'get_logs' EXIT
+      get_logs() {
+        mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
+        mkdir -p $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
+        cp -rLvt $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
+          $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310_hyperdebug)
+        cp -rLvt $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
+          $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:hyperdebug)
+      }
+
       . util/build_consts.sh
-      mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
-      mkdir -p $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
+      module load "xilinx/vivado/$(VIVADO_VERSION)"
       ci/bazelisk.sh build //hw/bitstream/vivado:fpga_cw310_hyperdebug
-      cp -rLvt $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
-        $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310_hyperdebug)
-      cp -rLvt $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
-        $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:hyperdebug)
     displayName: Build bitstream with Vivado
   - bash: |
       . util/build_consts.sh
