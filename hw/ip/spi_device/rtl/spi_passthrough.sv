@@ -449,7 +449,7 @@ module spi_passthrough
 
   addr_mode_e cmdinfo7th_addr_mode;
   assign cmdinfo7th_addr_mode = get_addr_mode(
-    cmd_info_7th[host_s_i[0]], cfg_addr_4b_en_i);
+    cmd_info_7th[host_s_i[0]].addr_mode, cfg_addr_4b_en_i);
 
   always_comb begin
     cmd_info_d = '0;
