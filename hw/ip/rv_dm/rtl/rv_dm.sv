@@ -145,8 +145,12 @@ module rv_dm
   // Life Cycle Gating //
   ///////////////////////
 
-  // debug enable gating
-  typedef enum logic [3:0] {
+  // Debug enable gating.
+  localparam int LcEnDebugReqVal = 4 - 1;
+  localparam int LcEnResetReqVal = LcEnDebugReqVal + NrHarts;
+  // +1 to get number of bits and another +1 because LcEnLastPos is one more than LcEnResetReq.
+  localparam int RvDmLcEnSize    = $clog2(LcEnResetReqVal + 2);
+  typedef enum logic [RvDmLcEnSize-1:0] {
     LcEnFetch,
     LcEnRom,
     LcEnSba,
@@ -155,9 +159,12 @@ module rv_dm
     LcEnDebugReq,
     // The above literal accommodates NrHarts number of debug requests - so we number the next
     // literal accordingly.
-    LcEnResetReq = 4 + NrHarts - 1,
+    LcEnResetReq = RvDmLcEnSize'(LcEnResetReqVal),
+    // LcEnLastPos must immediately follow LcEnResetReq to calculate RvDmLcEnSize.
     LcEnLastPos
   } rv_dm_lc_en_e;
+  // These must be equal so that the difference between LcEnResetReq and LcEnDebugReq is NrHarts.
+  `ASSERT(RvDmLcEnDebugVal_A, int'(LcEnDebugReq) == LcEnDebugReqVal)
 
   // debug enable gating
   typedef enum logic [3:0] {
