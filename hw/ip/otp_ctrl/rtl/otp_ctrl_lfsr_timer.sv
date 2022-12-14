@@ -67,14 +67,15 @@ module otp_ctrl_lfsr_timer
   // the LFSR. Note that this is not a blocking operation for the timer below.
   // I.e., the timer is allowed to continue its operation, and may draw more
   // values, even if the EDN reseed request is still in progress.
+  localparam int ReseedSize = $clog2(LfsrUsageThreshold+1);
   logic reseed_en, lfsr_en;
-  logic [$clog2(LfsrUsageThreshold+1)-1:0] reseed_cnt_d, reseed_cnt_q;
+  logic [ReseedSize-1:0] reseed_cnt_d, reseed_cnt_q;
   assign reseed_cnt_d = (reseed_en) ? '0                  :
                         (edn_req_o) ? reseed_cnt_q        :
                         (lfsr_en)   ? reseed_cnt_q + 1'b1 :
                                       reseed_cnt_q;
 
-  assign edn_req_o = (reseed_cnt_q >= LfsrUsageThreshold);
+  assign edn_req_o = (reseed_cnt_q >= ReseedSize'(LfsrUsageThreshold));
   assign reseed_en = edn_req_o & edn_ack_i;
 
   ///////////////////////////
