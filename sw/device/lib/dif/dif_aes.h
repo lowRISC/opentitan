@@ -207,7 +207,7 @@ typedef enum dif_aes_manual_operation {
 /**
  * AES key sideloaded.
  *
- * Controls whether the AES uses the key provided by the key manager
+ * Controls whether the AES uses the key provided by the key manager or
  * software.
  */
 typedef enum dif_aes_key_provider {

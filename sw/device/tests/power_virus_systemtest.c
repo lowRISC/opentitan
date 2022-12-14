@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "hw/ip/aes/model/aes_modes.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
+#include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
@@ -10,6 +12,7 @@
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
@@ -32,11 +35,16 @@ static dif_entropy_src_t entropy_src;
 static dif_csrng_t csrng;
 static dif_edn_t edn_0;
 static dif_edn_t edn_1;
+static dif_aes_t aes;
 
 /**
  * Test configuration parameters.
  */
 enum {
+  /**
+   * Test timeout parameter.
+   */
+  kTestTimeoutMicros = 100000,
   /**
    * ADC controller parameters.
    */
@@ -49,11 +57,26 @@ enum {
 };
 
 /**
+ * The mask share, used to mask kAesKey.
+ */
+static const uint8_t kAesKeyShare1[] = {
+    0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f, 0x8f, 0x9f, 0xaf,
+    0xbf, 0xcf, 0xdf, 0xef, 0xff, 0x0a, 0x1a, 0x2a, 0x3a, 0x4a, 0x5a,
+    0x6a, 0x7a, 0x8a, 0x9a, 0xaa, 0xba, 0xca, 0xda, 0xea, 0xfa,
+};
+
+static const uint8_t kHmacKey[] = {
+    0x0f, 0x1f, 0x2f, 0x3f, 0x4f, 0x5f, 0x6f, 0x7f,
+};
+
+/**
  * Initializes all DIF handles for each peripheral used in this test.
  */
 static void init_peripheral_handles() {
   CHECK_DIF_OK(dif_adc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_AON_BASE_ADDR), &adc_ctrl));
+  CHECK_DIF_OK(
+      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
   CHECK_DIF_OK(dif_csrng_init(
       mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
   CHECK_DIF_OK(
@@ -208,10 +231,46 @@ static void configure_entropy_complex() {
   CHECK_DIF_OK(dif_edn_configure(&edn_1));
 }
 
+static void configure_aes() {
+  // Prepare and load AES key shares.
+  uint8_t aes_key_share0[sizeof(kAesModesKey256)];
+  for (size_t i = 0; i < sizeof(kAesModesKey256); ++i) {
+    aes_key_share0[i] = kAesModesKey256[i] ^ kAesKeyShare1[i];
+  }
+  dif_aes_key_share_t aes_key;
+  memcpy(aes_key.share0, aes_key_share0, sizeof(aes_key.share0));
+  memcpy(aes_key.share1, kAesKeyShare1, sizeof(aes_key.share1));
+
+  // Prepare and load AES IV.
+  dif_aes_iv_t aes_iv;
+  memcpy(aes_iv.iv, kAesModesIvCbc, sizeof(aes_iv.iv));
+
+  // Setup AES in automatic, 256-bit SW provided key, CBC encryption mode. We
+  // need to be in automatic mode to mamimize throughput. Additionally, we want
+  // to keep the entropy complex busing by constantly reseeding PRNGs.
+  dif_aes_transaction_t aes_transaction_cfg = {
+      .operation = kDifAesOperationEncrypt,
+      .mode = kDifAesModeCbc,
+      .key_len = kDifAesKey256,
+      .key_provider = kDifAesKeySoftwareProvided,
+      .mask_reseeding = kDifAesReseedPerBlock,
+      .manual_operation = kDifAesManualOperationAuto,
+      .reseed_on_key_change = false,
+      .ctrl_aux_lock = false,
+  };
+
+  // Start the AES operation. Since we are in auto-mode, the encryption will not
+  // start until plain text data is loaded into the appropriate CSRs.
+  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
+                                kTestTimeoutMicros);
+  CHECK_DIF_OK(dif_aes_start(&aes, &aes_transaction_cfg, &aes_key, &aes_iv));
+}
+
 bool test_main(void) {
   init_peripheral_handles();
   configure_gpio_indicator_pin();
   configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
+  configure_aes();
   return true;
 }
