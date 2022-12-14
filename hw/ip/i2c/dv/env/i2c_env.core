@@ -46,6 +46,7 @@ filesets:
       - seq_lib/i2c_target_timeout_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_ack_stop_vseq.sv: {is_include_file: true}
       - seq_lib/i2c_target_fifo_reset_acq_vseq.sv: {is_include_file: true}
+      - seq_lib/i2c_target_fifo_reset_tx_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

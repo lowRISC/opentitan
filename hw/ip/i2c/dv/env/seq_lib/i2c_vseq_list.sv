@@ -29,3 +29,4 @@
 `include "i2c_target_timeout_vseq.sv"
 `include "i2c_target_ack_stop_vseq.sv"
 `include "i2c_target_fifo_reset_acq_vseq.sv"
+`include "i2c_target_fifo_reset_tx_vseq.sv"
