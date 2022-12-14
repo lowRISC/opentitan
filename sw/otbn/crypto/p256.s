@@ -998,13 +998,25 @@ proj_double:
  *
  * The routine receives the scalar in two shares k0, k1 such that
  *   k = (k0 + k1) mod n
- * The double-and-add loop operates on both shares in parallel applying
- * Shamir's trick.
+ * The loop operates on both shares in parallel, computing (k0 + k1) * P as
+ * follows:
+ *  Q = (0, 1, 0) # origin
+ *  for i in 319..0:
+ *    Q = 2 * Q
+ *    A = if (k0[i] ^ k1[i]) then P else 2P
+ *    B = Q + A
+ *    Q = if (k0[i] | k1[i]) then B else Q
+ *
+ *
+ * Each share k0/k1 is 320 bits, even though it represents a 256-bit value.
+ * This is a side-channel protection measure.
  *
  * @param[in]  x21: dptr_x, pointer to affine x-coordinate in dmem
  * @param[in]  x22: dptr_y, pointer to affine y-coordinate in dmem
- * @param[in]  w0: k0, first share of scalar for multiplication
- * @param[in]  w1: k1, second share of scalar for multiplication
+ * @param[in]  w0: lower 256 bits of k0, first share of scalar
+ * @param[in]  w1: upper 64 bits of k0, first share of scalar
+ * @param[in]  w2: lower 256 bits of k1, second share of scalar
+ * @param[in]  w3: upper 64 bits of k1, second share of scalar
  * @param[in]  w27: b, curve domain parameter
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus, 2^256 > p > 2^255.
@@ -1014,7 +1026,7 @@ proj_double:
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the computed affine y-coordinate.
  *
- * clobbered registers: x2, x3, x10, w0 to w29
+ * clobbered registers: x2, x3, x10, w0 to w30
  * clobbered flag groups: FG0
  */
 scalar_mult_int:
@@ -1063,8 +1075,17 @@ scalar_mult_int:
   bn.addi   w9, w31, 1
   bn.mov    w10, w31
 
+  /* Shift shares of k so their MSBs are in the most significant position of a
+     word.
+       w0,w1 <= [w0, w1] << 192 = k0 << 192
+       w2,w3 <= [w2, w3] << 192 = k1 << 192 */
+  bn.rshi   w1, w1, w0 >> 64
+  bn.rshi   w0, w0, w31 >> 64
+  bn.rshi   w3, w3, w2 >> 64
+  bn.rshi   w2, w2, w31 >> 64
+
   /* double-and-add loop with decreasing index */
-  loopi     256, 32
+  loopi     320, 34
 
     /* double point Q
        Q = (w11, w12, w13) <= 2*(w8, w9, w10) = 2*Q */
@@ -1079,9 +1100,15 @@ scalar_mult_int:
        - If both MSbs are set, select 2P for addition
        - If neither MSB is set, also 2P will be selected but this will be
          discarded later */
-    bn.xor    w20, w0, w1
+    bn.xor    w20, w1, w3
 
-    /* P = (w8, w9, w10)
+    /* N.B. The M bit here is secret. For side channel protection in the
+       selects below, it is vital that neither option is equal to the
+       destionation register (e.g. bn.sel w0, w0, w1). In this case, the
+       hamming distance from the destination's previous value to its new value
+       will be 0 in one of the cases and potentially reveal M.
+
+       P = (w8, w9, w10)
         <= (w0[255] xor w1[255])?P=(w14, w15, w16):2P=(w4, w5, w6) */
     bn.sel    w8, w14, w4, M
     bn.sel    w9, w15, w5, M
@@ -1099,17 +1126,22 @@ scalar_mult_int:
 
     /* probe if MSb of either one or both of the two
        scalars (k0 or k1) is 1.*/
-    bn.or     w20, w0, w1
+    bn.or     w20, w1, w3
 
-    /* select doubling result (Q) or addition result (Q+P)
-       Q = w0[255] or w1[255]?Q_a=(w11, w12, w13):Q=(w7, w26, w30) */
+    /* N.B. As before, the select instructions below must use distinct
+       source/destination registers to avoid revealing M.
+
+       Select doubling result (Q) or addition result (Q+P)
+         Q = w0[255] or w1[255]?Q_a=(w11, w12, w13):Q=(w7, w26, w30) */
     bn.sel    w8, w11, w7, M
     bn.sel    w9, w12, w26, M
     bn.sel    w10, w13, w30, M
 
-    /* rotate both scalars left 1 bit */
-    bn.rshi   w0, w0, w0 >> 255
-    bn.rshi   w1, w1, w1 >> 255
+    /* Shift both scalars left 1 bit. */
+    bn.rshi   w1, w1, w0 >> 255
+    bn.rshi   w0, w0, w31 >> 255
+    bn.rshi   w3, w3, w2 >> 255
+    bn.rshi   w2, w2, w31 >> 255
 
     /* init regs with random numbers from URND */
     bn.wsrr   w11, 2
@@ -1227,26 +1259,6 @@ p256_sign:
   li        x2, 28
   la        x3, p256_u_n
   bn.lid    x2, 0(x3)
-
-  /* Reduce k0 modulo n.
-     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
-
-     w0 <= [w0,w1] mod n = k0 mod n */
-  bn.mov   w19, w0
-  bn.mov   w20, w1
-  bn.mov   w22, w31
-  jal      x1, p256_reduce
-  bn.mov   w0, w19
-
-  /* Reduce k1 modulo n.
-     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
-
-     w1 <= [w2,w3] mod n = k1 mod n */
-  bn.mov   w19, w2
-  bn.mov   w20, w3
-  bn.mov   w22, w31
-  jal      x1, p256_reduce
-  bn.mov   w1, w19
 
   /* scalar multiplication with base point
      (x_1, y_1) = (w11, w12) <= k*G = w0*(dmem[p256_gx], dmem[p256_gy]) */
@@ -1434,26 +1446,6 @@ p256_base_mult:
   bn.lid    x2, 0(x16++)
   li        x2, 3
   bn.lid    x2, 0(x16)
-
-  /* Reduce d0 modulo n.
-     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
-
-     w0 <= [w0,w1] mod n = d0 mod n */
-  bn.mov   w19, w0
-  bn.mov   w20, w1
-  bn.mov   w22, w31
-  jal      x1, p256_reduce
-  bn.mov   w0, w19
-
-  /* Reduce d1 modulo n.
-     TODO: this is temporary until scalar_mult_int supports extra bits; remove later.
-
-     w1 <= [w2,w3] mod n = d1 mod n */
-  bn.mov   w19, w2
-  bn.mov   w20, w3
-  bn.mov   w22, w31
-  jal      x1, p256_reduce
-  bn.mov   w1, w19
 
   /* call internal scalar multiplication routine
      R = (x_a, y_a) = (w11, w12) <= d*P = (w0 + w1)*P */
