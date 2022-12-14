@@ -67,8 +67,10 @@ constexpr sigverify_rom_key_t kSigverifyRsaKeys[]{
 
 constexpr size_t kSigverifyRsaKeysCnt =
     std::extent<decltype(kSigverifyRsaKeys)>::value;
-static_assert(kSigverifyRsaKeysCnt <=
-              OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE);
+static_assert(OTP_CTRL_PARAM_CREATOR_SW_CFG_KEY_IS_VALID_SIZE >=
+                  kSigverifyRsaKeysCnt,
+              "CREATOR_SW_CFG_KEY_IS_VALID OTP item must be at least "
+              "`kSigVerifyRsaKeysCnt` bytes.");
 // Using 1 as the step size since it is coprime with every integer.
 constexpr size_t kSigverifyRsaKeysStep = 1;
 }
