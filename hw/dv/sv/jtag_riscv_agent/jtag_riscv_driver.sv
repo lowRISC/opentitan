@@ -38,9 +38,11 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
       rsp.set_id_info(req);
       seq_item_port.item_done();
 
-      drive_jtag(rsp);
-      if (cfg.in_reset) rsp.status = cfg.status_in_reset;
+      `DV_SPINWAIT_EXIT(
+          drive_jtag(rsp);,
+          wait(cfg.in_reset == 1);,)
 
+      if (cfg.in_reset) rsp.status = cfg.status_in_reset;
       seq_item_port.put_response(rsp);
     end
   endtask
