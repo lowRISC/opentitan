@@ -42,7 +42,7 @@ module clkmgr_trans
   logic idle_valid;
   logic sw_hint_synced;
   logic local_en;
-  assign idle_valid = (idle_cnt == TransIdleCnt);
+  assign idle_valid = (idle_cnt == IdleCntWidth'(TransIdleCnt));
   assign local_en = sw_hint_synced | ~idle_valid;
 
   prim_flop_2sync #(
