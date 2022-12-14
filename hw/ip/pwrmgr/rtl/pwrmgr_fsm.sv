@@ -451,7 +451,8 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
         rst_sys_req_d = {PowerDomains{(hw_rst_req |
                                        direct_rst_req |
                                        sw_rst_req) |
-                                      (ndmreset_req & !lc_dft_en_i)}};
+                                      (ndmreset_req &
+                                       lc_ctrl_pkg::lc_tx_test_false_loose(lc_dft_en_i))}};
 
 
         state_d = FastPwrStateResetWait;
