@@ -187,7 +187,7 @@ module keymgr_sideload_key_ctrl import keymgr_pkg::*;(
   );
 
   logic [LastIdx-1:0] valid_tracking_q;
-  for (genvar i = AesIdx; i < LastIdx; i++) begin : gen_tracking_valid
+  for (genvar i = int'(AesIdx); i < LastIdx; i++) begin : gen_tracking_valid
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         valid_tracking_q[i] <= '0;

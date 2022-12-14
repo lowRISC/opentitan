@@ -398,7 +398,7 @@ module edn_core import edn_pkg::*;
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.de = edn_enable_pfa;
   assign hw2reg.recov_alert_sts.edn_enable_field_alert.d  = edn_enable_pfa;
 
-  for (genvar i = FatalErr; i < LastEdnEntry; i = i+1) begin : gen_mubi_en_copies
+  for (genvar i = int'(FatalErr); i < LastEdnEntry; i = i+1) begin : gen_mubi_en_copies
     assign edn_enable_fo[i] = mubi4_test_true_strict(mubi_edn_enable_fanout[i]);
   end : gen_mubi_en_copies
 
