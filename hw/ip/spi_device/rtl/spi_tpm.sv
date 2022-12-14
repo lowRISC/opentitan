@@ -30,17 +30,6 @@ module spi_tpm
   localparam int unsigned WrFifoPtrW  = $clog2(WrFifoDepth+1),
   localparam int unsigned RdFifoPtrW  = $clog2(RdFifoDepth+1),
 
-  localparam int unsigned AccessRegSize    = 8, // times Locality
-  localparam int unsigned IntEnRegSize     = 32,
-  localparam int unsigned IntVectorRegSize = 8,
-  localparam int unsigned IntStsRegSize    = 32,
-  localparam int unsigned IntfCapRegSize   = 32,
-  localparam int unsigned StatusRegSize    = 32,
-  localparam int unsigned IdRegSize        = 32, // {DID, VID}
-  localparam int unsigned RidRegSize       = 8,
-
-  localparam int unsigned ActiveLocalityBitPos = 5, // Access[5]
-
   localparam int unsigned NumBits        = $bits(spi_byte_t),
   localparam int unsigned CmdAddrSize    = 32, // Cmd 8bit + Addr 24bit
   localparam int unsigned FifoRegSize    = 12, // lower 12bit excluding locality
