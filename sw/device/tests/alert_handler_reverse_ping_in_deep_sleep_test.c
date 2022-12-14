@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -48,6 +49,7 @@ static_assert(
     kTestParamWakeupThresholdUsec > 175000,
     "Invalid kTestParamWakeupThresholdUsec. See test plan for more details.");
 
+static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_rv_plic_t plic;
 static dif_pwrmgr_t pwrmgr;
 static dif_rstmgr_t rstmgr;
@@ -66,6 +68,9 @@ static volatile bool interrupt_serviced = false;
  * Initialize the peripherals used in this test.
  */
 static void init_peripherals(void) {
+  CHECK_DIF_OK(dif_flash_ctrl_init_state(
+      &flash_ctrl_state,
+      mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
   CHECK_DIF_OK(dif_alert_handler_init(
@@ -157,6 +162,30 @@ static void alert_handler_config(void) {
 }
 
 /**
+ * Log any external alerts.
+ */
+static void log_external_alerts(void) {
+  for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
+    bool is_cause;
+    CHECK_DIF_OK(
+        dif_alert_handler_alert_is_cause(&alert_handler, i, &is_cause));
+    if (is_cause) {
+      LOG_INFO("Unexpected alert cause: %d", i);
+
+      switch (i) {
+        case kTopEarlgreyAlertIdFlashCtrlFatalErr: {
+          dif_flash_ctrl_faults_t faults_out;
+          CHECK_DIF_OK(
+              dif_flash_ctrl_get_faults(&flash_ctrl_state, &faults_out));
+          LOG_INFO("Flash ctrl faults: %d", faults_out);
+          break;
+        }
+      }
+    }
+  }
+}
+
+/**
  * Ensure there were no local alerts fired.
  */
 static void check_local_alerts(void) {
@@ -175,7 +204,18 @@ static void check_local_alerts(void) {
  * line to the CPU, which results in a call to this OTTF ISR. This ISR
  * overrides the default OTTF implementation.
  */
-void ottf_external_isr(void) { interrupt_serviced = true; }
+void ottf_external_isr(void) {
+  // Specifically assert that no alerts were triggered
+  check_local_alerts();
+  dif_rv_plic_irq_id_t irq_id;
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
+  LOG_INFO("Saw interrupt %d", irq_id);
+
+  // Record an interrupt has been serviced so the test can fail if unexpected.
+  interrupt_serviced = true;
+
+  log_external_alerts();
+}
 
 bool test_main(void) {
   init_peripherals();
@@ -188,8 +228,10 @@ bool test_main(void) {
     alert_handler_config();
 
     irq_global_ctrl(true);
+    LOG_INFO("enabling external IRQs...");
     irq_external_ctrl(true);
 
+    LOG_INFO("reading Wakeup Threshold...");
     uint32_t wakeup_threshold = aon_timer_testutils_get_aon_cycles_from_us(
         kTestParamWakeupThresholdUsec);
 
