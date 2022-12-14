@@ -362,14 +362,13 @@
             Stimulus:
               - Configure DUT/Agent to Target/Host mode respectively
               - Run read write mixed traffic.
-              - For acq fifo, assert reset any period between stop
-                and the next start.
+              - Assert reset any period between stop and the next start.
 
             Checking:
               - Ensure the remaining entries are not show up after each fifio is reset,
             '''
       stage: V2
-      tests: ["i2c_target_fifo_reset_acq"]
+      tests: ["i2c_target_fifo_reset_acq", "i2c_target_fifo_reset_tx"]
     }
     {
       name: target_fifo_full

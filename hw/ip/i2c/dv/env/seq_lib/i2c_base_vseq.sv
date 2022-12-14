@@ -1143,6 +1143,8 @@ class i2c_base_vseq extends cip_base_vseq #(
     clear_interrupt(CmdComplete, 0);
   endtask // proc_intr_cmdcomplete
 
+  // This task is called when tb interrupt handler receives
+  // txstretch interrupt.
   virtual task proc_intr_txstretch();
     bit acq_fifo_empty;
     if (!cfg.use_drooling_tx) begin

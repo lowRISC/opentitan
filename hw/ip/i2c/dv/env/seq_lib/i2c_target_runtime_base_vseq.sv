@@ -45,7 +45,7 @@ class i2c_target_runtime_base_vseq extends i2c_target_smoke_vseq;
             // To avoid race between 'pause_seq set' and
             // 'cfg.m_i2c_agent_cfg.got_stop = 1'
             cfg.clk_rst_vif.wait_clks(1);
-            `DV_WAIT(pause_seq == 0, "pause_acq_read==0 wait timeout occurred!",
+            `DV_WAIT(pause_seq == 0, "pause_seq == 0 wait timeout occurred!",
                      cfg.spinwait_timeout_ns, "target_runtime_base_vseq")
           end
           process_target_interrupts();
