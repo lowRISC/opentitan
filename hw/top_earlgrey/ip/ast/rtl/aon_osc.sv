@@ -59,20 +59,18 @@ always begin
   #(CLK_PERIOD/2) clk_osc = ~clk_osc;
 end
 
-logic en_osc;
-
 // HDL Clock Gate
 logic en_clk, clk;
 
 always_latch begin
-  if ( !clk_osc ) en_clk = en_osc;
+  if ( !clk_osc ) en_clk = en_osc_re || en_osc_fe;
 end
 
 assign clk = clk_osc && en_clk;
 `else  // of SYNTHESIS
 // SYNTHESIS/LINTER
 ///////////////////////////////////////
-logic clk, en_osc;
+logic clk;
 assign clk = 1'b0;
 
 logic en_osc_re;
@@ -86,13 +84,13 @@ assign en_osc_re = vcore_pok_h_i && aon_en_i;
 
 // Clock Oscillator
 ////////////////////////////////////////
-logic clk, en_osc;
+logic clk;
 
 prim_clock_gating #(
   .NoFpgaGate ( 1'b1 )
 ) u_clk_ckgt (
   .clk_i ( clk_aon_ext_i ),
-  .en_i ( en_osc ),
+  .en_i ( en_osc_re || en_osc_fe ),
   .test_en_i ( 1'b0 ),
   .clk_o ( clk )
 );
@@ -100,7 +98,7 @@ prim_clock_gating #(
 
 logic en_osc_fe;
 
-// Syncronize en_osc to clk FE for glitch free disable
+// Syncronize en_osc_fe to clk FE for glitch free disable
 always_ff @( negedge clk, negedge vcore_pok_h_i ) begin
   if ( !vcore_pok_h_i ) begin
     en_osc_fe <= 1'b0;
@@ -108,8 +106,6 @@ always_ff @( negedge clk, negedge vcore_pok_h_i ) begin
     en_osc_fe <= en_osc_re;
   end
 end
-
-assign en_osc = en_osc_re || en_osc_fe;  // EN -> 1 || EN -> 0
 
 // Clock Output Buffer
 ////////////////////////////////////////
