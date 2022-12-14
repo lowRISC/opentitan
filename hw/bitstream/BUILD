@@ -83,7 +83,7 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:rom_mmi"],
-        "//conditions:default": ["@bitstreams//:rom_mmi"],
+        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_rom_mmi"],
     }),
     tags = ["manual"],
 )
@@ -94,7 +94,7 @@ filegroup(
     srcs = select({
         "bitstream_skip": ["skip.bit"],
         "bitstream_vivado": ["//hw/bitstream/vivado:otp_mmi"],
-        "//conditions:default": ["@bitstreams//:otp_mmi"],
+        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_otp_mmi"],
     }),
     tags = ["manual"],
 )
@@ -118,7 +118,7 @@ filegroup(
 bitstream_splice(
     name = "gcp_spliced_test_rom",
     testonly = True,
-    src = "@bitstreams//:bitstream_test_rom",
+    src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
     data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],
@@ -130,7 +130,7 @@ bitstream_splice(
 bitstream_splice(
     name = "gcp_spliced_rom",
     testonly = True,
-    src = "@bitstreams//:bitstream_test_rom",
+    src = "@bitstreams//:chip_earlgrey_cw310_bitstream",
     data = "//sw/device/silicon_creator/rom:rom_with_fake_keys_fpga_cw310_scr_vmem",
     meminfo = ":rom_mmi",
     tags = ["manual"],

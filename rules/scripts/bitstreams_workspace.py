@@ -7,6 +7,7 @@ import argparse
 import collections
 import datetime
 import io
+import json
 import logging
 import os.path
 import re
@@ -19,12 +20,21 @@ import xml.etree.ElementTree
 from pathlib import Path
 from typing import Dict, Set
 
+import jsonschema
+
+# The schema version used for legacy cache entries, JSON files missing a version
+# entry, and entries that use a higher version of the schema than supported here
+# (attempted in case there is forwards compatibility).
+MANIFEST_SCHEMA_VERSION = 1
+
 # Default location of the bitstreams cache.
 CACHE_DIR = '~/.cache/opentitan-bitstreams'
 # Default bucket URL.
 BUCKET_URL = 'https://storage.googleapis.com/opentitan-bitstreams/'
 # The xml document returned by the bucket is in this namespace.
 XMLNS = {'': 'http://doc.s3.amazonaws.com/2006-03-01'}
+# Manifest schema directory
+MANIFESTS_DIR = os.path.dirname(__file__) if __file__ else os.path.dirname(sys.argv[0])
 
 parser = argparse.ArgumentParser(
     description='Bitstream Downloader & Cache manager')
@@ -244,30 +254,103 @@ class BitstreamCache(object):
         if not os.path.exists(self.latest_update):
             self.Touch(key)
 
-    def GetFromCache(self, key: str) -> Dict[str, Set[str]]:
-        """Get the requested bitstream files.
+    def _GenerateLegacyManifest(self, key: str, files: [str]) -> Dict:
+        """Generate a manifest for old cache entries without them.
+
+        Args:
+            key: A git hash
+            files: A list of file paths
+        Returns:
+            A dictionary mapping file paths to manifest entries
+        """
+        output_files = dict()
+        legacy_files = {
+            "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig": {
+                "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                "outputInfo": {
+                    "@type": "bitstreamInfo",
+                    "design": "chip_earlgrey_cw310"
+                }
+            },
+            "otp.mmi": {
+                "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                "outputInfo": {
+                    "@type": "memoryMapInfo",
+                    "design": "chip_earlgrey_cw310",
+                    "memoryId": "otp"
+                }
+            },
+            "rom.mmi": {
+                "buildTarget": "//hw/bitstream/vivado:fpga_cw310",
+                "outputInfo": {
+                    "@type": "memoryMapInfo",
+                    "design": "chip_earlgrey_cw310",
+                    "memoryId": "rom"
+                }
+            },
+            "chip_earlgrey_cw310_hyperdebug/"
+            "lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit": {
+                "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+                "outputInfo": {
+                    "@type": "bitstreamInfo",
+                    "design": "chip_earlgrey_cw310_hyperdebug"
+                }
+            },
+            "chip_earlgrey_cw310_hyperdebug/otp.mmi": {
+                "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+                "outputInfo": {
+                    "@type": "memoryMapInfo",
+                    "design": "chip_earlgrey_cw310_hyperdebug",
+                    "memoryId": "otp"
+                }
+            },
+            "chip_earlgrey_cw310_hyperdebug/rom.mmi": {
+                "buildTarget": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
+                "outputInfo": {
+                    "@type": "memoryMapInfo",
+                    "design": "chip_earlgrey_cw310_hyperdebug",
+                    "memoryId": "rom"
+                }
+            },
+        }
+
+        for legacy_file in legacy_files:
+            if os.path.join("cache", key, legacy_file) in files:
+                output_files[legacy_file] = legacy_files[legacy_file]
+
+        manifest = {"schemaVersion": MANIFEST_SCHEMA_VERSION, "buildId": key,
+                    "outputFiles": output_files}
+        return manifest
+
+    def GetFromCache(self, key: str) -> Dict:
+        """Get the requested bitstream files manifest.
 
         Args:
             key: A git hash or the string 'latest'.
         Returns:
-            A dictionary that maps file extensions to the set of bitstream files
-            with that extension.
+            A dictionary that represents a bitstream cache manifest.
         """
         files = self._GetFromLocal(key)
         if not files:
             self._GetFromRemote(key)
             files = self._GetFromLocal(key)
 
-        extension_map: Dict[str, Set[str]] = collections.defaultdict(set)
-        for file_name in files:
-            _, extension = os.path.splitext(file_name)
-            if extension[0] != '.':
-                logging.error("Bitstream file has no extension: " +
-                              repr(file_name))
-                sys.exit(1)
-            key = extension[1:]
-            extension_map[key] |= {file_name}
-        return extension_map
+        manifest_path = os.path.join("cache", key, "manifest.json")
+        if manifest_path not in files:
+            logging.warning("No manifest found."
+                            " Attempting to generate manifest from legacy file"
+                            " paths.")
+            return self._GenerateLegacyManifest(key, files)
+
+        with open(manifest_path, "r") as manifest_file:
+            manifest = json.load(manifest_file)
+
+        if "schemaVersion" not in manifest:
+            logging.error("schema is missing a version number."
+                          " Generating legacy manifest instead...")
+            return self._GenerateLegacyManifest(key, files)
+
+        return manifest
 
     @staticmethod
     def _GetDateTimeStr():
@@ -279,30 +362,32 @@ class BitstreamCache(object):
         if key == 'latest':
             key = self.available['latest']
 
-        files_by_extension = self.GetFromCache(key)
+        manifest = self.GetFromCache(key)
+        designs = collections.defaultdict(dict)
+        if manifest["schemaVersion"] > MANIFEST_SCHEMA_VERSION:
+            logging.warning("Warning: Manifest is newer than available schemas")
+            logging.warning("Will try parsing an available schema with highest version")
+            manifest["schemaVersion"] = MANIFEST_SCHEMA_VERSION
 
-        if len(files_by_extension.get('orig', set())) != 1 or \
-           len(files_by_extension.get('splice', set())) != 1:
-            error_msg_lines = [
-                "Could not find the bitstreams to generate a BUILD file:" +
-                repr(build_file),
-                "in files_by_extension:" + repr(files_by_extension),
-                "using key:" + repr(key),
-            ]
-            logging.error('\n'.join(error_msg_lines))
-            sys.exit(1)
+        if manifest["schemaVersion"] == 1:
+            schema_path = os.path.join(MANIFESTS_DIR, "bitstreams_manifest.schema.json")
+            with open(schema_path) as schema_file:
+                schema = json.load(schema_file)
+            jsonschema.validate(manifest, schema)
+            output_files = manifest["outputFiles"]
+            for output in output_files:
+                metadata = output_files[output]["outputInfo"]
+                design_name = metadata["design"]
+                design = designs[design_name]
 
-        (test_rom_file, ) = files_by_extension['orig']
-        (rom_file, ) = files_by_extension['splice']
-
-        def filegroup_lines(name, src):
-            return [
-                'filegroup(',
-                '    name = "{}",'.format(name),
-                '    srcs = ["{}"],'.format(src),
-                ')',
-                '',
-            ]
+                if metadata["@type"] == "bitstreamInfo":
+                    design["bitstream"] = output
+                elif metadata["@type"] == "memoryMapInfo":
+                    mmi_id = metadata["memoryId"] + "_mmi"
+                    if mmi_id in design:
+                        logging.error("Unexpected duplicate memoryId " + metadata["memoryId"])
+                        sys.exit(1)
+                    design[mmi_id] = output
 
         bazel_lines = [
             '# This file was autogenerated. Do not edit!',
@@ -313,27 +398,44 @@ class BitstreamCache(object):
             '',
             'exports_files(glob(["cache/**"]))',
             '',
-        ] + filegroup_lines('bitstream_test_rom', test_rom_file) \
-          + filegroup_lines('bitstream_rom', rom_file)
+        ]
+
+        def filegroup_lines(name, src):
+            return [
+                'filegroup(',
+                '    name = "{}",'.format(name),
+                '    srcs = ["{}"],'.format(src),
+                ')',
+                '',
+            ]
 
         used_target_names: Set[str] = set()
 
-        for mmi_file in sorted(files_by_extension.get('mmi', set())):
-            target_name = os.path.basename(mmi_file).replace('.', '_')
-
-            # Only use the top-level files for now.
-            target_directory = "cache/{}".format(key)
-            if (os.path.dirname(mmi_file) != target_directory):
-                continue
-
-            if target_name in used_target_names:
-                logging.error(
-                    "Target name {} for file {} would collide with another target"
-                    .format(repr(target_name), repr(mmi_file)))
+        cache_base_dir = os.path.join("cache", key)
+        for design_name in sorted(designs.keys()):
+            design = designs[design_name]
+            if "bitstream" not in design:
+                error_msg_lines = [
+                    "Could not find the bitstreams to generate a BUILD file:" +
+                    repr(build_file),
+                    "in design " + design_name + ":" + repr(design),
+                    "using key:" + repr(key),
+                ]
+                logging.error('\n'.join(error_msg_lines))
                 sys.exit(1)
-            used_target_names.add(target_name)
 
-            bazel_lines += filegroup_lines(target_name, mmi_file)
+            for target in sorted(design.keys()):
+                target_file = os.path.join(cache_base_dir, design[target])
+                target_name = "_".join([design_name, target])
+
+                if target_name in used_target_names:
+                    logging.error(
+                        "Target name {} for file {} would collide with another target"
+                        .format(repr(target_name), repr(target_file)))
+                    sys.exit(1)
+                used_target_names.add(target_name)
+
+                bazel_lines += filegroup_lines(target_name, target_file)
 
         return '\n'.join(bazel_lines)
 
@@ -404,8 +506,7 @@ def main(argv):
 
     # Write a build file which allows tests to reference the bitstreams with
     # the labels:
-    #   @bitstreams//:bitstream_test_rom
-    #   @bitstreams//:bitstream_rom
+    #   @bitstreams//:{design}_bitstream
     configured_bitream = cache.WriteBuildFile(args.build_file,
                                               desired_bitstream)
     if desired_bitstream != 'latest' and configured_bitream != desired_bitstream:

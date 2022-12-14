@@ -397,7 +397,7 @@ jobs:
   - template: ci/checkout-template.yml
   - template: ci/install-package-dependencies.yml
   - bash: |
-      ci/scripts/get-bitstream-strategy.sh "@bitstreams//:bitstream_test_rom" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
+      ci/scripts/get-bitstream-strategy.sh "@bitstreams//:chip_earlgrey_cw310_bitstream" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
     displayName: Configure bitstream strategy
   - bash: |
       set -ex
@@ -534,7 +534,6 @@ jobs:
         parentDir: "$BIN_DIR/hw/top_earlgrey"
         includeFiles:
           - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
-          - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
           - "rom.mmi"
           - "otp.mmi"
           - "chip_earlgrey_cw310_hyperdebug/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"
