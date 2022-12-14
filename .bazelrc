@@ -26,9 +26,22 @@ build --workspace_status_command=util/get_workspace_status.sh
 # --config=riscv32
 build:riscv32 --platforms=@crt//platforms/riscv32:opentitan
 
-# Generate coverage in lcov format, which can be post-processed by lcov
-# into html-formatted reports.
-coverage --combined_report=lcov --instrument_test_targets --experimental_cc_coverage
+# Configuration for clang's source-based coverage instrumentation. Enable with
+# `--config=coverage_clang`. Bazel seems to support this only partially, thus we have to
+# perform some additional processing. See
+# https://github.com/bazelbuild/bazel/commit/21b5eb627d78c09d47c4de957e9e6b56a9ae6fad
+# and `util/coverage/coverage_off_target.py`.
+build:coverage_clang --repo_env=CC=clang
+build:coverage_clang --repo_env=BAZEL_USE_LLVM_NATIVE_COVERAGE=1
+build:coverage_clang --java_runtime_version=remotejdk_11
+build:coverage_clang --collect_code_coverage
+build:coverage_clang --copt='-O0'
+build:coverage_clang --cxxopt='-O0'
+coverage:coverage_clang --repo_env=GCOV=/usr/bin/llvm-profdata
+coverage:coverage_clang --repo_env=BAZEL_LLVM_COV=/usr/bin/llvm-cov
+# Docs state that bazel will fail to create coverage information if tests have been
+# cached previously. See https://bazel.build/configure/coverage?hl=en#remote-execution
+coverage:coverage_clang --nocache_test_results
 
 # Verilator is built for 4 cores and can time out if bazel is running more
 # than 1 test per four cores.
