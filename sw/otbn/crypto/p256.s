@@ -897,44 +897,44 @@ mod_inv:
  * @param[in]  w29: p, modulus of P-256 underlying finite field
  * @param[in]  w31: all-zero
  * @param[in]  MOD: p, modulus of P-256 underlying finite field
- * @param[out]  w26: z, random projective z-coordinate
- * @param[out]  w6: x, projective x-coordinate
- * @param[out]  w7: y, projective y-coordinate
+ * @param[out] w14: x, projective x-coordinate
+ * @param[out] w15: y, projective y-coordinate
+ * @param[out] w16: z, random projective z-coordinate
  *
  * Flags: When leaving this subroutine, the M, L and Z flags of FG0 depend on
  *        the scaled projective y-coordinate.
  *
- * clobbered registers: w2, w6, w7, w19 to w26
+ * clobbered registers: w14 to w16, w19 to w26
  * clobbered flag groups: FG0
  */
 fetch_proj_randomize:
 
   /* get random number from URND */
-  bn.wsrr   w2, 2
+  bn.wsrr   w16, 2 /* URND */
 
   /* reduce random number
-     w26 = z <= w2 mod p */
-  bn.addm   w26, w2, w31
+     w16 = z <= w16 mod p */
+  bn.addm   w16, w16, w31
 
   /* fetch x-coordinate from dmem
      w24 = x_a <= dmem[x22] = dmem[dptr_x] */
   bn.lid    x10, 0(x21)
 
   /* scale x-coordinate
-     w6 = x <= w24*w26 = x_a*z  mod p */
-  bn.mov    w25, w26
+     w14 = x <= w24*w16 = x_a*z  mod p */
+  bn.mov    w25, w16
   jal       x1, mod_mul_256x256
-  bn.mov    w6, w19
+  bn.mov    w14, w19
 
   /* fetch y-coordinate from dmem
      w24 = y_a <= dmem[x22] = dmem[dptr_y] */
   bn.lid    x10, 0(x22)
 
   /* scale y-coordinate
-     w7 = y <= w24*w26 = y_a*z  mod p */
-  bn.mov    w25, w26
+     w15 = y <= w24*w16 = y_a*z  mod p */
+  bn.mov    w25, w16
   jal       x1, mod_mul_256x256
-  bn.mov    w7, w19
+  bn.mov    w15, w19
 
   ret
 
@@ -1041,21 +1041,21 @@ scalar_mult_int:
   bn.lid    x2, 0(x3)
 
   /* get randomized projective coodinates of curve point
-     P = (x_p, y_p, z_p) = (w8, w9, w10) = (w6, w7, w26) =
+     P = (x_p, y_p, z_p) = (w8, w9, w10) = (w14, w15, w16) =
      (x*z mod p, y*z mod p, z) */
   li        x10, 24
   jal       x1, fetch_proj_randomize
-  bn.mov    w8, w6
-  bn.mov    w9, w7
-  bn.mov    w10, w26
+  bn.mov    w8, w14
+  bn.mov    w9, w15
+  bn.mov    w10, w16
 
   /* Init 2P, this will be used for the addition part in the double-and-add
      loop when the bit at the current index is 1 for both shares of the scalar.
-     2P = (w3, w4, w5) <= (w11, w12, w13) <= 2*(w8, w9, w10) = 2*P */
+     2P = (w4, w5, w6) <= (w11, w12, w13) <= 2*(w8, w9, w10) = 2*P */
   jal       x1, proj_double
-  bn.mov    w3, w11
-  bn.mov    w4, w12
-  bn.mov    w5, w13
+  bn.mov    w4, w11
+  bn.mov    w5, w12
+  bn.mov    w6, w13
 
   /* init double-and-add with point in infinity
      Q = (w8, w9, w10) <= (0, 1, 0) */
@@ -1071,7 +1071,7 @@ scalar_mult_int:
     jal       x1, proj_double
 
     /* re-fetch and randomize P again
-       P = (w6, w7, w26) */
+       P = (w14, w15, w16) */
     jal       x1, fetch_proj_randomize
 
     /* probe if MSb of either of the two scalars (k0 or k1) but not both is 1.
@@ -1079,19 +1079,19 @@ scalar_mult_int:
        - If both MSbs are set, select 2P for addition
        - If neither MSB is set, also 2P will be selected but this will be
          discarded later */
-    bn.xor    w8, w0, w1
+    bn.xor    w20, w0, w1
 
     /* P = (w8, w9, w10)
-        <= (w0[255] xor w1[256])?P=(w6, w7, w26):2P=(w3, w4, w5) */
-    bn.sel    w8, w6, w3, M
-    bn.sel    w9, w7, w4, M
-    bn.sel    w10, w26, w5, M
+        <= (w0[255] xor w1[255])?P=(w14, w15, w16):2P=(w4, w5, w6) */
+    bn.sel    w8, w14, w4, M
+    bn.sel    w9, w15, w5, M
+    bn.sel    w10, w16, w6, M
 
     /* save doubling result to survive follow-up subroutine call
-       Q = (w2, w6, w7) <= (w11, w12, w13) */
-    bn.mov    w2, w11
-    bn.mov    w6, w12
-    bn.mov    w7, w13
+       Q = (w7, w26, w30) <= (w11, w12, w13) */
+    bn.mov    w7, w11
+    bn.mov    w26, w12
+    bn.mov    w30, w13
 
     /* add points
        Q+P = (w11, w12, w13) <= (w11, w12, w13) + (w8, w9, w10) */
@@ -1099,13 +1099,13 @@ scalar_mult_int:
 
     /* probe if MSb of either one or both of the two
        scalars (k0 or k1) is 1.*/
-    bn.or     w8, w0, w1
+    bn.or     w20, w0, w1
 
     /* select doubling result (Q) or addition result (Q+P)
-       Q = w0[255] or w1[255]?Q_a=(w11, w12, w13):Q=(w2, w6, w7) */
-    bn.sel    w8, w11, w2, M
-    bn.sel    w9, w12, w6, M
-    bn.sel    w10, w13, w7, M
+       Q = w0[255] or w1[255]?Q_a=(w11, w12, w13):Q=(w7, w26, w30) */
+    bn.sel    w8, w11, w7, M
+    bn.sel    w9, w12, w26, M
+    bn.sel    w10, w13, w30, M
 
     /* rotate both scalars left 1 bit */
     bn.rshi   w0, w0, w0 >> 255
@@ -1119,25 +1119,25 @@ scalar_mult_int:
     /* get a fresh random number from URND and scale the coordinates of
        2P = (w3, w4, w5) (scaling each projective coordinate with same
        factor results in same point) */
-    bn.wsrr   w2, 2
+    bn.wsrr   w7, 2
 
-    /* w3 = w3 * w2 */
-    bn.mov    w24, w3
-    bn.mov    w25, w2
-    jal       x1, mod_mul_256x256
-    bn.mov    w3, w19
-
-    /* w4 = w4 * w2 */
+    /* w4 = w4 * w7 */
     bn.mov    w24, w4
-    bn.mov    w25, w2
+    bn.mov    w25, w7
     jal       x1, mod_mul_256x256
     bn.mov    w4, w19
 
-    /* w5 = w5 * w2 */
+    /* w5 = w5 * w7 */
     bn.mov    w24, w5
-    bn.mov    w25, w2
+    bn.mov    w25, w7
     jal       x1, mod_mul_256x256
     bn.mov    w5, w19
+
+    /* w6 = w6 * w7 */
+    bn.mov    w24, w6
+    bn.mov    w25, w7
+    jal       x1, mod_mul_256x256
+    bn.mov    w6, w19
 
   /* convert back to affine coordinates
      R = (x_a, y_a) = (w11, w12) */
