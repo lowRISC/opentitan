@@ -10,6 +10,7 @@
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_gpio.h"
+#include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
@@ -36,6 +37,7 @@ static dif_csrng_t csrng;
 static dif_edn_t edn_0;
 static dif_edn_t edn_1;
 static dif_aes_t aes;
+static dif_hmac_t hmac;
 
 /**
  * Test configuration parameters.
@@ -85,6 +87,8 @@ static void init_peripheral_handles() {
       dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn_1));
   CHECK_DIF_OK(dif_entropy_src_init(
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
+  CHECK_DIF_OK(
+      dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
   CHECK_DIF_OK(
       dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   CHECK_DIF_OK(dif_pinmux_init(
@@ -266,11 +270,20 @@ static void configure_aes() {
   CHECK_DIF_OK(dif_aes_start(&aes, &aes_transaction_cfg, &aes_key, &aes_iv));
 }
 
+static void configure_hmac() {
+  dif_hmac_transaction_t hmac_transaction_cfg = {
+      .digest_endianness = kDifHmacEndiannessLittle,
+      .message_endianness = kDifHmacEndiannessLittle,
+  };
+  CHECK_DIF_OK(dif_hmac_mode_hmac_start(&hmac, kHmacKey, hmac_transaction_cfg));
+}
+
 bool test_main(void) {
   init_peripheral_handles();
   configure_gpio_indicator_pin();
   configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
   configure_aes();
+  configure_hmac();
   return true;
 }
