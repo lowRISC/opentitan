@@ -36,6 +36,9 @@ source $CDC_WAIVER_DIR/cdc_waivers.w_fanout.tcl
 source $CDC_WAIVER_DIR/cdc_waivers.w_net_no_wave.tcl
 source $CDC_WAIVER_DIR/cdc_waivers.misc.tcl
 source $CDC_WAIVER_DIR/cdc_waivers.data.tcl
+source $CDC_WAIVER_DIR/cdc_waivers.multclk_crossings.tcl
+source $CDC_WAIVER_DIR/cdc_waivers.synch_rst_crossing.tcl
+source $CDC_WAIVER_DIR/cdc_waivers.rst_sync.tcl
 
 # Common Waivers
 
