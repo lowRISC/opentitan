@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@nonhermetic//:env.bzl", "ENV")
+load("@ot_python_deps//:requirements.bzl", "entry_point")
 
 """Rules for running FuseSoC.
 
@@ -71,9 +72,9 @@ def _fusesoc_build_impl(ctx):
     ctx.actions.run(
         mnemonic = "FuseSoC",
         outputs = outputs,
-        inputs = ctx.files.srcs + ctx.files.cores,
+        inputs = ctx.files.srcs + ctx.files.cores + ctx.files._fusesoc,
         arguments = [args],
-        executable = "fusesoc",
+        executable = ctx.executable._fusesoc,
         use_default_shell_env = False,
         execution_requirements = {
             "no-sandbox": "",
@@ -103,5 +104,10 @@ fusesoc_build = rule(
         ),
         "verilator_options": attr.label(),
         "make_options": attr.label(),
+        "_fusesoc": attr.label(
+            default = entry_point("fusesoc"),
+            executable = True,
+            cfg = "exec",
+        ),
     },
 )
