@@ -209,7 +209,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
       combined_user.data_intg = data_intg;
     end
 
-    localparam logic [top_pkg::TL_SZW-1:0] AccessSize = $clog2(top_pkg::TL_DBW);
+    localparam int AccessSize = $clog2(top_pkg::TL_DBW);
     always_comb begin
       // Pass-through by default
       tl_sram_o = tl_i;
@@ -228,7 +228,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
         tl_sram_o.a_opcode  = PutFullData;
         // Since we are performing a read-modify-write operation,
         // we always access the entire word.
-        tl_sram_o.a_size    = AccessSize;
+        tl_sram_o.a_size    = top_pkg::TL_SZW'(AccessSize);
         tl_sram_o.a_mask    = '{default: '1};
         // override with held / combined data.
         // need to use word aligned addresses here.
@@ -246,7 +246,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
         if (!error_i || stall_host) begin
           // Since we are performing a read-modify-write operation,
           // we always access the entire word.
-          tl_sram_o.a_size    = AccessSize;
+          tl_sram_o.a_size    = top_pkg::TL_SZW'(AccessSize);
           tl_sram_o.a_mask    = '{default: '1};
           // use incoming valid as long as we are not stalling the host
           tl_sram_o.a_valid   = tl_i.a_valid & ~stall_host;
