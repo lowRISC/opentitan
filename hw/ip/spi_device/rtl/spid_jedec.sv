@@ -117,7 +117,7 @@ module spid_jedec
 
   // Byte selection
   always_ff @(posedge clk_i or negedge rst_ni) begin : byte_sel_latch
-    if (!rst_ni)        byte_sel_q <= 8'h 0; // select manufacturer id
+    if (!rst_ni)        byte_sel_q <= 2'h 0; // select manufacturer id
     else if (next_byte) byte_sel_q <= byte_sel_d;
   end : byte_sel_latch
 

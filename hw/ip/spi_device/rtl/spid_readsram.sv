@@ -123,7 +123,7 @@ module spid_readsram
   assign sram_l2m_o.req   = sram_req;
   assign sram_l2m_o.we    = 1'b 0;
   assign sram_l2m_o.wdata = '0;
-  assign sram_l2m_o.wstrb = 8'h0; // no write
+  assign sram_l2m_o.wstrb = SramStrbW'(0); // no write
 
   sram_addr_t sram_addr;
   assign sram_l2m_o.addr = sram_addr;
