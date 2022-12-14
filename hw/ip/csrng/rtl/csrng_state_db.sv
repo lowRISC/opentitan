@@ -52,7 +52,7 @@ module csrng_state_db import csrng_pkg::*; #(
   localparam int InternalStateWidth = 2+KeyLen+BlkLen+CtrLen;
   localparam int RegInternalStateWidth = 30+InternalStateWidth;
   localparam int RegW = 32;
-  localparam int StateWidth = 1+1+KeyLen+BlkLen+CtrLen+StateId+1;
+  localparam int CsrngStateWidth = 1+1+KeyLen+BlkLen+CtrLen+StateId+1;
 
   logic [StateId-1:0]              state_db_id;
   logic [KeyLen-1:0]               state_db_key;
@@ -188,7 +188,7 @@ module csrng_state_db import csrng_pkg::*; #(
   assign {state_db_fips,state_db_inst_st,
           state_db_key,
           state_db_v,state_db_rc,
-          state_db_id,state_db_sts} = {StateWidth{state_db_enable_i}} &
+          state_db_id,state_db_sts} = {CsrngStateWidth{state_db_enable_i}} &
                                       {state_db_wr_fips_i,instance_status,
                                        state_db_wr_key_i,
                                        state_db_wr_v_i,state_db_wr_res_ctr_i,

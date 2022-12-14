@@ -6,9 +6,7 @@
 //
 //  - handles all app cmd requests from all requesting interfaces
 
-module csrng_main_sm import csrng_pkg::*; #(
-  parameter int StateWidth = 8
-) (
+module csrng_main_sm import csrng_pkg::*; #() (
   input logic                   clk_i,
   input logic                   rst_ni,
 

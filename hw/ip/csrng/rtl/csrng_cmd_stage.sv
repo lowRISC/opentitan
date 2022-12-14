@@ -224,9 +224,9 @@ module csrng_cmd_stage import csrng_pkg::*; #(
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 7
   //
-  localparam int StateWidth = 8;
-  typedef    enum logic [StateWidth-1:0] {
-    Idle      = 8'b00011011, // idle
+  localparam int CmdStageStateWidth = 8;
+  typedef    enum logic [CmdStageStateWidth-1:0] {
+    CmdIdle      = 8'b00011011, // idle
     ArbGnt    = 8'b11110101, // general arbiter request
     SendSOP   = 8'b00011100, // send sop (start of packet)
     SendMOP   = 8'b00000001, // send mop (middle of packet)
@@ -235,11 +235,11 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     GenReq    = 8'b11000000, // process gen requests
     GenArbGnt = 8'b11111110, // generate subsequent arb request
     GenSOP    = 8'b10110010, // generate subsequent request
-    Error     = 8'b10111001  // illegal state reached and hang
+    CmdError     = 8'b10111001  // illegal state reached and hang
   } state_e;
 
   state_e state_d, state_q;
-  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Idle)
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, CmdIdle)
 
   always_comb begin
     state_d = state_q;
@@ -256,20 +256,20 @@ module csrng_cmd_stage import csrng_pkg::*; #(
     cmd_arb_eop_o = 1'b0;
     cmd_stage_sm_err_o = 1'b0;
 
-    if (state_q == Error) begin
-      // In case we are in the Error state we must ignore the local escalate and enable signals.
+    if (state_q == CmdError) begin
+      // In case we are in the CmdError state we must ignore the local escalate and enable signals.
       cmd_stage_sm_err_o = 1'b1;
     end else if (local_escalate) begin
       // In case local escalate is high we must transition to the error state.
-      state_d = Error;
-    end else if (!cs_enable_i && state_q inside {Idle, ArbGnt, SendSOP, SendMOP, GenCmdChk, CmdAck,
-                                                 GenReq, GenArbGnt, GenSOP}) begin
+      state_d = CmdError;
+    end else if (!cs_enable_i && state_q inside {CmdIdle, ArbGnt, SendSOP, SendMOP, GenCmdChk,
+                                                 CmdAck, GenReq, GenArbGnt, GenSOP}) begin
       // In case the module is disabled and we are in a legal state we must go into idle state.
-      state_d = Idle;
+      state_d = CmdIdle;
     end else begin
       // Otherwise do the state machine as normal.
       unique case (state_q)
-        Idle: begin
+        CmdIdle: begin
           // Because of the if statement above we won't leave idle if enable is low.
           if (!cmd_fifo_zero) begin
             state_d = ArbGnt;
@@ -326,7 +326,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
             if (!sfifo_genbits_full) begin
               if (cmd_gen_cnt == '0) begin
                 cmd_final_ack = 1'b1;
-                state_d = Idle;
+                state_d = CmdIdle;
               end else begin
                 // Issue a subsequent gen request.
                 state_d = GenArbGnt;
@@ -335,7 +335,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
           end else begin
             // Ack for the non-gen request case.
             cmd_final_ack = 1'b1;
-            state_d = Idle;
+            state_d = CmdIdle;
           end
         end
         GenArbGnt: begin
@@ -354,9 +354,9 @@ module csrng_cmd_stage import csrng_pkg::*; #(
             cmd_gen_cnt_last = 1'b1;
           end
         end
-        // Error: The error state is now covered by the if statement above.
+        // CmdError: The error state is now covered by the if statement above.
         default: begin
-          state_d = Error;
+          state_d = CmdError;
           cmd_stage_sm_err_o = 1'b1;
         end
       endcase // unique case (state_q)
@@ -422,7 +422,7 @@ module csrng_cmd_stage import csrng_pkg::*; #(
 
   // Make sure that the state machine has a stable error state. This means that after the error
   // state is entered it will not exit it unless a reset signal is received.
-  `ASSERT(CsrngCmdStageErrorStStable_A, state_q == Error |=> $stable(state_q))
+  `ASSERT(CsrngCmdStageErrorStStable_A, state_q == CmdError |=> $stable(state_q))
   // If in error state, the error output must be high.
-  `ASSERT(CsrngCmdStageErrorOutput_A,   state_q == Error |-> cmd_stage_sm_err_o)
+  `ASSERT(CsrngCmdStageErrorOutput_A,   state_q == CmdError |-> cmd_stage_sm_err_o)
 endmodule

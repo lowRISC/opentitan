@@ -205,8 +205,8 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
 // Maximum Hamming weight: 3
 //
 
-  localparam int StateWidth = 5;
-  typedef enum logic [StateWidth-1:0] {
+  localparam int CtrDrbgGenStateWidth = 5;
+  typedef enum logic [CtrDrbgGenStateWidth-1:0] {
     ReqIdle  = 5'b01101,
     ReqSend  = 5'b00011,
     ESHalt   = 5'b11000,
