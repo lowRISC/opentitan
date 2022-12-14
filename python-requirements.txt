@@ -4,6 +4,7 @@
 
 # Keep sorted.
 hjson==3.1.0
+jsonschema==4.17.3; python_version >= "3.7"
 libcst==0.4.1
 mako==1.1.6
 pluralizer==1.2.0
