@@ -302,7 +302,7 @@
               - Ensure transactions are transmitted/received correctly
               - Ensure reset is handled correctly
             '''
-      stage: V2
+      stage: V3
       tests: [""]
     }
     {
@@ -314,14 +314,14 @@
               - Configure DUT/Agent to Target/Host mode respectively
               - Reduce access latency for all fifos
               - Issue long read/write back-to-back transactions
-              - Read tx_fifo as soon as read data valid
+              - Make all fifos accessible without any delay
               - Clear interrupt quickly
 
             Checking:
               - Ensure transactions are transmitted/received correctly
             '''
       stage: V2
-      tests: [""]
+      tests: ["i2c_target_perf"]
     }
     {
       name: target_fifo_overflow
