@@ -109,7 +109,6 @@ dual_cc_library(
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:memory",
             "//sw/device/silicon_creator/lib/drivers:otbn",
-            "//sw/device/silicon_creator/lib:otbn_util",
             "//sw/otbn/crypto:run_rsa_verify_3072_rr_modexp",
         ],
         host = [
