@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:dv:pins_if
     files:
+      - common_ifs_pkg.sv
       - clk_if.sv
       - clk_rst_if.sv
     file_type: systemVerilogSource

@@ -91,6 +91,13 @@ package dv_utils_pkg;
     ClkFreqDiffAny
   } clk_freq_diff_e;
 
+  // Enum representing reset scheme
+  typedef enum bit [1:0] {
+    RstAssertSyncDeassertSync,
+    RstAssertAsyncDeassertSync,
+    RstAssertAsyncDeassertASync
+  } rst_scheme_e;
+
   string msg_id = "dv_utils_pkg";
 
   // return the smaller value of 2 inputs

@@ -208,8 +208,6 @@ class dv_base_reg extends uvm_reg;
   // update local variables used for the special regs.
   // - shadow register: shadow reg won't be updated until the second write has no error
   // - lock register: if wen_fld is set to 0, change access policy to all the lockable_flds
-  // TODO: create an `enable_field_access_policy` variable and set the template code during
-  // automation.
   virtual function void pre_do_predict(uvm_reg_item rw, uvm_predict_e kind);
 
     // Skip updating shadow value or access type if:

@@ -24,6 +24,7 @@ interface clk_rst_if #(
   `include "dv_macros.svh"
   `include "uvm_macros.svh"
   import uvm_pkg::*;
+  import common_ifs_pkg::*;
 `endif
 
   // Enables clock to be generated and driven by this interface.
@@ -249,35 +250,27 @@ interface clk_rst_if #(
   endtask
 
   // apply reset with specified scheme
-  // TODO make this enum?
-  // rst_n_scheme
-  // 0 - fully synchronous reset - it is asserted and deasserted on clock edges
-  // 1 - async assert, sync deassert (default)
-  // 2 - async assert, async deassert
-  // 3 - clk gated when reset asserted
   // Note: for power on reset, please ensure pre_reset_dly_clks is set to 0
-  // TODO #2338 issue workaround - $urandom call moved from default argument value to function body
   task automatic apply_reset(int pre_reset_dly_clks   = 0,
-                             integer reset_width_clks = 'x,
+                             int reset_width_clks = $urandom_range(50, 100),
                              int post_reset_dly_clks  = 0,
-                             int rst_n_scheme         = 1);
+                             rst_scheme_e rst_n_scheme  = RstAssertAsyncDeassertSync);
     int dly_ps;
-    if ($isunknown(reset_width_clks)) reset_width_clks = $urandom_range(50, 100);
     dly_ps = $urandom_range(0, clk_period_ps);
     wait_clks(pre_reset_dly_clks);
     case (rst_n_scheme)
-      0: begin : sync_assert_deassert
+      RstAssertSyncDeassertSync: begin
         o_rst_n <= 1'b0;
         wait_clks(reset_width_clks);
         o_rst_n <= 1'b1;
       end
-      1: begin : async_assert_sync_deassert
+      RstAssertAsyncDeassertSync: begin
         #(dly_ps * 1ps);
         o_rst_n <= 1'b0;
         wait_clks(reset_width_clks);
         o_rst_n <= 1'b1;
       end
-      2: begin : async_assert_async_deassert
+      RstAssertAsyncDeassertASync: begin
         #(dly_ps * 1ps);
         o_rst_n <= 1'b0;
         wait_clks(reset_width_clks);
