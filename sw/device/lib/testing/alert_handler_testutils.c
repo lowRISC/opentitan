@@ -69,19 +69,19 @@ void alert_info_to_string(const alert_info_t *info) {
            info->class_accum_cnt[0], info->class_accum_cnt[1],
            info->class_accum_cnt[2], info->class_accum_cnt[3]);
   LOG_INFO("loc_alert_cause=0x%x", info->loc_alert_cause);
-  char cause_bits[81];
-  cause_bits[80] = '\0';
-  int string_index = 0;
+  int set_count = 0;
+  LOG_INFO("alert_cause bits set:");
+  // Typically very few bits are set, so it is more clear to only show the
+  // on bits.
   for (int i = 0; i < ALERT_HANDLER_PARAM_N_ALERTS; ++i) {
-    cause_bits[string_index] = info->alert_cause[i] ? '1' : '0';
-    ++string_index;
-    if (i % 8 == 0) {
-      cause_bits[string_index] = '_';
-      ++string_index;
+    if (info->alert_cause[i]) {
+      LOG_INFO("alert_cause[%d] = 1", i);
+      ++set_count;
     }
   }
-  cause_bits[string_index] = '\0';
-  LOG_INFO("alert_cause=%s (in increasing order left to right)", cause_bits);
+  if (set_count == 0) {
+    LOG_INFO("No bits set");
+  }
 }
 
 void alert_handler_testutils_configure_all(

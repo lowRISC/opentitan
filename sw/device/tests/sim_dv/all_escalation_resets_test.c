@@ -166,6 +166,7 @@ static dif_rv_plic_t plic;
 static dif_sram_ctrl_t sram_ctrl_main;
 static dif_sram_ctrl_t sram_ctrl_ret;
 
+static const char *sparse_fsm_check = "prim_sparse_fsm_flop";
 static const char *we_check = "prim_reg_we_check";
 
 static void save_fault_checker(fault_checker_t *fault_checker) {
@@ -314,6 +315,7 @@ static void kmac_fault_checker(bool enable, const char *ip_inst,
         ip_inst, status.faults, expected);
 }
 
+// This discriminates between the two faults based on type.
 static void lc_ctrl_fault_checker(bool enable, const char *ip_inst,
                                   const char *type) {
   // Check the lc_ctrl integrity fatal error code.
@@ -323,11 +325,12 @@ static void lc_ctrl_fault_checker(bool enable, const char *ip_inst,
       .mask = UINT32_MAX, .index = kDifLcCtrlStatusCodeTooManyTransitions};
   uint32_t mask = bitfield_field32_write(0, relevant_field, UINT32_MAX);
   uint32_t relevant_status = status & mask;
+  uint32_t bus_integ_error =
+      bitfield_bit32_write(0, kDifLcCtrlStatusCodeBusIntegError, true);
+  uint32_t state_error =
+      bitfield_bit32_write(0, kDifLcCtrlStatusCodeCorrupt, true);
   uint32_t expected_status =
-      enable
-          ? (bitfield_bit32_write(0, kDifLcCtrlStatusCodeBusIntegError, true) &
-             mask)
-          : 0;
+      enable ? (type == we_check ? bus_integ_error : state_error) : 0;
   CHECK(relevant_status == expected_status,
         "For %s got codes 0x%x, expected 0x%x", ip_inst, relevant_status,
         expected_status);
@@ -812,9 +815,12 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
       fault_checker = fc;
     } break;
     // TODO add mechanism to inject kTopEarlgreyAlertIdLcCtrlFatalProgError by
-    // forcing otp_prog_err_o from lc_ctrl_fsm and
-    // kTopEarlgreyAlertIdLcCtrlFatalStateError using sparse fsm.
-    // alerts, and corresponding CSR bit to check.
+    // forcing otp_prog_err_o from lc_ctrl_fsm
+    case kTopEarlgreyAlertIdLcCtrlFatalStateError: {
+      fault_checker_t fc = {lc_ctrl_fault_checker, lc_ctrl_inst_name,
+                            sparse_fsm_check};
+      fault_checker = fc;
+    } break;
     case kTopEarlgreyAlertIdLcCtrlFatalBusIntegError: {
       fault_checker_t fc = {lc_ctrl_fault_checker, lc_ctrl_inst_name, we_check};
       fault_checker = fc;
@@ -864,8 +870,8 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
                             we_check};
       fault_checker = fc;
     } break;
-    // TODO kTopEarlgreyAlertIdRstmgrAonFatalCnstyFault using sparse fsm or
-    // idle counter.
+    // kTopEarlgreyAlertIdRstmgrAonFatalCnstyFault needs a specialized test
+    // since the sec_cm instrumented prims are not involved in these faults.
     case kTopEarlgreyAlertIdRstmgrAonFatalFault: {
       fault_checker_t fc = {rstmgr_fault_checker, rstmgr_inst_name, we_check};
       fault_checker = fc;
@@ -1003,8 +1009,12 @@ void check_alert_dump() {
     if (i == kExpectedAlertNumber) {
       CHECK(actual_info.alert_cause[i], "Expected alert cause %d to be set", i);
     } else {
-      CHECK(!actual_info.alert_cause[i], "Expected alert cause %d to be clear",
-            i);
+      // It is possible some alerts can trigger others; for example, some
+      // lc_ctrl faults lead to otp_ctrl faults.
+      if (actual_info.alert_cause[i]) {
+        LOG_INFO("Unexpected alert cause %d, may be triggered by %d", i,
+                 kExpectedAlertNumber);
+      }
     }
   }
 }
@@ -1072,19 +1082,21 @@ bool test_main(void) {
     LOG_INFO("Interrupt count %d", interrupt_count);
     LOG_INFO("NMI count %d", nmi_count);
 
-    // ISRs should not run if flash_ctrl pr sram_ctrl_main get a fault because
-    // flash or sram accesses are blocked in those cases.
+    // ISRs should not run if flash_ctrl or sram_ctrl_main get a fault because
+    // flash or sram accesses are blocked in those cases. For lc_ctrl fatal
+    // state the lc_ctrl blocks the CPU.
     if (kExpectedAlertNumber == kTopEarlgreyAlertIdFlashCtrlFatalStdErr ||
-        kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlMainFatalError) {
+        kExpectedAlertNumber == kTopEarlgreyAlertIdSramCtrlMainFatalError ||
+        kExpectedAlertNumber == kTopEarlgreyAlertIdLcCtrlFatalStateError) {
       CHECK(interrupt_count == 0,
-            "Expected regular ISR should not run for flash_ctrl and "
-            "sram_ctrl_main faults");
+            "Expected regular ISR should not run for flash_ctrl, lc_ctrl fatal "
+            "state, or sram_ctrl_main faults");
       CHECK(nmi_count == 0,
-            "Expected nmi should not run for flash_ctrl and sram_ctrl_main "
-            "faults");
+            "Expected nmi should not run for flash_ctrl, lc_ctrl fatal state, "
+            "or sram_ctrl_main faults");
     } else {
-      CHECK(nmi_count > 0, "Expected at least one nmi");
       CHECK(interrupt_count == 1, "Expected exactly one regular interrupt");
+      CHECK(nmi_count > 0, "Expected at least one nmi");
     }
 
     // Check the alert handler cause is cleared.
@@ -1096,6 +1108,7 @@ bool test_main(void) {
     // Check the fault register is clear.
     fault_checker.function(/*enable=*/false, fault_checker.ip_inst,
                            fault_checker.type);
+    check_alert_dump();
     return true;
   } else {
     LOG_ERROR("Unexpected rst_info=0x%x", rst_info);
