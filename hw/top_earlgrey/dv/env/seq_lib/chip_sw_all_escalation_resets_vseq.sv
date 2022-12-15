@@ -23,7 +23,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*edn1*prim_reg_we_check*", TopEarlgreyAlertIdEdn1FatalAlert},
     '{"*entropy_src*prim_reg_we_check*", TopEarlgreyAlertIdEntropySrcFatalAlert},
     '{"*flash_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdFlashCtrlFatalStdErr},
-    // TODO test u_eflash.u_flash alert TopEarlgreyAlertIdFlashCtrlFatalErr and
+    // TODO test u_eflash.u_flash alert TopEarlgreyAlertIdFlashCtrlFatalErr
     // TODO TopEarlgreyAlertIdFlashCtrlFatalPrimFlashAlert.
     '{"*gpio*prim_reg_we_check*", TopEarlgreyAlertIdGpioFatalFault},
     '{"*hmac*prim_reg_we_check*", TopEarlgreyAlertIdHmacFatalFault},
@@ -33,8 +33,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*keymgr*prim_reg_we_check*", TopEarlgreyAlertIdKeymgrFatalFaultErr},
     '{"*kmac*prim_reg_we_check*", TopEarlgreyAlertIdKmacFatalFaultErr},
     // TODO TopEarlgreyAlertIdLcCtrlFatalProgError: done in sw/device/tests/sim_dv/lc_ctrl_program_error.c?
-    // TODO TopEarlgreyAlertIdLcCtrlFatalStateError. These don't have onehot_checkers, so they need an
-    // alternative mechanism: maybe need to cause both u_reg, and u_reg_tap checkers?
+    '{"*lc_ctrl*state_regs*", TopEarlgreyAlertIdLcCtrlFatalStateError},
     '{"*lc_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdLcCtrlFatalBusIntegError},
     '{"*otbn*prim_reg_we_check*", TopEarlgreyAlertIdOtbnFatal},
     // TODO TopEarlgreyAlertIdOtpCtrlFatalMacroError,
@@ -47,11 +46,11 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"*pwrmgr*prim_reg_we_check*", TopEarlgreyAlertIdPwrmgrAonFatalFault},
     '{"*rom_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdRomCtrlFatal},
     '{"*rstmgr*prim_reg_we_check*", TopEarlgreyAlertIdRstmgrAonFatalFault},
-    // TODO kTopEarlgreyAlertIdRstmgrAonFatalCnstyFault
+    // TopEarlgreyAlertIdRstmgrAonFatalCnstyFault cannot use this test.
     // TODO TopEarlgreyAlertIdRvCoreIbexFatalSwErr
     '{"*rv_core_ibex*prim_reg_we_check*", TopEarlgreyAlertIdRvCoreIbexFatalHwErr},
     '{"*rv_dm*prim_reg_we_check*", TopEarlgreyAlertIdRvDmFatalFault},
-    // TODO kTopEarlgreyAlertIdRvPlicFatalFault
+    '{"*rv_plic*prim_reg_we_check*", TopEarlgreyAlertIdRvPlicFatalFault},
     '{"*rv_timer*prim_reg_we_check*", TopEarlgreyAlertIdRvTimerFatalFault},
     '{"*sensor_ctrl*prim_reg_we_check*", TopEarlgreyAlertIdSensorCtrlFatalAlert},
     '{"*spi_device*prim_reg_we_check*", TopEarlgreyAlertIdSpiDeviceFatalFault},
@@ -70,8 +69,10 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
   rand int ip_index;
   constraint ip_index_c {ip_index inside {[0 : ip_alerts.size() - 1]};}
 
-  function int get_ip_index_from_name(string ip_name);
-    string regex = {"*", ip_name, "*prim_reg_we_check*"};
+  // Finds an entry in ip_alerts matching an ip and a security counter-measure by name.
+  // It returns the index of the matching entry. It is fatal if no entry is found.
+  function int get_ip_index_from_name(string ip_name, string sec_cm);
+    string regex = {"*", ip_name, "*", sec_cm, "*"};
     foreach (ip_alerts[i]) begin
       if (ip_alerts[i].ip_inst_regex == regex) return i;
     end
@@ -82,19 +83,36 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     sec_cm_pkg::sec_cm_base_if_proxy if_proxy;
     ip_fatal_alert_t ip_alert;
     bit [7:0] sw_alert_num[];
+    string sec_cm;
     string actual_ip;
+    bit show_proxies;
+
+    if ($value$plusargs("inject_fatal_error_for_sec_cm=%s", sec_cm)) begin
+      `uvm_info(`gfn, $sformatf("Will inject error on %0s interface", sec_cm), UVM_MEDIUM)
+    end else sec_cm = "prim_reg_we_check";
     if ($value$plusargs("inject_fatal_error_for_ip=%s", actual_ip)) begin
-      ip_index = get_ip_index_from_name(actual_ip);
+      ip_index = get_ip_index_from_name(actual_ip, sec_cm);
     end else begin
       string excluded_ips[$];
       int excluded_ip_idxs[$];
       `DV_GET_QUEUE_PLUSARG(excluded_ips, avoid_inject_fatal_error_for_ips)
       foreach (excluded_ips[i]) begin
-        excluded_ip_idxs.push_back(get_ip_index_from_name(excluded_ips[i]));
+        excluded_ip_idxs.push_back(get_ip_index_from_name(excluded_ips[i], "prim_reg_we_check"));
       end
       `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(ip_index, !(ip_index inside {excluded_ip_idxs});)
     end
 
+    if ($value$plusargs("show_proxies=%s", show_proxies)) begin
+      if (show_proxies) begin
+        foreach (sec_cm_pkg::sec_cm_if_proxy_q[i]) begin
+          `uvm_info(`gfn, $sformatf(
+                    "sec_cm type %0d at %s",
+                    sec_cm_pkg::sec_cm_if_proxy_q[i].sec_cm_type,
+                    sec_cm_pkg::sec_cm_if_proxy_q[i].path
+                    ), UVM_MEDIUM)
+        end
+      end
+    end
     ip_alert = ip_alerts[ip_index];
 
     // This sequence will trigger a fatal sec_cm failure.

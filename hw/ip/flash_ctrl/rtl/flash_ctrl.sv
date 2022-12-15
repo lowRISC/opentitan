@@ -331,7 +331,7 @@ module flash_ctrl
   // flash disable declaration
   mubi4_t [FlashDisableLast-1:0] flash_disable;
 
-  // flash control arbitration between softawre / harware interfaces
+  // flash control arbitration between software and hardware interfaces
   flash_ctrl_arb u_ctrl_arb (
     .clk_i,
     .rst_ni,
