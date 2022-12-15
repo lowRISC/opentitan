@@ -279,7 +279,7 @@ class BisectSession:
             Commit where `fast_command` and `slow_command` are known to fail.
           fast_command:
             A list of strings that represent a git-bisect script and args. These
-            are passed to `git-bisect run` in the first phase.
+            are passed to `git bisect run` in the first phase.
           slow_command:
             Just like `fast_command`, but for the second phase.  If this arg is
             None, we skip the second phase.
