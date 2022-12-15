@@ -26,8 +26,8 @@ impl CommandDispatch for TransportInit {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         // Configure all GPIO pins to default direction and level, according to
-        // configuration files provided.
-        transport.apply_default_pin_configurations()?;
+        // configuration files provided, and configures SPI port mode/speed, etc.
+        transport.apply_default_configuration()?;
         Ok(None)
     }
 }

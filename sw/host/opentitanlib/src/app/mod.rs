@@ -11,7 +11,7 @@ use crate::io::gpio::{GpioPin, PinMode, PullMode};
 use crate::io::i2c::Bus;
 use crate::io::spi::Target;
 use crate::io::uart::Uart;
-use crate::transport::{ProxyOps, Transport, TransportError};
+use crate::transport::{ProxyOps, Transport, TransportError, TransportInterfaceType};
 use anyhow::Result;
 use std::time::Duration;
 
@@ -69,6 +69,18 @@ impl PinConfiguration {
     }
 }
 
+#[derive(Default, Debug)]
+pub struct SpiConfiguration {
+    pub bits_per_sec: Option<u32>,
+}
+
+impl SpiConfiguration {
+    fn merge(&mut self, other: &SpiConfiguration) -> Result<(), ()> {
+        merge_field(&mut self.bits_per_sec, other.bits_per_sec)?;
+        Ok(())
+    }
+}
+
 pub struct TransportWrapperBuilder {
     transport: RefCell<Box<dyn Transport>>,
     pin_alias_map: HashMap<String, String>,
@@ -76,6 +88,7 @@ pub struct TransportWrapperBuilder {
     spi_map: HashMap<String, String>,
     i2c_map: HashMap<String, String>,
     pin_conf_list: Vec<(String, PinConfiguration)>,
+    spi_conf_list: Vec<(String, SpiConfiguration)>,
     strapping_conf_map: HashMap<String, Vec<(String, PinConfiguration)>>,
 }
 
@@ -89,6 +102,7 @@ pub struct TransportWrapper {
     spi_map: HashMap<String, String>,
     i2c_map: HashMap<String, String>,
     pin_conf_map: HashMap<String, PinConfiguration>,
+    spi_conf_map: HashMap<String, SpiConfiguration>,
     strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
 }
 
@@ -101,6 +115,7 @@ impl TransportWrapperBuilder {
             spi_map: HashMap::new(),
             i2c_map: HashMap::new(),
             pin_conf_list: Vec::new(),
+            spi_conf_list: Vec::new(),
             strapping_conf_map: HashMap::new(),
         }
     }
@@ -123,6 +138,20 @@ impl TransportWrapperBuilder {
             conf_entry.level = Some(level);
         }
         pin_conf_list.push((pin_conf.name.to_string(), conf_entry))
+    }
+
+    fn record_spi_conf(
+        spi_conf_list: &mut Vec<(String, SpiConfiguration)>,
+        spi_conf: &config::SpiConfiguration,
+    ) {
+        if spi_conf.bits_per_sec.is_none() {
+            return;
+        }
+        let mut conf_entry: SpiConfiguration = SpiConfiguration::default();
+        if let Some(bits_per_sec) = spi_conf.bits_per_sec {
+            conf_entry.bits_per_sec = Some(bits_per_sec);
+        }
+        spi_conf_list.push((spi_conf.name.to_string(), conf_entry))
     }
 
     pub fn add_configuration_file(&mut self, file: config::ConfigurationFile) -> Result<()> {
@@ -149,8 +178,7 @@ impl TransportWrapperBuilder {
                 self.spi_map
                     .insert(spi_conf.name.to_uppercase(), alias_of.clone());
             }
-            // TODO(#8769): Record bitrate / mode configration for later
-            // use when opening spi port.
+            Self::record_spi_conf(&mut self.spi_conf_list, &spi_conf);
         }
         for uart_conf in file.uarts {
             if let Some(alias_of) = &uart_conf.alias_of {
@@ -173,9 +201,28 @@ impl TransportWrapperBuilder {
                 .entry(map_name(pin_alias_map, name))
                 .or_default()
                 .merge(conf)
-                .map_err(|_| TransportError::InconsistentPinConf(name.to_string()))?;
+                .map_err(|_| {
+                    TransportError::InconsistentConf(TransportInterfaceType::Gpio, name.to_string())
+                })?;
         }
         Ok(result_pin_conf_map)
+    }
+
+    fn consolidate_spi_conf_map(
+        spi_alias_map: &HashMap<String, String>,
+        spi_conf_list: &Vec<(String, SpiConfiguration)>,
+    ) -> Result<HashMap<String, SpiConfiguration>> {
+        let mut result_spi_conf_map: HashMap<String, SpiConfiguration> = HashMap::new();
+        for (name, conf) in spi_conf_list {
+            result_spi_conf_map
+                .entry(map_name(spi_alias_map, name))
+                .or_default()
+                .merge(conf)
+                .map_err(|_| {
+                    TransportError::InconsistentConf(TransportInterfaceType::Spi, name.to_string())
+                })?;
+        }
+        Ok(result_spi_conf_map)
     }
 
     pub fn build(self) -> Result<TransportWrapper> {
@@ -189,6 +236,7 @@ impl TransportWrapperBuilder {
                 Self::consolidate_pin_conf_map(&self.pin_alias_map, &pin_conf_map)?,
             );
         }
+        let spi_conf_map = Self::consolidate_spi_conf_map(&self.spi_map, &self.spi_conf_list)?;
         Ok(TransportWrapper {
             transport: self.transport,
             pin_map: self.pin_alias_map,
@@ -196,6 +244,7 @@ impl TransportWrapperBuilder {
             spi_map: self.spi_map,
             i2c_map: self.i2c_map,
             pin_conf_map,
+            spi_conf_map,
             strapping_conf_map,
         })
     }
@@ -267,9 +316,22 @@ impl TransportWrapper {
         Ok(())
     }
 
+    fn apply_spi_configurations(&self, conf_map: &HashMap<String, SpiConfiguration>) -> Result<()> {
+        for (name, conf) in conf_map {
+            let spi = self.spi(name)?;
+            if let Some(bits_per_sec) = conf.bits_per_sec {
+                spi.set_max_speed(bits_per_sec)?;
+            }
+        }
+        Ok(())
+    }
+
     /// Configure all pins as input/output, pullup, etc. as declared in configuration files.
-    pub fn apply_default_pin_configurations(&self) -> Result<()> {
-        self.apply_pin_configurations(&self.pin_conf_map)
+    /// Also configure SPI port mode/speed, and other similar settings.
+    pub fn apply_default_configuration(&self) -> Result<()> {
+        self.apply_pin_configurations(&self.pin_conf_map)?;
+        self.apply_spi_configurations(&self.spi_conf_map)?;
+        Ok(())
     }
 
     /// Configure a specific set of pins as strong/weak pullup/pulldown as declared in

@@ -44,8 +44,8 @@ impl<'a> SessionHandler<'a> {
         };
         let socket_server = JsonSocketServer::new(TransportCommandHandler::new(transport), socket)?;
         // Configure all GPIO pins to default direction and level, according to
-        // configuration files provided.
-        transport.apply_default_pin_configurations()?;
+        // configuration files provided, and configures SPI port mode/speed, etc.
+        transport.apply_default_configuration()?;
         Ok(Self {
             port,
             socket_server,

@@ -55,8 +55,8 @@ pub enum TransportError {
     ProxyConnectError(String, String),
     #[error("Requested capabilities {0:?}, but capabilities {1:?} are supplied")]
     MissingCapabilities(Capability, Capability),
-    #[error("Inconsistent configuration for pin {0}")]
-    InconsistentPinConf(String),
+    #[error("Inconsistent configuration for {0:?} instance {1}")]
+    InconsistentConf(TransportInterfaceType, String),
 }
 impl_serializable_error!(TransportError);
 

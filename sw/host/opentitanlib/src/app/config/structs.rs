@@ -72,6 +72,8 @@ pub struct UartConfiguration {
 pub struct SpiConfiguration {
     /// The user-visible name of the SPI controller port.
     pub name: String,
+    /// Data communication rate in bits/second.
+    pub bits_per_sec: Option<u32>,
     /// Name of the SPI controller as defined by the transport.
     pub alias_of: Option<String>,
 }
