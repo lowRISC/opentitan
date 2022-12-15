@@ -97,26 +97,15 @@ class alert_sender_driver extends alert_esc_base_driver;
           $sformatf("starting to send sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
           req.s_alert_send, req.s_alert_ping_rsp, req.int_err), UVM_HIGH)
 
-      fork
-        begin : isolation_fork
-          fork
-            begin
-              wait_ping();
-              alert_atomic.get(1);
-              if (!req.ping_timeout) begin
-                drive_alert_pins(req);
-              end else begin
-                repeat (cfg.ping_timeout_cycle) wait_sender_clk();
-              end
-              alert_atomic.put(1);
-            end
-            begin
-              wait (under_reset || cfg.en_alert_lpg);
-            end
-          join_any
-          disable fork;
-        end
-      join
+      `DV_SPINWAIT_EXIT(
+          alert_atomic.get(1);
+          if (!cfg.ping_timeout) begin
+            drive_alert_pins(req);
+          end else begin
+            repeat (cfg.ping_timeout_cycle) wait_sender_clk();
+          end
+          alert_atomic.put(1);,
+          wait (under_reset || cfg.en_alert_lpg);)
 
       `uvm_info(`gfn,
           $sformatf("finished sending sender item, alert_send=%0b, ping_rsp=%0b, int_err=%0b",
@@ -216,14 +205,6 @@ class alert_sender_driver extends alert_esc_base_driver;
     cfg.vif.sender_cb.alert_tx_int.alert_p <= 1'b0;
     cfg.vif.sender_cb.alert_tx_int.alert_n <= 1'b0;
   endtask
-
-  virtual task wait_ping();
-    logic ping_p_value = cfg.vif.alert_rx.ping_p;
-    while (cfg.vif.alert_rx.ping_p === ping_p_value) begin
-      ping_p_value = cfg.vif.alert_rx.ping_p;
-      wait_sender_clk();
-    end
-  endtask : wait_ping
 
   virtual task wait_sender_clk();
     @(cfg.vif.sender_cb);
