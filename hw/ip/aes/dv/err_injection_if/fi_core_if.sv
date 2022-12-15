@@ -43,6 +43,10 @@ interface fi_core_if
   endfunction // force_signal
 
   function automatic void force_multi_bit(int target, bit [31:0] value);
+
+    //VCS coverage off
+    // pragma coverage off
+
     $assertoff(0, "tb.dut");
     $asserton(1, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscDataOut");
     $asserton(1, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscIv");
@@ -52,6 +56,10 @@ interface fi_core_if
     if (!uvm_hdl_force(intf_mul_array[target], value)) begin
       `uvm_error("fi_core_if", $sformatf("Was not able to force %s", intf_mul_array[target]))
     end
+
+    //VCS coverage on
+    // pragma coverage on
+
   endfunction
 
   function automatic void release_multi_bit(int target);

@@ -19,12 +19,20 @@ interface force_if
     $assertoff(0, "tb.dut");
     $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscDataOut");
     $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscIv");
+
+    //VCS coverage off
+    // pragma coverage off
+
     if (!uvm_hdl_check_path(path)) begin
       `uvm_fatal("Force_if", $sformatf("PATH NOT EXISTING %m"))
     end
     if (!uvm_hdl_force(path,state)) begin
       `uvm_error("Force_if", $sformatf("Was not able to force %s", state))
     end
+
+    //VCS coverage on
+    // pragma coverage on
+
   endfunction
 
   function static void release_state();

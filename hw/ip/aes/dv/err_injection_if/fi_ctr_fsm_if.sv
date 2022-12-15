@@ -37,6 +37,10 @@ interface fi_ctr_fsm_if
 
 
   function automatic void force_single_bit(int target);
+
+    //VCS coverage off
+    // pragma coverage off
+
     bit  read;
     $assertoff(0, "tb.dut");
     $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscDataOut");
@@ -52,6 +56,10 @@ interface fi_ctr_fsm_if
     if (!uvm_hdl_force(intf_array[target],!read)) begin
       `uvm_error("fi_ctr_fsm_if", $sformatf("Was not able to force %s", intf_array[target]))
     end
+
+    //VCS coverage on
+    // pragma coverage on
+
   endfunction
 
 

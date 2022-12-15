@@ -75,6 +75,10 @@ interface fi_control_if
 
 
   function automatic void force_single_bit(int target);
+
+    //VCS coverage off
+    // pragma coverage off
+
     bit  read;
     bit  value;
     $assertoff(0, "tb.dut");
@@ -103,6 +107,10 @@ interface fi_control_if
     if (!uvm_hdl_force(intf_array[target], value)) begin
       `uvm_error("fi_control_if", $sformatf("Was not able to force %s", intf_array[target]))
     end
+
+    //VCS coverage on
+    // pragma coverage on
+
   endfunction
 
 
@@ -113,6 +121,10 @@ interface fi_control_if
 
 
   function automatic void force_multi_bit(int target, bit [31:0] value);
+
+    //VCS coverage off
+    // pragma coverage off
+
     bit  read;
     $assertoff(0, "tb.dut");
     $asserton(0, "tb.dut.u_aes_core.AesSecCmDataRegLocalEscDataOut");
@@ -127,6 +139,10 @@ interface fi_control_if
     if (!uvm_hdl_force(intf_mul_array[target], value)) begin
       `uvm_error("fi_control_if", $sformatf("Was not able to force %s", intf_mul_array[target]))
     end
+
+    //VCS coverage on
+    // pragma coverage on
+
   endfunction
 
 
