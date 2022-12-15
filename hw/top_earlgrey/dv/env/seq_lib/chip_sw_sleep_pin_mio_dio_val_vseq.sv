@@ -35,7 +35,7 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     localparam string StartEvent = "BEGIN Chosen Retention Types";
     localparam string EndEvent = "END Chosen Retention Types";
 
-    `DV_WAIT(cfg.sw_logger_vif.printed_log == StartEvent)
+    `DV_WAIT(string'(cfg.sw_logger_vif.printed_log) == StartEvent)
     forever begin
       string printed_log;
 

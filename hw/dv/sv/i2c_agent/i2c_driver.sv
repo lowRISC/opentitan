@@ -70,7 +70,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     // During pause period, let drive_scl control scl
     `DV_WAIT(scl_pause == 1'b0,, scl_spinwait_timeout_ns, "drive_host_item")
     `uvm_info(`gfn, $sformatf("drv: %s", req.drv_type.name), UVM_MEDIUM)
-    unique case (req.drv_type)
+    case (req.drv_type)
       HostStart: begin
         cfg.vif.host_start(cfg.timing_cfg);
         cfg.host_scl_start = 1;
@@ -110,7 +110,7 @@ class i2c_driver extends dv_base_driver #(i2c_item, i2c_agent_cfg);
     bit [7:0] rd_data_cnt = 8'd0;
     bit [7:0] rdata;
 
-    unique case (req.drv_type)
+    case (req.drv_type)
       DevAck: begin
         cfg.timing_cfg.tStretchHostClock = gen_num_stretch_host_clks(cfg.timing_cfg);
          `uvm_info(`gfn, $sformatf("sending an ack"), UVM_MEDIUM)

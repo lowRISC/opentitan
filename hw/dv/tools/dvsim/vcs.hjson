@@ -28,6 +28,8 @@
                "+warn=noUII-L",
                // Disable unnecessary LCA warning.
                "+warn=noLCA_FEATURES_ENABLED",
+               // Disable warnings about bind directive not being applied.
+               "+warn=noBNA",
                // Below option required for $error/$fatal system calls
                "-assert svaext",
                // Force unique and priority to evaluate compliance checking only on the stable

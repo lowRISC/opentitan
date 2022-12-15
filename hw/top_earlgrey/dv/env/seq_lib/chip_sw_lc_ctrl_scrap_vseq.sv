@@ -2,15 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_base_vseq;
-  import lc_ctrl_state_pkg::dec_lc_state_e;
-  import lc_ctrl_state_pkg::lc_state_e;
-  import lc_ctrl_dv_utils_pkg::encode_lc_state;
-
   `uvm_object_utils(chip_sw_lc_ctrl_scrap_vseq)
-
   `uvm_object_new
 
-  rand dec_lc_state_e src_state;
+  rand lc_ctrl_state_pkg::dec_lc_state_e src_state;
   rand bit perform_transition_via_sw;
 
   constraint valid_src_state_c {
@@ -61,7 +56,8 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_base_vseq;
 
   virtual function void backdoor_override_otp();
     // Override the LC partition to TestLocked1 state.
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(encode_lc_state(src_state));
+    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(
+        lc_ctrl_dv_utils_pkg::encode_lc_state(src_state));
   endfunction : backdoor_override_otp
 
   virtual task dut_init(string reset_kind = "HARD");

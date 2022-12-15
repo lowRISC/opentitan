@@ -1223,12 +1223,12 @@ module otbn
       !rst_ni || u_otbn_core.urnd_reseed_err || u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
     // After execution, it's expected to see a change resulting with a nonzero register value
     `ASSERT(SecWipeChangedBaseRegs_A,
-      $rose(busy_secure_wipe) |-> (##[0:$]
+      $rose(busy_secure_wipe) |-> ((##[0:$]
         u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q !=
           EccZeroWord &&
         $changed(
-          u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q)
-        within $rose(busy_secure_wipe) ##[0:$] $fell(busy_secure_wipe)),
+          u_otbn_core.u_otbn_rf_base.gen_rf_base_ff.u_otbn_rf_base_inner.g_rf_flops[i].rf_reg_q))
+        within ($rose(busy_secure_wipe) ##[0:$] $fell(busy_secure_wipe))),
       clk_i,
       !rst_ni || u_otbn_core.urnd_reseed_err || u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
   end
@@ -1252,12 +1252,12 @@ module otbn
 
     // After execution, it's expected to see a change resulting with a nonzero register value
     `ASSERT(SecWipeChangedWideRegs_A,
-            $rose(busy_secure_wipe) |-> (##[0:$]
+            $rose(busy_secure_wipe) |-> ((##[0:$]
               u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i] !=
                 EccWideZeroWord &&
               $changed(
-                u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i])
-              within $rose(busy_secure_wipe) ##[0:$] $fell(busy_secure_wipe)),
+                u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.rf[i]))
+              within ($rose(busy_secure_wipe) ##[0:$] $fell(busy_secure_wipe))),
           clk_i, !rst_ni || u_otbn_core.urnd_reseed_err ||
             u_otbn_core.u_otbn_start_stop_control.mubi_err_d)
   end
