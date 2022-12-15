@@ -109,6 +109,7 @@ class cip_base_env #(type CFG_T               = cip_base_env_cfg,
     if (!cfg.en_cov) begin
       cfg.en_tl_err_cov = 0;
       cfg.en_tl_intg_err_cov = 0;
+      sec_cm_pkg::en_sec_cm_cov = 0;
     end
   endfunction
 
