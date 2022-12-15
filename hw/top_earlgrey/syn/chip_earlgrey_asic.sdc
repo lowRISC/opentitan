@@ -91,19 +91,16 @@ create_clock -name IO_CLK -period ${IO_TCK_PERIOD} [get_pins ${IO_CLK_PIN}]
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 
 # This requires knowledge of actual port name
-set CLK_SRC_NAME clk_i
 set CLK_DST_NAME clk_o
 
 # generated clocks (div2/div4)
 set CLK_PATH top_earlgrey/u_clkmgr_aon/u_no_scan_io_div2_div
-create_generated_clock -name IO_DIV2_CLK -divide_by 2 \
-    -source [get_pins ${CLK_PATH}/${CLK_SRC_NAME}] \
-            [get_pins ${CLK_PATH}/${CLK_DST_NAME}]
+create_generated_clock -name IO_DIV2_CLK  \
+    -source [get_pins ${IO_CLK_PIN}] -divide_by 2 [get_pins ${CLK_PATH}/${CLK_DST_NAME}]
 
 set CLK_PATH top_earlgrey/u_clkmgr_aon/u_no_scan_io_div4_div
-create_generated_clock -name IO_DIV4_CLK -divide_by 4 \
-    -source [get_pins ${CLK_PATH}/${CLK_SRC_NAME}] \
-            [get_pins ${CLK_PATH}/${CLK_DST_NAME}]
+create_generated_clock -name IO_DIV4_CLK  \
+    -source [get_pins ${IO_CLK_PIN}] -divide_by 4 [get_pins ${CLK_PATH}/${CLK_DST_NAME}]
 
 # TODO: these are dummy constraints and likely incorrect, need to properly constrain min/max
 # note that due to the muxing, additional timing views with set_case_analysis may be needed.
