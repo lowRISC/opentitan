@@ -528,6 +528,8 @@ We choose **Pessimistic Mode** as we want to avoid using X value in the conditio
 Xprop is enabled by default when running simulations for all of our DUTs due to the acceptable level of overhead it adds in terms of wall-clock time (less than 10%).
 
 It's mandatory to enable Xprop when running regression for coverage closure.
+Please refer to the simulator documentation to identify and apply the necessary build-time and / or run-time options to enable Xprop.
+In OpenTitan, Xprop is enabled by default for VCS and Xcelium simulators.
 To test Xprop more effectively, the address / data / control signals are required to be driven to Xs when invalid (valid bit is not set).
 For example, when a_valid is 0 in the TLUL interface, we drive data, address and control signals to unknown values.
 ```systemverilog
@@ -543,6 +545,11 @@ For example, when a_valid is 0 in the TLUL interface, we drive data, address and
     vif.host_cb.h2d.a_valid   <= 1'b0;
   endfunction : invalidate_a_channel
 ```
+
+The simulator may report that some portions of RTL / DV could not be instrumented for X-propagation due to the way they were written.
+This is typically captured in a log file during the simulator's build step.
+It is mandatory to analyze these pieces of logic to either refactor them to make them more amenable to X-prop instrumentation, or waive them if it is not possible to do so.
+This is captured as the V3 checklist item `X_PROP_ANALYSIS_COMPLETED`.
 
 ## FPV
 

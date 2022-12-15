@@ -571,7 +571,8 @@ All additional design deltas have been captured adequately and appropriately in 
 
 ### X_PROP_ANALYSIS_COMPLETED
 
-X Propagation analysis has been completed.
+[X-propagation](https://docs.opentitan.org/doc/ug/dv_methodology/#x-propagation-xprop) is enabled in DV simulations.
+There are no pieces of logic that are reported unsuitable for X-propagation instrumentation by the simulator during the build step.
 
 ### FPV_ASSERTIONS_PROVEN_AT_V3
 
