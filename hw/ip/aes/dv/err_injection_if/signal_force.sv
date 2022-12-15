@@ -29,6 +29,10 @@ module signal_force
   // example, if IfName is "foo" and we're bound into a module that is instantiated with indices 0,
   // 1 and 2 and then this should return "foo_0", "foo_1" and "foo_2", respectively.
   function automatic string pick_if_name();
+
+    //VCS coverage off
+    // pragma coverage off
+
     // find the interface index
     string str = $sformatf("%m");
     string suffix = "";
@@ -60,5 +64,9 @@ module signal_force
     end
 
     return $sformatf("%s_%s", IfName, suffix);
+
+    //VCS coverage on
+    // pragma coverage on
+
   endfunction
 endmodule
