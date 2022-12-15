@@ -984,6 +984,7 @@ module chip_earlgrey_cw310 #(
     .SecAesStartTriggerDelay(40),
     .SecAesAllowForcingMasks(1'b1),
     .KmacEnMasking(0),
+    .KmacSwKeyMasked(1),
     .SecKmacCmdDelay(40),
     .SecKmacIdleAcceptSwMsg(1'b1),
     .KeymgrKmacEnMasking(0),
