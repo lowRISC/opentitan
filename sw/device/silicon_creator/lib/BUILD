@@ -273,27 +273,6 @@ filegroup(
     ],
 )
 
-cc_library(
-    name = "otbn_util",
-    srcs = ["otbn_util.c"],
-    hdrs = ["otbn_util.h"],
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/drivers:otbn",
-    ],
-)
-
-cc_test(
-    name = "otbn_util_unittest",
-    srcs = ["otbn_util_unittest.cc"],
-    deps = [
-        ":otbn_util",
-        "//hw/ip/otbn/data:otbn_regs",
-        "@googletest//:gtest_main",
-    ],
-)
-
 dual_cc_library(
     name = "shutdown",
     srcs = dual_inputs(
