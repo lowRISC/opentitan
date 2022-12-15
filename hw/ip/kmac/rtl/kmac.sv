@@ -14,6 +14,13 @@ module kmac
   // If it is enabled, the result digest will be two set of 1600bit.
   parameter bit EnMasking = 1,
 
+  // In case EnMasking == 0, this defines whether SW can provide a masked key or whether Share 1 of
+  // the SW key is simply ignored. In case EnMasking == 1, this parameter has no meaning, always
+  // both shares of the key provided by SW are used.
+  // This is useful to allow both for area-optimized unmasked designs as well as unmasked designs
+  // having a SW interface fully compatible with the masked design.
+  parameter bit SwKeyMasked = 0,
+
   // Command delay, useful for SCA measurements only. A value of e.g. 40 allows the processor to go
   // into sleep before KMAC starts operation. If a value > 0 is chosen, the processor can provide
   // two commands subsquently and then go to sleep. The second command is buffered internally and
@@ -75,6 +82,7 @@ module kmac
   // Parameters //
   ////////////////
   localparam int Share = (EnMasking) ? 2 : 1 ;
+  localparam int SwKeyShare = (EnMasking || SwKeyMasked) ? 2 : 1;
 
   /////////////////
   // Definitions //
@@ -245,7 +253,7 @@ module kmac
 
 
   // Secret Key signals
-  logic [MaxKeyLen-1:0] sw_key_data_reg [2];
+  logic [MaxKeyLen-1:0] sw_key_data_reg [SwKeyShare];
   logic [MaxKeyLen-1:0] sw_key_data [Share];
   key_len_e             sw_key_len;
   logic [MaxKeyLen-1:0] key_data [Share];
@@ -469,22 +477,38 @@ module kmac
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       sw_key_data_reg[0] <= '0;
-      sw_key_data_reg[1] <= '0;
     end else if (engine_stable) begin
       for (int j = 0 ; j < MaxKeyLen/32 ; j++) begin
         if (reg2hw.key_share0[j].qe) begin
           sw_key_data_reg[0][32*j+:32] <= reg2hw.key_share0[j].q;
         end
-        if (reg2hw.key_share1[j].qe) begin
-          sw_key_data_reg[1][32*j+:32] <= reg2hw.key_share1[j].q;
-        end
       end // for j
     end // else if engine_stable
   end // always_ff
 
-  if (EnMasking) begin : gen_key_masked
+  if (EnMasking || SwKeyMasked) begin : gen_key_share1_reg
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        sw_key_data_reg[1] <= '0;
+      end else if (engine_stable) begin
+        for (int j = 0 ; j < MaxKeyLen/32 ; j++) begin
+          if (reg2hw.key_share1[j].qe) begin
+            sw_key_data_reg[1][32*j+:32] <= reg2hw.key_share1[j].q;
+          end
+        end // for j
+      end // else if engine_stable
+    end // always_ff
+  end else begin : gen_no_key_share1_reg
+    logic unused_key_share1;
+    assign unused_key_share1 = ^reg2hw.key_share1;
+  end
+
+  if (EnMasking || !SwKeyMasked) begin : gen_key_forward
+    // Forward all available key shares as is.
     assign sw_key_data = sw_key_data_reg;
-  end else begin : gen_key_unmasked
+  end else begin : gen_key_unmask
+    // Masking is disabled but the SW still provides the key in two shares.
+    // Unmask the key for processing.
     assign sw_key_data[0] = sw_key_data_reg[0] ^ sw_key_data_reg[1];
   end
 

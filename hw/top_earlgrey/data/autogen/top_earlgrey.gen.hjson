@@ -5638,6 +5638,20 @@
           name_top: KmacEnMasking
         }
         {
+          name: SwKeyMasked
+          desc:
+            '''
+            Disable(0) or enable(1) software key masking in case masking is disabled (EnMasking == 0).
+            If masking is enabled, this parameter has no effect.
+            Mainly useful for software interface compatibility between the masked and unmasked design.
+            Mostly relevant for SCA measurements.
+            '''
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: KmacSwKeyMasked
+        }
+        {
           name: SecCmdDelay
           desc:
             '''

@@ -1306,9 +1306,11 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     // Actual hash_mode based on interface or SW register
     sha3_pkg::sha3_mode_e actual_hash_mode = in_kmac_app ? sha3_pkg::CShake : hash_mode;
 
+    bit use_keymgr_keys = sideload_en || (in_kmac_app && app_mode == AppKeymgr);
+
     if (cfg.en_scb == 0) return;
 
-    if (sideload_en || (in_kmac_app && app_mode == AppKeymgr)) key_len = key_len_e'(Key256);
+    if (use_keymgr_keys) key_len = key_len_e'(Key256);
     key_word_len = get_key_size_words(key_len);
     key_byte_len = get_key_size_bytes(key_len);
 
@@ -1438,10 +1440,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(
 
         if (kmac_en) begin
           // Calculate the unmasked key
-          exp_keys = (sideload_en || (in_kmac_app && app_mode == AppKeymgr)) ?
-                      get_keymgr_keys : keys;
+          exp_keys = use_keymgr_keys ? get_keymgr_keys : keys;
           for (int i = 0; i < key_word_len; i++) begin
-            unmasked_key.push_back(exp_keys[0][i] ^ exp_keys[1][i]);
+            if (cfg.enable_masking || cfg.sw_key_masked || use_keymgr_keys) begin
+              unmasked_key.push_back(exp_keys[0][i] ^ exp_keys[1][i]);
+            end else begin
+              unmasked_key.push_back(exp_keys[0][i]);
+            end
             `uvm_info(`gfn, $sformatf("unmasked_key[%0d] = 0x%0x", i, unmasked_key[i]), UVM_HIGH)
           end
 
