@@ -205,6 +205,16 @@ Incoming message bitstream is not sensitive to the leakage.
 If the `EnMasking` parameter is set and {{<regref "CFG_SHADOWED.msg_mask" >}} is enabled, the message is masked upon loading into the Keccak core using the internal entropy generator.
 The secret key, however, is stored as masked form always.
 
+If the `EnMasking` parameter is not set, the masking is disabled.
+Then, the software has to provide the key in unmasked form by default.
+Any write operations to {{<regref "KEY_SHARE1_0" >}} - {{<regref "KEY_SHARE1_15" >}} are ignored.
+
+If the `EnMasking` parameter is not set and the `SwKeyMasked` parameter is set, software has to provide the key in masked form.
+Internally, the design then unmasks the key by XORing the two key shares together when loading the key into the engine.
+This is useful when software interface compatibility between the masked and unmasked configuration is desirable.
+
+If the `EnMasking` parameter is set, the `SwKeyMasked` parameter has no effect: Software always provides the key in two shares.
+
 ### Keccak State Access
 
 After the Keccak round completes the KMAC/SHA3 operation, the contents of the Keccak state contain the digest value.

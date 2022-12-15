@@ -63,13 +63,18 @@
   build_modes: [
     {
       name: enable_mask_mode
-      build_opts: ["+define+EN_MASKING=1"]
-      run_opts: ["+enable_masking=1"]
+      build_opts: ["+define+EN_MASKING=1", "+define+SW_KEY_MASKED=0"]
+      run_opts: ["+enable_masking=1", "+sw_key_masked=0"]
     }
     {
       name: disable_mask_mode
-      build_opts: ["+define+EN_MASKING=0"]
-      run_opts: ["+enable_masking=0"]
+      build_opts: ["+define+EN_MASKING=0", "+define+SW_KEY_MASKED=0"]
+      run_opts: ["+enable_masking=0", "+sw_key_masked=0"]
+    }
+    {
+      name: disable_mask_mode_with_masked_sw_keys
+      build_opts: ["+define+EN_MASKING=0", "+define+SW_KEY_MASKED=1"]
+      run_opts: ["+enable_masking=0", "+sw_key_masked=1"]
     }
   ]
 

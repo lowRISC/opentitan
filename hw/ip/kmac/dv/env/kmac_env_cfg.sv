@@ -13,6 +13,9 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
   // Masked KMAC is the default configuration
   bit enable_masking = 1;
 
+  // For the unmasked KMAC, the software key is not masked by default.
+  bit sw_key_masked = 0;
+
   // Disable scb cycle accurate check ("status" and "intr_state" registers).
   bit do_cycle_accurate_check = 1;
 
@@ -50,6 +53,7 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
     keymgr_sideload_agent_cfg = key_sideload_agent_cfg#(keymgr_pkg::hw_key_req_t)::type_id
                                 ::create("keymgr_sideload_agent_cfg");
     void'($value$plusargs("enable_masking=%0d", enable_masking));
+    void'($value$plusargs("sw_key_masked=%0d", sw_key_masked));
     void'($value$plusargs("test_vectors_sha3_variant=%0d", sha3_variant));
     void'($value$plusargs("test_vectors_shake_variant=%0d", shake_variant));
 
