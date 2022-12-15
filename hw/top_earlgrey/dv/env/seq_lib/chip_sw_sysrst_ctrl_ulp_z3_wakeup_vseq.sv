@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
-  import dv_utils_pkg::*;
   `uvm_object_utils(chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq)
   `uvm_object_new
 
@@ -65,7 +64,7 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     sw_symbol_backdoor_overwrite("kTestPhase", test_phase);
   endfunction
 
-  virtual function check_wakeup_pin();
+  virtual function void check_wakeup_pin();
     logic wakeup_result;
     // Read PAD_Z3WAKEUP_PATH <-> IOB7
     wakeup_result = cfg.chip_vif.pinmux_wkup_if.sample_pin(0);

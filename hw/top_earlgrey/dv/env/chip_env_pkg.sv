@@ -41,7 +41,6 @@ package chip_env_pkg;
   import sw_test_status_pkg::*;
   import tl_agent_pkg::*;
   import uart_agent_pkg::*;
-  import spi_agent_pkg::*;
   import xbar_env_pkg::*;
   import top_earlgrey_pkg::*;
   import top_earlgrey_rnd_cnst_pkg::*;

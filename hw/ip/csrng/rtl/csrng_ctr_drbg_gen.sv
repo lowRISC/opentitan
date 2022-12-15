@@ -598,5 +598,6 @@ module csrng_ctr_drbg_gen import csrng_pkg::*; #(
   // state is entered it will not exit it unless a reset signal is received.
   `ASSERT(CsrngDrbgGenErrorStStable_A, state_q == ReqError |=> $stable(state_q))
   // If in error state, the error output must be high.
-  `ASSERT(CsrngDrbgGenErrorOutput_A,   state_q == Error    |-> ctr_drbg_gen_sm_err_o)
+  `ASSERT(CsrngDrbgGenErrorOutput_A,
+          !(state_q inside {ReqIdle, ReqSend, ESHalt}) |-> ctr_drbg_gen_sm_err_o)
 endmodule
