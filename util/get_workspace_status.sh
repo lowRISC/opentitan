@@ -20,6 +20,8 @@ then
 fi
 echo "BUILD_SCM_REVISION ${git_rev}"
 
+echo "${git_rev}" > .scm_revision.txt
+
 git_version=$(git describe --always)
 if [[ $? != 0 ]];
 then

@@ -76,6 +76,7 @@ rust-project.json
 
 # Bazel-related cache and output directories
 bazel-*
+.scm_revision.txt
 
 # Site-specific bazel configuration
 .bazelrc-site

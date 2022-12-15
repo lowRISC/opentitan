@@ -73,6 +73,12 @@ bitstreams_repo = repository_rule(
             default = Label("//rules/scripts:bitstreams_workspace.py"),
             allow_files = True,
         ),
+        # Depend on the current SCM revision so targets in @bitstreams will
+        # never point to artifacts from the wrong commit. This came up in
+        # <https://github.com/lowRISC/opentitan/issues/16832>.
+        "_scm_revision": attr.label(
+            default = Label("//:.scm_revision.txt")
+        )
     },
     environ = ["BAZEL_BITSTREAMS_CACHE", "BITSTREAM"],
     local = True,
