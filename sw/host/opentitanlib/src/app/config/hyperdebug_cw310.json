@@ -216,10 +216,12 @@
   "spi": [
     {
       "name": "BOOTSTRAP",
+      "bits_per_sec": 8000000,
       "alias_of": "QSPI"
     },
     {
       "name": "TPM",
+      "bits_per_sec": 250000,
       "alias_of": "SPI2"
     }
   ],
