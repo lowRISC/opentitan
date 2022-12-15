@@ -110,10 +110,8 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
 
   virtual task trigger_non_blocking_seqs();
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(esc_int_err)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(alert_ping_timeout)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(esc_ping_timeout)
     run_esc_rsp_seq_nonblocking(esc_int_err, esc_ping_timeout);
-    run_alert_ping_rsp_seq_nonblocking(alert_ping_timeout);
   endtask
 
   virtual task run_smoke_seq();
@@ -126,6 +124,9 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
 
     for (int i = 1; i <= num_trans; i++) begin
       `DV_CHECK_RANDOMIZE_FATAL(this)
+
+      // Assign ping timeout value to each alert agent.
+      foreach (cfg.alert_host_cfg[i]) cfg.alert_host_cfg[i].ping_timeout = alert_ping_timeout[i];
 
       `uvm_info(`gfn, $sformatf(
           "start seq %0d/%0d: intr_en=0x%0h, alert=0x%0h, alert_en=0x%0h, loc_alert_en=0x%0h",

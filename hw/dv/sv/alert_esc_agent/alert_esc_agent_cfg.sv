@@ -23,6 +23,13 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
 
   bit bypass_esc_ready_to_end_check = 0;
 
+  // When this flag is set to 1, and agent in alert host mode, the sequence will automatically
+  // response to alert ping requests.
+  bit start_default_rsp_seq = 1;
+
+  // Control if ping response will timeout or not.
+  bit ping_timeout = 0;
+
   // dut clk frequency, used to generate alert async_clk frequency
   int clk_freq_mhz;
 

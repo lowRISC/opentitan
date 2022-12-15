@@ -34,6 +34,8 @@ class alert_esc_agent extends dv_base_agent#(
       if (cfg.is_alert) begin
         if (cfg.if_mode == Host) begin
           alert_esc_base_driver::type_id::set_type_override(alert_sender_driver::get_type());
+          // use for reactive device
+          cfg.has_req_fifo = 1;
         end else begin
           alert_esc_base_driver::type_id::set_type_override(alert_receiver_driver::get_type());
         end
@@ -47,6 +49,7 @@ class alert_esc_agent extends dv_base_agent#(
     end
 
     super.build_phase(phase);
+
     void'($value$plusargs("bypass_alert_ready_to_end_check=%0b",
           cfg.bypass_alert_ready_to_end_check));
 
@@ -79,4 +82,24 @@ class alert_esc_agent extends dv_base_agent#(
     end
   endfunction
 
+  // Create automatic response (from monitor) to ping and alert requests.
+  function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    if (cfg.is_alert && cfg.has_req_fifo) begin
+      monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
+    end
+  endfunction
+
+  virtual task run_phase(uvm_phase phase);
+    if (cfg.is_alert &&
+        cfg.if_mode == dv_utils_pkg::Host &&
+        cfg.start_default_rsp_seq &&
+        cfg.is_active) begin
+      alert_sender_ping_rsp_seq m_seq =
+          alert_sender_ping_rsp_seq::type_id::create("m_seq", this);
+      uvm_config_db#(uvm_object_wrapper)::set(null, {sequencer.get_full_name(), ".run_phase"},
+                                              "default_sequence", m_seq.get_type());
+      sequencer.start_phase_sequence(phase);
+    end
+  endtask
 endclass : alert_esc_agent

@@ -23,6 +23,7 @@ class alert_monitor extends alert_esc_base_monitor;
       reset_thread();
       int_fail_thread();
       alert_init_thread();
+      wait_ping_thread();
     join_none
   endtask : run_phase
 
@@ -221,6 +222,23 @@ class alert_monitor extends alert_esc_base_monitor;
       prev_err = is_sig_int_err();
     end
   endtask : int_fail_thread
+
+  virtual task wait_ping_thread();
+    alert_esc_seq_item req = alert_esc_seq_item::type_id::create("req");
+    forever begin
+      logic              ping_p_value;
+      wait (!under_reset && !cfg.en_alert_lpg);
+
+      `DV_SPINWAIT_EXIT(
+          ping_p_value = cfg.vif.monitor_cb.alert_rx_final.ping_p;
+          while (cfg.vif.monitor_cb.alert_rx_final.ping_p === ping_p_value) begin
+            ping_p_value = cfg.vif.monitor_cb.alert_rx_final.ping_p;
+            @(cfg.vif.monitor_cb);
+          end
+          req_analysis_port.write(req);,
+          wait (under_reset || cfg.en_alert_lpg);)
+    end
+  endtask
 
   virtual task wait_alert();
     while (cfg.vif.monitor_cb.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb);

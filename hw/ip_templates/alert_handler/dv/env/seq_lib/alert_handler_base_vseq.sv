@@ -342,22 +342,6 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  // This task will response to all alert_ping
-  virtual task run_alert_ping_rsp_seq_nonblocking(bit [NUM_ALERTS-1:0] alert_int_err = 0);
-    foreach (cfg.alert_host_cfg[i]) begin
-      automatic int index = i;
-      fork
-        forever begin
-          bit alert_timeout = alert_int_err[index] ? $urandom_range(0, 1) : 0;
-          alert_sender_ping_rsp_seq ping_seq =
-              alert_sender_ping_rsp_seq::type_id::create("ping_seq");
-          `DV_CHECK_RANDOMIZE_WITH_FATAL(ping_seq, int_err == 0; ping_timeout == alert_timeout;)
-          ping_seq.start(p_sequencer.alert_host_seqr_h[index]);
-        end
-      join_none
-    end
-  endtask : run_alert_ping_rsp_seq_nonblocking
-
 endclass : alert_handler_base_vseq
 
 `undef RAND_AND_WR_CLASS_PHASES_CYCLE

@@ -68,7 +68,6 @@ package alert_esc_agent_pkg;
   `include "alert_esc_base_monitor.sv"
   `include "alert_monitor.sv"
   `include "esc_monitor.sv"
-  `include "alert_esc_agent.sv"
 
   // Sequences
   `include "seq_lib/alert_receiver_base_seq.sv"
@@ -80,4 +79,5 @@ package alert_esc_agent_pkg;
   `include "seq_lib/esc_receiver_base_seq.sv"
   `include "seq_lib/esc_receiver_esc_rsp_seq.sv"
 
+  `include "alert_esc_agent.sv"
 endpackage

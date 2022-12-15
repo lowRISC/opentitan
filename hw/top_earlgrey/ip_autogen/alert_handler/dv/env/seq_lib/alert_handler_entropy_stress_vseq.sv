@@ -53,7 +53,6 @@ class alert_handler_entropy_stress_vseq extends alert_handler_smoke_vseq;
     `uvm_info(`gfn, "Test started", UVM_LOW)
 
     run_esc_rsp_seq_nonblocking();
-    run_alert_ping_rsp_seq_nonblocking();
 
     alert_handler_init(.intr_en('1),                       // Enable all interrupts
                        .alert_en('1),                      // Enable all alerts
