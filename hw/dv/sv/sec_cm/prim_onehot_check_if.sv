@@ -38,11 +38,33 @@ interface prim_onehot_check_if #(
   string addr_signal_forced = $sformatf("%s.addr_i", path);
 
   class prim_onehot_check_if_proxy extends sec_cm_pkg::sec_cm_base_if_proxy;
-    `uvm_object_new
-
     logic[OneHotWidth-1:0] oh_orig_value;
     logic[AddrWidth-1:0]   addr_orig_value;
     logic                  en_orig_value;
+
+    covergroup onehot_fault_cg (string name) with function sample(
+          onehot_fault_type_e onehot_fault_type);
+      option.name = name;
+      option.per_instance = 1;
+
+      cp_onehot_fault: coverpoint onehot_fault_type {
+        option.weight = AddrWidth > 1; // set to 0 to disable it if it's not supported
+        bins hit = {OnehotFault};
+      }
+      cp_onehot_enable_fault: coverpoint onehot_fault_type {
+        option.weight = EnableCheck; // set to 0 to disable it if it's not supported
+        bins hit = {OnehotEnableFault};
+      }
+      cp_onehot_addr_fault: coverpoint onehot_fault_type {
+        option.weight = AddrCheck; // set to 0 to disable it if it's not supported
+        bins hit = {OnehotAddrFault};
+      }
+    endgroup
+
+    function new (string name = "");
+      super.new(name);
+      if (sec_cm_pkg::en_sec_cm_cov) onehot_fault_cg = new(msg_id);
+    endfunction : new
 
     virtual task inject_fault();
       onehot_fault_type_e  onehot_fault_type;
@@ -61,7 +83,7 @@ interface prim_onehot_check_if #(
                                          !EnableCheck -> onehot_fault_type != OnehotEnableFault;
                                          )
 
-      // TODO, add covergroup for onehot_fault_type
+      if (sec_cm_pkg::en_sec_cm_cov) onehot_fault_cg.sample(onehot_fault_type);
       case (onehot_fault_type)
         OnehotFault: begin
           success = std::randomize(en_force_value, oh_force_value, addr_force_value) with {

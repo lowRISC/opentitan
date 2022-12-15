@@ -26,6 +26,9 @@ package sec_cm_pkg;
   // store all the sec_cm proxy classes
   sec_cm_base_if_proxy sec_cm_if_proxy_q[$];
 
+  // coverage enable knob
+  bit en_sec_cm_cov = 1;
+
   // Finds and returns a sec_cm interface proxy class instance from the sec_cm_if_proxy_q queue.
   //
   // This function matches the first instance whose `path` matches the input argument `path`.
