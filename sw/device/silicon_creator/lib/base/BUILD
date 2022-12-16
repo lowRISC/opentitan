@@ -31,7 +31,6 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//sw/device/lib/base:mmio",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
