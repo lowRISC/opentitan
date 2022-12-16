@@ -96,7 +96,6 @@ virtual class mem_bkdr_scb #(int AddrWidth = bus_params_pkg::BUS_AW,
     mem_mask_t raw_mask;
     mem_data_t raw_bit_mask, exp_bit_mask;
 
-    // TODO, sample is_raw in coverage
     is_raw = check_raw_hazard(addr, raw_data, raw_mask);
     if (is_raw) begin
       raw_bit_mask = expand_bit_mask(raw_mask);

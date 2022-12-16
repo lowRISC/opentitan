@@ -29,8 +29,6 @@ class mem_bkdr_util extends uvm_object;
   `define HAS_ECC (!(err_detection_scheme inside {ErrDetectionNone, ParityEven, ParityOdd}))
   `define HAS_PARITY (err_detection_scheme inside {ParityEven, ParityOdd})
 
-  // TODO: Indicates whether the memory implements scrambling.
-
   // Other memory specifics derived from the settings above.
   protected uint32_t data_width;  // ignoring ECC bits
   protected uint32_t byte_width;
@@ -210,8 +208,6 @@ class mem_bkdr_util extends uvm_object;
   // Returns the entire width of the memory at the given address, including the ECC bits. The data
   // returned is 'raw' i.e. it includes the parity bits. It also does not de-scramble the data if
   // encryption is enabled.
-  //
-  // TODO: Factor in encryption into this function itself?
   virtual function uvm_hdl_data_t read(bit [bus_params_pkg::BUS_AW-1:0] addr);
     bit res;
     uint32_t index;
