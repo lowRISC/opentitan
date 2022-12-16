@@ -55,20 +55,15 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
       uvm_object csr;
       uvm_reg_data_t opcode;
       case (spi_device_pkg::cmd_info_index_e'(i))
-        spi_device_pkg::CmdInfoEn4B:
-            csr = ral.spi_device.cmd_info_en4b.opcode;
-        spi_device_pkg::CmdInfoEx4B:
-            csr = ral.spi_device.cmd_info_ex4b.opcode;
-        spi_device_pkg::CmdInfoWrEn:
-            csr = ral.spi_device.cmd_info_wren.opcode;
-        spi_device_pkg::CmdInfoWrDi:
-            csr = ral.spi_device.cmd_info_wrdi.opcode;
-        default:
-            csr = ral.spi_device.cmd_info[i].opcode;
+        spi_device_pkg::CmdInfoEn4B:  csr = ral.spi_device.cmd_info_en4b.opcode;
+        spi_device_pkg::CmdInfoEx4B:  csr = ral.spi_device.cmd_info_ex4b.opcode;
+        spi_device_pkg::CmdInfoWrEn:  csr = ral.spi_device.cmd_info_wren.opcode;
+        spi_device_pkg::CmdInfoWrDi:  csr = ral.spi_device.cmd_info_wrdi.opcode;
+        default:                      csr = ral.spi_device.cmd_info[i].opcode;
       endcase
       if (passthrough_filters[i]) begin
         csr_rd(.ptr(csr), .value(opcode), .backdoor(1));
-        filter_map[opcode] = 1'b1;
+        filter_map[8'(opcode)] = 1'b1;
       end
     end
   endtask
@@ -178,4 +173,5 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
     end
     override_test_status_and_finish(1'b1);
   endtask
-endclass : chip_sw_spi_passthrough_vseq;
+
+endclass : chip_sw_spi_passthrough_vseq

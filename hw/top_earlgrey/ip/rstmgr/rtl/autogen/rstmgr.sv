@@ -213,7 +213,7 @@ module rstmgr
 
   // All of these are fatal alerts
   assign alerts[0] = reg2hw.err_code.reg_intg_err.q |
-                     |reg2hw.err_code.fsm_err.q;
+                     (|reg2hw.err_code.fsm_err.q);
 
   assign alerts[1] = reg2hw.err_code.reset_consistency_err.q;
 

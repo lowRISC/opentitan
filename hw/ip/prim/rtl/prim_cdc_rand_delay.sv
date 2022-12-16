@@ -37,7 +37,7 @@ module prim_cdc_rand_delay #(
       if (DataWidth <= 32) begin
         data = $urandom();
       end else begin
-        if (!std::randomize(data)) $fatal("%t: [%m] Failed to randomize data", $time);
+        if (!std::randomize(data)) $fatal(1, "%t: [%m] Failed to randomize data", $time);
       end
       return data;
     endfunction
