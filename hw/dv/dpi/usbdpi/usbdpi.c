@@ -610,7 +610,7 @@ void pollRX(struct usbdpi_ctx *ctx, int sendHi, int nakData) {
       if (ctx->tick_bits >= ctx->wait) {
         printf("[usbdpi] Timed out waiting for IN response\n");
         ctx->hostSt = HS_SENDHI;
-      } else if (ctx->bus_state = kUsbBulkInData) {
+      } else if (ctx->bus_state == kUsbBulkInData) {
         if (ctx->lastrxpid != USB_PID_NAK) {
           // device sent data so ACK it
           // TODO check DATA0 vs DATA1
@@ -756,8 +756,8 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
   int dat;
 
   if (ctx->tick == 0) {
-    int i;
 #ifdef NEED_SLEEP
+    int i;
     for (i = 7; i > 0; i--) {
       printf("Sleep %d...\n", i);
       sleep(1);
@@ -959,6 +959,15 @@ char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p) {
     assert(written == n);
   }
   return ctx->driving;
+}
+
+// Export some internal diagnostic state for visibility in waveforms
+void usbdpi_diags(void *ctx_void, svBitVecVal *diags) {
+  struct usbdpi_ctx *ctx = (struct usbdpi_ctx *)ctx_void;
+
+  diags[1] = (ctx->bus_state << 20) | (ctx->tick_bits >> 12);
+  diags[0] = (ctx->tick_bits << 20) | ((ctx->frame & 0x7ffU) << 9) |
+             ((ctx->hostSt & 0x1fU) << 4) | (ctx->state & 0xfU);
 }
 
 void usbdpi_close(void *ctx_void) {

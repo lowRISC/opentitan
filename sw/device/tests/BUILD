@@ -1897,6 +1897,9 @@ opentitan_functest(
     name = "usbdev_test",
     srcs = ["usbdev_test.c"],
     targets = ["verilator"],
+    verilator = verilator_params(
+        timeout = "long",
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
