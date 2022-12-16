@@ -20,6 +20,11 @@ class chip_sw_flash_host_gnt_err_inj_vseq extends chip_sw_base_vseq;
                  "wait for core1_host_req is timed out",
                  polling_timeout_ns)
     `uvm_info(`gfn, "polling is done", UVM_MEDIUM)
+
+    // After host_grant_error is injected, tlul will get error responses.
+    // So disable tl_err_chk.
+    cfg.en_scb_tl_err_chk = 0;
+
     `DV_CHECK(uvm_hdl_force(FLASH_BANK1_HOST_GNT_ERR_PATH, 1))
     // This value picked to be long enough more than one
     // host request to be sure grant error get asserted.
