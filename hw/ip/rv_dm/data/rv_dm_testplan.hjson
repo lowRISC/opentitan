@@ -262,17 +262,17 @@
     {
       name: jtag_dmi_debug_disabled
       desc: '''
-            Verify that the JTAG DMI register space cannot be accessed if lc_hw_debug_en is a non
+            Verify that the JTAG DMI register space cannot be accessed if pinmux_hw_debug_en is a non
             strict true value.
 
-            - Set lc_hw_debug_en to true and activate the dm.
+            - Set pinmux_hw_debug_en to true and activate the dm.
             - Write a known value to a randomly picked DMI CSR.
-            - Set lc_hw_debug_en to non-true value.
+            - Set pinmux_hw_debug_en to non-true value.
             - Write a different value to the same DMI CSR.
             - Attempt to read that DMI CSR - it should read all 0s.
             - Note that the above steps are rendered moot becuase the JTAG DTM itself will not
               receive any incoming JTAG transactions.
-            - Set lc_hw_debug_en to true and again, read the DMI CSR - it should reflect the
+            - Set pinmux_hw_debug_en to true and again, read the DMI CSR - it should reflect the
               originally written value.
             '''
       stage: V2
@@ -315,37 +315,23 @@
       tests: []
     }
     {
-      name: debug_req
-      desc: '''
-            Verify that the debugger can issue a debug request to the CPU.
-
-            - Set lc_hw_debug_en to non-true value and activate the dm.
-            - Set unavailable input to 0 to reflect that the hart is available.
-            - Write dmcontrol[haltreq] to 1 via JTAG and poll for dmstatus[allhalted] to be set.
-            - Verify that the debug_req output asserts.
-            - On the debug mem TL interface, after some random delay, write 1 to the `halted`
-              register in the debub memory.
-            - Ensure that the polling in the loop above completes.
-            '''
-      stage: V2
-      tests: []
-    }
-    {
       name: ndmreset_req
       desc: '''
             Verify that the debugger can issue a non-debug reset to the rest of the system.
 
-            - Set lc_hw_debug_en to true value and activate the dm.
+            - Set lc_hw_debug_en / pinmux_hw_debug_en to true value and activate the dm.
             - Pick a random set of write/readable CSRs in all 3 RALs (JTAG DMI, regs RAL and debug
               mem RAL). Write known values to them.
             - Write the dmcontrol register to assert ndmreset - verify that the ndmreset output
               stays asserted.
-            - Mimic the CPU going into reset by asserting unavailable input.
+            - Mimic the CPU going into reset by asserting unavailable input, asserting rst_ni
+              and setting lc_hw_debug_en to false. Keep pinmux_hw_debug_en set to true to keep
+              the JTAG side open while the ndmreset is in progress.
             - Read the dmstatus register to verify allunavail is asserted.
             - De-assert the ndmreset by writing 0 to the dmcontrol register field, verify the
               ndmreset output deasserted as well.
-            - Mimic the CPU coing out of reset reset by de-asserting unavailable input after some
-              delay.
+            - Mimic the CPU going out of reset by de-asserting unavailable input and rst_ni
+              after some delay. Set lc_hw_debug_en to true again as well.
             - Read the previously written registers back and verify that they reflect the previously
               written value, proving that ndmreset assertion had no effect on them.
             '''
@@ -367,31 +353,11 @@
       tests: []
     }
     {
-      name: prog_buf
+      name: tap_ctrl_transitions
       desc: '''
-            Verify that a halted hart can execute arbitrary set of instructions via program buffer.
+            Verify all JTAG TAP controller FSM transitions
 
-            - TBD.
-            '''
-      stage: V2
-      tests: []
-    }
-    {
-      name: abstract_cmd
-      desc: '''
-            Verify the quick-access abstract command feature.
-
-            - TBD
-            '''
-      stage: V2
-      tests: []
-    }
-    {
-      name: abstract_cmd_err
-      desc: '''
-            Verify the abstract command error scenarios.
-
-            - TBD
+            This test should verify that the standardized JTAG TAP FSM is working correctly.
             '''
       stage: V2
       tests: []
