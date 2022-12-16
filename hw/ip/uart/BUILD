@@ -25,6 +25,7 @@ sv_library(
     ],
     deps = [
         "//hw/ip/prim:prim_alert",
+        "//hw:and2",
     ],
 )
 

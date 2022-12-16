@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:verilog.bzl", "sv_library")
+load("//rules:verilog.bzl", "sv_library", "sv_prim_wrapper")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -53,4 +53,13 @@ sv_library(
 sv_library(
     name = "prim",
     srcs = glob(["rtl/*.svh", "rtl/*.sv"]) + [],
+)
+
+
+## Process Dependent Libraries
+sv_prim_wrapper(
+    name = "and2",
+    # _primgen = "//util/design/primgen:primgen",  # default value
+    # deps = [":prim_pkg"],
+    deps = glob(["**/prim_*:and2"]),
 )

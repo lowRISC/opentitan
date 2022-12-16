@@ -4,6 +4,7 @@
 
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
+load("//rules:verilog.bzl", "sv_prim_wrapper")
 
 # This configuration exposes fusesoc's "verilator_options" option to the
 # command line. This is intended to allow CI to specifically build a single
@@ -11,6 +12,8 @@ load("//rules:fusesoc.bzl", "fusesoc_build")
 # By default, the Verilated model should be built to
 # run with 4 threads.
 load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
+
+package(default_visibility = ["//visibility:public"])
 
 string_list_flag(
     name = "verilator_options",
@@ -122,4 +125,16 @@ pkg_files(
     srcs = ["verilator_bin"],
     prefix = "earlgrey/verilator",
     visibility = ["//visibility:public"],
+)
+
+## Process Dependent Libraries
+sv_prim_wrapper(
+    name = "and2",
+    # _primgen = "//util/design/primgen:primgen",  # default value
+    # deps = [":prim_pkg"],
+    #deps = glob(["ip/prim_*/rtl/prim_*_and2.sv"]) + glob(["foundry/ip/prim_*/rtl/prim_*_and2.sv"]),
+    deps = [
+        "//hw/ip/prim_generic:and2",
+        "//hw/ip/prim_xilinx:and2",
+    ],
 )
