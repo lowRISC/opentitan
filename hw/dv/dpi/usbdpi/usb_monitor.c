@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include <assert.h>
-#include <stdint.h>
+#include <errno.h>
+#include <stdarg.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <string.h>
 
 #include "usbdpi.h"
 
@@ -42,7 +42,11 @@ const char *decode_pid[] = {
 
 #define MON_BYTES_SIZE 1024
 
-struct mon_ctx {
+// Number of bytes in max output buffer line
+#define MAX_OBUF 80
+
+struct usb_monitor_ctx {
+  FILE *file;
   int state;
   int driver;
   int pu;
@@ -56,15 +60,56 @@ struct mon_ctx {
   unsigned char bytes[MON_BYTES_SIZE + 2];
 };
 
-void *monitor_usb_init(void) {
-  struct mon_ctx *mon = (struct mon_ctx *)calloc(1, sizeof(struct mon_ctx));
+/**
+ * Create and initialise a USB monitor instance
+ */
+usb_monitor_ctx_t *usb_monitor_init(const char *filename) {
+  usb_monitor_ctx_t *mon =
+      (usb_monitor_ctx_t *)calloc(1, sizeof(usb_monitor_ctx_t));
   assert(mon);
 
   mon->state = MS_IDLE;
   mon->driver = M_NONE;
   mon->pu = 0;
   mon->line = 0;
-  return (void *)mon;
+
+  mon->file = fopen(filename, "w");
+  if (!mon->file) {
+    fprintf(stderr, "USBDPI: Unable to open monitor file at %s: %s\n", filename,
+            strerror(errno));
+    free(mon);
+    return NULL;
+  }
+
+  // more useful for tail -f
+  setlinebuf(mon->file);
+  printf(
+      "\nUSBDPI: Monitor output file created at %s. Works well with tail:\n"
+      "$ tail -f %s\n",
+      filename, filename);
+
+  return mon;
+}
+
+/**
+ * Finalise a USB monitor
+ */
+void usb_monitor_fin(usb_monitor_ctx_t *mon) {
+  fclose(mon->file);
+  free(mon);
+}
+
+/**
+ * Append a formatted message to the USB monitor log file
+ */
+void usb_monitor_log(usb_monitor_ctx_t *ctx, const char *fmt, ...) {
+  char obuf[MAX_OBUF];
+  va_list ap;
+  va_start(ap, fmt);
+  int n = vsnprintf(obuf, MAX_OBUF, fmt, ap);
+  va_end(ap);
+  size_t written = fwrite(obuf, sizeof(char), (size_t)n, ctx->file);
+  assert(written == (size_t)n);
 }
 
 #define DR_SIZE 128
@@ -72,34 +117,55 @@ static char dr[DR_SIZE];
 char *pid_2data(int pid, unsigned char d0, unsigned char d1) {
   int comp_crc = CRC5((d1 & 7) << 8 | d0, 11);
   const char *crcok = (comp_crc == d1 >> 3) ? "OK" : "BAD";
-  if ((pid == USB_PID_IN) || (pid == USB_PID_OUT) || (pid == USB_PID_SETUP)) {
-    snprintf(dr, DR_SIZE, "%s %d.%d (CRC5 %02x %s)", decode_pid[pid & 0xf],
-             d0 & 0x7f, (d1 & 7) << 1 | d0 >> 7, d1 >> 3, crcok);
-  } else if (pid == USB_PID_SOF) {
-    snprintf(dr, DR_SIZE, "SOF %03x (CRC5 %02x %s)", (d1 & 7) << 8 | d0,
-             d1 >> 3, crcok);
-  } else if ((pid == USB_PID_DATA0) || (pid == USB_PID_DATA1)) {
-    snprintf(dr, DR_SIZE, "%s %02x, %02x (%s)", decode_pid[pid & 0xf], d0, d1,
-             (d0 | d1) ? "CRC16 BAD" : "NULL");
-  } else {
-    snprintf(dr, DR_SIZE, "%s %02x, %02x (CRC5 %s)", decode_pid[pid & 0xf], d0,
-             d1, crcok);
+
+  switch (pid) {
+    case USB_PID_SOF:
+      snprintf(dr, DR_SIZE, "SOF %03x (CRC5 %02x %s)", (d1 & 7) << 8 | d0,
+               d1 >> 3, crcok);
+      break;
+
+    case USB_PID_SETUP:
+    case USB_PID_OUT:
+    case USB_PID_IN:
+      snprintf(dr, DR_SIZE, "%s %d.%d (CRC5 %02x %s)", decode_pid[pid & 0xf],
+               d0 & 0x7f, (d1 & 7) << 1 | d0 >> 7, d1 >> 3, crcok);
+      break;
+
+    case USB_PID_DATA0:
+    case USB_PID_DATA1:
+      snprintf(dr, DR_SIZE, "%s %02x, %02x (%s)", decode_pid[pid & 0xf], d0, d1,
+               (d0 | d1) ? "CRC16 BAD" : "NULL");
+      break;
+
+    // Validate and log other PIDs
+    default:
+      if (((pid >> 4) ^ 0xf) == (pid & 0xf)) {
+        snprintf(dr, DR_SIZE, "%s %02x, %02x (CRC5 %s)", decode_pid[pid & 0xf],
+                 d0, d1, crcok);
+      } else {
+        snprintf(dr, DR_SIZE, "BAD PID %s %02x, %02x (CRC5 %s)",
+                 decode_pid[pid & 0xf], d0, d1, crcok);
+      }
+      break;
   }
   return dr;
 }
 
-void monitor_usb(void *mon_void, FILE *mon_file, int loglevel, int tick,
-                 int hdrive, int p2d, int d2p, int *lastpid) {
-  struct mon_ctx *mon = (struct mon_ctx *)mon_void;
-  assert(mon);
+/**
+ * Per-cycle monitoring of the USB
+ */
+void usb_monitor(usb_monitor_ctx_t *mon, int loglevel, int tick, bool hdrive,
+                 uint32_t p2d, uint32_t d2p, uint8_t *lastpid) {
   int dp, dn;
   int log, compact;
   log = (loglevel & 0x2);
   compact = (loglevel & 0x1);
 
+  assert(mon);
+
   if ((d2p & D2P_DP_EN) || (d2p & D2P_DN_EN) || (d2p & D2P_D_EN)) {
     if (hdrive) {
-      fprintf(mon_file, "mon: %8d: Bus clash\n", tick);
+      fprintf(mon->file, "mon: %8d: Bus clash\n", tick);
     }
     if (d2p & D2P_TX_USE_D_SE0) {
       if ((d2p & D2P_SE0) || !(d2p & D2P_D_EN)) {
@@ -132,10 +198,10 @@ void monitor_usb(void *mon_void, FILE *mon_file, int loglevel, int tick,
     if ((mon->driver != M_NONE) || (mon->pu != (d2p & D2P_PU))) {
       if (log) {
         if (d2p & D2P_PU) {
-          fprintf(mon_file, "mon: %8d: Idle, FS resistor (d2p 0x%x)\n", tick,
+          fprintf(mon->file, "mon: %8d: Idle, FS resistor (d2p 0x%x)\n", tick,
                   d2p);
         } else {
-          fprintf(mon_file, "mon: %8d: Idle, SE0\n", tick);
+          fprintf(mon->file, "mon: %8d: Idle, SE0\n", tick);
         }
       }
       mon->driver = M_NONE;
@@ -156,7 +222,7 @@ void monitor_usb(void *mon_void, FILE *mon_file, int loglevel, int tick,
     if ((mon->line & 0xfff) == ((DK << 10) | (DJ << 8) | (DK << 6) | (DJ << 4) |
                                 (DK << 2) | (DK << 0))) {
       if (log) {
-        fprintf(mon_file, "mon: %8d: (%c) SOP\n", tick,
+        fprintf(mon->file, "mon: %8d: (%c) SOP\n", tick,
                 mon->driver == M_HOST ? 'H' : 'D');
       }
       mon->sopAt = tick;
@@ -172,59 +238,64 @@ void monitor_usb(void *mon_void, FILE *mon_file, int loglevel, int tick,
       uint32_t pkt_crc16, comp_crc16;
 
       if (compact && mon->byte == 2) {
-        fprintf(mon_file, "mon: %8d -- %8d: (%c) SOP, PID %s, EOP\n",
+        fprintf(mon->file, "mon: %8d -- %8d: (%c) SOP, PID %s, EOP\n",
                 mon->sopAt, tick, mon->driver == M_HOST ? 'H' : 'D',
                 pid_2data(mon->lastpid, mon->bytes[0], mon->bytes[1]));
       } else if (compact && mon->byte == 1) {
-        fprintf(mon_file, "mon: %8d -- %8d: (%c) SOP, PID %s %02x EOP\n",
+        fprintf(mon->file, "mon: %8d -- %8d: (%c) SOP, PID %s %02x EOP\n",
                 mon->sopAt, tick, mon->driver == M_HOST ? 'H' : 'D',
                 decode_pid[mon->lastpid & 0xf], mon->bytes[0]);
       } else {
         if (compact) {
-          fprintf(mon_file, "mon: %8d -- %8d: (%c) SOP, PID %s, EOP\n",
+          fprintf(mon->file, "mon: %8d -- %8d: (%c) SOP, PID %s, EOP\n",
                   mon->sopAt, tick, mon->driver == M_HOST ? 'H' : 'D',
                   decode_pid[mon->lastpid & 0xf]);
         }
-        fprintf(mon_file,
+        fprintf(mon->file,
                 "mon:     %s: ", mon->driver == M_HOST ? "h->d" : "d->h");
         comp_crc16 = CRC16(mon->bytes, mon->byte - 2);
-        pkt_crc16 = mon->bytes[mon->byte - 2] | mon->bytes[mon->byte - 1] << 8;
-        for (i = 0; i < mon->byte; i++) {
-          fprintf(mon_file, "%02x%s", mon->bytes[i],
-                  ((i & 0xf) == 0xf)       ? "\nmon:           "
-                  : ((i + 1) == mon->byte) ? ""
-                                           : ", ");
+        pkt_crc16 =
+            mon->bytes[mon->byte - 2] | (mon->bytes[mon->byte - 1] << 8);
+        // Display the data field as interleaved hexadecimal values and
+        // printable characters
+        for (i = 0; i < mon->byte - 2; i++) {
+          fprintf(mon->file, "%02x%s", mon->bytes[i],
+                  ((i & 0xf) == 0xf)           ? "\nmon:           "
+                  : ((i + 1) == mon->byte - 2) ? " "
+                                               : ", ");
           if ((mon->bytes[i] == 0x0d) || (mon->bytes[i] == 0x0a)) {
             mon->bytes[i] = '_';
-          }
-          if (mon->bytes[i] == 0) {
+          } else if (mon->bytes[i] == 0) {
             mon->bytes[i] = '?';
-          }
-          if (i >= (mon->byte - 2)) {
-            mon->bytes[i] = 0;
           } else if ((mon->bytes[i] < 32) || (mon->bytes[i] > 127)) {
             text = 0;
           }
         }
+        // Display the received CRC16 value
+        fprintf(mon->file, "(CRC16 %02x %02x", mon->bytes[mon->byte - 2],
+                mon->bytes[mon->byte - 1]);
         if (comp_crc16 == pkt_crc16) {
-          fprintf(mon_file, "%s CRCOK\n",
+          fprintf(mon->file, "%s OK)\n",
                   (mon->byte == MON_BYTES_SIZE) ? "..." : "");
         } else {
-          fprintf(mon_file, "%s\nmon:           CRC16 %04x BAD expected %04x\n",
+          fprintf(mon->file,
+                  "%s BAD)\nmon:           CRC16 %04x BAD expected %04x\n",
                   (mon->byte == MON_BYTES_SIZE) ? "..." : "", pkt_crc16,
                   comp_crc16);
         }
         if (text && mon->byte > 2) {
-          fprintf(mon_file, "mon:          %s\n", mon->bytes);
+          // Terminate at the end of the data field
+          mon->bytes[mon->byte - 2] = '\0';
+          fprintf(mon->file, "mon:          %s\n", mon->bytes);
         }
       }
     } else if (compact) {
-      fprintf(mon_file, "mon: %8d -- %8d: (%c) SOP, PID %s EOP\n", mon->sopAt,
+      fprintf(mon->file, "mon: %8d -- %8d: (%c) SOP, PID %s EOP\n", mon->sopAt,
               tick, mon->driver == M_HOST ? 'H' : 'D',
               decode_pid[mon->lastpid & 0xf]);
     }
     if (log) {
-      fprintf(mon_file, "mon: %8d: (%c) EOP\n", tick,
+      fprintf(mon->file, "mon: %8d: (%c) EOP\n", tick,
               mon->driver == M_HOST ? 'H' : 'D');
     }
     mon->state = MS_IDLE;
@@ -234,7 +305,7 @@ void monitor_usb(void *mon_void, FILE *mon_file, int loglevel, int tick,
   mon->rawbits = (mon->rawbits << 1) | newbit;
   if ((mon->rawbits & 0x7e) == 0x7e) {
     if (newbit == 1) {
-      fprintf(mon_file, "mon: %8d: (%c) Bitstuff error, got 1 after 0x%x\n",
+      fprintf(mon->file, "mon: %8d: (%c) Bitstuff error, got 1 after 0x%x\n",
               tick, mon->driver == M_HOST ? 'H' : 'D', mon->rawbits);
     }
     /* Ignore bit stuff bit */
@@ -247,17 +318,21 @@ void monitor_usb(void *mon_void, FILE *mon_file, int loglevel, int tick,
   }
   switch (mon->state) {
     case MS_GET_PID:
-      if (((mon->bits & 0xf0) >> 4) ^ (mon->bits & 0x0f)) {
+      // Any byte for which the upper nybble is not the exact complement
+      // of the lower nybble is invalid
+      if (((mon->bits ^ 0xf0) >> 4) ^ (mon->bits & 0x0f)) {
+        if (log) {
+          fprintf(mon->file, "mon: %8d: (%c) BAD PID 0x%x\n", tick,
+                  mon->driver == M_HOST ? 'H' : 'D', mon->bits);
+        }
+      } else {
         *lastpid = mon->bits;
         mon->lastpid = mon->bits;
         if (log) {
-          fprintf(mon_file, "mon: %8d: (%c) PID %s (0x%x)\n", tick,
+          fprintf(mon->file, "mon: %8d: (%c) PID %s (0x%x)\n", tick,
                   mon->driver == M_HOST ? 'H' : 'D',
                   decode_pid[mon->bits & 0xf], mon->bits);
         }
-      } else if (log) {
-        fprintf(mon_file, "mon: %8d: (%c) BAD PID 0x%x\n", tick,
-                mon->driver == M_HOST ? 'H' : 'D', mon->bits);
       }
       mon->state = MS_GET_BYTES;
       mon->needbits = 8;
