@@ -47,154 +47,153 @@ jobs:
   - publish: $(Pipeline.Workspace)/opentitan-repo.tar.gz
     artifact: opentitan-repo
     displayName: Upload repository
-- job: lint
-  displayName: Quality (quick lint)
-  # Run code quality checks (quick lint)
-  dependsOn: checkout
-  pool:
-    vmImage: ubuntu-20.04
-  steps:
-  - template: ci/checkout-template.yml
-  - bash: |
-      sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
-    displayName: Uninstall Clang
-    # Remove existing Clang installation
-  - template: ci/install-package-dependencies.yml
-    ## !!!
-    ##
-    ##   The steps below here are duplicated in ci/jobs/quick-lint.sh
-    ##   to allow developers to "run CI" locally. Keep them in sync.
-    ##
-    ## !!!
-  - bash: ci/scripts/show-env.sh
-    displayName: Environment Info
-    # Display environment information
-  - bash: ci/scripts/lint-commits.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Commit metadata
-  - bash: ci/scripts/check-licence-headers.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Licence Headers
-  - bash: ci/scripts/exec-check.sh
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Executable Bits
-  - bash: ci/scripts/check-ascii.sh
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: ASCII Chars
-    # Check for non-ASCII characters in source code
-  - bash: ci/scripts/python-lint.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: flake8 (Python lint)
-    # Run Python lint (flake8)
-  - bash: ci/scripts/mypy.sh
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: mypy (Python lint)
-    # Run Python lint (mypy)
-  - bash: ci/scripts/clang-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: clang-format (C/C++ lint)
-    # Use clang-format to check C/C++ coding style
-  - bash: ci/scripts/rust-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: rustfmt
-  - bash: |
-      set -e
-      # Azure-specific installation:
-      # The latest version of shellcheck available to ubuntu-18.04 is 0.4.6-1.
-      # We need a newer version that provides the --warning flag.
-      SC_VERSION="v0.8.0"
-      SHELLCHECK_FILE="shellcheck-$SC_VERSION.linux.x86_64.tar.xz"
-      SHELLCHECK_URL="https://github.com/koalaman/shellcheck/releases/download/$SC_VERSION/$SHELLCHECK_FILE"
-      SC_SHA256=ab6ee1b178f014d1b86d1e24da20d1139656c8b0ed34d2867fbb834dad02bf0a
-      echo "Installing Shellcheck $SC_VERSION"
-      curl -L -o "$SHELLCHECK_FILE" "$SHELLCHECK_URL" --silent --show-error
-      echo "${SC_SHA256}  ${SHELLCHECK_FILE}" | sha256sum -c
-      tar -xJf $SHELLCHECK_FILE
-      sudo cp "shellcheck-$SC_VERSION/shellcheck" /usr/bin
-      # Run shellcheck
-      echo "Checking shell scripts..."
-      ci/scripts/run-shellcheck.sh || {
-        echo -n "##vso[task.logissue type=error]"
-        echo "Shellcheck failed. Run ci/scripts/run-shellcheck.sh to see errors."
-        exit 1
-      }
-    displayName: shellcheck
-  - bash: ci/scripts/include-guard.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Header guards
-    # Check formatting on header guards
-  - bash: ci/scripts/whitespace.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Check trailing whitespace
-  - bash: ci/scripts/build-docs.sh
-    displayName: Render documentation
-  - bash: ci/scripts/build-site.sh
-    displayName: Render landing site
-  - bash: ci/scripts/get-build-type.sh "$SYSTEM_PULLREQUEST_TARGETBRANCH" "$(Build.Reason)"
-    displayName: Type of change
-    # Check what kinds of changes the PR contains
-    name: DetermineBuildType
-  - bash: ci/scripts/check-no-bazelrc-site.sh
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Confirm no .bazelrc-site files
+#- job: lint
+#  displayName: Quality (quick lint)
+#  # Run code quality checks (quick lint)
+#  dependsOn: checkout
+#  pool:
+#    vmImage: ubuntu-20.04
+#  steps:
+#  - template: ci/checkout-template.yml
+#  - bash: |
+#      sudo apt-get remove -y clang-6.0 libclang-common-6.0-dev libclang1-6.0 libllvm6.0
+#    displayName: Uninstall Clang
+#    # Remove existing Clang installation
+#  - template: ci/install-package-dependencies.yml
+#    ## !!!
+#    ##
+#    ##   The steps below here are duplicated in ci/jobs/quick-lint.sh
+#    ##   to allow developers to "run CI" locally. Keep them in sync.
+#    ##
+#    ## !!!
+#  - bash: ci/scripts/show-env.sh
+#    displayName: Environment Info
+#    # Display environment information
+#  - bash: ci/scripts/lint-commits.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
+#    condition: eq(variables['Build.Reason'], 'PullRequest')
+#    displayName: Commit metadata
+#  - bash: ci/scripts/check-licence-headers.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
+#    condition: eq(variables['Build.Reason'], 'PullRequest')
+#    displayName: Licence Headers
+#  - bash: ci/scripts/exec-check.sh
+#    condition: eq(variables['Build.Reason'], 'PullRequest')
+#    displayName: Executable Bits
+#  - bash: ci/scripts/check-ascii.sh
+#    condition: eq(variables['Build.Reason'], 'PullRequest')
+#    displayName: ASCII Chars
+#    # Check for non-ASCII characters in source code
+#  - bash: ci/scripts/python-lint.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
+#    condition: eq(variables['Build.Reason'], 'PullRequest')
+#    displayName: flake8 (Python lint)
+#    # Run Python lint (flake8)
+#  - bash: ci/scripts/mypy.sh
+#    condition: eq(variables['Build.Reason'], 'PullRequest')
+#    displayName: mypy (Python lint)
+#    # Run Python lint (mypy)
+#  - bash: ci/scripts/clang-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
+#    condition: eq(variables['Build.Reason'], 'PullRequest')
+#    displayName: clang-format (C/C++ lint)
+#    # Use clang-format to check C/C++ coding style
+#  - bash: ci/scripts/rust-format.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
+#    condition: eq(variables['Build.Reason'], 'PullRequest')
+#    displayName: rustfmt
+#  - bash: |
+#      set -e
+#      # Azure-specific installation:
+#      # The latest version of shellcheck available to ubuntu-18.04 is 0.4.6-1.
+#      # We need a newer version that provides the --warning flag.
+#      SC_VERSION="v0.8.0"
+#      SHELLCHECK_FILE="shellcheck-$SC_VERSION.linux.x86_64.tar.xz"
+#      SHELLCHECK_URL="https://github.com/koalaman/shellcheck/releases/download/$SC_VERSION/$SHELLCHECK_FILE"
+#      SC_SHA256=ab6ee1b178f014d1b86d1e24da20d1139656c8b0ed34d2867fbb834dad02bf0a
+#      echo "Installing Shellcheck $SC_VERSION"
+#      curl -L -o "$SHELLCHECK_FILE" "$SHELLCHECK_URL" --silent --show-error
+#      echo "${SC_SHA256}  ${SHELLCHECK_FILE}" | sha256sum -c
+#      tar -xJf $SHELLCHECK_FILE
+#      sudo cp "shellcheck-$SC_VERSION/shellcheck" /usr/bin
+#      # Run shellcheck
+#      echo "Checking shell scripts..."
+#      ci/scripts/run-shellcheck.sh || {
+#        echo -n "##vso[task.logissue type=error]"
+#        echo "Shellcheck failed. Run ci/scripts/run-shellcheck.sh to see errors."
+#        exit 1
+#      }
+#    displayName: shellcheck
+#  - bash: ci/scripts/include-guard.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
+#    condition: eq(variables['Build.Reason'], 'PullRequest')
+#    displayName: Header guards
+#    # Check formatting on header guards
+#  - bash: ci/scripts/whitespace.sh $SYSTEM_PULLREQUEST_TARGETBRANCH
+#    condition: eq(variables['Build.Reason'], 'PullRequest')
+#    displayName: Check trailing whitespace
+#  - bash: ci/scripts/build-docs.sh
+#    displayName: Render documentation
+#  - bash: ci/scripts/build-site.sh
+#    displayName: Render landing site
+#  - bash: ci/scripts/get-build-type.sh "$SYSTEM_PULLREQUEST_TARGETBRANCH" "$(Build.Reason)"
+#    displayName: Type of change
+#    # Check what kinds of changes the PR contains
+#    name: DetermineBuildType
+#  - bash: ci/scripts/check-no-bazelrc-site.sh
+#    condition: eq(variables['Build.Reason'], 'PullRequest')
+#    displayName: Confirm no .bazelrc-site files
 
-- job: airgapped_bazel_build
-  displayName: Test an airgapped Bazel build
-  timeoutInMinutes: 90
-  dependsOn: checkout
-  condition: eq(variables['Build.Reason'], 'PullRequest')
-  pool:
-    vmImage: ubuntu-20.04
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: ci/scripts/test-airgapped-build.sh
+# - job: airgapped_bazel_build
+#   displayName: Test an airgapped Bazel build
+#   timeoutInMinutes: 90
+#   dependsOn: checkout
+#   condition: eq(variables['Build.Reason'], 'PullRequest')
+#   pool:
+#     vmImage: ubuntu-20.04
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - bash: ci/scripts/test-airgapped-build.sh
 
-- job: slow_lints
-  displayName: Quality (in-depth lint)
-  # Run code quality checks (in-depth lint)
-  dependsOn: lint
-  pool:
-    vmImage: ubuntu-20.04
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  # Bazel test suites are a common cause of problematic tags. Check test suites
-  # before checking for other tag issues.
-  - bash:  ci/scripts/check_bazel_test_suites.py
-    displayName: Check Bazel test suites (Experimental)
-    continueOnError: True
-  - bash: ci/scripts/check-bazel-tags.sh
-    displayName: Check Bazel Tags (Experimental)
-    continueOnError: True
-  - bash: ci/scripts/check-bazel-banned-rules.sh
-    displayName: Check for banned rules
-  - bash:  ci/scripts/check_bazel_target_names.py
-    displayName: Check Bazel target names (Experimental)
-    continueOnError: True
-  - bash: ci/scripts/check-generated.sh
-    displayName: Check Generated
-    # Ensure all generated files are clean and up-to-date
-  - bash: ci/bazelisk.sh test //quality:buildifier_check --test_output=streamed
-    displayName: Buildifier (Bazel lint)
-  - bash: ci/scripts/check-vendoring.sh
-    displayName: Vendored directories
-  - bash: ci/scripts/verible-lint.sh rtl
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Verible RTL (Verilog lint)
-  - bash: ci/scripts/verible-lint.sh dv
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Verible DV (Verilog lint)
-  - bash: ci/scripts/verible-lint.sh fpv
-    condition: eq(variables['Build.Reason'], 'PullRequest')
-    displayName: Verible FPV (Verilog lint)
+# - job: slow_lints
+#   displayName: Quality (in-depth lint)
+#   # Run code quality checks (in-depth lint)
+#   dependsOn: lint
+#   pool:
+#     vmImage: ubuntu-20.04
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   # Bazel test suites are a common cause of problematic tags. Check test suites
+#   # before checking for other tag issues.
+#   - bash:  ci/scripts/check_bazel_test_suites.py
+#     displayName: Check Bazel test suites (Experimental)
+#     continueOnError: True
+#   - bash: ci/scripts/check-bazel-tags.sh
+#     displayName: Check Bazel Tags (Experimental)
+#     continueOnError: True
+#   - bash: ci/scripts/check-bazel-banned-rules.sh
+#     displayName: Check for banned rules
+#   - bash:  ci/scripts/check_bazel_target_names.py
+#     displayName: Check Bazel target names (Experimental)
+#     continueOnError: True
+#   - bash: ci/scripts/check-generated.sh
+#     displayName: Check Generated
+#     # Ensure all generated files are clean and up-to-date
+#   - bash: ci/bazelisk.sh test //quality:buildifier_check --test_output=streamed
+#     displayName: Buildifier (Bazel lint)
+#   - bash: ci/scripts/check-vendoring.sh
+#     displayName: Vendored directories
+#   - bash: ci/scripts/verible-lint.sh rtl
+#     condition: eq(variables['Build.Reason'], 'PullRequest')
+#     displayName: Verible RTL (Verilog lint)
+#   - bash: ci/scripts/verible-lint.sh dv
+#     condition: eq(variables['Build.Reason'], 'PullRequest')
+#     displayName: Verible DV (Verilog lint)
+#   - bash: ci/scripts/verible-lint.sh fpv
+#     condition: eq(variables['Build.Reason'], 'PullRequest')
+#     displayName: Verible FPV (Verilog lint)
 
 - job: sw_build
   displayName: Earl Grey SW Build & Test
   # Build and test Software for Earl Grey toplevel design
   timeoutInMinutes: 120
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+  dependsOn: checkout
   pool: ci-public
   variables:
     - name: bazelCacheGcpKeyPath
@@ -229,11 +228,17 @@ jobs:
       --define DISABLE_VERILATOR_BUILD=true \
       --build_tag_filters=-vivado \
       --test_tag_filters=-broken,-cw310,-verilator,-dv \
+      --profile=./profile.gz \
+      --experimental_profile_additional_tasks=local_cpu_usage \
+      --experimental_profile_include_target_label \
       -- //... \
       -//quality/... \
       -//third_party/riscv-compliance/... \
       -//hw:all
     displayName: Build & test SW
+  - publish: ./profile.gz
+    artifact: SW Build Profile
+    displayName: "Publish profile"
   - bash: |
       set -x -e
       . util/build_consts.sh
@@ -250,416 +255,416 @@ jobs:
       includePatterns:
         - "/sw/***"
 
-- job: chip_englishbreakfast_verilator
-  displayName: Verilated English Breakfast
-  # Build Verilator simulation of the English Breakfast toplevel design
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool:
-    vmImage: ubuntu-20.04
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      python3 --version
-      fusesoc --version
-      verilator --version
-      verible-verilog-lint --version
-    displayName: Display environment
-  - bash: ci/scripts/build-chip-verilator.sh englishbreakfast
-    displayName: Build simulation with Verilator
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
+# - job: chip_englishbreakfast_verilator
+#   displayName: Verilated English Breakfast
+#   # Build Verilator simulation of the English Breakfast toplevel design
+#   dependsOn: lint
+#   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+#   pool:
+#     vmImage: ubuntu-20.04
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - bash: |
+#       python3 --version
+#       fusesoc --version
+#       verilator --version
+#       verible-verilog-lint --version
+#     displayName: Display environment
+#   - bash: ci/scripts/build-chip-verilator.sh englishbreakfast
+#     displayName: Build simulation with Verilator
+#   - template: ci/upload-artifacts-template.yml
+#     parameters:
+#       includePatterns:
+#         - "/hw/top_englishbreakfast/Vchip_englishbreakfast_verilator"
 
-- job: execute_verilated_tests
-  displayName: Fast Verilated Earl Grey tests
-  # Build and run fast tests on sim_verilator
-  pool: ci-public
-  timeoutInMinutes: 120
-  dependsOn: lint
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - task: DownloadSecureFile@1
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    name: bazelCacheGcpKey
-    inputs:
-      secureFile: "bazel_cache_gcp_key.json"
-  - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
-    condition: eq(variables['Build.SourceBranchName'], 'master')
-    displayName: GCP key path
-    # Set the remote cache GCP key path
-  - bash: |
-      set -x -e
-      export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
-      ci/scripts/run-verilator-tests.sh
-    displayName: Build & execute tests
-  # TODO: build and cache the verilator model to avoid building twice (#12574)
-  - bash: |
-      . util/build_consts.sh
-      mkdir -p "$BIN_DIR/hw/top_earlgrey/"
-      cp $(ci/scripts/target-location.sh //hw:verilator) \
-        "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
-    displayName: Copy //hw:verilator to $BIN_DIR
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
+# - job: execute_verilated_tests
+#   displayName: Fast Verilated Earl Grey tests
+#   # Build and run fast tests on sim_verilator
+#   pool: ci-public
+#   timeoutInMinutes: 120
+#   dependsOn: lint
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - task: DownloadSecureFile@1
+#     condition: eq(variables['Build.SourceBranchName'], 'master')
+#     name: bazelCacheGcpKey
+#     inputs:
+#       secureFile: "bazel_cache_gcp_key.json"
+#   - bash: echo "##vso[task.setvariable variable=bazelCacheGcpKeyPath]$(bazelCacheGcpKey.secureFilePath)"
+#     condition: eq(variables['Build.SourceBranchName'], 'master')
+#     displayName: GCP key path
+#     # Set the remote cache GCP key path
+#   - bash: |
+#       set -x -e
+#       export GCP_BAZEL_CACHE_KEY=$(bazelCacheGcpKeyPath)
+#       ci/scripts/run-verilator-tests.sh
+#     displayName: Build & execute tests
+#   # TODO: build and cache the verilator model to avoid building twice (#12574)
+#   - bash: |
+#       . util/build_consts.sh
+#       mkdir -p "$BIN_DIR/hw/top_earlgrey/"
+#       cp $(ci/scripts/target-location.sh //hw:verilator) \
+#         "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
+#     displayName: Copy //hw:verilator to $BIN_DIR
+#   - template: ci/upload-artifacts-template.yml
+#     parameters:
+#       includePatterns:
+#         - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
 
-# Software targeting the English Breakfast top level is produced by patching
-# the source tree before building. This builds a selected subset of software
-# only.
-# TODO: This is a rather ugly hack, which will go away once we properly support
-# building more than one top-level design with different parametrizations.
-# Work towards this goal is tracked in issue #4669.
-- job: build_and_execute_verilated_tests_englishbreakfast
-  displayName: Verilated English Breakfast
-  # Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
-  pool:
-    vmImage: ubuntu-20.04
-  dependsOn: chip_englishbreakfast_verilator
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_englishbreakfast_verilator
-  - bash: |
-      . util/build_consts.sh
-      ci/scripts/run-english-breakfast-verilator-tests.sh
-    displayName: Execute tests
-  - bash: |
-      . util/build_consts.sh
-      mkdir -p "$BIN_DIR/sw/device/lib/testing/test_rom"
-      cp $(ci/scripts/target-location.sh //sw/device/lib/testing/test_rom:test_rom_fpga_nexysvideo_vmem) \
-        "$BIN_DIR/sw/device/lib/testing/test_rom"
-    displayName: Copy test_rom_fpga_nexysvideo_vmem to $BIN_DIR
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.32.vmem"
+# # Software targeting the English Breakfast top level is produced by patching
+# # the source tree before building. This builds a selected subset of software
+# # only.
+# # TODO: This is a rather ugly hack, which will go away once we properly support
+# # building more than one top-level design with different parametrizations.
+# # Work towards this goal is tracked in issue #4669.
+# - job: build_and_execute_verilated_tests_englishbreakfast
+#   displayName: Verilated English Breakfast
+#   # Build and execute tests on the Verilated English Breakfast toplevel design with Bazel
+#   pool:
+#     vmImage: ubuntu-20.04
+#   dependsOn: chip_englishbreakfast_verilator
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - template: ci/download-artifacts-template.yml
+#     parameters:
+#       downloadPartialBuildBinFrom:
+#         - chip_englishbreakfast_verilator
+#   - bash: |
+#       . util/build_consts.sh
+#       ci/scripts/run-english-breakfast-verilator-tests.sh
+#     displayName: Execute tests
+#   - bash: |
+#       . util/build_consts.sh
+#       mkdir -p "$BIN_DIR/sw/device/lib/testing/test_rom"
+#       cp $(ci/scripts/target-location.sh //sw/device/lib/testing/test_rom:test_rom_fpga_nexysvideo_vmem) \
+#         "$BIN_DIR/sw/device/lib/testing/test_rom"
+#     displayName: Copy test_rom_fpga_nexysvideo_vmem to $BIN_DIR
+#   - template: ci/upload-artifacts-template.yml
+#     parameters:
+#       includePatterns:
+#         - "/sw/device/lib/testing/test_rom/test_rom_fpga_nexysvideo.32.vmem"
 
-- job: otbn_standalone_tests
-  displayName: Run OTBN Smoke Test
-  dependsOn: lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool:
-    vmImage: ubuntu-20.04
-  timeoutInMinutes: 10
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      set -x
-      sudo util/get-toolchain.py \
-        --install-dir="$TOOLCHAIN_PATH" \
-        --release-version="$TOOLCHAIN_VERSION" \
-        --update
-      echo "##vso[task.prependpath]$TOOLCHAIN_PATH/bin"
-    displayName: Install toolchain
-  - bash: |
-      python3 --version
-      fusesoc --version
-      verilator --version
-    displayName: Display environment
-  - bash: |
-      make -C hw/ip/otbn/dv/otbnsim test
-    displayName: OTBN ISS Test
-  - bash: |
-      ./hw/ip/otbn/dv/smoke/run_smoke.sh
-    displayName: OTBN Smoke Test
-  - bash: |
-      make -C hw/ip/otbn/util asm-check
-    displayName: Assemble & link code snippets
+# - job: otbn_standalone_tests
+#   displayName: Run OTBN Smoke Test
+#   dependsOn: lint
+#   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+#   pool:
+#     vmImage: ubuntu-20.04
+#   timeoutInMinutes: 10
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - bash: |
+#       set -x
+#       sudo util/get-toolchain.py \
+#         --install-dir="$TOOLCHAIN_PATH" \
+#         --release-version="$TOOLCHAIN_VERSION" \
+#         --update
+#       echo "##vso[task.prependpath]$TOOLCHAIN_PATH/bin"
+#     displayName: Install toolchain
+#   - bash: |
+#       python3 --version
+#       fusesoc --version
+#       verilator --version
+#     displayName: Display environment
+#   - bash: |
+#       make -C hw/ip/otbn/dv/otbnsim test
+#     displayName: OTBN ISS Test
+#   - bash: |
+#       ./hw/ip/otbn/dv/smoke/run_smoke.sh
+#     displayName: OTBN Smoke Test
+#   - bash: |
+#       make -C hw/ip/otbn/util asm-check
+#     displayName: Assemble & link code snippets
 
-- job: chip_earlgrey_cw310
-  displayName: CW310's Earl Grey Bitstream
-  # Build CW310 variant of the Earl Grey toplevel design using Vivado
-  dependsOn:
-    - lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool: ci-public
-  timeoutInMinutes: 180
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      ci/scripts/get-bitstream-strategy.sh "@bitstreams//:bitstream_test_rom" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
-    displayName: Configure bitstream strategy
-  - bash: |
-      set -ex
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/prepare-cached-bitstream.sh
-    condition: eq(variables.bitstreamStrategy, 'cached')
-    displayName: Prepare cached bitstream
-  - bash: |
-      set -ex
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      SUB_PATH=hw/top_earlgrey
-      mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
-      ci/bazelisk.sh build //hw/bitstream/vivado:standard
-      cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
-        $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310)
-      cp -rLvt "$BIN_DIR/$SUB_PATH/" \
-        $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:standard)
-      # Rename bitstreams to be compatible with subsequent steps
-      # TODO(#13807): replace this after choosing a naming scheme
-      mv "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
-      mv "$BIN_DIR/$SUB_PATH/fpga_cw310_rom.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
-    condition: ne(variables.bitstreamStrategy, 'cached')
-    displayName: Build and splice bitstream with Vivado
-  - bash: |
-      . util/build_consts.sh
-      echo "Synthesis log"
-      cat $OBJ_DIR/hw/top_earlgrey/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/synth_1/runme.log || true
+# - job: chip_earlgrey_cw310
+#   displayName: CW310's Earl Grey Bitstream
+#   # Build CW310 variant of the Earl Grey toplevel design using Vivado
+#   dependsOn:
+#     - lint
+#   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+#   pool: ci-public
+#   timeoutInMinutes: 180
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - bash: |
+#       ci/scripts/get-bitstream-strategy.sh "@bitstreams//:bitstream_test_rom" ':!/sw/' ':!/*testplan.hjson' ':!/site/' ':!/doc/' ':!/COMMITTERS' ':!/CLA' ':!/*.md' ':!/hw/**/dv/*'
+#     displayName: Configure bitstream strategy
+#   - bash: |
+#       set -ex
+#       module load "xilinx/vivado/$(VIVADO_VERSION)"
+#       ci/scripts/prepare-cached-bitstream.sh
+#     condition: eq(variables.bitstreamStrategy, 'cached')
+#     displayName: Prepare cached bitstream
+#   - bash: |
+#       set -ex
+#       . util/build_consts.sh
+#       module load "xilinx/vivado/$(VIVADO_VERSION)"
+#       SUB_PATH=hw/top_earlgrey
+#       mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
+#       ci/bazelisk.sh build //hw/bitstream/vivado:standard
+#       cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
+#         $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310)
+#       cp -rLvt "$BIN_DIR/$SUB_PATH/" \
+#         $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:standard)
+#       # Rename bitstreams to be compatible with subsequent steps
+#       # TODO(#13807): replace this after choosing a naming scheme
+#       mv "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
+#       mv "$BIN_DIR/$SUB_PATH/fpga_cw310_rom.bit" "$BIN_DIR/$SUB_PATH/lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
+#     condition: ne(variables.bitstreamStrategy, 'cached')
+#     displayName: Build and splice bitstream with Vivado
+#   - bash: |
+#       . util/build_consts.sh
+#       echo "Synthesis log"
+#       cat $OBJ_DIR/hw/top_earlgrey/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/synth_1/runme.log || true
 
-      echo "Implementation log"
-      cat $OBJ_DIR/hw/top_earlgrey/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/impl_1/runme.log || true
-    condition: ne(variables.bitstreamStrategy, 'cached')
-    displayName: Display synthesis & implementation logs
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/***"
-  - publish: "$(Build.ArtifactStagingDirectory)"
-    artifact: chip_earlgrey_cw310-build-out
-    displayName: Upload artifacts for CW310
-    condition: failed()
+#       echo "Implementation log"
+#       cat $OBJ_DIR/hw/top_earlgrey/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/impl_1/runme.log || true
+#     condition: ne(variables.bitstreamStrategy, 'cached')
+#     displayName: Display synthesis & implementation logs
+#   - template: ci/upload-artifacts-template.yml
+#     parameters:
+#       includePatterns:
+#         - "/hw/***"
+#   - publish: "$(Build.ArtifactStagingDirectory)"
+#     artifact: chip_earlgrey_cw310-build-out
+#     displayName: Upload artifacts for CW310
+#     condition: failed()
 
-- job: chip_earlgrey_cw310_hyperdebug
-  displayName: CW310's Earl Grey Bitstream for Hyperdebug
-  # Build CW310-hyperdebug variant of the Earl Grey toplevel design using Vivado
-  dependsOn:
-    - lint
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'master'))
-  pool: ci-public
-  timeoutInMinutes: 180
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - bash: |
-      set -e
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      . util/build_consts.sh
-      mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
-      mkdir -p $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
-      ci/bazelisk.sh build //hw/bitstream/vivado:fpga_cw310_hyperdebug
-      cp -rLvt $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
-        $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310_hyperdebug)
-      cp -rLvt $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
-        $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:hyperdebug)
-    displayName: Build bitstream with Vivado
-  - bash: |
-      . util/build_consts.sh
-      echo "Synthesis log"
-      cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/build.fpga_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/synth_1/runme.log || true
+# - job: chip_earlgrey_cw310_hyperdebug
+#   displayName: CW310's Earl Grey Bitstream for Hyperdebug
+#   # Build CW310-hyperdebug variant of the Earl Grey toplevel design using Vivado
+#   dependsOn:
+#     - lint
+#   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'), eq(variables['Build.SourceBranchName'], 'master'))
+#   pool: ci-public
+#   timeoutInMinutes: 180
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - bash: |
+#       set -e
+#       module load "xilinx/vivado/$(VIVADO_VERSION)"
+#       . util/build_consts.sh
+#       mkdir -p $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
+#       mkdir -p $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/
+#       ci/bazelisk.sh build //hw/bitstream/vivado:fpga_cw310_hyperdebug
+#       cp -rLvt $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
+#         $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:fpga_cw310_hyperdebug)
+#       cp -rLvt $BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/ \
+#         $($REPO_TOP/bazelisk.sh outquery-all //hw/bitstream/vivado:hyperdebug)
+#     displayName: Build bitstream with Vivado
+#   - bash: |
+#       . util/build_consts.sh
+#       echo "Synthesis log"
+#       cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/build.fpga_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/synth_1/runme.log || true
 
-      echo "Implementation log"
-      cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/build.fpga_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/impl_1/runme.log || true
-    displayName: Display synthesis & implementation logs
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/***"
-  - publish: "$(Build.ArtifactStagingDirectory)"
-    artifact: chip_earlgrey_cw310_hyperdebug-build-out
-    displayName: Upload artifacts for CW310
-    condition: failed()
-- job: chip_englishbreakfast_cw305
-  displayName: CW305's Bitstream
-  # Build CW305 variant of the English Breakfast toplevel design using Vivado
-  dependsOn: build_and_execute_verilated_tests_englishbreakfast
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool: ci-public
-  timeoutInMinutes: 120 # 2 hours
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - build_and_execute_verilated_tests_englishbreakfast
-  - bash: |
-      set -e
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/build-bitstream-vivado.sh top_englishbreakfast cw305
-    displayName: Build bitstream
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/top_englishbreakfast/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit"
+#       echo "Implementation log"
+#       cat $OBJ_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/build.fpga_cw310_hyperdebug/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/impl_1/runme.log || true
+#     displayName: Display synthesis & implementation logs
+#   - template: ci/upload-artifacts-template.yml
+#     parameters:
+#       includePatterns:
+#         - "/hw/***"
+#   - publish: "$(Build.ArtifactStagingDirectory)"
+#     artifact: chip_earlgrey_cw310_hyperdebug-build-out
+#     displayName: Upload artifacts for CW310
+#     condition: failed()
+# - job: chip_englishbreakfast_cw305
+#   displayName: CW305's Bitstream
+#   # Build CW305 variant of the English Breakfast toplevel design using Vivado
+#   dependsOn: build_and_execute_verilated_tests_englishbreakfast
+#   condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+#   pool: ci-public
+#   timeoutInMinutes: 120 # 2 hours
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - template: ci/download-artifacts-template.yml
+#     parameters:
+#       downloadPartialBuildBinFrom:
+#         - build_and_execute_verilated_tests_englishbreakfast
+#   - bash: |
+#       set -e
+#       module load "xilinx/vivado/$(VIVADO_VERSION)"
+#       ci/scripts/build-bitstream-vivado.sh top_englishbreakfast cw305
+#     displayName: Build bitstream
+#   - template: ci/upload-artifacts-template.yml
+#     parameters:
+#       includePatterns:
+#         - "/hw/top_englishbreakfast/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit"
 
-- job: cache_bitstreams
-  displayName: Cache bitstreams to GCP
-  pool:
-    vmImage: ubuntu-20.04
-  dependsOn:
-    - chip_earlgrey_cw310
-    - chip_earlgrey_cw310_hyperdebug
-  condition: eq(variables['Build.SourceBranchName'], 'master')
-  steps:
-    - template: ci/download-artifacts-template.yml
-      parameters:
-        downloadPartialBuildBinFrom:
-          - chip_earlgrey_cw310
-          - chip_earlgrey_cw310_hyperdebug
-    - bash: |
-        set -x
-        . util/build_consts.sh
-    - template: ci/gcp-upload-bitstream-template.yml
-      parameters:
-        parentDir: "$BIN_DIR/hw/top_earlgrey"
-        includeFiles:
-          - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
-          - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
-          - "rom.mmi"
-          - "otp.mmi"
-          - "chip_earlgrey_cw310_hyperdebug/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"
-          - "chip_earlgrey_cw310_hyperdebug/rom.mmi"
-          - "chip_earlgrey_cw310_hyperdebug/otp.mmi"
-        gcpKeyFile: "gcpkey.json"
-        bucketURI: "gs://opentitan-bitstreams/master"
+# - job: cache_bitstreams
+#   displayName: Cache bitstreams to GCP
+#   pool:
+#     vmImage: ubuntu-20.04
+#   dependsOn:
+#     - chip_earlgrey_cw310
+#     - chip_earlgrey_cw310_hyperdebug
+#   condition: eq(variables['Build.SourceBranchName'], 'master')
+#   steps:
+#     - template: ci/download-artifacts-template.yml
+#       parameters:
+#         downloadPartialBuildBinFrom:
+#           - chip_earlgrey_cw310
+#           - chip_earlgrey_cw310_hyperdebug
+#     - bash: |
+#         set -x
+#         . util/build_consts.sh
+#     - template: ci/gcp-upload-bitstream-template.yml
+#       parameters:
+#         parentDir: "$BIN_DIR/hw/top_earlgrey"
+#         includeFiles:
+#           - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig"
+#           - "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice"
+#           - "rom.mmi"
+#           - "otp.mmi"
+#           - "chip_earlgrey_cw310_hyperdebug/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"
+#           - "chip_earlgrey_cw310_hyperdebug/rom.mmi"
+#           - "chip_earlgrey_cw310_hyperdebug/otp.mmi"
+#         gcpKeyFile: "gcpkey.json"
+#         bucketURI: "gs://opentitan-bitstreams/master"
 
-- job: execute_test_rom_fpga_tests_cw310
-  displayName: CW310 Test ROM Tests
-  pool: FPGA
-  timeoutInMinutes: 45
-  dependsOn:
-    - chip_earlgrey_cw310
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
-        - sw_build
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      ci/scripts/run-fpga-cw310-tests.sh cw310_test_rom,-jtag || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
+# - job: execute_test_rom_fpga_tests_cw310
+#   displayName: CW310 Test ROM Tests
+#   pool: FPGA
+#   timeoutInMinutes: 45
+#   dependsOn:
+#     - chip_earlgrey_cw310
+#     - sw_build
+#   condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - template: ci/download-artifacts-template.yml
+#     parameters:
+#       downloadPartialBuildBinFrom:
+#         - chip_earlgrey_cw310
+#         - sw_build
+#   - bash: |
+#       set -e
+#       . util/build_consts.sh
+#       ci/scripts/run-fpga-cw310-tests.sh cw310_test_rom,-jtag || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+#     displayName: Execute tests
 
-- job: execute_rom_fpga_jtag_tests_cw310
-  displayName: Experimental CW310 ROM JTAG Tests
-  pool: FPGA
-  timeoutInMinutes: 45
-  dependsOn:
-    - chip_earlgrey_cw310
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
-        - sw_build
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-cw310-tests.sh jtag || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
-    # TODO(lowRISC/opentitan#16067) Fail CI when JTAG tests fail.
-    continueOnError: True
+# - job: execute_rom_fpga_jtag_tests_cw310
+#   displayName: Experimental CW310 ROM JTAG Tests
+#   pool: FPGA
+#   timeoutInMinutes: 45
+#   dependsOn:
+#     - chip_earlgrey_cw310
+#     - sw_build
+#   condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - template: ci/download-artifacts-template.yml
+#     parameters:
+#       downloadPartialBuildBinFrom:
+#         - chip_earlgrey_cw310
+#         - sw_build
+#   - bash: |
+#       set -e
+#       . util/build_consts.sh
+#       module load "xilinx/vivado/$(VIVADO_VERSION)"
+#       ci/scripts/run-fpga-cw310-tests.sh jtag || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+#     displayName: Execute tests
+#     # TODO(lowRISC/opentitan#16067) Fail CI when JTAG tests fail.
+#     continueOnError: True
 
-- job: execute_rom_fpga_tests_cw310
-  displayName: CW310 ROM Tests
-  pool: FPGA
-  timeoutInMinutes: 45
-  dependsOn:
-    - chip_earlgrey_cw310
-    - sw_build
-  condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - chip_earlgrey_cw310
-        - sw_build
-  - bash: |
-      set -e
-      . util/build_consts.sh
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/run-fpga-cw310-tests.sh cw310_rom,-jtag || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
-    displayName: Execute tests
+# - job: execute_rom_fpga_tests_cw310
+#   displayName: CW310 ROM Tests
+#   pool: FPGA
+#   timeoutInMinutes: 45
+#   dependsOn:
+#     - chip_earlgrey_cw310
+#     - sw_build
+#   condition: succeeded( 'chip_earlgrey_cw310', 'sw_build' )
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - template: ci/download-artifacts-template.yml
+#     parameters:
+#       downloadPartialBuildBinFrom:
+#         - chip_earlgrey_cw310
+#         - sw_build
+#   - bash: |
+#       set -e
+#       . util/build_consts.sh
+#       module load "xilinx/vivado/$(VIVADO_VERSION)"
+#       ci/scripts/run-fpga-cw310-tests.sh cw310_rom,-jtag || { res=$?; echo "To reproduce failures locally, follow the instructions at https://docs.opentitan.org/doc/getting_started/setup_fpga/#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
+#     displayName: Execute tests
 
-- job: deploy_release_artifacts
-  displayName: Package & deploy release
-  pool:
-    vmImage: ubuntu-20.04
-  dependsOn:
-    - lint
-    - sw_build
-    - execute_verilated_tests
-    - chip_earlgrey_cw310
-  condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - sw_build
-        - execute_verilated_tests
-        - chip_earlgrey_cw310
-        - chip_englishbreakfast_verilator
-  - bash: |
-      . util/build_consts.sh
-      ci/scripts/make_distribution.sh
-      tar --list -f $BIN_DIR/opentitan-*.tar.xz
-      # Put the resulting tar file into a directory the |publish| step below can reference.
-      mkdir "$BUILD_ROOT/dist-final"
-      mv $BIN_DIR/opentitan-*.tar.xz "$BUILD_ROOT/dist-final"
-    displayName: Create final dist
-  - publish: $(Build.ArtifactStagingDirectory)/dist-final
-    artifact: opentitan-dist
-    displayName: Upload release
-  - task: GithubRelease@0
-    displayName: Upload to GitHub releases (only tags)
-    condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-    inputs:
-      gitHubConnection: opentitan-release-upload
-      repositoryName: lowrisc/opentitan
-      addChangeLog: false
-      assets: |
-          $(Build.ArtifactStagingDirectory)/dist-final/*
+# - job: deploy_release_artifacts
+#   displayName: Package & deploy release
+#   pool:
+#     vmImage: ubuntu-20.04
+#   dependsOn:
+#     - lint
+#     - sw_build
+#     - execute_verilated_tests
+#     - chip_earlgrey_cw310
+#   condition: and(eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - template: ci/install-package-dependencies.yml
+#   - template: ci/download-artifacts-template.yml
+#     parameters:
+#       downloadPartialBuildBinFrom:
+#         - sw_build
+#         - execute_verilated_tests
+#         - chip_earlgrey_cw310
+#         - chip_englishbreakfast_verilator
+#   - bash: |
+#       . util/build_consts.sh
+#       ci/scripts/make_distribution.sh
+#       tar --list -f $BIN_DIR/opentitan-*.tar.xz
+#       # Put the resulting tar file into a directory the |publish| step below can reference.
+#       mkdir "$BUILD_ROOT/dist-final"
+#       mv $BIN_DIR/opentitan-*.tar.xz "$BUILD_ROOT/dist-final"
+#     displayName: Create final dist
+#   - publish: $(Build.ArtifactStagingDirectory)/dist-final
+#     artifact: opentitan-dist
+#     displayName: Upload release
+#   - task: GithubRelease@0
+#     displayName: Upload to GitHub releases (only tags)
+#     condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+#     inputs:
+#       gitHubConnection: opentitan-release-upload
+#       repositoryName: lowrisc/opentitan
+#       addChangeLog: false
+#       assets: |
+#           $(Build.ArtifactStagingDirectory)/dist-final/*
 
-- job: build_docker_containers
-  displayName: "Build Docker Containers"
-  pool:
-    vmImage: ubuntu-20.04
-  dependsOn:
-    - lint
-  steps:
-  - template: ci/checkout-template.yml
-  - task: Docker@2
-    displayName: Build Developer Utility Container
-    continueOnError: True
-    inputs:
-      command: build
-      Dockerfile: ./util/container/Dockerfile
-      buildContext: .
-  - task: Docker@2
-    displayName: Build Documentation Builder Container
-    inputs:
-      command: build
-      tags: gcr.io/active-premise-257318/builder
-      Dockerfile: ./site/docs/builder.Dockerfile
-      buildContext: .
-  - task: Docker@2
-    displayName: Build Documentation Redirector Container
-    inputs:
-      command: build
-      Dockerfile: ./site/redirector/Dockerfile
-      buildContext: ./site/redirector
+# - job: build_docker_containers
+#   displayName: "Build Docker Containers"
+#   pool:
+#     vmImage: ubuntu-20.04
+#   dependsOn:
+#     - lint
+#   steps:
+#   - template: ci/checkout-template.yml
+#   - task: Docker@2
+#     displayName: Build Developer Utility Container
+#     continueOnError: True
+#     inputs:
+#       command: build
+#       Dockerfile: ./util/container/Dockerfile
+#       buildContext: .
+#   - task: Docker@2
+#     displayName: Build Documentation Builder Container
+#     inputs:
+#       command: build
+#       tags: gcr.io/active-premise-257318/builder
+#       Dockerfile: ./site/docs/builder.Dockerfile
+#       buildContext: .
+#   - task: Docker@2
+#     displayName: Build Documentation Redirector Container
+#     inputs:
+#       command: build
+#       Dockerfile: ./site/redirector/Dockerfile
+#       buildContext: ./site/redirector
