@@ -235,7 +235,8 @@ package csr_utils_pkg;
 
     if (user_ftdr != null) csr.set_frontdoor(user_ftdr);
     csr.write(.status(status), .value(value), .path(path), .map(map), .prior(100));
-    // TODO: Does not work: if (user_ftdr != null) csr.set_frontdoor(null);
+    // TODO: need to remove the frontdoor to switch back to the default,
+    // but this doesn't work: if (user_ftdr != null) ptr.set_frontdoor(null);
 
     if (under_reset) return;
     if (check == UVM_CHECK) begin
@@ -360,7 +361,8 @@ package csr_utils_pkg;
               csr_or_fld.csr.read(.status(status), .value(value), .path(path), .map(map),
                                   .prior(100));
             end
-            // TODO: Does not work: if (user_ftdr != null) csr_or_fld.csr.set_frontdoor(null);
+            // TODO: need to remove the frontdoor to switch back to the default,
+            // but this doesn't work: if (user_ftdr != null) ptr.set_frontdoor(null);
             if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK,
                            $sformatf("trying to read csr/field %0s", ptr.get_full_name()),
@@ -606,7 +608,8 @@ package csr_utils_pkg;
             increment_outstanding_access();
             if (user_ftdr != null) ptr.set_frontdoor(user_ftdr);
             ptr.read(.status(status), .offset(offset), .value(data), .map(map), .prior(100));
-            // TODO: Does not work: if (user_ftdr != null) ptr.set_frontdoor(null);
+            // TODO: need to remove the frontdoor to switch back to the default,
+            // but this doesn't work: if (user_ftdr != null) ptr.set_frontdoor(null);
             if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK,
                            $sformatf("trying to read mem %0s", ptr.get_full_name()), error, msg_id)
@@ -660,7 +663,8 @@ package csr_utils_pkg;
             increment_outstanding_access();
             if (user_ftdr != null) ptr.set_frontdoor(user_ftdr);
             ptr.write(.status(status), .offset(offset), .value(data), .map(map), .prior(100));
-            // TODO: Does not work: if (user_ftdr != null) ptr.set_frontdoor(null);
+            // TODO: need to remove the frontdoor to switch back to the default,
+            // but this doesn't work: if (user_ftdr != null) ptr.set_frontdoor(null);
             if (check == UVM_CHECK && !under_reset) begin
               `DV_CHECK_EQ(status, UVM_IS_OK,
                            $sformatf("trying to write mem %0s", ptr.get_full_name()),
