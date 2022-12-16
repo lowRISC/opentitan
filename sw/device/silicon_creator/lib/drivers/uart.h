@@ -8,7 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 #ifdef __cplusplus
