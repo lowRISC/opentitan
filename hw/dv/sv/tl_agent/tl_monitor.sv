@@ -6,8 +6,6 @@
 // ---------------------------------------------
 // TileLink interface monitor
 // ---------------------------------------------
-
-// TODO: Implement protocl check in the monitor
 class tl_monitor extends dv_base_monitor#(
     .ITEM_T (tl_seq_item),
     .CFG_T  (tl_agent_cfg),
