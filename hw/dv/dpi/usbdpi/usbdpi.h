@@ -10,7 +10,12 @@
 
 #include <limits.h>
 #include <stdio.h>
+#ifdef USBDPI_STANDALONE
+#include <stdint.h>
+typedef uint32_t svBitVecVal;
+#else
 #include <svdpi.h>
+#endif
 
 // How many bits in our frame (1ms on real hardware)
 #define FRAME_INTERVAL 256 * 8
@@ -155,6 +160,7 @@ struct usbdpi_ctx {
 void *usbdpi_create(const char *name, int loglevel);
 void usbdpi_device_to_host(void *ctx_void, const svBitVecVal *usb_d2p);
 char usbdpi_host_to_device(void *ctx_void, const svBitVecVal *usb_d2p);
+void usbdpi_diags(void *ctx_void, svBitVecVal *diags);
 void usbdpi_close(void *ctx_void);
 uint32_t CRC5(uint32_t dwInput, int iBitcnt);
 uint32_t CRC16(uint8_t *data, int bytes);

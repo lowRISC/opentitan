@@ -74,11 +74,26 @@ void usb_testutils_poll(usb_testutils_ctx_t *ctx) {
   if (istate &
       ~((1u << kDifUsbdevIrqLinkReset) | (1u << kDifUsbdevIrqPktReceived) |
         (1u << kDifUsbdevIrqPktSent))) {
-    TRC_C('I');
-    TRC_I(istate, 12);
-    TRC_C(' ');
+    // Report anything that really should not be happening during testing,
+    //   at least for now
+    //
+    // TODO - introduce deliberate generation of each of these errors, and
+    //        modify usb_testutils_ to return the information without faulting
+    //        it?
+    if (istate &
+        ((1u << kDifUsbdevIrqRxFull) | (1u << kDifUsbdevIrqAvOverflow) |
+         (1u << kDifUsbdevIrqLinkInErr) | (1u << kDifUsbdevIrqRxCrcErr) |
+         (1u << kDifUsbdevIrqRxPidErr) | (1u << kDifUsbdevIrqRxBitstuffErr) |
+         (1u << kDifUsbdevIrqLinkOutErr))) {
+      LOG_INFO("USB: Unexpected interrupts: 0x%08x", istate);
+    } else {
+      // Other events are optionally reported
+      TRC_C('I');
+      TRC_I(istate, 12);
+      TRC_C(' ');
+    }
   }
-  // Clear the interupts
+  // Clear the interrupts
   CHECK_DIF_OK(dif_usbdev_irq_acknowledge_all(ctx->dev));
 
   // TODO - clean this up
