@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!--
+The eXtended Keccak Code Package (XKCP)
+https://github.com/XKCP/XKCP
+
+Implementation by Gilles Van Assche and Ronny Van Keer, hereby denoted as "the implementer".
+
+For more information, feedback or questions, please refer to the Keccak Team website:
+https://keccak.team/
+
+To the extent possible under law, the implementer has waived all copyright
+and related or neighboring rights to the source code in this file.
+http://creativecommons.org/publicdomain/zero/1.0/
+-->
+<build all="all" xmlns:xi="http://www.w3.org/2001/XInclude">
+
+    <target name="kmac" inherits="FIPS202 SP800-185 K1600-ref-64bits">
+        <c>kmac_vectors/main.c</c>
+        <h>lib/common/align.h</h>
+        <h>other_commons/brg_endian.h</h>
+        <c>kmac_vectors/displayIntermediateValues.c</c>
+        <h>kmac_vectors/displayIntermediateValues.h</h>
+        <gcc>-O</gcc>
+    </target>
+
+    <fragment name="FIPS202" inherits="KeccakSponge">
+        <config>XKCP_has_FIPS202</config>
+        <c>lib/high/Keccak/FIPS202/SimpleFIPS202.c</c>
+        <h>lib/high/Keccak/FIPS202/SimpleFIPS202.h</h>
+        <c>lib/high/Keccak/FIPS202/KeccakHash.c</c>
+        <h>lib/high/Keccak/FIPS202/KeccakHash.h</h>
+    </fragment>
+
+    <fragment name="SP800-185" inherits="KeccakSponge">
+        <config>XKCP_has_SP800_185</config>
+        <c>lib/high/Keccak/SP800-185/SP800-185.c</c>
+        <inc>lib/high/Keccak/SP800-185/SP800-185.inc</inc>
+        <h>lib/high/Keccak/SP800-185/SP800-185.h</h>
+        <h>lib/high/common/Phases.h</h>
+    </fragment>
+
+    <fragment name="KeccakSponge">
+        <config>XKCP_has_Sponge_Keccak</config>
+        <h>lib/high/Keccak/KeccakSponge.h</h>
+        <inc>lib/high/Keccak/KeccakSponge.inc</inc>
+        <c>lib/high/Keccak/KeccakSponge.c</c>
+    </fragment>
+
+    <fragment name="K1600">
+        <config>XKCP_has_KeccakP1600</config>
+    </fragment>
+
+    <fragment name="K1600-ref-64bits" inherits="K1600">
+        <c>lib/low/KeccakP-1600/ref-64bits/KeccakP-1600-reference.c</c>
+        <h>lib/low/KeccakP-1600/ref-64bits/KeccakP-1600-reference.h</h>
+        <h>lib/low/KeccakP-1600/ref-64bits/KeccakP-1600-SnP.h</h>
+    </fragment>
+
+</build>

@@ -1,0 +1,169 @@
+The redistribution and use of this software (with or without changes) is allowed without the payment of fees or royalties provided that the terms of the licenses of the different source files used is respected. Most of the source and header files in the XKCP are released to the public domain and associated to the CC0 (http://creativecommons.org/publicdomain/zero/1.0/) deed, but there are exceptions.
+
+In general, the redistribution of this software should include a copy of this file. However, if only a part of the software is redistributed or used, the portions that are no longer relevant may be removed. Hints are given below whether a file is used in libXKCP, UnitTests, Benchmarks or KeccakSum.
+
+
+For XKCP/lib/common/brg_endian.h (used in libXKCP, UnitTests, Benchmarks and KeccakSum):
+
+    ---------------------------------------------------------------------------
+    Copyright (c) 1998-2008, Brian Gladman, Worcester, UK. All rights reserved.
+
+    LICENSE TERMS
+
+    The redistribution and use of this software (with or without changes)
+    is allowed without the payment of fees or royalties provided that:
+
+    1. source code distributions include the above copyright notice, this
+        list of conditions and the following disclaimer;
+
+    2. binary distributions include the above copyright notice, this list
+        of conditions and the following disclaimer in their documentation;
+
+    3. the name of the copyright holder is not used to endorse products
+        built using this software without specific written permission.
+
+    DISCLAIMER
+
+    This software is provided 'as is' with no explicit or implied warranties
+    in respect of its properties, including, but not limited to, correctness
+    and/or fitness for purpose.
+    ---------------------------------------------------------------------------
+
+
+For XKCP/lib/low/KeccakP-1600/AVX2/KeccakP-1600-AVX2.s and XKCP/lib/low/KeccakP-1600/AVX512/KeccakP-1600-AVX512.s (potentially used in libXKCP, UnitTests, Benchmarks and KeccakSum, depending on the target platform):
+
+    Copyright (c) 2006-2017, CRYPTOGAMS by <appro@openssl.org>
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+        *	Redistributions of source code must retain copyright notices,
+        this list of conditions and the following disclaimer.
+
+        *	Redistributions in binary form must reproduce the above
+        copyright notice, this list of conditions and the following
+        disclaimer in the documentation and/or other materials
+        provided with the distribution.
+
+        *	Neither the name of the CRYPTOGAMS nor the names of its
+        copyright holder and contributors may be used to endorse or
+        promote products derived from this software without specific
+        prior written permission.
+
+    ALTERNATIVELY, provided that this notice is retained in full, this
+    product may be distributed under the terms of the GNU General Public
+    License (GPL), in which case the provisions of the GPL apply INSTEAD OF
+    those given above.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+For XKCP/Standalone/CompactFIPS202/C/genKAT.c, XKCP/tests/UnitTests/genKAT.c and XKCP/tests/UnitTests/genKAT.h (used only in UnitTests):
+
+    Copyright (c) 2008, Lawrence E. Bassham, National Institute of Standards and Technology (NIST),
+    for the original version (available at http://csrc.nist.gov/groups/ST/hash/sha-3/documents/KAT1.zip)
+
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+        * Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.
+        * Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+        * Neither the name of the NIST nor the
+        names of its contributors may be used to endorse or promote products
+        derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+For XKCP/support/Kernel-PMU/enable_arm_pmu.c (*not* used in libXKCP, UnitTests, Benchmarks nor KeccakSum):
+
+    Kernel-PMU
+    Enabling user-mode access to the performance monitor unit (PMU) on ARMv8 Aarch64 and ARMv7
+    Copyright (C) 2019 Bruno Pairault
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+For XKCP/tests/Benchmarks/timing.h (used only in Benchmarks):
+
+    Copyright 2020 Google Inc.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+
+For XKCP/tests/NIST_LWC/genkat_aead_c89.c, XKCP/tests/NIST_LWC/genkat_aead.c, XKCP/tests/NIST_LWC/genkat_hash_c89.c and XKCP/tests/NIST_LWC/genkat_hash.c (*not* used in libXKCP, UnitTests, Benchmarks nor KeccakSum):
+
+    NIST-developed software is provided by NIST as a public service.
+    You may use, copy and distribute copies of the software in any medium,
+    provided that you keep intact this entire notice. You may improve,
+    modify and create derivative works of the software or any portion of
+    the software, and you may copy and distribute such modifications or
+    works. Modified works should carry a notice stating that you changed
+    the software and should note the date and nature of any such change.
+    Please explicitly acknowledge the National Institute of Standards and
+    Technology as the source of the software.
+
+    NIST-developed software is expressly provided "AS IS." NIST MAKES NO
+    WARRANTY OF ANY KIND, EXPRESS, IMPLIED, IN FACT OR ARISING BY OPERATION
+    OF LAW, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTY OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT AND DATA ACCURACY. NIST
+    NEITHER REPRESENTS NOR WARRANTS THAT THE OPERATION OF THE SOFTWARE WILL BE
+    UNINTERRUPTED OR ERROR-FREE, OR THAT ANY DEFECTS WILL BE CORRECTED. NIST
+    DOES NOT WARRANT OR MAKE ANY REPRESENTATIONS REGARDING THE USE OF THE SOFTWARE
+    OR THE RESULTS THEREOF, INCLUDING BUT NOT LIMITED TO THE CORRECTNESS, ACCURACY,
+    RELIABILITY, OR USEFULNESS OF THE SOFTWARE.
+
+    You are solely responsible for determining the appropriateness of using and
+    distributing the software and you assume all risks associated with its use,
+    including but not limited to the risks and costs of program errors, compliance
+    with applicable laws, damage to or loss of data, programs or equipment, and
+    the unavailability or interruption of operation. This software is not intended
+    to be used in any situation where a failure could cause risk of injury or
+    damage to property. The software developed by NIST employees is not subject to
+    copyright protection within the United States.
