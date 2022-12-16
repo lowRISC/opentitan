@@ -200,11 +200,11 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       // TODO: Test the "manual" DIO pads as well.
     join
 
-    cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeRelease);
-    cfg.chip_vif.signal_probe_pinmux_periph_to_mio_i(SignalProbeRelease);
-    cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeRelease);
-    cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_11_0(SignalProbeRelease);
-    cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_15_14(SignalProbeRelease);
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeRelease));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_i(SignalProbeRelease));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeRelease));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_11_0(SignalProbeRelease));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_15_14(SignalProbeRelease));
     cfg.chip_vif.mios_if.disconnect();
 
     // Reset the DUT before reenabling the assertions.
@@ -220,20 +220,22 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       `uvm_info(`gfn, $sformatf("pinmux_outsel_test %0d/%0d", i, iterations), UVM_LOW)
       pinmux_mio_pad_attr_config();
       pinmux_mio_outsel_config();
-     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_mio_oe)
-     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_mio)
-      cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeForce, periph_to_mio_oe);
-      cfg.chip_vif.signal_probe_pinmux_periph_to_mio_i(SignalProbeForce, periph_to_mio);
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_mio_oe)
+      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_mio)
+      void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeForce,
+                                                                periph_to_mio_oe));
+      void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_i(SignalProbeForce, periph_to_mio));
       repeat ($urandom_range(4, 20)) begin
         cfg.chip_vif.io_div4_clk_rst_if.wait_clks($urandom_range(1, 20));
         randcase
           1: begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_mio_oe)
-            cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeForce, periph_to_mio_oe);
+            void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeForce,
+                                                                      periph_to_mio_oe));
           end
           1: begin
             `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_mio)
-            cfg.chip_vif.signal_probe_pinmux_periph_to_mio_i(SignalProbeForce, periph_to_mio);
+            void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_i(SignalProbeForce, periph_to_mio));
           end
         endcase
         cfg.chip_vif.io_div4_clk_rst_if.wait_clks(1);
@@ -496,9 +498,11 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   function void pinmux_dio_drive_inputs();
     cfg.chip_vif.dios_if.pins_oe = '0;
-    cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_11_0(SignalProbeForce, periph_to_dio[11:0]);
-    cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_15_14(SignalProbeForce, periph_to_dio[15:14]);
-    cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeForce, periph_to_dio_oe);
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_11_0(SignalProbeForce,
+                                                                periph_to_dio[11:0]));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_15_14(SignalProbeForce,
+                                                                 periph_to_dio[15:14]));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeForce, periph_to_dio_oe));
     for (int i = 0; i < DioCount; i++) begin
       cfg.chip_vif.dios_if.pins_oe[DioToDioPadMap[i]] = dio_to_periph_oe[i];
       cfg.chip_vif.dios_if.pins_o[DioToDioPadMap[i]] = dio_to_periph[i];

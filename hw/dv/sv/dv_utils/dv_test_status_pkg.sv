@@ -12,7 +12,8 @@ package dv_test_status_pkg;
   function automatic void dv_test_status(bit passed);
 `ifdef INC_ASSERT
     if (prim_util_pkg::end_of_simulation) begin
-      $fatal("prim_util_pkg::end_of_simulation was already signaled!");
+      // The first arg '1' is the error code, arbitrarily set to 1.
+      $fatal(1, "prim_util_pkg::end_of_simulation was already signaled!");
     end
     prim_util_pkg::end_of_simulation = 1'b1;
 `endif

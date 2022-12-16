@@ -207,4 +207,4 @@ class chip_sw_spi_passthrough_collision_vseq extends chip_sw_spi_passthrough_vse
     sw_symbol_backdoor_overwrite("kUploadWriteCommands", upload_config);
   endtask
 
-endclass : chip_sw_spi_passthrough_collision_vseq;
+endclass : chip_sw_spi_passthrough_collision_vseq

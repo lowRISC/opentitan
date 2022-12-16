@@ -116,7 +116,7 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
   endfunction // handle_read
 
   function void handle_writes(spi_item item);
-    item.data.pop_front();
+    void'(item.data.pop_front());
     // potential TODO add associative array for read back of write data
   endfunction // handle_writes
 

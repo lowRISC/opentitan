@@ -80,7 +80,7 @@ initial begin : rng_plusargs
   `ASSERT_I(DvRngSrateMinCheck, rng_srate_value_min inside {[5:500]})
   `ASSERT_I(DvRngSrateMaxCheck, rng_srate_value_max inside {[5:500]})
   `ASSERT_I(DvRngSrateBoundsCheck, rng_srate_value_max >= rng_srate_value_min)
-  dv_srate_value = 12'($urandom_range(rng_srate_value_min, rng_srate_value_max));
+  dv_srate_value = 12'($urandom_range(int'(rng_srate_value_min), int'(rng_srate_value_max)));
   void'($value$plusargs("rng_srate_value=%0d", dv_srate_value));
   `ASSERT_I(DvSrateValueCheck, dv_srate_value inside {[5:500]})
 end

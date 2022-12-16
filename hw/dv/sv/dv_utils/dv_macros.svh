@@ -567,7 +567,7 @@
 `ifndef dv_fatal
   // verilog_lint: waive macro-name-style
   `define dv_fatal(MSG_, ID_ = $sformatf("%m")) \
-    $fatal("%0t: (%0s:%0d) [%0s] %0s", $time, `__FILE__, `__LINE__, ID_, MSG_);
+    $fatal(1, "%0t: (%0s:%0d) [%0s] %0s", $time, `__FILE__, `__LINE__, ID_, MSG_);
 `endif
 
 `endif // UVM
